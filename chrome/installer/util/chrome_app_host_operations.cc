@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/master_preferences.h"
@@ -110,6 +109,13 @@ bool ChromeAppHostOperations::SetChannelFlags(
 bool ChromeAppHostOperations::ShouldCreateUninstallEntry(
     const std::set<std::wstring>& options) const {
   return (options.find(kOptionAppHostIsLauncher) != options.end());
+}
+
+void ChromeAppHostOperations::AddDefaultShortcutProperties(
+    BrowserDistribution* dist,
+    const FilePath& target_exe,
+    ShellUtil::ShortcutProperties* properties) const {
+  NOTREACHED() << "App Host does not create shortcuts.";
 }
 
 }  // namespace installer

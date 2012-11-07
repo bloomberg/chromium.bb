@@ -156,4 +156,11 @@ bool Product::SetChannelFlags(bool set, ChannelInfo* channel_info) const {
   return operations_->SetChannelFlags(options_, set, channel_info);
 }
 
+void Product::AddDefaultShortcutProperties(
+    const FilePath& target_exe,
+    ShellUtil::ShortcutProperties* properties) const {
+  return operations_->AddDefaultShortcutProperties(
+      distribution_, target_exe, properties);
+}
+
 }  // namespace installer

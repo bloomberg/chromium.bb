@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/shell_util.h"
 
 class CommandLine;
 
@@ -122,6 +123,11 @@ class Product {
 
   // See Productoperations::SetChannelFlags.
   bool SetChannelFlags(bool set, ChannelInfo* channel_info) const;
+
+  // See ProductOperations::AddDefaultShortcutProperties.
+  void AddDefaultShortcutProperties(
+      const FilePath& target_exe,
+      ShellUtil::ShortcutProperties* properties) const;
 
  protected:
   enum CacheStateFlags {

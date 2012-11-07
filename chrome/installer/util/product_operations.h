@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "chrome/installer/util/shell_util.h"
 
+class BrowserDistribution;
 class CommandLine;
 
 namespace installer {
@@ -71,6 +73,13 @@ class ProductOperations {
   // MSI; see InstallerState::is_msi.
   virtual bool ShouldCreateUninstallEntry(
       const std::set<std::wstring>& options) const = 0;
+
+  // Modifies a ShellUtil::ShortcutProperties object by assigning default values
+  // to unintialized members.
+  virtual void AddDefaultShortcutProperties(
+      BrowserDistribution* dist,
+      const FilePath& target_exe,
+      ShellUtil::ShortcutProperties* properties) const = 0;
 };
 
 }  // namespace installer

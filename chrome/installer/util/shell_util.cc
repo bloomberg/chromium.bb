@@ -50,8 +50,6 @@ using base::win::RegKey;
 
 namespace {
 
-typedef ShellUtil::ChromeShortcutProperties ChromeShortcutProperties;
-
 // An enum used to tell QuickIsChromeRegistered() which level of registration
 // the caller wants to confirm.
 enum RegistrationConfirmationLevel {
@@ -914,7 +912,7 @@ bool RegisterChromeAsDefaultProtocolClientXPStyle(BrowserDistribution* dist,
 // return value is suffixed with ".lnk".
 string16 ExtractShortcutNameFromProperties(
     BrowserDistribution* dist,
-    const ChromeShortcutProperties& properties) {
+    const ShellUtil::ShortcutProperties& properties) {
   DCHECK(dist);
   string16 shortcut_name;
   if (properties.has_shortcut_name())
@@ -928,26 +926,37 @@ string16 ExtractShortcutNameFromProperties(
   return shortcut_name;
 }
 
-// Returns a ShortcutProperties struct containing the properties to set on the
-// shortcut based on the provided ChromeShortcutProperties. If |operation| is
-// to create, some properties might be given a default if not set in
-// |properties| (see individual setters in ChromeShortcutProperties for
-// details).
-base::win::ShortcutProperties GetShortcutPropertiesFromChromeShortcutProperties(
-    BrowserDistribution* dist,
-    const ChromeShortcutProperties& properties,
-    base::win::ShortcutOperation operation) {
-  bool create = (operation == base::win::SHORTCUT_CREATE_ALWAYS ||
-                 operation == base::win::SHORTCUT_REPLACE_EXISTING);
-  // |chrome_exe| is mandatory when creating the shortcut.
-  DCHECK(!create || properties.has_chrome_exe());
+// Converts ShellUtil::ShortcutOperation to the best-matching value in
+// base::win::ShortcutOperation.
+base::win::ShortcutOperation TranslateShortcutOperation(
+    ShellUtil::ShortcutOperation operation) {
+  switch (operation) {
+    case ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS:  // Falls through.
+    case ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL:
+      return base::win::SHORTCUT_CREATE_ALWAYS;
 
+    case ShellUtil::SHELL_SHORTCUT_UPDATE_EXISTING:
+      return base::win::SHORTCUT_UPDATE_EXISTING;
+
+    case ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING:
+      return base::win::SHORTCUT_REPLACE_EXISTING;
+
+    default:
+      NOTREACHED();
+      return base::win::SHORTCUT_REPLACE_EXISTING;
+  }
+}
+
+// Returns a base::win::ShortcutProperties struct containing the properties
+// to set on the shortcut based on the provided ShellUtil::ShortcutProperties.
+base::win::ShortcutProperties TranslateShortcutProperties(
+    const ShellUtil::ShortcutProperties& properties) {
   base::win::ShortcutProperties shortcut_properties;
 
-  if (properties.has_chrome_exe()) {
-    shortcut_properties.set_target(properties.chrome_exe);
-    DCHECK(!properties.chrome_exe.DirName().empty());
-    shortcut_properties.set_working_dir(properties.chrome_exe.DirName());
+  if (properties.has_target()) {
+    shortcut_properties.set_target(properties.target);
+    DCHECK(!properties.target.DirName().empty());
+    shortcut_properties.set_working_dir(properties.target.DirName());
   }
 
   if (properties.has_arguments())
@@ -955,31 +964,12 @@ base::win::ShortcutProperties GetShortcutPropertiesFromChromeShortcutProperties(
 
   if (properties.has_description())
     shortcut_properties.set_description(properties.description);
-  else if (create)
-    shortcut_properties.set_description(dist->GetAppDescription());
 
-  if (properties.has_icon()) {
-    shortcut_properties.set_icon(properties.icon, 0);
-  } else if (create) {
-    int icon_index = dist->GetIconIndex();
-    FilePath prefs_path(properties.chrome_exe.DirName().AppendASCII(
-        installer::kDefaultMasterPrefs));
-    if (file_util::PathExists(prefs_path)) {
-      installer::MasterPreferences prefs(prefs_path);
-      prefs.GetInt(installer::master_preferences::kChromeShortcutIconIndex,
-                   &icon_index);
-    }
-    shortcut_properties.set_icon(properties.chrome_exe, icon_index);
-  }
+  if (properties.has_icon())
+    shortcut_properties.set_icon(properties.icon, properties.icon_index);
 
-  if (properties.has_app_id()) {
+  if (properties.has_app_id())
     shortcut_properties.set_app_id(properties.app_id);
-  } else if (create) {
-    bool is_per_user_install =
-        InstallUtil::IsPerUserInstall(properties.chrome_exe.value().c_str());
-    shortcut_properties.set_app_id(
-        ShellUtil::GetBrowserModelId(dist, is_per_user_install));
-  }
 
   if (properties.has_dual_mode())
     shortcut_properties.set_dual_mode(properties.dual_mode);
@@ -1222,22 +1212,22 @@ bool ShellUtil::QuickIsChromeRegisteredInHKLM(BrowserDistribution* dist,
                                  CONFIRM_SHELL_REGISTRATION_IN_HKLM);
 }
 
-bool ShellUtil::GetShortcutPath(ChromeShortcutLocation location,
+bool ShellUtil::GetShortcutPath(ShellUtil::ShortcutLocation location,
                                 BrowserDistribution* dist,
                                 ShellChange level,
                                 FilePath* path) {
   int dir_key = -1;
   bool add_folder_for_dist = false;
   switch (location) {
-    case SHORTCUT_DESKTOP:
+    case SHORTCUT_LOCATION_DESKTOP:
       dir_key = (level == CURRENT_USER) ? base::DIR_USER_DESKTOP :
                                           base::DIR_COMMON_DESKTOP;
       break;
-    case SHORTCUT_QUICK_LAUNCH:
+    case SHORTCUT_LOCATION_QUICK_LAUNCH:
       dir_key = (level == CURRENT_USER) ? base::DIR_USER_QUICK_LAUNCH :
                                           base::DIR_DEFAULT_USER_QUICK_LAUNCH;
       break;
-    case SHORTCUT_START_MENU:
+    case SHORTCUT_LOCATION_START_MENU:
       dir_key = (level == CURRENT_USER) ? base::DIR_START_MENU :
                                           base::DIR_COMMON_START_MENU;
       add_folder_for_dist = true;
@@ -1258,16 +1248,16 @@ bool ShellUtil::GetShortcutPath(ChromeShortcutLocation location,
   return true;
 }
 
-bool ShellUtil::CreateOrUpdateChromeShortcut(
-    ShellUtil::ChromeShortcutLocation location,
+bool ShellUtil::CreateOrUpdateShortcut(
+    ShellUtil::ShortcutLocation location,
     BrowserDistribution* dist,
-    const ChromeShortcutProperties& properties,
-    ChromeShortcutOperation operation) {
+    const ShellUtil::ShortcutProperties& properties,
+    ShellUtil::ShortcutOperation operation) {
   DCHECK(dist);
   // |pin_to_taskbar| is only acknowledged when first creating the shortcut.
   DCHECK(!properties.pin_to_taskbar ||
-         operation == SHORTCUT_CREATE_ALWAYS ||
-         operation == SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL);
+         operation == SHELL_SHORTCUT_CREATE_ALWAYS ||
+         operation == SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL);
 
   FilePath user_shortcut_path;
   FilePath system_shortcut_path;
@@ -1287,7 +1277,7 @@ bool ShellUtil::CreateOrUpdateChromeShortcut(
   if (properties.level == SYSTEM_LEVEL) {
     // Install the system-level shortcut if requested.
     chosen_path = &system_shortcut_path;
-  } else if (operation != SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL ||
+  } else if (operation != SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL ||
              !file_util::PathExists(system_shortcut_path)){
     // Otherwise install the user-level shortcut, unless the system-level
     // variant of this shortcut is present on the machine and |operation| states
@@ -1304,12 +1294,7 @@ bool ShellUtil::CreateOrUpdateChromeShortcut(
     return true;
 
   base::win::ShortcutOperation shortcut_operation =
-      (operation == SHORTCUT_UPDATE_EXISTING ?
-           base::win::SHORTCUT_UPDATE_EXISTING :
-           (operation == SHORTCUT_REPLACE_EXISTING ?
-                base::win::SHORTCUT_REPLACE_EXISTING :
-                base::win::SHORTCUT_CREATE_ALWAYS));
-
+      TranslateShortcutOperation(operation);
   // Make sure the parent directories exist when creating the shortcut.
   if (shortcut_operation == base::win::SHORTCUT_CREATE_ALWAYS &&
       !file_util::CreateDirectory(chosen_path->DirName())) {
@@ -1318,8 +1303,7 @@ bool ShellUtil::CreateOrUpdateChromeShortcut(
   }
 
   base::win::ShortcutProperties shortcut_properties(
-      GetShortcutPropertiesFromChromeShortcutProperties(dist, properties,
-                                                        shortcut_operation));
+      TranslateShortcutProperties(properties));
   bool ret = base::win::CreateOrUpdateShortcutLink(
       *chosen_path, shortcut_properties, shortcut_operation);
 
@@ -1790,13 +1774,12 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
   }
 }
 
-bool ShellUtil::RemoveChromeShortcut(
-    ChromeShortcutLocation location,
-    BrowserDistribution* dist,
-    const string16& chrome_exe,
-    ShellChange level,
-    const string16* shortcut_name) {
-  bool delete_folder = (location == SHORTCUT_START_MENU);
+bool ShellUtil::RemoveShortcut(ShellUtil::ShortcutLocation location,
+                               BrowserDistribution* dist,
+                               const string16& target_exe,
+                               ShellChange level,
+                               const string16* shortcut_name) {
+  bool delete_folder = (location == SHORTCUT_LOCATION_START_MENU);
 
   FilePath shortcut_folder;
   if (!GetShortcutPath(location, dist, level, &shortcut_folder) ||
@@ -1826,7 +1809,7 @@ bool ShellUtil::RemoveChromeShortcut(
     return false;
   }
 
-  if (InstallUtil::ProgramCompare(FilePath(chrome_exe)).Evaluate(read_target)) {
+  if (InstallUtil::ProgramCompare(FilePath(target_exe)).Evaluate(read_target)) {
     // Unpin the shortcut if it was ever pinned by the user or the installer.
     VLOG(1) << "Trying to unpin " << shortcut_path.value();
     if (!base::win::TaskbarUnpinShortcutLink(shortcut_path.value().c_str())) {
@@ -1839,12 +1822,12 @@ bool ShellUtil::RemoveChromeShortcut(
       return file_util::Delete(shortcut_path, false);
   }
 
-  // The shortcut at |shortcut_path| doesn't point to |chrome_exe|, act as if
+  // The shortcut at |shortcut_path| doesn't point to |target_exe|, act as if
   // our shortcut had been deleted.
   return true;
 }
 
-void ShellUtil::RemoveChromeTaskbarShortcuts(const string16& chrome_exe) {
+void ShellUtil::RemoveTaskbarShortcuts(const string16& target_exe) {
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
@@ -1859,8 +1842,8 @@ void ShellUtil::RemoveChromeTaskbarShortcuts(const string16& chrome_exe) {
       taskbar_pins_path, false,
       file_util::FileEnumerator::FILES, FILE_PATH_LITERAL("*.lnk"));
 
-  FilePath chrome_path(chrome_exe);
-  InstallUtil::ProgramCompare chrome_compare(chrome_path);
+  FilePath target_path(target_exe);
+  InstallUtil::ProgramCompare target_compare(target_path);
   for (FilePath shortcut_path = shortcuts_enum.Next(); !shortcut_path.empty();
        shortcut_path = shortcuts_enum.Next()) {
     FilePath read_target;
@@ -1868,15 +1851,15 @@ void ShellUtil::RemoveChromeTaskbarShortcuts(const string16& chrome_exe) {
       LOG(ERROR) << "Couldn't resolve shortcut at " << shortcut_path.value();
       continue;
     }
-    if (chrome_compare.Evaluate(read_target.value())) {
-      // Unpin this shortcut if it points to |chrome_exe|.
+    if (target_compare.Evaluate(read_target.value())) {
+      // Unpin this shortcut if it points to |target_exe|.
       base::win::TaskbarUnpinShortcutLink(shortcut_path.value().c_str());
     }
   }
 }
 
-void ShellUtil::RemoveChromeStartScreenShortcuts(BrowserDistribution* dist,
-                                                 const string16& chrome_exe) {
+void ShellUtil::RemoveStartScreenShortcuts(BrowserDistribution* dist,
+                                           const string16& target_exe) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
 
@@ -1889,7 +1872,7 @@ void ShellUtil::RemoveChromeStartScreenShortcuts(BrowserDistribution* dist,
 
   app_shortcuts_path = app_shortcuts_path.Append(
       GetBrowserModelId(dist,
-                        InstallUtil::IsPerUserInstall(chrome_exe.c_str())));
+                        InstallUtil::IsPerUserInstall(target_exe.c_str())));
   if (!file_util::DirectoryExists(app_shortcuts_path)) {
     VLOG(1) << "No start screen shortcuts to delete.";
     return;

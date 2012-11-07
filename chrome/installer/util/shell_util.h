@@ -40,33 +40,33 @@ class ShellUtil {
   };
 
   // Typical shortcut directories. Resolved in GetShortcutPath().
-  enum ChromeShortcutLocation {
-    SHORTCUT_DESKTOP,
-    SHORTCUT_QUICK_LAUNCH,
-    SHORTCUT_START_MENU,
+  enum ShortcutLocation {
+    SHORTCUT_LOCATION_DESKTOP,
+    SHORTCUT_LOCATION_QUICK_LAUNCH,
+    SHORTCUT_LOCATION_START_MENU,
   };
 
-  enum ChromeShortcutOperation {
+  enum ShortcutOperation {
     // Create a new shortcut (overwriting if necessary).
-    SHORTCUT_CREATE_ALWAYS,
+    SHELL_SHORTCUT_CREATE_ALWAYS,
     // Create the per-user shortcut only if its system-level equivalent is not
     // present.
-    SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL,
+    SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL,
     // Overwrite an existing shortcut (fail if the shortcut doesn't exist).
-    SHORTCUT_REPLACE_EXISTING,
+    SHELL_SHORTCUT_REPLACE_EXISTING,
     // Update specified properties only on an existing shortcut.
-    SHORTCUT_UPDATE_EXISTING,
+    SHELL_SHORTCUT_UPDATE_EXISTING,
   };
 
-  // Properties for shortcuts to chrome.exe. Properties set will be applied to
+  // Properties for shortcuts. Properties set will be applied to
   // the shortcut on creation/update. On update, unset properties are ignored;
   // on create (and replaced) unset properties might have a default value (see
   // individual property setters below for details).
   // Callers are encouraged to use the setters provided which take care of
   // setting |options| as desired.
-  struct ChromeShortcutProperties {
-    enum ChromeIndividualProperties {
-      PROPERTIES_CHROME_EXE = 1 << 0,
+  struct ShortcutProperties {
+    enum IndividualProperties {
+      PROPERTIES_TARGET = 1 << 0,
       PROPERTIES_ARGUMENTS = 1 << 1,
       PROPERTIES_DESCRIPTION = 1 << 2,
       PROPERTIES_ICON = 1 << 3,
@@ -75,18 +75,18 @@ class ShellUtil {
       PROPERTIES_DUAL_MODE = 1 << 6,
     };
 
-    explicit ChromeShortcutProperties(ShellChange level_in)
-        : level(level_in), dual_mode(false), pin_to_taskbar(false),
-          options(0U) {}
+    explicit ShortcutProperties(ShellChange level_in)
+        : level(level_in), icon_index(0), dual_mode(false),
+          pin_to_taskbar(false), options(0U) {}
 
-    // Sets the chrome.exe to launch from this shortcut. This is mandatory when
-    // creating a shortcut.
-    void set_chrome_exe(const FilePath& chrome_exe_in) {
-      chrome_exe = chrome_exe_in;
-      options |= PROPERTIES_CHROME_EXE;
+    // Sets the target executable to launch from this shortcut.
+    // This is mandatory when creating a shortcut.
+    void set_target(const FilePath& target_in) {
+      target = target_in;
+      options |= PROPERTIES_TARGET;
     }
 
-    // Sets the arguments to be passed to |chrome_exe| when launching from this
+    // Sets the arguments to be passed to |target| when launching from this
     // shortcut.
     // The length of this string must be less than MAX_PATH.
     void set_arguments(const string16& arguments_in) {
@@ -98,7 +98,6 @@ class ShellUtil {
     }
 
     // Sets the localized description of the shortcut.
-    // Default: the current distribution's description.
     // The length of this string must be less than MAX_PATH.
     void set_description(const string16& description_in) {
       // Size restriction as per MSDN at
@@ -109,15 +108,14 @@ class ShellUtil {
     }
 
     // Sets the path to the icon (icon_index set to 0).
-    // Default: chrome.exe (icon_index defaults to the current distribution's
     // icon index unless otherwise specified in master_preferences).
-    void set_icon(const FilePath& icon_in) {
+    void set_icon(const FilePath& icon_in, int icon_index_in) {
       icon = icon_in;
+      icon_index = icon_index_in;
       options |= PROPERTIES_ICON;
     }
 
     // Sets the app model id for the shortcut (Win7+).
-    // Default: the browser model id for the current install.
     void set_app_id(const string16& app_id_in) {
       app_id = app_id_in;
       options |= PROPERTIES_APP_ID;
@@ -147,8 +145,8 @@ class ShellUtil {
       pin_to_taskbar = pin_to_taskbar_in;
     }
 
-    bool has_chrome_exe() const {
-      return (options & PROPERTIES_CHROME_EXE) != 0;
+    bool has_target() const {
+      return (options & PROPERTIES_TARGET) != 0;
     }
 
     bool has_arguments() const {
@@ -179,10 +177,11 @@ class ShellUtil {
     // shortcut and SYSTEM_LEVEL for an all-users shortcut).
     ShellChange level;
 
-    FilePath chrome_exe;
+    FilePath target;
     string16 arguments;
     string16 description;
     FilePath icon;
+    int icon_index;
     string16 app_id;
     string16 shortcut_name;
     bool dual_mode;
@@ -297,21 +296,21 @@ class ShellUtil {
   // given |level| (CURRENT_USER for per-user path and SYSTEM_LEVEL for
   // all-users path).
   // Returns false on failure.
-  static bool GetShortcutPath(ChromeShortcutLocation location,
+  static bool GetShortcutPath(ShellUtil::ShortcutLocation location,
                               BrowserDistribution* dist,
                               ShellChange level,
                               FilePath* path);
 
-  // Updates Chrome shortcut in |location| (or creates it if |options| specify
-  // SHORTCUT_CREATE_ALWAYS).
+  // Updates shortcut in |location| (or creates it if |options| specify
+  // SHELL_SHORTCUT_CREATE_ALWAYS).
   // |dist| gives the type of browser distribution currently in use.
   // |properties| and |operation| affect this method as described on their
   // invidividual definitions above.
-  static bool CreateOrUpdateChromeShortcut(
-      ChromeShortcutLocation location,
+  static bool CreateOrUpdateShortcut(
+      ShellUtil::ShortcutLocation location,
       BrowserDistribution* dist,
-      const ChromeShortcutProperties& properties,
-      ChromeShortcutOperation operation);
+      const ShellUtil::ShortcutProperties& properties,
+      ShellUtil::ShortcutOperation operation);
 
   // This method appends the Chrome icon index inside chrome.exe to the
   // chrome.exe path passed in as input, to generate the full path for
@@ -497,34 +496,34 @@ class ShellUtil {
                                         const string16& protocol,
                                         bool elevate_if_not_admin);
 
-  // Removes installed Chrome shortcut at |location|.
+  // Removes installed shortcut at |location|.
   // |chrome_exe|: The path to the chrome.exe being uninstalled; the shortcut
   // will only be deleted if its target is also |chrome_exe|.
   // |level|: CURRENT_USER to remove the per-user shortcut and SYSTEM_LEVEL to
   // remove the all-users shortcut.
   // |shortcut_name|: If non-null, remove the shortcut named |shortcut_name| at
   // location; otherwise remove the default shortcut at |location|.
-  // If |location| is SHORTCUT_START_MENU the shortcut folder specific to |dist|
-  // is deleted.
+  // If |location| is SHORTCUT_LOCATION_START_MENU the shortcut folder specific
+  // to |dist| is deleted.
   // Also attempts to unpin the removed shortcut from the taskbar.
   // Returns true if the shortcut was successfully deleted (or there is no
   // shortcut at |location| pointing to |chrome_exe|).
-  static bool RemoveChromeShortcut(ChromeShortcutLocation location,
-                                   BrowserDistribution* dist,
-                                   const string16& chrome_exe,
-                                   ShellChange level,
-                                   const string16* shortcut_name);
+  static bool RemoveShortcut(ShellUtil::ShortcutLocation location,
+                             BrowserDistribution* dist,
+                             const string16& target_exe,
+                             ShellChange level,
+                             const string16* shortcut_name);
 
   // Enumerates all shortcuts pinned to the taskbar and deletes those pointing
-  // to |chrome_exe|.
+  // to |target_exe|.
   // base::win::TaskbarUnpinShortcutLink() should be prefered, but this is
   // useful on uninstall as the parent shortcut of a pin might no longer exist
   // (thus making it impossible to unpin it via that API).
-  static void RemoveChromeTaskbarShortcuts(const string16& chrome_exe);
+  static void RemoveTaskbarShortcuts(const string16& target_exe);
 
   // This will remove all secondary tiles from the start screen for |dist|.
-  static void RemoveChromeStartScreenShortcuts(BrowserDistribution* dist,
-                                               const string16& chrome_exe);
+  static void RemoveStartScreenShortcuts(BrowserDistribution* dist,
+                                         const string16& target_exe);
 
   // Sets |suffix| to the base 32 encoding of the md5 hash of this user's sid
   // preceded by a dot.

@@ -142,13 +142,13 @@ int DoUninstallTasks(bool chrome_still_running) {
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     FilePath chrome_exe;
     if (PathService::Get(base::FILE_EXE, &chrome_exe)) {
-      ShellUtil::ChromeShortcutLocation user_shortcut_locations[] = {
-        ShellUtil::SHORTCUT_DESKTOP,
-        ShellUtil::SHORTCUT_QUICK_LAUNCH,
-        ShellUtil::SHORTCUT_START_MENU,
+      ShellUtil::ShortcutLocation user_shortcut_locations[] = {
+        ShellUtil::SHORTCUT_LOCATION_DESKTOP,
+        ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
+        ShellUtil::SHORTCUT_LOCATION_START_MENU,
       };
       for (size_t i = 0; i < arraysize(user_shortcut_locations); ++i) {
-        if (!ShellUtil::RemoveChromeShortcut(
+        if (!ShellUtil::RemoveShortcut(
                 user_shortcut_locations[i], dist, chrome_exe.value(),
                 ShellUtil::CURRENT_USER, NULL)) {
           VLOG(1) << "Failed to delete shortcut at location "

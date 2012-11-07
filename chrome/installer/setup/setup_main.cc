@@ -1114,14 +1114,13 @@ installer::InstallStatus RegisterDevChrome(
         BrowserDistribution::CHROME_BROWSER));
 
     // Create the Start menu shortcut and pin it to the taskbar.
-    ShellUtil::ChromeShortcutProperties shortcut_properties(
-        ShellUtil::CURRENT_USER);
-    shortcut_properties.set_chrome_exe(chrome_exe);
+    ShellUtil::ShortcutProperties shortcut_properties(ShellUtil::CURRENT_USER);
+    chrome.AddDefaultShortcutProperties(chrome_exe, &shortcut_properties);
     shortcut_properties.set_dual_mode(true);
     shortcut_properties.set_pin_to_taskbar(true);
-    ShellUtil::CreateOrUpdateChromeShortcut(
-        ShellUtil::SHORTCUT_START_MENU, chrome.distribution(),
-        shortcut_properties, ShellUtil::SHORTCUT_CREATE_ALWAYS);
+    ShellUtil::CreateOrUpdateShortcut(
+        ShellUtil::SHORTCUT_LOCATION_START_MENU, chrome.distribution(),
+        shortcut_properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS);
 
     // Register Chrome at user-level and make it default.
     scoped_ptr<WorkItemList> delegate_execute_list(

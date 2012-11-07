@@ -6,12 +6,16 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/helper.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
+#include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 
 namespace installer {
@@ -92,6 +96,45 @@ bool ChromeBrowserOperations::SetChannelFlags(
 bool ChromeBrowserOperations::ShouldCreateUninstallEntry(
     const std::set<std::wstring>& options) const {
   return true;
+}
+
+// Modifies a ShortcutProperties object by adding default values to
+// uninitialized members. Tries to assign:
+// - target: |chrome_exe|.
+// - icon: from |chrome_exe|.
+// - icon_index: |dist|'s icon index (possibly overridden by
+//       khromeShortcutIconIndex in master_preferences)
+// - app_id: the browser model id for the current install.
+// - description: |dist|'s description.
+void ChromeBrowserOperations::AddDefaultShortcutProperties(
+      BrowserDistribution* dist,
+      const FilePath& target_exe,
+      ShellUtil::ShortcutProperties* properties) const {
+  DCHECK(target_exe.BaseName() == FilePath(installer::kChromeExe));
+  if (!properties->has_target())
+    properties->set_target(target_exe);
+
+  if (!properties->has_icon()) {
+    int icon_index = dist->GetIconIndex();
+    FilePath prefs_path(target_exe.DirName().AppendASCII(
+        installer::kDefaultMasterPrefs));
+    if (file_util::PathExists(prefs_path)) {
+      installer::MasterPreferences prefs(prefs_path);
+      prefs.GetInt(installer::master_preferences::kChromeShortcutIconIndex,
+                   &icon_index);
+    }
+    properties->set_icon(target_exe, icon_index);
+  }
+
+  if (!properties->has_app_id()) {
+    bool is_per_user_install =
+        InstallUtil::IsPerUserInstall(target_exe.value().c_str());
+    properties->set_app_id(
+        ShellUtil::GetBrowserModelId(dist, is_per_user_install));
+  }
+
+  if (!properties->has_description())
+    properties->set_description(dist->GetAppDescription());
 }
 
 }  // namespace installer

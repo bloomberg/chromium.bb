@@ -256,22 +256,17 @@ void CloseChromeFrameHelperProcess() {
   }
 }
 
-// This method deletes Chrome shortcut folder from Windows Start menu. It
-// checks system_uninstall to see if the shortcut is in all users start menu
-// or current user start menu.
+// This method deletes the product's shortcut folder from the
+// Windows Start menu.  It checks system_uninstall to see if the shortcut is
+// in all users start menu or current user start menu.
 // We try to remove the standard desktop shortcut but if that fails we try
 // to remove the alternate desktop shortcut. Only one of them should be
 // present in a given install but at this point we don't know which one.
 // We remove all start screen secondary tiles by removing the folder Windows
 // uses to store this installation's tiles.
-void DeleteChromeShortcuts(const InstallerState& installer_state,
-                           const Product& product,
-                           const string16& chrome_exe) {
-  if (!product.is_chrome()) {
-    VLOG(1) << __FUNCTION__ " called for non-CHROME distribution";
-    return;
-  }
-
+void DeleteShortcuts(const InstallerState& installer_state,
+                     const Product& product,
+                     const string16& target_exe) {
   BrowserDistribution* dist = product.distribution();
 
   // The per-user shortcut for this user, if present on a system-level install,
@@ -280,42 +275,40 @@ void DeleteChromeShortcuts(const InstallerState& installer_state,
       ShellUtil::SYSTEM_LEVEL : ShellUtil::CURRENT_USER;
 
   VLOG(1) << "Deleting Desktop shortcut.";
-  if (!ShellUtil::RemoveChromeShortcut(
-          ShellUtil::SHORTCUT_DESKTOP, dist, chrome_exe, install_level, NULL)) {
+  if (!ShellUtil::RemoveShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist,
+                                 target_exe, install_level, NULL)) {
     LOG(WARNING) << "Failed to delete Desktop shortcut.";
   }
   // Also try to delete the alternate desktop shortcut. It is not sufficient
   // to do so upon failure of the above call as ERROR_FILE_NOT_FOUND on
   // delete is considered success.
-  if (!ShellUtil::RemoveChromeShortcut(
-          ShellUtil::SHORTCUT_DESKTOP, dist, chrome_exe, install_level,
+  if (!ShellUtil::RemoveShortcut(
+          ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist, target_exe, install_level,
           &dist->GetAlternateApplicationName())) {
     LOG(WARNING) << "Failed to delete alternate Desktop shortcut.";
   }
 
   VLOG(1) << "Deleting Quick Launch shortcut.";
-  if (!ShellUtil::RemoveChromeShortcut(
-          ShellUtil::SHORTCUT_QUICK_LAUNCH, dist, chrome_exe, install_level,
-          NULL)) {
+  if (!ShellUtil::RemoveShortcut(ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
+                                 dist, target_exe, install_level, NULL)) {
     LOG(WARNING) << "Failed to delete Quick Launch shortcut.";
   }
 
   VLOG(1) << "Deleting Start Menu shortcuts.";
-  if (!ShellUtil::RemoveChromeShortcut(
-          ShellUtil::SHORTCUT_START_MENU, dist, chrome_exe, install_level,
-          NULL)) {
+  if (!ShellUtil::RemoveShortcut(ShellUtil::SHORTCUT_LOCATION_START_MENU, dist,
+                                 target_exe, install_level, NULL)) {
     LOG(WARNING) << "Failed to delete Start Menu shortcuts.";
   }
 
   // Although the shortcut removal calls above will unpin their shortcut if they
-  // result in a deletion (i.e. shortcut existed and pointed to |chrome_exe|),
+  // result in a deletion (i.e. shortcut existed and pointed to |target_exe|),
   // it is possible for shortcuts to remain pinned while their parent shortcut
-  // has been deleted or changed to point to another |chrome_exe|. Make sure all
-  // pinned-to-taskbar shortcuts that point to |chrome_exe| are unpinned.
-  ShellUtil::RemoveChromeTaskbarShortcuts(chrome_exe);
+  // has been deleted or changed to point to another |target_exe|. Make sure all
+  // pinned-to-taskbar shortcuts that point to |target_exe| are unpinned.
+  ShellUtil::RemoveTaskbarShortcuts(target_exe);
 
-  ShellUtil::RemoveChromeStartScreenShortcuts(product.distribution(),
-                                              chrome_exe);
+  ShellUtil::RemoveStartScreenShortcuts(product.distribution(),
+                                        target_exe);
 }
 
 bool ScheduleParentAndGrandparentForDeletion(const FilePath& path) {
@@ -1075,7 +1068,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
         ASCIIToUTF16(chrome::kInitialProfile));
 
     // First delete shortcuts from Start->Programs, Desktop & Quick Launch.
-    DeleteChromeShortcuts(installer_state, product, chrome_exe);
+    DeleteShortcuts(installer_state, product, chrome_exe);
   }
 
   // Delete the registry keys (Uninstall key and Version key).

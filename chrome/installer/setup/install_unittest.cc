@@ -26,6 +26,7 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/product.h"
+#include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -77,9 +78,16 @@ class InstallShortcutTest : public testing::Test {
     chrome_exe_ = temp_dir_.path().Append(installer::kChromeExe);
     EXPECT_EQ(0, file_util::WriteFile(chrome_exe_, "", 0));
 
+    ShellUtil::ShortcutProperties chrome_properties(ShellUtil::CURRENT_USER);
+    product_->AddDefaultShortcutProperties(chrome_exe_, &chrome_properties);
+
     expected_properties_.set_target(chrome_exe_);
+    expected_properties_.set_icon(chrome_properties.icon,
+                                  chrome_properties.icon_index);
+    expected_properties_.set_app_id(chrome_properties.app_id);
+    expected_properties_.set_description(chrome_properties.description);
     expected_properties_.set_dual_mode(false);
-    expected_start_menu_properties_.set_target(chrome_exe_);
+    expected_start_menu_properties_ = expected_properties_;
     expected_start_menu_properties_.set_dual_mode(true);
 
     prefs_.reset(GetFakeMasterPrefs(false, false, false));

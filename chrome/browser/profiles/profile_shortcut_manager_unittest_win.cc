@@ -33,8 +33,8 @@ namespace {
 void GetShortcutPathForProfile(BrowserDistribution* dist,
                                const string16& profile_name,
                                FilePath* path) {
-  EXPECT_TRUE(ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_DESKTOP, dist,
-                                         ShellUtil::CURRENT_USER, path));
+  EXPECT_TRUE(ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
+                                         dist, ShellUtil::CURRENT_USER, path));
   string16 shortcut_name(
       ProfileShortcutManager::GetShortcutNameForProfile(profile_name));
   *path = path->Append(shortcut_name);

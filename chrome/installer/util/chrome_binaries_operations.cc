@@ -77,4 +77,11 @@ bool ChromeBinariesOperations::ShouldCreateUninstallEntry(
   return false;
 }
 
+void ChromeBinariesOperations::AddDefaultShortcutProperties(
+    BrowserDistribution* dist,
+    const FilePath& target_exe,
+    ShellUtil::ShortcutProperties* properties) const {
+  NOTREACHED() << "Chrome Binaries do not create shortcuts.";
+}
+
 }  // namespace installer

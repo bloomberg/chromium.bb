@@ -5,9 +5,6 @@
 #ifndef CHROME_INSTALLER_UTIL_CHROME_BROWSER_SXS_OPERATIONS_H_
 #define CHROME_INSTALLER_UTIL_CHROME_BROWSER_SXS_OPERATIONS_H_
 
-#include <set>
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/installer/util/chrome_browser_operations.h"

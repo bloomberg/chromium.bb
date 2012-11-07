@@ -5,12 +5,7 @@
 #ifndef CHROME_INSTALLER_UTIL_CHROME_FRAME_OPERATIONS_H_
 #define CHROME_INSTALLER_UTIL_CHROME_FRAME_OPERATIONS_H_
 
-#include <set>
-#include <string>
-#include <vector>
-
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/compiler_specific.h"
 #include "chrome/installer/util/product_operations.h"
 
@@ -48,6 +43,11 @@ class ChromeFrameOperations : public ProductOperations {
 
   virtual bool ShouldCreateUninstallEntry(
       const std::set<std::wstring>& options) const OVERRIDE;
+
+  virtual void AddDefaultShortcutProperties(
+      BrowserDistribution* dist,
+      const FilePath& target_exe,
+      ShellUtil::ShortcutProperties* properties) const OVERRIDE;
 
  protected:
   void NormalizeOptions(std::set<std::wstring>* options) const;

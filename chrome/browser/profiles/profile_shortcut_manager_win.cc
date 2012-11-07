@@ -24,6 +24,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/auto_launch_util.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/product.h"
 #include "chrome/installer/util/shell_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
@@ -123,7 +124,7 @@ void RenameChromeDesktopShortcutForProfile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   FilePath shortcut_path;
-  if (ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_DESKTOP, dist,
+  if (ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist,
                                  ShellUtil::CURRENT_USER, &shortcut_path)) {
     FilePath old_shortcut_path = shortcut_path.Append(old_shortcut_file);
     FilePath new_shortcut_path = shortcut_path.Append(new_shortcut_file);
@@ -149,19 +150,20 @@ void CreateOrUpdateProfileDesktopShortcut(
     return;
   }
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  installer::Product product(dist);
 
-  ShellUtil::ChromeShortcutProperties properties(ShellUtil::CURRENT_USER);
-  properties.set_chrome_exe(chrome_exe);
+  ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
+  product.AddDefaultShortcutProperties(chrome_exe, &properties);
   properties.set_arguments(CreateProfileShortcutFlags(profile_path));
   if (!shortcut_icon.empty())
-    properties.set_icon(shortcut_icon);
+    properties.set_icon(shortcut_icon, 0);
   properties.set_shortcut_name(
       ProfileShortcutManager::GetShortcutNameForProfile(profile_name));
-  ShellUtil::ChromeShortcutOperation operation =
-      create ? ShellUtil::SHORTCUT_CREATE_ALWAYS :
-               ShellUtil::SHORTCUT_REPLACE_EXISTING;
-  ShellUtil::CreateOrUpdateChromeShortcut(
-      ShellUtil::SHORTCUT_DESKTOP, dist, properties, operation);
+  ShellUtil::ShortcutOperation operation =
+      create ? ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS :
+               ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING;
+  ShellUtil::CreateOrUpdateShortcut(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist, properties, operation);
 }
 
 }  // namespace
@@ -268,7 +270,8 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
             base::Bind(&CallBoolFunction, base::Bind(
-                &ShellUtil::RemoveChromeShortcut, ShellUtil::SHORTCUT_DESKTOP,
+                &ShellUtil::RemoveShortcut,
+                ShellUtil::SHORTCUT_LOCATION_DESKTOP,
                 dist, chrome_exe.value(), ShellUtil::CURRENT_USER,
                 &GetShortcutNameForProfile(profile_name_updated))));
 
