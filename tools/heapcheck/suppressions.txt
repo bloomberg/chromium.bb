@@ -362,9 +362,14 @@
    fun:ssl_InitSessionCacheLocks
 }
 {
-   FileStream::Context can leak through WorkerPool by design
+   FileStream::Context can leak through WorkerPool by design (Linux)
    Heapcheck:Leak
    fun:net::FileStream::FileStream
+}
+{
+   FileStream::Context can leak through WorkerPool by design (CrOS)
+   Heapcheck:Leak
+   fun:FileStream
 }
 {
    Tasks posted to WorkerPool can leak by design
@@ -1624,7 +1629,7 @@
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
 {
-   bug_159551_bind
+   bug_159551_bind_cros
    Heapcheck:Leak
    fun:base::Bind
    fun:net::FileStream::Context::CloseAndDelete
@@ -1632,16 +1637,10 @@
    fun:~FileStream
 }
 {
-   bug_159551_filestream_a
+   bug_159551_bind_linux
    Heapcheck:Leak
-   fun:FileStream
-   fun:webkit_blob::LocalFileStreamReader::DidVerifyForOpen
-}
-{
-   bug_159551_filestream_b
-   Heapcheck:Leak
-   fun:FileStream
-   fun:fileapi::LocalFileStreamWriter::InitiateOpen
-   fun:fileapi::LocalFileStreamWriter::Write
-   fun:LocalFileStreamWriterTest_CancelWrite_Test::TestBody
+   fun:base::Bind
+   fun:net::FileStream::Context::CloseAndDelete
+   fun:net::FileStream::Context::Orphan
+   fun:net::FileStream::~FileStream
 }
