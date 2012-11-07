@@ -45,15 +45,15 @@ typedef void (*TYPE_nacl_exit) (int status);
 
 /* ====================================================================== */
 /* prototypes for functions inside ld.so */
-extern void _dl_debug_state();
+extern void _dl_debug_state(void);
 
 /* this may be x86 specific but we do not have ld.so for arm anyway */
-extern char *__nacl_read_tp();
+extern char *__nacl_read_tp(void);
 /* from src/untrusted/nacl/tls_params.h */
 ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) asm("llvm.nacl.tp.tdb.offset");
 
 /* prototypes for functions inside libsimple.so */
-extern int fortytwo();
+extern int fortytwo(void);
 
 /* prototypes for functions inside mylibpthread.so */
 extern int __pthread_initialize(void);
@@ -128,27 +128,27 @@ void __register_frame_info(void *begin, void *ob) {
  */
 
 #if USE_PTHREAD == 0
-void __local_lock_acquire() {
+void __local_lock_acquire(void) {
   myprint("STUB __local_lock_acquire\n");
 }
 
-void __local_lock_acquire_recursive() {
+void __local_lock_acquire_recursive(void) {
   myprint("STUB __local_lock_acquire_recursive\n");
 }
 
-void __local_lock_close_recursive() {
+void __local_lock_close_recursive(void) {
   myprint("STUB __local_lock_close_recursive\n");
 }
 
-void __local_lock_init_recursive() {
+void __local_lock_init_recursive(void) {
   myprint("STUB __local_lock_init_recursive\n");
 }
 
-void __local_lock_release() {
+void __local_lock_release(void) {
   myprint("STUB __local_lock_release\n");
 }
 
-void __local_lock_release_recursive() {
+void __local_lock_release_recursive(void) {
   myprint("STUB __local_lock_release_recursive\n");
 }
 #endif

@@ -47,7 +47,7 @@ void test_stack_alignment(void) {
   }
 }
 
-int main() {
+int main(void) {
   test_stack_alignment();
   return 0;
 }

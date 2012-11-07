@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 
-int main() {
+int main(void) {
   int pid = getpid();
   assert(pid == -1);
   assert(errno == EACCES);

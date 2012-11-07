@@ -61,7 +61,7 @@ volatile int STRIDE = 8;
 REPEAT
 
 
-int main() {
+int main(void) {
   /* declare loop variables */
 #undef REPEAT_BODY
 #define REPEAT_BODY(N) int i ## N;

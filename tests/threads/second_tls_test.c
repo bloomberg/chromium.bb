@@ -40,7 +40,7 @@ void *test_thread(void *thread_arg) {
  */
 #define THREAD_COUNT 5
 
-int main() {
+int main(void) {
   pthread_t tids[THREAD_COUNT];
   int i;
   for (i = 0; i < THREAD_COUNT; i++) {

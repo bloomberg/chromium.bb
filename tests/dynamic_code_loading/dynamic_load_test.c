@@ -105,7 +105,7 @@ void copy_and_pad_fragment(void *dest,
 }
 
 /* Check that we can load and run code. */
-void test_loading_code() {
+void test_loading_code(void) {
   void *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int rc;
@@ -133,7 +133,7 @@ void test_loading_code() {
  * instruction cache, so it reproduces the bug
  * http://code.google.com/p/nativeclient/issues/detail?id=699
  */
-void test_stress() {
+void test_stress(void) {
   void *load_area = allocate_code_space(1);
   uint8_t *dest;
   uint8_t *dest_max;
@@ -159,7 +159,7 @@ void test_stress() {
  * so there is some interaction with page size.
  * Check that we can load to non-page-aligned addresses.
  */
-void test_loading_code_non_page_aligned() {
+void test_loading_code_non_page_aligned(void) {
   char *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int rc;
@@ -180,7 +180,7 @@ void test_loading_code_non_page_aligned() {
  * Since there is an interaction with page size, we also test loading
  * a multi-page chunk of code.
  */
-void test_loading_large_chunk() {
+void test_loading_large_chunk(void) {
   char *load_area = allocate_code_space(2);
   int size = 0x20000;
   uint8_t *data = alloca(size);
@@ -192,7 +192,7 @@ void test_loading_large_chunk() {
   assert(memcmp(load_area, data, size) == 0);
 }
 
-void test_loading_zero_size() {
+void test_loading_zero_size(void) {
   char *load_area = allocate_code_space(1);
   int rc = nacl_load_code(load_area, &template_func, 0);
   assert(rc == 0);
@@ -204,7 +204,7 @@ void test_loading_zero_size() {
  * comparing with expected log output.
  */
 
-void test_fail_on_validation_error() {
+void test_fail_on_validation_error(void) {
   void *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int rc;
@@ -215,7 +215,7 @@ void test_fail_on_validation_error() {
   assert(rc == -EINVAL);
 }
 
-void test_validation_error_does_not_leak() {
+void test_validation_error_does_not_leak(void) {
   void *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int rc;
@@ -233,7 +233,7 @@ void test_validation_error_does_not_leak() {
   assert(rc == 0);
 }
 
-void test_fail_on_non_bundle_aligned_dest_addresses() {
+void test_fail_on_non_bundle_aligned_dest_addresses(void) {
   char *load_area = allocate_code_space(1);
   int rc;
   uint8_t nops[BUF_SIZE];
@@ -261,7 +261,7 @@ void test_fail_on_non_bundle_aligned_dest_addresses() {
  * In principle we could load into the initially-loaded executable's
  * code area, but at the moment we don't allow it.
  */
-void test_fail_on_load_to_static_code_area() {
+void test_fail_on_load_to_static_code_area(void) {
   int size = &hlts_end - &hlts;
   int rc = nacl_load_code(&hlts, &hlts, size);
   assert(rc == -EFAULT);
@@ -269,7 +269,7 @@ void test_fail_on_load_to_static_code_area() {
 
 uint8_t block_in_data_segment[64];
 
-void test_fail_on_load_to_data_area() {
+void test_fail_on_load_to_data_area(void) {
   uint8_t *data;
   int rc;
 
@@ -286,7 +286,7 @@ void test_fail_on_load_to_data_area() {
   assert(rc == -EFAULT);
 }
 
-void test_fail_on_overwrite() {
+void test_fail_on_overwrite(void) {
   void *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int rc;
@@ -305,7 +305,7 @@ void test_fail_on_overwrite() {
 
 
 /* Allowing mmap() to overwrite the dynamic code area would be unsafe. */
-void test_fail_on_mmap_to_dyncode_area() {
+void test_fail_on_mmap_to_dyncode_area(void) {
   void *addr = allocate_code_space(1);
   size_t page_size = 0x10000;
   void *result;
@@ -324,7 +324,7 @@ void test_fail_on_mmap_to_dyncode_area() {
   /* TODO(mseaborn): Test mprotect() once NaCl provides it. */
 }
 
-void test_branches_outside_chunk() {
+void test_branches_outside_chunk(void) {
   char *load_area = allocate_code_space(1);
   int rc;
   int size = &branch_forwards_end - &branch_forwards;
@@ -337,7 +337,7 @@ void test_branches_outside_chunk() {
   assert(rc == 0);
 }
 
-void test_end_of_code_region() {
+void test_end_of_code_region(void) {
   int rc;
   void *dest;
   uint8_t data[BUF_SIZE];
@@ -367,7 +367,7 @@ void test_end_of_code_region() {
   assert(rc == 0);
 }
 
-void test_hlt_filled_bundle() {
+void test_hlt_filled_bundle(void) {
   uint8_t bad_code[NUM_BUNDLES_FOR_HLT * NACL_BUNDLE_SIZE];
   void *load_area;
   int ix;
@@ -385,7 +385,7 @@ void test_hlt_filled_bundle() {
 }
 
 /* Check that we can dynamically delete code. */
-void test_deleting_code() {
+void test_deleting_code(void) {
   uint8_t *load_area = (uint8_t *) allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int rc;
@@ -438,13 +438,13 @@ void test_deleting_code() {
 }
 
 /* nacl_dyncode_delete() succeeds trivially on the empty range. */
-void test_deleting_zero_size() {
+void test_deleting_zero_size(void) {
   uint8_t *load_addr = (uint8_t *) allocate_code_space(1);
   int rc = nacl_dyncode_delete(load_addr, 0);
   assert(rc == 0);
 }
 
-void test_deleting_code_from_invalid_ranges() {
+void test_deleting_code_from_invalid_ranges(void) {
   uint8_t *load_addr = (uint8_t *) allocate_code_space(1) + 32;
   uint8_t buf[64];
   int rc;
@@ -504,7 +504,7 @@ void check_region_is_filled_with_hlts(const char *data, size_t size) {
  * pages to become allocated, and unused parts of these pages should
  * be filled with halts.
  */
-void test_demand_alloc_surrounding_hlt_filling() {
+void test_demand_alloc_surrounding_hlt_filling(void) {
   int pad_size = 0x4000; /* This must be less than one 64k page. */
   int code_size = 0x28000;
   int total_size = pad_size * 2 + code_size;
@@ -527,7 +527,7 @@ void test_demand_alloc_surrounding_hlt_filling() {
  * call.  This provides some coverage of the coalescing of mprotect()
  * calls that dyncode_create() does.
  */
-void test_demand_alloc_of_fragmented_pages() {
+void test_demand_alloc_of_fragmented_pages(void) {
   int smaller_size = 2 * DYNAMIC_CODE_PAGE_SIZE;
   int smaller_size_load_offset = 2 * DYNAMIC_CODE_PAGE_SIZE;
   int larger_size = 6 * DYNAMIC_CODE_PAGE_SIZE;
@@ -555,7 +555,7 @@ void run_test(const char *test_name, void (*test_func)(void)) {
 
 #define RUN_TEST(test_func) (run_test(#test_func, test_func))
 
-int TestMain() {
+int TestMain(void) {
   /*
    * This should come first, so that we test loading code into the first page.
    * See http://code.google.com/p/nativeclient/issues/detail?id=1143
@@ -601,6 +601,6 @@ int TestMain() {
   return 0;
 }
 
-int main() {
+int main(void) {
   return RunTests(TestMain);
 }

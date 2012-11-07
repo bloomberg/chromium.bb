@@ -148,7 +148,7 @@ void CreateWithJoin(ThreadFunction func, void *state) {
 
 
 /* creates as detached thread, cannot join */
-void CreateDetached() {
+void CreateDetached(void) {
   pthread_t thread_id;
   pthread_attr_t attr;
   CHECK_OK(pthread_attr_init(&attr));
@@ -171,7 +171,7 @@ void* TlsThread(void* state) {
 }
 
 
-void TestTlsAndSync() {
+void TestTlsAndSync(void) {
   pthread_t thread_id;
   pthread_attr_t attr;
   struct SYNC_DATA sync_data;
@@ -201,7 +201,7 @@ void TestTlsAndSync() {
 }
 
 
-void TestManyThreadsJoinable() {
+void TestManyThreadsJoinable(void) {
   int i;
   TEST_FUNCTION_START;
   for (i = 0; i < g_num_test_loops; i++) {
@@ -214,7 +214,7 @@ void TestManyThreadsJoinable() {
 }
 
 
-void TestManyThreadsDetached() {
+void TestManyThreadsDetached(void) {
   int i;
   TEST_FUNCTION_START;
   for (i = 0; i < g_num_test_loops; i++) {
@@ -240,7 +240,7 @@ void* SemaphoresThread(void *state) {
   return 0;
 }
 
-void TestSemaphores() {
+void TestSemaphores(void) {
   int i;
   int rv;
   pthread_t thread_id;
@@ -270,7 +270,7 @@ void TestSemaphores() {
   TEST_FUNCTION_END;
 }
 
-void TestSemaphoreInitDestroy() {
+void TestSemaphoreInitDestroy(void) {
   sem_t sem;
   int rv;
   TEST_FUNCTION_START;
@@ -294,7 +294,7 @@ void TestSemaphoreInitDestroy() {
   TEST_FUNCTION_END;
 }
 
-void TestTryLockReturnValue() {
+void TestTryLockReturnValue(void) {
   pthread_mutex_t mutex;
   int rv;
   TEST_FUNCTION_START;
@@ -308,7 +308,7 @@ void TestTryLockReturnValue() {
   TEST_FUNCTION_END;
 }
 
-void TestDoubleUnlockReturnValue() {
+void TestDoubleUnlockReturnValue(void) {
   pthread_mutex_t mutex;
   int rv;
   TEST_FUNCTION_START;
@@ -327,7 +327,7 @@ void TestDoubleUnlockReturnValue() {
   TEST_FUNCTION_END;
 }
 
-void TestUnlockUninitializedReturnValue() {
+void TestUnlockUninitializedReturnValue(void) {
   pthread_mutex_t mutex;
   int rv;
   TEST_FUNCTION_START;
@@ -353,7 +353,7 @@ pthread_once_t once_control = PTHREAD_ONCE_INIT;
 typedef int AtomicInt32;
 #endif
 
-void pthread_once_routine() {
+void pthread_once_routine(void) {
   static AtomicInt32 count = 0;
   AtomicInt32 res =  __sync_fetch_and_add(&count, 1);
   EXPECT_LE(res, 1);
@@ -365,7 +365,7 @@ void* OnceThread(void *userdata) {
 }
 
 
-void TestPthreadOnce() {
+void TestPthreadOnce(void) {
   int i;
   TEST_FUNCTION_START;
   PRINT(g_verbose, ("creating %d threads\n", g_num_test_loops));
@@ -397,7 +397,7 @@ void* RecursiveLockThread(void *state) {
   return 0;
 }
 
-void TestRecursiveMutex() {
+void TestRecursiveMutex(void) {
   pthread_mutexattr_t attr;
   pthread_mutex_t mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
   pthread_t tid[NUM_THREADS];
@@ -443,7 +443,7 @@ void TestRecursiveMutex() {
 }
 
 
-void TestErrorCheckingMutex() {
+void TestErrorCheckingMutex(void) {
   pthread_mutexattr_t attr;
   pthread_mutex_t mutex;
   int rv;
@@ -484,7 +484,7 @@ void* TsdThread(void *state) {
 }
 
 
-void TestTSD() {
+void TestTSD(void) {
   int rv;
   void* ptr;
   int destructor_count = 0;
@@ -512,7 +512,7 @@ void *PthreadExitThread(void *unused) {
   return NULL;
 }
 
-void TestPthreadExit() {
+void TestPthreadExit(void) {
   pthread_t tid;
   void *result;
 
@@ -535,7 +535,7 @@ void* MallocSmallThread(void *userdata) {
 }
 
 
-void TestMallocSmall() {
+void TestMallocSmall(void) {
   int i = 0;
   pthread_t tid[NUM_THREADS];
   TEST_FUNCTION_START;
@@ -572,7 +572,7 @@ void* MallocLargeThread(void *unused) {
   return NULL;
 }
 
-void TestMallocLarge() {
+void TestMallocLarge(void) {
   int i = 0;
   pthread_t tid[NUM_THREADS];
   TEST_FUNCTION_START;
@@ -609,7 +609,7 @@ void* ReallocThread(void *userdata) {
 }
 
 
-void TestRealloc() {
+void TestRealloc(void) {
   pthread_t tid[NUM_THREADS];
   int i = 0;
   TEST_FUNCTION_START;
@@ -695,7 +695,7 @@ static void* WorkerThread(void *data) {
 /* Runs 10 copies of WorkerThread in parallel.  The address of a
  * shared volatile AtomicInt32 counter is passed to each thread.
  */
-static void CheckAtomicityUnderConcurrency() {
+static void CheckAtomicityUnderConcurrency(void) {
   volatile AtomicInt32 counter = 0;
   pthread_t threads[NUM_THREADS];
   int ii;
@@ -716,7 +716,7 @@ static void CheckAtomicityUnderConcurrency() {
 }
 
 /* Test hand-written intrinsics for ARM. */
-static void TestIntrinsics() {
+static void TestIntrinsics(void) {
   TEST_FUNCTION_START;
 
   /* Test uncontended behaviour: */
@@ -746,7 +746,7 @@ static void TestIntrinsics() {
   TEST_FUNCTION_END;
 }
 
-static void TestCondvar() {
+static void TestCondvar(void) {
   int i = 0;
   pthread_cond_t cv;
   pthread_mutex_t mu;
@@ -790,7 +790,7 @@ void AddNanosecondsToTimespec(struct timespec *time, unsigned int nanoseconds) {
   }
 }
 
-static void TestCondvarTimeout() {
+static void TestCondvarTimeout(void) {
   int i = 0;
   pthread_cond_t cv;
   pthread_mutex_t mu;
@@ -843,7 +843,7 @@ static void TestCondvarTimeout() {
   TEST_FUNCTION_END;
 }
 
-void TestStackSize() {
+void TestStackSize(void) {
   pthread_attr_t attr;
   size_t stack_size, stack_size2;
 
@@ -883,7 +883,7 @@ void *MutexClaimerThread(void *thread_arg) {
  * returned with ETIMEDOUT.  This problem occurred with NaCl's
  * newlib-based libpthread.
  */
-void TestErrorcheckMutexWorksWithCondvarTimeout() {
+void TestErrorcheckMutexWorksWithCondvarTimeout(void) {
   TEST_FUNCTION_START;
 
   pthread_mutexattr_t attrs;

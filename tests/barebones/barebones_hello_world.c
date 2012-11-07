@@ -11,7 +11,7 @@
 #include "barebones.h"
 
 
-int main() {
+int main(void) {
   myprint("@null\n");
   NACL_SYSCALL(null)();
 

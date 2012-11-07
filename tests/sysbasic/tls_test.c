@@ -9,6 +9,6 @@ __thread int tls_initialized_var1 = 67;
 __thread int tls_initialized_var2 = 1;
 __thread int tls_initialized_var3 = 1;
 
-int main() {
+int main(void) {
   return tls_initialized_var1 + tls_initialized_var2 + tls_initialized_var3;
 }

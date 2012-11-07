@@ -153,7 +153,7 @@ void ThreadFunc(struct NaClSignalContext *regs) {
  * entered with well-defined register state.  None of the registers
  * should come from uninitialised values.
  */
-void TestInitialRegsAtThreadEntry() {
+void TestInitialRegsAtThreadEntry(void) {
   char *stack_top = g_stack + sizeof(g_stack);
   uintptr_t aligned_stack_top =
       ((uintptr_t) stack_top & ~NACL_STACK_ALIGN_MASK)
@@ -190,7 +190,7 @@ void TestInitialRegsAtThreadEntry() {
 }
 
 
-int main() {
+int main(void) {
   printf("Testing null syscall...\n");
   TestSyscall((uintptr_t) NACL_SYSCALL(null));
 

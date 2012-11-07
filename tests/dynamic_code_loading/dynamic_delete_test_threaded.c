@@ -41,7 +41,7 @@ void *check_in_thread(void *load_area) {
  * Check that we can't delete dynamic code without checking in from other
  * threads.
  */
-void test_threaded_delete() {
+void test_threaded_delete(void) {
   pthread_t other_thread;
   void *load_area = allocate_code_space(1);
   uint8_t buf[NACL_BUNDLE_SIZE];

@@ -259,7 +259,7 @@ const struct NaClSrpcHandlerDesc srpc_methods[] = {
   { NULL, NULL },
 };
 
-int main() {
+int main(void) {
   int ns;
   int connected_socket;
 

@@ -52,7 +52,7 @@ void layer1(int s, int t) {
   layer2(junk[0], t + 1);
 }
 
-int main() {
+int main(void) {
   if (!NaClCrashDumpInit()) {
     fprintf(stderr, "ERROR: failed to set up crash dumping\n");
     return 2;

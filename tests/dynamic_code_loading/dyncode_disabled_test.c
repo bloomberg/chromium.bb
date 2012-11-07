@@ -16,7 +16,7 @@
  * loading being disabled.
  */
 
-int main() {
+int main(void) {
   void *dest = (void *) DYNAMIC_CODE_SEGMENT_START;
   char buf[1];
   int rc = nacl_dyncode_create(dest, buf, 0);

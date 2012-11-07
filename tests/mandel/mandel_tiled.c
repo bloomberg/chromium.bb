@@ -172,7 +172,7 @@ const struct NaClSrpcHandlerDesc srpc_methods[] = {
   { NULL, NULL },
 };
 
-int main() {
+int main(void) {
   if (!NaClSrpcModuleInit()) {
     return 1;
   }

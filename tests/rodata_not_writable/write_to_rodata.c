@@ -12,7 +12,7 @@
 /* We must initialise this for it to be put into .rodata. */
 const char buf[] = "x";
 
-int main() {
+int main(void) {
   fprintf(stderr, "** intended_exit_status=untrusted_segfault\n");
   /* This should fault. */
   *(char *) buf = 'y';

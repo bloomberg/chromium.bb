@@ -9,7 +9,7 @@
 
 static jmp_buf buf;
 
-int main() {
+int main(void) {
   volatile int result = -1;
   if (!setjmp(buf) ) {
     result = 55;

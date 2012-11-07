@@ -65,7 +65,7 @@ int dump(const char *fmt, ...) {
 }
 
 
-void test() {
+void test(void) {
   errors += dump("QQQL",
                  0x0000000100000002LL,
                  0x0000000300000004LL,
@@ -105,7 +105,7 @@ void test() {
 }
 
 
-int main() {
+int main(void) {
   test();
   NACL_SYSCALL(exit)(errors);
   /* UNREACHABLE */

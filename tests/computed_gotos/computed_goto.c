@@ -24,7 +24,7 @@ int test_computed_goto(int index) {
   return 4567;
 }
 
-int main() {
+int main(void) {
   assert(test_computed_goto(0) == 1234);
   assert(test_computed_goto(1) == 4567);
   return 0;

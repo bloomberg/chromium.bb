@@ -39,12 +39,12 @@ typedef struct {
 #define CHECK_SIZEOF(t, v) nerror += Assert(sizeof(t), v, "bad sizeof " #t)
 
 /* Helper Types so we can describe a type in one token */
-typedef void (*FunctionPointer)();
+typedef void (*FunctionPointer)(void);
 typedef void *Pointer;
 typedef long long long_long;
 typedef long double long_double;
 
-int CheckSizes() {
+int CheckSizes(void) {
   int nerror = 0;
 
   CHECK_SIZEOF(char, 1);
@@ -110,7 +110,7 @@ int CheckSizes() {
   nerror += Assert(offsetof(AlignStruct, x), a, "bad offsetof " #T); \
   } while(0)
 
-int CheckAlignment() {
+int CheckAlignment(void) {
   int nerror = 0;
   CHECK_ALIGNMENT(char, 1);
   CHECK_ALIGNMENT(short, 2);
@@ -167,7 +167,7 @@ int AssertMemcmp(char* name, unsigned char* p1, unsigned char* p2, int n) {
   } while(0)
 
 
-int CheckBitfields() {
+int CheckBitfields(void) {
   int nerror = 0;
   CHECK_BITFIELD(1, 1, 1,  0, 0, 1,  4,
                  "\x04\0\0\0");

@@ -10,7 +10,7 @@ extern int mywrite(int fd, const void* buf, int n);
 
 char message[] = "IN SHARED LIB\n";
 
-int fortytwo() {
+int fortytwo(void) {
   mywrite(1, message, sizeof message);
   return 42;
 }

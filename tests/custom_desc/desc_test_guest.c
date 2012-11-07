@@ -19,7 +19,7 @@
 #define BAD_DESC 100
 
 
-void test_sendmsg_data_only() {
+void test_sendmsg_data_only(void) {
   char *data = "test_sending_data_only";
   struct NaClImcMsgIoVec iov = { data, strlen(data) };
   struct NaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };
@@ -27,7 +27,7 @@ void test_sendmsg_data_only() {
   assert(rc == 101);
 }
 
-void test_sendmsg_with_descs() {
+void test_sendmsg_with_descs(void) {
   char *data = "test_sending_descs";
   struct NaClImcMsgIoVec iov = { data, strlen(data) };
   int descs[] = { EXAMPLE_DESC, EXAMPLE_DESC };
@@ -36,7 +36,7 @@ void test_sendmsg_with_descs() {
   assert(rc == 102);
 }
 
-void test_sendmsg_bad_destination_desc() {
+void test_sendmsg_bad_destination_desc(void) {
   char *data = "blah";
   struct NaClImcMsgIoVec iov = { data, strlen(data) };
   struct NaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };
@@ -45,7 +45,7 @@ void test_sendmsg_bad_destination_desc() {
   assert(errno == EBADF);
 }
 
-void test_sendmsg_bad_desc_args() {
+void test_sendmsg_bad_desc_args(void) {
   char *data = "blah";
   struct NaClImcMsgIoVec iov = { data, strlen(data) };
   /*
@@ -72,7 +72,7 @@ void send_simple_request(char *data) {
   assert(rc == 200);
 }
 
-void test_recvmsg_data_only() {
+void test_recvmsg_data_only(void) {
   send_simple_request("request_receiving_data_only");
 
   char buf[100];
@@ -86,7 +86,7 @@ void test_recvmsg_data_only() {
   assert(msg.desc_length == 0);
 }
 
-void test_recvmsg_with_descs() {
+void test_recvmsg_with_descs(void) {
   send_simple_request("request_receiving_descs");
 
   char buf[100];
@@ -107,7 +107,7 @@ void test_recvmsg_with_descs() {
   }
 }
 
-void test_recvmsg_truncated_descs() {
+void test_recvmsg_truncated_descs(void) {
   send_simple_request("request_receiving_descs");
 
   char buf[100];
@@ -133,7 +133,7 @@ void run_test(const char *test_name, void (*test_func)(void)) {
 
 #define RUN_TEST(test_func) (run_test(#test_func, test_func))
 
-int main() {
+int main(void) {
   RUN_TEST(test_sendmsg_data_only);
   RUN_TEST(test_sendmsg_with_descs);
   RUN_TEST(test_sendmsg_bad_destination_desc);

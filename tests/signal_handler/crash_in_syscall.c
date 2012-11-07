@@ -8,7 +8,7 @@
 #include <sys/nacl_syscalls.h>
 
 
-int main() {
+int main(void) {
   /*
    * There are two possible kinds of fault in trusted code:
    *  1) Faults legitimately triggered by untrusted code.  These are

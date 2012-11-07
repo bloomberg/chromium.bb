@@ -82,7 +82,7 @@ void *ExceptionHandlerThread(void *thread_arg) {
   return NULL;
 }
 
-void RegisterExceptionHandler() {
+void RegisterExceptionHandler(void) {
   mach_port_t task = mach_task_self();
   mach_port_t handler_port;
   kern_return_t rc;

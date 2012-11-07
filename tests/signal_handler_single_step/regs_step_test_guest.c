@@ -20,8 +20,8 @@
  * trusted-code portion of the test case.
  */
 
-void SyscallLoop();
-void SyscallReturnAddress();
+void SyscallLoop(void);
+void SyscallReturnAddress(void);
 
 int main(int argc, char **argv) {
   if (argc != 2) {

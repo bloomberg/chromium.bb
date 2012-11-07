@@ -16,7 +16,7 @@
 
 /* This test checks that the validator check is disabled in debug mode. */
 
-int main() {
+int main(void) {
   void *dest = (void *) DYNAMIC_CODE_SEGMENT_START;
   char buf[32];
   int rc;

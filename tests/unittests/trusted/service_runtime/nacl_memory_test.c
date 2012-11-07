@@ -13,7 +13,7 @@
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
-void run_check() {
+void run_check(void) {
   int error;
   void* page;
   int size = NACL_MAP_PAGESIZE;

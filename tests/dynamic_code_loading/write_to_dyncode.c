@@ -11,7 +11,7 @@
 
 /* Test that we can't write to the dynamic code area. */
 
-int main() {
+int main(void) {
   void (*func)();
   uintptr_t code_ptr = (uintptr_t) DYNAMIC_CODE_SEGMENT_START;
 

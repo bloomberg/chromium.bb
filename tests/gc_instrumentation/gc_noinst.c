@@ -15,6 +15,6 @@ __thread unsigned int thread_suspend_if_needed_count = 0;
  */
 volatile int __nacl_thread_suspension_needed = 1;
 
-void __nacl_suspend_thread_if_needed() {
+void __nacl_suspend_thread_if_needed(void) {
   thread_suspend_if_needed_count++;
 }

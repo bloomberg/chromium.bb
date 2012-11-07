@@ -53,7 +53,7 @@ static void Report(struct thread_closure *tc) {
 }
 
 volatile int gDoNotOptimize = 0;
-static void DoNothing() {
+static void DoNothing(void) {
   gDoNotOptimize += 1;
 }
 
@@ -100,7 +100,7 @@ static struct thread_closure gTClosure[kNumThreads] =
   { 10, NICE_REALTIME, 0 },
   { 11, NICE_REALTIME, 0 },
 };
-int CreateWorkerThreads() {
+int CreateWorkerThreads(void) {
   int i;
 
   for (i = 0; i < kNumThreads; i++) {
@@ -113,7 +113,7 @@ int CreateWorkerThreads() {
   return 1;
 }
 
-void RunDemo() {
+void RunDemo(void) {
   pthread_mutex_init(&gTheBigLock, NULL);
   pthread_cond_init(&gDoneCond, NULL);
 

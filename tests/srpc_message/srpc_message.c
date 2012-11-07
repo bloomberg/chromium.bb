@@ -458,10 +458,10 @@ void InitArrays(size_t large_array_size) {
 
 NaClSrpcMessageDesc g_bound_sock_pair[2];
 /* Forward declarations. */
-static NaClSrpcMessageDesc Connect();
-static NaClSrpcMessageDesc Accept();
+static NaClSrpcMessageDesc Connect(void);
+static NaClSrpcMessageDesc Accept(void);
 
-static void Sender() {
+static void Sender(void) {
   size_t msg_len;
   size_t fragments;
   size_t max_fragment_count;
@@ -552,11 +552,11 @@ static void Receiver(void* arg) {
 }
 
 #if defined(__native_client__)
-static int InitBoundSock() {
+static int InitBoundSock(void) {
   return (imc_makeboundsock(g_bound_sock_pair) == 0);
 }
 
-static int RunTests() {
+static int RunTests(void) {
   pthread_t recv_thread;
   void* result;
   void* (*fp)(void* arg) = (void *(*)(void*)) Receiver;
@@ -570,13 +570,13 @@ static int RunTests() {
   return 1;
 }
 
-static NaClSrpcMessageDesc Connect() {
+static NaClSrpcMessageDesc Connect(void) {
   NaClSrpcMessageDesc desc = imc_connect(g_bound_sock_pair[1]);
   assert(desc != -1);
   return desc;
 }
 
-static NaClSrpcMessageDesc Accept() {
+static NaClSrpcMessageDesc Accept(void) {
   NaClSrpcMessageDesc desc = imc_accept(g_bound_sock_pair[0]);
   assert(desc != -1);
   return desc;
@@ -584,11 +584,11 @@ static NaClSrpcMessageDesc Accept() {
 
 #else
 
-static int InitBoundSock() {
+static int InitBoundSock(void) {
   return (NaClCommonDescMakeBoundSock(g_bound_sock_pair) == 0);
 }
 
-static int RunTests() {
+static int RunTests(void) {
   struct NaClThread recv_thread;
   void (WINAPI *fp)(void* arg) = (void (WINAPI *)(void*)) Receiver;
   if (NaClThreadCreateJoinable(&recv_thread, fp, NULL, 1024 * 1024) == 0) {
@@ -601,7 +601,7 @@ static int RunTests() {
   return 1;
 }
 
-static NaClSrpcMessageDesc Connect() {
+static NaClSrpcMessageDesc Connect(void) {
   NaClSrpcMessageDesc desc;
   int result =
       (*NACL_VTBL(NaClDesc, g_bound_sock_pair[1])->ConnectAddr)(
@@ -610,7 +610,7 @@ static NaClSrpcMessageDesc Connect() {
   return desc;
 }
 
-static NaClSrpcMessageDesc Accept() {
+static NaClSrpcMessageDesc Accept(void) {
   NaClSrpcMessageDesc desc;
   int result =
       (*NACL_VTBL(NaClDesc, g_bound_sock_pair[0])->AcceptConn)(

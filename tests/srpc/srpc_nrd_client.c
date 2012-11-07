@@ -140,7 +140,7 @@ const struct NaClSrpcHandlerDesc srpc_methods[] = {
   { NULL, NULL },
 };
 
-int main() {
+int main(void) {
   printf("================== CLIENT ================\n");
   if (!NaClSrpcModuleInit()) {
     return 1;

@@ -34,7 +34,7 @@
 
 /************************************************************/
 
-int test_constants() {
+int test_constants(void) {
   int errs = 0;
   errs += CHECK_NAN(NAN);
   printf("Print out of NaN: %f\n", NAN);
@@ -44,7 +44,7 @@ int test_constants() {
   return errs;
 }
 
-int test_compares() {
+int test_compares(void) {
   int errs = 0;
 
   printf("Comparing float constants\n");
@@ -85,7 +85,7 @@ int test_compares() {
 }
 
 /* Test non-NaN-resulting library calls. */
-int test_defined() {
+int test_defined(void) {
   int errs = 0;
 
   printf("Checking lib calls that take NaN, etc, but return non-NaN.\n");
@@ -102,7 +102,7 @@ int test_defined() {
 }
 
 /* Test NaN-resulting library calls. */
-int test_errs() {
+int test_errs(void) {
   int errs = 0;
 
   printf("Checking well-defined library errors\n");
@@ -149,7 +149,7 @@ https://www.securecoding.cert.org/confluence/display/seccode/ \
    (0 != errno ? 0 : (printf("%s - errno %d not set at %d\n", \
                       #expr, errno, __LINE__), 1)))
 
-int test_exception() {
+int test_exception(void) {
   int errs = 0;
   printf("Checking that exceptional lib calls set errno\n");
   errs += CHECK_TRIPPED_ERRNO(pow(-3, 4.4));

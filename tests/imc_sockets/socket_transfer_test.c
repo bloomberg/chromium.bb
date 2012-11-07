@@ -115,7 +115,7 @@ void check_send_and_receive_data(int sock_fd1, int sock_fd2) {
   assert(fds_got == 0);
 }
 
-void test_socket_transfer() {
+void test_socket_transfer(void) {
   int sock_pair[2];
   int bound_pair[2];
   int rc;
@@ -173,7 +173,7 @@ void test_socket_transfer() {
   checked_close(bound_pair[1]);
 }
 
-void test_imc_accept_end_of_stream() {
+void test_imc_accept_end_of_stream(void) {
   int bound_pair[2];
   int rc;
   rc = imc_makeboundsock(bound_pair);
@@ -188,7 +188,7 @@ void test_imc_accept_end_of_stream() {
   checked_close(bound_pair[0]);
 }
 
-void test_imc_connect_with_no_acceptor() {
+void test_imc_connect_with_no_acceptor(void) {
   int bound_pair[2];
   int rc;
   rc = imc_makeboundsock(bound_pair);
@@ -203,7 +203,7 @@ void test_imc_connect_with_no_acceptor() {
   checked_close(bound_pair[1]);
 }
 
-void test_special_invalid_fd() {
+void test_special_invalid_fd(void) {
   int sock_pair[2];
   int sent;
   int received;
@@ -240,7 +240,7 @@ void test_special_invalid_fd() {
   checked_close(sock_pair[1]);
 }
 
-void test_sending_and_receiving_max_fd_count() {
+void test_sending_and_receiving_max_fd_count(void) {
   int sock_pair[2];
   int sent;
   int received;

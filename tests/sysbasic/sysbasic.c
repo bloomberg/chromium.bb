@@ -92,7 +92,7 @@ const int kInvalidFileDescriptor = 100;
  */
 extern char end;
 
-int main() {
+int main(void) {
   /*
    * Round up to the end of the page that's our last initial data page.
    * Then add 10MB for good measure to be out of the way of any allocations

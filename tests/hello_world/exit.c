@@ -10,7 +10,7 @@
 
 #include <stdlib.h>
 
-int main() {
+int main(void) {
   exit(69);
   return 0;
 }

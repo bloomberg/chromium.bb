@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <time.h>
 
-int main() {
+int main(void) {
   time_t a, b;
 
   a = time(&b);

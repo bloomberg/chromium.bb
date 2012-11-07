@@ -13,8 +13,8 @@
 
 int s = 110;
 volatile unsigned arr[110];
-void setarray();
-void checkarray();
+void setarray(void);
+void checkarray(void);
 
 int main(int argc, char* argv[]) {
   setarray();
@@ -22,14 +22,14 @@ int main(int argc, char* argv[]) {
   return 0;     /* unreachable */
 }
 
-void setarray() {
+void setarray(void) {
   register int i;
   for (i = s; i > 0; i--) {
     arr[s - i] = (i%2 ? 1 : 0);
   }
 }
 
-void checkarray() {
+void checkarray(void) {
   register int i;
   int sum = 0;
 

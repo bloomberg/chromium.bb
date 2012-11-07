@@ -33,12 +33,12 @@ int* main_thread_id = NULL;
 unsigned int nacl_pre_calls = 0;
 unsigned int nacl_post_calls = 0;
 
-void nacl_pre_gc_hook() {
+void nacl_pre_gc_hook(void) {
   if (main_thread_id && (main_thread_id == &cheap_thread_id))
     nacl_pre_calls++;
 }
 
-void nacl_post_gc_hook() {
+void nacl_post_gc_hook(void) {
   if (main_thread_id && (main_thread_id == &cheap_thread_id))
     nacl_post_calls++;
 }
@@ -72,7 +72,7 @@ unsigned int num_errors = 0;
   } while (0)
 
 
-void test_syscall_wrappers() {
+void test_syscall_wrappers(void) {
   int ret;
 
   unsigned int local_pre_call_count = nacl_pre_calls;
@@ -185,7 +185,7 @@ void check_func_instrumentation(unsigned int arg) {
   CHECK(arg < thread_suspend_if_needed_count);
 }
 
-void test_compiler_instrumentation() {
+void test_compiler_instrumentation(void) {
   int i;
   /* Test function prologue instrumentation */
   unsigned int local_thread_suspend_count = thread_suspend_if_needed_count;

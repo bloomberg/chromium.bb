@@ -27,7 +27,7 @@ char stack_in_rwdata[0x1000];
 const char stack_in_rodata[0x1000] = "blah";
 
 
-void test_bad_handler() {
+void test_bad_handler(void) {
   /*
    * Use an address that we know contains no valid code, yet is within
    * the code segment range and is well-aligned.  The bottom 64k of
@@ -72,7 +72,7 @@ asm(".pushsection .text, \"ax\", @progbits\n"
 # endif
     ".popsection\n");
 
-void error_exit() {
+void error_exit(void) {
   _exit(1);
 }
 
@@ -95,7 +95,7 @@ void bad_stack_exception_handler(struct NaClExceptionContext *context) {
  * cannot be set to point outside of the sandbox's address space on
  * x86-64 and ARM.
  */
-void test_stack_outside_sandbox() {
+void test_stack_outside_sandbox(void) {
 #if defined(__i386__)
   int rc = NACL_SYSCALL(exception_handler)(bad_stack_exception_handler, NULL);
   assert(rc == 0);
@@ -121,7 +121,7 @@ void test_stack_outside_sandbox() {
  * that we can be sure that other tests do not crash (and hence pass)
  * accidentally.
  */
-void test_stack_in_rwdata() {
+void test_stack_in_rwdata(void) {
   int rc = NACL_SYSCALL(exception_handler)(bad_stack_exception_handler, NULL);
   assert(rc == 0);
   rc = NACL_SYSCALL(exception_stack)((void *) stack_in_rwdata,
@@ -138,7 +138,7 @@ void test_stack_in_rwdata() {
  * X, in which sel_ldr would hang when attempting to write to an
  * unwritable stack.
  */
-void test_stack_in_rodata() {
+void test_stack_in_rodata(void) {
   int rc = NACL_SYSCALL(exception_handler)(bad_stack_exception_handler, NULL);
   assert(rc == 0);
   rc = NACL_SYSCALL(exception_stack)((void *) stack_in_rodata,
@@ -178,7 +178,7 @@ char *stack_in_code = (char *) 0x20000;
 #endif
 const int stack_in_code_size = 0x1000;
 
-void test_stack_in_code() {
+void test_stack_in_code(void) {
   int rc = NACL_SYSCALL(exception_handler)(bad_stack_exception_handler, NULL);
   assert(rc == 0);
   rc = NACL_SYSCALL(exception_stack)(stack_in_code, stack_in_code_size);
@@ -193,7 +193,7 @@ void test_stack_in_code() {
  * This checks that crashes in trusted code (such as inside NaCl
  * syscalls) do not cause the untrusted exception handler to run.
  */
-void test_crash_in_syscall() {
+void test_crash_in_syscall(void) {
   int rc = NACL_SYSCALL(exception_handler)(bad_stack_exception_handler, NULL);
   assert(rc == 0);
   rc = NACL_SYSCALL(exception_stack)((void *) stack_in_rwdata,

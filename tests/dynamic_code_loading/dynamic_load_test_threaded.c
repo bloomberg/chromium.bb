@@ -81,7 +81,7 @@ void *run_repeated_load(void *thread_arg) {
  * This test can't detect every possible problem, but it will hopefully detect
  * obvious ones.
  */
-void test_threaded_loads() {
+void test_threaded_loads(void) {
   pthread_t thread[NUM_THREADS];
   struct ThreadInfo info[NUM_THREADS + 1];
   int rc;

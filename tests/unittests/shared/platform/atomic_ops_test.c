@@ -20,7 +20,7 @@ struct NaClMutex gMutex;
 /* For atomic counter test */
 Atomic32 gCounter = 0;
 
-static void IncrementTest() {
+static void IncrementTest(void) {
   /* Increment the counter, gIncrementsPerThread times,
    * with the values 1...gIncrementsPerThread
    */
@@ -30,7 +30,7 @@ static void IncrementTest() {
   }
 }
 
-static void DecrementTest() {
+static void DecrementTest(void) {
   /* Decrement the counter gIncrementsPerThread times,
    * with the values 1...gIncrementsPerThread-1
    */

@@ -26,7 +26,7 @@
     fflush(stderr); \
   } while(0)
 
-NOINLINE void break_optimization() {
+NOINLINE void break_optimization(void) {
   static volatile int z;
   z++;
 }
@@ -50,7 +50,7 @@ void update(int *a) {
 }
 
 /* read from heap memory out of bounds */
-void oob_read_test() {
+void oob_read_test(void) {
   int *foo;
   SHOW_ME;
   foo = (int*)malloc(sizeof(int) * 10);
@@ -60,7 +60,7 @@ void oob_read_test() {
 }
 
 /* write to heap memory out of bounds */
-void oob_write_test() {
+void oob_write_test(void) {
   int *foo;
   SHOW_ME;
   foo = (int*)malloc(sizeof(int) * 10);
@@ -69,7 +69,7 @@ void oob_write_test() {
 }
 
 /* read uninitialized value from heap */
-void umr_heap_test() {
+void umr_heap_test(void) {
   int *foo;
   SHOW_ME;
   foo = (int*)malloc(sizeof(int) * 10);
@@ -78,14 +78,14 @@ void umr_heap_test() {
 }
 
 /* read uninitialized value from stack */
-void umr_stack_test() {
+void umr_stack_test(void) {
   int foo[10];
   SHOW_ME;
   USE(foo+5);
 }
 
 /* use heap memory after free() */
-void use_after_free_test() {
+void use_after_free_test(void) {
   int *foo;
   SHOW_ME;
   foo = (int*)malloc(sizeof(int) * 10);
@@ -95,7 +95,7 @@ void use_after_free_test() {
 }
 
 /* use heap memory after free() and a series of unrelated malloc/free */
-void use_after_free_with_reuse_test() {
+void use_after_free_with_reuse_test(void) {
   int i;
   int *foo;
   int *bar[1000];
@@ -114,7 +114,7 @@ void use_after_free_with_reuse_test() {
 
 
 /* memory leak */
-void leak_test() {
+void leak_test(void) {
   int *foo;
   SHOW_ME;
   foo = (int*)malloc(sizeof(int) * 10);
@@ -126,7 +126,7 @@ void leak_test() {
  See http://valgrind.org/docs/manual/manual-core-adv.html for more
  details on valgrind client requests.
 */
-void test_client_requests() {
+void test_client_requests(void) {
   /* Pass a NULL callback. Valgrind will simply print the parameters. */
   /* TODO(kcc): add tests for non-trivial client requests (when they start
    * working) */
@@ -139,7 +139,7 @@ void test_client_requests() {
 }
 
 /* test how valgrind prints backtraces */
-NOINLINE void test_backtrace() {
+NOINLINE void test_backtrace(void) {
   SHOW_ME;
   VALGRIND_PRINTF_BACKTRACE("BACKTRACE:\n");
   break_optimization();
@@ -148,7 +148,7 @@ NOINLINE void test_backtrace1() { test_backtrace(); break_optimization(); }
 NOINLINE void test_backtrace2() { test_backtrace1(); break_optimization(); }
 NOINLINE void test_backtrace3() { test_backtrace2(); break_optimization(); }
 
-NOINLINE void test_printf() {
+NOINLINE void test_printf(void) {
   SHOW_ME;
   VALGRIND_PRINTF("VG PRINTF\n");
   /*
@@ -172,7 +172,7 @@ NOINLINE int wrap_me_3(int a, int b, int c) { SHOW_ME; return a+10*b+100*c; }
 
 /* Wrapper functions. */
 
-NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaClZuNONE, wrap_me_0)() {
+NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaClZuNONE, wrap_me_0)(void) {
   int ret;
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
@@ -212,7 +212,7 @@ NOINLINE int I_WRAP_SONAME_FNNAME_ZZ(NaClZuNONE, wrap_me_3)(int a, int b,
 }
 
 NOINLINE
-void function_wrapping_test() {
+void function_wrapping_test(void) {
   SHOW_ME;
   /* The wrappers change the return value, so if the wrappers did not work
    these asserts will fail. */
@@ -251,7 +251,7 @@ int zz_wrap_me0(int a1, int a2, int a3, int a4, int a5, int a6, int a7) {
 }
 
 NOINLINE
-void many_args_wrapping_test() {
+void many_args_wrapping_test(void) {
   SHOW_ME;
   assert(zz_wrap_me0(1, 2, 3, 4, 5, 6, 7) == 7 * 28);
 }
@@ -268,26 +268,26 @@ void check_alignment(void* p) {
   assert(((size_t)p) % 16 == 0);
 }
 
-NOINLINE void wrap_me_check_alignment() {
+NOINLINE void wrap_me_check_alignment(void) {
   struct AlignedType var;
   check_alignment(&var);
 }
 
-NOINLINE void I_WRAP_SONAME_FNNAME_ZZ(NaClZuNONE, wrap_me_check_alignment)() {
+NOINLINE void I_WRAP_SONAME_FNNAME_ZZ(NaClZuNONE, wrap_me_check_alignment)(void) {
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
   CALL_FN_v_v(fn);
 }
 
 NOINLINE
-void function_alignment_wrapping_test() {
+void function_alignment_wrapping_test(void) {
   SHOW_ME;
   wrap_me_check_alignment();
 }
 
 
 NOINLINE
-void strcmp_test() {
+void strcmp_test(void) {
   SHOW_ME;
   const int SZ = 15;
   char* s1 = malloc(SZ);
@@ -306,7 +306,7 @@ void strcmp_test() {
 }
 
 NOINLINE
-void calloc_realloc_test() {
+void calloc_realloc_test(void) {
   char* p = calloc(1, 50);
   p[10] = 10;
   free(p);
@@ -317,7 +317,7 @@ void calloc_realloc_test() {
 }
 
 /* run all tests */
-int main() {
+int main(void) {
   if (!RUNNING_ON_VALGRIND) {
     /* Don't run this test w/o valgrind. It would fail otherwise. */
     return 0;

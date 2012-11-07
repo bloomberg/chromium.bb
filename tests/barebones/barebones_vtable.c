@@ -24,7 +24,7 @@ static int foo7() { return 7; }
 static int foo8() { return 8; }
 static int foo9() { return 9; }
 
-typedef int (*myfuptr)();
+typedef int (*myfuptr)(void);
 
 static myfuptr vtable[] = {
   foo0,
@@ -39,7 +39,7 @@ static myfuptr vtable[] = {
   foo9,
 };
 
-int main() {
+int main(void) {
   int result = vtable[startval]();
   NACL_SYSCALL(exit)(result);
   /* UNREACHABLE */

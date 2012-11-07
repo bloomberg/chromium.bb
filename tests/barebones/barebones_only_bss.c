@@ -12,7 +12,7 @@
 
 volatile unsigned stuff[100];
 
-int main() {
+int main(void) {
   stuff[0] = stuff[1];
   NACL_SYSCALL(exit)(55);
   /* UNREACHABLE */

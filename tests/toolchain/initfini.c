@@ -35,6 +35,6 @@ static const FUN_PTR array_fini[] ATTR_SEC(".fini_array") =
 
 /* NOTE: there is NO .prefini_array */
 
-int main() {
+int main(void) {
   return 0;
 }

@@ -39,7 +39,7 @@ void dummy1() __attribute__((noinline));
 void dummy0() __attribute__((noinline));
 
 
-void dummy3() {
+void dummy3(void) {
   void* cfa = (void*) __builtin_dwarf_cfa();
   printf("cfa: %p\n", cfa);
   ASSERT(dummy0_cfa == cfa, "ERROR: cfa mismatch");
@@ -48,7 +48,7 @@ void dummy3() {
   exit(55);
 }
 
-void dummy2() {
+void dummy2(void) {
   void* cfa = (void*) __builtin_dwarf_cfa();
   printf("cfa: %p\n", cfa);
   ASSERT(dummy0_cfa == cfa, "ERROR: cfa mismatch");
@@ -57,7 +57,7 @@ void dummy2() {
   __builtin_eh_return (STACK_REMAINDER, dummy3);
 }
 
-void dummy1() {
+void dummy1(void) {
   void* cfa = (void*) __builtin_dwarf_cfa();
   printf("cfa: %p\n", cfa);
   ASSERT(dummy0_cfa == cfa, "ERROR: cfa mismatch");
@@ -66,7 +66,7 @@ void dummy1() {
   __builtin_eh_return (STACK_REMAINDER, dummy2);
 }
 
-void dummy0() {
+void dummy0(void) {
   /* NOTE: __builtin_dwarf_cfa() return a pointer to the "current stack frame"
    *  CFA="canonical frame address".
    *  We pick STACK_REMAINDER so that stack is completely cleaned up and

@@ -37,7 +37,7 @@ static void fini_func300(void) {
   printf("fini_func with priority 300\n");
 }
 
-int main() {
+int main(void) {
   printf("in main()\n");
   return 0;
 }

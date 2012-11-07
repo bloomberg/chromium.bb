@@ -229,7 +229,7 @@ const struct NaClSrpcHandlerDesc srpc_methods[] = {
   { NULL, NULL },
 };
 
-int main() {
+int main(void) {
   assert(NaClSrpcModuleInit());
   /*
    * We need to be able to handle multiple connections because

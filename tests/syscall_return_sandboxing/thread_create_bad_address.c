@@ -13,13 +13,13 @@
 
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
-void thread_func() {
+void thread_func(void) {
   NACL_SYSCALL(thread_exit)(NULL);
   /* Run forever just in case thread_exit fails and returns. */
   while (1) { }
 }
 
-int main() {
+int main(void) {
   char *func_addr = (char *) (uintptr_t) thread_func;
   char *bad_func_addr;
   int stack_size = 0x10000;

@@ -35,7 +35,7 @@ static int switchme(int val) {
   }
 }
 
-int main() {
+int main(void) {
   NACL_SYSCALL(exit)(switchme(startval));
   /* UNREACHABLE */
   return 0;

@@ -7,7 +7,7 @@
 #include "barebones.h"
 
 
-int main() {
+int main(void) {
   NACL_SYSCALL(exit)(55 + ((int)__builtin_dwarf_cfa() & 15));
   /* UNREACHABLE */
   return 0;

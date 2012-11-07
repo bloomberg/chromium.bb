@@ -16,7 +16,7 @@ void test_two_line_function(int arg) {
   global_var = arg;
 }
 
-void test_stepi_after_break() {
+void test_stepi_after_break(void) {
   /* Something meaningful to step through.  */
   global_var = 0;
 }
@@ -34,7 +34,7 @@ void nested_calls(int arg) {
   leaf_call(arg + 1);
 }
 
-int test_print_symbol() {
+int test_print_symbol(void) {
   int local_var = 3;
   global_var = 2 + local_var * 0; /* Use local variable to prevent warning.  */
   set_global_var(1);

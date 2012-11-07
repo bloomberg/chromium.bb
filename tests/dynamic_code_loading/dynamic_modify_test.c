@@ -107,7 +107,7 @@ void copy_and_pad_fragment(void *dest,
 }
 
 /* Check that we can dynamically rewrite code. */
-void test_replacing_code() {
+void test_replacing_code(void) {
   uint8_t *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int rc;
@@ -132,7 +132,7 @@ void test_replacing_code() {
 
 
 /* Check that we can dynamically rewrite code. */
-void test_replacing_code_unaligned() {
+void test_replacing_code_unaligned(void) {
   uint8_t *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int first_diff = 0;
@@ -165,7 +165,7 @@ void test_replacing_code_unaligned() {
 
 #if defined(__i386__) || defined(__x86_64__)
 /* Check that we can rewrite instruction that crosses align boundaries. */
-void test_replacing_code_slowpaths() {
+void test_replacing_code_slowpaths(void) {
   uint8_t *load_area = allocate_code_space(1);
   uint8_t buf[NACL_BUNDLE_SIZE];
   size_t size;
@@ -203,7 +203,7 @@ void test_replacing_code_slowpaths() {
 #endif
 
 /* Check code replacement constraints */
-void test_illegal_code_replacment() {
+void test_illegal_code_replacment(void) {
   uint8_t *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int rc;
@@ -233,7 +233,7 @@ void test_illegal_code_replacment() {
   }
 }
 
-void test_external_jump_target_replacement() {
+void test_external_jump_target_replacement(void) {
   uint8_t *load_area = allocate_code_space(1);
   /* BUF_SIZE * 2 because this function necessarily has an extra bundle. */
   uint8_t buf[BUF_SIZE * 2];
@@ -263,7 +263,7 @@ void test_external_jump_target_replacement() {
 }
 
 #if defined(__i386__) || defined(__x86_64__)
-void test_jump_into_super_inst_create() {
+void test_jump_into_super_inst_create(void) {
   uint8_t *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int rc;
@@ -276,7 +276,7 @@ void test_jump_into_super_inst_create() {
   assert(errno == EINVAL);
 }
 
-void test_start_with_super_inst_replace() {
+void test_start_with_super_inst_replace(void) {
   uint8_t *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int rc;
@@ -297,7 +297,7 @@ void test_start_with_super_inst_replace() {
   assert(rc == 0);
 }
 
-void test_jump_into_super_inst_replace() {
+void test_jump_into_super_inst_replace(void) {
   uint8_t *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int rc;
@@ -325,14 +325,14 @@ void run_test(const char *test_name, void (*test_func)(void)) {
   test_func();
 }
 
-int is_replacement_enabled() {
+int is_replacement_enabled(void) {
   char trash;
   return (0 == nacl_dyncode_modify(allocate_code_space(1), &trash, 0));
 }
 
 #define RUN_TEST(test_func) (run_test(#test_func, test_func))
 
-int TestMain() {
+int TestMain(void) {
   /* Turn off stdout buffering to aid debugging in case of a crash. */
   setvbuf(stdout, NULL, _IONBF, 0);
 
@@ -352,6 +352,6 @@ int TestMain() {
   return 0;
 }
 
-int main() {
+int main(void) {
   return RunTests(TestMain);
 }

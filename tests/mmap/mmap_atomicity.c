@@ -35,7 +35,7 @@ void *thread_func(void *unused_arg) {
   return NULL;
 }
 
-int main() {
+int main(void) {
   mapping = mmap(NULL, 0x10000, PROT_READ | PROT_WRITE,
                  MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
   assert(mapping != MAP_FAILED);

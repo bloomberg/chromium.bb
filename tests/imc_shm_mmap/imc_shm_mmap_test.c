@@ -144,7 +144,7 @@ int imc_shm_mmap(size_t   region_size,
   return 0;
 }
 
-void test_map_private_is_not_supported() {
+void test_map_private_is_not_supported(void) {
   int fd;
   void *addr;
   int rc;
@@ -164,7 +164,7 @@ void test_map_private_is_not_supported() {
   assert(rc == 0);
 }
 
-int TestMain() {
+int TestMain(void) {
   fail_count += imc_shm_mmap(65536, PROT_READ|PROT_WRITE, MAP_SHARED,
                              0, 0, 0);
   fail_count += imc_shm_mmap(4096, PROT_READ|PROT_WRITE, MAP_SHARED,

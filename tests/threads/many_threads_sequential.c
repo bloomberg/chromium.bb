@@ -24,7 +24,7 @@ void *thread_func(void *unused_arg) {
   return NULL;
 }
 
-int main() {
+int main(void) {
   int rc;
   int index;
   for (index = 0; index < kIterations; index++) {

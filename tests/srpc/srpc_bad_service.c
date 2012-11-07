@@ -120,7 +120,7 @@ static void *acceptor(void *arg) {
   return NULL;
 }
 
-int main() {
+int main(void) {
   pthread_t acceptor_tid;
 
   /* This test can only run as embedded. */

@@ -39,7 +39,7 @@ int GlobalCounter = 0;
 AtomicInt32 GlobalError = 0;
 
 
-void IncError() {
+void IncError(void) {
   __sync_fetch_and_add(&GlobalError, 1);
 }
 
@@ -50,17 +50,17 @@ void IncError() {
 pthread_mutex_t mutex;
 
 
-void Init() {
+void Init(void) {
   pthread_mutex_init(&mutex, NULL);
 }
 
 
-void CriticalSectionEnter() {
+void CriticalSectionEnter(void) {
   pthread_mutex_lock(&mutex);
 }
 
 
-void CriticalSectionLeave() {
+void CriticalSectionLeave(void) {
   pthread_mutex_unlock(&mutex);
 }
 
@@ -69,11 +69,11 @@ void CriticalSectionLeave() {
 AtomicWord GlobalMutex = 0;
 
 
-void Init() {
+void Init(void) {
 }
 
 
-void CriticalSectionEnter() {
+void CriticalSectionEnter(void) {
   int old_value;
   do {
     old_value = AtomicExchange(&GlobalMutex, 1);
@@ -81,7 +81,7 @@ void CriticalSectionEnter() {
 }
 
 
-void CriticalSectionLeave() {
+void CriticalSectionLeave(void) {
   AtomicExchange(&GlobalMutex, 0);
 }
 

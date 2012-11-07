@@ -8,9 +8,9 @@
 /* NOTE: gcc reorders functions in a file arbitrarily */
 
 /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
-extern int main();
+extern int main(void);
 
-void _start() {
+void _start(void) {
   main();
 }
 

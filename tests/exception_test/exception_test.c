@@ -85,7 +85,7 @@ void check_pointer_is_aligned(void *pointer) {
   assert((uintptr_t) pointer % 16 == 0);
 }
 
-void check_stack_is_aligned() {
+void check_stack_is_aligned(void) {
   struct AlignedType var;
   check_pointer_is_aligned(&var);
 }
@@ -214,14 +214,14 @@ void test_exception_stack_with_size(char *stack, size_t stack_size) {
   memset(g_jmp_buf, 0, sizeof(g_jmp_buf));
 }
 
-void test_exceptions_minimally() {
+void test_exceptions_minimally(void) {
   /* Test exceptions without having an exception stack set up. */
   test_exception_stack_with_size(NULL, 0);
 
   test_exception_stack_with_size(stack, sizeof(stack));
 }
 
-void test_exception_stack_alignments() {
+void test_exception_stack_alignments(void) {
   /*
    * Test the stack realignment logic by trying stacks which end at
    * different addresses modulo the stack alignment size.
@@ -232,7 +232,7 @@ void test_exception_stack_alignments() {
   }
 }
 
-void test_getting_previous_handler() {
+void test_getting_previous_handler(void) {
   int rc;
   handler_func_t prev_handler;
 
@@ -248,7 +248,7 @@ void test_getting_previous_handler() {
   assert(prev_handler == NULL);
 }
 
-void test_invalid_handlers() {
+void test_invalid_handlers(void) {
   int rc;
   handler_func_t unaligned_func_ptr =
     (handler_func_t) ((uintptr_t) exception_handler + 1);
@@ -281,7 +281,7 @@ void *thread_func(void *unused_arg) {
   return NULL;
 }
 
-void test_exceptions_on_non_main_thread() {
+void test_exceptions_on_non_main_thread(void) {
   pthread_t tid;
   int rc = pthread_create(&tid, NULL, thread_func, NULL);
   assert(rc == 0);
@@ -294,7 +294,7 @@ void test_exceptions_on_non_main_thread() {
 
 int get_x86_direction_flag(void);
 
-void test_get_x86_direction_flag() {
+void test_get_x86_direction_flag(void) {
   /*
    * Sanity check:  Ensure that get_x86_direction_flag() works.  We
    * avoid calling assert() with the flag set, because that might not
@@ -323,7 +323,7 @@ void direction_flag_exception_handler(struct NaClExceptionContext *context) {
  * direction flag when calling the exception handler.  This test
  * checks that this happens.
  */
-void test_unsetting_x86_direction_flag() {
+void test_unsetting_x86_direction_flag(void) {
   int rc = NACL_SYSCALL(exception_handler)(direction_flag_exception_handler,
                                            NULL);
   assert(rc == 0);
@@ -346,7 +346,7 @@ void frame_ptr_exception_handler(struct NaClExceptionContext *context) {
   longjmp(g_jmp_buf, 1);
 }
 
-void test_preserving_frame_ptr() {
+void test_preserving_frame_ptr(void) {
   int rc = NACL_SYSCALL(exception_handler)(frame_ptr_exception_handler, NULL);
   assert(rc == 0);
   if (!setjmp(g_jmp_buf)) {
@@ -377,7 +377,7 @@ void run_test(const char *test_name, void (*test_func)(void)) {
 
 #define RUN_TEST(test_func) (run_test(#test_func, test_func))
 
-int TestMain() {
+int TestMain(void) {
   RUN_TEST(test_exceptions_minimally);
   RUN_TEST(test_exception_stack_alignments);
   RUN_TEST(test_getting_previous_handler);
@@ -396,6 +396,6 @@ int TestMain() {
   return 0;
 }
 
-int main() {
+int main(void) {
   return RunTests(TestMain);
 }

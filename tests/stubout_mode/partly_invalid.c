@@ -35,7 +35,7 @@ __asm__(".p2align 5\n"
 # error "Unsupported architecture"
 #endif
 
-int main() {
+int main(void) {
   printf("Before non-validating instruction\n");
   fflush(stdout);
   unfixed_code();

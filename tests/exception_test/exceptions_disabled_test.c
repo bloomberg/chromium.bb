@@ -16,7 +16,7 @@
  * the exception related syscalls return ENOSYS.
  */
 
-int main() {
+int main(void) {
   int rc;
 
   rc = NACL_SYSCALL(exception_handler)(NULL, NULL);

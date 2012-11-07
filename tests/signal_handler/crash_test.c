@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 
-int main() {
+int main(void) {
   fprintf(stderr, "[CRASH_TEST] Causing crash in untrusted code...\n");
   /* We use "volatile" because otherwise LLVM gets too clever (at
      least on ARM) and generates an illegal instruction, which

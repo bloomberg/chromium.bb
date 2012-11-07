@@ -44,7 +44,7 @@ void load_into_page(uint8_t *dest) {
   }
 }
 
-int main() {
+int main(void) {
   uint8_t *dyncode = (uint8_t *) DYNAMIC_CODE_SEGMENT_START;
   int value;
 

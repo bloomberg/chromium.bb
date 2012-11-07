@@ -11,14 +11,14 @@
 #define UNTYPED_SYSCALL(s) ((int (*)()) NACL_SYSCALL_ADDR(s))
 
 
-static void SimpleAbort() {
+static void SimpleAbort(void) {
   while (1) {
     /* Exit by causing a crash. */
     *(volatile int *) 0 = 0;
   }
 }
 
-void _start() {
+void _start(void) {
   int retval = UNTYPED_SYSCALL(TEST_SYSCALL_INVOKE)();
   if (retval != 123) {
     /* This sandbox is so simple that we have no way of printing a

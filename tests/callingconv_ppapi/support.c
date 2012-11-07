@@ -28,7 +28,7 @@ void emit_pointer(const char* m, const void* val) {
   printf("%s: %p\n", m, val);
 }
 
-void randomize() {
+void randomize(void) {
   char* data = (char*) &g_input_values;
   for (size_t i = 0; i < sizeof(g_input_values); ++i) {
     data[i] = (char) lrand48();

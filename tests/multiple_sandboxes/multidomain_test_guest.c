@@ -19,7 +19,7 @@
 #define RECEIVE_DESC 3
 
 
-void domain1() {
+void domain1(void) {
   char *message = "hello";
   struct NaClImcMsgIoVec iov = { message, strlen(message) };
   struct NaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };
@@ -30,7 +30,7 @@ void domain1() {
   assert(sent >= 0);
 }
 
-void domain2() {
+void domain2(void) {
   char buffer[100];
   struct NaClImcMsgIoVec iov = { buffer, sizeof(buffer) - 1 };
   struct NaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };

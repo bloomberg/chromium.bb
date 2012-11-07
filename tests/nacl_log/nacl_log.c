@@ -12,7 +12,7 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 
-void hello_world() {
+void hello_world(void) {
   NaClLog(LOG_INFO, "Hello, World!\n");
 }
 

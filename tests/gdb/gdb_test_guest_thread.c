@@ -10,11 +10,11 @@
 #include <unistd.h>
 
 /* This is here so that we can set a breakpoint on it.  */
-void foo() {
+void foo(void) {
 }
 
 /* This is here so that we can set a breakpoint on it.  */
-void bar() {
+void bar(void) {
 }
 
 void *f1(void *arg) {
@@ -29,7 +29,7 @@ void *f2(void *arg) {
   return NULL;
 }
 
-void test_break_continue_thread() {
+void test_break_continue_thread(void) {
   pthread_t t1;
   pthread_t t2;
   int rc;
@@ -44,7 +44,7 @@ void test_break_continue_thread() {
 }
 
 /* This is here so that we can set a breakpoint on it.  */
-void inside_f3() {
+void inside_f3(void) {
 }
 
 void *f3(void *arg) {
@@ -70,7 +70,7 @@ void *f3(void *arg) {
  * Instead, we use an additional thread that waits until main thread is blocked
  * in syscall and then calls a function to hit a breakpoint.
  */
-void test_syscall_thread() {
+void test_syscall_thread(void) {
   pthread_t t;
   int rc;
   rc = pthread_create(&t, NULL, f3, NULL);

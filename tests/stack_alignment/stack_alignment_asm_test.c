@@ -76,7 +76,7 @@ void ThreadStart(char *stack_ptr) {
   irt_thread.thread_exit((int32_t *) &g_stack_in_use);
 }
 
-int main() {
+int main(void) {
   __nc_initialize_interfaces(&irt_thread);
 
   int offset;

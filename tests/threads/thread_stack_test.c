@@ -86,7 +86,7 @@ void* thread2_func(void* arg)
  * allocated.
  */
 
-void TestThreadStackAllocation() {
+void TestThreadStackAllocation(void) {
   pthread_t thread1, thread2;
   pthread_attr_t attr1, attr2;
   sem_t thread2_started, main_thread_done;

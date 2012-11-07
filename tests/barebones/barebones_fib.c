@@ -24,7 +24,7 @@ static int fib(int val) {
 }
 
 
-int main() {
+int main(void) {
   NACL_SYSCALL(exit)(fib(startval));
   /* UNREACHABLE */
   return 0;

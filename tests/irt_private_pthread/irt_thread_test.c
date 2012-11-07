@@ -109,7 +109,7 @@ static void *irt_thread_func(void *arg) {
   return (void *) 0x23456789;
 }
 
-void test_irt_thread() {
+void test_irt_thread(void) {
   /*
    * Test that a thread created by the IRT for internal use works, and
    * that TLS works inside the thread.

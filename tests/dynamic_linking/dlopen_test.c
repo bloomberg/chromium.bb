@@ -19,7 +19,7 @@ typedef union {
   void* pvoid;
 } dl_union;
 
-int main() {
+int main(void) {
   void *handle;
   dl_union f;
 

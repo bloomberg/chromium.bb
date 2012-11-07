@@ -11,10 +11,10 @@
  * We compile this into a pso to link against the pexe.
  */
 
-void _dl_debug_state() {
+void _dl_debug_state(void) {
 }
 
-void _dl_get_tls_static_info() {
+void _dl_get_tls_static_info(void) {
 }
 
 void *_dl_allocate_tls (void *mem) {

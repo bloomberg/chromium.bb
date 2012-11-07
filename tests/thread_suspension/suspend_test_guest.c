@@ -47,7 +47,7 @@ static void SyscallInvokerThread(struct SuspendTestShm *test_shm) {
   }
 }
 
-void spin_instruction();
+void spin_instruction(void);
 
 REGS_SAVER_FUNC(ContinueAfterSuspension, CheckSavedRegisters);
 

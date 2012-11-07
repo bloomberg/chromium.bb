@@ -81,7 +81,7 @@ union AllValues {
 extern void emit_pointer(const char* m, const void* val);
 extern void emit_integer(const char* m, int64_t val);
 extern void emit_string(const char* s);
-extern void randomize();
+extern void randomize(void);
 extern void initialize(int argc, char* argv[]);
 extern union AllValues g_input_values;
 

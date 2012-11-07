@@ -11,7 +11,7 @@
 #include "barebones.h"
 
 
-int main() {
+int main(void) {
   NACL_SYSCALL(exit)(55);
   /* UNREACHABLE */
   return 0;

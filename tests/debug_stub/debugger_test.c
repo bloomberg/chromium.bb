@@ -41,7 +41,7 @@ __asm__(".pushsection .text, \"ax\", %progbits\n"
 # error Update fault_addr for other architectures
 #endif
 
-void set_registers_and_stop() {
+void set_registers_and_stop(void) {
   struct NaClSignalContext regs;
   memset(&regs, 0, sizeof(regs));
 
@@ -108,7 +108,7 @@ void set_registers_and_stop() {
 #endif
 }
 
-void test_jump_to_address_zero() {
+void test_jump_to_address_zero(void) {
   /*
    * "volatile" tells Clang/LLVM not to optimize this call away and
    * replace it with an illegal instruction, which produces different
@@ -123,7 +123,7 @@ void test_jump_to_address_zero() {
  * this function must not be inlined.
  */
 __attribute__((noinline))
-void breakpoint_target_func() {
+void breakpoint_target_func(void) {
   /*
    * This is also necessary to prevent inlining according to the GCC
    * docs for "noinline".
@@ -131,11 +131,11 @@ void breakpoint_target_func() {
   __asm__("");
 }
 
-int non_zero_return() {
+int non_zero_return(void) {
   return 2;
 }
 
-void test_single_step() {
+void test_single_step(void) {
   /*
    * The actual instructions used here don't matter, we just want to use
    * a variety of instruction sizes.
@@ -166,7 +166,7 @@ void test_single_step() {
 #endif
 }
 
-void test_interrupt() {
+void test_interrupt(void) {
   /*
    * 'volatile' is needed for clang optimizer to get this right.
    * TODO(robertm): http://code.google.com/p/nativeclient/issues/detail?id=2912
@@ -204,7 +204,7 @@ void *child_thread_func(void *thread_arg) {
   return NULL;
 }
 
-void test_suspending_threads() {
+void test_suspending_threads(void) {
   pthread_t tid;
   ASSERT_EQ(pthread_create(&tid, NULL, child_thread_func, NULL), 0);
   for (;;) {

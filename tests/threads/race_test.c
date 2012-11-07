@@ -47,7 +47,7 @@ void create_and_join_threads(ThreadCallback *callbacks, int n) {
 }
 
 /* Don't let various optimizations (e.g. tail call elimination) to happen. */
-NOINLINE void break_optimization() {
+NOINLINE void break_optimization(void) {
 #if defined(__pnacl__)
   volatile int foo;
   foo = 0;
@@ -61,11 +61,11 @@ NOINLINE void break_optimization() {
    Simle race on a global variable between three threads.
    We have few stack frames here to test ThreadSanitizer's output. */
 int simple_race_obj;
-NOINLINE void simple_race_write_frame_2() {
+NOINLINE void simple_race_write_frame_2(void) {
   break_optimization();
   simple_race_obj++;  /* Race here. */
 }
-NOINLINE void simple_race_write_frame_1() {
+NOINLINE void simple_race_write_frame_1(void) {
   break_optimization();
   simple_race_write_frame_2();
   break_optimization();
@@ -77,7 +77,7 @@ void *simple_race_write(void *arg) {
   return NULL;
 }
 
-void positive_race_on_global_test() {
+void positive_race_on_global_test(void) {
   ThreadCallback t[] = {simple_race_write, simple_race_write,
     simple_race_write};
   SHOW_ME;
@@ -90,11 +90,11 @@ void positive_race_on_global_test() {
 /* positive_race_on_heap_test
    Simple race on a heap object. */
 int *race_on_heap_obj;
-NOINLINE void race_on_heap_frame_2() {
+NOINLINE void race_on_heap_frame_2(void) {
   break_optimization();
   *race_on_heap_obj = 1;  /* Race here. */
 }
-NOINLINE void race_on_heap_frame_1() {
+NOINLINE void race_on_heap_frame_1(void) {
   break_optimization();
   race_on_heap_frame_2();
   break_optimization();
@@ -106,7 +106,7 @@ void *race_on_heap_write(void *unused) {
   return NULL;
 }
 
-void positive_race_on_heap_test() {
+void positive_race_on_heap_test(void) {
   ThreadCallback t[2] = {race_on_heap_write, race_on_heap_write};
   SHOW_ME;
   race_on_heap_obj = (int*)malloc(sizeof(int));
@@ -137,7 +137,7 @@ void *wrong_lock_test_access2(void *unused) {
   return NULL;
 }
 
-void positive_wrong_lock_test() {
+void positive_wrong_lock_test(void) {
   ThreadCallback t[2] = {wrong_lock_test_access1, wrong_lock_test_access2};
   pthread_mutex_init(&wrong_lock_test_mu_1, NULL);
   pthread_mutex_init(&wrong_lock_test_mu_2, NULL);
@@ -154,12 +154,12 @@ void positive_wrong_lock_test() {
 pthread_mutex_t locked_access_test_mu;
 int locked_access_test_obj;
 
-void locked_access_test_frame_2() {
+void locked_access_test_frame_2(void) {
   pthread_mutex_lock(&locked_access_test_mu);
   locked_access_test_obj++;  /* No race here. */
   pthread_mutex_unlock(&locked_access_test_mu);
 }
-void locked_access_test_frame_1() {
+void locked_access_test_frame_1(void) {
   locked_access_test_frame_2();
 }
 
@@ -168,7 +168,7 @@ void *locked_access_test_thread(void *unused) {
   return NULL;
 }
 
-void negative_locked_access_test() {
+void negative_locked_access_test(void) {
   ThreadCallback t[2] = {locked_access_test_thread, locked_access_test_thread};
   pthread_mutex_init(&locked_access_test_mu, NULL);
   SHOW_ME;
@@ -194,7 +194,7 @@ void* posix_sem_test_waiter(void* unused) {
   return NULL;
 }
 
-void negative_posix_sem_test() {
+void negative_posix_sem_test(void) {
   ThreadCallback t[2] = {posix_sem_test_poster, posix_sem_test_waiter};
   SHOW_ME;
   sem_init(&posix_sem_test_sem[0], 0, 0);
@@ -217,7 +217,7 @@ void* thread_create_and_join_test_thread1(void* unused) {
   return NULL;
 }
 
-void thread_create_and_join_test() {
+void thread_create_and_join_test(void) {
   ThreadCallback t[1] = {thread_create_and_join_test_thread1};
 
   SHOW_ME;
@@ -231,7 +231,7 @@ void thread_create_and_join_test() {
 }
 
 /* -------------------------------------------------------------------------- */
-int main() {
+int main(void) {
   if (1) positive_race_on_global_test();
   if (1) positive_race_on_heap_test();
   if (1) positive_wrong_lock_test();

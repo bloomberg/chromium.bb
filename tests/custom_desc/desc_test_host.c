@@ -167,7 +167,7 @@ static ssize_t ExampleDescRecvMsg(void *handle,
   return result;
 }
 
-static struct NaClDesc *MakeExampleDesc() {
+static struct NaClDesc *MakeExampleDesc(void) {
   struct NaClDescCustomFuncs funcs = NACL_DESC_CUSTOM_FUNCS_INITIALIZER;
   funcs.Destroy = ExampleDescDestroy;
   funcs.SendMsg = ExampleDescSendMsg;

@@ -11,7 +11,7 @@
 #define UNTYPED_SYSCALL(s) ((int (*)()) NACL_SYSCALL_ADDR(s))
 
 
-void _start() {
+void _start(void) {
   while (1) {
     UNTYPED_SYSCALL(SINGLE_STEP_TEST_SYSCALL)();
   }

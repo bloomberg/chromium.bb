@@ -16,6 +16,6 @@ int RunTests(int (*test_func)(void)) {
   return test_func();
 }
 
-int TestRunningInBrowser() {
+int TestRunningInBrowser(void) {
   return 0;
 }

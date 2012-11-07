@@ -35,7 +35,7 @@ void *ThreadFunc(void *arg) {
   return NULL;
 }
 
-int main() {
+int main(void) {
   pthread_t tid;
   int err;
 
