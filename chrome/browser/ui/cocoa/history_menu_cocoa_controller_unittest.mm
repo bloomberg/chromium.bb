@@ -28,7 +28,7 @@
   return self;
 }
 
-- (void)openURLForItem:(const HistoryMenuBridge::HistoryItem*)item {
+- (void)openURLForItem:(HistoryMenuBridge::HistoryItem*)item {
   opened_[item->session_id] = YES;
 }
 
