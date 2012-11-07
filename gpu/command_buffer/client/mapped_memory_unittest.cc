@@ -102,7 +102,7 @@ class MemoryChunkTest : public MappedMemoryTestBase {
 
   virtual void TearDown() {
     // If the GpuScheduler posts any tasks, this forces them to run.
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
 
     MappedMemoryTestBase::TearDown();
   }
@@ -153,7 +153,7 @@ class MappedMemoryManagerTest : public MappedMemoryTestBase {
 
   virtual void TearDown() {
     // If the GpuScheduler posts any tasks, this forces them to run.
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     manager_.reset();
     MappedMemoryTestBase::TearDown();
   }

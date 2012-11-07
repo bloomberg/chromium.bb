@@ -96,7 +96,7 @@ class CommandBufferHelperTest : public testing::Test {
 
   virtual void TearDown() {
     // If the GpuScheduler posts any tasks, this forces them to run.
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
 
   const CommandParser* GetParser() const {

@@ -60,7 +60,7 @@ class GpuSchedulerTest : public testing::Test {
   virtual void TearDown() {
     // Ensure that any unexpected tasks posted by the GPU scheduler are executed
     // in order to fail the test.
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
 
   error::Error GetError() {

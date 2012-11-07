@@ -99,7 +99,7 @@ class FencedAllocatorTest : public BaseFencedAllocatorTest {
 
   virtual void TearDown() {
     // If the GpuScheduler posts any tasks, this forces them to run.
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
 
     EXPECT_TRUE(allocator_->CheckConsistency());
 
@@ -401,7 +401,7 @@ class FencedAllocatorWrapperTest : public BaseFencedAllocatorTest {
 
   virtual void TearDown() {
     // If the GpuScheduler posts any tasks, this forces them to run.
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
 
     EXPECT_TRUE(allocator_->CheckConsistency());
 
