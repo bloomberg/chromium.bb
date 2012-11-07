@@ -33,7 +33,8 @@ const CGFloat kButtonGap = 6;
 // Positions the accessory view starting at yPos. Returns the new value of yPos.
 - (CGFloat)layoutAccessoryViewAtYPos:(CGFloat)yPos;
 // Update the position of the close button.
-- (void)layoutCloseButtonWithWindowWidth:(CGFloat)windowWidth;
+- (void)layoutCloseButtonWithWindowWidth:(CGFloat)windowWidth
+                            windowHeight:(CGFloat)windowHeight;
 @end
 
 @implementation ConstrainedWindowAlert
@@ -151,11 +152,13 @@ const CGFloat kButtonGap = 6;
   curY = [self layoutTextField:messageTextField_
                           yPos:curY
                    windowWidth:availableMessageWidth];
-  [self layoutCloseButtonWithWindowWidth:windowWidth];
+
+  CGFloat windowHeight = curY + ConstrainedWindowConstants::kTitleTopPadding;
+  [self layoutCloseButtonWithWindowWidth:windowWidth
+                            windowHeight:windowHeight];
 
   // Update window frame.
-  curY += ConstrainedWindowConstants::kTitleTopPadding;
-  [window_ setFrame:NSMakeRect(0, 0, windowWidth, curY)
+  [window_ setFrame:NSMakeRect(0, 0, windowWidth, windowHeight)
             display:NO];
 }
 
@@ -212,13 +215,15 @@ const CGFloat kButtonGap = 6;
   return NSMaxY(frame);
 }
 
-- (void)layoutCloseButtonWithWindowWidth:(CGFloat)windowWidth {
+- (void)layoutCloseButtonWithWindowWidth:(CGFloat)windowWidth
+                            windowHeight:(CGFloat)windowHeight {
   NSRect frame;
   frame.size.width = ConstrainedWindow::GetCloseButtonSize();
   frame.size.height = ConstrainedWindow::GetCloseButtonSize();
   frame.origin.x = windowWidth -
-      ConstrainedWindowConstants::kHorizontalPadding - NSWidth(frame);
-  frame.origin.y = NSMaxY([messageTextField_ frame]) - NSHeight(frame);
+      ConstrainedWindowConstants::kCloseButtonPadding - NSWidth(frame);
+  frame.origin.y = windowHeight -
+      ConstrainedWindowConstants::kCloseButtonPadding - NSHeight(frame);
   [closeButton_ setFrame:frame];
 }
 
