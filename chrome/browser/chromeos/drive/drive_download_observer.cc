@@ -194,6 +194,11 @@ void OnEntryFound(
   }
 }
 
+// Callback for DriveFileSystem::UpdateEntryData.
+void OnEntryUpdated(DriveFileError error) {
+  LOG_IF(ERROR, error != DRIVE_FILE_OK) << "Failed to update entry: " << error;
+}
+
 }  // namespace
 
 DriveDownloadObserver::DriveDownloadObserver(
@@ -690,21 +695,18 @@ void DriveDownloadObserver::MoveFileToDriveCache(DownloadItem* download) {
   }
 
   if (upload_data->is_overwrite()) {
-    file_system_->UpdateEntryData(upload_data->resource_id(),
-                                  upload_data->md5(),
-                                  entry.Pass(),
+    file_system_->UpdateEntryData(entry.Pass(),
                                   download->GetTargetFilePath(),
-                                  base::Bind(&base::DoNothing));
+                                  base::Bind(&OnEntryUpdated));
   } else {
     // Move downloaded file to drive cache. Note that |content_file_path| should
     // use the final target path (download->GetTargetFilePath()) when the
     // download item has transitioned to the DownloadItem::COMPLETE state.
-    file_system_->AddUploadedFile(google_apis::UPLOAD_NEW_FILE,
-                                  upload_data->virtual_dir_path(),
+    file_system_->AddUploadedFile(upload_data->virtual_dir_path(),
                                   entry.Pass(),
                                   download->GetTargetFilePath(),
                                   DriveCache::FILE_OPERATION_MOVE,
-                                  base::Bind(&base::DoNothing));
+                                  base::Bind(&OnEntryUpdated));
   }
 }
 

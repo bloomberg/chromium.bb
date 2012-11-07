@@ -326,31 +326,25 @@ class DriveFileSystemInterface {
   virtual void GetAvailableSpace(const GetAvailableSpaceCallback& callback) = 0;
 
   // Adds a file entry from |doc_entry| under |directory_path|, and modifies
-  // the cache state.
-  //
-  // When uploading a new file, adds a new file entry, and store its content
-  // from |file_content_path| into the cache.
-  //
-  // When uploading an existing file, replaces the file entry with a new one,
-  // and clears the dirty bit in the cache.
+  // the cache state. Adds a new file entry, and store its content from
+  // |file_content_path| into the cache.
   //
   // |callback| will be called on the UI thread upon completion of operation.
-  virtual void AddUploadedFile(google_apis::UploadMode upload_mode,
-                               const FilePath& directory_path,
+  // |callback| must not be null.
+  virtual void AddUploadedFile(const FilePath& directory_path,
                                scoped_ptr<google_apis::DocumentEntry> doc_entry,
                                const FilePath& file_content_path,
                                DriveCache::FileOperationType cache_operation,
-                               const base::Closure& callback) = 0;
+                               const FileOperationCallback& callback) = 0;
 
-  // Updates the data associated with the file referenced by |resource_id| and
-  // |md5|.  The data is copied from |file_content_path|.
+  // Updates the data associated with the file referenced by |entry|.
+  // The data is copied from |file_content_path|.
   //
   // |callback| will be called on the UI thread upon completion of operation.
-  virtual void UpdateEntryData(const std::string& resource_id,
-                               const std::string& md5,
-                               scoped_ptr<google_apis::DocumentEntry> entry,
+  // |callback| must not be null.
+  virtual void UpdateEntryData(scoped_ptr<google_apis::DocumentEntry> entry,
                                const FilePath& file_content_path,
-                               const base::Closure& callback) = 0;
+                               const FileOperationCallback& callback) = 0;
 
   // Returns miscellaneous metadata of the file system like the largest
   // timestamp. Used in chrome:drive-internals.

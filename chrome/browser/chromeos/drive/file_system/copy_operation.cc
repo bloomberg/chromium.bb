@@ -491,12 +491,11 @@ void CopyOperation::OnTransferCompleted(
 
   if (error == google_apis::DRIVE_UPLOAD_OK && document_entry.get()) {
     drive_file_system_->AddUploadedFile(
-        google_apis::UPLOAD_NEW_FILE,
         drive_path.DirName(),
         document_entry.Pass(),
         file_path,
         DriveCache::FILE_OPERATION_COPY,
-        base::Bind(&OnAddUploadFileCompleted, callback, DRIVE_FILE_OK));
+        base::Bind(&OnAddUploadFileCompleted, callback));
   } else if (!callback.is_null()) {
     callback.Run(DriveUploadErrorToDriveFileError(error));
   }

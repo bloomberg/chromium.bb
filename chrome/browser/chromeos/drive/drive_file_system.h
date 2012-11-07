@@ -129,17 +129,14 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const FilePath& directory_path) OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
-  virtual void AddUploadedFile(google_apis::UploadMode upload_mode,
-                               const FilePath& directory_path,
+  virtual void AddUploadedFile(const FilePath& directory_path,
                                scoped_ptr<google_apis::DocumentEntry> doc_entry,
                                const FilePath& file_content_path,
                                DriveCache::FileOperationType cache_operation,
-                               const base::Closure& callback) OVERRIDE;
-  virtual void UpdateEntryData(const std::string& resource_id,
-                               const std::string& md5,
-                               scoped_ptr<google_apis::DocumentEntry> entry,
+                               const FileOperationCallback& callback) OVERRIDE;
+  virtual void UpdateEntryData(scoped_ptr<google_apis::DocumentEntry> entry,
                                const FilePath& file_content_path,
-                               const base::Closure& callback) OVERRIDE;
+                               const FileOperationCallback& callback) OVERRIDE;
   virtual DriveFileSystemMetadata GetMetadata() const OVERRIDE;
   virtual void Reload() OVERRIDE;
 
@@ -238,9 +235,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Struct used for AddUploadedFile.
   struct AddUploadedFileParams;
-
-  // Struct used by UpdateEntryData.
-  struct UpdateEntryParams;
 
   // Initializes DriveResourceMetadata and DriveFeedLoader instances. This is a
   // part of the initialization.
@@ -413,13 +407,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
       DriveFileError error,
       const FilePath& directory_path);
 
-  // Continues to add an uploaded file after existing entry has been deleted.
-  void ContinueAddUploadedFile(scoped_ptr<AddUploadedFileParams> params,
-                               DriveFileError error,
-                               const FilePath& file_path);
-
   // Adds the uploaded file to the cache.
-  void AddUploadedFileToCache(scoped_ptr<AddUploadedFileParams> params,
+  void AddUploadedFileToCache(const AddUploadedFileParams& params,
                               DriveFileError error,
                               const FilePath& file_path);
 
@@ -581,6 +570,12 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const FilePath& file_path,
       scoped_ptr<google_apis::DocumentEntry> document_entry);
 
+  // Part of UpdateFileByResourceId().
+  void OnUpdatedFileRefreshed(const FileOperationCallback& callback,
+                              DriveFileError error,
+                              const FilePath& drive_file_path,
+                              scoped_ptr<DriveEntryProto> entry_proto);
+
   // The following functions are used to forward calls to asynchronous public
   // member functions to UI thread.
   void SearchAsyncOnUIThread(const std::string& search_query,
@@ -629,15 +624,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                  scoped_ptr<LoadFeedParams> params,
                                  DriveFileError error);
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
-  void AddUploadedFileOnUIThread(
-      google_apis::UploadMode upload_mode,
-      const FilePath& directory_path,
-      scoped_ptr<google_apis::DocumentEntry> doc_entry,
-      const FilePath& file_content_path,
-      DriveCache::FileOperationType cache_operation,
-      const base::Closure& callback);
-  void UpdateEntryDataOnUIThread(const UpdateEntryParams& params,
-                                 scoped_ptr<google_apis::DocumentEntry> entry);
 
   // Part of CreateDirectory(). Called after
   // FindFirstMissingParentDirectory() is complete.
@@ -676,12 +662,12 @@ class DriveFileSystem : public DriveFileSystemInterface,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
-  // Part of UpdateEntryDataOnUIThread(). Called after RefreshFile is complete.
-  void UpdateCacheEntryOnUIThread(
-      const UpdateEntryParams& params,
-      DriveFileError error,
-      const FilePath& drive_file_path,
-      scoped_ptr<DriveEntryProto> entry_proto);
+  // Part of UpdateEntryData(). Called after RefreshFile is complete.
+  void UpdateCacheEntry(const FilePath& file_content_path,
+                        const FileOperationCallback& callback,
+                        DriveFileError error,
+                        const FilePath& drive_file_path,
+                        scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of GetEntryByResourceId and GetEntryByPath. Checks whether there is a
   // local dirty cache for the entry, and if there is, replace the
