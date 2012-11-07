@@ -239,6 +239,7 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	surface->num_textures = 0;
 	surface->num_images = 0;
+	pixman_region32_init(&surface->texture_damage);
 
 	surface->buffer = NULL;
 	surface->output = NULL;
@@ -782,6 +783,7 @@ destroy_surface(struct wl_resource *resource)
 	if (surface->buffer)
 		wl_list_remove(&surface->buffer_destroy_listener.link);
 
+	pixman_region32_fini(&surface->texture_damage);
 	compositor->renderer->destroy_surface(surface);
 
 	pixman_region32_fini(&surface->transform.boundingbox);
@@ -905,8 +907,7 @@ static void
 surface_accumulate_damage(struct weston_surface *surface,
 			  pixman_region32_t *opaque)
 {
-	if (pixman_region32_not_empty(&surface->damage) &&
-	    surface->buffer && wl_buffer_is_shm(surface->buffer))
+	if (surface->buffer && wl_buffer_is_shm(surface->buffer))
 		surface->compositor->renderer->flush_damage(surface);
 
 	if (surface->transform.enabled) {

@@ -410,6 +410,7 @@ struct weston_surface {
 	struct weston_compositor *compositor;
 	GLuint textures[3];
 	int num_textures;
+	pixman_region32_t texture_damage;
 	pixman_region32_t clip;
 	pixman_region32_t damage;
 	pixman_region32_t opaque;

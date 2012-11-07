@@ -775,6 +775,18 @@ gles2_renderer_flush_damage(struct weston_surface *surface)
 	int i, n;
 #endif
 
+	pixman_region32_union(&surface->texture_damage,
+			      &surface->texture_damage, &surface->damage);
+
+	/* Avoid upload, if the texture won't be used this time.
+	 * We still accumulate the damage in texture_damage.
+	 */
+	if (surface->plane != &surface->compositor->primary_plane)
+		return;
+
+	if (!pixman_region32_not_empty(&surface->texture_damage))
+		return;
+
 	glBindTexture(GL_TEXTURE_2D, surface->textures[0]);
 
 	if (!surface->compositor->has_unpack_subimage) {
@@ -783,14 +795,14 @@ gles2_renderer_flush_damage(struct weston_surface *surface)
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
 			     wl_shm_buffer_get_data(surface->buffer));
 
-		return;
+		goto done;
 	}
 
 #ifdef GL_UNPACK_ROW_LENGTH
 	/* Mesa does not define GL_EXT_unpack_subimage */
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, surface->pitch);
 	data = wl_shm_buffer_get_data(surface->buffer);
-	rectangles = pixman_region32_rectangles(&surface->damage, &n);
+	rectangles = pixman_region32_rectangles(&surface->texture_damage, &n);
 	for (i = 0; i < n; i++) {
 		glPixelStorei(GL_UNPACK_SKIP_PIXELS, rectangles[i].x1);
 		glPixelStorei(GL_UNPACK_SKIP_ROWS, rectangles[i].y1);
@@ -801,6 +813,10 @@ gles2_renderer_flush_damage(struct weston_surface *surface)
 				GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
 	}
 #endif
+
+done:
+	pixman_region32_fini(&surface->texture_damage);
+	pixman_region32_init(&surface->texture_damage);
 }
 
 static void
