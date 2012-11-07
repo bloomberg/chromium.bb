@@ -2613,6 +2613,9 @@ input_set_pointer_image_index(struct input *input, int index)
 	struct wl_cursor *cursor;
 	struct wl_cursor_image *image;
 
+	if (!input->pointer)
+		return;
+
 	cursor = input->display->cursors[input->current_cursor];
 	if (!cursor)
 		return;
@@ -2651,6 +2654,9 @@ pointer_surface_frame_callback(void *data, struct wl_callback *callback,
 		wl_callback_destroy(callback);
 		input->cursor_frame_cb = NULL;
 	}
+
+	if (!input->pointer)
+		return;
 
 	if (input->current_cursor == CURSOR_BLANK) {
 		wl_pointer_set_cursor(input->pointer,
