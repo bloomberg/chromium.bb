@@ -139,14 +139,13 @@ class ScopedMTPDeviceMapEntry
   ScopedMTPDeviceMapEntry(const FilePath::StringType& device_location,
                           const base::Closure& no_references_callback)
       : device_location_(device_location),
-        delegate_(new MTPDeviceDelegateImpl(device_location)),
         no_references_callback_(no_references_callback) {
-    DCHECK(delegate_);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         Bind(&MTPDeviceMapService::AddDelegate,
              base::Unretained(MTPDeviceMapService::GetInstance()),
-             device_location_, make_scoped_refptr(delegate_)));
+             device_location_,
+             make_scoped_refptr(new MTPDeviceDelegateImpl(device_location))));
   }
 
  private:
@@ -165,12 +164,6 @@ class ScopedMTPDeviceMapEntry
 
   // Store the MTP or PTP device location.
   const FilePath::StringType device_location_;
-
-  // Store a raw pointer of MTPDeviceDelegateImpl object.
-  // MTPDeviceDelegateImpl is ref-counted and owned by MTPDeviceMapService.
-  // This class tells MTPDeviceMapService to dispose of it when the last
-  // reference to |this| goes away.
-  MTPDeviceDelegateImpl* delegate_;
 
   // A callback to call when the last reference of this object goes away.
   base::Closure no_references_callback_;
