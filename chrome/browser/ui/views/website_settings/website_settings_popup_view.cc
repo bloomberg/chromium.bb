@@ -236,7 +236,7 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(views::View* anchor_view)
       new views::Label(l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE));
   label->SetMultiLine(true);
   label->SetAllowCharacterBreak(true);
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(label);
 
   views::BubbleDelegateView::CreateBubble(this);
@@ -720,7 +720,7 @@ void WebsiteSettingsPopupView::ResetConnectionSection(
     headline_label->SetFont(
         headline_label->font().DeriveFont(0, gfx::Font::BOLD));
     headline_label->SetMultiLine(true);
-    headline_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    headline_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     // Allow linebreaking in the middle of words if necessary, so that extremely
     // long hostnames (longer than one line) will still be completely shown.
     headline_label->SetAllowCharacterBreak(true);
@@ -730,7 +730,7 @@ void WebsiteSettingsPopupView::ResetConnectionSection(
 
   views::Label* description_label = new views::Label(text);
   description_label->SetMultiLine(true);
-  description_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   description_label->SetAllowCharacterBreak(true);
   content_layout->StartRow(1, 0);
   content_layout->AddView(description_label);

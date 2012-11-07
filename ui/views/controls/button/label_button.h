@@ -45,8 +45,8 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // Get or set the horizontal alignment used for the button.
   // The optional image will lead the text, unless the button is right-aligned.
-  Label::Alignment GetHorizontalAlignment() const;
-  void SetHorizontalAlignment(Label::Alignment alignment);
+  gfx::HorizontalAlignment GetHorizontalAlignment() const;
+  void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
 
   // Call set_min_size(gfx::Size()) to clear the monotonically increasing size.
   void set_min_size(const gfx::Size& min_size) { min_size_ = min_size; }

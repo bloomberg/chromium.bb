@@ -106,13 +106,13 @@ void PasswordChangedView::Init() {
   title_label_->SetFont(title_font);
   title_label_->SetText(
       l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_TITLE));
-  title_label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
+  title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   description_label_ = new Label();
   description_label_->SetText(
       l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_DESC));
   description_label_->SetMultiLine(true);
-  description_label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
+  description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   full_sync_radio_ = new RadioButton(
       l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_RESET), 0);
@@ -136,7 +136,7 @@ void PasswordChangedView::Init() {
     password_error_label_->SetText(
         l10n_util::GetStringUTF16(IDS_NETWORK_CONFIG_ERROR_INCORRECT_PASSWORD));
     password_error_label_->SetMultiLine(true);
-    password_error_label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
+    password_error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     password_error_label_->SetEnabledColor(SK_ColorRED);
   }
 

@@ -168,9 +168,9 @@ void MessageBoxView::Init(const InitParams& params) {
     // first character with strong directionality.
     base::i18n::TextDirection message_direction =
         base::i18n::GetFirstStrongCharacterDirection(params.message);
-    Label::Alignment alignment =
+    gfx::HorizontalAlignment alignment =
         (message_direction == base::i18n::RIGHT_TO_LEFT) ?
-        Label::ALIGN_RIGHT : Label::ALIGN_LEFT;
+        gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT;
     for (size_t i = 0; i < texts.size(); ++i) {
       Label* message_label = new Label(texts[i]);
       // Don't set multi-line to true if the text is empty, else the label will
@@ -185,7 +185,7 @@ void MessageBoxView::Init(const InitParams& params) {
     Label* message_label = new Label(params.message);
     message_label->SetMultiLine(true);
     message_label->SetAllowCharacterBreak(true);
-    message_label->SetHorizontalAlignment(Label::ALIGN_LEFT);
+    message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     message_labels_.push_back(message_label);
   }
 

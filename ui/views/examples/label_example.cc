@@ -51,15 +51,15 @@ void LabelExample::CreateExampleView(View* container) {
   const wchar_t hello_world_hebrew[] =
       L"\x5e9\x5dc\x5d5\x5dd \x5d4\x5e2\x5d5\x5dc\x5dd!";
   label = new Label(WideToUTF16(hello_world_hebrew));
-  label->SetHorizontalAlignment(Label::ALIGN_RIGHT);
+  label->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   container->AddChildView(label);
 
   label = new Label(WideToUTF16(L"A UTF16 surrogate pair: \x5d0\x5b0"));
-  label->SetHorizontalAlignment(Label::ALIGN_RIGHT);
+  label->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   container->AddChildView(label);
 
   label = new Label(ASCIIToUTF16("A left-aligned blue label."));
-  label->SetHorizontalAlignment(Label::ALIGN_LEFT);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetEnabledColor(SK_ColorBLUE);
   container->AddChildView(label);
 

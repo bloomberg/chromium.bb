@@ -152,7 +152,7 @@ class UserView : public views::View,
           bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_KIOSK_LABEL));
       label->set_border(views::Border::CreateEmptyBorder(
             0, 4, 0, 1));
-      label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       user_info_->AddChildView(label);
       return;
     }
@@ -168,12 +168,12 @@ class UserView : public views::View,
     ash::SystemTrayDelegate* tray =
         ash::Shell::GetInstance()->tray_delegate();
     username_ = new views::Label(tray->GetUserDisplayName());
-    username_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    username_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     user->AddChildView(username_);
 
     email_ = new views::Label(UTF8ToUTF16(tray->GetUserEmail()));
     email_->SetFont(username_->font().DeriveFont(-1));
-    email_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    email_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     email_->SetEnabled(false);
     user->AddChildView(email_);
 

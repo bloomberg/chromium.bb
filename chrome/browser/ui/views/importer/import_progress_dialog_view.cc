@@ -48,12 +48,12 @@ ImportProgressDialogView::ImportProgressDialogView(
       l10n_util::GetStringFUTF16(IDS_IMPORT_PROGRESS_INFO, importer_name);
   label_info_ = new views::Label(info_text);
   label_info_->SetMultiLine(true);
-  label_info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  label_bookmarks_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  label_searches_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  label_passwords_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  label_history_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  label_cookies_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label_info_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label_bookmarks_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label_searches_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label_passwords_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label_history_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label_cookies_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   importer_host_->SetObserver(this);
 

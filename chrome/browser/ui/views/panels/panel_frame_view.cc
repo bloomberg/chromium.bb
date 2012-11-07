@@ -231,7 +231,7 @@ void PanelFrameView::Init() {
   title_icon_->Update();
 
   title_label_ = new views::Label(panel_view_->panel()->GetWindowTitle());
-  title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetAutoColorReadabilityEnabled(false);
   AddChildView(title_label_);
 }

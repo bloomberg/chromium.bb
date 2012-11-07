@@ -38,7 +38,7 @@ LoginView::LoginView(const string16& explanation,
       message_label_(new views::Label(explanation)),
       login_model_(model) {
   message_label_->SetMultiLine(true);
-  message_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message_label_->SetAllowCharacterBreak(true);
 
   // Initialize the Grid Layout Manager used for this dialog box.

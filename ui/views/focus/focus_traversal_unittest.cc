@@ -456,7 +456,7 @@ void FocusTraversalTest::InitContentView() {
   y = 5;
   for (size_t i = 0; i < arraysize(kTitles); ++i) {
     Link* link = new Link(ASCIIToUTF16(kTitles[i]));
-    link->SetHorizontalAlignment(Label::ALIGN_LEFT);
+    link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     link->set_id(kIDs[i]);
     scroll_content->AddChildView(link);
     link->SetBounds(5, y, 300, 15);
@@ -538,7 +538,7 @@ void FocusTraversalTest::InitContentView() {
   button->set_id(kSearchButtonID);
 
   link = new Link(ASCIIToUTF16("Help"));
-  link->SetHorizontalAlignment(Label::ALIGN_LEFT);
+  link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   link->set_id(kHelpLinkID);
   contents->AddChildView(link);
   link->SetBounds(175, 10, 30, 20);

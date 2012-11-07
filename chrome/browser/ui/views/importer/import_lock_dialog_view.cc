@@ -46,7 +46,7 @@ ImportLockDialogView::ImportLockDialogView(ImporterHost* importer_host)
   description_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_TEXT));
   description_label_->SetMultiLine(true);
-  description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(description_label_);
 }
 

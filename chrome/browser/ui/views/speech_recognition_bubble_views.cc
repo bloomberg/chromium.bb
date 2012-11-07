@@ -143,14 +143,13 @@ void SpeechRecognitionBubbleView::Init() {
   heading_->set_border(views::Border::CreateEmptyBorder(
       kBubbleHeadingVertMargin, 0, kBubbleHeadingVertMargin, 0));
   heading_->SetFont(font);
-  heading_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
+  heading_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   heading_->SetText(
       l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_HEADING));
   AddChildView(heading_);
 
   message_ = new views::Label();
   message_->SetFont(font);
-  message_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
   message_->SetMultiLine(true);
   AddChildView(message_);
 

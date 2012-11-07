@@ -231,7 +231,7 @@ views::Label* CreateCandidateLabel(
   // Change the font size.
   candidate_label->SetFont(
       candidate_label->font().DeriveFont(kFontSizeDelta));
-  candidate_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  candidate_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   return candidate_label;
 }
@@ -247,7 +247,7 @@ views::Label* CreateAnnotationLabel(
   annotation_label->SetFont(
       annotation_label->font().DeriveFont(kFontSizeDelta));
   annotation_label->SetEnabledColor(kAnnotationColor);
-  annotation_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  annotation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   return annotation_label;
 }
@@ -416,7 +416,7 @@ class HidableArea : public views::View {
 class InformationTextArea : public HidableArea {
  public:
   // Specify the alignment and initialize the control.
-  InformationTextArea(views::Label::Alignment align, int minWidth)
+  InformationTextArea(gfx::HorizontalAlignment align, int minWidth)
       : minWidth_(minWidth) {
     label_ = new views::Label;
     label_->SetHorizontalAlignment(align);
@@ -800,12 +800,12 @@ void CandidateWindowView::Init() {
   set_border(views::Border::CreateSolidBorder(1, kFrameColor));
 
   // Create areas.
-  preedit_area_ = new InformationTextArea(views::Label::ALIGN_LEFT,
+  preedit_area_ = new InformationTextArea(gfx::ALIGN_LEFT,
                                           kMinPreeditAreaWidth);
-  header_area_ = new InformationTextArea(views::Label::ALIGN_LEFT, 0);
+  header_area_ = new InformationTextArea(gfx::ALIGN_LEFT, 0);
   candidate_area_ = new HidableArea;
   candidate_area_->SetContents(new views::View);
-  footer_area_ = new InformationTextArea(views::Label::ALIGN_RIGHT, 0);
+  footer_area_ = new InformationTextArea(gfx::ALIGN_RIGHT, 0);
 
   // Set the window layout of the view
   views::GridLayout* layout = new views::GridLayout(this);
@@ -1293,14 +1293,14 @@ void InfolistView::Init() {
   title_label_ = new views::Label;
   title_label_->SetPosition(gfx::Point(0, 0));
   title_label_->SetFont(parent_infolist_window_->GetTitleFont());
-  title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->set_border(
       views::Border::CreateEmptyBorder(4, 7, 2, 4));
 
   description_label_ = new views::Label;
   description_label_->SetPosition(gfx::Point(0, 0));
   description_label_->SetFont(parent_infolist_window_->GetDescriptionFont());
-  description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   description_label_->SetMultiLine(true);
   description_label_->set_border(
       views::Border::CreateEmptyBorder(2, 17, 4, 4));
@@ -1394,7 +1394,7 @@ void InfolistWindowView::Init() {
 
   views::Label* caption_label = new views::Label;
   caption_label->SetFont(caption_label->font().DeriveFont(kFontSizeDelta - 2));
-  caption_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  caption_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   caption_label->SetText(
       l10n_util::GetStringUTF16(IDS_INPUT_METHOD_INFOLIST_WINDOW_TITLE));
   caption_label->set_border(

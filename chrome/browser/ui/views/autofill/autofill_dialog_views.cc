@@ -25,7 +25,7 @@ namespace {
 // Returns a label that describes a details section.
 views::Label* CreateDetailsSectionLabel(const string16& text) {
   views::Label* label = new views::Label(text);
-  label->SetHorizontalAlignment(views::Label::ALIGN_RIGHT);
+  label->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   label->SetFont(label->font().DeriveFont(0, gfx::Font::BOLD));
   // TODO(estade): this should be made to match the native textfield top
   // inset. It's hard to get at, so for now it's hard-coded.
@@ -141,7 +141,7 @@ void AutofillDialogViews::InitChildViews() {
 
   layout->StartRow(0, single_column_set);
   views::Label* intro = new views::Label(controller_->IntroText());
-  intro->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  intro->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->AddView(intro);
 
   layout->StartRowWithPadding(0, single_column_set,

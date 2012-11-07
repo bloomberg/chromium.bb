@@ -162,7 +162,7 @@ class DriveDetailedView : public TrayDetailsView,
           WideToUTF16(file_path.BaseName().value());
 #endif
       views::Label* label = new views::Label(file_label);
-      label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       label_container_->AddChildView(label);
       // Add progress bar.
       progress_bar_ = new OperationProgressBar();

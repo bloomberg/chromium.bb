@@ -695,7 +695,6 @@ BubbleContentsView::BubbleContentsView(
 
   label_view_ = new views::Label();
   SetSnapType(SNAP_NONE);
-  label_view_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
   label_view_->SetBackgroundColor(kBubbleBackgroundColor);
   label_view_->SetEnabledColor(kBubbleTextColor);
   label_view_->set_border(views::Border::CreateEmptyBorder(

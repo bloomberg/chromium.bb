@@ -101,7 +101,7 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
         root_window, ash::internal::kShellWindowId_SettingBubbleContainer));
   }
   label_ = new views::Label;
-  label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_->SetEnabledColor(kTooltipTextColor);
   label_->SetElideBehavior(views::Label::ELIDE_AT_END);
   AddChildView(label_);

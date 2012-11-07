@@ -154,8 +154,9 @@ void ButtonExample::LabelButtonPressed(const ui::Event& event) {
           label_button_->GetImage(CustomButton::BS_NORMAL).isNull() ?
           *icon_ : gfx::ImageSkia());
     } else {
-      label_button_->SetHorizontalAlignment(static_cast<Label::Alignment>(
-          (label_button_->GetHorizontalAlignment() + 1) % 3));
+      label_button_->SetHorizontalAlignment(
+          static_cast<gfx::HorizontalAlignment>(
+              (label_button_->GetHorizontalAlignment() + 1) % 3));
     }
   } else if (event.IsShiftDown()) {
     if (event.IsAltDown()) {

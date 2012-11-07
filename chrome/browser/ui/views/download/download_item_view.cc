@@ -1073,7 +1073,7 @@ void DownloadItemView::ShowWarningDialog() {
   string16 dangerous_label = model_->GetWarningText(font_, kTextWidth);
   dangerous_download_label_ = new views::Label(dangerous_label);
   dangerous_download_label_->SetMultiLine(true);
-  dangerous_download_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  dangerous_download_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   dangerous_download_label_->SetAutoColorReadabilityEnabled(false);
   AddChildView(dangerous_download_label_);
   SizeLabelToMinWidth();

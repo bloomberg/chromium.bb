@@ -123,7 +123,7 @@ void SSLClientCertificateSelector::Init() {
       ASCIIToUTF16(cert_request_info()->host_and_port));
   views::Label* label = new views::Label(text);
   label->SetMultiLine(true);
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetAllowCharacterBreak(true);
   layout->AddView(label);
 

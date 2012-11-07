@@ -121,7 +121,7 @@ void IdleLogoutDialogView::InitAndShow() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   restart_label_ = new views::Label();
-  restart_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  restart_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   restart_label_->SetMultiLine(true);
   restart_label_->SetFont(rb.GetFont(ui::ResourceBundle::BaseFont));
 

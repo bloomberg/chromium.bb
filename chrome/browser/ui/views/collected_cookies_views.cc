@@ -402,7 +402,7 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
               IDS_COLLECTED_COOKIES_BLOCKED_THIRD_PARTY_BLOCKING_ENABLED :
               IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL));
   blocked_label_->SetMultiLine(true);
-  blocked_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  blocked_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   const LocalSharedObjectsContainer& blocked_data =
       content_settings->blocked_local_shared_objects();
   blocked_cookies_tree_model_ = blocked_data.CreateCookiesTreeModel();

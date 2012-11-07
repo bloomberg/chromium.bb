@@ -380,7 +380,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   source_label_->SetFont(rb.GetFont(ui::ResourceBundle::SmallFont));
   source_label_->SetBackgroundColor(kControlBarBackgroundColor);
   source_label_->SetEnabledColor(kControlBarTextColor);
-  source_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  source_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   source_label_->SetElideBehavior(views::Label::ELIDE_AT_END);
   source_label_->SetBoundsRect(GetLabelBounds());
 

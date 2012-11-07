@@ -178,7 +178,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   label->SetFont(rb.GetFont(ui::ResourceBundle::MediumBoldFont));
   label->SetMultiLine(true);
   label->SizeToFit(200);
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->AddView(label);
   // The close button is custom.
   views::ImageButton* close_button = new views::ImageButton(this);

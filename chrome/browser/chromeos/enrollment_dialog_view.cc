@@ -157,7 +157,7 @@ void EnrollmentDialogView::InitDialog() {
                                  UTF8ToUTF16(network_name_)));
   label->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
       ui::ResourceBundle::BaseFont));
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetMultiLine(true);
   label->SetAllowCharacterBreak(true);
 

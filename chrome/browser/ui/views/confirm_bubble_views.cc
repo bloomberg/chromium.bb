@@ -101,7 +101,7 @@ void ConfirmBubbleViews::Init() {
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
                 views::GridLayout::FIXED, message_width, false);
   message_label->SetBounds(0, 0, message_width, 0);
-  message_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message_label->SetMultiLine(true);
   layout->StartRow(0, 1);
   layout->AddView(message_label);

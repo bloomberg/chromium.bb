@@ -142,7 +142,7 @@ class InstalledBubbleContent : public views::View,
         IDS_EXTENSION_INSTALLED_HEADING, extension_name));
     heading_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
     heading_->SetMultiLine(true);
-    heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    heading_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     AddChildView(heading_);
 
     bool has_keybinding = false;
@@ -169,7 +169,7 @@ class InstalledBubbleContent : public views::View,
 
         info_->SetFont(font);
         info_->SetMultiLine(true);
-        info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+        info_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         AddChildView(info_);
 
         manage_shortcut_ = new views::Link(
@@ -201,7 +201,7 @@ class InstalledBubbleContent : public views::View,
 
         info_->SetFont(font);
         info_->SetMultiLine(true);
-        info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+        info_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         AddChildView(info_);
         break;
       }
@@ -211,7 +211,7 @@ class InstalledBubbleContent : public views::View,
             UTF8ToUTF16(extension->omnibox_keyword())));
         info_->SetFont(font);
         info_->SetMultiLine(true);
-        info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+        info_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         AddChildView(info_);
         break;
       }
@@ -222,7 +222,7 @@ class InstalledBubbleContent : public views::View,
         manage_ = link;
         manage_->SetFont(font);
         manage_->SetMultiLine(true);
-        manage_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+        manage_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         AddChildView(manage_);
         break;
       }
@@ -238,7 +238,7 @@ class InstalledBubbleContent : public views::View,
           l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO));
       manage_->SetFont(font);
       manage_->SetMultiLine(true);
-      manage_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      manage_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       AddChildView(manage_);
     }
 

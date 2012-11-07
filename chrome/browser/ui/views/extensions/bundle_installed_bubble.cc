@@ -115,7 +115,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
           l10n_util::GetStringFUTF16(
               IDS_EXTENSION_PERMISSION_LINE, extension_name));
       extension_label->SetMultiLine(true);
-      extension_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      extension_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       extension_label->SizeToFit(kLeftColumnWidth);
       layout->AddView(extension_label);
     }
@@ -141,7 +141,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
 
     views::Label* heading_label = new views::Label(heading, bold_font);
     heading_label->SetMultiLine(true);
-    heading_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    heading_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     heading_label->SizeToFit(kLeftColumnWidth);
     layout->AddView(heading_label);
   }

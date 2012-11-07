@@ -63,7 +63,7 @@ string16 FormatDayOfWeek(const base::Time& time) {
 
 views::Label* CreateLabel() {
   views::Label* label = new views::Label;
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
   return label;
 }

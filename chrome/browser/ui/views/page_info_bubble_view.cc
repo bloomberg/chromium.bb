@@ -345,7 +345,7 @@ Section::Section(PageInfoBubbleView* owner,
   description_label_->set_background(
       views::Background::CreateSolidBackground(SK_ColorWHITE));
   description_label_->SetMultiLine(true);
-  description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   // Allow linebreaking in the middle of words if necessary, so that extremely
   // long hostnames (longer than one line) will still be completely shown.
   description_label_->SetAllowCharacterBreak(true);

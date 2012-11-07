@@ -610,7 +610,7 @@ void LocationBarView::SetInstantSuggestion(const string16& text) {
   if (!text.empty()) {
     if (!suggested_text_view_) {
       suggested_text_view_ = new views::Label();
-      suggested_text_view_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      suggested_text_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       suggested_text_view_->SetAutoColorReadabilityEnabled(false);
       suggested_text_view_->SetEnabledColor(LocationBarView::GetColor(
           ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT));

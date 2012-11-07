@@ -87,7 +87,7 @@ void NetworkProfileBubbleView::Init() {
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   title->SetMultiLine(true);
   title->SizeToFit(kNotificationBubbleWidth);
-  title->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->AddView(title);
 
   views::ColumnSet* bottom_columns = layout->AddColumnSet(1);

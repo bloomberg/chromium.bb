@@ -12,6 +12,7 @@
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -25,10 +26,6 @@ namespace views {
 /////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT Label : public View {
  public:
-  enum Alignment { ALIGN_LEFT = 0,
-                   ALIGN_CENTER,
-                   ALIGN_RIGHT };
-
   // The following enum is used to indicate whether using the Chrome UI's
   // directionality as the label's directionality, or auto-detecting the label's
   // directionality.
@@ -97,9 +94,11 @@ class VIEWS_EXPORT Label : public View {
   // should be reset to AUTO_DETECT_DIRECTIONALITY before the horizontal
   // alignment is set. Otherwise, the label's alignment specified as a parameter
   // will be flipped in RTL locales.
-  void SetHorizontalAlignment(Alignment alignment);
+  void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
 
-  Alignment horizontal_alignment() const { return horiz_alignment_; }
+  gfx::HorizontalAlignment horizontal_alignment() const {
+    return horizontal_alignment_;
+  }
 
   // Sets the directionality mode. The directionality mode is initialized to
   // USE_UI_DIRECTIONALITY when the label is constructed. USE_UI_DIRECTIONALITY
@@ -227,7 +226,7 @@ class VIEWS_EXPORT Label : public View {
   bool is_multi_line_;
   bool allow_character_break_;
   ElideBehavior elide_behavior_;
-  Alignment horiz_alignment_;
+  gfx::HorizontalAlignment horizontal_alignment_;
   string16 tooltip_text_;
   // Whether to collapse the label when it's not visible.
   bool collapse_when_hidden_;

@@ -77,14 +77,14 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   string16 title_string(error_->GetBubbleViewTitle());
   scoped_ptr<views::Label> title_label(new views::Label(title_string));
   title_label->SetMultiLine(true);
-  title_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label->SetFont(title_label->font().DeriveFont(1));
 
   string16 message_string(error_->GetBubbleViewMessage());
   views::Label* message_label = new views::Label(message_string);
   message_label->SetMultiLine(true);
   message_label->SizeToFit(kMaxBubbleViewWidth);
-  message_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   string16 accept_string(error_->GetBubbleViewAcceptButtonLabel());
   scoped_ptr<views::TextButton> accept_button(

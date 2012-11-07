@@ -215,7 +215,7 @@ void HoverHighlightView::AddLabel(const string16& text,
     left_margin = margin;
   text_label_->set_border(
       views::Border::CreateEmptyBorder(5, left_margin, 5, right_margin));
-  text_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_label_->SetFont(text_label_->font().DeriveFont(0, style));
   text_label_->SetDisabledColor(SkColorSetARGB(127, 0, 0, 0));
   if (text_default_color_)

@@ -92,7 +92,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
     views::Label* header = new views::Label(controller_->GetHeader());
     header->SetFont(header->font().DeriveFont(kHeadingFontSizeDelta,
                                               gfx::Font::BOLD));
-    header->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->StartRow(0, column_set_id);
     layout->AddView(header);
   }
@@ -100,7 +100,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
   // Message text.
   views::Label* subtext = new views::Label(controller_->GetSubtext());
   subtext->SetMultiLine(true);
-  subtext->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  subtext->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->StartRowWithPadding(0, column_set_id,
                               0, views::kRelatedControlVerticalSpacing);
   layout->AddView(subtext);

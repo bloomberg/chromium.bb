@@ -517,7 +517,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     zoom_label_ = new Label(
         l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, 100));
     zoom_label_->SetAutoColorReadabilityEnabled(false);
-    zoom_label_->SetHorizontalAlignment(Label::ALIGN_RIGHT);
+    zoom_label_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
 
     MenuButtonBackground* center_bg = new MenuButtonBackground(
         menu_->use_new_menu() && menu_->supports_new_separators_ ?

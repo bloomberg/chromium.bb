@@ -35,7 +35,7 @@ TEST_F(LabelButtonTest, Init) {
   EXPECT_TRUE(button.GetImage(CustomButton::BS_DISABLED).isNull());
 
   EXPECT_EQ(text, button.GetText());
-  EXPECT_EQ(Label::ALIGN_LEFT, button.GetHorizontalAlignment());
+  EXPECT_EQ(gfx::ALIGN_LEFT, button.GetHorizontalAlignment());
   EXPECT_FALSE(button.default_button());
   EXPECT_FALSE(button.native_theme());
   EXPECT_EQ(CustomButton::BS_NORMAL, button.state());
@@ -135,15 +135,15 @@ TEST_F(LabelButtonTest, LabelAndImage) {
   // (A proper parent view or layout manager would Layout on its invalidations).
   button.SetSize(button.GetPreferredSize());
   button.Layout();
-  EXPECT_EQ(Label::ALIGN_LEFT, button.GetHorizontalAlignment());
+  EXPECT_EQ(gfx::ALIGN_LEFT, button.GetHorizontalAlignment());
   EXPECT_LT(button.image_->bounds().right(), button.label_->bounds().x());
-  button.SetHorizontalAlignment(Label::ALIGN_CENTER);
+  button.SetHorizontalAlignment(gfx::ALIGN_CENTER);
   button.Layout();
-  EXPECT_EQ(Label::ALIGN_CENTER, button.GetHorizontalAlignment());
+  EXPECT_EQ(gfx::ALIGN_CENTER, button.GetHorizontalAlignment());
   EXPECT_LT(button.image_->bounds().right(), button.label_->bounds().x());
-  button.SetHorizontalAlignment(Label::ALIGN_RIGHT);
+  button.SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   button.Layout();
-  EXPECT_EQ(Label::ALIGN_RIGHT, button.GetHorizontalAlignment());
+  EXPECT_EQ(gfx::ALIGN_RIGHT, button.GetHorizontalAlignment());
   EXPECT_LT(button.label_->bounds().right(), button.image_->bounds().x());
 
   button.SetText(string16());

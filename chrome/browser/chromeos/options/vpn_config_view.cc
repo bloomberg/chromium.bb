@@ -549,7 +549,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
     service_text_ = NULL;
   } else {
     service_text_ = new views::Label(ASCIIToUTF16(vpn->name()));
-    service_text_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    service_text_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(service_text_);
     service_textfield_ = NULL;
   }
@@ -570,7 +570,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   } else {
     provider_type_text_label_ =
         new views::Label(ProviderTypeToString(provider_type_));
-    provider_type_text_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    provider_type_text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(provider_type_text_label_);
     provider_type_combobox_ = NULL;
   }
@@ -713,7 +713,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   layout->StartRow(0, column_view_set_id);
   layout->SkipColumns(1);
   error_label_ = new views::Label();
-  error_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   error_label_->SetEnabledColor(SK_ColorRED);
   layout->AddView(error_label_);
 

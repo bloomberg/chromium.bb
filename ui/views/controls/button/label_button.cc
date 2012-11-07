@@ -44,7 +44,7 @@ LabelButton::LabelButton(ButtonListener* listener, const string16& text)
 
   AddChildView(label_);
   label_->SetAutoColorReadabilityEnabled(false);
-  label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
+  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   // Initialize the colors, border, and layout for a Views-themed button.
   SetNativeTheme(false);
@@ -95,11 +95,11 @@ void LabelButton::SetFont(const gfx::Font& font) {
   label_->SetFont(font);
 }
 
-Label::Alignment LabelButton::GetHorizontalAlignment() const {
+gfx::HorizontalAlignment LabelButton::GetHorizontalAlignment() const {
   return label_->horizontal_alignment();
 }
 
-void LabelButton::SetHorizontalAlignment(Label::Alignment alignment) {
+void LabelButton::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
   label_->SetHorizontalAlignment(alignment);
   InvalidateLayout();
 }
@@ -183,7 +183,7 @@ void LabelButton::Layout() {
   gfx::Size label_size(child_area.size());
   if (!image_size.IsEmpty() && !label_size.IsEmpty()) {
     label_size.set_width(child_area.width() - image_size.width() - kSpacing);
-    if (GetHorizontalAlignment() == Label::ALIGN_CENTER) {
+    if (GetHorizontalAlignment() == gfx::ALIGN_CENTER) {
       label_size.set_width(std::min(label_size.width(),
                                     label_->GetPreferredSize().width()));
     }
@@ -191,16 +191,16 @@ void LabelButton::Layout() {
 
   gfx::Point image_origin(child_area.origin());
   image_origin.Offset(0, (child_area.height() - image_size.height()) / 2);
-  if (GetHorizontalAlignment() == Label::ALIGN_CENTER) {
+  if (GetHorizontalAlignment() == gfx::ALIGN_CENTER) {
     const int total_width = image_size.width() + label_size.width() +
         ((image_size.width() > 0 && label_size.width() > 0) ? kSpacing : 0);
     image_origin.Offset((child_area.width() - total_width) / 2, 0);
-  } else if (GetHorizontalAlignment() == Label::ALIGN_RIGHT) {
+  } else if (GetHorizontalAlignment() == gfx::ALIGN_RIGHT) {
     image_origin.Offset(child_area.width() - image_size.width(), 0);
   }
 
   gfx::Point label_origin(child_area.origin());
-  if (!image_size.IsEmpty() && GetHorizontalAlignment() != Label::ALIGN_RIGHT)
+  if (!image_size.IsEmpty() && GetHorizontalAlignment() != gfx::ALIGN_RIGHT)
     label_origin.set_x(image_origin.x() + image_size.width() + kSpacing);
 
   image_->SetBoundsRect(gfx::Rect(image_origin, image_size));

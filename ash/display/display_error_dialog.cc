@@ -63,7 +63,7 @@ DisplayErrorDialog::DisplayErrorDialog() {
   AddChildView(label_);
 
   label_->SetMultiLine(true);
-  label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_->set_border(views::Border::CreateEmptyBorder(
       kDialogMessageMarginWidthPixel,
       kDialogMessageMarginWidthPixel,

@@ -231,7 +231,7 @@ void ContentSettingBubbleContents::Init() {
     layout->StartRow(0, single_column_set_id);
     views::Label* section_title = new views::Label(UTF8ToUTF16(i->title));
     section_title->SetMultiLine(true);
-    section_title->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    section_title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(section_title, 1, 1, GridLayout::FILL, GridLayout::LEADING);
     for (std::set<std::string>::const_iterator j = i->hosts.begin();
          j != i->hosts.end(); ++j) {

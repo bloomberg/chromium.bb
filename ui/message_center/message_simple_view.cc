@@ -39,10 +39,10 @@ void MessageSimpleView::SetUpView() {
   icon_->SetImage(notification_.image);
 
   views::Label* title = new views::Label(notification_.title);
-  title->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetFont(title->font().DeriveFont(0, gfx::Font::BOLD));
   views::Label* message = new views::Label(notification_.message);
-  message->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetMultiLine(true);
 
   close_button_ = new views::ImageButton(this);

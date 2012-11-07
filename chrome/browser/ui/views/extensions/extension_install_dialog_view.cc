@@ -287,7 +287,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   heading->SetFont(heading->font().DeriveFont(kHeadingFontSizeDelta,
                                               gfx::Font::BOLD));
   heading->SetMultiLine(true);
-  heading->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  heading->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   heading->SizeToFit(left_column_width);
   layout->AddView(heading);
 
@@ -359,7 +359,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       views::Label* extension_label = new views::Label(
           PrepareForDisplay(extension_name, true));
       extension_label->SetMultiLine(true);
-      extension_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      extension_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       extension_label->SizeToFit(left_column_width);
       layout->AddView(extension_label);
     }
@@ -389,7 +389,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       permissions_header = new views::Label(prompt.GetPermissionsHeading());
     }
     permissions_header->SetMultiLine(true);
-    permissions_header->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    permissions_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     permissions_header->SizeToFit(left_column_width);
     layout->AddView(permissions_header);
 
@@ -399,7 +399,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       views::Label* permission_label = new views::Label(PrepareForDisplay(
           prompt.GetPermission(i), true));
       permission_label->SetMultiLine(true);
-      permission_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       permission_label->SizeToFit(left_column_width);
       layout->AddView(permission_label);
     }
@@ -424,7 +424,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
                                 0, views::kRelatedControlVerticalSpacing);
     views::Label* oauth_header = new views::Label(prompt.GetOAuthHeading());
     oauth_header->SetMultiLine(true);
-    oauth_header->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    oauth_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     oauth_header->SizeToFit(left_column_width);
     layout->AddView(oauth_header);
 
@@ -526,7 +526,7 @@ void IssueAdviceView::DetailsView::AddDetail(const string16& detail) {
   views::Label* detail_label =
       new views::Label(PrepareForDisplay(detail, true));
   detail_label->SetMultiLine(true);
-  detail_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  detail_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout_->AddView(detail_label);
 }
 
@@ -587,7 +587,7 @@ IssueAdviceView::IssueAdviceView(ExtensionInstallDialogView* owner,
       new views::Label(PrepareForDisplay(issue_advice.description,
                                          !details_view_));
   description_label->SetMultiLine(true);
-  description_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   description_label->SizeToFit(horizontal_space);
   layout->AddView(description_label);
 

@@ -38,7 +38,7 @@ class CapsLockDefaultView : public ActionableView {
         ToImageSkia());
     AddChildView(image);
 
-    text_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     AddChildView(text_label_);
 
     shortcut_label_->SetEnabled(false);
@@ -147,7 +147,7 @@ views::View* TrayCapsLock::CreateDetailedView(user::LoginStatus status) {
       IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH;
   views::Label* label = new views::Label(bundle.GetLocalizedString(string_id));
   label->SetMultiLine(true);
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   detailed_->AddChildView(label);
 
   return detailed_;

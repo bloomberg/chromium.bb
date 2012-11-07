@@ -918,7 +918,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     layout->AddView(ssid_textfield_);
   } else {
     views::Label* label = new views::Label(UTF8ToUTF16(wifi->name()));
-    label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(label);
   }
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -1125,7 +1125,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
   layout->StartRow(0, column_view_set_id);
   layout->SkipColumns(1);
   error_label_ = new views::Label();
-  error_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   error_label_->SetEnabledColor(SK_ColorRED);
   layout->AddView(error_label_);
 

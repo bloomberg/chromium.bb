@@ -92,10 +92,10 @@ void PowerStatusView::LayoutDefaultView() {
 void PowerStatusView::LayoutNotificationView() {
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
-  status_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  status_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(status_label_);
 
-  time_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  time_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(time_label_);
 }
 

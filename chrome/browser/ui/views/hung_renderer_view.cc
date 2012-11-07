@@ -368,7 +368,7 @@ void HungRendererDialogView::Init() {
   views::Label* info_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER));
   info_label->SetMultiLine(true);
-  info_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  info_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   hung_pages_table_model_.reset(new HungPagesTableModel(this));
   std::vector<ui::TableColumn> columns;

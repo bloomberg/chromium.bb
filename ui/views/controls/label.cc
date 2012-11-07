@@ -101,15 +101,17 @@ void Label::ClearEmbellishing() {
   has_shadow_ = false;
 }
 
-void Label::SetHorizontalAlignment(Alignment alignment) {
+void Label::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
   // If the View's UI layout is right-to-left and directionality_mode_ is
   // USE_UI_DIRECTIONALITY, we need to flip the alignment so that the alignment
   // settings take into account the text directionality.
   if (base::i18n::IsRTL() && (directionality_mode_ == USE_UI_DIRECTIONALITY) &&
-      (alignment != ALIGN_CENTER))
-    alignment = (alignment == ALIGN_LEFT) ? ALIGN_RIGHT : ALIGN_LEFT;
-  if (horiz_alignment_ != alignment) {
-    horiz_alignment_ = alignment;
+      (alignment != gfx::ALIGN_CENTER)) {
+    alignment = (alignment == gfx::ALIGN_LEFT) ?
+        gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT;
+  }
+  if (horizontal_alignment_ != alignment) {
+    horizontal_alignment_ = alignment;
     SchedulePaint();
   }
 }
@@ -321,7 +323,7 @@ void Label::Init(const string16& text, const gfx::Font& font) {
       ui::NativeTheme::kColorId_LabelBackgroundColor);
   auto_color_readability_ = true;
   RecalculateColors();
-  horiz_alignment_ = ALIGN_CENTER;
+  horizontal_alignment_ = gfx::ALIGN_CENTER;
   is_multi_line_ = false;
   allow_character_break_ = false;
   elide_behavior_ = NO_ELIDE;
@@ -354,10 +356,10 @@ gfx::Rect Label::GetTextBounds() const {
 
   gfx::Insets insets = GetInsets();
   gfx::Point text_origin(insets.left(), insets.top());
-  switch (horiz_alignment_) {
-    case ALIGN_LEFT:
+  switch (horizontal_alignment_) {
+    case gfx::ALIGN_LEFT:
       break;
-    case ALIGN_CENTER:
+    case gfx::ALIGN_CENTER:
       // We put any extra margin pixel on the left rather than the right.  We
       // used to do this because measurement on Windows used
       // GetTextExtentPoint32(), which could report a value one too large on the
@@ -365,7 +367,7 @@ gfx::Rect Label::GetTextBounds() const {
       text_origin.Offset((available_rect.width() + 1 - text_size.width()) / 2,
                          0);
       break;
-    case ALIGN_RIGHT:
+    case gfx::ALIGN_RIGHT:
       text_origin.set_x(available_rect.right() - text_size.width());
       break;
     default:
@@ -407,14 +409,14 @@ int Label::ComputeDrawStringFlags() const {
 #endif
   if (allow_character_break_)
     flags |= gfx::Canvas::CHARACTER_BREAK;
-  switch (horiz_alignment_) {
-    case ALIGN_LEFT:
+  switch (horizontal_alignment_) {
+    case gfx::ALIGN_LEFT:
       flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
       break;
-    case ALIGN_CENTER:
+    case gfx::ALIGN_CENTER:
       flags |= gfx::Canvas::TEXT_ALIGN_CENTER;
       break;
-    case ALIGN_RIGHT:
+    case gfx::ALIGN_RIGHT:
       flags |= gfx::Canvas::TEXT_ALIGN_RIGHT;
       break;
   }

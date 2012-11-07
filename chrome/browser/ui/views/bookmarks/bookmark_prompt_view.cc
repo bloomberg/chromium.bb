@@ -60,7 +60,7 @@ void BookmarkPromptView::Init() {
 
   dismiss_link_ = new views::Link(l10n_util::GetStringUTF16(
       IDS_BOOKMARK_PROMPT_DISMISS));
-  dismiss_link_->SetHorizontalAlignment(views::Label::ALIGN_RIGHT);
+  dismiss_link_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   dismiss_link_->set_listener(this);
   AddChildView(dismiss_link_);
 }

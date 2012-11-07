@@ -62,7 +62,7 @@ class CameraImageView : public views::ImageView {
 
     message_ = new views::Label();
     message_->SetMultiLine(true);
-    message_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    message_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     message_->SetVisible(false);
     CorrectLabelFontSize(message_);
     AddChildView(message_);
@@ -162,7 +162,7 @@ void TakePhotoView::Init(int image_width, int image_height) {
   if (show_title_) {
     title_label_ = new views::Label(
         l10n_util::GetStringUTF16(IDS_USER_IMAGE_SCREEN_TITLE));
-    title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     title_label_->SetMultiLine(true);
     CorrectLabelFontSize(title_label_);
   }

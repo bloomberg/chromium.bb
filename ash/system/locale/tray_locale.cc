@@ -42,7 +42,7 @@ class LocaleMessageView : public views::View,
     views::Label* message = new views::Label(
         l10n_util::GetStringFUTF16(
             IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE, from, to));
-    message->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     message->SetMultiLine(true);
     message->SizeToFit(kTrayNotificationContentsWidth);
     AddChildView(message);
@@ -51,7 +51,7 @@ class LocaleMessageView : public views::View,
         l10n_util::GetStringFUTF16(
             IDS_ASH_STATUS_TRAY_LOCALE_REVERT_MESSAGE, from));
     revert->set_listener(this);
-    revert->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    revert->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     revert->SetMultiLine(true);
     revert->SizeToFit(kTrayNotificationContentsWidth);
     AddChildView(revert);

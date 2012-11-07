@@ -90,7 +90,6 @@ FindBarView::FindBarView(FindBarHost* host)
 
   match_count_text_ = new views::Label();
   match_count_text_->SetFont(rb.GetFont(ui::ResourceBundle::BaseFont));
-  match_count_text_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
   AddChildView(match_count_text_);
 
   // Create a focus forwarder view which sends focus to find_text_.

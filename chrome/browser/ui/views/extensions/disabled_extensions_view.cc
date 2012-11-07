@@ -228,7 +228,7 @@ void DisabledExtensionsView::Init() {
 
   views::Label* message = new views::Label();
   message->SetMultiLine(true);
-  message->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetText(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SIDELOAD_WIPEOUT_WHAT_HAPPENED));
   message->SizeToFit(views::Widget::GetLocalizedContentsWidth(
@@ -248,7 +248,7 @@ void DisabledExtensionsView::Init() {
       0, kHeadlineMessagePadding);
   views::Label* extensions = new views::Label();
   extensions->SetMultiLine(true);
-  extensions->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  extensions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   extensions->SetFont(extensions->font().DeriveFont(0, gfx::Font::ITALIC));
 
   std::vector<string16> extension_list;
@@ -278,7 +278,7 @@ void DisabledExtensionsView::Init() {
       0, text_column_set_id, 0, kHeadlineMessagePadding);
   views::Label* recourse = new views::Label();
   recourse->SetMultiLine(true);
-  recourse->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  recourse->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   recourse->SetText(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SIDELOAD_WIPEOUT_RECOURSE));
   recourse->SizeToFit(views::Widget::GetLocalizedContentsWidth(

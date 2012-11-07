@@ -209,7 +209,6 @@ class MessageCenterContentsView : public views::View {
       views::Label* label = new views::Label(l10n_util::GetStringUTF16(
           IDS_MESSAGE_CENTER_NO_MESSAGES));
       label->SetFont(label->font().DeriveFont(1));
-      label->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
       label->SetEnabledColor(SK_ColorGRAY);
       scroll_content_->AddChildView(label);
       button_view_->SetCloseAllVisible(false);

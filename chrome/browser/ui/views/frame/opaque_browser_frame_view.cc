@@ -177,7 +177,7 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   // TODO(msw): Use a transparent background color as a workaround to use the
   // gfx::Canvas::NO_SUBPIXEL_RENDERING flag and avoid some visual artifacts.
   window_title_->SetBackgroundColor(0x00000000);
-  window_title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   window_title_->SetElideBehavior(views::Label::ELIDE_AT_END);
   AddChildView(window_title_);
 

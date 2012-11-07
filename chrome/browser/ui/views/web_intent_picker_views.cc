@@ -116,7 +116,7 @@ views::ImageButton* CreateCloseButton(views::ButtonListener* listener) {
 views::Label* CreateLabel() {
   views::Label* label = new views::Label();
   label->SetEnabledColor(kEnabledLabelColor);
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return label;
 }
 
@@ -139,7 +139,7 @@ views::Link* CreateLink() {
   views::Link* link = new views::Link();
   link->SetEnabledColor(kEnabledLinkColor);
   link->SetDisabledColor(kDisabledLinkColor);
-  link->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return link;
 }
 
@@ -504,7 +504,7 @@ WaitingView::WaitingView(views::ButtonListener* listener,
                             kMessageBuiltinTopPadding);
   layout->StartRow(0, CONTENT_ROW);
   views::Label* label = CreateLabel();
-  label->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
+  label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   label->SetText(l10n_util::GetStringUTF16(IDS_INTENT_PICKER_WAIT_FOR_CWS));
   layout->AddView(label);
 

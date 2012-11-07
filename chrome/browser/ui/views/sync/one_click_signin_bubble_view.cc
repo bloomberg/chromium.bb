@@ -104,7 +104,7 @@ void OneClickSigninBubbleView::Init() {
   views::Label* label = new views::Label(
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE));
   label->SetMultiLine(true);
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SizeToFit(kMinimumLabelWidth);
 
   layout->StartRow(0, kColumnSetFillAlign);
@@ -116,7 +116,7 @@ void OneClickSigninBubbleView::Init() {
   advanced_link_= new views::Link(
       l10n_util::GetStringUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED));
   advanced_link_->set_listener(this);
-  advanced_link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  advanced_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   // Add controls at the bottom.
   ok_button_ = new views::NativeTextButton(this);

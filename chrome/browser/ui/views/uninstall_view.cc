@@ -53,7 +53,7 @@ void UninstallView::SetupControls() {
   layout->StartRow(0, column_set_id);
   confirm_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_UNINSTALL_VERIFY));
-  confirm_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  confirm_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->AddView(confirm_label_);
 
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);

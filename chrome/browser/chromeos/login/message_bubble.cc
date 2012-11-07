@@ -75,7 +75,7 @@ void MessageBubble::Init() {
 
   views::Label* label = new views::Label(text_);
   label->SetMultiLine(true);
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SizeToFit(kMaxLabelWidth);
   layout->AddView(label);
 
