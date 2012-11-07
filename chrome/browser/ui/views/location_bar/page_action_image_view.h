@@ -33,7 +33,6 @@ class PageActionImageView : public views::ImageView,
                             public ExtensionContextMenuModel::PopupDelegate,
                             public views::WidgetObserver,
                             public views::ContextMenuController,
-                            public content::NotificationObserver,
                             public ExtensionActionIconFactory::Observer,
                             public ExtensionAction::IconAnimation::Observer {
  public:
@@ -65,11 +64,6 @@ class PageActionImageView : public views::ImageView,
   // Overridden from views::ContextMenuController.
   virtual void ShowContextMenuForView(View* source,
                                       const gfx::Point& point) OVERRIDE;
-
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // Overriden from ExtensionActionIconFactory::Observer.
   virtual void OnIconUpdated() OVERRIDE;
@@ -131,8 +125,6 @@ class PageActionImageView : public views::ImageView,
 
   // The current popup and the button it came from.  NULL if no popup.
   ExtensionPopup* popup_;
-
-  content::NotificationRegistrar registrar_;
 
   // The extension command accelerator this page action is listening for (to
   // show the popup).

@@ -23,12 +23,9 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -59,10 +56,6 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
 
   icon_factory_.reset(
       new ExtensionActionIconFactory(extension, page_action, this));
-
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(
-                     owner_->profile()->GetOriginalProfile()));
 
   set_accessibility_focusable(true);
   set_context_menu_controller(this);
@@ -252,18 +245,6 @@ void PageActionImageView::OnWidgetClosing(views::Widget* widget) {
   DCHECK_EQ(popup_->GetWidget(), widget);
   popup_->GetWidget()->RemoveObserver(this);
   popup_ = NULL;
-}
-
-void PageActionImageView::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNLOADED, type);
-  const Extension* unloaded_extension =
-      content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
-  if (page_action_ ==
-      extensions::ExtensionActionManager::Get(owner_->profile())->
-      GetPageAction(*unloaded_extension))
-    owner_->UpdatePageActions();
 }
 
 void PageActionImageView::OnIconUpdated() {
