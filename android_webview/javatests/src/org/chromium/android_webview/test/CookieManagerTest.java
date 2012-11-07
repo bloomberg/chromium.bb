@@ -11,11 +11,11 @@ import android.util.Pair;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.CookieManager;
-import org.chromium.android_webview.test.util.TestWebServer;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
+import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;
 import java.util.Arrays;

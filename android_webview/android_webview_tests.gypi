@@ -9,7 +9,8 @@
       'dependencies': [
         '../base/base.gyp:base_java_test_support',
         '../content/content.gyp:content_java_test_support',
-        'android_webview_java',
+        '../net/net.gyp:net_java_test_support',
+       'android_webview_java',
         'libwebviewchromium',
       ],
       'variables': {

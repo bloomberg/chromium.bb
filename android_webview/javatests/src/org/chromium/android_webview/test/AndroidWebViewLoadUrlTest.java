@@ -13,7 +13,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.test.util.CallbackHelper;
-import org.chromium.android_webview.test.util.TestWebServer;
+import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.TimeUnit;
 import java.util.HashMap;

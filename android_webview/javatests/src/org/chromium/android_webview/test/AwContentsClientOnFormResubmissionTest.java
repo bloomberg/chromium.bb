@@ -10,10 +10,10 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.apache.http.util.EncodingUtils;
 import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.test.util.TestWebServer;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.TimeUnit;

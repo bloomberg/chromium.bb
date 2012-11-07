@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.test.util;
+package org.chromium.net.test.util;
 
 import android.util.Base64;
 import android.util.Log;
@@ -53,6 +53,10 @@ import javax.net.ssl.X509TrustManager;
 
 /**
  * Simple http test server for testing.
+ *
+ * This server runs in a thread in the current process, so it is convenient
+ * for loopback testing without the need to setup tcp forwarding to the
+ * host computer.
  *
  * Based heavily on the CTSWebServer in Android.
  */
@@ -142,7 +146,7 @@ public class TestWebServer {
             throw new IllegalStateException(e);
         }
 
-        sInstance = null;
+        TestWebServer.sInstance = null;
     }
 
     private final static int RESPONSE_STATUS_NORMAL = 0;
