@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 
 namespace chrome {
 
 Browser* GetLastActiveBrowser() {
-  return BrowserList::GetLastActive();
+  return browser::FindLastActiveWithHostDesktopType(HOST_DESKTOP_TYPE_NATIVE);
 }
 
 }  // namespace chrome
