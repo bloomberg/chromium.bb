@@ -346,6 +346,17 @@ MediaControls.prototype.detachMedia = function() {
 };
 
 /**
+ * Force-empty the media pipeline. This is a workaround for crbug.com/149957.
+ * The document is not going to be GC-ed until the last Files app window closes,
+ * but we want the media pipeline to deinitialize ASAP to minimize leakage.
+ */
+MediaControls.prototype.cleanup = function() {
+  this.media_.src = '';
+  this.media_.load();
+  this.detachMedia();
+};
+
+/**
  * 'play' and 'pause' event handler.
  * @param {boolean} playing True if playing.
  * @private
@@ -444,7 +455,7 @@ MediaControls.prototype.encodeStateIntoLocation = function() {
   var newLocation = document.location.origin + document.location.pathname +
       document.location.search + '#' + playState;
 
-  history.replaceState(undefined, playState, newLocation);
+  document.location.href = newLocation;
 };
 
 /**
@@ -981,21 +992,25 @@ VideoControls.prototype.togglePlayState = function() {
 
 /**
  * Save the playback position to the persistent storage.
+ * @param {function} opt_callback Completion callback.
  */
-VideoControls.prototype.savePosition = function() {
+VideoControls.prototype.savePosition = function(opt_callback) {
   if (!this.media_.duration ||
-      this.media_.duration_ < VideoControls.RESUME_THRESHOLD)
+      this.media_.duration_ < VideoControls.RESUME_THRESHOLD) {
+    if (opt_callback) opt_callback();
     return;
+  }
 
   var ratio = this.media_.currentTime / this.media_.duration;
   if (ratio < VideoControls.RESUME_MARGIN ||
       ratio > (1 - VideoControls.RESUME_MARGIN)) {
     // We are too close to the beginning or the end.
     // Remove the resume position so that next time we start from the beginning.
-    this.resumePositions_.removeValue(this.media_.src);
+    this.resumePositions_.removeValue(this.media_.src, opt_callback);
   } else {
     this.resumePositions_.setValue(this.media_.src, Math.floor(Math.max(0,
-        this.media_.currentTime - VideoControls.RESUME_REWIND)));
+        this.media_.currentTime - VideoControls.RESUME_REWIND)),
+        opt_callback);
   }
 };
 
@@ -1004,9 +1019,10 @@ VideoControls.prototype.savePosition = function() {
  */
 VideoControls.prototype.restorePlayState = function() {
   if (this.media_.duration >= VideoControls.RESUME_THRESHOLD) {
-    var position = this.resumePositions_.getValue(this.media_.src);
-    if (position)
-      this.media_.currentTime = position;
+    this.resumePositions_.getValue(this.media_.src, function(position) {
+      if (position)
+        this.media_.currentTime = position;
+    }.bind(this));
   }
 };
 
@@ -1055,60 +1071,70 @@ function TimeLimitedMap(localStorageKey, capacity, lifetime) {
 
 /**
  * @param {string} key Key
- * @return {string} Value
+ * @param {function(number)} callback Callback accepting a value.
  */
-TimeLimitedMap.prototype.getValue = function(key) {
-  var map = this.read_();
-  var entry = map[key];
-  return entry && entry.value;
+TimeLimitedMap.prototype.getValue = function(key, callback) {
+  this.read_(function(map) {
+    var entry = map[key];
+    callback(entry && entry.value);
+  }.bind(this));
 };
 
 /**
  * @param {string} key Key.
  * @param {string} value Value.
+ * @param {function} opt_callback Completion callback.
  */
-TimeLimitedMap.prototype.setValue = function(key, value) {
-  var map = this.read_();
-  map[key] = { value: value, timestamp: Date.now() };
-  this.cleanup_(map);
-  this.write_(map);
+TimeLimitedMap.prototype.setValue = function(key, value, opt_callback) {
+  this.read_(function(map) {
+    map[key] = { value: value, timestamp: Date.now() };
+    this.cleanup_(map);
+    this.write_(map, opt_callback);
+  }.bind(this));
 };
 
 /**
  * @param {string} key Key to remove.
+ * @param {function} opt_callback Completion callback.
  */
-TimeLimitedMap.prototype.removeValue = function(key) {
-  var map = this.read_();
-  if (!(key in map))
-    return;  // Nothing to do.
-
-  delete map[key];
-  this.cleanup_(map);
-  this.write_(map);
+TimeLimitedMap.prototype.removeValue = function(key, opt_callback) {
+  this.read_(function(map) {
+    if (key in map) {
+      delete map[key];
+      this.cleanup_(map);
+      this.write_(map, opt_callback);
+    } else {
+      if (opt_callback) opt_callback();
+    }
+  }.bind(this));
 };
 
 /**
- * @return {Object} A map of timestamped key-value pairs.
+ * @param {function(Object)} callback Callback accepting a map of timestamped
+ *   key-value pairs.
  * @private
  */
-TimeLimitedMap.prototype.read_ = function() {
-  var json = localStorage[this.localStorageKey_];
-  if (json) {
-    try {
-      return JSON.parse(json);
-    } catch (e) {
-      // The localStorage item somehow got messed up, start fresh.
+TimeLimitedMap.prototype.read_ = function(callback) {
+  util.platform.getPreference(this.localStorageKey_, function(json) {
+    if (json) {
+      try {
+        callback(JSON.parse(json));
+      } catch (e) {
+        // The local storage item somehow got messed up, start fresh.
+      }
     }
-  }
-  return {};
+    callback({});
+  });
 };
 
 /**
  * @param {Object} map A map of timestamped key-value pairs.
+ * @param {function} opt_callback Completion callback.
  * @private
  */
-TimeLimitedMap.prototype.write_ = function(map) {
-  localStorage[this.localStorageKey_] = JSON.stringify(map);
+TimeLimitedMap.prototype.write_ = function(map, opt_callback) {
+  util.platform.setPreference(
+      this.localStorageKey_, JSON.stringify(map), opt_callback);
 };
 
 /**

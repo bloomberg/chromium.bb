@@ -46,12 +46,15 @@ var harness = {
       harness.iframe.src = 'main.html' + document.location.search;
     }
 
+    // window.PERSISTENT is a little nicer but not yet supported by packaged
+    // apps.
+    var fsType = window.TEMPORARY;
     window.webkitStorageInfo.requestQuota(
-        window.PERSISTENT,
+        fsType,
         1024 * 1024 * 1024, // 1 Gig should be enough for everybody:)
         function(grantedBytes) {
           window.webkitRequestFileSystem(
-              window.PERSISTENT,
+              fsType,
               grantedBytes,
               onFilesystem,
               util.flog('Error initializing filesystem'));
@@ -64,6 +67,13 @@ var harness = {
     var input = document.querySelector('#default-path');
     input.value = this.params.defaultPath || '';
     input.addEventListener('keyup', this.onInputKeyUp.bind(this));
+
+    document.querySelector('input[type="file"]').
+        addEventListener('change', this.onFilesChange.bind(this));
+    document.querySelector('input#reset').
+        addEventListener('click', this.onClearClick.bind(this));
+    document.querySelector('input#populate').
+        addEventListener('click', this.onPopulateClick.bind(this));
   },
 
   onInputKeyUp: function(event) {
@@ -267,3 +277,5 @@ var harness = {
     });
   }
 };
+
+document.addEventListener('DOMContentLoaded', harness.init.bind(harness));

@@ -27,6 +27,7 @@ function FileManager(dialogDom) {
 
   this.document_ = dialogDom.ownerDocument;
   this.dialogType = this.params_.type || DialogType.FULL_PAGE;
+  this.startupPrefName_ = 'file-manager-' + this.dialogType;
 
   // Optional list of file types.
   this.fileTypes_ = this.params_.typeList || [];
@@ -336,10 +337,11 @@ DialogType.isModal = function(type) {
     metrics.startInterval('Load.FileSystem');
 
     var self = this;
-    var downcount = 2;
+    var downcount = 3;
+    var startupPrefs = {};
     function done() {
       if (--downcount == 0)
-        self.init_();
+        self.init_(startupPrefs);
     }
 
     chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
@@ -350,15 +352,21 @@ DialogType.isModal = function(type) {
 
     // GDATA preferences should be initialized before creating DirectoryModel
     // to tot rebuild the roots list.
-    this.updateNetworkStateAndPreferences_(function() {
+    this.updateNetworkStateAndPreferences_(done);
+
+    util.platform.getPreference(this.startupPrefName_, function(value) {
+      try {
+        startupPrefs = JSON.parse(value);
+      } catch (ignore) {}
       done();
-    });
+    }.bind(this));
   };
 
   /**
+   * @param {Object} prefs Preferences.
    * Continue initializing the file manager after resolving roots.
    */
-  FileManager.prototype.init_ = function() {
+  FileManager.prototype.init_ = function(prefs) {
     metrics.startInterval('Load.DOM');
 
     this.metadataCache_ = MetadataCache.createFull();
@@ -378,7 +386,7 @@ DialogType.isModal = function(type) {
     this.table_.startBatchUpdates();
     this.grid_.startBatchUpdates();
 
-    this.initFileList_();
+    this.initFileList_(prefs);
     this.initDialogs_();
     this.bannersController_ = new FileListBannerController(
         this.directoryModel_, this.volumeManager_, this.document_);
@@ -386,7 +394,9 @@ DialogType.isModal = function(type) {
                                              this.onResize_.bind(this));
 
     window.addEventListener('popstate', this.onPopState_.bind(this));
-    window.addEventListener('unload', this.onUnload_.bind(this));
+    // TODO: handle window closing properly for apps v2.
+    if (!util.platform.v2())
+      window.addEventListener('unload', this.onUnload_.bind(this));
 
     var dm = this.directoryModel_;
     dm.addEventListener('directory-changed',
@@ -409,12 +419,9 @@ DialogType.isModal = function(type) {
 
     this.selectionHandler_.onSelectionChanged();
 
-    var sortField =
-        window.localStorage['sort-field-' + this.dialogType] ||
-        'modificationTime';
-    var sortDirection =
-        window.localStorage['sort-direction-' + this.dialogType] || 'desc';
-    this.directoryModel_.sortFileList(sortField, sortDirection);
+    this.directoryModel_.sortFileList(
+        prefs.sortField || 'modificationTime',
+        prefs.sortDirection || 'desc');
 
     this.setupCurrentDirectory_(true /* page loading */);
 
@@ -628,8 +635,10 @@ DialogType.isModal = function(type) {
       e.preventDefault();
     });
 
-    this.document_.defaultView.addEventListener('beforeunload',
-        this.onBeforeUnload_.bind(this));
+    // TODO: handle window closing properly for apps v2.
+    if (!util.platform.v2())
+      this.document_.defaultView.addEventListener('beforeunload',
+          this.onBeforeUnload_.bind(this));
 
     this.dialogDom_.addEventListener('click',
                                      this.onExternalLinkClick_.bind(this));
@@ -666,8 +675,9 @@ DialogType.isModal = function(type) {
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.document_.addEventListener('keyup', this.onKeyUp_.bind(this));
     // Disable the default browser context menu.
-    this.document_.addEventListener('contextmenu',
-                                    function(e) { e.preventDefault() });
+    if (!util.TEST_HARNESS)
+      this.document_.addEventListener('contextmenu',
+          function(e) { e.preventDefault() });
 
     this.renameInput_ = this.document_.createElement('input');
     this.renameInput_.className = 'rename';
@@ -748,9 +758,10 @@ DialogType.isModal = function(type) {
   };
 
   /**
+   * @param {Object} prefs Preferences.
    * Constructs table and grid (heavy operation).
    **/
-  FileManager.prototype.initFileList_ = function() {
+  FileManager.prototype.initFileList_ = function(prefs) {
     // Always sharing the data model between the detail/thumb views confuses
     // them.  Instead we maintain this bogus data model, and hook it up to the
     // view that is not in use.
@@ -793,7 +804,7 @@ DialogType.isModal = function(type) {
     dataModel.addEventListener('splice',
                                this.onDataModelSplice_.bind(this));
     dataModel.addEventListener('permuted',
-                               this.onDataModelPermuted_.bind(this));
+                               this.updateStartupPrefs_.bind(this));
 
     this.directoryModel_.getFileListSelection().addEventListener('change',
         this.selectionHandler_.onSelectionChanged.bind(
@@ -803,11 +814,7 @@ DialogType.isModal = function(type) {
     this.initGrid_();
     this.initRootsList_();
 
-    var listType = FileManager.ListType.DETAIL;
-    if (DialogType.isModal(this.dialogType))
-      listType = window.localStorage['listType-' + this.dialogType] ||
-          FileManager.ListType.DETAIL;
-    this.setListType(listType);
+    this.setListType(prefs.listType || FileManager.ListType.DETAIL);
 
     this.textSearchState_ = {text: '', date: new Date()};
 
@@ -847,11 +854,15 @@ DialogType.isModal = function(type) {
     this.selectionHandler_.updateSelectAllCheckboxState();
   };
 
-  FileManager.prototype.onDataModelPermuted_ = function(event) {
+  FileManager.prototype.updateStartupPrefs_ = function() {
     var sortStatus = this.directoryModel_.getFileList().sortStatus;
-    window.localStorage['sort-field-' + this.dialogType] = sortStatus.field;
-    window.localStorage['sort-direction-' + this.dialogType] =
-        sortStatus.direction;
+    var prefs = {
+      sortField: sortStatus.field,
+      sortDirection: sortStatus.direction
+    };
+    if (DialogType.isModal(this.dialogType))
+      prefs.listType = this.listType;
+    util.platform.setPreference(this.startupPrefName_, prefs);
   };
 
   /**
@@ -936,9 +947,6 @@ DialogType.isModal = function(type) {
     if (type && type == this.listType_)
       return;
 
-    if (DialogType.isModal(this.dialogType))
-      window.localStorage['listType-' + this.dialogType] = type;
-
     this.table_.list.startBatchUpdates();
     this.grid_.startBatchUpdates();
 
@@ -975,6 +983,7 @@ DialogType.isModal = function(type) {
     }
 
     this.listType_ = type;
+    this.updateStartupPrefs_();
     this.updateColumnModel_();
     this.onResize_();
 
@@ -1220,7 +1229,7 @@ DialogType.isModal = function(type) {
   };
 
   FileManager.prototype.updateWindowState_ = function() {
-    chrome.windows.getCurrent(function(wnd) {
+    util.platform.getWindowStatus(function(wnd) {
       if (wnd.state == 'maximized') {
         this.dialogDom_.setAttribute('maximized', 'maximized');
       } else {
@@ -2146,9 +2155,7 @@ DialogType.isModal = function(type) {
         // If the file manager opened automatically when a usb drive inserted,
         // user have never changed current volume (that implies the current
         // directory is still on the device) then close this tab.
-        chrome.tabs.getCurrent(function(tab) {
-          chrome.tabs.remove(tab.id);
-        });
+        util.platform.closeWindow();
       }
     }
   };

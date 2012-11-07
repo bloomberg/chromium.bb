@@ -74,7 +74,7 @@ FileTasks.prototype.onTasks_ = function(tasks) {
  */
 FileTasks.prototype.processTasks_ = function(tasks) {
   this.tasks_ = [];
-  var id = util.getExtensionId();
+  var id = util.platform.getAppId();
   var is_on_drive = false;
   for (var index = 0; index < this.urls_.length; ++index) {
     if (FileType.isOnGDrive(this.urls_[index])) {
@@ -200,7 +200,7 @@ FileTasks.prototype.execute_ = function(taskId, opt_urls) {
     chrome.fileBrowserPrivate.executeTask(taskId, urls);
 
     var task_parts = taskId.split('|');
-    if (task_parts[0] == util.getExtensionId() && task_parts[1] == 'file') {
+    if (task_parts[0] == util.platform.getAppId() && task_parts[1] == 'file') {
       // For internal tasks we do not listen to the event to avoid
       // handling the same task instance from multiple tabs.
       // So, we manually execute the task.
@@ -295,8 +295,24 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
       urls = fm.getAllUrlsInCurrentDirectory().filter(FileType.isAudio);
       position = urls.indexOf(selectedUrl);
     }
-    chrome.mediaPlayerPrivate.play(urls, position);
+    if (util.platform.v2()) {
+      chrome.runtime.getBackgroundPage(function(background) {
+        background.launchAudioPlayer({ items: urls, position: position });
+      });
+    } else {
+      chrome.mediaPlayerPrivate.play(urls, position);
+    }
     return;
+  }
+
+  if (util.platform.v2()) {
+    if (id == 'watch') {
+      console.assert(urls.length == 1, 'Cannot open multiple videos');
+      chrome.runtime.getBackgroundPage(function(background) {
+        background.launchVideoPlayer(urls[0]);
+      });
+      return;
+    }
   }
 
   if (id == 'mount-archive') {
@@ -382,7 +398,13 @@ FileTasks.prototype.openGallery = function(urls) {
 
   function onClose(selectedUrls) {
     fm.directoryModel_.selectUrls(selectedUrls);
-    history.back(1);  // This will restore document.title.
+    if (util.platform.v2()) {
+      // TODO: might need to restore document title.
+      galleryFrame.contentWindow.Gallery.instance.unload();
+      fm.closeFilePopup_();
+    } else {
+      history.back(1);  // This will restore document.title.
+    }
   }
 
   galleryFrame.onload = function() {

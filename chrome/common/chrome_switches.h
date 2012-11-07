@@ -413,6 +413,7 @@ extern const char kStubCrosSettings[];
 extern const char kAuthExtensionPath[];
 extern const char kEnterpriseEnrollmentInitialModulus[];
 extern const char kEnterpriseEnrollmentModulusLimit[];
+extern const char kFileManagerPackaged[];
 #ifndef NDEBUG
 extern const char kOobeSkipPostLogin[];
 #endif

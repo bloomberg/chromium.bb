@@ -8,6 +8,7 @@
 // included file but that's all right since any javascript file should start
 // with a copyright comment anyway.
 
+//<include src="../util.js"/>
 //<include src="../file_type.js"/>
 //<include src="media_controls.js"/>
 //<include src="audio_player.js"/>

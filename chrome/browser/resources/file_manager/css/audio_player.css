@@ -45,21 +45,26 @@ body {
   background-color: #1f1f1f;
 }
 
-/* TODO(kaznacheev): Remove display: none when the audio player is title-less */
 .title-button.close {
   background-image: -webkit-image-set(
     url('../images/media/media_close.png') 1x,
     url('../images/media/2x/media_close.png') 2x);
-  display: none;
   right: 0;
 }
 
-/* TODO(kaznacheev): Set right: 29px when the audio player is title-less */
 .title-button.collapse {
   background-image: -webkit-image-set(
     url('../images/media/media_collapse.png') 1x,
     url('../images/media/2x/media_collapse.png') 2x);
   right: 0;
+}
+
+.audio-player:not(.frameless) .title-button.close {
+  display: none;
+}
+
+.audio-player.frameless .title-button.collapse {
+  right: 29px;
 }
 
 .collapsed .title-button.collapse {

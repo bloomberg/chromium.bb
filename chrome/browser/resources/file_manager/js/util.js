@@ -584,7 +584,7 @@ util.applyTransform = function(element, transform) {
  */
 util.makeFilesystemUrl = function(path) {
   path = path.split('/').map(encodeURIComponent).join('/');
-  return 'filesystem:' + chrome.extension.getURL('external' + path);
+  return 'filesystem:' + util.platform.getURL('external' + path);
 };
 
 /**
@@ -597,13 +597,6 @@ util.extractFilePath = function(url) {
       exec(url)[2];
   if (!path) return null;
   return decodeURIComponent(path);
-};
-
-/**
- * @return {string} Id of the current Chrome extension.
- */
-util.getExtensionId = function() {
-  return chrome.extension.getURL('').split('/')[2];
 };
 
 /**
@@ -676,6 +669,9 @@ util.createChild = function(parent, opt_className, opt_tag) {
  *   stringified if object. If omitted the search query is left unchanged.
  */
 util.updateLocation = function(replace, path, opt_param) {
+  if (util.platform.v2())
+    return;
+
   var location = window.top.document.location;
   var history = window.top.history;
 
@@ -728,3 +724,151 @@ function str(id) {
 function strf(id, var_args) {
   return loadTimeData.getStringF.apply(loadTimeData, arguments);
 }
+
+/**
+ * Adapter object that abstracts away the the difference between Chrome app APIs
+ * v1 and v2. Is only necessary while the migration to v2 APIs is in progress.
+ */
+util.platform = {
+  /**
+   * @return {boolean} True for v2.
+   */
+  v2: function() {
+    try {
+      return !!(chrome.app && chrome.app.runtime);
+    } catch (e) {
+      console.log(new Error.stack);
+      return false;
+    }
+  },
+
+  /**
+   * @param {function(Object)} callback Function accepting a preference map.
+   */
+  getPreferences: function(callback) {
+    try {
+      callback(window.localStorage);
+    } catch (ignore) {
+      chrome.storage.local.get(callback);
+    }
+  },
+
+  /**
+   * @param {string} key Preference name.
+   * @param {function(string)} callback Function accepting the preference value.
+   */
+  getPreference: function(key, callback) {
+    try {
+      callback(window.localStorage[key]);
+    } catch (ignore) {
+      chrome.storage.local.get(function(items) {
+        callback(items[key]);
+      });
+    }
+  },
+
+  /**
+   * @param {string} key Preference name.
+   * @param {string} value Preference value.
+   * @param {function} callback Completion callback.
+   */
+  setPreference: function(key, value, opt_callback) {
+    try {
+      window.localStorage[key] = value;
+      if (opt_callback) opt_callback();
+    } catch (ignore) {
+      var items = {};
+      items[key] = value;
+      chrome.storage.local.set(items, opt_callback);
+    }
+  },
+
+  /**
+   * @param {function(Object)} callback Function accepting a status object.
+   */
+  getWindowStatus: function(callback) {
+    try {
+      chrome.windows.getCurrent(callback);
+    } catch (ignore) {
+      // TODO: fill the status object once the API is available.
+      callback({});
+    }
+  },
+
+  /**
+   * Close current window.
+   */
+  closeWindow: function() {
+    if (this.v2()) {
+      window.close();
+    } else {
+      chrome.tabs.getCurrent(function(tab) {
+        chrome.tabs.remove(tab.id);
+      });
+    }
+  },
+
+  /**
+   * @return {string} Applicaton id.
+   */
+  getAppId: function() {
+    try {
+      return chrome.extension.getURL('').split('/')[2];
+    } catch (ignore) {
+      return chrome.runtime.id;
+    }
+  },
+
+  /**
+   * @param {string} path Path relative to the extension root.
+   * @return {string} Extension-based URL.
+   */
+  getURL: function(path) {
+    try {
+      return chrome.extension.getURL(path);
+    } catch (ignore) {
+      return chrome.runtime.getURL(path);
+    }
+  }
+};
+
+/**
+ * Load Javascript resources dynamically.
+ * @param {Array.<string>} urls Array of script urls.
+ * @param {function} onload Completion callback.
+ */
+util.loadScripts = function(urls, onload) {
+  var countdown = urls.length;
+  if (!countdown) {
+    onload();
+    return;
+  }
+  function done() {
+    if (--countdown == 0)
+      onload();
+  }
+  while (urls.length) {
+    var script = document.createElement('script');
+    script.src = urls.shift();
+    document.head.appendChild(script);
+    script.onload = done;
+    script.onerror = done;
+  }
+};
+
+/**
+ * Attach page load handler.
+ * Loads mock chrome.* APIs is the real ones are not present.
+ * @param {function} handler Application-specific load handler.
+ */
+util.addPageLoadHandler = function(handler) {
+  document.addEventListener('DOMContentLoaded', function() {
+    if (chrome.fileBrowserPrivate) {
+      handler();
+    } else {
+      util.TEST_HARNESS = true;
+      util.loadScripts(['js/mock_chrome.js', 'js/file_copy_manager.js'],
+          handler);
+    }
+  });
+};

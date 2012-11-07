@@ -1,7 +1,6 @@
 {
   // chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/
   "key": "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQDlhpGghtnNJ7pluQN0RDwbUxwwi99oM35ZEaFYvxPLrf0fIEC18cfDdJi6u4aJ+UoSpgzK731L0P/k4LvK2Rz9kVKOy0+IvuRrWkT7lbrLfA1UEBh02OA1AAshjmyRg4IxCqgl8ia8XWq6HKegS1y1KXZYGgb4qp7Bh9VC4cIzswIBIw==",
-  "manifest_version": 2,
   "name": "Files",
   "version": "0.1",
   "description": "File Manager",
@@ -11,13 +10,11 @@
     "128": "images/icon128.png"
   },
   "permissions": [
-    "storage",
     "fileBrowserHandler",
     "fileBrowserPrivate",
     "mediaPlayerPrivate",
     "metricsPrivate",
     "unlimitedStorage",
-    // Comment out chrome:// permissions to debug on a desktop browser.
     "chrome://extension-icon/",
     "chrome://resources/",
     "chrome://theme/",
@@ -27,6 +24,13 @@
     "https://*.googleusercontent.com/",
     "https://drive.google.com/"
   ],
+  "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-src 'self' about:; img-src 'self' chrome://resources chrome://theme data: https://docs.google.com https://*.googleusercontent.com chrome://extension-icon; media-src 'self' https://*.googleusercontent.com; connect-src https://drive.google.com",
+  "app": {
+    "launch": {
+      "container": "panel",
+      "local_path": "main.html"
+    }
+  },
   "file_browser_handlers": [
     {
       "id": "play",
@@ -169,14 +173,11 @@
   "chrome_url_overrides": {
     "files": "main.html"
   },
-  "app": {
-    "background": {
-      "scripts": [
-        // "js/mock_chrome.js", // Uncomment this to debug on a desktop browser.
-        "js/file_copy_manager.js",
-        "js/path_util.js",
-        "js/util.js",
-        "js/background.js"]
-    }
+  "background": {
+    "transient": true,
+    "persistent": false,
+    "scripts": ["js/file_copy_manager.js",
+                "js/path_util.js",
+                "js/util.js"]
   }
 }

@@ -234,16 +234,19 @@ bool ComponentLoader::Exists(const std::string& id) const {
 
 void ComponentLoader::AddFileManagerExtension() {
 #if defined(FILE_MANAGER_EXTENSION)
-#ifndef NDEBUG
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  int manifest_id = command_line->HasSwitch(switches::kFileManagerPackaged) ?
+      IDR_FILEMANAGER_MANIFEST :
+      IDR_FILEMANAGER_MANIFEST_V1;
+#ifndef NDEBUG
   if (command_line->HasSwitch(switches::kFileManagerExtensionPath)) {
     FilePath filemgr_extension_path(
         command_line->GetSwitchValuePath(switches::kFileManagerExtensionPath));
-    Add(IDR_FILEMANAGER_MANIFEST, filemgr_extension_path);
+    Add(manifest_id, filemgr_extension_path);
     return;
   }
 #endif  // NDEBUG
-  Add(IDR_FILEMANAGER_MANIFEST, FilePath(FILE_PATH_LITERAL("file_manager")));
+  Add(manifest_id, FilePath(FILE_PATH_LITERAL("file_manager")));
 #endif  // defined(FILE_MANAGER_EXTENSION)
 }
 

@@ -72,19 +72,17 @@ SlideMode.prototype.getName = function() { return 'slide' };
  * @private
  */
 SlideMode.prototype.initListeners_ = function() {
-  var win = this.document_.defaultView;
+  if (!util.platform.v2()) {
+    //  We need to listen to the top window 'unload' and 'beforeunload' because
+    //  the Gallery iframe does not get notified if the tab is closed.
+    this.onTopBeforeUnloadBound_ = this.onTopBeforeUnload_.bind(this);
+    window.top.addEventListener('beforeunload', this.onTopBeforeUnloadBound_);
 
-  this.onBeforeUnloadBound_ = this.onBeforeUnload_.bind(this);
-  win.top.addEventListener('beforeunload', this.onBeforeUnloadBound_);
+    this.onTopUnloadBound_ = this.onTopUnload_.bind(this);
+    window.top.addEventListener('unload', this.onTopUnloadBound_);
+  }
 
-  win.addEventListener('unload', this.onUnload_.bind(this));
-
-  // We need to listen to the top window 'unload' and 'beforeunload' because
-  // the Gallery iframe does not get notified if the tab is closed.
-  this.onTopUnloadBound_ = this.onTopUnload_.bind(this);
-  win.top.addEventListener('unload', this.onTopUnloadBound_);
-
-  win.addEventListener('resize', this.onResize_.bind(this), false);
+  window.addEventListener('resize', this.onResize_.bind(this), false);
 };
 
 /**
@@ -111,7 +109,11 @@ SlideMode.prototype.initDom_ = function() {
       overwriteOriginalBox, 'common white', 'input');
   this.overwriteOriginal_.type = 'checkbox';
   this.overwriteOriginal_.id = 'overwrite-checkbox';
-  this.overwriteOriginal_.checked = this.shouldOverwriteOriginal_();
+  util.platform.getPreference(SlideMode.OVERWRITE_KEY, function(value) {
+    // Out-of-the box default is 'true'
+    this.overwriteOriginal_.checked =
+        (typeof value != 'string' || value == 'true');
+  }.bind(this));
   this.overwriteOriginal_.addEventListener('click',
       this.onOverwriteOriginalClick_.bind(this));
 
@@ -659,14 +661,17 @@ SlideMode.prototype.loadItem_ = function(
     ImageUtil.setAttribute(this.options_, 'saved',
         !this.getSelectedItem().isOriginal());
 
-    var times = SlideMode.OVERWRITE_BUBBLE_KEY in localStorage ?
-        parseInt(localStorage[SlideMode.OVERWRITE_BUBBLE_KEY], 10) : 0;
-    if (times < SlideMode.OVERWRITE_BUBBLE_MAX_TIMES) {
-      this.bubble_.hidden = false;
-      if (this.isEditing()) {
-        localStorage[SlideMode.OVERWRITE_BUBBLE_KEY] = times + 1;
-      }
-    }
+    util.platform.getPreference(SlideMode.OVERWRITE_BUBBLE_KEY,
+        function(value) {
+          var times = typeof value == 'string' ? parseInt(value, 10) : 0;
+          if (times < SlideMode.OVERWRITE_BUBBLE_MAX_TIMES) {
+            this.bubble_.hidden = false;
+            if (this.isEditing()) {
+              util.platform.setPreference(
+                  SlideMode.OVERWRITE_BUBBLE_KEY, times + 1);
+            }
+          }
+        }.bind(this));
 
     loadCallback(loadType, delay);
   }.bind(this);
@@ -711,12 +716,14 @@ SlideMode.prototype.requestPrefetch = function(direction, delay) {
 
 /**
  * Unload handler.
- * @private
  */
-SlideMode.prototype.onUnload_ = function() {
+SlideMode.prototype.onUnload = function() {
   this.saveVideoPosition_();
-  window.top.removeEventListener('beforeunload', this.onBeforeUnloadBound_);
-  window.top.removeEventListener('unload', this.onTopUnloadBound_);
+  if (!util.platform.v2()) {
+    window.top.removeEventListener('beforeunload',
+        this.onTopBeforeUnloadBound_);
+    window.top.removeEventListener('unload', this.onTopUnloadBound_);
+  }
 };
 
 /**
@@ -732,7 +739,7 @@ SlideMode.prototype.onTopUnload_ = function() {
  * @return {string} Message to show if there are unsaved changes.
  * @private
  */
-SlideMode.prototype.onBeforeUnload_ = function() {
+SlideMode.prototype.onTopBeforeUnload_ = function() {
   if (this.editor_.isBusy())
     return this.displayStringFunction_('unsaved_changes');
   return null;
@@ -939,10 +946,7 @@ SlideMode.OVERWRITE_BUBBLE_MAX_TIMES = 5;
  * @private
  */
 SlideMode.prototype.shouldOverwriteOriginal_ = function() {
-  if (!(SlideMode.OVERWRITE_KEY in localStorage))
-    return true;  // Out-of-the box default is 'true'.
-
-  return localStorage[SlideMode.OVERWRITE_KEY] == 'true';
+   return this.overwriteOriginal_.checked;
 };
 
 /**
@@ -951,7 +955,7 @@ SlideMode.prototype.shouldOverwriteOriginal_ = function() {
  * @private
  */
 SlideMode.prototype.onOverwriteOriginalClick_ = function(event) {
-  localStorage[SlideMode.OVERWRITE_KEY] = event.target.checked;
+  util.platform.setPreference(SlideMode.OVERWRITE_KEY, event.target.checked);
 };
 
 /**
@@ -960,8 +964,8 @@ SlideMode.prototype.onOverwriteOriginalClick_ = function(event) {
  */
 SlideMode.prototype.onCloseBubble_ = function() {
   this.bubble_.hidden = true;
-  localStorage[SlideMode.OVERWRITE_BUBBLE_KEY] =
-      SlideMode.OVERWRITE_BUBBLE_MAX_TIMES;
+  util.platform.setPreference(SlideMode.OVERWRITE_BUBBLE_KEY,
+      SlideMode.OVERWRITE_BUBBLE_MAX_TIMES);
 };
 
 // Slideshow
@@ -1029,7 +1033,7 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
     cr.dispatchSimpleEvent(this, 'useraction');
 
   this.fullscreenBeforeSlideshow_ = false;
-  chrome.windows.getCurrent(function(info) {
+  util.platform.getWindowStatus(function(info) {
     if (info.state == 'maximized') {
       this.resumeSlideshow_(opt_interval);
       return;  // Do not go fullscreen if already maximized.

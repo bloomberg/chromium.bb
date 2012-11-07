@@ -8,18 +8,6 @@
  * To be included as a first script in main.html
  */
 
-(function() {
-  // Switch to the 'test harness' mode when loading from a file or http url.
-  // Do this as early as possible because the metrics code depends on
-  // chrome private APIs.
-  if (document.location.protocol == 'file:' ||
-      document.location.protocol == 'http:') {
-    console.log('created mock script');
-    document.write('<script src="js/mock_chrome.js"><\57script>');
-    document.write('<script src="js/file_copy_manager.js"><\57script>');
-  }
-})();
-
 var metrics = {};
 
 /**
@@ -52,6 +40,23 @@ metrics.convertName_ = function(name) {
 };
 
 /**
+ * Wrapper method for calling chrome.fileBrowserPrivate safely.
+ * @param {string} name Method name.
+ * @param {Array.<Object>} args Arguments.
+ * @private
+ */
+metrics.call_ = function(name, args) {
+  if (!chrome.metricsPrivate)
+    return;  // Mock object not loaded yet, ignore.
+
+  try {
+    chrome.metricsPrivate[name].apply(chrome.metricsPrivate, args);
+  } catch (e) {
+    console.error(e.stack);
+  }
+};
+
+/**
  * Create a decorator function that calls a chrome.metricsPrivate function
  * with the same name and correct parameters.
  *
@@ -61,8 +66,8 @@ metrics.decorate = function(name) {
   metrics[name] = function() {
     var args = Array.apply(null, arguments);
     args[0] = metrics.convertName_(args[0]);
-    chrome.metricsPrivate[name].apply(chrome.metricsPrivate, args);
-    if (localStorage.logMetrics) {
+    metrics.call_(name, args);
+    if (metrics.log) {
       console.log('chrome.metricsPrivate.' + name, args);
     }
   }
@@ -121,8 +126,8 @@ metrics.recordEnum = function(name, value, validValues) {
     'max': boundaryValue,
     'buckets': boundaryValue + 1
   };
-  chrome.metricsPrivate.recordValue(metricDescr, index);
-  if (localStorage.logMetrics) {
+  metrics.call_('recordValue', [metricDescr, index]);
+  if (metrics.log) {
     console.log('chrome.metricsPrivate.recordValue',
         [metricDescr.metricName, index, value]);
   }

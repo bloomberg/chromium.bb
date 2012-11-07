@@ -30,7 +30,7 @@ ImageUtil.trace = (function() {
       }
     }
     this.lines_[key].textContent = key + ': ' + value;
-    if (localStorage.logTrace) this.dumpLine(key);
+    if (ImageUtil.trace.log) this.dumpLine(key);
   };
 
   PerformanceTrace.prototype.resetTimer = function(key) {

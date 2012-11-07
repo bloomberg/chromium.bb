@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-document.addEventListener('DOMContentLoaded', function() {
+util.addPageLoadHandler(function() {
   if (!location.hash)
     return;
 
@@ -149,7 +149,8 @@ Gallery.METADATA_TYPE = 'thumbnail|filesystem|media|streaming';
  */
 
 Gallery.prototype.initListeners_ = function() {
-  this.document_.oncontextmenu = function(e) { e.preventDefault(); };
+  if (!util.TEST_HARNESS)
+    this.document_.oncontextmenu = function(e) { e.preventDefault(); };
 
   this.keyDownBound_ = this.onKeyDown_.bind(this);
   this.document_.body.addEventListener('keydown', this.keyDownBound_);
@@ -166,15 +167,23 @@ Gallery.prototype.initListeners_ = function() {
   this.document_.body.addEventListener('touchend', initiateFading);
   this.document_.body.addEventListener('touchcancel', initiateFading);
 
-  var thumbnailObserverId = this.metadataCache_.addObserver(
+  this.thumbnailObserverId_ = this.metadataCache_.addObserver(
       this.context_.curDirEntry,
       MetadataCache.CHILDREN,
       'thumbnail',
       this.updateThumbnails_.bind(this));
 
-  this.document_.defaultView.addEventListener('unload',
-      this.metadataCache_.removeObserver.bind(
-          this.metadataCache_, thumbnailObserverId));
+  if (!util.platform.v2)
+    this.document_.defaultView.addEventListener(
+        'unload', this.unload.bind(this));
+};
+
+/**
+ * Unload the Gallery.
+ */
+Gallery.prototype.unload = function() {
+  this.metadataCache_.removeObserver(this.thumbnailObserverId_);
+  this.slideMode_.onUnload();
 };
 
 /**
@@ -767,7 +776,7 @@ Gallery.prototype.toggleShare_ = function() {
 Gallery.prototype.updateShareMenu_ = function() {
   var urls = this.getSelectedUrls();
 
-  var internalId = util.getExtensionId();
+  var internalId = util.platform.getAppId();
   function isShareAction(task) {
     var task_parts = task.taskId.split('|');
     return task_parts[0] != internalId;

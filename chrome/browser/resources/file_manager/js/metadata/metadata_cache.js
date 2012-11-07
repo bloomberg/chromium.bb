@@ -940,7 +940,7 @@ ContentProvider.prototype.onResult_ = function(url, metadata) {
  * @private
  */
 ContentProvider.prototype.onError_ = function(url, step, error, metadata) {
-  if (localStorage.logMetadata)  // Avoid log spam by default.
+  if (MetadataCache.log)  // Avoid log spam by default.
     console.warn('metadata: ' + url + ': ' + step + ': ' + error);
   metadata = metadata || {};
   // Prevent asking for thumbnail again.
@@ -954,6 +954,6 @@ ContentProvider.prototype.onError_ = function(url, step, error, metadata) {
  * @private
  */
 ContentProvider.prototype.onLog_ = function(arglist) {
-  if (localStorage.logMetadata)  // Avoid log spam by default.
+  if (MetadataCache.log)  // Avoid log spam by default.
     console.log.apply(console, ['metadata:'].concat(arglist));
 };

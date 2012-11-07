@@ -2,15 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-document.addEventListener('DOMContentLoaded', function() {
-  // Test harness sets the search string to prevent the automatic load.
-  // It calls AudioPlayer.load() explicitly after initializing
-  // the |chrome| variable with an appropriate mock object.
-  if (!document.location.search) {
-    AudioPlayer.load();
-  }
-});
-
 /**
  * @param {HTMLElement} container Container element.
  * @constructor
@@ -37,8 +28,8 @@ function AudioPlayer(container) {
   this.trackList_ = createChild('track-list');
   this.trackStack_ = createChild('track-stack');
 
-  createChild('title-button close').addEventListener(
-      'click', function() { chrome.mediaPlayerPrivate.closeWindow() });
+  if (!util.platform.v2())
+    window.addEventListener('unload', unload);
 
   createChild('title-button collapse').addEventListener(
       'click', this.onExpandCollapse_.bind(this));
@@ -72,22 +63,55 @@ AudioPlayer.TRACK_KEY = 'audioTrack';
  */
 AudioPlayer.load = function() {
   document.ondragstart = function(e) { e.preventDefault() };
-  document.oncontextmenu = function(e) { e.preventDefault(); };
+  if (!util.TEST_HARNESS)
+    document.oncontextmenu = function(e) { e.preventDefault(); };
 
   // If the audio player is starting before the first instance of the File
   // Manager then it does not have access to filesystem URLs. Request it now.
   chrome.fileBrowserPrivate.requestLocalFileSystem(function() {
-    var player = new AudioPlayer(document.querySelector('.audio-player'));
-    function getPlaylist() {
-      chrome.mediaPlayerPrivate.getPlaylist(player.load.bind(player));
-    }
-    if (document.location.hash) // The window is reloading, restore the state.
-      player.load(null);
-    else
-      getPlaylist();
+    AudioPlayer.instance =
+        new AudioPlayer(document.querySelector('.audio-player'));
     chrome.mediaPlayerPrivate.onPlaylistChanged.addListener(getPlaylist);
+    reload(window.launchData);
   });
 };
+
+util.addPageLoadHandler(AudioPlayer.load);
+
+/**
+ * Unload the player.
+ */
+function unload() {
+  AudioPlayer.instance.audioControls_.cleanup();
+}
+
+/**
+ * @param {Object} launchData Launch data.
+ * Reload the player.
+ */
+function reload(launchData) {
+  if (launchData) {
+    // Launching/reloading a v2 app.
+    AudioPlayer.instance.load(launchData);
+    return;
+  }
+
+  // Lauching/reloading a v1 app.
+  if (document.location.hash) {
+    // The window is reloading, restore the state.
+    AudioPlayer.instance.load(null);
+  } else {
+    getPlaylist();
+  }
+}
+
+/**
+ * Get the playlist from Chrome.
+ */
+function getPlaylist() {
+  chrome.mediaPlayerPrivate.getPlaylist(
+      AudioPlayer.instance.load.bind(AudioPlayer.instance));
+}
 
 /**
  * Load a new playlist.
@@ -97,19 +121,25 @@ AudioPlayer.prototype.load = function(playlist) {
   if (!playlist || !playlist.items.length) {
     // playlist is null if the window is being reloaded.
     // playlist is empty if ChromeOS has restarted with the Audio Player open.
-    // Restore the playlist from the local storage. Restore the player state
-    // encoded in the page location.
-    try {
-      playlist = {
-        items: JSON.parse(localStorage[AudioPlayer.PLAYLIST_KEY]),
-        position: Number(localStorage[AudioPlayer.TRACK_KEY]),
-        restore: true
-      };
-    } catch (ignore) {}
+    // Restore the playlist from the local storage.
+    util.platform.getPreferences(function(prefs) {
+      try {
+        var restoredPlaylist = {
+          items: JSON.parse(prefs[AudioPlayer.PLAYLIST_KEY]),
+          position: Number(prefs[AudioPlayer.TRACK_KEY]),
+          restore: true
+        };
+        if (restoredPlaylist.items.length)
+          this.load(restoredPlaylist);
+      } catch (ignore) {}
+    }.bind(this));
+    return;
   } else {
     // Remember the playlist for the restart.
-    localStorage[AudioPlayer.PLAYLIST_KEY] = JSON.stringify(playlist.items);
-    localStorage[AudioPlayer.TRACK_KEY] = playlist.position;
+    util.platform.setPreference(
+        AudioPlayer.PLAYLIST_KEY, JSON.stringify(playlist.items));
+    util.platform.setPreference(
+        AudioPlayer.TRACK_KEY, playlist.position);
   }
 
   this.playlistGeneration_++;
@@ -198,7 +228,7 @@ AudioPlayer.prototype.select_ = function(newTrack, opt_restoreState) {
   this.changeSelectionInStack_(this.currentTrack_, newTrack);
 
   this.currentTrack_ = newTrack;
-  localStorage[AudioPlayer.TRACK_KEY] = this.currentTrack_;
+  util.platform.setPreference(AudioPlayer.TRACK_KEY, this.currentTrack_);
 
   this.scrollToCurrent_(false);
 
@@ -392,8 +422,18 @@ AudioPlayer.prototype.syncHeight_ = function() {
       AudioPlayer.TRACK_HEIGHT :
       AudioPlayer.HEADER_HEIGHT + expandedListHeight);
 
-  chrome.mediaPlayerPrivate.setWindowHeight(
-      targetClientHeight - this.container_.clientHeight);
+  if (util.platform.v2()) {
+    var appWindow = chrome.app.window.current();
+    var oldHeight = appWindow.contentWindow.outerHeight;
+    var bottom = appWindow.contentWindow.screenY + oldHeight;
+    var newTop = Math.max(0, bottom - targetClientHeight);
+    appWindow.moveTo(appWindow.contentWindow.screenX, newTop);
+    appWindow.resizeTo(appWindow.contentWindow.outerWidth,
+        oldHeight + targetClientHeight - this.container_.clientHeight);
+  } else {
+    chrome.mediaPlayerPrivate.setWindowHeight(
+        targetClientHeight - this.container_.clientHeight);
+  }
 };
 
 
@@ -498,14 +538,6 @@ AudioPlayer.TrackInfo.prototype.setMetadata = function(
  */
 function FullWindowAudioControls(container, advanceTrack, onError) {
   AudioControls.apply(this, arguments);
-
-  window.addEventListener('unload', function() {
-    // Workaround for crbug.com/149957. The document is not going to be GC-ed
-    // until the last Files app window closes, but we want the media pipeline
-    // to deinitialize ASAP.
-    this.getMedia().src = '';
-    this.getMedia().load();
-  }.bind(this));
 
   document.addEventListener('keydown', function(e) {
     if (e.keyIdentifier == 'U+0020') {

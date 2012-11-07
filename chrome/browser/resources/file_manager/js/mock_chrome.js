@@ -51,9 +51,9 @@ function cloneShallow(object) {
  */
 chrome.fileBrowserPrivate = {
   /**
-   * Change to window.TEMPORARY if you do not insist on persistence.
+   * window.PERSISTENT is a little nicer but not yet supported by packaged apps.
    */
-  FS_TYPE: window.PERSISTENT,
+  FS_TYPE: window.TEMPORARY,
 
   /**
    * Return a normal HTML5 filesystem api, rather than the real local
@@ -130,7 +130,7 @@ chrome.fileBrowserPrivate = {
     if (urlList.length == 0)
       return callback([]);
 
-    var internalTaskPrefix = util.getExtensionId() + '|file';
+    var internalTaskPrefix = util.platform.getAppId() + '|file';
 
     if (!callback)
       throw new Error('Missing callback');
@@ -156,7 +156,13 @@ chrome.fileBrowserPrivate = {
         iconUrl: emptyIcon
       },
       {
-        taskId: 'fake-extension-id|fake-item',
+        taskId: internalTaskPrefix + '|watch',
+        title: 'Watch',
+        regexp: /\.(3gp|avi|m4v|mov|mp4|mpeg4?|mpg4?|ogm|ogv|ogx|webm)$/i,
+        iconUrl: emptyIcon
+      },
+      {
+        taskId: 'fake-extension-id|file|fake-item',
         title: 'External action',
         regexp: /\.(bmp|gif|jpe?g|png|webp|3gp|avi|m4v|mov|mp4|mpeg4?|mpg4?|ogm|ogv|ogx|webm)$/i,
         iconUrl: 'chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GENERIC'
@@ -190,8 +196,15 @@ chrome.fileBrowserPrivate = {
 
       for (var taskIndex = candidateTasks.length - 1; taskIndex >= 0;
            taskIndex--) {
-        if (candidateTasks[taskIndex].regexp.test(urlList[i]))
-          continue;
+        var task = candidateTasks[taskIndex];
+        var url = urlList[i];
+        if (task.regexp.test(url)) {
+          // For a single video only the video player should be applicable,
+          // for multiple videos or a mix of videos and images only the Gallery.
+          if (!FileType.isVideo(url) ||
+             ((task.title == 'Watch') == (urlList.length == 1)))
+            continue;
+        }
 
         // This task doesn't match this url, remove the task.
         candidateTasks.splice(taskIndex, 1);
@@ -500,7 +513,7 @@ chrome.fileBrowserPrivate = {
 
       MOUNT_ARCHIVE: 'Open',
       FORMAT_DEVICE: 'Format device',
-      IMPORT_PHOTOS_BUTTON_LABEL: 'Import photos',
+      PHOTO_IMPORT_TITLE: 'Import media',
 
       ACTION_VIEW: 'View',
       ACTION_OPEN: 'Open',
@@ -778,14 +791,16 @@ chrome.fileBrowserHandler = {
   onExecute: new MockEventSource()
 };
 
-/**
- * Mock object for |chrome.runtime|.
- */
-chrome.runtime = {
-  getBackgroundPage: function(callback) {
-    setTimeout(function() {callback(window);}, 0);
-  }
-};
+if (!chrome.runtime) {
+  /**
+   * Mock object for |chrome.runtime|.
+   */
+  chrome.runtime = {
+    getBackgroundPage: function(callback) {
+      setTimeout(function() {callback(window);}, 0);
+    }
+  };
+}
 
 /**
  * Mock object for |chrome.tabs|.
@@ -832,48 +847,30 @@ chrome.mediaPlayerPrivate = {
 
   onPlaylistChanged: new MockEventSource(),
 
+  onVideoLaunched: new MockEventSource(),
+
   onTogglePlayState: new MockEventSource(),
 
   onNextTrack: new MockEventSource(),
 
   onPrevTrack: new MockEventSource(),
 
-  play: function(urls, position) {
-    this.playlist_ = { items: urls, position: position };
-
-    if (this.popup_) {
-      this.onPlaylistChanged.notify();
-      return;
-    }
-
-    // Using global document is OK for the test harness.
-    this.popup_ = document.createElement('iframe');
-    this.popup_.scrolling = 'no';
-    this.popup_.style.cssText = 'position:absolute; border:none; z-index:10;' +
-        'width:280px; height:93px; right:10px; bottom:80px;' +
-        '-webkit-transition: height 200ms ease';
-
-    document.body.appendChild(this.popup_);
-
-    this.popup_.onload = function() {
-      var win = this.popup_.contentWindow;
-      win.chrome = chrome;
-      win.AudioPlayer.load();
-    }.bind(this);
-
-    this.popup_.src = 'mediaplayer.html?no_auto_load';
-  },
-
   getPlaylist: function(callback) {
-    callback(this.playlist_);
+    callback(this.audioPlaylist_);
   },
 
-  setWindowHeight: function(height) {
-    this.popup_.style.height = height + 'px';
+  getVideoUrl: function(callback) {
+    callback(this.videoUrl_);
   },
 
-  closeWindow: function() {
-    this.popup_.parentNode.removeChild(this.popup_);
-    this.popup_ = null;
+  // Helper methods to call from the console.
+  playAudio: function(urls, position) {
+    this.audioPlaylist_ = { items: urls, position: position };
+    this.onPlaylistChanged.notify();
+  },
+
+  playVideo: function(url) {
+    this.videoUrl_ = url;
+    this.onVideoLaunched.notify();
   }
 };

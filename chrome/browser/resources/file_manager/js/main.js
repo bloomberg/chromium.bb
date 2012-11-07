@@ -24,6 +24,6 @@ function init() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', init);
+util.addPageLoadHandler(init);
 
 metrics.recordInterval('Load.Script');  // Must be the last line.
