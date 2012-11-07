@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/drive/drive_cache_metadata.h"
 #include "chrome/browser/chromeos/drive/drive_cache_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -192,43 +193,6 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
   }
 }
 
-// Appends |resource_id| ID to |to_fetch| if the file is pinned but not
-// fetched (not present locally), or to |to_upload| if the file is dirty
-// but not uploaded.
-void CollectBacklog(std::vector<std::string>* to_fetch,
-                    std::vector<std::string>* to_upload,
-                    const std::string& resource_id,
-                    const DriveCacheEntry& cache_entry) {
-  DCHECK(to_fetch);
-  DCHECK(to_upload);
-
-  if (cache_entry.is_pinned() && !cache_entry.is_present())
-    to_fetch->push_back(resource_id);
-
-  if (cache_entry.is_dirty())
-    to_upload->push_back(resource_id);
-}
-
-// Appends |resource_id| ID to |resource_ids| if the file is pinned and
-// present (cached locally).
-void CollectExistingPinnedFile(std::vector<std::string>* resource_ids,
-                               const std::string& resource_id,
-                               const DriveCacheEntry& cache_entry) {
-  DCHECK(resource_ids);
-
-  if (cache_entry.is_pinned() && cache_entry.is_present())
-    resource_ids->push_back(resource_id);
-}
-
-// Appends |resource_id| ID to |resource_ids| unconditionally.
-void CollectAnyFile(std::vector<std::string>* resource_ids,
-                    const std::string& resource_id,
-                    const DriveCacheEntry& /* cache_entry */) {
-  DCHECK(resource_ids);
-
-  resource_ids->push_back(resource_id);
-}
-
 // Runs callback with pointers dereferenced.
 // Used to implement Store, ClearDirty and Remove.
 void RunCacheOperationCallback(const CacheOperationCallback& callback,
@@ -251,29 +215,6 @@ void RunGetFileFromCacheCallback(
 
   if (!callback.is_null())
     callback.Run(result->first, result->second);
-}
-
-// Runs callback with pointers dereferenced.
-// Used to implement GetResourceIdsOfBacklog().
-void RunGetResourceIdsOfBacklogCallback(
-    const GetResourceIdsOfBacklogCallback& callback,
-    std::vector<std::string>* to_fetch,
-    std::vector<std::string>* to_upload) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(to_fetch);
-  DCHECK(to_upload);
-  DCHECK(!callback.is_null());
-  callback.Run(*to_fetch, *to_upload);
-}
-
-// Runs callback with pointers dereferenced.
-// Used to implement GetResourceIdsOfExistingPinnedFiles().
-void RunGetResourceIdsCallback(const GetResourceIdsCallback& callback,
-                               std::vector<std::string>* resource_ids) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(resource_ids);
-  DCHECK(!callback.is_null());
-  callback.Run(*resource_ids);
 }
 
 // Runs callback with pointers dereferenced.
@@ -371,47 +312,18 @@ void DriveCache::GetCacheEntry(const std::string& resource_id,
                  callback, base::Owned(cache_entry)));
 }
 
-void DriveCache::GetResourceIdsOfBacklog(
-    const GetResourceIdsOfBacklogCallback& callback) {
+void DriveCache::Iterate(const CacheIterateCallback& iteration_callback,
+                         const base::Closure& completion_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
+  DCHECK(!iteration_callback.is_null());
+  DCHECK(!completion_callback.is_null());
 
-  std::vector<std::string>* to_fetch = new std::vector<std::string>;
-  std::vector<std::string>* to_upload = new std::vector<std::string>;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&DriveCache::GetResourceIdsOfBacklogOnBlockingPool,
-                 base::Unretained(this), to_fetch, to_upload),
-      base::Bind(&RunGetResourceIdsOfBacklogCallback,
-                 callback, base::Owned(to_fetch), base::Owned(to_upload)));
-}
-
-void DriveCache::GetResourceIdsOfExistingPinnedFiles(
-    const GetResourceIdsCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  std::vector<std::string>* resource_ids = new std::vector<std::string>;
-  blocking_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&DriveCache::GetResourceIdsOfExistingPinnedFilesOnBlockingPool,
-                 base::Unretained(this), resource_ids),
-      base::Bind(&RunGetResourceIdsCallback,
-                 callback, base::Owned(resource_ids)));
-}
-
-void DriveCache::GetResourceIdsOfAllFiles(
-    const GetResourceIdsCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  std::vector<std::string>* resource_ids = new std::vector<std::string>;
-  blocking_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&DriveCache::GetResourceIdsOfAllFilesOnBlockingPool,
-                 base::Unretained(this), resource_ids),
-      base::Bind(&RunGetResourceIdsCallback,
-                 callback, base::Owned(resource_ids)));
+      base::Bind(&DriveCache::IterateOnBlockingPool,
+                 base::Unretained(this),
+                 google_apis::CreateRelayCallback(iteration_callback)),
+      completion_callback);
 }
 
 bool DriveCache::FreeDiskSpaceOnBlockingPoolIfNeededFor(int64 num_bytes) {
@@ -654,30 +566,12 @@ void DriveCache::ForceRescanOnBlockingPoolForTesting() {
   metadata_->ForceRescanForTesting(cache_paths_);
 }
 
-void DriveCache::GetResourceIdsOfBacklogOnBlockingPool(
-    std::vector<std::string>* to_fetch,
-    std::vector<std::string>* to_upload) {
+void DriveCache::IterateOnBlockingPool(
+    const CacheIterateCallback& iteration_callback) {
   AssertOnSequencedWorkerPool();
-  DCHECK(to_fetch);
-  DCHECK(to_upload);
+  DCHECK(!iteration_callback.is_null());
 
-  metadata_->Iterate(base::Bind(&CollectBacklog, to_fetch, to_upload));
-}
-
-void DriveCache::GetResourceIdsOfExistingPinnedFilesOnBlockingPool(
-    std::vector<std::string>* resource_ids) {
-  AssertOnSequencedWorkerPool();
-  DCHECK(resource_ids);
-
-  metadata_->Iterate(base::Bind(&CollectExistingPinnedFile, resource_ids));
-}
-
-void DriveCache::GetResourceIdsOfAllFilesOnBlockingPool(
-    std::vector<std::string>* resource_ids) {
-  AssertOnSequencedWorkerPool();
-  DCHECK(resource_ids);
-
-  metadata_->Iterate(base::Bind(&CollectAnyFile, resource_ids));
+  metadata_->Iterate(iteration_callback);
 }
 
 scoped_ptr<DriveCache::GetFileResult> DriveCache::GetFileOnBlockingPool(

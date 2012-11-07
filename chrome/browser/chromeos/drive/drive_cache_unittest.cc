@@ -100,19 +100,18 @@ class MockFreeDiskSpaceGetter : public FreeDiskSpaceGetterInterface {
   MOCK_CONST_METHOD0(AmountOfFreeDiskSpace, int64());
 };
 
-// Copies results from GetResourceIdsOfBacklogCallback.
-void OnGetResourceIdsOfBacklog(std::vector<std::string>* out_to_fetch,
-                               std::vector<std::string>* out_to_upload,
-                               const std::vector<std::string>& to_fetch,
-                               const std::vector<std::string>& to_upload) {
-  *out_to_fetch = to_fetch;
-  *out_to_upload = to_upload;
+// Copies results from Iterate().
+void OnIterate(std::vector<std::string>* out_resource_ids,
+               std::vector<DriveCacheEntry>* out_cache_entries,
+               const std::string& resource_id,
+               const DriveCacheEntry& cache_entry) {
+  out_resource_ids->push_back(resource_id);
+  out_cache_entries->push_back(cache_entry);
 }
 
-// Copies results from GetResourceIdsCallback.
-void OnGetResourceIds(std::vector<std::string>* out_resource_ids,
-                      const std::vector<std::string>& resource_ids) {
-  *out_resource_ids = resource_ids;
+// Called upon completion of Iterate().
+void OnIterateCompleted(bool* out_is_called) {
+  *out_is_called = true;
 }
 
 // Copies results from ClearAll.
@@ -1484,46 +1483,18 @@ TEST_F(DriveCacheTest, MountUnmount) {
   EXPECT_EQ(1, num_callback_invocations_);
 }
 
-TEST_F(DriveCacheTest, GetResourceIdsOfBacklog) {
-  PrepareForInitCacheTest();
-
-  std::vector<std::string> to_fetch;
-  std::vector<std::string> to_upload;
-  cache_->GetResourceIdsOfBacklog(
-      base::Bind(&OnGetResourceIdsOfBacklog, &to_fetch, &to_upload));
-  google_apis::test_util::RunBlockingPoolTask();
-
-  sort(to_fetch.begin(), to_fetch.end());
-  ASSERT_EQ(1U, to_fetch.size());
-  EXPECT_EQ("pinned:non-existent", to_fetch[0]);
-
-  sort(to_upload.begin(), to_upload.end());
-  ASSERT_EQ(2U, to_upload.size());
-  EXPECT_EQ("dirty:existing", to_upload[0]);
-  EXPECT_EQ("dirty_and_pinned:existing", to_upload[1]);
-}
-
-TEST_F(DriveCacheTest, GetResourceIdsOfExistingPinnedFiles) {
+TEST_F(DriveCacheTest, Iterate) {
   PrepareForInitCacheTest();
 
   std::vector<std::string> resource_ids;
-  cache_->GetResourceIdsOfExistingPinnedFiles(
-      base::Bind(&OnGetResourceIds, &resource_ids));
+  std::vector<DriveCacheEntry> cache_entries;
+  bool completed = false;
+  cache_->Iterate(
+      base::Bind(&OnIterate, &resource_ids, &cache_entries),
+      base::Bind(&OnIterateCompleted, &completed));
   google_apis::test_util::RunBlockingPoolTask();
 
-  sort(resource_ids.begin(), resource_ids.end());
-  ASSERT_EQ(2U, resource_ids.size());
-  EXPECT_EQ("dirty_and_pinned:existing", resource_ids[0]);
-  EXPECT_EQ("pinned:existing", resource_ids[1]);
-}
-
-TEST_F(DriveCacheTest, GetResourceIdsOfAllFiles) {
-  PrepareForInitCacheTest();
-
-  std::vector<std::string> resource_ids;
-  cache_->GetResourceIdsOfAllFiles(
-      base::Bind(&OnGetResourceIds, &resource_ids));
-  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_TRUE(completed);
 
   sort(resource_ids.begin(), resource_ids.end());
   ASSERT_EQ(6U, resource_ids.size());
@@ -1533,6 +1504,8 @@ TEST_F(DriveCacheTest, GetResourceIdsOfAllFiles) {
   EXPECT_EQ("pinned:non-existent", resource_ids[3]);
   EXPECT_EQ("tmp:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?", resource_ids[4]);
   EXPECT_EQ("tmp:resource_id", resource_ids[5]);
+
+  ASSERT_EQ(6U, cache_entries.size());
 }
 
 

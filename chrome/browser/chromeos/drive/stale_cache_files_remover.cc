@@ -5,9 +5,8 @@
 #include "chrome/browser/chromeos/drive/stale_cache_files_remover.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -45,39 +44,16 @@ StaleCacheFilesRemover::~StaleCacheFilesRemover() {
 void StaleCacheFilesRemover::OnInitialLoadFinished(DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const FilePath root_path = FilePath(kDriveRootDirectory);
-  cache_->GetResourceIdsOfAllFiles(
-      base::Bind(&StaleCacheFilesRemover::OnGetResourceIdsOfAllFiles,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void StaleCacheFilesRemover::OnGetResourceIdsOfAllFiles(
-    const std::vector<std::string>& resource_ids) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  for (size_t i = 0; i < resource_ids.size(); ++i) {
-    const std::string& resource_id = resource_ids[i];
-    cache_->GetCacheEntry(
-        resource_id,
-        "",  // Don't check MD5.
-        base::Bind(
-            &StaleCacheFilesRemover::GetEntryInfoAndRemoveCacheIfNecessary,
-            weak_ptr_factory_.GetWeakPtr(),
-            resource_id));
-  }
+  cache_->Iterate(
+      base::Bind(&StaleCacheFilesRemover::GetEntryInfoAndRemoveCacheIfNecessary,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&base::DoNothing));
 }
 
 void StaleCacheFilesRemover::GetEntryInfoAndRemoveCacheIfNecessary(
     const std::string& resource_id,
-    bool success,
     const DriveCacheEntry& cache_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Removes the cache if GetCacheEntry() failed.
-  if (!success) {
-    LOG(WARNING) << "GetCacheEntry() failed";
-    return;
-  }
 
   file_system_->GetEntryInfoByResourceId(
       resource_id,

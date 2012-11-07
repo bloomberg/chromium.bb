@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_STALE_CACHE_FILES_REMOVER_H_
 
 #include <string>
-#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -35,15 +34,10 @@ class StaleCacheFilesRemover : public DriveFileSystemObserver {
   // with the list.
   virtual void OnInitialLoadFinished(DriveFileError error) OVERRIDE;
 
-  // Gets the cache entry of each resource id. And passes the cache entry to
-  // GetEntryInfoAndRemoveCacheIfNecessary().
-  void OnGetResourceIdsOfAllFiles(const std::vector<std::string>& resource_ids);
-
   // Gets the file entry and calls RemoveCacheIfNecessary() with the file entry.
-  // This is called from StaleCacheFilesRemover::OnGetResourceIdsOfAllFiles().
+  // This is called from StaleCacheFilesRemover::OnInitialLoadFinished.
   void GetEntryInfoAndRemoveCacheIfNecessary(
       const std::string& resource_id,
-      bool success,
       const DriveCacheEntry& cache_entry);
 
   // Check the cache file and removes if it is unavailable or invalid (eg. md5

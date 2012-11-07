@@ -218,14 +218,9 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
                              bool hide_hosted_documents,
                              scoped_ptr<drive::DriveEntryProtoVector> entries);
 
-  // Called when GetResourceIdsOfAllFiles() is complete.
-  void OnGetResourceIdsOfAllFiles(
-      const std::vector<std::string>& resource_ids);
-
-  // Called when GetCacheEntry() is complete.
-  void OnGetCacheEntry(const std::string& resource_id,
-                       bool success,
-                       const drive::DriveCacheEntry& cache_entry);
+  // Called as the iterator for DriveCache::Iterate().
+  void UpdateCacheEntry(const std::string& resource_id,
+                        const drive::DriveCacheEntry& cache_entry);
 
   // Called when GetFreeDiskSpace() is complete.
   void OnGetFreeDiskSpace(base::DictionaryValue* local_storage_summary);
@@ -535,9 +530,9 @@ void DriveInternalsWebUIHandler::UpdateLocalStorageUsageSection() {
 
 void DriveInternalsWebUIHandler::UpdateCacheContentsSection(
     drive::DriveCache* cache) {
-  cache->GetResourceIdsOfAllFiles(
-      base::Bind(&DriveInternalsWebUIHandler::OnGetResourceIdsOfAllFiles,
-                 weak_ptr_factory_.GetWeakPtr()));
+  cache->Iterate(base::Bind(&DriveInternalsWebUIHandler::UpdateCacheEntry,
+                            weak_ptr_factory_.GetWeakPtr()),
+                 base::Bind(&base::DoNothing));
 }
 
 void DriveInternalsWebUIHandler::OnGetGCacheContents(
@@ -597,28 +592,9 @@ void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
   }
 }
 
-void DriveInternalsWebUIHandler::OnGetResourceIdsOfAllFiles(
-    const std::vector<std::string>& resource_ids) {
-  for (size_t i = 0; i < resource_ids.size(); ++i) {
-    const std::string& resource_id = resource_ids[i];
-    GetSystemService()->cache()->GetCacheEntry(
-        resource_id,
-        "",  // Don't check MD5.
-        base::Bind(&DriveInternalsWebUIHandler::OnGetCacheEntry,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   resource_id));
-  }
-}
-
-void DriveInternalsWebUIHandler::OnGetCacheEntry(
+void DriveInternalsWebUIHandler::UpdateCacheEntry(
     const std::string& resource_id,
-    bool success,
     const drive::DriveCacheEntry& cache_entry) {
-  if (!success) {
-    LOG(ERROR) << "Failed to get cache entry: " << resource_id;
-    return;
-  }
-
   // Convert |cache_entry| into a dictionary.
   base::DictionaryValue value;
   value.SetString("resource_id", resource_id);

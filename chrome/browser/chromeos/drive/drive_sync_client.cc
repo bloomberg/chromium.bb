@@ -58,6 +58,23 @@ struct CompareTypeAndResourceId {
   const std::string resource_id;
 };
 
+// Appends |resource_id| to |to_fetch| if the file is pinned but not fetched
+// (not present locally), or to |to_upload| if the file is dirty but not
+// uploaded.
+void CollectBacklog(std::vector<std::string>* to_fetch,
+                    std::vector<std::string>* to_upload,
+                    const std::string& resource_id,
+                    const DriveCacheEntry& cache_entry) {
+  DCHECK(to_fetch);
+  DCHECK(to_upload);
+
+  if (cache_entry.is_pinned() && !cache_entry.is_present())
+    to_fetch->push_back(resource_id);
+
+  if (cache_entry.is_dirty())
+    to_upload->push_back(resource_id);
+}
+
 }  // namespace
 
 DriveSyncClient::SyncTask::SyncTask(SyncType in_sync_type,
@@ -106,17 +123,22 @@ void DriveSyncClient::Initialize() {
 void DriveSyncClient::StartProcessingBacklog() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  cache_->GetResourceIdsOfBacklog(
-      base::Bind(&DriveSyncClient::OnGetResourceIdsOfBacklog,
-                 weak_ptr_factory_.GetWeakPtr()));
+  std::vector<std::string>* to_fetch = new std::vector<std::string>;
+  std::vector<std::string>* to_upload = new std::vector<std::string>;
+  cache_->Iterate(base::Bind(&CollectBacklog, to_fetch, to_upload),
+                  base::Bind(&DriveSyncClient::OnGetResourceIdsOfBacklog,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             base::Owned(to_fetch),
+                             base::Owned(to_upload)));
 }
 
 void DriveSyncClient::StartCheckingExistingPinnedFiles() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  cache_->GetResourceIdsOfExistingPinnedFiles(
-      base::Bind(&DriveSyncClient::OnGetResourceIdsOfExistingPinnedFiles,
-                 weak_ptr_factory_.GetWeakPtr()));
+  cache_->Iterate(
+      base::Bind(&DriveSyncClient::OnGetResourceIdOfExistingPinnedFile,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&base::DoNothing));
 }
 
 std::vector<std::string> DriveSyncClient::GetResourceIdsForTesting(
@@ -275,20 +297,20 @@ void DriveSyncClient::AddTaskToQueue(const SyncTask& sync_task) {
 }
 
 void DriveSyncClient::OnGetResourceIdsOfBacklog(
-    const std::vector<std::string>& to_fetch,
-    const std::vector<std::string>& to_upload) {
+    const std::vector<std::string>* to_fetch,
+    const std::vector<std::string>* to_upload) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Give priority to upload tasks over fetch tasks, so that dirty files are
   // uploaded as soon as possible.
-  for (size_t i = 0; i < to_upload.size(); ++i) {
-    const std::string& resource_id = to_upload[i];
+  for (size_t i = 0; i < to_upload->size(); ++i) {
+    const std::string& resource_id = (*to_upload)[i];
     DVLOG(1) << "Queuing to upload: " << resource_id;
     AddTaskToQueue(SyncTask(UPLOAD, resource_id, base::Time::Now()));
   }
 
-  for (size_t i = 0; i < to_fetch.size(); ++i) {
-    const std::string& resource_id = to_fetch[i];
+  for (size_t i = 0; i < to_fetch->size(); ++i) {
+    const std::string& resource_id = (*to_fetch)[i];
     DVLOG(1) << "Queuing to fetch: " << resource_id;
     AddTaskToQueue(SyncTask(FETCH, resource_id, base::Time::Now()));
   }
@@ -296,22 +318,24 @@ void DriveSyncClient::OnGetResourceIdsOfBacklog(
   StartSyncLoop();
 }
 
-void DriveSyncClient::OnGetResourceIdsOfExistingPinnedFiles(
-    const std::vector<std::string>& resource_ids) {
+void DriveSyncClient::OnGetResourceIdOfExistingPinnedFile(
+    const std::string& resource_id,
+    const DriveCacheEntry& cache_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  for (size_t i = 0; i < resource_ids.size(); ++i) {
-    const std::string& resource_id = resource_ids[i];
+  if (cache_entry.is_pinned() && cache_entry.is_present()) {
     file_system_->GetEntryInfoByResourceId(
         resource_id,
         base::Bind(&DriveSyncClient::OnGetEntryInfoByResourceId,
                    weak_ptr_factory_.GetWeakPtr(),
-                   resource_id));
+                   resource_id,
+                   cache_entry));
   }
 }
 
 void DriveSyncClient::OnGetEntryInfoByResourceId(
     const std::string& resource_id,
+    const DriveCacheEntry& cache_entry,
     DriveFileError error,
     const FilePath& /* drive_file_path */,
     scoped_ptr<DriveEntryProto> entry_proto) {
@@ -325,31 +349,11 @@ void DriveSyncClient::OnGetEntryInfoByResourceId(
     return;
   }
 
-  cache_->GetCacheEntry(
-      resource_id,
-      "" /* don't check MD5 */,
-      base::Bind(&DriveSyncClient::OnGetCacheEntry,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 resource_id,
-                 entry_proto->file_specific_info().file_md5()));
-}
-
-void DriveSyncClient::OnGetCacheEntry(
-    const std::string& resource_id,
-    const std::string& latest_md5,
-    bool success,
-    const DriveCacheEntry& cache_entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!success) {
-    LOG(WARNING) << "Cache entry not found: " << resource_id;
-    return;
-  }
-
   // If MD5s don't match, it indicates the local cache file is stale, unless
   // the file is dirty (the MD5 is "local"). We should never re-fetch the
   // file when we have a locally modified version.
-  if (latest_md5 != cache_entry.md5() && !cache_entry.is_dirty()) {
+  if (entry_proto->file_specific_info().file_md5() != cache_entry.md5() &&
+      !cache_entry.is_dirty()) {
     cache_->Remove(resource_id,
                    base::Bind(&DriveSyncClient::OnRemove,
                               weak_ptr_factory_.GetWeakPtr()));

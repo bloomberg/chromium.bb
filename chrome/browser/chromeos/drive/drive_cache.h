@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/drive/drive_cache_metadata.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 
 class Profile;
@@ -38,17 +39,6 @@ typedef base::Callback<void(DriveFileError error,
 typedef base::Callback<void(DriveFileError error,
                             const FilePath& cache_file_path)>
     GetFileFromCacheCallback;
-
-// Callback for GetResourceIdsOfBacklog.
-// |to_fetch| is for resource IDs of pinned-but-not-fetched files.
-// |to_upload| is for resource IDs of dirty-but-not-uploaded files.
-typedef base::Callback<void(const std::vector<std::string>& to_fetch,
-                            const std::vector<std::string>& to_upload)>
-    GetResourceIdsOfBacklogCallback;
-
-// Callback for GetResourceIdsOfExistingPinnedFiles.
-typedef base::Callback<void(const std::vector<std::string>& resource_ids)>
-    GetResourceIdsCallback;
 
 // Callback for GetCacheEntry.
 // |success| indicates if the operation was successful.
@@ -137,20 +127,10 @@ class DriveCache {
                      const std::string& md5,
                      const GetCacheEntryCallback& callback);
 
-  // Gets the resource IDs of pinned-but-not-fetched files and
-  // dirty-but-not-uploaded files.
-  // |callback| must not be null.
-  void GetResourceIdsOfBacklog(const GetResourceIdsOfBacklogCallback& callback);
-
-  // Gets the resource IDs of all existing (i.e. cached locally) pinned
-  // files, including pinned dirty files.
-  // |callback| must not be null.
-  void GetResourceIdsOfExistingPinnedFiles(
-      const GetResourceIdsCallback& callback);
-
-  // Gets the resource IDs of all files in the cache.
-  // |callback| must not be null.
-  void GetResourceIdsOfAllFiles(const GetResourceIdsCallback& callback);
+  // Iterates all files in the cache and calls |iteration_callback| for each
+  // file. |completion_callback| is run upon completion.
+  void Iterate(const CacheIterateCallback& iteration_callback,
+               const base::Closure& completion_callback);
 
   // Frees up disk space to store the given number of bytes, while keeping
   // kMinFreeSpace bytes on the disk, if needed.
@@ -315,18 +295,8 @@ class DriveCache {
   // Force a rescan of cache directories.
   void ForceRescanOnBlockingPoolForTesting();
 
-  // Used to implement GetResourceIdsOfBacklog.
-  void GetResourceIdsOfBacklogOnBlockingPool(
-      std::vector<std::string>* to_fetch,
-      std::vector<std::string>* to_upload);
-
-  // Used to implement GetResourceIdsOfExistingPinnedFiles.
-  void GetResourceIdsOfExistingPinnedFilesOnBlockingPool(
-      std::vector<std::string>* resource_ids);
-
-  // Used to implement GetResourceIdsOfAllFiles.
-  void GetResourceIdsOfAllFilesOnBlockingPool(
-      std::vector<std::string>* resource_ids);
+  // Used to implement Iterate().
+  void IterateOnBlockingPool(const CacheIterateCallback& iteration_callback);
 
   // Used to implement GetFile.
   scoped_ptr<GetFileResult> GetFileOnBlockingPool(

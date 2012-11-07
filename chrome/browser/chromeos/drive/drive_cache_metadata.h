@@ -9,10 +9,25 @@
 #include <vector>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/file_path.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+
+namespace base {
+
+class SequencedTaskRunner;
+
+}  // namespace base
 
 namespace drive {
+
+class DriveCacheEntry;
+
+// Callback for Iterate().
+typedef base::Callback<void(const std::string& resource_id,
+                            const DriveCacheEntry& cache_entry)>
+    CacheIterateCallback;
 
 // DriveCacheMetadata is interface to maintain metadata of DriveCache's cached
 // files. This class only manages metadata. File operations are done by
@@ -20,11 +35,6 @@ namespace drive {
 // All member access including ctor and dtor must be made on the blocking pool.
 class DriveCacheMetadata {
  public:
-  // Callback for Iterate().
-  typedef base::Callback<void(const std::string& resource_id,
-                              const DriveCacheEntry& cache_entry)>
-      IterateCallback;
-
   // A map table of cache file's resource id to its CacheEntry* entry.
   typedef std::map<std::string, DriveCacheEntry> CacheMap;
 
@@ -66,7 +76,7 @@ class DriveCacheMetadata {
 
   // Iterates over all the cache entries synchronously. |callback| is called
   // on each cache entry.
-  virtual void Iterate(const IterateCallback& callback) = 0;
+  virtual void Iterate(const CacheIterateCallback& callback) = 0;
 
   // Force a rescan of cache directories, for testing.
   virtual void ForceRescanForTesting(
