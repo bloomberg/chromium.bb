@@ -11,10 +11,14 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
   switch (code) {
     case kOk:
       return "ok";
-    case kUnknownError:
-      return "unknown error";
     case kUnknownCommand:
       return "unknown command";
+    case kUnknownError:
+      return "unknown error";
+    case kSessionNotCreatedException:
+      return "session not created exception";
+    case kNoSuchSession:
+      return "no such session";
     default:
       return "<unknown>";
   }

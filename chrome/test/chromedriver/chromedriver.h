@@ -7,13 +7,12 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
+
 class CommandExecutor;
 
-typedef CommandExecutor* (*CommandExecutorFactoryFunc)();
-
-// Sets the function to use for creating new |CommandExecutor|s. Only
-// for testing purposes.
-void SetCommandExecutorFactoryForTesting(CommandExecutorFactoryFunc func);
+// Inits the command executor. Must be called before |ExecuteCommand|.
+void Init(scoped_ptr<CommandExecutor> executor);
 
 // Synchronously executes the given command. Thread safe.
 // Command must be a JSON object:
@@ -31,5 +30,8 @@ void SetCommandExecutorFactoryForTesting(CommandExecutorFactoryFunc func);
 // If "status" is non-zero, "value" will be an object with a string "message"
 // property which signifies the error message.
 void ExecuteCommand(const std::string& command, std::string* response);
+
+// Shuts down the command executor. No commands must be currently executing.
+void Shutdown();
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROMEDRIVER_H_

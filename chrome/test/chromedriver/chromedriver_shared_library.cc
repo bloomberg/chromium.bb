@@ -10,6 +10,8 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/test/chromedriver/chromedriver.h"
+#include "chrome/test/chromedriver/command_executor.h"
+#include "chrome/test/chromedriver/command_executor_impl.h"
 #include "chrome/test/chromedriver/third_party/jni/jni.h"
 
 #if defined(OS_WIN)
@@ -77,17 +79,23 @@ EXPORT jstring Java_org_openqa_selenium_chrome_NewCommandExecutor_execute(
 
 #if defined(OS_WIN)
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, void* reserved) {
-  if (reason == DLL_PROCESS_ATTACH)
+  if (reason == DLL_PROCESS_ATTACH) {
     g_at_exit = new base::AtExitManager();
-  if (reason == DLL_PROCESS_DETACH)
+    Init(scoped_ptr<CommandExecutor>(new CommandExecutorImpl()));
+  }
+  if (reason == DLL_PROCESS_DETACH) {
+    Shutdown();
     delete g_at_exit;
+  }
   return TRUE;
 }
 #else
 void __attribute__((constructor)) OnLoad(void) {
   g_at_exit = new base::AtExitManager();
+  Init(scoped_ptr<CommandExecutor>(new CommandExecutorImpl()));
 }
 void __attribute__((destructor)) OnUnload(void) {
+  Shutdown();
   delete g_at_exit;
 }
 #endif

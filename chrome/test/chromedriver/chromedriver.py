@@ -5,6 +5,27 @@
 import ctypes
 import json
 
+class ChromeDriverException(Exception):
+  pass
+class UnknownCommand(ChromeDriverException):
+  pass
+class UnknownError(ChromeDriverException):
+  pass
+class SessionNotCreatedException(ChromeDriverException):
+  pass
+class NoSuchSession(ChromeDriverException):
+  pass
+
+def _ExceptionForResponse(response):
+  exception_class_map = {
+    9: UnknownCommand,
+    13: UnknownError,
+    33: SessionNotCreatedException,
+    100: NoSuchSession
+  }
+  status = response['status']
+  msg = response['value']['message']
+  return exception_class_map.get(status, ChromeDriverException)(msg)
 
 class ChromeDriver(object):
   """Starts and controls a single Chrome instance on this machine."""
@@ -29,7 +50,10 @@ class ChromeDriver(object):
         ctypes.byref(response_size))
     response_json = ctypes.string_at(response_data, response_size.value)
     self._lib.Free(response_data)
-    return json.loads(response_json)['value']
+    response = json.loads(response_json)
+    if response['status'] != 0:
+      raise _ExceptionForResponse(response)
+    return response['value']
 
   def _ExecuteSessionCommand(self, name, params={}):
     return self._ExecuteCommand(name, params, self._session_id)

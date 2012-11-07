@@ -6,26 +6,15 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/command_executor.h"
-#include "chrome/test/chromedriver/command_executor_impl.h"
 #include "chrome/test/chromedriver/status.h"
 
 namespace {
 
-// Guards initialization of |g_command_executor|.
-base::LazyInstance<base::Lock> g_lazy_lock = LAZY_INSTANCE_INITIALIZER;
-
 CommandExecutor* g_command_executor = NULL;
-
-CommandExecutor* CreateCommandExecutor() {
-  return new CommandExecutorImpl();
-}
-
-CommandExecutorFactoryFunc g_executor_factory = &CreateCommandExecutor;
 
 void SetResponse(StatusCode status,
                  const base::Value* value,
@@ -48,26 +37,12 @@ void SetError(const std::string& error_msg,
 
 }  // namespace
 
-void SetCommandExecutorFactoryForTesting(CommandExecutorFactoryFunc func) {
-  g_executor_factory = func;
+void Init(scoped_ptr<CommandExecutor> executor) {
+  g_command_executor = executor.release();
 }
 
-// Synchronously executes the given command. Thread safe.
-// Command must be a JSON object:
-// {
-//   "name": <string>,
-//   "parameters": <dictionary>,
-//   "sessionId": <string>
-// }
-// Response will always be a JSON object:
-// {
-//   "status": <integer>,
-//   "value": <object>,
-//   "sessionId": <string>
-// }
-// If "status" is non-zero, "value" will be an object with a string "message"
-// property which signifies the error message.
 void ExecuteCommand(const std::string& command, std::string* response) {
+  CHECK(g_command_executor);
   std::string error_msg;
   scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
       command, 0, NULL, &error_msg));
@@ -100,12 +75,38 @@ void ExecuteCommand(const std::string& command, std::string* response) {
   StatusCode out_status = kOk;
   scoped_ptr<base::Value> out_value;
   std::string out_session_id;
-  {
-    base::AutoLock(g_lazy_lock.Get());
-    if (!g_command_executor)
-      g_command_executor = g_executor_factory();
-  }
   g_command_executor->ExecuteCommand(
       name, *params, session_id, &out_status, &out_value, &out_session_id);
   SetResponse(out_status, out_value.get(), out_session_id, response);
+}
+
+void Shutdown() {
+  // TODO: Move this out to a separate doc.
+  // On shutdown, it is nice to quit all running sessions so that we don't
+  // have leftover Chrome processes and temporary user data dirs.
+  // To do this, we execute the quitAll command.
+  // Alternative shutdown behaviors:
+  // 1. If the user doesn't quit the session, don't clean it up.
+  //    This is what the FF driver does, except the temp dir is
+  //    cleaned up in FF because the client side is responsible for creating
+  //    the temp directory, not the driver.
+  // 2. Separate helper process that we spawn that is in charge of
+  //    launching processes and creating temporary files. This process
+  //    communicates to the helper via a socket. The helper process
+  //    kills all processes and deletes temp files if it sees the parent
+  //    die and then exits itself. This is more complicated, but it guarantees
+  //    that the processes and temp dirs are cleaned up, even if this process
+  //    exits abnormally.
+  // 3. Add Chrome command-line switch for socket/pipe that Chrome listens
+  //    to and exits if the pipe is closed. This is how the old
+  //    TestingAutomationProvider worked. However, this doesn't clean up
+  //    temp directories, unless we make Chrome clean its own directory too.
+  //    If Chrome crashes the directory would be leaked.
+  base::DictionaryValue params;
+  StatusCode status_code;
+  scoped_ptr<base::Value> value;
+  std::string session_id;
+  g_command_executor->ExecuteCommand(
+      "quitAll", params, "", &status_code, &value, &session_id);
+  delete g_command_executor;
 }

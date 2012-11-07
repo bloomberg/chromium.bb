@@ -11,7 +11,9 @@
 enum StatusCode {
   kOk = 0,
   kUnknownCommand = 9,
-  kUnknownError = 13
+  kUnknownError = 13,
+  kSessionNotCreatedException = 33,
+  kNoSuchSession = 100
 };
 
 // Represents a WebDriver status, which may be an error or ok.

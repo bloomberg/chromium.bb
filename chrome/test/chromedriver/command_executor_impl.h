@@ -5,16 +5,18 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_COMMAND_EXECUTOR_IMPL_H_
 #define CHROME_TEST_CHROMEDRIVER_COMMAND_EXECUTOR_IMPL_H_
 
-#include <map>
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
+#include "chrome/test/chromedriver/command.h"
 #include "chrome/test/chromedriver/command_executor.h"
+#include "chrome/test/chromedriver/session_map.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/synchronized_map.h"
 
 namespace base {
 class DictionaryValue;
@@ -35,26 +37,13 @@ class CommandExecutorImpl : public CommandExecutor {
                               std::string* out_session_id) OVERRIDE;
 
  private:
-  typedef base::Callback<void(
-      const base::DictionaryValue& params,
-      Status* status,
-      scoped_ptr<base::Value>* value)>
-          SessionCommandCallback;
-  typedef std::map<std::string, SessionCommandCallback> SessionCommandMap;
+  FRIEND_TEST_ALL_PREFIXES(CommandExecutorImplTest, SimpleCommand);
+  FRIEND_TEST_ALL_PREFIXES(
+      CommandExecutorImplTest, CommandThatDoesntSetValueOrSessionId);
+  FRIEND_TEST_ALL_PREFIXES(CommandExecutorImplTest, CommandThatReturnsError);
 
-  void ExecuteCommandInternal(
-      const std::string& name,
-      const base::DictionaryValue& params,
-      const std::string& session_id,
-      Status* status,
-      scoped_ptr<base::Value>* value,
-      std::string* out_session_id);
-
-  void ExecuteNewSession(std::string* session_id);
-
-  base::Lock lock_;
-  int next_session_id_;
-  SessionCommandMap session_command_map_;
+  SessionMap session_map_;
+  SynchronizedMap<std::string, Command> command_map_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandExecutorImpl);
 };
