@@ -432,10 +432,12 @@ TEST_P(LayerTreeHostImplTest, nonFastScrollableRegionBasic)
 {
     setupScrollAndContentsLayers(gfx::Size(200, 200));
     m_hostImpl->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
-    initializeRendererAndDrawFrame();
-    LayerImpl* root = m_hostImpl->rootLayer();
 
+    LayerImpl* root = m_hostImpl->rootLayer();
+    root->setContentsScale(2, 2);
     root->setNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
+
+    initializeRendererAndDrawFrame();
 
     // All scroll types inside the non-fast scrollable region should fail.
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(25, 25), InputHandlerClient::Wheel), InputHandlerClient::ScrollOnMainThread);
@@ -454,10 +456,12 @@ TEST_P(LayerTreeHostImplTest, nonFastScrollableRegionWithOffset)
 {
     setupScrollAndContentsLayers(gfx::Size(200, 200));
     m_hostImpl->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
-    LayerImpl* root = m_hostImpl->rootLayer();
 
+    LayerImpl* root = m_hostImpl->rootLayer();
+    root->setContentsScale(2, 2);
     root->setNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
     root->setPosition(gfx::PointF(-25, 0));
+
     initializeRendererAndDrawFrame();
 
     // This point would fall into the non-fast scrollable region except that we've moved the layer down by 25 pixels.

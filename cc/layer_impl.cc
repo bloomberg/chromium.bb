@@ -215,8 +215,9 @@ InputHandlerClient::ScrollStatus LayerImpl::tryScroll(const gfx::PointF& screenS
 
     if (!nonFastScrollableRegion().IsEmpty()) {
         bool clipped = false;
-        gfx::PointF hitTestPointInLocalSpace = MathUtil::projectPoint(screenSpaceTransform().inverse(), screenSpacePoint, clipped);
-        if (!clipped && nonFastScrollableRegion().Contains(gfx::ToFlooredPoint(hitTestPointInLocalSpace))) {
+        gfx::PointF hitTestPointInContentSpace = MathUtil::projectPoint(screenSpaceTransform().inverse(), screenSpacePoint, clipped);
+        gfx::PointF hitTestPointInLayerSpace = hitTestPointInContentSpace.Scale(1 / contentsScaleX(), 1 / contentsScaleY());
+        if (!clipped && nonFastScrollableRegion().Contains(gfx::ToRoundedPoint(hitTestPointInLayerSpace))) {
             TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed nonFastScrollableRegion");
             return InputHandlerClient::ScrollOnMainThread;
         }
