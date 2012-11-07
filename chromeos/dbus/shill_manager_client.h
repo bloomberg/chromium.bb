@@ -40,9 +40,14 @@ class CHROMEOS_EXPORT ShillManagerClient {
     virtual void RemoveDevice(const std::string& device_path) = 0;
     virtual void AddService(const std::string& service_path,
                             bool add_to_watch_list) = 0;
+    virtual void AddServiceAtIndex(const std::string& service_path,
+                                   size_t index,
+                                   bool add_to_watch_list) = 0;
     virtual void RemoveService(const std::string& service_path) = 0;
     virtual void AddTechnology(const std::string& type, bool enabled) = 0;
     virtual void RemoveTechnology(const std::string& type) = 0;
+
+    // Used to reset all properties; does not notify observers.
     virtual void ClearProperties() = 0;
 
    protected:

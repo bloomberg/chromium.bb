@@ -46,8 +46,7 @@ class CHROMEOS_EXPORT ShillServiceClient {
     virtual void AddService(const std::string& service_path,
                             const std::string& name,
                             const std::string& type,
-                            const std::string& state,
-                            const std::string& security) = 0;
+                            const std::string& state) = 0;
     virtual void RemoveService(const std::string& service_path) = 0;
     virtual void SetServiceProperty(const std::string& service_path,
                                     const std::string& property,

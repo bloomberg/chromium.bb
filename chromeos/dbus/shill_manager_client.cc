@@ -172,13 +172,24 @@ class ShillManagerClientImpl : public ShillManagerClient {
   DISALLOW_COPY_AND_ASSIGN(ShillManagerClientImpl);
 };
 
+// Used to compare values for finding entries to erase in a ListValue.
+// (ListValue only implements a const_iterator version of Find).
+struct ValueEquals {
+  ValueEquals(const Value* first) : first_(first) {}
+  bool operator ()(const Value* second) const {
+    return first_->Equals(second);
+  }
+  const Value* first_;
+};
+
 // A stub implementation of ShillManagerClient.
 // Implemented: Stub devices and services for NetworkStateManager tests.
 // Implemented: Stub cellular device entry for SMS tests.
 class ShillManagerClientStubImpl : public ShillManagerClient,
                                    public ShillManagerClient::TestInterface {
  public:
-  ShillManagerClientStubImpl() : weak_ptr_factory_(this) {
+  ShillManagerClientStubImpl()
+      : weak_ptr_factory_(this) {
     SetDefaultProperties();
   }
 
@@ -220,13 +231,9 @@ class ShillManagerClientStubImpl : public ShillManagerClient,
                            const base::Closure& callback,
                            const ErrorCallback& error_callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE, callback);
-    const int kScanDelaySeconds = 3;
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ShillManagerClientStubImpl::NotifyObserversPropertyChanged,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   flimflam::kServicesProperty),
-        base::TimeDelta::FromSeconds(kScanDelaySeconds));
+    const int kScanDelayMilliseconds = 3000;
+    CallNotifyObserversPropertyChanged(
+        flimflam::kServicesProperty, kScanDelayMilliseconds);
   }
 
   virtual void EnableTechnology(
@@ -243,11 +250,8 @@ class ShillManagerClientStubImpl : public ShillManagerClient,
     }
     MessageLoop::current()->PostTask(FROM_HERE, callback);
     enabled_list->AppendIfNotPresent(new base::StringValue(type));
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ShillManagerClientStubImpl::NotifyObserversPropertyChanged,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   flimflam::kEnabledTechnologiesProperty));
+    CallNotifyObserversPropertyChanged(
+        flimflam::kEnabledTechnologiesProperty, 0);
   }
 
   virtual void DisableTechnology(
@@ -265,11 +269,8 @@ class ShillManagerClientStubImpl : public ShillManagerClient,
     MessageLoop::current()->PostTask(FROM_HERE, callback);
     base::StringValue type_value(type);
     enabled_list->Remove(type_value, NULL);
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ShillManagerClientStubImpl::NotifyObserversPropertyChanged,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   flimflam::kEnabledTechnologiesProperty));
+    CallNotifyObserversPropertyChanged(
+        flimflam::kEnabledTechnologiesProperty, 0);
   }
 
   virtual void ConfigureService(
@@ -294,49 +295,87 @@ class ShillManagerClientStubImpl : public ShillManagerClient,
   // ShillManagerClient::TestInterface overrides.
 
   virtual void AddDevice(const std::string& device_path) OVERRIDE {
-    GetListProperty(flimflam::kDevicesProperty)->Append(
-        base::Value::CreateStringValue(device_path));
+    if (GetListProperty(flimflam::kDevicesProperty)->AppendIfNotPresent(
+            base::Value::CreateStringValue(device_path))) {
+      CallNotifyObserversPropertyChanged(flimflam::kDevicesProperty, 0);
+    }
   }
 
   virtual void RemoveDevice(const std::string& device_path) OVERRIDE {
     base::StringValue device_path_value(device_path);
-    GetListProperty(flimflam::kDevicesProperty)->Remove(
-        device_path_value, NULL);
+    if (GetListProperty(flimflam::kDevicesProperty)->Remove(
+            device_path_value, NULL)) {
+      CallNotifyObserversPropertyChanged(flimflam::kDevicesProperty, 0);
+    }
   }
 
   virtual void AddService(const std::string& service_path,
                           bool add_to_watch_list) OVERRIDE {
-    GetListProperty(flimflam::kServicesProperty)->Append(
-        base::Value::CreateStringValue(service_path));
-    if (add_to_watch_list) {
-      GetListProperty(flimflam::kServiceWatchListProperty)->Append(
-          base::Value::CreateStringValue(service_path));
+    if (GetListProperty(flimflam::kServicesProperty)->AppendIfNotPresent(
+            base::Value::CreateStringValue(service_path))) {
+      CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
     }
+    if (add_to_watch_list)
+      AddServiceToWatchList(service_path);
+  }
+
+  virtual void AddServiceAtIndex(const std::string& service_path,
+                                 size_t index,
+                                 bool add_to_watch_list) OVERRIDE {
+    base::StringValue path_value(service_path);
+    base::ListValue* service_list =
+        GetListProperty(flimflam::kServicesProperty);
+    base::ListValue::iterator iter =
+        std::find_if(service_list->begin(), service_list->end(),
+                     ValueEquals(&path_value));
+    service_list->Find(path_value);
+    if (iter != service_list->end())
+      service_list->Erase(iter, NULL);
+    service_list->Insert(index, path_value.DeepCopy());
+    CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
+    if (add_to_watch_list)
+      AddServiceToWatchList(service_path);
   }
 
   virtual void RemoveService(const std::string& service_path) OVERRIDE {
     base::StringValue service_path_value(service_path);
-    GetListProperty(flimflam::kServicesProperty)->Remove(
-        service_path_value, NULL);
-    GetListProperty(flimflam::kServiceWatchListProperty)->Remove(
-        service_path_value, NULL);
+    if (GetListProperty(flimflam::kServicesProperty)->Remove(
+            service_path_value, NULL)) {
+      CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
+    }
+    if (GetListProperty(flimflam::kServiceWatchListProperty)->Remove(
+            service_path_value, NULL)) {
+      CallNotifyObserversPropertyChanged(
+          flimflam::kServiceWatchListProperty, 0);
+    }
   }
 
   virtual void AddTechnology(const std::string& type, bool enabled) OVERRIDE {
-    GetListProperty(flimflam::kAvailableTechnologiesProperty)->Append(
-        base::Value::CreateStringValue(type));
-    if (enabled) {
-      GetListProperty(flimflam::kEnabledTechnologiesProperty)->Append(
-          base::Value::CreateStringValue(type));
+    if (GetListProperty(flimflam::kAvailableTechnologiesProperty)->
+        AppendIfNotPresent(base::Value::CreateStringValue(type))) {
+      CallNotifyObserversPropertyChanged(
+          flimflam::kAvailableTechnologiesProperty, 0);
+    }
+    if (enabled &&
+        GetListProperty(flimflam::kEnabledTechnologiesProperty)->
+        AppendIfNotPresent(base::Value::CreateStringValue(type))) {
+      CallNotifyObserversPropertyChanged(
+          flimflam::kEnabledTechnologiesProperty, 0);
     }
   }
 
   virtual void RemoveTechnology(const std::string& type) OVERRIDE {
     base::StringValue type_value(type);
-    GetListProperty(flimflam::kAvailableTechnologiesProperty)->Remove(
-        type_value, NULL);
-    GetListProperty(flimflam::kEnabledTechnologiesProperty)->Remove(
-        type_value, NULL);
+    if (GetListProperty(flimflam::kAvailableTechnologiesProperty)->Remove(
+            type_value, NULL)) {
+      CallNotifyObserversPropertyChanged(
+          flimflam::kAvailableTechnologiesProperty, 0);
+    }
+    if (GetListProperty(flimflam::kEnabledTechnologiesProperty)->Remove(
+            type_value, NULL)) {
+      CallNotifyObserversPropertyChanged(
+          flimflam::kEnabledTechnologiesProperty, 0);
+    }
   }
 
   virtual void ClearProperties() OVERRIDE {
@@ -344,6 +383,15 @@ class ShillManagerClientStubImpl : public ShillManagerClient,
   }
 
  private:
+  void AddServiceToWatchList(const std::string& service_path) {
+    if (GetListProperty(
+            flimflam::kServiceWatchListProperty)->AppendIfNotPresent(
+                base::Value::CreateStringValue(service_path))) {
+      CallNotifyObserversPropertyChanged(
+          flimflam::kServiceWatchListProperty, 0);
+    }
+  }
+
   void SetDefaultProperties() {
     // Stub Devices, Note: names match Device stub map.
     AddDevice("stub_wifi_device1");
@@ -363,6 +411,20 @@ class ShillManagerClientStubImpl : public ShillManagerClient,
 
   void PassStubProperties(const DictionaryValueCallback& callback) const {
     callback.Run(DBUS_METHOD_CALL_SUCCESS, stub_properties_);
+  }
+
+  void CallNotifyObserversPropertyChanged(const std::string& property,
+                                          int delay_ms) {
+    // Avoid unnecessary delayed task if we have no observers (e.g. during
+    // initial setup).
+    if (observer_list_.size() == 0)
+      return;
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ShillManagerClientStubImpl::NotifyObserversPropertyChanged,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   property),
+        base::TimeDelta::FromMilliseconds(delay_ms));
   }
 
   void NotifyObserversPropertyChanged(const std::string& property) {

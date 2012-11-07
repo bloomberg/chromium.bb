@@ -191,6 +191,8 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
   }
 
   virtual ~ShillServiceClientStubImpl() {
+    STLDeleteContainerPairSecondPointers(
+        observer_list_.begin(), observer_list_.end());
   }
 
   // ShillServiceClient overrides.
@@ -198,13 +200,13 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& service_path,
       ShillPropertyChangedObserver* observer) OVERRIDE {
-    observer_list_.AddObserver(observer);
+    GetObserverList(service_path).AddObserver(observer);
   }
 
   virtual void RemovePropertyChangedObserver(
       const dbus::ObjectPath& service_path,
       ShillPropertyChangedObserver* observer) OVERRIDE {
-    observer_list_.RemoveObserver(observer);
+    GetObserverList(service_path).RemoveObserver(observer);
   }
 
   virtual void GetProperties(const dbus::ObjectPath& service_path,
@@ -291,8 +293,7 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
   virtual void AddService(const std::string& service_path,
                           const std::string& name,
                           const std::string& type,
-                          const std::string& state,
-                          const std::string& security) OVERRIDE {
+                          const std::string& state) OVERRIDE {
     base::DictionaryValue* properties = GetServiceProperties(service_path);
     properties->SetWithoutPathExpansion(
         flimflam::kSSIDProperty,
@@ -306,9 +307,6 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
     properties->SetWithoutPathExpansion(
         flimflam::kStateProperty,
         base::Value::CreateStringValue(state));
-    properties->SetWithoutPathExpansion(
-        flimflam::kSecurityProperty,
-        base::Value::CreateStringValue(security));
   }
 
   virtual void RemoveService(const std::string& service_path) {
@@ -319,7 +317,8 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
                                   const std::string& property,
                                   const base::Value& value) OVERRIDE {
     SetProperty(dbus::ObjectPath(service_path), property, value,
-                base::Bind(&base::DoNothing), ErrorCallback());
+                base::Bind(&base::DoNothing),
+                base::Bind(&ShillServiceClientStubImpl::ErrorFunction));
   }
 
   virtual void ClearServices() OVERRIDE {
@@ -327,24 +326,29 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
   }
 
  private:
+  typedef ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
+
   void SetDefaultProperties() {
     // Add stub services. Note: names match Manager stub impl.
     AddService("stub_ethernet", "eth0",
                flimflam::kTypeEthernet,
-               flimflam::kStateOnline,
-               flimflam::kSecurityNone);
+               flimflam::kStateOnline);
+
     AddService("stub_wifi1", "wifi1",
                flimflam::kTypeWifi,
-               flimflam::kStateOnline,
-               flimflam::kSecurityNone);
+               flimflam::kStateOnline);
+
     AddService("stub_wifi2", "wifi2_PSK",
                flimflam::kTypeWifi,
-               flimflam::kStateIdle,
-               flimflam::kSecurityPsk);
+               flimflam::kStateIdle);
+    base::StringValue psk_value(flimflam::kSecurityPsk);
+    SetServiceProperty("stub_wifi2",
+                       flimflam::kSecurityProperty,
+                       psk_value);
+
     AddService("stub_cellular1", "cellular1",
                flimflam::kTypeCellular,
-               flimflam::kStateIdle,
-               flimflam::kSecurityNone);
+               flimflam::kStateIdle);
     base::StringValue technology_value(flimflam::kNetworkTechnologyGsm);
     SetServiceProperty("stub_cellular1",
                        flimflam::kNetworkTechnologyProperty,
@@ -378,7 +382,7 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
       return;
     }
     FOR_EACH_OBSERVER(ShillPropertyChangedObserver,
-                      observer_list_,
+                      GetObserverList(service_path),
                       OnPropertyChanged(property, *value));
   }
 
@@ -392,9 +396,24 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
     return properties;
   }
 
+  PropertyObserverList& GetObserverList(const dbus::ObjectPath& device_path) {
+    std::map<dbus::ObjectPath, PropertyObserverList*>::iterator iter =
+        observer_list_.find(device_path);
+    if (iter != observer_list_.end())
+      return *(iter->second);
+    PropertyObserverList* observer_list = new PropertyObserverList();
+    observer_list_[device_path] = observer_list;
+    return *observer_list;
+  }
+
+  static void ErrorFunction(const std::string& error_name,
+                            const std::string& error_message) {
+    LOG(ERROR) << "Shill Error: " << error_name << " : " << error_message;
+  }
 
   base::DictionaryValue stub_services_;
-  ObserverList<ShillPropertyChangedObserver> observer_list_;
+  // Observer list for each service.
+  std::map<dbus::ObjectPath, PropertyObserverList*> observer_list_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

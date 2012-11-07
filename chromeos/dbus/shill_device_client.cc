@@ -226,17 +226,24 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
     SetDefaultProperties();
   }
 
-  virtual ~ShillDeviceClientStubImpl() {}
+  virtual ~ShillDeviceClientStubImpl() {
+    STLDeleteContainerPairSecondPointers(
+        observer_list_.begin(), observer_list_.end());
+  }
 
   // ShillDeviceClient overrides.
 
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& device_path,
-      ShillPropertyChangedObserver* observer) OVERRIDE {}
+      ShillPropertyChangedObserver* observer) OVERRIDE {
+    GetObserverList(device_path).AddObserver(observer);
+  }
 
   virtual void RemovePropertyChangedObserver(
       const dbus::ObjectPath& device_path,
-      ShillPropertyChangedObserver* observer) OVERRIDE {}
+      ShillPropertyChangedObserver* observer) OVERRIDE {
+    GetObserverList(device_path).RemoveObserver(observer);
+  }
 
   virtual void GetProperties(const dbus::ObjectPath& device_path,
                              const DictionaryValueCallback& callback) OVERRIDE {
@@ -277,6 +284,10 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
     }
     device_properties->Set(name, value.DeepCopy());
     MessageLoop::current()->PostTask(FROM_HERE, callback);
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ShillDeviceClientStubImpl::NotifyObserversPropertyChanged,
+                   weak_ptr_factory_.GetWeakPtr(), device_path, name));
   }
 
   virtual void ClearProperty(const dbus::ObjectPath& device_path,
@@ -383,6 +394,8 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
   }
 
  private:
+  typedef ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
+
   void SetDefaultProperties() {
     // Add a wifi device. Note: path matches Manager entry.
     AddDevice("stub_wifi_device1", flimflam::kTypeWifi,
@@ -413,6 +426,25 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
                                      base::Bind(callback, status));
   }
 
+  void NotifyObserversPropertyChanged(const dbus::ObjectPath& device_path,
+                                      const std::string& property) {
+    base::DictionaryValue* dict = NULL;
+    std::string path = device_path.value();
+    if (!stub_devices_.GetDictionaryWithoutPathExpansion(path, &dict)) {
+      LOG(ERROR) << "Notify for unknown service: " << path;
+      return;
+    }
+    base::Value* value = NULL;
+    if (!dict->GetWithoutPathExpansion(property, &value)) {
+      LOG(ERROR) << "Notify for unknown property: "
+                 << path << " : " << property;
+      return;
+    }
+    FOR_EACH_OBSERVER(ShillPropertyChangedObserver,
+                      GetObserverList(device_path),
+                      OnPropertyChanged(property, *value));
+  }
+
   base::DictionaryValue* GetDeviceProperties(const std::string& device_path) {
     base::DictionaryValue* properties = NULL;
     if (!stub_devices_.GetDictionaryWithoutPathExpansion(
@@ -423,8 +455,20 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
     return properties;
   }
 
+  PropertyObserverList& GetObserverList(const dbus::ObjectPath& device_path) {
+    std::map<dbus::ObjectPath, PropertyObserverList*>::iterator iter =
+        observer_list_.find(device_path);
+    if (iter != observer_list_.end())
+      return *(iter->second);
+    PropertyObserverList* observer_list = new PropertyObserverList();
+    observer_list_[device_path] = observer_list;
+    return *observer_list;
+  }
+
   // Dictionary of <device_name, Dictionary>.
   base::DictionaryValue stub_devices_;
+  // Observer list for each device.
+  std::map<dbus::ObjectPath, PropertyObserverList*> observer_list_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
