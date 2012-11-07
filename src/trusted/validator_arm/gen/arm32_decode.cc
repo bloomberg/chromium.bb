@@ -911,27 +911,27 @@ const ClassDecoder& Arm32DecoderState::decode_halfword_multiply_and_multiply_acc
 {
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x00600000) == 0x00000000 /* op1(22:21)=00 */) {
-    return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
+    return Binary4RegisterDualOp_instance_;
   }
 
   if ((inst.Bits() & 0x00600000) == 0x00200000 /* op1(22:21)=01 */ &&
       (inst.Bits() & 0x00000020) == 0x00000000 /* op(5)=0 */) {
-    return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
+    return Binary4RegisterDualOp_instance_;
   }
 
   if ((inst.Bits() & 0x00600000) == 0x00200000 /* op1(22:21)=01 */ &&
       (inst.Bits() & 0x00000020) == 0x00000020 /* op(5)=1 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
+    return Binary3RegisterOpAltA_instance_;
   }
 
   if ((inst.Bits() & 0x00600000) == 0x00400000 /* op1(22:21)=10 */) {
-    return Defs12To19CondsDontCareRdRmRnNotPc_instance_;
+    return Binary4RegisterDualResult_instance_;
   }
 
   if ((inst.Bits() & 0x00600000) == 0x00600000 /* op1(22:21)=11 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
+    return Binary3RegisterOpAltA_instance_;
   }
 
   // Catch any attempt to fall though ...

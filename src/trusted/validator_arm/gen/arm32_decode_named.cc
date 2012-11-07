@@ -1184,27 +1184,27 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_halfword_multiply_and_mu
      const nacl_arm_dec::Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x00600000) == 0x00000000 /* op1(22:21)=00 */) {
-    return Binary4RegisterDualOp_Smlaxx_Rule_166_A1_P330_instance_;
+    return Binary4RegisterDualOp_SMLABB_SMLABT_SMLATB_SMLATT_instance_;
   }
 
   if ((inst.Bits() & 0x00600000) == 0x00200000 /* op1(22:21)=01 */ &&
       (inst.Bits() & 0x00000020) == 0x00000000 /* op(5)=0 */) {
-    return Binary4RegisterDualOp_Smlawx_Rule_171_A1_340_instance_;
+    return Binary4RegisterDualOp_SMLAWB_SMLAWT_instance_;
   }
 
   if ((inst.Bits() & 0x00600000) == 0x00200000 /* op1(22:21)=01 */ &&
       (inst.Bits() & 0x00000020) == 0x00000020 /* op(5)=1 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return Binary3RegisterOpAltA_Smulwx_Rule_180_A1_P358_instance_;
+    return Binary3RegisterOpAltA_SMULWB_SMULWT_instance_;
   }
 
   if ((inst.Bits() & 0x00600000) == 0x00400000 /* op1(22:21)=10 */) {
-    return Binary4RegisterDualResult_Smlalxx_Rule_169_A1_P336_instance_;
+    return Binary4RegisterDualResult_SMLALBB_SMLALBT_SMLALTB_SMLALTT_instance_;
   }
 
   if ((inst.Bits() & 0x00600000) == 0x00600000 /* op1(22:21)=11 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return Binary3RegisterOpAltA_Smulxx_Rule_178_P354_instance_;
+    return Binary3RegisterOpAltA_SMULBB_SMULBT_SMULTB_SMULTT_instance_;
   }
 
   // Catch any attempt to fall through...
