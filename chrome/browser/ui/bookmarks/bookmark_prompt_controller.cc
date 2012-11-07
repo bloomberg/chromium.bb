@@ -48,11 +48,6 @@ enum PromptDisplayReason {
 };
 
 bool CanShowBookmarkPrompt(Browser* browser) {
-  if (!browser || browser->type() != Browser::TYPE_TABBED ||
-      browser->profile()->IsOffTheRecord() ||
-      !browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR) ||
-      !browser->window()->GetLocationBar())
-    return false;
   BookmarkPromptPrefs prefs(browser->profile()->GetPrefs());
   if (!prefs.IsBookmarkPromptEnabled())
     return false;
@@ -220,7 +215,13 @@ void BookmarkPromptController::OnBrowserRemoved(Browser* browser) {
 }
 
 void BookmarkPromptController::OnBrowserSetLastActive(Browser* browser) {
-  SetBrowser(CanShowBookmarkPrompt(browser) ? browser : NULL);
+  if (browser && browser->type() == Browser::TYPE_TABBED &&
+      !browser->profile()->IsOffTheRecord() &&
+      browser->CanSupportWindowFeature(Browser::FEATURE_LOCATIONBAR) &&
+      CanShowBookmarkPrompt(browser))
+    SetBrowser(browser);
+  else
+    SetBrowser(NULL);
 }
 
 void BookmarkPromptController::OnDidQueryURL(
@@ -241,7 +242,8 @@ void BookmarkPromptController::OnDidQueryURL(
   UMA_HISTOGRAM_TIMES("BookmarkPrompt.QueryURLDuration",
                       base::Time::Now() - query_url_start_time_);
 
-  if (!CanShowBookmarkPrompt(browser_) ||
+  if (!browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR) ||
+      !CanShowBookmarkPrompt(browser_) ||
       !IsActiveWebContents(browser_, web_contents_) ||
       IsBookmarked(browser_, url))
     return;
