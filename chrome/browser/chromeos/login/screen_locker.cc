@@ -33,7 +33,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -318,7 +318,8 @@ void ScreenLocker::Show() {
   }
 
   // Exit fullscreen.
-  Browser* browser = BrowserList::GetLastActive();
+  Browser* browser = browser::FindLastActiveWithHostDesktopType(
+      chrome::HOST_DESKTOP_TYPE_ASH);
   // browser can be NULL if we receive a lock request before the first browser
   // window is shown.
   if (browser && browser->window()->IsFullscreen()) {
