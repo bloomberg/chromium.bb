@@ -161,8 +161,6 @@ bool AppListView::OnKeyPressed(const ui::KeyEvent& event) {
 void AppListView::ActivateApp(AppListItemModel* item, int event_flags) {
   if (delegate_.get())
     delegate_->ActivateAppListItem(item, event_flags);
-
-  Close();
 }
 
 void AppListView::QueryChanged(SearchBoxView* sender) {
