@@ -119,6 +119,25 @@
         "name": "onSuspendCanceled",
         "type": "function",
         "description": "Sent after onSuspend() to indicate that the app won't be unloaded after all."
+      },
+      {
+        "name": "onUpdateAvailable",
+        "type": "function",
+        "description": "Fired when an update is available, but isn't installed immediately because the app is currently running. If you do nothing, the update will be installed the next time the background page gets unloaded, if you want it to be installed sooner you can explicitly call chrome.runtime.reload().",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "version": {
+                "type": "string",
+                "description": "The version number of the available update."
+              }
+            },
+            "additionalProperties": { "type": "any" },
+            "description": "The manifest details of the available update."
+          }
+        ]
       }
     ]
   }

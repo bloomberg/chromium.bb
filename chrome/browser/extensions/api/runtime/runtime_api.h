@@ -25,6 +25,12 @@ class RuntimeEventRouter {
                                        const std::string& extension_id,
                                        const Version& old_version,
                                        bool chrome_updated);
+
+  // Dispatches the onUpdateAvailable event to the given extension.
+  static void DispatchOnUpdateAvailableEvent(
+      Profile* profile,
+      const std::string& extension_id,
+      const base::DictionaryValue* manifest);
 };
 
 class RuntimeGetBackgroundPageFunction : public AsyncExtensionFunction {

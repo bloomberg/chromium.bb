@@ -85,7 +85,7 @@ std::vector<FilePath> FindPrivateKeyFiles(const FilePath& extension_dir);
 // found in |extension_paths|.
 void GarbageCollectExtensions(
     const FilePath& extensions_dir,
-    const std::map<std::string, FilePath>& extension_paths);
+    const std::multimap<std::string, FilePath>& extension_paths);
 
 // Loads extension message catalogs and returns message bundle.
 // Returns NULL on error, or if extension is not localized.

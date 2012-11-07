@@ -73,7 +73,8 @@ void SimpleExtensionLoadPrompt::InstallUIProceed() {
     service_weak_->OnExtensionInstalled(
         extension_,
         syncer::StringOrdinal(),
-        false /* no requirement errors */);
+        false /* no requirement errors */,
+        false /* don't wait for idle */);
   }
   delete this;
 }
@@ -264,7 +265,8 @@ void UnpackedInstaller::OnLoaded() {
   perms_updater.GrantActivePermissions(extension_, false);
   service_weak_->OnExtensionInstalled(extension_,
                                       syncer::StringOrdinal(),
-                                      false /* no requirement errors */);
+                                      false /* no requirement errors */,
+                                      false /* don't wait for idle */);
 }
 
 }  // namespace extensions

@@ -419,7 +419,17 @@ class ExtensionService
   void OnExtensionInstalled(
       const extensions::Extension* extension,
       const syncer::StringOrdinal& page_ordinal,
-      bool has_requirement_errors);
+      bool has_requirement_errors,
+      bool wait_for_idle);
+
+  // Finishes installation of an update for an extension with the specified id,
+  // when installation of that extension was previously delayed because the
+  // extension was in use.
+  void FinishInstallation(const std::string& extension_id);
+
+  // Similar to FinishInstallation, but first checks if there still is an update
+  // pending for the extension, and makes sure the extension is still idle.
+  void MaybeFinishInstallation(const std::string& extension_id);
 
   // Initializes the |extension|'s active permission set and disables the
   // extension if the privilege level has increased (e.g., due to an upgrade).
@@ -791,6 +801,10 @@ class ExtensionService
   // (or upgraded) extension.
   bool ShouldEnableOnInstall(const extensions::Extension* extension);
 
+  // Helper to determine if an extension is idle, and it should be safe
+  // to update the extension.
+  bool IsExtensionIdle(const std::string& extension_id) const;
+
   // The normal profile associated with this ExtensionService.
   Profile* profile_;
 
@@ -811,6 +825,9 @@ class ExtensionService
 
   // The list of installed extensions that have been terminated.
   ExtensionSet terminated_extensions_;
+
+  // The list of extension updates that are waiting to be installed.
+  ExtensionSet pending_extension_updates_;
 
   // Hold the set of pending extensions.
   extensions::PendingExtensionManager pending_extension_manager_;

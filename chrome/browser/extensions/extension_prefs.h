@@ -351,33 +351,33 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // version directory and the location. Blacklisted extensions won't be saved
   // and neither will external extensions the user has explicitly uninstalled.
   // Caller takes ownership of returned structure.
-  ExtensionsInfo* GetInstalledExtensionsInfo() const;
+  scoped_ptr<ExtensionsInfo> GetInstalledExtensionsInfo() const;
 
   // Returns the ExtensionInfo from the prefs for the given extension. If the
   // extension is not present, NULL is returned.
-  ExtensionInfo* GetInstalledExtensionInfo(
+  scoped_ptr<ExtensionInfo> GetInstalledExtensionInfo(
       const std::string& extension_id) const;
 
   // We've downloaded an updated .crx file for the extension, but are waiting
   // for idle time to install it.
-  void SetIdleInstallInfo(const std::string& extension_id,
-                          const FilePath& crx_path,
-                          const std::string& version,
-                          const base::Time& fetch_time);
+  void SetIdleInstallInfo(const Extension* extension,
+                          Extension::State initial_state);
 
   // Removes any idle install information we have for the given |extension_id|.
   // Returns true if there was info to remove; false otherwise.
   bool RemoveIdleInstallInfo(const std::string& extension_id);
 
-  // If we have idle install information for |extension_id|, this puts it into
-  // the out parameters and returns true. Otherwise returns false.
-  bool GetIdleInstallInfo(const std::string& extension_id,
-                          FilePath* crx_path,
-                          std::string* version,
-                          base::Time* fetch_time);
+  // Update the prefs to finish the update for an extension.
+  bool FinishIdleInstallInfo(const std::string& extension_id);
 
-  // Returns the extension id's that have idle install information.
-  std::set<std::string> GetIdleInstallInfoIds();
+  // Returns the ExtensionInfo from the prefs for idle install information for
+  // |extension_id|, if we have any. Otherwise returns NULL.
+  scoped_ptr<ExtensionInfo> GetIdleInstallInfo(
+      const std::string& extension_id) const;
+
+  // Returns information about all the extensions that have pending idle
+  // install information.
+  scoped_ptr<ExtensionsInfo> GetAllIdleInstallInfo() const;
 
   // We allow the web store to set a string containing login information when a
   // purchase is made, so that when a user logs into sync with a different

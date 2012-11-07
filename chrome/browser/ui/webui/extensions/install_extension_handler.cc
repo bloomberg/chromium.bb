@@ -88,6 +88,7 @@ void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
   crx_installer->set_error_on_unsupported_requirements(true);
   crx_installer->set_off_store_install_allow_reason(
       extensions::CrxInstaller::OffStoreInstallAllowedFromSettingsPage);
+  crx_installer->set_install_wait_for_idle(false);
 
   const bool kCaseSensitive = false;
 

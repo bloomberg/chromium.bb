@@ -34,6 +34,7 @@ class TestExtensionPrefs {
   }
   PrefService* pref_service() { return pref_service_.get(); }
   const FilePath& temp_dir() const { return temp_dir_.path(); }
+  const FilePath& extensions_dir() const { return extensions_dir_; }
 
   // This will cause the ExtensionPrefs to be deleted and recreated, based on
   // any existing backing file we had previously created.

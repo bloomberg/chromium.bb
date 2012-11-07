@@ -265,7 +265,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
       &error));
   service->OnExtensionInstalled(extension,
                                 syncer::StringOrdinal::CreateInitialOrdinal(),
-                                false /* no requirement errors */);
+                                false /* no requirement errors */,
+                                false /* don't wait for idle */);
   ASSERT_TRUE(extension.get());
   ASSERT_TRUE(extension->from_bookmark());
 

@@ -103,7 +103,8 @@ CrxInstaller::CrxInstaller(
       record_oauth2_grant_(false),
       error_on_unsupported_requirements_(false),
       requirements_checker_(new extensions::RequirementsChecker()),
-      has_requirement_errors_(false) {
+      has_requirement_errors_(false),
+      install_wait_for_idle_(true) {
   if (!approval)
     return;
 
@@ -630,7 +631,8 @@ void CrxInstaller::ReportSuccessFromUIThread() {
   // extension_ to it.
   frontend_weak_->OnExtensionInstalled(extension_,
                                        page_ordinal_,
-                                       has_requirement_errors_);
+                                       has_requirement_errors_,
+                                       install_wait_for_idle_);
 
   NotifyCrxInstallComplete(extension_.get());
 

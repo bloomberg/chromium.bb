@@ -71,7 +71,8 @@ std::string SyncExtensionHelper::InstallExtension(
     return "";
   }
   profile->GetExtensionService()->OnExtensionInstalled(
-      extension, syncer::StringOrdinal(), false /* no requirement errors */);
+      extension, syncer::StringOrdinal(), false /* no requirement errors */,
+      false /* don't wait for idle to install */);
   return extension->id();
 }
 

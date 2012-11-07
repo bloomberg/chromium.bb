@@ -10,10 +10,13 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -54,6 +57,21 @@ ManifestReloadReason ShouldReloadExtensionManifest(const ExtensionInfo& info) {
     return NEEDS_RELOCALIZATION;
 
   return NOT_NEEDED;
+}
+
+void DispatchOnInstalledEvent(
+    Profile* profile,
+    const std::string& extension_id,
+    const Version& old_version,
+    bool chrome_updated) {
+  // profile manager can be NULL in unit tests.
+  if (!g_browser_process->profile_manager())
+    return;
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+    return;
+
+  extensions::RuntimeEventRouter::DispatchOnInstalledEvent(
+      profile, extension_id, old_version, chrome_updated);
 }
 
 }  // namespace
@@ -127,9 +145,35 @@ void InstalledLoader::LoadAllExtensions() {
 
   std::vector<int> reload_reason_counts(NUM_MANIFEST_RELOAD_REASONS, 0);
   bool should_write_prefs = false;
+  int update_count = 0;
 
   for (size_t i = 0; i < extensions_info->size(); ++i) {
     ExtensionInfo* info = extensions_info->at(i).get();
+
+    scoped_ptr<ExtensionInfo> pending_update(
+        extension_prefs_->GetIdleInstallInfo(info->extension_id));
+    if (pending_update) {
+      if (!extension_prefs_->FinishIdleInstallInfo(info->extension_id))
+        NOTREACHED();
+
+      Version old_version;
+      if (info->extension_manifest) {
+        std::string version_str;
+        if (info->extension_manifest->GetString(
+            extension_manifest_keys::kVersion, &version_str)) {
+          old_version = Version(version_str);
+        }
+      }
+      MessageLoop::current()->PostTask(FROM_HERE,
+          base::Bind(&DispatchOnInstalledEvent, extension_service_->profile(),
+                     info->extension_id, old_version, false));
+
+      info = extension_prefs_->GetInstalledExtensionInfo(
+          info->extension_id).release();
+      extensions_info->at(i).reset(info);
+
+      update_count++;
+    }
 
     ManifestReloadReason reload_reason = ShouldReloadExtensionManifest(*info);
     ++reload_reason_counts[reload_reason];
@@ -185,6 +229,8 @@ void InstalledLoader::LoadAllExtensions() {
                            extension_service_->extensions()->size());
   UMA_HISTOGRAM_COUNTS_100("Extensions.Disabled",
                            extension_service_->disabled_extensions()->size());
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateOnLoad",
+                           update_count);
 
   UMA_HISTOGRAM_TIMES("Extensions.LoadAllTime",
                       base::TimeTicks::Now() - start_time);

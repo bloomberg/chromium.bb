@@ -1229,7 +1229,7 @@ TEST_F(ExtensionServiceTest, DISABLED_CleanupOnStartup) {
 
   service_->Init();
   // Wait for GarbageCollectExtensions task to complete.
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 
   file_util::FileEnumerator dirs(extensions_install_dir_, false,
                                  file_util::FileEnumerator::DIRECTORIES);
@@ -1244,6 +1244,78 @@ TEST_F(ExtensionServiceTest, DISABLED_CleanupOnStartup) {
   FilePath extension_dir = extensions_install_dir_
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj");
   ASSERT_FALSE(file_util::PathExists(extension_dir));
+}
+
+// Test that GarbageCollectExtensions deletes the right versions of an
+// extension.
+TEST_F(ExtensionServiceTest, GarbageCollectWithPendingUpdates) {
+  PluginService::GetInstance()->Init();
+
+  FilePath source_install_dir = data_dir_
+      .AppendASCII("pending_updates")
+      .AppendASCII("Extensions");
+  FilePath pref_path = source_install_dir
+      .DirName()
+      .AppendASCII("Preferences");
+
+  InitializeInstalledExtensionService(pref_path, source_install_dir);
+
+  // This is the directory that is going to be deleted, so make sure it actually
+  // is there before the garbage collection.
+  ASSERT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+      "hpiknbiabeeppbpihjehijgoemciehgk/3")));
+
+  service_->GarbageCollectExtensions();
+  // Wait for GarbageCollectExtensions task to complete.
+  loop_.RunUntilIdle();
+
+  // Verify that the pending update for the first extension didn't get
+  // deleted.
+  EXPECT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+      "bjafgdebaacbbbecmhlhpofkepfkgcpa/1.0")));
+  EXPECT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+      "bjafgdebaacbbbecmhlhpofkepfkgcpa/2.0")));
+  EXPECT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+      "hpiknbiabeeppbpihjehijgoemciehgk/2")));
+  EXPECT_FALSE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+      "hpiknbiabeeppbpihjehijgoemciehgk/3")));
+}
+
+// Test that pending updates are properly handled on startup.
+TEST_F(ExtensionServiceTest, UpdateOnStartup) {
+  PluginService::GetInstance()->Init();
+
+  FilePath source_install_dir = data_dir_
+      .AppendASCII("pending_updates")
+      .AppendASCII("Extensions");
+  FilePath pref_path = source_install_dir
+      .DirName()
+      .AppendASCII("Preferences");
+
+  InitializeInstalledExtensionService(pref_path, source_install_dir);
+
+  // This is the directory that is going to be deleted, so make sure it actually
+  // is there before the garbage collection.
+  ASSERT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+      "hpiknbiabeeppbpihjehijgoemciehgk/3")));
+
+  service_->Init();
+  // Wait for GarbageCollectExtensions task to complete.
+  loop_.RunUntilIdle();
+
+  // Verify that the pending update for the first extension got installed.
+  EXPECT_FALSE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+      "bjafgdebaacbbbecmhlhpofkepfkgcpa/1.0")));
+  EXPECT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+      "bjafgdebaacbbbecmhlhpofkepfkgcpa/2.0")));
+  EXPECT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+      "hpiknbiabeeppbpihjehijgoemciehgk/2")));
+  EXPECT_FALSE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+      "hpiknbiabeeppbpihjehijgoemciehgk/3")));
+
+  // Make sure update information got deleted.
+  ExtensionPrefs* prefs = service_->extension_prefs();
+  EXPECT_FALSE(prefs->GetIdleInstallInfo("bjafgdebaacbbbecmhlhpofkepfkgcpa"));
 }
 
 // Test installing extensions. This test tries to install few extensions using

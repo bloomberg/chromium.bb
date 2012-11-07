@@ -22,6 +22,7 @@ namespace {
 
 const char kOnStartupEvent[] = "runtime.onStartup";
 const char kOnInstalledEvent[] = "runtime.onInstalled";
+const char kOnUpdateAvailableEvent[] = "runtime.onUpdateAvailable";
 const char kNoBackgroundPageError[] = "You do not have a background page.";
 const char kPageLoadError[] = "Background page failed to load.";
 const char kInstallReason[] = "reason";
@@ -106,6 +107,21 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
       extension_id, kOnInstalledEvent, event_args.Pass(), NULL, GURL());
   system->event_router()->RemoveLazyEventListener(kOnInstalledEvent,
                                                   extension_id);
+}
+
+// static
+void RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
+    Profile* profile,
+    const std::string& extension_id,
+    const DictionaryValue* manifest) {
+  ExtensionSystem* system = ExtensionSystem::Get(profile);
+  if (!system)
+    return;
+
+  scoped_ptr<ListValue> args(new ListValue);
+  args->Append(manifest->DeepCopy());
+  system->event_router()->DispatchEventToExtension(
+      extension_id, kOnUpdateAvailableEvent, args.Pass(), NULL, GURL());
 }
 
 bool RuntimeGetBackgroundPageFunction::RunImpl() {
