@@ -27,6 +27,13 @@ class GestureConfigUI : public content::WebUIController {
   void GetPreferenceValue(const base::ListValue* args);
 
   /**
+   * Reset a preference to its default value and return this value
+   * via asynchronous callback to the JS method
+   * 'gesture_config.getPreferenceValueResult'.
+   */
+  void ResetPreferenceValue(const base::ListValue* args);
+
+  /**
    * Set a preference setting's value.
    * Two parameters are provided in a JS list: prefName and value, the
    * key of the preference value to be set, and the value it's to be set to.

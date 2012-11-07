@@ -22,120 +22,101 @@ var gesture_config = (function() {
     {
       key: 'long_press_time_in_seconds',
       label: 'Long Press Time',
-      units: 'seconds',
-      default: 1.0
+      units: 'seconds'
     },
     {
       key: 'semi_long_press_time_in_seconds',
       label: 'Semi Long Press Time',
-      units: 'seconds',
-      default: 0.4
+      units: 'seconds'
     },
     {
       key: 'max_seconds_between_double_click',
       label: 'Maximum Double Click Interval',
       units: 'seconds',
-      step: 0.1,
-      default: 0.7
+      step: 0.1
     },
     {
       key: 'max_separation_for_gesture_touches_in_pixels',
       label: 'Maximum Separation for Gesture Touches',
-      units: 'pixels',
-      default: 150
+      units: 'pixels'
     },
     {
       key: 'max_swipe_deviation_ratio',
       label: 'Maximum Swipe Deviation',
-      units: '',
-      default: 3
+      units: ''
     },
     {
       key: 'max_touch_down_duration_in_seconds_for_click',
       label: 'Maximum Touch-Down Duration for Click',
       units: 'seconds',
-      step: 0.1,
-      default: 0.8
+      step: 0.1
     },
     {
       key: 'max_touch_move_in_pixels_for_click',
       label: 'Maximum Touch-Move for Click',
-      units: 'pixels',
-      default: 10
+      units: 'pixels'
     },
     {
       key: 'max_distance_between_taps_for_double_tap',
       label: 'Maximum Distance between two taps for Double Tap',
-      units: 'pixels',
-      default: 20
+      units: 'pixels'
     },
     {
       key: 'min_distance_for_pinch_scroll_in_pixels',
       label: 'Minimum Distance for Pinch Scroll',
-      units: 'pixels',
-      default: 20
+      units: 'pixels'
     },
     {
       key: 'min_flick_speed_squared',
       label: 'Minimum Flick Speed Squared',
-      units: '(pixels/sec.)<sup>2</sup>',
-      default: 550 * 550
+      units: '(pixels/sec.)<sup>2</sup>'
     },
     {
       key: 'min_pinch_update_distance_in_pixels',
       label: 'Minimum Pinch Update Distance',
-      units: 'pixels',
-      default: 5
+      units: 'pixels'
     },
     {
       key: 'min_rail_break_velocity',
       label: 'Minimum Rail-Break Velocity',
-      units: 'pixels/sec.',
-      default: 200
+      units: 'pixels/sec.'
     },
     {
       key: 'min_scroll_delta_squared',
       label: 'Minimum Scroll Delta Squared',
-      units: '',
-      default: 5 * 5
+      units: ''
     },
     {
       key: 'min_swipe_speed',
       label: 'Minimum Swipe Speed',
-      units: 'pixels/sec.',
-      default: 20
+      units: 'pixels/sec.'
     },
     {
       key: 'min_touch_down_duration_in_seconds_for_click',
       label: 'Minimum Touch-Down Duration for Click',
       units: 'seconds',
-      step: 0.01,
-      default: 0.01
+      step: 0.01
     },
     {
       key: 'points_buffered_for_velocity',
       label: 'Points Buffered for Velocity',
       units: '',
-      step: 1,
-      default: 3
+      step: 1
     },
     {
       key: 'rail_break_proportion',
       label: 'Rail-Break Proportion',
-      units: '%',
-      default: 15
+      units: '%'
     },
     {
       key: 'rail_start_proportion',
       label: 'Rail-Start Proportion',
-      units: '%',
-      default: 2
+      units: '%'
     },
     {
       key: 'touchscreen_fling_acceleration_adjustment',
       label: 'Touchscreen Fling Acceleration Adjustment',
-      units: 'pixels/sec.',
-      default: 0.85
+      units: 'pixels/sec.'
     }
   ];
 
@@ -159,7 +140,7 @@ var gesture_config = (function() {
       label.textContent = field.label;
       input.id = field.key;
       input.min = field.min || 0;
-      input.title = "Default Value: " + field.default;
+
       if (field.max) input.max = field.max;
       if (field.step) input.step = field.step;
 
@@ -213,14 +194,22 @@ var gesture_config = (function() {
   }
 
   /**
+   * Reset a preference to its default value and get that callback
+   * to getPreferenceValueResult with the new value of the preference.
+   * @param {string} prefName The name of the requested preference.
+   */
+  function resetPreferenceValue(prefName) {
+    chrome.send('resetPreferenceValue', [GESTURE_PREFIX + prefName]);
+  }
+
+  /**
    * Handle processing of "Reset" button.
    * Causes off form values to be updated based on current preference values.
    */
   function onReset() {
     for (var i = 0; i < FIELDS.length; i++) {
       var field = FIELDS[i];
-      $(field.key).value = field.default;
-      setPreferenceValue(field.key, field.default);
+      resetPreferenceValue(field.key);
     }
     return false;
   }
