@@ -20,6 +20,9 @@ AC_PROG_SED
 LT_PREREQ([2.2])
 LT_INIT([disable-static])
 
+AC_ARG_VAR([WESTON_NATIVE_BACKEND],
+           [Set the native backend to use, if Weston is not running under Wayland nor X11. @<:@default=drm-backend.so@:>@])
+
 PKG_PROG_PKG_CONFIG()
 
 AC_CHECK_FUNC([dlopen], [],
@@ -254,6 +257,13 @@ if test "x$GCC" = "xyes"; then
 fi
 AC_SUBST(GCC_CFLAGS)
 AC_SUBST(GCC_CXXFLAGS)
+
+if test "x$WESTON_NATIVE_BACKEND" = "x"; then
+	WESTON_NATIVE_BACKEND="drm-backend.so"
+fi
+AC_MSG_NOTICE([Weston's native backend: $WESTON_NATIVE_BACKEND])
+AC_DEFINE_UNQUOTED([WESTON_NATIVE_BACKEND], ["$WESTON_NATIVE_BACKEND"],
+		   [The default backend to load, if not wayland nor x11.])
 
 WAYLAND_SCANNER_RULES(['$(top_srcdir)/protocol'])
 

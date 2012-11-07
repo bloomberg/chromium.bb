@@ -98,7 +98,7 @@ Load
 instead of the default backend. The file is searched for in
 .IR "__weston_modules_dir__" ,
 or you can pass an absolute path. The default backend is 
-.I drm-backend.so
+.I __weston_native_backend__
 unless the environment suggests otherwise, see
 .IR DISPLAY " and " WAYLAND_DISPLAY .
 .TP

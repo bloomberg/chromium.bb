@@ -3151,7 +3151,7 @@ int main(int argc, char *argv[])
 		else if (getenv("DISPLAY"))
 			backend = "x11-backend.so";
 		else
-			backend = "drm-backend.so";
+			backend = WESTON_NATIVE_BACKEND;
 	}
 
 	config_file = config_file_path("weston.ini");
