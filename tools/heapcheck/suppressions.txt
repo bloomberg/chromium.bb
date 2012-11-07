@@ -1644,3 +1644,12 @@
    fun:net::FileStream::Context::Orphan
    fun:net::FileStream::~FileStream
 }
+{
+   bug_159726
+   Heapcheck:Leak
+   fun:dbus::Response::FromMethodCall
+   fun:chromeos::SetValueVerifierBase::Run
+   fun:testing::internal::InvokeHelper::InvokeMethod
+   ...
+   fun:dbus::MockObjectProxy::CallMethodWithErrorCallback
+}
