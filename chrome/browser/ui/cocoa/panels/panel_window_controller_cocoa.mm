@@ -96,6 +96,17 @@ const double kWidthOfMouseResizeArea = 4.0;
       [app previousKeyWindow] == self ||
       [[app windows] count] == static_cast<NSUInteger>([controller numPanels]);
 }
+
+// Ignore key events if window cannot become key window to fix problem
+// where keyboard input is still going into a minimized panel even though
+// the app has been deactivated in -[PanelWindowControllerCocoa deactivate:].
+- (void)sendEvent:(NSEvent*)anEvent {
+  NSEventType eventType = [anEvent type];
+  if ((eventType == NSKeyDown || eventType == NSKeyUp) &&
+      ![self canBecomeKeyWindow])
+    return;
+  [super sendEvent:anEvent];
+}
 @end
 
 // Transparent view covering the whole panel in order to intercept mouse
@@ -806,18 +817,12 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   if ([NSApp isActive] && ([NSApp keyWindow] == [self window]))
     return;
 
-  // We need to deactivate the controls (in the "WebView"). To do this, get the
-  // selected WebContents's RenderWidgetHostView and tell it to deactivate.
-  if (WebContents* contents = [contentsController_ webContents]) {
-    if (content::RenderWidgetHostView* rwhv =
-        contents->GetRenderWidgetHostView())
-      rwhv->SetActive(false);
-  }
-
-  windowShim_->panel()->OnActiveStateChanged(false);
+  [self onWindowDidResignKey];
 }
 
 - (void)activate {
+  // Activate the window. -|windowDidBecomeKey:| will be called when
+  // window becomes active.
   AutoReset<BOOL> pin(&activationRequestedByPanel_, true);
   [BrowserWindowUtils activateWindowForController:self];
 }
@@ -829,8 +834,19 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   // Cocoa does not support deactivating a window, so we deactivate the app.
   [NSApp deactivate];
 
-  // Deactivating the app does not trigger windowDidResignKey so the panel
-  // doesn't know it's active status has changed. Let the window know.
+  // Deactivating the app does not trigger windowDidResignKey. Do it manually.
+  [self onWindowDidResignKey];
+}
+
+- (void)onWindowDidResignKey {
+  // We need to deactivate the controls (in the "WebView"). To do this, get the
+  // selected WebContents's RenderWidgetHostView and tell it to deactivate.
+  if (WebContents* contents = [contentsController_ webContents]) {
+    if (content::RenderWidgetHostView* rwhv =
+        contents->GetRenderWidgetHostView())
+      rwhv->SetActive(false);
+  }
+
   windowShim_->panel()->OnActiveStateChanged(false);
 }
 
