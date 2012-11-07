@@ -22,6 +22,8 @@
         'android/testshell/tab_manager.cc',
         'android/testshell/tab_manager.h',
         'android/testshell/testshell_entry_point.cc',
+        "android/testshell/testshell_google_location_settings_helper.cc",
+        "android/testshell/testshell_google_location_settings_helper.h",
         'android/testshell/testshell_stubs.cc',
       ],
       'include_dirs': [

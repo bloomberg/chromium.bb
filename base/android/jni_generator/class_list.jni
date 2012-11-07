@@ -48,6 +48,3 @@ Lorg/chromium/net/NetworkChangeNotifier
 Lorg/chromium/net/ProxyChangeListener
 Lorg/chromium/ui/gfx/NativeWindow
 Lorg/chromium/ui/SelectFileDialog
-Lcom/google/android/apps/chrome/GoogleLocationSettingsHelperImpl
-Lorg/chromium/chrome/browser/GoogleLocationSettingsHelper
-Lorg/chromium/chrome/browser/GoogleLocationSettingsHelperStub

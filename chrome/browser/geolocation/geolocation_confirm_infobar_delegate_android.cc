@@ -21,7 +21,8 @@ GeolocationConfirmInfoBarDelegateAndroid::
     : GeolocationConfirmInfoBarDelegate(infobar_helper, controller, id,
                                         requesting_frame_url,
                                         display_languages),
-      google_location_settings_helper_(new GoogleLocationSettingsHelper())  {
+      google_location_settings_helper_(
+          GoogleLocationSettingsHelper::Create()) {
 }
 
 GeolocationConfirmInfoBarDelegateAndroid::

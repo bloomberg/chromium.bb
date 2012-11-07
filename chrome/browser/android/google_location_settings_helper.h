@@ -5,12 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_GOOGLE_LOCATION_SETTINGS_HELPER_H_
 #define CHROME_BROWSER_ANDROID_GOOGLE_LOCATION_SETTINGS_HELPER_H_
 
-#include "base/android/jni_helper.h"
-#include "base/android/scoped_java_ref.h"
-#include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/android/google_location_settings_helper_factory.h"
 
 // This class is needed to fetch the current system location
 // setting and update the infobar button label based on that information i.e,
@@ -18,21 +13,19 @@
 // "Settings" with a link to open the system location settings activity.
 class GoogleLocationSettingsHelper {
  public:
-  GoogleLocationSettingsHelper();
-  ~GoogleLocationSettingsHelper();
+  virtual ~GoogleLocationSettingsHelper() {}
 
-  static void SetGoogleLocationSettingsHelperFactory(
-      GoogleLocationSettingsHelperFactory* factory);
-  std::string GetAcceptButtonLabel();
-  void ShowGoogleLocationSettings();
-  bool IsMasterLocationSettingEnabled();
-  bool IsGoogleAppsLocationSettingEnabled();
-  static bool Register(JNIEnv* env);
+  static GoogleLocationSettingsHelper* Create();
+
+  virtual std::string GetAcceptButtonLabel() = 0;
+  virtual void ShowGoogleLocationSettings() = 0;
+  virtual bool IsMasterLocationSettingEnabled() = 0;
+  virtual bool IsGoogleAppsLocationSettingEnabled() = 0;
+
+ protected:
+  GoogleLocationSettingsHelper() {}
 
  private:
-  base::android::ScopedJavaGlobalRef<jobject>
-      java_google_location_settings_helper_;
-  static GoogleLocationSettingsHelperFactory* helper_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleLocationSettingsHelper);
 };

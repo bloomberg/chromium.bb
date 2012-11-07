@@ -13,7 +13,8 @@
 ChromeGeolocationPermissionContextAndroid::
     ChromeGeolocationPermissionContextAndroid(Profile* profile)
     : ChromeGeolocationPermissionContext(profile),
-      google_location_settings_helper_(new GoogleLocationSettingsHelper()) {
+      google_location_settings_helper_(
+          GoogleLocationSettingsHelper::Create()) {
 }
 
 ChromeGeolocationPermissionContextAndroid::

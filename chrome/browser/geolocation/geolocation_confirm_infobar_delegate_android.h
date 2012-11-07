@@ -27,6 +27,7 @@ class GeolocationConfirmInfoBarDelegateAndroid
   virtual bool Accept() OVERRIDE;
 
   scoped_ptr<GoogleLocationSettingsHelper> google_location_settings_helper_;
+
 };
 
 #endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONFIRM_INFOBAR_DELEGATE_ANDROID_H_
