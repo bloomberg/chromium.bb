@@ -903,6 +903,12 @@ void AcceleratedPresenter::DoReleaseSurface() {
 void AcceleratedPresenter::PresentWithGDI(HDC dc) {
   TRACE_EVENT0("gpu", "PresentWithGDI");
 
+  if (!present_thread_->device())
+    return;
+
+  if (!swap_chain_)
+    return;
+
   base::win::ScopedComPtr<IDirect3DTexture9> system_texture;
   {
     TRACE_EVENT0("gpu", "CreateSystemTexture");
