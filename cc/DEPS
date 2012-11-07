@@ -8,9 +8,6 @@ include_rules = [
 # http://crbug.com/147395
   "+third_party/WebKit/Source/WebCore/platform/graphics/Region.h",
   "+Source/WebCore/platform/graphics/Region.h",
-# TODO(jamesr): Resolve these
-  "+third_party/WebKit/Source/WebCore/platform/graphics/UnitBezier.h",
-  "+Source/WebCore/platform/graphics/UnitBezier.h",
 # http://crbug.com/154451
   "+third_party/WebKit/Source/WTF/config.h",
   "+Source/WTF/config.h",

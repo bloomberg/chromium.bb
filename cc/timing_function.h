@@ -5,9 +5,9 @@
 #ifndef CC_TIMING_FUNCTION_H_
 #define CC_TIMING_FUNCTION_H_
 
-#include "UnitBezier.h"
 #include "cc/animation_curve.h"
 #include "cc/cc_export.h"
+#include "third_party/skia/include/core/SkScalar.h"
 
 namespace cc {
 
@@ -35,7 +35,10 @@ public:
 protected:
     CubicBezierTimingFunction(double x1, double y1, double x2, double y2);
 
-    UnitBezier m_curve;
+    SkScalar m_x1;
+    SkScalar m_y1;
+    SkScalar m_x2;
+    SkScalar m_y2;
 };
 
 class CC_EXPORT EaseTimingFunction {

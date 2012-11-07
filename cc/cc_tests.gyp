@@ -52,6 +52,7 @@
       'texture_uploader_unittest.cc',
       'tiled_layer_unittest.cc',
       'tree_synchronizer_unittest.cc',
+      'timing_function_unittest.cc',
     ],
     'cc_tests_support_files': [
       'test/animation_test_common.cc',

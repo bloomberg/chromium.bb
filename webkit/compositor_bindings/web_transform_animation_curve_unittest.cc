@@ -136,7 +136,7 @@ TEST(WebTransformAnimationCurveTest, CubicBezierTimingFunction)
     EXPECT_FLOAT_EQ(0, curve->getValue(0).m41());
     EXPECT_LT(0, curve->getValue(0.25).m41());
     EXPECT_GT(0.25, curve->getValue(0.25).m41());
-    EXPECT_FLOAT_EQ(0.5, curve->getValue(0.5).m41());
+    EXPECT_NEAR(curve->getValue(0.5).m41(), 0.5, 0.00015);
     EXPECT_LT(0.75, curve->getValue(0.75).m41());
     EXPECT_GT(1, curve->getValue(0.75).m41());
     EXPECT_FLOAT_EQ(1, curve->getValue(1).m41());

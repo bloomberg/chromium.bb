@@ -264,10 +264,8 @@
       'sources': [
         '<@(cc_source_files)',
         'stubs/Region.h',
-        'stubs/UnitBezier.h',
 
         'stubs/config.h',
-        'stubs/unit_bezier.h',
       ],
     },
   ],
