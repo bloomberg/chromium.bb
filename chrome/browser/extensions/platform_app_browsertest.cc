@@ -775,7 +775,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, ReOpenedWithURL) {
 // Test that showing a permission request as a constrained window works and is
 // correctly parented.
 #if defined(OS_MACOSX)
-#define MAYBE_ConstrainedWindowRequest ConstrainedWindowRequest
+#define MAYBE_ConstrainedWindowRequest DISABLED_ConstrainedWindowRequest
 #else
 // TODO(sail): Enable this on other platforms once http://crbug.com/95455 is
 // fixed.
