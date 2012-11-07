@@ -38,7 +38,8 @@ const int kMinimumScreenPercent = 90;
 
 SnapSizer::SnapSizer(aura::Window* window,
                      const gfx::Point& start,
-                     Edge edge)
+                     Edge edge,
+                     InputType input_type)
     : window_(window),
       edge_(edge),
       time_last_update_(base::TimeTicks::Now()),
@@ -46,7 +47,9 @@ SnapSizer::SnapSizer(aura::Window* window,
       resize_disabled_(false),
       num_moves_since_adjust_(0),
       last_adjust_x_(start.x()),
-      last_update_x_(start.x()) {
+      last_update_x_(start.x()),
+      start_x_(start.x()),
+      input_type_(input_type) {
   target_bounds_ = GetTargetBounds();
 }
 
@@ -59,7 +62,19 @@ void SnapSizer::Update(const gfx::Point& location) {
                  CalculateIncrement(location.x(), last_update_x_));
   } else {
     bool along_edge = AlongEdge(location.x());
-    if (std::abs(location.x() - last_adjust_x_) >= kPixelsBeforeAdjust ||
+    int pixels_before_adjust = kPixelsBeforeAdjust;
+    if (input_type_ == TOUCH_MAXIMIZE_BUTTON_INPUT) {
+      const gfx::Rect& workspace_bounds = window_->parent()->bounds();
+      if (start_x_ > location.x()) {
+        pixels_before_adjust =
+            std::min(pixels_before_adjust, start_x_ / 10);
+      } else {
+        pixels_before_adjust =
+            std::min(pixels_before_adjust,
+                     (workspace_bounds.width() - start_x_) / 10);
+      }
+    }
+    if (std::abs(location.x() - last_adjust_x_) >= pixels_before_adjust ||
         (along_edge && num_moves_since_adjust_ >= kMovesBeforeAdjust)) {
       ChangeBounds(location.x(),
                    CalculateIncrement(location.x(), last_adjust_x_));

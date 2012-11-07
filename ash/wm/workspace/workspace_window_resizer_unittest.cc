@@ -1119,7 +1119,10 @@ TEST_F(WorkspaceWindowResizerTest, CtrlCompleteDragMoveToExactPosition) {
 TEST_F(WorkspaceWindowResizerTest, TestProperSizerResolutions) {
   window_->SetBounds(gfx::Rect(96, 112, 320, 160));
   scoped_ptr<SnapSizer> resizer(new SnapSizer(
-      window_.get(), gfx::Point(), SnapSizer::LEFT_EDGE));
+      window_.get(),
+      gfx::Point(),
+      SnapSizer::LEFT_EDGE,
+      SnapSizer::OTHER_INPUT));
   ASSERT_TRUE(resizer.get());
   shelf_layout_manager()->SetAutoHideBehavior(
       SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);

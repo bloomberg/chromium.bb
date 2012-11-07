@@ -414,7 +414,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
   {
     internal::SnapSizer sizer(target.get(), location,
-        internal::SnapSizer::RIGHT_EDGE);
+        internal::SnapSizer::RIGHT_EDGE,
+        internal::SnapSizer::OTHER_INPUT);
     EXPECT_EQ(sizer.target_bounds().ToString(), target->bounds().ToString());
   }
 
@@ -431,7 +432,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
   {
     internal::SnapSizer sizer(target.get(), location,
-        internal::SnapSizer::LEFT_EDGE);
+        internal::SnapSizer::LEFT_EDGE,
+        internal::SnapSizer::OTHER_INPUT);
     EXPECT_EQ(sizer.target_bounds().ToString(), target->bounds().ToString());
   }
 

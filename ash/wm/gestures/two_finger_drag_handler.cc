@@ -136,7 +136,8 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
         internal::SnapSizer sizer(target,
             gfx::Point(),
             event.details().swipe_left() ? internal::SnapSizer::LEFT_EDGE :
-                                           internal::SnapSizer::RIGHT_EDGE);
+                                           internal::SnapSizer::RIGHT_EDGE,
+            internal::SnapSizer::OTHER_INPUT);
 
         ui::ScopedLayerAnimationSettings scoped_setter(
             target->layer()->GetAnimator());

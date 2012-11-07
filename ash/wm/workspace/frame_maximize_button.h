@@ -107,7 +107,10 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
 
   // Updates |snap_type_| based on a mouse drag. If |select_default| is set,
   // the single button click default setting of the snap sizer should be used.
-  void UpdateSnap(const gfx::Point& location, bool select_default);
+  // Set |is_touch| to true to make touch snapping at the corners possible.
+  void UpdateSnap(const gfx::Point& location,
+                  bool select_default,
+                  bool is_touch);
 
   // Returns the type of snap based on the specified location.
   SnapType SnapTypeForLocation(const gfx::Point& location) const;
@@ -144,6 +147,9 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
 
   // Location of the press.
   gfx::Point press_location_;
+
+  // True if the press was triggered by a gesture/touch.
+  bool press_is_gesture_;
 
   // Current snap type.
   SnapType snap_type_;

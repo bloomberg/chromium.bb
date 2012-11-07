@@ -27,7 +27,18 @@ class ASH_EXPORT SnapSizer {
     RIGHT_EDGE
   };
 
-  SnapSizer(aura::Window* window, const gfx::Point& start, Edge edge);
+  enum InputType {
+    TOUCH_MAXIMIZE_BUTTON_INPUT,
+    OTHER_INPUT
+  };
+
+  // Set |input_type| to |TOUCH_MAXIMIZE_BUTTON_INPUT| when called by a touch
+  // operation by the maximize button. This will allow the user to snap resize
+  // the window beginning close to the border.
+  SnapSizer(aura::Window* window,
+            const gfx::Point& start,
+            Edge edge,
+            InputType input_type);
 
   // Updates the target bounds based on a mouse move.
   void Update(const gfx::Point& location);
@@ -91,6 +102,14 @@ class ASH_EXPORT SnapSizer {
 
   // X-coordinate last supplied to Update().
   int last_update_x_;
+
+  // Initial x-coordinate.
+  const int start_x_;
+
+  // |TOUCH_MAXIMIZE_BUTTON_INPUT| if the snap sizer was created through a
+  // touch & drag operation of the maximizer button. It changes the behavior of
+  // the drag / resize behavior when the dragging starts close to the border.
+  const InputType input_type_;
 
   DISALLOW_COPY_AND_ASSIGN(SnapSizer);
 };

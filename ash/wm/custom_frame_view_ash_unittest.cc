@@ -172,7 +172,8 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
     EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
     EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
     internal::SnapSizer sizer(window, center,
-        internal::SnapSizer::RIGHT_EDGE);
+        internal::SnapSizer::RIGHT_EDGE,
+        internal::SnapSizer::OTHER_INPUT);
     EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
   }
 
@@ -188,7 +189,8 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
     EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
     EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
     internal::SnapSizer sizer(window, center,
-        internal::SnapSizer::LEFT_EDGE);
+        internal::SnapSizer::LEFT_EDGE,
+        internal::SnapSizer::OTHER_INPUT);
     EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
   }
 
@@ -221,7 +223,8 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
     EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
     EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
     internal::SnapSizer sizer(window, center,
-        internal::SnapSizer::RIGHT_EDGE);
+        internal::SnapSizer::RIGHT_EDGE,
+        internal::SnapSizer::OTHER_INPUT);
     EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
   }
 
@@ -238,7 +241,8 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
     EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
     EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
     internal::SnapSizer sizer(window, center,
-        internal::SnapSizer::LEFT_EDGE);
+        internal::SnapSizer::LEFT_EDGE,
+        internal::SnapSizer::OTHER_INPUT);
     EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
   }
 
@@ -259,6 +263,61 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
 
   widget->Close();
 }
+
+// Tests Left/Right snapping with resize button touch dragging - which should
+// trigger dependent on the available drag distance.
+TEST_F(CustomFrameViewAshTest, TouchDragResizeCloseToCornerDiffersFromMouse) {
+  views::Widget* widget = CreateWidget();
+  aura::Window* window = widget->GetNativeWindow();
+  CustomFrameViewAsh* frame = custom_frame_view_ash(widget);
+  CustomFrameViewAsh::TestApi test(frame);
+  views::View* view = test.maximize_button();
+
+  gfx::Rect work_area = widget->GetWorkAreaBoundsInScreen();
+  gfx::Rect bounds = window->bounds();
+  bounds.set_x(work_area.width() - bounds.width());
+  widget->SetBounds(bounds);
+
+  gfx::Point start_point = view->GetBoundsInScreen().CenterPoint();
+  // We want to move all the way to the right (the few pixels we have).
+  gfx::Point end_point = gfx::Point(work_area.width(), start_point.y());
+
+  aura::test::EventGenerator generator(window->GetRootWindow(), start_point);
+
+  EXPECT_TRUE(ash::wm::IsWindowNormal(window));
+
+  // Snap right with a touch drag.
+  generator.GestureScrollSequence(start_point,
+                                  end_point,
+                                  base::TimeDelta::FromMilliseconds(100),
+                                  10);
+  RunAllPendingInMessageLoop();
+
+  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
+  gfx::Rect touch_result = window->bounds();
+  EXPECT_NE(bounds.ToString(), touch_result.ToString());
+
+  // Set the position back to where it was before and re-try with a mouse.
+  widget->SetBounds(bounds);
+
+  generator.MoveMouseTo(start_point);
+  generator.PressLeftButton();
+  generator.MoveMouseTo(end_point, 10);
+  generator.ReleaseLeftButton();
+  RunAllPendingInMessageLoop();
+
+  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+  EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
+  gfx::Rect mouse_result = window->bounds();
+
+  // The difference between the two operations should be that the mouse
+  // operation should have just started to resize and the touch operation is
+  // already all the way down to the smallest possible size.
+  EXPECT_NE(mouse_result.ToString(), touch_result.ToString());
+  EXPECT_GT(mouse_result.width(), touch_result.width());
+}
+
 
 // Test that closing the (browser) window with an opened balloon does not
 // crash the system. In other words: Make sure that shutting down the frame
@@ -369,7 +428,8 @@ TEST_F(CustomFrameViewAshTest, MaximizeLeftByButton) {
   EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
   EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
   internal::SnapSizer sizer(window, button_pos,
-                            internal::SnapSizer::LEFT_EDGE);
+                            internal::SnapSizer::LEFT_EDGE,
+                            internal::SnapSizer::OTHER_INPUT);
   sizer.SelectDefaultSizeAndDisableResize();
   EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
 }

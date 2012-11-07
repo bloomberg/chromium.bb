@@ -95,7 +95,8 @@ SystemGestureStatus SystemPinchHandler::ProcessGestureEvent(
         SnapSizer sizer(target_,
             gfx::Point(),
             event.details().swipe_left() ? internal::SnapSizer::LEFT_EDGE :
-                                           internal::SnapSizer::RIGHT_EDGE);
+                                           internal::SnapSizer::RIGHT_EDGE,
+            internal::SnapSizer::OTHER_INPUT);
         target_->SetBounds(sizer.GetSnapBounds(target_->bounds()));
       } else if (event.details().swipe_up()) {
         if (!wm::IsWindowMaximized(target_) &&
