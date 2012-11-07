@@ -28,24 +28,24 @@ class WebKitTestRunner : public RenderViewObserver,
       const WebKit::WebContextMenuData& data) OVERRIDE;
 
   // WebTestDelegate implementation.
-  virtual void clearContextMenuData() OVERRIDE;
-  virtual void clearEditCommand() OVERRIDE;
+  virtual void clearContextMenuData();
+  virtual void clearEditCommand();
   virtual void fillSpellingSuggestionList(
       const WebKit::WebString& word,
-      WebKit::WebVector<WebKit::WebString>* suggestions) OVERRIDE;
+      WebKit::WebVector<WebKit::WebString>* suggestions);
   virtual void setEditCommand(const std::string& name,
-                              const std::string& value) OVERRIDE;
-  virtual WebKit::WebContextMenuData* lastContextMenuData() const OVERRIDE;
-  virtual void setGamepadData(const WebKit::WebGamepads& gamepads) OVERRIDE;
-  virtual void printMessage(const std::string& message) OVERRIDE;
-  virtual void postTask(WebTestRunner::WebTask* task) OVERRIDE;
+                              const std::string& value);
+  virtual WebKit::WebContextMenuData* lastContextMenuData() const;
+  virtual void setGamepadData(const WebKit::WebGamepads& gamepads);
+  virtual void printMessage(const std::string& message);
+  virtual void postTask(WebTestRunner::WebTask* task);
   virtual void postDelayedTask(WebTestRunner::WebTask* task,
-                               long long ms) OVERRIDE;
+                               long long ms);
   virtual WebKit::WebString registerIsolatedFileSystem(
-      const WebKit::WebVector<WebKit::WebString>& absolute_filenames) OVERRIDE;
-  virtual long long getCurrentTimeInMillisecond() OVERRIDE;
+      const WebKit::WebVector<WebKit::WebString>& absolute_filenames);
+  virtual long long getCurrentTimeInMillisecond();
   virtual WebKit::WebString getAbsoluteWebStringFromUTF8Path(
-      const std::string& utf8_path) OVERRIDE;
+      const std::string& utf8_path);
 
  private:
   // Message handlers.
