@@ -203,13 +203,14 @@ void ChromeShellDelegate::OpenFileManager(bool as_dialog) {
     Browser* browser =
         browser::FindBrowserWithWindow(ash::wm::GetActiveWindow());
     // Open the select file dialog only if there is an active browser where the
-    // selected file is displayed. Otherwise open a file manager in a tab.
+    // selected file is displayed.
     if (browser) {
       browser->OpenFile();
       return;
     }
+  } else {
+    file_manager_util::OpenApplication();
   }
-  file_manager_util::OpenApplication();
 #endif
 }
 
