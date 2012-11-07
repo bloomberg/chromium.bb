@@ -35,6 +35,8 @@ public class TabManager extends LinearLayout {
 
     private TabBase mCurrentTab;
 
+    private String mStartupUrl = DEFAULT_URL;
+
     /**
      * @param context The Context the view is running in.
      * @param attrs   The attributes of the XML tag that is inflating the view.
@@ -61,7 +63,7 @@ public class TabManager extends LinearLayout {
             public void surfaceCreated(SurfaceHolder holder) {
                 nativeSurfaceCreated(holder.getSurface());
 
-                if (mCurrentTab == null) createTab(DEFAULT_URL);
+                if (mCurrentTab == null) createTab(mStartupUrl);
             }
 
             @Override
@@ -76,6 +78,13 @@ public class TabManager extends LinearLayout {
      */
     public void setWindow(NativeWindow window) {
         mWindow = window;
+    }
+
+    /**
+     * @param startupUrl The URL that the first tab should navigate to.
+     */
+    public void setStartupUrl(String startupUrl) {
+        mStartupUrl = startupUrl;
     }
 
     /**

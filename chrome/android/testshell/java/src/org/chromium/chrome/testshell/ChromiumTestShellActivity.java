@@ -46,6 +46,10 @@ public class ChromiumTestShellActivity extends Activity {
 
         setContentView(R.layout.testshell_activity);
         mTabManager = (TabManager) findViewById(R.id.tab_manager);
+        String startupUrl = getUrlFromIntent(getIntent());
+        if (!TextUtils.isEmpty(startupUrl)) {
+            mTabManager.setStartupUrl(startupUrl);
+        }
 
         mWindow = new ActivityNativeWindow(this);
         mWindow.restoreInstanceState(savedInstanceState);
