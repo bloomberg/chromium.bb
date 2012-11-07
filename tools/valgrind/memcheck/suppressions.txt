@@ -6110,4 +6110,26 @@
    fun:_ZN8chromeos12_GLOBAL__N_126ShillServiceClientStubImpl15GetObserverListERKN4dbus10ObjectPathE
    fun:_ZN8chromeos12_GLOBAL__N_126ShillServiceClientStubImpl30NotifyObserversPropertyChangedERKN4dbus10ObjectPathERKSs
 }
-
+{
+   bug_159928_a
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN3net4test13MockScheduler10SentPacket*
+   fun:_ZN3net14QuicConnection10SendPacket*
+   fun:_ZN3net4test14TestConnection10SendPacket*
+   fun:_ZN3net14QuicConnection10OnCanWriteEv
+   fun:_ZN3net20QuicConnectionHelper11OnSendAlarmEv
+}
+{
+   bug_159928_b
+   Memcheck:Uninitialized
+   fun:_ZN3net13NullDecrypter7DecryptEN4base16BasicStringPieceISsEES3_
+   fun:_ZN3net10QuicFramer14DecryptPayloadERKNS_19QuicEncryptedPacketE
+   fun:_ZN3net10QuicFramer19ProcessPacketHeaderEPNS_16QuicPacketHeaderERKNS_19QuicEncryptedPacketE
+   fun:_ZN3net10QuicFramer13ProcessPacketERKNS_10IPEndPointES3_RKNS_19QuicEncryptedPacketE
+   fun:_ZN3net4test20TestConnectionHelper17WritePacketToWire*
+   fun:_ZN3net14QuicConnection10SendPacket*
+   fun:_ZN3net4test14TestConnection10SendPacket*
+   fun:_ZN3net14QuicConnection14SendStreamDataEjN4base16BasicStringPieceISsEE*
+   fun:_ZN3net4test40QuicConnectionHelperTest_TestResend_Test8TestBodyEv
+}
