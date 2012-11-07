@@ -214,6 +214,7 @@ void AppListController::ShowAppList() {
   // If there is already a view visible, activate it.
   if (current_view_) {
     current_view_->Show();
+    current_view_->GetWidget()->Activate();
     return;
   }
 
@@ -240,6 +241,7 @@ void AppListController::ShowAppList() {
   string16 icon_path = GetAppListIconPath();
   ui::win::SetAppIconForWindow(icon_path, hwnd);
   current_view_->Show();
+  current_view_->GetWidget()->Activate();
 #endif
 }
 
