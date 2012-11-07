@@ -213,17 +213,18 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<StateStore> state_store_;
     scoped_ptr<ShellWindowGeometryCache> shell_window_geometry_cache_;
     scoped_ptr<ExtensionPrefs> extension_prefs_;
-    // ExtensionService depends on the 2 above.
-    scoped_ptr<ExtensionService> extension_service_;
-    scoped_ptr<ManagementPolicy> management_policy_;
-    scoped_refptr<UserScriptMaster> user_script_master_;
-    // extension_info_map_ needs to outlive extension_process_manager_.
-    scoped_refptr<ExtensionInfoMap> extension_info_map_;
-    // This is a dependency of MessageService and EventRouter.
+    // LazyBackgroundTaskQueue is a dependency of
+    // MessageService and EventRouter.
     scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
     scoped_ptr<MessageService> message_service_;
     scoped_ptr<EventRouter> extension_event_router_;
     scoped_ptr<NavigationObserver> navigation_observer_;
+    scoped_refptr<UserScriptMaster> user_script_master_;
+    // ExtensionService depends on ExtensionPrefs and StateStore.
+    scoped_ptr<ExtensionService> extension_service_;
+    scoped_ptr<ManagementPolicy> management_policy_;
+    // extension_info_map_ needs to outlive extension_process_manager_.
+    scoped_refptr<ExtensionInfoMap> extension_info_map_;
   };
 
   Profile* profile_;
