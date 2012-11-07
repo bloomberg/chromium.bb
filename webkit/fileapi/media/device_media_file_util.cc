@@ -5,7 +5,6 @@
 #include "webkit/fileapi/media/device_media_file_util.h"
 
 #include "base/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_url.h"
@@ -76,17 +75,17 @@ PlatformFileError DeviceMediaFileUtil::GetFileInfo(
   return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 }
 
-FileSystemFileUtil::AbstractFileEnumerator*
-DeviceMediaFileUtil::CreateFileEnumerator(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url,
-    bool recursive) {
+scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
+    DeviceMediaFileUtil::CreateFileEnumerator(
+        FileSystemOperationContext* context,
+        const FileSystemURL& url,
+        bool recursive) {
   DCHECK(context->mtp_device_delegate());
-  return new FilteringFileEnumerator(
-      make_scoped_ptr(
-          context->mtp_device_delegate()->CreateFileEnumerator(url.path(),
-                                                               recursive)),
-      context->media_path_filter());
+  return make_scoped_ptr(new FilteringFileEnumerator(
+      context->mtp_device_delegate()->CreateFileEnumerator(url.path(),
+                                                           recursive),
+      context->media_path_filter()))
+      .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
 }
 
 PlatformFileError DeviceMediaFileUtil::GetLocalFilePath(

@@ -38,18 +38,16 @@ PlatformFileError NativeMediaFileUtil::EnsureFileExists(
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
 
-FileSystemFileUtil::AbstractFileEnumerator*
+scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
 NativeMediaFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,
     const FileSystemURL& root_url,
     bool recursive) {
   DCHECK(context);
-
-  AbstractFileEnumerator* base_enumerator =
-      IsolatedFileUtil::CreateFileEnumerator(context, root_url, recursive);
-  return new FilteringFileEnumerator(
-      scoped_ptr<AbstractFileEnumerator>(base_enumerator),
-      context->media_path_filter());
+  return make_scoped_ptr(new FilteringFileEnumerator(
+      IsolatedFileUtil::CreateFileEnumerator(context, root_url, recursive),
+      context->media_path_filter()))
+      .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
 }
 
 PlatformFileError NativeMediaFileUtil::Touch(

@@ -734,27 +734,33 @@ PlatformFileError MTPDeviceDelegateImplLinux::GetFileInfo(
   return worker->get_file_info(file_info);
 }
 
-FileSystemFileUtil::AbstractFileEnumerator*
-MTPDeviceDelegateImplLinux::CreateFileEnumerator(
+scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
+    MTPDeviceDelegateImplLinux::CreateFileEnumerator(
         const FilePath& root,
         bool recursive) {
-  if (root.value().empty() || !LazyInit())
-    return new FileSystemFileUtil::EmptyFileEnumerator();
+  if (root.value().empty() || !LazyInit()) {
+    return make_scoped_ptr(new FileSystemFileUtil::EmptyFileEnumerator())
+        .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
+  }
 
   scoped_refptr<ReadDirectoryWorker> worker(new ReadDirectoryWorker(
       device_handle_, GetDeviceRelativePath(device_path_, root.value()),
       media_task_runner_, &on_task_completed_event_, &on_shutdown_event_));
   worker->Run();
 
-  if (worker->get_file_entries().empty())
-    return new FileSystemFileUtil::EmptyFileEnumerator();
+  if (worker->get_file_entries().empty()) {
+    return make_scoped_ptr(new FileSystemFileUtil::EmptyFileEnumerator())
+        .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
+  }
 
   if (recursive) {
-    return new RecursiveMediaFileEnumerator(
+    return make_scoped_ptr(new RecursiveMediaFileEnumerator(
         device_handle_, media_task_runner_, worker->get_file_entries(),
-        &on_task_completed_event_, &on_shutdown_event_);
+        &on_task_completed_event_, &on_shutdown_event_))
+        .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
   }
-  return new MediaFileEnumerator(worker->get_file_entries());
+  return make_scoped_ptr(new MediaFileEnumerator(worker->get_file_entries()))
+      .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
 }
 
 PlatformFileError MTPDeviceDelegateImplLinux::CreateSnapshotFile(

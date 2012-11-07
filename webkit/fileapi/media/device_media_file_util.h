@@ -6,6 +6,7 @@
 #define WEBKIT_FILEAPI_MEDIA_DEVICE_MEDIA_FILE_UTIL_H_
 
 #include "base/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/storage/webkit_storage_export.h"
@@ -47,7 +48,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE DeviceMediaFileUtil
       const FileSystemURL& url,
       base::PlatformFileInfo* file_info,
       FilePath* platform_path) OVERRIDE;
-  virtual AbstractFileEnumerator* CreateFileEnumerator(
+  virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemURL& root_url,
       bool recursive) OVERRIDE;

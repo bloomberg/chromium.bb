@@ -38,7 +38,7 @@ class MTPDeviceDelegateImplLinux : public fileapi::MTPDeviceDelegate,
   virtual base::PlatformFileError GetFileInfo(
       const FilePath& file_path,
       base::PlatformFileInfo* file_info) OVERRIDE;
-  virtual fileapi::FileSystemFileUtil::AbstractFileEnumerator*
+  virtual scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
       CreateFileEnumerator(const FilePath& root,
                            bool recursive) OVERRIDE;
   virtual base::PlatformFileError CreateSnapshotFile(

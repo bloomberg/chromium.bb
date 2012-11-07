@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_file_util.h"
@@ -62,7 +63,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE LocalFileUtil : public FileSystemFileUtil {
       const FileSystemURL& url,
       base::PlatformFileInfo* file_info,
       FilePath* platform_file) OVERRIDE;
-  virtual AbstractFileEnumerator* CreateFileEnumerator(
+  virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemURL& root_url,
       bool recursive) OVERRIDE;

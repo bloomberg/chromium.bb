@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -99,9 +98,8 @@ FilePath RecursiveSetFileEnumerator::Next() {
 
   // Enumerates subdirectories of the next path.
   FileInfo& next_file = *file_iter_++;
-  current_enumerator_.reset(
-        NativeFileUtil::CreateFileEnumerator(
-            next_file.path, true /* recursive */));
+  current_enumerator_ = NativeFileUtil::CreateFileEnumerator(
+      next_file.path, true /* recursive */);
   DCHECK(current_enumerator_.get());
   return current_enumerator_->Next();
 }
@@ -160,11 +158,11 @@ PlatformFileError DraggedFileUtil::GetFileInfo(
   return error;
 }
 
-FileSystemFileUtil::AbstractFileEnumerator*
-DraggedFileUtil::CreateFileEnumerator(
-    FileSystemOperationContext* context,
-    const FileSystemURL& root,
-    bool recursive) {
+scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
+    DraggedFileUtil::CreateFileEnumerator(
+        FileSystemOperationContext* context,
+        const FileSystemURL& root,
+        bool recursive) {
   DCHECK(root.is_valid());
   if (!root.path().empty())
     return NativeFileUtil::CreateFileEnumerator(root.path(), recursive);
@@ -173,9 +171,12 @@ DraggedFileUtil::CreateFileEnumerator(
   std::vector<FileInfo> toplevels;
   IsolatedContext::GetInstance()->GetDraggedFileInfo(
       root.filesystem_id(), &toplevels);
-  if (!recursive)
-    return new SetFileEnumerator(toplevels);
-  return new RecursiveSetFileEnumerator(toplevels);
+  if (!recursive) {
+    return make_scoped_ptr(new SetFileEnumerator(toplevels))
+        .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
+  }
+  return make_scoped_ptr(new RecursiveSetFileEnumerator(toplevels))
+      .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
 }
 
 bool DraggedFileUtil::IsDirectoryEmpty(

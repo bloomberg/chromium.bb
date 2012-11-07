@@ -134,24 +134,28 @@ PlatformFileError LocalFileUtil::GetFileInfo(
   return error;
 }
 
-FileSystemFileUtil::AbstractFileEnumerator* LocalFileUtil::CreateFileEnumerator(
-    FileSystemOperationContext* context,
-    const FileSystemURL& root_url,
-    bool recursive) {
+scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> LocalFileUtil::
+    CreateFileEnumerator(
+        FileSystemOperationContext* context,
+        const FileSystemURL& root_url,
+        bool recursive) {
   FilePath file_path;
   if (GetLocalFilePath(context, root_url, &file_path) !=
-      base::PLATFORM_FILE_OK)
-    return new EmptyFileEnumerator();
-  return new LocalFileEnumerator(file_path, root_url.path(), recursive,
+      base::PLATFORM_FILE_OK) {
+    return make_scoped_ptr(new EmptyFileEnumerator)
+        .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
+  }
+  return make_scoped_ptr(new LocalFileEnumerator(
+      file_path, root_url.path(), recursive,
       file_util::FileEnumerator::FILES |
-      file_util::FileEnumerator::DIRECTORIES);
+          file_util::FileEnumerator::DIRECTORIES))
+      .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
 }
 
 PlatformFileError LocalFileUtil::GetLocalFilePath(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
     FilePath* local_file_path) {
-
   FileSystemMountPointProvider* provider =
       context->file_system_context()->GetMountPointProvider(url.type());
   DCHECK(provider);

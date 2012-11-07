@@ -38,9 +38,9 @@ class MTPDeviceDelegate
   // the file entries of |root| path. The instance needs to be freed by the
   // caller, and its lifetime should not extend past when the current call
   // returns to the main media task runner thread.
-  virtual FileSystemFileUtil::AbstractFileEnumerator* CreateFileEnumerator(
-      const FilePath& root,
-      bool recursive) = 0;
+  virtual scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
+      CreateFileEnumerator(const FilePath& root,
+                           bool recursive) = 0;
 
   // Updates the temporary snapshot file contents given by |local_path| with
   // media file contents given by |device_file_path| and also returns the

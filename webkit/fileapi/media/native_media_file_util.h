@@ -5,6 +5,7 @@
 #ifndef WEBKIT_FILEAPI_MEDIA_NATIVE_MEDIA_FILE_UTIL_H_
 #define WEBKIT_FILEAPI_MEDIA_NATIVE_MEDIA_FILE_UTIL_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/isolated_file_util.h"
 #include "webkit/storage/webkit_storage_export.h"
 
@@ -27,7 +28,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE NativeMediaFileUtil
   virtual PlatformFileError EnsureFileExists(
       FileSystemOperationContext* context,
       const FileSystemURL& url, bool* created) OVERRIDE;
-  virtual AbstractFileEnumerator* CreateFileEnumerator(
+  virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemURL& root_url,
       bool recursive) OVERRIDE;

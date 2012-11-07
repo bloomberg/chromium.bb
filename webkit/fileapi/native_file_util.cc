@@ -155,12 +155,14 @@ PlatformFileError NativeFileUtil::GetFileInfo(
   return base::PLATFORM_FILE_OK;
 }
 
-FileSystemFileUtil::AbstractFileEnumerator*
-NativeFileUtil::CreateFileEnumerator(const FilePath& root_path,
-                                     bool recursive) {
-  return new NativeFileEnumerator(root_path, recursive,
+scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
+    NativeFileUtil::CreateFileEnumerator(const FilePath& root_path,
+                                         bool recursive) {
+  return make_scoped_ptr(new NativeFileEnumerator(
+      root_path, recursive,
       file_util::FileEnumerator::FILES |
-      file_util::FileEnumerator::DIRECTORIES);
+          file_util::FileEnumerator::DIRECTORIES))
+      .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
 }
 
 PlatformFileError NativeFileUtil::Touch(
@@ -204,9 +206,9 @@ bool NativeFileUtil::IsDirectoryEmpty(const FilePath& path) {
 }
 
 PlatformFileError NativeFileUtil::CopyOrMoveFile(
-      const FilePath& src_path,
-      const FilePath& dest_path,
-      bool copy) {
+    const FilePath& src_path,
+    const FilePath& dest_path,
+    bool copy) {
   if (copy) {
     if (file_util::CopyFile(src_path,
                             dest_path))

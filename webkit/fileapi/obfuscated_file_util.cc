@@ -473,17 +473,20 @@ PlatformFileError ObfuscatedFileUtil::GetFileInfo(
                              file_info, platform_file_path);
 }
 
-FileSystemFileUtil::AbstractFileEnumerator*
-ObfuscatedFileUtil::CreateFileEnumerator(
+scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
+    ObfuscatedFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,
     const FileSystemURL& root_url,
     bool recursive) {
   FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
       root_url.origin(), root_url.type(), false);
-  if (!db)
-    return new FileSystemFileUtil::EmptyFileEnumerator();
-  return new ObfuscatedFileEnumerator(
-      db, context, this, root_url, recursive);
+  if (!db) {
+    return make_scoped_ptr(new FileSystemFileUtil::EmptyFileEnumerator())
+        .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
+  }
+  return make_scoped_ptr(new ObfuscatedFileEnumerator(db, context, this,
+                                                      root_url, recursive))
+      .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
 }
 
 PlatformFileError ObfuscatedFileUtil::GetLocalFilePath(
