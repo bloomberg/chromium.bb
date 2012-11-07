@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace views {
 

@@ -6,7 +6,6 @@
 #define UI_VIEWS_WINDOW_DIALOG_CLIENT_VIEW_H_
 
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/font.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/window/client_view.h"

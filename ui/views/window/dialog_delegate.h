@@ -10,10 +10,10 @@
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace views {
 
+class DialogClientView;
 class View;
 
 ///////////////////////////////////////////////////////////////////////////////

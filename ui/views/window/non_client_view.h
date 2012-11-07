@@ -6,13 +6,14 @@
 #define UI_VIEWS_WINDOW_NON_CLIENT_VIEW_H_
 
 #include "ui/views/view.h"
-#include "ui/views/window/client_view.h"
 
 namespace gfx {
 class Path;
 }
 
 namespace views {
+
+class ClientView;
 
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView
