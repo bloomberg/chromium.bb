@@ -205,6 +205,7 @@ class SelectPopupDialog {
     public static void hide(ContentViewCore contentView) {
         if (sShownDialog != null &&
                 (contentView == null || sShownDialog.mContentViewCore == contentView)) {
+            if (contentView != null) contentView.selectPopupMenuItems(null);
             sShownDialog.mListBoxPopup.dismiss();
         }
     }
