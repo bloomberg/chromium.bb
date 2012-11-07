@@ -27,7 +27,7 @@ std::vector<std::string> CreateVector(const std::string& string) {
 }  // namespace
 
 TestingValueStore::TestingValueStore()
-    : fail_all_requests_(false) {}
+    : read_count_(0), write_count_(0), fail_all_requests_(false) {}
 
 TestingValueStore::~TestingValueStore() {}
 
@@ -60,6 +60,7 @@ ValueStore::ReadResult TestingValueStore::Get(const std::string& key) {
 
 ValueStore::ReadResult TestingValueStore::Get(
     const std::vector<std::string>& keys) {
+  read_count_++;
   if (fail_all_requests_) {
     return ReadResultError();
   }
@@ -76,6 +77,7 @@ ValueStore::ReadResult TestingValueStore::Get(
 }
 
 ValueStore::ReadResult TestingValueStore::Get() {
+  read_count_++;
   if (fail_all_requests_) {
     return ReadResultError();
   }
@@ -91,6 +93,7 @@ ValueStore::WriteResult TestingValueStore::Set(
 
 ValueStore::WriteResult TestingValueStore::Set(
     WriteOptions options, const DictionaryValue& settings) {
+  write_count_++;
   if (fail_all_requests_) {
     return WriteResultError();
   }
@@ -117,6 +120,7 @@ ValueStore::WriteResult TestingValueStore::Remove(const std::string& key) {
 
 ValueStore::WriteResult TestingValueStore::Remove(
     const std::vector<std::string>& keys) {
+  write_count_++;
   if (fail_all_requests_) {
     return WriteResultError();
   }
@@ -134,10 +138,6 @@ ValueStore::WriteResult TestingValueStore::Remove(
 }
 
 ValueStore::WriteResult TestingValueStore::Clear() {
-  if (fail_all_requests_) {
-    return WriteResultError();
-  }
-
   std::vector<std::string> keys;
   for (DictionaryValue::Iterator it(storage_); it.HasNext(); it.Advance()) {
     keys.push_back(it.key());

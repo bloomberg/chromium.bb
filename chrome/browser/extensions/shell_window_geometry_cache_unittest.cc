@@ -28,24 +28,30 @@ namespace extensions {
 class ShellWindowGeometryCacheTest : public testing::Test {
  public:
   ShellWindowGeometryCacheTest() :
-        ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
+        ui_thread_(BrowserThread::UI, &ui_message_loop_),
+        file_thread_(BrowserThread::FILE),
         value_store_(new TestingValueStore()) {
-
+    file_thread_.Start();
     state_store_.reset(new StateStore(&profile_, value_store_));
     cache_.reset(
         new ShellWindowGeometryCache(&profile_, state_store_.get()));
+    cache_->SetSyncDelayForTests(0);
   }
 
   void AddGeometryAndLoadExtension(const std::string& extension_id,
                                    const std::string& window_id,
                                    const gfx::Rect& bounds);
+
+  // Spins the UI and FILE threads' message loops to make sure any task
+  // posted to sync the geometry to the value store gets a chance to run.
+  void WaitForSync();
+
   void LoadExtension(const std::string& extension_id);
   void UnloadExtension(const std::string& extension_id);
 
  protected:
   TestingProfile profile_;
-  MessageLoopForUI message_loop_;
+  MessageLoopForUI ui_message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   TestingValueStore* value_store_;
@@ -65,26 +71,24 @@ void ShellWindowGeometryCacheTest::AddGeometryAndLoadExtension(
   dict->SetWithoutPathExpansion(window_id, value);
   state_store_->SetExtensionValue(extension_id, kWindowGeometryKey,
                                   scoped_ptr<base::Value>(dict.release()));
-
   LoadExtension(extension_id);
+}
+
+void ShellWindowGeometryCacheTest::WaitForSync() {
+  content::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop(BrowserThread::FILE);
 }
 
 void ShellWindowGeometryCacheTest::LoadExtension(
     const std::string& extension_id) {
   cache_->OnExtensionLoaded(extension_id);
-
-  // TODO(mek): not sure this is the best way to ensure that loading of data
-  // from the store has actually finished for the given extension id.
-  content::RunAllPendingInMessageLoop();
+  WaitForSync();
 }
 
 void ShellWindowGeometryCacheTest::UnloadExtension(
     const std::string& extension_id) {
   cache_->OnExtensionUnloaded(extension_id);
-
-  // TODO(mek): not sure this is the best way to ensure that saving of data to
-  // the store has actually finished for the given extension id.
-  content::RunAllPendingInMessageLoop();
+  WaitForSync();
 }
 
 // Test getting geometry from an empty store.
@@ -165,6 +169,33 @@ TEST_F(ShellWindowGeometryCacheTest, SaveGeometryToStore) {
   // and make sure the geometry got reloaded properly too
   ASSERT_TRUE(cache_->GetGeometry(extension_id, window_id, &newBounds));
   ASSERT_EQ(bounds, newBounds);
+}
+
+// Tests that we won't do writes to the state store for SaveGeometry calls
+// which don't change the state we already have.
+TEST_F(ShellWindowGeometryCacheTest, NoDuplicateWrites) {
+  gfx::Rect bounds1(100, 200, 300, 400);
+  gfx::Rect bounds2(200, 400, 600, 800);
+  gfx::Rect bounds2_duplicate(200, 400, 600, 800);
+
+  // Write the first bounds - it should do > 0 writes.
+  cache_->SaveGeometry(kExtensionId, kWindowId, bounds1);
+  WaitForSync();
+  int write_count1 = value_store_->write_count();
+  EXPECT_GT(write_count1, 0);
+
+  // Write a different bounds - it should also do > 0 writes.
+  cache_->SaveGeometry(kExtensionId, kWindowId, bounds2);
+  WaitForSync();
+  int write_count2 = value_store_->write_count();
+  EXPECT_GT(write_count2, write_count1);
+
+  // Write a bounds that's a duplicate of what we already have. This should
+  // not do any writes.
+  cache_->SaveGeometry(kExtensionId, kWindowId, bounds2_duplicate);
+  WaitForSync();
+  int write_count3 = value_store_->write_count();
+  EXPECT_EQ(write_count2, write_count3);
 }
 
 } // namespace extensions

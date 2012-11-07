@@ -35,12 +35,20 @@ class ShellWindowGeometryCache
   virtual ~ShellWindowGeometryCache();
 
   void SaveGeometry(const std::string& extension_id,
-                          const std::string& window_id,
-                          const gfx::Rect& bounds);
+                    const std::string& window_id,
+                    const gfx::Rect& bounds);
 
   bool GetGeometry(const std::string& extension_id,
-                         const std::string& window_id,
-                         gfx::Rect* bounds) const;
+                   const std::string& window_id,
+                   gfx::Rect* bounds) const;
+
+ protected:
+  friend class ShellWindowGeometryCacheTest;
+
+  // For tests, this modifies the timeout delay for saving changes from calls
+  // to SaveGeometry. (Note that even if this is set to 0, you still need to
+  // run the message loop to see the results of any SyncToStorage call).
+  void SetSyncDelayForTests(int timeout_ms);
 
  private:
   // content::NotificationObserver
@@ -56,8 +64,6 @@ class ShellWindowGeometryCache
 
   void SyncToStorage();
 
-  friend class ShellWindowGeometryCacheTest;
-
   // State store.
   StateStore* store_;
 
@@ -69,6 +75,9 @@ class ShellWindowGeometryCache
 
   // The timer used to save the data
   base::OneShotTimer<ShellWindowGeometryCache> sync_timer_;
+
+  // The timeout value we'll use for |sync_timer_|.
+  base::TimeDelta sync_delay_;
 
   content::NotificationRegistrar registrar_;
 };

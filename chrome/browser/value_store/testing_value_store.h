@@ -18,6 +18,14 @@ class TestingValueStore : public ValueStore {
   // Sets whether to fail all requests (default is false).
   void SetFailAllRequests(bool fail_all_requests);
 
+  // Accessors for the number of reads/writes done by this value store. Each
+  // Get* operation (except for the BytesInUse ones) counts as one read, and
+  // each Set*/Remove/Clear operation counts as one write. This is useful in
+  // tests seeking to assert that some number of reads/writes to their
+  // underlying value store have (or have not) happened.
+  int read_count() { return read_count_; }
+  int write_count() { return write_count_; }
+
   // ValueStore implementation.
   virtual size_t GetBytesInUse(const std::string& key) OVERRIDE;
   virtual size_t GetBytesInUse(const std::vector<std::string>& keys) OVERRIDE;
@@ -37,7 +45,8 @@ class TestingValueStore : public ValueStore {
 
  private:
   DictionaryValue storage_;
-
+  int read_count_;
+  int write_count_;
   bool fail_all_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingValueStore);

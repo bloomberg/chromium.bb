@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/shell_window_geometry_cache.h"
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -26,7 +27,8 @@ namespace extensions {
 
 ShellWindowGeometryCache::ShellWindowGeometryCache(Profile* profile,
                                                    StateStore* state_store)
-    : store_(state_store) {
+    : store_(state_store),
+      sync_delay_(base::TimeDelta::FromMilliseconds(kSyncTimeoutMilliseconds)) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -44,6 +46,13 @@ void ShellWindowGeometryCache::SaveGeometry(
     const std::string& window_id,
     const gfx::Rect& bounds) {
   std::map<std::string, gfx::Rect>& geometry = cache_[extension_id];
+
+  // If we don't have any unsynced changes and this is a duplicate of what's
+  // already in the cache, just ignore it.
+  if (geometry[window_id] == bounds &&
+      !ContainsKey(unsynced_extensions_, extension_id))
+    return;
+
   geometry[window_id] = bounds;
 
   unsynced_extensions_.insert(extension_id);
@@ -51,9 +60,8 @@ void ShellWindowGeometryCache::SaveGeometry(
   // We don't use Reset() because the timer may not yet be running.
   // (In that case Stop() is a no-op.)
   sync_timer_.Stop();
-  sync_timer_.Start(FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kSyncTimeoutMilliseconds), this,
-      &ShellWindowGeometryCache::SyncToStorage);
+  sync_timer_.Start(FROM_HERE, sync_delay_, this,
+                    &ShellWindowGeometryCache::SyncToStorage);
 }
 
 void ShellWindowGeometryCache::SyncToStorage() {
@@ -123,6 +131,10 @@ void ShellWindowGeometryCache::Observe(
       NOTREACHED();
       return;
   }
+}
+
+void ShellWindowGeometryCache::SetSyncDelayForTests(int timeout_ms) {
+  sync_delay_ = base::TimeDelta::FromMilliseconds(timeout_ms);
 }
 
 void ShellWindowGeometryCache::OnExtensionLoaded(
