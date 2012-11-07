@@ -115,6 +115,10 @@ class DriveFileSyncClient : public base::NonThreadSafe,
                               const std::string& search_query,
                               const DocumentFeedCallback& callback);
 
+  void DidGetAccountMetadata(const ChangeStampCallback& callback,
+                             google_apis::GDataErrorCode error,
+                             scoped_ptr<base::Value> data);
+
   void DidGetDocumentFeedData(const DocumentFeedCallback& callback,
                               google_apis::GDataErrorCode error,
                               scoped_ptr<base::Value> data);

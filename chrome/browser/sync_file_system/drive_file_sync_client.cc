@@ -205,7 +205,26 @@ void DriveFileSyncClient::DidCreateDirectory(
 void DriveFileSyncClient::GetLargestChangeStamp(
     const ChangeStampCallback& callback) {
   DCHECK(CalledOnValidThread());
-  NOTIMPLEMENTED();
+
+  drive_service_->GetAccountMetadata(
+      base::Bind(&DriveFileSyncClient::DidGetAccountMetadata,
+                 AsWeakPtr(), callback));
+}
+
+void DriveFileSyncClient::DidGetAccountMetadata(
+    const ChangeStampCallback& callback,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<base::Value> data) {
+  DCHECK(CalledOnValidThread());
+
+  int64 largest_changestamp = 0;
+  if (error == google_apis::HTTP_SUCCESS) {
+    scoped_ptr<google_apis::AccountMetadataFeed> metadata(
+        google_apis::AccountMetadataFeed::CreateFrom(*data));
+    largest_changestamp = metadata->largest_changestamp();
+  }
+
+  callback.Run(error, largest_changestamp);
 }
 
 void DriveFileSyncClient::SearchFilesInDirectory(
@@ -223,23 +242,38 @@ void DriveFileSyncClient::SearchFilesInDirectory(
                  AsWeakPtr(), callback));
 }
 
-void DriveFileSyncClient::ListFiles(const std::string& resource_id,
+void DriveFileSyncClient::ListFiles(const std::string& directory_resource_id,
                                     const DocumentFeedCallback& callback) {
   DCHECK(CalledOnValidThread());
-  NOTIMPLEMENTED();
+
+  SearchFilesInDirectory(directory_resource_id,
+                         std::string() /* search_query */,
+                         callback);
 }
 
 void DriveFileSyncClient::ListChanges(int64 start_changestamp,
                                       const DocumentFeedCallback& callback) {
   DCHECK(CalledOnValidThread());
-  NOTIMPLEMENTED();
+  drive_service_->GetDocuments(
+      GURL(),  // feed_url
+      start_changestamp,
+      std::string(),  // search_query
+      std::string(),  // directory_resource_id
+      base::Bind(&DriveFileSyncClient::DidGetDocumentFeedData,
+                 AsWeakPtr(), callback));
 }
 
 void DriveFileSyncClient::ContinueListing(
     const GURL& feed_url,
     const DocumentFeedCallback& callback) {
   DCHECK(CalledOnValidThread());
-  NOTIMPLEMENTED();
+  drive_service_->GetDocuments(
+      feed_url,
+      0,  // start_changestamp
+      std::string(),  // search_query
+      std::string(),  // directory_resource_id
+      base::Bind(&DriveFileSyncClient::DidGetDocumentFeedData,
+                 AsWeakPtr(), callback));
 }
 
 void DriveFileSyncClient::DidGetDocumentFeedData(
