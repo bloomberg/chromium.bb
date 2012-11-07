@@ -45,7 +45,7 @@ def GenerateExpectedJSON(options):
     'win32': 'Windows'
   }
 
-  retrieval_url = options.data_server + '/content/retrieve?hash_key='
+  retrieval_url = options.data_server + '/content/retrieve/default/'
 
   expected = {
     'test_case_name': TEST_NAME,
@@ -114,7 +114,7 @@ class MockZipFile(object):
 
 def MockUrlOpen(url_or_request, _data, has_return_value):
   if (isinstance(url_or_request, basestring) and
-      url_or_request.endswith('/content/has')):
+      url_or_request.endswith('/content/contains')):
     return StringIO.StringIO(has_return_value)
   return StringIO.StringIO('{}')
 

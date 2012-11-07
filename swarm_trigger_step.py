@@ -72,9 +72,9 @@ class Manifest(object):
     self.working_dir = switches.working_dir
     self.test_name = test_name
     base_url = switches.data_server.rstrip('/')
-    self.data_server_retrieval = base_url + '/content/retrieve?hash_key='
-    self.data_server_storage = base_url + '/content/store'
-    self.data_server_has = base_url + '/content/contains'
+    self.data_server_retrieval = base_url + '/content/retrieve/default/'
+    self.data_server_storage = base_url + '/content/store/default/'
+    self.data_server_has = base_url + '/content/contains/default'
     self.zip_file_hash = ''
 
   def add_task(self, task_name, actions, time_out=600):
@@ -117,9 +117,7 @@ class Manifest(object):
         return True
       print 'Zip file not on server, starting uploading.'
 
-      url = (self.data_server_storage + '?' +
-             urllib.urlencode({'hash_key': self.zip_file_hash,
-                               'priority': '0'}))
+      url = self.data_server_storage + self.zip_file_hash + '?priority=0'
 
       request = urllib2.Request(url, data=zip_contents)
       request.add_header('Content-Type', 'application/octet-stream')

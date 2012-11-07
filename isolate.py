@@ -23,7 +23,6 @@ import stat
 import subprocess
 import sys
 import time
-import urllib
 import urllib2
 
 import run_isolated
@@ -307,98 +306,76 @@ def encode_multipart_formdata(fields, files,
   return content_type, body
 
 
-def upload_hash_content(url, params=None, payload=None,
-                        content_type='application/octet-stream'):
-  """Uploads the given hash contents.
-
-  Arguments:
-    url: The url to upload the hash contents to.
-    params: The params to include with the upload.
-    payload: The data to upload.
-    content_type: The content_type of the data being uploaded.
-  """
-  if params:
-    url = url + '?' + urllib.urlencode(params)
+def gen_url_request(url, payload, content_type='application/octet-stream'):
+  """Returns a POST request."""
   request = urllib2.Request(url, data=payload)
-  request.add_header('Content-Type', content_type)
-  request.add_header('Content-Length', len(payload or ''))
-
-  return urllib2.urlopen(request)
-
-
-def upload_hash_content_to_blobstore(generate_upload_url, params,
-                                     hash_data):
-  """Uploads the given hash contents directly to the blobsotre via a generated
-  url.
-
-  Arguments:
-    generate_upload_url: The url to get the new upload url from.
-    params: The params to include with the upload.
-    hash_contents: The contents to upload.
-  """
-  content_type, body = encode_multipart_formdata(
-      params.items(), [('hash_contents', 'hash_content', hash_data)])
-
-  logging.debug('Generating url to directly upload file to blobstore')
-  response = urllib2.urlopen(generate_upload_url)
-  upload_url = response.read()
-
-  if not upload_url:
-    logging.error('Unable to generate upload url')
-    return
-
-  return upload_hash_content(upload_url, payload=body,
-                             content_type=content_type)
+  if payload is not None:
+    request.add_header('Content-Type', content_type)
+    request.add_header('Content-Length', len(payload))
+  return request
 
 
-class UploadRemote(run_isolated.Remote):
-  @staticmethod
-  def get_file_handler(base_url):
-    def upload_file(hash_data, hash_key):
-      params = {'hash_key': hash_key}
-      if len(hash_data) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
-        upload_hash_content_to_blobstore(
-            base_url.rstrip('/') + '/content/generate_blobstore_url',
-            params, hash_data)
-      else:
-        upload_hash_content(
-            base_url.rstrip('/') + '/content/store', params, hash_data)
-    return upload_file
-
-
-def url_open(url, data=None, max_retries=MAX_UPLOAD_ATTEMPTS):
-  """Opens the given url with the given data, repeating up to max_retries
-  times if it encounters an error.
+def url_open(url, data, content_type='application/octet-stream'):
+  """Opens the given url with the given data, repeating up to
+  MAX_UPLOAD_ATTEMPTS times if it encounters an error.
 
   Arguments:
     url: The url to open.
     data: The data to send to the url.
-    max_retries: The maximum number of times to try connecting to the url.
 
   Returns:
     The response from the url, or it raises an exception it it failed to get
     a response.
   """
-  request = urllib2.Request(url, data=data)
-  if data is not None:
-    request.add_header('content-type', 'application/octet-stream')
-    request.add_header('content-length', len(data))
-  response = None
-  for _ in range(max_retries):
+  request = gen_url_request(url, data, content_type)
+  for i in range(MAX_UPLOAD_ATTEMPTS):
     try:
-      response = urllib2.urlopen(request)
+      return urllib2.urlopen(request)
     except urllib2.URLError as e:
       logging.warning('Unable to connect to %s, error msg: %s', url, e)
-      time.sleep(1)
+      time.sleep(0.5 + i)
 
   # If we get no response from the server after max_retries, assume it
   # is down and raise an exception
-  if response is None:
-    raise run_isolated.MappingError(
-        'Unable to connect to server, %s, to see which files are presents' %
-          url)
+  raise run_isolated.MappingError(
+      'Unable to connect to server, %s, to see which files are presents' %
+        url)
 
-  return response
+
+def upload_hash_content_to_blobstore(generate_upload_url, content):
+  """Uploads the given hash contents directly to the blobsotre via a generated
+  url.
+
+  Arguments:
+    generate_upload_url: The url to get the new upload url from.
+    hash_contents: The contents to upload.
+  """
+  logging.debug('Generating url to directly upload file to blobstore')
+  upload_url = url_open(generate_upload_url, None).read()
+
+  if not upload_url:
+    logging.error('Unable to generate upload url')
+    return
+
+  content_type, body = encode_multipart_formdata(
+      [], [('hash_contents', 'hash_content', content)])
+  url_open(upload_url, body, content_type)
+
+
+class UploadRemote(run_isolated.Remote):
+  @staticmethod
+  def get_file_handler(base_url):
+    def upload_file(content, hash_key):
+      content_url = base_url.rstrip('/') + '/content/'
+      namespace = 'default'
+      if len(content) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
+        upload_hash_content_to_blobstore(
+            content_url + 'generate_blobstore_url/' + namespace + '/' +
+              hash_key,
+            content)
+      else:
+        url_open(content_url + '/store/' + namespace + '/' + hash_key, content)
+    return upload_file
 
 
 def update_files_to_upload(query_url, queries, files_to_upload):
@@ -413,7 +390,7 @@ def update_files_to_upload(query_url, queries, files_to_upload):
       (binascii.unhexlify(meta_data['sha-1']) for (_, meta_data) in queries))
   assert (len(body) % 20) == 0, repr(body)
 
-  response = url_open(query_url, data=body).read()
+  response = url_open(query_url, body).read()
   if len(queries) != len(response):
     raise run_isolated.MappingError(
         'Got an incorrect number of responses from the server. Expected %d, '
@@ -444,7 +421,7 @@ def upload_sha1_tree(base_url, indir, infiles):
   # Generate the list of files that need to be uploaded (since some may already
   # be on the server.
   base_url = base_url.rstrip('/')
-  contains_hash_url = base_url + '/content/contains'
+  contains_hash_url = base_url + '/content/contains/default'
   to_upload = []
   next_queries = []
   for relfile, metadata in infiles.iteritems():
@@ -500,6 +477,7 @@ def upload_sha1_tree(base_url, indir, infiles):
       cache_miss_size / 1024.,
       len(cache_miss) * 100. / total,
       cache_miss_size * 100. / total_size)
+
 
 def process_input(filepath, prevdict, read_only):
   """Processes an input file, a dependency, and return meta data about it.
