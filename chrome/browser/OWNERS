@@ -1,0 +1,2 @@
+per-file chrome_content_browser_client.cc=*
+per-file chrome_content_browser_client.h=*
