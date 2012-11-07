@@ -409,7 +409,8 @@ void MediaStreamCaptureIndicator::AddCaptureDeviceTab(
 
   WebContents* web_contents = tab_util::GetWebContentsByID(
       render_process_id, render_view_id);
-  web_contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+  if (web_contents)
+    web_contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
 
   if (!status_icon_)
     return;
