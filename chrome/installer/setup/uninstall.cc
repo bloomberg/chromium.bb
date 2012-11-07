@@ -150,9 +150,9 @@ void ProcessQuickEnableWorkItems(
   AddQuickEnableChromeFrameWorkItems(installer_state, machine_state, FilePath(),
                                      Version(), work_item_list.get());
 
-  AddQuickEnableApplicationHostWorkItems(installer_state, machine_state,
-                                         FilePath(), Version(),
-                                         work_item_list.get());
+  AddQuickEnableApplicationLauncherWorkItems(installer_state, machine_state,
+                                             FilePath(), Version(),
+                                             work_item_list.get());
   if (!work_item_list->Do())
     LOG(ERROR) << "Failed to update quick-enable-cf command.";
 }

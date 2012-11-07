@@ -1114,9 +1114,9 @@ void AddInstallWorkItems(const InstallationState& original_state,
   // Copy over brand, usagestats, and other values.
   AddGoogleUpdateWorkItems(original_state, installer_state, install_list);
 
-  AddQuickEnableApplicationHostWorkItems(installer_state, original_state,
-                                         setup_path, new_version,
-                                         install_list);
+  AddQuickEnableApplicationLauncherWorkItems(installer_state, original_state,
+                                             setup_path, new_version,
+                                             install_list);
 
   AddQuickEnableChromeFrameWorkItems(installer_state, original_state,
                                      setup_path, new_version, install_list);
@@ -1553,7 +1553,7 @@ void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,
                                  work_item_list);
 }
 
-void AddQuickEnableApplicationHostWorkItems(
+void AddQuickEnableApplicationLauncherWorkItems(
     const InstallerState& installer_state,
     const InstallationState& machine_state,
     const FilePath& setup_path,
@@ -1563,11 +1563,11 @@ void AddQuickEnableApplicationHostWorkItems(
 
   CommandLine cmd_line(CommandLine::NO_PROGRAM);
   cmd_line.AppendSwitch(switches::kMultiInstall);
-  cmd_line.AppendSwitch(switches::kChromeAppHost);
+  cmd_line.AppendSwitch(switches::kChromeAppLauncher);
   cmd_line.AppendSwitch(switches::kEnsureGoogleUpdatePresent);
 
   // For system-level binaries there is no way to keep the command state in sync
-  // with the installation/uninstallation of the Application Host (which is
+  // with the installation/uninstallation of the Application Launcher (which is
   // always at user-level).
   // So we pass false for 'have_child_product' to cause this command to always
   // be installed if the Chrome Binaries are installed.

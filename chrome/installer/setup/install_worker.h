@@ -198,7 +198,7 @@ void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,
 // product(s) currently being installed) are required when processing product
 // installation; they are unused ((and may therefore be empty) when
 // uninstalling).
-void AddQuickEnableApplicationHostWorkItems(
+void AddQuickEnableApplicationLauncherWorkItems(
     const InstallerState& installer_state,
     const InstallationState& machine_state,
     const FilePath& setup_path,

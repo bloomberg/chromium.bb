@@ -321,7 +321,7 @@ void InstallationValidator::ValidateQuickEnableApplicationHostCommand(
   SwitchExpectations expected;
 
   expected.push_back(std::make_pair(
-      std::string(switches::kChromeAppHost), true));
+      std::string(switches::kChromeAppLauncher), true));
   expected.push_back(std::make_pair(
       std::string(switches::kSystemLevel), false));
   expected.push_back(std::make_pair(
