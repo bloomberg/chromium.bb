@@ -42,7 +42,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual LauncherDelegate* CreateLauncherDelegate(
       ash::LauncherModel* model) OVERRIDE;
-  virtual SystemTrayDelegate* CreateSystemTrayDelegate(SystemTray* t) OVERRIDE;
+  virtual SystemTrayDelegate* CreateSystemTrayDelegate() OVERRIDE;
   virtual UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
   virtual CapsLockDelegate* CreateCapsLockDelegate() OVERRIDE;
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;

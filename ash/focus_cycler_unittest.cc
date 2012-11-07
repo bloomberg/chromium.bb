@@ -71,7 +71,7 @@ class FocusCyclerTest : public AshTestBase {
         GetContainer(ash::internal::kShellWindowId_StatusContainer);
 
     internal::StatusAreaWidget* widget = new internal::StatusAreaWidget(parent);
-    widget->CreateTrayViews(NULL);
+    widget->CreateTrayViews();
     widget->Show();
     tray_.reset(widget->system_tray());
     if (!tray_->GetWidget())

@@ -15,7 +15,6 @@ namespace ash {
 
 class ShellDelegate;
 class SystemTray;
-class SystemTrayDelegate;
 class WebNotificationTray;
 
 namespace internal {
@@ -28,7 +27,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   virtual ~StatusAreaWidget();
 
   // Creates the SystemTray and the WebNotificationTray.
-  void CreateTrayViews(ShellDelegate* shell_delegate);
+  void CreateTrayViews();
 
   // Destroys the system tray and web notification tray. Called before
   // tearing down the windows to avoid shutdown ordering issues.
@@ -60,9 +59,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
     return status_area_widget_delegate_;
   }
   SystemTray* system_tray() { return system_tray_; }
-  SystemTrayDelegate* system_tray_delegate() {
-    return system_tray_delegate_.get();
-  }
   WebNotificationTray* web_notification_tray() {
     return web_notification_tray_;
   }
@@ -78,10 +74,9 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   bool IsMessageBubbleShown() const;
 
  private:
-  void AddSystemTray(ShellDelegate* shell_delegate);
+  void AddSystemTray();
   void AddWebNotificationTray();
 
-  scoped_ptr<SystemTrayDelegate> system_tray_delegate_;
   // Weak pointers to View classes that are parented to StatusAreaWidget:
   internal::StatusAreaWidgetDelegate* status_area_widget_delegate_;
   SystemTray* system_tray_;

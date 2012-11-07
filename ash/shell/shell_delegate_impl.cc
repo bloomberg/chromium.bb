@@ -127,8 +127,7 @@ ash::LauncherDelegate* ShellDelegateImpl::CreateLauncherDelegate(
   return launcher_delegate_;
 }
 
-ash::SystemTrayDelegate* ShellDelegateImpl::CreateSystemTrayDelegate(
-    ash::SystemTray* tray) {
+ash::SystemTrayDelegate* ShellDelegateImpl::CreateSystemTrayDelegate() {
   return NULL;
 }
 

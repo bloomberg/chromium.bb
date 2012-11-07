@@ -27,6 +27,7 @@
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/activation_controller.h"
@@ -245,6 +246,9 @@ Shell::~Shell() {
   // container is now on top of launcher container and released after it.
   // TODO(xiyuan): Move it back when app list container is no longer needed.
   app_list_controller_.reset();
+
+  // Destroy SystemTrayDelegate before destroying the status area(s).
+  system_tray_delegate_.reset();
 
   // Destroy all child windows including widgets.
   display_controller_->CloseChildWindows();
@@ -487,7 +491,17 @@ void Shell::Init() {
     shadow_controller_.reset(new internal::ShadowController());
   }
 
+  // Initialize system_tray_delegate_ before initializing StatusAreaWidget.
+  if (delegate_.get())
+    system_tray_delegate_.reset(delegate()->CreateSystemTrayDelegate());
+  if (!system_tray_delegate_.get())
+    system_tray_delegate_.reset(SystemTrayDelegate::CreateDummyDelegate());
+
+  // Creates StatusAreaWidget.
   root_window_controller->InitForPrimaryDisplay();
+
+  // Initialize system_tray_delegate_ after StatusAreaWidget is created.
+  system_tray_delegate_->Initialize();
 
   display_controller_->InitSecondaryDisplays();
 
@@ -723,15 +737,6 @@ WebNotificationTray* Shell::GetWebNotificationTray() {
 
 internal::StatusAreaWidget* Shell::status_area_widget() {
   return GetPrimaryRootWindowController()->status_area_widget();
-}
-
-SystemTrayDelegate* Shell::tray_delegate() {
-  // TODO(oshima): Decouple system tray and its delegate.
-  // We assume in throughout the code that this will not return NULL. If code
-  // triggers this for valid reasons, it should test status_area_widget first.
-  internal::StatusAreaWidget* status_area = status_area_widget();
-  CHECK(status_area);
-  return status_area->system_tray_delegate();
 }
 
 SystemTray* Shell::system_tray() {

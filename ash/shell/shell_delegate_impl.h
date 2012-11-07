@@ -45,8 +45,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual ash::LauncherDelegate* CreateLauncherDelegate(
       ash::LauncherModel* model) OVERRIDE;
-  virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate(
-      ash::SystemTray* tray) OVERRIDE;
+  virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate() OVERRIDE;
   virtual ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
   virtual ash::CapsLockDelegate* CreateCapsLockDelegate() OVERRIDE;
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;

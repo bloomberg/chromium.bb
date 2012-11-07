@@ -243,14 +243,14 @@ void RootWindowController::InitLayoutManagers() {
 
 void RootWindowController::InitForPrimaryDisplay() {
   DCHECK(!status_area_widget_);
-  ShellDelegate* delegate = Shell::GetInstance()->delegate();
   aura::Window* status_container =
       GetContainer(ash::internal::kShellWindowId_StatusContainer);
   // Initialize Primary RootWindow specific items.
   status_area_widget_ = new internal::StatusAreaWidget(status_container);
-  status_area_widget_->CreateTrayViews(delegate);
+  status_area_widget_->CreateTrayViews();
   // Login screen manages status area visibility by itself.
-  if (delegate && delegate->IsSessionStarted())
+  ShellDelegate* shell_delegate = Shell::GetInstance()->delegate();
+  if (shell_delegate && shell_delegate->IsSessionStarted())
     status_area_widget_->Show();
 
   Shell::GetInstance()->focus_cycler()->AddWidget(status_area_widget_);
@@ -281,7 +281,7 @@ void RootWindowController::InitForPrimaryDisplay() {
           panel_container, panel_layout_manager_));
   panel_container->SetLayoutManager(panel_layout_manager_);
 
-  if (!delegate || delegate->IsUserLoggedIn())
+  if (!shell_delegate || shell_delegate->IsUserLoggedIn())
     CreateLauncher();
 }
 

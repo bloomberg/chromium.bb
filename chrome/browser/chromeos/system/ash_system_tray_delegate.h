@@ -11,7 +11,7 @@ class SystemTrayDelegate;
 }
 
 namespace chromeos {
-ash::SystemTrayDelegate* CreateSystemTrayDelegate(ash::SystemTray* tray);
+ash::SystemTrayDelegate* CreateSystemTrayDelegate();
 }
 
 #endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_ASH_SYSTEM_TRAY_DELEGATE_H_

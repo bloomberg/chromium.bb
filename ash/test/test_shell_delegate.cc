@@ -113,8 +113,7 @@ LauncherDelegate* TestShellDelegate::CreateLauncherDelegate(
   return new TestLauncherDelegate(model);
 }
 
-SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate(
-    SystemTray* tray) {
+SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate() {
   return NULL;
 }
 

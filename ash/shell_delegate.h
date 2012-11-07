@@ -39,7 +39,6 @@ class CapsLockDelegate;
 class LauncherDelegate;
 class LauncherModel;
 struct LauncherItem;
-class SystemTray;
 class SystemTrayDelegate;
 class UserWallpaperDelegate;
 
@@ -142,7 +141,7 @@ class ASH_EXPORT ShellDelegate {
       ash::LauncherModel* model) = 0;
 
   // Creates a system-tray delegate. Shell takes ownership of the delegate.
-  virtual SystemTrayDelegate* CreateSystemTrayDelegate(SystemTray* tray) = 0;
+  virtual SystemTrayDelegate* CreateSystemTrayDelegate() = 0;
 
   // Creates a user wallpaper delegate. Shell takes ownership of the delegate.
   virtual UserWallpaperDelegate* CreateUserWallpaperDelegate() = 0;

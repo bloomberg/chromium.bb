@@ -104,6 +104,9 @@ class SystemTrayDelegate {
  public:
   virtual ~SystemTrayDelegate() {}
 
+  // Called after SystemTray has been instantiated.
+  virtual void Initialize() = 0;
+
   // Returns true if system tray should be visible on startup.
   virtual bool GetTrayVisibilityOnStartup() = 0;
 
@@ -286,6 +289,8 @@ class SystemTrayDelegate {
   virtual void SetVolumeControlDelegate(
       scoped_ptr<VolumeControlDelegate> delegate) = 0;
 
+  // Creates a dummy delegate for testing.
+  static SystemTrayDelegate* CreateDummyDelegate();
 };
 
 }  // namespace ash

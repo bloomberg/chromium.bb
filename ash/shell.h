@@ -72,8 +72,8 @@ class ScreenAsh;
 class SessionStateController;
 class ShellDelegate;
 class ShellObserver;
-class SystemTrayDelegate;
 class SystemTray;
+class SystemTrayDelegate;
 class UserActivityDetector;
 class UserWallpaperDelegate;
 class VideoDetector;
@@ -370,8 +370,12 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   // status_area_widget() has been destroyed; check status_area_widget()
   // before calling these in destructors.
   internal::StatusAreaWidget* status_area_widget();
-  SystemTrayDelegate* tray_delegate();
   SystemTray* system_tray();
+
+  // TODO(stevenjb): Rename to system_tray_delegate().
+  SystemTrayDelegate* tray_delegate() {
+    return system_tray_delegate_.get();
+  }
 
   static void set_initially_hide_cursor(bool hide) {
     initially_hide_cursor_ = hide;
@@ -458,6 +462,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
 #endif  // !defined(OS_MACOSX)
 
   scoped_ptr<ShellDelegate> delegate_;
+  scoped_ptr<SystemTrayDelegate> system_tray_delegate_;
   scoped_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
   scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
 

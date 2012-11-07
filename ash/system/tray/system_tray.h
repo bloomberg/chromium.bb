@@ -117,51 +117,51 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   // Returns true if the mouse is inside the notification bubble.
   bool IsMouseInNotificationBubble() const;
 
-  AccessibilityObserver* accessibility_observer() const {
+  AccessibilityObserver* accessibility_observer() {
     return accessibility_observer_;
   }
-  AudioObserver* audio_observer() const {
+  AudioObserver* audio_observer() {
     return audio_observer_;
   }
-  BluetoothObserver* bluetooth_observer() const {
+  BluetoothObserver* bluetooth_observer() {
     return bluetooth_observer_;
   }
-  BrightnessObserver* brightness_observer() const {
+  BrightnessObserver* brightness_observer() {
     return brightness_observer_;
   }
-  CapsLockObserver* caps_lock_observer() const {
+  CapsLockObserver* caps_lock_observer() {
     return caps_lock_observer_;
   }
-  ClockObserver* clock_observer() const {
+  ClockObserver* clock_observer() {
     return clock_observer_;
   }
-  DriveObserver* drive_observer() const {
+  DriveObserver* drive_observer() {
     return drive_observer_;
   }
-  IMEObserver* ime_observer() const {
+  IMEObserver* ime_observer() {
     return ime_observer_;
   }
-  LocaleObserver* locale_observer() const {
+  LocaleObserver* locale_observer() {
     return locale_observer_;
   }
 #if defined(OS_CHROMEOS)
-  NetworkObserver* network_observer() const {
+  NetworkObserver* network_observer() {
     return network_observer_;
   }
-  NetworkObserver* vpn_observer() const {
+  NetworkObserver* vpn_observer() {
     return vpn_observer_;
   }
-  SmsObserver* sms_observer() const {
+  SmsObserver* sms_observer() {
     return sms_observer_;
   }
 #endif
   ObserverList<PowerStatusObserver>& power_status_observers() {
     return power_status_observers_;
   }
-  UpdateObserver* update_observer() const {
+  UpdateObserver* update_observer() {
     return update_observer_;
   }
-  UserObserver* user_observer() const {
+  UserObserver* user_observer() {
     return user_observer_;
   }
 
