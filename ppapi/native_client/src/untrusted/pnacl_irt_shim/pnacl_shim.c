@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: Mon Oct 29 12:56:27 2012. */
+/* Last generated from IDL: Wed Nov  7 09:50:53 2012. */
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"
@@ -31,6 +31,7 @@
 #include "ppapi/c/dev/ppb_view_dev.h"
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
+#include "ppapi/c/dev/ppp_network_state_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_text_input_dev.h"
 #include "ppapi/c/dev/ppp_video_capture_dev.h"
@@ -195,6 +196,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Widget_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Widget_Dev_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Zoom_Dev_0_2;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_NetworkState_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Printing_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_TextInput_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_VideoCapture_Dev_0_1;
@@ -1938,6 +1940,8 @@ void Pnacl_M14_PPB_VideoDecoder_Dev_Destroy(PP_Resource video_decoder) {
 /* Not generating wrapper methods for PPB_Widget_Dev_0_4 */
 
 /* Not generating wrapper methods for PPB_Zoom_Dev_0_2 */
+
+/* Not generating wrapper methods for PPP_NetworkState_Dev_0_1 */
 
 /* Not generating wrapper methods for PPP_Printing_Dev_0_6 */
 
@@ -3966,6 +3970,8 @@ struct PPB_VideoDecoder_Dev_0_16 Pnacl_Wrappers_PPB_VideoDecoder_Dev_0_16 = {
 
 /* Not generating wrapper interface for PPB_Zoom_Dev_0_2 */
 
+/* Not generating wrapper interface for PPP_NetworkState_Dev_0_1 */
+
 /* Not generating wrapper interface for PPP_Printing_Dev_0_6 */
 
 /* Not generating wrapper interface for PPP_TextInput_Dev_0_1 */
@@ -4821,6 +4827,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Zoom_Dev_0_2 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_NetworkState_Dev_0_1 = {
+  .iface_macro = PPP_NETWORK_STATE_DEV_INTERFACE_0_1,
+  .wrapped_iface = NULL /* Still need slot for real_iface */,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Printing_Dev_0_6 = {
   .iface_macro = PPP_PRINTING_DEV_INTERFACE_0_6,
   .wrapped_iface = NULL /* Still need slot for real_iface */,
@@ -5231,6 +5243,7 @@ static struct __PnaclWrapperInfo *s_ppp_wrappers[] = {
   &Pnacl_WrapperInfo_PPP_Instance_1_1,
   &Pnacl_WrapperInfo_PPP_Messaging_1_0,
   &Pnacl_WrapperInfo_PPP_MouseLock_1_0,
+  &Pnacl_WrapperInfo_PPP_NetworkState_Dev_0_1,
   &Pnacl_WrapperInfo_PPP_Printing_Dev_0_6,
   &Pnacl_WrapperInfo_PPP_TextInput_Dev_0_1,
   &Pnacl_WrapperInfo_PPP_VideoCapture_Dev_0_1,
