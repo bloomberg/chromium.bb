@@ -5,20 +5,17 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPAPI_PLUGIN_INSTANCE_H_
 #define WEBKIT_PLUGINS_PPAPI_PPAPI_PLUGIN_INSTANCE_H_
 
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
-#include "media/base/decryptor.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
@@ -38,7 +35,6 @@
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
-#include "ppapi/c/private/ppp_content_decryptor_private.h"
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
@@ -58,7 +54,6 @@
 #include "webkit/plugins/ppapi/ppp_pdf.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
-struct PP_DecryptedBlockInfo;
 struct PP_Point;
 
 class SkBitmap;
@@ -71,13 +66,6 @@ class WebPluginContainer;
 struct WebCompositionUnderline;
 struct WebCursorInfo;
 struct WebPrintParams;
-}
-
-namespace media {
-class AudioDecoderConfig;
-class DecoderBuffer;
-class DecryptorClient;
-class VideoDecoderConfig;
 }
 
 namespace ppapi {
@@ -94,6 +82,7 @@ class Range;
 namespace webkit {
 namespace ppapi {
 
+class ContentDecryptorDelegate;
 class FullscreenContainer;
 class MessageChannel;
 class PluginDelegate;
@@ -254,38 +243,6 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   void Graphics3DContextLost();
 
-  // Provides access to PPP_ContentDecryptor_Private.
-  // TODO(tomfinegan): Move decryptor methods to delegate class.
-  void set_decrypt_client(media::DecryptorClient* client);
-  bool GenerateKeyRequest(const std::string& key_system,
-                          const std::string& type,
-                          const std::string& init_data);
-  bool AddKey(const std::string& session_id,
-              const std::string& key,
-              const std::string& init_data);
-  bool CancelKeyRequest(const std::string& session_id);
-  bool Decrypt(media::Decryptor::StreamType stream_type,
-               const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
-               const media::Decryptor::DecryptCB& decrypt_cb);
-  bool CancelDecrypt(media::Decryptor::StreamType stream_type);
-  bool InitializeAudioDecoder(
-      const media::AudioDecoderConfig& decoder_config,
-      const media::Decryptor::DecoderInitCB& decoder_init_cb);
-  bool InitializeVideoDecoder(
-      const media::VideoDecoderConfig& decoder_config,
-      const media::Decryptor::DecoderInitCB& decoder_init_cb);
-  // TODO(tomfinegan): Add callback args for DeinitializeDecoder() and
-  // ResetDecoder()
-  bool DeinitializeDecoder(media::Decryptor::StreamType stream_type);
-  bool ResetDecoder(media::Decryptor::StreamType stream_type);
-  // Note: These methods can be used with unencrypted data.
-  bool DecryptAndDecodeAudio(
-      const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
-      const media::Decryptor::AudioDecodeCB& audio_decode_cb);
-  bool DecryptAndDecodeVideo(
-      const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
-      const media::Decryptor::VideoDecodeCB& video_decode_cb);
-
   // There are 2 implementations of the fullscreen interface
   // PPB_FlashFullscreen is used by Pepper Flash.
   // PPB_Fullscreen is intended for other applications including NaCl.
@@ -381,6 +338,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   void SimulateImeSetCompositionEvent(
       const ::ppapi::InputEventData& input_event);
 
+  ContentDecryptorDelegate* GetContentDecryptorDelegate();
+
   // PPB_Instance_API implementation.
   virtual PP_Bool BindGraphics(PP_Instance instance,
                                PP_Resource device) OVERRIDE;
@@ -458,9 +417,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
       PP_Instance instance,
       PP_URLComponents_Dev* components) OVERRIDE;
 
-  // PPB_ContentDecryptor_Private
-  // TODO(tomfinegan): Move the PPB_ContentDecryptor_Private methods to a
-  // delegate class.
+  // PPB_ContentDecryptor_Private implementation.
   virtual void NeedKey(PP_Instance instance,
                        PP_Var key_system,
                        PP_Var session_id,
@@ -525,7 +482,6 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                  PluginModule* module,
                  ::ppapi::PPP_Instance_Combined* instance_interface);
 
-  bool LoadContentDecryptorInterface();
   bool LoadFindInterface();
   bool LoadInputEventInterface();
   bool LoadMessagingInterface();
@@ -605,9 +561,6 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   void SetSizeAttributesForFullscreen();
   void ResetSizeAttributesAfterFullscreen();
 
-  // Cancels the pending decrypt-and-decode callback for |stream_type|.
-  void CancelDecode(media::Decryptor::StreamType stream_type);
-
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
   scoped_ptr< ::ppapi::PPP_Instance_Combined> instance_interface_;
@@ -662,7 +615,6 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   // The plugin-provided interfaces.
   // When adding PPP interfaces, make sure to reset them in ResetAsProxied.
-  const PPP_ContentDecryptor_Private* plugin_decryption_interface_;
   const PPP_Find_Dev* plugin_find_interface_;
   const PPP_InputEvent* plugin_input_event_interface_;
   const PPP_Messaging* plugin_messaging_interface_;
@@ -796,31 +748,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // the pointer so we can re-send it later if we are reset to talk to NaCl.
   scoped_refptr<PPB_URLLoader_Impl> document_loader_;
 
-  media::DecryptorClient* decryptor_client_;
-
-  // Request ID for tracking pending content decryption callbacks.
-  // Note that zero indicates an invalid request ID.
-  // TODO(xhwang): Add completion callbacks for Reset/Stop and remove the use
-  // of request IDs.
-  uint32_t next_decryption_request_id_;
-
-  uint32_t pending_audio_decrypt_request_id_;
-  media::Decryptor::DecryptCB pending_audio_decrypt_cb_;
-
-  uint32_t pending_video_decrypt_request_id_;
-  media::Decryptor::DecryptCB pending_video_decrypt_cb_;
-
-  uint32_t pending_audio_decoder_init_request_id_;
-  media::Decryptor::DecoderInitCB pending_audio_decoder_init_cb_;
-
-  uint32_t pending_video_decoder_init_request_id_;
-  media::Decryptor::DecoderInitCB pending_video_decoder_init_cb_;
-
-  uint32_t pending_audio_decode_request_id_;
-  media::Decryptor::AudioDecodeCB pending_audio_decode_cb_;
-
-  uint32_t pending_video_decode_request_id_;
-  media::Decryptor::VideoDecodeCB pending_video_decode_cb_;
+  // The ContentDecryptorDelegate forwards PPP_ContentDecryptor_Private
+  // calls and handles PPB_ContentDecryptor_Private calls.
+  scoped_ptr<ContentDecryptorDelegate> content_decryptor_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };

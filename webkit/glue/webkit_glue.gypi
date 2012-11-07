@@ -164,6 +164,8 @@
         '../plugins/ppapi/audio_helper.cc',
         '../plugins/ppapi/audio_helper.h',
         '../plugins/ppapi/common.h',
+        '../plugins/ppapi/content_decryptor_delegate.cc',
+        '../plugins/ppapi/content_decryptor_delegate.h',
         '../plugins/ppapi/event_conversion.cc',
         '../plugins/ppapi/event_conversion.h',
         '../plugins/ppapi/file_callbacks.cc',

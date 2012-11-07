@@ -22,6 +22,7 @@ class DecryptorClient;
 
 namespace webkit {
 namespace ppapi {
+class ContentDecryptorDelegate;
 class PluginInstance;
 }
 }
@@ -34,8 +35,8 @@ namespace webkit_media {
 class PpapiDecryptor : public media::Decryptor {
  public:
   PpapiDecryptor(
-    media::DecryptorClient* client,
-    const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance);
+      media::DecryptorClient* client,
+      const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance);
   virtual ~PpapiDecryptor();
 
   // media::Decryptor implementation.
@@ -79,7 +80,14 @@ class PpapiDecryptor : public media::Decryptor {
   void OnDecoderInitialized(StreamType stream_type, bool success);
 
   media::DecryptorClient* client_;
-  scoped_refptr<webkit::ppapi::PluginInstance> cdm_plugin_;
+
+  // Hold a reference of the plugin instance to make sure the plugin outlives
+  // the |plugin_cdm_delegate_|. This is needed because |plugin_cdm_delegate_|
+  // is owned by the |plugin_instance_|.
+  scoped_refptr<webkit::ppapi::PluginInstance> plugin_instance_;
+
+  webkit::ppapi::ContentDecryptorDelegate* plugin_cdm_delegate_;
+
   scoped_refptr<base::MessageLoopProxy> render_loop_proxy_;
 
   DecoderInitCB audio_decoder_init_cb_;

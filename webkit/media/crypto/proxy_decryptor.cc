@@ -257,7 +257,7 @@ scoped_ptr<media::Decryptor> ProxyDecryptor::CreatePpapiDecryptor(
   const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance =
     CreatePluginInstance(plugin_type, web_media_player_client_, web_frame_);
   if (!plugin_instance) {
-    DVLOG(1) << "PpapiDecryptor: plugin instance creation failed.";
+    DVLOG(1) << "ProxyDecryptor: plugin instance creation failed.";
     return scoped_ptr<media::Decryptor>();
   }
 
