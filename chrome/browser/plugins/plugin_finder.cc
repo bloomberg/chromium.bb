@@ -227,18 +227,18 @@ bool PluginFinder::FindPluginWithIdentifier(
     scoped_ptr<PluginMetadata>* plugin_metadata) {
   base::AutoLock lock(mutex_);
   PluginMap::const_iterator metadata_it = identifier_plugin_.find(identifier);
-  if (metadata_it != identifier_plugin_.end()) {
-    if (installer) {
-      std::map<std::string, PluginInstaller*>::const_iterator installer_it =
-          installers_.find(identifier);
-      if (installer_it != installers_.end())
-        *installer = installer_it->second;
-    }
-    *plugin_metadata = metadata_it->second->Clone();
-    return true;
-  }
+  if (metadata_it == identifier_plugin_.end())
+    return false;
+  *plugin_metadata = metadata_it->second->Clone();
 
-  return false;
+  if (installer) {
+    std::map<std::string, PluginInstaller*>::const_iterator installer_it =
+        installers_.find(identifier);
+    if (installer_it == installers_.end())
+      return false;
+    *installer = installer_it->second;
+  }
+  return true;
 }
 
 void PluginFinder::ReinitializePlugins(
