@@ -42,7 +42,7 @@ all: $(TARGET_LIST)
 clean: $(CLEAN_LIST)
 	echo "Done cleaning targets."
 
+.PHONY: RUN
 RUN: all
-	echo "Staring up python webserver."
-	python httpd.py
-
+	echo "Starting up python webserver."
+	python ../tools/httpd.py

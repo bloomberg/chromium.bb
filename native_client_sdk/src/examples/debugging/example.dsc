@@ -15,8 +15,17 @@
       'LIBS' : ['ppapi', 'pthread']
     }
   ],
-  'POST': 'include Makefile.inc\n',
-  'DATA': ['Makefile.inc', 'example.js'],
+
+  # The debugging example needs to use a different HTTP server to handle POST
+  # messages from the NaCl module.
+  'PRE': """
+CHROME_ARGS+=--no-sandbox
+CHROME_ENV:=NACL_DANGEROUS_ENABLE_FILE_ACCESS=1
+CHROME_ENV+=NACL_SECURITY_DISABLE=1
+CHROME_ENV+=NACL_UNTRUSTED_EXCEPTION_HANDLING=1
+""",
+
+  'DATA': ['handler.py', 'example.js'],
   'DEST': 'examples',
   'NAME': 'debugging',
   'TITLE': 'Debugging',
@@ -24,6 +33,5 @@
 Debugging example shows how to use developer only features to enable
 catching an exception, and then using that to create a stacktrace.""",
   'INFO': 'Debugging, Stacktraces.'
-
 }
 

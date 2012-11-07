@@ -630,7 +630,7 @@ def BuildStepCopyExamples(pepperdir, toolchains, build_experimental, clobber):
   MakeDirectoryOrClobber(pepperdir, 'src', clobber)
 
   # Copy individual files
-  files = ['favicon.ico', 'httpd.cmd', 'httpd.py', 'index.html']
+  files = ['favicon.ico', 'httpd.cmd', 'index.html']
   for filename in files:
     oshelpers.Copy(['-v', os.path.join(SDK_EXAMPLE_DIR, filename), exampledir])
 
