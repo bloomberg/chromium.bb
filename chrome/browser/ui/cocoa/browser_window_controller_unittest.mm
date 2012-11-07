@@ -658,10 +658,6 @@ class BrowserWindowFullScreenControllerTest : public CocoaProfileTest {
   BrowserWindowController* controller_;
 };
 
-@interface BrowserWindowController (PrivateAPI)
-- (BOOL)supportsFullscreen;
-@end
-
 // Check if the window is front most or if one of its child windows (such
 // as a status bubble) is front most.
 static bool IsFrontWindow(NSWindow *window) {

@@ -996,14 +996,6 @@ enum {
   }
 }
 
-- (BOOL)supportsFullscreen {
-  // TODO(avi, thakis): GTMWindowSheetController has no api to move
-  // tabsheets between windows. Until then, we have to prevent having to
-  // move a tabsheet between windows, e.g. no fullscreen toggling
-  NSArray* a = [[tabStripController_ sheetController] viewsWithAttachedSheets];
-  return [a count] == 0;
-}
-
 // Called to validate menu and toolbar items when this window is key. All the
 // items we care about have been set with the |-commandDispatch:| or
 // |-commandDispatchUsingKeyModifiers:| actions and a target of FirstResponder
@@ -1033,7 +1025,6 @@ enum {
             enable &= !![[static_cast<NSMenuItem*>(item) keyEquivalent] length];
           break;
         case IDC_FULLSCREEN: {
-          enable &= [self supportsFullscreen];
           if ([static_cast<NSObject*>(item) isKindOfClass:[NSMenuItem class]]) {
             NSString* menuTitle = l10n_util::GetNSString(
                 [self isFullscreen] && ![self inPresentationMode] ?
@@ -1047,7 +1038,6 @@ enum {
           break;
         }
         case IDC_PRESENTATION_MODE: {
-          enable &= [self supportsFullscreen];
           if ([static_cast<NSObject*>(item) isKindOfClass:[NSMenuItem class]]) {
             NSString* menuTitle = l10n_util::GetNSString(
                 [self inPresentationMode] ? IDS_EXIT_PRESENTATION_MAC :
@@ -1950,7 +1940,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   if (fullscreen == [self isFullscreen])
     return;
 
-  if (![self supportsFullscreen])
+  if (!chrome::IsCommandEnabled(browser_.get(), IDC_FULLSCREEN))
     return;
 
   if (base::mac::IsOSLionOrLater()) {

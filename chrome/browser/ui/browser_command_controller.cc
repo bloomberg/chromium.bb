@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -862,9 +863,6 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_HOME, normal_window);
 
   // Window management commands
-  // TODO(rohitrao): Disable fullscreen on non-Lion?
-  command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN,
-      !(browser_->is_type_panel() && browser_->is_app()));
   command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_PREVIOUS_TAB,
                                         normal_window);
@@ -887,11 +885,7 @@ void BrowserCommandController::InitCommandState() {
       IDC_WIN8_DESKTOP_RESTART : IDC_WIN8_METRO_RESTART;
   command_updater_.UpdateCommandEnabled(restart_mode, normal_window);
 #endif
-#if defined(OS_MACOSX)
   command_updater_.UpdateCommandEnabled(IDC_TABPOSE, normal_window);
-  command_updater_.UpdateCommandEnabled(IDC_PRESENTATION_MODE,
-      !(browser_->is_type_panel() && browser_->is_app()));
-#endif
 
   // Find-in-page
   command_updater_.UpdateCommandEnabled(IDC_FIND, !browser_->is_devtools());
@@ -1105,9 +1099,20 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode(
 #endif
 
   // Disable explicit fullscreen toggling when in metro snap mode.
-  command_updater_.UpdateCommandEnabled(
-      IDC_FULLSCREEN,
-      fullscreen_mode != FULLSCREEN_METRO_SNAP);
+  bool fullscreen_enabled = !browser_->is_type_panel() &&
+                            !browser_->is_app() &&
+                            fullscreen_mode != FULLSCREEN_METRO_SNAP;
+#if defined(OS_MACOSX)
+  // The Mac implementation doesn't support switching to fullscreen while
+  // a tab modal dialog is displayed.
+  int tabIndex = chrome::IndexOfFirstBlockedTab(browser_->tab_strip_model());
+  bool has_blocked_tab = tabIndex != browser_->tab_strip_model()->count();
+  fullscreen_enabled &= !has_blocked_tab;
+#endif
+
+  command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN, fullscreen_enabled);
+  command_updater_.UpdateCommandEnabled(IDC_PRESENTATION_MODE,
+                                        fullscreen_enabled);
 
   UpdateCommandsForBookmarkBar();
   UpdateCommandsForMultipleProfiles();
