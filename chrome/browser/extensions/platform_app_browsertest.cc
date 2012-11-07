@@ -705,12 +705,26 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, RunningAppsAreRecorded) {
   CloseShellWindowsAndWaitForAppToExit();
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DevToolsOpenedWithReload) {
+namespace {
+
+class PlatformAppDevToolsBrowserTest : public PlatformAppBrowserTest {
+ protected:
+  enum TestFlags {
+    RELAUNCH = 0x1,
+    HAS_ID = 0x2,
+  };
+  // Runs a test inside a harness that opens DevTools on a shell window.
+  void RunTestWithDevTools(const char* name, int test_flags);
+};
+
+void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
+    const char* name, int test_flags) {
   using content::DevToolsAgentHostRegistry;
-  const Extension* extension = LoadAndLaunchPlatformApp("minimal_id");
+  const Extension* extension = LoadAndLaunchPlatformApp(name);
   ASSERT_TRUE(extension);
   ShellWindow* window = GetFirstShellWindow();
   ASSERT_TRUE(window);
+  ASSERT_EQ(window->window_key().empty(), (test_flags & HAS_ID) == 0);
   content::RenderViewHost* rvh = window->web_contents()->GetRenderViewHost();
   ASSERT_TRUE(rvh);
 
@@ -724,26 +738,38 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DevToolsOpenedWithReload) {
   loaded_observer.Wait();
   ASSERT_TRUE(DevToolsAgentHostRegistry::HasDevToolsAgentHost(rvh));
 
-  // Close the ShellWindow, and ensure it is gone.
-  CloseShellWindow(window);
-  ASSERT_FALSE(GetFirstShellWindow());
+  if (test_flags & RELAUNCH) {
+    // Close the ShellWindow, and ensure it is gone.
+    CloseShellWindow(window);
+    ASSERT_FALSE(GetFirstShellWindow());
 
-  // Relaunch the app and get a new ShellWindow.
-  content::WindowedNotificationObserver app_loaded_observer(
-      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      content::NotificationService::AllSources());
-  application_launch::OpenApplication(application_launch::LaunchParams(
-      browser()->profile(), extension, extension_misc::LAUNCH_NONE,
-      NEW_WINDOW));
-  app_loaded_observer.Wait();
-  window = GetFirstShellWindow();
-  ASSERT_TRUE(window);
+    // Relaunch the app and get a new ShellWindow.
+    content::WindowedNotificationObserver app_loaded_observer(
+        content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+        content::NotificationService::AllSources());
+    application_launch::OpenApplication(application_launch::LaunchParams(
+        browser()->profile(), extension, extension_misc::LAUNCH_NONE,
+        NEW_WINDOW));
+    app_loaded_observer.Wait();
+    window = GetFirstShellWindow();
+    ASSERT_TRUE(window);
 
-  // DevTools should have reopened with the relaunch.
-  rvh = window->web_contents()->GetRenderViewHost();
-  ASSERT_TRUE(rvh);
-  ASSERT_TRUE(DevToolsAgentHostRegistry::HasDevToolsAgentHost(rvh));
+    // DevTools should have reopened with the relaunch.
+    rvh = window->web_contents()->GetRenderViewHost();
+    ASSERT_TRUE(rvh);
+    ASSERT_TRUE(DevToolsAgentHostRegistry::HasDevToolsAgentHost(rvh));
+  }
   CloseShellWindowsAndWaitForAppToExit();
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, ReOpenedWithID) {
+  RunTestWithDevTools("minimal_id", RELAUNCH | HAS_ID);
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, ReOpenedWithURL) {
+  RunTestWithDevTools("minimal", RELAUNCH);
 }
 
 // Test that showing a permission request as a constrained window works and is

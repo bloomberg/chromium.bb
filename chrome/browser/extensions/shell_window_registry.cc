@@ -13,10 +13,10 @@
 namespace {
 
 // Create a key that identifies a ShellWindow in a RenderViewHost across App
-// reloads. Current format concatenates the extension ID (fixed length string)
-// a colon separator, and the ShellWindow's |id| (passed to create). If the
-// RenderViewHost is not for a ShellWindow, or if the window was not created
-// with an |id|, return an empty string.
+// reloads. If the window was given an id in CreateParams, the key is the
+// extension id, a colon separator, and the ShellWindow's |id|. If there is no
+// |id|, the chrome-extension://extension-id/page.html URL will be used. If the
+// RenderViewHost is not for a ShellWindow, return an empty string.
 std::string GetWindowKeyForRenderViewHost(
     const extensions::ShellWindowRegistry* registry,
     content::RenderViewHost* render_view_host) {
@@ -26,7 +26,7 @@ std::string GetWindowKeyForRenderViewHost(
     return std::string(); // Not a ShellWindow.
 
   if (shell_window->window_key().empty())
-    return std::string(); // Not created with an |id| in CreateParams.
+    return shell_window->web_contents()->GetURL().possibly_invalid_spec();
 
   std::string key = shell_window->extension()->id();
   key += ':';
