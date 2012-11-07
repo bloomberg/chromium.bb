@@ -35,25 +35,6 @@ public class LibraryLoader {
 
     private static boolean sInitialized = false;
 
-    private static AsyncTask<Void, Void, Boolean> sAsyncLoader;
-
-    /**
-     * Callback for handling loading of the native library.
-     *
-     * <p> The callback methods will always be triggered on the UI thread.
-     */
-    @Deprecated
-    public static interface Callback {
-        /**
-         * Called when loading the native library is successful.
-         */
-        void onSuccess();
-
-        /**
-         * Called when loading the native library fails.
-         */
-        void onFailure();
-    }
 
     /**
      * Sets the library name that is to be loaded.  This must be called prior to the library being
@@ -91,88 +72,8 @@ public class LibraryLoader {
             // Already initialized, nothing to do.
             return;
         }
-        if (sAsyncLoader != null) {
-            // Async initialization in progress, wait.
-            waitForAsyncInitialized();
-            return;
-        }
         loadNow();
         initializeOnMainThread();
-    }
-
-    /**
-     *  Block until the library is fully initialized.
-     *  Must be called on the thread that the native will call its "main" thread.
-     */
-    private static void waitForAsyncInitialized() {
-        checkThreadUsage();
-        if (sInitialized) {
-            // Already initialized.
-            return;
-        }
-        synchronized (sLoadedLock) {
-            try {
-                while (!sLoaded) {
-                    sLoadedLock.wait();
-                }
-                // If the UI thread blocked waiting for the task it will already
-                // have handled the library load completion, so don't duplicate that work here.
-            } catch (InterruptedException e) {
-            }
-        }
-        initializeOnMainThread();
-    }
-
-    /**
-     *  Kicks off an asynchronous library load, and will asynchronously initialize the
-     *  library when that completes.
-     *  Must be called on the thread that the native will call its "main" thread.
-     */
-    @Deprecated
-    public static void loadAndInitAsync(final Callback onLoadedListener) {
-        checkThreadUsage();
-        if (sInitialized) {
-            // Already initialized, post our Runnable if needed.
-            if (onLoadedListener != null) {
-                new Handler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        onLoadedListener.onSuccess();
-                    }
-                });
-            }
-            return;
-        }
-        sAsyncLoader = new AsyncTask<Void, Void, Boolean>() {
-            @Override
-            public Boolean doInBackground(Void... voids) {
-                // We're loading the .so in a background thread. Potentially, this
-                // can break native code that relies on static initializers using
-                // thread local storage, as the library would normally load in the
-                // main thread. If do we hit such cases we should remove those static
-                // initializers, as we chrome has banned them.
-                // (Worst case, we can go back to just warming up the file in the system
-                // cache here and do the actual loading in onPostExecute().)
-                try {
-                  loadNow();
-                  return true;
-                } catch (UnsatisfiedLinkError e) {
-                  return false;
-                }
-            }
-
-            @Override
-            protected void onPostExecute(Boolean result) {
-                if (result) {
-                    initializeOnMainThread();
-                    if (onLoadedListener != null) onLoadedListener.onSuccess();
-                } else {
-                    if (onLoadedListener != null) onLoadedListener.onFailure();
-                }
-
-            }
-        };
-        sAsyncLoader.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
