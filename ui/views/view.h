@@ -475,7 +475,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Returns the NativeTheme to use for this View. This calls through to
   // GetNativeTheme() on the Widget this View is in. If this View is not in a
-  // Widget this returns NULL.
+  // Widget this returns ui::NativeTheme::instance().
   ui::NativeTheme* GetNativeTheme() {
     return const_cast<ui::NativeTheme*>(
         const_cast<const View*>(this)->GetNativeTheme());
@@ -1062,9 +1062,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // System events -------------------------------------------------------------
 
-  // Called when the UI theme has changed, overriding allows individual Views to
-  // do special cleanup and processing (such as dropping resource caches).
-  // To dispatch a theme changed notification, call Widget::ThemeChanged().
+  // Called when the UI theme (not the NativeTheme) has changed, overriding
+  // allows individual Views to do special cleanup and processing (such as
+  // dropping resource caches).  To dispatch a theme changed notification, call
+  // Widget::ThemeChanged().
   virtual void OnThemeChanged() {}
 
   // Called when the locale has changed, overriding allows individual Views to
@@ -1105,6 +1106,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // used by the public static method ExceededDragThreshold().
   static int GetHorizontalDragThreshold();
   static int GetVerticalDragThreshold();
+
+  // NativeTheme ---------------------------------------------------------------
+
+  // Invoked when the NativeTheme associated with this View changes.
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) {}
 
   // Debugging -----------------------------------------------------------------
 
@@ -1194,6 +1200,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
                                 bool is_add,
                                 View* parent,
                                 View* child);
+
+  // Invokes OnNativeThemeChanged() on this and all descendants.
+  void PropagateNativeThemeChanged(const ui::NativeTheme* theme);
 
   // Size and disposition ------------------------------------------------------
 

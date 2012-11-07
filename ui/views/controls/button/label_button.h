@@ -67,6 +67,10 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, LabelAndImage);
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Font);
 
+  // Resets the colors from the NativeTheme. If |reset_all| is true all colors
+  // are reset, otherwise only those not explicitly set are changed.
+  void ResetColorsFromNativeTheme(bool reset_all);
+
   // Overridden from CustomButton:
   virtual void StateChanged() OVERRIDE;
 
@@ -75,6 +79,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   virtual void Layout() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
 
   // Overridden from NativeThemeDelegate:
   virtual ui::NativeTheme::Part GetThemePart() const OVERRIDE;
@@ -97,6 +102,9 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // The images and colors for each button state.
   gfx::ImageSkia button_state_images_[BS_COUNT];
   SkColor button_state_colors_[BS_COUNT];
+
+  // Used to track whether SetTextColor() has been invoked.
+  bool explicitly_set_colors_[BS_COUNT];
 
   // |min_size_| increases monotonically with the preferred size.
   gfx::Size min_size_;

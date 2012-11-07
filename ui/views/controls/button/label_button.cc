@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "grit/ui_resources.h"
 #include "ui/base/animation/throb_animation.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/focus_border.h"
@@ -77,6 +78,7 @@ void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {
     label_->SetDisabledColor(color);
   else if (for_state == state())
     label_->SetEnabledColor(color);
+  explicitly_set_colors_[for_state] = true;
 }
 
 bool LabelButton::GetTextMultiLine() const {
@@ -115,8 +117,14 @@ void LabelButton::SetDefaultButton(bool default_button) {
 void LabelButton::SetNativeTheme(bool native_theme) {
   native_theme_ = native_theme;
   static_cast<LabelButtonBorder*>(border())->set_native_theme(native_theme);
+  // Invalidate the layout to pickup the new insets from the border.
+  InvalidateLayout();
 
-  const ui::NativeTheme* theme = ui::NativeTheme::instance();
+  ResetColorsFromNativeTheme(true);
+}
+
+void LabelButton::ResetColorsFromNativeTheme(bool reset_all) {
+  const ui::NativeTheme* theme = GetNativeTheme();
   SkColor colors[BS_COUNT] = {
     theme->GetSystemColor(ui::NativeTheme::kColorId_TextButtonEnabledColor),
     theme->GetSystemColor(ui::NativeTheme::kColorId_TextButtonHoverColor),
@@ -124,18 +132,19 @@ void LabelButton::SetNativeTheme(bool native_theme) {
     theme->GetSystemColor(ui::NativeTheme::kColorId_TextButtonDisabledColor),
   };
 #if defined(OS_WIN)
-  if (native_theme) {
+  if (native_theme_ && theme == ui::NativeThemeWin::instance()) {
     colors[BS_NORMAL] = color_utils::GetSysSkColor(COLOR_BTNTEXT);
     colors[BS_HOT] = color_utils::GetSysSkColor(COLOR_BTNTEXT);
     colors[BS_PUSHED] = color_utils::GetSysSkColor(COLOR_BTNTEXT);
     colors[BS_DISABLED] = color_utils::GetSysSkColor(COLOR_GRAYTEXT);
   }
 #endif
-  for (size_t state = BS_NORMAL; state < BS_COUNT; ++state)
-    SetTextColor(static_cast<ButtonState>(state), colors[state]);
-
-  // Invalidate the layout to pickup the new insets from the border.
-  InvalidateLayout();
+  for (size_t state = BS_NORMAL; state < BS_COUNT; ++state) {
+    if (reset_all || !explicitly_set_colors_[state]) {
+      SetTextColor(static_cast<ButtonState>(state), colors[state]);
+      explicitly_set_colors_[state] = false;
+    }
+  }
 }
 
 void LabelButton::StateChanged() {
@@ -215,6 +224,11 @@ void LabelButton::ChildPreferredSizeChanged(View* child) {
   PreferredSizeChanged();
 }
 
+void LabelButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  if (native_theme_)
+    ResetColorsFromNativeTheme(false);
+}
+
 ui::NativeTheme::Part LabelButton::GetThemePart() const {
   return ui::NativeTheme::kPushButton;
 }
@@ -237,9 +251,11 @@ ui::NativeTheme::State LabelButton::GetThemeState(
 }
 
 const ui::Animation* LabelButton::GetThemeAnimation() const {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  if (native_theme() && !ui::NativeThemeWin::instance()->IsThemingActive())
-    return NULL;
+#if defined(OS_WIN)
+  if (native_theme_ && GetNativeTheme() == ui::NativeThemeWin::instance()) {
+    return ui::NativeThemeWin::instance()->IsThemingActive() ?
+        hover_animation_.get() : NULL;
+  }
 #endif
   return hover_animation_.get();
 }
@@ -263,7 +279,7 @@ void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   params->button.is_focused = HasFocus() && IsAccessibilityFocusable();
   params->button.has_border = native_theme();
   params->button.classic_state = 0;
-  params->button.background_color = ui::NativeTheme::instance()->GetSystemColor(
+  params->button.background_color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TextButtonBackgroundColor);
 }
 

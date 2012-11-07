@@ -195,6 +195,7 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
 
  protected:
   TextButtonBase(ButtonListener* listener, const string16& text);
@@ -209,6 +210,22 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
 
   // Calculate the size of the text size without setting any of the members.
   void CalculateTextSize(gfx::Size* text_size, int max_width);
+
+  void set_color_enabled(SkColor color) { color_enabled_ = color; }
+  void set_color_disabled(SkColor color) { color_disabled_ = color; }
+  void set_color_hover(SkColor color) { color_hover_ = color; }
+
+  bool use_enabled_color_from_theme() const {
+    return use_enabled_color_from_theme_;
+  }
+
+  bool use_disabled_color_from_theme() const {
+    return use_disabled_color_from_theme_;
+  }
+
+  bool use_hover_color_from_theme() const {
+    return use_hover_color_from_theme_;
+  }
 
   // Overridden from NativeThemeDelegate:
   virtual gfx::Rect GetThemePaintRect() const OVERRIDE;
@@ -247,15 +264,6 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   // The font used to paint the text.
   gfx::Font font_;
 
-  // Text color.
-  SkColor color_;
-
-  // State colors.
-  SkColor color_enabled_;
-  SkColor color_disabled_;
-  SkColor color_highlight_;
-  SkColor color_hover_;
-
   // Flag indicating if a shadow should be drawn behind the text.
   bool has_text_shadow_;
   // Optional shadow text colors for active and inactive widget states.
@@ -283,6 +291,22 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   bool multi_line_;
 
   PrefixType prefix_type_;
+
+ private:
+  // Text color.
+  SkColor color_;
+
+  // State colors.
+  SkColor color_enabled_;
+  SkColor color_disabled_;
+  SkColor color_highlight_;
+  SkColor color_hover_;
+
+  // True if the specified color should be used from the theme.
+  bool use_enabled_color_from_theme_;
+  bool use_disabled_color_from_theme_;
+  bool use_highlight_color_from_theme_;
+  bool use_hover_color_from_theme_;
 
   DISALLOW_COPY_AND_ASSIGN(TextButtonBase);
 };
@@ -395,9 +419,13 @@ class VIEWS_EXPORT NativeTextButton : public TextButton {
   // Overridden from TextButton:
   virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
 
  private:
   void Init();
+
+  // Sets the necessary theme specific state from |theme|.
+  void SetThemeSpecificState(const ui::NativeTheme* theme);
 
   // Overridden from TextButton:
   virtual void GetExtraParams(

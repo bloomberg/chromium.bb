@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -162,6 +163,7 @@ void View::AddChildViewAt(View* view, int index) {
 
   // If |view| has a parent, remove it from its parent.
   View* parent = view->parent_;
+  const ui::NativeTheme* old_theme = view->GetNativeTheme();
   if (parent) {
     if (parent == this) {
       ReorderChildView(view, index);
@@ -182,8 +184,13 @@ void View::AddChildViewAt(View* view, int index) {
 
   view->PropagateAddNotifications(this, view);
   UpdateTooltip();
-  if (GetWidget())
+  views::Widget* widget = GetWidget();
+  if (widget) {
     RegisterChildrenForVisibleBoundsNotification(view);
+    const ui::NativeTheme* new_theme = widget->GetNativeTheme();
+    if (new_theme != old_theme)
+      PropagateNativeThemeChanged(new_theme);
+  }
 
   if (layout_manager_.get())
     layout_manager_->ViewAdded(this, view);
@@ -736,7 +743,7 @@ ui::ThemeProvider* View::GetThemeProvider() const {
 
 const ui::NativeTheme* View::GetNativeTheme() const {
   const Widget* widget = GetWidget();
-  return widget ? widget->GetNativeTheme() : NULL;
+  return widget ? widget->GetNativeTheme() : ui::NativeTheme::instance();
 }
 
 // Accelerated Painting --------------------------------------------------------
@@ -1658,6 +1665,12 @@ void View::ViewHierarchyChangedImpl(bool register_accelerators,
 
   ViewHierarchyChanged(is_add, parent, child);
   parent->needs_layout_ = true;
+}
+
+void View::PropagateNativeThemeChanged(const ui::NativeTheme* theme) {
+  for (int i = 0, count = child_count(); i < count; ++i)
+    child_at(i)->PropagateNativeThemeChanged(theme);
+  OnNativeThemeChanged(theme);
 }
 
 // Size and disposition --------------------------------------------------------

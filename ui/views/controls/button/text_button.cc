@@ -143,8 +143,8 @@ TextButtonNativeThemeBorder::~TextButtonNativeThemeBorder() {
 
 void TextButtonNativeThemeBorder::Paint(const View& view,
                                         gfx::Canvas* canvas) const {
+  const ui::NativeTheme* theme = view.GetNativeTheme();
   const TextButtonBase* tb = static_cast<const TextButton*>(&view);
-  const ui::NativeTheme* native_theme = ui::NativeTheme::instance();
   ui::NativeTheme::Part part = delegate_->GetThemePart();
   gfx::Rect rect(delegate_->GetThemePaintRect());
 
@@ -155,20 +155,19 @@ void TextButtonNativeThemeBorder::Paint(const View& view,
     ui::NativeTheme::ExtraParams prev_extra;
     ui::NativeTheme::State prev_state =
         delegate_->GetBackgroundThemeState(&prev_extra);
-    native_theme->Paint(canvas->sk_canvas(), part, prev_state, rect,
-                        prev_extra);
+    theme->Paint(canvas->sk_canvas(), part, prev_state, rect, prev_extra);
 
     // Composite foreground state above it.
     ui::NativeTheme::ExtraParams extra;
     ui::NativeTheme::State state = delegate_->GetForegroundThemeState(&extra);
     int alpha = delegate_->GetThemeAnimation()->CurrentValueBetween(0, 255);
     canvas->SaveLayerAlpha(static_cast<uint8>(alpha));
-    native_theme->Paint(canvas->sk_canvas(), part, state, rect, extra);
+    theme->Paint(canvas->sk_canvas(), part, state, rect, extra);
     canvas->Restore();
   } else {
     ui::NativeTheme::ExtraParams extra;
     ui::NativeTheme::State state = delegate_->GetThemeState(&extra);
-    native_theme->Paint(canvas->sk_canvas(), part, state, rect, extra);
+    theme->Paint(canvas->sk_canvas(), part, state, rect, extra);
   }
 }
 
@@ -188,16 +187,6 @@ TextButtonBase::TextButtonBase(ButtonListener* listener, const string16& text)
       alignment_(ALIGN_LEFT),
       font_(ResourceBundle::GetSharedInstance().GetFont(
           ResourceBundle::BaseFont)),
-      color_(ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextButtonEnabledColor)),
-      color_enabled_(ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextButtonEnabledColor)),
-      color_disabled_(ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextButtonDisabledColor)),
-      color_highlight_(ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextButtonHighlightColor)),
-      color_hover_(ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextButtonHoverColor)),
       has_text_shadow_(false),
       active_text_shadow_color_(0),
       inactive_text_shadow_color_(0),
@@ -208,7 +197,21 @@ TextButtonBase::TextButtonBase(ButtonListener* listener, const string16& text)
       show_multiple_icon_states_(true),
       is_default_(false),
       multi_line_(false),
-      prefix_type_(PREFIX_NONE) {
+      prefix_type_(PREFIX_NONE),
+      color_(ui::NativeTheme::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_TextButtonEnabledColor)),
+      color_enabled_(ui::NativeTheme::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_TextButtonEnabledColor)),
+      color_disabled_(ui::NativeTheme::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_TextButtonDisabledColor)),
+      color_highlight_(ui::NativeTheme::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_TextButtonHighlightColor)),
+      color_hover_(ui::NativeTheme::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_TextButtonHoverColor)),
+      use_enabled_color_from_theme_(true),
+      use_disabled_color_from_theme_(true),
+      use_highlight_color_from_theme_(true),
+      use_hover_color_from_theme_(true) {
   SetText(text);
   SetAnimationDuration(kHoverAnimationDurationMs);
 }
@@ -242,20 +245,24 @@ void TextButtonBase::SetFont(const gfx::Font& font) {
 
 void TextButtonBase::SetEnabledColor(SkColor color) {
   color_enabled_ = color;
+  use_enabled_color_from_theme_ = false;
   UpdateColor();
 }
 
 void TextButtonBase::SetDisabledColor(SkColor color) {
   color_disabled_ = color;
+  use_disabled_color_from_theme_ = false;
   UpdateColor();
 }
 
 void TextButtonBase::SetHighlightColor(SkColor color) {
   color_highlight_ = color;
+  use_highlight_color_from_theme_ = false;
 }
 
 void TextButtonBase::SetHoverColor(SkColor color) {
   color_hover_ = color;
+  use_hover_color_from_theme_ = false;
 }
 
 void TextButtonBase::SetTextShadowColors(SkColor active_color,
@@ -517,6 +524,26 @@ std::string TextButtonBase::GetClassName() const {
   return kViewClassName;
 }
 
+void TextButtonBase::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  if (use_enabled_color_from_theme_) {
+    color_enabled_ = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_TextButtonEnabledColor);
+  }
+  if (use_disabled_color_from_theme_) {
+    color_disabled_ = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_TextButtonDisabledColor);
+  }
+  if (use_highlight_color_from_theme_) {
+    color_highlight_ = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_TextButtonHighlightColor);
+  }
+  if (use_hover_color_from_theme_) {
+    color_hover_ = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_TextButtonHoverColor);
+  }
+  UpdateColor();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TextButtonBase, NativeThemeDelegate overrides:
 
@@ -543,14 +570,13 @@ ui::NativeTheme::State TextButtonBase::GetThemeState(
 }
 
 const ui::Animation* TextButtonBase::GetThemeAnimation() const {
-#if defined(USE_AURA)
-  return hover_animation_.get();
-#elif defined(OS_WIN)
-  return ui::NativeThemeWin::instance()->IsThemingActive()
-      ? hover_animation_.get() : NULL;
-#else
-  return hover_animation_.get();
+#if defined(OS_WIN)
+  if (GetNativeTheme() == ui::NativeThemeWin::instance()) {
+    return ui::NativeThemeWin::instance()->IsThemingActive() ?
+        hover_animation_.get() : NULL;
+  }
 #endif
+  return hover_animation_.get();
 }
 
 ui::NativeTheme::State TextButtonBase::GetBackgroundThemeState(
@@ -732,12 +758,7 @@ NativeTextButton::NativeTextButton(ButtonListener* listener,
 }
 
 void NativeTextButton::Init() {
-#if defined(OS_WIN)
-  // Use applicable Windows system colors.
-  color_enabled_ = skia::COLORREFToSkColor(GetSysColor(COLOR_BTNTEXT));
-  color_disabled_ = skia::COLORREFToSkColor(GetSysColor(COLOR_GRAYTEXT));
-  color_hover_ = color_ = color_enabled_;
-#endif
+  SetThemeSpecificState(GetNativeTheme());
   set_border(new TextButtonNativeThemeBorder(this));
 #if !defined(OS_WIN)
   // Paint nothing, focus will be indicated with a border highlight drawn by
@@ -757,18 +778,46 @@ std::string NativeTextButton::GetClassName() const {
   return kViewClassName;
 }
 
+void NativeTextButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  SetThemeSpecificState(theme);
+}
+
+void NativeTextButton::SetThemeSpecificState(const ui::NativeTheme* theme) {
+#if defined(OS_WIN)
+  if (theme == ui::NativeThemeWin::instance()) {
+    if (use_enabled_color_from_theme())
+      set_color_enabled(skia::COLORREFToSkColor(GetSysColor(COLOR_BTNTEXT)));
+    if (use_disabled_color_from_theme())
+      set_color_disabled(skia::COLORREFToSkColor(GetSysColor(COLOR_GRAYTEXT)));
+    if (use_hover_color_from_theme())
+      set_color_hover(skia::COLORREFToSkColor(GetSysColor(COLOR_BTNTEXT)));
+    UpdateColor();
+    set_focus_border(FocusBorder::CreateDashedFocusBorder(kFocusRectInset,
+                                                          kFocusRectInset,
+                                                          kFocusRectInset,
+                                                          kFocusRectInset));
+  } else {
+    // Paint nothing, focus will be indicated with a border highlight drawn by
+    // NativeThemeBase::PaintButton.
+    set_focus_border(NULL);
+  }
+#endif
+}
+
 void NativeTextButton::GetExtraParams(
     ui::NativeTheme::ExtraParams* params) const {
   TextButton::GetExtraParams(params);
   params->button.has_border = true;
-#if !defined(OS_WIN)
   // Windows may paint a dotted focus rect in
   // NativeTextButton::OnPaintFocusBorder. To avoid getting two focus
-  // indications (A dotted rect and a highlighted border) only set is_focused on
-  // non windows platforms.
+  // indications (A dotted rect and a highlighted border) only set |is_focused|
+  // when not using NativeThemeWin.
+#if defined(OS_WIN)
+  if (GetNativeTheme() == ui::NativeThemeWin::instance())
+    return;
+#endif
   params->button.is_focused = HasFocus() &&
       (focusable() || IsAccessibilityFocusable());
-#endif
 }
 
 }  // namespace views
