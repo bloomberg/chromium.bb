@@ -4787,7 +4787,10 @@
               'dependencies': [
                 # Win bot needs to be turned into an interactive bot.
                 'interactive_ui_tests',
-                'browser_tests',
+                # Random tests hang/timeout on linux coverage bot.
+                # Disabled until we figure out these tests.
+                # crbug.com/159748
+                #'browser_tests',
                 '../courgette/courgette.gyp:courgette_unittests',
                 '../crypto/crypto.gyp:crypto_unittests',
                 'chromedriver_unittests',
