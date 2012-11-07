@@ -95,13 +95,13 @@ class AppsGridViewTest : public testing::Test {
 
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
-    apps_model_.reset(new AppListModel::Apps);
+    model_.reset(new AppListModel);
     pagination_model_.reset(new PaginationModel);
 
     apps_grid_view_.reset(new AppsGridView(NULL, pagination_model_.get()));
     apps_grid_view_->SetLayout(kIconDimension, kCols, kRows);
     apps_grid_view_->SetBoundsRect(gfx::Rect(gfx::Size(kWidth, kHeight)));
-    apps_grid_view_->SetModel(apps_model_.get());
+    apps_grid_view_->SetModel(model_.get());
 
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view_.get()));
   }
@@ -113,17 +113,17 @@ class AppsGridViewTest : public testing::Test {
   void PopulateApps(int n) {
     for (int i = 0; i < n; ++i) {
       std::string title = base::StringPrintf("Item %d", i);
-      apps_model_->Add(CreateItem(title));
+      model_->apps()->Add(CreateItem(title));
     }
   }
 
   // Get a string of all apps in |model| joined with ','.
   std::string GetModelContent() {
     std::string content;
-    for (size_t i = 0; i < apps_model_->item_count(); ++i) {
+    for (size_t i = 0; i < model_->apps()->item_count(); ++i) {
       if (i > 0)
         content += ',';
-      content += apps_model_->GetItemAt(i)->title();
+      content += model_->apps()->GetItemAt(i)->title();
     }
     return content;
   }
@@ -135,7 +135,7 @@ class AppsGridViewTest : public testing::Test {
   }
 
   void HighlightItemAt(int index) {
-    AppListItemModel* item = apps_model_->GetItemAt(index);
+    AppListItemModel* item = model_->apps()->GetItemAt(index);
     item->SetHighlighted(true);
   }
 
@@ -145,7 +145,7 @@ class AppsGridViewTest : public testing::Test {
   }
 
   AppListItemView* GetItemViewForPoint(const gfx::Point& point) {
-    for (size_t i = 0; i < apps_model_->item_count(); ++i) {
+    for (size_t i = 0; i < model_->apps()->item_count(); ++i) {
       AppListItemView* view = GetItemViewAt(i);
       if (view->bounds().Contains(point))
         return view;
@@ -154,7 +154,7 @@ class AppsGridViewTest : public testing::Test {
   }
 
   gfx::Rect GetItemTileRectAt(int row, int col) {
-    DCHECK_GT(apps_model_->item_count(), 0u);
+    DCHECK_GT(model_->apps()->item_count(), 0u);
 
     gfx::Insets insets(apps_grid_view_->GetInsets());
     gfx::Rect rect(gfx::Point(insets.left(), insets.top()),
@@ -170,8 +170,10 @@ class AppsGridViewTest : public testing::Test {
     AppListItemView* view = GetItemViewForPoint(from);
     DCHECK(view);
 
-    gfx::Point translated_from = from.Subtract(view->bounds().origin());
-    gfx::Point translated_to = to.Subtract(view->bounds().origin());
+    gfx::Point translated_from = gfx::PointAtOffsetFromOrigin(
+        from - view->bounds().origin());
+    gfx::Point translated_to = gfx::PointAtOffsetFromOrigin(
+        to - view->bounds().origin());
 
     ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED,
                                  translated_from, translated_from, 0);
@@ -182,7 +184,7 @@ class AppsGridViewTest : public testing::Test {
     apps_grid_view_->UpdateDrag(view, pointer, drag_event);
   }
 
-  scoped_ptr<AppListModel::Apps> apps_model_;
+  scoped_ptr<AppListModel> model_;
   scoped_ptr<PaginationModel> pagination_model_;
   scoped_ptr<AppsGridView> apps_grid_view_;
   scoped_ptr<AppsGridViewTestApi> test_api_;
@@ -200,7 +202,7 @@ TEST_F(AppsGridViewTest, CreatePage) {
   EXPECT_EQ(kPages, pagination_model_->total_pages());
 
   // Adds one more and gets a new page created.
-  apps_model_->Add(CreateItem(std::string("Extra")));
+  model_->apps()->Add(CreateItem(std::string("Extra")));
   EXPECT_EQ(kPages + 1, pagination_model_->total_pages());
 }
 
@@ -222,7 +224,7 @@ TEST_F(AppsGridViewTest, EnsureHighlightedVisible) {
   EXPECT_EQ(1, pagination_model_->selected_page());
 
   // Highlight last one in the model and last page should be selected.
-  HighlightItemAt(apps_model_->item_count() - 1);
+  HighlightItemAt(model_->apps()->item_count() - 1);
   EXPECT_EQ(kPages - 1, pagination_model_->selected_page());
 }
 
@@ -234,7 +236,7 @@ TEST_F(AppsGridViewTest, RemoveSelectedLastApp) {
 
   AppListItemView* last_view = GetItemViewAt(kLastItemIndex);
   apps_grid_view_->SetSelectedView(last_view);
-  apps_model_->DeleteAt(kLastItemIndex);
+  model_->apps()->DeleteAt(kLastItemIndex);
 
   EXPECT_FALSE(apps_grid_view_->IsSelectedView(last_view));
 
@@ -269,7 +271,7 @@ TEST_F(AppsGridViewTest, MouseDrag) {
 
   // Deleting an item keeps remaining intact.
   SimulateDrag(AppsGridView::MOUSE, from, to);
-  apps_model_->DeleteAt(1);
+  model_->apps()->DeleteAt(1);
   apps_grid_view_->EndDrag(false);
   EXPECT_EQ(std::string("Item 1,Item 2,Item 3"),
             GetModelContent());
@@ -277,7 +279,7 @@ TEST_F(AppsGridViewTest, MouseDrag) {
 
   // Adding a launcher item cancels the drag and respects the order.
   SimulateDrag(AppsGridView::MOUSE, from, to);
-  apps_model_->Add(CreateItem(std::string("Extra")));
+  model_->apps()->Add(CreateItem(std::string("Extra")));
   apps_grid_view_->EndDrag(false);
   EXPECT_EQ(std::string("Item 1,Item 2,Item 3,Extra"),
             GetModelContent());

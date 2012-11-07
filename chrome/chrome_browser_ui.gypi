@@ -109,6 +109,8 @@
         'browser/ui/ash/ash_init.h',
         'browser/ui/ash/app_list/app_list_controller_ash.h',
         'browser/ui/ash/app_list/app_list_controller_ash.cc',
+        'browser/ui/ash/app_list/app_sync_ui_state_watcher.cc',
+        'browser/ui/ash/app_list/app_sync_ui_state_watcher.h',
         'browser/ui/ash/app_sync_ui_state.cc',
         'browser/ui/ash/app_sync_ui_state.h',
         'browser/ui/ash/app_sync_ui_state_observer.h',

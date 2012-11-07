@@ -74,7 +74,7 @@ ContentsView::~ContentsView() {
 
 void ContentsView::SetModel(AppListModel* model) {
   if (model) {
-    GetAppsGridView(view_model_.get())->SetModel(model->apps());
+    GetAppsGridView(view_model_.get())->SetModel(model);
     GetSearchResultListView(view_model_.get())->SetResults(model->results());
   } else {
     GetAppsGridView(view_model_.get())->SetModel(NULL);

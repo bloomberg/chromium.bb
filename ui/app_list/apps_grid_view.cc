@@ -11,6 +11,7 @@
 #include "ui/app_list/apps_grid_view_delegate.h"
 #include "ui/app_list/page_switcher.h"
 #include "ui/app_list/pagination_model.h"
+#include "ui/app_list/pulsing_block_view.h"
 #include "ui/base/animation/animation.h"
 #include "ui/base/events/event.h"
 #include "ui/views/border.h"
@@ -109,8 +110,10 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
 }
 
 AppsGridView::~AppsGridView() {
-  if (model_)
+  if (model_) {
     model_->RemoveObserver(this);
+    model_->apps()->RemoveObserver(this);
+  }
   pagination_model_->RemoveObserver(this);
 }
 
@@ -125,13 +128,17 @@ void AppsGridView::SetLayout(int icon_size, int cols, int rows_per_page) {
                                               kLeftRightPadding));
 }
 
-void AppsGridView::SetModel(AppListModel::Apps* model) {
-  if (model_)
+void AppsGridView::SetModel(AppListModel* model) {
+  if (model_) {
     model_->RemoveObserver(this);
+    model_->apps()->RemoveObserver(this);
+  }
 
   model_ = model;
-  if (model_)
+  if (model_) {
     model_->AddObserver(this);
+    model_->apps()->AddObserver(this);
+  }
   Update();
 }
 
@@ -165,7 +172,7 @@ void AppsGridView::EnsureViewVisible(const views::View* view) {
 void AppsGridView::InitiateDrag(views::View* view,
                                 Pointer pointer,
                                 const ui::LocatedEvent& event) {
-  if (drag_view_)
+  if (drag_view_ || pulsing_blocks_model_.view_size())
     return;
 
   drag_view_ = view;
@@ -243,6 +250,7 @@ void AppsGridView::Layout() {
     if (view != drag_view_)
       view->SetBoundsRect(view_model_.ideal_bounds(i));
   }
+  views::ViewModelUtils::SetViewBoundsToIdealBounds(pulsing_blocks_model_);
 
   const int page_switcher_height =
       page_switcher_view_->GetPreferredSize().height();
@@ -312,8 +320,8 @@ void AppsGridView::ViewHierarchyChanged(bool is_add,
 void AppsGridView::Update() {
   selected_view_ = NULL;
   view_model_.Clear();
-  if (model_ && model_->item_count())
-    ListItemsAdded(0, model_->item_count());
+  if (model_ && model_->apps()->item_count())
+    ListItemsAdded(0, model_->apps()->item_count());
 }
 
 void AppsGridView::UpdatePaging() {
@@ -326,10 +334,33 @@ void AppsGridView::UpdatePaging() {
       (view_model_.view_size() - 1) / tiles_per_page() + 1);
 }
 
+void AppsGridView::UpdatePulsingBlockViews() {
+  const int available_slots =
+      tiles_per_page() - model_->apps()->item_count() % tiles_per_page();
+  const int desired = model_->status() == AppListModel::STATUS_SYNCING ?
+      available_slots : 0;
+
+  if (pulsing_blocks_model_.view_size() == desired)
+    return;
+
+  while (pulsing_blocks_model_.view_size() > desired) {
+    views::View* view = pulsing_blocks_model_.view_at(0);
+    pulsing_blocks_model_.Remove(0);
+    delete view;
+  }
+
+  while (pulsing_blocks_model_.view_size() < desired) {
+    views::View* view = new PulsingBlockView(
+        gfx::Size(kPreferredTileWidth, kPreferredTileHeight), true);
+    pulsing_blocks_model_.Add(view, 0);
+    AddChildView(view);
+  }
+}
+
 views::View* AppsGridView::CreateViewForItemAtIndex(size_t index) {
-  DCHECK_LT(index, model_->item_count());
+  DCHECK_LT(index, model_->apps()->item_count());
   AppListItemView* view = new AppListItemView(this,
-                                              model_->GetItemAt(index));
+                                              model_->apps()->GetItemAt(index));
   view->SetIconSize(icon_size_);
 #if !defined(OS_WIN)
   view->SetPaintToLayer(true);
@@ -424,9 +455,11 @@ void AppsGridView::CalculateIdealBounds() {
   const int transition_offset = is_valid ?
       transition.progress * page_width * dir : 0;
 
+  const int total_views =
+      view_model_.view_size() + pulsing_blocks_model_.view_size();
   int slot_index = 0;
-  for (int i = 0; i < view_model_.view_size(); ++i) {
-    if (view_model_.view_at(i) == drag_view_)
+  for (int i = 0; i < total_views; ++i) {
+    if (i < view_model_.view_size() && view_model_.view_at(i) == drag_view_)
       continue;
 
     int page = slot_index / tiles_per_page();
@@ -456,7 +489,12 @@ void AppsGridView::CalculateIdealBounds() {
         gfx::Point(grid_rect.x() + col * tile_size.width() + x_offset,
                    grid_rect.y() + row * tile_size.height()),
         tile_size);
-    view_model_.set_ideal_bounds(i, tile_slot);
+    if (i < view_model_.view_size()) {
+      view_model_.set_ideal_bounds(i, tile_slot);
+    } else {
+      pulsing_blocks_model_.set_ideal_bounds(i - view_model_.view_size(),
+                                             tile_slot);
+    }
 
     ++slot_index;
   }
@@ -619,10 +657,10 @@ void AppsGridView::MoveItemInModel(views::View* item_view,
   if (target_model_index == current_model_index)
     return;
 
-  model_->RemoveObserver(this);
-  model_->Move(current_model_index, target_model_index);
+  model_->apps()->RemoveObserver(this);
+  model_->apps()->Move(current_model_index, target_model_index);
   view_model_.Move(current_model_index, target_model_index);
-  model_->AddObserver(this);
+  model_->apps()->AddObserver(this);
 
   if (pagination_model_->selected_page() != target.page)
     pagination_model_->SelectPage(target.page, false);
@@ -652,6 +690,7 @@ void AppsGridView::ListItemsAdded(size_t start, size_t count) {
   }
 
   UpdatePaging();
+  UpdatePulsingBlockViews();
   Layout();
   SchedulePaint();
 }
@@ -666,6 +705,7 @@ void AppsGridView::ListItemsRemoved(size_t start, size_t count) {
   }
 
   UpdatePaging();
+  UpdatePulsingBlockViews();
   Layout();
   SchedulePaint();
 }
@@ -702,6 +742,12 @@ void AppsGridView::TransitionChanged() {
       pagination_model_->transition();
   if (pagination_model_->is_valid_page(transition.target_page))
     Layout();
+}
+
+void AppsGridView::OnAppListModelStatusChanged() {
+  UpdatePulsingBlockViews();
+  Layout();
+  SchedulePaint();
 }
 
 }  // namespace app_list

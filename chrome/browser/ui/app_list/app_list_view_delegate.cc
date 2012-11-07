@@ -10,6 +10,10 @@
 #include "chrome/browser/ui/app_list/search_builder.h"
 #include "content/public/browser/user_metrics.h"
 
+#if defined(USE_ASH)
+#include "chrome/browser/ui/ash/app_list/app_sync_ui_state_watcher.h"
+#endif
+
 AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
     : controller_(controller) {}
 
@@ -27,9 +31,15 @@ void AppListViewDelegate::SetModel(app_list::AppListModel* model) {
                                             model->search_box(),
                                             model->results(),
                                             controller_.get()));
+#if defined(USE_ASH)
+    app_sync_ui_state_watcher_.reset(new AppSyncUIStateWatcher(profile, model));
+#endif
   } else {
     apps_builder_.reset();
     search_builder_.reset();
+#if defined(USE_ASH)
+    app_sync_ui_state_watcher_.reset();
+#endif
   }
 }
 

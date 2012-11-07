@@ -12,6 +12,7 @@
 #include "base/timer.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/base/models/list_model_observer.h"
 #include "ui/views/animation/bounds_animator.h"
@@ -38,7 +39,8 @@ class PaginationModel;
 class APP_LIST_EXPORT AppsGridView : public views::View,
                                      public views::ButtonListener,
                                      public ui::ListModelObserver,
-                                     public PaginationModelObserver {
+                                     public PaginationModelObserver,
+                                     public AppListModelObserver {
  public:
   enum Pointer {
     NONE,
@@ -55,7 +57,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void SetLayout(int icon_size, int cols, int rows_per_page);
 
   // Sets |model| to use. Note this does not take ownership of |model|.
-  void SetModel(AppListModel::Apps* model);
+  void SetModel(AppListModel* model);
 
   void SetSelectedView(views::View* view);
   void ClearSelectedView(views::View* view);
@@ -113,6 +115,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Updates page splits for item views.
   void UpdatePaging();
 
+  // Updates the number of pulsing block views based on AppListModel status and
+  // number of apps.
+  void UpdatePulsingBlockViews();
+
   views::View* CreateViewForItemAtIndex(size_t index);
 
   void SetSelectedItemByIndex(const Index& index);
@@ -168,7 +174,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   virtual void SelectedPageChanged(int old_selected, int new_selected) OVERRIDE;
   virtual void TransitionChanged() OVERRIDE;
 
-  AppListModel::Apps* model_;  // Owned by AppListModel.
+  // Overridden from AppListModelObserver:
+  virtual void OnAppListModelStatusChanged() OVERRIDE;
+
+  AppListModel* model_;  // Owned by AppListView.
   AppsGridViewDelegate* delegate_;
   PaginationModel* pagination_model_;  // Owned by AppListController.
   PageSwitcher* page_switcher_view_;  // Owned by views hierarchy.
@@ -179,6 +188,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Tracks app item views. There is a view per item in |model_|.
   views::ViewModel view_model_;
+
+  // Tracks pulsing block views.
+  views::ViewModel pulsing_blocks_model_;
 
   views::View* selected_view_;
 
