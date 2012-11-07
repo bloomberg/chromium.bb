@@ -9,14 +9,12 @@
 
 #include "base/id_map.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer_tracker.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSpellCheckClient.h"
 
 class RenderView;
+class SpellCheck;
 struct SpellCheckResult;
-
-namespace chrome {
-class ChromeContentRendererClient;
-}
 
 namespace WebKit {
 class WebString;
@@ -26,13 +24,15 @@ struct WebTextCheckingResult;
 
 // This class deals with invoking browser-side spellcheck mechanism
 // which is done asynchronously.
-class SpellCheckProvider : public content::RenderViewObserver,
-                           public WebKit::WebSpellCheckClient {
+class SpellCheckProvider
+    : public content::RenderViewObserver,
+      public content::RenderViewObserverTracker<SpellCheckProvider>,
+      public WebKit::WebSpellCheckClient {
  public:
   typedef IDMap<WebKit::WebTextCheckingCompletion> WebTextCheckCompletions;
 
   SpellCheckProvider(content::RenderView* render_view,
-                     chrome::ChromeContentRendererClient* render_client);
+                     SpellCheck* spellcheck);
   virtual ~SpellCheckProvider();
 
   // Requests async spell and grammar checker to the platform text
@@ -46,6 +46,9 @@ class SpellCheckProvider : public content::RenderViewObserver,
   size_t pending_text_request_size() const {
     return text_check_completions_.size();
   }
+
+  // Replace shared spellcheck data.
+  void set_spellcheck(SpellCheck* spellcheck) { spellcheck_ = spellcheck; }
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -133,9 +136,8 @@ class SpellCheckProvider : public content::RenderViewObserver,
   // True if the browser is showing the spelling panel for us.
   bool spelling_panel_visible_;
 
-  // The ChromeContentRendererClient used to access the SpellChecker.
-  // Weak reference.
-  chrome::ChromeContentRendererClient* chrome_content_renderer_client_;
+  // Weak pointer to shared (per RenderView) spellcheck data.
+  SpellCheck* spellcheck_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckProvider);
 };

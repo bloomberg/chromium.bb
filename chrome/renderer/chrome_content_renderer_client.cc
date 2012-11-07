@@ -68,6 +68,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_view_visitor.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/renderer_resources.h"
@@ -140,6 +141,24 @@ static void AppendParams(const std::vector<string16>& additional_names,
 
   existing_names->swap(names);
   existing_values->swap(values);
+}
+
+class SpellCheckReplacer : public content::RenderViewVisitor {
+ public:
+  explicit SpellCheckReplacer(SpellCheck* spellcheck)
+      : spellcheck_(spellcheck) {}
+  virtual bool Visit(content::RenderView* render_view) OVERRIDE;
+
+ private:
+  SpellCheck* spellcheck_;  // New shared spellcheck for all views. Weak Ptr.
+  DISALLOW_COPY_AND_ASSIGN(SpellCheckReplacer);
+};
+
+bool SpellCheckReplacer::Visit(content::RenderView* render_view) {
+  SpellCheckProvider* provider = SpellCheckProvider::Get(render_view);
+  DCHECK(provider);
+  provider->set_spellcheck(spellcheck_);
+  return true;
 }
 
 }  // namespace
@@ -254,7 +273,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   new PrintWebViewHelper(render_view);
 #endif
   new SearchBox(render_view);
-  new SpellCheckProvider(render_view, this);
+  new SpellCheckProvider(render_view, spellcheck_.get());
   new prerender::PrerendererClient(render_view);
 #if defined(ENABLE_SAFE_BROWSING)
   safe_browsing::MalwareDOMDetails::Create(render_view);
@@ -962,6 +981,8 @@ void ChromeContentRendererClient::OnPurgeMemory() {
   if (spellcheck_.get())
     thread->RemoveObserver(spellcheck_.get());
   spellcheck_.reset(new SpellCheck());
+  SpellCheckReplacer replacer(spellcheck_.get());
+  content::RenderView::ForEach(&replacer);
   thread->AddObserver(spellcheck_.get());
 }
 

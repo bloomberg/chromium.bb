@@ -137,8 +137,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual void RegisterPPAPIInterfaceFactories(
       webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) OVERRIDE;
 
-  SpellCheck* spellcheck() const { return spellcheck_.get(); }
-
   WebKit::WebPlugin* CreatePlugin(
       content::RenderView* render_view,
       WebKit::WebFrame* frame,

@@ -8,7 +8,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
-#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -109,11 +108,12 @@ int SpellCheckProvider::DocumentTag::GetTag() {
 
 SpellCheckProvider::SpellCheckProvider(
     content::RenderView* render_view,
-    chrome::ChromeContentRendererClient* renderer_client)
+    SpellCheck* spellcheck)
     : content::RenderViewObserver(render_view),
+      content::RenderViewObserverTracker<SpellCheckProvider>(render_view),
       document_tag_(this, this->routing_id()),
       spelling_panel_visible_(false),
-      chrome_content_renderer_client_(renderer_client) {
+      spellcheck_(spellcheck) {
   if (render_view)  // NULL in unit tests.
     render_view->GetWebView()->setSpellCheckClient(this);
 }
@@ -205,9 +205,9 @@ void SpellCheckProvider::spellCheck(
     WebVector<WebString>* optional_suggestions) {
   string16 word(text);
   // Will be NULL during unit tests.
-  if (chrome_content_renderer_client_) {
+  if (spellcheck_) {
     std::vector<string16> suggestions;
-    chrome_content_renderer_client_->spellcheck()->SpellCheckWord(
+    spellcheck_->SpellCheckWord(
         word.c_str(), word.size(), document_tag_.GetTag(),
         &offset, &length, optional_suggestions ? & suggestions : NULL);
     if (optional_suggestions)
@@ -236,11 +236,10 @@ void SpellCheckProvider::checkTextOfParagraph(
   document_tag_.GetTag();
 
   // Will be NULL during unit tets.
-  if (!chrome_content_renderer_client_)
+  if (!spellcheck_)
     return;
 
-  chrome_content_renderer_client_->spellcheck()->SpellCheckParagraph(
-      string16(text), results);
+  spellcheck_->SpellCheckParagraph(string16(text), results);
 #endif
 }
 
@@ -254,9 +253,8 @@ WebString SpellCheckProvider::autoCorrectWord(const WebString& word) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableSpellingAutoCorrect)) {
     // Will be NULL during unit tests.
-    if (chrome_content_renderer_client_) {
-      return chrome_content_renderer_client_->spellcheck()->
-          GetAutoCorrectionWord(word, document_tag_.GetTag());
+    if (spellcheck_) {
+      return spellcheck_->GetAutoCorrectionWord(word, document_tag_.GetTag());
     }
   }
   return string16();
@@ -295,10 +293,9 @@ void SpellCheckProvider::OnRespondSpellingService(
 
   // If |succeeded| is false, we use local spellcheck as a fallback.
   if (!succeeded) {
-    // |chrome_content_renderer_client| may be NULL in unit tests.
-    if (chrome_content_renderer_client_) {
-      chrome_content_renderer_client_->spellcheck()->RequestTextChecking(
-          line, offset, completion);
+    // |spellcheck_| may be NULL in unit tests.
+    if (spellcheck_) {
+      spellcheck_->RequestTextChecking(line, offset, completion);
       return;
     }
   }
@@ -306,8 +303,8 @@ void SpellCheckProvider::OnRespondSpellingService(
   // Double-check the returned spellchecking results with our spellchecker to
   // visualize the differences between ours and the on-line spellchecker.
   WebKit::WebVector<WebKit::WebTextCheckingResult> textcheck_results;
-  if (chrome_content_renderer_client_) {
-    chrome_content_renderer_client_->spellcheck()->CreateTextCheckingResults(
+  if (spellcheck_) {
+    spellcheck_->CreateTextCheckingResults(
         offset, line, results, &textcheck_results);
   } else {
     CreateTextCheckingResults(offset, results, &textcheck_results);
