@@ -35,6 +35,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'toolchain-major',
     'toolchain-minor',
     'asan',
+    'asan-informational',
     'refresh-packages',
 )
 
@@ -806,12 +807,27 @@ incremental.add_config('x86-generic-asan',
   description='Build with Address Sanitizer (Clang)',
 )
 
+chromium_info.add_config('x86-generic-tot-asan-informational',
+  boards=['x86-generic'],
+  chroot_replace=True,
+  profile='asan',
+  description='Build with Address Sanitizer (Clang) on TOT',
+)
+
 incremental.add_config('amd64-generic-asan',
   amd64,
   boards=['amd64-generic'],
   chroot_replace=True,
   profile='asan',
   description='Build with Address Sanitizer (Clang)',
+)
+
+chromium_info.add_config('amd64-generic-tot-asan-informational',
+  amd64,
+  boards=['amd64-generic'],
+  chroot_replace=True,
+  profile='asan',
+  description='Build with Address Sanitizer (Clang) on TOT',
 )
 
 incremental_arm = incremental.derive(arm)
