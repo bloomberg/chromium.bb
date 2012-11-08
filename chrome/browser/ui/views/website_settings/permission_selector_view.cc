@@ -196,11 +196,11 @@ PermissionMenuButton::PermissionMenuButton(const string16& text,
     : ALLOW_THIS_IN_INITIALIZER_LIST(MenuButton(NULL, text, this,
                                                 show_menu_marker)),
       menu_model_(model) {
-  SetEnabledColor(ui::NativeTheme::instance()->GetSystemColor(
+  SetEnabledColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LabelEnabledColor));
-  SetHoverColor(ui::NativeTheme::instance()->GetSystemColor(
+  SetHoverColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LabelEnabledColor));
-  SetDisabledColor(ui::NativeTheme::instance()->GetSystemColor(
+  SetDisabledColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LabelDisabledColor));
 }
 

@@ -411,13 +411,6 @@ class ButtonContainerMenuItemView : public MenuItemView {
   DISALLOW_COPY_AND_ASSIGN(ButtonContainerMenuItemView);
 };
 
-bool IsAuraTheme(const ui::NativeTheme* theme) {
-#if defined(USE_AURA)
-  return theme == ui::NativeThemeAura::instance();
-#endif
-  return false;
-}
-
 }  // namespace
 
 // CutCopyPasteView ------------------------------------------------------------
