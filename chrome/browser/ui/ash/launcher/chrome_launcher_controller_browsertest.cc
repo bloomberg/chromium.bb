@@ -348,7 +348,13 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MAYBE_MultipleApps) {
 
 // Confirm that app windows can be reactivated by clicking their icons and that
 // the correct activation order is maintained.
-IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
+// Times out on ChromeOS: http://crbug.com/159394
+#if defined(OS_CHROMEOS)
+#define MAYBE_WindowActivation DISABLED_WindowActivation
+#else
+#define MAYBE_WindowActivation WindowActivation
+#endif
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MAYBE_WindowActivation) {
   int item_count = launcher_->model()->item_count();
 
   // First run app.
