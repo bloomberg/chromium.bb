@@ -21,6 +21,7 @@
 #include "gestures/include/logging_filter_interpreter.h"
 #include "gestures/include/lookahead_filter_interpreter.h"
 #include "gestures/include/mouse_interpreter.h"
+#include "gestures/include/non_linearity_filter_interpreter.h"
 #include "gestures/include/palm_classifying_filter_interpreter.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/scaling_filter_interpreter.h"
@@ -396,6 +397,8 @@ void GestureInterpreter::InitializeTouchpad(void) {
                                              tracer_.get());
   temp = new Cr48ProfileSensorFilterInterpreter(prop_reg_.get(), temp,
                                                 tracer_.get());
+  temp = new NonLinearityFilterInterpreter(prop_reg_.get(), temp,
+                                           tracer_.get());
   temp = loggingFilter_ = new LoggingFilterInterpreter(prop_reg_.get(), temp,
                                                        tracer_.get());
   interpreter_.reset(temp);
