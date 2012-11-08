@@ -73,17 +73,41 @@ def list_test_cases(isolated):
     '--isolated', isolated,
     '--',
   ]
-  # Use the default seed.
-  # TODO(maruel): Shards?
-  return run_test_cases.list_test_cases(
-      cmd,
-      '.',
-      0,
-      0,
-      False,
-      False,
-      False,
-      1)
+  try:
+    # Use the default seed.
+    # TODO(maruel): Shards?
+    return run_test_cases.list_test_cases(
+        cmd,
+        '.',
+        0,
+        0,
+        False,
+        False,
+        False,
+        1)
+  except run_test_cases.Failure, e:
+    cmd = [
+      sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
+      'trace',
+      '--merge',
+      '--isolated', isolated,
+      '--',
+      '--gtest_list_tests',
+    ]
+    add_verbosity(cmd)
+    logging.debug(cmd)
+    if subprocess.call(cmd):
+      # The tracing itself failed.
+      raise e
+    return run_test_cases.list_test_cases(
+        cmd,
+        '.',
+        0,
+        0,
+        False,
+        False,
+        False,
+        1)
 
 
 def add_verbosity(cmd):
