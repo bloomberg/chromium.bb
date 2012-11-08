@@ -61,6 +61,8 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver {
   explicit PrerenderLocalPredictor(PrerenderManager* prerender_manager);
   virtual ~PrerenderLocalPredictor();
 
+  void Shutdown();
+
   // history::VisitDatabaseObserver implementation
   virtual void OnAddVisit(const history::BriefVisitInfo& info) OVERRIDE;
 
@@ -92,6 +94,10 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver {
   // Delay after which to initialize, to avoid putting to much load on the
   // database thread early on when Chrome is starting up.
   static const int kInitDelayMs = 5 * 1000;
+
+  // Whether we're registered with the history service as a
+  // history::VisitDatabaseObserver.
+  bool is_visit_database_observer_;
 
   CancelableRequestConsumer history_db_consumer_;
 

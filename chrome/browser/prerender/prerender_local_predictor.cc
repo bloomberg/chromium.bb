@@ -197,7 +197,8 @@ struct PrerenderLocalPredictor::PrerenderData {
 
 PrerenderLocalPredictor::PrerenderLocalPredictor(
     PrerenderManager* prerender_manager)
-    : prerender_manager_(prerender_manager) {
+    : prerender_manager_(prerender_manager),
+      is_visit_database_observer_(false) {
   RecordEvent(EVENT_CONSTRUCTED);
   if (MessageLoop::current()) {
     timer_.Start(FROM_HERE,
@@ -236,9 +237,17 @@ PrerenderLocalPredictor::PrerenderLocalPredictor(
 }
 
 PrerenderLocalPredictor::~PrerenderLocalPredictor() {
-  HistoryService* history = GetHistoryIfExists();
-  if (history)
+  Shutdown();
+}
+
+void PrerenderLocalPredictor::Shutdown() {
+  timer_.Stop();
+  if (is_visit_database_observer_) {
+    HistoryService* history = GetHistoryIfExists();
+    CHECK(history);
     history->RemoveVisitDatabaseObserver(this);
+    is_visit_database_observer_ = false;
+  }
 }
 
 void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
@@ -409,10 +418,12 @@ void PrerenderLocalPredictor::Init() {
   RecordEvent(EVENT_INIT_STARTED);
   HistoryService* history = GetHistoryIfExists();
   if (history) {
+    CHECK(!is_visit_database_observer_);
     history->ScheduleDBTask(
         new GetVisitHistoryTask(this, kMaxVisitHistory),
         &history_db_consumer_);
     history->AddVisitDatabaseObserver(this);
+    is_visit_database_observer_ = true;
   } else {
     RecordEvent(EVENT_INIT_FAILED_NO_HISTORY);
   }

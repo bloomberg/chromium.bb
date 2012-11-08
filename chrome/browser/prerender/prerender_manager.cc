@@ -977,6 +977,10 @@ void PrerenderManager::DoShutdown() {
   DestroyAllContents(FINAL_STATUS_MANAGER_SHUTDOWN);
   STLDeleteElements(&prerender_conditions_);
   on_close_tab_contents_deleters_.clear();
+  // Must happen before |profile_| is set to NULL as
+  // |local_predictor_| accesses it.
+  if (local_predictor_)
+    local_predictor_->Shutdown();
   profile_ = NULL;
 
   DCHECK(active_prerender_list_.empty());
