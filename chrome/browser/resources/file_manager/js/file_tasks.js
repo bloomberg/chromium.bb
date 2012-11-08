@@ -197,14 +197,14 @@ FileTasks.prototype.executeDefault_ = function() {
 FileTasks.prototype.execute_ = function(taskId, opt_urls) {
   var urls = opt_urls || this.urls_;
   this.checkAvailability_(function() {
-    chrome.fileBrowserPrivate.executeTask(taskId, urls);
-
     var task_parts = taskId.split('|');
     if (task_parts[0] == util.platform.getAppId() && task_parts[1] == 'file') {
       // For internal tasks we do not listen to the event to avoid
       // handling the same task instance from multiple tabs.
       // So, we manually execute the task.
       this.executeInternalTask_(task_parts[2], urls);
+    } else {
+      chrome.fileBrowserPrivate.executeTask(taskId, urls);
     }
   }.bind(this));
 };

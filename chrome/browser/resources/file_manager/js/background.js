@@ -2,11 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.app.runtime.onLaunched.addListener(function() {
-  chrome.app.window.create('main.html', {
-    height: 800,
-    width: 1000
+function launchFileManager(launchData) {
+  var options = {
+    defaultWidth: Math.round(window.screen.availWidth * 0.8),
+    defaultHeight: Math.round(window.screen.availHeight * 0.8)
+  };
+
+  chrome.app.window.create('main.html', options, function(newWindow) {
+    newWindow.contentWindow.launchData = launchData;
   });
+}
+
+chrome.app.runtime.onLaunched.addListener(launchFileManager);
+
+chrome.fileBrowserHandler.onExecute.addListener(function(id, details) {
+  var urls = details.entries.map(function(e) { return e.toURL() });
+  switch (id) {
+    case 'play':
+      launchAudioPlayer({items: urls, position: 0});
+      break;
+
+    case 'watch':
+      launchVideoPlayer(urls[0]);
+      break;
+
+    default:
+      // Every other action opens the main Files app window.
+      var launchData = {};
+      launchData.action = id;
+      launchData.defaultPath = details.entries[0].fullPath;
+      launchFileManager(launchData);
+      break;
+  }
 });
 
 /**
@@ -38,6 +65,7 @@ SingletonWindow.prototype.open = function(url, options, launchData) {
   if (this.creating_)
     return; // The window is being created, will use the updated launch data.
 
+  options.id = url;
   this.creating_ = true;
   chrome.app.window.create(url, options, function(newWindow) {
     this.window_ = newWindow;
@@ -63,8 +91,7 @@ function launchAudioPlayer(playlist) {
   var BOTTOM = 80;
   var RIGHT = 20;
 
-  var param = {
-    id: 'audio',
+  var options = {
     defaultLeft: (window.screen.availWidth - WIDTH - RIGHT),
     defaultTop: (window.screen.availHeight - MIN_HEIGHT - BOTTOM),
     minHeight: MIN_HEIGHT,
@@ -75,7 +102,7 @@ function launchAudioPlayer(playlist) {
     width: WIDTH
   };
 
-  audioPlayer.open('mediaplayer.html', param, playlist);
+  audioPlayer.open('mediaplayer.html', options, playlist);
 }
 
 var videoPlayer = new SingletonWindow();
@@ -85,10 +112,9 @@ var videoPlayer = new SingletonWindow();
  * @param {string} url Video url.
  */
 function launchVideoPlayer(url) {
-  var param = {
-    id: 'video',
+  var options = {
     hidden: true  // Will be shown when the video loads.
   };
 
-  videoPlayer.open('video_player.html', param, {url: url});
+  videoPlayer.open('video_player.html', options, {url: url});
 }

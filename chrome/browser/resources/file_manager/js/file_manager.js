@@ -18,7 +18,7 @@ function FileManager(dialogDom) {
   this.filesystem_ = null;
   this.params_ = location.search ?
                  JSON.parse(decodeURIComponent(location.search.substr(1))) :
-                 {};
+                 window.launchData || {};
   this.listType_ = null;
   this.showDelayTimeout_ = null;
 
@@ -817,7 +817,7 @@ DialogType.isModal = function(type) {
 
     this.textSearchState_ = {text: '', date: new Date()};
 
-    this.closeOnUnmount_ = this.params_.mountTriggered;
+    this.closeOnUnmount_ = (this.params_.action == 'auto-open');
 
     if (this.closeOnUnmount_) {
       this.volumeManager_.addEventListener('externally-unmounted',
@@ -1272,9 +1272,8 @@ DialogType.isModal = function(type) {
     // In the FULL_PAGE mode if the hash path points to a file we might have
     // to invoke a task after selecting it.
     // If the file path is in params_ we only want to select the file.
-    var invokeHandlers = pageLoading && !this.params_.selectOnly &&
-        this.dialogType == DialogType.FULL_PAGE &&
-        !!location.hash;
+    var invokeHandlers = pageLoading && (this.params_.action != 'select') &&
+        this.dialogType == DialogType.FULL_PAGE;
 
     if (PathUtil.getRootType(path) === RootType.GDATA) {
       var tracker = this.directoryModel_.createDirectoryChangeTracker();
