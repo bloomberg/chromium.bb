@@ -94,6 +94,7 @@ public class CommonResources {
                          // any fancy hit target calculations when synthesizing the touch event
                          // to click it.
                          "img.big { width:100%; height:100%; background-color:blue; }" +
+                         ".full_view { height:100%; width:100%; position:absolute; }" +
                      "</style>" +
                      headers +
                  "</head>" +

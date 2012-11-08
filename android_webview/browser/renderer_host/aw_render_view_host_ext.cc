@@ -33,7 +33,20 @@ void AwRenderViewHostExt::DocumentHasImages(DocumentHasImagesResult result) {
 }
 
 void AwRenderViewHostExt::ClearCache() {
+  DCHECK(CalledOnValidThread());
   Send(new AwViewMsg_ClearCache);
+}
+
+void AwRenderViewHostExt::RequestNewHitTestDataAt(int view_x, int view_y) {
+  DCHECK(CalledOnValidThread());
+  Send(new AwViewMsg_DoHitTest(web_contents()->GetRoutingID(),
+                               view_x,
+                               view_y));
+}
+
+const AwHitTestData& AwRenderViewHostExt::GetLastHitTestData() const {
+  DCHECK(CalledOnValidThread());
+  return last_hit_test_data_;
 }
 
 void AwRenderViewHostExt::RenderViewGone(base::TerminationStatus status) {
@@ -51,6 +64,8 @@ bool AwRenderViewHostExt::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AwRenderViewHostExt, message)
     IPC_MESSAGE_HANDLER(AwViewHostMsg_DocumentHasImagesResponse,
                         OnDocumentHasImagesResponse)
+    IPC_MESSAGE_HANDLER(AwViewHostMsg_UpdateHitTestData,
+                        OnUpdateHitTestData)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -68,6 +83,12 @@ void AwRenderViewHostExt::OnDocumentHasImagesResponse(int msg_id,
     pending_req->second.Run(has_images);
     pending_document_has_images_requests_.erase(pending_req);
   }
+}
+
+void AwRenderViewHostExt::OnUpdateHitTestData(
+    const AwHitTestData& hit_test_data) {
+  DCHECK(CalledOnValidThread());
+  last_hit_test_data_ = hit_test_data;
 }
 
 }  // namespace android_webview

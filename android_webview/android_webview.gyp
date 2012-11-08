@@ -80,6 +80,8 @@
         'common/android_webview_message_generator.h',
         'common/aw_content_client.cc',
         'common/aw_content_client.h',
+        'common/aw_hit_test_data.cc',
+        'common/aw_hit_test_data.h',
         'common/aw_resource.h',
         'common/render_view_messages.cc',
         'common/render_view_messages.h',

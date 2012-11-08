@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
+#include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
@@ -327,6 +328,41 @@ base::android::ScopedJavaLocalRef<jbyteArray>
   net::X509Certificate::GetDEREncoded(cert->os_cert_handle(), &der_string);
   return base::android::ToJavaByteArray(env,
       reinterpret_cast<const uint8*>(der_string.data()), der_string.length());
+}
+
+void AwContents::RequestNewHitTestDataAt(JNIEnv* env, jobject obj,
+                                         jint x, jint y) {
+  render_view_host_ext_->RequestNewHitTestDataAt(x, y);
+}
+
+base::android::ScopedJavaLocalRef<jobject> AwContents::GetLastHitTestData(
+    JNIEnv* env, jobject obj) {
+  const AwHitTestData& data = render_view_host_ext_->GetLastHitTestData();
+
+  // Make sure to null the Java object if data is empty/invalid.
+  ScopedJavaLocalRef<jstring> extra_data_for_type;
+  if (data.extra_data_for_type.length())
+    extra_data_for_type = ConvertUTF8ToJavaString(
+        env, data.extra_data_for_type);
+
+  ScopedJavaLocalRef<jstring> href;
+  if (data.href.length())
+    href = ConvertUTF16ToJavaString(env, data.href);
+
+  ScopedJavaLocalRef<jstring> anchor_text;
+  if (data.anchor_text.length())
+    anchor_text = ConvertUTF16ToJavaString(env, data.anchor_text);
+
+  ScopedJavaLocalRef<jstring> img_src;
+  if (data.img_src.is_valid())
+    img_src = ConvertUTF8ToJavaString(env, data.img_src.spec());
+
+  return Java_AwContents_createHitTestData(env,
+                                           data.type,
+                                           extra_data_for_type.obj(),
+                                           href.obj(),
+                                           anchor_text.obj(),
+                                           img_src.obj());
 }
 
 }  // namespace android_webview

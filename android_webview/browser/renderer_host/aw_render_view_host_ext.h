@@ -7,6 +7,7 @@
 
 #include "content/public/browser/web_contents_observer.h"
 
+#include "android_webview/common/aw_hit_test_data.h"
 #include "base/threading/non_thread_safe.h"
 
 namespace android_webview {
@@ -28,14 +29,29 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   // Clear all WebCore memory cache (not only for this view).
   void ClearCache();
 
+  // Do a hit test at the view port coordinates and asynchronously update
+  // |last_hit_test_data_|.
+  void RequestNewHitTestDataAt(int view_x, int view_y);
+
+  // Return |last_hit_test_data_|. Note that this is unavoidably racy;
+  // the corresponding public WebView API is as well.
+  const AwHitTestData& GetLastHitTestData() const;
+
  private:
   // content::WebContentsObserver implementation.
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnDocumentHasImagesResponse(int msg_id, bool has_images);
+  void OnUpdateHitTestData(
+      const AwHitTestData& hit_test_data);
 
   std::map<int, DocumentHasImagesResult> pending_document_has_images_requests_;
+
+  // Master copy of hit test data on the browser side. This is updated
+  // as a result of DoHitTest called explicitly or when the FocusedNodeChanged
+  // is called in AwRenderViewExt.
+  AwHitTestData last_hit_test_data_;
 
   DISALLOW_COPY_AND_ASSIGN(AwRenderViewHostExt);
 };

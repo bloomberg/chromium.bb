@@ -4,16 +4,21 @@
 
 #include "android_webview/renderer/aw_render_view_ext.h"
 
+#include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/common/render_view_messages.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_view.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebHitTestResult.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
@@ -35,6 +40,7 @@ bool AwRenderViewExt::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AwRenderViewExt, message)
     IPC_MESSAGE_HANDLER(AwViewMsg_DocumentHasImages, OnDocumentHasImagesRequest)
+    IPC_MESSAGE_HANDLER(AwViewMsg_DoHitTest, OnDoHitTest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -77,6 +83,68 @@ void AwRenderViewExt::DidCommitProvisionalLoad(WebKit::WebFrame* frame,
     WebKit::WebSecurityOrigin origin = frame->document().securityOrigin();
     origin.grantLoadLocalResources();
   }
+}
+
+void AwRenderViewExt::FocusedNodeChanged(const WebKit::WebNode& node) {
+  if (!node.isNull()) {
+    if (node.isTextNode() && node.isContentEditable()) {
+      AwHitTestData data;
+      data.type = AwHitTestData::EDIT_TEXT_TYPE;
+      Send(new AwViewHostMsg_UpdateHitTestData(
+          routing_id(), data));
+    } else {
+      // TODO(boliu): Implement this path.
+      NOTIMPLEMENTED() << "Tab focused links not implemented";
+    }
+  }
+}
+
+void AwRenderViewExt::OnDoHitTest(int view_x, int view_y) {
+  if (!render_view() || !render_view()->GetWebView())
+    return;
+
+  const WebKit::WebHitTestResult result =
+      render_view()->GetWebView()->hitTestResultAt(
+          WebKit::WebPoint(view_x, view_y));
+  AwHitTestData data;
+
+  // Populate fixed AwHitTestData fields.
+  if (result.absoluteImageURL().isValid())
+    data.img_src = result.absoluteImageURL();
+  if (!result.urlElement().isNull()) {
+    data.anchor_text = result.urlElement().innerText();
+
+    // href is the actual 'href' attribute, which might relative if valid or can
+    // possibly contain garbage otherwise, so not using absoluteLinkURL here.
+    data.href = result.urlElement().getAttribute("href");
+  }
+
+  GURL url(result.absoluteLinkURL());
+  bool is_javascript_scheme = url.SchemeIs(chrome::kJavaScriptScheme);
+
+  // Set AwHitTestData type and extra_data_for_type.
+  if (result.absoluteLinkURL().isValid() &&
+      !result.absoluteImageURL().isValid() &&
+      !is_javascript_scheme) {
+    data.type = AwHitTestData::SRC_LINK_TYPE;
+    data.extra_data_for_type = url.spec();
+  } else if (result.absoluteLinkURL().isValid() &&
+             result.absoluteImageURL().isValid() &&
+             !is_javascript_scheme) {
+    data.type = AwHitTestData::SRC_IMAGE_LINK_TYPE;
+    data.extra_data_for_type = data.img_src.spec();
+  } else if (!result.absoluteLinkURL().isValid() &&
+             result.absoluteImageURL().isValid()) {
+    data.type = AwHitTestData::IMAGE_TYPE;
+    data.extra_data_for_type = data.img_src.spec();
+  } else if (result.isContentEditable()) {
+    data.type = AwHitTestData::EDIT_TEXT_TYPE;
+    DCHECK(data.extra_data_for_type.length() == 0);
+  } else {
+    // TODO(boliu): Do content detection here.
+  }
+
+  Send(new AwViewHostMsg_UpdateHitTestData(routing_id(), data));
 }
 
 }  // namespace android_webview

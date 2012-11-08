@@ -12,6 +12,7 @@
 
 namespace WebKit {
 
+class WebNode;
 class WebURL;
 
 }  // namespace WebKit
@@ -34,8 +35,11 @@ class AwRenderViewExt : public content::RenderViewObserver,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
                                         bool is_new_navigation) OVERRIDE;
+  virtual void FocusedNodeChanged(const WebKit::WebNode& node) OVERRIDE;
 
   void OnDocumentHasImagesRequest(int id);
+
+  void OnDoHitTest(int view_x, int view_y);
 
   // WebKit::WebPermissionClient implementation.
   virtual bool allowImage(WebKit::WebFrame* frame,

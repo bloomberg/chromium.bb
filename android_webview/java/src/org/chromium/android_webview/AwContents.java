@@ -8,10 +8,12 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.net.http.SslCertificate;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.webkit.ValueCallback;
 
@@ -47,6 +49,35 @@ public class AwContents {
     private static final String TAG = AwContents.class.getSimpleName();
 
     private static final String WEB_ARCHIVE_EXTENSION = ".mht";
+
+    /**
+     * WebKit hit test related data strcutre. These are used to implement
+     * getHitTestResult, requestFocusNodeHref, requestImageRef methods in WebView.
+     * All values should be updated together. The native counterpart is
+     * AwHitTestData.
+     */
+    public static class HitTestData {
+        // Used in getHitTestResult.
+        public final int hitTestResultType;
+        public final String hitTestResultExtraData;
+
+        // Used in requestFocusNodeHref (all three) and requestImageRef (only imgSrc).
+        public final String href;
+        public final String anchorText;
+        public final String imgSrc;
+
+        private HitTestData(int type,
+                            String extra,
+                            String href,
+                            String anchorText,
+                            String imgSrc) {
+            this.hitTestResultType = type;
+            this.hitTestResultExtraData = extra;
+            this.href = href;
+            this.anchorText = anchorText;
+            this.imgSrc = imgSrc;
+        }
+    }
 
     private int mNativeAwContents;
     private ContentViewCore mContentViewCore;
@@ -366,6 +397,60 @@ public class AwContents {
         return null;
     }
 
+    /**
+     * This should be called from the onTouchEvent of the view.
+     */
+    public void considerMotionEventForHitTest(MotionEvent event) {
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+          int actionIndex = event.getActionIndex();
+
+          // Note this will trigger IPC back to browser even if nothing is hit.
+          nativeRequestNewHitTestDataAt(mNativeAwContents,
+                                        Math.round(event.getX(actionIndex)),
+                                        Math.round(event.getY(actionIndex)));
+        }
+    }
+
+    /**
+     * Method to return all hit test values relevant to public WebView API.
+     * Note that this expose more data than needed for WebView.getHitTestResult.
+     */
+    public HitTestData getLastHitTestResult() {
+        return nativeGetLastHitTestData(mNativeAwContents);
+    }
+
+    /**
+     * @see android.webkit.WebView#requestFocusNodeHref()
+     */
+    public void requestFocusNodeHref(Message msg) {
+        if (msg == null) {
+            return;
+        }
+
+        HitTestData hitTestData = nativeGetLastHitTestData(mNativeAwContents);
+        Bundle data = msg.getData();
+        data.putString("url", hitTestData.href);
+        data.putString("title", hitTestData.anchorText);
+        data.putString("src", hitTestData.imgSrc);
+        msg.setData(data);
+        msg.sendToTarget();
+    }
+
+    /**
+     * @see android.webkit.WebView#requestImageRef()
+     */
+    public void requestImageRef(Message msg) {
+        if (msg == null) {
+            return;
+        }
+
+        HitTestData hitTestData = nativeGetLastHitTestData(mNativeAwContents);
+        Bundle data = msg.getData();
+        data.putString("url", hitTestData.imgSrc);
+        msg.setData(data);
+        msg.sendToTarget();
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Methods called from native via JNI
     //--------------------------------------------------------------------------------------------
@@ -393,6 +478,12 @@ public class AwContents {
     public void onFindResultReceived(int activeMatchOrdinal, int numberOfMatches,
             boolean isDoneCounting) {
         mContentsClient.onFindResultReceived(activeMatchOrdinal, numberOfMatches, isDoneCounting);
+    }
+
+    @CalledByNative
+    private static HitTestData createHitTestData(
+            int type, String extra, String href, String anchorText, String imgSrc) {
+        return new HitTestData(type, extra, href, anchorText, imgSrc);
     }
 
     // -------------------------------------------------------------------------------------------
@@ -493,4 +584,6 @@ public class AwContents {
     private native void nativeClearMatches(int nativeAwContents);
     private native void nativeClearCache(int nativeAwContents, boolean includeDiskFiles);
     private native byte[] nativeGetCertificate(int nativeAwContents);
+    private native void nativeRequestNewHitTestDataAt(int nativeAwContents, int x, int y);
+    private native HitTestData nativeGetLastHitTestData(int nativeAwContents);
 }

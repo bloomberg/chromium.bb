@@ -72,6 +72,9 @@ class AwContents : public FindHelper::Listener {
                                       jobject delegate);
   base::android::ScopedJavaLocalRef<jbyteArray> GetCertificate(
       JNIEnv* env, jobject obj);
+  void RequestNewHitTestDataAt(JNIEnv* env, jobject obj, jint x, jint y);
+  base::android::ScopedJavaLocalRef<jobject> GetLastHitTestData(
+      JNIEnv* env, jobject obj);
 
   // Find-in-page API and related methods.
   jint FindAllSync(JNIEnv* env, jobject obj, jstring search_string);
