@@ -342,7 +342,7 @@ bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {
 }
 
 void BrowserTabStripController::CreateNewTab() {
-  model_->delegate()->AddBlankTab(true);
+  model_->delegate()->AddBlankTabAt(-1, true);
 }
 
 void BrowserTabStripController::ClickActiveTab(int index) {

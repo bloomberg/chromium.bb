@@ -16,9 +16,7 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   virtual ~TestTabStripModelDelegate();
 
   // Overridden from TabStripModelDelegate:
-  virtual TabContents* AddBlankTab(bool foreground) OVERRIDE;
-  virtual TabContents* AddBlankTabAt(int index,
-                                     bool foreground) OVERRIDE;
+  virtual void AddBlankTabAt(int index, bool foreground) OVERRIDE;
   virtual Browser* CreateNewStripWithContents(
       const std::vector<NewStripContents>& contentses,
       const gfx::Rect& window_bounds,

@@ -17,13 +17,7 @@ TestTabStripModelDelegate::TestTabStripModelDelegate() {
 TestTabStripModelDelegate::~TestTabStripModelDelegate() {
 }
 
-TabContents* TestTabStripModelDelegate::AddBlankTab(bool foreground) {
-  return NULL;
-}
-
-TabContents* TestTabStripModelDelegate::AddBlankTabAt(int index,
-                                                      bool foreground) {
-  return NULL;
+void TestTabStripModelDelegate::AddBlankTabAt(int index, bool foreground) {
 }
 
 Browser* TestTabStripModelDelegate::CreateNewStripWithContents(

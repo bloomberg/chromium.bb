@@ -414,7 +414,8 @@ class TabStripModel : public content::NotificationObserver {
   // Adds a TabContents at the best position in the TabStripModel given
   // the specified insertion index, transition, etc. |add_types| is a bitmask of
   // AddTabTypes; see it for details. This method ends up calling into
-  // InsertTabContentsAt to do the actual insertion.
+  // InsertTabContentsAt to do the actual insertion. Pass -1 for |index| to
+  // append the contents to the end of the tab strip.
   void AddTabContents(TabContents* contents,
                       int index,
                       content::PageTransition transition,

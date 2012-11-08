@@ -868,7 +868,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
   if (!chrome::GetActiveWebContents(browser)) {
     // TODO: this is a work around for 110909. Figure out why it's needed.
     if (!browser->tab_count())
-      chrome::AddBlankTab(browser, true);
+      chrome::AddBlankTabAt(browser, -1, true);
     else
       chrome::ActivateTabAt(browser, 0, false);
   }

@@ -65,7 +65,7 @@ class AppNonClientFrameViewAshTest : public InProcessBrowserTest {
     params.initial_show_state = ui::SHOW_STATE_MAXIMIZED;
     params.app_type = Browser::APP_TYPE_HOST;
     app_browser_ = new Browser(params);
-    chrome::AddBlankTab(app_browser_, true);
+    chrome::AddBlankTabAt(app_browser_, -1, true);
     app_browser_->window()->Show();
   }
 

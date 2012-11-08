@@ -614,7 +614,7 @@ private:
   content::RecordAction(UserMetricsAction("NewTab_Button"));
   UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_BUTTON,
                             TabStripModel::NEW_TAB_ENUM_COUNT);
-  tabStripModel_->delegate()->AddBlankTab(true);
+  tabStripModel_->delegate()->AddBlankTabAt(-1, true);
 }
 
 // (Private) Returns the number of open tabs in the tab strip. This is the

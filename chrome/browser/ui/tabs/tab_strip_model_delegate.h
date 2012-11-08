@@ -46,9 +46,9 @@ class TabStripModelDelegate {
 
   virtual ~TabStripModelDelegate() {}
 
-  // Adds what the delegate considers to be a blank tab to the model.
-  virtual TabContents* AddBlankTab(bool foreground) = 0;
-  virtual TabContents* AddBlankTabAt(int index, bool foreground) = 0;
+  // Adds what the delegate considers to be a blank tab to the model. An |index|
+  // value of -1 means to append the contents to the end of the tab strip.
+  virtual void AddBlankTabAt(int index, bool foreground) = 0;
 
   // Asks for a new TabStripModel to be created and the given web contentses to
   // be added to it. Its size and position are reflected in |window_bounds|.

@@ -1141,7 +1141,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   // For some reason we can't use AddSelectedTabWithURL here on ChromeOS. It
   // could be some delicate assumption about the tab starting off unselected or
   // something relating to user gesture.
-  chrome::AddBlankTab(browser(), true);
+  chrome::AddBlankTabAt(browser(), -1, true);
   ui_test_utils::NavigateToURL(browser(), url);
   WebContents* web_contents_2 = chrome::GetActiveWebContents(browser());
   EXPECT_NE(web_contents_1, web_contents_2);
@@ -1264,7 +1264,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
       FindBarController::kKeepResultsInFindBox);
 
   // Now create a second tab and load the same page.
-  chrome::AddBlankTab(browser(), true);
+  chrome::AddBlankTabAt(browser(), -1, true);
   ui_test_utils::NavigateToURL(browser(), url);
   WebContents* web_contents_2 = chrome::GetActiveWebContents(browser());
   EXPECT_NE(web_contents_1, web_contents_2);

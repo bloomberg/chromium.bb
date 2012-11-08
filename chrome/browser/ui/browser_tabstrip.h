@@ -35,8 +35,9 @@ content::WebContents* GetWebContentsAt(const Browser* browser, int index);
 
 void ActivateTabAt(Browser* browser, int index, bool user_gesture);
 
-TabContents* AddBlankTab(Browser* browser, bool foreground);
-TabContents* AddBlankTabAt(Browser* browser, int index, bool foreground);
+// Adds a blank tab to the tab strip of the specified browser; an |index| of -1
+// means to append it to the end of the tab strip.
+void AddBlankTabAt(Browser* browser, int index, bool foreground);
 
 // Used by extensions.
 bool IsTabStripEditable(Browser* browser);

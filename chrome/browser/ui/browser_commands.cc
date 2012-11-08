@@ -308,7 +308,7 @@ void NewEmptyWindow(Profile* profile) {
 Browser* OpenEmptyWindow(Profile* profile, HostDesktopType desktop_type) {
   Browser* browser = new Browser(
       Browser::CreateParams(Browser::TYPE_TABBED, profile, desktop_type));
-  AddBlankTab(browser, true);
+  AddBlankTabAt(browser, -1, true);
   browser->window()->Show();
   return browser;
 }
@@ -473,15 +473,15 @@ void NewTab(Browser* browser) {
                             TabStripModel::NEW_TAB_ENUM_COUNT);
 
   if (browser->is_type_tabbed()) {
-    AddBlankTab(browser, true);
+    AddBlankTabAt(browser, -1, true);
     GetActiveWebContents(browser)->GetView()->RestoreFocus();
   } else {
     Browser* b =
         browser::FindOrCreateTabbedBrowser(browser->profile(),
                                            browser->host_desktop_type());
-    AddBlankTab(b, true);
+    AddBlankTabAt(b, -1, true);
     b->window()->Show();
-    // The call to AddBlankTab above did not set the focus to the tab as its
+    // The call to AddBlankTabAt above did not set the focus to the tab as its
     // window was not active, so we have to do it explicitly.
     // See http://crbug.com/6380.
     GetActiveWebContents(b)->GetView()->RestoreFocus();

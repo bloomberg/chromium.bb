@@ -40,13 +40,8 @@ BrowserTabStripModelDelegate::~BrowserTabStripModelDelegate() {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripModelDelegate, TabStripModelDelegate implementation:
 
-TabContents* BrowserTabStripModelDelegate::AddBlankTab(bool foreground) {
-  return chrome::AddBlankTab(browser_, foreground);
-}
-
-TabContents* BrowserTabStripModelDelegate::AddBlankTabAt(int index,
-                                                         bool foreground) {
-  return chrome::AddBlankTabAt(browser_, index, foreground);
+void BrowserTabStripModelDelegate::AddBlankTabAt(int index, bool foreground) {
+  chrome::AddBlankTabAt(browser_, index, foreground);
 }
 
 Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(

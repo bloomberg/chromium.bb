@@ -55,11 +55,7 @@ void ActivateTabAt(Browser* browser, int index, bool user_gesture) {
   browser->tab_strip_model()->ActivateTabAt(index, user_gesture);
 }
 
-TabContents* AddBlankTab(Browser* browser, bool foreground) {
-  return AddBlankTabAt(browser, -1, foreground);
-}
-
-TabContents* AddBlankTabAt(Browser* browser, int index, bool foreground) {
+void AddBlankTabAt(Browser* browser, int index, bool foreground) {
   // Time new tab page creation time.  We keep track of the timing data in
   // WebContents, but we want to include the time it takes to create the
   // WebContents object too.
@@ -71,7 +67,6 @@ TabContents* AddBlankTabAt(Browser* browser, int index, bool foreground) {
   chrome::Navigate(&params);
   params.target_contents->web_contents()->SetNewTabStartTime(
       new_tab_start_time);
-  return params.target_contents;
 }
 
 bool IsTabStripEditable(Browser* browser) {
