@@ -13,6 +13,7 @@
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/drive/drive_observer.h"
 #include "ash/system/ime/ime_observer.h"
+#include "ash/system/logout_button/logout_button_observer.h"
 #include "ash/system/power/power_status_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -748,11 +749,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   void SetProfile(Profile* profile) {
+    PrefService* prefs = profile->GetPrefs();
     pref_registrar_.reset(new PrefChangeRegistrar);
-    pref_registrar_->Init(profile->GetPrefs());
+    pref_registrar_->Init(prefs);
     pref_registrar_->Add(prefs::kUse24HourClock, this);
     pref_registrar_->Add(prefs::kLanguageRemapSearchKeyTo, this);
-    UpdateClockType(profile->GetPrefs());
+    pref_registrar_->Add(prefs::kShowLogoutButtonInTray, this);
+    UpdateClockType(prefs);
+    UpdateShowLogoutButtonInTray(prefs);
     search_key_mapped_to_ =
         profile->GetPrefs()->GetInteger(prefs::kLanguageRemapSearchKeyTo);
   }
@@ -765,12 +769,21 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     system_service->drive_service()->AddObserver(this);
   }
 
-  void UpdateClockType(PrefService* service) {
+  void UpdateClockType(PrefServiceBase* service) {
     clock_type_ = service->GetBoolean(prefs::kUse24HourClock) ?
         base::k24HourClock : base::k12HourClock;
     ash::ClockObserver* observer = GetSystemTray()->clock_observer();
     if (observer)
       observer->OnDateFormatChanged();
+  }
+
+  void UpdateShowLogoutButtonInTray(PrefServiceBase* service) {
+    ash::LogoutButtonObserver* observer =
+        GetSystemTray()->logout_button_observer();
+    if (observer) {
+      observer->OnShowLogoutButtonInTrayChanged(
+          service->GetBoolean(prefs::kShowLogoutButtonInTray));
+    }
   }
 
   void NotifyRefreshClock() {
@@ -1123,7 +1136,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void OnPreferenceChanged(PrefServiceBase* service,
                                    const std::string& pref) OVERRIDE {
     if (pref == prefs::kUse24HourClock) {
-      UpdateClockType(static_cast<PrefService*>(service));
+      UpdateClockType(service);
     } else if (pref == prefs::kLanguageRemapSearchKeyTo) {
       search_key_mapped_to_ =
           service->GetInteger(prefs::kLanguageRemapSearchKeyTo);
@@ -1134,6 +1147,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         observer->OnAccessibilityModeChanged(
             service->GetBoolean(prefs::kSpokenFeedbackEnabled));
       }
+    } else if (pref == prefs::kShowLogoutButtonInTray) {
+      UpdateShowLogoutButtonInTray(service);
     } else {
       NOTREACHED();
     }

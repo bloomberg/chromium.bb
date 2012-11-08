@@ -16,6 +16,7 @@
 #include "ash/system/drive/tray_drive.h"
 #include "ash/system/ime/tray_ime.h"
 #include "ash/system/locale/tray_locale.h"
+#include "ash/system/logout_button/tray_logout_button.h"
 #include "ash/system/monitor/tray_monitor.h"
 #include "ash/system/power/power_status_observer.h"
 #include "ash/system/power/power_supply_status.h"
@@ -115,6 +116,7 @@ SystemTray::SystemTray(internal::StatusAreaWidget* status_area_widget)
       drive_observer_(NULL),
       ime_observer_(NULL),
       locale_observer_(NULL),
+      logout_button_observer_(NULL),
 #if defined(OS_CHROMEOS)
       network_observer_(NULL),
       vpn_observer_(NULL),
@@ -151,6 +153,8 @@ void SystemTray::CreateItems() {
   internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock;
   internal::TrayDrive* tray_drive = new internal::TrayDrive;
   internal::TrayLocale* tray_locale = new internal::TrayLocale;
+  internal::TrayLogoutButton* tray_logout_button =
+      new internal::TrayLogoutButton();
   internal::TrayUpdate* tray_update = new internal::TrayUpdate;
   internal::TraySettings* tray_settings = new internal::TraySettings();
 
@@ -163,6 +167,7 @@ void SystemTray::CreateItems() {
   drive_observer_ = tray_drive;
   ime_observer_ = tray_ime;
   locale_observer_ = tray_locale;
+  logout_button_observer_ = tray_logout_button;
   power_status_observers_.AddObserver(tray_power);
   power_status_observers_.AddObserver(tray_settings);
   update_observer_ = tray_update;
@@ -178,6 +183,7 @@ void SystemTray::CreateItems() {
   sms_observer_ = tray_sms;
 #endif
 
+  AddTrayItem(tray_logout_button);
   AddTrayItem(tray_user);
   AddTrayItem(tray_ime);
   AddTrayItem(tray_power);

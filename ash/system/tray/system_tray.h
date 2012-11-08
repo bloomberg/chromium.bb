@@ -32,6 +32,7 @@ class ClockObserver;
 class DriveObserver;
 class IMEObserver;
 class LocaleObserver;
+class LogoutButtonObserver;
 class PowerStatusObserver;
 class UpdateObserver;
 class UserObserver;
@@ -144,6 +145,9 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   LocaleObserver* locale_observer() {
     return locale_observer_;
   }
+  LogoutButtonObserver* logout_button_observer() {
+    return logout_button_observer_;
+  }
 #if defined(OS_CHROMEOS)
   NetworkObserver* network_observer() {
     return network_observer_;
@@ -243,6 +247,7 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   DriveObserver* drive_observer_;
   IMEObserver* ime_observer_;
   LocaleObserver* locale_observer_;
+  LogoutButtonObserver* logout_button_observer_;
 #if defined(OS_CHROMEOS)
   NetworkObserver* network_observer_;
   NetworkObserver* vpn_observer_;
