@@ -23,7 +23,7 @@ class WebGraphicsContext3D;
 
 namespace cc {
 
-class ScopedTexture;
+class ScopedResource;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
 class GeometryBinding;
@@ -71,11 +71,11 @@ protected:
     const gfx::QuadF& sharedGeometryQuad() const { return m_sharedGeometryQuad; }
     const GeometryBinding* sharedGeometry() const { return m_sharedGeometry.get(); }
 
-    bool getFramebufferTexture(ScopedTexture*, const gfx::Rect& deviceRect);
+    bool getFramebufferTexture(ScopedResource*, const gfx::Rect& deviceRect);
     void releaseRenderPassTextures();
 
     virtual void bindFramebufferToOutputSurface(DrawingFrame&) OVERRIDE;
-    virtual bool bindFramebufferToTexture(DrawingFrame&, const ScopedTexture*, const gfx::Rect& framebufferRect) OVERRIDE;
+    virtual bool bindFramebufferToTexture(DrawingFrame&, const ScopedResource*, const gfx::Rect& framebufferRect) OVERRIDE;
     virtual void setDrawViewportSize(const gfx::Size&) OVERRIDE;
     virtual void setScissorTestRect(const gfx::Rect& scissorRect) OVERRIDE;
     virtual void clearFramebuffer(DrawingFrame&) OVERRIDE;
@@ -90,7 +90,7 @@ private:
 
     void drawCheckerboardQuad(const DrawingFrame&, const CheckerboardDrawQuad*);
     void drawDebugBorderQuad(const DrawingFrame&, const DebugBorderDrawQuad*);
-    scoped_ptr<ScopedTexture> drawBackgroundFilters(
+    scoped_ptr<ScopedResource> drawBackgroundFilters(
         DrawingFrame&, const RenderPassDrawQuad*, const WebKit::WebFilterOperations&,
         const WebKit::WebTransformationMatrix& contentsDeviceTransform,
         const WebKit::WebTransformationMatrix& contentsDeviceTransformInverse);
@@ -108,7 +108,7 @@ private:
 
     void copyTextureToFramebuffer(const DrawingFrame&, int textureId, const gfx::Rect&, const WebKit::WebTransformationMatrix& drawMatrix);
 
-    bool useScopedTexture(DrawingFrame&, const ScopedTexture*, const gfx::Rect& viewportRect);
+    bool useScopedTexture(DrawingFrame&, const ScopedResource*, const gfx::Rect& viewportRect);
 
     bool makeContextCurrent();
 

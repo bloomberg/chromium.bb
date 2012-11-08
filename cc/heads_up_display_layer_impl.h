@@ -10,7 +10,7 @@
 #include "cc/cc_export.h"
 #include "cc/font_atlas.h"
 #include "cc/layer_impl.h"
-#include "cc/scoped_texture.h"
+#include "cc/scoped_resource.h"
 
 class SkCanvas;
 class SkPaint;
@@ -54,7 +54,7 @@ private:
     void drawDebugRects(SkCanvas*, DebugRectHistory*);
 
     scoped_ptr<FontAtlas> m_fontAtlas;
-    scoped_ptr<ScopedTexture> m_hudTexture;
+    scoped_ptr<ScopedResource> m_hudTexture;
     scoped_ptr<SkCanvas> m_hudCanvas;
 
     double m_averageFPS;

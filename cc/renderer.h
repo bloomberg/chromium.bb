@@ -13,7 +13,7 @@
 
 namespace cc {
 
-class ScopedTexture;
+class ScopedResource;
 
 class CC_EXPORT RendererClient {
 public:

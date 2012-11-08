@@ -9,7 +9,7 @@
 #include "cc/cc_export.h"
 #include "cc/renderer.h"
 #include "cc/resource_provider.h"
-#include "cc/scoped_texture.h"
+#include "cc/scoped_resource.h"
 
 namespace cc {
 
@@ -38,7 +38,7 @@ protected:
         const RenderPassIdHashMap* renderPassesById;
         const RenderPass* rootRenderPass;
         const RenderPass* currentRenderPass;
-        const ScopedTexture* currentTexture;
+        const ScopedResource* currentTexture;
 
         gfx::RectF rootDamageRect;
 
@@ -48,19 +48,19 @@ protected:
         gfx::RectF scissorRectInRenderPassSpace;
     };
 
-    class CachedTexture : public ScopedTexture {
+    class CachedResource : public ScopedResource {
     public:
-        static scoped_ptr<CachedTexture> create(ResourceProvider* resourceProvider) {
-          return make_scoped_ptr(new CachedTexture(resourceProvider));
+        static scoped_ptr<CachedResource> create(ResourceProvider* resourceProvider) {
+          return make_scoped_ptr(new CachedResource(resourceProvider));
         }
-        virtual ~CachedTexture() {}
+        virtual ~CachedResource() {}
 
         bool isComplete() const { return m_isComplete; }
         void setIsComplete(bool isComplete) { m_isComplete = isComplete; }
 
     protected:
-        explicit CachedTexture(ResourceProvider* resourceProvider)
-            : ScopedTexture(resourceProvider)
+        explicit CachedResource(ResourceProvider* resourceProvider)
+            : ScopedResource(resourceProvider)
             , m_isComplete(false)
         {
         }
@@ -68,7 +68,7 @@ protected:
     private:
         bool m_isComplete;
 
-        DISALLOW_COPY_AND_ASSIGN(CachedTexture);
+        DISALLOW_COPY_AND_ASSIGN(CachedResource);
     };
 
     static gfx::RectF quadVertexRect();
@@ -84,7 +84,7 @@ protected:
     bool useRenderPass(DrawingFrame&, const RenderPass*);
 
     virtual void bindFramebufferToOutputSurface(DrawingFrame&) = 0;
-    virtual bool bindFramebufferToTexture(DrawingFrame&, const ScopedTexture*, const gfx::Rect& framebufferRect) = 0;
+    virtual bool bindFramebufferToTexture(DrawingFrame&, const ScopedResource*, const gfx::Rect& framebufferRect) = 0;
     virtual void setDrawViewportSize(const gfx::Size&) = 0;
     virtual void setScissorTestRect(const gfx::Rect& scissorRect) = 0;
     virtual void clearFramebuffer(DrawingFrame&) = 0;
@@ -93,7 +93,7 @@ protected:
     virtual void finishDrawingFrame(DrawingFrame&) = 0;
     virtual bool flippedFramebuffer() const = 0;
 
-    ScopedPtrHashMap<RenderPass::Id, CachedTexture> m_renderPassTextures;
+    ScopedPtrHashMap<RenderPass::Id, CachedResource> m_renderPassTextures;
     ResourceProvider* m_resourceProvider;
 
 private:

@@ -4,22 +4,22 @@
 
 #include "config.h"
 
-#include "cc/scoped_texture.h"
+#include "cc/scoped_resource.h"
 
 namespace cc {
 
-ScopedTexture::ScopedTexture(ResourceProvider* resourceProvider)
+ScopedResource::ScopedResource(ResourceProvider* resourceProvider)
     : m_resourceProvider(resourceProvider)
 {
     DCHECK(m_resourceProvider);
 }
 
-ScopedTexture::~ScopedTexture()
+ScopedResource::~ScopedResource()
 {
     free();
 }
 
-bool ScopedTexture::allocate(int pool, const gfx::Size& size, GLenum format, ResourceProvider::TextureUsageHint hint)
+bool ScopedResource::allocate(int pool, const gfx::Size& size, GLenum format, ResourceProvider::TextureUsageHint hint)
 {
     DCHECK(!id());
     DCHECK(!size.IsEmpty());
@@ -34,7 +34,7 @@ bool ScopedTexture::allocate(int pool, const gfx::Size& size, GLenum format, Res
     return id();
 }
 
-void ScopedTexture::free()
+void ScopedResource::free()
 {
     if (id()) {
 #ifndef NDEBUG
@@ -45,7 +45,7 @@ void ScopedTexture::free()
     setId(0);
 }
 
-void ScopedTexture::leak()
+void ScopedResource::leak()
 {
     setId(0);
 }

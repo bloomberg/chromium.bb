@@ -30,7 +30,7 @@ PrioritizedResource::PrioritizedResource(PrioritizedResourceManager* manager, gf
     // m_manager is set in registerTexture() so validity can be checked.
     DCHECK(format || size.IsEmpty());
     if (format)
-        m_bytes = Texture::memorySizeBytes(size, format);
+        m_bytes = Resource::memorySizeBytes(size, format);
     if (manager)
         manager->registerTexture(this);
 }
@@ -57,7 +57,7 @@ void PrioritizedResource::setDimensions(gfx::Size size, GLenum format)
         m_isAbovePriorityCutoff = false;
         m_format = format;
         m_size = size;
-        m_bytes = Texture::memorySizeBytes(size, format);
+        m_bytes = Resource::memorySizeBytes(size, format);
         DCHECK(m_manager || !m_backing);
         if (m_manager)
             m_manager->returnBackingTexture(this);
@@ -133,7 +133,7 @@ void PrioritizedResource::setToSelfManagedMemoryPlaceholder(size_t bytes)
 }
 
 PrioritizedResource::Backing::Backing(unsigned id, ResourceProvider* resourceProvider, gfx::Size size, GLenum format)
-    : Texture(id, size, format)
+    : Resource(id, size, format)
     , m_owner(0)
     , m_priorityAtLastPriorityUpdate(PriorityCalculator::lowestPriority())
     , m_wasAbovePriorityCutoffAtLastPriorityUpdate(false)

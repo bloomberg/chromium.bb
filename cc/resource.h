@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEXTURE_H_
-#define CC_TEXTURE_H_
+#ifndef CC_RESOURCE_H_
+#define CC_RESOURCE_H_
 
 #include "cc/cc_export.h"
 #include "cc/resource_provider.h"
@@ -12,10 +12,10 @@
 
 namespace cc {
 
-class CC_EXPORT Texture {
+class CC_EXPORT Resource {
 public:
-    Texture() : m_id(0) { }
-    Texture(unsigned id, gfx::Size size, GLenum format)
+    Resource() : m_id(0) { }
+    Resource(unsigned id, gfx::Size size, GLenum format)
         : m_id(id)
         , m_size(size)
         , m_format(format) { }
@@ -40,4 +40,4 @@ private:
 
 }
 
-#endif  // CC_TEXTURE_H_
+#endif  // CC_RESOURCE_H_

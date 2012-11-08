@@ -10,12 +10,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
 #include "cc/priority_calculator.h"
+#include "cc/resource.h"
 #include "cc/resource_provider.h"
-#include "cc/texture.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/vector2d.h"
-#include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 
@@ -92,7 +92,7 @@ private:
     friend class PrioritizedResourceManager;
     friend class PrioritizedResourceTest;
 
-    class Backing : public Texture {
+    class Backing : public Resource {
     public:
         Backing(unsigned id, ResourceProvider*, gfx::Size, GLenum format);
         ~Backing();

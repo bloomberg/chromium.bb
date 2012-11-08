@@ -627,7 +627,7 @@ size_t LayerTreeHost::calculateMemoryForRenderSurfaces(const LayerList& updateLi
         Layer* renderSurfaceLayer = updateList[i].get();
         RenderSurface* renderSurface = renderSurfaceLayer->renderSurface();
 
-        size_t bytes = Texture::memorySizeBytes(renderSurface->contentRect().size(), GL_RGBA);
+        size_t bytes = Resource::memorySizeBytes(renderSurface->contentRect().size(), GL_RGBA);
         contentsTextureBytes += bytes;
 
         if (renderSurfaceLayer->backgroundFilters().isEmpty())
@@ -636,7 +636,7 @@ size_t LayerTreeHost::calculateMemoryForRenderSurfaces(const LayerList& updateLi
         if (bytes > maxBackgroundTextureBytes)
             maxBackgroundTextureBytes = bytes;
         if (!readbackBytes)
-            readbackBytes = Texture::memorySizeBytes(m_deviceViewportSize, GL_RGBA);
+            readbackBytes = Resource::memorySizeBytes(m_deviceViewportSize, GL_RGBA);
     }
     return readbackBytes + maxBackgroundTextureBytes + contentsTextureBytes;
 }

@@ -19,7 +19,7 @@
 #include "cc/proxy.h"
 #include "cc/render_pass.h"
 #include "cc/render_surface_filters.h"
-#include "cc/scoped_texture.h"
+#include "cc/scoped_resource.h"
 #include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/stream_video_draw_quad.h"
@@ -358,7 +358,7 @@ static GrContext* getFilterGrContext(bool hasImplThread)
         return WebSharedGraphicsContext3D::mainThreadGrContext();
 }
 
-static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilterOperations& filters, ScopedTexture* sourceTexture, bool hasImplThread)
+static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilterOperations& filters, ScopedResource* sourceTexture, bool hasImplThread)
 {
     if (filters.isEmpty())
         return SkBitmap();
@@ -376,7 +376,7 @@ static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilte
     return source;
 }
 
-static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, ScopedTexture* sourceTexture, bool hasImplThread)
+static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, ScopedResource* sourceTexture, bool hasImplThread)
 {
     if (!filter)
         return SkBitmap();
@@ -428,7 +428,7 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     return device.accessBitmap(false);
 }
 
-scoped_ptr<ScopedTexture> GLRenderer::drawBackgroundFilters(
+scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
     DrawingFrame& frame, const RenderPassDrawQuad* quad,
     const WebKit::WebFilterOperations& filters,
     const WebTransformationMatrix& contentsDeviceTransform,
@@ -451,12 +451,12 @@ scoped_ptr<ScopedTexture> GLRenderer::drawBackgroundFilters(
     // FIXME: When this algorithm changes, update LayerTreeHost::prioritizeTextures() accordingly.
 
     if (filters.isEmpty())
-        return scoped_ptr<ScopedTexture>();
+        return scoped_ptr<ScopedResource>();
 
     // FIXME: We only allow background filters on an opaque render surface because other surfaces may contain
     // translucent pixels, and the contents behind those translucent pixels wouldn't have the filter applied.
     if (frame.currentRenderPass->hasTransparentBackground())
-        return scoped_ptr<ScopedTexture>();
+        return scoped_ptr<ScopedResource>();
     DCHECK(!frame.currentTexture);
 
     // FIXME: Do a single readback for both the surface and replica and cache the filtered results (once filter textures are not reused).
@@ -468,20 +468,20 @@ scoped_ptr<ScopedTexture> GLRenderer::drawBackgroundFilters(
 
     deviceRect.Intersect(frame.currentRenderPass->outputRect());
 
-    scoped_ptr<ScopedTexture> deviceBackgroundTexture = ScopedTexture::create(m_resourceProvider);
+    scoped_ptr<ScopedResource> deviceBackgroundTexture = ScopedResource::create(m_resourceProvider);
     if (!getFramebufferTexture(deviceBackgroundTexture.get(), deviceRect))
-        return scoped_ptr<ScopedTexture>();
+        return scoped_ptr<ScopedResource>();
 
     SkBitmap filteredDeviceBackground = applyFilters(this, filters, deviceBackgroundTexture.get(), m_client->hasImplThread());
     if (!filteredDeviceBackground.getTexture())
-        return scoped_ptr<ScopedTexture>();
+        return scoped_ptr<ScopedResource>();
 
     GrTexture* texture = reinterpret_cast<GrTexture*>(filteredDeviceBackground.getTexture());
     int filteredDeviceBackgroundTextureId = texture->getTextureHandle();
 
-    scoped_ptr<ScopedTexture> backgroundTexture = ScopedTexture::create(m_resourceProvider);
+    scoped_ptr<ScopedResource> backgroundTexture = ScopedResource::create(m_resourceProvider);
     if (!backgroundTexture->allocate(Renderer::ImplPool, quad->quadRect().size(), GL_RGBA, ResourceProvider::TextureUsageFramebuffer))
-        return scoped_ptr<ScopedTexture>();
+        return scoped_ptr<ScopedResource>();
 
     const RenderPass* targetRenderPass = frame.currentRenderPass;
     bool usingBackgroundTexture = useScopedTexture(frame, backgroundTexture.get(), quad->quadRect());
@@ -498,13 +498,13 @@ scoped_ptr<ScopedTexture> GLRenderer::drawBackgroundFilters(
     useRenderPass(frame, targetRenderPass);
 
     if (!usingBackgroundTexture)
-        return scoped_ptr<ScopedTexture>();
+        return scoped_ptr<ScopedResource>();
     return backgroundTexture.Pass();
 }
 
 void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQuad* quad)
 {
-    CachedTexture* contentsTexture = m_renderPassTextures.get(quad->renderPassId());
+    CachedResource* contentsTexture = m_renderPassTextures.get(quad->renderPassId());
     if (!contentsTexture || !contentsTexture->id())
         return;
 
@@ -522,7 +522,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         return;
 
     WebTransformationMatrix contentsDeviceTransformInverse = contentsDeviceTransform.inverse();
-    scoped_ptr<ScopedTexture> backgroundTexture = drawBackgroundFilters(
+    scoped_ptr<ScopedResource> backgroundTexture = drawBackgroundFilters(
         frame, quad, renderPass->backgroundFilters(),
         contentsDeviceTransform, contentsDeviceTransformInverse);
 
@@ -1294,7 +1294,7 @@ void GLRenderer::getFramebufferPixels(void *pixels, const gfx::Rect& rect)
     enforceMemoryPolicy();
 }
 
-bool GLRenderer::getFramebufferTexture(ScopedTexture* texture, const gfx::Rect& deviceRect)
+bool GLRenderer::getFramebufferTexture(ScopedResource* texture, const gfx::Rect& deviceRect)
 {
     DCHECK(!texture->id() || (texture->size() == deviceRect.size() && texture->format() == GL_RGB));
 
@@ -1308,7 +1308,7 @@ bool GLRenderer::getFramebufferTexture(ScopedTexture* texture, const gfx::Rect& 
     return true;
 }
 
-bool GLRenderer::useScopedTexture(DrawingFrame& frame, const ScopedTexture* texture, const gfx::Rect& viewportRect)
+bool GLRenderer::useScopedTexture(DrawingFrame& frame, const ScopedResource* texture, const gfx::Rect& viewportRect)
 {
     DCHECK(texture->id());
     frame.currentRenderPass = 0;
@@ -1323,7 +1323,7 @@ void GLRenderer::bindFramebufferToOutputSurface(DrawingFrame& frame)
     GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
-bool GLRenderer::bindFramebufferToTexture(DrawingFrame& frame, const ScopedTexture* texture, const gfx::Rect& framebufferRect)
+bool GLRenderer::bindFramebufferToTexture(DrawingFrame& frame, const ScopedResource* texture, const gfx::Rect& framebufferRect)
 {
     DCHECK(texture->id());
 

@@ -69,7 +69,7 @@ void HeadsUpDisplayLayerImpl::willDraw(ResourceProvider* resourceProvider)
     LayerImpl::willDraw(resourceProvider);
 
     if (!m_hudTexture)
-        m_hudTexture = ScopedTexture::create(resourceProvider);
+        m_hudTexture = ScopedResource::create(resourceProvider);
 
     // FIXME: Scale the HUD by deviceScale to make it more friendly under high DPI.
 

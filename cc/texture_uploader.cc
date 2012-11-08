@@ -12,8 +12,8 @@
 #include "base/debug/alias.h"
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
-#include "cc/texture.h"
 #include "cc/prioritized_resource.h"
+#include "cc/resource.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/rect.h"
@@ -230,7 +230,7 @@ void TextureUploader::uploadWithTexSubImage(const uint8* image,
     gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
 
     const uint8* pixel_source;
-    unsigned int bytes_per_pixel = Texture::bytesPerPixel(format);
+    unsigned int bytes_per_pixel = Resource::bytesPerPixel(format);
 
     if (image_rect.width() == source_rect.width() && !offset.x()) {
         pixel_source = &image[bytes_per_pixel * offset.y() * image_rect.width()];
@@ -314,7 +314,7 @@ void TextureUploader::uploadWithMapTexSubImage(const uint8* image,
         return;
     }
 
-    unsigned int bytes_per_pixel = Texture::bytesPerPixel(format);
+    unsigned int bytes_per_pixel = Resource::bytesPerPixel(format);
 
     if (image_rect.width() == source_rect.width() && !offset.x()) {
         memcpy(pixel_dest,

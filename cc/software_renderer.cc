@@ -128,7 +128,7 @@ void SoftwareRenderer::bindFramebufferToOutputSurface(DrawingFrame& frame)
     m_skCurrentCanvas = m_skRootCanvas.get();
 }
 
-bool SoftwareRenderer::bindFramebufferToTexture(DrawingFrame& frame, const ScopedTexture* texture, const gfx::Rect& framebufferRect)
+bool SoftwareRenderer::bindFramebufferToTexture(DrawingFrame& frame, const ScopedResource* texture, const gfx::Rect& framebufferRect)
 {
     m_currentFramebufferLock = make_scoped_ptr(new ResourceProvider::ScopedWriteLockSoftware(m_resourceProvider, texture->id()));
     m_skCurrentCanvas = m_currentFramebufferLock->skCanvas();
@@ -276,7 +276,7 @@ void SoftwareRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQua
 
 void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const RenderPassDrawQuad* quad)
 {
-    CachedTexture* contentTexture = m_renderPassTextures.get(quad->renderPassId());
+    CachedResource* contentTexture = m_renderPassTextures.get(quad->renderPassId());
     if (!contentTexture || !contentTexture->id())
         return;
 

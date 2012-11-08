@@ -4,18 +4,18 @@
 
 #include "config.h"
 
-#include "cc/texture.h"
+#include "cc/resource.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 namespace cc {
 
-void Texture::setDimensions(const gfx::Size& size, GLenum format)
+void Resource::setDimensions(const gfx::Size& size, GLenum format)
 {
     m_size = size;
     m_format = format;
 }
 
-size_t Texture::bytes() const
+size_t Resource::bytes() const
 {
     if (m_size.IsEmpty())
         return 0u;
@@ -23,7 +23,7 @@ size_t Texture::bytes() const
     return memorySizeBytes(m_size, m_format);
 }
 
-size_t Texture::bytesPerPixel(GLenum format)
+size_t Resource::bytesPerPixel(GLenum format)
 {
     unsigned int componentsPerPixel = 0;
     unsigned int bytesPerComponent = 1;
@@ -41,7 +41,7 @@ size_t Texture::bytesPerPixel(GLenum format)
     return componentsPerPixel * bytesPerComponent;
 }
 
-size_t Texture::memorySizeBytes(const gfx::Size& size, GLenum format)
+size_t Resource::memorySizeBytes(const gfx::Size& size, GLenum format)
 {
     return bytesPerPixel(format) * size.width() * size.height();
 }

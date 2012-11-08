@@ -7,11 +7,11 @@
 #include "cc/prioritized_resource.h"
 
 #include "cc/prioritized_resource_manager.h"
+#include "cc/resource.h"
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/fake_graphics_context.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/tiled_layer_test_common.h"
-#include "cc/texture.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace cc;
@@ -39,7 +39,7 @@ public:
 
     size_t texturesMemorySize(size_t textureCount)
     {
-        return Texture::memorySizeBytes(m_textureSize, m_textureFormat) * textureCount;
+        return Resource::memorySizeBytes(m_textureSize, m_textureFormat) * textureCount;
     }
 
     scoped_ptr<PrioritizedResourceManager> createManager(size_t maxTextures)

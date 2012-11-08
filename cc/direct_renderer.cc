@@ -122,7 +122,7 @@ void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& r
         renderPassesInFrame.insert(std::pair<RenderPass::Id, const RenderPass*>(renderPassesInDrawOrder[i]->id(), renderPassesInDrawOrder[i]));
 
     std::vector<RenderPass::Id> passesToDelete;
-    ScopedPtrHashMap<RenderPass::Id, CachedTexture>::const_iterator passIterator;
+    ScopedPtrHashMap<RenderPass::Id, CachedResource>::const_iterator passIterator;
     for (passIterator = m_renderPassTextures.begin(); passIterator != m_renderPassTextures.end(); ++passIterator) {
         base::hash_map<RenderPass::Id, const RenderPass*>::const_iterator it = renderPassesInFrame.find(passIterator->first);
         if (it == renderPassesInFrame.end()) {
@@ -133,7 +133,7 @@ void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& r
         const RenderPass* renderPassInFrame = it->second;
         const gfx::Size& requiredSize = renderPassTextureSize(renderPassInFrame);
         GLenum requiredFormat = renderPassTextureFormat(renderPassInFrame);
-        CachedTexture* texture = passIterator->second;
+        CachedResource* texture = passIterator->second;
         DCHECK(texture);
 
         if (texture->id() && (texture->size() != requiredSize || texture->format() != requiredFormat))
@@ -146,7 +146,7 @@ void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& r
 
     for (size_t i = 0; i < renderPassesInDrawOrder.size(); ++i) {
         if (!m_renderPassTextures.contains(renderPassesInDrawOrder[i]->id())) {
-          scoped_ptr<CachedTexture> texture = CachedTexture::create(m_resourceProvider);
+          scoped_ptr<CachedResource> texture = CachedResource::create(m_resourceProvider);
             m_renderPassTextures.set(renderPassesInDrawOrder[i]->id(), texture.Pass());
         }
     }
@@ -193,7 +193,7 @@ void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* rende
         }
     }
 
-    CachedTexture* texture = m_renderPassTextures.get(renderPass->id());
+    CachedResource* texture = m_renderPassTextures.get(renderPass->id());
     if (texture)
         texture->setIsComplete(!renderPass->hasOcclusionFromOutsideTargetSurface());
 }
@@ -210,7 +210,7 @@ bool DirectRenderer::useRenderPass(DrawingFrame& frame, const RenderPass* render
         return true;
     }
 
-    CachedTexture* texture = m_renderPassTextures.get(renderPass->id());
+    CachedResource* texture = m_renderPassTextures.get(renderPass->id());
     DCHECK(texture);
     if (!texture->id() && !texture->allocate(Renderer::ImplPool, renderPassTextureSize(renderPass), renderPassTextureFormat(renderPass), ResourceProvider::TextureUsageFramebuffer))
         return false;
@@ -220,7 +220,7 @@ bool DirectRenderer::useRenderPass(DrawingFrame& frame, const RenderPass* render
 
 bool DirectRenderer::haveCachedResourcesForRenderPassId(RenderPass::Id id) const
 {
-    CachedTexture* texture = m_renderPassTextures.get(id);
+    CachedResource* texture = m_renderPassTextures.get(id);
     return texture && texture->id() && texture->isComplete();
 }
 

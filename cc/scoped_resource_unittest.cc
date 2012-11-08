@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/scoped_texture.h"
+#include "cc/scoped_resource.h"
 
 #include "cc/renderer.h"
 #include "cc/test/fake_graphics_context.h"
@@ -18,11 +18,11 @@ using namespace WebKitTests;
 
 namespace {
 
-TEST(ScopedTextureTest, NewScopedTexture)
+TEST(ScopedResourceTest, NewScopedResource)
 {
     scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
-    scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
+    scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
 
     // New scoped textures do not hold a texture yet.
     EXPECT_EQ(0u, texture->id());
@@ -32,11 +32,11 @@ TEST(ScopedTextureTest, NewScopedTexture)
     EXPECT_EQ(0u, texture->bytes());
 }
 
-TEST(ScopedTextureTest, CreateScopedTexture)
+TEST(ScopedResourceTest, CreateScopedResource)
 {
     scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
-    scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
+    scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
     texture->allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
 
     // The texture has an allocated byte-size now.
@@ -48,13 +48,13 @@ TEST(ScopedTextureTest, CreateScopedTexture)
     EXPECT_EQ(gfx::Size(30, 30), texture->size());
 }
 
-TEST(ScopedTextureTest, ScopedTextureIsDeleted)
+TEST(ScopedResourceTest, ScopedResourceIsDeleted)
 {
     scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
 
     {
-        scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
+        scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
 
         EXPECT_EQ(0u, resourceProvider->numResources());
         texture->allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
@@ -65,7 +65,7 @@ TEST(ScopedTextureTest, ScopedTextureIsDeleted)
     EXPECT_EQ(0u, resourceProvider->numResources());
 
     {
-        scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
+        scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
         EXPECT_EQ(0u, resourceProvider->numResources());
         texture->allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
         EXPECT_LT(0u, texture->id());
@@ -75,13 +75,13 @@ TEST(ScopedTextureTest, ScopedTextureIsDeleted)
     }
 }
 
-TEST(ScopedTextureTest, LeakScopedTexture)
+TEST(ScopedResourceTest, LeakScopedResource)
 {
     scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
 
     {
-        scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
+        scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
 
         EXPECT_EQ(0u, resourceProvider->numResources());
         texture->allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);

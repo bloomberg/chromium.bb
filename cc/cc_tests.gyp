@@ -42,7 +42,7 @@
       'resource_update_controller_unittest.cc',
       'scheduler_state_machine_unittest.cc',
       'scheduler_unittest.cc',
-      'scoped_texture_unittest.cc',
+      'scoped_resource_unittest.cc',
       'scrollbar_animation_controller_linear_fade_unittest.cc',
       'scrollbar_layer_unittest.cc',
       'software_renderer_unittest.cc',
