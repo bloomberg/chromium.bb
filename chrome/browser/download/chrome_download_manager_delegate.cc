@@ -397,24 +397,11 @@ bool ChromeDownloadManagerDelegate::ShouldOpenWithWebIntents(
   if (item->GetTargetDisposition() == DownloadItem::TARGET_DISPOSITION_PROMPT)
     return false;
 
+#if !defined(OS_CHROMEOS)
   std::string mime_type = item->GetMimeType();
 
-#if defined(OS_CHROMEOS)
-  if (mime_type == "application/msword" ||
-      mime_type == "application/vnd.ms-powerpoint" ||
-      mime_type == "application/vnd.ms-excel" ||
-      mime_type == "application/vnd.openxmlformats-officedocument."
-                   "wordprocessingml.document" ||
-      mime_type == "application/vnd.openxmlformats-officedocument."
-                   "presentationml.presentation" ||
-      mime_type == "application/vnd.openxmlformats-officedocument."
-                   "spreadsheetml.sheet") {
-    return true;
-  }
-#endif  // defined(OS_CHROMEOS)
-
-  // If QuickOffice extension is installed, use web intents to handle the
-  // downloaded file.
+  // If QuickOffice extension is installed, and we're not on ChromeOS,use web
+  // intents to handle the downloaded file.
   const char kQuickOfficeExtensionId[] = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
   const char kQuickOfficeDevExtensionId[] = "ionpfmkccalenbmnddpbmocokhaknphg";
   ExtensionServiceInterface* extension_service =
@@ -444,6 +431,7 @@ bool ChromeDownloadManagerDelegate::ShouldOpenWithWebIntents(
       return true;
     }
   }
+#endif  // !defined(OS_CHROMEOS)
 
   return false;
 }

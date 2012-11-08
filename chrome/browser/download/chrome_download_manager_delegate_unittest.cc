@@ -910,44 +910,6 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_LastSavePath) {
   RunTestCases(kLastSavePathTestCases, 1);
 }
 
-#if defined(OS_CHROMEOS)
-TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_WebIntents) {
-  const DownloadTestCase kWebIntentsTestCases[] = {
-    {
-      // 1: A file which would be dangerous, but is handled by web intents.
-      // The name will be unaltered (the actual save name will have the
-      // .webintents extension).
-      AUTOMATIC,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      "http://example.com/feed.exe", "application/msword",
-      FILE_PATH_LITERAL(""),
-
-      FILE_PATH_LITERAL("feed.exe.webintents"),
-      FILE_PATH_LITERAL(""),
-      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-
-      EXPECT_CRDOWNLOAD
-    },
-
-    {
-      // 2: A download with a forced path won't be handled by web intents.
-      FORCED,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      "http://example.com/feed.exe", "application/msword",
-      FILE_PATH_LITERAL("forced.feed.exe"),
-
-      FILE_PATH_LITERAL("forced.feed.exe"),
-      FILE_PATH_LITERAL(""),
-      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-
-      EXPECT_CRDOWNLOAD
-    },
-  };
-
-  RunTestCases(kWebIntentsTestCases, arraysize(kWebIntentsTestCases));
-}
-#endif
-
 // TODO(asanka): Add more tests.
 // * Default download path is not writable.
 // * Download path doesn't exist.
