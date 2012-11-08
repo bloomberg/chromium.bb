@@ -390,10 +390,13 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
 
   # Print out the command before running.
   if print_cmd or log_output:
+    # Note we reformat the argument into a form that can be directly
+    # copy/pasted into a term- thus the map(repr, cmd) bit needs to stay.
     if cwd:
-      logger.log(debug_level, 'RunCommand: %r in %s', cmd, cwd)
+      logger.log(debug_level, 'RunCommand: %s in %s',
+                 ' '.join(map(repr, cmd)), cwd)
     else:
-      logger.log(debug_level, 'RunCommand: %r', cmd)
+      logger.log(debug_level, 'RunCommand: %r', ' '.join(map(repr, cmd)))
 
   cmd_result.cmd = cmd
 
