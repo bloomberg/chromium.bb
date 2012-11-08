@@ -34,6 +34,7 @@
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/aura/display_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -290,6 +291,11 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
   window_->AddObserver(window_observer_.get());
   aura::client::SetTooltipText(window_, &tooltip_);
   aura::client::SetActivationDelegate(window_, this);
+  aura::DisplayManager* display_manager =
+      aura::Env::GetInstance()->display_manager();
+  // display_manager can be NULL in tests.
+  if (display_manager)
+    display_manager->AddObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1296,6 +1302,25 @@ void RenderWidgetHostViewAura::ExtendSelectionAndDelete(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura, aura::DisplayObserver implementation:
+
+void RenderWidgetHostViewAura::OnDisplayBoundsChanged(
+    const gfx::Display& display) {
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(window_);
+  if (display.id() == screen->GetDisplayNearestWindow(window_).id()) {
+    UpdateScreenInfo(window_);
+  }
+}
+
+void RenderWidgetHostViewAura::OnDisplayAdded(
+    const gfx::Display& new_display) {
+}
+
+void RenderWidgetHostViewAura::OnDisplayRemoved(
+    const gfx::Display& old_display) {
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, aura::WindowDelegate implementation:
 
 gfx::Size RenderWidgetHostViewAura::GetMinimumSize() const {
@@ -1395,6 +1420,7 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
   if (backing_store)  // NULL in hardware path.
     backing_store->ScaleFactorChanged(device_scale_factor);
 
+  UpdateScreenInfo(window_);
   host_->SetDeviceScaleFactor(device_scale_factor);
   current_cursor_.SetScaleFactor(device_scale_factor);
 }
@@ -1756,6 +1782,11 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
     popup_parent_host_view_->popup_child_host_view_ = NULL;
   }
   aura::client::SetTooltipText(window_, NULL);
+  aura::DisplayManager* display_manager =
+      aura::Env::GetInstance()->display_manager();
+  // display_manager can be NULL in tests.
+  if (display_manager)
+    display_manager->RemoveObserver(this);
 
   // This call is usually no-op since |this| object is already removed from the
   // Aura root window and we don't have a way to get an input method object
@@ -1891,6 +1922,7 @@ void RenderWidgetHostViewAura::InsertSyncPointAndACK(
 
 void RenderWidgetHostViewAura::AddingToRootWindow() {
   host_->ParentChanged(GetNativeViewId());
+  UpdateScreenInfo(window_);
 }
 
 void RenderWidgetHostViewAura::RemovingFromRootWindow() {
