@@ -359,6 +359,22 @@ weston_compositor_add_axis_binding(struct weston_compositor *compositor,
 	return binding;
 }
 
+WL_EXPORT struct weston_binding *
+weston_compositor_add_debug_binding(struct weston_compositor *compositor,
+				    uint32_t key,
+				    weston_key_binding_handler_t handler,
+				    void *data)
+{
+	struct weston_binding *binding;
+
+	binding = weston_compositor_add_binding(compositor, key, 0, 0, 0,
+						handler, data);
+
+	wl_list_insert(compositor->debug_binding_list.prev, &binding->link);
+
+	return binding;
+}
+
 WL_EXPORT void
 weston_binding_destroy(struct weston_binding *binding)
 {
@@ -495,6 +511,28 @@ weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 			handler(&seat->seat, time, axis, value, b->data);
 		}
 	}
+}
+
+WL_EXPORT int
+weston_compositor_run_debug_binding(struct weston_compositor *compositor,
+				    struct weston_seat *seat,
+				    uint32_t time, uint32_t key,
+				    enum wl_keyboard_key_state state)
+{
+	weston_key_binding_handler_t handler;
+	struct weston_binding *binding;
+	int count = 0;
+
+	wl_list_for_each(binding, &compositor->debug_binding_list, link) {
+		if (key != binding->key)
+			continue;
+
+		count++;
+		handler = binding->handler;
+		handler(&seat->seat, time, key, binding->data);
+	}
+
+	return count;
 }
 
 WL_EXPORT int

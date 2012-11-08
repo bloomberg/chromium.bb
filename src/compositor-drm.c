@@ -2338,9 +2338,8 @@ drm_compositor_create(struct wl_display *display,
 
 	udev_device_unref(drm_device);
 
-	weston_compositor_add_key_binding(&ec->base, KEY_O,
-					  MODIFIER_CTRL | MODIFIER_ALT,
-					  hide_sprites_binding, ec);
+	weston_compositor_add_debug_binding(&ec->base, KEY_O,
+					    hide_sprites_binding, ec);
 
 	return &ec->base;
 

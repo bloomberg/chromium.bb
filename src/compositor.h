@@ -320,6 +320,7 @@ struct weston_compositor {
 	struct wl_list key_binding_list;
 	struct wl_list button_binding_list;
 	struct wl_list axis_binding_list;
+	struct wl_list debug_binding_list;
 	struct {
 		struct weston_spring spring;
 		struct weston_animation animation;
@@ -631,6 +632,11 @@ weston_compositor_add_axis_binding(struct weston_compositor *compositor,
 			           enum weston_keyboard_modifier modifier,
 			           weston_axis_binding_handler_t binding,
 				   void *data);
+struct weston_binding *
+weston_compositor_add_debug_binding(struct weston_compositor *compositor,
+				    uint32_t key,
+				    weston_key_binding_handler_t binding,
+				    void *data);
 void
 weston_binding_destroy(struct weston_binding *binding);
 
@@ -651,6 +657,11 @@ void
 weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 				   struct weston_seat *seat, uint32_t time,
 				   uint32_t axis, int32_t value);
+int
+weston_compositor_run_debug_binding(struct weston_compositor *compositor,
+				    struct weston_seat *seat, uint32_t time,
+				    uint32_t key,
+				    enum wl_keyboard_key_state state);
 
 int
 weston_environment_get_fd(const char *env);
