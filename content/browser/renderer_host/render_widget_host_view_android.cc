@@ -225,10 +225,17 @@ bool RenderWidgetHostViewAndroid::IsSurfaceAvailableForCopy() const {
 }
 
 void RenderWidgetHostViewAndroid::Show() {
+  if (content_view_core_) {
+    host_->AttachLayer(texture_layer_->layer());
+    is_hidden_ = false;
+  }
+
   texture_layer_->layer()->setDrawsContent(true);
 }
 
 void RenderWidgetHostViewAndroid::Hide() {
+  is_hidden_ = true;
+
   texture_layer_->layer()->setDrawsContent(false);
 }
 

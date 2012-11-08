@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/ssl/ssl_host_state.h"
+#include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
@@ -27,7 +28,6 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -238,8 +238,14 @@ void ContentViewCoreImpl::InitJNI(JNIEnv* env, jobject obj) {
 RenderWidgetHostViewAndroid*
     ContentViewCoreImpl::GetRenderWidgetHostViewAndroid() {
   RenderWidgetHostView* rwhv = NULL;
-  if (web_contents_)
+  if (web_contents_) {
     rwhv = web_contents_->GetRenderWidgetHostView();
+    if (web_contents_->ShowingInterstitialPage()) {
+      rwhv = static_cast<InterstitialPageImpl*>(
+          web_contents_->GetInterstitialPage())->
+              GetRenderViewHost()->GetView();
+    }
+  }
   return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
 }
 

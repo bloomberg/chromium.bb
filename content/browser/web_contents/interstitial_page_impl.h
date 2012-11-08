@@ -74,6 +74,12 @@ class CONTENT_EXPORT InterstitialPageImpl
   }
   bool reload_on_dont_proceed() const { return reload_on_dont_proceed_; }
 
+#if defined(OS_ANDROID)
+  // Android shares a single platform window for all tabs, so we need to expose
+  // the RenderViewHost to properly route gestures to the interstitial.
+  RenderViewHost* GetRenderViewHost() const;
+#endif
+
  protected:
   // NotificationObserver method:
   virtual void Observe(int type,
@@ -114,6 +120,11 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual void ShowContextMenu(
       const ContextMenuParams& params,
       ContextMenuSourceType type) OVERRIDE;
+
+#if defined(OS_ANDROID)
+  virtual void AttachLayer(WebKit::WebLayer* layer) OVERRIDE;
+  virtual void RemoveLayer(WebKit::WebLayer* layer) OVERRIDE;
+#endif
 
   // RenderWidgetHostDelegate implementation:
   virtual void RenderWidgetDeleted(

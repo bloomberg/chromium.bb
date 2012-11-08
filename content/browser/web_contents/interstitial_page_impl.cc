@@ -628,6 +628,12 @@ RenderViewHost* InterstitialPageImpl::GetRenderViewHostForTesting() const {
   return render_view_host_;
 }
 
+#if defined(OS_ANDROID)
+RenderViewHost* InterstitialPageImpl::GetRenderViewHost() const {
+  return render_view_host_;
+}
+#endif
+
 InterstitialPageDelegate* InterstitialPageImpl::GetDelegateForTesting() {
   return delegate_.get();
 }
@@ -678,6 +684,16 @@ void InterstitialPageImpl::ShowContextMenu(
     const ContextMenuParams& params,
     ContextMenuSourceType type) {
 }
+
+#if defined(OS_ANDROID)
+void InterstitialPageImpl::AttachLayer(WebKit::WebLayer* layer) {
+  web_contents_->AttachLayer(layer);
+}
+
+void InterstitialPageImpl::RemoveLayer(WebKit::WebLayer* layer) {
+  web_contents_->RemoveLayer(layer);
+}
+#endif
 
 void InterstitialPageImpl::Disable() {
   enabled_ = false;
