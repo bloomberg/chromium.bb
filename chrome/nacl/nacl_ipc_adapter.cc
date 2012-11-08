@@ -462,7 +462,6 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
     switch (msg.type()) {
       CASE_FOR_MESSAGE(PpapiMsg_CreateNaClChannel)
       CASE_FOR_MESSAGE(PpapiMsg_PPBAudio_NotifyAudioStreamCreated)
-      CASE_FOR_MESSAGE(PpapiMsg_PPBAudioInput_OpenACK)
       case IPC_REPLY_ID: {
         int id = IPC::SyncMessage::GetMessageId(msg);
         LockedData::PendingSyncMsgMap::iterator iter(

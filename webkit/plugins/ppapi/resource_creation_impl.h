@@ -30,11 +30,6 @@ class WEBKIT_PLUGINS_EXPORT ResourceCreationImpl
   virtual PP_Resource CreateAudioConfig(PP_Instance instance,
                                         PP_AudioSampleRate sample_rate,
                                         uint32_t sample_frame_count) OVERRIDE;
-  virtual PP_Resource CreateAudioInput0_1(
-      PP_Instance instance,
-      PP_Resource config_id,
-      PPB_AudioInput_Callback audio_input_callback,
-      void* user_data) OVERRIDE;
   virtual PP_Resource CreateAudioInput(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateBroker(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateBrowserFont(

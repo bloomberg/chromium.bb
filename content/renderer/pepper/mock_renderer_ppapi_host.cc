@@ -27,6 +27,12 @@ bool MockRendererPpapiHost::IsValidInstance(PP_Instance instance) const {
   return instance == pp_instance_;
 }
 
+webkit::ppapi::PluginInstance* MockRendererPpapiHost::GetPluginInstance(
+    PP_Instance instance) const {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 RenderView* MockRendererPpapiHost::GetRenderViewForInstance(
     PP_Instance instance) const {
   if (instance == pp_instance_)
@@ -42,6 +48,13 @@ WebKit::WebPluginContainer* MockRendererPpapiHost::GetContainerForInstance(
 
 bool MockRendererPpapiHost::HasUserGesture(PP_Instance instance) const {
   return has_user_gesture_;
+}
+
+IPC::PlatformFileForTransit MockRendererPpapiHost::ShareHandleWithRemote(
+    base::PlatformFile handle,
+    bool should_close_source) {
+  NOTIMPLEMENTED();
+  return IPC::InvalidPlatformFileForTransit();
 }
 
 }  // namespace content

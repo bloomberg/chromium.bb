@@ -15,7 +15,6 @@
 #include "ppapi/c/private/ppb_tcp_server_socket_private.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/c/private/ppb_udp_socket_private.h"
-#include "ppapi/c/trusted/ppb_audio_input_trusted_dev.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/c/trusted/ppb_buffer_trusted.h"
@@ -53,8 +52,6 @@ namespace thunk {
 // Old-style thunk getters. Only put trusted/private stuff here (it hasn't
 // yet been converted to the new system). Otherwise, add the declaration to
 // the appropriate interfaces_*.h file.
-PPAPI_THUNK_EXPORT const PPB_AudioInputTrusted_Dev_0_1*
-    GetPPB_AudioInputTrusted_0_1_Thunk();
 PPAPI_THUNK_EXPORT const PPB_AudioTrusted_0_6* GetPPB_AudioTrusted_0_6_Thunk();
 PPAPI_THUNK_EXPORT const PPB_BrokerTrusted_0_2* GetPPB_Broker_0_2_Thunk();
 PPAPI_THUNK_EXPORT const PPB_BufferTrusted_0_1*

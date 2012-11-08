@@ -32,6 +32,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_time.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/c/private/ppb_flash.h"
@@ -61,6 +62,7 @@
 
 #define IPC_MESSAGE_START PpapiMsgStart
 
+IPC_ENUM_TRAITS(PP_AudioSampleRate)
 IPC_ENUM_TRAITS(PP_DeviceType_Dev)
 IPC_ENUM_TRAITS(PP_DecryptorStreamType)
 IPC_ENUM_TRAITS(PP_Flash_BrowserOperations_Permission)
@@ -412,17 +414,6 @@ IPC_SYNC_MESSAGE_CONTROL2_1(PpapiMsg_ConnectToPlugin,
 // in, since some could be valid even in the error case.
 IPC_MESSAGE_ROUTED4(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
                     ppapi::HostResource /* audio_id */,
-                    int32_t /* result_code (will be != PP_OK on failure) */,
-                    ppapi::proxy::SerializedHandle /* socket_handle */,
-                    ppapi::proxy::SerializedHandle /* handle */)
-
-// PPB_AudioInput_Dev.
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPBAudioInput_EnumerateDevicesACK,
-                    ppapi::HostResource /* audio_input */,
-                    int32_t /* result */,
-                    std::vector<ppapi::DeviceRefData> /* devices */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPBAudioInput_OpenACK,
-                    ppapi::HostResource /* audio_input */,
                     int32_t /* result_code (will be != PP_OK on failure) */,
                     ppapi::proxy::SerializedHandle /* socket_handle */,
                     ppapi::proxy::SerializedHandle /* handle */)
@@ -842,23 +833,6 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBAudio_Create,
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBAudio_StartOrStop,
                     ppapi::HostResource /* audio_id */,
                     bool /* play */)
-
-// PPB_AudioInput.
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBAudioInput_Create,
-                           PP_Instance /* instance */,
-                           ppapi::HostResource /* result */)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBAudioInput_EnumerateDevices,
-                    ppapi::HostResource /* audio_input */)
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBAudioInput_Open,
-                    ppapi::HostResource /* audio_input */,
-                    std::string /* device_id */,
-                    int32_t /* sample_rate */,
-                    uint32_t /* sample_frame_count */)
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBAudioInput_StartOrStop,
-                    ppapi::HostResource /* audio_input */,
-                    bool /* capture */)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBAudioInput_Close,
-                    ppapi::HostResource /* audio_input */)
 
 // PPB_Core.
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_AddRefResource,
@@ -1626,7 +1600,6 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply,
                      PP_PrintSettings_Dev /* print_settings */)
 
 // WebSocket ------------------------------------------------------------------
-
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_WebSocket_Create)
 
 // Establishes the connection to a server. This message requires
@@ -1707,6 +1680,21 @@ IPC_MESSAGE_CONTROL4(PpapiPluginMsg_WebSocket_ClosedReply,
 
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
 
+// Audio input.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_AudioInput_Create)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_AudioInput_EnumerateDevices)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_AudioInput_EnumerateDevicesReply,
+                     std::vector<ppapi::DeviceRefData> /* devices */)
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_AudioInput_Open,
+                     std::string /* device_id */,
+                     PP_AudioSampleRate /* sample_rate */,
+                     uint32_t /* sample_frame_count */)
+// Reply to an Open call. This supplies a socket handle and a shared memory
+// handle. Both handles are passed in the ReplyParams struct.
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_AudioInput_OpenReply)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_AudioInput_StartOrStop, bool /* capture */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_AudioInput_Close)
+
 // Flash clipboard.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashClipboard_Create)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_FlashClipboard_RegisterCustomFormat,
@@ -1725,6 +1713,7 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_FlashClipboard_WriteData,
                      uint32_t /* clipboard_type */,
                      std::vector<uint32_t> /* formats */,
                      std::vector<std::string> /* data */)
+
 // Flash font file.
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_FlashFontFile_Create,
                      ppapi::proxy::SerializedFontDescription /* description */,

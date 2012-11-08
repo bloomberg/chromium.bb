@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_audio_input_dev.idl modified Sat Mar  3 23:06:35 2012. */
+/* From dev/ppb_audio_input_dev.idl modified Mon Oct 29 14:40:53 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_AUDIO_INPUT_DEV_H_
 #define PPAPI_C_DEV_PPB_AUDIO_INPUT_DEV_H_
@@ -15,7 +15,6 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_AUDIO_INPUT_DEV_INTERFACE_0_1 "PPB_AudioInput(Dev);0.1"
 #define PPB_AUDIO_INPUT_DEV_INTERFACE_0_2 "PPB_AudioInput(Dev);0.2"
 #define PPB_AUDIO_INPUT_DEV_INTERFACE PPB_AUDIO_INPUT_DEV_INTERFACE_0_2
 
@@ -168,17 +167,6 @@ struct PPB_AudioInput_Dev_0_2 {
 };
 
 typedef struct PPB_AudioInput_Dev_0_2 PPB_AudioInput_Dev;
-
-struct PPB_AudioInput_Dev_0_1 {
-  PP_Resource (*Create)(PP_Instance instance,
-                        PP_Resource config,
-                        PPB_AudioInput_Callback audio_input_callback,
-                        void* user_data);
-  PP_Bool (*IsAudioInput)(PP_Resource resource);
-  PP_Resource (*GetCurrentConfig)(PP_Resource audio_input);
-  PP_Bool (*StartCapture)(PP_Resource audio_input);
-  PP_Bool (*StopCapture)(PP_Resource audio_input);
-};
 /**
  * @}
  */

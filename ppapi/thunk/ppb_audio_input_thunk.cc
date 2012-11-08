@@ -18,19 +18,7 @@ namespace {
 
 typedef EnterResource<PPB_AudioInput_API> EnterAudioInput;
 
-PP_Resource Create0_1(PP_Instance instance,
-                      PP_Resource config,
-                      PPB_AudioInput_Callback audio_input_callback,
-                      void* user_data) {
-  EnterResourceCreation enter(instance);
-  if (enter.failed())
-    return 0;
-
-  return enter.functions()->CreateAudioInput0_1(
-      instance, config, audio_input_callback, user_data);
-}
-
-PP_Resource Create0_2(PP_Instance instance) {
+PP_Resource Create(PP_Instance instance) {
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -107,16 +95,8 @@ void Close(PP_Resource audio_input) {
     enter.object()->Close();
 }
 
-const PPB_AudioInput_Dev_0_1 g_ppb_audioinput_0_1_thunk = {
-  &Create0_1,
-  &IsAudioInput,
-  &GetCurrentConfig,
-  &StartCapture,
-  &StopCapture
-};
-
 const PPB_AudioInput_Dev_0_2 g_ppb_audioinput_0_2_thunk = {
-  &Create0_2,
+  &Create,
   &IsAudioInput,
   &EnumerateDevices,
   &Open,
@@ -127,10 +107,6 @@ const PPB_AudioInput_Dev_0_2 g_ppb_audioinput_0_2_thunk = {
 };
 
 }  // namespace
-
-const PPB_AudioInput_Dev_0_1* GetPPB_AudioInput_Dev_0_1_Thunk() {
-  return &g_ppb_audioinput_0_1_thunk;
-}
 
 const PPB_AudioInput_Dev_0_2* GetPPB_AudioInput_Dev_0_2_Thunk() {
   return &g_ppb_audioinput_0_2_thunk;

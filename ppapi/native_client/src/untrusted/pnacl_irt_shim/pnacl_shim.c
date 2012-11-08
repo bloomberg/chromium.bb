@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: Thu Nov  8 08:56:35 2012. */
+/* Last generated from IDL: Thu Nov  8 11:15:32 2012. */
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"
@@ -92,7 +92,6 @@
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
 #include "ppapi/c/private/ppp_instance_private.h"
-#include "ppapi/c/trusted/ppb_audio_input_trusted_dev.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"
@@ -152,7 +151,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Messaging_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_MouseLock_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInputTrusted_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioTrusted_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0;
@@ -163,7 +161,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIOTrusted_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ImageDataTrusted_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoaderTrusted_0_3;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Buffer_Dev_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Console_Dev_0_1;
@@ -1105,34 +1102,6 @@ static void Pnacl_M14_PPP_Messaging_HandleMessage(PP_Instance instance, struct P
 
 /* Not generating wrapper methods for PPP_MouseLock_1_0 */
 
-/* Begin wrapper methods for PPB_AudioInputTrusted_Dev_0_1 */
-
-static __attribute__((pnaclcall))
-PP_Resource Pnacl_M17_PPB_AudioInputTrusted_Dev_CreateTrusted(PP_Instance instance) {
-  const struct PPB_AudioInputTrusted_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_AudioInputTrusted_Dev_0_1.real_iface;
-  return iface->CreateTrusted(instance);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M17_PPB_AudioInputTrusted_Dev_Open(PP_Resource audio_input, PP_Resource config, struct PP_CompletionCallback create_callback) {
-  const struct PPB_AudioInputTrusted_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_AudioInputTrusted_Dev_0_1.real_iface;
-  return iface->Open(audio_input, config, create_callback);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M17_PPB_AudioInputTrusted_Dev_GetSyncSocket(PP_Resource audio_input, int* sync_socket) {
-  const struct PPB_AudioInputTrusted_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_AudioInputTrusted_Dev_0_1.real_iface;
-  return iface->GetSyncSocket(audio_input, sync_socket);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M17_PPB_AudioInputTrusted_Dev_GetSharedMemory(PP_Resource audio_input, int* shm_handle, uint32_t* shm_size) {
-  const struct PPB_AudioInputTrusted_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_AudioInputTrusted_Dev_0_1.real_iface;
-  return iface->GetSharedMemory(audio_input, shm_handle, shm_size);
-}
-
-/* End wrapper methods for PPB_AudioInputTrusted_Dev_0_1 */
-
 /* Begin wrapper methods for PPB_AudioTrusted_0_6 */
 
 static __attribute__((pnaclcall))
@@ -1310,8 +1279,6 @@ int32_t Pnacl_M14_PPB_FileIOTrusted_WillSetLength(PP_Resource file_io, int64_t l
 /* Not generating wrapper methods for PPB_ImageDataTrusted_0_4 */
 
 /* Not generating wrapper methods for PPB_URLLoaderTrusted_0_3 */
-
-/* Not generating wrapper methods for PPB_AudioInput_Dev_0_1 */
 
 /* Begin wrapper methods for PPB_AudioInput_Dev_0_2 */
 
@@ -3744,13 +3711,6 @@ struct PPP_Messaging_1_0 Pnacl_Wrappers_PPP_Messaging_1_0 = {
 
 /* Not generating wrapper interface for PPP_MouseLock_1_0 */
 
-struct PPB_AudioInputTrusted_Dev_0_1 Pnacl_Wrappers_PPB_AudioInputTrusted_Dev_0_1 = {
-    .CreateTrusted = (PP_Resource (*)(PP_Instance instance))&Pnacl_M17_PPB_AudioInputTrusted_Dev_CreateTrusted,
-    .Open = (int32_t (*)(PP_Resource audio_input, PP_Resource config, struct PP_CompletionCallback create_callback))&Pnacl_M17_PPB_AudioInputTrusted_Dev_Open,
-    .GetSyncSocket = (int32_t (*)(PP_Resource audio_input, int* sync_socket))&Pnacl_M17_PPB_AudioInputTrusted_Dev_GetSyncSocket,
-    .GetSharedMemory = (int32_t (*)(PP_Resource audio_input, int* shm_handle, uint32_t* shm_size))&Pnacl_M17_PPB_AudioInputTrusted_Dev_GetSharedMemory
-};
-
 struct PPB_AudioTrusted_0_6 Pnacl_Wrappers_PPB_AudioTrusted_0_6 = {
     .CreateTrusted = (PP_Resource (*)(PP_Instance instance))&Pnacl_M14_PPB_AudioTrusted_CreateTrusted,
     .Open = (int32_t (*)(PP_Resource audio, PP_Resource config, struct PP_CompletionCallback create_callback))&Pnacl_M14_PPB_AudioTrusted_Open,
@@ -3801,8 +3761,6 @@ struct PPB_FileIOTrusted_0_4 Pnacl_Wrappers_PPB_FileIOTrusted_0_4 = {
 /* Not generating wrapper interface for PPB_ImageDataTrusted_0_4 */
 
 /* Not generating wrapper interface for PPB_URLLoaderTrusted_0_3 */
-
-/* Not generating wrapper interface for PPB_AudioInput_Dev_0_1 */
 
 struct PPB_AudioInput_Dev_0_2 Pnacl_Wrappers_PPB_AudioInput_Dev_0_2 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M19_PPB_AudioInput_Dev_Create,
@@ -4563,12 +4521,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_MouseLock_1_0 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInputTrusted_Dev_0_1 = {
-  .iface_macro = PPB_AUDIO_INPUT_TRUSTED_DEV_INTERFACE_0_1,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_AudioInputTrusted_Dev_0_1,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioTrusted_0_6 = {
   .iface_macro = PPB_AUDIO_TRUSTED_INTERFACE_0_6,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_AudioTrusted_0_6,
@@ -4625,12 +4577,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ImageDataTrusted_0_4 = {
 
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoaderTrusted_0_3 = {
   .iface_macro = PPB_URLLOADERTRUSTED_INTERFACE_0_3,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_1 = {
-  .iface_macro = PPB_AUDIO_INPUT_DEV_INTERFACE_0_1,
   .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
@@ -5165,7 +5111,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_VarArrayBuffer_1_0,
   &Pnacl_WrapperInfo_PPB_View_1_0,
   &Pnacl_WrapperInfo_PPB_WebSocket_1_0,
-  &Pnacl_WrapperInfo_PPB_AudioInputTrusted_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_AudioTrusted_0_6,
   &Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2,
   &Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0,
@@ -5176,7 +5121,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_FileIOTrusted_0_4,
   &Pnacl_WrapperInfo_PPB_ImageDataTrusted_0_4,
   &Pnacl_WrapperInfo_PPB_URLLoaderTrusted_0_3,
-  &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_Buffer_Dev_0_4,
   &Pnacl_WrapperInfo_PPB_Console_Dev_0_1,

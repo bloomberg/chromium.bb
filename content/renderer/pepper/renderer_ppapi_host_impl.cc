@@ -52,7 +52,8 @@ RendererPpapiHostImpl::RendererPpapiHostImpl(
     PluginModule* module,
     ppapi::proxy::HostDispatcher* dispatcher,
     const ppapi::PpapiPermissions& permissions)
-    : module_(module) {
+    : module_(module),
+      dispatcher_(dispatcher) {
   // Hook the PpapiHost up to the dispatcher for out-of-process communication.
   ppapi_host_.reset(
       new ppapi::host::PpapiHost(dispatcher, permissions));
@@ -65,7 +66,8 @@ RendererPpapiHostImpl::RendererPpapiHostImpl(
 RendererPpapiHostImpl::RendererPpapiHostImpl(
     PluginModule* module,
     const ppapi::PpapiPermissions& permissions)
-    : module_(module) {
+    : module_(module),
+      dispatcher_(NULL) {
   // Hook the host up to the in-process router.
   in_process_router_.reset(new PepperInProcessRouter(this));
   ppapi_host_.reset(new ppapi::host::PpapiHost(
@@ -149,6 +151,11 @@ bool RendererPpapiHostImpl::IsValidInstance(
   return !!GetAndValidateInstance(instance);
 }
 
+webkit::ppapi::PluginInstance* RendererPpapiHostImpl::GetPluginInstance(
+    PP_Instance instance) const {
+  return GetAndValidateInstance(instance);
+}
+
 WebKit::WebPluginContainer* RendererPpapiHostImpl::GetContainerForInstance(
       PP_Instance instance) const {
   PluginInstance* instance_object = GetAndValidateInstance(instance);
@@ -166,6 +173,17 @@ bool RendererPpapiHostImpl::HasUserGesture(PP_Instance instance) const {
           ppapi::PERMISSION_BYPASS_USER_GESTURE))
     return true;
   return instance_object->IsProcessingUserGesture();
+}
+
+IPC::PlatformFileForTransit RendererPpapiHostImpl::ShareHandleWithRemote(
+    base::PlatformFile handle,
+    bool should_close_source) {
+  if (!dispatcher_) {
+    if (should_close_source)
+      base::ClosePlatformFile(handle);
+    return IPC::InvalidPlatformFileForTransit();
+  }
+  return dispatcher_->ShareHandleWithRemote(handle, should_close_source);
 }
 
 PluginInstance* RendererPpapiHostImpl::GetAndValidateInstance(

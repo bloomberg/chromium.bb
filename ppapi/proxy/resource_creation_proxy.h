@@ -126,11 +126,6 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual PP_Resource CreateX509CertificatePrivate(
       PP_Instance instance) OVERRIDE;
 #if !defined(OS_NACL)
-  virtual PP_Resource CreateAudioInput0_1(
-      PP_Instance instance,
-      PP_Resource config_id,
-      PPB_AudioInput_Callback audio_input_callback,
-      void* user_data) OVERRIDE;
   virtual PP_Resource CreateAudioInput(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateBroker(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateBrowserFont(

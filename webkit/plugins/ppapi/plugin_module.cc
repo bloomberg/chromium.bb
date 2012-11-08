@@ -86,7 +86,6 @@
 #include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/c/private/ppb_x509_certificate_private.h"
-#include "ppapi/c/trusted/ppb_audio_input_trusted_dev.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"
@@ -294,8 +293,6 @@ const void* InternalGetInterface(const char* name) {
 
   // Please keep alphabetized by interface macro name with "special" stuff at
   // the bottom.
-  if (strcmp(name, PPB_AUDIO_INPUT_TRUSTED_DEV_INTERFACE_0_1) == 0)
-    return ::ppapi::thunk::GetPPB_AudioInputTrusted_0_1_Thunk();
   if (strcmp(name, PPB_AUDIO_TRUSTED_INTERFACE_0_6) == 0)
     return ::ppapi::thunk::GetPPB_AudioTrusted_0_6_Thunk();
   if (strcmp(name, PPB_BUFFER_TRUSTED_INTERFACE_0_1) == 0)

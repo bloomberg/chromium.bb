@@ -22,7 +22,6 @@
   F(PPB_Audio_API) \
   F(PPB_AudioConfig_API) \
   F(PPB_AudioInput_API) \
-  F(PPB_AudioInputTrusted_API) \
   F(PPB_AudioTrusted_API) \
   F(PPB_Broker_API) \
   F(PPB_BrowserFont_Trusted_API) \

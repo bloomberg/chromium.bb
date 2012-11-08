@@ -9,7 +9,6 @@
  */
 
 label Chrome {
-  M17 = 0.1,
   M19 = 0.2
 };
 
@@ -28,13 +27,6 @@ typedef void PPB_AudioInput_Callback([in] mem_t sample_buffer,
  */
 [macro="PPB_AUDIO_INPUT_DEV_INTERFACE"]
 interface PPB_AudioInput_Dev {
-  [deprecate=0.2]
-  PP_Resource Create(
-      [in] PP_Instance instance,
-      [in] PP_Resource config,
-      [in] PPB_AudioInput_Callback audio_input_callback,
-      [inout] mem_t user_data);
-
   /**
    * Creates an audio input resource.
    *
@@ -44,7 +36,6 @@ interface PPB_AudioInput_Dev {
    * @return A <code>PP_Resource</code> corresponding to an audio input resource
    * if successful, 0 if failed.
    */
-  [version=0.2]
   PP_Resource Create(
       [in] PP_Instance instance);
 
@@ -80,7 +71,6 @@ interface PPB_AudioInput_Dev {
    *
    * @return An error code from <code>pp_errors.h</code>.
    */
-  [version=0.2]
   int32_t EnumerateDevices(
       [in] PP_Resource audio_input,
       [out] PP_Resource devices,
@@ -106,7 +96,6 @@ interface PPB_AudioInput_Dev {
    *
    * @return An error code from <code>pp_errors.h</code>.
    */
-  [version=0.2]
   int32_t Open(
       [in] PP_Resource audio_input,
       [in] PP_Resource device_ref,
@@ -165,7 +154,6 @@ interface PPB_AudioInput_Dev {
    * @param[in] audio_input A <code>PP_Resource</code> corresponding to an audio
    * input resource.
    */
-  [version=0.2]
   void Close(
       [in] PP_Resource audio_input);
 };

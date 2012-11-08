@@ -39,11 +39,16 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   // RendererPpapiHost.
   virtual ppapi::host::PpapiHost* GetPpapiHost() OVERRIDE;
   virtual bool IsValidInstance(PP_Instance instance) const OVERRIDE;
+  virtual webkit::ppapi::PluginInstance* GetPluginInstance(
+      PP_Instance instance) const OVERRIDE;
   virtual RenderView* GetRenderViewForInstance(
       PP_Instance instance) const OVERRIDE;
   virtual WebKit::WebPluginContainer* GetContainerForInstance(
       PP_Instance instance) const OVERRIDE;
   virtual bool HasUserGesture(PP_Instance instance) const OVERRIDE;
+  virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
+      base::PlatformFile handle,
+      bool should_close_source) OVERRIDE;
 
  private:
   ppapi::proxy::ResourceMessageTestSink sink_;

@@ -19,6 +19,8 @@
           'cpp/completion_callback.h',
           'utility/completion_callback_factory.h',
 
+          'proxy/audio_input_resource.cc',
+          'proxy/audio_input_resource.h',
           'proxy/broker_dispatcher.cc',
           'proxy/broker_dispatcher.h',
           'proxy/connection.h',
@@ -65,8 +67,6 @@
           'proxy/ppapi_command_buffer_proxy.h',
           'proxy/ppapi_command_buffer_proxy.cc',
           'proxy/ppapi_message_utils.h',
-          'proxy/ppb_audio_input_proxy.cc',
-          'proxy/ppb_audio_input_proxy.h',
           'proxy/ppb_audio_proxy.cc',
           'proxy/ppb_audio_proxy.h',
           'proxy/ppb_broker_proxy.cc',
@@ -175,12 +175,12 @@
         'target_conditions': [
           ['>(nacl_untrusted_build)==1', {
             'sources!': [
+              'proxy/audio_input_resource.cc',
               'proxy/broker_dispatcher.cc',
               'proxy/flash_device_id_resource.cc',
               'proxy/flash_font_file_resource.cc',
               'proxy/flash_clipboard_resource.cc',
               'proxy/flash_resource.cc',
-              'proxy/ppb_audio_input_proxy.cc',
               'proxy/ppb_broker_proxy.cc',
               'proxy/ppb_buffer_proxy.cc',
               'proxy/ppb_file_chooser_proxy.cc',

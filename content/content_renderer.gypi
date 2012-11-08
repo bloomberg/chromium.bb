@@ -163,6 +163,8 @@
     'renderer/password_form_conversion_utils.cc',
     'renderer/pepper/content_renderer_pepper_host_factory.cc',
     'renderer/pepper/content_renderer_pepper_host_factory.h',
+    'renderer/pepper/pepper_audio_input_host.cc',
+    'renderer/pepper/pepper_audio_input_host.h',
     'renderer/pepper/pepper_broker_impl.cc',
     'renderer/pepper/pepper_broker_impl.h',
     'renderer/pepper/pepper_device_enumeration_event_handler.cc',

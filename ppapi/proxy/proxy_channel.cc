@@ -7,6 +7,10 @@
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_test_sink.h"
 
+#if defined(OS_NACL)
+#include <unistd.h>
+#endif
+
 namespace ppapi {
 namespace proxy {
 
@@ -51,8 +55,16 @@ IPC::PlatformFileForTransit ProxyChannel::ShareHandleWithRemote(
       base::PlatformFile handle,
       bool should_close_source) {
   // Channel could be closed if the plugin crashes.
-  if (!channel_.get())
+  if (!channel_.get()) {
+    if (should_close_source) {
+#if !defined(OS_NACL)
+      base::ClosePlatformFile(handle);
+#else
+      close(handle);
+#endif
+    }
     return IPC::InvalidPlatformFileForTransit();
+  }
   return delegate_->ShareHandleWithRemote(handle, *channel_,
                                           should_close_source);
 }

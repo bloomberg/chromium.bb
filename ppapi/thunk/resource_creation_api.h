@@ -5,7 +5,6 @@
 #ifndef PPAPI_THUNK_RESOURCE_CREATION_API_H_
 #define PPAPI_THUNK_RESOURCE_CREATION_API_H_
 
-#include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
@@ -128,11 +127,6 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateWebSocket(PP_Instance instance) = 0;
   virtual PP_Resource CreateX509CertificatePrivate(PP_Instance instance) = 0;
 #if !defined(OS_NACL)
-  virtual PP_Resource CreateAudioInput0_1(
-      PP_Instance instance,
-      PP_Resource config_id,
-      PPB_AudioInput_Callback audio_input_callback,
-      void* user_data) = 0;
   virtual PP_Resource CreateAudioInput(PP_Instance instance) = 0;
   virtual PP_Resource CreateBroker(PP_Instance instance) = 0;
   virtual PP_Resource CreateBrowserFont(

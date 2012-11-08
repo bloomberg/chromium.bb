@@ -7,6 +7,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
+#include "ppapi/proxy/audio_input_resource.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/flash_device_id_resource.h"
@@ -16,7 +17,6 @@
 #include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_audio_input_proxy.h"
 #include "ppapi/proxy/ppb_audio_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_broker_proxy.h"
@@ -268,19 +268,9 @@ PP_Resource ResourceCreationProxy::CreateX509CertificatePrivate(
 }
 
 #if !defined(OS_NACL)
-PP_Resource ResourceCreationProxy::CreateAudioInput0_1(
-    PP_Instance instance,
-    PP_Resource config_id,
-    PPB_AudioInput_Callback audio_input_callback,
-    void* user_data) {
-  return PPB_AudioInput_Proxy::CreateProxyResource0_1(instance, config_id,
-                                                      audio_input_callback,
-                                                      user_data);
-}
-
 PP_Resource ResourceCreationProxy::CreateAudioInput(
     PP_Instance instance) {
-  return PPB_AudioInput_Proxy::CreateProxyResource(instance);
+  return (new AudioInputResource(GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateBroker(PP_Instance instance) {

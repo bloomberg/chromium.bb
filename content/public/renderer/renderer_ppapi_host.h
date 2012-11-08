@@ -6,7 +6,9 @@
 #define CONTENT_PUBLIC_RENDERER_RENDERER_PPAPI_HOST_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/platform_file.h"
 #include "content/common/content_export.h"
+#include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_instance.h"
 
 class FilePath;
@@ -19,6 +21,12 @@ namespace ppapi {
 class PpapiPermissions;
 namespace host {
 class PpapiHost;
+}
+}
+
+namespace webkit {
+namespace ppapi {
+class PluginInstance;
 }
 }
 
@@ -63,6 +71,11 @@ class RendererPpapiHost {
   // plugin associated with this host.
   virtual bool IsValidInstance(PP_Instance instance) const = 0;
 
+  // Returns the PluginInstance for the given PP_Instance, or NULL if the
+  // PP_Instance is invalid.
+  virtual webkit::ppapi::PluginInstance* GetPluginInstance(
+      PP_Instance instance) const = 0;
+
   // Returns the RenderView for the given plugin instance, or NULL if the
   // instance is invalid.
   virtual RenderView* GetRenderViewForInstance(PP_Instance instance) const = 0;
@@ -78,6 +91,16 @@ class RendererPpapiHost {
   // restricted by user gestures). Returns false if the instance is invalid or
   // if there is no current user gesture.
   virtual bool HasUserGesture(PP_Instance instance) const = 0;
+
+  // Shares a file handle (HANDLE / file descriptor) with the remote side. It
+  // returns a handle that should be sent in exactly one IPC message. Upon
+  // receipt, the remote side then owns that handle. Note: if sending the
+  // message fails, the returned handle is properly closed by the IPC system. If
+  // |should_close_source| is set to true, the original handle is closed by this
+  // operation and should not be used again.
+  virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
+      base::PlatformFile handle,
+      bool should_close_source) = 0;
 
  protected:
   virtual ~RendererPpapiHost() {}
