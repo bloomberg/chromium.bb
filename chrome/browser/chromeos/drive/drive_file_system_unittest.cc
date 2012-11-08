@@ -167,7 +167,10 @@ class DriveFileSystemTest : public testing::Test {
         expected_sub_dir_type_(DriveCache::CACHE_TYPE_META),
         expected_success_(true),
         expect_outgoing_symlink_(false),
-        root_feed_changestamp_(0) {
+        // |root_feed_changestamp_| should be set to the largest changestamp in
+        // account metadata feed. But we fake it by some non-zero positive
+        // increasing value.  See |LoadChangeFeed()|.
+        root_feed_changestamp_(1) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -2536,6 +2539,17 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
   EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "", _, _))
       .Times(1);
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL(
+          "drive/Directory 1/Sub Directory Folder"))))).Times(1);
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL(
+          "drive/Directory 1/Sub Directory Folder/"
+          "Sub Sub Directory Folder"))))).Times(1);
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Entry 1 Title"))))).Times(1);
 
   SearchCallback callback = base::Bind(&DriveSearchCallback,
       &message_loop_,
@@ -2543,7 +2557,9 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
       GURL("https://next_feed"));
 
   file_system_->Search("foo", GURL(), callback);
-  message_loop_.Run();  // Wait to get our result.
+  // Make sure all the delayed tasks to complete.
+  // message_loop_.Run() can return before the delta feed processing finishes.
+  google_apis::test_util::RunBlockingPoolTask();
 }
 
 TEST_F(DriveFileSystemTest, ContentSearchEmptyResult) {
