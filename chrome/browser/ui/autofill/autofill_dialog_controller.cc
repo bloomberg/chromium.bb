@@ -11,8 +11,30 @@
 
 namespace autofill {
 
+namespace {
+
+// Looks through |input_template| for the types in |requested_data|. Appends
+// DetailInput values to |inputs|.
+void FilterInputs(const std::vector<AutofillFieldType>& requested_data,
+                  const DetailInput* input_template,
+                  size_t template_size,
+                  DetailInputs* inputs) {
+  for (size_t i = 0; i < template_size; ++i) {
+    for (size_t j = 0; j < requested_data.size(); ++j) {
+      const DetailInput* input = &input_template[i];
+      if (requested_data[j] == input->type) {
+        inputs->push_back(input);
+        break;
+      }
+    }
+  }
+}
+
+}  // namespace
+
 AutofillDialogController::AutofillDialogController(
-    content::WebContents* contents)
+    content::WebContents* contents,
+    const std::vector<AutofillFieldType>& requested_data)
     : contents_(contents) {
   // TODO(estade): replace with real data.
   suggested_emails_.AddItem(ASCIIToUTF16("captain.jack@gmail.com"));
@@ -22,11 +44,29 @@ AutofillDialogController::AutofillDialogController(
   suggested_billing_.AddItem(ASCIIToUTF16("that one"));
   suggested_billing_.AddItem(ASCIIToUTF16("Enter new billing"));
   suggested_shipping_.AddItem(ASCIIToUTF16("Enter new shipping"));
+
+  // TODO(estade): remove duplicates from |requested_data|.
+  FilterInputs(requested_data,
+               kEmailInputs,
+               kEmailInputsSize,
+               &requested_email_fields_);
+
+  FilterInputs(requested_data,
+               kBillingInputs,
+               kBillingInputsSize,
+               &requested_billing_fields_);
+
+  FilterInputs(requested_data,
+               kShippingInputs,
+               kShippingInputsSize,
+               &requested_shipping_fields_);
 }
 
 AutofillDialogController::~AutofillDialogController() {}
 
 void AutofillDialogController::Show() {
+  // TODO(estade): don't show the dialog if the site didn't specify the right
+  // fields. First we must figure out what the "right" fields are.
   view_.reset(AutofillDialogView::Create(this));
   view_->Show();
 }
@@ -83,12 +123,63 @@ string16 AutofillDialogController::ConfirmButtonText() const {
 }
 
 bool AutofillDialogController::ConfirmButtonEnabled() const {
-  return false;
+  // TODO(estade): implement.
+  return true;
 }
 
-void AutofillDialogController::ViewClosed(Action action) {
-  // TODO(estade): pass the result along to the page.
+const DetailInputs& AutofillDialogController::RequestedFieldsForSection(
+    DialogSection section) const {
+  switch (section) {
+    case SECTION_EMAIL:
+      return requested_email_fields_;
+    case SECTION_BILLING:
+      return requested_billing_fields_;
+    case SECTION_SHIPPING:
+      return requested_shipping_fields_;
+  }
+
+  NOTREACHED();
+  return requested_shipping_fields_;
+}
+
+ui::ComboboxModel* AutofillDialogController::SuggestionModelForSection(
+    DialogSection section) {
+  switch (section) {
+    case SECTION_EMAIL:
+      return &suggested_emails_;
+    case SECTION_BILLING:
+      return &suggested_billing_;
+    case SECTION_SHIPPING:
+      return &suggested_shipping_;
+  }
+
+  NOTREACHED();
+  return NULL;
+}
+
+void AutofillDialogController::ViewClosed(DialogAction action) {
+  if (action == ACTION_SUBMIT) {
+    FillOutputForSection(SECTION_EMAIL);
+    FillOutputForSection(SECTION_BILLING);
+    if (view_->UseBillingForShipping()) {
+      // TODO(estade): fill in shipping info from billing info.
+    } else {
+      FillOutputForSection(SECTION_SHIPPING);
+    }
+    // TODO(estade): pass the result along to the page.
+  }
+
   delete this;
+}
+
+void AutofillDialogController::FillOutputForSection(DialogSection section) {
+  int suggestion_selection = view_->GetSuggestionSelection(section);
+  if (suggestion_selection <
+          SuggestionModelForSection(section)->GetItemCount() - 1) {
+    // TODO(estade): Fill in |output_| from suggestion.
+  } else {
+    view_->GetUserInput(section, &output_);
+  }
 }
 
 // SuggestionsComboboxModel ----------------------------------------------------

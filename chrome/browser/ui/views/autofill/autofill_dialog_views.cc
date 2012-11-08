@@ -43,6 +43,7 @@ AutofillDialogView* AutofillDialogView::Create(
 
 AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
     : controller_(controller),
+      did_submit_(false),
       window_(NULL),
       contents_(NULL) {
   DCHECK(controller);
@@ -62,6 +63,24 @@ void AutofillDialogViews::Show() {
       true, ConstrainedWindowViews::DEFAULT_INSETS);
 }
 
+int AutofillDialogViews::GetSuggestionSelection(DialogSection section) {
+  return GroupForSection(section)->suggested_input->selected_index();
+}
+
+void AutofillDialogViews::GetUserInput(DialogSection section,
+                                       DetailOutputMap* output) {
+  DetailsGroup* group = GroupForSection(section);
+  for (TextfieldMap::iterator it = group->textfields.begin();
+       it != group->textfields.end(); ++it) {
+    views::Textfield* field = it->second;
+    output->insert(std::make_pair(it->first, field->text()));
+  }
+}
+
+bool AutofillDialogViews::UseBillingForShipping() {
+  return use_billing_for_shipping_->checked();
+}
+
 string16 AutofillDialogViews::GetWindowTitle() const {
   return controller_->DialogTitle();
 }
@@ -69,7 +88,7 @@ string16 AutofillDialogViews::GetWindowTitle() const {
 void AutofillDialogViews::DeleteDelegate() {
   window_ = NULL;
   // |this| belongs to |controller_|.
-  controller_->ViewClosed(AutofillDialogController::AUTOFILL_ACTION_ABORT);
+  controller_->ViewClosed(did_submit_ ? ACTION_SUBMIT : ACTION_ABORT);
 }
 
 views::Widget* AutofillDialogViews::GetWidget() {
@@ -104,7 +123,7 @@ bool AutofillDialogViews::Cancel() {
 }
 
 bool AutofillDialogViews::Accept() {
-  NOTREACHED();
+  did_submit_ = true;
   return true;
 }
 
@@ -167,29 +186,35 @@ views::View* AutofillDialogViews::CreateDetailsContainer() {
                            views::kRelatedControlVerticalSpacing));
 
   // Email.
-  email_ = CreateDetailsSection(controller_->EmailSectionLabel(),
-                                CreateEmailInputs(),
-                                controller_->suggested_emails());
+  CreateDetailsSection(
+      controller_->EmailSectionLabel(),
+      CreateEmailInputs(),
+      controller_->SuggestionModelForSection(SECTION_EMAIL),
+      &email_);
   view->AddChildView(email_.container);
   // Billing.
-  billing_ = CreateDetailsSection(controller_->BillingSectionLabel(),
-                                  CreateBillingInputs(),
-                                  controller_->suggested_billing());
+  CreateDetailsSection(
+      controller_->BillingSectionLabel(),
+      CreateBillingInputs(),
+      controller_->SuggestionModelForSection(SECTION_BILLING),
+      &billing_);
   view->AddChildView(billing_.container);
   // Shipping.
-  shipping_ = CreateDetailsSection(controller_->ShippingSectionLabel(),
-                                   CreateShippingInputs(),
-                                   controller_->suggested_shipping());
+  CreateDetailsSection(
+      controller_->ShippingSectionLabel(),
+      CreateShippingInputs(),
+      controller_->SuggestionModelForSection(SECTION_SHIPPING),
+      &shipping_);
   view->AddChildView(shipping_.container);
   shipping_.container->SetVisible(!use_billing_for_shipping_->checked());
 
   return view;
 }
 
-AutofillDialogViews::DetailsGroup AutofillDialogViews::CreateDetailsSection(
-    const string16& label,
-    views::View* inputs,
-    ui::ComboboxModel* model) {
+void AutofillDialogViews::CreateDetailsSection(const string16& label,
+                                               views::View* inputs,
+                                               ui::ComboboxModel* model,
+                                               DetailsGroup* group) {
   // Inputs container (manual inputs + combobox).
   views::View* inputs_container = new views::View();
   inputs_container->SetLayoutManager(
@@ -204,8 +229,8 @@ AutofillDialogViews::DetailsGroup AutofillDialogViews::CreateDetailsSection(
   views::GridLayout* layout = new views::GridLayout(container);
   container->SetLayoutManager(layout);
 
-  const int column_set_id = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
+  const int kColumnSetId = 0;
+  views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
   // TODO(estade): pull out these constants, and figure out better values
   // for them.
   column_set->AddColumn(views::GridLayout::FILL,
@@ -222,22 +247,18 @@ AutofillDialogViews::DetailsGroup AutofillDialogViews::CreateDetailsSection(
                         300,
                         0);
 
-  layout->StartRow(0, column_set_id);
+  layout->StartRow(0, kColumnSetId);
   layout->AddView(CreateDetailsSectionLabel(label));
   layout->AddView(inputs_container);
 
-  DetailsGroup group;
-  group.container = container;
-  group.suggested_input = combobox;
-  group.manual_input = inputs;
-  UpdateDetailsGroupState(group);
-  return group;
+  group->container = container;
+  group->suggested_input = combobox;
+  group->manual_input = inputs;
+  UpdateDetailsGroupState(*group);
 }
 
 views::View* AutofillDialogViews::CreateEmailInputs() {
-  views::Textfield* field = new views::Textfield();
-  field->set_placeholder_text(ASCIIToUTF16("placeholder text"));
-  return field;
+  return InitInputsView(SECTION_EMAIL);
 }
 
 views::View* AutofillDialogViews::CreateBillingInputs() {
@@ -247,8 +268,7 @@ views::View* AutofillDialogViews::CreateBillingInputs() {
                            views::kRelatedControlVerticalSpacing);
   billing->SetLayoutManager(layout);
 
-  billing->AddChildView(
-      InitInputsFromTemplate(kBillingInputs, kBillingInputsSize));
+  billing->AddChildView(InitInputsView(SECTION_BILLING));
 
   use_billing_for_shipping_ =
       new views::Checkbox(controller_->UseBillingForShippingText());
@@ -260,31 +280,33 @@ views::View* AutofillDialogViews::CreateBillingInputs() {
 }
 
 views::View* AutofillDialogViews::CreateShippingInputs() {
-  return InitInputsFromTemplate(kShippingInputs, kShippingInputsSize);
+  return InitInputsView(SECTION_SHIPPING);
 }
 
 // TODO(estade): we should be using Chrome-style constrained window padding
 // values.
-views::View* AutofillDialogViews::InitInputsFromTemplate(
-    const DetailInput* inputs,
-    size_t inputs_len) {
+views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
+  const DetailInputs& inputs = controller_->RequestedFieldsForSection(section);
+  TextfieldMap* textfields = &GroupForSection(section)->textfields;
+
   views::View* view = new views::View();
   views::GridLayout* layout = new views::GridLayout(view);
   view->SetLayoutManager(layout);
 
-  for (size_t i = 0; i < inputs_len; ++i) {
-    const DetailInput& input = inputs[i];
+  for (DetailInputs::const_iterator it = inputs.begin();
+       it != inputs.end(); ++it) {
+    const DetailInput& input = **it;
     if (!controller_->ShouldShowInput(input))
       continue;
 
-    int column_set_id = input.row_id;
-    views::ColumnSet* column_set = layout->GetColumnSet(column_set_id);
+    int kColumnSetId = input.row_id;
+    views::ColumnSet* column_set = layout->GetColumnSet(kColumnSetId);
     if (!column_set) {
       // Create a new column set and row.
-      column_set = layout->AddColumnSet(column_set_id);
-      if (i > 0)
+      column_set = layout->AddColumnSet(kColumnSetId);
+      if (it != inputs.begin())
         layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-      layout->StartRow(0, column_set_id);
+      layout->StartRow(0, kColumnSetId);
     } else {
       // Add a new column to existing row.
       column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
@@ -303,6 +325,7 @@ views::View* AutofillDialogViews::InitInputsFromTemplate(
 
     views::Textfield* field = new views::Textfield();
     field->set_placeholder_text(ASCIIToUTF16(input.placeholder_text));
+    textfields->insert(std::make_pair(input.type, field));
     layout->AddView(field);
   }
 
@@ -319,9 +342,26 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   group.manual_input->SetVisible(!show_combobox);
 }
 
+AutofillDialogViews::DetailsGroup* AutofillDialogViews::
+    GroupForSection(DialogSection section) {
+  switch (section) {
+    case SECTION_EMAIL:
+      return &email_;
+    case SECTION_BILLING:
+      return &billing_;
+    case SECTION_SHIPPING:
+      return &shipping_;
+  }
+
+  NOTREACHED();
+  return NULL;
+}
+
 AutofillDialogViews::DetailsGroup::DetailsGroup()
     : container(NULL),
       suggested_input(NULL),
       manual_input(NULL) {}
+
+AutofillDialogViews::DetailsGroup::~DetailsGroup() {}
 
 }  // namespace autofill
