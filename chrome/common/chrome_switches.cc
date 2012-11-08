@@ -497,6 +497,10 @@ const char kEasyOffStoreExtensionInstall[] = "easy-off-store-extension-install";
 const char kEnableExperimentalExtensionApis[] =
     "enable-experimental-extension-apis";
 
+// Enable autofill for new elements like checkboxes. crbug.com/157636
+const char kEnableExperimentalFormFilling[] =
+    "enable-experimental-form-filling";
+
 // Enables logging for extension activity.
 const char kEnableExtensionActivityLogging[] =
     "enable-extension-activity-logging";

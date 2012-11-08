@@ -1092,6 +1092,13 @@ const Experiment kExperiments[] = {
     kOsWin,
     SINGLE_VALUE_TYPE(switches::kShowAppListShortcut)
   },
+  {
+    "enable-experimental-form-filling",
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_NAME,
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_DESCRIPTION,
+    kOsWin | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableExperimentalFormFilling)
+  },
 };
 
 const Experiment* experiments = kExperiments;

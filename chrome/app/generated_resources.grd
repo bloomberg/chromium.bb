@@ -6317,6 +6317,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_NEW_AUTOFILL_HEURISTICS_DESCRIPTION" desc="Description for the flag to enable new Autofill heuristics">
         Enable new Autofill heuristics.  This primarily covers detection of additional field types, such as credit card type.
       </message>
+      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_NAME" desc="Title for the flag to enable experimental form filling">
+        Enable experimental form filling
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_DESCRIPTION" desc="Description for the flag to enable experimantal form filling feature">
+        Enable experimental form filling. Enables a collection of experimental features that make form filling easier.
+      </message>
       <message name="IDS_FLAGS_SYNC_SEARCH_ENGINES_NAME" desc="Title for the flag to enable syncing the Search Engines datatype">
         Enable syncing search engines
       </message>

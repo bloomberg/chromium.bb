@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
@@ -15,6 +16,7 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/autofill_xml_parser.h"
@@ -517,6 +519,12 @@ std::string FormStructure::FormSignature() const {
 }
 
 bool FormStructure::IsAutofillable(bool require_method_post) const {
+  // TODO(ramankk): Remove this check once we have better way of identifying the
+  // cases to trigger experimental form filling.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExperimentalFormFilling))
+    return true;
+
   if (autofill_count() < kRequiredFillableFields)
     return false;
 
@@ -534,6 +542,12 @@ void FormStructure::UpdateAutofillCount() {
 }
 
 bool FormStructure::ShouldBeParsed(bool require_method_post) const {
+  // TODO(ramankk): Remove this check once we have better way of identifying the
+  // cases to trigger experimental form filling.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExperimentalFormFilling))
+    return true;
+
   if (field_count() < kRequiredFillableFields)
     return false;
 
