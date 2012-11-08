@@ -298,13 +298,16 @@
     },
     'ntp': {
       'filepath': 'chrome/browser/resources/ntp4/|'\
-        'chrome/browser/resources/touch_ntp/|'\
-        'chrome/browser/resources/touch_ntp/|'\
+        'chrome/browser/resources/ntp_search/|'\
         'chrome/browser/ui/webui/ntp/',
     },
     'omnibox': {
       'filepath': 'chrome/browser/autocomplete/'\
                   '|chrome/browser/ui/.*/omnibox/'
+    },
+    'options': {
+      'filepath': 'chrome/browser/resources/options/|'\
+          'chrome/browser/ui/webui/options/',
     },
     'panels': {
       'filepath': 'chrome/browser/ui/panels'\
@@ -576,6 +579,7 @@
     'npapi_headers': ['stuartmorgan@chromium.org'],
     'ntp': ['estade+watch@chromium.org', 'dbeam+watch-ntp@chromium.org'],
     'omnibox': ['suzhe@chromium.org'],
+    'options': ['dbeam+watch-options@chromium.org'],
     'panels': ['dimich@chromium.org', 'jennb@chromium.org',
                'dcheng@chromium.org', 'jianli@chromium.org'],
     'pepper_api': ['piman+watch@chromium.org', 'darin-cc@chromium.org',
