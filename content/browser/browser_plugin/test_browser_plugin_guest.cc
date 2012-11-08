@@ -27,6 +27,7 @@ TestBrowserPluginGuest::TestBrowserPluginGuest(
       damage_buffer_call_count_(0),
       exit_observed_(false),
       focus_observed_(false),
+      blur_observed_(false),
       advance_focus_observed_(false),
       was_hidden_observed_(false),
       stop_observed_(false),
@@ -131,10 +132,23 @@ void TestBrowserPluginGuest::WaitForExit() {
 }
 
 void TestBrowserPluginGuest::WaitForFocus() {
-  if (focus_observed_)
+  if (focus_observed_) {
+    focus_observed_ = false;
     return;
+  }
   focus_message_loop_runner_ = new MessageLoopRunner();
   focus_message_loop_runner_->Run();
+  focus_observed_ = false;
+}
+
+void TestBrowserPluginGuest::WaitForBlur() {
+  if (blur_observed_) {
+    blur_observed_ = false;
+    return;
+  }
+  blur_message_loop_runner_ = new MessageLoopRunner();
+  blur_message_loop_runner_->Run();
+  blur_observed_ = false;
 }
 
 void TestBrowserPluginGuest::WaitForAdvanceFocus() {
@@ -199,9 +213,15 @@ void TestBrowserPluginGuest::WaitForLoadStop() {
 }
 
 void TestBrowserPluginGuest::SetFocus(bool focused) {
-  focus_observed_ = true;
-  if (focus_message_loop_runner_)
-    focus_message_loop_runner_->Quit();
+  if (focused) {
+    focus_observed_ = true;
+    if (focus_message_loop_runner_)
+      focus_message_loop_runner_->Quit();
+  } else {
+    blur_observed_ = true;
+    if (blur_message_loop_runner_)
+      blur_message_loop_runner_->Quit();
+  }
   BrowserPluginGuest::SetFocus(focused);
 }
 

@@ -5758,6 +5758,8 @@ void RenderViewImpl::OnSetFocus(bool enable) {
   }
   // Notify all Pepper plugins.
   pepper_delegate_.OnSetFocus(enable);
+  // Notify all BrowserPlugins of the RenderView's focus state.
+  BrowserPluginManager::Get()->SetEmbedderFocus(this, enable);
 }
 
 void RenderViewImpl::PpapiPluginFocusChanged() {

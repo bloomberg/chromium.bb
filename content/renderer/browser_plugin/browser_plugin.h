@@ -32,6 +32,7 @@ class MockBrowserPlugin;
 class CONTENT_EXPORT BrowserPlugin :
     NON_EXPORTED_BASE(public WebKit::WebPlugin) {
  public:
+  RenderViewImpl* render_view() const { return render_view_.get(); }
   // Called only by tests to clean up before we blow away the MockRenderProcess.
   void Cleanup();
 
@@ -98,6 +99,12 @@ class CONTENT_EXPORT BrowserPlugin :
   // Tells the BrowserPlugin to advance the focus to the next (or previous)
   // element.
   void AdvanceFocus(bool reverse);
+  // Inform the BrowserPlugin of the focus state of the embedder RenderView.
+  void SetEmbedderFocus(bool focused);
+  // Informs the guest of an updated focus state.
+  void UpdateGuestFocus();
+  // Indicates whether the guest should be focused.
+  bool ShouldGuestBeFocused() const;
 
   // Inform the BrowserPlugin that the guest's contentWindow is ready,
   // and provide it with a routing ID to grab it.
@@ -261,7 +268,8 @@ class CONTENT_EXPORT BrowserPlugin :
   std::string storage_partition_id_;
   bool persist_storage_;
   int content_window_routing_id_;
-  bool focused_;
+  bool plugin_focused_;
+  bool embedder_focused_;
   // Tracks the visibility of the browser plugin regardless of the whole
   // embedder RenderView's visibility.
   bool visible_;

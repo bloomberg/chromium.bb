@@ -284,6 +284,8 @@ class BrowserPluginHostTest : public ContentBrowserTest {
         shell()->web_contents());
     RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
         embedder_web_contents->GetRenderViewHost());
+    // Focus the embedder.
+    rvh->Focus();
 
     // Allow the test to do some operations on the embedder before we perform
     // the first navigation of the guest.
@@ -1104,6 +1106,34 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusPreservation) {
     ASSERT_TRUE(value->GetAsBoolean(&result));
     EXPECT_TRUE(result);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusTracksEmbedder) {
+  const char* kEmbedderURL = "files/browser_plugin_embedder.html";
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      test_embedder()->web_contents()->GetRenderViewHost());
+  RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
+      test_guest()->web_contents()->GetRenderViewHost());
+  {
+    // Focus the BrowserPlugin. This will have the effect of also focusing the
+    // current guest.
+    ExecuteSyncJSFunction(
+        rvh, ASCIIToUTF16("document.getElementById('plugin').focus();"));
+    // Verify that key presses go to the guest.
+    SimulateSpaceKeyPress(test_embedder()->web_contents());
+    test_guest()->WaitForInput();
+    // Verify that the guest is focused.
+    scoped_ptr<base::Value> value(
+        guest_rvh->ExecuteJavascriptAndGetValue(string16(),
+            ASCIIToUTF16("document.hasFocus()")));
+    bool result = false;
+    ASSERT_TRUE(value->GetAsBoolean(&result));
+    EXPECT_TRUE(result);
+  }
+  // Blur the embedder.
+  test_embedder()->web_contents()->GetRenderViewHost()->Blur();
+  test_guest()->WaitForBlur();
 }
 
 }  // namespace content

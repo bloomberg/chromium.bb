@@ -227,7 +227,6 @@ int RendererMain(const MainFunctionParams& parameters) {
     RenderProcessImpl render_process;
     new RenderThreadImpl();
 #endif
-    new BrowserPluginManagerImpl();
 
     platform.RunSandboxTests(no_sandbox);
 

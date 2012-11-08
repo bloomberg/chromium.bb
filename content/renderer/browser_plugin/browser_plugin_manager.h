@@ -46,6 +46,7 @@ class CONTENT_EXPORT BrowserPluginManager : public IPC::Sender,
   void AddBrowserPlugin(int instance_id, BrowserPlugin* browser_plugin);
   void RemoveBrowserPlugin(int instance_id);
   BrowserPlugin* GetBrowserPlugin(int instance_id) const;
+  void SetEmbedderFocus(const RenderViewImpl* embedder, bool focused);
 
  protected:
   IDMap<BrowserPlugin> instances_;

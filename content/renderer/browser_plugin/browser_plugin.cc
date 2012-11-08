@@ -98,7 +98,8 @@ BrowserPlugin::BrowserPlugin(
       process_id_(-1),
       persist_storage_(false),
       content_window_routing_id_(MSG_ROUTING_NONE),
-      focused_(false),
+      plugin_focused_(false),
+      embedder_focused_(false),
       visible_(true),
       current_nav_entry_index_(0),
       nav_entry_count_(0) {
@@ -137,7 +138,7 @@ void BrowserPlugin::SetSrcAttribute(const std::string& src) {
     BrowserPluginHostMsg_CreateGuest_Params params;
     params.storage_partition_id = storage_partition_id_;
     params.persist_storage = persist_storage_;
-    params.focused = focused_;
+    params.focused = ShouldGuestBeFocused();
     params.visible = visible_;
     PopulateAutoSizeParameters(&params.auto_size);
     BrowserPluginManager::Get()->Send(
@@ -624,9 +625,33 @@ void BrowserPlugin::LoadRedirect(const GURL& old_url,
 }
 
 void BrowserPlugin::AdvanceFocus(bool reverse) {
-  // We do not have a RenderView when we are testing.
-  if (render_view_)
-    render_view_->GetWebView()->advanceFocus(reverse);
+  DCHECK(render_view_);
+  render_view_->GetWebView()->advanceFocus(reverse);
+}
+
+void BrowserPlugin::SetEmbedderFocus(bool focused) {
+  if (embedder_focused_ == focused)
+    return;
+
+  bool old_guest_focus_state = ShouldGuestBeFocused();
+  embedder_focused_ = focused;
+
+  if (ShouldGuestBeFocused() != old_guest_focus_state)
+    UpdateGuestFocus();
+}
+
+void BrowserPlugin::UpdateGuestFocus() {
+  if (!navigate_src_sent_)
+    return;
+  bool should_be_focused = ShouldGuestBeFocused();
+  BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SetFocus(
+      render_view_routing_id_,
+      instance_id_,
+      should_be_focused));
+}
+
+bool BrowserPlugin::ShouldGuestBeFocused() const {
+  return plugin_focused_ && embedder_focused_;
 }
 
 void BrowserPlugin::GuestContentWindowReady(int content_window_routing_id) {
@@ -868,17 +893,14 @@ TransportDIB* BrowserPlugin::CreateTransportDIB(const size_t size) {
 }
 
 void BrowserPlugin::updateFocus(bool focused) {
-  if (focused_ == focused)
+  if (plugin_focused_ == focused)
     return;
 
-  focused_ = focused;
-  if (!navigate_src_sent_)
-    return;
+  bool old_guest_focus_state = ShouldGuestBeFocused();
+  plugin_focused_ = focused;
 
-  BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SetFocus(
-      render_view_routing_id_,
-      instance_id_,
-      focused));
+  if (ShouldGuestBeFocused() != old_guest_focus_state)
+    UpdateGuestFocus();
 }
 
 void BrowserPlugin::updateVisibility(bool visible) {
