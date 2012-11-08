@@ -6,18 +6,22 @@
 
 #include <windows.h>
 #include <shellapi.h>
+#include <shobjidl.h>
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/i18n/rtl.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/metro.h"
+#include "base/win/registry.h"
 #include "base/win/text_services_message_filter.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
@@ -39,6 +43,7 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/shell_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/main_function_params.h"
 #include "grit/app_locale_settings.h"
 #include "grit/chromium_strings.h"
@@ -88,6 +93,28 @@ class TranslationDelegate : public installer::TranslationDelegate {
  public:
   virtual string16 GetLocalizedString(int installer_string_id) OVERRIDE;
 };
+
+// Forces the Desktop vs Metro preference on Win8 back to Desktop if Chrome has
+// lost default browser. This is to prevent a case where Chrome is running on
+// the Desktop and is made default again (at which point subsequent launches
+// would try to launch in Metro and fail, rdv'ing back to Desktop Chrome).
+void ResetLaunchModePreferenceIfLostDefaultOnWin8() {
+  DCHECK(base::win::GetVersion() >= base::win::VERSION_WIN8);
+  if (ShellIntegration::IsDefaultBrowser() !=
+          ShellIntegration::IS_DEFAULT_WEB_CLIENT) {
+    DWORD reg_value = 0;
+    base::win::RegKey reg_key(HKEY_CURRENT_USER, chrome::kMetroRegistryPath,
+                              KEY_ALL_ACCESS);
+    if (reg_key.Valid() &&
+        reg_key.ReadValueDW(chrome::kLaunchModeValue,
+                            &reg_value) == ERROR_SUCCESS &&
+        reg_value != ECHUIM_DESKTOP &&
+        reg_key.WriteValue(chrome::kLaunchModeValue,
+                           ECHUIM_DESKTOP) != ERROR_SUCCESS) {
+      NOTREACHED();
+    }
+  }
+}
 
 }  // namespace
 
@@ -235,6 +262,12 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopRun() {
 #if defined(USE_AURA)
   metro_viewer_process_host_.reset(new MetroViewerProcessHost);
 #endif
+
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::FILE, FROM_HERE,
+        base::Bind(&ResetLaunchModePreferenceIfLostDefaultOnWin8));
+  }
 }
 
 // static

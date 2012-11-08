@@ -223,13 +223,13 @@ bool ShouldLaunchInWindows8ImmersiveMode(const FilePath& user_data_dir) {
     return false;
   }
 
-  base::win::RegKey reg_key;
   DWORD reg_value = 0;
-  if (reg_key.Create(HKEY_CURRENT_USER, chrome::kMetroRegistryPath,
-                     KEY_READ) == ERROR_SUCCESS &&
+  base::win::RegKey reg_key(HKEY_CURRENT_USER, chrome::kMetroRegistryPath,
+                            KEY_READ);
+  if (reg_key.Valid() &&
       reg_key.ReadValueDW(chrome::kLaunchModeValue,
                           &reg_value) == ERROR_SUCCESS) {
-    return reg_value == 1;
+    return reg_value == ECHUIM_IMMERSIVE;
   }
   return base::win::IsMachineATablet();
 }
