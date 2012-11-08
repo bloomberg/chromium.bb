@@ -1,0 +1,125 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CC_REGION_H_
+#define CC_REGION_H_
+
+#include <string>
+
+#include "base/logging.h"
+#include "cc/cc_export.h"
+#include "third_party/skia/include/core/SkRegion.h"
+#include "ui/gfx/rect.h"
+
+namespace cc {
+
+class CC_EXPORT Region {
+ public:
+  Region();
+  Region(const Region& region);
+  Region(gfx::Rect rect);
+  ~Region();
+
+  const Region& operator=(gfx::Rect rect);
+  const Region& operator=(const Region& region);
+
+  bool IsEmpty() const;
+
+  bool Contains(gfx::Point point) const;
+  bool Contains(gfx::Rect rect) const;
+  bool Contains(const Region& region) const;
+
+  bool Intersects(gfx::Rect rect) const;
+  bool Intersects(const Region& region) const;
+
+  void Subtract(gfx::Rect rect);
+  void Subtract(const Region& region);
+  void Union(gfx::Rect rect);
+  void Union(const Region& region);
+  void Intersect(gfx::Rect rect);
+  void Intersect(const Region& region);
+
+  bool Equals(const Region& other) const { return skregion_ == other.skregion_; }
+
+  gfx::Rect bounds() const {
+    SkIRect r = skregion_.getBounds();
+    // TODO(danakj) Use method from ui/gfx/skia_utils.h when it exists.
+    return gfx::Rect(r.x(), r.y(), r.width(), r.height());
+  }
+
+  std::string ToString() const;
+
+  class CC_EXPORT Iterator {
+   public:
+    Iterator(const Region& region);
+    ~Iterator();
+
+    gfx::Rect rect() const {
+      SkIRect r = it_.rect();
+      // TODO(danakj) Use method from ui/gfx/skia_utils.h when it exists.
+      return gfx::Rect(r.x(), r.y(), r.width(), r.height());
+    }
+
+    void next() {
+      it_.next();
+    }
+    bool has_rect() const {
+      return !it_.done();
+    }
+
+   private:
+    SkRegion::Iterator it_;
+  };
+
+ private:
+  SkRegion skregion_;
+};
+
+inline bool operator==(const Region& a, const Region& b) {
+  return a.Equals(b);
+}
+
+inline bool operator!=(const Region& a, const Region& b) {
+  return !(a == b);
+}
+
+inline Region SubtractRegions(const Region& a, const Region& b) {
+  Region result = a;
+  result.Subtract(b);
+  return result;
+}
+
+inline Region SubtractRegions(const Region& a, gfx::Rect b) {
+  Region result = a;
+  result.Subtract(b);
+  return result;
+}
+
+inline Region IntersectRegions(const Region& a, const Region& b) {
+  Region result = a;
+  result.Intersect(b);
+  return result;
+}
+
+inline Region IntersectRegions(const Region& a, gfx::Rect b) {
+  Region result = a;
+  result.Intersect(b);
+  return result;
+}
+
+inline Region UnionRegions(const Region& a, const Region& b) {
+  Region result = a;
+  result.Union(b);
+  return result;
+}
+
+inline Region UnionRegions(const Region& a, gfx::Rect b) {
+  Region result = a;
+  result.Union(b);
+  return result;
+}
+
+}  // namespace cc
+
+#endif  // CC_REGION_H_

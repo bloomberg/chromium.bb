@@ -6,6 +6,7 @@
 
 #include "cc/layer_sorter.h"
 
+#include <algorithm>
 #include <deque>
 #include <limits>
 #include <vector>

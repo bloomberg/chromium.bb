@@ -5,7 +5,6 @@
 #ifndef CC_TEST_OCCLUSION_TRACKER_TEST_COMMON_H_
 #define CC_TEST_OCCLUSION_TRACKER_TEST_COMMON_H_
 
-#include "Region.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/render_surface.h"
 #include "cc/render_surface_impl.h"
@@ -21,11 +20,11 @@ public:
     {
     }
 
-    cc::Region occlusionInScreenSpace() const { return cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInScreen; }
-    cc::Region occlusionInTargetSurface() const { return cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInTarget; }
+    cc::Region occlusionInScreenSpace() const { return cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.back().occlusionInScreen; }
+    cc::Region occlusionInTargetSurface() const { return cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.back().occlusionInTarget; }
 
-    void setOcclusionInScreenSpace(const cc::Region& region) { cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInScreen = region; }
-    void setOcclusionInTargetSurface(const cc::Region& region) { cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInTarget = region; }
+    void setOcclusionInScreenSpace(const cc::Region& region) { cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.back().occlusionInScreen = region; }
+    void setOcclusionInTargetSurface(const cc::Region& region) { cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.back().occlusionInTarget = region; }
 };
 
 typedef TestOcclusionTrackerBase<cc::Layer, cc::RenderSurface> TestOcclusionTracker;

@@ -5,9 +5,6 @@ include_rules = [
   "+third_party/khronos/GLES2/gl2ext.h",
   "+ui/gfx",
   "+media",
-# http://crbug.com/147395
-  "+third_party/WebKit/Source/WebCore/platform/graphics/Region.h",
-  "+Source/WebCore/platform/graphics/Region.h",
 # http://crbug.com/154451
   "+third_party/WebKit/Source/WTF/config.h",
   "+Source/WTF/config.h",

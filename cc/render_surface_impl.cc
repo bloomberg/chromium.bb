@@ -6,6 +6,8 @@
 
 #include "cc/render_surface_impl.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "cc/damage_tracker.h"

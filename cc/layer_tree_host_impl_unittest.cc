@@ -6,6 +6,8 @@
 
 #include "cc/layer_tree_host_impl.h"
 
+#include <cmath>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/hash_tables.h"
@@ -16,6 +18,7 @@
 #include "cc/io_surface_layer_impl.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tiling_data.h"
+#include "cc/math_util.h"
 #include "cc/quad_sink.h"
 #include "cc/render_pass_draw_quad.h"
 #include "cc/scrollbar_geometry_fixed_thumb.h"
@@ -1449,7 +1452,7 @@ TEST_P(LayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
 
         // The child layer should have scrolled down in its local coordinates an amount proportional to
         // the angle between it and the input scroll delta.
-        gfx::Vector2d expectedScrollDelta(0, gestureScrollDelta.y() * cosf(deg2rad(childLayerAngle)));
+        gfx::Vector2d expectedScrollDelta(0, gestureScrollDelta.y() * std::cos(MathUtil::Deg2Rad(childLayerAngle)));
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         expectContains(*scrollInfo.get(), childLayerId, expectedScrollDelta);
 
@@ -1468,13 +1471,13 @@ TEST_P(LayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
 
         // The child layer should have scrolled down in its local coordinates an amount proportional to
         // the angle between it and the input scroll delta.
-        gfx::Vector2d expectedScrollDelta(0, -gestureScrollDelta.x() * sinf(deg2rad(childLayerAngle)));
+        gfx::Vector2d expectedScrollDelta(0, -gestureScrollDelta.x() * std::sin(MathUtil::Deg2Rad(childLayerAngle)));
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         expectContains(*scrollInfo.get(), childLayerId, expectedScrollDelta);
 
         // The root layer should have scrolled more, since the input scroll delta was mostly
         // orthogonal to the child layer's vertical scroll axis.
-        gfx::Vector2d expectedRootScrollDelta(gestureScrollDelta.x() * pow(cosf(deg2rad(childLayerAngle)), 2), 0);
+        gfx::Vector2d expectedRootScrollDelta(gestureScrollDelta.x() * std::pow(std::cos(MathUtil::Deg2Rad(childLayerAngle)), 2), 0);
         expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), expectedRootScrollDelta);
     }
 }

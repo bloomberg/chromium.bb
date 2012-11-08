@@ -20,6 +20,9 @@ using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
+const double MathUtil::PI_DOUBLE = 3.14159265358979323846;
+const float MathUtil::PI_FLOAT = 3.14159265358979323846f;
+
 static HomogeneousCoordinate projectHomogeneousPoint(const WebTransformationMatrix& transform, const gfx::PointF& p)
 {
     // In this case, the layer we are trying to project onto is perpendicular to ray
@@ -380,18 +383,12 @@ gfx::Vector2dF MathUtil::computeTransform2dScaleComponents(const WebTransformati
     return gfx::Vector2dF(xScale, yScale);
 }
 
-static inline double rad2deg(double r)
-{
-  double pi = 3.14159265358979323846;
-  return r * 180.0 / pi;
-}
-
 float MathUtil::smallestAngleBetweenVectors(gfx::Vector2dF v1, gfx::Vector2dF v2)
 {
     double dotProduct = gfx::DotProduct(v1, v2) / v1.Length() / v2.Length();
     // Clamp to compensate for rounding errors.
     dotProduct = std::max(-1.0, std::min(1.0, dotProduct));
-    return static_cast<float>(rad2deg(std::acos(dotProduct)));
+    return static_cast<float>(Rad2Deg(std::acos(dotProduct)));
 }
 
 gfx::Vector2dF MathUtil::projectVector(gfx::Vector2dF source, gfx::Vector2dF destination)

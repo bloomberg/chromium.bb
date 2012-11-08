@@ -58,14 +58,14 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::leaveLayer(const LayerI
 template<typename LayerType, typename RenderSurfaceType>
 void OcclusionTrackerBase<LayerType, RenderSurfaceType>::enterRenderTarget(const LayerType* newTarget)
 {
-    if (!m_stack.isEmpty() && m_stack.last().target == newTarget)
+    if (!m_stack.empty() && m_stack.back().target == newTarget)
         return;
 
-    const LayerType* oldTarget = m_stack.isEmpty() ? 0 : m_stack.last().target;
+    const LayerType* oldTarget = m_stack.empty() ? 0 : m_stack.back().target;
     const RenderSurfaceType* oldAncestorThatMovesPixels = !oldTarget ? 0 : oldTarget->renderSurface()->nearestAncestorThatMovesPixels();
     const RenderSurfaceType* newAncestorThatMovesPixels = newTarget->renderSurface()->nearestAncestorThatMovesPixels();
 
-    m_stack.append(StackObject(newTarget));
+    m_stack.push_back(StackObject(newTarget));
 
     // We copy the screen occlusion into the new RenderSurfaceImpl subtree, but we never copy in the
     // target occlusion, since we are looking at a new RenderSurfaceImpl target.
@@ -111,13 +111,13 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::finishedRenderTarget(co
     // TODO(senorblanco):  Make this smarter for SkImageFilter case:  once
     // SkImageFilters can report affectsOpacity(), call that.
     if (finishedTarget->maskLayer() || !surfaceOpacityKnown(surface) || surface->drawOpacity() < 1 || finishedTarget->filters().hasFilterThatAffectsOpacity() || finishedTarget->filter()) {
-        m_stack.last().occlusionInScreen = Region();
-        m_stack.last().occlusionInTarget = Region();
+        m_stack.back().occlusionInScreen = Region();
+        m_stack.back().occlusionInTarget = Region();
     } else {
         if (!surfaceTransformsToTargetKnown(surface))
-            m_stack.last().occlusionInTarget = Region();
+            m_stack.back().occlusionInTarget = Region();
         if (!surfaceTransformsToScreenKnown(surface))
-            m_stack.last().occlusionInScreen = Region();
+            m_stack.back().occlusionInScreen = Region();
     }
 }
 
@@ -150,7 +150,7 @@ static inline void reduceOcclusion(const gfx::Rect& affectedArea, const gfx::Rec
     if (affectedArea.IsEmpty())
         return;
 
-    Region affectedOcclusion = intersect(occlusion, affectedArea);
+    Region affectedOcclusion = IntersectRegions(occlusion, affectedArea);
     Region::Iterator affectedOcclusionRects(affectedOcclusion);
 
     occlusion.Subtract(affectedArea);
@@ -234,17 +234,17 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::leaveToRenderTarget(con
         // Merge the top of the stack down.
         m_stack[lastIndex - 1].occlusionInScreen.Union(m_stack[lastIndex].occlusionInScreen);
         m_stack[lastIndex - 1].occlusionInTarget.Union(oldTargetOcclusionInNewTarget);
-        m_stack.removeLast();
+        m_stack.pop_back();
     } else {
         // Replace the top of the stack with the new pushed surface. Copy the occluded screen region to the top.
-        m_stack.last().target = newTarget;
-        m_stack.last().occlusionInTarget = oldTargetOcclusionInNewTarget;
+        m_stack.back().target = newTarget;
+        m_stack.back().occlusionInTarget = oldTargetOcclusionInNewTarget;
     }
 
     if (oldTarget->backgroundFilters().hasFilterThatMovesPixels()) {
-        reduceOcclusionBelowSurface(oldTarget, unoccludedSurfaceRect, oldSurface->drawTransform(), newTarget, m_stack.last().occlusionInTarget, m_stack.last().occlusionInScreen);
+        reduceOcclusionBelowSurface(oldTarget, unoccludedSurfaceRect, oldSurface->drawTransform(), newTarget, m_stack.back().occlusionInTarget, m_stack.back().occlusionInScreen);
         if (oldTarget->hasReplica())
-            reduceOcclusionBelowSurface(oldTarget, unoccludedReplicaRect, oldSurface->replicaDrawTransform(), newTarget, m_stack.last().occlusionInTarget, m_stack.last().occlusionInScreen);
+            reduceOcclusionBelowSurface(oldTarget, unoccludedReplicaRect, oldSurface->replicaDrawTransform(), newTarget, m_stack.back().occlusionInTarget, m_stack.back().occlusionInScreen);
     }
 }
 
@@ -275,9 +275,9 @@ static inline void addOcclusionBehindLayer(Region& region, const LayerType* laye
 template<typename LayerType, typename RenderSurfaceType>
 void OcclusionTrackerBase<LayerType, RenderSurfaceType>::markOccludedBehindLayer(const LayerType* layer)
 {
-    DCHECK(!m_stack.isEmpty());
-    DCHECK(layer->renderTarget() == m_stack.last().target);
-    if (m_stack.isEmpty())
+    DCHECK(!m_stack.empty());
+    DCHECK(layer->renderTarget() == m_stack.back().target);
+    if (m_stack.empty())
         return;
 
     if (!layerOpacityKnown(layer) || layer->drawOpacity() < 1)
@@ -292,20 +292,20 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::markOccludedBehindLayer
 
     gfx::Rect clipRectInTarget = layerClipRectInTarget(layer);
     if (layerTransformsToTargetKnown(layer))
-        addOcclusionBehindLayer<LayerType>(m_stack.last().occlusionInTarget, layer, layer->drawTransform(), opaqueContents, clipRectInTarget, m_minimumTrackingSize, 0);
+        addOcclusionBehindLayer<LayerType>(m_stack.back().occlusionInTarget, layer, layer->drawTransform(), opaqueContents, clipRectInTarget, m_minimumTrackingSize, 0);
 
     // We must clip the occlusion within the layer's clipRectInTarget within screen space as well. If the clip rect can't be moved to screen space and
     // remain rectilinear, then we don't add any occlusion in screen space.
 
     if (layerTransformsToScreenKnown(layer)) {
-        WebTransformationMatrix targetToScreenTransform = m_stack.last().target->renderSurface()->screenSpaceTransform();
+        WebTransformationMatrix targetToScreenTransform = m_stack.back().target->renderSurface()->screenSpaceTransform();
         bool clipped;
         gfx::QuadF clipQuadInScreen = MathUtil::mapQuad(targetToScreenTransform, gfx::QuadF(clipRectInTarget), clipped);
         // FIXME: Find a rect interior to the transformed clip quad.
         if (clipped || !clipQuadInScreen.IsRectilinear())
             return;
         gfx::Rect clipRectInScreen = gfx::IntersectRects(m_rootTargetRect, gfx::ToEnclosedRect(clipQuadInScreen.BoundingBox()));
-        addOcclusionBehindLayer<LayerType>(m_stack.last().occlusionInScreen, layer, layer->screenSpaceTransform(), opaqueContents, clipRectInScreen, m_minimumTrackingSize, m_occludingScreenSpaceRects);
+        addOcclusionBehindLayer<LayerType>(m_stack.back().occlusionInScreen, layer, layer->screenSpaceTransform(), opaqueContents, clipRectInScreen, m_minimumTrackingSize, m_occludingScreenSpaceRects);
     }
 }
 
@@ -323,20 +323,20 @@ bool OcclusionTrackerBase<LayerType, RenderSurfaceType>::occluded(const LayerTyp
     if (hasOcclusionFromOutsideTargetSurface)
         *hasOcclusionFromOutsideTargetSurface = false;
 
-    DCHECK(!m_stack.isEmpty());
-    if (m_stack.isEmpty())
+    DCHECK(!m_stack.empty());
+    if (m_stack.empty())
         return false;
     if (contentRect.IsEmpty())
         return true;
 
-    DCHECK(renderTarget == m_stack.last().target);
+    DCHECK(renderTarget == m_stack.back().target);
 
-    if (!implDrawTransformIsUnknown && testContentRectOccluded(contentRect, drawTransform, clippedRectInTarget, m_stack.last().occlusionInTarget))
+    if (!implDrawTransformIsUnknown && testContentRectOccluded(contentRect, drawTransform, clippedRectInTarget, m_stack.back().occlusionInTarget))
         return true;
 
     // renderTarget can be NULL in some tests.
     bool transformToScreenKnown = renderTarget && !implDrawTransformIsUnknown && layerTransformsToScreenKnown(renderTarget);
-    if (transformToScreenKnown && testContentRectOccluded(contentRect, renderTarget->renderSurface()->screenSpaceTransform() * drawTransform, m_rootTargetRect, m_stack.last().occlusionInScreen)) {
+    if (transformToScreenKnown && testContentRectOccluded(contentRect, renderTarget->renderSurface()->screenSpaceTransform() * drawTransform, m_rootTargetRect, m_stack.back().occlusionInScreen)) {
         if (hasOcclusionFromOutsideTargetSurface)
             *hasOcclusionFromOutsideTargetSurface = true;
         return true;
@@ -370,26 +370,26 @@ static inline gfx::Rect computeUnoccludedContentRect(const gfx::Rect& contentRec
 template<typename LayerType, typename RenderSurfaceType>
 gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::unoccludedContentRect(const LayerType* renderTarget, const gfx::Rect& contentRect, const WebKit::WebTransformationMatrix& drawTransform, bool implDrawTransformIsUnknown, const gfx::Rect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface) const
 {
-    DCHECK(!m_stack.isEmpty());
-    if (m_stack.isEmpty())
+    DCHECK(!m_stack.empty());
+    if (m_stack.empty())
         return contentRect;
     if (contentRect.IsEmpty())
         return contentRect;
 
     DCHECK(renderTarget->renderTarget() == renderTarget);
     DCHECK(renderTarget->renderSurface());
-    DCHECK(renderTarget == m_stack.last().target);
+    DCHECK(renderTarget == m_stack.back().target);
 
     // We want to return a rect that contains all the visible parts of |contentRect| in both screen space and in the target surface.
     // So we find the visible parts of |contentRect| in each space, and take the intersection.
 
     gfx::Rect unoccludedInScreen = contentRect;
     if (layerTransformsToScreenKnown(renderTarget) && !implDrawTransformIsUnknown)
-        unoccludedInScreen = computeUnoccludedContentRect(contentRect, renderTarget->renderSurface()->screenSpaceTransform() * drawTransform, m_rootTargetRect, m_stack.last().occlusionInScreen);
+        unoccludedInScreen = computeUnoccludedContentRect(contentRect, renderTarget->renderSurface()->screenSpaceTransform() * drawTransform, m_rootTargetRect, m_stack.back().occlusionInScreen);
 
     gfx::Rect unoccludedInTarget = contentRect;
     if (!implDrawTransformIsUnknown)
-        unoccludedInTarget = computeUnoccludedContentRect(contentRect, drawTransform, clippedRectInTarget, m_stack.last().occlusionInTarget);
+        unoccludedInTarget = computeUnoccludedContentRect(contentRect, drawTransform, clippedRectInTarget, m_stack.back().occlusionInTarget);
 
     if (hasOcclusionFromOutsideTargetSurface)
         *hasOcclusionFromOutsideTargetSurface = (gfx::IntersectRects(unoccludedInScreen, unoccludedInTarget) != unoccludedInTarget);
@@ -400,7 +400,7 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::unoccludedContentR
 template<typename LayerType, typename RenderSurfaceType>
 gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::unoccludedContributingSurfaceContentRect(const LayerType* layer, bool forReplica, const gfx::Rect& contentRect, bool* hasOcclusionFromOutsideTargetSurface) const
 {
-    DCHECK(!m_stack.isEmpty());
+    DCHECK(!m_stack.empty());
     // The layer is a contributing renderTarget so it should have a surface.
     DCHECK(layer->renderSurface());
     // The layer is a contributing renderTarget so its target should be itself.
@@ -408,7 +408,7 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::unoccludedContribu
     // The layer should not be the root, else what is is contributing to?
     DCHECK(layer->parent());
     // This should be called while the layer is still considered the current target in the occlusion tracker.
-    DCHECK(layer == m_stack.last().target);
+    DCHECK(layer == m_stack.back().target);
 
     if (contentRect.IsEmpty())
         return contentRect;

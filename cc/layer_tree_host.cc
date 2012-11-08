@@ -6,7 +6,6 @@
 
 #include "cc/layer_tree_host.h"
 
-#include "Region.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "cc/font_atlas.h"

@@ -5,10 +5,10 @@
 #ifndef CC_OCCLUSION_TRACKER_H_
 #define CC_OCCLUSION_TRACKER_H_
 
-#include "Region.h"
 #include "base/basictypes.h"
 #include "cc/cc_export.h"
 #include "cc/layer_iterator.h"
+#include "cc/region.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {
@@ -47,7 +47,7 @@ public:
     OverdrawMetrics& overdrawMetrics() const { return *m_overdrawMetrics.get(); }
 
     // Gives the region of the screen that is not occluded by something opaque.
-    Region computeVisibleRegionInScreen() const { return subtract(Region(m_rootTargetRect), m_stack.last().occlusionInScreen); }
+    Region computeVisibleRegionInScreen() const { return SubtractRegions(m_rootTargetRect, m_stack.back().occlusionInScreen); }
 
     void setMinimumTrackingSize(const gfx::Size& size) { m_minimumTrackingSize = size; }
 
@@ -70,7 +70,7 @@ protected:
     // - When we visit a layer representing itself, we add its occlusion to the current subtree, which is at the top of the stack.
     // - When we visit a layer representing a contributing surface, the current target will never be the top of the stack since we just came from the contributing surface.
     // We merge the occlusion at the top of the stack with the new current subtree. This new target is pushed onto the stack if not already there.
-    Vector<StackObject, 1> m_stack;
+    std::vector<StackObject> m_stack;
 
     // Allow tests to override this.
     virtual gfx::Rect layerClipRectInTarget(const LayerType*) const;

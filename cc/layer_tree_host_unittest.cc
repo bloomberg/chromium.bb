@@ -1689,12 +1689,9 @@ public:
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         m_layerTreeHost->commitComplete();
 
-        EXPECT_RECT_EQ(gfx::Rect(), grandChild->occludedScreenSpace().bounds());
-        EXPECT_EQ(0u, Region::Iterator(grandChild->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(30, 40, 170, 160), child->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(child->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(30, 40, 170, 160), rootLayer->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(rootLayer->occludedScreenSpace()).size());
+        EXPECT_EQ(gfx::Rect().ToString(), grandChild->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(30, 40, 170, 160).ToString(), child->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(30, 40, 170, 160).ToString(), rootLayer->occludedScreenSpace().ToString());
 
         // If the child layer is opaque, then it adds to the occlusion seen by the rootLayer.
         setLayerPropertiesForTesting(rootLayer.get(), 0, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(200, 200), true);
@@ -1706,12 +1703,9 @@ public:
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         m_layerTreeHost->commitComplete();
 
-        EXPECT_RECT_EQ(gfx::Rect(), grandChild->occludedScreenSpace().bounds());
-        EXPECT_EQ(0u, Region::Iterator(grandChild->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(30, 40, 170, 160), child->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(child->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(30, 30, 170, 170), rootLayer->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(rootLayer->occludedScreenSpace()).size());
+        EXPECT_EQ(gfx::Rect().ToString(), grandChild->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(30, 40, 170, 160).ToString(), child->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(30, 30, 170, 170).ToString(), rootLayer->occludedScreenSpace().ToString());
 
         // Add a second child to the root layer and the regions should merge
         setTestLayerPropertiesForTesting(rootLayer.get(), 0, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(200, 200), true);
@@ -1724,14 +1718,10 @@ public:
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         m_layerTreeHost->commitComplete();
 
-        EXPECT_RECT_EQ(gfx::Rect(), grandChild->occludedScreenSpace().bounds());
-        EXPECT_EQ(0u, Region::Iterator(grandChild->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(30, 40, 170, 160), child->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(child->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(30, 30, 170, 170), child2->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(child2->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(30, 20, 170, 180), rootLayer->occludedScreenSpace().bounds());
-        EXPECT_EQ(2u, Region::Iterator(rootLayer->occludedScreenSpace()).size());
+        EXPECT_EQ(gfx::Rect().ToString(), grandChild->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(30, 40, 170, 160).ToString(), child->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(30, 30, 170, 170).ToString(), child2->occludedScreenSpace().ToString());
+        EXPECT_EQ(UnionRegions(gfx::Rect(30, 30, 170, 170), gfx::Rect(70, 20, 130, 180)).ToString(), rootLayer->occludedScreenSpace().ToString());
 
         // Move the second child to be sure.
         setTestLayerPropertiesForTesting(rootLayer.get(), 0, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(200, 200), true);
@@ -1744,14 +1734,10 @@ public:
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         m_layerTreeHost->commitComplete();
 
-        EXPECT_RECT_EQ(gfx::Rect(), grandChild->occludedScreenSpace().bounds());
-        EXPECT_EQ(0u, Region::Iterator(grandChild->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(30, 40, 170, 160), child->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(child->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(30, 30, 170, 170), child2->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(child2->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(10, 30, 190, 170), rootLayer->occludedScreenSpace().bounds());
-        EXPECT_EQ(2u, Region::Iterator(rootLayer->occludedScreenSpace()).size());
+        EXPECT_EQ(gfx::Rect().ToString(), grandChild->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(30, 40, 170, 160).ToString(), child->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(30, 30, 170, 170).ToString(), child2->occludedScreenSpace().ToString());
+        EXPECT_EQ(UnionRegions(gfx::Rect(10, 70, 190, 130), gfx::Rect(30, 30, 170, 170)).ToString(), rootLayer->occludedScreenSpace().ToString());
 
         // If the child layer has a mask on it, then it shouldn't contribute to occlusion on stuff below it
         setLayerPropertiesForTesting(rootLayer.get(), 0, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(200, 200), true);
@@ -1766,14 +1752,10 @@ public:
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         m_layerTreeHost->commitComplete();
 
-        EXPECT_RECT_EQ(gfx::Rect(), grandChild->occludedScreenSpace().bounds());
-        EXPECT_EQ(0u, Region::Iterator(grandChild->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(30, 40, 170, 160), child->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(child->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(), child2->occludedScreenSpace().bounds());
-        EXPECT_EQ(0u, Region::Iterator(child2->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(10, 70, 190, 130), rootLayer->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(rootLayer->occludedScreenSpace()).size());
+        EXPECT_EQ(gfx::Rect().ToString(), grandChild->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(30, 40, 170, 160).ToString(), child->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), child2->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(10, 70, 190, 130).ToString(), rootLayer->occludedScreenSpace().ToString());
 
         // If the child layer with a mask is below child2, then child2 should contribute to occlusion on everything, and child shouldn't contribute to the rootLayer
         setLayerPropertiesForTesting(rootLayer.get(), 0, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(200, 200), true);
@@ -1788,14 +1770,10 @@ public:
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         m_layerTreeHost->commitComplete();
 
-        EXPECT_RECT_EQ(gfx::Rect(), child2->occludedScreenSpace().bounds());
-        EXPECT_EQ(0u, Region::Iterator(child2->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(10, 70, 190, 130), grandChild->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(grandChild->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(10, 40, 190, 160), child->occludedScreenSpace().bounds());
-        EXPECT_EQ(2u, Region::Iterator(child->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(10, 70, 190, 130), rootLayer->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(rootLayer->occludedScreenSpace()).size());
+        EXPECT_EQ(gfx::Rect().ToString(), child2->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(10, 70, 190, 130).ToString(), grandChild->occludedScreenSpace().ToString());
+        EXPECT_EQ(UnionRegions(gfx::Rect(30, 40, 170, 160), gfx::Rect(10, 70, 190, 130)).ToString(), child->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(10, 70, 190, 130), rootLayer->occludedScreenSpace());
 
         // If the child layer has a non-opaque drawOpacity, then it shouldn't contribute to occlusion on stuff below it
         setTestLayerPropertiesForTesting(rootLayer.get(), 0, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(200, 200), true);
@@ -1811,14 +1789,10 @@ public:
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         m_layerTreeHost->commitComplete();
 
-        EXPECT_RECT_EQ(gfx::Rect(), grandChild->occludedScreenSpace().bounds());
-        EXPECT_EQ(0u, Region::Iterator(grandChild->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(30, 40, 170, 160), child->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(child->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(), child2->occludedScreenSpace().bounds());
-        EXPECT_EQ(0u, Region::Iterator(child2->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(10, 70, 190, 130), rootLayer->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(rootLayer->occludedScreenSpace()).size());
+        EXPECT_EQ(gfx::Rect().ToString(), grandChild->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(30, 40, 170, 160).ToString(), child->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), child2->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(10, 70, 190, 130).ToString(), rootLayer->occludedScreenSpace().ToString());
 
         // If the child layer with non-opaque drawOpacity is below child2, then child2 should contribute to occlusion on everything, and child shouldn't contribute to the rootLayer
         setTestLayerPropertiesForTesting(rootLayer.get(), 0, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(200, 200), true);
@@ -1834,14 +1808,10 @@ public:
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         m_layerTreeHost->commitComplete();
 
-        EXPECT_RECT_EQ(gfx::Rect(), child2->occludedScreenSpace().bounds());
-        EXPECT_EQ(0u, Region::Iterator(child2->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(10, 70, 190, 130), grandChild->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(grandChild->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(10, 40, 190, 160), child->occludedScreenSpace().bounds());
-        EXPECT_EQ(2u, Region::Iterator(child->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(10, 70, 190, 130), rootLayer->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(rootLayer->occludedScreenSpace()).size());
+        EXPECT_EQ(gfx::Rect().ToString(), child2->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(10, 70, 190, 130).ToString(), grandChild->occludedScreenSpace().ToString());
+        EXPECT_EQ(UnionRegions(gfx::Rect(30, 40, 170, 160), gfx::Rect(10, 70, 190, 130)).ToString(), child->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(10, 70, 190, 130).ToString(), rootLayer->occludedScreenSpace().ToString());
 
         // Kill the layerTreeHost immediately.
         m_layerTreeHost->setRootLayer(0);
@@ -1897,14 +1867,10 @@ public:
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         m_layerTreeHost->commitComplete();
 
-        EXPECT_RECT_EQ(gfx::Rect(), child2->occludedScreenSpace().bounds());
-        EXPECT_EQ(0u, Region::Iterator(child2->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(10, 70, 190, 130), grandChild->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(grandChild->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(10, 40, 190, 160), child->occludedScreenSpace().bounds());
-        EXPECT_EQ(2u, Region::Iterator(child->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(10, 70, 190, 130), rootLayer->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(rootLayer->occludedScreenSpace()).size());
+        EXPECT_EQ(gfx::Rect().ToString(), child2->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(10, 70, 190, 130).ToString(), grandChild->occludedScreenSpace().ToString());
+        EXPECT_EQ(UnionRegions(gfx::Rect(30, 40, 170, 30), gfx::Rect(10, 70, 190, 130)).ToString(), child->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(10, 70, 190, 130).ToString(), rootLayer->occludedScreenSpace().ToString());
 
         // If the child layer has a filter that moves pixels/changes alpha, and is below child2, then child should not inherit occlusion from outside its subtree,
         // and should not contribute to the rootLayer
@@ -1924,14 +1890,10 @@ public:
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         m_layerTreeHost->commitComplete();
 
-        EXPECT_RECT_EQ(gfx::Rect(), child2->occludedScreenSpace().bounds());
-        EXPECT_EQ(0u, Region::Iterator(child2->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(), grandChild->occludedScreenSpace().bounds());
-        EXPECT_EQ(0u, Region::Iterator(grandChild->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(30, 40, 170, 160), child->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(child->occludedScreenSpace()).size());
-        EXPECT_RECT_EQ(gfx::Rect(10, 70, 190, 130), rootLayer->occludedScreenSpace().bounds());
-        EXPECT_EQ(1u, Region::Iterator(rootLayer->occludedScreenSpace()).size());
+        EXPECT_EQ(gfx::Rect().ToString(), child2->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), grandChild->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(30, 40, 170, 160).ToString(), child->occludedScreenSpace().ToString());
+        EXPECT_EQ(gfx::Rect(10, 70, 190, 130).ToString(), rootLayer->occludedScreenSpace().ToString());
 
         // Kill the layerTreeHost immediately.
         m_layerTreeHost->setRootLayer(0);
@@ -1988,9 +1950,7 @@ public:
 
         for (int i = 0; i < numSurfaces-1; ++i) {
             gfx::Rect expectedOcclusion(i+1, i+1, 200-i-1, 200-i-1);
-
-            EXPECT_RECT_EQ(expectedOcclusion, layers[i]->occludedScreenSpace().bounds());
-            EXPECT_EQ(1u, Region::Iterator(layers[i]->occludedScreenSpace()).size());
+            EXPECT_EQ(expectedOcclusion.ToString(), layers[i]->occludedScreenSpace().ToString());
         }
 
         // Kill the layerTreeHost immediately.

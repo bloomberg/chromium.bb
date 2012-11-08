@@ -34,6 +34,7 @@
       'occlusion_tracker_unittest.cc',
       'prioritized_resource_unittest.cc',
       'quad_culler_unittest.cc',
+      'region_unittest.cc',
       'render_pass_unittest.cc',
       'render_surface_filters_unittest.cc',
       'render_surface_unittest.cc',

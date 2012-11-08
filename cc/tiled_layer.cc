@@ -6,7 +6,6 @@
 
 #include "cc/tiled_layer.h"
 
-#include "Region.h"
 #include "base/basictypes.h"
 #include "cc/geometry.h"
 #include "cc/layer_impl.h"

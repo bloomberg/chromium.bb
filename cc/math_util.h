@@ -67,6 +67,14 @@ struct HomogeneousCoordinate {
 
 class CC_EXPORT MathUtil {
 public:
+    static const double PI_DOUBLE;
+    static const float PI_FLOAT;
+
+    static double Deg2Rad(double deg)  { return deg * PI_DOUBLE / 180; }
+    static double Rad2Deg(double rad)  { return rad * 180 / PI_DOUBLE; }
+
+    static float Deg2Rad(float deg)  { return deg * PI_FLOAT / 180; }
+    static float Rad2Deg(float rad)  { return rad * 180 / PI_FLOAT; }
 
     // Background: WebTransformationMatrix code in WebCore does not do the right thing in
     // mapRect / mapQuad / projectQuad when there is a perspective projection that causes

@@ -6,9 +6,9 @@
 
 #include "cc/test/layer_test_common.h"
 
-#include "Region.h"
 #include "cc/draw_quad.h"
 #include "cc/math_util.h"
+#include "cc/region.h"
 #include "cc/render_pass.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"

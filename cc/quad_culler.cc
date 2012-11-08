@@ -6,7 +6,6 @@
 
 #include "cc/quad_culler.h"
 
-#include "Region.h"
 #include "cc/append_quads_data.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/layer_impl.h"

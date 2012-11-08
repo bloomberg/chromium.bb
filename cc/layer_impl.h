@@ -7,12 +7,12 @@
 
 #include <string>
 
-#include "Region.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
 #include "cc/input_handler.h"
 #include "cc/layer_animation_controller.h"
+#include "cc/region.h"
 #include "cc/render_pass.h"
 #include "cc/render_surface_impl.h"
 #include "cc/resource_provider.h"

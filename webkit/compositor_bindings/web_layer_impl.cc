@@ -5,7 +5,6 @@
 #include "config.h"
 #include "web_layer_impl.h"
 
-#include "Region.h"
 #include "SkMatrix44.h"
 #ifdef LOG
 #undef LOG
@@ -13,6 +12,7 @@
 #include "base/string_util.h"
 #include "cc/active_animation.h"
 #include "cc/layer.h"
+#include "cc/region.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
@@ -403,29 +403,41 @@ void WebLayerImpl::setNonFastScrollableRegion(const WebVector<WebRect>& rects)
 
 WebVector<WebRect> WebLayerImpl::nonFastScrollableRegion() const
 {
-    cc::Region::Iterator regionRects(m_layer->nonFastScrollableRegion());
-    WebVector<WebRect> result(regionRects.size());
-    for (size_t i = 0; regionRects.has_rect(); regionRects.next(), ++i)
+    size_t numRects = 0;
+    for (cc::Region::Iterator regionRects(m_layer->nonFastScrollableRegion()); regionRects.has_rect(); regionRects.next())
+        ++numRects;
+
+    WebVector<WebRect> result(numRects);
+    size_t i = 0;
+    for (cc::Region::Iterator regionRects(m_layer->nonFastScrollableRegion()); regionRects.has_rect(); regionRects.next()) {
         result[i] = regionRects.rect();
+        ++i;
+    }
     return result;
 }
 
 void WebLayerImpl::setTouchEventHandlerRegion(const WebVector<WebRect>& rects)
 {
-  cc::Region region;
-  for (size_t i = 0; i < rects.size(); ++i)
-      region.Union(rects[i]);
-  m_layer->setTouchEventHandlerRegion(region);
-
+    cc::Region region;
+    for (size_t i = 0; i < rects.size(); ++i)
+        region.Union(rects[i]);
+    m_layer->setTouchEventHandlerRegion(region);
 }
 
 WebVector<WebRect> WebLayerImpl::touchEventHandlerRegion() const
 {
-  cc::Region::Iterator regionRects(m_layer->touchEventHandlerRegion());
-  WebVector<WebRect> result(regionRects.size());
-  for (size_t i = 0; regionRects.has_rect(); regionRects.next(), ++i)
-      result[i] = regionRects.rect();
-  return result;
+    size_t numRects = 0;
+    for (cc::Region::Iterator regionRects(m_layer->touchEventHandlerRegion()); regionRects.has_rect(); regionRects.next())
+        ++numRects;
+
+
+    WebVector<WebRect> result(numRects);
+    size_t i = 0;
+    for (cc::Region::Iterator regionRects(m_layer->touchEventHandlerRegion()); regionRects.has_rect(); regionRects.next()) {
+        result[i] = regionRects.rect();
+        ++i;
+    }
+    return result;
 }
 
 void WebLayerImpl::setIsContainerForFixedPositionLayers(bool enable)

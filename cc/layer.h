@@ -5,11 +5,11 @@
 #ifndef CC_LAYER_H_
 #define CC_LAYER_H_
 
-#include "Region.h"
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
 #include "cc/layer_animation_controller.h"
 #include "cc/occlusion_tracker.h"
+#include "cc/region.h"
 #include "cc/render_surface.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect.h"

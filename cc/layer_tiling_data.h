@@ -10,10 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
 #include "cc/hash_pair.h"
+#include "cc/region.h"
 #include "cc/scoped_ptr_hash_map.h"
 #include "cc/tiling_data.h"
 #include "ui/gfx/rect.h"
-#include "Region.h"
 
 namespace cc {
 

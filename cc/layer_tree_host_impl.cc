@@ -6,6 +6,8 @@
 
 #include "cc/layer_tree_host_impl.h"
 
+#include <algorithm>
+
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
 #include "cc/append_quads_data.h"
@@ -34,7 +36,6 @@
 #include "cc/texture_uploader.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
-#include <algorithm>
 
 using WebKit::WebTransformationMatrix;
 

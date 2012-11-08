@@ -34,10 +34,10 @@ public:
         , m_layerClipRectInTarget(gfx::Rect(0, 0, 1000, 1000))
     {
         // Pretend we have visited a render surface.
-        m_stack.append(StackObject());
+        m_stack.push_back(StackObject());
     }
 
-    void setOcclusion(const Region& occlusion) { m_stack.last().occlusionInTarget = occlusion; }
+    void setOcclusion(const Region& occlusion) { m_stack.back().occlusionInTarget = occlusion; }
 
 protected:
     virtual gfx::Rect layerClipRectInTarget(const Layer* layer) const OVERRIDE { return m_layerClipRectInTarget; }
@@ -1270,8 +1270,7 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     layer->update(*m_queue.get(), &occluded, m_stats);
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
-    EXPECT_RECT_EQ(gfx::IntersectRects(opaquePaintRect, visibleBounds), opaqueContents.bounds());
-    EXPECT_EQ(1u, Region::Iterator(opaqueContents).size());
+    EXPECT_EQ(gfx::IntersectRects(opaquePaintRect, visibleBounds).ToString(), opaqueContents.ToString());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 20000 * 2, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 17100, 1);
@@ -1283,8 +1282,7 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     layer->update(*m_queue.get(), &occluded, m_stats);
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
-    EXPECT_RECT_EQ(gfx::IntersectRects(opaquePaintRect, visibleBounds), opaqueContents.bounds());
-    EXPECT_EQ(1u, Region::Iterator(opaqueContents).size());
+    EXPECT_EQ(gfx::IntersectRects(opaquePaintRect, visibleBounds).ToString(), opaqueContents.ToString());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 20000 * 2, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 17100, 1);
@@ -1298,8 +1296,7 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     layer->update(*m_queue.get(), &occluded, m_stats);
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
-    EXPECT_RECT_EQ(gfx::IntersectRects(opaquePaintRect, visibleBounds), opaqueContents.bounds());
-    EXPECT_EQ(1u, Region::Iterator(opaqueContents).size());
+    EXPECT_EQ(gfx::IntersectRects(opaquePaintRect, visibleBounds).ToString(), opaqueContents.ToString());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 20000 * 2 + 1, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 17100, 1);
@@ -1313,8 +1310,7 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     layer->update(*m_queue.get(), &occluded, m_stats);
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
-    EXPECT_RECT_EQ(gfx::IntersectRects(gfx::Rect(10, 100, 90, 100), visibleBounds), opaqueContents.bounds());
-    EXPECT_EQ(1u, Region::Iterator(opaqueContents).size());
+    EXPECT_EQ(gfx::IntersectRects(gfx::Rect(10, 100, 90, 100), visibleBounds).ToString(), opaqueContents.ToString());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 20000 * 2 + 1  + 1, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 17100, 1);

@@ -135,6 +135,8 @@
       'quad_sink.h',
       'rate_limiter.cc',
       'rate_limiter.h',
+      'region.cc',
+      'region.h',
       'render_pass.cc',
       'render_pass.h',
       'render_pass_draw_quad.cc',
@@ -271,8 +273,6 @@
       ],
       'sources': [
         '<@(cc_source_files)',
-        'stubs/Region.h',
-
         'stubs/config.h',
       ],
     },
