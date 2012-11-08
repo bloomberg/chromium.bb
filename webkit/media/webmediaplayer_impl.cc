@@ -474,6 +474,9 @@ bool WebMediaPlayerImpl::seeking() const {
 float WebMediaPlayerImpl::duration() const {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
+  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
+    return std::numeric_limits<float>::quiet_NaN();
+
   base::TimeDelta duration = pipeline_->GetMediaDuration();
 
   // Return positive infinity if the resource is unbounded.
