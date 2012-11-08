@@ -205,14 +205,21 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
 
 ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
     const content::MainFunctionParams& parameters)
-    : ChromeBrowserMainPartsLinux(parameters) {
+    : ChromeBrowserMainPartsLinux(parameters),
+      did_post_main_message_loop_start_(false) {
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     chromeos::ShutdownKioskModeScreensaver();
-  cryptohome::AsyncMethodCaller::Shutdown();
-  chromeos::disks::DiskMountManager::Shutdown();
+
+  // PostMainMessageLoopStart() is not always called in tests. Calling
+  // Shutdown() on these can generate bogus WARNINGs or cause problems.
+  // TODO(stevenjb): Find a better way to do this for all Parts & stages.
+  if (did_post_main_message_loop_start_) {
+    cryptohome::AsyncMethodCaller::Shutdown();
+    chromeos::disks::DiskMountManager::Shutdown();
+  }
 
   // CrosLibrary is shut down before DBusThreadManager even though the former
   // is initialized before the latter becuase some of its libraries depend
@@ -222,10 +229,12 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   if (!parameters().ui_task && chromeos::CrosLibrary::Get())
     chromeos::CrosLibrary::Shutdown();
 
-  chromeos::input_method::InputMethodManager::Shutdown();
-
-  chromeos::CrosDBusService::Shutdown();
-  chromeos::DBusThreadManager::Shutdown();
+  if (did_post_main_message_loop_start_) {
+    chromeos::input_method::InputMethodManager::Shutdown();
+    chromeos::CrosDBusService::Shutdown();
+    // NOTE: This must only be called if Initialize() was called.
+    chromeos::DBusThreadManager::Shutdown();
+  }
 
   // To be precise, logout (browser shutdown) is not yet done, but the
   // remaining work is negligible, hence we say LogoutDone here.
@@ -290,6 +299,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // Initialize DBusThreadManager for the browser. This must be done after
   // the main message loop is started, as it uses the message loop.
   chromeos::DBusThreadManager::Initialize();
+
   // Add observers for WallpaperManager. WallpaperManager is initialized before
   // DBusThreadManager.
   chromeos::WallpaperManager::Get()->AddObservers();
@@ -322,6 +332,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
     chromeos::input_method::InputMethodManager::GetInstance()->
         GetXKeyboard()->SetNumLockEnabled(false);
   }
+
+  did_post_main_message_loop_start_ = true;
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
 }

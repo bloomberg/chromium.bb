@@ -81,11 +81,13 @@ bool IsCrashReportingEnabled(const PrefService* local_state) {
 
 ChromeBrowserMainPartsLinux::ChromeBrowserMainPartsLinux(
     const content::MainFunctionParams& parameters)
-    : ChromeBrowserMainPartsPosix(parameters) {
+    : ChromeBrowserMainPartsPosix(parameters),
+      did_pre_profile_init_(false) {
 }
 
 ChromeBrowserMainPartsLinux::~ChromeBrowserMainPartsLinux() {
-  chrome::MediaTransferProtocolManager::Shutdown();
+  if (did_pre_profile_init_)
+    chrome::MediaTransferProtocolManager::Shutdown();
 }
 
 void ChromeBrowserMainPartsLinux::PreProfileInit() {
@@ -114,6 +116,8 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 #endif
 
   chrome::MediaTransferProtocolManager::Initialize();
+
+  did_pre_profile_init_ = true;
 
   ChromeBrowserMainPartsPosix::PreProfileInit();
 }

@@ -11,17 +11,11 @@ namespace ui {
 
 class TextInputTestSupport {
  public:
-  TextInputTestSupport();
-  virtual ~TextInputTestSupport();
-
-  // Initialize DBusThreadManager for text input testing.
+  // Initialize DBusThreadManager for text input testing if necessary.
   static void Initialize();
 
-  // Shutdown DBusThreadManager.
+  // Shutdown DBusThreadManager if necessary.
   static void Shutdown();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TextInputTestSupport);
 };
 
 }  // namespace ui

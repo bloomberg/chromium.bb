@@ -95,6 +95,10 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Initialize with stub implementations for tests based on stubs.
   static void InitializeWithStub();
 
+  // Returns true if DBusThreadManager has been initialized. Call this to
+  // avoid initializing + shutting down DBusThreadManager more than once.
+  static bool IsInitialized();
+
   // Destroys the global instance.
   static void Shutdown();
 

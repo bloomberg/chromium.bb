@@ -8,23 +8,29 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif  // OS_CHROMEOS
 
+#if defined(OS_CHROMEOS)
+namespace {
+bool dbus_thread_manager_was_initialized = false;
+}
+#endif  // OS_CHROMEOS
+
 namespace ui {
-
-TextInputTestSupport::TextInputTestSupport() {
-}
-
-TextInputTestSupport::~TextInputTestSupport() {
-}
 
 void TextInputTestSupport::Initialize() {
 #if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::InitializeWithStub();
+  if (!chromeos::DBusThreadManager::IsInitialized()) {
+    chromeos::DBusThreadManager::InitializeWithStub();
+    dbus_thread_manager_was_initialized = true;
+  }
 #endif  // OS_CHROMEOS
 }
 
 void TextInputTestSupport::Shutdown() {
 #if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::Shutdown();
+  if (dbus_thread_manager_was_initialized) {
+    chromeos::DBusThreadManager::Shutdown();
+    dbus_thread_manager_was_initialized = false;
+  }
 #endif  // OS_CHROMEOS
 }
 

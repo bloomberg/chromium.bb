@@ -49,6 +49,7 @@
 namespace chromeos {
 
 static DBusThreadManager* g_dbus_thread_manager = NULL;
+static bool g_dbus_thread_manager_set_for_testing = false;
 
 // The DBusThreadManager implementation used in production.
 class DBusThreadManagerImpl : public DBusThreadManager {
@@ -447,10 +448,12 @@ class DBusThreadManagerImpl : public DBusThreadManager {
 
 // static
 void DBusThreadManager::Initialize() {
-  if (g_dbus_thread_manager) {
-    LOG(WARNING) << "DBusThreadManager was already initialized";
+  // Ignore Initialize() if we set a test DBusThreadManager.
+  if (g_dbus_thread_manager_set_for_testing)
     return;
-  }
+  // If we initialize DBusThreadManager twice we may also be shutting it down
+  // early; do not allow that.
+  CHECK(g_dbus_thread_manager == NULL);
   // Determine whether we use stub or real client implementations.
   if (base::chromeos::IsRunningOnChromeOS()) {
     g_dbus_thread_manager =
@@ -466,29 +469,35 @@ void DBusThreadManager::Initialize() {
 // static
 void DBusThreadManager::InitializeForTesting(
     DBusThreadManager* dbus_thread_manager) {
-  if (g_dbus_thread_manager) {
-    LOG(WARNING) << "DBusThreadManager was already initialized";
-    return;
-  }
+  // If we initialize DBusThreadManager twice we may also be shutting it down
+  // early; do not allow that.
+  CHECK(g_dbus_thread_manager == NULL);
   CHECK(dbus_thread_manager);
   g_dbus_thread_manager = dbus_thread_manager;
+  g_dbus_thread_manager_set_for_testing = true;
   VLOG(1) << "DBusThreadManager initialized with test implementation";
 }
 
 // static
 void DBusThreadManager::InitializeWithStub() {
+  // If we initialize DBusThreadManager twice we may also be shutting it down
+  // early; do not allow that.
+  CHECK(g_dbus_thread_manager == NULL);
   g_dbus_thread_manager =
         new DBusThreadManagerImpl(STUB_DBUS_CLIENT_IMPLEMENTATION);
-    VLOG(1) << "DBusThreadManager initialized with stub implementation";
+  VLOG(1) << "DBusThreadManager initialized with stub implementation";
+}
+
+// static
+bool DBusThreadManager::IsInitialized() {
+  return g_dbus_thread_manager != NULL;
 }
 
 // static
 void DBusThreadManager::Shutdown() {
-  if (!g_dbus_thread_manager) {
-    // TODO(satorux): Make it a DCHECK() once it's ready.
-    LOG(WARNING) << "DBusThreadManager::Shutdown() called with NULL manager";
-    return;
-  }
+  // If we called InitializeForTesting, this may get called more than once.
+  // Ensure that we only shutdown DBusThreadManager once.
+  CHECK(g_dbus_thread_manager || g_dbus_thread_manager_set_for_testing);
   delete g_dbus_thread_manager;
   g_dbus_thread_manager = NULL;
   VLOG(1) << "DBusThreadManager Shutdown completed";

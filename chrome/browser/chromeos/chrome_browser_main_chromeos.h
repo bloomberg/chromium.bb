@@ -74,6 +74,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<chromeos::ScreenDimmingObserver> screen_dimming_observer_;
   scoped_refptr<chromeos::RemovableDeviceNotificationsCros>
       removable_device_notifications_;
+  bool did_post_main_message_loop_start_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

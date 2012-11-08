@@ -39,15 +39,16 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
 
  private:
 #if defined(OS_CHROMEOS)
+  // TODO(stevenjb): Move these to ChromeBrowserMainChromeos.
   chromeos::VersionLoader cros_version_loader_;
   CancelableRequestConsumer cros_consumer_;
 #else
   scoped_refptr<chrome::RemovableDeviceNotificationsLinux>
       removable_device_notifications_linux_;
 #endif
-
   scoped_ptr<chrome::MediaTransferProtocolDeviceObserverLinux>
       media_transfer_protocol_device_observer_;
+  bool did_pre_profile_init_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsLinux);
 };

@@ -1644,10 +1644,3 @@
    fun:net::FileStream::Context::Orphan
    fun:net::FileStream::~FileStream
 }
-{
-   bug_159854
-   Heapcheck:Leak
-   ...
-   fun:chromeos::::ShillServiceClientStubImpl::GetObserverList
-   fun:chromeos::::ShillServiceClientStubImpl::NotifyObserversPropertyChanged
-}
