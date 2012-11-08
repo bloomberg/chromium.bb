@@ -146,8 +146,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
                             const gfx::Rect& target);
 
   // Calculates |drop_target_| based on |drag_point|. |drag_point| is in the
-  // grid view's coordinates.
-  void CalculateDropTarget(const gfx::Point& drag_point);
+  // grid view's coordinates. When |use_page_button_hovering| is true and
+  // |drag_point| is hovering on a page button, use the last slot on that page
+  // as drop target.
+  void CalculateDropTarget(const gfx::Point& drag_point,
+                           bool use_page_button_hovering);
 
   // Starts the page flip timer if |drag_point| is in left/right side page flip
   // zone or is over page switcher.

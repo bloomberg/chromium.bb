@@ -194,7 +194,7 @@ void AppsGridView::UpdateDrag(views::View* view,
     views::View::ConvertPointToTarget(drag_view_, this, &last_drag_point_);
 
     const Index last_drop_target = drop_target_;
-    CalculateDropTarget(last_drag_point_);
+    CalculateDropTarget(last_drag_point_, false);
     MaybeStartPageFlipTimer(last_drag_point_);
 
     gfx::Point page_switcher_point(last_drag_point_);
@@ -210,8 +210,11 @@ void AppsGridView::UpdateDrag(views::View* view,
 }
 
 void AppsGridView::EndDrag(bool cancel) {
-  if (!cancel && dragging() && drag_view_ && IsValidIndex(drop_target_))
-    MoveItemInModel(drag_view_, drop_target_);
+  if (!cancel && dragging() && drag_view_) {
+    CalculateDropTarget(last_drag_point_, true);
+    if (IsValidIndex(drop_target_))
+      MoveItemInModel(drag_view_, drop_target_);
+  }
 
   drag_pointer_ = NONE;
   drop_target_ = Index();
@@ -574,10 +577,12 @@ void AppsGridView::AnimationBetweenRows(views::View* view,
 #endif
 }
 
-void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point) {
+void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point,
+                                       bool use_page_button_hovering) {
   const int current_page = pagination_model_->selected_page();
 
-  if (page_switcher_view_->bounds().Contains(drag_point)) {
+  if (use_page_button_hovering &&
+      page_switcher_view_->bounds().Contains(drag_point)) {
     gfx::Point page_switcher_point(drag_point);
     views::View::ConvertPointToTarget(this, page_switcher_view_,
                                       &page_switcher_point);
@@ -727,7 +732,7 @@ void AppsGridView::TotalPagesChanged() {
 
 void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
   if (dragging()) {
-    CalculateDropTarget(last_drag_point_);
+    CalculateDropTarget(last_drag_point_, true);
     Layout();
     MaybeStartPageFlipTimer(last_drag_point_);
   } else {
