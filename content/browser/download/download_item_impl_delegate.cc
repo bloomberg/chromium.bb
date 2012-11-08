@@ -43,7 +43,8 @@ void DownloadItemImplDelegate::ReadyForDownloadCompletion(
   complete_callback.Run();
 }
 
-bool DownloadItemImplDelegate::ShouldOpenDownload(DownloadItemImpl* download) {
+bool DownloadItemImplDelegate::ShouldOpenDownload(
+    DownloadItemImpl* download, const ShouldOpenDownloadCallback& callback) {
   return false;
 }
 
@@ -56,10 +57,6 @@ void DownloadItemImplDelegate::CheckForFileRemoval(
     DownloadItemImpl* download_item) {}
 
 BrowserContext* DownloadItemImplDelegate::GetBrowserContext() const {
-  return NULL;
-}
-
-DownloadFileManager* DownloadItemImplDelegate::GetDownloadFileManager() {
   return NULL;
 }
 

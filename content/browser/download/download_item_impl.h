@@ -129,7 +129,6 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const OVERRIDE;
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual WebContents* GetWebContents() const OVERRIDE;
-  virtual void DelayedDownloadOpened(bool auto_opened) OVERRIDE;
   virtual void OnContentCheckCompleted(DownloadDangerType danger_type) OVERRIDE;
   virtual void SetOpenWhenComplete(bool open) OVERRIDE;
   virtual void SetIsTemporary(bool temporary) OVERRIDE;
@@ -164,9 +163,6 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void NotifyRemoved();
 
   virtual void OnDownloadedFileRemoved();
-
-  // Indicate that an error has occurred on the download.
-  virtual void Interrupt(DownloadInterruptReason reason);
 
   // Provide a weak pointer reference to a DownloadDestinationObserver
   // for use by download destinations.
@@ -283,11 +279,18 @@ class CONTENT_EXPORT DownloadItemImpl
   //     final rename and eliminate the interrupt reason callback.
   void OnDownloadFileReleased(DownloadInterruptReason reason);
 
+  // Called if the embedder took over opening a download, to indicate that
+  // the download has been opened.
+  virtual void DelayedDownloadOpened(bool auto_opened);
+
   // Called when the entire download operation (including renaming etc)
   // is completed.
   void Completed();
 
   // Helper routines -----------------------------------------------------------
+
+  // Indicate that an error has occurred on the download.
+  virtual void Interrupt(DownloadInterruptReason reason);
 
   // Cancel the DownloadFile if we have it.
   void CancelDownloadFile();

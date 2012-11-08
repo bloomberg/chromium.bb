@@ -352,21 +352,20 @@ bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(
       this, item->GetId(), user_complete_callback));
 }
 
-bool ChromeDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
+bool ChromeDownloadManagerDelegate::ShouldOpenDownload(
+    DownloadItem* item, const content::DownloadOpenDelayedCallback& callback) {
   if (download_crx_util::IsExtensionDownload(*item)) {
     scoped_refptr<extensions::CrxInstaller> crx_installer =
         download_crx_util::OpenChromeExtension(profile_, *item);
 
-    // CRX_INSTALLER_DONE will fire when the install completes.  Observe()
-    // will call DelayedDownloadOpened() on this item.  If this DownloadItem
-    // is not around when CRX_INSTALLER_DONE fires, Complete() will not be
-    // called.
+    // CRX_INSTALLER_DONE will fire when the install completes.  At that
+    // time, Observe() will call the passed callback.
     registrar_.Add(
         this,
         chrome::NOTIFICATION_CRX_INSTALLER_DONE,
         content::Source<extensions::CrxInstaller>(crx_installer.get()));
 
-    crx_installers_[crx_installer.get()] = item->GetId();
+    crx_installers_[crx_installer.get()] = callback;
     // The status text and percent complete indicator will change now
     // that we are installing a CRX.  Update observers so that they pick
     // up the change.
@@ -376,7 +375,7 @@ bool ChromeDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
 
   if (ShouldOpenWithWebIntents(item)) {
     OpenWithWebIntent(item);
-    item->DelayedDownloadOpened(true /* did_open */);
+    callback.Run(true);
     return false;
   }
 
@@ -689,12 +688,9 @@ void ChromeDownloadManagerDelegate::Observe(
 
   scoped_refptr<extensions::CrxInstaller> installer =
       content::Source<extensions::CrxInstaller>(source).ptr();
-  int download_id = crx_installers_[installer];
+  content::DownloadOpenDelayedCallback callback = crx_installers_[installer];
   crx_installers_.erase(installer.get());
-
-  DownloadItem* item = download_manager_->GetDownload(download_id);
-  if (item)
-    item->DelayedDownloadOpened(installer->did_handle_successfully());
+  callback.Run(installer->did_handle_successfully());
 }
 
 void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(

@@ -34,25 +34,21 @@ namespace {
 class MockDelegate : public DownloadItemImplDelegate {
  public:
   MOCK_METHOD2(DetermineDownloadTarget, void(
-      DownloadItemImpl* download, const DownloadTargetCallback& callback));
-  MOCK_METHOD1(ShouldOpenDownload, bool(DownloadItemImpl* download));
-  MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const FilePath& path));
-  MOCK_METHOD1(CheckForFileRemoval, void(DownloadItemImpl* download));
+      DownloadItemImpl*, const DownloadTargetCallback&));
+  MOCK_METHOD2(ShouldOpenDownload,
+               bool(DownloadItemImpl*, const ShouldOpenDownloadCallback&));
+  MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const FilePath&));
+  MOCK_METHOD1(CheckForFileRemoval, void(DownloadItemImpl*));
   MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
-  MOCK_METHOD1(UpdatePersistence, void(DownloadItemImpl* download));
-  MOCK_METHOD1(DownloadStopped, void(DownloadItemImpl* download));
-  MOCK_METHOD1(DownloadCompleted, void(DownloadItemImpl* download));
-  MOCK_METHOD1(DownloadOpened, void(DownloadItemImpl* download));
-  MOCK_METHOD1(DownloadRemoved, void(DownloadItemImpl* download));
+  MOCK_METHOD1(UpdatePersistence, void(DownloadItemImpl*));
+  MOCK_METHOD1(DownloadStopped, void(DownloadItemImpl*));
+  MOCK_METHOD1(DownloadCompleted, void(DownloadItemImpl*));
+  MOCK_METHOD1(DownloadOpened, void(DownloadItemImpl*));
+  MOCK_METHOD1(DownloadRemoved, void(DownloadItemImpl*));
   MOCK_METHOD1(DownloadRenamedToIntermediateName,
-               void(DownloadItemImpl* download));
-  MOCK_METHOD1(DownloadRenamedToFinalName, void(DownloadItemImpl* download));
-  MOCK_CONST_METHOD1(AssertStateConsistent, void(DownloadItemImpl* download));
-  virtual DownloadFileManager* GetDownloadFileManager() OVERRIDE {
-    return file_manager_;
-  }
- private:
-  DownloadFileManager* file_manager_;
+               void(DownloadItemImpl*));
+  MOCK_METHOD1(DownloadRenamedToFinalName, void(DownloadItemImpl*));
+  MOCK_CONST_METHOD1(AssertStateConsistent, void(DownloadItemImpl*));
 };
 
 class MockRequestHandle : public DownloadRequestHandleInterface {
@@ -316,7 +312,8 @@ TEST_F(DownloadItemTest, NotificationAfterInterrupted) {
   EXPECT_CALL(*download_file, Cancel());
   MockObserver observer(item);
 
-  item->Interrupt(DOWNLOAD_INTERRUPT_REASON_NONE);
+  item->DestinationObserverAsWeakPtr()->DestinationError(
+      DOWNLOAD_INTERRUPT_REASON_NONE);
   ASSERT_TRUE(observer.CheckUpdated());
 }
 
@@ -502,7 +499,7 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
                         Property(&DownloadItem::GetTargetFilePath,
                                  final_path))));
   EXPECT_CALL(*mock_delegate(), DownloadCompleted(item));
-  EXPECT_CALL(*mock_delegate(), ShouldOpenDownload(item))
+  EXPECT_CALL(*mock_delegate(), ShouldOpenDownload(item, _))
       .WillOnce(Return(true));
   EXPECT_CALL(*download_file, Detach(_))
       .WillOnce(ScheduleDetachCallback());
@@ -522,7 +519,7 @@ TEST_F(DownloadItemTest, Interrupted) {
 
   // Confirm interrupt sets state properly.
   EXPECT_CALL(*download_file, Cancel());
-  item->Interrupt(reason);
+  item->DestinationObserverAsWeakPtr()->DestinationError(reason);
   RunAllPendingInMessageLoops();
   EXPECT_EQ(DownloadItem::INTERRUPTED, item->GetState());
   EXPECT_EQ(reason, item->GetLastReason());

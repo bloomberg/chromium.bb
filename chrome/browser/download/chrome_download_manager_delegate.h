@@ -73,7 +73,9 @@ class ChromeDownloadManagerDelegate
   virtual bool ShouldCompleteDownload(
       content::DownloadItem* item,
       const base::Closure& complete_callback) OVERRIDE;
-  virtual bool ShouldOpenDownload(content::DownloadItem* item) OVERRIDE;
+  virtual bool ShouldOpenDownload(
+      content::DownloadItem* item,
+      const content::DownloadOpenDelayedCallback& callback) OVERRIDE;
   virtual bool GenerateFileHash() OVERRIDE;
   virtual void AddItemToPersistentStore(content::DownloadItem* item) OVERRIDE;
   virtual void UpdateItemInPersistentStore(
@@ -237,7 +239,8 @@ class ChromeDownloadManagerDelegate
   scoped_ptr<DownloadHistory> download_history_;
 
   // Maps from pending extension installations to DownloadItem IDs.
-  typedef base::hash_map<extensions::CrxInstaller*, int> CrxInstallerMap;
+  typedef base::hash_map<extensions::CrxInstaller*,
+      content::DownloadOpenDelayedCallback> CrxInstallerMap;
   CrxInstallerMap crx_installers_;
 
   content::NotificationRegistrar registrar_;

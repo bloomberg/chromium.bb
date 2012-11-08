@@ -230,11 +230,15 @@ bool DownloadManagerImpl::ShouldOpenFileBasedOnExtension(const FilePath& path) {
   return delegate_->ShouldOpenFileBasedOnExtension(path);
 }
 
-bool DownloadManagerImpl::ShouldOpenDownload(DownloadItemImpl* item) {
+bool DownloadManagerImpl::ShouldOpenDownload(
+    DownloadItemImpl* item, const ShouldOpenDownloadCallback& callback) {
   if (!delegate_)
     return true;
 
-  return delegate_->ShouldOpenDownload(item);
+  // Relies on DownloadItemImplDelegate::ShouldOpenDownloadCallback and
+  // DownloadManagerDelegate::DownloadOpenDelayedCallback "just happening"
+  // to have the same type :-}.
+  return delegate_->ShouldOpenDownload(item, callback);
 }
 
 void DownloadManagerImpl::SetDelegate(DownloadManagerDelegate* delegate) {

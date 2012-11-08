@@ -25,7 +25,6 @@ class BoundNetLog;
 
 namespace content {
 class DownloadFileFactory;
-class DownloadFileManager;
 class DownloadItemFactory;
 class DownloadItemImpl;
 
@@ -140,7 +139,9 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   virtual void ReadyForDownloadCompletion(
       DownloadItemImpl* item, const base::Closure& complete_callback) OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
-  virtual bool ShouldOpenDownload(DownloadItemImpl* item) OVERRIDE;
+  virtual bool ShouldOpenDownload(
+      DownloadItemImpl* item,
+      const ShouldOpenDownloadCallback& callback) OVERRIDE;
   virtual void CheckForFileRemoval(DownloadItemImpl* download_item) OVERRIDE;
   virtual void UpdatePersistence(DownloadItemImpl* download) OVERRIDE;
   virtual void DownloadStopped(DownloadItemImpl* download) OVERRIDE;

@@ -4,9 +4,9 @@
 
 // File method ordering: Methods in this file are in the same order as
 // in download_item_impl.h, with the following exception: The public
-// interfaces Start, DelayedDownloadOpened, MaybeCompleteDownload, and
-// OnDownloadCompleting are placed in chronological order with the other
-// (private) routines that together define a DownloadItem's state transitions
+// interfaces Start, MaybeCompleteDownload, and OnDownloadCompleting
+// are placed in chronological order with the other (private) routines
+// that together define a DownloadItem's state transitions
 // as the download progresses.  See "Download progression cascade" later in
 // this file.
 
@@ -820,33 +820,6 @@ void DownloadItemImpl::OnDownloadedFileRemoved() {
   UpdateObservers();
 }
 
-// An error occurred somewhere.
-void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
-  // Somewhat counter-intuitively, it is possible for us to receive an
-  // interrupt after we've already been interrupted.  The generation of
-  // interrupts from the file thread Renames and the generation of
-  // interrupts from disk writes go through two different mechanisms (driven
-  // by rename requests from UI thread and by write requests from IO thread,
-  // respectively), and since we choose not to keep state on the File thread,
-  // this is the place where the races collide.  It's also possible for
-  // interrupts to race with cancels.
-
-  // Whatever happens, the first one to hit the UI thread wins.
-  if (state_ != IN_PROGRESS_INTERNAL && state_ != COMPLETING_INTERNAL)
-    return;
-
-  last_reason_ = reason;
-  TransitionTo(INTERRUPTED_INTERNAL);
-
-  CancelDownloadFile();
-
-  // Cancel the originating URL request.
-  request_handle_->CancelRequest();
-
-  RecordDownloadInterrupted(reason, received_bytes_, total_bytes_);
-  delegate_->DownloadStopped(this);
-}
-
 base::WeakPtr<DownloadDestinationObserver>
 DownloadItemImpl::DestinationObserverAsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
@@ -1252,10 +1225,13 @@ void DownloadItemImpl::OnDownloadFileReleased(DownloadInterruptReason reason) {
     Interrupt(reason);
     return;
   }
-  if (delegate_->ShouldOpenDownload(this))
+  if (delegate_->ShouldOpenDownload(
+          this, base::Bind(&DownloadItemImpl::DelayedDownloadOpened,
+                           weak_ptr_factory_.GetWeakPtr()))) {
     Completed();
-  else
+  } else {
     delegate_delayed_complete_ = true;
+  }
 }
 
 void DownloadItemImpl::DelayedDownloadOpened(bool auto_opened) {
@@ -1291,6 +1267,33 @@ void DownloadItemImpl::Completed() {
 }
 
 // **** End of Download progression cascade
+
+// An error occurred somewhere.
+void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
+  // Somewhat counter-intuitively, it is possible for us to receive an
+  // interrupt after we've already been interrupted.  The generation of
+  // interrupts from the file thread Renames and the generation of
+  // interrupts from disk writes go through two different mechanisms (driven
+  // by rename requests from UI thread and by write requests from IO thread,
+  // respectively), and since we choose not to keep state on the File thread,
+  // this is the place where the races collide.  It's also possible for
+  // interrupts to race with cancels.
+
+  // Whatever happens, the first one to hit the UI thread wins.
+  if (state_ != IN_PROGRESS_INTERNAL && state_ != COMPLETING_INTERNAL)
+    return;
+
+  last_reason_ = reason;
+  TransitionTo(INTERRUPTED_INTERNAL);
+
+  CancelDownloadFile();
+
+  // Cancel the originating URL request.
+  request_handle_->CancelRequest();
+
+  RecordDownloadInterrupted(reason, received_bytes_, total_bytes_);
+  delegate_->DownloadStopped(this);
+}
 
 void DownloadItemImpl::CancelDownloadFile() {
   // TODO(rdsmith/benjhayden): Remove condition as part of

@@ -85,7 +85,6 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetPersistentStoreInfo, DownloadPersistentStoreInfo());
   MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_CONST_METHOD0(GetWebContents, WebContents*());
-  MOCK_METHOD1(DelayedDownloadOpened, void(bool));
   MOCK_METHOD1(OnContentCheckCompleted, void(DownloadDangerType));
   MOCK_METHOD1(SetOpenWhenComplete, void(bool));
   MOCK_METHOD1(SetIsTemporary, void(bool));

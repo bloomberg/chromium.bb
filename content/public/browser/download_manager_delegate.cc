@@ -35,7 +35,8 @@ bool DownloadManagerDelegate::ShouldCompleteDownload(
   return true;
 }
 
-bool DownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
+bool DownloadManagerDelegate::ShouldOpenDownload(
+    DownloadItem* item, const DownloadOpenDelayedCallback& callback) {
   return true;
 }
 

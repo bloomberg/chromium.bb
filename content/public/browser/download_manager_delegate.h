@@ -46,6 +46,9 @@ typedef base::Callback<void(
     DownloadDangerType danger_type,
     const FilePath& intermediate_path)> DownloadTargetCallback;
 
+// Called when a download delayed by the delegate has completed.
+typedef base::Callback<void(bool)> DownloadOpenDelayedCallback;
+
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManagerDelegate {
  public:
@@ -88,11 +91,11 @@ class CONTENT_EXPORT DownloadManagerDelegate {
       const base::Closure& complete_callback);
 
   // Allows the delegate to override opening the download. If this function
-  // returns false, the delegate needs to call
-  // DownloadItem::DelayedDownloadOpened when it's done with the item,
-  // and is responsible for opening it.  This function is called
+  // returns false, the delegate needs to call callback when it's done
+  // with the item, and is responsible for opening it.  This function is called
   // after the final rename, but before the download state is set to COMPLETED.
-  virtual bool ShouldOpenDownload(DownloadItem* item);
+  virtual bool ShouldOpenDownload(DownloadItem* item,
+                                  const DownloadOpenDelayedCallback& callback);
 
   // Returns true if we need to generate a binary hash for downloads.
   virtual bool GenerateFileHash();

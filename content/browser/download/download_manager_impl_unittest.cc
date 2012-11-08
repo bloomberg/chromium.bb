@@ -85,7 +85,6 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD3(UpdateProgress, void(int64, int64, const std::string&));
   MOCK_METHOD1(Cancel, void(bool));
   MOCK_METHOD0(MarkAsComplete, void());
-  MOCK_METHOD1(DelayedDownloadOpened, void(bool));
   MOCK_METHOD1(OnAllDataSaved, void(const std::string&));
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
   MOCK_METHOD0(MaybeCompleteDownload, void());
@@ -96,7 +95,6 @@ class MockDownloadItemImpl : public DownloadItemImpl {
 
   MOCK_METHOD1(MockStart, void(DownloadFile*));
 
-  MOCK_METHOD1(Interrupt, void(DownloadInterruptReason));
   MOCK_METHOD1(Delete, void(DeleteReason));
   MOCK_METHOD0(Remove, void());
   MOCK_CONST_METHOD1(TimeRemaining, bool(base::TimeDelta*));
@@ -182,7 +180,8 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
   MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const FilePath&));
   MOCK_METHOD2(ShouldCompleteDownload,
                bool(DownloadItem*, const base::Closure&));
-  MOCK_METHOD1(ShouldOpenDownload, bool(DownloadItem*));
+  MOCK_METHOD2(ShouldOpenDownload,
+               bool(DownloadItem*, const DownloadOpenDelayedCallback&));
   MOCK_METHOD0(GenerateFileHash, bool());
   MOCK_METHOD1(AddItemToPersistentStore, void(DownloadItem*));
   MOCK_METHOD1(UpdateItemInPersistentStore, void(DownloadItem*));

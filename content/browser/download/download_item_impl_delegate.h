@@ -12,7 +12,6 @@
 #include "content/public/browser/download_item.h"
 
 namespace content {
-class DownloadFileManager;
 class DownloadItemImpl;
 class BrowserContext;
 
@@ -28,6 +27,10 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
       DownloadDangerType,
       const FilePath&                   // Intermediate file path
                               )> DownloadTargetCallback;
+
+  // The boolean argument indicates whether or not the download was
+  // actually opened.
+  typedef base::Callback<void(bool)> ShouldOpenDownloadCallback;
 
   DownloadItemImplDelegate();
   virtual ~DownloadItemImplDelegate();
@@ -51,7 +54,8 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
 
   // Allows the delegate to override the opening of a download. If it returns
   // true then it's reponsible for opening the item.
-  virtual bool ShouldOpenDownload(DownloadItemImpl* download);
+  virtual bool ShouldOpenDownload(
+      DownloadItemImpl* download, const ShouldOpenDownloadCallback& callback);
 
   // Tests if a file type should be opened automatically.
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path);
@@ -64,9 +68,6 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
 
   // For contextual issues like language and prefs.
   virtual BrowserContext* GetBrowserContext() const;
-
-  // Get the DownloadFileManager to use for this download.
-  virtual DownloadFileManager* GetDownloadFileManager();
 
   // Update the persistent store with our information.
   virtual void UpdatePersistence(DownloadItemImpl* download);
