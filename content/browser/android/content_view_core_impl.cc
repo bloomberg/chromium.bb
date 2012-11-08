@@ -669,6 +669,18 @@ void ContentViewCoreImpl::SetFocus(JNIEnv* env, jobject obj, jboolean focused) {
     GetRenderWidgetHostViewAndroid()->Blur();
 }
 
+void ContentViewCoreImpl::SendOrientationChangeEvent(JNIEnv* env,
+                                                     jobject obj,
+                                                     jint orientation) {
+  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
+  if (rwhv)
+    rwhv->UpdateScreenInfo(rwhv->GetNativeView());
+
+  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
+      web_contents_->GetRenderViewHost());
+  rvhi->SendOrientationChangeEvent(orientation);
+}
+
 jboolean ContentViewCoreImpl::SendTouchEvent(JNIEnv* env,
                                              jobject obj,
                                              jlong time_ms,

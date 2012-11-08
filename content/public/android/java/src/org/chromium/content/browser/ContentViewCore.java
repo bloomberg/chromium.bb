@@ -27,6 +27,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Surface;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
@@ -1178,6 +1179,11 @@ public class ContentViewCore implements MotionEventDelegate {
             undoScrollFocusedEditableNodeIntoViewIfNeeded(true);
             mUnfocusOnNextSizeChanged = false;
         }
+
+        if (mNeedUpdateOrientationChanged) {
+            sendOrientationChangeEvent();
+            mNeedUpdateOrientationChanged = false;
+        }
     }
 
     private void scrollFocusedEditableNodeIntoView() {
@@ -1497,6 +1503,41 @@ public class ContentViewCore implements MotionEventDelegate {
             return velocity > 0 ? maxVelocity : -maxVelocity;
         } else {
             return velocity;
+        }
+    }
+
+    /**
+     * Get the screen orientation from the OS and push it to WebKit.
+     *
+     * TODO(husky): Add a hook for mock orientations.
+     *
+     * TODO(husky): Currently each new tab starts with an orientation of 0 until you actually
+     * rotate the device. This is wrong if you actually started in landscape mode. To fix this, we
+     * need to push the correct orientation, but only after WebKit's Frame object has been fully
+     * initialized. Need to find a good time to do that. onPageFinished() would probably work but
+     * it isn't implemented yet.
+     */
+    private void sendOrientationChangeEvent() {
+        if (mNativeContentViewCore == 0) return;
+
+        WindowManager windowManager =
+                (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+        switch (windowManager.getDefaultDisplay().getRotation()) {
+            case Surface.ROTATION_90:
+                nativeSendOrientationChangeEvent(mNativeContentViewCore, 90);
+                break;
+            case Surface.ROTATION_180:
+                nativeSendOrientationChangeEvent(mNativeContentViewCore, 180);
+                break;
+            case Surface.ROTATION_270:
+                nativeSendOrientationChangeEvent(mNativeContentViewCore, -90);
+                break;
+            case Surface.ROTATION_0:
+                nativeSendOrientationChangeEvent(mNativeContentViewCore, 0);
+                break;
+            default:
+                Log.w(TAG, "Unknown rotation!");
+                break;
         }
     }
 
@@ -2238,6 +2279,9 @@ public class ContentViewCore implements MotionEventDelegate {
     private native boolean nativeCrashed(int nativeContentViewCoreImpl);
 
     private native void nativeSetFocus(int nativeContentViewCoreImpl, boolean focused);
+
+    private native void nativeSendOrientationChangeEvent(
+            int nativeContentViewCoreImpl, int orientation);
 
     private native boolean nativeSendTouchEvent(
             int nativeContentViewCoreImpl, long timeMs, int action, TouchPoint[] pts);
