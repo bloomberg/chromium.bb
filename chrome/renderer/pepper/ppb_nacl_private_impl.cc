@@ -118,42 +118,44 @@ PP_Bool LaunchSelLdr(PP_Instance instance,
   return PP_TRUE;
 }
 
-PP_Bool StartPpapiProxy(PP_Instance instance) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNaClIPCProxy)) {
-    InstanceInfoMap& map = g_instance_info.Get();
-    InstanceInfoMap::iterator it = map.find(instance);
-    if (it == map.end())
-      return PP_FALSE;
-    InstanceInfo instance_info = it->second;
-    map.erase(it);
+int32_t StartPpapiProxy(PP_Instance instance) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNaClIPCProxy))
+    return PP_ERROR_NOTSUPPORTED;  // Signal the plugin to use the SRPC proxy.
 
-    webkit::ppapi::PluginInstance* plugin_instance =
-        content::GetHostGlobals()->GetInstance(instance);
-    if (!plugin_instance)
-      return PP_FALSE;
+  InstanceInfoMap& map = g_instance_info.Get();
+  InstanceInfoMap::iterator it = map.find(instance);
+  if (it == map.end())
+    return PP_ERROR_FAILED;
+  InstanceInfo instance_info = it->second;
+  map.erase(it);
 
-    // Create a new module for each instance of the NaCl plugin that is using
-    // the IPC based out-of-process proxy. We can't use the existing module,
-    // because it is configured for the in-process NaCl plugin, and we must
-    // keep it that way to allow the page to create other instances.
-    webkit::ppapi::PluginModule* plugin_module = plugin_instance->module();
-    scoped_refptr<webkit::ppapi::PluginModule> nacl_plugin_module(
-        plugin_module->CreateModuleForNaClInstance());
+  webkit::ppapi::PluginInstance* plugin_instance =
+      content::GetHostGlobals()->GetInstance(instance);
+  if (!plugin_instance)
+    return PP_ERROR_FAILED;
 
-    content::RendererPpapiHost* renderer_ppapi_host =
-        content::RendererPpapiHost::CreateExternalPluginModule(
-            nacl_plugin_module,
-            plugin_instance,
-            FilePath().AppendASCII(instance_info.url.spec()),
-            instance_info.permissions,
-            instance_info.channel_handle,
-            instance_info.plugin_child_id);
-    if (renderer_ppapi_host &&
-        nacl_plugin_module->InitAsProxiedNaCl(plugin_instance))
-      return PP_TRUE;
-  }
-  return PP_FALSE;
+  // Create a new module for each instance of the NaCl plugin that is using
+  // the IPC based out-of-process proxy. We can't use the existing module,
+  // because it is configured for the in-process NaCl plugin, and we must
+  // keep it that way to allow the page to create other instances.
+  webkit::ppapi::PluginModule* plugin_module = plugin_instance->module();
+  scoped_refptr<webkit::ppapi::PluginModule> nacl_plugin_module(
+      plugin_module->CreateModuleForNaClInstance());
+
+  content::RendererPpapiHost* renderer_ppapi_host =
+      content::RendererPpapiHost::CreateExternalPluginModule(
+          nacl_plugin_module,
+          plugin_instance,
+          FilePath().AppendASCII(instance_info.url.spec()),
+          instance_info.permissions,
+          instance_info.channel_handle,
+          instance_info.plugin_child_id);
+  if (renderer_ppapi_host &&
+      nacl_plugin_module->InitAsProxiedNaCl(plugin_instance))
+    return PP_OK;
+
+  return PP_ERROR_FAILED;
 }
 
 int UrandomFD(void) {

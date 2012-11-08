@@ -28,9 +28,11 @@ struct PPB_NaCl_Private {
                           int socket_count,
                           void* imc_handles);
 
-  // This function starts the PPAPI proxy so the nexe can communicate with the
-  // browser's renderer process.
-  PP_Bool (*StartPpapiProxy)(PP_Instance instance);
+  // This function starts the IPC proxy so the nexe can communicate with the
+  // browser. Returns an error code from pp_errors.h. PP_ERROR_NOTSUPPORTED
+  // signals the plugin to use the SRPC proxy. PP_OK indicates the proxy started
+  // successfully. Any other error indicates the proxy couldn't be started.
+  int32_t (*StartPpapiProxy)(PP_Instance instance);
 
   // On POSIX systems, this function returns the file descriptor of
   // /dev/urandom.  On non-POSIX systems, this function returns 0.
