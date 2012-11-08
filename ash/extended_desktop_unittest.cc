@@ -24,6 +24,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/events/event_handler.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -79,6 +80,45 @@ internal::MultiDisplayManager* GetDisplayManager() {
   return static_cast<internal::MultiDisplayManager*>(
       aura::Env::GetInstance()->display_manager());
 }
+
+// An event filter which moves the target window to the secondary root window
+// at pre-handle phase of a mouse release event.
+class MoveWindowByClickEventFilter : public ui::EventHandler {
+ public:
+  explicit MoveWindowByClickEventFilter(aura::Window* target)
+      : target_(target) {}
+  virtual ~MoveWindowByClickEventFilter() {}
+
+ private:
+  // ui::EventHandler overrides:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+    return ui::ER_UNHANDLED;
+  }
+
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_MOUSE_RELEASED) {
+      Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+      DCHECK_LT(1u, root_windows.size());
+      root_windows[1]->AddChild(target_);
+    }
+    return ui::ER_UNHANDLED;
+  }
+
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
+    return ui::ER_UNHANDLED;
+  }
+
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+    return ui::ER_UNHANDLED;
+  }
+
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    return ui::ER_UNHANDLED;
+  }
+
+  aura::Window* target_;
+  DISALLOW_COPY_AND_ASSIGN(MoveWindowByClickEventFilter);
+};
 
 }  // namespace
 
@@ -399,6 +439,25 @@ TEST_F(ExtendedDesktopTest, MoveWindow) {
   // TODO(oshima): This one probably should pick the closest root window.
   d1->SetBounds(gfx::Rect(200, 10, 100, 100));
   EXPECT_EQ(root_windows[0], d1->GetNativeView()->GetRootWindow());
+}
+
+// Verifies if the mouse event arrives to the window even when the window
+// moves to another root in a pre-target handler.  See: crbug.com/157583
+TEST_F(ExtendedDesktopTest, MoveWindowByMouseClick) {
+  UpdateDisplay("1000x600,600x400");
+
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::test::EventCountDelegate delegate;
+  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
+      &delegate, 0, gfx::Rect(10, 10, 100, 100), root_windows[0]));
+  MoveWindowByClickEventFilter event_filter(window.get());
+  window->AddPreTargetHandler(&event_filter);
+  aura::test::EventGenerator generator(root_windows[0], window.get());
+  generator.ClickLeftButton();
+  // Both mouse pressed and released arrive at the window and its delegate.
+  EXPECT_EQ("1 1", delegate.GetMouseButtonCountsAndReset());
+  // Also event_filter moves the window to another root at mouse release.
+  EXPECT_EQ(root_windows[1], window->GetRootWindow());
 }
 
 // This test fails on the "Win Aura" bot: <http://crbug.com/157817>.

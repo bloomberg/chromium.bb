@@ -267,6 +267,14 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
  private:
   friend class Window;
 
+  // The parameter for OnWindowHidden() to specify why window is hidden.
+  enum WindowHiddenReason {
+    WINDOW_DESTROYED,  // Window is destroyed.
+    WINDOW_HIDDEN,     // Window is hidden.
+    WINDOW_MOVING,     // Window is temporarily marked as hidden due to move
+                       // across root windows.
+  };
+
   // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
   // sending exited and entered events as its value changes.
   void HandleMouseMoved(const ui::MouseEvent& event, Window* target);
@@ -280,12 +288,12 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Called when a Window is attached or detached from the RootWindow.
   void OnWindowAddedToRootWindow(Window* window);
-  void OnWindowRemovedFromRootWindow(Window* window);
+  void OnWindowRemovedFromRootWindow(Window* window, RootWindow* new_root);
 
   // Called when a window becomes invisible, either by being removed
   // from root window hierachy, via SetVisible(false) or being destroyed.
-  // |destroyed| is set to true when the window is being destroyed.
-  void OnWindowHidden(Window* invisible, bool destroyed);
+  // |reason| specifies what triggered the hiding.
+  void OnWindowHidden(Window* invisible, WindowHiddenReason reason);
 
   // Cleans up the gesture recognizer for all windows in |window| (including
   // |window| itself).

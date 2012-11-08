@@ -791,9 +791,9 @@ void Window::RemoveChildImpl(Window* child, Window* new_parent) {
     layout_manager_->OnWillRemoveWindowFromLayout(child);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWillRemoveWindow(child));
   RootWindow* root_window = child->GetRootWindow();
-  if (root_window &&
-      (!new_parent || new_parent->GetRootWindow() != root_window)) {
-    root_window->OnWindowRemovedFromRootWindow(child);
+  RootWindow* new_root_window = new_parent ? new_parent->GetRootWindow() : NULL;
+  if (root_window && root_window != new_root_window) {
+    root_window->OnWindowRemovedFromRootWindow(child, new_root_window);
     child->NotifyRemovingFromRootWindow();
   }
   child->parent_ = NULL;

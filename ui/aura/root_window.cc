@@ -286,7 +286,7 @@ bool RootWindow::DispatchGestureEvent(ui::GestureEvent* event) {
 }
 
 void RootWindow::OnWindowDestroying(Window* window) {
-  OnWindowHidden(window, true);
+  OnWindowHidden(window, WINDOW_DESTROYED);
 
   if (window->IsVisible() &&
       window->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
@@ -305,7 +305,7 @@ void RootWindow::OnWindowBoundsChanged(Window* window,
 
 void RootWindow::OnWindowVisibilityChanged(Window* window, bool is_visible) {
   if (!is_visible)
-    OnWindowHidden(window, false);
+    OnWindowHidden(window, WINDOW_HIDDEN);
 
   if (window->ContainsPointInRoot(GetLastMouseLocationInRoot()))
     PostMouseMoveEventAfterWindowChange();
@@ -671,10 +671,11 @@ bool RootWindow::ProcessGestures(ui::GestureRecognizer::Gestures* gestures) {
   return handled;
 }
 
-void RootWindow::OnWindowRemovedFromRootWindow(Window* detached) {
+void RootWindow::OnWindowRemovedFromRootWindow(Window* detached,
+                                               RootWindow* new_root) {
   DCHECK(aura::client::GetCaptureWindow(this) != this);
 
-  OnWindowHidden(detached, false);
+  OnWindowHidden(detached, (new_root == NULL) ? WINDOW_HIDDEN : WINDOW_MOVING);
 
   if (detached->IsVisible() &&
       detached->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
@@ -682,48 +683,54 @@ void RootWindow::OnWindowRemovedFromRootWindow(Window* detached) {
   }
 }
 
-void RootWindow::OnWindowHidden(Window* invisible, bool destroyed) {
-  // Update the focused window state if the invisible window contains
-  // focused_window.
-  Window* focused_window = focus_manager_->GetFocusedWindow();
-  if (invisible->Contains(focused_window)) {
-    Window* focus_to = invisible->transient_parent();
-    if (focus_to) {
-      // Has to be removed from the transient parent before focusing, otherwise
-      // |window| will be focused again.
-      if (destroyed)
-        focus_to->RemoveTransientChild(invisible);
-    } else {
-      // If the invisible view has no visible transient window, focus to the
-      // topmost visible parent window.
-      focus_to = invisible->parent();
+void RootWindow::OnWindowHidden(Window* invisible, WindowHiddenReason reason) {
+  // Do not clear the focus, the capture, and the dispatch targets if the window
+  // is moving across root windows, because the target itself is actually still
+  // visible and clearing them stops further event processing, which can cause
+  // unexpected behaviors. See crbug.com/157583
+  if (reason != WINDOW_MOVING) {
+    // Update the focused window state if the invisible window contains
+    // focused_window.
+    Window* focused_window = focus_manager_->GetFocusedWindow();
+    if (reason != WINDOW_MOVING && invisible->Contains(focused_window)) {
+      Window* focus_to = invisible->transient_parent();
+      if (focus_to) {
+        // Has to be removed from the transient parent before focusing,
+        // otherwise |window| will be focused again.
+        if (reason == WINDOW_DESTROYED)
+          focus_to->RemoveTransientChild(invisible);
+      } else {
+        // If the invisible view has no visible transient window, focus to the
+        // topmost visible parent window.
+        focus_to = invisible->parent();
+      }
+      if (focus_to &&
+          (!focus_to->IsVisible() ||
+           !focus_to->CanFocus() ||
+           (client::GetActivationClient(this) &&
+            !client::GetActivationClient(this)->OnWillFocusWindow(focus_to,
+                                                                  NULL)))) {
+        focus_to = NULL;
+      }
+      GetFocusManager()->SetFocusedWindow(focus_to, NULL);
     }
-    if (focus_to &&
-        (!focus_to->IsVisible() ||
-         !focus_to->CanFocus() ||
-         (client::GetActivationClient(this) &&
-          !client::GetActivationClient(this)->OnWillFocusWindow(focus_to,
-                                                                NULL)))) {
-      focus_to = NULL;
-    }
-    GetFocusManager()->SetFocusedWindow(focus_to, NULL);
-  }
-  Window* capture_window = aura::client::GetCaptureWindow(this);
-  // If the ancestor of the capture window is hidden,
-  // release the capture.
-  if (invisible->Contains(capture_window) && invisible != this)
-    capture_window->ReleaseCapture();
+    Window* capture_window = aura::client::GetCaptureWindow(this);
+    // If the ancestor of the capture window is hidden,
+    // release the capture.
+    if (invisible->Contains(capture_window) && invisible != this)
+      capture_window->ReleaseCapture();
 
-  // If the ancestor of any event handler windows are invisible, release the
-  // pointer to those windows.
-  if (invisible->Contains(mouse_pressed_handler_))
-    mouse_pressed_handler_ = NULL;
-  if (invisible->Contains(mouse_moved_handler_))
-    mouse_moved_handler_ = NULL;
-  if (invisible->Contains(mouse_event_dispatch_target_))
-    mouse_event_dispatch_target_ = NULL;
-  if (invisible->Contains(event_dispatch_target_))
-    event_dispatch_target_ = NULL;
+    // If the ancestor of any event handler windows are invisible, release the
+    // pointer to those windows.
+    if (invisible->Contains(mouse_pressed_handler_))
+      mouse_pressed_handler_ = NULL;
+    if (invisible->Contains(mouse_moved_handler_))
+      mouse_moved_handler_ = NULL;
+    if (invisible->Contains(mouse_event_dispatch_target_))
+      mouse_event_dispatch_target_ = NULL;
+    if (invisible->Contains(event_dispatch_target_))
+      event_dispatch_target_ = NULL;
+  }
 
   CleanupGestureRecognizerState(invisible);
 }
