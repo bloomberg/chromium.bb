@@ -79,6 +79,9 @@ const int kHeaderRowSpacing = 4;
 // the Omnibox's edge, inset the bubble's anchor rect by this amount of pixels.
 const int kLocationIconVerticalMargin = 5;
 
+// The max possible width of the popup.
+const int kMaxPopupWidth = 500;
+
 // The margins between the popup border and the popup content.
 const int kPopupMarginTop = 4;
 const int kPopupMarginLeft = 0;
@@ -86,9 +89,11 @@ const int kPopupMarginBottom = 10;
 const int kPopupMarginRight = 0;
 
 // Padding values for sections on the permissions tab.
+const int kPermissionsSectionContentMinWidth = 300;
 const int kPermissionsSectionPaddingBottom = 6;
 const int kPermissionsSectionPaddingLeft = 18;
 const int kPermissionsSectionPaddingTop = 16;
+
 // Space between the headline and the content of a section on the permissions
 // tab.
 const int kPermissionsSectionHeadlineMarginBottom = 10;
@@ -96,9 +101,6 @@ const int kPermissionsSectionHeadlineMarginBottom = 10;
 // section is structured in individual rows. |kPermissionsSectionRowSpacing|
 // is the space between these rows.
 const int kPermissionsSectionRowSpacing = 2;
-
-// The max width of the popup.
-const int kPopupWidth = 310;
 
 const int kSiteDataIconColumnWidth = 20;
 const int kSiteDataSectionRowSpacing = 11;
@@ -406,7 +408,16 @@ gfx::Size WebsiteSettingsPopupView::GetPreferredSize() {
     height += header_->GetPreferredSize().height();
   if (tabbed_pane_)
     height += tabbed_pane_->GetPreferredSize().height();
-  return gfx::Size(kPopupWidth, height);
+
+  int width = kPermissionsSectionContentMinWidth;
+  if (site_data_content_)
+    width = std::max(width, site_data_content_->GetPreferredSize().width());
+  if (permissions_content_)
+    width = std::max(width, permissions_content_->GetPreferredSize().width());
+  width += kPermissionsSectionPaddingLeft;
+  width = std::min(width, kMaxPopupWidth);
+
+  return gfx::Size(width, height);
 }
 
 void WebsiteSettingsPopupView::SetCookieInfo(
