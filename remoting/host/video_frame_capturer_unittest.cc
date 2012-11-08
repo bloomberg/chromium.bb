@@ -14,14 +14,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
+using ::testing::AnyNumber;
+
 namespace remoting {
-
-namespace {
-
-void IgnoreCursorShapeChanged(scoped_ptr<protocol::CursorShapeInfo> info) {
-}
-
-}  // namespace
 
 MATCHER(DirtyRegionIsNonEmptyRect, "") {
   const SkRegion& dirty_region = arg->dirty_region();
@@ -39,23 +35,23 @@ class VideoFrameCapturerTest : public testing::Test {
   }
 
   scoped_ptr<VideoFrameCapturer> capturer_;
-  MockCaptureCompletedCallback capture_completed_callback_;
+  MockVideoFrameCapturerDelegate delegate_;
 };
 
 TEST_F(VideoFrameCapturerTest, StartCapturer) {
-  capturer_->Start(base::Bind(&IgnoreCursorShapeChanged));
+  capturer_->Start(&delegate_);
   capturer_->Stop();
 }
 
 TEST_F(VideoFrameCapturerTest, Capture) {
   // Assume that Start() treats the screen as invalid initially.
-  EXPECT_CALL(capture_completed_callback_,
-              CaptureCompletedPtr(DirtyRegionIsNonEmptyRect()));
+  EXPECT_CALL(delegate_,
+              OnCaptureCompleted(DirtyRegionIsNonEmptyRect()));
+  EXPECT_CALL(delegate_, OnCursorShapeChangedPtr(_))
+      .Times(AnyNumber());
 
-  capturer_->Start(base::Bind(&IgnoreCursorShapeChanged));
-  capturer_->CaptureInvalidRegion(base::Bind(
-      &MockCaptureCompletedCallback::CaptureCompleted,
-      base::Unretained(&capture_completed_callback_)));
+  capturer_->Start(&delegate_);
+  capturer_->CaptureInvalidRegion();
   capturer_->Stop();
 }
 

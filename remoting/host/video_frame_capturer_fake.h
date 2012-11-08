@@ -21,13 +21,11 @@ class VideoFrameCapturerFake : public VideoFrameCapturer {
   virtual ~VideoFrameCapturerFake();
 
   // Overridden from VideoFrameCapturer:
-  virtual void Start(
-      const CursorShapeChangedCallback& callback) OVERRIDE;
+  virtual void Start(Delegate* delegate) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
-  virtual void CaptureInvalidRegion(
-      const CaptureCompletedCallback& callback) OVERRIDE;
+  virtual void CaptureInvalidRegion() OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
@@ -36,6 +34,8 @@ class VideoFrameCapturerFake : public VideoFrameCapturer {
 
   // Called when the screen configuration is changed.
   void ScreenConfigurationChanged();
+
+  Delegate* delegate_;
 
   SkISize size_;
   int bytes_per_row_;

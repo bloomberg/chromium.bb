@@ -48,12 +48,11 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
   virtual ~VideoFrameCapturerWin();
 
   // Overridden from VideoFrameCapturer:
-  virtual void Start(const CursorShapeChangedCallback& callback) OVERRIDE;
+  virtual void Start(Delegate* delegate) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
-  virtual void CaptureInvalidRegion(
-      const CaptureCompletedCallback& callback) OVERRIDE;
+  virtual void CaptureInvalidRegion() OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
@@ -79,10 +78,9 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
   // contents reported to the caller, to determine the dirty region.
   void CalculateInvalidRegion();
 
-  // Creates a CaptureData instance wrapping the current framebuffer and calls
-  // |callback| with it.
-  void CaptureRegion(const SkRegion& region,
-                     const CaptureCompletedCallback& callback);
+  // Creates a CaptureData instance wrapping the current framebuffer and
+  // notifies |delegate_|.
+  void CaptureRegion(const SkRegion& region);
 
   // Captures the current screen contents into the next available framebuffer.
   void CaptureImage();
@@ -94,12 +92,11 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
   // Capture the current cursor shape.
   void CaptureCursor();
 
+  Delegate* delegate_;
+
   // A thread-safe list of invalid rectangles, and the size of the most
   // recently captured screen.
   VideoFrameCapturerHelper helper_;
-
-  // Callback notified whenever the cursor shape is changed.
-  CursorShapeChangedCallback cursor_shape_changed_callback_;
 
   // Snapshot of the last cursor bitmap we sent to the client. This is used
   // to diff against the current cursor so we only send a cursor-change
@@ -151,7 +148,8 @@ VideoFrameCapturerWin::VideoFrameBuffer::VideoFrameBuffer()
 }
 
 VideoFrameCapturerWin::VideoFrameCapturerWin()
-    : last_cursor_size_(SkISize::Make(0, 0)),
+    : delegate_(NULL),
+      last_cursor_size_(SkISize::Make(0, 0)),
       desktop_dc_rect_(SkIRect::MakeEmpty()),
       resource_generation_(0),
       current_buffer_(0),
@@ -170,8 +168,7 @@ void VideoFrameCapturerWin::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
 
-void VideoFrameCapturerWin::CaptureInvalidRegion(
-    const CaptureCompletedCallback& callback) {
+void VideoFrameCapturerWin::CaptureInvalidRegion() {
   // Force the system to power-up display hardware, if it has been suspended.
   SetThreadExecutionState(ES_DISPLAY_REQUIRED);
 
@@ -179,7 +176,7 @@ void VideoFrameCapturerWin::CaptureInvalidRegion(
   CalculateInvalidRegion();
   SkRegion invalid_region;
   helper_.SwapInvalidRegion(&invalid_region);
-  CaptureRegion(invalid_region, callback);
+  CaptureRegion(invalid_region);
 
   // Check for cursor shape update.
   CaptureCursor();
@@ -189,9 +186,10 @@ const SkISize& VideoFrameCapturerWin::size_most_recent() const {
   return helper_.size_most_recent();
 }
 
-void VideoFrameCapturerWin::Start(
-    const CursorShapeChangedCallback& callback) {
-  cursor_shape_changed_callback_ = callback;
+void VideoFrameCapturerWin::Start(Delegate* delegate) {
+  DCHECK(delegate_ == NULL);
+
+  delegate_ = delegate;
 
   // Load dwmapi.dll dynamically since it is not available on XP.
   if (!dwmapi_library_.is_valid()) {
@@ -217,6 +215,8 @@ void VideoFrameCapturerWin::Stop() {
   if (composition_func_ != NULL) {
     (*composition_func_)(DWM_EC_ENABLECOMPOSITION);
   }
+
+  delegate_ = NULL;
 }
 
 void VideoFrameCapturerWin::PrepareCaptureResources() {
@@ -347,9 +347,7 @@ void VideoFrameCapturerWin::CalculateInvalidRegion() {
   InvalidateRegion(region);
 }
 
-void VideoFrameCapturerWin::CaptureRegion(
-    const SkRegion& region,
-    const CaptureCompletedCallback& callback) {
+void VideoFrameCapturerWin::CaptureRegion(const SkRegion& region) {
   const VideoFrameBuffer& buffer = buffers_[current_buffer_];
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
 
@@ -364,7 +362,7 @@ void VideoFrameCapturerWin::CaptureRegion(
 
   helper_.set_size_most_recent(data->size());
 
-  callback.Run(data);
+  delegate_->OnCaptureCompleted(data);
 }
 
 void VideoFrameCapturerWin::CaptureImage() {
@@ -561,7 +559,7 @@ void VideoFrameCapturerWin::CaptureCursor() {
   memcpy(last_cursor_.get(), cursor_dst_data, data_size);
   last_cursor_size_ = SkISize::Make(width, height);
 
-  cursor_shape_changed_callback_.Run(cursor_proto.Pass());
+  delegate_->OnCursorShapeChanged(cursor_proto.Pass());
 }
 
 }  // namespace

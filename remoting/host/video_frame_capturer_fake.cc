@@ -39,7 +39,8 @@ VideoFrameCapturerFake::VideoFrameCapturerFake()
 VideoFrameCapturerFake::~VideoFrameCapturerFake() {
 }
 
-void VideoFrameCapturerFake::Start(const CursorShapeChangedCallback& callback) {
+void VideoFrameCapturerFake::Start(Delegate* delegate) {
+  delegate_ = delegate;
 }
 
 void VideoFrameCapturerFake::Stop() {
@@ -53,8 +54,7 @@ void VideoFrameCapturerFake::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
 
-void VideoFrameCapturerFake::CaptureInvalidRegion(
-    const CaptureCompletedCallback& callback) {
+void VideoFrameCapturerFake::CaptureInvalidRegion() {
   GenerateImage();
   helper_.InvalidateScreen(size_);
 
@@ -73,7 +73,7 @@ void VideoFrameCapturerFake::CaptureInvalidRegion(
 
   helper_.set_size_most_recent(capture_data->size());
 
-  callback.Run(capture_data);
+  delegate_->OnCaptureCompleted(capture_data);
 }
 
 const SkISize& VideoFrameCapturerFake::size_most_recent() const {

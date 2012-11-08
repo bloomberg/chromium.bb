@@ -113,12 +113,11 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   bool Init();
 
   // Overridden from VideoFrameCapturer:
-  virtual void Start(const CursorShapeChangedCallback& callback) OVERRIDE;
+  virtual void Start(Delegate* delegate) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
-  virtual void CaptureInvalidRegion(
-      const CaptureCompletedCallback& callback) OVERRIDE;
+  virtual void CaptureInvalidRegion() OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
@@ -128,8 +127,6 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   void GlBlitSlow(const VideoFrameBuffer& buffer);
   void CgBlitPreLion(const VideoFrameBuffer& buffer, const SkRegion& region);
   void CgBlitPostLion(const VideoFrameBuffer& buffer, const SkRegion& region);
-  void CaptureRegion(const SkRegion& region,
-                     const CaptureCompletedCallback& callback);
 
   // Called when the screen configuration is changed.
   void ScreenConfigurationChanged();
@@ -153,6 +150,8 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
 
   void ReleaseBuffers();
 
+  Delegate* delegate_;
+
   CGLContextObj cgl_context_;
   static const int kNumBuffers = 2;
   ScopedPixelBufferObject pixel_buffer_object_;
@@ -165,9 +164,6 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   // A thread-safe list of invalid rectangles, and the size of the most
   // recently captured screen.
   VideoFrameCapturerHelper helper_;
-
-  // Callback notified whenever the cursor shape is changed.
-  CursorShapeChangedCallback cursor_shape_changed_callback_;
 
   // Image of the last cursor that we sent to the client.
   base::mac::ScopedCFTypeRef<CGImageRef> current_cursor_;
@@ -207,7 +203,8 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
 };
 
 VideoFrameCapturerMac::VideoFrameCapturerMac()
-    : cgl_context_(NULL),
+    : delegate_(NULL),
+      cgl_context_(NULL),
       current_buffer_(0),
       last_buffer_(NULL),
       pixel_format_(media::VideoFrame::RGB32),
@@ -273,8 +270,10 @@ void VideoFrameCapturerMac::ReleaseBuffers() {
   }
 }
 
-void VideoFrameCapturerMac::Start(const CursorShapeChangedCallback& callback) {
-  cursor_shape_changed_callback_ = callback;
+void VideoFrameCapturerMac::Start(Delegate* delegate) {
+  DCHECK(delegate_ == NULL);
+
+  delegate_ = delegate;
 
   // Create power management assertions to wake the display and prevent it from
   // going to sleep on user idle.
@@ -311,8 +310,7 @@ void VideoFrameCapturerMac::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
 
-void VideoFrameCapturerMac::CaptureInvalidRegion(
-    const CaptureCompletedCallback& callback) {
+void VideoFrameCapturerMac::CaptureInvalidRegion() {
   // Only allow captures when the display configuration is not occurring.
   scoped_refptr<CaptureData> data;
 
@@ -362,14 +360,10 @@ void VideoFrameCapturerMac::CaptureInvalidRegion(
 
   CaptureCursor();
 
-  callback.Run(data);
+  delegate_->OnCaptureCompleted(data);
 }
 
 void VideoFrameCapturerMac::CaptureCursor() {
-  if (cursor_shape_changed_callback_.is_null()) {
-    return;
-    }
-
   NSCursor* cursor = [NSCursor currentSystemCursor];
   if (cursor == nil) {
     return;
@@ -445,7 +439,7 @@ void VideoFrameCapturerMac::CaptureCursor() {
   cursor_proto->set_height(size.height);
   cursor_proto->set_hotspot_x(hotspot.x);
   cursor_proto->set_hotspot_y(hotspot.y);
-  cursor_shape_changed_callback_.Run(cursor_proto.Pass());
+  delegate_->OnCursorShapeChanged(cursor_proto.Pass());
 
   // Record the last cursor image that we sent.
   current_cursor_.reset(CGImageCreateCopy(image));

@@ -34,12 +34,6 @@ namespace remoting {
 
 namespace {
 
-ACTION_P2(RunCallback, region, data) {
-  SkRegion& dirty_region = data->mutable_dirty_region();
-  dirty_region.op(region, SkRegion::kUnion_Op);
-  arg0.Run(data);
-}
-
 ACTION(FinishEncode) {
   scoped_ptr<VideoPacket> packet(new VideoPacket());
   packet->set_flags(VideoPacket::LAST_PACKET | VideoPacket::LAST_PARTITION);
@@ -82,7 +76,7 @@ MockVideoEncoder::~MockVideoEncoder() {}
 
 class VideoSchedulerTest : public testing::Test {
  public:
-  VideoSchedulerTest() {
+  VideoSchedulerTest() : size_(SkISize::Make(0, 0)) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -100,6 +94,8 @@ class VideoSchedulerTest : public testing::Test {
         &video_stub_);
   }
 
+  void GenerateOnCaptureCompleted();
+
  protected:
   MessageLoop message_loop_;
   scoped_refptr<VideoScheduler> scheduler_;
@@ -111,16 +107,25 @@ class VideoSchedulerTest : public testing::Test {
   // The following mock objects are owned by VideoScheduler.
   MockVideoEncoder* encoder_;
 
+  SkISize size_;
+  scoped_refptr<CaptureData> data_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoSchedulerTest);
 };
+
+void VideoSchedulerTest::GenerateOnCaptureCompleted() {
+  SkRegion update_region(SkIRect::MakeXYWH(0, 0, 10, 10));
+  data_->mutable_dirty_region().op(update_region, SkRegion::kUnion_Op);
+
+  scheduler_->OnCaptureCompleted(data_);
+}
 
 // This test mocks capturer, encoder and network layer to simulate one capture
 // cycle. When the first encoded packet is submitted to the network
 // VideoScheduler is instructed to come to a complete stop. We expect the stop
 // sequence to be executed successfully.
 TEST_F(VideoSchedulerTest, StartAndStop) {
-  SkRegion update_region(SkIRect::MakeXYWH(0, 0, 10, 10));
   DataPlanes planes;
   for (int i = 0; i < DataPlanes::kPlaneCount; ++i) {
     planes.data[i] = reinterpret_cast<uint8*>(i);
@@ -129,22 +134,23 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
 
   Expectation capturer_start = EXPECT_CALL(capturer_, Start(_));
 
-  SkISize size(SkISize::Make(kWidth, kHeight));
-  scoped_refptr<CaptureData> data(new CaptureData(planes, size, kFormat));
+  size_.set(kWidth, kHeight);
+  data_ = new CaptureData(planes, size_, kFormat);
 
   // Create a RunLoop through which to drive |message_loop_|.
   base::RunLoop run_loop;
 
   EXPECT_CALL(capturer_, size_most_recent())
-      .WillRepeatedly(ReturnRef(size));
+      .WillRepeatedly(ReturnRef(size_));
 
   // First the capturer is called.
-  Expectation capturer_capture = EXPECT_CALL(capturer_, CaptureInvalidRegion(_))
+  Expectation capturer_capture = EXPECT_CALL(capturer_, CaptureInvalidRegion())
       .After(capturer_start)
-      .WillRepeatedly(RunCallback(update_region, data));
+      .WillRepeatedly(InvokeWithoutArgs(
+          this, &VideoSchedulerTest::GenerateOnCaptureCompleted));
 
   // Expect the encoder be called.
-  EXPECT_CALL(*encoder_, Encode(data, false, _))
+  EXPECT_CALL(*encoder_, Encode(data_, false, _))
       .WillRepeatedly(FinishEncode());
 
   // By default delete the arguments when ProcessVideoPacket is received.

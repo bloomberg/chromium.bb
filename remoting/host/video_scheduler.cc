@@ -60,6 +60,38 @@ VideoScheduler::VideoScheduler(
 
 // Public methods --------------------------------------------------------------
 
+void VideoScheduler::OnCaptureCompleted(
+    scoped_refptr<CaptureData> capture_data) {
+  DCHECK(capture_task_runner_->BelongsToCurrentThread());
+
+  if (capture_data) {
+    base::TimeDelta capture_time = base::Time::Now() - capture_start_time_;
+    int capture_time_ms =
+        static_cast<int>(capture_time.InMilliseconds());
+    capture_data->set_capture_time_ms(capture_time_ms);
+    scheduler_.RecordCaptureTime(capture_time);
+
+    // The best way to get this value is by binding the sequence number to
+    // the callback when calling CaptureInvalidRects(). However the callback
+    // system doesn't allow this. Reading from the member variable is
+    // accurate as long as capture is synchronous as the following statement
+    // will obtain the most recent sequence number received.
+    capture_data->set_client_sequence_number(sequence_number_);
+  }
+
+  encode_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoScheduler::EncodeFrame, this, capture_data));
+}
+
+void VideoScheduler::OnCursorShapeChanged(
+    scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
+  DCHECK(capture_task_runner_->BelongsToCurrentThread());
+
+  network_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoScheduler::SendCursorShape, this,
+                            base::Passed(&cursor_shape)));
+}
+
 void VideoScheduler::Stop(const base::Closure& done_task) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK(!done_task.is_null());
@@ -112,8 +144,7 @@ void VideoScheduler::StartOnCaptureThread() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
   // Start the capturer and let it notify us of cursor shape changes.
-  capturer_->Start(
-      base::Bind(&VideoScheduler::CursorShapeChangedCallback, this));
+  capturer_->Start(this);
 
   capture_timer_.reset(new base::OneShotTimer<VideoScheduler>());
 
@@ -171,40 +202,7 @@ void VideoScheduler::CaptureNextFrame() {
 
   // And finally perform one capture.
   capture_start_time_ = base::Time::Now();
-  capturer_->CaptureInvalidRegion(
-      base::Bind(&VideoScheduler::CaptureDoneCallback, this));
-}
-
-void VideoScheduler::CaptureDoneCallback(
-    scoped_refptr<CaptureData> capture_data) {
-  DCHECK(capture_task_runner_->BelongsToCurrentThread());
-
-  if (capture_data) {
-    base::TimeDelta capture_time = base::Time::Now() - capture_start_time_;
-    int capture_time_ms =
-        static_cast<int>(capture_time.InMilliseconds());
-    capture_data->set_capture_time_ms(capture_time_ms);
-    scheduler_.RecordCaptureTime(capture_time);
-
-    // The best way to get this value is by binding the sequence number to
-    // the callback when calling CaptureInvalidRects(). However the callback
-    // system doesn't allow this. Reading from the member variable is
-    // accurate as long as capture is synchronous as the following statement
-    // will obtain the most recent sequence number received.
-    capture_data->set_client_sequence_number(sequence_number_);
-  }
-
-  encode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoScheduler::EncodeFrame, this, capture_data));
-}
-
-void VideoScheduler::CursorShapeChangedCallback(
-    scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
-  DCHECK(capture_task_runner_->BelongsToCurrentThread());
-
-  network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoScheduler::SendCursorShape, this,
-                            base::Passed(&cursor_shape)));
+  capturer_->CaptureInvalidRegion();
 }
 
 void VideoScheduler::FrameCaptureCompleted() {

@@ -83,12 +83,11 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
   bool Init();  // TODO(ajwong): Do we really want this to be synchronous?
 
   // Capturer interface.
-  virtual void Start(const CursorShapeChangedCallback& callback) OVERRIDE;
+  virtual void Start(Delegate* delegate) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
-  virtual void CaptureInvalidRegion(
-      const CaptureCompletedCallback& callback) OVERRIDE;
+  virtual void CaptureInvalidRegion() OVERRIDE;
   virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
@@ -110,8 +109,7 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
   // previous capture.
   CaptureData* CaptureFrame();
 
-  // Capture the cursor image and call the CursorShapeChangedCallback if it
-  // has been set (using SetCursorShapeChangedCallback).
+  // Capture the cursor image and notify the delegate if it was captured.
   void CaptureCursor();
 
   // Called when the screen configuration is changed.
@@ -134,6 +132,8 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
   // In FastBlit, the operation is effectively a memcpy.
   void FastBlit(uint8* image, const SkIRect& rect, CaptureData* capture_data);
   void SlowBlit(uint8* image, const SkIRect& rect, CaptureData* capture_data);
+
+  Delegate* delegate_;
 
   // X11 graphics context.
   Display* display_;
@@ -159,9 +159,6 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
   // recently captured screen.
   VideoFrameCapturerHelper helper_;
 
-  // Callback notified whenever the cursor shape is changed.
-  CursorShapeChangedCallback cursor_shape_changed_callback_;
-
   // Capture state.
   static const int kNumBuffers = 2;
   VideoFrameBuffer buffers_[kNumBuffers];
@@ -184,7 +181,8 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
 };
 
 VideoFrameCapturerLinux::VideoFrameCapturerLinux()
-    : display_(NULL),
+    : delegate_(NULL),
+      display_(NULL),
       gc_(NULL),
       root_window_(BadValue),
       has_xfixes_(false),
@@ -293,9 +291,10 @@ void VideoFrameCapturerLinux::InitXDamage() {
   LOG(INFO) << "Using XDamage extension.";
 }
 
-void VideoFrameCapturerLinux::Start(
-    const CursorShapeChangedCallback& callback) {
-  cursor_shape_changed_callback_ = callback;
+void VideoFrameCapturerLinux::Start(Delegate* delegate) {
+  DCHECK(delegate_ == NULL);
+
+  delegate_ = delegate;
 }
 
 void VideoFrameCapturerLinux::Stop() {
@@ -309,8 +308,7 @@ void VideoFrameCapturerLinux::InvalidateRegion(const SkRegion& invalid_region) {
   helper_.InvalidateRegion(invalid_region);
 }
 
-void VideoFrameCapturerLinux::CaptureInvalidRegion(
-    const CaptureCompletedCallback& callback) {
+void VideoFrameCapturerLinux::CaptureInvalidRegion() {
   // Process XEvents for XDamage and cursor shape tracking.
   ProcessPendingXEvents();
 
@@ -337,7 +335,7 @@ void VideoFrameCapturerLinux::CaptureInvalidRegion(
   last_buffer_ = current_buffer_;
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
 
-  callback.Run(capture_data);
+  delegate_->OnCaptureCompleted(capture_data);
 }
 
 void VideoFrameCapturerLinux::ProcessPendingXEvents() {
@@ -368,8 +366,6 @@ void VideoFrameCapturerLinux::ProcessPendingXEvents() {
 
 void VideoFrameCapturerLinux::CaptureCursor() {
   DCHECK(has_xfixes_);
-  if (cursor_shape_changed_callback_.is_null())
-    return;
 
   XFixesCursorImage* img = XFixesGetCursorImage(display_);
   if (!img) {
@@ -400,7 +396,7 @@ void VideoFrameCapturerLinux::CaptureCursor() {
   }
   XFree(img);
 
-  cursor_shape_changed_callback_.Run(cursor_proto.Pass());
+  delegate_->OnCursorShapeChanged(cursor_proto.Pass());
 }
 
 CaptureData* VideoFrameCapturerLinux::CaptureFrame() {

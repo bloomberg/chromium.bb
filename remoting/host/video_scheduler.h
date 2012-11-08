@@ -15,6 +15,7 @@
 #include "base/timer.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/host/capture_scheduler.h"
+#include "remoting/host/video_frame_capturer.h"
 #include "remoting/proto/video.pb.h"
 
 namespace base {
@@ -68,7 +69,8 @@ class VideoStub;
 // rate-limit captures to avoid overloading the host system, either by consuming
 // too much CPU, or hogging the host's graphics subsystem.
 
-class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler> {
+class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
+                       public VideoFrameCapturer::Delegate {
  public:
   // Creates a VideoScheduler running capture, encode and network tasks on the
   // supplied TaskRunners.  Video and cursor shape updates will be pumped to
@@ -83,6 +85,12 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler> {
       scoped_ptr<VideoEncoder> encoder,
       protocol::ClientStub* client_stub,
       protocol::VideoStub* video_stub);
+
+  // VideoFrameCapturer::Delegate implementation
+  virtual void OnCaptureCompleted(
+      scoped_refptr<CaptureData> capture_data) OVERRIDE;
+  virtual void OnCursorShapeChanged(
+      scoped_ptr<protocol::CursorShapeInfo> cursor_shape) OVERRIDE;
 
   // Stop scheduling frame captures.  |done_task| is executed on the network
   // thread when capturing has stopped.  This object cannot be re-used once
@@ -115,13 +123,6 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler> {
 
   // Starts the next frame capture, unless there are already too many pending.
   void CaptureNextFrame();
-
-  // Called when a frame capture completes.
-  void CaptureDoneCallback(scoped_refptr<CaptureData> capture_data);
-
-  // Called when the cursor shape changes.
-  void CursorShapeChangedCallback(
-      scoped_ptr<protocol::CursorShapeInfo> cursor_data);
 
   // Called when a frame capture has been encoded & sent to the client.
   void FrameCaptureCompleted();
