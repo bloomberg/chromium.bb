@@ -24,6 +24,10 @@ FilePath GetSetupExeForInstallationLevel(InstallationLevel level);
 // exists.
 FilePath GetChromePathForInstallationLevel(InstallationLevel level);
 
+// Returns the path to an installed app_host.exe at the specified level, if
+// it can be found via Omaha client state.
+FilePath GetAppHostPathForInstallationLevel(InstallationLevel level);
+
 // Returns the path to an installed chrome.exe, or an empty path. Prefers a
 // system-level installation to a user-level installation. Uses Omaha client
 // state to identify a Chrome installation location.
@@ -31,6 +35,18 @@ FilePath GetChromePathForInstallationLevel(InstallationLevel level);
 // chrome.exe in the same directory as the current executable.
 // The file path returned (if any) is guaranteed to exist.
 FilePath GetAnyChromePath();
+
+// Returns the path to an installed app_host.exe, or an empty path. Prefers a
+// system-level installation to a user-level installation. Uses Omaha client
+// state to identify a App Host installation location.
+// In non-official builds, to ease development, this will first look for a
+// app_host.exe in the same directory as the current executable.
+// The file path returned (if any) is guaranteed to exist.
+FilePath GetAnyAppHostPath();
+
+// Returns true if App Host is installed (system-level or user-level),
+// or in the same directory as the current executable.
+bool IsAppHostPresent();
 
 }  // namespace chrome_launcher_support
 

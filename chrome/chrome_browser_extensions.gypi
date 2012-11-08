@@ -344,6 +344,8 @@
         'browser/extensions/api/web_socket_proxy_private/web_socket_proxy_private_api.h',
         'browser/extensions/api/webstore_private/webstore_private_api.cc',
         'browser/extensions/api/webstore_private/webstore_private_api.h',
+        'browser/extensions/app_host_installer_win.cc',
+        'browser/extensions/app_host_installer_win.h',
         'browser/extensions/app_notification.cc',
         'browser/extensions/app_notification.h',
         'browser/extensions/app_notification_manager.cc',
@@ -767,6 +769,7 @@
         }],
         ['OS=="win"', {
           'dependencies': [
+            'launcher_support',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
           ],

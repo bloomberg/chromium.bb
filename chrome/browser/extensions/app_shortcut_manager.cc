@@ -4,7 +4,10 @@
 
 #include "chrome/browser/extensions/app_shortcut_manager.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -16,6 +19,10 @@
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/extensions/app_host_installer_win.h"
+#endif
 
 namespace extensions {
 
@@ -46,12 +53,15 @@ ShellIntegration::ShortcutInfo ShortcutInfoForExtensionAndProfile(
 
 AppShortcutManager::AppShortcutManager(Profile* profile)
     : profile_(profile),
-      tracker_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      tracker_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
 }
+
+AppShortcutManager::~AppShortcutManager() {}
 
 void AppShortcutManager::OnImageLoaded(const gfx::Image& image,
                                        const std::string& extension_id,
@@ -81,8 +91,15 @@ void AppShortcutManager::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
       const Extension* extension = content::Details<const Extension>(
           details).ptr();
-      if (extension->is_platform_app())
+      if (extension->is_platform_app()) {
+#if defined(OS_WIN)
+        extensions::AppHostInstaller::EnsureAppHostInstalled(
+            base::Bind(&AppShortcutManager::OnAppHostInstallationComplete,
+                       weak_factory_.GetWeakPtr(), extension));
+#else
         UpdateApplicationShortcuts(extension);
+#endif
+      }
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
@@ -96,6 +113,18 @@ void AppShortcutManager::Observe(int type,
   }
 #endif
 }
+
+#if defined(OS_WIN)
+void AppShortcutManager::OnAppHostInstallationComplete(
+    const Extension* extension, bool app_host_install_success) {
+  if (!app_host_install_success) {
+    // Do not create shortcuts if App Host fails to install.
+    LOG(ERROR) << "Application Runtime installation failed.";
+    return;
+  }
+  UpdateApplicationShortcuts(extension);
+}
+#endif
 
 void AppShortcutManager::UpdateApplicationShortcuts(
     const Extension* extension) {

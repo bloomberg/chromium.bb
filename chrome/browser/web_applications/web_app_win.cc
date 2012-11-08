@@ -16,6 +16,7 @@
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/icon_util.h"
 
@@ -224,12 +225,12 @@ bool CreatePlatformShortcuts(
     return false;
   }
 
-  FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe))
+  FilePath app_host_exe(chrome_launcher_support::GetAnyAppHostPath());
+  if (app_host_exe.empty())
     return false;
 
   // Working directory.
-  FilePath chrome_folder(chrome_exe.DirName());
+  FilePath working_dir(app_host_exe.DirName());
 
   CommandLine cmd_line(CommandLine::NO_PROGRAM);
   cmd_line = ShellIntegration::CommandLineArgsForLauncher(shortcut_info.url,
@@ -268,8 +269,8 @@ bool CreatePlatformShortcuts(
     }
 
     base::win::ShortcutProperties shortcut_properties;
-    shortcut_properties.set_target(chrome_exe);
-    shortcut_properties.set_working_dir(chrome_folder);
+    shortcut_properties.set_target(app_host_exe);
+    shortcut_properties.set_working_dir(working_dir);
     shortcut_properties.set_arguments(wide_switches);
     shortcut_properties.set_description(description);
     shortcut_properties.set_icon(icon_file, 0);
