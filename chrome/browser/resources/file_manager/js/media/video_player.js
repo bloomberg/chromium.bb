@@ -11,6 +11,10 @@ function onError(opt_message) {
   errorBanner.textContent =
       loadTimeData.getString(opt_message || 'GALLERY_VIDEO_ERROR');
   errorBanner.setAttribute('visible', 'true');
+  if (util.platform.v2()) {
+    // The window is hidden if the video has not loaded yet.
+    chrome.app.window.current().show();
+  }
 }
 
 /**
@@ -72,8 +76,6 @@ var metadataCache;
  * Initialize the video player window.
  */
 function loadVideoPlayer() {
-  if (!util.TEST_HARNESS)
-    document.oncontextmenu = function(e) { e.preventDefault(); };
   document.ondragstart = function(e) { e.preventDefault() };
 
   chrome.fileBrowserPrivate.getStrings(function(strings) {

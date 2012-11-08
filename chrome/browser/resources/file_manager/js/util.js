@@ -829,6 +829,22 @@ util.platform = {
     } catch (ignore) {
       return chrome.runtime.getURL(path);
     }
+  },
+
+  /**
+   * Suppress default context menu in a current window.
+   */
+  suppressContextMenu: function() {
+    // For packed v2 apps the default context menu would not show until
+    // --debug-packed-apps is added to the command line.
+    // For unpacked v2 apps (used for debugging) it is ok to show the menu.
+    if (util.platform.v2())
+      return;
+
+    // For the old style app we show the menu only in the test harness mode.
+    if (!util.TEST_HARNESS)
+      document.addEventListener('contextmenu',
+          function(e) { e.preventDefault() });
   }
 };
 
@@ -870,5 +886,6 @@ util.addPageLoadHandler = function(handler) {
       util.loadScripts(['js/mock_chrome.js', 'js/file_copy_manager.js'],
           handler);
     }
+    util.platform.suppressContextMenu();
   });
 };

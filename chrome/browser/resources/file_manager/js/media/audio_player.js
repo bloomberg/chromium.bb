@@ -63,8 +63,6 @@ AudioPlayer.TRACK_KEY = 'audioTrack';
  */
 AudioPlayer.load = function() {
   document.ondragstart = function(e) { e.preventDefault() };
-  if (!util.TEST_HARNESS)
-    document.oncontextmenu = function(e) { e.preventDefault(); };
 
   // If the audio player is starting before the first instance of the File
   // Manager then it does not have access to filesystem URLs. Request it now.

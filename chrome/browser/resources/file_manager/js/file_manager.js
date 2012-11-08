@@ -677,10 +677,6 @@ DialogType.isModal = function(type) {
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.document_.addEventListener('keyup', this.onKeyUp_.bind(this));
-    // Disable the default browser context menu.
-    if (!util.TEST_HARNESS)
-      this.document_.addEventListener('contextmenu',
-          function(e) { e.preventDefault() });
 
     this.renameInput_ = this.document_.createElement('input');
     this.renameInput_.className = 'rename';
@@ -761,8 +757,8 @@ DialogType.isModal = function(type) {
   };
 
   /**
-   * @param {Object} prefs Preferences.
    * Constructs table and grid (heavy operation).
+   * @param {Object} prefs Preferences.
    **/
   FileManager.prototype.initFileList_ = function(prefs) {
     // Always sharing the data model between the detail/thumb views confuses
@@ -865,7 +861,7 @@ DialogType.isModal = function(type) {
     };
     if (DialogType.isModal(this.dialogType))
       prefs.listType = this.listType;
-    util.platform.setPreference(this.startupPrefName_, prefs);
+    util.platform.setPreference(this.startupPrefName_, JSON.stringify(prefs));
   };
 
   /**
