@@ -11,7 +11,31 @@
 
 namespace views {
 
+namespace {
+
 const int kCheckboxLabelSpacing = 4;
+
+// A border with zero left inset.
+class CheckboxNativeThemeBorder : public TextButtonNativeThemeBorder {
+ public:
+  explicit CheckboxNativeThemeBorder(views::NativeThemeDelegate* delegate)
+      : TextButtonNativeThemeBorder(delegate) {}
+  virtual ~CheckboxNativeThemeBorder() {}
+
+  // The insets apply to the whole view (checkbox + text), not just the square
+  // with the checkmark in it. The insets do not visibly affect the checkbox,
+  // except to ensure that there is enough padding between this and other
+  // elements.
+  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
+    TextButtonNativeThemeBorder::GetInsets(insets);
+    insets->Set(insets->top(), 0, insets->bottom(), 0);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CheckboxNativeThemeBorder);
+};
+
+}  // namespace
 
 // static
 const char Checkbox::kViewClassName[] = "views/Checkbox";
@@ -22,7 +46,7 @@ const char Checkbox::kViewClassName[] = "views/Checkbox";
 Checkbox::Checkbox(const string16& label)
     : TextButtonBase(NULL, label),
       checked_(false) {
-  set_border(new TextButtonNativeThemeBorder(this));
+  set_border(new CheckboxNativeThemeBorder(this));
   set_focusable(true);
 }
 
@@ -40,7 +64,7 @@ gfx::Size Checkbox::GetPreferredSize() {
   ui::NativeTheme::State state = GetThemeState(&extra);
   gfx::Size size = ui::NativeTheme::instance()->GetPartSize(GetThemePart(),
                                                             state, extra);
-  prefsize.Enlarge(size.width(), 0);
+  prefsize.Enlarge(size.width() + kCheckboxLabelSpacing, 0);
   prefsize.set_height(std::max(prefsize.height(), size.height()));
 
   if (max_width_ > 0)

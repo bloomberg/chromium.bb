@@ -21,6 +21,8 @@ class ConstrainedWindowConstants {
   static const int kCloseButtonPadding; // Padding around the close button.
   static const int kBorderRadius; // Border radius for dialog corners.
   static const int kRowPadding; // Padding between rows of text.
+  static const int kCheckboxIndent; // Indent of checkboxes relative to related
+                                    // text.
 
   // Font style for dialog text.
   static const ui::ResourceBundle::FontStyle kTextFontStyle;

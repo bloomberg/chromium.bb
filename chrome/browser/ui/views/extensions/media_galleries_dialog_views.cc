@@ -30,19 +30,6 @@ namespace {
 // Heading font size correction.
 const int kHeadingFontSizeDelta = 1;
 
-// A border with zero left inset.
-class MediaGalleriesCheckboxBorder : public views::TextButtonNativeThemeBorder {
- public:
-  explicit MediaGalleriesCheckboxBorder(views::NativeThemeDelegate* delegate)
-      : views::TextButtonNativeThemeBorder(delegate) {}
-  virtual ~MediaGalleriesCheckboxBorder() {}
-
-  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
-    views::TextButtonNativeThemeBorder::GetInsets(insets);
-    insets->Set(insets->top(), 0, insets->bottom(), insets->right());
-  }
-};
-
 }  // namespace
 
 MediaGalleriesDialogViews::MediaGalleriesDialogViews(
@@ -143,7 +130,6 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
   }
 
   views::Checkbox* checkbox = new views::Checkbox(gallery->display_name);
-  checkbox->set_border(new MediaGalleriesCheckboxBorder(checkbox));
   checkbox->set_listener(this);
   checkbox->SetTooltipText(gallery->AbsolutePath().LossyDisplayName());
   checkbox_container_->AddChildView(checkbox);

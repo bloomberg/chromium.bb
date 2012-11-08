@@ -296,7 +296,7 @@ void CreateApplicationShortcutView::InitControls() {
 
   static const int kTableColumnSetId = 1;
   column_set = layout->AddColumnSet(kTableColumnSetId);
-  column_set->AddPaddingColumn(5.0f, 10);
+  column_set->AddPaddingColumn(0, views::kPanelHorizIndentation);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         100.0f, views::GridLayout::USE_PREF, 0, 0);
 

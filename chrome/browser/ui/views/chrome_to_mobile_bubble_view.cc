@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_to_mobile_service.h"
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/constrained_window_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/throb_animation.h"
@@ -43,30 +44,6 @@ const size_t kProgressThrobDurationMS = 2400;
 
 // The seconds to delay before automatically closing the bubble after sending.
 const int kAutoCloseDelay = 3;
-
-// A custom TextButtonNativeThemeBorder with no left (leading) inset.
-class CheckboxNativeThemeBorder : public views::TextButtonNativeThemeBorder {
- public:
-  explicit CheckboxNativeThemeBorder(views::NativeThemeDelegate* delegate);
-  virtual ~CheckboxNativeThemeBorder();
-
-  // views::TextButtonNativeThemeBorder methods.
-  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CheckboxNativeThemeBorder);
-};
-
-CheckboxNativeThemeBorder::CheckboxNativeThemeBorder(
-    views::NativeThemeDelegate* delegate)
-    : views::TextButtonNativeThemeBorder(delegate) {}
-
-CheckboxNativeThemeBorder::~CheckboxNativeThemeBorder() {}
-
-void CheckboxNativeThemeBorder::GetInsets(gfx::Insets* insets) const {
-  views::TextButtonNativeThemeBorder::GetInsets(insets);
-  insets->Set(insets->top(), 0, insets->bottom(), insets->right());
-}
 
 // Downcast TextButton |view| and set the icon image with the resource |id|.
 void SetTextButtonIconToId(views::View* view, int id) {
@@ -206,7 +183,7 @@ void ChromeToMobileBubbleView::OnSendComplete(bool success) {
     error_label->SetEnabledColor(SK_ColorRED);
     GridLayout* layout = static_cast<GridLayout*>(GetLayoutManager());
     layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
-    layout->StartRow(0, 0 /*single_column_set_id*/);
+    layout->StartRow(0, 0 /*kSingleColumnSetId*/);
     layout->AddView(error_label);
     SizeToContents();
   }
@@ -220,14 +197,20 @@ void ChromeToMobileBubbleView::Init() {
   GridLayout* layout = new GridLayout(this);
   SetLayoutManager(layout);
 
-  const size_t single_column_set_id = 0;
-  views::ColumnSet* cs = layout->AddColumnSet(single_column_set_id);
+  const size_t kSingleColumnSetId = 0;
+  views::ColumnSet* cs = layout->AddColumnSet(kSingleColumnSetId);
   cs->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                 GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(1, 0);
 
-  const size_t button_column_set_id = 1;
-  cs = layout->AddColumnSet(button_column_set_id);
+  const size_t kRadioColumnSetId = 1;
+  cs = layout->AddColumnSet(kRadioColumnSetId);
+  cs->AddPaddingColumn(0, ConstrainedWindowConstants::kCheckboxIndent);
+  cs->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                GridLayout::USE_PREF, 0, 0);
+
+  const size_t kButtonColumnSetId = 2;
+  cs = layout->AddColumnSet(kButtonColumnSetId);
   cs->AddColumn(GridLayout::LEADING, GridLayout::TRAILING, 0,
                 GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(1, 0);
@@ -243,7 +226,7 @@ void ChromeToMobileBubbleView::Init() {
   views::Label* title_label = new views::Label();
   title_label->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   title_label->SetEnabledColor(kTitleColor);
-  layout->StartRow(0, single_column_set_id);
+  layout->StartRow(0, kSingleColumnSetId);
   layout->AddView(title_label);
 
   const ListValue* mobiles = service_->GetMobiles();
@@ -272,7 +255,7 @@ void ChromeToMobileBubbleView::Init() {
         radio->SetEnabledColor(SK_ColorBLACK);
         radio->SetHoverColor(SK_ColorBLACK);
         radio_buttons_.push_back(radio);
-        layout->StartRow(0, single_column_set_id);
+        layout->StartRow(0, kRadioColumnSetId);
         layout->AddView(radio);
       } else {
         NOTREACHED();
@@ -285,12 +268,10 @@ void ChromeToMobileBubbleView::Init() {
       l10n_util::GetStringFUTF16(IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY,
           l10n_util::GetStringUTF16(
               IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY_GENERATING)));
-  // Use CheckboxNativeThemeBorder to align the checkbox with the title label.
-  send_copy_->set_border(new CheckboxNativeThemeBorder(send_copy_));
   send_copy_->SetEnabledColor(SK_ColorBLACK);
   send_copy_->SetHoverColor(SK_ColorBLACK);
   send_copy_->SetEnabled(false);
-  layout->StartRow(0, single_column_set_id);
+  layout->StartRow(0, kSingleColumnSetId);
   layout->AddView(send_copy_);
 
   views::Link* learn_more =
@@ -303,7 +284,7 @@ void ChromeToMobileBubbleView::Init() {
   cancel_ = new views::NativeTextButton(
       this, l10n_util::GetStringUTF16(IDS_CANCEL));
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
-  layout->StartRow(0, button_column_set_id);
+  layout->StartRow(0, kButtonColumnSetId);
   layout->AddView(learn_more);
   layout->AddView(send_);
   layout->AddView(cancel_);

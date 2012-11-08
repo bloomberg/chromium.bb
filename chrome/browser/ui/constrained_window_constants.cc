@@ -11,6 +11,7 @@ const int ConstrainedWindowConstants::kClientBottomPadding = 20;
 const int ConstrainedWindowConstants::kCloseButtonPadding = 7;
 const int ConstrainedWindowConstants::kBorderRadius = 2;
 const int ConstrainedWindowConstants::kRowPadding = 20;
+const int ConstrainedWindowConstants::kCheckboxIndent = 10;
 
 const ui::ResourceBundle::FontStyle ConstrainedWindowConstants::kTextFontStyle =
     ui::ResourceBundle::BaseFont;
