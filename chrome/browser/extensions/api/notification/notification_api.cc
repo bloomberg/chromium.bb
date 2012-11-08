@@ -24,10 +24,12 @@ const char kNotificationPrefix[] = "extension.api.";
 
 class NotificationApiDelegate : public NotificationDelegate {
  public:
-  explicit NotificationApiDelegate(
-      extensions::ApiResourceEventNotifier* event_notifier)
-      : event_notifier_(event_notifier),
+  NotificationApiDelegate(extensions::ApiFunction* api_function,
+                          extensions::ApiResourceEventNotifier* event_notifier)
+      : api_function_(api_function),
+        event_notifier_(event_notifier),
         id_(kNotificationPrefix + base::Uint64ToString(next_id_++)) {
+    DCHECK(api_function_);
   }
 
   virtual void Display() OVERRIDE {
@@ -51,13 +53,17 @@ class NotificationApiDelegate : public NotificationDelegate {
   }
 
   virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
-    // TODO(miket): required to handle icon
-    return NULL;
+    // We're holding a reference to api_function_, so we know it'll be valid as
+    // long as we are, and api_function_ (as a UIThreadExtensionFunction)
+    // listens to content::NOTIFICATION_RENDER_VIEW_HOST_DELETED and will
+    // properly zero out its copy of render_view_host when the RVH goes away.
+    return api_function_->render_view_host();
   }
 
  private:
   virtual ~NotificationApiDelegate() {}
 
+  scoped_refptr<extensions::ApiFunction> api_function_;
   extensions::ApiResourceEventNotifier* event_notifier_;
   std::string id_;
 
@@ -121,7 +127,8 @@ bool NotificationShowFunction::RunImpl() {
                             WebKit::WebTextDirectionDefault,
                             string16(), replace_id,
                             optional_fields.get(),
-                            new NotificationApiDelegate(event_notifier_));
+                            new NotificationApiDelegate(this,
+                                                        event_notifier_));
   g_browser_process->notification_ui_manager()->Add(notification, profile());
 
   // TODO(miket): why return a result if it's always true?
