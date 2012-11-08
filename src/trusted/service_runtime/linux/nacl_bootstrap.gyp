@@ -83,9 +83,9 @@
         '-fno-pie', '-fno-PIE',
       ],
       'cflags!': [
-        # TODO(glider): -fasan is deprecated.
-        '-fasan',
+        # TODO(glider): -faddress-sanitizer is deprecated.
         '-faddress-sanitizer',
+        '-fsanitize=address',
         '-w',
         # We filter these out because release_extra_cflags or another
         # such thing might be adding them in, and those options wind up
