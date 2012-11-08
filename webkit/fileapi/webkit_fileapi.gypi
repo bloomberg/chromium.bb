@@ -88,6 +88,8 @@
       '../fileapi/syncable/local_file_sync_status.h',
       '../fileapi/syncable/local_origin_change_observer.h',
       '../fileapi/syncable/sync_callbacks.h',
+      '../fileapi/syncable/sync_file_metadata.cc',
+      '../fileapi/syncable/sync_file_metadata.h',
       '../fileapi/syncable/sync_file_type.h',
       '../fileapi/syncable/sync_status_code.cc',
       '../fileapi/syncable/sync_status_code.h',

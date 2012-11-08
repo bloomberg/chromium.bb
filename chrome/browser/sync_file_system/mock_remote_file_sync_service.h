@@ -27,8 +27,14 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   MOCK_METHOD1(UnregisterOriginForTrackingChanges, void(const GURL& origin));
   MOCK_METHOD2(ProcessRemoteChange,
                void(RemoteChangeProcessor* processor,
-                    const fileapi::SyncCompletionCallback& callback));
+                    const fileapi::SyncFileCallback& callback));
   MOCK_METHOD0(GetLocalChangeProcessor, LocalChangeProcessor*());
+  MOCK_METHOD2(GetConflictFiles,
+               void(const GURL& origin,
+                    const fileapi::SyncFileSetCallback& callback));
+  MOCK_METHOD2(GetRemoteFileMetadata,
+               void(const fileapi::FileSystemURL& url,
+                    const fileapi::SyncFileMetadataCallback& callback));
 
   // Sets a mock local change processor. The value is returned by
   // the default action for GetLocalChangeProcessor.
@@ -39,7 +45,7 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
 
  private:
   void ProcessRemoteChangeStub(RemoteChangeProcessor* processor,
-                               const fileapi::SyncCompletionCallback& callback);
+                               const fileapi::SyncFileCallback& callback);
 
   scoped_ptr<LocalChangeProcessor> local_change_processor_;
 

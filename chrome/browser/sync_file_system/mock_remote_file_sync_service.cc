@@ -30,7 +30,7 @@ MockRemoteFileSyncService::~MockRemoteFileSyncService() {
 
 void MockRemoteFileSyncService::ProcessRemoteChangeStub(
     RemoteChangeProcessor* processor,
-    const fileapi::SyncCompletionCallback& callback) {
+    const fileapi::SyncFileCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC,

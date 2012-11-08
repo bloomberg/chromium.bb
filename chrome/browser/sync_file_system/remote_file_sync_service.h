@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_REMOTE_FILE_SYNC_SERVICE_H_
 
 #include "base/basictypes.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
 
 class GURL;
@@ -16,6 +17,8 @@ class RemoteChangeProcessor;
 class LocalChangeProcessor;
 
 // This class represents a backing service of the sync filesystem.
+// This also maintains conflict information, i.e. a list of conflicting files
+// (at least in the current design).
 // Owned by SyncFileSystemService.
 class RemoteFileSyncService {
  public:
@@ -50,11 +53,21 @@ class RemoteFileSyncService {
   // the control to the sync engine).
   virtual void ProcessRemoteChange(
       RemoteChangeProcessor* processor,
-      const fileapi::SyncCompletionCallback& callback) = 0;
+      const fileapi::SyncFileCallback& callback) = 0;
 
   // Returns a LocalChangeProcessor that applies a local change to the remote
   // storage backed by this service.
   virtual LocalChangeProcessor* GetLocalChangeProcessor() = 0;
+
+  // Returns a list of conflicting files for the given origin.
+  virtual void GetConflictFiles(
+      const GURL& origin,
+      const fileapi::SyncFileSetCallback& callback) = 0;
+
+  // Returns the metadata of a remote file pointed by |url|.
+  virtual void GetRemoteFileMetadata(
+      const fileapi::FileSystemURL& url,
+      const fileapi::SyncFileMetadataCallback& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteFileSyncService);

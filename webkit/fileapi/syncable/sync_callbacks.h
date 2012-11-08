@@ -6,17 +6,33 @@
 #define WEBKIT_FILEAPI_SYNCABLE_SYNC_CALLBACKS_H_
 
 #include "base/callback_forward.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
 namespace fileapi {
 
 class FileSystemURL;
+class SyncFileMetadata;
+class ConflictFileInfo;
 
 typedef base::Callback<void(SyncStatusCode status)>
     SyncStatusCallback;
 
-typedef base::Callback<void(SyncStatusCode status, const FileSystemURL& url)>
-    SyncCompletionCallback;
+typedef base::Callback<void(SyncStatusCode status,
+                            const FileSystemURL& url)>
+    SyncFileCallback;
+
+typedef base::Callback<void(SyncStatusCode status,
+                            const SyncFileMetadata& metadata)>
+    SyncFileMetadataCallback;
+
+typedef base::Callback<void(fileapi::SyncStatusCode status,
+                            const fileapi::FileSystemURLSet& urls)>
+    SyncFileSetCallback;
+
+typedef base::Callback<void(fileapi::SyncStatusCode status,
+                            const fileapi::ConflictFileInfo& conflict_info)>
+    ConflictFileInfoCallback;
 
 }  // namespace fileapi
 

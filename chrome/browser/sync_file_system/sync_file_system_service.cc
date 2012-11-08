@@ -14,9 +14,15 @@
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
 using content::BrowserThread;
+using fileapi::ConflictFileInfoCallback;
+using fileapi::FileSystemURL;
+using fileapi::SyncFileMetadata;
+using fileapi::SyncStatusCallback;
+using fileapi::SyncStatusCode;
 
 namespace sync_file_system {
 
@@ -39,19 +45,41 @@ SyncFileSystemService::~SyncFileSystemService() {
 void SyncFileSystemService::InitializeForApp(
     fileapi::FileSystemContext* file_system_context,
     const std::string& service_name,
-    const GURL& app_url,
-    const fileapi::SyncStatusCallback& callback) {
+    const GURL& app_origin,
+    const SyncStatusCallback& callback) {
   DCHECK(local_file_service_);
+  DCHECK(app_origin == app_origin.GetOrigin());
 
   // TODO(kinuko,tzik): Instantiate the remote_file_service for the given
   // |service_name| if it hasn't been initialized.
 
   local_file_service_->MaybeInitializeFileSystemContext(
-      app_url.GetOrigin(), service_name, file_system_context, callback);
+      app_origin, service_name, file_system_context, callback);
 
-  // TODO(tzik): Uncomment this line after its implementation lands.
-  // remote_file_service_->RegisterOriginForTrackingChanges(
-  //   app_url.GetOrigin());
+  if (remote_file_service_)
+    remote_file_service_->RegisterOriginForTrackingChanges(app_origin);
+}
+
+void SyncFileSystemService::GetConflictFiles(
+    const GURL& app_origin,
+    const std::string& service_name,
+    const fileapi::SyncFileSetCallback& callback) {
+  DCHECK(app_origin == app_origin.GetOrigin());
+
+  // TODO(kinuko): Implement.
+  NOTIMPLEMENTED();
+}
+
+void SyncFileSystemService::GetConflictFileInfo(
+    const GURL& app_origin,
+    const std::string& service_name,
+    const FileSystemURL& url,
+    const ConflictFileInfoCallback& callback) {
+  DCHECK(local_file_service_);
+  DCHECK(app_origin == app_origin.GetOrigin());
+
+  // TODO(kinuko): Implement.
+  NOTIMPLEMENTED();
 }
 
 void SyncFileSystemService::OnLocalChangeAvailable(int64 pending_changes) {
@@ -75,7 +103,7 @@ void SyncFileSystemService::Initialize(
     scoped_ptr<LocalFileSyncService> local_file_service,
     scoped_ptr<RemoteFileSyncService> remote_file_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(local_file_service.get());
+  DCHECK(local_file_service);
   DCHECK(profile_);
 
   local_file_service_ = local_file_service.Pass();

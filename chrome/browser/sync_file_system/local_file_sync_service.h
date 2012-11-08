@@ -69,7 +69,12 @@ class LocalFileSyncService
   // using |processor|.
   // |processor| must have same or longer lifetime than this service.
   void ProcessLocalChange(LocalChangeProcessor* processor,
-                          const fileapi::SyncCompletionCallback& callback);
+                          const fileapi::SyncFileCallback& callback);
+
+  // Returns the metadata of a remote file pointed by |url|.
+  virtual void GetLocalFileMetadata(
+      const fileapi::FileSystemURL& url,
+      const fileapi::SyncFileMetadataCallback& callback);
 
   // RemoteChangeProcessor overrides.
   virtual void PrepareForProcessRemoteChange(
@@ -143,7 +148,7 @@ class LocalFileSyncService
 
   // This callback is non-null while a local sync is running (i.e.
   // ProcessLocalChange has been called and has not been returned yet).
-  fileapi::SyncCompletionCallback local_sync_callback_;
+  fileapi::SyncFileCallback local_sync_callback_;
 
   ObserverList<Observer> change_observers_;
 

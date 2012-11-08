@@ -20,7 +20,8 @@ using fileapi::FileChangeList;
 using fileapi::FileSystemURL;
 using fileapi::LocalFileSyncContext;
 using fileapi::LocalFileSyncInfo;
-using fileapi::SyncCompletionCallback;
+using fileapi::SyncFileCallback;
+using fileapi::SyncFileMetadataCallback;
 using fileapi::SyncStatusCallback;
 using fileapi::SyncStatusCallback;
 using fileapi::SyncStatusCode;
@@ -113,7 +114,7 @@ void LocalFileSyncService::AddChangeObserver(Observer* observer) {
 
 void LocalFileSyncService::ProcessLocalChange(
     LocalChangeProcessor* processor,
-    const SyncCompletionCallback& callback) {
+    const SyncFileCallback& callback) {
   DCHECK(local_sync_callback_.is_null());
   local_sync_callback_ = callback;
 
@@ -130,6 +131,14 @@ void LocalFileSyncService::ProcessLocalChange(
       origin_to_contexts_[origin],
       base::Bind(&LocalFileSyncService::DidGetFileForLocalSync,
                  AsWeakPtr(), processor));
+}
+
+void LocalFileSyncService::GetLocalFileMetadata(
+    const fileapi::FileSystemURL& url,
+    const SyncFileMetadataCallback& callback) {
+  DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
+  // TODO(kinuko): implement.
+  NOTIMPLEMENTED();
 }
 
 void LocalFileSyncService::PrepareForProcessRemoteChange(
@@ -182,7 +191,7 @@ void LocalFileSyncService::RunLocalSyncCallback(
     fileapi::SyncStatusCode status,
     const fileapi::FileSystemURL& url) {
   DCHECK(!local_sync_callback_.is_null());
-  fileapi::SyncCompletionCallback callback = local_sync_callback_;
+  fileapi::SyncFileCallback callback = local_sync_callback_;
   local_sync_callback_.Reset();
   callback.Run(status, url);
 }
@@ -198,7 +207,7 @@ void LocalFileSyncService::DidGetFileForLocalSync(
   }
   if (sync_file_info.changes.empty()) {
     // There's a slight chance this could happen.
-    fileapi::SyncCompletionCallback callback = local_sync_callback_;
+    fileapi::SyncFileCallback callback = local_sync_callback_;
     local_sync_callback_.Reset();
     ProcessLocalChange(processor, callback);
     return;
