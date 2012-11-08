@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <shlobj.h>
 
+#include "base/win/win_util.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_drag_utils_win.h"
 #include "content/public/browser/web_contents.h"
@@ -45,11 +46,11 @@ DWORD GetPreferredDropEffect(DWORD effect) {
 
 int GetModifierFlags() {
   int modifier_state = 0;
-  if (::GetKeyState(VK_SHIFT) & kHighBitMaskShort)
+  if (base::win::IsShiftPressed())
     modifier_state |= WebKit::WebInputEvent::ShiftKey;
-  if (::GetKeyState(VK_CONTROL) & kHighBitMaskShort)
+  if (base::win::IsCtrlPressed())
     modifier_state |= WebKit::WebInputEvent::ControlKey;
-  if (::GetKeyState(VK_MENU) & kHighBitMaskShort)
+  if (base::win::IsAltPressed())
     modifier_state |= WebKit::WebInputEvent::AltKey;
   if (::GetKeyState(VK_LWIN) & kHighBitMaskShort)
     modifier_state |= WebKit::WebInputEvent::MetaKey;
