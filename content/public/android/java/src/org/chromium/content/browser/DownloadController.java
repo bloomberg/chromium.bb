@@ -26,18 +26,12 @@ class DownloadController {
         return sInstance;
     }
 
-    private Context mContext;
-
     private DownloadController() {
         nativeInit();
     }
 
     private static ContentViewDownloadDelegate downloadDelegateFromView(ContentViewCore view) {
         return view.getDownloadDelegate();
-    }
-
-    public void setContext(Context context) {
-        mContext = context;
     }
 
     /**
