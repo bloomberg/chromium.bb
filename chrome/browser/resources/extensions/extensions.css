@@ -275,7 +275,7 @@ html[dir='rtl'] #extension-settings .trash {
   visibility: hidden;
 }
 
-.may-not-disable .optional-controls {
+.may-not-disable .optional-controls .optional-controls-disableable {
   display: none;
 }
 
