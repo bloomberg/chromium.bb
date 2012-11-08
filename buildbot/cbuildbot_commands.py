@@ -380,8 +380,7 @@ def RunChromeSuite(buildroot, board, image_dir, results_dir):
          'desktopui_BrowserTest.control$',
          'desktopui_BrowserTest.control.one',
          'desktopui_BrowserTest.control.two',
-         'desktopui_BrowserTest.control.three',
-         'desktopui_PyAutoFunctionalTests.control.vm']
+         'desktopui_BrowserTest.control.three']
   cros_build_lib.RunCommand(cmd, cwd=cwd, error_code_ok=True)
 
 
