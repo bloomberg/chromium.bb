@@ -1,7 +1,7 @@
-UNKNOWN_TYPE | payment_method |  | Visa
+CREDIT_CARD_TYPE | payment_method |  | Visa
 CREDIT_CARD_NUMBER | cc_number |  | 
 CREDIT_CARD_NAME | cc_name |  | 
 CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR | cc_exp | Expiration date (MM/YY) | 
-UNKNOWN_TYPE | cc_cvv2 | CVV2 / Security Code: | 
+CREDIT_CARD_VERIFICATION_CODE | cc_cvv2 | CVV2 / Security Code: | 
 UNKNOWN_TYPE | field_17 |  | Select an option...
 UNKNOWN_TYPE | age |  | 

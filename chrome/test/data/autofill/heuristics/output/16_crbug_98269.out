@@ -9,6 +9,6 @@ UNKNOWN_TYPE | selBirthYear | * Date of Birth: | Year
 CREDIT_CARD_TYPE | cardType | Type: | VI
 CREDIT_CARD_NUMBER | CreditCardNumber | Number: | 
 CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR | CreditCardExpYYMM | Expiration: | 092011
-UNKNOWN_TYPE | CVV | Security Code: | 
+CREDIT_CARD_VERIFICATION_CODE | CVV | Security Code: | 
 UNKNOWN_TYPE | GiftCardNum | Card Number: | 
 UNKNOWN_TYPE | GiftCardPIN | Security ID Number: | 

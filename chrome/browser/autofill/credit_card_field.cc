@@ -196,6 +196,9 @@ CreditCardField::CreditCardField()
 
 bool CreditCardField::ClassifyField(FieldTypeMap* map) const {
   bool ok = AddClassification(number_, CREDIT_CARD_NUMBER, map);
+  ok = ok && AddClassification(type_, CREDIT_CARD_TYPE, map);
+  ok = ok && AddClassification(verification_, CREDIT_CARD_VERIFICATION_CODE,
+                               map);
 
   // If the heuristics detected first and last name in separate fields,
   // then ignore both fields. Putting them into separate fields is probably
@@ -204,7 +207,6 @@ bool CreditCardField::ClassifyField(FieldTypeMap* map) const {
   if (cardholder_last_ == NULL)
     ok = ok && AddClassification(cardholder_, CREDIT_CARD_NAME, map);
 
-  ok = ok && AddClassification(type_, CREDIT_CARD_TYPE, map);
   if (expiration_date_) {
     if (is_two_digit_year_) {
       ok = ok && AddClassification(expiration_date_,

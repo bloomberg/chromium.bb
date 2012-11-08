@@ -19,7 +19,7 @@ CREDIT_CARD_TYPE | paymentFormInfo.creditCardType | Credit Card Type: |
 CREDIT_CARD_NUMBER | paymentFormInfo.creditCardNumber | Credit Card Number: | 
 CREDIT_CARD_EXP_MONTH | paymentFormInfo.creditCardExpMonth | Expiration Date: |  
 CREDIT_CARD_EXP_4_DIGIT_YEAR | paymentFormInfo.creditCardExpYear | / | -1
-UNKNOWN_TYPE | paymentFormInfo.creditCardCvv | CID | 
+CREDIT_CARD_VERIFICATION_CODE | paymentFormInfo.creditCardCvv | CID | 
 NAME_FIRST | addrsForm[2].firstName | *First Name: | 
 NAME_MIDDLE_INITIAL | addrsForm[2].middleInitial | Middle Initial: | 
 NAME_LAST | addrsForm[2].lastName | *Last Name: | 

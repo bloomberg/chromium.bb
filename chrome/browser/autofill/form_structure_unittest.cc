@@ -896,7 +896,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfo) {
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(6U, form_structure->field_count());
-  ASSERT_EQ(4U, form_structure->autofill_count());
+  ASSERT_EQ(5U, form_structure->autofill_count());
 
   // Credit card name.
   EXPECT_EQ(CREDIT_CARD_NAME, form_structure->field(0)->heuristic_type());
@@ -907,8 +907,9 @@ TEST(FormStructureTest, HeuristicsCreditCardInfo) {
   // Credit card expiration year.
   EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
             form_structure->field(3)->heuristic_type());
-  // We don't determine CVV.
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(4)->heuristic_type());
+  // CVV.
+  EXPECT_EQ(CREDIT_CARD_VERIFICATION_CODE,
+            form_structure->field(4)->heuristic_type());
   // Submit.
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(5)->heuristic_type());
 }
@@ -956,7 +957,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(7U, form_structure->field_count());
-  ASSERT_EQ(4U, form_structure->autofill_count());
+  ASSERT_EQ(5U, form_structure->autofill_count());
 
   // Credit card name.
   EXPECT_EQ(CREDIT_CARD_NAME, form_structure->field(0)->heuristic_type());
@@ -969,8 +970,9 @@ TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
   // Credit card expiration year.
   EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
             form_structure->field(4)->heuristic_type());
-  // We don't determine CVV.
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(5)->heuristic_type());
+  // CVV.
+  EXPECT_EQ(CREDIT_CARD_VERIFICATION_CODE,
+            form_structure->field(5)->heuristic_type());
   // Submit.
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(6)->heuristic_type());
 }
@@ -1383,7 +1385,7 @@ TEST(FormStructureTest, CVCCodeClash) {
 
   // Expect the correct number of fields.
   ASSERT_EQ(6U, form_structure->field_count());
-  ASSERT_EQ(4U, form_structure->autofill_count());
+  ASSERT_EQ(5U, form_structure->autofill_count());
 
   // Card Number.
   EXPECT_EQ(CREDIT_CARD_NUMBER, form_structure->field(0)->heuristic_type());
@@ -1396,8 +1398,9 @@ TEST(FormStructureTest, CVCCodeClash) {
   // Expiration Year.
   EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
             form_structure->field(4)->heuristic_type());
-  // CVC code should not match.
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(5)->heuristic_type());
+  // CVC code.
+  EXPECT_EQ(CREDIT_CARD_VERIFICATION_CODE,
+            form_structure->field(5)->heuristic_type());
 }
 
 TEST(FormStructureTest, EncodeQueryRequest) {

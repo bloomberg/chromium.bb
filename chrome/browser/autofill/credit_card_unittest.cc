@@ -39,12 +39,10 @@ const char* const kInvalidNumbers[] = {
 
 }  // namespace
 
-typedef testing::Test CreditCardTest;
-
 // Tests credit card summary string generation.  This test simulates a variety
 // of different possible summary strings.  Variations occur based on the
 // existence of credit card number, month, and year fields.
-TEST_F(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
+TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   // Case 0: empty credit card.
   CreditCard credit_card0;
   string16 summary0 = credit_card0.Label();
@@ -98,7 +96,7 @@ TEST_F(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   EXPECT_EQ(ASCIIToUTF16("************5100"), obfuscated4);
 }
 
-TEST_F(CreditCardTest, AssignmentOperator) {
+TEST(CreditCardTest, AssignmentOperator) {
   CreditCard a, b;
 
   // Result of assignment should be logically equal to the original profile.
@@ -112,7 +110,7 @@ TEST_F(CreditCardTest, AssignmentOperator) {
   EXPECT_TRUE(a == b);
 }
 
-TEST_F(CreditCardTest, IsValidCreditCardNumber) {
+TEST(CreditCardTest, IsValidCreditCardNumber) {
   for (size_t i = 0; i < arraysize(kValidNumbers); ++i) {
     SCOPED_TRACE(kValidNumbers[i]);
     EXPECT_TRUE(
@@ -125,7 +123,7 @@ TEST_F(CreditCardTest, IsValidCreditCardNumber) {
   }
 }
 
-TEST_F(CreditCardTest, IsComplete) {
+TEST(CreditCardTest, IsComplete) {
   CreditCard card;
   EXPECT_FALSE(card.IsComplete());
   card.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Wally T. Walrus"));
@@ -146,7 +144,7 @@ TEST_F(CreditCardTest, IsComplete) {
   }
 }
 
-TEST_F(CreditCardTest, InvalidMastercardNumber) {
+TEST(CreditCardTest, InvalidMastercardNumber) {
   CreditCard card;
 
   autofill_test::SetCreditCardInfo(&card, "Baby Face Nelson",
@@ -155,7 +153,7 @@ TEST_F(CreditCardTest, InvalidMastercardNumber) {
 }
 
 // Verify that we preserve exactly what the user typed for credit card numbers.
-TEST_F(CreditCardTest, SetInfoCreditCardNumber) {
+TEST(CreditCardTest, SetInfoCreditCardNumber) {
   CreditCard card;
 
   autofill_test::SetCreditCardInfo(&card, "Bob Dylan",
@@ -165,7 +163,7 @@ TEST_F(CreditCardTest, SetInfoCreditCardNumber) {
 }
 
 // Verify that we can handle both numeric and named months.
-TEST_F(CreditCardTest, SetInfoExpirationMonth) {
+TEST(CreditCardTest, SetInfoExpirationMonth) {
   CreditCard card;
 
   card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("05"));
@@ -181,7 +179,7 @@ TEST_F(CreditCardTest, SetInfoExpirationMonth) {
   EXPECT_EQ(ASCIIToUTF16("04"), card.GetInfo(CREDIT_CARD_EXP_MONTH));
 }
 
-TEST_F(CreditCardTest, CreditCardType) {
+TEST(CreditCardTest, CreditCardType) {
   CreditCard card;
 
   // The card type cannot be set directly.
@@ -191,4 +189,12 @@ TEST_F(CreditCardTest, CreditCardType) {
   // Setting the number should implicitly set the type.
   card.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111 1111 1111 1111"));
   EXPECT_EQ(ASCIIToUTF16("Visa"), card.GetInfo(CREDIT_CARD_TYPE));
+}
+
+TEST(CreditCardTest, CreditCardVerificationCode) {
+  CreditCard card;
+
+  // The verification code cannot be set, as Chrome does not store this data.
+  card.SetInfo(CREDIT_CARD_VERIFICATION_CODE, ASCIIToUTF16("999"));
+  EXPECT_EQ(string16(), card.GetInfo(CREDIT_CARD_VERIFICATION_CODE));
 }

@@ -280,7 +280,7 @@ string16 CreditCard::GetInfo(AutofillFieldType type) const {
       return number_;
 
     case CREDIT_CARD_VERIFICATION_CODE:
-      NOTREACHED();
+      // Chrome doesn't store credit card verification codes.
       return string16();
 
     default:
@@ -316,7 +316,7 @@ void CreditCard::SetInfo(AutofillFieldType type, const string16& value) {
       break;
 
     case CREDIT_CARD_TYPE:
-      // We determine the type based on the number.
+      // This is a read-only attribute, determined by the credit card number.
       break;
 
     case CREDIT_CARD_NUMBER: {
@@ -327,7 +327,7 @@ void CreditCard::SetInfo(AutofillFieldType type, const string16& value) {
     }
 
     case CREDIT_CARD_VERIFICATION_CODE:
-      NOTREACHED();
+      // Chrome doesn't store the credit card verification code.
       break;
 
     default:

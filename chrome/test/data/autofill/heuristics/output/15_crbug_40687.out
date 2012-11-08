@@ -12,4 +12,4 @@ EMAIL_ADDRESS | user[email_confirm] | Confirm Email Address |
 CREDIT_CARD_NUMBER | payment[cc_number] | Credit Card Number | 
 CREDIT_CARD_EXP_MONTH | payment[cc_expmo] | Expiration Month | 
 CREDIT_CARD_EXP_4_DIGIT_YEAR | payment[cc_expyr] | Expiration Year | 
-UNKNOWN_TYPE | payment[sigpanel] | CVV2/Panel Code | 
+CREDIT_CARD_VERIFICATION_CODE | payment[sigpanel] | CVV2/Panel Code | 
