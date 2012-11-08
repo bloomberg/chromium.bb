@@ -25,12 +25,18 @@ if "%1" == "force" (
 
 :GIT_CHECK
 :: If the batch file exists, skip the git check.
-if exist "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%" goto :MSYS_TERM_CHECK
-if "%CHROME_HEADLESS%" == "1" goto :MSYS_TERM_CHECK
+if exist "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%" goto :MSYS_PATH_CHECK
+if "%CHROME_HEADLESS%" == "1" goto :SVN_CHECK
 if "%WIN_TOOLS_FORCE%" == "1" goto :GIT_INSTALL
 call git --version 2>nul 1>nul
 if errorlevel 1 goto :GIT_INSTALL
-goto :MSYS_TERM_CHECK
+goto :SVN_CHECK
+
+
+:MSYS_PATH_CHECK
+call find "mingw" "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\cmd\git.cmd" 2>nul 1>nul
+if errorlevel 1 goto :SVN_CHECK
+rmdir /S /Q "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%"
 
 
 :GIT_INSTALL
@@ -54,7 +60,7 @@ call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\ssh-keygen.bat" "%WIN_TOOLS_ROO
 :: Ensure autocrlf and filemode are set correctly.
 call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --global core.autocrlf false
 call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --global core.filemode false
-goto :MSYS_TERM_CHECK
+goto :SVN_CHECK
 
 
 :GIT_FAIL
@@ -64,17 +70,6 @@ echo client before continuing.
 echo You can also get the "prebacked" version used at %WIN_TOOLS_ROOT_URL%/
 set ERRORLEVEL=1
 goto :END
-
-
-:MSYS_TERM_CHECK
-:: Tweak git.bat to set TERM appropriately
-call FIND "TERM" "%WIN_TOOLS_ROOT_DIR%\git.bat" 2>nul 1>nul
-IF errorlevel 1 (
-  FINDSTR /V "git\.cmd" "%WIN_TOOLS_ROOT_DIR%\git.bat" > git.bat.new
-  echo set TERM=msys >> git.bat.new
-  FINDSTR "git\.cmd" "%WIN_TOOLS_ROOT_DIR%\git.bat" >> git.bat.new
-  MOVE /Y git.bat.new "%WIN_TOOLS_ROOT_DIR%\git.bat" >nul
-)
 
 
 :SVN_CHECK
