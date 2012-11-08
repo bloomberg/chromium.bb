@@ -163,7 +163,8 @@ CaptivePortalService::CaptivePortalService(Profile* profile)
   resolve_errors_with_web_service_.Init(
       prefs::kAlternateErrorPagesEnabled,
       profile_->GetPrefs(),
-      this);
+      base::Bind(&CaptivePortalService::UpdateEnabledState,
+                 base::Unretained(this)));
   ResetBackoffEntry(last_detection_result_);
 
   UpdateEnabledState();
@@ -271,13 +272,6 @@ void CaptivePortalService::OnPortalDetectionCompleted(
   OnResult(result);
 }
 
-void CaptivePortalService::OnPreferenceChanged(PrefServiceBase* service,
-                                               const std::string& pref_name) {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(std::string(prefs::kAlternateErrorPagesEnabled), pref_name);
-  UpdateEnabledState();
-}
-
 void CaptivePortalService::Shutdown() {
   DCHECK(CalledOnValidThread());
   if (enabled_) {
@@ -318,6 +312,7 @@ void CaptivePortalService::ResetBackoffEntry(Result result) {
 }
 
 void CaptivePortalService::UpdateEnabledState() {
+  DCHECK(CalledOnValidThread());
   bool enabled_before = enabled_;
   enabled_ = testing_state_ != DISABLED_FOR_TESTING &&
              resolve_errors_with_web_service_.GetValue();

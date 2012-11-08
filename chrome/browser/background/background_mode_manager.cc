@@ -169,7 +169,10 @@ BackgroundModeManager::BackgroundModeManager(
   // Listen for the background mode preference changing.
   if (g_browser_process->local_state()) {  // Skip for unit tests
     pref_registrar_.Init(g_browser_process->local_state());
-    pref_registrar_.Add(prefs::kBackgroundModeEnabled, this);
+    pref_registrar_.Add(
+        prefs::kBackgroundModeEnabled,
+        base::Bind(&BackgroundModeManager::OnBackgroundModeEnabledPrefChanged,
+                   base::Unretained(this)));
   }
 
   // Keep the browser alive until extensions are done loading - this is needed
@@ -334,12 +337,6 @@ void BackgroundModeManager::Observe(
       NOTREACHED();
       break;
   }
-}
-
-void BackgroundModeManager::OnPreferenceChanged(PrefServiceBase* service,
-                                                const std::string& pref_name) {
-  DCHECK(pref_name == prefs::kBackgroundModeEnabled);
-  OnBackgroundModeEnabledPrefChanged();
 }
 
 void BackgroundModeManager::OnBackgroundModeEnabledPrefChanged() {

@@ -160,13 +160,6 @@ void AudioHandler::RemoveVolumeObserver(VolumeObserver* observer) {
   volume_observers_.RemoveObserver(observer);
 }
 
-void AudioHandler::OnPreferenceChanged(PrefServiceBase* service,
-                                       const std::string& pref_name) {
-  DCHECK(pref_name == prefs::kAudioOutputAllowed ||
-         pref_name == prefs::kAudioCaptureAllowed);
-  ApplyAudioPolicy();
-}
-
 AudioHandler::AudioHandler(AudioMixer* mixer)
     : mixer_(mixer),
       local_state_(g_browser_process->local_state()) {
@@ -183,8 +176,10 @@ AudioHandler::~AudioHandler() {
 
 void AudioHandler::InitializePrefObservers() {
   pref_change_registrar_.Init(local_state_);
-  pref_change_registrar_.Add(prefs::kAudioOutputAllowed, this);
-  pref_change_registrar_.Add(prefs::kAudioCaptureAllowed, this);
+  base::Closure callback = base::Bind(&AudioHandler::ApplyAudioPolicy,
+                                      base::Unretained(this));
+  pref_change_registrar_.Add(prefs::kAudioOutputAllowed, callback);
+  pref_change_registrar_.Add(prefs::kAudioCaptureAllowed, callback);
 }
 
 void AudioHandler::ApplyAudioPolicy() {
