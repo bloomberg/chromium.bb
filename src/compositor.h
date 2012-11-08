@@ -358,6 +358,8 @@ struct weston_compositor {
 	PFNEGLQUERYWAYLANDBUFFERWL query_buffer;
 	int has_bind_display;
 
+	int has_egl_image_external;
+
 	void (*destroy)(struct weston_compositor *ec);
 	void (*restore)(struct weston_compositor *ec);
 	int (*authenticate)(struct weston_compositor *c, uint32_t id);

@@ -27,8 +27,14 @@
 #include <ctype.h>
 #include <float.h>
 #include <assert.h>
+#include <linux/input.h>
 
 #include "compositor.h"
+
+struct gles2_renderer {
+	struct weston_renderer base;
+	int fragment_shader_debug;
+};
 
 static const char *
 egl_error_string(EGLint code)
@@ -940,6 +946,12 @@ static const char vertex_shader[] =
 	"  gl_FragColor.b = y + 2.01723214 * u;\n"			\
 	"  gl_FragColor.a = alpha;\n"
 
+static const char fragment_debug[] =
+	"  gl_FragColor = vec4(0.0, 0.3, 0.0, 0.2) + gl_FragColor * 0.8;\n";
+
+static const char fragment_brace[] =
+	"}\n";
+
 static const char texture_fragment_shader_rgba[] =
 	"precision mediump float;\n"
 	"varying vec2 v_texcoord;\n"
@@ -948,7 +960,7 @@ static const char texture_fragment_shader_rgba[] =
 	"void main()\n"
 	"{\n"
 	"   gl_FragColor = alpha * texture2D(tex, v_texcoord)\n;"
-	"}\n";
+	;
 
 static const char texture_fragment_shader_rgbx[] =
 	"precision mediump float;\n"
@@ -959,7 +971,7 @@ static const char texture_fragment_shader_rgbx[] =
 	"{\n"
 	"   gl_FragColor.rgb = alpha * texture2D(tex, v_texcoord).rgb\n;"
 	"   gl_FragColor.a = alpha;\n"
-	"}\n";
+	;
 
 static const char texture_fragment_shader_egl_external[] =
 	"#extension GL_OES_EGL_image_external : require\n"
@@ -970,7 +982,7 @@ static const char texture_fragment_shader_egl_external[] =
 	"void main()\n"
 	"{\n"
 	"   gl_FragColor = alpha * texture2D(tex, v_texcoord)\n;"
-	"}\n";
+	;
 
 static const char texture_fragment_shader_y_uv[] =
 	"precision mediump float;\n"
@@ -983,7 +995,7 @@ static const char texture_fragment_shader_y_uv[] =
 	"  float u = texture2D(tex1, v_texcoord).r - 0.5;\n"
 	"  float v = texture2D(tex1, v_texcoord).g - 0.5;\n"
 	FRAGMENT_CONVERT_YUV
-	"}\n";
+	;
 
 static const char texture_fragment_shader_y_u_v[] =
 	"precision mediump float;\n"
@@ -997,7 +1009,7 @@ static const char texture_fragment_shader_y_u_v[] =
 	"  float u = texture2D(tex1, v_texcoord).x - 0.5;\n"
 	"  float v = texture2D(tex2, v_texcoord).x - 0.5;\n"
 	FRAGMENT_CONVERT_YUV
-	"}\n";
+	;
 
 static const char texture_fragment_shader_y_xuxv[] =
 	"precision mediump float;\n"
@@ -1010,7 +1022,7 @@ static const char texture_fragment_shader_y_xuxv[] =
 	"  float u = texture2D(tex1, v_texcoord).g - 0.5;\n"
 	"  float v = texture2D(tex1, v_texcoord).a - 0.5;\n"
 	FRAGMENT_CONVERT_YUV
-	"}\n";
+	;
 
 static const char solid_fragment_shader[] =
 	"precision mediump float;\n"
@@ -1019,17 +1031,17 @@ static const char solid_fragment_shader[] =
 	"void main()\n"
 	"{\n"
 	"   gl_FragColor = alpha * color\n;"
-	"}\n";
+	;
 
 static int
-compile_shader(GLenum type, const char *source)
+compile_shader(GLenum type, int count, const char **sources)
 {
 	GLuint s;
 	char msg[512];
 	GLint status;
 
 	s = glCreateShader(type);
-	glShaderSource(s, 1, &source, NULL);
+	glShaderSource(s, count, sources, NULL);
 	glCompileShader(s);
 	glGetShaderiv(s, GL_COMPILE_STATUS, &status);
 	if (!status) {
@@ -1042,16 +1054,32 @@ compile_shader(GLenum type, const char *source)
 }
 
 static int
-weston_shader_init(struct weston_shader *shader,
+weston_shader_init(struct weston_shader *shader, struct weston_compositor *ec,
 		   const char *vertex_source, const char *fragment_source)
 {
 	char msg[512];
 	GLint status;
+	int count;
+	const char *sources[3];
+	struct gles2_renderer *renderer =
+		(struct gles2_renderer *) ec->renderer;
 
 	shader->vertex_shader =
-		compile_shader(GL_VERTEX_SHADER, vertex_source);
+		compile_shader(GL_VERTEX_SHADER, 1, &vertex_source);
+
+	if (renderer->fragment_shader_debug) {
+		sources[0] = fragment_source;
+		sources[1] = fragment_debug;
+		sources[2] = fragment_brace;
+		count = 3;
+	} else {
+		sources[0] = fragment_source;
+		sources[1] = fragment_brace;
+		count = 2;
+	}
+
 	shader->fragment_shader =
-		compile_shader(GL_FRAGMENT_SHADER, fragment_source);
+		compile_shader(GL_FRAGMENT_SHADER, count, sources);
 
 	shader->program = glCreateProgram();
 	glAttachShader(shader->program, shader->vertex_shader);
@@ -1075,6 +1103,18 @@ weston_shader_init(struct weston_shader *shader,
 	shader->color_uniform = glGetUniformLocation(shader->program, "color");
 
 	return 0;
+}
+
+static void
+weston_shader_release(struct weston_shader *shader)
+{
+	glDeleteShader(shader->vertex_shader);
+	glDeleteShader(shader->fragment_shader);
+	glDeleteProgram(shader->program);
+
+	shader->vertex_shader = 0;
+	shader->fragment_shader = 0;
+	shader->program = 0;
 }
 
 static void
@@ -1157,10 +1197,6 @@ log_egl_config_info(EGLDisplay egldpy, EGLConfig eglconfig)
 		weston_log_continue(" unknown\n");
 }
 
-struct gles2_renderer {
-	struct weston_renderer base;
-};
-
 WL_EXPORT void
 gles2_renderer_destroy(struct weston_compositor *ec)
 {
@@ -1168,12 +1204,65 @@ gles2_renderer_destroy(struct weston_compositor *ec)
 		ec->unbind_display(ec->egl_display, ec->wl_display);
 }
 
+static int
+compile_shaders(struct weston_compositor *ec)
+{
+	if (weston_shader_init(&ec->texture_shader_rgba, ec,
+			     vertex_shader, texture_fragment_shader_rgba) < 0)
+		return -1;
+	if (weston_shader_init(&ec->texture_shader_rgbx, ec,
+			     vertex_shader, texture_fragment_shader_rgbx) < 0)
+		return -1;
+	if (ec->has_egl_image_external &&
+			weston_shader_init(&ec->texture_shader_egl_external, ec,
+				vertex_shader, texture_fragment_shader_egl_external) < 0)
+		return -1;
+	if (weston_shader_init(&ec->texture_shader_y_uv, ec,
+			       vertex_shader, texture_fragment_shader_y_uv) < 0)
+		return -1;
+	if (weston_shader_init(&ec->texture_shader_y_u_v, ec,
+			       vertex_shader, texture_fragment_shader_y_u_v) < 0)
+		return -1;
+	if (weston_shader_init(&ec->texture_shader_y_xuxv, ec,
+			       vertex_shader, texture_fragment_shader_y_xuxv) < 0)
+		return -1;
+	if (weston_shader_init(&ec->solid_shader, ec,
+			     vertex_shader, solid_fragment_shader) < 0)
+		return -1;
+
+	return 0;
+}
+
+static void
+fragment_debug_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
+		       void *data)
+{
+	struct weston_compositor *ec = data;
+	struct gles2_renderer *renderer =
+		(struct gles2_renderer *) ec->renderer;
+	struct weston_output *output;
+
+	renderer->fragment_shader_debug ^= 1;
+
+	weston_shader_release(&ec->texture_shader_rgba);
+	weston_shader_release(&ec->texture_shader_rgbx);
+	weston_shader_release(&ec->texture_shader_egl_external);
+	weston_shader_release(&ec->texture_shader_y_uv);
+	weston_shader_release(&ec->texture_shader_y_u_v);
+	weston_shader_release(&ec->texture_shader_y_xuxv);
+	weston_shader_release(&ec->solid_shader);
+
+	compile_shaders(ec);
+
+	wl_list_for_each(output, &ec->output_list, link)
+		weston_output_damage(output);
+}
+
 WL_EXPORT int
 gles2_renderer_init(struct weston_compositor *ec)
 {
 	struct gles2_renderer *renderer;
 	const char *extensions;
-	int has_egl_image_external = 0;
 	struct weston_output *output;
 	EGLBoolean ret;
 
@@ -1182,7 +1271,7 @@ gles2_renderer_init(struct weston_compositor *ec)
 		EGL_NONE
 	};
 
-	renderer = malloc(sizeof *renderer);
+	renderer = calloc(1, sizeof *renderer);
 	if (renderer == NULL)
 		return -1;
 
@@ -1247,7 +1336,7 @@ gles2_renderer_init(struct weston_compositor *ec)
 		ec->has_unpack_subimage = 1;
 
 	if (strstr(extensions, "GL_OES_EGL_image_external"))
-		has_egl_image_external = 1;
+		ec->has_egl_image_external = 1;
 
 	extensions =
 		(const char *) eglQueryString(ec->egl_display, EGL_EXTENSIONS);
@@ -1266,34 +1355,17 @@ gles2_renderer_init(struct weston_compositor *ec)
 
 	glActiveTexture(GL_TEXTURE0);
 
-	if (weston_shader_init(&ec->texture_shader_rgba,
-			     vertex_shader, texture_fragment_shader_rgba) < 0)
-		return -1;
-	if (weston_shader_init(&ec->texture_shader_rgbx,
-			     vertex_shader, texture_fragment_shader_rgbx) < 0)
-		return -1;
-	if (has_egl_image_external &&
-			weston_shader_init(&ec->texture_shader_egl_external,
-				vertex_shader, texture_fragment_shader_egl_external) < 0)
-		return -1;
-	if (weston_shader_init(&ec->texture_shader_y_uv,
-			       vertex_shader, texture_fragment_shader_y_uv) < 0)
-		return -1;
-	if (weston_shader_init(&ec->texture_shader_y_u_v,
-			       vertex_shader, texture_fragment_shader_y_u_v) < 0)
-		return -1;
-	if (weston_shader_init(&ec->texture_shader_y_xuxv,
-			       vertex_shader, texture_fragment_shader_y_xuxv) < 0)
-		return -1;
-	if (weston_shader_init(&ec->solid_shader,
-			     vertex_shader, solid_fragment_shader) < 0)
-		return -1;
-
 	renderer->base.repaint_output = gles2_renderer_repaint_output;
 	renderer->base.flush_damage = gles2_renderer_flush_damage;
 	renderer->base.attach = gles2_renderer_attach;
 	renderer->base.destroy_surface = gles2_renderer_destroy_surface;
 	ec->renderer = &renderer->base;
+
+	if (compile_shaders(ec))
+		return -1;
+
+	weston_compositor_add_debug_binding(ec, KEY_S,
+					    fragment_debug_binding, ec);
 
 	weston_log("GL ES 2 renderer features:\n");
 	weston_log_continue(STAMP_SPACE "read-back format: %s\n",
