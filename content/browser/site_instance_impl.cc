@@ -198,7 +198,7 @@ bool SiteInstanceImpl::IsRelatedSiteInstance(const SiteInstance* instance) {
 
 bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) const {
   // Having no process isn't a problem, since we'll assign it correctly.
-  if (!HasProcess())
+  if (!process_)
     return false;
 
   // If the URL to navigate to can be associated with any site instance,
