@@ -5,6 +5,8 @@
 
 base_dir=$(dirname "$0")
 
-"$base_dir"/update_depot_tools
+if ! [[ "grep fetch cleanup diff" =~ "$1" ]]; then
+  "$base_dir"/update_depot_tools
+fi
 
 PYTHONDONTWRITEBYTECODE=1 exec python "$base_dir/gclient.py" "$@"
