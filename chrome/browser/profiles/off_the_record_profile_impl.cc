@@ -190,6 +190,11 @@ FilePath OffTheRecordProfileImpl::GetPath() {
   return profile_->GetPath();
 }
 
+scoped_refptr<base::SequencedTaskRunner>
+OffTheRecordProfileImpl::GetIOTaskRunner() {
+  return profile_->GetIOTaskRunner();
+}
+
 bool OffTheRecordProfileImpl::IsOffTheRecord() const {
   return true;
 }

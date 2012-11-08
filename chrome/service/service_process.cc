@@ -13,6 +13,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
+#include "base/prefs/json_pref_store.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -152,6 +153,7 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
     Teardown();
     return false;
   }
+  blocking_pool_ = new base::SequencedWorkerPool(3, "ServiceBlocking");
 
   request_context_getter_ = new ServiceURLRequestContextGetter();
 
@@ -159,7 +161,9 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   FilePath pref_path = user_data_dir.Append(chrome::kServiceStateFileName);
   service_prefs_.reset(
-      new ServiceProcessPrefs(pref_path, file_thread_->message_loop_proxy()));
+      new ServiceProcessPrefs(
+          pref_path,
+          JsonPrefStore::GetTaskRunnerForFile(pref_path, blocking_pool_)));
   service_prefs_->ReadPrefs();
 
   // Check if a locale override has been specified on the command-line.
@@ -218,6 +222,12 @@ bool ServiceProcess::Teardown() {
   shutdown_event_.Signal();
   io_thread_.reset();
   file_thread_.reset();
+
+  if (blocking_pool_.get()) {
+    blocking_pool_->Shutdown();
+    blocking_pool_ = NULL;
+  }
+
   // The NetworkChangeNotifier must be destroyed after all other threads that
   // might use it have been shut down.
   network_change_notifier_.reset();

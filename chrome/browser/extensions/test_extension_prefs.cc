@@ -11,6 +11,8 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/prefs/json_pref_store.h"
+#include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
@@ -30,6 +32,8 @@ using content::BrowserThread;
 namespace extensions {
 
 namespace {
+
+void DoNothing() {}
 
 // Mock ExtensionPrefs class with artificial clock to guarantee that no two
 // extensions get the same installation time stamp and we can reliably
@@ -54,9 +58,10 @@ class MockExtensionPrefs : public ExtensionPrefs {
 
 }  // namespace
 
-TestExtensionPrefs::TestExtensionPrefs()
-    : pref_service_(NULL),
-      extensions_disabled_(false) {
+TestExtensionPrefs::TestExtensionPrefs(
+    base::SequencedTaskRunner* task_runner) : pref_service_(NULL),
+                                              task_runner_(task_runner),
+                                              extensions_disabled_(false) {
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
   preferences_file_ = temp_dir_.path().AppendASCII("Preferences");
   extensions_dir_ = temp_dir_.path().AppendASCII("Extensions");
@@ -65,36 +70,29 @@ TestExtensionPrefs::TestExtensionPrefs()
   RecreateExtensionPrefs();
 }
 
-TestExtensionPrefs::~TestExtensionPrefs() {}
+TestExtensionPrefs::~TestExtensionPrefs() {
+}
 
 void TestExtensionPrefs::RecreateExtensionPrefs() {
   // We persist and reload the PrefService's PrefStores because this process
   // deletes all empty dictionaries. The ExtensionPrefs implementation
   // needs to be able to handle this situation.
   if (pref_service_.get()) {
-    // The PrefService writes its persistent file on the file thread, so we
-    // need to wait for any pending I/O to complete before creating a new
-    // PrefService.
-    base::WaitableEvent io_finished(false, false);
-    pref_service_-> CommitPendingWrite();
-    EXPECT_TRUE(BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&base::WaitableEvent::Signal,
-                   base::Unretained(&io_finished))));
-
-    // If the FILE thread is in fact the current thread (possible in testing
-    // scenarios), we have to ensure the task has a chance to run. If the FILE
-    // thread is a different thread, the test must ensure that thread is running
-    // (otherwise the Wait below will hang).
-    MessageLoop::current()->RunAllPending();
-
-    io_finished.Wait();
+    // Commit a pending write (which posts a task to task_runner_) and wait for
+    // it to finish.
+    pref_service_->CommitPendingWrite();
+    base::RunLoop run_loop;
+    ASSERT_TRUE(
+        task_runner_->PostTaskAndReply(
+            FROM_HERE,
+            base::Bind(&DoNothing),
+            run_loop.QuitClosure()));
+    run_loop.Run();
   }
 
   extension_pref_value_map_.reset(new ExtensionPrefValueMap);
   PrefServiceMockBuilder builder;
-  builder.WithUserFilePrefs(preferences_file_);
+  builder.WithUserFilePrefs(preferences_file_, task_runner_);
   builder.WithExtensionPrefs(
       new ExtensionPrefStore(extension_pref_value_map_.get(), false));
   pref_service_.reset(builder.Create());

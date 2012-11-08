@@ -178,6 +178,7 @@ class TestingProfile : public Profile {
 
   // content::BrowserContext
   virtual FilePath GetPath() OVERRIDE;
+  virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
   virtual content::DownloadManagerDelegate*
       GetDownloadManagerDelegate() OVERRIDE;

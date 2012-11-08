@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -76,6 +77,7 @@ class BookmarkContextMenuTest : public testing::Test {
 
     ui::Clipboard::DestroyClipboardForCurrentThread();
 
+    BrowserThread::GetBlockingPool()->FlushForTesting();
     // Flush the message loop to make application verifiers happy.
     message_loop_.RunAllPending();
   }

@@ -220,14 +220,14 @@ class LoginUtilsTest : public testing::Test,
     connector_ = browser_process_->browser_policy_connector();
     connector_->Init();
 
-    RunAllPending();
+    RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
     cryptohome::AsyncMethodCaller::Shutdown();
     mock_async_method_caller_ = NULL;
 
-    RunAllPending();
+    RunUntilIdle();
     {
       // chrome_browser_net::Predictor usually skips its shutdown routines on
       // unit_tests, but does the full thing when
@@ -242,7 +242,7 @@ class LoginUtilsTest : public testing::Test,
       loop_.PostTask(FROM_HERE,
                      base::Bind(&LoginUtilsTest::TearDownOnIO,
                                 base::Unretained(this)));
-      RunAllPending();
+      RunUntilIdle();
       io_thread_.DeprecatedSetMessageLoop(NULL);
     }
 
@@ -251,7 +251,7 @@ class LoginUtilsTest : public testing::Test,
     browser_process_->SetProfileManager(NULL);
     connector_ = NULL;
     browser_process_->SetBrowserPolicyConnector(NULL);
-    RunAllPending();
+    RunUntilIdle();
   }
 
   void TearDownOnIO() {
@@ -267,10 +267,10 @@ class LoginUtilsTest : public testing::Test,
     }
   }
 
-  void RunAllPending() {
-    loop_.RunAllPending();
+  void RunUntilIdle() {
+    loop_.RunUntilIdle();
     BrowserThread::GetBlockingPool()->FlushForTesting();
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
   }
 
   virtual void OnProfilePrepared(Profile* profile) OVERRIDE {
@@ -299,7 +299,7 @@ class LoginUtilsTest : public testing::Test,
     device_data_store->set_device_id(kDeviceId);
     EXPECT_EQ(policy::EnterpriseInstallAttributes::LOCK_SUCCESS,
               connector_->LockDevice(username));
-    RunAllPending();
+    RunUntilIdle();
   }
 
   void PrepareProfile(const std::string& username) {
@@ -325,7 +325,7 @@ class LoginUtilsTest : public testing::Test,
                                       kPendingRequests, kUsingOAuth,
                                       kHasCookies, this);
     device_settings_test_helper.Flush();
-    RunAllPending();
+    RunUntilIdle();
   }
 
   net::TestURLFetcher* PrepareOAuthFetcher(const std::string& expected_url) {
@@ -477,7 +477,7 @@ TEST_F(LoginUtilsTest, OAuth1TokenFetchFailureUnblocksRefreshPolicies) {
   bool refresh_policies_completed = false;
   browser_process_->policy_service()->RefreshPolicies(
       base::Bind(SetFlag, &refresh_policies_completed));
-  RunAllPending();
+  RunUntilIdle();
   ASSERT_FALSE(refresh_policies_completed);
 
   // 4. Now make the fetcher fail. RefreshPolicies() should unblock.
@@ -495,7 +495,7 @@ TEST_F(LoginUtilsTest, OAuth1TokenFetchFailureUnblocksRefreshPolicies) {
   for (int i = 0; i < 6; ++i) {
     ASSERT_FALSE(refresh_policies_completed);
     delegate->OnURLFetchComplete(&mock_fetcher);
-    RunAllPending();
+    RunUntilIdle();
   }
   EXPECT_TRUE(refresh_policies_completed);
 }
@@ -555,14 +555,14 @@ TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
 
     // The cloud policy subsystem is now ready to fetch the dmtoken and the user
     // policy.
-    RunAllPending();
+    RunUntilIdle();
     if (steps < 4) break;
 
     fetcher = PrepareDMRegisterFetcher();
     ASSERT_TRUE(fetcher);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
     // The policy fetch job has now been scheduled, run it:
-    RunAllPending();
+    RunUntilIdle();
     if (steps < 5) break;
 
     // Verify that there is no profile prepared just before the policy fetch.

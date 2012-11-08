@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
@@ -123,6 +124,7 @@ class ServiceProcess : public CloudPrintProxy::Client {
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<base::Thread> io_thread_;
   scoped_ptr<base::Thread> file_thread_;
+  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
   scoped_ptr<CloudPrintProxy> cloud_print_proxy_;
   scoped_ptr<ServiceProcessPrefs> service_prefs_;
   scoped_ptr<ServiceIPCServer> ipc_server_;

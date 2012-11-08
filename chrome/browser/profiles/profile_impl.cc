@@ -13,10 +13,13 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/prefs/json_pref_store.h"
 #include "base/string_number_conversions.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
@@ -149,6 +152,38 @@ static const char kReadmeText[] =
 const char* const kPrefExitTypeCrashed = "Crashed";
 const char* const kPrefExitTypeSessionEnded = "SessionEnded";
 
+// Helper method needed because PostTask cannot currently take a Callback
+// function with non-void return type.
+void CreateDirectoryAndSignal(const FilePath& path,
+                              base::WaitableEvent* done_creating) {
+  DVLOG(1) << "Creating directory " << path.value();
+  file_util::CreateDirectory(path);
+  done_creating->Signal();
+}
+
+// Task that blocks the FILE thread until CreateDirectoryAndSignal() finishes on
+// blocking I/O pool.
+void BlockFileThreadOnDirectoryCreate(base::WaitableEvent* done_creating) {
+  done_creating->Wait();
+}
+
+// Initiates creation of profile directory on |sequenced_task_runner| and
+// ensures that FILE thread is blocked until that operation finishes.
+void CreateProfileDirectory(base::SequencedTaskRunner* sequenced_task_runner,
+                            const FilePath& path) {
+  base::WaitableEvent* done_creating = new base::WaitableEvent(false, false);
+  sequenced_task_runner->PostTask(FROM_HERE,
+                                  base::Bind(&CreateDirectoryAndSignal,
+                                             path,
+                                             done_creating));
+  // Block the FILE thread until directory is created on I/O pool to make sure
+  // that we don't attempt any operation until that part completes.
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&BlockFileThreadOnDirectoryCreate,
+                 base::Owned(done_creating)));
+}
+
 FilePath GetCachePath(const FilePath& base) {
   return base.Append(chrome::kCacheDirname);
 }
@@ -199,12 +234,15 @@ std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
 Profile* Profile::CreateProfile(const FilePath& path,
                                 Delegate* delegate,
                                 CreateMode create_mode) {
+  // Get sequenced task runner for making sure that file operations of
+  // this profile (defined by |path|) are executed in expected order
+  // (what was previously assured by the FILE thread).
+  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner =
+      JsonPrefStore::GetTaskRunnerForFile(path,
+                                          BrowserThread::GetBlockingPool());
   if (create_mode == CREATE_MODE_ASYNCHRONOUS) {
     DCHECK(delegate);
-    // This is safe while all file operations are done on the FILE thread.
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(base::IgnoreResult(&file_util::CreateDirectory), path));
+    CreateProfileDirectory(sequenced_task_runner, path);
   } else if (create_mode == CREATE_MODE_SYNCHRONOUS) {
     if (!file_util::PathExists(path)) {
       // TODO(tc): http://b/1094718 Bad things happen if we can't write to the
@@ -217,7 +255,7 @@ Profile* Profile::CreateProfile(const FilePath& path,
     NOTREACHED();
   }
 
-  return new ProfileImpl(path, delegate, create_mode);
+  return new ProfileImpl(path, delegate, create_mode, sequenced_task_runner);
 }
 
 // static
@@ -270,9 +308,11 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
                              PrefService::SYNCABLE_PREF);
 }
 
-ProfileImpl::ProfileImpl(const FilePath& path,
-                         Delegate* delegate,
-                         CreateMode create_mode)
+ProfileImpl::ProfileImpl(
+    const FilePath& path,
+    Delegate* delegate,
+    CreateMode create_mode,
+    base::SequencedTaskRunner* sequenced_task_runner)
     : path_(path),
       ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
       host_content_settings_map_(NULL),
@@ -307,7 +347,7 @@ ProfileImpl::ProfileImpl(const FilePath& path,
   if (cloud_policy_manager_)
     cloud_policy_manager_->Init();
   managed_mode_policy_provider_.reset(
-      policy::ManagedModePolicyProvider::Create(this));
+      policy::ManagedModePolicyProvider::Create(this, sequenced_task_runner));
   managed_mode_policy_provider_->Init();
   policy_service_ = connector->CreatePolicyService(this);
 #else
@@ -317,6 +357,7 @@ ProfileImpl::ProfileImpl(const FilePath& path,
   if (create_mode == CREATE_MODE_ASYNCHRONOUS) {
     prefs_.reset(PrefService::CreatePrefService(
         GetPrefFilePath(),
+        sequenced_task_runner,
         policy_service_.get(),
         new ExtensionPrefStore(
             ExtensionPrefValueMapFactory::GetForProfile(this), false),
@@ -331,6 +372,7 @@ ProfileImpl::ProfileImpl(const FilePath& path,
     // Load prefs synchronously.
     prefs_.reset(PrefService::CreatePrefService(
         GetPrefFilePath(),
+        sequenced_task_runner,
         policy_service_.get(),
         new ExtensionPrefStore(
             ExtensionPrefValueMapFactory::GetForProfile(this), false),
@@ -354,10 +396,10 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
   // to PathService.
   chrome::GetUserCacheDirectory(path_, &base_cache_path_);
   // Always create the cache directory asynchronously.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(base::IgnoreResult(&file_util::CreateDirectory),
-                 base_cache_path_));
+  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner =
+      JsonPrefStore::GetTaskRunnerForFile(base_cache_path_,
+                                          BrowserThread::GetBlockingPool());
+  CreateProfileDirectory(sequenced_task_runner, base_cache_path_);
 
   // Now that the profile is hooked up to receive pref change notifications to
   // kGoogleServicesUsername, initialize components that depend on it to reflect
@@ -560,6 +602,11 @@ std::string ProfileImpl::GetProfileName() {
 
 FilePath ProfileImpl::GetPath() {
   return path_;
+}
+
+scoped_refptr<base::SequencedTaskRunner> ProfileImpl::GetIOTaskRunner() {
+  return JsonPrefStore::GetTaskRunnerForFile(
+      GetPath(), BrowserThread::GetBlockingPool());
 }
 
 bool ProfileImpl::IsOffTheRecord() const {

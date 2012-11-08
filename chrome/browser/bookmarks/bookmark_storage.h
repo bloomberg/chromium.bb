@@ -13,6 +13,10 @@
 class BookmarkModel;
 class BookmarkPermanentNode;
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace content {
 class BrowserContext;
 }
@@ -102,7 +106,9 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer,
                         public base::RefCountedThreadSafe<BookmarkStorage> {
  public:
   // Creates a BookmarkStorage for the specified model
-  BookmarkStorage(content::BrowserContext* context, BookmarkModel* model);
+  BookmarkStorage(content::BrowserContext* context,
+                  BookmarkModel* model,
+                  base::SequencedTaskRunner* sequenced_task_runner);
 
   // Loads the bookmarks into the model, notifying the model when done. This
   // takes ownership of |details|. See BookmarkLoadDetails for details.
@@ -138,6 +144,9 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer,
 
   // See class description of BookmarkLoadDetails for details on this.
   scoped_ptr<BookmarkLoadDetails> details_;
+
+  // Sequenced task runner where file I/O operations will be performed at.
+  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkStorage);
 };

@@ -107,15 +107,17 @@ BookmarkLoadDetails::~BookmarkLoadDetails() {
 
 // BookmarkStorage -------------------------------------------------------------
 
-BookmarkStorage::BookmarkStorage(content::BrowserContext* context,
-                                 BookmarkModel* model)
+BookmarkStorage::BookmarkStorage(
+    content::BrowserContext* context,
+    BookmarkModel* model,
+    base::SequencedTaskRunner* sequenced_task_runner)
     : model_(model),
       writer_(context->GetPath().Append(chrome::kBookmarksFileName),
-              BrowserThread::GetMessageLoopProxyForThread(
-                  BrowserThread::FILE)) {
+              sequenced_task_runner) {
+  sequenced_task_runner_ = sequenced_task_runner;
   writer_.set_commit_interval(base::TimeDelta::FromMilliseconds(kSaveDelayMS));
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&BackupCallback, writer_.path()));
+  sequenced_task_runner_->PostTask(FROM_HERE,
+                                   base::Bind(&BackupCallback, writer_.path()));
 }
 
 BookmarkStorage::~BookmarkStorage() {
@@ -127,8 +129,10 @@ void BookmarkStorage::LoadBookmarks(BookmarkLoadDetails* details) {
   DCHECK(!details_.get());
   DCHECK(details);
   details_.reset(details);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-      &LoadCallback, writer_.path(), make_scoped_refptr(this), details_.get()));
+  sequenced_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&LoadCallback, writer_.path(), make_scoped_refptr(this),
+                 details_.get()));
 }
 
 void BookmarkStorage::ScheduleSave() {

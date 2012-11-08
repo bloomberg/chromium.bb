@@ -478,6 +478,10 @@ FilePath TestingProfile::GetPath() {
   return profile_path_;
 }
 
+scoped_refptr<base::SequencedTaskRunner> TestingProfile::GetIOTaskRunner() {
+  return MessageLoop::current()->message_loop_proxy();
+}
+
 TestingPrefService* TestingProfile::GetTestingPrefService() {
   if (!prefs_.get())
     CreateTestingPrefService();

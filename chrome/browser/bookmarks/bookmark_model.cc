@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/scoped_vector.h"
+#include "base/sequenced_task_runner.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -247,7 +248,7 @@ void BookmarkModel::Load() {
                  content::Source<Profile>(profile_));
 
   // Load the bookmarks. BookmarkStorage notifies us when done.
-  store_ = new BookmarkStorage(profile_, this);
+  store_ = new BookmarkStorage(profile_, this, profile_->GetIOTaskRunner());
   store_->LoadBookmarks(CreateLoadDetails());
 }
 

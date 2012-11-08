@@ -19,6 +19,7 @@
 #include "base/path_service.h"
 #include "base/process.h"
 #include "base/process_util.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
@@ -1288,7 +1289,9 @@ void TestingAutomationProvider::GetBookmarksAsJSON(
     return;
   }
   scoped_refptr<BookmarkStorage> storage(
-      new BookmarkStorage(browser->profile(), bookmark_model));
+      new BookmarkStorage(browser->profile(),
+                          bookmark_model,
+                          browser->profile()->GetIOTaskRunner()));
   if (!storage->SerializeData(&bookmarks_as_json)) {
     reply.SendError("Failed to serialize bookmarks");
     return;

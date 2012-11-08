@@ -87,6 +87,7 @@ class OffTheRecordProfileImpl : public Profile,
 
   // content::BrowserContext implementation:
   virtual FilePath GetPath() OVERRIDE;
+  virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
   virtual content::DownloadManagerDelegate*
       GetDownloadManagerDelegate() OVERRIDE;

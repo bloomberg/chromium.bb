@@ -35,6 +35,7 @@ class TabContentsProvider;
 }
 
 namespace base {
+class SequencedTaskRunner;
 class Time;
 }
 
@@ -140,6 +141,10 @@ class Profile : public content::BrowserContext {
   // time.
   static void RegisterUserPrefs(PrefService* prefs);
 
+  // Gets task runner for I/O operations associated with |profile|.
+  static scoped_refptr<base::SequencedTaskRunner> GetTaskRunnerForProfile(
+      Profile* profile);
+
   // Create a new profile given a path. If |create_mode| is
   // CREATE_MODE_ASYNCHRONOUS then the profile is initialized asynchronously.
   static Profile* CreateProfile(const FilePath& path,
@@ -156,6 +161,10 @@ class Profile : public content::BrowserContext {
 
   // Typesafe upcast.
   virtual TestingProfile* AsTestingProfile();
+
+  // Returns sequenced task runner where browser context dependent I/O
+  // operations should be performed.
+  virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() = 0;
 
   // Returns the name associated with this profile. This name is displayed in
   // the browser frame.
