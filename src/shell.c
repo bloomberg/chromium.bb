@@ -135,7 +135,6 @@ struct desktop_shell {
 
 	uint32_t binding_modifier;
 	enum animation_type win_animation_type;
-	struct weston_surface *debug_repaint_surface;
 };
 
 enum shell_surface_type {
@@ -3478,45 +3477,6 @@ backlight_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 }
 
 static void
-debug_repaint_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
-		      void *data)
-{
-	struct desktop_shell *shell = data;
-	struct weston_compositor *compositor = shell->compositor;
-	struct weston_surface *surface;
-	struct weston_plane plane;
-
-	if (shell->debug_repaint_surface) {
-		weston_surface_destroy(shell->debug_repaint_surface);
-		shell->debug_repaint_surface = NULL;
-	} else {
-		surface = weston_surface_create(compositor);
-		weston_surface_set_color(surface, 1.0, 0.0, 0.0, 0.2);
-		weston_surface_configure(surface, 0, 0, 8192, 8192);
-		wl_list_insert(&compositor->fade_layer.surface_list,
-			       &surface->layer_link);
-		pixman_region32_fini(&surface->input);
-		pixman_region32_init(&surface->input);
-
-		/* Here's the dirty little trick that makes the
-		 * repaint debugging work: we move the surface to a
-		 * different plane and force an update_transform to
-		 * update dependent state and clear the
-		 * geometry.dirty bit.  This way the call to
-		 * damage_below() in update_transform() does not
-		 * add damage to the primary plane.  */
-
-		weston_plane_init(&plane, 0, 0);
-		surface->plane = &plane;
-		weston_surface_update_transform(surface);
-		shell->debug_repaint_surface = surface;
-		surface->plane = &compositor->primary_plane;
-		weston_plane_release(&plane);
-	}
-}
-
-
-static void
 fan_debug_repaint_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 		      void *data)
 {
@@ -3839,8 +3799,6 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 	/* Debug bindings */
 	weston_compositor_add_key_binding(ec, KEY_SPACE, mod | MODIFIER_SHIFT,
 					  debug_binding, shell);
-	weston_compositor_add_debug_binding(ec, KEY_R,
-					    debug_repaint_binding, shell);
 	weston_compositor_add_debug_binding(ec, KEY_F,
 					    fan_debug_repaint_binding, shell);
 }
