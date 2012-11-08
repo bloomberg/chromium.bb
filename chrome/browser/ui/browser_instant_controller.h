@@ -67,7 +67,10 @@ class BrowserInstantController : public TabStripModelObserver,
                                    const std::string& pref_name) OVERRIDE;
 
   // Overridden from TabStripModelObserver:
-  virtual void TabDeactivated(TabContents* contents) OVERRIDE;
+  virtual void ActiveTabChanged(TabContents* old_contents,
+                                TabContents* new_contents,
+                                int index,
+                                bool user_gesture) OVERRIDE;
 
   // Overridden from search::SearchModelObserver:
   virtual void ModeChanged(const search::Mode& old_mode,

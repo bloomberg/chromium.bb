@@ -103,6 +103,9 @@ class InstantController {
   // handled the key press.
   bool OnUpOrDownKeyPressed(int count);
 
+  // Called when the user presses escape while editing omnibox text.
+  void OnEscapeKeyPressed();
+
   // The preview TabContents. May be NULL if ReleasePreviewContents() has been
   // called, with no subsequent successful call to Update(). InstantController
   // retains ownership of the object.

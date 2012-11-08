@@ -27,7 +27,8 @@ InstantPreviewControllerViews::~InstantPreviewControllerViews() {
 
 void InstantPreviewControllerViews::PreviewStateChanged(
     const InstantModel& model) {
-  if (model.preview_state() == InstantModel::QUERY_RESULTS) {
+  if (model.preview_state() == InstantModel::QUERY_RESULTS ||
+      model.preview_state() == InstantModel::CUSTOM_NTP_CONTENT) {
     ShowInstant(model.GetPreviewContents(),
                 model.height(), model.height_units());
   } else {

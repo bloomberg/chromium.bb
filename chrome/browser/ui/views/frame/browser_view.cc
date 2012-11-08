@@ -1469,8 +1469,18 @@ void BrowserView::ActiveTabChanged(TabContents* old_contents,
   // toggling the size of the main WebContents.
   UpdateDevToolsForContents(new_contents);
 
-  if (change_tab_contents)
+  if (change_tab_contents) {
     contents_container_->SetWebContents(new_contents->web_contents());
+#if defined(USE_AURA)
+    // Put the Instant preview back on top in case it is showing custom new tab
+    // page content.
+    if (contents_->preview_web_contents()) {
+      ui::Layer* preview_layer =
+          contents_->preview_web_contents()->GetNativeView()->layer();
+      preview_layer->parent()->StackAtTop(preview_layer);
+    }
+#endif
+  }
 
   if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&
       GetWidget()->IsVisible()) {

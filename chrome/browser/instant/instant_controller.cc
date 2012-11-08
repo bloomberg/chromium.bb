@@ -338,6 +338,11 @@ bool InstantController::OnUpOrDownKeyPressed(int count) {
   return true;
 }
 
+void InstantController::OnEscapeKeyPressed() {
+  if (model_.preview_state() != InstantModel::CUSTOM_NTP_CONTENT)
+    Hide();
+}
+
 TabContents* InstantController::GetPreviewContents() const {
   return loader_.get() ? loader_->preview_contents() : NULL;
 }
@@ -459,6 +464,11 @@ void InstantController::OnAutocompleteLostFocus(
 
   loader_->OnAutocompleteLostFocus();
 
+  // It's bizarre if custom NTP content disappears when the user focuses
+  // outside the omnibox.
+  if (model_.preview_state() == InstantModel::CUSTOM_NTP_CONTENT)
+    return;
+
   // If the preview is not showing, only need to check for loader staleness.
   if (model_.preview_state() == InstantModel::NOT_READY) {
     MaybeOnStaleLoader();
@@ -543,8 +553,13 @@ void InstantController::OnAutocompleteGotFocus() {
 
 void InstantController::OnActiveTabModeChanged(bool active_tab_is_ntp) {
   active_tab_is_ntp_ = active_tab_is_ntp;
-  if (GetPreviewContents())
+  if (GetPreviewContents()) {
     loader_->OnActiveTabModeChanged(active_tab_is_ntp_);
+    // On navigation away from the NTP, hide custom content.
+    if (!active_tab_is_ntp_ &&
+        model_.preview_state() == InstantModel::CUSTOM_NTP_CONTENT)
+      Hide();
+  }
 }
 
 bool InstantController::commit_on_pointer_release() const {

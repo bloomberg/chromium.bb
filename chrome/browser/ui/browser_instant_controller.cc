@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/search/search_model.h"
+#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
@@ -21,6 +22,22 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+
+namespace {
+
+// Returns true iff the search model for |tab| is in an NTP state, that is, a
+// state in which the Instant overlay may be showing custom NTP content in
+// EXTENDED mode.
+bool IsSearchModelNTP(TabContents* tab) {
+  if (!tab || !tab->web_contents())
+    return false;
+  content::WebContents* web_contents = tab->web_contents();
+  chrome::search::SearchModel* model =
+      chrome::search::SearchTabHelper::FromWebContents(web_contents)->model();
+  return model && model->mode().is_ntp();
+}
+
+}  // namespace
 
 namespace chrome {
 
@@ -116,9 +133,19 @@ void BrowserInstantController::OnPreferenceChanged(
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserInstantController, TabStripModelObserver implementation:
 
-void BrowserInstantController::TabDeactivated(TabContents* contents) {
-  if (instant())
-    instant_->Hide();
+void BrowserInstantController::ActiveTabChanged(
+    TabContents* old_contents,
+    TabContents* new_contents,
+    int index,
+    bool user_gesture) {
+  if (instant()) {
+    const bool old_is_ntp = IsSearchModelNTP(old_contents);
+    const bool new_is_ntp = IsSearchModelNTP(new_contents);
+    // Do not hide Instant if switching from an NTP to another NTP since that
+    // would cause custom NTP content to flicker.
+    if (!(old_is_ntp && new_is_ntp))
+      instant()->Hide();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
