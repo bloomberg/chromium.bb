@@ -53,10 +53,15 @@ PP_Resource Resource::GetReference() {
   return pp_resource();
 }
 
-void Resource::LastPluginRefWasDeleted() {
+void Resource::NotifyLastPluginRefWasDeleted() {
+  // Notify subclasses.
+  LastPluginRefWasDeleted();
 }
 
-void Resource::InstanceWasDeleted() {
+void Resource::NotifyInstanceWasDeleted() {
+  // Notify subclasses.
+  InstanceWasDeleted();
+
   host_resource_ = HostResource();
 }
 

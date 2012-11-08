@@ -211,8 +211,6 @@ PPB_Graphics2D_Impl::AsPPB_Graphics2D_API() {
 }
 
 void PPB_Graphics2D_Impl::LastPluginRefWasDeleted() {
-  Resource::LastPluginRefWasDeleted();
-
   // Abort any pending callbacks.
   unpainted_flush_callback_.PostAbort();
   painted_flush_callback_.PostAbort();

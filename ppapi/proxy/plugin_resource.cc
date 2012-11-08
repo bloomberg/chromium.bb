@@ -42,6 +42,30 @@ void PluginResource::OnReplyReceived(
   }
 }
 
+void PluginResource::NotifyLastPluginRefWasDeleted() {
+  Resource::NotifyLastPluginRefWasDeleted();
+
+  // The callbacks may hold referrences to this object. Normally, we will get
+  // reply messages from the host side and remove them. However, it is possible
+  // that some replies from the host never arrive, e.g., the corresponding
+  // renderer crashes. In that case, we have to clean up the callbacks,
+  // otherwise this object will live forever.
+  callbacks_.clear();
+}
+
+void PluginResource::NotifyInstanceWasDeleted() {
+  Resource::NotifyInstanceWasDeleted();
+
+  // Please see comments in NotifyLastPluginRefWasDeleted() about why we must
+  // clean up the callbacks.
+  // It is possible that NotifyLastPluginRefWasDeleted() is never called for a
+  // resource. For example, those singleton-style resources such as
+  // GamepadResource never expose references to the plugin and thus won't
+  // receive a NotifyLastPluginRefWasDeleted() call. For those resources, we
+  // need to clean up callbacks when the instance goes away.
+  callbacks_.clear();
+}
+
 void PluginResource::SendCreate(Destination dest, const IPC::Message& msg) {
   if (dest == RENDERER) {
     DCHECK(!sent_create_to_renderer_);

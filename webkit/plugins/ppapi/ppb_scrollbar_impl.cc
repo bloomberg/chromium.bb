@@ -67,7 +67,6 @@ PPB_Scrollbar_API* PPB_Scrollbar_Impl::AsPPB_Scrollbar_API() {
 }
 
 void PPB_Scrollbar_Impl::InstanceWasDeleted() {
-  Resource::LastPluginRefWasDeleted();
   scrollbar_.reset();
 }
 

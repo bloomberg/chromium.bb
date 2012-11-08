@@ -92,7 +92,6 @@ PPB_URLLoader_API* PPB_URLLoader_Impl::AsPPB_URLLoader_API() {
 }
 
 void PPB_URLLoader_Impl::InstanceWasDeleted() {
-  Resource::InstanceWasDeleted();
   loader_.reset();
 }
 

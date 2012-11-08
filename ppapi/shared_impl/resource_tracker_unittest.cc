@@ -27,11 +27,9 @@ class MyMockResource : public Resource {
   }
 
   virtual void LastPluginRefWasDeleted() OVERRIDE {
-    Resource::LastPluginRefWasDeleted();
     last_plugin_ref_was_deleted_count++;
   }
   virtual void InstanceWasDeleted() OVERRIDE {
-    Resource::InstanceWasDeleted();
     instance_was_deleted_count++;
   }
 };

@@ -141,7 +141,7 @@ void ResourceTracker::DidDeleteInstance(PP_Instance instance) {
   while (cur != to_delete.end()) {
     ResourceMap::iterator found_resource = live_resources_.find(*cur);
     if (found_resource != live_resources_.end())
-      found_resource->second.first->InstanceWasDeleted();
+      found_resource->second.first->NotifyInstanceWasDeleted();
     cur++;
   }
 
@@ -216,7 +216,7 @@ void ResourceTracker::LastPluginRefWasDeleted(Resource* object) {
   CHECK(callback_tracker || is_message_loop);
   if (callback_tracker)
     callback_tracker->PostAbortForResource(object->pp_resource());
-  object->LastPluginRefWasDeleted();
+  object->NotifyLastPluginRefWasDeleted();
 }
 
 }  // namespace ppapi

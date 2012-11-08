@@ -66,8 +66,8 @@ class PPAPI_SHARED_EXPORT ResourceTracker {
   virtual void RemoveResource(Resource* object);
 
  private:
-  // Calls LastPluginRefWasDeleted on the given resource object and cancels
-  // pending callbacks for the resource.
+  // Calls NotifyLastPluginRefWasDeleted on the given resource object and
+  // cancels pending callbacks for the resource.
   void LastPluginRefWasDeleted(Resource* object);
 
   typedef std::set<PP_Resource> ResourceSet;
