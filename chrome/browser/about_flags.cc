@@ -935,6 +935,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshReverseNewLockAnimations),
   },
+  {
+    "file-manager-packaged",
+    IDS_FLAGS_FILE_MANAGER_PACKAGED_NAME,
+    IDS_FLAGS_FILE_MANAGER_PACKAGED_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kFileManagerPackaged),
+  },
 #endif
   {
     "enable-views-textfield",

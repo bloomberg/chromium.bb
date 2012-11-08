@@ -12006,6 +12006,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <!-- File Browser -->
+      <message name="IDS_FLAGS_FILE_MANAGER_PACKAGED_NAME" desc="Name of about:flag option to launch the Files app as a packaged app.">
+        Packaged Files app
+      </message>
+      <message name="IDS_FLAGS_FILE_MANAGER_PACKAGED_DESCRIPTION" desc="Description of about:flag option to launch the Files app as a packaged app.">
+        Make the Files app use new "packaged apps" APIs.
+      </message>
       <message name="IDS_FILE_BROWSER_ROOT_DIRECTORY_LABEL" desc="Root directory label.">
         Files
       </message>
