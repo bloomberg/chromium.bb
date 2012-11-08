@@ -125,8 +125,10 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     popup_visible_ = true;
     ApplyAutofillSuggestions(values, labels, icons, ids);
 
-    autofill_manager_->OnDidShowAutofillSuggestions(
-        has_autofill_item && !has_shown_autofill_popup_for_current_edit_);
+    if (autofill_manager_) {
+      autofill_manager_->OnDidShowAutofillSuggestions(
+          has_autofill_item && !has_shown_autofill_popup_for_current_edit_);
+    }
     has_shown_autofill_popup_for_current_edit_ |= has_autofill_item;
   }
 }
@@ -233,6 +235,9 @@ void AutofillExternalDelegate::ClearPreviewedForm() {
 }
 
 void AutofillExternalDelegate::HideAutofillPopup() {
+  if (!popup_visible_)
+    return;
+
   popup_visible_ = false;
 
   ClearPreviewedForm();

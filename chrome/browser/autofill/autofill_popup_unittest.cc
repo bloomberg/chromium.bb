@@ -15,7 +15,8 @@ using WebKit::WebAutofillClient;
 
 namespace {
 
-class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
+class MockAutofillExternalDelegate :
+      public autofill::TestAutofillExternalDelegate {
  public:
   MockAutofillExternalDelegate() : TestAutofillExternalDelegate(NULL, NULL) {};
   virtual ~MockAutofillExternalDelegate() {};
@@ -146,6 +147,11 @@ TEST_F(AutofillPopupViewUnitTest, RemoveLine) {
   autofill_ids.push_back(WebAutofillClient::MenuItemIDAutofillOptions);
   autofill_popup_view_->Show(autofill_values, autofill_values, autofill_values,
                              autofill_ids);
+
+  // Generate a popup, so it can be hidden later. It doesn't matter what the
+  // external_delegate thinks is being shown in the process, since we are just
+  // testing the popup here.
+  autofill::GenerateTestAutofillPopup(&external_delegate_);
 
   // To remove warnings.
   EXPECT_CALL(*autofill_popup_view_, InvalidateRow(_)).Times(AtLeast(0));

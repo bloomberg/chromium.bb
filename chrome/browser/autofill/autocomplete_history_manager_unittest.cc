@@ -146,7 +146,8 @@ TEST_F(AutocompleteHistoryManagerTest, SearchField) {
 
 namespace {
 
-class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
+class MockAutofillExternalDelegate :
+      public autofill::TestAutofillExternalDelegate {
  public:
   explicit MockAutofillExternalDelegate(content::WebContents* web_contents)
       : TestAutofillExternalDelegate(web_contents, NULL) {}

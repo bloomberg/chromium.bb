@@ -3086,7 +3086,8 @@ TEST_F(AutofillManagerTest, RemoveProfileVariant) {
 
 namespace {
 
-class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
+class MockAutofillExternalDelegate :
+      public autofill::TestAutofillExternalDelegate {
  public:
   explicit MockAutofillExternalDelegate(content::WebContents* web_contents,
                                         AutofillManager* autofill_manager)

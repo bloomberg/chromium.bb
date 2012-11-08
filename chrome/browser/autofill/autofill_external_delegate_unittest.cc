@@ -32,7 +32,8 @@ const int kQueryId = 5;
 // A constant value to use as an Autofill profile ID.
 const int kAutofillProfileId = 1;
 
-class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
+class MockAutofillExternalDelegate :
+      public autofill::TestAutofillExternalDelegate {
  public:
   MockAutofillExternalDelegate(content::WebContents* web_contents,
                                AutofillManager* autofill_manger)

@@ -9,6 +9,13 @@
 
 class AutofillManager;
 
+namespace autofill {
+
+// Calls the required functions on the given external delegate to cause the
+// delegate to display a popup.
+void GenerateTestAutofillPopup(
+    AutofillExternalDelegate* autofill_external_delegate);
+
 // This test class is meant to give tests a base AutofillExternalDelegate
 // class that requires no additional work to compile with (i.e. all the
 // pure virtual functions have been giving empty methods).
@@ -31,5 +38,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAutofillExternalDelegate);
 };
+
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_AUTOFILL_TEST_AUTOFILL_EXTERNAL_DELEGATE_H_

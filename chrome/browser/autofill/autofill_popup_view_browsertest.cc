@@ -5,6 +5,7 @@
 #include "chrome/browser/autofill/autofill_popup_view.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -25,14 +26,19 @@ using testing::_;
 
 namespace {
 
-class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
+class MockAutofillExternalDelegate :
+      public autofill::TestAutofillExternalDelegate {
  public:
-  MockAutofillExternalDelegate(content::WebContents* web_contents) :
-      TestAutofillExternalDelegate(web_contents, NULL) {}
+  explicit MockAutofillExternalDelegate(content::WebContents* web_contents) :
+      TestAutofillExternalDelegate(
+          web_contents,
+          AutofillManager::FromWebContents(web_contents)) {}
   ~MockAutofillExternalDelegate() {}
 
   virtual void SelectAutofillSuggestionAtIndex(int unique_id)
       OVERRIDE {}
+
+  virtual void ClearPreviewedForm() OVERRIDE {}
 
   MOCK_METHOD0(HideAutofillPopupInternal, void());
 };
@@ -84,6 +90,8 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
   EXPECT_CALL(*autofill_external_delegate_,
               HideAutofillPopupInternal()).Times(AtLeast(1));
 
+  autofill::GenerateTestAutofillPopup(autofill_external_delegate_.get());
+
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
       content::Source<content::WebContents>(web_contents_));
@@ -98,6 +106,8 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
                        TestPageNavigationHidingAutofillPopup) {
   EXPECT_CALL(*autofill_external_delegate_,
               HideAutofillPopupInternal()).Times(AtLeast(1));
+
+  autofill::GenerateTestAutofillPopup(autofill_external_delegate_.get());
 
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,

@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/autofill/test_autofill_external_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_view_views.h"
@@ -15,7 +16,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/rect.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -58,26 +58,6 @@ class AutofillExternalDelegateViewsBrowserTest : public InProcessBrowserTest {
         new MockAutofillExternalDelegateViews(web_contents_));
   }
 
-  void GeneratePopup() {
-    int query_id = 1;
-    FormData form;
-    FormFieldData field;
-    field.is_focusable = true;
-    field.should_autocomplete = true;
-    gfx::Rect bounds(100, 100);
-
-    // Ensure that we can populate the popup through the delegate without any
-    // and then close it.
-    autofill_external_delegate_->OnQuery(query_id, form, field, bounds, false);
-
-    std::vector<string16> autofill_item;
-    autofill_item.push_back(string16());
-    std::vector<int> autofill_id;
-    autofill_id.push_back(0);
-    autofill_external_delegate_->OnSuggestionsReturned(
-        query_id, autofill_item, autofill_item, autofill_item, autofill_id);
-  }
-
  protected:
   content::WebContents* web_contents_;
   scoped_ptr<MockAutofillExternalDelegateViews> autofill_external_delegate_;
@@ -85,7 +65,7 @@ class AutofillExternalDelegateViewsBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateViewsBrowserTest,
                        OpenAndClosePopup) {
-  GeneratePopup();
+  autofill::GenerateTestAutofillPopup(autofill_external_delegate_.get());
 
   autofill_external_delegate_->HideAutofillPopup();
   EXPECT_TRUE(autofill_external_delegate_->popup_hidden_);
@@ -93,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateViewsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateViewsBrowserTest,
                        CloseWidgetAndNoLeaking) {
-  GeneratePopup();
+  autofill::GenerateTestAutofillPopup(autofill_external_delegate_.get());
 
   // Delete the widget to ensure that the external delegate can handle the
   // popup getting deleted elsewhere and the .
@@ -106,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateViewsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateViewsBrowserTest,
                        HandlePopupClosingAndChangingPages) {
-  GeneratePopup();
+  autofill::GenerateTestAutofillPopup(autofill_external_delegate_.get());
 
   // Close popup.
   autofill_external_delegate_->HideAutofillPopup();
