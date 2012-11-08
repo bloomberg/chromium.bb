@@ -17,6 +17,7 @@
         <activity android:name="org.chromium.chrome.testshell.ChromiumTestShellActivity"
                   android:label="ChromiumTestShellActivity"
                   android:launchMode="singleTask"
+                  android:theme="@android:style/Theme.Holo.Light.NoActionBar"
                   android:hardwareAccelerated="true">
               <intent-filter>
                   <action android:name="android.intent.action.MAIN" />
