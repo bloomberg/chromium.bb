@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/plugin_resource.h"
 
+#include <limits>
+
 #include "ppapi/proxy/ppapi_messages.h"
 
 namespace ppapi {
@@ -12,7 +14,7 @@ namespace proxy {
 PluginResource::PluginResource(Connection connection, PP_Instance instance)
     : Resource(OBJECT_IS_PROXY, instance),
       connection_(connection),
-      next_sequence_number_(0),
+      next_sequence_number_(1),
       sent_create_to_browser_(false),
       sent_create_to_renderer_(false) {
 }
@@ -74,13 +76,13 @@ void PluginResource::SendCreate(Destination dest, const IPC::Message& msg) {
     DCHECK(!sent_create_to_browser_);
     sent_create_to_browser_ = true;
   }
-  ResourceMessageCallParams params(pp_resource(), next_sequence_number_++);
+  ResourceMessageCallParams params(pp_resource(), GetNextSequence());
   GetSender(dest)->Send(
       new PpapiHostMsg_ResourceCreated(params, pp_instance(), msg));
 }
 
 void PluginResource::Post(Destination dest, const IPC::Message& msg) {
-  ResourceMessageCallParams params(pp_resource(), next_sequence_number_++);
+  ResourceMessageCallParams params(pp_resource(), GetNextSequence());
   SendResourceCall(dest, params, msg);
 }
 
@@ -95,7 +97,7 @@ bool PluginResource::SendResourceCall(
 int32_t PluginResource::GenericSyncCall(Destination dest,
                                         const IPC::Message& msg,
                                         IPC::Message* reply) {
-  ResourceMessageCallParams params(pp_resource(), next_sequence_number_++);
+  ResourceMessageCallParams params(pp_resource(), GetNextSequence());
   params.set_has_callback();
   ResourceMessageReplyParams reply_params;
   bool success = GetSender(dest)->Send(new PpapiHostMsg_ResourceSyncCall(
@@ -103,6 +105,18 @@ int32_t PluginResource::GenericSyncCall(Destination dest,
   if (success)
     return reply_params.result();
   return PP_ERROR_FAILED;
+}
+
+int32_t PluginResource::GetNextSequence() {
+  // Return the value with wraparound, making sure we don't make a sequence
+  // number with a 0 ID. Note that signed wraparound is undefined in C++ so we
+  // manually check.
+  int32_t ret = next_sequence_number_;
+  if (next_sequence_number_ == std::numeric_limits<int32_t>::max())
+    next_sequence_number_ = 1;  // Skip 0 which is invalid.
+  else
+    next_sequence_number_++;
+  return ret;
 }
 
 }  // namespace proxy

@@ -81,13 +81,13 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
   // still be invoked but with the default values of the message parameters.
   //
   // Returns the new request's sequence number which can be used to identify
-  // the callback.
+  // the callback. This value will never be 0, which you can use to identify
+  // an invalid callback.
   //
-  // Note: 1) all integers (including 0 and -1) are valid request IDs.
-  //       2) when all plugin references to this resource are gone or the
+  // Note: 1) When all plugin references to this resource are gone or the
   //          corresponding plugin instance is deleted, all pending callbacks
   //          are abandoned.
-  //       3) it is *not* recommended to let |callback| hold any reference to
+  //       2) It is *not* recommended to let |callback| hold any reference to
   //          |this|, in which it will be stored. Otherwise, this object will
   //          live forever if we fail to clean up the callback. It is safe to
   //          use base::Unretained(this) or a weak pointer, because this object
@@ -135,8 +135,11 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
                           const IPC::Message& msg,
                           IPC::Message* reply_msg);
 
+  int32_t GetNextSequence();
+
   Connection connection_;
 
+  // Use GetNextSequence to retrieve the next value.
   int32_t next_sequence_number_;
 
   bool sent_create_to_browser_;
