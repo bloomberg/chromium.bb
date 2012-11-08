@@ -567,8 +567,10 @@ public:
         ~Atom();
         Atom& operator=(const Atom&);
     public:
+        long long GetStartTimecode() const;
+        long long GetStopTimecode() const;
         int GetDisplayCount() const;
-        const Atom* GetAtom(int index) const;
+        const Display* GetDisplay(int index) const;
     private:
         void Init();
         void ShallowCopy(Atom&) const;
@@ -580,8 +582,8 @@ public:
 
         unsigned long long m_uid;
         // TODO(matthewjheaney): Cue Identifier (string)
-        unsigned long long m_start_timecode;
-        unsigned long long m_stop_timecode;
+        long long m_start_timecode;
+        long long m_stop_timecode;
 
         Display* m_displays;
         int m_displays_size;
@@ -597,7 +599,7 @@ public:
         Edition& operator=(const Edition&);
     public:
         int GetAtomCount() const;
-        const Atom& GetAtom(int index) const;
+        const Atom* GetAtom(int index) const;
     private:
         void Init();
         void ShallowCopy(Edition&) const;

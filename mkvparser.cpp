@@ -4374,6 +4374,24 @@ Chapters::Edition::~Edition()
 }
 
 
+int Chapters::Edition::GetAtomCount() const
+{
+    return m_atoms_count;
+}
+
+
+const Chapters::Atom* Chapters::Edition::GetAtom(int index) const
+{
+    if (index < 0)
+        return NULL;
+
+    if (index >= m_atoms_count)
+        return NULL;
+
+    return m_atoms + index;
+}
+
+
 void Chapters::Edition::Init()
 {
     m_atoms = NULL;
@@ -4496,8 +4514,42 @@ Chapters::Atom::~Atom()
 }
 
 
+long long Chapters::Atom::GetStartTimecode() const
+{
+    return m_start_timecode;
+}
+
+
+long long Chapters::Atom::GetStopTimecode() const
+{
+    return m_stop_timecode;
+}
+
+
+int Chapters::Atom::GetDisplayCount() const
+{
+    return m_displays_count;
+}
+
+
+const Chapters::Display* Chapters::Atom::GetDisplay(int index) const
+{
+    if (index < 0)
+        return NULL;
+
+    if (index >= m_displays_count)
+        return NULL;
+
+    return m_displays + index;
+}
+
+
 void Chapters::Atom::Init()
 {
+    m_uid = 0;
+    m_start_timecode = -1;
+    m_stop_timecode = -1;
+
     m_displays = NULL;
     m_displays_size = 0;
     m_displays_count = 0;
@@ -4506,6 +4558,10 @@ void Chapters::Atom::Init()
 
 void Chapters::Atom::ShallowCopy(Atom& rhs) const
 {
+    rhs.m_uid = m_uid;
+    rhs.m_start_timecode = m_start_timecode;
+    rhs.m_stop_timecode = m_stop_timecode;
+
     rhs.m_displays = m_displays;
     rhs.m_displays_size = m_displays_size;
     rhs.m_displays_count = m_displays_count;
