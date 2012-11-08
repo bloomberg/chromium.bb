@@ -108,6 +108,9 @@ TEST(PrefServiceTest, Observers) {
   registrar.Init(&prefs);
   registrar.Add(pref_name, &obs);
 
+  PrefChangeRegistrar registrar_two;
+  registrar_two.Init(&prefs);
+
   // This should fire the checks in PrefObserverMock::Observe.
   obs.Expect(&prefs, pref_name, &expected_new_pref_value);
   prefs.SetString(pref_name, new_pref_value);
@@ -119,7 +122,7 @@ TEST(PrefServiceTest, Observers) {
   PrefObserverMock obs2;
   obs.Expect(&prefs, pref_name, &expected_new_pref_value2);
   obs2.Expect(&prefs, pref_name, &expected_new_pref_value2);
-  registrar.Add(pref_name, &obs2);
+  registrar_two.Add(pref_name, &obs2);
   // This should fire the checks in obs and obs2.
   prefs.SetString(pref_name, new_pref_value2);
   Mock::VerifyAndClearExpectations(&obs);
@@ -136,7 +139,7 @@ TEST(PrefServiceTest, Observers) {
   Mock::VerifyAndClearExpectations(&obs2);
 
   // Make sure obs2 still works after removing obs.
-  registrar.Remove(pref_name, &obs);
+  registrar.Remove(pref_name);
   EXPECT_CALL(obs, OnPreferenceChanged(_, _)).Times(0);
   obs2.Expect(&prefs, pref_name, &expected_new_pref_value);
   // This should only fire the observer in obs2.

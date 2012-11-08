@@ -1129,8 +1129,8 @@ class ExtensionPrefsNotifyWhenNeeded : public ExtensionPrefsPrepopulatedTest {
     Mock::VerifyAndClearExpectations(&observer);
     Mock::VerifyAndClearExpectations(&incognito_observer);
 
-    registrar.Remove(kPref1, &observer);
-    incognito_registrar.Remove(kPref1, &incognito_observer);
+    registrar.Remove(kPref1);
+    incognito_registrar.Remove(kPref1);
   }
   virtual void Verify() {
     std::string actual = prefs()->pref_service()->GetString(kPref1);

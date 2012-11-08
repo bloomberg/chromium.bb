@@ -28,6 +28,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -91,7 +93,8 @@ class PrefMemberBase : public PrefObserver {
 
   // See PrefMember<> for description.
   void Init(const char* pref_name, PrefServiceBase* prefs,
-            PrefObserver* observer);
+            const base::Closure& observer);
+  void Init(const char* pref_name, PrefServiceBase* prefs);
 
   virtual void CreateInternal() const = 0;
 
@@ -126,7 +129,7 @@ class PrefMemberBase : public PrefObserver {
  private:
   // Ordered the members to compact the class instance.
   std::string pref_name_;
-  PrefObserver* observer_;
+  base::Closure observer_;  // Initially bound to base::DoNothing.
   PrefServiceBase* prefs_;
 
  protected:
@@ -148,12 +151,28 @@ class PrefMember : public subtle::PrefMemberBase {
   PrefMember() {}
   virtual ~PrefMember() {}
 
-  // Do the actual initialization of the class.  |observer| may be null if you
-  // don't want any notifications of changes.
-  // This method should only be called on the UI thread.
+  // Do the actual initialization of the class.  Use the two-parameter
+  // version if you don't want any notifications of changes.  This
+  // method should only be called on the UI thread.
+  void Init(const char* pref_name, PrefServiceBase* prefs,
+            const base::Closure& observer) {
+    subtle::PrefMemberBase::Init(pref_name, prefs, observer);
+  }
+
+  void Init(const char* pref_name, PrefServiceBase* prefs) {
+    subtle::PrefMemberBase::Init(pref_name, prefs);
+  }
+
+  // Deprecated version of Init.
   void Init(const char* pref_name, PrefServiceBase* prefs,
             PrefObserver* observer) {
-    subtle::PrefMemberBase::Init(pref_name, prefs, observer);
+    if (observer) {
+      Init(pref_name, prefs, base::Bind(&PrefObserver::OnPreferenceChanged,
+                                        base::Unretained(observer),
+                                        prefs, std::string(pref_name)));
+    } else {
+      Init(pref_name, prefs);
+    }
   }
 
   // Unsubscribes the PrefMember from the PrefService. After calling this
