@@ -54,6 +54,7 @@ class DeepMemoryProfiler(object):
       os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
       'tools', 'deep_memory_profiler')
   _DMPROF_SCRIPT_PATH = os.path.join(_DMPROF_DIR_PATH, 'dmprof')
+  _POLICIES = ['l0', 'l1', 'l2', 't0']
 
   def __init__(self):
     self._enabled = self.GetEnvironmentVariable(
@@ -63,7 +64,9 @@ class DeepMemoryProfiler(object):
     self._json_file = None
     self._last_json_filename = ''
     self._proc = None
-    self._last_time = -1.0
+    self._last_time = {}
+    for policy in self._POLICIES:
+      self._last_time[policy] = -1.0
 
   def __nonzero__(self):
     return self._enabled
@@ -179,31 +182,34 @@ class DeepMemoryProfiler(object):
       return
 
     results = {}
-    if self._last_json_filename:
-      json_data = {}
-      with open(self._last_json_filename) as json_f:
-        json_data = json.load(json_f)
-      if json_data['version'] == 'JSON_DEEP_1':
-        results = json_data['snapshots']
-      elif json_data['version'] == 'JSON_DEEP_2':
-        results = json_data['policies']['l2']['snapshots']
-    if results and results[-1]['second'] > self._last_time:
-      started = False
-      for legend in json_data['policies']['l2']['legends']:
-        if legend == 'FROM_HERE_FOR_TOTAL':
-          started = True
-        elif legend == 'UNTIL_HERE_FOR_TOTAL':
-          break
-        elif started:
-          output_perf_graph_value(
-              legend.encode('utf-8'), [
-                  (int(round(snapshot['second'])), snapshot[legend] / 1024)
-                  for snapshot in results
-                  if snapshot['second'] > self._last_time],
-              'KB',
-              graph_name='%s%s-DMP' % (webapp_name, test_description),
-              units_x='seconds', is_stacked=True)
-      self._last_time = results[-1]['second']
+    for policy in self._POLICIES:
+      if self._last_json_filename:
+        json_data = {}
+        with open(self._last_json_filename) as json_f:
+          json_data = json.load(json_f)
+        if json_data['version'] == 'JSON_DEEP_1':
+          results[policy] = json_data['snapshots']
+        elif json_data['version'] == 'JSON_DEEP_2':
+          results[policy] = json_data['policies'][policy]['snapshots']
+    for policy, result in results.iteritems():
+      if result and result[-1]['second'] > self._last_time[policy]:
+        started = False
+        for legend in json_data['policies'][policy]['legends']:
+          if legend == 'FROM_HERE_FOR_TOTAL':
+            started = True
+          elif legend == 'UNTIL_HERE_FOR_TOTAL':
+            break
+          elif started:
+            output_perf_graph_value(
+                legend.encode('utf-8'), [
+                    (int(round(snapshot['second'])), snapshot[legend] / 1024)
+                    for snapshot in result
+                    if snapshot['second'] > self._last_time[policy]],
+                'KB',
+                graph_name='%s%s-%s-DMP' % (
+                    webapp_name, test_description, policy),
+                units_x='seconds', is_stacked=True)
+        self._last_time[policy] = result[-1]['second']
 
   def _WaitForDeepMemoryProfiler(self):
     """Waits for the Deep Memory Profiler to finish if running."""
