@@ -9,7 +9,7 @@
 #include "android_webview/common/url_constants.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/component/navigation_interception/intercept_navigation_delegate.h"
+#include "content/components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
@@ -18,7 +18,7 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 
-using navigation_interception::InterceptNavigationDelegate;
+using content::InterceptNavigationDelegate;
 
 namespace {
 

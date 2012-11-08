@@ -15,14 +15,14 @@
 #include "android_webview/native/js_result_handler.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "chrome/browser/component/navigation_interception/component_jni_registrar.h"
 #include "chrome/browser/component/web_contents_delegate_android/component_jni_registrar.h"
+#include "content/components/navigation_interception/component_jni_registrar.h"
 
 namespace android_webview {
 
 static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
   // Register JNI for components we depend on.
-  { "navigation_interception", navigation_interception::RegisterJni },
+  { "navigation_interception", content::RegisterNavigationInterceptionJni },
   { "web_contents_delegate_android",
       web_contents_delegate_android::RegisterJni },
   // Register JNI for android_webview classes.

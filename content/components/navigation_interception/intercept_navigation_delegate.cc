@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component/navigation_interception/intercept_navigation_delegate.h"
+#include "content/components/navigation_interception/intercept_navigation_delegate.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/callback.h"
-#include "chrome/browser/component/navigation_interception/intercept_navigation_resource_throttle.h"
+#include "content/components/navigation_interception/intercept_navigation_resource_throttle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -21,7 +21,7 @@ using content::BrowserThread;
 using content::RenderViewHost;
 using content::WebContents;
 
-namespace navigation_interception {
+namespace content {
 
 namespace {
 
@@ -106,4 +106,4 @@ bool RegisterInterceptNavigationDelegate(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-} // namespace navigation_interception
+}  // namespace content

@@ -29,7 +29,8 @@ LOCAL_SRC_FILES += \
 # browser components
 LOCAL_SRC_FILES += \
     $(call all-java-files-under, ../chrome/browser/component/web_contents_delegate_android/java/src) \
-    $(call all-java-files-under, ../chrome/browser/component/navigation_interception/java/src) \
+    $(call all-java-files-under, \
+        ../content/components/navigation_interception/java/src) \
 
 # TODO(mkosiba): Remove chromium_chrome dep once required browser
 # components are in (replace it with contentview).
