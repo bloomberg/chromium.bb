@@ -68,6 +68,7 @@ hooks = [
     'python',
     'native_client/build/download_toolchains.py',
     '--keep',
+    '--arm-untrusted',
     'native_client/TOOL_REVISIONS'
 ],
     'pattern':
