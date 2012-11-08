@@ -126,7 +126,7 @@ TEST(LayerAnimationControllerTest, doNotSyncFinishedAnimation)
 
     EXPECT_FALSE(controllerImpl->getActiveAnimation(0, ActiveAnimation::Opacity));
 
-    addOpacityTransitionToController(*controller, 1, 0, 1, false);
+    int animationId = addOpacityTransitionToController(*controller, 1, 0, 1, false);
 
     controller->pushAnimationUpdatesTo(controllerImpl.get());
 
@@ -138,14 +138,14 @@ TEST(LayerAnimationControllerTest, doNotSyncFinishedAnimation)
     controller->notifyAnimationStarted(animationStartedEvent);
 
     // Force animation to complete on impl thread.
-    controllerImpl->removeAnimation(0);
+    controllerImpl->removeAnimation(animationId);
 
-    EXPECT_FALSE(controllerImpl->getActiveAnimation(0, ActiveAnimation::Opacity));
+    EXPECT_FALSE(controllerImpl->getActiveAnimation(animationId, ActiveAnimation::Opacity));
 
     controller->pushAnimationUpdatesTo(controllerImpl.get());
 
     // Even though the main thread has a 'new' animation, it should not be pushed because the animation has already completed on the impl thread.
-    EXPECT_FALSE(controllerImpl->getActiveAnimation(0, ActiveAnimation::Opacity));
+    EXPECT_FALSE(controllerImpl->getActiveAnimation(animationId, ActiveAnimation::Opacity));
 }
 
 // Tests that transitioning opacity from 0 to 1 works as expected.

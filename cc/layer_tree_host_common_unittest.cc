@@ -3832,6 +3832,50 @@ TEST(LayerTreeHostCommonTest, verifyContentsScaleForSurfaces)
     EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale * initialChildScale, surfaceNoAutoScaleChildNoScale->drawTransform().m22());
 }
 
+TEST(LayerTreeHostCommonTest, verifyContentsScaleForAnimatingLayer)
+{
+    MockContentLayerClient delegate;
+    WebTransformationMatrix identityMatrix;
+
+    WebTransformationMatrix parentScaleMatrix;
+    const double initialParentScale = 1.75;
+    parentScaleMatrix.scale(initialParentScale);
+
+    WebTransformationMatrix childScaleMatrix;
+    const double initialChildScale = 1.25;
+    childScaleMatrix.scale(initialChildScale);
+
+    scoped_refptr<ContentLayer> parent = createDrawableContentLayer(&delegate);
+    setLayerPropertiesForTesting(parent.get(), parentScaleMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), true);
+
+    scoped_refptr<ContentLayer> childScale = createDrawableContentLayer(&delegate);
+    setLayerPropertiesForTesting(childScale.get(), childScaleMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(2, 2), gfx::Size(10, 10), true);
+
+    parent->addChild(childScale);
+
+    // Now put an animating transform on child.
+    int animationId = addAnimatedTransformToController(*childScale->layerAnimationController(), 10, 30, 0);
+
+    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    int dummyMaxTextureSize = 512;
+
+    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+
+    EXPECT_CONTENTS_SCALE_EQ(initialParentScale, parent);
+    // The layers with animating transforms should not compute a contentsScale other than 1 until they finish animating.
+    EXPECT_CONTENTS_SCALE_EQ(1, childScale);
+
+    // Remove the animation, now it can save a raster scale.
+    childScale->layerAnimationController()->removeAnimation(animationId);
+
+    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, renderSurfaceLayerList);
+
+    EXPECT_CONTENTS_SCALE_EQ(initialParentScale, parent);
+    // The layers with animating transforms should not compute a contentsScale other than 1 until they finish animating.
+    EXPECT_CONTENTS_SCALE_EQ(initialParentScale * initialChildScale, childScale);
+}
+
+
 TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPI)
 {
     MockContentLayerClient delegate;
