@@ -573,6 +573,9 @@ DialogType.isModal = function(type) {
     CommandUtil.registerCommand(doc, 'gdata-clear-local-cache',
         Commands.gdataClearCacheCommand, this);
 
+    CommandUtil.registerCommand(doc, 'gdata-reload',
+        Commands.gdataReloadCommand, this);
+
     CommandUtil.registerCommand(doc, 'gdata-go-to-drive',
         Commands.gdataGoToDriveCommand, this);
 
@@ -2695,13 +2698,6 @@ DialogType.isModal = function(type) {
     switch (util.getKeyModifiers(event) + event.keyCode) {
       case 'Ctrl-17':  // Ctrl => Show hidden setting
         this.dialogDom_.setAttribute('ctrl-pressing', 'true');
-        return;
-
-      case 'Alt-Shift-82':  // Alt-Shift-R => Reload the file system metadata.
-        var gdataPath = RootDirectory.GDATA;
-        if (this.isOnGData() && this.volumeManager_.isMounted(gdataPath))
-          chrome.fileBrowserPrivate.reloadDrive();
-        event.preventDefault();
         return;
 
       case 'Ctrl-190':  // Ctrl-. => Toggle filter files.

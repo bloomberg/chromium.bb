@@ -250,6 +250,16 @@ Commands.gdataClearCacheCommand = {
 };
 
 /**
+ * Reload the metadata of the file system from the server
+ */
+Commands.gdataReloadCommand = {
+  execute: function() {
+    chrome.fileBrowserPrivate.reloadDrive();
+  },
+  canExecute: CommandUtil.canExecuteOnGDataOnly
+};
+
+/**
  * Opens drive.google.com.
  */
 Commands.gdataGoToDriveCommand = {
