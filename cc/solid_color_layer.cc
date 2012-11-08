@@ -29,4 +29,10 @@ SolidColorLayer::~SolidColorLayer()
 {
 }
 
+void SolidColorLayer::setBackgroundColor(SkColor color)
+{
+    setContentsOpaque(SkColorGetA(color) == 255);
+    Layer::setBackgroundColor(color);
+}
+
 }  // namespace cc

@@ -74,7 +74,7 @@ public:
     void setAnchorPointZ(float);
     float anchorPointZ() const { return m_anchorPointZ; }
 
-    void setBackgroundColor(SkColor);
+    virtual void setBackgroundColor(SkColor);
     SkColor backgroundColor() const { return m_backgroundColor; }
 
     // A layer's bounds are in logical, non-page-scaled pixels (however, the

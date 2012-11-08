@@ -19,6 +19,8 @@ public:
 
     virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
 
+    virtual void setBackgroundColor(SkColor) OVERRIDE;
+
 protected:
     SolidColorLayer();
 
