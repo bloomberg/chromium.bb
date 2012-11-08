@@ -488,6 +488,11 @@ const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 // Enables Drive v2 API instead of Google Documents List API.
 const char kEnableDriveV2Api[]              = "enable-drive-v2-api";
 
+// Enables an interactive autocomplete UI and a way to invoke this UI from
+// WebKit by enabling HTMLFormElement#requestAutocomplete (and associated
+// autocomplete* events and logic).
+const char kEnableInteractiveAutocomplete[] = "enable-interactive-autocomplete";
+
 // Enables extensions to be easily installed from sites other than the web
 // store. Without this flag, they can still be installed, but must be manually
 // dragged onto chrome://extensions/.

@@ -166,6 +166,12 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
     base::StatisticsRecorder::set_dump_on_exit(true);
   }
 
+#if defined(TOOLKIT_VIEWS)
+  WebRuntimeFeatures::enableRequestAutocomplete(
+      command_line.HasSwitch(switches::kEnableInteractiveAutocomplete) ||
+      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
+#endif
+
   RenderThread* thread = RenderThread::Get();
   resource_delegate_.reset(new RendererResourceDelegate());
   thread->SetResourceDispatcherDelegate(resource_delegate_.get());
