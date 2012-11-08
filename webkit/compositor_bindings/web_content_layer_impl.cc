@@ -6,7 +6,10 @@
 #include "web_content_layer_impl.h"
 
 #include "SkMatrix44.h"
+#include "base/command_line.h"
 #include "cc/content_layer.h"
+#include "cc/picture_layer.h"
+#include "cc/switches.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayerClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
@@ -17,21 +20,32 @@ using namespace cc;
 
 namespace WebKit {
 
+static bool usingPictureLayer()
+{
+    return CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kImplSidePainting);
+}
+
 WebContentLayer* WebContentLayer::create(WebContentLayerClient* client)
 {
     return new WebContentLayerImpl(client);
 }
 
 WebContentLayerImpl::WebContentLayerImpl(WebContentLayerClient* client)
-    : m_layer(new WebLayerImpl(ContentLayer::create(this)))
-    , m_client(client)
+    : m_client(client)
 {
+    if (usingPictureLayer())
+        m_layer = make_scoped_ptr(new WebLayerImpl(PictureLayer::create(this)));
+    else
+        m_layer = make_scoped_ptr(new WebLayerImpl(ContentLayer::create(this)));
     m_layer->layer()->setIsDrawable(true);
 }
 
 WebContentLayerImpl::~WebContentLayerImpl()
 {
-    static_cast<ContentLayer*>(m_layer->layer())->clearClient();
+    if (usingPictureLayer())
+        static_cast<PictureLayer*>(m_layer->layer())->clearClient();
+    else
+        static_cast<ContentLayer*>(m_layer->layer())->clearClient();
 }
 
 WebLayer* WebContentLayerImpl::layer()
