@@ -34,6 +34,9 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+using aura::RootWindow;
+using aura::Window;
+
 namespace {
 // TODO(jamescook): Border is specified to be a single pixel overlapping
 // the web content and may need to be built into the shadow layers instead.
@@ -99,12 +102,21 @@ void TileRoundRect(gfx::Canvas* canvas,
   canvas->DrawImageInPath(image, -image_inset_x, 0, path, paint);
 }
 
+// Returns true if |child| and all ancestors are visible.
+bool IsVisibleToRoot(Window* child) {
+  for (Window* window = child; window; window = window->parent()) {
+    // We must use TargetVisibility() because windows animate in and out and
+    // IsVisible() also tracks the layer visibility state.
+    if (!window->TargetVisibility())
+      return false;
+  }
+  return true;
+}
 // Returns true if |window| is a visible, normal window.
 bool IsVisibleNormalWindow(aura::Window* window) {
-  // We must use TargetVisibility() because windows animate in and out and
-  // IsVisible() also tracks the layer visibility state.
+  // Test visibility up to root in case the whole workspace is hidden.
   return window &&
-    window->TargetVisibility() &&
+    IsVisibleToRoot(window) &&
     (window->type() == aura::client::WINDOW_TYPE_NORMAL ||
      window->type() == aura::client::WINDOW_TYPE_PANEL);
 }
@@ -208,6 +220,13 @@ void FramePainter::Init(views::Widget* frame,
   // If there is already a solo window in the same root, this initialization
   // should turn off its solo-mode.
   UpdateSoloWindowFramePainter(NULL);
+}
+
+// static
+void FramePainter::UpdateSoloWindowHeader(RootWindow* root_window) {
+  // Use a separate function here so callers outside of FramePainter don't need
+  // to know about "ignorable_window".
+  UpdateSoloWindowInRoot(root_window, NULL /* ignorable_window */);
 }
 
 gfx::Rect FramePainter::GetBoundsForClientView(
@@ -716,11 +735,13 @@ bool FramePainter::UseSoloWindowHeader() {
   return (root->GetProperty(internal::kSoloWindowFramePainterKey) == this);
 }
 
-FramePainter* FramePainter::GetSoloPainterInRoot(
-    aura::Window* ignorable_window) {
-  DCHECK(instances_);
+// static
+FramePainter* FramePainter::GetSoloPainterInRoot(RootWindow* root_window,
+                                                 Window* ignorable_window) {
+  // Can be NULL in tests that don't use FramePainter windows.
+  if (!instances_)
+    return NULL;
 
-  aura::RootWindow* root_window = window_->GetRootWindow();
   FramePainter* painter = NULL;
   for (std::set<FramePainter*>::const_iterator it = instances_->begin();
        it != instances_->end();
@@ -748,27 +769,31 @@ FramePainter* FramePainter::GetSoloPainterInRoot(
   return painter;
 }
 
-void FramePainter::UpdateSoloWindowFramePainter(
-    aura::Window* ignorable_window) {
-  aura::RootWindow* root = window_->GetRootWindow();
+// static
+void FramePainter::UpdateSoloWindowInRoot(RootWindow* root,
+                                          Window* ignorable_window) {
   if (!root)
     return;
 
   FramePainter* old_solo_painter = root->GetProperty(
       internal::kSoloWindowFramePainterKey);
-  FramePainter* new_solo_painter = GetSoloPainterInRoot(ignorable_window);
+  FramePainter* new_solo_painter = GetSoloPainterInRoot(root, ignorable_window);
   if (old_solo_painter != new_solo_painter) {
     if (old_solo_painter && old_solo_painter->frame_ &&
         old_solo_painter->frame_->non_client_view()) {
       old_solo_painter->frame_->non_client_view()->SchedulePaint();
     }
-    window_->GetRootWindow()->SetProperty(
-        internal::kSoloWindowFramePainterKey, new_solo_painter);
+    root->SetProperty(internal::kSoloWindowFramePainterKey, new_solo_painter);
     if (new_solo_painter && new_solo_painter->frame_ &&
         new_solo_painter->frame_->non_client_view()) {
       new_solo_painter->frame_->non_client_view()->SchedulePaint();
     }
   }
+}
+
+void FramePainter::UpdateSoloWindowFramePainter(
+    aura::Window* ignorable_window) {
+  UpdateSoloWindowInRoot(window_->GetRootWindow(), ignorable_window);
 }
 
 void FramePainter::SchedulePaintForHeader() {

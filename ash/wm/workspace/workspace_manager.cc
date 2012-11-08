@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/base_layout_manager.h"
+#include "ash/wm/frame_painter.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_animations.h"
@@ -355,6 +356,10 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace,
       ShowOrHideDesktopBackground(background, reason, duration, true);
     }
   }
+
+  // Showing or hiding a workspace may change the "solo window" status of
+  // a window, requiring the header to be updated.
+  FramePainter::UpdateSoloWindowHeader(contents_view_->GetRootWindow());
 }
 
 WorkspaceManager::Workspaces::iterator

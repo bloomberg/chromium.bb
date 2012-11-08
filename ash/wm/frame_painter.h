@@ -17,6 +17,7 @@
 #include "ui/gfx/rect.h"
 
 namespace aura {
+class RootWindow;
 class Window;
 }
 namespace gfx {
@@ -69,6 +70,10 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
             views::ImageButton* size_button,
             views::ImageButton* close_button,
             SizeButtonBehavior behavior);
+
+  // Updates the solo-window transparent header appearance for all windows
+  // using frame painters across all root windows.
+  static void UpdateSoloWindowHeader(aura::RootWindow* root_window);
 
   // Helpers for views::NonClientFrameView implementations.
   gfx::Rect GetBoundsForClientView(int top_height,
@@ -161,16 +166,22 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // window header.
   bool UseSoloWindowHeader();
 
-  // Returns the frame painter for the solo window in the root window which
-  // |window_| belongs to. Returns NULL in case there is no such window, for
-  // example more than two indows or there's a fullscreen window.  It ignores
-  // |ignorable_window| to check the solo-ness of the window.  Pass NULL if
-  // there's no ignorable window.
-  FramePainter* GetSoloPainterInRoot(aura::Window* ignorable_window);
+  // Returns the frame painter for the solo window in |root_window|. Returns
+  // NULL in case there is no such window, for example more than two windows or
+  // there's a fullscreen window.  It ignores |ignorable_window| to check the
+  // solo-ness of the window.  Pass NULL for |ignorable_window| to consider
+  // all windows.
+  static FramePainter* GetSoloPainterInRoot(aura::RootWindow* root_window,
+                                            aura::Window* ignorable_window);
 
-  // Updates the current solo window frame painter. This calculates the new solo
-  // window frame painter (ignoring |ignorable_window|) and if they differ
+  // Updates the current solo window frame painter for |root_window| while
+  // ignoring |ignorable_window|. If the solo window frame painter changed it
   // schedules paints as necessary.
+  static void UpdateSoloWindowInRoot(aura::RootWindow* root_window,
+                                     aura::Window* ignorable_window);
+
+  // Convenience method to call UpdateSoloWindowInRoot() with the current
+  // window's root window.
   void UpdateSoloWindowFramePainter(aura::Window* ignorable_window);
 
   // Schedules a paint for the header. Used when transitioning from no header to
