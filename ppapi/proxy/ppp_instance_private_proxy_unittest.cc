@@ -13,7 +13,9 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/proxy/host_dispatcher.h"
+#include "ppapi/proxy/interface_list.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppb_var_shared.h"
 #include "ppapi/shared_impl/var.h"
 
@@ -158,6 +160,10 @@ TEST_F(PPP_Instance_Private_ProxyTest, DISABLED_PPPInstancePrivate) {
   // PluginProxyTestHarness provides.
   ASSERT_NE(kInstance, pp_instance());
   HostDispatcher::SetForInstance(kInstance, host().host_dispatcher());
+
+  // Requires dev interfaces.
+  InterfaceList::SetProcessGlobalPermissions(
+      PpapiPermissions::AllPermissions());
 
   // This file-local global is used by the PPP_Instance mock above in order to
   // access PPB_Var_Deprecated.

@@ -183,6 +183,11 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   void OnMsgSupportsInterface(const std::string& interface_name, bool* result);
   void OnMsgSetPreferences(const Preferences& prefs);
 
+  // Internal backed for DispatchResourceReply.
+  static void LockedDispatchResourceReply(
+      const ppapi::proxy::ResourceMessageReplyParams& reply_params,
+      const IPC::Message& nested_msg);
+
   PluginDelegate* plugin_delegate_;
 
   // Contains all the plugin interfaces we've queried. The mapped value will

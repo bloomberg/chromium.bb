@@ -274,14 +274,10 @@ thunk::ResourceCreationAPI* PluginDispatcher::GetResourceCreationAPI() {
 void PluginDispatcher::DispatchResourceReply(
     const ppapi::proxy::ResourceMessageReplyParams& reply_params,
     const IPC::Message& nested_msg) {
-  Resource* resource = PpapiGlobals::Get()->GetResourceTracker()->GetResource(
-      reply_params.pp_resource());
-  if (!resource) {
-    if (reply_params.sequence())
-      NOTREACHED();
-    return;
-  }
-  resource->OnReplyReceived(reply_params, nested_msg);
+  // We need to grab the proxy lock to ensure that we don't collide with the
+  // plugin making pepper calls on a different thread.
+  ProxyAutoLock lock;
+  LockedDispatchResourceReply(reply_params, nested_msg);
 }
 
 void PluginDispatcher::ForceFreeAllInstances() {
@@ -305,7 +301,7 @@ void PluginDispatcher::ForceFreeAllInstances() {
 void PluginDispatcher::OnMsgResourceReply(
     const ppapi::proxy::ResourceMessageReplyParams& reply_params,
     const IPC::Message& nested_msg) {
-  DispatchResourceReply(reply_params, nested_msg);
+  LockedDispatchResourceReply(reply_params, nested_msg);
 }
 
 void PluginDispatcher::OnMsgSupportsInterface(
@@ -334,6 +330,20 @@ void PluginDispatcher::OnMsgSetPreferences(const Preferences& prefs) {
     received_preferences_ = true;
     preferences_ = prefs;
   }
+}
+
+// static
+void PluginDispatcher::LockedDispatchResourceReply(
+    const ppapi::proxy::ResourceMessageReplyParams& reply_params,
+    const IPC::Message& nested_msg) {
+  Resource* resource = PpapiGlobals::Get()->GetResourceTracker()->GetResource(
+      reply_params.pp_resource());
+  if (!resource) {
+    if (reply_params.sequence())
+      NOTREACHED();
+    return;
+  }
+  resource->OnReplyReceived(reply_params, nested_msg);
 }
 
 }  // namespace proxy

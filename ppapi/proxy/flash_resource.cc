@@ -35,7 +35,8 @@ int32_t FlashResource::EnumerateVideoCaptureDevices(
   if (!output.is_valid())
     return PP_ERROR_BADARGUMENT;
 
-  thunk::EnterResource<thunk::PPB_VideoCapture_API> enter(video_capture, true);
+  thunk::EnterResourceNoLock<thunk::PPB_VideoCapture_API> enter(video_capture,
+                                                                true);
   if (enter.failed())
     return PP_ERROR_NOINTERFACE;
 
