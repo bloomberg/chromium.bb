@@ -103,6 +103,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
+#include "net/base/escape.h"
 #include "net/base/ssl_cert_request_info.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
@@ -472,29 +473,58 @@ content::WebContentsView*
   return NULL;
 }
 
-std::string ChromeContentBrowserClient::GetStoragePartitionIdForChildProcess(
-    content::BrowserContext* browser_context,
-    int child_process_id) {
-  const Extension* extension = NULL;
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (extension_service) {
-    std::set<std::string> extension_ids =
-        extension_service->process_map()->
-            GetExtensionsInProcess(child_process_id);
-    if (!extension_ids.empty())
-      // Since All the apps in a process share the same storage partition,
-      // we can pick any of them to retrieve the storage partition id.
-      extension =
-          extension_service->extensions()->GetByID(*(extension_ids.begin()));
-  }
-  return GetStoragePartitionIdForExtension(browser_context, extension);
-}
-
 std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(
     content::BrowserContext* browser_context,
     const GURL& site) {
+  std::string partition_id;
+
+  // The partition ID for webview guest processes is the string value of its
+  // SiteInstance URL - "chrome-guest://app_id/persist?partition".
+  if (site.SchemeIs(chrome::kGuestScheme))
+    partition_id = site.spec();
+
+  DCHECK(IsValidStoragePartitionId(browser_context,partition_id));
+  return partition_id;
+}
+
+bool ChromeContentBrowserClient::IsValidStoragePartitionId(
+    content::BrowserContext* browser_context,
+    const std::string& partition_id) {
+  // The default ID is empty and is always valid.
+  if (partition_id.empty())
+    return true;
+
+  return GURL(partition_id).is_valid();
+}
+
+void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
+    content::BrowserContext* browser_context,
+    const GURL& site,
+    std::string* partition_domain,
+    std::string* partition_name,
+    bool* in_memory) {
+  // For the webview tag, we create special guest processes, which host the
+  // tag content separately from the main application that embeds the tag.
+  // A webview tag can specify both the partition name and whether the storage
+  // for that partition should be persisted. Each tag gets a SiteInstance with
+  // a specially formatted URL, based on the application it is hosted by and
+  // the partition requested by it. The format for that URL is:
+  // chrome-guest://partition_domain/persist?partition_name
+  if (site.SchemeIs(chrome::kGuestScheme)) {
+    // Since guest URLs are only used for packaged apps, there must be an app
+    // id in the URL.
+    CHECK(site.has_host());
+    *partition_domain = site.host();
+    // Since persistence is optional, the path must either be empty or the
+    // literal string.
+    *in_memory = (site.path() != "/persist");
+    // The partition name is user supplied value, which we have encoded when the
+    // URL was created, so it needs to be decoded.
+    *partition_name = net::UnescapeURLComponent(site.query(),
+                                                net::UnescapeRule::NORMAL);
+    return;
+  }
+
   const Extension* extension = NULL;
   Profile* profile = Profile::FromBrowserContext(browser_context);
   ExtensionService* extension_service =
@@ -502,31 +532,20 @@ std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(
   if (extension_service) {
     extension = extension_service->extensions()->
         GetExtensionOrAppByURL(ExtensionURLInfo(site));
+    if (extension && extension->is_storage_isolated()) {
+      // Extensions which have storage isolation enabled (e.g., apps), use
+      // the extension id as the |partition_domain|.
+      *partition_domain = extension->id();
+      partition_name->clear();
+      *in_memory = false;
+      return;
+    }
   }
 
-  return GetStoragePartitionIdForExtension(browser_context, extension);
-}
-
-bool ChromeContentBrowserClient::IsValidStoragePartitionId(
-    content::BrowserContext* browser_context,
-    const std::string& partition_id) {
-  // The default ID is empty which is always allowed.
-  if (partition_id.empty())
-    return true;
-
-  // If it isn't empty, then it must belong to an extension of some sort. Parse
-  // out the extension ID and make sure it is still installed.
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!extension_service) {
-    // No extension service means no storage partitions in Chrome.
-    return false;
-  }
-
-  // See if we can find an extension. The |partition_id| is the extension ID so
-  // no parsing needed to be done.
-  return extension_service->GetExtensionById(partition_id, false) != NULL;
+  // All other cases use the default, browser-wide, storage partition.
+  partition_domain->clear();
+  partition_name->clear();
+  *in_memory = false;
 }
 
 content::WebContentsViewDelegate*
@@ -1611,10 +1630,16 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   chrome::ViewType view_type = chrome::GetViewType(web_contents);
   ExtensionService* service = profile->GetExtensionService();
   if (service) {
-    const Extension* extension = service->extensions()->GetByID(
-        rvh->GetSiteInstance()->GetSiteURL().host());
-    extension_webkit_preferences::SetPreferences(
-        extension, view_type, web_prefs);
+    const GURL& url = rvh->GetSiteInstance()->GetSiteURL();
+    const Extension* extension = service->extensions()->GetByID(url.host());
+    // Ensure that we are only granting extension preferences to URLs with
+    // the correct scheme. Without this check, chrome-guest:// schemes used by
+    // webview tags as well as hosts that happen to match the id of an
+    // installed extension would get the wrong preferences.
+    if (url.SchemeIs(chrome::kExtensionScheme)) {
+      extension_webkit_preferences::SetPreferences(
+          extension, view_type, web_prefs);
+    }
   }
 
   if (content::IsForceCompositingModeEnabled())
@@ -1891,24 +1916,5 @@ void ChromeContentBrowserClient::SetApplicationLocaleOnIOThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   io_thread_application_locale_ = locale;
 }
-
-std::string ChromeContentBrowserClient::GetStoragePartitionIdForExtension(
-    content::BrowserContext* browser_context, const Extension* extension) {
-  // In chrome, we use the extension ID as the partition ID. This works well
-  // because the extension ID fits the partition ID pattern and currently only
-  // apps can designate that storage should be isolated.
-  //
-  // If |extension| is NULL, then the default, empty string, partition id is
-  // used.
-  std::string partition_id;
-  if (extension && extension->is_storage_isolated()) {
-    partition_id = extension->id();
-  }
-
-  // Enforce that IsValidStoragePartitionId() implementation stays in sync.
-  DCHECK(IsValidStoragePartitionId(browser_context, partition_id));
-  return partition_id;
-}
-
 
 }  // namespace chrome

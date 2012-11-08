@@ -37,9 +37,11 @@ namespace {
 const char* kDownloadManagerKeyName = "download_manager";
 const char* kStorageParitionMapKeyName = "content_storage_partition_map";
 
-StoragePartition* GetStoragePartitionByPartitionId(
+StoragePartition* GetStoragePartitionFromConfig(
     BrowserContext* browser_context,
-    const std::string& partition_id) {
+    const std::string& partition_domain,
+    const std::string& partition_name,
+    bool in_memory) {
   StoragePartitionImplMap* partition_map =
       static_cast<StoragePartitionImplMap*>(
           browser_context->GetUserData(kStorageParitionMapKeyName));
@@ -48,12 +50,20 @@ StoragePartition* GetStoragePartitionByPartitionId(
     browser_context->SetUserData(kStorageParitionMapKeyName, partition_map);
   }
 
-  return partition_map->Get(partition_id);
+  if (browser_context->IsOffTheRecord())
+    in_memory = true;
+
+  // TODO(nasko): Webview tags with named partitions will have both
+  // partition_domain and partition_name set. In this case, mark them in-memory
+  // until the on-disk storage code has landed. http://crbug.com/159464
+  if (!partition_domain.empty() && !partition_name.empty())
+    in_memory = true;
+
+  return partition_map->Get(partition_domain, partition_name, in_memory);
 }
 
 // Run |callback| on each DOMStorageContextImpl in |browser_context|.
-void PurgeDOMStorageContextInPartition(const std::string& id,
-                                       StoragePartition* storage_partition) {
+void PurgeDOMStorageContextInPartition(StoragePartition* storage_partition) {
   static_cast<StoragePartitionImpl*>(storage_partition)->
       GetDOMStorageContext()->PurgeMemory();
 }
@@ -104,26 +114,34 @@ DownloadManager* BrowserContext::GetDownloadManager(
 StoragePartition* BrowserContext::GetStoragePartition(
     BrowserContext* browser_context,
     SiteInstance* site_instance) {
-  std::string partition_id;  // Default to "" for NULL |site_instance|.
+  std::string partition_domain;
+  std::string partition_name;
+  bool in_memory = false;
 
   // TODO(ajwong): After GetDefaultStoragePartition() is removed, get rid of
   // this conditional and require that |site_instance| is non-NULL.
   if (site_instance) {
-    partition_id = GetContentClient()->browser()->
-        GetStoragePartitionIdForSite(browser_context,
-                                     site_instance->GetSiteURL());
+    GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+        browser_context, site_instance->GetSiteURL(),
+        &partition_domain, &partition_name, &in_memory);
   }
 
-  return GetStoragePartitionByPartitionId(browser_context, partition_id);
+  return GetStoragePartitionFromConfig(
+      browser_context, partition_domain, partition_name, in_memory);
 }
 
 StoragePartition* BrowserContext::GetStoragePartitionForSite(
     BrowserContext* browser_context,
     const GURL& site) {
-  std::string partition_id = GetContentClient()->browser()->
-      GetStoragePartitionIdForSite(browser_context, site);
+  std::string partition_domain;
+  std::string partition_name;
+  bool in_memory;
 
-  return GetStoragePartitionByPartitionId(browser_context, partition_id);
+  GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+      browser_context, site, &partition_domain, &partition_name, &in_memory);
+
+  return GetStoragePartitionFromConfig(
+      browser_context, partition_domain, partition_name, in_memory);
 }
 
 void BrowserContext::ForEachStoragePartition(

@@ -782,18 +782,8 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
     int renderer_child_id) {
   content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
       renderer_child_id);
-  content::StoragePartition* storage_partition = rph->GetStoragePartition();
 
-  // TODO(nasko): Remove this conditional, once webview tag creates a proper
-  // storage partition.
-  if (rph->IsGuest()) {
-    // For guest processes, we only allow in-memory partitions for now, so
-    // hardcode the parameter here.
-    return GetRequestContextForStoragePartition(
-        storage_partition->GetPath(), true);
-  }
-
-  return storage_partition->GetURLRequestContext();
+  return rph->GetStoragePartition()->GetURLRequestContext();
 }
 
 net::URLRequestContextGetter* ProfileImpl::GetMediaRequestContext() {
@@ -807,15 +797,6 @@ ProfileImpl::GetMediaRequestContextForRenderProcess(
   content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
       renderer_child_id);
   content::StoragePartition* storage_partition = rph->GetStoragePartition();
-
-  // TODO(nasko): Remove this conditional, once webview tag creates a proper
-  // storage partition.
-  if (rph->IsGuest()) {
-    // For guest processes, we only allow in-memory partitions for now, so
-    // hardcode the parameter here.
-    return GetMediaRequestContextForStoragePartition(
-        storage_partition->GetPath(), true);
-  }
 
   return storage_partition->GetMediaURLRequestContext();
 }

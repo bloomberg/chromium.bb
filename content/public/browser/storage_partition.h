@@ -54,14 +54,6 @@ class StoragePartition {
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
   virtual IndexedDBContext* GetIndexedDBContext() = 0;
 
-  // Returns the relative path from the profile's base directory, to the
-  // directory that holds all the state for storage contexts in |partition_id|.
-  //
-  // TODO(ajwong): Remove this function from the public API once
-  // URLRequestContextGetter's creation is moved into StoragePartition.
-  static CONTENT_EXPORT FilePath GetPartitionPath(
-      const std::string& partition_id);
-
  protected:
   virtual ~StoragePartition() {}
 };

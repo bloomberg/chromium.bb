@@ -160,12 +160,6 @@ net::URLRequestContext* ContentBrowserClient::OverrideRequestContextForURL(
   return NULL;
 }
 
-std::string ContentBrowserClient::GetStoragePartitionIdForChildProcess(
-    BrowserContext* browser_context,
-    int child_process_id) {
-  return std::string();
-}
-
 std::string ContentBrowserClient::GetStoragePartitionIdForSite(
     BrowserContext* browser_context,
     const GURL& site) {
@@ -178,6 +172,17 @@ bool ContentBrowserClient::IsValidStoragePartitionId(
   // Since the GetStoragePartitionIdForChildProcess() only generates empty
   // strings, we should only ever see empty strings coming back.
   return partition_id.empty();
+}
+
+void ContentBrowserClient::GetStoragePartitionConfigForSite(
+    BrowserContext* browser_context,
+    const GURL& site,
+    std::string* partition_domain,
+    std::string* partition_name,
+    bool* in_memory) {
+  partition_domain->clear();
+  partition_name->clear();
+  *in_memory = false;
 }
 
 MediaObserver* ContentBrowserClient::GetMediaObserver() {

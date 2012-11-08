@@ -263,23 +263,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual net::URLRequestContext* OverrideRequestContextForURL(
       const GURL& url, ResourceContext* context);
 
-  // Allow the embedder to specify storage parititon id associated with a child
-  // process.
-  //
-  // Child processes that have different storage partition identifiers will
-  // behave as if they belong to different web browsers and not be able to
-  // access each other's cookies, local storage, etc.  IDs must only fit the
-  // pattern [a-z0-9]* (lowercase letters or digits).
-  //
-  // Returns the empty string for the regular storage partition.
-  virtual std::string GetStoragePartitionIdForChildProcess(
-      content::BrowserContext* browser_context,
-      int child_process_id);
-
-  // Same as GetStoragePartitionIdForChildProcess(), but uses a site instead.
-  //
-  // TODO(ajwong): Replace all uses of GetStoragePartitionIdForChildProcess()
-  // with this one.
+  // Allow the embedder to specify a string version of the storage partition
+  // config with a site.
   virtual std::string GetStoragePartitionIdForSite(
       content::BrowserContext* browser_context,
       const GURL& site);
@@ -289,6 +274,21 @@ class CONTENT_EXPORT ContentBrowserClient {
   // GetStoragePartitionIdForChildProcess().
   virtual bool IsValidStoragePartitionId(BrowserContext* browser_context,
                                          const std::string& partition_id);
+
+  // Allows the embedder to provide a storage parititon configuration for a
+  // site. A storage partition configuration includes a domain of the embedder's
+  // choice, an optional name within that domain, and whether the partition is
+  // in-memory only. The |partition_domain| is [a-z]* UTF-8 string, specifying
+  // the domain in which partitions live (similar to namespace). Within a
+  // domain, partitions can be uniquely identified by the combination of
+  // |partition_name| and |in_memory| values. When a partition is not to be
+  // persisted, the |in_memory| value must be set to true.
+  virtual void GetStoragePartitionConfigForSite(
+      content::BrowserContext* browser_context,
+      const GURL& site,
+      std::string* partition_domain,
+      std::string* partition_name,
+      bool* in_memory);
 
   // Create and return a new quota permission context.
   virtual QuotaPermissionContext* CreateQuotaPermissionContext();

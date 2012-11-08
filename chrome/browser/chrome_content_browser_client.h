@@ -43,15 +43,18 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::WebContents* web_contents,
       content::RenderViewHostDelegateView** render_view_host_delegate_view)
           OVERRIDE;
-  virtual std::string GetStoragePartitionIdForChildProcess(
-      content::BrowserContext* browser_context,
-      int child_process_id) OVERRIDE;
   virtual std::string GetStoragePartitionIdForSite(
       content::BrowserContext* browser_context,
       const GURL& site) OVERRIDE;
   virtual bool IsValidStoragePartitionId(
       content::BrowserContext* browser_context,
       const std::string& partition_id) OVERRIDE;
+  virtual void GetStoragePartitionConfigForSite(
+      content::BrowserContext* browser_context,
+      const GURL& site,
+      std::string* partition_domain,
+      std::string* partition_name,
+      bool* in_memory) OVERRIDE;
   virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) OVERRIDE;
   virtual void RenderViewHostCreated(
@@ -236,12 +239,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
  private:
   // Sets io_thread_application_locale_ to the given value.
   void SetApplicationLocaleOnIOThread(const std::string& locale);
-
-  // Helper function for getting the storage partition id from an Extension
-  // object.
-  std::string GetStoragePartitionIdForExtension(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension);
 
 #if defined(OS_ANDROID)
   void InitCrashDumpManager();

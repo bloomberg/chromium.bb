@@ -7,10 +7,19 @@ chrome.test.getConfig(function(config) {
       '/files/extensions/platform_apps/web_view_isolation/cookie.html';
   var url2 = 'http://localhost:' + config.testServer.port +
       '/files/extensions/platform_apps/web_view_isolation/cookie2.html';
+  var url3 = 'http://localhost:' + config.testServer.port +
+      '/files/extensions/platform_apps/web_view_isolation/storage1.html';
+  var url4 = 'http://localhost:' + config.testServer.port +
+      '/files/extensions/platform_apps/web_view_isolation/storage2.html';
   var node = document.getElementById('web_view_container');
-  node.innerHTML = "<object id='webview' src=" + url +
+  node.innerHTML =
+      "<object id='webview' src=" + url +
       " type='application/browser-plugin' width=500 height=550></object>" +
       "<object id='webview2' src=" + url2 +
+      " type='application/browser-plugin' width=500 height=550></object>" +
+      "<object id='webview2' partition='partition1' src=" + url3 +
+      " type='application/browser-plugin' width=500 height=550></object>" +
+      "<object id='webview2' partition='partition1' src=" + url4 +
       " type='application/browser-plugin' width=500 height=550></object>";
   chrome.test.sendMessage('Launched');
 });

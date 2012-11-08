@@ -396,19 +396,12 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
 
 WebContentsImpl* WebContentsImpl::CreateGuest(
     BrowserContext* browser_context,
-    const std::string& host_url,
+    SiteInstance* site_instance,
     int guest_instance_id,
     const BrowserPluginHostMsg_CreateGuest_Params& params) {
-  // The SiteInstance of a given guest is based on the fact that it's a guest
-  // in addition to which platform application the guest belongs to, rather
-  // than the URL that the guest is being navigated to.
-  GURL guest_site(
-      base::StringPrintf("%s://%s", chrome::kGuestScheme, host_url.c_str()));
-  SiteInstance* guest_site_instance =
-      SiteInstance::CreateForURL(browser_context, guest_site);
   WebContentsImpl* new_contents = WebContentsImpl::Create(
       browser_context,
-      guest_site_instance,
+      site_instance,
       MSG_ROUTING_NONE,
       NULL);  // base WebContents
   WebContentsImpl* new_contents_impl =

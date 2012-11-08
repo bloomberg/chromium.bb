@@ -39,8 +39,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
  public:
   // Used in ForEachStoragePartition(). The first argument is the partition id.
   // The second argument is the StoragePartition object for that partition id.
-  typedef base::Callback<void(const std::string&, StoragePartition*)>
-      StoragePartitionCallback;
+  typedef base::Callback<void(StoragePartition*)> StoragePartitionCallback;
 
   static DownloadManager* GetDownloadManager(BrowserContext* browser_context);
 

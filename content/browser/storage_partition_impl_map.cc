@@ -187,7 +187,8 @@ void InitializeURLRequestContext(
 
 StoragePartitionImplMap::StoragePartitionImplMap(
     BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+    : browser_context_(browser_context),
+      resource_context_initialized_(false) {
 }
 
 StoragePartitionImplMap::~StoragePartitionImplMap() {
@@ -196,51 +197,55 @@ StoragePartitionImplMap::~StoragePartitionImplMap() {
 }
 
 StoragePartitionImpl* StoragePartitionImplMap::Get(
-    const std::string& partition_id) {
+    const std::string& partition_domain,
+    const std::string& partition_name,
+    bool in_memory) {
+  // TODO(ajwong): ResourceContexts no longer have any storage related state.
+  // We should move this into a place where it is called once per
+  // BrowserContext creation rather than piggybacking off the default context
+  // creation.
+  if (!resource_context_initialized_) {
+    resource_context_initialized_ = true;
+    InitializeResourceContext(browser_context_);
+  }
+
   // Find the previously created partition if it's available.
-  std::map<std::string, StoragePartitionImpl*>::const_iterator it =
-      partitions_.find(partition_id);
+  StoragePartitionImpl::StoragePartitionConfig partition_config(
+      partition_domain, partition_name, in_memory);
+
+  PartitionMap::const_iterator it = partitions_.find(partition_config);
   if (it != partitions_.end())
     return it->second;
 
   // There was no previous partition, so let's make a new one.
   StoragePartitionImpl* partition =
-      StoragePartitionImpl::Create(browser_context_, partition_id,
+      StoragePartitionImpl::Create(browser_context_, partition_config,
                                    browser_context_->GetPath());
-  partitions_[partition_id] = partition;
+  partitions_[partition_config] = partition;
 
   // These calls must happen after StoragePartitionImpl::Create().
   partition->SetURLRequestContext(
-      partition_id.empty() ?
+      partition_domain.empty() ?
       browser_context_->GetRequestContext() :
       browser_context_->GetRequestContextForStoragePartition(
-          partition->GetPath(), false));
+          partition->GetPath(), in_memory));
   partition->SetMediaURLRequestContext(
-      partition_id.empty() ?
+      partition_domain.empty() ?
       browser_context_->GetMediaRequestContext() :
       browser_context_->GetMediaRequestContextForStoragePartition(
-          partition->GetPath(), false));
+          partition->GetPath(), in_memory));
 
   PostCreateInitialization(partition);
-
-  // TODO(ajwong): ResourceContexts no longer have any storage related state.
-  // We should move this into a place where it is called once per
-  // BrowserContext creation rather than piggybacking off the default context
-  // creation.
-  if (partition_id.empty()) {
-    InitializeResourceContext(browser_context_);
-  }
 
   return partition;
 }
 
 void StoragePartitionImplMap::ForEach(
     const BrowserContext::StoragePartitionCallback& callback) {
-  for (std::map<std::string, StoragePartitionImpl*>::const_iterator it =
-           partitions_.begin();
+  for (PartitionMap::const_iterator it = partitions_.begin();
        it != partitions_.end();
        ++it) {
-    callback.Run(it->first, it->second);
+    callback.Run(it->second);
   }
 }
 

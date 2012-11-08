@@ -612,16 +612,7 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForRenderProcess(
     int renderer_child_id) {
   content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
       renderer_child_id);
-  content::StoragePartition* storage_partition = rph->GetStoragePartition();
-
-  // TODO(nasko): Remove this conditional, once webview tag creates a proper
-  // storage partition.
-  if (rph->IsGuest()) {
-    return GetRequestContextForStoragePartition(
-        storage_partition->GetPath(), true);
-  }
-
-  return storage_partition->GetURLRequestContext();
+  return rph->GetStoragePartition()->GetURLRequestContext();
 }
 
 void TestingProfile::CreateRequestContext() {

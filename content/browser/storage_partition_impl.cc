@@ -4,6 +4,7 @@
 
 #include "content/browser/storage_partition_impl.h"
 
+#include "base/utf_string_conversions.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,7 +29,9 @@ namespace {
 //   Storage/ext/ABCDEF/def
 //   Storage/ext/ABCDEF/{hash(guest partition)}
 //
-// The code in GetPartitionPath() constructs these path names.
+// The code in GetStoragePartitionPath() constructs these path names.
+//
+// TODO(nasko): Move extension related path code out of content.
 const FilePath::CharType kStoragePartitionDirname[] =
     FILE_PATH_LITERAL("Storage");
 const FilePath::CharType kExtensionsDirname[] =
@@ -39,18 +42,20 @@ const FilePath::CharType kDefaultPartitionDirname[] =
 }  // namespace
 
 // static
-FilePath StoragePartition::GetPartitionPath(const std::string& partition_id) {
-  if (partition_id.empty()) {
-    // The default profile just sits inside the top-level profile directory.
+FilePath StoragePartitionImpl::GetStoragePartitionPath(
+    const StoragePartitionConfig& config) {
+  if (config.partition_domain.empty())
     return FilePath();
-  }
 
-  // TODO(ajwong): This should check that we create a valid path name.
-  CHECK(IsStringASCII(partition_id));
-  return FilePath(kStoragePartitionDirname)
-      .Append(kExtensionsDirname)
-      .AppendASCII(partition_id)
-      .Append(kDefaultPartitionDirname);
+  CHECK(IsStringUTF8(config.partition_domain));
+
+  FilePath path = FilePath(kStoragePartitionDirname).Append(kExtensionsDirname)
+      .Append(FilePath::FromUTF8Unsafe(config.partition_domain));
+
+  if (!config.partition_name.empty())
+    return path.Append(FilePath::FromUTF8Unsafe(config.partition_name));
+
+  return path.Append(kDefaultPartitionDirname);
 }
 
 StoragePartitionImpl::StoragePartitionImpl(
@@ -88,7 +93,7 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 // need 3 pieces of info from it.
 StoragePartitionImpl* StoragePartitionImpl::Create(
     BrowserContext* context,
-    const std::string& partition_id,
+    const StoragePartitionConfig& partition_config,
     const FilePath& profile_path) {
   // Ensure that these methods are called on the UI thread, except for
   // unittests where a UI thread might not have been created.
@@ -96,7 +101,7 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
          !BrowserThread::IsMessageLoopValid(BrowserThread::UI));
 
   FilePath partition_path =
-      profile_path.Append(GetPartitionPath(partition_id));
+      profile_path.Append(GetStoragePartitionPath(partition_config));
 
   // All of the clients have to be created and registered with the
   // QuotaManager prior to the QuotaManger being used. We do them
@@ -104,7 +109,7 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   // that utilizes the QuotaManager.
   scoped_refptr<quota::QuotaManager> quota_manager =
       new quota::QuotaManager(
-          context->IsOffTheRecord(), partition_path,
+          partition_config.in_memory, partition_path,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
           context->GetSpecialStoragePolicy());
@@ -112,17 +117,17 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   // Each consumer is responsible for registering its QuotaClient during
   // its construction.
   scoped_refptr<fileapi::FileSystemContext> filesystem_context =
-      CreateFileSystemContext(partition_path, context->IsOffTheRecord(),
+      CreateFileSystemContext(partition_path, partition_config.in_memory,
                               context->GetSpecialStoragePolicy(),
                               quota_manager->proxy());
 
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker =
       new webkit_database::DatabaseTracker(
-          partition_path, context->IsOffTheRecord(),
+          partition_path, partition_config.in_memory,
           context->GetSpecialStoragePolicy(), quota_manager->proxy(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 
-  FilePath path = context->IsOffTheRecord() ? FilePath() : partition_path;
+  FilePath path = partition_config.in_memory ? FilePath() : partition_path;
   scoped_refptr<DOMStorageContextImpl> dom_storage_context =
       new DOMStorageContextImpl(path, context->GetSpecialStoragePolicy());
 

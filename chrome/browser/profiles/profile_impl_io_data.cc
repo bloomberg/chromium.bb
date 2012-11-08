@@ -188,9 +188,9 @@ ProfileImplIOData::Handle::GetIsolatedAppRequestContextGetter(
     const FilePath& partition_path,
     bool in_memory) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // TODO(nasko): Check that the partition_path is not the same as the
-  // base profile path. We expect isolated partition, which will never go
-  // to the default profile path.
+  // Check that the partition_path is not the same as the base profile path. We
+  // expect isolated partition, which will never go to the default profile path.
+  CHECK(partition_path != profile_->GetPath());
   LazyInitialize();
 
   // Keep a map of request context getters, one per requested storage partition.
@@ -220,10 +220,7 @@ ProfileImplIOData::Handle::GetIsolatedMediaRequestContextGetter(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // We must have a non-default path, or this will act like the default media
   // context.
-  //
-  // TODO(nasko): Check that the partition_path is not the same as the
-  // base profile path. We expect isolated partition, which will never go
-  // to the default profile path.
+  CHECK(partition_path != profile_->GetPath());
   LazyInitialize();
 
   // Keep a map of request context getters, one per requested storage partition.

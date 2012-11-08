@@ -15,7 +15,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/user_metrics.h"
+#include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/escape.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/size.h"
 
@@ -80,11 +83,36 @@ void BrowserPluginEmbedder::CreateGuest(
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
   CHECK(!guest);
 
+  // Validate that the partition id coming from the renderer is valid UTF-8,
+  // since we depend on this in other parts of the code, such as FilePath
+  // creation. If the validation fails, treat it as a bad message and kill the
+  // renderer process.
+  if (!IsStringUTF8(params.storage_partition_id)) {
+    content::RecordAction(UserMetricsAction("BadMessageTerminate_BPE"));
+    base::KillProcess(render_view_host->GetProcess()->GetHandle(),
+                      content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
+    return;
+  }
+
   const std::string& host =
       render_view_host->GetSiteInstance()->GetSiteURL().host();
+  std::string url_encoded_partition = net::EscapeQueryParamValue(
+      params.storage_partition_id, false);
+
+  // The SiteInstance of a given webview tag is based on the fact that it's a
+  // guest process in addition to which platform application the tag belongs to
+  // and what storage partition is in use, rather than the URL that the tag is
+  // being navigated to.
+  GURL guest_site(
+      base::StringPrintf("%s://%s/%s?%s", chrome::kGuestScheme,
+                         host.c_str(), params.persist_storage ? "persist" : "",
+                         url_encoded_partition.c_str()));
+  SiteInstance* guest_site_instance = SiteInstance::CreateForURL(
+      web_contents()->GetBrowserContext(), guest_site);
+
   guest_web_contents = WebContentsImpl::CreateGuest(
       web_contents()->GetBrowserContext(),
-      host,
+      guest_site_instance,
       instance_id,
       params);
 

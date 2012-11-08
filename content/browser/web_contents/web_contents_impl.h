@@ -95,7 +95,7 @@ class CONTENT_EXPORT WebContentsImpl
   // Creates a WebContents to be used as a browser plugin guest.
   static WebContentsImpl* CreateGuest(
       BrowserContext* browser_context,
-      const std::string& host,
+      content::SiteInstance* site_instance,
       int guest_instance_id,
       const BrowserPluginHostMsg_CreateGuest_Params& params);
 

@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/supports_user_data.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 
 class FilePath;
@@ -17,7 +18,6 @@ class FilePath;
 namespace content {
 
 class BrowserContext;
-class StoragePartitionImpl;
 
 // A std::string to StoragePartition map for use with SupportsUserData APIs.
 class StoragePartitionImplMap : public base::SupportsUserData::Data {
@@ -27,11 +27,18 @@ class StoragePartitionImplMap : public base::SupportsUserData::Data {
   virtual ~StoragePartitionImplMap();
 
   // This map retains ownership of the returned StoragePartition objects.
-  StoragePartitionImpl* Get(const std::string& partition_id);
+  StoragePartitionImpl* Get(const std::string& partition_domain,
+                            const std::string& partition_name,
+                            bool in_memory);
 
   void ForEach(const BrowserContext::StoragePartitionCallback& callback);
 
  private:
+  typedef std::map<StoragePartitionImpl::StoragePartitionConfig,
+                   StoragePartitionImpl*,
+                   StoragePartitionImpl::StoragePartitionConfigLess>
+      PartitionMap;
+
   // This must always be called *after* |partition| has been added to the
   // partitions_.
   //
@@ -41,7 +48,11 @@ class StoragePartitionImplMap : public base::SupportsUserData::Data {
   void PostCreateInitialization(StoragePartitionImpl* partition);
 
   BrowserContext* browser_context_;  // Not Owned.
-  std::map<std::string, StoragePartitionImpl*> partitions_;
+  PartitionMap partitions_;
+
+  // Set to true when the ResourceContext for the associated |browser_context_|
+  // is initialized. Can never return to false.
+  bool resource_context_initialized_;
 };
 
 }  // namespace content
