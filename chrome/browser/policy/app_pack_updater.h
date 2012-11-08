@@ -73,6 +73,11 @@ class AppPackUpdater : public CloudPolicySubsystem::Observer,
   // |callback| can be used to remove a previous callback.
   void SetScreenSaverUpdateCallback(const ScreenSaverUpdateCallback& callback);
 
+  // If a user of one of the AppPack's extensions detects that the extension
+  // is damaged then this method can be used to remove it from the cache and
+  // retry to download it after a restart.
+  void OnDamagedFileDetected(const FilePath& path);
+
  private:
   struct AppPackEntry {
     std::string update_url;

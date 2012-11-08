@@ -161,10 +161,12 @@ void AppPackUpdater::Observe(int type,
       LoadPolicy();
       break;
 
-    case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR:
-      OnCrxInstallFailed(
-          content::Source<extensions::CrxInstaller>(source).ptr());
+    case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
+      extensions::CrxInstaller* installer =
+          content::Source<extensions::CrxInstaller>(source).ptr();
+      OnDamagedFileDetected(installer->source_file());
       break;
+    }
 
     default:
       NOTREACHED();
@@ -547,9 +549,7 @@ void AppPackUpdater::OnCacheEntryInstalled(const std::string& id,
   }
 }
 
-void AppPackUpdater::OnCrxInstallFailed(extensions::CrxInstaller* installer) {
-  FilePath path = installer->source_file();
-
+void AppPackUpdater::OnDamagedFileDetected(const FilePath& path) {
   // Search for |path| in |cached_extensions_|, and delete it if found.
   for (CacheEntryMap::iterator it = cached_extensions_.begin();
        it != cached_extensions_.end(); ++it) {
