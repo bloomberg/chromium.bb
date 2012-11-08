@@ -129,6 +129,11 @@ enum VariationID {
   kSuggestTrialStarted2012Q4IDMin = 3310029,
   kSuggestTrialStarted2012Q4IDMax = 3310048,
 
+  // NEXT ID: When adding new IDs, please add them above this section, starting
+  // with the value of kNextID, and updating kNextID to (end of your reserved
+  // range) + 1.
+  kNextID = 3310050,
+
 
   // USABLE IDs END HERE.
   //
