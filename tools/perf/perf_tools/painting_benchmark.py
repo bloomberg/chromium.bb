@@ -1,7 +1,7 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from chrome_remote_control import multi_page_benchmark
+from telemetry import multi_page_benchmark
 from perf_tools import scrolling_benchmark
 
 class PaintingBenchmark(scrolling_benchmark.ScrollingBenchmark):

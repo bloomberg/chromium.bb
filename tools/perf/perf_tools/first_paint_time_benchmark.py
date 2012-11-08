@@ -4,8 +4,8 @@
 
 # The test takes a list of URLs through stdin and prints results in CSV format.
 # Example: python run_scroll_test.py < data/urls.txt > test_results.csv
-from chrome_remote_control import multi_page_benchmark
-from chrome_remote_control import util
+from telemetry import multi_page_benchmark
+from telemetry import util
 
 class FirstPaintTimeBenchmark(multi_page_benchmark.MultiPageBenchmark):
   def MeasurePage(self, _, tab, results):

@@ -35,7 +35,7 @@ KNOWN_INCOMPATIBLE = {
         'third_party/talloc',
         'third_party/webdriver',
         'third_party/wtl',
-        'tools/chrome_remote_control/third_party/websocket-client',
+        'tools/telemetry/third_party/websocket-client',
     ],
     # Incompatible code in ICU.
     'third_party/icu': [
