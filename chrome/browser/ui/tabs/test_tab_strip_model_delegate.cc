@@ -58,7 +58,8 @@ void TestTabStripModelDelegate::DuplicateContentsAt(int index) {
 void TestTabStripModelDelegate::CloseFrameAfterDragSession() {
 }
 
-void TestTabStripModelDelegate::CreateHistoricalTab(TabContents* contents) {
+void TestTabStripModelDelegate::CreateHistoricalTab(
+    content::WebContents* contents) {
 }
 
 bool TestTabStripModelDelegate::RunUnloadListenerBeforeClosing(

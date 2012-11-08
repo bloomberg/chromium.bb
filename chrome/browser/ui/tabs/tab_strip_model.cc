@@ -1180,7 +1180,7 @@ void TabStripModel::InternalCloseTab(TabContents* contents,
   // Ask the delegate to save an entry for this tab in the historical tab
   // database if applicable.
   if (create_historical_tabs)
-    delegate_->CreateHistoricalTab(contents);
+    delegate_->CreateHistoricalTab(contents->web_contents());
 
   // Deleting the TabContents will call back to us via
   // NotificationObserver and detach it.

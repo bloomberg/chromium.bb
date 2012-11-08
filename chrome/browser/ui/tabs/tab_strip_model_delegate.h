@@ -100,8 +100,8 @@ class TabStripModelDelegate {
   virtual void CloseFrameAfterDragSession() = 0;
 
   // Creates an entry in the historical tab database for the specified
-  // TabContents.
-  virtual void CreateHistoricalTab(TabContents* contents) = 0;
+  // WebContents.
+  virtual void CreateHistoricalTab(content::WebContents* contents) = 0;
 
   // Runs any unload listeners associated with the specified TabContents
   // before it is closed. If there are unload listeners that need to be run,

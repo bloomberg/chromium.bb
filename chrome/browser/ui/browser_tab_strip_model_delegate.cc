@@ -129,14 +129,17 @@ void BrowserTabStripModelDelegate::CloseFrameAfterDragSession() {
 #endif
 }
 
-void BrowserTabStripModelDelegate::CreateHistoricalTab(TabContents* contents) {
+void BrowserTabStripModelDelegate::CreateHistoricalTab(
+    content::WebContents* contents) {
   // We don't create historical tabs for incognito windows or windows without
   // profiles.
   if (!browser_->profile() || browser_->profile()->IsOffTheRecord())
     return;
 
-  // We don't create historical tabs for print preview tabs.
-  if (contents->web_contents()->GetURL() == GURL(kChromeUIPrintURL))
+  // We don't create historical tabs for print preview tabs. TODO(avi): Is this
+  // arbitrary special-casing still needed now that print preview lives in a
+  // constrained dialog?
+  if (contents->GetURL() == GURL(kChromeUIPrintURL))
     return;
 
   TabRestoreService* service =
@@ -144,8 +147,9 @@ void BrowserTabStripModelDelegate::CreateHistoricalTab(TabContents* contents) {
 
   // We only create historical tab entries for tabbed browser windows.
   if (service && browser_->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
-    service->CreateHistoricalTab(contents->web_contents(),
-        browser_->tab_strip_model()->GetIndexOfTabContents(contents));
+    service->CreateHistoricalTab(
+        contents,
+        browser_->tab_strip_model()->GetIndexOfWebContents(contents));
   }
 }
 
