@@ -536,8 +536,16 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_WillWriteWillSetLength)
 #define MAYBE_NACL_FileIO_TouchQuery FileIO_TouchQuery
 #endif
 
+// PPAPINaclTest.FileIO_AbortCalls is often flaky on Windows.
+// http://crbug.com/160034
+#if defined(OS_WIN)
+#define MAYBE_FileIO_AbortCalls DISABLED_FileIO_AbortCalls
+#else
+#define MAYBE_FileIO_AbortCalls FileIO_FileIO_AbortCalls
+#endif
+
 TEST_PPAPI_NACL_VIA_HTTP(FileIO_Open)
-TEST_PPAPI_NACL_VIA_HTTP(FileIO_AbortCalls)
+TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileIO_AbortCalls)
 TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileIO_ParallelReads)
 TEST_PPAPI_NACL_VIA_HTTP(FileIO_ParallelWrites)
 TEST_PPAPI_NACL_VIA_HTTP(FileIO_NotAllowMixedReadWrite)
