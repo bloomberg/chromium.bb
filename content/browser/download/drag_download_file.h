@@ -30,6 +30,10 @@ namespace content {
 class DownloadManager;
 class WebContents;
 
+// This class implements downloading a file via dragging virtual files out of
+// the browser:
+// http://lists.whatwg.org/htdig.cgi/whatwg-whatwg.org/2009-August/022118.html
+// http://www.html5rocks.com/en/tutorials/casestudies/box_dnd_download/
 class CONTENT_EXPORT DragDownloadFile : public ui::DownloadFileProvider {
  public:
   // On Windows, we need to download into a temporary file. On posix, we need to
