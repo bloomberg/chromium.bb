@@ -5,6 +5,8 @@
 #ifndef ASH_WM_WORKSPACE_SNAP_SIZER_H_
 #define ASH_WM_WORKSPACE_SNAP_SIZER_H_
 
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/time.h"
@@ -39,6 +41,7 @@ class ASH_EXPORT SnapSizer {
             const gfx::Point& start,
             Edge edge,
             InputType input_type);
+  virtual ~SnapSizer();
 
   // Updates the target bounds based on a mouse move.
   void Update(const gfx::Point& location);
@@ -110,6 +113,10 @@ class ASH_EXPORT SnapSizer {
   // touch & drag operation of the maximizer button. It changes the behavior of
   // the drag / resize behavior when the dragging starts close to the border.
   const InputType input_type_;
+
+  // A list of usable window widths for size. This gets created when the
+  // sizer gets created.
+  const std::vector<int> usable_width_;
 
   DISALLOW_COPY_AND_ASSIGN(SnapSizer);
 };

@@ -507,7 +507,9 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
 
     resizer->Drag(CalculateDragPoint(*resizer, 199, 00), 0);
     resizer->CompleteDrag(0);
-    EXPECT_EQ("20,0 180x" + base::IntToString(bottom),
+    // With the resolution of 200x600 we will hit in this case the 50% screen
+    // size setting.
+    EXPECT_EQ("100,0 100x" + base::IntToString(bottom),
               window_->bounds().ToString());
     EXPECT_EQ("800,10 50x60",
               GetRestoreBoundsInScreen(window_.get())->ToString());
@@ -1117,6 +1119,12 @@ TEST_F(WorkspaceWindowResizerTest, CtrlCompleteDragMoveToExactPosition) {
 
 // Check that only usable sizes get returned by the resizer.
 TEST_F(WorkspaceWindowResizerTest, TestProperSizerResolutions) {
+  // Check that we have the correct work area resolution which fits our
+  // expected test result.
+  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+                          window_.get()));
+  EXPECT_EQ(800, work_area.width());
+
   window_->SetBounds(gfx::Rect(96, 112, 320, 160));
   scoped_ptr<SnapSizer> resizer(new SnapSizer(
       window_.get(),
@@ -1126,24 +1134,24 @@ TEST_F(WorkspaceWindowResizerTest, TestProperSizerResolutions) {
   ASSERT_TRUE(resizer.get());
   shelf_layout_manager()->SetAutoHideBehavior(
       SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+
+  // Check that the list is declining and contains elements of the
+  // ideal size list [1280, 1024, 768, 640] as well as 50% and 90% the work
+  // area.
   gfx::Rect rect = resizer->GetTargetBoundsForSize(0);
   EXPECT_EQ("0,0 720x597", rect.ToString());
   rect = resizer->GetTargetBoundsForSize(1);
-  EXPECT_EQ("0,0 720x597", rect.ToString());
-  rect = resizer->GetTargetBoundsForSize(2);
-  EXPECT_EQ("0,0 720x597", rect.ToString());
-  rect = resizer->GetTargetBoundsForSize(3);
   EXPECT_EQ("0,0 640x597", rect.ToString());
+  rect = resizer->GetTargetBoundsForSize(2);
+  EXPECT_EQ("0,0 400x597", rect.ToString());
   shelf_layout_manager()->SetAutoHideBehavior(
       SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   rect = resizer->GetTargetBoundsForSize(0);
   EXPECT_EQ("0,0 720x552", rect.ToString());
   rect = resizer->GetTargetBoundsForSize(1);
-  EXPECT_EQ("0,0 720x552", rect.ToString());
-  rect = resizer->GetTargetBoundsForSize(2);
-  EXPECT_EQ("0,0 720x552", rect.ToString());
-  rect = resizer->GetTargetBoundsForSize(3);
   EXPECT_EQ("0,0 640x552", rect.ToString());
+  rect = resizer->GetTargetBoundsForSize(2);
+  EXPECT_EQ("0,0 400x552", rect.ToString());
 }
 
 // Verifies that a dragged window will restore to its pre-maximized size.

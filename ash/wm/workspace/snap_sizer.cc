@@ -16,13 +16,14 @@ namespace internal {
 
 namespace {
 
-// Sizes in pixel for the width of a given window.
-const int kSizes[] = { 1280, 1024, 768, 640 };
+// A list of ideal window width in pixel which will be used to populate the
+// |usable_width_| list.
+const int kIdealWidth[] = { 1280, 1024, 768, 640 };
 
-// Windows are initially snapped to the size at index 0. The index into
-// |kSizes| is changed if any of the following happen:
-// . The user stops moving the mouse for |kDelayBeforeIncreaseMS| and then moves
-//   the mouse again.
+// Windows are initially snapped to the size in |usable_width_| at index 0.
+// The index into |usable_width_| is changed if any of the following happen:
+// . The user stops moving the mouse for |kDelayBeforeIncreaseMS| and then
+//   moves the mouse again.
 // . The mouse moves |kPixelsBeforeAdjust| horizontal pixels.
 // . The mouse is against the edge of the screen and the mouse is moved
 //   |kMovesBeforeAdjust| times.
@@ -33,6 +34,33 @@ const int kPixelsBeforeAdjust = 100;
 // When the smallest resolution does not fit on the screen, we take this
 // fraction of the available space.
 const int kMinimumScreenPercent = 90;
+
+// Create the list of possible width for the current screen configuration:
+// Fill the |usable_width_| list with items from |kIdealWidth| which fit on
+// the screen and supplement it with the 'half of screen' size. Furthermore,
+// add an entry for 90% of the screen size if it is smaller then the biggest
+// value in the |kIdealWidth| list (to get a step between the values).
+std::vector<int> BuildIdealWidthList(aura::Window* window) {
+  std::vector<int> ideal_width_list;
+  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(window));
+  int half_size = work_area.width() / 2;
+  int maximum_width = (kMinimumScreenPercent * work_area.width()) / 100;
+  for (size_t i = 0; i < arraysize(kIdealWidth); i++) {
+    if (maximum_width >= kIdealWidth[i]) {
+      if (i && !ideal_width_list.size() && maximum_width != kIdealWidth[i])
+        ideal_width_list.push_back(maximum_width);
+      if (half_size > kIdealWidth[i])
+        ideal_width_list.push_back(half_size);
+      if (half_size >= kIdealWidth[i])
+        half_size = 0;
+      ideal_width_list.push_back(kIdealWidth[i]);
+    }
+  }
+  if (half_size)
+    ideal_width_list.push_back(half_size);
+
+  return ideal_width_list;
+}
 
 }  // namespace
 
@@ -49,8 +77,13 @@ SnapSizer::SnapSizer(aura::Window* window,
       last_adjust_x_(start.x()),
       last_update_x_(start.x()),
       start_x_(start.x()),
-      input_type_(input_type) {
+      input_type_(input_type),
+      usable_width_(BuildIdealWidthList(window)) {
+  DCHECK(!usable_width_.empty());
   target_bounds_ = GetTargetBounds();
+}
+
+SnapSizer::~SnapSizer() {
 }
 
 void SnapSizer::Update(const gfx::Point& location) {
@@ -85,9 +118,9 @@ void SnapSizer::Update(const gfx::Point& location) {
 }
 
 gfx::Rect SnapSizer::GetSnapBounds(const gfx::Rect& bounds) {
-  size_t current = 0;
+  int current = 0;
   if (!resize_disabled_) {
-    for (current = arraysize(kSizes) - 1; current; current--) {
+    for (current = usable_width_.size() - 1; current >= 0; current--) {
       gfx::Rect target = GetTargetBoundsForSize(current);
       if (target == bounds) {
         ++current;
@@ -95,7 +128,7 @@ gfx::Rect SnapSizer::GetSnapBounds(const gfx::Rect& bounds) {
       }
     }
   }
-  return GetTargetBoundsForSize(current % arraysize(kSizes));
+  return GetTargetBoundsForSize(current % (usable_width_.size() - 1));
 }
 
 void SnapSizer::SelectDefaultSizeAndDisableResize() {
@@ -110,21 +143,16 @@ gfx::Rect SnapSizer::GetTargetBoundsForSize(size_t size_index) const {
   // We don't align to the bottom of the grid as the launcher may not
   // necessarily align to the grid (happens when auto-hidden).
   int max_y = work_area.bottom();
-  int width = kSizes[size_index];
+  int width = 0;
   if (resize_disabled_) {
-    width = std::max(1024, work_area.width() / 2);
+    // Make sure that we keep the size of the window smaller then a certain
+    // fraction of the screen space.
+    int minimum_size = (kMinimumScreenPercent * work_area.width()) / 100;
+    width = std::max(std::min(minimum_size, 1024), work_area.width() / 2);
   } else {
-    while (width >= work_area.width()) {
-      ++size_index;
-      if (size_index >= arraysize(kSizes))
-        break;
-      width = kSizes[size_index];
-    }
+    DCHECK(size_index < usable_width_.size());
+    width = usable_width_[size_index];
   }
-
-  // Make sure that we keep the size of the window smaller then a certain
-  // fraction of the screen space.
-  width = std::min(width, kMinimumScreenPercent * work_area.width() / 100);
 
   if (edge_ == LEFT_EDGE) {
     int x = work_area.x();
@@ -153,7 +181,7 @@ int SnapSizer::CalculateIncrement(int x, int reference_x) const {
 }
 
 void SnapSizer::ChangeBounds(int x, int delta) {
-  int index = std::min(static_cast<int>(arraysize(kSizes)) - 1,
+  int index = std::min(static_cast<int>(usable_width_.size()) - 1,
                        std::max(size_index_ + delta, 0));
   if (index != size_index_) {
     size_index_ = index;
