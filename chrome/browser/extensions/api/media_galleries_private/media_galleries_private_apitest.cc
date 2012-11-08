@@ -80,27 +80,20 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }
 
-  void Attach(bool listening) {
-    const std::string expect_attach_msg =
-        base::StringPrintf("%s,%s", kAttachTestOk, kDeviceName);
-    ExtensionTestMessageListener attach_finished_listener(
-        expect_attach_msg,
-        false  /* no reply */);
+  void AttachDetach() {
+    Attach();
+    Detach();
+  }
+
+  void Attach() {
     base::SystemMonitor::Get()->ProcessRemovableStorageAttached(
         device_id_, ASCIIToUTF16(kDeviceName), kDevicePath);
     WaitForDeviceEvents();
-    if (listening)
-      EXPECT_TRUE(attach_finished_listener.WaitUntilSatisfied());
   }
 
-  void Detach(bool listening) {
-    ExtensionTestMessageListener detach_finished_listener(
-        kDetachTestOk,
-        false  /* no reply */);
+  void Detach() {
     base::SystemMonitor::Get()->ProcessRemovableStorageDetached(device_id_);
     WaitForDeviceEvents();
-    if (listening)
-      EXPECT_TRUE(detach_finished_listener.WaitUntilSatisfied());
   }
 
  private:
@@ -126,41 +119,49 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateApiTest, DeviceAttachDetachEvents) {
   ASSERT_TRUE(host);
 
   // No listeners, attach and detach a couple times.
-  Attach(false);
-  Detach(false);
-  Attach(false);
-  Detach(false);
+  AttachDetach();
+  AttachDetach();
 
   // Add attach listener.
   ChangeListener(host, kAddAttachListenerCmd, kAddAttachListenerOk);
 
   // Attach / detach
-  Attach(true);
-  Detach(false);
+  const std::string expect_attach_msg =
+      base::StringPrintf("%s,%s", kAttachTestOk, kDeviceName);
+  ExtensionTestMessageListener attach_finished_listener(expect_attach_msg,
+                                                        false  /* no reply */);
+  Attach();
+  EXPECT_TRUE(attach_finished_listener.WaitUntilSatisfied());
+  Detach();
 
   // Attach / detach
-  Attach(true);
-  Detach(false);
+  Attach();
+  EXPECT_TRUE(attach_finished_listener.WaitUntilSatisfied());
+  // Detach
+  Detach();
 
   // Remove attach listener.
   ChangeListener(host, kRemoveAttachListenerCmd, kRemoveAttachListenerOk);
 
   // No listeners, attach and detach a couple times.
-  Attach(false);
-  Detach(false);
-  Attach(false);
-  Detach(false);
+  AttachDetach();
+  AttachDetach();
 
   // Add detach listener.
   ChangeListener(host, kAddDummyDetachListenerCmd, kAddDummyDetachListenerOk);
 
   // Attach / detach
-  Attach(false);
-  Detach(true);
+  Attach();
+
+  ExtensionTestMessageListener detach_finished_listener(kDetachTestOk,
+                                                        false  /* no reply */);
+  Detach();
+  EXPECT_TRUE(detach_finished_listener.WaitUntilSatisfied());
 
   // Attach / detach
-  Attach(false);
-  Detach(true);
+  Attach();
+  Detach();
+  EXPECT_TRUE(detach_finished_listener.WaitUntilSatisfied());
 
   // Switch ok dummy detach listener for the regular one.
   ChangeListener(host, kRemoveDummyDetachListenerCmd,
@@ -170,10 +171,13 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateApiTest, DeviceAttachDetachEvents) {
   // Add attach listener.
   ChangeListener(host, kAddAttachListenerCmd, kAddAttachListenerOk);
 
-  Attach(true);
-  Detach(true);
+  Attach();
+  EXPECT_TRUE(attach_finished_listener.WaitUntilSatisfied());
+  Detach();
+  EXPECT_TRUE(detach_finished_listener.WaitUntilSatisfied());
 
-  Attach(true);
-  Detach(true);
-  CloseShellWindowsAndWaitForAppToExit();
+  Attach();
+  EXPECT_TRUE(attach_finished_listener.WaitUntilSatisfied());
+  Detach();
+  EXPECT_TRUE(detach_finished_listener.WaitUntilSatisfied());
 }

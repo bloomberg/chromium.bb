@@ -6,8 +6,8 @@
 
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -173,13 +173,6 @@ bool ExtensionApiTest::RunPageTest(const std::string& page_url,
 }
 
 bool ExtensionApiTest::RunPlatformAppTest(const char* extension_name) {
-  bool res = RunPlatformAppTestReturnImmediately(extension_name);
-  CloseShellWindowsAndWaitForAppToExit();
-  return res;
-}
-
-bool ExtensionApiTest::RunPlatformAppTestReturnImmediately(
-    const char* extension_name) {
   return RunExtensionTestImpl(extension_name, "", kFlagLaunchPlatformApp);
 }
 

@@ -11,5 +11,3 @@ function checkGeometry() {
 }
 
 window.setTimeout(checkGeometry, 500);
-
-chrome.test.sendMessage('Launched');

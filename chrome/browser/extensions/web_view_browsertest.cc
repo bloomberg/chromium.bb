@@ -205,8 +205,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
                               named_partition_contents1,
                               &cookie_size, &cookie_value);
   EXPECT_EQ("", cookie_value);
-
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // This tests DOM storage isolation for packaged apps with webview tags. It
@@ -295,8 +293,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DOMStorageIsolation) {
       default_tag_contents1->GetRenderViewHost(), std::wstring(),
       get_session_storage.c_str(), &output));
   EXPECT_STREQ("badval", output.c_str());
-
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 // This tests IndexedDB isolation for packaged apps with webview tags. It loads
@@ -383,6 +379,4 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
   ExecuteScriptWaitForTitle(chrome::GetWebContentsAt(browser(), 0),
                             script, "db not found");
   ExecuteScriptWaitForTitle(default_tag_contents1, script, "db not found");
-
-  CloseShellWindowsAndWaitForAppToExit();
 }

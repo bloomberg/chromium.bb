@@ -177,7 +177,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(errors::kInvalidClientId), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->install_ui_shown());
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -189,7 +188,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(errors::kInvalidScopes), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->install_ui_shown());
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -202,7 +200,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->install_ui_shown());
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -220,7 +217,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->install_ui_shown());
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -240,7 +236,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->install_ui_shown());
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -253,7 +248,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_FALSE(func->install_ui_shown());
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -271,7 +265,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_FALSE(func->install_ui_shown());
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -291,7 +284,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_FALSE(func->install_ui_shown());
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -310,7 +302,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(errors::kUserRejected), error);
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_TRUE(func->install_ui_shown());
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -335,7 +326,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_TRUE(func->install_ui_shown());
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -362,7 +352,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_TRUE(func->install_ui_shown());
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -381,7 +370,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(errors::kUserRejected), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_TRUE(func->install_ui_shown());
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -408,7 +396,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_TRUE(func->install_ui_shown());
-  CloseShellWindowsAndWaitForAppToExit();
 }
 
 class LaunchWebAuthFlowFunctionTest : public ExtensionBrowserTest {

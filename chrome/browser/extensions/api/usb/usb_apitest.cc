@@ -81,7 +81,7 @@ class UsbApiTest : public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, DeviceHandling) {
   EXPECT_CALL(*mock_device_, Close(_)).Times(1);
-  ASSERT_TRUE(RunPlatformAppTest("usb/device_handling"));
+  ASSERT_TRUE(RunExtensionTest("usb/device_handling"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferEvent) {
@@ -99,14 +99,14 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferEvent) {
       IsochronousTransfer(UsbDevice::OUTBOUND, 3, _, 1, 1, 1, _, _))
       .WillOnce(InvokeUsbTransferCallback<7>(USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_, Close(_)).Times(AnyNumber());
-  ASSERT_TRUE(RunPlatformAppTest("usb/transfer_event"));
+  ASSERT_TRUE(RunExtensionTest("usb/transfer_event"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, ZeroLengthTransfer) {
   EXPECT_CALL(*mock_device_, BulkTransfer(_, _, _, 0, _, _))
       .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_, Close(_)).Times(AnyNumber());
-  ASSERT_TRUE(RunPlatformAppTest("usb/zero_length_transfer"));
+  ASSERT_TRUE(RunExtensionTest("usb/zero_length_transfer"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferFailure) {
@@ -115,5 +115,5 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferFailure) {
       .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_ERROR))
       .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_TIMEOUT));
   EXPECT_CALL(*mock_device_, Close(_)).Times(AnyNumber());
-  ASSERT_TRUE(RunPlatformAppTest("usb/transfer_failure"));
+  ASSERT_TRUE(RunExtensionTest("usb/transfer_failure"));
 }
