@@ -697,6 +697,7 @@
     ['OS=="win"', {
       'variables': {
         'isolate_dependency_tracked': [
+          '../net/tools/testserver/testserver_base.py',
           '../third_party/python_26/DLLs/_hashlib.pyd',
           '../third_party/python_26/DLLs/_socket.pyd',
           '../third_party/python_26/DLLs/_ssl.pyd',
@@ -817,6 +818,16 @@
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/gyp-win-tool',
           '<(PRODUCT_DIR)/icudt.dll',
+          'test/data/chromeos/gdata/account_metadata.json',
+          'test/data/chromeos/gdata/basic_feed.json',
+          'test/data/chromeos/gdata/new_folder_entry.json',
+          'test/data/chromeos/sync_file_system/origin_directory_created.json',
+          'test/data/chromeos/sync_file_system/origin_directory_found.json',
+          'test/data/chromeos/sync_file_system/origin_directory_get_parent.json',
+          'test/data/chromeos/sync_file_system/origin_directory_not_found.json',
+          'test/data/chromeos/sync_file_system/sync_root_created.json',
+          'test/data/chromeos/sync_file_system/sync_root_found.json',
+          'test/data/chromeos/sync_file_system/sync_root_not_found.json',
           'test/data/safe_browsing/download_protection/signed.exe',
           'test/data/safe_browsing/download_protection/unsigned.exe',
           'test/data/safe_browsing/download_protection/wow_helper.exe',
@@ -838,6 +849,7 @@
           '../ui/base/glib/',
           'test/data/components/flapper/windows/',
           'test/data/extensions/manifest_tests/_locales/en/',
+          'test/data/extensions/pending_updates/',
           'test/data/firefox2_profile/bookmarks.html',
           'test/data/firefox2_profile/cookies.txt',
           'test/data/firefox2_profile/history.dat',
