@@ -76,6 +76,8 @@ class PluginFinder {
   PluginFinder();
   ~PluginFinder();
 
+  static base::DictionaryValue* ComputePluginList();
+
   // Loads the plug-in information from the browser resources and parses it.
   // Returns NULL if the plug-in list couldn't be parsed.
   static base::DictionaryValue* LoadPluginList();

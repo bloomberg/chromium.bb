@@ -152,16 +152,24 @@ PluginFinder::PluginFinder() {
 
 void PluginFinder::Init() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  plugin_list_.reset(ComputePluginList());
+  DCHECK(plugin_list_.get());
+
+  InitInternal();
+}
+
+// static
+DictionaryValue* PluginFinder::ComputePluginList() {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   const base::DictionaryValue* metadata =
       g_browser_process->local_state()->GetDictionary(prefs::kPluginsMetadata);
-  plugin_list_.reset(
-      metadata->empty() ? LoadPluginList() : metadata->DeepCopy());
+  if (!metadata->empty())
+    return metadata->DeepCopy();
 #endif
-  if (!plugin_list_.get())
-    plugin_list_.reset(new DictionaryValue());
-
-  InitInternal();
+  base::DictionaryValue* result = LoadPluginList();
+  if (result)
+    return result;
+  return new base::DictionaryValue();
 }
 
 // static
