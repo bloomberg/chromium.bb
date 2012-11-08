@@ -174,8 +174,8 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
   enable_debug_stub_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableNaClDebug);
 
-  enable_ipc_proxy_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNaClIPCProxy);
+  enable_ipc_proxy_ = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableNaClSRPCProxy);
 }
 
 NaClProcessHost::~NaClProcessHost() {

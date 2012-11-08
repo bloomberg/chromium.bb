@@ -417,11 +417,11 @@ const Experiment kExperiments[] = {
   // TODO(bbudge): When NaCl switches to the IPC-based proxy, remove this
   // flag entry.
   {
-    "enable-nacl-ipc-proxy",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_ENABLE_NACL_IPC_PROXY_NAME,
-    IDS_FLAGS_ENABLE_NACL_IPC_PROXY_DESCRIPTION,
+    "enable-nacl-srpc-proxy",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_ENABLE_NACL_SRPC_PROXY_NAME,
+    IDS_FLAGS_ENABLE_NACL_SRPC_PROXY_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableNaClIPCProxy)
+    SINGLE_VALUE_TYPE(switches::kEnableNaClSRPCProxy)
   },
   {
     "enable-scripted-speech",  // FLAGS:RECORD_UMA

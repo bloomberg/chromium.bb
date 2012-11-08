@@ -119,8 +119,8 @@ PP_Bool LaunchSelLdr(PP_Instance instance,
 }
 
 int32_t StartPpapiProxy(PP_Instance instance) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNaClIPCProxy))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNaClSRPCProxy))
     return PP_ERROR_NOTSUPPORTED;  // Signal the plugin to use the SRPC proxy.
 
   InstanceInfoMap& map = g_instance_info.Get();

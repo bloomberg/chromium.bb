@@ -99,6 +99,9 @@ function declareTests(tester) {
   //////////////////////////////////////
   // Initialization errors begin here //
   //////////////////////////////////////
+/* TODO(bbudge) Re-enable these tests when the IPC proxy reports similar errors.
+  http://crbug.com/160076
+
 
   // 'bad_ppp_initialize' loads a manifest, then loads a nexe that fails to
   // initialize PPAPI module
@@ -174,6 +177,7 @@ function declareTests(tester) {
       'bad_event_replay_crash',
       'ppapi_bad_event_replay_crash.nmf',
       'NaCl module load failed: instance crashed after creation.');
+*/
 }
 
 

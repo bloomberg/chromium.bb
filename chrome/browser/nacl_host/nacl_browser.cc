@@ -38,10 +38,10 @@ enum ValidationCacheStatus {
 const FilePath::StringType NaClIrtName() {
   FilePath::StringType irt_name;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNaClIPCProxy))
-    irt_name.append(FILE_PATH_LITERAL("nacl_ipc_irt_"));
-  else
+          switches::kEnableNaClSRPCProxy))
     irt_name.append(FILE_PATH_LITERAL("nacl_irt_"));
+  else
+    irt_name.append(FILE_PATH_LITERAL("nacl_ipc_irt_"));
 
 #if defined(ARCH_CPU_X86_FAMILY)
 #if defined(ARCH_CPU_X86_64)
