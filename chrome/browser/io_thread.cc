@@ -362,6 +362,7 @@ IOThread::IOThread(
   ChromeNetworkDelegate::InitializePrefsOnUIThread(
       &system_enable_referrers_,
       NULL,
+      NULL,
       local_state);
   ssl_config_service_manager_.reset(
       SSLConfigServiceManager::CreateDefaultManager(local_state, NULL));
@@ -436,6 +437,7 @@ void IOThread::Init() {
       NULL,
       NULL,
       &system_enable_referrers_,
+      NULL,
       NULL,
       NULL);
   if (command_line.HasSwitch(switches::kDisableExtensionsHttpThrottling))

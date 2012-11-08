@@ -302,6 +302,7 @@ extern const char kSpeechRecognitionTrayNotificationShownContexts[];
 extern const char kEnabledLabsExperiments[];
 extern const char kEnableAutoSpellCorrect[];
 extern const char kSavingBrowserHistoryDisabled[];
+extern const char kForceSafeSearch[];
 extern const char kDeleteTimePeriod[];
 #if defined(TOOLKIT_GTK)
 extern const char kUsesSystemTheme[];

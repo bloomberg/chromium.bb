@@ -79,10 +79,13 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/net/url_request_failed_job.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/http/http_stream_factory.h"
 #include "net/url_request/url_request.h"
@@ -146,6 +149,31 @@ void RedirectHostsToTestDataOnIOThread(const GURL* const urls[], size_t size) {
     filter->AddHostnameHandler(url->scheme(), url->host(),
                                URLRequestMockHTTPJob::Factory);
   }
+}
+
+// Fails requests using ERR_CONNECTION_RESET.
+net::URLRequestJob* FailedJobFactory(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    const std::string& scheme) {
+  return new content::URLRequestFailedJob(
+      request, network_delegate, net::ERR_CONNECTION_RESET);
+}
+
+// Filters requests to the |host| such that they fail. Run on IO thread.
+void MakeRequestFailOnIO(const std::string& host) {
+  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+  filter->AddHostnameHandler("http", host, &FailedJobFactory);
+  filter->AddHostnameHandler("https", host, &FailedJobFactory);
+}
+
+// Sets up the filter on IO thread such that requests to |host| fail.
+void MakeRequestFail(const std::string& host) {
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(MakeRequestFailOnIO, host),
+      MessageLoop::QuitClosure());
+  content::RunMessageLoop();
 }
 
 // Verifies that the given |url| can be opened. This assumes that |url| points
@@ -583,6 +611,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ClearSiteDataOnExit) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
+  MakeRequestFail("search.example");
+
   // Verifies that a default search is made using the provider configured via
   // policy. Also checks that default search can be completely disabled.
   const string16 kKeyword(ASCIIToUTF16("testsearch"));
@@ -648,7 +678,64 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   EXPECT_EQ(GURL(chrome::kAboutBlankURL), web_contents->GetURL());
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
+  // Makes the requests fail since all we want to check is that the redirection
+  // is done properly.
+  MakeRequestFail("google.com");
+
+  // Verifies that requests to Google Search engine with the SafeSearch
+  // enabled set the safe=active&ssui=on parameters at the end of the query.
+  TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
+      browser()->profile());
+  ui_test_utils::WaitForTemplateURLServiceToLoad(service);
+
+  // First check that nothing happens.
+  content::TestNavigationObserver no_safesearch_observer(
+      content::NotificationService::AllSources());
+  chrome::FocusLocationBar(browser());
+  LocationBar* location_bar = browser()->window()->GetLocationBar();
+  ui_test_utils::SendToOmniboxAndSubmit(location_bar, "http://google.com/");
+  OmniboxEditModel* model = location_bar->GetLocationEntry()->model();
+  no_safesearch_observer.Wait();
+  EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  GURL expected_without("http://google.com/");
+  EXPECT_EQ(expected_without, web_contents->GetURL());
+
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(prefs->IsManagedPreference(prefs::kForceSafeSearch));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kForceSafeSearch));
+
+  // Override the default SafeSearch setting using policies.
+  PolicyMap policies;
+  policies.Set(key::kForceSafeSearch, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+  provider_.UpdateChromePolicy(policies);
+
+  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kForceSafeSearch));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kForceSafeSearch));
+
+  content::TestNavigationObserver safesearch_observer(
+      content::NotificationService::AllSources());
+
+  // Verify that searching from google.com works.
+  chrome::FocusLocationBar(browser());
+  location_bar = browser()->window()->GetLocationBar();
+  ui_test_utils::SendToOmniboxAndSubmit(location_bar, "http://google.com/");
+  safesearch_observer.Wait();
+  model = location_bar->GetLocationEntry()->model();
+  EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
+  web_contents = chrome::GetActiveWebContents(browser());
+  std::string expected_url("http://google.com/?");
+  expected_url += std::string(chrome::kSafeSearchSafeParameter) + "&" +
+                  chrome::kSafeSearchSsuiParameter;
+  GURL expected_with_parameters(expected_url);
+  EXPECT_EQ(expected_with_parameters, web_contents->GetURL());
+}
+
 IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
+  MakeRequestFail("search.example");
+
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableInstantExtendedAPI);
 

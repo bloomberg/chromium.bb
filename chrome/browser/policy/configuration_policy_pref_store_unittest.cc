@@ -213,6 +213,8 @@ INSTANTIATE_TEST_CASE_P(
                       prefs::kDisableSpdy),
         PolicyAndPref(key::kSafeBrowsingEnabled,
                       prefs::kSafeBrowsingEnabled),
+        PolicyAndPref(key::kForceSafeSearch,
+                      prefs::kForceSafeSearch),
         PolicyAndPref(key::kMetricsReportingEnabled,
                       prefs::kMetricsReportingEnabled),
         PolicyAndPref(key::kPasswordManagerEnabled,

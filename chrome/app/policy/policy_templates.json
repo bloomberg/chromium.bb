@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 161
+#   For your editing convenience: highest ID currently used: 162
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -551,6 +551,24 @@
       If this setting is disabled, users cannot enable the proxy, and the machine will not be allowed to share it's printers with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>.
 
       If this policy is left not set, this will be enabled but the user will be able to change it.''',
+    },
+    {
+      'name': 'ForceSafeSearch',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:24-', 'chrome_os:0.24-'],
+      'features': {
+        'dynamic_refresh': True,
+        'can_be_recommended': False,
+      },
+      'example_value': False,
+      'id': 162,
+      'caption': '''Force SafeSearch''',
+      'desc': '''Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting.
+
+      If you enable this setting, SafeSearch in Google Search is always active.
+
+      If you disable this setting, SafeSearch in Google Search is not enforced.''',
     },
     {
       'name': 'SafeBrowsingEnabled',

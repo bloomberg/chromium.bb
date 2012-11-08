@@ -9,6 +9,13 @@
 #include "base/message_loop.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
+#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread.h"
+#include "net/base/completion_callback.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,7 +39,7 @@ class ChromeNetworkDelegateTest : public testing::Test {
   scoped_ptr<ChromeNetworkDelegate> CreateNetworkDelegate() {
     return scoped_ptr<ChromeNetworkDelegate>(new ChromeNetworkDelegate(
         forwarder_.get(), NULL, NULL, NULL, NULL, NULL, &pref_member_, NULL,
-        NULL));
+        NULL, NULL));
   }
 
   // Implementation moved here for access to private bits.
@@ -79,4 +86,199 @@ class ChromeNetworkDelegateTest : public testing::Test {
 
 TEST_F(ChromeNetworkDelegateTest, NeverThrottleLogic) {
   NeverThrottleLogicImpl();
+}
+
+class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
+ public:
+  scoped_ptr<net::NetworkDelegate> CreateNetworkDelegate() {
+    return scoped_ptr<net::NetworkDelegate>(new ChromeNetworkDelegate(
+        forwarder_.get(), NULL, NULL, NULL, NULL, NULL, &enable_referrers_,
+        NULL, &force_google_safe_search_, NULL));
+  }
+
+  void SetSafeSearch(bool value) {
+    force_google_safe_search_.SetValue(value);
+  }
+
+  void SetDelegate(net::NetworkDelegate* delegate) {
+    context_.set_network_delegate(delegate);
+  }
+
+ protected:
+  ChromeNetworkDelegateSafeSearchTest()
+      : forwarder_(new extensions::EventRouterForwarder()) {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    io_thread_.reset(new content::TestBrowserThread(content::BrowserThread::IO,
+                                                    &message_loop_));
+    prefs_.RegisterBooleanPref(prefs::kForceSafeSearch, false,
+                               PrefService::UNSYNCABLE_PREF);
+    force_google_safe_search_.Init(prefs::kForceSafeSearch,
+                                   profile_.GetTestingPrefService(), NULL);
+    prefs_.RegisterBooleanPref(prefs::kEnableReferrers, false,
+                               PrefService::UNSYNCABLE_PREF);
+    enable_referrers_.Init(prefs::kEnableReferrers,
+                           profile_.GetTestingPrefService(), NULL);
+  }
+
+  // Does a request using the |url_string| URL and verifies that the expected
+  // string is equal to the query part (between ? and #) of the final url of
+  // that request.
+  void CheckAddedParameters(const std::string& url_string,
+                            const std::string& expected_query_parameters) {
+    // Show the URL in the trace so we know where we failed.
+    SCOPED_TRACE(url_string);
+
+    TestURLRequest request(GURL(url_string), &delegate_, &context_);
+
+    request.Start();
+    MessageLoop::current()->RunUntilIdle();
+
+    EXPECT_EQ(expected_query_parameters, request.url().query());
+  }
+
+ private:
+  scoped_refptr<extensions::EventRouterForwarder> forwarder_;
+  TestingProfile profile_;
+  TestingPrefService prefs_;
+  BooleanPrefMember enable_referrers_;
+  BooleanPrefMember force_google_safe_search_;
+  scoped_ptr<net::URLRequest> request_;
+  TestURLRequestContext context_;
+  TestDelegate delegate_;
+  MessageLoopForIO message_loop_;
+  scoped_ptr<content::TestBrowserThread> io_thread_;
+};
+
+TEST_F(ChromeNetworkDelegateSafeSearchTest, SafeSearchOn) {
+  // Tests with SafeSearch on, request parameters should be rewritten.
+  const std::string kSafeParameter = chrome::kSafeSearchSafeParameter;
+  const std::string kSsuiParameter = chrome::kSafeSearchSsuiParameter;
+  const std::string kBothParameters = kSafeParameter + "&" + kSsuiParameter;
+  SetSafeSearch(true);
+  scoped_ptr<net::NetworkDelegate> delegate(CreateNetworkDelegate());
+  SetDelegate(delegate.get());
+
+  // Test the home page.
+  CheckAddedParameters("http://google.com/", kBothParameters);
+
+  // Test the search home page.
+  CheckAddedParameters("http://google.com/webhp",
+                       kBothParameters);
+
+  // Test different valid search pages with parameters.
+  CheckAddedParameters("http://google.com/search?q=google",
+                       "q=google&" + kBothParameters);
+
+  CheckAddedParameters("http://google.com/?q=google",
+                       "q=google&" + kBothParameters);
+
+  CheckAddedParameters("http://google.com/webhp?q=google",
+                       "q=google&" + kBothParameters);
+
+  // Test the valid pages with safe set to off.
+  CheckAddedParameters("http://google.com/search?q=google&safe=off",
+                       "q=google&" + kBothParameters);
+
+  CheckAddedParameters("http://google.com/?q=google&safe=off",
+                       "q=google&" + kBothParameters);
+
+  CheckAddedParameters("http://google.com/webhp?q=google&safe=off",
+                       "q=google&" + kBothParameters);
+
+  CheckAddedParameters("http://google.com/webhp?q=google&%73afe=off",
+                       "q=google&%73afe=off&" + kBothParameters);
+
+  // Test the home page, different TLDs.
+  CheckAddedParameters("http://google.de/", kBothParameters);
+  CheckAddedParameters("http://google.ro/", kBothParameters);
+  CheckAddedParameters("http://google.nl/", kBothParameters);
+
+  // Test the search home page, different TLD.
+  CheckAddedParameters("http://google.de/webhp", kBothParameters);
+
+  // Test the search page with parameters, different TLD.
+  CheckAddedParameters("http://google.de/search?q=google",
+                       "q=google&" + kBothParameters);
+
+  // Test the home page with parameters, different TLD.
+  CheckAddedParameters("http://google.de/?q=google",
+                       "q=google&" + kBothParameters);
+
+  // Test the search page with the parameters set.
+  CheckAddedParameters("http://google.de/?q=google&" + kBothParameters,
+                       "q=google&" + kBothParameters);
+
+  // Test some possibly tricky combinations.
+  CheckAddedParameters("http://google.com/?q=goog&" + kSafeParameter +
+                       "&ssui=one",
+                       "q=goog&" + kBothParameters);
+
+  CheckAddedParameters("http://google.de/?q=goog&unsafe=active&" +
+                       kSsuiParameter,
+                       "q=goog&unsafe=active&" + kBothParameters);
+
+  CheckAddedParameters("http://google.de/?q=goog&safe=off&ssui=off",
+                       "q=goog&" + kBothParameters);
+
+  // Test various combinations where we should not add anything.
+  CheckAddedParameters("http://google.com/?q=goog&" + kSsuiParameter + "&" +
+                       kSafeParameter,
+                       "q=goog&" + kBothParameters);
+
+  CheckAddedParameters("http://google.com/?" + kSsuiParameter + "&q=goog&" +
+                       kSafeParameter,
+                       "q=goog&" + kBothParameters);
+
+  CheckAddedParameters("http://google.com/?" + kSsuiParameter + "&" +
+                       kSafeParameter + "&q=goog",
+                       "q=goog&" + kBothParameters);
+
+  // Test that another website is not affected, without parameters.
+  CheckAddedParameters("http://google.com/finance", "");
+
+  // Test that another website is not affected, with parameters.
+  CheckAddedParameters("http://google.com/finance?q=goog", "q=goog");
+
+  // Test that another website is not affected with redirects, with parameters.
+  CheckAddedParameters("http://finance.google.com/?q=goog", "q=goog");
+
+  // Test with percent-encoded data (%26 is &)
+  CheckAddedParameters("http://google.com/?q=%26%26%26&" + kSsuiParameter +
+                       "&" + kSafeParameter + "&param=%26%26%26",
+                       "q=%26%26%26&param=%26%26%26&" + kBothParameters);
+}
+
+TEST_F(ChromeNetworkDelegateSafeSearchTest, SafeSearchOff) {
+  // Tests with SafeSearch settings off, delegate should not alter requests.
+  SetSafeSearch(false);
+  scoped_ptr<net::NetworkDelegate> delegate(CreateNetworkDelegate());
+  SetDelegate(delegate.get());
+
+  // Test the home page.
+  CheckAddedParameters("http://google.com/", "");
+
+  // Test the search home page.
+  CheckAddedParameters("http://google.com/webhp", "");
+
+  // Test the home page with parameters.
+  CheckAddedParameters("http://google.com/search?q=google",
+                       "q=google");
+
+  // Test the search page with parameters.
+  CheckAddedParameters("http://google.com/?q=google",
+                       "q=google");
+
+  // Test the search webhp page with parameters.
+  CheckAddedParameters("http://google.com/webhp?q=google",
+                       "q=google");
+
+  // Test the home page with parameters and safe set to off.
+  CheckAddedParameters("http://google.com/search?q=google&safe=off",
+                       "q=google&safe=off");
+
+  // Test the home page with parameters and safe set to active.
+  CheckAddedParameters("http://google.com/search?q=google&safe=active",
+                       "q=google&safe=active");
 }

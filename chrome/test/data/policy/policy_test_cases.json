@@ -254,6 +254,13 @@
     ]
   },
 
+  "ForceSafeSearch": {
+    "pref": "settings.force_safesearch",
+    "test_policy": { "ForceSafeSearch": true },
+    "settings_pages": [],
+    "os": ["win", "linux", "mac", "chromeos"]
+  },
+
   "MetricsReportingEnabled": {
     "os": ["win", "mac", "linux"],
     "official_only": true,

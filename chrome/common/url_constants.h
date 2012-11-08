@@ -413,6 +413,10 @@ extern const char kDriveScheme[];
 extern const char kCloudPrintLearnMoreURL[];
 #endif
 
+// Parameters that get appended to force SafeSearch.
+extern const char kSafeSearchSafeParameter[];
+extern const char kSafeSearchSsuiParameter[];
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_URL_CONSTANTS_H_

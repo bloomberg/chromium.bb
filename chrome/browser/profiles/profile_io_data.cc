@@ -191,6 +191,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   ChromeNetworkDelegate::InitializePrefsOnUIThread(
       &enable_referrers_,
       &enable_do_not_track_,
+      &force_safesearch_,
       pref_service);
 
 #if defined(ENABLE_PRINTING)
@@ -533,6 +534,7 @@ void ProfileIOData::LazyInitialize() const {
         profile_params_->cookie_settings,
         &enable_referrers_,
         &enable_do_not_track_,
+        &force_safesearch_,
         load_time_stats_));
 
   fraudulent_certificate_reporter_.reset(
@@ -654,6 +656,7 @@ void ProfileIOData::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   enable_referrers_.Destroy();
   enable_do_not_track_.Destroy();
+  force_safesearch_.Destroy();
 #if !defined(OS_CHROMEOS)
   enable_metrics_.Destroy();
 #endif

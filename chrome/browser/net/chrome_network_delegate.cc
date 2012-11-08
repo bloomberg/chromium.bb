@@ -4,10 +4,13 @@
 
 #include "chrome/browser/net/chrome_network_delegate.h"
 
+#include <vector>
+
 #include "base/base_paths.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/string_split.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
@@ -19,6 +22,7 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -87,6 +91,75 @@ void ForwardProxyErrors(net::URLRequest* request,
             event_router, profile, request->status().error());
     }
   }
+}
+
+// Returns whether a URL parameter, |first_parameter| (e.g. foo=bar), has the
+// same key as the the |second_parameter| (e.g. foo=baz). Both parameters
+// must be in key=value form.
+bool HasSameParameterKey(const std::string& first_parameter,
+                         const std::string& second_parameter) {
+  DCHECK(second_parameter.find("=") != std::string::npos);
+  // Prefix for "foo=bar" is "foo=".
+  std::string parameter_prefix = second_parameter.substr(
+      0, second_parameter.find("=") + 1);
+  return StartsWithASCII(first_parameter, parameter_prefix, false);
+}
+
+// Examines the query string containing parameters and adds the necessary ones
+// so that SafeSearch is active. |query| is the string to examine and the
+// return value is the |query| string modified such that SafeSearch is active.
+std::string AddSafeSearchParameters(const std::string& query) {
+  std::vector<std::string> new_parameters;
+  std::string safe_parameter = chrome::kSafeSearchSafeParameter;
+  std::string ssui_parameter = chrome::kSafeSearchSsuiParameter;
+
+  std::vector<std::string> parameters;
+  base::SplitString(query, '&', &parameters);
+
+  std::vector<std::string>::iterator it;
+  for (it = parameters.begin(); it < parameters.end(); ++it) {
+    if (!HasSameParameterKey(*it, safe_parameter) &&
+        !HasSameParameterKey(*it, ssui_parameter)) {
+      new_parameters.push_back(*it);
+    }
+  }
+
+  new_parameters.push_back(safe_parameter);
+  new_parameters.push_back(ssui_parameter);
+  return JoinString(new_parameters, '&');
+}
+
+// If |request| is a request to Google Web Search the function
+// enforces that the SafeSearch query parameters are set to active.
+// Sets the query part of |new_url| with the new value of the parameters.
+void ForceGoogleSafeSearch(net::URLRequest* request,
+                           GURL* new_url) {
+  if (!google_util::IsGoogleSearchUrl(request->url().spec()) &&
+      !google_util::IsGoogleHomePageUrl(request->url().spec()))
+    return;
+
+  std::string query = request->url().query();
+  std::string new_query = AddSafeSearchParameters(query);
+  if (query == new_query)
+    return;
+
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(new_query);
+  *new_url = request->url().ReplaceComponents(replacements);
+}
+
+// Gets called when the extensions finish work on the URL. If the extensions
+// did not do a redirect (so |new_url| is empty) then we enforce the
+// SafeSearch parameters. Otherwise we will get called again after the
+// redirect and we enforce SafeSearch then.
+void ForceGoogleSafeSearchCallbackWrapper(
+    const net::CompletionCallback& callback,
+    net::URLRequest* request,
+    GURL* new_url,
+    int rv) {
+  if (rv == net::OK && new_url->is_empty())
+    ForceGoogleSafeSearch(request, new_url);
+  callback.Run(rv);
 }
 
 enum RequestStatus { REQUEST_STARTED, REQUEST_DONE };
@@ -196,6 +269,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
     CookieSettings* cookie_settings,
     BooleanPrefMember* enable_referrers,
     BooleanPrefMember* enable_do_not_track,
+    BooleanPrefMember* force_google_safe_search,
     chrome_browser_net::LoadTimeStats* load_time_stats)
     : event_router_(event_router),
       profile_(profile),
@@ -203,6 +277,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       extension_info_map_(extension_info_map),
       enable_referrers_(enable_referrers),
       enable_do_not_track_(enable_do_not_track),
+      force_google_safe_search_(force_google_safe_search),
       url_blacklist_manager_(url_blacklist_manager),
       managed_mode_url_filter_(managed_mode_url_filter),
       load_time_stats_(load_time_stats),
@@ -224,6 +299,7 @@ void ChromeNetworkDelegate::NeverThrottleRequests() {
 void ChromeNetworkDelegate::InitializePrefsOnUIThread(
     BooleanPrefMember* enable_referrers,
     BooleanPrefMember* enable_do_not_track,
+    BooleanPrefMember* force_google_safe_search,
     PrefService* pref_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   enable_referrers->Init(prefs::kEnableReferrers, pref_service, NULL);
@@ -232,6 +308,11 @@ void ChromeNetworkDelegate::InitializePrefsOnUIThread(
   if (enable_do_not_track) {
     enable_do_not_track->Init(prefs::kEnableDoNotTrack, pref_service, NULL);
     enable_do_not_track->MoveToThread(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  }
+  if (force_google_safe_search) {
+    force_google_safe_search->Init(prefs::kForceSafeSearch, pref_service, NULL);
+    force_google_safe_search->MoveToThread(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
 }
@@ -294,8 +375,26 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
     request->set_referrer(std::string());
   if (enable_do_not_track_ && enable_do_not_track_->GetValue())
     request->SetExtraRequestHeaderByName(kDNTHeader, "1", true /* override */);
-  return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
-      profile_, extension_info_map_.get(), request, callback, new_url);
+
+  bool force_safe_search = force_google_safe_search_ &&
+                           force_google_safe_search_->GetValue();
+
+  net::CompletionCallback wrapped_callback = callback;
+  if (force_safe_search) {
+    wrapped_callback = base::Bind(&ForceGoogleSafeSearchCallbackWrapper,
+                                  callback,
+                                  base::Unretained(request),
+                                  base::Unretained(new_url));
+  }
+
+  int rv = ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
+      profile_, extension_info_map_.get(), request, wrapped_callback,
+      new_url);
+
+  if (force_safe_search && rv == net::OK && new_url->is_empty())
+    ForceGoogleSafeSearch(request, new_url);
+
+  return rv;
 }
 
 int ChromeNetworkDelegate::OnBeforeSendHeaders(

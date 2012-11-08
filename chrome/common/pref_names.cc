@@ -842,6 +842,9 @@ const char kSpeechRecognitionTrayNotificationShownContexts[] =
 // Boolean controlling whether history saving is disabled.
 const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 
+// Boolean controlling whether SafeSearch is mandatory for Google Web Searches.
+const char kForceSafeSearch[] = "settings.force_safesearch";
+
 #if defined(TOOLKIT_GTK)
 // GTK specific preference on whether we should match the system GTK theme.
 const char kUsesSystemTheme[] = "extensions.theme.use_system";

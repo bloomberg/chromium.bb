@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_NET_CHROME_NETWORK_DELEGATE_H_
 #define CHROME_BROWSER_NET_CHROME_NETWORK_DELEGATE_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -31,6 +33,10 @@ namespace extensions {
 class EventRouterForwarder;
 }
 
+namespace net {
+class URLRequest;
+}
+
 namespace policy {
 class URLBlacklistManager;
 }
@@ -55,6 +61,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
       CookieSettings* cookie_settings,
       BooleanPrefMember* enable_referrers,
       BooleanPrefMember* enable_do_not_track,
+      BooleanPrefMember* force_google_safe_search,
       chrome_browser_net::LoadTimeStats* load_time_stats);
   virtual ~ChromeNetworkDelegate();
 
@@ -65,9 +72,11 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   // Binds the pref members to |pref_service| and moves them to the IO thread.
   // |enable_do_not_track| can be NULL.
   // This method should be called on the UI thread.
-  static void InitializePrefsOnUIThread(BooleanPrefMember* enable_referrers,
-                                        BooleanPrefMember* enable_do_not_track,
-                                        PrefService* pref_service);
+  static void InitializePrefsOnUIThread(
+      BooleanPrefMember* enable_referrers,
+      BooleanPrefMember* enable_do_not_track,
+      BooleanPrefMember* force_google_safe_search,
+      PrefService* pref_service);
 
   // When called, all file:// URLs will now be accessible.  If this is not
   // called, then some platforms restrict access to file:// paths.
@@ -141,6 +150,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   // Weak, owned by our owner.
   BooleanPrefMember* enable_referrers_;
   BooleanPrefMember* enable_do_not_track_;
+  BooleanPrefMember* force_google_safe_search_;
 
   // Weak, owned by our owner.
   const policy::URLBlacklistManager* url_blacklist_manager_;
