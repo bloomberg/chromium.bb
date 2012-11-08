@@ -74,10 +74,7 @@ RenderWidgetHostView* WebContentsViewAndroid::CreateViewForWidget(
   // order to paint it. See ContentView::GetRenderWidgetHostViewAndroid for an
   // example of how this is achieved for InterstitialPages.
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(render_widget_host);
-  RenderWidgetHostView* view = new RenderWidgetHostViewAndroid(
-      rwhi, content_view_core_);
-  view->Show();
-  return view;
+  return new RenderWidgetHostViewAndroid(rwhi, content_view_core_);
 }
 
 gfx::NativeView WebContentsViewAndroid::GetNativeView() const {
