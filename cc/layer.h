@@ -147,6 +147,10 @@ public:
     void setNonFastScrollableRegionChanged() { m_nonFastScrollableRegionChanged = true; }
     const Region& nonFastScrollableRegion() const { return m_nonFastScrollableRegion; }
 
+    void setTouchEventHandlerRegion(const Region&);
+    void setTouchEventHandlerRegionChanged() { m_touchEventHandlerRegionChanged = true; }
+    const Region& touchEventHandlerRegion() const { return m_touchEventHandlerRegion; }
+
     void setLayerScrollClient(WebKit::WebLayerScrollClient* layerScrollClient) { m_layerScrollClient = layerScrollClient; }
 
     void setDrawCheckerboardForMissingTiles(bool);
@@ -350,6 +354,8 @@ private:
     bool m_haveWheelEventHandlers;
     Region m_nonFastScrollableRegion;
     bool m_nonFastScrollableRegionChanged;
+    Region m_touchEventHandlerRegion;
+    bool m_touchEventHandlerRegionChanged;
     gfx::PointF m_position;
     gfx::PointF m_anchorPoint;
     SkColor m_backgroundColor;

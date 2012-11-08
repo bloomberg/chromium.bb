@@ -88,6 +88,8 @@ public:
     virtual bool shouldScrollOnMainThread() const;
     virtual void setNonFastScrollableRegion(const WebVector<WebRect>&) OVERRIDE;
     virtual WebVector<WebRect> nonFastScrollableRegion() const;
+    virtual void setTouchEventHandlerRegion(const WebVector<WebRect>&);
+    virtual WebVector<WebRect> touchEventHandlerRegion() const;
     virtual void setIsContainerForFixedPositionLayers(bool) OVERRIDE;
     virtual bool isContainerForFixedPositionLayers() const;
     virtual void setFixedToContainerLayer(bool) OVERRIDE;

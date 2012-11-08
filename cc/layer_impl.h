@@ -215,6 +215,9 @@ public:
     const Region& nonFastScrollableRegion() const { return m_nonFastScrollableRegion; }
     void setNonFastScrollableRegion(const Region& region) { m_nonFastScrollableRegion = region; }
 
+    const Region& touchEventHandlerRegion() const { return m_touchEventHandlerRegion; }
+    void setTouchEventHandlerRegion(const Region& region) { m_touchEventHandlerRegion = region; }
+
     void setDrawCheckerboardForMissingTiles(bool checkerboard) { m_drawCheckerboardForMissingTiles = checkerboard; }
     bool drawCheckerboardForMissingTiles() const;
 
@@ -319,6 +322,7 @@ private:
     bool m_shouldScrollOnMainThread;
     bool m_haveWheelEventHandlers;
     Region m_nonFastScrollableRegion;
+    Region m_touchEventHandlerRegion;
     SkColor m_backgroundColor;
 
     // Whether the "back" of this layer should draw.

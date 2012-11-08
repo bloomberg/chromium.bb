@@ -410,6 +410,24 @@ WebVector<WebRect> WebLayerImpl::nonFastScrollableRegion() const
     return result;
 }
 
+void WebLayerImpl::setTouchEventHandlerRegion(const WebVector<WebRect>& rects)
+{
+  cc::Region region;
+  for (size_t i = 0; i < rects.size(); ++i)
+      region.Union(rects[i]);
+  m_layer->setTouchEventHandlerRegion(region);
+
+}
+
+WebVector<WebRect> WebLayerImpl::touchEventHandlerRegion() const
+{
+  cc::Region::Iterator regionRects(m_layer->touchEventHandlerRegion());
+  WebVector<WebRect> result(regionRects.size());
+  for (size_t i = 0; regionRects.has_rect(); regionRects.next(), ++i)
+      result[i] = regionRects.rect();
+  return result;
+}
+
 void WebLayerImpl::setIsContainerForFixedPositionLayers(bool enable)
 {
     m_layer->setIsContainerForFixedPositionLayers(enable);

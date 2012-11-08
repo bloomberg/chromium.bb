@@ -41,6 +41,7 @@ Layer::Layer()
     , m_shouldScrollOnMainThread(false)
     , m_haveWheelEventHandlers(false)
     , m_nonFastScrollableRegionChanged(false)
+    , m_touchEventHandlerRegionChanged(false)
     , m_anchorPoint(0.5, 0.5)
     , m_backgroundColor(0)
     , m_debugBorderColor(0)
@@ -459,6 +460,14 @@ void Layer::setNonFastScrollableRegion(const Region& region)
     setNeedsCommit();
 }
 
+void Layer::setTouchEventHandlerRegion(const Region& region)
+{
+    if (m_touchEventHandlerRegion == region)
+        return;
+    m_touchEventHandlerRegion = region;
+    m_touchEventHandlerRegionChanged = true;
+}
+
 void Layer::setDrawCheckerboardForMissingTiles(bool checkerboard)
 {
     if (m_drawCheckerboardForMissingTiles == checkerboard)
@@ -578,6 +587,10 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
     if (m_nonFastScrollableRegionChanged) {
         layer->setNonFastScrollableRegion(m_nonFastScrollableRegion);
         m_nonFastScrollableRegionChanged = false;
+    }
+    if (m_touchEventHandlerRegionChanged) {
+        layer->setTouchEventHandlerRegion(m_touchEventHandlerRegion);
+        m_touchEventHandlerRegionChanged = false;
     }
     layer->setContentsOpaque(m_contentsOpaque);
     if (!opacityIsAnimating())
