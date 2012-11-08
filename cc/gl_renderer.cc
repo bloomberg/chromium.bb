@@ -238,6 +238,7 @@ void GLRenderer::beginDrawingFrame(DrawingFrame& frame)
 
     GLC(m_context, m_context->disable(GL_DEPTH_TEST));
     GLC(m_context, m_context->disable(GL_CULL_FACE));
+    GLC(m_context, m_context->enable(GL_SCISSOR_TEST));
     GLC(m_context, m_context->colorMask(true, true, true, true));
     GLC(m_context, m_context->enable(GL_BLEND));
     GLC(m_context, m_context->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
@@ -1025,7 +1026,6 @@ void GLRenderer::finishDrawingFrame(DrawingFrame& frame)
     m_currentFramebufferLock.reset();
     m_swapBufferRect.Union(gfx::ToEnclosingRect(frame.rootDamageRect));
 
-    GLC(m_context, m_context->disable(GL_SCISSOR_TEST));
     GLC(m_context, m_context->disable(GL_BLEND));
 }
 
@@ -1340,15 +1340,9 @@ bool GLRenderer::bindFramebufferToTexture(DrawingFrame& frame, const ScopedTextu
     return true;
 }
 
-void GLRenderer::enableScissorTestRect(const gfx::Rect& scissorRect)
+void GLRenderer::setScissorTestRect(const gfx::Rect& scissorRect)
 {
-    GLC(m_context, m_context->enable(GL_SCISSOR_TEST));
     GLC(m_context, m_context->scissor(scissorRect.x(), scissorRect.y(), scissorRect.width(), scissorRect.height()));
-}
-
-void GLRenderer::disableScissorTest()
-{
-    GLC(m_context, m_context->disable(GL_SCISSOR_TEST));
 }
 
 void GLRenderer::setDrawViewportSize(const gfx::Size& viewportSize)

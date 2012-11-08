@@ -46,8 +46,7 @@ protected:
     virtual void bindFramebufferToOutputSurface(DrawingFrame&) OVERRIDE;
     virtual bool bindFramebufferToTexture(DrawingFrame&, const ScopedTexture*, const gfx::Rect& framebufferRect) OVERRIDE;
     virtual void setDrawViewportSize(const gfx::Size&) OVERRIDE;
-    virtual void enableScissorTestRect(const gfx::Rect& scissorRect) OVERRIDE;
-    virtual void disableScissorTest() OVERRIDE;
+    virtual void setScissorTestRect(const gfx::Rect& scissorRect) OVERRIDE;
     virtual void clearFramebuffer(DrawingFrame&) OVERRIDE;
     virtual void drawQuad(DrawingFrame&, const DrawQuad*) OVERRIDE;
     virtual void beginDrawingFrame(DrawingFrame&) OVERRIDE;

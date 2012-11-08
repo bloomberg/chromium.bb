@@ -138,15 +138,9 @@ bool SoftwareRenderer::bindFramebufferToTexture(DrawingFrame& frame, const Scope
     return true;
 }
 
-void SoftwareRenderer::enableScissorTestRect(const gfx::Rect& scissorRect)
+void SoftwareRenderer::setScissorTestRect(const gfx::Rect& scissorRect)
 {
     m_skCurrentCanvas->clipRect(toSkRect(scissorRect), SkRegion::kReplace_Op);
-}
-
-void SoftwareRenderer::disableScissorTest()
-{
-    gfx::Rect canvasRect(gfx::Point(), viewportSize());
-    m_skCurrentCanvas->clipRect(toSkRect(canvasRect), SkRegion::kReplace_Op);
 }
 
 void SoftwareRenderer::clearFramebuffer(DrawingFrame& frame)
