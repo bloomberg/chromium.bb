@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -92,7 +93,8 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   const net::SSLConfig ssl_config_;
   net::ProxyService::PacRequest* pac_request_;
   net::ProxyInfo proxy_info_;
-  net::HostPortPair dest_host_port_pair_;
+  const net::HostPortPair dest_host_port_pair_;
+  const GURL proxy_url_;
   bool tried_direct_connect_fallback_;
   net::BoundNetLog bound_net_log_;
   base::WeakPtrFactory<ProxyResolvingClientSocket> weak_factory_;

@@ -9,7 +9,6 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_network_session.h"
@@ -34,6 +33,9 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
           ssl_config_(ssl_config),
           pac_request_(NULL),
           dest_host_port_pair_(dest_host_port_pair),
+          // Assume that we intend to do TLS on this socket; all
+          // current use cases do.
+          proxy_url_("https://" + dest_host_port_pair_.ToString()),
           tried_direct_connect_fallback_(false),
           bound_net_log_(
               net::BoundNetLog::Make(
@@ -46,6 +48,7 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
   DCHECK(request_context);
   DCHECK(!dest_host_port_pair_.host().empty());
   DCHECK_GT(dest_host_port_pair_.port(), 0);
+  DCHECK(proxy_url_.is_valid());
 
   net::HttpNetworkSession::Params session_params;
   session_params.client_socket_factory = socket_factory;
@@ -125,10 +128,8 @@ int ProxyResolvingClientSocket::Connect(
   tried_direct_connect_fallback_ = false;
 
   // First we try and resolve the proxy.
-  GURL url("http://" + dest_host_port_pair_.ToString());
-  DCHECK(url.is_valid());
   int status = network_session_->proxy_service()->ResolveProxy(
-      url,
+      proxy_url_,
       &proxy_info_,
       proxy_resolve_callback_,
       &pac_request_,
@@ -267,9 +268,8 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
         proxy_info_.proxy_server().host_port_pair().ToString());
   }
 
-  GURL url("http://" + dest_host_port_pair_.ToString());
   int rv = network_session_->proxy_service()->ReconsiderProxyAfterError(
-      url, &proxy_info_, proxy_resolve_callback_, &pac_request_,
+      proxy_url_, &proxy_info_, proxy_resolve_callback_, &pac_request_,
       bound_net_log_);
   if (rv == net::OK || rv == net::ERR_IO_PENDING) {
     CloseTransportSocket();
