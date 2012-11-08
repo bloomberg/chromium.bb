@@ -23,13 +23,6 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
       const DockInfo& dock_info,
       bool maximize) OVERRIDE;
   virtual int GetDragActions() const OVERRIDE;
-  virtual TabContents* CreateTabContentsForURL(
-      const GURL& url,
-      const content::Referrer& referrer,
-      Profile* profile,
-      content::PageTransition transition,
-      bool defer_load,
-      content::SiteInstance* instance) const OVERRIDE;
   virtual bool CanDuplicateContentsAt(int index) OVERRIDE;
   virtual void DuplicateContentsAt(int index) OVERRIDE;
   virtual void CloseFrameAfterDragSession() OVERRIDE;

@@ -9,20 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 
-class Browser;
-class DockInfo;
-class GURL;
-class TabContents;
-
-namespace content {
-struct Referrer;
-class SiteInstance;
-}
-
-namespace gfx {
-class Rect;
-}
-
 namespace chrome {
 
 class BrowserTabStripModelDelegate : public TabStripModelDelegate {
@@ -39,13 +25,6 @@ class BrowserTabStripModelDelegate : public TabStripModelDelegate {
       const DockInfo& dock_info,
       bool maximize) OVERRIDE;
   virtual int GetDragActions() const OVERRIDE;
-  virtual TabContents* CreateTabContentsForURL(
-      const GURL& url,
-      const content::Referrer& referrer,
-      Profile* profile,
-      content::PageTransition transition,
-      bool defer_load,
-      content::SiteInstance* instance) const OVERRIDE;
   virtual bool CanDuplicateContentsAt(int index) OVERRIDE;
   virtual void DuplicateContentsAt(int index) OVERRIDE;
   virtual void CloseFrameAfterDragSession() OVERRIDE;

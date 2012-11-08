@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/site_instance.h"
@@ -85,22 +84,6 @@ Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(
 int BrowserTabStripModelDelegate::GetDragActions() const {
   return TabStripModelDelegate::TAB_TEAROFF_ACTION |
       (browser_->tab_count() > 1 ? TabStripModelDelegate::TAB_MOVE_ACTION : 0);
-}
-
-TabContents* BrowserTabStripModelDelegate::CreateTabContentsForURL(
-    const GURL& url, const content::Referrer& referrer, Profile* profile,
-    content::PageTransition transition, bool defer_load,
-    content::SiteInstance* instance) const {
-  TabContents* contents = TabContentsFactory(profile, instance,
-      MSG_ROUTING_NONE, GetActiveWebContents(browser_));
-  if (!defer_load) {
-    // Load the initial URL before adding the new tab contents to the tab strip
-    // so that the tab contents has navigation state.
-    contents->web_contents()->GetController().LoadURL(
-        url, referrer, transition, std::string());
-  }
-
-  return contents;
 }
 
 bool BrowserTabStripModelDelegate::CanDuplicateContentsAt(int index) {

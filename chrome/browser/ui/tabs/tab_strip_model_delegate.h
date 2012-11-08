@@ -11,14 +11,9 @@
 
 class Browser;
 class DockInfo;
-class GURL;
-class Profile;
-class TabContents;
 
 namespace content {
-class SiteInstance;
 class WebContents;
-struct Referrer;
 }
 
 namespace gfx {
@@ -31,7 +26,7 @@ class Rect;
 //
 //  A delegate interface that the TabStripModel uses to perform work that it
 //  can't do itself, such as obtain a container HWND for creating new
-//  TabContentses, creating new TabStripModels for detached tabs, etc.
+//  WebContentses, creating new TabStripModels for detached tabs, etc.
 //
 //  This interface is typically implemented by the controller that instantiates
 //  the TabStripModel (in our case the Browser object).
@@ -74,19 +69,6 @@ class TabStripModelDelegate {
 
   // Determines what drag actions are possible for the specified strip.
   virtual int GetDragActions() const = 0;
-
-  // Creates an appropriate TabContents for the given URL. This is
-  // handled by the delegate since the TabContents may require special
-  // circumstances to exist for it to be constructed (e.g. a parent HWND).
-  // If |defer_load| is true, the navigation controller doesn't load the url.
-  // If |instance| is not null, its process is used to render the tab.
-  virtual TabContents* CreateTabContentsForURL(
-      const GURL& url,
-      const content::Referrer& referrer,
-      Profile* profile,
-      content::PageTransition transition,
-      bool defer_load,
-      content::SiteInstance* instance) const = 0;
 
   // Returns whether some contents can be duplicated.
   virtual bool CanDuplicateContentsAt(int index) = 0;

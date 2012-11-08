@@ -24,7 +24,6 @@ class OffscreenTabContentsCreator;
 class PanelHost;
 class Profile;
 class TabStripModel;
-class TabStripModelContentsCreator;
 
 namespace chromeos {
 class SimpleWebViewDialog;
@@ -80,7 +79,6 @@ class TabContents : public content::WebContentsObserver {
     // See crbug.com/153587
     friend class TabAndroid;
     friend class TabStripModel;
-    friend class TabStripModelContentsCreator;
     FRIEND_TEST_ALL_PREFIXES(SessionRestoreTest, SessionStorageAfterTabReplace);
 
     static TabContents* CreateTabContents(content::WebContents* contents);
