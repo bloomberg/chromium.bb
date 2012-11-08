@@ -89,6 +89,8 @@ class DriveFileSyncClient : public base::NonThreadSafe,
                        const DocumentFeedCallback& callback);
 
  private:
+  friend class DriveFileSyncClientTest;
+
   // Constructor for test use.
   DriveFileSyncClient(
       Profile* profile,
@@ -122,6 +124,8 @@ class DriveFileSyncClient : public base::NonThreadSafe,
   void DidGetDocumentFeedData(const DocumentFeedCallback& callback,
                               google_apis::GDataErrorCode error,
                               scoped_ptr<base::Value> data);
+
+  static std::string FormatTitleQuery(const std::string& title);
 
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
   scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader_;

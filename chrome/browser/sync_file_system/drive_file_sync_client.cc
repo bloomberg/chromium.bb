@@ -22,13 +22,6 @@ const char kSyncRootDirectoryName[] = "Chrome Syncable FileSystem";
 const char kResourceLinkPrefix[] =
     "https://docs.google.com/feeds/default/private/full/";
 
-std::string FormatTitleQuery(const std::string& title) {
-  // TODO(tzik): This pattern matches partial and case-insensitive,
-  // and also matches files in subdirectories.
-  // Refine the query after we migrate to Drive API.
-  return "title:" + net::EscapePath(title);
-}
-
 bool HasParentLinkTo(const ScopedVector<google_apis::Link>& links,
                      const std::string& parent_resource_id) {
   bool should_not_have_parent = parent_resource_id.empty();
@@ -286,6 +279,33 @@ void DriveFileSyncClient::DidGetDocumentFeedData(
                error == google_apis::HTTP_SUCCESS ?
                    google_apis::DocumentFeed::ExtractAndParse(*data) :
                    scoped_ptr<google_apis::DocumentFeed>());
+}
+
+// static
+std::string DriveFileSyncClient::FormatTitleQuery(const std::string& title) {
+  // TODO(tzik): This pattern matches partial and case-insensitive,
+  // and also matches files in subdirectories.
+  // Refine the query after we migrate to Drive API.
+  std::ostringstream out;
+  out << "title:";
+
+  // Escape single quote and back slash with '\\'.
+  // https://developers.google.com/drive/search-parameters
+  out << '\'';
+  for (std::string::const_iterator itr = title.begin();
+       itr != title.end(); ++itr) {
+    switch (*itr) {
+      case '\'':
+      case '\\':
+        out << '\\' << *itr;
+        break;
+      default:
+        out << *itr;
+        break;
+    }
+  }
+  out << '\'';
+  return out.str();
 }
 
 }  // namespace sync_file_system

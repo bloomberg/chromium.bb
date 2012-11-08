@@ -55,7 +55,7 @@ class DriveFileSyncClientTest : public testing::Test {
   DriveFileSyncClient* sync_client() { return sync_client_.get(); }
 
   std::string FormatTitleQuery(const std::string& title) {
-    return "title:" + net::EscapePath(title);
+    return DriveFileSyncClient::FormatTitleQuery(title);
   }
 
   StrictMock<google_apis::MockDriveService>* mock_drive_service() {
