@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/syncable/canned_syncable_file_system.h"
@@ -18,8 +18,6 @@
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
-using content::BrowserThread;
-using content::TestBrowserThread;
 using fileapi::FileChange;
 using fileapi::FileChangeList;
 using fileapi::FileSystemURL;
@@ -32,19 +30,6 @@ namespace {
 
 const char kOrigin[] = "http://example.com";
 const char kServiceName[] = "test";
-
-template <typename R>
-void Assign(const base::Closure& closure, R* result_out, R result) {
-  DCHECK(result_out);
-  *result_out = result;
-  closure.Run();
-}
-
-template <typename R> base::Callback<void(R)>
-AssignAndQuitCallback(base::RunLoop* run_loop, R* result) {
-  return base::Bind(&Assign<R>, run_loop->QuitClosure(),
-                    base::Unretained(result));
-}
 
 void DidPrepareForProcessRemoteChange(const tracked_objects::Location& where,
                                       const base::Closure& closure,
@@ -66,33 +51,19 @@ class LocalFileSyncServiceTest
     : public testing::Test,
       public LocalFileSyncService::Observer {
  protected:
-  LocalFileSyncServiceTest()
-      : file_thread_(new base::Thread("Thread_File")),
-        io_thread_(new base::Thread("Thread_IO")),
-        num_changes_(0) {}
+  LocalFileSyncServiceTest() : num_changes_(0) {}
 
   ~LocalFileSyncServiceTest() {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    file_thread_->Start();
-    io_thread_->StartWithOptions(
-        base::Thread::Options(MessageLoop::TYPE_IO, 0));
+    thread_helper_.SetUp();
 
-    browser_ui_thread_.reset(
-        new TestBrowserThread(BrowserThread::UI,
-                              MessageLoop::current()));
-    browser_file_thread_.reset(
-        new TestBrowserThread(BrowserThread::FILE,
-                              file_thread_->message_loop()));
-    browser_io_thread_.reset(
-        new TestBrowserThread(BrowserThread::IO,
-                              io_thread_->message_loop()));
     file_system_.reset(new fileapi::CannedSyncableFileSystem(
         GURL(kOrigin), kServiceName,
-        io_thread_->message_loop_proxy(),
-        file_thread_->message_loop_proxy()));
+        thread_helper_.io_task_runner(),
+        thread_helper_.file_task_runner()));
 
     local_service_.reset(new LocalFileSyncService);
 
@@ -115,8 +86,7 @@ class LocalFileSyncServiceTest
     file_system_->TearDown();
     fileapi::RevokeSyncableFileSystem(kServiceName);
 
-    file_thread_->Stop();
-    io_thread_->Stop();
+    thread_helper_.TearDown();
   }
 
   // LocalChangeObserver overrides.
@@ -151,13 +121,7 @@ class LocalFileSyncServiceTest
     return sync_status;
   }
 
-  MessageLoop message_loop_;
-  scoped_ptr<base::Thread> file_thread_;
-  scoped_ptr<base::Thread> io_thread_;
-
-  scoped_ptr<TestBrowserThread> browser_ui_thread_;
-  scoped_ptr<TestBrowserThread> browser_file_thread_;
-  scoped_ptr<TestBrowserThread> browser_io_thread_;
+  MultiThreadTestHelper thread_helper_;
 
   ScopedTempDir temp_dir_;
 
@@ -246,8 +210,8 @@ TEST_F(LocalFileSyncServiceTest, LocalChangeObserverMultipleContexts) {
   const char kOrigin2[] = "http://foo";
   fileapi::CannedSyncableFileSystem file_system2(
       GURL(kOrigin2), kServiceName,
-      io_thread_->message_loop_proxy(),
-      file_thread_->message_loop_proxy());
+      thread_helper_.io_task_runner(),
+      thread_helper_.file_task_runner());
   file_system2.SetUp();
   EXPECT_EQ(base::PLATFORM_FILE_OK, file_system2.OpenFileSystem());
 
