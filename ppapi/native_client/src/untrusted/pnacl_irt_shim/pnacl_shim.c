@@ -3,13 +3,14 @@
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: Wed Nov  7 09:50:53 2012. */
+/* Last generated from IDL: Wed Nov  7 13:45:01 2012. */
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_console_dev.h"
+#include "ppapi/c/dev/ppb_crypto_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
@@ -166,6 +167,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Buffer_Dev_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Console_Dev_0_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Crypto_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CursorControl_Dev_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5;
@@ -1380,6 +1382,8 @@ void Pnacl_M14_PPB_Console_Dev_LogWithSource(PP_Instance instance, PP_LogLevel_D
 }
 
 /* End wrapper methods for PPB_Console_Dev_0_1 */
+
+/* Not generating wrapper methods for PPB_Crypto_Dev_0_1 */
 
 /* Not generating wrapper methods for PPB_CursorControl_Dev_0_4 */
 
@@ -3818,6 +3822,8 @@ struct PPB_Console_Dev_0_1 Pnacl_Wrappers_PPB_Console_Dev_0_1 = {
     .LogWithSource = (void (*)(PP_Instance instance, PP_LogLevel_Dev level, struct PP_Var source, struct PP_Var value))&Pnacl_M14_PPB_Console_Dev_LogWithSource
 };
 
+/* Not generating wrapper interface for PPB_Crypto_Dev_0_1 */
+
 /* Not generating wrapper interface for PPB_CursorControl_Dev_0_4 */
 
 struct PPB_DeviceRef_Dev_0_1 Pnacl_Wrappers_PPB_DeviceRef_Dev_0_1 = {
@@ -4647,6 +4653,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Console_Dev_0_1 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Crypto_Dev_0_1 = {
+  .iface_macro = PPB_CRYPTO_DEV_INTERFACE_0_1,
+  .wrapped_iface = NULL /* Still need slot for real_iface */,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CursorControl_Dev_0_4 = {
   .iface_macro = PPB_CURSOR_CONTROL_DEV_INTERFACE_0_4,
   .wrapped_iface = NULL /* Still need slot for real_iface */,
@@ -5168,6 +5180,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_Buffer_Dev_0_4,
   &Pnacl_WrapperInfo_PPB_Console_Dev_0_1,
+  &Pnacl_WrapperInfo_PPB_Crypto_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_CursorControl_Dev_0_4,
   &Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5,
