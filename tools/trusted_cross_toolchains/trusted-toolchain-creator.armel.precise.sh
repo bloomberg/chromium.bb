@@ -59,7 +59,7 @@ readonly MAKE_OPTS="-j8"
 readonly CROSS_ARM_TC_REPO=http://archive.ubuntu.com/ubuntu
 # this is where we get all the armel packages from
 readonly ARMEL_REPO=http://ports.ubuntu.com/ubuntu-ports
-#
+
 readonly PACKAGE_LIST="${ARMEL_REPO}/dists/precise/main/binary-armel/Packages.bz2"
 
 # Packages for the host system
@@ -103,7 +103,8 @@ readonly ARMEL_BASE_PACKAGES="\
 # Additional jail packages needed to build chrome
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-readonly ARMEL_BASE_DEP_FILES="$(cat ${SCRIPT_DIR}/packagelist.precise.armel.base)"
+readonly ARMEL_BASE_DEP_LIST="${SCRIPT_DIR}/packagelist.precise.armel.base"
+readonly ARMEL_BASE_DEP_FILES="$(cat ${ARMEL_BASE_DEP_LIST})"
 
 readonly ARMEL_EXTRA_PACKAGES="\
   comerr-dev \
@@ -116,6 +117,8 @@ readonly ARMEL_EXTRA_PACKAGES="\
   libbz2-dev \
   libcairo2 \
   libcairo2-dev \
+  libcairo-gobject2 \
+  libcairo-script-interpreter2 \
   libcomerr2 \
   libcups2 \
   libcups2-dev \
@@ -137,27 +140,39 @@ readonly ARMEL_EXTRA_PACKAGES="\
   libgdk-pixbuf2.0-0 \
   libgdk-pixbuf2.0-dev \
   libgnutls26 \
+  libgnutlsxx27 \
   libgnutls-dev \
+  libgnutls-openssl27 \
   libgssapi-krb5-2 \
+  libgssrpc4 \
   libgtk2.0-0 \
   libgtk2.0-dev \
   libglib2.0-0 \
   libglib2.0-dev \
+  libgnome-keyring0 \
   libgnome-keyring-dev \
+  libkadm5clnt-mit8 \
+  libkadm5srv-mit8 \
+  libkdb5-6 \
   libkrb5-3 \
   libkrb5-dev \
+  libkrb5support0 \
   libk5crypto3 \
   libnspr4 \
   libnspr4-dev \
   libnss3 \
   libnss3-dev \
+  libnss-db \
   liborbit2 \
   libpam0g \
   libpam0g-dev \
   libpango1.0-0 \
   libpango1.0-dev \
+  libpci3 \
+  libpci-dev \
   libpcre3 \
   libpcre3-dev \
+  libpcrecpp0 \
   libpixman-1-0 \
   libpixman-1-dev \
   libpng12-0 \
@@ -208,7 +223,8 @@ readonly ARMEL_EXTRA_PACKAGES="\
 
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-readonly ARMEL_EXTRA_DEP_FILES="$(cat ${SCRIPT_DIR}/packagelist.precise.armel.extra)"
+readonly ARMEL_EXTRA_DEP_LIST="${SCRIPT_DIR}/packagelist.precise.armel.extra"
+readonly ARMEL_EXTRA_DEP_FILES="$(cat ${ARMEL_EXTRA_DEP_LIST})"
 
 ######################################################################
 # Helper
@@ -338,8 +354,8 @@ HacksAndPatches() {
   # This is for chrome's ./build/linux/pkg-config-wrapper
   # which overwrites PKG_CONFIG_PATH internally
   SubBanner "Package Configs Symlink"
-  mkdir -p  ${rel_path}/usr/share
-  ln -s  ../lib/arm-linux-gnueabi/pkgconfig ${rel_path}/usr/share/pkgconfig
+  mkdir -p ${rel_path}/usr/share
+  ln -s ../lib/arm-linux-gnueabi/pkgconfig ${rel_path}/usr/share/pkgconfig
 }
 
 
@@ -384,9 +400,16 @@ CleanupJailSymlinks() {
         ln -snfv "../..${target}" "${link}"
         ;;
     esac
-    # make sure we catch new bad links
+  done
+
+  find usr/lib -type l -printf '%p %l\n' | while read link target; do
+    # Make sure we catch new bad links.
+    # libnss_db.so is an exception this since is actually a broken link
+    # in Ubuntu. See /usr/lib/x86_64-linux-gnu/libnss_db.so on a
+    # precise desktop.
+    # TODO(sbc): remove this exception if/when Ubuntu fixes this link.
     if [ "${link}" == "usr/lib/arm-linux-gnueabi/libnss_db.so" ] ; then
-      echo "ignoring  known bad link: ${link}"
+      echo "ignoring known bad link: ${link}"
     elif [ ! -r "${link}" ]; then
       echo "ERROR: FOUND BAD LINK ${link}"
       exit -1
@@ -470,55 +493,47 @@ BuildJail() {
   CleanupJailSymlinks
   InstallTrustedLinkerScript
   HacksAndPatches
-  AddChromeWrapperScripts
-  exit
   BuildAndInstallQemu
   CreateTarBall $1
 }
 
 #@
-#@ AddChromeWrapperScripts
+#@ GeneratePackageList
 #@
-#@    Add some script which simplify cross compiling chrome.
-AddChromeWrapperScripts() {
-   SubBanner "Installing Chrome Wrapper"
-
-   cp -a tools/trusted_cross_toolchains/chrome.cc.arm.sh ${INSTALL_ROOT}/chrome.cc.arm.sh
-   cp -a tools/trusted_cross_toolchains/chrome.cc.arm.sh ${INSTALL_ROOT}/chrome.c++.arm.sh
-
-   cp -a tools/trusted_cross_toolchains/chrome.cc.host.sh ${INSTALL_ROOT}/chrome.cc.host.sh
-   cp -a tools/trusted_cross_toolchains/chrome.cc.host.sh ${INSTALL_ROOT}/chrome.c++.host.sh
-
-   chmod a+rx ${INSTALL_ROOT}/chrome.c*.sh
+#@     Looks up package names in ${TMP}/Packages and write list of URLs
+#@     to output file.
+#@
+GeneratePackageList() {
+  local output_file=$1
+  echo "Updating: ${output_file}"
+  /bin/rm -f ${output_file}
+  shift
+  for pkg in $@ ; do
+    local pkg_full=$(grep -A 1 "${pkg}\$" ${TMP}/Packages | egrep -o "pool/.*")
+    if [[ -z ${pkg_full} ]]; then
+        echo "ERROR: missing package: $pkg"
+        exit 1
+    fi
+    echo $pkg_full | sed "s/^pool\///" >> $output_file
+  done
+  # sort -o does an in-place sort of this file
+  sort $output_file -o $output_file
 }
 
 #@
-#@ GeneratePackageList
+#@ UpdatePackageLists
 #@
-#@     This will need some manual intervention, e.g. "pool/"
-#@     needs to be stripped and special characters like may "+" cause problems
+#@     Regenerate the armel package lists such that they contain an up-to-date
+#@     list of URLs within the ubuntu archive.
 #@
-GeneratePackageList() {
+UpdatePackageLists() {
   local package_list="${TMP}/Packages.precise.bz2"
   DownloadOrCopy ${PACKAGE_LIST} ${package_list}
   bzcat ${package_list} | egrep '^(Package:|Filename:)' > ${TMP}/Packages
-  echo  ${ARMEL_EXTRA_PACKAGES}
-  echo "# BEGIN:"
-  for pkg in $@ ; do
-    echo $pkg
-    grep  -A 1 "${pkg}\$" ${TMP}/Packages | egrep -o "pool/.*"
-  done
-  echo "# END:"
-}
 
-GeneratePackageListBase() {
-  GeneratePackageList "${ARMEL_BASE_PACKAGES}"
+  GeneratePackageList ${ARMEL_BASE_DEP_LIST} "${ARMEL_BASE_PACKAGES}"
+  GeneratePackageList ${ARMEL_EXTRA_DEP_LIST} "${ARMEL_EXTRA_PACKAGES}"
 }
-
-GeneratePackageListExtra() {
-  GeneratePackageList "${ARMEL_EXTRA_PACKAGES}"
-}
-
 
 if [[ $# -eq 0 ]] ; then
   echo "ERROR: you must specify a mode on the commandline"
