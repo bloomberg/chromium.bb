@@ -50,7 +50,8 @@ class BrowserTabStripModelDelegate : public TabStripModelDelegate {
   virtual void DuplicateContentsAt(int index) OVERRIDE;
   virtual void CloseFrameAfterDragSession() OVERRIDE;
   virtual void CreateHistoricalTab(content::WebContents* contents) OVERRIDE;
-  virtual bool RunUnloadListenerBeforeClosing(TabContents* contents) OVERRIDE;
+  virtual bool RunUnloadListenerBeforeClosing(
+      content::WebContents* contents) OVERRIDE;
   virtual bool CanBookmarkAllTabs() const OVERRIDE;
   virtual void BookmarkAllTabs() OVERRIDE;
   virtual bool CanRestoreTab() OVERRIDE;

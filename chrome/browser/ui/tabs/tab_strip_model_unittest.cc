@@ -107,7 +107,8 @@ class TabStripDummyDelegate : public TestTabStripModelDelegate {
       return dummy_contents_;
     return NULL;
   }
-  virtual bool RunUnloadListenerBeforeClosing(TabContents* contents) OVERRIDE {
+  virtual bool RunUnloadListenerBeforeClosing(
+      content::WebContents* contents) OVERRIDE {
     return run_unload_;
   }
 

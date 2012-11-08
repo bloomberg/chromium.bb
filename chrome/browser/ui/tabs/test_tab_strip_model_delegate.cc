@@ -57,7 +57,7 @@ void TestTabStripModelDelegate::CreateHistoricalTab(
 }
 
 bool TestTabStripModelDelegate::RunUnloadListenerBeforeClosing(
-    TabContents* contents) {
+    content::WebContents* contents) {
   return true;
 }
 

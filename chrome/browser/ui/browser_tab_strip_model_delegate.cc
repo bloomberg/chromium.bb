@@ -142,8 +142,8 @@ void BrowserTabStripModelDelegate::CreateHistoricalTab(
 }
 
 bool BrowserTabStripModelDelegate::RunUnloadListenerBeforeClosing(
-    TabContents* contents) {
-  return Browser::RunUnloadEventsHelper(contents->web_contents());
+    content::WebContents* contents) {
+  return Browser::RunUnloadEventsHelper(contents);
 }
 
 bool BrowserTabStripModelDelegate::CanBookmarkAllTabs() const {

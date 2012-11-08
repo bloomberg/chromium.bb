@@ -1157,13 +1157,13 @@ bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
           close_types & CLOSE_USER_GESTURE);
     }
 
-    TabContents* closing_tab_contents =
-        TabContents::FromWebContents(closing_contents);
-    if (delegate_->RunUnloadListenerBeforeClosing(closing_tab_contents)) {
+    if (delegate_->RunUnloadListenerBeforeClosing(closing_contents)) {
       retval = false;
       continue;
     }
 
+    TabContents* closing_tab_contents =
+        TabContents::FromWebContents(closing_contents);
     InternalCloseTab(closing_tab_contents, index,
                      (close_types & CLOSE_CREATE_HISTORICAL_TAB) != 0);
   }

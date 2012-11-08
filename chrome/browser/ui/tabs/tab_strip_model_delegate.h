@@ -103,12 +103,13 @@ class TabStripModelDelegate {
   // WebContents.
   virtual void CreateHistoricalTab(content::WebContents* contents) = 0;
 
-  // Runs any unload listeners associated with the specified TabContents
+  // Runs any unload listeners associated with the specified WebContents
   // before it is closed. If there are unload listeners that need to be run,
   // this function returns true and the TabStripModel will wait before closing
-  // the TabContents. If it returns false, there are no unload listeners
-  // and the TabStripModel can close the TabContents immediately.
-  virtual bool RunUnloadListenerBeforeClosing(TabContents* contents) = 0;
+  // the WebContents. If it returns false, there are no unload listeners
+  // and the TabStripModel will close the WebContents immediately.
+  virtual bool RunUnloadListenerBeforeClosing(
+      content::WebContents* contents) = 0;
 
   // Returns true if a tab can be restored.
   virtual bool CanRestoreTab() = 0;
