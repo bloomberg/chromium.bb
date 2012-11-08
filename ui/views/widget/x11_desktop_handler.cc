@@ -41,10 +41,8 @@ X11DesktopHandler* X11DesktopHandler::get() {
 X11DesktopHandler::X11DesktopHandler()
     : xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
-      atom_cache_(xdisplay_, kAtomsToCache),
-      focus_manager_(new aura::FocusManager),
-      desktop_activation_client_(
-          new aura::DesktopActivationClient(focus_manager_.get())) {
+      current_window_(None),
+      atom_cache_(xdisplay_, kAtomsToCache) {
   base::MessagePumpAuraX11::Current()->AddDispatcherForRootWindow(this);
   aura::Env::GetInstance()->AddObserver(this);
 
@@ -58,6 +56,28 @@ X11DesktopHandler::X11DesktopHandler()
 X11DesktopHandler::~X11DesktopHandler() {
   aura::Env::GetInstance()->RemoveObserver(this);
   base::MessagePumpAuraX11::Current()->RemoveDispatcherForRootWindow(this);
+}
+
+void X11DesktopHandler::ActivateWindow(::Window window) {
+  XEvent xclient;
+  memset(&xclient, 0, sizeof(xclient));
+  xclient.type = ClientMessage;
+  xclient.xclient.window = window;
+  xclient.xclient.message_type = atom_cache_.GetAtom("_NET_ACTIVE_WINDOW");
+  xclient.xclient.format = 32;
+  xclient.xclient.data.l[0] = 1;  // Specified we are an app.
+  xclient.xclient.data.l[1] = CurrentTime;
+  xclient.xclient.data.l[2] = None;
+  xclient.xclient.data.l[3] = 0;
+  xclient.xclient.data.l[4] = 0;
+
+  XSendEvent(xdisplay_, x_root_window_, False,
+             SubstructureRedirectMask | SubstructureNotifyMask,
+             &xclient);
+}
+
+bool X11DesktopHandler::IsActiveWindow(::Window window) const {
+  return window == current_window_;
 }
 
 bool X11DesktopHandler::Dispatch(const base::NativeEvent& event) {
@@ -89,23 +109,18 @@ void X11DesktopHandler::OnWillDestroyEnv() {
   delete this;
 }
 
-// This code should live elsewhere and should only trigger if a non-RootWindow
-// has been selected.
 void X11DesktopHandler::OnActiveWindowChanged(::Window xid) {
-#if defined(OS_CHROMEOS)
-  // This is a temporary hack because it looks like chromeos both does and
-  // doesn't include DNWHA in different targets. It'll be awesome when I can
-  // rip that out.
-  aura::Window* window = NULL;
-#else
-  aura::RootWindow* root_window =
-      aura::RootWindow::GetForAcceleratedWidget(xid);
-  aura::Window* window = root_window ?
-      views::DesktopRootWindowHostLinux::GetContentWindowForXID(xid) :
-      NULL;
-#endif
+  DesktopRootWindowHostLinux* old_host =
+      views::DesktopRootWindowHostLinux::GetHostForXID(current_window_);
+  if (old_host)
+    old_host->HandleNativeWidgetActivationChanged(false);
 
-  desktop_activation_client_->ActivateWindow(window);
+  DesktopRootWindowHostLinux* new_host =
+      views::DesktopRootWindowHostLinux::GetHostForXID(xid);
+  if (new_host)
+    new_host->HandleNativeWidgetActivationChanged(true);
+
+  current_window_ = xid;
 }
 
 }  // namespace views

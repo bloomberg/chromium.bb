@@ -52,8 +52,15 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
       const gfx::Rect& initial_bounds);
   virtual ~DesktopRootWindowHostLinux();
 
-  // A way of converting an xwindows |xid| into a |content_window_|.
+  // A way of converting an X11 |xid| host window into a |content_window_|.
   static aura::Window* GetContentWindowForXID(XID xid);
+
+  // A way of converting an X11 |xid| host window into this object.
+  static DesktopRootWindowHostLinux* GetHostForXID(XID xid);
+
+  // Called by X11DesktopHandler to notify us that the native windowing system
+  // has changed our activation.
+  void HandleNativeWidgetActivationChanged(bool active);
 
  private:
   // Initializes our X11 surface to draw on. This method performs all
@@ -202,6 +209,7 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
 
   // aura:: objects that we own.
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
+  scoped_ptr<aura::FocusManager> focus_manager_;
   scoped_ptr<aura::DesktopActivationClient> activation_client_;
   scoped_ptr<aura::DesktopCursorClient> cursor_client_;
   scoped_ptr<aura::DesktopDispatcherClient> dispatcher_client_;

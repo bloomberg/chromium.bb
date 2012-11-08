@@ -16,11 +16,6 @@
 
 template <typename T> struct DefaultSingletonTraits;
 
-namespace aura {
-class FocusManager;
-class DesktopActivationClient;
-}
-
 namespace views {
 
 // A singleton that owns global objects related to the desktop and listens for
@@ -33,12 +28,11 @@ class VIEWS_EXPORT X11DesktopHandler
   // Returns the singleton handler.
   static X11DesktopHandler* get();
 
-  aura::FocusManager* get_focus_manager() const {
-    return focus_manager_.get();
-  }
-  aura::DesktopActivationClient* get_activation_client() const {
-    return desktop_activation_client_.get();
-  }
+  // Sends a request to the window manager to activate |window|.
+  void ActivateWindow(::Window window);
+
+  // Checks if the current active window is |window|.
+  bool IsActiveWindow(::Window window) const;
 
   // Overridden from MessageLoop::Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
@@ -60,11 +54,10 @@ class VIEWS_EXPORT X11DesktopHandler
   // The native root window.
   ::Window x_root_window_;
 
-  ui::X11AtomCache atom_cache_;
+  // The activated window.
+  ::Window current_window_;
 
-  // Global focus/activation managers.
-  scoped_ptr<aura::FocusManager> focus_manager_;
-  scoped_ptr<aura::DesktopActivationClient> desktop_activation_client_;
+  ui::X11AtomCache atom_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(X11DesktopHandler);
 };

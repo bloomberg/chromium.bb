@@ -108,21 +108,10 @@ void DesktopActivationClient::OnWindowFocused(aura::Window* window) {
 }
 
 bool DesktopActivationClient::CanActivateWindow(aura::Window* window) const {
-  bool can_activate = window &&
+  return window &&
       window->IsVisible() &&
       (!aura::client::GetActivationDelegate(window) ||
        aura::client::GetActivationDelegate(window)->ShouldActivate(NULL));
-
-#if defined(OS_LINUX)
-  if (can_activate) {
-    // TODO(erg,ananta): Windows behaves differently than Linux; clicking will
-    // always send an activation message on windows while on Linux we'll need
-    // to emulate that behavior if views is expecting it.
-    can_activate = window->parent() == window->GetRootWindow();
-  }
-#endif
-
-  return can_activate;
 }
 
 aura::Window* DesktopActivationClient::GetActivatableWindow(

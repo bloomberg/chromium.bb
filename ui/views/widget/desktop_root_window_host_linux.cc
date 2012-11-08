@@ -42,6 +42,9 @@ DesktopRootWindowHostLinux* DesktopRootWindowHostLinux::g_current_capture =
 DEFINE_WINDOW_PROPERTY_KEY(
     aura::Window*, kViewsWindowForRootWindow, NULL);
 
+DEFINE_WINDOW_PROPERTY_KEY(
+    DesktopRootWindowHostLinux*, kHostForRootWindow, NULL);
+
 namespace {
 
 // Standard Linux mouse buttons for going back and forward.
@@ -87,6 +90,7 @@ DesktopRootWindowHostLinux::DesktopRootWindowHostLinux(
 }
 
 DesktopRootWindowHostLinux::~DesktopRootWindowHostLinux() {
+  root_window_->ClearProperty(kHostForRootWindow);
 }
 
 // static
@@ -167,6 +171,18 @@ aura::Window* DesktopRootWindowHostLinux::GetContentWindowForXID(XID xid) {
   return root ? root->GetProperty(kViewsWindowForRootWindow) : NULL;
 }
 
+// static
+DesktopRootWindowHostLinux* DesktopRootWindowHostLinux::GetHostForXID(XID xid) {
+  aura::RootWindow* root = aura::RootWindow::GetForAcceleratedWidget(xid);
+  return root ? root->GetProperty(kHostForRootWindow) : NULL;
+}
+
+void DesktopRootWindowHostLinux::HandleNativeWidgetActivationChanged(
+    bool active) {
+  native_widget_delegate_->OnNativeWidgetActivationChanged(active);
+  native_widget_delegate_->AsWidget()->GetRootView()->SchedulePaint();
+}
+
 // TODO(erg): This method should basically be everything I need form
 // RootWindowHostLinux::RootWindowHostLinux().
 aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
@@ -180,6 +196,7 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   root_window_->AddChild(content_window_);
   root_window_->SetLayoutManager(new DesktopLayoutManager(root_window_));
   root_window_->SetProperty(kViewsWindowForRootWindow, content_window_);
+  root_window_->SetProperty(kHostForRootWindow, this);
   root_window_host_delegate_ = root_window_;
 
   // If we're given a parent, we need to mark ourselves as transient to another
@@ -193,13 +210,17 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   capture_client_.reset(new aura::client::DefaultCaptureClient(root_window_));
   aura::client::SetCaptureClient(root_window_, capture_client_.get());
 
-  root_window_->set_focus_manager(
-      X11DesktopHandler::get()->get_focus_manager());
+  // Ensure that the X11DesktopHandler exists so that it dispatches activation
+  // messages to us.
+  X11DesktopHandler::get();
 
-  aura::DesktopActivationClient* activation_client =
-      X11DesktopHandler::get()->get_activation_client();
-  aura::client::SetActivationClient(
-      root_window_, activation_client);
+  focus_manager_.reset(new aura::FocusManager);
+  root_window_->set_focus_manager(focus_manager_.get());
+
+  activation_client_.reset(
+      new aura::DesktopActivationClient(root_window_->GetFocusManager()));
+  aura::client::SetActivationClient(root_window_,
+                                    activation_client_.get());
 
   dispatcher_client_.reset(new aura::DesktopDispatcherClient);
   aura::client::SetDispatcherClient(root_window_,
@@ -224,7 +245,7 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
 
   // TODO(erg): Unify this code once the other consumer goes away.
   x11_window_event_filter_.reset(
-      new X11WindowEventFilter(root_window_, activation_client));
+      new X11WindowEventFilter(root_window_, activation_client_.get()));
   x11_window_event_filter_->SetUseHostWindowBorders(false);
   root_window_event_filter_->AddFilter(x11_window_event_filter_.get());
 
@@ -232,6 +253,7 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   aura::client::SetWindowMoveClient(root_window_,
                                     x11_window_move_client_.get());
 
+  focus_manager_->SetFocusedWindow(content_window_, NULL);
   return root_window_;
 }
 
@@ -430,18 +452,16 @@ void DesktopRootWindowHostLinux::SetShape(gfx::NativeRegion native_region) {
 }
 
 void DesktopRootWindowHostLinux::Activate() {
-  aura::client::GetActivationClient(root_window_)->ActivateWindow(
-      content_window_);
+  X11DesktopHandler::get()->ActivateWindow(xwindow_);
 }
 
 void DesktopRootWindowHostLinux::Deactivate() {
-  aura::client::GetActivationClient(root_window_)->DeactivateWindow(
-      content_window_);
+  // Deactivating a window means activating nothing.
+  X11DesktopHandler::get()->ActivateWindow(None);
 }
 
 bool DesktopRootWindowHostLinux::IsActive() const {
-  return aura::client::GetActivationClient(root_window_)->
-      GetActiveWindow() == content_window_;
+  return X11DesktopHandler::get()->IsActiveWindow(xwindow_);
 }
 
 void DesktopRootWindowHostLinux::Maximize() {
