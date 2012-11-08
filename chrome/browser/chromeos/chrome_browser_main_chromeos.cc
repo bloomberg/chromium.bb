@@ -492,11 +492,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // portal detector starts to listen for notifications from
   // NetworkLibrary about changes in the NetworkManager and initiates
   // captive portal detection for active networks.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableChromeCaptivePortalDetector) &&
-      chromeos::NetworkPortalDetector::GetInstance()) {
+  if (chromeos::NetworkPortalDetector::GetInstance())
     chromeos::NetworkPortalDetector::GetInstance()->Init();
-  }
 
   chromeos::NotifyDisplayLocalStatePrefChanged();
 
@@ -565,11 +562,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   if (chromeos::CrosNetworkChangeNotifierFactory::GetInstance())
     chromeos::CrosNetworkChangeNotifierFactory::GetInstance()->Shutdown();
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableChromeCaptivePortalDetector) &&
-      chromeos::NetworkPortalDetector::GetInstance()) {
+  if (chromeos::NetworkPortalDetector::GetInstance())
     chromeos::NetworkPortalDetector::GetInstance()->Shutdown();
-  }
 
   // Tell DeviceSettingsService to stop talking to session_manager.
   chromeos::DeviceSettingsService::Get()->Shutdown();

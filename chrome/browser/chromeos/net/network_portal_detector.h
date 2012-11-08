@@ -8,17 +8,12 @@
 #include <string>
 
 #include "base/hash_tables.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/captive_portal/captive_portal_detector.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "googleurl/src/gurl.h"
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 namespace chromeos {
 
@@ -46,11 +41,11 @@ class NetworkPortalDetector
     virtual ~Observer() {}
   };
 
+  NetworkPortalDetector();
   virtual ~NetworkPortalDetector();
 
   void Init();
   void Shutdown();
-
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -66,8 +61,6 @@ class NetworkPortalDetector
   static NetworkPortalDetector* GetInstance();
 
  private:
-  friend class NetworkPortalDetectorTest;
-
   typedef std::string NetworkId;
   typedef base::hash_map<NetworkId, CaptivePortalState> CaptivePortalStateMap;
 
@@ -80,9 +73,6 @@ class NetworkPortalDetector
     // is pending.
     STATE_CHECKING_FOR_PORTAL_NETWORK_CHANGED,
   };
-
-  explicit NetworkPortalDetector(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
 
   // Initiates Captive Portal detection. If currently portal detection
   // in in progress, then delays portal detection.
@@ -102,8 +92,6 @@ class NetworkPortalDetector
   // Notifies observers that portal state is changed for a |network|.
   void NotifyPortalStateChanged(const Network* network,
                                 CaptivePortalState state);
-
-  State state() { return state_; }
 
   std::string active_network_id_;
   State state_;
