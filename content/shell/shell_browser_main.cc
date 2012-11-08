@@ -23,6 +23,7 @@
 namespace {
 
 GURL GetURLForLayoutTest(const std::string& test_name,
+                         FilePath* current_working_directory,
                          bool* enable_pixel_dumping,
                          std::string* expected_pixel_hash) {
   // A test name is formated like file:///path/to/test'--pixel-test'pixelhash
@@ -56,10 +57,14 @@ GURL GetURLForLayoutTest(const std::string& test_name,
 #endif
   }
   FilePath local_path;
-  if (net::FileURLToFilePath(test_url, &local_path)) {
-    // We're outside of the message loop here, and this is a test.
+  {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    file_util::SetCurrentDirectory(local_path.DirName());
+    if (net::FileURLToFilePath(test_url, &local_path)) {
+      // We're outside of the message loop here, and this is a test.
+      file_util::SetCurrentDirectory(local_path.DirName());
+    }
+    if (current_working_directory)
+      file_util::GetCurrentDirectory(current_working_directory);
   }
   return test_url;
 }
@@ -119,10 +124,11 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
 
       bool enable_pixel_dumps;
       std::string pixel_hash;
+      FilePath cwd;
       GURL test_url = GetURLForLayoutTest(
-          test_string, &enable_pixel_dumps, &pixel_hash);
+          test_string, &cwd, &enable_pixel_dumps, &pixel_hash);
       if (!content::WebKitTestController::Get()->PrepareForLayoutTest(
-              test_url, enable_pixel_dumps, pixel_hash)) {
+              test_url, cwd, enable_pixel_dumps, pixel_hash)) {
         break;
       }
 

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/cancelable_callback.h"
+#include "base/file_path.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -71,6 +72,7 @@ class WebKitTestController : public base::NonThreadSafe,
 
   // True if the controller is ready for testing.
   bool PrepareForLayoutTest(const GURL& test_url,
+                            const FilePath& current_working_directory,
                             bool enable_pixel_dumping,
                             const std::string& expected_pixel_hash);
   // True if the controller was reset successfully.
@@ -126,6 +128,8 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnPrintMessage(const std::string& message);
 
   scoped_ptr<WebKitTestResultPrinter> printer_;
+
+  FilePath current_working_directory_;
 
   Shell* main_window_;
 

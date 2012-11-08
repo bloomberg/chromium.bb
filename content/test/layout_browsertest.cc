@@ -153,7 +153,8 @@ void InProcessBrowserLayoutTest::RunLayoutTestInternal(
   test_controller_->set_printer(printer.release());
 
   LOG(INFO) << "Navigating to URL " << url << " and blocking.";
-  ASSERT_TRUE(test_controller_->PrepareForLayoutTest(url, false, ""));
+  ASSERT_TRUE(
+      test_controller_->PrepareForLayoutTest(url, FilePath(), false, ""));
   base::RunLoop run_loop;
   run_loop.Run();
   LOG(INFO) << "Navigation completed.";

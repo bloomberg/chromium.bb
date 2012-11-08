@@ -141,9 +141,11 @@ WebKitTestController::~WebKitTestController() {
 
 bool WebKitTestController::PrepareForLayoutTest(
     const GURL& test_url,
+    const FilePath& current_working_directory,
     bool enable_pixel_dumping,
     const std::string& expected_pixel_hash) {
   DCHECK(CalledOnValidThread());
+  current_working_directory_ = current_working_directory;
   enable_pixel_dumping_ = enable_pixel_dumping;
   expected_pixel_hash_ = expected_pixel_hash;
   if (test_url.spec().find("/dumpAsText/") != std::string::npos ||
@@ -241,12 +243,10 @@ void WebKitTestController::PluginCrashed(const FilePath& plugin_path) {
 }
 
 void WebKitTestController::RenderViewReady() {
-  FilePath cwd;
-  file_util::GetCurrentDirectory(&cwd);
   RenderViewHost* render_view_host =
       main_window_->web_contents()->GetRenderViewHost();
   render_view_host->Send(new ShellViewMsg_SetCurrentWorkingDirectory(
-      render_view_host->GetRoutingID(), cwd));
+      render_view_host->GetRoutingID(), current_working_directory_));
   if (did_set_as_main_window_)
     return;
   render_view_host->Send(new ShellViewMsg_SetIsMainWindow(
