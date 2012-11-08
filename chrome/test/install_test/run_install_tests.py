@@ -8,12 +8,14 @@
 Install tests are performed using a single Chrome build, whereas two or more
 builds are needed for Update tests. There are separate command arguments for
 the builds that will be used for each of the tests. If a test file contains
-both types of tests(Install and Update), both arguments should be specified.
+both types of tests(install and update), both arguments should be specified.
 Otherwise, specify only the command argument that is required for the test.
-This script can be used as an executable to run other Install/Upgrade tests.
+To run a test with this script, append the module name to the _TEST_MODULES
+list. Modules added to the list must be in the same directory or in a sub-
+directory that's in the same location as this script.
 
 Example:
-    $ python run_install_test.py <script_name> --url=<chrome_builds_url> \
+    $ python run_install_test.py --url=<chrome_builds_url> --filter=* \
       --install-build=24.0.1290.0 --update-builds=24.0.1289.0,24.0.1290.0
 """
 
@@ -27,12 +29,17 @@ import unittest
 
 import chrome_installer_win
 from install_test import InstallTest
-import sample_updater
 
 _DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(os.path.dirname(_DIRECTORY), 'pyautolib'))
 
 import pyauto_utils
+
+# To run tests from a module, append the module name to this list.
+_TEST_MODULES = ['sample_updater']
+
+for module in _TEST_MODULES:
+  __import__(module)
 
 
 class Main(object):
@@ -181,14 +188,13 @@ class Main(object):
 
   def _Run(self):
     """Runs the unit tests."""
-    all_tests = unittest.defaultTestLoader.loadTestsFromModule(sample_updater)
+    all_tests = unittest.defaultTestLoader.loadTestsFromNames(_TEST_MODULES)
     tests = self._FilterTestSuite(all_tests, self._opts.filter)
     result = pyauto_utils.GTestTextTestRunner(verbosity=1).run(tests)
     # Run tests again if installation type is 'both'(i.e., user and system).
     if self._opts.install_type == 'both':
       # Load the tests again so test parameters can be reinitialized.
-      all_tests = unittest.defaultTestLoader.loadTestsFromModule(
-          sample_updater)
+      all_tests = unittest.defaultTestLoader.loadTestsFromNames(_TEST_MODULES)
       tests = self._FilterTestSuite(all_tests, self._opts.filter)
       InstallTest.SetInstallType(chrome_installer_win.InstallationType.SYSTEM)
       result = pyauto_utils.GTestTextTestRunner(verbosity=1).run(tests)
