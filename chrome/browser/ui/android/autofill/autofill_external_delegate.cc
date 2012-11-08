@@ -35,18 +35,9 @@ void AutofillExternalDelegate::CreateForWebContentsAndManager(
 AutofillExternalDelegateAndroid::AutofillExternalDelegateAndroid(
     content::WebContents* web_contents, AutofillManager* manager)
     : AutofillExternalDelegate(web_contents, manager) {
-  content::ContentViewCore* content_view_core =
-      content::ContentViewCore::FromWebContents(web_contents);
-
   JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> container_view_delegate;
-  // content_view_core should only be NULL for testing.
-  if (content_view_core) {
-    container_view_delegate = content_view_core->GetContainerViewDelegate();
-  }
-
   java_object_.Reset(Java_AutofillExternalDelegate_create(env,
-      reinterpret_cast<jint>(this), container_view_delegate.obj()));
+      reinterpret_cast<jint>(this)));
 }
 
 AutofillExternalDelegateAndroid::~AutofillExternalDelegateAndroid() {}
@@ -92,8 +83,20 @@ void AutofillExternalDelegateAndroid::ApplyAutofillSuggestions(
   }
   ui::WindowAndroid* window_android =
       WindowAndroidHelper::FromWebContents(web_contents())->GetWindowAndroid();
-  Java_AutofillExternalDelegate_openAutofillPopup(env, java_object_.obj(),
-      window_android->GetJavaObject().obj(), data_array.obj());
+
+  // ContainerViewDelege is passed in here because ContentViewCore is null at
+  // the construction of AutofillExternalDelegete for pre-rendered pages.
+  content::ContentViewCore* content_view_core =
+      content::ContentViewCore::FromWebContents(web_contents());
+  base::android::ScopedJavaLocalRef<jobject> container_view_delegate =
+      content_view_core->GetContainerViewDelegate();
+
+  Java_AutofillExternalDelegate_openAutofillPopup(
+      env,
+      java_object_.obj(),
+      container_view_delegate.obj(),
+      window_android->GetJavaObject().obj(),
+      data_array.obj());
 }
 
 void AutofillExternalDelegateAndroid::HideAutofillPopupInternal() {

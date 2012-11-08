@@ -19,32 +19,18 @@ public class AutofillExternalDelegate {
     private Rect mAutofillAnchorRect;
     private AutofillWindow mAutofillWindow;
     private final int mNativeAutofillExternalDelegate;
-    private final ContainerViewDelegate mContainerViewDelegate;
 
     /**
      * Creates an AutofillExternalDelegate object.
      * @param nativeAutofillExternalDelegate A pointer to the native AutofillExternalDelegate.
-     * @param containerViewDelegate A delegate that allows adding and removing views.
      */
-    public AutofillExternalDelegate(int nativeAutofillExternalDelegate,
-            ContainerViewDelegate containerViewDelegate) {
+    public AutofillExternalDelegate(int nativeAutofillExternalDelegate) {
         mNativeAutofillExternalDelegate = nativeAutofillExternalDelegate;
-        mContainerViewDelegate = containerViewDelegate;
     }
 
     @CalledByNative
-    private static AutofillExternalDelegate create(int nativeAutofillExternalDelegate,
-            ContainerViewDelegate containerViewDelegate) {
-        return new AutofillExternalDelegate(nativeAutofillExternalDelegate, containerViewDelegate);
-    }
-
-    /**
-     * Sets the autofill window's position in the proper space (window space).
-     */
-    private void setAutofillWindowPosition() {
-        if (mAutofillWindow != null && mAutofillAnchorRect != null) {
-            mAutofillWindow.setPositionAround(mAutofillAnchorRect);
-        }
+    private static AutofillExternalDelegate create(int nativeAutofillExternalDelegate) {
+        return new AutofillExternalDelegate(nativeAutofillExternalDelegate);
     }
 
     /**
@@ -62,16 +48,17 @@ public class AutofillExternalDelegate {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void openAutofillPopup(NativeWindow nativeWindow, AutofillSuggestion[] data) {
+    private void openAutofillPopup(ContainerViewDelegate containerViewDelegate,
+            NativeWindow nativeWindow, AutofillSuggestion[] data) {
         if (mAutofillWindow == null) {
-            mAutofillWindow = new AutofillWindow(nativeWindow, mContainerViewDelegate, this, data);
+            mAutofillWindow = new AutofillWindow(nativeWindow, containerViewDelegate, this, data);
         } else {
             mAutofillWindow.setAutofillSuggestions(data);
         }
-        if (mAutofillAnchorRect != null) {
-            setAutofillWindowPosition();
-            mAutofillWindow.show();
-        }
+        assert mAutofillAnchorRect != null :
+                "Autofill anchor rect should have been set by setBounds()";
+        mAutofillWindow.setPositionAround(mAutofillAnchorRect);
+        mAutofillWindow.show();
     }
 
     @SuppressWarnings("unused")
@@ -87,7 +74,6 @@ public class AutofillExternalDelegate {
     @CalledByNative
     private void setAutofillAnchorRect(float x, float y, float width, float height) {
         mAutofillAnchorRect = new Rect((int) x, (int) y, (int) (x + width), (int) (y + height));
-        setAutofillWindowPosition();
     }
 
     @SuppressWarnings("unused")
