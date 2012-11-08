@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "net/base/net_util.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
@@ -111,18 +112,26 @@ bool TypedUrlModelAssociator::FixupURLAndGetVisits(
   return true;
 }
 
-bool TypedUrlModelAssociator::ShouldIgnoreUrl(
-    const history::URLRow& url, const history::VisitVector& visits) {
+bool TypedUrlModelAssociator::ShouldIgnoreUrl(const GURL& url) {
   // Ignore empty URLs. Not sure how this can happen (maybe import from other
   // busted browsers, or misuse of the history API, or just plain bugs) but we
   // can't deal with them.
-  if (url.url().spec().empty())
+  if (url.spec().empty())
     return true;
 
   // Ignore local file URLs.
-  if (GURL(url.url()).SchemeIsFile())
+  if (url.SchemeIsFile())
     return true;
 
+  // Ignore localhost URLs.
+  if (net::IsLocalhost(url.host()))
+    return true;
+
+  return false;
+}
+
+bool TypedUrlModelAssociator::ShouldIgnoreVisits(
+    const history::VisitVector& visits) {
   // We ignore URLs that were imported, but have never been visited by
   // chromium.
   static const int kLastImportedSource = history::SOURCE_EXTENSION;
@@ -184,7 +193,8 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
       return syncer::SyncError();
     DCHECK_EQ(0U, visit_vectors.count(ix->id()));
     if (!FixupURLAndGetVisits(&(*ix), &(visit_vectors[ix->id()])) ||
-        ShouldIgnoreUrl(*ix, visit_vectors[ix->id()])) {
+        ShouldIgnoreUrl(ix->url()) ||
+        ShouldIgnoreVisits(visit_vectors[ix->id()])) {
       // Ignore this URL if we couldn't load the visits or if there's some
       // other problem with it (it was empty, or imported and never visited).
       ix = typed_urls.erase(ix);

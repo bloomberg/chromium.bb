@@ -160,6 +160,10 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   static void UpdateURLRowFromTypedUrlSpecifics(
       const sync_pb::TypedUrlSpecifics& specifics, history::URLRow* url_row);
 
+  // Helper function that determines if we should ignore a URL for the purposes
+  // of sync, because it contains invalid data.
+  bool ShouldIgnoreUrl(const GURL& url);
+
  protected:
   // Returns true if pending_abort_ is true. Overridable by tests.
   virtual bool IsAbortPending();
@@ -175,9 +179,8 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   syncer::SyncError DoAssociateModels();
 
   // Helper function that determines if we should ignore a URL for the purposes
-  // of sync, because it contains invalid data or is import-only.
-  bool ShouldIgnoreUrl(const history::URLRow& url,
-                       const history::VisitVector& visits);
+  // of sync, based on the visits the URL had.
+  bool ShouldIgnoreVisits(const history::VisitVector& visits);
 
   ProfileSyncService* sync_service_;
   history::HistoryBackend* history_backend_;
