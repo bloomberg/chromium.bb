@@ -318,11 +318,11 @@ class ThreadPool(object):
   """
   QUEUE_CLASS = Queue.Queue
 
-  def __init__(self, num_threads):
+  def __init__(self, num_threads, queue_size=0):
     logging.debug('Creating ThreadPool')
-    self._tasks = self.QUEUE_CLASS()
+    self.tasks = self.QUEUE_CLASS(queue_size)
     self._workers = [
-      WorkerThread(self._tasks, name='worker-%d' % i)
+      WorkerThread(self.tasks, name='worker-%d' % i)
       for i in range(num_threads)
     ]
 
@@ -332,17 +332,11 @@ class ThreadPool(object):
     The function's return value will be stored in the the worker's thread local
     outputs list.
     """
-    self._tasks.put((func, args, kwargs))
+    self.tasks.put((func, args, kwargs))
 
-  def join(self, progress):
+  def join(self):
     """Extracts all the results from each threads unordered."""
-    if progress:
-      # Too many positional arguments for function call
-      # pylint: disable=E1121
-      self._tasks.join(progress)
-    else:
-      # pylint: disable=E1121
-      self._tasks.join()
+    self.tasks.join()
     out = []
     # Look for exceptions.
     for w in self._workers:
@@ -356,7 +350,7 @@ class ThreadPool(object):
     """Closes all the threads."""
     for _ in range(len(self._workers)):
       # Enqueueing None causes the worker to stop.
-      self._tasks.put(None)
+      self.tasks.put(None)
     for t in self._workers:
       t.join()
 

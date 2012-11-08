@@ -210,6 +210,10 @@ def call_with_timeout(cmd, timeout, **kwargs):
 
 class QueueWithProgress(Queue.Queue):
   """Implements progress support in join()."""
+  def __init__(self, maxsize, *args, **kwargs):
+    Queue.Queue.__init__(self, *args, **kwargs)
+    self.progress = Progress(maxsize)
+
   def task_done(self):
     """Contrary to Queue.task_done(), it wakes self.all_tasks_done at each task
     done.
@@ -225,17 +229,15 @@ class QueueWithProgress(Queue.Queue):
     finally:
       self.all_tasks_done.release()
 
-  # QueueWithProgress.join: Arguments number differs from overridden method
-  # pylint: disable=W0221
-  def join(self, progress):
+  def join(self):
     """Calls print_update() whenever possible."""
-    progress.print_update()
+    self.progress.print_update()
     self.all_tasks_done.acquire()
     try:
       while self.unfinished_tasks:
-        progress.print_update()
+        self.progress.print_update()
         self.all_tasks_done.wait()
-      progress.print_update()
+      self.progress.print_update()
     finally:
       self.all_tasks_done.release()
 
@@ -615,20 +617,20 @@ def run_test_cases(
   """Traces test cases one by one."""
   if not test_cases:
     return 0
-  progress = Progress(len(test_cases))
   if run_all:
     decider = RunAll()
   else:
     # If 10% of test cases fail, just too bad.
     decider = RunSome(len(test_cases), retries, 2, 0.1, max_failures)
-  with ThreadPool(jobs) as pool:
-    function = Runner(cmd, os.getcwd(), timeout, progress, retries, decider).map
+  with ThreadPool(jobs, len(test_cases)) as pool:
+    function = Runner(
+        cmd, os.getcwd(), timeout, pool.tasks.progress, retries, decider).map
     logging.debug('Adding tests to ThreadPool')
     for test_case in test_cases:
       pool.add_task(function, test_case)
     logging.debug('All tests added to the ThreadPool')
-    results = pool.join(progress)
-    duration = time.time() - progress.start
+    results = pool.join()
+    duration = time.time() - pool.tasks.progress.start
 
   results = dict((item[0]['test_case'], item) for item in results if item)
   # Total time taken to run each test case.

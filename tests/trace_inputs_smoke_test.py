@@ -453,7 +453,8 @@ class TraceInputsImport(TraceInputsBase):
       resultcode, output = tracer.trace(cmd, cwd, tracename, True)
       return (tracename, resultcode, output)
 
-    with run_test_cases.ThreadPool(parallel) as pool:
+    with run_test_cases.ThreadPool(parallel, 0) as pool:
+      pool.tasks.progress = FakeProgress()
       api = self.trace_inputs.get_api()
       with api.get_tracer(self.log) as tracer:
         pool.add_task(
@@ -473,7 +474,7 @@ class TraceInputsImport(TraceInputsBase):
             trace, tracer, self.get_child_command(False), ROOT_DIR, 'trace7')
         pool.add_task(
             trace, tracer, self.get_child_command(True), self.cwd, 'trace8')
-        trace_results = pool.join(FakeProgress())
+        trace_results = pool.join()
     def blacklist(f):
       return f.endswith(('.pyc', 'do_not_care.txt', '.git', '.svn'))
     actual_results = api.parse_log(self.log, blacklist, None)

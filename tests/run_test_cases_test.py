@@ -177,10 +177,11 @@ class FakeProgress(object):
 class WorkerPoolTest(unittest.TestCase):
   def test_normal(self):
     mapper = lambda value: -value
-    with run_test_cases.ThreadPool(8) as pool:
+    with run_test_cases.ThreadPool(8, 0) as pool:
+      pool.tasks.progress = FakeProgress()
       for i in range(32):
         pool.add_task(mapper, i)
-      results = pool.join(FakeProgress())
+      results = pool.join()
     self.assertEquals(range(-31, 1), sorted(results))
 
   def test_exception(self):
@@ -190,10 +191,11 @@ class WorkerPoolTest(unittest.TestCase):
       raise FearsomeException(value)
     task_added = False
     try:
-      with run_test_cases.ThreadPool(8) as pool:
+      with run_test_cases.ThreadPool(8, 0) as pool:
+        pool.tasks.progress = FakeProgress()
         pool.add_task(mapper, 0)
         task_added = True
-        pool.join(FakeProgress())
+        pool.join()
         self.fail()
     except FearsomeException:
       self.assertEquals(True, task_added)
