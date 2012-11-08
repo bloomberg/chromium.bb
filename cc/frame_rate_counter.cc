@@ -24,8 +24,8 @@ static inline int safeMod(int number, int modulus)
 }
 
 // static
-scoped_ptr<FrameRateCounter> FrameRateCounter::create() {
-  return make_scoped_ptr(new FrameRateCounter());
+scoped_ptr<FrameRateCounter> FrameRateCounter::create(bool hasImplThread) {
+  return make_scoped_ptr(new FrameRateCounter(hasImplThread));
 }
 
 inline base::TimeDelta FrameRateCounter::frameInterval(int frameNumber) const
@@ -39,8 +39,9 @@ inline int FrameRateCounter::frameIndex(int frameNumber) const
     return safeMod(frameNumber, kTimeStampHistorySize);
 }
 
-FrameRateCounter::FrameRateCounter()
-    : m_currentFrameNumber(1)
+FrameRateCounter::FrameRateCounter(bool hasImplThread)
+    : m_hasImplThread(hasImplThread)
+    , m_currentFrameNumber(1)
     , m_droppedFrameCount(0)
 {
     m_timeStampHistory[0] = base::TimeTicks::Now();
@@ -54,7 +55,7 @@ void FrameRateCounter::markBeginningOfFrame(base::TimeTicks timestamp)
     m_timeStampHistory[frameIndex(m_currentFrameNumber)] = timestamp;
     base::TimeDelta frameIntervalSeconds = frameInterval(m_currentFrameNumber);
 
-    if (Proxy::hasImplThread() && m_currentFrameNumber > 0) {
+    if (m_hasImplThread && m_currentFrameNumber > 0) {
         HISTOGRAM_CUSTOM_COUNTS("Renderer4.CompositorThreadImplDrawDelay", frameIntervalSeconds.InMilliseconds(), 1, 120, 60);
     }
 
@@ -71,7 +72,7 @@ void FrameRateCounter::markEndOfFrame()
 bool FrameRateCounter::isBadFrameInterval(base::TimeDelta intervalBetweenConsecutiveFrames) const
 {
     double delta = intervalBetweenConsecutiveFrames.InSecondsF();
-    bool schedulerAllowsDoubleFrames = !Proxy::hasImplThread();
+    bool schedulerAllowsDoubleFrames = !m_hasImplThread;
     bool intervalTooFast = schedulerAllowsDoubleFrames ? delta < kFrameTooFast : delta <= 0.0;
     bool intervalTooSlow = delta > kFrameTooSlow;
     return intervalTooFast || intervalTooSlow;

@@ -8,7 +8,6 @@
 
 #include "base/debug/trace_event.h"
 #include "cc/prioritized_resource.h"
-#include "cc/proxy.h"
 #include "cc/resource_provider.h"
 #include "cc/texture_copier.h"
 #include "cc/thread.h"
@@ -71,8 +70,9 @@ size_t ResourceUpdateController::maxFullUpdatesPerTick(
     return texturesPerTick ? texturesPerTick : 1;
 }
 
-ResourceUpdateController::ResourceUpdateController(ResourceUpdateControllerClient* client, Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
+ResourceUpdateController::ResourceUpdateController(ResourceUpdateControllerClient* client, Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider, bool hasImplThread)
     : m_client(client)
+    , m_hasImplThread(hasImplThread)
     , m_queue(queue.Pass())
     , m_resourceProvider(resourceProvider)
     , m_textureUpdatesPerTick(maxFullUpdatesPerTick(resourceProvider))
@@ -133,10 +133,10 @@ void ResourceUpdateController::updateTexture(ResourceUpdate update)
         DCHECK(m_resourceProvider->resourceType(texture->resourceId()) ==
                ResourceProvider::GLTexture);
 
-        WebGraphicsContext3D* paintContext = Proxy::hasImplThread() ?
+        WebGraphicsContext3D* paintContext = m_hasImplThread ?
             WebSharedGraphicsContext3D::compositorThreadContext() :
             WebSharedGraphicsContext3D::mainThreadContext();
-        GrContext* paintGrContext = Proxy::hasImplThread() ?
+        GrContext* paintGrContext = m_hasImplThread ?
             WebSharedGraphicsContext3D::compositorThreadGrContext() :
             WebSharedGraphicsContext3D::mainThreadGrContext();
 

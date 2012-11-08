@@ -14,6 +14,7 @@
 #include "cc/proxy.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/animation_test_common.h"
+#include "cc/test/fake_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace cc;
@@ -132,8 +133,6 @@ void expectTreesAreIdentical(Layer* layer, LayerImpl* layerImpl, LayerTreeHostIm
 // return a null tree.
 TEST(TreeSynchronizerTest, syncNullTree)
 {
-    DebugScopedSetImplThread impl;
-
     scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(0, scoped_ptr<LayerImpl>(), 0);
 
     EXPECT_TRUE(!layerImplTreeRoot.get());
@@ -142,10 +141,10 @@ TEST(TreeSynchronizerTest, syncNullTree)
 // Constructs a very simple tree and synchronizes it without trying to reuse any preexisting layers.
 TEST(TreeSynchronizerTest, syncSimpleTreeFromEmpty)
 {
-    DebugScopedSetImplThread impl;
-
     LayerTreeSettings settings;
-    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0);
+    FakeProxy proxy(scoped_ptr<Thread>(NULL));
+    DebugScopedSetImplThread impl(&proxy);
+    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0, &proxy);
 
     scoped_refptr<Layer> layerTreeRoot = Layer::create();
     layerTreeRoot->addChild(Layer::create());
@@ -159,11 +158,12 @@ TEST(TreeSynchronizerTest, syncSimpleTreeFromEmpty)
 // Constructs a very simple tree and synchronizes it attempting to reuse some layers
 TEST(TreeSynchronizerTest, syncSimpleTreeReusingLayers)
 {
-    DebugScopedSetImplThread impl;
     std::vector<int> layerImplDestructionList;
 
     LayerTreeSettings settings;
-    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0);
+    FakeProxy proxy(scoped_ptr<Thread>(NULL));
+    DebugScopedSetImplThread impl(&proxy);
+    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0, &proxy);
 
     scoped_refptr<Layer> layerTreeRoot = MockLayer::create(&layerImplDestructionList);
     layerTreeRoot->addChild(MockLayer::create(&layerImplDestructionList));
@@ -189,11 +189,12 @@ TEST(TreeSynchronizerTest, syncSimpleTreeReusingLayers)
 // Constructs a very simple tree and checks that a stacking-order change is tracked properly.
 TEST(TreeSynchronizerTest, syncSimpleTreeAndTrackStackingOrderChange)
 {
-    DebugScopedSetImplThread impl;
     std::vector<int> layerImplDestructionList;
 
     LayerTreeSettings settings;
-    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0);
+    FakeProxy proxy(scoped_ptr<Thread>(NULL));
+    DebugScopedSetImplThread impl(&proxy);
+    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0, &proxy);
 
     // Set up the tree and sync once. child2 needs to be synced here, too, even though we
     // remove it to set up the intended scenario.
@@ -219,10 +220,10 @@ TEST(TreeSynchronizerTest, syncSimpleTreeAndTrackStackingOrderChange)
 
 TEST(TreeSynchronizerTest, syncSimpleTreeAndProperties)
 {
-    DebugScopedSetImplThread impl;
-
     LayerTreeSettings settings;
-    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0);
+    FakeProxy proxy(scoped_ptr<Thread>(NULL));
+    DebugScopedSetImplThread impl(&proxy);
+    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0, &proxy);
 
     scoped_refptr<Layer> layerTreeRoot = Layer::create();
     layerTreeRoot->addChild(Layer::create());
@@ -255,11 +256,12 @@ TEST(TreeSynchronizerTest, syncSimpleTreeAndProperties)
 
 TEST(TreeSynchronizerTest, reuseLayerImplsAfterStructuralChange)
 {
-    DebugScopedSetImplThread impl;
     std::vector<int> layerImplDestructionList;
 
     LayerTreeSettings settings;
-    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0);
+    FakeProxy proxy(scoped_ptr<Thread>(NULL));
+    DebugScopedSetImplThread impl(&proxy);
+    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0, &proxy);
 
     // Set up a tree with this sort of structure:
     // root --- A --- B ---+--- C
@@ -305,11 +307,12 @@ TEST(TreeSynchronizerTest, reuseLayerImplsAfterStructuralChange)
 // Constructs a very simple tree, synchronizes it, then synchronizes to a totally new tree. All layers from the old tree should be deleted.
 TEST(TreeSynchronizerTest, syncSimpleTreeThenDestroy)
 {
-    DebugScopedSetImplThread impl;
     std::vector<int> layerImplDestructionList;
 
     LayerTreeSettings settings;
-    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0);
+    FakeProxy proxy(scoped_ptr<Thread>(NULL));
+    DebugScopedSetImplThread impl(&proxy);
+    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0, &proxy);
 
     scoped_refptr<Layer> oldLayerTreeRoot = MockLayer::create(&layerImplDestructionList);
     oldLayerTreeRoot->addChild(MockLayer::create(&layerImplDestructionList));
@@ -340,10 +343,10 @@ TEST(TreeSynchronizerTest, syncSimpleTreeThenDestroy)
 // Constructs+syncs a tree with mask, replica, and replica mask layers.
 TEST(TreeSynchronizerTest, syncMaskReplicaAndReplicaMaskLayers)
 {
-    DebugScopedSetImplThread impl;
-
     LayerTreeSettings settings;
-    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0);
+    FakeProxy proxy(scoped_ptr<Thread>(NULL));
+    DebugScopedSetImplThread impl(&proxy);
+    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0, &proxy);
 
     scoped_refptr<Layer> layerTreeRoot = Layer::create();
     layerTreeRoot->addChild(Layer::create());
@@ -386,10 +389,10 @@ TEST(TreeSynchronizerTest, syncMaskReplicaAndReplicaMaskLayers)
 
 TEST(TreeSynchronizerTest, synchronizeAnimations)
 {
-    DebugScopedSetImplThread impl;
-
     LayerTreeSettings settings;
-    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0);
+    FakeProxy proxy(scoped_ptr<Thread>(NULL));
+    DebugScopedSetImplThread impl(&proxy);
+    scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0, &proxy);
 
     scoped_refptr<Layer> layerTreeRoot = Layer::create();
 

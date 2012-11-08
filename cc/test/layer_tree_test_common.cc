@@ -88,9 +88,9 @@ scoped_ptr<WebCompositorOutputSurface> TestHooks::createOutputSurface()
     return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3DWithTextureTracking::create(WebGraphicsContext3D::Attributes()).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<WebKit::WebCompositorOutputSurface>();
 }
 
-scoped_ptr<MockLayerTreeHostImpl> MockLayerTreeHostImpl::create(TestHooks* testHooks, const LayerTreeSettings& settings, LayerTreeHostImplClient* client)
+scoped_ptr<MockLayerTreeHostImpl> MockLayerTreeHostImpl::create(TestHooks* testHooks, const LayerTreeSettings& settings, LayerTreeHostImplClient* client, Proxy* proxy)
 {
-    return make_scoped_ptr(new MockLayerTreeHostImpl(testHooks, settings, client));
+    return make_scoped_ptr(new MockLayerTreeHostImpl(testHooks, settings, client, proxy));
 }
 
 void MockLayerTreeHostImpl::beginCommit()
@@ -131,8 +131,8 @@ base::TimeDelta MockLayerTreeHostImpl::lowFrequencyAnimationInterval() const
     return base::TimeDelta::FromMilliseconds(16);
 }
 
-MockLayerTreeHostImpl::MockLayerTreeHostImpl(TestHooks* testHooks, const LayerTreeSettings& settings, LayerTreeHostImplClient* client)
-    : LayerTreeHostImpl(settings, client)
+MockLayerTreeHostImpl::MockLayerTreeHostImpl(TestHooks* testHooks, const LayerTreeSettings& settings, LayerTreeHostImplClient* client, Proxy* proxy)
+    : LayerTreeHostImpl(settings, client, proxy)
     , m_testHooks(testHooks)
 {
 }
@@ -140,10 +140,10 @@ MockLayerTreeHostImpl::MockLayerTreeHostImpl(TestHooks* testHooks, const LayerTr
 // Adapts LayerTreeHost for test. Injects MockLayerTreeHostImpl.
 class MockLayerTreeHost : public cc::LayerTreeHost {
 public:
-    static scoped_ptr<MockLayerTreeHost> create(TestHooks* testHooks, cc::LayerTreeHostClient* client, scoped_refptr<cc::Layer> rootLayer, const cc::LayerTreeSettings& settings)
+    static scoped_ptr<MockLayerTreeHost> create(TestHooks* testHooks, cc::LayerTreeHostClient* client, scoped_refptr<cc::Layer> rootLayer, const cc::LayerTreeSettings& settings, scoped_ptr<cc::Thread> implThread)
     {
         scoped_ptr<MockLayerTreeHost> layerTreeHost(new MockLayerTreeHost(testHooks, client, settings));
-        bool success = layerTreeHost->initialize();
+        bool success = layerTreeHost->initialize(implThread.Pass());
         EXPECT_TRUE(success);
         layerTreeHost->setRootLayer(rootLayer);
 
@@ -157,7 +157,7 @@ public:
 
     virtual scoped_ptr<cc::LayerTreeHostImpl> createLayerTreeHostImpl(cc::LayerTreeHostImplClient* client)
     {
-        return MockLayerTreeHostImpl::create(m_testHooks, settings(), client).PassAs<cc::LayerTreeHostImpl>();
+        return MockLayerTreeHostImpl::create(m_testHooks, settings(), client, proxy()).PassAs<cc::LayerTreeHostImpl>();
     }
 
     virtual void didAddAnimation() OVERRIDE
@@ -274,6 +274,7 @@ ThreadedTest::ThreadedTest()
     , m_finished(false)
     , m_scheduled(false)
     , m_started(false)
+    , m_implThread(0)
 {
 }
 
@@ -345,11 +346,13 @@ void ThreadedTest::postDidAddAnimationToMainThread()
 
 void ThreadedTest::doBeginTest()
 {
-    DCHECK(Proxy::isMainThread());
     m_client = ThreadedMockLayerTreeHostClient::create(this);
 
     scoped_refptr<Layer> rootLayer = Layer::create();
-    m_layerTreeHost = MockLayerTreeHost::create(this, m_client.get(), rootLayer, m_settings);
+    scoped_ptr<cc::Thread> implCCThread(NULL);
+    if (m_implThread)
+        implCCThread = cc::ThreadImpl::createForDifferentThread(m_implThread->message_loop_proxy());
+    m_layerTreeHost = MockLayerTreeHost::create(this, m_client.get(), rootLayer, m_settings, implCCThread.Pass());
     ASSERT_TRUE(m_layerTreeHost.get());
     rootLayer->setLayerTreeHost(m_layerTreeHost.get());
     m_layerTreeHost->setSurfaceReady();
@@ -383,13 +386,12 @@ void ThreadedTest::scheduleComposite()
 
 void ThreadedTest::realEndTest()
 {
-    DCHECK(Proxy::isMainThread());
     MessageLoop::current()->Quit();
 }
 
 void ThreadedTest::dispatchSetNeedsAnimate()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(!proxy() || proxy()->isMainThread());
 
     if (m_finished)
         return;
@@ -400,7 +402,7 @@ void ThreadedTest::dispatchSetNeedsAnimate()
 
 void ThreadedTest::dispatchAddInstantAnimation()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(!proxy() || proxy()->isMainThread());
 
     if (m_finished)
         return;
@@ -411,7 +413,7 @@ void ThreadedTest::dispatchAddInstantAnimation()
 
 void ThreadedTest::dispatchAddAnimation(Layer* layerToReceiveAnimation)
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(!proxy() || proxy()->isMainThread());
 
     if (m_finished)
         return;
@@ -422,7 +424,7 @@ void ThreadedTest::dispatchAddAnimation(Layer* layerToReceiveAnimation)
 
 void ThreadedTest::dispatchSetNeedsAnimateAndCommit()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(!proxy() || proxy()->isMainThread());
 
     if (m_finished)
         return;
@@ -435,7 +437,7 @@ void ThreadedTest::dispatchSetNeedsAnimateAndCommit()
 
 void ThreadedTest::dispatchSetNeedsCommit()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(!proxy() || proxy()->isMainThread());
 
     if (m_finished)
         return;
@@ -446,7 +448,7 @@ void ThreadedTest::dispatchSetNeedsCommit()
 
 void ThreadedTest::dispatchAcquireLayerTextures()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(!proxy() || proxy()->isMainThread());
 
     if (m_finished)
         return;
@@ -457,7 +459,7 @@ void ThreadedTest::dispatchAcquireLayerTextures()
 
 void ThreadedTest::dispatchSetNeedsRedraw()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(!proxy() || proxy()->isMainThread());
 
     if (m_finished)
         return;
@@ -468,7 +470,7 @@ void ThreadedTest::dispatchSetNeedsRedraw()
 
 void ThreadedTest::dispatchSetVisible(bool visible)
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(!proxy() || proxy()->isMainThread());
 
     if (m_finished)
         return;
@@ -486,7 +488,7 @@ void ThreadedTest::dispatchComposite()
 
 void ThreadedTest::dispatchDidAddAnimation()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(!proxy() || proxy()->isMainThread());
 
     if (m_finished)
         return;
@@ -504,24 +506,20 @@ void ThreadedTest::runTest(bool threaded)
     if (threaded) {
         m_implThread.reset(new base::Thread("ThreadedTest"));
         ASSERT_TRUE(m_implThread->Start());
-        m_implCCThread = cc::ThreadImpl::createForDifferentThread(m_implThread->message_loop_proxy());
-        cc::Proxy::setImplThread(m_implCCThread.get());
     }
 
-    DCHECK(Proxy::isMainThread());
-    m_mainThreadProxy = ScopedThreadProxy::create(Proxy::mainThread());
+    m_mainCCThread = cc::ThreadImpl::createForCurrentThread();
+    m_mainThreadProxy = ScopedThreadProxy::create(m_mainCCThread.get());
 
     initializeSettings(m_settings);
 
-    cc::Proxy::mainThread()->postTask(base::Bind(&ThreadedTest::doBeginTest, base::Unretained(this)));
+    m_mainCCThread->postTask(base::Bind(&ThreadedTest::doBeginTest, base::Unretained(this)));
     m_timeout.Reset(base::Bind(&ThreadedTest::timeout, base::Unretained(this)));
-    cc::Proxy::mainThread()->postDelayedTask(m_timeout.callback(), 5000);
+    m_mainCCThread->postDelayedTask(m_timeout.callback(), 5000);
     MessageLoop::current()->Run();
     if (m_layerTreeHost.get() && m_layerTreeHost->rootLayer())
         m_layerTreeHost->rootLayer()->setLayerTreeHost(0);
     m_layerTreeHost.reset();
-
-    cc::Proxy::setImplThread(0);
 
     m_timeout.Cancel();
 

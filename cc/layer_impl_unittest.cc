@@ -58,8 +58,6 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     //
 
     // The constructor on this will fake that we are on the correct thread.
-    DebugScopedSetImplThread setImplThread;
-
     // Create a simple LayerImpl tree:
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
     root->addChild(LayerImpl::create(2));

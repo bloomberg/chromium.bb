@@ -66,13 +66,11 @@ LayerImpl::LayerImpl(int id)
 #endif
     , m_layerAnimationController(LayerAnimationController::create(this))
 {
-    DCHECK(Proxy::isImplThread());
     DCHECK(m_layerId > 0);
 }
 
 LayerImpl::~LayerImpl()
 {
-    DCHECK(Proxy::isImplThread());
 #ifndef NDEBUG
     DCHECK(!m_betweenWillDrawAndDidDraw);
 #endif

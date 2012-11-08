@@ -28,8 +28,6 @@ gfx::Rect ToRoundedIntRect(gfx::RectF rect_f) {
 
 TEST(NinePatchLayerImplTest, verifyDrawQuads)
 {
-    DebugScopedSetImplThread implThread;
-
     // Input is a 100x100 bitmap with a 40x50 aperture at x=20, y=30.
     // The bounds of the layer are set to 400x400, so the draw quads
     // generated should leave the border width (40) intact.

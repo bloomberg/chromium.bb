@@ -111,7 +111,7 @@ bool GLRenderer::initialize()
     m_capabilities.usingPartialSwap = Settings::partialSwapEnabled() && extensions.count("GL_CHROMIUM_post_sub_buffer");
 
     // Use the swapBuffers callback only with the threaded proxy.
-    if (Proxy::hasImplThread())
+    if (m_client->hasImplThread())
         m_capabilities.usingSwapCompleteCallback = extensions.count("GL_CHROMIUM_swapbuffers_complete_callback");
     if (m_capabilities.usingSwapCompleteCallback)
         m_context->setSwapBuffersCompleteCallbackCHROMIUM(this);
@@ -144,7 +144,6 @@ bool GLRenderer::initialize()
 
 GLRenderer::~GLRenderer()
 {
-    DCHECK(Proxy::isImplThread());
     m_context->setSwapBuffersCompleteCallbackCHROMIUM(0);
     m_context->setMemoryAllocationChangedCallbackCHROMIUM(0);
     m_context->setContextLostCallback(0);
@@ -342,29 +341,29 @@ void GLRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorde
     GLC(context(), context()->drawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 6 * sizeof(unsigned short)));
 }
 
-static WebGraphicsContext3D* getFilterContext()
+static WebGraphicsContext3D* getFilterContext(bool hasImplThread)
 {
-    if (Proxy::hasImplThread())
+    if (hasImplThread)
         return WebSharedGraphicsContext3D::compositorThreadContext();
     else
         return WebSharedGraphicsContext3D::mainThreadContext();
 }
 
-static GrContext* getFilterGrContext()
+static GrContext* getFilterGrContext(bool hasImplThread)
 {
-    if (Proxy::hasImplThread())
+    if (hasImplThread)
         return WebSharedGraphicsContext3D::compositorThreadGrContext();
     else
         return WebSharedGraphicsContext3D::mainThreadGrContext();
 }
 
-static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilterOperations& filters, ScopedTexture* sourceTexture)
+static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilterOperations& filters, ScopedTexture* sourceTexture, bool hasImplThread)
 {
     if (filters.isEmpty())
         return SkBitmap();
 
-    WebGraphicsContext3D* filterContext = getFilterContext();
-    GrContext* filterGrContext = getFilterGrContext();
+    WebGraphicsContext3D* filterContext = getFilterContext(hasImplThread);
+    GrContext* filterGrContext = getFilterGrContext(hasImplThread);
 
     if (!filterContext || !filterGrContext)
         return SkBitmap();
@@ -376,13 +375,13 @@ static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilte
     return source;
 }
 
-static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, ScopedTexture* sourceTexture)
+static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, ScopedTexture* sourceTexture, bool hasImplThread)
 {
     if (!filter)
         return SkBitmap();
 
-    WebGraphicsContext3D* context3d = getFilterContext();
-    GrContext* grContext = getFilterGrContext();
+    WebGraphicsContext3D* context3d = getFilterContext(hasImplThread);
+    GrContext* grContext = getFilterGrContext(hasImplThread);
 
     if (!context3d || !grContext)
         return SkBitmap();
@@ -472,7 +471,7 @@ scoped_ptr<ScopedTexture> GLRenderer::drawBackgroundFilters(
     if (!getFramebufferTexture(deviceBackgroundTexture.get(), deviceRect))
         return scoped_ptr<ScopedTexture>();
 
-    SkBitmap filteredDeviceBackground = applyFilters(this, filters, deviceBackgroundTexture.get());
+    SkBitmap filteredDeviceBackground = applyFilters(this, filters, deviceBackgroundTexture.get(), m_client->hasImplThread());
     if (!filteredDeviceBackground.getTexture())
         return scoped_ptr<ScopedTexture>();
 
@@ -530,9 +529,9 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     // Apply filters to the contents texture.
     SkBitmap filterBitmap;
     if (renderPass->filter()) {
-        filterBitmap = applyImageFilter(this, renderPass->filter(), contentsTexture);
+        filterBitmap = applyImageFilter(this, renderPass->filter(), contentsTexture, m_client->hasImplThread());
     } else {
-        filterBitmap = applyFilters(this, renderPass->filters(), contentsTexture);
+        filterBitmap = applyFilters(this, renderPass->filters(), contentsTexture, m_client->hasImplThread());
     }
     scoped_ptr<ResourceProvider::ScopedReadLockGL> contentsResourceLock;
     unsigned contentsTextureId = 0;
@@ -960,8 +959,6 @@ struct TexTransformTextureProgramBinding : TextureProgramBinding {
 
 void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQuad* quad)
 {
-    DCHECK(Proxy::isImplThread());
-
     TexTransformTextureProgramBinding binding;
     if (quad->flipped())
         binding.set(textureProgramFlip());
@@ -1004,7 +1001,6 @@ void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQua
 
 void GLRenderer::drawIOSurfaceQuad(const DrawingFrame& frame, const IOSurfaceDrawQuad* quad)
 {
-    DCHECK(Proxy::isImplThread());
     TexTransformTextureProgramBinding binding;
     binding.set(textureIOSurfaceProgram());
 
@@ -1146,35 +1142,6 @@ void GLRenderer::onSwapBuffersComplete()
 
 void GLRenderer::onMemoryAllocationChanged(WebGraphicsMemoryAllocation allocation)
 {
-    // FIXME: This is called on the main thread in single threaded mode, but we expect it on the impl thread.
-    if (!Proxy::hasImplThread()) {
-      DCHECK(Proxy::isMainThread());
-      DebugScopedSetImplThread impl;
-      onMemoryAllocationChangedOnImplThread(allocation);
-    } else {
-      DCHECK(Proxy::isImplThread());
-      onMemoryAllocationChangedOnImplThread(allocation);
-    }
-}
-
-int GLRenderer::priorityCutoffValue(WebKit::WebGraphicsMemoryAllocation::PriorityCutoff priorityCutoff)
-{
-    switch (priorityCutoff) {
-    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowNothing:
-        return PriorityCalculator::allowNothingCutoff();
-    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowVisibleOnly:
-        return PriorityCalculator::allowVisibleOnlyCutoff();
-    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowVisibleAndNearby:
-        return PriorityCalculator::allowVisibleAndNearbyCutoff();
-    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowEverything:
-        return PriorityCalculator::allowEverythingCutoff();
-    }
-    NOTREACHED();
-    return 0;
-}
-
-void GLRenderer::onMemoryAllocationChangedOnImplThread(WebKit::WebGraphicsMemoryAllocation allocation)
-{
     // Just ignore the memory manager when it says to set the limit to zero
     // bytes. This will happen when the memory manager thinks that the renderer
     // is not visible (which the renderer knows better).
@@ -1196,6 +1163,22 @@ void GLRenderer::onMemoryAllocationChangedOnImplThread(WebKit::WebGraphicsMemory
     enforceMemoryPolicy();
     if (allocation.enforceButDoNotKeepAsPolicy)
         m_discardFramebufferWhenNotVisible = oldDiscardFramebufferWhenNotVisible;
+}
+
+int GLRenderer::priorityCutoffValue(WebKit::WebGraphicsMemoryAllocation::PriorityCutoff priorityCutoff)
+{
+    switch (priorityCutoff) {
+    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowNothing:
+        return PriorityCalculator::allowNothingCutoff();
+    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowVisibleOnly:
+        return PriorityCalculator::allowVisibleOnlyCutoff();
+    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowVisibleAndNearby:
+        return PriorityCalculator::allowVisibleAndNearbyCutoff();
+    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowEverything:
+        return PriorityCalculator::allowEverythingCutoff();
+    }
+    NOTREACHED();
+    return 0;
 }
 
 void GLRenderer::enforceMemoryPolicy()

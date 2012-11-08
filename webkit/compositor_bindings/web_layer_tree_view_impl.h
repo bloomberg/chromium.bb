@@ -11,6 +11,7 @@
 
 namespace cc {
 class LayerTreeHost;
+class Thread;
 }
 
 namespace WebKit {
@@ -23,7 +24,7 @@ public:
     explicit WebLayerTreeViewImpl(WebLayerTreeViewClient*);
     virtual ~WebLayerTreeViewImpl();
 
-    bool initialize(const Settings&);
+    bool initialize(const Settings&, scoped_ptr<cc::Thread> implThread);
 
     // WebLayerTreeView implementation.
     virtual void setSurfaceReady() OVERRIDE;

@@ -9,6 +9,7 @@
 #include "cc/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"
+#include "cc/thread.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebInputHandler.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
@@ -23,15 +24,6 @@ using namespace cc;
 
 namespace WebKit {
 
-WebLayerTreeView* WebLayerTreeView::create(WebLayerTreeViewClient* client, const WebLayer& root, const WebLayerTreeView::Settings& settings)
-{
-    scoped_ptr<WebLayerTreeViewImpl> layerTreeViewImpl(new WebLayerTreeViewImpl(client));
-    if (!layerTreeViewImpl->initialize(settings))
-        return 0;
-    layerTreeViewImpl->setRootLayer(root);
-    return layerTreeViewImpl.release();
-}
-
 WebLayerTreeViewImpl::WebLayerTreeViewImpl(WebLayerTreeViewClient* client)
     : m_client(client)
 {
@@ -41,7 +33,7 @@ WebLayerTreeViewImpl::~WebLayerTreeViewImpl()
 {
 }
 
-bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSettings)
+bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSettings, scoped_ptr<Thread> implThread)
 {
     LayerTreeSettings settings;
     settings.acceleratePainting = webSettings.acceleratePainting;
@@ -51,7 +43,7 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
     settings.refreshRate = webSettings.refreshRate;
     settings.defaultTileSize = webSettings.defaultTileSize;
     settings.maxUntiledLayerSize = webSettings.maxUntiledLayerSize;
-    m_layerTreeHost = LayerTreeHost::create(this, settings);
+    m_layerTreeHost = LayerTreeHost::create(this, settings, implThread.Pass());
     if (!m_layerTreeHost.get())
         return false;
 
@@ -151,10 +143,7 @@ bool WebLayerTreeViewImpl::commitRequested() const
 
 void WebLayerTreeViewImpl::composite()
 {
-    if (Proxy::hasImplThread())
-        m_layerTreeHost->setNeedsCommit();
-    else
-        m_layerTreeHost->composite();
+    m_layerTreeHost->composite();
 }
 
 void WebLayerTreeViewImpl::updateAnimations(double frameBeginTimeSeconds)

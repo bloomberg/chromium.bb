@@ -153,7 +153,7 @@ PrioritizedResource::Backing::~Backing()
 
 void PrioritizedResource::Backing::deleteResource(ResourceProvider* resourceProvider)
 {
-    DCHECK(Proxy::isImplThread());
+    DCHECK(!proxy() || proxy()->isImplThread());
     DCHECK(!m_resourceHasBeenDeleted);
 #ifndef NDEBUG
     DCHECK(resourceProvider == m_resourceProvider);
@@ -166,19 +166,19 @@ void PrioritizedResource::Backing::deleteResource(ResourceProvider* resourceProv
 
 bool PrioritizedResource::Backing::resourceHasBeenDeleted() const
 {
-    DCHECK(Proxy::isImplThread());
+    DCHECK(!proxy() || proxy()->isImplThread());
     return m_resourceHasBeenDeleted;
 }
 
 bool PrioritizedResource::Backing::canBeRecycled() const
 {
-    DCHECK(Proxy::isImplThread());
+    DCHECK(!proxy() || proxy()->isImplThread());
     return !m_wasAbovePriorityCutoffAtLastPriorityUpdate && !m_inDrawingImplTree;
 }
 
 void PrioritizedResource::Backing::updatePriority()
 {
-    DCHECK(Proxy::isImplThread() && Proxy::isMainThreadBlocked());
+    DCHECK(!proxy() || proxy()->isImplThread() && proxy()->isMainThreadBlocked());
     if (m_owner) {
         m_priorityAtLastPriorityUpdate = m_owner->requestPriority();
         m_wasAbovePriorityCutoffAtLastPriorityUpdate = m_owner->isAbovePriorityCutoff();
@@ -190,7 +190,7 @@ void PrioritizedResource::Backing::updatePriority()
 
 void PrioritizedResource::Backing::updateInDrawingImplTree()
 {
-    DCHECK(Proxy::isImplThread() && Proxy::isMainThreadBlocked());
+    DCHECK(!proxy() || proxy()->isImplThread() && proxy()->isMainThreadBlocked());
     m_inDrawingImplTree = !!owner();
     if (!m_inDrawingImplTree)
         DCHECK(m_priorityAtLastPriorityUpdate == PriorityCalculator::lowestPriority());
@@ -201,6 +201,13 @@ void PrioritizedResource::returnBackingTexture()
     DCHECK(m_manager || !m_backing);
     if (m_manager)
         m_manager->returnBackingTexture(this);
+}
+
+const Proxy* PrioritizedResource::Backing::proxy() const
+{
+    if (!m_owner || !m_owner->resourceManager())
+        return 0;
+    return m_owner->resourceManager()->proxyForDebug();
 }
 
 }  // namespace cc

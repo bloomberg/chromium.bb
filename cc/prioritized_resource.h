@@ -20,6 +20,7 @@
 namespace cc {
 
 class PrioritizedResourceManager;
+class Proxy;
 
 class CC_EXPORT PrioritizedResource {
 public:
@@ -108,6 +109,8 @@ private:
         bool resourceHasBeenDeleted() const;
 
     private:
+        const Proxy* proxy() const;
+
         friend class PrioritizedResource;
         PrioritizedResource* m_owner;
         int m_priorityAtLastPriorityUpdate;
@@ -120,7 +123,6 @@ private:
 #ifndef NDEBUG
         ResourceProvider* m_resourceProvider;
 #endif
-
         DISALLOW_COPY_AND_ASSIGN(Backing);
     };
 

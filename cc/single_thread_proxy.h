@@ -91,42 +91,58 @@ private:
 // code is running on the impl thread to satisfy assertion checks.
 class DebugScopedSetImplThread {
 public:
-    DebugScopedSetImplThread()
+    explicit DebugScopedSetImplThread(Proxy* proxy)
+        : m_proxy(proxy)
     {
 #ifndef NDEBUG
-        Proxy::setCurrentThreadIsImplThread(true);
+        m_previousValue = m_proxy->m_implThreadIsOverridden;
+        m_proxy->setCurrentThreadIsImplThread(true);
 #endif
     }
     ~DebugScopedSetImplThread()
     {
 #ifndef NDEBUG
-        Proxy::setCurrentThreadIsImplThread(false);
+        m_proxy->setCurrentThreadIsImplThread(m_previousValue);
 #endif
     }
+private:
+    bool m_previousValue;
+    Proxy* m_proxy;
 };
 
 // For use in the single-threaded case. In debug builds, it pretends that the
 // code is running on the main thread to satisfy assertion checks.
 class DebugScopedSetMainThread {
 public:
-    DebugScopedSetMainThread()
+    explicit DebugScopedSetMainThread(Proxy* proxy)
+        : m_proxy(proxy)
     {
 #ifndef NDEBUG
-        Proxy::setCurrentThreadIsImplThread(false);
+        m_previousValue = m_proxy->m_implThreadIsOverridden;
+        m_proxy->setCurrentThreadIsImplThread(false);
 #endif
     }
     ~DebugScopedSetMainThread()
     {
 #ifndef NDEBUG
-        Proxy::setCurrentThreadIsImplThread(true);
+        m_proxy->setCurrentThreadIsImplThread(m_previousValue);
 #endif
     }
+private:
+    bool m_previousValue;
+    Proxy* m_proxy;
 };
 
 // For use in the single-threaded case. In debug builds, it pretends that the
 // code is running on the impl thread and that the main thread is blocked to
 // satisfy assertion checks
 class DebugScopedSetImplThreadAndMainThreadBlocked {
+public:
+    explicit DebugScopedSetImplThreadAndMainThreadBlocked(Proxy* proxy)
+        : m_implThread(proxy)
+        , m_mainThreadBlocked(proxy)
+    {
+    }
 private:
     DebugScopedSetImplThread m_implThread;
     DebugScopedSetMainThreadBlocked m_mainThreadBlocked;

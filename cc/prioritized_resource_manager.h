@@ -12,6 +12,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
+#include "cc/proxy.h"
 #include "cc/prioritized_resource.h"
 #include "cc/priority_calculator.h"
 #include "cc/texture.h"
@@ -32,12 +33,13 @@ struct hash<cc::PrioritizedResource*> {
 namespace cc {
 
 class PriorityCalculator;
+class Proxy;
 
 class CC_EXPORT PrioritizedResourceManager {
 public:
-    static scoped_ptr<PrioritizedResourceManager> create(size_t maxMemoryLimitBytes, int maxTextureSize, int pool)
+    static scoped_ptr<PrioritizedResourceManager> create(size_t maxMemoryLimitBytes, int maxTextureSize, int pool, const Proxy* proxy)
     {
-        return make_scoped_ptr(new PrioritizedResourceManager(maxMemoryLimitBytes, maxTextureSize, pool));
+        return make_scoped_ptr(new PrioritizedResourceManager(maxMemoryLimitBytes, maxTextureSize, pool, proxy));
     }
     scoped_ptr<PrioritizedResource> createTexture(gfx::Size size, GLenum format)
     {
@@ -108,6 +110,8 @@ public:
     // Mark all textures' backings as being in the drawing impl tree.
     void updateBackingsInDrawingImplTree();
 
+    const Proxy* proxyForDebug() const;
+
 private:
     friend class PrioritizedResourceTest;
 
@@ -142,7 +146,7 @@ private:
         return a < b;
     }
 
-    PrioritizedResourceManager(size_t maxMemoryLimitBytes, int maxTextureSize, int pool);
+    PrioritizedResourceManager(size_t maxMemoryLimitBytes, int maxTextureSize, int pool, const Proxy* proxy);
 
     bool evictBackingsToReduceMemory(size_t limitBytes, int priorityCutoff, EvictionPolicy, ResourceProvider*);
     PrioritizedResource::Backing* createBacking(gfx::Size, GLenum format, ResourceProvider*);
@@ -167,6 +171,8 @@ private:
 
     typedef base::hash_set<PrioritizedResource*> TextureSet;
     typedef std::vector<PrioritizedResource*> TextureVector;
+
+    const Proxy* m_proxy;
 
     TextureSet m_textures;
     // This list is always sorted in eviction order, with the exception the

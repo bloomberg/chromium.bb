@@ -791,8 +791,6 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
 {
     // This test checks for correct scroll compensation when the fixed-position container
     // is the direct parent of the fixed-position layer.
-
-    DebugScopedSetImplThread scopedImplThread;
     scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
     LayerImpl* child = root->children()[0];
     LayerImpl* grandChild = child->children()[0];
@@ -832,8 +830,6 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithT
     // Transforms are in general non-commutative; using something like a non-uniform scale
     // helps to verify that translations and non-uniform scales are applied in the correct
     // order.
-
-    DebugScopedSetImplThread scopedImplThread;
     scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
     LayerImpl* child = root->children()[0];
     LayerImpl* grandChild = child->children()[0];
@@ -875,8 +871,6 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
 {
     // This test checks for correct scroll compensation when the fixed-position container
     // is NOT the direct parent of the fixed-position layer.
-    DebugScopedSetImplThread scopedImplThread;
-
     scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
     LayerImpl* child = root->children()[0];
     LayerImpl* grandChild = child->children()[0];
@@ -919,8 +913,6 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     // This test checks for correct scroll compensation when the fixed-position container
     // is NOT the direct parent of the fixed-position layer, and the hierarchy has various
     // transforms that have to be processed in the correct order.
-    DebugScopedSetImplThread scopedImplThread;
-
     scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
     LayerImpl* child = root->children()[0];
     LayerImpl* grandChild = child->children()[0];
@@ -981,8 +973,6 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     // This test checks for correct scroll compensation when the fixed-position container
     // is NOT the direct parent of the fixed-position layer, and the hierarchy has various
     // transforms that have to be processed in the correct order.
-    DebugScopedSetImplThread scopedImplThread;
-
     scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
     LayerImpl* child = root->children()[0];
     LayerImpl* grandChild = child->children()[0];
@@ -1043,8 +1033,6 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithI
     // contributes to a different renderSurface than the fixed-position layer. In this
     // case, the surface drawTransforms also have to be accounted for when checking the
     // scrollDelta.
-    DebugScopedSetImplThread scopedImplThread;
-
     scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
     LayerImpl* child = root->children()[0];
     LayerImpl* grandChild = child->children()[0];
@@ -1116,8 +1104,6 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     // contributes to a different renderSurface than the fixed-position layer, with
     // additional renderSurfaces in-between. This checks that the conversion to ancestor
     // surfaces is accumulated properly in the final matrix transform.
-    DebugScopedSetImplThread scopedImplThread;
-
     scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
     LayerImpl* child = root->children()[0];
     LayerImpl* grandChild = child->children()[0];
@@ -1227,8 +1213,6 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithC
     // itself has a renderSurface. In this case, the container layer should be treated
     // like a layer that contributes to a renderTarget, and that renderTarget
     // is completely irrelevant; it should not affect the scroll compensation.
-    DebugScopedSetImplThread scopedImplThread;
-
     scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
     LayerImpl* child = root->children()[0];
     LayerImpl* grandChild = child->children()[0];
@@ -1274,8 +1258,6 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatI
     // This test checks the scenario where a fixed-position layer also happens to be a
     // container itself for a descendant fixed position layer. In particular, the layer
     // should not accidentally be fixed to itself.
-    DebugScopedSetImplThread scopedImplThread;
-
     scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
     LayerImpl* child = root->children()[0];
     LayerImpl* grandChild = child->children()[0];
@@ -1311,8 +1293,6 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatH
     // This test checks scroll compensation when a fixed-position layer does not find any
     // ancestor that is a "containerForFixedPositionLayers". In this situation, the layer should
     // be fixed to the viewport -- not the rootLayer, which may have transforms of its own.
-    DebugScopedSetImplThread scopedImplThread;
-
     scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
     LayerImpl* child = root->children()[0];
     LayerImpl* grandChild = child->children()[0];
@@ -2684,8 +2664,6 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3dForFlatteningS
 TEST(LayerTreeHostCommonTest, verifyHitTestingForEmptyLayerList)
 {
     // Hit testing on an empty renderSurfaceLayerList should return a null pointer.
-    DebugScopedSetImplThread thisScopeIsOnImplThread;
-
     std::vector<LayerImpl*> renderSurfaceLayerList;
 
     gfx::Point testPoint(0, 0);
@@ -2699,8 +2677,6 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForEmptyLayerList)
 
 TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayer)
 {
-    DebugScopedSetImplThread thisScopeIsOnImplThread;
-
     scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
 
     WebTransformationMatrix identityMatrix;
@@ -2741,8 +2717,6 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayer)
 
 TEST(LayerTreeHostCommonTest, verifyHitTestingForUninvertibleTransform)
 {
-    DebugScopedSetImplThread thisScopeIsOnImplThread;
-
     scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
 
     WebTransformationMatrix uninvertibleTransform;
@@ -2802,8 +2776,6 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForUninvertibleTransform)
 
 TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePositionedLayer)
 {
-    DebugScopedSetImplThread thisScopeIsOnImplThread;
-
     scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
 
     WebTransformationMatrix identityMatrix;
@@ -2845,8 +2817,6 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePositionedLayer)
 
 TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleRotatedLayer)
 {
-    DebugScopedSetImplThread thisScopeIsOnImplThread;
-
     scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
 
     WebTransformationMatrix identityMatrix;
@@ -2896,8 +2866,6 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleRotatedLayer)
 
 TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePerspectiveLayer)
 {
-    DebugScopedSetImplThread thisScopeIsOnImplThread;
-
     scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
 
     WebTransformationMatrix identityMatrix;
@@ -2958,8 +2926,6 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents)
     // contentsScale is ignored, then hit testing will mis-interpret the visibleContentRect
     // as being larger than the actual bounds of the layer.
     //
-    DebugScopedSetImplThread thisScopeIsOnImplThread;
-
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
 
     WebTransformationMatrix identityMatrix;
@@ -3021,8 +2987,6 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSimpleClippedLayer)
 {
     // Test that hit-testing will only work for the visible portion of a layer, and not
     // the entire layer bounds. Here we just test the simple axis-aligned case.
-    DebugScopedSetImplThread thisScopeIsOnImplThread;
-
     WebTransformationMatrix identityMatrix;
     gfx::PointF anchor(0, 0);
 
@@ -3089,8 +3053,6 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
     // combined create a triangle. The rotatedLeaf will only be visible where it overlaps
     // this triangle.
     //
-    DebugScopedSetImplThread thisScopeIsOnImplThread;
-
     scoped_ptr<LayerImpl> root = LayerImpl::create(123);
 
     WebTransformationMatrix identityMatrix;
@@ -3189,8 +3151,6 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
 {
     // This test checks that hit testing code does not accidentally clip to layer
     // bounds for a layer that actually does not clip.
-    DebugScopedSetImplThread thisScopeIsOnImplThread;
-
     WebTransformationMatrix identityMatrix;
     gfx::PointF anchor(0, 0);
 
@@ -3250,8 +3210,6 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
 
 TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
 {
-    DebugScopedSetImplThread thisScopeIsOnImplThread;
-
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
 
     WebTransformationMatrix identityMatrix;
@@ -3355,8 +3313,6 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
     // The geometry is set up similarly to the previous case, but
     // all layers are forced to be renderSurfaces now.
     //
-    DebugScopedSetImplThread thisScopeIsOnImplThread;
-
     scoped_ptr<LayerImpl> root = LayerImpl::create(1);
 
     WebTransformationMatrix identityMatrix;

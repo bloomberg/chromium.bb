@@ -347,7 +347,7 @@ void SoftwareRenderer::drawUnsupportedQuad(const DrawingFrame& frame, const Draw
 
 bool SoftwareRenderer::swapBuffers()
 {
-    if (Proxy::hasImplThread())
+    if (m_client->hasImplThread())
         m_client->onSwapBuffersComplete();
     return true;
 }

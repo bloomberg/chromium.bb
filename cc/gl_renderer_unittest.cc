@@ -9,7 +9,6 @@
 #include "cc/prioritized_resource_manager.h"
 #include "cc/resource_provider.h"
 #include "cc/settings.h"
-#include "cc/single_thread_proxy.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/test_common.h"
@@ -44,9 +43,6 @@ public:
     int frameCount() { return m_frame; }
     void setMemoryAllocation(WebGraphicsMemoryAllocation allocation)
     {
-        DCHECK(Proxy::isImplThread());
-        // In single threaded mode we expect this callback on main thread.
-        DebugScopedSetMainThread main;
         m_memoryAllocationChangedCallback->onMemoryAllocationChanged(allocation);
     }
 
@@ -78,6 +74,7 @@ public:
     virtual void setFullRootLayerDamage() OVERRIDE { m_setFullRootLayerDamageCount++; }
     virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { m_memoryAllocationLimitBytes = policy.bytesLimitWhenVisible; }
     virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { if (m_lastCallWasSetVisibility) *m_lastCallWasSetVisibility = false; }
+    virtual bool hasImplThread() const OVERRIDE { return false; }
 
     // Methods added for test.
     int setFullRootLayerDamageCount() const { return m_setFullRootLayerDamageCount; }
@@ -92,7 +89,6 @@ public:
 private:
     int m_setFullRootLayerDamageCount;
     bool* m_lastCallWasSetVisibility;
-    DebugScopedSetImplThread m_implThread;
     scoped_ptr<LayerImpl> m_rootLayer;
     RenderPassList m_renderPassesInDrawOrder;
     RenderPassIdHashMap m_renderPasses;

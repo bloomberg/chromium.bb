@@ -165,9 +165,6 @@ scoped_ptr<LayerImpl> createAndSetUpTestTreeWithTwoSurfaces()
 }
 
 class DamageTrackerTest : public testing::Test {
-private:
-    // For testing purposes, fake that we are on the impl thread.
-    DebugScopedSetImplThread setImplThread;
 };
 
 TEST_F(DamageTrackerTest, sanityCheckTestTreeWithOneSurface)

@@ -35,7 +35,7 @@ public:
     MockLayerTreeHost()
         : LayerTreeHost(&m_fakeClient, LayerTreeSettings())
     {
-        initialize();
+        initialize(scoped_ptr<Thread>(NULL));
     }
 
 private:
@@ -48,6 +48,8 @@ public:
     NinePatchLayerTest()
     {
     }
+
+    Proxy* proxy() const { return m_layerTreeHost->proxy(); }
 
 protected:
     virtual void SetUp()
@@ -106,8 +108,8 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     scoped_ptr<GraphicsContext> context;
     scoped_ptr<ResourceProvider> resourceProvider;
     {
-        DebugScopedSetImplThread implThread;
-        DebugScopedSetMainThreadBlocked mainThreadBlocked;
+        DebugScopedSetImplThread implThread(proxy());
+        DebugScopedSetMainThreadBlocked mainThreadBlocked(proxy());
         context = WebKit::createFakeGraphicsContext();
         resourceProvider = ResourceProvider::create(context.get());
         params.texture->acquireBackingTexture(resourceProvider.get());
@@ -121,8 +123,8 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     EXPECT_EQ(queue.partialUploadSize(), 0);
 
     {
-        DebugScopedSetImplThread implThread;
-        DebugScopedSetMainThreadBlocked mainThreadBlocked;
+        DebugScopedSetImplThread implThread(proxy());
+        DebugScopedSetMainThreadBlocked mainThreadBlocked(proxy());
         m_layerTreeHost->contentsTextureManager()->clearAllMemory(resourceProvider.get());
     }
 
