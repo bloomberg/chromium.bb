@@ -866,13 +866,6 @@ const Experiment kExperiments[] = {
 #endif  // defined(USE_ASH)
 #if defined(OS_CHROMEOS)
   {
-    "disable-new-wallpaper-picker-ui",
-    IDS_FLAGS_DISABLE_NEW_WALLPAPER_UI_NAME,
-    IDS_FLAGS_DISABLE_NEW_WALLPAPER_UI_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kDisableNewWallpaperUI)
-  },
-  {
     "disable-html5-camera",
     IDS_FLAGS_DISABLE_HTML5_CAMERA,
     IDS_FLAGS_DISABLE_HTML5_CAMERA_DESCRIPTION,

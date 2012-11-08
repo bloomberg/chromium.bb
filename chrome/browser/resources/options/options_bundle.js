@@ -42,10 +42,6 @@
   var PointerOverlay = options.PointerOverlay;
   var UIAccountTweaks = uiAccountTweaks.UIAccountTweaks;
 </if>
-<if expr="pp_ifdef('chromeos') and pp_ifdef('use_ash')">
-  <include src="chromeos/set_wallpaper_options.js"></include>
-  var SetWallpaperOptions = options.SetWallpaperOptions;
-</if>
 <if expr="pp_ifdef('use_nss')">
   <include src="certificate_tree.js"></include>
   <include src="certificate_manager.js"></include>

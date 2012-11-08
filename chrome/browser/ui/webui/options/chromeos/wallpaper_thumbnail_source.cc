@@ -105,12 +105,10 @@ bool ParseIndexFromPath(const std::string& path, int* index) {
 
 // Convert |path| to corresponding IDR. Return -1 if the path is invalid.
 // |path| must not be NULL.
+// TODO(bshe): This is only used in old wallpaper picker. Remove the whole
+// file.
 int PathToIDR(const std::string& path) {
-  int idr = -1;
-  int index = ash::GetInvalidWallpaperIndex();
-  if (ParseIndexFromPath(path, &index))
-    idr = ash::GetWallpaperInfo(index).thumb_id;
-  return idr;
+  return -1;
 }
 
 // True if |path| is a custom wallpaper thumbnail URL and set |email| parsed

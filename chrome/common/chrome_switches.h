@@ -384,7 +384,6 @@ extern const char kDisableFactoryReset[];
 extern const char kDisableHtml5Camera[];
 extern const char kDisableLoginAnimations[];
 extern const char kDisableNewOobe[];
-extern const char kDisableNewWallpaperUI[];
 extern const char kDisableOobeAnimation[];
 extern const char kEnableBackgroundLoader[];
 extern const char kEnableChromeCaptivePortalDetector[];

@@ -47,49 +47,40 @@ Browser* GetBrowserForUrl(GURL target_url) {
 
 void OpenWallpaperManager() {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  // Hides the new UI container behind a flag.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableNewWallpaperUI)) {
-    std::string url = chrome::kChromeUIWallpaperURL;
-    ExtensionService* service = profile->GetExtensionService();
-    if (!service)
-      return;
+  std::string url = chrome::kChromeUIWallpaperURL;
+  ExtensionService* service = profile->GetExtensionService();
+  if (!service)
+    return;
 
-    const extensions::Extension* extension =
-        service->GetExtensionById(extension_misc::kWallpaperManagerId, false);
-    if (!extension)
-      return;
+  const extensions::Extension* extension =
+      service->GetExtensionById(extension_misc::kWallpaperManagerId, false);
+  if (!extension)
+    return;
 
-    GURL wallpaper_picker_url(url);
-    int width = extension->launch_width();
-    int height = extension->launch_height();
-    // TODO(oshima|bshe): Open WallpaperManager in the display is is requested.
-    const gfx::Size screen =
-        ash::Shell::GetScreen()->GetPrimaryDisplay().size();
-    const gfx::Rect bounds((screen.width() - width) / 2,
-                           (screen.height() - height) / 2,
-                           width,
-                           height);
+  GURL wallpaper_picker_url(url);
+  int width = extension->launch_width();
+  int height = extension->launch_height();
+  // TODO(oshima|bshe): Open WallpaperManager in the display is is requested.
+  const gfx::Size screen =
+      ash::Shell::GetScreen()->GetPrimaryDisplay().size();
+  const gfx::Rect bounds((screen.width() - width) / 2,
+                         (screen.height() - height) / 2,
+                         width,
+                         height);
 
-    Browser* browser = GetBrowserForUrl(wallpaper_picker_url);
+  Browser* browser = GetBrowserForUrl(wallpaper_picker_url);
 
-    if (!browser) {
-      browser = new Browser(
-          Browser::CreateParams::CreateForApp(Browser::TYPE_POPUP,
-                                              extension->name(),
-                                              bounds,
-                                              profile));
+  if (!browser) {
+    browser = new Browser(
+        Browser::CreateParams::CreateForApp(Browser::TYPE_POPUP,
+                                            extension->name(),
+                                            bounds,
+                                            profile));
 
-      chrome::AddSelectedTabWithURL(browser, wallpaper_picker_url,
-                                    content::PAGE_TRANSITION_LINK);
-    }
-    browser->window()->Show();
-  } else {
-    Browser* browser = browser::FindOrCreateTabbedBrowser(
-        ProfileManager::GetDefaultProfileOrOffTheRecord(),
-        chrome::HOST_DESKTOP_TYPE_ASH);
-    chrome::ShowSettingsSubPage(browser, "setWallpaper");
+    chrome::AddSelectedTabWithURL(browser, wallpaper_picker_url,
+                                  content::PAGE_TRANSITION_LINK);
   }
+  browser->window()->Show();
 }
 
 }  // namespace wallpaper_manager_util

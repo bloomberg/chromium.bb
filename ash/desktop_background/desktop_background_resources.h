@@ -33,11 +33,6 @@ struct ASH_EXPORT WallpaperViewInfo {
 struct ASH_EXPORT WallpaperInfo {
   WallpaperViewInfo large_wallpaper;
   WallpaperViewInfo small_wallpaper;
-  int thumb_id;
-  // TODO(bshe): author member should be encoded to UTF16. We need to use i18n
-  // string for this member after M19.
-  const char* author;
-  const char* website;
 };
 
 const SkColor kLoginWallpaperColor = 0xFEFEFE;
@@ -46,7 +41,6 @@ ASH_EXPORT int GetDefaultWallpaperIndex();
 ASH_EXPORT int GetGuestWallpaperIndex();
 ASH_EXPORT int GetInvalidWallpaperIndex();
 ASH_EXPORT WallpaperLayout GetLayoutEnum(const std::string& layout);
-ASH_EXPORT int GetNextWallpaperIndex(int index);
 ASH_EXPORT int GetSolidColorIndex();
 ASH_EXPORT int GetWallpaperCount();
 ASH_EXPORT const WallpaperInfo& GetWallpaperInfo(int index);

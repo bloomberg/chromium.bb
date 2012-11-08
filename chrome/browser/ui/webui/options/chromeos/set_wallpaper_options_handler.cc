@@ -119,9 +119,6 @@ void SetWallpaperOptionsHandler::SendDefaultImages() {
   for (int i = 0; i < ash::GetWallpaperCount(); ++i) {
     images.Append(image_detail = new DictionaryValue());
     image_info = ash::GetWallpaperInfo(i);
-    image_detail->SetString("url", GetDefaultWallpaperThumbnailURL(i));
-    image_detail->SetString("author", image_info.author);
-    image_detail->SetString("website", image_info.website);
   }
 
   web_ui()->CallJavascriptFunction("SetWallpaperOptions.setDefaultImages",
@@ -168,7 +165,6 @@ void SetWallpaperOptionsHandler::HandlePageShown(const base::ListValue* args) {
   WallpaperManager::Get()->GetLoggedInUserWallpaperProperties(
       &type, &index, &date);
   if (type == User::DAILY && date != base::Time::Now().LocalMidnight()) {
-      index = ash::GetNextWallpaperIndex(index);
       UserManager::Get()->SaveLoggedInUserWallpaperProperties(User::DAILY,
                                                               index);
       ash::Shell::GetInstance()->user_wallpaper_delegate()->
@@ -242,8 +238,6 @@ void SetWallpaperOptionsHandler::HandleDailyWallpaper(const ListValue* args) {
   base::Time date;
   WallpaperManager::Get()->GetLoggedInUserWallpaperProperties(
       &type, &index, &date);
-  if (date != base::Time::Now().LocalMidnight())
-    index = ash::GetNextWallpaperIndex(index);
   UserManager::Get()->SaveLoggedInUserWallpaperProperties(User::DAILY, index);
   ash::Shell::GetInstance()->desktop_background_controller()->
       SetDefaultWallpaper(index);
