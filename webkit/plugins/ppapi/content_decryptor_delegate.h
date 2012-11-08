@@ -38,10 +38,13 @@ class WEBKIT_PLUGINS_EXPORT ContentDecryptorDelegate {
   void set_decrypt_client(media::DecryptorClient* decryptor_client);
   bool GenerateKeyRequest(const std::string& key_system,
                           const std::string& type,
-                          const std::string& init_data);
+                          const uint8* init_data,
+                          int init_data_length);
   bool AddKey(const std::string& session_id,
-              const std::string& key,
-              const std::string& init_data);
+              const uint8* key,
+              int key_length,
+              const uint8* init_data,
+              int init_data_length);
   bool CancelKeyRequest(const std::string& session_id);
   bool Decrypt(media::Decryptor::StreamType stream_type,
                const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,

@@ -59,13 +59,8 @@ bool PpapiDecryptor::GenerateKeyRequest(const std::string& key_system,
     plugin_cdm_delegate_->set_decrypt_client(client_);
   }
 
-  // TODO(xhwang): Finalize the data type for |init_data| to avoid unnecessary
-  // data type conversions.
   if (!plugin_cdm_delegate_->GenerateKeyRequest(
-      key_system,
-      type,
-      std::string(reinterpret_cast<const char*>(init_data),
-                  init_data_length))) {
+      key_system, type, init_data, init_data_length)) {
     ReportFailureToCallPlugin(key_system, "");
     return false;
   }
@@ -83,10 +78,7 @@ void PpapiDecryptor::AddKey(const std::string& key_system,
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
 
   if (!plugin_cdm_delegate_->AddKey(
-      session_id,
-      std::string(reinterpret_cast<const char*>(key), key_length),
-      std::string(reinterpret_cast<const char*>(init_data),
-                  init_data_length))) {
+      session_id, key, key_length, init_data, init_data_length)) {
     ReportFailureToCallPlugin(key_system, session_id);
   }
 

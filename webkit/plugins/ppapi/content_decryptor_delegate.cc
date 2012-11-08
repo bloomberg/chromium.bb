@@ -274,16 +274,16 @@ void ContentDecryptorDelegate::set_decrypt_client(
   decryptor_client_ = decryptor_client;
 }
 
-bool ContentDecryptorDelegate::GenerateKeyRequest(
-    const std::string& key_system,
-    const std::string& type,
-    const std::string& init_data) {
+bool ContentDecryptorDelegate::GenerateKeyRequest(const std::string& key_system,
+                                                  const std::string& type,
+                                                  const uint8* init_data,
+                                                  int init_data_length) {
   if (key_system.empty())
     return false;
 
   PP_Var init_data_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-          init_data.size(), init_data.data());
+          init_data_length, init_data);
 
   plugin_decryption_interface_->GenerateKeyRequest(
       pp_instance_,
@@ -294,15 +294,16 @@ bool ContentDecryptorDelegate::GenerateKeyRequest(
 }
 
 bool ContentDecryptorDelegate::AddKey(const std::string& session_id,
-                                      const std::string& key,
-                                      const std::string& init_data) {
+                                      const uint8* key,
+                                      int key_length,
+                                      const uint8* init_data,
+                                      int init_data_length) {
   PP_Var key_array =
-      PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(key.size(),
-                                                                 key.data());
+      PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(key_length,
+                                                                 key);
   PP_Var init_data_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-          init_data.size(),
-          init_data.data());
+          init_data_length, init_data);
 
   plugin_decryption_interface_->AddKey(
       pp_instance_,
