@@ -6,9 +6,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -41,12 +40,11 @@ NetworkPortalDetector* g_network_portal_detector = NULL;
 
 }  // namespace
 
-NetworkPortalDetector::NetworkPortalDetector()
+NetworkPortalDetector::NetworkPortalDetector(
+    const scoped_refptr<net::URLRequestContextGetter>& request_context)
     : test_url_(CaptivePortalDetector::kDefaultURL) {
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  DCHECK(profile);
   captive_portal_detector_.reset(
-      new CaptivePortalDetector(profile->GetRequestContext()));
+      new CaptivePortalDetector(request_context));
 }
 
 NetworkPortalDetector::~NetworkPortalDetector() {
@@ -65,6 +63,7 @@ void NetworkPortalDetector::Shutdown() {
   DCHECK(CalledOnValidThread());
 
   captive_portal_detector_->Cancel();
+  captive_portal_detector_.reset();
   observers_.Clear();
   chromeos::NetworkLibrary* network_library =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
@@ -131,7 +130,8 @@ void NetworkPortalDetector::OnNetworkManagerChanged(NetworkLibrary* cros) {
 // static
 NetworkPortalDetector* NetworkPortalDetector::CreateInstance() {
   DCHECK(!g_network_portal_detector);
-  g_network_portal_detector = new NetworkPortalDetector();
+  g_network_portal_detector = new NetworkPortalDetector(
+      g_browser_process->system_request_context());
   return g_network_portal_detector;
 }
 

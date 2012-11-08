@@ -43,7 +43,9 @@ void NetworkStateInformer::Init() {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   UpdateState(cros);
   cros->AddNetworkManagerObserver(this);
+
   NetworkPortalDetector::GetInstance()->AddObserver(this);
+
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_PROXY_CHANGED,
                  content::NotificationService::AllSources());
@@ -186,11 +188,8 @@ bool NetworkStateInformer::IsRestrictedPool(const Network* network) {
   DCHECK(network);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableChromeCaptivePortalDetector)) {
-    NetworkPortalDetector* portal_detector =
-        NetworkPortalDetector::GetInstance();
-    DCHECK(portal_detector);
     NetworkPortalDetector::CaptivePortalState state =
-        portal_detector->GetCaptivePortalState(network);
+        NetworkPortalDetector::GetInstance()->GetCaptivePortalState(network);
     return (state == NetworkPortalDetector::CAPTIVE_PORTAL_STATE_PORTAL);
   } else {
     return network->restricted_pool();
