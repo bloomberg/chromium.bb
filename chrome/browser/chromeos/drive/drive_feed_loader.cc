@@ -842,6 +842,7 @@ void DriveFeedLoader::UpdateFromFeed(
     int64 root_feed_changestamp,
     const base::Closure& update_finished_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!update_finished_callback.is_null());
   DVLOG(1) << "Updating directory with a feed";
 
   feed_processor_.reset(new DriveFeedProcessor(resource_metadata_));

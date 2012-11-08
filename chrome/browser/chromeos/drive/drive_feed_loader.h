@@ -139,6 +139,7 @@ class DriveFeedLoader {
   //
   // See comments at DriveFeedProcessor::ApplyFeeds() for
   // |start_changestamp| and |root_feed_changestamp|.
+  // |update_finished_callback| must not be null.
   void UpdateFromFeed(
     const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64 start_changestamp,

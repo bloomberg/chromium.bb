@@ -6,20 +6,14 @@
 
 #include <string>
 
+#include "base/bind_helpers.h"
 #include "base/json/json_file_value_serializer.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_feed_loader.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
-namespace {
-
-void OnUpdateFromFeed() {
-}
-
-}  // namespace
 
 namespace test_util {
 
@@ -113,18 +107,23 @@ void CopyResultFromInitializeCacheCallback(bool* out_success,
   *out_success = success;
 }
 
-void LoadChangeFeed(const std::string& relative_path,
+bool LoadChangeFeed(const std::string& relative_path,
                     DriveFileSystem* file_system,
                     int64 start_changestamp,
                     int64 root_feed_changestamp) {
   std::string error;
   scoped_ptr<Value> document =
       google_apis::test_util::LoadJSONFile(relative_path);
-  ASSERT_TRUE(document.get());
-  ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
+  if (!document.get())
+    return false;
+  if (document->GetType() != Value::TYPE_DICTIONARY)
+    return false;
+
   scoped_ptr<google_apis::DocumentFeed> document_feed(
       google_apis::DocumentFeed::ExtractAndParse(*document));
-  ASSERT_TRUE(document_feed.get());
+  if (!document_feed.get())
+    return false;
+
   ScopedVector<google_apis::DocumentFeed> feed_list;
   feed_list.push_back(document_feed.release());
 
@@ -132,9 +131,11 @@ void LoadChangeFeed(const std::string& relative_path,
       feed_list,
       start_changestamp,
       root_feed_changestamp,
-      base::Bind(&OnUpdateFromFeed));
+      base::Bind(&base::DoNothing));
   // DriveFeedLoader::UpdateFromFeed is asynchronous, so wait for it to finish.
   google_apis::test_util::RunBlockingPoolTask();
+
+  return true;
 }
 
 }  // namespace test_util
