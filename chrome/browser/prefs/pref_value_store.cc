@@ -214,23 +214,11 @@ bool PrefValueStore::GetValueFromStore(const char* name,
   // Only return true if we find a value and it is the correct type, so stale
   // values with the incorrect type will be ignored.
   const PrefStore* store = GetPrefStore(static_cast<PrefStoreType>(store_type));
-  if (store) {
-    switch (store->GetValue(name, out_value)) {
-      case PrefStore::READ_USE_DEFAULT:
-        store = GetPrefStore(DEFAULT_STORE);
-        if (!store || store->GetValue(name, out_value) != PrefStore::READ_OK) {
-          *out_value = NULL;
-          return false;
-        }
-        // Fall through...
-      case PrefStore::READ_OK:
-        return true;
-      case PrefStore::READ_NO_VALUE:
-        break;
-    }
-  }
+  if (store && store->GetValue(name, out_value))
+    return true;
 
-  // No valid value found for the given preference name: set the return false.
+  // No valid value found for the given preference name: set the return value
+  // to false.
   *out_value = NULL;
   return false;
 }

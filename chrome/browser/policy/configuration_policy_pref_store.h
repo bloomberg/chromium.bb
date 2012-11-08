@@ -35,8 +35,8 @@ class ConfigurationPolicyPrefStore
   virtual void RemoveObserver(PrefStore::Observer* observer) OVERRIDE;
   virtual size_t NumberOfObservers() const OVERRIDE;
   virtual bool IsInitializationComplete() const OVERRIDE;
-  virtual ReadResult GetValue(const std::string& key,
-                              const Value** result) const OVERRIDE;
+  virtual bool GetValue(const std::string& key,
+                        const Value** result) const OVERRIDE;
 
   // PolicyService::Observer methods:
   virtual void OnPolicyUpdated(PolicyDomain domain,

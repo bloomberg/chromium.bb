@@ -85,7 +85,7 @@ void TestingPrefServiceBase::RemoveRecommendedPref(const char* path) {
 const Value* TestingPrefServiceBase::GetPref(TestingPrefStore* pref_store,
                                              const char* path) const {
   const Value* res;
-  return pref_store->GetValue(path, &res) == PrefStore::READ_OK ? res : NULL;
+  return pref_store->GetValue(path, &res) ? res : NULL;
 }
 
 void TestingPrefServiceBase::SetPref(TestingPrefStore* pref_store,

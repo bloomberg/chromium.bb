@@ -32,7 +32,7 @@ class TestCommandLinePrefStore : public CommandLinePrefStore {
 
   void VerifyProxyMode(ProxyPrefs::ProxyMode expected_mode) {
     const Value* value = NULL;
-    ASSERT_EQ(PrefStore::READ_OK, GetValue(prefs::kProxy, &value));
+    ASSERT_TRUE(GetValue(prefs::kProxy, &value));
     ASSERT_EQ(Value::TYPE_DICTIONARY, value->GetType());
     ProxyConfigDictionary dict(static_cast<const DictionaryValue*>(value));
     ProxyPrefs::ProxyMode actual_mode;
@@ -43,8 +43,7 @@ class TestCommandLinePrefStore : public CommandLinePrefStore {
   void VerifySSLCipherSuites(const char* const* ciphers,
                              size_t cipher_count) {
     const Value* value = NULL;
-    ASSERT_EQ(PrefStore::READ_OK,
-              GetValue(prefs::kCipherSuiteBlacklist, &value));
+    ASSERT_TRUE(GetValue(prefs::kCipherSuiteBlacklist, &value));
     ASSERT_EQ(Value::TYPE_LIST, value->GetType());
     const ListValue* list_value = static_cast<const ListValue*>(value);
     ASSERT_EQ(cipher_count, list_value->GetSize());
@@ -68,8 +67,7 @@ TEST(CommandLinePrefStoreTest, SimpleStringPref) {
   scoped_refptr<CommandLinePrefStore> store = new CommandLinePrefStore(&cl);
 
   const Value* actual = NULL;
-  EXPECT_EQ(PrefStore::READ_OK,
-            store->GetValue(prefs::kApplicationLocale, &actual));
+  EXPECT_TRUE(store->GetValue(prefs::kApplicationLocale, &actual));
   std::string result;
   EXPECT_TRUE(actual->GetAsString(&result));
   EXPECT_EQ("hi-MOM", result);
@@ -93,8 +91,8 @@ TEST(CommandLinePrefStoreTest, NoPrefs) {
   scoped_refptr<CommandLinePrefStore> store = new CommandLinePrefStore(&cl);
 
   const Value* actual = NULL;
-  EXPECT_EQ(PrefStore::READ_NO_VALUE, store->GetValue(unknown_bool, &actual));
-  EXPECT_EQ(PrefStore::READ_NO_VALUE, store->GetValue(unknown_string, &actual));
+  EXPECT_FALSE(store->GetValue(unknown_bool, &actual));
+  EXPECT_FALSE(store->GetValue(unknown_string, &actual));
 }
 
 // Tests a complex command line with multiple known and unknown switches.
@@ -108,13 +106,13 @@ TEST(CommandLinePrefStoreTest, MultipleSwitches) {
       new TestCommandLinePrefStore(&cl);
 
   const Value* actual = NULL;
-  EXPECT_EQ(PrefStore::READ_NO_VALUE, store->GetValue(unknown_bool, &actual));
-  EXPECT_EQ(PrefStore::READ_NO_VALUE, store->GetValue(unknown_string, &actual));
+  EXPECT_FALSE(store->GetValue(unknown_bool, &actual));
+  EXPECT_FALSE(store->GetValue(unknown_string, &actual));
 
   store->VerifyProxyMode(ProxyPrefs::MODE_FIXED_SERVERS);
 
   const Value* value = NULL;
-  ASSERT_EQ(PrefStore::READ_OK, store->GetValue(prefs::kProxy, &value));
+  ASSERT_TRUE(store->GetValue(prefs::kProxy, &value));
   ASSERT_EQ(Value::TYPE_DICTIONARY, value->GetType());
   ProxyConfigDictionary dict(static_cast<const DictionaryValue*>(value));
 

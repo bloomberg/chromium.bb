@@ -65,16 +65,15 @@ bool ConfigurationPolicyPrefStore::IsInitializationComplete() const {
   return policy_service_->IsInitializationComplete();
 }
 
-PrefStore::ReadResult
-ConfigurationPolicyPrefStore::GetValue(const std::string& key,
-                                       const Value** value) const {
+bool ConfigurationPolicyPrefStore::GetValue(const std::string& key,
+                                            const Value** value) const {
   const Value* stored_value = NULL;
   if (!prefs_.get() || !prefs_->GetValue(key, &stored_value))
-    return PrefStore::READ_NO_VALUE;
+    return false;
 
   if (value)
     *value = stored_value;
-  return PrefStore::READ_OK;
+  return true;
 }
 
 void ConfigurationPolicyPrefStore::OnPolicyUpdated(

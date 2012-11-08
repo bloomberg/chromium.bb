@@ -99,22 +99,15 @@ void TestHarness::InstallPolicy(const std::string& policy_name,
                                 base::Value* policy_value) {
   base::DictionaryValue* cached_policy = NULL;
   base::Value* value = NULL;
-  PrefStore::ReadResult result =
-      pref_store_->GetMutableValue(ManagedModePolicyProvider::kPolicies,
-                                   &value);
-  switch (result) {
-    case PrefStore::READ_NO_VALUE:
-      cached_policy = new base::DictionaryValue;
-      pref_store_->SetValue(ManagedModePolicyProvider::kPolicies,
-                            cached_policy);
-      break;
-    case PrefStore::READ_OK:
-      ASSERT_TRUE(value->GetAsDictionary(&cached_policy));
-      break;
-    default:
-      FAIL() << "Invalid result reading policy: " << result;
-      return;
+  if (pref_store_->GetMutableValue(ManagedModePolicyProvider::kPolicies,
+                                   &value)) {
+    ASSERT_TRUE(value->GetAsDictionary(&cached_policy));
+  } else {
+    cached_policy = new base::DictionaryValue;
+    pref_store_->SetValue(ManagedModePolicyProvider::kPolicies,
+                          cached_policy);
   }
+
   cached_policy->SetWithoutPathExpansion(policy_name, policy_value);
 }
 

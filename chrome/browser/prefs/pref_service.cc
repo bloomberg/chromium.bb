@@ -731,7 +731,7 @@ const base::Value* PrefService::GetUserPrefValue(const char* path) const {
   // Look for an existing preference in the user store. If it doesn't
   // exist, return NULL.
   base::Value* value = NULL;
-  if (user_pref_store_->GetMutableValue(path, &value) != PrefStore::READ_OK)
+  if (!user_pref_store_->GetMutableValue(path, &value))
     return NULL;
 
   if (!value->IsType(pref->GetType())) {
@@ -746,7 +746,7 @@ const base::Value* PrefService::GetDefaultPrefValue(const char* path) const {
   DCHECK(CalledOnValidThread());
   // Lookup the preference in the default store.
   const base::Value* value = NULL;
-  if (default_store_->GetValue(path, &value) != PrefStore::READ_OK) {
+  if (!default_store_->GetValue(path, &value)) {
     NOTREACHED() << "Default value missing for pref: " << path;
     return NULL;
   }
@@ -789,7 +789,7 @@ void PrefService::RegisterPreference(const char* path,
   // The main code path takes ownership, but most don't. We'll be safe.
   scoped_ptr<Value> scoped_value(default_value);
 
-  DCHECK(!FindPreference(path)) << "Tried to register duplicate pref " << path;
+  CHECK(!FindPreference(path)) << "Tried to register duplicate pref " << path;
 
   base::Value::Type orig_type = default_value->GetType();
   DCHECK(orig_type != Value::TYPE_NULL && orig_type != Value::TYPE_BINARY) <<
@@ -824,10 +824,8 @@ void PrefService::UnregisterPreference(const char* path) {
   DCHECK(CalledOnValidThread());
 
   PreferenceMap::iterator it = prefs_map_.find(path);
-  if (it == prefs_map_.end()) {
-    NOTREACHED() << "Trying to unregister an unregistered pref: " << path;
-    return;
-  }
+  CHECK(it != prefs_map_.end()) << "Trying to unregister an unregistered pref: "
+                                << path;
 
   prefs_map_.erase(it);
   default_store_->RemoveDefaultValue(path);
@@ -932,7 +930,7 @@ Value* PrefService::GetMutableUserPref(const char* path,
   // Look for an existing preference in the user store. If it doesn't
   // exist or isn't the correct type, create a new user preference.
   Value* value = NULL;
-  if (user_pref_store_->GetMutableValue(path, &value) != PrefStore::READ_OK ||
+  if (!user_pref_store_->GetMutableValue(path, &value) ||
       !value->IsType(type)) {
     if (type == Value::TYPE_DICTIONARY) {
       value = new DictionaryValue;

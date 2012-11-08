@@ -361,7 +361,7 @@ void CredentialCacheService::ScheduleNextReadFromAlternateCredentialCache(
 
 bool CredentialCacheService::HasPref(scoped_refptr<JsonPrefStore> store,
                                      const std::string& pref_name) {
-  return (store->GetValue(pref_name, NULL) == PrefStore::READ_OK);
+  return store->GetValue(pref_name, NULL);
 }
 
 // static

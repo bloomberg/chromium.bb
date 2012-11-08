@@ -77,20 +77,12 @@ void ManagedModePolicyProvider::OnInitializationCompleted(bool success) {
 base::DictionaryValue* ManagedModePolicyProvider::GetCachedPolicy() const {
   base::Value* value = NULL;
   base::DictionaryValue* dict = NULL;
-  PrefStore::ReadResult result = store_->GetMutableValue(kPolicies, &value);
-  switch (result) {
-    case PrefStore::READ_NO_VALUE: {
-      dict = new base::DictionaryValue;
-      store_->SetValue(kPolicies, dict);
-      break;
-    }
-    case PrefStore::READ_OK: {
-      bool success = value->GetAsDictionary(&dict);
-      DCHECK(success);
-      break;
-    }
-    default:
-      NOTREACHED();
+  if (store_->GetMutableValue(kPolicies, &value)) {
+    bool success = value->GetAsDictionary(&dict);
+    DCHECK(success);
+  } else {
+    dict = new base::DictionaryValue;
+    store_->SetValue(kPolicies, dict);
   }
 
   return dict;
