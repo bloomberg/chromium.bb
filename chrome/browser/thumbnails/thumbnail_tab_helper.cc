@@ -382,8 +382,8 @@ void ThumbnailTabHelper::UpdateThumbnail(
 
   gfx::Image image(thumbnail);
   thumbnail_service->SetPageThumbnail(context->url, image, context->score);
-  LOG(ERROR) << "Thumbnail taken for " << context->url << ": "
-             << context->score.ToString();
+  VLOG(1) << "Thumbnail taken for " << context->url << ": "
+          << context->score.ToString();
 }
 
 void ThumbnailTabHelper::AsyncUpdateThumbnail(
