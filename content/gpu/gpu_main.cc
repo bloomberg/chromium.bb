@@ -131,11 +131,19 @@ int GpuMain(const MainFunctionParams& parameters) {
   enable_watchdog = false;
 #endif
 
+  bool delayed_watchdog_enable = false;
+
+#if defined(OS_CHROMEOS)
+  // Don't start watchdog immediately, to allow developers to switch to VT2 on
+  // startup.
+  delayed_watchdog_enable = true;
+#endif
+
   scoped_refptr<GpuWatchdogThread> watchdog_thread;
 
   // Start the GPU watchdog only after anything that is expected to be time
   // consuming has completed, otherwise the process is liable to be aborted.
-  if (enable_watchdog) {
+  if (enable_watchdog && !delayed_watchdog_enable) {
     watchdog_thread = new GpuWatchdogThread(kGpuTimeout);
     watchdog_thread->Start();
   }
@@ -189,6 +197,11 @@ int GpuMain(const MainFunctionParams& parameters) {
     gpu_info.gpu_accessible = false;
     gpu_info.finalized = true;
     dead_on_arrival = true;
+  }
+
+  if (enable_watchdog && delayed_watchdog_enable) {
+    watchdog_thread = new GpuWatchdogThread(kGpuTimeout);
+    watchdog_thread->Start();
   }
 
   // OSMesa is expected to run very slowly, so disable the watchdog in that
