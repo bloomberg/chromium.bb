@@ -34,7 +34,6 @@
 #include <sys/types.h>
 #include <ucontext.h>
 #include <unistd.h>
-#include <ucontext.h>
 
 #include <string>
 
@@ -60,8 +59,10 @@ using namespace google_breakpad;
 const int kGUIDStringSize = 37;
 
 namespace {
+
 typedef testing::Test MinidumpWriterTest;
-}
+
+const char kMDWriterUnitTestFileName[] = "/minidump-writer-unittest";
 
 TEST(MinidumpWriterTest, SetupWithPath) {
   int fds[2];
@@ -81,12 +82,12 @@ TEST(MinidumpWriterTest, SetupWithPath) {
   memset(&context, 0, sizeof(context));
 
   AutoTempDir temp_dir;
-  string templ = temp_dir.path() + "/minidump-writer-unittest";
+  string templ = temp_dir.path() + kMDWriterUnitTestFileName;
   // Set a non-zero tid to avoid tripping asserts.
   context.tid = 1;
   ASSERT_TRUE(WriteMinidump(templ.c_str(), child, &context, sizeof(context)));
   struct stat st;
-  ASSERT_EQ(stat(templ.c_str(), &st), 0);
+  ASSERT_EQ(0, stat(templ.c_str(), &st));
   ASSERT_GT(st.st_size, 0u);
 
   close(fds[1]);
@@ -110,13 +111,13 @@ TEST(MinidumpWriterTest, SetupWithFD) {
   memset(&context, 0, sizeof(context));
 
   AutoTempDir temp_dir;
-  string templ = temp_dir.path() + "/minidump-writer-unittest";
+  string templ = temp_dir.path() + kMDWriterUnitTestFileName;
   int fd = open(templ.c_str(), O_CREAT | O_WRONLY, S_IRWXU);
   // Set a non-zero tid to avoid tripping asserts.
   context.tid = 1;
   ASSERT_TRUE(WriteMinidump(fd, child, &context, sizeof(context)));
   struct stat st;
-  ASSERT_EQ(stat(templ.c_str(), &st), 0);
+  ASSERT_EQ(0, stat(templ.c_str(), &st));
   ASSERT_GT(st.st_size, 0u);
 
   close(fds[1]);
@@ -177,7 +178,7 @@ TEST(MinidumpWriterTest, MappingInfo) {
   context.tid = child;
 
   AutoTempDir temp_dir;
-  string templ = temp_dir.path() + "/minidump-writer-unittest";
+  string templ = temp_dir.path() + kMDWriterUnitTestFileName;
 
   // Add information about the mapped memory.
   MappingInfo info;
@@ -295,7 +296,7 @@ TEST(MinidumpWriterTest, MappingInfoContained) {
   memset(&context, 0, sizeof(context));
   context.tid = 1;
 
-  string dumpfile = temp_dir.path() + "/minidump-writer-unittest";
+  string dumpfile = temp_dir.path() + kMDWriterUnitTestFileName;
 
   // Add information about the mapped memory. Report it as being larger than
   // it actually is.
@@ -335,11 +336,8 @@ TEST(MinidumpWriterTest, MappingInfoContained) {
 }
 
 TEST(MinidumpWriterTest, DeletedBinary) {
-  static const int kNumberOfThreadsInHelperProgram = 1;
-  char kNumberOfThreadsArgument[2];
-  sprintf(kNumberOfThreadsArgument, "%d", kNumberOfThreadsInHelperProgram);
-
-  string helper_path(GetHelperBinary());
+  const string kNumberOfThreadsArgument = "1";
+  const string helper_path(GetHelperBinary());
   if (helper_path.empty()) {
     FAIL() << "Couldn't find helper binary";
     exit(1);
@@ -366,7 +364,7 @@ TEST(MinidumpWriterTest, DeletedBinary) {
     execl(binpath.c_str(),
           binpath.c_str(),
           pipe_fd_string,
-          kNumberOfThreadsArgument,
+          kNumberOfThreadsArgument.c_str(),
           NULL);
   }
   close(fds[1]);
@@ -391,7 +389,7 @@ TEST(MinidumpWriterTest, DeletedBinary) {
   ExceptionHandler::CrashContext context;
   memset(&context, 0, sizeof(context));
 
-  string templ = temp_dir.path() + "/minidump-writer-unittest";
+  string templ = temp_dir.path() + kMDWriterUnitTestFileName;
   // Set a non-zero tid to avoid tripping asserts.
   context.tid = 1;
   ASSERT_TRUE(WriteMinidump(templ.c_str(), child_pid, &context,
@@ -399,7 +397,7 @@ TEST(MinidumpWriterTest, DeletedBinary) {
   kill(child_pid, SIGKILL);
 
   struct stat st;
-  ASSERT_EQ(stat(templ.c_str(), &st), 0);
+  ASSERT_EQ(0, stat(templ.c_str(), &st));
   ASSERT_GT(st.st_size, 0u);
 
   Minidump minidump(templ.c_str());
@@ -468,7 +466,7 @@ TEST(MinidumpWriterTest, AdditionalMemory) {
   context.tid = child;
 
   AutoTempDir temp_dir;
-  string templ = temp_dir.path() + "/minidump-writer-unittest";
+  string templ = temp_dir.path() + kMDWriterUnitTestFileName;
   unlink(templ.c_str());
 
   MappingList mappings;
@@ -547,7 +545,7 @@ TEST(MinidumpWriterTest, InvalidStackPointer) {
 #endif
 
   AutoTempDir temp_dir;
-  string templ = temp_dir.path() + "/minidump-writer-unittest";
+  string templ = temp_dir.path() + kMDWriterUnitTestFileName;
   // NOTE: In previous versions of Breakpad, WriteMinidump() would fail if
   // presented with an invalid stack pointer.
   ASSERT_TRUE(WriteMinidump(templ.c_str(), child, &context, sizeof(context)));
@@ -581,3 +579,5 @@ TEST(MinidumpWriterTest, InvalidStackPointer) {
 
   close(fds[1]);
 }
+
+}  // namespace
