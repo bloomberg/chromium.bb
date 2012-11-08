@@ -178,6 +178,10 @@ void HostGlobals::BroadcastLogWithSource(PP_Module pp_module,
      (*i)->element().document().frame()->addMessageToConsole(message);
 }
 
+::ppapi::MessageLoopShared* HostGlobals::GetCurrentMessageLoop() {
+  return NULL;
+}
+
 PP_Module HostGlobals::AddModule(PluginModule* module) {
 #ifndef NDEBUG
   // Make sure we're not adding one more than once.

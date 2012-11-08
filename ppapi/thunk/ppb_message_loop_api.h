@@ -9,6 +9,7 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
 
@@ -16,7 +17,7 @@ class TrackedCallback;
 
 namespace thunk {
 
-class PPB_MessageLoop_API {
+class PPAPI_THUNK_EXPORT PPB_MessageLoop_API {
  public:
   virtual ~PPB_MessageLoop_API() {}
 

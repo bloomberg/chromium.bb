@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/ppb_message_loop_shared.h"
 #include "ppapi/thunk/ppb_message_loop_api.h"
 
 struct PPB_MessageLoop_Dev_0_1;
@@ -19,13 +19,12 @@ struct PPB_MessageLoop_Dev_0_1;
 namespace ppapi {
 namespace proxy {
 
-class MessageLoopResource : public Resource, public thunk::PPB_MessageLoop_API {
+class MessageLoopResource : public MessageLoopShared {
  public:
   explicit MessageLoopResource(PP_Instance instance);
   // Construct the one MessageLoopResource for the main thread. This must be
   // invoked on the main thread.
-  struct ForMainThread {};
-  MessageLoopResource(ForMainThread);
+  explicit MessageLoopResource(ForMainThread);
   virtual ~MessageLoopResource();
 
   // Resource overrides.
@@ -38,6 +37,7 @@ class MessageLoopResource : public Resource, public thunk::PPB_MessageLoop_API {
                            int64_t delay_ms) OVERRIDE;
   virtual int32_t PostQuit(PP_Bool should_destroy) OVERRIDE;
 
+  static MessageLoopResource* GetCurrent();
   void DetachFromThread();
   bool is_main_thread_loop() const {
     return is_main_thread_loop_;
@@ -58,9 +58,9 @@ class MessageLoopResource : public Resource, public thunk::PPB_MessageLoop_API {
   // NOTE: The given closure will be run *WITHOUT* acquiring the Proxy lock.
   //       This only makes sense for user code and completely thread-safe
   //       proxy operations (e.g., MessageLoop::QuitClosure).
-  void PostClosure(const tracked_objects::Location& from_here,
-                   const base::Closure& closure,
-                   int64 delay_ms);
+  virtual void PostClosure(const tracked_objects::Location& from_here,
+                           const base::Closure& closure,
+                           int64 delay_ms) OVERRIDE;
 
   // TLS destructor function.
   static void ReleaseMessageLoop(void* value);

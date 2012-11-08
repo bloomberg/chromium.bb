@@ -54,6 +54,7 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
                                       PP_LogLevel_Dev level,
                                       const std::string& source,
                                       const std::string& value) OVERRIDE;
+  virtual ::ppapi::MessageLoopShared* GetCurrentMessageLoop() OVERRIDE;
 
   HostVarTracker* host_var_tracker() {
     return &host_var_tracker_;

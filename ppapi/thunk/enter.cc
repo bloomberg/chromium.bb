@@ -87,8 +87,6 @@ int32_t EnterBase::SetResult(int32_t result) {
     // The function completed synchronously.
     if (callback_->is_required()) {
       // This is a required callback, so we must issue it asynchronously.
-      // TODO(dmichael) make this work so that a call from a background thread
-      // goes back to that thread.
       callback_->PostRun(result);
       retval_ = PP_OK_COMPLETIONPENDING;
     } else {
@@ -108,23 +106,52 @@ Resource* EnterBase::GetResource(PP_Resource resource) {
 }
 
 void EnterBase::SetStateForCallbackError(bool report_error) {
-  if (!CallbackIsValid()) {
-    callback_->MarkAsCompleted();
-    callback_ = NULL;
-    retval_ = PP_ERROR_BLOCKS_MAIN_THREAD;
-    if (report_error) {
-      std::string message(
-          "Blocking callbacks are not allowed on the main thread.");
-      PpapiGlobals::Get()->BroadcastLogWithSource(0, PP_LOGLEVEL_ERROR,
-                                                  std::string(), message);
+  if (PpapiGlobals::Get()->IsHostGlobals()) {
+    // In-process plugins can't make PPAPI calls off the main thread.
+    CHECK(IsMainThread());
+  }
+  if (callback_) {
+    if (callback_->is_blocking() && IsMainThread()) {
+      // Blocking callbacks are never allowed on the main thread.
+      callback_->MarkAsCompleted();
+      callback_ = NULL;
+      retval_ = PP_ERROR_BLOCKS_MAIN_THREAD;
+      if (report_error) {
+        std::string message(
+            "Blocking callbacks are not allowed on the main thread.");
+        PpapiGlobals::Get()->BroadcastLogWithSource(0, PP_LOGLEVEL_ERROR,
+                                                    std::string(), message);
+      }
+    } else if (!IsMainThread() &&
+               callback_->has_null_target_loop() &&
+               !callback_->is_blocking()) {
+      // On a non-main thread, there must be a valid target loop for non-
+      // blocking callbacks, or we will have no place to run them.
+
+      // If the callback is required, there's no nice way to tell the plugin.
+      // We can't run their callback asynchronously without a message loop, and
+      // the plugin won't expect any return code other than
+      // PP_OK_COMPLETIONPENDING. So we crash to make the problem more obvious.
+      if (callback_->is_required()) {
+        std::string message("Attempted to use a required callback, but there"
+                            "is no attached message loop on which to run the"
+                            "callback.");
+        PpapiGlobals::Get()->BroadcastLogWithSource(0, PP_LOGLEVEL_ERROR,
+                                                    std::string(), message);
+        LOG(FATAL) << message;
+      }
+
+      callback_->MarkAsCompleted();
+      callback_ = NULL;
+      retval_ = PP_ERROR_NO_MESSAGE_LOOP;
+      if (report_error) {
+        std::string message(
+            "The calling thread must have a message loop attached.");
+        PpapiGlobals::Get()->BroadcastLogWithSource(0, PP_LOGLEVEL_ERROR,
+                                                    std::string(), message);
+      }
     }
   }
-}
-
-bool EnterBase::CallbackIsValid() const {
-  // A callback is only considered invalid if it is blocking and we're on the
-  // main thread.
-  return !callback_ || !callback_->is_blocking() || !IsMainThread();
 }
 
 void EnterBase::ClearCallback() {
@@ -145,8 +172,6 @@ void EnterBase::SetStateForResourceError(PP_Resource pp_resource,
     return;  // Everything worked.
 
   if (callback_ && callback_->is_required()) {
-    // TODO(dmichael) make this work so that a call from a background thread
-    // goes back to that thread.
     callback_->PostRun(static_cast<int32_t>(PP_ERROR_BADRESOURCE));
     callback_ = NULL;
     retval_ = PP_OK_COMPLETIONPENDING;

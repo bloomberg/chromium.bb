@@ -27,15 +27,15 @@ typedef thunk::EnterResource<PPB_MessageLoop_API> EnterMessageLoop;
 }
 
 MessageLoopResource::MessageLoopResource(PP_Instance instance)
-    : Resource(OBJECT_IS_PROXY, instance),
+    : MessageLoopShared(instance),
       nested_invocations_(0),
       destroyed_(false),
       should_destroy_(false),
       is_main_thread_loop_(false) {
 }
 
-MessageLoopResource::MessageLoopResource(ForMainThread)
-    : Resource(Resource::Untracked()),
+MessageLoopResource::MessageLoopResource(ForMainThread for_main_thread)
+    : MessageLoopShared(for_main_thread),
       nested_invocations_(0),
       destroyed_(false),
       should_destroy_(false),
@@ -80,7 +80,7 @@ int32_t MessageLoopResource::AttachToCurrentThread() {
     if (slot->Get())
       return PP_ERROR_INPROGRESS;
   }
-  // TODO(brettw) check that the current thread can support a message loop.
+  // TODO(dmichael) check that the current thread can support a message loop.
 
   // Take a ref to the MessageLoop on behalf of the TLS. Note that this is an
   // internal ref and not a plugin ref so the plugin can't accidentally
@@ -140,20 +140,24 @@ int32_t MessageLoopResource::PostQuit(PP_Bool should_destroy) {
   if (PP_ToBool(should_destroy))
     should_destroy_ = true;
 
-  if (IsCurrent())
+  if (IsCurrent() && nested_invocations_ > 0)
     loop_->Quit();
   else
     PostClosure(FROM_HERE, MessageLoop::QuitClosure(), 0);
   return PP_OK;
 }
 
-void MessageLoopResource::DetachFromThread() {
-  // Never detach the main thread from its loop resource. Other plugin instances
-  // might need it.
-  if (is_main_thread_loop_)
-    return;
+// static
+MessageLoopResource* MessageLoopResource::GetCurrent() {
+  PluginGlobals* globals = PluginGlobals::Get();
+  if (!globals->msg_loop_slot())
+    return NULL;
+  return reinterpret_cast<MessageLoopResource*>(
+      globals->msg_loop_slot()->Get());
+}
 
-  // Note that the message loop must be destroyed on the thread is was created
+void MessageLoopResource::DetachFromThread() {
+  // Note that the message loop must be destroyed on the thread it was created
   // on.
   loop_proxy_ = NULL;
   loop_.reset();
@@ -208,12 +212,10 @@ PP_Resource GetForMainThread() {
 }
 
 PP_Resource GetCurrent() {
-  PluginGlobals* globals = PluginGlobals::Get();
-  if (!globals->msg_loop_slot())
-    return 0;
-  MessageLoopResource* loop = reinterpret_cast<MessageLoopResource*>(
-      globals->msg_loop_slot()->Get());
-  return loop->GetReference();
+  Resource* resource = MessageLoopResource::GetCurrent();
+  if (resource)
+    return resource->GetReference();
+  return 0;
 }
 
 int32_t AttachToCurrentThread(PP_Resource message_loop) {

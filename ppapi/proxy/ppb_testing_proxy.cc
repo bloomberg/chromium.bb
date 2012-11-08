@@ -53,12 +53,14 @@ PP_Bool ReadImageData(PP_Resource graphics_2d,
 
 void RunMessageLoop(PP_Instance instance) {
   MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-  // TODO(dmichael): We should probably assert that this is the main thread.
+  CHECK(PpapiGlobals::Get()->GetMainThreadMessageLoop()->
+            BelongsToCurrentThread());
   MessageLoop::current()->Run();
 }
 
 void QuitMessageLoop(PP_Instance instance) {
-  // TODO(dmichael): We should probably assert that this is the main thread.
+  CHECK(PpapiGlobals::Get()->GetMainThreadMessageLoop()->
+            BelongsToCurrentThread());
   MessageLoop::current()->QuitNow();
 }
 

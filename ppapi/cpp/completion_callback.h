@@ -99,7 +99,7 @@ class CompletionCallback {
   /// On synchronous method completion, the completion result will be returned
   /// by the method itself. Otherwise, the method will return
   /// PP_OK_COMPLETIONPENDING, and the callback will be invoked asynchronously
-  /// on the main thread of Pepper execution.
+  /// on the same thread where the PPB method was invoked.
   ///
   /// @return true if this callback is optional, otherwise false.
   bool IsOptional() const {
@@ -150,6 +150,7 @@ class CompletionCallback {
   int32_t MayForce(int32_t result) const {
     if (result == PP_OK_COMPLETIONPENDING || IsOptional())
       return result;
+    // FIXME(dmichael): Use pp::MessageLoop here once it's out of Dev.
     Module::Get()->core()->CallOnMainThread(0, *this, result);
     return PP_OK_COMPLETIONPENDING;
   }

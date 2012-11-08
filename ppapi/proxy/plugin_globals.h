@@ -56,6 +56,7 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
                                       PP_LogLevel_Dev level,
                                       const std::string& source,
                                       const std::string& value) OVERRIDE;
+  virtual MessageLoopShared* GetCurrentMessageLoop() OVERRIDE;
 
   // Getters for the plugin-specific versions.
   PluginResourceTracker* plugin_resource_tracker() {

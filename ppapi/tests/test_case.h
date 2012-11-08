@@ -122,11 +122,12 @@ class TestCase {
              "Chrome, use the --enable-pepper-testing flag.";
     }
     // These tests are only valid if running out-of-process (threading is not
-    // supported in-process). Just consider it a pass.
+    // supported in-process). For in-process, just consider it a pass.
     if (!testing_interface_->IsOutOfProcess())
       return std::string();
+    pp::MessageLoop_Dev background_loop(instance_);
     ThreadedTestRunner<T> runner(instance_->pp_instance(),
-        static_cast<T*>(this), test_to_run);
+        static_cast<T*>(this), test_to_run, background_loop);
     RunOnThreadInternal(&ThreadedTestRunner<T>::ThreadFunction, &runner,
                         testing_interface_);
     return runner.result();
@@ -162,10 +163,12 @@ class TestCase {
     typedef std::string(T::*TestMethodType)();
     ThreadedTestRunner(PP_Instance instance,
                        T* test_case,
-                       TestMethodType test_to_run)
+                       TestMethodType test_to_run,
+                       pp::MessageLoop_Dev loop)
         : instance_(instance),
           test_case_(test_case),
-          test_to_run_(test_to_run) {
+          test_to_run_(test_to_run),
+          loop_(loop) {
     }
     const std::string& result() { return result_; }
     static void ThreadFunction(void* runner) {
@@ -174,9 +177,11 @@ class TestCase {
 
    private:
     void Run() {
-      // TODO(dmichael): Create and attach a pp::MessageLoop for this thread so
-      //                 nested loops work.
+      PP_DCHECK(PP_OK == loop_.AttachToCurrentThread());
       result_ = (test_case_->*test_to_run_)();
+      // Now give the loop a chance to clean up.
+      loop_.PostQuit(true /* should_destroy */);
+      loop_.Run();
       // Tell the main thread to quit its nested message loop, now that the test
       // is complete.
       TestCase::QuitMainMessageLoop(instance_);
@@ -186,6 +191,7 @@ class TestCase {
     PP_Instance instance_;
     T* test_case_;
     TestMethodType test_to_run_;
+    pp::MessageLoop_Dev loop_;
   };
 
   // The internals for RunOnThread. This allows us to avoid including
@@ -275,6 +281,12 @@ class TestCaseFactory {
         CheckResourcesAndVars(RunOnThread(&test_case::Test##name))); \
   }
 
+#define RUN_TEST_BACKGROUND(test_case, name, test_filter) \
+  if (MatchesFilter(#name, test_filter)) { \
+    instance_->LogTest(#name"Background", \
+        CheckResourcesAndVars(RunOnThread(&test_case::Test##name))); \
+  }
+
 #define RUN_TEST_FORCEASYNC_AND_NOT(name, test_filter) \
   do { \
     RUN_TEST_FORCEASYNC(name, test_filter); \
@@ -287,6 +299,7 @@ class TestCaseFactory {
     RUN_TEST_FORCEASYNC(name, test_filter); \
     RUN_TEST(name, test_filter); \
     RUN_TEST_BLOCKING(test_case, name, test_filter); \
+    RUN_TEST_BACKGROUND(test_case, name, test_filter); \
   } while (false)
 
 #define RUN_TEST_WITH_REFERENCE_CHECK(name, test_filter) \

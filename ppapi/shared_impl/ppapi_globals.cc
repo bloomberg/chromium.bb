@@ -23,12 +23,12 @@ PpapiGlobals* PpapiGlobals::ppapi_globals_ = NULL;
 PpapiGlobals::PpapiGlobals() {
   DCHECK(!ppapi_globals_);
   ppapi_globals_ = this;
-  message_loop_proxy_ = base::MessageLoopProxy::current();
+  main_loop_proxy_ = base::MessageLoopProxy::current();
 }
 
 PpapiGlobals::PpapiGlobals(ForTest) {
   DCHECK(!ppapi_globals_);
-  message_loop_proxy_ = base::MessageLoopProxy::current();
+  main_loop_proxy_ = base::MessageLoopProxy::current();
 }
 
 PpapiGlobals::~PpapiGlobals() {
@@ -45,7 +45,7 @@ void PpapiGlobals::SetPpapiGlobalsOnThreadForTest(PpapiGlobals* ptr) {
 }
 
 base::MessageLoopProxy* PpapiGlobals::GetMainThreadMessageLoop() {
-  return message_loop_proxy_.get();
+  return main_loop_proxy_.get();
 }
 
 bool PpapiGlobals::IsHostGlobals() const {

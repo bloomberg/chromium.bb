@@ -105,6 +105,10 @@ void PluginGlobals::BroadcastLogWithSource(PP_Module /* module */,
   LogWithSource(0, level, source, value);
 }
 
+MessageLoopShared* PluginGlobals::GetCurrentMessageLoop() {
+  return MessageLoopResource::GetCurrent();
+}
+
 MessageLoopResource* PluginGlobals::loop_for_main_thread() {
   return loop_for_main_thread_.get();
 }

@@ -69,4 +69,14 @@ void TestGlobals::BroadcastLogWithSource(PP_Module module,
                                          const std::string& value) {
 }
 
+MessageLoopShared* TestGlobals::GetCurrentMessageLoop() {
+  return NULL;
+}
+
+bool TestGlobals::IsHostGlobals() const {
+  // Pretend to be the host-side, for code that expects one or the other.
+  // TODO(dmichael): just make it settable which one we're pretending to be?
+  return true;
+}
+
 }  // namespace ppapi

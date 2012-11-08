@@ -14,10 +14,20 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/callback_tracker.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/ppb_message_loop_shared.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
 
 namespace ppapi {
+
+namespace {
+
+bool IsMainThread() {
+  return
+      PpapiGlobals::Get()->GetMainThreadMessageLoop()->BelongsToCurrentThread();
+}
+
+}  // namespace
 
 // TrackedCallback -------------------------------------------------------------
 
@@ -30,7 +40,12 @@ TrackedCallback::TrackedCallback(
       completed_(false),
       aborted_(false),
       callback_(callback),
+      target_loop_(PpapiGlobals::Get()->GetCurrentMessageLoop()),
       result_for_blocked_callback_(PP_OK) {
+  // Note that target_loop_ may be NULL at this point, if the plugin has not
+  // attached a loop to this thread, or if this is an in-process plugin.
+  // The Enter class should handle checking this for us.
+
   // TODO(dmichael): Add tracking at the instance level, for callbacks that only
   // have an instance (e.g. for MouseLock).
   if (resource) {
@@ -40,19 +55,27 @@ TrackedCallback::TrackedCallback(
   }
 
   base::Lock* proxy_lock = PpapiGlobals::Get()->GetProxyLock();
-  // We only need a ConditionVariable if the lock is valid (i.e., we're out-of-
-  // process) and the callback is blocking.
-  if (proxy_lock && is_blocking())
-    operation_completed_condvar_.reset(new base::ConditionVariable(proxy_lock));
+  if (proxy_lock) {
+    // If the proxy_lock is valid, we're running out-of-process, and locking
+    // is enabled.
+    if (is_blocking()) {
+      // This is a blocking completion callback, so we will need a condition
+      // variable for blocking & signalling the calling thread.
+      operation_completed_condvar_.reset(
+          new base::ConditionVariable(proxy_lock));
+    } else {
+      // It's a non-blocking callback, so we should have a MessageLoopResource
+      // to dispatch to. Note that we don't error check here, though. Later,
+      // EnterResource::SetResult will check to make sure the callback is valid
+      // and take appropriate action.
+    }
+  }
 }
 
 TrackedCallback::~TrackedCallback() {
 }
 
 void TrackedCallback::Abort() {
-  // It doesn't make sense to abort a callback that's not associated with a
-  // resource.
-  DCHECK(resource_id_);
   Run(PP_ERROR_ABORTED);
 }
 
@@ -71,12 +94,10 @@ void TrackedCallback::Run(int32_t result) {
   if (result == PP_ERROR_ABORTED)
     aborted_ = true;
 
-  // Copy |callback_| and look at |aborted()| now, since |MarkAsCompleted()|
-  // may delete us.
-  PP_CompletionCallback callback = callback_;
   // Note that this call of Run() may have been scheduled prior to Abort() or
   // PostAbort() being called. If we have been told to Abort, that always
-  // trumps a result that was scheduled before.
+  // trumps a result that was scheduled before, so we should make sure to pass
+  // PP_ERROR_ABORTED.
   if (aborted())
     result = PP_ERROR_ABORTED;
 
@@ -100,6 +121,15 @@ void TrackedCallback::Run(int32_t result) {
     // Wait()s.
     operation_completed_condvar_->Signal();
   } else {
+    // If there's a target_loop_, and we're not on the right thread, we need to
+    // post to target_loop_.
+    if (target_loop_ &&
+        target_loop_ != PpapiGlobals::Get()->GetCurrentMessageLoop()) {
+      PostRun(result);
+      return;
+    }
+    // Copy |callback_| now, since |MarkAsCompleted()| may delete us.
+    PP_CompletionCallback callback = callback_;
     // Do this before running the callback in case of reentrancy (which
     // shouldn't happen, but avoid strange failures).
     MarkAsCompleted();
@@ -122,7 +152,15 @@ void TrackedCallback::PostRun(int32_t result) {
 
   base::Closure callback_closure(
       RunWhileLocked(base::Bind(&TrackedCallback::Run, this, result)));
-  MessageLoop::current()->PostTask(FROM_HERE, callback_closure);
+  if (!target_loop_) {
+    // We must be running in-process and on the main thread (the Enter
+    // classes protect against having a null target_loop_ otherwise).
+    DCHECK(IsMainThread());
+    DCHECK(PpapiGlobals::Get()->IsHostGlobals());
+    MessageLoop::current()->PostTask(FROM_HERE, callback_closure);
+  } else {
+    target_loop_->PostClosure(FROM_HERE, callback_closure, 0);
+  }
   is_scheduled_ = true;
 }
 
