@@ -258,7 +258,6 @@ void SoftwareRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureD
     const SkBitmap* bitmap = lock.skBitmap();
     gfx::RectF uvRect = gfx::ScaleRect(quad->uvRect(), bitmap->width(), bitmap->height());
     SkRect skUvRect = toSkRect(uvRect);
-
     if (quad->flipped())
         m_skCurrentCanvas->scale(1, -1);
     m_skCurrentCanvas->drawBitmapRectToRect(*bitmap, &skUvRect,

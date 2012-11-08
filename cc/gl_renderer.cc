@@ -403,7 +403,7 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     SkBitmap source;
     source.setConfig(SkBitmap::kARGB_8888_Config, sourceTexture->size().width(), sourceTexture->size().height());
     source.setPixelRef(new SkGrPixelRef(texture.get()))->unref();
-    
+
     // Create a scratch texture for backing store.
     GrTextureDesc desc;
     desc.fFlags = kRenderTarget_GrTextureFlagBit | kNoStencil_GrTextureFlagBit;
@@ -428,7 +428,11 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     return device.accessBitmap(false);
 }
 
-scoped_ptr<ScopedTexture> GLRenderer::drawBackgroundFilters(DrawingFrame& frame, const RenderPassDrawQuad* quad, const WebKit::WebFilterOperations& filters, const WebTransformationMatrix& contentsDeviceTransform)
+scoped_ptr<ScopedTexture> GLRenderer::drawBackgroundFilters(
+    DrawingFrame& frame, const RenderPassDrawQuad* quad,
+    const WebKit::WebFilterOperations& filters,
+    const WebTransformationMatrix& contentsDeviceTransform,
+    const WebTransformationMatrix& contentsDeviceTransformInverse)
 {
     // This method draws a background filter, which applies a filter to any pixels behind the quad and seen through its background.
     // The algorithm works as follows:
@@ -487,7 +491,7 @@ scoped_ptr<ScopedTexture> GLRenderer::drawBackgroundFilters(DrawingFrame& frame,
         WebTransformationMatrix deviceToFramebufferTransform;
         deviceToFramebufferTransform.translate(quad->quadRect().width() / 2.0, quad->quadRect().height() / 2.0);
         deviceToFramebufferTransform.scale3d(quad->quadRect().width(), quad->quadRect().height(), 1);
-        deviceToFramebufferTransform.multiply(contentsDeviceTransform.inverse());
+        deviceToFramebufferTransform.multiply(contentsDeviceTransformInverse);
         copyTextureToFramebuffer(frame, filteredDeviceBackgroundTextureId, deviceRect, deviceToFramebufferTransform);
     }
 
@@ -517,7 +521,10 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     if (!contentsDeviceTransform.isInvertible())
         return;
 
-    scoped_ptr<ScopedTexture> backgroundTexture = drawBackgroundFilters(frame, quad, renderPass->backgroundFilters(), contentsDeviceTransform);
+    WebTransformationMatrix contentsDeviceTransformInverse = contentsDeviceTransform.inverse();
+    scoped_ptr<ScopedTexture> backgroundTexture = drawBackgroundFilters(
+        frame, quad, renderPass->backgroundFilters(),
+        contentsDeviceTransform, contentsDeviceTransformInverse);
 
     // FIXME: Cache this value so that we don't have to do it for both the surface and its replica.
     // Apply filters to the contents texture.
@@ -635,7 +642,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     }
 
     // Map device space quad to surface space. contentsDeviceTransform has no 3d component since it was generated with to2dTransform() so we don't need to project.
-    gfx::QuadF surfaceQuad = MathUtil::mapQuad(contentsDeviceTransform.inverse(), deviceLayerEdges.ToQuadF(), clipped);
+    gfx::QuadF surfaceQuad = MathUtil::mapQuad(contentsDeviceTransformInverse, deviceLayerEdges.ToQuadF(), clipped);
     DCHECK(!clipped);
 
     setShaderOpacity(quad->opacity(), shaderAlphaLocation);
@@ -808,9 +815,9 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
         // Create device space quad.
         LayerQuad deviceQuad(leftEdge, topEdge, rightEdge, bottomEdge);
 
-        // Map device space quad to local space. contentsDeviceTransform has no 3d component since it was generated with to2dTransform() so we don't need to project.
-        WebTransformationMatrix inverseDeviceTransform = deviceTransform.inverse();
-        localQuad = MathUtil::mapQuad(inverseDeviceTransform, deviceQuad.ToQuadF(), clipped);
+        // Map device space quad to local space. deviceTransform has no 3d component since it was generated with to2dTransform() so we don't need to project.
+        WebTransformationMatrix deviceTransformInverse = deviceTransform.inverse();
+        localQuad = MathUtil::mapQuad(deviceTransformInverse, deviceQuad.ToQuadF(), clipped);
 
         // We should not DCHECK(!clipped) here, because anti-aliasing inflation may cause deviceQuad to become
         // clipped. To our knowledge this scenario does not need to be handled differently than the unclipped case.

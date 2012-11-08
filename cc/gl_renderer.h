@@ -91,7 +91,10 @@ private:
 
     void drawCheckerboardQuad(const DrawingFrame&, const CheckerboardDrawQuad*);
     void drawDebugBorderQuad(const DrawingFrame&, const DebugBorderDrawQuad*);
-    scoped_ptr<ScopedTexture> drawBackgroundFilters(DrawingFrame&, const RenderPassDrawQuad*, const WebKit::WebFilterOperations&, const WebKit::WebTransformationMatrix& deviceTransform);
+    scoped_ptr<ScopedTexture> drawBackgroundFilters(
+        DrawingFrame&, const RenderPassDrawQuad*, const WebKit::WebFilterOperations&,
+        const WebKit::WebTransformationMatrix& contentsDeviceTransform,
+        const WebKit::WebTransformationMatrix& contentsDeviceTransformInverse);
     void drawRenderPassQuad(DrawingFrame&, const RenderPassDrawQuad*);
     void drawSolidColorQuad(const DrawingFrame&, const SolidColorDrawQuad*);
     void drawStreamVideoQuad(const DrawingFrame&, const StreamVideoDrawQuad*);
