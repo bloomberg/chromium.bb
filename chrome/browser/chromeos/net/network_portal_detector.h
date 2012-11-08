@@ -15,6 +15,10 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "googleurl/src/gurl.h"
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace chromeos {
 
 // This class handles all notifications about network changes from
@@ -41,11 +45,12 @@ class NetworkPortalDetector
     virtual ~Observer() {}
   };
 
-  NetworkPortalDetector();
+  explicit NetworkPortalDetector(net::URLRequestContextGetter* request_context);
   virtual ~NetworkPortalDetector();
 
   void Init();
   void Shutdown();
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -61,6 +66,8 @@ class NetworkPortalDetector
   static NetworkPortalDetector* GetInstance();
 
  private:
+  friend class NetworkPortalDetectorTest;
+
   typedef std::string NetworkId;
   typedef base::hash_map<NetworkId, CaptivePortalState> CaptivePortalStateMap;
 
@@ -92,6 +99,8 @@ class NetworkPortalDetector
   // Notifies observers that portal state is changed for a |network|.
   void NotifyPortalStateChanged(const Network* network,
                                 CaptivePortalState state);
+
+  State state() { return state_; }
 
   std::string active_network_id_;
   State state_;
