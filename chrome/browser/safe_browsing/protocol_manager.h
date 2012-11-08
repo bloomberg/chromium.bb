@@ -22,6 +22,7 @@
 #include "base/timer.h"
 #include "chrome/browser/safe_browsing/chunk_range.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
+#include "chrome/browser/safe_browsing/protocol_manager_helper.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -43,13 +44,6 @@ struct hash<const net::URLFetcher*> {
 };
 }
 #endif
-
-struct SafeBrowsingProtocolConfig {
-  SafeBrowsingProtocolConfig() : disable_auto_update(false) {}
-  std::string client_name;
-  std::string url_prefix;
-  bool disable_auto_update;
-};
 
 class SBProtocolManagerFactory;
 class SafeBrowsingProtocolManagerDelegate;
@@ -73,14 +67,14 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
     factory_ = factory;
   }
 
-  // Create an instance of the safe browsing service.
+  // Create an instance of the safe browsing protocol manager.
   static SafeBrowsingProtocolManager* Create(
       SafeBrowsingProtocolManagerDelegate* delegate,
       net::URLRequestContextGetter* request_context_getter,
       const SafeBrowsingProtocolConfig& config);
 
   // Sets up the update schedule and internal state for making periodic requests
-  // of the SafeBrowsing service.
+  // of the Safebrowsing servers.
   virtual void Initialize();
 
   // net::URLFetcherDelegate interface.
@@ -108,20 +102,6 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
 
   // Called after the chunks that were parsed were inserted in the database.
   void OnChunkInserted();
-
-  // For UMA users we report to Google when a SafeBrowsing interstitial is shown
-  // to the user.  |threat_type| should be one of the types known by
-  // SafeBrowsingHitUrl.
-  void ReportSafeBrowsingHit(const GURL& malicious_url,
-                             const GURL& page_url,
-                             const GURL& referrer_url,
-                             bool is_subresource,
-                             SBThreatType threat_type,
-                             const std::string& post_data);
-
-  // Users can opt-in on the SafeBrowsing interstitial to send detailed
-  // malware reports. |report| is the serialized report.
-  void ReportMalwareDetails(const std::string& report);
 
   // The last time we received an update.
   base::Time last_update() const { return last_update_; }
@@ -184,10 +164,6 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestGetHashUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
                            TestGetHashBackOffTimes);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
-                           TestSafeBrowsingHitUrl);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
-                           TestMalwareDetailsUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestNextChunkUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestUpdateUrl);
   friend class SafeBrowsingServiceTest;
@@ -202,26 +178,11 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
     CHUNK_REQUEST,      // Request for a specific chunk
   };
 
-  // Composes a URL using |prefix|, |method| (e.g.: gethash, download, report).
-  // |client_name| and |version|. When not empty, |additional_query| is
-  // appended to the URL with an additional "&" in the front.
-  static std::string ComposeUrl(const std::string& prefix,
-                                const std::string& method,
-                                const std::string& client_name,
-                                const std::string& version,
-                                const std::string& additional_query);
-
   // Generates Update URL for querying about the latest set of chunk updates.
   GURL UpdateUrl() const;
   // Generates GetHash request URL for retrieving full hashes.
   GURL GetHashUrl() const;
   // Generates URL for reporting safe browsing hits for UMA users.
-  GURL SafeBrowsingHitUrl(
-      const GURL& malicious_url, const GURL& page_url, const GURL& referrer_url,
-      bool is_subresource,
-      SBThreatType threat_type) const;
-  // Generates URL for reporting malware details for users who opt-in.
-  GURL MalwareDetailsUrl() const;
 
   // Composes a ChunkUrl based on input string.
   GURL NextChunkUrl(const std::string& input) const;
@@ -352,10 +313,6 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // Tracks the size of each update (in bytes).
   int update_size_;
 
-  // Track outstanding SafeBrowsing report fetchers for clean up.
-  // We add both "hit" and "detail" fetchers in this set.
-  std::set<const net::URLFetcher*> safebrowsing_reports_;
-
   // The safe browsing client name sent in each request.
   std::string client_name_;
 
@@ -366,9 +323,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // The context we use to issue network requests.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
-  // URL prefix where browser fetches safebrowsing chunk updates, hashes, and
-  // reports hits to the safebrowsing list and sends detaild malware reports
-  // for UMA users.
+  // URL prefix where browser fetches safebrowsing chunk updates, and hashes.
   std::string url_prefix_;
 
   // When true, protocol manager will not start an update unless

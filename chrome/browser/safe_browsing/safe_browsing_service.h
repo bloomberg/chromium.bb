@@ -35,6 +35,7 @@ class MalwareDetails;
 class PrefChangeRegistrar;
 class PrefService;
 class SafeBrowsingDatabase;
+class SafeBrowsingPingManager;
 class SafeBrowsingServiceFactory;
 class SafeBrowsingURLRequestContextGetter;
 
@@ -513,6 +514,9 @@ class SafeBrowsingService
 
   // Handles interaction with SafeBrowsing servers.
   SafeBrowsingProtocolManager* protocol_manager_;
+
+  // Provides phishing and malware statistics.
+  SafeBrowsingPingManager* ping_manager_;
 
   // Only access this whitelist from the UI thread.
   std::vector<WhiteListedEntry> white_listed_entries_;

@@ -25,6 +25,7 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/browser/safe_browsing/malware_details.h"
+#include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
@@ -227,6 +228,7 @@ SafeBrowsingService* SafeBrowsingService::CreateSafeBrowsingService() {
 SafeBrowsingService::SafeBrowsingService()
     : database_(NULL),
       protocol_manager_(NULL),
+      ping_manager_(NULL),
       enabled_(false),
       enable_download_protection_(false),
       enable_csd_whitelist_(false),
@@ -673,8 +675,12 @@ void SafeBrowsingService::StartOnIOThread() {
       SafeBrowsingProtocolManager::Create(this,
                                           url_request_context_getter_,
                                           config);
-
   protocol_manager_->Initialize();
+
+  DCHECK(!ping_manager_);
+  ping_manager_ =
+      SafeBrowsingPingManager::Create(url_request_context_getter_,
+                                      config);
 }
 
 void SafeBrowsingService::StopOnIOThread() {
@@ -689,6 +695,9 @@ void SafeBrowsingService::StopOnIOThread() {
   // This cancels all in-flight GetHash requests.
   delete protocol_manager_;
   protocol_manager_ = NULL;
+
+  delete ping_manager_;
+  ping_manager_ = NULL;
 
   // Delete queued checks, calling back any clients with 'SB_THREAT_TYPE_SAFE'.
   // If we don't do this here we may fail to close the database below.
@@ -1208,7 +1217,7 @@ void SafeBrowsingService::ReportSafeBrowsingHitOnIOThread(
   DVLOG(1) << "ReportSafeBrowsingHit: " << malicious_url << " " << page_url
            << " " << referrer_url << " " << is_subresource << " "
            << threat_type;
-  protocol_manager_->ReportSafeBrowsingHit(malicious_url, page_url,
+  ping_manager_->ReportSafeBrowsingHit(malicious_url, page_url,
                                            referrer_url, is_subresource,
                                            threat_type, post_data);
 }
@@ -1223,7 +1232,7 @@ void SafeBrowsingService::SendSerializedMalwareDetails(
 
   if (!serialized.empty()) {
     DVLOG(1) << "Sending serialized malware details.";
-    protocol_manager_->ReportMalwareDetails(serialized);
+    ping_manager_->ReportMalwareDetails(serialized);
   }
 }
 

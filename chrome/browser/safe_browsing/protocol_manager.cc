@@ -16,7 +16,6 @@
 #include "base/stringprintf.h"
 #include "base/timer.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/google_api_keys.h"
@@ -95,12 +94,7 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
 
   // Set the backoff multiplier fuzz to a random value between 0 and 1.
   back_off_fuzz_ = static_cast<float>(base::RandDouble());
-
-  chrome::VersionInfo version_info;
-  if (!version_info.is_valid() || version_info.Version().empty())
-    version_ = "0.1";
-  else
-    version_ = version_info.Version();
+  version_ = SafeBrowsingProtocolManagerHelper::Version();
 }
 
 // static
@@ -120,11 +114,6 @@ SafeBrowsingProtocolManager::~SafeBrowsingProtocolManager() {
   STLDeleteContainerPairFirstPointers(hash_requests_.begin(),
                                       hash_requests_.end());
   hash_requests_.clear();
-
-  // Delete in-progress safebrowsing reports (hits and details).
-  STLDeleteContainerPointers(safebrowsing_reports_.begin(),
-                             safebrowsing_reports_.end());
-  safebrowsing_reports_.clear();
 }
 
 // We can only have one update or chunk request outstanding, but there may be
@@ -177,17 +166,6 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
   scoped_ptr<const net::URLFetcher> fetcher;
   bool parsed_ok = true;
   bool must_back_off = false;  // Reduce SafeBrowsing service query frequency.
-
-  // See if this is a safebrowsing report fetcher. We don't take any action for
-  // the response to those.
-  std::set<const net::URLFetcher*>::iterator sit =
-      safebrowsing_reports_.find(source);
-  if (sit != safebrowsing_reports_.end()) {
-    const net::URLFetcher* report = *sit;
-    safebrowsing_reports_.erase(sit);
-    delete report;
-    return;
-  }
 
   HashRequests::iterator it = hash_requests_.find(source);
   if (it != hash_requests_.end()) {
@@ -564,45 +542,6 @@ void SafeBrowsingProtocolManager::OnChunkInserted() {
   }
 }
 
-// Sends a SafeBrowsing "hit" for UMA users.
-void SafeBrowsingProtocolManager::ReportSafeBrowsingHit(
-    const GURL& malicious_url,
-    const GURL& page_url,
-    const GURL& referrer_url,
-    bool is_subresource,
-    SBThreatType threat_type,
-    const std::string& post_data) {
-  GURL report_url = SafeBrowsingHitUrl(malicious_url, page_url,
-                                       referrer_url, is_subresource,
-                                       threat_type);
-  net::URLFetcher* report = net::URLFetcher::Create(
-      report_url,
-      post_data.empty() ? net::URLFetcher::GET : net::URLFetcher::POST,
-      this);
-  report->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  report->SetRequestContext(request_context_getter_);
-  if (!post_data.empty())
-    report->SetUploadData("text/plain", post_data);
-  report->Start();
-  safebrowsing_reports_.insert(report);
-}
-
-// Sends malware details for users who opt-in.
-void SafeBrowsingProtocolManager::ReportMalwareDetails(
-    const std::string& report) {
-  GURL report_url = MalwareDetailsUrl();
-  net::URLFetcher* fetcher = net::URLFetcher::Create(
-      report_url, net::URLFetcher::POST, this);
-  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  fetcher->SetRequestContext(request_context_getter_);
-  fetcher->SetUploadData("application/octet-stream", report);
-  // Don't try too hard to send reports on failures.
-  fetcher->SetAutomaticallyRetryOn5xx(false);
-  fetcher->Start();
-  safebrowsing_reports_.insert(fetcher);
-}
-
-
 // static
 std::string SafeBrowsingProtocolManager::FormatList(
     const SBListChunkRanges& list) {
@@ -634,83 +573,15 @@ void SafeBrowsingProtocolManager::UpdateFinished(bool success) {
   delegate_->UpdateFinished(success);
 }
 
-std::string SafeBrowsingProtocolManager::ComposeUrl(
-    const std::string& prefix, const std::string& method,
-    const std::string& client_name, const std::string& version,
-    const std::string& additional_query) {
-  DCHECK(!prefix.empty() && !method.empty() &&
-         !client_name.empty() && !version.empty());
-  std::string url = base::StringPrintf("%s/%s?client=%s&appver=%s&pver=2.2",
-                                       prefix.c_str(), method.c_str(),
-                                       client_name.c_str(), version.c_str());
-  std::string api_key = google_apis::GetAPIKey();
-  if (!api_key.empty()) {
-    base::StringAppendF(&url, "&key=%s",
-                        net::EscapeQueryParamValue(api_key, true).c_str());
-  }
-  if (!additional_query.empty()) {
-    DCHECK(url.find("?") != std::string::npos);
-    url.append("&");
-    url.append(additional_query);
-  }
-  return url;
-}
-
 GURL SafeBrowsingProtocolManager::UpdateUrl() const {
-  return GURL(ComposeUrl(url_prefix_, "downloads", client_name_, version_,
-                         additional_query_));
+  std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
+      url_prefix_, "downloads", client_name_, version_, additional_query_);
+  return GURL(url);
 }
 
 GURL SafeBrowsingProtocolManager::GetHashUrl() const {
-  return GURL(ComposeUrl(url_prefix_, "gethash", client_name_, version_,
-                         additional_query_));
-}
-
-GURL SafeBrowsingProtocolManager::SafeBrowsingHitUrl(
-    const GURL& malicious_url, const GURL& page_url,
-    const GURL& referrer_url, bool is_subresource,
-    SBThreatType threat_type) const {
-  std::string url = ComposeUrl(url_prefix_, "report", client_name_,
-                               version_, additional_query_);
-  std::string threat_list = "none";
-  switch (threat_type) {
-    case SB_THREAT_TYPE_URL_MALWARE:
-      threat_list = "malblhit";
-      break;
-    case SB_THREAT_TYPE_URL_PHISHING:
-      threat_list = "phishblhit";
-      break;
-    case SB_THREAT_TYPE_BINARY_MALWARE_URL:
-      threat_list = "binurlhit";
-      break;
-    case SB_THREAT_TYPE_BINARY_MALWARE_HASH:
-      threat_list = "binhashhit";
-      break;
-    case SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL:
-      threat_list = "phishcsdhit";
-      break;
-    default:
-      NOTREACHED();
-  }
-  return GURL(base::StringPrintf("%s&evts=%s&evtd=%s&evtr=%s&evhr=%s&evtb=%d",
-      url.c_str(), threat_list.c_str(),
-      net::EscapeQueryParamValue(malicious_url.spec(), true).c_str(),
-      net::EscapeQueryParamValue(page_url.spec(), true).c_str(),
-      net::EscapeQueryParamValue(referrer_url.spec(), true).c_str(),
-      is_subresource));
-}
-
-GURL SafeBrowsingProtocolManager::MalwareDetailsUrl() const {
-  std::string url = base::StringPrintf(
-          "%s/clientreport/malware?client=%s&appver=%s&pver=1.0",
-          url_prefix_.c_str(),
-          client_name_.c_str(),
-          version_.c_str());
-  std::string api_key = google_apis::GetAPIKey();
-  if (!api_key.empty()) {
-    base::StringAppendF(&url, "&key=%s",
-                        net::EscapeQueryParamValue(api_key, true).c_str());
-  }
+  std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
+      url_prefix_, "gethash", client_name_, version_, additional_query_);
   return GURL(url);
 }
 
