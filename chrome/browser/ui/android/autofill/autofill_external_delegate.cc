@@ -21,6 +21,11 @@
 using base::android::MethodID;
 using content::BrowserThread;
 
+void AutofillExternalDelegateAndroid::ClearPreviewedForm() {
+  // Intentionally blank as Autofill preview is unused on Android
+  // TODO(aurimas): Clean this up (crbug.com/159809)
+}
+
 void AutofillExternalDelegate::CreateForWebContentsAndManager(
     content::WebContents* web_contents,
     AutofillManager* autofill_manager) {
