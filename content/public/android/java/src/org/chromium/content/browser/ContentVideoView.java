@@ -129,7 +129,7 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
         }
     }
 
-    private class ProgressView extends LinearLayout {
+    private static class ProgressView extends LinearLayout {
 
         private ProgressBar mProgressBar;
         private TextView mTextView;
@@ -148,7 +148,7 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
         }
     }
 
-    private class FullScreenMediaController extends MediaController {
+    private static class FullScreenMediaController extends MediaController {
 
         View mVideoView;
 
