@@ -150,10 +150,6 @@ int TrayPower::GetBatteryImageIndex(const PowerSupplyStatus& supply_status) {
   } else if (!supply_status.battery_is_present) {
     image_index = kNumPowerImages;
   } else {
-    // If power supply is calculating battery time, the battery percentage
-    // is uncertain, just return -1.
-    if (supply_status.is_calculating_battery_time)
-      return -1;
     image_index = static_cast<int>(supply_status.battery_percentage /
                   100.0 * (kNumPowerImages - 1));
     image_index = std::max(std::min(image_index, kNumPowerImages - 2), 0);
