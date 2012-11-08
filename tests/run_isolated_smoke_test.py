@@ -110,7 +110,18 @@ class RunSwarmStep(unittest.TestCase):
     shutil.copyfile(filepath, os.path.join(self.table, h))
     return h
 
-  def _generate_args(self, sha1_hash):
+  def _generate_args_with_isolated(self, isolated):
+    """Generates the standard arguments used with isolated as the isolated file.
+
+    Returns a list of the required arguments.
+    """
+    return [
+      '--isolated', isolated,
+      '--cache', self.cache,
+      '--remote', self.table,
+    ]
+
+  def _generate_args_with_sha1(self, sha1_hash):
     """Generates the standard arguments used with sha1_hash as the hash.
 
     Returns a list of the required arguments.
@@ -129,12 +140,8 @@ class RunSwarmStep(unittest.TestCase):
       self._store('gtest_fake.py'),
       calc_sha1(isolated),
     ]
-    args = [
-      '--isolated', isolated,
-      '--cache', self.cache,
-      '--remote', self.table,
-    ]
-    out, err, returncode = self._run(args)
+    out, err, returncode = self._run(
+        self._generate_args_with_isolated(isolated))
     if not VERBOSE:
       self.assertEquals('', err)
       self.assertEquals(1070, len(out), out)
@@ -150,12 +157,8 @@ class RunSwarmStep(unittest.TestCase):
       self._store('gtest_fake.py'),
       result_sha1,
     ]
-    args = [
-      '--hash', result_sha1,
-      '--cache', self.cache,
-      '--remote', self.table,
-    ]
-    out, err, returncode = self._run(args)
+
+    out, err, returncode = self._run(self._generate_args_with_sha1(result_sha1))
     if not VERBOSE:
       self.assertEquals('', err)
       self.assertEquals(1070, len(out), out)
@@ -169,7 +172,7 @@ class RunSwarmStep(unittest.TestCase):
       'state.json',
       result_sha1,
     ]
-    out, err, returncode = self._run(self._generate_args(result_sha1))
+    out, err, returncode = self._run(self._generate_args_with_sha1(result_sha1))
     if not VERBOSE:
       self.assertEquals('', out)
       self.assertEquals('No command to run\n', err)
@@ -196,7 +199,7 @@ class RunSwarmStep(unittest.TestCase):
       self._store('manifest2.isolated'),
       result_sha1,
     ]
-    out, err, returncode = self._run(self._generate_args(result_sha1))
+    out, err, returncode = self._run(self._generate_args_with_sha1(result_sha1))
     if not VERBOSE:
       self.assertEquals('', err)
       self.assertEquals('Success\n', out)
@@ -215,13 +218,46 @@ class RunSwarmStep(unittest.TestCase):
         self._store('repeated_files.py')
     ]
 
-    out, err, returncode = self._run(self._generate_args(result_sha1))
+    out, err, returncode = self._run(self._generate_args_with_sha1(result_sha1))
     if not VERBOSE:
       self.assertEquals('', err)
       self.assertEquals('Success\n', out)
     self.assertEquals(0, returncode)
     actual = list_files_tree(self.cache)
     self.assertEquals(sorted(expected), actual)
+
+  def test_delete_invald_cache_entry(self):
+    isolated_file = os.path.join(self.data_dir, 'file_with_size.isolated')
+    file1_sha1 = self._store('file1.txt')
+
+    # Run the test once to generate the cache.
+    out, err, returncode = self._run(self._generate_args_with_isolated(
+        isolated_file))
+    if VERBOSE:
+      print out
+      print err
+    self.assertEqual(0, returncode)
+
+    # Modify one of the files in the cache to be invalid.
+    cached_file_path = os.path.join(self.cache, file1_sha1)
+    with open(cached_file_path, 'w') as f:
+      f.write('invalid size')
+
+    # Ensure that the cache has an invalid file.
+    self.assertNotEqual(
+        os.stat(os.path.join(self.data_dir, 'file1.txt')).st_size,
+        os.stat(cached_file_path).st_size)
+
+    # Rerun the test and make sure the cache contains the right file afterwards.
+    out, err, returncode = self._run(self._generate_args_with_isolated(
+        isolated_file))
+    if VERBOSE:
+      print out
+      print err
+    self.assertEqual(0, returncode)
+
+    self.assertEqual(os.stat(os.path.join(self.data_dir, 'file1.txt')).st_size,
+                     os.stat(cached_file_path).st_size)
 
 
 if __name__ == '__main__':

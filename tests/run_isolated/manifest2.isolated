@@ -1,8 +1,9 @@
 {
-  "includes": ["858e2f54f479c439ba529f893b9a54a5346986de"],
+  "includes": ["9d7dd92a34c7b01a24477180abf92824e88d32ef"],
   "files": {
     "file2.txt": {
-      "sha-1": "4c5f884b8c98cd2064d36ffaf8512ff264f08316"
+      "sha-1": "4c5f884b8c98cd2064d36ffaf8512ff264f08316",
+      "size": 164
     }
   }
 }

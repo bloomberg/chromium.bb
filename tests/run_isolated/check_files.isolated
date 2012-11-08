@@ -1,15 +1,17 @@
 {
   "command": ["python", "check_files.py"],
   "includes": [
-    "c926928a4fe1eb59159849816076f49f602e76cf",
-    "ebb03d931934088b29a5010f67166447a7a8001a"
+    "52f7a5f98add92134cbbf8fce3fcb87448d06169",
+    "171f7c07df14b65aa2b29191bd084d0d803be9c4"
   ],
   "files": {
     "check_files.py": {
-      "sha-1": "7057184fcc8351aced8f4222fa9abbb5defc7b9e"
+      "sha-1": "7057184fcc8351aced8f4222fa9abbb5defc7b9e",
+      "size": 960
     },
     "file2.txt": {
-      "sha-1": "7c0095bad1bcbf38e36d208e2b685c5d279146a5"
+      "sha-1": "7c0095bad1bcbf38e36d208e2b685c5d279146a5",
+      "size": 10
     }
   }
 }

@@ -31,6 +31,10 @@ HARDLINK, SYMLINK, COPY = range(1, 4)
 
 RE_IS_SHA1 = re.compile(r'^[a-fA-F0-9]{40}$')
 
+# The file size to be used when we don't know the correct file size,
+# generally used for .isolated files.
+UNKNOWN_FILE_SIZE = None
+
 
 class ConfigError(ValueError):
   """Generic failure to load a .isolated file."""
@@ -365,6 +369,12 @@ class ThreadPool(object):
     self.close()
 
 
+def valid_file(filepath, size):
+  """Determines if the given files appears valid (currently it just checks
+  the file's size)."""
+  return (size == UNKNOWN_FILE_SIZE or size == os.stat(filepath).st_size)
+
+
 class Profiler(object):
   def __init__(self, name):
     self.name = name
@@ -647,16 +657,21 @@ class Cache(object):
         '%4d (%7dkb) removed', len(self._removed), sum(self._removed) / 1024)
     logging.info('%7dkb free', self._free_disk / 1024)
 
-  def remove_lru_file(self):
-    """Removes the last recently used file."""
+  def remove_file_at_index(self, index):
+    """Removes the file at the given index."""
     try:
-      filename, size = self.state.pop(0)
+      filename, size = self.state.pop(index)
+      # TODO(csharp): _lookup should self-update.
       del self._lookup[filename]
       self._removed.append(size)
       os.remove(self.path(filename))
       self._dirty = True
     except OSError as e:
       logging.error('Error attempting to delete a file\n%s' % e)
+
+  def remove_lru_file(self):
+    """Removes the last recently used file."""
+    self.remove_file_at_index(0)
 
   def trim(self):
     """Trims anything we don't know, make sure enough free space exists."""
@@ -681,25 +696,35 @@ class Cache(object):
 
     self.save()
 
-  def retrieve(self, priority, item):
+  def retrieve(self, priority, item, size):
     """Retrieves a file from the remote, if not already cached, and adds it to
     the cache.
+
+    If the file is in the cache, verifiy that the file is valid (i.e. it is
+    the correct size), retrieving it again if it isn't.
     """
     assert not '/' in item
     path = self.path(item)
     index = self._lookup.get(item)
+
+    if index is not None:
+      if not valid_file(self.path(item), size):
+        self.remove_file_at_index(index)
+        self._update_lookup()
+        index = None
+      else:
+        assert index < len(self.state)
+        # Was already in cache. Update it's LRU value by putting it at the end.
+        self.state.append(self.state.pop(index))
+        self._dirty = True
+        self._update_lookup()
+
     if index is None:
       if item in self._pending_queue:
         # Already pending. The same object could be referenced multiple times.
         return
       self.remote.add_item(priority, item, path)
       self._pending_queue.add(item)
-    else:
-      if index != len(self.state) - 1:
-        # Was already in cache. Update it's LRU value by putting it at the end.
-        self.state.append(self.state.pop(index))
-        self._dirty = True
-        self._update_lookup()
 
   def add(self, filepath, obj):
     """Forcibly adds a file to the cache."""
@@ -812,7 +837,7 @@ class IsolatedFile(object):
         if 'sha-1' in properties:
           # Preemptively request files.
           logging.debug('fetching %s' % filepath)
-          cache.retrieve(Remote.MED, properties['sha-1'])
+          cache.retrieve(Remote.MED, properties['sha-1'], properties['size'])
     self.files_fetched = True
 
 
@@ -846,7 +871,7 @@ class Settings(object):
     in 'includes' is important.
     """
     self.root = IsolatedFile(root_isolated_hash)
-    cache.retrieve(Remote.HIGH, root_isolated_hash)
+    cache.retrieve(Remote.HIGH, root_isolated_hash, UNKNOWN_FILE_SIZE)
     pending = {root_isolated_hash: self.root}
     # Keeps the list of retrieved items to refuse recursive includes.
     retrieved = [root_isolated_hash]
@@ -889,7 +914,7 @@ class Settings(object):
         if h in retrieved:
           raise ConfigError('IsolatedFile %s is retrieved recursively' % h)
         pending[h] = new_child
-        cache.retrieve(Remote.HIGH, h)
+        cache.retrieve(Remote.HIGH, h, UNKNOWN_FILE_SIZE)
 
       # Traverse the whole tree to see if files can now be fetched.
       traverse_tree(self.root)
