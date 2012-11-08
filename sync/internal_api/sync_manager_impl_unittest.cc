@@ -674,8 +674,10 @@ class SyncManagerObserverMock : public SyncManager::Observer {
  public:
   MOCK_METHOD1(OnSyncCycleCompleted,
                void(const SyncSessionSnapshot&));  // NOLINT
-  MOCK_METHOD3(OnInitializationComplete,
-               void(const WeakHandle<JsBackend>&, bool,
+  MOCK_METHOD4(OnInitializationComplete,
+               void(const WeakHandle<JsBackend>&,
+                    const WeakHandle<DataTypeDebugInfoListener>&,
+                    bool,
                     syncer::ModelTypeSet));  // NOLINT
   MOCK_METHOD1(OnConnectionStatusChange, void(ConnectionStatus));  // NOLINT
   MOCK_METHOD0(OnStopSyncingPermanently, void());  // NOLINT
@@ -739,7 +741,7 @@ class SyncManagerTest : public testing::Test,
     fake_invalidator_ = new FakeInvalidator();
 
     sync_manager_.AddObserver(&manager_observer_);
-    EXPECT_CALL(manager_observer_, OnInitializationComplete(_, _, _)).
+    EXPECT_CALL(manager_observer_, OnInitializationComplete(_, _, _, _)).
         WillOnce(SaveArg<0>(&js_backend_));
 
     EXPECT_FALSE(js_backend_.IsInitialized());

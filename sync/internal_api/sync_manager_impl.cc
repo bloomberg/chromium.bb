@@ -415,7 +415,9 @@ void SyncManagerImpl::Init(
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                       OnInitializationComplete(
                           MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
-                          false, syncer::ModelTypeSet()));
+                          MakeWeakHandle(
+                              debug_info_event_listener_.GetWeakPtr()),
+                          false, ModelTypeSet()));
     LOG(ERROR) << "Sync manager initialization failed!";
     return;
   }
@@ -473,6 +475,7 @@ void SyncManagerImpl::Init(
   FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                     OnInitializationComplete(
                         MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
+                        MakeWeakHandle(debug_info_event_listener_.GetWeakPtr()),
                         true, InitialSyncEndedTypes()));
 }
 

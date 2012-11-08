@@ -220,7 +220,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
                                               data_type_controller,
                                               &error_handler_,
                                               &model_associator));
-      EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _)).
+      EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _, _)).
           WillOnce(ReturnNewDataTypeManager());
 
       token_service_->IssueAuthTokenForTest(

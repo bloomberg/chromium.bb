@@ -201,7 +201,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
           WillRepeatedly(MakePasswordSyncComponents(service_.get(),
                                                     password_store_.get(),
                                                     data_type_controller));
-      EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _)).
+      EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _, _)).
           WillOnce(ReturnNewDataTypeManager());
 
       // We need tokens to get the tests going

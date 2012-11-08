@@ -26,6 +26,8 @@ using content::BrowserThread;
 namespace browser_sync {
 
 DataTypeManagerImpl::DataTypeManagerImpl(
+    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+        debug_info_listener,
     BackendDataTypeConfigurer* configurer,
     const DataTypeController::TypeMap* controllers,
     DataTypeManagerObserver* observer)

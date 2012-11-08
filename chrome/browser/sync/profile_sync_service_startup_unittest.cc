@@ -102,7 +102,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
   DataTypeManagerMock* SetUpDataTypeManager() {
     DataTypeManagerMock* data_type_manager = new DataTypeManagerMock();
-    EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _, _)).
+    EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _, _, _)).
         WillOnce(Return(data_type_manager));
     return data_type_manager;
   }
@@ -219,7 +219,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
 }
 
 TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
-  EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _, _)).Times(0);
+  EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _, _, _)).Times(0);
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
@@ -329,7 +329,7 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   // Disable sync through policy.
   profile_->GetPrefs()->SetBoolean(prefs::kSyncManaged, true);
 
-  EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _, _)).Times(0);
+  EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _, _, _)).Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   // Service should not be started by Initialize() since it's managed.
@@ -360,7 +360,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   // When switching back to unmanaged, the state should change, but the service
   // should not start up automatically (kSyncSetupCompleted will be false).
   Mock::VerifyAndClearExpectations(data_type_manager);
-  EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _, _)).Times(0);
+  EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _, _, _)).Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   profile_->GetPrefs()->ClearPref(prefs::kSyncManaged);
 }

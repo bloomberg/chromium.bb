@@ -66,6 +66,8 @@ class SyncFrontend : public syncer::InvalidationHandler {
   // is initialized only if |success| is true.
   virtual void OnBackendInitialized(
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+          debug_info_listener,
       bool success) = 0;
 
   // The backend queried the server recently and received some updates.
@@ -358,6 +360,8 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Called when the SyncManager has been constructed and initialized.
   virtual void HandleSyncManagerInitializationOnFrontendLoop(
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+          debug_info_listener,
       bool success,
       syncer::ModelTypeSet restored_types);
 
@@ -542,11 +546,12 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // UI-thread cache of the last SyncSessionSnapshot received from syncapi.
   syncer::sessions::SyncSessionSnapshot last_snapshot_;
 
-  // Temporary holder for the javascript backend. Set by
+  // Temporary holder of sync manager's initialization results. Set by
   // HandleSyncManagerInitializationOnFrontendLoop, and consumed when we pass
   // it via OnBackendInitialized in the final state of
   // HandleInitializationCompletedOnFrontendLoop.
   syncer::WeakHandle<syncer::JsBackend> js_backend_;
+  syncer::WeakHandle<syncer::DataTypeDebugInfoListener> debug_info_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };

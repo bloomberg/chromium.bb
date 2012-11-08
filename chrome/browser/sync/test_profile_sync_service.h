@@ -24,7 +24,7 @@ class Task;
 class TestProfileSyncService;
 
 ACTION(ReturnNewDataTypeManager) {
-  return new browser_sync::DataTypeManagerImpl(arg0, arg1, arg2);
+  return new browser_sync::DataTypeManagerImpl(arg0, arg1, arg2, arg3);
 }
 
 namespace browser_sync {
@@ -57,6 +57,8 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
 
   virtual void HandleSyncManagerInitializationOnFrontendLoop(
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+          debug_info_listener,
       bool success,
       syncer::ModelTypeSet restored_types) OVERRIDE;
 
@@ -102,6 +104,8 @@ class TestProfileSyncService : public ProfileSyncService {
 
   virtual void OnBackendInitialized(
       const syncer::WeakHandle<syncer::JsBackend>& backend,
+      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+          debug_info_listener,
       bool success) OVERRIDE;
 
   virtual void OnConfigureDone(

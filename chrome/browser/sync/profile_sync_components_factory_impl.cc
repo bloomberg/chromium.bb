@@ -223,10 +223,15 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
 }
 
 DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
+    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+        debug_info_listener,
     SyncBackendHost* backend,
     const DataTypeController::TypeMap* controllers,
     DataTypeManagerObserver* observer) {
-  return new DataTypeManagerImpl(backend, controllers, observer);
+  return new DataTypeManagerImpl(debug_info_listener,
+                                 backend,
+                                 controllers,
+                                 observer);
 }
 
 browser_sync::GenericChangeProcessor*

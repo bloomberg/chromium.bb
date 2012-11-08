@@ -114,7 +114,8 @@ void FakeSyncManager::Init(
   PurgePartiallySyncedTypes();
   FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                     OnInitializationComplete(
-                        syncer::WeakHandle<syncer::JsBackend>(),
+                        WeakHandle<JsBackend>(),
+                        WeakHandle<DataTypeDebugInfoListener>(),
                         true, initial_sync_ended_types_));
 }
 

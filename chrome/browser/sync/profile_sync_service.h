@@ -275,6 +275,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // SyncFrontend implementation.
   virtual void OnBackendInitialized(
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+          debug_info_listener,
       bool success) OVERRIDE;
   virtual void OnSyncCycleCompleted() OVERRIDE;
   virtual void OnSyncConfigureRetry() OVERRIDE;
@@ -870,6 +872,10 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Dispatches invalidations to handlers.  Set in Initialize() and
   // unset in Shutdown().
   scoped_ptr<syncer::InvalidatorRegistrar> invalidator_registrar_;
+
+  // Sync's internal debug info listener. Used to record datatype configuration
+  // and association information.
+  syncer::WeakHandle<syncer::DataTypeDebugInfoListener> debug_info_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

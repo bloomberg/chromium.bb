@@ -34,9 +34,10 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   static ProfileKeyedService* BuildMockProfileSyncService(Profile* profile);
 
   MOCK_METHOD0(DisableForUser, void());
-  MOCK_METHOD2(OnBackendInitialized,
-               void(const syncer::WeakHandle<syncer::JsBackend>&,
-                    bool));
+  MOCK_METHOD3(OnBackendInitialized,
+      void(const syncer::WeakHandle<syncer::JsBackend>&,
+           const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&,
+           bool));
   MOCK_METHOD0(OnSyncCycleCompleted, void());
   MOCK_METHOD0(OnAuthError, void());
   MOCK_METHOD4(OnUserSubmittedAuth,

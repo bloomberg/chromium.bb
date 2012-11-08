@@ -26,8 +26,9 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
   virtual ~ProfileSyncComponentsFactoryMock();
 
   MOCK_METHOD1(RegisterDataTypes, void(ProfileSyncService*));
-  MOCK_METHOD3(CreateDataTypeManager,
+  MOCK_METHOD4(CreateDataTypeManager,
                browser_sync::DataTypeManager*(
+                   const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&,
                    browser_sync::SyncBackendHost*,
                    const browser_sync::DataTypeController::TypeMap*,
                    browser_sync::DataTypeManagerObserver* observer));

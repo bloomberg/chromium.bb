@@ -59,8 +59,11 @@ class MockSyncFrontend : public SyncFrontend {
   MOCK_METHOD2(OnIncomingInvalidation,
                void(const syncer::ObjectIdInvalidationMap&,
                     syncer::IncomingInvalidationSource));
-  MOCK_METHOD2(OnBackendInitialized,
-               void(const syncer::WeakHandle<syncer::JsBackend>&, bool));
+  MOCK_METHOD3(
+      OnBackendInitialized,
+      void(const syncer::WeakHandle<syncer::JsBackend>&,
+           const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&,
+           bool));
   MOCK_METHOD0(OnSyncCycleCompleted, void());
   MOCK_METHOD1(OnConnectionStatusChange,
                void(syncer::ConnectionStatus status));
@@ -178,7 +181,7 @@ class SyncBackendHostTest : public testing::Test {
 
   // Synchronously initializes the backend.
   void InitializeBackend() {
-    EXPECT_CALL(mock_frontend_, OnBackendInitialized(_, true)).
+    EXPECT_CALL(mock_frontend_, OnBackendInitialized(_, _, true)).
         WillOnce(InvokeWithoutArgs(QuitMessageLoop));
     backend_->Initialize(&mock_frontend_,
                          syncer::WeakHandle<syncer::JsEventHandler>(),

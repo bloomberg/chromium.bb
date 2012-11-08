@@ -67,7 +67,10 @@ TEST_F(JsSyncManagerObserverTest, OnInitializationComplete) {
                             HasDetailsAsDictionary(expected_details)));
 
   js_sync_manager_observer_.OnInitializationComplete(
-      WeakHandle<JsBackend>(), true, restored_types);
+      WeakHandle<JsBackend>(),
+      WeakHandle<DataTypeDebugInfoListener>(),
+      true,
+      restored_types);
   PumpLoop();
 }
 

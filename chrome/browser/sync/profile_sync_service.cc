@@ -751,7 +751,10 @@ void ProfileSyncService::OnIncomingInvalidation(
 }
 
 void ProfileSyncService::OnBackendInitialized(
-    const syncer::WeakHandle<syncer::JsBackend>& js_backend, bool success) {
+    const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+        debug_info_listener,
+    bool success) {
   is_first_time_sync_configure_ = !HasSyncSetupCompleted();
 
   if (is_first_time_sync_configure_) {
@@ -795,6 +798,7 @@ void ProfileSyncService::OnBackendInitialized(
   UpdateInvalidatorRegistrarState();
 
   sync_js_controller_.AttachJsBackend(js_backend);
+  debug_info_listener_ = debug_info_listener;
 
   // If we have a cached passphrase use it to decrypt/encrypt data now that the
   // backend is initialized. We want to call this before notifying observers in
@@ -1432,7 +1436,8 @@ void ProfileSyncService::ConfigureDataTypeManager() {
   if (!data_type_manager_.get()) {
     restart = true;
     data_type_manager_.reset(
-        factory_->CreateDataTypeManager(backend_.get(),
+        factory_->CreateDataTypeManager(debug_info_listener_,
+                                        backend_.get(),
                                         &data_type_controllers_,
                                         this));
 

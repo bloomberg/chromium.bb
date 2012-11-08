@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "sync/internal_api/public/data_type_debug_info_listener.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/sync_manager.h"
@@ -19,13 +20,17 @@
 
 namespace syncer {
 
-const unsigned int kMaxEntries = 6;
+// In order to track datatype association results, we need at least as many
+// entries as datatypes.
+const unsigned int kMaxEntries = 25;
 
 // Listens to events and records them in a queue. And passes the events to
 // syncer when requested.
+// This class is not thread safe and should only be accessed on the sync thread.
 class DebugInfoEventListener : public SyncManager::Observer,
                                public SyncEncryptionHandler::Observer,
-                               public sessions::DebugInfoGetter {
+                               public sessions::DebugInfoGetter,
+                               public DataTypeDebugInfoListener {
  public:
   DebugInfoEventListener();
   virtual ~DebugInfoEventListener();
@@ -34,7 +39,8 @@ class DebugInfoEventListener : public SyncManager::Observer,
   virtual void OnSyncCycleCompleted(
     const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
   virtual void OnInitializationComplete(
-      const syncer::WeakHandle<JsBackend>& js_backend,
+      const WeakHandle<JsBackend>& js_backend,
+      const WeakHandle<DataTypeDebugInfoListener>& debug_listener,
       bool success, ModelTypeSet restored_types) OVERRIDE;
   virtual void OnConnectionStatusChange(
       ConnectionStatus connection_status) OVERRIDE;
@@ -66,8 +72,16 @@ class DebugInfoEventListener : public SyncManager::Observer,
   void OnIncomingNotification(
       const ModelTypeInvalidationMap& invalidation_map);
 
-  // DebugInfoGetter Implementation.
+  // DebugInfoGetter implementation.
   virtual void GetAndClearDebugInfo(sync_pb::DebugInfo* debug_info) OVERRIDE;
+
+  // DataTypeDebugInfoListener implementation.
+  virtual void OnDataTypeAssociationComplete(
+      const DataTypeAssociationStats& association_stats) OVERRIDE;
+  virtual void OnConfigureComplete() OVERRIDE;
+
+  // Returns a weak pointer to this object.
+  base::WeakPtr<DataTypeDebugInfoListener> GetWeakPtr();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DebugInfoEventListenerTest, VerifyEventsAdded);
@@ -87,6 +101,10 @@ class DebugInfoEventListener : public SyncManager::Observer,
 
   // Cryptographer is initialized and does not have pending keys.
   bool cryptographer_ready_;
+
+  base::WeakPtrFactory<DebugInfoEventListener> weak_ptr_factory_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugInfoEventListener);
 };

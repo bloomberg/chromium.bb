@@ -105,7 +105,10 @@ void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
 
 void SyncBackendHostForProfileSyncTest
         ::HandleSyncManagerInitializationOnFrontendLoop(
-    const syncer::WeakHandle<syncer::JsBackend>& js_backend, bool success,
+    const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+        debug_info_listener,
+    bool success,
     syncer::ModelTypeSet restored_types) {
   // Here's our opportunity to pretend to do things that the SyncManager would
   // normally do during initialization, but can't because this is a test.
@@ -138,7 +141,7 @@ void SyncBackendHostForProfileSyncTest
   }
 
   SyncBackendHost::HandleSyncManagerInitializationOnFrontendLoop(
-      js_backend, success, restored_types);
+      js_backend, debug_info_listener, success, restored_types);
 }
 
 void SyncBackendHostForProfileSyncTest::SetInitialSyncEndedForAllTypes() {
@@ -201,8 +204,12 @@ TestProfileSyncService::~TestProfileSyncService() {
 
 void TestProfileSyncService::OnBackendInitialized(
     const syncer::WeakHandle<syncer::JsBackend>& backend,
+    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+        debug_info_listener,
     bool success) {
-  ProfileSyncService::OnBackendInitialized(backend, success);
+  ProfileSyncService::OnBackendInitialized(backend,
+                                           debug_info_listener,
+                                           success);
 
   // TODO(akalin): Figure out a better way to do this.
   if (synchronous_backend_initialization_) {

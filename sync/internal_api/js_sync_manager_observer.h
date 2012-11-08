@@ -36,7 +36,9 @@ class JsSyncManagerObserver : public SyncManager::Observer {
   virtual void OnConnectionStatusChange(ConnectionStatus status) OVERRIDE;
   virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
   virtual void OnInitializationComplete(
-      const WeakHandle<JsBackend>& js_backend, bool success,
+      const WeakHandle<JsBackend>& js_backend,
+      const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
+      bool success,
       syncer::ModelTypeSet restored_types) OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;
   virtual void OnActionableError(

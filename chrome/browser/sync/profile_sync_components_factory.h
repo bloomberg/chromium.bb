@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 
 class PasswordStore;
 class ProfileSyncService;
@@ -28,6 +29,7 @@ class DataTypeErrorHandler;
 }
 
 namespace syncer {
+class DataTypeDebugInfoListener;
 class SyncableService;
 }
 
@@ -69,6 +71,8 @@ class ProfileSyncComponentsFactory {
   // type controllers and a DataTypeManagerObserver.  The return pointer is
   // owned by the caller.
   virtual browser_sync::DataTypeManager* CreateDataTypeManager(
+      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+          debug_info_listener,
       browser_sync::SyncBackendHost* backend,
       const browser_sync::DataTypeController::TypeMap* controllers,
       browser_sync::DataTypeManagerObserver* observer) = 0;

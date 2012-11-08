@@ -32,6 +32,7 @@ class EncryptedData;
 namespace syncer {
 
 class BaseTransaction;
+class DataTypeDebugInfoListener;
 class Encryptor;
 struct Experiments;
 class ExtensionsActivityMonitor;
@@ -254,9 +255,10 @@ class SyncManager {
     // function getChildNodeIds(id);
 
     virtual void OnInitializationComplete(
-        const WeakHandle<syncer::JsBackend>& js_backend,
+        const WeakHandle<JsBackend>& js_backend,
+        const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
         bool success,
-        syncer::ModelTypeSet restored_types) = 0;
+        ModelTypeSet restored_types) = 0;
 
     // We are no longer permitted to communicate with the server. Sync should
     // be disabled and state cleaned up at once.  This can happen for a number

@@ -97,6 +97,8 @@ class SyncBackendHost::Core
       const syncer::sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
   virtual void OnInitializationComplete(
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+          debug_info_listener,
       bool success,
       syncer::ModelTypeSet restored_types) OVERRIDE;
   virtual void OnConnectionStatusChange(
@@ -791,11 +793,15 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop(
 }
 
 void SyncBackendHost::HandleSyncManagerInitializationOnFrontendLoop(
-    const syncer::WeakHandle<syncer::JsBackend>& js_backend, bool success,
+    const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+        debug_info_listener,
+    bool success,
     syncer::ModelTypeSet restored_types) {
   registrar_->SetInitialTypes(restored_types);
   DCHECK(!js_backend_.IsInitialized());
   js_backend_ = js_backend;
+  debug_info_listener_ = debug_info_listener;
   HandleInitializationCompletedOnFrontendLoop(success);
 }
 
@@ -876,6 +882,8 @@ void SyncBackendHost::Core::OnSyncCycleCompleted(
 
 void SyncBackendHost::Core::OnInitializationComplete(
     const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+        debug_info_listener,
     bool success,
     const syncer::ModelTypeSet restored_types) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
@@ -892,7 +900,7 @@ void SyncBackendHost::Core::OnInitializationComplete(
   host_.Call(
       FROM_HERE,
       &SyncBackendHost::HandleSyncManagerInitializationOnFrontendLoop,
-      js_backend, success, restored_types);
+      js_backend, debug_info_listener, success, restored_types);
 
   if (success) {
     // Initialization is complete, so we can schedule recurring SaveChanges.
@@ -1304,7 +1312,9 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
     js_backend_.Reset();
     initialization_state_ = NOT_INITIALIZED;
     frontend_->OnBackendInitialized(
-        syncer::WeakHandle<syncer::JsBackend>(), false);
+        syncer::WeakHandle<syncer::JsBackend>(),
+        syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(),
+        false);
     return;
   }
 
@@ -1345,7 +1355,9 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
       // experimental types to enable. This should be done before we inform
       // the frontend to ensure they're visible in the customize screen.
       AddExperimentalTypes();
-      frontend_->OnBackendInitialized(js_backend_, true);
+      frontend_->OnBackendInitialized(js_backend_,
+                                      debug_info_listener_,
+                                      true);
       js_backend_.Reset();
       break;
     default:

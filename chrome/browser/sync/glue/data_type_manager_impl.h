@@ -18,6 +18,11 @@
 #include "chrome/browser/sync/glue/backend_data_type_configurer.h"
 #include "chrome/browser/sync/glue/model_association_manager.h"
 
+namespace syncer {
+class DataTypeDebugInfoListener;
+template <typename T> class WeakHandle;
+}
+
 namespace browser_sync {
 
 class DataTypeController;
@@ -26,9 +31,12 @@ class DataTypeManagerObserver;
 class DataTypeManagerImpl : public DataTypeManager,
                             public ModelAssociationResultProcessor {
  public:
-  DataTypeManagerImpl(BackendDataTypeConfigurer* configurer,
-                      const DataTypeController::TypeMap* controllers,
-                      DataTypeManagerObserver* observer);
+  DataTypeManagerImpl(
+      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+          debug_info_listener,
+      BackendDataTypeConfigurer* configurer,
+      const DataTypeController::TypeMap* controllers,
+      DataTypeManagerObserver* observer);
   virtual ~DataTypeManagerImpl();
 
   // DataTypeManager interface.
