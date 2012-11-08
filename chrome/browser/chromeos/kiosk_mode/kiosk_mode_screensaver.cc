@@ -199,24 +199,29 @@ void KioskModeScreensaver::OnUserActivity() {
   ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
 
   // Find the retail mode login page.
-  CHECK(WebUILoginDisplayHost::default_host());
-  WebUILoginDisplayHost* webui_host =
-      static_cast<WebUILoginDisplayHost*>(
-          WebUILoginDisplayHost::default_host());
-  OobeUI* oobe_ui = webui_host->GetOobeUI();
+  if (WebUILoginDisplayHost::default_host()) {
+    WebUILoginDisplayHost* webui_host =
+        static_cast<WebUILoginDisplayHost*>(
+            WebUILoginDisplayHost::default_host());
+    OobeUI* oobe_ui = webui_host->GetOobeUI();
 
-  // Show the login spinner.
-  CHECK(oobe_ui);
-  oobe_ui->ShowRetailModeLoginSpinner();
+    // Show the login spinner.
+    if (oobe_ui)
+      oobe_ui->ShowRetailModeLoginSpinner();
 
-  // Close the screensaver, our login spinner is already showing.
-  ash::CloseScreensaver();
+    // Close the screensaver, our login spinner is already showing.
+    ash::CloseScreensaver();
 
-  // Log us in.
-  ExistingUserController* controller =
-      ExistingUserController::current_controller();
-  CHECK(controller);
-  controller->LoginAsDemoUser();
+    // Log us in.
+    ExistingUserController* controller =
+        ExistingUserController::current_controller();
+    if (controller && !chromeos::UserManager::Get()->IsUserLoggedIn())
+      controller->LoginAsDemoUser();
+  } else {
+    // No default host for the WebUiLoginDisplay means that we're already in the
+    // process of logging in - shut down screensaver and do nothing else.
+    ash::CloseScreensaver();
+  }
 
   ShutdownKioskModeScreensaver();
 }
