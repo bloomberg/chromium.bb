@@ -1,4 +1,3 @@
 cpu@chromium.org
 
-# generated_resources.grd
-*
+per-file generated_resources.grd=*
