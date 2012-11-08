@@ -33,7 +33,6 @@
     ['OS != "ios"', {
       'includes': [
         '../build/win_precompile.gypi',
-        'content_components_navigation_interception.gypi',
         'content_shell.gypi',
       ],
     }],

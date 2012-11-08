@@ -4,9 +4,18 @@
 
 package org.chromium.chrome.browser.component.navigation_interception;
 
-// TODO(jknotten): Remove this file once external dependencies are using
-// org.chromium.content.components.navigation_interception.InterceptNavigationDelegate
+import org.chromium.base.CalledByNative;
 
-public interface InterceptNavigationDelegate extends
-       org.chromium.content.components.navigation_interception.InterceptNavigationDelegate {
+public interface InterceptNavigationDelegate {
+    /**
+     * This method is called for every top-level navigation within the associated WebContents.
+     * The method allows the embedder to ignore navigations. This is used on Android to 'convert'
+     * certain navigations to Intents to 3rd party applications.
+     *
+     * @param url the target url of the navigation.
+     * @param isUserGestrue true if the navigation was initiated by the user.
+     * @return true if the navigation should be ignored.
+     */
+    @CalledByNative
+    boolean shouldIgnoreNavigation(String url, boolean isUserGestrue);
 }

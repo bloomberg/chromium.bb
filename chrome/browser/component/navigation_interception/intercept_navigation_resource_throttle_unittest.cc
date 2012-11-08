@@ -7,7 +7,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/components/navigation_interception/intercept_navigation_resource_throttle.h"
+#include "chrome/browser/component/navigation_interception/intercept_navigation_resource_throttle.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_controller.h"
@@ -19,12 +20,12 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_renderer_host.h"
 #include "net/url_request/url_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace content;
+using namespace navigation_interception;
 using namespace ::testing;
 
 namespace {
@@ -137,7 +138,7 @@ class TestIOThreadState {
 // InterceptNavigationResourceThrottleTest ------------------------------------
 
 class InterceptNavigationResourceThrottleTest
-  : public RenderViewHostTestHarness {
+  : public ChromeRenderViewHostTestHarness {
  public:
   InterceptNavigationResourceThrottleTest()
       : mock_callback_receiver_(new MockInterceptCallbackReceiver()),
@@ -147,7 +148,7 @@ class InterceptNavigationResourceThrottleTest
   }
 
   virtual void SetUp() OVERRIDE {
-    RenderViewHostTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
 
     io_thread_.StartIOThread();
   }

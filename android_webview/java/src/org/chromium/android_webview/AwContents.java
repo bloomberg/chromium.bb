@@ -20,11 +20,11 @@ import android.webkit.ValueCallback;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.component.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.common.CleanupReference;
-import org.chromium.content.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.net.X509Util;
 import org.chromium.ui.gfx.NativeWindow;
 

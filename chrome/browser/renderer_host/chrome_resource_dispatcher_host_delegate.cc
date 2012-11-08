@@ -46,7 +46,7 @@
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 #if defined(OS_ANDROID)
-#include "content/components/navigation_interception/intercept_navigation_delegate.h"
+#include "chrome/browser/component/navigation_interception/intercept_navigation_delegate.h"
 #endif
 
 // TODO(oshima): Enable this for other platforms.
@@ -144,7 +144,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 #if defined(OS_ANDROID)
   if (!is_prerendering && resource_type == ResourceType::MAIN_FRAME) {
     throttles->push_back(
-        content::InterceptNavigationDelegate::CreateThrottleFor(
+        navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(
             request));
   }
 #endif
