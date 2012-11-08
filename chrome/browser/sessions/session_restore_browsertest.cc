@@ -653,23 +653,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ClosedTabStaysClosed) {
   ASSERT_EQ(url1_, chrome::GetActiveWebContents(new_browser)->GetURL());
 }
 
-// Test to verify that the print preview tab is not restored.
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, DontRestorePrintPreviewTabTest) {
-  ui_test_utils::NavigateToURL(browser(), url1_);
-
-  // Append the print preview tab.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUIPrintURL), NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-
-  // Restart and make sure we have only one window with one tab and the url
-  // is url1_.
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
-
-  AssertOneWindowWithOneTab(new_browser);
-  ASSERT_EQ(url1_, chrome::GetActiveWebContents(new_browser)->GetURL());
-}
-
 // Creates a tabbed browser and popup and makes sure we restore both.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NormalAndPopup) {
   if (!browser_defaults::kRestorePopups)

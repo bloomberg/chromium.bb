@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -129,12 +128,6 @@ void BrowserTabStripModelDelegate::CreateHistoricalTab(
   // We don't create historical tabs for incognito windows or windows without
   // profiles.
   if (!browser_->profile() || browser_->profile()->IsOffTheRecord())
-    return;
-
-  // We don't create historical tabs for print preview tabs. TODO(avi): Is this
-  // arbitrary special-casing still needed now that print preview lives in a
-  // constrained dialog?
-  if (contents->GetURL() == GURL(kChromeUIPrintURL))
     return;
 
   TabRestoreService* service =
