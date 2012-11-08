@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/notification/notification_api.h"
 
 #include "base/callback.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/api_resource_event_notifier.h"
@@ -19,11 +20,14 @@ const char kResultKey[] = "result";
 
 namespace {
 
+const char kNotificationPrefix[] = "extension.api.";
+
 class NotificationApiDelegate : public NotificationDelegate {
  public:
   explicit NotificationApiDelegate(
       extensions::ApiResourceEventNotifier* event_notifier)
-      : event_notifier_(event_notifier) {
+      : event_notifier_(event_notifier),
+        id_(kNotificationPrefix + base::Uint64ToString(next_id_++)) {
   }
 
   virtual void Display() OVERRIDE {
@@ -43,8 +47,7 @@ class NotificationApiDelegate : public NotificationDelegate {
   }
 
   virtual std::string id() const OVERRIDE {
-    // TODO(miket): implement
-    return std::string();
+    return id_;
   }
 
   virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
@@ -56,9 +59,14 @@ class NotificationApiDelegate : public NotificationDelegate {
   virtual ~NotificationApiDelegate() {}
 
   extensions::ApiResourceEventNotifier* event_notifier_;
+  std::string id_;
+
+  static uint64 next_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationApiDelegate);
 };
+
+uint64 NotificationApiDelegate::next_id_ = 0;
 
 }  // namespace
 
