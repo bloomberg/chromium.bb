@@ -8,21 +8,37 @@
 # Run me to generate the documentation!
 ###
 
+# Line too long (NN/80)
+# pylint: disable=C0301
+
 """Test tracing and isolation infrastructure.
 
 Scripts are compartmentalized by their name:
-- trace_*.py: Tracing infrastructure scripts.
-- isolate_*.py: Executable isolation scripts. (TODO)
-- *_test_cases.py: Scripts specifically managing GTest executables.
+- isolate_*.py:       Executable isolation scripts. More information can be
+                      found at
+                      http://chromium.org/developers/testing/isolated-testing
+- isolateserver_*.py: Tools to interact with the CAD server. The source code of
+                      the isolate server can be found at
+                      http://src.chromium.org/viewvc/chrome/trunk/tools/isolate_server/
+- run_*.py:           Tools to run tests.
+- swarm_*.py:         Swarm interaction scripts. More information can be found
+                      at
+                      http://chromium.org/developers/testing/isolated-testing/swarm
+- trace_*.py:         Tracing infrastructure scripts. More information can be
+                      found at
+                      http://chromium.org/developers/testing/tracing-tools
+- *_test_cases.py:    Scripts specifically managing GTest executables. More
+                      information about google-test can be found at
+                      http://code.google.com/p/googletest/wiki/Primer
 
 A few scripts have strict dependency rules:
-- run_isolated.py, run_test_cases.py, shard_test_cases.py and trace_inputs.py
-  depends on no other script so they can be run outside the checkout.
-- The pure tracing scripts (trace_inputs.py and trace_test_cases.py) do not know
-  about isolate infrastructure.
-- Scripts without _test_cases suffix do not know about GTest.
-- Scripts without isolate_ prefix do not know about the isolation
-  infrastructure. (TODO)
+- run_isolated.py, shard_test_cases.py and trace_inputs.py depends on no other
+  script so they can be run outside the checkout.
+- The pure tracing scripts (trace_*.py) do not know about isolate
+  infrastructure.
+- Scripts without '_test_cases' suffix do not know about GTest.
+- Scripts without 'isolate_' prefix do not know about the isolation
+  infrastructure.
 
 See http://dev.chromium.org/developers/testing/isolated-testing for more info.
 """

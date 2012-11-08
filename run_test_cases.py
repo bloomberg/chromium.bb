@@ -21,6 +21,9 @@ import sys
 import threading
 import time
 
+# Scripts using run_test_cases as a library expect this function.
+from run_isolated import fix_python_path
+
 
 # These are known to influence the way the output is generated.
 KNOWN_GTEST_ENV_VARS = [
@@ -365,16 +368,6 @@ class Progress(object):
         self.last_printed_line = ''
 
       sys.stdout.write(line)
-
-
-def fix_python_path(cmd):
-  """Returns the fixed command line to call the right python executable."""
-  out = cmd[:]
-  if out[0] == 'python':
-    out[0] = sys.executable
-  elif out[0].endswith('.py'):
-    out.insert(0, sys.executable)
-  return out
 
 
 def setup_gtest_env():
