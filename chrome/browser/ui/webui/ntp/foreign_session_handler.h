@@ -73,6 +73,12 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   // model has changed and the new tab page needs to reflect the changes.
   void HandleGetForeignSessions(const ListValue* args);
 
+  // Delete a foreign session. This will remove it from the list of foreign
+  // sessions on all devices. It will reappear if the session is re-activated
+  // on the original device.
+  // This is a javascript callback handler.
+  void HandleDeleteForeignSession(const ListValue* args);
+
   void HandleSetForeignSessionCollapsed(const ListValue* args);
 
   // Show a popup listing the devices's tabs.
