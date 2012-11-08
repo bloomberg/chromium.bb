@@ -55,9 +55,12 @@ def VersionSelect(versions, flavor):
     versions: version data loaded from file.
     flavor: kind of tool.
   Returns:
-    An svn version number.
+    An svn version number (or other version string).
   """
 
+  if isinstance(flavor, tuple):
+    ids = [versions[i] for i in flavor[1:]]
+    return ','.join(ids)
   if 'pnacl' in flavor:
     return versions['PNACL_VERSION']
   if 'glibc' in flavor:
@@ -91,11 +94,55 @@ def HashSelect(versions, flavor):
 
 
 def IsFlavorNeeded(options, flavor):
+  if isinstance(flavor, tuple):
+    flavor = flavor[0]
   if options.filter_out_predicates:
     for predicate in options.filter_out_predicates:
       if predicate(flavor):
         return False
   return True
+
+
+def FlavorOutDir(options, flavor):
+  """Given a flavor, decide where it should be extracted."""
+  if isinstance(flavor, tuple):
+    return os.path.join(options.toolchain_dir, flavor[0])
+  else:
+    return os.path.join(options.toolchain_dir, flavor)
+
+
+def FlavorName(flavor):
+  """Given a flavor, get a string name for it."""
+  if isinstance(flavor, tuple):
+    return flavor[0]
+  else:
+    return flavor
+
+
+def FlavorComponentNames(flavor):
+  if isinstance(flavor, tuple):
+    return flavor[1:]
+  else:
+    return [flavor]
+
+
+def FlavorUrls(options, versions, flavor):
+  """Given a flavor, get a list of the URLs of its components."""
+  if isinstance(flavor, tuple):
+    ids = [versions[i] for i in flavor[1:]]
+    return [toolchainbinaries.EncodeToolchainUrl(
+            options.base_once_url, i, 'new') for i in ids]
+  else:
+    return [toolchainbinaries.EncodeToolchainUrl(
+            options.base_url, VersionSelect(versions, flavor), flavor)]
+
+
+def FlavorHashes(versions, flavor):
+  """Given a flavor, get the list of hashes of its components."""
+  if isinstance(flavor, tuple):
+    return [HashSelect(versions, i) for i in flavor[1:]]
+  else:
+    return [HashSelect(versions, flavor)]
 
 
 def GetUpdatedDEPS(options, versions):
@@ -113,9 +160,10 @@ def GetUpdatedDEPS(options, versions):
           flavors.add(flavor)
   new_deps = {}
   for flavor in flavors:
-    url = toolchainbinaries.EncodeToolchainUrl(
-      options.base_url, VersionSelect(versions, flavor), flavor)
-    new_deps[flavor] = download_utils.HashUrl(url)
+    names = FlavorComponentNames(flavor)
+    urls = FlavorUrls(options, versions, flavor)
+    for name, url in zip(names, urls):
+      new_deps[name] = download_utils.HashUrl(url)
   return new_deps
 
 
@@ -131,15 +179,15 @@ def ShowUpdatedDEPS(options, versions):
     sys.stdout.flush()
 
 
-def SyncFlavor(flavor, url, dst, hash, min_time, keep=False, force=False,
+def SyncFlavor(flavor, urls, dst, hashes, min_time, keep=False, force=False,
                verbose=False):
   """Sync a flavor of the nacl toolchain
 
   Arguments:
     flavor: short directory name of the toolchain flavor.
-    url: url to download the toolchain flavor from.
+    urls: urls to download the toolchain flavor from.
     dst: destination directory for the toolchain.
-    hash: expected hash of the toolchain.
+    hashes: expected hashes of the toolchain.
   """
 
   toolchain_dir = os.path.join(PARENT_DIR, 'toolchain')
@@ -160,43 +208,55 @@ def SyncFlavor(flavor, url, dst, hash, min_time, keep=False, force=False,
       except Exception, e:
         print 'Failed cleanup with: ' + str(e)
 
-  # Build the tarfile name from the url
-  filepath = os.path.join(download_dir, url.split('/')[-1])
-
   # If we are forcing a sync, then ignore stamp
   if force:
     stamp_dir = None
   else:
     stamp_dir = dst
 
-  # If we did not need to synchronize, then we are done
-  if not download_utils.SyncURL(url, filepath, stamp_dir=stamp_dir,
-                                min_time=min_time, hash=hash,
-                                keep=keep, verbose=verbose):
+  filepaths = []
+  need_sync = False
+
+  index = 0
+  for url, hash_val in zip(urls, hashes):
+    # Build the tarfile name from the url
+    filepath = url.split('/')[-1].rsplit('_', 1)[0] + '.tgz'
+    filepath = os.path.join(download_dir, filepath)
+    filepaths.append(filepath)
+    # If we did not need to synchronize, then we are done
+    if download_utils.SyncURL(url, filepath, stamp_dir=stamp_dir,
+                              min_time=min_time, hash_val=hash_val,
+                              stamp_index=index,
+                              keep=keep, verbose=verbose):
+      need_sync = True
+    index += 1
+
+  if not need_sync:
     return False
 
-  # If we didn't already have an expected hash (which must have matched the
-  # actual hash), compute one so we can store it in the stamp file.
-  if hash is None:
-    hash = download_utils.HashFile(filepath)
+  # Compute the new hashes for each file.
+  new_hashes = []
+  for filepath in filepaths:
+    new_hashes.append(download_utils.HashFile(filepath))
 
   untar_dir = tempfile.mkdtemp(
       suffix=suffix, prefix=prefix, dir=toolchain_dir)
   try:
-    tar = cygtar.CygTar(filepath, 'r:*', verbose=verbose)
-    curdir = os.getcwd()
-    os.chdir(untar_dir)
-    try:
-      tar.Extract()
-      tar.Close()
-    finally:
-      os.chdir(curdir)
+    for filepath in filepaths:
+      tar = cygtar.CygTar(filepath, 'r:*', verbose=verbose)
+      curdir = os.getcwd()
+      os.chdir(untar_dir)
+      try:
+        tar.Extract()
+        tar.Close()
+      finally:
+        os.chdir(curdir)
 
-    if not keep:
-      os.remove(filepath)
+      if not keep:
+        os.remove(filepath)
 
     # TODO(bradnelson_): get rid of this when toolchain tarballs flattened.
-    if 'arm' in flavor or 'pnacl' in flavor:
+    if isinstance(flavor, tuple) or 'arm' in flavor or 'pnacl' in flavor:
       src = os.path.join(untar_dir)
     elif 'newlib' in flavor:
       src = os.path.join(untar_dir, 'sdk', 'nacl-sdk')
@@ -209,8 +269,8 @@ def SyncFlavor(flavor, url, dst, hash, min_time, keep=False, force=False,
     except Exception, e:
       print 'Failed cleanup with: ' + str(e)
       print 'Continuing on original exception...'
-  download_utils.WriteSourceStamp(dst, url)
-  download_utils.WriteHashStamp(dst, hash)
+  download_utils.WriteSourceStamp(dst, '\n'.join(urls))
+  download_utils.WriteHashStamp(dst, '\n'.join(new_hashes))
   return True
 
 
@@ -220,6 +280,10 @@ def ParseArgs(args):
       '-b', '--base-url', dest='base_url',
       default=toolchainbinaries.BASE_DOWNLOAD_URL,
       help='base url to download from')
+  parser.add_option(
+      '--base-once-url', dest='base_once_url',
+      default=toolchainbinaries.BASE_ONCE_DOWNLOAD_URL,
+      help='base url to download new toolchain artifacts from')
   parser.add_option(
       '-c', '--hashes', dest='hashes',
       default=False,
@@ -256,6 +320,9 @@ def ParseArgs(args):
       const=toolchainbinaries.IsX86Flavor,
       help='Filter out x86 toolchains.')
   parser.add_option(
+      '--arm-untrusted', dest='arm_untrusted', action='store_true',
+      default=False, help='Add arm untrusted toolchains.')
+  parser.add_option(
       '--no-pnacl-translator', dest='filter_out_predicates',
       action='append_const',
       const=toolchainbinaries.IsSandboxedTranslatorFlavor,
@@ -265,6 +332,11 @@ def ParseArgs(args):
       const=toolchainbinaries.IsArmTrustedFlavor,
       help='Filter out trusted arm toolchains.')
   options, args = parser.parse_args(args)
+
+  if not options.arm_untrusted:
+    if options.filter_out_predicates is None:
+      options.filter_out_predicates = []
+    options.filter_out_predicates.append(toolchainbinaries.IsArmUntrustedFlavor)
 
   if len(args) > 1:
     parser.error('Expecting only one version file.')
@@ -308,22 +380,23 @@ def main(args):
 
   for flavor in flavors:
     version = VersionSelect(versions, flavor)
-    url = toolchainbinaries.EncodeToolchainUrl(
-      options.base_url, version, flavor)
-    dst = os.path.join(options.toolchain_dir, flavor)
+    urls = FlavorUrls(options, versions, flavor)
+    dst = FlavorOutDir(options, flavor)
+    hashes = FlavorHashes(versions, flavor)
+    flavor_name = FlavorName(flavor)
+
     if version == 'latest':
       print flavor + ': downloading latest version...'
       force = True
     else:
       force = False
-    hash_value = HashSelect(versions, flavor)
 
     try:
-      if SyncFlavor(flavor, url, dst, hash_value, script_time, force=force,
+      if SyncFlavor(flavor, urls, dst, hashes, script_time, force=force,
                     keep=options.keep, verbose=options.verbose):
-        print flavor + ': updated to version ' + version + '.'
+        print flavor_name + ': updated to version ' + version + '.'
       else:
-        print flavor + ': already up to date.'
+        print flavor_name + ': already up to date.'
     except download_utils.HashError, e:
       print str(e)
       print '-' * 70

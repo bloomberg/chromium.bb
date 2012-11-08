@@ -71,7 +71,7 @@ hooks = [
   {
     "pattern": ".",
     "action": ["python", "native_client/build/download_toolchains.py",
-               "--keep", "native_client/TOOL_REVISIONS"],
+               "--keep", "--arm-untrusted", "native_client/TOOL_REVISIONS"],
   },
   {
     "pattern": ".",

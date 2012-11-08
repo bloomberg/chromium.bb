@@ -36,9 +36,9 @@ PLATFORM_COLLAPSE = {
 }
 
 ARCH_COLLAPSE = {
-    'i386'  : 'x86-32',
-    'i686'  : 'x86-32',
-    'x86_64': 'x86-64',
+    'i386'  : 'x86',
+    'i686'  : 'x86',
+    'x86_64': 'x86',
     'armv7l': 'arm',
 }
 
@@ -101,12 +101,12 @@ def WriteDataFromStream(filename, stream, chunk_size, verbose=True):
     dst.close()
 
 
-def DoesStampMatch(stampfile, expected):
+def DoesStampMatch(stampfile, expected, index):
   try:
     f = open(stampfile, 'r')
     stamp = f.read()
     f.close()
-    if stamp == expected:
+    if stamp.split('\n')[index] == expected:
       return "already up-to-date."
     elif stamp.startswith('manual'):
       return "manual override."
@@ -122,7 +122,7 @@ def WriteStamp(stampfile, data):
   f.close()
 
 
-def StampIsCurrent(path, stamp_name, stamp_contents, min_time=None):
+def StampIsCurrent(path, stamp_name, stamp_contents, min_time=None, index=0):
   stampfile = os.path.join(path, stamp_name)
 
   # Check if the stampfile is older than the minimum last mod time
@@ -134,16 +134,16 @@ def StampIsCurrent(path, stamp_name, stamp_contents, min_time=None):
     except OSError:
       return False
 
-  return DoesStampMatch(stampfile, stamp_contents)
+  return DoesStampMatch(stampfile, stamp_contents, index)
 
 
 def WriteSourceStamp(path, url):
   stampfile = os.path.join(path, SOURCE_STAMP)
   WriteStamp(stampfile, url)
 
-def WriteHashStamp(path, hash):
+def WriteHashStamp(path, hash_val):
   hash_stampfile = os.path.join(path, HASH_STAMP)
-  WriteStamp(hash_stampfile, hash)
+  WriteStamp(hash_stampfile, hash_val)
 
 
 def Retry(op, *args):
@@ -259,7 +259,7 @@ def HashUrl(url):
 
 
 def SyncURL(url, filename=None, stamp_dir=None, min_time=None,
-            hash=None, keep=False, verbose=False):
+            hash_val=None, keep=False, verbose=False, stamp_index=0):
   """Synchronize a destination file with a URL
 
   if the URL does not match the URL stamp, then we must re-download it.
@@ -268,9 +268,10 @@ def SyncURL(url, filename=None, stamp_dir=None, min_time=None,
     url: the url which will to compare against and download
     filename: the file to create on download
     path: the download path
-    stamp_file: the filename containing the URL stamp to check against
-    hash: if set, the expected hash which must be matched
+    stamp_dir: the filename containing the URL stamp to check against
+    hash_val: if set, the expected hash which must be matched
     verbose: prints out status as it runs
+    stamp_index: index within the stamp file to check.
   Returns:
     True if the file is replaced
     False if the file is not replaced
@@ -294,8 +295,8 @@ def SyncURL(url, filename=None, stamp_dir=None, min_time=None,
       if verbose:
         print '%s is already up to date.' % filename
       return False
-    if (hash is not None and
-        StampIsCurrent(stamp_dir, HASH_STAMP, hash, min_time)):
+    if (hash_val is not None and
+        StampIsCurrent(stamp_dir, HASH_STAMP, hash_val, min_time, stamp_index)):
       if verbose:
         print '%s is identical to the up to date file.' % filename
       return False
@@ -305,10 +306,10 @@ def SyncURL(url, filename=None, stamp_dir=None, min_time=None,
   EnsureFileCanBeWritten(filename)
   http_download.HttpDownload(url, filename)
 
-  if hash:
+  if hash_val:
     tar_hash = HashFile(filename)
-    if hash != tar_hash:
-      raise HashError(actual_hash=tar_hash, expected_hash=hash,
+    if hash_val != tar_hash:
+      raise HashError(actual_hash=tar_hash, expected_hash=hash_val,
                       download_url=url)
 
   return True
