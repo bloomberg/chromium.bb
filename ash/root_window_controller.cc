@@ -250,7 +250,7 @@ void RootWindowController::InitForPrimaryDisplay() {
   status_area_widget_->CreateTrayViews();
   // Login screen manages status area visibility by itself.
   ShellDelegate* shell_delegate = Shell::GetInstance()->delegate();
-  if (shell_delegate && shell_delegate->IsSessionStarted())
+  if (shell_delegate->IsSessionStarted())
     status_area_widget_->Show();
 
   Shell::GetInstance()->focus_cycler()->AddWidget(status_area_widget_);
@@ -281,7 +281,7 @@ void RootWindowController::InitForPrimaryDisplay() {
           panel_container, panel_layout_manager_));
   panel_container->SetLayoutManager(panel_layout_manager_);
 
-  if (!shell_delegate || shell_delegate->IsUserLoggedIn())
+  if (shell_delegate->IsUserLoggedIn())
     CreateLauncher();
 }
 

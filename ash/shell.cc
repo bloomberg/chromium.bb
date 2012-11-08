@@ -9,7 +9,7 @@
 
 #include "ash/accelerators/focus_manager_factory.h"
 #include "ash/ash_switches.h"
-#include "ash/caps_lock_delegate_stub.h"
+#include "ash/caps_lock_delegate.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_resources.h"
 #include "ash/desktop_background/desktop_background_view.h"
@@ -194,6 +194,7 @@ Shell::Shell(ShellDelegate* delegate)
 #endif  // defined(OS_CHROMEOS)
       browser_context_(NULL),
       simulate_modal_window_open_for_testing_(false) {
+  DCHECK(delegate_.get());
   ANNOTATE_LEAKING_OBJECT_PTR(screen_);  // see crbug.com/156466
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_);
   if (!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE))
@@ -434,7 +435,7 @@ void Shell::Init() {
       new internal::RootWindowController(root_window);
   root_window_controller->CreateContainers();
   root_window_controller->CreateSystemBackground(
-      delegate_.get() ? delegate_->IsFirstRunAfterBoot() : false);
+      delegate_->IsFirstRunAfterBoot());
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
@@ -452,8 +453,7 @@ void Shell::Init() {
   stacking_controller_.reset(new internal::StackingController);
   visibility_controller_.reset(new internal::VisibilityController);
   drag_drop_controller_.reset(new internal::DragDropController);
-  if (delegate_.get())
-    user_action_client_.reset(delegate_->CreateUserActionClient());
+  user_action_client_.reset(delegate_->CreateUserActionClient());
   window_modality_controller_.reset(new internal::WindowModalityController);
   AddEnvEventFilter(window_modality_controller_.get());
 
@@ -475,16 +475,12 @@ void Shell::Init() {
 
   // This controller needs to be set before SetupManagedWindowMode.
   desktop_background_controller_.reset(new DesktopBackgroundController());
-  if (delegate_.get())
-    user_wallpaper_delegate_.reset(delegate_->CreateUserWallpaperDelegate());
+  user_wallpaper_delegate_.reset(delegate_->CreateUserWallpaperDelegate());
   if (!user_wallpaper_delegate_.get())
     user_wallpaper_delegate_.reset(new DummyUserWallpaperDelegate());
 
   // StatusAreaWidget uses Shell's CapsLockDelegate.
-  if (delegate_.get())
-    caps_lock_delegate_.reset(delegate_->CreateCapsLockDelegate());
-  else
-    caps_lock_delegate_.reset(new CapsLockDelegateStub);
+  caps_lock_delegate_.reset(delegate_->CreateCapsLockDelegate());
 
   if (!command_line->HasSwitch(switches::kAuraNoShadows)) {
     resize_shadow_controller_.reset(new internal::ResizeShadowController());
@@ -492,8 +488,7 @@ void Shell::Init() {
   }
 
   // Initialize system_tray_delegate_ before initializing StatusAreaWidget.
-  if (delegate_.get())
-    system_tray_delegate_.reset(delegate()->CreateSystemTrayDelegate());
+  system_tray_delegate_.reset(delegate()->CreateSystemTrayDelegate());
   if (!system_tray_delegate_.get())
     system_tray_delegate_.reset(SystemTrayDelegate::CreateDummyDelegate());
 
@@ -540,7 +535,7 @@ void Shell::RemoveEnvEventFilter(aura::EventFilter* filter) {
 
 void Shell::ShowContextMenu(const gfx::Point& location_in_screen) {
   // No context menus if user have not logged in.
-  if (!delegate_.get() || !delegate_->IsUserLoggedIn())
+  if (!delegate_->IsUserLoggedIn())
     return;
   // No context menus when screen is locked.
   if (IsScreenLocked())
@@ -567,7 +562,7 @@ aura::Window* Shell::GetAppListWindow() {
 }
 
 bool Shell::IsScreenLocked() const {
-  return !delegate_.get() || delegate_->IsScreenLocked();
+  return delegate_->IsScreenLocked();
 }
 
 bool Shell::IsModalWindowOpen() const {

@@ -135,37 +135,6 @@ void HandleSwapPrimaryDisplay() {
 
 #endif  // defined(OS_CHROMEOS)
 
-bool HandleExit() {
-  ShellDelegate* delegate = Shell::GetInstance()->delegate();
-  if (!delegate)
-    return false;
-  delegate->Exit();
-  return true;
-}
-
-bool HandleNewTab() {
-  Shell::GetInstance()->delegate()->NewTab();
-  return true;
-}
-
-bool HandleNewWindow(bool is_incognito) {
-  ShellDelegate* delegate = Shell::GetInstance()->delegate();
-  if (!delegate)
-    return false;
-  delegate->NewWindow(is_incognito);
-  return true;
-}
-
-bool HandleRestoreTab() {
-  Shell::GetInstance()->delegate()->RestoreTab();
-  return true;
-}
-
-bool HandleShowTaskManager() {
-  Shell::GetInstance()->delegate()->ShowTaskManager();
-  return true;
-}
-
 bool HandleRotatePaneFocus(Shell::Direction direction) {
   if (!Shell::GetInstance()->delegate()->RotatePaneFocus(direction)) {
     // No browser window is available. Focus the launcher.
@@ -441,7 +410,7 @@ bool AcceleratorController::PerformAction(int action,
   ash::Shell* shell = ash::Shell::GetInstance();
   bool at_login_screen = false;
 #if defined(OS_CHROMEOS)
-  at_login_screen = shell->delegate() && !shell->delegate()->IsSessionStarted();
+  at_login_screen = !shell->delegate()->IsSessionStarted();
 #endif
   if (at_login_screen &&
       actions_allowed_at_login_screen_.find(action) ==
@@ -527,17 +496,22 @@ bool AcceleratorController::PerformAction(int action,
       ash::Shell::GetInstance()->delegate()->OpenFeedbackPage();
       return true;
     case EXIT:
-      return HandleExit();
+      Shell::GetInstance()->delegate()->Exit();
+      return true;
     case NEW_INCOGNITO_WINDOW:
-      return HandleNewWindow(true /* is_incognito */);
+      Shell::GetInstance()->delegate()->NewWindow(true /* is_incognito */);
+      return true;
     case NEW_TAB:
       if (key_code == ui::VKEY_T && shell->delegate())
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEWTAB_T);
-      return HandleNewTab();
+      Shell::GetInstance()->delegate()->NewTab();
+      return true;
     case NEW_WINDOW:
-      return HandleNewWindow(false /* is_incognito */);
+      Shell::GetInstance()->delegate()->NewWindow(false /* is_incognito */);
+      return true;
     case RESTORE_TAB:
-      return HandleRestoreTab();
+      Shell::GetInstance()->delegate()->RestoreTab();
+      return true;
     case TAKE_SCREENSHOT:
       if (screenshot_delegate_.get() &&
           screenshot_delegate_->CanTakeScreenshot()) {
@@ -636,7 +610,8 @@ bool AcceleratorController::PerformAction(int action,
       }
       break;
     case SHOW_TASK_MANAGER:
-      return HandleShowTaskManager();
+      Shell::GetInstance()->delegate()->ShowTaskManager();
+      return true;
     case NEXT_IME:
       // This check is necessary e.g. not to process the Shift+Alt+
       // ET_KEY_RELEASED accelerator for Chrome OS (see ash/accelerators/

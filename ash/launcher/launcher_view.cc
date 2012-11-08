@@ -975,8 +975,6 @@ ShelfAlignment LauncherView::GetShelfAlignment() const {
 }
 
 string16 LauncherView::GetAccessibleName(const views::View* view) {
-  if (!delegate_)
-    return string16();
   int view_index = view_model_->GetIndexOfView(view);
   // May be -1 while in the process of animating closed.
   if (view_index == -1)
@@ -1011,8 +1009,6 @@ void LauncherView::ButtonPressed(views::Button* sender,
     return;
   }
 
-  if (!delegate_)
-    return;
   int view_index = view_model_->GetIndexOfView(sender);
   // May be -1 while in the process of animating closed.
   if (view_index == -1)
@@ -1054,9 +1050,6 @@ void LauncherView::ButtonPressed(views::Button* sender,
 
 void LauncherView::ShowContextMenuForView(views::View* source,
                                           const gfx::Point& point) {
-  if (!delegate_)
-    return;
-
   int view_index = view_model_->GetIndexOfView(source);
   if (view_index != -1 &&
       model_->items()[view_index].type == TYPE_APP_LIST) {

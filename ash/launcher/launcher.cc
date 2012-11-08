@@ -206,10 +206,8 @@ Launcher::Launcher(aura::Window* window_container,
       alignment_(SHELF_ALIGNMENT_BOTTOM),
       background_animator_(delegate_view_, 0, kLauncherBackgroundAlpha) {
   model_.reset(new LauncherModel);
-  if (Shell::GetInstance()->delegate()) {
-    delegate_.reset(
-        Shell::GetInstance()->delegate()->CreateLauncherDelegate(model_.get()));
-  }
+  delegate_.reset(
+      Shell::GetInstance()->delegate()->CreateLauncherDelegate(model_.get()));
 
   widget_.reset(new views::Widget);
   views::Widget::InitParams params(
@@ -318,9 +316,6 @@ void Launcher::SetStatusSize(const gfx::Size& size) {
 }
 
 gfx::Rect Launcher::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
-  if (!delegate_.get())
-    return gfx::Rect();
-
   LauncherID id = delegate_->GetIDByWindow(window);
   gfx::Rect bounds(launcher_view_->GetIdealBoundsOfItemIcon(id));
   if (bounds.IsEmpty())

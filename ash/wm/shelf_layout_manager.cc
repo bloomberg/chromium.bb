@@ -802,8 +802,8 @@ void ShelfLayoutManager::UpdateShelfBackground(
   // The status area normally draws a background, but we don't want it to draw a
   // background when the launcher does or when we're at login/lock screen.
   ShellDelegate* delegate = Shell::GetInstance()->delegate();
-  bool delegate_allows_tray_bg = !delegate ||
-      (delegate->IsUserLoggedIn() && !delegate->IsScreenLocked());
+  bool delegate_allows_tray_bg =
+      delegate->IsUserLoggedIn() && !delegate->IsScreenLocked();
   bool status_area_paints = !launcher_paints && delegate_allows_tray_bg;
   status_area_widget_->SetPaintsBackground(status_area_paints, type);
 }
