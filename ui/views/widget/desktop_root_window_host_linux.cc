@@ -537,8 +537,7 @@ void DesktopRootWindowHostLinux::EndMoveLoop() {
 
 void DesktopRootWindowHostLinux::SetVisibilityChangedAnimationsEnabled(
     bool value) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  // Much like the previous NativeWidgetGtk, we don't have anything to do here.
 }
 
 bool DesktopRootWindowHostLinux::ShouldUseNativeFrame() {
