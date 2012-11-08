@@ -88,13 +88,33 @@ TEST(ExtensionCSPValidator, IsSecure) {
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' http:", Extension::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https://*", Extension::TYPE_EXTENSION));
+      "default-src 'self' google.com", Extension::TYPE_EXTENSION));
+
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' *", Extension::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' google.com", Extension::TYPE_EXTENSION));
+      "default-src 'self' *:*", Extension::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' *:*/", Extension::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' *:*/path", Extension::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://*:*", Extension::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://*:*/", Extension::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://*:*/path", Extension::TYPE_EXTENSION));
+
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
       "default-src 'self' https://*.google.com", Extension::TYPE_EXTENSION));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://*.google.com:1", Extension::TYPE_EXTENSION));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://*.google.com:*", Extension::TYPE_EXTENSION));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://*.google.com:1/", Extension::TYPE_EXTENSION));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://*.google.com:*/", Extension::TYPE_EXTENSION));
 
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
       "default-src 'self' http://127.0.0.1", Extension::TYPE_EXTENSION));

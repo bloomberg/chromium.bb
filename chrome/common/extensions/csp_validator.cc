@@ -40,8 +40,23 @@ bool HasOnlySecureTokens(StringTokenizer& tokenizer, Extension::Type type) {
     std::string source = tokenizer.token();
     StringToLowerASCII(&source);
 
-    if (EndsWith(source, "*", true))
-      return false;
+    // Don't alow whitelisting of all hosts. This boils down to:
+    //   1. Maximum of 2 '*' characters.
+    //   2. Each '*' is either followed by a '.' or preceded by a ':'
+    int wildcards = 0;
+    size_t length = source.length();
+    for (size_t i = 0; i < length; ++i) {
+      if (source[i] == L'*') {
+        wildcards++;
+        if (wildcards > 2)
+          return false;
+
+        bool isWildcardPort = i > 0 && source[i - 1] == L':';
+        bool isWildcardSubdomain = i + 1 < length && source[i + 1] == L'.';
+        if (!isWildcardPort && !isWildcardSubdomain)
+          return false;
+      }
+    }
 
     // We might need to relax this whitelist over time.
     if (source == "'self'" ||
