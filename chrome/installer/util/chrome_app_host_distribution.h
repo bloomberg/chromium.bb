@@ -21,6 +21,8 @@ class ChromeAppHostDistribution : public BrowserDistribution {
 
   virtual string16 GetAlternateApplicationName() OVERRIDE;
 
+  virtual string16 GetBaseAppId() OVERRIDE;
+
   virtual string16 GetInstallSubDir() OVERRIDE;
 
   virtual string16 GetPublisherName() OVERRIDE;

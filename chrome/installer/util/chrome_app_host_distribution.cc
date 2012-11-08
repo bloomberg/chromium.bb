@@ -21,8 +21,10 @@
 #include "installer_util_strings.h"  // NOLINT
 
 namespace {
+
 const wchar_t kChromeAppHostGuid[] = L"{FDA71E6F-AC4C-4a00-8B70-9958A68906BF}";
-}
+
+}  // namespace
 
 ChromeAppHostDistribution::ChromeAppHostDistribution()
     : BrowserDistribution(CHROME_APP_HOST) {
@@ -46,6 +48,11 @@ string16 ChromeAppHostDistribution::GetAlternateApplicationName() {
   const string16& product_name =
       installer::GetLocalizedString(IDS_PRODUCT_APP_HOST_NAME_BASE);
   return product_name;
+}
+
+string16 ChromeAppHostDistribution::GetBaseAppId() {
+  // Should be same as AppListController::GetAppModelId().
+  return L"ChromeAppList";
 }
 
 string16 ChromeAppHostDistribution::GetInstallSubDir() {
@@ -124,7 +131,7 @@ bool ChromeAppHostDistribution::CanSetAsDefault() {
 }
 
 bool ChromeAppHostDistribution::CanCreateDesktopShortcuts() {
-  return false;
+  return true;
 }
 
 bool ChromeAppHostDistribution::GetCommandExecuteImplClsid(

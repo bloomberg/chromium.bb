@@ -71,7 +71,7 @@ bool CreateVisualElementsManifest(const FilePath& src_path,
 // If creating the Start menu shortcut is successful, it is also pinned to the
 // taskbar.
 void CreateOrUpdateShortcuts(
-    const FilePath& chrome_exe,
+    const FilePath& target,
     const Product& product,
     const MasterPreferences& prefs,
     InstallShortcutLevel install_level,

@@ -7,10 +7,13 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
+#include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 
 namespace installer {
@@ -115,7 +118,22 @@ void ChromeAppHostOperations::AddDefaultShortcutProperties(
     BrowserDistribution* dist,
     const FilePath& target_exe,
     ShellUtil::ShortcutProperties* properties) const {
-  NOTREACHED() << "App Host does not create shortcuts.";
+  if (!properties->has_target())
+    properties->set_target(target_exe);
+  if (!properties->has_arguments()) {
+    CommandLine app_host_args(CommandLine::NO_PROGRAM);
+    app_host_args.AppendSwitch(::switches::kShowAppList);
+    properties->set_arguments(app_host_args.GetCommandLineString());
+  }
+  if (!properties->has_app_id()) {
+    std::vector<string16> components;
+    string16 suffix;
+    ShellUtil::GetUserSpecificRegistrySuffix(&suffix);
+    string16 base_app_id(dist->GetBaseAppId());
+    base_app_id.append(suffix);
+    components.push_back(base_app_id);
+    properties->set_app_id(ShellUtil::BuildAppModelId(components));
+  }
 }
 
 }  // namespace installer

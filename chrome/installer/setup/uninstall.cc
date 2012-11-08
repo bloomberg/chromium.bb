@@ -256,14 +256,9 @@ void CloseChromeFrameHelperProcess() {
   }
 }
 
-// This method deletes the product's shortcut folder from the
-// Windows Start menu.  It checks system_uninstall to see if the shortcut is
-// in all users start menu or current user start menu.
-// We try to remove the standard desktop shortcut but if that fails we try
-// to remove the alternate desktop shortcut. Only one of them should be
-// present in a given install but at this point we don't know which one.
-// We remove all start screen secondary tiles by removing the folder Windows
-// uses to store this installation's tiles.
+// Deletes shortcuts at |install_level| from Start menu, Desktop,
+// Quick Launch, taskbar, and secondary tiles on the Start Screen (Win8+).
+// Only shortcuts pointing to |target| will be removed.
 void DeleteShortcuts(const InstallerState& installer_state,
                      const Product& product,
                      const string16& target_exe) {
@@ -1053,10 +1048,10 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     }
   }
 
-  // Chrome is not in use so lets uninstall Chrome by deleting various files
-  // and registry entries. Here we will just make best effort and keep going
-  // in case of errors.
   if (is_chrome) {
+    // Chrome is not in use so lets uninstall Chrome by deleting various files
+    // and registry entries. Here we will just make best effort and keep going
+    // in case of errors.
     ClearRlzProductState();
     // Delete the key that delegate_execute might make.
     if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
@@ -1067,8 +1062,15 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     auto_launch_util::DisableAllAutoStartFeatures(
         ASCIIToUTF16(chrome::kInitialProfile));
 
-    // First delete shortcuts from Start->Programs, Desktop & Quick Launch.
     DeleteShortcuts(installer_state, product, chrome_exe);
+
+  } else if (product.is_chrome_app_host()) {
+    // TODO(huangs): Remove this check once we have system-level App Host.
+    DCHECK(!installer_state.system_install());
+    const string16 app_host_exe(
+        installer_state.target_path().Append(installer::kChromeAppHostExe)
+            .value());
+    DeleteShortcuts(installer_state, product, app_host_exe);
   }
 
   // Delete the registry keys (Uninstall key and Version key).

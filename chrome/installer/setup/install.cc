@@ -23,6 +23,7 @@
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/auto_launch_util.h"
@@ -132,7 +133,7 @@ void AddChromeToMediaPlayerList() {
     LOG(ERROR) << "Could not add Chrome to media player inclusion list.";
 }
 
-// Copy master preferences file provided to installer, in the same folder
+// Copy master_preferences file provided to installer, in the same folder
 // as chrome.exe so Chrome first run can find it. This function will be called
 // only on the first install of Chrome.
 void CopyPreferenceFileForFirstRun(const InstallerState& installer_state,
@@ -285,6 +286,23 @@ void CleanupLegacyShortcuts(const InstallerState& installer_state,
   }
 }
 
+// Returns the appropriate shortcut operations for App Launcher,
+// based on state of installation and master_preferences.
+installer::InstallShortcutOperation GetAppLauncherShortcutOperation(
+    const InstallationState& original_state,
+    const InstallerState& installer_state) {
+  const installer::ProductState* original_app_host_state =
+      original_state.GetProductState(installer_state.system_install(),
+                                     BrowserDistribution::CHROME_APP_HOST);
+  bool app_launcher_exists = original_app_host_state &&
+      CommandLine(original_app_host_state->uninstall_command())
+          .HasSwitch(installer::switches::kChromeAppLauncher);
+  if (!app_launcher_exists)
+    return installer::INSTALL_SHORTCUT_CREATE_ALL;
+
+  return installer::INSTALL_SHORTCUT_REPLACE_EXISTING;
+}
+
 }  // end namespace
 
 namespace installer {
@@ -356,15 +374,13 @@ bool CreateVisualElementsManifest(const FilePath& src_path,
   }
 }
 
+// TODO(tommi): Change this function to use WorkItemList.
 void CreateOrUpdateShortcuts(
-    const FilePath& chrome_exe,
+    const FilePath& target,
     const Product& product,
     const MasterPreferences& prefs,
     InstallShortcutLevel install_level,
     InstallShortcutOperation install_operation) {
-  // TODO(tommi): Change this function to use WorkItemList.
-  DCHECK(product.is_chrome());
-
   // Extract shortcut preferences from |prefs|.
   bool do_not_create_desktop_shortcut = false;
   bool do_not_create_quick_launch_shortcut = false;
@@ -377,9 +393,6 @@ void CreateOrUpdateShortcuts(
                 &alternate_desktop_shortcut);
 
   BrowserDistribution* dist = product.distribution();
-  // Shortcuts are always installed per-user unless specified.
-  ShellUtil::ShellChange shortcut_level = (install_level == ALL_USERS ?
-      ShellUtil::SYSTEM_LEVEL : ShellUtil::CURRENT_USER);
 
   // The default operation on update is to overwrite shortcuts with the
   // currently desired properties, but do so only for shortcuts that still
@@ -398,10 +411,14 @@ void CreateOrUpdateShortcuts(
       break;
   }
 
+  // Shortcuts are always installed per-user unless specified.
+  ShellUtil::ShellChange shortcut_level = (install_level == ALL_USERS ?
+      ShellUtil::SYSTEM_LEVEL : ShellUtil::CURRENT_USER);
+
   // |base_properties|: The basic properties to set on every shortcut installed
   // (to be refined on a per-shortcut basis).
   ShellUtil::ShortcutProperties base_properties(shortcut_level);
-  product.AddDefaultShortcutProperties(chrome_exe, &base_properties);
+  product.AddDefaultShortcutProperties(target, &base_properties);
 
   if (!do_not_create_desktop_shortcut ||
       shortcut_operation == ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING) {
@@ -529,14 +546,30 @@ InstallStatus InstallOrUpdateProduct(
     if (result == FIRST_INSTALL_SUCCESS && !prefs_path.empty())
       CopyPreferenceFileForFirstRun(installer_state, prefs_path);
 
-    // Currently this only creates shortcuts for Chrome, but for other products
-    // we might want to create shortcuts.
-    const Product* chrome_install =
-        installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
-    if (chrome_install) {
-      installer_state.UpdateStage(installer::CREATING_SHORTCUTS);
+    installer_state.UpdateStage(installer::CREATING_SHORTCUTS);
 
-      BrowserDistribution* dist = chrome_install->distribution();
+    const Product* app_launcher_product =
+        installer_state.FindProduct(BrowserDistribution::CHROME_APP_HOST);
+    // Creates shortcuts for App Launcher.
+    if (app_launcher_product &&
+        app_launcher_product->HasOption(kOptionAppHostIsLauncher)) {
+      // TODO(huangs): Remove this check once we have system-level App Host.
+      DCHECK(!installer_state.system_install());
+      const FilePath app_host_exe(
+          installer_state.target_path().Append(kChromeAppHostExe));
+      InstallShortcutOperation app_launcher_shortcut_operation =
+          GetAppLauncherShortcutOperation(original_state, installer_state);
+
+      // Always install per-user shortcuts for App Launcher.
+      CreateOrUpdateShortcuts(app_host_exe, *app_launcher_product, prefs,
+                              CURRENT_USER, app_launcher_shortcut_operation);
+    }
+
+    const Product* chrome_product =
+        installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
+    // Creates shortcuts for Chrome.
+    if (chrome_product) {
+      BrowserDistribution* dist = chrome_product->distribution();
       const FilePath chrome_exe(
           installer_state.target_path().Append(kChromeExe));
       CleanupLegacyShortcuts(installer_state, dist, chrome_exe);
@@ -550,13 +583,18 @@ InstallStatus InstallOrUpdateProduct(
 
       if (installer_state.system_install()) {
         // Update existing all-users shortcuts for legacy installs.
-        CreateOrUpdateShortcuts(chrome_exe, *chrome_install, prefs, ALL_USERS,
+        CreateOrUpdateShortcuts(chrome_exe, *chrome_product, prefs, ALL_USERS,
                                 INSTALL_SHORTCUT_REPLACE_EXISTING);
       }
       // Always install per-user shortcuts (even on system-level installs where
       // we do so for the installing user instead of waiting for Active Setup).
-      CreateOrUpdateShortcuts(chrome_exe, *chrome_install, prefs, CURRENT_USER,
+      CreateOrUpdateShortcuts(chrome_exe, *chrome_product, prefs, CURRENT_USER,
                               install_operation);
+    }
+
+    if (chrome_product) {
+      // Register Chrome and, if requested, make Chrome the default browser.
+      installer_state.UpdateStage(installer::REGISTERING_CHROME);
 
       bool make_chrome_default = false;
       prefs.GetBool(master_preferences::kMakeChromeDefault,
@@ -573,15 +611,14 @@ InstallStatus InstallOrUpdateProduct(
                       &force_chrome_default_for_user);
       }
 
-      installer_state.UpdateStage(installer::REGISTERING_CHROME);
-
-      RegisterChromeOnMachine(installer_state, *chrome_install,
+      RegisterChromeOnMachine(installer_state, *chrome_product,
           make_chrome_default || force_chrome_default_for_user);
 
+      // Configure auto-launch.
       if (result == FIRST_INSTALL_SUCCESS) {
         installer_state.UpdateStage(installer::CONFIGURE_AUTO_LAUNCH);
 
-        // Add auto-launch key if specified in master preferences.
+        // Add auto-launch key if specified in master_preferences.
         bool auto_launch_chrome = false;
         prefs.GetBool(
             installer::master_preferences::kAutoLaunchChrome,
