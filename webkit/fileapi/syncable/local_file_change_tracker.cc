@@ -115,7 +115,7 @@ void LocalFileChangeTracker::OnRemoveDirectory(const FileSystemURL& url) {
 }
 
 void LocalFileChangeTracker::GetNextChangedURLs(
-    std::vector<FileSystemURL>* urls, int max_urls) {
+    std::deque<FileSystemURL>* urls, int max_urls) {
   DCHECK(urls);
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   urls->clear();
@@ -170,10 +170,10 @@ void LocalFileChangeTracker::UpdateNumChanges() {
 }
 
 void LocalFileChangeTracker::GetAllChangedURLs(FileSystemURLSet* urls) {
-  std::vector<FileSystemURL> url_vector;
-  GetNextChangedURLs(&url_vector, 0);
+  std::deque<FileSystemURL> url_deque;
+  GetNextChangedURLs(&url_deque, 0);
   urls->clear();
-  urls->insert(url_vector.begin(), url_vector.end());
+  urls->insert(url_deque.begin(), url_deque.end());
 }
 
 void LocalFileChangeTracker::DropAllChanges() {

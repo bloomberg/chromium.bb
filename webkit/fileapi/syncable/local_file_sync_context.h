@@ -48,9 +48,8 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       public LocalFileSyncStatus::Observer {
  public:
   typedef base::Callback<void(SyncStatusCode status,
-                              SyncFileType file_type,
-                              const FileChangeList& changes)>
-      ChangeListCallback;
+                              const LocalFileSyncInfo& sync_file_info)>
+      LocalFileSyncInfoCallback;
 
   LocalFileSyncContext(base::SingleThreadTaskRunner* ui_task_runner,
                        base::SingleThreadTaskRunner* io_task_runner);
@@ -68,6 +67,18 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // This method must be called on UI thread.
   void ShutdownOnUIThread();
 
+  // Picks a file for next local sync and returns it after disabling writes
+  // for the file.
+  // This method must be called on UI thread.
+  void GetFileForLocalSync(FileSystemContext* file_system_context,
+                           const LocalFileSyncInfoCallback& callback);
+
+  // Notifies the sync context that the local sync has finished (either
+  // successfully or with an error) for |url|.
+  // This method must be called on UI thread.
+  void FinalizeSyncForURL(FileSystemContext* file_system_context,
+                          const FileSystemURL& url);
+
   // Prepares for sync |url| by disabling writes on |url|.
   // If the target |url| is being written and cannot start sync it
   // returns SYNC_STATUS_WRITING status code via |callback|.
@@ -76,7 +87,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // This method must be called on UI thread.
   void PrepareForSync(FileSystemContext* file_system_context,
                       const FileSystemURL& url,
-                      const ChangeListCallback& callback);
+                      const LocalFileSyncInfoCallback& callback);
 
   // Registers |url| to wait until sync is enabled for |url|.
   // |on_syncable_callback| is to be called when |url| becomes syncable
@@ -102,9 +113,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // They must be called on UI thread.
   void AddOriginChangeObserver(LocalOriginChangeObserver* observer);
   void RemoveOriginChangeObserver(LocalOriginChangeObserver* observer);
-
-  // Called by internal timer on IO thread to notify changes to UI thread.
-  void NotifyAvailableChangesOnIOThread();
 
   // OperationRunner is accessible only on IO thread.
   base::WeakPtr<SyncableFileOperationRunner> operation_runner() const;
@@ -132,6 +140,14 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
 
   void ShutdownOnIOThread();
 
+  // Adds |origin| to the internal origin set that have pending changes
+  // (origins_with_pending_changes_) and start timer to eventually call
+  // NotifyAvailableChangesOnIOThread. This is called on IO thread.
+  void OnNumberOfAvailableChangesUpdatedOnIOThread(const GURL& origin);
+
+  // Called by the internal timer on IO thread to notify changes to UI thread.
+  void NotifyAvailableChangesOnIOThread();
+
   // Called from NotifyAvailableChangesOnIOThread.
   void NotifyAvailableChanges(const std::set<GURL>& origins);
 
@@ -154,13 +170,32 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       FileSystemContext* file_system_context,
       SyncStatusCode status);
 
-  // Helper routines for PrepareForSync.
-  void DidGetWritingStatusForPrepareForSync(
+  // Helper routines for GetFileForLocalSync.
+  void GetNextURLsForSyncOnFileThread(
+      FileSystemContext* file_system_context,
+      std::deque<FileSystemURL>* urls);
+  void TryPrepareForLocalSync(
+      FileSystemContext* file_system_context,
+      std::deque<FileSystemURL>* urls,
+      const LocalFileSyncInfoCallback& callback);
+  void DidTryPrepareForLocalSync(
+      FileSystemContext* file_system_context,
+      std::deque<FileSystemURL>* remaining_urls,
+      const LocalFileSyncInfoCallback& callback,
+      SyncStatusCode status,
+      const LocalFileSyncInfo& sync_file_info);
+
+  // Callback routine for PrepareForSync and GetFileForLocalSync.
+  void DidGetWritingStatusForSync(
       FileSystemContext* file_system_context,
       SyncStatusCode status,
       const FileSystemURL& url,
-      const ChangeListCallback& callback);
+      const LocalFileSyncInfoCallback& callback);
 
+  // Helper routine for FinalizeSyncForURL.
+  void EnableWritingOnIOThread(const FileSystemURL& url);
+
+  // Callback routine for ApplyRemoteChange.
   void DidApplyRemoteChange(
       const SyncStatusCallback& callback_on_ui,
       base::PlatformFileError file_error);

@@ -5,10 +5,12 @@
 #ifndef WEBKIT_FILEAPI_SYNCABLE_FILE_CHANGE_H_
 #define WEBKIT_FILEAPI_SYNCABLE_FILE_CHANGE_H_
 
+#include <deque>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_file_type.h"
 #include "webkit/storage/webkit_storage_export.h"
 
@@ -47,6 +49,8 @@ class WEBKIT_STORAGE_EXPORT FileChange {
 
 class WEBKIT_STORAGE_EXPORT FileChangeList {
  public:
+  typedef std::deque<FileChange> List;
+
   FileChangeList();
   ~FileChangeList();
 
@@ -56,12 +60,26 @@ class WEBKIT_STORAGE_EXPORT FileChangeList {
   size_t size() const { return list_.size(); }
   bool empty() const { return list_.empty(); }
   void clear() { list_.clear(); }
-  const std::vector<FileChange>& list() const { return list_; }
+  const List& list() const { return list_; }
+  const FileChange& front() const { return list_.front(); }
+
+  FileChangeList PopAndGetNewList() const;
 
   std::string DebugString() const;
 
  private:
-  std::vector<FileChange> list_;
+  List list_;
+};
+
+// Move this to sync_file_metadata.h.
+struct WEBKIT_STORAGE_EXPORT LocalFileSyncInfo {
+  LocalFileSyncInfo();
+  ~LocalFileSyncInfo();
+
+  FileSystemURL url;
+  FilePath local_file_path;
+  SyncFileType file_type;  // TODO: replace this with SyncFileMetadata.
+  FileChangeList changes;
 };
 
 }  // namespace fileapi

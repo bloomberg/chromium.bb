@@ -63,7 +63,7 @@ class SyncableFileSystemTest : public testing::Test {
     ASSERT_EQ(1U, changes.size());
     SCOPED_TRACE(testing::Message() << url.DebugString() <<
                  " actual:" << changes.DebugString());
-    EXPECT_EQ(expected_change, changes.list()[0]);
+    EXPECT_EQ(expected_change, changes.front());
 
     // Clear the URL from the change tracker.
     change_tracker()->ClearChangesForURL(url);

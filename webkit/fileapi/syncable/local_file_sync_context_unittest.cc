@@ -20,6 +20,7 @@
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/syncable/canned_syncable_file_system.h"
+#include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
@@ -106,13 +107,12 @@ class LocalFileSyncContextTest : public testing::Test {
   void DidPrepareForSync(SyncFileType* file_type_out,
                          FileChangeList* changes_out,
                          SyncStatusCode status,
-                         SyncFileType file_type,
-                         const FileChangeList& changes) {
+                         const LocalFileSyncInfo& sync_file_info) {
     ASSERT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
     has_inflight_prepare_for_sync_ = false;
     status_ = status;
-    *file_type_out = file_type;
-    *changes_out = changes;
+    *file_type_out = sync_file_info.file_type;
+    *changes_out = sync_file_info.changes;
     MessageLoop::current()->Quit();
   }
 

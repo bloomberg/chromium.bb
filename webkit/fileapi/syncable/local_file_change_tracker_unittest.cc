@@ -4,6 +4,7 @@
 
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 
+#include <deque>
 #include <set>
 
 #include "base/basictypes.h"
@@ -137,7 +138,7 @@ TEST_F(LocalFileChangeTrackerTest, GetChanges) {
   EXPECT_FALSE(ContainsKey(urls, URL(kPath0)));
 
   // GetNextChangedURLs only returns up to max_urls (i.e. 3) urls.
-  std::vector<FileSystemURL> urls_to_process;
+  std::deque<FileSystemURL> urls_to_process;
   change_tracker()->GetNextChangedURLs(&urls_to_process, 3);
   ASSERT_EQ(3U, urls_to_process.size());
 
@@ -474,7 +475,7 @@ TEST_F(LocalFileChangeTrackerTest, NextChangedURLsWithRecursiveCopy) {
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.Copy(URL(kPath0), URL(kPath0Copy)));
 
-  std::vector<FileSystemURL> urls_to_process;
+  std::deque<FileSystemURL> urls_to_process;
   change_tracker()->GetNextChangedURLs(&urls_to_process, 0);
   ASSERT_EQ(6U, urls_to_process.size());
 
@@ -511,7 +512,7 @@ TEST_F(LocalFileChangeTrackerTest, NextChangedURLsWithRecursiveRemove) {
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.Remove(URL(kPath0), true /* recursive */));
 
-  std::vector<FileSystemURL> urls_to_process;
+  std::deque<FileSystemURL> urls_to_process;
   change_tracker()->GetNextChangedURLs(&urls_to_process, 0);
 
   // This is actually not really desirable, but since the directory

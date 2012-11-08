@@ -5,9 +5,9 @@
 #ifndef WEBKIT_FILEAPI_SYNCABLE_LOCAL_FILE_CHANGE_TRACKER_H_
 #define WEBKIT_FILEAPI_SYNCABLE_LOCAL_FILE_CHANGE_TRACKER_H_
 
+#include <deque>
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -61,7 +61,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
   // If |max_urls| is non-zero (recommended in production code) this
   // returns URLs up to the number from the ones that have smallest
   // change_seq numbers (i.e. older changes).
-  void GetNextChangedURLs(std::vector<FileSystemURL>* urls, int max_urls);
+  void GetNextChangedURLs(std::deque<FileSystemURL>* urls, int max_urls);
 
   // Returns all changes recorded for the given |url|.
   // This should be called after writing is disabled.
@@ -100,7 +100,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
   typedef std::map<int64, FileSystemURL> ChangeSeqMap;
 
   // This does mostly same as calling GetNextChangedURLs with max_url=0
-  // except that it returns urls in set rather than in vector.
+  // except that it returns urls in set rather than in deque.
   // Used only in testings.
   void GetAllChangedURLs(FileSystemURLSet* urls);
 

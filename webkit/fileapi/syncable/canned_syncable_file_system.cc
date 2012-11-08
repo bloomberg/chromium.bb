@@ -157,7 +157,8 @@ CannedSyncableFileSystem::CannedSyncableFileSystem(
       io_task_runner_(io_task_runner),
       file_task_runner_(file_task_runner),
       is_filesystem_set_up_(false),
-      is_filesystem_opened_(false) {
+      is_filesystem_opened_(false),
+      sync_status_observers_(new ObserverList) {
 }
 
 CannedSyncableFileSystem::~CannedSyncableFileSystem() {}
@@ -212,7 +213,25 @@ PlatformFileError CannedSyncableFileSystem::OpenFileSystem() {
       base::Bind(&CannedSyncableFileSystem::DidOpenFileSystem,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
+  if (file_system_context_->sync_context()) {
+    // Register 'this' as a sync status observer.
+    RunOnThread(io_task_runner_,
+                FROM_HERE,
+                base::Bind(
+                    &CannedSyncableFileSystem::InitializeSyncStatusObserver,
+                    base::Unretained(this)));
+  }
   return result_;
+}
+
+void CannedSyncableFileSystem::AddSyncStatusObserver(
+    LocalFileSyncStatus::Observer* observer) {
+  sync_status_observers_->AddObserver(observer);
+}
+
+void CannedSyncableFileSystem::RemoveSyncStatusObserver(
+    LocalFileSyncStatus::Observer* observer) {
+  sync_status_observers_->RemoveObserver(observer);
 }
 
 SyncStatusCode CannedSyncableFileSystem::MaybeInitializeFileSystemContext(
@@ -371,6 +390,16 @@ FileSystemOperation* CannedSyncableFileSystem::NewOperation() {
   return file_system_context_->CreateFileSystemOperation(URL(""), NULL);
 }
 
+void CannedSyncableFileSystem::OnSyncEnabled(const FileSystemURL& url) {
+  sync_status_observers_->Notify(&LocalFileSyncStatus::Observer::OnSyncEnabled,
+                                 url);
+}
+
+void CannedSyncableFileSystem::OnWriteEnabled(const FileSystemURL& url) {
+  sync_status_observers_->Notify(&LocalFileSyncStatus::Observer::OnWriteEnabled,
+                                 url);
+}
+
 void CannedSyncableFileSystem::DoCreateDirectory(
     const FileSystemURL& url,
     const StatusCallback& callback) {
@@ -483,6 +512,11 @@ void CannedSyncableFileSystem::DidInitializeFileSystemContext(
     SyncStatusCode status) {
   sync_status_ = status;
   MessageLoop::current()->Quit();
+}
+
+void CannedSyncableFileSystem::InitializeSyncStatusObserver() {
+  ASSERT_TRUE(io_task_runner_->RunsTasksOnCurrentThread());
+  file_system_context_->sync_context()->sync_status()->AddObserver(this);
 }
 
 }  // namespace fileapi

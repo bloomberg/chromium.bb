@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -23,6 +23,7 @@ class GURL;
 namespace fileapi {
 class FileSystemContext;
 class LocalFileSyncContext;
+struct LocalFileSyncInfo;
 }
 
 namespace sync_file_system {
@@ -85,10 +86,51 @@ class LocalFileSyncService
       const std::set<GURL>& origins) OVERRIDE;
 
  private:
+  class OriginChangeMap {
+   public:
+    typedef std::map<GURL, int64> Map;
+
+    OriginChangeMap();
+    ~OriginChangeMap();
+
+    // Sets |origin| to the next origin to process. (For now we simply apply
+    // round-robin to pick the next origin to avoid starvation.)
+    // Returns false if no origins to process.
+    bool NextOriginToProcess(GURL* origin);
+
+    int64 GetTotalChangeCount() const;
+
+    // Update change_count_map_ for |origin|.
+    void SetOriginChangeCount(const GURL& origin, int64 changes);
+
+   private:
+    // Per-origin changes (cached info, could be stale).
+    Map change_count_map_;
+    Map::iterator next_;
+  };
+
   void DidInitializeFileSystemContext(
       const GURL& app_origin,
       fileapi::FileSystemContext* file_system_context,
       const fileapi::SyncStatusCallback& callback,
+      fileapi::SyncStatusCode status);
+
+  // Runs local_sync_callback_ and resets it.
+  void RunLocalSyncCallback(
+      fileapi::SyncStatusCode status,
+      const fileapi::FileSystemURL& url);
+
+  // Callbacks for ProcessLocalChange.
+  void DidGetFileForLocalSync(
+      LocalChangeProcessor* processor,
+      fileapi::SyncStatusCode status,
+      const fileapi::LocalFileSyncInfo& sync_file_info);
+  void ProcessNextChangeForURL(
+      LocalChangeProcessor* processor,
+      const fileapi::FileSystemURL& url,
+      const FilePath& local_file_path,
+      const fileapi::FileChange& last_change,
+      const fileapi::FileChangeList& changes,
       fileapi::SyncStatusCode status);
 
   scoped_refptr<fileapi::LocalFileSyncContext> sync_context_;
@@ -97,8 +139,11 @@ class LocalFileSyncService
   // profile single origin wouldn't belong to multiple FileSystemContexts.)
   std::map<GURL, fileapi::FileSystemContext*> origin_to_contexts_;
 
-  // Per-origin change count (cached info, could be stale).
-  std::map<GURL, int64> per_origin_changes_;
+  OriginChangeMap origin_change_map_;
+
+  // This callback is non-null while a local sync is running (i.e.
+  // ProcessLocalChange has been called and has not been returned yet).
+  fileapi::SyncCompletionCallback local_sync_callback_;
 
   ObserverList<Observer> change_observers_;
 

@@ -10,11 +10,13 @@
 
 #include "base/callback_forward.h"
 #include "base/message_loop.h"
+#include "base/observer_list_threadsafe.h"
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/syncable/local_file_sync_status.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/quota/quota_types.h"
 
@@ -41,7 +43,8 @@ class LocalFileSyncContext;
 // A canned syncable filesystem for testing.
 // This internally creates its own QuotaManager and FileSystemContext
 // (as we do so for each isolated application).
-class CannedSyncableFileSystem {
+class CannedSyncableFileSystem
+    : public LocalFileSyncStatus::Observer {
  public:
   typedef base::Callback<void(base::PlatformFileError)> StatusCallback;
   typedef base::Callback<void(int64)> WriteCallback;
@@ -50,7 +53,7 @@ class CannedSyncableFileSystem {
                            const std::string& service,
                            base::SingleThreadTaskRunner* io_task_runner,
                            base::SingleThreadTaskRunner* file_task_runner);
-  ~CannedSyncableFileSystem();
+  virtual ~CannedSyncableFileSystem();
 
   // SetUp must be called before using this instance.
   void SetUp();
@@ -68,6 +71,12 @@ class CannedSyncableFileSystem {
 
   // Opens a new syncable file system.
   base::PlatformFileError OpenFileSystem();
+
+  // Register sync status observers. Unlike original
+  // LocalFileSyncStatus::Observer implementation the observer methods
+  // are called on the same thread where AddSyncStatusObserver were called.
+  void AddSyncStatusObserver(LocalFileSyncStatus::Observer* observer);
+  void RemoveSyncStatusObserver(LocalFileSyncStatus::Observer* observer);
 
   // Accessors.
   FileSystemContext* file_system_context() {
@@ -115,7 +124,13 @@ class CannedSyncableFileSystem {
   // Returns new FileSystemOperation.
   FileSystemOperation* NewOperation();
 
+  // LocalFileSyncStatus::Observer overrides.
+  virtual void OnSyncEnabled(const FileSystemURL& url) OVERRIDE;
+  virtual void OnWriteEnabled(const FileSystemURL& url) OVERRIDE;
+
  private:
+  typedef ObserverListThreadSafe<LocalFileSyncStatus::Observer> ObserverList;
+
   // Operation methods body.
   void DoCreateDirectory(const FileSystemURL& url,
                          const StatusCallback& callback);
@@ -157,6 +172,8 @@ class CannedSyncableFileSystem {
                          const GURL& root);
   void DidInitializeFileSystemContext(SyncStatusCode status);
 
+  void InitializeSyncStatusObserver();
+
   ScopedTempDir data_dir_;
   const std::string service_name_;
 
@@ -174,6 +191,8 @@ class CannedSyncableFileSystem {
   // Boolean flags mainly for helping debug.
   bool is_filesystem_set_up_;
   bool is_filesystem_opened_;
+
+  scoped_refptr<ObserverList> sync_status_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedSyncableFileSystem);
 };

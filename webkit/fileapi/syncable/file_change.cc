@@ -71,6 +71,13 @@ void FileChangeList::Update(const FileChange& new_change) {
   last = new_change;
 }
 
+FileChangeList FileChangeList::PopAndGetNewList() const {
+  FileChangeList changes;
+  changes.list_ = this->list_;
+  changes.list_.pop_front();
+  return changes;
+}
+
 std::string FileChangeList::DebugString() const {
   std::ostringstream ss;
   ss << "{ ";
@@ -79,5 +86,10 @@ std::string FileChangeList::DebugString() const {
   ss << "}";
   return ss.str();
 }
+
+LocalFileSyncInfo::LocalFileSyncInfo()
+    : file_type(SYNC_FILE_TYPE_UNKNOWN) {}
+
+LocalFileSyncInfo::~LocalFileSyncInfo() {}
 
 }  // namespace fileapi
