@@ -63,31 +63,6 @@ void UsbService::Cleanup() {
   event_handler_ = NULL;
 }
 
-// TODO(gdk): Remove this method. It is a lesser-functional version of
-// FindDevices, and essentially duplicates much of the work it does, due to the
-// device-handle oritented restructuring.
-UsbDevice* UsbService::FindDevice(const uint16 vendor_id,
-                                  const uint16 product_id) {
-  DCHECK(event_handler_) << "FindDevice called after event handler stopped.";
-  UsbDevice* device = NULL;
-
-  DeviceVector enumerated_devices;
-  EnumerateDevices(&enumerated_devices);
-  if (enumerated_devices.empty())
-    return NULL;
-
-  for (unsigned int i = 0; i < enumerated_devices.size(); ++i) {
-    PlatformUsbDevice current_device = enumerated_devices[i].device();
-    if (DeviceMatches(current_device, vendor_id, product_id)) {
-      device = LookupOrCreateDevice(current_device);
-      if (device)
-        break;
-    }
-  }
-
-  return device;
-}
-
 bool UsbService::FindDevices(const uint16 vendor_id,
                              const uint16 product_id,
                              vector<scoped_refptr<UsbDevice> >* devices) {

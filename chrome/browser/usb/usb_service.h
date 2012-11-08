@@ -31,11 +31,6 @@ class UsbService : public ProfileKeyedService {
   // event handling thread and disposes of open devices.
   void Cleanup();
 
-  // Find the (topologically) first USB device identified by vendor_id and
-  // product_id. The created device is associated with this service, so that
-  // it can be used to close the device later.
-  UsbDevice* FindDevice(const uint16 vendor_id, const uint16 product_id);
-
   // Find all of the devices attached to the system that are identified by
   // |vendor_id| and |product_id|, inserting them into |devices|. Clears
   // |devices| before use.
