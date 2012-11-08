@@ -11,15 +11,21 @@
 // HeapProfileTable::FillOrderedProfile().
 //
 // DeepHeapProfile::FillOrderedProfile() dumps more detailed information about
-// heap usage, which includes OS-level information such as whether the memory
-// block is actually in memory, or not.  DeepHeapProfile::FillOrderedProfile()
-// uses logged data in HeapProfileTable as one of its data sources.
-// DeepHeapProfile works only when its FillOrderedProfile() is called.  It has
-// overhead when dumping, but no overhead when logging.
+// heap usage, which includes OS-level information such as memory residency and
+// type information if the type profiler is available.
+//
+// DeepHeapProfile::FillOrderedProfile() uses data stored in HeapProfileTable.
+// Any code in DeepHeapProfile runs only when FillOrderedProfile() is called.
+// It has overhead in dumping, but no overhead in logging.
 //
 // It currently works only on Linux.  It just delegates to HeapProfileTable in
 // non-Linux environments.
 
+// Note that uint64 is used to represent addresses instead of uintptr_t, and
+// int is used to represent buffer sizes instead of size_t.
+// It's for consistency with other TCMalloc functions.  ProcMapsIterator uses
+// uint64 for addresses, and HeapProfileTable::FillOrderedProfile uses int
+// for buffer sizes.
 
 #ifndef BASE_DEEP_HEAP_PROFILE_H_
 #define BASE_DEEP_HEAP_PROFILE_H_
@@ -39,10 +45,31 @@
 
 class DeepHeapProfile {
  public:
-  typedef HeapProfileTable::Bucket Bucket;
-  typedef HeapProfileTable::AllocationMap AllocationMap;
-  typedef HeapProfileTable::AllocValue AllocValue;
+  // Constructs a DeepHeapProfile instance.  It works as a wrapper of
+  // HeapProfileTable.
+  //
+  // |heap_profile| is a pointer to HeapProfileTable.  DeepHeapProfile reads
+  // data in |heap_profile| and forwards operations to |heap_profile| if
+  // DeepHeapProfile is not available (non-Linux).
+  // |prefix| is a prefix of dumped file names.
+  DeepHeapProfile(HeapProfileTable* heap_profile, const char* prefix);
+  ~DeepHeapProfile();
+
+  // Fills deep profile dump into |raw_buffer| of |buffer_size|, and return the
+  // actual size occupied by the dump in |raw_buffer|.  It works as an
+  // alternative of HeapProfileTable::FillOrderedProfile.  |raw_buffer| is not
+  // terminated by zero.
+  //
+  // In addition, a list of buckets is dumped into a ".buckets" file in
+  // descending order of allocated bytes.
+  int FillOrderedProfile(char raw_buffer[], int buffer_size);
+
+ private:
+#ifdef DEEP_HEAP_PROFILE
   typedef HeapProfileTable::Stats Stats;
+  typedef HeapProfileTable::Bucket Bucket;
+  typedef HeapProfileTable::AllocValue AllocValue;
+  typedef HeapProfileTable::AllocationMap AllocationMap;
 
   enum MapsRegionType {
     // Bytes of memory which were not recognized with /proc/<pid>/maps.
@@ -69,46 +96,137 @@ class DeepHeapProfile {
     NUMBER_OF_MAPS_REGION_TYPES
   };
 
-  // Construct a DeepHeapProfile instance.  It works as a wrapper of
-  // HeapProfileTable.
-  //
-  // |heap_profile| is a pointer to HeapProfileTable.  DeepHeapProfile reads
-  // data in |heap_profile| and forwards operations to |heap_profile| if
-  // DeepHeapProfile is not available (non-Linux).
-  // |prefix| is a prefix of dumped file names.
-  DeepHeapProfile(HeapProfileTable* heap_profile, const char* prefix);
-  ~DeepHeapProfile();
+  // Manages a buffer to keep a dumped text for FillOrderedProfile and other
+  // functions.
+  class TextBuffer {
+   public:
+    TextBuffer(char *raw_buffer, int size)
+        : buffer_(raw_buffer),
+          size_(size),
+          cursor_(0) {
+    }
 
-  // Fill deep profile data into |buffer| of |size|, and return the actual
-  // size occupied by the dump in |buffer|.  It works as an alternative
-  // of HeapProfileTable::FillOrderedProfile.
-  //
-  // The profile buckets are dumped in the decreasing order of currently
-  // allocated bytes.  We do not provision for 0-terminating |buffer|.
-  int FillOrderedProfile(char buffer[], int buffer_size);
+    int Size();
+    int FilledBytes();
+    void Clear();
+    void Write(RawFD fd);
 
- private:
-#ifdef DEEP_HEAP_PROFILE
-  struct DeepBucket {
-    Bucket*     bucket;
-#if defined(TYPE_PROFILING)
-    const std::type_info* type;
-#endif
-    size_t      committed_size;
-    bool        is_mmap;
-    int         id;         // Unique ID of the bucket.
-    bool        is_logged;  // True if the stracktrace is logged to a file.
-    DeepBucket* next;       // Next entry in hash-table.
+    bool AppendChar(char v);
+    bool AppendString(const char* v, int d);
+    bool AppendInt(int v, int d);
+    bool AppendLong(long v, int d);
+    bool AppendUnsignedLong(unsigned long v, int d);
+    bool AppendInt64(int64 v, int d);
+    bool AppendPtr(uint64 v, int d);
+
+   private:
+    bool ForwardCursor(int appended);
+
+    char *buffer_;
+    int size_;
+    int cursor_;
+    DISALLOW_COPY_AND_ASSIGN(TextBuffer);
   };
 
-  typedef AddressMap<DeepBucket> DeepBucketMap;
+  class ProcPagemap {
+   public:
+    ProcPagemap(): fd_(kIllegalRawFD) {}
 
-  struct PageState {
-    bool is_committed;  // Currently, we use only this
-    bool is_present;
-    bool is_swapped;
-    bool is_shared;
-    bool is_mmap;
+    // Opens /proc/<pid>/pagemap and stores its file descriptor.
+    // It keeps open while the process is running.
+    //
+    // Note that file descriptors need to be refreshed after fork.
+    void Open();
+
+    // Returns the number of resident (including swapped) bytes of the given
+    // memory region from |first_address| to |last_address| inclusive.
+    size_t CommittedSize(uint64 first_address, uint64 last_address) const;
+
+   private:
+    struct State {
+      bool is_committed;  // Currently, we use only this
+      bool is_present;
+      bool is_swapped;
+      bool is_shared;
+      bool is_mmap;
+    };
+
+    // Seeks to the offset of the open pagemap file.
+    // It returns true if succeeded.
+    bool Seek(uint64 address) const;
+
+    // Reads a pagemap state from the current offset.
+    // It returns true if succeeded.
+    bool Read(State* state) const;
+
+    RawFD fd_;
+  };
+
+  struct MMapListEntry {
+    uint64 first_address;
+    uint64 last_address;
+    MapsRegionType type;
+  };
+
+  // Contains extended information for HeapProfileTable::Bucket.  These objects
+  // are managed in a hash table (DeepBucketTable) whose key is an address of
+  // a Bucket and other additional information.
+  struct DeepBucket {
+   public:
+    void UnparseForStats(TextBuffer* buffer);
+    void UnparseForBucketFile(TextBuffer* buffer);
+
+    Bucket* bucket;
+#if defined(TYPE_PROFILING)
+    const std::type_info* type;  // A type of the object
+#endif
+    size_t committed_size;  // A resident size of this bucket
+    bool is_mmap;  // True if the bucket represents a mmap region
+    int id;  // A unique ID of the bucket
+    bool is_logged;  // True if the stracktrace is logged to a file
+    DeepBucket* next;  // A reference to the next entry in the hash table
+  };
+
+  // Manages a hash table for DeepBucket.
+  class DeepBucketTable {
+   public:
+    DeepBucketTable(int size,
+                    HeapProfileTable::Allocator alloc,
+                    HeapProfileTable::DeAllocator dealloc);
+    ~DeepBucketTable();
+
+    // Finds a DeepBucket instance corresponding to the given |bucket|, or
+    // creates a new DeepBucket object if it doesn't exist.
+    DeepBucket* Lookup(Bucket* bucket,
+#if defined(TYPE_PROFILING)
+                       const std::type_info* type,
+#endif
+                       bool is_mmap);
+
+    // Writes stats of the hash table to |buffer| for FillOrderedProfile.
+    void UnparseForStats(TextBuffer* buffer);
+
+    // Writes all buckets for a bucket file with using |buffer|.
+    void WriteForBucketFile(const char* prefix,
+                            int dump_count,
+                            TextBuffer* buffer);
+
+    // Resets 'committed_size' members in DeepBucket objects.
+    void ResetCommittedSize();
+
+    // Resets all 'is_loggeed' flags in DeepBucket objects.
+    void ResetIsLogged();
+
+   private:
+    // Adds |add| to a |hash_value| for Lookup.
+    inline static void AddToHashValue(uintptr_t add, uintptr_t* hash_value);
+    inline static void FinishHashValue(uintptr_t* hash_value);
+
+    DeepBucket** table_;
+    size_t table_size_;
+    HeapProfileTable::Allocator alloc_;
+    HeapProfileTable::DeAllocator dealloc_;
+    int bucket_id_;
   };
 
   class RegionStats {
@@ -116,22 +234,20 @@ class DeepHeapProfile {
     RegionStats(): virtual_bytes_(0), committed_bytes_(0) {}
     ~RegionStats() {}
 
-    // Initialize virtual_bytes and committed_bytes.
+    // Initializes 'virtual_bytes_' and 'committed_bytes_'.
     void Initialize();
 
-    // Update the RegionStats to include the tallies of virtual_bytes and
-    // committed_bytes in the region from |first_adress| to |last_address|
+    // Updates itself to contain the tallies of 'virtual_bytes' and
+    // 'committed_bytes' in the region from |first_adress| to |last_address|
     // inclusive.
-    void Record(int pagemap_fd, uint64 first_address, uint64 last_address);
+    void Record(const ProcPagemap& pagemap,
+                uint64 first_address,
+                uint64 last_address);
 
-    size_t virtual_bytes() const { return virtual_bytes_; }
+    // Writes stats of the region into |buffer| with |name|.
+    void Unparse(const char* name, TextBuffer* buffer);
+
     size_t committed_bytes() const { return committed_bytes_; }
-    void set_virtual_bytes(size_t virtual_bytes) {
-      virtual_bytes_ = virtual_bytes;
-    }
-    void set_committed_bytes(size_t committed_bytes) {
-      committed_bytes_ = committed_bytes;
-    }
     void AddToVirtualBytes(size_t additional_virtual_bytes) {
       virtual_bytes_ += additional_virtual_bytes;
     }
@@ -149,153 +265,73 @@ class DeepHeapProfile {
     DISALLOW_COPY_AND_ASSIGN(RegionStats);
   };
 
-  struct GlobalStats {
+  class GlobalStats {
+   public:
+    // Snapshots and calculates global stats from /proc/<pid>/maps and pagemap.
+    void SnapshotProcMaps(const ProcPagemap& pagemap,
+                          MMapListEntry* mmap_list,
+                          int mmap_list_length);
+
+    // Snapshots allocations by malloc and mmap.
+    void SnapshotAllocations(DeepHeapProfile* deep_profile);
+
+    // Writes global stats into |buffer|.
+    void Unparse(TextBuffer* buffer);
+
+  private:
+    static bool ByFirstAddress(const MMapListEntry& a,
+                               const MMapListEntry& b);
+
+    // Records both virtual and committed byte counts of malloc and mmap regions
+    // as callback functions for AllocationMap::Iterate().
+    static void RecordAlloc(const void* pointer,
+                            AllocValue* alloc_value,
+                            DeepHeapProfile* deep_profile);
+    static void RecordMMap(const void* pointer,
+                           AllocValue* alloc_value,
+                           DeepHeapProfile* deep_profile);
+
     // All RegionStats members in this class contain the bytes of virtual
     // memory and committed memory.
     // TODO(dmikurube): These regions should be classified more precisely later
     // for more detailed analysis.
-    RegionStats all[NUMBER_OF_MAPS_REGION_TYPES];
-    RegionStats nonprofiled[NUMBER_OF_MAPS_REGION_TYPES];
+    RegionStats all_[NUMBER_OF_MAPS_REGION_TYPES];
 
-    // Total bytes of mmap'ed regions.
-    RegionStats profiled_mmap;
+    RegionStats nonprofiled_[NUMBER_OF_MAPS_REGION_TYPES];
 
     // Total bytes of malloc'ed regions.
-    RegionStats profiled_malloc;
+    RegionStats profiled_malloc_;
+
+    // Total bytes of mmap'ed regions.
+    RegionStats profiled_mmap_;
   };
 
-  struct MMapListEntry {
-    uint64 first_address;
-    uint64 last_address;
-    MapsRegionType type;
-  };
+  // Writes reformatted /proc/<pid>/maps into a file with using |raw_buffer|
+  // of |buffer_size|.
+  //
+  // If |count| is zero, the filename will be "|prefix|.<pid>.maps".
+  // Otherwise, "|prefix|.<pid>.|count|.maps".
+  static void WriteProcMaps(const char* prefix,
+                            unsigned count,
+                            int buffer_size,
+                            char raw_buffer[]);
 
-  static void DeallocateDeepBucketTable(DeepBucket** deep_table,
-                                        HeapProfileTable* heap_profile);
-
-  // Checks if the length of |printed| characters by snprintf is valid.
-  static bool IsPrintedStringValid(int printed,
-                                   int buffer_size,
-                                   int used_in_buffer);
-
-  // Open /proc/pid/pagemap and return its file descriptor.
-  // File descriptors need to be refreshed after each fork.
-  static int OpenProcPagemap();
-
-  // Seek to the offset of the open pagemap file pagemap_fd.
-  // It returns true if succeeded.  Otherwise, it returns false.
-  static bool SeekProcPagemap(int pagemap_fd, uint64 address);
-
-  // Read a pagemap state from the current pagemap_fd offset.
-  // It returns true if succeeded.  Otherwise, it returns false.
-  static bool ReadProcPagemap(int pagemap_fd, PageState* state);
-
-  // Returns the number of resident (including swapped) bytes of the memory
-  // region starting at |first_address| and ending at |last_address| inclusive.
-  static size_t GetCommittedSize(int pagemap_fd,
-                                 uint64 first_address,
-                                 uint64 last_address);
-
-  // Write re-formatted /proc/self/maps into a file with using |buffer| of
-  // size |buffer_size|.
-  // If |count| is zero, the filename will be "|filename_prefix|.<pid>.maps".
-  // Otherwise, "|filename_prefix|.<pid>.|count|.maps".
-  static void WriteMapsToFile(const char* filename_prefix,
-                              unsigned count,
-                              int buffer_size,
-                              char buffer[]);
-
-  // Compute the global statistics from /proc/self/maps and |pagemap_fd|, and
-  // store the statistics in |stats|.
-  static void SnapshotGlobalStatsWithoutMalloc(int pagemap_fd,
-                                               GlobalStats* stats,
-                                               MMapListEntry* mmap_list,
-                                               int mmap_list_length);
-
-  // Add a uintptr_t integer to a hash-value for GetDeepBucket.
-  inline static void AddIntegerToHashValue(
-      uintptr_t add, uintptr_t* hash_value);
-
-  // Get the DeepBucket object corresponding to the given |bucket|.
-  // DeepBucket is an extension to Bucket which is declared above.
-  DeepBucket* GetDeepBucket(Bucket* bucket, bool is_mmap,
-#if defined(TYPE_PROFILING)
-      const std::type_info* type,
-#endif
-      DeepBucket** table);
-
-  // Reset committed_size member variables in DeepBucket objects to 0.
-  void ResetCommittedSize(DeepBucket** deep_table);
-
-  // Fill bucket data in |bucket_table| into buffer |buffer| of size
-  // |buffer_size|, and return the size occupied by the bucket data in
-  // |buffer|.  |bucket_length| is the offset for |buffer| to start filling.
-  int SnapshotBucketTableWithoutMalloc(DeepBucket** deep_table,
-                                       int used_in_buffer,
-                                       int buffer_size,
-                                       char buffer[]);
-
-  static bool ByFirstAddress(const MMapListEntry& a,
-                             const MMapListEntry& b);
-
-  // Count mmap allocations in deep_profile->num_mmap_allocations_.
+  // Counts mmap allocations in |deep_profile|->num_mmap_allocations_.
   static void CountMMap(const void* pointer,
                         AllocValue* alloc_value,
                         DeepHeapProfile* deep_profile);
 
-  // Record both virtual and committed byte counts of malloc and mmap regions
-  // as callback functions for AllocationMap::Iterate().
-  static void RecordAlloc(const void* pointer,
-                          AllocValue* alloc_value,
-                          DeepHeapProfile* deep_profile);
-  static void RecordMMap(const void* pointer,
-                         AllocValue* alloc_value,
-                         DeepHeapProfile* deep_profile);
-  void SnapshotAllAllocsWithoutMalloc();
+  ProcPagemap pagemap_;
 
-  // Fill a bucket (a bucket id and its corresponding calling stack) into
-  // |buffer| of size |buffer_size|.
-  int FillBucketForBucketFile(const DeepBucket* deep_bucket,
-                              int buffer_size,
-                              char buffer[]);
-
-  // Write a |bucket_table| into a file of |bucket_fd|.
-  void WriteBucketsTableToBucketFile(DeepBucket** deep_table, RawFD bucket_fd);
-
-  // Write both malloc and mmap bucket tables into a "bucket file".
-  void WriteBucketsToBucketFile();
-
-  // Fill a |deep_bucket| and its corresponding bucket into |buffer| from the
-  // offset |used_in_buffer|.  Add the sizes to |profile_stats| if it's not
-  // NULL.
-  static int UnparseBucket(const DeepBucket& deep_bucket,
-                           const char* extra,
-                           int used_in_buffer,
-                           int buffer_size,
-                           char* buffer,
-                           Stats* profile_stats);
-
-  // Fill statistics of a region into |buffer|.
-  static int UnparseRegionStats(const RegionStats* stats,
-                                const char* name,
-                                int used_in_buffer,
-                                int buffer_size,
-                                char* buffer);
-
-  // Fill global statistics into |buffer|.
-  int UnparseGlobalStats(int used_in_buffer, int buffer_size, char* buffer);
-
-  int pagemap_fd_;         // File descriptor of /proc/self/pagemap.
-
-  // Process ID of the last dump.  This could change by fork.
+  // Process ID of the last dump.  This can change by fork.
   pid_t most_recent_pid_;
+
   GlobalStats stats_;      // Stats about total memory.
   int dump_count_;         // The number of dumps.
   char* filename_prefix_;  // Output file prefix.
   char* profiler_buffer_;  // Buffer we use many times.
 
-  int bucket_id_;
-  DeepBucket** deep_table_;
+  DeepBucketTable deep_table_;
   MMapListEntry* mmap_list_;
   int mmap_list_length_;
   int num_mmap_allocations_;
