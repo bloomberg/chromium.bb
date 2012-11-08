@@ -574,7 +574,7 @@ bool BluetoothStartDiscoveryFunction::RunImpl() {
   GetEventRouter(profile())->SetSendDiscoveryEvents(true);
 
   // If the adapter is already discovering, there is nothing else to do.
-  if (GetMutableAdapter(profile())->IsDiscovering()) {
+  if (GetAdapter(profile())->IsDiscovering()) {
     SendResponse(true);
     return true;
   }
