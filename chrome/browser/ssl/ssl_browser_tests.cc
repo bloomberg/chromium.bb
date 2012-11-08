@@ -631,7 +631,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
 
 // Visit a HTTPS page which requires client cert authentication. The client
 // cert will be selected automatically, then a test which uses WebSocket runs.
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSClientCert) {
+// Disabled:  http://crbug.com/159985
+IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestWSSClientCert) {
   // Open a temporary NSS DB for testing.
   crypto::ScopedTestNSSDB test_nssdb;
   ASSERT_TRUE(test_nssdb.is_open());
