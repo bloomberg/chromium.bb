@@ -26,6 +26,9 @@ struct DetailInput {
   float expand_weight;
 };
 
+extern const DetailInput kEmailInputs[];
+extern const size_t kEmailInputsSize;
+
 extern const DetailInput kBillingInputs[];
 extern const size_t kBillingInputsSize;
 
