@@ -82,7 +82,7 @@ def GenerateExpectedJSON(options):
     ],
     'working_dir': options.working_dir,
     'restart_on_failure': True,
-    'cleanup': 'all'
+    'cleanup': 'root'
   }
 
   if options.os_image == 'win32':

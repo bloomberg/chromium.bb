@@ -182,7 +182,7 @@ class Manifest(object):
       ],
       'working_dir': self.working_dir,
       'restart_on_failure': True,
-      'cleanup': 'all',
+      'cleanup': 'root',
     }
 
     return json.dumps(test_case)
