@@ -324,7 +324,7 @@ DriveFileSystem::DriveFileSystem(
 }
 
 void DriveFileSystem::Reload() {
-  InitializeResourceMetadataAndFeedLoader();
+  ResetResourceMetadata();
 
   feed_loader_->ReloadFromServerIfNeeded(
       base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
@@ -338,16 +338,7 @@ void DriveFileSystem::Initialize() {
 
   drive_service_->Initialize(profile_);
 
-  InitializeResourceMetadataAndFeedLoader();
-
-  // Allocate the drive operation handlers.
-  drive_operations_.Init(drive_service_,
-                         this,  // DriveFileSystemInterface
-                         cache_,
-                         resource_metadata_.get(),
-                         uploader_,
-                         blocking_task_runner_,
-                         this);  // OperationObserver
+  ResetResourceMetadata();
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableDriveHostedFiles);
@@ -357,7 +348,7 @@ void DriveFileSystem::Initialize() {
   InitializePreferenceObserver();
 }
 
-void DriveFileSystem::InitializeResourceMetadataAndFeedLoader() {
+void DriveFileSystem::ResetResourceMetadata() {
   resource_metadata_.reset(new DriveResourceMetadata);
   feed_loader_.reset(new DriveFeedLoader(resource_metadata_.get(),
                                          drive_service_,
@@ -365,6 +356,15 @@ void DriveFileSystem::InitializeResourceMetadataAndFeedLoader() {
                                          cache_,
                                          blocking_task_runner_));
   feed_loader_->AddObserver(this);
+
+  // Allocate the drive operation handlers.
+  drive_operations_.Init(drive_service_,
+                         this,  // DriveFileSystemInterface
+                         cache_,
+                         resource_metadata_.get(),
+                         uploader_,
+                         blocking_task_runner_,
+                         this);  // OperationObserver
 }
 
 void DriveFileSystem::CheckForUpdates() {

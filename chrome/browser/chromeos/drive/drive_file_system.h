@@ -236,9 +236,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Struct used for AddUploadedFile.
   struct AddUploadedFileParams;
 
-  // Initializes DriveResourceMetadata and DriveFeedLoader instances. This is a
-  // part of the initialization.
-  void InitializeResourceMetadataAndFeedLoader();
+  // Initializes DriveResourceMetadata and related instances (DriveFeedLoader
+  // and DriveOperations). This is a part of the initialization.
+  void ResetResourceMetadata();
 
   // Callback passed to |LoadFeedFromServer| from |Search| method.
   // |callback| is that should be run with data received from
