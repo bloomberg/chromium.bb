@@ -43,6 +43,7 @@
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webcursor.h"
 
+struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_CreateGuest_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 class TransportDIB;
@@ -178,6 +179,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                         WebKit::WebDragOperationsMask drag_mask,
                         const gfx::Point& location);
 
+  // Updates the autosize state of the guest.
+  void SetAutoSize(
+      const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
+      const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
+
   // Updates the cursor during dragging.
   // During dragging, if the guest notifies to update the cursor for a drag,
   // then it is necessary to route the cursor update to the embedder correctly
@@ -250,6 +256,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                     const GURL& new_url,
                     bool is_top_level);
 
+  bool InAutoSizeBounds(const gfx::Size& size) const;
   // Static factory instance (always NULL for non-test).
   static content::BrowserPluginHostFactory* factory_;
 
@@ -273,10 +280,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   bool focused_;
   bool visible_;
   bool auto_size_;
-  int max_height_;
-  int max_width_;
-  int min_height_;
-  int min_width_;
+  gfx::Size max_auto_size_;
+  gfx::Size min_auto_size_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuest);
 };

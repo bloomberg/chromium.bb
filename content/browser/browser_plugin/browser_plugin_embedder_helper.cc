@@ -53,6 +53,7 @@ bool BrowserPluginEmbedderHelper::OnMessageReceived(
                         OnSetGuestVisibility)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_DragStatusUpdate,
                         OnDragStatusUpdate)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetAutoSize, OnSetAutoSize)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -168,6 +169,13 @@ void BrowserPluginEmbedderHelper::OnDragStatusUpdate(
     const gfx::Point& location) {
   embedder_->DragStatusUpdate(instance_id, drag_status, drop_data, drag_mask,
       location);
+}
+
+void BrowserPluginEmbedderHelper::OnSetAutoSize(
+    int instance_id,
+    const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
+    const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params) {
+  embedder_->SetAutoSize(instance_id, auto_size_params, resize_guest_params);
 }
 
 }  // namespace content

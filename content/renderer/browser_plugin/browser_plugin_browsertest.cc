@@ -667,10 +667,10 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
         &create_instance_id,
         &params);
      EXPECT_TRUE(params.auto_size.enable);
-     EXPECT_EQ(42, params.auto_size.min_width);
-     EXPECT_EQ(43, params.auto_size.min_height);
-     EXPECT_EQ(1337, params.auto_size.max_width);
-     EXPECT_EQ(1338, params.auto_size.max_height);
+     EXPECT_EQ(42, params.auto_size.min_size.width());
+     EXPECT_EQ(43, params.auto_size.min_size.height());
+     EXPECT_EQ(1337, params.auto_size.max_size.width());
+     EXPECT_EQ(1338, params.auto_size.max_size.height());
   }
   // Disable autosize and verify that the BrowserPlugin issues a
   // BrowserPluginHostMsg_SetAutoSize with the change.
@@ -682,17 +682,16 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
         BrowserPluginHostMsg_SetAutoSize::ID);
     ASSERT_TRUE(auto_size_msg);
 
-    int instance_id;
-    BrowserPluginHostMsg_AutoSize_Params params;
-    BrowserPluginHostMsg_SetAutoSize::Read(
-        auto_size_msg,
-        &instance_id,
-        &params);
-     EXPECT_FALSE(params.enable);
-     EXPECT_EQ(42, params.min_width);
-     EXPECT_EQ(43, params.min_height);
-     EXPECT_EQ(1337, params.max_width);
-     EXPECT_EQ(1338, params.max_height);
+    PickleIterator iter = IPC::SyncMessage::GetDataIterator(auto_size_msg);
+    BrowserPluginHostMsg_SetAutoSize::SendParam set_auto_size_params;
+    ASSERT_TRUE(IPC::ReadParam(auto_size_msg, &iter, &set_auto_size_params));
+    const BrowserPluginHostMsg_AutoSize_Params& auto_size_params =
+        set_auto_size_params.b;
+    EXPECT_FALSE(auto_size_params.enable);
+    EXPECT_EQ(42, auto_size_params.min_size.width());
+    EXPECT_EQ(43, auto_size_params.min_size.height());
+    EXPECT_EQ(1337, auto_size_params.max_size.width());
+    EXPECT_EQ(1338, auto_size_params.max_size.height());
   }
 }
 

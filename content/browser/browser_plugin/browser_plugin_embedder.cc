@@ -289,6 +289,15 @@ void BrowserPluginEmbedder::DragStatusUpdate(
     guest->DragStatusUpdate(drag_status, drop_data, drag_mask, location);
 }
 
+void BrowserPluginEmbedder::SetAutoSize(
+    int instance_id,
+    const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
+    const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params) {
+  BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
+  if (guest)
+    guest->SetAutoSize(auto_size_params, resize_guest_params);
+}
+
 void BrowserPluginEmbedder::Go(int instance_id, int relative_index) {
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
   if (guest)

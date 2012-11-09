@@ -928,6 +928,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
   // thread and make these messages async: http://crbug.com/149063.
   if (msg.type() != BrowserPluginHostMsg_HandleInputEvent::ID &&
       msg.type() != BrowserPluginHostMsg_ResizeGuest::ID &&
+      msg.type() != BrowserPluginHostMsg_SetAutoSize::ID &&
       !BrowserMessageFilter::CheckCanDispatchOnUI(msg, this))
     return true;
 

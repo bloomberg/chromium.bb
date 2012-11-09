@@ -44,6 +44,8 @@ class BrowserPluginBackingStore {
                           const gfx::Rect& clip_rect,
                           const gfx::Size& view_size);
 
+  void Clear(SkColor clear_color);
+
   const gfx::Size& GetSize() const { return size_; }
 
   const SkBitmap& GetBitmap() const { return bitmap_; }

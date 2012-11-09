@@ -22,6 +22,7 @@ class Point;
 class Size;
 }
 
+struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_CreateGuest_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct WebDropData;
@@ -77,6 +78,10 @@ class BrowserPluginEmbedderHelper : public RenderViewHostObserver {
                           const WebDropData& drop_data,
                           WebKit::WebDragOperationsMask drag_mask,
                           const gfx::Point& location);
+  void OnSetAutoSize(
+      int instance_id,
+      const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
+      const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
 
   BrowserPluginEmbedder* embedder_;
 

@@ -31,6 +31,7 @@
 #include "ui/surface/transport_dib.h"
 #include "webkit/glue/webdropdata.h"
 
+struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_CreateGuest_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 
@@ -116,6 +117,10 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
                         const WebDropData& drop_data,
                         WebKit::WebDragOperationsMask drag_mask,
                         const gfx::Point& location);
+  void SetAutoSize(
+      int instance_id,
+      const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
+      const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
 
   bool visible() const { return visible_; }
 

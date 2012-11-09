@@ -71,6 +71,16 @@ void TestBrowserPluginGuest::Observe(int type,
 void TestBrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
   if (msg->type() == BrowserPluginMsg_UpdateRect::ID) {
     update_rect_count_++;
+    int instance_id = 0;
+    int message_id = 0;
+    BrowserPluginMsg_UpdateRect_Params params;
+    BrowserPluginMsg_UpdateRect::Read(msg, &instance_id, &message_id, &params);
+    last_view_size_observed_ = params.view_size;
+    if (!expected_auto_view_size_.IsEmpty() &&
+        expected_auto_view_size_ == params.view_size) {
+      if (auto_view_size_message_loop_runner_)
+        auto_view_size_message_loop_runner_->Quit();
+    }
     if (send_message_loop_runner_)
       send_message_loop_runner_->Quit();
   }
@@ -210,6 +220,18 @@ void TestBrowserPluginGuest::WaitForLoadStop() {
   load_stop_message_loop_runner_ = new MessageLoopRunner();
   load_stop_message_loop_runner_->Run();
   load_stop_observed_ = false;
+}
+
+void TestBrowserPluginGuest::WaitForViewSize(const gfx::Size& view_size) {
+  if (last_view_size_observed_ == view_size) {
+    last_view_size_observed_ = gfx::Size();
+    return;
+  }
+
+  expected_auto_view_size_ = view_size;
+  auto_view_size_message_loop_runner_ = new MessageLoopRunner();
+  auto_view_size_message_loop_runner_->Run();
+  last_view_size_observed_ = gfx::Size();
 }
 
 void TestBrowserPluginGuest::SetFocus(bool focused) {

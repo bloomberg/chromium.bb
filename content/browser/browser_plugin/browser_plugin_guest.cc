@@ -58,10 +58,8 @@ BrowserPluginGuest::BrowserPluginGuest(
       focused_(params.focused),
       visible_(params.visible),
       auto_size_(params.auto_size.enable),
-      max_height_(params.auto_size.max_height),
-      max_width_(params.auto_size.max_width),
-      min_height_(params.auto_size.min_height),
-      min_width_(params.auto_size.min_width) {
+      max_auto_size_(params.auto_size.max_size),
+      min_auto_size_(params.auto_size.min_size) {
   DCHECK(web_contents);
   // |render_view_host| manages the ownership of this BrowserPluginGuestHelper.
   new BrowserPluginGuestHelper(this, render_view_host);
@@ -194,6 +192,23 @@ void BrowserPluginGuest::DragStatusUpdate(WebKit::WebDragStatus drag_status,
   }
 }
 
+void BrowserPluginGuest::SetAutoSize(
+    const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
+    const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params) {
+  auto_size_ = auto_size_params.enable;
+  max_auto_size_ = auto_size_params.max_size;
+  min_auto_size_ = auto_size_params.min_size;
+  if (auto_size_) {
+    web_contents()->GetRenderViewHost()->EnableAutoResize(
+        min_auto_size_, max_auto_size_);
+  } else {
+    web_contents()->GetRenderViewHost()->DisableAutoResize(
+        gfx::Size(resize_guest_params.width, resize_guest_params.height));
+  }
+  // We call resize here to update the damage buffer.
+  Resize(embedder_web_contents_->GetRenderViewHost(), resize_guest_params);
+}
+
 void BrowserPluginGuest::UpdateDragCursor(WebKit::WebDragOperation operation) {
   RenderViewHostImpl* embedder_render_view_host =
       static_cast<RenderViewHostImpl*>(
@@ -286,6 +301,11 @@ void BrowserPluginGuest::SetDamageBuffer(
   damage_buffer_scale_factor_ = scale_factor;
 }
 
+bool BrowserPluginGuest::InAutoSizeBounds(const gfx::Size& size) const {
+  return size.width() <= max_auto_size_.width() &&
+      size.height() <= max_auto_size_.height();
+}
+
 void BrowserPluginGuest::UpdateRect(
     RenderViewHost* render_view_host,
     const ViewHostMsg_UpdateRect_Params& params) {
@@ -298,14 +318,16 @@ void BrowserPluginGuest::UpdateRect(
   if (!params.needs_ack)
     return;
 
-  // Only copy damage if the guest's view size is equal to the damage buffer's
-  // size and the guest's scale factor is equal to the damage buffer's scale
-  // factor.
+  // Only copy damage if the guest is in autosize mode and the guest's view size
+  // is less than the maximum size or the guest's view size is equal to the
+  // damage buffer's size and the guest's scale factor is equal to the damage
+  // buffer's scale factor.
   // The scaling change can happen due to asynchronous updates of the DPI on a
   // resolution change.
-  if (params.view_size.width() == damage_view_size().width() &&
-      params.view_size.height() == damage_view_size().height() &&
-      params.scale_factor == damage_buffer_scale_factor()) {
+  if (((auto_size_ && InAutoSizeBounds(params.view_size)) ||
+      (params.view_size.width() == damage_view_size().width() &&
+       params.view_size.height() == damage_view_size().height())) &&
+       params.scale_factor == damage_buffer_scale_factor()) {
     TransportDIB* dib = render_view_host->GetProcess()->
         GetTransportDIB(params.bitmap);
     if (dib) {
@@ -526,6 +548,12 @@ void BrowserPluginGuest::RenderViewReady() {
   bool embedder_visible =
       embedder_web_contents_->GetBrowserPluginEmbedder()->visible();
   SetVisibility(embedder_visible, visible());
+  if (auto_size_) {
+    web_contents()->GetRenderViewHost()->EnableAutoResize(
+        min_auto_size_, max_auto_size_);
+  } else {
+    web_contents()->GetRenderViewHost()->DisableAutoResize(damage_view_size_);
+  }
 }
 
 void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {

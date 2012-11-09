@@ -60,6 +60,7 @@ class CONTENT_EXPORT BrowserPlugin :
   int min_width_attribute() const { return min_width_; }
   // Set the minwidth attribute value.
   void SetMinWidthAttribute(int minwidth);
+  bool InAutoSizeBounds(const gfx::Size& size) const;
 
   // Get the guest's DOMWindow proxy.
   NPObject* GetContentWindow() const;
@@ -233,12 +234,21 @@ class CONTENT_EXPORT BrowserPlugin :
   virtual TransportDIB* CreateTransportDIB(const size_t size);
   // Frees up the damage buffer. Overridden in tests.
   virtual void FreeDamageBuffer();
+  // Populates BrowserPluginHostMsg_ResizeGuest_Params with resize state and
+  // returns the newly allocated TransportDIB.
+  TransportDIB* PopulateResizeGuestParameters(
+      BrowserPluginHostMsg_ResizeGuest_Params* params,
+      int view_width, int view_height);
 
   // Populates BrowserPluginHostMsg_AutoSize_Params object with autosize state.
   void PopulateAutoSizeParameters(
-      BrowserPluginHostMsg_AutoSize_Params* params) const;
+      BrowserPluginHostMsg_AutoSize_Params* params);
+
   // Informs the guest of an updated autosize state.
-  void UpdateGuestAutoSizeState() const;
+  void UpdateGuestAutoSizeState();
+
+  // Informs the BrowserPlugin that guest has changed its size in autosize mode.
+  void SizeChangedDueToAutoSize(const gfx::Size& old_view_size);
 
   int instance_id_;
   base::WeakPtr<RenderViewImpl> render_view_;
@@ -277,6 +287,8 @@ class CONTENT_EXPORT BrowserPlugin :
   typedef std::vector<v8::Persistent<v8::Function> > EventListeners;
   typedef std::map<std::string, EventListeners> EventListenerMap;
   EventListenerMap event_listener_map_;
+  gfx::Size last_view_size_;
+  bool size_changed_in_flight_;
   // Important: Do not add more history state here.
   // We strongly discourage storing additional history state (such as page IDs)
   // in the embedder process, at the risk of having incorrect information that

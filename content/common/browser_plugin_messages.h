@@ -31,10 +31,8 @@ IPC_ENUM_TRAITS(WebKit::WebDragStatus)
 
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_AutoSize_Params)
   IPC_STRUCT_MEMBER(bool, enable)
-  IPC_STRUCT_MEMBER(int, max_height)
-  IPC_STRUCT_MEMBER(int, max_width)
-  IPC_STRUCT_MEMBER(int, min_height)
-  IPC_STRUCT_MEMBER(int, min_width)
+  IPC_STRUCT_MEMBER(gfx::Size, max_size)
+  IPC_STRUCT_MEMBER(gfx::Size, min_size)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_CreateGuest_Params)
@@ -126,9 +124,11 @@ IPC_STRUCT_END()
 
 // This message is sent to the browser process to enable or disable autosize
 // mode.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetAutoSize,
-                    int /* instance_id */,
-                    BrowserPluginHostMsg_AutoSize_Params)
+IPC_SYNC_MESSAGE_ROUTED3_0(
+    BrowserPluginHostMsg_SetAutoSize,
+    int /* instance_id */,
+    BrowserPluginHostMsg_AutoSize_Params /* auto_size_params */,
+    BrowserPluginHostMsg_ResizeGuest_Params /* resize_guest_params */)
 
 
 // This message is sent to the browser process to create the browser plugin

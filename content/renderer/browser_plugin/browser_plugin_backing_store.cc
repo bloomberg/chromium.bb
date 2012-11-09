@@ -92,4 +92,8 @@ void BrowserPluginBackingStore::ScrollBackingStore(
   bitmap_.scrollRect(&rect, pixel_dx, pixel_dy);
 }
 
+void BrowserPluginBackingStore::Clear(SkColor clear_color) {
+  canvas_->clear(clear_color);
+}
+
 }  // namespace content

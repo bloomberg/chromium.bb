@@ -1,4 +1,8 @@
 <script type="text/javascript">
+function sizeChanged(evt) {
+  document.title = "AutoSize(" + evt.newWidth + ", " + evt.newHeight + ")";
+}
+
 function loadAbort(evt) {
   document.title = evt.type;
 }
@@ -101,4 +105,5 @@ function receiveMessage(event) {
   window.addEventListener('message', receiveMessage, false);
   plugin.addEventListener('loadstop', loadStop);
   plugin.addEventListener('loadcommit', loadCommit);
+  plugin.addEventListener('sizechanged', sizeChanged);
 </script>

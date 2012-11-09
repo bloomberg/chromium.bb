@@ -79,6 +79,8 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   void WaitForInput();
   // Waits until 'loadstop' is observed.
   void WaitForLoadStop();
+  // Waits until UpdateRect with a particular |view_size| is observed.
+  void WaitForViewSize(const gfx::Size& view_size);
 
  private:
   // Overridden methods from BrowserPluginGuest to intercept in test objects.
@@ -96,6 +98,8 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   bool set_damage_buffer_observed_;
   bool input_observed_;
   bool load_stop_observed_;
+  gfx::Size last_view_size_observed_;
+  gfx::Size expected_auto_view_size_;
 
   // For WaitForDamageBufferWithSize().
   bool waiting_for_damage_buffer_with_size_;
@@ -113,6 +117,7 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   scoped_refptr<MessageLoopRunner> damage_buffer_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> input_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> load_stop_message_loop_runner_;
+  scoped_refptr<MessageLoopRunner> auto_view_size_message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserPluginGuest);
 };
