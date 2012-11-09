@@ -345,10 +345,10 @@ TEST(QuadTest, Scale) {
   QuadF q1(a, b, c, d);
   q1.Scale(1.5f);
 
-  PointF a_scaled = a.Scale(1.5f);
-  PointF b_scaled = b.Scale(1.5f);
-  PointF c_scaled = c.Scale(1.5f);
-  PointF d_scaled = d.Scale(1.5f);
+  PointF a_scaled = ScalePoint(a, 1.5f);
+  PointF b_scaled = ScalePoint(b, 1.5f);
+  PointF c_scaled = ScalePoint(c, 1.5f);
+  PointF d_scaled = ScalePoint(d, 1.5f);
   EXPECT_EQ(q1.ToString(),
             QuadF(a_scaled, b_scaled, c_scaled, d_scaled).ToString());
 

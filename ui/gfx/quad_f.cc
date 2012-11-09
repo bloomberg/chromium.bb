@@ -131,10 +131,10 @@ RectF QuadF::BoundingBox() const {
 }
 
 void QuadF::Scale(float x_scale, float y_scale) {
-  p1_ = p1_.Scale(x_scale, y_scale);
-  p2_ = p2_.Scale(x_scale, y_scale);
-  p3_ = p3_.Scale(x_scale, y_scale);
-  p4_ = p4_.Scale(x_scale, y_scale);
+  p1_.Scale(x_scale, y_scale);
+  p2_.Scale(x_scale, y_scale);
+  p3_.Scale(x_scale, y_scale);
+  p4_.Scale(x_scale, y_scale);
 }
 
 void QuadF::operator+=(const Vector2dF& rhs) {

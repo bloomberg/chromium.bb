@@ -318,7 +318,7 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
     position = ui::EventLocationFromNative(event.native_event());
 #endif
     position = gfx::ToFlooredPoint(
-        position.Scale(1. / target->layer()->device_scale_factor()));
+        gfx::ScalePoint(position, 1. / target->layer()->device_scale_factor()));
   }
 
   position.set_x(std::min(bounds.width() - 1, std::max(0, position.x())));

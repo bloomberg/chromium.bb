@@ -29,7 +29,8 @@ ShadowValue::~ShadowValue() {
 }
 
 ShadowValue ShadowValue::Scale(float scale) const {
-  gfx::Point scaled_offset = gfx::ToFlooredPoint(offset_.Scale(scale));
+  gfx::Point scaled_offset =
+      gfx::ToFlooredPoint(gfx::ScalePoint(offset_, scale));
   return ShadowValue(scaled_offset, blur_ * scale, color_);
 }
 

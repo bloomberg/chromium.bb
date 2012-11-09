@@ -345,7 +345,8 @@ void RootWindow::PostNativeEvent(const base::NativeEvent& native_event) {
 
 void RootWindow::ConvertPointToNativeScreen(gfx::Point* point) const {
   // TODO(oshima): Take the root window's transform into account.
-  *point = gfx::ToFlooredPoint(point->Scale(ui::GetDeviceScaleFactor(layer())));
+  *point = gfx::ToFlooredPoint(
+      gfx::ScalePoint(*point, ui::GetDeviceScaleFactor(layer())));
   gfx::Point location = host_->GetLocationOnNativeScreen();
   point->Offset(location.x(), location.y());
 }
@@ -354,7 +355,7 @@ void RootWindow::ConvertPointFromNativeScreen(gfx::Point* point) const {
   gfx::Point location = host_->GetLocationOnNativeScreen();
   point->Offset(-location.x(), -location.y());
   *point = gfx::ToFlooredPoint(
-      point->Scale(1 / ui::GetDeviceScaleFactor(layer())));
+      gfx::ScalePoint(*point, 1 / ui::GetDeviceScaleFactor(layer())));
 }
 
 void RootWindow::ProcessedTouchEvent(ui::TouchEvent* event,

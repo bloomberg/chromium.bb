@@ -98,4 +98,26 @@ TEST(PointTest, ToRoundedPoint) {
   EXPECT_EQ(Point(-11, -11), ToRoundedPoint(PointF(-10.9999f, -10.9999f)));
 }
 
+TEST(PointTest, Scale) {
+  EXPECT_EQ(PointF().ToString(), ScalePoint(Point(), 2).ToString());
+  EXPECT_EQ(PointF().ToString(), ScalePoint(Point(), 2, 2).ToString());
+
+  EXPECT_EQ(PointF(2, -2).ToString(),
+            ScalePoint(Point(1, -1), 2).ToString());
+  EXPECT_EQ(PointF(2, -2).ToString(),
+            ScalePoint(Point(1, -1), 2, 2).ToString());
+
+  PointF zero;
+  PointF one(1, -1);
+
+  zero.Scale(2);
+  zero.Scale(3, 1.5);
+
+  one.Scale(2);
+  one.Scale(3, 1.5);
+
+  EXPECT_EQ(PointF().ToString(), zero.ToString());
+  EXPECT_EQ(PointF(6, -3).ToString(), one.ToString());
+}
+
 }  // namespace gfx

@@ -9,6 +9,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/size_conversions.h"
@@ -29,7 +30,7 @@ ui::ScaleFactor GetScaleFactorForView(const RenderWidgetHostView* view) {
 gfx::Point ConvertPointToDIP(const RenderWidgetHostView* view,
                              const gfx::Point& point_in_pixel) {
   return gfx::ToFlooredPoint(
-      point_in_pixel.Scale(1.0f / GetScaleForView(view)));
+      gfx::ScalePoint(point_in_pixel, 1.0f / GetScaleForView(view)));
 }
 
 gfx::Size ConvertSizeToDIP(const RenderWidgetHostView* view,
@@ -41,13 +42,13 @@ gfx::Size ConvertSizeToDIP(const RenderWidgetHostView* view,
 gfx::Rect ConvertRectToDIP(const RenderWidgetHostView* view,
                            const gfx::Rect& rect_in_pixel) {
   float scale = 1.0f / GetScaleForView(view);
-  return gfx::Rect(gfx::ToFlooredPoint(rect_in_pixel.origin().Scale(scale)),
-                   gfx::ToFlooredSize(rect_in_pixel.size().Scale(scale)));
+  return gfx::ToFlooredRectDeprecated(gfx::ScaleRect(rect_in_pixel, scale));
 }
 
 gfx::Point ConvertPointToPixel(const RenderWidgetHostView* view,
                                const gfx::Point& point_in_dip) {
-  return gfx::ToFlooredPoint(point_in_dip.Scale(GetScaleForView(view)));
+  return gfx::ToFlooredPoint(
+      gfx::ScalePoint(point_in_dip, GetScaleForView(view)));
 }
 
 gfx::Size ConvertSizeToPixel(const RenderWidgetHostView* view,
@@ -58,8 +59,7 @@ gfx::Size ConvertSizeToPixel(const RenderWidgetHostView* view,
 gfx::Rect ConvertRectToPixel(const RenderWidgetHostView* view,
                              const gfx::Rect& rect_in_dip) {
     float scale = GetScaleForView(view);
-    return gfx::Rect(gfx::ToFlooredPoint(rect_in_dip.origin().Scale(scale)),
-                     gfx::ToFlooredSize(rect_in_dip.size().Scale(scale)));
+    return gfx::ToFlooredRectDeprecated(gfx::ScaleRect(rect_in_dip, scale));
 }
 
 }  // namespace content

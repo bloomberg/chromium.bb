@@ -1053,7 +1053,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::scrollBegin(gfx::Point viewp
     if (!ensureRenderSurfaceLayerList())
         return ScrollIgnored;
 
-    gfx::PointF deviceViewportPoint = viewportPoint.Scale(m_deviceScaleFactor);
+    gfx::PointF deviceViewportPoint = gfx::ScalePoint(viewportPoint, m_deviceScaleFactor);
 
     // First find out which layer was hit from the saved list of visible layers
     // in the most recent frame.
@@ -1103,7 +1103,7 @@ static gfx::Vector2dF scrollLayerWithViewportSpaceDelta(PinchZoomViewport* viewp
     DCHECK(layerImpl.screenSpaceTransform().isInvertible());
     WebTransformationMatrix inverseScreenSpaceTransform = layerImpl.screenSpaceTransform().inverse();
 
-    gfx::PointF screenSpacePoint = viewportPoint.Scale(scaleFromViewportToScreenSpace);
+    gfx::PointF screenSpacePoint = gfx::ScalePoint(viewportPoint, scaleFromViewportToScreenSpace);
 
     gfx::Vector2dF screenSpaceDelta = viewportDelta;
     screenSpaceDelta.Scale(scaleFromViewportToScreenSpace);
@@ -1124,8 +1124,8 @@ static gfx::Vector2dF scrollLayerWithViewportSpaceDelta(PinchZoomViewport* viewp
     // localStartPoint and localEndPoint are in content space but we want to move them to layer space for scrolling.
     float widthScale = 1 / layerImpl.contentsScaleX();
     float heightScale = 1 / layerImpl.contentsScaleY();
-    localStartPoint = localStartPoint.Scale(widthScale, heightScale);
-    localEndPoint = localEndPoint.Scale(widthScale, heightScale);
+    localStartPoint.Scale(widthScale, heightScale);
+    localEndPoint.Scale(widthScale, heightScale);
 
     // Apply the scroll delta.
     gfx::Vector2dF previousDelta = layerImpl.scrollDelta();
@@ -1136,14 +1136,14 @@ static gfx::Vector2dF scrollLayerWithViewportSpaceDelta(PinchZoomViewport* viewp
 
     // Get the end point in the layer's content space so we can apply its screenSpaceTransform.
     gfx::PointF actualLocalEndPoint = localStartPoint + layerImpl.scrollDelta() - previousDelta;
-    gfx::PointF actualLocalContentEndPoint = actualLocalEndPoint.Scale(1 / widthScale, 1 / heightScale);
+    gfx::PointF actualLocalContentEndPoint = gfx::ScalePoint(actualLocalEndPoint, 1 / widthScale, 1 / heightScale);
 
     // Calculate the applied scroll delta in viewport space coordinates.
     gfx::PointF actualScreenSpaceEndPoint = MathUtil::mapPoint(layerImpl.screenSpaceTransform(), actualLocalContentEndPoint, endClipped);
     DCHECK(!endClipped);
     if (endClipped)
         return gfx::Vector2dF();
-    gfx::PointF actualViewportEndPoint = actualScreenSpaceEndPoint.Scale(1 / scaleFromViewportToScreenSpace);
+    gfx::PointF actualViewportEndPoint = gfx::ScalePoint(actualScreenSpaceEndPoint, 1 / scaleFromViewportToScreenSpace);
     return actualViewportEndPoint - viewportPoint;
 }
 
@@ -1235,10 +1235,10 @@ void LayerTreeHostImpl::pinchGestureUpdate(float magnifyDelta, gfx::Point anchor
     // Keep the center-of-pinch anchor specified by (x, y) in a stable
     // position over the course of the magnify.
     float pageScaleDelta = m_pinchZoomViewport.pageScaleDelta();
-    gfx::PointF previousScaleAnchor = m_previousPinchAnchor.Scale(1 / pageScaleDelta);
+    gfx::PointF previousScaleAnchor = gfx::ScalePoint(m_previousPinchAnchor, 1 / pageScaleDelta);
     setPageScaleDelta(pageScaleDelta * magnifyDelta);
     pageScaleDelta = m_pinchZoomViewport.pageScaleDelta();
-    gfx::PointF newScaleAnchor = anchor.Scale(1 / pageScaleDelta);
+    gfx::PointF newScaleAnchor = gfx::ScalePoint(anchor, 1 / pageScaleDelta);
     gfx::Vector2dF move = previousScaleAnchor - newScaleAnchor;
 
     m_previousPinchAnchor = anchor;

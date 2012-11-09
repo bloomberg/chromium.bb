@@ -20,12 +20,12 @@ class UI_EXPORT PointF : public PointBase<PointF, float, Vector2dF> {
   PointF(float x, float y);
   ~PointF();
 
-  PointF Scale(float scale) const WARN_UNUSED_RESULT {
-    return Scale(scale, scale);
+  void Scale(float scale) {
+    Scale(scale, scale);
   }
 
-  PointF Scale(float x_scale, float y_scale) const WARN_UNUSED_RESULT {
-    return PointF(x() * x_scale, y() * y_scale);
+  void Scale(float x_scale, float y_scale) {
+    SetPoint(x() * x_scale, y() * y_scale);
   }
 
   // Returns a string representation of point.
@@ -58,6 +58,12 @@ inline Vector2dF operator-(const PointF& lhs, const PointF& rhs) {
 
 inline PointF PointAtOffsetFromOrigin(const Vector2dF& offset_from_origin) {
   return PointF(offset_from_origin.x(), offset_from_origin.y());
+}
+
+UI_EXPORT PointF ScalePoint(const PointF& p, float x_scale, float y_scale);
+
+inline PointF ScalePoint(const PointF& p, float scale) {
+  return ScalePoint(p, scale, scale);
 }
 
 #if !defined(COMPILER_MSVC)
