@@ -175,7 +175,8 @@ def main():
       if sys.platform == 'win32':
         gclient_path += '.bat'
       return subprocess.call(
-          [gclient_path, 'sync', '--revision', base_rev], cwd=gclient_root)
+          [gclient_path, 'sync', '--revision', base_rev, '--nohooks'],
+          cwd=gclient_root)
   return 0
 
 
