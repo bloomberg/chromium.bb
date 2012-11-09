@@ -410,13 +410,6 @@ void VideoLayerImpl::setNeedsRedraw()
     layerTreeHostImpl()->setNeedsRedraw();
 }
 
-void VideoLayerImpl::dumpLayerProperties(std::string* str, int indent) const
-{
-    str->append(indentString(indent));
-    str->append("video layer\n");
-    LayerImpl::dumpLayerProperties(str, indent);
-}
-
 const char* VideoLayerImpl::layerTypeAsString() const
 {
     return "VideoLayer";

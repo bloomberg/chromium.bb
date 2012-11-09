@@ -44,8 +44,6 @@ public:
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
     virtual void didDraw(ResourceProvider*) OVERRIDE;
 
-    virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
-
     // WebKit::WebVideoFrameProvider::Client implementation.
     virtual void stopUsingProvider(); // Callable on any thread.
     virtual void didReceiveFrame(); // Callable on impl thread.

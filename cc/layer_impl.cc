@@ -271,6 +271,12 @@ void LayerImpl::dumpLayerProperties(std::string* str, int indent) const
     }
 
     str->append(indentStr);
+    base::StringAppendF(str, "position: %f, %f\n", m_position.x(), m_position.y());
+
+    str->append(indentStr);
+    base::StringAppendF(str, "contentsOpaque: %d\n", m_contentsOpaque);
+
+    str->append(indentStr);
     base::StringAppendF(str, "drawTransform: %f, %f, %f, %f  //  %f, %f, %f, %f  //  %f, %f, %f, %f  //  %f, %f, %f, %f\n",
         m_drawTransform.m11(), m_drawTransform.m12(), m_drawTransform.m13(), m_drawTransform.m14(),
         m_drawTransform.m21(), m_drawTransform.m22(), m_drawTransform.m23(), m_drawTransform.m24(),

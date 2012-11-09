@@ -6,6 +6,7 @@
 
 #include "nine_patch_layer_impl.h"
 
+#include "base/stringprintf.h"
 #include "cc/quad_sink.h"
 #include "cc/texture_draw_quad.h"
 #include "ui/gfx/rect_f.h"
@@ -26,12 +27,6 @@ ResourceProvider::ResourceId NinePatchLayerImpl::contentsResourceId() const
 {
     return 0;
 }
-
-void NinePatchLayerImpl::dumpLayerProperties(std::string* str, int indent) const
-{
-    LayerImpl::dumpLayerProperties(str, indent);
-}
-
 
 void NinePatchLayerImpl::willDraw(ResourceProvider* resourceProvider)
 {
@@ -112,6 +107,13 @@ void NinePatchLayerImpl::didLoseContext()
 const char* NinePatchLayerImpl::layerTypeAsString() const
 {
     return "NinePatchLayer";
+}
+
+void NinePatchLayerImpl::dumpLayerProperties(std::string* str, int indent) const
+{
+    str->append(indentString(indent));
+    base::StringAppendF(str, "imageAperture: %s\n", m_imageAperture.ToString().c_str());
+    LayerImpl::dumpLayerProperties(str, indent);
 }
 
 }
