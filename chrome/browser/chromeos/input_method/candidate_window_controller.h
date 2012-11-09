@@ -4,8 +4,8 @@
 //
 // This file implements the input method candidate window used on Chrome OS.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_CONTROLLER_H_
+#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_CONTROLLER_H_
 
 #include "base/basictypes.h"
 
@@ -43,4 +43,4 @@ class CandidateWindowController {
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_CONTROLLER_H_

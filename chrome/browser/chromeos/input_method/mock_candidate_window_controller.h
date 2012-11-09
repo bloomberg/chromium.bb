@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_CANDIDATE_WINDOW_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_CANDIDATE_WINDOW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_CANDIDATE_WINDOW_CONTROLLER_H_
+#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_CANDIDATE_WINDOW_CONTROLLER_H_
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/input_method/candidate_window.h"
+#include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 
 namespace chromeos {
 namespace input_method {
@@ -40,4 +40,4 @@ class MockCandidateWindowController : public CandidateWindowController {
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_CANDIDATE_WINDOW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_CANDIDATE_WINDOW_CONTROLLER_H_

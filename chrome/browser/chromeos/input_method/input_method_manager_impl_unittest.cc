@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/input_method/mock_candidate_window.h"
+#include "chrome/browser/chromeos/input_method/mock_candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_ibus_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_xkeyboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
