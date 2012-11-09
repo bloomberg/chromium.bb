@@ -82,6 +82,16 @@ views::Widget* CreateModalWidget(const gfx::Rect& bounds) {
   return widget;
 }
 
+views::Widget* CreateModalWidgetWithParent(const gfx::Rect& bounds,
+                                           gfx::NativeWindow parent) {
+  views::Widget* widget =
+      views::Widget::CreateWindowWithParentAndBounds(new TestDelegate(true),
+                                                     parent,
+                                                     bounds);
+  widget->Show();
+  return widget;
+}
+
 aura::Window* GetModalContainer(aura::RootWindow* root_window) {
   return Shell::GetContainer(
       root_window,
@@ -227,12 +237,34 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
       internal::kShellWindowId_SystemModalContainer)->layout_manager(),
           controller->GetSystemModalLayoutManager(NULL));
 
+  views::Widget* session_modal_widget =
+      CreateModalWidget(gfx::Rect(300, 10, 100, 100));
+  EXPECT_EQ(Shell::GetContainer(controller->root_window(),
+      internal::kShellWindowId_SystemModalContainer)->layout_manager(),
+          controller->GetSystemModalLayoutManager(
+              session_modal_widget->GetNativeView()));
+
   shell->delegate()->LockScreen();
   EXPECT_EQ(user::LOGGED_IN_LOCKED,
             shell->tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),
       internal::kShellWindowId_LockSystemModalContainer)->layout_manager(),
           controller->GetSystemModalLayoutManager(NULL));
+
+  aura::Window* lock_container =
+      Shell::GetContainer(controller->root_window(),
+                          internal::kShellWindowId_LockScreenContainer);
+  views::Widget* lock_modal_widget =
+      CreateModalWidgetWithParent(gfx::Rect(300, 10, 100, 100), lock_container);
+  EXPECT_EQ(Shell::GetContainer(controller->root_window(),
+      internal::kShellWindowId_LockSystemModalContainer)->layout_manager(),
+          controller->GetSystemModalLayoutManager(
+              lock_modal_widget->GetNativeView()));
+  EXPECT_EQ(Shell::GetContainer(controller->root_window(),
+        internal::kShellWindowId_SystemModalContainer)->layout_manager(),
+            controller->GetSystemModalLayoutManager(
+                session_modal_widget->GetNativeView()));
+
   shell->delegate()->UnlockScreen();
 }
 

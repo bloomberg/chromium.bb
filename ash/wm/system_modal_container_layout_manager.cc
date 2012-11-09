@@ -94,7 +94,8 @@ void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
          child->type() == aura::client::WINDOW_TYPE_POPUP);
   DCHECK(
       container_->id() != internal::kShellWindowId_LockSystemModalContainer ||
-      Shell::GetInstance()->delegate()->IsScreenLocked());
+      Shell::GetInstance()->delegate()->IsScreenLocked() ||
+      !Shell::GetInstance()->delegate()->IsSessionStarted());
 
   child->AddObserver(this);
   if (child->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE)
@@ -153,6 +154,14 @@ void SystemModalContainerLayoutManager::OnWindowDestroying(
 
 bool SystemModalContainerLayoutManager::CanWindowReceiveEvents(
     aura::Window* window) {
+  // We could get when we're at lock screen and there is modal window at
+  // system modal window layer which added event filter.
+  // Now this lock modal windows layer layout manager should not block events
+  // for windows at lock layer.
+  // See SystemModalContainerLayoutManagerTest.EventFocusContainers and
+  // http://crbug.com/157469
+  if (modal_windows_.empty())
+    return true;
   // This container can not handle events if the screen is locked and it is not
   // above the lock screen layer (crbug.com/110920).
   if (ash::Shell::GetInstance()->IsScreenLocked() &&

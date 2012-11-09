@@ -302,9 +302,10 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
   aura::Window* lock_modal = lock_modal_delegate->OpenTestWindow(lock.get());
   EXPECT_TRUE(wm::IsActiveWindow(lock_modal));
   e1.ClickLeftButton();
-  EXPECT_EQ(1, main_delegate->mouse_presses());
+  EXPECT_EQ(1, lock_modal_delegate->mouse_presses());
 
   // Verify that none of the other containers received any more mouse presses.
+  EXPECT_EQ(1, main_delegate->mouse_presses());
   EXPECT_EQ(1, transient_delegate->mouse_presses());
   EXPECT_EQ(1, lock_delegate->mouse_presses());
   EXPECT_EQ(1, lock_modal_delegate->mouse_presses());

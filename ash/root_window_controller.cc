@@ -201,10 +201,12 @@ SystemModalContainerLayoutManager*
 RootWindowController::GetSystemModalLayoutManager(aura::Window* window) {
   aura::Window* container = NULL;
   if (window) {
-    container = GetContainer(
-        kShellWindowId_LockSystemModalContainer);
-    if (!container->Contains(window))
+    if (window->parent() &&
+        window->parent()->id() >= kShellWindowId_LockScreenContainer) {
+      container = GetContainer(kShellWindowId_LockSystemModalContainer);
+    } else {
       container = GetContainer(kShellWindowId_SystemModalContainer);
+    }
   } else {
     user::LoginStatus login = Shell::GetInstance()->status_area_widget() ?
         Shell::GetInstance()->tray_delegate()->GetUserLoginStatus() :

@@ -6,6 +6,7 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/coordinate_conversion.h"
@@ -112,15 +113,15 @@ aura::Window* StackingController::GetSystemModalContainer(
 
   // If screen lock is not active, all modal windows are placed into the
   // normal modal container.
-  aura::Window* lock_container =
-      GetContainerById(root, internal::kShellWindowId_LockScreenContainer);
-  if (!lock_container->children().size()) {
+  if (!Shell::GetInstance()->delegate()->IsScreenLocked()) {
     return GetContainerById(root,
                             internal::kShellWindowId_SystemModalContainer);
   }
 
   // Otherwise those that originate from LockScreen container and above are
   // placed in the screen lock modal container.
+  aura::Window* lock_container =
+      GetContainerById(root, internal::kShellWindowId_LockScreenContainer);
   int lock_container_id = lock_container->id();
   int window_container_id = window->transient_parent()->parent()->id();
 
