@@ -2118,14 +2118,8 @@ const char kRailStartProportion[] =
     "gesture.rail_start_proportion";
 const char kSemiLongPressTimeInSeconds[] =
     "gesture.semi_long_press_time_in_seconds";
-const char kFlingAccelerationCurveCoefficient0[] =
-    "gesture.fling_acceleration_curve_coefficient_0";
-const char kFlingAccelerationCurveCoefficient1[] =
-    "gesture.fling_acceleration_curve_coefficient_1";
-const char kFlingAccelerationCurveCoefficient2[] =
-    "gesture.fling_acceleration_curve_coefficient_2";
-const char kFlingAccelerationCurveCoefficient3[] =
-    "gesture.fling_acceleration_curve_coefficient_3";
+const char kTouchScreenFlingAccelerationAdjustment[] =
+    "gesture.touchscreen_fling_acceleration_adjustment";
 #endif
 
 // Indicates whether the browser is in managed mode.
