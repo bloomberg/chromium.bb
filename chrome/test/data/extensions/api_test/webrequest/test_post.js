@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Common definitions for test_post?.js.
+
 var dirName = "requestBody/";
 
 function sendPost(formFile, parseableForm) {
@@ -128,14 +130,3 @@ function sendPost(formFile, parseableForm) {
     navigateAndWait(getURL(dirName + formFile));
   }
 }
-
-runTests([
-  // Navigates to a page with a form and submits it, generating a POST request.
-  // First two result in url-encoded form.
-  sendPost('no-enctype.html', true),
-  sendPost('urlencoded.html', true),
-  // Third results in multipart-encoded form.
-  sendPost('multipart.html', true),
-  // Fourth results in unparseable form, and thus raw data string.
-  sendPost('plaintext.html', false),
-]);

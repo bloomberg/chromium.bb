@@ -242,9 +242,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   RunPermissionTest("split", false, false, "redirected1", "");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, PostData) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, PostData1) {
   // Request body access is only enabled on dev (and canary).
   Feature::ScopedCurrentChannel sc(chrome::VersionInfo::CHANNEL_DEV);
-  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_post.html")) <<
+  // Test HTML form POST data access with the default and "url" encoding.
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_post1.html")) <<
+      message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, PostData2) {
+  // Request body access is only enabled on dev (and canary).
+  Feature::ScopedCurrentChannel sc(chrome::VersionInfo::CHANNEL_DEV);
+  // Test HTML form POST data access with the multipart and plaintext encoding.
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_post2.html")) <<
       message_;
 }
