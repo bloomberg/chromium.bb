@@ -1866,6 +1866,9 @@ void ExtensionService::AcknowledgeExternalExtension(const std::string& id) {
 
 bool ExtensionService::IsUnacknowledgedExternalExtension(
     const Extension* extension) {
+  if (!FeatureSwitch::prompt_for_external_extensions()->IsEnabled())
+    return false;
+
   return (Extension::IsExternalLocation(extension->location()) &&
           !extension_prefs_->IsExternalExtensionAcknowledged(extension->id()) &&
           !(extension_prefs_->GetDisableReasons(extension->id()) &
