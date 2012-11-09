@@ -206,9 +206,9 @@ void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
 
 void CoreOptionsHandler::StopObservingPref(const std::string& pref_name) {
   if (g_browser_process->local_state()->FindPreference(pref_name.c_str()))
-    local_state_registrar_.Remove(pref_name.c_str());
+    local_state_registrar_.Remove(pref_name.c_str(), this);
   else
-    registrar_.Remove(pref_name.c_str());
+    registrar_.Remove(pref_name.c_str(), this);
 }
 
 void CoreOptionsHandler::SetPref(const std::string& pref_name,
