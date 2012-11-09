@@ -360,6 +360,7 @@ scons-stage-noirt() {
 
 llvm-regression() {
   echo "@@@BUILD_STEP llvm_regression@@@"
+  # PNACL_TOOLCHAIN_LABEL is expected by this script to be in the environment
   ${LLVM_TEST} llvm-regression || handle-error
 }
 
@@ -539,7 +540,7 @@ mode-buildbot-arm-hw-try() {
 tc-tests-all() {
   local is_try=$1
 
-  local label="pnaclsdk_mode=custom:toolchain/${TOOLCHAIN_LABEL}"
+  local label="pnaclsdk_mode=custom:toolchain/${PNACL_TOOLCHAIN_LABEL}"
   local scons_flags="-k skip_trusted_tests=1 -j8 ${label}"
 
   llvm-regression
@@ -581,27 +582,27 @@ tc-tests-fast() {
 mode-buildbot-tc-x8664-linux() {
   local is_try=$1
   FAIL_FAST=false
-  TOOLCHAIN_LABEL=pnacl_linux_x86
-  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} true true
+  export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86
+  tc-build-all ${PNACL_TOOLCHAIN_LABEL} ${is_try} true true
   tc-tests-all ${is_try}
 }
 
 mode-buildbot-tc-x8632-linux() {
   local is_try=$1
   FAIL_FAST=false
-  TOOLCHAIN_LABEL=pnacl_linux_x86
+  export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86
   # For now, just use this bot to test a pure 32 bit build but don't upload
-  tc-build-all ${TOOLCHAIN_LABEL} true false false
+  tc-build-all ${PNACL_TOOLCHAIN_LABEL} true false false
   tc-tests-fast "x86-32"
 }
 
 mode-buildbot-tc-x8632-mac() {
   local is_try=$1
   FAIL_FAST=false
-  TOOLCHAIN_LABEL=pnacl_mac_x86
+  export PNACL_TOOLCHAIN_LABEL=pnacl_mac_x86
   # We can't test ARM because we do not have QEMU for Mac.
   # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
-  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false false
+  tc-build-all ${PNACL_TOOLCHAIN_LABEL} ${is_try} false false
   tc-tests-fast "x86-32"
 }
 
@@ -609,8 +610,8 @@ mode-buildbot-tc-x8664-win() {
   local is_try=$1
   FAIL_FAST=false
   # NOTE: this is a 64bit bot but the TC generated is 32bit
-  TOOLCHAIN_LABEL=pnacl_win_x86
-  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false false
+  export PNACL_TOOLCHAIN_LABEL=pnacl_win_x86
+  tc-build-all ${PNACL_TOOLCHAIN_LABEL} ${is_try} false false
 
   # We can't test ARM because we do not have QEMU for Win.
   tc-tests-fast "x86-64"
