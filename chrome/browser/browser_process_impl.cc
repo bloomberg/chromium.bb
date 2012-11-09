@@ -610,6 +610,17 @@ safe_browsing::ClientSideDetectionService*
   return NULL;
 }
 
+void BrowserProcessImpl::OnPreferenceChanged(PrefServiceBase* service,
+                                             const std::string& pref) {
+  if (pref == prefs::kDefaultBrowserSettingEnabled) {
+    ApplyDefaultBrowserPolicy();
+  } else if (pref == prefs::kDisabledSchemes) {
+    ApplyDisabledSchemesPolicy();
+  } else if (pref == prefs::kAllowCrossOriginAuthPrompt) {
+    ApplyAllowCrossOriginAuthPromptPolicy();
+  }
+}
+
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
 void BrowserProcessImpl::StartAutoupdateTimer() {
   autoupdate_timer_.Start(FROM_HERE,
@@ -666,10 +677,7 @@ void BrowserProcessImpl::ResourceDispatcherHostCreated() {
   ResourceDispatcherHost::Get()->SetDelegate(
       resource_dispatcher_host_delegate_.get());
 
-  pref_change_registrar_.Add(
-      prefs::kAllowCrossOriginAuthPrompt,
-      base::Bind(&BrowserProcessImpl::ApplyAllowCrossOriginAuthPromptPolicy,
-                 base::Unretained(this)));
+  pref_change_registrar_.Add(prefs::kAllowCrossOriginAuthPrompt, this);
   ApplyAllowCrossOriginAuthPromptPolicy();
 }
 
@@ -717,10 +725,7 @@ void BrowserProcessImpl::CreateLocalState() {
   // Initialize the notification for the default browser setting policy.
   local_state_->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,
                                     false);
-  pref_change_registrar_.Add(
-      prefs::kDefaultBrowserSettingEnabled,
-      base::Bind(&BrowserProcessImpl::ApplyDefaultBrowserPolicy,
-                 base::Unretained(this)));
+  pref_change_registrar_.Add(prefs::kDefaultBrowserSettingEnabled, this);
 
   // This policy needs to be defined before the net subsystem is initialized,
   // so we do it here.
@@ -736,10 +741,7 @@ void BrowserProcessImpl::CreateLocalState() {
   // This is observed by ChildProcessSecurityPolicy, which lives in content/
   // though, so it can't register itself.
   local_state_->RegisterListPref(prefs::kDisabledSchemes);
-  pref_change_registrar_.Add(
-      prefs::kDisabledSchemes,
-      base::Bind(&BrowserProcessImpl::ApplyDisabledSchemesPolicy,
-                 base::Unretained(this)));
+  pref_change_registrar_.Add(prefs::kDisabledSchemes, this);
   ApplyDisabledSchemesPolicy();
 
   local_state_->RegisterBooleanPref(prefs::kAllowCrossOriginAuthPrompt, false);

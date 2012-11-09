@@ -212,10 +212,7 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       delegate->GetOriginalProfile());
   RegisterWithSyncService();
   registrar_.Init(manager_delegate_->GetPrefs());
-  registrar_.Add(
-      prefs::kPasswordGenerationEnabled,
-      base::Bind(&AutofillManager::OnPasswordGenerationEnabledChanged,
-                 base::Unretained(this)));
+  registrar_.Add(prefs::kPasswordGenerationEnabled, this);
 }
 
 AutofillManager::~AutofillManager() {
@@ -294,8 +291,10 @@ void AutofillManager::RenderViewCreated(content::RenderViewHost* host) {
   UpdatePasswordGenerationState(host, true);
 }
 
-void AutofillManager::OnPasswordGenerationEnabledChanged() {
+void AutofillManager::OnPreferenceChanged(PrefServiceBase* service,
+                                          const std::string& pref_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(prefs::kPasswordGenerationEnabled == pref_name);
   UpdatePasswordGenerationState(web_contents()->GetRenderViewHost(), false);
 }
 
