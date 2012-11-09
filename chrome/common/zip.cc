@@ -151,7 +151,7 @@ bool ZipWithFilterCallback(const FilePath& src_dir, const FilePath& dest_file,
     }
   }
 
-  if (ZIP_OK != zipClose(zip_file, NULL)) {  // global comment
+  if (ZIP_OK != zipClose(zip_file, NULL)) {
     DLOG(ERROR) << "Error closing zip file " << dest_file.value();
     return false;
   }
@@ -168,6 +168,39 @@ bool Zip(const FilePath& src_dir, const FilePath& dest_file,
     return ZipWithFilterCallback(
         src_dir, dest_file, base::Bind(&ExcludeHiddenFilesFilter));
   }
+}
+
+bool ZipFiles(const FilePath& src_dir,
+              const std::vector<FilePath>& src_relative_paths,
+              const FilePath& dest_file) {
+  DCHECK(file_util::DirectoryExists(src_dir));
+
+  // TODO(hshi): check that |src_relative_paths| does not contain |dest_file|.
+  zipFile zip_file = internal::OpenForZipping(dest_file.AsUTF8Unsafe(),
+                                              APPEND_STATUS_CREATE);
+
+  if (!zip_file) {
+    DLOG(WARNING) << "couldn't create file " << dest_file.value();
+    return false;
+  }
+
+  bool success = true;
+  for (std::vector<FilePath>::const_iterator iter = src_relative_paths.begin();
+      iter != src_relative_paths.end(); ++iter) {
+    const FilePath& path = src_dir.Append(*iter);
+    if (!AddEntryToZip(zip_file, path, src_dir)) {
+      // TODO(hshi): clean up the partial zip file when error occurs.
+      success = false;
+      break;
+    }
+  }
+
+  if (ZIP_OK != zipClose(zip_file, NULL)) {
+    DLOG(ERROR) << "Error closing zip file " << dest_file.value();
+    success = false;
+  }
+
+  return success;
 }
 
 }  // namespace zip

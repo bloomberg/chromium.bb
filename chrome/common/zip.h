@@ -6,8 +6,7 @@
 #define CHROME_COMMON_ZIP_H_
 
 #include "base/callback.h"
-
-class FilePath;
+#include "base/file_path.h"
 
 namespace zip {
 
@@ -25,6 +24,14 @@ bool ZipWithFilterCallback(const FilePath& src_dir, const FilePath& dest_file,
 // Otherwise they are omitted.
 bool Zip(const FilePath& src_dir, const FilePath& dest_file,
          bool include_hidden_files);
+
+// Zips files listed in |src_relative_paths| to |dest_file|.
+// The paths listed in |src_relative_paths| are relative to |src_dir| and will
+// be used as the file names in the created zip file. All source paths must be
+// under |src_dir| in the file system hierarchy.
+bool ZipFiles(const FilePath& src_dir,
+              const std::vector<FilePath>& src_relative_paths,
+              const FilePath& dest_file);
 
 // Unzip the contents of zip_file into dest_dir.
 bool Unzip(const FilePath& zip_file, const FilePath& dest_dir);

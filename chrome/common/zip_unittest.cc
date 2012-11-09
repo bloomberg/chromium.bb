@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <set>
+#include <vector>
 
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -10,6 +11,7 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/zip.h"
+#include "chrome/common/zip_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -34,6 +36,11 @@ class ZipTest : public PlatformTest {
     zip_contents_.insert(zip_path.AppendASCII("baz.txt"));
     zip_contents_.insert(zip_path.AppendASCII("quux.txt"));
     zip_contents_.insert(zip_path.AppendASCII(".hidden"));
+
+    // Include a subset of files in |zip_file_list_| to test ZipFiles().
+    zip_file_list_.push_back(FilePath(FILE_PATH_LITERAL("foo.txt")));
+    zip_file_list_.push_back(FilePath(FILE_PATH_LITERAL("foo/bar/quux.txt")));
+    zip_file_list_.push_back(FilePath(FILE_PATH_LITERAL("foo/bar/.hidden")));
   }
 
   virtual void TearDown() {
@@ -77,13 +84,16 @@ class ZipTest : public PlatformTest {
     EXPECT_EQ(expected_count, count);
   }
 
-  // the path to temporary directory used to contain the test operations
+  // The path to temporary directory used to contain the test operations.
   FilePath test_dir_;
 
   ScopedTempDir temp_dir_;
 
-  // hard-coded contents of a known zip file
+  // Hard-coded contents of a known zip file.
   std::set<FilePath> zip_contents_;
+
+  // Hard-coded list of relative paths for a zip file created with ZipFiles.
+  std::vector<FilePath> zip_file_list_;
 };
 
 TEST_F(ZipTest, Unzip) {
@@ -150,4 +160,27 @@ TEST_F(ZipTest, ZipIgnoreHidden) {
   TestUnzipFile(zip_file, false);
 }
 
+TEST_F(ZipTest, ZipFiles) {
+  FilePath src_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &src_dir));
+  src_dir = src_dir.AppendASCII("zip").AppendASCII("test");
+
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath zip_file = temp_dir.path().AppendASCII("out.zip");
+
+  EXPECT_TRUE(zip::ZipFiles(src_dir, zip_file_list_, zip_file));
+
+  zip::ZipReader reader;
+  EXPECT_TRUE(reader.Open(zip_file));
+  EXPECT_EQ(zip_file_list_.size(), static_cast<size_t>(reader.num_entries()));
+  for (size_t i = 0; i < zip_file_list_.size(); ++i) {
+    EXPECT_TRUE(reader.LocateAndOpenEntry(zip_file_list_[i]));
+    // Check the path in the entry just in case.
+    const zip::ZipReader::EntryInfo* entry_info = reader.current_entry_info();
+    EXPECT_EQ(entry_info->file_path(), zip_file_list_[i]);
+  }
+}
+
 }  // namespace
+
