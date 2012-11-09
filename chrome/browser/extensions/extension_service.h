@@ -897,6 +897,8 @@ class ExtensionService
   // Flag to make sure event routers are only initialized once.
   bool event_routers_initialized_;
 
+  // TODO(yoz): None of these should be owned by ExtensionService.
+  // crbug.com/159265
   scoped_ptr<HistoryExtensionEventRouter> history_event_router_;
 
   scoped_ptr<extensions::BrowserEventRouter> browser_event_router_;
