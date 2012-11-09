@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_helpers.h"
@@ -1483,6 +1484,10 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     net::URLRequest* request,
     extensions::RequestStage request_stage,
     const net::HttpResponseHeaders* original_response_headers) {
+  // If this check fails, check that the active stages are up-to-date in
+  // browser/extensions/api/declarative_webrequest/request_stage.h .
+  DCHECK(request_stage & extensions::kActiveStages);
+
   // Rules of the current |profile| may apply but we need to check also whether
   // there are applicable rules from extensions whose background page
   // spans from regular to incognito mode.

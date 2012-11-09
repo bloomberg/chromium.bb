@@ -5,14 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_REQUEST_STAGE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_REQUEST_STAGE_H_
 
-#include <stddef.h>  // For size_t.
-
 namespace extensions {
 
-// The stages of the web request during which a condition can be tested and
-// an action can be applied. This is required because for example the response
-// headers cannot be tested before a request has been sent. If you modify this,
-// don't forget to modify |kRequestStages| as well.
+// The stages of the web request during which a condition could be tested and
+// an action could be applied. This is required because for example the response
+// headers cannot be tested before a request has been sent. Note that currently
+// not all stages are supported in declarative Web Request, only those marked
+// as "active" in |kActiveStages| below.
 enum RequestStage {
   ON_BEFORE_REQUEST = 1 << 0,
   ON_BEFORE_SEND_HEADERS = 1 << 1,
@@ -25,9 +24,12 @@ enum RequestStage {
   ON_ERROR = 1 << 8
 };
 
-// This allows to iterate over all stage constants in a "for" loop.
-extern const RequestStage kRequestStages[];
-extern const size_t kRequestStagesLength;
+// The bitmap with active stages.
+extern const unsigned int kActiveStages;
+
+// The highest bit in |kActiveStages|. This allows to iterate over all active
+// stages in a "for" loop.
+extern const unsigned int kLastActiveStage;
 
 }  // namespace extensions
 

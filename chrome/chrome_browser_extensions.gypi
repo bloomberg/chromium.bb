@@ -691,7 +691,7 @@
             ['include', '^browser/extensions/api/declarative/rules_registry_with_cache.cc'],
             ['include', '^browser/extensions/api/declarative/substring_set_matcher.cc'],
             ['include', '^browser/extensions/api/declarative/url_matcher.cc'],
-            ['include', '^browser/extensions/api/declarative_webrequest/request_stages.cc'],
+            ['include', '^browser/extensions/api/declarative_webrequest/request_stage.cc'],
             ['include', '^browser/extensions/api/declarative_webrequest/webrequest_action.cc'],
             ['include', '^browser/extensions/api/declarative_webrequest/webrequest_condition.cc'],
             ['include', '^browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.cc'],

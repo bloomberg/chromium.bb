@@ -194,24 +194,27 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
   TestDelegate delegate;
   TestURLRequest url_request(url_a, &delegate, &context);
 
-  for (size_t i = 0; i < kRequestStagesLength; ++i) {
+  for (unsigned int i = 1; i <= kLastActiveStage; i <<= 1) {
+    if (!(kActiveStages & i))
+      continue;
+    const RequestStage stage = static_cast<RequestStage>(i);
     url_request.set_first_party_for_cookies(url_empty);
     EXPECT_FALSE(third_party_attribute->IsFulfilled(WebRequestRule::RequestData(
-        &url_request, kRequestStages[i])));
+        &url_request, stage)));
     EXPECT_TRUE(first_party_attribute->IsFulfilled(WebRequestRule::RequestData(
-        &url_request, kRequestStages[i])));
+        &url_request, stage)));
 
     url_request.set_first_party_for_cookies(url_b);
     EXPECT_TRUE(third_party_attribute->IsFulfilled(WebRequestRule::RequestData(
-        &url_request, kRequestStages[i])));
+        &url_request, stage)));
     EXPECT_FALSE(first_party_attribute->IsFulfilled(WebRequestRule::RequestData(
-        &url_request, kRequestStages[i])));
+        &url_request, stage)));
 
     url_request.set_first_party_for_cookies(url_a);
     EXPECT_FALSE(third_party_attribute->IsFulfilled(WebRequestRule::RequestData(
-        &url_request, kRequestStages[i])));
+        &url_request, stage)));
     EXPECT_TRUE(first_party_attribute->IsFulfilled(WebRequestRule::RequestData(
-        &url_request, kRequestStages[i])));
+        &url_request, stage)));
   }
 }
 
@@ -231,17 +234,11 @@ TEST(WebRequestConditionAttributeTest, Stages) {
     StageNamePair(ON_AUTH_REQUIRED, keys::kOnAuthRequiredEnum)
   };
 
-  // First we check that all stages are considered in this test. We initialize
-  // |covered_stages| with those which we know to be currently not used in
-  // Declarative WebRequest.
-  int covered_stages = ON_SEND_HEADERS | ON_BEFORE_REDIRECT |
-      ON_RESPONSE_STARTED | ON_COMPLETED | ON_ERROR;
-  // Then we add those contained in |active_stages|.
+  // Check that exactly all active stages are considered in this test.
+  unsigned int covered_stages = 0;
   for (size_t i = 0; i < arraysize(active_stages); ++i)
     covered_stages |= active_stages[i].first;
-  // Finally, we check that all existing stages are covered.
-  for (size_t i = 0; i < kRequestStagesLength; ++i)
-    ASSERT_NE(0, kRequestStages[i] & covered_stages);
+  EXPECT_EQ(covered_stages, kActiveStages);
 
   std::string error;
 
@@ -251,7 +248,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
       WebRequestConditionAttribute::Create(keys::kStagesKey,
                                            &empty_list,
                                            &error);
-  ASSERT_EQ("", error);
+  EXPECT_EQ("", error);
   ASSERT_TRUE(empty_attribute.get());
 
   // Create an attribute with all possible applicable stages.
@@ -262,7 +259,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
       WebRequestConditionAttribute::Create(keys::kStagesKey,
                                            &all_stages,
                                            &error);
-  ASSERT_EQ("", error);
+  EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_with_all.get());
 
   // Create one attribute for each single stage, to be applicable in that stage.
@@ -275,7 +272,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
         WebRequestConditionAttribute::Create(keys::kStagesKey,
                                              &single_stage_list,
                                              &error).release());
-    ASSERT_EQ("", error);
+    EXPECT_EQ("", error);
     ASSERT_TRUE(one_stage_attributes.back() != NULL);
   }
 

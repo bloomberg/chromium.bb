@@ -8,18 +8,23 @@
 
 namespace extensions {
 
-const RequestStage kRequestStages[] = {
-  ON_BEFORE_REQUEST,
-  ON_BEFORE_SEND_HEADERS,
-  ON_SEND_HEADERS,
-  ON_HEADERS_RECEIVED,
-  ON_AUTH_REQUIRED,
-  ON_BEFORE_REDIRECT,
-  ON_RESPONSE_STARTED,
-  ON_COMPLETED,
-  ON_ERROR
+const unsigned int kActiveStages = ON_BEFORE_REQUEST |
+                                   ON_BEFORE_SEND_HEADERS |
+                                   ON_HEADERS_RECEIVED |
+                                   ON_AUTH_REQUIRED;
+
+// HighestBit<n> computes the highest bit of |n| in compile time, provided that
+// |n| is a positive compile-time constant.
+template <long unsigned int n>
+struct HighestBit {
+  COMPILE_ASSERT(n > 0, argument_is_not_a_positive_compile_time_constant);
+  enum { VALUE = HighestBit<(n >> 1)>::VALUE << 1 };
+};
+template <>
+struct HighestBit<1> {
+  enum { VALUE = 1 };
 };
 
-const size_t kRequestStagesLength = arraysize(kRequestStages);
+const unsigned int kLastActiveStage = HighestBit<kActiveStages>::VALUE;
 
 }  // namespace extensions
