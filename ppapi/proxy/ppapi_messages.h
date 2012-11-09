@@ -1644,9 +1644,9 @@ IPC_MESSAGE_CONTROL2(PpapiPluginMsg_WebSocket_ConnectReply,
 // finished. All arguments will be valid iff the result is PP_OK and it means
 // that the client initiated closing handshake is finished gracefully.
 IPC_MESSAGE_CONTROL4(PpapiPluginMsg_WebSocket_CloseReply,
-                     unsigned long /* buffered_amount */,
+                     uint64_t /* buffered_amount */,
                      bool /* was_clean */,
-                     unsigned short /* code */,
+                     uint16_t /* code */,
                      std::string /* reason */)
 
 // Unsolicited reply message to transmit a receiving text frame.
@@ -1662,7 +1662,7 @@ IPC_MESSAGE_CONTROL0(PpapiPluginMsg_WebSocket_ErrorReply)
 
 // Unsolicited reply message to update the buffered amount value.
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_WebSocket_BufferedAmountReply,
-                     unsigned long /* buffered_amount */)
+                     uint64_t /* buffered_amount */)
 
 // Unsolicited reply message to update |state| because of incoming external
 // events, e.g., protocol error, or unexpected network closure.
@@ -1673,9 +1673,9 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_WebSocket_StateReply,
 // any WebSocket_Close request. Server initiated closing handshake or
 // unexpected network errors will invoke this message.
 IPC_MESSAGE_CONTROL4(PpapiPluginMsg_WebSocket_ClosedReply,
-                     unsigned long /* buffered_amount */,
+                     uint64_t /* buffered_amount */,
                      bool /* was_clean */,
-                     unsigned short /* code */,
+                     uint16_t /* code */,
                      std::string /* reason */)
 
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
