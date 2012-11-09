@@ -39,18 +39,18 @@ class ASH_EXPORT AcceleratorControllerContext {
   // event type of the previous accelerator.
   void UpdateContext(const ui::Accelerator& accelerator);
 
-  ui::EventType previous_event_type() const { return previous_event_type_; }
-  bool repeated() const { return repeated_; }
+  const ui::Accelerator& previous_accelerator() const {
+    return previous_accelerator_;
+  }
+  bool repeated() const {
+    return current_accelerator_ == previous_accelerator_ &&
+        current_accelerator_.type() != ui::ET_UNKNOWN;
+  }
 
  private:
   ui::Accelerator current_accelerator_;
-
-  // If the current accelerator was repeated.
-  bool repeated_;
-
-  // Event type of the previous accelerator. Used for NEXT_IME and
-  // DISABLE_CAPS_LOCK accelerator actions.
-  ui::EventType previous_event_type_;
+  // Used for NEXT_IME and DISABLE_CAPS_LOCK accelerator actions.
+  ui::Accelerator previous_accelerator_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerContext);
 };

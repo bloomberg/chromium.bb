@@ -497,27 +497,28 @@ TEST_F(AcceleratorControllerTest, ControllerContext) {
   accelerator_b.set_type(ui::ET_KEY_PRESSED);
 
   EXPECT_FALSE(GetController()->context()->repeated());
-  EXPECT_EQ(ui::ET_UNKNOWN, GetController()->context()->previous_event_type());
+  EXPECT_EQ(ui::ET_UNKNOWN,
+            GetController()->context()->previous_accelerator().type());
 
   GetController()->context()->UpdateContext(accelerator_a);
   EXPECT_FALSE(GetController()->context()->repeated());
-  EXPECT_EQ(ui::ET_KEY_PRESSED,
-            GetController()->context()->previous_event_type());
+  EXPECT_EQ(ui::ET_UNKNOWN,
+            GetController()->context()->previous_accelerator().type());
 
   GetController()->context()->UpdateContext(accelerator_a2);
   EXPECT_FALSE(GetController()->context()->repeated());
   EXPECT_EQ(ui::ET_KEY_PRESSED,
-            GetController()->context()->previous_event_type());
+            GetController()->context()->previous_accelerator().type());
 
   GetController()->context()->UpdateContext(accelerator_a2);
   EXPECT_TRUE(GetController()->context()->repeated());
   EXPECT_EQ(ui::ET_KEY_RELEASED,
-            GetController()->context()->previous_event_type());
+            GetController()->context()->previous_accelerator().type());
 
   GetController()->context()->UpdateContext(accelerator_b);
   EXPECT_FALSE(GetController()->context()->repeated());
   EXPECT_EQ(ui::ET_KEY_RELEASED,
-            GetController()->context()->previous_event_type());
+            GetController()->context()->previous_accelerator().type());
 }
 
 TEST_F(AcceleratorControllerTest, SuppressToggleMaximized) {
@@ -1030,6 +1031,34 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
     EXPECT_FALSE(ProcessWithContext(shift_alt_x));
     EXPECT_FALSE(ProcessWithContext(shift_alt));
     EXPECT_EQ(2, delegate->handle_next_ime_count());
+
+    // But we _should_ if X is either VKEY_RETURN or VKEY_SPACE.
+    // TODO(nona|mazda): Remove this when crbug.com/139556 in a better way.
+    const ui::Accelerator shift_alt_return_press(
+        ui::VKEY_RETURN,
+        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+    const ReleaseAccelerator shift_alt_return(
+        ui::VKEY_RETURN,
+        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+
+    EXPECT_FALSE(ProcessWithContext(shift_alt_press));
+    EXPECT_FALSE(ProcessWithContext(shift_alt_return_press));
+    EXPECT_FALSE(ProcessWithContext(shift_alt_return));
+    EXPECT_TRUE(ProcessWithContext(shift_alt));
+    EXPECT_EQ(3, delegate->handle_next_ime_count());
+
+    const ui::Accelerator shift_alt_space_press(
+        ui::VKEY_SPACE,
+        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+    const ReleaseAccelerator shift_alt_space(
+        ui::VKEY_SPACE,
+        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+
+    EXPECT_FALSE(ProcessWithContext(shift_alt_press));
+    EXPECT_FALSE(ProcessWithContext(shift_alt_space_press));
+    EXPECT_FALSE(ProcessWithContext(shift_alt_space));
+    EXPECT_TRUE(ProcessWithContext(shift_alt));
+    EXPECT_EQ(4, delegate->handle_next_ime_count());
   }
 
 #if defined(OS_CHROMEOS)
@@ -1066,6 +1095,20 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
     EXPECT_EQ(2, delegate->handle_next_ime_count());
   }
 #endif
+}
+
+// TODO(nona|mazda): Remove this when crbug.com/139556 in a better way.
+TEST_F(AcceleratorControllerTest, ImeGlobalAcceleratorsWorkaround139556) {
+  // The workaround for crbug.com/139556 depends on the fact that we don't
+  // use Shift+Alt+Enter/Space with ET_KEY_PRESSED as an accelerator. Test it.
+  const ui::Accelerator shift_alt_return_press(
+      ui::VKEY_RETURN,
+      ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  EXPECT_FALSE(ProcessWithContext(shift_alt_return_press));
+  const ui::Accelerator shift_alt_space_press(
+      ui::VKEY_SPACE,
+      ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  EXPECT_FALSE(ProcessWithContext(shift_alt_space_press));
 }
 
 TEST_F(AcceleratorControllerTest, ReservedAccelerators) {

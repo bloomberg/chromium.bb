@@ -310,19 +310,15 @@ bool HandlePrintWindowHierarchy() {
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorControllerContext, public:
 
-AcceleratorControllerContext::AcceleratorControllerContext()
-    : repeated_(false),
-      previous_event_type_(ui::ET_UNKNOWN) {
+AcceleratorControllerContext::AcceleratorControllerContext() {
+  current_accelerator_.set_type(ui::ET_UNKNOWN);
+  previous_accelerator_.set_type(ui::ET_UNKNOWN);
 }
 
 void AcceleratorControllerContext::UpdateContext(
     const ui::Accelerator& accelerator) {
-  const ui::Accelerator previous_accelerator = current_accelerator_;
+  previous_accelerator_ = current_accelerator_;
   current_accelerator_ = accelerator;
-
-  // Compute contextual information.
-  repeated_ = previous_accelerator == current_accelerator_;
-  previous_event_type_ = previous_accelerator.type();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -444,7 +440,8 @@ bool AcceleratorController::PerformAction(int action,
     return true;
   }
   // Type of the previous accelerator. Used by NEXT_IME and DISABLE_CAPS_LOCK.
-  const ui::EventType previous_event_type = context_.previous_event_type();
+  const ui::EventType previous_event_type =
+    context_.previous_accelerator().type();
 
   // You *MUST* return true when some action is performed. Otherwise, this
   // function might be called *twice*, via BrowserView::PreHandleKeyboardEvent
@@ -617,7 +614,15 @@ bool AcceleratorController::PerformAction(int action,
       // ET_KEY_RELEASED accelerator for Chrome OS (see ash/accelerators/
       // accelerator_controller.cc) when Shift+Alt+Tab is pressed and then Tab
       // is released.
-      if (previous_event_type == ui::ET_KEY_RELEASED) {
+      if (previous_event_type == ui::ET_KEY_RELEASED &&
+          // Workaround for crbug.com/139556. CJK IME users tend to press
+          // Enter (or Space) and Shift+Alt almost at the same time to commit
+          // an IME string and then switch from the IME to the English layout.
+          // This workaround allows the user to trigger NEXT_IME even if the
+          // user presses Shift+Alt before releasing Enter.
+          // TODO(nona|mazda): Fix crbug.com/139556 in a cleaner way.
+          context_.previous_accelerator().key_code() != ui::VKEY_RETURN &&
+          context_.previous_accelerator().key_code() != ui::VKEY_SPACE) {
         // We totally ignore this accelerator.
         // TODO(mazda): Fix crbug.com/158217
         return false;
