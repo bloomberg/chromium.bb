@@ -121,14 +121,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   InstallThemeAndVerify("theme", "camo theme");
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/141854
-#define MAYBE_AppInstallConfirmation FLAKY_AppInstallConfirmation
-#else
-#define MAYBE_AppInstallConfirmation AppInstallConfirmation
-#endif
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
-                       MAYBE_AppInstallConfirmation) {
+                       AppInstallConfirmation) {
   int num_tabs = browser()->tab_count();
 
   FilePath app_dir = test_data_dir_.AppendASCII("app");
@@ -145,15 +139,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   }
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/141854
-#define MAYBE_AppInstallConfirmation_Incognito \
-        FLAKY_AppInstallConfirmation_Incognito
-#else
-#define MAYBE_AppInstallConfirmation_Incognito AppInstallConfirmation_Incognito
-#endif
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
-                       MAYBE_AppInstallConfirmation_Incognito) {
+                       AppInstallConfirmation_Incognito) {
   Browser* incognito_browser = CreateIncognitoBrowser();
 
   int num_incognito_tabs = incognito_browser->tab_count();
