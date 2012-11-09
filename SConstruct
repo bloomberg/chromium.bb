@@ -1365,19 +1365,27 @@ def CommandTestFileDumpCheck(env,
     target_obj = env.GetTranslatedNexe(target)
   else:
     target_obj = target
-  return env.CommandTest(
-      name,
-      ['${PYTHON}',
-       env.File('${SCONSTRUCT_DIR}/tools/file_check.py'),
-       '${OBJDUMP}',
-       objdump_flags,
-       target_obj,
-       check_file],
-      # don't run ${PYTHON} under the emulator.
-      direct_emulation=False)
+  return env.CommandTestFileCheck(name,
+                                  ['${OBJDUMP}', objdump_flags, target_obj],
+                                  check_file)
 
 pre_base_env.AddMethod(CommandTestFileDumpCheck)
 
+
+def CommandTestFileCheck(env, name, cmd, check_file):
+  """Create a test that runs a |cmd| (array of strings),
+  which is expected to print to stdout.  The results
+  of stdout will then be piped to the file_check.py tool which
+  will search for the regexes specified in |check_file|. """
+
+  return env.CommandTest(name,
+                         ['${PYTHON}',
+                          env.File('${SCONSTRUCT_DIR}/tools/file_check.py'),
+                          check_file] + cmd,
+                         # don't run ${PYTHON} under the emulator.
+                         direct_emulation=False)
+
+pre_base_env.AddMethod(CommandTestFileCheck)
 
 def CommandSelLdrTestNacl(env, name, nexe,
                           args = None,
