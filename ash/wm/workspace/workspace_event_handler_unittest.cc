@@ -154,12 +154,10 @@ TEST_F(WorkspaceEventHandlerTest, DeleteWhenDragging) {
   aura::test::EventGenerator generator(window->GetRootWindow());
   generator.MoveMouseToCenterOf(window.get());
   generator.PressLeftButton();
-  generator.MoveMouseTo(
-      generator.current_location().Add(gfx::Vector2d(50, 50)));
+  generator.MoveMouseTo(generator.current_location() + gfx::Vector2d(50, 50));
   DCHECK_NE(bounds.origin().ToString(), window->bounds().origin().ToString());
   window.reset();
-  generator.MoveMouseTo(
-      generator.current_location().Add(gfx::Vector2d(50, 50)));
+  generator.MoveMouseTo(generator.current_location() + gfx::Vector2d(50, 50));
 }
 
 // Verifies deleting the window while in a run loop doesn't crash.

@@ -76,12 +76,12 @@ int DragDropController::StartDragAndDrop(
   drag_image_->SetImage(provider.drag_image());
   drag_image_offset_ = provider.drag_image_offset();
   drag_image_->SetBoundsInScreen(gfx::Rect(
-        root_location.Subtract(drag_image_offset_),
+        root_location - drag_image_offset_,
         drag_image_->GetPreferredSize()));
   drag_image_->SetWidgetVisible(true);
 
   drag_window_ = NULL;
-  drag_start_location_ = root_location.Subtract(drag_image_offset_);
+  drag_start_location_ = root_location - drag_image_offset_;
 
 #if !defined(OS_MACOSX)
   if (should_block_during_drag_drop_) {
@@ -140,7 +140,7 @@ void DragDropController::DragUpdate(aura::Window* target,
     ash::wm::ConvertPointToScreen(target->GetRootWindow(),
                                   &root_location_in_screen);
     drag_image_->SetScreenPosition(
-        root_location_in_screen.Subtract(drag_image_offset_));
+        root_location_in_screen - drag_image_offset_);
   }
 }
 

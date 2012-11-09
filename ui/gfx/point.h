@@ -70,11 +70,15 @@ inline bool operator!=(const Point& lhs, const Point& rhs) {
 }
 
 inline Point operator+(const Point& lhs, const Vector2d& rhs) {
-  return lhs.Add(rhs);
+  Point result(lhs);
+  result += rhs;
+  return result;
 }
 
 inline Point operator-(const Point& lhs, const Vector2d& rhs) {
-  return lhs.Subtract(rhs);
+  Point result(lhs);
+  result -= rhs;
+  return result;
 }
 
 inline Vector2d operator-(const Point& lhs, const Point& rhs) {

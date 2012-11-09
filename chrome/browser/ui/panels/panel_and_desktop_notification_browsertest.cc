@@ -105,7 +105,7 @@ class PanelAndDesktopNotificationTest : public BasePanelBrowserTest {
     PanelManager* panel_manager = PanelManager::GetInstance();
     gfx::Point mouse_location = panel->GetBounds().origin();
     panel_manager->StartResizingByMouse(panel, mouse_location, side);
-    panel_manager->ResizeByMouse(mouse_location.Add(delta));
+    panel_manager->ResizeByMouse(mouse_location + delta);
     panel_manager->EndResizingByMouse(false);
   }
 

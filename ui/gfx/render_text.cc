@@ -847,11 +847,11 @@ Vector2d RenderText::GetTextOffset() {
 }
 
 Point RenderText::ToTextPoint(const Point& point) {
-  return point.Subtract(GetTextOffset());
+  return point - GetTextOffset();
 }
 
 Point RenderText::ToViewPoint(const Point& point) {
-  return point.Add(GetTextOffset());
+  return point + GetTextOffset();
 }
 
 int RenderText::GetContentWidth() {

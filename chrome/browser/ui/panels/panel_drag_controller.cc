@@ -27,7 +27,7 @@ PanelDragController::~PanelDragController() {
 
 gfx::Point PanelDragController::GetPanelPositionForMouseLocation(
     const gfx::Point& mouse_location) const {
-  return mouse_location.Subtract(offset_from_mouse_location_on_drag_start_);
+  return mouse_location - offset_from_mouse_location_on_drag_start_;
 }
 
 void PanelDragController::StartDragging(Panel* panel,
@@ -194,7 +194,7 @@ bool PanelDragController::CanDragToDetachedStrip(
   // the panel should follow the mouse movement. The size remains unchanged.
   gfx::Rect target_panel_bounds = dragging_panel_->GetBounds();
   target_panel_bounds.set_origin(
-      mouse_location.Subtract(offset_from_mouse_location_on_drag_start_));
+      mouse_location - offset_from_mouse_location_on_drag_start_);
 
   // Panels in the detached strip are always at their full size.
   target_panel_bounds.set_size(dragging_panel()->full_size());

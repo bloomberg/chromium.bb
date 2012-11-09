@@ -459,8 +459,8 @@ void TooltipController::UpdateIfRequired() {
       GetTooltip()->Hide();
     } else {
       string16 tooltip_text(tooltip_text_);
-      gfx::Point widget_loc = curr_mouse_loc_.Add(
-          tooltip_window_->GetBoundsInScreen().OffsetFromOrigin());
+      gfx::Point widget_loc = curr_mouse_loc_ +
+          tooltip_window_->GetBoundsInScreen().OffsetFromOrigin();
       GetTooltip()->SetText(tooltip_text, widget_loc);
       GetTooltip()->Show();
       tooltip_shown_timer_.Start(FROM_HERE,

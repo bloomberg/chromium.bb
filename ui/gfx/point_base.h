@@ -33,26 +33,12 @@ class UI_EXPORT PointBase {
     y_ += delta_y;
   }
 
-  void operator+=(const VectorClass& other) {
-    Offset(other.x(), other.y());
+  void operator+=(const VectorClass& vector) {
+    Offset(vector.x(), vector.y());
   }
 
-  void operator-=(const VectorClass& other) {
-    Offset(-other.x(), -other.y());
-  }
-
-  Class Add(const VectorClass& other) const WARN_UNUSED_RESULT {
-    const Class* orig = static_cast<const Class*>(this);
-    Class copy = *orig;
-    copy.Offset(other.x(), other.y());
-    return copy;
-  }
-
-  Class Subtract(const VectorClass& other) const WARN_UNUSED_RESULT {
-    const Class* orig = static_cast<const Class*>(this);
-    Class copy = *orig;
-    copy.Offset(-other.x(), -other.y());
-    return copy;
+  void operator-=(const VectorClass& vector) {
+    Offset(-vector.x(), -vector.y());
   }
 
   Class Middle(const Class& other) const WARN_UNUSED_RESULT {

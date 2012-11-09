@@ -630,8 +630,8 @@ void View::ConvertPointToTarget(const View* source,
 
   // API defines NULL |source| as returning the point in screen coordinates.
   if (!source) {
-    *point = point->Subtract(
-        root->GetWidget()->GetClientAreaBoundsInScreen().OffsetFromOrigin());
+    *point -=
+        root->GetWidget()->GetClientAreaBoundsInScreen().OffsetFromOrigin();
   }
 }
 
@@ -660,7 +660,7 @@ void View::ConvertPointToScreen(const View* src, gfx::Point* p) {
   const Widget* widget = src->GetWidget();
   if (widget) {
     ConvertPointToWidget(src, p);
-    *p = p->Add(widget->GetClientAreaBoundsInScreen().OffsetFromOrigin());
+    *p += widget->GetClientAreaBoundsInScreen().OffsetFromOrigin();
   }
 }
 
@@ -672,7 +672,7 @@ void View::ConvertPointFromScreen(const View* dst, gfx::Point* p) {
   const views::Widget* widget = dst->GetWidget();
   if (!widget)
     return;
-  *p = p->Add(-widget->GetClientAreaBoundsInScreen().OffsetFromOrigin());
+  *p -= widget->GetClientAreaBoundsInScreen().OffsetFromOrigin();
   views::View::ConvertPointFromWidget(dst, p);
 }
 

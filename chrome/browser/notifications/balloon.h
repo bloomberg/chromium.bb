@@ -59,7 +59,7 @@ class Balloon {
   Profile* profile() const { return profile_; }
 
   gfx::Point GetPosition() const {
-    return position_.Add(offset_);
+    return position_ + offset_;
   }
   void SetPosition(const gfx::Point& upper_left, bool reposition);
 
