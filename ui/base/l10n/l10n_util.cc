@@ -506,9 +506,9 @@ string16 GetDisplayNameForLocale(const std::string& locale,
     display_name.resize(actual_size);
   }
 
-  // Add an RTL mark so parentheses are properly placed.
+  // Add directional markup so parentheses are properly placed.
   if (is_for_ui && base::i18n::IsRTL())
-    display_name.push_back(static_cast<char16>(base::i18n::kRightToLeftMark));
+    base::i18n::AdjustStringForLocaleDirection(&display_name);
   return display_name;
 }
 

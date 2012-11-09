@@ -301,6 +301,38 @@ TEST_F(L10nUtilTest, SortStringsUsingFunction) {
   STLDeleteElements(&strings);
 }
 
+/**
+ * Helper method for validating strings that require direcitonal markup.
+ * Checks that parentheses are enclosed in appropriate direcitonal markers.
+ */
+void CheckUiDisplayNameForLocale(const std::string& locale,
+                                 const std::string& display_locale,
+                                 bool is_rtl)
+{
+  EXPECT_EQ(true, base::i18n::IsRTL());
+  string16 result = l10n_util::GetDisplayNameForLocale(locale,
+                                                       display_locale,
+                                                       /* is_for_ui */ true);
+
+  bool rtl_direction = true;
+  for (size_t i = 0; i < result.length() - 1; i++) {
+    char16 ch = result.at(i);
+    switch (ch) {
+    case base::i18n::kLeftToRightMark:
+    case base::i18n::kLeftToRightEmbeddingMark:
+      rtl_direction = false;
+      break;
+    case base::i18n::kRightToLeftMark:
+    case base::i18n::kRightToLeftEmbeddingMark:
+      rtl_direction = true;
+      break;
+    case '(':
+    case ')':
+      EXPECT_EQ(is_rtl, rtl_direction);
+    }
+  }
+}
+
 TEST_F(L10nUtilTest, GetDisplayNameForLocale) {
   // TODO(jungshik): Make this test more extensive.
   // Test zh-CN and zh-TW are treated as zh-Hans and zh-Hant.
@@ -321,6 +353,22 @@ TEST_F(L10nUtilTest, GetDisplayNameForLocale) {
 
   result = l10n_util::GetDisplayNameForLocale("xyz-xyz", "en", false);
   EXPECT_EQ(ASCIIToUTF16("xyz (XYZ)"), result);
+
+#if !defined(TOOLKIT_GTK)
+  // Check for directional markers when using RTL languages to ensure that
+  // direction neutral characters such as parentheses are properly formatted.
+
+  // Keep a copy of ICU's default locale before we overwrite it.
+  icu::Locale locale = icu::Locale::getDefault();
+
+  base::i18n::SetICUDefaultLocale("he");
+  CheckUiDisplayNameForLocale("en-US", "en", false);
+  CheckUiDisplayNameForLocale("en-US", "he", true);
+
+  // Clean up.
+  UErrorCode error_code = U_ZERO_ERROR;
+  icu::Locale::setDefault(locale, error_code);
+#endif
 
   // ToUpper and ToLower should work with embedded NULLs.
   const size_t length_with_null = 4;

@@ -84,33 +84,6 @@ function filtersForPage(pageName, isRTL) {
             "חדשות תוכן ועדכונים - ידיעות אחרונות")
       ]
     },
-    "chrome://settings/clearBrowserData" : {
-      "RTL" : [
-        // BUG: http://crbug.com/94070
-        bidichecker.FilterFactory.atText("Google Cloud Print")
-      ]
-    },
-    "chrome://settings/content" : {
-      "RTL" : [
-        // BUG: http://crbug.com/94070
-        bidichecker.FilterFactory.atText("Google Cloud Print")
-      ]
-    },
-    "chrome://settings/languages" : {
-      "RTL" : [
-        // BUG: http://crbug.com/94070
-        bidichecker.FilterFactory.atText("Google Cloud Print"),
-        bidichecker.FilterFactory.atText("Hebrew"),
-        bidichecker.FilterFactory.atText("English (United States"),
-        bidichecker.FilterFactory.atText("English")
-      ]
-    },
-    "chrome://settings/contentExceptions" : {
-      "RTL" : [
-        // BUG: http://crbug.com/94070
-        bidichecker.FilterFactory.atText("Google Cloud Print")
-      ]
-    },
     "chrome://history-frame" : {
       "LTR" : [
         // BUG: http://crbug.com/119595
