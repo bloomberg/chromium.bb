@@ -648,6 +648,11 @@ class Coverage(object):
       # executable. So skip this test from adding into coverage_bundles.py.
       if testname == 'pyautolib':
         continue
+      # Random tests are failing in browser_tests. Disabling it for now.
+      # crbug.com/159748
+      if testname == 'browser_tests' and self.options.bundles:
+        logging.info('Skipping browser_tests from running')
+        continue
       self.tests += [os.path.join(self.directory, testname)]
       if gtest_filter:
         self.test_filters[testname] = gtest_filter
