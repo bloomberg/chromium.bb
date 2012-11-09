@@ -23,8 +23,12 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   // RemoteFileSyncService overrides.
   MOCK_METHOD1(AddObserver, void(RemoteFileSyncService::Observer* observer));
   MOCK_METHOD1(RemoveObserver, void(RemoteFileSyncService::Observer* observer));
-  MOCK_METHOD1(RegisterOriginForTrackingChanges, void(const GURL& origin));
-  MOCK_METHOD1(UnregisterOriginForTrackingChanges, void(const GURL& origin));
+  MOCK_METHOD2(RegisterOriginForTrackingChanges,
+               void(const GURL& origin,
+                    const fileapi::SyncStatusCallback& callback));
+  MOCK_METHOD2(UnregisterOriginForTrackingChanges,
+               void(const GURL& origin,
+                    const fileapi::SyncStatusCallback& callback));
   MOCK_METHOD2(ProcessRemoteChange,
                void(RemoteChangeProcessor* processor,
                     const fileapi::SyncFileCallback& callback));

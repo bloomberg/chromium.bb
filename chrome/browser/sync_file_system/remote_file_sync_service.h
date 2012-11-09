@@ -32,6 +32,11 @@ class RemoteFileSyncService {
     // scheduling but the value may not be accurately reflect the real-time
     // value.
     virtual void OnRemoteChangeAvailable(int64 pending_changes_hint) = 0;
+
+    // This is called when RemoteFileSyncService changes its status.
+    virtual void OnRemoteSyncStatusChanged(
+        fileapi::SyncStatusCode new_status) {}
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
@@ -43,10 +48,16 @@ class RemoteFileSyncService {
   virtual void RemoveObserver(Observer* observer) = 0;
 
   // Registers |origin| to track remote side changes for the |origin|.
-  virtual void RegisterOriginForTrackingChanges(const GURL& origin) = 0;
+  // Upon completion, invokes |callback| if it's non-empty.
+  virtual void RegisterOriginForTrackingChanges(
+      const GURL& origin,
+      const fileapi::SyncStatusCallback& callback) = 0;
 
   // Unregisters |origin| to track remote side changes for the |origin|.
-  virtual void UnregisterOriginForTrackingChanges(const GURL& origin) = 0;
+  // Upon completion, invokes |callback| if it's non-empty.
+  virtual void UnregisterOriginForTrackingChanges(
+      const GURL& origin,
+      const fileapi::SyncStatusCallback& callback) = 0;
 
   // Called by the sync engine to process one remote change.
   // After a change is processed |callback| will be called (to return

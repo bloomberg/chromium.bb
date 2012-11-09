@@ -56,8 +56,11 @@ void SyncFileSystemService::InitializeForApp(
   local_file_service_->MaybeInitializeFileSystemContext(
       app_origin, service_name, file_system_context, callback);
 
-  if (remote_file_service_)
-    remote_file_service_->RegisterOriginForTrackingChanges(app_origin);
+  if (remote_file_service_) {
+    // TODO(tzik): Handle errors in the completion callback.
+    remote_file_service_->RegisterOriginForTrackingChanges(
+        app_origin, fileapi::SyncStatusCallback());
+  }
 }
 
 void SyncFileSystemService::GetConflictFiles(
