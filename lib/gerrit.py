@@ -106,6 +106,41 @@ class GerritHelper(object):
   def ssh_prefix(self):
     return self.GetSshPrefix()
 
+  def SetReviewers(self, change, add=(), remove=(), project=None):
+    """Adjust the reviewers list for a given change.
+
+    Arguments:
+      change: Either the ChangeId, or preferably, the gerrit change number.
+        If you use a ChangeId be aware that this command will fail if multiple
+        changes match.  Can be either a string or an integer.
+      add: Either this or removes must be given.  If given, it must be a
+        either a single email address/group name, or a sequence of email
+        addresses or group names to add as reviewers.  Note it's not
+        considered an error if you attempt to add a reviewer that
+        already is marked as a reviewer for the change.
+      remove: Same rules as 'add', just is the list of reviewers to remove.
+      project: If given, the project to find the given change w/in.  Unnecessary
+        if passing a gerrit number for change; if passing a ChangeId, strongly
+        advised that a project be specified.
+    Raises:
+      RunCommandError if the attempt to modify the reviewers list fails.  If
+      the command fails, no changes to the reviewer list occurs.
+    """
+    if not add and not remove:
+      raise ValueError('Either add or remove must be non empty')
+
+    command = self.ssh_prefix + ['gerrit', 'set-reviewers']
+    command.extend(cros_build_lib.iflatten_instance(
+        [('--add', x) for x in cros_build_lib.iflatten_instance(add)] +
+        [('--remove', x) for x in cros_build_lib.iflatten_instance(remove)]))
+    if project is not None:
+      command += ['--project', project]
+    # Always set the change last; else --project may not take hold by that point,
+    # with gerrit complaining of duplicates when there aren't.
+    # Yes kiddies, gerrit can be retarded; this being one of those cases.
+    command.append(str(change))
+    cros_build_lib.RunCommandCaptureOutput(command, print_cmd=self.print_cmd)
+
   def GetGerritReviewCommand(self, command_list):
     """Returns array corresponding to Gerrit Review command.
 
