@@ -123,7 +123,7 @@ class MenuButtonBorder : public views::Border {
   }
 
   // Overridden from views::Border.
-  virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE {
+  virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE {
     // Painting of border is done in MenuButtonBackground.
   }
 

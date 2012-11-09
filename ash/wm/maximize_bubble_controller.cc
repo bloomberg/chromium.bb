@@ -67,8 +67,7 @@ class MaximizeBubbleBorder : public views::BubbleBorder {
                               const gfx::Size& contents_size) const OVERRIDE;
 
   // Overridden from views::Border.
-  virtual void Paint(const views::View& view,
-                     gfx::Canvas* canvas) const OVERRIDE;
+  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
 
  private:
   // Note: Animations can continue after then main window frame was destroyed.
@@ -129,8 +128,7 @@ gfx::Rect MaximizeBubbleBorder::GetBounds(
   return gfx::Rect(view_origin, border_size);
 }
 
-void MaximizeBubbleBorder::Paint(const views::View& view,
-                                 gfx::Canvas* canvas) const {
+void MaximizeBubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   gfx::Insets inset;
   GetInsets(&inset);
 

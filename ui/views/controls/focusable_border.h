@@ -31,7 +31,7 @@ class FocusableBorder : public Border {
   }
 
   // Overridden from Border:
-  virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE;
+  virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
   virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
 
  private:

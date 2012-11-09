@@ -380,7 +380,7 @@ BubbleBorder::BorderImages* BubbleBorder::GetBorderImages(Shadow shadow) {
 
 BubbleBorder::~BubbleBorder() {}
 
-void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
+void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   // Convenience shorthand variables.
   const int tl_width = images_->top_left.width();
   const int tl_height = images_->top_left.height();

@@ -39,7 +39,8 @@ bool BorderImages::IsEmpty() const {
 }
 
 void BorderImages::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
-  DCHECK(!IsEmpty());
+  if (IsEmpty())
+    return;
 
   // Images must share widths by column and heights by row as depicted below.
   //     x0   x1   x2   x3

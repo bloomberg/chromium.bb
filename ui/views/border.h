@@ -62,7 +62,7 @@ class VIEWS_EXPORT Border {
   static Border* CreateBorderPainter(Painter* painter);
 
   // Renders the border for the specified view.
-  virtual void Paint(const View& view, gfx::Canvas* canvas) const = 0;
+  virtual void Paint(const View& view, gfx::Canvas* canvas) = 0;
 
   // Sets the specified insets to the the border insets.
   virtual void GetInsets(gfx::Insets* insets) const = 0;

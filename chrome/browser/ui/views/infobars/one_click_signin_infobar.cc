@@ -35,8 +35,7 @@ class InfoBarColoredButtonBorder : public views::Border {
   static SkColor DarkenColor(SkColor color);
 
   // Border overrides:
-  virtual void Paint(const views::View& view,
-                     gfx::Canvas* canvas) const OVERRIDE;
+  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
   virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
 
   virtual ~InfoBarColoredButtonBorder();
@@ -65,7 +64,7 @@ SkColor InfoBarColoredButtonBorder::DarkenColor(SkColor color) {
 }
 
 void InfoBarColoredButtonBorder::Paint(const views::View& view,
-                                       gfx::Canvas* canvas) const {
+                                       gfx::Canvas* canvas) {
   const views::CustomButton* button =
       static_cast<const views::CustomButton*>(&view);
   const views::CustomButton::ButtonState state = button->state();

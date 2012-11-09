@@ -23,10 +23,11 @@ class VIEWS_EXPORT LabelButtonBorder : public Border {
   void set_native_theme(bool native_theme) { native_theme_ = native_theme; }
 
   // Overridden from Border:
-  virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE;
+  virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
   virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
 
-  // Set the images shown for the specified button state.
+  // Get or set the images shown for the specified button state.
+  BorderImages* GetImages(CustomButton::ButtonState state);
   void SetImages(CustomButton::ButtonState state, const BorderImages& images);
 
  private:

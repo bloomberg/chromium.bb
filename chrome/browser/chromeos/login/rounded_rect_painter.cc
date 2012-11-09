@@ -118,7 +118,7 @@ class RoundedRectBorder : public views::Border {
       : border_(border) {
   }
 
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas) const;
+  virtual void Paint(const views::View& view, gfx::Canvas* canvas);
   virtual void GetInsets(gfx::Insets* insets) const;
 
  private:
@@ -127,8 +127,7 @@ class RoundedRectBorder : public views::Border {
   DISALLOW_COPY_AND_ASSIGN(RoundedRectBorder);
 };
 
-void RoundedRectBorder::Paint(const views::View& view,
-                              gfx::Canvas* canvas) const {
+void RoundedRectBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   // Don't paint anything. RoundedRectBorder is used to provide insets only.
 }
 

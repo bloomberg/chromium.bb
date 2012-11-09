@@ -99,7 +99,7 @@ class ChromeStyleTextButtonBackgroundPainter : public Painter {
 
  private:
   // Overridden from Painter:
-  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) {
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
     PaintShadow(canvas, size);
     PaintGradientBackground(canvas, size);
     PaintInsetShadow(canvas, size);
@@ -164,7 +164,7 @@ class ChromeStyleTextButtonBackground : public Background {
   }
 
   // Overriden from Background
-  virtual void Paint(gfx::Canvas* canvas, View* view) const {
+  virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE {
     gfx::Rect bounds = view->GetLocalBounds();
     // Inset to the actual button region.
     int inset = GetButtonInset();
@@ -200,7 +200,7 @@ class ChromeStyleTextButtonBorderPainter : public views::Painter {
   }
 
   // Overriden from Painter
-  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) {
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
     SkPaint paint;
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setColor(color_);
@@ -234,13 +234,13 @@ class ChromeStyleTextButtonBorder : public views::Border {
   }
 
   // Overriden from Border
-  virtual void Paint(const View& view, gfx::Canvas* canvas) const {
+  virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE {
     gfx::Rect bounds = view.GetLocalBounds();
     int border_inset = GetButtonInset() - kBorderWidth;
     bounds.Inset(border_inset, border_inset, border_inset, border_inset);
     Painter::PaintPainterAt(canvas, painter_.get(), bounds);
   }
-  virtual void GetInsets(gfx::Insets* insets) const {
+  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
     DCHECK(insets);
     int inset = GetButtonInset();
     insets->Set(inset, inset, inset, inset);
@@ -260,8 +260,8 @@ class ChromeStyleFocusBorder : public views::FocusBorder {
  public:
   ChromeStyleFocusBorder() {}
 
-  // Overriden from Border
-  virtual void Paint(const View& view, gfx::Canvas* canvas) const {
+  // Overriden from views::FocusBorder
+  virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE {
     SkPaint paint;
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(kFocusRingWidth));
@@ -298,7 +298,7 @@ class ChromeStyleStateChangedUpdater
     SetBorderColorForState(button->state());
   }
 
-  virtual void StateChanged(CustomButton::ButtonState state) {
+  virtual void StateChanged(CustomButton::ButtonState state) OVERRIDE {
     SetBackgroundForState(state);
 
     // Update text shadow when transitioning to/from pushed state.

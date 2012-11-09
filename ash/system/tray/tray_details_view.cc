@@ -10,7 +10,6 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/grid_layout.h"
 
 namespace ash {
 namespace internal {
@@ -24,8 +23,7 @@ class ScrollBorder : public views::Border {
 
  private:
   // Overridden from views::Border.
-  virtual void Paint(const views::View& view,
-                     gfx::Canvas* canvas) const OVERRIDE {
+  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE {
     if (!visible_)
       return;
     canvas->FillRect(gfx::Rect(0, view.height() - 1, view.width(), 1),

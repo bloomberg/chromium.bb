@@ -12,6 +12,8 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/native_theme_delegate.h"
 
+namespace views {
+
 namespace {
 
 // Preferred padding between content and edge.
@@ -22,8 +24,7 @@ static const int kPreferredPaddingVertical = 5;
 static const int kPreferredNativeThemePaddingHorizontal = 12;
 static const int kPreferredNativeThemePaddingVertical = 5;
 
-views::CustomButton::ButtonState GetButtonStateForThemeState(
-    ui::NativeTheme::State state) {
+views::CustomButton::ButtonState GetButtonState(ui::NativeTheme::State state) {
   switch(state) {
     case ui::NativeTheme::kDisabled: return views::CustomButton::BS_DISABLED;
     case ui::NativeTheme::kHovered:  return views::CustomButton::BS_HOT;
@@ -34,9 +35,21 @@ views::CustomButton::ButtonState GetButtonStateForThemeState(
   return views::CustomButton::BS_NORMAL;
 }
 
-}  // namespace
+// A helper function to paint the native theme or images as appropriate.
+void PaintHelper(LabelButtonBorder* border,
+                 gfx::Canvas* canvas,
+                 const ui::NativeTheme* theme,
+                 ui::NativeTheme::Part part,
+                 ui::NativeTheme::State state,
+                 const gfx::Rect& rect,
+                 const ui::NativeTheme::ExtraParams& extra) {
+  if (border->native_theme())
+    theme->Paint(canvas->sk_canvas(), part, state, rect, extra);
+  else
+    border->GetImages(GetButtonState(state))->Paint(canvas, rect.size());
+}
 
-namespace views {
+}  // namespace
 
 LabelButtonBorder::LabelButtonBorder() : native_theme_(false) {
   SetImages(CustomButton::BS_HOT, BorderImages(BorderImages::kHot));
@@ -45,7 +58,7 @@ LabelButtonBorder::LabelButtonBorder() : native_theme_(false) {
 
 LabelButtonBorder::~LabelButtonBorder() {}
 
-void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) const {
+void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
   const NativeThemeDelegate* native_theme_delegate =
       static_cast<const LabelButton*>(&view);
   ui::NativeTheme::Part part = native_theme_delegate->GetThemePart();
@@ -58,45 +71,22 @@ void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) const {
   if (animation && animation->is_animating()) {
     // Paint the background state.
     state = native_theme_delegate->GetBackgroundThemeState(&extra);
-    if (native_theme()) {
-      theme->Paint(canvas->sk_canvas(), part, state, rect, extra);
-    } else {
-      BorderImages* set = const_cast<BorderImages*>(
-          &images_[GetButtonStateForThemeState(state)]);
-      if (!set->IsEmpty())
-        set->Paint(canvas, view.size());
-    }
+    PaintHelper(this, canvas, theme, part, state, rect, extra);
 
     // Composite the foreground state above the background state.
     const int alpha = animation->CurrentValueBetween(0, 255);
     canvas->SaveLayerAlpha(static_cast<uint8>(alpha));
     state = native_theme_delegate->GetForegroundThemeState(&extra);
-    if (native_theme()) {
-      theme->Paint(canvas->sk_canvas(), part, state, rect, extra);
-    } else {
-      BorderImages* set = const_cast<BorderImages*>(
-          &images_[GetButtonStateForThemeState(state)]);
-      if (!set->IsEmpty())
-        set->Paint(canvas, view.size());
-    }
+    PaintHelper(this, canvas, theme, part, state, rect, extra);
     canvas->Restore();
   } else {
     state = native_theme_delegate->GetThemeState(&extra);
-    if (native_theme()) {
-      theme->Paint(canvas->sk_canvas(), part, state, rect, extra);
-    } else {
-      BorderImages* set = const_cast<BorderImages*>(
-          &images_[GetButtonStateForThemeState(state)]);
-      if (!set->IsEmpty())
-        set->Paint(canvas, view.size());
-    }
+    PaintHelper(this, canvas, theme, part, state, rect, extra);
   }
 
-  if (native_theme()) {
-    // Draw the Views focus border for the native theme style.
-    if (view.focus_border() && extra.button.is_focused)
-      view.focus_border()->Paint(view, canvas);
-  }
+  // Draw the Views focus border for the native theme style.
+  if (native_theme() && view.focus_border() && extra.button.is_focused)
+    view.focus_border()->Paint(view, canvas);
 }
 
 void LabelButtonBorder::GetInsets(gfx::Insets* insets) const {
@@ -109,6 +99,10 @@ void LabelButtonBorder::GetInsets(gfx::Insets* insets) const {
     insets->Set(kPreferredPaddingVertical, kPreferredPaddingHorizontal,
                 kPreferredPaddingVertical, kPreferredPaddingHorizontal);
   }
+}
+
+BorderImages* LabelButtonBorder::GetImages(CustomButton::ButtonState state) {
+  return &images_[state];
 }
 
 void LabelButtonBorder::SetImages(CustomButton::ButtonState state,

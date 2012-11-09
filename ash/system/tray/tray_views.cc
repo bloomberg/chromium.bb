@@ -67,8 +67,7 @@ class SpecialPopupRowBorder : public views::Border {
   virtual ~SpecialPopupRowBorder() {}
 
  private:
-  virtual void Paint(const views::View& view,
-                     gfx::Canvas* canvas) const OVERRIDE {
+  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE {
     views::Painter::PaintPainterAt(canvas, painter_.get(),
         gfx::Rect(gfx::Size(view.width(), kBorderHeight)));
   }

@@ -27,7 +27,7 @@ FocusableBorder::FocusableBorder()
               kBottomInsetSize, kRightInsetSize) {
 }
 
-void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) const {
+void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) {
   SkPath path;
   path.addRect(gfx::RectToSkRect(view.GetLocalBounds()), SkPath::kCW_Direction);
   SkPaint paint;

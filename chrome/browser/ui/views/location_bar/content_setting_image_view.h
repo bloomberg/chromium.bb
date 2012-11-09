@@ -7,31 +7,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_decoration_view.h"
-#include "chrome/browser/ui/views/location_bar/touchable_location_bar_view.h"
 #include "chrome/common/content_settings_types.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/views/controls/image_view.h"
-#include "ui/views/painter.h"
 #include "ui/views/widget/widget_observer.h"
 
 class ContentSettingImageModel;
 class LocationBarView;
 class TabContents;
-
-namespace content {
-class WebContents;
-}
-
-namespace views {
-class GestureEvent;
-class MouseEvent;
-}
-
-namespace ui {
-class SlideAnimation;
-}
 
 // The ContentSettingImageView displays an icon and optional text label for
 // various content settings affordances in the location bar (i.e. plugin

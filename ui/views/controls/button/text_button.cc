@@ -98,15 +98,14 @@ TextButtonBorder::~TextButtonBorder() {
 // TextButtonBorder - painting
 //
 ////////////////////////////////////////////////////////////////////////////////
-void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas) const {
+void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
   const TextButton* button = static_cast<const TextButton*>(&view);
   int state = button->state();
 
-  BorderImages* set = const_cast<BorderImages*>(&normal_set_);
+  BorderImages* set = &normal_set_;
   if (button->show_multiple_icon_states() &&
       ((state == TextButton::BS_HOT) || (state == TextButton::BS_PUSHED))) {
-    set = const_cast<BorderImages*>(
-        (state == TextButton::BS_HOT) ? &hot_set_ :  &pushed_set_);
+    set = (state == TextButton::BS_HOT) ? &hot_set_ : &pushed_set_;
   }
   if (!set->IsEmpty()) {
     if (button->GetAnimation()->is_animating()) {
@@ -141,8 +140,7 @@ TextButtonNativeThemeBorder::TextButtonNativeThemeBorder(
 TextButtonNativeThemeBorder::~TextButtonNativeThemeBorder() {
 }
 
-void TextButtonNativeThemeBorder::Paint(const View& view,
-                                        gfx::Canvas* canvas) const {
+void TextButtonNativeThemeBorder::Paint(const View& view, gfx::Canvas* canvas) {
   const ui::NativeTheme* theme = view.GetNativeTheme();
   const TextButtonBase* tb = static_cast<const TextButton*>(&view);
   ui::NativeTheme::Part part = delegate_->GetThemePart();
