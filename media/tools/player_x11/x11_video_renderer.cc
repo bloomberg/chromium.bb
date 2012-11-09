@@ -84,16 +84,18 @@ X11VideoRenderer::~X11VideoRenderer() {
 }
 
 void X11VideoRenderer::Paint(media::VideoFrame* video_frame) {
-  int width = video_frame->data_size().width();
-  int height = video_frame->data_size().height();
-
   if (!image_)
-    Initialize(width, height);
+    Initialize(video_frame->coded_size(), video_frame->visible_rect());
+
+  const int coded_width = video_frame->coded_size().width();
+  const int coded_height = video_frame->coded_size().height();
+  const int visible_width = video_frame->visible_rect().width();
+  const int visible_height = video_frame->visible_rect().height();
 
   // Check if we need to reallocate our XImage.
-  if (image_->width != width || image_->height != height) {
+  if (image_->width != coded_width || image_->height != coded_height) {
     XDestroyImage(image_);
-    image_ = CreateImage(display_, width, height);
+    image_ = CreateImage(display_, coded_width, coded_height);
   }
 
   // Convert YUV frame to RGB.
@@ -109,9 +111,7 @@ void X11VideoRenderer::Paint(media::VideoFrame* video_frame) {
   media::ConvertYUVToRGB32(video_frame->data(media::VideoFrame::kYPlane),
                            video_frame->data(media::VideoFrame::kUPlane),
                            video_frame->data(media::VideoFrame::kVPlane),
-                           (uint8*)image_->data,
-                           video_frame->data_size().width(),
-                           video_frame->data_size().height(),
+                           (uint8*)image_->data, coded_width, coded_height,
                            video_frame->stride(media::VideoFrame::kYPlane),
                            video_frame->stride(media::VideoFrame::kUPlane),
                            image_->bytes_per_line,
@@ -125,8 +125,8 @@ void X11VideoRenderer::Paint(media::VideoFrame* video_frame) {
     // Creates a XImage.
     XImage image;
     memset(&image, 0, sizeof(image));
-    image.width = width;
-    image.height = height;
+    image.width = coded_width;
+    image.height = coded_height;
     image.depth = 32;
     image.bits_per_pixel = 32;
     image.format = ZPixmap;
@@ -140,15 +140,15 @@ void X11VideoRenderer::Paint(media::VideoFrame* video_frame) {
     image.data = image_->data;
 
     // Creates a pixmap and uploads from the XImage.
-    unsigned long pixmap = XCreatePixmap(display_,
-                                         window_,
-                                         width,
-                                         height,
+    unsigned long pixmap = XCreatePixmap(display_, window_,
+                                         visible_width, visible_height,
                                          32);
     GC gc = XCreateGC(display_, pixmap, 0, NULL);
     XPutImage(display_, pixmap, gc, &image,
-              0, 0, 0, 0,
-              width, height);
+              video_frame->visible_rect().x(),
+              video_frame->visible_rect().y(),
+              0, 0,
+              visible_width, visible_height);
     XFreeGC(display_, gc);
 
     // Creates the picture representing the pixmap.
@@ -158,7 +158,7 @@ void X11VideoRenderer::Paint(media::VideoFrame* video_frame) {
     // Composite the picture over the picture representing the window.
     XRenderComposite(display_, PictOpSrc, picture, 0,
                      picture_, 0, 0, 0, 0, 0, 0,
-                     width, height);
+                     visible_width, visible_height);
 
     XRenderFreePicture(display_, picture);
     XFreePixmap(display_, pixmap);
@@ -171,18 +171,21 @@ void X11VideoRenderer::Paint(media::VideoFrame* video_frame) {
   // to the window.
   GC gc = XCreateGC(display_, window_, 0, NULL);
   XPutImage(display_, window_, gc, image_,
-            0, 0, 0, 0, width, height);
+            video_frame->visible_rect().x(),
+            video_frame->visible_rect().y(),
+            0, 0, visible_width, visible_height);
   XFlush(display_);
   XFreeGC(display_, gc);
 }
 
-void X11VideoRenderer::Initialize(int width, int height) {
+void X11VideoRenderer::Initialize(gfx::Size coded_size,
+                                  gfx::Rect visible_rect) {
   CHECK(!image_);
   LOG(INFO) << "Initializing X11 Renderer...";
 
   // Resize the window to fit that of the video.
-  XResizeWindow(display_, window_, width, height);
-  image_ = CreateImage(display_, width, height);
+  XResizeWindow(display_, window_, visible_rect.width(), visible_rect.height());
+  image_ = CreateImage(display_, coded_size.width(), coded_size.height());
 
   // Testing XRender support. We'll use the very basic of XRender
   // so if it presents it is already good enough. We don't need

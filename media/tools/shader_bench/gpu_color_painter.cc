@@ -104,8 +104,9 @@ void GPUColorWithLuminancePainter::Initialize(int width, int height) {
 
 void GPUColorWithLuminancePainter::Paint(
     scoped_refptr<media::VideoFrame> video_frame) {
-  int width = video_frame->data_size().width();
-  int height = video_frame->data_size().height();
+  // Not accounting for x/y offset presently.
+  int width = video_frame->visible_rect().width();
+  int height = video_frame->visible_rect().height();
   for (unsigned int i = 0; i < kNumYUVPlanes; ++i) {
     unsigned int plane_width =
         (i == media::VideoFrame::kYPlane) ? width : width / 2;

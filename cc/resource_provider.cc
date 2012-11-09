@@ -283,6 +283,7 @@ void ResourceProvider::setPixels(ResourceId id, const uint8_t* image, const gfx:
     }
 
     if (resource->pixels) {
+        DCHECK(resource->format == GL_RGBA);
         SkBitmap srcFull;
         srcFull.setConfig(SkBitmap::kARGB_8888_Config, imageRect.width(), imageRect.height());
         srcFull.setPixels(const_cast<uint8_t*>(image));

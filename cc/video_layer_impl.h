@@ -57,7 +57,6 @@ public:
         ResourceProvider::ResourceId resourceId;
         gfx::Size size;
         GLenum format;
-        gfx::Size visibleSize;
 
         FramePlane() : resourceId(0) { }
 

@@ -66,6 +66,7 @@ void SimpleVideoFrameProvider::GenerateFrame() {
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
                                        size_,
+                                       gfx::Rect(size_),
                                        size_,
                                        current_time_);
 

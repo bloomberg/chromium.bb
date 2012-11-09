@@ -35,13 +35,11 @@ public:
     std::string getShaderString() const;
 
     int matrixLocation() const { return m_matrixLocation; }
-    int yWidthScaleFactorLocation() const { return m_yWidthScaleFactorLocation; }
-    int uvWidthScaleFactorLocation() const { return m_uvWidthScaleFactorLocation; }
+    int texScaleLocation() const { return m_texScaleLocation; }
 
 private:
     int m_matrixLocation;
-    int m_yWidthScaleFactorLocation;
-    int m_uvWidthScaleFactorLocation;
+    int m_texScaleLocation;
 };
 
 class VertexShaderPos {

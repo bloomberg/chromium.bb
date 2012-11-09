@@ -69,8 +69,7 @@ std::string VertexShaderPosTex::getShaderString() const
 
 VertexShaderPosTexYUVStretch::VertexShaderPosTexYUVStretch()
     : m_matrixLocation(-1)
-    , m_yWidthScaleFactorLocation(-1)
-    , m_uvWidthScaleFactorLocation(-1)
+    , m_texScaleLocation(-1)
 {
 }
 
@@ -78,17 +77,15 @@ void VertexShaderPosTexYUVStretch::init(WebGraphicsContext3D* context, unsigned 
 {
     static const char* shaderUniforms[] = {
         "matrix",
-        "y_widthScaleFactor",
-        "uv_widthScaleFactor",
+        "texScale",
     };
-    int locations[3];
+    int locations[2];
 
     getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_matrixLocation = locations[0];
-    m_yWidthScaleFactorLocation = locations[1];
-    m_uvWidthScaleFactorLocation = locations[2];
-    DCHECK(m_matrixLocation != -1 && m_yWidthScaleFactorLocation != -1 && m_uvWidthScaleFactorLocation != -1);
+    m_texScaleLocation = locations[1];
+    DCHECK(m_matrixLocation != -1 && m_texScaleLocation != -1);
 }
 
 std::string VertexShaderPosTexYUVStretch::getShaderString() const
@@ -98,15 +95,12 @@ std::string VertexShaderPosTexYUVStretch::getShaderString() const
         attribute vec4 a_position;
         attribute vec2 a_texCoord;
         uniform mat4 matrix;
-        varying vec2 y_texCoord;
-        varying vec2 uv_texCoord;
-        uniform float y_widthScaleFactor;
-        uniform float uv_widthScaleFactor;
+        varying vec2 v_texCoord;
+        uniform vec2 texScale;
         void main()
         {
             gl_Position = matrix * a_position;
-            y_texCoord = vec2(y_widthScaleFactor * a_texCoord.x, a_texCoord.y);
-            uv_texCoord = vec2(uv_widthScaleFactor * a_texCoord.x, a_texCoord.y);
+            v_texCoord = a_texCoord * texScale;
         }
     );
 }
@@ -782,8 +776,7 @@ std::string FragmentShaderYUVVideo::getShaderString() const
     return SHADER(
         precision mediump float;
         precision mediump int;
-        varying vec2 y_texCoord;
-        varying vec2 uv_texCoord;
+        varying vec2 v_texCoord;
         uniform sampler2D y_texture;
         uniform sampler2D u_texture;
         uniform sampler2D v_texture;
@@ -792,9 +785,9 @@ std::string FragmentShaderYUVVideo::getShaderString() const
         uniform mat3 yuv_matrix;
         void main()
         {
-            float y_raw = texture2D(y_texture, y_texCoord).x;
-            float u_unsigned = texture2D(u_texture, uv_texCoord).x;
-            float v_unsigned = texture2D(v_texture, uv_texCoord).x;
+            float y_raw = texture2D(y_texture, v_texCoord).x;
+            float u_unsigned = texture2D(u_texture, v_texCoord).x;
+            float v_unsigned = texture2D(v_texture, v_texCoord).x;
             vec3 yuv = vec3(y_raw, u_unsigned, v_unsigned) + yuv_adj;
             vec3 rgb = yuv_matrix * yuv;
             gl_FragColor = vec4(rgb, float(1)) * alpha;

@@ -251,12 +251,20 @@ const int RTCVideoDecoderTest::kHeight = 480;
 const PipelineStatistics RTCVideoDecoderTest::kStatistics;
 
 MATCHER_P2(HasSize, width, height, "") {
-  EXPECT_EQ(arg->data_size().width(), width);
-  EXPECT_EQ(arg->data_size().height(), height);
+  EXPECT_EQ(arg->coded_size().width(), width);
+  EXPECT_EQ(arg->coded_size().height(), height);
+  EXPECT_EQ(arg->visible_rect().x(), 0);
+  EXPECT_EQ(arg->visible_rect().y(), 0);
+  EXPECT_EQ(arg->visible_rect().width(), width);
+  EXPECT_EQ(arg->visible_rect().height(), height);
   EXPECT_EQ(arg->natural_size().width(), width);
   EXPECT_EQ(arg->natural_size().height(), height);
-  return (arg->data_size().width() == width) &&
-      (arg->data_size().height() == height) &&
+  return (arg->coded_size().width() == width) &&
+      (arg->coded_size().height() == height) &&
+      (arg->visible_rect().x() == 0) &&
+      (arg->visible_rect().y() == 0) &&
+      (arg->visible_rect().width() == width) &&
+      (arg->visible_rect().height() == height) &&
       (arg->natural_size().width() == width) &&
       (arg->natural_size().height() == height);
 }

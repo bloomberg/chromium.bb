@@ -7,6 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "media/base/video_frame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
 
 namespace webkit_media {
@@ -20,13 +22,12 @@ class WebVideoFrameImpl : public WebKit::WebVideoFrame {
   WebVideoFrameImpl(scoped_refptr<media::VideoFrame> video_frame);
   virtual ~WebVideoFrameImpl();
   virtual WebVideoFrame::Format format() const;
-  virtual unsigned width() const;
-  virtual unsigned height() const;
   virtual unsigned planes() const;
-  virtual int stride(unsigned plane) const;
   virtual const void* data(unsigned plane) const;
   virtual unsigned textureId() const;
   virtual unsigned textureTarget() const;
+  virtual WebKit::WebRect visibleRect() const;
+  virtual WebKit::WebSize textureSize() const;
 
  private:
   scoped_refptr<media::VideoFrame> video_frame_;

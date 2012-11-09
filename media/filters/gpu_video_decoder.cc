@@ -42,8 +42,9 @@ GpuVideoDecoder::BufferPair::BufferPair(
 GpuVideoDecoder::BufferPair::~BufferPair() {}
 
 GpuVideoDecoder::BufferData::BufferData(
-    int32 bbid, base::TimeDelta ts, const gfx::Size& ns)
-    : bitstream_buffer_id(bbid), timestamp(ts), natural_size(ns) {
+    int32 bbid, base::TimeDelta ts, const gfx::Rect& vr, const gfx::Size& ns)
+    : bitstream_buffer_id(bbid), timestamp(ts), visible_rect(vr),
+      natural_size(ns) {
 }
 
 GpuVideoDecoder::BufferData::~BufferData() {}
@@ -325,6 +326,7 @@ void GpuVideoDecoder::RecordBufferData(
     const BitstreamBuffer& bitstream_buffer, const Buffer& buffer) {
   input_buffer_data_.push_front(BufferData(
       bitstream_buffer.id(), buffer.GetTimestamp(),
+      demuxer_stream_->video_decoder_config().visible_rect(),
       demuxer_stream_->video_decoder_config().natural_size()));
   // Why this value?  Because why not.  avformat.h:MAX_REORDER_DELAY is 16, but
   // that's too small for some pathological B-frame test videos.  The cost of
@@ -337,6 +339,7 @@ void GpuVideoDecoder::RecordBufferData(
 }
 
 void GpuVideoDecoder::GetBufferData(int32 id, base::TimeDelta* timestamp,
+                                    gfx::Rect* visible_rect,
                                     gfx::Size* natural_size) {
   for (std::list<BufferData>::const_iterator it =
            input_buffer_data_.begin(); it != input_buffer_data_.end();
@@ -344,6 +347,7 @@ void GpuVideoDecoder::GetBufferData(int32 id, base::TimeDelta* timestamp,
     if (it->bitstream_buffer_id != id)
       continue;
     *timestamp = it->timestamp;
+    *visible_rect = it->visible_rect;
     *natural_size = it->natural_size;
     return;
   }
@@ -425,16 +429,19 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
 
   // Update frame's timestamp.
   base::TimeDelta timestamp;
+  gfx::Rect visible_rect;
   gfx::Size natural_size;
-  GetBufferData(picture.bitstream_buffer_id(), &timestamp, &natural_size);
+  GetBufferData(picture.bitstream_buffer_id(), &timestamp, &visible_rect,
+                &natural_size);
   DCHECK(decoder_texture_target_);
-  scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
-      pb.texture_id(), decoder_texture_target_, pb.size(), natural_size,
-      timestamp,
-      base::Bind(&Factories::ReadPixels, factories_, pb.texture_id(),
-                 decoder_texture_target_, pb.size()),
-      base::Bind(&GpuVideoDecoder::ReusePictureBuffer, this,
-                 picture.picture_buffer_id())));
+  scoped_refptr<VideoFrame> frame(
+      VideoFrame::WrapNativeTexture(
+          pb.texture_id(), decoder_texture_target_, pb.size(), visible_rect,
+          natural_size, timestamp,
+          base::Bind(&Factories::ReadPixels, factories_, pb.texture_id(),
+                     decoder_texture_target_, pb.size()),
+          base::Bind(&GpuVideoDecoder::ReusePictureBuffer, this,
+                     picture.picture_buffer_id())));
 
   EnqueueFrameAndTriggerFrameDelivery(frame);
 }

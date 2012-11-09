@@ -785,7 +785,7 @@ void ContentDecryptorDelegate::DeliverFrame(
   // managed by the PPB_Buffer_Dev, and avoid the extra copy.
   scoped_refptr<media::VideoFrame> decoded_frame(
       media::VideoFrame::CreateFrame(
-          format, frame_size, frame_size,
+          format, frame_size, gfx::Rect(frame_size), frame_size,
           base::TimeDelta::FromMicroseconds(
               frame_info->tracking_info.timestamp)));
 

@@ -128,8 +128,8 @@ void LocalVideoCapture::OnBufferReady(
 
   gfx::Size natural_size(buf->width, buf->height);
   scoped_refptr<media::VideoFrame> current_frame =
-      media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
-                                     natural_size, natural_size,
+      media::VideoFrame::CreateFrame(media::VideoFrame::YV12, natural_size,
+                                     gfx::Rect(natural_size), natural_size,
                                      buf->timestamp - base::Time());
   uint8* buffer = buf->memory_pointer;
 

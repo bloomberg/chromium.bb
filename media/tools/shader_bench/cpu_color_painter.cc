@@ -67,7 +67,8 @@ void CPUColorPainter::Paint(scoped_refptr<media::VideoFrame> video_frame) {
   // Convert to RGB32 frame.
   scoped_refptr<media::VideoFrame> rgba_frame =
       media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
-                                     video_frame->data_size(),
+                                     video_frame->coded_size(),
+                                     video_frame->visible_rect(),
                                      video_frame->natural_size(),
                                      base::TimeDelta());
 
@@ -75,16 +76,19 @@ void CPUColorPainter::Paint(scoped_refptr<media::VideoFrame> video_frame) {
                            video_frame->data(media::VideoFrame::kUPlane),
                            video_frame->data(media::VideoFrame::kVPlane),
                            rgba_frame->data(0),
-                           video_frame->data_size().width(),
-                           video_frame->data_size().height(),
+                           video_frame->coded_size().width(),
+                           video_frame->coded_size().height(),
                            video_frame->stride(media::VideoFrame::kYPlane),
                            video_frame->stride(media::VideoFrame::kUPlane),
                            rgba_frame->stride(0),
                            media::YV12);
 
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rgba_frame->data_size().width(),
-                  rgba_frame->data_size().height(), GL_RGBA, GL_UNSIGNED_BYTE,
+  // Not accounting for x/y offset presently.
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+                  rgba_frame->visible_rect().width(),
+                  rgba_frame->visible_rect().height(),
+                  GL_RGBA, GL_UNSIGNED_BYTE,
                   rgba_frame->data(0));
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

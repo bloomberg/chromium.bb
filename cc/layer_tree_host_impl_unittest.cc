@@ -2565,6 +2565,8 @@ public:
     virtual const void* data(unsigned plane) const { NOTREACHED(); return NULL; }
     virtual unsigned textureId() const { NOTREACHED(); return 0; }
     virtual unsigned textureTarget() const { NOTREACHED(); return 0; }
+    virtual WebKit::WebRect visibleRect() const { NOTREACHED(); return WebKit::WebRect(0, 0, 0, 0); }
+    virtual WebKit::WebSize textureSize() const { NOTREACHED(); return WebKit::WebSize(4, 4); }
 
     static VideoFrame* toVideoFrame(WebVideoFrame* web_video_frame) {
         FakeVideoFrame* wrapped_frame =
@@ -2735,6 +2737,15 @@ TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     videoLayer->setLayerTreeHostImpl(m_hostImpl.get());
     rootLayer->addChild(videoLayer.PassAs<LayerImpl>());
 
+    FakeVideoFrameProvider providerScaled;
+    scoped_ptr<VideoLayerImpl> videoLayerScaled = VideoLayerImpl::create(layerId++, &providerScaled, unwrapper);
+    videoLayerScaled->setBounds(gfx::Size(10, 10));
+    videoLayerScaled->setAnchorPoint(gfx::PointF(0, 0));
+    videoLayerScaled->setContentBounds(gfx::Size(10, 10));
+    videoLayerScaled->setDrawsContent(true);
+    videoLayerScaled->setLayerTreeHostImpl(m_hostImpl.get());
+    rootLayer->addChild(videoLayerScaled.PassAs<LayerImpl>());
+
     FakeVideoFrameProvider hwProvider;
     scoped_ptr<VideoLayerImpl> hwVideoLayer = VideoLayerImpl::create(layerId++, &hwProvider, unwrapper);
     hwVideoLayer->setBounds(gfx::Size(10, 10));
@@ -2787,9 +2798,17 @@ TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
         VideoFrame::WrapNativeTexture(
             m_hostImpl->resourceProvider()->graphicsContext3D()->createTexture(),
             GL_TEXTURE_2D,
-            gfx::Size(4, 4), gfx::Size(4, 4), base::TimeDelta(),
+            gfx::Size(4, 4), gfx::Rect(0, 0, 4, 4), gfx::Size(4, 4), base::TimeDelta(),
             VideoFrame::ReadPixelsCB(), base::Closure()));
     hwProvider.setFrame(&hwVideoFrame);
+
+    FakeVideoFrame videoFrameScaled(
+        VideoFrame::WrapNativeTexture(
+            m_hostImpl->resourceProvider()->graphicsContext3D()->createTexture(),
+            GL_TEXTURE_2D,
+            gfx::Size(4, 4), gfx::Rect(0, 0, 3, 2), gfx::Size(4, 4), base::TimeDelta(),
+            VideoFrame::ReadPixelsCB(), base::Closure()));
+    providerScaled.setFrame(&videoFrameScaled);
 
     m_hostImpl->setRootLayer(rootLayer.Pass());
 
@@ -2813,6 +2832,7 @@ TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     // The WebVideoFrameProvider is expected to recreate its textures after a
     // lost context (or not serve a frame).
     hwProvider.setFrame(0);
+    providerScaled.setFrame(0);
 
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
     m_hostImpl->drawLayers(frame);
@@ -2823,7 +2843,7 @@ TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
         VideoFrame::WrapNativeTexture(
             m_hostImpl->resourceProvider()->graphicsContext3D()->createTexture(),
             GL_TEXTURE_2D,
-            gfx::Size(4, 4), gfx::Size(4, 4), base::TimeDelta(),
+            gfx::Size(4, 4), gfx::Rect(0, 0, 4, 4), gfx::Size(4, 4), base::TimeDelta(),
             VideoFrame::ReadPixelsCB(), base::Closure()));
     hwProvider.setFrame(&hwVideoFrame2);
 

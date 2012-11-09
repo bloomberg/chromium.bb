@@ -9,6 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 class MessageLoop;
 
@@ -28,7 +30,7 @@ class X11VideoRenderer : public base::RefCountedThreadSafe<X11VideoRenderer> {
 
  private:
   // Initializes X11 rendering for the given dimensions.
-  void Initialize(int width, int height);
+  void Initialize(gfx::Size coded_size, gfx::Rect visible_rect);
 
   Display* display_;
   Window window_;

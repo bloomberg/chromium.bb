@@ -122,7 +122,8 @@ static double BenchmarkFilter(media::ScaleFilter filter) {
 
     gfx::Size dest_size(dest_width, dest_height);
     dest_frames.push_back(
-        VideoFrame::CreateFrame(VideoFrame::RGB32, dest_size, dest_size,
+        VideoFrame::CreateFrame(VideoFrame::RGB32, dest_size,
+                                gfx::Rect(dest_size), dest_size,
                                 TimeDelta::FromSeconds(0)));
   }
 
@@ -160,7 +161,8 @@ static double BenchmarkScaleWithRect() {
 
     gfx::Size dest_size(dest_width, dest_height);
     dest_frames.push_back(
-        VideoFrame::CreateFrame(VideoFrame::RGB32, dest_size, dest_size,
+        VideoFrame::CreateFrame(VideoFrame::RGB32, dest_size,
+                                gfx::Rect(dest_size), dest_size,
                                 TimeDelta::FromSeconds(0)));
   }
 

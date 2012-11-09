@@ -75,6 +75,7 @@ void RTCVideoRenderer::RenderFrame(const cricket::VideoFrame* frame) {
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
                                      size,
+                                     gfx::Rect(size),
                                      size,
                                      timestamp);
 

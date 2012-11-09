@@ -376,8 +376,8 @@ void WebMediaPlayerAndroid::WillDestroyCurrentMessageLoop() {
 void WebMediaPlayerAndroid::ReallocateVideoFrame() {
   if (texture_id_) {
     video_frame_.reset(new WebVideoFrameImpl(VideoFrame::WrapNativeTexture(
-        texture_id_, kGLTextureExternalOES, natural_size_, natural_size_,
-        base::TimeDelta(),
+        texture_id_, kGLTextureExternalOES, natural_size_,
+        gfx::Rect(natural_size_), natural_size_, base::TimeDelta(),
         VideoFrame::ReadPixelsCB(),
         base::Closure())));
   }

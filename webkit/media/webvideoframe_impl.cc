@@ -37,18 +37,6 @@ WebVideoFrame::Format WebVideoFrameImpl::format() const {
   return WebVideoFrame::FormatInvalid;
 }
 
-unsigned WebVideoFrameImpl::width() const {
-  if (video_frame_.get())
-    return video_frame_->data_size().width();
-  return 0;
-}
-
-unsigned WebVideoFrameImpl::height() const {
-  if (video_frame_.get())
-    return video_frame_->data_size().height();
-  return 0;
-}
-
 unsigned WebVideoFrameImpl::planes() const {
   if (!video_frame_.get())
     return 0;
@@ -69,12 +57,6 @@ unsigned WebVideoFrameImpl::planes() const {
   return 0;
 }
 
-int WebVideoFrameImpl::stride(unsigned plane) const {
-  if (video_frame_.get())
-    return static_cast<int>(video_frame_->stride(plane));
-  return 0;
-}
-
 const void* WebVideoFrameImpl::data(unsigned plane) const {
   if (!video_frame_.get() || format() == FormatNativeTexture)
     return NULL;
@@ -91,6 +73,18 @@ unsigned WebVideoFrameImpl::textureTarget() const {
   if (!video_frame_.get() || format() != FormatNativeTexture)
     return 0;
   return video_frame_->texture_target();
+}
+
+WebKit::WebRect WebVideoFrameImpl::visibleRect() const {
+  if (!video_frame_.get())
+    return WebKit::WebRect(0, 0, 0, 0);
+  return WebKit::WebRect(video_frame_->visible_rect());
+}
+
+WebKit::WebSize WebVideoFrameImpl::textureSize() const {
+  if (!video_frame_.get() || format() != FormatNativeTexture)
+    return WebKit::WebSize(0, 0);
+  return WebKit::WebSize(video_frame_->coded_size());
 }
 
 }  // namespace webkit_media

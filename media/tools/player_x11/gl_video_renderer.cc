@@ -121,8 +121,7 @@ GlVideoRenderer::~GlVideoRenderer() {
 
 void GlVideoRenderer::Paint(media::VideoFrame* video_frame) {
   if (!gl_context_)
-    Initialize(video_frame->data_size().width(),
-               video_frame->data_size().height());
+    Initialize(video_frame->coded_size(), video_frame->visible_rect());
 
   // Convert YUV frame to RGB.
   DCHECK(video_frame->format() == media::VideoFrame::YV12 ||
@@ -147,12 +146,12 @@ void GlVideoRenderer::Paint(media::VideoFrame* video_frame) {
   glXSwapBuffers(display_, window_);
 }
 
-void GlVideoRenderer::Initialize(int width, int height) {
+void GlVideoRenderer::Initialize(gfx::Size coded_size, gfx::Rect visible_rect) {
   CHECK(!gl_context_);
   LOG(INFO) << "Initializing GL Renderer...";
 
   // Resize the window to fit that of the video.
-  XResizeWindow(display_, window_, width, height);
+  XResizeWindow(display_, window_, visible_rect.width(), visible_rect.height());
 
   gl_context_ = InitGLContext(display_, window_);
   CHECK(gl_context_) << "Failed to initialize GL context";
@@ -241,8 +240,16 @@ void GlVideoRenderer::Initialize(int width, int height) {
 
   int tc_location = glGetAttribLocation(program, "in_tc");
   glEnableVertexAttribArray(tc_location);
-  glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0,
-                        kTextureCoords);
+  float verts[8];
+  float x0 = static_cast<float>(visible_rect.x()) / coded_size.width();
+  float y0 = static_cast<float>(visible_rect.y()) / coded_size.height();
+  float x1 = static_cast<float>(visible_rect.right()) / coded_size.width();
+  float y1 = static_cast<float>(visible_rect.bottom()) / coded_size.height();
+  verts[0] = x0; verts[1] = y0;
+  verts[2] = x0; verts[3] = y1;
+  verts[4] = x1; verts[5] = y0;
+  verts[6] = x1; verts[7] = y1;
+  glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0, verts);
 
   // We are getting called on a thread. Release the context so that it can be
   // made current on the main thread.

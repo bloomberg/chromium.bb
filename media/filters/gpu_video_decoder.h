@@ -127,7 +127,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   void RecordBufferData(
       const BitstreamBuffer& bitstream_buffer, const Buffer& buffer);
   void GetBufferData(int32 id, base::TimeDelta* timetamp,
-                     gfx::Size* natural_size);
+                     gfx::Rect* visible_rect, gfx::Size* natural_size);
 
   // Set |vda_| and |weak_vda_| on the VDA thread (in practice the render
   // thread).
@@ -208,11 +208,12 @@ class MEDIA_EXPORT GpuVideoDecoder
   uint32 decoder_texture_target_;
 
   struct BufferData {
-    BufferData(int32 bbid, base::TimeDelta ts,
+    BufferData(int32 bbid, base::TimeDelta ts, const gfx::Rect& visible_rect,
                const gfx::Size& natural_size);
     ~BufferData();
     int32 bitstream_buffer_id;
     base::TimeDelta timestamp;
+    gfx::Rect visible_rect;
     gfx::Size natural_size;
   };
   std::list<BufferData> input_buffer_data_;

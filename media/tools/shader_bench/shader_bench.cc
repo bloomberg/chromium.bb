@@ -53,7 +53,8 @@ void GetFrames(std::string file_name,
   gfx::Size size(width, height);
   for (int i = 0; i < num_frames; i++) {
     scoped_refptr<media::VideoFrame> video_frame =
-        media::VideoFrame::CreateFrame(media::VideoFrame::YV12, size, size,
+        media::VideoFrame::CreateFrame(media::VideoFrame::YV12, size,
+                                       gfx::Rect(size), size,
                                        base::TimeDelta());
     long bytes_read =
         fread(video_frame->data(0), 1, frame_size, file_handle);

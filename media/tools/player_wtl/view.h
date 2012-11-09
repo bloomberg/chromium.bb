@@ -144,11 +144,12 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
     uint8 *movie_dib_bits = reinterpret_cast<uint8 *>(bm.bmBits) +
         bm.bmWidthBytes * (bm.bmHeight - 1);
     int dibrowbytes = -bm.bmWidthBytes;
-    int clipped_width = video_frame->data_size().width();
+    // Not accounting for cropping presently.
+    int clipped_width = video_frame->coded_size().width();
     if (dibwidth < clipped_width) {
       clipped_width = dibwidth;
     }
-    int clipped_height = video_frame->data_size().height();
+    int clipped_height = video_frame->coded_size().height();
     if (dibheight < clipped_height) {
       clipped_height = dibheight;
     }
@@ -243,7 +244,7 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
       if (frame) {
         // Size the window the first time we get a frame.
         if (!last_frame_)
-          SetSize(frame->data_size().width(), frame->data_size().height());
+          SetSize(frame->coded_size().width(), frame->coded_size().height());
 
         base::TimeDelta frame_timestamp = frame->GetTimestamp();
         if (frame != last_frame_ || frame_timestamp != last_timestamp_) {
@@ -436,24 +437,24 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
     if (file_yuv != NULL) {
       fseek(file_yuv, 0, SEEK_END);
       const int frame_size =
-        video_frame->data_size().width() * video_frame->data_size().height();
-      for (int y = 0; y < video_frame->data_size().height(); ++y)
+        video_frame->coded_size().width() * video_frame->coded_size().height();
+      for (int y = 0; y < video_frame->coded_size().height(); ++y)
         fwrite(video_frame->data(0) + video_frame->stride(0)*y,
-          video_frame->data_size().width(), sizeof(uint8), file_yuv);
-      for (int y = 0; y < video_frame->data_size().height()/2; ++y)
+          video_frame->coded_size().width(), sizeof(uint8), file_yuv);
+      for (int y = 0; y < video_frame->coded_size().height()/2; ++y)
         fwrite(video_frame->data(1) + video_frame->stride(1)*y,
-          video_frame->data_size().width() / 2, sizeof(uint8), file_yuv);
-      for (int y = 0; y < video_frame->data_size().height()/2; ++y)
+          video_frame->coded_size().width() / 2, sizeof(uint8), file_yuv);
+      for (int y = 0; y < video_frame->coded_size().height()/2; ++y)
         fwrite(video_frame->data(2) + video_frame->stride(2)*y,
-          video_frame->data_size().width() / 2, sizeof(uint8), file_yuv);
+          video_frame->coded_size().width() / 2, sizeof(uint8), file_yuv);
       fclose(file_yuv);
 
 #if TESTING
       static int frame_dump_count = 0;
       char outputbuf[512];
       _snprintf_s(outputbuf, sizeof(outputbuf), "yuvdump %4d %dx%d stride %d\n",
-                  frame_dump_count, video_frame->data_size().width(),
-                  video_frame->data_size().height(),
+                  frame_dump_count, video_frame->coded_size().width(),
+                  video_frame->coded_size().height(),
                   video_frame->stride(0));
       OutputDebugStringA(outputbuf);
       ++frame_dump_count;

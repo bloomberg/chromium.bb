@@ -15,7 +15,17 @@ namespace cc {
 
 class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
 public:
-    static scoped_ptr<YUVVideoDrawQuad> create(const SharedQuadState*, const gfx::Rect&, const VideoLayerImpl::FramePlane& yPlane, const VideoLayerImpl::FramePlane& uPlane, const VideoLayerImpl::FramePlane& vPlane);
+    static scoped_ptr<YUVVideoDrawQuad> create(
+        const SharedQuadState* sharedQuadState,
+        const gfx::Rect& quadRect,
+        const gfx::SizeF& texScale,
+        const VideoLayerImpl::FramePlane& yPlane,
+        const VideoLayerImpl::FramePlane& uPlane,
+        const VideoLayerImpl::FramePlane& vPlane);
+
+    ~YUVVideoDrawQuad();
+
+    const gfx::SizeF& texScale() const { return m_texScale; }
 
     const VideoLayerImpl::FramePlane& yPlane() const { return m_yPlane; }
     const VideoLayerImpl::FramePlane& uPlane() const { return m_uPlane; }
@@ -23,8 +33,15 @@ public:
 
     static const YUVVideoDrawQuad* materialCast(const DrawQuad*);
 private:
-    YUVVideoDrawQuad(const SharedQuadState*, const gfx::Rect&, const VideoLayerImpl::FramePlane& yPlane, const VideoLayerImpl::FramePlane& uPlane, const VideoLayerImpl::FramePlane& vPlane);
+    YUVVideoDrawQuad(
+        const SharedQuadState* sharedQuadState,
+        const gfx::Rect& quadRect,
+        const gfx::SizeF& texScale,
+        const VideoLayerImpl::FramePlane& yPlane,
+        const VideoLayerImpl::FramePlane& uPlane,
+        const VideoLayerImpl::FramePlane& vPlane);
 
+    gfx::SizeF m_texScale;
     VideoLayerImpl::FramePlane m_yPlane;
     VideoLayerImpl::FramePlane m_uPlane;
     VideoLayerImpl::FramePlane m_vPlane;
