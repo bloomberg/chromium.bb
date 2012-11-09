@@ -10,9 +10,7 @@ namespace search {
 
 // The mininum height of content view to layout detached bookmark bar at bottom
 // for |NTP| search mode, calculated from chrome/browser/resources/ntp_search/
-// tile_page.js HEIGHT_FOR_BOTTOM_PANEL - TAB_BAR_HEIGHT - UPPER_SECTION_HEIGHT.
-// TODO(kuan): change this when tile_page.js changes to use non-const
-// UPPER_SECTION_HEIGHT,
+// tile_page.js HEIGHT_FOR_BOTTOM_PANEL constant.
 extern const int kMinContentHeightForBottomBookmarkBar;
 
 }  // namespace search

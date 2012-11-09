@@ -6,94 +6,6 @@ cr.define('ntp', function() {
   'use strict';
 
   //----------------------------------------------------------------------------
-  // Constants
-  //----------------------------------------------------------------------------
-
-  /**
-   * Bottom Panel's minimum padding bottom, which is 48 (the height of bookmark
-   * bar in detached mode as defined by kSearchNewtabBookmarkBarHeight in
-   * chrome/browser/ui/views/bookmarks/bookmark_bar_view.cc minus 12 (top
-   * padding of a bookmark button).
-   * @type {number}
-   * @const
-   */
-  var BOTTOM_PANEL_MIN_PADDING_BOTTOM = 36;
-
-  /**
-   * The height required to show 2 rows of Tiles in the Bottom Panel.
-   * @type {number}
-   * @const
-   */
-  var HEIGHT_FOR_TWO_ROWS = 800;
-
-  /**
-   * The height required to show 1 row of Tiles with extra bottom padding.
-   * @type {number}
-   * @const
-   */
-  var HEIGHT_FOR_ONE_TALL_ROW = 700;
-
-  /**
-   * The height required to show the Bottom Panel.
-   * @type {number}
-   * @const
-   */
-  // TODO(pedrosimonetti): This value is related to
-  // kMinContentHeightForBottomBookmarkBar defined in chrome/browser/ui/search/
-  // search_ui.h.  Change that value when calulation of bottom panel changes.
-  var HEIGHT_FOR_BOTTOM_PANEL = 591;
-
-  /**
-   * The Bottom Panel width required to show 5 cols of Tiles, which is used
-   * in the width computation.
-   * @type {number}
-   * @const
-   */
-  var MAX_BOTTOM_PANEL_WIDTH = 948;
-
-  /**
-   * The normal Bottom Panel width. If the window width is greater than or
-   * equal to this value, then the width of the Bottom Panel's content will be
-   * the available width minus side margin. If the available width is smaller
-   * than this value, then the width of the Bottom Panel's content will be an
-   * interpolation between the normal width, and the minimum width defined by
-   * the constant MIN_BOTTOM_PANEL_CONTENT_WIDTH.
-   * @type {number}
-   * @const
-   */
-  var NORMAL_BOTTOM_PANEL_WIDTH = 500;
-
-  /**
-   * The minimum Bottom Panel width. If the available width is smaller than
-   * this value, then the width of the Bottom Panel's content will be fixed to
-   * MIN_BOTTOM_PANEL_CONTENT_WIDTH.
-   * @type {number}
-   * @const
-   */
-  var MIN_BOTTOM_PANEL_WIDTH = 300;
-
-  /**
-   * The minimum width of the Bottom Panel's content.
-   * @type {number}
-   * @const
-   */
-  var MIN_BOTTOM_PANEL_CONTENT_WIDTH = 200;
-
-  /**
-   * The height of the TabBar.
-   * @type {number}
-   * @const
-   */
-  var TAB_BAR_HEIGHT = 34;
-
-  /**
-   * The height of the NTP's Upper Section.
-   * @type {number}
-   * @const
-   */
-  var UPPER_SECTION_HEIGHT = 289;
-
-  //----------------------------------------------------------------------------
   // Tile
   //----------------------------------------------------------------------------
 
@@ -141,9 +53,6 @@ cr.define('ntp', function() {
     initialize: function(config) {
       this.classList.add('tile');
       this.reset();
-    },
-
-    tearDown: function() {
     },
 
     /**
@@ -305,18 +214,15 @@ cr.define('ntp', function() {
      */
     TileClass: Tile,
 
-    // The config object should be defined by each TilePage subclass.
-    config_: {
+    // The config object should be defined by a TilePage subclass if it
+    // wants the non-default behavior.
+    config: {
       // The width of a cell.
-      cellWidth: 0,
+      cellWidth: 110,
       // The start margin of a cell (left or right according to text direction).
-      cellMarginStart: 0,
-      // The border panel horizontal margin.
-      bottomPanelHorizontalMargin: 0,
-      // The height of the tile row.
-      rowHeight: 0,
+      cellMarginStart: 12,
       // The maximum number of Tiles to be displayed.
-      maxTileCount: 0
+      maxTileCount: 6
     },
 
     /**
@@ -343,23 +249,12 @@ cr.define('ntp', function() {
       // The list of Tile elements which is used to fill the TileGrid cells.
       this.tiles_ = [];
 
-      // Event handlers.
-      this.eventTracker = new EventTracker();
-      this.eventTracker.add(window, 'resize', this.onResize_.bind(this));
-      this.eventTracker.add(window, 'keyup', this.onKeyUp_.bind(this));
-
       // TODO(pedrosimonetti): Check duplication of these methods.
-      this.eventTracker.add(this, 'cardselected', this.handleCardSelection_);
-      this.eventTracker.add(this, 'carddeselected',
-          this.handleCardDeselection_);
+      this.addEventListener('cardselected', this.handleCardSelection_);
+      this.addEventListener('carddeselected', this.handleCardDeselection_);
 
-      this.eventTracker.add(this.tileGrid_, 'webkitTransitionEnd',
+      this.tileGrid_.addEventListener('webkitTransitionEnd',
           this.onTileGridTransitionEnd_.bind(this));
-
-      // TODO(pedrosimonetti): This should be handled by BottomPanel class,
-      // not by each individual page.
-      this.eventTracker.add($('card-slider-frame'), 'webkitTransitionEnd',
-          this.onCardSliderFrameTransitionEnd_.bind(this));
     },
 
     /**
@@ -397,17 +292,7 @@ cr.define('ntp', function() {
       // deleting the card afterward is probably a better choice.
       assert(typeof arguments[0] != 'boolean',
              'This function takes no |opt_animate| argument.');
-      this.tearDown_();
       this.parentNode.removeChild(this);
-    },
-
-    /**
-     * Cleans up resources that are no longer needed after this TilePage
-     * instance is removed from the DOM.
-     * @private
-     */
-    tearDown_: function() {
-      this.eventTracker.removeAll();
     },
 
     /**
@@ -435,7 +320,6 @@ cr.define('ntp', function() {
     removeTile: function(tile, opt_animate, opt_dontNotify) {
       var tiles = this.tiles;
       var index = tiles.indexOf(tile);
-      tile.tearDown();
       tile.parentNode.removeChild(tile);
       tiles.splice(index, 1);
       this.renderGrid_();
@@ -464,7 +348,6 @@ cr.define('ntp', function() {
      * Removes all tiles from the page.
      */
     removeAllTiles: function() {
-      // TODO(pedrosimonetti): Dispatch individual tearDown functions.
       this.tileGrid_.innerHTML = '';
     },
 
@@ -474,7 +357,7 @@ cr.define('ntp', function() {
      * @private
      */
     handleCardSelection_: function(e) {
-      this.layout();
+      ntp.layout();
     },
 
     /**
@@ -499,7 +382,7 @@ cr.define('ntp', function() {
     rowCount_: 0,
     // The number of visible rows. We initialize this value with zero so
     // we can detect when the first time the page is rendered.
-    numOfVisibleRows_: 0,
+    numOfVisibleRows_: 1,
     // The number of the last column being animated. We initialize this value
     // with zero so we can detect when the first time the page is rendered.
     animatingColCount_: 0,
@@ -516,13 +399,11 @@ cr.define('ntp', function() {
      */
     appendTile: function(tile) {
       var index = this.tiles_.length;
-      this.tiles_.push(tile);
-      this.fireAddedEvent(tile, index);
+      this.addTileAt(tile, index);
     },
 
     /**
      * Adds the given element to the tile grid.
-     * TODO(pedrosimonetti): If this is not being used, delete.
      * @param {Tile} tile The tile to be added.
      * @param {number} index The location in the tile grid to insert it at.
      * @protected
@@ -539,7 +420,7 @@ cr.define('ntp', function() {
      */
     createTiles_: function(count) {
       var Class = this.TileClass;
-      var config = this.config_;
+      var config = this.config;
       count = Math.min(count, config.maxTileCount);
       for (var i = 0; i < count; i++) {
         this.appendTile(new Class(config));
@@ -550,7 +431,7 @@ cr.define('ntp', function() {
      * Update the tiles after a change to |dataList_|.
      */
     updateTiles_: function() {
-      var maxTileCount = this.config_.maxTileCount;
+      var maxTileCount = this.config.maxTileCount;
       var dataList = this.dataList_;
       var tiles = this.tiles;
       for (var i = 0; i < maxTileCount; i++) {
@@ -576,8 +457,7 @@ cr.define('ntp', function() {
      * @param {Array} dataList The array of data.
      */
     setDataList: function(dataList) {
-      var maxTileCount = this.config_.maxTileCount;
-      this.dataList_ = dataList.slice(0, maxTileCount);
+      this.dataList_ = dataList.slice(0, this.config.maxTileCount);
 
       var dataListLength = this.dataList_.length;
       var tileCount = this.tileCount;
@@ -610,8 +490,8 @@ cr.define('ntp', function() {
      * @private
      */
     getTileRequiredWidth_: function() {
-      var conf = this.config_;
-      return conf.cellWidth + conf.cellMarginStart;
+      var config = this.config;
+      return config.cellWidth + config.cellMarginStart;
     },
 
     /**
@@ -620,7 +500,7 @@ cr.define('ntp', function() {
      * @private
      */
     getColCountForWidth_: function(width) {
-      var availableWidth = width + this.config_.cellMarginStart;
+      var availableWidth = width + this.config.cellMarginStart;
       var requiredWidth = this.getTileRequiredWidth_();
       var colCount = Math.floor(availableWidth / requiredWidth);
       return colCount;
@@ -633,33 +513,7 @@ cr.define('ntp', function() {
      */
     getWidthForColCount_: function(colCount) {
       var requiredWidth = this.getTileRequiredWidth_();
-      var width = colCount * requiredWidth - this.config_.cellMarginStart;
-      return width;
-    },
-
-    /**
-     * Gets the bottom panel width.
-     * @private
-     */
-    getBottomPanelWidth_: function() {
-      var windowWidth = cr.doc.documentElement.clientWidth;
-      var margin = 2 * this.config_.bottomPanelHorizontalMargin;
-      var width;
-      if (windowWidth >= MAX_BOTTOM_PANEL_WIDTH) {
-        width = MAX_BOTTOM_PANEL_WIDTH - margin;
-      } else if (windowWidth >= NORMAL_BOTTOM_PANEL_WIDTH) {
-        width = windowWidth - margin;
-      } else if (windowWidth >= MIN_BOTTOM_PANEL_WIDTH) {
-        // Interpolation between the previous and next states.
-        var minMargin = MIN_BOTTOM_PANEL_WIDTH - MIN_BOTTOM_PANEL_CONTENT_WIDTH;
-        var factor = (windowWidth - MIN_BOTTOM_PANEL_WIDTH) /
-            (NORMAL_BOTTOM_PANEL_WIDTH - MIN_BOTTOM_PANEL_WIDTH);
-        var interpolatedMargin = minMargin + factor * (margin - minMargin);
-        width = windowWidth - interpolatedMargin;
-      } else {
-        width = MIN_BOTTOM_PANEL_CONTENT_WIDTH;
-      }
-
+      var width = colCount * requiredWidth - this.config.cellMarginStart;
       return width;
     },
 
@@ -674,10 +528,9 @@ cr.define('ntp', function() {
       var col = index % colCount;
       if (isRTL())
         col = colCount - col - 1;
-      var config = this.config_;
-      var top = Math.floor(index / colCount) * config.rowHeight;
+      var config = this.config;
       var left = col * (config.cellWidth + config.cellMarginStart);
-      return {top: top, left: left};
+      return {top: 0, left: left};
     },
 
     // rendering
@@ -705,7 +558,6 @@ cr.define('ntp', function() {
 
       var numOfVisibleRows = this.numOfVisibleRows_;
       var rowCount = Math.ceil(tileCount / colCount);
-      rowCount = Math.max(rowCount, numOfVisibleRows);
       var tileRows = tileGridContent.getElementsByClassName('tile-row');
 
       var pageOffset = this.pageOffset_;
@@ -743,7 +595,7 @@ cr.define('ntp', function() {
             tileCell = tileRowTiles[col];
           } else {
             var span = cr.doc.createElement('span');
-            tileCell = new TileCell(span, this.config_);
+            tileCell = new TileCell(span, this.config);
           }
 
           // Render Tiles.
@@ -778,125 +630,50 @@ cr.define('ntp', function() {
       this.rowCount_ = rowCount;
     },
 
+    // layout
+    // -------------------------------------------------------------------------
+
     /**
-     * Adjusts the layout of the tile page according to the current window size.
-     * This method will resize the containers of the bottom panel + tile page,
+     * Calculates the layout of the tile page according to the current Bottom
+     * Panel's size. This method will resize the containers of the tile page,
      * and re-render the grid when its dimension changes (number of columns or
      * visible rows changes). This method also sets the private properties
-     * numOfVisibleRows_ and animatingColCount_, and these values are
-     * initialized when each tile page is created by using the opt_force
-     * parameter.
+     * |numOfVisibleRows_| and |animatingColCount_|.
      *
      * This method should be called every time the dimension of the grid changes
      * or when you need to reinforce its dimension.
-     * @param {boolean=} opt_force Whether the layout should be forced, which
-     *   implies not animating the resizing.
+     * @param {boolean=} opt_animate Whether the layout be animated.
      */
-    layout: function(opt_force) {
-      // Only adjusts the layout if the page is currently selected, or when
-      // it is being forced.
-      if (!(this.selected || opt_force))
-        return;
-
-      var shouldAnimate = !opt_force;
-
-      var bottomPanelWidth = this.getBottomPanelWidth_();
-      var colCount = this.getColCountForWidth_(bottomPanelWidth);
+    layout: function(opt_animate) {
+      var contentWidth = ntp.getContentWidth();
+      var colCount = this.getColCountForWidth_(contentWidth);
       var lastColCount = this.colCount_;
       var animatingColCount = this.animatingColCount_;
-
-      // TODO(pedrosimonetti): Separate height/width logic in different methods.
-
-      // Height logic
-
-      var windowHeight = cr.doc.documentElement.clientHeight +
-          UPPER_SECTION_HEIGHT + TAB_BAR_HEIGHT;
-
-      this.showBottomPanel_(windowHeight >= HEIGHT_FOR_BOTTOM_PANEL);
-
-      // If the number of visible rows has changed, then we need to resize the
-      // grid and animate the affected rows. We also need to keep track of
-      // whether the number of visible rows has changed because we might have
-      // to render the grid when the number of columns hasn't changed.
-      var numberOfRowsHasChanged = false;
-      var numOfVisibleRows = windowHeight >= HEIGHT_FOR_TWO_ROWS ? 2 : 1;
-
-      if (numOfVisibleRows != this.numOfVisibleRows_) {
-        this.numOfVisibleRows_ = numOfVisibleRows;
-        numberOfRowsHasChanged = true;
-
-        var cardSliderFrame = $('card-slider-frame');
-        if (shouldAnimate)
-          cardSliderFrame.classList.add('animate-frame-height');
-
-        // By forcing the pagination, all affected rows will be animated.
-        this.paginate_(null, true);
-        cardSliderFrame.style.height =
-            (this.config_.rowHeight * numOfVisibleRows) + 'px';
-      }
-
-      // Calculate the size of the bottom padding.
-      var paddingBottom;
-      if (windowHeight < HEIGHT_FOR_ONE_TALL_ROW) {
-        paddingBottom = BOTTOM_PANEL_MIN_PADDING_BOTTOM;
-      } else if (windowHeight < HEIGHT_FOR_TWO_ROWS) {
-        paddingBottom = BOTTOM_PANEL_MIN_PADDING_BOTTOM +
-            Math.round((windowHeight - HEIGHT_FOR_ONE_TALL_ROW) / 2);
-      } else if (windowHeight >= HEIGHT_FOR_TWO_ROWS) {
-        paddingBottom = BOTTOM_PANEL_MIN_PADDING_BOTTOM +
-            Math.round((windowHeight - HEIGHT_FOR_TWO_ROWS) / 2);
-      }
-
-      $('bottom-panel').style.bottom = paddingBottom + 'px';
-
-      // Width logic
-
-      // If the number of columns being animated has changed, then we need to
-      // resize the grid, animate the tiles, and render the grid when its actual
-      // size changes.
       if (colCount != animatingColCount) {
-        if (shouldAnimate)
+        if (opt_animate)
           this.tileGrid_.classList.add('animate-grid-width');
 
-        var newWidth = this.getWidthForColCount_(colCount);
-
-        // If the grid is expanding horizontally we need to render the grid
-        // first so the revealing tiles are visible as soon as the animation
-        // starts.
         if (colCount > animatingColCount) {
-          // We only have to render the grid if the actual number of columns
-          // has changed.
+          // If the grid is expanding, it needs to be rendered first so the
+          // revealing tiles are visible as soon as the animation starts.
           if (colCount != lastColCount)
             this.renderGrid_(colCount);
 
-          // Animates the affected columns.
+          // Hides affected columns and forces the reflow.
           this.showTileCols_(animatingColCount, false);
-
-          var self = this;
-          // We need to save the animatingColCount value in a closure otherwise
-          // the animation of tiles won't work when expanding horizontally.
-          // The problem happens because the layout method is called several
-          // times when resizing the window, and the animatingColCount is saved
-          // and restored each time a new column has to be animated. So, if we
-          // don't save the value, by the time the showTileCols_ method is
-          // called the animatingColCount is holding a new value, breaking
-          // the animation.
-          setTimeout((function(animatingColCount) {
-            return function() {
-              self.showTileCols_(animatingColCount, true);
-            }
-          })(animatingColCount), 0);
-
+          // Trigger reflow, making the tiles completely hidden.
+          this.tileGrid_.offsetTop;
+          // Fades in the affected columns.
+          this.showTileCols_(animatingColCount, true);
         } else {
-          // If the grid is shrinking horizontally, then we need to render the
-          // grid only after the animation ends so the tiles that are being
-          // hidden remains visible until the end of the animation. See
-          // onTileGridTransitionEndHandler_ below.
+          // Fades out the affected columns.
           this.showTileCols_(colCount, false);
         }
 
+        var newWidth = this.getWidthForColCount_(colCount);
         this.tileGrid_.style.width = newWidth + 'px';
 
+        // TODO(pedrosimonetti): move to handler below.
         var self = this;
         this.onTileGridTransitionEndHandler_ = function() {
           if (colCount < lastColCount)
@@ -904,18 +681,9 @@ cr.define('ntp', function() {
           else
             self.showTileCols_(0, true);
         };
-
-        this.paginate_();
-
-      } else if (numberOfRowsHasChanged) {
-        // If the number of columns being animated hasn't changed but the number
-        // of rows has changed then we have to render the grid too.
-        this.renderGrid_(colCount);
       }
 
-      this.content_.style.width = bottomPanelWidth + 'px';
-      $('bottom-panel-header').style.width = bottomPanelWidth + 'px';
-      $('bottom-panel-footer').style.width = bottomPanelWidth + 'px';
+      this.content_.style.width = contentWidth + 'px';
 
       this.animatingColCount_ = colCount;
     },
@@ -1032,7 +800,7 @@ cr.define('ntp', function() {
       var tileCount = tiles.length;
 
       var tileCells = this.querySelectorAll('.tile-cell');
-      var extraTileIndex = Math.min(tileCount, this.config_.maxTileCount - 1);
+      var extraTileIndex = Math.min(tileCount, this.config.maxTileCount - 1);
       var extraCell = tileCells[extraTileIndex];
       var extraTileData = newDataList[extraTileIndex + 1];
 
@@ -1186,15 +954,6 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Animates the display the Bottom Panel.
-     * @param {boolean} show Whether or not to show the Bottom Panel.
-     */
-    showBottomPanel_: function(show) {
-      $('bottom-panel').classList[show ? 'remove' : 'add'](
-          'hide-bottom-panel');
-    },
-
-    /**
      * Animates the display of a row. TODO(pedrosimonetti): Make it local?
      * @param {HTMLElement} row The row element.
      * @param {boolean} show Whether or not to show the row.
@@ -1217,49 +976,8 @@ cr.define('ntp', function() {
       }
     },
 
-    // pagination
-    // -------------------------------------------------------------------------
-
-    /**
-     * Resets the display of columns.
-     * @param {number=} opt_pageOffset The index of the topmost row visible.
-     *     Default value is the last pageOffset_.
-     * @param {boolean=} opt_force Forces the pagination. Default is false.
-     */
-    paginate_: function(opt_pageOffset, opt_force) {
-      var numOfVisibleRows = this.numOfVisibleRows_;
-      var pageOffset = typeof opt_pageOffset == 'number' ?
-          opt_pageOffset : this.pageOffset_;
-
-      pageOffset = Math.min(this.rowCount_ - numOfVisibleRows, pageOffset);
-      pageOffset = Math.max(0, pageOffset);
-
-      if (pageOffset != this.pageOffset || opt_force) {
-        var rows = this.tileGridContent_.getElementsByClassName('tile-row');
-        for (var i = 0, length = rows.length; i < length; i++) {
-          var row = rows[i];
-          var isRowVisible = i >= pageOffset &&
-              i <= (pageOffset + numOfVisibleRows - 1);
-          this.showTileRow_(row, isRowVisible);
-        }
-
-        this.pageOffset_ = pageOffset;
-        this.tileGridContent_.style.webkitTransform =
-            'translate3d(0, ' + (-pageOffset * this.config_.rowHeight) +
-            'px, 0)';
-      }
-    },
-
     // event handlers
     // -------------------------------------------------------------------------
-
-    /**
-     * Handles the window resize event.
-     * @param {Event} e The window resize event.
-     */
-    onResize_: function(e) {
-      this.layout();
-    },
 
     /**
      * Handles the end of the horizontal tile grid transition.
@@ -1290,41 +1008,6 @@ cr.define('ntp', function() {
           this.onTileGridTransitionEndHandler_();
       }
     },
-
-    /**
-     * Handles the end of the vertical card slider frame transition.
-     * @param {Event} e The tile grid webkitTransitionEnd event.
-     */
-    onCardSliderFrameTransitionEnd_: function(e) {
-      if (!this.selected)
-        return;
-
-      // For the same reason as explained in onTileGridTransitionEnd_, we need
-      // to remove the class when the vertical transition ends.
-      var cardSliderFrame = $('card-slider-frame');
-      if (e.target == cardSliderFrame &&
-          cardSliderFrame.classList.contains('animate-frame-height')) {
-        cardSliderFrame.classList.remove('animate-frame-height');
-      }
-    },
-
-    /**
-     * Handles the window keyup event.
-     * @param {Event} e The keyboard event.
-     */
-    onKeyUp_: function(e) {
-      var pageOffset = this.pageOffset_;
-
-      var keyCode = e.keyCode;
-      if (keyCode == 40 /* down */)
-        pageOffset++;
-      else if (keyCode == 38 /* up */)
-        pageOffset--;
-
-      // Changes the pagination according to which arrow key was pressed.
-      if (pageOffset != this.pageOffset_)
-        this.paginate_(pageOffset);
-    },
   };
 
   /**
@@ -1338,7 +1021,7 @@ cr.define('ntp', function() {
     var tile;
     if (opt_data) {
       // If there's data, the new tile will be a real one (not a filler).
-      tile = new tilePage.TileClass(tilePage.config_);
+      tile = new tilePage.TileClass(tilePage.config);
       tile.setData(opt_data);
     } else {
       // Otherwise, it will be a fake filler tile.

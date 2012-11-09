@@ -155,18 +155,13 @@ cr.define('ntp', function() {
      * @const
      * @private
      */
-    config_: {
+    config: {
       // The width of a cell.
       cellWidth: 161,
       // The start margin of a cell (left or right according to text direction).
       cellMarginStart: 18,
-      // The border panel horizontal margin.
-      bottomPanelHorizontalMargin: 100,
-      // The height of the tile row.
-      // TODO(vadimt): Strange that we need to repeat same value for all pages.
-      rowHeight: 105,
       // The maximum number of Tiles to be displayed.
-      maxTileCount: 10
+      maxTileCount: 6
     },
 
     /**

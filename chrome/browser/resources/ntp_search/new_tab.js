@@ -4,12 +4,10 @@
 
 /**
  * @fileoverview New tab page
- * This is the main code for the new tab page used by touch-enabled Chrome
- * browsers. NewTabView manages page list and dot list and handles apps pages
- * callbacks from backend.
- *
- * Note that you need to have AppLauncherHandler in your WebUI to use this code.
-*/
+ * This is the main code for the new tab page. NewTabView manages page list,
+ * dot list and handles apps pages callbacks from backend. It also handles
+ * the layout of the Bottom Panel and the global UI states of the New Tab Page.
+ */
 
 // Use an anonymous function to enable strict mode just for this file (which
 // will be concatenated with other files when embedded in Chrome
@@ -27,6 +25,57 @@ cr.define('ntp', function() {
     NTP_WEBSTORE_FOOTER: 18,
     NTP_WEBSTORE_PLUS_ICON: 19,
   };
+
+  /**
+   * @type {number}
+   * @const
+   */
+  var BOTTOM_PANEL_HORIZONTAL_MARGIN = 100;
+
+  /**
+   * The height required to show the Bottom Panel.
+   * @type {number}
+   * @const
+   */
+  var HEIGHT_FOR_BOTTOM_PANEL = 505;
+
+  /**
+   * The Bottom Panel width required to show 6 cols of Tiles, which is used
+   * in the width computation.
+   * @type {number}
+   * @const
+   */
+  var MAX_BOTTOM_PANEL_WIDTH = 920;
+
+  /**
+   * The minimum width of the Bottom Panel's content.
+   * @type {number}
+   * @const
+   */
+  var MIN_BOTTOM_PANEL_CONTENT_WIDTH = 200;
+
+  /**
+   * The minimum Bottom Panel width. If the available width is smaller than
+   * this value, then the width of the Bottom Panel's content will be fixed to
+   * MIN_BOTTOM_PANEL_CONTENT_WIDTH.
+   * @type {number}
+   * @const
+   */
+  var MIN_BOTTOM_PANEL_WIDTH = 300;
+
+  /**
+   * The normal Bottom Panel width. If the window width is greater than or
+   * equal to this value, then the width of the Bottom Panel's content will be
+   * the available width minus side margin. If the available width is smaller
+   * than this value, then the width of the Bottom Panel's content will be an
+   * interpolation between the normal width, and the minimum width defined by
+   * the constant MIN_BOTTOM_PANEL_CONTENT_WIDTH.
+   * @type {number}
+   * @const
+   */
+  var NORMAL_BOTTOM_PANEL_WIDTH = 500;
+
+  //----------------------------------------------------------------------------
 
   /**
    * NewTabView instance.
@@ -152,12 +201,6 @@ cr.define('ntp', function() {
     shownPageIndex: 0,
 
     /**
-     * EventTracker for managing event listeners for page events.
-     * @type {!EventTracker}
-     */
-    eventTracker: new EventTracker,
-
-    /**
      * If non-null, this is the ID of the app to highlight to the user the next
      * time getAppsCallback runs. "Highlight" in this case means to switch to
      * the page and run the new tile animation.
@@ -194,12 +237,6 @@ cr.define('ntp', function() {
             loadTimeData.getInteger('most_visited_page_id'), 0);
       }
 
-      document.addEventListener('keydown', this.onDocKeyDown_.bind(this));
-      // Prevent touch events from triggering any sort of native scrolling.
-      document.addEventListener('touchmove', function(e) {
-        e.preventDefault();
-      }, true);
-
       this.tilePages = this.pageList.getElementsByClassName('tile-page');
       this.appsPages = this.pageList.getElementsByClassName('apps-page');
 
@@ -212,22 +249,34 @@ cr.define('ntp', function() {
       this.cardSlider.initialize(
           loadTimeData.getBoolean('isSwipeTrackingFromScrollEventsEnabled'));
 
+      // Prevent touch events from triggering any sort of native scrolling.
+      document.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+      }, true);
+
       // Handle events from the card slider.
       this.pageList.addEventListener('cardSlider:card_changed',
-                                     this.onCardChanged_.bind(this));
+          this.onCardChanged_.bind(this));
       this.pageList.addEventListener('cardSlider:card_added',
-                                     this.onCardAdded_.bind(this));
+          this.onCardAdded_.bind(this));
       this.pageList.addEventListener('cardSlider:card_removed',
-                                     this.onCardRemoved_.bind(this));
-
-      // Ensure the slider is resized appropriately with the window.
-      window.addEventListener('resize', this.onWindowResize_.bind(this));
+         this.onCardRemoved_.bind(this));
 
       // Update apps when online state changes.
       window.addEventListener('online',
           this.updateOfflineEnabledApps_.bind(this));
       window.addEventListener('offline',
           this.updateOfflineEnabledApps_.bind(this));
+    },
+
+    /**
+     * Starts listening to user input events. The resize and keydown events
+     * must be added only when all NTP have finished loading because they
+     * will act in the current selected page.
+     */
+    onReady: function() {
+      window.addEventListener('resize', this.onWindowResize_.bind(this));
+      document.addEventListener('keydown', this.onDocKeyDown_.bind(this));
     },
 
     /**
@@ -557,7 +606,7 @@ cr.define('ntp', function() {
       // When the second arg passed to insertBefore is falsey, it acts just like
       // appendChild.
       this.pageList.insertBefore(page, this.tilePages[e.addedIndex]);
-      page.layout(true);
+      this.layout(false, page);
       this.onCardAddedOrRemoved_();
     },
 
@@ -566,7 +615,7 @@ cr.define('ntp', function() {
      * @param {Event} e A card removed or added event.
      */
     onCardRemoved_: function(e) {
-      e.removedCard.parentNode.removeChild(e.removedCard);
+      e.removedCard.remove();
       this.onCardAddedOrRemoved_();
     },
 
@@ -588,21 +637,7 @@ cr.define('ntp', function() {
      */
     onWindowResize_: function(e) {
       this.cardSlider.resize(this.sliderFrame.offsetWidth);
-    },
-
-    /**
-     * Listener for offline status change events. Updates apps that are
-     * not offline-enabled to be grayscale if the browser is offline.
-     * @private
-     */
-    updateOfflineEnabledApps_: function() {
-      var apps = document.querySelectorAll('.app');
-      for (var i = 0; i < apps.length; ++i) {
-        if (apps[i].appData.enabled && !apps[i].appData.offline_enabled) {
-          apps[i].setIcon();
-          apps[i].loadIcon();
-        }
-      }
+      this.layout(true);
     },
 
     /**
@@ -632,6 +667,21 @@ cr.define('ntp', function() {
     },
 
     /**
+     * Listener for offline status change events. Updates apps that are
+     * not offline-enabled to be grayscale if the browser is offline.
+     * @private
+     */
+    updateOfflineEnabledApps_: function() {
+      var apps = document.querySelectorAll('.app');
+      for (var i = 0; i < apps.length; ++i) {
+        if (apps[i].appData.enabled && !apps[i].appData.offline_enabled) {
+          apps[i].setIcon();
+          apps[i].loadIcon();
+        }
+      }
+    },
+
+    /**
      * Returns the index of a given tile page.
      * @param {TilePage} page The TilePage we wish to find.
      * @return {number} The index of |page| or -1 if it is not in the
@@ -649,6 +699,96 @@ cr.define('ntp', function() {
       if (page.navigationDot)
         page.navigationDot.remove();
       this.cardSlider.removeCard(page);
+    },
+
+    /**
+     * The width of the Bottom Panel's content.
+     * @type {number}
+     */
+    contentWidth_: 0,
+
+    /**
+     * Calculates the layout of the NTP's Bottom Panel. This method will resize
+     * and position all container elements in the Bottom Panel. At the end of
+     * the layout process it will dispatch the layout method to the current
+     * selected TilePage. Alternatively, you can pass a specific TilePage in
+     * the |opt_page| parameter, which is useful for initializing the layout
+     * of a recently created TilePage.
+     *
+     * The |NewTabView.layout| deals with the global layout state while the
+     * |TilePage.layout| deals with the per-page layout state. A general rule
+     * would be: if you need to resize any element which is outside the
+     * card-slider-frame, it should be handled here in NewTabView. Otherwise,
+     * it should be handled in TilePage.
+     *
+     * @param {boolean} opt_animate Whether the layout should be animated.
+     * @param {ntp.TilePage} opt_page Alternative TilePage to calculate layout.
+     */
+    layout: function(opt_animate, opt_page) {
+      opt_animate = typeof opt_animate == 'undefined' ? false : opt_animate;
+
+      var viewHeight = cr.doc.documentElement.clientHeight;
+      var isBottomPanelVisible = viewHeight >= HEIGHT_FOR_BOTTOM_PANEL;
+      // Toggles the visibility of the Bottom Panel when there is (or there
+      // is not) space to show the entire panel.
+      this.showBottomPanel_(isBottomPanelVisible);
+
+      // The layout calculation can be skipped if Bottom Panel is not visible.
+      if (!isBottomPanelVisible && !opt_page)
+        return;
+
+      // Calculates the width of the Bottom Panel's Content.
+      var width = this.calculateContentWidth_();
+      if (width != this.contentWidth_) {
+        this.contentWidth_ = width;
+        $('bottom-panel-footer').style.width = width + 'px';
+      }
+
+      // Finally, dispatch the layout method to the current page.
+      var currentPage = opt_page || this.cardSlider.currentCardValue;
+      currentPage.layout(opt_animate);
+    },
+
+    /**
+     * @return {number} The width of the Bottom Panel's content.
+     */
+    get contentWidth() {
+      return this.contentWidth_;
+    },
+
+    /**
+     * @return {number} The width of the Bottom Panel's content.
+     * @private
+     */
+    calculateContentWidth_: function() {
+      var windowWidth = cr.doc.documentElement.clientWidth;
+      var margin = 2 * BOTTOM_PANEL_HORIZONTAL_MARGIN;
+
+      var width;
+      if (windowWidth >= MAX_BOTTOM_PANEL_WIDTH) {
+        width = MAX_BOTTOM_PANEL_WIDTH - margin;
+      } else if (windowWidth >= NORMAL_BOTTOM_PANEL_WIDTH) {
+        width = windowWidth - margin;
+      } else if (windowWidth >= MIN_BOTTOM_PANEL_WIDTH) {
+        // Interpolation between the previous and next states.
+        var minMargin = MIN_BOTTOM_PANEL_WIDTH - MIN_BOTTOM_PANEL_CONTENT_WIDTH;
+        var factor = (windowWidth - MIN_BOTTOM_PANEL_WIDTH) /
+            (NORMAL_BOTTOM_PANEL_WIDTH - MIN_BOTTOM_PANEL_WIDTH);
+        var interpolatedMargin = minMargin + factor * (margin - minMargin);
+        width = windowWidth - interpolatedMargin;
+      } else {
+        width = MIN_BOTTOM_PANEL_CONTENT_WIDTH;
+      }
+
+      return width;
+    },
+
+    /**
+     * Animates the display of the Bottom Panel.
+     * @param {boolean} show Whether or not to show the Bottom Panel.
+     */
+    showBottomPanel_: function(show) {
+      $('bottom-panel').classList.toggle('hide-bottom-panel', !show);
     },
   };
 
@@ -682,10 +822,11 @@ cr.define('ntp', function() {
     doWhenAllSectionsReady(function() {
       // Tell the slider about the pages.
       newTabView.updateSliderCards();
+      newTabView.onReady();
       // Restore the visibility only after calling updateSliderCards to avoid
       // flickering, otherwise for a small fraction of a second the Page List is
       // partially rendered.
-      newTabView.cardSlider.frame_.style.visibility = 'visible';
+      $('bottom-panel').style.visibility = 'visible';
       if (loadTimeData.valueExists('serverpromo')) {
         var promo = loadTimeData.getString('serverpromo');
         var tags = ['IMG'];
@@ -712,7 +853,7 @@ cr.define('ntp', function() {
    * The number of sections to wait on.
    * @type {number}
    */
-  var sectionsToWaitFor = 3;
+  var sectionsToWaitFor = 1;
 
   /**
    * Queued callbacks which lie in wait for all sections to be ready.
@@ -857,7 +998,6 @@ cr.define('ntp', function() {
 
   function setRecentlyClosedTabs(dataList) {
     newTabView.recentlyClosedPage.setDataList(dataList);
-    cr.dispatchSimpleEvent(document, 'sectionready', true, true);
   }
 
   function setMostVisitedPages(data, hasBlacklistedUrls) {
@@ -878,7 +1018,6 @@ cr.define('ntp', function() {
 
   function setForeignSessions(dataList, isTabSyncEnabled) {
     newTabView.otherDevicesPage.setDataList(dataList);
-    cr.dispatchSimpleEvent(document, 'sectionready', true, true);
   }
 
   function getThumbnailUrl(url) {
@@ -926,10 +1065,6 @@ cr.define('ntp', function() {
     return newTabView.appsPrefChangedCallback.apply(newTabView, arguments);
   }
 
-  function appsReordered() {
-    return newTabView.appsReordered.apply(newTabView, arguments);
-  }
-
   function getAppsCallback() {
     return newTabView.getAppsCallback.apply(newTabView, arguments);
   }
@@ -946,6 +1081,14 @@ cr.define('ntp', function() {
     newTabView.highlightAppId = appId;
   }
 
+  function layout(opt_animate) {
+    newTabView.layout(opt_animate);
+  }
+
+  function getContentWidth() {
+    return newTabView.contentWidth;
+  }
+
   // Return an object with all the exports
   return {
     APP_LAUNCH: APP_LAUNCH,
@@ -956,15 +1099,17 @@ cr.define('ntp', function() {
     getAppsCallback: getAppsCallback,
     getAppsPageIndex: getAppsPageIndex,
     getCardSlider: getCardSlider,
+    getContentWidth: getContentWidth,
     getThumbnailUrl: getThumbnailUrl,
     incrementHoveredThumbnailCount: incrementHoveredThumbnailCount,
+    layout: layout,
     logTimeToClickAndHoverCount: logTimeToClickAndHoverCount,
-    onLoad: onLoad,
     // This property is being used to disable NTP5 features that are not ready
     // yet. Right now this is being used just to disable Apps page.
     // TODO(pedrosimonetti): Remove this property after porting Apps Page.
     ntp5: true,
     NtpFollowAction: NtpFollowAction,
+    onLoad: onLoad,
     setAppToBeHighlighted: setAppToBeHighlighted,
     setBookmarkBarAttached: setBookmarkBarAttached,
     setForeignSessions: setForeignSessions,

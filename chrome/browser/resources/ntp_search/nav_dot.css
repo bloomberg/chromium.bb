@@ -3,6 +3,7 @@
  * found in the LICENSE file. */
 
 #dot-list {
+  display: none;
   height: 15px;
   margin: 10px 0 8px;
   overflow: hidden;

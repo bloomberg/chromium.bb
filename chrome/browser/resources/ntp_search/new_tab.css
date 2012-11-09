@@ -70,17 +70,19 @@ body {
 }
 
 #bottom-panel {
-  -webkit-transition: opacity 250ms, -webkit-transform 250ms;
+  -webkit-transition: opacity 200ms;
   position: absolute;
+  top: 364px;
+  visibility: hidden;
   width: 100%;
 }
 
 .hide-bottom-panel {
-  -webkit-transform: translate3d(0, 170px, 0);
   opacity: 0;
 }
 
 #card-slider-frame {
+  height: 92px;
   overflow: hidden;
 }
 
@@ -90,23 +92,14 @@ body {
   position: static;
 }
 
-#bottom-panel-header,
 #bottom-panel-footer,
 #bottom-panel-toolbar {
   margin: 10px auto;
   text-align: center;
 }
 
-#bottom-panel-toolbar,
-#bottom-panel-footer {
-  height: 18px;
-}
-
-#bottom-panel-header {
-  margin-top: 38px;
-}
-
 #bottom-panel-toolbar {
+  height: 18px;
   margin-top: 8px;
 }
 

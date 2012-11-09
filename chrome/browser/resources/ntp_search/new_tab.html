@@ -63,19 +63,26 @@
 <script src="../shared/js/cr/ui/context_menu_button.js"></script>
 <script src="../shared/js/cr/ui/touch_handler.js"></script>
 
-<script src="tile_page.js"></script>
+<script src="new_tab.js"></script>
 <script src="dot_list.js"></script>
+<script src="nav_dot.js"></script>
+<script src="tile_page.js"></script>
 <script src="thumbnail_page.js"></script>
 <script src="most_visited_page.js"></script>
-<script src="nav_dot.js"></script>
-<script src="new_tab.js"></script>
 <script src="recently_closed_page.js"></script>
 <script src="other_devices_page.js"></script>
 </head>
 
 <body id="ntp5" i18n-values=".style.fontSize:fontsize">
   <div id="bottom-panel">
-    <div id="bottom-panel-header">
+    <div id="card-slider-frame">
+      <div id="page-list"></div>
+      <div id="attribution">
+        <span i18n-content="attributionintro"></span>
+        <img id="attribution-img">
+      </div>
+    </div>
+    <div id="bottom-panel-footer">
       <ul id="dot-list"></ul>
       <div id="bottom-panel-toolbar">
         <div id="notification-container" class="inactive" hidden>
@@ -85,21 +92,6 @@
             <button class="close-button custom-appearance"></button>
           </div>
         </div>
-        <div id="top-scroller">
-          <!-- TODO(jeremycho): Place top chevron here. -->
-        </div>
-      </div>
-    </div>
-    <div id="card-slider-frame">
-      <div id="page-list"></div>
-      <div id="attribution">
-        <span i18n-content="attributionintro"></span>
-        <img id="attribution-img">
-      </div>
-    </div>
-    <div id="bottom-panel-footer">
-      <div id="bottom-scroller">
-        <!-- TODO(jeremycho): Place bottom chevron here. -->
       </div>
     </div>
   </div>

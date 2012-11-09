@@ -30,7 +30,7 @@
 
 .tile-row {
   -webkit-transition: opacity 200ms;
-  height: 105px;
+  height: 92px;
   text-align: start;
   white-space: nowrap;
 }
@@ -42,11 +42,6 @@
 .animate-grid-width {
   -webkit-transform: translate3d(0, 0, 0);
   -webkit-transition: width 200ms;
-}
-
-.animate-frame-height {
-  /* TODO(pedrosimonetti): Confirm the easing function with Marcin. */
-  -webkit-transition: height 200ms;
 }
 
 /* -----------------------------------------------------------------------------
@@ -116,10 +111,6 @@
 
 .animate-tile-repositioning.undo-removal .target-tile {
   -webkit-transition-delay: 200ms;
-}
-
-.animate-tile-repositioning .tile .title {
-  display: none;
 }
 
 .animate-tile-repositioning .animate-hide-tile {

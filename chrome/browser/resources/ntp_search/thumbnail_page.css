@@ -7,10 +7,10 @@
 ----------------------------------------------------------------------------- */
 
 .thumbnail-page .tile-cell {
-  -webkit-margin-start: 18px;
-  height: 80px;
-  margin-bottom: 22px;
-  width: 132px;
+  -webkit-margin-start: 12px;
+  height: 68px;
+  margin-bottom: 12px;
+  width: 110px;
 }
 
 .thumbnail-page .tile {
@@ -19,10 +19,10 @@
   border-radius: 2px;
   box-shadow: 0 1px 0 rgba(255, 255, 255, .7);
   display: block;
-  height: 78px;
+  height: 66px;
   outline: none;  /* Avoids outline glitch when blacklisting a thumbnail. */
   position: absolute;
-  width: 130px;
+  width: 108px;
 }
 
 .thumbnail-page .tile:hover,
@@ -45,13 +45,13 @@
 .thumbnail .thumbnail-image {
   /* These values are equivalent to background-size: 100%.
      TODO(jeremycho): Resolve the discrepancy with the cell dimensions above. */
-  background-size: 130px 81px;
+  background-size: 110px 68px;
 }
 
 .thumbnail .title,
 .thumbnail-banner {
+  bottom: -18px;
   color: #777;
-  display: none;
   font-size: 0.9167em;
   overflow: hidden;
   position: absolute;
@@ -67,11 +67,6 @@
   -webkit-background-clip: padding-box;
 }
 
-.thumbnail:hover .title {
-  bottom: -18px;
-  display: block;
-}
-
 .thumbnail-wrapper {
   display: block;
   height: 100%;
@@ -80,7 +75,7 @@
 }
 
 .thumbnail-banner {
-  bottom: 18px;
+  bottom: 13px;
   display: block;
   font-size: 1.14em;
   margin: 0 7px;
@@ -91,7 +86,7 @@
   height: 16px;
   margin: 0 auto;
   position: relative;
-  top: 22px;
+  top: 19px;
   width: 16px;
 }
 

@@ -162,19 +162,6 @@ cr.define('ntp', function() {
   ThumbnailPage.prototype = {
     __proto__: TilePage.prototype,
 
-    config_: {
-      // The width of a cell.
-      cellWidth: 132,
-      // The start margin of a cell (left or right according to text direction).
-      cellMarginStart: 18,
-      // The border panel horizontal margin.
-      bottomPanelHorizontalMargin: 100,
-      // The height of the tile row.
-      rowHeight: 105,
-      // The maximum number of Tiles to be displayed.
-      maxTileCount: 10
-    },
-
     /**
      * Initializes a ThumbnailPage.
      */
