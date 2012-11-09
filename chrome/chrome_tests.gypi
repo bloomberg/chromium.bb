@@ -1014,7 +1014,7 @@
     # This is the new ChromeDriver based on DevTools.
     {
       'target_name': 'chromedriver2',
-      'type': 'shared_library',
+      'type': 'loadable_module',
       'dependencies': [
         'chromedriver2_lib',
         '../base/base.gyp:base',
