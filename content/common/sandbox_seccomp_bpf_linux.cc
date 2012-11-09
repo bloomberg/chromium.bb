@@ -1269,6 +1269,8 @@ ErrorCode RendererOrWorkerProcessPolicy(int sysno, void *) {
     case __NR_times:
     case __NR_uname:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
+    case __NR_prlimit64:
+      return ErrorCode(EPERM);  // See crbug.com/160157.
     default:
 #if defined(__x86_64__) || defined(__arm__)
       if (IsSystemVSharedMemory(sysno))
