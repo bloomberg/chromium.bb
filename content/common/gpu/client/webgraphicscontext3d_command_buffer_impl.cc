@@ -1586,7 +1586,15 @@ DELEGATE_TO_GL_3(bindUniformLocationCHROMIUM, BindUniformLocationCHROMIUM,
 
 DELEGATE_TO_GL(shallowFlushCHROMIUM,ShallowFlushCHROMIUM);
 
-DELEGATE_TO_GL_1(genMailboxCHROMIUM, GenMailboxCHROMIUM, WGC3Dbyte*)
+void WebGraphicsContext3DCommandBufferImpl::genMailboxCHROMIUM(
+    WGC3Dbyte* name) {
+  std::vector<std::string> names(1);
+  if (command_buffer_->GenerateMailboxNames(1, &names))
+    memcpy(name, names[0].c_str(), GL_MAILBOX_SIZE_CHROMIUM);
+  else
+    synthesizeGLError(GL_OUT_OF_MEMORY);
+}
+
 DELEGATE_TO_GL_2(produceTextureCHROMIUM, ProduceTextureCHROMIUM,
                  WGC3Denum, const WGC3Dbyte*)
 DELEGATE_TO_GL_2(consumeTextureCHROMIUM, ConsumeTextureCHROMIUM,
