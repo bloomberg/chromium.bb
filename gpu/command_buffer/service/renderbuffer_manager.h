@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_RENDERBUFFER_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_RENDERBUFFER_MANAGER_H_
 
+#include <string>
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
@@ -78,6 +79,8 @@ class GPU_EXPORT RenderbufferManager {
     }
 
     size_t EstimatedSize();
+
+    void AddToSignature(std::string* signature) const;
 
    private:
     friend class RenderbufferManager;

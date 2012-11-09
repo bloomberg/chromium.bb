@@ -4,10 +4,21 @@
 
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace gpu {
 namespace gles2 {
+
+FramebufferManager::FramebufferInfo::FramebufferComboCompleteMap*
+    FramebufferManager::FramebufferInfo::framebuffer_combo_complete_map_;
+
+void FramebufferManager::FramebufferInfo::ClearFramebufferCompleteComboMap() {
+  if (framebuffer_combo_complete_map_) {
+    framebuffer_combo_complete_map_->clear();
+  }
+}
 
 class RenderbufferAttachment
     : public FramebufferManager::FramebufferInfo::Attachment {
@@ -70,6 +81,12 @@ class RenderbufferAttachment
 
   RenderbufferManager::RenderbufferInfo* renderbuffer() const {
     return renderbuffer_.get();
+  }
+
+  virtual void AddToSignature(
+      TextureManager* texture_manager, std::string* signature) const OVERRIDE {
+    DCHECK(signature);
+    renderbuffer_->AddToSignature(signature);
   }
 
  protected:
@@ -158,6 +175,12 @@ class TextureAttachment
         attachment_type);
     uint32 have = GLES2Util::GetChannelsForFormat(internal_format);
     return (need & have) != 0;
+  }
+
+  virtual void AddToSignature(
+      TextureManager* texture_manager, std::string* signature) const OVERRIDE {
+    DCHECK(signature);
+    texture_manager->AddToSignature(texture_, target_, level_, signature);
   }
 
  protected:
@@ -315,6 +338,34 @@ GLenum FramebufferManager::FramebufferInfo::IsPossiblyComplete() const {
   // This does not mean the framebuffer is actually complete. It just means our
   // checks passed.
   return GL_FRAMEBUFFER_COMPLETE;
+}
+
+GLenum FramebufferManager::FramebufferInfo::GetStatus(
+    TextureManager* texture_manager, GLenum target) const {
+  // Check if we have this combo already.
+  std::string signature(base::StringPrintf("|FBO|target=%04x", target));
+  for (AttachmentMap::const_iterator it = attachments_.begin();
+       it != attachments_.end(); ++it) {
+    Attachment* attachment = it->second;
+    signature += base::StringPrintf(
+        "|Attachment|attachmentpoint=%04x", it->first);
+    attachment->AddToSignature(texture_manager, &signature);
+  }
+
+  if (!framebuffer_combo_complete_map_) {
+    framebuffer_combo_complete_map_ = new FramebufferComboCompleteMap();
+  }
+
+  FramebufferComboCompleteMap::const_iterator it =
+      framebuffer_combo_complete_map_->find(signature);
+  if (it != framebuffer_combo_complete_map_->end()) {
+    return GL_FRAMEBUFFER_COMPLETE;
+  }
+  GLenum result = glCheckFramebufferStatusEXT(target);
+  if (result == GL_FRAMEBUFFER_COMPLETE) {
+    framebuffer_combo_complete_map_->insert(std::make_pair(signature, true));
+  }
+  return result;
 }
 
 bool FramebufferManager::FramebufferInfo::IsCleared() const {

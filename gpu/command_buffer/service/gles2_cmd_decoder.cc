@@ -2615,7 +2615,8 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
       texture_manager()->HaveUnclearedMips()) {
     if (!framebuffer->IsCleared()) {
       // Can we clear them?
-      if (glCheckFramebufferStatusEXT(target) != GL_FRAMEBUFFER_COMPLETE) {
+      if (framebuffer->GetStatus(texture_manager(), target) !=
+          GL_FRAMEBUFFER_COMPLETE) {
         SetGLError(
             GL_INVALID_FRAMEBUFFER_OPERATION, func_name,
             "framebuffer incomplete (clear)");
@@ -2626,7 +2627,8 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
   }
 
   if (!framebuffer_manager()->IsComplete(framebuffer)) {
-    if (glCheckFramebufferStatusEXT(target) != GL_FRAMEBUFFER_COMPLETE) {
+    if (framebuffer->GetStatus(texture_manager(), target) !=
+        GL_FRAMEBUFFER_COMPLETE) {
       SetGLError(
           GL_INVALID_FRAMEBUFFER_OPERATION, func_name,
           "framebuffer incomplete (check)");
@@ -4371,7 +4373,7 @@ GLenum GLES2DecoderImpl::DoCheckFramebufferStatus(GLenum target) {
   if (completeness != GL_FRAMEBUFFER_COMPLETE) {
     return completeness;
   }
-  return glCheckFramebufferStatusEXT(target);
+  return framebuffer->GetStatus(texture_manager(), target);
 }
 
 void GLES2DecoderImpl::DoFramebufferTexture2D(

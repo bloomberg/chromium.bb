@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_TEXTURE_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_TEXTURE_MANAGER_H_
 
+#include <string>
 #include <vector>
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
@@ -279,6 +280,11 @@ class GPU_EXPORT TextureManager {
         GLint level,
         gfx::GLImage* image);
 
+    // Appends a signature for the given level.
+    void AddToSignature(
+        const FeatureInfo* feature_info,
+        GLenum target, GLint level, std::string* signature) const;
+
     // Info about each face and level of texture.
     std::vector<std::vector<LevelInfo> > level_infos_;
 
@@ -509,6 +515,12 @@ class GPU_EXPORT TextureManager {
       GLenum target,
       GLint level,
       gfx::GLImage* image);
+
+  void AddToSignature(
+      TextureInfo* info,
+      GLenum target,
+      GLint level,
+      std::string* signature) const;
 
  private:
   // Helper for Initialize().

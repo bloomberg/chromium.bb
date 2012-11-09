@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "base/logging.h"
 #include "base/debug/trace_event.h"
+#include "base/stringprintf.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -40,6 +41,14 @@ size_t RenderbufferManager::RenderbufferInfo::EstimatedSize() {
          GLES2Util::RenderbufferBytesPerPixel(internal_format_);
 }
 
+void RenderbufferManager::RenderbufferInfo::AddToSignature(
+    std::string* signature) const {
+  DCHECK(signature);
+  *signature += base::StringPrintf(
+      "|Renderbuffer|internal_format=%04x|samples=%d|width=%d|height=%d",
+      internal_format_, samples_, width_, height_);
+}
+
 RenderbufferManager::RenderbufferInfo::~RenderbufferInfo() {
   if (manager_) {
     if (manager_->have_context_) {
@@ -50,6 +59,7 @@ RenderbufferManager::RenderbufferInfo::~RenderbufferInfo() {
     manager_ = NULL;
   }
 }
+
 
 void RenderbufferManager::UpdateMemRepresented() {
   renderbuffer_memory_tracker_->UpdateMemRepresented(mem_represented_);

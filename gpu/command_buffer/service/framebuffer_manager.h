@@ -44,6 +44,8 @@ class GPU_EXPORT FramebufferManager {
       virtual bool CanRenderTo() const = 0;
       virtual void DetachFromFramebuffer() = 0;
       virtual bool ValidForAttachmentType(GLenum attachment_type) = 0;
+      virtual void AddToSignature(
+          TextureManager* texture_manager, std::string* signature) const = 0;
 
      protected:
       friend class base::RefCounted<Attachment>;
@@ -103,8 +105,13 @@ class GPU_EXPORT FramebufferManager {
     // means it passed our tests.
     GLenum IsPossiblyComplete() const;
 
+    // Implements optimized glGetFramebufferStatus.
+    GLenum GetStatus(TextureManager* texture_manager, GLenum target) const;
+
     // Check all attachments are cleared
     bool IsCleared() const;
+
+    static void ClearFramebufferCompleteComboMap();
 
    private:
     friend class FramebufferManager;
@@ -143,6 +150,11 @@ class GPU_EXPORT FramebufferManager {
     // A map of attachments.
     typedef base::hash_map<GLenum, Attachment::Ref> AttachmentMap;
     AttachmentMap attachments_;
+
+    // A map of successful frame buffer combos. If it's in the map
+    // it should be FRAMEBUFFER_COMPLETE.
+    typedef base::hash_map<std::string, bool> FramebufferComboCompleteMap;
+    static FramebufferComboCompleteMap* framebuffer_combo_complete_map_;
 
     DISALLOW_COPY_AND_ASSIGN(FramebufferInfo);
   };

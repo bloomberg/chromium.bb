@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "base/bits.h"
+#include "base/stringprintf.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -178,6 +179,34 @@ bool TextureManager::TextureInfo::CanRender(
   } else {
     return true;
   }
+}
+
+void TextureManager::TextureInfo::AddToSignature(
+    const FeatureInfo* feature_info,
+    GLenum target,
+    GLint level,
+    std::string* signature) const {
+  DCHECK(feature_info);
+  DCHECK(signature);
+  DCHECK_GE(level, 0);
+  DCHECK_LT(static_cast<size_t>(GLTargetToFaceIndex(target)),
+            level_infos_.size());
+  DCHECK_LT(static_cast<size_t>(level),
+            level_infos_[GLTargetToFaceIndex(target)].size());
+  const TextureInfo::LevelInfo& info =
+      level_infos_[GLTargetToFaceIndex(target)][level];
+  *signature += base::StringPrintf(
+      "|Texture|target=%04x|level=%d|internal_format=%04x"
+      "|width=%d|height=%d|depth=%d|border=%d|format=%04x|type=%04x"
+      "|image=%d|canrender=%d|canrenderto=%d|npot_=%d"
+      "|min_filter=%04x|mag_filter=%04x|wrap_s=%04x|wrap_t=%04x"
+      "|usage=%04x",
+      target, level, info.internal_format,
+      info.width, info.height, info.depth, info.border,
+      info.format, info.type, info.image.get() != NULL,
+      CanRender(feature_info), CanRenderTo(), npot_,
+      min_filter_, mag_filter_, wrap_s_, wrap_t_,
+      usage_);
 }
 
 bool TextureManager::TextureInfo::MarkMipmapsGenerated(
@@ -1127,6 +1156,14 @@ void TextureManager::SetLevelImage(
   if (!info->SafeToRenderFrom()) {
     ++num_unsafe_textures_;
   }
+}
+
+void TextureManager::AddToSignature(
+    TextureInfo* info,
+    GLenum target,
+    GLint level,
+    std::string* signature) const {
+  info->AddToSignature(feature_info_.get(), target, level, signature);
 }
 
 }  // namespace gles2

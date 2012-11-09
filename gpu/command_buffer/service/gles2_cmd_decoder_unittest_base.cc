@@ -84,6 +84,7 @@ void GLES2DecoderTestBase::InitDecoder(
     bool request_depth,
     bool request_stencil,
     bool bind_generates_resource) {
+  FramebufferManager::FramebufferInfo::ClearFramebufferCompleteComboMap();
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gfx::GLInterface::SetGLInterface(gl_.get());
   group_ = ContextGroup::Ref(new ContextGroup(NULL,

@@ -1019,6 +1019,121 @@ TEST_F(TextureInfoTest, GetLevelImage) {
   EXPECT_TRUE(info_->GetLevelImage(GL_TEXTURE_2D, 1) == NULL);
 }
 
+namespace {
+
+bool InSet(std::set<std::string>* string_set, const std::string& str) {
+  std::pair<std::set<std::string>::iterator, bool> result =
+      string_set->insert(str);
+  return !result.second;
+}
+
+}  // anonymous namespace
+
+TEST_F(TextureInfoTest, AddToSignature) {
+  manager_.SetInfoTarget(info_, GL_TEXTURE_2D);
+  manager_.SetLevelInfo(info_,
+      GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
+  std::string signature1;
+  std::string signature2;
+  manager_.AddToSignature(info_, GL_TEXTURE_2D, 1, &signature1);
+
+  std::set<std::string> string_set;
+  EXPECT_FALSE(InSet(&string_set, signature1));
+
+  // check changing 1 thing makes a different signature.
+  manager_.SetLevelInfo(info_,
+      GL_TEXTURE_2D, 1, GL_RGBA, 4, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
+  manager_.AddToSignature(info_, GL_TEXTURE_2D, 1, &signature2);
+  EXPECT_FALSE(InSet(&string_set, signature2));
+
+  // check putting it back makes the same signature.
+  manager_.SetLevelInfo(info_,
+      GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
+  signature2.clear();
+  manager_.AddToSignature(info_, GL_TEXTURE_2D, 1, &signature2);
+  EXPECT_EQ(signature1, signature2);
+
+  // Check setting cleared status does not change signature.
+  manager_.SetLevelInfo(info_,
+      GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, false);
+  signature2.clear();
+  manager_.AddToSignature(info_, GL_TEXTURE_2D, 1, &signature2);
+  EXPECT_EQ(signature1, signature2);
+
+  // Check changing other settings changes signature.
+  manager_.SetLevelInfo(info_,
+      GL_TEXTURE_2D, 1, GL_RGBA, 2, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, false);
+  signature2.clear();
+  manager_.AddToSignature(info_, GL_TEXTURE_2D, 1, &signature2);
+  EXPECT_FALSE(InSet(&string_set, signature2));
+
+  manager_.SetLevelInfo(info_,
+      GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, false);
+  signature2.clear();
+  manager_.AddToSignature(info_, GL_TEXTURE_2D, 1, &signature2);
+  EXPECT_FALSE(InSet(&string_set, signature2));
+
+  manager_.SetLevelInfo(info_,
+      GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, false);
+  signature2.clear();
+  manager_.AddToSignature(info_, GL_TEXTURE_2D, 1, &signature2);
+  EXPECT_FALSE(InSet(&string_set, signature2));
+
+  manager_.SetLevelInfo(info_,
+      GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, false);
+  signature2.clear();
+  manager_.AddToSignature(info_, GL_TEXTURE_2D, 1, &signature2);
+  EXPECT_FALSE(InSet(&string_set, signature2));
+
+  manager_.SetLevelInfo(info_,
+      GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1, 0, GL_RGBA, GL_FLOAT,
+      false);
+  signature2.clear();
+  manager_.AddToSignature(info_, GL_TEXTURE_2D, 1, &signature2);
+  EXPECT_FALSE(InSet(&string_set, signature2));
+
+  // put it back
+  manager_.SetLevelInfo(info_,
+      GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+      false);
+  signature2.clear();
+  manager_.AddToSignature(info_, GL_TEXTURE_2D, 1, &signature2);
+  EXPECT_EQ(signature1, signature2);
+
+  // check changing parameters changes signature.
+  manager_.SetParameter(info_, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  signature2.clear();
+  manager_.AddToSignature(info_, GL_TEXTURE_2D, 1, &signature2);
+  EXPECT_FALSE(InSet(&string_set, signature2));
+
+  manager_.SetParameter(info_, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+  manager_.SetParameter(info_, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  signature2.clear();
+  manager_.AddToSignature(info_, GL_TEXTURE_2D, 1, &signature2);
+  EXPECT_FALSE(InSet(&string_set, signature2));
+
+  manager_.SetParameter(info_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  manager_.SetParameter(info_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  signature2.clear();
+  manager_.AddToSignature(info_, GL_TEXTURE_2D, 1, &signature2);
+  EXPECT_FALSE(InSet(&string_set, signature2));
+
+  manager_.SetParameter(info_, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  manager_.SetParameter(info_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  signature2.clear();
+  manager_.AddToSignature(info_, GL_TEXTURE_2D, 1, &signature2);
+  EXPECT_FALSE(InSet(&string_set, signature2));
+
+  // Check putting it back genenerates the same signature
+  manager_.SetParameter(info_, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  signature2.clear();
+  manager_.AddToSignature(info_, GL_TEXTURE_2D, 1, &signature2);
+  EXPECT_EQ(signature1, signature2);
+
+  // Check the set was acutally getting different signatures.
+  EXPECT_EQ(11u, string_set.size());
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

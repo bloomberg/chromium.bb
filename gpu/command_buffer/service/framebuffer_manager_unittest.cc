@@ -8,6 +8,8 @@
 #include "gpu/command_buffer/common/gl_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::Return;
+
 namespace gpu {
 namespace gles2 {
 
@@ -628,6 +630,84 @@ TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
   EXPECT_TRUE(manager_.IsComplete(info_));
   info_->UnbindTexture(kTarget1, tex_info2);
   EXPECT_FALSE(manager_.IsComplete(info_));
+}
+
+TEST_F(FramebufferInfoTest, Gettatus) {
+  const GLuint kRenderbufferClient1Id = 33;
+  const GLuint kRenderbufferService1Id = 333;
+  const GLuint kTextureClient2Id = 34;
+  const GLuint kTextureService2Id = 334;
+  const GLenum kTarget1 = GL_TEXTURE_2D;
+  const GLint kLevel1 = 0;
+
+  renderbuffer_manager_.CreateRenderbufferInfo(
+      kRenderbufferClient1Id, kRenderbufferService1Id);
+  RenderbufferManager::RenderbufferInfo* rb_info1 =
+      renderbuffer_manager_.GetRenderbufferInfo(kRenderbufferClient1Id);
+  ASSERT_TRUE(rb_info1 != NULL);
+  texture_manager_.CreateTextureInfo(kTextureClient2Id, kTextureService2Id);
+  TextureManager::TextureInfo::Ref tex_info2 =
+      texture_manager_.GetTextureInfo(kTextureClient2Id);
+  ASSERT_TRUE(tex_info2 != NULL);
+  texture_manager_.SetInfoTarget(tex_info2, GL_TEXTURE_2D);
+
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+  info_->GetStatus(&texture_manager_, GL_FRAMEBUFFER);
+
+  // Check a second call for the same type does not call anything
+  info_->GetStatus(&texture_manager_, GL_FRAMEBUFFER);
+
+  // Check changing the attachments calls CheckFramebufferStatus.
+  info_->AttachTexture(GL_COLOR_ATTACHMENT0, tex_info2, kTarget1, kLevel1);
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+  info_->GetStatus(&texture_manager_, GL_FRAMEBUFFER);
+
+  // Check a second call for the same type does not call anything.
+  info_->GetStatus(&texture_manager_, GL_FRAMEBUFFER);
+
+  // Check a second call with a different target calls CheckFramebufferStatus.
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+  info_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
+
+  // Check a second call for the same type does not call anything.
+  info_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
+
+  // Check adding another attachment calls CheckFramebufferStatus.
+  info_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, rb_info1);
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+  info_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
+
+  // Check a second call for the same type does not call anything.
+  info_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
+
+  // Check changing the format calls CheckFramebuffferStatus.
+  texture_manager_.SetParameter(tex_info2, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+  info_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
+
+  // Check since it did not return FRAMEBUFFER_COMPLETE that it calls
+  // CheckFramebufferStatus
+  info_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
+
+  // Check putting it back does not call CheckFramebufferStatus.
+  texture_manager_.SetParameter(tex_info2, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  info_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
+
+  // Check Unbinding does not call CheckFramebufferStatus
+  info_->UnbindRenderbuffer(GL_RENDERBUFFER, rb_info1);
+  info_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
 }
 
 }  // namespace gles2
