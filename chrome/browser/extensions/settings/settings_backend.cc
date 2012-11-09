@@ -57,13 +57,15 @@ SyncableSettingsStorage* SettingsBackend::GetOrCreateStorageWithSyncData(
     return maybe_storage->second.get();
   }
 
-  ValueStore* storage = storage_factory_->Create(base_path_, extension_id);
+  std::string error;
+  ValueStore* storage =
+      storage_factory_->Create(base_path_, extension_id, &error);
   if (storage) {
     // It's fine to create the quota enforcer underneath the sync layer, since
     // sync will only go ahead if each underlying storage operation succeeds.
     storage = new SettingsStorageQuotaEnforcer(quota_, storage);
   } else {
-    storage = new FailingValueStore();
+    storage = new FailingValueStore(error);
   }
 
   linked_ptr<SyncableSettingsStorage> syncable_storage(

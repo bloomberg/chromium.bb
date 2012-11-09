@@ -22,7 +22,8 @@ class LeveldbValueStore : public ValueStore {
   virtual ~LeveldbValueStore();
 
   // Create and open the database at the given path.
-  static LeveldbValueStore* Create(const FilePath& path);
+  // On failure, returns NULL and populates |error| with an error message.
+  static LeveldbValueStore* Create(const FilePath& path, std::string* error);
 
   // ValueStore implementation.
   virtual size_t GetBytesInUse(const std::string& key) OVERRIDE;

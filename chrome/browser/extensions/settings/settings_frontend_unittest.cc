@@ -34,8 +34,10 @@ const ValueStore::WriteOptions DEFAULTS = ValueStore::DEFAULTS;
 class NullSettingsStorageFactory : public SettingsStorageFactory {
  public:
   // SettingsStorageFactory implementation.
-  virtual ValueStore* Create(
-      const FilePath& base_path, const std::string& extension_id) OVERRIDE {
+  virtual ValueStore* Create(const FilePath& base_path,
+                             const std::string& extension_id,
+                             std::string* error) OVERRIDE {
+    *error = "NullSettingsStorageFactory";
     return NULL;
   }
 

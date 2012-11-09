@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
@@ -76,7 +77,8 @@ class ScopedSnapshot {
 }  // namespace
 
 // static
-LeveldbValueStore* LeveldbValueStore::Create(const FilePath& path) {
+LeveldbValueStore* LeveldbValueStore::Create(const FilePath& path,
+                                             std::string* error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
 #if defined(OS_POSIX)
@@ -90,10 +92,17 @@ LeveldbValueStore* LeveldbValueStore::Create(const FilePath& path) {
   leveldb::DB* db;
   leveldb::Status status = leveldb::DB::Open(options, os_path, &db);
   if (!status.ok()) {
-    LOG(WARNING) << "Failed to create leveldb at " << path.value() <<
-        ": " << status.ToString();
+    // |os_path| may contain sensitive data, and these strings are passed
+    // through to the extension, so strip that out.
+    std::string status_string = status.ToString();
+    ReplaceSubstringsAfterOffset(&status_string, 0u, os_path, "...");
+
+    *error = base::StringPrintf("Failed to open database: %s",
+                                status_string.c_str());
+    LOG(WARNING) << *error;
     return NULL;
   }
+
   return new LeveldbValueStore(path, db);
 }
 

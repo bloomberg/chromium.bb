@@ -17,9 +17,10 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   void Init(const FilePath& db_path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     DCHECK(!storage_);
-    storage_ = LeveldbValueStore::Create(db_path);
+    std::string error;
+    storage_ = LeveldbValueStore::Create(db_path, &error);
     if (!storage_)
-      storage_ = new FailingValueStore();
+      storage_ = new FailingValueStore(error);
   }
 
   // This variant is useful for testing (using a mock ValueStore).

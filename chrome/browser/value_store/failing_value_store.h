@@ -11,7 +11,7 @@
 // Settings storage area which fails every request.
 class FailingValueStore : public ValueStore {
  public:
-  FailingValueStore();
+  explicit FailingValueStore(const std::string& failure_message);
   virtual ~FailingValueStore();
 
   // ValueStore implementation.
@@ -32,6 +32,12 @@ class FailingValueStore : public ValueStore {
   virtual WriteResult Clear() OVERRIDE;
 
  private:
+  ValueStore::ReadResult ReadResultError();
+
+  ValueStore::WriteResult WriteResultError();
+
+  std::string failure_message_;
+
   DISALLOW_COPY_AND_ASSIGN(FailingValueStore);
 };
 

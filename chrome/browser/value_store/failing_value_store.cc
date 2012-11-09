@@ -6,21 +6,10 @@
 
 #include "base/logging.h"
 
-namespace {
-
-const char kGenericErrorMessage[] = "Failed to initialize settings";
-
-ValueStore::ReadResult ReadResultError() {
-  return ValueStore::MakeReadResult(kGenericErrorMessage);
+FailingValueStore::FailingValueStore(const std::string& failure_message)
+    : failure_message_(failure_message) {
+  DCHECK_NE("", failure_message);
 }
-
-ValueStore::WriteResult WriteResultError() {
-  return ValueStore::MakeWriteResult(kGenericErrorMessage);
-}
-
-}  // namespace
-
-FailingValueStore::FailingValueStore() {}
 
 FailingValueStore::~FailingValueStore() {}
 
@@ -76,4 +65,12 @@ ValueStore::WriteResult FailingValueStore::Remove(
 
 ValueStore::WriteResult FailingValueStore::Clear() {
   return WriteResultError();
+}
+
+ValueStore::ReadResult FailingValueStore::ReadResultError() {
+  return ValueStore::MakeReadResult(failure_message_);
+}
+
+ValueStore::WriteResult FailingValueStore::WriteResultError() {
+  return ValueStore::MakeWriteResult(failure_message_);
 }

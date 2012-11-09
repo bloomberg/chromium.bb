@@ -23,8 +23,9 @@ class SettingsStorageFactory
  public:
   // Creates a new ValueStore area for an extension under |base_path|.
   // Return NULL to indicate failure.  Must be called on the FILE thread.
-  virtual ValueStore* Create(
-      const FilePath& base_path, const std::string& extension_id) = 0;
+  virtual ValueStore* Create(const FilePath& base_path,
+                             const std::string& extension_id,
+                             std::string* error) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<SettingsStorageFactory>;
