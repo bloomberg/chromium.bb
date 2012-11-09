@@ -19,8 +19,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
-#include "net/base/upload_data.h"
-#include "net/base/upload_element.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_job.h"
@@ -33,7 +31,7 @@ namespace {
 // work. (If we used a test server, the PRE_Test and Test would have separate
 // instances running on separate ports.)
 
-base::LazyInstance<std::map<std::string, std::string> > g_file_contents =
+static base::LazyInstance<std::map<std::string, std::string> > file_contents =
     LAZY_INSTANCE_INITIALIZER;
 
 net::URLRequestJob* URLRequestFaker(
@@ -42,30 +40,7 @@ net::URLRequestJob* URLRequestFaker(
     const std::string& scheme) {
   return new net::URLRequestTestJob(
       request, network_delegate, net::URLRequestTestJob::test_headers(),
-      g_file_contents.Get()[request->url().path()], true);
-}
-
-base::LazyInstance<std::string> g_last_upload_bytes = LAZY_INSTANCE_INITIALIZER;
-
-net::URLRequestJob* URLRequestFakerForPostRequests(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const std::string& scheme) {
-  // Read the uploaded data and store it to g_last_upload_bytes.
-  const net::UploadData* upload_data = request->get_upload();
-  g_last_upload_bytes.Get().clear();
-  if (upload_data) {
-    const std::vector<net::UploadElement>* elements = upload_data->elements();
-    for (size_t i = 0; elements && i < elements->size(); ++i) {
-      if ((*elements)[i].type() == net::UploadElement::TYPE_BYTES) {
-        g_last_upload_bytes.Get() +=
-            std::string((*elements)[i].bytes(), (*elements)[i].bytes_length());
-      }
-    }
-  }
-  return new net::URLRequestTestJob(
-      request, network_delegate, net::URLRequestTestJob::test_headers(),
-      "<html><body>Data posted</body></html>", true);
+      file_contents.Get()[request->url().path()], true);
 }
 
 }  // namespace
@@ -73,18 +48,16 @@ net::URLRequestJob* URLRequestFakerForPostRequests(
 class BetterSessionRestoreTest : public InProcessBrowserTest {
  public:
   BetterSessionRestoreTest()
-      : fake_server_address_("http://www.test.com/"),
-        test_path_("session_restore/"),
-        title_pass_(ASCIIToUTF16("PASS")),
+      : title_pass_(ASCIIToUTF16("PASS")),
         title_storing_(ASCIIToUTF16("STORING")),
         title_error_write_failed_(ASCIIToUTF16("ERROR_WRITE_FAILED")),
-        title_error_empty_(ASCIIToUTF16("ERROR_EMPTY")) {
+        title_error_empty_(ASCIIToUTF16("ERROR_EMPTY")),
+        fake_server_address_("http://www.test.com/"),
+        test_path_("session_restore/") {
     // Set up the URL request filtering.
     std::vector<std::string> test_files;
     test_files.push_back("common.js");
-    test_files.push_back("cookies.html");
     test_files.push_back("local_storage.html");
-    test_files.push_back("post.html");
     test_files.push_back("session_cookies.html");
     test_files.push_back("session_storage.html");
     FilePath test_file_dir;
@@ -97,14 +70,11 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
       FilePath path = test_file_dir.AppendASCII(*it);
       std::string contents;
       CHECK(file_util::ReadFileToString(path, &contents));
-      g_file_contents.Get()["/" + test_path_ + *it] = contents;
+      file_contents.Get()["/" + test_path_ + *it] = contents;
       net::URLRequestFilter::GetInstance()->AddUrlHandler(
           GURL(fake_server_address_ + test_path_ + *it),
           &URLRequestFaker);
     }
-    net::URLRequestFilter::GetInstance()->AddUrlHandler(
-        GURL(fake_server_address_ + test_path_ + "posted.php"),
-        &URLRequestFakerForPostRequests);
   }
 
  protected:
@@ -150,23 +120,18 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     }
   }
 
- protected:
-  std::string fake_server_address_;
-  std::string test_path_;
-
  private:
   string16 title_pass_;
   string16 title_storing_;
   string16 title_error_write_failed_;
   string16 title_error_empty_;
+  std::string fake_server_address_;
+  std::string test_path_;
 
   DISALLOW_COPY_AND_ASSIGN(BetterSessionRestoreTest);
 };
 
-class ContinueWhereILeftOffTest : public BetterSessionRestoreTest {
-};
-
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_SessionCookies) {
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, PRE_SessionCookies) {
   // Set the startup preference to "continue where I left off" and visit a page
   // which stores a session cookie.
   SessionStartupPref::SetStartupPref(
@@ -174,30 +139,30 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_SessionCookies) {
   StoreDataWithPage("session_cookies.html");
 }
 
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, SessionCookies) {
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, SessionCookies) {
   // The browsing session will be continued; just wait for the page to reload
   // and check the stored data.
   CheckReloadedPageRestored();
 }
 
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_SessionStorage) {
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, PRE_SessionStorage) {
   SessionStartupPref::SetStartupPref(
       browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
   StoreDataWithPage("session_storage.html");
 }
 
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, SessionStorage) {
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, SessionStorage) {
   CheckReloadedPageRestored();
 }
 
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest,
                        PRE_PRE_LocalStorageClearedOnExit) {
   SessionStartupPref::SetStartupPref(
       browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
   StoreDataWithPage("local_storage.html");
 }
 
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest,
                        PRE_LocalStorageClearedOnExit) {
   // Normally localStorage is restored.
   CheckReloadedPageRestored();
@@ -206,43 +171,6 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
       SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
 }
 
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, LocalStorageClearedOnExit) {
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, LocalStorageClearedOnExit) {
   CheckReloadedPageNotRestored();
-}
-
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
-                       PRE_PRE_CookiesClearedOnExit) {
-  SessionStartupPref::SetStartupPref(
-      browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
-  StoreDataWithPage("cookies.html");
-}
-
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_CookiesClearedOnExit) {
-  // Normally cookies are restored.
-  CheckReloadedPageRestored();
-  // ... but not if the content setting is set to clear on exit.
-  CookieSettings::Factory::GetForProfile(browser()->profile())->
-      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
-}
-
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, CookiesClearedOnExit) {
-  CheckReloadedPageNotRestored();
-}
-
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_Post) {
-  SessionStartupPref::SetStartupPref(
-      browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
-  ui_test_utils::NavigateToURL(
-      browser(), GURL(fake_server_address_ + test_path_ + "post.html"));
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") !=
-              std::string::npos);
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") !=
-              std::string::npos);
-}
-
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, Post) {
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") !=
-              std::string::npos);
-  EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") !=
-              std::string::npos);
 }
