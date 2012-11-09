@@ -72,11 +72,20 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
   // Creates an adapter, using the thread associated with the given task
   // runner for posting messages. In normal use, the task runner will post to
   // the I/O thread of the process.
+  //
+  // If you use this constructor, you MUST call ConnectChannel after the
+  // NaClIPCAdapter is constructed, or the NaClIPCAdapter's channel will not be
+  // connected.
   NaClIPCAdapter(const IPC::ChannelHandle& handle, base::TaskRunner* runner);
 
   // Initializes with a given channel that's already created for testing
   // purposes. This function will take ownership of the given channel.
   NaClIPCAdapter(scoped_ptr<IPC::Channel> channel, base::TaskRunner* runner);
+
+  // Connect the channel. This must be called after the constructor that accepts
+  // an IPC::ChannelHandle, and causes the Channel to be connected on the IO
+  // thread.
+  void ConnectChannel();
 
   // Implementation of sendmsg. Returns the number of bytes written or -1 on
   // failure.

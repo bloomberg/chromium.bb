@@ -295,8 +295,11 @@ NaClIPCAdapter::NaClIPCAdapter(const IPC::ChannelHandle& handle,
       locked_data_() {
   io_thread_data_.channel_.reset(
       new IPC::Channel(handle, IPC::Channel::MODE_SERVER, this));
-  task_runner_->PostTask(FROM_HERE,
-      base::Bind(&NaClIPCAdapter::ConnectChannelOnIOThread, this));
+  // Note, we can not PostTask for ConnectChannelOnIOThread here. If we did,
+  // and that task ran before this constructor completes, the reference count
+  // would go to 1 and then to 0 because of the Task, before we've been returned
+  // to the owning scoped_refptr, which is supposed to give us our first
+  // ref-count.
 }
 
 NaClIPCAdapter::NaClIPCAdapter(scoped_ptr<IPC::Channel> channel,
@@ -306,6 +309,11 @@ NaClIPCAdapter::NaClIPCAdapter(scoped_ptr<IPC::Channel> channel,
       task_runner_(runner),
       locked_data_() {
   io_thread_data_.channel_ = channel.Pass();
+}
+
+void NaClIPCAdapter::ConnectChannel() {
+  task_runner_->PostTask(FROM_HERE,
+      base::Bind(&NaClIPCAdapter::ConnectChannelOnIOThread, this));
 }
 
 // Note that this message is controlled by the untrusted code. So we should be
@@ -523,6 +531,7 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
               IPC::Channel::GenerateVerifiedChannelID("nacl");
           scoped_refptr<NaClIPCAdapter> ipc_adapter(
               new NaClIPCAdapter(channel_handle, task_runner_));
+          ipc_adapter->ConnectChannel();
 #if defined(OS_POSIX)
           channel_handle.socket = base::FileDescriptor(
               ipc_adapter->TakeClientFileDescriptor(), true);

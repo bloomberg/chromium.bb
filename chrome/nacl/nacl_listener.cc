@@ -205,6 +205,8 @@ void NaClListener::OnMsgStart(const nacl::NaClStartParams& params) {
         IPC::Channel::GenerateVerifiedChannelID("nacl");
     scoped_refptr<NaClIPCAdapter> ipc_adapter(
         new NaClIPCAdapter(handle, io_thread_.message_loop_proxy()));
+    ipc_adapter->ConnectChannel();
+
     // Pass a NaClDesc to the untrusted side. This will hold a ref to the
     // NaClIPCAdapter.
     args->initial_ipc_desc = ipc_adapter->MakeNaClDesc();
