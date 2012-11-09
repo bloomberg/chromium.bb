@@ -290,7 +290,6 @@ class PackageBuilder(object):
       sys.exit(1)
     if options.trybot or options.buildbot:
       options.verbose = True
-      options.clobber = True
     if not targets:
       targets = sorted(packages.keys())
     targets = self.BuildOrder(targets)
