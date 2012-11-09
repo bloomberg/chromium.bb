@@ -44,10 +44,13 @@ StaleCacheFilesRemover::~StaleCacheFilesRemover() {
 void StaleCacheFilesRemover::OnInitialLoadFinished(DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  cache_->Iterate(
-      base::Bind(&StaleCacheFilesRemover::GetEntryInfoAndRemoveCacheIfNecessary,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&base::DoNothing));
+  if (error == DRIVE_FILE_OK) {
+    cache_->Iterate(
+        base::Bind(
+            &StaleCacheFilesRemover::GetEntryInfoAndRemoveCacheIfNecessary,
+            weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&base::DoNothing));
+  }
 }
 
 void StaleCacheFilesRemover::GetEntryInfoAndRemoveCacheIfNecessary(

@@ -236,7 +236,8 @@ bool DriveSyncClient::ShouldStopSyncLoop() {
 void DriveSyncClient::OnInitialLoadFinished(DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  StartProcessingBacklog();
+  if (error == DRIVE_FILE_OK)
+    StartProcessingBacklog();
 }
 
 void DriveSyncClient::OnFeedFromServerLoaded() {
