@@ -53,7 +53,7 @@ WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
           idb_transaction_id_, object_store_id, &idb_object_store_id, &ec));
   if (!object_store_id)
     return NULL;
-  return new RendererWebIDBObjectStoreImpl(object_store_id);
+  return new RendererWebIDBObjectStoreImpl(idb_object_store_id);
 }
 
 void RendererWebIDBTransactionImpl::commit() {
