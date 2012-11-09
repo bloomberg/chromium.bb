@@ -3,10 +3,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This script builds and runs the llvm test suite. It assumes that the source
-# has been checked out using gclient (build.sh git-sync).
-# Testsuite must be configured, then run, then report. Currently it
-# requires clean in between runs of different arch. TODO(dschuff): fix that
+# This script runs the LLVM regression tests and the LLVM testsuite.
+# These tests are tightly coupled to the LLVM build, and require that LLVM
+# has been built on this host by build.sh
+# It also assumes that the test suite source has been checked out
+# using gclient (build.sh git-sync).
+
+# The testsuite must be configured, then run, then reported. Currently it
+# requires clean in between runs of different arches.
+
+# The regression tests require nothing more than running 'make check' in the
+# build directory, but currently not all of the upstream tests pass in our
+# source tree, so we currently use the same known-failures mechanism that
+# the testsuite uses. Once we eliminate the locally-caused failures, we
+# should expect 'make check' to always pass and can get rid of the regression
+# known failures.
+
+# The testsuite has only been tested on x86-64 Linux, but the regression
+# tests should work on all supported architectures.
 
 set -o nounset
 set -o errexit
@@ -18,22 +32,35 @@ if [[ $(pwd) != */native_client ]]; then
   exit 1
 fi
 
-readonly NACL_ROOT="$(pwd)"
-readonly LLVM_TESTSUITE_SRC=${NACL_ROOT}/pnacl/git/llvm-test-suite
-readonly LLVM_TESTSUITE_BUILD=${NACL_ROOT}/pnacl/build/llvm-test-suite
+source pnacl/scripts/common-tools.sh
 
-readonly TC_SRC_LLVM=${NACL_ROOT}/pnacl/git/llvm
-readonly TC_BUILD_LLVM=${NACL_ROOT}/pnacl/build/llvm_x86_64
-readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-6}
+readonly NACL_ROOT="$(pwd)"
+readonly LLVM_TESTSUITE_SRC="${NACL_ROOT}/pnacl/git/llvm-test-suite"
+readonly LLVM_TESTSUITE_BUILD="${NACL_ROOT}/pnacl/build/llvm-test-suite"
+
+readonly TC_SRC_LLVM="${NACL_ROOT}/pnacl/git/llvm"
+readonly TC_BUILD_LLVM="${NACL_ROOT}/pnacl/build/llvm_${HOST_ARCH}"
+readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
 
 if [[ ${PNACL_TOOLCHAIN_LABEL} == "" ]]; then
   echo 'Must set env var PNACL_TOOLCHAIN_LABEL to locate pnacl tc!'
 fi
-readonly PNACL_BIN=${NACL_ROOT}/toolchain/${PNACL_TOOLCHAIN_LABEL}/newlib/bin
+readonly PNACL_BIN="${NACL_ROOT}/toolchain/${PNACL_TOOLCHAIN_LABEL}/newlib/bin"
 readonly PNACL_SDK_DIR=\
-${NACL_ROOT}/toolchain/${PNACL_TOOLCHAIN_LABEL}/newlib/sdk
-readonly PNACL_SCRIPTS=${NACL_ROOT}/pnacl/scripts
-readonly PARSE_REPORT=${PNACL_SCRIPTS}/parse_llvm_testsuite_report.py
+"${NACL_ROOT}/toolchain/${PNACL_TOOLCHAIN_LABEL}/newlib/sdk/lib"
+readonly PNACL_SCRIPTS="${NACL_ROOT}/pnacl/scripts"
+readonly PARSE_REPORT="${PNACL_SCRIPTS}/parse_llvm_test_report.py"
+readonly LIT_KNOWN_FAILURES="$(pwd)/pnacl/scripts/lit_known_failures.txt"
+
+llvm-regression() {
+  pushd "${TC_BUILD_LLVM}"
+  make check-all VERBOSE=1 > make-check.log || true
+  if ${PNACL_BUILDBOT}; then
+    cat make-check.log
+  fi
+  "${PARSE_REPORT}" make-check.log -l -x "${LIT_KNOWN_FAILURES}"
+  popd
+}
 
 ensure-sdk-exists() {
     # a little crude but good enough for manual users of this script
@@ -114,6 +141,7 @@ testsuite-report() {
     --exclude ${PNACL_SCRIPTS}/testsuite_known_failures_pnacl.txt \
     --build-path ${LLVM_TESTSUITE_BUILD} \
     --attribute ${arch} \
+    -t \
     "$@" \
     ${LLVM_TESTSUITE_BUILD}/report.pnacl.${arch}.csv
 }

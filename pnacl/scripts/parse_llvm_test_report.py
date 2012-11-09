@@ -3,10 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Parse the report output of the llvm test suite,
+"""Parse the report output of the llvm test suite or regression tests,
    filter out known failures, and check for new failures
 
-pnacl/scripts/parse_llvm_testsuite_report.py [options]+ reportfile
+pnacl/scripts/parse_llvm_test_report.py [options]+ reportfile
 
 """
 
@@ -34,6 +34,10 @@ def ParseCommandLine(argv):
   parser.add_option('-a', '--attribute', dest='attributes', action='append',
                     default=[],
                     help='Add attribute of test configuration (e.g. arch)')
+  parser.add_option('-t', '--testsuite', action='store_true', dest='testsuite',
+                    default=False)
+  parser.add_option('-l', '--lit', action='store_true', dest='lit',
+                    default=False)
 
   options, args = parser.parse_args(argv)
   return options, args
@@ -48,8 +52,8 @@ def IsFullname(name):
 def GetShortname(fullname):
   return fullname.split('/')[-1]
 
-def ParseCSV(filename):
-  ''' Parse a CSV file with a record for each test.
+def ParseTestsuiteCSV(filename):
+  ''' Parse a CSV file output by llvm testsuite with a record for each test.
       returns 2 dictionaries:
       1) a mapping from the short name of the test (without the path) to
        a list of full pathnames that match it. It contains all the tests.
@@ -74,10 +78,36 @@ def ParseCSV(filename):
     elif row['Exec'] == '*':
       failures[fullname] = 'exec'
 
-  print testcount, 'tests,', len(failures), ' failures'
+  print testcount, 'tests,', len(failures), 'failures'
   return alltests, failures
 
-def ParseExcludeFile(filename, alltests, config_attributes):
+def ParseLit(filename):
+  ''' Parse the output of the LLVM regression test runner (lit/make check).
+      returns a dictionary mapping test name to the type of failure
+      (Clang, LLVM, LLVMUnit, etc)
+  '''
+  alltests = {}
+  failures = {}
+  testcount = 0
+  with open(filename) as f:
+    for line in f:
+      l = line.split()
+      if len(l) < 4:
+        continue
+      if l[0] in ('PASS:', 'FAIL:', 'XFAIL:', 'XPASS:', 'UNSUPPORTED:'):
+        testcount += 1
+        fullname = l[3]
+        shortname = GetShortname(fullname)
+        fullnames = alltests.get(shortname, [])
+        fullnames.append(fullname)
+        alltests[shortname] = fullnames
+      if l[0] in ('FAIL:', 'XPASS:'):
+        failures[fullname] = l[1]
+  print testcount, 'tests,', len(failures), 'failures'
+  return alltests, failures
+
+def ParseExcludeFile(filename, config_attributes,
+                     check_test_names=False, alltests=None):
   ''' Parse a list of excludes (known test failures). Excludes can be specified
       by shortname (e.g. fbench) or by full path
       (e.g. SingleSource/Benchmarks/Misc/fbench) but if there is more than
@@ -174,14 +204,19 @@ def main(argv):
     print 'Full test results:'
 
   # get the set of tests and failures
-  if filename.endswith('csv'):
-    alltests, failures = ParseCSV(filename)
+  if options.testsuite:
+    alltests, failures = ParseTestsuiteCSV(filename)
+    check_test_names = True
+  elif options.lit:
+    alltests, failures = ParseLit(filename)
+    check_test_names = True
   else:
-    Fatal('Only csv files currently supported')
+    Fatal('Must specify either testsuite (-t) or lit (-l) output format')
 
   # get the set of excludes
   for f in options.excludes:
-    ParseExcludeFile(f, alltests, set(options.attributes))
+    ParseExcludeFile(f, set(options.attributes),
+                     check_test_names=check_test_names, alltests=alltests)
 
   # intersect them and check for unexpected fails/passes
   unexpected_failures = 0

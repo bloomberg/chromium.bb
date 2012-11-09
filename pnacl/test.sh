@@ -58,6 +58,10 @@ SetLogDirectory "${NACL_ROOT}/toolchain/test-log"
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
 
 readonly OTHER_TEST_SCRIPT="${NACL_ROOT}/buildbot/buildbot_pnacl.sh"
+readonly LLVM_TEST="${NACL_ROOT}/pnacl/scripts/llvm-test.sh"
+
+# This needs to be kept in sync with the var of the same name in build.sh
+readonly TC_BUILD_LLVM="$(pwd)/pnacl/build/llvm_${HOST_ARCH}"
 
 ######################################################################
 ######################################################################
@@ -234,6 +238,7 @@ test-all() {
     exit -1
   fi
 
+  ${LLVM_TEST} llvm-regression
   FAIL_FAST=true ${OTHER_TEST_SCRIPT} mode-test-all ${PNACL_CONCURRENCY}
 }
 

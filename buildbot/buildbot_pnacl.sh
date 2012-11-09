@@ -36,6 +36,7 @@ readonly SCONS_COMMON="./scons --verbose bitcode=1"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 # This script is used by toolchain bots (i.e. tc-xxx functions)
 readonly PNACL_BUILD="pnacl/build.sh"
+readonly LLVM_TEST="pnacl/scripts/llvm-test.sh"
 readonly ACCEPTABLE_TOOLCHAIN_SIZE_MB=50
 
 tc-clobber() {
@@ -357,6 +358,11 @@ scons-stage-noirt() {
   ${SCONS_COMMON} ${extra} ${mode} platform=${platform} ${test} || handle-error
 }
 
+llvm-regression() {
+  echo "@@@BUILD_STEP llvm_regression@@@"
+  ${LLVM_TEST} llvm-regression || handle-error
+}
+
 # This function is shared between x86-32 and x86-64. All building and testing
 # is done on the same bot. Try runs are identical to buildbot runs
 #
@@ -536,6 +542,8 @@ tc-tests-all() {
   local label="pnaclsdk_mode=custom:toolchain/${TOOLCHAIN_LABEL}"
   local scons_flags="-k skip_trusted_tests=1 -j8 ${label}"
 
+  llvm-regression
+
   # newlib
   scons-stage-noirt "x86-32" "${scons_flags}" "${SCONS_TC_TESTS}"
   # Large tests cannot be run in parallel
@@ -564,6 +572,7 @@ tc-tests-all() {
 }
 
 tc-tests-fast() {
+  llvm-regression
   scons-stage-noirt "$1" "-j8 -k" "${SCONS_TC_TESTS}"
   # Large tests cannot be run in parallel
   scons-stage-noirt "$1" "-j1 -k" "large_tests"
@@ -622,6 +631,8 @@ test-all-newlib() {
 
   # turn verbose mode off
   set +o xtrace
+
+  llvm-regression
 
   # At least clobber scons-out before building and running the tests though.
   echo "@@@BUILD_STEP clobber@@@"
