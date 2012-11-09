@@ -69,9 +69,15 @@ function is_git_clone_repo {
 
 function update_git_repo {
   if is_git_clone_repo; then
-    git fetch -q origin > /dev/null
-    git rebase -q origin/master > /dev/null
-    return 0
+    git fetch -q origin &> /dev/null
+    local REBASE_TXT=$(git rebase -q origin/master 2>&1)
+    local STATUS=$?
+    if [[ $STATUS != 0 ]]; then
+      echo "depot_tools update failed. Conflict in $base_dir" >&2
+      echo "$REBASE_TXT" >&2
+      git rebase --abort 2> /dev/null
+    fi
+    return $STATUS
   fi
 
   test_git_svn
