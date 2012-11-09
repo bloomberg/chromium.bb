@@ -1612,8 +1612,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsFileUrlAccessTestHelper(views.getContents1(), views.getClient1(), 1));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * Bug: crbug.com/160273
+     */
+    @DisabledTest
     public void testContentUrlAccessNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1621,8 +1625,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsContentUrlAccessTestHelper(views.getContents1(), views.getClient1(), 1));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * Bug: crbug.com/160273
+     */
+    @DisabledTest
     public void testContentUrlAccessIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1630,8 +1638,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsContentUrlAccessTestHelper(views.getContents1(), views.getClient1(), 1));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * Bug: crbug.com/160273
+     */
+    @DisabledTest
     public void testContentUrlAccessBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1661,8 +1673,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         ensureResourceRequestCountInContentProvider(target, 0);
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences", "Navigation"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences", "Navigation"})
+     * Bug: crbug.com/160273
+     */
+    @DisabledTest
     public void testContentUrlFromFileNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1672,8 +1688,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                     views.getContents1(), views.getClient1(), 1));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences", "Navigation"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences", "Navigation"})
+     * Bug: crbug.com/160273
+     */
+    @DisabledTest
     public void testContentUrlFromFileIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1683,8 +1703,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                     views.getContents1(), views.getClient1(), 1));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences", "Navigation"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences", "Navigation"})
+     * Bug: crbug.com/160273
+     */
+    @DisabledTest
     public void testContentUrlFromFileBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
