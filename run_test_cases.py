@@ -868,6 +868,19 @@ def main(argv):
       action='store_true',
       help='List all the test cases unformatted. Keeps compatibility with the '
            'executable itself.')
+
+  group = optparse.OptionGroup(
+      parser, 'For compatibility with sharding_supervisor')
+  group.add_option(
+      '--retry-failed', action='store_true')
+  group.add_option(
+      '--no-color', action='store_true')
+  group.add_option(
+      '--shard-index', type='int', dest='index')
+  group.add_option(
+      '--total-slaves', type='int', dest='shards')
+  parser.add_option_group(group)
+
   options, args = parser.parse_args(argv)
 
   if not args:
