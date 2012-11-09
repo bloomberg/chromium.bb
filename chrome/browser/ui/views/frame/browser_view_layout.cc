@@ -449,11 +449,17 @@ void BrowserViewLayout::LayoutBookmarkBarAtBottom() {
   // overlap is irrelevant.  So set infobar visible to force no toolbar overlap.
   active_bookmark_bar_->set_infobar_visible(true);
   active_bookmark_bar_->SetVisible(true);
-  int bookmark_bar_height = active_bookmark_bar_->GetPreferredSize().height();
-  active_bookmark_bar_->SetBounds(vertical_layout_rect_.x(),
-                                  content_bottom.y() - bookmark_bar_height,
-                                  vertical_layout_rect_.width(),
-                                  bookmark_bar_height);
+
+  // Horizontally center bookmark bar.
+  const int kMaxNtpBookmarkBarWidth = 720;
+  const int kNtpBookmarkBarWidthPadding = 130;
+  int width = vertical_layout_rect_.width() - 2 * kNtpBookmarkBarWidthPadding;
+  if (width > kMaxNtpBookmarkBarWidth)
+    width = kMaxNtpBookmarkBarWidth;
+  int x_pos = (vertical_layout_rect_.width() - width) / 2;
+  int height = active_bookmark_bar_->GetPreferredSize().height();
+  active_bookmark_bar_->SetBounds(x_pos, content_bottom.y() - height,
+                                  width, height);
 }
 
 int BrowserViewLayout::LayoutInfoBar(int top) {

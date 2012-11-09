@@ -139,6 +139,16 @@ static const int kOtherFolderButtonTag = 1;
 // is only needed locally.
 static const int kSearchNewtabBookmarkBarHeight = 48;
 
+// TODO(kuan): change BookmarkBarView::kNewtabHorizontalPadding to this new
+// valud when search_ntp replaces ntp4; for now, while both versions exist, this
+// new padding value is only needed locally.
+static const int kSearchNewtabHorizontalPadding = 0;
+
+// TODO(kuan): change kLeftMargin and kRightMargin to these new values when
+// search_ntp replaces ntp4.
+static const int kSearchLeftMargin = 0;
+static const int kSearchRightMargin = 0;
+
 namespace {
 
 // BookmarkButton -------------------------------------------------------------
@@ -304,6 +314,19 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   AppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_BOOKMARK_BAR);
+}
+
+int GetLeftMargin(const chrome::search::Mode& search_mode) {
+  return search_mode.is_ntp() ? kSearchLeftMargin : kLeftMargin;
+}
+
+int GetRightMargin(const chrome::search::Mode& search_mode) {
+  return search_mode.is_ntp() ? kSearchRightMargin : kRightMargin;
+}
+
+int GetNtpHorizontalPadding(const chrome::search::Mode& search_mode) {
+  return search_mode.is_ntp() ? kSearchNewtabHorizontalPadding :
+                                BookmarkBarView::kNewtabHorizontalPadding;
 }
 
 }  // namespace
@@ -478,7 +501,6 @@ void BookmarkBarView::SetBookmarkBarState(
   SetPaintToLayer(bookmark_bar_state_ == BookmarkBar::DETACHED &&
                   search_mode.is_ntp());
   SetFillsBoundsOpaquely(false);
-  instructions_->UpdateBackgroundColor(search_mode);
 #endif  // defined(USE_AURA)
 }
 
@@ -650,11 +672,13 @@ gfx::Size BookmarkBarView::GetMinimumSize() {
   // The minimum width of the bookmark bar should at least contain the overflow
   // button, by which one can access all the Bookmark Bar items, and the "Other
   // Bookmarks" folder, along with appropriate margins and button padding.
-  int width = kLeftMargin;
+  int width = GetLeftMargin(browser_->search_model()->mode());
 
   if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
     double current_state = 1 - size_animation_->GetCurrentValue();
-    width += 2 * static_cast<int>(kNewtabHorizontalPadding * current_state);
+    width += 2 * static_cast<int>(
+        GetNtpHorizontalPadding(browser_->search_model()->mode()) *
+            current_state);
   }
 
   gfx::Size other_bookmarked_pref =
@@ -706,7 +730,7 @@ void BookmarkBarView::PaintChildren(gfx::Canvas* canvas) {
     int h = height();
     if (index == GetBookmarkButtonCount()) {
       if (index == 0) {
-        x = kLeftMargin;
+        x = GetLeftMargin(browser_->search_model()->mode());
       } else {
         x = GetBookmarkButton(index - 1)->x() +
             GetBookmarkButton(index - 1)->width();
@@ -1628,18 +1652,21 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   if (!parent() && !compute_bounds_only)
     return prefsize;
 
-  int x = kLeftMargin;
+  int x = GetLeftMargin(browser_->search_model()->mode());
   int top_margin = IsDetached() ? kDetachedTopMargin : 0;
   int y = top_margin;
-  int width = View::width() - kRightMargin - kLeftMargin;
+  int width = View::width() -
+      GetRightMargin(browser_->search_model()->mode()) - x;
   int height = -top_margin - kBottomMargin;
   int separator_margin = kSeparatorMargin;
 
   if (IsDetached()) {
     double current_state = 1 - size_animation_->GetCurrentValue();
-    x += static_cast<int>(kNewtabHorizontalPadding * current_state);
+    int horizontal_padding =
+        GetNtpHorizontalPadding(browser_->search_model()->mode());
+    x += static_cast<int>(horizontal_padding * current_state);
     y += static_cast<int>(kNewtabVerticalPadding * current_state);
-    width -= static_cast<int>(kNewtabHorizontalPadding * current_state);
+    width -= static_cast<int>(horizontal_padding * current_state);
     height += View::height() -
         static_cast<int>(kNewtabVerticalPadding * 2 * current_state);
     separator_margin -= static_cast<int>(kSeparatorMargin * current_state);
@@ -1732,13 +1759,14 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
 
   // Set the preferred size computed so far.
   if (compute_bounds_only) {
-    x += kRightMargin;
+    x += GetRightMargin(browser_->search_model()->mode());
     prefsize.set_width(x);
     if (IsDetached()) {
       int ntp_bookmark_bar_height = browser_->search_model()->mode().is_ntp() ?
-          kSearchNewtabBookmarkBarHeight : chrome::kNTPBookmarkBarHeight;
+        kSearchNewtabBookmarkBarHeight : chrome::kNTPBookmarkBarHeight;
       x += static_cast<int>(
-          kNewtabHorizontalPadding * (1 - size_animation_->GetCurrentValue()));
+          GetNtpHorizontalPadding(browser_->search_model()->mode()) *
+              (1 - size_animation_->GetCurrentValue()));
       prefsize.set_height(
           browser_defaults::kBookmarkBarHeight +
           static_cast<int>(
