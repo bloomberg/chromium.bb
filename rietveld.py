@@ -70,9 +70,10 @@ class Rietveld(object):
 
   def get_pending_issues(self):
     """Returns an array of dict of all the pending issues on the server."""
-    return json.loads(self.get(
-        '/search?format=json&commit=2&closed=3&keys_only=True&limit=1000')
-        )['results']
+    # TODO: Convert this to use Rietveld::search(), defined below.
+    return json.loads(
+        self.get('/search?format=json&commit=2&closed=3&'
+                 'keys_only=True&limit=1000&order=__key__'))['results']
 
   def close_issue(self, issue):
     """Closes the Rietveld issue for this changelist."""
