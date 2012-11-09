@@ -371,9 +371,6 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
                                      0.5),
       motion_tap_prevent_timeout_(prop_reg, "Motion Tap Prevent Timeout",
                                   0.05),
-      liftoff_brush_min_radius_(prop_reg, "Liftoff Brush Min Radius", 3.0),
-      liftoff_brush_max_radius_(prop_reg, "Liftoff Brush Max Radius", 8.0),
-      liftoff_brush_timeout_(prop_reg, "Liftoff Brush Timeout", 0.142),
       tapping_finger_min_separation_(prop_reg, "Tap Min Separation", 10.0),
       vertical_scroll_snap_slope_(prop_reg, "Vertical Scroll Snap Slope",
                                   tanf(DegToRad(50.0))),  // 50 deg. from horiz.
@@ -424,7 +421,6 @@ Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     FillStartPositions(*hwstate);
     UpdatePinchState(*hwstate, true);
   }
-  UpdateLiftoffPoints(*hwstate, !same_fingers);
 
   if (hwstate->finger_cnt < prev_state_.finger_cnt)
     finger_leave_time_ = hwstate->timestamp;
@@ -1147,8 +1143,7 @@ void ImmediateInterpreter::UpdateTapState(
         // Gesturing finger wasn't in prev state. It's new.
         const FingerState* fs = hwstate->GetFingerState(*it);
         if (FingerTooCloseToTap(*hwstate, *fs) ||
-            FingerTooCloseToTap(prev_state_, *fs) ||
-            PointInLiftoffBrush(*fs))
+            FingerTooCloseToTap(prev_state_, *fs))
           continue;
         added_fingers.insert(*it);
         Log("TTC: Added %d", *it);
@@ -1523,50 +1518,6 @@ void ImmediateInterpreter::UpdateStartedMovingTime(
       return;
     }
   }
-}
-
-void ImmediateInterpreter::UpdateLiftoffPoints(const HardwareState& hwstate,
-                                               bool should_add_points) {
-  // Remove old entries
-  for (map<stime_t, Point, kMaxFingers>::iterator it = liftoff_points_.begin();
-       it != liftoff_points_.end();) {
-    if ((*it).first + liftoff_brush_timeout_.val_ < hwstate.timestamp)
-      it = MapEraseIterator(&liftoff_points_, it);
-    else
-      ++it;
-  }
-  if (!should_add_points)
-    return;
-  for (size_t i = 0; i < prev_state_.finger_cnt; i++) {
-    const FingerState& fs = prev_state_.fingers[i];
-    if (hwstate.GetFingerState(fs.tracking_id))
-      continue;  // Finger still is present
-    if (liftoff_points_.size() == kMaxFingers)
-      return;  // Ran out of space
-    liftoff_points_[prev_state_.timestamp] = Point(fs.position_x,
-                                                   fs.position_y);
-  }
-}
-
-bool ImmediateInterpreter::PointInLiftoffBrush(const FingerState& fs) const {
-  // We've already filtered out old liftoff points in UpdateLiftoffPoints, so
-  // here we can just use location.
-  float min_dist_sq =
-      liftoff_brush_min_radius_.val_ * liftoff_brush_min_radius_.val_;
-  float max_dist_sq =
-      liftoff_brush_max_radius_.val_ * liftoff_brush_max_radius_.val_;
-  for (map<stime_t, Point, kMaxFingers>::const_iterator it =
-           liftoff_points_.begin(), e = liftoff_points_.end(); it != e; ++it) {
-    const Point& point = (*it).second;
-    if (fs.position_y < point.y_)
-      continue;  // Point is above liftoff point. Not a brush.
-    if (fabsf(fs.position_y - point.y_) < fabsf(fs.position_x - point.x_))
-      continue;  // Horizontally aligned, not vertically. Not a brush.
-    float dist_sq = DistSqXY(fs, point.x_, point.y_);
-    if (dist_sq >= min_dist_sq && dist_sq <= max_dist_sq)
-      return true;
-  }
-  return false;
 }
 
 void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate,
