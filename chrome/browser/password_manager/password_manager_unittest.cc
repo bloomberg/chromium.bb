@@ -12,8 +12,10 @@
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -54,11 +56,11 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   virtual void SetUp() {
-    TestingProfile* testing_profile = new TestingProfile;
+    testing_profile_ = new TestingProfile;
     store_ = static_cast<MockPasswordStore*>(
         PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
-            testing_profile, MockPasswordStore::Build).get());
-    browser_context_.reset(testing_profile);
+            testing_profile_, MockPasswordStore::Build).get());
+    browser_context_.reset(testing_profile_);
     ChromeRenderViewHostTestHarness::SetUp();
 
     EXPECT_CALL(delegate_, GetProfile()).WillRepeatedly(Return(profile()));
@@ -95,6 +97,8 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
 
   scoped_refptr<MockPasswordStore> store_;
   MockPasswordManagerDelegate delegate_;  // Owned by manager_.
+
+  TestingProfile* testing_profile_;
 };
 
 MATCHER_P(FormMatches, form, "") {
@@ -335,3 +339,34 @@ TEST_F(PasswordManagerTest, InitiallyInvisibleForm) {
   manager()->OnPasswordFormsParsed(observed);  // The post-navigation load.
   manager()->OnPasswordFormsRendered(observed);  // The post-navigation layout.
 }
+
+TEST_F(PasswordManagerTest, SavingDependsOnManagerEnabledPreference) {
+  // Test that saving passwords depends on the password manager enabled
+  // preference.
+  TestingPrefService* prefService = testing_profile_->GetTestingPrefService();
+  prefService->SetUserPref(prefs::kPasswordManagerEnabled,
+                           Value::CreateBooleanValue(true));
+  EXPECT_TRUE(manager()->IsSavingEnabled());
+  prefService->SetUserPref(prefs::kPasswordManagerEnabled,
+                           Value::CreateBooleanValue(false));
+  EXPECT_FALSE(manager()->IsSavingEnabled());
+}
+
+TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
+  // Test fix for issue 158296: Passwords must be filled even if the password
+  // manager is disabled.
+  std::vector<PasswordForm*> result;
+  PasswordForm* existing = new PasswordForm(MakeSimpleForm());
+  result.push_back(existing);
+  TestingPrefService* prefService = testing_profile_->GetTestingPrefService();
+  prefService->SetUserPref(prefs::kPasswordManagerEnabled,
+                           Value::CreateBooleanValue(false));
+  EXPECT_CALL(delegate_, FillPasswordForm(_));
+  EXPECT_CALL(*store_, GetLogins(_, _))
+    .WillRepeatedly(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  manager()->OnPasswordFormsParsed(observed);
+}
+

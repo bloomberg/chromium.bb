@@ -121,7 +121,8 @@ void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
 }
 
 bool PasswordManager::IsSavingEnabled() const {
-  return IsFillingEnabled() && !delegate_->GetProfile()->IsOffTheRecord();
+  return *password_manager_enabled_ &&
+         !delegate_->GetProfile()->IsOffTheRecord();
 }
 
 void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
@@ -222,9 +223,6 @@ bool PasswordManager::OnMessageReceived(const IPC::Message& message) {
 
 void PasswordManager::OnPasswordFormsParsed(
     const std::vector<PasswordForm>& forms) {
-  if (!IsFillingEnabled())
-    return;
-
   // Ask the SSLManager for current security.
   bool had_ssl_error = delegate_->DidLastPageLoadEncounterSSLErrors();
 
@@ -315,8 +313,4 @@ void PasswordManager::Autofill(
                                            preferred_match.password_value);
       }
   }
-}
-
-bool PasswordManager::IsFillingEnabled() const {
-  return delegate_->GetProfile() && *password_manager_enabled_;
 }

@@ -84,9 +84,6 @@ class PasswordManager : public LoginModel,
  private:
   friend class content::WebContentsUserData<PasswordManager>;
 
-  // Is password autofill enabled for the current profile?
-  bool IsFillingEnabled() const;
-
   // Note about how a PasswordFormManager can transition from
   // pending_login_managers_ to provisional_save_manager_ and the infobar.
   //
@@ -118,8 +115,8 @@ class PasswordManager : public LoginModel,
   // The LoginModelObserver (i.e LoginView) requiring autofill.
   LoginModelObserver* observer_;
 
-  // Set to false to disable the password manager (will no longer fill
-  // passwords or ask you if you want to save passwords).
+  // Set to false to disable the password manager (will no longer ask if you
+  // want to save passwords but will continue to fill passwords).
   BooleanPrefMember password_manager_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
