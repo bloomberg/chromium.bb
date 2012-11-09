@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onLaunched.addListener(function() {
-  chrome.app.window.create('chrome://settings-frame/settings', {
-    'height': 550,
-    'width': 640,
-  });
+  chrome.app.window.create(
+      'chrome://settings-frame/options_settings_app.html',
+      {'height': 550, 'width': 660});
 });

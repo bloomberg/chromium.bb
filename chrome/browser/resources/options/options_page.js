@@ -20,9 +20,13 @@ cr.define('options', function() {
     this.pageDiv = $(this.pageDivName);
     this.tab = null;
     this.lastFocusedElement = null;
+
+    // Offset of page container in pixels, to allow room for side menu.
+    // Simplified settings pages can override this if they don't use the menu.
+    this.horizontalOffset = DEFAULT_HORIZONTAL_OFFSET;
   }
 
-  /** @const */ var HORIZONTAL_OFFSET = 155;
+  /** @const */ var DEFAULT_HORIZONTAL_OFFSET = 155;
 
   /**
    * This is the absolute difference maintained between standard and
@@ -666,10 +670,14 @@ cr.define('options', function() {
    */
   OptionsPage.updateFrozenElementHorizontalPosition_ = function(e) {
     if (isRTL())
-      e.style.right = HORIZONTAL_OFFSET + 'px';
+      e.style.right = this.horizontalOffset + 'px';
     else
-      e.style.left = HORIZONTAL_OFFSET - document.body.scrollLeft + 'px';
+      e.style.left = this.horizontalOffset - document.body.scrollLeft + 'px';
   };
+
+  OptionsPage.setHorizontalOffset = function(value) {
+    this.horizontalOffset = value;
+  }
 
   OptionsPage.setClearPluginLSODataEnabled = function(enabled) {
     if (enabled) {

@@ -162,7 +162,7 @@
         </div>
       </div>
   </section>
-  <section guest-visibility="hidden">
+  <section id="sync-users-section" guest-visibility="hidden">
     <h3 i18n-content="sectionTitleUsers"></h3>
 <if expr="pp_ifdef('chromeos')">
     <include src="sync_section.html">
@@ -226,7 +226,7 @@
     </div>
   </section>
 </if>
-  <section>
+  <section id="privacy-section">
     <h3 i18n-content="advancedSectionTitlePrivacy"></h3>
     <div>
       <div class="settings-row">
@@ -459,7 +459,7 @@
     </div>
   </section>
 <if expr="not pp_ifdef('chromeos')">
-  <section>
+  <section id="network-section">
     <h3 i18n-content="advancedSectionTitleNetwork"></h3>
     <div>
       <span id="proxiesLabel" class="settings-row"></span>
@@ -471,7 +471,7 @@
     </div>
   </section>
 </if>
-  <section>
+  <section id="languages-section">
     <h3 i18n-content="advancedSectionTitleLanguages"></h3>
     <span class="settings-row" i18n-content="languageSectionLabel"></span>
     <div class="settings-row">
