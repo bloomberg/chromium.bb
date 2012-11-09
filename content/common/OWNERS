@@ -1,7 +1,16 @@
-# For sandbox*_linux.*
-cevans@chromium.org
-jln@chromium.org
+# For security review of sandboxes
+per-file sandbox*_linux.*=set noparent
+per-file sandbox*_linux.*=cevans@chromium.org
+per-file sandbox*_linux.*=jln@chromium.org
+per-file sandbox_policy.cc=set noparent
+per-file sandbox_policy.cc=jschuh@chromium.org
+per-file sandbox_policy.cc=cpu@chromium.org
 
-# For sandbox_policy.cc
-jschuh@chromium.org
-cpu@chromium.org
+# Changes to IPC messages require a security review to avoid introducing
+# new sandbox escapes.
+per-file *_messages.h=set noparent
+per-file *_messages.h=cdn@chromium.org
+per-file *_messages.h=jln@chromium.org
+per-file *_messages.h=jschuh@chromium.org
+per-file *_messages.h=palmer@chromium.org
+per-file *_messages.h=tsepez@chromium.org
