@@ -926,9 +926,6 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
   extensions_.Insert(make_scoped_refptr(extension));
   disabled_extensions_.Remove(extension->id());
 
-  // Make sure any browser action contained within it is not hidden.
-  extension_prefs_->SetBrowserActionVisibility(extension, true);
-
   NotifyExtensionLoaded(extension);
 
   // Notify listeners that the extension was enabled.

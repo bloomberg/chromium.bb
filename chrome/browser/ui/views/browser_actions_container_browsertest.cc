@@ -244,11 +244,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, ForceHide) {
   service->extension_prefs()->SetBrowserActionVisibility(
       service->GetExtensionById(idA, false), false);
   EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
-
-  ReloadExtension(idA);
-
-  // The browser action should become visible again.
-  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, TestCrash57536) {

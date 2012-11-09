@@ -668,6 +668,9 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
                      AsWeakPtr(), extension_id));
     } else {
       extension_service_->EnableExtension(extension_id);
+
+      // Make sure any browser action contained within it is not hidden.
+      prefs->SetBrowserActionVisibility(extension, true);
     }
   } else {
     extension_service_->DisableExtension(
