@@ -296,6 +296,8 @@
         'browser/chromeos/input_method/candidate_window.cc',
         'browser/chromeos/input_method/candidate_window_controller.cc',
         'browser/chromeos/input_method/candidate_window_controller.h',
+        'browser/chromeos/input_method/hidable_area.cc',
+        'browser/chromeos/input_method/hidable_area.h',
         'browser/chromeos/input_method/ibus_controller.cc',
         'browser/chromeos/input_method/ibus_controller.h',
         'browser/chromeos/input_method/ibus_controller_base.cc',

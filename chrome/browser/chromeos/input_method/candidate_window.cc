@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/input_method/candidate_view.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
+#include "chrome/browser/chromeos/input_method/hidable_area.h"
 #include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -347,65 +348,6 @@ gfx::Size ComputeAnnotationColumnSize(
 }
 
 }  // namespace
-
-// HidableArea is used as an area to place optional information that can be
-// turned displaying off if it is unnecessary.
-class HidableArea : public views::View {
- public:
-  HidableArea() {
-    // |place_holder_| will be deleted by scoped_ptr, rather than
-    // the standard owning relation of views::View.
-    //
-    // This is because we swap the contents of HidableArea between
-    // |place_holder_| (to show nothing) and |contents_| (to show something).
-    // In other words, the HidableArea only contains one of the two views
-    // hence cannot own the two views at the same time.
-    place_holder_.reset(new views::View);
-    place_holder_->set_owned_by_client();  // Won't own
-
-    // Initially show nothing.
-    SetLayoutManager(new views::FillLayout);
-    AddChildView(place_holder_.get());
-  }
-
-  // Sets the content view.
-  void SetContents(views::View* contents) {
-    contents_.reset(contents);
-    contents_->set_owned_by_client();  // Won't own
-  }
-
-  // Shows the content.
-  void Show() {
-    if (contents_.get() && contents_->parent() != this) {
-      RemoveAllChildViews(false);  // Don't delete child views.
-      AddChildView(contents_.get());
-    }
-  }
-
-  // Hides the content.
-  void Hide() {
-    if (IsShown()) {
-      RemoveAllChildViews(false);  // Don't delete child views.
-      AddChildView(place_holder_.get());
-    }
-  }
-
-  // Returns whether the content is already set and shown.
-  bool IsShown() const {
-    return contents_.get() && contents_->parent() == this;
-  }
-
-  // Returns the content.
-  views::View* contents() {
-    return contents_.get();
-  }
-
- private:
-  scoped_ptr<views::View> contents_;
-  scoped_ptr<views::View> place_holder_;
-
-  DISALLOW_COPY_AND_ASSIGN(HidableArea);
-};
 
 // InformationTextArea is a HidableArea having a single Label in it.
 class InformationTextArea : public HidableArea {
