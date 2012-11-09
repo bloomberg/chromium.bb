@@ -31,6 +31,9 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       ],
       'sources': [
+        'chromeos/lib/machine_id_chromeos.cc',
+        'chromeos/lib/rlz_value_store_chromeos.cc',
+        'chromeos/lib/rlz_value_store_chromeos.h',
         'lib/assert.cc',
         'lib/assert.h',
         'lib/crc32.h',
@@ -108,6 +111,7 @@
       'dependencies': [
         ':rlz_lib',
         '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/zlib/zlib.gyp:zlib',

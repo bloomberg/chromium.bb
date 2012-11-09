@@ -21,8 +21,8 @@ enum AccessPoint {
   GD_SEARCH_GADGET,   // Search gadget when GD in sidebar mode.
   GD_WEB_SERVER,      // Boxes in web pages shown by local GD web server.
   GD_OUTLOOK,         // Search box installed within outlook by GD.
-  CHROME_OMNIBOX,     // Chrome searches through the address bar omnibox.
-  CHROME_HOME_PAGE,   // Chrome searches through Google as home page.
+  CHROME_OMNIBOX,     // Chrome searches through the address bar omnibox (Win).
+  CHROME_HOME_PAGE,   // Chrome searches through Google as home page (Win).
   FFTB2_BOX,          // Firefox Toolbar v2 Search Box.
   FFTB3_BOX,          // Firefox Toolbar v3+ Search Box.
   PINYIN_IME_BHO,     // Goopy Input Method Editor BHO (Pinyin).
@@ -55,15 +55,16 @@ enum AccessPoint {
   PARTNER_AP_4,
   PARTNER_AP_5,
 
-  CHROME_MAC_OMNIBOX,  // Chrome searches through the address bar omnibox (mac).
-  CHROME_MAC_HOME_PAGE,// Chrome searches through Google as home page (mac).
+  CHROME_MAC_OMNIBOX,  // Chrome searches through the address bar omnibox (Mac).
+  CHROME_MAC_HOME_PAGE,// Chrome searches through Google as home page (Mac).
+
+  CHROMEOS_OMNIBOX,    // ChromeOS searches through the address bar omnibox.
+  CHROMEOS_HOME_PAGE,  // ChromeOS searches through Google as home page.
+  CHROMEOS_RESERVED,   // Reserved for ChromeOS.
 
   // Unclaimed access points - should be used first before creating new APs.
   // Please also make sure you re-name the enum before using an unclaimed value;
   // this acts as a check to ensure we don't have collisions.
-  UNDEFINED_AP_J,
-  UNDEFINED_AP_K,
-  UNDEFINED_AP_L,
   UNDEFINED_AP_M,
   UNDEFINED_AP_N,
   UNDEFINED_AP_O,

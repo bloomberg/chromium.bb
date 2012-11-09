@@ -44,6 +44,12 @@
 #endif
 #endif
 
+#if defined(OS_CHROMEOS)
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
+#endif
+
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
 namespace net {
 class URLRequestContextGetter;
@@ -69,6 +75,12 @@ const size_t kMaxPingResponseLength = 0x4000;  // 16K
 // loop returned by this context will be used for the IO done by
 // SendFinancialPing().
 bool RLZ_LIB_API SetURLRequestContext(net::URLRequestContextGetter* context);
+#endif
+
+#if defined(OS_CHROMEOS)
+// Set the MessageLoopProxy used by RLZ store to run I/O tasks on. Should be
+// called before any other API calls.
+void RLZ_LIB_API SetIOTaskRunner(base::SequencedTaskRunner* io_task_runner);
 #endif
 
 // RLZ storage functions.

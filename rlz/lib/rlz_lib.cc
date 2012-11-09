@@ -16,6 +16,10 @@
 #include "rlz/lib/rlz_value_store.h"
 #include "rlz/lib/string_utils.h"
 
+#if defined(OS_CHROMEOS)
+#include "rlz/chromeos/lib/rlz_value_store_chromeos.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 // Event information returned from ping response.
@@ -211,6 +215,12 @@ namespace rlz_lib {
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
 bool SetURLRequestContext(net::URLRequestContextGetter* context) {
   return FinancialPing::SetURLRequestContext(context);
+}
+#endif
+
+#if defined(OS_CHROMEOS)
+void RLZ_LIB_API SetIOTaskRunner(base::SequencedTaskRunner* io_task_runner) {
+  RlzValueStoreChromeOS::SetIOTaskRunner(io_task_runner);
 }
 #endif
 
