@@ -266,16 +266,16 @@
           ],
         }],
       ],
-    },
-  ],
-  'target_conditions': [
-    ['OS == "ios"', {
-      'sources/': [
-        # Pull in specific Mac files for iOS (which have been filtered out
-        # by file name rules).
-        ['include', '^base/l10n/l10n_util_mac_unittest\\.mm$'],
+      'target_conditions': [
+        ['OS == "ios"', {
+          'sources/': [
+            # Pull in specific Mac files for iOS (which have been filtered out
+            # by file name rules).
+            ['include', '^base/l10n/l10n_util_mac_unittest\\.mm$'],
+          ],
+        }],
       ],
-    }],
+    },
   ],
   'conditions': [
     # Special target to wrap a gtest_target_type==shared_library
