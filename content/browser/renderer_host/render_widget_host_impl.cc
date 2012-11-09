@@ -1917,7 +1917,13 @@ void RenderWidgetHostImpl::OnMsgShowDisambiguationPopup(
 void RenderWidgetHostImpl::OnWindowlessPluginDummyWindowCreated(
     gfx::NativeViewId dummy_activation_window) {
   HWND hwnd = reinterpret_cast<HWND>(dummy_activation_window);
-  CHECK(WebPluginDelegateImpl::IsDummyActivationWindow(hwnd));
+  if (!IsWindow(hwnd) ||
+      !WebPluginDelegateImpl::IsDummyActivationWindow(hwnd)) {
+    // This may happen as a result of a race condition when the plugin is going
+    // away.
+    return;
+  }
+
   SetParent(hwnd, reinterpret_cast<HWND>(GetNativeViewId()));
   dummy_windows_for_activation_.push_back(hwnd);
 }
