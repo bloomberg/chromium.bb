@@ -7,11 +7,9 @@
 #include "base/i18n/rtl.h"
 #include "ui/base/events/event.h"
 #include "ui/base/models/table_model.h"
-#include "ui/base/native_theme/native_theme.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/table/table_view_observer.h"
 
@@ -30,7 +28,6 @@ static const int kImageSize = 16;
 static const int kImageToTextPadding = 4;
 
 namespace views {
-
 
 TableView::TableView(ui::TableModel* model,
                      const std::vector<ui::TableColumn>& columns,
@@ -71,11 +68,8 @@ void TableView::SetModel(ui::TableModel* model) {
 }
 
 View* TableView::CreateParentIfNecessary() {
-  ScrollView* scroll_view = new ScrollView;
+  ScrollView* scroll_view = ScrollView::CreateScrollViewWithBorder();
   scroll_view->SetContents(this);
-  scroll_view->set_border(Border::CreateSolidBorder(
-      1, ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_UnfocusedBorderColor)));
   return scroll_view;
 }
 

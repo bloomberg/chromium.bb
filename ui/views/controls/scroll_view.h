@@ -37,6 +37,9 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
              View* resize_corner);
   virtual ~ScrollView();
 
+  // Creates a ScrollView with a theme specific border.
+  static ScrollView* CreateScrollViewWithBorder();
+
   // Set the contents. Any previous contents will be deleted. The contents
   // is the view that needs to scroll.
   void SetContents(View* a_view);

@@ -21,6 +21,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/linear_animation.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
@@ -832,9 +833,10 @@ int StatusBubbleViews::GetStandardStatusBubbleWidth() {
 }
 
 int StatusBubbleViews::GetMaxStatusBubbleWidth() {
+  const ui::NativeTheme* theme = base_view_->GetNativeTheme();
   return static_cast<int>(std::max(0, base_view_->bounds().width() -
       (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding - 1 -
-      views::NativeScrollBar::GetVerticalScrollBarWidth()));
+      views::NativeScrollBar::GetVerticalScrollBarWidth(theme)));
 }
 
 void StatusBubbleViews::SetBubbleWidth(int width) {

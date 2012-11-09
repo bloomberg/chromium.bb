@@ -9,23 +9,26 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/native_theme_delegate.h"
+#include "ui/views/view.h"
 
 namespace views {
 
-NativeThemePainter::NativeThemePainter(NativeThemeDelegate* delegate)
-    : delegate_(delegate) {
+NativeThemePainter::NativeThemePainter(NativeThemeDelegate* delegate,
+                                       views::View* view)
+    : delegate_(delegate),
+      view_(view) {
   DCHECK(delegate_);
 }
 
 gfx::Size NativeThemePainter::GetPreferredSize() {
-  const ui::NativeTheme* theme = ui::NativeTheme::instance();
+  const ui::NativeTheme* theme = view_->GetNativeTheme();
   ui::NativeTheme::ExtraParams extra;
   ui::NativeTheme::State state = delegate_->GetThemeState(&extra);
   return theme->GetPartSize(delegate_->GetThemePart(), state, extra);
 }
 
 void NativeThemePainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
-  const ui::NativeTheme* native_theme = ui::NativeTheme::instance();
+  const ui::NativeTheme* native_theme = view_->GetNativeTheme();
   ui::NativeTheme::Part part = delegate_->GetThemePart();
   gfx::Rect rect(size);
 

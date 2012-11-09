@@ -410,7 +410,7 @@ void TextButtonBase::GetExtraParams(
   params->button.has_border = false;
   params->button.classic_state = 0;
   params->button.background_color =
-      ui::NativeTheme::instance()->GetSystemColor(
+      GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_TextButtonBackgroundColor);
 }
 

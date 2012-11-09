@@ -20,6 +20,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/base/range/range.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
@@ -272,6 +273,18 @@ void NativeTextfieldViews::OnFocus() {
 
 void NativeTextfieldViews::OnBlur() {
   NOTREACHED();
+}
+
+void NativeTextfieldViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  gfx::RenderText* render_text = GetRenderText();
+  render_text->set_selection_color(
+      theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldSelectionColor));
+  render_text->set_selection_background_focused_color(
+      theme->GetSystemColor(
+          ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
+  render_text->set_selection_background_unfocused_color(
+      theme->GetSystemColor(
+              ui::NativeTheme::kColorId_TextfieldSelectionBackgroundUnfocused));
 }
 
 void NativeTextfieldViews::SelectRect(const gfx::Point& start,

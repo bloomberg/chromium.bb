@@ -32,13 +32,15 @@ NativeScrollBar::~NativeScrollBar() {
 }
 
 // static
-int NativeScrollBar::GetHorizontalScrollBarHeight() {
-  return NativeScrollBarWrapper::GetHorizontalScrollBarHeight();
+int NativeScrollBar::GetHorizontalScrollBarHeight(
+    const ui::NativeTheme* theme) {
+  return NativeScrollBarWrapper::GetHorizontalScrollBarHeight(theme);
 }
 
 // static
-int NativeScrollBar::GetVerticalScrollBarWidth() {
-  return NativeScrollBarWrapper::GetVerticalScrollBarWidth();
+int NativeScrollBar::GetVerticalScrollBarWidth(
+    const ui::NativeTheme* theme) {
+  return NativeScrollBarWrapper::GetVerticalScrollBarWidth(theme);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -101,7 +103,8 @@ void NativeScrollBar::Update(int viewport_size,
 
 int NativeScrollBar::GetLayoutSize() const {
   return IsHorizontal() ?
-      GetHorizontalScrollBarHeight() : GetVerticalScrollBarWidth();
+      GetHorizontalScrollBarHeight(GetNativeTheme()) :
+      GetVerticalScrollBarWidth(GetNativeTheme());
 }
 
 int NativeScrollBar::GetPosition() const {

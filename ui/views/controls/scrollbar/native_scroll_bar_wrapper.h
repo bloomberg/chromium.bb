@@ -7,6 +7,10 @@
 
 #include "ui/views/views_export.h"
 
+namespace ui {
+class NativeTheme;
+}
+
 namespace views {
 
 class NativeScrollBar;
@@ -32,8 +36,8 @@ class VIEWS_EXPORT NativeScrollBarWrapper {
   static NativeScrollBarWrapper* CreateWrapper(NativeScrollBar* button);
 
   // Returns the system sizes of vertical/horizontal scroll bars.
-  static int GetVerticalScrollBarWidth();
-  static int GetHorizontalScrollBarHeight();
+  static int GetVerticalScrollBarWidth(const ui::NativeTheme* theme);
+  static int GetHorizontalScrollBarHeight(const ui::NativeTheme* theme);
 };
 
 }  // namespace views

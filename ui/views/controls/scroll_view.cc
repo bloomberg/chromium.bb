@@ -6,12 +6,40 @@
 
 #include "base/logging.h"
 #include "ui/base/events/event.h"
+#include "ui/base/native_theme/native_theme.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/scrollbar/native_scroll_bar.h"
 #include "ui/views/widget/root_view.h"
 
 namespace views {
 
 const char* const ScrollView::kViewClassName = "views/ScrollView";
+
+namespace {
+
+// Subclass of ScrollView that resets the border when the theme changes.
+class ScrollViewWithBorder : public views::ScrollView {
+ public:
+  ScrollViewWithBorder() {
+    SetThemeSpecificState();
+  }
+
+  // View overrides;
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE {
+    SetThemeSpecificState();
+  }
+
+ private:
+  void SetThemeSpecificState() {
+    set_border(Border::CreateSolidBorder(
+        1, GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_UnfocusedBorderColor)));
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollViewWithBorder);
+};
+
+}  // namespace
 
 // Viewport contains the contents View of the ScrollView.
 class Viewport : public View {
@@ -64,6 +92,11 @@ ScrollView::~ScrollView() {
 
   if (resize_corner_ && !resize_corner_->parent())
     delete resize_corner_;
+}
+
+// static
+ScrollView* ScrollView::CreateScrollViewWithBorder() {
+  return new ScrollViewWithBorder();
 }
 
 void ScrollView::SetContents(View* a_view) {

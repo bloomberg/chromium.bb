@@ -74,16 +74,19 @@ void Label::SetAutoColorReadabilityEnabled(bool enabled) {
 
 void Label::SetEnabledColor(SkColor color) {
   requested_enabled_color_ = color;
+  enabled_color_set_ = true;
   RecalculateColors();
 }
 
 void Label::SetDisabledColor(SkColor color) {
   requested_disabled_color_ = color;
+  disabled_color_set_ = true;
   RecalculateColors();
 }
 
 void Label::SetBackgroundColor(SkColor color) {
   background_color_ = color;
+  background_color_set_ = true;
   RecalculateColors();
 }
 
@@ -307,6 +310,10 @@ void Label::OnPaint(gfx::Canvas* canvas) {
   PaintText(canvas, paint_text, text_bounds, flags);
 }
 
+void Label::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  UpdateColorsFromTheme(theme);
+}
+
 // static
 gfx::Font Label::GetDefaultFont() {
   return ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
@@ -315,14 +322,9 @@ gfx::Font Label::GetDefaultFont() {
 void Label::Init(const string16& text, const gfx::Font& font) {
   font_ = font;
   text_size_valid_ = false;
-  requested_enabled_color_ = ui::NativeTheme::instance()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelEnabledColor);
-  requested_disabled_color_ = ui::NativeTheme::instance()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelDisabledColor);
-  background_color_ = ui::NativeTheme::instance()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelBackgroundColor);
+  enabled_color_set_ = disabled_color_set_ = background_color_set_ = false;
   auto_color_readability_ = true;
-  RecalculateColors();
+  UpdateColorsFromTheme(ui::NativeTheme::instance());
   horizontal_alignment_ = gfx::ALIGN_CENTER;
   is_multi_line_ = false;
   allow_character_break_ = false;
@@ -450,6 +452,22 @@ void Label::CalculateDrawStringParams(string16* paint_text,
 
   *text_bounds = GetTextBounds();
   *flags = ComputeDrawStringFlags();
+}
+
+void Label::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
+  if (!enabled_color_set_) {
+    requested_enabled_color_ = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_LabelEnabledColor);
+  }
+  if (!disabled_color_set_) {
+    requested_disabled_color_ = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_LabelDisabledColor);
+  }
+  if (!background_color_set_) {
+    background_color_ = theme->GetSystemColor(
+        ui::NativeTheme::kColorId_LabelBackgroundColor);
+  }
+  RecalculateColors();
 }
 
 }  // namespace views

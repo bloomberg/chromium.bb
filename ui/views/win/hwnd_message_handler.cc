@@ -1964,10 +1964,7 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
 }
 
 void HWNDMessageHandler::OnThemeChanged() {
-  // TODO(beng): resolve vis-a-vis aura.
-#if !defined(USE_AURA)
   ui::NativeThemeWin::instance()->CloseHandles();
-#endif
 }
 
 LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,

@@ -52,7 +52,7 @@ ExampleNativeThemeButton::ExampleNativeThemeButton(
   cb_part_->set_listener(this);
   cb_state_->set_listener(this);
 
-  painter_.reset(new NativeThemePainter(this));
+  painter_.reset(new NativeThemePainter(this, this));
   set_background(Background::CreateBackgroundPainter(
       false, painter_.get()));
 }
@@ -115,9 +115,9 @@ ui::NativeTheme::Part ExampleNativeThemeButton::GetThemePart() const {
 gfx::Rect ExampleNativeThemeButton::GetThemePaintRect() const {
   ui::NativeTheme::ExtraParams extra;
   ui::NativeTheme::State state = GetThemeState(&extra);
-  gfx::Size size(ui::NativeTheme::instance()->GetPartSize(GetThemePart(),
-                                                           state,
-                                                           extra));
+  gfx::Size size(GetNativeTheme()->GetPartSize(GetThemePart(),
+                                               state,
+                                               extra));
   gfx::Rect rect(size);
   rect.set_x(GetMirroredXForRect(rect));
   return rect;

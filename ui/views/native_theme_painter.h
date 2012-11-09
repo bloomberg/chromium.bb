@@ -16,13 +16,14 @@ class Size;
 namespace views {
 
 class NativeThemeDelegate;
+class View;
 
 // A Painter that uses NativeTheme to implement painting and sizing.  A
 // theme delegate must be given at construction time so that the appropriate
 // painting and sizing can be done.
 class VIEWS_EXPORT NativeThemePainter : public Painter {
  public:
-  explicit NativeThemePainter(NativeThemeDelegate* delegate);
+  NativeThemePainter(NativeThemeDelegate* delegate, views::View* view);
 
   virtual ~NativeThemePainter() {}
 
@@ -30,11 +31,13 @@ class VIEWS_EXPORT NativeThemePainter : public Painter {
   gfx::Size GetPreferredSize();
 
  private:
+  // Overridden from Painter:
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
+
   // The delegate the controls the appearance of this painter.
   NativeThemeDelegate* delegate_;
 
-  // Overridden from Painter:
-  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
+  views::View* view_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemePainter);
 };

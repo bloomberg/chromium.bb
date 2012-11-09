@@ -136,7 +136,7 @@ DialogClientView::DialogClientView(Widget* owner,
       notified_delegate_(false),
       listening_to_focus_(false),
       saved_focus_manager_(NULL) {
-  SkColor bg_color = ui::NativeTheme::instance()->GetSystemColor(
+  SkColor bg_color = owner->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
   set_background(views::Background::CreateSolidBackground(bg_color));
 }
@@ -456,8 +456,9 @@ void DialogClientView::PaintSizeBox(gfx::Canvas* canvas) {
   if (GetWidget()->widget_delegate()->CanResize() ||
       GetWidget()->widget_delegate()->CanMaximize()) {
 #if defined(OS_WIN)
+    ui::NativeTheme* theme = GetNativeTheme();
     ui::NativeTheme::ExtraParams extra;
-    gfx::Size gripper_size = ui::NativeTheme::instance()->GetPartSize(
+    gfx::Size gripper_size = theme->GetPartSize(
         ui::NativeTheme::kWindowResizeGripper, ui::NativeTheme::kNormal, extra);
 
     // TODO(beng): (http://b/1085509) In "classic" rendering mode, there isn't
@@ -468,11 +469,11 @@ void DialogClientView::PaintSizeBox(gfx::Canvas* canvas) {
     size_box_bounds_.set_x(size_box_bounds_.right() - gripper_size.width());
     size_box_bounds_.set_y(size_box_bounds_.bottom() - gripper_size.height());
 
-    ui::NativeTheme::instance()->Paint(canvas->sk_canvas(),
-                                       ui::NativeTheme::kWindowResizeGripper,
-                                       ui::NativeTheme::kNormal,
-                                       size_box_bounds_,
-                                       extra);
+    theme->Paint(canvas->sk_canvas(),
+                 ui::NativeTheme::kWindowResizeGripper,
+                 ui::NativeTheme::kNormal,
+                 size_box_bounds_,
+                 extra);
 #else
     NOTIMPLEMENTED();
     // TODO(port): paint size box

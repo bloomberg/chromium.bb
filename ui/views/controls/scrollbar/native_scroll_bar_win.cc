@@ -222,9 +222,10 @@ void NativeScrollBarWin::Layout() {
 }
 
 gfx::Size NativeScrollBarWin::GetPreferredSize() {
+  const ui::NativeTheme* theme = native_scroll_bar_->GetNativeTheme();
   if (native_scroll_bar_->IsHorizontal())
-    return gfx::Size(0, GetHorizontalScrollBarHeight());
-  return gfx::Size(GetVerticalScrollBarWidth(), 0);
+    return gfx::Size(0, GetHorizontalScrollBarHeight(theme));
+  return gfx::Size(GetVerticalScrollBarWidth(theme), 0);
 }
 
 bool NativeScrollBarWin::OnKeyPressed(const ui::KeyEvent& event) {
@@ -338,12 +339,14 @@ NativeScrollBarWrapper* NativeScrollBarWrapper::CreateWrapper(
 }
 
 // static
-int NativeScrollBarWrapper::GetHorizontalScrollBarHeight() {
+int NativeScrollBarWrapper::GetHorizontalScrollBarHeight(
+    const ui::NativeTheme* theme) {
   return GetSystemMetrics(SM_CYHSCROLL);
 }
 
 // static
-int NativeScrollBarWrapper::GetVerticalScrollBarWidth() {
+int NativeScrollBarWrapper::GetVerticalScrollBarWidth(
+    const ui::NativeTheme* theme) {
   return GetSystemMetrics(SM_CXVSCROLL);
 }
 

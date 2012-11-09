@@ -182,6 +182,7 @@ class VIEWS_EXPORT Label : public View {
   // Overridden to dirty our text bounds if we're multi-line.
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
 
  private:
   // These tests call CalculateDrawStringParams in order to verify the
@@ -213,6 +214,9 @@ class VIEWS_EXPORT Label : public View {
                                  gfx::Rect* text_bounds,
                                  int* flags) const;
 
+  // Updates any colors that have not been explicitly set from the theme.
+  void UpdateColorsFromTheme(const ui::NativeTheme* theme);
+
   string16 text_;
   gfx::Font font_;
   SkColor requested_enabled_color_;
@@ -220,6 +224,12 @@ class VIEWS_EXPORT Label : public View {
   SkColor requested_disabled_color_;
   SkColor actual_disabled_color_;
   SkColor background_color_;
+
+  // Set to true once the corresponding setter is invoked.
+  bool enabled_color_set_;
+  bool disabled_color_set_;
+  bool background_color_set_;
+
   bool auto_color_readability_;
   mutable gfx::Size text_size_;
   mutable bool text_size_valid_;

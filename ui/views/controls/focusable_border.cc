@@ -32,7 +32,7 @@ void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) const {
   path.addRect(gfx::RectToSkRect(view.GetLocalBounds()), SkPath::kCW_Direction);
   SkPaint paint;
   paint.setStyle(SkPaint::kStroke_Style);
-  SkColor focus_color = ui::NativeTheme::instance()->GetSystemColor(
+  SkColor focus_color = view.GetNativeTheme()->GetSystemColor(
       has_focus_ ? ui::NativeTheme::kColorId_FocusedBorderColor
           : ui::NativeTheme::kColorId_UnfocusedBorderColor);
   paint.setColor(focus_color);

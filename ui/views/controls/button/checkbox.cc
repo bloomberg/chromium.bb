@@ -62,8 +62,7 @@ gfx::Size Checkbox::GetPreferredSize() {
   gfx::Size prefsize(TextButtonBase::GetPreferredSize());
   ui::NativeTheme::ExtraParams extra;
   ui::NativeTheme::State state = GetThemeState(&extra);
-  gfx::Size size = ui::NativeTheme::instance()->GetPartSize(GetThemePart(),
-                                                            state, extra);
+  gfx::Size size = GetNativeTheme()->GetPartSize(GetThemePart(), state, extra);
   prefsize.Enlarge(size.width() + kCheckboxLabelSpacing, 0);
   prefsize.set_height(std::max(prefsize.height(), size.height()));
 
@@ -106,8 +105,7 @@ ui::NativeTheme::Part Checkbox::GetThemePart() const {
 gfx::Rect Checkbox::GetThemePaintRect() const {
   ui::NativeTheme::ExtraParams extra;
   ui::NativeTheme::State state = GetThemeState(&extra);
-  gfx::Size size(ui::NativeTheme::instance()->GetPartSize(GetThemePart(), state,
-                                                          extra));
+  gfx::Size size(GetNativeTheme()->GetPartSize(GetThemePart(), state, extra));
   gfx::Insets insets = GetInsets();
   int y_offset = (height() - size.height()) / 2;
   gfx::Rect rect(insets.left(), y_offset, size.width(), size.height());
@@ -124,8 +122,7 @@ gfx::Rect Checkbox::GetTextBounds() const {
   gfx::Rect bounds(TextButtonBase::GetTextBounds());
   ui::NativeTheme::ExtraParams extra;
   ui::NativeTheme::State state = GetThemeState(&extra);
-  gfx::Size size(ui::NativeTheme::instance()->GetPartSize(GetThemePart(), state,
-                                                          extra));
+  gfx::Size size(GetNativeTheme()->GetPartSize(GetThemePart(), state, extra));
   bounds.Offset(size.width() + kCheckboxLabelSpacing, 0);
   return bounds;
 }

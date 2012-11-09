@@ -12,13 +12,11 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/base/native_theme/native_theme.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/background.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view_controller.h"
@@ -79,11 +77,8 @@ TreeView::~TreeView() {
 }
 
 View* TreeView::CreateParentIfNecessary() {
-  ScrollView* scroll_view = new ScrollView;
+  ScrollView* scroll_view = ScrollView::CreateScrollViewWithBorder();
   scroll_view->SetContents(this);
-  scroll_view->set_border(Border::CreateSolidBorder(
-      1, ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_UnfocusedBorderColor)));
   return scroll_view;
 }
 
