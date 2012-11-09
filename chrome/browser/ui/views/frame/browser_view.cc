@@ -2161,11 +2161,6 @@ void BrowserView::ShowDevToolsContainer() {
   UpdateDevToolsSplitPosition();
   contents_split_->InvalidateLayout();
   Layout();
-  // In NTP search mode, schedule a repaint of toolbar and tabstrip.
-  if (browser()->search_model()->mode().is_ntp()) {
-    toolbar_->SchedulePaint();
-    tabstrip_->SchedulePaint();
-  }
 }
 
 void BrowserView::HideDevToolsContainer() {
@@ -2174,11 +2169,6 @@ void BrowserView::HideDevToolsContainer() {
   devtools_container_->SetVisible(false);
   contents_split_->InvalidateLayout();
   Layout();
-  // In NTP search mode, schedule a repaint of toolbar and tabstrip.
-  if (browser()->search_model()->mode().is_ntp()) {
-    toolbar_->SchedulePaint();
-    tabstrip_->SchedulePaint();
-  }
 }
 
 void BrowserView::UpdateDevToolsSplitPosition() {
