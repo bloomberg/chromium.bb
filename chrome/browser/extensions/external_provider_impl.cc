@@ -314,6 +314,21 @@ void ExternalProviderImpl::CreateExternalProviders(
     VisitorInterface* service,
     Profile* profile,
     ProviderCollection* provider_list) {
+  // Policies are mandatory so they can't be skipped with command line flag.
+  provider_list->push_back(
+      linked_ptr<ExternalProviderInterface>(
+          new ExternalProviderImpl(
+              service,
+              new ExternalPolicyLoader(profile),
+              Extension::INVALID,
+              Extension::EXTERNAL_POLICY_DOWNLOAD,
+              Extension::NO_FLAGS)));
+
+  // In tests don't install extensions from default external sources.
+  // It would only slowdown tests and make them flaky.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableDefaultApps))
+    return;
 
   // On Mac OS, items in /Library/... should be written by the superuser.
   // Check that all components of the path are writable by root only.
@@ -384,15 +399,6 @@ void ExternalProviderImpl::CreateExternalProviders(
               Extension::EXTERNAL_PREF_DOWNLOAD,
               bundled_extension_creation_flags)));
 #endif
-
-  provider_list->push_back(
-      linked_ptr<ExternalProviderInterface>(
-          new ExternalProviderImpl(
-              service,
-              new ExternalPolicyLoader(profile),
-              Extension::INVALID,
-              Extension::EXTERNAL_POLICY_DOWNLOAD,
-              Extension::NO_FLAGS)));
 
 #if !defined(OS_CHROMEOS)
   // The default apps are installed as INTERNAL but use the external

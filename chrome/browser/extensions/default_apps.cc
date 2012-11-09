@@ -114,11 +114,6 @@ bool Provider::ShouldInstallInProfile() {
   if (install_apps && !IsLocaleSupported())
     install_apps = false;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableDefaultApps)) {
-    install_apps = false;
-  }
-
   // Default apps are only installed on profile creation or a new chrome
   // download.
   if (state == kUnknown) {
