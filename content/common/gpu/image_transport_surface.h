@@ -88,7 +88,9 @@ class ImageTransportSurface {
   DISALLOW_COPY_AND_ASSIGN(ImageTransportSurface);
 };
 
-class ImageTransportHelper : public IPC::Listener {
+class ImageTransportHelper
+    : public IPC::Listener,
+      public base::SupportsWeakPtr<ImageTransportHelper> {
  public:
   // Takes weak pointers to objects that outlive the helper.
   ImageTransportHelper(ImageTransportSurface* surface,

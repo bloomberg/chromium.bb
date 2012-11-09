@@ -147,9 +147,7 @@ unsigned GLSurface::GetFormat() {
   return 0;
 }
 
-bool GLSurface::GetVSyncParameters(base::TimeTicks* timebase,
-                                   base::TimeDelta* interval) {
-  return false;
+void GLSurface::GetVSyncParameters(const UpdateVSyncCallback& callback) {
 }
 
 GLSurface* GLSurface::GetCurrent() {
@@ -256,9 +254,8 @@ unsigned GLSurfaceAdapter::GetFormat() {
   return surface_->GetFormat();
 }
 
-bool GLSurfaceAdapter::GetVSyncParameters(base::TimeTicks* timebase,
-                                          base::TimeDelta* interval) {
-  return surface_->GetVSyncParameters(timebase, interval);
+void GLSurfaceAdapter::GetVSyncParameters(const UpdateVSyncCallback& callback) {
+  surface_->GetVSyncParameters(callback);
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}

@@ -353,11 +353,9 @@ gfx::Size PassThroughImageTransportSurface::GetSize() {
 PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {}
 
 void PassThroughImageTransportSurface::SendVSyncUpdateIfAvailable() {
-  base::TimeTicks timebase;
-  base::TimeDelta interval;
-  if (GetVSyncParameters(&timebase, &interval)) {
-    helper_->SendUpdateVSyncParameters(timebase, interval);
-  }
+  GetVSyncParameters(
+      base::Bind(&ImageTransportHelper::SendUpdateVSyncParameters,
+                 helper_->AsWeakPtr()));
 }
 
 }  // namespace content

@@ -961,6 +961,9 @@ WGL_FUNCTIONS = [
 ]
 
 GLX_FUNCTIONS = [
+{ 'return_type': 'int',
+  'names': ['glXWaitVideoSyncSGI'],
+  'arguments': 'int divisor, int remainder, unsigned int* count', },
 { 'return_type': 'XVisualInfo*',
   'names': ['glXChooseVisual'],
   'arguments': 'Display* dpy, int screen, int* attribList', },
