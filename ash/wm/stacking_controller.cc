@@ -83,6 +83,9 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* window,
       else if (IsWindowModal(window))
         return GetContainerForWindow(window->transient_parent());
       return GetAlwaysOnTopController(target_root)->GetContainer(window);
+    case aura::client::WINDOW_TYPE_CONTROL:
+      return GetContainerById(
+          target_root, internal::kShellWindowId_UnparentedControlContainer);
     case aura::client::WINDOW_TYPE_PANEL:
       return GetContainerById(target_root,
                               internal::kShellWindowId_PanelContainer);
@@ -92,9 +95,6 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* window,
     case aura::client::WINDOW_TYPE_TOOLTIP:
       return GetContainerById(
           target_root, internal::kShellWindowId_DragImageAndTooltipContainer);
-    case aura::client::WINDOW_TYPE_CONTROL:
-      return GetContainerById(
-          target_root, internal::kShellWindowId_UnparentedControlContainer);
     default:
       NOTREACHED() << "Window " << window->id()
                    << " has unhandled type " << window->type();
