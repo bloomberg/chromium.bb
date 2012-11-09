@@ -607,9 +607,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MutationEventsDisabled) {
 
 // Test that windows created with an id will remember and restore their
 // geometry when opening new windows.
-// Flaky, see http://crbug.com/155459.
+// Disabled due to flakiness on linux, see http://crbug.com/155459.
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_ShellWindowRestorePosition DISABLED_ShellWindowRestorePosition
+#else
+#define MAYBE_ShellWindowRestorePosition FLAKY_ShellWindowRestorePosition
+#endif
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
-                       FLAKY_ShellWindowRestorePosition) {
+                       MAYBE_ShellWindowRestorePosition) {
   ExtensionTestMessageListener page2_listener("WaitForPage2", true);
   ExtensionTestMessageListener page3_listener("WaitForPage3", true);
   ExtensionTestMessageListener done_listener("Done1", false);
