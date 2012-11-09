@@ -37,9 +37,17 @@ class MultiThreadTestHelper {
   void SetUp();
   void TearDown();
 
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner();
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner();
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner();
+  base::SingleThreadTaskRunner* ui_task_runner() {
+    return ui_task_runner_.get();
+  }
+
+  base::SingleThreadTaskRunner* file_task_runner() {
+    return file_task_runner_.get();
+  }
+
+  base::SingleThreadTaskRunner* io_task_runner() {
+    return io_task_runner_.get();
+  }
 
  private:
   MessageLoop message_loop_;
@@ -49,6 +57,10 @@ class MultiThreadTestHelper {
   scoped_ptr<content::TestBrowserThread> browser_ui_thread_;
   scoped_ptr<content::TestBrowserThread> browser_file_thread_;
   scoped_ptr<content::TestBrowserThread> browser_io_thread_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 };
 
 }  // namespace sync_file_system

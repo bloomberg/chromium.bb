@@ -54,26 +54,18 @@ void MultiThreadTestHelper::SetUp() {
   browser_io_thread_.reset(
       new TestBrowserThread(BrowserThread::IO,
                             io_thread_->message_loop()));
+
+  ui_task_runner_ =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+  file_task_runner_ =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
+  io_task_runner_ =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
 }
 
 void MultiThreadTestHelper::TearDown() {
   file_thread_->Stop();
   io_thread_->Stop();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-MultiThreadTestHelper::ui_task_runner() {
-  return base::MessageLoopProxy::current();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-MultiThreadTestHelper::file_task_runner() {
-  return file_thread_->message_loop_proxy();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-MultiThreadTestHelper::io_task_runner() {
-  return io_thread_->message_loop_proxy();
 }
 
 }  // namespace sync_file_system
