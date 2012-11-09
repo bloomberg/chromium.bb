@@ -2205,3 +2205,36 @@ def GetTargetChromiteApiVersion(buildroot, validate_version=True):
         % (buildroot, major, constants.REEXEC_API_MAJOR))
 
   return major, minor
+
+
+def iflatten_instance(iterable, terminate_on_kls=(basestring,)):
+  """Derivative of snakeoil.lists.iflatten_instance; flatten an object.
+
+  Given an object, flatten it into a single depth iterable-
+  stopping descent on objects that either aren't iterable, or match
+  isinstance(obj, terminate_on_kls).
+
+  Example:
+  >>> print list(iflatten_instance([1, 2, "as", ["4", 5]))
+  [1, 2, "as", "4", 5]
+  """
+  def descend_into(item):
+    if isinstance(item, terminate_on_kls):
+      return False
+    try:
+      iter(item)
+    except TypeError:
+      return False
+    # Note strings can be infinitely descended through- thus this
+    # recursion limiter.
+    return not isinstance(item, basestring) or len(item) > 1
+
+  if not descend_into(iterable):
+    yield iterable
+    return
+  for item in iterable:
+    if not descend_into(item):
+      yield item
+    else:
+      for subitem in iflatten_instance(item, terminate_on_kls):
+        yield subitem

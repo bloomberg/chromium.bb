@@ -38,11 +38,8 @@ def WriteFile(path, content, mode='w', atomic=False):
   if atomic:
     write_path = path + '.tmp'
 
-  if isinstance(content, basestring):
-    content = [content]
-
   with open(write_path, mode) as f:
-    f.writelines(content)
+    f.writelines(cros_build_lib.iflatten_instance(content))
 
   if not atomic:
     return

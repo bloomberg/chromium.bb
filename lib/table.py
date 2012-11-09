@@ -9,6 +9,9 @@ import inspect
 import re
 import sys
 
+from chromite.lib import cros_build_lib
+
+
 class Table(object):
   """Class to represent column headers and rows of data."""
 
@@ -374,9 +377,8 @@ class Table(object):
 
   def _GetIdValuesForRow(self, row, id_columns):
     """Return a dict with values from |row| in |id_columns|."""
-    if isinstance(id_columns, basestring):
-      id_columns = [id_columns]
-    id_values = dict((col, row[col]) for col in id_columns)
+    id_values = dict((col, row[col]) for col in
+                     cros_build_lib.iflatten_instance(id_columns))
     return id_values
 
   def _MergeRow(self, other_row, id_columns, merge_rules=None):

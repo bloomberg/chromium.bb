@@ -810,5 +810,15 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
     self.assertEqual(branches, ['refs/remotes/origin/release-R23-2913.B'])
 
 
+class Test_iflatten_instance(cros_test_lib.TestCase):
+
+  def test_it(self):
+    f = lambda *a: list(cros_build_lib.iflatten_instance(*a))
+    self.assertEqual([1, 2], f([1, 2]))
+    self.assertEqual([1, '2a'], f([1, '2a']))
+    self.assertEqual([1, 2, 'b'], f([1, [2, 'b']]))
+    self.assertEqual([1, 2, 'f', 'd', 'a', 's'], f([1, 2, ('fdas',)], int))
+    self.assertEqual([''], f(''))
+
 if __name__ == '__main__':
   cros_test_lib.main()
