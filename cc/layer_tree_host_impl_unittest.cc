@@ -1174,7 +1174,7 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
 
     if (!Settings::pageScalePinchZoomEnabled()) {
         // The scale should apply to the scroll delta.
-        expectedScrollDelta = gfx::ToFlooredVector2d(cc::ScaleVector2d(expectedScrollDelta, pageScale));
+        expectedScrollDelta = gfx::ToFlooredVector2d(gfx::ScaleVector2d(expectedScrollDelta, pageScale));
     }
     scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), expectedScrollDelta);
@@ -1297,7 +1297,7 @@ TEST_P(LayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
 
     if (!Settings::pageScalePinchZoomEnabled()) {
         // The scale should apply to the scroll delta.
-        expectedScrollDelta = gfx::ToFlooredVector2d(cc::ScaleVector2d(expectedScrollDelta, pageScale));
+        expectedScrollDelta = gfx::ToFlooredVector2d(gfx::ScaleVector2d(expectedScrollDelta, pageScale));
     }
     scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     expectContains(*scrollInfo.get(), scrollLayerId, expectedScrollDelta);

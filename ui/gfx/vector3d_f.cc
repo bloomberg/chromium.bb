@@ -76,4 +76,13 @@ float DotProduct(const Vector3dF& lhs, const Vector3dF& rhs) {
   return lhs.x() * rhs.x() + lhs.y() * rhs.y() + lhs.z() * rhs.z();
 }
 
+Vector3dF ScaleVector3d(const Vector3dF& v,
+                        float x_scale,
+                        float y_scale,
+                        float z_scale) {
+  Vector3dF scaled_v(v);
+  scaled_v.Scale(x_scale, y_scale, z_scale);
+  return scaled_v;
+}
+
 }  // namespace gfx

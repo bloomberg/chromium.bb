@@ -61,4 +61,10 @@ double DotProduct(const Vector2dF& lhs, const Vector2dF& rhs) {
       static_cast<double>(lhs.y()) * rhs.y();
 }
 
+Vector2dF ScaleVector2d(const Vector2dF& v, float x_scale, float y_scale) {
+  Vector2dF scaled_v(v);
+  scaled_v.Scale(x_scale, y_scale);
+  return scaled_v;
+}
+
 }  // namespace gfx

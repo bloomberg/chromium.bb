@@ -88,9 +88,18 @@ TEST(Vector3dTest, Scale) {
                      triple_values[i][1],
                      triple_values[i][2]);
     v.Scale(triple_values[i][3], triple_values[i][4], triple_values[i][5]);
-    EXPECT_EQ(v.x(), triple_values[i][0] * triple_values[i][3]);
-    EXPECT_EQ(v.y(), triple_values[i][1] * triple_values[i][4]);
-    EXPECT_EQ(v.z(), triple_values[i][2] * triple_values[i][5]);
+    EXPECT_EQ(triple_values[i][0] * triple_values[i][3], v.x());
+    EXPECT_EQ(triple_values[i][1] * triple_values[i][4], v.y());
+    EXPECT_EQ(triple_values[i][2] * triple_values[i][5], v.z());
+
+    Vector3dF v2 = ScaleVector3d(
+        gfx::Vector3dF(triple_values[i][0],
+                       triple_values[i][1],
+                       triple_values[i][2]),
+        triple_values[i][3], triple_values[i][4], triple_values[i][5]);
+    EXPECT_EQ(triple_values[i][0] * triple_values[i][3], v2.x());
+    EXPECT_EQ(triple_values[i][1] * triple_values[i][4], v2.y());
+    EXPECT_EQ(triple_values[i][2] * triple_values[i][5], v2.z());
   }
 
   float single_values[][4] = {
@@ -115,9 +124,18 @@ TEST(Vector3dTest, Scale) {
                      single_values[i][1],
                      single_values[i][2]);
     v.Scale(single_values[i][3]);
-    EXPECT_EQ(v.x(), single_values[i][0] * single_values[i][3]);
-    EXPECT_EQ(v.y(), single_values[i][1] * single_values[i][3]);
-    EXPECT_EQ(v.z(), single_values[i][2] * single_values[i][3]);
+    EXPECT_EQ(single_values[i][0] * single_values[i][3], v.x());
+    EXPECT_EQ(single_values[i][1] * single_values[i][3], v.y());
+    EXPECT_EQ(single_values[i][2] * single_values[i][3], v.z());
+
+    Vector3dF v2 = ScaleVector3d(
+        gfx::Vector3dF(single_values[i][0],
+                       single_values[i][1],
+                       single_values[i][2]),
+        single_values[i][3]);
+    EXPECT_EQ(single_values[i][0] * single_values[i][3], v2.x());
+    EXPECT_EQ(single_values[i][1] * single_values[i][3], v2.y());
+    EXPECT_EQ(single_values[i][2] * single_values[i][3], v2.z());
   }
 }
 

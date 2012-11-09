@@ -115,6 +115,12 @@ TEST(Vector2dTest, Scale) {
     v.Scale(double_values[i][2], double_values[i][3]);
     EXPECT_EQ(v.x(), double_values[i][0] * double_values[i][2]);
     EXPECT_EQ(v.y(), double_values[i][1] * double_values[i][3]);
+
+    Vector2dF v2 = ScaleVector2d(
+        gfx::Vector2dF(double_values[i][0], double_values[i][1]),
+        double_values[i][2], double_values[i][3]);
+    EXPECT_EQ(double_values[i][0] * double_values[i][2], v2.x());
+    EXPECT_EQ(double_values[i][1] * double_values[i][3], v2.y());
   }
 
   float single_values[][3] = {
@@ -134,6 +140,12 @@ TEST(Vector2dTest, Scale) {
     v.Scale(single_values[i][2]);
     EXPECT_EQ(v.x(), single_values[i][0] * single_values[i][2]);
     EXPECT_EQ(v.y(), single_values[i][1] * single_values[i][2]);
+
+    Vector2dF v2 = ScaleVector2d(
+        gfx::Vector2dF(double_values[i][0], double_values[i][1]),
+        double_values[i][2]);
+    EXPECT_EQ(single_values[i][0] * single_values[i][2], v2.x());
+    EXPECT_EQ(single_values[i][1] * single_values[i][2], v2.y());
   }
 }
 

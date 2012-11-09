@@ -22,16 +22,12 @@ gfx::PointF toPointF(const gfx::Vector2dF& vector)
 // between 0 and 1, representing the percentage position within the viewport.
 gfx::Vector2dF normalizeFromViewport(const gfx::Vector2dF& denormalized, const gfx::SizeF& viewportSize)
 {
-    gfx::Vector2dF normalized(denormalized);
-    normalized.Scale(1 / viewportSize.width(), 1 / viewportSize.height());
-    return normalized;
+    return gfx::ScaleVector2d(denormalized, 1 / viewportSize.width(), 1 / viewportSize.height());
 }
 
 gfx::Vector2dF denormalizeToViewport(const gfx::Vector2dF& normalized, const gfx::SizeF& viewportSize)
 {
-    gfx::Vector2dF denormalized(normalized);
-    denormalized.Scale(viewportSize.width(), viewportSize.height());
-    return denormalized;
+    return gfx::ScaleVector2d(normalized, viewportSize.width(), viewportSize.height());
 }
 
 gfx::Vector2dF interpolateBetween(const gfx::Vector2dF& start, const gfx::Vector2dF end, float interp)
@@ -183,8 +179,7 @@ gfx::Vector2dF PageScaleAnimation::scrollOffsetAt(float interp) const
 gfx::Vector2dF PageScaleAnimation::anchorAt(float interp) const
 {
     // Interpolate from start to target anchor in absolute space.
-    gfx::Vector2dF delta = m_targetAnchor - m_startAnchor;
-    delta.Scale(interp);
+    gfx::Vector2dF delta = gfx::ScaleVector2d(m_targetAnchor - m_startAnchor, interp);
     return m_startAnchor + delta;
 }
 

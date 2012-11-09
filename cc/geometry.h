@@ -65,19 +65,6 @@ inline gfx::PointF BottomRight(gfx::RectF rect) {
   return gfx::PointF(rect.right(), rect.bottom());
 }
 
-// Return a vector that is |v| scaled by the given scale factors along each
-// axis.
-inline gfx::Vector2dF ScaleVector2d(gfx::Vector2dF v, float x_scale, float y_scale) {
-  gfx::Vector2dF scaled = v;
-  scaled.Scale(x_scale, y_scale);
-  return scaled;
-}
-
-// Return a vector that is |v| scaled by the given scale factor.
-inline gfx::Vector2dF ScaleVector2d(gfx::Vector2dF v, float scale) {
-  return ScaleVector2d(v, scale, scale);
-}
-
 }  // namespace cc
 
 #endif  // CC_GEOMETRY_H_
