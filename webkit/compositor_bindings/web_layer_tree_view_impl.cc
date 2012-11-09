@@ -179,6 +179,8 @@ void WebLayerTreeViewImpl::renderingStats(WebRenderingStats& stats) const
     stats.totalRasterizeTimeInSeconds = ccStats.totalRasterizeTimeInSeconds;
     stats.totalCommitTimeInSeconds = ccStats.totalCommitTimeInSeconds;
     stats.totalCommitCount = ccStats.totalCommitCount;
+    stats.totalPixelsPainted = ccStats.totalPixelsPainted;
+    stats.totalPixelsRasterized = ccStats.totalPixelsRasterized;
     stats.numImplThreadScrolls = ccStats.numImplThreadScrolls;
     stats.numMainThreadScrolls = ccStats.numMainThreadScrolls;
 }

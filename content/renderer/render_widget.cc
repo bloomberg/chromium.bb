@@ -669,6 +669,13 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
                              skia::PlatformCanvas* canvas) {
   TRACE_EVENT2("renderer", "PaintRect",
                "width", rect.width(), "height", rect.height());
+
+  const bool kEnableGpuBenchmarking =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGpuBenchmarking);
+  base::TimeTicks rasterize_begin_ticks;
+  if (kEnableGpuBenchmarking)
+    rasterize_begin_ticks = base::TimeTicks::HighResNow();
   canvas->save();
 
   // Bring the canvas into the coordinate system of the paint rect.
@@ -724,22 +731,35 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
     // WebKit and filling the background (which can be slow) and just painting
     // the plugin. Unlike the DoDeferredUpdate case, an extra copy is still
     // required.
-    base::TimeTicks paint_begin_ticks = base::TimeTicks::Now();
+    base::TimeTicks paint_begin_ticks;
+    if (kEnableGpuBenchmarking)
+      paint_begin_ticks = base::TimeTicks::HighResNow();
+
     SkAutoCanvasRestore auto_restore(canvas, true);
     canvas->scale(device_scale_factor_, device_scale_factor_);
     optimized_instance->Paint(webkit_glue::ToWebCanvas(canvas),
                               optimized_copy_location, rect);
     canvas->restore();
-    base::TimeDelta paint_time = base::TimeTicks::Now() - paint_begin_ticks;
-    if (!is_accelerated_compositing_active_)
-      software_stats_.totalPaintTimeInSeconds += paint_time.InSecondsF();
+    if (kEnableGpuBenchmarking) {
+      base::TimeDelta paint_time =
+          base::TimeTicks::HighResNow() - paint_begin_ticks;
+      if (!is_accelerated_compositing_active_)
+        software_stats_.totalPaintTimeInSeconds += paint_time.InSecondsF();
+    }
   } else {
     // Normal painting case.
-    base::TimeTicks paint_begin_ticks = base::TimeTicks::Now();
+    base::TimeTicks paint_begin_ticks;
+    if (kEnableGpuBenchmarking)
+      paint_begin_ticks = base::TimeTicks::HighResNow();
+
     webwidget_->paint(webkit_glue::ToWebCanvas(canvas), rect);
-    base::TimeDelta paint_time = base::TimeTicks::Now() - paint_begin_ticks;
-    if (!is_accelerated_compositing_active_)
-      software_stats_.totalPaintTimeInSeconds += paint_time.InSecondsF();
+
+    if (kEnableGpuBenchmarking) {
+      base::TimeDelta paint_time =
+          base::TimeTicks::HighResNow() - paint_begin_ticks;
+      if (!is_accelerated_compositing_active_)
+        software_stats_.totalPaintTimeInSeconds += paint_time.InSecondsF();
+    }
 
     // Flush to underlying bitmap.  TODO(darin): is this needed?
     skia::GetTopDevice(*canvas)->accessBitmap(false);
@@ -747,6 +767,16 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
 
   PaintDebugBorder(rect, canvas);
   canvas->restore();
+
+  if (kEnableGpuBenchmarking) {
+    base::TimeDelta rasterize_time =
+        base::TimeTicks::HighResNow() - rasterize_begin_ticks;
+    software_stats_.totalRasterizeTimeInSeconds += rasterize_time.InSecondsF();
+
+    int64 num_pixels_processed = rect.width() * rect.height();
+    software_stats_.totalPixelsPainted += num_pixels_processed;
+    software_stats_.totalPixelsRasterized += num_pixels_processed;
+  }
 }
 
 void RenderWidget::PaintDebugBorder(const gfx::Rect& rect,
@@ -1886,6 +1916,10 @@ void RenderWidget::GetRenderingStats(WebKit::WebRenderingStats& stats) const {
   stats.numAnimationFrames += software_stats_.numAnimationFrames;
   stats.numFramesSentToScreen += software_stats_.numFramesSentToScreen;
   stats.totalPaintTimeInSeconds += software_stats_.totalPaintTimeInSeconds;
+  stats.totalPixelsPainted += software_stats_.totalPixelsPainted;
+  stats.totalRasterizeTimeInSeconds +=
+      software_stats_.totalRasterizeTimeInSeconds;
+  stats.totalPixelsRasterized += software_stats_.totalPixelsRasterized;
 }
 
 bool RenderWidget::GetGpuRenderingStats(GpuRenderingStats* stats) const {

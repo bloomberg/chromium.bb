@@ -176,6 +176,10 @@ class GpuBenchmarkingWrapper : public v8::Extension {
                       v8::Integer::New(stats.numImplThreadScrolls));
     stats_object->Set(v8::String::New("numMainThreadScrolls"),
                       v8::Integer::New(stats.numMainThreadScrolls));
+    stats_object->Set(v8::String::New("totalPixelsPainted"),
+                      v8::Integer::New(stats.totalPixelsPainted));
+    stats_object->Set(v8::String::New("totalPixelsRasterized"),
+                      v8::Integer::New(stats.totalPixelsRasterized));
 
     stats_object->Set(v8::String::New("globalTextureUploadCount"),
                       v8::Number::New(gpu_stats.global_texture_upload_count));

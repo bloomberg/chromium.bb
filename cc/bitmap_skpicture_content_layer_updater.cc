@@ -67,6 +67,7 @@ void BitmapSkPictureContentLayerUpdater::paintContentsRect(SkCanvas* canvas, con
     base::TimeTicks rasterizeBeginTime = base::TimeTicks::Now();
     drawPicture(canvas);
     stats.totalRasterizeTimeInSeconds += (base::TimeTicks::Now() - rasterizeBeginTime).InSecondsF();
+    stats.totalPixelsRasterized += sourceRect.width() * sourceRect.height();
 }
 
 }  // namespace cc

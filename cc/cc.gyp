@@ -150,6 +150,7 @@
       'render_surface_impl.h',
       'renderer.cc',
       'renderer.h',
+      'rendering_stats.cc',
       'rendering_stats.h',
       'resource.cc',
       'resource.h',

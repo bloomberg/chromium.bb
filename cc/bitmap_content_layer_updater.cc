@@ -7,6 +7,7 @@
 #include "cc/bitmap_content_layer_updater.h"
 
 #include "cc/layer_painter.h"
+#include "cc/rendering_stats.h"
 #include "cc/resource_update.h"
 #include "cc/resource_update_queue.h"
 #include "skia/ext/platform_canvas.h"
@@ -54,6 +55,8 @@ void BitmapContentLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, co
         m_canvasSize = contentRect.size();
         m_canvas = make_scoped_ptr(skia::CreateBitmapCanvas(m_canvasSize.width(), m_canvasSize.height(), m_opaque));
     }
+
+    stats.totalPixelsRasterized += contentRect.width() * contentRect.height();
 
     paintContents(m_canvas.get(), contentRect, contentsWidthScale, contentsHeightScale, resultingOpaqueRect, stats);
 }

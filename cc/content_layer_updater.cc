@@ -56,6 +56,8 @@ void ContentLayerUpdater::paintContents(SkCanvas* canvas, const gfx::Rect& conte
     stats.totalPaintTimeInSeconds += (base::TimeTicks::Now() - paintBeginTime).InSecondsF();
     canvas->restore();
 
+    stats.totalPixelsPainted += contentRect.width() * contentRect.height();
+
     gfx::RectF opaqueContentRect = gfx::ScaleRect(opaqueLayerRect, contentsWidthScale, contentsHeightScale);
     resultingOpaqueRect = gfx::ToEnclosedRect(opaqueContentRect);
 
