@@ -275,6 +275,8 @@
       'conditions': [
         ['OS != "android"', {
           'sources': [
+            'notifier/ack_tracker.cc',
+            'notifier/ack_tracker.h',
             'notifier/invalidation_notifier.cc',
             'notifier/invalidation_notifier.h',
             'notifier/invalidation_state_tracker.h',
@@ -695,6 +697,7 @@
         'conditions': [
           ['OS != "android"', {
             'sources': [
+              'notifier/ack_tracker_unittest.cc',
               'notifier/fake_invalidator_unittest.cc',
               'notifier/invalidation_notifier_unittest.cc',
               'notifier/invalidator_registrar_unittest.cc',
