@@ -331,13 +331,16 @@ cr.define('cr.ui', function() {
    * before login UI is dismissed.
    */
   Oobe.animateAuthenticationSuccess = function() {
-    var launcher = $('login-header-bar');
-    launcher.addEventListener(
-        'webkitTransitionEnd', function f(e) {
-          launcher.removeEventListener('webkitTransitionEnd', f);
-          chrome.send('unlockOnLoginSuccess');
-        });
-    launcher.classList.add('login-header-bar-hidden');
+    login.HeaderBar.animateOut(function() {
+      chrome.send('unlockOnLoginSuccess');
+    });
+  };
+
+  /**
+   * Displays animations that have to happen once login UI is fully displayed.
+   */
+  Oobe.animateOnceFullyDisplayed = function() {
+    login.HeaderBar.animateIn();
   };
 
   /**

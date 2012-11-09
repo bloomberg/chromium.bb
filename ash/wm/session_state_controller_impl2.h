@@ -116,7 +116,8 @@ class ASH_EXPORT SessionStateControllerImpl2 : public SessionStateController {
   virtual void OnStartingLock() OVERRIDE;
   virtual void RequestShutdown() OVERRIDE;
 
-  virtual void OnLockScreenHide(base::Callback<void(void)>& callback) OVERRIDE;
+  virtual void OnLockScreenHide(base::Closure& callback) OVERRIDE;
+  virtual void SetLockScreenDisplayedCallback(base::Closure& callback) OVERRIDE;
 
  protected:
   friend class test::PowerButtonControllerTest;
@@ -153,7 +154,10 @@ class ASH_EXPORT SessionStateControllerImpl2 : public SessionStateController {
   // Requests that the machine be shut down.
   void OnRealShutdownTimeout();
 
-  // The current login status, or original login status from before we locked..
+  // Triggers late animations on the lock screen.
+  void OnLockScreenAnimationFinished();
+
+  // The current login status, or original login status from before we locked.
   user::LoginStatus login_status_;
 
   // Current lock status.
@@ -188,6 +192,8 @@ class ASH_EXPORT SessionStateControllerImpl2 : public SessionStateController {
   // request shutdown.  Gives the animation time to complete before Chrome, X,
   // etc. are shut down.
   base::OneShotTimer<SessionStateControllerImpl2> real_shutdown_timer_;
+
+  base::Closure lock_screen_displayed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStateControllerImpl2);
 };

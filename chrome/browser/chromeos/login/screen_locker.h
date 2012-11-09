@@ -121,6 +121,10 @@ class ScreenLocker : public LoginStatusConsumer {
   // Called when the screen lock is ready.
   void ScreenLockReady();
 
+  // Triggers visual effects that should happen once screen locker is fully
+  // visible. Called when screen lock appearance animation is finished.
+  void OnFullyDisplayedCallback();
+
   // Called when screen locker is safe to delete.
   static void ScheduleDeletion();
 

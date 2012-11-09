@@ -155,6 +155,13 @@ void ScreenLocker::Init() {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   delegate_.reset(new WebUIScreenLocker(this));
   delegate_->LockScreen(unlock_on_input_);
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(ash::switches::kAshNewLockAnimationsEnabled)) {
+    base::Closure callback = base::Bind(&ScreenLocker::OnFullyDisplayedCallback,
+                                        weak_factory_.GetWeakPtr());
+    ash::Shell::GetInstance()->session_state_controller()->
+        SetLockScreenDisplayedCallback(callback);
+  }
 }
 
 void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
@@ -421,6 +428,10 @@ void ScreenLocker::ScreenLockReady() {
       content::Details<bool>(&state));
   VLOG(1) << "Calling session manager's HandleLockScreenShown D-Bus method";
   DBusThreadManager::Get()->GetSessionManagerClient()->NotifyLockScreenShown();
+}
+
+void ScreenLocker::OnFullyDisplayedCallback() {
+  delegate_->ProcessFullyDisplayedAnimations();
 }
 
 }  // namespace chromeos

@@ -69,15 +69,20 @@ void SessionStateControllerImpl2::OnLockStateChanged(bool locked) {
   system_is_locked_ = locked;
 
   if (locked) {
+    base::Callback<void(void)> callback =
+        base::Bind(&SessionStateControllerImpl2::OnLockScreenAnimationFinished,
+        base::Unretained(this));
     if (CommandLine::ForCurrentProcess()->
         HasSwitch(ash::switches::kAshReverseNewLockAnimations)) {
-      animator_->StartAnimation(
+      animator_->StartAnimationWithCallback(
           internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_DROP);
+          internal::SessionStateAnimator::ANIMATION_DROP,
+          callback);
     } else {
-      animator_->StartAnimation(
+      animator_->StartAnimationWithCallback(
           internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN);
+          internal::SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN,
+          callback);
     }
     lock_timer_.Stop();
     lock_fail_timer_.Stop();
@@ -91,6 +96,18 @@ void SessionStateControllerImpl2::OnLockStateChanged(bool locked) {
         internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS |
         internal::SessionStateAnimator::LAUNCHER,
         internal::SessionStateAnimator::ANIMATION_DROP);
+  }
+}
+
+void SessionStateControllerImpl2::SetLockScreenDisplayedCallback(
+    base::Closure& callback) {
+  lock_screen_displayed_callback_ = callback;
+}
+
+void SessionStateControllerImpl2::OnLockScreenAnimationFinished() {
+  if (!lock_screen_displayed_callback_.is_null()) {
+    lock_screen_displayed_callback_.Run();
+    lock_screen_displayed_callback_.Reset();
   }
 }
 

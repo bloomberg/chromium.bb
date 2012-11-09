@@ -134,7 +134,11 @@ class ASH_EXPORT SessionStateController : public aura::RootWindowObserver,
   // Called when ScreenLocker is ready to close, but not yet destroyed.
   // Can be used to display "hiding" animations on unlock.
   // |callback| will be called when all animations are done.
-  virtual void OnLockScreenHide(base::Callback<void(void)>& callback) = 0;
+  virtual void OnLockScreenHide(base::Closure& callback) = 0;
+
+  // Sets up the callback that should be called once lock animation is finished.
+  // Callback is guaranteed to be called once and then discarded.
+  virtual void SetLockScreenDisplayedCallback(base::Closure& callback) = 0;
 
  protected:
   friend class test::PowerButtonControllerTest;

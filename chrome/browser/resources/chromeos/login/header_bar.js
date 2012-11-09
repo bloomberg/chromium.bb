@@ -149,7 +149,32 @@ cr.define('login', function() {
           !this.signinUIActive_ || !this.allowCancel_;
       $('guest-user-header-bar-item').hidden =
           this.signinUIActive_ || !this.showGuest_;
-    }
+    },
+
+    /**
+     * Animates Header bar to hide from the screen.
+     * @param {function()} callback will be called once animation is finished.
+     */
+    animateOut: function(callback) {
+      var launcher = this;
+      launcher.addEventListener(
+          'webkitTransitionEnd', function f(e) {
+            launcher.removeEventListener('webkitTransitionEnd', f);
+            callback();
+          });
+      this.classList.remove('login-header-bar-animate-slow');
+      this.classList.add('login-header-bar-animate-fast');
+      this.classList.add('login-header-bar-hidden');
+    },
+
+    /**
+     * Animates Header bar to slowly appear on the screen.
+     */
+    animateIn: function() {
+      this.classList.remove('login-header-bar-animate-fast');
+      this.classList.add('login-header-bar-animate-slow');
+      this.classList.remove('login-header-bar-hidden');
+    },
   };
 
   /**

@@ -116,7 +116,8 @@ class ASH_EXPORT SessionStateControllerImpl : public SessionStateController {
   virtual void OnStartingLock() OVERRIDE;
   virtual void RequestShutdown() OVERRIDE;
 
-  virtual void OnLockScreenHide(base::Callback<void(void)>& callback) OVERRIDE;
+  virtual void OnLockScreenHide(base::Closure& callback) OVERRIDE;
+  virtual void SetLockScreenDisplayedCallback(base::Closure& callback) OVERRIDE;
 
  protected:
   friend class test::PowerButtonControllerTest;

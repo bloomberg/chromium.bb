@@ -310,9 +310,13 @@ void SessionStateControllerImpl::OnRealShutdownTimeout() {
   delegate_->RequestShutdown();
 }
 
-void SessionStateControllerImpl::OnLockScreenHide(
-    base::Callback<void(void)>& callback) {
+void SessionStateControllerImpl::OnLockScreenHide(base::Closure& callback) {
   callback.Run();
+}
+
+void SessionStateControllerImpl::SetLockScreenDisplayedCallback(
+    base::Closure& callback) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace ash

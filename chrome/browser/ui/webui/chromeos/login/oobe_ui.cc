@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
@@ -262,6 +263,12 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
     localized_strings->SetString("oobeType", "new");
   else
     localized_strings->SetString("oobeType", "old");
+
+  if (CommandLine::ForCurrentProcess()->
+          HasSwitch(ash::switches::kAshNewLockAnimationsEnabled))
+    localized_strings->SetString("lockAnimationsType", "new");
+  else
+    localized_strings->SetString("lockAnimationsType", "old");
 
   // If we're not doing boot animation then WebUI should trigger
   // wallpaper load on boot.
