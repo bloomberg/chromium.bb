@@ -81,6 +81,7 @@
         'common/chrome_sandbox_type_mac.h',
         'common/chrome_utility_messages.h',
         'common/chrome_version_info.cc',
+        'common/chrome_version_info_android.cc',
         'common/chrome_version_info_chromeos.cc',
         'common/chrome_version_info_posix.cc',
         'common/chrome_version_info_mac.mm',
@@ -360,6 +361,7 @@
         }],
         ['OS=="android"', {
           'sources/': [
+            ['exclude', '^common/chrome_version_info_posix.cc'],
             ['exclude', '^common/service_'],
           ],
           'dependencies!': [
