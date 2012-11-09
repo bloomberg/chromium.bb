@@ -84,10 +84,22 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     content::Source<content::NavigationController> source4 = observer4.source();
     EXPECT_TRUE(source4->GetWebContents()->GetRenderProcessHost()->IsGuest());
 
-    // Tags with the same storage partition are not yet combined in the same
-    // process. Check this until http://crbug.com/138296 is fixed.
-    EXPECT_NE(source1->GetWebContents()->GetRenderProcessHost()->GetID(),
+    // Check that the first two tags use the same process and it is different
+    // than the process used by the other two.
+    EXPECT_EQ(source1->GetWebContents()->GetRenderProcessHost()->GetID(),
               source2->GetWebContents()->GetRenderProcessHost()->GetID());
+    EXPECT_EQ(source3->GetWebContents()->GetRenderProcessHost()->GetID(),
+              source4->GetWebContents()->GetRenderProcessHost()->GetID());
+    EXPECT_NE(source1->GetWebContents()->GetRenderProcessHost()->GetID(),
+              source3->GetWebContents()->GetRenderProcessHost()->GetID());
+
+    // The two sets of tags should also be isolated from the main browser.
+    EXPECT_NE(source1->GetWebContents()->GetRenderProcessHost()->GetID(),
+              chrome::GetWebContentsAt(browser(), 0)->
+                  GetRenderProcessHost()->GetID());
+    EXPECT_NE(source3->GetWebContents()->GetRenderProcessHost()->GetID(),
+              chrome::GetWebContentsAt(browser(), 0)->
+                  GetRenderProcessHost()->GetID());
 
     // Check that the storage partitions of the first two tags match and are
     // different than the other two.

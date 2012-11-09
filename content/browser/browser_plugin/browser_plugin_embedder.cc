@@ -107,8 +107,26 @@ void BrowserPluginEmbedder::CreateGuest(
       base::StringPrintf("%s://%s/%s?%s", chrome::kGuestScheme,
                          host.c_str(), params.persist_storage ? "persist" : "",
                          url_encoded_partition.c_str()));
-  SiteInstance* guest_site_instance = SiteInstance::CreateForURL(
-      web_contents()->GetBrowserContext(), guest_site);
+
+  // If we already have a webview tag in the same app using the same storage
+  // partition, we should use the same SiteInstance so the existing tag and
+  // the new tag can script each other.
+  SiteInstance* guest_site_instance = NULL;
+  for (ContainerInstanceMap::const_iterator it =
+           guest_web_contents_by_instance_id_.begin();
+       it != guest_web_contents_by_instance_id_.end(); ++it) {
+    if (it->second->GetSiteInstance()->GetSiteURL() == guest_site) {
+      guest_site_instance = it->second->GetSiteInstance();
+      break;
+    }
+  }
+  if (!guest_site_instance) {
+    // Create the SiteInstance in a new BrowsingInstance, which will ensure that
+    // webview tags are also not allowed to send messages across different
+    // partitions.
+    guest_site_instance = SiteInstance::CreateForURL(
+        web_contents()->GetBrowserContext(), guest_site);
+  }
 
   guest_web_contents = WebContentsImpl::CreateGuest(
       web_contents()->GetBrowserContext(),
