@@ -349,6 +349,9 @@ bool OcclusionTrackerBase<LayerType, RenderSurfaceType>::occluded(const LayerTyp
 // the resulting unoccluded region is not rectangular, we return a rect containing it.
 static inline gfx::Rect rectSubtractRegion(const gfx::Rect& rect, const Region& region)
 {
+    if (region.IsEmpty())
+        return rect;
+
     Region rectRegion(rect);
     rectRegion.Subtract(region);
     return rectRegion.bounds();

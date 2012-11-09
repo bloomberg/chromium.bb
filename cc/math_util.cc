@@ -117,7 +117,7 @@ gfx::RectF MathUtil::mapClippedRect(const WebTransformationMatrix& transform, co
     }
 
     // Apply the transform, but retain the result in homogeneous coordinates.
-    gfx::QuadF q = gfx::QuadF(gfx::RectF(srcRect));
+    gfx::QuadF q = gfx::QuadF(srcRect);
     HomogeneousCoordinate h1 = mapHomogeneousPoint(transform, gfx::Point3F(q.p1()));
     HomogeneousCoordinate h2 = mapHomogeneousPoint(transform, gfx::Point3F(q.p2()));
     HomogeneousCoordinate h3 = mapHomogeneousPoint(transform, gfx::Point3F(q.p3()));
@@ -128,8 +128,14 @@ gfx::RectF MathUtil::mapClippedRect(const WebTransformationMatrix& transform, co
 
 gfx::RectF MathUtil::projectClippedRect(const WebTransformationMatrix& transform, const gfx::RectF& srcRect)
 {
+    if (transform.isIdentityOrTranslation()) {
+        gfx::RectF projectedRect(srcRect);
+        projectedRect.Offset(static_cast<float>(transform.m41()), static_cast<float>(transform.m42()));
+        return projectedRect;
+    }
+
     // Perform the projection, but retain the result in homogeneous coordinates.
-    gfx::QuadF q = gfx::QuadF(gfx::RectF(srcRect));
+    gfx::QuadF q = gfx::QuadF(srcRect);
     HomogeneousCoordinate h1 = projectHomogeneousPoint(transform, q.p1());
     HomogeneousCoordinate h2 = projectHomogeneousPoint(transform, q.p2());
     HomogeneousCoordinate h3 = projectHomogeneousPoint(transform, q.p3());
