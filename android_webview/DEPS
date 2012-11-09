@@ -1,14 +1,14 @@
 # Please include joth@ and (joi@ or erikwright@) on the review for any changes
 # to DEPS files under android_webview/ 
 
-# With the exception of chrome/browser/component, do not add any includes under
-# chrome/ anywhere in android_webview.
+# Do not add any includes under chrome/ anywhere in android_webview.
 
 include_rules = [
   # lib is the top-level target, and must remain a leaf in the dependency tree.
   "-android_webview/lib",
 
-  "+chrome/browser/component",
+  "!chrome/browser/component",
+  "+content/components",
   "+content/public/common",
   "+jni",
   "+net",

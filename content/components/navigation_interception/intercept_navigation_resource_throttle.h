@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMPONENT_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_RESOURCE_THROTTLE_H_
-#define CHROME_BROWSER_COMPONENT_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_RESOURCE_THROTTLE_H_
+#ifndef CONTENT_COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_RESOURCE_THROTTLE_H_
+#define CONTENT_COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_RESOURCE_THROTTLE_H_
 
 #include <string>
 
@@ -22,7 +22,7 @@ namespace net {
 class URLRequest;
 }
 
-namespace navigation_interception {
+namespace content {
 
 // This class allows the provider of the Callback to selectively ignore top
 // level navigations.
@@ -54,6 +54,6 @@ class InterceptNavigationResourceThrottle : public content::ResourceThrottle {
   DISALLOW_COPY_AND_ASSIGN(InterceptNavigationResourceThrottle);
 };
 
-} // namespace navigation_interception
+}  // namespace content
 
-#endif  // CHROME_BROWSER_COMPONENT_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_RESOURCE_THROTTLE_H_
+#endif  // CONTENT_COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_RESOURCE_THROTTLE_H_

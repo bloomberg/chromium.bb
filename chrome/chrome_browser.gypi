@@ -2160,13 +2160,13 @@
         ['OS != "ios"', {
           'dependencies': [
             'autofill_regexes',
-            'browser/component/components.gyp:navigation_interception',
             'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
             'browser_extensions',
             'common/extensions/api/api.gyp:api',
             'debugger',
             'installer_util',
             'sync_file_system_proto',
+            '../content/content.gyp:navigation_interception',
             '../net/net.gyp:net_with_v8',
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',  # For PpapiMsg_LoadPlugin
             '../printing/printing.gyp:printing',

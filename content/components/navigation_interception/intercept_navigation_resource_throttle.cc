@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component/navigation_interception/intercept_navigation_resource_throttle.h"
+#include "content/components/navigation_interception/intercept_navigation_resource_throttle.h"
 
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -19,7 +19,7 @@ using content::Referrer;
 using content::RenderViewHost;
 using content::ResourceRequestInfo;
 
-namespace navigation_interception {
+namespace content {
 
 namespace {
 
@@ -119,4 +119,4 @@ void InterceptNavigationResourceThrottle::OnResultObtained(
   }
 }
 
-} // namespace navigation_interception
+}  // namespace content

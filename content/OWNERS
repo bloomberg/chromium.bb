@@ -4,5 +4,8 @@ creis@chromium.org
 darin@chromium.org
 jam@chromium.org
 piman@chromium.org
+per-file content_components_navigation_interception.gypi=jknotten@chromium.org
+per-file content_components_navigation_interception.gypi=joth@chromium.org
+per-file content_components_navigation_interception.gypi=mkosiba@chromium.org
 per-file content_jni.gypi=bulach@chromium.org
 per-file content_jni.gypi=yfriedman@chromium.org

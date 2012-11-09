@@ -16,7 +16,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/supports_user_data.h"
-#include "chrome/browser/component/navigation_interception/intercept_navigation_delegate.h"
+#include "content/components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
@@ -36,8 +36,8 @@ using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 using content::ContentViewCore;
+using content::InterceptNavigationDelegate;
 using content::WebContents;
-using navigation_interception::InterceptNavigationDelegate;
 
 extern "C" {
 static AwGLDrawFunction GLDrawFunction;
