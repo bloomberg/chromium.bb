@@ -89,6 +89,7 @@ PepperMessageFilter::PepperMessageFilter(ProcessType type,
                                          int process_id,
                                          BrowserContext* browser_context)
     : process_type_(type),
+      permissions_(),
       process_id_(process_id),
       nacl_render_view_id_(0),
       resource_context_(browser_context->GetResourceContext()),
@@ -102,9 +103,12 @@ PepperMessageFilter::PepperMessageFilter(ProcessType type,
   DCHECK(resource_context_);
 }
 
-PepperMessageFilter::PepperMessageFilter(ProcessType type,
-                                         net::HostResolver* host_resolver)
+PepperMessageFilter::PepperMessageFilter(
+    ProcessType type,
+    const ppapi::PpapiPermissions& permissions,
+    net::HostResolver* host_resolver)
     : process_type_(type),
+      permissions_(permissions),
       process_id_(0),
       nacl_render_view_id_(0),
       resource_context_(NULL),
@@ -115,11 +119,14 @@ PepperMessageFilter::PepperMessageFilter(ProcessType type,
   DCHECK(host_resolver);
 }
 
-PepperMessageFilter::PepperMessageFilter(ProcessType type,
-                                         net::HostResolver* host_resolver,
-                                         int process_id,
-                                         int render_view_id)
+PepperMessageFilter::PepperMessageFilter(
+    ProcessType type,
+    const ppapi::PpapiPermissions& permissions,
+    net::HostResolver* host_resolver,
+    int process_id,
+    int render_view_id)
     : process_type_(type),
+      permissions_(permissions),
       process_id_(process_id),
       nacl_render_view_id_(render_view_id),
       resource_context_(NULL),
@@ -595,6 +602,11 @@ void PepperMessageFilter::OnHostResolverResolve(
     uint32 host_resolver_id,
     const ppapi::HostPortPair& host_port,
     const PP_HostResolver_Private_Hint& hint) {
+  // Support all in-process plugins, and ones with "private" permissions.
+  if (process_type_ != RENDERER &&
+      !permissions_.HasPermission(ppapi::PERMISSION_PRIVATE))
+    return;
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::HostResolver::RequestInfo request_info(
       net::HostPortPair(host_port.host, host_port.port));
@@ -678,6 +690,11 @@ bool PepperMessageFilter::SendHostResolverResolveACKError(
 }
 
 void PepperMessageFilter::OnNetworkMonitorStart(uint32 plugin_dispatcher_id) {
+  // Support all in-process plugins, and ones with "private" permissions.
+  if (process_type_ != RENDERER &&
+      !permissions_.HasPermission(ppapi::PERMISSION_PRIVATE))
+    return;
+
   if (network_monitor_ids_.empty())
     net::NetworkChangeNotifier::AddIPAddressObserver(this);
 
@@ -686,6 +703,11 @@ void PepperMessageFilter::OnNetworkMonitorStart(uint32 plugin_dispatcher_id) {
 }
 
 void PepperMessageFilter::OnNetworkMonitorStop(uint32 plugin_dispatcher_id) {
+  // Support all in-process plugins, and ones with "private" permissions.
+  if (process_type_ != RENDERER &&
+      !permissions_.HasPermission(ppapi::PERMISSION_PRIVATE))
+    return;
+
   network_monitor_ids_.erase(plugin_dispatcher_id);
   if (network_monitor_ids_.empty())
     net::NetworkChangeNotifier::RemoveIPAddressObserver(this);

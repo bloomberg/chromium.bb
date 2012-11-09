@@ -26,6 +26,7 @@ BrowserPpapiHost* BrowserPpapiHost::CreateExternalPluginProcess(
 
   channel->AddFilter(
       new PepperMessageFilter(PepperMessageFilter::NACL,
+                              permissions,
                               host_resolver,
                               render_process_id,
                               render_view_id));

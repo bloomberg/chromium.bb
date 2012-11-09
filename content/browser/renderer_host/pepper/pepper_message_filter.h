@@ -73,11 +73,13 @@ class PepperMessageFilter
   // Constructor when used in the context of a PPAPI process (the argument is
   // provided for sanity checking and must be PLUGIN).
   PepperMessageFilter(ProcessType type,
+                      const ppapi::PpapiPermissions& permissions,
                       net::HostResolver* host_resolver);
 
   // Constructor when used in the context of a NaCl process (the argument is
   // provided for sanity checking and must be NACL).
   PepperMessageFilter(ProcessType type,
+                      const ppapi::PpapiPermissions& permissions,
                       net::HostResolver* host_resolver,
                       int process_id,
                       int render_view_id);
@@ -252,6 +254,12 @@ class PepperMessageFilter
   void SendNetworkList(scoped_ptr<net::NetworkInterfaceList> list);
 
   ProcessType process_type_;
+
+  // When attached to an out-of-process plugin (be it native or NaCl) this
+  // will have the Pepper permissions for the plugin. When attached to the
+  // renderer channel, this will have no permissions listed (since there may
+  // be many plugins sharing this channel).
+  ppapi::PpapiPermissions permissions_;
 
   // Render process ID.
   int process_id_;

@@ -169,6 +169,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
       PROCESS_TYPE_PPAPI_PLUGIN, this));
 
   filter_ = new PepperMessageFilter(PepperMessageFilter::PLUGIN,
+                                    permissions_,
                                     host_resolver);
 
   host_impl_.reset(new BrowserPpapiHostImpl(this, permissions_));
