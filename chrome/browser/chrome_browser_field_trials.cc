@@ -366,4 +366,5 @@ void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {
   base::FieldTrialList::FindValue("UMA-Dynamic-Binary-Uniformity-Trial");
   base::FieldTrialList::FindValue("UMA-Dynamic-Uniformity-Trial");
   base::FieldTrialList::FindValue("InstantDummy");
+  base::FieldTrialList::FindValue("InstantChannel");
 }
