@@ -415,9 +415,10 @@ class ShellUtil {
                                 const string16& chrome_exe,
                                 bool elevate_if_not_admin);
 
-  // Shows to the user a system dialog where Chrome can be set as the
-  // default browser. This is intended for Windows 8 and above only.
-  // This is a blocking call.
+  // Shows and waits for the Windows 8 "How do you want to open webpages?"
+  // dialog if Chrome is not already the default HTTP/HTTPS handler. Also does
+  // XP-era registrations if Chrome is chosen or was already the default. Do
+  // not use on pre-Win8 OSes.
   //
   // |dist| gives the type of browser distribution currently in use.
   // |chrome_exe| The chrome.exe path to register as default browser.
@@ -431,9 +432,10 @@ class ShellUtil {
                                               const string16& chrome_exe,
                                               const string16& protocol);
 
-  // Shows to the user a system dialog where Chrome can be set as the
-  // default handler for the given protocol. This is intended for Windows 8
-  // and above only. This is a blocking call.
+  // Shows and waits for the Windows 8 "How do you want to open links of this
+  // type?" dialog if Chrome is not already the default |protocol|
+  // handler. Also does XP-era registrations if Chrome is chosen or was already
+  // the default for |protocol|. Do not use on pre-Win8 OSes.
   //
   // |dist| gives the type of browser distribution currently in use.
   // |chrome_exe| The chrome.exe path to register as default browser.

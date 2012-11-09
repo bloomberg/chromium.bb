@@ -1571,19 +1571,21 @@ bool ShellUtil::ShowMakeChromeDefaultSystemUI(BrowserDistribution* dist,
   if (!RegisterChromeBrowser(dist, chrome_exe, string16(), true))
       return false;
 
-  // On Windows 8, you can't set yourself as the default handler
-  // programatically. In other words IApplicationAssociationRegistration
-  // has been rendered useless. What you can do is to launch
-  // "Set Program Associations" section of the "Default Programs"
-  // control panel, which is a mess, or pop the concise "How you want to open
-  // webpages?" dialog.  We choose the latter.
-  // Return true only when the user took an action and there was no error.
-  const bool ret = LaunchSelectDefaultProtocolHandlerDialog(L"http");
-
-  if (ret && GetChromeDefaultState() == IS_DEFAULT)
+  bool succeeded = true;
+  bool is_default = (GetChromeDefaultState() == IS_DEFAULT);
+  if (!is_default) {
+    // On Windows 8, you can't set yourself as the default handler
+    // programatically. In other words IApplicationAssociationRegistration
+    // has been rendered useless. What you can do is to launch
+    // "Set Program Associations" section of the "Default Programs"
+    // control panel, which is a mess, or pop the concise "How you want to open
+    // webpages?" dialog.  We choose the latter.
+    succeeded = LaunchSelectDefaultProtocolHandlerDialog(L"http");
+    is_default = (succeeded && GetChromeDefaultState() == IS_DEFAULT);
+  }
+  if (succeeded && is_default)
     RegisterChromeAsDefaultXPStyle(dist, CURRENT_USER, chrome_exe);
-
-  return ret;
+  return succeeded;
 }
 
 bool ShellUtil::MakeChromeDefaultProtocolClient(BrowserDistribution* dist,
@@ -1642,19 +1644,23 @@ bool ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(
   if (!RegisterChromeForProtocol(dist, chrome_exe, string16(), protocol, true))
     return false;
 
-  // On Windows 8, you can't set yourself as the default handler
-  // programatically. In other words IApplicationAssociationRegistration
-  // has been rendered useless. What you can do is to launch
-  // "Set Program Associations" section of the "Default Programs"
-  // control panel, which is a mess, or pop the concise "How you want to open
-  // links of this type (protocol)?" dialog.  We choose the latter.
-  // Return true only when the user took an action and there was no error.
-  const bool ret = LaunchSelectDefaultProtocolHandlerDialog(protocol.c_str());
-
-  if (ret && GetChromeDefaultProtocolClientState(protocol) == IS_DEFAULT)
+  bool succeeded = true;
+  bool is_default = (
+      GetChromeDefaultProtocolClientState(protocol) == IS_DEFAULT);
+  if (!is_default) {
+    // On Windows 8, you can't set yourself as the default handler
+    // programatically. In other words IApplicationAssociationRegistration
+    // has been rendered useless. What you can do is to launch
+    // "Set Program Associations" section of the "Default Programs"
+    // control panel, which is a mess, or pop the concise "How you want to open
+    // links of this type (protocol)?" dialog.  We choose the latter.
+    succeeded = LaunchSelectDefaultProtocolHandlerDialog(protocol.c_str());
+    is_default = (succeeded &&
+                  GetChromeDefaultProtocolClientState(protocol) == IS_DEFAULT);
+  }
+  if (succeeded && is_default)
     RegisterChromeAsDefaultProtocolClientXPStyle(dist, chrome_exe, protocol);
-
-  return ret;
+  return succeeded;
 }
 
 bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,

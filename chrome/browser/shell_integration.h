@@ -26,7 +26,8 @@ class ShellIntegration {
   // Chrome as the default browser. Returns false if the flow cannot be
   // initialized, if it is not supported (introduced for Windows 8) or if the
   // user cancels the operation. This is a blocking call and requires a FILE
-  // thread.
+  // thread. If Chrome is already default browser, no interactive dialog will be
+  // shown and this method returns true.
   static bool SetAsDefaultBrowserInteractive();
 
   // Sets Chrome as the default client application for the given protocol
@@ -37,7 +38,8 @@ class ShellIntegration {
   // Chrome as the default handler for |protocol|. Returns false if the flow
   // cannot be initialized, if it is not supported (introduced for Windows 8)
   // or if the user cancels the operation. This is a blocking call and requires
-  // a FILE thread.
+  // a FILE thread. If Chrome is already default for |protocol|, no interactive
+  // dialog will be shown and this method returns true.
   static bool SetAsDefaultProtocolClientInteractive(
       const std::string& protocol);
 

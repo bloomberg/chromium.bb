@@ -484,8 +484,7 @@ void RegisterChromeOnMachine(const InstallerState& installer_state,
       if (installer_state.system_install())
         level = level | ShellUtil::SYSTEM_LEVEL;
       ShellUtil::MakeChromeDefault(dist, level, chrome_exe, true);
-    } else if (IsInteractiveProcess() &&
-               ShellUtil::GetChromeDefaultState() != ShellUtil::IS_DEFAULT) {
+    } else if (IsInteractiveProcess()) {
       ShellUtil::ShowMakeChromeDefaultSystemUI(dist, chrome_exe);
     } else {
       ShellUtil::RegisterChromeBrowser(dist, chrome_exe, string16(), false);
