@@ -19,104 +19,11 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
+#include "native_client/src/trusted/validator_ragel/elf_load.h"
 
 using std::set;
 using std::string;
 using std::vector;
-
-
-// Hypothetically reading whole ELF file to memory can cause problems with huge
-// amounts of debug info, but unless it actually happens this approach is used
-// for simplicity.
-void ReadImage(const char *filename, vector<uint8_t> *data) {
-  FILE *fp = fopen(filename, "rb");
-  if (fp == NULL) {
-    fprintf(stderr, "Failed to open input file: %s\n", filename);
-    exit(1);
-  }
-
-  fseek(fp, 0, SEEK_END);
-  size_t file_size = ftell(fp);
-
-  data->resize(file_size);
-
-  fseek(fp, 0, SEEK_SET);
-  size_t got = fread(&(*data)[0], 1, file_size, fp);
-  if (got != file_size) {
-    fprintf(stderr, "Unable to read data from input file: %s\n",
-            filename);
-    exit(1);
-  }
-  fclose(fp);
-}
-
-
-struct Segment {
-  const uint8_t *data;
-  uint32_t size;
-  uint32_t vaddr;
-};
-
-
-template<typename ElfEhdrType, typename ElfPhdrType>
-Segment FindTextSegment(const vector<uint8_t> &data) {
-  Segment segment = {NULL, 0, 0};  // only to suppress 'uninitialized' warning
-  bool found = false;
-
-  const ElfEhdrType &header = *reinterpret_cast<const ElfEhdrType *>(&data[0]);
-  CHECK(sizeof(header) <= data.size());
-  CHECK(memcmp(header.e_ident, ELFMAG, SELFMAG) == 0);
-
-  for (uint64_t index = 0; index < header.e_phnum; ++index) {
-    uint64_t phdr_offset = header.e_phoff + header.e_phentsize * index;
-    // static_cast to silence msvc on 32-bit platform
-    const ElfPhdrType &phdr = *reinterpret_cast<const ElfPhdrType *>(
-        &data[static_cast<size_t>(phdr_offset)]);
-
-    // TODO(shcherbina): size of other loadable segments
-    if (phdr.p_type == PT_LOAD && (phdr.p_flags & PF_X)) {
-      if (found) {
-        printf("More than one text segment.\n");
-        exit(1);
-      }
-
-      if (phdr.p_flags != (PF_R | PF_X)) {
-        // Cast to support 64-bit ELF.
-        printf("Text segment is expected to have flags PF_R | PF_X "
-               "(has 0x%" NACL_PRIx64 " instead).\n",
-               static_cast<uint64_t>(phdr.p_flags));
-        exit(1);
-      }
-
-      CHECK(phdr.p_filesz <= phdr.p_memsz);
-      if (phdr.p_filesz < phdr.p_memsz) {
-        printf("File image is smaller than memory image size.\n");
-        exit(1);
-      }
-
-      // TODO(shcherbina): find or introduce proper constant.
-      if (phdr.p_filesz > 256 << 20) {
-        printf("Test segment is too large.");
-        exit(1);
-      }
-
-      if (phdr.p_vaddr > UINT32_MAX - phdr.p_filesz) {
-        printf("Text segment does not fit in 4GB.");
-        exit(1);
-      }
-
-      segment.data = &data[static_cast<size_t>(phdr.p_offset)];
-      segment.size = static_cast<uint32_t>(phdr.p_filesz);
-      segment.vaddr = static_cast<uint32_t>(phdr.p_vaddr);
-      found = true;
-    }
-  }
-  if (!found) {
-    printf("Text segment not found.\n");
-    exit(1);
-  }
-  return segment;
-}
 
 
 struct Jump {
@@ -356,11 +263,11 @@ int main(int argc, char **argv) {
   ParseOptions(argc, argv, &options);
   printf("Validating %s ...\n", options.input_file);
 
-  vector<uint8_t> data;
-  ReadImage(options.input_file, &data);
+  Image image;
+  ReadImage(options.input_file, &image);
 
-  const Elf32_Ehdr &header = *reinterpret_cast<const Elf32_Ehdr *>(&data[0]);
-  if (data.size() < sizeof(header) ||
+  const Elf32_Ehdr &header = *reinterpret_cast<const Elf32_Ehdr *>(&image[0]);
+  if (image.size() < sizeof(header) ||
       memcmp(header.e_ident, ELFMAG, SELFMAG) != 0) {
     printf("Not an ELF file.\n");
     exit(1);
@@ -369,10 +276,10 @@ int main(int argc, char **argv) {
   Segment segment;
   switch (header.e_ident[EI_CLASS]) {
     case ELFCLASS32:
-      segment = FindTextSegment<Elf32_Ehdr, Elf32_Phdr>(data);
+      segment = FindTextSegment<Elf32_Ehdr, Elf32_Phdr>(image);
       break;
     case ELFCLASS64:
-      segment = FindTextSegment<Elf64_Ehdr, Elf64_Phdr>(data);
+      segment = FindTextSegment<Elf64_Ehdr, Elf64_Phdr>(image);
       break;
     default:
       printf("Invalid ELF class %d.\n", header.e_ident[EI_CLASS]);

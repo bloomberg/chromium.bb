@@ -86,7 +86,7 @@ if env.Bit('validator_ragel') and env.Bit('host_linux'):
 
 ncval_new = env.ComponentProgram(
     'ncval_new',
-    ['ncval.cc'],
+    ['ncval.cc', 'elf_load.cc'],
     EXTRA_LIBS=['dfa_validate_x86_32', 'dfa_validate_x86_64', 'platform']
 )
 
