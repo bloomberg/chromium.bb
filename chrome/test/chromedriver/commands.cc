@@ -6,24 +6,44 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome.h"
+#include "chrome/test/chromedriver/chrome_launcher.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/status.h"
 
 Status ExecuteNewSession(
     SessionMap* session_map,
+    ChromeLauncher* launcher,
     const base::DictionaryValue& params,
     const std::string& session_id,
     scoped_ptr<base::Value>* out_value,
     std::string* out_session_id) {
+  scoped_ptr<Chrome> chrome;
+  FilePath::StringType path_str;
+  FilePath chrome_exe;
+  if (params.GetString("desiredCapabilities.chrome.binary", &path_str)) {
+    chrome_exe = FilePath(path_str);
+    if (!file_util::PathExists(chrome_exe)) {
+      std::string message = base::StringPrintf(
+          "no chrome binary at %" PRFilePath,
+          path_str.c_str());
+      return Status(kUnknownError, message);
+    }
+  }
+  Status status = launcher->Launch(chrome_exe, &chrome);
+  if (status.IsError())
+    return Status(kSessionNotCreatedException, status.message());
+
   uint64 msb = base::RandUint64();
   uint64 lsb = base::RandUint64();
   std::string new_id =
       base::StringPrintf("%016" PRIx64 "%016" PRIx64, msb, lsb);
-  scoped_ptr<Session> session(new Session(new_id));
+  scoped_ptr<Session> session(new Session(new_id, chrome.Pass()));
   scoped_refptr<SessionAccessor> accessor(
       new SessionAccessorImpl(session.Pass()));
   session_map->Set(new_id, accessor);
@@ -56,5 +76,5 @@ Status ExecuteQuit(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   CHECK(session_map->Remove(session->id));
-  return Status(kOk);
+  return session->chrome->Quit();
 }

@@ -18,11 +18,13 @@ class DictionaryValue;
 class Value;
 }
 
+class ChromeLauncher;
 struct Session;
 
 // Creates a new session.
 Status ExecuteNewSession(
     SessionMap* session_map,
+    ChromeLauncher* launcher,
     const base::DictionaryValue& params,
     const std::string& session_id,
     scoped_ptr<base::Value>* out_value,

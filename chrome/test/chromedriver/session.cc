@@ -4,7 +4,12 @@
 
 #include "chrome/test/chromedriver/session.h"
 
+#include "chrome/test/chromedriver/chrome.h"
+
 Session::Session(const std::string& id) : id(id) {}
+
+Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
+    : id(id), chrome(chrome.Pass()) {}
 
 Session::~Session() {}
 

@@ -28,7 +28,7 @@ CommandExecutorImpl::CommandExecutorImpl() {
 
   // Non-session commands.
   command_map_.Set("newSession",
-      base::Bind(&ExecuteNewSession, &session_map_));
+      base::Bind(&ExecuteNewSession, &session_map_, &launcher_));
   command_map_.Set("quitAll",
       base::Bind(&ExecuteQuitAll, quit_command, &session_map_));
 }

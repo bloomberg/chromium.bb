@@ -959,6 +959,15 @@
         '..',
       ],
       'sources': [
+        'test/chromedriver/chrome.h',
+        'test/chromedriver/chrome_finder.cc',
+        'test/chromedriver/chrome_finder.h',
+        'test/chromedriver/chrome_finder_mac.mm',
+        'test/chromedriver/chrome_impl.cc',
+        'test/chromedriver/chrome_impl.h',
+        'test/chromedriver/chrome_launcher.h',
+        'test/chromedriver/chrome_launcher_impl.cc',
+        'test/chromedriver/chrome_launcher_impl.h',
         'test/chromedriver/chromedriver.cc',
         'test/chromedriver/chromedriver.h',
         'test/chromedriver/command.h',
@@ -990,6 +999,7 @@
         '..',
       ],
       'sources': [
+        'test/chromedriver/chrome_finder_unittest.cc',
         'test/chromedriver/chromedriver_unittest.cc',
         'test/chromedriver/command_executor_impl_unittest.cc',
         'test/chromedriver/commands_unittest.cc',

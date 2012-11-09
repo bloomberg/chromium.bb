@@ -19,7 +19,7 @@ class FakeSessionAccessor : public SessionAccessor {
  public:
   explicit FakeSessionAccessor(Session* session);
 
-  // Overriden from SessionAccessor:
+  // Overridden from SessionAccessor:
   virtual Session* Access(scoped_ptr<base::AutoLock>* lock) OVERRIDE;
 
  private:

@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/test/chromedriver/chrome_launcher_impl.h"
 #include "chrome/test/chromedriver/command.h"
 #include "chrome/test/chromedriver/command_executor.h"
 #include "chrome/test/chromedriver/session_map.h"
@@ -28,7 +29,7 @@ class CommandExecutorImpl : public CommandExecutor {
   CommandExecutorImpl();
   virtual ~CommandExecutorImpl();
 
-  // Overriden from CommandExecutor:
+  // Overridden from CommandExecutor:
   virtual void ExecuteCommand(const std::string& name,
                               const base::DictionaryValue& params,
                               const std::string& session_id,
@@ -43,6 +44,7 @@ class CommandExecutorImpl : public CommandExecutor {
   FRIEND_TEST_ALL_PREFIXES(CommandExecutorImplTest, CommandThatReturnsError);
 
   SessionMap session_map_;
+  ChromeLauncherImpl launcher_;
   SynchronizedMap<std::string, Command> command_map_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandExecutorImpl);

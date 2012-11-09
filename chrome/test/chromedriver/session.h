@@ -12,11 +12,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 
+class Chrome;
+
 struct Session {
   explicit Session(const std::string& id);
+  Session(const std::string& id, scoped_ptr<Chrome> chrome);
   ~Session();
 
   const std::string id;
+  scoped_ptr<Chrome> chrome;
 };
 
 class SessionAccessor : public base::RefCountedThreadSafe<SessionAccessor> {
