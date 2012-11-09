@@ -106,6 +106,7 @@ class GpuChannelHost : public IPC::Sender,
   void set_gpu_info(const GPUInfo& gpu_info);
   const GPUInfo& gpu_info() const;
 
+  void OnMessageReceived(const IPC::Message& message);
   void OnChannelError();
 
   // IPC::Sender implementation:
@@ -162,6 +163,9 @@ class GpuChannelHost : public IPC::Sender,
   friend class base::RefCountedThreadSafe<GpuChannelHost>;
   virtual ~GpuChannelHost();
 
+  // Message handlers.
+  void OnGenerateMailboxNamesReply(const std::vector<std::string>& names);
+
   // A filter used internally to route incoming messages from the IO thread
   // to the correct message loop.
   class MessageFilter : public IPC::ChannelProxy::MessageFilter {
@@ -207,6 +211,9 @@ class GpuChannelHost : public IPC::Sender,
 
   // A filter for sending messages from thread other than the main thread.
   scoped_refptr<IPC::SyncMessageFilter> sync_filter_;
+
+  // A pool of valid mailbox names.
+  std::vector<std::string> mailbox_name_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);
 };

@@ -154,6 +154,7 @@ class CommandBufferProxyImpl
   void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
   void OnSetMemoryAllocation(const GpuMemoryAllocationForRenderer& allocation);
   void OnSignalSyncPointAck(uint32 id);
+  void OnGenerateMailboxNamesReply(const std::vector<std::string>& names);
 
   // Try to read an updated copy of the state from shared memory.
   void TryUpdateState();

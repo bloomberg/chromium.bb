@@ -172,6 +172,8 @@ class MailboxMessageFilter : public IPC::ChannelProxy::MessageFilter {
     IPC_BEGIN_MESSAGE_MAP(MailboxMessageFilter, message)
       IPC_MESSAGE_HANDLER(GpuChannelMsg_GenerateMailboxNames,
                           OnGenerateMailboxNames)
+      IPC_MESSAGE_HANDLER(GpuChannelMsg_GenerateMailboxNamesAsync,
+                          OnGenerateMailboxNamesAsync)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
 
@@ -204,6 +206,12 @@ class MailboxMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
       (*result)[i].assign(name, sizeof(name));
     }
+  }
+
+  void OnGenerateMailboxNamesAsync(unsigned num) {
+    std::vector<std::string> names;
+    OnGenerateMailboxNames(num, &names);
+    Send(new GpuChannelMsg_GenerateMailboxNamesReply(names));
   }
 
   IPC::Channel* channel_;

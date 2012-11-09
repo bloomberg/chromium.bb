@@ -414,10 +414,18 @@ IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
 IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
                             int32 /* instance_id */)
 
-// Generates n new unique mailbox names.
+// Generates n new unique mailbox names synchronously.
 IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_GenerateMailboxNames,
                             unsigned, /* num */
                             std::vector<std::string> /* mailbox_names */)
+
+// Generates n new unique mailbox names asynchronously.
+IPC_MESSAGE_CONTROL1(GpuChannelMsg_GenerateMailboxNamesAsync,
+                     unsigned /* num */)
+
+// Reply to GpuChannelMsg_GenerateMailboxNamesAsync.
+IPC_MESSAGE_CONTROL1(GpuChannelMsg_GenerateMailboxNamesReply,
+                     std::vector<std::string> /* mailbox_names */)
 
 #if defined(OS_ANDROID)
 // Register the StreamTextureProxy class with the GPU process, so that

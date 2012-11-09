@@ -71,6 +71,18 @@ const GPUInfo& GpuChannelHost::gpu_info() const {
   return gpu_info_;
 }
 
+void GpuChannelHost::OnMessageReceived(const IPC::Message& message) {
+    bool handled = true;
+
+    IPC_BEGIN_MESSAGE_MAP(GpuChannelHost, message)
+      IPC_MESSAGE_HANDLER(GpuChannelMsg_GenerateMailboxNamesReply,
+                          OnGenerateMailboxNamesReply)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+
+    DCHECK(handled);
+}
+
 void GpuChannelHost::OnChannelError() {
   state_ = kLost;
 
@@ -246,7 +258,35 @@ bool GpuChannelHost::GenerateMailboxNames(unsigned num,
                                           std::vector<std::string>* names) {
   TRACE_EVENT0("gpu", "GenerateMailboxName");
   AutoLock lock(context_lock_);
-  return Send(new GpuChannelMsg_GenerateMailboxNames(num, names));
+
+  if (num > mailbox_name_pool_.size()) {
+    if (!Send(new GpuChannelMsg_GenerateMailboxNames(num, names)))
+      return false;
+  } else {
+    names->insert(names->begin(),
+                  mailbox_name_pool_.end() - num,
+                  mailbox_name_pool_.end());
+    mailbox_name_pool_.erase(mailbox_name_pool_.end() - num,
+                             mailbox_name_pool_.end());
+  }
+
+  const unsigned ideal_mailbox_pool_size = 100;
+  if (mailbox_name_pool_.size() < ideal_mailbox_pool_size / 2) {
+    Send(new GpuChannelMsg_GenerateMailboxNamesAsync(
+        ideal_mailbox_pool_size - mailbox_name_pool_.size()));
+  }
+
+  return true;
+}
+
+void GpuChannelHost::OnGenerateMailboxNamesReply(
+    const std::vector<std::string>& names) {
+  TRACE_EVENT0("gpu", "OnGenerateMailboxNamesReply");
+  AutoLock lock(context_lock_);
+
+  mailbox_name_pool_.insert(mailbox_name_pool_.end(),
+                            names.begin(),
+                            names.end());
 }
 
 GpuChannelHost::~GpuChannelHost() {}
@@ -280,11 +320,19 @@ void GpuChannelHost::MessageFilter::RemoveRoute(int route_id) {
 bool GpuChannelHost::MessageFilter::OnMessageReceived(
     const IPC::Message& message) {
   DCHECK(parent_->factory_->IsIOThread());
+
   // Never handle sync message replies or we will deadlock here.
   if (message.is_reply())
     return false;
 
-  DCHECK(message.routing_id() != MSG_ROUTING_CONTROL);
+  if (message.routing_id() == MSG_ROUTING_CONTROL) {
+    MessageLoop* main_loop = parent_->factory_->GetMainLoop();
+    main_loop->PostTask(FROM_HERE,
+                        base::Bind(&GpuChannelHost::OnMessageReceived,
+                                   parent_,
+                                   message));
+    return true;
+  }
 
   ListenerMap::iterator it = listeners_.find(message.routing_id());
 
