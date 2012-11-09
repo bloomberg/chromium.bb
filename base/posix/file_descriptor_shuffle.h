@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_FILE_DESCRIPTOR_SHUFFLE_H_
-#define BASE_FILE_DESCRIPTOR_SHUFFLE_H_
+#ifndef BASE_POSIX_FILE_DESCRIPTOR_SHUFFLE_H_
+#define BASE_POSIX_FILE_DESCRIPTOR_SHUFFLE_H_
 
 // This code exists to perform the shuffling of file descriptors which is
 // commonly needed when forking subprocesses. The naive approve is very simple,
@@ -84,4 +84,4 @@ static inline bool ShuffleFileDescriptors(InjectiveMultimap* map) {
 
 }  // namespace base
 
-#endif  // BASE_FILE_DESCRIPTOR_SHUFFLE_H_
+#endif  // BASE_POSIX_FILE_DESCRIPTOR_SHUFFLE_H_
