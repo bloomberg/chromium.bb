@@ -69,7 +69,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme);
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
 
   // TouchSelectionClientView overrides:
   virtual void SelectRect(const gfx::Point& start,
