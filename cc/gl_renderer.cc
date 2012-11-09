@@ -648,6 +648,11 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     setShaderOpacity(quad->opacity(), shaderAlphaLocation);
     setShaderQuadF(surfaceQuad, shaderQuadLocation);
     drawQuadGeometry(frame, quad->quadTransform(), quad->quadRect(), shaderMatrixLocation);
+
+    // Flush the compositor context before the filter bitmap goes out of
+    // scope, so the draw gets processed before the filter texture gets deleted.
+    if (filterBitmap.getTexture())
+        m_context->flush();
 }
 
 void GLRenderer::drawSolidColorQuad(const DrawingFrame& frame, const SolidColorDrawQuad* quad)
