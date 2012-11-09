@@ -304,6 +304,10 @@ WebKit::WebString TestWebKitPlatformSupport::queryLocalizedString(
       return ASCIIToUTF16("<<CalendarClear>>");
     case WebKit::WebLocalizedString::CalendarToday:
       return ASCIIToUTF16("<<CalendarToday>>");
+    case WebKit::WebLocalizedString::ThisMonthButtonLabel:
+      return ASCIIToUTF16("<<ThisMonthLabel>>");
+    case WebKit::WebLocalizedString::ThisWeekButtonLabel:
+      return ASCIIToUTF16("<<ThisWeekLabel>>");
     default:
       return WebKitPlatformSupportImpl::queryLocalizedString(name);
   }
