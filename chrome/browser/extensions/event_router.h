@@ -22,6 +22,7 @@
 #include "ipc/ipc_sender.h"
 
 class GURL;
+class ExtensionDevToolsManager;
 class Profile;
 
 namespace content {
@@ -44,16 +45,6 @@ class EventRouter : public content::NotificationObserver,
     USER_GESTURE_UNKNOWN = 0,
     USER_GESTURE_ENABLED = 1,
     USER_GESTURE_NOT_ENABLED = 2,
-  };
-
-  // Observers register interest in events with a particular name and are
-  // notified when a listener is added or removed for that |event_name|.
-  class Observer {
-   public:
-    // Called when a listener is added.
-    virtual void OnListenerAdded(const std::string& event_name) {}
-    // Called when a listener is removed.
-    virtual void OnListenerRemoved(const std::string& event_name) {}
   };
 
   // Sends an event via ipc_sender to the given extension. Can be called on any
@@ -81,15 +72,6 @@ class EventRouter : public content::NotificationObserver,
                            const std::string& extension_id);
 
   EventListenerMap& listeners() { return listeners_; }
-
-  // Registers an observer to be notified when an event listener for
-  // |event_name| is added or removed. There can currently be only one observer
-  // for each distinct |event_name|.
-  void RegisterObserver(Observer* observer,
-                        const std::string& event_name);
-
-  // Unregisters an observer from all events.
-  void UnregisterObserver(Observer* observer);
 
   // Add or remove the extension as having a lazy background page that listens
   // to the event. The difference from the above methods is that these will be
@@ -267,10 +249,9 @@ class EventRouter : public content::NotificationObserver,
 
   content::NotificationRegistrar registrar_;
 
-  EventListenerMap listeners_;
+  scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
 
-  typedef std::map<std::string, Observer*> ObserverMap;
-  ObserverMap observers_;
+  EventListenerMap listeners_;
 
   // True if we should dispatch the event signalling that Chrome was updated
   // upon loading an extension.

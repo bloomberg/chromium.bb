@@ -13,6 +13,8 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/processes/processes_api_constants.h"
+#include "chrome/browser/extensions/api/processes/processes_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/event_names.h"
@@ -120,6 +122,8 @@ void EventRouter::DispatchEvent(IPC::Sender* ipc_sender,
 
 EventRouter::EventRouter(Profile* profile, ExtensionPrefs* extension_prefs)
     : profile_(profile),
+      extension_devtools_manager_(
+          ExtensionSystem::Get(profile)->devtools_manager()),
       listeners_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       dispatch_chrome_updated_event_(false) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -162,39 +166,23 @@ void EventRouter::RemoveEventListener(const std::string& event_name,
   listeners_.RemoveListener(&listener);
 }
 
-void EventRouter::RegisterObserver(Observer* observer,
-                                   const std::string& event_name) {
-  observers_[event_name] = observer;
-}
-
-void EventRouter::UnregisterObserver(Observer* observer) {
-  std::vector<ObserverMap::iterator> iters_to_remove;
-  for (ObserverMap::iterator iter = observers_.begin();
-       iter != observers_.end(); ++iter) {
-    if (iter->second == observer)
-      iters_to_remove.push_back(iter);
-  }
-  for (size_t i = 0; i < iters_to_remove.size(); ++i)
-    observers_.erase(iters_to_remove[i]);
-}
-
 void EventRouter::OnListenerAdded(const EventListener* listener) {
   // We don't care about lazy events being added.
   if (!listener->process)
     return;
 
-  const std::string& event_name = listener->event_name;
-  ObserverMap::iterator observer = observers_.find(event_name);
-  if (observer != observers_.end())
-    observer->second->OnListenerAdded(event_name);
+  if (extension_devtools_manager_.get())
+    extension_devtools_manager_->AddEventListener(listener->event_name,
+                                                  listener->process->GetID());
 
-  // TODO(yoz): Migrate these to become EventRouter observers.
-  // EventRouter shouldn't need to know about them.
-  ExtensionDevToolsManager* extension_devtools_manager =
-      ExtensionSystem::Get(profile_)->devtools_manager();
-  if (extension_devtools_manager)
-    extension_devtools_manager->AddEventListener(event_name,
-                                                 listener->process->GetID());
+  // We lazily tell the TaskManager to start updating when listeners to the
+  // processes.onUpdated or processes.onUpdatedWithMemory events arrive.
+  const std::string& event_name = listener->event_name;
+  if (event_name.compare(
+          extensions::processes_api_constants::kOnUpdated) == 0 ||
+      event_name.compare(
+          extensions::processes_api_constants::kOnUpdatedWithMemory) == 0)
+    extensions::ProcessesEventRouter::GetInstance()->ListenerAdded();
 
   if (SystemInfoEventRouter::IsSystemInfoEvent(event_name))
     SystemInfoEventRouter::GetInstance()->AddEventListener(event_name);
@@ -206,22 +194,23 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
     return;
 
   const std::string& event_name = listener->event_name;
-  ObserverMap::iterator observer = observers_.find(event_name);
-  if (observer != observers_.end())
-    observer->second->OnListenerRemoved(event_name);
-
-  // TODO(yoz): Migrate these to become EventRouter observers.
-  // EventRouter shouldn't need to know about them.
-  ExtensionDevToolsManager* extension_devtools_manager =
-      ExtensionSystem::Get(profile_)->devtools_manager();
-  if (extension_devtools_manager)
-    extension_devtools_manager->RemoveEventListener(
+  if (extension_devtools_manager_.get())
+    extension_devtools_manager_->RemoveEventListener(
         event_name, listener->process->GetID());
+
+  // If a processes.onUpdated or processes.onUpdatedWithMemory event listener
+  // is removed (or a process with one exits), then we let the extension API
+  // know that it has one fewer listener.
+  if (event_name.compare(
+          extensions::processes_api_constants::kOnUpdated) == 0 ||
+      event_name.compare(
+          extensions::processes_api_constants::kOnUpdatedWithMemory) == 0)
+    extensions::ProcessesEventRouter::GetInstance()->ListenerRemoved();
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NotifyEventListenerRemovedOnIOThread,
-                 profile_, listener->extension_id, event_name));
+                 profile_, listener->extension_id, listener->event_name));
 
   if (SystemInfoEventRouter::IsSystemInfoEvent(event_name))
     SystemInfoEventRouter::GetInstance()->RemoveEventListener(event_name);

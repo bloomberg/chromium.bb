@@ -39,6 +39,7 @@
 #include "chrome/browser/extensions/api/management/management_api.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
+#include "chrome/browser/extensions/api/processes/processes_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
@@ -527,6 +528,7 @@ void ExtensionService::InitEventRouters() {
   cookies_event_router_.reset(
       new extensions::ExtensionCookiesEventRouter(profile_));
   management_event_router_.reset(new ExtensionManagementEventRouter(profile_));
+  extensions::ProcessesEventRouter::GetInstance()->ObserveProfile(profile_);
   web_navigation_event_router_.reset(
       new extensions::WebNavigationEventRouter(profile_));
   font_settings_event_router_.reset(
