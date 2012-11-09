@@ -879,6 +879,8 @@ def main(argv):
       '--shard-index', type='int', dest='index')
   group.add_option(
       '--total-slaves', type='int', dest='shards')
+  group.add_option(
+      '--gtest_print_time', action='store_true')
   parser.add_option_group(group)
 
   options, args = parser.parse_args(argv)
