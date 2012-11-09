@@ -1250,12 +1250,10 @@ class MinidumpWriter {
             size_t length = my_strlen(value);
             if (length == 0)
               goto popline;
+            my_strlcpy(vendor_id, value, sizeof(vendor_id));
             // we don't want the trailing newline
-            if (value[length - 1] == '\n')
-              length--;
-            // ensure we have space for the value
-            if (length < sizeof(vendor_id))
-              my_strlcpy(vendor_id, value, length);
+            if (length < sizeof(vendor_id) && vendor_id[length - 1] == '\n')
+              vendor_id[length - 1] == '\0';
           }
         }
 
