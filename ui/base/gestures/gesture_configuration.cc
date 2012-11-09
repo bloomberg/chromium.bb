@@ -40,7 +40,15 @@ int GestureConfiguration::points_buffered_for_velocity_ = 3;
 double GestureConfiguration::rail_break_proportion_ = 15;
 double GestureConfiguration::rail_start_proportion_ = 2;
 
-// The additional acceleration to apply to touchscreen flings.
-double GestureConfiguration::touchscreen_fling_acceleration_adjustment_ = 0.85;
+// Coefficients for a function that computes fling acceleration.
+// These are empirically determined defaults. Do not adjust without
+// additional empirical validation.
+float GestureConfiguration::fling_acceleration_curve_coefficients_[
+    NumAccelParams] = {
+  0.0166667f,
+  -0.0238095f,
+  0.0452381f,
+  0.8f
+};
 
 }  // namespace ui

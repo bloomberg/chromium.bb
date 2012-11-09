@@ -16,6 +16,10 @@ namespace ui {
 
 class UI_EXPORT GestureConfiguration {
  public:
+  // Number of parameters in the array of parameters for the fling acceleration
+  // curve.
+  static const int NumAccelParams = 4;
+
   // Ordered alphabetically ignoring underscores, to align with the
   // associated list of prefs in gesture_prefs_aura.cc.
   static int default_radius() {
@@ -139,11 +143,11 @@ class UI_EXPORT GestureConfiguration {
   static void set_rail_start_proportion(double val) {
     rail_start_proportion_ = val;
   }
-  static double touchscreen_fling_acceleration_adjustment() {
-    return touchscreen_fling_acceleration_adjustment_;
+  static void set_fling_acceleration_curve_coefficients(int i, float val) {
+    fling_acceleration_curve_coefficients_[i] = val;
   }
-  static void set_touchscreen_fling_acceleration_adjustment(double val) {
-    touchscreen_fling_acceleration_adjustment_ = val;
+  static float fling_acceleration_curve_coefficients(int i) {
+    return fling_acceleration_curve_coefficients_[i];
   }
 
  private:
@@ -182,7 +186,7 @@ class UI_EXPORT GestureConfiguration {
   static int points_buffered_for_velocity_;
   static double rail_break_proportion_;
   static double rail_start_proportion_;
-  static double touchscreen_fling_acceleration_adjustment_;
+  static float fling_acceleration_curve_coefficients_[NumAccelParams];
 
   DISALLOW_COPY_AND_ASSIGN(GestureConfiguration);
 };
