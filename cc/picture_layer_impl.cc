@@ -15,4 +15,17 @@ PictureLayerImpl::PictureLayerImpl(int id) :
 PictureLayerImpl::~PictureLayerImpl() {
 }
 
+const char* PictureLayerImpl::layerTypeAsString() const {
+  return "PictureLayer";
+}
+
+void PictureLayerImpl::appendQuads(QuadSink&, AppendQuadsData&) {
+  // TODO(enne): implement me
+}
+
+void PictureLayerImpl::dumpLayerProperties(std::string*, int indent) const {
+  // TODO(enne): implement me
+}
+
+
 }  // namespace cc

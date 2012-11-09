@@ -6,6 +6,7 @@
 
 #include "cc/picture_layer.h"
 #include "cc/picture_layer_impl.h"
+#include "ui/gfx/rect_conversions.h"
 
 namespace cc {
 
@@ -28,9 +29,22 @@ scoped_ptr<LayerImpl> PictureLayer::createLayerImpl() {
   return PictureLayerImpl::create(id()).PassAs<LayerImpl>();
 }
 
-void PictureLayer::pushPropertiesTo(LayerImpl* baseLayerImpl) {
-  PictureLayerImpl* layerImpl = static_cast<PictureLayerImpl*>(baseLayerImpl);
-  pile_.pushPropertiesTo(layerImpl->pile_);
+void PictureLayer::pushPropertiesTo(LayerImpl* base_layer) {
+  PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
+  pile_.PushPropertiesTo(layer_impl->pile_);
+
+  // TODO(nduca): Need to invalidate tiles here from pile's invalidation info.
+}
+
+void PictureLayer::setNeedsDisplayRect(const gfx::RectF& layer_rect) {
+  gfx::Rect rect = gfx::ToEnclosedRect(layer_rect);
+  pile_.Invalidate(rect);
+}
+
+void PictureLayer::update(ResourceUpdateQueue&, const OcclusionTracker*,
+                    RenderingStats& stats) {
+  pile_.Resize(bounds());
+  pile_.Update(client_, stats);
 }
 
 }  // namespace cc

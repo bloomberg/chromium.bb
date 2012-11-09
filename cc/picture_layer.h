@@ -7,10 +7,13 @@
 
 #include "cc/layer.h"
 #include "cc/picture_pile.h"
+#include "cc/occlusion_tracker.h"
 
 namespace cc {
 
 class ContentLayerClient;
+class ResourceUpdateQueue;
+struct RenderingStats;
 
 class CC_EXPORT PictureLayer : public Layer {
 public:
@@ -22,6 +25,9 @@ public:
   virtual bool drawsContent() const OVERRIDE;
   virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
   virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
+  virtual void setNeedsDisplayRect(const gfx::RectF& layerRect) OVERRIDE;
+  virtual void update(ResourceUpdateQueue&, const OcclusionTracker*,
+                      RenderingStats&) OVERRIDE;
 
 protected:
   explicit PictureLayer(ContentLayerClient*);

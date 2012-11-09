@@ -14,25 +14,38 @@
 namespace cc {
 
 class ContentLayerClient;
+struct RenderingStats;
 
 class CC_EXPORT Picture
     : public base::RefCountedThreadSafe<Picture> {
 public:
-  scoped_refptr<Picture> create(ContentLayerClient*, gfx::Rect);
+  static scoped_refptr<Picture> Create();
 
-  const gfx::Rect& rect();
-  scoped_refptr<Picture> clone();
+  const gfx::Rect& LayerRect() const { return layer_rect_; }
+  const gfx::Rect& OpaqueRect() const { return opaque_rect_; }
 
-protected:
-  Picture();
-  ~Picture();
+  // Make a thread-safe clone for rasterizing with.
+  scoped_refptr<Picture> Clone();
 
-  gfx::Rect m_rect;
-  SkPicture m_picture;
+  // Record a paint operation (clobbering any previous recording).
+  void Record(ContentLayerClient*, gfx::Rect layer_rect, RenderingStats&);
+
+  // Raster this Picture's layer_rect into the given canvas.
+  // Assumes contentsScale have already been applied.
+  void Raster(SkCanvas* canvas);
 
 private:
-  friend class base::RefCountedThreadSafe<Picture>;
+  Picture();
+  // This constructor assumes SkPicture is already ref'd and transfers
+  // ownership to this picture.
+  Picture(SkPicture*, gfx::Rect layer_rect, gfx::Rect opaque_rect);
+  ~Picture();
 
+  gfx::Rect layer_rect_;
+  gfx::Rect opaque_rect_;
+  SkAutoTUnref<SkPicture> picture_;
+
+  friend class base::RefCountedThreadSafe<Picture>;
   DISALLOW_COPY_AND_ASSIGN(Picture);
 };
 

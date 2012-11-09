@@ -10,6 +10,9 @@
 
 namespace cc {
 
+struct AppendQuadsData;
+class QuadSink;
+
 class CC_EXPORT PictureLayerImpl : public LayerImpl {
 public:
   static scoped_ptr<PictureLayerImpl> create(int id)
@@ -17,6 +20,11 @@ public:
       return make_scoped_ptr(new PictureLayerImpl(id));
   }
   virtual ~PictureLayerImpl();
+
+  // LayerImpl overrides.
+  virtual const char* layerTypeAsString() const OVERRIDE;
+  virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
+  virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
 
 protected:
   PictureLayerImpl(int id);
