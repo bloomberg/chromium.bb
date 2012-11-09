@@ -269,6 +269,43 @@ void DriveFileSyncClient::ContinueListing(
                  AsWeakPtr(), callback));
 }
 
+void DriveFileSyncClient::DownloadFile(
+    const std::string& resource_id,
+    const std::string& local_file_md5,
+    const FilePath& local_file_path,
+    const DownloadFileCallback& callback) {
+  // TODO(nhiroki): implement.
+  NOTIMPLEMENTED();
+}
+
+void DriveFileSyncClient::UploadNewFile(
+    const std::string& directory_resource_id,
+    const FilePath& local_file_path,
+    const std::string& title,
+    int64 file_size,
+    const UploadFileCallback& callback) {
+  // TODO(nhiroki): implement.
+  NOTIMPLEMENTED();
+}
+
+void DriveFileSyncClient::UploadExistingFile(
+    const std::string& resource_id,
+    const std::string& remote_file_md5,
+    const FilePath& local_file_path,
+    int64 file_size,
+    const UploadFileCallback& callback) {
+  // TODO(nhiroki): implement.
+  NOTIMPLEMENTED();
+}
+
+void DriveFileSyncClient::DeleteFile(
+    const std::string& resource_id,
+    const std::string& remote_file_md5,
+    const GDataErrorCallback& callback) {
+  // TODO(nhiroki): implement.
+  NOTIMPLEMENTED();
+}
+
 void DriveFileSyncClient::DidGetDocumentFeedData(
     const DocumentFeedCallback& callback,
     google_apis::GDataErrorCode error,

@@ -32,6 +32,14 @@ class DriveFileSyncClient : public base::NonThreadSafe,
  public:
   // TODO(tzik): Implement a function to map GDataErrorcode to SyncStatusCode.
   // crbug.com/157837
+  typedef base::Callback<void(google_apis::GDataErrorCode error)>
+      GDataErrorCallback;
+  typedef base::Callback<void(google_apis::GDataErrorCode error,
+                              const std::string& file_md5)>
+      DownloadFileCallback;
+  typedef base::Callback<void(google_apis::GDataErrorCode error,
+                              const std::string& file_md5)>
+      UploadFileCallback;
   typedef base::Callback<void(google_apis::GDataErrorCode error,
                               const std::string& resource_id)>
       ResourceIdCallback;
@@ -87,6 +95,47 @@ class DriveFileSyncClient : public base::NonThreadSafe,
   // Upon completion, invokes |callback|.
   void ContinueListing(const GURL& feed_url,
                        const DocumentFeedCallback& callback);
+
+  // Downloads the file identified by |resource_id| from Drive to
+  // |local_file_path|.
+  // |local_file_md5| represents the hash value of the local file to be updated.
+  // If |local_file_md5| is equal to remote file's value, cancels the download
+  // and invokes |callback| with GDataErrorCode::HTTP_NOT_MODIFIED immediately.
+  // When there is no local file to be updated, |local_file_md5| should be
+  // empty.
+  void DownloadFile(const std::string& resource_id,
+                    const std::string& local_file_md5,
+                    const FilePath& local_file_path,
+                    const DownloadFileCallback& callback);
+
+  // Uploads the new file |local_file_path| with specified |title| into the
+  // directory identified by |directory_resource_id|.
+  // Upon completion, invokes |callback|.
+  void UploadNewFile(const std::string& directory_resource_id,
+                     const FilePath& local_file_path,
+                     const std::string& title,
+                     int64 file_size,
+                     const UploadFileCallback& callback);
+
+  // Uploads the existing file identified by |local_file_path|.
+  // |remote_file_md5| represents the expected hash value of the file to be
+  // updated on Drive. If |remote_file_md5| is different from the actual value,
+  // cancels the upload and invokes |callback| with
+  // GDataErrorCode::HTTP_CONFLICT immediately.
+  void UploadExistingFile(const std::string& resource_id,
+                          const std::string& remote_file_md5,
+                          const FilePath& local_file_path,
+                          int64 file_size,
+                          const UploadFileCallback& callback);
+
+  // Deletes the file identified by |resource_id|.
+  // |remote_file_md5| represents the expected hash value of the file to be
+  // deleted from Drive. If |remote_file_md5| is different from the actual
+  // value, cancels the deletion and invokes |callback| with
+  // GDataErrorCode::HTTP_CONFLICT immediately.
+  void DeleteFile(const std::string& resource_id,
+                  const std::string& remote_file_md5,
+                  const GDataErrorCallback& callback);
 
  private:
   friend class DriveFileSyncClientTest;
