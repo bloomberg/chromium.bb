@@ -421,6 +421,8 @@ class SyncDataModel(object):
                     parent_tag='google_chrome', sync_type=BOOKMARK),
       PermanentItem('bookmark_bar', name='Bookmark Bar',
                     parent_tag='google_chrome_bookmarks', sync_type=BOOKMARK),
+      PermanentItem('synced_bookmarks', name='Mobile Bookmarks',
+                    parent_tag='google_chrome_bookmarks', sync_type=BOOKMARK),
       PermanentItem('other_bookmarks', name='Other Bookmarks',
                     parent_tag='google_chrome_bookmarks', sync_type=BOOKMARK),
       PermanentItem('synced_bookmarks', name='Synced Bookmarks',
@@ -963,7 +965,7 @@ class SyncDataModel(object):
     """
 
     synced_bookmarks_spec, = [spec for spec in self._PERMANENT_ITEM_SPECS
-                              if spec.tag == "synced_bookmarks"]
+                              if spec.name == "Synced Bookmarks"]
     self._CreatePermanentItem(synced_bookmarks_spec)
 
   def SetInducedError(self, error, error_frequency,
