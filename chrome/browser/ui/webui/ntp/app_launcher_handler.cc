@@ -346,7 +346,7 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   for (std::set<std::string>::iterator it = visible_apps_.begin();
        it != visible_apps_.end(); ++it) {
     const Extension* extension = extension_service_->GetInstalledExtension(*it);
-    if (extension && extension->ShouldDisplayInLauncher()) {
+    if (extension && extension->ShouldDisplayInNewTabPage()) {
       DictionaryValue* app_info = GetAppInfo(extension);
       list->Append(app_info);
     }

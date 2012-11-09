@@ -1162,13 +1162,64 @@ TEST(ExtensionTest, OnlyDisplayAppsInLauncher) {
                             Extension::INTERNAL, 0, FilePath(),
                             Extension::NO_FLAGS));
 
-  EXPECT_FALSE(extension->ShouldDisplayInLauncher());
+  EXPECT_FALSE(extension->ShouldDisplayInAppLauncher());
+  EXPECT_FALSE(extension->ShouldDisplayInNewTabPage());
 
   scoped_refptr<Extension> app(
       MakeSyncTestExtension(APP, GURL(), GURL("http://www.google.com"),
                             Extension::INTERNAL, 0, FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_TRUE(app->ShouldDisplayInLauncher());
+  EXPECT_TRUE(app->ShouldDisplayInAppLauncher());
+  EXPECT_TRUE(app->ShouldDisplayInNewTabPage());
+}
+
+TEST(ExtensionTest, DisplayInXManifestProperties) {
+  DictionaryValue manifest;
+  manifest.SetString(keys::kName, "TestComponentApp");
+  manifest.SetString(keys::kVersion, "0.0.0.0");
+  manifest.SetString(keys::kApp, "true");
+  manifest.SetString(keys::kPlatformAppBackgroundPage, "");
+
+  std::string error;
+  scoped_refptr<Extension> app;
+
+  // Default to true.
+  app = Extension::Create(
+      FilePath(), Extension::COMPONENT, manifest, 0, &error);
+  EXPECT_EQ(error, std::string());
+  EXPECT_TRUE(app->ShouldDisplayInAppLauncher());
+  EXPECT_TRUE(app->ShouldDisplayInNewTabPage());
+
+  // Value display_in_NTP defaults to display_in_launcher.
+  manifest.SetBoolean(keys::kDisplayInLauncher, false);
+  app = Extension::Create(
+      FilePath(), Extension::COMPONENT, manifest, 0, &error);
+  EXPECT_EQ(error, std::string());
+  EXPECT_FALSE(app->ShouldDisplayInAppLauncher());
+  EXPECT_FALSE(app->ShouldDisplayInNewTabPage());
+
+  // Value display_in_NTP = true overriding display_in_launcher = false.
+  manifest.SetBoolean(keys::kDisplayInNewTabPage, true);
+  app = Extension::Create(
+      FilePath(), Extension::COMPONENT, manifest, 0, &error);
+  EXPECT_EQ(error, std::string());
+  EXPECT_FALSE(app->ShouldDisplayInAppLauncher());
+  EXPECT_TRUE(app->ShouldDisplayInNewTabPage());
+
+  // Value display_in_NTP = false only, overrides default = true.
+  manifest.Remove(keys::kDisplayInLauncher, NULL);
+  manifest.SetBoolean(keys::kDisplayInNewTabPage, false);
+  app = Extension::Create(
+      FilePath(), Extension::COMPONENT, manifest, 0, &error);
+  EXPECT_EQ(error, std::string());
+  EXPECT_TRUE(app->ShouldDisplayInAppLauncher());
+  EXPECT_FALSE(app->ShouldDisplayInNewTabPage());
+
+  // Error checking.
+  manifest.SetString(keys::kDisplayInNewTabPage, "invalid");
+  app = Extension::Create(
+      FilePath(), Extension::COMPONENT, manifest, 0, &error);
+  EXPECT_EQ(error, std::string(errors::kInvalidDisplayInNewTabPage));
 }
 
 TEST(ExtensionTest, OnlySyncInternal) {

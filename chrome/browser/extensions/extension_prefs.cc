@@ -1497,7 +1497,7 @@ void ExtensionPrefs::OnExtensionInstalled(
   // Clear state that may be registered from a previous install.
   extension_dict->Remove(kRegisteredEvents, NULL);
 
-  if (extension->ShouldDisplayInLauncher())
+  if (extension->RequiresSortOrdinal())
     extension_sorting_->EnsureValidOrdinals(extension->id(), page_ordinal);
 
   extension_pref_value_map_->RegisterExtension(

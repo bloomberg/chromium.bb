@@ -82,7 +82,7 @@ void AppsModelBuilder::PopulateApps() {
   const ExtensionSet* extensions = service->extensions();
   for (ExtensionSet::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {
-    if ((*app)->ShouldDisplayInLauncher())
+    if ((*app)->ShouldDisplayInAppLauncher())
       apps.push_back(new ExtensionAppItem(profile_, *app, controller_));
   }
 
@@ -180,7 +180,7 @@ void AppsModelBuilder::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
-      if (!extension->ShouldDisplayInLauncher())
+      if (!extension->ShouldDisplayInAppLauncher())
         return;
 
       if (FindApp(extension->id()) != -1)

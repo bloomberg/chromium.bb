@@ -18,5 +18,6 @@
   "permissions": [
     "chrome://settings-frame/"
   ],
-  "display_in_launcher": true
+  "display_in_launcher": true,
+  "display_in_new_tab_page": false
 }

@@ -34,6 +34,7 @@ namespace extension_manifest_keys {
   extern const char kDescription[];
   extern const char kDevToolsPage[];
   extern const char kDisplayInLauncher[];
+  extern const char kDisplayInNewTabPage[];
   extern const char kEventName[];
   extern const char kExcludeGlobs[];
   extern const char kExcludeMatches[];
@@ -203,6 +204,7 @@ namespace extension_manifest_errors {
   extern const char kInvalidDescription[];
   extern const char kInvalidDevToolsPage[];
   extern const char kInvalidDisplayInLauncher[];
+  extern const char kInvalidDisplayInNewTabPage[];
   extern const char kInvalidExcludeMatch[];
   extern const char kInvalidExcludeMatches[];
   extern const char kInvalidFileAccessList[];

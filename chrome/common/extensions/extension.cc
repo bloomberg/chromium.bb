@@ -1054,6 +1054,16 @@ bool Extension::LoadAppFeatures(string16* error) {
     *error = ASCIIToUTF16(errors::kInvalidDisplayInLauncher);
     return false;
   }
+  if (manifest_->HasKey(keys::kDisplayInNewTabPage)) {
+    if (!manifest_->GetBoolean(keys::kDisplayInNewTabPage,
+                               &display_in_new_tab_page_)) {
+      *error = ASCIIToUTF16(errors::kInvalidDisplayInNewTabPage);
+      return false;
+    }
+  } else {
+    // Inherit default from display_in_launcher property.
+    display_in_new_tab_page_ = display_in_launcher_;
+  }
   return true;
 }
 
@@ -3009,6 +3019,7 @@ Extension::Extension(const FilePath& path,
       launch_width_(0),
       launch_height_(0),
       display_in_launcher_(true),
+      display_in_new_tab_page_(true),
       wants_file_access_(false),
       creation_flags_(0) {
   DCHECK(path.empty() || path.IsAbsolute());
@@ -3867,9 +3878,18 @@ bool Extension::IsSyncable() const {
   return is_syncable;
 }
 
-bool Extension::ShouldDisplayInLauncher() const {
-  // Only apps should be displayed on the NTP.
+bool Extension::RequiresSortOrdinal() const {
+  return is_app() && (display_in_launcher_ || display_in_new_tab_page_);
+}
+
+bool Extension::ShouldDisplayInAppLauncher() const {
+  // Only apps should be displayed in the launcher.
   return is_app() && display_in_launcher_;
+}
+
+bool Extension::ShouldDisplayInNewTabPage() const {
+  // Only apps should be displayed on the NTP.
+  return is_app() && display_in_new_tab_page_;
 }
 
 bool Extension::InstallWarning::operator==(const InstallWarning& other) const {

@@ -607,8 +607,15 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns true if the extension should be synced.
   bool IsSyncable() const;
 
-  // Returns true if the extension should be displayed in the launcher.
-  bool ShouldDisplayInLauncher() const;
+  // Returns true if the extension requires a valid ordinal for sorting, e.g.,
+  // for displaying in a launcher or new tab page.
+  bool RequiresSortOrdinal() const;
+
+  // Returns true if the extension should be displayed in the app launcher.
+  bool ShouldDisplayInAppLauncher() const;
+
+  // Returns true if the extension should be displayed in the browser NTP.
+  bool ShouldDisplayInNewTabPage() const;
 
   // Returns true if the extension should be displayed in the extension
   // settings page (i.e. chrome://extensions).
@@ -1182,8 +1189,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   int launch_width_;
   int launch_height_;
 
-  // Should this app be shown in a launcher.
+  // Should this app be shown in the app launcher.
   bool display_in_launcher_;
+
+  // Should this app be shown in the browser New Tab Page.
+  bool display_in_new_tab_page_;
 
   // The Omnibox keyword for this extension, or empty if there is none.
   std::string omnibox_keyword_;

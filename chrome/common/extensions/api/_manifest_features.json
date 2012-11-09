@@ -115,6 +115,11 @@
     "extension_types": ["packaged_app", "platform_app"],
     "location": "component"
   },
+  "display_in_new_tab_page": {
+    "channel": "stable",
+    "extension_types": ["packaged_app", "platform_app"],
+    "location": "component"
+  },
   "file_browser_handlers": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]

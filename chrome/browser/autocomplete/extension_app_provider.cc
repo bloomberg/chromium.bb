@@ -159,8 +159,10 @@ void ExtensionAppProvider::RefreshAppList() {
   for (ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     const extensions::Extension* app = *iter;
-    if (!app->ShouldDisplayInLauncher())
+    if (!app->ShouldDisplayInAppLauncher())
       continue;
+    // Note: Apps that appear in the NTP only are not added here since this
+    // provider is currently only used in the app launcher.
 
     if (profile_->IsOffTheRecord() &&
         !extension_service->CanLoadInIncognito(app))
