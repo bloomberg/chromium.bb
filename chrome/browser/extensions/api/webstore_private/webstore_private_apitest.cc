@@ -398,9 +398,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest, InstallBundle) {
   ASSERT_TRUE(RunPageTest(GetTestServerURL("install_bundle.html").spec()));
 }
 
+#if defined(OS_WIN)
+// Acting flakey in Windows. http://crbug.com/160219
+#define MAYBE_InstallBundleIncognito DISABLED_InstallBundleIncognito
+#else
+#define MAYBE_InstallBundleIncognito InstallBundleIncognito
+#endif
+
 // Tests that bundles can be installed from incognito windows.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBundleTest,
-                       InstallBundleIncognito) {
+                       MAYBE_InstallBundleIncognito) {
   extensions::BundleInstaller::SetAutoApproveForTesting(true);
 
   PackCRX("bmfoocgfinpmkmlbjhcbofejhkhlbchk", "extension1.json");
