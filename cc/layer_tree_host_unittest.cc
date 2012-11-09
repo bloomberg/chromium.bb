@@ -13,6 +13,7 @@
 #include "cc/layer_tree_host_impl.h"
 #include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
+#include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test_common.h"
@@ -1215,14 +1216,6 @@ TEST_F(LayerTreeHostTestOpacityChange, runMultiThread)
     runTest(true);
 }
 
-class MockContentLayerClient : public ContentLayerClient {
-public:
-    bool drawsContent() const { return true; }
-    MOCK_CONST_METHOD0(preserves3D, bool());
-    void paintContents(SkCanvas*, const gfx::Rect&, gfx::RectF&) OVERRIDE { }
-    void notifySyncRequired() { }
-};
-
 class NoScaleContentLayer : public ContentLayer {
 public:
     static scoped_refptr<NoScaleContentLayer> create(ContentLayerClient* client) { return make_scoped_refptr(new NoScaleContentLayer(client)); }
@@ -1269,7 +1262,7 @@ public:
     }
 
 private:
-    MockContentLayerClient m_client;
+    FakeContentLayerClient m_client;
     scoped_refptr<ContentLayerWithUpdateTracking> m_updateCheckLayer;
 };
 
@@ -1378,7 +1371,7 @@ public:
     }
 
 private:
-    MockContentLayerClient m_client;
+    FakeContentLayerClient m_client;
     scoped_refptr<NoScaleContentLayer> m_rootLayer;
     scoped_refptr<ContentLayer> m_childLayer;
 };
@@ -1467,7 +1460,7 @@ public:
     }
 
 private:
-    MockContentLayerClient m_client;
+    FakeContentLayerClient m_client;
     scoped_refptr<ContentLayerWithUpdateTracking> m_layer;
 };
 
@@ -1614,7 +1607,7 @@ public:
     }
 
 private:
-    MockContentLayerClient m_client;
+    FakeContentLayerClient m_client;
     scoped_refptr<ContentLayerWithUpdateTracking> m_parent;
     scoped_refptr<ContentLayerWithUpdateTracking> m_child;
     int m_numCommits;
@@ -2199,7 +2192,7 @@ public:
 
         m_layerTreeHost->setDeviceScaleFactor(m_deviceScaleFactor);
 
-        m_rootScrollLayer = ContentLayer::create(&m_mockDelegate);
+        m_rootScrollLayer = ContentLayer::create(&m_fakeDelegate);
         m_rootScrollLayer->setBounds(gfx::Size(110, 110));
 
         m_rootScrollLayer->setPosition(gfx::PointF(0, 0));
@@ -2210,7 +2203,7 @@ public:
         m_rootScrollLayer->setMaxScrollOffset(gfx::Vector2d(100, 100));
         m_layerTreeHost->rootLayer()->addChild(m_rootScrollLayer);
 
-        m_childLayer = ContentLayer::create(&m_mockDelegate);
+        m_childLayer = ContentLayer::create(&m_fakeDelegate);
         m_childLayer->setLayerScrollClient(this);
         m_childLayer->setBounds(gfx::Size(110, 110));
 
@@ -2315,7 +2308,7 @@ private:
     int m_rootScrolls;
     gfx::Vector2d m_finalScrollOffset;
 
-    MockContentLayerClient m_mockDelegate;
+    FakeContentLayerClient m_fakeDelegate;
     scoped_refptr<Layer> m_rootScrollLayer;
     scoped_refptr<Layer> m_childLayer;
 };
@@ -2359,7 +2352,7 @@ public:
 
         m_layerTreeHost->setDeviceScaleFactor(m_deviceScaleFactor);
 
-        m_rootScrollLayer = ContentLayer::create(&m_mockDelegate);
+        m_rootScrollLayer = ContentLayer::create(&m_fakeDelegate);
         m_rootScrollLayer->setBounds(gfx::Size(110, 110));
 
         m_rootScrollLayer->setPosition(gfx::PointF(0, 0));
@@ -2448,7 +2441,7 @@ private:
     gfx::Vector2d m_scrollAmount;
     int m_rootScrolls;
 
-    MockContentLayerClient m_mockDelegate;
+    FakeContentLayerClient m_fakeDelegate;
     scoped_refptr<Layer> m_rootScrollLayer;
 };
 
@@ -2497,11 +2490,11 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestCompositeAndReadbackCleanup)
 class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit : public LayerTreeHostTest {
 public:
     LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit()
-        : m_rootLayer(ContentLayerWithUpdateTracking::create(&m_mockDelegate))
-        , m_surfaceLayer1(ContentLayerWithUpdateTracking::create(&m_mockDelegate))
-        , m_replicaLayer1(ContentLayerWithUpdateTracking::create(&m_mockDelegate))
-        , m_surfaceLayer2(ContentLayerWithUpdateTracking::create(&m_mockDelegate))
-        , m_replicaLayer2(ContentLayerWithUpdateTracking::create(&m_mockDelegate))
+        : m_rootLayer(ContentLayerWithUpdateTracking::create(&m_fakeDelegate))
+        , m_surfaceLayer1(ContentLayerWithUpdateTracking::create(&m_fakeDelegate))
+        , m_replicaLayer1(ContentLayerWithUpdateTracking::create(&m_fakeDelegate))
+        , m_surfaceLayer2(ContentLayerWithUpdateTracking::create(&m_fakeDelegate))
+        , m_replicaLayer2(ContentLayerWithUpdateTracking::create(&m_fakeDelegate))
     {
     }
 
@@ -2566,7 +2559,7 @@ public:
     }
 
 private:
-    MockContentLayerClient m_mockDelegate;
+    FakeContentLayerClient m_fakeDelegate;
     scoped_refptr<ContentLayerWithUpdateTracking> m_rootLayer;
     scoped_refptr<ContentLayerWithUpdateTracking> m_surfaceLayer1;
     scoped_refptr<ContentLayerWithUpdateTracking> m_replicaLayer1;
@@ -2785,7 +2778,7 @@ public:
     }
 
 private:
-    MockContentLayerClient m_client;
+    FakeContentLayerClient m_client;
     scoped_refptr<EvictionTestLayer> m_layer;
     LayerTreeHostImpl* m_implForEvictTextures;
     int m_numCommits;
@@ -2871,7 +2864,7 @@ public:
     }
 
 private:
-    MockContentLayerClient m_client;
+    FakeContentLayerClient m_client;
     scoped_refptr<EvictionTestLayer> m_layer;
     LayerTreeHostImpl* m_implForEvictTextures;
     int m_numCommits;
@@ -2960,7 +2953,7 @@ public:
     }
 
 private:
-    MockContentLayerClient m_client;
+    FakeContentLayerClient m_client;
     scoped_refptr<ContentLayerWithUpdateTracking> m_parent;
     int m_numChildren;
     std::vector<scoped_refptr<ContentLayerWithUpdateTracking> > m_children;
@@ -3034,7 +3027,7 @@ public:
         m_layerTreeHost->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
         m_layerTreeHost->rootLayer()->setBounds(gfx::Size(10, 10));
 
-        m_contentLayer = ContentLayer::create(&m_mockDelegate);
+        m_contentLayer = ContentLayer::create(&m_fakeDelegate);
         m_contentLayer->setBounds(gfx::Size(10, 10));
         m_contentLayer->setPosition(gfx::PointF(0, 0));
         m_contentLayer->setAnchorPoint(gfx::PointF(0, 0));
@@ -3072,7 +3065,7 @@ public:
     }
 
 private:
-    MockContentLayerClient m_mockDelegate;
+    FakeContentLayerClient m_fakeDelegate;
     scoped_refptr<Layer> m_contentLayer;
     int m_numCommitComplete;
     int m_numDrawLayers;
