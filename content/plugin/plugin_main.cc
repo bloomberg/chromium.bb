@@ -25,7 +25,7 @@
 #include "content/public/common/injection_test_win.h"
 #include "sandbox/win/src/sandbox.h"
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "base/global_descriptors_posix.h"
+#include "base/posix/global_descriptors.h"
 #include "ipc/ipc_descriptors.h"
 #endif
 

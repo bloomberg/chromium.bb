@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_GLOBAL_DESCRIPTORS_POSIX_H_
-#define BASE_GLOBAL_DESCRIPTORS_POSIX_H_
+#ifndef BASE_POSIX_GLOBAL_DESCRIPTORS_H_
+#define BASE_POSIX_GLOBAL_DESCRIPTORS_H_
 
 #include "build/build_config.h"
 
@@ -67,4 +67,4 @@ class BASE_EXPORT GlobalDescriptors {
 
 }  // namespace base
 
-#endif  // BASE_GLOBAL_DESCRIPTORS_POSIX_H_
+#endif  // BASE_POSIX_GLOBAL_DESCRIPTORS_H_

@@ -6,7 +6,7 @@
 #define CONTENT_SHELL_ANDROID_SHELL_DESCRIPTORS_H_
 
 // This is a list of global descriptor keys to be used with the
-// base::GlobalDescriptors object (see base/global_descriptors_posix.h)
+// base::GlobalDescriptors object (see base/posix/global_descriptors.h)
 enum {
   kShellPakDescriptor = 1,
 };

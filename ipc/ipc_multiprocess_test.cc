@@ -7,7 +7,7 @@
 #include "ipc/ipc_multiprocess_test.h"
 
 #if defined(OS_POSIX)
-#include "base/global_descriptors_posix.h"
+#include "base/posix/global_descriptors.h"
 #include "ipc/ipc_descriptors.h"
 #endif
 

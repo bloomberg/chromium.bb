@@ -44,7 +44,7 @@
 #include "chrome/common/mac/mock_launchd.h"
 #endif
 #if defined(OS_POSIX)
-#include "base/global_descriptors_posix.h"
+#include "base/posix/global_descriptors.h"
 #endif
 
 using ::testing::AnyNumber;

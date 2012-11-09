@@ -76,7 +76,7 @@
 #if defined(OS_POSIX)
 #include <signal.h>
 
-#include "base/global_descriptors_posix.h"
+#include "base/posix/global_descriptors.h"
 #include "content/public/common/content_descriptors.h"
 
 #if !defined(OS_MACOSX)

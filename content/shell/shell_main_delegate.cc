@@ -32,7 +32,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "base/global_descriptors_posix.h"
+#include "base/posix/global_descriptors.h"
 #include "content/shell/android/shell_descriptors.h"
 #endif
 

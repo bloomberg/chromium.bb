@@ -36,7 +36,7 @@
 #endif
 
 #if defined(OS_POSIX)
-#include "base/global_descriptors_posix.h"
+#include "base/posix/global_descriptors.h"
 #endif
 
 namespace content {

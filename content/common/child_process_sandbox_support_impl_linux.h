@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_LINUX_H_
 #define CONTENT_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_LINUX_H_
 
-#include "base/global_descriptors_posix.h"
+#include "base/posix/global_descriptors.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
 #include "content/public/common/content_descriptors.h"
 

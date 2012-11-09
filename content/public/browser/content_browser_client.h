@@ -18,7 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "base/global_descriptors_posix.h"
+#include "base/posix/global_descriptors.h"
 #endif
 
 

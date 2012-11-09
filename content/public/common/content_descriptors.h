@@ -8,7 +8,7 @@
 #include "ipc/ipc_descriptors.h"
 
 // This is a list of global descriptor keys to be used with the
-// base::GlobalDescriptors object (see base/global_descriptors_posix.h)
+// base::GlobalDescriptors object (see base/posix/global_descriptors.h)
 enum {
   kCrashDumpSignal = kPrimaryIPCChannel + 1,
   kSandboxIPCChannel,  // http://code.google.com/p/chromium/LinuxSandboxIPC
@@ -18,7 +18,7 @@ enum {
 #endif
 
   // The first key that embedders can use to register descriptors (see
-  // base/global_descriptors_posix.h).
+  // base/posix/global_descriptors.h).
   kContentIPCDescriptorMax
 };
 
