@@ -871,6 +871,27 @@ util.platform = {
     if (!util.TEST_HARNESS)
       document.addEventListener('contextmenu',
           function(e) { e.preventDefault() });
+  },
+
+  /**
+   * Creates a new window.
+   * @param {string} url Window url.
+   * @param {Object} options Window options.
+   */
+  createWindow: function(url, options) {
+    if (util.platform.v2()) {
+      chrome.app.window.create(url, options);
+    } else {
+      var params = {};
+      for (var key in options) {
+        if (options.hasOwnProperty(key)) {
+          params[key] = options[key];
+        }
+      }
+      params.url = url;
+      params.type = 'popup';
+      chrome.windows.create(params);
+    }
   }
 };
 
