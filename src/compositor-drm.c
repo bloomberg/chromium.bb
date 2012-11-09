@@ -184,8 +184,6 @@ struct drm_seat {
 
 static void
 drm_output_set_cursor(struct drm_output *output);
-static void
-drm_disable_unused_sprites(struct weston_output *output_base);
 
 static int
 drm_sprite_crtc_supported(struct weston_output *output_base, uint32_t supported)
@@ -427,8 +425,6 @@ drm_output_repaint(struct weston_output *output_base,
 		output->vblank_pending = 1;
 	}
 
-	drm_disable_unused_sprites(&output->base);
-
 	return;
 }
 
@@ -534,38 +530,6 @@ drm_surface_transform_supported(struct weston_surface *es)
 	}
 
 	return 1;
-}
-
-static void
-drm_disable_unused_sprites(struct weston_output *output_base)
-{
-	struct weston_compositor *ec = output_base->compositor;
-	struct drm_compositor *c =(struct drm_compositor *) ec;
-	struct drm_output *output = (struct drm_output *) output_base;
-	struct drm_sprite *s;
-	int ret;
-
-	wl_list_for_each(s, &c->sprite_list, link) {
-		if (s->pending_fb_id)
-			continue;
-
-		ret = drmModeSetPlane(c->drm.fd, s->plane_id,
-				      output->crtc_id, 0, 0,
-				      0, 0, 0, 0, 0, 0, 0, 0);
-		if (ret)
-			weston_log("failed to disable plane: %d: %s\n",
-				ret, strerror(errno));
-		drmModeRmFB(c->drm.fd, s->fb_id);
-
-		if (s->surface) {
-			s->surface = NULL;
-			wl_list_remove(&s->destroy_listener.link);
-		}
-
-		assert(!s->pending_surface);
-		s->fb_id = 0;
-		s->pending_fb_id = 0;
-	}
 }
 
 static struct weston_plane *
