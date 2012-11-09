@@ -41,10 +41,6 @@ class UI_EXPORT PointBase {
     Offset(-vector.x(), -vector.y());
   }
 
-  Class Middle(const Class& other) const WARN_UNUSED_RESULT {
-    return Class((x_ + other.x_) / 2, (y_ + other.y_) / 2);
-  }
-
   bool IsOrigin() const {
     return x_ == 0 && y_ == 0;
   }
