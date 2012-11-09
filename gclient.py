@@ -618,7 +618,18 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         # Strip any leading path separators.
         while file_list[i].startswith(('\\', '/')):
           file_list[i] = file_list[i][1:]
-    elif command == 'recurse':
+
+    # Always parse the DEPS file.
+    self.ParseDepsFile()
+
+    self._run_is_done(file_list, parsed_url)
+
+    if self.recursion_limit:
+      # Parse the dependencies of this dependency.
+      for s in self.dependencies:
+        work_queue.enqueue(s)
+
+    if command == 'recurse':
       if not isinstance(parsed_url, self.FileImpl):
         # Skip file only checkout.
         scm = gclient_scm.GetScmName(parsed_url)
@@ -630,25 +641,39 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
             env['GCLIENT_SCM'] = scm
           if parsed_url:
             env['GCLIENT_URL'] = parsed_url
+          if options.prepend_dir:
+            print_stdout = False
+            def filter_fn(line):
+              items = line.split('\0')
+              if len(items) == 1:
+                match = re.match('Binary file (.*) matches$', line)
+                if match:
+                  print 'Binary file %s matches' % os.path.join(
+                      self.name, match.group(1))
+                else:
+                  print line
+              elif len(items) == 2 and items[1]:
+                print '%s : %s' % (os.path.join(self.name, items[0]), items[1])
+              else:
+                # Multiple null bytes or a single trailing null byte indicate
+                # git is likely displaying filenames only (such as with -l)
+                print '\n'.join(os.path.join(self.name, f) for f in items if f)
+          else:
+            print_stdout = True
+            filter_fn = None
+
           if os.path.isdir(cwd):
             try:
               gclient_utils.CheckCallAndFilter(
-                  args, cwd=cwd, env=env, print_stdout=True)
+                  args, cwd=cwd, env=env, print_stdout=print_stdout,
+                  filter_fn=filter_fn,
+                  )
             except subprocess2.CalledProcessError:
               if not options.ignore:
                 raise
           else:
             print >> sys.stderr, 'Skipped missing %s' % cwd
 
-    # Always parse the DEPS file.
-    self.ParseDepsFile()
-
-    self._run_is_done(file_list, parsed_url)
-
-    if self.recursion_limit:
-      # Parse the dependencies of this dependency.
-      for s in self.dependencies:
-        work_queue.enqueue(s)
 
   @gclient_utils.lockedmethod
   def _run_is_done(self, file_list, parsed_url):
@@ -1050,7 +1075,7 @@ solutions = [
       print('Using safesync_url revision: %s.\n' % safe_rev)
     self._options.revisions.append('%s@%s' % (dep.name, safe_rev))
 
-  def RunOnDeps(self, command, args):
+  def RunOnDeps(self, command, args, ignore_requirements=False, progress=True):
     """Runs a command on each dependency in a client and its dependencies.
 
     Args:
@@ -1066,12 +1091,13 @@ solutions = [
       revision_overrides = self._EnforceRevisions()
     pm = None
     # Disable progress for non-tty stdout.
-    if (sys.stdout.isatty() and not self._options.verbose):
+    if (sys.stdout.isatty() and not self._options.verbose and progress):
       if command in ('update', 'revert'):
         pm = Progress('Syncing projects', 1)
       elif command == 'recurse':
         pm = Progress(' '.join(args), 1)
-    work_queue = gclient_utils.ExecutionQueue(self._options.jobs, pm)
+    work_queue = gclient_utils.ExecutionQueue(
+        self._options.jobs, pm, ignore_requirements=ignore_requirements)
     for s in self.dependencies:
       work_queue.enqueue(s)
     work_queue.flush(revision_overrides, command, args, options=self._options)
@@ -1119,7 +1145,7 @@ solutions = [
     if not self.dependencies:
       raise gclient_utils.Error('No solution specified')
     # Load all the settings.
-    work_queue = gclient_utils.ExecutionQueue(self._options.jobs, None)
+    work_queue = gclient_utils.ExecutionQueue(self._options.jobs, None, False)
     for s in self.dependencies:
       work_queue.enqueue(s)
     work_queue.flush({}, None, [], options=self._options)
@@ -1234,9 +1260,13 @@ def CMDrecurse(parser, args):
   # Stop parsing at the first non-arg so that these go through to the command
   parser.disable_interspersed_args()
   parser.add_option('-s', '--scm', action='append', default=[],
-                    help='choose scm types to operate upon')
+                    help='Choose scm types to operate upon.')
   parser.add_option('-i', '--ignore', action='store_true',
-                    help='continue processing in case of non zero return code')
+                    help='Ignore non-zero return codes from subcommands.')
+  parser.add_option('--prepend-dir', action='store_true',
+                    help='Prepend relative dir for use with git <cmd> --null.')
+  parser.add_option('--no-progress', action='store_true',
+                    help='Disable progress bar that shows sub-command updates')
   options, args = parser.parse_args(args)
   if not args:
     print >> sys.stderr, 'Need to supply a command!'
@@ -1256,7 +1286,8 @@ def CMDrecurse(parser, args):
 
   options.nohooks = True
   client = GClient.LoadCurrentConfig(options)
-  return client.RunOnDeps('recurse', args)
+  return client.RunOnDeps('recurse', args, ignore_requirements=True,
+                          progress=not options.no_progress)
 
 
 @attr('usage', '[args ...]')
@@ -1266,8 +1297,38 @@ def CMDfetch(parser, args):
 Completely git-specific. Simply runs 'git fetch [args ...]' for each module.
 """
   (options, args) = parser.parse_args(args)
-  args = ['-j%d' % options.jobs, '-s', 'git', 'git', 'fetch'] + args
-  return CMDrecurse(parser, args)
+  return CMDrecurse(Parser(), [
+      '--jobs=%d' % options.jobs, '--scm=git', 'git', 'fetch'] + args)
+
+
+def CMDgrep(parser, args):
+  """Greps through git repos managed by gclient.
+
+Runs 'git grep [args...]' for each module.
+"""
+
+  # We can't use optparse because it will try to parse arguments sent
+  # to git grep and throw an error. :-(
+  if not args or re.match('(-h|--help)$', args[0]):
+    print >> sys.stderr, (
+        'Usage: gclient grep [-j <N>] git-grep-args...\n\n'
+        'Example: "gclient grep -j10 -A2 RefCountedBase" runs\n"git grep '
+        '-A2 RefCountedBase" on each of gclient\'s git\nrepos with up to '
+        '10 jobs.\n\nBonus: page output by appending "|& less -FRSX" to the'
+        ' end of your query.'
+        )
+    return 1
+
+  jobs_arg = ['--jobs=1']
+  if re.match(r'(-j|--jobs=)\d+$', args[0]):
+    jobs_arg, args = args[:1], args[1:]
+  elif re.match(r'(-j|--jobs)$', args[0]):
+    jobs_arg, args = args[:2], args[2:]
+
+  return CMDrecurse(
+      parser,
+      jobs_arg + ['--ignore', '--prepend-dir', '--no-progress', '--scm=git',
+                  'git', 'grep', '--null', '--color=Always'] + args)
 
 
 @attr('usage', '[url] [safesync url]')

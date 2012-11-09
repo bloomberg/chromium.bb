@@ -269,7 +269,7 @@ class GclientTest(trial_dir.TestCase):
     options, _ = parser.parse_args([])
     options.force = True
     client = gclient.GClient.LoadCurrentConfig(options)
-    work_queue = gclient_utils.ExecutionQueue(options.jobs, None)
+    work_queue = gclient_utils.ExecutionQueue(options.jobs, None, False)
     for s in client.dependencies:
       work_queue.enqueue(s)
     work_queue.flush({}, None, [], options=options)

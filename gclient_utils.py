@@ -192,29 +192,31 @@ def safe_makedirs(tree):
         raise
 
 
-def CheckCallAndFilterAndHeader(args, always=False, **kwargs):
+def CheckCallAndFilterAndHeader(args, always=False, header=None, **kwargs):
   """Adds 'header' support to CheckCallAndFilter.
 
   If |always| is True, a message indicating what is being done
   is printed to stdout all the time even if not output is generated. Otherwise
   the message header is printed only if the call generated any ouput.
   """
-  stdout = kwargs.get('stdout', None) or sys.stdout
+  stdout = kwargs.setdefault('stdout', sys.stdout)
+  if header is None:
+    header = "\n________ running '%s' in '%s'\n" % (
+                 ' '.join(args), kwargs.get('cwd', '.'))
+
   if always:
-    stdout.write('\n________ running \'%s\' in \'%s\'\n'
-        % (' '.join(args), kwargs.get('cwd', '.')))
+    stdout.write(header)
   else:
-    filter_fn = kwargs.get('filter_fn', None)
+    filter_fn = kwargs.get('filter_fn')
     def filter_msg(line):
       if line is None:
-        stdout.write('\n________ running \'%s\' in \'%s\'\n'
-            % (' '.join(args), kwargs.get('cwd', '.')))
+        stdout.write(header)
       elif filter_fn:
         filter_fn(line)
     kwargs['filter_fn'] = filter_msg
     kwargs['call_filter_on_first_line'] = True
   # Obviously.
-  kwargs['print_stdout'] = True
+  kwargs.setdefault('print_stdout', True)
   return CheckCallAndFilter(args, **kwargs)
 
 
@@ -450,7 +452,7 @@ def PathDifference(root, subpath):
 
 def FindFileUpwards(filename, path=None):
   """Search upwards from the a directory (default: current) to find a file.
-  
+
   Returns nearest upper-level directory with the passed in file.
   """
   if not path:
@@ -526,7 +528,7 @@ class ExecutionQueue(object):
 
   Methods of this class are thread safe.
   """
-  def __init__(self, jobs, progress):
+  def __init__(self, jobs, progress, ignore_requirements):
     """jobs specifies the number of concurrent tasks to allow. progress is a
     Progress instance."""
     # Set when a thread is done or a new item is enqueued.
@@ -545,6 +547,8 @@ class ExecutionQueue(object):
     self.progress = progress
     if self.progress:
       self.progress.update(0)
+
+    self.ignore_requirements = ignore_requirements
 
   def enqueue(self, d):
     """Enqueue one Dependency to be executed later once its requirements are
@@ -583,11 +587,8 @@ class ExecutionQueue(object):
           # Check for new tasks to start.
           for i in xrange(len(self.queued)):
             # Verify its requirements.
-            for r in self.queued[i].requirements:
-              if not r in self.ran:
-                # Requirement not met.
-                break
-            else:
+            if (self.ignore_requirements or
+                not (set(self.queued[i].requirements) - set(self.ran))):
               # Start one work item: all its requirements are satisfied.
               self._run_one_task(self.queued.pop(i), args, kwargs)
               break
