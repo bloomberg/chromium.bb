@@ -254,6 +254,7 @@ class Progress(object):
     self.index = 0
     self.start = time.time()
     self.size = size
+    self.use_cr_only = True
 
     # To be used in all threads.
     self.queued_lines = Queue.Queue()
@@ -279,16 +280,16 @@ class Progress(object):
             self.size,
             time.time() - self.start,
             name)
-        # Fill it with whitespace.
-        # TODO(maruel): Read the console width when prossible and trim
-        # next_line.
-        # TODO(maruel): When not a console is used, do not fill with whitepace
-        # but use \n instead.
-        prefix = '\r' if self.last_printed_line else ''
-        line = '%s%s%s' % (
-            prefix,
-            next_line,
-            ' ' * max(0, len(self.last_printed_line) - len(next_line)))
+        # Fill it with whitespace only if self.use_cr_only is set.
+        prefix = ''
+        if self.use_cr_only:
+          if self.last_printed_line:
+            prefix = '\r'
+        if self.use_cr_only:
+          suffix = ' ' * max(0, len(self.last_printed_line) - len(next_line))
+        else:
+          suffix = '\n'
+        line = '%s%s%s' % (prefix, next_line, suffix)
         self.last_printed_line = next_line
       else:
         line = '\n%s\n' % name.strip('\n')
@@ -613,7 +614,7 @@ def LogResults(result_file, results):
 
 def run_test_cases(
     cmd, test_cases, jobs, timeout, retries, run_all, max_failures,
-    result_file):
+    no_cr, result_file):
   """Traces test cases one by one."""
   if not test_cases:
     return 0
@@ -626,6 +627,7 @@ def run_test_cases(
     function = Runner(
         cmd, os.getcwd(), timeout, pool.tasks.progress, retries, decider).map
     logging.debug('Adding tests to ThreadPool')
+    pool.tasks.progress.use_cr_only = not no_cr
     for test_case in test_cases:
       pool.add_task(function, test_case)
     logging.debug('All tests added to the ThreadPool')
@@ -861,6 +863,10 @@ def main(argv):
       action='store_true',
       help='do not generate a .run_test_cases file')
   parser.add_option(
+      '--no-cr',
+      action='store_true',
+      help='Use LF instead of CR for status progress')
+  parser.add_option(
       '--result',
       help='Override the default name of the generated .run_test_cases file')
   parser.add_option(
@@ -868,21 +874,6 @@ def main(argv):
       action='store_true',
       help='List all the test cases unformatted. Keeps compatibility with the '
            'executable itself.')
-
-  group = optparse.OptionGroup(
-      parser, 'For compatibility with sharding_supervisor')
-  group.add_option(
-      '--retry-failed', action='store_true')
-  group.add_option(
-      '--no-color', action='store_true')
-  group.add_option(
-      '--shard-index', type='int', dest='index')
-  group.add_option(
-      '--total-slaves', type='int', dest='shards')
-  group.add_option(
-      '--gtest_print_time', action='store_true')
-  parser.add_option_group(group)
-
   options, args = parser.parse_args(argv)
 
   if not args:
@@ -919,6 +910,7 @@ def main(argv):
       options.retries,
       options.run_all,
       options.max_failures,
+      options.no_cr,
       result_file)
 
 
