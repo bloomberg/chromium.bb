@@ -177,6 +177,7 @@ ResourceProvider::ResourceId ResourceProvider::createGLTexture(int pool, const g
         GLC(context3d, context3d->texStorage2DEXT(GL_TEXTURE_2D, 1, storageFormat, size.width(), size.height()));
     } else
         GLC(context3d, context3d->texImage2D(GL_TEXTURE_2D, 0, format, size.width(), size.height(), 0, format, GL_UNSIGNED_BYTE, 0));
+
     ResourceId id = m_nextId++;
     Resource resource(textureId, pool, size, format);
     m_resources[id] = resource;
@@ -538,7 +539,6 @@ void ResourceProvider::destroyChild(int child)
     DCHECK(it != m_children.end());
     deleteOwnedResources(it->second.pool);
     m_children.erase(it);
-    trimMailboxDeque();
 }
 
 const ResourceProvider::ResourceIdMap& ResourceProvider::getChildToParentMap(int child) const
@@ -621,8 +621,8 @@ void ResourceProvider::receiveFromChild(int child, const TransferableResourceLis
         GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D, it->mailbox.name));
         ResourceId id = m_nextId++;
         Resource resource(textureId, childInfo.pool, it->size, it->format);
+        resource.mailbox.setName(it->mailbox.name);
         m_resources[id] = resource;
-        m_mailboxes.push_back(it->mailbox);
         childInfo.parentToChildMap[id] = it->id;
         childInfo.childToParentMap[it->id] = id;
     }
@@ -644,9 +644,9 @@ void ResourceProvider::receiveFromParent(const TransferableResourceList& resourc
         Resource* resource = &mapIterator->second;
         DCHECK(resource->exported);
         resource->exported = false;
+        resource->mailbox.setName(it->mailbox.name);
         GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, resource->glId));
         GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D, it->mailbox.name));
-        m_mailboxes.push_back(it->mailbox);
         if (resource->markedForDeletion)
             deleteResourceInternal(mapIterator);
     }
@@ -655,9 +655,10 @@ void ResourceProvider::receiveFromParent(const TransferableResourceList& resourc
 bool ResourceProvider::transferResource(WebGraphicsContext3D* context, ResourceId id, TransferableResource* resource)
 {
     DCHECK(m_threadChecker.CalledOnValidThread());
-    ResourceMap::const_iterator it = m_resources.find(id);
+    WebGraphicsContext3D* context3d = m_context->context3D();
+    ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
-    const Resource* source = &it->second;
+    Resource* source = &it->second;
     DCHECK(!source->lockedForWrite);
     DCHECK(!source->lockForReadCount);
     DCHECK(!source->external);
@@ -666,41 +667,17 @@ bool ResourceProvider::transferResource(WebGraphicsContext3D* context, ResourceI
     resource->id = id;
     resource->format = source->format;
     resource->size = source->size;
-    if (!m_mailboxes.empty()) {
-        resource->mailbox = m_mailboxes.front();
-        m_mailboxes.pop_front();
+
+    if (source->mailbox.isZero()) {
+      GLbyte name[GL_MAILBOX_SIZE_CHROMIUM];
+      GLC(context3d, context3d->genMailboxCHROMIUM(name));
+      source->mailbox.setName(name);
     }
-    else
-        GLC(context, context->genMailboxCHROMIUM(resource->mailbox.name));
+
+    resource->mailbox = source->mailbox;
     GLC(context, context->bindTexture(GL_TEXTURE_2D, source->glId));
     GLC(context, context->produceTextureCHROMIUM(GL_TEXTURE_2D, resource->mailbox.name));
     return true;
-}
-
-void ResourceProvider::trimMailboxDeque()
-{
-    // Trim the mailbox deque to the maximum number of resources we may need to
-    // send.
-    // If we have a parent, any non-external resource not already transfered is
-    // eligible to be sent to the parent. Otherwise, all resources belonging to
-    // a child might need to be sent back to the child.
-    size_t maxMailboxCount = 0;
-    if (m_context->capabilities().hasParentCompositor) {
-        for (ResourceMap::iterator it = m_resources.begin(); it != m_resources.end(); ++it) {
-            if (!it->second.exported && !it->second.external)
-                ++maxMailboxCount;
-        }
-    } else {
-        base::hash_set<int> childPoolSet;
-        for (ChildMap::iterator it = m_children.begin(); it != m_children.end(); ++it)
-            childPoolSet.insert(it->second.pool);
-        for (ResourceMap::iterator it = m_resources.begin(); it != m_resources.end(); ++it) {
-            if (ContainsKey(childPoolSet, it->second.pool))
-                ++maxMailboxCount;
-        }
-    }
-    while (m_mailboxes.size() > maxMailboxCount)
-        m_mailboxes.pop_front();
 }
 
 void ResourceProvider::debugNotifyEnterZone(unsigned int zone)

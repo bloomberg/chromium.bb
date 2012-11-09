@@ -15,6 +15,9 @@
 namespace cc {
 
 struct Mailbox {
+  Mailbox();
+  bool isZero() const;
+  void setName(const GLbyte* name);
   GLbyte name[64];
 };
 

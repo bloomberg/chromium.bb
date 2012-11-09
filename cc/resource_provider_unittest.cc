@@ -452,7 +452,6 @@ TEST_P(ResourceProviderTest, TransferResources)
     }
 
     EXPECT_EQ(2u, m_resourceProvider->numResources());
-    EXPECT_EQ(2u, m_resourceProvider->mailboxCount());
     ResourceProvider::ResourceIdMap resourceMap = m_resourceProvider->getChildToParentMap(childId);
     ResourceProvider::ResourceId mappedId1 = resourceMap[id1];
     ResourceProvider::ResourceId mappedId2 = resourceMap[id2];
@@ -490,8 +489,6 @@ TEST_P(ResourceProviderTest, TransferResources)
         EXPECT_EQ(2u, list.resources.size());
         childResourceProvider->receiveFromParent(list);
     }
-    EXPECT_EQ(0u, m_resourceProvider->mailboxCount());
-    EXPECT_EQ(2u, childResourceProvider->mailboxCount());
     EXPECT_FALSE(childResourceProvider->inUseByConsumer(id1));
     EXPECT_FALSE(childResourceProvider->inUseByConsumer(id2));
 
@@ -528,7 +525,6 @@ TEST_P(ResourceProviderTest, TransferResources)
     EXPECT_EQ(2u, m_resourceProvider->numResources());
     m_resourceProvider->destroyChild(childId);
     EXPECT_EQ(0u, m_resourceProvider->numResources());
-    EXPECT_EQ(0u, m_resourceProvider->mailboxCount());
 }
 
 TEST_P(ResourceProviderTest, DeleteTransferredResources)

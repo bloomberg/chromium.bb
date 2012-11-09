@@ -132,9 +132,6 @@ public:
     // will wait on it.
     void receiveFromParent(const TransferableResourceList&);
 
-    // Only for testing
-    size_t mailboxCount() const { return m_mailboxes.size(); }
-
     // The following lock classes are part of the ResourceProvider API and are
     // needed to read and write the resource contents. The user must ensure
     // that they only use GL locks on GL resources, etc, and this is enforced
@@ -212,6 +209,7 @@ private:
         Resource(uint8_t* pixels, int pool, const gfx::Size& size, GLenum format);
 
         unsigned glId;
+        Mailbox mailbox;
         uint8_t* pixels;
         int pool;
         int lockForReadCount;
@@ -244,7 +242,6 @@ private:
     static void populateSkBitmapWithResource(SkBitmap*, const Resource*);
 
     bool transferResource(WebKit::WebGraphicsContext3D*, ResourceId, TransferableResource*);
-    void trimMailboxDeque();
     void deleteResourceInternal(ResourceMap::iterator it);
 
     GraphicsContext* m_context;
@@ -252,8 +249,6 @@ private:
     ResourceMap m_resources;
     int m_nextChild;
     ChildMap m_children;
-
-    std::deque<Mailbox> m_mailboxes;
 
     ResourceType m_defaultResourceType;
     bool m_useTextureStorageExt;
