@@ -120,11 +120,23 @@ void ChromeAppHostOperations::AddDefaultShortcutProperties(
     ShellUtil::ShortcutProperties* properties) const {
   if (!properties->has_target())
     properties->set_target(target_exe);
+
   if (!properties->has_arguments()) {
     CommandLine app_host_args(CommandLine::NO_PROGRAM);
     app_host_args.AppendSwitch(::switches::kShowAppList);
     properties->set_arguments(app_host_args.GetCommandLineString());
   }
+
+  if (!properties->has_icon()) {
+    // Currently the App Launcher icon is inside chrome.exe, which we assume
+    // to be located in the same directory as app_host.exe.
+    // TODO(huangs): Cause the icon to also be embedded in app_host.exe,
+    // and then point at this (as chrome.exe is _not_ in the same folder
+    // for system-level chrome installs, or may even be uninstalled).
+    FilePath chrome_exe(target_exe.DirName().Append(kChromeExe));
+    properties->set_icon(chrome_exe, dist->GetIconIndex());
+  }
+
   if (!properties->has_app_id()) {
     std::vector<string16> components;
     string16 suffix;

@@ -621,6 +621,8 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                          install_path.value(),
                                          true);
 
+    // TODO(huangs): Generalize this, so app_host.exe can get its own icon,
+    // and not rely on chrome.exe's.
     // DisplayIcon, NoModify and NoRepair
     string16 chrome_icon = ShellUtil::GetChromeIcon(
         product.distribution(),

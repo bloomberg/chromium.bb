@@ -22,6 +22,11 @@
 
 namespace {
 
+#if defined(GOOGLE_CHROME_BUILD)
+const int kAppListIconIndex = 5;
+#else
+const int kAppListIconIndex = 1;
+#endif
 const wchar_t kChromeAppHostGuid[] = L"{FDA71E6F-AC4C-4a00-8B70-9958A68906BF}";
 
 }  // namespace
@@ -132,6 +137,10 @@ bool ChromeAppHostDistribution::CanSetAsDefault() {
 
 bool ChromeAppHostDistribution::CanCreateDesktopShortcuts() {
   return true;
+}
+
+int ChromeAppHostDistribution::GetIconIndex() {
+  return kAppListIconIndex;
 }
 
 bool ChromeAppHostDistribution::GetCommandExecuteImplClsid(
