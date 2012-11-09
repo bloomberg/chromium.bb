@@ -105,63 +105,49 @@ void RemoveAllFiles(const FilePath& directory) {
   }
 }
 
-// Modifies cache state of file on blocking pool, which involves:
-// - moving or copying file (per |file_operation_type|) from |source_path| to
-//  |dest_path| if they're different
-// - deleting symlink if |symlink_path| is not empty
-// - creating symlink if |symlink_path| is not empty and |create_symlink| is
-//   true.
-DriveFileError ModifyCacheState(
-    const FilePath& source_path,
-    const FilePath& dest_path,
-    DriveCache::FileOperationType file_operation_type,
-    const FilePath& symlink_path,
-    bool create_symlink) {
-  // Move or copy |source_path| to |dest_path| if they are different.
-  if (source_path != dest_path) {
-    bool success = false;
-    if (file_operation_type == DriveCache::FILE_OPERATION_MOVE)
-      success = file_util::Move(source_path, dest_path);
-    else if (file_operation_type == DriveCache::FILE_OPERATION_COPY)
-      success = file_util::CopyFile(source_path, dest_path);
-    if (!success) {
-      LOG(ERROR) << "Failed to "
-                 << (file_operation_type == DriveCache::FILE_OPERATION_MOVE ?
-                     "move " : "copy ")
-                 << source_path.value()
-                 << " to " << dest_path.value();
-      return DRIVE_FILE_ERROR_FAILED;
-    } else {
-      DVLOG(1) << (file_operation_type == DriveCache::FILE_OPERATION_MOVE ?
-                   "Moved " : "Copied ")
-               << source_path.value()
-               << " to " << dest_path.value();
-    }
-  } else {
-    DVLOG(1) << "No need to move file: source = destination";
-  }
-
-  if (symlink_path.empty())
-    return DRIVE_FILE_OK;
-
-  // Remove symlink regardless of |create_symlink| because creating a link will
-  // not overwrite an existing one.
+// Deletes the symlink.
+void DeleteSymlink(const FilePath& symlink_path) {
   // We try to save one file operation by not checking if link exists before
   // deleting it, so unlink may return error if link doesn't exist, but it
   // doesn't really matter to us.
   file_util::Delete(symlink_path, false);
+}
 
-  if (!create_symlink)
-    return DRIVE_FILE_OK;
+// Creates a symlink.
+bool CreateSymlink(const FilePath& cache_file_path,
+                   const FilePath& symlink_path) {
+  // Remove symlink because creating a link will not overwrite an existing one.
+  DeleteSymlink(symlink_path);
 
-  // Create new symlink to |dest_path|.
-  if (!file_util::CreateSymbolicLink(dest_path, symlink_path)) {
+  // Create new symlink to |cache_file_path|.
+  if (!file_util::CreateSymbolicLink(cache_file_path, symlink_path)) {
     LOG(ERROR) << "Failed to create a symlink from " << symlink_path.value()
-               << " to " << dest_path.value();
-    return DRIVE_FILE_ERROR_FAILED;
+               << " to " << cache_file_path.value();
+    return false;
   }
+  return true;
+}
 
-  return DRIVE_FILE_OK;
+// Moves the file.
+bool MoveFile(const FilePath& source_path, const FilePath& dest_path) {
+  if (!file_util::Move(source_path, dest_path)) {
+    LOG(ERROR) << "Failed to move " << source_path.value()
+               << " to " << dest_path.value();
+    return false;
+  }
+  DVLOG(1) << "Moved " << source_path.value() << " to " << dest_path.value();
+  return true;
+}
+
+// Copies the file.
+bool CopyFile(const FilePath& source_path, const FilePath& dest_path) {
+  if (!file_util::CopyFile(source_path, dest_path)) {
+    LOG(ERROR) << "Failed to copy " << source_path.value()
+               << " to " << dest_path.value();
+    return false;
+  }
+  DVLOG(1) << "Copied " << source_path.value() << " to " << dest_path.value();
+  return true;
 }
 
 // Deletes all files that match |path_to_delete_pattern| except for
@@ -335,7 +321,7 @@ bool DriveCache::FreeDiskSpaceOnBlockingPoolIfNeededFor(int64 num_bytes) {
 
   // Otherwise, try to free up the disk space.
   DVLOG(1) << "Freeing up disk space for " << num_bytes;
-  // First remove temporary files from the cache map.
+  // First remove temporary files from the metadata.
   metadata_->RemoveTemporaryFiles();
   // Then remove all files under "tmp" directory.
   RemoveAllFiles(GetCacheDirectoryPath(CACHE_TYPE_TMP));
@@ -623,12 +609,10 @@ DriveFileError DriveCache::StoreOnBlockingPool(
       return DRIVE_FILE_ERROR_NO_SPACE;
   }
 
-  FilePath dest_path;
   FilePath symlink_path;
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_TMP;
 
-  // If file was previously pinned, store it in persistent dir and create
-  // symlink in pinned dir.
+  // If file was previously pinned, store it in persistent dir.
   DriveCacheEntry cache_entry;
   if (GetCacheEntryOnBlockingPool(resource_id, md5, &cache_entry)) {
     // File exists in cache.
@@ -641,30 +625,31 @@ DriveFileError DriveCache::StoreOnBlockingPool(
       return DRIVE_FILE_ERROR_IN_USE;
     }
 
-    // If file is pinned, determines destination path.
-    if (cache_entry.is_pinned()) {
+    if (cache_entry.is_pinned())
       sub_dir_type = CACHE_TYPE_PERSISTENT;
-      dest_path = GetCacheFilePath(resource_id, md5, sub_dir_type,
-                                   CACHED_FILE_FROM_SERVER);
-      symlink_path = GetCacheFilePath(
-          resource_id, std::string(), CACHE_TYPE_PINNED,
-          CACHED_FILE_FROM_SERVER);
-    }
   }
 
-  // File wasn't pinned or doesn't exist in cache, store in tmp dir.
-  if (dest_path.empty()) {
-    DCHECK_EQ(CACHE_TYPE_TMP, sub_dir_type);
-    dest_path = GetCacheFilePath(resource_id, md5, sub_dir_type,
-                                 CACHED_FILE_FROM_SERVER);
+  FilePath dest_path = GetCacheFilePath(resource_id, md5, sub_dir_type,
+                                        CACHED_FILE_FROM_SERVER);
+  bool success = false;
+  switch (file_operation_type) {
+    case FILE_OPERATION_MOVE:
+      success = MoveFile(source_path, dest_path);
+      break;
+    case FILE_OPERATION_COPY:
+      success = CopyFile(source_path, dest_path);
+      break;
+    default:
+      NOTREACHED();
   }
 
-  DriveFileError error = ModifyCacheState(
-      source_path,
-      dest_path,
-      file_operation_type,
-      symlink_path,
-      !symlink_path.empty());  // create symlink
+  // Create symlink in pinned directory if the file is pinned.
+  if (success && cache_entry.is_pinned()) {
+    FilePath symlink_path = GetCacheFilePath(resource_id, std::string(),
+                                             CACHE_TYPE_PINNED,
+                                             CACHED_FILE_FROM_SERVER);
+    success = CreateSymlink(dest_path, symlink_path);
+  }
 
   // Determine search pattern for stale filenames corresponding to resource_id,
   // either "<resource_id>*" or "<resource_id>.*".
@@ -687,37 +672,30 @@ DriveFileError DriveCache::StoreOnBlockingPool(
   // Delete files that match |stale_filenames_pattern| except for |dest_path|.
   DeleteFilesSelectively(stale_filenames_pattern, dest_path);
 
-  if (error == DRIVE_FILE_OK) {
-    // Now that file operations have completed, update cache map.
+  if (success) {
+    // Now that file operations have completed, update metadata.
     cache_entry.set_md5(md5);
     cache_entry.set_is_present(true);
     cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
     metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
   }
 
-  return error;
+  return success ? DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
 }
 
 DriveFileError DriveCache::PinOnBlockingPool(const std::string& resource_id,
                                              const std::string& md5) {
   AssertOnSequencedWorkerPool();
 
-  FilePath source_path;
   FilePath dest_path;
-  FilePath symlink_path;
-  bool create_symlink = true;
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_PERSISTENT;
 
   DriveCacheEntry cache_entry;
   if (!GetCacheEntryOnBlockingPool(resource_id, md5, &cache_entry)) {
-    // Entry does not exist in cache.
-    // Set both |dest_path| and |source_path| to /dev/null, so that:
-    // 1) ModifyCacheState won't move files when |source_path| and |dest_path|
-    //    are the same.
-    // 2) symlinks to /dev/null will be picked up by DriveSyncClient to download
-    //    pinned files that don't exist in cache.
+    // Entry does not exist in cache. Set |dest_path| to /dev/null, so that
+    // symlinks to /dev/null will be picked up by DriveSyncClient to download
+    // pinned files that don't exist in cache.
     dest_path = FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull);
-    source_path = dest_path;
 
     // Set sub_dir_type to TMP. The file will be first downloaded in 'tmp',
     // then moved to 'persistent'.
@@ -725,62 +703,51 @@ DriveFileError DriveCache::PinOnBlockingPool(const std::string& resource_id,
   } else {  // File exists in cache, determines destination path.
     // Determine source and destination paths.
 
-    // If file is dirty or mounted, don't move it, so determine |dest_path| and
-    // set |source_path| the same, because ModifyCacheState only moves files if
-    // source and destination are different.
+    // If file is dirty or mounted, don't move it.
     if (cache_entry.is_dirty() || cache_entry.is_mounted()) {
       DCHECK(cache_entry.is_persistent());
       dest_path = GetCacheFilePath(resource_id,
                                    md5,
                                    GetSubDirectoryType(cache_entry),
                                    CACHED_FILE_LOCALLY_MODIFIED);
-      source_path = dest_path;
     } else {
-      // Gets the current path of the file in cache.
-      source_path = GetCacheFilePath(resource_id,
-                                     md5,
-                                     GetSubDirectoryType(cache_entry),
-                                     CACHED_FILE_FROM_SERVER);
-
       // If file was pinned before but actual file blob doesn't exist in cache:
-      // - don't need to move the file, so set |dest_path| to |source_path|,
-      //   because ModifyCacheState only moves files if source and destination
-      //   are different
+      // - don't need to move the file.
       // - don't create symlink since it already exists.
       if (!cache_entry.is_present()) {
-        dest_path = source_path;
-        create_symlink = false;
-      } else {  // File exists, move it to persistent dir.
-        dest_path = GetCacheFilePath(resource_id,
-                                     md5,
-                                     CACHE_TYPE_PERSISTENT,
-                                     CACHED_FILE_FROM_SERVER);
+        DCHECK(cache_entry.is_pinned());
+        return DRIVE_FILE_OK;
       }
+      // File exists, move it to persistent dir.
+      // Gets the current path of the file in cache.
+      FilePath source_path = GetCacheFilePath(resource_id,
+                                              md5,
+                                              GetSubDirectoryType(cache_entry),
+                                              CACHED_FILE_FROM_SERVER);
+      dest_path = GetCacheFilePath(resource_id,
+                                   md5,
+                                   CACHE_TYPE_PERSISTENT,
+                                   CACHED_FILE_FROM_SERVER);
+      if (!MoveFile(source_path, dest_path))
+        return DRIVE_FILE_ERROR_FAILED;
     }
   }
 
   // Create symlink in pinned dir.
-  if (create_symlink) {
-    symlink_path = GetCacheFilePath(resource_id,
-                                    std::string(),
-                                    CACHE_TYPE_PINNED,
-                                    CACHED_FILE_FROM_SERVER);
-  }
+  FilePath symlink_path = GetCacheFilePath(resource_id,
+                                           std::string(),
+                                           CACHE_TYPE_PINNED,
+                                           CACHED_FILE_FROM_SERVER);
+  DCHECK(!dest_path.empty());
+  if (!CreateSymlink(dest_path, symlink_path))
+    return DRIVE_FILE_ERROR_FAILED;
 
-  DriveFileError error = ModifyCacheState(source_path,
-                                          dest_path,
-                                          FILE_OPERATION_MOVE,
-                                          symlink_path,
-                                          create_symlink);
-  if (error == DRIVE_FILE_OK) {
-    // Now that file operations have completed, update cache map.
-    cache_entry.set_md5(md5);
-    cache_entry.set_is_pinned(true);
-    cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
-    metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
-  }
-
-  return error;
+  // Now that file operations have completed, update metadata.
+  cache_entry.set_md5(md5);
+  cache_entry.set_is_pinned(true);
+  cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
+  metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
+  return DRIVE_FILE_OK;
 }
 
 DriveFileError DriveCache::UnpinOnBlockingPool(const std::string& resource_id,
@@ -796,74 +763,51 @@ DriveFileError DriveCache::UnpinOnBlockingPool(const std::string& resource_id,
     return DRIVE_FILE_ERROR_NOT_FOUND;
   }
 
-  // Entry exists in cache, determines source and destination paths.
-
-  FilePath source_path;
-  FilePath dest_path;
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_TMP;
 
-  // If file is dirty or mounted, don't move it, so determine |dest_path| and
-  // set |source_path| the same, because ModifyCacheState moves files if source
-  // and destination are different.
+  // If file is dirty or mounted, don't move it.
   if (cache_entry.is_dirty() || cache_entry.is_mounted()) {
     sub_dir_type = CACHE_TYPE_PERSISTENT;
     DCHECK(cache_entry.is_persistent());
-    dest_path = GetCacheFilePath(resource_id,
-                                 md5,
-                                 GetSubDirectoryType(cache_entry),
-                                 CACHED_FILE_LOCALLY_MODIFIED);
-    source_path = dest_path;
   } else {
-    // Gets the current path of the file in cache.
-    source_path = GetCacheFilePath(resource_id,
-                                   md5,
-                                   GetSubDirectoryType(cache_entry),
-                                   CACHED_FILE_FROM_SERVER);
-
     // If file was pinned but actual file blob still doesn't exist in cache,
-    // don't need to move the file, so set |dest_path| to |source_path|, because
-    // ModifyCacheState only moves files if source and destination are
-    // different.
-    if (!cache_entry.is_present()) {
-      dest_path = source_path;
-    } else {  // File exists, move it to tmp dir.
-      dest_path = GetCacheFilePath(resource_id, md5,
-                                   CACHE_TYPE_TMP,
-                                   CACHED_FILE_FROM_SERVER);
-    }
-  }
-
-  // If file was pinned, get absolute path of symlink in pinned dir so as to
-  // remove it.
-  FilePath symlink_path;
-  if (cache_entry.is_pinned()) {
-    symlink_path = GetCacheFilePath(resource_id,
-                                    std::string(),
-                                    CACHE_TYPE_PINNED,
-                                    CACHED_FILE_FROM_SERVER);
-  }
-
-  DriveFileError error = ModifyCacheState(
-      source_path,
-      dest_path,
-      FILE_OPERATION_MOVE,
-      symlink_path,  // This will be deleted if it exists.
-      false /* don't create symlink*/);
-
-  if (error == DRIVE_FILE_OK) {
-    // Now that file operations have completed, update cache map.
+    // don't need to move the file.
     if (cache_entry.is_present()) {
-      cache_entry.set_md5(md5);
-      cache_entry.set_is_pinned(false);
-      cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
-      metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
-    } else {
-      // Remove the existing entry if we are unpinning a non-present file.
-      metadata_->RemoveCacheEntry(resource_id);
+      // Gets the current path of the file in cache.
+      FilePath source_path = GetCacheFilePath(resource_id,
+                                              md5,
+                                              GetSubDirectoryType(cache_entry),
+                                              CACHED_FILE_FROM_SERVER);
+      // File exists, move it to tmp dir.
+      FilePath dest_path = GetCacheFilePath(resource_id,
+                                            md5,
+                                            CACHE_TYPE_TMP,
+                                            CACHED_FILE_FROM_SERVER);
+      if (!MoveFile(source_path, dest_path))
+        return DRIVE_FILE_ERROR_FAILED;
     }
   }
 
-  return error;
+  // If file was pinned, remove the symlink in pinned dir.
+  if (cache_entry.is_pinned()) {
+    FilePath symlink_path = GetCacheFilePath(resource_id,
+                                             std::string(),
+                                             CACHE_TYPE_PINNED,
+                                             CACHED_FILE_FROM_SERVER);
+    DeleteSymlink(symlink_path);
+  }
+
+  // Now that file operations have completed, update metadata.
+  if (cache_entry.is_present()) {
+    cache_entry.set_md5(md5);
+    cache_entry.set_is_pinned(false);
+    cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
+    metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
+  } else {
+    // Remove the existing entry if we are unpinning a non-present file.
+    metadata_->RemoveCacheEntry(resource_id);
+  }
+  return DRIVE_FILE_OK;
 }
 
 scoped_ptr<DriveCache::GetFileResult> DriveCache::SetMountedStateOnBlockingPool(
@@ -921,16 +865,15 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::SetMountedStateOnBlockingPool(
   }
 
   // Move cache blob from source path to destination path.
-  DriveFileError error = ModifyCacheState(
-      source_path, cache_file_path, FILE_OPERATION_MOVE, FilePath(), false);
-  if (error == DRIVE_FILE_OK) {
-    // Now that cache operation is complete, update cache map
+  bool success = MoveFile(source_path, cache_file_path);
+
+  if (success) {
+    // Now that cache operation is complete, update metadata.
     cache_entry.set_md5(md5);
     cache_entry.set_is_persistent(dest_subdir == CACHE_TYPE_PERSISTENT);
     metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
   }
-
-  result->first = error;
+  result->first = success ? DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
   result->second = cache_file_path;
   return result.Pass();
 }
@@ -970,42 +913,28 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::MarkDirtyOnBlockingPool(
     DCHECK(cache_entry.is_persistent());
 
     // Determine symlink path in outgoing dir, so as to remove it.
-    FilePath symlink_path = GetCacheFilePath(
-        resource_id,
-        std::string(),
-        CACHE_TYPE_OUTGOING,
-        CACHED_FILE_FROM_SERVER);
-
-    // We're not moving files here, so simply use empty FilePath for both
-    // |source_path| and |dest_path| because ModifyCacheState only move files
-    // if source and destination are different.
-    DriveFileError error = ModifyCacheState(
-        FilePath(),  // non-applicable source path
-        FilePath(),  // non-applicable dest path
-        FILE_OPERATION_MOVE,
-        symlink_path,
-        false /* don't create symlink */);
+    FilePath symlink_path = GetCacheFilePath(resource_id,
+                                             std::string(),
+                                             CACHE_TYPE_OUTGOING,
+                                             CACHED_FILE_FROM_SERVER);
+    DeleteSymlink(symlink_path);
 
     // Determine current path of dirty file.
-    result->first = error;
-    if (error == DRIVE_FILE_OK) {
-      result->second = GetCacheFilePath(resource_id,
-                                        md5,
-                                        CACHE_TYPE_PERSISTENT,
-                                        CACHED_FILE_LOCALLY_MODIFIED);
-    }
+    result->first = DRIVE_FILE_OK;
+    result->second = GetCacheFilePath(resource_id,
+                                      md5,
+                                      CACHE_TYPE_PERSISTENT,
+                                      CACHED_FILE_LOCALLY_MODIFIED);
     return result.Pass();
   }
 
   // Move file to persistent dir with new .local extension.
 
   // Get the current path of the file in cache.
-  FilePath source_path = GetCacheFilePath(
-      resource_id,
-      md5,
-      GetSubDirectoryType(cache_entry),
-      CACHED_FILE_FROM_SERVER);
-
+  FilePath source_path = GetCacheFilePath(resource_id,
+                                          md5,
+                                          GetSubDirectoryType(cache_entry),
+                                          CACHED_FILE_FROM_SERVER);
   // Determine destination path.
   const CacheSubDirectoryType sub_dir_type = CACHE_TYPE_PERSISTENT;
   FilePath cache_file_path = GetCacheFilePath(resource_id,
@@ -1013,30 +942,25 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::MarkDirtyOnBlockingPool(
                                               sub_dir_type,
                                               CACHED_FILE_LOCALLY_MODIFIED);
 
+  bool success = MoveFile(source_path, cache_file_path);
+
   // If file is pinned, update symlink in pinned dir.
-  FilePath symlink_path;
-  if (cache_entry.is_pinned()) {
-    symlink_path = GetCacheFilePath(resource_id,
-                                    std::string(),
-                                    CACHE_TYPE_PINNED,
-                                    CACHED_FILE_FROM_SERVER);
+  if (success && cache_entry.is_pinned()) {
+    FilePath symlink_path = GetCacheFilePath(resource_id,
+                                             std::string(),
+                                             CACHE_TYPE_PINNED,
+                                             CACHED_FILE_FROM_SERVER);
+    success = CreateSymlink(cache_file_path, symlink_path);
   }
 
-  DriveFileError error = ModifyCacheState(
-      source_path,
-      cache_file_path,
-      FILE_OPERATION_MOVE,
-      symlink_path,
-      !symlink_path.empty() /* create symlink */);
-
-  if (error == DRIVE_FILE_OK) {
-    // Now that file operations have completed, update cache map.
+  if (success) {
+    // Now that file operations have completed, update metadata.
     cache_entry.set_md5(md5);
     cache_entry.set_is_dirty(true);
     cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
     metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
   }
-  result->first = error;
+  result->first = success ? DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
   result->second = cache_file_path;
   return result.Pass();
 }
@@ -1086,14 +1010,8 @@ DriveFileError DriveCache::CommitDirtyOnBlockingPool(
                                           GetSubDirectoryType(cache_entry),
                                           CACHED_FILE_LOCALLY_MODIFIED);
 
-  // Since there's no need to move files, use |target_path| for both
-  // |source_path| and |dest_path|, because ModifyCacheState only moves files
-  // if source and destination are different.
-  return ModifyCacheState(target_path,  // source
-                          target_path,  // destination
-                          FILE_OPERATION_MOVE,
-                          symlink_path,
-                          true /* create symlink */);
+  return CreateSymlink(target_path, symlink_path) ?
+      DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
 }
 
 DriveFileError DriveCache::ClearDirtyOnBlockingPool(
@@ -1143,44 +1061,36 @@ DriveFileError DriveCache::ClearDirtyOnBlockingPool(
                                         sub_dir_type,
                                         CACHED_FILE_FROM_SERVER);
 
-  // Delete symlink in outgoing dir.
-  FilePath symlink_path = GetCacheFilePath(resource_id,
-                                           std::string(),
-                                           CACHE_TYPE_OUTGOING,
-                                           CACHED_FILE_FROM_SERVER);
+  bool success = MoveFile(source_path, dest_path);
 
-  DriveFileError error = ModifyCacheState(source_path,
-                                          dest_path,
-                                          FILE_OPERATION_MOVE,
-                                          symlink_path,
-                                          false /* don't create symlink */);
-
-  // If file is pinned, update symlink in pinned dir.
-  if (error == DRIVE_FILE_OK && cache_entry.is_pinned()) {
-    symlink_path = GetCacheFilePath(resource_id,
-                                    std::string(),
-                                    CACHE_TYPE_PINNED,
-                                    CACHED_FILE_FROM_SERVER);
-
-    // Since there's no moving of files here, use |dest_path| for both
-    // |source_path| and |dest_path|, because ModifyCacheState only moves files
-    // if source and destination are different.
-    error = ModifyCacheState(dest_path,  // source path
-                             dest_path,  // destination path
-                             FILE_OPERATION_MOVE,
-                             symlink_path,
-                             true /* create symlink */);
+  if (success) {
+    // Delete symlink in outgoing dir.
+    FilePath symlink_path = GetCacheFilePath(resource_id,
+                                             std::string(),
+                                             CACHE_TYPE_OUTGOING,
+                                             CACHED_FILE_FROM_SERVER);
+    DeleteSymlink(symlink_path);
   }
 
-  if (error == DRIVE_FILE_OK) {
-    // Now that file operations have completed, update cache map.
+  // If file is pinned, update symlink in pinned dir.
+  if (success && cache_entry.is_pinned()) {
+    FilePath symlink_path = GetCacheFilePath(resource_id,
+                                             std::string(),
+                                             CACHE_TYPE_PINNED,
+                                             CACHED_FILE_FROM_SERVER);
+
+    success = CreateSymlink(dest_path, symlink_path);
+  }
+
+  if (success) {
+    // Now that file operations have completed, update metadata.
     cache_entry.set_md5(md5);
     cache_entry.set_is_dirty(false);
     cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
     metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
   }
 
-  return error;
+  return success ? DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
 }
 
 DriveFileError DriveCache::RemoveOnBlockingPool(
@@ -1238,7 +1148,7 @@ DriveFileError DriveCache::RemoveOnBlockingPool(
     DeleteFilesSelectively(paths_to_delete[i], path_to_keep);
   }
 
-  // Now that all file operations have completed, remove from cache map.
+  // Now that all file operations have completed, remove from metadata.
   metadata_->RemoveCacheEntry(resource_id);
 
   return DRIVE_FILE_OK;
