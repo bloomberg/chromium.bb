@@ -607,21 +607,47 @@ util.extractFilePath = function(url) {
  * @param {number?} max_depth Maximum depth. Pass zero to traverse everything.
  */
 util.traverseTree = function(root, callback, max_depth) {
+  var list = [];
+  util.forEachEntryInTree(root, function(entry) {
+    if (entry) {
+      list.push(entry);
+    } else {
+      callback(list);
+    }
+    return true;
+  }, max_depth);
+};
+
+/**
+ * Traverses a tree up to a certain depth, and calls a callback for each entry.
+ * @param {FileEntry} root Root entry.
+ * @param {function(Entry):boolean} callback The callback is called for each
+ *     entry, and then once with null passed. If callback returns false once,
+ *     the whole traversal is stopped.
+ * @param {number?} max_depth Maximum depth. Pass zero to traverse everything.
+ */
+util.forEachEntryInTree = function(root, callback, max_depth) {
   if (root.isFile) {
-    callback([root]);
+    if (callback(root))
+      callback(null);
     return;
   }
 
-  var result = [];
   var pending = 0;
+  var cancelled = false;
 
   function maybeDone() {
-    if (pending == 0)
-      callback(result);
+    if (pending == 0 && !cancelled)
+      callback(null);
   }
 
   function readEntry(entry, depth) {
-    result.push(entry);
+    if (cancelled) return;
+
+    if (!callback(entry)) {
+      cancelled = true;
+      return;
+    }
 
     // Do not recurse too deep and into files.
     if (entry.isFile || (max_depth != 0 && depth >= max_depth))

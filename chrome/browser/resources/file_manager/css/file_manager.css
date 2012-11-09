@@ -1188,6 +1188,11 @@ input.rename {
   white-space: nowrap;
 }
 
+.preview-summary .calculating-size {
+  margin-left: 5px;
+  opacity: 0.5;
+}
+
 .detail-name > * {
   -webkit-box-align: center;
   display: -webkit-box;

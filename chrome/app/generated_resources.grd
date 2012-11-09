@@ -12533,20 +12533,17 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_COMPUTING_SELECTION" desc="Computing selection...">
         Computing selection...
       </message>
-      <message name="IDS_FILE_BROWSER_ONE_FILE_SELECTED" desc="One file selected.">
-        One file selected, <ph name="FILE_SIZE">$1<ex>3.3 MB</ex></ph>
-      </message>
-      <message name="IDS_FILE_BROWSER_ONE_DIRECTORY_SELECTED" desc="One directory selected.">
-        One folder selected
-      </message>
       <message name="IDS_FILE_BROWSER_MANY_FILES_SELECTED" desc="Many files selected.">
-        <ph name="SELCTED_FILE_COUNT">$1<ex>13</ex></ph> files selected, <ph name="TOTAL_FILE_SIZE">$2<ex>3.3 MB</ex></ph>
+        <ph name="SELCTED_FILE_COUNT">$1<ex>13</ex></ph> files selected
       </message>
       <message name="IDS_FILE_BROWSER_MANY_DIRECTORIES_SELECTED" desc="Many directories selected.">
         <ph name="SELCTED_FOLDERS_COUNT">$1<ex>2</ex></ph> folders selected
       </message>
       <message name="IDS_FILE_BROWSER_MANY_ENTRIES_SELECTED" desc="Many items (both files and directories) selected.">
-        <ph name="SELCTED_FILES_COUNT">$1<ex>21</ex></ph> items selected, <ph name="TOTAL_FILE_SIZE">$2<ex>3.3 MB</ex></ph>
+        <ph name="SELCTED_FILES_COUNT">$1<ex>21</ex></ph> items selected
+      </message>
+      <message name="IDS_FILE_BROWSER_CALCULATING_SIZE" desc="Message informing the user that total items size is being calculated.">
+        Calculating size
       </message>
       <message name="IDS_FILE_BROWSER_OFFLINE_HEADER" desc="Message informing the user that the browser is offline.">
         You are offline

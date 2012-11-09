@@ -670,11 +670,10 @@ chrome.fileBrowserPrivate = {
       SELECT_SAVEAS_FILE_TITLE: 'Save file as',
 
       COMPUTING_SELECTION: 'Computing selection...',
-      ONE_FILE_SELECTED: 'One file selected, $1',
-      ONE_DIRECTORY_SELECTED: 'One folder selected',
-      MANY_FILES_SELECTED: '$1 files selected, $2',
+      MANY_FILES_SELECTED: '$1 files selected',
       MANY_DIRECTORIES_SELECTED: '$1 folders selected',
-      MANY_ENTRIES_SELECTED: '$1 items selected, $2',
+      MANY_ENTRIES_SELECTED: '$1 items selected',
+      CALCULATING_SIZE: 'Calculating size',
 
       DELETED_MESSAGE: 'Deleted $1',
       DELETED_MESSAGE_PLURAL: 'Deleted $1 items',

@@ -646,10 +646,6 @@ DialogType.isModal = function(type) {
     this.dialogDom_.addEventListener('click',
                                      this.onExternalLinkClick_.bind(this));
     // Cache nodes we'll be manipulating.
-    this.previewThumbnails_ =
-        this.dialogDom_.querySelector('.preview-thumbnails');
-    this.previewPanel_ = this.dialogDom_.querySelector('.preview-panel');
-    this.previewSummary_ = this.dialogDom_.querySelector('.preview-summary');
     this.filenameInput_ = this.dialogDom_.querySelector(
         '#filename-input-box input');
     this.taskItems_ = this.dialogDom_.querySelector('#tasks');
