@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
+#include "net/base/big_endian.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -19,6 +20,8 @@
 #include "ui/base/resource/data_pack.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
+
+#include "grit/ui_resources.h"
 
 using ::testing::_;
 using ::testing::Between;
@@ -36,6 +39,16 @@ extern const char kEmptyPakContents[];
 extern const size_t kEmptyPakSize;
 
 namespace {
+
+const unsigned char kPngMagic[8] = { 0x89, 'P', 'N', 'G', 13, 10, 26, 10 };
+const size_t kPngChunkMetadataSize = 12;
+const unsigned char kPngIHDRChunkType[4] = { 'I', 'H', 'D', 'R' };
+
+// Custom chunk that GRIT adds to PNG to indicate that it could not find a
+// bitmap at the requested scale factor and fell back to 1x.
+const unsigned char kPngScaleChunk[12] = { 0x00, 0x00, 0x00, 0x00,
+                                           'c', 's', 'C', 'l',
+                                           0xc1, 0x30, 0x60, 0x4d };
 
 // Mock for the ResourceBundle::Delegate class.
 class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
@@ -77,16 +90,47 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
   }
 };
 
+// Returns |bitmap_data| with |custom_chunk| inserted after the IHDR chunk.
+void AddCustomChunk(const base::StringPiece& custom_chunk,
+                    std::vector<unsigned char>* bitmap_data) {
+  EXPECT_LT(arraysize(kPngMagic) + kPngChunkMetadataSize, bitmap_data->size());
+  EXPECT_TRUE(std::equal(
+      bitmap_data->begin(),
+      bitmap_data->begin() + arraysize(kPngMagic),
+      kPngMagic));
+  std::vector<unsigned char>::iterator ihdr_start =
+      bitmap_data->begin() + arraysize(kPngMagic);
+  char ihdr_length_data[sizeof(uint32)];
+  for (size_t i = 0; i < sizeof(uint32); ++i)
+    ihdr_length_data[i] = *(ihdr_start + i);
+  uint32 ihdr_chunk_length = 0;
+  net::ReadBigEndian(reinterpret_cast<char*>(ihdr_length_data),
+                     &ihdr_chunk_length);
+  EXPECT_TRUE(std::equal(
+      ihdr_start + sizeof(uint32),
+      ihdr_start + sizeof(uint32) + sizeof(kPngIHDRChunkType),
+      kPngIHDRChunkType));
+
+  bitmap_data->insert(ihdr_start + kPngChunkMetadataSize + ihdr_chunk_length,
+                      custom_chunk.begin(), custom_chunk.end());
+}
+
 // Creates datapack at |path| with a single bitmap at resource ID 3
 // which is |edge_size|x|edge_size| pixels.
+// If |custom_chunk| is non empty, adds it after the IHDR chunk
+// in the encoded bitmap data.
 void CreateDataPackWithSingleBitmap(const FilePath& path,
-                                    int edge_size) {
+                                    int edge_size,
+                                    const base::StringPiece& custom_chunk) {
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, edge_size, edge_size);
   bitmap.allocPixels();
   bitmap.eraseColor(SK_ColorWHITE);
   std::vector<unsigned char> bitmap_data;
   EXPECT_TRUE(gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bitmap_data));
+
+  if (custom_chunk.size() > 0)
+    AddCustomChunk(custom_chunk, &bitmap_data);
 
   std::map<uint16, base::StringPiece> resources;
   resources[3u] = base::StringPiece(
@@ -383,8 +427,8 @@ TEST_F(ResourceBundleImageTest, GetImageNamed) {
   FilePath data_2x_path = dir_path().Append(FILE_PATH_LITERAL("sample_2x.pak"));
 
   // Create the pak files.
-  CreateDataPackWithSingleBitmap(data_path, 10);
-  CreateDataPackWithSingleBitmap(data_2x_path, 20);
+  CreateDataPackWithSingleBitmap(data_path, 10, base::StringPiece());
+  CreateDataPackWithSingleBitmap(data_2x_path, 20, base::StringPiece());
 
   // Load the regular and 2x pak files.
   ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
@@ -406,6 +450,36 @@ TEST_F(ResourceBundleImageTest, GetImageNamed) {
   image_rep = image_skia->GetRepresentation(ui::SCALE_FACTOR_140P);
   EXPECT_TRUE(image_rep.scale_factor() == ui::SCALE_FACTOR_100P ||
               image_rep.scale_factor() == ui::SCALE_FACTOR_200P);
+}
+
+// Test that GetImageNamed() behaves properly for images which GRIT has
+// annotated as having fallen back to 1x.
+TEST_F(ResourceBundleImageTest, GetImageNamedFallback1x) {
+  FilePath data_path = dir_path().AppendASCII("sample.pak");
+  FilePath data_2x_path = dir_path().AppendASCII("sample_2x.pak");
+
+  // Create the pak files.
+  CreateDataPackWithSingleBitmap(data_path, 10, base::StringPiece());
+  // 2x data pack bitmap has custom chunk to indicate that the 2x bitmap is not
+  // available and that GRIT fell back to 1x.
+  CreateDataPackWithSingleBitmap(data_2x_path, 10, base::StringPiece(
+      reinterpret_cast<const char*>(kPngScaleChunk),
+      arraysize(kPngScaleChunk)));
+
+  // Load the regular and 2x pak files.
+  ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
+  resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);
+  resource_bundle->AddDataPackFromPath(data_2x_path, SCALE_FACTOR_200P);
+
+  gfx::ImageSkia* image_skia = resource_bundle->GetImageSkiaNamed(3);
+
+  // The image rep for 2x should be available. It should be resized to the
+  // proper 2x size.
+  gfx::ImageSkiaRep image_rep =
+    image_skia->GetRepresentation(ui::SCALE_FACTOR_200P);
+  EXPECT_EQ(ui::SCALE_FACTOR_200P, image_rep.scale_factor());
+  EXPECT_EQ(20, image_rep.pixel_width());
+  EXPECT_EQ(20, image_rep.pixel_height());
 }
 
 }  // namespace ui

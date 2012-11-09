@@ -51,6 +51,7 @@ const int kLargeFontSizeDelta = 8;
 const unsigned char kPngMagic[8] = { 0x89, 'P', 'N', 'G', 13, 10, 26, 10 };
 const size_t kPngChunkMetadataSize = 12;  // length, type, crc32
 const unsigned char kPngScaleChunkType[4] = { 'c', 's', 'C', 'l' };
+const unsigned char kPngDataChunkType[4] = { 'I', 'D', 'A', 'T' };
 
 ResourceBundle* g_shared_instance_ = NULL;
 
@@ -61,32 +62,45 @@ bool ShouldHighlightMissingScaledResources() {
 
 // A wrapper for PNGCodec::Decode that returns information about custom chunks.
 // For security reasons we can't alter PNGCodec to return this information. Our
-// PNG files are preprocessed by GRIT to move our custom chunks to the beginning
-// (before even the PNG header), and we omit them entirely from the data that we
-// pass on to PNGCodec::Decode.
+// PNG files are preprocessed by GRIT, and any special chunks should occur
+// immediately after the IHDR chunk.
 bool DecodePNG(const unsigned char* buf,
                size_t size,
                SkBitmap* bitmap,
                bool* fell_back_to_1x) {
   *fell_back_to_1x = false;
-  size_t pos = 0;
-  // Scan for special chunks until we find the PNG header.
+
+  if (size < arraysize(kPngMagic) ||
+      memcmp(buf, kPngMagic, arraysize(kPngMagic)) != 0) {
+    // Data invalid or a JPEG.
+    return false;
+  }
+  size_t pos = arraysize(kPngMagic);
+
+  // Scan for custom chunks until we find one, find the IDAT chunk, or run out
+  // of chunks.
   for (;;) {
     if (size - pos < kPngChunkMetadataSize)
-      return false;
-    if (memcmp(buf + pos, kPngMagic, sizeof(kPngMagic)) == 0)
       break;
     uint32 length = 0;
     net::ReadBigEndian(reinterpret_cast<const char*>(buf + pos), &length);
     if (size - pos - kPngChunkMetadataSize < length)
-      return false;
+      break;
     if (length == 0 && memcmp(buf + pos + sizeof(uint32), kPngScaleChunkType,
-                              sizeof(kPngScaleChunkType)) == 0)
+                              arraysize(kPngScaleChunkType)) == 0) {
       *fell_back_to_1x = true;
+      break;
+    }
+    if (memcmp(buf + pos + sizeof(uint32), kPngDataChunkType,
+               arraysize(kPngDataChunkType)) == 0) {
+      // Stop looking for custom chunks, any custom chunks should be before an
+      // IDAT chunk.
+      break;
+    }
     pos += length + kPngChunkMetadataSize;
   }
-  // Pass the rest of the data to the PNG decoder.
-  return gfx::PNGCodec::Decode(buf + pos, size - pos, bitmap);
+  // Pass the data to the PNG decoder.
+  return gfx::PNGCodec::Decode(buf, size, bitmap);
 }
 
 }  // namespace
