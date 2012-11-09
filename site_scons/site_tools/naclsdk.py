@@ -26,30 +26,6 @@ NACL_CANONICAL_PLATFORM_MAP = {
     'darwin': 'mac',
 }
 
-# NACL_PLATFORM_DIR_MAP is a mapping from the canonical platform,
-# BUILD_ARCHITECHTURE and BUILD_SUBARCH to a subdirectory name in the
-# download target directory. See _GetNaclSdkRoot below.
-NACL_PLATFORM_DIR_MAP = {
-    'win': {
-        'x86': {
-            '32': 'win_x86',
-            '64': 'win_x86',
-        },
-    },
-    'linux': {
-        'x86': {
-            '32': 'linux_x86',
-            '64': 'linux_x86',
-        },
-    },
-    'mac': {
-        'x86': {
-            '32': 'mac_x86',
-            '64': 'mac_x86',
-        },
-    },
-}
-
 NACL_TOOL_MAP = {
     'arm': {
         '32': {
@@ -85,7 +61,7 @@ def _PlatformSubdirs(env):
     platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
     arch = env['BUILD_ARCHITECTURE']
     subarch = env['TARGET_SUBARCH']
-    name = NACL_PLATFORM_DIR_MAP[platform][arch][subarch]
+    name = platform + '_' + arch
     if not env.Bit('nacl_glibc'):
       name = name + '_newlib'
   return name
