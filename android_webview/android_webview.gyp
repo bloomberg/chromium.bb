@@ -91,7 +91,7 @@
         'lib/aw_browser_dependency_factory_impl.h',
         'lib/main/aw_main_delegate.cc',
         'lib/main/aw_main_delegate.h',
-        'public/browser/gl_draw.h',
+        'public/browser/draw_gl.h',
         'renderer/aw_content_renderer_client.cc',
         'renderer/aw_content_renderer_client.h',
         'renderer/aw_render_process_observer.cc',

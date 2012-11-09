@@ -233,19 +233,19 @@ public class AwContents {
         mCleanupReference.cleanupNow();
     }
 
-    public static int getAwGLDrawFunction() {
-        return nativeGetAwGLDrawFunction();
+    public static int getAwDrawGLFunction() {
+        return nativeGetAwDrawGLFunction();
     }
 
-    public int getAwGLDrawViewContext() {
+    public int getAwDrawGLViewContext() {
         // Using the native pointer as the returned viewContext. This is matched by the
-        // reinterpret_cast back to AwContents pointer in the native GLDrawFunction.
+        // reinterpret_cast back to AwContents pointer in the native DrawGLFunction.
         return mNativeAwContents;
     }
 
-    public boolean onPrepareGLDraw(Canvas canvas) {
+    public boolean onPrepareDrawGL(Canvas canvas) {
         // TODO(joth): Ensure the HW path is setup and read any required params out of canvas.
-        Log.e(TAG, "Not implemented: AwContents.onPrepareGlDraw()");
+        Log.e(TAG, "Not implemented: AwContents.onPrepareDrawGL()");
 
         // returning false will cause a fallback to SW path.
         return true;
@@ -565,7 +565,7 @@ public class AwContents {
     private native int nativeInit(AwWebContentsDelegate webViewWebContentsDelegate,
             boolean privateBrowsing);
     private static native void nativeDestroy(int nativeAwContents);
-    private static native int nativeGetAwGLDrawFunction();
+    private static native int nativeGetAwDrawGLFunction();
 
     private native int nativeGetWebContents(int nativeAwContents);
 

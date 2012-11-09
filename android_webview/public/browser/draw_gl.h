@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_PUBLIC_BROWSER_GL_DRAW_H_
-#define ANDROID_WEBVIEW_PUBLIC_BROWSER_GL_DRAW_H_
+#ifndef ANDROID_WEBVIEW_PUBLIC_BROWSER_DRAW_GL_H_
+#define ANDROID_WEBVIEW_PUBLIC_BROWSER_DRAW_GL_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // Holds the information required to trigger an OpenGL drawing operation.
-struct AwGLDrawInfo {
+struct AwDrawGLInfo {
   // Input: Tells the Draw function what action to perform.
   enum Mode {
     kModeDraw,
@@ -38,7 +38,6 @@ struct AwGLDrawInfo {
     kStatusMaskDone = 0x0,
     kStatusMaskDraw = 0x1,
     kStatusMaskInvoke = 0x2,
-    kStatusMaskDrew = 0x4,
   } status_mask;
 
   // Output: dirty region to redraw.
@@ -49,17 +48,17 @@ struct AwGLDrawInfo {
 };
 
 // Function to invoke a direct GL draw into the client's pre-configured
-// GL context. Obtained via AwContents.getGLDrawFunction() (static).
+// GL context. Obtained via AwContents.getDrawGLFunction() (static).
 // |view_context| is an opaque identifier that was returned by the corresponding
-// call to AwContents.getAwGLDrawViewContext().
+// call to AwContents.getAwDrawGLViewContext().
 // |draw_info| carries the in and out parameters for this draw.
 // |spare| ignored; pass NULL.
-typedef void (AwGLDrawFunction)(int view_context,
-                                AwGLDrawInfo* draw_info,
+typedef void (AwDrawGLFunction)(int view_context,
+                                AwDrawGLInfo* draw_info,
                                 void* spare);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif  // ANDROID_WEBVIEW_PUBLIC_BROWSER_GL_DRAW_H_
+#endif  // ANDROID_WEBVIEW_PUBLIC_BROWSER_DRAW_GL_H_

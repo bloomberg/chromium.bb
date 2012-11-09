@@ -40,13 +40,13 @@ using content::InterceptNavigationDelegate;
 using content::WebContents;
 
 extern "C" {
-static AwGLDrawFunction GLDrawFunction;
-static void GLDrawFunction(int view_context,
-                           AwGLDrawInfo* draw_info,
+static AwDrawGLFunction DrawGLFunction;
+static void DrawGLFunction(int view_context,
+                           AwDrawGLInfo* draw_info,
                            void* spare) {
   // |view_context| is the value that was returned from the java
-  // AwContents.onPrepareGlDraw; this cast must match the code there.
-  reinterpret_cast<android_webview::AwContents*>(view_context)->GLDraw(
+  // AwContents.onPrepareDrawGL; this cast must match the code there.
+  reinterpret_cast<android_webview::AwContents*>(view_context)->DrawGL(
       draw_info);
 }
 }
@@ -107,7 +107,7 @@ AwContents::~AwContents() {
     find_helper_->SetListener(NULL);
 }
 
-void AwContents::GLDraw(AwGLDrawInfo* draw_info) {
+void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
   // TODO(joth): Do some drawing.
 }
 
@@ -120,8 +120,8 @@ void AwContents::Destroy(JNIEnv* env, jobject obj) {
 }
 
 // static
-jint GetAwGLDrawFunction(JNIEnv* env, jclass) {
-  return reinterpret_cast<jint>(&GLDrawFunction);
+jint GetAwDrawGLFunction(JNIEnv* env, jclass) {
+  return reinterpret_cast<jint>(&DrawGLFunction);
 }
 
 namespace {
