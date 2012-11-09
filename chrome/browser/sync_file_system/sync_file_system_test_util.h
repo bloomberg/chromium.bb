@@ -5,13 +5,12 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_TEST_UTIL_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_TEST_UTIL_H_
 
-#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/run_loop.h"
 
 namespace base {
+class RunLoop;
 class SingleThreadTaskRunner;
 class Thread;
 }
@@ -23,17 +22,10 @@ class TestBrowserThread;
 namespace sync_file_system {
 
 template <typename R>
-void AssignAndQuit(base::RunLoop* run_loop, R* result_out, R result) {
-  DCHECK(result_out);
-  DCHECK(run_loop);
-  *result_out = result;
-  run_loop->Quit();
-}
+void AssignAndQuit(base::RunLoop* run_loop, R* result_out, R result);
 
 template <typename R> base::Callback<void(R)>
-AssignAndQuitCallback(base::RunLoop* run_loop, R* result) {
-  return base::Bind(&AssignAndQuit<R>, run_loop, base::Unretained(result));
-}
+AssignAndQuitCallback(base::RunLoop* run_loop, R* result);
 
 // This sets up FILE, IO and UI browser threads for testing.
 // (UI thread is set to the current thread.)
