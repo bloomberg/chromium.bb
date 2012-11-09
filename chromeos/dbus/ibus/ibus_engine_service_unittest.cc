@@ -910,7 +910,7 @@ TEST_F(IBusEngineServiceTest, DelayProcessKeyEventTest) {
                  base::Unretained(&response_sender)));
 
   // Call KeyEventDone callback.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Call exported function without engine.
   service_->UnsetEngine();

@@ -113,7 +113,7 @@ class ShillManagerClientTest : public ShillClientUnittestBase {
     client_.reset(ShillManagerClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION,
                                                 mock_bus_));
     // Run the message loop to run the signal connection result callback.
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   virtual void TearDown() {
@@ -180,7 +180,7 @@ TEST_F(ShillManagerClientTest, GetProperties) {
   client_->GetProperties(base::Bind(&ExpectDictionaryValueResult,
                                     &value));
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, CallGetPropertiesAndBlock) {
@@ -231,7 +231,7 @@ TEST_F(ShillManagerClientTest, SetProperty) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, RequestScan) {
@@ -251,7 +251,7 @@ TEST_F(ShillManagerClientTest, RequestScan) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, EnableTechnology) {
@@ -271,7 +271,7 @@ TEST_F(ShillManagerClientTest, EnableTechnology) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, DisableTechnology) {
@@ -291,7 +291,7 @@ TEST_F(ShillManagerClientTest, DisableTechnology) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, ConfigureService) {
@@ -313,7 +313,7 @@ TEST_F(ShillManagerClientTest, ConfigureService) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ShillManagerClientTest, GetService) {
@@ -337,7 +337,7 @@ TEST_F(ShillManagerClientTest, GetService) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace chromeos

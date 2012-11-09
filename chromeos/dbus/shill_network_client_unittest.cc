@@ -36,7 +36,7 @@ class ShillNetworkClientTest : public ShillClientUnittestBase {
     client_.reset(ShillNetworkClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION,
                                                 mock_bus_));
     // Run the message loop to run the signal connection result callback.
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   virtual void TearDown() {
@@ -145,7 +145,7 @@ TEST_F(ShillNetworkClientTest, GetProperties) {
   client_->GetProperties(dbus::ObjectPath(kExampleNetworkPath),
                          base::Bind(&ExpectDictionaryValueResult, &value));
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ShillNetworkClientTest, CallGetPropertiesAndBlock) {

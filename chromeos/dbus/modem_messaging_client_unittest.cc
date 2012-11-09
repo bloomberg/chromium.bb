@@ -179,7 +179,7 @@ TEST_F(ModemMessagingClientTest, SmsReceived) {
                                             base::Unretained(&handler)));
 
   // Run the message loop to run the signal connection result callback.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Send signal.
   dbus::Signal signal(modemmanager::kModemManager1MessagingInterface,
@@ -212,7 +212,7 @@ TEST_F(ModemMessagingClientTest, Delete) {
                              base::Unretained(&callback)));
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ModemMessagingClientTest, List) {
@@ -242,7 +242,7 @@ TEST_F(ModemMessagingClientTest, List) {
                            base::Unretained(&callback)));
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace chromeos

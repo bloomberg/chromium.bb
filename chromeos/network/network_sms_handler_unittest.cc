@@ -90,7 +90,7 @@ TEST_F(NetworkSmsHandlerTest, SmsHandlerDbusStub) {
   scoped_ptr<TestObserver> test_observer(new TestObserver());
   sms_handler->AddObserver(test_observer.get());
   sms_handler->Init();
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_EQ(test_observer->message_count(), 0);
 
   // Test that no messages have been received yet
@@ -104,7 +104,7 @@ TEST_F(NetworkSmsHandlerTest, SmsHandlerDbusStub) {
   // Test for messages delivered by signals.
   test_observer->ClearMessages();
   sms_handler->RequestUpdate();
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_GE(test_observer->message_count(), 1);
   EXPECT_NE(messages.find(kMessage1), messages.end());
 }

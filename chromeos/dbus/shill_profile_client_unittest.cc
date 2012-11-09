@@ -44,7 +44,7 @@ class ShillProfileClientTest : public ShillClientUnittestBase {
     client_.reset(ShillProfileClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION,
                                                 mock_bus_));
     // Run the message loop to run the signal connection result callback.
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   virtual void TearDown() {
@@ -124,7 +124,7 @@ TEST_F(ShillProfileClientTest, GetProperties) {
   EXPECT_CALL(error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ShillProfileClientTest, GetEntry) {
@@ -158,7 +158,7 @@ TEST_F(ShillProfileClientTest, GetEntry) {
                     error_callback.GetCallback());
   EXPECT_CALL(error_callback, Run(_, _)).Times(0);
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ShillProfileClientTest, DeleteEntry) {
@@ -184,7 +184,7 @@ TEST_F(ShillProfileClientTest, DeleteEntry) {
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace chromeos

@@ -190,7 +190,7 @@ TEST_F(IBusClientTest, CreateInputContextTest) {
                  base::Unretained(&error_callback)));
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(IBusClientTest, CreateInputContext_NullResponseFail) {
@@ -214,7 +214,7 @@ TEST_F(IBusClientTest, CreateInputContext_NullResponseFail) {
                  base::Unretained(&error_callback)));
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(IBusClientTest, CreateInputContext_InvalidResponseFail) {
@@ -239,7 +239,7 @@ TEST_F(IBusClientTest, CreateInputContext_InvalidResponseFail) {
                  base::Unretained(&error_callback)));
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(IBusClientTest, CreateInputContext_MethodCallFail) {
@@ -263,7 +263,7 @@ TEST_F(IBusClientTest, CreateInputContext_MethodCallFail) {
                  base::Unretained(&error_callback)));
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(IBusClientTest, SetGlobalEngineTest) {
@@ -287,7 +287,7 @@ TEST_F(IBusClientTest, SetGlobalEngineTest) {
                  base::Unretained(&error_callback)));
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(IBusClientTest, SetGlobalEngineTest_InvalidResponse) {
@@ -310,7 +310,7 @@ TEST_F(IBusClientTest, SetGlobalEngineTest_InvalidResponse) {
                  base::Unretained(&error_callback)));
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(IBusClientTest, SetGlobalEngineTest_MethodCallFail) {
@@ -334,7 +334,7 @@ TEST_F(IBusClientTest, SetGlobalEngineTest_MethodCallFail) {
                  base::Unretained(&error_callback)));
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(IBusClientTest, ExitTest) {
@@ -358,7 +358,7 @@ TEST_F(IBusClientTest, ExitTest) {
                  base::Unretained(&error_callback)));
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(IBusClientTest, ExitTest_InvalidResponse) {
@@ -381,7 +381,7 @@ TEST_F(IBusClientTest, ExitTest_InvalidResponse) {
                  base::Unretained(&error_callback)));
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(IBusClientTest, ExitTest_MethodCallFail) {
@@ -405,7 +405,7 @@ TEST_F(IBusClientTest, ExitTest_MethodCallFail) {
                  base::Unretained(&error_callback)));
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace chromeos

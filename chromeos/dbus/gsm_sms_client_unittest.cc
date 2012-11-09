@@ -201,7 +201,7 @@ TEST_F(GsmSMSClientTest, SmsReceived) {
                                             base::Unretained(&handler)));
 
   // Run the message loop to run the signal connection result callback.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Send signal.
   dbus::Signal signal(modemmanager::kModemManagerSMSInterface,
@@ -234,7 +234,7 @@ TEST_F(GsmSMSClientTest, Delete) {
                              base::Unretained(&callback)));
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(GsmSMSClientTest, Get) {
@@ -274,7 +274,7 @@ TEST_F(GsmSMSClientTest, Get) {
                base::Bind(&MockGetCallback::Run, base::Unretained(&callback)));
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(GsmSMSClientTest, List) {
@@ -318,7 +318,7 @@ TEST_F(GsmSMSClientTest, List) {
                            base::Unretained(&callback)));
 
   // Run the message loop.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace chromeos

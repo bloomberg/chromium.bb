@@ -154,7 +154,7 @@ TEST_F(IBusEngineFactoryServiceTest, SyncCreateEngineTest) {
       kSampleEngine,
       base::Bind(&SynchronousCreateEngineHandler::Run,
                  base::Unretained(&handler)));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Invoke method call.
   dbus::MethodCall method_call(
@@ -177,7 +177,7 @@ TEST_F(IBusEngineFactoryServiceTest, SyncCreateEngineTest) {
       &method_call,
       base::Bind(&MockCreateEngineResponseSender::CheckCreateEngineResponse,
                  base::Unretained(&response_sender)));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(IBusEngineFactoryServiceTest, AsyncCreateEngineTest) {
@@ -196,7 +196,7 @@ TEST_F(IBusEngineFactoryServiceTest, AsyncCreateEngineTest) {
       kSampleEngine,
       base::Bind(&AsynchronousCreateEngineHandler::Run,
                  base::Unretained(&handler)));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Invoke method call.
   dbus::MethodCall method_call(
@@ -219,7 +219,7 @@ TEST_F(IBusEngineFactoryServiceTest, AsyncCreateEngineTest) {
       &method_call,
       base::Bind(&MockCreateEngineResponseSender::CheckCreateEngineResponse,
                  base::Unretained(&response_sender)));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace chromeos
