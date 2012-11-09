@@ -1829,6 +1829,10 @@ COMPILE_ASSERT(int(WebKit::WebTextInputTypeTime) == \
                int(ui::TEXT_INPUT_TYPE_TIME), mismatching_enum);
 COMPILE_ASSERT(int(WebKit::WebTextInputTypeWeek) == \
                int(ui::TEXT_INPUT_TYPE_WEEK), mismatching_enum);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeTextArea) == \
+               int(ui::TEXT_INPUT_TYPE_TEXT_AREA), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeContentEditable) == \
+               int(ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE), mismatching_enums);
 
 ui::TextInputType RenderWidget::WebKitToUiTextInputType(
     WebKit::WebTextInputType type) {
