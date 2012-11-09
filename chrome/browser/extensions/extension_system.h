@@ -216,8 +216,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
     // LazyBackgroundTaskQueue is a dependency of
     // MessageService and EventRouter.
     scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
+    scoped_ptr<EventRouter> event_router_;
     scoped_ptr<MessageService> message_service_;
-    scoped_ptr<EventRouter> extension_event_router_;
     scoped_ptr<NavigationObserver> navigation_observer_;
     scoped_refptr<UserScriptMaster> user_script_master_;
     // ExtensionService depends on ExtensionPrefs and StateStore.

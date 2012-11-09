@@ -8,11 +8,16 @@
 #include <set>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
+
+class Profile;
 
 namespace base {
 class ListValue;
@@ -25,11 +30,8 @@ namespace extensions {
 class ProcessesEventRouter : public TaskManagerModelObserver,
                              public content::NotificationObserver {
  public:
-  // Single instance of the event router.
-  static ProcessesEventRouter* GetInstance();
-
-  // Safe to call multiple times.
-  void ObserveProfile(Profile* profile);
+  explicit ProcessesEventRouter(Profile* profile);
+  virtual ~ProcessesEventRouter();
 
   // Called when an extension process wants to listen to process events.
   void ListenerAdded();
@@ -46,11 +48,6 @@ class ProcessesEventRouter : public TaskManagerModelObserver,
   int num_listeners() { return listeners_; }
 
  private:
-  friend struct DefaultSingletonTraits<ProcessesEventRouter>;
-
-  ProcessesEventRouter();
-  virtual ~ProcessesEventRouter();
-
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -69,11 +66,7 @@ class ProcessesEventRouter : public TaskManagerModelObserver,
       content::RenderProcessHost* rph,
       content::RenderProcessHost::RendererClosedDetails* details);
 
-  void NotifyProfiles(const char* event_name,
-                      scoped_ptr<base::ListValue> event_args);
-
-  void DispatchEvent(Profile* profile,
-                     const char* event_name,
+  void DispatchEvent(const char* event_name,
                      scoped_ptr<base::ListValue> event_args);
 
   // Determines whether there is a registered listener for the specified event.
@@ -83,9 +76,7 @@ class ProcessesEventRouter : public TaskManagerModelObserver,
   // Used for tracking registrations to process related notifications.
   content::NotificationRegistrar registrar_;
 
-  // Registered profiles.
-  typedef std::set<Profile*> ProfileSet;
-  ProfileSet profiles_;
+  Profile* profile_;
 
   // TaskManager to observe for updates.
   TaskManagerModel* model_;
@@ -100,6 +91,31 @@ class ProcessesEventRouter : public TaskManagerModelObserver,
   DISALLOW_COPY_AND_ASSIGN(ProcessesEventRouter);
 };
 
+// The profile-keyed service that manages the processes extension API.
+class ProcessesAPI : public ProfileKeyedService,
+                     public EventRouter::Observer {
+ public:
+  explicit ProcessesAPI(Profile* profile);
+  virtual ~ProcessesAPI();
+
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
+  // Convenience method to get the ProcessesAPI for a profile.
+  static ProcessesAPI* Get(Profile* profile);
+
+  ProcessesEventRouter* processes_event_router();
+
+  // EventRouter::Observer implementation.
+  virtual void OnListenerAdded(const std::string& event_name) OVERRIDE;
+  virtual void OnListenerRemoved(const std::string& event_name) OVERRIDE;
+
+ private:
+  Profile* profile_;
+
+  // Created lazily on first access.
+  scoped_ptr<ProcessesEventRouter> processes_event_router_;
+};
 
 // This extension function returns the Process object for the renderer process
 // currently in use by the specified Tab.
