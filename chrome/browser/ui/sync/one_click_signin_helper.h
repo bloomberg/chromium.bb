@@ -30,6 +30,13 @@ class OneClickSigninHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<OneClickSigninHelper> {
  public:
+  enum AutoAccept {
+    AUTO_ACCEPT,
+    NO_AUTO_ACCEPT,
+    CONFIGURE,
+    REJECTED_FOR_PROFILE
+  };
+
   virtual ~OneClickSigninHelper();
 
   // Called only by tests to associate information with a given request.
@@ -71,6 +78,7 @@ class OneClickSigninHelper
   // The portion of ShowInfoBarIfPossible() that needs to run on the UI thread.
   static void ShowInfoBarUIThread(const std::string& session_index,
                                   const std::string& email,
+                                  AutoAccept auto_accept,
                                   int child_id,
                                   int route_id);
 
@@ -92,6 +100,7 @@ class OneClickSigninHelper
   std::string session_index_;
   std::string email_;
   std::string password_;
+  AutoAccept auto_accept_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninHelper);
 };

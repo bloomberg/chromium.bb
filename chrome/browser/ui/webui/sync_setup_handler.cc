@@ -26,6 +26,8 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
@@ -182,6 +184,11 @@ bool AreUserNamesEqual(const string16& user1, const string16& user2) {
 bool IsKeystoreEncryptionEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSyncKeystoreEncryption);
+}
+
+bool UseWebBasedSigninFlow() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseWebBasedSigninFlow);
 }
 
 }  // namespace
@@ -554,8 +561,18 @@ SigninManager* SyncSetupHandler::GetSignin() const {
 }
 
 void SyncSetupHandler::DisplayGaiaLogin(bool fatal_error) {
-  retry_on_signin_failure_ = true;
-  DisplayGaiaLoginWithErrorMessage(string16(), fatal_error);
+  if (UseWebBasedSigninFlow()) {
+    GURL url(SyncPromoUI::GetSyncPromoURL(GURL(),
+        SyncPromoUI::SOURCE_SETTINGS, false));
+    Browser* browser = browser::FindBrowserWithWebContents(
+        web_ui()->GetWebContents());
+    browser->OpenURL(
+        content::OpenURLParams(url, content::Referrer(), SINGLETON_TAB,
+                               content::PAGE_TRANSITION_AUTO_BOOKMARK, false));
+  } else {
+    retry_on_signin_failure_ = true;
+    DisplayGaiaLoginWithErrorMessage(string16(), fatal_error);
+  }
 }
 
 void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
@@ -641,9 +658,11 @@ bool SyncSetupHandler::PrepareSyncSetup() {
     return false;
   }
 
-  // Notify services that login UI is now active.
-  GetLoginUIService()->SetLoginUI(this);
-  service->SetSetupInProgress(true);
+  if (!UseWebBasedSigninFlow()) {
+    // Notify services that login UI is now active.
+    GetLoginUIService()->SetLoginUI(this);
+    service->SetSetupInProgress(true);
+  }
 
   return true;
 }
@@ -1052,7 +1071,8 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
     DisplayConfigureSync(true, false);
   }
 
-  ShowSetupUI();
+  if (!UseWebBasedSigninFlow())
+    ShowSetupUI();
 }
 
 void SyncSetupHandler::OpenConfigureSync() {

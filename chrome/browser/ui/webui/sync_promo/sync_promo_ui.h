@@ -17,6 +17,7 @@ class SyncPromoUI : public content::WebUIController {
     SOURCE_START_PAGE = 0, // This must be first.
     SOURCE_NTP_LINK,
     SOURCE_MENU,
+    SOURCE_SETTINGS,
     SOURCE_UNKNOWN, // This must be last.
   };
 

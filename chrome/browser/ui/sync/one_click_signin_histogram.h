@@ -34,6 +34,12 @@ enum {
   // The sync was started with advanced settings.
   HISTOGRAM_WITH_ADVANCED,
 
+  // The sync was started through auto-accept with default settings.
+  HISTOGRAM_AUTO_WITH_DEFAULTS,
+
+  // The sync was started through auto-accept with advanced settings.
+  HISTOGRAM_AUTO_WITH_ADVANCED,
+
   HISTOGRAM_MAX
 };
 

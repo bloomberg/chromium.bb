@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 
-#include "base/metrics/histogram.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -12,7 +11,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 
@@ -26,12 +24,6 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
       signin_tracker_(browser_->profile(), this),
       start_mode_(start_mode) {
   DCHECK(browser_);
-
-  int action = start_mode_ == SYNC_WITH_DEFAULT_SETTINGS ?
-      one_click_signin::HISTOGRAM_WITH_DEFAULTS :
-      one_click_signin::HISTOGRAM_WITH_ADVANCED;
-  UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse", action,
-                            one_click_signin::HISTOGRAM_MAX);
 
   // Let the sync service know that setup is in progress so it doesn't start
   // syncing until the user has finished any configuration.

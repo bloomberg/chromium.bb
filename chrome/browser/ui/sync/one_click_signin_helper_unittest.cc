@@ -162,6 +162,7 @@ void OneClickSigninHelperTest::SetUp() {
 
   TestingProfile* testing_profile = new TestingProfile();
   browser_context_.reset(testing_profile);
+
   content::RenderViewHostTestHarness::SetUp();
 }
 

@@ -957,10 +957,16 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
   // If the sync promo page is going to be displayed then insert it at the front
   // of the list.
   if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_, is_first_run_)) {
+    GURL continue_url;
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kUseWebBasedSigninFlow)) {
+      continue_url = GURL(chrome::kChromeUINewTabURL);
+    }
+
     SyncPromoUI::DidShowSyncPromoAtStartup(profile_);
     GURL old_url = (*startup_urls)[0];
     (*startup_urls)[0] =
-        SyncPromoUI::GetSyncPromoURL(GURL(chrome::kChromeUINewTabURL),
+        SyncPromoUI::GetSyncPromoURL(continue_url,
                                      SyncPromoUI::SOURCE_START_PAGE,
                                      false);
 

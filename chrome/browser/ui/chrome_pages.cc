@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/chrome_pages.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -166,23 +168,28 @@ void ShowSearchEngineSettings(Browser* browser) {
 }
 
 void ShowSyncSetup(Browser* browser, SyncPromoUI::Source source) {
+  Profile* original_profile = browser->profile()->GetOriginalProfile();
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          browser->profile()->GetOriginalProfile());
-  LoginUIService* login_service = LoginUIServiceFactory::GetForProfile(
-      browser->profile()->GetOriginalProfile());
+          original_profile);
   if (service->HasSyncSetupCompleted()) {
     ShowSettings(browser);
-  } else if (SyncPromoUI::ShouldShowSyncPromo(browser->profile()) &&
-             login_service->current_login_ui() == NULL) {
-    // There is no currently active login UI, so display a new promo page.
-    GURL url(SyncPromoUI::GetSyncPromoURL(GURL(), source, false));
-    NavigateParams params(GetSingletonTabNavigateParams(browser, GURL(url)));
-    params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-    ShowSingletonTabOverwritingNTP(browser, params);
   } else {
-    LoginUIServiceFactory::GetForProfile(
-        browser->profile()->GetOriginalProfile())->ShowLoginUI(browser);
+    const bool use_web_flow = CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kUseWebBasedSigninFlow);
+    const bool show_promo =
+        SyncPromoUI::ShouldShowSyncPromo(browser->profile());
+
+    LoginUIService* login = LoginUIServiceFactory::GetForProfile(
+        original_profile);
+    if (use_web_flow || (show_promo && login->current_login_ui() == NULL)) {
+      GURL url(SyncPromoUI::GetSyncPromoURL(GURL(), source, false));
+      NavigateParams params(GetSingletonTabNavigateParams(browser, url));
+      params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
+      ShowSingletonTabOverwritingNTP(browser, params);
+    } else {
+      login->ShowLoginUI(browser);
+    }
   }
 }
 
