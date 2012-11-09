@@ -224,7 +224,10 @@ TEST(RegionTest, ReadPastFullSpanVectorInIntersectsTest) {
   }
 
 TEST(RegionTest, ContainsRegion) {
-  TEST_NO_CONTAINS(gfx::Rect(), gfx::Rect());
+  TEST_CONTAINS(gfx::Rect(), gfx::Rect());
+  TEST_CONTAINS(gfx::Rect(0, 0, 1, 1), gfx::Rect());
+  TEST_CONTAINS(gfx::Rect(10, 10, 1, 1), gfx::Rect());
+
   TEST_NO_CONTAINS(gfx::Rect(), gfx::Rect(0, 0, 1, 1));
   TEST_NO_CONTAINS(gfx::Rect(), gfx::Rect(1, 1, 1, 1));
 

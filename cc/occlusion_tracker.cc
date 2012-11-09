@@ -314,7 +314,7 @@ static inline bool testContentRectOccluded(const gfx::Rect& contentRect, const W
     gfx::RectF transformedRect = MathUtil::mapClippedRect(contentSpaceTransform, gfx::RectF(contentRect));
     // Take the gfx::ToEnclosingRect, as we want to include partial pixels in the test.
     gfx::Rect targetRect = gfx::IntersectRects(gfx::ToEnclosingRect(transformedRect), clipRectInTarget);
-    return targetRect.IsEmpty() || occlusion.Contains(targetRect);
+    return occlusion.Contains(targetRect);
 }
 
 template<typename LayerType, typename RenderSurfaceType>

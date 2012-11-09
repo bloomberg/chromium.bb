@@ -47,10 +47,14 @@ bool Region::Contains(gfx::Point point) const {
 }
 
 bool Region::Contains(gfx::Rect rect) const {
+  if (rect.IsEmpty())
+    return true;
   return skregion_.contains(ToSkIRect(rect));
 }
 
 bool Region::Contains(const Region& region) const {
+  if (region.IsEmpty())
+    return true;
   return skregion_.contains(region.skregion_);
 }
 
