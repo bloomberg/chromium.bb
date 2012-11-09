@@ -130,18 +130,18 @@ scoped_ptr<Database::MetricVector> AggregateMetric(
     const Database::MetricVector* metrics,
     const base::Time& start,
     const base::TimeDelta& resolution,
-    AggregationStrategy strategy) {
+    AggregationMethod method) {
   if (!metrics)
     return scoped_ptr<Database::MetricVector>(NULL);
 
   CHECK(resolution > base::TimeDelta());
 
-  switch (strategy) {
-    case AGGREGATION_STRATEGY_NONE:
+  switch (method) {
+    case AGGREGATION_METHOD_NONE:
       return NoAggregation(type, metrics, start);
-    case AGGREGATION_STRATEGY_MEDIAN:
+    case AGGREGATION_METHOD_MEDIAN:
       return AggregateByMedian(type, metrics, start, resolution);
-    case AGGREGATION_STRATEGY_MEAN:
+    case AGGREGATION_METHOD_MEAN:
       return AggregateByMean(type, metrics, start, resolution);
     default:
       NOTREACHED();

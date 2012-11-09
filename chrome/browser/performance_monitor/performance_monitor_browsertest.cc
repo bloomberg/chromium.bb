@@ -211,7 +211,7 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
 
   void GetStatsOnBackgroundThread(Database::MetricVector* metrics,
                                   MetricType type) {
-    *metrics = performance_monitor_->database()->GetStatsForActivityAndMetric(
+    *metrics = *performance_monitor_->database()->GetStatsForActivityAndMetric(
         type, base::Time(), base::Time::FromInternalValue(kint64max));
   }
 

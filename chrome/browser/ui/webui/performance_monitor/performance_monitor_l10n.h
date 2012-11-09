@@ -15,10 +15,10 @@
 namespace performance_monitor {
 
 // Aggregation-Related
-string16 GetLocalizedStringFromAggregationStrategy(
-    const AggregationStrategy strategy);
-string16 GetLocalizedStringForAggregationStrategyDescription(
-    const AggregationStrategy strategy);
+string16 GetLocalizedStringFromAggregationMethod(
+    const AggregationMethod method);
+string16 GetLocalizedStringForAggregationMethodDescription(
+    const AggregationMethod method);
 
 // Event-Related
 string16 GetLocalizedStringFromEventCategory(const EventCategory category);

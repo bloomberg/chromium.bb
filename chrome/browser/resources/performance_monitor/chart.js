@@ -43,7 +43,7 @@ cr.define('performance_monitor', function() {
   };
 
   /**
-   * Map of available date formats in flot-style format strings.
+   * Map of available date formats in Flot-style format strings.
    * @type {Object.<string, string>}
    * @private
    */
@@ -133,39 +133,24 @@ cr.define('performance_monitor', function() {
     PerformanceMonitor.TimeResolution;
 
     /**
-     * Information regarding a certain time resolution option, including an
-     * enumerative id, the key to the i18n name and the name itself, the
-     * timespan in milliseconds prior to |now|, data point resolution in
-     * milliseconds, and time-label frequency in data points per label.
-     * @typedef {{
-     *   id: number,
-     *   i18nKey: string,
-     *   name: string
-     *   timeSpan: number,
-     *   pointResolution: number,
-     *   labelEvery: number,
-     * }}
-     */
-    PerformanceMonitor.TimeResolution;
-
-    /**
-     * Detailed information on a metric in the UI. MetricId is a unique
-     * identifying number for the metric, provided by the webui, and assumed
-     * to be densely populated. All metrics also have a description and
-     * an associated category giving their unit information and home chart.
-     * They also have a color in which they are displayed, and a maximum value
-     * by which to scale their y-axis. Additionally, there is a corresponding
-     * checkbox element, which is the checkbox used to enable or disable the
-     * metric display.
+     * Detailed information on a metric in the UI. |metricId| is a unique
+     * identifying number for the metric, provided by the webui, and assumed to
+     * be densely populated. |description| is a localized string description
+     * suitable for mouseover on the metric. |category| corresponds to a
+     * category object to which the metric belongs (see |metricCategoryMap_|).
+     * |color| is the color in which the metric is displayed on the graphs.
+     * |maxValue| is a value by which to scale the y-axis, in order to avoid
+     * constant resizing to fit the present data. |checkbox| is the HTML element
+     * for the checkbox which toggles the metric's display. |enabled| indicates
+     * whether or not the metric is being actively displayed. |data| is the
+     * collection of data for the metric.
      *
-     * Although in the present UI each metric appears only in the home chart of
-     * its metric category, we keep the divs property to allow future
-     * modifications in which the same metric might appear in several charts
-     * for side-by-side comparisons. Metrics not being displayed have an
-     * empty div list. If a div list is not empty, the associated data will
-     * be non-null, or null but about to be filled by webui handler response.
-     * Thus, any metric with non-empty div list but null data is awaiting a
-     * data response from the webui handler.
+     * For |data|, the inner-most array represents a point in a pair of numbers,
+     * representing time and value (this will always be of length 2). The
+     * array above is the collection of points within a series, which is an
+     * interval for which PerformanceMonitor was active. The outer-most array
+     * is the collection of these series.
+     *
      * @typedef {{
      *   metricId: number,
      *   description: string,
@@ -173,22 +158,23 @@ cr.define('performance_monitor', function() {
      *   color: string,
      *   maxValue: number,
      *   checkbox: HTMLElement,
-     *   divs: !Array.<HTMLDivElement>,
-     *   data: ?Array.<{time: number, value: number}>
+     *   enabled: boolean,
+     *   data: ?Array.<Array<Array<number> > >
      * }}
      */
     PerformanceMonitor.MetricDetails;
 
     /**
      * Similar data for events as for metrics, though no y-axis info is needed
-     * since events are simply labelled markers at X locations. Rules regarding
-     * null data with non-empty div list apply here as for metricDetailsMap_
-     * above. The |data| field follows a special rule not describable in
-     * JSDoc:  Aside from the |time| key, each event type has varying other
+     * since events are simply labeled markers at X locations.
+     *
+     * The |data| field follows a special rule not describable in
+     * JSDoc: Aside from the |time| key, each event type has varying other
      * properties, with unknown key names, which properties must still be
      * displayed. Such properties always have value of form
      * {label: 'some label', value: 'some value'}, with label and value
      * internationalized.
+     *
      * @typedef {{
      *   eventId: number,
      *   name: string,
@@ -196,16 +182,34 @@ cr.define('performance_monitor', function() {
      *   description: string,
      *   color: string,
      *   checkbox: HTMLElement,
-     *   divs: !Array.<HTMLDivElement>,
+     *   enabled: boolean
      *   data: ?Array.<{time: number}>
      * }}
      */
     PerformanceMonitor.EventDetails;
 
     /**
+     * The collection of divs that compose a chart on the UI, plus the metricIds
+     * of any metric which should be shown on the chart (whether the metric is
+     * enabled or not). The |mainDiv| is the full element, under which all other
+     * divs are nested. The |grid| is the div into which the |plot| (which is
+     * the core of the graph, including the axis, gridlines, dataseries, etc)
+     * goes. The |yaxisLabel| is nested under the mainDiv, and shows the units
+     * for the chart.
+     *
+     * @typedef {{
+     *   mainDiv: HTMLDivElement,
+     *   grid: HTMLDivElement,
+     *   plot: HTMLDivElement,
+     *   yaxisLabel: HTMLDivElement,
+     *   metricIds: ?Array.<number>
+     */
+    PerformanceMonitor.Chart;
+
+    /**
      * The time range which we are currently viewing, with the start and end of
      * the range, the TimeResolution, and an appropriate for display (this
-     * format is the string structure which flot expects for its setting).
+     * format is the string structure which Flot expects for its setting).
      * @typedef {{
      * @type {{
      *   start: number,
@@ -234,6 +238,7 @@ cr.define('performance_monitor', function() {
      * to which each corresponds. The different methods are retrieved from the
      * WebUI, and the information about the method is stored in the 'option'
      * field. The key to the map is the id of the aggregation method.
+     *
      * @type {Object.<string, {
      *   option: {
      *     id: number,
@@ -249,17 +254,16 @@ cr.define('performance_monitor', function() {
     /**
      * Metrics fall into categories that have common units and thus may
      * share a common graph, or share y-axes within a multi-y-axis graph.
-     * Each category has one home chart in which metrics of that category
-     * are displayed. Currently this is also the only chart in which such
-     * metrics are displayed, but the design permits a metric to show in
-     * several charts if this is useful later on. The key is metricCategoryId.
+     * Each category has a unique identifying metricCategoryId; a localized
+     * name, mouseover description, and unit; and an array of all the metrics
+     * which are in this category. The key is |metricCategoryId|.
+     *
      * @type {Object.<string, {
      *   metricCategoryId: number,
      *   name: string,
      *   description: string,
      *   unit: string,
      *   details: Array.<{!PerformanceMonitor.MetricDetails}>,
-     *   homeChart: !HTMLDivElement
      * }>}
      * @private
      */
@@ -278,6 +282,7 @@ cr.define('performance_monitor', function() {
      * needn't share maxima, y-axes, nor units, and since events appear on
      * all charts. But grouping of event categories in the event-selection
      * UI is still useful. The key is the id of the event category.
+     *
      * @type {Object.<string, {
      *   eventCategoryId: number,
      *   name: string,
@@ -327,9 +332,34 @@ cr.define('performance_monitor', function() {
     this.resizeTimer_ = null;
 
     /**
-     * All chart divs in the display, whether hidden or not. Presently
-     * this has one entry for each metric category in |this.metricCategoryMap|.
-     * @type {Array.<HTMLDivElement>}
+     * The status of all calls for data, stored in order to keep track of the
+     * internal state. This stores an attribute for each type of repeated data
+     * call (for now, only metrics and events), which will be true if we are
+     * awaiting data and false otherwise.
+     * @type {Object.<string, boolean>}
+     * @private
+     */
+    this.awaitingDataCalls_ = {};
+
+    /**
+     * The progress into the initialization process. This must be stored, since
+     * certain tasks must be performed in a specific order which cannot be
+     * statically determined. Mainly, we must not request any data until the
+     * metrics, events, aggregation method, and time range have all been set.
+     * This object contains an attribute for each stage of the initialization
+     * process, which is set to true if the stage has been completed.
+     * @type {Object.<string, boolean>}
+     * @private
+     */
+    this.initProgress_ = { 'aggregation': false,
+                           'events': false,
+                           'metrics': false,
+                           'timeRange': false };
+
+    /**
+     * All PerformanceMonitor.Chart objects available in the display, whether
+     * hidden or visible.
+     * @type {Array.<PerformanceMonitor.Chart>}
      * @private
      */
     this.charts_ = [];
@@ -386,6 +416,38 @@ cr.define('performance_monitor', function() {
     },
 
     /**
+     * Return true if we are not awaiting any returning data calls, and false
+     * otherwise.
+     * @return {boolean} The value indicating whether or not we are actively
+     *     fetching data.
+     */
+    fetchingData_: function() {
+      return this.awaitingDataCalls_.metrics == true ||
+             this.awaitingDataCalls_.events == true;
+    },
+
+    /**
+     * Return true if the main steps of initialization prior to the first draw
+     * are complete, and false otherwise.
+     * @return {boolean} The value indicating whether or not the initialization
+     *     process has finished.
+     */
+    isInitialized_: function() {
+      return this.initProgress_.aggregation == true &&
+             this.initProgress_.events == true &&
+             this.initProgress_.metrics == true &&
+             this.initProgress_.timeRange == true;
+    },
+
+    /**
+     * Refresh all data areas.
+     */
+    refreshAll: function() {
+      this.refreshMetrics();
+      this.refreshEvents();
+    },
+
+    /**
      * Receive a list of all the aggregation methods. Populate
      * |this.aggregationRadioMap_| to reflect said list. Create the section of
      * radio buttons for the aggregation methods, and choose the first method
@@ -394,19 +456,22 @@ cr.define('performance_monitor', function() {
      *   id: number,
      *   name: string,
      *   description: string
-     * }>} strategies All aggregation strategies needing radio buttons.
+     * }>} methods All aggregation methods needing radio buttons.
      */
-    getAggregationTypesCallback: function(strategies) {
-      strategies.forEach(function(strategy) {
-        this.aggregationRadioMap_[strategy.id] = { 'option': strategy };
+    getAggregationTypesCallback: function(methods) {
+      methods.forEach(function(method) {
+        this.aggregationRadioMap_[method.id] = { 'option': method };
       }, this);
 
       this.setupRadioButtons_($('#choose-aggregation')[0],
                               this.aggregationRadioMap_,
-                              this.setAggregationStrategy,
+                              this.setAggregationMethod,
                               aggregationMethodMedian,
-                              'aggregation-strategies');
-      this.setAggregationStrategy(aggregationMethodMedian);
+                              'aggregation-methods');
+      this.setAggregationMethod(aggregationMethodMedian);
+      this.initProgress_.aggregation = true;
+      if (this.isInitialized_())
+        this.refreshAll();
     },
 
     /**
@@ -444,8 +509,14 @@ cr.define('performance_monitor', function() {
       this.setupCheckboxes_($('#choose-metrics')[0],
           this.metricCategoryMap_, 'metricId', this.addMetric, this.dropMetric);
 
-      for (var metric in this.metricDetailsMap_)
-        this.metricDetailsMap_[metric].checkbox.click();
+      for (var metric in this.metricDetailsMap_) {
+        this.metricDetailsMap_[metric].checkbox.checked = true;
+        this.metricDetailsMap_[metric].enabled = true;
+      }
+
+      this.initProgress_.metrics = true;
+      if (this.isInitialized_())
+        this.refreshAll();
     },
 
     /**
@@ -478,6 +549,10 @@ cr.define('performance_monitor', function() {
 
       this.setupCheckboxes_($('#choose-events')[0], this.eventCategoryMap_,
           'eventId', this.addEventType, this.dropEventType);
+
+      this.initProgress_.events = true;
+      if (this.isInitialized_())
+        this.refreshAll();
     },
 
     /**
@@ -513,6 +588,10 @@ cr.define('performance_monitor', function() {
       forwardButton.addEventListener('click', this.forwardTime.bind(this));
       var backButton = $('#back-time')[0];
       backButton.addEventListener('click', this.backTime.bind(this));
+
+      this.initProgress_.timeRange = true;
+      if (this.isInitialized_())
+        this.refreshAll();
     },
 
     /**
@@ -566,7 +645,7 @@ cr.define('performance_monitor', function() {
      *         description:
      *             'The combined private memory usage of all processes related
      *             to Chrome',
-               color: 'rgb(128, 255, 128)'
+     *         color: 'rgb(128, 255, 128)'
      *       },
      *       {
      *         metricId: 3,
@@ -574,7 +653,7 @@ cr.define('performance_monitor', function() {
      *         description:
      *             'The combined shared memory usage of all processes related
      *             to Chrome',
-               color: 'rgb(128, 128, 255)'
+     *         color: 'rgb(128, 128, 255)'
      *       }
      *     ]
      *  }
@@ -691,7 +770,7 @@ cr.define('performance_monitor', function() {
      *
      * optionMaps have two guaranteed fields - 'option' and 'element'. The
      * 'option' field corresponds to the item which the radio button will be
-     * representing (e.g., a particular aggregation strategy).
+     * representing (e.g., a particular aggregation method).
      *   - Each 'option' is guaranteed to have a 'value', a 'name', and a
      *     'description'. 'Value' holds the id of the option, while 'name' and
      *     'description' are internationalized strings for the radio button's
@@ -724,20 +803,20 @@ cr.define('performance_monitor', function() {
      *
      * and we would call setupRadioButtons_ with:
      * this.setupRadioButtons_(<parent_div>, this.aggregationRadioMap_,
-     *     this.setAggregationStrategy, 0, 'aggregation-strategies');
+     *     this.setAggregationMethod, 0, 'aggregation-methods');
      *
      * The resultant HTML would be:
      * <div class="radio">
      *   <label class="input-label" title="Aggregate using median \
      *       calculations to reduce noisiness in reporting">
-     *     <input type="radio" name="aggregation-strategies" value=0>
+     *     <input type="radio" name="aggregation-methods" value=0>
      *     <span>Median</span>
      *   </label>
      * </div>
      * <div class="radio">
      *   <label class="input-label" title="Aggregate using mean \
      *       calculations for the most accurate average in reporting">
-     *     <input type="radio" name="aggregation-strategies" value=1>
+     *     <input type="radio" name="aggregation-methods" value=1>
      *     <span>Mean</span>
      *   </label>
      * </div>
@@ -797,26 +876,38 @@ cr.define('performance_monitor', function() {
      */
     addCategoryChart_: function(category) {
       var chartParent = $('#charts')[0];
-      var chart = $('#chart-template')[0].cloneNode(true);
-      chart.id = '';
-      var yaxisLabel = chart.querySelector('h4');
+      var mainDiv = $('#chart-template')[0].cloneNode(true);
+      mainDiv.id = '';
 
+      var yaxisLabel = mainDiv.querySelector('h4');
       yaxisLabel.innerText = category.unit;
+
       // Rotation is weird in html. The length of the text affects the x-axis
       // placement of the label. We shift it back appropriately.
       var width = -1 * (yaxisLabel.offsetWidth / 2) + 20;
       var widthString = width.toString() + 'px';
       yaxisLabel.style.webkitMarginStart = widthString;
 
-      var grid = chart.querySelector('.grid');
-      chart.grid = grid;
+      var grid = mainDiv.querySelector('.grid');
 
-      chart.hidden = true;
-      chartParent.appendChild(chart);
-      this.charts_.push(chart);
-      category.homeChart = chart;
-      chart.refs = 0;
+      mainDiv.hidden = true;
+      chartParent.appendChild(mainDiv);
+
       grid.hovers = [];
+
+      // Set the various fields for the PerformanceMonitor.Chart object, and
+      // add the new object to |charts_|.
+      var chart = {};
+      chart.mainDiv = mainDiv;
+      chart.yaxisLabel = yaxisLabel;
+      chart.grid = grid;
+      chart.metricIds = [];
+
+      category.details.forEach(function(details) {
+        chart.metricIds.push(details.metricId);
+      });
+
+      this.charts_.push(chart);
 
       // Receive hover events from Flot.
       // Attached to chart will be properties 'hovers', a list of {x, div}
@@ -849,14 +940,14 @@ cr.define('performance_monitor', function() {
       clearTimeout(this.resizeTimer_);
       this.resizeTimer_ = null;
 
-      this.charts_.forEach(function(chart) {this.drawChart(chart);}, this);
+      this.drawCharts();
     },
 
     /**
      * Set the time range for which to display metrics and events. For
      * now, the time range always ends at 'now', but future implementations
      * may allow time ranges not so anchored. Also set the format string for
-     * flot.
+     * Flot.
      *
      * @param {TimeResolution} resolution
      *     The time resolution at which to display the data.
@@ -886,11 +977,12 @@ cr.define('performance_monitor', function() {
       this.range_.start = this.range_.end - resolution.timeSpan;
       this.setTimeFormat_();
 
-      this.requestIntervals();
+      if (this.isInitialized_())
+        this.refreshAll();
     },
 
     /**
-     * Set the format string for flot. For time formats, we display the time
+     * Set the format string for Flot. For time formats, we display the time
      * if we are showing data only for the current day; we display the month,
      * day, and time if we are showing data for multiple days at a fine
      * resolution; we display the month and day if we are showing data for
@@ -944,294 +1036,211 @@ cr.define('performance_monitor', function() {
     },
 
     /**
-     * Request activity intervals in the current time range.
+     * Set the aggregation method.
+     * @param {number} methodId The id of the aggregation method.
      */
-    requestIntervals: function() {
-      chrome.send('getActiveIntervals', [this.range_.start, this.range_.end]);
-    },
-
-    /**
-     * Webui callback delivering response from requestIntervals call. Assumes
-     * this is a new time range choice, which results in complete refresh of
-     * all metrics and event types that are currently selected.
-     * @param {!Array.<{start: number, end: number}>} intervals
-     *     The new intervals.
-     */
-    getActiveIntervalsCallback: function(intervals) {
-      this.intervals_ = intervals;
-
-      for (var metric in this.metricDetailsMap_) {
-        var metricDetails = this.metricDetailsMap_[metric];
-        if (metricDetails.divs.length > 0)  // if we're displaying this metric.
-          this.refreshMetric(metricDetails);
-      }
-
-      for (var eventType in this.eventDetailsMap_) {
-        var eventValue = this.eventDetailsMap_[eventType];
-        if (eventValue.divs.length > 0)
-          this.refreshEventType(eventValue.eventId);
-      }
-    },
-
-    /**
-     * Set the aggregation strategy.
-     * @param {number} strategyId The id of the aggregation strategy.
-     */
-    setAggregationStrategy: function(strategyId) {
-      if (strategyId != aggregationMethodNone)
+    setAggregationMethod: function(methodId) {
+      if (methodId != aggregationMethodNone)
         this.hideWarning('no-aggregation-warning');
       else
         this.showWarning('no-aggregation-warning');
 
-      this.aggregationStrategy = strategyId;
-      this.requestIntervals();
+      this.aggregationMethod = methodId;
+      if (this.isInitialized_())
+        this.refreshMetrics();
     },
 
     /**
-     * Add a new metric to the display, showing it on its category's home
-     * chart. Un-hide the home chart if needed.
+     * Add a new metric to the display, fetching its data and triggering a
+     * chart redraw.
      * @param {number} metricId The id of the metric to start displaying.
      */
     addMetric: function(metricId) {
-      var details = this.metricDetailsMap_[metricId];
-      var homeChart = details.category.homeChart;
-
-      details.divs.push(homeChart);
-      if (homeChart.refs == 0)
-        homeChart.hidden = false;
-      homeChart.refs++;
-
-      this.refreshMetric(details);
+      var metric = this.metricDetailsMap_[metricId];
+      metric.enabled = true;
+      this.refreshMetrics();
     },
 
     /**
-     * Remove a metric from the chart(s).
-     * @param {string} metric The metric to stop displaying.
+     * Remove a metric from its homechart, triggering a chart redraw.
+     * @param {number} metricId The metric to stop displaying.
      */
-    dropMetric: function(metric) {
-      var details = this.metricDetailsMap_[metric];
-      var affectedCharts = details.divs;
-
-      details.divs = [];  // Gotta do this now to get correct drawChart result.
-      affectedCharts.forEach(function(chart) {
-        chart.refs--;
-        if (chart.refs == 0)
-          chart.hidden = true;
-        this.drawChart(chart);
-      }, this);
-
+    dropMetric: function(metricId) {
+      var metric = this.metricDetailsMap_[metricId];
+      metric.enabled = false;
+      this.drawCharts();
     },
 
     /**
-     * Request new metric data, assuming the metric table and chart already
-     * exist.
-     * @param {string} metricDetails The metric details for which to get data.
+     * Refresh all metrics which are active on the graph in one call to the
+     * webui. Results will be returned in getMetricsCallback().
      */
-    refreshMetric: function(metricDetails) {
-      metricDetails.data = null;  // Mark metric as awaiting response.
-      chrome.send('getMetric', [metricDetails.metricId,
-          this.range_.start, this.range_.end,
-          this.range_.resolution.pointResolution,
-          this.aggregationStrategy]);
-    },
+    refreshMetrics: function() {
+      var metrics = [];
 
-    /**
-     * Receive new datapoints for a metric, convert the data to Flot-usable
-     * form, and redraw all affected charts.
-     * @param {!{
-     *   id: number,
-     *   max: number,
-     *   metrics: !Array.<{time: number, value: number}>
-     * }} result An object giving metric ID, max expected value of the data,
-     *     and time/value point pairs for that id.
-     */
-    getMetricCallback: function(result) {
+      for (var metric in this.metricDetailsMap_) {
+        if (this.metricDetailsMap_[metric].enabled)
+          metrics.push(this.metricDetailsMap_[metric].metricId);
+      }
 
-      var metricDetails = this.metricDetailsMap_[result.metricId];
-      // Might have been dropped while waiting for data.
-      if (metricDetails.divs.length == 0)
+      if (!metrics.length)
         return;
 
-      var series = [];
-      metricDetails.data = [series];  // Data ends with current open series.
-
-      // Traverse the points, and the intervals, in parallel. Both are in
-      // ascending time order. Create a sequence of data 'series' (per Flot)
-      // arrays, with each series comprising all points within a given interval.
-      var interval = this.intervals_[0];
-      var intervalIndex = 0;
-      var pointIndex = 0;
-      while (pointIndex < result.metrics.length &&
-          intervalIndex < this.intervals_.length) {
-        var point = result.metrics[pointIndex++];
-        while (intervalIndex < this.intervals_.length &&
-            point.time > interval.end) {
-          interval = this.intervals_[++intervalIndex];  // Jump to new interval.
-          if (series.length > 0) {
-            series = [];  // Start a new series.
-            metricDetails.data.push(series);  // Put it on the end of the data.
-          }
-        }
-        if (intervalIndex < this.intervals_.length &&
-            point.time > interval.start) {
-          series.push([point.time - timezoneOffset_, point.value]);
-        }
-      }
-      metricDetails.maxValue = Math.max(metricDetails.maxValue,
-          result.maxValue);
-
-      metricDetails.divs.forEach(this.drawChart, this);
+      this.awaitingDataCalls_.metrics = true;
+      chrome.send('getMetrics',
+                  [metrics,
+                   this.range_.start, this.range_.end,
+                   this.range_.resolution.pointResolution,
+                   this.aggregationMethod]);
     },
 
     /**
-     * Add a new event to the chart(s).
-     * @param {string} eventType The type of event to start displaying.
+     * The callback from refreshing the metrics. The resulting metrics will be
+     * returned in a list, containing for each active metric a list of data
+     * point series, representing the time periods for which PerformanceMonitor
+     * was active. These data will be in sorted order, and will be aggregated
+     * according to |aggregationMethod_|. These data are put into a Flot-style
+     * series, with each point stored in an array of length 2, comprised of the
+     * time and the value of the point.
+     * @param Array<{
+     *   metricId: number,
+     *   data: Array<{time: number, value: number}>,
+     *   maxValue: number
+     * }> results The data for the requested metrics.
      */
-    addEventType: function(eventType) {
-      // Events show on all charts.
-      this.eventDetailsMap_[eventType].divs = this.charts_;
-      this.refreshEventType(eventType);
+    getMetricsCallback: function(results) {
+      results.forEach(function(metric) {
+        var metricDetails = this.metricDetailsMap_[metric.metricId];
+
+        metricDetails.data = [];
+
+        // Each data series sent back represents a interval for which
+        // PerformanceMonitor was active. Iterate through the points of each
+        // series, converting them to Flot standard (an array of time, value
+        // pairs).
+        metric.metrics.forEach(function(series) {
+          var seriesData = [];
+          series.forEach(function(point) {
+            seriesData.push([point.time - timezoneOffset_, point.value]);
+          });
+          metricDetails.data.push(seriesData);
+        });
+
+        metricDetails.maxValue = Math.max(metricDetails.maxValue,
+                                          metric.maxValue);
+      }, this);
+
+      this.awaitingDataCalls_.metrics = false;
+      this.drawCharts();
+    },
+
+    /**
+     * Add a new event to the display, fetching its data and triggering a
+     * redraw.
+     * @param {number} eventType The type of event to start displaying.
+     */
+    addEventType: function(eventId) {
+      this.eventDetailsMap_[eventId].enabled = true;
+      this.refreshEvents();
     },
 
     /*
-     * Remove an event from the chart(s).
-     * @param {string} eventType The type of event to stop displaying.
+     * Remove an event from the display, triggering a redraw.
+     * @param {number} eventId The type of event to stop displaying.
      */
-    dropEventType: function(eventType) {
-      var eventValue = this.eventDetailsMap_[eventType];
-      var affectedCharts = eventValue.divs;
-
-      eventValue.divs = [];  // Gotta do this now for correct drawChart results.
-      affectedCharts.forEach(this.drawChart, this);
+    dropEventType: function(eventId) {
+      this.eventDetailsMap_[eventId].enabled = false;
+      this.drawCharts();
     },
 
     /**
-     * Request new data for |eventType|, for times in the current range.
-     * @param {string} eventType The type of event to get new data for.
+     * Refresh all events which are active on the graph in one call to the
+     * webui. Results will be returned in getEventsCallback().
      */
-    refreshEventType: function(eventType) {
-      // Mark eventType as awaiting response.
-      this.eventDetailsMap_[eventType].data = null;
-
-      chrome.send('getEvents', [eventType, this.range_.start, this.range_.end]);
-    },
-
-    /**
-     * Receive new events for |eventType|. If |eventType| has been deselected
-     * while awaiting webui handler response, do nothing. Otherwise, save the
-     * data directly, since events are handled differently than metrics
-     * when drawing (no 'series'), and redraw all the affected charts.
-     * @param {!{
-     *   id: number,
-     *   events: !Array.<{time: number}>
-     * }} result An object giving eventType id, and times at which that event
-     *     type occurred in the range requested. Each object in the array may
-     *     also have an arbitrary list of properties to be displayed as
-     *     a tooltip message for the event.
-     */
-    getEventsCallback: function(result) {
-      var eventValue = this.eventDetailsMap_[result.eventId];
-
-      if (eventValue.divs.length == 0)
+    refreshEvents: function() {
+      var events = [];
+      for (var eventType in this.eventDetailsMap_) {
+        if (this.eventDetailsMap_[eventType].enabled)
+          events.push(this.eventDetailsMap_[eventType].eventId);
+      }
+      if (!events.length)
         return;
 
-      result.events.forEach(function(element) {
-        element.time -= timezoneOffset_;
-      });
-
-      eventValue.data = result.events;
-      eventValue.divs.forEach(this.drawChart, this);
+      this.awaitingDataCalls_.events = true;
+      chrome.send('getEvents', [events, this.range_.start, this.range_.end]);
     },
 
     /**
-     * Return an object containing an array of metrics and another of events
-     * that include |chart| as one of the divs into which they display.
-     * @param {HTMLDivElement} chart The <div> for which to get relevant items.
-     * @return {!{metrics: !Array,<Object>, events: !Array.<Object>}}
-     * @private
+     * The callback from refreshing events. Resulting events are stored in a
+     * list object, which contains for each event type requested a series
+     * of event points. Each event point contains a time and an arbitrary list
+     * of additional properties to be displayed as a tooltip message for the
+     * event.
+     * @param Array.<{
+     *   eventId: number,
+     *   Array.<{time: number}>
+     * }> results The collection of events for the requested types.
      */
-    getChartData_: function(chart) {
-      var result = {metrics: [], events: []};
+    getEventsCallback: function(results) {
+      results.forEach(function(eventSet) {
+        var eventType = this.eventDetailsMap_[eventSet.eventId];
 
-      for (var metric in this.metricDetailsMap_) {
-        var metricDetails = this.metricDetailsMap_[metric];
+        eventSet.events.forEach(function(eventData) {
+          eventData.time -= timezoneOffset_;
+        });
+        eventType.data = eventSet.events;
+      }, this);
 
-        if (metricDetails.divs.indexOf(chart) != -1)
-          result.metrics.push(metricDetails);
-      }
-
-      for (var eventType in this.eventDetailsMap_) {
-        var eventValue = this.eventDetailsMap_[eventType];
-
-        // Events post to all divs, if they post to any.
-        if (eventValue.divs.length > 0)
-          result.events.push(eventValue);
-      }
-
-      return result;
-    },
-
-    /**
-     * Check all entries in an object of the type returned from getChartData,
-     * above, to see if all events and metrics have completed data (none is
-     * awaiting an asynchronous webui handler response to get their current
-     * data).
-     * @param {!{metrics: !Array,<Object>, events: !Array.<Object>}} chartData
-     *     The event/metric data to check for readiness.
-     * @return {boolean}  Whether data is ready.
-     * @private
-     */
-    isDataReady_: function(chartData) {
-      return chartData.metrics.every(function(metric) {return metric.data;}) &&
-          chartData.events.every(function(event) {return event.data;});
+      this.awaitingDataCalls_.events = false;
+      this.drawCharts();
     },
 
     /**
      * Create and return an array of 'markings' (per Flot), representing
      * vertical lines at the event time, in the event's color. Also add
      * (not per Flot) a |popupTitle| property to each, to be used for
-     * labelling description popups.
-     * @param {!Array.<{
-     *                   description: string,
-     *                   color: string,
-     *                   data: !Array.<{time: number}>
-     *                 }>} eventValues The events to make markings for.
+     * labeling description popups.
      * @return {!Array.<{
-     *                   color: string,
-     *                   description: string,
-     *                   xaxis: {from: number, to: number}
-     *                 }>} A marks data structure for Flot to use.
+     *   color: string,
+     *   popupContent: string,
+     *   xaxis: {from: number, to: number}
+     * }>} A marks data structure for Flot to use.
      * @private
      */
-    getEventMarks_: function(eventValues) {
+    getEventMarks_: function() {
+      var enabledEvents = [];
       var markings = [];
       var explanation;
-      var date, hours, minutes;
+      var date;
 
-      eventValues.forEach(function(eventValue) {
+      for (var eventType in this.eventDetailsMap_) {
+        if (this.eventDetailsMap_[eventType].enabled)
+          enabledEvents.push(this.eventDetailsMap_[eventType]);
+      }
+
+      enabledEvents.forEach(function(eventValue) {
         eventValue.data.forEach(function(point) {
           if (point.time >= this.range_.start - timezoneOffset_ &&
               point.time <= this.range_.end - timezoneOffset_) {
-
-            // Date wants Zulu time.
             date = new Date(point.time + timezoneOffset_);
-            hours = date.getHours();
-            minutes = date.getMinutes();
             explanation = '<b>' + eventValue.popupTitle + '<br/>' +
                 date.toLocaleString() + '</b><br/>';
 
             for (var key in point) {
               if (key != 'time') {
                 var datum = point[key];
-                if ('label' in datum && 'value' in datum)
+
+                // We display all fields with a label-value pair.
+                if ('label' in datum && 'value' in datum) {
                   explanation = explanation + '<b>' + datum.label + ': </b>' +
-                      datum.value + '<br/>';
+                      datum.value + ' <br/>';
+                }
               }
             }
             markings.push({
               color: eventValue.color,
               popupContent: explanation,
-              xaxis: {from: point.time, to: point.time}
+              xaxis: { from: point.time, to: point.time }
             });
           } else {
             console.log('Event out of time range ' + this.range_.start +
@@ -1244,85 +1253,127 @@ cr.define('performance_monitor', function() {
     },
 
     /**
-     * Redraw the chart in div |chart|, *if* all its dependent data is present.
-     * Otherwise simply return, and await another call when all data is
-     * available.
-     * @param {HTMLDivElement} chart The <div> to redraw.
+     * Return an object containing an array of series for Flot to chart, as well
+     * as a series of axes (currently this will only be one axis).
+     * @param {Array.<PerformanceMonitor.MetricDetails>} activeMetrics
+     *     The metrics for which we are generating series.
+     * @return {!{
+     *   series: !Array.<{
+     *     color: string,
+     *     data: !Array<{time: number, value: number},
+     *     yaxis: {min: number, max: number, labelWidth: number}
+     *   },
+     *   yaxes: !Array.<{min: number, max: number, labelWidth: number}>
+     * }}
+     * @private
      */
-    drawChart: function(chart) {
-      var chartData = this.getChartData_(chart);
-      var axisMap = {}; // Maps category ids to y-axis numbers
-
-      if (chart.hidden || !this.isDataReady_(chartData))
-        return;
-
-      var seriesSeq = [];
-      var yAxes = [];
-      chartData.metrics.forEach(function(metricDetails) {
-        var metricCategory = metricDetails.category;
-        var yAxisNumber = axisMap[metricCategory.metricCategoryId];
+    getChartSeriesAndAxes_: function(activeMetrics) {
+      var seriesList = [];
+      var axisList = [];
+      var axisMap = {};
+      activeMetrics.forEach(function(metric) {
+        var categoryId = metric.category.metricCategoryId;
+        var yaxisNumber = axisMap[categoryId];
 
         // Add a new y-axis if we are encountering this category of metric
         // for the first time. Otherwise, update the existing y-axis with
         // a new max value if needed. (Presently, we expect only one category
         // of metric per chart, but this design permits more in the future.)
-        if (yAxisNumber === undefined) {
-          yAxes.push({min: 0, max: metricDetails.maxValue * yAxisMargin_,
-              labelWidth: 60});
-          axisMap[metricCategory.metricCategoryId] = yAxisNumber = yAxes.length;
+        if (yaxisNumber === undefined) {
+          axisList.push({min: 0,
+                         max: metric.maxValue * yAxisMargin_,
+                         labelWidth: 60});
+          axisMap[categoryId] = yaxisNumber = axisList.length;
         } else {
-          yAxes[yAxisNumber - 1].max = Math.max(yAxes[yAxisNumber - 1].max,
-              metricDetails.maxValue * yAxisMargin_);
+          axisList[yaxisNumber - 1].max =
+              Math.max(axisList[yaxisNumber - 1].max,
+                       metric.maxValue * yAxisMargin_);
         }
 
-        for (var i = 0; i < metricDetails.data.length; i++) {
-          seriesSeq.push({
-            color: metricDetails.color,
-            data: metricDetails.data[i],
-            label: i == 0 ? metricDetails.name : null,
-            yaxis: yAxisNumber,
+        // Create a Flot-style series for each data series in the metric.
+        for (var i = 0; i < metric.data.length; ++i) {
+          seriesList.push({
+            color: metric.color,
+            data: metric.data[i],
+            label: i == 0 ? metric.name : null,
+            yaxis: yaxisNumber
           });
         }
-      });
+      }, this);
 
-      var markings = this.getEventMarks_(chartData.events);
-      var plot = $.plot(chart.grid, seriesSeq, {
-        yaxes: yAxes,
-        xaxis: {
-          mode: 'time',
-          timeformat: this.range_.format,
-          min: this.range_.start - timezoneOffset_,
-          max: this.range_.end - timezoneOffset_
-        },
-        points: {show: true, radius: 1},
-        lines: {show: true},
-        grid: {
-          markings: markings,
-          hoverable: true,
-          autoHighlight: true,
-          backgroundColor: { colors: ['#fff', '#f0f6fc'] },
-        },
-      });
+      return { series: seriesList, yaxes: axisList };
+    },
 
-      // For each event in |markings|, create also a label div, with left
-      // edge colinear with the event vertical line. Top of label is
-      // presently a hack-in, putting labels in three tiers of 25px height
-      // each to avoid overlap. Will need something better.
-      var labelTemplate = $('#label-template')[0];
-      for (var i = 0; i < markings.length; i++) {
-        var mark = markings[i];
-        var point =
-            plot.pointOffset({x: mark.xaxis.to, y: yAxes[0].max, yaxis: 1});
-        var labelDiv = labelTemplate.cloneNode(true);
-        labelDiv.innerHTML = mark.popupContent;
-        labelDiv.style.left = point.left + 'px';
-        labelDiv.style.top = (point.top + 100 * (i % 3)) + 'px';
+    /**
+     * Draw each chart which has at least one enabled metric, along with all
+     * the event markers, if and only if we do not have outstanding calls for
+     * data.
+     */
+    drawCharts: function() {
+      // If we are currently waiting for data, do nothing - the callbacks will
+      // re-call drawCharts when they are done. This way, we can avoid any
+      // conflicts.
+      if (this.fetchingData_())
+        return;
 
-        chart.grid.appendChild(labelDiv);
-        labelDiv.hidden = true;
-        chart.grid.hovers.push({x: mark.xaxis.to, div: labelDiv});
-      }
-    }
+      // All charts will share the same xaxis and events.
+      var eventMarks = this.getEventMarks_();
+      var xaxis = {
+        mode: 'time',
+        timeformat: this.range_.format,
+        min: this.range_.start - timezoneOffset_,
+        max: this.range_.end - timezoneOffset_
+      };
+
+      this.charts_.forEach(function(chart) {
+        var activeMetrics = [];
+        chart.metricIds.forEach(function(id) {
+          if (this.metricDetailsMap_[id].enabled)
+            activeMetrics.push(this.metricDetailsMap_[id]);
+        }, this);
+
+        if (!activeMetrics.length) {
+          chart.hidden = true;
+          return;
+        }
+
+        chart.mainDiv.hidden = false;
+
+        var chartData = this.getChartSeriesAndAxes_(activeMetrics);
+
+        chart.plot = $.plot(chart.grid, chartData.series, {
+          yaxes: chartData.yaxes,
+          xaxis: xaxis,
+          points: { show: true, radius: 1},
+          lines: { show: true},
+          grid: {
+            markings: eventMarks,
+            hoverable: true,
+            autoHighlight: true,
+            backgroundColor: { colors: ['#fff', '#f0f6fc'] },
+          },
+        });
+
+        // For each event in |eventMarks|, create also a label div, with left
+        // edge colinear with the event vertical line. Top of label is
+        // presently a hack-in, putting labels in three tiers of 25px height
+        // each to avoid overlap. Will need something better.
+        var labelTemplate = $('#label-template')[0];
+        for (var i = 0; i < eventMarks.length; i++) {
+          var mark = eventMarks[i];
+          var point = chart.plot.pointOffset(
+              {x: mark.xaxis.to, y: chartData.yaxes[0].max, yaxis: 1});
+          var labelDiv = labelTemplate.cloneNode(true);
+          labelDiv.innerHTML = mark.popupContent;
+          labelDiv.style.left = point.left + 'px';
+          labelDiv.style.top = (point.top + 100 * (i % 3)) + 'px';
+
+          chart.grid.appendChild(labelDiv);
+          labelDiv.hidden = true;
+          chart.grid.hovers.push({x: mark.xaxis.to, div: labelDiv});
+        }
+      }, this);
+    },
   };
   return {
     PerformanceMonitor: PerformanceMonitor

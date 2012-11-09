@@ -346,13 +346,13 @@ bool Database::GetRecentStatsForActivityAndMetric(const std::string& activity,
   return status.ok();
 }
 
-Database::MetricVector Database::GetStatsForActivityAndMetric(
+scoped_ptr<Database::MetricVector> Database::GetStatsForActivityAndMetric(
     const std::string& activity,
     MetricType metric_type,
     const base::Time& start,
     const base::Time& end) {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  MetricVector results;
+  scoped_ptr<MetricVector> results(new MetricVector());
   std::string start_key =
       key_builder_->CreateMetricKey(start, metric_type, activity);
   std::string end_key =
@@ -374,11 +374,11 @@ Database::MetricVector Database::GetStatsForActivityAndMetric(
                    << ". Erasing metric from database.";
         continue;
       }
-      results.push_back(metric);
+      results->push_back(metric);
     }
   }
   metric_db_->Write(write_options_, &invalid_entries);
-  return results;
+  return results.Pass();
 }
 
 Database::MetricVectorMap Database::GetStatsForMetricByActivity(

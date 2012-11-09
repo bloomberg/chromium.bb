@@ -59,10 +59,11 @@ class PerformanceMonitorHandler
   // |args| is unused.
   void HandleGetMetricTypes(const base::ListValue* args);
 
-  // Callback for the "getMetric" message.
-  // |args| contains a MetricType id to collect, a start and end time, and a
-  // time resolution which defines the spacing of metric samples returned.
-  void HandleGetMetric(const base::ListValue* args);
+  // Callback for the "getMetrics" message.
+  // |args| contains a list of MetricTypes to collect, a start and end time,
+  // a time resolution (defining the spacing of metric samples returned),
+  // and an aggregation method.
+  void HandleGetMetrics(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceMonitorHandler);
 };

@@ -190,25 +190,26 @@ class Database {
   }
 
   // Query given |metric_type| and |activity|.
-  MetricVector GetStatsForActivityAndMetric(const std::string& activity,
-                                            MetricType metric_type,
-                                            const base::Time& start,
-                                            const base::Time& end);
+  scoped_ptr<MetricVector> GetStatsForActivityAndMetric(
+      const std::string& activity,
+      MetricType metric_type,
+      const base::Time& start,
+      const base::Time& end);
 
-  MetricVector GetStatsForActivityAndMetric(MetricType metric_type,
-                                            const base::Time& start,
-                                            const base::Time& end) {
+  scoped_ptr<MetricVector> GetStatsForActivityAndMetric(
+      MetricType metric_type, const base::Time& start, const base::Time& end) {
     return GetStatsForActivityAndMetric(kProcessChromeAggregate, metric_type,
                                         start, end);
   }
 
-  MetricVector GetStatsForActivityAndMetric(const std::string& activity,
-                                            MetricType metric_type) {
+  scoped_ptr<MetricVector> GetStatsForActivityAndMetric(
+      const std::string& activity, MetricType metric_type) {
     return GetStatsForActivityAndMetric(activity, metric_type, base::Time(),
                                         clock_->GetTime());
   }
 
-  MetricVector GetStatsForActivityAndMetric(MetricType metric_type) {
+  scoped_ptr<MetricVector> GetStatsForActivityAndMetric(
+      MetricType metric_type) {
     return GetStatsForActivityAndMetric(kProcessChromeAggregate, metric_type,
                                         base::Time(), clock_->GetTime());
   }

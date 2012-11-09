@@ -10,16 +10,6 @@
 
 namespace performance_monitor {
 
-// The different options for aggregation strategies.
-enum AggregationStrategy {
-  // IMPORTANT! These values are hard-coded in
-  // chrome/browser/resources/performance_monitor.js. Please do not change them.
-  AGGREGATION_STRATEGY_NONE,
-  AGGREGATION_STRATEGY_MEDIAN,
-  AGGREGATION_STRATEGY_MEAN,
-  AGGREGATION_STRATEGY_NUMBER_OF_STRATEGIES
-};
-
 // Return the factor by which all metrics should be multiplied in order to be in
 // the preferred unit (e.g., memory usage is in bytes, but we display it in
 // megabytes, so we return 1/1024^2).
@@ -46,7 +36,7 @@ scoped_ptr<Database::MetricVector> AggregateMetric(
     const Database::MetricVector* metrics,
     const base::Time& start,
     const base::TimeDelta& resolution,
-    AggregationStrategy strategy);
+    AggregationMethod method);
 
 }  // namespace performance_monitor
 

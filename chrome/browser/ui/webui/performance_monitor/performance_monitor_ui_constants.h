@@ -43,6 +43,17 @@ enum Unit {
   UNIT_UNDEFINED
 };
 
+// The different options for aggregation when we pass data to the UI side.
+enum AggregationMethod {
+  // IMPORTANT! These values are hard-coded in
+  // chrome/browser/resources/performance_monitor.js. Please do not change them.
+  AGGREGATION_METHOD_NONE,
+  AGGREGATION_METHOD_MEDIAN,
+  AGGREGATION_METHOD_MEAN,
+  AGGREGATION_METHOD_NUMBER_OF_METHODS
+};
+
+
 // A MeasurementType represents the "type" of data which we are measuring, e.g.
 // whether we are measuring distance, memory amounts, time, etc. Two units can
 // be converted if and only if they are in the same type. We can convert

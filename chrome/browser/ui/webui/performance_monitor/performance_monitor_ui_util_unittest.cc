@@ -28,13 +28,13 @@ TEST(PerformanceMonitorUtilTest, AggregateMetricEmptyTest) {
                       &metric,
                       results_time,
                       resolution,
-                      AGGREGATION_STRATEGY_MEAN);
+                      AGGREGATION_METHOD_MEAN);
   ASSERT_EQ(0u, aggregated_metric->size());
   aggregated_metric = AggregateMetric(METRIC_CPU_USAGE,
                                       &metric,
                                       results_time,
                                       resolution,
-                                      AGGREGATION_STRATEGY_MEDIAN);
+                                      AGGREGATION_METHOD_MEDIAN);
   ASSERT_EQ(0u, aggregated_metric->size());
 }
 
@@ -51,7 +51,7 @@ TEST(PerformanceMonitorUtilTest, AggregateMetricSimpleTest) {
                        &metric,
                        results_time,
                        results_resolution,
-                       AGGREGATION_STRATEGY_MEAN);
+                       AGGREGATION_METHOD_MEAN);
 
   ASSERT_EQ(1u, aggregated_metric.size());
   EXPECT_EQ(results_time + results_resolution, aggregated_metric[0].time);
@@ -61,7 +61,7 @@ TEST(PerformanceMonitorUtilTest, AggregateMetricSimpleTest) {
                                        &metric,
                                        results_time,
                                        results_resolution,
-                                       AGGREGATION_STRATEGY_MEDIAN);
+                                       AGGREGATION_METHOD_MEDIAN);
   ASSERT_EQ(1u, aggregated_metric.size());
   EXPECT_EQ(results_time + results_resolution, aggregated_metric[0].time);
   EXPECT_EQ(value, aggregated_metric[0].value);
@@ -88,7 +88,7 @@ TEST(PerformanceMonitorUtilTest, AggregateMetricDenseTest) {
                        &metric,
                        results_time,
                        results_resolution,
-                       AGGREGATION_STRATEGY_MEAN);
+                       AGGREGATION_METHOD_MEAN);
   // The first 4 points get ignored because they are before the start time.
   // The remaining 8 points are aggregated into two data points.
   ASSERT_EQ(2u, aggregated_metric.size());
@@ -104,7 +104,7 @@ TEST(PerformanceMonitorUtilTest, AggregateMetricDenseTest) {
                                        &metric,
                                        results_time,
                                        results_resolution,
-                                       AGGREGATION_STRATEGY_MEDIAN);
+                                       AGGREGATION_METHOD_MEDIAN);
   ASSERT_EQ(2u, aggregated_metric.size());
   EXPECT_EQ(results_time + results_resolution, aggregated_metric[0].time);
   EXPECT_EQ(results_time + 2 * results_resolution,
@@ -133,7 +133,7 @@ TEST(PerformanceMonitorUtilTest, AggregateMetricSparseTest) {
                        &metric,
                        results_time,
                        results_resolution,
-                       AGGREGATION_STRATEGY_MEAN);
+                       AGGREGATION_METHOD_MEAN);
 
   // The first aggregation point is split between the first value and the second
   // value. The second is split between the second and third. The third doesn't
@@ -155,7 +155,7 @@ TEST(PerformanceMonitorUtilTest, AggregateMetricSparseTest) {
                                        &metric,
                                        results_time,
                                        results_resolution,
-                                       AGGREGATION_STRATEGY_MEDIAN);
+                                       AGGREGATION_METHOD_MEDIAN);
   ASSERT_EQ(3u, aggregated_metric.size());
   EXPECT_EQ(results_time + 1 * results_resolution,
             aggregated_metric[0].time);
