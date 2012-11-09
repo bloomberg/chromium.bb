@@ -39,7 +39,7 @@ bool X11DesktopWindowMoveClient::Dispatch(const base::NativeEvent& event) {
   switch (xev->type) {
     case MotionNotify: {
       gfx::Point cursor_point(xev->xmotion.x_root, xev->xmotion.y_root);
-      gfx::Point system_loc = cursor_point.Subtract(window_offset_);
+      gfx::Point system_loc = cursor_point - window_offset_;
       root_window_->SetHostBounds(gfx::Rect(
           system_loc, root_window_->GetHostSize()));
       break;
