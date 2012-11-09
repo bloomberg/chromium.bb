@@ -38,9 +38,158 @@ static const char kProcSelfMapsHeader[] = "\nMAPPED_LIBRARIES:\n";
 static const char kVirtualLabel[] = "virtual";
 static const char kCommittedLabel[] = "committed";
 
+namespace {
+
+#if defined(__linux__)
+
+// Implements MemoryResidenceInfoGetterInterface for Linux.
+class MemoryInfoGetterLinux :
+    public DeepHeapProfile::MemoryResidenceInfoGetterInterface {
+ public:
+  MemoryInfoGetterLinux(): fd_(kIllegalRawFD) {}
+  virtual ~MemoryInfoGetterLinux() {}
+
+  // Opens /proc/<pid>/pagemap and stores its file descriptor.
+  // It keeps open while the process is running.
+  //
+  // Note that file descriptors need to be refreshed after fork.
+  virtual void Initialize();
+
+  // Returns the number of resident (including swapped) bytes of the given
+  // memory region from |first_address| to |last_address| inclusive.
+  virtual size_t CommittedSize(uint64 first_address, uint64 last_address) const;
+
+ private:
+  struct State {
+    bool is_committed;  // Currently, we use only this
+    bool is_present;
+    bool is_swapped;
+    bool is_shared;
+    bool is_mmap;
+  };
+
+  // Seeks to the offset of the open pagemap file.
+  // It returns true if succeeded.
+  bool Seek(uint64 address) const;
+
+  // Reads a pagemap state from the current offset.
+  // It returns true if succeeded.
+  bool Read(State* state) const;
+
+  RawFD fd_;
+};
+
+void MemoryInfoGetterLinux::Initialize() {
+  char filename[100];
+  snprintf(filename, sizeof(filename), "/proc/%d/pagemap",
+           static_cast<int>(getpid()));
+  fd_ = open(filename, O_RDONLY);
+  RAW_DCHECK(fd_ != -1, "Failed to open /proc/self/pagemap");
+}
+
+size_t MemoryInfoGetterLinux::CommittedSize(
+    uint64 first_address, uint64 last_address) const {
+  int page_size = getpagesize();
+  uint64 page_address = (first_address / page_size) * page_size;
+  size_t committed_size = 0;
+
+  Seek(first_address);
+
+  // Check every page on which the allocation resides.
+  while (page_address <= last_address) {
+    // Read corresponding physical page.
+    State state;
+    // TODO(dmikurube): Read pagemap in bulk for speed.
+    if (Read(&state) == false) {
+      // We can't read the last region (e.g vsyscall).
+#ifndef NDEBUG
+      RAW_LOG(0, "pagemap read failed @ %#llx %"PRId64" bytes",
+              first_address, last_address - first_address + 1);
+#endif
+      return 0;
+    }
+
+    if (state.is_committed) {
+      // Calculate the size of the allocation part in this page.
+      size_t bytes = page_size;
+
+      // If looking at the last page in a given region.
+      if (last_address <= page_address - 1 + page_size) {
+        bytes = last_address - page_address + 1;
+      }
+
+      // If looking at the first page in a given region.
+      if (page_address < first_address) {
+        bytes -= first_address - page_address;
+      }
+
+      committed_size += bytes;
+    }
+    if (page_address > MAX_ADDRESS - page_size) {
+      break;
+    }
+    page_address += page_size;
+  }
+
+  return committed_size;
+}
+
+bool MemoryInfoGetterLinux::Seek(uint64 address) const {
+  int64 index = (address / getpagesize()) * PAGEMAP_BYTES;
+  int64 offset = lseek64(fd_, index, SEEK_SET);
+  RAW_DCHECK(offset == index, "Failed in seeking.");
+  return offset >= 0;
+}
+
+bool MemoryInfoGetterLinux::Read(State* state) const {
+  static const uint64 U64_1 = 1;
+  static const uint64 PFN_FILTER = (U64_1 << 55) - U64_1;
+  static const uint64 PAGE_PRESENT = U64_1 << 63;
+  static const uint64 PAGE_SWAP = U64_1 << 62;
+  static const uint64 PAGE_RESERVED = U64_1 << 61;
+  static const uint64 FLAG_NOPAGE = U64_1 << 20;
+  static const uint64 FLAG_KSM = U64_1 << 21;
+  static const uint64 FLAG_MMAP = U64_1 << 11;
+
+  uint64 pagemap_value;
+  int result = read(fd_, &pagemap_value, PAGEMAP_BYTES);
+  if (result != PAGEMAP_BYTES) {
+    return false;
+  }
+
+  // Check if the page is committed.
+  state->is_committed = (pagemap_value & (PAGE_PRESENT | PAGE_SWAP));
+
+  state->is_present = (pagemap_value & PAGE_PRESENT);
+  state->is_swapped = (pagemap_value & PAGE_SWAP);
+  state->is_shared = false;
+
+  return true;
+}
+
+#endif  // defined(__linux__)
+
+}  // anonymous namespace
+
+DeepHeapProfile::MemoryResidenceInfoGetterInterface::
+    MemoryResidenceInfoGetterInterface() {}
+
+DeepHeapProfile::MemoryResidenceInfoGetterInterface::
+    ~MemoryResidenceInfoGetterInterface() {}
+
+DeepHeapProfile::MemoryResidenceInfoGetterInterface*
+    DeepHeapProfile::MemoryResidenceInfoGetterInterface::Create() {
+#if defined(__linux__)
+  return new MemoryInfoGetterLinux();
+#else
+  return NULL;
+#endif
+}
+
 DeepHeapProfile::DeepHeapProfile(HeapProfileTable* heap_profile,
                                  const char* prefix)
-    : pagemap_(),
+    : memory_residence_info_getter_(
+          MemoryResidenceInfoGetterInterface::Create()),
       most_recent_pid_(-1),
       stats_(),
       dump_count_(0),
@@ -62,6 +211,7 @@ DeepHeapProfile::DeepHeapProfile(HeapProfileTable* heap_profile,
 DeepHeapProfile::~DeepHeapProfile() {
   heap_profile_->dealloc_(profiler_buffer_);
   heap_profile_->dealloc_(filename_prefix_);
+  delete memory_residence_info_getter_;
 }
 
 // Global malloc() should not be used in this function.
@@ -79,7 +229,7 @@ int DeepHeapProfile::FillOrderedProfile(char raw_buffer[], int buffer_size) {
   if (most_recent_pid_ != getpid()) {
     most_recent_pid_ = getpid();
 
-    pagemap_.Open();
+    memory_residence_info_getter_->Initialize();
     deep_table_.ResetIsLogged();
 
     // Write maps into "|filename_prefix_|.<pid>.maps".
@@ -108,7 +258,7 @@ int DeepHeapProfile::FillOrderedProfile(char raw_buffer[], int buffer_size) {
     mmap_list_[i].first_address = 0;
   mmap_list_[num_mmap_allocations_ - 1].last_address = 0;
 
-  stats_.SnapshotProcMaps(pagemap_, NULL, 0);
+  stats_.SnapshotProcMaps(memory_residence_info_getter_, NULL, 0);
 
   // TODO(dmikurube): Eliminate dynamic memory allocation caused by snprintf.
   // glibc's snprintf internally allocates memory by alloca normally, but it
@@ -118,7 +268,8 @@ int DeepHeapProfile::FillOrderedProfile(char raw_buffer[], int buffer_size) {
   stats_.SnapshotAllocations(this);
 
   // Check if committed bytes changed during SnapshotAllocations.
-  stats_.SnapshotProcMaps(pagemap_, mmap_list_, mmap_list_length_);
+  stats_.SnapshotProcMaps(
+      memory_residence_info_getter_, mmap_list_, mmap_list_length_);
 
   buffer.AppendString(kProfileHeader, 0);
   buffer.AppendString(kProfileVersion, 0);
@@ -234,94 +385,6 @@ bool DeepHeapProfile::TextBuffer::ForwardCursor(int appended) {
   if (appended < 0 || appended >= size_ - cursor_)
     return false;
   cursor_ += appended;
-  return true;
-}
-
-void DeepHeapProfile::ProcPagemap::Open() {
-  char filename[100];
-  snprintf(filename, sizeof(filename), "/proc/%d/pagemap",
-           static_cast<int>(getpid()));
-  fd_ = open(filename, O_RDONLY);
-  RAW_DCHECK(fd_ != -1, "Failed to open /proc/self/pagemap");
-}
-
-size_t DeepHeapProfile::ProcPagemap::CommittedSize(
-    uint64 first_address, uint64 last_address) const {
-  int page_size = getpagesize();
-  uint64 page_address = (first_address / page_size) * page_size;
-  size_t committed_size = 0;
-
-  Seek(first_address);
-
-  // Check every page on which the allocation resides.
-  while (page_address <= last_address) {
-    // Read corresponding physical page.
-    State state;
-    // TODO(dmikurube): Read pagemap in bulk for speed.
-    if (Read(&state) == false) {
-      // We can't read the last region (e.g vsyscall).
-#ifndef NDEBUG
-      RAW_LOG(0, "pagemap read failed @ %#llx %"PRId64" bytes",
-              first_address, last_address - first_address + 1);
-#endif
-      return 0;
-    }
-
-    if (state.is_committed) {
-      // Calculate the size of the allocation part in this page.
-      size_t bytes = page_size;
-
-      // If looking at the last page in a given region.
-      if (last_address <= page_address - 1 + page_size) {
-        bytes = last_address - page_address + 1;
-      }
-
-      // If looking at the first page in a given region.
-      if (page_address < first_address) {
-        bytes -= first_address - page_address;
-      }
-
-      committed_size += bytes;
-    }
-    if (page_address > MAX_ADDRESS - page_size) {
-      break;
-    }
-    page_address += page_size;
-  }
-
-  return committed_size;
-}
-
-bool DeepHeapProfile::ProcPagemap::Seek(uint64 address) const {
-  int64 index = (address / getpagesize()) * PAGEMAP_BYTES;
-  int64 offset = lseek64(fd_, index, SEEK_SET);
-  RAW_DCHECK(offset == index, "Failed in seeking.");
-  return offset >= 0;
-}
-
-bool DeepHeapProfile::ProcPagemap::Read(State* state) const {
-  static const uint64 U64_1 = 1;
-  static const uint64 PFN_FILTER = (U64_1 << 55) - U64_1;
-  static const uint64 PAGE_PRESENT = U64_1 << 63;
-  static const uint64 PAGE_SWAP = U64_1 << 62;
-  static const uint64 PAGE_RESERVED = U64_1 << 61;
-  static const uint64 FLAG_NOPAGE = U64_1 << 20;
-  static const uint64 FLAG_KSM = U64_1 << 21;
-  static const uint64 FLAG_MMAP = U64_1 << 11;
-
-  uint64 pagemap_value;
-  int result = read(fd_, &pagemap_value, PAGEMAP_BYTES);
-  if (result != PAGEMAP_BYTES) {
-    return false;
-  }
-
-  // Check if the page is committed.
-  state->is_committed = (pagemap_value & (PAGE_PRESENT | PAGE_SWAP));
-
-  state->is_present = (pagemap_value & PAGE_PRESENT);
-  state->is_swapped = (pagemap_value & PAGE_SWAP);
-  state->is_shared = false;
-
   return true;
 }
 
@@ -529,9 +592,12 @@ void DeepHeapProfile::RegionStats::Initialize() {
 }
 
 void DeepHeapProfile::RegionStats::Record(
-    const ProcPagemap& pagemap, uint64 first_address, uint64 last_address) {
+    const MemoryResidenceInfoGetterInterface* memory_residence_info_getter,
+    uint64 first_address,
+    uint64 last_address) {
   virtual_bytes_ += static_cast<size_t>(last_address - first_address + 1);
-  committed_bytes_ += pagemap.CommittedSize(first_address, last_address);
+  committed_bytes_ += memory_residence_info_getter->CommittedSize(first_address,
+                                                                  last_address);
 }
 
 void DeepHeapProfile::RegionStats::Unparse(const char* name,
@@ -546,7 +612,7 @@ void DeepHeapProfile::RegionStats::Unparse(const char* name,
 
 // TODO(dmikurube): Eliminate dynamic memory allocation caused by snprintf.
 void DeepHeapProfile::GlobalStats::SnapshotProcMaps(
-    const ProcPagemap& pagemap,
+    const MemoryResidenceInfoGetterInterface* memory_residence_info_getter,
     MMapListEntry* mmap_list,
     int mmap_list_length) {
   ProcMapsIterator::Buffer iterator_buffer;
@@ -584,7 +650,8 @@ void DeepHeapProfile::GlobalStats::SnapshotProcMaps(
     } else {
       type = OTHER;
     }
-    all_[type].Record(pagemap, first_address, last_address);
+    all_[type].Record(
+        memory_residence_info_getter, first_address, last_address);
 
     // TODO(dmikurube): Stop double-counting pagemap.
     // Counts nonprofiled memory regions in /proc/<pid>/maps.
@@ -613,7 +680,9 @@ void DeepHeapProfile::GlobalStats::SnapshotProcMaps(
 
         if (last_address_of_nonprofiled + 1 > cursor) {
           nonprofiled_[type].Record(
-              pagemap, cursor, last_address_of_nonprofiled);
+              memory_residence_info_getter,
+              cursor,
+              last_address_of_nonprofiled);
           cursor = last_address_of_nonprofiled + 1;
         }
       } while (mmap_list_index < mmap_list_length &&
@@ -695,7 +764,7 @@ void DeepHeapProfile::GlobalStats::RecordAlloc(const void* pointer,
                                                AllocValue* alloc_value,
                                                DeepHeapProfile* deep_profile) {
   uint64 address = reinterpret_cast<uintptr_t>(pointer);
-  size_t committed = deep_profile->pagemap_.CommittedSize(
+  size_t committed = deep_profile->memory_residence_info_getter_->CommittedSize(
       address, address + alloc_value->bytes - 1);
 
   DeepBucket* deep_bucket = deep_profile->deep_table_.Lookup(
@@ -714,7 +783,7 @@ void DeepHeapProfile::GlobalStats::RecordMMap(const void* pointer,
                                               AllocValue* alloc_value,
                                               DeepHeapProfile* deep_profile) {
   uint64 address = reinterpret_cast<uintptr_t>(pointer);
-  size_t committed = deep_profile->pagemap_.CommittedSize(
+  size_t committed = deep_profile->memory_residence_info_getter_->CommittedSize(
       address, address + alloc_value->bytes - 1);
 
   DeepBucket* deep_bucket = deep_profile->deep_table_.Lookup(

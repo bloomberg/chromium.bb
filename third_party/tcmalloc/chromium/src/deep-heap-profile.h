@@ -45,6 +45,26 @@
 
 class DeepHeapProfile {
  public:
+  // Defines an interface for getting info about memory residence.
+  class MemoryResidenceInfoGetterInterface {
+   public:
+    virtual ~MemoryResidenceInfoGetterInterface();
+
+    // Initializes the instance.
+    virtual void Initialize() = 0;
+
+    // Returns the number of resident (including swapped) bytes of the given
+    // memory region from |first_address| to |last_address| inclusive.
+    virtual size_t CommittedSize(
+        uint64 first_address, uint64 last_address) const = 0;
+
+    // Creates a new platform specific MemoryResidenceInfoGetterInterface.
+    static MemoryResidenceInfoGetterInterface* Create();
+
+   protected:
+    MemoryResidenceInfoGetterInterface();
+  };
+
   // Constructs a DeepHeapProfile instance.  It works as a wrapper of
   // HeapProfileTable.
   //
@@ -128,40 +148,6 @@ class DeepHeapProfile {
     DISALLOW_COPY_AND_ASSIGN(TextBuffer);
   };
 
-  class ProcPagemap {
-   public:
-    ProcPagemap(): fd_(kIllegalRawFD) {}
-
-    // Opens /proc/<pid>/pagemap and stores its file descriptor.
-    // It keeps open while the process is running.
-    //
-    // Note that file descriptors need to be refreshed after fork.
-    void Open();
-
-    // Returns the number of resident (including swapped) bytes of the given
-    // memory region from |first_address| to |last_address| inclusive.
-    size_t CommittedSize(uint64 first_address, uint64 last_address) const;
-
-   private:
-    struct State {
-      bool is_committed;  // Currently, we use only this
-      bool is_present;
-      bool is_swapped;
-      bool is_shared;
-      bool is_mmap;
-    };
-
-    // Seeks to the offset of the open pagemap file.
-    // It returns true if succeeded.
-    bool Seek(uint64 address) const;
-
-    // Reads a pagemap state from the current offset.
-    // It returns true if succeeded.
-    bool Read(State* state) const;
-
-    RawFD fd_;
-  };
-
   struct MMapListEntry {
     uint64 first_address;
     uint64 last_address;
@@ -240,9 +226,10 @@ class DeepHeapProfile {
     // Updates itself to contain the tallies of 'virtual_bytes' and
     // 'committed_bytes' in the region from |first_adress| to |last_address|
     // inclusive.
-    void Record(const ProcPagemap& pagemap,
-                uint64 first_address,
-                uint64 last_address);
+    void Record(
+        const MemoryResidenceInfoGetterInterface* memory_residence_info_getter,
+        uint64 first_address,
+        uint64 last_address);
 
     // Writes stats of the region into |buffer| with |name|.
     void Unparse(const char* name, TextBuffer* buffer);
@@ -268,9 +255,10 @@ class DeepHeapProfile {
   class GlobalStats {
    public:
     // Snapshots and calculates global stats from /proc/<pid>/maps and pagemap.
-    void SnapshotProcMaps(const ProcPagemap& pagemap,
-                          MMapListEntry* mmap_list,
-                          int mmap_list_length);
+    void SnapshotProcMaps(
+        const MemoryResidenceInfoGetterInterface* memory_residence_info_getter,
+        MMapListEntry* mmap_list,
+        int mmap_list_length);
 
     // Snapshots allocations by malloc and mmap.
     void SnapshotAllocations(DeepHeapProfile* deep_profile);
@@ -321,7 +309,7 @@ class DeepHeapProfile {
                         AllocValue* alloc_value,
                         DeepHeapProfile* deep_profile);
 
-  ProcPagemap pagemap_;
+  MemoryResidenceInfoGetterInterface* memory_residence_info_getter_;
 
   // Process ID of the last dump.  This can change by fork.
   pid_t most_recent_pid_;
