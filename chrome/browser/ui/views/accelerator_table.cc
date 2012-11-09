@@ -136,7 +136,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_F5, ui::EF_SHIFT_DOWN, IDC_RELOAD_IGNORING_CACHE },
   { ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_SHOW_AVATAR_MENU},
 #endif  // OS_CHROMEOS
-#if !defined(USE_ASH)
+#if !defined(OS_CHROMEOS)
   { ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FEEDBACK },
   { ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_EXIT },
   { ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,

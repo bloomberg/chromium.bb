@@ -182,7 +182,8 @@ void ChromeShellDelegate::NewTab() {
 void ChromeShellDelegate::NewWindow(bool is_incognito) {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   chrome::NewEmptyWindow(
-      is_incognito ? profile->GetOffTheRecordProfile() : profile);
+      is_incognito ? profile->GetOffTheRecordProfile() : profile,
+      chrome::HOST_DESKTOP_TYPE_ASH);
 }
 
 void ChromeShellDelegate::ToggleMaximized() {

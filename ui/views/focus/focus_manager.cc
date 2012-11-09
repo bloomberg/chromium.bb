@@ -59,7 +59,7 @@ bool FocusManager::OnKeyEvent(const ui::KeyEvent& event) {
   accelerator.set_type(event.type());
 
   if (event.type() == ui::ET_KEY_PRESSED) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
     // If the focused view wants to process the key event as is, let it be.
     // This is not used for linux/aura.
     if (focused_view_ && focused_view_->SkipDefaultKeyEventProcessing(event) &&

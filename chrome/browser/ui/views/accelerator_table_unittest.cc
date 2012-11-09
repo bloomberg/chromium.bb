@@ -41,7 +41,7 @@ TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
   }
 }
 
-#if defined(USE_ASH)
+#if defined(USE_ASH) && !defined(OS_WIN)
 TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
   std::set<AcceleratorMapping, Cmp> acclerators;
   for (size_t i = 0; i < kAcceleratorMapLength; ++i) {
