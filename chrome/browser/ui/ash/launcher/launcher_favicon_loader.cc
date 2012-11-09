@@ -5,7 +5,8 @@
 #include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 
 #include "base/logging.h"
-#include "chrome/browser/favicon/favicon_util.h"
+#include "chrome/browser/favicon/favicon_download_helper.h"
+#include "chrome/browser/favicon/favicon_download_helper_delegate.h"
 #include "chrome/browser/ui/ash/launcher/browser_launcher_item_controller.h"
 #include "chrome/common/favicon_url.h"
 #include "chrome/common/icon_messages.h"
@@ -25,35 +26,39 @@ const int kMaxBitmapSize = 256;
 // These icon bitmaps are not resized and are not cached beyond the lifetime
 // of the class. Bitmaps larger than kMaxBitmapSize are ignored.
 
-class FaviconBitmapHandler {
+class FaviconBitmapHandler : public FaviconDownloadHelperDelegate {
  public:
   FaviconBitmapHandler(content::WebContents* web_contents,
                        LauncherFaviconLoader::Delegate* delegate)
-      : web_contents_(web_contents),
-        delegate_(delegate) {
+      : delegate_(delegate) {
+    download_helper_.reset(new FaviconDownloadHelper(web_contents, this));
   }
 
   ~FaviconBitmapHandler() {}
 
   const SkBitmap& bitmap() const { return bitmap_; }
 
-  void OnUpdateFaviconURL(int32 page_id,
-                          const std::vector<FaviconURL>& candidates);
-
-  void OnDidDownloadFavicon(int id,
-                            const GURL& image_url,
-                            bool errored,
-                            int requested_size,
-                            const std::vector<SkBitmap>& bitmaps);
-
   bool HasPendingDownloads() const;
+
+  // FaviconDownloadHelperDelegate methods
+  virtual void OnUpdateFaviconURL(
+    int32 page_id,
+    const std::vector<FaviconURL>& candidates) OVERRIDE;
+
+  virtual void OnDidDownloadFavicon(
+    int id,
+    const GURL& image_url,
+    bool errored,
+    int requested_size,
+    const std::vector<SkBitmap>& bitmaps) OVERRIDE;
 
  private:
   void DownloadFavicon(const GURL& image_url);
   void AddFavicon(const GURL& image_url, const SkBitmap& new_bitmap);
 
-  content::WebContents* web_contents_;
   LauncherFaviconLoader::Delegate* delegate_;
+
+  scoped_ptr<FaviconDownloadHelper> download_helper_;
 
   typedef std::set<GURL> UrlSet;
   // Map of pending download urls.
@@ -104,17 +109,10 @@ void FaviconBitmapHandler::OnUpdateFaviconURL(
       continue;  // Skip already processed downloads.
     if (pending_requests_.find(*iter) != pending_requests_.end())
       continue;  // Skip already pending downloads.
-    DownloadFavicon(*iter);
+    pending_requests_.insert(*iter);
+    download_helper_->DownloadFavicon(*iter, 0);
   }
 }
-
-void FaviconBitmapHandler::DownloadFavicon(const GURL& image_url) {
-  int image_size = 0;  // Request the full sized image.
-  pending_requests_.insert(image_url);
-  content::RenderViewHost* host = web_contents_->GetRenderViewHost();
-  FaviconUtil::DownloadFavicon(host, image_url, image_size);
-}
-
 
 void FaviconBitmapHandler::OnDidDownloadFavicon(
     int id,
@@ -162,22 +160,12 @@ void FaviconBitmapHandler::AddFavicon(const GURL& image_url,
 
 LauncherFaviconLoader::LauncherFaviconLoader(Delegate* delegate,
                                              content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : web_contents_(web_contents) {
   favicon_handler_.reset(
       new internal::FaviconBitmapHandler(web_contents, delegate));
 }
 
 LauncherFaviconLoader::~LauncherFaviconLoader() {
-}
-
-bool LauncherFaviconLoader::OnMessageReceived(const IPC::Message& message) {
-  bool message_handled = false;   // Allow other handlers to receive these.
-  IPC_BEGIN_MESSAGE_MAP(LauncherFaviconLoader, message)
-    IPC_MESSAGE_HANDLER(IconHostMsg_DidDownloadFavicon, OnDidDownloadFavicon)
-    IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
-    IPC_MESSAGE_UNHANDLED(message_handled = false)
-  IPC_END_MESSAGE_MAP()
-  return message_handled;
 }
 
 SkBitmap LauncherFaviconLoader::GetFavicon() const {
@@ -186,20 +174,4 @@ SkBitmap LauncherFaviconLoader::GetFavicon() const {
 
 bool LauncherFaviconLoader::HasPendingDownloads() const {
   return favicon_handler_->HasPendingDownloads();
-}
-
-void LauncherFaviconLoader::OnUpdateFaviconURL(
-    int32 page_id,
-    const std::vector<FaviconURL>& candidates) {
-  favicon_handler_->OnUpdateFaviconURL(page_id, candidates);
-}
-
-void LauncherFaviconLoader::OnDidDownloadFavicon(
-    int id,
-    const GURL& image_url,
-    bool errored,
-    int requested_size,
-    const std::vector<SkBitmap>& bitmaps) {
-  favicon_handler_->OnDidDownloadFavicon(
-      id, image_url, errored, requested_size, bitmaps);
 }
