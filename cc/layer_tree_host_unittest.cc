@@ -1632,7 +1632,7 @@ public:
     virtual bool drawsContent() const OVERRIDE { return true; }
 
     const Region& occludedScreenSpace() const { return m_occludedScreenSpace; }
-    void clearOccludedScreenSpace() { m_occludedScreenSpace = Region(); }
+    void clearOccludedScreenSpace() { m_occludedScreenSpace.Clear(); }
 
 private:
     TestLayer() : Layer() { }

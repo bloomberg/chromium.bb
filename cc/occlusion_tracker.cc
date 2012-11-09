@@ -111,13 +111,13 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::finishedRenderTarget(co
     // TODO(senorblanco):  Make this smarter for SkImageFilter case:  once
     // SkImageFilters can report affectsOpacity(), call that.
     if (finishedTarget->maskLayer() || !surfaceOpacityKnown(surface) || surface->drawOpacity() < 1 || finishedTarget->filters().hasFilterThatAffectsOpacity() || finishedTarget->filter()) {
-        m_stack.back().occlusionInScreen = Region();
-        m_stack.back().occlusionInTarget = Region();
+        m_stack.back().occlusionInScreen.Clear();
+        m_stack.back().occlusionInTarget.Clear();
     } else {
         if (!surfaceTransformsToTargetKnown(surface))
-            m_stack.back().occlusionInTarget = Region();
+            m_stack.back().occlusionInTarget.Clear();
         if (!surfaceTransformsToScreenKnown(surface))
-            m_stack.back().occlusionInScreen = Region();
+            m_stack.back().occlusionInScreen.Clear();
     }
 }
 

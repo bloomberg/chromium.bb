@@ -38,6 +38,14 @@ const Region& Region::operator=(const Region& region) {
   return *this;
 }
 
+void Region::Swap(Region& region) {
+  region.skregion_.swap(skregion_);
+}
+
+void Region::Clear() {
+  skregion_.setEmpty();
+}
+
 bool Region::IsEmpty() const {
   return skregion_.isEmpty();
 }

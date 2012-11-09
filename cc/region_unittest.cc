@@ -297,54 +297,54 @@ TEST(RegionTest, ContainsRegion) {
   container.Union(gfx::Rect(0, 20, 41, 20));
   TEST_CONTAINS(container, gfx::Rect(5, 5, 30, 30));
 
-  container = Region();
+  container.Clear();
   container.Union(gfx::Rect(0, 0, 10, 10));
   container.Union(gfx::Rect(0, 30, 10, 10));
   container.Union(gfx::Rect(30, 30, 10, 10));
   container.Union(gfx::Rect(30, 0, 10, 10));
   TEST_NO_CONTAINS(container, gfx::Rect(5, 5, 30, 30));
 
-  container = Region();
+  container.Clear();
   container.Union(gfx::Rect(0, 0, 10, 10));
   container.Union(gfx::Rect(0, 30, 10, 10));
   container.Union(gfx::Rect(30, 0, 10, 40));
   TEST_NO_CONTAINS(container, gfx::Rect(5, 5, 30, 30));
 
-  container = Region();
+  container.Clear();
   container.Union(gfx::Rect(30, 0, 10, 10));
   container.Union(gfx::Rect(30, 30, 10, 10));
   container.Union(gfx::Rect(0, 0, 10, 40));
   TEST_NO_CONTAINS(container, gfx::Rect(5, 5, 30, 30));
 
-  container = Region();
+  container.Clear();
   container.Union(gfx::Rect(0, 0, 10, 40));
   container.Union(gfx::Rect(30, 0, 10, 40));
   TEST_NO_CONTAINS(container, gfx::Rect(5, 5, 30, 30));
 
-  container = Region();
+  container.Clear();
   container.Union(gfx::Rect(0, 0, 40, 40));
   TEST_NO_CONTAINS(container, gfx::Rect(10, -1, 20, 10));
 
-  container = Region();
+  container.Clear();
   container.Union(gfx::Rect(0, 0, 40, 40));
   TEST_NO_CONTAINS(container, gfx::Rect(10, 31, 20, 10));
 
-  container = Region();
+  container.Clear();
   container.Union(gfx::Rect(0, 0, 40, 20));
   container.Union(gfx::Rect(0, 20, 41, 20));
   TEST_NO_CONTAINS(container, gfx::Rect(-1, 10, 10, 20));
 
-  container = Region();
+  container.Clear();
   container.Union(gfx::Rect(0, 0, 40, 20));
   container.Union(gfx::Rect(0, 20, 41, 20));
   TEST_NO_CONTAINS(container, gfx::Rect(31, 10, 10, 20));
 
-  container = Region();
+  container.Clear();
   container.Union(gfx::Rect(0, 0, 40, 40));
   container.Subtract(gfx::Rect(0, 20, 60, 0));
   TEST_NO_CONTAINS(container, gfx::Rect(31, 10, 10, 20));
 
-  container = Region();
+  container.Clear();
   container.Union(gfx::Rect(0, 0, 60, 20));
   container.Union(gfx::Rect(30, 20, 10, 20));
   TEST_NO_CONTAINS(container, gfx::Rect(0, 0, 10, 39));
@@ -357,7 +357,7 @@ TEST(RegionTest, ContainsRegion) {
   TEST_NO_CONTAINS(container, gfx::Rect(50, 0, 10, 40));
   TEST_NO_CONTAINS(container, gfx::Rect(51, 0, 10, 41));
 
-  container = Region();
+  container.Clear();
   container.Union(gfx::Rect(30, 0, 10, 20));
   container.Union(gfx::Rect(0, 20, 60, 20));
   TEST_NO_CONTAINS(container, gfx::Rect(0, 0, 10, 39));
@@ -418,6 +418,39 @@ TEST(RegionTest, IsEmpty) {
   EXPECT_FALSE(SkIRect::MakeXYWH(-1, -1, 1, 1).isEmpty());
   EXPECT_FALSE(SkIRect::MakeXYWH(0, 0, 1, 1).isEmpty());
   EXPECT_FALSE(SkIRect::MakeXYWH(0, 0, 2, 2).isEmpty());
+}
+
+TEST(RegionTest, Clear) {
+  Region r;
+
+  r = gfx::Rect(0, 0, 50, 50);
+  EXPECT_FALSE(r.IsEmpty());
+  r.Clear();
+  EXPECT_TRUE(r.IsEmpty());
+
+  r = gfx::Rect(0, 0, 50, 50);
+  r.Union(gfx::Rect(100, 0, 50, 50));
+  r.Union(gfx::Rect(0, 0, 500, 500));
+  EXPECT_FALSE(r.IsEmpty());
+  r.Clear();
+  EXPECT_TRUE(r.IsEmpty());
+}
+
+TEST(RegionSwap, Swap) {
+  Region r1, r2, r3;
+
+  r1 = gfx::Rect(0, 0, 50, 50);
+  r1.Swap(r2);
+  EXPECT_TRUE(r1.IsEmpty());
+  EXPECT_EQ(r2.ToString(), Region(gfx::Rect(0, 0, 50, 50)).ToString());
+
+  r1 = gfx::Rect(0, 0, 50, 50);
+  r1.Union(gfx::Rect(100, 0, 50, 50));
+  r1.Union(gfx::Rect(0, 0, 500, 500));
+  r3 = r1;
+  r1.Swap(r2);
+  EXPECT_EQ(r1.ToString(), Region(gfx::Rect(0, 0, 50, 50)).ToString());
+  EXPECT_EQ(r2.ToString(), r3.ToString());
 }
 
 }  // namespace
