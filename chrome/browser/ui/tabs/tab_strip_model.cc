@@ -683,8 +683,7 @@ void TabStripModel::AddTabContents(TabContents* contents,
     inherit_group = true;
   }
   InsertTabContentsAt(
-      index, contents,
-      add_types | (inherit_group ? ADD_INHERIT_GROUP : 0));
+      index, contents, add_types | (inherit_group ? ADD_INHERIT_GROUP : 0));
   // Reset the index, just in case insert ended up moving it on us.
   index = GetIndexOfTabContents(contents);
 
@@ -838,13 +837,13 @@ void TabStripModel::ExecuteContextMenuCommand(
     case CommandDuplicate: {
       content::RecordAction(UserMetricsAction("TabContextMenu_Duplicate"));
       std::vector<int> indices = GetIndicesForCommand(context_index);
-      // Copy the TabContents off as the indices will change as tabs are
+      // Copy the WebContents off as the indices will change as tabs are
       // duplicated.
-      std::vector<TabContents*> tabs;
+      std::vector<WebContents*> tabs;
       for (size_t i = 0; i < indices.size(); ++i)
-        tabs.push_back(GetTabContentsAt(indices[i]));
+        tabs.push_back(GetWebContentsAt(indices[i]));
       for (size_t i = 0; i < tabs.size(); ++i) {
-        int index = GetIndexOfTabContents(tabs[i]);
+        int index = GetIndexOfWebContents(tabs[i]);
         if (index != -1 && delegate_->CanDuplicateContentsAt(index))
           delegate_->DuplicateContentsAt(index);
       }
@@ -853,19 +852,8 @@ void TabStripModel::ExecuteContextMenuCommand(
 
     case CommandCloseTab: {
       content::RecordAction(UserMetricsAction("TabContextMenu_CloseTab"));
-      std::vector<int> indices = GetIndicesForCommand(context_index);
-      // Copy the TabContents off as the indices will change as we remove
-      // things.
-      std::vector<TabContents*> tabs;
-      for (size_t i = 0; i < indices.size(); ++i)
-        tabs.push_back(GetTabContentsAt(indices[i]));
-      for (size_t i = 0; i < tabs.size(); ++i) {
-        int index = GetIndexOfTabContents(tabs[i]);
-        if (index != -1) {
-          CloseTabContentsAt(index,
-                             CLOSE_CREATE_HISTORICAL_TAB | CLOSE_USER_GESTURE);
-        }
-      }
+      InternalCloseTabs(GetIndicesForCommand(context_index),
+                        CLOSE_CREATE_HISTORICAL_TAB | CLOSE_USER_GESTURE);
       break;
     }
 
