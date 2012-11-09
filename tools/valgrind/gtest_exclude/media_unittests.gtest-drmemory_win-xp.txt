@@ -1,4 +1,0 @@
-# http://code.google.com/p/drmemory/issues/detail?id=842
-YUVConvertTest.RGB24ToYUV
-YUVConvertTest.SideBySideRGB
-SimpleSources.SineWaveAudio16MonoTest

@@ -1,8 +1,0 @@
-# TSan seems to timeout at random point on media_unittests,
-# see http://crbug.com/157793
-AudioBusTest.*
-AudioRendererAlgorithmTest.*
-VectorMathTest.*
-VideoFrame.*
-PipelineTest.*
-PipelineTeardownTest.*
