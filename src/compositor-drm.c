@@ -92,8 +92,9 @@ struct drm_compositor {
 	 * due to out of bounds dimensions, and then mistakenly set
 	 * sprites_are_broken:
 	 */
-	int32_t min_width, max_width;
-	int32_t min_height, max_height;
+	uint32_t min_width, max_width;
+	uint32_t min_height, max_height;
+	int no_addfb2;
 
 	struct wl_list sprite_list;
 	int sprites_are_broken;
@@ -149,18 +150,11 @@ struct drm_output {
 struct drm_sprite {
 	struct wl_list link;
 
-	uint32_t fb_id;
-	uint32_t pending_fb_id;
-	struct weston_surface *surface;
-	struct weston_surface *pending_surface;
 	struct weston_plane plane;
 
+	struct drm_fb *current, *next;
 	struct drm_output *output;
-
 	struct drm_compositor *compositor;
-
-	struct wl_listener destroy_listener;
-	struct wl_listener pending_destroy_listener;
 
 	uint32_t possible_crtcs;
 	uint32_t plane_id;
@@ -222,12 +216,11 @@ drm_fb_destroy_callback(struct gbm_bo *bo, void *data)
 }
 
 static struct drm_fb *
-drm_fb_get_from_bo(struct gbm_bo *bo)
+drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_compositor *compositor)
 {
 	struct drm_fb *fb = gbm_bo_get_user_data(bo);
-	struct drm_compositor *compositor =
-		(struct drm_compositor *) output->base.compositor;
-	uint32_t width, height, stride, handle;
+	uint32_t width, height, stride, handle, format;
+	uint32_t handles[4], pitches[4], offsets[4];
 	int ret;
 
 	if (fb)
@@ -244,17 +237,48 @@ drm_fb_get_from_bo(struct gbm_bo *bo)
 	stride = gbm_bo_get_stride(bo);
 	handle = gbm_bo_get_handle(bo).u32;
 
-	ret = drmModeAddFB(compositor->drm.fd, width, height, 24, 32,
-			   stride, handle, &fb->fb_id);
+	if (compositor->min_width > width || width > compositor->max_width ||
+	    compositor->min_height > height ||
+	    height > compositor->max_height) {
+		weston_log("bo geometry out of bounds\n");
+		goto err_free;
+	}
+
+	ret = -1;
+
+	format = gbm_bo_get_format(bo);
+
+	if (format && !compositor->no_addfb2) {
+		handles[0] = handle;
+		pitches[0] = stride;
+		offsets[0] = 0;
+
+		ret = drmModeAddFB2(compositor->drm.fd, width, height,
+				    format, handles, pitches, offsets,
+				    &fb->fb_id, 0);
+		if (ret) {
+			weston_log("addfb2 failed: %m\n");
+			compositor->no_addfb2 = 1;
+			compositor->sprites_are_broken = 1;
+		}
+	}
+
+	if (ret)
+		ret = drmModeAddFB(compositor->drm.fd, width, height, 24, 32,
+				   stride, handle, &fb->fb_id);
+
 	if (ret) {
 		weston_log("failed to create kms fb: %m\n");
-		free(fb);
-		return NULL;
+		goto err_free;
 	}
 
 	gbm_bo_set_user_data(bo, fb, drm_fb_destroy_callback);
 
 	return fb;
+
+err_free:
+	free(fb);
+	return NULL;
 }
 
 static void
@@ -264,6 +288,20 @@ fb_handle_buffer_destroy(struct wl_listener *listener, void *data)
 					 buffer_destroy_listener);
 
 	fb->buffer = NULL;
+}
+
+static void
+drm_fb_set_buffer(struct drm_fb *fb, struct wl_buffer *buffer)
+{
+	assert(fb->buffer == NULL);
+
+	fb->is_client_buffer = 1;
+	fb->buffer = buffer;
+	fb->buffer->busy_count++;
+	fb->buffer_destroy_listener.notify = fb_handle_buffer_destroy;
+
+	wl_signal_add(&fb->buffer->resource.destroy_signal,
+		      &fb->buffer_destroy_listener);
 }
 
 static struct weston_plane *
@@ -298,19 +336,13 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 		return NULL;
 	}
 
-	output->next = drm_fb_get_from_bo(bo);
+	output->next = drm_fb_get_from_bo(bo, c);
 	if (!output->next) {
 		gbm_bo_destroy(bo);
 		return NULL;
 	}
 
-	output->next->is_client_buffer = 1;
-	output->next->buffer = es->buffer;
-	output->next->buffer->busy_count++;
-	output->next->buffer_destroy_listener.notify = fb_handle_buffer_destroy;
-
-	wl_signal_add(&output->next->buffer->resource.destroy_signal,
-		      &output->next->buffer_destroy_listener);
+	drm_fb_set_buffer(output->next, es->buffer);
 
 	return &output->fb_plane;
 }
@@ -318,10 +350,11 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 static void
 drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 {
-	struct weston_compositor *ec = output->base.compositor;
+	struct drm_compositor *c =
+		(struct drm_compositor *) output->base.compositor;
 	struct gbm_bo *bo;
 
-	ec->renderer->repaint_output(&output->base, damage);
+	c->base.renderer->repaint_output(&output->base, damage);
 
 	bo = gbm_surface_lock_front_buffer(output->surface);
 	if (!bo) {
@@ -329,7 +362,7 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 		return;
 	}
 
-	output->next = drm_fb_get_from_bo(bo);
+	output->next = drm_fb_get_from_bo(bo, c);
 	if (!output->next) {
 		weston_log("failed to get drm_fb for bo\n");
 		gbm_surface_release_buffer(output->surface, bo);
@@ -380,21 +413,21 @@ drm_output_repaint(struct weston_output *output_base,
 	 * Now, update all the sprite surfaces
 	 */
 	wl_list_for_each(s, &compositor->sprite_list, link) {
-		uint32_t flags = 0;
+		uint32_t flags = 0, fb_id = 0;
 		drmVBlank vbl = {
 			.request.type = DRM_VBLANK_RELATIVE | DRM_VBLANK_EVENT,
 			.request.sequence = 1,
 		};
 
-		if ((!s->fb_id && !s->pending_fb_id) ||
+		if ((!s->current && !s->next) ||
 		    !drm_sprite_crtc_supported(output_base, s->possible_crtcs))
 			continue;
 
+		if (s->next && !compositor->sprites_hidden)
+			fb_id = s->next->fb_id;
+
 		ret = drmModeSetPlane(compositor->drm.fd, s->plane_id,
-				      output->crtc_id,
-				      compositor->sprites_hidden ?
-				      0 : s->pending_fb_id,
-				      flags,
+				      output->crtc_id, fb_id, flags,
 				      s->dest_x, s->dest_y,
 				      s->dest_w, s->dest_h,
 				      s->src_x, s->src_y,
@@ -429,29 +462,16 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	       void *data)
 {
 	struct drm_sprite *s = (struct drm_sprite *)data;
-	struct drm_compositor *c = s->compositor;
 	struct drm_output *output = s->output;
 	uint32_t msecs;
 
 	output->vblank_pending = 0;
 
-	if (s->surface) {
-		weston_buffer_post_release(s->surface->buffer);
-		wl_list_remove(&s->destroy_listener.link);
-		s->surface = NULL;
-		drmModeRmFB(c->drm.fd, s->fb_id);
-		s->fb_id = 0;
-	}
+	if (s->current)
+		gbm_bo_destroy(s->current->bo);
 
-	if (s->pending_surface) {
-		wl_list_remove(&s->pending_destroy_listener.link);
-		wl_signal_add(&s->pending_surface->buffer->resource.destroy_signal,
-			      &s->destroy_listener);
-		s->surface = s->pending_surface;
-		s->pending_surface = NULL;
-		s->fb_id = s->pending_fb_id;
-		s->pending_fb_id = 0;
-	}
+	s->current = s->next;
+	s->next = NULL;
 
 	if (!output->page_flip_pending) {
 		msecs = sec * 1000 + usec / 1000;
@@ -536,16 +556,11 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	struct drm_compositor *c =(struct drm_compositor *) ec;
 	struct drm_sprite *s;
 	int found = 0;
-	EGLint handle, stride;
 	struct gbm_bo *bo;
-	uint32_t fb_id = 0;
-	uint32_t handles[4], pitches[4], offsets[4];
-	int ret = 0;
 	pixman_region32_t dest_rect, src_rect;
 	pixman_box32_t *box;
 	uint32_t format;
 	wl_fixed_t sx1, sy1, sx2, sy2;
-	int32_t width, height;
 
 	if (c->sprites_are_broken)
 		return NULL;
@@ -566,7 +581,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 		if (!drm_sprite_crtc_supported(output_base, s->possible_crtcs))
 			continue;
 
-		if (!s->pending_fb_id) {
+		if (!s->next) {
 			found = 1;
 			break;
 		}
@@ -576,49 +591,25 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (!found)
 		return NULL;
 
-	width = es->geometry.width;
-	height = es->geometry.height;
-
-	/* If geometry is out of bounds, don't even bother trying because
-	 * we know the AddFB2() call will fail:
-	 */
-	if (c->min_width > width || width > c->max_width ||
-	    c->min_height > height || height > c->max_height)
-		return NULL;
-
 	bo = gbm_bo_import(c->gbm, GBM_BO_IMPORT_WL_BUFFER,
 			   es->buffer, GBM_BO_USE_SCANOUT);
 	if (!bo)
 		return NULL;
 
 	format = gbm_bo_get_format(bo);
-	handle = gbm_bo_get_handle(bo).s32;
-	stride = gbm_bo_get_stride(bo);
 
-	gbm_bo_destroy(bo);
-
-	if (!drm_surface_format_supported(s, format))
-		return NULL;
-
-	if (!handle)
-		return NULL;
-
-	handles[0] = handle;
-	pitches[0] = stride;
-	offsets[0] = 0;
-
-	ret = drmModeAddFB2(c->drm.fd, width, height,
-			    format, handles, pitches, offsets,
-			    &fb_id, 0);
-	if (ret) {
-		weston_log("addfb2 failed: %d\n", ret);
-		c->sprites_are_broken = 1;
+	if (!drm_surface_format_supported(s, format)) {
+		gbm_bo_destroy(bo);
 		return NULL;
 	}
 
-	s->pending_fb_id = fb_id;
-	s->pending_surface = es;
-	es->buffer->busy_count++;
+	s->next = drm_fb_get_from_bo(bo, c);
+	if (!s->next) {
+		gbm_bo_destroy(bo);
+		return NULL;
+	}
+
+	drm_fb_set_buffer(s->next, es->buffer);
 
 	box = pixman_region32_extents(&es->transform.boundingbox);
 	s->plane.x = box->x1;
@@ -668,9 +659,6 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	s->src_w = (sx2 - sx1) << 8;
 	s->src_h = (sy2 - sy1) << 8;
 	pixman_region32_fini(&src_rect);
-
-	wl_signal_add(&es->buffer->resource.destroy_signal,
-		      &s->pending_destroy_listener);
 
 	return &s->plane;
 }
@@ -1129,32 +1117,6 @@ drm_subpixel_to_wayland(int drm_value)
 	}
 }
 
-static void
-sprite_handle_buffer_destroy(struct wl_listener *listener, void *data)
-{
-	struct drm_sprite *sprite =
-		container_of(listener, struct drm_sprite,
-			     destroy_listener);
-	struct drm_compositor *compositor = sprite->compositor;
-
-	sprite->surface = NULL;
-	drmModeRmFB(compositor->drm.fd, sprite->fb_id);
-	sprite->fb_id = 0;
-}
-
-static void
-sprite_handle_pending_buffer_destroy(struct wl_listener *listener, void *data)
-{
-	struct drm_sprite *sprite =
-		container_of(listener, struct drm_sprite,
-			     pending_destroy_listener);
-	struct drm_compositor *compositor = sprite->compositor;
-
-	sprite->pending_surface = NULL;
-	drmModeRmFB(compositor->drm.fd, sprite->pending_fb_id);
-	sprite->pending_fb_id = 0;
-}
-
 /* returns a value between 0-255 range, where higher is brighter */
 static uint32_t
 drm_get_backlight(struct drm_output *output)
@@ -1534,13 +1496,8 @@ create_sprites(struct drm_compositor *ec)
 
 		sprite->possible_crtcs = plane->possible_crtcs;
 		sprite->plane_id = plane->plane_id;
-		sprite->surface = NULL;
-		sprite->pending_surface = NULL;
-		sprite->fb_id = 0;
-		sprite->pending_fb_id = 0;
-		sprite->destroy_listener.notify = sprite_handle_buffer_destroy;
-		sprite->pending_destroy_listener.notify =
-			sprite_handle_pending_buffer_destroy;
+		sprite->current = NULL;
+		sprite->next = NULL;
 		sprite->compositor = ec;
 		sprite->count_formats = plane->count_formats;
 		memcpy(sprite->formats, plane->formats,
@@ -1569,7 +1526,10 @@ destroy_sprites(struct drm_compositor *compositor)
 				sprite->plane_id,
 				output->crtc_id, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 0);
-		drmModeRmFB(compositor->drm.fd, sprite->fb_id);
+		if (sprite->current)
+			gbm_bo_destroy(sprite->current->bo);
+		if (sprite->next)
+			gbm_bo_destroy(sprite->next->bo);
 		weston_plane_release(&sprite->plane);
 		free(sprite);
 	}
@@ -2025,8 +1985,8 @@ drm_destroy(struct weston_compositor *ec)
 	eglTerminate(ec->egl_display);
 	eglReleaseThread();
 
-	gbm_device_destroy(d->gbm);
 	destroy_sprites(d);
+	gbm_device_destroy(d->gbm);
 	if (weston_launcher_drm_set_master(&d->base, d->drm.fd, 0) < 0)
 		weston_log("failed to drop master: %m\n");
 	tty_destroy(d->tty);
