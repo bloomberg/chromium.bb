@@ -32,10 +32,20 @@ en-US/ProtocolInterfaces.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/proto
 	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/protocol-interfaces-to-docbook.xsl \
 		$(top_srcdir)/protocol/wayland.xml > en-US/ProtocolInterfaces.xml
 
-en-US/WaylandClientAPI.xml: $(top_builddir)/doc/doxygen/xml/wayland-client_8h.xml $(srcdir)/doxygen-to-publican.xsl
+# WaylandClientAPI.xml is generated after combining all xml in one single file
+# with the exception of wayland-client_8h.xml that is omitted to not duplicate
+# the output methods.
+en-US/WaylandClientAPI.xml: $(top_builddir)/doc/doxygen/xml/index.xml $(srcdir)/doxygen-to-publican.xsl
 	$(AM_V_GEN)$(MKDIR_P) en-US/images
+	$(AM_V_GEN)mv $(top_srcdir)/doc/doxygen/xml/wayland-client_8h.xml \
+		$(top_srcdir)/doc/doxygen/
+	$(AM_V_GEN)$(XSLTPROC) $(top_srcdir)/doc/doxygen/xml/combine.xslt \
+		$(top_srcdir)/doc/doxygen/xml/index.xml > \
+		$(top_srcdir)/doc/doxygen/xml/clientAPI.xml
+	$(AM_V_GEN)mv $(top_srcdir)/doc/doxygen/wayland-client_8h.xml \
+		$(top_srcdir)/doc/doxygen/xml
 	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/doxygen-to-publican.xsl \
-		$(top_builddir)/doc/doxygen/xml/wayland-client_8h.xml > en-US/WaylandClientAPI.xml
+		$(top_builddir)/doc/doxygen/xml/clientAPI.xml > en-US/WaylandClientAPI.xml
 
 # Copy the en_US source files into en-US destination
 # This is required for out-of-source-tree build as publican does not allow us

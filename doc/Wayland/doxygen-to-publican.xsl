@@ -13,11 +13,19 @@
 
   <section id="sect-Library-Client">
     <title>Client API</title>
-    <para>Following is the Wayland library interface for clients
+    <para>Following is the Wayland library classes for clients
 	  (<emphasis>libwayland-client</emphasis>). Note that most of the
 	  procedures are related with IPC, which is the main responsibility of
 	  the library.
     </para>
+
+    <para>
+    <variablelist>
+    <xsl:apply-templates select="/doxygen/compounddef" />
+    </variablelist>
+    </para>
+
+    <para>And methods for the respective classes.</para>
 
     <para>
     <variablelist>
@@ -27,20 +35,38 @@
   </section>
 </xsl:template>
 
-<xsl:template match="memberdef" >
-    <xsl:if test="@kind = 'function'">
-  <varlistentry>
 
-      <term>
-      <xsl:value-of select="name" />
-      </term>
-    <listitem>
-    <para>
-      <xsl:value-of select="briefdescription" />
-    </para>
-    </listitem>
-  </varlistentry>
-  </xsl:if>
+<!-- methods -->
+<xsl:template match="memberdef" >
+    <xsl:if test="@kind = 'function' and @static = 'no'">
+    <varlistentry>
+        <term>
+        <xsl:value-of select="name" />
+        - <xsl:value-of select="briefdescription" />
+        </term>
+        <listitem>
+            <para></para>
+        </listitem>
+    </varlistentry>
+    </xsl:if>
 </xsl:template>
 
+<!-- classes -->
+<xsl:template match="compounddef" >
+    <xsl:if test="@kind = 'class' ">
+    <varlistentry>
+        <term>
+            <xsl:value-of select="compoundname" />
+            <xsl:if test="briefdescription">
+                - <xsl:value-of select="briefdescription" />
+            </xsl:if>
+        </term>
+
+        <!-- TODO: the output text is not splitting paragraphs correctly -->
+        <listitem>
+            <para><xsl:value-of select="detaileddescription"/></para>
+        </listitem>
+    </varlistentry>
+    </xsl:if>
+</xsl:template>
 </xsl:stylesheet>
