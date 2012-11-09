@@ -92,6 +92,7 @@ const char *kBlockedHostnames[] = {
   "*.abc.com",
   "def",
   "*.def.com",
+  "*.site.com",
   "history",
   "z"
 };
@@ -113,9 +114,16 @@ const struct TestHistoryEntry {
   {"http://www.bar.com/7", "Page 7", kSearchText, 4, 4, false },
   {"http://www.bar.com/8", "Page 8", kSearchText, 3, 3, false },
   {"http://www.bar.com/9", "Page 9", kSearchText, 2, 2, false },
+  {"http://www.site.com/path/1", "Site 1", kSearchText, 4, 4, false },
+  {"http://www.site.com/path/2", "Site 2", kSearchText, 3, 3, false },
+  {"http://www.site.com/path/3", "Site 3", kSearchText, 2, 2, false },
 
   // To trigger inline autocomplete.
   {"http://www.def.com", "Page def", kSearchText, 10000, 10000, true },
+
+  // Used in particular for the desired TLD test.  This makes it test
+  // the interesting case when there's an intranet host with the same
+  // name as the .com.
   {"http://bar/", "Bar", kSearchText, 1, 0, false },
 };
 
@@ -1007,7 +1015,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     string16 old_text = omnibox_view->GetText();
 
     // Input something that can match history items.
-    omnibox_view->SetUserText(ASCIIToUTF16("bar"));
+    omnibox_view->SetUserText(ASCIIToUTF16("site.com/p"));
     ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
     ASSERT_TRUE(popup_model->IsOpen());
 
@@ -1018,7 +1026,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_GE(popup_model->result().size(), 3U);
 
     string16 user_text = omnibox_view->GetText();
-    ASSERT_EQ(ASCIIToUTF16("bar"), user_text);
+    ASSERT_EQ(ASCIIToUTF16("site.com/p"), user_text);
     omnibox_view->SelectAll(true);
     ASSERT_TRUE(omnibox_view->IsSelectAll());
 
