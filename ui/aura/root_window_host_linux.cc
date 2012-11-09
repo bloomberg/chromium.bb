@@ -807,11 +807,14 @@ void RootWindowHostLinux::DispatchXI2Event(const base::NativeEvent& event) {
         num_coalesced = ui::CoalescePendingMotionEvents(xev, &last_event);
         if (num_coalesced > 0)
           xev = &last_event;
-      } else if (type == ui::ET_MOUSE_PRESSED) {
+      } else if (type == ui::ET_MOUSE_PRESSED ||
+                 type == ui::ET_MOUSE_RELEASED) {
         XIDeviceEvent* xievent =
             static_cast<XIDeviceEvent*>(xev->xcookie.data);
         int button = xievent->detail;
         if (button == kBackMouseButton || button == kForwardMouseButton) {
+          if (type == ui::ET_MOUSE_RELEASED)
+            break;
           client::UserActionClient* gesture_client =
               client::GetUserActionClient(delegate_->AsRootWindow());
           if (gesture_client) {
