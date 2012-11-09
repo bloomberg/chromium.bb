@@ -31,7 +31,9 @@ gfx::ImageSkia ImageSkiaFromUIImage(UIImage* image) {
   CGSize size = image.size;
   CGSize desired_size_for_scale =
       CGSizeMake(size.width * scale, size.height * scale);
-  SkBitmap bitmap(gfx::UIImageToSkBitmap(image, desired_size_for_scale, false));
+  SkBitmap bitmap(gfx::CGImageToSkBitmap(image.CGImage,
+                                         desired_size_for_scale,
+                                         false));
   if (!bitmap.isNull())
     image_skia.AddRepresentation(gfx::ImageSkiaRep(bitmap, scale_factor));
   return image_skia;

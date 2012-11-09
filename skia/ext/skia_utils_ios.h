@@ -18,8 +18,10 @@ class UIImage;
 
 namespace gfx {
 
-// Draws a UIImage with a given size into a SkBitmap.
-SK_API SkBitmap UIImageToSkBitmap(UIImage* image, CGSize size, bool is_opaque);
+// Draws a CGImage into an SkBitmap of the given size.
+SK_API SkBitmap CGImageToSkBitmap(CGImageRef image,
+                                  CGSize size,
+                                  bool is_opaque);
 
 // Given an SkBitmap and a color space, return an autoreleased UIImage.
 SK_API UIImage* SkBitmapToUIImageWithColorSpace(const SkBitmap& skia_bitmap,
