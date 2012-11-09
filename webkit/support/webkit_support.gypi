@@ -66,6 +66,8 @@
         'weburl_loader_mock_factory.h',
         'web_audio_device_mock.cc',
         'web_audio_device_mock.h',
+        'web_gesture_curve_mock.cc',
+        'web_gesture_curve_mock.h',
       ],
       'conditions': [
         ['OS=="mac"', {

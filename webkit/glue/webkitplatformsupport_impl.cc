@@ -31,7 +31,9 @@
 #include "grit/webkit_chromium_resources.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurve.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginListBuilder.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCookie.h"
@@ -42,6 +44,7 @@
 #include "ui/base/layout.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
+#include "webkit/glue/touch_fling_platform_gesture_curve.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
@@ -860,5 +863,16 @@ WebKit::WebFlingAnimator* WebKitPlatformSupportImpl::createFlingAnimator() {
   return new FlingAnimatorImpl();
 }
 #endif
+
+WebKit::WebGestureCurve* WebKitPlatformSupportImpl::createFlingAnimationCurve(
+    int device_source,
+    const WebKit::WebFloatPoint& velocity,
+    const WebKit::WebSize& cumulative_scroll) {
+  if (device_source == WebKit::WebGestureEvent::Touchscreen)
+    return TouchFlingGestureCurve::CreateForTouchScreen(velocity,
+                                                        cumulative_scroll);
+
+  return TouchFlingGestureCurve::CreateForTouchPad(velocity, cumulative_scroll);
+}
 
 }  // namespace webkit_glue

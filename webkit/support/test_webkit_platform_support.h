@@ -129,6 +129,11 @@ class TestWebKitPlatformSupport :
       size_t before_index,
       const WebKit::WebString& locale) OVERRIDE;
 
+  virtual WebKit::WebGestureCurve* createFlingAnimationCurve(
+      int device_source,
+      const WebKit::WebFloatPoint& velocity,
+      const WebKit::WebSize& cumulative_scroll) OVERRIDE;
+
  private:
   TestShellWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;

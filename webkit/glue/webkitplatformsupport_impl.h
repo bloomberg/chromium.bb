@@ -159,6 +159,11 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual WebKit::WebFlingAnimator* createFlingAnimator();
 #endif
 
+  virtual WebKit::WebGestureCurve* createFlingAnimationCurve(
+      int device_source,
+      const WebKit::WebFloatPoint& velocity,
+      const WebKit::WebSize& cumulative_scroll) OVERRIDE;
+
  private:
   void DoTimeout() {
     if (shared_timer_func_ && !shared_timer_suspended_)
