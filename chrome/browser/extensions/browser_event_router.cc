@@ -479,17 +479,16 @@ void BrowserEventRouter::TabReplacedAt(TabStripModel* tab_strip_model,
   TabInsertedAt(new_contents, index, tab_strip_model->active_index() == index);
 }
 
-void BrowserEventRouter::TabPinnedStateChanged(TabContents* contents,
+void BrowserEventRouter::TabPinnedStateChanged(WebContents* contents,
                                                int index) {
   TabStripModel* tab_strip = NULL;
   int tab_index;
 
-  if (ExtensionTabUtil::GetTabStripModel(
-        contents->web_contents(), &tab_strip, &tab_index)) {
+  if (ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index)) {
     DictionaryValue* changed_properties = new DictionaryValue();
     changed_properties->SetBoolean(tab_keys::kPinnedKey,
                                    tab_strip->IsTabPinned(tab_index));
-    DispatchTabUpdatedEvent(contents->web_contents(), changed_properties);
+    DispatchTabUpdatedEvent(contents, changed_properties);
   }
 }
 

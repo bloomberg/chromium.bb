@@ -423,20 +423,19 @@ void BrowserTabStripController::TabReplacedAt(TabStripModel* tab_strip_model,
   SetTabDataAt(new_contents->web_contents(), model_index);
 }
 
-void BrowserTabStripController::TabPinnedStateChanged(
-    TabContents* contents,
-    int model_index) {
+void BrowserTabStripController::TabPinnedStateChanged(WebContents* contents,
+                                                      int model_index) {
   // Currently none of the renderers render pinned state differently.
 }
 
-void BrowserTabStripController::TabMiniStateChanged(TabContents* contents,
+void BrowserTabStripController::TabMiniStateChanged(WebContents* contents,
                                                     int model_index) {
-  SetTabDataAt(contents->web_contents(), model_index);
+  SetTabDataAt(contents, model_index);
 }
 
-void BrowserTabStripController::TabBlockedStateChanged(TabContents* contents,
+void BrowserTabStripController::TabBlockedStateChanged(WebContents* contents,
                                                        int model_index) {
-  SetTabDataAt(contents->web_contents(), model_index);
+  SetTabDataAt(contents, model_index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

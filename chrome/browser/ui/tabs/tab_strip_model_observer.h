@@ -9,6 +9,10 @@ class TabContents;
 class TabStripModel;
 class TabStripSelectionModel;
 
+namespace content {
+class WebContents;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // TabStripModelObserver
@@ -108,18 +112,19 @@ class TabStripModelObserver {
 
   // Invoked when the pinned state of a tab changes. See note in
   // TabMiniStateChanged as to how this relates to TabMiniStateChanged.
-  virtual void TabPinnedStateChanged(TabContents* contents, int index);
+  virtual void TabPinnedStateChanged(content::WebContents* contents, int index);
 
   // Invoked if the mini state of a tab changes.
-  // NOTE: this is sent when the pinned state of a non-app tab changes and is
+  // NOTE: This is sent when the pinned state of a non-app tab changes and is
   // sent in addition to TabPinnedStateChanged. UI code typically need not care
   // about TabPinnedStateChanged, but instead this.
-  virtual void TabMiniStateChanged(TabContents* contents, int index);
+  virtual void TabMiniStateChanged(content::WebContents* contents, int index);
 
   // Invoked when the blocked state of a tab changes.
   // NOTE: This is invoked when a tab becomes blocked/unblocked by a tab modal
   // window.
-  virtual void TabBlockedStateChanged(TabContents* contents, int index);
+  virtual void TabBlockedStateChanged(content::WebContents* contents,
+                                      int index);
 
   // The TabStripModel now no longer has any tabs. The implementer may
   // use this as a trigger to try and close the window containing the

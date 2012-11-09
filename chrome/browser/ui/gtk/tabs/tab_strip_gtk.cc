@@ -1142,7 +1142,7 @@ void TabStripGtk::TabReplacedAt(TabStripModel* tab_strip_model,
   TabChangedAt(new_contents, index, ALL);
 }
 
-void TabStripGtk::TabMiniStateChanged(TabContents* contents, int index) {
+void TabStripGtk::TabMiniStateChanged(WebContents* contents, int index) {
   // Don't do anything if we've already picked up the change from TabMoved.
   if (GetTabAt(index)->mini() == model_->IsMiniTab(index))
     return;
@@ -1158,8 +1158,7 @@ void TabStripGtk::TabMiniStateChanged(TabContents* contents, int index) {
   }
 }
 
-void TabStripGtk::TabBlockedStateChanged(TabContents* contents,
-                                         int index) {
+void TabStripGtk::TabBlockedStateChanged(WebContents* contents, int index) {
   GetTabAt(index)->SetBlocked(model_->IsTabBlocked(index));
 }
 

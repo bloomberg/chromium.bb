@@ -7,6 +7,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 
+using content::WebContents;
+
 namespace {
 
 // TODO(avi): Remove when TabStripModelObserver sends WebContents.
@@ -112,11 +114,11 @@ void TabStripModelObserverBridge::TabReplacedAt(
 }
 
 void TabStripModelObserverBridge::TabMiniStateChanged(
-    TabContents* contents,
+    WebContents* contents,
     int index) {
   if ([controller_ respondsToSelector:
           @selector(tabMiniStateChangedWithContents:atIndex:)]) {
-    [controller_ tabMiniStateChangedWithContents:WebContentsOf(contents)
+    [controller_ tabMiniStateChangedWithContents:contents
                                          atIndex:index];
   }
 }

@@ -145,7 +145,7 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
   // of the ID of each web contents followed by a 'p' if pinned. For example,
   // if the model consists of two tabs with ids 2 and 1, with the first
   // tab pinned, this returns "2p 1".
-  std::string GetPinnedState(const TabStripModel& model) {
+  std::string GetTabStripStateString(const TabStripModel& model) {
     std::string actual;
     for (int i = 0; i < model.count(); ++i) {
       if (i > 0)
@@ -225,7 +225,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   };
 
   struct State {
-    State(TabContents* a_dst_contents,
+    State(WebContents* a_dst_contents,
           int a_dst_index,
           TabStripModelObserverAction a_action)
         : src_contents(NULL),
@@ -237,8 +237,8 @@ class MockTabStripModelObserver : public TabStripModelObserver {
           action(a_action) {
     }
 
-    TabContents* src_contents;
-    TabContents* dst_contents;
+    WebContents* src_contents;
+    WebContents* dst_contents;
     int src_index;
     int dst_index;
     bool user_gesture;
@@ -271,7 +271,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
                              int index,
                              bool foreground) OVERRIDE {
     empty_ = false;
-    State s(contents, index, INSERT);
+    State s(contents ? contents->web_contents() : NULL, index, INSERT);
     s.foreground = foreground;
     states_.push_back(s);
   }
@@ -279,23 +279,24 @@ class MockTabStripModelObserver : public TabStripModelObserver {
                                 TabContents* new_contents,
                                 int index,
                                 bool user_gesture) OVERRIDE {
-    State s(new_contents, index, ACTIVATE);
-    s.src_contents = old_contents;
+    State s(
+        new_contents ? new_contents->web_contents() : NULL, index, ACTIVATE);
+    s.src_contents = old_contents ? old_contents->web_contents() : NULL;
     s.user_gesture = user_gesture;
     states_.push_back(s);
   }
   virtual void TabSelectionChanged(
       TabStripModel* tab_strip_model,
       const TabStripSelectionModel& old_model) OVERRIDE {
-    State s(model()->GetActiveTabContents(), model()->active_index(), SELECT);
-    s.src_contents = model()->GetTabContentsAt(old_model.active());
+    State s(model()->GetActiveWebContents(), model()->active_index(), SELECT);
+    s.src_contents = model()->GetWebContentsAt(old_model.active());
     s.src_index = old_model.active();
     states_.push_back(s);
   }
   virtual void TabMoved(TabContents* contents,
                         int from_index,
                         int to_index) OVERRIDE {
-    State s(contents, to_index, MOVE);
+    State s(contents ? contents->web_contents() : NULL, to_index, MOVE);
     s.src_index = from_index;
     states_.push_back(s);
   }
@@ -303,28 +304,34 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
                             TabContents* contents,
                             int index) OVERRIDE {
-    states_.push_back(State(contents, index, CLOSE));
+    states_.push_back(
+        State(contents ? contents->web_contents() : NULL, index, CLOSE));
   }
   virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE {
-    states_.push_back(State(contents, index, DETACH));
+    states_.push_back(
+        State(contents ? contents->web_contents() : NULL, index, DETACH));
   }
   virtual void TabDeactivated(TabContents* contents) OVERRIDE {
-    states_.push_back(State(contents, model()->active_index(), DEACTIVATE));
+    states_.push_back(State(contents ? contents->web_contents() : NULL,
+                            model()->active_index(),
+                            DEACTIVATE));
   }
   virtual void TabChangedAt(TabContents* contents,
                             int index,
                             TabChangeType change_type) OVERRIDE {
-    states_.push_back(State(contents, index, CHANGE));
+    states_.push_back(
+        State(contents ? contents->web_contents() : NULL, index, CHANGE));
   }
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              TabContents* old_contents,
                              TabContents* new_contents,
                              int index) OVERRIDE {
-    State s(new_contents, index, REPLACED);
-    s.src_contents = old_contents;
+    State s(
+        new_contents ? new_contents->web_contents() : NULL, index, REPLACED);
+    s.src_contents = old_contents ? old_contents->web_contents() : NULL;
     states_.push_back(s);
   }
-  virtual void TabPinnedStateChanged(TabContents* contents,
+  virtual void TabPinnedStateChanged(WebContents* contents,
                                      int index) OVERRIDE {
     states_.push_back(State(contents, index, PINNED));
   }
@@ -358,7 +365,9 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
 
   typedef MockTabStripModelObserver::State State;
 
-  TabContents* contents1 = CreateTabContents();
+  TabContents* tab_contents1 = CreateTabContents();
+  WebContents* contents1 = tab_contents1->web_contents();
+  SetID(contents1, 1);
 
   // Note! The ordering of these tests is important, each subsequent test
   // builds on the state established in the previous. This is important if you
@@ -367,7 +376,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   // Test AppendTabContents, ContainsIndex
   {
     EXPECT_FALSE(tabstrip.ContainsIndex(0));
-    tabstrip.AppendTabContents(contents1, true);
+    tabstrip.AppendTabContents(tab_contents1, true);
     EXPECT_TRUE(tabstrip.ContainsIndex(0));
     EXPECT_EQ(1, tabstrip.count());
     EXPECT_EQ(3, observer.GetStateCount());
@@ -382,11 +391,14 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_TRUE(observer.StateEquals(2, s3));
     observer.ClearStates();
   }
+  EXPECT_EQ("1", GetTabStripStateString(tabstrip));
 
   // Test InsertTabContentsAt, foreground tab.
-  TabContents* contents2 = CreateTabContents();
+  TabContents* tab_contents2 = CreateTabContents();
+  WebContents* contents2 = tab_contents2->web_contents();
+  SetID(contents2, 2);
   {
-    tabstrip.InsertTabContentsAt(1, contents2, TabStripModel::ADD_ACTIVE);
+    tabstrip.InsertTabContentsAt(1, tab_contents2, TabStripModel::ADD_ACTIVE);
 
     EXPECT_EQ(2, tabstrip.count());
     EXPECT_EQ(4, observer.GetStateCount());
@@ -404,11 +416,14 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_TRUE(observer.StateEquals(3, s4));
     observer.ClearStates();
   }
+  EXPECT_EQ("1 2", GetTabStripStateString(tabstrip));
 
   // Test InsertTabContentsAt, background tab.
-  TabContents* contents3 = CreateTabContents();
+  TabContents* tab_contents3 = CreateTabContents();
+  WebContents* contents3 = tab_contents3->web_contents();
+  SetID(contents3, 3);
   {
-    tabstrip.InsertTabContentsAt(2, contents3, TabStripModel::ADD_NONE);
+    tabstrip.InsertTabContentsAt(2, tab_contents3, TabStripModel::ADD_NONE);
 
     EXPECT_EQ(3, tabstrip.count());
     EXPECT_EQ(1, observer.GetStateCount());
@@ -417,6 +432,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_TRUE(observer.StateEquals(0, s1));
     observer.ClearStates();
   }
+  EXPECT_EQ("1 2 3", GetTabStripStateString(tabstrip));
 
   // Test ActivateTabAt
   {
@@ -434,13 +450,15 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_TRUE(observer.StateEquals(2, s3));
     observer.ClearStates();
   }
+  EXPECT_EQ("1 2 3", GetTabStripStateString(tabstrip));
 
   // Test DetachTabContentsAt
   {
-    // Detach
-    TabContents* detached = tabstrip.DetachTabContentsAt(2);
+    // Detach ...
+    TabContents* detached_tab = tabstrip.DetachTabContentsAt(2);
+    WebContents* detached = detached_tab->web_contents();
     // ... and append again because we want this for later.
-    tabstrip.AppendTabContents(detached, true);
+    tabstrip.AppendTabContents(detached_tab, true);
     EXPECT_EQ(8, observer.GetStateCount());
     State s1(detached, 2, MockTabStripModelObserver::DETACH);
     EXPECT_TRUE(observer.StateEquals(0, s1));
@@ -470,6 +488,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_TRUE(observer.StateEquals(7, s8));
     observer.ClearStates();
   }
+  EXPECT_EQ("1 2 3", GetTabStripStateString(tabstrip));
 
   // Test CloseTabContentsAt
   {
@@ -494,6 +513,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_TRUE(observer.StateEquals(4, s5));
     observer.ClearStates();
   }
+  EXPECT_EQ("1 2", GetTabStripStateString(tabstrip));
 
   // Test MoveTabContentsAt, select_after_move == true
   {
@@ -506,6 +526,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_EQ(0, tabstrip.active_index());
     observer.ClearStates();
   }
+  EXPECT_EQ("2 1", GetTabStripStateString(tabstrip));
 
   // Test MoveTabContentsAt, select_after_move == false
   {
@@ -519,16 +540,20 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     tabstrip.MoveTabContentsAt(0, 1, false);
     observer.ClearStates();
   }
+  EXPECT_EQ("2 1", GetTabStripStateString(tabstrip));
 
   // Test Getters
   {
-    EXPECT_EQ(contents2, tabstrip.GetActiveTabContents());
-    EXPECT_EQ(contents2, tabstrip.GetTabContentsAt(0));
-    EXPECT_EQ(contents1, tabstrip.GetTabContentsAt(1));
-    EXPECT_EQ(0, tabstrip.GetIndexOfTabContents(contents2));
-    EXPECT_EQ(1, tabstrip.GetIndexOfTabContents(contents1));
-    EXPECT_EQ(0, tabstrip.GetIndexOfWebContents(contents2->web_contents()));
-    EXPECT_EQ(1, tabstrip.GetIndexOfWebContents(contents1->web_contents()));
+    EXPECT_EQ(tab_contents2, tabstrip.GetActiveTabContents());
+    EXPECT_EQ(contents2, tabstrip.GetActiveWebContents());
+    EXPECT_EQ(tab_contents2, tabstrip.GetTabContentsAt(0));
+    EXPECT_EQ(tab_contents1, tabstrip.GetTabContentsAt(1));
+    EXPECT_EQ(contents2, tabstrip.GetWebContentsAt(0));
+    EXPECT_EQ(contents1, tabstrip.GetWebContentsAt(1));
+    EXPECT_EQ(0, tabstrip.GetIndexOfTabContents(tab_contents2));
+    EXPECT_EQ(1, tabstrip.GetIndexOfTabContents(tab_contents1));
+    EXPECT_EQ(0, tabstrip.GetIndexOfWebContents(tab_contents2->web_contents()));
+    EXPECT_EQ(1, tabstrip.GetIndexOfWebContents(tab_contents1->web_contents()));
   }
 
   // Test UpdateTabContentsStateAt
@@ -918,7 +943,7 @@ TEST_F(TabStripModelTest, CommandCloseTab) {
                   0, TabStripModel::CommandCloseTab));
   tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandCloseTab);
   // Should have closed tabs 0 and 1.
-  EXPECT_EQ("2", GetPinnedState(tabstrip));
+  EXPECT_EQ("2", GetTabStripStateString(tabstrip));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -931,7 +956,7 @@ TEST_F(TabStripModelTest, CommandCloseTab) {
                   2, TabStripModel::CommandCloseTab));
   tabstrip.ExecuteContextMenuCommand(2, TabStripModel::CommandCloseTab);
   // Should have closed tab 2.
-  EXPECT_EQ("0 1", GetPinnedState(tabstrip));
+  EXPECT_EQ("0 1", GetTabStripStateString(tabstrip));
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
 
@@ -942,7 +967,7 @@ TEST_F(TabStripModelTest, CommandCloseTab) {
                   0, TabStripModel::CommandCloseTab));
   tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandCloseTab);
   // Should have closed tab 2.
-  EXPECT_EQ("2", GetPinnedState(tabstrip));
+  EXPECT_EQ("2", GetTabStripStateString(tabstrip));
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
 }
@@ -961,7 +986,7 @@ TEST_F(TabStripModelTest, CommandCloseOtherTabs) {
   EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
                   0, TabStripModel::CommandCloseOtherTabs));
   tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandCloseOtherTabs);
-  EXPECT_EQ("0 1", GetPinnedState(tabstrip));
+  EXPECT_EQ("0 1", GetTabStripStateString(tabstrip));
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
 
@@ -972,7 +997,7 @@ TEST_F(TabStripModelTest, CommandCloseOtherTabs) {
   EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
                   2, TabStripModel::CommandCloseOtherTabs));
   tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandCloseOtherTabs);
-  EXPECT_EQ("0 1", GetPinnedState(tabstrip));
+  EXPECT_EQ("0 1", GetTabStripStateString(tabstrip));
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
 
@@ -1004,7 +1029,7 @@ TEST_F(TabStripModelTest, CommandCloseOtherTabs) {
                   0, TabStripModel::CommandCloseOtherTabs));
   tabstrip.ExecuteContextMenuCommand(1, TabStripModel::CommandCloseOtherTabs);
   // The pinned tab shouldn't be closed.
-  EXPECT_EQ("0p 1", GetPinnedState(tabstrip));
+  EXPECT_EQ("0p 1", GetTabStripStateString(tabstrip));
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
 }
@@ -1027,7 +1052,7 @@ TEST_F(TabStripModelTest, CommandCloseTabsToRight) {
   EXPECT_FALSE(tabstrip.IsContextMenuCommandEnabled(
                    2, TabStripModel::CommandCloseTabsToRight));
   tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandCloseTabsToRight);
-  EXPECT_EQ("0", GetPinnedState(tabstrip));
+  EXPECT_EQ("0", GetTabStripStateString(tabstrip));
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
 }
@@ -1049,15 +1074,15 @@ TEST_F(TabStripModelTest, CommandTogglePinned) {
   EXPECT_TRUE(tabstrip.IsContextMenuCommandEnabled(
                   2, TabStripModel::CommandTogglePinned));
   tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandTogglePinned);
-  EXPECT_EQ("0p 1p 2", GetPinnedState(tabstrip));
+  EXPECT_EQ("0p 1p 2", GetTabStripStateString(tabstrip));
 
   // Execute CommandTogglePinned again, this should unpin.
   tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandTogglePinned);
-  EXPECT_EQ("0 1 2", GetPinnedState(tabstrip));
+  EXPECT_EQ("0 1 2", GetTabStripStateString(tabstrip));
 
   // Pin the last.
   tabstrip.ExecuteContextMenuCommand(2, TabStripModel::CommandTogglePinned);
-  EXPECT_EQ("2p 0 1", GetPinnedState(tabstrip));
+  EXPECT_EQ("2p 0 1", GetTabStripStateString(tabstrip));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -1760,52 +1785,55 @@ TEST_F(TabStripModelTest, Apps) {
       Extension::Create(path, Extension::INVALID, manifest, Extension::NO_FLAGS,
                         &error));
   extension_app->launch_web_url_ = "http://www.google.com";
-  TabContents* contents1 = CreateTabContents();
-  extensions::TabHelper::FromWebContents(contents1->web_contents())->
+  TabContents* tab_contents1 = CreateTabContents();
+  WebContents* contents1 = tab_contents1->web_contents();
+  extensions::TabHelper::FromWebContents(contents1)->
       SetExtensionApp(extension_app);
-  TabContents* contents2 = CreateTabContents();
-  extensions::TabHelper::FromWebContents(contents2->web_contents())->
+  TabContents* tab_contents2 = CreateTabContents();
+  WebContents* contents2 = tab_contents2->web_contents();
+  extensions::TabHelper::FromWebContents(contents2)->
       SetExtensionApp(extension_app);
-  TabContents* contents3 = CreateTabContents();
+  TabContents* tab_contents3 = CreateTabContents();
+  WebContents* contents3 = tab_contents3->web_contents();
 
-  SetID(contents1->web_contents(), 1);
-  SetID(contents2->web_contents(), 2);
-  SetID(contents3->web_contents(), 3);
+  SetID(contents1, 1);
+  SetID(contents2, 2);
+  SetID(contents3, 3);
 
   // Note! The ordering of these tests is important, each subsequent test
   // builds on the state established in the previous. This is important if you
   // ever insert tests rather than append.
 
   // Initial state, tab3 only and selected.
-  tabstrip.AppendTabContents(contents3, true);
+  tabstrip.AppendTabContents(tab_contents3, true);
 
   observer.ClearStates();
 
   // Attempt to insert tab1 (an app tab) at position 1. This isn't a legal
   // position and tab1 should end up at position 0.
   {
-    tabstrip.InsertTabContentsAt(1, contents1, TabStripModel::ADD_NONE);
+    tabstrip.InsertTabContentsAt(1, tab_contents1, TabStripModel::ADD_NONE);
 
     ASSERT_EQ(1, observer.GetStateCount());
     State state(contents1, 0, MockTabStripModelObserver::INSERT);
     EXPECT_TRUE(observer.StateEquals(0, state));
 
     // And verify the state.
-    EXPECT_EQ("1ap 3", GetPinnedState(tabstrip));
+    EXPECT_EQ("1ap 3", GetTabStripStateString(tabstrip));
 
     observer.ClearStates();
   }
 
   // Insert tab 2 at position 1.
   {
-    tabstrip.InsertTabContentsAt(1, contents2, TabStripModel::ADD_NONE);
+    tabstrip.InsertTabContentsAt(1, tab_contents2, TabStripModel::ADD_NONE);
 
     ASSERT_EQ(1, observer.GetStateCount());
     State state(contents2, 1, MockTabStripModelObserver::INSERT);
     EXPECT_TRUE(observer.StateEquals(0, state));
 
     // And verify the state.
-    EXPECT_EQ("1ap 2ap 3", GetPinnedState(tabstrip));
+    EXPECT_EQ("1ap 2ap 3", GetTabStripStateString(tabstrip));
 
     observer.ClearStates();
   }
@@ -1817,7 +1845,7 @@ TEST_F(TabStripModelTest, Apps) {
     ASSERT_EQ(0, observer.GetStateCount());
 
     // And verify the state didn't change.
-    EXPECT_EQ("1ap 2ap 3", GetPinnedState(tabstrip));
+    EXPECT_EQ("1ap 2ap 3", GetTabStripStateString(tabstrip));
 
     observer.ClearStates();
   }
@@ -1829,7 +1857,7 @@ TEST_F(TabStripModelTest, Apps) {
     ASSERT_EQ(0, observer.GetStateCount());
 
     // And verify the state didn't change.
-    EXPECT_EQ("1ap 2ap 3", GetPinnedState(tabstrip));
+    EXPECT_EQ("1ap 2ap 3", GetTabStripStateString(tabstrip));
 
     observer.ClearStates();
   }
@@ -1844,7 +1872,7 @@ TEST_F(TabStripModelTest, Apps) {
     EXPECT_TRUE(observer.StateEquals(0, state));
 
     // And verify the state didn't change.
-    EXPECT_EQ("2ap 1ap 3", GetPinnedState(tabstrip));
+    EXPECT_EQ("2ap 1ap 3", GetTabStripStateString(tabstrip));
 
     observer.ClearStates();
   }
@@ -1854,14 +1882,14 @@ TEST_F(TabStripModelTest, Apps) {
     tabstrip.DetachTabContentsAt(2);
     observer.ClearStates();
 
-    tabstrip.InsertTabContentsAt(0, contents3, TabStripModel::ADD_NONE);
+    tabstrip.InsertTabContentsAt(0, tab_contents3, TabStripModel::ADD_NONE);
 
     ASSERT_EQ(1, observer.GetStateCount());
     State state(contents3, 2, MockTabStripModelObserver::INSERT);
     EXPECT_TRUE(observer.StateEquals(0, state));
 
     // And verify the state didn't change.
-    EXPECT_EQ("2ap 1ap 3", GetPinnedState(tabstrip));
+    EXPECT_EQ("2ap 1ap 3", GetTabStripStateString(tabstrip));
 
     observer.ClearStates();
   }
@@ -1880,22 +1908,25 @@ TEST_F(TabStripModelTest, Pinning) {
 
   typedef MockTabStripModelObserver::State State;
 
-  TabContents* contents1 = CreateTabContents();
-  TabContents* contents2 = CreateTabContents();
-  TabContents* contents3 = CreateTabContents();
+  TabContents* tab_contents1 = CreateTabContents();
+  TabContents* tab_contents2 = CreateTabContents();
+  TabContents* tab_contents3 = CreateTabContents();
+  WebContents* contents1 = tab_contents1->web_contents();
+  WebContents* contents2 = tab_contents2->web_contents();
+  WebContents* contents3 = tab_contents3->web_contents();
 
-  SetID(contents1->web_contents(), 1);
-  SetID(contents2->web_contents(), 2);
-  SetID(contents3->web_contents(), 3);
+  SetID(contents1, 1);
+  SetID(contents2, 2);
+  SetID(contents3, 3);
 
   // Note! The ordering of these tests is important, each subsequent test
   // builds on the state established in the previous. This is important if you
   // ever insert tests rather than append.
 
   // Initial state, three tabs, first selected.
-  tabstrip.AppendTabContents(contents1, true);
-  tabstrip.AppendTabContents(contents2, false);
-  tabstrip.AppendTabContents(contents3, false);
+  tabstrip.AppendTabContents(tab_contents1, true);
+  tabstrip.AppendTabContents(tab_contents2, false);
+  tabstrip.AppendTabContents(tab_contents3, false);
 
   observer.ClearStates();
 
@@ -1909,7 +1940,7 @@ TEST_F(TabStripModelTest, Pinning) {
     EXPECT_TRUE(observer.StateEquals(0, state));
 
     // And verify the state.
-    EXPECT_EQ("1p 2 3", GetPinnedState(tabstrip));
+    EXPECT_EQ("1p 2 3", GetTabStripStateString(tabstrip));
 
     observer.ClearStates();
   }
@@ -1924,7 +1955,7 @@ TEST_F(TabStripModelTest, Pinning) {
     EXPECT_TRUE(observer.StateEquals(0, state));
 
     // And verify the state.
-    EXPECT_EQ("1 2 3", GetPinnedState(tabstrip));
+    EXPECT_EQ("1 2 3", GetTabStripStateString(tabstrip));
 
     observer.ClearStates();
   }
@@ -1943,7 +1974,7 @@ TEST_F(TabStripModelTest, Pinning) {
     EXPECT_TRUE(observer.StateEquals(1, state));
 
     // And verify the state.
-    EXPECT_EQ("3p 1 2", GetPinnedState(tabstrip));
+    EXPECT_EQ("3p 1 2", GetTabStripStateString(tabstrip));
 
     observer.ClearStates();
   }
@@ -1958,7 +1989,7 @@ TEST_F(TabStripModelTest, Pinning) {
     EXPECT_TRUE(observer.StateEquals(0, state));
 
     // And verify the state.
-    EXPECT_EQ("3p 1p 2", GetPinnedState(tabstrip));
+    EXPECT_EQ("3p 1p 2", GetTabStripStateString(tabstrip));
 
     observer.ClearStates();
   }
@@ -1971,7 +2002,7 @@ TEST_F(TabStripModelTest, Pinning) {
     ASSERT_EQ(0, observer.GetStateCount());
 
     // And verify the state.
-    EXPECT_EQ("3p 1p 2", GetPinnedState(tabstrip));
+    EXPECT_EQ("3p 1p 2", GetTabStripStateString(tabstrip));
 
     observer.ClearStates();
   }
@@ -1989,7 +2020,7 @@ TEST_F(TabStripModelTest, Pinning) {
     EXPECT_TRUE(observer.StateEquals(1, state));
 
     // And verify the state.
-    EXPECT_EQ("1p 3 2", GetPinnedState(tabstrip));
+    EXPECT_EQ("1p 3 2", GetTabStripStateString(tabstrip));
 
     observer.ClearStates();
   }
@@ -2000,7 +2031,7 @@ TEST_F(TabStripModelTest, Pinning) {
 
     ASSERT_EQ(0, observer.GetStateCount());
 
-    EXPECT_EQ("1p 3 2", GetPinnedState(tabstrip));
+    EXPECT_EQ("1p 3 2", GetTabStripStateString(tabstrip));
 
     observer.ClearStates();
   }
@@ -2010,24 +2041,25 @@ TEST_F(TabStripModelTest, Pinning) {
     tabstrip.SetTabPinned(0, true);
     tabstrip.SetTabPinned(1, true);
 
-    EXPECT_EQ("1p 3p 2", GetPinnedState(tabstrip));
+    EXPECT_EQ("1p 3p 2", GetTabStripStateString(tabstrip));
 
     observer.ClearStates();
   }
 
-  TabContents* contents4 = CreateTabContents();
-  SetID(contents4->web_contents(), 4);
+  TabContents* tab_contents4 = CreateTabContents();
+  WebContents* contents4 = tab_contents4->web_contents();
+  SetID(contents4, 4);
 
   // Insert "4" between "1" and "3". As "1" and "4" are pinned, "4" should end
   // up after them.
   {
-    tabstrip.InsertTabContentsAt(1, contents4, TabStripModel::ADD_NONE);
+    tabstrip.InsertTabContentsAt(1, tab_contents4, TabStripModel::ADD_NONE);
 
     ASSERT_EQ(1, observer.GetStateCount());
     State state(contents4, 2, MockTabStripModelObserver::INSERT);
     EXPECT_TRUE(observer.StateEquals(0, state));
 
-    EXPECT_EQ("1p 3p 4 2", GetPinnedState(tabstrip));
+    EXPECT_EQ("1p 3p 4 2", GetTabStripStateString(tabstrip));
   }
 
   tabstrip.CloseAllTabs();
@@ -2041,15 +2073,17 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
   TabStripDummyDelegate delegate;
   TabStripModel strip(&delegate, profile());
 
-  TabContents* first_contents = CreateTabContents();
-  strip.AddTabContents(first_contents, -1, content::PAGE_TRANSITION_TYPED,
+  TabContents* first_tab_contents = CreateTabContents();
+  WebContents* first_contents = first_tab_contents->web_contents();
+  strip.AddTabContents(first_tab_contents, -1, content::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_ACTIVE);
 
   MockTabStripModelObserver tabstrip_observer(&strip);
   strip.AddObserver(&tabstrip_observer);
 
-  TabContents* new_contents = CreateTabContents();
-  delete strip.ReplaceTabContentsAt(0, new_contents);
+  TabContents* new_tab_contents = CreateTabContents();
+  WebContents* new_contents = new_tab_contents->web_contents();
+  delete strip.ReplaceTabContentsAt(0, new_tab_contents);
 
   ASSERT_EQ(2, tabstrip_observer.GetStateCount());
 
@@ -2065,15 +2099,17 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
 
   // Now add another tab and replace it, making sure we don't get a selected
   // event this time.
-  TabContents* third_contents = CreateTabContents();
-  strip.AddTabContents(third_contents, 1, content::PAGE_TRANSITION_TYPED,
+  TabContents* third_tab_contents = CreateTabContents();
+  WebContents* third_contents = third_tab_contents->web_contents();
+  strip.AddTabContents(third_tab_contents, 1, content::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_NONE);
 
   tabstrip_observer.ClearStates();
 
   // And replace it.
-  new_contents = CreateTabContents();
-  delete strip.ReplaceTabContentsAt(1, new_contents);
+  new_tab_contents = CreateTabContents();
+  new_contents = new_tab_contents->web_contents();
+  delete strip.ReplaceTabContentsAt(1, new_tab_contents);
 
   ASSERT_EQ(1, tabstrip_observer.GetStateCount());
 
@@ -2092,10 +2128,11 @@ TEST_F(TabStripModelTest, DiscardTabContentsAt) {
   TabStripModel tabstrip(&delegate, profile());
 
   // Fill it with some tabs.
-  TabContents* contents1 = CreateTabContents();
-  tabstrip.AppendTabContents(contents1, true);
-  TabContents* contents2 = CreateTabContents();
-  tabstrip.AppendTabContents(contents2, true);
+  TabContents* tab_contents1 = CreateTabContents();
+  WebContents* contents1 = tab_contents1->web_contents();
+  tabstrip.AppendTabContents(tab_contents1, true);
+  TabContents* tab_contents2 = CreateTabContents();
+  tabstrip.AppendTabContents(tab_contents2, true);
 
   // Start watching for events after the appends to avoid observing state
   // transitions that aren't relevant to this test.
@@ -2103,12 +2140,13 @@ TEST_F(TabStripModelTest, DiscardTabContentsAt) {
   tabstrip.AddObserver(&tabstrip_observer);
 
   // Discard one of the tabs.
-  TabContents* null_contents1 = tabstrip.DiscardTabContentsAt(0);
+  TabContents* null_tab_contents1 = tabstrip.DiscardTabContentsAt(0);
+  WebContents* null_contents1 = null_tab_contents1->web_contents();
   ASSERT_EQ(2, tabstrip.count());
   EXPECT_TRUE(tabstrip.IsTabDiscarded(0));
   EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
-  ASSERT_EQ(null_contents1, tabstrip.GetTabContentsAt(0));
-  ASSERT_EQ(contents2, tabstrip.GetTabContentsAt(1));
+  ASSERT_EQ(null_tab_contents1, tabstrip.GetTabContentsAt(0));
+  ASSERT_EQ(tab_contents2, tabstrip.GetTabContentsAt(1));
   ASSERT_EQ(1, tabstrip_observer.GetStateCount());
   State state1(null_contents1, 0, MockTabStripModelObserver::REPLACED);
   state1.src_contents = contents1;
@@ -2116,12 +2154,13 @@ TEST_F(TabStripModelTest, DiscardTabContentsAt) {
   tabstrip_observer.ClearStates();
 
   // Discard the same tab again.
-  TabContents* null_contents2 = tabstrip.DiscardTabContentsAt(0);
+  TabContents* null_tab_contents2 = tabstrip.DiscardTabContentsAt(0);
+  WebContents* null_contents2 = null_tab_contents2->web_contents();
   ASSERT_EQ(2, tabstrip.count());
   EXPECT_TRUE(tabstrip.IsTabDiscarded(0));
   EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
-  ASSERT_EQ(null_contents2, tabstrip.GetTabContentsAt(0));
-  ASSERT_EQ(contents2, tabstrip.GetTabContentsAt(1));
+  ASSERT_EQ(null_tab_contents2, tabstrip.GetTabContentsAt(0));
+  ASSERT_EQ(tab_contents2, tabstrip.GetTabContentsAt(1));
   ASSERT_EQ(1, tabstrip_observer.GetStateCount());
   State state2(null_contents2, 0, MockTabStripModelObserver::REPLACED);
   state2.src_contents = null_contents1;
@@ -2216,7 +2255,8 @@ TEST_F(TabStripModelTest, MoveSelectedTabsTo) {
                                         test_data[i].pinned_count,
                                         test_data[i].selected_tabs));
     strip.MoveSelectedTabsTo(test_data[i].target_index);
-    EXPECT_EQ(test_data[i].state_after_move, GetPinnedState(strip)) << i;
+    EXPECT_EQ(test_data[i].state_after_move,
+              GetTabStripStateString(strip)) << i;
     strip.CloseAllTabs();
   }
 }
@@ -2238,17 +2278,21 @@ TEST_F(TabStripModelTest, CloseSelectedTabs) {
 }
 
 TEST_F(TabStripModelTest, MultipleSelection) {
+  typedef MockTabStripModelObserver::State State;
+
   TabStripDummyDelegate delegate;
   TabStripModel strip(&delegate, profile());
   MockTabStripModelObserver observer(&strip);
-  TabContents* contents0 = CreateTabContents();
-  TabContents* contents1 = CreateTabContents();
-  TabContents* contents2 = CreateTabContents();
-  TabContents* contents3 = CreateTabContents();
-  strip.AppendTabContents(contents0, false);
-  strip.AppendTabContents(contents1, false);
-  strip.AppendTabContents(contents2, false);
-  strip.AppendTabContents(contents3, false);
+  TabContents* tab_contents0 = CreateTabContents();
+  TabContents* tab_contents1 = CreateTabContents();
+  TabContents* tab_contents2 = CreateTabContents();
+  TabContents* tab_contents3 = CreateTabContents();
+  WebContents* contents0 = tab_contents0->web_contents();
+  WebContents* contents3 = tab_contents3->web_contents();
+  strip.AppendTabContents(tab_contents0, false);
+  strip.AppendTabContents(tab_contents1, false);
+  strip.AppendTabContents(tab_contents2, false);
+  strip.AppendTabContents(tab_contents3, false);
   strip.AddObserver(&observer);
 
   // Selection and active tab change.
@@ -2256,8 +2300,7 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   ASSERT_EQ(2, observer.GetStateCount());
   ASSERT_EQ(observer.GetStateAt(0).action,
             MockTabStripModelObserver::ACTIVATE);
-  MockTabStripModelObserver::State s1(contents3, 3,
-      MockTabStripModelObserver::SELECT);
+  State s1(contents3, 3, MockTabStripModelObserver::SELECT);
   EXPECT_TRUE(observer.StateEquals(1, s1));
   observer.ClearStates();
 
@@ -2268,8 +2311,7 @@ TEST_F(TabStripModelTest, MultipleSelection) {
             MockTabStripModelObserver::DEACTIVATE);
   ASSERT_EQ(observer.GetStateAt(1).action,
             MockTabStripModelObserver::ACTIVATE);
-  MockTabStripModelObserver::State s2(contents0, 0,
-      MockTabStripModelObserver::SELECT);
+  State s2(contents0, 0, MockTabStripModelObserver::SELECT);
   s2.src_contents = contents3;
   s2.src_index = 3;
   EXPECT_TRUE(observer.StateEquals(2, s2));
@@ -2352,12 +2394,15 @@ TEST_F(TabStripModelTest, MultipleSelection) {
 // selection, but not in a way that changes the selected_index that
 // TabSelectionChanged is invoked.
 TEST_F(TabStripModelTest, MultipleToSingle) {
+  typedef MockTabStripModelObserver::State State;
+
   TabStripDummyDelegate delegate;
   TabStripModel strip(&delegate, profile());
-  TabContents* contents1 = CreateTabContents();
-  TabContents* contents2 = CreateTabContents();
-  strip.AppendTabContents(contents1, false);
-  strip.AppendTabContents(contents2, false);
+  TabContents* tab_contents1 = CreateTabContents();
+  TabContents* tab_contents2 = CreateTabContents();
+  WebContents* contents2 = tab_contents2->web_contents();
+  strip.AppendTabContents(tab_contents1, false);
+  strip.AppendTabContents(tab_contents2, false);
   strip.ToggleSelectionAt(0);
   strip.ToggleSelectionAt(1);
 
@@ -2367,8 +2412,7 @@ TEST_F(TabStripModelTest, MultipleToSingle) {
   // still remains at 1.
   strip.ActivateTabAt(1, true);
   ASSERT_EQ(1, observer.GetStateCount());
-  MockTabStripModelObserver::State s(
-      contents2, 1, MockTabStripModelObserver::SELECT);
+  State s(contents2, 1, MockTabStripModelObserver::SELECT);
   s.src_contents = contents2;
   s.src_index = 1;
   s.user_gesture = false;

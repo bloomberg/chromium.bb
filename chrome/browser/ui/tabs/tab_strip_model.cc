@@ -516,10 +516,9 @@ void TabStripModel::SetTabBlocked(int index, bool blocked) {
   if (contents_data_[index]->blocked == blocked)
     return;
   contents_data_[index]->blocked = blocked;
-  TabContents* tab_contents =
-      TabContents::FromWebContents(contents_data_[index]->contents);
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabBlockedStateChanged(tab_contents, index));
+                    TabBlockedStateChanged(contents_data_[index]->contents,
+                                           index));
 }
 
 void TabStripModel::SetTabPinned(int index, bool pinned) {
@@ -549,17 +548,15 @@ void TabStripModel::SetTabPinned(int index, bool pinned) {
       index = non_mini_tab_index - 1;
     }
 
-    TabContents* tab_contents =
-        TabContents::FromWebContents(contents_data_[index]->contents);
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                      TabMiniStateChanged(tab_contents, index));
+                      TabMiniStateChanged(contents_data_[index]->contents,
+                                          index));
   }
 
   // else: the tab was at the boundary and its position doesn't need to change.
-  TabContents* tab_contents =
-      TabContents::FromWebContents(contents_data_[index]->contents);
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabPinnedStateChanged(tab_contents, index));
+                    TabPinnedStateChanged(contents_data_[index]->contents,
+                                          index));
 }
 
 bool TabStripModel::IsTabPinned(int index) const {

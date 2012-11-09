@@ -12,8 +12,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 
-using content::NavigationController;
-
 TestTabStripModelObserver::TestTabStripModelObserver(
     TabStripModel* tab_strip_model,
     content::JsInjectionReadyObserver* js_injection_ready_observer)
@@ -27,7 +25,7 @@ TestTabStripModelObserver::~TestTabStripModelObserver() {
 }
 
 void TestTabStripModelObserver::TabBlockedStateChanged(
-    TabContents* contents, int index) {
+    content::WebContents* contents, int index) {
   // Need to do this later - the print preview tab has not been created yet.
   MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -37,14 +35,15 @@ void TestTabStripModelObserver::TabBlockedStateChanged(
 }
 
 void TestTabStripModelObserver::ObservePrintPreviewTabContents(
-    TabContents* contents) {
+    content::WebContents* contents) {
   printing::PrintPreviewTabController* tab_controller =
       printing::PrintPreviewTabController::GetInstance();
   if (tab_controller) {
+    TabContents* tab_contents = TabContents::FromWebContents(contents);
     TabContents* preview_tab =
-        tab_controller->GetPrintPreviewForTab(contents);
+        tab_controller->GetPrintPreviewForTab(tab_contents);
     if (preview_tab) {
-      RegisterAsObserver(content::Source<NavigationController>(
+      RegisterAsObserver(content::Source<content::NavigationController>(
           &preview_tab->web_contents()->GetController()));
     }
   }

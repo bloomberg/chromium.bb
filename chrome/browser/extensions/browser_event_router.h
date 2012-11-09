@@ -62,7 +62,7 @@ class BrowserEventRouter : public TabStripModelObserver,
                              TabContents* old_contents,
                              TabContents* new_contents,
                              int index) OVERRIDE;
-  virtual void TabPinnedStateChanged(TabContents* contents,
+  virtual void TabPinnedStateChanged(content::WebContents* contents,
                                      int index) OVERRIDE;
   virtual void TabStripEmpty() OVERRIDE;
 

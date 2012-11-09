@@ -48,7 +48,7 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                              TabContents* old_contents,
                              TabContents* new_contents,
                              int index) OVERRIDE;
-  virtual void TabMiniStateChanged(TabContents* contents,
+  virtual void TabMiniStateChanged(content::WebContents* contents,
                                    int index) OVERRIDE;
   virtual void TabStripEmpty() OVERRIDE;
   virtual void TabStripModelDeleted() OVERRIDE;

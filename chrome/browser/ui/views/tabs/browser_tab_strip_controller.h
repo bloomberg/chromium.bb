@@ -90,11 +90,11 @@ class BrowserTabStripController : public TabStripController,
                              TabContents* old_contents,
                              TabContents* new_contents,
                              int model_index) OVERRIDE;
-  virtual void TabPinnedStateChanged(TabContents* contents,
+  virtual void TabPinnedStateChanged(content::WebContents* contents,
                                      int model_index) OVERRIDE;
-  virtual void TabMiniStateChanged(TabContents* contents,
+  virtual void TabMiniStateChanged(content::WebContents* contents,
                                    int model_index) OVERRIDE;
-  virtual void TabBlockedStateChanged(TabContents* contents,
+  virtual void TabBlockedStateChanged(content::WebContents* contents,
                                       int model_index) OVERRIDE;
 
   // PrefObserver implementation:
