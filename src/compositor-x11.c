@@ -401,11 +401,10 @@ x11_output_destroy(struct weston_output *output_base)
 }
 
 static void
-x11_output_set_wm_protocols(struct x11_output *output)
+x11_output_set_wm_protocols(struct x11_compositor *c,
+			    struct x11_output *output)
 {
 	xcb_atom_t list[1];
-	struct x11_compositor *c =
-		(struct x11_compositor *) output->base.compositor;
 
 	list[0] = c->atom.wm_delete_window;
 	xcb_change_property (c->conn, 
@@ -417,38 +416,6 @@ x11_output_set_wm_protocols(struct x11_output *output)
 			     ARRAY_LENGTH(list),
 			     list);
 }
-
-static void
-x11_output_change_state(struct x11_output *output, int add, xcb_atom_t state)
-{
-	xcb_client_message_event_t event;
-	struct x11_compositor *c =
-		(struct x11_compositor *) output->base.compositor;
-	xcb_screen_iterator_t iter;
-
-#define _NET_WM_STATE_REMOVE        0    /* remove/unset property */
-#define _NET_WM_STATE_ADD           1    /* add/set property */
-#define _NET_WM_STATE_TOGGLE        2    /* toggle property  */  
-
-	memset(&event, 0, sizeof event);
-	event.response_type = XCB_CLIENT_MESSAGE;
-	event.format = 32;
-	event.window = output->window;
-	event.type = c->atom.net_wm_state;
-
-	event.data.data32[0] = add ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
-	event.data.data32[1] = state;
-	event.data.data32[2] = 0;
-	event.data.data32[3] = 0;
-	event.data.data32[4] = 0;
-
-	iter = xcb_setup_roots_iterator(xcb_get_setup(c->conn));
-	xcb_send_event(c->conn, 0, iter.data->root,
-		       XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
-		       XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
-		       (void *) &event);
-}
-
 
 struct wm_normal_hints {
     	uint32_t flags;
@@ -494,6 +461,47 @@ x11_output_set_icon(struct x11_compositor *c,
 	pixman_image_unref(image);
 }
 
+static void
+x11_output_wait_for_map(struct x11_compositor *c, struct x11_output *output)
+{
+	xcb_map_notify_event_t *map_notify;
+	xcb_configure_notify_event_t *configure_notify;
+	xcb_generic_event_t *event;
+	int mapped = 0;
+	uint8_t response_type;
+
+	/* This isn't the nicest way to do this.  Ideally, we could
+	 * just go back to the main loop and once we get the map
+	 * notify, we add the output to the compositor.  While we do
+	 * support output hotplug, we can't start up with no outputs.
+	 * We could add the output and then resize once we get the map
+	 * notify, but we don't want to start up and immediately
+	 * resize the output. */
+
+	xcb_flush(c->conn);
+
+	while (!mapped) {
+		event = xcb_wait_for_event(c->conn);
+		response_type = event->response_type & ~0x80;
+
+		switch (response_type) {
+		case XCB_MAP_NOTIFY:
+			map_notify = (xcb_map_notify_event_t *) event;
+			if (map_notify->window == output->window)
+				mapped = 1;
+			break;
+
+		case XCB_CONFIGURE_NOTIFY:
+			configure_notify =
+				(xcb_configure_notify_event_t *) event;
+
+			output->mode.width = configure_notify->width;
+			output->mode.height = configure_notify->height;
+			break;
+		}
+	}
+}
+
 static struct x11_output *
 x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			     int width, int height, int fullscreen,
@@ -508,6 +516,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	struct wm_normal_hints normal_hints;
 	struct wl_event_loop *loop;
 	uint32_t mask = XCB_CW_EVENT_MASK | XCB_CW_CURSOR;
+	xcb_atom_t atom_list[1];
 	uint32_t values[2] = {
 		XCB_EVENT_MASK_EXPOSURE |
 		XCB_EVENT_MASK_STRUCTURE_NOTIFY,
@@ -545,12 +554,6 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	wl_list_init(&output->base.mode_list);
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
-	output->base.current = &output->mode;
-	output->base.make = "xwayland";
-	output->base.model = "none";
-	weston_output_init(&output->base, &c->base,
-			   x, y, width, height, transform);
-
 	values[1] = c->null_cursor;
 	output->window = xcb_generate_id(c->conn);
 	iter = xcb_setup_roots_iterator(xcb_get_setup(c->conn));
@@ -565,19 +568,28 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			  iter.data->root_visual,
 			  mask, values);
 
-	/* Don't resize me. */
-	memset(&normal_hints, 0, sizeof normal_hints);
-	normal_hints.flags =
-		WM_NORMAL_HINTS_MAX_SIZE | WM_NORMAL_HINTS_MIN_SIZE;
-	normal_hints.min_width = width;
-	normal_hints.min_height = height;
-	normal_hints.max_width = width;
-	normal_hints.max_height = height;
-	xcb_change_property (c->conn, XCB_PROP_MODE_REPLACE, output->window,
-			     c->atom.wm_normal_hints,
-			     c->atom.wm_size_hints, 32,
-			     sizeof normal_hints / 4,
-			     (uint8_t *) &normal_hints);
+	if (fullscreen) {
+		atom_list[0] = c->atom.net_wm_state_fullscreen;
+		xcb_change_property(c->conn, XCB_PROP_MODE_REPLACE,
+				    output->window,
+				    c->atom.net_wm_state,
+				    XCB_ATOM_ATOM, 32,
+				    ARRAY_LENGTH(atom_list), atom_list);
+	} else {
+		/* Don't resize me. */
+		memset(&normal_hints, 0, sizeof normal_hints);
+		normal_hints.flags =
+			WM_NORMAL_HINTS_MAX_SIZE | WM_NORMAL_HINTS_MIN_SIZE;
+		normal_hints.min_width = width;
+		normal_hints.min_height = height;
+		normal_hints.max_width = width;
+		normal_hints.max_height = height;
+		xcb_change_property(c->conn, XCB_PROP_MODE_REPLACE, output->window,
+				    c->atom.wm_normal_hints,
+				    c->atom.wm_size_hints, 32,
+				    sizeof normal_hints / 4,
+				    (uint8_t *) &normal_hints);
+	}
 
 	/* Set window name.  Don't bother with non-EWMH WMs. */
 	xcb_change_property(c->conn, XCB_PROP_MODE_REPLACE, output->window,
@@ -589,13 +601,11 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 
 	x11_output_set_icon(c, output, DATADIR "/weston/wayland.png");
 
+	x11_output_set_wm_protocols(c, output);
+
 	xcb_map_window(c->conn, output->window);
 
-	x11_output_set_wm_protocols(output);
-
-	if (fullscreen)
-		x11_output_change_state(output, 1,
-					c->atom.net_wm_state_fullscreen);
+	x11_output_wait_for_map(c, output);
 
 	output->base.egl_surface = 
 		eglCreateWindowSurface(c->base.egl_display, c->base.egl_config,
@@ -616,6 +626,11 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->base.set_backlight = NULL;
 	output->base.set_dpms = NULL;
 	output->base.switch_mode = NULL;
+	output->base.current = &output->mode;
+	output->base.make = "xwayland";
+	output->base.model = "none";
+	weston_output_init(&output->base, &c->base,
+			   x, y, width, height, transform);
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 
@@ -1340,7 +1355,7 @@ backend_init(struct wl_display *display, int argc, char *argv[],
 	const struct weston_option x11_options[] = {
 		{ WESTON_OPTION_INTEGER, "width", 0, &option_width },
 		{ WESTON_OPTION_INTEGER, "height", 0, &option_height },
-		{ WESTON_OPTION_BOOLEAN, "fullscreen", 0, &fullscreen },
+		{ WESTON_OPTION_BOOLEAN, "fullscreen", 'f', &fullscreen },
 		{ WESTON_OPTION_INTEGER, "output-count", 0, &option_count },
 		{ WESTON_OPTION_BOOLEAN, "no-input", 0, &no_input },
 	};
