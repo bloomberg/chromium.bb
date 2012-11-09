@@ -391,7 +391,8 @@ drm_output_repaint(struct weston_output *output_base,
 			.request.sequence = 1,
 		};
 
-		if (!drm_sprite_crtc_supported(output_base, s->possible_crtcs))
+		if ((!s->fb_id && !s->pending_fb_id) ||
+		    !drm_sprite_crtc_supported(output_base, s->possible_crtcs))
 			continue;
 
 		ret = drmModeSetPlane(compositor->drm.fd, s->plane_id,
