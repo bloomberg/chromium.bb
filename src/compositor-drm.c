@@ -222,7 +222,7 @@ drm_fb_destroy_callback(struct gbm_bo *bo, void *data)
 }
 
 static struct drm_fb *
-drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_output *output)
+drm_fb_get_from_bo(struct gbm_bo *bo)
 {
 	struct drm_fb *fb = gbm_bo_get_user_data(bo);
 	struct drm_compositor *compositor =
@@ -236,7 +236,6 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_output *output)
 	fb = malloc(sizeof *fb);
 
 	fb->bo = bo;
-	fb->output = output;
 	fb->is_client_buffer = 0;
 	fb->buffer = NULL;
 
@@ -265,10 +264,6 @@ fb_handle_buffer_destroy(struct wl_listener *listener, void *data)
 					 buffer_destroy_listener);
 
 	fb->buffer = NULL;
-
-	if (fb == fb->output->next ||
-	    (fb == fb->output->current && !fb->output->next))
-		weston_output_schedule_repaint(&fb->output->base);
 }
 
 static struct weston_plane *
@@ -303,7 +298,7 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 		return NULL;
 	}
 
-	output->next = drm_fb_get_from_bo(bo, output);
+	output->next = drm_fb_get_from_bo(bo);
 	if (!output->next) {
 		gbm_bo_destroy(bo);
 		return NULL;
@@ -334,7 +329,7 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 		return;
 	}
 
-	output->next = drm_fb_get_from_bo(bo, output);
+	output->next = drm_fb_get_from_bo(bo);
 	if (!output->next) {
 		weston_log("failed to get drm_fb for bo\n");
 		gbm_surface_release_buffer(output->surface, bo);
