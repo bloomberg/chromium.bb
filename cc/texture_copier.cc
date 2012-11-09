@@ -49,6 +49,8 @@ void AcceleratedTextureCopier::copyTexture(Parameters parameters)
 {
     TRACE_EVENT0("cc", "TextureCopier::copyTexture");
 
+    GLC(m_context, m_context->disable(GL_SCISSOR_TEST));
+
     // Note: this code does not restore the viewport, bound program, 2D texture, framebuffer, buffer or blend enable.
     GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, m_fbo));
     GLC(m_context, m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, parameters.destTexture, 0));
@@ -88,6 +90,8 @@ void AcceleratedTextureCopier::copyTexture(Parameters parameters)
     GLC(m_context, m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0));
     GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, 0));
     GLC(m_context, m_context->bindTexture(GL_TEXTURE_2D, 0));
+
+    GLC(m_context, m_context->enable(GL_SCISSOR_TEST));
 }
 
 void AcceleratedTextureCopier::flush()
