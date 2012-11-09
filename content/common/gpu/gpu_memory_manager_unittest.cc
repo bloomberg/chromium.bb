@@ -112,6 +112,24 @@ class FakeClient : public GpuMemoryManagerClient {
   }
   void SetSurfaceSize(gfx::Size size) { surface_size_ = size; }
 
+  void SetVisible(bool visible) {
+    memmgr_.SetClientVisible(this, visible);
+  }
+
+  void SetUsageStats(size_t bytes_required,
+                     size_t bytes_nice_to_have,
+                     size_t bytes_allocated) {
+    memmgr_.SetClientManagedMemoryStats(
+        this,
+        GpuManagedMemoryStats(bytes_required,
+                              bytes_nice_to_have,
+                              bytes_allocated,
+                              false));
+  }
+
+  size_t BytesWhenNotVisible() const {
+    return allocation_.renderer_allocation.bytes_limit_when_not_visible;
+  }
 };
 
 class GpuMemoryManagerTest : public testing::Test {
@@ -145,13 +163,15 @@ class GpuMemoryManagerTest : public testing::Test {
       const GpuMemoryAllocation& alloc) {
     return alloc.browser_allocation.suggest_have_frontbuffer &&
            !alloc.renderer_allocation.have_backbuffer_when_not_visible &&
-           alloc.renderer_allocation.bytes_limit_when_not_visible == 0;
+           alloc.renderer_allocation.bytes_limit_when_not_visible <=
+               memmgr_.GetCurrentBackgroundedAvailableGpuMemory();
   }
   bool IsAllocationHibernatedForSurfaceYes(
       const GpuMemoryAllocation& alloc) {
     return !alloc.browser_allocation.suggest_have_frontbuffer &&
            !alloc.renderer_allocation.have_backbuffer_when_not_visible &&
-           alloc.renderer_allocation.bytes_limit_when_not_visible == 0;
+           alloc.renderer_allocation.bytes_limit_when_not_visible <=
+               memmgr_.GetCurrentBackgroundedAvailableGpuMemory();
   }
   bool IsAllocationForegroundForSurfaceNo(
       const GpuMemoryAllocation& alloc) {
@@ -756,6 +776,112 @@ TEST_F(GpuMemoryManagerTest, TestManagedUsageTracking) {
      &stub2, GpuManagedMemoryStats(0, 0, 6, false));
   EXPECT_EQ(6ul, memmgr_.bytes_allocated_managed_visible_);
   EXPECT_EQ(4ul, memmgr_.bytes_allocated_managed_backgrounded_);
+}
+
+// Test GpuMemoryManager's background cutoff threshoulds
+TEST_F(GpuMemoryManagerTest, TestBackgroundCutoff) {
+  memmgr_.TestingSetAvailableGpuMemory(64);
+  memmgr_.TestingSetBackgroundedAvailableGpuMemory(16);
+
+  FakeClient stub1(memmgr_, GenerateUniqueSurfaceId(), true, older_);
+
+  // stub1's requirements are not <16, so it should just dump
+  // everything when it goes invisible.
+  stub1.SetUsageStats(16, 24, 18);
+  Manage();
+  EXPECT_EQ(0ul, stub1.BytesWhenNotVisible());
+
+  // stub1 now fits, so it should have a full budget.
+  stub1.SetUsageStats(15, 24, 18);
+  Manage();
+  EXPECT_EQ(memmgr_.bytes_backgrounded_available_gpu_memory_,
+            memmgr_.GetCurrentBackgroundedAvailableGpuMemory());
+  EXPECT_EQ(memmgr_.GetCurrentBackgroundedAvailableGpuMemory(),
+            stub1.BytesWhenNotVisible());
+
+  // background stub1
+  stub1.SetUsageStats(15, 24, 15);
+  stub1.SetVisible(false);
+
+  // Add stub2 that uses almost enough memory to evict
+  // stub1, but not quite
+  FakeClient stub2(memmgr_, GenerateUniqueSurfaceId(), true, older_);
+  stub2.SetUsageStats(15, 50, 48);
+  Manage();
+  EXPECT_EQ(memmgr_.bytes_backgrounded_available_gpu_memory_,
+            memmgr_.GetCurrentBackgroundedAvailableGpuMemory());
+  EXPECT_EQ(memmgr_.GetCurrentBackgroundedAvailableGpuMemory(),
+            stub1.BytesWhenNotVisible());
+  EXPECT_EQ(memmgr_.GetCurrentBackgroundedAvailableGpuMemory(),
+            stub2.BytesWhenNotVisible());
+
+  // Increase stub2 to break evict stub1
+  stub2.SetUsageStats(15, 50, 49);
+  Manage();
+  EXPECT_EQ(0ul,
+            stub1.BytesWhenNotVisible());
+  EXPECT_EQ(memmgr_.GetCurrentBackgroundedAvailableGpuMemory(),
+            stub2.BytesWhenNotVisible());
+}
+
+// Test GpuMemoryManager's background MRU behavior
+TEST_F(GpuMemoryManagerTest, TestBackgroundMru) {
+  memmgr_.TestingSetAvailableGpuMemory(64);
+  memmgr_.TestingSetBackgroundedAvailableGpuMemory(16);
+
+  FakeClient stub1(memmgr_, GenerateUniqueSurfaceId(), true, older_);
+  FakeClient stub2(memmgr_, GenerateUniqueSurfaceId(), true, older_);
+  FakeClient stub3(memmgr_, GenerateUniqueSurfaceId(), true, older_);
+
+  // When all are visible, they should all be allowed to have memory
+  // should they become backgrounded.
+  stub1.SetUsageStats(7, 24, 7);
+  stub2.SetUsageStats(7, 24, 7);
+  stub3.SetUsageStats(7, 24, 7);
+  Manage();
+  EXPECT_EQ(memmgr_.bytes_backgrounded_available_gpu_memory_,
+            memmgr_.GetCurrentBackgroundedAvailableGpuMemory());
+  EXPECT_EQ(memmgr_.GetCurrentBackgroundedAvailableGpuMemory(),
+            stub1.BytesWhenNotVisible());
+  EXPECT_EQ(memmgr_.GetCurrentBackgroundedAvailableGpuMemory(),
+            stub2.BytesWhenNotVisible());
+  EXPECT_EQ(memmgr_.GetCurrentBackgroundedAvailableGpuMemory(),
+            stub3.BytesWhenNotVisible());
+
+
+  // Background stubs 1 and 2, and they should fit
+  stub2.SetVisible(false);
+  // XXX - the MRU ordering is determined by taking the timestamp
+  //       at which visibility changed. This does not have high
+  //       enough resolution on all platforms to distinguish
+  //       between the three SetVisible calls, so we have to
+  //       explicitly set the timestamp.
+  memmgr_.TestingSetClientLastUsedTime(&stub2, older_);
+  stub1.SetVisible(false);
+  memmgr_.TestingSetClientLastUsedTime(&stub1, newer_);
+  Manage();
+  EXPECT_EQ(memmgr_.bytes_backgrounded_available_gpu_memory_,
+            memmgr_.GetCurrentBackgroundedAvailableGpuMemory());
+  EXPECT_EQ(memmgr_.GetCurrentBackgroundedAvailableGpuMemory(),
+            stub1.BytesWhenNotVisible());
+  EXPECT_EQ(memmgr_.GetCurrentBackgroundedAvailableGpuMemory(),
+            stub2.BytesWhenNotVisible());
+  EXPECT_EQ(memmgr_.GetCurrentBackgroundedAvailableGpuMemory(),
+            stub3.BytesWhenNotVisible());
+
+  // Now background stub 3, and it should cause stub 2 to be
+  // evicted because it was set non-visible first
+  stub3.SetVisible(false);
+  memmgr_.TestingSetClientLastUsedTime(&stub3, newer_);
+  Manage();
+  EXPECT_EQ(memmgr_.bytes_backgrounded_available_gpu_memory_,
+            memmgr_.GetCurrentBackgroundedAvailableGpuMemory());
+  EXPECT_EQ(memmgr_.GetCurrentBackgroundedAvailableGpuMemory(),
+            stub1.BytesWhenNotVisible());
+  EXPECT_EQ(0ul,
+            stub2.BytesWhenNotVisible());
+  EXPECT_EQ(memmgr_.GetCurrentBackgroundedAvailableGpuMemory(),
+            stub3.BytesWhenNotVisible());
 }
 
 }  // namespace content

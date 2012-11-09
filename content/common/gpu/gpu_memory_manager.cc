@@ -38,6 +38,7 @@ GpuMemoryManager::GpuMemoryManager(
           max_surfaces_with_frontbuffer_soft_limit),
       bytes_available_gpu_memory_(0),
       bytes_available_gpu_memory_overridden_(false),
+      bytes_backgrounded_available_gpu_memory_(0),
       bytes_allocated_current_(0),
       bytes_allocated_managed_visible_(0),
       bytes_allocated_managed_backgrounded_(0),
@@ -54,6 +55,7 @@ GpuMemoryManager::GpuMemoryManager(
     bytes_available_gpu_memory_overridden_ = true;
   } else
     bytes_available_gpu_memory_ = GetDefaultAvailableGpuMemory();
+  UpdateBackgroundedAvailableGpuMemory();
 }
 
 GpuMemoryManager::~GpuMemoryManager() {
@@ -66,6 +68,14 @@ GpuMemoryManager::~GpuMemoryManager() {
 
 size_t GpuMemoryManager::GetAvailableGpuMemory() const {
   return bytes_available_gpu_memory_;
+}
+
+size_t GpuMemoryManager::GetCurrentBackgroundedAvailableGpuMemory() const {
+  if (bytes_allocated_managed_visible_ < GetAvailableGpuMemory()) {
+    return std::min(bytes_backgrounded_available_gpu_memory_,
+                    GetAvailableGpuMemory() - bytes_allocated_managed_visible_);
+  }
+  return 0;
 }
 
 size_t GpuMemoryManager::GetDefaultAvailableGpuMemory() const {
@@ -190,6 +200,20 @@ void GpuMemoryManager::UpdateAvailableGpuMemory(
   // Never go above the maximum.
   bytes_available_gpu_memory_ = std::min(bytes_available_gpu_memory_,
                                          GetMaximumTotalGpuMemory());
+
+  // Update the backgrounded available gpu memory because it depends on
+  // the available GPU memory.
+  UpdateBackgroundedAvailableGpuMemory();
+}
+
+void GpuMemoryManager::UpdateBackgroundedAvailableGpuMemory() {
+  // Be conservative and disable saving backgrounded tabs' textures on Android
+  // for the moment
+#if defined(OS_ANDROID)
+  bytes_backgrounded_available_gpu_memory_ = 0;
+#else
+  bytes_backgrounded_available_gpu_memory_ = bytes_available_gpu_memory_ / 4;
+#endif
 }
 
 bool GpuMemoryManager::ClientsComparator::operator()(
@@ -278,6 +302,7 @@ void GpuMemoryManager::SetClientVisible(GpuMemoryManagerClient* client,
   if (client_state->visible == visible)
     return;
   client_state->visible = visible;
+  client_state->last_used_time = base::TimeTicks::Now();
   TrackValueChanged(client_state->managed_memory_stats.bytes_allocated, 0,
                     client_state->visible ?
                         &bytes_allocated_managed_backgrounded_ :
@@ -303,6 +328,12 @@ void GpuMemoryManager::SetClientManagedMemoryStats(
                         &bytes_allocated_managed_visible_ :
                         &bytes_allocated_managed_backgrounded_);
   client_state->managed_memory_stats = stats;
+
+  // If this allocation pushed our usage of backgrounded tabs memory over the
+  // limit, then schedule a drop of backgrounded memory.
+  if (bytes_allocated_managed_backgrounded_ >
+      GetCurrentBackgroundedAvailableGpuMemory())
+    ScheduleManage(false);
 }
 
 void GpuMemoryManager::TestingSetClientVisible(
@@ -422,27 +453,58 @@ void GpuMemoryManager::Manage() {
   // surfaces).
   SetClientsHibernatedState(clients);
 
-  // Determine how much memory to assign to give to visible clients
+  // Determine how much memory to assign to give to visible and backgrounded
+  // clients.
   size_t bytes_limit_when_visible = GetVisibleClientAllocation(clients);
 
   // Now give out allocations to everyone.
+  size_t bytes_allocated_backgrounded = 0;
   for (ClientStateVector::iterator it = clients.begin();
        it != clients.end();
        ++it) {
     ClientState* client_state = *it;
-
     GpuMemoryAllocation allocation;
     if (client_state->has_surface) {
       allocation.browser_allocation.suggest_have_frontbuffer =
           !client_state->hibernated;
+
+      // Set the state when visible.
       allocation.renderer_allocation.bytes_limit_when_visible =
           bytes_limit_when_visible;
       allocation.renderer_allocation.priority_cutoff_when_visible =
           GpuMemoryAllocationForRenderer::kPriorityCutoffAllowEverything;
-      allocation.renderer_allocation.bytes_limit_when_not_visible =
-          0;
-      allocation.renderer_allocation.priority_cutoff_when_not_visible =
-          GpuMemoryAllocationForRenderer::kPriorityCutoffAllowNothing;
+
+      // Set the state when backgrounded.
+      bool allow_allocation_when_backgrounded = false;
+      if (client_state->visible) {
+        // If the client is visible, then allow it to keep its textures, should
+        // it be backgrounded, but only if all textures required to draw will
+        // fit in total backgrounded memory limit.
+        allow_allocation_when_backgrounded =
+            client_state->managed_memory_stats.bytes_required <
+            bytes_backgrounded_available_gpu_memory_;
+      } else {
+        // If the client is backgrounded, then allow it to keep its textures
+        // if everything required to draw fits in-budget.
+        allow_allocation_when_backgrounded =
+            client_state->managed_memory_stats.bytes_required +
+            bytes_allocated_backgrounded <
+            GetCurrentBackgroundedAvailableGpuMemory();
+        if (allow_allocation_when_backgrounded) {
+          bytes_allocated_backgrounded +=
+              client_state->managed_memory_stats.bytes_allocated;
+        }
+      }
+      if (allow_allocation_when_backgrounded) {
+        allocation.renderer_allocation.bytes_limit_when_not_visible =
+            GetCurrentBackgroundedAvailableGpuMemory();
+        allocation.renderer_allocation.priority_cutoff_when_not_visible =
+            GpuMemoryAllocationForRenderer::kPriorityCutoffAllowOnlyRequired;
+      } else {
+        allocation.renderer_allocation.bytes_limit_when_not_visible = 0;
+        allocation.renderer_allocation.priority_cutoff_when_not_visible =
+            GpuMemoryAllocationForRenderer::kPriorityCutoffAllowNothing;
+      }
     } else {
       if (!client_state->hibernated) {
         allocation.renderer_allocation.bytes_limit_when_visible =

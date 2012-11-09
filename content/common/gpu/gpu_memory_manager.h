@@ -103,6 +103,10 @@ class CONTENT_EXPORT GpuMemoryManager :
                            StubMemoryStatsForLastManageTests);
   FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
                            TestManagedUsageTracking);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           TestBackgroundCutoff);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           TestBackgroundMru);
 
   struct ClientState {
     ClientState(GpuMemoryManagerClient* client,
@@ -141,16 +145,18 @@ class CONTENT_EXPORT GpuMemoryManager :
   void Manage();
   void SetClientsHibernatedState(const ClientStateVector& clients) const;
   size_t GetVisibleClientAllocation(const ClientStateVector& clients) const;
+  size_t GetCurrentBackgroundedAvailableGpuMemory() const;
 
   // Update the amount of GPU memory we think we have in the system, based
   // on what the stubs' contexts report.
   void UpdateAvailableGpuMemory(const ClientStateVector& clients);
+  void UpdateBackgroundedAvailableGpuMemory();
 
   // The amount of video memory which is available for allocation.
   size_t GetAvailableGpuMemory() const;
 
-  // Default per-OS value for the amount of available GPU memory, used
-  // if we can't query the driver for an exact value.
+  // Minimum value of available GPU memory, no matter how little the GPU
+  // reports. This is the default value.
   size_t GetDefaultAvailableGpuMemory() const;
 
   // Maximum cap on total GPU memory, no matter how much the GPU reports.
@@ -173,6 +179,14 @@ class CONTENT_EXPORT GpuMemoryManager :
   bool TestingCompareClients(GpuMemoryManagerClient* lhs,
                              GpuMemoryManagerClient* rhs) const;
   void TestingDisableScheduleManage() { disable_schedule_manage_ = true; }
+  void TestingSetAvailableGpuMemory(size_t bytes) {
+    bytes_available_gpu_memory_ = bytes;
+    bytes_available_gpu_memory_overridden_ = true;
+  }
+
+  void TestingSetBackgroundedAvailableGpuMemory(size_t bytes) {
+    bytes_backgrounded_available_gpu_memory_ = bytes;
+  }
 
   // All clients of this memory manager which have callbacks we
   // can use to adjust memory usage
@@ -189,6 +203,10 @@ class CONTENT_EXPORT GpuMemoryManager :
   // The maximum amount of memory that may be allocated for GPU resources
   size_t bytes_available_gpu_memory_;
   bool bytes_available_gpu_memory_overridden_;
+
+  // The maximum amount of memory that can be allocated for GPU resources
+  // in backgrounded renderers.
+  size_t bytes_backgrounded_available_gpu_memory_;
 
   // The current total memory usage, and historical maximum memory usage
   size_t bytes_allocated_current_;
