@@ -159,6 +159,13 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 
   AppendChromeMetricsHeaders(request, resource_context, resource_type);
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  // TODO(rogerta): this call also needs to be made on each new redirect
+  // request.  However, URLRequest does not yet support changing the headers
+  // for redirects.  This is being tracked in crbug.com/157154.
+  AppendChromeSyncGaiaHeader(request, resource_context);
+#endif
+
   AppendStandardResourceThrottles(request,
                                   resource_context,
                                   child_id,
@@ -330,6 +337,18 @@ void ChromeResourceDispatcherHostDelegate::AppendChromeMetricsHeaders(
         false);
   }
 }
+
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+void ChromeResourceDispatcherHostDelegate::AppendChromeSyncGaiaHeader(
+    net::URLRequest* request,
+    content::ResourceContext* resource_context) {
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+  if (OneClickSigninHelper::CanOfferOnIOThread(request->url(), request,
+                                               io_data)) {
+    request->SetExtraRequestHeaderByName("Allow-Chrome-SignIn", "1", false);
+  }
+}
+#endif
 
 bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
     const GURL& url, const std::string& mime_type) {

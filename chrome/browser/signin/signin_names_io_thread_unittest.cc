@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -11,30 +12,11 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-class TestInternal : public SigninNamesOnIOThread::Internal {
- private:
-  virtual ~TestInternal() {}
-
-  // Disable thread checks for testing.
-  virtual void CheckOnIOThread() const OVERRIDE {}
-  virtual void CheckOnUIThread() const OVERRIDE {}
-  virtual void PostTaskToIOThread(int type, const string16& email) OVERRIDE;
-};
-
-void TestInternal::PostTaskToIOThread(int type, const string16& email) {
-  // For tests, don't bother dispatching to IO thread.
-  UpdateOnIOThread(type, email);
-}
-
-class TestSigninNamesOnIOThread : public SigninNamesOnIOThread {
-  Internal* CreateInternal() OVERRIDE { return new TestInternal(); }
-};
 
 class SigninNamesOnIOThreadTest : public testing::Test {
  public:
@@ -46,22 +28,26 @@ class SigninNamesOnIOThreadTest : public testing::Test {
   void SimulateSignout(const string16& email);
   void AddNewProfile(const string16& name, const string16& email);
 
+  MessageLoop message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
   TestingProfileManager testing_profile_manager_;
-  TestSigninNamesOnIOThread signin_names_;
+  SigninNamesOnIOThread signin_names_;
 };
 
 SigninNamesOnIOThreadTest::SigninNamesOnIOThreadTest()
-    : testing_profile_manager_(
+    : ui_thread_(content::BrowserThread::UI, &message_loop_),
+      io_thread_(content::BrowserThread::IO, &message_loop_),
+      testing_profile_manager_(
           static_cast<TestingBrowserProcess*>(g_browser_process)) {
 }
 
 void SigninNamesOnIOThreadTest::SetUp() {
   ASSERT_TRUE(testing_profile_manager_.SetUp());
-  signin_names_.Initialize();
 }
 
 void SigninNamesOnIOThreadTest::TearDown() {
-  signin_names_.ReleaseResources();
+  signin_names_.ReleaseResourcesOnUIThread();
 }
 
 void SigninNamesOnIOThreadTest::SimulateSignin(const string16& email) {
@@ -134,13 +120,12 @@ TEST_F(SigninNamesOnIOThreadTest, StartWithConnectedProfiles) {
   AddNewProfile(UTF8ToUTF16("bar"), email2);
   AddNewProfile(UTF8ToUTF16("toto"), string16());
 
-  TestSigninNamesOnIOThread signin_names;
-  signin_names.Initialize();
+  SigninNamesOnIOThread signin_names;
 
   const SigninNamesOnIOThread::EmailSet& emails = signin_names.GetEmails();
   ASSERT_EQ(2u, emails.size());
   ASSERT_EQ(1u, emails.count(email1));
   ASSERT_EQ(1u, emails.count(email2));
 
-  signin_names.ReleaseResources();
+  signin_names.ReleaseResourcesOnUIThread();
 }

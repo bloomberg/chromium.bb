@@ -14,17 +14,15 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
-SigninNamesOnIOThread::Internal::Internal() {
-}
-
-void SigninNamesOnIOThread::Internal::Initialize() {
+SigninNamesOnIOThread::SigninNamesOnIOThread() {
   CheckOnUIThread();
 
   // We want to register for all profiles, not just for the current profile.
-  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-                 content::NotificationService::AllSources());
+  registrar_.reset(new content::NotificationRegistrar);
+  registrar_->Add(this, chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
+                  content::NotificationService::AllSources());
+  registrar_->Add(this, chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
+                  content::NotificationService::AllSources());
 
   // Get list of profiles and record the email addresses of any connected
   // accounts.
@@ -41,28 +39,23 @@ void SigninNamesOnIOThread::Internal::Initialize() {
   }
 }
 
+SigninNamesOnIOThread::~SigninNamesOnIOThread() {
+  CheckOnIOThread();
+  DCHECK(!registrar_) << "Must call ReleaseResourcesOnUIThread() first";
+}
+
 const SigninNamesOnIOThread::EmailSet&
-    SigninNamesOnIOThread::Internal::GetEmails() const {
+    SigninNamesOnIOThread::GetEmails() const {
   CheckOnIOThread();
   return emails_;
 }
 
-SigninNamesOnIOThread::Internal::~Internal() {
-  registrar_.RemoveAll();
+void SigninNamesOnIOThread::ReleaseResourcesOnUIThread() {
+  CheckOnUIThread();
+  registrar_.reset();
 }
 
-void SigninNamesOnIOThread::Internal::UpdateOnIOThread(
-    int type,
-    const string16& email) {
-  CheckOnIOThread();
-  if (type == chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL) {
-    emails_.insert(email);
-  } else {
-    emails_.erase(email);
-  }
-}
-
-void SigninNamesOnIOThread::Internal::Observe(
+void SigninNamesOnIOThread::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -86,48 +79,36 @@ void SigninNamesOnIOThread::Internal::Observe(
   }
 }
 
-void SigninNamesOnIOThread::Internal::CheckOnIOThread() const {
+void SigninNamesOnIOThread::CheckOnIOThread() const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 }
 
-void SigninNamesOnIOThread::Internal::CheckOnUIThread() const {
+void SigninNamesOnIOThread::CheckOnUIThread() const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
-void SigninNamesOnIOThread::Internal::PostTaskToIOThread(
+void SigninNamesOnIOThread::PostTaskToIOThread(
     int type,
     const string16& email) {
-  bool may_run = content::BrowserThread::PostTask(
-          content::BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(&SigninNamesOnIOThread::Internal::UpdateOnIOThread, this,
-                     type, email));
-  DCHECK(may_run);
+  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
+    UpdateOnIOThread(type, email);
+  } else {
+    bool may_run = content::BrowserThread::PostTask(
+            content::BrowserThread::IO,
+            FROM_HERE,
+            base::Bind(&SigninNamesOnIOThread::UpdateOnIOThread,
+                       base::Unretained(this), type, email));
+    DCHECK(may_run);
+  }
 }
 
-SigninNamesOnIOThread::SigninNamesOnIOThread() {
-}
-
-SigninNamesOnIOThread::~SigninNamesOnIOThread() {
-  DCHECK(!internal_) << "Forgot to call ReleaseResources()";
-}
-
-const SigninNamesOnIOThread::EmailSet&
-    SigninNamesOnIOThread::GetEmails() const {
-  DCHECK(internal_);
-  return internal_->GetEmails();
-}
-
-void SigninNamesOnIOThread::ReleaseResources() {
-  DCHECK(internal_);
-  internal_ = NULL;
-}
-
-void SigninNamesOnIOThread::Initialize() {
-  internal_ = CreateInternal();
-  internal_->Initialize();
-}
-
-SigninNamesOnIOThread::Internal* SigninNamesOnIOThread::CreateInternal() {
-  return new Internal();
+void SigninNamesOnIOThread::UpdateOnIOThread(
+    int type,
+    const string16& email) {
+  CheckOnIOThread();
+  if (type == chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL) {
+    emails_.insert(email);
+  } else {
+    emails_.erase(email);
+  }
 }

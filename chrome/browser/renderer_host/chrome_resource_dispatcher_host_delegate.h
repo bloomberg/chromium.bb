@@ -111,6 +111,14 @@ class ChromeResourceDispatcherHostDelegate
       content::ResourceContext* resource_context,
       ResourceType::Type resource_type);
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  // Append headers required to tell Gaia whether the sync interstitial
+  // should be shown or not.  This header is only added for valid Gaia URLs.
+  void AppendChromeSyncGaiaHeader(
+      net::URLRequest* request,
+      content::ResourceContext* resource_context);
+#endif
+
   // Prepares the variation IDs cache with initial values if not already done.
   // This method also registers the caller with the FieldTrialList to receive
   // new variation IDs.

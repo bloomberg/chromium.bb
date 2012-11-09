@@ -30,6 +30,7 @@ class ExtensionInfoMap;
 class HostContentSettingsMap;
 class Profile;
 class ProtocolHandlerRegistry;
+class SigninNamesOnIOThread;
 class TransportSecurityPersister;
 
 namespace chrome_browser_net {
@@ -104,6 +105,26 @@ class ProfileIOData {
 
   IntegerPrefMember* session_startup_pref() const {
     return &session_startup_pref_;
+  }
+
+  SigninNamesOnIOThread* signin_names() const {
+    return signin_names_.get();
+  }
+
+  StringPrefMember* google_services_username() const {
+    return &google_services_username_;
+  }
+
+  StringPrefMember* google_services_username_pattern() const {
+    return &google_services_username_pattern_;
+  }
+
+  BooleanPrefMember* reverse_autologin_enabled() const {
+    return &reverse_autologin_enabled_;
+  }
+
+  StringListPrefMember* one_click_signin_rejected_email_list() const {
+    return &one_click_signin_rejected_email_list_;
   }
 
   ChromeURLRequestContext* extensions_request_context() const {
@@ -285,6 +306,10 @@ class ProfileIOData {
       const ProfileParams* profile_params,
       net::HttpNetworkSession::Params* params) const;
 
+  void SetCookieSettingsForTesting(CookieSettings* cookie_settings);
+
+  void set_signin_names_for_testing(SigninNamesOnIOThread* signin_names);
+
  private:
   class ResourceContext : public content::ResourceContext {
    public:
@@ -371,6 +396,14 @@ class ProfileIOData {
   // Data from the UI thread from the Profile, used to initialize ProfileIOData.
   // Deleted after lazy initialization.
   mutable scoped_ptr<ProfileParams> profile_params_;
+
+  // Provides access to the email addresses of all signed in profiles.
+  mutable scoped_ptr<SigninNamesOnIOThread> signin_names_;
+
+  mutable StringPrefMember google_services_username_;
+  mutable StringPrefMember google_services_username_pattern_;
+  mutable BooleanPrefMember reverse_autologin_enabled_;
+  mutable StringListPrefMember one_click_signin_rejected_email_list_;
 
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;

@@ -46,6 +46,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -142,6 +143,7 @@ Profile* GetProfileOnUI(ProfileManager* profile_manager, Profile* profile) {
 void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* pref_service = profile->GetPrefs();
+  PrefService* local_state_pref_service = g_browser_process->local_state();
 
   scoped_ptr<ProfileParams> params(new ProfileParams);
   params->path = profile->GetPath();
@@ -201,6 +203,32 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 #endif
   chrome_http_user_agent_settings_.reset(
       new ChromeHttpUserAgentSettings(pref_service));
+
+  // These members are used only for one click sign in, which is not enabled
+  // in incognito mode.  So no need to initialize them.
+  if (!is_incognito()) {
+    signin_names_.reset(new SigninNamesOnIOThread());
+
+    google_services_username_.Init(prefs::kGoogleServicesUsername, pref_service,
+                                   NULL);
+    google_services_username_.MoveToThread(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+
+    google_services_username_pattern_.Init(
+        prefs::kGoogleServicesUsernamePattern, local_state_pref_service, NULL);
+    google_services_username_pattern_.MoveToThread(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+
+    reverse_autologin_enabled_.Init(
+        prefs::kReverseAutologinEnabled, pref_service, NULL);
+    reverse_autologin_enabled_.MoveToThread(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+
+    one_click_signin_rejected_email_list_.Init(
+        prefs::kReverseAutologinRejectedEmailList, pref_service, NULL);
+    one_click_signin_rejected_email_list_.MoveToThread(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  }
 
   // The URLBlacklistManager has to be created on the UI thread to register
   // observers of |pref_service|, and it also has to clean up on
@@ -654,6 +682,14 @@ void ProfileIOData::SetUpJobFactoryDefaults(
 
 void ProfileIOData::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (signin_names_)
+    signin_names_->ReleaseResourcesOnUIThread();
+
+  google_services_username_.Destroy();
+  google_services_username_pattern_.Destroy();
+  reverse_autologin_enabled_.Destroy();
+  one_click_signin_rejected_email_list_.Destroy();
   enable_referrers_.Destroy();
   enable_do_not_track_.Destroy();
   force_safesearch_.Destroy();
@@ -714,4 +750,15 @@ void ProfileIOData::PopulateNetworkSessionParams(
     params->trusted_spdy_proxy = command_line.GetSwitchValueASCII(
         switches::kTrustedSpdyProxy);
   }
+}
+
+void ProfileIOData::SetCookieSettingsForTesting(
+    CookieSettings* cookie_settings) {
+  DCHECK(!cookie_settings_.get());
+  cookie_settings_ = cookie_settings;
+}
+
+void ProfileIOData::set_signin_names_for_testing(
+    SigninNamesOnIOThread* signin_names) {
+  signin_names_.reset(signin_names);
 }

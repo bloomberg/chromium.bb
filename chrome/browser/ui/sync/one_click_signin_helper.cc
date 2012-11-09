@@ -5,10 +5,12 @@
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/field_trial.h"
 #include "base/string_split.h"
+#include "base/supports_user_data.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/one_click_signin_infobar_delegate.h"
 #include "chrome/browser/browser_process.h"
@@ -18,9 +20,11 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -29,6 +33,7 @@
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -39,6 +44,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/password_form.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
@@ -75,6 +81,54 @@ bool IsGaiaSignonRealm(const GURL& url) {
 
   return url == GURL(GaiaUrls::GetInstance()->gaia_origin_url());
 }
+
+// This class is associated as user data with a given URLRequest object, in
+// order to pass information from one response to another during the process
+// of signing the user into their Gaia account.  This class is only meant
+// to be used from the IO thread.
+class OneClickSigninRequestUserData : public base::SupportsUserData::Data {
+ public:
+  const std::string& email() const { return email_; }
+
+  // Associates signin information with the request.  Overwrites existing
+  // information if any.
+  static void AssociateWithRequest(base::SupportsUserData* request,
+                                   const std::string& email);
+
+  // Gets the one-click sign in information associated with the request.
+  static OneClickSigninRequestUserData* FromRequest(
+      base::SupportsUserData* request);
+
+ private:
+  // Key used when setting this object on the request.
+  static const void* const kUserDataKey;
+
+  explicit OneClickSigninRequestUserData(const std::string& email)
+      : email_(email) {
+  }
+
+  std::string email_;
+
+  DISALLOW_COPY_AND_ASSIGN(OneClickSigninRequestUserData);
+};
+
+// static
+void OneClickSigninRequestUserData::AssociateWithRequest(
+    base::SupportsUserData* request,
+    const std::string& email) {
+  request->SetUserData(kUserDataKey, new OneClickSigninRequestUserData(email));
+}
+
+// static
+OneClickSigninRequestUserData* OneClickSigninRequestUserData::FromRequest(
+    base::SupportsUserData* request) {
+  return static_cast<OneClickSigninRequestUserData*>(
+      request->GetUserData(kUserDataKey));
+}
+
+const void* const OneClickSigninRequestUserData::kUserDataKey =
+    static_cast<const void* const>(
+        &OneClickSigninRequestUserData::kUserDataKey);
 
 }  // namespace
 
@@ -254,9 +308,18 @@ OneClickSigninHelper::~OneClickSigninHelper() {
 }
 
 // static
+void OneClickSigninHelper::AssociateWithRequestForTesting(
+    base::SupportsUserData* request,
+    const std::string& email) {
+  OneClickSigninRequestUserData::AssociateWithRequest(request, email);
+}
+
+// static
 bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
                                     const std::string& email,
                                     bool check_connected) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
   if (!web_contents)
     return false;
 
@@ -338,6 +401,65 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
 }
 
 // static
+bool OneClickSigninHelper::CanOfferOnIOThread(const GURL& url,
+                                              base::SupportsUserData* request,
+                                              ProfileIOData* io_data) {
+  static const bool use_web_based_signin_flow =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseWebBasedSigninFlow);
+  if (!use_web_based_signin_flow)
+    return false;
+
+  if (!ProfileSyncService::IsSyncEnabled())
+    return false;
+
+  if (!io_data)
+    return false;
+
+  // Check for incognito before other parts of the io_data, since those
+  // members may not be initalized.
+  if (io_data->is_incognito())
+    return false;
+
+  if (!io_data->reverse_autologin_enabled()->GetValue())
+    return false;
+
+  OneClickSigninRequestUserData* one_click_data =
+      OneClickSigninRequestUserData::FromRequest(request);
+  if (!one_click_data)
+    return false;
+
+  if (!gaia::IsGaiaSignonRealm(url.GetOrigin()))
+    return false;
+
+  if (!io_data->google_services_username()->GetValue().empty())
+    return false;
+
+  if (!SigninManager::IsAllowedUsername(one_click_data->email(),
+          io_data->google_services_username_pattern()->GetValue())) {
+    return false;
+  }
+
+  std::vector<std::string> rejected_emails =
+      io_data->one_click_signin_rejected_email_list()->GetValue();
+  if (std::count_if(rejected_emails.begin(), rejected_emails.end(),
+                    std::bind2nd(std::equal_to<std::string>(),
+                                 one_click_data->email())) > 0) {
+    return false;
+  }
+
+  if (!SigninManager::AreSigninCookiesAllowed(io_data->GetCookieSettings()))
+    return false;
+
+  if (io_data->signin_names()->GetEmails().count(
+          UTF8ToUTF16(one_click_data->email())) > 0) {
+    return false;
+  }
+
+  return true;
+}
+
+// static
 void OneClickSigninHelper::InitializeFieldTrial() {
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial("OneClickSignIn", 100,
@@ -383,6 +505,11 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
 
   if (email.empty() || session_index.empty())
     return;
+
+  // Later in the chain of this request, we'll need to check the email address
+  // in the IO thread (see CanOfferOnIOThread).  So save the email address as
+  // user data on the request.
+  OneClickSigninRequestUserData::AssociateWithRequest(request, email);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,

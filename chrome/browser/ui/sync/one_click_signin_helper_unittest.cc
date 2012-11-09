@@ -2,21 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_fake.h"
+#include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 
@@ -41,13 +46,91 @@ class SigninManagerMock : public FakeSigninManager {
   MOCK_CONST_METHOD1(IsAllowedUsername, bool(const std::string& username));
 };
 
+class TestProfileIOData : public ProfileIOData {
+ public:
+  TestProfileIOData(bool is_incognito, PrefService* pref_service,
+                    PrefService* local_state, CookieSettings* cookie_settings)
+      : ProfileIOData(is_incognito) {
+    // Initialize the IO members required for these tests, but keep them on
+    // this thread since we don't use a background thread here.
+    google_services_username()->Init(prefs::kGoogleServicesUsername,
+                                     pref_service, NULL);
+    reverse_autologin_enabled()->Init(prefs::kReverseAutologinEnabled,
+                                      pref_service, NULL);
+    one_click_signin_rejected_email_list()->Init(
+        prefs::kReverseAutologinRejectedEmailList, pref_service, NULL);
+
+    google_services_username_pattern()->Init(
+        prefs::kGoogleServicesUsernamePattern, local_state, NULL);
+
+    set_signin_names_for_testing(new SigninNamesOnIOThread());
+    SetCookieSettingsForTesting(cookie_settings);
+  }
+
+  virtual ~TestProfileIOData() {
+    signin_names()->ReleaseResourcesOnUIThread();
+  }
+
+  // ProfileIOData overrides:
+  virtual void LazyInitializeInternal(
+      ProfileParams* profile_params) const OVERRIDE {
+    NOTREACHED();
+  }
+  virtual ChromeURLRequestContext* InitializeAppRequestContext(
+      ChromeURLRequestContext* main_context,
+      const StoragePartitionDescriptor& details,
+      scoped_ptr<net::URLRequestJobFactory::Interceptor>
+          protocol_handler_interceptor) const OVERRIDE {
+    NOTREACHED();
+    return NULL;
+  }
+  virtual ChromeURLRequestContext* InitializeMediaRequestContext(
+      ChromeURLRequestContext* original_context,
+      const StoragePartitionDescriptor& details) const OVERRIDE {
+    NOTREACHED();
+    return NULL;
+  }
+  virtual ChromeURLRequestContext*
+      AcquireMediaRequestContext() const OVERRIDE {
+    NOTREACHED();
+    return NULL;
+  }
+  virtual ChromeURLRequestContext*
+      AcquireIsolatedAppRequestContext(
+          ChromeURLRequestContext* main_context,
+          const StoragePartitionDescriptor& partition_descriptor,
+          scoped_ptr<net::URLRequestJobFactory::Interceptor>
+              protocol_handler_interceptor) const OVERRIDE {
+    NOTREACHED();
+    return NULL;
+  }
+  virtual ChromeURLRequestContext*
+      AcquireIsolatedMediaRequestContext(
+          ChromeURLRequestContext* app_context,
+          const StoragePartitionDescriptor& partition_descriptor)
+          const OVERRIDE {
+    NOTREACHED();
+    return NULL;
+  }
+  virtual chrome_browser_net::LoadTimeStats* GetLoadTimeStats(
+      IOThread::Globals* io_thread_globals) const OVERRIDE {
+    NOTREACHED();
+    return NULL;
+  }
+};
+
+class TestURLRequest : public base::SupportsUserData {
+public:
+  TestURLRequest() {}
+  virtual ~TestURLRequest() {}
+};
+
 class OneClickSigninHelperTest : public content::RenderViewHostTestHarness {
  public:
   OneClickSigninHelperTest();
 
   virtual void SetUp() OVERRIDE;
 
- protected:
   // Creates the sign-in manager for tests.  If |use_incognito| is true then
   // a WebContents for an incognito profile is created.  If |username| is
   // is not empty, the profile of the mock WebContents will be connected to
@@ -56,8 +139,8 @@ class OneClickSigninHelperTest : public content::RenderViewHostTestHarness {
 
   void AddEmailToOneClickRejectedList(const std::string& email);
   void EnableOneClick(bool enable);
-
   void AllowSigninCookies(bool enable);
+  void SetAllowedUsernamePattern(const std::string& pattern);
 
   SigninManagerMock* signin_manager_;
 
@@ -73,6 +156,10 @@ OneClickSigninHelperTest::OneClickSigninHelperTest()
 }
 
 void OneClickSigninHelperTest::SetUp() {
+  // Make sure web flow is enabled for tests.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kUseWebBasedSigninFlow);
+
   TestingProfile* testing_profile = new TestingProfile();
   browser_context_.reset(testing_profile);
   content::RenderViewHostTestHarness::SetUp();
@@ -159,6 +246,66 @@ void OneClickSigninHelperTest::AllowSigninCookies(bool enable) {
           Profile::FromBrowserContext(browser_context_.get()));
   cookie_settings->SetDefaultCookieSetting(
       enable ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+}
+
+void OneClickSigninHelperTest::SetAllowedUsernamePattern(
+    const std::string& pattern) {
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetString(prefs::kGoogleServicesUsernamePattern, pattern);
+}
+
+class OneClickSigninHelperIOTest : public OneClickSigninHelperTest {
+ public:
+  OneClickSigninHelperIOTest();
+  virtual ~OneClickSigninHelperIOTest();
+
+  virtual void SetUp() OVERRIDE;
+
+  TestProfileIOData* CreateTestProfileIOData(bool is_incognito);
+
+ protected:
+  TestingProfileManager testing_profile_manager_;
+  TestURLRequest request_;
+  const GURL valid_gaia_url_;
+
+ private:
+  content::TestBrowserThread db_thread_;
+  content::TestBrowserThread fub_thread_;
+  content::TestBrowserThread io_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(OneClickSigninHelperIOTest);
+};
+
+OneClickSigninHelperIOTest::OneClickSigninHelperIOTest()
+    : testing_profile_manager_(
+          static_cast<TestingBrowserProcess*>(g_browser_process)),
+      valid_gaia_url_("https://accounts.google.com/"),
+      db_thread_(content::BrowserThread::DB, &message_loop_),
+      fub_thread_(content::BrowserThread::FILE_USER_BLOCKING, &message_loop_),
+      io_thread_(content::BrowserThread::IO, &message_loop_) {
+}
+
+OneClickSigninHelperIOTest::~OneClickSigninHelperIOTest() {
+}
+
+void OneClickSigninHelperIOTest::SetUp() {
+  OneClickSigninHelperTest::SetUp();
+  ASSERT_TRUE(testing_profile_manager_.SetUp());
+  OneClickSigninHelper::AssociateWithRequestForTesting(&request_,
+                                                       "user@gmail.com");
+}
+
+TestProfileIOData* OneClickSigninHelperIOTest::CreateTestProfileIOData(
+    bool is_incognito) {
+  TestingProfile* testing_profile = static_cast<TestingProfile*>(
+      browser_context_.get());
+  PrefService* pref_service = testing_profile->GetPrefs();
+  PrefService* local_state = g_browser_process->local_state();
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(testing_profile);
+  TestProfileIOData* io_data = new TestProfileIOData(
+      is_incognito, pref_service, local_state, cookie_settings);
+  return io_data;
 }
 
 }  // namespace
@@ -273,4 +420,80 @@ TEST_F(OneClickSigninHelperTest, CanOfferNoSigninCookies) {
   EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents(), "user@gmail.com",
                                               true));
   EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents(), "", false));
+}
+
+TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThread) {
+  scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
+  EXPECT_TRUE(OneClickSigninHelper::CanOfferOnIOThread(
+      valid_gaia_url_, &request_, io_data.get()));
+}
+
+TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadIncognito) {
+  scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(true));
+  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
+      valid_gaia_url_, &request_, io_data.get()));
+}
+
+TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadNoIOData) {
+  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
+      valid_gaia_url_, &request_, NULL));
+}
+
+TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadBadURL) {
+  scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
+  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
+      GURL("https://foo.com/"), &request_, io_data.get()));
+  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
+      GURL("http://accounts.google.com/"), &request_, io_data.get()));
+}
+
+TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabled) {
+  EnableOneClick(false);
+  scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
+  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
+      valid_gaia_url_, &request_, io_data.get()));
+}
+
+TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadSignedIn) {
+  TestingProfile* testing_profile = static_cast<TestingProfile*>(
+      browser_context_.get());
+  PrefService* pref_service = testing_profile->GetPrefs();
+  pref_service->SetString(prefs::kGoogleServicesUsername, "user@gmail.com");
+
+  scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
+  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
+      valid_gaia_url_, &request_, io_data.get()));
+}
+
+TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailNotAllowed) {
+  SetAllowedUsernamePattern("*@example.com");
+  scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
+  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
+      valid_gaia_url_, &request_, io_data.get()));
+}
+
+TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailAlreadyUsed) {
+  ProfileInfoCache* cache = testing_profile_manager_.profile_info_cache();
+  const FilePath& user_data_dir = cache->GetUserDataDir();
+  cache->AddProfileToCache(user_data_dir.Append(FILE_PATH_LITERAL("user")),
+                           UTF8ToUTF16("user"),
+                           UTF8ToUTF16("user@gmail.com"), 0);
+
+  scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
+  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
+      valid_gaia_url_, &request_, io_data.get()));
+}
+
+TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadWithRejectedEmail) {
+  AddEmailToOneClickRejectedList("user@gmail.com");
+  scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
+  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
+      valid_gaia_url_, &request_, io_data.get()));
+}
+
+TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadNoSigninCookies) {
+  AllowSigninCookies(false);
+  scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
+  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
+      valid_gaia_url_, &request_, io_data.get()));
 }
