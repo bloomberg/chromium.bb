@@ -292,6 +292,18 @@ PlatformFileError CannedSyncableFileSystem::TruncateFile(
                  base::Unretained(this), url, size));
 }
 
+PlatformFileError CannedSyncableFileSystem::TouchFile(
+    const FileSystemURL& url,
+    const base::Time& last_access_time,
+    const base::Time& last_modified_time) {
+  return RunOnThread<PlatformFileError>(
+      io_task_runner_,
+      FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoTouchFile,
+                 base::Unretained(this), url,
+                 last_access_time, last_modified_time));
+}
+
 PlatformFileError CannedSyncableFileSystem::Remove(
     const FileSystemURL& url, bool recursive) {
   return RunOnThread<PlatformFileError>(
@@ -436,6 +448,16 @@ void CannedSyncableFileSystem::DoTruncateFile(
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
   NewOperation()->Truncate(url, size, callback);
+}
+
+void CannedSyncableFileSystem::DoTouchFile(
+    const FileSystemURL& url,
+    const base::Time& last_access_time,
+    const base::Time& last_modified_time,
+    const StatusCallback& callback) {
+  EXPECT_TRUE(is_filesystem_opened_);
+  NewOperation()->TouchFile(url, last_access_time,
+                            last_modified_time, callback);
 }
 
 void CannedSyncableFileSystem::DoRemove(

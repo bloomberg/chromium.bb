@@ -100,6 +100,9 @@ class CannedSyncableFileSystem
   base::PlatformFileError Move(const FileSystemURL& src_url,
                                const FileSystemURL& dest_url);
   base::PlatformFileError TruncateFile(const FileSystemURL& url, int64 size);
+  base::PlatformFileError TouchFile(const FileSystemURL& url,
+                                    const base::Time& last_access_time,
+                                    const base::Time& last_modified_time);
   base::PlatformFileError Remove(const FileSystemURL& url, bool recursive);
   base::PlatformFileError FileExists(const FileSystemURL& url);
   base::PlatformFileError DirectoryExists(const FileSystemURL& url);
@@ -145,6 +148,10 @@ class CannedSyncableFileSystem
   void DoTruncateFile(const FileSystemURL& url,
                       int64 size,
                       const StatusCallback& callback);
+  void DoTouchFile(const FileSystemURL& url,
+                   const base::Time& last_access_time,
+                   const base::Time& last_modified_time,
+                   const StatusCallback& callback);
   void DoRemove(const FileSystemURL& url,
                 bool recursive,
                 const StatusCallback& callback);
