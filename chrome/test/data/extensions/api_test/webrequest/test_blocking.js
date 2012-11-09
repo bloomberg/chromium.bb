@@ -518,8 +518,9 @@ runTests([
     });
   },
 
-  // Checks that XHR requests from ourself are invisible to blocking handlers.
-  function xhrsFromOurselfAreInvisible() {
+  // Checks that synchronous XHR requests from ourself are invisible to blocking
+  // handlers.
+  function syncXhrsFromOurselfAreInvisible() {
     expect(
       [  // events
         { label: "a-onBeforeRequest",
@@ -623,6 +624,147 @@ runTests([
     navigateAndWait(getURL("simpleLoad/a.html"), function() {
         var req = new XMLHttpRequest();
         var asynchronous = false;
+        req.open("GET", getURLHttpXHRData(), asynchronous);
+        req.send(null);
+        navigateAndWait(getURL("complexLoad/b.jpg"));
+    });
+  },
+
+  // Checks that asynchronous XHR requests from ourself are visible to blocking
+  // handlers.
+  function asyncXhrsFromOurselfAreVisible() {
+    expect(
+      [  // events
+        { label: "a-onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            frameUrl: getURL("simpleLoad/a.html")
+          }
+        },
+        { label: "a-onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.1 200 OK",
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+        { label: "a-onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURL("simpleLoad/a.html"),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.1 200 OK",
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+        {
+          label: "x-onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            url: getURLHttpXHRData(),
+            tabId: 1,
+            type: "xmlhttprequest",
+            frameUrl: "unknown frame URL",
+          }
+        },
+        {
+          label: "x-onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: getURLHttpXHRData(),
+            tabId: 1,
+            type: "xmlhttprequest",
+          }
+        },
+        { label: "x-onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLHttpXHRData(),
+            tabId: 1,
+            type: "xmlhttprequest",
+          }
+        },
+        { label: "x-onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURLHttpXHRData(),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.0 200 OK",
+            tabId: 1,
+            type: "xmlhttprequest",
+            ip: "127.0.0.1",
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+        {
+          label: "x-onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLHttpXHRData(),
+            tabId: 1,
+            type: "xmlhttprequest",
+            statusLine: "HTTP/1.0 200 OK",
+          }
+        },
+        { label: "x-onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURLHttpXHRData(),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.0 200 OK",
+            tabId: 1,
+            type: "xmlhttprequest",
+            ip: "127.0.0.1",
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+        { label: "b-onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            url: getURL("complexLoad/b.jpg"),
+            frameUrl: getURL("complexLoad/b.jpg")
+          }
+        },
+        { label: "b-onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURL("complexLoad/b.jpg"),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.1 200 OK",
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+        { label: "b-onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURL("complexLoad/b.jpg"),
+            statusCode: 200,
+            fromCache: false,
+            statusLine: "HTTP/1.1 200 OK",
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+      ],
+      [  // event order
+        ["a-onBeforeRequest", "a-onResponseStarted", "a-onCompleted",
+         "x-onBeforeRequest", "x-onBeforeSendHeaders", "x-onSendHeaders",
+         "x-onHeadersReceived", "x-onResponseStarted", "x-onCompleted"],
+        ["a-onCompleted", "x-onBeforeRequest",
+         "b-onBeforeRequest", "b-onResponseStarted", "b-onCompleted"]
+      ],
+      {urls: ["<all_urls>"]}, ["blocking"]);
+    // Check the page content for our modified User-Agent string.
+    navigateAndWait(getURL("simpleLoad/a.html"), function() {
+        var req = new XMLHttpRequest();
+        var asynchronous = true;
         req.open("GET", getURLHttpXHRData(), asynchronous);
         req.send(null);
         navigateAndWait(getURL("complexLoad/b.jpg"));

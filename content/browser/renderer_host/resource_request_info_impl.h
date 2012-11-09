@@ -76,6 +76,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   virtual bool WasIgnoredByHandler() const OVERRIDE;
   virtual bool GetAssociatedRenderView(int* render_process_id,
                                        int* render_view_id) const OVERRIDE;
+  virtual bool IsAsync() const OVERRIDE;
 
 
   void AssociateWithRequest(net::URLRequest* request);

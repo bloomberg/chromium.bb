@@ -310,6 +310,7 @@ class ExtensionWebRequestEventRouter
       int tab_id,
       int window_id,
       ResourceType::Type resource_type,
+      bool is_async_request,
       bool is_request_from_extension,
       int* extra_info_spec,
       std::vector<const ExtensionWebRequestEventRouter::EventListener*>*

@@ -193,6 +193,10 @@ bool ResourceRequestInfoImpl::GetAssociatedRenderView(
   return true;
 }
 
+bool ResourceRequestInfoImpl::IsAsync() const {
+  return async_handler_ != NULL;
+}
+
 void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {
   request->SetUserData(NULL, this);
   int render_process_id;

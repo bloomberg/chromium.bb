@@ -92,6 +92,9 @@ class ResourceRequestInfo {
   virtual bool GetAssociatedRenderView(int* render_process_id,
                                        int* render_view_id) const = 0;
 
+  // Returns true if this is associated with an asynchronous request.
+  virtual bool IsAsync() const = 0;
+
  protected:
   virtual ~ResourceRequestInfo() {}
 };
