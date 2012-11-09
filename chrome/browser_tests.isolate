@@ -96,6 +96,7 @@
         'isolate_dependency_tracked': [
           '../net/data/ssl/certificates/websocket_cacert.pem',
           '../net/data/ssl/certificates/websocket_client_cert.p12',
+          '../net/tools/testserver/testserver_base.py',
           '../testing/xvfb.py',
           '../third_party/WebKit/Tools/Scripts/VCSUtils.pm',
           '../third_party/WebKit/Tools/Scripts/new-run-webkit-httpd',
@@ -115,6 +116,7 @@
           '<(PRODUCT_DIR)/libppapi_tests.so',
           '<(PRODUCT_DIR)/nacl_helper<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/nacl_helper_bootstrap<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/nacl_ipc_irt_x86_64.nexe',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
           'test/data/autofill/autofill_middleinit_form.html',
           'test/data/autofill/dataset_2.txt',
@@ -403,6 +405,7 @@
         ],
         'isolate_dependency_touched': [
           '../net/data/websocket/OWNERS',
+          '../net/data/websocket/README',
           '../net/data/websocket/websocket_shared_worker.html',
           '../net/data/websocket/websocket_worker_simple.js',
           'test/data/autofill/heuristics/input/01_autocomplete_attribute_advanced.html',
