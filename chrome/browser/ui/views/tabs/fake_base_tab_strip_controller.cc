@@ -97,9 +97,6 @@ bool FakeBaseTabStripController::IsCompatibleWith(TabStrip* other) const {
 void FakeBaseTabStripController::CreateNewTab() {
 }
 
-void FakeBaseTabStripController::ClickActiveTab(int index) {
-}
-
 bool FakeBaseTabStripController::IsIncognito() {
   return false;
 }

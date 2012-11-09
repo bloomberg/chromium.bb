@@ -70,10 +70,6 @@ class TabController {
   virtual BaseTab* GetTabAt(BaseTab* tab,
                             const gfx::Point& tab_in_tab_coordinates) = 0;
 
-  // Informs that an active tab is selected when already active (ie - clicked
-  // when already active/foreground).
-  virtual void ClickActiveTab(const BaseTab* tab) const = 0;
-
   // Invoked when a mouse event occurs on |source|.
   virtual void OnMouseEventInTab(views::View* source,
                                  const ui::MouseEvent& event) = 0;

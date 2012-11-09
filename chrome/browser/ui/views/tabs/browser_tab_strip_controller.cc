@@ -345,11 +345,6 @@ void BrowserTabStripController::CreateNewTab() {
   model_->delegate()->AddBlankTabAt(-1, true);
 }
 
-void BrowserTabStripController::ClickActiveTab(int index) {
-  DCHECK(model_->active_index() == index);
-  model_->ActiveTabClicked(index);
-}
-
 bool BrowserTabStripController::IsIncognito() {
   return browser_->profile()->IsOffTheRecord();
 }

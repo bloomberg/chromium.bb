@@ -738,10 +738,6 @@ void TabStripModel::MoveTabPrevious() {
   MoveTabContentsAt(active_index(), new_index, true);
 }
 
-void TabStripModel::ActiveTabClicked(int index) {
-  FOR_EACH_OBSERVER(TabStripModelObserver, observers_, ActiveTabClicked(index));
-}
-
 // Context menu functions.
 bool TabStripModel::IsContextMenuCommandEnabled(
     int context_index, ContextMenuCommand command_id) const {

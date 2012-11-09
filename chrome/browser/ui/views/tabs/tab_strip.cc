@@ -1106,13 +1106,6 @@ BaseTab* TabStrip::GetTabAt(BaseTab* tab,
   return view && view->id() == VIEW_ID_TAB ? static_cast<BaseTab*>(view) : NULL;
 }
 
-void TabStrip::ClickActiveTab(const BaseTab* tab) const {
-  DCHECK(IsActiveTab(tab));
-  int index = GetModelIndexOfBaseTab(tab);
-  if (controller() && IsValidModelIndex(index))
-    controller()->ClickActiveTab(index);
-}
-
 void TabStrip::OnMouseEventInTab(views::View* source,
                                  const ui::MouseEvent& event) {
   UpdateLayoutTypeFromMouseEvent(source, event);

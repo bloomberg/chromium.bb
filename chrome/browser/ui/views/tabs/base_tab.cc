@@ -342,8 +342,6 @@ bool BaseTab::OnMousePressed(const ui::MouseEvent& event) {
         }
       } else if (!IsSelected()) {
         controller()->SelectTab(this);
-      } else if (IsActive()) {
-        controller()->ClickActiveTab(this);
       }
     } else if (!IsSelected()) {
       controller()->SelectTab(this);

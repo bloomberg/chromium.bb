@@ -65,5 +65,3 @@ void TabStripModelObserver::TabBlockedStateChanged(WebContents* contents,
 void TabStripModelObserver::TabStripEmpty() {}
 
 void TabStripModelObserver::TabStripModelDeleted() {}
-
-void TabStripModelObserver::ActiveTabClicked(int index) {}
