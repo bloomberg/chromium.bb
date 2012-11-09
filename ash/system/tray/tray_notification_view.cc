@@ -125,6 +125,8 @@ bool TrayNotificationView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 ui::EventResult TrayNotificationView::OnGestureEvent(ui::GestureEvent* event) {
+  if (SlideOutView::OnGestureEvent(event) == ui::ER_CONSUMED)
+    return ui::ER_CONSUMED;
   if (event->type() != ui::ET_GESTURE_TAP)
     return ui::ER_UNHANDLED;
   HandleClickAction();
@@ -135,6 +137,10 @@ void TrayNotificationView::OnClose() {
 }
 
 void TrayNotificationView::OnClickAction() {
+}
+
+void TrayNotificationView::OnSlideOut() {
+  tray_->HideNotificationView();
 }
 
 void TrayNotificationView::HandleClose() {

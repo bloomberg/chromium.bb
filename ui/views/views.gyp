@@ -194,6 +194,8 @@
         'controls/single_split_view.cc',
         'controls/single_split_view.h',
         'controls/single_split_view_listener.h',
+        'controls/slide_out_view.cc',
+        'controls/slide_out_view.h',
         'controls/slider.cc',
         'controls/slider.h',
         'controls/tabbed_pane/native_tabbed_pane_views.cc',

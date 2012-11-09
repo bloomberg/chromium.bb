@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_TRAY_TRAY_NOTIFICATION_VIEWS_H_
 
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/view.h"
+#include "ui/views/controls/slide_out_view.h"
 
 namespace gfx {
 class ImageSkia;
@@ -27,7 +27,7 @@ namespace internal {
 // | icon  contents  x |
 //  ----------------v--
 // The close button will call OnClose() when clicked.
-class TrayNotificationView : public views::View,
+class TrayNotificationView : public views::SlideOutView,
                              public views::ButtonListener {
  public:
   // If icon_id is 0, no icon image will be set. SetIconImage can be called
@@ -66,6 +66,9 @@ class TrayNotificationView : public views::View,
   virtual void OnClose();
   // Called when the notification is clicked on. Does nothing by default.
   virtual void OnClickAction();
+
+  // Overridden from views::SlideOutView.
+  virtual void OnSlideOut() OVERRIDE;
 
   SystemTrayItem* tray() { return tray_; }
 

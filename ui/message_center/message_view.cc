@@ -8,7 +8,6 @@
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -110,8 +109,7 @@ MessageView::MessageView(
       notification_(notification),
       icon_(NULL),
       close_button_(NULL),
-      scroller_(NULL),
-      gesture_scroll_amount_(0.f) {
+      scroller_(NULL) {
 }
 
 MessageView::MessageView() {
@@ -140,46 +138,16 @@ ui::EventResult MessageView::OnGestureEvent(ui::GestureEvent* event) {
     return ui::ER_CONSUMED;
   }
 
-  if (event->type() == ui::ET_SCROLL_FLING_START) {
-    // The threshold for the fling velocity is computed empirically.
-    // The unit is in pixels/second.
-    const float kFlingThresholdForClose = 800.f;
-    if (fabsf(event->details().velocity_x()) > kFlingThresholdForClose) {
-      SlideOutAndClose(event->details().velocity_x() < 0 ? SLIDE_LEFT :
-                       SLIDE_RIGHT);
-    } else if (scroller_) {
-      RestoreVisualState();
-      scroller_->OnGestureEvent(event);
-    }
-    return ui::ER_CONSUMED;
-  }
+  ui::EventResult result = SlideOutView::OnGestureEvent(event);
+  if (result & ui::ER_CONSUMED)
+    return result;
 
   if (!event->IsScrollGestureEvent())
-    return ui::ER_UNHANDLED;
-
-  if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
-    gesture_scroll_amount_ = 0.f;
-  } else if (event->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
-    // The scroll-update events include the incremental scroll amount.
-    gesture_scroll_amount_ += event->details().scroll_x();
-
-    gfx::Transform transform;
-    transform.SetTranslateX(gesture_scroll_amount_);
-    layer()->SetTransform(transform);
-    layer()->SetOpacity(
-        1.f - std::min(fabsf(gesture_scroll_amount_) / width(), 1.f));
-
-  } else if (event->type() == ui::ET_GESTURE_SCROLL_END) {
-    const float kScrollRatioForClosingNotification = 0.5f;
-    float scrolled_ratio = fabsf(gesture_scroll_amount_) / width();
-    if (scrolled_ratio >= kScrollRatioForClosingNotification)
-      SlideOutAndClose(gesture_scroll_amount_ < 0 ? SLIDE_LEFT : SLIDE_RIGHT);
-    else
-      RestoreVisualState();
-  }
+    return result;
 
   if (scroller_)
     scroller_->OnGestureEvent(event);
+
   return ui::ER_CONSUMED;
 }
 
@@ -187,10 +155,6 @@ void MessageView::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   if (sender == close_button_)
     list_delegate_->SendRemoveNotification(notification_.id);
-}
-
-void MessageView::OnImplicitAnimationsCompleted() {
-  list_delegate_->SendRemoveNotification(notification_.id);
 }
 
 void MessageView::ShowMenu(gfx::Point screen_location) {
@@ -210,28 +174,8 @@ void MessageView::ShowMenu(gfx::Point screen_location) {
       views::MenuRunner::HAS_MNEMONICS));
 }
 
-void MessageView::RestoreVisualState() {
-  // Restore the layer state.
-  const int kSwipeRestoreDurationMS = 150;
-  ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kSwipeRestoreDurationMS));
-  layer()->SetTransform(gfx::Transform());
-  layer()->SetOpacity(1.f);
-}
-
-void MessageView::SlideOutAndClose(SlideDirection direction) {
-  const int kSwipeOutTotalDurationMS = 150;
-  int swipe_out_duration = kSwipeOutTotalDurationMS * layer()->opacity();
-  ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(swipe_out_duration));
-  settings.AddObserver(this);
-
-  gfx::Transform transform;
-  transform.SetTranslateX(direction == SLIDE_LEFT ? -width() : width());
-  layer()->SetTransform(transform);
-  layer()->SetOpacity(0.f);
+void MessageView::OnSlideOut() {
+  list_delegate_->SendRemoveNotification(notification_.id);
 }
 
 }  // namespace message_center

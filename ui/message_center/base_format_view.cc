@@ -32,8 +32,6 @@ void BaseFormatView::SetUpView() {
   SkColor bg_color = notification_.is_read ?
       kNotificationReadColor : kNotificationColor;
   set_background(views::Background::CreateSolidBackground(bg_color));
-  SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
 
   icon_ = new views::ImageView;
   icon_->SetImageSize(
