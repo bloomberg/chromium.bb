@@ -294,26 +294,34 @@ void LayerTreeHostImpl::animate(base::TimeTicks monotonicTime, base::Time wallCl
     animateScrollbars(monotonicTime);
 }
 
-void LayerTreeHostImpl::startPageScaleAnimation(gfx::Vector2d targetOffset, bool anchorPoint, float pageScale, base::TimeTicks startTime, base::TimeDelta duration)
+void LayerTreeHostImpl::startPageScaleAnimation(gfx::Vector2d targetPosition, bool anchorPoint, float pageScale, base::TimeTicks startTime, base::TimeDelta duration)
 {
     if (!m_rootScrollLayerImpl)
         return;
 
     gfx::Vector2dF scrollTotal = m_rootScrollLayerImpl->scrollOffset() + m_rootScrollLayerImpl->scrollDelta();
-    scrollTotal.Scale(m_pinchZoomViewport.pageScaleDelta());
-    float scaleTotal = m_pinchZoomViewport.totalPageScaleFactor();
-    gfx::Size scaledContentSize = gfx::ToFlooredSize(contentSize().Scale(m_pinchZoomViewport.pageScaleDelta()));
+    gfx::SizeF scaledContentSize = contentSize();
+    if (!Settings::pageScalePinchZoomEnabled()) {
+        scrollTotal.Scale(1 / m_pinchZoomViewport.pageScaleFactor());
+        scaledContentSize = scaledContentSize.Scale(1 / m_pinchZoomViewport.pageScaleFactor());
+    }
+    gfx::SizeF viewportSize = m_deviceViewportSize;
+    viewportSize = viewportSize.Scale(1 / m_deviceScaleFactor);
 
     double startTimeSeconds = (startTime - base::TimeTicks()).InSecondsF();
-    m_pageScaleAnimation = PageScaleAnimation::create(gfx::ToFlooredVector2d(scrollTotal), scaleTotal, m_deviceViewportSize, scaledContentSize, startTimeSeconds);
+    m_pageScaleAnimation = PageScaleAnimation::create(scrollTotal, m_pinchZoomViewport.totalPageScaleFactor(), viewportSize, scaledContentSize, startTimeSeconds);
 
     if (anchorPoint) {
-        gfx::Vector2dF windowAnchor = targetOffset;
-        windowAnchor.Scale(scaleTotal / pageScale);
-        windowAnchor -= scrollTotal;
-        m_pageScaleAnimation->zoomWithAnchor(gfx::ToFlooredVector2d(windowAnchor), pageScale, duration.InSecondsF());
-    } else
-        m_pageScaleAnimation->zoomTo(targetOffset, pageScale, duration.InSecondsF());
+        gfx::Vector2dF anchor(targetPosition);
+        if (!Settings::pageScalePinchZoomEnabled())
+            anchor.Scale(1 / pageScale);
+        m_pageScaleAnimation->zoomWithAnchor(anchor, pageScale, duration.InSecondsF());
+    } else {
+        gfx::Vector2dF scaledTargetPosition = targetPosition;
+        if (!Settings::pageScalePinchZoomEnabled())
+            scaledTargetPosition.Scale(1 / pageScale);
+        m_pageScaleAnimation->zoomTo(scaledTargetPosition, pageScale, duration.InSecondsF());
+    }
 
     m_client->setNeedsRedrawOnImplThread();
     m_client->setNeedsCommitOnImplThread();
@@ -1262,10 +1270,10 @@ void LayerTreeHostImpl::pinchGestureEnd()
 
 void LayerTreeHostImpl::computeDoubleTapZoomDeltas(ScrollAndScaleSet* scrollInfo)
 {
-    float pageScale = m_pageScaleAnimation->finalPageScale();
-    gfx::Vector2dF scrollOffset = m_pageScaleAnimation->finalScrollOffset();
-    scrollOffset.Scale(m_pinchZoomViewport.pageScaleFactor() / pageScale);
-    makeScrollAndScaleSet(scrollInfo, gfx::ToRoundedVector2d(scrollOffset), pageScale);
+    gfx::Vector2dF scaledScrollOffset = m_pageScaleAnimation->targetScrollOffset();
+    if (!Settings::pageScalePinchZoomEnabled())
+        scaledScrollOffset.Scale(m_pinchZoomViewport.pageScaleFactor());
+    makeScrollAndScaleSet(scrollInfo, ToFlooredVector2d(scaledScrollOffset), m_pageScaleAnimation->targetPageScaleFactor());
 }
 
 void LayerTreeHostImpl::computePinchZoomDeltas(ScrollAndScaleSet* scrollInfo)
@@ -1339,14 +1347,12 @@ scoped_ptr<ScrollAndScaleSet> LayerTreeHostImpl::processScrollDeltas()
     if (m_pinchGestureActive || m_pageScaleAnimation) {
         scrollInfo->pageScaleDelta = 1;
         m_pinchZoomViewport.setSentPageScaleDelta(1);
-        // FIXME(aelias): Make these painting optimizations compatible with
+        // FIXME(aelias): Make pinch-zoom painting optimization compatible with
         // compositor-side scaling.
-        if (!Settings::pageScalePinchZoomEnabled()) {
-            if (m_pinchGestureActive)
-                computePinchZoomDeltas(scrollInfo.get());
-            else if (m_pageScaleAnimation.get())
-                computeDoubleTapZoomDeltas(scrollInfo.get());
-        }
+        if (!Settings::pageScalePinchZoomEnabled() && m_pinchGestureActive)
+            computePinchZoomDeltas(scrollInfo.get());
+        else if (m_pageScaleAnimation.get())
+            computeDoubleTapZoomDeltas(scrollInfo.get());
         return scrollInfo.Pass();
     }
 
@@ -1379,9 +1385,11 @@ void LayerTreeHostImpl::animatePageScale(base::TimeTicks time)
     double monotonicTime = (time - base::TimeTicks()).InSecondsF();
     gfx::Vector2dF scrollTotal = m_rootScrollLayerImpl->scrollOffset() + m_rootScrollLayerImpl->scrollDelta();
 
-    setPageScaleDelta(m_pageScaleAnimation->pageScaleAtTime(monotonicTime) / m_pinchZoomViewport.pageScaleFactor());
+    setPageScaleDelta(m_pageScaleAnimation->pageScaleFactorAtTime(monotonicTime) / m_pinchZoomViewport.pageScaleFactor());
     gfx::Vector2dF nextScroll = m_pageScaleAnimation->scrollOffsetAtTime(monotonicTime);
-    nextScroll.Scale(1 / m_pinchZoomViewport.pageScaleDelta());
+
+    if (!Settings::pageScalePinchZoomEnabled())
+        nextScroll.Scale(m_pinchZoomViewport.pageScaleFactor());
     m_rootScrollLayerImpl->scrollBy(nextScroll - scrollTotal);
     m_client->setNeedsRedrawOnImplThread();
 

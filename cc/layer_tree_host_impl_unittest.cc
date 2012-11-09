@@ -651,7 +651,7 @@ TEST_P(LayerTreeHostImplTest, pageScaleAnimation)
     LayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
     DCHECK(scrollLayer);
 
-    const float minPageScale = Settings::pageScalePinchZoomEnabled() ? 1 : 0.5;
+    const float minPageScale = 0.5;
     const float maxPageScale = 4;
     const base::TimeTicks startTime = base::TimeTicks() + base::TimeDelta::FromSeconds(1);
     const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(100);
@@ -772,33 +772,32 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPage
     LayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
     DCHECK(scrollLayer);
 
-    const float minPageScale = Settings::pageScalePinchZoomEnabled() ? 1 : 0.5;
+    const float minPageScale = 0.5;
     const float maxPageScale = 4;
     const base::TimeTicks startTime = base::TimeTicks() + base::TimeDelta::FromSeconds(1);
     const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(100);
     const base::TimeTicks halfwayThroughAnimation = startTime + duration / 2;
     const base::TimeTicks endTime = startTime + duration;
-    // Start a page scale animation.
+
     const float pageScaleDelta = 2;
+    gfx::Vector2d target(25, 25);
+    gfx::Vector2d scaledTarget = target;
+    if (!Settings::pageScalePinchZoomEnabled())
+      scaledTarget = gfx::Vector2d(12, 12);
+
     m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
-    m_hostImpl->startPageScaleAnimation(gfx::Vector2d(50, 50), false, pageScaleDelta, startTime, duration);
+    m_hostImpl->startPageScaleAnimation(target, false, pageScaleDelta, startTime, duration);
 
     // We should immediately get the final zoom and scroll values for the
     // animation.
     m_hostImpl->animate(halfwayThroughAnimation, base::Time());
     scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
-
-    if (!Settings::pageScalePinchZoomEnabled()) {
-        EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
-        expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(25, 25));
-    } else {
-        EXPECT_EQ(scrollInfo->pageScaleDelta, 1);
-        EXPECT_TRUE(scrollInfo->scrolls.empty());
-    }
+    EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
+    expectContains(*scrollInfo, scrollLayer->id(), scaledTarget);
 
     // Scrolling during the animation is ignored.
     const gfx::Vector2d scrollDelta(0, 10);
-    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(25, 25), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(target.x(), target.y()), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
     m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
     m_hostImpl->scrollEnd();
 
@@ -807,7 +806,7 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPage
     m_hostImpl->animate(endTime, base::Time());
     scrollInfo = m_hostImpl->processScrollDeltas();
     EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
-    expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(25, 25));
+    expectContains(*scrollInfo, scrollLayer->id(), scaledTarget);
 }
 
 class DidDrawCheckLayer : public TiledLayerImpl {
