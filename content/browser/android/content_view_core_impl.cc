@@ -139,6 +139,13 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
   DCHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
 
+  // When a tab is restored (from a saved state), it does not have a renderer
+  // process.  We treat it like the tab is crashed. If the content is loaded
+  // when the tab is shown, tab_crashed_ will be reset.  Since
+  // RenderWidgetHostView is associated with the lifetime of the renderer
+  // process, we use it to test whether there is a renderer process.
+  tab_crashed_ = !(web_contents->GetRenderWidgetHostView());
+
   // TODO(leandrogracia): make use of the hardware_accelerated argument.
 
   InitJNI(env, obj);
