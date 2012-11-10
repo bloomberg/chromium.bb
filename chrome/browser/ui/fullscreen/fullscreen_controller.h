@@ -130,6 +130,9 @@ class FullscreenController : public content::NotificationObserver {
 
   void UpdateNotificationRegistrations();
 
+  // Posts a task to call NotifyFullscreenChange.
+  void PostFullscreenChangeNotification(bool is_fullscreen);
+  // Sends a NOTIFICATION_FULLSCREEN_CHANGED notification.
   void NotifyFullscreenChange(bool is_fullscreen);
   // Notifies the tab that it has been forced out of fullscreen and mouse lock
   // mode if necessary.

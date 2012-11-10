@@ -19,17 +19,17 @@
 #include "base/mac/mac_util.h"
 #endif
 
+using chrome::kAboutBlankURL;
 using content::WebContents;
+using content::PAGE_TRANSITION_TYPED;
 
 class FullscreenControllerBrowserTest: public FullscreenControllerTest {
 };
 
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        PendingMouseLockExitsOnTabSwitch) {
-  AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
-                       content::PAGE_TRANSITION_TYPED);
-  AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
-                       content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
   WebContents* tab1 = chrome::GetActiveWebContents(browser());
 
   // Request mouse lock. Bubble is displayed.
@@ -62,10 +62,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        PendingMouseLockExitsOnTabClose) {
   // Add more tabs.
-  AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
-                       content::PAGE_TRANSITION_TYPED);
-  AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
-                       content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
   // Request mouse lock. Bubble is displayed.
   RequestToLockMouse(true, false);

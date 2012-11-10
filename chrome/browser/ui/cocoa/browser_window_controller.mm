@@ -2016,8 +2016,10 @@ willAnimateFromState:(bookmarks::VisualState)oldState
       [self setPresentationModeInternal:YES forceDropdown:YES];
       [self releaseBarVisibilityForOwner:self withAnimation:YES delay:YES];
       // Since -windowDidEnterFullScreen: won't be called in the
-      // fullscreen --> presentation mode case, manually show the exit bubble.
+      // fullscreen --> presentation mode case, manually show the exit bubble
+      // and notify the change happened with WindowFullscreenStateChanged().
       [self showFullscreenExitBubbleIfNecessary];
+      browser_->WindowFullscreenStateChanged();
     } else {
       // If not in fullscreen mode, trigger the Lion fullscreen mode machinery.
       // Presentation mode will automatically be enabled in

@@ -39,6 +39,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_launcher.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
 #include "ui/compositor/compositor_switches.h"
@@ -212,10 +213,15 @@ void InProcessBrowserTest::AddTabAtIndexToBrowser(
     int index,
     const GURL& url,
     content::PageTransition transition) {
+  content::TestNavigationObserver observer(
+      content::NotificationService::AllSources(), NULL, 1);
+
   chrome::NavigateParams params(browser, url, transition);
   params.tabstrip_index = index;
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
+
+  observer.Wait();
 }
 
 void InProcessBrowserTest::AddTabAtIndex(

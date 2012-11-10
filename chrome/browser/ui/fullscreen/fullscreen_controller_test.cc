@@ -90,16 +90,6 @@ void FullscreenControllerTest::DenyCurrentFullscreenOrMouseLockRequest() {
   browser()->fullscreen_controller()->OnDenyFullscreenPermission(type);
 }
 
-void FullscreenControllerTest::AddTabAtIndexAndWait(int index, const GURL& url,
-    content::PageTransition transition) {
-  content::TestNavigationObserver observer(
-      content::NotificationService::AllSources(), NULL, 1);
-
-  AddTabAtIndex(index, url, transition);
-
-  observer.Wait();
-}
-
 void FullscreenControllerTest::GoBack() {
   content::TestNavigationObserver observer(
       content::NotificationService::AllSources(), NULL, 1);

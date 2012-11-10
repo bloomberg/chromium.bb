@@ -20,7 +20,9 @@
 #include "base/mac/mac_util.h"
 #endif
 
+using chrome::kAboutBlankURL;
 using content::WebContents;
+using content::PAGE_TRANSITION_TYPED;
 
 namespace {
 
@@ -94,7 +96,7 @@ void FullscreenControllerInteractiveTest::ToggleBrowserFullscreen(
 void
 FullscreenControllerInteractiveTest::TestFullscreenMouseLockContentSettings() {
   GURL url = test_server()->GetURL("simple.html");
-  AddTabAtIndexAndWait(0, url, content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, url, PAGE_TRANSITION_TYPED);
 
   // Validate that going fullscreen for a URL defaults to asking permision.
   ASSERT_FALSE(IsFullscreenPermissionRequested());
@@ -154,23 +156,19 @@ FullscreenControllerInteractiveTest::TestFullscreenMouseLockContentSettings() {
 void FullscreenControllerInteractiveTest::ToggleTabFullscreen_Internal(
     bool enter_fullscreen, bool retry_until_success) {
   WebContents* tab = chrome::GetActiveWebContents(browser());
-  if (IsFullscreenForBrowser()) {
-    // Changing tab fullscreen state will not actually change the window
-    // when browser fullscreen is in effect.
+  do {
+    FullscreenNotificationObserver fullscreen_observer;
     browser()->ToggleFullscreenModeForTab(tab, enter_fullscreen);
-  } else {  // Not in browser fullscreen, expect window to actually change.
-    ASSERT_NE(browser()->window()->IsFullscreen(), enter_fullscreen);
-    do {
-      FullscreenNotificationObserver fullscreen_observer;
-      browser()->ToggleFullscreenModeForTab(tab, enter_fullscreen);
-      fullscreen_observer.Wait();
-      // Repeat ToggleFullscreenModeForTab until the correct state is entered.
-      // This addresses flakiness on test bots running many fullscreen
-      // tests in parallel.
-    } while (retry_until_success &&
-             browser()->window()->IsFullscreen() != enter_fullscreen);
+    fullscreen_observer.Wait();
+    // Repeat ToggleFullscreenModeForTab until the correct state is entered.
+    // This addresses flakiness on test bots running many fullscreen
+    // tests in parallel.
+  } while (retry_until_success &&
+           !IsFullscreenForBrowser() &&
+           browser()->window()->IsFullscreen() != enter_fullscreen);
+  ASSERT_EQ(IsFullscreenForTabOrPending(), enter_fullscreen);
+  if (!IsFullscreenForBrowser())
     ASSERT_EQ(browser()->window()->IsFullscreen(), enter_fullscreen);
-  }
 }
 
 // Tests ///////////////////////////////////////////////////////////////////////
@@ -181,15 +179,13 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        DISABLED_TestNewTabExitsFullscreen) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndexAndWait(
-      0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
 
   {
     FullscreenNotificationObserver fullscreen_observer;
-    AddTabAtIndexAndWait(
-        1, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
+    AddTabAtIndex(1, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
     fullscreen_observer.Wait();
     ASSERT_FALSE(browser()->window()->IsFullscreen());
   }
@@ -201,8 +197,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        DISABLED_TestTabExitsItselfFromFullscreen) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndexAndWait(
-      0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(false));
@@ -215,10 +210,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        DISABLED_TestFullscreenBubbleMouseLockState) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
-                content::PAGE_TRANSITION_TYPED);
-  AddTabAtIndexAndWait(1, GURL(chrome::kAboutBlankURL),
-                content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(1, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
 
@@ -257,8 +250,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_NO_FATAL_FAILURE(ToggleBrowserFullscreen(true));
 
   // Enter tab fullscreen.
-  AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
-                content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
 
   // Exit browser fullscreen.
@@ -274,8 +266,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_NO_FATAL_FAILURE(ToggleBrowserFullscreen(true));
 
   // Enter and then exit tab fullscreen.
-  AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
-                content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(false));
 
@@ -369,8 +360,7 @@ IN_PROC_BROWSER_TEST_F(
     FullscreenControllerTest, DISABLED_TabEntersPresentationModeFromWindowed) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndexAndWait(
-      0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
   WebContents* tab = chrome::GetActiveWebContents(browser());
 
@@ -877,7 +867,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   // http://crbug.com/133831
 
   GURL url = test_server()->GetURL("simple.html");
-  AddTabAtIndexAndWait(0, url, content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, url, PAGE_TRANSITION_TYPED);
 
   // Validate that going fullscreen for a URL defaults to asking permision.
   ASSERT_FALSE(IsFullscreenPermissionRequested());

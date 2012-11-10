@@ -110,6 +110,10 @@ void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
             GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
       }
       UpdateFullscreenExitBubbleContent();
+
+      // This is only a change between Browser and Tab fullscreen. We generate
+      // a fullscreen notification now because there is no window change.
+      PostFullscreenChangeNotification(true);
     }
   } else {
     if (in_browser_or_tab_fullscreen_mode) {
@@ -126,6 +130,10 @@ void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
         // case, all we have to do is notifying the tab that it has exited "tab
         // fullscreen" mode.
         NotifyTabOfExitIfNecessary();
+
+        // This is only a change between Browser and Tab fullscreen. We generate
+        // a fullscreen notification now because there is no window change.
+        PostFullscreenChangeNotification(true);
       }
     }
   }
@@ -258,9 +266,7 @@ void FullscreenController::WindowFullscreenStateChanged() {
 #else
   exiting_fullscreen = !window_->IsFullscreen();
 #endif
-  MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&FullscreenController::NotifyFullscreenChange,
-          ptr_factory_.GetWeakPtr(), !exiting_fullscreen));
+  PostFullscreenChangeNotification(!exiting_fullscreen);
   if (exiting_fullscreen)
     NotifyTabOfExitIfNecessary();
   if (exiting_fullscreen)
@@ -439,6 +445,13 @@ void FullscreenController::UpdateNotificationRegistrations() {
   } else if (!tab && !registrar_.IsEmpty()) {
     registrar_.RemoveAll();
   }
+}
+
+void FullscreenController::PostFullscreenChangeNotification(
+    bool is_fullscreen) {
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&FullscreenController::NotifyFullscreenChange,
+          ptr_factory_.GetWeakPtr(), is_fullscreen));
 }
 
 void FullscreenController::NotifyFullscreenChange(bool is_fullscreen) {
