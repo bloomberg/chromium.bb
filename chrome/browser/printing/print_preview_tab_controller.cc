@@ -119,6 +119,9 @@ void PrintPreviewTabDelegate::GetWebUIMessageHandlers(
 
 void PrintPreviewTabDelegate::GetDialogSize(gfx::Size* size) const {
   DCHECK(size);
+  // TODO(skuhne): Remove test code.
+  LOG(ERROR) << "GetDialogSize IN: " << size->ToString();
+  // TODO(skuhne): Remove to here.
   const gfx::Size kMinDialogSize(800, 480);
   const int kBorder = 50;
   gfx::Rect rect;
@@ -133,6 +136,9 @@ void PrintPreviewTabDelegate::GetDialogSize(gfx::Size* size) const {
   size->set_width(std::min(size->width(), kMaxDialogSize.width()));
   size->set_height(std::min(size->height(), kMaxDialogSize.height()));
 #endif
+  // TODO(skuhne): Remove test code.
+  LOG(ERROR) << "GetDialogSize OUT: " << size->ToString();
+  // TODO(skuhne): Remove to here.
 }
 
 std::string PrintPreviewTabDelegate::GetDialogArgs() const {
