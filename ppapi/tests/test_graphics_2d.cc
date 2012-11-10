@@ -572,7 +572,7 @@ std::string TestGraphics2D::TestReplace() {
   dc.PaintImageData(background, pp::Point(0, 0));
 
   // Replace with a green background but don't flush yet.
-  const int32_t swapped_color = 0xFF0000FF;
+  const int32_t swapped_color = 0x00FF00FF;
   pp::ImageData swapped(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                         pp::Size(w, h), true);
   if (swapped.is_null())
