@@ -460,7 +460,7 @@ void ExtensionAction::DoPaintBadge(
   int rect_y = bounds.bottom() - bottom_margin - kBadgeHeight;
   int rect_width = badge_width;
   int rect_x = (badge_width >= kCenterAlignThreshold) ?
-      (bounds.x() + bounds.width() - badge_width) / 2 :
+      bounds.x() + (bounds.width() - badge_width) / 2 :
       bounds.right() - badge_width;
   gfx::Rect rect(rect_x, rect_y, rect_width, rect_height);
 
