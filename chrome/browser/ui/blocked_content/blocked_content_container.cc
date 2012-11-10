@@ -13,6 +13,18 @@
 using content::OpenURLParams;
 using content::WebContents;
 
+namespace {
+
+void DestroyBlockedContents(WebContents* web_contents) {
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
+  if (tab_contents)
+    delete tab_contents;
+  else
+    delete web_contents;
+}
+
+}  // namespace
+
 // static
 const size_t BlockedContentContainer::kImpossibleNumberOfPopups = 30;
 
@@ -109,7 +121,7 @@ void BlockedContentContainer::Clear() {
     WebContents* web_contents = i->web_contents;
     web_contents->SetDelegate(NULL);
     BlockedContentTabHelper::FromWebContents(web_contents)->set_delegate(NULL);
-    delete TabContents::FromWebContents(web_contents);
+    DestroyBlockedContents(web_contents);
   }
   blocked_contents_.clear();
 }
@@ -144,7 +156,7 @@ void BlockedContentContainer::CloseContents(WebContents* source) {
       BlockedContentTabHelper::FromWebContents(web_contents)->
           set_delegate(NULL);
       blocked_contents_.erase(i);
-      delete TabContents::FromWebContents(web_contents);
+      DestroyBlockedContents(web_contents);
       break;
     }
   }
