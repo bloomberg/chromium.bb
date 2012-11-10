@@ -29,10 +29,13 @@ class MockDownloadFile : virtual public DownloadFile {
   MOCK_METHOD2(AppendDataToFile, DownloadInterruptReason(
       const char* data, size_t data_len));
   MOCK_METHOD1(Rename, DownloadInterruptReason(const FilePath& full_path));
-  MOCK_METHOD3(Rename, void(const FilePath& full_path,
-                            bool overwrite_existing_file,
-                            const RenameCompletionCallback& callback));
-  MOCK_METHOD1(Detach, void(const DetachCompletionCallback& callback));
+  MOCK_METHOD2(RenameAndUniquify,
+               void(const FilePath& full_path,
+                    const RenameCompletionCallback& callback));
+  MOCK_METHOD2(RenameAndAnnotate,
+               void(const FilePath& full_path,
+                    const RenameCompletionCallback& callback));
+  MOCK_METHOD0(Detach, void());
   MOCK_METHOD0(Cancel, void());
   MOCK_METHOD0(Finish, void());
   MOCK_CONST_METHOD0(FullPath, FilePath());

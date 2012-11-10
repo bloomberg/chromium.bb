@@ -98,20 +98,17 @@ DownloadInterruptReason DownloadFileImpl::AppendDataToFile(
   return file_.AppendDataToFile(data, data_len);
 }
 
-void DownloadFileImpl::Rename(const FilePath& full_path,
-                              bool overwrite_existing_file,
-                              const RenameCompletionCallback& callback) {
+void DownloadFileImpl::RenameAndUniquify(
+    const FilePath& full_path, const RenameCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   FilePath new_path(full_path);
-  if (!overwrite_existing_file) {
-    // Make the file unique if requested.
-    int uniquifier =
-        file_util::GetUniquePathNumber(new_path, FILE_PATH_LITERAL(""));
-    if (uniquifier > 0) {
-      new_path = new_path.InsertBeforeExtensionASCII(
-          StringPrintf(" (%d)", uniquifier));
-    }
+
+  int uniquifier =
+      file_util::GetUniquePathNumber(new_path, FILE_PATH_LITERAL(""));
+  if (uniquifier > 0) {
+    new_path = new_path.InsertBeforeExtensionASCII(
+        StringPrintf(" (%d)", uniquifier));
   }
 
   DownloadInterruptReason reason = file_.Rename(new_path);
@@ -131,18 +128,45 @@ void DownloadFileImpl::Rename(const FilePath& full_path,
       base::Bind(callback, reason, new_path));
 }
 
-void DownloadFileImpl::Detach(const DetachCompletionCallback& callback) {
-  // Doing the annotation here leaves a small window during
-  // which the file has the final name but hasn't been marked with the
-  // Mark Of The Web.  However, it allows anti-virus scanners on Windows
-  // to actually see the data (http://crbug.com/127999), and the Window
-  // is pretty small (round trip to the UI thread).
-  DownloadInterruptReason interrupt_reason =
-      file_.AnnotateWithSourceInformation();
-  file_.Detach();
+void DownloadFileImpl::RenameAndAnnotate(
+    const FilePath& full_path, const RenameCompletionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, interrupt_reason));
+  FilePath new_path(full_path);
+
+  DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_NONE;
+  // Short circuit null rename.
+  if (full_path != file_.full_path())
+    reason = file_.Rename(new_path);
+
+  if (reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
+    // Doing the annotation after the rename rather than before leaves
+    // a very small window during which the file has the final name but
+    // hasn't been marked with the Mark Of The Web.  However, it allows
+    // anti-virus scanners on Windows to actually see the data
+    // (http://crbug.com/127999) under the correct name (which is information
+    // it uses).
+    reason = file_.AnnotateWithSourceInformation();
+  }
+
+  if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
+    // Make sure our information is updated, since we're about to
+    // error out.
+    SendUpdate();
+
+    // Null out callback so that we don't do any more stream processing.
+    stream_reader_->RegisterCallback(base::Closure());
+
+    new_path.clear();
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, reason, new_path));
+}
+
+void DownloadFileImpl::Detach() {
+  file_.Detach();
 }
 
 void DownloadFileImpl::Cancel() {

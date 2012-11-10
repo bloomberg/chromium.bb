@@ -49,10 +49,13 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
 
   // DownloadFile functions.
   virtual void Initialize(const InitializeCallback& callback) OVERRIDE;
-  virtual void Rename(const FilePath& full_path,
-                      bool overwrite_existing_file,
-                      const RenameCompletionCallback& callback) OVERRIDE;
-  virtual void Detach(const DetachCompletionCallback& callback) OVERRIDE;
+  virtual void RenameAndUniquify(
+      const FilePath& full_path,
+      const RenameCompletionCallback& callback) OVERRIDE;
+  virtual void RenameAndAnnotate(
+      const FilePath& full_path,
+      const RenameCompletionCallback& callback) OVERRIDE;
+  virtual void Detach() OVERRIDE;
   virtual void Cancel() OVERRIDE;
   virtual FilePath FullPath() const OVERRIDE;
   virtual bool InProgress() const OVERRIDE;

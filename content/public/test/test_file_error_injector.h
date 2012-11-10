@@ -55,7 +55,8 @@ class TestFileErrorInjector
   enum FileOperationCode {
     FILE_OPERATION_INITIALIZE,
     FILE_OPERATION_WRITE,
-    FILE_OPERATION_RENAME
+    FILE_OPERATION_RENAME_UNIQUIFY,
+    FILE_OPERATION_RENAME_ANNOTATE,
   };
 
   // Structure that encapsulates the information needed to inject a file error.

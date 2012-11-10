@@ -64,23 +64,12 @@ class MockRequestHandle : public DownloadRequestHandleInterface {
 // Schedules a task to invoke the RenameCompletionCallback with |new_path| on
 // the UI thread. Should only be used as the action for
 // MockDownloadFile::Rename as follows:
-//   EXPECT_CALL(download_file, Rename(_,_,_))
+//   EXPECT_CALL(download_file, Rename*(_,_))
 //       .WillOnce(ScheduleRenameCallback(new_path));
 ACTION_P(ScheduleRenameCallback, new_path) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(arg2, DOWNLOAD_INTERRUPT_REASON_NONE, new_path));
-}
-
-// Schedules a task to invoke the input closure on
-// the UI thread. Should only be used as the action for
-// MockDownloadFile::Detach as follows:
-//   EXPECT_CALL(download_file, Detach(_))
-//       .WillOnce(ScheduleDetachCallback()));
-ACTION(ScheduleDetachCallback) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(arg0, DOWNLOAD_INTERRUPT_REASON_NONE));
+      base::Bind(arg1, DOWNLOAD_INTERRUPT_REASON_NONE, new_path));
 }
 
 }  // namespace
@@ -396,7 +385,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnDownloadTargetDetermined) {
   FilePath target_path(kDummyPath);
   FilePath intermediate_path(target_path.InsertBeforeExtensionASCII("x"));
   FilePath new_intermediate_path(target_path.InsertBeforeExtensionASCII("y"));
-  EXPECT_CALL(*download_file, Rename(intermediate_path, false, _))
+  EXPECT_CALL(*download_file, RenameAndUniquify(intermediate_path, _))
       .WillOnce(ScheduleRenameCallback(new_intermediate_path));
 
   // Currently, a notification would be generated if the danger type is anything
@@ -431,7 +420,7 @@ TEST_F(DownloadItemTest, DisplayName) {
   FilePath intermediate_path(target_path.InsertBeforeExtensionASCII("x"));
   EXPECT_EQ(FILE_PATH_LITERAL(""),
             item->GetFileNameToReportUser().value());
-  EXPECT_CALL(*download_file, Rename(_, false, _))
+  EXPECT_CALL(*download_file, RenameAndUniquify(_, _))
       .WillOnce(ScheduleRenameCallback(intermediate_path));
   callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path);
@@ -468,7 +457,7 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
   FilePath final_path(FilePath(kDummyPath).AppendASCII("foo.bar"));
   FilePath intermediate_path(final_path.InsertBeforeExtensionASCII("x"));
   FilePath new_intermediate_path(final_path.InsertBeforeExtensionASCII("y"));
-  EXPECT_CALL(*download_file, Rename(intermediate_path, false, _))
+  EXPECT_CALL(*download_file, RenameAndUniquify(intermediate_path, _))
       .WillOnce(ScheduleRenameCallback(new_intermediate_path));
 
   // DownloadItemImpl should invoke this callback on the delegate once the
@@ -487,7 +476,7 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
   ::testing::Mock::VerifyAndClearExpectations(mock_delegate());
 
   item->OnAllDataSaved("");
-  EXPECT_CALL(*download_file, Rename(final_path, true, _))
+  EXPECT_CALL(*download_file, RenameAndAnnotate(final_path, _))
       .WillOnce(ScheduleRenameCallback(final_path));
   // DownloadItemImpl should invoke this callback on the delegate after the
   // final rename has completed. Also check that GetFullPath() and
@@ -501,8 +490,7 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
   EXPECT_CALL(*mock_delegate(), DownloadCompleted(item));
   EXPECT_CALL(*mock_delegate(), ShouldOpenDownload(item, _))
       .WillOnce(Return(true));
-  EXPECT_CALL(*download_file, Detach(_))
-      .WillOnce(ScheduleDetachCallback());
+  EXPECT_CALL(*download_file, Detach());
   item->SetIsPersisted();
   item->MaybeCompleteDownload();
   RunAllPendingInMessageLoops();

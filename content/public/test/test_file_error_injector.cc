@@ -49,9 +49,12 @@ class DownloadFileWithErrors: public DownloadFileImpl {
   // DownloadFile interface.
   virtual DownloadInterruptReason AppendDataToFile(
       const char* data, size_t data_len) OVERRIDE;
-  virtual void Rename(const FilePath& full_path,
-                      bool overwrite_existing_file,
-                      const RenameCompletionCallback& callback) OVERRIDE;
+  virtual void RenameAndUniquify(
+      const FilePath& full_path,
+      const RenameCompletionCallback& callback) OVERRIDE;
+  virtual void RenameAndAnnotate(
+      const FilePath& full_path,
+      const RenameCompletionCallback& callback) OVERRIDE;
 
  private:
   // Error generating helper.
@@ -150,22 +153,38 @@ DownloadInterruptReason DownloadFileWithErrors::AppendDataToFile(
       DownloadFileImpl::AppendDataToFile(data, data_len));
 }
 
-void DownloadFileWithErrors::Rename(
+void DownloadFileWithErrors::RenameAndUniquify(
     const FilePath& full_path,
-    bool overwrite_existing_file,
     const RenameCompletionCallback& callback) {
   DownloadInterruptReason error_to_return = DOWNLOAD_INTERRUPT_REASON_NONE;
   RenameCompletionCallback callback_to_use = callback;
 
   // Replace callback if the error needs to be overwritten.
   if (OverwriteError(
-          TestFileErrorInjector::FILE_OPERATION_RENAME,
+          TestFileErrorInjector::FILE_OPERATION_RENAME_UNIQUIFY,
           &error_to_return)) {
     callback_to_use = base::Bind(&RenameErrorCallback, callback,
                                  error_to_return);
   }
 
-  DownloadFileImpl::Rename(full_path, overwrite_existing_file, callback_to_use);
+  DownloadFileImpl::RenameAndUniquify(full_path, callback_to_use);
+}
+
+void DownloadFileWithErrors::RenameAndAnnotate(
+    const FilePath& full_path,
+    const RenameCompletionCallback& callback) {
+  DownloadInterruptReason error_to_return = DOWNLOAD_INTERRUPT_REASON_NONE;
+  RenameCompletionCallback callback_to_use = callback;
+
+  // Replace callback if the error needs to be overwritten.
+  if (OverwriteError(
+          TestFileErrorInjector::FILE_OPERATION_RENAME_ANNOTATE,
+          &error_to_return)) {
+    callback_to_use = base::Bind(&RenameErrorCallback, callback,
+                                 error_to_return);
+  }
+
+  DownloadFileImpl::RenameAndAnnotate(full_path, callback_to_use);
 }
 
 bool DownloadFileWithErrors::OverwriteError(
@@ -415,8 +434,10 @@ std::string TestFileErrorInjector::DebugString(FileOperationCode code) {
       return "INITIALIZE";
     case FILE_OPERATION_WRITE:
       return "WRITE";
-    case FILE_OPERATION_RENAME:
-      return "RENAME";
+    case FILE_OPERATION_RENAME_UNIQUIFY:
+      return "RENAME_UNIQUIFY";
+    case FILE_OPERATION_RENAME_ANNOTATE:
+      return "RENAME_ANNOTATE";
     default:
       break;
   }

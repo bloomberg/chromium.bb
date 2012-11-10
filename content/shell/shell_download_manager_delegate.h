@@ -31,10 +31,13 @@ class ShellDownloadManagerDelegate
   void SetDownloadBehaviorForTesting(
       const FilePath& default_download_path);
 
+ protected:
+  // To allow subclasses for testing.
+  virtual ~ShellDownloadManagerDelegate();
+
  private:
   friend class base::RefCountedThreadSafe<ShellDownloadManagerDelegate>;
 
-  virtual ~ShellDownloadManagerDelegate();
 
   void GenerateFilename(int32 download_id,
                         const DownloadTargetCallback& callback,

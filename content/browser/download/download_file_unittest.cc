@@ -245,19 +245,38 @@ class DownloadFileTest : public testing::Test {
     }
   }
 
-  DownloadInterruptReason Rename(
-      const FilePath& full_path, bool overwrite_existing_file,
+  DownloadInterruptReason RenameAndUniquify(
+      const FilePath& full_path,
       FilePath* result_path_p) {
     base::WeakPtrFactory<DownloadFileTest> weak_ptr_factory(this);
     DownloadInterruptReason result_reason(DOWNLOAD_INTERRUPT_REASON_NONE);
     bool callback_was_called(false);
     FilePath result_path;
 
-    download_file_->Rename(full_path, overwrite_existing_file,
-                           base::Bind(&DownloadFileTest::SetRenameResult,
-                                      weak_ptr_factory.GetWeakPtr(),
-                                      &callback_was_called,
-                                      &result_reason, result_path_p));
+    download_file_->RenameAndUniquify(
+        full_path, base::Bind(&DownloadFileTest::SetRenameResult,
+                              weak_ptr_factory.GetWeakPtr(),
+                              &callback_was_called,
+                              &result_reason, result_path_p));
+    loop_.RunUntilIdle();
+
+    EXPECT_TRUE(callback_was_called);
+    return result_reason;
+  }
+
+  DownloadInterruptReason RenameAndAnnotate(
+      const FilePath& full_path,
+      FilePath* result_path_p) {
+    base::WeakPtrFactory<DownloadFileTest> weak_ptr_factory(this);
+    DownloadInterruptReason result_reason(DOWNLOAD_INTERRUPT_REASON_NONE);
+    bool callback_was_called(false);
+    FilePath result_path;
+
+    download_file_->RenameAndAnnotate(
+        full_path, base::Bind(&DownloadFileTest::SetRenameResult,
+                              weak_ptr_factory.GetWeakPtr(),
+                              &callback_was_called,
+                              &result_reason, result_path_p));
     loop_.RunAllPending();
 
     EXPECT_TRUE(callback_was_called);
@@ -334,7 +353,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 
   // Rename the file before downloading any data.
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            Rename(path_1, false, &output_path));
+            RenameAndUniquify(path_1, &output_path));
   FilePath renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_1, renamed_path);
   EXPECT_EQ(path_1, output_path);
@@ -349,7 +368,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 
   // Rename the file after downloading some data.
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            Rename(path_2, false, &output_path));
+            RenameAndUniquify(path_2, &output_path));
   renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_2, renamed_path);
   EXPECT_EQ(path_2, output_path);
@@ -363,7 +382,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 
   // Rename the file after downloading all the data.
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            Rename(path_3, false, &output_path));
+            RenameAndUniquify(path_3, &output_path));
   renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_3, renamed_path);
   EXPECT_EQ(path_3, output_path);
@@ -380,7 +399,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 
   // Rename the file after downloading all the data and closing the file.
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            Rename(path_4, false, &output_path));
+            RenameAndUniquify(path_4, &output_path));
   renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_4, renamed_path);
   EXPECT_EQ(path_4, output_path);
@@ -404,7 +423,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   EXPECT_EQ(std::string(file_data), file_contents);
 
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            Rename(path_5, true, &output_path));
+            RenameAndAnnotate(path_5, &output_path));
   EXPECT_EQ(path_5, output_path);
 
   file_contents = "";
@@ -429,8 +448,7 @@ TEST_F(DownloadFileTest, RenameUniquifies) {
             file_util::WriteFile(path_1, file_data, sizeof(file_data)));
   ASSERT_TRUE(file_util::PathExists(path_1));
 
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            Rename(path_1, false, NULL));
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, RenameAndUniquify(path_1, NULL));
   EXPECT_TRUE(file_util::PathExists(path_1_suffixed));
 
   FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true);
@@ -461,7 +479,7 @@ TEST_F(DownloadFileTest, RenameError) {
     // Expect nulling out of further processing.
     EXPECT_CALL(*input_stream_, RegisterCallback(IsNullCallback()));
     EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED,
-              Rename(target_path, true, NULL));
+              RenameAndAnnotate(target_path, NULL));
     EXPECT_FALSE(file_util::PathExists(target_path_suffixed));
   }
 

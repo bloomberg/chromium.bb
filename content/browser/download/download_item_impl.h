@@ -273,12 +273,6 @@ class CONTENT_EXPORT DownloadItemImpl
   void OnDownloadRenamedToFinalName(DownloadInterruptReason reason,
                                     const FilePath& full_path);
 
-  void ReleaseDownloadFile();
-
-  // TODO(rdsmith,asanka): Move the AnnotateWithSourceInformation() call to the
-  //     final rename and eliminate the interrupt reason callback.
-  void OnDownloadFileReleased(DownloadInterruptReason reason);
-
   // Called if the embedder took over opening a download, to indicate that
   // the download has been opened.
   virtual void DelayedDownloadOpened(bool auto_opened);
@@ -297,10 +291,6 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Check if a download is ready for completion.
   bool IsDownloadReadyForCompletion();
-
-  // Returns true if the download still needs to be renamed to
-  // GetTargetFilePath().
-  bool NeedsRename() const;
 
   // Call to transition state; all state transitions should go through this.
   void TransitionTo(DownloadInternalState new_state);

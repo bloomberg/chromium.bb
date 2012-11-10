@@ -86,17 +86,15 @@ class DownloadFileWithDelay : public DownloadFileImpl {
 
   virtual ~DownloadFileWithDelay();
 
-  // Wraps DownloadFileImpl::Rename and intercepts the return callback,
+  // Wraps DownloadFileImpl::Rename* and intercepts the return callback,
   // storing it in the factory that produced this object for later
   // retrieval.
-  virtual void Rename(const FilePath& full_path,
-                      bool overwrite_existing_file,
-                      const RenameCompletionCallback& callback) OVERRIDE;
-
-  // Wraps DownloadFileImpl::Detach and intercepts the return callback,
-  // storing it in the factory that produced this object for later
-  // retrieval.
-  virtual void Detach(const DetachCompletionCallback& callback) OVERRIDE;
+  virtual void RenameAndUniquify(
+      const FilePath& full_path,
+      const RenameCompletionCallback& callback) OVERRIDE;
+  virtual void RenameAndAnnotate(
+      const FilePath& full_path,
+      const RenameCompletionCallback& callback) OVERRIDE;
 
  private:
   static void RenameCallbackWrapper(
@@ -104,11 +102,6 @@ class DownloadFileWithDelay : public DownloadFileImpl {
       const RenameCompletionCallback& original_callback,
       DownloadInterruptReason reason,
       const FilePath& path);
-
-  static void DetachCallbackWrapper(
-      DownloadFileWithDelayFactory* factory,
-      const DetachCompletionCallback& original_callback,
-      DownloadInterruptReason interrupt_reason);
 
   // This variable may only be read on the FILE thread, and may only be
   // indirected through (e.g. methods on DownloadFileWithDelayFactory called)
@@ -138,18 +131,14 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
       base::WeakPtr<DownloadDestinationObserver> observer) OVERRIDE;
 
   void AddRenameCallback(base::Closure callback);
-  void AddDetachCallback(base::Closure callback);
   void GetAllRenameCallbacks(std::vector<base::Closure>* results);
-  void GetAllDetachCallbacks(std::vector<base::Closure>* results);
 
-  // Do not return until either GetAllRenameCallbacks() or
-  // GetAllDetachCallbacks() will return a non-empty list.
+  // Do not return until GetAllRenameCallbacks() will return a non-empty list.
   void WaitForSomeCallback();
 
  private:
   base::WeakPtrFactory<DownloadFileWithDelayFactory> weak_ptr_factory_;
   std::vector<base::Closure> rename_callbacks_;
-  std::vector<base::Closure> detach_callbacks_;
   bool waiting_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileWithDelayFactory);
@@ -174,21 +163,20 @@ DownloadFileWithDelay::DownloadFileWithDelay(
 
 DownloadFileWithDelay::~DownloadFileWithDelay() {}
 
-void DownloadFileWithDelay::Rename(const FilePath& full_path,
-                      bool overwrite_existing_file,
-                      const RenameCompletionCallback& callback) {
+void DownloadFileWithDelay::RenameAndUniquify(
+    const FilePath& full_path, const RenameCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DownloadFileImpl::Rename(
-      full_path, overwrite_existing_file,
-      base::Bind(DownloadFileWithDelay::RenameCallbackWrapper,
-                 owner_, callback));
+  DownloadFileImpl::RenameAndUniquify(
+      full_path, base::Bind(DownloadFileWithDelay::RenameCallbackWrapper,
+                            owner_, callback));
 }
 
-void DownloadFileWithDelay::Detach(const DetachCompletionCallback& callback) {
+void DownloadFileWithDelay::RenameAndAnnotate(
+    const FilePath& full_path, const RenameCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DownloadFileImpl::Detach(
-      base::Bind(DownloadFileWithDelay::DetachCallbackWrapper,
-                 owner_, callback));
+  DownloadFileImpl::RenameAndAnnotate(
+      full_path, base::Bind(DownloadFileWithDelay::RenameCallbackWrapper,
+                            owner_, callback));
 }
 
 // static
@@ -199,15 +187,6 @@ void DownloadFileWithDelay::RenameCallbackWrapper(
     const FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   factory->AddRenameCallback(base::Bind(original_callback, reason, path));
-}
-
-// static
-void DownloadFileWithDelay::DetachCallbackWrapper(
-    DownloadFileWithDelayFactory* factory,
-    const DetachCompletionCallback& original_callback,
-    DownloadInterruptReason interrupt_reason) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  factory->AddDetachCallback(base::Bind(original_callback, interrupt_reason));
 }
 
 DownloadFileWithDelayFactory::DownloadFileWithDelayFactory()
@@ -241,29 +220,16 @@ void DownloadFileWithDelayFactory::AddRenameCallback(base::Closure callback) {
     MessageLoopForUI::current()->Quit();
 }
 
-void DownloadFileWithDelayFactory::AddDetachCallback(base::Closure callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  detach_callbacks_.push_back(callback);
-  if (waiting_)
-    MessageLoopForUI::current()->Quit();
-}
-
 void DownloadFileWithDelayFactory::GetAllRenameCallbacks(
     std::vector<base::Closure>* results) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   results->swap(rename_callbacks_);
 }
 
-void DownloadFileWithDelayFactory::GetAllDetachCallbacks(
-    std::vector<base::Closure>* results) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  results->swap(detach_callbacks_);
-}
-
 void DownloadFileWithDelayFactory::WaitForSomeCallback() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (rename_callbacks_.empty() && detach_callbacks_.empty()) {
+  if (rename_callbacks_.empty()) {
     waiting_ = true;
     RunMessageLoop();
     waiting_ = false;
@@ -351,6 +317,36 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
   }
 };
 
+class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
+ public:
+  TestShellDownloadManagerDelegate()
+      : delay_download_open_(false) {}
+
+  virtual bool ShouldOpenDownload(
+      DownloadItem* item,
+      const DownloadOpenDelayedCallback& callback) OVERRIDE {
+    if (delay_download_open_) {
+      delayed_callbacks_.push_back(callback);
+      return false;
+    }
+    return true;
+  }
+
+  void SetDelayedOpen(bool delay) {
+    delay_download_open_ = delay;
+  }
+
+  void GetDelayedCallbacks(
+      std::vector<DownloadOpenDelayedCallback>* callbacks) {
+    callbacks->swap(delayed_callbacks_);
+  }
+ private:
+  virtual ~TestShellDownloadManagerDelegate() {}
+
+  bool delay_download_open_;
+  std::vector<DownloadOpenDelayedCallback> delayed_callbacks_;
+};
+
 }  // namespace
 
 class DownloadContentTest : public ContentBrowserTest {
@@ -358,11 +354,12 @@ class DownloadContentTest : public ContentBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
 
-    ShellDownloadManagerDelegate* delegate =
-        static_cast<ShellDownloadManagerDelegate*>(
-            shell()->web_contents()->GetBrowserContext()
-            ->GetDownloadManagerDelegate());
+    TestShellDownloadManagerDelegate* delegate =
+        new TestShellDownloadManagerDelegate();
     delegate->SetDownloadBehaviorForTesting(downloads_directory_.path());
+    DownloadManager* manager = DownloadManagerForShell(shell());
+    manager->SetDelegate(delegate);
+    delegate->SetDownloadManager(manager);
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -371,6 +368,12 @@ class DownloadContentTest : public ContentBrowserTest {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&URLRequestMockHTTPJob::AddUrlHandler, mock_base));
+  }
+
+  TestShellDownloadManagerDelegate* GetDownloadManagerDelegate(
+      DownloadManager* manager) {
+    return static_cast<TestShellDownloadManagerDelegate*>(
+        manager->GetDelegate());
   }
 
   // Create a DownloadTestObserverTerminal that will wait for the
@@ -558,8 +561,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtFinalRename) {
   // Wait until the first (intermediate file) rename and execute the callback.
   file_factory->WaitForSomeCallback();
   std::vector<base::Closure> callbacks;
-  file_factory->GetAllDetachCallbacks(&callbacks);
-  ASSERT_TRUE(callbacks.empty());
   file_factory->GetAllRenameCallbacks(&callbacks);
   ASSERT_EQ(1u, callbacks.size());
   callbacks[0].Run();
@@ -567,8 +568,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtFinalRename) {
 
   // Wait until the second (final) rename callback is posted.
   file_factory->WaitForSomeCallback();
-  file_factory->GetAllDetachCallbacks(&callbacks);
-  ASSERT_TRUE(callbacks.empty());
   file_factory->GetAllRenameCallbacks(&callbacks);
   ASSERT_EQ(1u, callbacks.size());
 
@@ -591,12 +590,16 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtFinalRename) {
 }
 
 // Try to cancel just after we release the download file, by delaying
-// release.
+// in ShouldOpenDownload.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
+  DownloadManagerImpl* download_manager(DownloadManagerForShell(shell()));
+
+  // Mark delegate for delayed open.
+  GetDownloadManagerDelegate(download_manager)->SetDelayedOpen(true);
+
   // Setup new factory.
   DownloadFileWithDelayFactory* file_factory =
       new DownloadFileWithDelayFactory();
-  DownloadManagerImpl* download_manager(DownloadManagerForShell(shell()));
   download_manager->SetDownloadFileFactoryForTesting(
       scoped_ptr<DownloadFileFactory>(file_factory).Pass());
 
@@ -607,8 +610,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
   // Wait until the first (intermediate file) rename and execute the callback.
   file_factory->WaitForSomeCallback();
   std::vector<base::Closure> callbacks;
-  file_factory->GetAllDetachCallbacks(&callbacks);
-  ASSERT_TRUE(callbacks.empty());
   file_factory->GetAllRenameCallbacks(&callbacks);
   ASSERT_EQ(1u, callbacks.size());
   callbacks[0].Run();
@@ -616,8 +617,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
 
   // Wait until the second (final) rename callback is posted.
   file_factory->WaitForSomeCallback();
-  file_factory->GetAllDetachCallbacks(&callbacks);
-  ASSERT_TRUE(callbacks.empty());
   file_factory->GetAllRenameCallbacks(&callbacks);
   ASSERT_EQ(1u, callbacks.size());
 
@@ -625,7 +624,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
   callbacks[0].Run();
   callbacks.clear();
 
-  // Confirm download still IN_PROGRESS.
+  // Confirm download still IN_PROGRESS (internal state COMPLETING).
   std::vector<DownloadItem*> items;
   download_manager->GetAllDownloads(&items);
   EXPECT_EQ(DownloadItem::IN_PROGRESS, items[0]->GetState());
@@ -635,14 +634,12 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
   items[0]->Cancel(true);
   EXPECT_EQ(DownloadItem::IN_PROGRESS, items[0]->GetState());
 
-  // Confirm detach callback and run it.
-  file_factory->WaitForSomeCallback();
-  file_factory->GetAllRenameCallbacks(&callbacks);
-  ASSERT_TRUE(callbacks.empty());
-  file_factory->GetAllDetachCallbacks(&callbacks);
-  ASSERT_EQ(1u, callbacks.size());
-  callbacks[0].Run();
-  callbacks.clear();
+  // Need to complete open test.
+  std::vector<DownloadOpenDelayedCallback> delayed_callbacks;
+  GetDownloadManagerDelegate(download_manager)->GetDelayedCallbacks(
+      &delayed_callbacks);
+  ASSERT_EQ(1u, delayed_callbacks.size());
+  delayed_callbacks[0].Run(true);
 
   // *Now* the download should be complete.
   EXPECT_EQ(DownloadItem::COMPLETE, items[0]->GetState());
@@ -694,10 +691,15 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownInProgress) {
 // Try to shutdown just after we release the download file, by delaying
 // release.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
+  DownloadManagerImpl* download_manager(DownloadManagerForShell(shell()));
+
+  // Mark delegate for delayed open.
+  GetDownloadManagerDelegate(download_manager)->SetDelayedOpen(true);
+
   // Setup new factory.
   DownloadFileWithDelayFactory* file_factory =
       new DownloadFileWithDelayFactory();
-  DownloadManagerForShell(shell())->SetDownloadFileFactoryForTesting(
+  download_manager->SetDownloadFileFactoryForTesting(
       scoped_ptr<DownloadFileFactory>(file_factory).Pass());
 
   // Create a download
@@ -707,8 +709,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
   // Wait until the first (intermediate file) rename and execute the callback.
   file_factory->WaitForSomeCallback();
   std::vector<base::Closure> callbacks;
-  file_factory->GetAllDetachCallbacks(&callbacks);
-  ASSERT_TRUE(callbacks.empty());
   file_factory->GetAllRenameCallbacks(&callbacks);
   ASSERT_EQ(1u, callbacks.size());
   callbacks[0].Run();
@@ -716,8 +716,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
 
   // Wait until the second (final) rename callback is posted.
   file_factory->WaitForSomeCallback();
-  file_factory->GetAllDetachCallbacks(&callbacks);
-  ASSERT_TRUE(callbacks.empty());
   file_factory->GetAllRenameCallbacks(&callbacks);
   ASSERT_EQ(1u, callbacks.size());
 
@@ -737,20 +735,13 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
   RunAllPendingInMessageLoop();
   EXPECT_EQ(DownloadItem::IN_PROGRESS, items[0]->GetState());
 
-  // Get the detach callback that should have been produced by the above.
-  file_factory->WaitForSomeCallback();
-  file_factory->GetAllRenameCallbacks(&callbacks);
-  ASSERT_TRUE(callbacks.empty());
-  file_factory->GetAllDetachCallbacks(&callbacks);
-  ASSERT_EQ(1u, callbacks.size());
+  MockDownloadItemObserver observer;
+  items[0]->AddObserver(&observer);
+  EXPECT_CALL(observer, OnDownloadDestroyed(items[0]));
 
   // Shutdown the download manager.  Mostly this is confirming a lack of
   // crashes.
   DownloadManagerForShell(shell())->Shutdown();
-
-  // Run the detach callback; shouldn't cause any problems.
-  callbacks[0].Run();
-  callbacks.clear();
 }
 
 }  // namespace content

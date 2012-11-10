@@ -29,17 +29,12 @@ class CONTENT_EXPORT DownloadFile {
   typedef base::Callback<void(DownloadInterruptReason reason)>
       InitializeCallback;
 
-  // Callback used with Rename().  On a successful rename |reason| will be
+  // Callback used with Rename*().  On a successful rename |reason| will be
   // DOWNLOAD_INTERRUPT_REASON_NONE and |path| the path the rename
   // was done to.  On a failed rename, |reason| will contain the
   // error.
   typedef base::Callback<void(DownloadInterruptReason reason,
                               const FilePath& path)> RenameCompletionCallback;
-
-  // Callback used with Detach(). On success, |reason| will be
-  // DOWNLOAD_INTERRUPT_REASON_NONE.
-  typedef base::Callback<void(DownloadInterruptReason reason)>
-      DetachCompletionCallback;
 
   virtual ~DownloadFile() {}
 
@@ -48,18 +43,20 @@ class CONTENT_EXPORT DownloadFile {
   // called on the UI thread as per the comment above.
   virtual void Initialize(const InitializeCallback& callback) = 0;
 
-  // Rename the download file to |full_path|.  If that file exists and
-  // |overwrite_existing_file| is false, |full_path| will be uniquified by
-  // suffixing " (<number>)" to the file name before the extension.
-  // Upon completion, |callback| will be called on the UI thread
-  // as per the comment above.
-  virtual void Rename(const FilePath& full_path,
-                      bool overwrite_existing_file,
-                      const RenameCompletionCallback& callback) = 0;
+  // Rename the download file to |full_path|.  If that file exists
+  // |full_path| will be uniquified by suffixing " (<number>)" to the
+  // file name before the extension.
+  virtual void RenameAndUniquify(const FilePath& full_path,
+                                 const RenameCompletionCallback& callback) = 0;
+
+  // Rename the download file to |full_path| and annotate it with
+  // "Mark of the Web" information about its source.  No uniquification
+  // will be performed.
+  virtual void RenameAndAnnotate(const FilePath& full_path,
+                                 const RenameCompletionCallback& callback) = 0;
 
   // Detach the file so it is not deleted on destruction.
-  // |callback| will be called on the UI thread after detach.
-  virtual void Detach(const DetachCompletionCallback& callback) = 0;
+  virtual void Detach() = 0;
 
   // Abort the download and automatically close the file.
   virtual void Cancel() = 0;
