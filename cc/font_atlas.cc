@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/string_split.h"
-#include "cc/proxy.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
@@ -28,8 +27,6 @@ FontAtlas::~FontAtlas()
 
 void FontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const std::string& text, const gfx::Point& destPosition, const gfx::Size& clip) const
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
-
     std::vector<std::string> lines;
     base::SplitString(text, '\n', &lines);
 
@@ -44,8 +41,6 @@ void FontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const std::stri
 
 void FontAtlas::drawOneLineOfTextInternal(SkCanvas* canvas, const SkPaint& paint, const std::string& textLine, const gfx::Point& destPosition) const
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
-
     gfx::Point position = destPosition;
     for (unsigned i = 0; i < textLine.length(); ++i) {
         // If the ASCII code is out of bounds, then index 0 is used, which is just a plain rectangle glyph.
@@ -78,8 +73,6 @@ gfx::Size FontAtlas::textSize(const std::string& text)
 
 void FontAtlas::drawDebugAtlas(SkCanvas* canvas, const gfx::Point& destPosition) const
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
-
     SkIRect source = SkIRect::MakeWH(m_atlas.width(), m_atlas.height());
     canvas->drawBitmapRect(m_atlas, &source, SkRect::MakeXYWH(destPosition.x(), destPosition.y(), m_atlas.width(), m_atlas.height()));
 }

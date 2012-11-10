@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread_checker.h"
 #include "cc/cc_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
@@ -61,8 +60,6 @@ private:
     gfx::Rect m_asciiToRectTable[128];
 
     int m_fontHeight;
-
-    base::ThreadChecker m_threadChecker;
 
     DISALLOW_COPY_AND_ASSIGN(FontAtlas);
 };
