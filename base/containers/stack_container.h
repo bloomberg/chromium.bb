@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_STACK_CONTAINER_H_
-#define BASE_STACK_CONTAINER_H_
+#ifndef BASE_CONTAINERS_STACK_CONTAINER_H_
+#define BASE_CONTAINERS_STACK_CONTAINER_H_
 
 #include <string>
 #include <vector>
@@ -11,6 +11,9 @@
 #include "base/basictypes.h"
 #include "build/build_config.h"
 #include "base/memory/aligned_memory.h"
+#include "base/string16.h"
+
+namespace base {
 
 // This allocator can be used with STL containers to provide a stack buffer
 // from which to allocate memory and overflows onto the heap. This stack buffer
@@ -169,7 +172,8 @@ class StackContainer {
   DISALLOW_COPY_AND_ASSIGN(StackContainer);
 };
 
-// StackString
+// StackString -----------------------------------------------------------------
+
 template<size_t stack_capacity>
 class StackString : public StackContainer<
     std::basic_string<char,
@@ -188,27 +192,28 @@ class StackString : public StackContainer<
   DISALLOW_COPY_AND_ASSIGN(StackString);
 };
 
-// StackWString
+// StackStrin16 ----------------------------------------------------------------
+
 template<size_t stack_capacity>
-class StackWString : public StackContainer<
-    std::basic_string<wchar_t,
-                      std::char_traits<wchar_t>,
-                      StackAllocator<wchar_t, stack_capacity> >,
+class StackString16 : public StackContainer<
+    std::basic_string<char16,
+                      base::string16_char_traits,
+                      StackAllocator<char16, stack_capacity> >,
     stack_capacity> {
  public:
-  StackWString() : StackContainer<
-      std::basic_string<wchar_t,
-                        std::char_traits<wchar_t>,
-                        StackAllocator<wchar_t, stack_capacity> >,
+  StackString16() : StackContainer<
+      std::basic_string<char16,
+                        base::string16_char_traits,
+                        StackAllocator<char16, stack_capacity> >,
       stack_capacity>() {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(StackWString);
+  DISALLOW_COPY_AND_ASSIGN(StackString16);
 };
 
-// StackVector
-//
+// StackVector -----------------------------------------------------------------
+
 // Example:
 //   StackVector<int, 16> foo;
 //   foo->push_back(22);  // we have overloaded operator->
@@ -248,4 +253,6 @@ class StackVector : public StackContainer<
   }
 };
 
-#endif  // BASE_STACK_CONTAINER_H_
+}  // namespace base
+
+#endif  // BASE_CONTAINERS_STACK_CONTAINER_H_

@@ -15,13 +15,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/stack_container.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
-#include "base/stack_container.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/history/history.h"
@@ -458,7 +458,7 @@ bool VisitedLinkMaster::DeleteFingerprint(Fingerprint fingerprint,
   // instead we just remove them all and re-add them (minus our deleted one).
   // This will mean there's a small window of time where the affected links
   // won't be marked visited.
-  StackVector<Fingerprint, 32> shuffled_fingerprints;
+  base::StackVector<Fingerprint, 32> shuffled_fingerprints;
   Hash stop_loop = IncrementHash(end_range);  // The end range is inclusive.
   for (Hash i = deleted_hash; i != stop_loop; i = IncrementHash(i)) {
     if (hash_table_[i] != fingerprint) {

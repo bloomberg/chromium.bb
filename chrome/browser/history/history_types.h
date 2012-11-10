@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/containers/stack_container.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/stack_container.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/history/snippet.h"
@@ -402,7 +402,7 @@ class QueryResults {
   // time an entry with that URL appears. Normally, each URL will have one or
   // very few indices after it, so we optimize this to use statically allocated
   // memory when possible.
-  typedef std::map<GURL, StackVector<size_t, 4> > URLToResultIndices;
+  typedef std::map<GURL, base::StackVector<size_t, 4> > URLToResultIndices;
 
   // Inserts an entry into the |url_to_results_| map saying that the given URL
   // is at the given index in the results_.

@@ -10,10 +10,10 @@
 #include "skia/ext/image_operations.h"
 
 // TODO(pkasting): skia/ext should not depend on base/!
+#include "base/containers/stack_container.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/stack_container.h"
 #include "base/time.h"
 #include "build/build_config.h"
 #include "skia/ext/convolver.h"
@@ -232,8 +232,8 @@ void ResizeFilter::ComputeFilters(int src_size,
   // Speed up the divisions below by turning them into multiplies.
   float inv_scale = 1.0f / scale;
 
-  StackVector<float, 64> filter_values;
-  StackVector<int16, 64> fixed_filter_values;
+  base::StackVector<float, 64> filter_values;
+  base::StackVector<int16, 64> fixed_filter_values;
 
   // Loop over all pixels in the output range. We will generate one set of
   // filter values for each one. Those values will tell us how to blend the

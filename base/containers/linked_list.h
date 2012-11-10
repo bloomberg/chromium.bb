@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_LINKED_LIST_H_
-#define BASE_LINKED_LIST_H_
+#ifndef BASE_CONTAINERS_LINKED_LIST_H_
+#define BASE_CONTAINERS_LINKED_LIST_H_
 
 // Simple LinkedList type. (See the Q&A section to understand how this
 // differs from std::list).
@@ -161,4 +161,4 @@ class LinkedList {
 
 }  // namespace base
 
-#endif  // BASE_LINKED_LIST_H_
+#endif  // BASE_CONTAINERS_LINKED_LIST_H_

@@ -11,11 +11,11 @@
 #include <shlwapi.h>
 
 #include "base/command_line.h"
+#include "base/containers/stack_container.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/stack_container.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -99,13 +99,13 @@ bool MinidumpCallback(const wchar_t *dumpPath,
   // StackString uses the stack but overflows onto the heap.  But we don't
   // care too much about being completely correct here, since most crashes
   // will be happening on developers' machines where they have debuggers.
-  StackWString<kPathBufSize * 2> origPath;
+  base::StackString16<kPathBufSize * 2> origPath;
   origPath->append(dumpPath);
   origPath->push_back(FilePath::kSeparators[0]);
   origPath->append(minidumpID);
   origPath->append(L".dmp");
 
-  StackWString<kPathBufSize * 2> newPath;
+  base::StackString16<kPathBufSize * 2> newPath;
   newPath->append(dumpPath);
   newPath->push_back(FilePath::kSeparators[0]);
   newPath->append(g_currentTestName);

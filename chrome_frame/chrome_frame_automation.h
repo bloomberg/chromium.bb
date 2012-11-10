@@ -11,9 +11,9 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/stack_container.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_handle.h"
-#include "base/stack_container.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/timer.h"
@@ -294,7 +294,7 @@ class ProxyFactory {
                                        LaunchDelegate* delegate);
 
  private:
-  typedef StackVector<scoped_refptr<AutomationProxyCacheEntry>, 4> Vector;
+  typedef base::StackVector<scoped_refptr<AutomationProxyCacheEntry>, 4> Vector;
   Vector proxies_;
   // Lock if we are going to call GetAutomationServer from more than one thread.
   base::Lock lock_;
