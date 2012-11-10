@@ -215,7 +215,7 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
   // These members are only used during Initialization.
   Codec codec_;
   uint32 h264_profile_;  // OMX_AVCProfile requested during Initialization.
-  bool component_name_is_nvidia_h264ext_;
+  bool component_name_is_nvidia_;
 
   // Has static initialization of pre-sandbox components completed successfully?
   static bool pre_sandbox_init_done_;

@@ -157,7 +157,7 @@ OmxVideoDecodeAccelerator::OmxVideoDecodeAccelerator(
       client_(client),
       codec_(UNKNOWN),
       h264_profile_(OMX_VIDEO_AVCProfileMax),
-      component_name_is_nvidia_h264ext_(false) {
+      component_name_is_nvidia_(false) {
   static bool omx_functions_initialized = PostSandboxInitialization();
   RETURN_ON_FAILURE(omx_functions_initialized,
                     "Failed to load openmax library", PLATFORM_FAILURE,);
@@ -236,8 +236,8 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
                         PLATFORM_FAILURE, false);
   RETURN_ON_FAILURE(num_components == 1, "No components for: " << role_name,
                     PLATFORM_FAILURE, false);
-  component_name_is_nvidia_h264ext_ = StartsWithASCII(
-      component, "OMX.Nvidia.h264ext.decode", true);
+  component_name_is_nvidia_ = StartsWithASCII(
+      component, "OMX.Nvidia", true);
 
   // Get the handle to the component.
   result = omx_gethandle(
@@ -586,7 +586,7 @@ void OmxVideoDecodeAccelerator::OnReachedIdleInInitializing() {
   DCHECK_EQ(client_state_, OMX_StateLoaded);
   client_state_ = OMX_StateIdle;
   // Query the resources with the component.
-  if (component_name_is_nvidia_h264ext_) {
+  if (component_name_is_nvidia_) {
     OMX_INDEXTYPE extension_index;
     OMX_ERRORTYPE result = OMX_GetExtensionIndex(
         component_handle_,
