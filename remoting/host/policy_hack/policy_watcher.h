@@ -81,13 +81,8 @@ class PolicyWatcher {
   void ScheduleFallbackReloadTask();
   void ScheduleReloadTask(const base::TimeDelta& delay);
 
-  // The names of policies with boolean values.
-  static const char* const kBooleanPolicyNames[];
-  static const int kBooleanPolicyNamesNum;
-
-  // The names of policies with string values.
-  static const char* const kStringPolicyNames[];
-  static const int kStringPolicyNamesNum;
+  // Returns a DictionaryValue containing the default values for each policy.
+  const base::DictionaryValue& Defaults() const;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -95,6 +90,8 @@ class PolicyWatcher {
   PolicyCallback policy_callback_;
 
   scoped_ptr<base::DictionaryValue> old_policies_;
+  scoped_ptr<base::DictionaryValue> default_values_;
+  scoped_ptr<base::DictionaryValue> bad_type_values_;
 
   // Allows us to cancel any inflight FileWatcher events or scheduled reloads.
   base::WeakPtrFactory<PolicyWatcher> weak_factory_;

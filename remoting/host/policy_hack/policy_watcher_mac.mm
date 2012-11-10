@@ -45,34 +45,35 @@ class PolicyWatcherMac : public PolicyWatcher {
 
     CFStringRef policy_bundle_id = CFSTR("com.google.Chrome");
     if (CFPreferencesAppSynchronize(policy_bundle_id)) {
-      for (int i = 0; i < kBooleanPolicyNamesNum; ++i) {
-        const char* policy_name = kBooleanPolicyNames[i];
+      for (base::DictionaryValue::Iterator i(Defaults());
+           i.HasNext(); i.Advance()) {
+        const std::string& policy_name = i.key();
         base::mac::ScopedCFTypeRef<CFStringRef> policy_key(
             base::SysUTF8ToCFStringRef(policy_name));
-        Boolean valid = false;
-        bool allowed = CFPreferencesGetAppBooleanValue(policy_key,
+
+        if (i.value().GetType() == base::DictionaryValue::TYPE_BOOLEAN) {
+          Boolean valid = false;
+          bool value = CFPreferencesGetAppBooleanValue(policy_key,
                                                        policy_bundle_id,
                                                        &valid);
-        if (valid) {
-          policy.SetBoolean(policy_name, allowed);
-        }
-      }
-      for (int i = 0; i < kStringPolicyNamesNum; ++i) {
-        const char* policy_name = kStringPolicyNames[i];
-        base::mac::ScopedCFTypeRef<CFStringRef> policy_key(
-            base::SysUTF8ToCFStringRef(policy_name));
-        base::mac::ScopedCFTypeRef<CFPropertyListRef> property_list(
-            CFPreferencesCopyAppValue(policy_key, policy_bundle_id));
-        if (property_list.get() != NULL) {
-          CFStringRef policy_value = base::mac::CFCast<CFStringRef>(
-              property_list.get());
-          if (policy_value != NULL) {
-            policy.SetString(policy_name,
-                             base::SysCFStringRefToUTF8(policy_value));
-          } else {
-            LOG(WARNING) << "Policy " << policy_name << ": value not a string.";
+          if (valid) {
+            policy.SetBoolean(policy_name, value);
           }
         }
+
+        if (i.value().GetType() == base::DictionaryValue::TYPE_STRING) {
+          base::mac::ScopedCFTypeRef<CFPropertyListRef> property_list(
+              CFPreferencesCopyAppValue(policy_key, policy_bundle_id));
+          if (property_list.get() != NULL) {
+            CFStringRef policy_value = base::mac::CFCast<CFStringRef>(
+                property_list.get());
+            if (policy_value != NULL) {
+              policy.SetString(policy_name,
+                               base::SysCFStringRefToUTF8(policy_value));
+            }
+          }
+        }
+
       }
     }
 

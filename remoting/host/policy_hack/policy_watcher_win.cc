@@ -168,24 +168,26 @@ class PolicyWatcherWin :
     return ret;
   }
 
-  base::DictionaryValue* Load() {
-    base::DictionaryValue* policy = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> Load() {
+    scoped_ptr<base::DictionaryValue> policy(new base::DictionaryValue());
 
-    for (int i = 0; i < kBooleanPolicyNamesNum; ++i) {
-      const char* policy_name = kBooleanPolicyNames[i];
-      bool bool_value;
-      if (GetRegistryPolicyBoolean(policy_name, &bool_value)) {
-        policy->SetBoolean(policy_name, bool_value);
+    for (base::DictionaryValue::Iterator i(Defaults());
+         i.HasNext(); i.Advance()) {
+      const std::string& policy_name = i.key();
+      if (i.value().GetType() == base::DictionaryValue::TYPE_BOOLEAN) {
+        bool bool_value;
+        if (GetRegistryPolicyBoolean(policy_name, &bool_value)) {
+          policy->SetBoolean(policy_name, bool_value);
+        }
+      }
+      if (i.value().GetType() == base::DictionaryValue::TYPE_STRING) {
+        std::string string_value;
+        if (GetRegistryPolicyString(policy_name, &string_value)) {
+          policy->SetString(policy_name, string_value);
+        }
       }
     }
-    for (int i = 0; i < kStringPolicyNamesNum; ++i) {
-      const char* policy_name = kStringPolicyNames[i];
-      std::string string_value;
-      if (GetRegistryPolicyString(policy_name, &string_value)) {
-        policy->SetString(policy_name, string_value);
-      }
-    }
-    return policy;
+    return policy.Pass();
   }
 
   // Post a reload notification and update the watch machinery.

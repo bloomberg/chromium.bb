@@ -21,89 +21,36 @@ namespace remoting {
 namespace policy_hack {
 
 namespace {
+
 // The time interval for rechecking policy. This is our fallback in case the
 // delegate never reports a change to the ReloadObserver.
 const int kFallbackReloadDelayMinutes = 15;
 
-// Gets a boolean from a dictionary, or returns a default value if the boolean
-// couldn't be read.
-bool GetBooleanOrDefault(const base::DictionaryValue* dict, const char* key,
-                         bool default_if_value_missing,
-                         bool default_if_value_not_boolean) {
-  if (!dict->HasKey(key)) {
-    return default_if_value_missing;
-  }
-  const base::Value* value;
-  if (dict->Get(key, &value) && value->IsType(base::Value::TYPE_BOOLEAN)) {
-    bool bool_value;
-    CHECK(value->GetAsBoolean(&bool_value));
-    return bool_value;
-  }
-  return default_if_value_not_boolean;
-}
+// Copies all policy values from one dictionary to another, using values from
+// |default| if they are not set in |from|, or values from |bad_type_values| if
+// the value in |from| has the wrong type.
+scoped_ptr<base::DictionaryValue> CopyGoodValuesAndAddDefaults(
+    const base::DictionaryValue* from,
+    const base::DictionaryValue* default_values,
+    const base::DictionaryValue* bad_type_values) {
+  scoped_ptr<base::DictionaryValue> to(default_values->DeepCopy());
+  for (base::DictionaryValue::Iterator i(*default_values);
+       i.HasNext(); i.Advance()) {
 
-// Gets a string from a dictionary, or returns a default value if the string
-// couldn't be read.
-std::string GetStringOrDefault(const base::DictionaryValue* dict,
-                               const char* key,
-                               const std::string& default_if_value_missing,
-                               const std::string& default_if_value_not_string) {
-  if (!dict->HasKey(key)) {
-    return default_if_value_missing;
+    const base::Value* value = NULL;
+
+    // If the policy isn't in |from|, use the default.
+    if (!from->Get(i.key(), &value)) {
+      continue;
+    }
+
+    // If the policy is the wrong type, use the value from |bad_type_values|.
+    if (!value->IsType(i.value().GetType())) {
+      CHECK(bad_type_values->Get(i.key(), &value));
+    }
+
+    to->Set(i.key(), value->DeepCopy());
   }
-  const base::Value* value;
-  if (dict->Get(key, &value) && value->IsType(base::Value::TYPE_STRING)) {
-    std::string string_value;
-    CHECK(value->GetAsString(&string_value));
-    return string_value;
-  }
-  return default_if_value_not_string;
-}
-
-// Copies a boolean from one dictionary to another, using a default value
-// if the boolean couldn't be read from the first dictionary.
-void CopyBooleanOrDefault(base::DictionaryValue* to,
-                          const base::DictionaryValue* from, const char* key,
-                          bool default_if_value_missing,
-                          bool default_if_value_not_boolean) {
-  to->Set(key, base::Value::CreateBooleanValue(
-      GetBooleanOrDefault(from, key, default_if_value_missing,
-                          default_if_value_not_boolean)));
-}
-
-// Copies a string from one dictionary to another, using a default value
-// if the string couldn't be read from the first dictionary.
-void CopyStringOrDefault(base::DictionaryValue* to,
-                         const base::DictionaryValue* from, const char* key,
-                         const std::string& default_if_value_missing,
-                         const std::string& default_if_value_not_string) {
-  to->Set(key, base::Value::CreateStringValue(
-      GetStringOrDefault(from, key, default_if_value_missing,
-                         default_if_value_not_string)));
-}
-
-// Copies all policy values from one dictionary to another, using default values
-// when necessary.
-scoped_ptr<base::DictionaryValue> AddDefaultValuesWhenNecessary(
-    const base::DictionaryValue* from) {
-  scoped_ptr<base::DictionaryValue> to(new base::DictionaryValue());
-  CopyBooleanOrDefault(to.get(), from,
-                       PolicyWatcher::kNatPolicyName, true, false);
-  CopyBooleanOrDefault(to.get(), from,
-                       PolicyWatcher::kHostRequireTwoFactorPolicyName,
-                       false, false);
-  CopyStringOrDefault(to.get(), from,
-                      PolicyWatcher::kHostDomainPolicyName, "", "");
-  CopyBooleanOrDefault(to.get(), from,
-                       PolicyWatcher::kHostMatchUsernamePolicyName,
-                       false, false);
-  CopyStringOrDefault(to.get(), from,
-                      PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
-                      kDefaultHostTalkGadgetPrefix,
-                      kDefaultHostTalkGadgetPrefix);
-  CopyBooleanOrDefault(to.get(), from,
-                       PolicyWatcher::kHostRequireCurtainPolicyName,
-                       false, false);
 
   return to.Pass();
 }
@@ -128,29 +75,25 @@ const char PolicyWatcher::kHostTalkGadgetPrefixPolicyName[] =
 const char PolicyWatcher::kHostRequireCurtainPolicyName[] =
     "RemoteAccessHostRequireCurtain";
 
-const char* const PolicyWatcher::kBooleanPolicyNames[] =
-    { PolicyWatcher::kNatPolicyName,
-      PolicyWatcher::kHostRequireTwoFactorPolicyName,
-      PolicyWatcher::kHostMatchUsernamePolicyName,
-      PolicyWatcher::kHostRequireCurtainPolicyName
-    };
-
-const int PolicyWatcher::kBooleanPolicyNamesNum =
-    arraysize(kBooleanPolicyNames);
-
-const char* const PolicyWatcher::kStringPolicyNames[] =
-    { PolicyWatcher::kHostDomainPolicyName,
-      PolicyWatcher::kHostTalkGadgetPrefixPolicyName
-    };
-
-const int PolicyWatcher::kStringPolicyNamesNum =
-    arraysize(kStringPolicyNames);
-
 PolicyWatcher::PolicyWatcher(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
       old_policies_(new base::DictionaryValue()),
+      default_values_(new base::DictionaryValue()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+  // Initialize the default values for each policy.
+  default_values_->SetBoolean(kNatPolicyName, true);
+  default_values_->SetBoolean(kHostRequireTwoFactorPolicyName, false);
+  default_values_->SetBoolean(kHostRequireCurtainPolicyName, false);
+  default_values_->SetBoolean(kHostMatchUsernamePolicyName, false);
+  default_values_->SetString(kHostDomainPolicyName, "");
+  default_values_->SetString(kHostTalkGadgetPrefixPolicyName,
+                               kDefaultHostTalkGadgetPrefix);
+
+  // Initialize the fall-back values to use for unreadable policies.
+  // For most policies these match the defaults.
+  bad_type_values_.reset(default_values_->DeepCopy());
+  bad_type_values_->SetBoolean(kNatPolicyName, false);
 }
 
 PolicyWatcher::~PolicyWatcher() {
@@ -198,6 +141,10 @@ void PolicyWatcher::ScheduleReloadTask(const base::TimeDelta& delay) {
       delay);
 }
 
+const base::DictionaryValue& PolicyWatcher::Defaults() const {
+  return *default_values_;
+}
+
 bool PolicyWatcher::OnPolicyWatcherThread() const {
   return task_runner_->BelongsToCurrentThread();
 }
@@ -208,7 +155,8 @@ void PolicyWatcher::UpdatePolicies(
 
   // Use default values for any missing policies.
   scoped_ptr<base::DictionaryValue> new_policies =
-      AddDefaultValuesWhenNecessary(new_policies_raw);
+      CopyGoodValuesAndAddDefaults(
+          new_policies_raw, default_values_.get(), bad_type_values_.get());
 
   // Find the changed policies.
   scoped_ptr<base::DictionaryValue> changed_policies(
