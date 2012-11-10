@@ -413,7 +413,7 @@ void BrowserPluginGuest::HandleInputEvent(RenderViewHost* render_view_host,
     // won't get sent to the guest. Reply immediately with handled = false so
     // embedder doesn't hang.
     BrowserPluginHostMsg_HandleInputEvent::WriteReplyParams(
-        reply_message, false /* handled */, cursor_);
+        reply_message, false /* handled */);
     SendMessageToEmbedder(reply_message);
     return;
   }
@@ -436,8 +436,7 @@ void BrowserPluginGuest::HandleInputEventAck(RenderViewHost* render_view_host,
   DCHECK(pending_input_event_reply_.get());
   IPC::Message* reply_message = pending_input_event_reply_.release();
   BrowserPluginHostMsg_HandleInputEvent::WriteReplyParams(reply_message,
-                                                          handled,
-                                                          cursor_);
+                                                          handled);
   SendMessageToEmbedder(reply_message);
 }
 
@@ -471,7 +470,7 @@ void BrowserPluginGuest::ShowWidget(RenderViewHost* render_view_host,
 }
 
 void BrowserPluginGuest::SetCursor(const WebCursor& cursor) {
-  cursor_ = cursor;
+  SendMessageToEmbedder(new BrowserPluginMsg_SetCursor(instance_id(), cursor));
 }
 
 void BrowserPluginGuest::DidStartProvisionalLoadForFrame(
@@ -560,8 +559,7 @@ void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
   if (pending_input_event_reply_.get()) {
     IPC::Message* reply_message = pending_input_event_reply_.release();
     BrowserPluginHostMsg_HandleInputEvent::WriteReplyParams(reply_message,
-                                                            false,
-                                                            cursor_);
+                                                            false);
     SendMessageToEmbedder(reply_message);
   }
   int process_id = web_contents()->GetRenderProcessHost()->GetID();

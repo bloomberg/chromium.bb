@@ -7,6 +7,7 @@
 #include "content/common/browser_plugin_messages.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/render_thread_impl.h"
+#include "webkit/glue/webcursor.h"
 
 namespace content {
 
@@ -47,6 +48,7 @@ bool BrowserPluginManagerImpl::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadRedirect, OnLoadRedirect)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadCommit, OnLoadCommit)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStop, OnLoadStop)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -127,6 +129,13 @@ void BrowserPluginManagerImpl::OnLoadRedirect(int instance_id,
   BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
   if (plugin)
     plugin->LoadRedirect(old_url, new_url, is_top_level);
+}
+
+void BrowserPluginManagerImpl::OnSetCursor(int instance_id,
+                                           const WebCursor& cursor) {
+  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
+  if (plugin)
+    plugin->SetCursor(cursor);
 }
 
 }  // namespace content

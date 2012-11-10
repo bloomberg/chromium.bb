@@ -141,6 +141,9 @@ class CONTENT_EXPORT BrowserPlugin :
   // A request from Javascript has been made to reload the page.
   void Reload();
 
+  // Informs the BrowserPlugin of the cursor that the guest has requested.
+  void SetCursor(const WebCursor& cursor);
+
   // WebKit::WebPlugin implementation.
   virtual WebKit::WebPluginContainer* container() const OVERRIDE;
   virtual bool initialize(WebKit::WebPluginContainer* container) OVERRIDE;
@@ -287,8 +290,10 @@ class CONTENT_EXPORT BrowserPlugin :
   typedef std::vector<v8::Persistent<v8::Function> > EventListeners;
   typedef std::map<std::string, EventListeners> EventListenerMap;
   EventListenerMap event_listener_map_;
+  WebCursor cursor_;
   gfx::Size last_view_size_;
   bool size_changed_in_flight_;
+
   // Important: Do not add more history state here.
   // We strongly discourage storing additional history state (such as page IDs)
   // in the embedder process, at the risk of having incorrect information that

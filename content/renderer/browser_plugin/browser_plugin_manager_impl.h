@@ -10,6 +10,7 @@
 
 struct BrowserPluginMsg_LoadCommit_Params;
 struct BrowserPluginMsg_UpdateRect_Params;
+class WebCursor;
 
 namespace content {
 
@@ -51,6 +52,8 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
                       const GURL& old_url,
                       const GURL& new_url,
                       bool is_top_level);
+  void OnSetCursor(int instance_id,
+                   const WebCursor& cursor);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManagerImpl);
 };

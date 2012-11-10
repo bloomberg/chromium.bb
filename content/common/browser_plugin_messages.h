@@ -166,9 +166,8 @@ IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_Reload,
 // 1. A blob that should be cast to WebInputEvent
 // 2. An optional boolean value indicating if a RawKeyDown event is associated
 //    to a keyboard shortcut of the browser.
-IPC_SYNC_MESSAGE_ROUTED0_2(BrowserPluginHostMsg_HandleInputEvent,
-                           bool /* handled */,
-                           WebCursor /* cursor */)
+IPC_SYNC_MESSAGE_ROUTED0_1(BrowserPluginHostMsg_HandleInputEvent,
+                           bool /* handled */)
 
 // An ACK to the guest process letting it know that the embedder has handled
 // the previous frame and is ready for the next frame. If the guest sent the
@@ -280,6 +279,11 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_AdvanceFocus,
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_ShouldAcceptTouchEvents,
                      int /* instance_id */,
                      bool /* accept */)
+
+// Inform the embedder of the cursor the guest wishes to display.
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetCursor,
+                     int /* instance_id */,
+                     WebCursor /* cursor */)
 
 // The guest has damage it wants to convey to the embedder so that it can
 // update its backing store.

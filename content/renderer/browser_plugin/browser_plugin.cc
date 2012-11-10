@@ -486,6 +486,10 @@ void BrowserPlugin::Reload() {
                                       instance_id_));
 }
 
+void BrowserPlugin::SetCursor(const WebCursor& cursor) {
+  cursor_ = cursor;
+}
+
 void BrowserPlugin::UpdateRect(
     int message_id,
     const BrowserPluginMsg_UpdateRect_Params& params) {
@@ -1030,14 +1034,13 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
   IPC::Message* message =
       new BrowserPluginHostMsg_HandleInputEvent(
           render_view_routing_id_,
-          &handled,
-          &cursor);
+          &handled);
   message->WriteInt(instance_id_);
   message->WriteData(reinterpret_cast<const char*>(&plugin_rect_),
                      sizeof(gfx::Rect));
   message->WriteData(reinterpret_cast<const char*>(&event), event.size);
   BrowserPluginManager::Get()->Send(message);
-  cursor.GetCursorInfo(&cursor_info);
+  cursor_.GetCursorInfo(&cursor_info);
   return handled;
 }
 

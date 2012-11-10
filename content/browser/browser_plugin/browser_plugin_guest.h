@@ -41,13 +41,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragStatus.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/webcursor.h"
 
 struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_CreateGuest_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 class TransportDIB;
 struct ViewHostMsg_UpdateRect_Params;
+class WebCursor;
 struct WebDropData;
 
 namespace WebKit {
@@ -273,7 +273,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   float damage_buffer_scale_factor_;
   scoped_ptr<IPC::Message> pending_input_event_reply_;
   gfx::Rect guest_rect_;
-  WebCursor cursor_;
   IDMap<RenderViewHost> pending_updates_;
   int pending_update_counter_;
   base::TimeDelta guest_hang_timeout_;
