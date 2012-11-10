@@ -283,6 +283,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         '--allow-file-access',
         '--allow-file-access-from-files',
         '--enable-file-cookies',
+        '--disable-default-apps',
         '--dom-automation',
         '--skip-oauth-login',
         # Enables injection of test content script for webui login automation
