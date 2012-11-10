@@ -5,6 +5,7 @@
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -16,6 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
+#include "webkit/plugins/plugin_switches.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
@@ -77,29 +79,41 @@ PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
 }
 
 // static
+PP_Bool PPB_Graphics3D_Impl::IsGpuBlacklisted() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line)
+    return PP_FromBool(
+        command_line->HasSwitch(switches::kDisablePepper3d));
+  return PP_TRUE;
+}
+
+// static
 PP_Resource PPB_Graphics3D_Impl::Create(PP_Instance instance,
                                         PP_Resource share_context,
                                         const int32_t* attrib_list) {
   PPB_Graphics3D_API* share_api = NULL;
+  if (IsGpuBlacklisted())
+    return 0;
   if (share_context) {
     EnterResourceNoLock<PPB_Graphics3D_API> enter(share_context, true);
     if (enter.failed())
       return 0;
     share_api = enter.object();
   }
-
   scoped_refptr<PPB_Graphics3D_Impl> graphics_3d(
       new PPB_Graphics3D_Impl(instance));
-
   if (!graphics_3d->Init(share_api, attrib_list))
     return 0;
   return graphics_3d->GetReference();
 }
 
+// static
 PP_Resource PPB_Graphics3D_Impl::CreateRaw(PP_Instance instance,
                                            PP_Resource share_context,
                                            const int32_t* attrib_list) {
   PPB_Graphics3D_API* share_api = NULL;
+  if (IsGpuBlacklisted())
+    return 0;
   if (share_context) {
     EnterResourceNoLock<PPB_Graphics3D_API> enter(share_context, true);
     if (enter.failed())

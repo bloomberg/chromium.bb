@@ -9,9 +9,8 @@ namespace switches {
 // Dumps extra logging about plugin loading to the log file.
 const char kDebugPluginLoading[] = "debug-plugin-loading";
 
-// Disables NativeClient's access to Pepper3D.
-const char kDisablePepper3dForUntrustedUse[] =
-    "disable-pepper-3d-for-untrusted-use";
+// Disable Pepper3D.
+const char kDisablePepper3d[] = "disable-pepper-3d";
 
 // "Command-line" arguments for the PPAPI Flash; used for debugging options.
 const char kPpapiFlashArgs[] = "ppapi-flash-args";

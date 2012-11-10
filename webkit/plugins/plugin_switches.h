@@ -11,7 +11,7 @@
 namespace switches {
 
 WEBKIT_PLUGINS_EXPORT extern const char kDebugPluginLoading[];
-WEBKIT_PLUGINS_EXPORT extern const char kDisablePepper3dForUntrustedUse[];
+WEBKIT_PLUGINS_EXPORT extern const char kDisablePepper3d[];
 WEBKIT_PLUGINS_EXPORT extern const char kPpapiFlashArgs[];
 
 #if defined(OS_WIN)
