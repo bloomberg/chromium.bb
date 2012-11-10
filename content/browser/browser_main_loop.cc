@@ -49,6 +49,12 @@
 #include "content/browser/renderer_host/image_transport_factory.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "content/browser/android/surface_texture_peer_browser_impl.h"
+#include "content/browser/device_orientation/data_fetcher_impl_android.h"
+#endif
+
 #if defined(OS_WIN)
 #include <windows.h>
 #include <commctrl.h>
@@ -357,6 +363,13 @@ void BrowserMainLoop::MainMessageLoopStart() {
 
   if (parts_.get())
     parts_->PostMainMessageLoopStart();
+
+#if defined(OS_ANDROID)
+  SurfaceTexturePeer::InitInstance(new SurfaceTexturePeerBrowserImpl(
+      parameters_.command_line.HasSwitch(
+          switches::kMediaPlayerInRenderProcess)));
+  DataFetcherImplAndroid::Init(base::android::AttachCurrentThread());
+#endif
 }
 
 void BrowserMainLoop::CreateThreads() {
