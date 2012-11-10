@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include "web_animation_curve_common.h"
 
 #include "cc/timing_function.h"

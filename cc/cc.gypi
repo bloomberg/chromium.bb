@@ -16,10 +16,9 @@
     'webkit_src_dir': '<(webkit_src_dir)',
     'conditions': [
       ['inside_chromium_build==1', {
-        'cc_stubs_dirs': ['stubs'],
+        'cc_stubs_dirs': [],
       }, {
         'cc_stubs_dirs': [
-          'stubs',
           '<(SHARED_INTERMEDIATE_DIR)/webkit',
           '<(webkit_src_dir)',
           '<(webkit_src_dir)/Source/WebCore/platform',

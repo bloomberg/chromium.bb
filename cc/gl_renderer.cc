@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include "cc/gl_renderer.h"
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "build/build_config.h"
 #include "cc/damage_tracker.h"
 #include "cc/geometry_binding.h"
 #include "cc/layer_quad.h"
@@ -53,7 +52,7 @@ namespace {
 
 bool needsIOSurfaceReadbackWorkaround()
 {
-#if OS(DARWIN)
+#if defined(OS_MACOSX)
     return true;
 #else
     return false;

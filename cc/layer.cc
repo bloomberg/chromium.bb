@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include "cc/layer.h"
 
 #include "cc/active_animation.h"
@@ -187,8 +185,8 @@ void Layer::removeChild(Layer* child)
 
 void Layer::replaceChild(Layer* reference, scoped_refptr<Layer> newLayer)
 {
-    ASSERT_ARG(reference, reference);
-    ASSERT_ARG(reference, reference->parent() == this);
+    DCHECK(reference);
+    DCHECK_EQ(reference->parent(), this);
 
     if (reference == newLayer)
         return;

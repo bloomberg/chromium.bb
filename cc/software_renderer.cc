@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include "cc/software_renderer.h"
 
 #include "cc/debug_border_draw_quad.h"
@@ -168,7 +166,7 @@ bool SoftwareRenderer::isSoftwareResource(ResourceProvider::ResourceId id) const
         return true;
     }
 
-    CRASH();
+    LOG(FATAL) << "Invalid resource type.";
     return false;
 }
 

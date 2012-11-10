@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include "cc/resource_provider.h"
 
 #include <limits.h>
@@ -153,7 +151,7 @@ ResourceProvider::ResourceId ResourceProvider::createResource(int pool, const gf
         return createBitmap(pool, size);
     }
 
-    CRASH();
+    LOG(FATAL) << "Invalid default resource type.";
     return 0;
 }
 

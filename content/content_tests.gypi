@@ -494,6 +494,8 @@
             '../ipc/ipc.gyp:test_support_ipc',
             '../jingle/jingle.gyp:jingle_glue_test_util',
             '../media/media.gyp:shared_memory_support',
+            '../third_party/icu/icu.gyp:icui18n',
+            '../third_party/icu/icu.gyp:icuuc',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',

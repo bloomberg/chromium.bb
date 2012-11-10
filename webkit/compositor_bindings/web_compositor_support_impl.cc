@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
 #include "base/debug/trace_event.h"

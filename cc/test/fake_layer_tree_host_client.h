@@ -4,8 +4,6 @@
 #ifndef CC_TEST_FAKE_LAYER_TREE_HOST_CLIENT_H_
 #define CC_TEST_FAKE_LAYER_TREE_HOST_CLIENT_H_
 
-#include "config.h"
-
 #include "base/memory/scoped_ptr.h"
 #include "cc/input_handler.h"
 #include "cc/layer_tree_host.h"

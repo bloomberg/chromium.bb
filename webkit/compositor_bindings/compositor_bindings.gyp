@@ -45,7 +45,6 @@
       'type': 'static_library',
       'dependencies': [
         '../../skia/skia.gyp:skia',
-        '<(webkit_src_dir)/Source/WTF/WTF.gyp/WTF.gyp:wtf',
         'webkit_compositor_bindings',
       ],
       'sources': [
@@ -74,10 +73,6 @@
         '../../cc/cc.gyp:cc',
         '../../skia/skia.gyp:skia',
         '../../ui/ui.gyp:ui',
-        # We have to depend on WTF directly to pick up the correct defines for WTF headers - for instance USE_SYSTEM_MALLOC.
-        '<(webkit_src_dir)/Source/WTF/WTF.gyp/WTF.gyp:wtf',
-        '<(webkit_src_dir)/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore_platform_geometry',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit_wtf_support',
       ],
       'include_dirs': [
         '../../cc',

@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 
-#include "config.h"
-
 #include "cc/layer_tiling_data.h"
 
 #include "base/logging.h"

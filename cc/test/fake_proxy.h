@@ -5,8 +5,6 @@
 #ifndef FakeCCProxy_h
 #define FakeCCProxy_h
 
-#include "config.h"
-
 #include "cc/layer_tree_host.h"
 #include "cc/proxy.h"
 #include "cc/thread.h"

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
 #include "web_external_texture_layer_impl.h"
 
 #include "cc/resource_update_queue.h"
@@ -97,14 +96,14 @@ private:
 
 unsigned WebExternalTextureLayerImpl::prepareTexture(ResourceUpdateQueue& queue)
 {
-    ASSERT(m_client);
+    DCHECK(m_client);
     WebTextureUpdaterImpl updaterImpl(queue);
     return m_client->prepareTexture(updaterImpl);
 }
 
 WebGraphicsContext3D* WebExternalTextureLayerImpl::context()
 {
-    ASSERT(m_client);
+    DCHECK(m_client);
     return m_client->context();
 }
 

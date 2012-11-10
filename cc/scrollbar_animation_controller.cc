@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include "cc/scrollbar_animation_controller.h"
 
-#include "cc/scrollbar_layer_impl.h"
 #include "base/time.h"
+#include "build/build_config.h"
+#include "cc/scrollbar_layer_impl.h"
 
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 #include "cc/scrollbar_animation_controller_linear_fade.h"
 #endif
 
 namespace cc {
 
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 scoped_ptr<ScrollbarAnimationController> ScrollbarAnimationController::create(LayerImpl* scrollLayer)
 {
     static const double fadeoutDelay = 0.3;

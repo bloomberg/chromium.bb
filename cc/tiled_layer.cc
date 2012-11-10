@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include "cc/tiled_layer.h"
 
 #include "base/basictypes.h"
+#include "build/build_config.h"
 #include "cc/geometry.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host.h"
@@ -261,10 +260,8 @@ UpdatableTile* TiledLayer::createTile(int i, int j)
     addedTile->dirtyRect = m_tiler->tileRect(addedTile);
 
     // Temporary diagnostic crash.
-    if (!addedTile)
-        CRASH();
-    if (!tileAt(i, j))
-        CRASH();
+    CHECK(addedTile);
+    CHECK(tileAt(i, j));
 
     return addedTile;
 }
@@ -280,7 +277,7 @@ void TiledLayer::setUseLCDText(bool useLCDText)
     ContentsScalingLayer::setUseLCDText(useLCDText);
 
     LayerTilingData::BorderTexelOption borderTexelOption;
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
     // Always want border texels and GL_LINEAR due to pinch zoom.
     borderTexelOption = LayerTilingData::HasBorderTexels;
 #else
@@ -490,21 +487,15 @@ void TiledLayer::updateTileTextures(const gfx::Rect& paintRect, int left, int to
 
             // Calculate tile-space rectangle to upload into.
             gfx::Vector2d destOffset = sourceRect.origin() - anchor;
-            if (destOffset.x() < 0)
-                CRASH();
-            if (destOffset.y() < 0)
-                CRASH();
+            CHECK(destOffset.x() >= 0);
+            CHECK(destOffset.y() >= 0);
 
             // Offset from paint rectangle to this tile's dirty rectangle.
             gfx::Vector2d paintOffset = sourceRect.origin() - paintRect.origin();
-            if (paintOffset.x() < 0)
-                CRASH();
-            if (paintOffset.y() < 0)
-                CRASH();
-            if (paintOffset.x() + sourceRect.width() > paintRect.width())
-                CRASH();
-            if (paintOffset.y() + sourceRect.height() > paintRect.height())
-                CRASH();
+            CHECK(paintOffset.x() >= 0);
+            CHECK(paintOffset.y() >= 0);
+            CHECK(paintOffset.x() + sourceRect.width() <= paintRect.width());
+            CHECK(paintOffset.y() + sourceRect.height() <= paintRect.height());
 
             tile->updaterResource()->update(queue, sourceRect, destOffset, tile->partialUpdate, stats);
             if (occlusion)

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
 #include "web_layer_impl.h"
 
 #include "SkMatrix44.h"
@@ -334,7 +333,7 @@ bool WebLayerImpl::hasActiveAnimation()
 
 void WebLayerImpl::transferAnimationsTo(WebLayer* other)
 {
-    ASSERT(other);
+    DCHECK(other);
     static_cast<WebLayerImpl*>(other)->m_layer->setLayerAnimationController(m_layer->releaseLayerAnimationController());
 }
 

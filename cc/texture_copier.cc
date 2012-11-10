@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include "cc/texture_copier.h"
 
 #include "base/debug/trace_event.h"
+#include "build/build_config.h"
 #include "cc/gl_renderer.h" // For the GLC() macro.
 #include "third_party/khronos/GLES2/gl2.h"
 #include <public/WebGraphicsContext3D.h>
@@ -55,7 +54,7 @@ void AcceleratedTextureCopier::copyTexture(Parameters parameters)
     GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, m_fbo));
     GLC(m_context, m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, parameters.destTexture, 0));
 
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
     // Clear destination to improve performance on tiling GPUs.
     // TODO: Use EXT_discard_framebuffer or skip clearing if it isn't available.
     GLC(m_context, m_context->clear(GL_COLOR_BUFFER_BIT));

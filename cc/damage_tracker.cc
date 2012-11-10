@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include "cc/damage_tracker.h"
 
 #include "cc/layer_impl.h"
@@ -343,4 +341,3 @@ void DamageTracker::extendDamageForRenderSurface(LayerImpl* layer, gfx::RectF& t
 }
 
 }  // namespace cc
-

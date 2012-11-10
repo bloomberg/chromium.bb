@@ -154,6 +154,11 @@
             },
           },
         }],  # OS=="win"
+        ['OS=="linux"', {
+          'dependencies': [
+            '../build/linux/system.gyp:fontconfig',
+          ],
+        }],
         ['OS=="android"', {
           'dependencies': [
             'content_shell_jni_headers',

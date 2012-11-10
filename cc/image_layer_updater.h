@@ -5,8 +5,6 @@
 #ifndef ImageLayerUpdater_h
 #define ImageLayerUpdater_h
 
-#include "config.h"
-
 #include "cc/layer_updater.h"
 
 namespace cc {

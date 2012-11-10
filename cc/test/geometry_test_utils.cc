@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include "cc/test/geometry_test_utils.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,4 +31,3 @@ void ExpectTransformationMatrixEq(const WebKit::WebTransformationMatrix& expecte
 }
 
 } // namespace WebKitTests
-

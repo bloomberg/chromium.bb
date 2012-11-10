@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include "cc/draw_quad.h"
 
 #include "base/logging.h"
@@ -84,7 +82,7 @@ scoped_ptr<DrawQuad> DrawQuad::copy(const SharedQuadState* copiedSharedQuadState
         break;
     case RenderPass:  // RenderPass quads have their own copy() method.
     case Invalid:
-        CRASH();
+        LOG(FATAL) << "Invalid DrawQuad material " << material();
         break;
     }
     copyQuad->setSharedQuadState(copiedSharedQuadState);

@@ -28,7 +28,6 @@
         '../../skia/skia.gyp:skia',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
-        '../../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
         'compositor_bindings.gyp:webkit_compositor_bindings',
       ],
       'sources': [

@@ -265,9 +265,6 @@
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui',
-        '<(webkit_src_dir)/Source/WTF/WTF.gyp/WTF.gyp:wtf',
-        '<(webkit_src_dir)/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore_platform_geometry',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit_wtf_support',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'defines': [
@@ -279,7 +276,6 @@
       ],
       'sources': [
         '<@(cc_source_files)',
-        'stubs/config.h',
       ],
     },
   ],

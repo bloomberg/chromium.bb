@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
 #include "web_delegated_renderer_layer_impl.h"
 
 #include "cc/delegated_renderer_layer.h"
