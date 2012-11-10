@@ -114,6 +114,13 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
                               BookmarkModelAssociator* associator,
                               DataTypeErrorHandler* error_handler);
 
+  // Update transaction version of |model| and |nodes| to |new_version| if
+  // it's valid.
+  static void UpdateTransactionVersion(
+      int64 new_version,
+      BookmarkModel* model,
+      const std::vector<const BookmarkNode*>& nodes);
+
  protected:
   virtual void StartImpl(Profile* profile) OVERRIDE;
 

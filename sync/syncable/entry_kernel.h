@@ -50,6 +50,7 @@ enum Int64Field {
   SERVER_VERSION = BASE_VERSION + 1,
   LOCAL_EXTERNAL_ID,  // ID of an item in the external local storage that this
                       // entry is associated with. (such as bookmarks.js)
+  TRANSACTION_VERSION,
   INT64_FIELDS_END
 };
 

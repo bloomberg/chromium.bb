@@ -23,12 +23,16 @@ namespace syncable {
 // Note that these methods may be called on *any* thread.
 class DirectoryChangeDelegate {
  public:
+  // Returns the handles of changed entries in |entry_changed|.
   virtual void HandleCalculateChangesChangeEventFromSyncApi(
       const ImmutableWriteTransactionInfo& write_transaction_info,
-      BaseTransaction* trans) = 0;
+      BaseTransaction* trans,
+      std::vector<int64>* entries_changed) = 0;
+  // Returns the handles of changed entries in |entry_changed|.
   virtual void HandleCalculateChangesChangeEventFromSyncer(
       const ImmutableWriteTransactionInfo& write_transaction_info,
-      BaseTransaction* trans) = 0;
+      BaseTransaction* trans,
+      std::vector<int64>* entries_changed) = 0;
   // Must return the set of all ModelTypes that were modified in the
   // transaction.
   virtual ModelTypeSet HandleTransactionEndingChangeEvent(

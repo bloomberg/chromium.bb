@@ -22,6 +22,7 @@
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
+#include "sync/syncable/write_transaction.h"
 #include "sync/util/cryptographer.h"
 #include "sync/util/data_type_histogram.h"
 
@@ -527,26 +528,34 @@ void BookmarkModelAssociator::PersistAssociations() {
     return;
   }
 
-  syncer::WriteTransaction trans(FROM_HERE, user_share_);
-  DirtyAssociationsSyncIds::iterator iter;
-  for (iter = dirty_associations_sync_ids_.begin();
-       iter != dirty_associations_sync_ids_.end();
-       ++iter) {
-    int64 sync_id = *iter;
-    syncer::WriteNode sync_node(&trans);
-    if (sync_node.InitByIdLookup(sync_id) != syncer::BaseNode::INIT_OK) {
-      unrecoverable_error_handler_->OnSingleDatatypeUnrecoverableError(
-          FROM_HERE,
-          "Could not lookup bookmark node for ID persistence.");
-      return;
+  int64 new_version = syncer::syncable::kInvalidTransactionVersion;
+  std::vector<const BookmarkNode*> bnodes;
+  {
+    syncer::WriteTransaction trans(FROM_HERE, user_share_, &new_version);
+    DirtyAssociationsSyncIds::iterator iter;
+    for (iter = dirty_associations_sync_ids_.begin();
+         iter != dirty_associations_sync_ids_.end();
+         ++iter) {
+      int64 sync_id = *iter;
+      syncer::WriteNode sync_node(&trans);
+      if (sync_node.InitByIdLookup(sync_id) != syncer::BaseNode::INIT_OK) {
+        unrecoverable_error_handler_->OnSingleDatatypeUnrecoverableError(
+            FROM_HERE,
+            "Could not lookup bookmark node for ID persistence.");
+        return;
+      }
+      const BookmarkNode* node = GetChromeNodeFromSyncId(sync_id);
+      if (node && sync_node.GetExternalId() != node->id()) {
+        sync_node.SetExternalId(node->id());
+        bnodes.push_back(node);
+      }
     }
-    const BookmarkNode* node = GetChromeNodeFromSyncId(sync_id);
-    if (node)
-      sync_node.SetExternalId(node->id());
-    else
-      NOTREACHED();
+    dirty_associations_sync_ids_.clear();
   }
-  dirty_associations_sync_ids_.clear();
+
+  BookmarkChangeProcessor::UpdateTransactionVersion(new_version,
+                                                    bookmark_model_,
+                                                    bnodes);
 }
 
 bool BookmarkModelAssociator::CryptoReadyIfNecessary() {

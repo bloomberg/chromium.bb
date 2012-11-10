@@ -1676,6 +1676,7 @@ TEST_F(OnDiskSyncableDirectoryTest,
     specifics.mutable_bookmark()->set_favicon("PNG");
     specifics.mutable_bookmark()->set_url("http://nowhere");
     create.Put(SPECIFICS, specifics);
+    update.Put(SPECIFICS, specifics);
     create_pre_save = create.GetKernelCopy();
     update_pre_save = update.GetKernelCopy();
     create_id = create.Get(ID);
@@ -1702,10 +1703,12 @@ TEST_F(OnDiskSyncableDirectoryTest,
   }
   int i = BEGIN_FIELDS;
   for ( ; i < INT64_FIELDS_END ; ++i) {
-    EXPECT_EQ(create_pre_save.ref((Int64Field)i),
+    EXPECT_EQ(create_pre_save.ref((Int64Field)i) +
+                  (i == TRANSACTION_VERSION ? 1 : 0),
               create_post_save.ref((Int64Field)i))
               << "int64 field #" << i << " changed during save/load";
-    EXPECT_EQ(update_pre_save.ref((Int64Field)i),
+    EXPECT_EQ(update_pre_save.ref((Int64Field)i) +
+              (i == TRANSACTION_VERSION ? 1 : 0),
               update_post_save.ref((Int64Field)i))
               << "int64 field #" << i << " changed during save/load";
   }

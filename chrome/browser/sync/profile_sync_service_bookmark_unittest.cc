@@ -6,6 +6,8 @@
 // BookmarkChangeProcessor.  Write unit tests for
 // BookmarkModelAssociator separately.
 
+#include <map>
+#include <queue>
 #include <stack>
 #include <vector>
 
@@ -559,12 +561,12 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   content::TestBrowserThread file_thread_;
 
   TestingProfile profile_;
-  scoped_ptr<TestBookmarkModelAssociator> model_associator_;
 
  protected:
   BookmarkModel* model_;
   syncer::TestUserShare test_user_share_;
   scoped_ptr<BookmarkChangeProcessor> change_processor_;
+  scoped_ptr<TestBookmarkModelAssociator> model_associator_;
   StrictMock<DataTypeErrorHandlerMock> mock_error_handler_;
 };
 
@@ -976,6 +978,9 @@ struct TestData {
   const char* url;
 };
 
+// Map from bookmark node ID to its version.
+typedef std::map<int64, int64> BookmarkNodeVersionMap;
+
 // TODO(ncarter): Integrate the existing TestNode/PopulateNodeFromString code
 // in the bookmark model unittest, to make it simpler to set up test data
 // here (and reduce the amount of duplication among tests), and to reduce the
@@ -1001,6 +1006,13 @@ class ProfileSyncServiceBookmarkTestWithData
 
   void ExpectBookmarkModelMatchesTestData();
   void WriteTestDataToBookmarkModel();
+
+  // Verify transaction versions of bookmark nodes and sync nodes are equal
+  // recursively. If node is in |version_expected|, versions should match
+  // there, too.
+  void ExpectTransactionVersionMatch(
+      const BookmarkNode* node,
+      const BookmarkNodeVersionMap& version_expected);
 
  private:
   const base::Time start_time_;
@@ -1134,10 +1146,10 @@ void ProfileSyncServiceBookmarkTestWithData::PopulateFromTestData(
           start_time_ + base::TimeDelta::FromMinutes(*running_count);
       model_->AddURLWithCreationTime(node, i, WideToUTF16Hack(item.title),
                                      GURL(item.url), add_time);
-      (*running_count)++;
     } else {
       model_->AddFolder(node, i, WideToUTF16Hack(item.title));
     }
+    (*running_count)++;
   }
 }
 
@@ -1165,11 +1177,11 @@ void ProfileSyncServiceBookmarkTestWithData::CompareWithTestData(
           start_time_ + base::TimeDelta::FromMinutes(*running_count);
       EXPECT_EQ(expected_time.ToInternalValue(),
                 child_node->date_added().ToInternalValue());
-      (*running_count)++;
     } else {
       EXPECT_TRUE(child_node->is_folder());
       EXPECT_FALSE(child_node->is_url());
     }
+    (*running_count)++;
   }
 }
 
@@ -1593,6 +1605,113 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateDateAdded) {
   EXPECT_EQ(WideToUTF16Hack(kTitle), node->GetTitle());
   EXPECT_EQ(kUrl, node->url().possibly_invalid_spec());
   EXPECT_EQ(node->date_added(), base::Time::FromInternalValue(30));
+}
+
+// Output transaction versions of |node| and nodes under it to |node_versions|.
+void GetTransactionVersions(
+    const BookmarkNode* root,
+    BookmarkNodeVersionMap* node_versions) {
+  node_versions->clear();
+  std::queue<const BookmarkNode*> nodes;
+  nodes.push(root);
+  while (!nodes.empty()) {
+    const BookmarkNode* n = nodes.front();
+    nodes.pop();
+
+    std::string version_str;
+    int64 version;
+    EXPECT_TRUE(n->GetMetaInfo(kBookmarkTransactionVersionKey, &version_str));
+    EXPECT_TRUE(base::StringToInt64(version_str, &version));
+
+    (*node_versions)[n->id()] = version;
+    for (int i = 0; i < n->child_count(); ++i)
+      nodes.push(n->GetChild(i));
+  }
+}
+
+void ProfileSyncServiceBookmarkTestWithData::ExpectTransactionVersionMatch(
+    const BookmarkNode* node,
+    const BookmarkNodeVersionMap& version_expected) {
+  syncer::ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
+
+  BookmarkNodeVersionMap bnodes_versions;
+  GetTransactionVersions(node, &bnodes_versions);
+  for (BookmarkNodeVersionMap::const_iterator it = bnodes_versions.begin();
+      it != bnodes_versions.end(); ++it) {
+    syncer::ReadNode sync_node(&trans);
+    ASSERT_TRUE(model_associator_->InitSyncNodeFromChromeId(it->first,
+                                                            &sync_node));
+    EXPECT_EQ(sync_node.GetEntry()->Get(syncer::syncable::TRANSACTION_VERSION),
+              it->second);
+    BookmarkNodeVersionMap::const_iterator expected_ver_it =
+        version_expected.find(it->first);
+    if (expected_ver_it != version_expected.end())
+      EXPECT_EQ(expected_ver_it->second, it->second);
+  }
+}
+
+// Test transaction versions of model and nodes are incremented after changes
+// are applied.
+TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateTransactionVersion) {
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  StartSync();
+  WriteTestDataToBookmarkModel();
+  MessageLoop::current()->RunUntilIdle();
+
+  BookmarkNodeVersionMap initial_versions;
+
+  // Verify transaction versions in sync model and bookmark model (saved as
+  // transaction version of root node) are equal after
+  // WriteTestDataToBookmarkModel() created bookmarks.
+  {
+    syncer::ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
+    EXPECT_GT(trans.GetModelVersion(syncer::BOOKMARKS), 0);
+    GetTransactionVersions(model_->root_node(), &initial_versions);
+    EXPECT_EQ(trans.GetModelVersion(syncer::BOOKMARKS),
+              initial_versions[model_->root_node()->id()]);
+  }
+  ExpectTransactionVersionMatch(model_->bookmark_bar_node(),
+                                BookmarkNodeVersionMap());
+  ExpectTransactionVersionMatch(model_->other_node(),
+                                BookmarkNodeVersionMap());
+  ExpectTransactionVersionMatch(model_->mobile_node(),
+                                BookmarkNodeVersionMap());
+
+  // Verify model version is incremented and bookmark node versions remain
+  // the same.
+  const BookmarkNode* bookmark_bar = model_->bookmark_bar_node();
+  model_->Remove(bookmark_bar, 0);
+  MessageLoop::current()->RunUntilIdle();
+  BookmarkNodeVersionMap new_versions;
+  GetTransactionVersions(model_->root_node(), &new_versions);
+  EXPECT_EQ(initial_versions[model_->root_node()->id()] + 1,
+            new_versions[model_->root_node()->id()]);
+  // HACK(haitaol): siblings of removed node are actually updated in sync model
+  //                because of NEXT_ID/PREV_ID. After switching to ordinal,
+  //                siblings will not get updated and the hack below can be
+  //                removed.
+  model_->SetNodeMetaInfo(bookmark_bar->GetChild(0),
+                          kBookmarkTransactionVersionKey, "43");
+  initial_versions[bookmark_bar->GetChild(0)->id()] = 43;
+  ExpectTransactionVersionMatch(model_->bookmark_bar_node(), initial_versions);
+  ExpectTransactionVersionMatch(model_->other_node(), initial_versions);
+  ExpectTransactionVersionMatch(model_->mobile_node(), initial_versions);
+
+  // Verify model version and version of changed bookmark are incremented and
+  // versions of others remain same.
+  const BookmarkNode* changed_bookmark =
+      model_->bookmark_bar_node()->GetChild(0);
+  model_->SetTitle(changed_bookmark, WideToUTF16Hack(L"test"));
+  MessageLoop::current()->RunUntilIdle();
+  GetTransactionVersions(model_->root_node(), &new_versions);
+  EXPECT_EQ(initial_versions[model_->root_node()->id()] + 2,
+            new_versions[model_->root_node()->id()]);
+  EXPECT_EQ(initial_versions[changed_bookmark->id()] + 1,
+            new_versions[changed_bookmark->id()]);
+  initial_versions.erase(changed_bookmark->id());
+  ExpectTransactionVersionMatch(model_->bookmark_bar_node(), initial_versions);
+  ExpectTransactionVersionMatch(model_->other_node(), initial_versions);
+  ExpectTransactionVersionMatch(model_->mobile_node(), initial_versions);
 }
 
 }  // namespace

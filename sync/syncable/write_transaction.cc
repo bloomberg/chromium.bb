@@ -6,16 +6,30 @@
 
 #include "sync/syncable/directory.h"
 #include "sync/syncable/directory_change_delegate.h"
+#include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/transaction_observer.h"
 #include "sync/syncable/write_transaction_info.h"
 
 namespace syncer {
 namespace syncable {
 
+const int64 kInvalidTransactionVersion = -1;
+
 WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
                                    WriterTag writer, Directory* directory)
-    : BaseTransaction(location, "WriteTransaction", writer, directory) {
+    : BaseTransaction(location, "WriteTransaction", writer, directory),
+      transaction_version_(NULL) {
   Lock();
+}
+
+WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
+                                   Directory* directory,
+                                   int64* transaction_version)
+    : BaseTransaction(location, "WriteTransaction", SYNCAPI, directory),
+      transaction_version_(transaction_version) {
+  Lock();
+  if (transaction_version_)
+    *transaction_version_ = kInvalidTransactionVersion;
 }
 
 void WriteTransaction::SaveOriginal(const EntryKernel* entry) {
@@ -82,13 +96,15 @@ ModelTypeSet WriteTransaction::NotifyTransactionChangingAndEnding(
   ImmutableWriteTransactionInfo immutable_write_transaction_info(
       &write_transaction_info);
   DirectoryChangeDelegate* const delegate = directory_->kernel_->delegate;
+  std::vector<int64> entry_changed;
   if (writer_ == syncable::SYNCAPI) {
     delegate->HandleCalculateChangesChangeEventFromSyncApi(
-        immutable_write_transaction_info, this);
+        immutable_write_transaction_info, this, &entry_changed);
   } else {
     delegate->HandleCalculateChangesChangeEventFromSyncer(
-        immutable_write_transaction_info, this);
+        immutable_write_transaction_info, this, &entry_changed);
   }
+  UpdateTransactionVersion(entry_changed);
 
   ModelTypeSet models_with_changes =
       delegate->HandleTransactionEndingChangeEvent(
@@ -105,6 +121,30 @@ void WriteTransaction::NotifyTransactionComplete(
     ModelTypeSet models_with_changes) {
   directory_->kernel_->delegate->HandleTransactionCompleteChangeEvent(
       models_with_changes);
+}
+
+void WriteTransaction::UpdateTransactionVersion(
+    const std::vector<int64>& entry_changed) {
+  syncer::ModelTypeSet type_seen;
+  for (uint32 i = 0; i < entry_changed.size(); ++i) {
+    MutableEntry entry(this, GET_BY_HANDLE, entry_changed[i]);
+    if (entry.good()) {
+      ModelType type = GetModelTypeFromSpecifics(entry.Get(SPECIFICS));
+      if (type < FIRST_REAL_MODEL_TYPE)
+        continue;
+      if (!type_seen.Has(type)) {
+        directory_->IncrementTransactionVersion(type);
+        type_seen.Put(type);
+      }
+      entry.Put(TRANSACTION_VERSION, directory_->GetTransactionVersion(type));
+    }
+  }
+
+  if (!type_seen.Empty() && transaction_version_) {
+    DCHECK_EQ(1u, type_seen.Size());
+    *transaction_version_ = directory_->GetTransactionVersion(
+        type_seen.First().Get());
+  }
 }
 
 WriteTransaction::~WriteTransaction() {

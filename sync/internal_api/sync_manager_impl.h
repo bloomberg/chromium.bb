@@ -165,10 +165,12 @@ class SyncManagerImpl :
       syncable::BaseTransaction* trans) OVERRIDE;
   virtual void HandleCalculateChangesChangeEventFromSyncApi(
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
-      syncable::BaseTransaction* trans) OVERRIDE;
+      syncable::BaseTransaction* trans,
+      std::vector<int64>* entries_changed) OVERRIDE;
   virtual void HandleCalculateChangesChangeEventFromSyncer(
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
-      syncable::BaseTransaction* trans) OVERRIDE;
+      syncable::BaseTransaction* trans,
+      std::vector<int64>* entries_changed) OVERRIDE;
 
   // InvalidationHandler implementation.
   virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
@@ -226,8 +228,6 @@ class SyncManagerImpl :
   bool VisiblePropertiesDiffer(
       const syncable::EntryKernelMutation& mutation,
       Cryptographer* cryptographer) const;
-
-  bool ChangeBuffersAreEmpty();
 
   // Open the directory named with username_for_share
   bool OpenDirectory();
@@ -335,13 +335,14 @@ class SyncManagerImpl :
   // sync components.
   AllStatus allstatus_;
 
-  // Each element of this array is a store of change records produced by
-  // HandleChangeEvent during the CALCULATE_CHANGES step.  The changes are
-  // segregated by model type, and are stored here to be processed and
-  // forwarded to the observer slightly later, at the TRANSACTION_ENDING
-  // step by HandleTransactionEndingChangeEvent. The list is cleared in the
-  // TRANSACTION_COMPLETE step by HandleTransactionCompleteChangeEvent.
-  ChangeReorderBuffer change_buffers_[MODEL_TYPE_COUNT];
+  // Each element of this map is a store of change records produced by
+  // HandleChangeEventFromSyncer during the CALCULATE_CHANGES step. The changes
+  // are grouped by model type, and are stored here in tree order to be
+  // forwarded to the observer slightly later, at the TRANSACTION_ENDING step
+  // by HandleTransactionEndingChangeEvent. The list is cleared after observer
+  // finishes processing.
+  typedef std::map<int, ImmutableChangeRecordList> ChangeRecordMap;
+  ChangeRecordMap change_records_;
 
   SyncManager::ChangeDelegate* change_delegate_;
 

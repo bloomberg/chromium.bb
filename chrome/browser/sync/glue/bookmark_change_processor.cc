@@ -26,6 +26,7 @@
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/syncable/entry.h"  // TODO(tim): Investigating bug 121587.
+#include "sync/syncable/write_transaction.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_util.h"
 
@@ -113,40 +114,49 @@ void BookmarkChangeProcessor::RemoveOneSyncNode(
 
 void BookmarkChangeProcessor::RemoveSyncNodeHierarchy(
     const BookmarkNode* topmost) {
-  syncer::WriteTransaction trans(FROM_HERE, share_handle());
+  int64 new_version =
+      syncer::syncable::kInvalidTransactionVersion;
+  {
+    syncer::WriteTransaction trans(FROM_HERE, share_handle(), &new_version);
 
-  // Later logic assumes that |topmost| has been unlinked.
-  DCHECK(topmost->is_root());
+    // Later logic assumes that |topmost| has been unlinked.
+    DCHECK(topmost->is_root());
 
-  // A BookmarkModel deletion event means that |node| and all its children were
-  // deleted. Sync backend expects children to be deleted individually, so we do
-  // a depth-first-search here.  At each step, we consider the |index|-th child
-  // of |node|.  |index_stack| stores index values for the parent levels.
-  std::stack<int> index_stack;
-  index_stack.push(0);  // For the final pop.  It's never used.
-  const BookmarkNode* node = topmost;
-  int index = 0;
-  while (node) {
-    // The top of |index_stack| should always be |node|'s index.
-    DCHECK(node->is_root() || (node->parent()->GetIndexOf(node) ==
-      index_stack.top()));
-    if (index == node->child_count()) {
-      // If we've processed all of |node|'s children, delete |node| and move
-      // on to its successor.
-      RemoveOneSyncNode(&trans, node);
-      node = node->parent();
-      index = index_stack.top() + 1;      // (top() + 0) was what we removed.
-      index_stack.pop();
-    } else {
-      // If |node| has an unprocessed child, process it next after pushing the
-      // current state onto the stack.
-      DCHECK_LT(index, node->child_count());
-      index_stack.push(index);
-      node = node->GetChild(index);
-      index = 0;
+    // A BookmarkModel deletion event means that |node| and all its children
+    // were deleted. Sync backend expects children to be deleted individually,
+    // so we do a depth-first-search here.  At each step, we consider the
+    // |index|-th child of |node|.  |index_stack| stores index values for the
+    // parent levels.
+    std::stack<int> index_stack;
+    index_stack.push(0);  // For the final pop.  It's never used.
+    const BookmarkNode* node = topmost;
+    int index = 0;
+    while (node) {
+      // The top of |index_stack| should always be |node|'s index.
+      DCHECK(node->is_root() || (node->parent()->GetIndexOf(node) ==
+        index_stack.top()));
+      if (index == node->child_count()) {
+        // If we've processed all of |node|'s children, delete |node| and move
+        // on to its successor.
+        RemoveOneSyncNode(&trans, node);
+        node = node->parent();
+        index = index_stack.top() + 1;      // (top() + 0) was what we removed.
+        index_stack.pop();
+      } else {
+        // If |node| has an unprocessed child, process it next after pushing the
+        // current state onto the stack.
+        DCHECK_LT(index, node->child_count());
+        index_stack.push(index);
+        node = node->GetChild(index);
+        index = 0;
+      }
     }
+    DCHECK(index_stack.empty());  // Nothing should be left on the stack.
   }
-  DCHECK(index_stack.empty());  // Nothing should be left on the stack.
+
+  // Don't need to update versions of deleted nodes.
+  UpdateTransactionVersion(new_version, bookmark_model_,
+                           std::vector<const BookmarkNode*>());
 }
 
 void BookmarkChangeProcessor::Loaded(BookmarkModel* model,
@@ -165,11 +175,24 @@ void BookmarkChangeProcessor::BookmarkNodeAdded(BookmarkModel* model,
                                                 int index) {
   DCHECK(share_handle());
 
-  // Acquire a scoped write lock via a transaction.
-  syncer::WriteTransaction trans(FROM_HERE, share_handle());
+  int64 new_version = syncer::syncable::kInvalidTransactionVersion;
+  int64 sync_id = syncer::kInvalidId;
+  {
+    // Acquire a scoped write lock via a transaction.
+    syncer::WriteTransaction trans(FROM_HERE, share_handle(), &new_version);
+    sync_id = CreateSyncNode(parent, model, index, &trans,
+                             model_associator_, error_handler());
+  }
 
-  CreateSyncNode(parent, model, index, &trans, model_associator_,
-                 error_handler());
+  if (syncer::kInvalidId != sync_id) {
+    // Siblings of added node in sync DB will also be updated to reflect new
+    // PREV_ID/NEXT_ID and thus get a new version. But we only update version
+    // of added node here. After switching to ordinals for positioning,
+    // PREV_ID/NEXT_ID will be deprecated and siblings will not be updated.
+    UpdateTransactionVersion(
+        new_version, model,
+        std::vector<const BookmarkNode*>(1, parent->GetChild(index)));
+  }
 }
 
 // static
@@ -199,11 +222,10 @@ int64 BookmarkChangeProcessor::CreateSyncNode(const BookmarkNode* parent,
   return sync_child.GetId();
 }
 
-
 void BookmarkChangeProcessor::BookmarkNodeRemoved(BookmarkModel* model,
-                                                    const BookmarkNode* parent,
-                                                    int index,
-                                                    const BookmarkNode* node) {
+                                                  const BookmarkNode* parent,
+                                                  int index,
+                                                  const BookmarkNode* node) {
   RemoveSyncNodeHierarchy(node);
 }
 
@@ -215,76 +237,81 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
     return;
   }
 
-  // Acquire a scoped write lock via a transaction.
-  syncer::WriteTransaction trans(FROM_HERE, share_handle());
+  int64 new_version = syncer::syncable::kInvalidTransactionVersion;
+  {
+    // Acquire a scoped write lock via a transaction.
+    syncer::WriteTransaction trans(FROM_HERE, share_handle(), &new_version);
 
-  // Lookup the sync node that's associated with |node|.
-  syncer::WriteNode sync_node(&trans);
-  if (!model_associator_->InitSyncNodeFromChromeId(node->id(), &sync_node)) {
-    // TODO(tim): Investigating bug 121587.
-    if (model_associator_->GetSyncIdFromChromeId(node->id()) ==
-                                                 syncer::kInvalidId) {
-      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-          "Bookmark id not found in model associator on BookmarkNodeChanged");
-      LOG(ERROR) << "Bad id.";
-    } else if (!sync_node.GetEntry()->good()) {
-      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-          "Could not InitByIdLookup on BookmarkNodeChanged, good() failed");
-      LOG(ERROR) << "Bad entry.";
-    } else if (sync_node.GetEntry()->Get(syncer::syncable::IS_DEL)) {
-      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-          "Could not InitByIdLookup on BookmarkNodeChanged, is_del true");
-      LOG(ERROR) << "Deleted entry.";
-    } else {
-      syncer::Cryptographer* crypto = trans.GetCryptographer();
-      syncer::ModelTypeSet encrypted_types(trans.GetEncryptedTypes());
-      const sync_pb::EntitySpecifics& specifics =
-          sync_node.GetEntry()->Get(syncer::syncable::SPECIFICS);
-      CHECK(specifics.has_encrypted());
-      const bool can_decrypt = crypto->CanDecrypt(specifics.encrypted());
-      const bool agreement = encrypted_types.Has(syncer::BOOKMARKS);
-      if (!agreement && !can_decrypt) {
+    // Lookup the sync node that's associated with |node|.
+    syncer::WriteNode sync_node(&trans);
+    if (!model_associator_->InitSyncNodeFromChromeId(node->id(), &sync_node)) {
+      // TODO(tim): Investigating bug 121587.
+      if (model_associator_->GetSyncIdFromChromeId(node->id()) ==
+                                                   syncer::kInvalidId) {
         error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-            "Could not InitByIdLookup on BookmarkNodeChanged, "
-            " Cryptographer thinks bookmarks not encrypted, and CanDecrypt"
-            " failed.");
-        LOG(ERROR) << "Case 1.";
-      } else if (agreement && can_decrypt) {
+            "Bookmark id not found in model associator on BookmarkNodeChanged");
+        LOG(ERROR) << "Bad id.";
+      } else if (!sync_node.GetEntry()->good()) {
         error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-            "Could not InitByIdLookup on BookmarkNodeChanged, "
-            " Cryptographer thinks bookmarks are encrypted, and CanDecrypt"
-            " succeeded (?!), but DecryptIfNecessary failed.");
-        LOG(ERROR) << "Case 2.";
-      } else if (agreement) {
+            "Could not InitByIdLookup on BookmarkNodeChanged, good() failed");
+        LOG(ERROR) << "Bad entry.";
+      } else if (sync_node.GetEntry()->Get(syncer::syncable::IS_DEL)) {
         error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-            "Could not InitByIdLookup on BookmarkNodeChanged, "
-            " Cryptographer thinks bookmarks are encrypted, but CanDecrypt"
-            " failed.");
-        LOG(ERROR) << "Case 3.";
+            "Could not InitByIdLookup on BookmarkNodeChanged, is_del true");
+        LOG(ERROR) << "Deleted entry.";
       } else {
-        error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-            "Could not InitByIdLookup on BookmarkNodeChanged, "
-            " Cryptographer thinks bookmarks not encrypted, but CanDecrypt"
-            " succeeded (super weird, btw)");
-        LOG(ERROR) << "Case 4.";
+        syncer::Cryptographer* crypto = trans.GetCryptographer();
+        syncer::ModelTypeSet encrypted_types(trans.GetEncryptedTypes());
+        const sync_pb::EntitySpecifics& specifics =
+            sync_node.GetEntry()->Get(syncer::syncable::SPECIFICS);
+        CHECK(specifics.has_encrypted());
+        const bool can_decrypt = crypto->CanDecrypt(specifics.encrypted());
+        const bool agreement = encrypted_types.Has(syncer::BOOKMARKS);
+        if (!agreement && !can_decrypt) {
+          error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+              "Could not InitByIdLookup on BookmarkNodeChanged, "
+              " Cryptographer thinks bookmarks not encrypted, and CanDecrypt"
+              " failed.");
+          LOG(ERROR) << "Case 1.";
+        } else if (agreement && can_decrypt) {
+          error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+              "Could not InitByIdLookup on BookmarkNodeChanged, "
+              " Cryptographer thinks bookmarks are encrypted, and CanDecrypt"
+              " succeeded (?!), but DecryptIfNecessary failed.");
+          LOG(ERROR) << "Case 2.";
+        } else if (agreement) {
+          error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+              "Could not InitByIdLookup on BookmarkNodeChanged, "
+              " Cryptographer thinks bookmarks are encrypted, but CanDecrypt"
+              " failed.");
+          LOG(ERROR) << "Case 3.";
+        } else {
+          error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+              "Could not InitByIdLookup on BookmarkNodeChanged, "
+              " Cryptographer thinks bookmarks not encrypted, but CanDecrypt"
+              " succeeded (super weird, btw)");
+          LOG(ERROR) << "Case 4.";
+        }
       }
+      return;
     }
-    return;
+
+    UpdateSyncNodeProperties(node, model, &sync_node);
+
+    DCHECK_EQ(sync_node.GetIsFolder(), node->is_folder());
+    DCHECK_EQ(model_associator_->GetChromeNodeFromSyncId(
+              sync_node.GetParentId()),
+              node->parent());
+    // This node's index should be one more than the predecessor's index.
+    DCHECK_EQ(node->parent()->GetIndexOf(node),
+              CalculateBookmarkModelInsertionIndex(node->parent(),
+                                                   &sync_node,
+                                                   model_associator_));
   }
 
-  UpdateSyncNodeProperties(node, model, &sync_node);
-
-  DCHECK_EQ(sync_node.GetIsFolder(), node->is_folder());
-  DCHECK_EQ(model_associator_->GetChromeNodeFromSyncId(
-            sync_node.GetParentId()),
-            node->parent());
-  // This node's index should be one more than the predecessor's index.
-  DCHECK_EQ(node->parent()->GetIndexOf(node),
-            CalculateBookmarkModelInsertionIndex(node->parent(),
-                                                 &sync_node,
-                                                 model_associator_));
+  UpdateTransactionVersion(new_version, model,
+                           std::vector<const BookmarkNode*>(1, node));
 }
-
 
 void BookmarkChangeProcessor::BookmarkNodeMoved(BookmarkModel* model,
       const BookmarkNode* old_parent, int old_index,
@@ -296,23 +323,29 @@ void BookmarkChangeProcessor::BookmarkNodeMoved(BookmarkModel* model,
     return;
   }
 
-  // Acquire a scoped write lock via a transaction.
-  syncer::WriteTransaction trans(FROM_HERE, share_handle());
+  int64 new_version = syncer::syncable::kInvalidTransactionVersion;
+  {
+    // Acquire a scoped write lock via a transaction.
+    syncer::WriteTransaction trans(FROM_HERE, share_handle(), &new_version);
 
-  // Lookup the sync node that's associated with |child|.
-  syncer::WriteNode sync_node(&trans);
-  if (!model_associator_->InitSyncNodeFromChromeId(child->id(), &sync_node)) {
-    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-                                                        std::string());
-    return;
+    // Lookup the sync node that's associated with |child|.
+    syncer::WriteNode sync_node(&trans);
+    if (!model_associator_->InitSyncNodeFromChromeId(child->id(), &sync_node)) {
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+                                                          std::string());
+      return;
+    }
+
+    if (!PlaceSyncNode(MOVE, new_parent, new_index, &trans, &sync_node,
+                       model_associator_)) {
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+                                                          std::string());
+      return;
+    }
   }
 
-  if (!PlaceSyncNode(MOVE, new_parent, new_index, &trans, &sync_node,
-                     model_associator_)) {
-    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-                                                        std::string());
-    return;
-  }
+  UpdateTransactionVersion(new_version, model,
+                           std::vector<const BookmarkNode*>(1, child));
 }
 
 void BookmarkChangeProcessor::BookmarkNodeFaviconChanged(
@@ -323,30 +356,39 @@ void BookmarkChangeProcessor::BookmarkNodeFaviconChanged(
 
 void BookmarkChangeProcessor::BookmarkNodeChildrenReordered(
     BookmarkModel* model, const BookmarkNode* node) {
+  int64 new_version = syncer::syncable::kInvalidTransactionVersion;
+  std::vector<const BookmarkNode*> children;
+  {
+    // Acquire a scoped write lock via a transaction.
+    syncer::WriteTransaction trans(FROM_HERE, share_handle(), &new_version);
 
-  // Acquire a scoped write lock via a transaction.
-  syncer::WriteTransaction trans(FROM_HERE, share_handle());
+    // The given node's children got reordered. We need to reorder all the
+    // children of the corresponding sync node.
+    for (int i = 0; i < node->child_count(); ++i) {
+      const BookmarkNode* child = node->GetChild(i);
+      children.push_back(child);
 
-  // The given node's children got reordered. We need to reorder all the
-  // children of the corresponding sync node.
-  for (int i = 0; i < node->child_count(); ++i) {
-    syncer::WriteNode sync_child(&trans);
-    if (!model_associator_->InitSyncNodeFromChromeId(node->GetChild(i)->id(),
-                                                     &sync_child)) {
-      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-                                                          std::string());
-      return;
-    }
-    DCHECK_EQ(sync_child.GetParentId(),
-              model_associator_->GetSyncIdFromChromeId(node->id()));
+      syncer::WriteNode sync_child(&trans);
+      if (!model_associator_->InitSyncNodeFromChromeId(child->id(),
+                                                       &sync_child)) {
+        error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+                                                            std::string());
+        return;
+      }
+      DCHECK_EQ(sync_child.GetParentId(),
+                model_associator_->GetSyncIdFromChromeId(node->id()));
 
-    if (!PlaceSyncNode(MOVE, node, i, &trans, &sync_child,
-                       model_associator_)) {
-      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-                                                          std::string());
-      return;
+      if (!PlaceSyncNode(MOVE, node, i, &trans, &sync_child,
+                         model_associator_)) {
+        error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+                                                            std::string());
+        return;
+      }
     }
   }
+
+  // TODO(haitaol): Filter out children that didn't actually change.
+  UpdateTransactionVersion(new_version, model, children);
 }
 
 // static
@@ -505,7 +547,12 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
         return;
       }
 
-      if (!CreateOrUpdateBookmarkNode(&src, model, model_associator_)) {
+      const BookmarkNode* node = CreateOrUpdateBookmarkNode(&src, model,
+                                                            model_associator_);
+      if (node) {
+        bookmark_model_->SetNodeMetaInfo(node, kBookmarkTransactionVersionKey,
+                                         base::Int64ToString(model_version));
+      } else {
         // Because the Synced Bookmarks node can be created server side, it's
         // possible it'll arrive at the client as an update. In that case it
         // won't have been associated at startup, the GetChromeNodeFromSyncId
@@ -596,6 +643,21 @@ const BookmarkNode* BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
   }
 
   return dst;
+}
+
+// static
+void BookmarkChangeProcessor::UpdateTransactionVersion(
+    int64 new_version,
+    BookmarkModel* model,
+    const std::vector<const BookmarkNode*>& nodes) {
+  if (new_version != syncer::syncable::kInvalidTransactionVersion) {
+    model->SetNodeMetaInfo(model->root_node(), kBookmarkTransactionVersionKey,
+                           base::Int64ToString(new_version));
+    for (size_t i = 0; i < nodes.size(); ++i) {
+      model->SetNodeMetaInfo(nodes[i], kBookmarkTransactionVersionKey,
+                             base::Int64ToString(new_version));
+    }
+  }
 }
 
 // static

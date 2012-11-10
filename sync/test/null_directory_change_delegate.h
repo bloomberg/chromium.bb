@@ -18,10 +18,12 @@ class NullDirectoryChangeDelegate : public DirectoryChangeDelegate {
 
   virtual void HandleCalculateChangesChangeEventFromSyncApi(
       const ImmutableWriteTransactionInfo& write_transaction_info,
-      BaseTransaction* trans) OVERRIDE;
+      BaseTransaction* trans,
+      std::vector<int64>* entries_changed) OVERRIDE;
   virtual void HandleCalculateChangesChangeEventFromSyncer(
       const ImmutableWriteTransactionInfo& write_transaction_info,
-      BaseTransaction* trans) OVERRIDE;
+      BaseTransaction* trans,
+      std::vector<int64>* entries_changed) OVERRIDE;
   virtual ModelTypeSet HandleTransactionEndingChangeEvent(
       const ImmutableWriteTransactionInfo& write_transaction_info,
       BaseTransaction* trans) OVERRIDE;

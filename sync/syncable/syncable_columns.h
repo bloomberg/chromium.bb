@@ -25,6 +25,7 @@ static const ColumnSpec g_metas_columns[] = {
   {"server_version", "bigint default 0"},
   // This is the item ID that we store for the embedding application.
   {"local_external_id", "bigint default 0"},
+  {"transaction_version", "bigint default 0"},
   // These timestamps are kept in the same format as that of the
   // protocol (ms since Unix epoch).
   {"mtime", "bigint default 0"},

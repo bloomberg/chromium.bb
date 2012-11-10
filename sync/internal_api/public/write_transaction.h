@@ -30,6 +30,12 @@ class WriteTransaction : public BaseTransaction {
   // Start a new read/write transaction.
   WriteTransaction(const tracked_objects::Location& from_here,
                    UserShare* share);
+  // |transaction_version| stores updated model and nodes version if model
+  // is changed by the transaction, or syncer::syncable::kInvalidTransaction
+  // if not after transaction is closed. This constructor is used for model
+  // types that support embassy data.
+  WriteTransaction(const tracked_objects::Location& from_here,
+                   UserShare* share, int64* transaction_version);
   virtual ~WriteTransaction();
 
   // Provide access to the syncable transaction from the API WriteNode.
@@ -40,7 +46,7 @@ class WriteTransaction : public BaseTransaction {
   WriteTransaction() {}
 
   void SetTransaction(syncable::WriteTransaction* trans) {
-      transaction_ = trans;
+    transaction_ = trans;
   }
 
  private:

@@ -11,16 +11,29 @@ NullDirectoryChangeDelegate::~NullDirectoryChangeDelegate() {}
 
 void NullDirectoryChangeDelegate::HandleCalculateChangesChangeEventFromSyncApi(
     const ImmutableWriteTransactionInfo& write_transaction_info,
-    BaseTransaction* trans) {}
+    BaseTransaction* trans,
+    std::vector<int64>* entries_changed) {
+  for (EntryKernelMutationMap::const_iterator it =
+          write_transaction_info.Get().mutations.Get().begin();
+      it != write_transaction_info.Get().mutations.Get().end(); ++it) {
+    entries_changed->push_back(it->first);
+  }
+}
 
 void NullDirectoryChangeDelegate::HandleCalculateChangesChangeEventFromSyncer(
     const ImmutableWriteTransactionInfo& write_transaction_info,
-    BaseTransaction* trans) {}
+    BaseTransaction* trans,
+    std::vector<int64>* entries_changed) {
+  for (EntryKernelMutationMap::const_iterator it =
+          write_transaction_info.Get().mutations.Get().begin();
+      it != write_transaction_info.Get().mutations.Get().end(); ++it) {
+    entries_changed->push_back(it->first);
+  }
+}
 
-ModelTypeSet
-    NullDirectoryChangeDelegate::HandleTransactionEndingChangeEvent(
-        const ImmutableWriteTransactionInfo& write_transaction_info,
-        BaseTransaction* trans) {
+ModelTypeSet NullDirectoryChangeDelegate::HandleTransactionEndingChangeEvent(
+    const ImmutableWriteTransactionInfo& write_transaction_info,
+    BaseTransaction* trans) {
   return ModelTypeSet();
 }
 

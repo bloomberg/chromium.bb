@@ -40,7 +40,7 @@ static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
 extern const int32 kCurrentDBVersion;  // Global visibility for our unittest.
-const int32 kCurrentDBVersion = 82;
+const int32 kCurrentDBVersion = 83;
 
 // Iterate over the fields of |entry| and bind each to |statement| for
 // updating.  Returns the number of args bound.
@@ -356,6 +356,12 @@ bool DirectoryBackingStore::InitializeTables() {
   if (version_on_disk == 81) {
     if (MigrateVersion81To82())
       version_on_disk = 82;
+  }
+
+  // Version 83 migration added transaction_version column per sync entry.
+  if (version_on_disk == 82) {
+    if (MigrateVersion82To83())
+      version_on_disk = 83;
   }
 
   // If one of the migrations requested it, drop columns that aren't current.
@@ -1069,6 +1075,19 @@ bool DirectoryBackingStore::MigrateVersion81To82() {
   if (!update.Run())
     return false;
   SetVersion(82);
+  return true;
+}
+
+bool DirectoryBackingStore::MigrateVersion82To83() {
+  // Version 83 added transaction_version on sync node.
+  if (!db_->Execute(
+      "ALTER TABLE metas ADD COLUMN transaction_version BIGINT default 0"))
+    return false;
+  sql::Statement update(db_->GetUniqueStatement(
+      "UPDATE metas SET transaction_version = 0"));
+  if (!update.Run())
+    return false;
+  SetVersion(83);
   return true;
 }
 
