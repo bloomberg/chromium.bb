@@ -38,6 +38,9 @@
       'targets': [{
         'target_name': 'ui_unittest_strings',
         'type': 'none',
+        'dependencies': [
+          'ui_strings',
+        ],
         'variables': {
           'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
           'conditions': [
