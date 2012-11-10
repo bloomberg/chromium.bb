@@ -144,11 +144,11 @@ void AuxiliaryProfilesImpl::GetAddressBookNames(
   NSString* lastName = [me valueForProperty:kABLastNameProperty];
   NSString* companyName = [me valueForProperty:kABOrganizationProperty];
 
-  profile->SetInfo(NAME_FIRST, base::SysNSStringToUTF16(firstName));
-  profile->SetInfo(NAME_MIDDLE, base::SysNSStringToUTF16(middleName));
-  profile->SetInfo(NAME_LAST, base::SysNSStringToUTF16(lastName));
+  profile->SetRawInfo(NAME_FIRST, base::SysNSStringToUTF16(firstName));
+  profile->SetRawInfo(NAME_MIDDLE, base::SysNSStringToUTF16(middleName));
+  profile->SetRawInfo(NAME_LAST, base::SysNSStringToUTF16(lastName));
   if ([addressLabelRaw isEqualToString:kABAddressWorkLabel])
-    profile->SetInfo(COMPANY_NAME, base::SysNSStringToUTF16(companyName));
+    profile->SetRawInfo(COMPANY_NAME, base::SysNSStringToUTF16(companyName));
 }
 
 // Addresss information from the Address Book may span multiple lines.
@@ -173,24 +173,29 @@ void AuxiliaryProfilesImpl::GetAddressBookAddresses(NSDictionary* address,
       NSString* addressField2 =
           [[chunks subarrayWithRange:NSMakeRange(1, [chunks count] - 1)]
               componentsJoinedByString:separator];
-      profile->SetInfo(ADDRESS_HOME_LINE1,
-                       base::SysNSStringToUTF16(addressField1));
-      profile->SetInfo(ADDRESS_HOME_LINE2,
-                       base::SysNSStringToUTF16(addressField2));
+      profile->SetRawInfo(ADDRESS_HOME_LINE1,
+                          base::SysNSStringToUTF16(addressField1));
+      profile->SetRawInfo(ADDRESS_HOME_LINE2,
+                          base::SysNSStringToUTF16(addressField2));
     } else {
-      profile->SetInfo(ADDRESS_HOME_LINE1,
-                       base::SysNSStringToUTF16(addressField));
+      profile->SetRawInfo(ADDRESS_HOME_LINE1,
+                          base::SysNSStringToUTF16(addressField));
     }
   }
 
   if (NSString* city = [address objectForKey:kABAddressCityKey])
-    profile->SetInfo(ADDRESS_HOME_CITY, base::SysNSStringToUTF16(city));
+    profile->SetRawInfo(ADDRESS_HOME_CITY, base::SysNSStringToUTF16(city));
+
   if (NSString* state = [address objectForKey:kABAddressStateKey])
-    profile->SetInfo(ADDRESS_HOME_STATE, base::SysNSStringToUTF16(state));
+    profile->SetRawInfo(ADDRESS_HOME_STATE, base::SysNSStringToUTF16(state));
+
   if (NSString* zip = [address objectForKey:kABAddressZIPKey])
-    profile->SetInfo(ADDRESS_HOME_ZIP, base::SysNSStringToUTF16(zip));
-  if (NSString* country = [address objectForKey:kABAddressCountryKey])
-    profile->SetInfo(ADDRESS_HOME_COUNTRY, base::SysNSStringToUTF16(country));
+    profile->SetRawInfo(ADDRESS_HOME_ZIP, base::SysNSStringToUTF16(zip));
+
+  if (NSString* country = [address objectForKey:kABAddressCountryKey]) {
+    profile->SetRawInfo(ADDRESS_HOME_COUNTRY,
+                        base::SysNSStringToUTF16(country));
+  }
 }
 
 // Fills in email address matching current address label.  Note that there may
@@ -210,7 +215,7 @@ void AuxiliaryProfilesImpl::GetAddressBookEmail(
       break;
     }
   }
-  profile->SetInfo(EMAIL_ADDRESS, base::SysNSStringToUTF16(emailAddress));
+  profile->SetRawInfo(EMAIL_ADDRESS, base::SysNSStringToUTF16(emailAddress));
 }
 
 // Fills in telephone numbers.  Each of these are special cases.
@@ -230,17 +235,17 @@ void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
         [phoneLabelRaw isEqualToString:kABPhoneHomeLabel]) {
       string16 homePhone = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
-      profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, homePhone);
+      profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, homePhone);
     } else if ([addressLabelRaw isEqualToString:kABAddressWorkLabel] &&
                [phoneLabelRaw isEqualToString:kABPhoneWorkLabel]) {
       string16 workPhone = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
-      profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, workPhone);
+      profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, workPhone);
     } else if ([phoneLabelRaw isEqualToString:kABPhoneMobileLabel] ||
                [phoneLabelRaw isEqualToString:kABPhoneMainLabel]) {
       string16 phone = base::SysNSStringToUTF16(
           [phoneNumbers valueAtIndex:reverseK]);
-      profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, phone);
+      profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, phone);
     }
   }
 }

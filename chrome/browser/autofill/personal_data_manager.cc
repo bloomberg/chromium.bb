@@ -93,10 +93,10 @@ bool IsValidZip(const string16& value) {
 // filled.  No verification of validity of the contents is preformed.  This is
 // and existence check only.
 bool IsMinimumAddress(const AutofillProfile& profile) {
-  return !profile.GetInfo(ADDRESS_HOME_LINE1).empty() &&
-         !profile.GetInfo(ADDRESS_HOME_CITY).empty() &&
-         !profile.GetInfo(ADDRESS_HOME_STATE).empty() &&
-         !profile.GetInfo(ADDRESS_HOME_ZIP).empty();
+  return !profile.GetRawInfo(ADDRESS_HOME_LINE1).empty() &&
+         !profile.GetRawInfo(ADDRESS_HOME_CITY).empty() &&
+         !profile.GetRawInfo(ADDRESS_HOME_STATE).empty() &&
+         !profile.GetRawInfo(ADDRESS_HOME_ZIP).empty();
 }
 
 // Return true if the |field_type| and |value| are valid within the context
@@ -596,19 +596,19 @@ bool PersonalDataManager::IsValidLearnableProfile(
   if (!IsMinimumAddress(profile))
     return false;
 
-  string16 email = profile.GetInfo(EMAIL_ADDRESS);
+  string16 email = profile.GetRawInfo(EMAIL_ADDRESS);
   if (!email.empty() && !IsValidEmail(email))
     return false;
 
   // Reject profiles with invalid US state information.
-  string16 state = profile.GetInfo(ADDRESS_HOME_STATE);
+  string16 state = profile.GetRawInfo(ADDRESS_HOME_STATE);
   if (profile.CountryCode() == "US" &&
       !state.empty() && !autofill::IsValidState(state)) {
     return false;
   }
 
   // Reject profiles with invalid US zip information.
-  string16 zip = profile.GetInfo(ADDRESS_HOME_ZIP);
+  string16 zip = profile.GetRawInfo(ADDRESS_HOME_ZIP);
   if (profile.CountryCode() == "US" && !zip.empty() && !IsValidZip(zip))
     return false;
 

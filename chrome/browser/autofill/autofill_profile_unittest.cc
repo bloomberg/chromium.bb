@@ -490,7 +490,7 @@ TEST_F(AutofillProfileTest, CreateInferredLabelsSkipsEmptyFields) {
 
   // A field must have a non-empty value for each profile to be considered a
   // distinguishing field.
-  profiles[1]->SetInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("88 Nowhere Ave."));
+  profiles[1]->SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("88 Nowhere Ave."));
   AutofillProfile::CreateInferredLabels(&profiles.get(), NULL, UNKNOWN_TYPE, 1,
                                         &labels);
   ASSERT_EQ(3U, labels.size());
@@ -598,7 +598,7 @@ TEST_F(AutofillProfileTest, MultiValueNames) {
   p.SetMultiInfo(NAME_FULL, set_values);
 
   // Expect regular |GetInfo| returns the first element.
-  EXPECT_EQ(kJohnDoe, p.GetInfo(NAME_FULL));
+  EXPECT_EQ(kJohnDoe, p.GetRawInfo(NAME_FULL));
 
   // Ensure that we get out what we put in.
   std::vector<string16> get_values;
@@ -627,7 +627,7 @@ TEST_F(AutofillProfileTest, MultiValueNames) {
   EXPECT_EQ(string16(), get_values[0]);
 
   // Expect regular |GetInfo| returns empty value.
-  EXPECT_EQ(string16(), p.GetInfo(NAME_FULL));
+  EXPECT_EQ(string16(), p.GetRawInfo(NAME_FULL));
 }
 
 TEST_F(AutofillProfileTest, MultiValueEmails) {
@@ -640,7 +640,7 @@ TEST_F(AutofillProfileTest, MultiValueEmails) {
   p.SetMultiInfo(EMAIL_ADDRESS, set_values);
 
   // Expect regular |GetInfo| returns the first element.
-  EXPECT_EQ(kJohnDoe, p.GetInfo(EMAIL_ADDRESS));
+  EXPECT_EQ(kJohnDoe, p.GetRawInfo(EMAIL_ADDRESS));
 
   // Ensure that we get out what we put in.
   std::vector<string16> get_values;
@@ -669,7 +669,7 @@ TEST_F(AutofillProfileTest, MultiValueEmails) {
   EXPECT_EQ(string16(), get_values[0]);
 
   // Expect regular |GetInfo| returns empty value.
-  EXPECT_EQ(string16(), p.GetInfo(EMAIL_ADDRESS));
+  EXPECT_EQ(string16(), p.GetRawInfo(EMAIL_ADDRESS));
 }
 
 TEST_F(AutofillProfileTest, MultiValuePhone) {
@@ -682,7 +682,7 @@ TEST_F(AutofillProfileTest, MultiValuePhone) {
   p.SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
 
   // Expect regular |GetInfo| returns the first element.
-  EXPECT_EQ(kJohnDoe, p.GetInfo(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_EQ(kJohnDoe, p.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
 
   // Ensure that we get out what we put in.
   std::vector<string16> get_values;
@@ -711,5 +711,5 @@ TEST_F(AutofillProfileTest, MultiValuePhone) {
   EXPECT_EQ(string16(), get_values[0]);
 
   // Expect regular |GetInfo| returns empty value.
-  EXPECT_EQ(string16(), p.GetInfo(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_EQ(string16(), p.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
 }

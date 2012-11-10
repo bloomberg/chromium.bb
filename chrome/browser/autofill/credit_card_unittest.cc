@@ -126,20 +126,20 @@ TEST(CreditCardTest, IsValidCreditCardNumber) {
 TEST(CreditCardTest, IsComplete) {
   CreditCard card;
   EXPECT_FALSE(card.IsComplete());
-  card.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Wally T. Walrus"));
+  card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Wally T. Walrus"));
   EXPECT_FALSE(card.IsComplete());
-  card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
+  card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
   EXPECT_FALSE(card.IsComplete());
-  card.SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2014"));
+  card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2014"));
 
   for (size_t i = 0; i < arraysize(kValidNumbers); ++i) {
     SCOPED_TRACE(kValidNumbers[i]);
-    card.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16(kValidNumbers[i]));
+    card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16(kValidNumbers[i]));
     EXPECT_TRUE(card.IsComplete());
   }
   for (size_t i = 0; i < arraysize(kInvalidNumbers); ++i) {
     SCOPED_TRACE(kInvalidNumbers[i]);
-    card.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16(kInvalidNumbers[i]));
+    card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16(kInvalidNumbers[i]));
     EXPECT_FALSE(card.IsComplete());
   }
 }
@@ -159,42 +159,42 @@ TEST(CreditCardTest, SetInfoCreditCardNumber) {
   autofill_test::SetCreditCardInfo(&card, "Bob Dylan",
                                    "4321-5432-6543-xxxx", "07", "2013");
   EXPECT_EQ(ASCIIToUTF16("4321-5432-6543-xxxx"),
-            card.GetInfo(CREDIT_CARD_NUMBER));
+            card.GetRawInfo(CREDIT_CARD_NUMBER));
 }
 
 // Verify that we can handle both numeric and named months.
 TEST(CreditCardTest, SetInfoExpirationMonth) {
   CreditCard card;
 
-  card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("05"));
-  EXPECT_EQ(ASCIIToUTF16("05"), card.GetInfo(CREDIT_CARD_EXP_MONTH));
+  card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("05"));
+  EXPECT_EQ(ASCIIToUTF16("05"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
 
-  card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("7"));
-  EXPECT_EQ(ASCIIToUTF16("07"), card.GetInfo(CREDIT_CARD_EXP_MONTH));
+  card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("7"));
+  EXPECT_EQ(ASCIIToUTF16("07"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
 
-  card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("January"));
-  EXPECT_EQ(ASCIIToUTF16("01"), card.GetInfo(CREDIT_CARD_EXP_MONTH));
+  card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("January"));
+  EXPECT_EQ(ASCIIToUTF16("01"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
 
-  card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("Apr"));
-  EXPECT_EQ(ASCIIToUTF16("04"), card.GetInfo(CREDIT_CARD_EXP_MONTH));
+  card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("Apr"));
+  EXPECT_EQ(ASCIIToUTF16("04"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
 }
 
 TEST(CreditCardTest, CreditCardType) {
   CreditCard card;
 
   // The card type cannot be set directly.
-  card.SetInfo(CREDIT_CARD_TYPE, ASCIIToUTF16("Visa"));
-  EXPECT_EQ(string16(), card.GetInfo(CREDIT_CARD_TYPE));
+  card.SetRawInfo(CREDIT_CARD_TYPE, ASCIIToUTF16("Visa"));
+  EXPECT_EQ(string16(), card.GetRawInfo(CREDIT_CARD_TYPE));
 
   // Setting the number should implicitly set the type.
-  card.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111 1111 1111 1111"));
-  EXPECT_EQ(ASCIIToUTF16("Visa"), card.GetInfo(CREDIT_CARD_TYPE));
+  card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111 1111 1111 1111"));
+  EXPECT_EQ(ASCIIToUTF16("Visa"), card.GetRawInfo(CREDIT_CARD_TYPE));
 }
 
 TEST(CreditCardTest, CreditCardVerificationCode) {
   CreditCard card;
 
   // The verification code cannot be set, as Chrome does not store this data.
-  card.SetInfo(CREDIT_CARD_VERIFICATION_CODE, ASCIIToUTF16("999"));
-  EXPECT_EQ(string16(), card.GetInfo(CREDIT_CARD_VERIFICATION_CODE));
+  card.SetRawInfo(CREDIT_CARD_VERIFICATION_CODE, ASCIIToUTF16("999"));
+  EXPECT_EQ(string16(), card.GetRawInfo(CREDIT_CARD_VERIFICATION_CODE));
 }

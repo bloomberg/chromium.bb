@@ -44,18 +44,18 @@ void AutofillProfile31FromStatement(const sql::Statement& s,
   DCHECK(date_modified);
   *label = s.ColumnString16(0);
   *unique_id = s.ColumnInt(1);
-  profile->SetInfo(NAME_FIRST, s.ColumnString16(2));
-  profile->SetInfo(NAME_MIDDLE, s.ColumnString16(3));
-  profile->SetInfo(NAME_LAST, s.ColumnString16(4));
-  profile->SetInfo(EMAIL_ADDRESS, s.ColumnString16(5));
-  profile->SetInfo(COMPANY_NAME, s.ColumnString16(6));
-  profile->SetInfo(ADDRESS_HOME_LINE1, s.ColumnString16(7));
-  profile->SetInfo(ADDRESS_HOME_LINE2, s.ColumnString16(8));
-  profile->SetInfo(ADDRESS_HOME_CITY, s.ColumnString16(9));
-  profile->SetInfo(ADDRESS_HOME_STATE, s.ColumnString16(10));
-  profile->SetInfo(ADDRESS_HOME_ZIP, s.ColumnString16(11));
-  profile->SetInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(12));
-  profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, s.ColumnString16(13));
+  profile->SetRawInfo(NAME_FIRST, s.ColumnString16(2));
+  profile->SetRawInfo(NAME_MIDDLE, s.ColumnString16(3));
+  profile->SetRawInfo(NAME_LAST, s.ColumnString16(4));
+  profile->SetRawInfo(EMAIL_ADDRESS, s.ColumnString16(5));
+  profile->SetRawInfo(COMPANY_NAME, s.ColumnString16(6));
+  profile->SetRawInfo(ADDRESS_HOME_LINE1, s.ColumnString16(7));
+  profile->SetRawInfo(ADDRESS_HOME_LINE2, s.ColumnString16(8));
+  profile->SetRawInfo(ADDRESS_HOME_CITY, s.ColumnString16(9));
+  profile->SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(10));
+  profile->SetRawInfo(ADDRESS_HOME_ZIP, s.ColumnString16(11));
+  profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(12));
+  profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, s.ColumnString16(13));
   *date_modified = s.ColumnInt64(15);
   profile->set_guid(s.ColumnString(16));
   EXPECT_TRUE(base::IsValidGUID(profile->guid()));
@@ -68,13 +68,13 @@ void AutofillProfile33FromStatement(const sql::Statement& s,
   DCHECK(date_modified);
   profile->set_guid(s.ColumnString(0));
   EXPECT_TRUE(base::IsValidGUID(profile->guid()));
-  profile->SetInfo(COMPANY_NAME, s.ColumnString16(1));
-  profile->SetInfo(ADDRESS_HOME_LINE1, s.ColumnString16(2));
-  profile->SetInfo(ADDRESS_HOME_LINE2, s.ColumnString16(3));
-  profile->SetInfo(ADDRESS_HOME_CITY, s.ColumnString16(4));
-  profile->SetInfo(ADDRESS_HOME_STATE, s.ColumnString16(5));
-  profile->SetInfo(ADDRESS_HOME_ZIP, s.ColumnString16(6));
-  profile->SetInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(7));
+  profile->SetRawInfo(COMPANY_NAME, s.ColumnString16(1));
+  profile->SetRawInfo(ADDRESS_HOME_LINE1, s.ColumnString16(2));
+  profile->SetRawInfo(ADDRESS_HOME_LINE2, s.ColumnString16(3));
+  profile->SetRawInfo(ADDRESS_HOME_CITY, s.ColumnString16(4));
+  profile->SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(5));
+  profile->SetRawInfo(ADDRESS_HOME_ZIP, s.ColumnString16(6));
+  profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(7));
   *date_modified = s.ColumnInt64(8);
 }
 
@@ -91,10 +91,10 @@ void CreditCard31FromStatement(const sql::Statement& s,
   DCHECK(date_modified);
   *label = s.ColumnString16(0);
   *unique_id = s.ColumnInt(1);
-  credit_card->SetInfo(CREDIT_CARD_NAME, s.ColumnString16(2));
-  credit_card->SetInfo(CREDIT_CARD_TYPE, s.ColumnString16(3));
-  credit_card->SetInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(5));
-  credit_card->SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(6));
+  credit_card->SetRawInfo(CREDIT_CARD_NAME, s.ColumnString16(2));
+  credit_card->SetRawInfo(CREDIT_CARD_TYPE, s.ColumnString16(3));
+  credit_card->SetRawInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(5));
+  credit_card->SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(6));
   int encrypted_number_len = s.ColumnByteLength(10);
   if (encrypted_number_len) {
     encrypted_number->resize(encrypted_number_len);
@@ -114,9 +114,9 @@ void CreditCard32FromStatement(const sql::Statement& s,
   DCHECK(date_modified);
   credit_card->set_guid(s.ColumnString(0));
   EXPECT_TRUE(base::IsValidGUID(credit_card->guid()));
-  credit_card->SetInfo(CREDIT_CARD_NAME, s.ColumnString16(1));
-  credit_card->SetInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(2));
-  credit_card->SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(3));
+  credit_card->SetRawInfo(CREDIT_CARD_NAME, s.ColumnString16(1));
+  credit_card->SetRawInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(2));
+  credit_card->SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(3));
   int encrypted_number_len = s.ColumnByteLength(4);
   if (encrypted_number_len) {
     encrypted_number->resize(encrypted_number_len);
@@ -812,20 +812,20 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion31ToCurrent) {
     EXPECT_NO_FATAL_FAILURE(AutofillProfile33FromStatement(
         s1, &profile_a, &profile_date_modified_a));
     EXPECT_EQ(profile.guid(), profile_a.guid());
-    EXPECT_EQ(profile.GetInfo(COMPANY_NAME),
-              profile_a.GetInfo(COMPANY_NAME));
-    EXPECT_EQ(profile.GetInfo(ADDRESS_HOME_LINE1),
-              profile_a.GetInfo(ADDRESS_HOME_LINE1));
-    EXPECT_EQ(profile.GetInfo(ADDRESS_HOME_LINE2),
-              profile_a.GetInfo(ADDRESS_HOME_LINE2));
-    EXPECT_EQ(profile.GetInfo(ADDRESS_HOME_CITY),
-              profile_a.GetInfo(ADDRESS_HOME_CITY));
-    EXPECT_EQ(profile.GetInfo(ADDRESS_HOME_STATE),
-              profile_a.GetInfo(ADDRESS_HOME_STATE));
-    EXPECT_EQ(profile.GetInfo(ADDRESS_HOME_ZIP),
-              profile_a.GetInfo(ADDRESS_HOME_ZIP));
-    EXPECT_EQ(profile.GetInfo(ADDRESS_HOME_COUNTRY),
-              profile_a.GetInfo(ADDRESS_HOME_COUNTRY));
+    EXPECT_EQ(profile.GetRawInfo(COMPANY_NAME),
+              profile_a.GetRawInfo(COMPANY_NAME));
+    EXPECT_EQ(profile.GetRawInfo(ADDRESS_HOME_LINE1),
+              profile_a.GetRawInfo(ADDRESS_HOME_LINE1));
+    EXPECT_EQ(profile.GetRawInfo(ADDRESS_HOME_LINE2),
+              profile_a.GetRawInfo(ADDRESS_HOME_LINE2));
+    EXPECT_EQ(profile.GetRawInfo(ADDRESS_HOME_CITY),
+              profile_a.GetRawInfo(ADDRESS_HOME_CITY));
+    EXPECT_EQ(profile.GetRawInfo(ADDRESS_HOME_STATE),
+              profile_a.GetRawInfo(ADDRESS_HOME_STATE));
+    EXPECT_EQ(profile.GetRawInfo(ADDRESS_HOME_ZIP),
+              profile_a.GetRawInfo(ADDRESS_HOME_ZIP));
+    EXPECT_EQ(profile.GetRawInfo(ADDRESS_HOME_COUNTRY),
+              profile_a.GetRawInfo(ADDRESS_HOME_COUNTRY));
     EXPECT_EQ(profile_date_modified, profile_date_modified_a);
 
     sql::Statement s2(

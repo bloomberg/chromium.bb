@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, SameProfileWithConflict) {
 
   AutofillProfile profile0 = CreateAutofillProfile(PROFILE_HOMER);
   AutofillProfile profile1 = CreateAutofillProfile(PROFILE_HOMER);
-  profile1.SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("1234567890"));
+  profile1.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("1234567890"));
 
   AddProfile(0, profile0);
   AddProfile(1, profile1);
@@ -460,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, NoCreditCardSync) {
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
 
   CreditCard card;
-  card.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("6011111111111117"));
+  card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("6011111111111117"));
   std::vector<CreditCard> credit_cards;
   credit_cards.push_back(card);
   SetCreditCards(0, &credit_cards);

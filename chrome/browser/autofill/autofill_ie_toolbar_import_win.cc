@@ -150,8 +150,9 @@ bool ImportSingleProfile(FormGroup* profile,
 
       // We need to store phone data in |phone| before building the whole number
       // at the end. The rest of the fields are set "as is".
+      // TODO(isherman): Call SetCanonicalizedInfo(), rather than SetRawInfo().
       if (!phone.SetInfo(it->second, field_value))
-        profile->SetInfo(it->second, field_value);
+        profile->SetRawInfo(it->second, field_value);
     }
   }
   // Now re-construct the phones if needed.
@@ -255,7 +256,9 @@ bool ImportCurrentUserProfiles(std::vector<AutofillProfile>* profiles,
       RegKey key(HKEY_CURRENT_USER, key_name.c_str(), KEY_READ);
       CreditCard credit_card;
       if (ImportSingleProfile(&credit_card, &key, reg_to_field)) {
-        string16 cc_number = credit_card.GetInfo(CREDIT_CARD_NUMBER);
+        // TODO(isherman): Call into GetCanonicalizedInfo() below, rather than
+        // GetRawInfo().
+        string16 cc_number = credit_card.GetRawInfo(CREDIT_CARD_NUMBER);
         if (!cc_number.empty())
           credit_cards->push_back(credit_card);
       }
@@ -272,4 +275,3 @@ bool ImportAutofillDataWin(PersonalDataManager* pdm) {
   // importer will self delete.
   return importer->ImportProfiles();
 }
-

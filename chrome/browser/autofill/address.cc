@@ -56,7 +56,7 @@ void Address::GetSupportedTypes(FieldTypeSet* supported_types) const {
   supported_types->insert(ADDRESS_HOME_COUNTRY);
 }
 
-string16 Address::GetInfo(AutofillFieldType type) const {
+string16 Address::GetRawInfo(AutofillFieldType type) const {
   if (type == ADDRESS_HOME_LINE1)
     return line1_;
 
@@ -78,7 +78,7 @@ string16 Address::GetInfo(AutofillFieldType type) const {
   return string16();
 }
 
-void Address::SetInfo(AutofillFieldType type, const string16& value) {
+void Address::SetRawInfo(AutofillFieldType type, const string16& value) {
   type = AutofillType::GetEquivalentFieldType(type);
   if (type == ADDRESS_HOME_LINE1)
     line1_ = value;

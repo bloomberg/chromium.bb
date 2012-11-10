@@ -29,7 +29,7 @@ void CreateTestFormField(const char* label,
 inline void check_and_set(
     FormGroup* profile, AutofillFieldType type, const char* value) {
   if (value)
-    profile->SetInfo(type, UTF8ToUTF16(value));
+    profile->SetRawInfo(type, UTF8ToUTF16(value));
 }
 
 void SetProfileInfo(AutofillProfile* profile,

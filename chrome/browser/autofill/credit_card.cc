@@ -243,7 +243,7 @@ void CreditCard::GetSupportedTypes(FieldTypeSet* supported_types) const {
   supported_types->insert(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
 }
 
-string16 CreditCard::GetInfo(AutofillFieldType type) const {
+string16 CreditCard::GetRawInfo(AutofillFieldType type) const {
   switch (type) {
     case CREDIT_CARD_NAME:
       return name_on_card_;
@@ -289,7 +289,7 @@ string16 CreditCard::GetInfo(AutofillFieldType type) const {
   }
 }
 
-void CreditCard::SetInfo(AutofillFieldType type, const string16& value) {
+void CreditCard::SetRawInfo(AutofillFieldType type, const string16& value) {
   switch (type) {
     case CREDIT_CARD_NAME:
       name_on_card_ = value;
@@ -340,15 +340,15 @@ string16 CreditCard::GetCanonicalizedInfo(AutofillFieldType type) const {
   if (type == CREDIT_CARD_NUMBER)
     return StripSeparators(number_);
 
-  return GetInfo(type);
+  return GetRawInfo(type);
 }
 
 bool CreditCard::SetCanonicalizedInfo(AutofillFieldType type,
                                       const string16& value) {
   if (type == CREDIT_CARD_NUMBER)
-    SetInfo(type, StripSeparators(value));
+    SetRawInfo(type, StripSeparators(value));
   else
-    SetInfo(type, value);
+    SetRawInfo(type, value);
 
   return true;
 }
@@ -467,8 +467,8 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
                                       CREDIT_CARD_EXP_MONTH,
                                       CREDIT_CARD_EXP_4_DIGIT_YEAR };
   for (size_t index = 0; index < arraysize(types); ++index) {
-    int comparison = GetInfo(types[index]).compare(
-        credit_card.GetInfo(types[index]));
+    int comparison = GetRawInfo(types[index]).compare(
+        credit_card.GetRawInfo(types[index]));
     if (comparison != 0)
       return comparison;
   }
@@ -607,15 +607,15 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
       << " "
       << credit_card.guid()
       << " "
-      << UTF16ToUTF8(credit_card.GetInfo(CREDIT_CARD_NAME))
+      << UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_NAME))
       << " "
-      << UTF16ToUTF8(credit_card.GetInfo(CREDIT_CARD_TYPE))
+      << UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_TYPE))
       << " "
-      << UTF16ToUTF8(credit_card.GetInfo(CREDIT_CARD_NUMBER))
+      << UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_NUMBER))
       << " "
-      << UTF16ToUTF8(credit_card.GetInfo(CREDIT_CARD_EXP_MONTH))
+      << UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_EXP_MONTH))
       << " "
-      << UTF16ToUTF8(credit_card.GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+      << UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 }
 
 // These values must match the values in WebKitPlatformSupportImpl in

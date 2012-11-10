@@ -30,8 +30,9 @@ class PhoneNumber : public FormGroup {
   // FormGroup implementation:
   virtual void GetMatchingTypes(const string16& text,
                                 FieldTypeSet* matching_types) const OVERRIDE;
-  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
-  virtual void SetInfo(AutofillFieldType type, const string16& value) OVERRIDE;
+  virtual string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
+  virtual void SetRawInfo(AutofillFieldType type,
+                          const string16& value) OVERRIDE;
   virtual string16 GetCanonicalizedInfo(AutofillFieldType type) const OVERRIDE;
   virtual bool SetCanonicalizedInfo(AutofillFieldType type,
                                     const string16& value) OVERRIDE;

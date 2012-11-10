@@ -122,8 +122,10 @@ void CopyValuesToItems(AutofillFieldType type,
                        std::vector<T>* form_group_items,
                        const T& prototype) {
   form_group_items->resize(values.size(), prototype);
-  for (size_t i = 0; i < form_group_items->size(); ++i)
-    (*form_group_items)[i].SetInfo(type, CollapseWhitespace(values[i], false));
+  for (size_t i = 0; i < form_group_items->size(); ++i) {
+    (*form_group_items)[i].SetRawInfo(type,
+                                      CollapseWhitespace(values[i], false));
+  }
   // Must have at least one (possibly empty) element.
   if (form_group_items->empty())
     form_group_items->resize(1, prototype);
@@ -139,7 +141,7 @@ void CopyItemsToValues(AutofillFieldType type,
     if (canonicalize)
       (*values)[i] = form_group_items[i].GetCanonicalizedInfo(type);
     else
-      (*values)[i] = form_group_items[i].GetInfo(type);
+      (*values)[i] = form_group_items[i].GetRawInfo(type);
   }
 }
 
@@ -262,19 +264,20 @@ void AutofillProfile::GetMatchingTypes(const string16& text,
 }
 
 
-string16 AutofillProfile::GetInfo(AutofillFieldType type) const {
+string16 AutofillProfile::GetRawInfo(AutofillFieldType type) const {
   AutofillFieldType return_type = AutofillType::GetEquivalentFieldType(type);
   const FormGroup* form_group = FormGroupForType(return_type);
   if (!form_group)
     return string16();
 
-  return form_group->GetInfo(return_type);
+  return form_group->GetRawInfo(return_type);
 }
 
-void AutofillProfile::SetInfo(AutofillFieldType type, const string16& value) {
+void AutofillProfile::SetRawInfo(AutofillFieldType type,
+                                 const string16& value) {
   FormGroup* form_group = MutableFormGroupForType(type);
   if (form_group)
-    form_group->SetInfo(type, CollapseWhitespace(value, false));
+    form_group->SetRawInfo(type, CollapseWhitespace(value, false));
 }
 
 string16 AutofillProfile::GetCanonicalizedInfo(AutofillFieldType type) const {
@@ -314,12 +317,12 @@ void AutofillProfile::SetMultiInfo(AutofillFieldType type,
       break;
     default:
       if (values.size() == 1) {
-        SetInfo(type, values[0]);
+        SetRawInfo(type, values[0]);
       } else if (values.size() == 0) {
-        SetInfo(type, string16());
+        SetRawInfo(type, string16());
       } else {
-        NOTREACHED()
-            << "Attempt to set multiple values on single-valued field.";
+        // Shouldn't attempt to set multiple values on single-valued field.
+        NOTREACHED();
       }
       break;
   }
@@ -350,7 +353,7 @@ void AutofillProfile::GetMultiInfoImpl(AutofillFieldType type,
       break;
     default:
       values->resize(1);
-      (*values)[0] = GetInfo(type);
+      (*values)[0] = GetRawInfo(type);
   }
 }
 
@@ -453,8 +456,8 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
                                                    ADDRESS_HOME_COUNTRY };
 
   for (size_t i = 0; i < arraysize(single_value_types); ++i) {
-    int comparison = GetInfo(single_value_types[i]).compare(
-        profile.GetInfo(single_value_types[i]));
+    int comparison = GetRawInfo(single_value_types[i]).compare(
+        profile.GetRawInfo(single_value_types[i]));
     if (comparison != 0)
       return comparison;
   }
@@ -493,8 +496,8 @@ bool AutofillProfile::operator!=(const AutofillProfile& profile) const {
 }
 
 const string16 AutofillProfile::PrimaryValue() const {
-  return GetInfo(ADDRESS_HOME_LINE1) +
-         GetInfo(ADDRESS_HOME_CITY);
+  return GetRawInfo(ADDRESS_HOME_LINE1) +
+         GetRawInfo(ADDRESS_HOME_CITY);
 }
 
 bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile) const {
@@ -513,13 +516,13 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile) const {
       // Phone numbers should be canonicalized prior to being compared.
       if (*iter != PHONE_HOME_WHOLE_NUMBER) {
         continue;
-      } else if (!autofill_i18n::PhoneNumbersMatch(GetInfo(*iter),
-                                                   profile.GetInfo(*iter),
+      } else if (!autofill_i18n::PhoneNumbersMatch(GetRawInfo(*iter),
+                                                   profile.GetRawInfo(*iter),
                                                    CountryCode())) {
         return false;
       }
-    } else if (StringToLowerASCII(GetInfo(*iter)) !=
-                   StringToLowerASCII(profile.GetInfo(*iter))) {
+    } else if (StringToLowerASCII(GetRawInfo(*iter)) !=
+                   StringToLowerASCII(profile.GetRawInfo(*iter))) {
       return false;
     }
   }
@@ -564,9 +567,11 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile) {
       }
       SetMultiInfo(*iter, existing_values);
     } else {
-      string16 new_value = profile.GetInfo(*iter);
-      if (StringToLowerASCII(GetInfo(*iter)) != StringToLowerASCII(new_value))
-        SetInfo(*iter, new_value);
+      string16 new_value = profile.GetRawInfo(*iter);
+      if (StringToLowerASCII(GetRawInfo(*iter)) !=
+              StringToLowerASCII(new_value)) {
+        SetRawInfo(*iter, new_value);
+      }
     }
   }
 }
@@ -595,7 +600,7 @@ string16 AutofillProfile::ConstructInferredLabel(
            included_fields.begin();
        it != included_fields.end() && num_fields_used < num_fields_to_use;
        ++it) {
-    string16 field = GetInfo(*it);
+    string16 field = GetRawInfo(*it);
     if (field.empty())
       continue;
 
@@ -627,7 +632,7 @@ void AutofillProfile::CreateDifferentiatingLabels(
     for (std::list<size_t>::const_iterator it = indices.begin();
          it != indices.end(); ++it) {
       const AutofillProfile* profile = profiles[*it];
-      string16 field_text = profile->GetInfo(*field);
+      string16 field_text = profile->GetRawInfo(*field);
 
       // If this label is not already in the map, add it with frequency 0.
       if (!field_text_frequencies.count(field_text))
@@ -654,7 +659,7 @@ void AutofillProfile::CreateDifferentiatingLabels(
     for (std::vector<AutofillFieldType>::const_iterator field = fields.begin();
          field != fields.end(); ++field) {
       // Skip over empty fields.
-      string16 field_text = profile->GetInfo(*field);
+      string16 field_text = profile->GetRawInfo(*field);
       if (field_text.empty())
         continue;
 
@@ -739,19 +744,19 @@ std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
       << " "
       << UTF16ToUTF8(MultiString(profile, EMAIL_ADDRESS))
       << " "
-      << UTF16ToUTF8(profile.GetInfo(COMPANY_NAME))
+      << UTF16ToUTF8(profile.GetRawInfo(COMPANY_NAME))
       << " "
-      << UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_LINE1))
+      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE1))
       << " "
-      << UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_LINE2))
+      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE2))
       << " "
-      << UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_CITY))
+      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_CITY))
       << " "
-      << UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_STATE))
+      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_STATE))
       << " "
-      << UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_ZIP))
+      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_ZIP))
       << " "
-      << UTF16ToUTF8(profile.GetInfo(ADDRESS_HOME_COUNTRY))
+      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))
       << " "
       << UTF16ToUTF8(MultiString(profile, PHONE_HOME_WHOLE_NUMBER));
 }

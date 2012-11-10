@@ -22,8 +22,9 @@ class NameInfo : public FormGroup {
   NameInfo& operator=(const NameInfo& info);
 
   // FormGroup:
-  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
-  virtual void SetInfo(AutofillFieldType type, const string16& value) OVERRIDE;
+  virtual string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
+  virtual void SetRawInfo(AutofillFieldType type,
+                          const string16& value) OVERRIDE;
 
  private:
   // FormGroup:
@@ -59,8 +60,9 @@ class EmailInfo : public FormGroup {
   EmailInfo& operator=(const EmailInfo& info);
 
   // FormGroup:
-  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
-  virtual void SetInfo(AutofillFieldType type, const string16& value) OVERRIDE;
+  virtual string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
+  virtual void SetRawInfo(AutofillFieldType type,
+                          const string16& value) OVERRIDE;
 
  private:
   // FormGroup:
@@ -78,8 +80,9 @@ class CompanyInfo : public FormGroup {
   CompanyInfo& operator=(const CompanyInfo& info);
 
   // FormGroup:
-  virtual string16 GetInfo(AutofillFieldType type) const OVERRIDE;
-  virtual void SetInfo(AutofillFieldType type, const string16& value) OVERRIDE;
+  virtual string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
+  virtual void SetRawInfo(AutofillFieldType type,
+                          const string16& value) OVERRIDE;
 
  private:
   // FormGroup:

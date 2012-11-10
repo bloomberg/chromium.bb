@@ -2246,7 +2246,7 @@ TEST_F(AutofillManagerTest, FillAddressFormWithVariantType) {
   // Add a name variant to the Elvis profile.
   AutofillProfile* profile = autofill_manager_->GetProfileWithGUID(
       "00000000-0000-0000-0000-000000000001");
-  const string16 elvis_name = profile->GetInfo(NAME_FULL);
+  const string16 elvis_name = profile->GetRawInfo(NAME_FULL);
 
   std::vector<string16> name_variants;
   name_variants.push_back(ASCIIToUTF16("Some Other Guy"));
@@ -2334,7 +2334,8 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   AutofillProfile* work_profile = autofill_manager_->GetProfileWithGUID(
       "00000000-0000-0000-0000-000000000002");
   ASSERT_TRUE(work_profile != NULL);
-  work_profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("16505554567"));
+  work_profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
+                           ASCIIToUTF16("16505554567"));
 
   GUIDPair guid(work_profile->guid(), 0);
   GUIDPair empty(std::string(), 0);
@@ -2373,8 +2374,10 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
 
   // We should not be able to fill prefix and suffix fields for international
   // numbers.
-  work_profile->SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United Kingdom"));
-  work_profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("447700954321"));
+  work_profile->SetRawInfo(ADDRESS_HOME_COUNTRY,
+                           ASCIIToUTF16("United Kingdom"));
+  work_profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
+                           ASCIIToUTF16("447700954321"));
   page_id = 3;
   FillAutofillFormData(page_id, form_with_maxlength,
                        *form_with_maxlength.fields.begin(),
@@ -2411,7 +2414,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   std::vector<string16> phone_variants;
   phone_variants.push_back(ASCIIToUTF16("16505554567"));
   phone_variants.push_back(ASCIIToUTF16("18887771234"));
-  work_profile->SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"));
+  work_profile->SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"));
   work_profile->SetMultiInfo(PHONE_HOME_WHOLE_NUMBER, phone_variants);
 
   page_id = 5;

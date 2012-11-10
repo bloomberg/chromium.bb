@@ -375,11 +375,11 @@ class RemoveAutofillTester : public PersonalDataManagerObserver {
 
   void AddProfile() {
     AutofillProfile profile;
-    profile.SetInfo(NAME_FIRST, ASCIIToUTF16("Bob"));
-    profile.SetInfo(NAME_LAST, ASCIIToUTF16("Smith"));
-    profile.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("94043"));
-    profile.SetInfo(EMAIL_ADDRESS, ASCIIToUTF16("sue@example.com"));
-    profile.SetInfo(COMPANY_NAME, ASCIIToUTF16("Company X"));
+    profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Bob"));
+    profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
+    profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("94043"));
+    profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("sue@example.com"));
+    profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Company X"));
 
     std::vector<AutofillProfile> profiles;
     profiles.push_back(profile);
@@ -387,7 +387,7 @@ class RemoveAutofillTester : public PersonalDataManagerObserver {
     MessageLoop::current()->Run();
 
     CreditCard card;
-    card.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1234-5678-9012-3456"));
+    card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1234-5678-9012-3456"));
 
     std::vector<CreditCard> cards;
     cards.push_back(card);

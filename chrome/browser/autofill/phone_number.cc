@@ -59,7 +59,7 @@ void PhoneNumber::GetSupportedTypes(FieldTypeSet* supported_types) const {
   supported_types->insert(PHONE_HOME_COUNTRY_CODE);
 }
 
-string16 PhoneNumber::GetInfo(AutofillFieldType type) const {
+string16 PhoneNumber::GetRawInfo(AutofillFieldType type) const {
   if (type == PHONE_HOME_WHOLE_NUMBER)
     return number_;
 
@@ -85,7 +85,7 @@ string16 PhoneNumber::GetInfo(AutofillFieldType type) const {
   return string16();
 }
 
-void PhoneNumber::SetInfo(AutofillFieldType type, const string16& value) {
+void PhoneNumber::SetRawInfo(AutofillFieldType type, const string16& value) {
   if (type != PHONE_HOME_CITY_AND_NUMBER &&
       type != PHONE_HOME_WHOLE_NUMBER) {
     // Only full phone numbers should be set directly.  The remaining field
@@ -102,7 +102,7 @@ void PhoneNumber::SetInfo(AutofillFieldType type, const string16& value) {
 //   1-800-FLOWERS -> 18003569377
 // If the phone cannot be normalized, returns the stored value verbatim.
 string16 PhoneNumber::GetCanonicalizedInfo(AutofillFieldType type) const {
-  string16 phone = GetInfo(type);
+  string16 phone = GetRawInfo(type);
   if (type != PHONE_HOME_WHOLE_NUMBER)
     return phone;
 
@@ -118,7 +118,7 @@ bool PhoneNumber::SetCanonicalizedInfo(AutofillFieldType type,
                                        const string16& value) {
   string16 number = value;
   StripPunctuation(&number);
-  SetInfo(type, number);
+  SetRawInfo(type, number);
 
   return NormalizePhone();
 }

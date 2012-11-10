@@ -28,11 +28,15 @@ class FormGroup {
   // data.  This method is additive on |non_empty_types|.
   virtual void GetNonEmptyTypes(FieldTypeSet* non_empty_types) const;
 
-  // Returns the literal string associated with |type|.
-  virtual string16 GetInfo(AutofillFieldType type) const = 0;
+  // Returns the string associated with |type|, without canonicalizing the
+  // returned value.  For user-visible strings, use GetCanonicalizedInfo()
+  // instead.
+  virtual string16 GetRawInfo(AutofillFieldType type) const = 0;
 
-  // Used to populate this FormGroup object with data.
-  virtual void SetInfo(AutofillFieldType type, const string16& value) = 0;
+  // Sets this FormGroup object's data for |type| to |value|, without
+  // canonicalizing the |value|.  For data that has not already been
+  // canonicalized, use SetCanonicalizedInfo() instead.
+  virtual void SetRawInfo(AutofillFieldType type, const string16& value) = 0;
 
   // Returns the string that should be auto-filled into a text field given the
   // type of that field.

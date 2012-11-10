@@ -160,28 +160,30 @@ TEST_F(AutofillIeToolbarImportTest, TestAutofillImport) {
   EXPECT_TRUE(ImportCurrentUserProfiles(&profiles, &credit_cards));
   ASSERT_EQ(2U, profiles.size());
   // The profiles are read in reverse order.
-  EXPECT_EQ(profile1[0].value, profiles[1].GetInfo(NAME_FIRST));
-  EXPECT_EQ(profile1[1].value, profiles[1].GetInfo(NAME_MIDDLE));
-  EXPECT_EQ(profile1[2].value, profiles[1].GetInfo(NAME_LAST));
-  EXPECT_EQ(profile1[3].value, profiles[1].GetInfo(EMAIL_ADDRESS));
-  EXPECT_EQ(profile1[4].value, profiles[1].GetInfo(COMPANY_NAME));
-  EXPECT_EQ(profile1[7].value, profiles[1].GetInfo(PHONE_HOME_COUNTRY_CODE));
-  EXPECT_EQ(profile1[6].value, profiles[1].GetInfo(PHONE_HOME_CITY_CODE));
-  EXPECT_EQ(L"5555555", profiles[1].GetInfo(PHONE_HOME_NUMBER));
-  EXPECT_EQ(L"+1 650-555-5555", profiles[1].GetInfo(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_EQ(profile1[0].value, profiles[1].GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(profile1[1].value, profiles[1].GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(profile1[2].value, profiles[1].GetRawInfo(NAME_LAST));
+  EXPECT_EQ(profile1[3].value, profiles[1].GetRawInfo(EMAIL_ADDRESS));
+  EXPECT_EQ(profile1[4].value, profiles[1].GetRawInfo(COMPANY_NAME));
+  EXPECT_EQ(profile1[7].value, profiles[1].GetRawInfo(PHONE_HOME_COUNTRY_CODE));
+  EXPECT_EQ(profile1[6].value, profiles[1].GetRawInfo(PHONE_HOME_CITY_CODE));
+  EXPECT_EQ(L"5555555", profiles[1].GetRawInfo(PHONE_HOME_NUMBER));
+  EXPECT_EQ(L"+1 650-555-5555",
+            profiles[1].GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
 
-  EXPECT_EQ(profile2[0].value, profiles[0].GetInfo(NAME_FIRST));
-  EXPECT_EQ(profile2[1].value, profiles[0].GetInfo(NAME_LAST));
-  EXPECT_EQ(profile2[2].value, profiles[0].GetInfo(EMAIL_ADDRESS));
-  EXPECT_EQ(profile2[3].value, profiles[0].GetInfo(COMPANY_NAME));
+  EXPECT_EQ(profile2[0].value, profiles[0].GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(profile2[1].value, profiles[0].GetRawInfo(NAME_LAST));
+  EXPECT_EQ(profile2[2].value, profiles[0].GetRawInfo(EMAIL_ADDRESS));
+  EXPECT_EQ(profile2[3].value, profiles[0].GetRawInfo(COMPANY_NAME));
 
   ASSERT_EQ(1U, credit_cards.size());
-  EXPECT_EQ(credit_card[0].value, credit_cards[0].GetInfo(CREDIT_CARD_NAME));
-  EXPECT_EQ(L"4111111111111111", credit_cards[0].GetInfo(CREDIT_CARD_NUMBER));
+  EXPECT_EQ(credit_card[0].value, credit_cards[0].GetRawInfo(CREDIT_CARD_NAME));
+  EXPECT_EQ(L"4111111111111111",
+            credit_cards[0].GetRawInfo(CREDIT_CARD_NUMBER));
   EXPECT_EQ(credit_card[2].value,
-            credit_cards[0].GetInfo(CREDIT_CARD_EXP_MONTH));
+            credit_cards[0].GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(credit_card[3].value,
-            credit_cards[0].GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+            credit_cards[0].GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
   // Mock password encrypted cc.
   cc_key.Open(HKEY_CURRENT_USER, kCreditCardKey, KEY_ALL_ACCESS);

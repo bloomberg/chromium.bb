@@ -545,18 +545,18 @@ TEST_F(AutofillTableTest, AutofillProfile) {
 
   // Add a 'Home' profile.
   AutofillProfile home_profile;
-  home_profile.SetInfo(NAME_FIRST, ASCIIToUTF16("John"));
-  home_profile.SetInfo(NAME_MIDDLE, ASCIIToUTF16("Q."));
-  home_profile.SetInfo(NAME_LAST, ASCIIToUTF16("Smith"));
-  home_profile.SetInfo(EMAIL_ADDRESS, ASCIIToUTF16("js@smith.xyz"));
-  home_profile.SetInfo(COMPANY_NAME, ASCIIToUTF16("Google"));
-  home_profile.SetInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1234 Apple Way"));
-  home_profile.SetInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("unit 5"));
-  home_profile.SetInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("Los Angeles"));
-  home_profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
-  home_profile.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90025"));
-  home_profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
-  home_profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
+  home_profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
+  home_profile.SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("Q."));
+  home_profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
+  home_profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("js@smith.xyz"));
+  home_profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Google"));
+  home_profile.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1234 Apple Way"));
+  home_profile.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("unit 5"));
+  home_profile.SetRawInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("Los Angeles"));
+  home_profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
+  home_profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90025"));
+  home_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+  home_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
 
   Time pre_creation_time = Time::Now();
   EXPECT_TRUE(db.GetAutofillTable()->AddAutofillProfile(home_profile));
@@ -581,9 +581,9 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   // Add a 'Billing' profile.
   AutofillProfile billing_profile = home_profile;
   billing_profile.set_guid(base::GenerateGUID());
-  billing_profile.SetInfo(ADDRESS_HOME_LINE1,
-                          ASCIIToUTF16("5678 Bottom Street"));
-  billing_profile.SetInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("suite 3"));
+  billing_profile.SetRawInfo(ADDRESS_HOME_LINE1,
+                             ASCIIToUTF16("5678 Bottom Street"));
+  billing_profile.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("suite 3"));
 
   pre_creation_time = Time::Now();
   EXPECT_TRUE(db.GetAutofillTable()->AddAutofillProfile(billing_profile));
@@ -604,7 +604,7 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   delete db_profile;
 
   // Update the 'Billing' profile, name only.
-  billing_profile.SetInfo(NAME_FIRST, ASCIIToUTF16("Jane"));
+  billing_profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Jane"));
   Time pre_modification_time = Time::Now();
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(
       billing_profile));
@@ -625,18 +625,20 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   delete db_profile;
 
   // Update the 'Billing' profile.
-  billing_profile.SetInfo(NAME_FIRST, ASCIIToUTF16("Janice"));
-  billing_profile.SetInfo(NAME_MIDDLE, ASCIIToUTF16("C."));
-  billing_profile.SetInfo(NAME_FIRST, ASCIIToUTF16("Joplin"));
-  billing_profile.SetInfo(EMAIL_ADDRESS, ASCIIToUTF16("jane@singer.com"));
-  billing_profile.SetInfo(COMPANY_NAME, ASCIIToUTF16("Indy"));
-  billing_profile.SetInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("Open Road"));
-  billing_profile.SetInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Route 66"));
-  billing_profile.SetInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("NFA"));
-  billing_profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("NY"));
-  billing_profile.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("10011"));
-  billing_profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United States"));
-  billing_profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181230000"));
+  billing_profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Janice"));
+  billing_profile.SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("C."));
+  billing_profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Joplin"));
+  billing_profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("jane@singer.com"));
+  billing_profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Indy"));
+  billing_profile.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("Open Road"));
+  billing_profile.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Route 66"));
+  billing_profile.SetRawInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("NFA"));
+  billing_profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("NY"));
+  billing_profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("10011"));
+  billing_profile.SetRawInfo(ADDRESS_HOME_COUNTRY,
+                             ASCIIToUTF16("United States"));
+  billing_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
+                             ASCIIToUTF16("18181230000"));
   Time pre_modification_time_2 = Time::Now();
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(
       billing_profile));
@@ -700,7 +702,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueNames) {
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
   EXPECT_EQ(0, p.Compare(*db_profile));
-  EXPECT_EQ(string16(), db_profile->GetInfo(NAME_FULL));
+  EXPECT_EQ(string16(), db_profile->GetRawInfo(NAME_FULL));
   delete db_profile;
 }
 
@@ -777,7 +779,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueEmails) {
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
   EXPECT_EQ(0, p.Compare(*db_profile));
-  EXPECT_EQ(string16(), db_profile->GetInfo(EMAIL_ADDRESS));
+  EXPECT_EQ(string16(), db_profile->GetRawInfo(EMAIL_ADDRESS));
   delete db_profile;
 }
 
@@ -818,7 +820,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValuePhone) {
   ASSERT_TRUE(db.GetAutofillTable()->GetAutofillProfile(p.guid(), &db_profile));
   EXPECT_EQ(p, *db_profile);
   EXPECT_EQ(0, p.Compare(*db_profile));
-  EXPECT_EQ(string16(), db_profile->GetInfo(EMAIL_ADDRESS));
+  EXPECT_EQ(string16(), db_profile->GetRawInfo(EMAIL_ADDRESS));
   delete db_profile;
 }
 
@@ -855,15 +857,15 @@ TEST_F(AutofillTableTest, AutofillProfileTrashInteraction) {
   EXPECT_TRUE(guids.empty());
 
   AutofillProfile profile;
-  profile.SetInfo(NAME_FIRST, ASCIIToUTF16("John"));
-  profile.SetInfo(NAME_MIDDLE, ASCIIToUTF16("Q."));
-  profile.SetInfo(NAME_LAST, ASCIIToUTF16("Smith"));
-  profile.SetInfo(EMAIL_ADDRESS,ASCIIToUTF16("js@smith.xyz"));
-  profile.SetInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1 Main St"));
-  profile.SetInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("Los Angeles"));
-  profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
-  profile.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90025"));
-  profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+  profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
+  profile.SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("Q."));
+  profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
+  profile.SetRawInfo(EMAIL_ADDRESS,ASCIIToUTF16("js@smith.xyz"));
+  profile.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1 Main St"));
+  profile.SetRawInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("Los Angeles"));
+  profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
+  profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90025"));
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
 
   // Mark this profile as in the trash.  This stops |AddAutofillProfile| from
   // adding it.
@@ -888,13 +890,13 @@ TEST_F(AutofillTableTest, AutofillProfileTrashInteraction) {
   // from updating it.  In normal operation a profile should not be both in the
   // trash and in the profiles table simultaneously.
   EXPECT_TRUE(db.GetAutofillTable()->AddAutofillGUIDToTrash(profile.guid()));
-  profile.SetInfo(NAME_FIRST, ASCIIToUTF16("Jane"));
+  profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Jane"));
   EXPECT_TRUE(db.GetAutofillTable()->UpdateAutofillProfileMulti(profile));
   AutofillProfile* updated_profile = NULL;
   EXPECT_TRUE(db.GetAutofillTable()->GetAutofillProfile(
       profile.guid(), &updated_profile));
   ASSERT_NE(static_cast<AutofillProfile*>(NULL), added_profile);
-  EXPECT_EQ(ASCIIToUTF16("John"), updated_profile->GetInfo(NAME_FIRST));
+  EXPECT_EQ(ASCIIToUTF16("John"), updated_profile->GetRawInfo(NAME_FIRST));
   delete updated_profile;
 
   // Try to delete the trashed profile.  This stops |RemoveAutofillProfile| from
@@ -927,10 +929,12 @@ TEST_F(AutofillTableTest, CreditCard) {
 
   // Add a 'Work' credit card.
   CreditCard work_creditcard;
-  work_creditcard.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
-  work_creditcard.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1234567890123456"));
-  work_creditcard.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("04"));
-  work_creditcard.SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2013"));
+  work_creditcard.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
+  work_creditcard.SetRawInfo(CREDIT_CARD_NUMBER,
+                             ASCIIToUTF16("1234567890123456"));
+  work_creditcard.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("04"));
+  work_creditcard.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                             ASCIIToUTF16("2013"));
 
   Time pre_creation_time = Time::Now();
   EXPECT_TRUE(db.GetAutofillTable()->AddCreditCard(work_creditcard));
@@ -955,11 +959,12 @@ TEST_F(AutofillTableTest, CreditCard) {
 
   // Add a 'Target' credit card.
   CreditCard target_creditcard;
-  target_creditcard.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
-  target_creditcard.SetInfo(CREDIT_CARD_NUMBER,
-                            ASCIIToUTF16("1111222233334444"));
-  target_creditcard.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("06"));
-  target_creditcard.SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2012"));
+  target_creditcard.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
+  target_creditcard.SetRawInfo(CREDIT_CARD_NUMBER,
+                               ASCIIToUTF16("1111222233334444"));
+  target_creditcard.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("06"));
+  target_creditcard.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                               ASCIIToUTF16("2012"));
 
   pre_creation_time = Time::Now();
   EXPECT_TRUE(db.GetAutofillTable()->AddCreditCard(target_creditcard));
@@ -980,7 +985,7 @@ TEST_F(AutofillTableTest, CreditCard) {
   delete db_creditcard;
 
   // Update the 'Target' credit card.
-  target_creditcard.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Charles Grady"));
+  target_creditcard.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Charles Grady"));
   Time pre_modification_time = Time::Now();
   EXPECT_TRUE(db.GetAutofillTable()->UpdateCreditCard(target_creditcard));
   Time post_modification_time = Time::Now();
@@ -1012,18 +1017,18 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
 
   // Add a profile to the db.
   AutofillProfile profile;
-  profile.SetInfo(NAME_FIRST, ASCIIToUTF16("John"));
-  profile.SetInfo(NAME_MIDDLE, ASCIIToUTF16("Q."));
-  profile.SetInfo(NAME_LAST, ASCIIToUTF16("Smith"));
-  profile.SetInfo(EMAIL_ADDRESS, ASCIIToUTF16("js@example.com"));
-  profile.SetInfo(COMPANY_NAME, ASCIIToUTF16("Google"));
-  profile.SetInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1234 Apple Way"));
-  profile.SetInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("unit 5"));
-  profile.SetInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("Los Angeles"));
-  profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
-  profile.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90025"));
-  profile.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
-  profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
+  profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
+  profile.SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("Q."));
+  profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
+  profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("js@example.com"));
+  profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Google"));
+  profile.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1234 Apple Way"));
+  profile.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("unit 5"));
+  profile.SetRawInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("Los Angeles"));
+  profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
+  profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90025"));
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
   db.GetAutofillTable()->AddAutofillProfile(profile);
 
   // Set a mocked value for the profile's creation time.
@@ -1049,7 +1054,7 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
 
   // Now, update the profile and save the update to the database.
   // The modification date should change to reflect the update.
-  profile.SetInfo(EMAIL_ADDRESS, ASCIIToUTF16("js@smith.xyz"));
+  profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("js@smith.xyz"));
   db.GetAutofillTable()->UpdateAutofillProfileMulti(profile);
 
   // Get the profile.
@@ -1096,10 +1101,10 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
 
   // Add a credit card to the db.
   CreditCard credit_card;
-  credit_card.SetInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
-  credit_card.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1234567890123456"));
-  credit_card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("04"));
-  credit_card.SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2013"));
+  credit_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
+  credit_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1234567890123456"));
+  credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("04"));
+  credit_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2013"));
   db.GetAutofillTable()->AddCreditCard(credit_card);
 
   // Set a mocked value for the credit card's creation time.
@@ -1125,7 +1130,7 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
 
   // Now, update the credit card and save the update to the database.
   // The modification date should change to reflect the update.
-  credit_card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
+  credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
   db.GetAutofillTable()->UpdateCreditCard(credit_card);
 
   // Get the credit card.

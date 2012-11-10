@@ -50,7 +50,7 @@ void NameInfo::GetSupportedTypes(FieldTypeSet* supported_types) const {
   supported_types->insert(NAME_FULL);
 }
 
-string16 NameInfo::GetInfo(AutofillFieldType type) const {
+string16 NameInfo::GetRawInfo(AutofillFieldType type) const {
   if (type == NAME_FIRST)
     return first();
 
@@ -69,7 +69,7 @@ string16 NameInfo::GetInfo(AutofillFieldType type) const {
   return string16();
 }
 
-void NameInfo::SetInfo(AutofillFieldType type, const string16& value) {
+void NameInfo::SetRawInfo(AutofillFieldType type, const string16& value) {
   DCHECK_EQ(AutofillType::NAME, AutofillType(type).group());
   if (type == NAME_FIRST)
     first_ = value;
@@ -151,14 +151,14 @@ void EmailInfo::GetSupportedTypes(FieldTypeSet* supported_types) const {
   supported_types->insert(EMAIL_ADDRESS);
 }
 
-string16 EmailInfo::GetInfo(AutofillFieldType type) const {
+string16 EmailInfo::GetRawInfo(AutofillFieldType type) const {
   if (type == EMAIL_ADDRESS)
     return email_;
 
   return string16();
 }
 
-void EmailInfo::SetInfo(AutofillFieldType type, const string16& value) {
+void EmailInfo::SetRawInfo(AutofillFieldType type, const string16& value) {
   DCHECK_EQ(EMAIL_ADDRESS, type);
   email_ = value;
 }
@@ -183,14 +183,14 @@ void CompanyInfo::GetSupportedTypes(FieldTypeSet* supported_types) const {
   supported_types->insert(COMPANY_NAME);
 }
 
-string16 CompanyInfo::GetInfo(AutofillFieldType type) const {
+string16 CompanyInfo::GetRawInfo(AutofillFieldType type) const {
   if (type == COMPANY_NAME)
     return company_name_;
 
   return string16();
 }
 
-void CompanyInfo::SetInfo(AutofillFieldType type, const string16& value) {
+void CompanyInfo::SetRawInfo(AutofillFieldType type, const string16& value) {
   DCHECK_EQ(COMPANY_NAME, type);
   company_name_ = value;
 }

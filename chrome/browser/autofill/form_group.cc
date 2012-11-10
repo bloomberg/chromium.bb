@@ -22,7 +22,7 @@ void FormGroup::GetMatchingTypes(const string16& text,
     // TODO(isherman): Matches are case-sensitive for now.  Let's keep an eye on
     // this and decide whether there are compelling reasons to add case-
     // insensitivity.
-    if (GetInfo(*type) == text)
+    if (GetRawInfo(*type) == text)
       matching_types->insert(*type);
   }
 }
@@ -32,17 +32,17 @@ void FormGroup::GetNonEmptyTypes(FieldTypeSet* non_empty_types) const {
   GetSupportedTypes(&types);
   for (FieldTypeSet::const_iterator type = types.begin();
        type != types.end(); ++type) {
-    if (!GetInfo(*type).empty())
+    if (!GetRawInfo(*type).empty())
       non_empty_types->insert(*type);
   }
 }
 
 string16 FormGroup::GetCanonicalizedInfo(AutofillFieldType type) const {
-  return GetInfo(type);
+  return GetRawInfo(type);
 }
 
 bool FormGroup::SetCanonicalizedInfo(AutofillFieldType type,
                                      const string16& value) {
-  SetInfo(type, value);
+  SetRawInfo(type, value);
   return true;
 }
