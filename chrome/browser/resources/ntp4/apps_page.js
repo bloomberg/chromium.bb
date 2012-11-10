@@ -512,6 +512,11 @@ cr.define('ntp', function() {
      * @param {Event} e The mousedown event.
      */
     onMousedown_: function(e) {
+      // If the current platform uses middle click to autoscroll and this
+      // mousedown isn't handled, onClick_() will never fire. crbug.com/142939
+      if (e.button == 1)
+        e.preventDefault();
+
       if (e.button == 2 ||
           !findAncestorByClass(e.target, 'launch-click-target')) {
         this.appContents_.classList.add('suppress-active');
