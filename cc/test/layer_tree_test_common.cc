@@ -27,7 +27,14 @@
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
 
-using namespace cc;
+using cc::InputHandler;
+using cc::Layer;
+using cc::LayerTreeHostImplClient;
+using cc::LayerTreeSettings;
+using cc::Proxy;
+using cc::ScopedThreadProxy;
+using cc::Settings;
+
 using namespace WebKit;
 
 namespace WebKitTests {

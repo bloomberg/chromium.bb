@@ -4,7 +4,14 @@
 
 #include "cc/test/tiled_layer_test_common.h"
 
-using namespace cc;
+using cc::LayerTilingData;
+using cc::LayerUpdater;
+using cc::PriorityCalculator;
+using cc::PrioritizedResource;
+using cc::PrioritizedResourceManager;
+using cc::RenderingStats;
+using cc::ResourceUpdate;
+using cc::ResourceUpdateQueue;
 
 namespace WebKitTests {
 

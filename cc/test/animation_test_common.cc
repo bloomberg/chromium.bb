@@ -10,7 +10,14 @@
 #include "cc/layer_impl.h"
 #include <public/WebTransformOperations.h>
 
-using namespace cc;
+using cc::ActiveAnimation;
+using cc::AnimationCurve;
+using cc::EaseTimingFunction;
+using cc::FloatKeyframe;
+using cc::KeyframedFloatAnimationCurve;
+using cc::KeyframedTransformAnimationCurve;
+using cc::TimingFunction;
+using cc::TransformKeyframe;
 
 namespace {
 
