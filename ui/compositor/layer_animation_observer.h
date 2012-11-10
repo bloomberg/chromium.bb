@@ -82,6 +82,9 @@ class COMPOSITOR_EXPORT ImplicitAnimationObserver
   ImplicitAnimationObserver();
   virtual ~ImplicitAnimationObserver();
 
+  // Called when the first animation sequence has started.
+  virtual void OnImplicitAnimationsScheduled() {}
+
   // Do not "delete this" in your implementation.  Consider using something
   // like MessageLoop::current()->DeleteSoon() instead.
   virtual void OnImplicitAnimationsCompleted() = 0;
@@ -117,6 +120,9 @@ class COMPOSITOR_EXPORT ImplicitAnimationObserver
   // Set to true in the destructor (if non-NULL). Used to detect deletion while
   // calling out.
   bool* destroyed_;
+
+  // True if OnLayerAnimationScheduled() has been called at least once.
+  bool first_sequence_scheduled_;
 };
 
 }  // namespace ui

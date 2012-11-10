@@ -18,6 +18,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/base_layout_manager.h"
+#include "ash/wm/boot_splash_screen.h"
 #include "ash/wm/panel_layout_manager.h"
 #include "ash/wm/panel_window_event_filter.h"
 #include "ash/wm/property_util.h"
@@ -33,6 +34,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
+#include "base/time.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -52,6 +54,17 @@
 
 namespace ash {
 namespace {
+
+#if defined(OS_CHROMEOS)
+// Background color used for the Chrome OS boot splash screen.
+const SkColor kChromeOsBootColor = SkColorSetARGB(0xff, 0xfe, 0xfe, 0xfe);
+#endif
+
+// Duration for the animation that hides the boot splash screen, in
+// milliseconds.  This should be short enough in relation to
+// wm/window_animation.cc's brightness/grayscale fade animation that the login
+// background image animation isn't hidden by the splash screen animation.
+const int kBootSplashScreenHideDurationMs = 500;
 
 // Creates a new window for use as a container.
 aura::Window* CreateContainer(int window_id,
@@ -293,21 +306,24 @@ void RootWindowController::CreateContainers() {
 
 void RootWindowController::CreateSystemBackground(
     bool is_first_run_after_boot) {
-  SystemBackgroundController::Content initial_content =
-      SystemBackgroundController::CONTENT_BLACK;
+  SkColor color = SK_ColorBLACK;
 #if defined(OS_CHROMEOS)
-  if (is_first_run_after_boot) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kAshCopyHostBackgroundAtBoot)) {
-      initial_content = SystemBackgroundController::CONTENT_COPY_FROM_HOST;
-    } else {
-      initial_content =
-          SystemBackgroundController::CONTENT_CHROME_OS_BOOT_COLOR;
-    }
-  }
+  if (is_first_run_after_boot)
+    color = kChromeOsBootColor;
 #endif
   system_background_.reset(
-      new SystemBackgroundController(root_window_.get(), initial_content));
+      new SystemBackgroundController(root_window_.get(), color));
+
+#if defined(OS_CHROMEOS)
+  // Make a copy of the system's boot splash screen so we can composite it
+  // onscreen until the desktop background is ready.
+  if (is_first_run_after_boot &&
+      (CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kAshCopyHostBackgroundAtBoot) ||
+       CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kAshAnimateFromBootSplashScreen)))
+    boot_splash_screen_.reset(new BootSplashScreen(root_window_.get()));
+#endif
 }
 
 void RootWindowController::CreateLauncher() {
@@ -350,8 +366,20 @@ void RootWindowController::UpdateAfterLoginStatusChange(
     status_area_widget_->UpdateAfterLoginStatusChange(status);
 }
 
+void RootWindowController::HandleInitialDesktopBackgroundAnimationStarted() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshAnimateFromBootSplashScreen) &&
+      boot_splash_screen_.get()) {
+    // Make the splash screen fade out so it doesn't obscure the desktop
+    // wallpaper's brightness/grayscale animation.
+    boot_splash_screen_->StartHideAnimation(
+        base::TimeDelta::FromMilliseconds(kBootSplashScreenHideDurationMs));
+  }
+}
+
 void RootWindowController::HandleDesktopBackgroundVisible() {
-  system_background_->SetContent(SystemBackgroundController::CONTENT_BLACK);
+  system_background_->SetColor(SK_ColorBLACK);
+  boot_splash_screen_.reset();
 }
 
 void RootWindowController::CloseChildWindows() {

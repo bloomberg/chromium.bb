@@ -120,6 +120,10 @@ class DummyUserWallpaperDelegate : public UserWallpaperDelegate {
     return WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
   }
 
+  virtual bool ShouldShowInitialAnimation() OVERRIDE {
+    return false;
+  }
+
   virtual void UpdateWallpaper() OVERRIDE {
   }
 
@@ -747,6 +751,10 @@ void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
   internal::RootWindowController* controller =
       new internal::RootWindowController(root);
   controller->CreateContainers();
+  // Pass false for the |is_first_run_after_boot| parameter so we'll show a
+  // black background on this display instead of trying to mimic the boot splash
+  // screen.
+  controller->CreateSystemBackground(false);
   InitRootWindowController(controller);
   if (IsLauncherPerDisplayEnabled())
     controller->InitForPrimaryDisplay();

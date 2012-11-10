@@ -266,6 +266,8 @@
         'wm/always_on_top_controller.h',
         'wm/base_layout_manager.cc',
         'wm/base_layout_manager.h',
+        'wm/boot_splash_screen.cc',
+        'wm/boot_splash_screen.h',
         'wm/capture_controller.cc',
         'wm/capture_controller.h',
         'wm/coordinate_conversion.cc',

@@ -57,7 +57,8 @@ void LayerAnimationObserver::DetachedFromSequence(
 
 ImplicitAnimationObserver::ImplicitAnimationObserver()
     : active_(false),
-      destroyed_(NULL) {
+      destroyed_(NULL),
+      first_sequence_scheduled_(false) {
 }
 
 ImplicitAnimationObserver::~ImplicitAnimationObserver() {
@@ -96,6 +97,10 @@ void ImplicitAnimationObserver::OnLayerAnimationAborted(
 
 void ImplicitAnimationObserver::OnLayerAnimationScheduled(
     LayerAnimationSequence* sequence) {
+  if (!first_sequence_scheduled_) {
+    first_sequence_scheduled_ = true;
+    OnImplicitAnimationsScheduled();
+  }
 }
 
 void ImplicitAnimationObserver::OnAttachedToSequence(

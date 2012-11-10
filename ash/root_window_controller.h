@@ -33,6 +33,7 @@ class ToplevelWindowEventHandler;
 
 namespace internal {
 
+class BootSplashScreen;
 class PanelLayoutManager;
 class RootWindowLayoutManager;
 class ScreenDimmer;
@@ -99,8 +100,8 @@ class ASH_EXPORT RootWindowController {
   // creates
   void InitForPrimaryDisplay();
 
-  // Initializes |system_background_|.  |is_first_run_after_boot| determines the
-  // background's initial content.
+  // Initializes |system_background_| and possibly also |boot_splash_screen_|.
+  // |is_first_run_after_boot| determines the background's initial color.
   void CreateSystemBackground(bool is_first_run_after_boot);
 
   // Initializes |launcher_|.  Does nothing if it's already initialized.
@@ -116,7 +117,13 @@ class ASH_EXPORT RootWindowController {
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
   void UpdateAfterLoginStatusChange(user::LoginStatus status);
 
-  // Updates |background_| to be black after the desktop background is visible.
+  // Called when the brightness/grayscale animation from white to the login
+  // desktop background image has started.  Starts |boot_splash_screen_|'s
+  // hiding animation (if the screen is non-NULL).
+  void HandleInitialDesktopBackgroundAnimationStarted();
+
+  // Called when the login background is fully visible.  Updates |background_|
+  // to be black and drops |boot_splash_screen_|.
   void HandleDesktopBackgroundVisible();
 
   // Deletes associated objects and clears the state, but doesn't delete
@@ -168,6 +175,7 @@ class ASH_EXPORT RootWindowController {
   scoped_ptr<Launcher> launcher_;
 
   scoped_ptr<SystemBackgroundController> system_background_;
+  scoped_ptr<BootSplashScreen> boot_splash_screen_;
 
   scoped_ptr<ScreenDimmer> screen_dimmer_;
   scoped_ptr<WorkspaceController> workspace_controller_;

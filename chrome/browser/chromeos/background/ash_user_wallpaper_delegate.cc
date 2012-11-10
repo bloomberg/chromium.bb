@@ -47,8 +47,14 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
   }
 
   virtual ash::WindowVisibilityAnimationType GetAnimationType() OVERRIDE {
+    return ShouldShowInitialAnimation() ?
+        ash::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE :
+        ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
+  }
+
+  virtual bool ShouldShowInitialAnimation() OVERRIDE {
     if (IsNormalWallpaperChange() || boot_animation_finished_)
-      return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
+      return false;
 
     // It is a first boot case now. If kDisableBootAnimation flag
     // is passed, it only disables any transition after OOBE.
@@ -61,9 +67,9 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
         HasSwitch(switches::kDisableOobeAnimation);
     if ((!is_registered && disable_oobe_animation) ||
         (is_registered && disable_boot_animation))
-      return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
+      return false;
 
-    return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE;
+    return true;
   }
 
   virtual void UpdateWallpaper() OVERRIDE {

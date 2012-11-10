@@ -12,6 +12,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -33,9 +34,11 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
                                        public views::WidgetObserver {
  public:
   ShowWallpaperAnimationObserver(aura::RootWindow* root_window,
-                                 views::Widget* desktop_widget)
+                                 views::Widget* desktop_widget,
+                                 bool is_initial_animation)
       : root_window_(root_window),
-        desktop_widget_(desktop_widget) {
+        desktop_widget_(desktop_widget),
+        is_initial_animation_(is_initial_animation) {
     DCHECK(desktop_widget_);
     desktop_widget_->AddObserver(this);
   }
@@ -48,12 +51,18 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
 
  private:
   // Overridden from ui::ImplicitAnimationObserver:
+  virtual void OnImplicitAnimationsScheduled() OVERRIDE {
+    if (is_initial_animation_) {
+      GetRootWindowController(root_window_)->
+          HandleInitialDesktopBackgroundAnimationStarted();
+    }
+  }
+
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
     DCHECK(desktop_widget_);
-    ash::Shell* shell = ash::Shell::GetInstance();
-    // TODO(oshima): fix this for extended desktop.
-    shell->GetPrimaryRootWindowController()->HandleDesktopBackgroundVisible();
-    shell->user_wallpaper_delegate()->OnWallpaperAnimationFinished();
+    GetRootWindowController(root_window_)->HandleDesktopBackgroundVisible();
+    ash::Shell::GetInstance()->user_wallpaper_delegate()->
+        OnWallpaperAnimationFinished();
     // Only removes old component when wallpaper animation finished. If we
     // remove the old one before the new wallpaper is done fading in there will
     // be a white flash during the animation.
@@ -80,15 +89,18 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
   aura::RootWindow* root_window_;
   views::Widget* desktop_widget_;
 
+  // Is this object observing the initial brightness/grayscale animation?
+  const bool is_initial_animation_;
+
   DISALLOW_COPY_AND_ASSIGN(ShowWallpaperAnimationObserver);
 };
 
-}  // namespace
-
 // For our scaling ratios we need to round positive numbers.
-static int RoundPositive(double x) {
+int RoundPositive(double x) {
   return static_cast<int>(floor(x + 0.5));
 }
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopBackgroundView, public:
@@ -167,6 +179,9 @@ views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
                                        int container_id) {
   DesktopBackgroundController* controller =
       ash::Shell::GetInstance()->desktop_background_controller();
+  ash::UserWallpaperDelegate* wallpaper_delegate =
+    ash::Shell::GetInstance()->user_wallpaper_delegate();
+
   views::Widget* desktop_widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -176,14 +191,14 @@ views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
   desktop_widget->Init(params);
   desktop_widget->SetContentsView(new DesktopBackgroundView());
   ash::WindowVisibilityAnimationType animation_type =
-      ash::Shell::GetInstance()->user_wallpaper_delegate()->GetAnimationType();
+      wallpaper_delegate->GetAnimationType();
   ash::SetWindowVisibilityAnimationType(desktop_widget->GetNativeView(),
                                         animation_type);
   // Disable animation when creating the first widget. Otherwise, wallpaper
   // will animate from a white screen. Note that boot animation is different.
   // It animates from a white background.
   if (animation_type == ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE &&
-      NULL == root_window->GetProperty(kAnimatingDesktopController)) {
+      root_window->GetProperty(kAnimatingDesktopController) == NULL) {
     ash::SetWindowVisibilityAnimationTransition(desktop_widget->GetNativeView(),
                                                 ash::ANIMATE_NONE);
   } else {
@@ -194,8 +209,9 @@ views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
   ui::ScopedLayerAnimationSettings settings(
       desktop_widget->GetNativeView()->layer()->GetAnimator());
   settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
-  settings.AddObserver(new ShowWallpaperAnimationObserver(root_window,
-                                                          desktop_widget));
+  settings.AddObserver(new ShowWallpaperAnimationObserver(
+      root_window, desktop_widget,
+      wallpaper_delegate->ShouldShowInitialAnimation()));
   desktop_widget->Show();
   desktop_widget->GetNativeView()->SetName("DesktopBackgroundView");
   return desktop_widget;

@@ -40,8 +40,14 @@ class UserWallpaperDelegate {
  public:
   virtual ~UserWallpaperDelegate() {}
 
-  // Returns type of window animation that should be used when showin wallpaper.
+  // Returns the type of window animation that should be used when showing the
+  // wallpaper.
   virtual ash::WindowVisibilityAnimationType GetAnimationType() = 0;
+
+  // Should the slower initial animation be shown (as opposed to the faster
+  // animation that's used e.g. when switching from one user's wallpaper to
+  // another's on the login screen)?
+  virtual bool ShouldShowInitialAnimation() = 0;
 
   // Updates current wallpaper. It may switch the size of wallpaper based on the
   // current display's resolution.

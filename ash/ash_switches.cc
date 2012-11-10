@@ -7,6 +7,14 @@
 namespace ash {
 namespace switches {
 
+// Enables an animated transition from the boot splash screen (Chrome logo on a
+// white background) to the login screen.  Implies
+// |kAshCopyHostBackgroundAtBoot| and doesn't make much sense if used in
+// conjunction with |kDisableBootAnimation| (since the transition begins at the
+// same time as the white/grayscale login screen animation).
+const char kAshAnimateFromBootSplashScreen[] =
+    "ash-animate-from-boot-splash-screen";
+
 // Variation of boot animation that uses Tween::EASE_OUT_2.
 const char kAshBootAnimationFunction2[] = "ash-boot-animation-function2";
 
