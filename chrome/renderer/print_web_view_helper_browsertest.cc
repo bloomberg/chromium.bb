@@ -223,8 +223,8 @@ TEST_F(PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
   // Try again as if user initiated, without resetting the print count.
   chrome_render_thread_->printer()->ResetPrinter();
   LoadHTML(kPrintOnUserAction);
-  gfx::Size newSize(200,100);
-  Resize(newSize, gfx::Rect(), false);
+  gfx::Size new_size(200,100);
+  Resize(new_size, gfx::Rect(), false);
 
   gfx::Rect bounds = GetElementBounds("print");
   EXPECT_FALSE(bounds.IsEmpty());
