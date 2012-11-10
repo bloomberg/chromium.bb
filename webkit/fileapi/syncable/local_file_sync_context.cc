@@ -18,6 +18,7 @@
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/local_origin_change_observer.h"
+#include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/syncable_file_operation_runner.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
@@ -486,8 +487,9 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
   LocalFileSyncInfo sync_file_info;
   sync_file_info.url = url;
   sync_file_info.local_file_path = platform_path;
-  sync_file_info.file_type = file_type;
-  // TODO: fill file size.
+  sync_file_info.metadata.file_type = file_type;
+  sync_file_info.metadata.size = file_info.size;
+  sync_file_info.metadata.last_modified = file_info.last_modified;
   sync_file_info.changes = changes;
 
   ui_task_runner_->PostTask(FROM_HERE,

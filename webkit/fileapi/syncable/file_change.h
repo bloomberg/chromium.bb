@@ -71,17 +71,6 @@ class WEBKIT_STORAGE_EXPORT FileChangeList {
   List list_;
 };
 
-// Move this to sync_file_metadata.h.
-struct WEBKIT_STORAGE_EXPORT LocalFileSyncInfo {
-  LocalFileSyncInfo();
-  ~LocalFileSyncInfo();
-
-  FileSystemURL url;
-  FilePath local_file_path;
-  SyncFileType file_type;  // TODO: replace this with SyncFileMetadata.
-  FileChangeList changes;
-};
-
 }  // namespace fileapi
 
 #endif  // WEBKIT_FILEAPI_SYNCABLE_FILE_CHANGE_H_

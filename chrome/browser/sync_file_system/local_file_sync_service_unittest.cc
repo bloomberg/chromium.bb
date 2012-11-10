@@ -20,6 +20,7 @@
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/fileapi/syncable/local_file_sync_status.h"
+#include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
@@ -27,6 +28,7 @@ using fileapi::FileChange;
 using fileapi::FileChangeList;
 using fileapi::FileSystemURL;
 using fileapi::LocalFileSyncStatus;
+using fileapi::SyncFileMetadata;
 using fileapi::SyncFileType;
 using fileapi::SyncStatusCallback;
 using fileapi::SyncStatusCode;
@@ -46,13 +48,14 @@ const char kServiceName[] = "test";
 void DidPrepareForProcessRemoteChange(const tracked_objects::Location& where,
                                       const base::Closure& oncompleted,
                                       SyncStatusCode expected_status,
-                                      SyncFileType expected_file_type,
+                                      const SyncFileMetadata& expected_metadata,
                                       SyncStatusCode status,
-                                      SyncFileType file_type,
+                                      const SyncFileMetadata& metadata,
                                       const FileChangeList& changes) {
   SCOPED_TRACE(testing::Message() << where.ToString());
   ASSERT_EQ(expected_status, status);
-  ASSERT_EQ(expected_file_type, file_type);
+  ASSERT_EQ(expected_metadata.file_type, metadata.file_type);
+  ASSERT_EQ(expected_metadata.size, metadata.size);
   ASSERT_TRUE(changes.empty());
   oncompleted.Run();
 }
@@ -155,10 +158,11 @@ class LocalFileSyncServiceTest
     num_changes_ = num_changes;
   }
 
-  void PrepareForProcessRemoteChange(const FileSystemURL& url,
-                                     const tracked_objects::Location& where,
-                                     SyncStatusCode expected_status,
-                                     SyncFileType expected_file_type) {
+  void PrepareForProcessRemoteChange(
+      const FileSystemURL& url,
+      const tracked_objects::Location& where,
+      SyncStatusCode expected_status,
+      const SyncFileMetadata& expected_metadata) {
     base::RunLoop run_loop;
     local_service_->PrepareForProcessRemoteChange(
         url,
@@ -166,7 +170,7 @@ class LocalFileSyncServiceTest
                    where,
                    run_loop.QuitClosure(),
                    expected_status,
-                   expected_file_type));
+                   expected_metadata));
     run_loop.Run();
   }
 
@@ -211,9 +215,12 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
             file_util::WriteFile(local_path, kTestFileData, kTestFileDataSize));
 
   // Run PrepareForProcessRemoteChange for kFile.
+  SyncFileMetadata expected_metadata;
+  expected_metadata.file_type = fileapi::SYNC_FILE_TYPE_UNKNOWN;
+  expected_metadata.size = 0;
   PrepareForProcessRemoteChange(kFile, FROM_HERE,
                                 fileapi::SYNC_STATUS_OK,
-                                fileapi::SYNC_FILE_TYPE_UNKNOWN);
+                                expected_metadata);
 
   // Run ApplyRemoteChange for kFile.
   FileChange change(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
@@ -228,7 +235,7 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
   // Run PrepareForProcessRemoteChange for kDir.
   PrepareForProcessRemoteChange(kDir, FROM_HERE,
                                 fileapi::SYNC_STATUS_OK,
-                                fileapi::SYNC_FILE_TYPE_UNKNOWN);
+                                expected_metadata);
 
   // Run ApplyRemoteChange for kDir.
   change = FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,

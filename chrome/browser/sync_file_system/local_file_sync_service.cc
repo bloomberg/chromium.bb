@@ -13,6 +13,7 @@
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
+#include "webkit/fileapi/syncable/sync_file_metadata.h"
 
 using content::BrowserThread;
 using fileapi::FileChange;
@@ -34,7 +35,7 @@ void PrepareForProcessRemoteChangeCallbackAdapter(
     const RemoteChangeProcessor::PrepareChangeCallback& callback,
     SyncStatusCode status,
     const LocalFileSyncInfo& sync_file_info) {
-  callback.Run(status, sync_file_info.file_type, sync_file_info.changes);
+  callback.Run(status, sync_file_info.metadata, sync_file_info.changes);
 }
 
 }  // namespace

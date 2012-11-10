@@ -87,9 +87,4 @@ std::string FileChangeList::DebugString() const {
   return ss.str();
 }
 
-LocalFileSyncInfo::LocalFileSyncInfo()
-    : file_type(SYNC_FILE_TYPE_UNKNOWN) {}
-
-LocalFileSyncInfo::~LocalFileSyncInfo() {}
-
 }  // namespace fileapi

@@ -16,4 +16,7 @@ SyncFileMetadata::~SyncFileMetadata() {}
 ConflictFileInfo::ConflictFileInfo() {}
 ConflictFileInfo::~ConflictFileInfo() {}
 
+LocalFileSyncInfo::LocalFileSyncInfo() {}
+LocalFileSyncInfo::~LocalFileSyncInfo() {}
+
 }  // namespace fileapi

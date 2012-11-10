@@ -20,7 +20,6 @@
 #include "base/observer_list.h"
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/local_file_sync_status.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
@@ -35,6 +34,7 @@ namespace fileapi {
 class FileChange;
 class FileSystemContext;
 class LocalFileChangeTracker;
+struct LocalFileSyncInfo;
 class LocalOriginChangeObserver;
 class SyncableFileOperationRunner;
 
