@@ -74,7 +74,7 @@ inline Point operator-(const Point& lhs, const Vector2d& rhs) {
 }
 
 inline Vector2d operator-(const Point& lhs, const Point& rhs) {
-  return lhs.OffsetFrom(rhs);
+  return Vector2d(lhs.x() - rhs.x(), lhs.y() - rhs.y());
 }
 
 inline Point PointAtOffsetFromOrigin(const Vector2d& offset_from_origin) {

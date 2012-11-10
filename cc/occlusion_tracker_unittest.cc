@@ -905,22 +905,22 @@ protected:
 
         EXPECT_TRUE(occlusion.occludedLayer(child, clippedLayerInChild));
         EXPECT_TRUE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).IsEmpty());
-        clippedLayerInChild.Offset(-1, 0);
+        clippedLayerInChild += gfx::Vector2d(-1, 0);
         EXPECT_FALSE(occlusion.occludedLayer(child, clippedLayerInChild));
         EXPECT_FALSE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).IsEmpty());
-        clippedLayerInChild.Offset(1, 0);
-        clippedLayerInChild.Offset(1, 0);
+        clippedLayerInChild += gfx::Vector2d(1, 0);
+        clippedLayerInChild += gfx::Vector2d(1, 0);
         EXPECT_FALSE(occlusion.occludedLayer(child, clippedLayerInChild));
         EXPECT_FALSE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).IsEmpty());
-        clippedLayerInChild.Offset(-1, 0);
-        clippedLayerInChild.Offset(0, -1);
+        clippedLayerInChild += gfx::Vector2d(-1, 0);
+        clippedLayerInChild += gfx::Vector2d(0, -1);
         EXPECT_FALSE(occlusion.occludedLayer(child, clippedLayerInChild));
         EXPECT_FALSE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).IsEmpty());
-        clippedLayerInChild.Offset(0, 1);
-        clippedLayerInChild.Offset(0, 1);
+        clippedLayerInChild += gfx::Vector2d(0, 1);
+        clippedLayerInChild += gfx::Vector2d(0, 1);
         EXPECT_FALSE(occlusion.occludedLayer(child, clippedLayerInChild));
         EXPECT_FALSE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).IsEmpty());
-        clippedLayerInChild.Offset(0, -1);
+        clippedLayerInChild += gfx::Vector2d(0, -1);
 
         this->leaveContributingSurface(child, occlusion);
         this->enterLayer(parent, occlusion);

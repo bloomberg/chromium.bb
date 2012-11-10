@@ -168,7 +168,7 @@ void DrawTextOntoCairoSurface(cairo_t* cr,
   pango_layout_get_pixel_size(layout, &width, &height);
   Rect text_rect(bounds.x(), bounds.y(), width, height);
   // Vertically center |text_rect| in |bounds|.
-  text_rect.Offset(0, (bounds.height() - text_rect.height()) / 2);
+  text_rect += gfx::Vector2d(0, (bounds.height() - text_rect.height()) / 2);
 
   DrawPangoLayout(cr, layout, font, bounds, text_rect,
                   text_color, text_direction, flags);

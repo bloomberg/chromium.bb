@@ -90,6 +90,18 @@ std::string Rect::ToString() const {
                             size().ToString().c_str());
 }
 
+Rect operator+(const Rect& lhs, const Vector2d& rhs) {
+  Rect result(lhs);
+  result += rhs;
+  return result;
+}
+
+Rect operator-(const Rect& lhs, const Vector2d& rhs) {
+  Rect result(lhs);
+  result -= rhs;
+  return result;
+}
+
 Rect IntersectRects(const Rect& a, const Rect& b) {
   Rect result = a;
   result.Intersect(b);

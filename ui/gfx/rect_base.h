@@ -69,6 +69,8 @@ class UI_EXPORT RectBase {
   void Offset(const VectorClass& distance) {
     Offset(distance.x(), distance.y());
   }
+  void operator+=(const VectorClass& offset);
+  void operator-=(const VectorClass& offset);
 
   InsetsClass InsetsFrom(const Class& inner) const {
     return InsetsClass(inner.y() - y(),

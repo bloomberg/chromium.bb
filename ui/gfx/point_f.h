@@ -53,7 +53,7 @@ inline PointF operator-(const PointF& lhs, const Vector2dF& rhs) {
 }
 
 inline Vector2dF operator-(const PointF& lhs, const PointF& rhs) {
-  return lhs.OffsetFrom(rhs);
+  return Vector2dF(lhs.x() - rhs.x(), lhs.y() - rhs.y());
 }
 
 inline PointF PointAtOffsetFromOrigin(const Vector2dF& offset_from_origin) {

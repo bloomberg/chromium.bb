@@ -288,7 +288,7 @@ void Canvas::DrawStringWithShadows(const string16& text,
       if (i == 0) {
         // TODO(msw|asvitkine): Support multi-line text with varied heights.
         const int aggregate_height = strings.size() * line_height;
-        rect.Offset(0, (text_bounds.height() - aggregate_height) / 2);
+        rect += gfx::Vector2d(0, (text_bounds.height() - aggregate_height) / 2);
       }
 #endif
 
@@ -297,7 +297,7 @@ void Canvas::DrawStringWithShadows(const string16& text,
       ApplyUnderlineStyle(range, render_text.get());
       render_text->SetDisplayRect(rect);
       render_text->Draw(this);
-      rect.Offset(0, line_height);
+      rect += gfx::Vector2d(0, line_height);
     }
   } else {
     ui::Range range = StripAcceleratorChars(flags, &adjusted_text);
@@ -327,7 +327,7 @@ void Canvas::DrawStringWithShadows(const string16& text,
 
     const int line_height = render_text->GetStringSize().height();
     // Center the text vertically.
-    rect.Offset(0, (text_bounds.height() - line_height) / 2);
+    rect += gfx::Vector2d(0, (text_bounds.height() - line_height) / 2);
     rect.set_height(line_height);
     render_text->SetDisplayRect(rect);
 
@@ -446,7 +446,7 @@ void Canvas::DrawFadeTruncatingString(
 
   const int line_height = render_text->GetStringSize().height();
   // Center the text vertically.
-  rect.Offset(0, (display_rect.height() - line_height) / 2);
+  rect += gfx::Vector2d(0, (display_rect.height() - line_height) / 2);
   rect.set_height(line_height);
   render_text->SetDisplayRect(rect);
 

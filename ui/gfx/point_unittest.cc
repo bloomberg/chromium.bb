@@ -74,7 +74,6 @@ TEST(PointTest, VectorArithmetic) {
 TEST(PointTest, OffsetFromPoint) {
   Point a(1, 5);
   Point b(-20, 8);
-  EXPECT_EQ(Vector2d(-20 - 1, 8 - 5).ToString(), b.OffsetFrom(a).ToString());
   EXPECT_EQ(Vector2d(-20 - 1, 8 - 5).ToString(), (b - a).ToString());
 }
 

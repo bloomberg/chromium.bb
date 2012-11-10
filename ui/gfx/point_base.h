@@ -34,11 +34,13 @@ class UI_EXPORT PointBase {
   }
 
   void operator+=(const VectorClass& vector) {
-    Offset(vector.x(), vector.y());
+    x_ += vector.x();
+    y_ += vector.y();
   }
 
   void operator-=(const VectorClass& vector) {
-    Offset(-vector.x(), -vector.y());
+    x_ -= vector.x();
+    y_ -= vector.y();
   }
 
   bool IsOrigin() const {
@@ -47,10 +49,6 @@ class UI_EXPORT PointBase {
 
   VectorClass OffsetFromOrigin() const {
     return VectorClass(x_, y_);
-  }
-
-  VectorClass OffsetFrom(const Class& other) const {
-    return VectorClass(x_ - other.x_, y_ - other.y_);
   }
 
   // A point is less than another point if its y-value is closer

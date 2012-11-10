@@ -1002,7 +1002,7 @@ void RenderText::UpdateCachedBoundsAndOffset() {
 
   gfx::Vector2d delta_offset(delta_x, 0);
   display_offset_ += delta_offset;
-  cursor_bounds_.Offset(delta_offset);
+  cursor_bounds_ += delta_offset;
 }
 
 void RenderText::DrawSelection(Canvas* canvas) {

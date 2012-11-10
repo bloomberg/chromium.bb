@@ -100,21 +100,17 @@ bool PinchZoomViewport::setPageScaleFactorAndLimits(float pageScaleFactor, float
 
 gfx::RectF PinchZoomViewport::bounds() const
 {
-    gfx::SizeF scaledViewportSize = m_layoutViewportSize;
-    scaledViewportSize = scaledViewportSize.Scale(1 / totalPageScaleFactor());
-
-    gfx::RectF bounds(gfx::PointF(), scaledViewportSize);
-    bounds.Offset(m_pinchViewportScrollDelta);
-
+    gfx::RectF bounds(gfx::PointF(), m_layoutViewportSize);
+    bounds.Scale(1 / totalPageScaleFactor());
+    bounds += m_pinchViewportScrollDelta;
     return bounds;
 }
 
 gfx::Vector2dF PinchZoomViewport::applyScroll(const gfx::Vector2dF& delta)
 {
     gfx::Vector2dF overflow;
-    gfx::RectF pinchedBounds = bounds();
+    gfx::RectF pinchedBounds = bounds() + delta;
 
-    pinchedBounds.Offset(delta);
     if (pinchedBounds.x() < 0) {
         overflow.set_x(pinchedBounds.x());
         pinchedBounds.set_x(0);
@@ -127,12 +123,12 @@ gfx::Vector2dF PinchZoomViewport::applyScroll(const gfx::Vector2dF& delta)
 
     if (pinchedBounds.right() > m_layoutViewportSize.width()) {
         overflow.set_x(pinchedBounds.right() - m_layoutViewportSize.width());
-        pinchedBounds.Offset(m_layoutViewportSize.width() - pinchedBounds.right(), 0);
+        pinchedBounds += gfx::Vector2dF(m_layoutViewportSize.width() - pinchedBounds.right(), 0);
     }
 
     if (pinchedBounds.bottom() > m_layoutViewportSize.height()) {
         overflow.set_y(pinchedBounds.bottom() - m_layoutViewportSize.height());
-        pinchedBounds.Offset(0, m_layoutViewportSize.height() - pinchedBounds.bottom());
+        pinchedBounds += gfx::Vector2dF(0, m_layoutViewportSize.height() - pinchedBounds.bottom());
     }
     m_pinchViewportScrollDelta = pinchedBounds.OffsetFromOrigin();
 

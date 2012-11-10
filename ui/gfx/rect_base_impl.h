@@ -102,7 +102,7 @@ template<typename Class,
          typename Type>
 void RectBase<Class, PointClass, SizeClass, InsetsClass, VectorClass, Type>::
     Inset(Type left, Type top, Type right, Type bottom) {
-  Offset(left, top);
+  origin_ += VectorClass(left, top);
   set_width(std::max(width() - left - right, static_cast<Type>(0)));
   set_height(std::max(height() - top - bottom, static_cast<Type>(0)));
 }
@@ -115,7 +115,29 @@ template<typename Class,
          typename Type>
 void RectBase<Class, PointClass, SizeClass, InsetsClass, VectorClass, Type>::
     Offset(Type horizontal, Type vertical) {
-  origin_.Offset(horizontal, vertical);
+  origin_ += VectorClass(horizontal, vertical);
+}
+
+template<typename Class,
+         typename PointClass,
+         typename SizeClass,
+         typename InsetsClass,
+         typename VectorClass,
+         typename Type>
+void RectBase<Class, PointClass, SizeClass, InsetsClass, VectorClass, Type>::
+    operator+=(const VectorClass& offset) {
+  origin_ += offset;
+}
+
+template<typename Class,
+         typename PointClass,
+         typename SizeClass,
+         typename InsetsClass,
+         typename VectorClass,
+         typename Type>
+void RectBase<Class, PointClass, SizeClass, InsetsClass, VectorClass, Type>::
+    operator-=(const VectorClass& offset) {
+  origin_ -= offset;
 }
 
 template<typename Class,

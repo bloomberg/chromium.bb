@@ -671,33 +671,57 @@ TEST(RectTest, BoundingRect) {
 }
 
 TEST(RectTest, IsExpressibleAsRect) {
-  EXPECT_TRUE(gfx::RectF().IsExpressibleAsRect());
+  EXPECT_TRUE(RectF().IsExpressibleAsRect());
 
   float min = std::numeric_limits<int>::min();
   float max = std::numeric_limits<int>::max();
   float infinity = std::numeric_limits<float>::infinity();
 
-  EXPECT_TRUE(gfx::RectF(
+  EXPECT_TRUE(RectF(
       min + 200, min + 200, max - 200, max - 200).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(
+  EXPECT_FALSE(RectF(
       min - 200, min + 200, max + 200, max + 200).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(
+  EXPECT_FALSE(RectF(
       min + 200 , min - 200, max + 200, max + 200).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(
+  EXPECT_FALSE(RectF(
       min + 200, min + 200, max + 200, max - 200).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(
+  EXPECT_FALSE(RectF(
       min + 200, min + 200, max - 200, max + 200).IsExpressibleAsRect());
 
-  EXPECT_TRUE(gfx::RectF(0, 0, max - 200, max - 200).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(200, 0, max + 200, max - 200).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(0, 200, max - 200, max + 200).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(0, 0, max + 200, max - 200).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(0, 0, max - 200, max + 200).IsExpressibleAsRect());
+  EXPECT_TRUE(RectF(0, 0, max - 200, max - 200).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(200, 0, max + 200, max - 200).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(0, 200, max - 200, max + 200).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(0, 0, max + 200, max - 200).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(0, 0, max - 200, max + 200).IsExpressibleAsRect());
 
-  EXPECT_FALSE(gfx::RectF(infinity, 0, 1, 1).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(0, infinity, 1, 1).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(0, 0, infinity, 1).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(0, 0, 1, infinity).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(infinity, 0, 1, 1).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(0, infinity, 1, 1).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(0, 0, infinity, 1).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(0, 0, 1, infinity).IsExpressibleAsRect());
+}
+
+TEST(RectTest, Offset) {
+  Rect i(1, 2, 3, 4);
+
+  EXPECT_EQ(Rect(2, 1, 3, 4).ToString(), (i + Vector2d(1, -1)).ToString());
+  EXPECT_EQ(Rect(2, 1, 3, 4).ToString(), (Vector2d(1, -1) + i).ToString());
+  i += Vector2d(1, -1);
+  EXPECT_EQ(Rect(2, 1, 3, 4).ToString(), i.ToString());
+  EXPECT_EQ(Rect(1, 2, 3, 4).ToString(), (i - Vector2d(1, -1)).ToString());
+  i -= Vector2d(1, -1);
+  EXPECT_EQ(Rect(1, 2, 3, 4).ToString(), i.ToString());
+
+  RectF f(1.1f, 2.2f, 3.3f, 4.4f);
+  EXPECT_EQ(RectF(2.2f, 1.1f, 3.3f, 4.4f).ToString(),
+            (f + Vector2dF(1.1f, -1.1f)).ToString());
+  EXPECT_EQ(RectF(2.2f, 1.1f, 3.3f, 4.4f).ToString(),
+            (Vector2dF(1.1f, -1.1f) + f).ToString());
+  f += Vector2dF(1.1f, -1.1f);
+  EXPECT_EQ(RectF(2.2f, 1.1f, 3.3f, 4.4f).ToString(), f.ToString());
+  EXPECT_EQ(RectF(1.1f, 2.2f, 3.3f, 4.4f).ToString(),
+            (f - Vector2dF(1.1f, -1.1f)).ToString());
+  f -= Vector2dF(1.1f, -1.1f);
+  EXPECT_EQ(RectF(1.1f, 2.2f, 3.3f, 4.4f).ToString(), f.ToString());
 }
 
 }  // namespace gfx

@@ -129,7 +129,7 @@ void BlitCanvasToCanvas(SkCanvas *dst_canvas,
 
 void ScrollCanvas(SkCanvas* canvas,
                   const gfx::Rect& in_clip,
-                  const gfx::Vector2d& amount) {
+                  const gfx::Vector2d& offset) {
   DCHECK(!HasClipOrTransform(*canvas));  // Don't support special stuff.
 #if defined(OS_WIN)
   // If we have a PlatformCanvas, we should use ScrollDC. Otherwise, fall
@@ -140,7 +140,7 @@ void ScrollCanvas(SkCanvas* canvas,
 
     RECT damaged_rect;
     RECT r = in_clip.ToRECT();
-    ScrollDC(hdc, amount.x(), amount.y(), NULL, &r, NULL, &damaged_rect);
+    ScrollDC(hdc, offset.x(), offset.y(), NULL, &r, NULL, &damaged_rect);
     return;
   }
 #endif  // defined(OS_WIN)
@@ -157,32 +157,29 @@ void ScrollCanvas(SkCanvas* canvas,
       in_clip, gfx::Rect(0, 0, bitmap.width(), bitmap.height()));
 
   // Compute the set of pixels we'll actually end up painting.
-  gfx::Rect dest_rect = clip;
-  dest_rect.Offset(amount);
-  dest_rect.Intersect(clip);
-  if (dest_rect.size() == gfx::Size())
+  gfx::Rect dest_rect = gfx::IntersectRects(clip + offset, clip);
+  if (dest_rect.size().IsEmpty())
     return;  // Nothing to do.
 
   // Compute the source pixels that will map to the dest_rect
-  gfx::Rect src_rect = dest_rect;
-  src_rect.Offset(-amount.x(), -amount.y());
+  gfx::Rect src_rect = dest_rect - offset;
 
   size_t row_bytes = dest_rect.width() * 4;
-  if (amount.y() > 0) {
+  if (offset.y() > 0) {
     // Data is moving down, copy from the bottom up.
     for (int y = dest_rect.height() - 1; y >= 0; y--) {
       memcpy(bitmap.getAddr32(dest_rect.x(), dest_rect.y() + y),
              bitmap.getAddr32(src_rect.x(), src_rect.y() + y),
              row_bytes);
     }
-  } else if (amount.y() < 0) {
+  } else if (offset.y() < 0) {
     // Data is moving up, copy from the top down.
     for (int y = 0; y < dest_rect.height(); y++) {
       memcpy(bitmap.getAddr32(dest_rect.x(), dest_rect.y() + y),
              bitmap.getAddr32(src_rect.x(), src_rect.y() + y),
              row_bytes);
     }
-  } else if (amount.x() != 0) {
+  } else if (offset.x() != 0) {
     // Horizontal-only scroll. We can do it in either top-to-bottom or bottom-
     // to-top, but have to be careful about the order for copying each row.
     // Fortunately, memmove already handles this for us.

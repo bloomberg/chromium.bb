@@ -110,11 +110,8 @@ gfx::Rect MathUtil::mapClippedRect(const WebTransformationMatrix& transform, con
 
 gfx::RectF MathUtil::mapClippedRect(const WebTransformationMatrix& transform, const gfx::RectF& srcRect)
 {
-    if (transform.isIdentityOrTranslation()) {
-        gfx::RectF mappedRect(srcRect);
-        mappedRect.Offset(static_cast<float>(transform.m41()), static_cast<float>(transform.m42()));
-        return mappedRect;
-    }
+    if (transform.isIdentityOrTranslation())
+        return srcRect + gfx::Vector2dF(static_cast<float>(transform.m41()), static_cast<float>(transform.m42()));
 
     // Apply the transform, but retain the result in homogeneous coordinates.
     gfx::QuadF q = gfx::QuadF(srcRect);
@@ -128,11 +125,8 @@ gfx::RectF MathUtil::mapClippedRect(const WebTransformationMatrix& transform, co
 
 gfx::RectF MathUtil::projectClippedRect(const WebTransformationMatrix& transform, const gfx::RectF& srcRect)
 {
-    if (transform.isIdentityOrTranslation()) {
-        gfx::RectF projectedRect(srcRect);
-        projectedRect.Offset(static_cast<float>(transform.m41()), static_cast<float>(transform.m42()));
-        return projectedRect;
-    }
+    if (transform.isIdentityOrTranslation())
+        return srcRect + gfx::Vector2dF(static_cast<float>(transform.m41()), static_cast<float>(transform.m42()));
 
     // Perform the projection, but retain the result in homogeneous coordinates.
     gfx::QuadF q = gfx::QuadF(srcRect);

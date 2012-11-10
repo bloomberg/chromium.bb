@@ -40,12 +40,12 @@ UI_EXPORT void BlitCanvasToCanvas(SkCanvas *dst_canvas,
                                   SkCanvas *src_canvas,
                                   const Point& src_origin);
 
-// Scrolls the given subset of the given canvas by the given amount.
+// Scrolls the given subset of the given canvas by the given offset.
 // The canvas should not have a clip or a transform applied, since platforms
 // may implement those operations differently.
 UI_EXPORT void ScrollCanvas(SkCanvas* canvas,
                             const Rect& clip,
-                            const Vector2d& amount);
+                            const Vector2d& offset);
 
 }  // namespace gfx
 

@@ -3500,8 +3500,7 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
     gfx::RectF childDrawRect = MathUtil::mapClippedRect(child->drawTransform(), childContentBounds);
     gfx::RectF childScreenSpaceRect = MathUtil::mapClippedRect(child->screenSpaceTransform(), childContentBounds);
 
-    gfx::RectF expectedChildDrawRect(gfx::PointF(), child->bounds());
-    expectedChildDrawRect.Offset(child->position().x(), child->position().y());
+    gfx::RectF expectedChildDrawRect(child->position(), child->bounds());
     expectedChildDrawRect.Scale(deviceScaleFactor);
     EXPECT_FLOAT_RECT_EQ(expectedChildDrawRect, childDrawRect);
     EXPECT_FLOAT_RECT_EQ(expectedChildDrawRect, childScreenSpaceRect);

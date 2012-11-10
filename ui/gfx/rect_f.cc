@@ -52,6 +52,18 @@ std::string RectF::ToString() const {
                             size().ToString().c_str());
 }
 
+RectF operator+(const RectF& lhs, const Vector2dF& rhs) {
+  RectF result(lhs);
+  result += rhs;
+  return result;
+}
+
+RectF operator-(const RectF& lhs, const Vector2dF& rhs) {
+  RectF result(lhs);
+  result -= rhs;
+  return result;
+}
+
 RectF IntersectRects(const RectF& a, const RectF& b) {
   RectF result = a;
   result.Intersect(b);
