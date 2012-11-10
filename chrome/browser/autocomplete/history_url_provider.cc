@@ -248,7 +248,11 @@ HistoryURLProvider::HistoryURLProvider(AutocompleteProviderListener* listener,
       create_shorter_match_(
           !AutocompleteFieldTrial::InHUPCreateShorterMatchFieldTrial() ||
           !AutocompleteFieldTrial::
-              InHUPCreateShorterMatchFieldTrialExperimentGroup()) {
+              InHUPCreateShorterMatchFieldTrialExperimentGroup()),
+      search_url_database_(
+          !AutocompleteFieldTrial::InHQPReplaceHUPScoringFieldTrial() ||
+          !AutocompleteFieldTrial::
+              InHQPReplaceHUPScoringFieldTrialExperimentGroup()) {
 }
 
 // static
@@ -377,27 +381,33 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   history::URLRows url_matches;
   history::HistoryMatches history_matches;
 
-  const URLPrefixes& prefixes = URLPrefix::GetURLPrefixes();
-  for (URLPrefixes::const_iterator i(prefixes.begin()); i != prefixes.end();
-       ++i) {
-    if (params->cancel_flag.IsSet())
-      return;  // Canceled in the middle of a query, give up.
-    // We only need kMaxMatches results in the end, but before we get there we
-    // need to promote lower-quality matches that are prefixes of
-    // higher-quality matches, and remove lower-quality redirects.  So we ask
-    // for more results than we need, of every prefix type, in hopes this will
-    // give us far more than enough to work with.  CullRedirects() will then
-    // reduce the list to the best kMaxMatches results.
-    db->AutocompleteForPrefix(UTF16ToUTF8(i->prefix + params->input.text()),
-                              kMaxMatches * 2, (backend == NULL), &url_matches);
-    for (history::URLRows::const_iterator j(url_matches.begin());
-         j != url_matches.end(); ++j) {
-      const URLPrefix* best_prefix =
-          URLPrefix::BestURLPrefix(UTF8ToUTF16(j->url().spec()), string16());
-      DCHECK(best_prefix != NULL);
-      history_matches.push_back(history::HistoryMatch(*j, i->prefix.length(),
-          i->num_components == 0,
-          i->num_components >= best_prefix->num_components));
+  if (search_url_database_) {
+    const URLPrefixes& prefixes = URLPrefix::GetURLPrefixes();
+    for (URLPrefixes::const_iterator i(prefixes.begin()); i != prefixes.end();
+         ++i) {
+      if (params->cancel_flag.IsSet())
+        return;  // Canceled in the middle of a query, give up.
+      // We only need kMaxMatches results in the end, but before we
+      // get there we need to promote lower-quality matches that are
+      // prefixes of higher-quality matches, and remove lower-quality
+      // redirects.  So we ask for more results than we need, of every
+      // prefix type, in hopes this will give us far more than enough
+      // to work with.  CullRedirects() will then reduce the list to
+      // the best kMaxMatches results.
+      db->AutocompleteForPrefix(
+          UTF16ToUTF8(i->prefix + params->input.text()),
+          kMaxMatches * 2,
+          (backend == NULL),
+          &url_matches);
+      for (history::URLRows::const_iterator j(url_matches.begin());
+           j != url_matches.end(); ++j) {
+        const URLPrefix* best_prefix =
+            URLPrefix::BestURLPrefix(UTF8ToUTF16(j->url().spec()), string16());
+        DCHECK(best_prefix != NULL);
+        history_matches.push_back(history::HistoryMatch(*j, i->prefix.length(),
+            i->num_components == 0,
+            i->num_components >= best_prefix->num_components));
+      }
     }
   }
 
@@ -435,6 +445,9 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   // This is the end of the synchronous pass.
   if (!backend)
     return;
+  // If search_url_database_ is false, we shouldn't have scheduled a second
+  // pass.
+  DCHECK(search_url_database_);
 
   // Determine relevancy of highest scoring match, if any.
   int relevance = -1;
@@ -595,7 +608,8 @@ void HistoryURLProvider::RunAutocompletePasses(
 
   // Pass 2: Ask the history service to call us back on the history thread,
   // where we can read the full on-disk DB.
-  if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
+  if (search_url_database_ &&
+      (input.matches_requested() == AutocompleteInput::ALL_MATCHES)) {
     done_ = false;
     params_ = params.release();  // This object will be destroyed in
                                  // QueryComplete() once we're done with it.

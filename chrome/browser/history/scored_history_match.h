@@ -61,8 +61,9 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // lower than 10 scored 0.
   static int ScoreForValue(int value, const int* value_ranks);
 
-  // Compares two matches by score. Functor supporting URLIndexPrivateData's
-  // HistoryItemsForTerms function.
+  // Compares two matches by score.  Functor supporting URLIndexPrivateData's
+  // HistoryItemsForTerms function.  Looks at particular fields within
+  // with url_info to make tie-breaking a bit smarter.
   static bool MatchScoreGreater(const ScoredHistoryMatch& m1,
                                 const ScoredHistoryMatch& m2);
 
@@ -101,6 +102,9 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // field trial state.
   static void InitializeNewScoringField();
 
+  // Sets also_do_hup_like_scoring based on the field trial state.
+  static void InitializeAlsoDoHUPLikeScoringField();
+
   // End of functions used only in "new" scoring --------------------------
 
   // An interim score taking into consideration location and completeness
@@ -133,9 +137,19 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // Allows us to determing setting for use_new_scoring_ only once.
   static bool initialized_;
 
-  // Whether to use new-score or old-scoring.  Set in the constructor
-  // by examining command line flags.
+  // Whether to use new-scoring or old-scoring.  Set in the
+  // constructor by examining command line flags and field trial
+  // state.  Note that new-scoring has to do with a new version of the
+  // ordinary scoring done here.  It has nothing to do with and no
+  // affect on HistoryURLProvider-like scoring that can happen in this
+  // class as well (see boolean below).
   static bool use_new_scoring;
+
+  // If true, assign raw scores to be max(whatever it normally would be,
+  // a score that's similar to the score HistoryURL provider would assign).
+  // This variable is set in the constructor by examining the field trial
+  // state.
+  static bool also_do_hup_like_scoring;
 };
 typedef std::vector<ScoredHistoryMatch> ScoredHistoryMatches;
 
