@@ -363,7 +363,11 @@ static inline void updateLayerContentsScale(Layer* layer, const WebTransformatio
             rasterScale = combinedScale / deviceScaleFactor;
             if (!layer->boundsContainPageScale())
                 rasterScale /= pageScaleFactor;
-            layer->setRasterScale(rasterScale);
+            // Prevent scale factors below 1 from being used or saved.
+            if (rasterScale < 1)
+                rasterScale = 1;
+            else
+                layer->setRasterScale(rasterScale);
         }
     }
 

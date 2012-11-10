@@ -3686,6 +3686,61 @@ TEST(LayerTreeHostCommonTest, verifyContentsScale)
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * fixedRasterScale, childNoAutoScale);
 }
 
+TEST(LayerTreeHostCommonTest, verifySmallContentsScale)
+{
+    MockContentLayerClient delegate;
+    WebTransformationMatrix identityMatrix;
+
+    WebTransformationMatrix parentScaleMatrix;
+    const double initialParentScale = 1.75;
+    parentScaleMatrix.scale(initialParentScale);
+
+    WebTransformationMatrix childScaleMatrix;
+    const double initialChildScale = 0.25;
+    childScaleMatrix.scale(initialChildScale);
+
+    scoped_refptr<ContentLayer> parent = createDrawableContentLayer(&delegate);
+    setLayerPropertiesForTesting(parent.get(), parentScaleMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(100, 100), true);
+
+    scoped_refptr<ContentLayer> childScale = createDrawableContentLayer(&delegate);
+    setLayerPropertiesForTesting(childScale.get(), childScaleMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(2, 2), gfx::Size(10, 10), true);
+
+    // FIXME: Remove this when pageScaleFactor is applied in the compositor.
+    // Page scale should not apply to the parent.
+    parent->setBoundsContainPageScale(true);
+
+    parent->addChild(childScale);
+
+    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    int dummyMaxTextureSize = 512;
+
+    double deviceScaleFactor = 2.5;
+    double pageScaleFactor = 0.01;
+
+    // FIXME: Remove this when pageScaleFactor is applied in the compositor.
+    WebTransformationMatrix pageScaleMatrix;
+    pageScaleMatrix.scale(pageScaleFactor);
+    parent->setSublayerTransform(pageScaleMatrix);
+
+    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
+
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * initialParentScale, parent);
+    // The child's scale is < 1, so we should not save and use that scale factor.
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * 1, childScale);
+
+    // When chilld's total scale becomes >= 1, we should save and use that scale factor.
+    childScaleMatrix.makeIdentity();
+    const double finalChildScale = 0.75;
+    childScaleMatrix.scale(finalChildScale);
+    childScale->setTransform(childScaleMatrix);
+
+    renderSurfaceLayerList.clear();
+    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
+
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * initialParentScale, parent);
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * finalChildScale, childScale);
+}
+
 TEST(LayerTreeHostCommonTest, verifyContentsScaleForSurfaces)
 {
     MockContentLayerClient delegate;
