@@ -26,14 +26,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"
 
-namespace ash {
-class LauncherModel;
-}
-
-namespace aura {
-class Window;
-}
-
 class AppSyncUIState;
 class Browser;
 class BrowserLauncherItemControllerTest;
@@ -42,6 +34,18 @@ class PrefService;
 class Profile;
 class ShellWindowLauncherController;
 class TabContents;
+
+namespace ash {
+class LauncherModel;
+}
+
+namespace aura {
+class Window;
+}
+
+namespace content {
+class WebContents;
+}
 
 // ChromeLauncherController manages the launcher items needed for content
 // windows. Launcher items have a type, an optional app id, and a controller.
@@ -232,7 +236,7 @@ class ChromeLauncherController
 
   // Notify the controller that the state of an non platform app's tabs
   // have changed,
-  void UpdateAppState(TabContents* tab, AppState app_state);
+  void UpdateAppState(content::WebContents* tab, AppState app_state);
 
   // Limits application refocusing to urls that match |url| for |id|.
   void SetRefocusURLPattern(ash::LauncherID id, const GURL& url);

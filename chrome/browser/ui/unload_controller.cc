@@ -114,7 +114,7 @@ void UnloadController::Observe(int type,
 ////////////////////////////////////////////////////////////////////////////////
 // UnloadController, TabStripModelObserver implementation:
 
-void UnloadController::TabInsertedAt(TabContents* contents,
+void UnloadController::TabInsertedAt(content::WebContents* contents,
                                      int index,
                                      bool foreground) {
   TabAttachedImpl(contents);
@@ -129,7 +129,7 @@ void UnloadController::TabReplacedAt(TabStripModel* tab_strip_model,
                                      TabContents* new_contents,
                                      int index) {
   TabDetachedImpl(old_contents);
-  TabAttachedImpl(new_contents);
+  TabAttachedImpl(new_contents->web_contents());
 }
 
 void UnloadController::TabStripEmpty() {
@@ -141,13 +141,13 @@ void UnloadController::TabStripEmpty() {
 ////////////////////////////////////////////////////////////////////////////////
 // UnloadController, private:
 
-void UnloadController::TabAttachedImpl(TabContents* contents) {
+void UnloadController::TabAttachedImpl(content::WebContents* contents) {
   // If the tab crashes in the beforeunload or unload handler, it won't be
   // able to ack. But we know we can close it.
   registrar_.Add(
       this,
       content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-      content::Source<content::WebContents>(contents->web_contents()));
+      content::Source<content::WebContents>(contents));
 }
 
 void UnloadController::TabDetachedImpl(TabContents* contents) {

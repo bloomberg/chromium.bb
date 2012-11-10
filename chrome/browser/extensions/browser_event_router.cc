@@ -179,15 +179,15 @@ void BrowserEventRouter::TabCreatedAt(WebContents* contents,
   RegisterForTabNotifications(contents);
 }
 
-void BrowserEventRouter::TabInsertedAt(TabContents* contents,
+void BrowserEventRouter::TabInsertedAt(WebContents* contents,
                                        int index,
                                        bool active) {
   // If tab is new, send created event.
-  int tab_id = ExtensionTabUtil::GetTabId(contents->web_contents());
-  if (!GetTabEntry(contents->web_contents())) {
+  int tab_id = ExtensionTabUtil::GetTabId(contents);
+  if (!GetTabEntry(contents)) {
     tab_entries_[tab_id] = TabEntry();
 
-    TabCreatedAt(contents->web_contents(), index, active);
+    TabCreatedAt(contents, index, active);
     return;
   }
 
@@ -196,12 +196,13 @@ void BrowserEventRouter::TabInsertedAt(TabContents* contents,
 
   DictionaryValue* object_args = new DictionaryValue();
   object_args->Set(tab_keys::kNewWindowIdKey, Value::CreateIntegerValue(
-      ExtensionTabUtil::GetWindowIdOfTab(contents->web_contents())));
+      ExtensionTabUtil::GetWindowIdOfTab(contents)));
   object_args->Set(tab_keys::kNewPositionKey, Value::CreateIntegerValue(
       index));
   args->Append(object_args);
 
-  DispatchEvent(contents->profile(), events::kOnTabAttached, args.Pass(),
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  DispatchEvent(profile, events::kOnTabAttached, args.Pass(),
                 EventRouter::USER_GESTURE_UNKNOWN);
 }
 
@@ -477,7 +478,9 @@ void BrowserEventRouter::TabReplacedAt(TabStripModel* tab_strip_model,
                                        TabContents* new_contents,
                                        int index) {
   TabClosingAt(tab_strip_model, old_contents->web_contents(), index);
-  TabInsertedAt(new_contents, index, tab_strip_model->active_index() == index);
+  TabInsertedAt(new_contents->web_contents(),
+                index,
+                tab_strip_model->active_index() == index);
 }
 
 void BrowserEventRouter::TabPinnedStateChanged(WebContents* contents,

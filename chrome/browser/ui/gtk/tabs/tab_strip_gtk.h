@@ -109,7 +109,7 @@ class TabStripGtk : public TabStripModelObserver,
 
  protected:
   // TabStripModelObserver implementation:
-  virtual void TabInsertedAt(TabContents* contents,
+  virtual void TabInsertedAt(content::WebContents* contents,
                              int index,
                              bool foreground) OVERRIDE;
   virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE;

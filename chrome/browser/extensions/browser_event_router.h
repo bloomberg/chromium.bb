@@ -41,7 +41,7 @@ class BrowserEventRouter : public TabStripModelObserver,
   virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
 
   // TabStripModelObserver
-  virtual void TabInsertedAt(TabContents* contents, int index,
+  virtual void TabInsertedAt(content::WebContents* contents, int index,
                              bool active) OVERRIDE;
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
                             content::WebContents* contents,

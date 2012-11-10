@@ -1008,34 +1008,34 @@ WebContents* Browser::OpenURL(const OpenURLParams& params) {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, TabStripModelObserver implementation:
 
-void Browser::TabInsertedAt(TabContents* contents,
+void Browser::TabInsertedAt(WebContents* contents,
                             int index,
                             bool foreground) {
-  SetAsDelegate(contents->web_contents(), this);
+  SetAsDelegate(contents, this);
   SessionTabHelper* session_tab_helper =
-      SessionTabHelper::FromWebContents(contents->web_contents());
+      SessionTabHelper::FromWebContents(contents);
   session_tab_helper->SetWindowID(session_id());
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_PARENTED,
-      content::Source<content::WebContents>(contents->web_contents()),
+      content::Source<content::WebContents>(contents),
       content::NotificationService::NoDetails());
 
   SyncHistoryWithTabs(index);
 
   // Make sure the loading state is updated correctly, otherwise the throbber
   // won't start if the page is loading.
-  LoadingStateChanged(contents->web_contents());
+  LoadingStateChanged(contents);
 
   registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-                 content::Source<WebContents>(contents->web_contents()));
+                 content::Source<WebContents>(contents));
 
   registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_DETACHED,
-                 content::Source<WebContents>(contents->web_contents()));
+                 content::Source<WebContents>(contents));
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
-    session_service->TabInserted(contents->web_contents());
+    session_service->TabInserted(contents);
 }
 
 void Browser::TabClosingAt(TabStripModel* tab_strip_model,
@@ -1154,7 +1154,7 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
     session_service->TabClosing(old_contents->web_contents());
-  TabInsertedAt(new_contents, index, (index == active_index()));
+  TabInsertedAt(new_contents->web_contents(), index, (index == active_index()));
 
   int entry_count =
       new_contents->web_contents()->GetController().GetEntryCount();

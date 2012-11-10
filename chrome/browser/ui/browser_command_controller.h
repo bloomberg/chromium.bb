@@ -93,7 +93,7 @@ class BrowserCommandController : public CommandUpdater::CommandUpdaterDelegate,
                                    const std::string& pref_name) OVERRIDE;
 
   // Overridden from TabStripModelObserver:
-  virtual void TabInsertedAt(TabContents* contents,
+  virtual void TabInsertedAt(content::WebContents* contents,
                              int index,
                              bool foreground) OVERRIDE;
   virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE;
@@ -160,7 +160,7 @@ class BrowserCommandController : public CommandUpdater::CommandUpdaterDelegate,
 
   // Add/remove observers for interstitial attachment/detachment from
   // |contents|.
-  void AddInterstitialObservers(TabContents* contents);
+  void AddInterstitialObservers(content::WebContents* contents);
   void RemoveInterstitialObservers(TabContents* contents);
 
   inline BrowserWindow* window();

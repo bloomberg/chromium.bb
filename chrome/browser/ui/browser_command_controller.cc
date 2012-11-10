@@ -50,7 +50,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
 
-using content::WebContents;
 using content::NavigationEntry;
 using content::NavigationController;
 using content::WebContents;
@@ -713,7 +712,7 @@ void BrowserCommandController::OnPreferenceChanged(
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, TabStripModelObserver implementation:
 
-void BrowserCommandController::TabInsertedAt(TabContents* contents,
+void BrowserCommandController::TabInsertedAt(WebContents* contents,
                                              int index,
                                              bool foreground) {
   AddInterstitialObservers(contents);
@@ -728,7 +727,7 @@ void BrowserCommandController::TabReplacedAt(TabStripModel* tab_strip_model,
                                              TabContents* new_contents,
                                              int index) {
   RemoveInterstitialObservers(old_contents);
-  AddInterstitialObservers(new_contents);
+  AddInterstitialObservers(new_contents->web_contents());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1165,11 +1164,11 @@ void BrowserCommandController::UpdateReloadStopState(bool is_loading,
   command_updater_.UpdateCommandEnabled(IDC_STOP, is_loading);
 }
 
-void BrowserCommandController::AddInterstitialObservers(TabContents* contents) {
+void BrowserCommandController::AddInterstitialObservers(WebContents* contents) {
   registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-                 content::Source<WebContents>(contents->web_contents()));
+                 content::Source<WebContents>(contents));
   registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_DETACHED,
-                 content::Source<WebContents>(contents->web_contents()));
+                 content::Source<WebContents>(contents));
 }
 
 void BrowserCommandController::RemoveInterstitialObservers(

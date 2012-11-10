@@ -32,12 +32,12 @@ TabStripModelObserverBridge::~TabStripModelObserverBridge() {
   model_->RemoveObserver(this);
 }
 
-void TabStripModelObserverBridge::TabInsertedAt(TabContents* contents,
+void TabStripModelObserverBridge::TabInsertedAt(WebContents* contents,
                                                 int index,
                                                 bool foreground) {
   if ([controller_ respondsToSelector:
           @selector(insertTabWithContents:atIndex:inForeground:)]) {
-    [controller_ insertTabWithContents:WebContentsOf(contents)
+    [controller_ insertTabWithContents:contents
                                atIndex:index
                           inForeground:foreground];
   }

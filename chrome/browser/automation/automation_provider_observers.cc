@@ -482,7 +482,7 @@ TabCountChangeObserver::~TabCountChangeObserver() {
   tab_strip_model_->RemoveObserver(this);
 }
 
-void TabCountChangeObserver::TabInsertedAt(TabContents* contents,
+void TabCountChangeObserver::TabInsertedAt(WebContents* contents,
                                            int index,
                                            bool foreground) {
   CheckTabCount();

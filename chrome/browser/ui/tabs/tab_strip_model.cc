@@ -158,7 +158,7 @@ void TabStripModel::InsertTabContentsAt(int index,
   selection_model_.IncrementFrom(index);
 
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabInsertedAt(contents, index, active));
+                    TabInsertedAt(contents->web_contents(), index, active));
   if (active) {
     TabStripSelectionModel new_model;
     new_model.Copy(selection_model_);

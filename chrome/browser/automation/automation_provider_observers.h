@@ -317,11 +317,11 @@ class TabCountChangeObserver : public TabStripModelObserver {
                          IPC::Message* reply_message,
                          int target_tab_count);
   // Implementation of TabStripModelObserver.
-  virtual void TabInsertedAt(TabContents* contents,
+  virtual void TabInsertedAt(content::WebContents* contents,
                              int index,
-                             bool foreground);
-  virtual void TabDetachedAt(TabContents* contents, int index);
-  virtual void TabStripModelDeleted();
+                             bool foreground) OVERRIDE;
+  virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE;
+  virtual void TabStripModelDeleted() OVERRIDE;
 
  private:
   virtual ~TabCountChangeObserver();

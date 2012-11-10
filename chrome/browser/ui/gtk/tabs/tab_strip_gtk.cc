@@ -974,7 +974,7 @@ GtkWidget* TabStripGtk::GetWidgetForViewID(ViewID view_id) {
 ////////////////////////////////////////////////////////////////////////////////
 // TabStripGtk, TabStripModelObserver implementation:
 
-void TabStripGtk::TabInsertedAt(TabContents* contents,
+void TabStripGtk::TabInsertedAt(WebContents* contents,
                                 int index,
                                 bool foreground) {
   TRACE_EVENT0("ui::gtk", "TabStripGtk::TabInsertedAt");
@@ -991,8 +991,7 @@ void TabStripGtk::TabInsertedAt(TabContents* contents,
   // has the Tab already constructed and we can just insert it into our list
   // again.
   if (IsDragSessionActive()) {
-    tab = drag_controller_->GetDraggedTabForContents(
-        contents->web_contents());
+    tab = drag_controller_->GetDraggedTabForContents(contents);
     if (tab) {
       // If the Tab was detached, it would have been animated closed but not
       // removed, so we need to reset this property.
@@ -1016,7 +1015,7 @@ void TabStripGtk::TabInsertedAt(TabContents* contents,
   if (!contains_tab) {
     TabData d = { tab, gfx::Rect() };
     tab_data_.insert(tab_data_.begin() + index, d);
-    tab->UpdateData(contents->web_contents(), model_->IsAppTab(index), false);
+    tab->UpdateData(contents, model_->IsAppTab(index), false);
   }
   tab->set_mini(model_->IsMiniTab(index));
   tab->set_app(model_->IsAppTab(index));

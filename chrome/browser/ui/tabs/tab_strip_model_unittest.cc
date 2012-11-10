@@ -267,11 +267,11 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   }
 
   // TabStripModelObserver implementation:
-  virtual void TabInsertedAt(TabContents* contents,
+  virtual void TabInsertedAt(WebContents* contents,
                              int index,
                              bool foreground) OVERRIDE {
     empty_ = false;
-    State s(contents ? contents->web_contents() : NULL, index, INSERT);
+    State s(contents, index, INSERT);
     s.foreground = foreground;
     states_.push_back(s);
   }

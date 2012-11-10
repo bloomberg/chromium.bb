@@ -600,8 +600,9 @@ void ChromeLauncherController::RemoveTabFromRunningApp(
   }
 }
 
-void ChromeLauncherController::UpdateAppState(TabContents* tab,
+void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
                                               AppState app_state) {
+  TabContents* tab = TabContents::FromWebContents(contents);
   std::string app_id = GetAppID(tab);
 
   // Check the old |app_id| for a tab. If the contents has changed we need to

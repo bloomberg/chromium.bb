@@ -71,7 +71,7 @@ class BrowserTabStripController : public TabStripController,
   virtual void LayoutTypeMaybeChanged() OVERRIDE;
 
   // TabStripModelObserver implementation:
-  virtual void TabInsertedAt(TabContents* contents,
+  virtual void TabInsertedAt(content::WebContents* contents,
                              int model_index,
                              bool is_active) OVERRIDE;
   virtual void TabDetachedAt(TabContents* contents,
@@ -133,7 +133,7 @@ class BrowserTabStripController : public TabStripController,
       BaseTab* tab);
 
   // Adds a tab.
-  void AddTab(TabContents* contents, int index, bool is_active);
+  void AddTab(content::WebContents* contents, int index, bool is_active);
 
   // Resets the tabstrips layout type from prefs.
   void UpdateLayoutType();

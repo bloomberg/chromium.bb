@@ -42,10 +42,10 @@ class TabStripModelObserver {
     ALL
   };
 
-  // A new TabContents was inserted into the TabStripModel at the
+  // A new WebContents was inserted into the TabStripModel at the
   // specified index. |foreground| is whether or not it was opened in the
   // foreground (selected).
-  virtual void TabInsertedAt(TabContents* contents,
+  virtual void TabInsertedAt(content::WebContents* contents,
                              int index,
                              bool foreground);
 
@@ -76,6 +76,8 @@ class TabStripModelObserver {
   // but does change the selection. In this case |ActiveTabChanged| is not sent.
   // If you care about any changes to the selection, override
   // TabSelectionChanged.
+  // Note: |old_contents| will be NULL if there was no contents previously
+  // active.
   virtual void ActiveTabChanged(TabContents* old_contents,
                                 TabContents* new_contents,
                                 int index,
