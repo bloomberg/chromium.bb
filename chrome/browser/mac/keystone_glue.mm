@@ -577,8 +577,11 @@ NSString* const kVersionKey = @"KSVersion";
 - (void)installUpdateComplete:(NSNotification*)notification {
   NSDictionary* userInfo = [notification userInfo];
 
-  if (![[userInfo objectForKey:ksr::KSUpdateCheckSuccessfulKey] boolValue] ||
-      ![[userInfo objectForKey:ksr::KSUpdateCheckSuccessfullyInstalledKey]
+  // http://crbug.com/160308 and b/7517358: when using system Keystone and on
+  // a user ticket, KSUpdateCheckSuccessfulKey will be NO even when an update
+  // was installed correctly, so don't check it. It should be redudnant when
+  // KSUpdateCheckSuccessfullyInstalledKey is checked.
+  if (![[userInfo objectForKey:ksr::KSUpdateCheckSuccessfullyInstalledKey]
           intValue]) {
     [self updateStatus:kAutoupdateInstallFailed version:nil];
   } else {
