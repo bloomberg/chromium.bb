@@ -20,10 +20,10 @@
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
 
-using namespace cc;
 using namespace WebKit;
 using namespace WebKitTests;
 
+namespace cc {
 namespace {
 
 class TestContentLayer : public Layer {
@@ -3077,4 +3077,5 @@ protected:
 
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestMinimumTrackingSize);
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

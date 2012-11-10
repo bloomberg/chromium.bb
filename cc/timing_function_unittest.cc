@@ -5,8 +5,7 @@
 #include "cc/timing_function.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
-
+namespace cc {
 namespace {
 
 TEST(TimingFunctionTest, CubicBezierTimingFunction) {
@@ -36,4 +35,5 @@ TEST(TimingFunctionTest, CubicBezierTimingFunction) {
   EXPECT_NEAR(function->getValue(1), 1, epsilon);
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

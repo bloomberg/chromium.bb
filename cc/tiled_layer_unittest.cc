@@ -20,10 +20,10 @@
 #include "ui/gfx/rect_conversions.h"
 #include <public/WebTransformationMatrix.h>
 
-using namespace cc;
 using namespace WebKitTests;
 using WebKit::WebTransformationMatrix;
 
+namespace cc {
 namespace {
 
 class TestOcclusionTracker : public OcclusionTracker {
@@ -1623,4 +1623,5 @@ TEST_F(TiledLayerTest, nonIntegerContentsScaleIsNotDistortedDuringInvalidation)
     EXPECT_RECT_EQ(layerRect, layer->trackingLayerPainter()->paintedRect());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

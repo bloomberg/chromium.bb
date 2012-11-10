@@ -6,8 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
-
+namespace cc {
 namespace {
 
 const SchedulerStateMachine::CommitState allCommitStates[] = {
@@ -868,4 +867,5 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenContextLost)
     EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

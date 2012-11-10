@@ -13,9 +13,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
 using namespace LayerTestCommon;
 
+namespace cc {
 namespace {
 
 // Create a default tiled layer with textures for all tiles and a default
@@ -225,4 +225,5 @@ TEST(TiledLayerImplTest, tileOpaqueRectForLayerNoBorders)
     }
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

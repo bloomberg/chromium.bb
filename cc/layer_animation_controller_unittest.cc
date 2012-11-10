@@ -11,10 +11,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 
-using namespace cc;
 using namespace WebKitTests;
 using WebKit::WebTransformationMatrix;
 
+namespace cc {
 namespace {
 
 void expectTranslateX(double translateX, const WebTransformationMatrix& matrix)
@@ -556,4 +556,5 @@ TEST(LayerAnimationControllerTest, ForceSyncWhenSynchronizedStartTimeNeeded)
     EXPECT_EQ(ActiveAnimation::WaitingForTargetAvailability, activeAnimation->runState());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

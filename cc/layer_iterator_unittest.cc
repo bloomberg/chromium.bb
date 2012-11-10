@@ -10,13 +10,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 
-using namespace cc;
 using WebKit::WebTransformationMatrix;
 using ::testing::Mock;
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::AnyNumber;
 
+namespace cc {
 namespace {
 
 class TestLayer : public Layer {
@@ -250,4 +250,5 @@ TEST(LayerIteratorTest, complexTreeMultiSurface)
     EXPECT_COUNT(root3, -1, -1, 0);
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

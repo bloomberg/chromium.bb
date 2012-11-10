@@ -17,10 +17,10 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include <public/WebTransformationMatrix.h>
 
-using namespace cc;
 using namespace WebKit;
 using namespace WebKitTests;
 
+namespace cc {
 namespace {
 
 class FrameCountingMemoryAllocationSettingContext : public FakeWebGraphicsContext3D {
@@ -536,4 +536,5 @@ TEST(GLRendererTest2, activeTextureState)
     EXPECT_EQ(context->activeTexture(), GL_TEXTURE0);
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

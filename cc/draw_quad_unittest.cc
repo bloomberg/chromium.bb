@@ -19,8 +19,7 @@
 
 using WebKit::WebTransformationMatrix;
 
-using namespace cc;
-
+namespace cc {
 namespace {
 
 TEST(DrawQuadTest, copySharedQuadState)
@@ -304,4 +303,5 @@ TEST(DrawQuadTest, copyYUVVideoDrawQuad)
     EXPECT_EQ(vPlane.format, copyQuad->vPlane().format);
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

@@ -12,7 +12,6 @@
 #include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
 using namespace WebKitTests;
 
 namespace cc {
@@ -95,8 +94,6 @@ protected:
     scoped_ptr<GraphicsContext> m_context;
     scoped_ptr<ResourceProvider> m_resourceProvider;
 };
-
-}
 
 namespace {
 
@@ -702,5 +699,5 @@ TEST_F(PrioritizedResourceTest, usageStatistics)
     resourceManager->clearAllMemory(resourceProvider());
 }
 
-
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

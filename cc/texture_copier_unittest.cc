@@ -9,12 +9,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-using namespace cc;
 using namespace WebKit;
 using testing::InSequence;
 using testing::Test;
 using testing::_;
 
+namespace cc {
 namespace {
 
 class MockContext : public FakeWebGraphicsContext3D {
@@ -62,4 +62,5 @@ TEST(TextureCopierTest, testDrawArraysCopy)
     copier->copyTexture(copy);
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

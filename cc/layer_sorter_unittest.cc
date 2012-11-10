@@ -10,9 +10,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 
-using namespace cc;
 using WebKit::WebTransformationMatrix;
 
+namespace cc {
 namespace {
 
 // Note: In the following overlap tests, the "camera" is looking down the negative Z axis,
@@ -260,4 +260,5 @@ TEST(LayerSorterTest, verifyExistingOrderingPreservedWhenNoZDiff)
     EXPECT_EQ(5, layerList[4]->id());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

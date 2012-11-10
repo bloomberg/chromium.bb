@@ -13,9 +13,9 @@
 #include "ui/gfx/rect_f.h"
 #include <public/WebTransformationMatrix.h>
 
-using namespace cc;
 using WebKit::WebTransformationMatrix;
 
+namespace cc {
 namespace {
 
 TEST(MathUtilTest, verifyBackfaceVisibilityBasicCases)
@@ -180,4 +180,5 @@ TEST(MathUtilTest, vectorProjection)
               projectedVector.y() / targetVector.y());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

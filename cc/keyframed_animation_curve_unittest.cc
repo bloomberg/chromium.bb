@@ -9,9 +9,9 @@
 #include <public/WebTransformOperations.h>
 #include <public/WebTransformationMatrix.h>
 
-using namespace cc;
 using WebKit::WebTransformationMatrix;
 
+namespace cc {
 namespace {
 
 void expectTranslateX(double translateX, const WebTransformationMatrix& matrix)
@@ -201,4 +201,5 @@ TEST(KeyframedAnimationCurveTest, CubicBezierTimingFunction)
     EXPECT_FLOAT_EQ(1, curve->getValue(1));
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

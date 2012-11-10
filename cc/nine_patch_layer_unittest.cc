@@ -20,12 +20,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
 using ::testing::Mock;
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::AnyNumber;
 
+namespace cc {
 namespace {
 
 class MockLayerTreeHost : public LayerTreeHost {
@@ -133,4 +133,5 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     EXPECT_EQ(queue.partialUploadSize(), 0);
 }
 
-} // anonymous namespace
+}  // namespace
+}  // namespace cc

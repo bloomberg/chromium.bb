@@ -13,11 +13,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
-using namespace cc;
 using namespace WebKit;
 using namespace WebKitTests;
 using testing::Test;
 
+namespace cc {
 namespace {
 
 const int kFlushPeriodFull = 4;
@@ -502,4 +502,5 @@ TEST_F(ResourceUpdateControllerTest, UpdatesCompleteInFiniteTime)
     EXPECT_EQ(2, m_numTotalUploads);
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

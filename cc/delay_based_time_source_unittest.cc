@@ -8,9 +8,9 @@
 #include "cc/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
 using namespace WebKitTests;
 
+namespace cc {
 namespace {
 
 base::TimeDelta interval()
@@ -372,4 +372,5 @@ TEST(DelayBasedTimeSource, TestDeactivateAndReactivateAfterNextTickTime)
     EXPECT_EQ(13, thread.pendingDelayMs());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

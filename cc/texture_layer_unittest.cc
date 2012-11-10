@@ -12,12 +12,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
 using ::testing::Mock;
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::AnyNumber;
 
+namespace cc {
 namespace {
 
 class MockLayerImplTreeHost : public LayerTreeHost {
@@ -180,4 +180,5 @@ TEST_F(TextureLayerTest, syncImplWhenRemovingFromTree)
     Mock::VerifyAndClearExpectations(m_layerTreeHost.get());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

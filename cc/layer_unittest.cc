@@ -18,7 +18,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 
-using namespace cc;
 using namespace WebKitTests;
 using WebKit::WebTransformationMatrix;
 using ::testing::Mock;
@@ -32,6 +31,7 @@ using ::testing::AnyNumber;
         Mock::VerifyAndClearExpectations(m_layerTreeHost.get());                                      \
     } while (0)
 
+namespace cc {
 namespace {
 
 class MockLayerImplTreeHost : public LayerTreeHost {
@@ -795,5 +795,5 @@ TEST(LayerTestWithoutFixture, setBoundsTriggersSetNeedsRedrawAfterGettingNonEmpt
     EXPECT_TRUE(layer->needsDisplay());
 }
 
-
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

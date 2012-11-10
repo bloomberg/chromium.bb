@@ -10,10 +10,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-using namespace cc;
 using namespace WebKit;
-using namespace WebKitTests;
 
+namespace cc {
 namespace {
 
 TEST(ScopedResourceTest, NewScopedResource)
@@ -98,4 +97,5 @@ TEST(ScopedResourceTest, LeakScopedResource)
     EXPECT_EQ(1u, resourceProvider->numResources());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

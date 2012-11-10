@@ -15,10 +15,10 @@
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
 
-using namespace cc;
 using namespace WebKit;
 using namespace WebKitTests;
 
+namespace cc {
 namespace {
 
 void executeCalculateDrawTransformsAndVisibility(LayerImpl* root, std::vector<LayerImpl*>& renderSurfaceLayerList)
@@ -1155,4 +1155,5 @@ TEST_F(DamageTrackerTest, verifyDamageAccumulatesUntilReset)
     EXPECT_TRUE(rootDamageRect.IsEmpty());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

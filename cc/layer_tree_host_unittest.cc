@@ -27,10 +27,10 @@
 #include <public/WebLayerScrollClient.h>
 #include <public/WebSize.h>
 
-using namespace cc;
 using namespace WebKit;
 using namespace WebKitTests;
 
+namespace cc {
 namespace {
 
 class LayerTreeHostTest : public ThreadedTest { };
@@ -3222,4 +3222,5 @@ TEST_F(LayerTreeHostTestDeferCommits, runMultiThread)
     runTest(true);
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

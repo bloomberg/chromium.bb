@@ -17,8 +17,7 @@ using WebKit::WebFilterOperations;
 using WebKit::WebTransformationMatrix;
 using WebKitTests::TestRenderPass;
 
-using namespace cc;
-
+namespace cc {
 namespace {
 
 struct RenderPassSize {
@@ -82,4 +81,5 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
     EXPECT_EQ(sizeof(RenderPassSize), sizeof(RenderPass));
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

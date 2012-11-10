@@ -6,8 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
-
+namespace cc {
 namespace {
 
 #define TEST_INSIDE_RECT(r, x, y, w, h)                      \
@@ -452,3 +451,4 @@ TEST(RegionSwap, Swap) {
 }
 
 }  // namespace
+}  // namespace cc

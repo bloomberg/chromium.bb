@@ -11,9 +11,9 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
-using namespace cc;
 using namespace WebKit;
 
+namespace cc {
 namespace {
 
 class FakeWebGraphicsContext3DWithQueryTesting : public FakeWebGraphicsContext3D {
@@ -95,4 +95,5 @@ TEST(TextureUploaderTest, MarkPendingUploadsAsNonBlocking)
     EXPECT_EQ(0, uploader->numBlockingUploads());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

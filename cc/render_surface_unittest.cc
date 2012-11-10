@@ -16,9 +16,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 
-using namespace cc;
 using WebKit::WebTransformationMatrix;
 
+namespace cc {
 namespace {
 
 #define EXECUTE_AND_VERIFY_SURFACE_CHANGED(codeToTest)                  \
@@ -151,4 +151,5 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
     EXPECT_EQ(origin, pass->transformToRootTarget());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

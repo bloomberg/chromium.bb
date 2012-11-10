@@ -16,9 +16,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 
-using namespace cc;
 using WebKit::WebTransformationMatrix;
 
+namespace cc {
 namespace {
 
 class TestOcclusionTrackerImpl : public OcclusionTrackerImpl {
@@ -464,5 +464,5 @@ TEST(QuadCullerTest, verifyWithoutMetrics)
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 0, 1);
 }
 
-
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

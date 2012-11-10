@@ -16,8 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 
-using namespace cc;
-
+namespace cc {
 namespace {
 
 gfx::Rect ToRoundedIntRect(gfx::RectF rect_f) {
@@ -87,4 +86,5 @@ TEST(NinePatchLayerImplTest, verifyDrawQuads)
     EXPECT_EQ(texRemaining, apertureRegion);
 }
 
-}
+}  // namespace
+}  // namespace cc

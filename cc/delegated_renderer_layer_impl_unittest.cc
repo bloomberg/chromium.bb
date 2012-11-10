@@ -25,9 +25,9 @@ using WebKit::FakeWebCompositorOutputSurface;
 using WebKit::FakeWebGraphicsContext3D;
 using WebKit::WebTransformationMatrix;
 
-using namespace cc;
 using namespace WebKitTests;
 
+namespace cc {
 namespace {
 
 class DelegatedRendererLayerImplTest : public testing::Test, public LayerTreeHostImplClient {
@@ -452,4 +452,5 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, sharedState->quadTransform);
 }
 
-}  // annonymous namespace
+}  // namespace
+}  // namespace cc

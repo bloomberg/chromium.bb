@@ -7,8 +7,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
-
+namespace cc {
 namespace {
 
 class MockContentsScalingLayer : public ContentsScalingLayer {
@@ -75,4 +74,5 @@ TEST(ContentsScalingLayerTest, checkContentsScaleChangeTriggersNeedsDisplay) {
                        testLayer->lastNeedsDisplayRect());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

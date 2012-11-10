@@ -13,9 +13,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
 using namespace LayerTestCommon;
 
+namespace cc {
 namespace {
 
 TEST(SolidColorLayerImplTest, verifyTilingCompleteAndNoOverlap)
@@ -139,4 +139,5 @@ TEST(SolidColorLayerImplTest, verifyOpaqueRect)
     }
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

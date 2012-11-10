@@ -16,9 +16,9 @@
 #include "ui/gfx/rect.h"
 #include <public/WebGraphicsContext3D.h>
 
-using namespace cc;
 using namespace WebKit;
 
+namespace cc {
 namespace {
 
 size_t textureSize(const gfx::Size& size, WGC3Denum format)
@@ -585,4 +585,5 @@ INSTANTIATE_TEST_CASE_P(ResourceProviderTests,
                         ::testing::Values(ResourceProvider::GLTexture,
                                           ResourceProvider::Bitmap));
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

@@ -11,9 +11,9 @@
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
 
-using namespace cc;
 using namespace WebKit;
 
+namespace cc {
 namespace {
 
 #define EXECUTE_AND_VERIFY_SUBTREE_CHANGED(codeToTest)                  \
@@ -160,4 +160,5 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setBounds(arbitrarySize));
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

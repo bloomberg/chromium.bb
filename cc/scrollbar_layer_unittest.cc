@@ -14,8 +14,7 @@
 #include <public/WebScrollbarThemeGeometry.h>
 #include <public/WebScrollbarThemePainter.h>
 
-using namespace cc;
-
+namespace cc {
 namespace {
 
 class FakeWebScrollbar : public WebKit::WebScrollbar {
@@ -122,4 +121,5 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
     EXPECT_EQ(300, ccScrollbarLayer->maximum());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

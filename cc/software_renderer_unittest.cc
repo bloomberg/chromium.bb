@@ -19,10 +19,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
 using namespace WebKit;
 using namespace WebKitTests;
 
+namespace cc {
 namespace {
 
 class SoftwareRendererTest : public testing::Test, public RendererClient {
@@ -148,4 +148,5 @@ TEST_F(SoftwareRendererTest, tileQuad)
     EXPECT_EQ(SK_ColorCYAN, pixels[outerPixels - outerSize.width() - 2]);
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

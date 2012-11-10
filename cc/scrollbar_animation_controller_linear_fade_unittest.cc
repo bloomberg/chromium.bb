@@ -8,8 +8,7 @@
 #include "cc/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
-
+namespace cc {
 namespace {
 
 class ScrollbarAnimationControllerLinearFadeTest : public testing::Test {
@@ -112,4 +111,5 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyForceAwakenByPinch)
 
 }
 
-}  // annoymous namespace
+}  // namespace
+}  // namespace cc

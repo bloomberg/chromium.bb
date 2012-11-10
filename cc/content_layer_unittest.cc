@@ -12,9 +12,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect_conversions.h"
 
-using namespace cc;
 using namespace WebKit;
 
+namespace cc {
 namespace {
 
 class MockContentLayerClient : public ContentLayerClient {
@@ -49,4 +49,5 @@ TEST(ContentLayerTest, ContentLayerPainterWithDeviceScale)
     EXPECT_RECT_EQ(gfx::ToEnclosingRect(opaqueRectInContentSpace), resultingOpaqueRect);
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

@@ -15,9 +15,9 @@
 #include "cc/test/fake_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
 using namespace WebKitTests;
 
+namespace cc {
 namespace {
 
 class MockLayerImpl : public LayerImpl {
@@ -405,4 +405,5 @@ TEST(TreeSynchronizerTest, synchronizeAnimations)
     EXPECT_TRUE(static_cast<FakeLayerAnimationController*>(layerTreeRoot->layerAnimationController())->synchronizedAnimations());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

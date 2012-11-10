@@ -9,9 +9,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
 using namespace WebKitTests;
 
+namespace cc {
 namespace {
 
 class FakeSchedulerClient : public SchedulerClient {
@@ -465,4 +465,5 @@ TEST(SchedulerTest, NoBeginFrameWhenSwapFailsDuringForcedCommit)
     EXPECT_EQ(0, controllerPtr->numFramesPending());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

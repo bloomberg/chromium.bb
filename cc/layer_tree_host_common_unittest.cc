@@ -20,10 +20,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 
-using namespace cc;
 using namespace WebKitTests;
 using WebKit::WebTransformationMatrix;
 
+namespace cc {
 namespace {
 
 template<typename LayerType>
@@ -4097,4 +4097,5 @@ TEST(LayerTreeHostCommonTest, verifySubtreeSearch)
     EXPECT_EQ(0, LayerTreeHostCommon::findLayerInSubtree(root.get(), nonexistentId));
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

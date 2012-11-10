@@ -9,8 +9,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace WebKitTests;
-using namespace cc;
 
+namespace cc {
 namespace {
 
 scoped_ptr<ActiveAnimation> createActiveAnimation(int iterations, double duration)
@@ -216,4 +216,5 @@ TEST(ActiveAnimationTest, RunStateChangesIgnoredWhileSuspended)
     EXPECT_EQ(ActiveAnimation::Running, anim->runState());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

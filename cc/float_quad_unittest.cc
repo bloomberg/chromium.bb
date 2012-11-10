@@ -8,9 +8,9 @@
 #include "ui/gfx/quad_f.h"
 #include <public/WebTransformationMatrix.h>
 
-using namespace cc;
 using WebKit::WebTransformationMatrix;
 
+namespace cc {
 namespace {
 
 // TODO(danakj) Move this test to ui/gfx/ when we don't use WebTransformationMatrix.
@@ -56,4 +56,5 @@ TEST(FloatQuadTest, IsRectilinearTest)
     }
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

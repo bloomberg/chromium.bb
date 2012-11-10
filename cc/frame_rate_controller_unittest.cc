@@ -7,9 +7,9 @@
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
 using namespace WebKitTests;
 
+namespace cc {
 namespace {
 
 class FakeFrameRateControllerClient : public cc::FrameRateControllerClient {
@@ -165,4 +165,5 @@ TEST(FrameRateControllerTest, TestFrameThrottling_Unthrottled)
     EXPECT_TRUE(client.vsyncTicked());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

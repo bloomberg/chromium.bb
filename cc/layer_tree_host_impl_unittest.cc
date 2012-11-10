@@ -47,7 +47,6 @@
 #include <public/WebVideoFrame.h>
 #include <public/WebVideoFrameProvider.h>
 
-using namespace cc;
 using namespace LayerTestCommon;
 using namespace WebKit;
 using namespace WebKitTests;
@@ -59,6 +58,7 @@ using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::_;
 
+namespace cc {
 namespace {
 
 // This test is parametrized to run all tests with the
@@ -4440,4 +4440,5 @@ INSTANTIATE_TEST_CASE_P(LayerTreeHostImplTests,
                         LayerTreeHostImplTest,
                         ::testing::Values(false, true));
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc

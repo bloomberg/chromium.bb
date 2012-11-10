@@ -7,8 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/quad_f.h"
 
-using namespace cc;
-
+namespace cc {
 namespace {
 
 TEST(LayerQuadTest, QuadFConversion)
@@ -41,4 +40,5 @@ TEST(LayerQuadTest, Inflate)
     EXPECT_TRUE(layerQuad.ToQuadF() == quad);
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace cc
