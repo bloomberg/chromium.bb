@@ -12,6 +12,7 @@
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/test_common.h"
+#include "cc/test/render_pass_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -104,6 +105,8 @@ public:
     // Changing visibility to public.
     using GLRenderer::initialize;
     using GLRenderer::isFramebufferDiscarded;
+    using GLRenderer::drawQuad;
+    using GLRenderer::beginDrawingFrame;
 };
 
 class GLRendererTest : public testing::Test {
@@ -480,6 +483,58 @@ TEST(GLRendererTest2, visibilityChangeIsLastCall)
     renderer.drawFrame(mockClient.renderPassesInDrawOrder(), mockClient.renderPasses());
     renderer.setVisible(false);
     EXPECT_TRUE(lastCallWasSetVisiblity);
+}
+
+
+class ActiveTextureTrackingContext : public FakeWebGraphicsContext3D {
+public:
+    ActiveTextureTrackingContext()
+        : m_activeTexture(GL_INVALID_ENUM)
+    {
+    }
+
+    virtual WebString getString(WGC3Denum name)
+    {
+        if (name == GL_EXTENSIONS)
+            return WebString("GL_OES_EGL_image_external");
+        return WebString();
+    }
+
+    virtual void activeTexture(WGC3Denum texture)
+    {
+        EXPECT_NE(texture, m_activeTexture);
+        m_activeTexture = texture;
+    }
+
+    WGC3Denum activeTexture() const { return m_activeTexture; }
+
+private:
+    WGC3Denum m_activeTexture;
+};
+
+TEST(GLRendererTest2, activeTextureState)
+{
+    FakeRendererClient fakeClient;
+    scoped_ptr<GraphicsContext> outputSurface(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ActiveTextureTrackingContext)));
+    ActiveTextureTrackingContext* context = static_cast<ActiveTextureTrackingContext*>(outputSurface->context3D());
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
+    FakeRendererGL renderer(&fakeClient, resourceProvider.get());
+
+    EXPECT_TRUE(renderer.initialize());
+
+    cc::RenderPass::Id id(1, 1);
+    scoped_ptr<TestRenderPass> pass = TestRenderPass::create(id, gfx::Rect(0, 0, 100, 100), WebTransformationMatrix());
+    pass->appendOneOfEveryQuadType(resourceProvider.get());
+
+    cc::DirectRenderer::DrawingFrame drawingFrame;
+    renderer.beginDrawingFrame(drawingFrame);
+    EXPECT_EQ(context->activeTexture(), GL_TEXTURE0);
+
+    for (cc::QuadList::backToFrontIterator it = pass->quadList().backToFrontBegin();
+         it != pass->quadList().backToFrontEnd(); ++it) {
+        renderer.drawQuad(drawingFrame, *it);
+    }
+    EXPECT_EQ(context->activeTexture(), GL_TEXTURE0);
 }
 
 }  // anonymous namespace

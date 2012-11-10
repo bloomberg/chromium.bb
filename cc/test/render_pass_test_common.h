@@ -7,6 +7,10 @@
 
 #include "cc/render_pass.h"
 
+namespace cc {
+class ResourceProvider;
+}
+
 namespace WebKitTests {
 
 class TestRenderPass : public cc::RenderPass {
@@ -20,6 +24,8 @@ public:
 
     void appendQuad(scoped_ptr<cc::DrawQuad> quad) { m_quadList.append(quad.Pass()); }
     void appendSharedQuadState(scoped_ptr<cc::SharedQuadState> state) { m_sharedQuadStateList.append(state.Pass()); }
+
+    void appendOneOfEveryQuadType(cc::ResourceProvider*);
 
 protected:
     TestRenderPass(Id id, gfx::Rect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget)

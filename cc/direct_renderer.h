@@ -28,10 +28,7 @@ public:
     virtual bool haveCachedResourcesForRenderPassId(RenderPass::Id) const OVERRIDE;
     virtual void drawFrame(const RenderPassList& renderPassesInDrawOrder, const RenderPassIdHashMap& renderPassesById) OVERRIDE;
 
-protected:
-    DirectRenderer(RendererClient* client, ResourceProvider* resourceProvider);
-
-    struct DrawingFrame {
+    struct CC_EXPORT DrawingFrame {
         DrawingFrame();
         ~DrawingFrame();
 
@@ -47,6 +44,9 @@ protected:
         bool flippedY;
         gfx::RectF scissorRectInRenderPassSpace;
     };
+
+protected:
+    DirectRenderer(RendererClient* client, ResourceProvider* resourceProvider);
 
     class CachedResource : public ScopedResource {
     public:

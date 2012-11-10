@@ -80,6 +80,7 @@
       'test/mock_quad_culler.cc',
       'test/mock_quad_culler.h',
       'test/occlusion_tracker_test_common.h',
+      'test/render_pass_test_common.cc',
       'test/render_pass_test_common.h',
       'test/scheduler_test_common.cc',
       'test/scheduler_test_common.h',

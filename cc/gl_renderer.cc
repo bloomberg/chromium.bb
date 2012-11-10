@@ -242,6 +242,7 @@ void GLRenderer::beginDrawingFrame(DrawingFrame& frame)
     GLC(m_context, m_context->colorMask(true, true, true, true));
     GLC(m_context, m_context->enable(GL_BLEND));
     GLC(m_context, m_context->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
+    GLC(context(), context()->activeTexture(GL_TEXTURE0));
 }
 
 void GLRenderer::doNoOp()
@@ -573,7 +574,6 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
 
     // FIXME: use the backgroundTexture and blend the background in with this draw instead of having a separate copy of the background texture.
 
-    GLC(context(), context()->activeTexture(GL_TEXTURE0));
     context()->bindTexture(GL_TEXTURE_2D, contentsTextureId);
 
     int shaderQuadLocation = -1;
@@ -759,7 +759,6 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
 
     GLC(context(), context()->useProgram(uniforms.program));
     GLC(context(), context()->uniform1i(uniforms.samplerLocation, 0));
-    GLC(context(), context()->activeTexture(GL_TEXTURE0));
     ResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resourceId());
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, quadResourceLock.textureId()));
     GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, quad->textureFilter()));
@@ -925,7 +924,6 @@ void GLRenderer::drawStreamVideoQuad(const DrawingFrame& frame, const StreamVide
     toGLMatrix(&glMatrix[0], quad->matrix());
     GLC(context(), context()->uniformMatrix4fv(program->vertexShader().texMatrixLocation(), 1, false, glMatrix));
 
-    GLC(context(), context()->activeTexture(GL_TEXTURE0));
     GLC(context(), context()->bindTexture(GL_TEXTURE_EXTERNAL_OES, quad->textureId()));
 
     GLC(context(), context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
@@ -970,7 +968,6 @@ void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQua
     const gfx::RectF& uvRect = quad->uvRect();
     GLC(context(), context()->uniform4f(binding.texTransformLocation, uvRect.x(), uvRect.y(), uvRect.width(), uvRect.height()));
 
-    GLC(context(), context()->activeTexture(GL_TEXTURE0));
     ResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resourceId());
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, quadResourceLock.textureId()));
 
@@ -1012,7 +1009,6 @@ void GLRenderer::drawIOSurfaceQuad(const DrawingFrame& frame, const IOSurfaceDra
     else
         GLC(context(), context()->uniform4f(binding.texTransformLocation, 0, 0, quad->ioSurfaceSize().width(), quad->ioSurfaceSize().height()));
 
-    GLC(context(), context()->activeTexture(GL_TEXTURE0));
     GLC(context(), context()->bindTexture(GL_TEXTURE_RECTANGLE_ARB, quad->ioSurfaceTextureId()));
 
     setShaderOpacity(quad->opacity(), binding.alphaLocation);
@@ -1092,7 +1088,6 @@ void GLRenderer::copyTextureToFramebuffer(const DrawingFrame& frame, int texture
 {
     const RenderPassProgram* program = renderPassProgram();
 
-    GLC(context(), context()->activeTexture(GL_TEXTURE0));
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, textureId));
     GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
     GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
