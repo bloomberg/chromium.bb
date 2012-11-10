@@ -7,22 +7,28 @@
 #include "ui/gfx/point.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace gfx {
+namespace {
+
 TEST(TransformUtilTest, GetScaleTransform) {
-  const gfx::Point kAnchor(20, 40);
+  const Point kAnchor(20, 40);
   const float kScale = 0.5f;
 
-  gfx::Transform scale = gfx::GetScaleTransform(kAnchor, kScale);
+  Transform scale = GetScaleTransform(kAnchor, kScale);
 
   const int kOffset = 10;
   for (int sign_x = -1; sign_x <= 1; ++sign_x) {
     for (int sign_y = -1; sign_y <= 1; ++sign_y) {
-      gfx::Point test(kAnchor.x() + sign_x * kOffset,
-                      kAnchor.y() + sign_y * kOffset);
+      Point test(kAnchor.x() + sign_x * kOffset,
+                 kAnchor.y() + sign_y * kOffset);
       scale.TransformPoint(test);
 
-      EXPECT_EQ(gfx::Point(kAnchor.x() + sign_x * kOffset * kScale,
-                           kAnchor.y() + sign_y * kOffset * kScale),
+      EXPECT_EQ(Point(kAnchor.x() + sign_x * kOffset * kScale,
+                      kAnchor.y() + sign_y * kOffset * kScale),
                 test);
     }
   }
 }
+
+}  // namespace
+}  // namespace gfx
