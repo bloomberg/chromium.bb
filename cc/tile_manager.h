@@ -7,14 +7,18 @@
 
 #include <vector>
 
+#include "base/values.h"
+#include "cc/tile_priority.h"
+
 namespace cc {
 
 class Tile;
+class TileVersion;
 class ResourceProvider;
 
 class TileManagerClient {
  public:
-  virtual void ScheduleManage() = 0;
+  virtual void ScheduleManageTiles() = 0;
 
  protected:
   ~TileManagerClient() { }
@@ -28,18 +32,25 @@ class TileManager {
  public:
   TileManager(TileManagerClient* client);
   ~TileManager();
-  void Manage() { }
+
+  void SetGlobalState(const GlobalStateThatImpactsTilePriority& state);
+  void ManageTiles();
 
  protected:
   // Methods called by Tile
-  void RegisterTile(Tile*);
-  void UnregisterTile(Tile*);
+  void DidCreateTileVersion(TileVersion*);
+  void WillModifyTileVersionPriority(TileVersion*, const TilePriority& new_priority);
+  void DidDeleteTileVersion(TileVersion*);
 
  private:
   friend class Tile;
+  void ScheduleManageTiles();
 
   TileManagerClient* client_;
-  std::vector<Tile*> registered_tiles_;
+  bool manage_tiles_pending_;
+
+  GlobalStateThatImpactsTilePriority global_state_;
+  std::vector<TileVersion*> tile_versions_;
 };
 
 }

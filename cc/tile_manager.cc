@@ -8,26 +8,56 @@
 
 namespace cc {
 
-TileManager::TileManager(TileManagerClient* client) {
+TileManager::TileManager(TileManagerClient* client)
+  : client_(client)
+  , manage_tiles_pending_(false)
+{
 }
 
 TileManager::~TileManager() {
-  DCHECK(registered_tiles_.size() == 0);
+  ManageTiles();
+  DCHECK(tile_versions_.size() == 0);
 }
 
-void TileManager::RegisterTile(Tile* tile) {
-  registered_tiles_.push_back(tile);
+void TileManager::SetGlobalState(const GlobalStateThatImpactsTilePriority& global_state) {
+  global_state_ = global_state;
+  ScheduleManageTiles();
 }
 
-void TileManager::UnregisterTile(Tile* tile) {
-  // TODO(nduca): Known slow. Shrug. Fish need frying.
-  for (size_t i =  0; i < registered_tiles_.size(); i++) {
-    if (registered_tiles_[i] == tile) {
-      registered_tiles_.erase(registered_tiles_.begin() + i);
+void TileManager::ManageTiles() {
+  // Figure out how much memory we would be willing to give out.
+
+  // Free up memory.
+
+  // GC old versions.
+}
+
+void TileManager::DidCreateTileVersion(TileVersion* version) {
+  tile_versions_.push_back(version);
+  ScheduleManageTiles();
+}
+
+void TileManager::DidDeleteTileVersion(TileVersion* version) {
+  for (size_t i = 0; i < tile_versions_.size(); i++) {
+    if (tile_versions_[i] == version) {
+      tile_versions_.erase(tile_versions_.begin() + i);
       return;
     }
   }
-  DCHECK(false) << "Tile " << tile << " wasnt regitered.";
+  DCHECK(false) << "Could not find tile version.";
+}
+
+void TileManager::WillModifyTileVersionPriority(TileVersion*, const TilePriority& new_priority) {
+  // TODO(nduca): Do something smarter if reprioritization turns out to be
+  // costly.
+  ScheduleManageTiles();
+}
+
+void TileManager::ScheduleManageTiles() {
+  if (manage_tiles_pending_)
+    return;
+  ScheduleManageTiles();
+  manage_tiles_pending_ = true;
 }
 
 }
