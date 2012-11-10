@@ -1039,21 +1039,20 @@ void Browser::TabInsertedAt(TabContents* contents,
 }
 
 void Browser::TabClosingAt(TabStripModel* tab_strip_model,
-                           TabContents* contents,
+                           WebContents* contents,
                            int index) {
-  fullscreen_controller_->OnTabClosing(contents->web_contents());
+  fullscreen_controller_->OnTabClosing(contents);
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
-    session_service->TabClosing(contents->web_contents());
+    session_service->TabClosing(contents);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CLOSING,
-      content::Source<NavigationController>(
-          &contents->web_contents()->GetController()),
+      content::Source<NavigationController>(&contents->GetController()),
       content::NotificationService::NoDetails());
 
   // Sever the WebContents' connection back to us.
-  SetAsDelegate(contents->web_contents(), NULL);
+  SetAsDelegate(contents, NULL);
 }
 
 void Browser::TabDetachedAt(TabContents* contents, int index) {

@@ -12,7 +12,7 @@ void TabStripModelObserver::TabInsertedAt(TabContents* contents,
 }
 
 void TabStripModelObserver::TabClosingAt(TabStripModel* tab_strip_model,
-                                         TabContents* contents,
+                                         WebContents* contents,
                                          int index) {
 }
 

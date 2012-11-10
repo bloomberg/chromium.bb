@@ -32,7 +32,7 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                              int index,
                              bool foreground) OVERRIDE;
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                            TabContents* contents,
+                            content::WebContents* contents,
                             int index) OVERRIDE;
   virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE;
   virtual void ActiveTabChanged(TabContents* old_contents,

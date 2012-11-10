@@ -532,7 +532,7 @@ class TabStripModel : public content::NotificationObserver {
   // The boolean parameter create_historical_tab controls whether to
   // record these tabs and their history for reopening recently closed
   // tabs.
-  void InternalCloseTab(TabContents* contents,
+  void InternalCloseTab(content::WebContents* contents,
                         int index,
                         bool create_historical_tabs);
 

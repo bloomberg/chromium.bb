@@ -49,10 +49,10 @@ class TabStripModelObserver {
                              int index,
                              bool foreground);
 
-  // The specified TabContents at |index| is being closed (and eventually
-  // destroyed). |tab_strip_model| is the TabStripModel the tab was part of.
+  // The specified WebContents at |index| is being closed (and eventually
+  // destroyed). |tab_strip_model| is the TabStripModel that contained the tab.
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                            TabContents* contents,
+                            content::WebContents* contents,
                             int index);
 
   // The specified TabContents at |index| is being detached, perhaps to

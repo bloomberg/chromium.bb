@@ -227,9 +227,9 @@ void BrowserEventRouter::TabDetachedAt(TabContents* contents, int index) {
 }
 
 void BrowserEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
-                                      TabContents* contents,
+                                      WebContents* contents,
                                       int index) {
-  int tab_id = ExtensionTabUtil::GetTabId(contents->web_contents());
+  int tab_id = ExtensionTabUtil::GetTabId(contents);
 
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(Value::CreateIntegerValue(tab_id));
@@ -239,13 +239,14 @@ void BrowserEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
                           tab_strip_model->closing_all());
   args->Append(object_args);
 
-  DispatchEvent(contents->profile(), events::kOnTabRemoved, args.Pass(),
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  DispatchEvent(profile, events::kOnTabRemoved, args.Pass(),
                 EventRouter::USER_GESTURE_UNKNOWN);
 
   int removed_count = tab_entries_.erase(tab_id);
   DCHECK_GT(removed_count, 0);
 
-  UnregisterForTabNotifications(contents->web_contents());
+  UnregisterForTabNotifications(contents);
 }
 
 void BrowserEventRouter::ActiveTabChanged(TabContents* old_contents,
@@ -475,7 +476,7 @@ void BrowserEventRouter::TabReplacedAt(TabStripModel* tab_strip_model,
                                        TabContents* old_contents,
                                        TabContents* new_contents,
                                        int index) {
-  TabClosingAt(tab_strip_model, old_contents, index);
+  TabClosingAt(tab_strip_model, old_contents->web_contents(), index);
   TabInsertedAt(new_contents, index, tab_strip_model->active_index() == index);
 }
 

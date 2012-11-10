@@ -168,7 +168,7 @@ void TabStripModel::InsertTabContentsAt(int index,
 }
 
 void TabStripModel::InsertWebContentsAt(int index,
-                                        content::WebContents* contents,
+                                        WebContents* contents,
                                         int add_types) {
   TabContents* tab_contents = TabContents::FromWebContents(contents);
   DCHECK(tab_contents);
@@ -350,7 +350,7 @@ TabContents* TabStripModel::GetActiveTabContents() const {
   return GetTabContentsAt(active_index());
 }
 
-content::WebContents* TabStripModel::GetActiveWebContents() const {
+WebContents* TabStripModel::GetActiveWebContents() const {
   return GetWebContentsAt(active_index());
 }
 
@@ -360,7 +360,7 @@ TabContents* TabStripModel::GetTabContentsAt(int index) const {
   return NULL;
 }
 
-content::WebContents* TabStripModel::GetWebContentsAt(int index) const {
+WebContents* TabStripModel::GetWebContentsAt(int index) const {
   if (ContainsIndex(index))
     return GetWebContentsAtImpl(index);
   return NULL;
@@ -985,8 +985,8 @@ void TabStripModel::Observe(int type,
               details)->extension;
       // Iterate backwards as we may remove items while iterating.
       for (int i = count() - 1; i >= 0; i--) {
-        TabContents* contents = GetTabContentsAtImpl(i);
-        if (extensions::TabHelper::FromWebContents(contents->web_contents())->
+        WebContents* contents = GetWebContentsAtImpl(i);
+        if (extensions::TabHelper::FromWebContents(contents)->
               extension_app() == extension) {
           // The extension an app tab was created from has been nuked. Delete
           // the WebContents. Deleting a WebContents results in a notification
@@ -1143,16 +1143,14 @@ bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
       continue;
     }
 
-    TabContents* closing_tab_contents =
-        TabContents::FromWebContents(closing_contents);
-    InternalCloseTab(closing_tab_contents, index,
+    InternalCloseTab(closing_contents, index,
                      (close_types & CLOSE_CREATE_HISTORICAL_TAB) != 0);
   }
 
   return retval;
 }
 
-void TabStripModel::InternalCloseTab(TabContents* contents,
+void TabStripModel::InternalCloseTab(WebContents* contents,
                                      int index,
                                      bool create_historical_tabs) {
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
@@ -1161,11 +1159,13 @@ void TabStripModel::InternalCloseTab(TabContents* contents,
   // Ask the delegate to save an entry for this tab in the historical tab
   // database if applicable.
   if (create_historical_tabs)
-    delegate_->CreateHistoricalTab(contents->web_contents());
+    delegate_->CreateHistoricalTab(contents);
 
-  // Deleting the TabContents will call back to us via
+  // Deleting the WebContents will call back to us via
   // NotificationObserver and detach it.
-  delete contents;
+  TabContents* tab_contents = TabContents::FromWebContents(contents);
+  DCHECK(tab_contents);
+  delete tab_contents;
 }
 
 TabContents* TabStripModel::GetTabContentsAtImpl(int index) const {
@@ -1174,7 +1174,7 @@ TabContents* TabStripModel::GetTabContentsAtImpl(int index) const {
   return TabContents::FromWebContents(contents_data_[index]->contents);
 }
 
-content::WebContents* TabStripModel::GetWebContentsAtImpl(int index) const {
+WebContents* TabStripModel::GetWebContentsAtImpl(int index) const {
   CHECK(ContainsIndex(index)) <<
       "Failed to find: " << index << " in: " << count() << " entries.";
   return contents_data_[index]->contents;

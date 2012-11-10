@@ -137,9 +137,9 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   MockTabStripModelObserver() : closing_count_(0) {}
 
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                            TabContents* contents,
+                            WebContents* contents,
                             int index) {
-    closing_count_++;
+    ++closing_count_;
   }
 
   int closing_count() const { return closing_count_; }
