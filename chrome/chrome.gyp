@@ -135,6 +135,7 @@
     'chrome_installer_util.gypi',
     'chrome_renderer.gypi',
     'chrome_tests.gypi',
+    'chrome_tests_unit.gypi',
     'nacl.gypi',
     'version.gypi',
   ],
