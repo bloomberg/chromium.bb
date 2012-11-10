@@ -561,7 +561,7 @@ public class ContentViewCore implements MotionEventDelegate {
         mImeAdapter = createImeAdapter(mContext);
         mKeyboardConnected = mContainerView.getResources().getConfiguration().keyboard
                 != Configuration.KEYBOARD_NOKEYS;
-        mVSyncMonitor = new VSyncMonitor(mContext, mContainerView, mVSyncListener);
+        mVSyncMonitor = new VSyncMonitor(mContext, mVSyncListener);
         TraceEvent.end();
     }
 
@@ -614,12 +614,12 @@ public class ContentViewCore implements MotionEventDelegate {
      */
     public void destroy() {
         hidePopupDialog();
+        if (mVSyncMonitor != null) mVSyncMonitor.unregisterListener();
         if (mNativeContentViewCore != 0) {
             nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
         }
         mNativeContentViewCore = 0;
         mContentSettings = null;
-        mVSyncMonitor.stop();
     }
 
     /**
