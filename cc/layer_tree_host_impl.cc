@@ -1008,7 +1008,7 @@ void LayerTreeHostImpl::updateMaxScrollOffset()
 
     // The viewport may be larger than the contents in some cases, such as
     // having a vertical scrollbar but no horizontal overflow.
-    maxScroll = ClampFromBelow(maxScroll, gfx::Vector2dF());
+    maxScroll.ClampToMin(gfx::Vector2dF());
 
     m_rootScrollLayerImpl->setMaxScrollOffset(gfx::ToFlooredVector2d(maxScroll));
 }
@@ -1296,8 +1296,8 @@ void LayerTreeHostImpl::computePinchZoomDeltas(ScrollAndScaleSet* scrollInfo)
     gfx::Vector2dF scrollEnd = scrollBegin + anchorOffset;
     scrollEnd.Scale(m_pinchZoomViewport.minPageScaleFactor() / scaleBegin);
     scrollEnd -= anchorOffset;
-    scrollEnd = ClampFromAbove(scrollEnd, BottomRight(gfx::RectF(scaledContentsSize)) - BottomRight(gfx::Rect(m_deviceViewportSize)));
-    scrollEnd = ClampFromBelow(scrollEnd, gfx::Vector2d());
+    scrollEnd.ClampToMax(BottomRight(gfx::RectF(scaledContentsSize)) - BottomRight(gfx::Rect(m_deviceViewportSize)));
+    scrollEnd.ClampToMin(gfx::Vector2d());
     scrollEnd.Scale(1 / pageScaleDeltaToSend);
     scrollEnd.Scale(m_deviceScaleFactor);
 

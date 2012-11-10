@@ -134,8 +134,8 @@ void TiledLayer::updateTileSizeAndTilingOption()
 
     gfx::Size requestedSize = isTiled ? tileSize : contentBounds();
     const int maxSize = layerTreeHost()->rendererCapabilities().maxTextureSize;
-    gfx::Size clampedSize = ClampSizeFromAbove(requestedSize, gfx::Size(maxSize, maxSize));
-    setTileSize(clampedSize);
+    requestedSize.ClampToMax(gfx::Size(maxSize, maxSize));
+    setTileSize(requestedSize);
 }
 
 void TiledLayer::updateBounds()

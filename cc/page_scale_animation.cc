@@ -5,10 +5,11 @@
 #include "config.h"
 
 #include "cc/page_scale_animation.h"
+
+#include "cc/geometry.h"
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/rect_f.h"
 
-#include <algorithm>
 #include <math.h>
 
 namespace {
@@ -134,13 +135,9 @@ void PageScaleAnimation::inferTargetAnchorFromScrollOffsets()
 
 void PageScaleAnimation::clampTargetScrollOffset()
 {
-    gfx::Vector2dF maxScrollPosition;
-    maxScrollPosition.set_x(m_rootLayerSize.width() - viewportSizeAtScale(m_targetPageScaleFactor).width());
-    maxScrollPosition.set_y(m_rootLayerSize.height() - viewportSizeAtScale(m_targetPageScaleFactor).height());
-    m_targetScrollOffset.set_x(std::max<float>(0, m_targetScrollOffset.x()));
-    m_targetScrollOffset.set_y(std::max<float>(0, m_targetScrollOffset.y()));
-    m_targetScrollOffset.set_x(std::min<float>(maxScrollPosition.x(), m_targetScrollOffset.x()));
-    m_targetScrollOffset.set_y(std::min<float>(maxScrollPosition.y(), m_targetScrollOffset.y()));
+    gfx::Vector2dF maxScrollOffset = BottomRight(gfx::RectF(m_rootLayerSize)) - BottomRight(gfx::RectF(viewportSizeAtScale(m_targetPageScaleFactor)));
+    m_targetScrollOffset.ClampToMin(gfx::Vector2dF());
+    m_targetScrollOffset.ClampToMax(maxScrollOffset);
 }
 
 gfx::Vector2dF PageScaleAnimation::scrollOffsetAtTime(double time) const

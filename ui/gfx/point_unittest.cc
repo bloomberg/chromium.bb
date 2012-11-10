@@ -119,4 +119,56 @@ TEST(PointTest, Scale) {
   EXPECT_EQ(PointF(6, -3).ToString(), one.ToString());
 }
 
+TEST(PointTest, ClampPoint) {
+  Point a;
+
+  a = Point(3, 5);
+  EXPECT_EQ(Point(3, 5).ToString(), a.ToString());
+  a.ClampToMin(Point(2, 4));
+  EXPECT_EQ(Point(3, 5).ToString(), a.ToString());
+  a.ClampToMin(Point(3, 5));
+  EXPECT_EQ(Point(3, 5).ToString(), a.ToString());
+  a.ClampToMin(Point(4, 2));
+  EXPECT_EQ(Point(4, 5).ToString(), a.ToString());
+  a.ClampToMin(Point(8, 10));
+  EXPECT_EQ(Point(8, 10).ToString(), a.ToString());
+
+  a.ClampToMax(Point(9, 11));
+  EXPECT_EQ(Point(8, 10).ToString(), a.ToString());
+  a.ClampToMax(Point(8, 10));
+  EXPECT_EQ(Point(8, 10).ToString(), a.ToString());
+  a.ClampToMax(Point(11, 9));
+  EXPECT_EQ(Point(8, 9).ToString(), a.ToString());
+  a.ClampToMax(Point(7, 11));
+  EXPECT_EQ(Point(7, 9).ToString(), a.ToString());
+  a.ClampToMax(Point(3, 5));
+  EXPECT_EQ(Point(3, 5).ToString(), a.ToString());
+}
+
+TEST(PointTest, ClampPointF) {
+  PointF a;
+
+  a = PointF(3.5f, 5.5f);
+  EXPECT_EQ(PointF(3.5f, 5.5f).ToString(), a.ToString());
+  a.ClampToMin(PointF(2.5f, 4.5f));
+  EXPECT_EQ(PointF(3.5f, 5.5f).ToString(), a.ToString());
+  a.ClampToMin(PointF(3.5f, 5.5f));
+  EXPECT_EQ(PointF(3.5f, 5.5f).ToString(), a.ToString());
+  a.ClampToMin(PointF(4.5f, 2.5f));
+  EXPECT_EQ(PointF(4.5f, 5.5f).ToString(), a.ToString());
+  a.ClampToMin(PointF(8.5f, 10.5f));
+  EXPECT_EQ(PointF(8.5f, 10.5f).ToString(), a.ToString());
+
+  a.ClampToMax(PointF(9.5f, 11.5f));
+  EXPECT_EQ(PointF(8.5f, 10.5f).ToString(), a.ToString());
+  a.ClampToMax(PointF(8.5f, 10.5f));
+  EXPECT_EQ(PointF(8.5f, 10.5f).ToString(), a.ToString());
+  a.ClampToMax(PointF(11.5f, 9.5f));
+  EXPECT_EQ(PointF(8.5f, 9.5f).ToString(), a.ToString());
+  a.ClampToMax(PointF(7.5f, 11.5f));
+  EXPECT_EQ(PointF(7.5f, 9.5f).ToString(), a.ToString());
+  a.ClampToMax(PointF(3.5f, 5.5f));
+  EXPECT_EQ(PointF(3.5f, 5.5f).ToString(), a.ToString());
+}
+
 }  // namespace gfx

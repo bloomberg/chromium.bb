@@ -44,6 +44,18 @@ class UI_EXPORT Vector3dF {
   void operator+=(const Vector3dF& other) { Add(other); }
   void operator-=(const Vector3dF& other) { Subtract(other); }
 
+  void ClampToMax(const Vector3dF& max) {
+    x_ = x_ <= max.x_ ? x_ : max.x_;
+    y_ = y_ <= max.y_ ? y_ : max.y_;
+    z_ = z_ <= max.z_ ? z_ : max.z_;
+  }
+
+  void ClampToMin(const Vector3dF& min) {
+    x_ = x_ >= min.x_ ? x_ : min.x_;
+    y_ = y_ >= min.y_ ? y_ : min.y_;
+    z_ = z_ >= min.z_ ? z_ : min.z_;
+  }
+
   // Gives the square of the diagonal length of the vector.
   double LengthSquared() const;
   // Gives the diagonal length of the vector.
