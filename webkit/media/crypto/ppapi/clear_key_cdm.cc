@@ -112,7 +112,9 @@ static Type* AllocateAndCopy(const Type* data, int size) {
 }
 
 void INITIALIZE_CDM_MODULE() {
+#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   av_register_all();
+#endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 }
 
 void DeInitializeCdmModule() {
