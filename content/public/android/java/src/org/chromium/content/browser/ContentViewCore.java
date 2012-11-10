@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -72,7 +73,7 @@ public class ContentViewCore implements MotionEventDelegate {
 
     // To avoid checkerboard, we clamp the fling velocity based on the maximum number of tiles
     // should be allowed to upload per 100ms.
-    private final int mMaxNumUploadTiles = 12;
+    private final int mMaxNumUploadTiles;
 
     // Personality of the ContentView.
     private final int mPersonality;
@@ -295,6 +296,30 @@ public class ContentViewCore implements MotionEventDelegate {
 
         mPersonality = personality;
         HeapStatsLogger.init(mContext.getApplicationContext());
+
+        // We should set this constant based on the GPU performance. As it doesn't exist in the
+        // framework yet, we use the memory class as an indicator. Here are some good values that
+        // we determined via manual experimentation:
+        //
+        // Device            Screen size        Memory class   Tiles per 100ms
+        // ================= ================== ============== =====================
+        // Nexus S            480 x  800         128            9 (3 rows portrait)
+        // Galaxy Nexus       720 x 1280         256           12 (3 rows portrait)
+        // Nexus 7           1280 x  800         384           18 (3 rows landscape)
+        // Nexus 10          2560 x 1600         512           44 (4 rows landscape)
+        //
+        // Here is a spreadsheet with the data, plus a curve fit:
+        // https://docs.google.com/a/chromium.org/spreadsheet/pub?key=0AlNYk7HM2CgQdG1vUWRVWkU3ODRTc1B2SVF3ZTJBUkE&output=html
+        // That gives us tiles-per-100ms of 8, 13, 22, 37 for the devices listed above.
+        // Not too bad, and it should behave reasonably sensibly for unknown devices.
+        // If you want to tweak these constants, please update the spreadsheet appropriately.
+        //
+        // The curve is y = b * m^x, with coefficients as follows:
+        double b = 4.70009671080384;
+        double m = 1.00404437546897;
+        int memoryClass = ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE))
+                .getLargeMemoryClass();
+        mMaxNumUploadTiles = (int) Math.round(b * Math.pow(m, memoryClass));
     }
 
     /**
