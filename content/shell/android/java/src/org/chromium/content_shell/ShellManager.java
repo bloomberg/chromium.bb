@@ -7,13 +7,11 @@ package org.chromium.content_shell;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.Surface;
-import android.view.SurfaceView;
-import android.view.SurfaceHolder;
 import android.widget.FrameLayout;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.ui.gfx.NativeWindow;
 
 /**
@@ -28,7 +26,7 @@ public class ShellManager extends FrameLayout {
     private String mStartupUrl = ContentShellActivity.DEFAULT_SHELL_URL;
 
     // The target for all content rendering.
-    private SurfaceView mSurfaceView;
+    private ContentViewRenderView mContentViewRenderView;
 
     /**
      * Constructor for inflating via XML.
@@ -36,25 +34,12 @@ public class ShellManager extends FrameLayout {
     public ShellManager(Context context, AttributeSet attrs) {
         super(context, attrs);
         nativeInit(this);
-
-        mSurfaceView = new SurfaceView(context);
-        mSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
+        mContentViewRenderView = new ContentViewRenderView(context) {
             @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-                nativeSurfaceSetSize(width, height);
-            }
-
-            @Override
-            public void surfaceCreated(SurfaceHolder holder) {
-                nativeSurfaceCreated(holder.getSurface());
+            protected void onReadyToRender() {
                 mActiveShell.loadUrl(mStartupUrl);
             }
-
-            @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {
-                nativeSurfaceDestroyed();
-            }
-        });
+        };
     }
 
     /**
@@ -95,6 +80,12 @@ public class ShellManager extends FrameLayout {
 
     @SuppressWarnings("unused")
     @CalledByNative
+    private int getContentViewLayerRenderer() {
+        return mContentViewRenderView.getNativeContentViewLayerRenderer();
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
     private Object createShell() {
         LayoutInflater inflater =
                 (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -106,10 +97,10 @@ public class ShellManager extends FrameLayout {
             if (mActiveShell.getContentView() != null) {
                 mActiveShell.getContentView().onHide();
             }
-            mActiveShell.setSurfaceView(null);
+            mActiveShell.setContentViewRenderView(null);
         }
 
-        shellView.setSurfaceView(mSurfaceView);
+        shellView.setContentViewRenderView(mContentViewRenderView);
         addView(shellView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         mActiveShell = shellView;
@@ -120,7 +111,4 @@ public class ShellManager extends FrameLayout {
 
     private static native void nativeInit(Object shellManagerInstance);
     private static native void nativeLaunchShell(String url);
-    private static native void nativeSurfaceCreated(Surface surface);
-    private static native void nativeSurfaceDestroyed();
-    private static native void nativeSurfaceSetSize(int width, int height);
 }

@@ -10,6 +10,7 @@
 #include "content/browser/android/content_settings.h"
 #include "content/browser/android/content_video_view.h"
 #include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/android/content_view_render_view.h"
 #include "content/browser/android/content_view_statics.h"
 #include "content/browser/android/download_controller_android_impl.h"
 #include "content/browser/android/load_url_params.h"
@@ -31,6 +32,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "BrowserProcessSurfaceTexture",
     SurfaceTexturePeerBrowserImpl::RegisterBrowserProcessSurfaceTexture },
   { "ContentSettings", content::ContentSettings::RegisterContentSettings },
+  { "ContentViewRenderView", content::RegisterContentViewRenderView },
   { "ContentVideoView", content::ContentVideoView::RegisterContentVideoView },
   { "ContentViewCore", content::RegisterContentViewCore },
   { "DownloadControllerAndroidImpl",

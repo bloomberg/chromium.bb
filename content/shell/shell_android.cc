@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_piece.h"
+#include "content/public/browser/android/content_view_layer_renderer.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/android/shell_manager.h"
 #include "jni/Shell_jni.h"
@@ -34,8 +35,7 @@ void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
 
 void Shell::PlatformSetAddressBarURL(const GURL& url) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_url =
-        ConvertUTF8ToJavaString(env, url.spec());
+  ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, url.spec());
   Java_Shell_onUpdateUrl(env, java_object_.obj(), j_url.obj());
 }
 
@@ -45,7 +45,7 @@ void Shell::PlatformSetIsLoading(bool loading) {
 }
 
 void Shell::PlatformCreateWindow(int width, int height) {
-  java_object_.Reset(AttachCurrentThread(), CreateShellView());
+  java_object_.Reset(AttachCurrentThread(), CreateShellView(this));
 }
 
 void Shell::PlatformSetContents() {
@@ -73,11 +73,16 @@ void Shell::Close() {
 }
 
 void Shell::AttachLayer(WebContents* web_contents, WebKit::WebLayer* layer) {
-  ShellAttachLayer(layer);
+  content_view_layer_renderer_->AttachLayer(layer);
 }
 
 void Shell::RemoveLayer(WebContents* web_contents, WebKit::WebLayer* layer) {
-  ShellRemoveLayer(layer);
+  content_view_layer_renderer_->DetachLayer(layer);
+}
+
+void Shell::SetContentViewLayerRenderer(
+    ContentViewLayerRenderer* content_view_layer_renderer) {
+  content_view_layer_renderer_ = content_view_layer_renderer;
 }
 
 // static

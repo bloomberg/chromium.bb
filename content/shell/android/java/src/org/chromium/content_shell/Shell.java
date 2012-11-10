@@ -48,7 +48,7 @@ public class Shell extends LinearLayout {
 
     private ClipDrawable mProgressDrawable;
 
-    private View mSurfaceView;
+    private View mContentViewRenderView;
     private NativeWindow mWindow;
 
     private boolean mLoading = false;
@@ -63,17 +63,19 @@ public class Shell extends LinearLayout {
     /**
      * Set the SurfaceView being renderered to as soon as it is available.
      */
-    public void setSurfaceView(View surfaceView) {
+    public void setContentViewRenderView(View contentViewRenderView) {
         FrameLayout contentViewHolder = (FrameLayout) findViewById(R.id.contentview_holder);
-        if (surfaceView == null) {
-            if (mSurfaceView != null) contentViewHolder.removeView(mSurfaceView);
+        if (contentViewRenderView == null) {
+            if (mContentViewRenderView != null) {
+                contentViewHolder.removeView(mContentViewRenderView);
+            }
         } else {
-            contentViewHolder.addView(surfaceView,
+            contentViewHolder.addView(contentViewRenderView,
                     new FrameLayout.LayoutParams(
                             FrameLayout.LayoutParams.MATCH_PARENT,
                             FrameLayout.LayoutParams.MATCH_PARENT));
         }
-        mSurfaceView = surfaceView;
+        mContentViewRenderView = contentViewRenderView;
     }
 
     /**
