@@ -23,7 +23,9 @@
 #include "remoting/base/capture_data.h"
 #include "remoting/base/util.h"
 #include "remoting/host/mac/scoped_pixel_buffer_object.h"
+#include "remoting/host/video_frame.h"
 #include "remoting/host/video_frame_capturer_helper.h"
+#include "remoting/host/video_frame_queue.h"
 #include "remoting/proto/control.pb.h"
 
 namespace remoting {
@@ -56,52 +58,21 @@ SkIRect CGRectToSkIRect(const CGRect& rect) {
 const int64 kDisplayReconfigurationTimeoutInSeconds = 10;
 
 // A class representing a full-frame pixel buffer.
-class VideoFrameBuffer {
+class VideoFrameMac : public VideoFrame {
  public:
-  VideoFrameBuffer() :
-      size_(SkISize::Make(0, 0)),
-      dpi_(SkIPoint::Make(0, 0)),
-      bytes_per_row_(0),
-      needs_update_(true) {
-  }
+  explicit VideoFrameMac(const SkISize& size);
+  virtual ~VideoFrameMac();
 
-  // If the buffer is marked as needing to be updated (for example after the
-  // screen mode changes) and is the wrong size, then release the old buffer
-  // and create a new one.
-  void Update(const SkISize& size) {
-    if (needs_update_) {
-      needs_update_ = false;
-      size_t buffer_size = size.width() * size.height() * sizeof(uint32_t);
-      if (size != size_) {
-        size_ = size;
-        bytes_per_row_ = size.width() * sizeof(uint32_t);
-        ptr_.reset(new uint8[buffer_size]);
-      }
-      memset(ptr(), 0, buffer_size);
-
-      // TODO(wez): Move the ugly DPI code into a helper.
-      NSScreen* screen = [NSScreen mainScreen];
-      NSDictionary* attr = [screen deviceDescription];
-      NSSize resolution = [[attr objectForKey: NSDeviceResolution] sizeValue];
-      dpi_.set(resolution.width, resolution.height);
-    }
-  }
-
-  SkISize size() const { return size_; }
-  SkIPoint dpi() const { return dpi_; }
-  int bytes_per_row() const { return bytes_per_row_; }
-  uint8* ptr() const { return ptr_.get(); }
-
-  void set_needs_update() { needs_update_ = true; }
+  const SkIPoint& dpi() const { return dpi_; }
 
  private:
-  SkISize size_;
-  SkIPoint dpi_;
-  int bytes_per_row_;
-  scoped_array<uint8> ptr_;
-  bool needs_update_;
+  // Allocated pixel buffer.
+  scoped_array<uint8> data_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoFrameBuffer);
+  // DPI settings for this buffer.
+  SkIPoint dpi_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameMac);
 };
 
 // A class to perform video frame capturing for mac.
@@ -123,10 +94,10 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
  private:
   void CaptureCursor();
 
-  void GlBlitFast(const VideoFrameBuffer& buffer, const SkRegion& region);
-  void GlBlitSlow(const VideoFrameBuffer& buffer);
-  void CgBlitPreLion(const VideoFrameBuffer& buffer, const SkRegion& region);
-  void CgBlitPostLion(const VideoFrameBuffer& buffer, const SkRegion& region);
+  void GlBlitFast(const VideoFrame& buffer, const SkRegion& region);
+  void GlBlitSlow(const VideoFrame& buffer);
+  void CgBlitPreLion(const VideoFrame& buffer, const SkRegion& region);
+  void CgBlitPostLion(const VideoFrame& buffer, const SkRegion& region);
 
   // Called when the screen configuration is changed.
   void ScreenConfigurationChanged();
@@ -153,9 +124,10 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   Delegate* delegate_;
 
   CGLContextObj cgl_context_;
-  static const int kNumBuffers = 2;
   ScopedPixelBufferObject pixel_buffer_object_;
-  VideoFrameBuffer buffers_[kNumBuffers];
+
+  // Queue of the frames buffers.
+  VideoFrameQueue queue_;
 
   // Current display configuration.
   std::vector<CGDirectDisplayID> display_ids_;
@@ -167,13 +139,6 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
 
   // Image of the last cursor that we sent to the client.
   base::mac::ScopedCFTypeRef<CGImageRef> current_cursor_;
-
-  // The current buffer with valid data for reading.
-  int current_buffer_;
-
-  // The previous buffer into which we captured, or NULL for the first capture
-  // for a particular screen resolution.
-  uint8* last_buffer_;
 
   // Contains an invalid region from the previous capture.
   SkRegion last_invalid_region_;
@@ -202,11 +167,27 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCapturerMac);
 };
 
+VideoFrameMac::VideoFrameMac(const SkISize& size) {
+  set_bytes_per_row(size.width() * sizeof(uint32_t));
+  set_dimensions(size);
+
+  size_t buffer_size = size.width() * size.height() * sizeof(uint32_t);
+  data_.reset(new  uint8[buffer_size]);
+  set_pixels(data_.get());
+
+  // TODO(wez): Move the ugly DPI code into a helper.
+  NSScreen* screen = [NSScreen mainScreen];
+  NSDictionary* attr = [screen deviceDescription];
+  NSSize resolution = [[attr objectForKey: NSDeviceResolution] sizeValue];
+  dpi_.set(resolution.width, resolution.height);
+}
+
+VideoFrameMac::~VideoFrameMac() {
+}
+
 VideoFrameCapturerMac::VideoFrameCapturerMac()
     : delegate_(NULL),
       cgl_context_(NULL),
-      current_buffer_(0),
-      last_buffer_(NULL),
       pixel_format_(media::VideoFrame::RGB32),
       display_configuration_capture_event_(false, true),
       power_assertion_id_display_(kIOPMNullAssertionID),
@@ -265,9 +246,7 @@ void VideoFrameCapturerMac::ReleaseBuffers() {
   // The buffers might be in use by the encoder, so don't delete them here.
   // Instead, mark them as "needs update"; next time the buffers are used by
   // the capturer, they will be recreated if necessary.
-  for (int i = 0; i < kNumBuffers; ++i) {
-    buffers_[i].set_needs_update();
-  }
+  queue_.SetAllFramesNeedUpdate();
 }
 
 void VideoFrameCapturerMac::Start(Delegate* delegate) {
@@ -319,47 +298,55 @@ void VideoFrameCapturerMac::CaptureInvalidRegion() {
       base::TimeDelta::FromSeconds(kDisplayReconfigurationTimeoutInSeconds)));
   SkRegion region;
   helper_.SwapInvalidRegion(&region);
-  VideoFrameBuffer& current_buffer = buffers_[current_buffer_];
-  current_buffer.Update(SkISize::Make(desktop_bounds_.width(),
-                                      desktop_bounds_.height()));
+
+  // If the current buffer is from an older generation then allocate a new one.
+  // Note that we can't reallocate other buffers at this point, since the caller
+  // may still be reading from them.
+  if (queue_.current_frame_needs_update()) {
+    scoped_ptr<VideoFrameMac> buffer(new VideoFrameMac(
+        SkISize::Make(desktop_bounds_.width(), desktop_bounds_.height())));
+    queue_.ReplaceCurrentFrame(buffer.PassAs<VideoFrame>());
+  }
+
+  VideoFrame* current_buffer = queue_.current_frame();
 
   bool flip = false;  // GL capturers need flipping.
   if (base::mac::IsOSLionOrLater()) {
     // Lion requires us to use their new APIs for doing screen capture. These
     // APIS currently crash on 10.6.8 if there is no monitor attached.
-    CgBlitPostLion(current_buffer, region);
+    CgBlitPostLion(*current_buffer, region);
   } else if (cgl_context_) {
     flip = true;
     if (pixel_buffer_object_.get() != 0) {
-      GlBlitFast(current_buffer, region);
+      GlBlitFast(*current_buffer, region);
     } else {
       // See comment in ScopedPixelBufferObject::Init about why the slow
       // path is always used on 10.5.
-      GlBlitSlow(current_buffer);
+      GlBlitSlow(*current_buffer);
     }
   } else {
-    CgBlitPreLion(current_buffer, region);
+    CgBlitPreLion(*current_buffer, region);
   }
 
   DataPlanes planes;
-  planes.data[0] = current_buffer.ptr();
-  planes.strides[0] = current_buffer.bytes_per_row();
+  planes.data[0] = current_buffer->pixels();
+  planes.strides[0] = current_buffer->bytes_per_row();
   if (flip) {
     planes.strides[0] = -planes.strides[0];
-    planes.data[0] +=
-        (current_buffer.size().height() - 1) * current_buffer.bytes_per_row();
+    planes.data[0] += (current_buffer->dimensions().height() - 1) *
+        current_buffer->bytes_per_row();
   }
 
-  data = new CaptureData(planes, current_buffer.size(), pixel_format());
-  data->set_dpi(current_buffer.dpi());
+  data = new CaptureData(planes, current_buffer->dimensions(), pixel_format());
+  data->set_dpi(static_cast<VideoFrameMac*>(current_buffer)->dpi());
   data->mutable_dirty_region() = region;
 
-  current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
   helper_.set_size_most_recent(data->size());
   display_configuration_capture_event_.Signal();
 
   CaptureCursor();
 
+  queue_.DoneWithCurrentFrame();
   delegate_->OnCaptureCompleted(data);
 }
 
@@ -445,14 +432,14 @@ void VideoFrameCapturerMac::CaptureCursor() {
   current_cursor_.reset(CGImageCreateCopy(image));
 }
 
-void VideoFrameCapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
+void VideoFrameCapturerMac::GlBlitFast(const VideoFrame& buffer,
                                        const SkRegion& region) {
-  const int buffer_height = buffer.size().height();
-  const int buffer_width = buffer.size().width();
+  const int buffer_height = buffer.dimensions().height();
+  const int buffer_width = buffer.dimensions().width();
 
   // Clip to the size of our current screen.
   SkIRect clip_rect = SkIRect::MakeWH(buffer_width, buffer_height);
-  if (last_buffer_) {
+  if (queue_.previous_frame()) {
     // We are doing double buffer for the capture data so we just need to copy
     // the invalid region from the previous capture in the current buffer.
     // TODO(hclam): We can reduce the amount of copying here by subtracting
@@ -465,16 +452,15 @@ void VideoFrameCapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
     for(SkRegion::Iterator i(last_invalid_region_); !i.done(); i.next()) {
       SkIRect copy_rect = i.rect();
       if (copy_rect.intersect(clip_rect)) {
-        CopyRect(last_buffer_ + y_offset,
+        CopyRect(queue_.previous_frame()->pixels() + y_offset,
                  -buffer.bytes_per_row(),
-                 buffer.ptr() + y_offset,
+                 buffer.pixels() + y_offset,
                  -buffer.bytes_per_row(),
                  4,  // Bytes for pixel for RGBA.
                  copy_rect);
       }
     }
   }
-  last_buffer_ = buffer.ptr();
   last_invalid_region_ = region;
 
   CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
@@ -495,7 +481,7 @@ void VideoFrameCapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
       if (copy_rect.intersect(clip_rect)) {
         CopyRect(ptr + y_offset,
            -buffer.bytes_per_row(),
-           buffer.ptr() + y_offset,
+           buffer.pixels() + y_offset,
            -buffer.bytes_per_row(),
            4,  // Bytes for pixel for RGBA.
            copy_rect);
@@ -513,7 +499,7 @@ void VideoFrameCapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
   glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
 }
 
-void VideoFrameCapturerMac::GlBlitSlow(const VideoFrameBuffer& buffer) {
+void VideoFrameCapturerMac::GlBlitSlow(const VideoFrame& buffer) {
   CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
   glReadBuffer(GL_FRONT);
   glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
@@ -522,21 +508,23 @@ void VideoFrameCapturerMac::GlBlitSlow(const VideoFrameBuffer& buffer) {
   glPixelStorei(GL_PACK_SKIP_ROWS, 0);
   glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
   // Read a block of pixels from the frame buffer.
-  glReadPixels(0, 0, buffer.size().width(), buffer.size().height(),
-               GL_BGRA, GL_UNSIGNED_BYTE, buffer.ptr());
+  glReadPixels(0, 0, buffer.dimensions().width(), buffer.dimensions().height(),
+               GL_BGRA, GL_UNSIGNED_BYTE, buffer.pixels());
   glPopClientAttrib();
 }
 
-void VideoFrameCapturerMac::CgBlitPreLion(const VideoFrameBuffer& buffer,
+void VideoFrameCapturerMac::CgBlitPreLion(const VideoFrame& buffer,
                                           const SkRegion& region) {
-  const int buffer_height = buffer.size().height();
+  const int buffer_height = buffer.dimensions().height();
 
   // Copy the entire contents of the previous capture buffer, to capture over.
   // TODO(wez): Get rid of this as per crbug.com/145064, or implement
   // crbug.com/92354.
-  if (last_buffer_)
-    memcpy(buffer.ptr(), last_buffer_, buffer.bytes_per_row() * buffer_height);
-  last_buffer_ = buffer.ptr();
+  if (queue_.previous_frame()) {
+    memcpy(buffer.pixels(),
+           queue_.previous_frame()->pixels(),
+           buffer.bytes_per_row() * buffer_height);
+  }
 
   for (unsigned int d = 0; d < display_ids_.size(); ++d) {
     // Use deprecated APIs to determine the display buffer layout.
@@ -562,7 +550,7 @@ void VideoFrameCapturerMac::CgBlitPreLion(const VideoFrameBuffer& buffer,
     copy_region.translate(-display_bounds.left(), -display_bounds.top());
 
     // Calculate where in the output buffer the display's origin is.
-    uint8* out_ptr = buffer.ptr() +
+    uint8* out_ptr = buffer.pixels() +
          (display_bounds.left() * src_bytes_per_pixel) +
          (display_bounds.top() * buffer.bytes_per_row());
 
@@ -578,16 +566,18 @@ void VideoFrameCapturerMac::CgBlitPreLion(const VideoFrameBuffer& buffer,
   }
 }
 
-void VideoFrameCapturerMac::CgBlitPostLion(const VideoFrameBuffer& buffer,
+void VideoFrameCapturerMac::CgBlitPostLion(const VideoFrame& buffer,
                                            const SkRegion& region) {
-  const int buffer_height = buffer.size().height();
+  const int buffer_height = buffer.dimensions().height();
 
   // Copy the entire contents of the previous capture buffer, to capture over.
   // TODO(wez): Get rid of this as per crbug.com/145064, or implement
   // crbug.com/92354.
-  if (last_buffer_)
-    memcpy(buffer.ptr(), last_buffer_, buffer.bytes_per_row() * buffer_height);
-  last_buffer_ = buffer.ptr();
+  if (queue_.previous_frame()) {
+    memcpy(buffer.pixels(),
+           queue_.previous_frame()->pixels(),
+           buffer.bytes_per_row() * buffer_height);
+  }
 
   for (unsigned int d = 0; d < display_ids_.size(); ++d) {
     // Determine the position of the display in the buffer.
@@ -620,7 +610,7 @@ void VideoFrameCapturerMac::CgBlitPostLion(const VideoFrameBuffer& buffer,
     int src_bytes_per_pixel = CGImageGetBitsPerPixel(image) / 8;
 
     // Calculate where in the output buffer the display's origin is.
-    uint8* out_ptr = buffer.ptr() +
+    uint8* out_ptr = buffer.pixels() +
         (display_bounds.left() * src_bytes_per_pixel) +
         (display_bounds.top() * buffer.bytes_per_row());
 
@@ -643,7 +633,6 @@ const SkISize& VideoFrameCapturerMac::size_most_recent() const {
 void VideoFrameCapturerMac::ScreenConfigurationChanged() {
   // Release existing buffers, which will be of the wrong size.
   ReleaseBuffers();
-  last_buffer_ = NULL;
 
   // Clear the dirty region, in case the display is down-sizing.
   helper_.ClearInvalidRegion();
@@ -668,6 +657,9 @@ void VideoFrameCapturerMac::ScreenConfigurationChanged() {
   // Re-mark the entire desktop as dirty.
   helper_.InvalidateScreen(SkISize::Make(desktop_bounds_.width(),
                                          desktop_bounds_.height()));
+
+  // Make sure the frame buffers will be reallocated.
+  queue_.SetAllFramesNeedUpdate();
 
   // CgBlitPostLion uses CGDisplayCreateImage() to snapshot each display's
   // contents. Although the API exists in OS 10.6, it crashes the caller if
