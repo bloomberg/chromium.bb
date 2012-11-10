@@ -6,17 +6,8 @@
 
 #include "base/file_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/system_monitor/removable_device_constants.h"
 #include "content/public/browser/browser_thread.h"
-
-namespace {
-
-#if defined(OS_WIN)
-const wchar_t kDCIMDirName[] = L"DCIM";
-#else
-const char kDCIMDirName[] = "DCIM";
-#endif
-
-}  // namespace
 
 namespace chrome {
 
@@ -24,7 +15,7 @@ bool IsMediaDevice(const FilePath::StringType& mount_point) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   FilePath dcim_path(mount_point);
-  FilePath::StringType dcim_dir = kDCIMDirName;
+  FilePath::StringType dcim_dir(kDCIMDirectoryName);
   if (!file_util::DirectoryExists(dcim_path.Append(dcim_dir))) {
     // Check for lowercase 'dcim' as well.
     FilePath dcim_path_lower(dcim_path.Append(StringToLowerASCII(dcim_dir)));

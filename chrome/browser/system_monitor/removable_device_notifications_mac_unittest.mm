@@ -13,6 +13,7 @@
 #include "base/test/mock_devices_changed_observer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
+#include "chrome/browser/system_monitor/removable_device_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -139,7 +140,7 @@ TEST_F(RemovableDeviceNotificationsMacTest, UpdateVolumeName) {
 TEST_F(RemovableDeviceNotificationsMacTest, DCIM) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  file_util::CreateDirectory(temp_dir.path().AppendASCII("DCIM"));
+  file_util::CreateDirectory(temp_dir.path().Append(kDCIMDirectoryName));
 
   FilePath mount_point = temp_dir.path();
   DiskInfoMac info = CreateDiskInfoMac(

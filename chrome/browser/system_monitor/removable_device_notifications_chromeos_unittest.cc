@@ -116,7 +116,7 @@ class RemovableDeviceNotificationsCrosTest : public testing::Test {
     return_path = return_path.AppendASCII(dir);
     FilePath path(return_path);
     if (with_dcim_dir)
-      path = path.AppendASCII("DCIM");
+      path = path.Append(chrome::kDCIMDirectoryName);
     if (!file_util::CreateDirectory(path))
       return FilePath();
     return return_path;

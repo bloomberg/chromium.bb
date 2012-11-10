@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_CONSTANTS_H_
 #define CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_CONSTANTS_H_
 
+#include "base/file_path.h"
 #include "base/string16.h"
 #include "build/build_config.h"
 
@@ -22,6 +23,8 @@ extern const char kVendorModelVolumeStoragePrefix[];
 // Windows portable device interface GUID constant.
 extern const char16 kWPDDevInterfaceGUID[];
 #endif
+
+extern const FilePath::CharType kDCIMDirectoryName[];
 
 }  // namespace chrome
 

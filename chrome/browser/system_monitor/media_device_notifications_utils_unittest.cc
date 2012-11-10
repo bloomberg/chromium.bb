@@ -8,20 +8,11 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
+#include "chrome/browser/system_monitor/removable_device_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome {
-
-namespace {
-
-#if defined(OS_WIN)
-const wchar_t kDCIMDirName[] = L"DCIM";
-#else
-const char kDCIMDirName[] = "DCIM";
-#endif
-
-}  // namespace
 
 using content::BrowserThread;
 
@@ -46,7 +37,7 @@ class MediaDeviceNotificationUtilsTest : public testing::Test {
   FilePath CreateMountPoint(bool create_dcim_dir) {
     FilePath path(scoped_temp_dir_.path());
     if (create_dcim_dir)
-      path = path.Append(kDCIMDirName);
+      path = path.Append(kDCIMDirectoryName);
     if (!file_util::CreateDirectory(path))
       return FilePath();
     return scoped_temp_dir_.path();

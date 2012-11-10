@@ -20,6 +20,7 @@
 #include "base/test/mock_devices_changed_observer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
+#include "chrome/browser/system_monitor/removable_device_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,8 +47,6 @@ const char kMountPointA[] = "mnt_a";
 const char kMountPointB[] = "mnt_b";
 const char kMountPointC[] = "mnt_c";
 
-const char kDCIM[] = "DCIM";
-
 struct TestDeviceData {
   const char* device_path;
   const char* unique_id;
@@ -56,16 +55,16 @@ struct TestDeviceData {
 };
 
 const TestDeviceData kTestDeviceData[] = {
-  {kDeviceDCIM1, "UUID:FFF0-000F", "TEST_USB_MODEL_1",
-   MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM},
-  {kDeviceDCIM2, "VendorModelSerial:ComName:Model2010:8989", "TEST_USB_MODEL_2",
-   MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM},
-  {kDeviceDCIM3, "VendorModelSerial:::WEM319X792", "TEST_USB_MODEL_3",
-   MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM},
-  {kDeviceNoDCIM, "UUID:ABCD-1234", "TEST_USB_MODEL_4",
-   MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM},
-  {kDeviceFixed, "UUID:743A91FD2349", "TEST_USB_MODEL_5",
-   MediaStorageUtil::FIXED_MASS_STORAGE},
+  { kDeviceDCIM1, "UUID:FFF0-000F", "TEST_USB_MODEL_1",
+    MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM},
+  { kDeviceDCIM2, "VendorModelSerial:ComName:Model2010:8989",
+    "TEST_USB_MODEL_2", MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM},
+  { kDeviceDCIM3, "VendorModelSerial:::WEM319X792", "TEST_USB_MODEL_3",
+    MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM},
+  { kDeviceNoDCIM, "UUID:ABCD-1234", "TEST_USB_MODEL_4",
+    MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM},
+  { kDeviceFixed, "UUID:743A91FD2349", "TEST_USB_MODEL_5",
+    MediaStorageUtil::FIXED_MASS_STORAGE},
 };
 
 void GetDeviceInfo(const FilePath& device_path, std::string* id,
@@ -110,7 +109,7 @@ string16 GetDeviceName(const std::string& device) {
 }
 
 class RemovableDeviceNotificationsLinuxTestWrapper
-   : public RemovableDeviceNotificationsLinux {
+    : public RemovableDeviceNotificationsLinux {
  public:
   RemovableDeviceNotificationsLinuxTestWrapper(const FilePath& path,
                                                MessageLoop* message_loop)
@@ -224,7 +223,8 @@ class RemovableDeviceNotificationLinuxTest : public testing::Test {
   }
 
   void RemoveDCIMDirFromMountPoint(const std::string& dir) {
-    FilePath dcim(scoped_temp_dir_.path().AppendASCII(dir).AppendASCII(kDCIM));
+    FilePath dcim =
+        scoped_temp_dir_.path().AppendASCII(dir).Append(kDCIMDirectoryName);
     file_util::Delete(dcim, false);
   }
 
@@ -247,7 +247,7 @@ class RemovableDeviceNotificationLinuxTest : public testing::Test {
     return_path = return_path.AppendASCII(dir);
     FilePath path(return_path);
     if (with_dcim_dir)
-      path = path.AppendASCII(kDCIM);
+      path = path.Append(kDCIMDirectoryName);
     if (!file_util::CreateDirectory(path))
       return FilePath();
     return return_path;
@@ -537,7 +537,7 @@ TEST_F(RemovableDeviceNotificationLinuxTest,
   };
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(2);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(1);
-  file_util::Delete(test_path_b.Append("DCIM"), false);
+  file_util::Delete(test_path_b.Append(kDCIMDirectoryName), false);
   AppendToMtabAndRunLoop(test_data5, arraysize(test_data5));
 
   // Detach |kDeviceNoDCIM|.
