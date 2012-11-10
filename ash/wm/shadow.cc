@@ -18,7 +18,7 @@ const float kInactiveShadowOpacity = 0.2f;
 const float kSmallShadowOpacity = 1.0f;
 
 // Duration for opacity animation in milliseconds.
-const int kAnimationDurationMs = 120;
+const int kShadowAnimationDurationMs = 100;
 
 float GetOpacityForStyle(ash::internal::Shadow::Style style) {
   switch (style) {
@@ -94,7 +94,7 @@ void Shadow::SetStyle(Style style) {
     ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
     settings.AddObserver(this);
     settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+        base::TimeDelta::FromMilliseconds(kShadowAnimationDurationMs));
     switch (style_) {
       case STYLE_ACTIVE:
         image_grid_->layer()->SetOpacity(kActiveShadowOpacity);

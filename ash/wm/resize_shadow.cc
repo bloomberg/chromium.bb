@@ -18,7 +18,7 @@ namespace {
 // Final opacity for resize effect.
 const float kShadowTargetOpacity = 0.25f;
 // Animation time for resize effect in milliseconds.
-const int kShadowAnimationDurationMs = 200;
+const int kShadowAnimationDurationMs = 100;
 
 // Sets up a layer as invisible and fully transparent, without animating.
 void InitLayer(ui::Layer* layer) {
