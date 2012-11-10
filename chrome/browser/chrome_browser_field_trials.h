@@ -49,9 +49,6 @@ class ChromeBrowserFieldTrials {
   // Disables the new tab field trial if not running in desktop mode.
   void DisableNewTabFieldTrialIfNecesssary();
 
-  // Sets up the Safe Browsing interstitial redesign trial.
-  void SetUpSafeBrowsingInterstitialFieldTrial();
-
   // Sets up the InfiniteCache field trial.
   void SetUpInfiniteCacheFieldTrial();
 

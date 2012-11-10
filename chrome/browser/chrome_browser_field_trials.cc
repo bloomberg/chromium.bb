@@ -133,7 +133,6 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(
   SetupUniformityFieldTrials(install_time);
   AutocompleteFieldTrial::Activate();
   DisableNewTabFieldTrialIfNecesssary();
-  SetUpSafeBrowsingInterstitialFieldTrial();
   SetUpInfiniteCacheFieldTrial();
   SetUpCacheSensitivityAnalysisFieldTrial();
   WindowsOverlappedTCPReadsFieldTrial();
@@ -282,16 +281,6 @@ void ChromeBrowserFieldTrials::DisableNewTabFieldTrialIfNecesssary() {
     if (ui::GetDisplayLayout() != ui::LAYOUT_DESKTOP || using_hidpi_assets)
       trial->Disable();
   }
-}
-
-void ChromeBrowserFieldTrials::SetUpSafeBrowsingInterstitialFieldTrial() {
-  const base::FieldTrial::Probability kDivisor = 100;
-  const base::FieldTrial::Probability kVersion2Probability = 50;  // 50% prob.
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial("SBInterstitial", kDivisor,
-                                                 "V1", 2012, 10, 23, NULL));
-  trial->UseOneTimeRandomization();
-  trial->AppendGroup("V2", kVersion2Probability);
 }
 
 void ChromeBrowserFieldTrials::SetUpInfiniteCacheFieldTrial() {

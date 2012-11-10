@@ -32,12 +32,27 @@ static const char* kBadURL3 = "http://www.badguys3.com/";
 namespace {
 
 // A SafeBrowingBlockingPage class that does not create windows.
-class TestSafeBrowsingBlockingPage :  public SafeBrowsingBlockingPageV1 {
+class TestSafeBrowsingBlockingPageV1 :  public SafeBrowsingBlockingPageV1 {
  public:
-  TestSafeBrowsingBlockingPage(SafeBrowsingService* service,
-                               WebContents* web_contents,
-                               const UnsafeResourceList& unsafe_resources)
+  TestSafeBrowsingBlockingPageV1(SafeBrowsingService* service,
+                                 WebContents* web_contents,
+                                 const UnsafeResourceList& unsafe_resources)
       : SafeBrowsingBlockingPageV1(service, web_contents, unsafe_resources) {
+    // Don't delay details at all for the unittest.
+    malware_details_proceed_delay_ms_ = 0;
+
+    // Don't create a view.
+    interstitial_page()->DontCreateViewForTesting();
+  }
+};
+
+// A SafeBrowingBlockingPage class that does not create windows.
+class TestSafeBrowsingBlockingPageV2 :  public SafeBrowsingBlockingPageV2 {
+ public:
+  TestSafeBrowsingBlockingPageV2(SafeBrowsingService* service,
+                                 WebContents* web_contents,
+                                 const UnsafeResourceList& unsafe_resources)
+      : SafeBrowsingBlockingPageV2(service, web_contents, unsafe_resources) {
     // Don't delay details at all for the unittest.
     malware_details_proceed_delay_ms_ = 0;
 
@@ -72,8 +87,16 @@ class TestSafeBrowsingBlockingPageFactory
       SafeBrowsingService* service,
       WebContents* web_contents,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources) {
-    return new TestSafeBrowsingBlockingPage(service, web_contents,
-                                            unsafe_resources);
+    // TODO(mattm): remove this when SafeBrowsingBlockingPageV2 supports
+    // multi-threat warnings.
+    if (unsafe_resources.size() == 1 &&
+        (unsafe_resources[0].threat_type == SB_THREAT_TYPE_URL_MALWARE ||
+         unsafe_resources[0].threat_type == SB_THREAT_TYPE_URL_PHISHING)) {
+      return new TestSafeBrowsingBlockingPageV2(service, web_contents,
+          unsafe_resources);
+    }
+    return new TestSafeBrowsingBlockingPageV1(service, web_contents,
+                                              unsafe_resources);
   }
 };
 

@@ -30,7 +30,6 @@ IsolatedAppTest.*
 ProxyBrowserTest.*
 RedirectTest.*
 SafeBrowsingBlockingPageTest.*
-SafeBrowsingBlockingPageV2Test.*
 SSLUITest.*
 SSLUITestIgnoreCertErrors.*
 # DrM-i#1052-c#3
