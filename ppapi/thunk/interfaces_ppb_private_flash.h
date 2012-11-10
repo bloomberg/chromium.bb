@@ -65,9 +65,4 @@ PROXIED_IFACE(PPB_Flash_MessageLoop,
               PPB_FLASH_MESSAGELOOP_INTERFACE_0_1,
               PPB_Flash_MessageLoop_0_1)
 
-// TCPSocketPrivate is defined in the normal private interfaces.
-PROXIED_IFACE(PPB_TCPSocket_Private,
-              PPB_FLASH_TCPSOCKET_INTERFACE_0_2,
-              PPB_TCPSocket_Private_0_3)
-
 #include "ppapi/thunk/interfaces_postamble.h"

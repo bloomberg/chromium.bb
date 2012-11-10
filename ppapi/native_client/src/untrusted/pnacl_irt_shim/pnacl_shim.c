@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: Thu Nov  8 11:15:32 2012. */
+/* Last generated from IDL: Fri Nov  9 15:24:06 2012. */
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"
@@ -76,7 +76,6 @@
 #include "ppapi/c/private/ppb_flash_fullscreen.h"
 #include "ppapi/c/private/ppb_flash_message_loop.h"
 #include "ppapi/c/private/ppb_flash_print.h"
-#include "ppapi/c/private/ppb_flash_tcp_socket.h"
 #include "ppapi/c/private/ppb_gpu_blacklist_private.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_instance_private.h"
@@ -221,7 +220,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FlashFullscreen_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FlashFullscreen_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_MessageLoop_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Print_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_GpuBlacklist_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_Private_0_1;
@@ -2684,70 +2682,6 @@ int32_t Pnacl_M21_PPB_Flash_DeviceID_GetDeviceID(PP_Resource device_id, struct P
 
 /* Not generating wrapper methods for PPB_Flash_Print_1_0 */
 
-/* Begin wrapper methods for PPB_Flash_TCPSocket_0_2 */
-
-static __attribute__((pnaclcall))
-PP_Resource Pnacl_M15_PPB_Flash_TCPSocket_Create(PP_Instance instance) {
-  const struct PPB_Flash_TCPSocket_0_2 *iface = Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2.real_iface;
-  return iface->Create(instance);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M15_PPB_Flash_TCPSocket_IsFlashTCPSocket(PP_Resource resource) {
-  const struct PPB_Flash_TCPSocket_0_2 *iface = Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2.real_iface;
-  return iface->IsFlashTCPSocket(resource);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M15_PPB_Flash_TCPSocket_Connect(PP_Resource tcp_socket, const char* host, uint16_t port, struct PP_CompletionCallback callback) {
-  const struct PPB_Flash_TCPSocket_0_2 *iface = Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2.real_iface;
-  return iface->Connect(tcp_socket, host, port, callback);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M15_PPB_Flash_TCPSocket_ConnectWithNetAddress(PP_Resource tcp_socket, const struct PP_NetAddress_Private* addr, struct PP_CompletionCallback callback) {
-  const struct PPB_Flash_TCPSocket_0_2 *iface = Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2.real_iface;
-  return iface->ConnectWithNetAddress(tcp_socket, addr, callback);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M15_PPB_Flash_TCPSocket_GetLocalAddress(PP_Resource tcp_socket, struct PP_NetAddress_Private* local_addr) {
-  const struct PPB_Flash_TCPSocket_0_2 *iface = Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2.real_iface;
-  return iface->GetLocalAddress(tcp_socket, local_addr);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M15_PPB_Flash_TCPSocket_GetRemoteAddress(PP_Resource tcp_socket, struct PP_NetAddress_Private* remote_addr) {
-  const struct PPB_Flash_TCPSocket_0_2 *iface = Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2.real_iface;
-  return iface->GetRemoteAddress(tcp_socket, remote_addr);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M15_PPB_Flash_TCPSocket_SSLHandshake(PP_Resource tcp_socket, const char* server_name, uint16_t server_port, struct PP_CompletionCallback callback) {
-  const struct PPB_Flash_TCPSocket_0_2 *iface = Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2.real_iface;
-  return iface->SSLHandshake(tcp_socket, server_name, server_port, callback);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M15_PPB_Flash_TCPSocket_Read(PP_Resource tcp_socket, char* buffer, int32_t bytes_to_read, struct PP_CompletionCallback callback) {
-  const struct PPB_Flash_TCPSocket_0_2 *iface = Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2.real_iface;
-  return iface->Read(tcp_socket, buffer, bytes_to_read, callback);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M15_PPB_Flash_TCPSocket_Write(PP_Resource tcp_socket, const char* buffer, int32_t bytes_to_write, struct PP_CompletionCallback callback) {
-  const struct PPB_Flash_TCPSocket_0_2 *iface = Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2.real_iface;
-  return iface->Write(tcp_socket, buffer, bytes_to_write, callback);
-}
-
-static __attribute__((pnaclcall))
-void Pnacl_M15_PPB_Flash_TCPSocket_Disconnect(PP_Resource tcp_socket) {
-  const struct PPB_Flash_TCPSocket_0_2 *iface = Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2.real_iface;
-  iface->Disconnect(tcp_socket);
-}
-
-/* End wrapper methods for PPB_Flash_TCPSocket_0_2 */
-
 /* Not generating wrapper methods for PPB_GpuBlacklist_Private_0_2 */
 
 /* Begin wrapper methods for PPB_HostResolver_Private_0_1 */
@@ -4114,19 +4048,6 @@ struct PPB_Flash_DeviceID_1_0 Pnacl_Wrappers_PPB_Flash_DeviceID_1_0 = {
 
 /* Not generating wrapper interface for PPB_Flash_Print_1_0 */
 
-struct PPB_Flash_TCPSocket_0_2 Pnacl_Wrappers_PPB_Flash_TCPSocket_0_2 = {
-    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M15_PPB_Flash_TCPSocket_Create,
-    .IsFlashTCPSocket = (PP_Bool (*)(PP_Resource resource))&Pnacl_M15_PPB_Flash_TCPSocket_IsFlashTCPSocket,
-    .Connect = (int32_t (*)(PP_Resource tcp_socket, const char* host, uint16_t port, struct PP_CompletionCallback callback))&Pnacl_M15_PPB_Flash_TCPSocket_Connect,
-    .ConnectWithNetAddress = (int32_t (*)(PP_Resource tcp_socket, const struct PP_NetAddress_Private* addr, struct PP_CompletionCallback callback))&Pnacl_M15_PPB_Flash_TCPSocket_ConnectWithNetAddress,
-    .GetLocalAddress = (PP_Bool (*)(PP_Resource tcp_socket, struct PP_NetAddress_Private* local_addr))&Pnacl_M15_PPB_Flash_TCPSocket_GetLocalAddress,
-    .GetRemoteAddress = (PP_Bool (*)(PP_Resource tcp_socket, struct PP_NetAddress_Private* remote_addr))&Pnacl_M15_PPB_Flash_TCPSocket_GetRemoteAddress,
-    .SSLHandshake = (int32_t (*)(PP_Resource tcp_socket, const char* server_name, uint16_t server_port, struct PP_CompletionCallback callback))&Pnacl_M15_PPB_Flash_TCPSocket_SSLHandshake,
-    .Read = (int32_t (*)(PP_Resource tcp_socket, char* buffer, int32_t bytes_to_read, struct PP_CompletionCallback callback))&Pnacl_M15_PPB_Flash_TCPSocket_Read,
-    .Write = (int32_t (*)(PP_Resource tcp_socket, const char* buffer, int32_t bytes_to_write, struct PP_CompletionCallback callback))&Pnacl_M15_PPB_Flash_TCPSocket_Write,
-    .Disconnect = (void (*)(PP_Resource tcp_socket))&Pnacl_M15_PPB_Flash_TCPSocket_Disconnect
-};
-
 /* Not generating wrapper interface for PPB_GpuBlacklist_Private_0_2 */
 
 struct PPB_HostResolver_Private_0_1 Pnacl_Wrappers_PPB_HostResolver_Private_0_1 = {
@@ -4941,12 +4862,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Print_1_0 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2 = {
-  .iface_macro = PPB_FLASH_TCPSOCKET_INTERFACE_0_2,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Flash_TCPSocket_0_2,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_GpuBlacklist_Private_0_2 = {
   .iface_macro = PPB_GPUBLACKLIST_PRIVATE_INTERFACE_0_2,
   .wrapped_iface = NULL /* Still need slot for real_iface */,
@@ -5172,7 +5087,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_FlashFullscreen_1_0,
   &Pnacl_WrapperInfo_PPB_Flash_MessageLoop_0_1,
   &Pnacl_WrapperInfo_PPB_Flash_Print_1_0,
-  &Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2,
   &Pnacl_WrapperInfo_PPB_GpuBlacklist_Private_0_2,
   &Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Instance_Private_0_1,
