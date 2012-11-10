@@ -449,9 +449,10 @@ void MultiDisplayManager::ScaleDisplayImpl() {
        iter != displays_.end(); ++iter) {
     gfx::Display display = *iter;
     float factor = display.device_scale_factor() == 1.0f ? 2.0f : 1.0f;
-    display.SetScaleAndBounds(
-        factor, gfx::Rect(display.bounds_in_pixel().origin(),
-                          gfx::ToFlooredSize(display.size().Scale(factor))));
+    gfx::Point display_origin = display.bounds_in_pixel().origin();
+    gfx::Size display_size = gfx::ToFlooredSize(
+        gfx::ScaleSize(display.size(), factor));
+    display.SetScaleAndBounds(factor, gfx::Rect(display_origin, display_size));
     new_displays.push_back(display);
   }
   OnNativeDisplaysChanged(new_displays);

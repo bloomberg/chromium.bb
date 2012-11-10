@@ -184,7 +184,7 @@ class EmptyImageSource: public gfx::ImageSkiaSource {
   virtual gfx::ImageSkiaRep GetImageForScale(
       ui::ScaleFactor scale_factor) OVERRIDE {
     gfx::Size pixel_size = gfx::ToFlooredSize(
-        size_.Scale(ui::GetScaleFactorScale(scale_factor)));
+        gfx::ScaleSize(size_, ui::GetScaleFactorScale(scale_factor)));
     SkBitmap empty_bitmap = GetEmptyBitmap(pixel_size);
     return gfx::ImageSkiaRep(empty_bitmap, scale_factor);
   }

@@ -88,8 +88,8 @@ gfx::Size GetCopySizeForThumbnail(content::RenderWidgetHostView* view) {
       ui::GetScaleFactorForNativeView(view->GetNativeView());
   switch (scale_factor) {
     case ui::SCALE_FACTOR_100P:
-      copy_size = gfx::ToFlooredSize(
-          copy_size.Scale(ui::GetScaleFactorScale(ui::SCALE_FACTOR_200P)));
+      copy_size = gfx::ToFlooredSize(gfx::ScaleSize(
+          copy_size, ui::GetScaleFactorScale(ui::SCALE_FACTOR_200P)));
       break;
     case ui::SCALE_FACTOR_200P:
       // Use the size as-is.
@@ -97,8 +97,8 @@ gfx::Size GetCopySizeForThumbnail(content::RenderWidgetHostView* view) {
     default:
       DLOG(WARNING) << "Unsupported scale factor. Use the same copy size as "
                     << "ui::SCALE_FACTOR_100P";
-      copy_size = gfx::ToFlooredSize(
-          copy_size.Scale(ui::GetScaleFactorScale(ui::SCALE_FACTOR_200P)));
+      copy_size = gfx::ToFlooredSize(gfx::ScaleSize(
+          copy_size, ui::GetScaleFactorScale(ui::SCALE_FACTOR_200P)));
       break;
   }
   return copy_size;
@@ -113,7 +113,7 @@ gfx::Size GetThumbnailSizeInPixel() {
   // crbug.com/159157.
   float max_scale_factor =
       ui::GetScaleFactorScale(ui::GetMaxScaleFactor());
-  return gfx::ToFlooredSize(thumbnail_size.Scale(max_scale_factor));
+  return gfx::ToFlooredSize(gfx::ScaleSize(thumbnail_size, max_scale_factor));
 }
 
 // Returns the clipping rectangle that is used for creating a thumbnail with

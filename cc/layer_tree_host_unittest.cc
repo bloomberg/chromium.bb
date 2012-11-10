@@ -1337,8 +1337,7 @@ public:
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 60, 60), root->renderSurface()->contentRect());
 
         // The content bounds of the child should be scaled.
-        gfx::Size childBoundsScaled = child->bounds();
-        childBoundsScaled = gfx::ToRoundedSize(childBoundsScaled.Scale(1.5));
+        gfx::Size childBoundsScaled = gfx::ToCeiledSize(gfx::ScaleSize(child->bounds(), 1.5));
         EXPECT_EQ(childBoundsScaled, child->contentBounds());
 
         WebTransformationMatrix scaleTransform;
@@ -2185,7 +2184,7 @@ public:
     virtual void beginTest() OVERRIDE
     {
         gfx::Size viewportSize(10, 10);
-        gfx::Size deviceViewportSize = gfx::ToCeiledSize(viewportSize.Scale(m_deviceScaleFactor));
+        gfx::Size deviceViewportSize = gfx::ToCeiledSize(gfx::ScaleSize(viewportSize, m_deviceScaleFactor));
         m_layerTreeHost->setViewportSize(viewportSize, deviceViewportSize);
 
         m_layerTreeHost->setDeviceScaleFactor(m_deviceScaleFactor);
@@ -2345,7 +2344,7 @@ public:
     virtual void beginTest() OVERRIDE
     {
         gfx::Size viewportSize(10, 10);
-        gfx::Size deviceViewportSize = gfx::ToCeiledSize(viewportSize.Scale(m_deviceScaleFactor));
+        gfx::Size deviceViewportSize = gfx::ToCeiledSize(gfx::ScaleSize(viewportSize, m_deviceScaleFactor));
         m_layerTreeHost->setViewportSize(viewportSize, deviceViewportSize);
 
         m_layerTreeHost->setDeviceScaleFactor(m_deviceScaleFactor);

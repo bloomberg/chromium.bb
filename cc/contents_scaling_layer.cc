@@ -15,7 +15,7 @@ ContentsScalingLayer::~ContentsScalingLayer() {
 }
 
 gfx::Size ContentsScalingLayer::contentBounds() const {
-  return gfx::ToCeiledSize(bounds().Scale(contentsScaleX(), contentsScaleY()));
+  return gfx::ToCeiledSize(gfx::ScaleSize(bounds(), contentsScaleX(), contentsScaleY()));
 }
 
 float ContentsScalingLayer::contentsScaleX() const {

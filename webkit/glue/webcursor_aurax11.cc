@@ -31,7 +31,7 @@ const ui::PlatformCursor WebCursor::GetPlatformCursor() {
     image = ui::SkBitmapToXcursorImage(&bitmap, hotspot_);
   } else {
     gfx::Size scaled_size = gfx::ToFlooredSize(
-        custom_size_.Scale(scale_factor_));
+        gfx::ScaleSize(custom_size_, scale_factor_));
     SkBitmap scaled_bitmap = skia::ImageOperations::Resize(bitmap,
         skia::ImageOperations::RESIZE_BETTER,
         scaled_size.width(),

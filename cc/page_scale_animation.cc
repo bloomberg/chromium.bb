@@ -99,7 +99,7 @@ void PageScaleAnimation::zoomWithAnchor(const gfx::Vector2dF& anchor, float targ
 
 gfx::SizeF PageScaleAnimation::viewportSizeAtScale(float pageScaleFactor) const
 {
-    return gfx::SizeF(m_viewportSize.width() / pageScaleFactor, m_viewportSize.height() / pageScaleFactor);
+    return gfx::ScaleSize(m_viewportSize, 1 / pageScaleFactor);
 }
 
 void PageScaleAnimation::inferTargetScrollOffsetFromStartAnchor()

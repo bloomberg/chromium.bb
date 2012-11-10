@@ -48,7 +48,7 @@ void RenderWidgetSnapshotTaker::AskForSnapshot(
   float scale_factor = ui::GetScaleFactorScale(ui::GetScaleFactorForNativeView(
       renderer->GetView()->GetNativeView()));
   gfx::Size desired_size_in_pixel = gfx::ToFlooredSize(
-      desired_size.Scale(scale_factor));
+      gfx::ScaleSize(desired_size, scale_factor));
   scoped_ptr<TransportDIB> thumbnail_dib(TransportDIB::Create(
       desired_size_in_pixel.GetArea() * 4, sequence_num));
 

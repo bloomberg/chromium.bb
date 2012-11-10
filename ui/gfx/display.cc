@@ -89,7 +89,7 @@ void Display::SetScaleAndBounds(
   bounds_in_pixel_ = bounds_in_pixel;
 #endif
   bounds_ = gfx::Rect(gfx::ToFlooredSize(
-      bounds_in_pixel.size().Scale(1.0f / device_scale_factor_)));
+      gfx::ScaleSize(bounds_in_pixel.size(), 1.0f / device_scale_factor_)));
   UpdateWorkAreaFromInsets(insets);
 }
 
@@ -109,7 +109,7 @@ void Display::UpdateWorkAreaFromInsets(const gfx::Insets& insets) {
 }
 
 gfx::Size Display::GetSizeInPixel() const {
-  return gfx::ToFlooredSize(size().Scale(device_scale_factor_));
+  return gfx::ToFlooredSize(gfx::ScaleSize(size(), device_scale_factor_));
 }
 
 std::string Display::ToString() const {

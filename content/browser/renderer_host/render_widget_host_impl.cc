@@ -1499,7 +1499,7 @@ void RenderWidgetHostImpl::OnMsgUpdateRect(
   if (dib) {
     DCHECK(!params.bitmap_rect.IsEmpty());
     gfx::Size pixel_size = gfx::ToFlooredSize(
-        params.bitmap_rect.size().Scale(params.scale_factor));
+        gfx::ScaleSize(params.bitmap_rect.size(), params.scale_factor));
     const size_t size = pixel_size.height() * pixel_size.width() * 4;
     if (dib->size() < size) {
       DLOG(WARNING) << "Transport DIB too small for given rectangle";

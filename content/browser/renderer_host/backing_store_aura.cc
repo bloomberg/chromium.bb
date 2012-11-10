@@ -29,7 +29,8 @@ BackingStoreAura::BackingStoreAura(RenderWidgetHost* widget,
     : BackingStore(widget, size) {
   device_scale_factor_ =
       ui::GetScaleFactorScale(GetScaleFactorForView(widget->GetView()));
-  gfx::Size pixel_size = gfx::ToFlooredSize(size.Scale(device_scale_factor_));
+  gfx::Size pixel_size = gfx::ToFlooredSize(
+      gfx::ScaleSize(size, device_scale_factor_));
   bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
       pixel_size.width(), pixel_size.height());
   bitmap_.allocPixels();
@@ -51,10 +52,11 @@ void BackingStoreAura::ScaleFactorChanged(float device_scale_factor) {
     return;
 
   gfx::Size old_pixel_size = gfx::ToFlooredSize(
-      size().Scale(device_scale_factor_));
+      gfx::ScaleSize(size(), device_scale_factor_));
   device_scale_factor_ = device_scale_factor;
 
-  gfx::Size pixel_size = gfx::ToFlooredSize(size().Scale(device_scale_factor_));
+  gfx::Size pixel_size = gfx::ToFlooredSize(
+      gfx::ScaleSize(size(), device_scale_factor_));
   SkBitmap new_bitmap;
   new_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
       pixel_size.width(), pixel_size.height());
@@ -76,7 +78,8 @@ void BackingStoreAura::ScaleFactorChanged(float device_scale_factor) {
 size_t BackingStoreAura::MemorySize() {
   // NOTE: The computation may be different when the canvas is a subrectangle of
   // a larger bitmap.
-  return gfx::ToFlooredSize(size().Scale(device_scale_factor_)).GetArea() * 4;
+  return gfx::ToFlooredSize(
+      gfx::ScaleSize(size(), device_scale_factor_)).GetArea() * 4;
 }
 
 void BackingStoreAura::PaintToBackingStore(

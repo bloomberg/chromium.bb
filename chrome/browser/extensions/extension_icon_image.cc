@@ -193,8 +193,8 @@ gfx::ImageSkiaRep IconImage::LoadImageForScaleFactor(
   info_list.push_back(ImageLoadingTracker::ImageRepresentation(
       resource,
       ImageLoadingTracker::ImageRepresentation::ALWAYS_RESIZE,
-      gfx::ToFlooredSize(
-          gfx::Size(resource_size_in_dip_, resource_size_in_dip_).Scale(scale)),
+      gfx::ToFlooredSize(gfx::ScaleSize(
+          gfx::Size(resource_size_in_dip_, resource_size_in_dip_), scale)),
       scale_factor));
   tracker_.LoadImages(extension_, info_list, ImageLoadingTracker::DONT_CACHE);
 

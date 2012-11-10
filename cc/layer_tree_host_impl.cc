@@ -297,10 +297,9 @@ void LayerTreeHostImpl::startPageScaleAnimation(gfx::Vector2d targetPosition, bo
     gfx::SizeF scaledContentSize = contentSize();
     if (!Settings::pageScalePinchZoomEnabled()) {
         scrollTotal.Scale(1 / m_pinchZoomViewport.pageScaleFactor());
-        scaledContentSize = scaledContentSize.Scale(1 / m_pinchZoomViewport.pageScaleFactor());
+        scaledContentSize.Scale(1 / m_pinchZoomViewport.pageScaleFactor());
     }
-    gfx::SizeF viewportSize = m_deviceViewportSize;
-    viewportSize = viewportSize.Scale(1 / m_deviceScaleFactor);
+    gfx::SizeF viewportSize = gfx::ScaleSize(m_deviceViewportSize, 1 / m_deviceScaleFactor);
 
     double startTimeSeconds = (startTime - base::TimeTicks()).InSecondsF();
     m_pageScaleAnimation = PageScaleAnimation::create(scrollTotal, m_pinchZoomViewport.totalPageScaleFactor(), viewportSize, scaledContentSize, startTimeSeconds);
@@ -983,10 +982,8 @@ void LayerTreeHostImpl::updateMaxScrollOffset()
     gfx::SizeF viewBounds = m_deviceViewportSize;
     if (LayerImpl* clipLayer = m_rootScrollLayerImpl->parent()) {
         // Compensate for non-overlay scrollbars.
-        if (clipLayer->masksToBounds()) {
-            viewBounds = clipLayer->bounds();
-            viewBounds = viewBounds.Scale(m_deviceScaleFactor);
-        }
+        if (clipLayer->masksToBounds())
+            viewBounds = gfx::ScaleSize(clipLayer->bounds(), m_deviceScaleFactor);
     }
 
     gfx::Size contentBounds = contentSize();
@@ -998,7 +995,7 @@ void LayerTreeHostImpl::updateMaxScrollOffset()
         contentBounds.set_width(contentBounds.width() / pageScaleFactor);
         contentBounds.set_height(contentBounds.height() / pageScaleFactor);
     } else {
-        viewBounds = viewBounds.Scale(1 / m_pinchZoomViewport.pageScaleDelta());
+        viewBounds.Scale(1 / m_pinchZoomViewport.pageScaleDelta());
     }
 
     gfx::Vector2dF maxScroll = BottomRight(gfx::Rect(contentBounds)) - BottomRight(gfx::RectF(viewBounds));
@@ -1288,7 +1285,7 @@ void LayerTreeHostImpl::computePinchZoomDeltas(ScrollAndScaleSet* scrollInfo)
     scrollBegin.Scale(m_pinchZoomViewport.pageScaleDelta());
     float scaleBegin = m_pinchZoomViewport.totalPageScaleFactor();
     float pageScaleDeltaToSend = m_pinchZoomViewport.minPageScaleFactor() / m_pinchZoomViewport.pageScaleFactor();
-    gfx::SizeF scaledContentsSize = contentSize().Scale(pageScaleDeltaToSend);
+    gfx::SizeF scaledContentsSize = gfx::ScaleSize(contentSize(), pageScaleDeltaToSend);
 
     gfx::Vector2d anchorOffset = m_previousPinchAnchor.OffsetFromOrigin();
     gfx::Vector2dF scrollEnd = scrollBegin + anchorOffset;

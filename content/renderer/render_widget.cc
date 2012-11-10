@@ -1544,9 +1544,9 @@ void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
       TransportDIB::CreateWithHandle(dib_handle));
 
   gfx::Size page_size_in_pixel = gfx::ToFlooredSize(
-      page_size.Scale(device_scale_factor_));
+      gfx::ScaleSize(page_size, device_scale_factor_));
   gfx::Size desired_size_in_pixel = gfx::ToFlooredSize(
-      desired_size.Scale(device_scale_factor_));
+      gfx::ScaleSize(desired_size, device_scale_factor_));
   gfx::Size canvas_size = page_size_in_pixel;
   float x_scale = static_cast<float>(desired_size_in_pixel.width()) /
                   static_cast<float>(canvas_size.width());

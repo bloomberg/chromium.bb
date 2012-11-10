@@ -767,8 +767,9 @@ void Layer::RecomputeDrawsContentAndUVRect() {
   } else {
     DCHECK(texture_);
 
+    float texture_scale_factor = 1.0f / texture_->device_scale_factor();
     gfx::Size texture_size = gfx::ToFlooredSize(
-          texture_->size().Scale(1.0f / texture_->device_scale_factor()));
+        gfx::ScaleSize(texture_->size(), texture_scale_factor));
 
     gfx::Size size(std::min(bounds().width(), texture_size.width()),
                    std::min(bounds().height(), texture_size.height()));

@@ -329,13 +329,13 @@ void CompositingIOSurfaceMac::DrawIOSurface(NSView* view, float scale_factor) {
   [glContext_ setView:view];
   gfx::Size window_size(NSSizeToCGSize([view frame].size));
   gfx::Size pixel_window_size = gfx::ToFlooredSize(
-      window_size.Scale(scale_factor));
+      gfx::ScaleSize(window_size, scale_factor));
   glViewport(0, 0, pixel_window_size.width(), pixel_window_size.height());
 
   // TODO: After a resolution change, the DPI-ness of the view and the
   // IOSurface might not be in sync.
   io_surface_size_ = gfx::ToFlooredSize(
-      pixel_io_surface_size_.Scale(1.0 / scale_factor));
+      gfx::ScaleSize(pixel_io_surface_size_, 1.0 / scale_factor));
   quad_.set_size(io_surface_size_, pixel_io_surface_size_);
 
   glMatrixMode(GL_PROJECTION);

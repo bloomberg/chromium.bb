@@ -327,7 +327,7 @@ class ResizeSource : public ImageSkiaSource {
 
     const float scale = ui::GetScaleFactorScale(scale_factor);
     const Size target_pixel_size = gfx::ToFlooredSize(
-        target_dip_size_.Scale(scale));
+        gfx::ScaleSize(target_dip_size_, scale));
     const SkBitmap resized = skia::ImageOperations::Resize(
         image_rep.sk_bitmap(),
         resize_method_,

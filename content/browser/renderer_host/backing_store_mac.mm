@@ -70,7 +70,8 @@ void BackingStoreMac::ScaleFactorChanged(float device_scale_factor) {
 }
 
 size_t BackingStoreMac::MemorySize() {
-  return gfx::ToFlooredSize(size().Scale(device_scale_factor_)).GetArea() * 4;
+  return gfx::ToFlooredSize(
+      gfx::ScaleSize(size(), device_scale_factor_)).GetArea() * 4;
 }
 
 void BackingStoreMac::PaintToBackingStore(
@@ -89,7 +90,7 @@ void BackingStoreMac::PaintToBackingStore(
     return;
 
   gfx::Size pixel_size = gfx::ToFlooredSize(
-      size().Scale(device_scale_factor_));
+      gfx::ScaleSize(size(), device_scale_factor_));
   gfx::Rect pixel_bitmap_rect = ToFlooredRectDeprecated(
       gfx::ScaleRect(bitmap_rect, scale_factor));
 
@@ -248,7 +249,7 @@ CGLayerRef BackingStoreMac::CreateCGLayer() {
   DCHECK(cg_context);
 
   // Note: This takes the backingScaleFactor of cg_context into account. The
-  // bitmap backing |layer| with be size().Scale(2) in HiDPI mode automatically.
+  // bitmap backing |layer| will be size() * 2 in HiDPI mode automatically.
   CGLayerRef layer = CGLayerCreateWithContext(cg_context,
                                               size().ToCGSize(),
                                               NULL);
@@ -258,7 +259,8 @@ CGLayerRef BackingStoreMac::CreateCGLayer() {
 }
 
 CGContextRef BackingStoreMac::CreateCGBitmapContext() {
-  gfx::Size pixel_size = gfx::ToFlooredSize(size().Scale(device_scale_factor_));
+  gfx::Size pixel_size = gfx::ToFlooredSize(
+      gfx::ScaleSize(size(), device_scale_factor_));
   // A CGBitmapContext serves as a stand-in for the layer before the view is
   // in a containing window.
   CGContextRef context = CGBitmapContextCreate(NULL,

@@ -36,7 +36,7 @@ gfx::Point ConvertPointToDIP(const RenderWidgetHostView* view,
 gfx::Size ConvertSizeToDIP(const RenderWidgetHostView* view,
                            const gfx::Size& size_in_pixel) {
   return gfx::ToFlooredSize(
-      size_in_pixel.Scale(1.0f / GetScaleForView(view)));
+      gfx::ScaleSize(size_in_pixel, 1.0f / GetScaleForView(view)));
 }
 
 gfx::Rect ConvertRectToDIP(const RenderWidgetHostView* view,
@@ -53,7 +53,8 @@ gfx::Point ConvertPointToPixel(const RenderWidgetHostView* view,
 
 gfx::Size ConvertSizeToPixel(const RenderWidgetHostView* view,
                              const gfx::Size& size_in_dip) {
-  return gfx::ToFlooredSize(size_in_dip.Scale(GetScaleForView(view)));
+  return gfx::ToFlooredSize(
+      gfx::ScaleSize(size_in_dip, GetScaleForView(view)));
 }
 
 gfx::Rect ConvertRectToPixel(const RenderWidgetHostView* view,

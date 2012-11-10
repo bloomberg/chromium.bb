@@ -6337,7 +6337,7 @@ bool RenderViewImpl::didTapMultipleTargets(
     return false;
 
   gfx::Size canvas_size = zoom_rect.size();
-  canvas_size = ToCeiledSize(canvas_size.Scale(scale));
+  canvas_size = ToCeiledSize(gfx::ScaleSize(canvas_size, scale));
   TransportDIB* transport_dib = NULL;
   {
     scoped_ptr<skia::PlatformCanvas> canvas(

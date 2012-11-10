@@ -563,7 +563,8 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
   SkAutoCanvasRestore auto_restore(canvas, true);
   canvas->clipRect(sk_invalidate_rect);
   gfx::Size pixel_image_size(image_data_->width(), image_data_->height());
-  gfx::Size image_size = gfx::ToFlooredSize(pixel_image_size.Scale(scale_));
+  gfx::Size image_size = gfx::ToFlooredSize(
+      gfx::ScaleSize(pixel_image_size, scale_));
 
   PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)

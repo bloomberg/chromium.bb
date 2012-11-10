@@ -32,7 +32,7 @@ gfx::Point ConvertPointToDIP(const Layer* layer,
 gfx::Size ConvertSizeToDIP(const Layer* layer,
                            const gfx::Size& size_in_pixel) {
   return gfx::ToFlooredSize(
-      size_in_pixel.Scale(1.0f / GetDeviceScaleFactor(layer)));
+      gfx::ScaleSize(size_in_pixel, 1.0f / GetDeviceScaleFactor(layer)));
 }
 
 gfx::Rect ConvertRectToDIP(const Layer* layer,
@@ -49,7 +49,8 @@ gfx::Point ConvertPointToPixel(const Layer* layer,
 
 gfx::Size ConvertSizeToPixel(const Layer* layer,
                              const gfx::Size& size_in_dip) {
-  return gfx::ToFlooredSize(size_in_dip.Scale(GetDeviceScaleFactor(layer)));
+  return gfx::ToFlooredSize(
+      gfx::ScaleSize(size_in_dip, GetDeviceScaleFactor(layer)));
 }
 
 gfx::Rect ConvertRectToPixel(const Layer* layer,

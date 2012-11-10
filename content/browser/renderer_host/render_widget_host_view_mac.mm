@@ -858,7 +858,8 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
     return;
 
   float scale = ScaleFactor(cocoa_view_);
-  gfx::Size dst_pixel_size = gfx::ToFlooredSize(dst_size.Scale(scale));
+  gfx::Size dst_pixel_size = gfx::ToFlooredSize(
+      gfx::ScaleSize(dst_size, scale));
   if (!output->Allocate(
       dst_pixel_size.width(), dst_pixel_size.height(), true))
     return;
