@@ -12,6 +12,7 @@
 #include "base/chromeos/chromeos_version.h"
 #include "base/eintr_wrapper.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/string_util.h"
 #include "base/threading/worker_pool.h"
@@ -537,32 +538,39 @@ class DebugDaemonClientStubImpl : public DebugDaemonClient {
   virtual void GetRoutes(bool numeric, bool ipv6,
                          const GetRoutesCallback& callback) OVERRIDE {
     std::vector<std::string> empty;
-    callback.Run(false, empty);
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(callback, false, empty));
   }
   virtual void GetNetworkStatus(const GetNetworkStatusCallback& callback)
       OVERRIDE {
-    callback.Run(false, "");
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(callback, false, ""));
   }
   virtual void GetModemStatus(const GetModemStatusCallback& callback)
       OVERRIDE {
-    callback.Run(false, "");
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(callback, false, ""));
   }
   virtual void GetNetworkInterfaces(
       const GetNetworkInterfacesCallback& callback) OVERRIDE {
-    callback.Run(false, "");
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(callback, false, ""));
   }
   virtual void GetAllLogs(const GetLogsCallback& callback) OVERRIDE {
     std::map<std::string, std::string> empty;
-    callback.Run(false, empty);
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(callback, false, empty));
   }
   virtual void GetUserLogFiles(const GetLogsCallback& callback) OVERRIDE {
     std::map<std::string, std::string> empty;
-    callback.Run(false, empty);
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(callback, false, empty));
   }
 
   virtual void TestICMP(const std::string& ip_address,
                         const TestICMPCallback& callback) OVERRIDE {
-    callback.Run(false, "");
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(callback, false, ""));
   }
 };
 
