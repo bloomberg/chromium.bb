@@ -207,11 +207,6 @@ class WebPluginDelegateProxy
   // Draw a graphic indicating a crashed plugin.
   void PaintSadPlugin(WebKit::WebCanvas* canvas, const gfx::Rect& rect);
 
-  // Returns true if the given rectangle is different in the native drawing
-  // context and the current background bitmap.
-  bool BackgroundChanged(gfx::NativeDrawingContext context,
-                         const gfx::Rect& rect);
-
   // Copies the given rectangle from the back-buffer transport_stores_ bitmap to
   // the front-buffer transport_stores_ bitmap.
   void CopyFromBackBufferToFrontBuffer(const gfx::Rect& rect);
@@ -308,17 +303,10 @@ class WebPluginDelegateProxy
   // True if we got an invalidate from the plugin and are waiting for a paint.
   bool invalidate_pending_;
 
-  // Used to desynchronize windowless painting.  When WebKit paints, we bitblt
-  // from our front buffer store of what the plugin rectangle looks like.  The
-  // plugin paints into the back buffer store, and we swap the buffers when we
-  // get an invalidate from it.  The background bitmap is used for transparent
-  // plugins, as they need the background data during painting.
-  bool transparent_;
   // The index in the transport_stores_ array of the current front buffer
   // (i.e., the buffer to display).
   int front_buffer_index_;
   SharedBitmap transport_stores_[2];
-  SharedBitmap background_store_;
   // This lets us know the total portion of the transport store that has been
   // painted since the buffers were created.
   gfx::Rect transport_store_painted_;

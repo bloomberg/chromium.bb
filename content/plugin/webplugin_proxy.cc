@@ -67,7 +67,6 @@ WebPluginProxy::WebPluginProxy(
       delegate_(NULL),
       waiting_for_paint_(false),
       page_url_(page_url),
-      transparent_(false),
       windowless_buffer_index_(0),
       host_render_view_routing_id_(host_render_view_routing_id),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -362,18 +361,6 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   // it is going to continue to be used.
   int saved_index = windowless_buffer_index_;
 
-  if (background_context_.get()) {
-    base::mac::ScopedCFTypeRef<CGImageRef> image(
-        CGBitmapContextCreateImage(background_context_));
-    CGRect source_rect = rect.ToCGRect();
-    // Flip the rect we use to pull from the canvas, since it's upside-down.
-    source_rect.origin.y = CGImageGetHeight(image) - rect.y() - rect.height();
-    base::mac::ScopedCFTypeRef<CGImageRef> sub_image(
-        CGImageCreateWithImageInRect(image, source_rect));
-    CGContextDrawImage(windowless_context(), rect.ToCGRect(), sub_image);
-  } else if (transparent_) {
-    CGContextClearRect(windowless_context(), rect.ToCGRect());
-  }
   CGContextClipToRect(windowless_context(), rect.ToCGRect());
   // TODO(caryclark): This is a temporary workaround to allow the Darwin / Skia
   // port to share code with the Darwin / CG port. All ports will eventually use
@@ -400,22 +387,9 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
                      SkIntToScalar(rect.bottom()) };
   saved_canvas->clipRect(sk_rect);
 
-  // Setup the background.
-  if (background_canvas_.get() && background_canvas_.get()->getDevice()) {
-    // When a background canvas is given, we're in transparent mode. This means
-    // the plugin wants to have the image of the page in the canvas it's drawing
-    // into (which is windowless_canvases_) so it can do blending. So we copy
-    // the background bitmap into the windowless canvas.
-    const SkBitmap& background_bitmap =
-        skia::GetTopDevice(*background_canvas_)->accessBitmap(false);
-    saved_canvas->drawBitmap(background_bitmap, 0, 0);
-  } else {
-    // In non-transparent mode, the plugin doesn't care what's underneath, so we
-    // can just give it black.
-    SkPaint black_fill_paint;
-    black_fill_paint.setARGB(0xFF, 0x00, 0x00, 0x00);
-    saved_canvas->drawPaint(black_fill_paint);
-  }
+  // Fill a transparent value so that if the plugin supports transparency that
+  // will work.
+  saved_canvas->drawColor(SkColorSetARGB(0, 0, 0, 0), SkXfermode::kSrc_Mode);
 
   // Bring the windowless canvas into the window coordinate system, which is
   // how the plugin expects to draw (since the windowless API was originally
@@ -436,12 +410,9 @@ void WebPluginProxy::UpdateGeometry(
     const gfx::Rect& clip_rect,
     const TransportDIB::Handle& windowless_buffer0,
     const TransportDIB::Handle& windowless_buffer1,
-    int windowless_buffer_index,
-    const TransportDIB::Handle& background_buffer,
-    bool transparent) {
+    int windowless_buffer_index) {
   gfx::Rect old = delegate_->GetRect();
   gfx::Rect old_clip_rect = delegate_->GetClipRect();
-  transparent_ = transparent;
 
   // Update the buffers before doing anything that could call into plugin code,
   // so that we don't process buffer changes out of order if plugins make
@@ -450,7 +421,6 @@ void WebPluginProxy::UpdateGeometry(
     // The plugin's rect changed, so now we have new buffers to draw into.
     SetWindowlessBuffers(windowless_buffer0,
                          windowless_buffer1,
-                         background_buffer,
                          window_rect);
   }
 
@@ -496,14 +466,12 @@ void WebPluginProxy::CreateCanvasFromHandle(
 void WebPluginProxy::SetWindowlessBuffers(
     const TransportDIB::Handle& windowless_buffer0,
     const TransportDIB::Handle& windowless_buffer1,
-    const TransportDIB::Handle& background_buffer,
     const gfx::Rect& window_rect) {
   CreateCanvasFromHandle(windowless_buffer0,
                          window_rect,
                          &windowless_canvases_[0]);
   if (!windowless_canvases_[0].get()) {
     windowless_canvases_[1].reset(NULL);
-    background_canvas_.reset(NULL);
     return;
   }
   CreateCanvasFromHandle(windowless_buffer1,
@@ -511,19 +479,7 @@ void WebPluginProxy::SetWindowlessBuffers(
                          &windowless_canvases_[1]);
   if (!windowless_canvases_[1].get()) {
     windowless_canvases_[0].reset(NULL);
-    background_canvas_.reset(NULL);
     return;
-  }
-
-  if (background_buffer) {
-    CreateCanvasFromHandle(background_buffer,
-                           window_rect,
-                           &background_canvas_);
-    if (!background_canvas_.get()) {
-      windowless_canvases_[0].reset(NULL);
-      windowless_canvases_[1].reset(NULL);
-      return;
-    }
   }
 }
 
@@ -557,7 +513,6 @@ void WebPluginProxy::CreateDIBAndCGContextFromHandle(
 void WebPluginProxy::SetWindowlessBuffers(
     const TransportDIB::Handle& windowless_buffer0,
     const TransportDIB::Handle& windowless_buffer1,
-    const TransportDIB::Handle& background_buffer,
     const gfx::Rect& window_rect) {
   CreateDIBAndCGContextFromHandle(windowless_buffer0,
                                   window_rect,
@@ -567,10 +522,6 @@ void WebPluginProxy::SetWindowlessBuffers(
                                   window_rect,
                                   &windowless_dibs_[1],
                                   &windowless_contexts_[1]);
-  CreateDIBAndCGContextFromHandle(background_buffer,
-                                  window_rect,
-                                  &background_dib_,
-                                  &background_context_);
 }
 
 #elif defined(USE_X11)
@@ -617,7 +568,6 @@ void WebPluginProxy::CreateShmPixmapFromDIB(
 void WebPluginProxy::SetWindowlessBuffers(
     const TransportDIB::Handle& windowless_buffer0,
     const TransportDIB::Handle& windowless_buffer1,
-    const TransportDIB::Handle& background_buffer,
     const gfx::Rect& window_rect) {
   CreateDIBAndCanvasFromHandle(windowless_buffer0,
                                window_rect,
@@ -627,10 +577,6 @@ void WebPluginProxy::SetWindowlessBuffers(
                                window_rect,
                                &windowless_dibs_[1],
                                &windowless_canvases_[1]);
-  CreateDIBAndCanvasFromHandle(background_buffer,
-                               window_rect,
-                               &background_dib_,
-                               &background_canvas_);
 
   // If SHM pixmaps support is available, create SHM pixmaps to pass to the
   // delegate for windowless plugin painting.
@@ -649,7 +595,6 @@ void WebPluginProxy::SetWindowlessBuffers(
 void WebPluginProxy::SetWindowlessBuffers(
     const TransportDIB::Handle& windowless_buffer0,
     const TransportDIB::Handle& windowless_buffer1,
-    const TransportDIB::Handle& background_buffer,
     const gfx::Rect& window_rect) {
   NOTIMPLEMENTED();
 }

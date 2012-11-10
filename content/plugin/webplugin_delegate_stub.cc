@@ -263,8 +263,7 @@ void WebPluginDelegateStub::OnUpdateGeometry(
   webplugin_->UpdateGeometry(
       param.window_rect, param.clip_rect,
       param.windowless_buffer0, param.windowless_buffer1,
-      param.windowless_buffer_index, param.background_buffer,
-      param.transparent);
+      param.windowless_buffer_index);
 }
 
 void WebPluginDelegateStub::OnGetPluginScriptableObject(int* route_id) {

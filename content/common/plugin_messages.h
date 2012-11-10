@@ -54,11 +54,9 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(PluginMsg_UpdateGeometry_Param)
   IPC_STRUCT_MEMBER(gfx::Rect, window_rect)
   IPC_STRUCT_MEMBER(gfx::Rect, clip_rect)
-  IPC_STRUCT_MEMBER(bool, transparent)
   IPC_STRUCT_MEMBER(TransportDIB::Handle, windowless_buffer0)
   IPC_STRUCT_MEMBER(TransportDIB::Handle, windowless_buffer1)
   IPC_STRUCT_MEMBER(int, windowless_buffer_index)
-  IPC_STRUCT_MEMBER(TransportDIB::Handle, background_buffer)
 IPC_STRUCT_END()
 
 //-----------------------------------------------------------------------------
