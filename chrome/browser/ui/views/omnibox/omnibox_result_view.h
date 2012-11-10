@@ -47,7 +47,7 @@ class OmniboxResultView : public views::View,
                     const gfx::Font& bold_font);
   virtual ~OmniboxResultView();
 
-  static SkColor GetColor(ResultViewState state, ColorKind kind);
+  SkColor GetColor(ResultViewState state, ColorKind kind) const;
 
   // Updates the match used to paint the contents of this result view. We copy
   // the match so that we can continue to paint the last result even after the
@@ -97,6 +97,10 @@ class OmniboxResultView : public views::View,
 
   struct RunData;
   typedef std::vector<RunData> Runs;
+
+  // Common initialization code of the colors returned by GetColors().
+  static void CommonInitColors(const ui::NativeTheme* theme,
+                               SkColor colors[][NUM_KINDS]);
 
   // Predicate functions for use when sorting the runs.
   static bool SortRunsLogically(const RunData& lhs, const RunData& rhs);

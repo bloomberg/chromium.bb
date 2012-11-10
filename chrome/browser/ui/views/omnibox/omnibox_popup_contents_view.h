@@ -145,6 +145,8 @@ class OmniboxPopupContentsView : public views::View,
   // Returns the target bounds given the specified content height.
   gfx::Rect CalculateTargetBounds(int h);
 
+  OmniboxResultView* result_view_at(size_t i);
+
   // The popup that contains this view.  We create this, but it deletes itself
   // when its window is destroyed.  This is a WeakPtr because it's possible for
   // the OS to destroy the window and thus delete this object before we're

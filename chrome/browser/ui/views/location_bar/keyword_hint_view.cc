@@ -27,9 +27,11 @@ static const int kTabImageYOffset = 1;
 // The tab key image.
 static const gfx::ImageSkia* kTabButtonImage = NULL;
 
-KeywordHintView::KeywordHintView(Profile* profile) : profile_(profile) {
-  leading_label_ = CreateLabel();
-  trailing_label_ = CreateLabel();
+KeywordHintView::KeywordHintView(Profile* profile,
+                                 const LocationBarView* location_bar_view)
+    : profile_(profile) {
+  leading_label_ = CreateLabel(location_bar_view);
+  trailing_label_ = CreateLabel(location_bar_view);
 
   if (!kTabButtonImage) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -129,11 +131,12 @@ void KeywordHintView::Layout() {
   }
 }
 
-views::Label* KeywordHintView::CreateLabel() {
+views::Label* KeywordHintView::CreateLabel(
+    const LocationBarView* location_bar_view) {
   views::Label* label = new views::Label();
-  label->SetBackgroundColor(LocationBarView::GetColor(
+  label->SetBackgroundColor(location_bar_view->GetColor(
       ToolbarModel::NONE, LocationBarView::BACKGROUND));
-  label->SetEnabledColor(LocationBarView::GetColor(
+  label->SetEnabledColor(location_bar_view->GetColor(
       ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT));
   AddChildView(label);
   return label;

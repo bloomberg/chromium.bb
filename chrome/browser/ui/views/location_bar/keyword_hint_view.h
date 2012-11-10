@@ -11,9 +11,12 @@
 #include "ui/gfx/size.h"
 #include "ui/views/view.h"
 
+class LocationBarView;
+
 namespace gfx {
 class Font;
 }
+
 class Profile;
 namespace views {
 class Label;
@@ -29,7 +32,7 @@ class Label;
 // couldn't bring myself to use such a long name.
 class KeywordHintView : public views::View {
  public:
-  explicit KeywordHintView(Profile* profile);
+  KeywordHintView(Profile* profile, const LocationBarView* location_bar_view);
   virtual ~KeywordHintView();
 
   void SetFont(const gfx::Font& font);
@@ -44,7 +47,7 @@ class KeywordHintView : public views::View {
   virtual void Layout() OVERRIDE;
 
  private:
-  views::Label* CreateLabel();
+  views::Label* CreateLabel(const LocationBarView* location_bar_view);
 
   views::Label* leading_label_;
   views::Label* trailing_label_;

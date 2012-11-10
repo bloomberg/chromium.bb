@@ -172,8 +172,8 @@ class LocationBarView : public LocationBar,
 
   // Returns the appropriate color for the desired kind, based on the user's
   // system theme.
-  static SkColor GetColor(ToolbarModel::SecurityLevel security_level,
-                          ColorKind kind);
+  SkColor GetColor(ToolbarModel::SecurityLevel security_level,
+                   ColorKind kind) const;
 
   // Updates the location bar.  We also reset the bar's permanent text and
   // security style, and, if |tab_for_state_restoring| is non-NULL, also restore

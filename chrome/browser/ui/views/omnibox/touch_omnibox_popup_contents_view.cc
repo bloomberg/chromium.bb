@@ -88,7 +88,7 @@ void TouchOmniboxPopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
     TouchOmniboxResultView* child = static_cast<TouchOmniboxResultView*>(*i);
     TouchOmniboxResultView* next_child =
         static_cast<TouchOmniboxResultView*>(*(i + 1));
-    SkColor divider_color = OmniboxResultView::GetColor(
+    SkColor divider_color = child->GetColor(
         std::max(child->GetState(), next_child->GetState()),
         OmniboxResultView::DIVIDER);
     int line_y = child->y() + child->height() - 1;

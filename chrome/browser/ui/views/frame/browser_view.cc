@@ -1872,7 +1872,7 @@ void BrowserView::PaintChildren(gfx::Canvas* canvas) {
 void BrowserView::ViewHierarchyChanged(bool is_add,
                                        views::View* parent,
                                        views::View* child) {
-  if (is_add && child == this && GetWidget() && !initialized_) {
+  if (!initialized_ && is_add && child == this && GetWidget()) {
     Init();
     initialized_ = true;
   }

@@ -78,6 +78,10 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_WIN)
+#include "ui/base/native_theme/native_theme_win.h"
+#endif
+
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
 #endif
@@ -240,6 +244,10 @@ LocationBarView::~LocationBarView() {
 }
 
 void LocationBarView::Init() {
+  // We need to be in a Widget, otherwise GetNativeTheme() may change and we're
+  // not prepared for that.
+  DCHECK(GetWidget());
+
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (mode_ == POPUP) {
     font_ = rb.GetFont(ui::ResourceBundle::BaseFont);
@@ -260,7 +268,8 @@ void LocationBarView::Init() {
 
   ev_bubble_view_ =
       new EVBubbleView(kEVBubbleBackgroundImages, IDR_OMNIBOX_HTTPS_VALID,
-                       GetColor(ToolbarModel::EV_SECURE, SECURITY_TEXT), this);
+                       GetColor(ToolbarModel::EV_SECURE, SECURITY_TEXT),
+                       this);
   AddChildView(ev_bubble_view_);
   ev_bubble_view_->SetVisible(false);
   ev_bubble_view_->set_drag_controller(this);
@@ -282,7 +291,7 @@ void LocationBarView::Init() {
   selected_keyword_view_->SetFont(font_);
   selected_keyword_view_->SetVisible(false);
 
-  keyword_hint_view_ = new KeywordHintView(profile_);
+  keyword_hint_view_ = new KeywordHintView(profile_, this);
   AddChildView(keyword_hint_view_);
   keyword_hint_view_->SetVisible(false);
   keyword_hint_view_->SetFont(font_);
@@ -342,20 +351,28 @@ bool LocationBarView::IsInitialized() const {
   return location_entry_view_ != NULL;
 }
 
-// static
 SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
-                                  ColorKind kind) {
-  switch (kind) {
+                                  ColorKind kind) const {
 #if defined(OS_WIN)
-    case BACKGROUND:    return color_utils::GetSysSkColor(COLOR_WINDOW);
-    case TEXT:          return color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
-    case SELECTED_TEXT: return color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
-#else
+  if (GetNativeTheme() == ui::NativeThemeWin::instance()) {
+    switch (kind) {
+      case BACKGROUND:
+        return color_utils::GetSysSkColor(COLOR_WINDOW);
+      case TEXT:
+        return color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
+      case SELECTED_TEXT:
+        return color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
+      default:
+        // Other cases are handled below.
+        break;
+    }
+  }
+#endif
+  switch (kind) {
     // TODO(beng): source from theme provider.
     case BACKGROUND:    return kOmniboxBackgroundColor;
     case TEXT:          return SK_ColorBLACK;
     case SELECTED_TEXT: return SK_ColorWHITE;
-#endif
 
     case DEEMPHASIZED_TEXT:
       return color_utils::AlphaBlend(
@@ -383,8 +400,8 @@ SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
           NOTREACHED();
           return GetColor(security_level, TEXT);
       }
-      return color_utils::GetReadableColor(color, GetColor(security_level,
-                                                           BACKGROUND));
+      return color_utils::GetReadableColor(
+          color, GetColor(security_level, BACKGROUND));
     }
 
     default:
@@ -612,7 +629,7 @@ void LocationBarView::SetInstantSuggestion(const string16& text) {
       suggested_text_view_ = new views::Label();
       suggested_text_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       suggested_text_view_->SetAutoColorReadabilityEnabled(false);
-      suggested_text_view_->SetEnabledColor(LocationBarView::GetColor(
+      suggested_text_view_->SetEnabledColor(GetColor(
           ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT));
       suggested_text_view_->SetText(text);
       suggested_text_view_->SetFont(location_entry_->GetFont());

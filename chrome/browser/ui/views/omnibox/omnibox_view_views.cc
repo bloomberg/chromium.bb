@@ -240,7 +240,7 @@ void OmniboxViewViews::Init() {
   textfield_ = new AutocompleteTextfield(this, location_bar_view_);
   textfield_->SetController(this);
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
-  textfield_->SetBackgroundColor(LocationBarView::GetColor(
+  textfield_->SetBackgroundColor(location_bar_view_->GetColor(
       ToolbarModel::NONE, LocationBarView::BACKGROUND));
 
   if (popup_window_mode_)
@@ -859,14 +859,14 @@ void OmniboxViewViews::EmphasizeURLComponents() {
                                                  &scheme, &host);
   const bool emphasize = model()->CurrentTextIsURL() && (host.len > 0);
 
-  SkColor base_color = LocationBarView::GetColor(
+  SkColor base_color = location_bar_view_->GetColor(
       security_level_,
       emphasize ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT);
   ApplyURLStyle(textfield_, 0, text.length(), base_color, false);
 
   if (emphasize) {
-    SkColor normal_color =
-        LocationBarView::GetColor(security_level_, LocationBarView::TEXT);
+    SkColor normal_color = location_bar_view_->GetColor(
+        security_level_, LocationBarView::TEXT);
     ApplyURLStyle(textfield_, host.begin, host.end(), normal_color, false);
   }
 
@@ -877,7 +877,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   // may have incorrectly identified a qualifier as a scheme.
   if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
       scheme.is_nonempty() && (security_level_ != ToolbarModel::NONE)) {
-    SkColor security_color = LocationBarView::GetColor(
+    SkColor security_color = location_bar_view_->GetColor(
         security_level_, LocationBarView::SECURITY_TEXT);
     bool use_strikethrough = (security_level_ == ToolbarModel::SECURITY_ERROR);
     ApplyURLStyle(textfield_, scheme.begin, scheme.end(),

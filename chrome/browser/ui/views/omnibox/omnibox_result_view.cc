@@ -28,6 +28,14 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/render_text.h"
 
+#if defined(OS_WIN)
+#include "ui/base/native_theme/native_theme_win.h"
+#endif
+
+#if defined(USE_AURA)
+#include "ui/base/native_theme/native_theme_aura.h"
+#endif
+
 namespace {
 
 const char16 kEllipsis[] = { 0x2026, 0x0 };
@@ -134,18 +142,30 @@ OmniboxResultView::OmniboxResultView(
 OmniboxResultView::~OmniboxResultView() {
 }
 
-// static
-SkColor OmniboxResultView::GetColor(ResultViewState state, ColorKind kind) {
+SkColor OmniboxResultView::GetColor(
+    ResultViewState state,
+    ColorKind kind) const {
+  const ui::NativeTheme* theme = GetNativeTheme();
+#if defined(OS_WIN)
+  if (theme == ui::NativeThemeWin::instance()) {
+    static bool win_initialized = false;
+    static SkColor win_colors[NUM_STATES][NUM_KINDS];
+    if (!win_initialized) {
+      win_colors[NORMAL][BACKGROUND] = color_utils::GetSysSkColor(COLOR_WINDOW);
+      win_colors[SELECTED][BACKGROUND] =
+          color_utils::GetSysSkColor(COLOR_HIGHLIGHT);
+      win_colors[NORMAL][TEXT] = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
+      win_colors[SELECTED][TEXT] =
+          color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
+      CommonInitColors(theme, win_colors);
+      win_initialized = true;
+    }
+    return win_colors[state][kind];
+  }
+#endif
   static bool initialized = false;
   static SkColor colors[NUM_STATES][NUM_KINDS];
   if (!initialized) {
-#if defined(OS_WIN)
-    colors[NORMAL][BACKGROUND] = color_utils::GetSysSkColor(COLOR_WINDOW);
-    colors[SELECTED][BACKGROUND] = color_utils::GetSysSkColor(COLOR_HIGHLIGHT);
-    colors[NORMAL][TEXT] = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
-    colors[SELECTED][TEXT] = color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
-#elif defined(USE_AURA)
-    const ui::NativeTheme* theme = ui::NativeTheme::instance();
     colors[SELECTED][BACKGROUND] = theme->GetSystemColor(
         ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
     colors[NORMAL][BACKGROUND] = theme->GetSystemColor(
@@ -153,39 +173,9 @@ SkColor OmniboxResultView::GetColor(ResultViewState state, ColorKind kind) {
     colors[NORMAL][URL] = SkColorSetARGB(0xff, 0x00, 0x99, 0x33);
     colors[SELECTED][URL] = SkColorSetARGB(0xff, 0x00, 0x66, 0x22);
     colors[HOVERED][URL] = SkColorSetARGB(0xff, 0x00, 0x66, 0x22);
-#else
-    // TODO(beng): source from theme provider.
-    colors[NORMAL][BACKGROUND] = SK_ColorWHITE;
-    colors[SELECTED][BACKGROUND] = SK_ColorBLUE;
-    colors[NORMAL][TEXT] = SK_ColorBLACK;
-    colors[SELECTED][TEXT] = SK_ColorWHITE;
-#endif
-    colors[HOVERED][BACKGROUND] =
-        color_utils::AlphaBlend(colors[SELECTED][BACKGROUND],
-                                colors[NORMAL][BACKGROUND], 64);
-    colors[HOVERED][TEXT] = colors[NORMAL][TEXT];
-    for (int i = 0; i < NUM_STATES; ++i) {
-#if defined(USE_AURA)
-      colors[i][TEXT] =
-          color_utils::AlphaBlend(SK_ColorBLACK, colors[i][BACKGROUND], 0xdd);
-      colors[i][DIMMED_TEXT] =
-          color_utils::AlphaBlend(SK_ColorBLACK, colors[i][BACKGROUND], 0xbb);
-#else
-      colors[i][DIMMED_TEXT] =
-          color_utils::AlphaBlend(colors[i][TEXT], colors[i][BACKGROUND], 128);
-      colors[i][URL] = color_utils::GetReadableColor(SkColorSetRGB(0, 128, 0),
-                                                     colors[i][BACKGROUND]);
-#endif
-
-      // TODO(joi): Programmatically draw the dropdown border using
-      // this color as well. (Right now it's drawn as black with 25%
-      // alpha.)
-      colors[i][DIVIDER] =
-          color_utils::AlphaBlend(colors[i][TEXT], colors[i][BACKGROUND], 0x34);
-    }
+    CommonInitColors(theme, colors);
     initialized = true;
   }
-
   return colors[state][kind];
 }
 
@@ -260,6 +250,39 @@ void OmniboxResultView::PaintMatch(gfx::Canvas* canvas,
 
 int OmniboxResultView::GetTextHeight() const {
   return std::max(normal_font_.GetHeight(), bold_font_.GetHeight());
+}
+
+// static
+void OmniboxResultView::CommonInitColors(const ui::NativeTheme* theme,
+                                         SkColor colors[][NUM_KINDS]) {
+  colors[HOVERED][BACKGROUND] =
+      color_utils::AlphaBlend(colors[SELECTED][BACKGROUND],
+                              colors[NORMAL][BACKGROUND], 64);
+  colors[HOVERED][TEXT] = colors[NORMAL][TEXT];
+#if defined(USE_AURA)
+  const bool is_aura = theme == ui::NativeThemeAura::instance();
+#else
+  const bool is_aura = false;
+#endif
+  for (int i = 0; i < NUM_STATES; ++i) {
+    if (is_aura) {
+      colors[i][TEXT] =
+          color_utils::AlphaBlend(SK_ColorBLACK, colors[i][BACKGROUND], 0xdd);
+      colors[i][DIMMED_TEXT] =
+          color_utils::AlphaBlend(SK_ColorBLACK, colors[i][BACKGROUND], 0xbb);
+    } else {
+      colors[i][DIMMED_TEXT] =
+          color_utils::AlphaBlend(colors[i][TEXT], colors[i][BACKGROUND], 128);
+      colors[i][URL] = color_utils::GetReadableColor(SkColorSetRGB(0, 128, 0),
+                                                     colors[i][BACKGROUND]);
+    }
+
+    // TODO(joi): Programmatically draw the dropdown border using
+    // this color as well. (Right now it's drawn as black with 25%
+    // alpha.)
+    colors[i][DIVIDER] =
+        color_utils::AlphaBlend(colors[i][TEXT], colors[i][BACKGROUND], 0x34);
+  }
 }
 
 // static

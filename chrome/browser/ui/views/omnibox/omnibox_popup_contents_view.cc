@@ -160,8 +160,7 @@ bool OmniboxPopupContentsView::IsOpen() const {
 }
 
 void OmniboxPopupContentsView::InvalidateLine(size_t line) {
-  OmniboxResultView* result = static_cast<OmniboxResultView*>(
-      child_at(static_cast<int>(line)));
+  OmniboxResultView* result = result_view_at(line);
   result->Invalidate();
 
   if (HasMatchAt(line) && GetMatchAtIndex(line).associated_keyword.get()) {
@@ -191,7 +190,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   size_t child_rv_count = child_count();
   const size_t result_size = model_->result().size();
   for (size_t i = 0; i < result_size; ++i) {
-    OmniboxResultView* view = static_cast<OmniboxResultView*>(child_at(i));
+    OmniboxResultView* view = result_view_at(i);
     view->SetMatch(GetMatchAtIndex(i));
     view->SetVisible(true);
   }
@@ -382,7 +381,7 @@ ui::EventResult OmniboxPopupContentsView::OnGestureEvent(
 // OmniboxPopupContentsView, protected:
 
 void OmniboxPopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
-  canvas->DrawColor(OmniboxResultView::GetColor(
+  canvas->DrawColor(result_view_at(0)->GetColor(
       OmniboxResultView::NORMAL, OmniboxResultView::BACKGROUND));
   View::PaintChildren(canvas);
 }
@@ -486,7 +485,7 @@ void OmniboxPopupContentsView::MakeCanvasTransparent(gfx::Canvas* canvas) {
   SkAlpha alpha = GetThemeProvider()->ShouldUseNativeFrame() ?
       kGlassPopupAlpha : kOpaquePopupAlpha;
   canvas->DrawColor(SkColorSetA(
-      OmniboxResultView::GetColor(OmniboxResultView::NORMAL,
+      result_view_at(0)->GetColor(OmniboxResultView::NORMAL,
           OmniboxResultView::BACKGROUND), alpha), SkXfermode::kDstIn_Mode);
 }
 
@@ -556,4 +555,8 @@ void OmniboxPopupContentsView::OpenSelectedLine(
     WindowOpenDisposition disposition) {
   size_t index = GetIndexForPoint(event.location());
   OpenIndex(index, disposition);
+}
+
+OmniboxResultView* OmniboxPopupContentsView::result_view_at(size_t i) {
+  return static_cast<OmniboxResultView*>(child_at(static_cast<int>(i)));
 }
