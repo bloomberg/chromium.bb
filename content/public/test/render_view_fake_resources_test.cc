@@ -94,7 +94,7 @@ void RenderViewFakeResourcesTest::TearDown() {
 
   ASSERT_TRUE(channel_->Send(new ViewMsg_Close(kViewId)));
   do {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     view_ = NULL;
     RenderView::ForEach(this);
   } while (view_);

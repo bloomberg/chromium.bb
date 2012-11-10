@@ -40,7 +40,7 @@ class MediaStreamDeviceUIControllerTest
   }
 
   virtual void TearDown() {
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
   }
 
   void CreateDummyRequest(const std::string& label, bool audio, bool video) {

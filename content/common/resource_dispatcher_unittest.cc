@@ -337,7 +337,7 @@ TEST_F(DeferredResourceLoadingTest, DeferredLoadTest) {
   InitMessages();
 
   // Dispatch deferred messages.
-  message_loop.RunAllPending();
+  message_loop.RunUntilIdle();
   delete bridge;
 }
 

@@ -91,7 +91,7 @@ class GeolocationProviderWin7Tests : public testing::Test {
     provider_->UnregisterListener(&location_listener_);
     provider_->StopProvider();
     delete provider_;
-    main_message_loop_.RunAllPending();
+    main_message_loop_.RunUntilIdle();
   }
 
  protected:

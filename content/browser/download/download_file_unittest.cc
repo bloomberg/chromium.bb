@@ -152,7 +152,7 @@ class DownloadFileTest : public testing::Test {
     download_file_->Initialize(base::Bind(
         &DownloadFileTest::SetInterruptReasonCallback,
         weak_ptr_factory.GetWeakPtr(), &called, &result));
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
     EXPECT_TRUE(called);
 
     ::testing::Mock::VerifyAndClearExpectations(input_stream_);
@@ -236,7 +236,7 @@ class DownloadFileTest : public testing::Test {
     VerifyStreamAndSize();
     if (check_observer) {
       EXPECT_CALL(*(observer_.get()), DestinationCompleted(_));
-      loop_.RunAllPending();
+      loop_.RunUntilIdle();
       ::testing::Mock::VerifyAndClearExpectations(observer_.get());
       EXPECT_CALL(*(observer_.get()), DestinationUpdate(_, _, _))
           .Times(AnyNumber())
@@ -277,7 +277,7 @@ class DownloadFileTest : public testing::Test {
                               weak_ptr_factory.GetWeakPtr(),
                               &callback_was_called,
                               &result_reason, result_path_p));
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
 
     EXPECT_TRUE(callback_was_called);
     return result_reason;
@@ -395,7 +395,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   std::string hash;
   EXPECT_FALSE(download_file_->GetHash(&hash));
   FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true);
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 
   // Rename the file after downloading all the data and closing the file.
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
@@ -452,7 +452,7 @@ TEST_F(DownloadFileTest, RenameUniquifies) {
   EXPECT_TRUE(file_util::PathExists(path_1_suffixed));
 
   FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true);
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   DestroyDownloadFile(0);
 }
 
@@ -484,7 +484,7 @@ TEST_F(DownloadFileTest, RenameError) {
   }
 
   FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true);
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   DestroyDownloadFile(0);
 }
 
@@ -502,7 +502,7 @@ TEST_F(DownloadFileTest, StreamEmptySuccess) {
   // observer.
   EXPECT_CALL(*(observer_.get()), DestinationCompleted(_));
   FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, false);
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 
   DestroyDownloadFile(0);
 }
@@ -529,7 +529,7 @@ TEST_F(DownloadFileTest, StreamEmptyError) {
 
   FinishStream(DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED, false);
 
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 
   DestroyDownloadFile(0);
 }
@@ -546,7 +546,7 @@ TEST_F(DownloadFileTest, StreamNonEmptySuccess) {
   EXPECT_CALL(*(observer_.get()), DestinationCompleted(_));
   sink_callback_.Run();
   VerifyStreamAndSize();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   DestroyDownloadFile(0);
 }
 
@@ -576,7 +576,7 @@ TEST_F(DownloadFileTest, StreamNonEmptyError) {
                                   _, _));
 
   sink_callback_.Run();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   VerifyStreamAndSize();
   DestroyDownloadFile(0);
 }

@@ -178,14 +178,14 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
     device_->DeAllocate();  // Guarantees no more use of consumer_.
     consumer_.reset();
     device_.reset();  // Release reference to internal CaptureMachine.
-    message_loop_->RunAllPending();  // Just in case.
+    message_loop_->RunUntilIdle();  // Just in case.
     destroyed_->Wait();  // Wait until CaptureMachine is fully destroyed.
     destroyed_.reset();
     source_.reset();
     browser_context_.reset();
     ui_thread_->Stop();
     ui_thread_.reset();
-    message_loop_->RunAllPending();  // Deletes MockRenderProcessHost.
+    message_loop_->RunUntilIdle();  // Deletes MockRenderProcessHost.
     message_loop_.reset();
   }
 

@@ -210,14 +210,14 @@ class RTCVideoDecoderTest : public testing::Test {
     // Test successful initialization.
     decoder_->Initialize(
         NULL, NewExpectedStatusCB(PIPELINE_OK), NewStatisticsCB());
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   void Stop() {
     EXPECT_CALL(*video_track_, RemoveRenderer(decoder_.get()));
     decoder_->Stop(media::NewExpectedClosure());
 
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     EXPECT_EQ(RTCVideoDecoder::kStopped, decoder_->state_);
   }
 
@@ -286,7 +286,7 @@ TEST_F(RTCVideoDecoderTest, DoReset) {
   decoder_->Read(read_cb_);
   decoder_->Reset(media::NewExpectedClosure());
 
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_EQ(RTCVideoDecoder::kNormal, decoder_->state_);
 }
 
@@ -296,7 +296,7 @@ TEST_F(RTCVideoDecoderTest, DoRenderFrame) {
   for (size_t i = 0; i < media::limits::kMaxVideoFrames; ++i)
     RenderFrame();
 
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_EQ(RTCVideoDecoder::kNormal, decoder_->state_);
 }
 
@@ -307,7 +307,7 @@ TEST_F(RTCVideoDecoderTest, DoSetSize) {
                                 HasSize(kWidth, kHeight)));
   decoder_->Read(read_cb_);
   RenderFrame();
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   int new_width = kWidth * 2;
   int new_height = kHeight * 2;
@@ -317,7 +317,7 @@ TEST_F(RTCVideoDecoderTest, DoSetSize) {
                                 HasSize(new_width, new_height)));
   decoder_->Read(read_cb_);
   RenderFrame();
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(RTCVideoDecoderTest, ReadAndShutdown) {
@@ -334,7 +334,7 @@ TEST_F(RTCVideoDecoderTest, ReadAndShutdown) {
   EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk,
                                 scoped_refptr<media::VideoFrame>()));
   decoder_->Read(read_cb_);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace content

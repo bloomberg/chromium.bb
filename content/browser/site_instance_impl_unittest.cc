@@ -143,8 +143,8 @@ class SiteInstanceTest : public testing::Test {
     // We don't just do this in TearDown() because we create TestBrowserContext
     // objects in each test, which will be destructed before
     // TearDown() is called.
-    MessageLoop::current()->RunAllPending();
-    message_loop_.RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
+    message_loop_.RunUntilIdle();
   }
 
  private:

@@ -164,7 +164,7 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
             delegate.received_device_info().frame_per_second);
   delegate.Reset();
 
-  message_loop.RunAllPending();
+  message_loop.RunUntilIdle();
 }
 
 TEST(VideoCaptureMessageFilterTest, Delegates) {
@@ -214,7 +214,7 @@ TEST(VideoCaptureMessageFilterTest, Delegates) {
                                    VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_FALSE(delegate2.state_changed_received());
 
-  message_loop.RunAllPending();
+  message_loop.RunUntilIdle();
 }
 
 }  // namespace content

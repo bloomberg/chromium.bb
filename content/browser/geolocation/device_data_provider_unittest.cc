@@ -28,12 +28,12 @@ TEST(GeolocationDeviceDataProviderWifiData, CreateDestroy) {
     DeviceDataProvider<WifiData>::Register(&listener);
     for (int j = 0; j < 10; j++) {
       base::PlatformThread::Sleep(base::TimeDelta());
-      main_message_loop.RunAllPending();  // See comment above
+      main_message_loop.RunUntilIdle();  // See comment above
     }
     DeviceDataProvider<WifiData>::Unregister(&listener);
     for (int j = 0; j < 10; j++) {
       base::PlatformThread::Sleep(base::TimeDelta());
-      main_message_loop.RunAllPending();  // See comment above
+      main_message_loop.RunUntilIdle();  // See comment above
     }
   }
 }

@@ -106,7 +106,7 @@ class AudioInputDeviceManagerTest : public testing::Test {
         .Times(1);
 
     // Wait until we get the list.
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -149,7 +149,7 @@ TEST_F(AudioInputDeviceManagerTest, OpenAndCloseDevice) {
         .Times(1);
 
     // Waits for the callback.
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
   }
 }
 
@@ -179,7 +179,7 @@ TEST_F(AudioInputDeviceManagerTest, OpenMultipleDevices) {
         .Times(1);
 
     // Waits for the callback.
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
   }
 
   // Checks if the session_ids are unique.
@@ -197,7 +197,7 @@ TEST_F(AudioInputDeviceManagerTest, OpenMultipleDevices) {
         .Times(1);
 
     // Waits for the callback.
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
   }
 }
 
@@ -218,7 +218,7 @@ TEST_F(AudioInputDeviceManagerTest, OpenNotExistingDevice) {
       .Times(1);
 
   // Waits for the callback.
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 }
 
 // Opens default device twice.
@@ -254,7 +254,7 @@ TEST_F(AudioInputDeviceManagerTest, OpenDeviceTwice) {
       .Times(1);
 
   // Waits for the callback.
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 }
 
 // Starts and closes the sessions after opening the devices.
@@ -286,20 +286,20 @@ TEST_F(AudioInputDeviceManagerTest, StartAndStopSession) {
     EXPECT_CALL(*audio_input_listener_,
                 Opened(MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
         .Times(1);
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
 
     manager_->Start(session_id[index], audio_input_event_handler.get());
     EXPECT_CALL(*audio_input_event_handler,
                 DeviceStarted(session_id[index], iter->device_id))
         .Times(1);
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
 
     manager_->Stop(session_id[index]);
     manager_->Close(session_id[index]);
     EXPECT_CALL(*audio_input_listener_,
                 Closed(MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
         .Times(1);
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
   }
 }
 
@@ -331,13 +331,13 @@ TEST_F(AudioInputDeviceManagerTest, CloseWithoutStopSession) {
     EXPECT_CALL(*audio_input_listener_,
                 Opened(MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
         .Times(1);
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
 
     manager_->Start(session_id[index], audio_input_event_handler.get());
     EXPECT_CALL(*audio_input_event_handler,
                 DeviceStarted(session_id[index], iter->device_id))
         .Times(1);
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
 
     // Event Handler should get a stop device notification as no stop is called
     // before closing the device.
@@ -348,7 +348,7 @@ TEST_F(AudioInputDeviceManagerTest, CloseWithoutStopSession) {
     EXPECT_CALL(*audio_input_listener_,
                 Closed(MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
         .Times(1);
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
   }
 }
 
@@ -381,7 +381,7 @@ TEST_F(AudioInputDeviceManagerTest, StartDeviceTwice) {
   EXPECT_CALL(*audio_input_listener_,
               Opened(MEDIA_DEVICE_AUDIO_CAPTURE, second_session_id))
       .Times(1);
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 
   // Calls Start()/Stop()/Close() for the default device twice.
   manager_->Start(first_session_id, first_event_handler.get());
@@ -394,7 +394,7 @@ TEST_F(AudioInputDeviceManagerTest, StartDeviceTwice) {
               DeviceStarted(second_session_id,
                             media::AudioManagerBase::kDefaultDeviceId))
       .Times(1);
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 
   manager_->Stop(first_session_id);
   manager_->Stop(second_session_id);
@@ -406,7 +406,7 @@ TEST_F(AudioInputDeviceManagerTest, StartDeviceTwice) {
   EXPECT_CALL(*audio_input_listener_,
               Closed(MEDIA_DEVICE_AUDIO_CAPTURE, second_session_id))
       .Times(1);
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 }
 
 // Starts an invalid session.
@@ -427,7 +427,7 @@ TEST_F(AudioInputDeviceManagerTest, StartInvalidSession) {
   EXPECT_CALL(*audio_input_listener_,
               Opened(MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
       .Times(1);
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 
   // Starts a non-opened device.
   // This should fail and trigger error code 'kDeviceNotAvailable'.
@@ -436,13 +436,13 @@ TEST_F(AudioInputDeviceManagerTest, StartInvalidSession) {
   EXPECT_CALL(*audio_input_event_handler,
               DeviceStarted(invalid_session_id, std::string()))
       .Times(1);
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 
   manager_->Close(session_id);
   EXPECT_CALL(*audio_input_listener_,
               Closed(MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
       .Times(1);
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 }
 
 // Starts a session twice, the first time should succeed, while the second
@@ -464,7 +464,7 @@ TEST_F(AudioInputDeviceManagerTest, StartSessionTwice) {
   EXPECT_CALL(*audio_input_listener_,
               Opened(MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
       .Times(1);
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 
   // Starts the session, it should succeed.
   manager_->Start(session_id, audio_input_event_handler.get());
@@ -472,7 +472,7 @@ TEST_F(AudioInputDeviceManagerTest, StartSessionTwice) {
               DeviceStarted(session_id,
                             media::AudioManagerBase::kDefaultDeviceId))
       .Times(1);
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 
   // Starts the session for the second time, it should fail.
   manager_->Start(session_id, audio_input_event_handler.get());
@@ -485,7 +485,7 @@ TEST_F(AudioInputDeviceManagerTest, StartSessionTwice) {
   EXPECT_CALL(*audio_input_listener_,
               Closed(MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
       .Times(1);
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 }
 
 }  // namespace content

@@ -408,7 +408,7 @@ class RenderWidgetHostTest : public testing::Test {
 #endif
 
     // Process all pending tasks to avoid leaks.
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
 
   void SendInputEventACK(WebInputEvent::Type type, bool processed) {
@@ -932,7 +932,7 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
   // The coalesced events can queue up a delayed ack
   // so that additional input events can be processed before
   // we turn off coalescing.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
                   ViewMsg_HandleInputEvent::ID));
@@ -940,7 +940,7 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
 
   // One more time.
   SendInputEventACK(WebInputEvent::MouseWheel, true);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
                   ViewMsg_HandleInputEvent::ID));
@@ -948,7 +948,7 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
 
   // After the final ack, the queue should be empty.
   SendInputEventACK(WebInputEvent::MouseWheel, true);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0U, process_->sink().message_count());
 }
 
@@ -999,7 +999,7 @@ TEST_F(RenderWidgetHostTest, CoalescesGesturesEvents) {
 
   // Check that the ACK sends the second message.
   SendInputEventACK(WebInputEvent::GestureScrollBegin, true);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
               ViewMsg_HandleInputEvent::ID));
@@ -1007,7 +1007,7 @@ TEST_F(RenderWidgetHostTest, CoalescesGesturesEvents) {
 
   // Ack for queued coalesced event.
   SendInputEventACK(WebInputEvent::GestureScrollUpdate, true);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
               ViewMsg_HandleInputEvent::ID));
@@ -1015,7 +1015,7 @@ TEST_F(RenderWidgetHostTest, CoalescesGesturesEvents) {
 
   // Ack for queued uncoalesced event.
   SendInputEventACK(WebInputEvent::GestureScrollUpdate, true);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
               ViewMsg_HandleInputEvent::ID));
@@ -1023,7 +1023,7 @@ TEST_F(RenderWidgetHostTest, CoalescesGesturesEvents) {
 
   // After the final ack, the queue should be empty.
   SendInputEventACK(WebInputEvent::GestureScrollEnd, true);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0U, process_->sink().message_count());
 }
 
@@ -1041,12 +1041,12 @@ TEST_F(RenderWidgetHostTest, GestureFlingCancelsFiltered) {
   SimulateGestureFlingStartEvent(0, -10);
   EXPECT_TRUE(host_->FlingInProgress());
   SendInputEventACK(WebInputEvent::GestureFlingStart, true);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel);
   EXPECT_FALSE(host_->FlingInProgress());
   EXPECT_EQ(2U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::GestureFlingCancel, true);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
 
   // GFC before previous GFS is acked.
@@ -1060,9 +1060,9 @@ TEST_F(RenderWidgetHostTest, GestureFlingCancelsFiltered) {
 
   // Advance state realistically.
   SendInputEventACK(WebInputEvent::GestureFlingStart, true);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   SendInputEventACK(WebInputEvent::GestureFlingCancel, true);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
 
   // GFS is added to the queue if another event is pending

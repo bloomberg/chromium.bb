@@ -163,7 +163,7 @@ void RenderViewHostTestHarness::TearDown() {
 #endif
   // Make sure that we flush any messages related to WebContentsImpl destruction
   // before we destroy the browser context.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   // Delete any RenderProcessHosts before the BrowserContext goes away.
   if (rvh_test_enabler_.rph_factory_.get())
@@ -171,7 +171,7 @@ void RenderViewHostTestHarness::TearDown() {
 
   // Release the browser context on the UI thread.
   message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
 #if defined(OS_WIN)
   ole_initializer_.reset();

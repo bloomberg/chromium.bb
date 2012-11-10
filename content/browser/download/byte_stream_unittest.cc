@@ -150,7 +150,7 @@ TEST_F(ByteStreamTest, ByteStream_PushBack) {
   EXPECT_FALSE(Write(byte_stream_input.get(), 1024));
   // Flush
   byte_stream_input->Close(DOWNLOAD_INTERRUPT_REASON_NONE);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Pull the IO buffers out; do we get the same buffers and do they
   // have the same contents?
@@ -193,15 +193,15 @@ TEST_F(ByteStreamTest, ByteStream_PushBackSplit) {
   // Push a series of IO buffers on; test pushback happening and
   // that it's advisory.
   EXPECT_TRUE(Write(byte_stream_input.get(), 1024));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_TRUE(Write(byte_stream_input.get(), 1024));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_TRUE(Write(byte_stream_input.get(), 1024));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_TRUE(Write(byte_stream_input.get(), 1024));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_FALSE(Write(byte_stream_input.get(), 6 * 1024));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Pull the IO buffers out; do we get the same buffers and do they
   // have the same contents?
@@ -247,7 +247,7 @@ TEST_F(ByteStreamTest, ByteStream_CompleteTransmits) {
   EXPECT_EQ(ByteStreamReader::STREAM_EMPTY,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   byte_stream_input->Close(DOWNLOAD_INTERRUPT_REASON_NONE);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   ASSERT_EQ(ByteStreamReader::STREAM_COMPLETE,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
@@ -261,7 +261,7 @@ TEST_F(ByteStreamTest, ByteStream_CompleteTransmits) {
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_TRUE(Write(byte_stream_input.get(), 1024));
   byte_stream_input->Close(DOWNLOAD_INTERRUPT_REASON_NONE);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_EQ(ByteStreamReader::STREAM_HAS_DATA,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_TRUE(ValidateIOBuffer(output_io_buffer, output_length));
@@ -277,7 +277,7 @@ TEST_F(ByteStreamTest, ByteStream_CompleteTransmits) {
   EXPECT_EQ(ByteStreamReader::STREAM_EMPTY,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   byte_stream_input->Close(DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   ASSERT_EQ(ByteStreamReader::STREAM_COMPLETE,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED,
@@ -291,7 +291,7 @@ TEST_F(ByteStreamTest, ByteStream_CompleteTransmits) {
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_TRUE(Write(byte_stream_input.get(), 1024));
   byte_stream_input->Close(DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_EQ(ByteStreamReader::STREAM_HAS_DATA,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_TRUE(ValidateIOBuffer(output_io_buffer, output_length));
@@ -333,7 +333,7 @@ TEST_F(ByteStreamTest, ByteStream_SinkCallback) {
                       Return(true)));
 
   EXPECT_TRUE(Write(byte_stream_input.get(), 4000));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Check callback results match expectations.
   ::testing::Mock::VerifyAndClearExpectations(task_runner.get());
@@ -353,7 +353,7 @@ TEST_F(ByteStreamTest, ByteStream_SinkCallback) {
   // Confirm callback *isn't* called at less than 33% (by lack of
   // unexpected call on task runner).
   EXPECT_TRUE(Write(byte_stream_input.get(), 3000));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // This reflects an implementation artifact that data goes with callbacks,
   // which should not be considered part of the interface guarantee.
@@ -396,7 +396,7 @@ TEST_F(ByteStreamTest, ByteStream_SourceCallback) {
 
   // Allow bytes to transition (needed for message passing implementation),
   // and get and validate the data.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_EQ(ByteStreamReader::STREAM_HAS_DATA,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_TRUE(ValidateIOBuffer(output_io_buffer, output_length));
@@ -466,7 +466,7 @@ TEST_F(ByteStreamTest, ByteStream_SinkInterrupt) {
 
   // Add data, and pass it across.
   EXPECT_TRUE(Write(byte_stream_input.get(), 4000));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // The task runner should have been hit, but the callback count
   // isn't changed until we actually run the callback.
@@ -517,13 +517,13 @@ TEST_F(ByteStreamTest, ByteStream_SourceInterrupt) {
   EXPECT_TRUE(Write(byte_stream_input.get(), 2000));
   EXPECT_TRUE(Write(byte_stream_input.get(), 2001));
   EXPECT_FALSE(Write(byte_stream_input.get(), 6000));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Initial get should not trigger callback.
   EXPECT_EQ(ByteStreamReader::STREAM_HAS_DATA,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_TRUE(ValidateIOBuffer(output_io_buffer, output_length));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Setup expectations.
   EXPECT_CALL(*task_runner.get(), PostDelayedTask(_, _, base::TimeDelta()))

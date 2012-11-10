@@ -237,7 +237,7 @@ class VideoCaptureHostTest : public testing::Test {
     host_ = NULL;
 
     // We need to continue running message_loop_ to complete all destructions.
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
 
     // Delete the IO message loop.  This will cause the MediaStreamManager to be
     // notified so it will stop its device thread and device managers.
@@ -332,7 +332,7 @@ class VideoCaptureHostTest : public testing::Test {
     VideoCaptureControllerID id(kDeviceId);
     host_->OnError(id);
     // Wait for the error callback.
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
   }
 
   scoped_refptr<MockVideoCaptureHost> host_;

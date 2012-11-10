@@ -73,10 +73,10 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
         DatabaseUtil::GetOriginIdentifier(kSessionOnlyOrigin));
     ASSERT_TRUE(file_util::CreateDirectory(normal_path));
     ASSERT_TRUE(file_util::CreateDirectory(session_only_path));
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   EXPECT_TRUE(file_util::DirectoryExists(normal_path));
   EXPECT_FALSE(file_util::DirectoryExists(session_only_path));
@@ -120,11 +120,11 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
         DatabaseUtil::GetOriginIdentifier(kSessionOnlyOrigin));
     ASSERT_TRUE(file_util::CreateDirectory(normal_path));
     ASSERT_TRUE(file_util::CreateDirectory(session_only_path));
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   // Make sure we wait until the destructor has run.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // No data was cleared because of SetForceKeepSessionState.
   EXPECT_TRUE(file_util::DirectoryExists(normal_path));
@@ -191,11 +191,11 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
     idb_context->DeleteForOrigin(kTestOrigin);
 
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   // Make sure we wait until the destructor has run.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   EXPECT_FALSE(file_util::DirectoryExists(test_path));
 }

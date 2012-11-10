@@ -89,7 +89,7 @@ class MediaStreamManagerTest : public ::testing::Test {
   }
 
   virtual void TearDown() {
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
 
     // Delete the IO message loop to clean up the MediaStreamManager.
     message_loop_.reset();

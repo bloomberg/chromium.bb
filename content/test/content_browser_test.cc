@@ -109,7 +109,7 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
 #endif
 
   // Pump startup related events.
-  MessageLoopForUI::current()->RunAllPending();
+  MessageLoopForUI::current()->RunUntilIdle();
 
 #if defined(OS_MACOSX)
   pool.Recycle();

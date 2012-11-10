@@ -163,7 +163,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
 
     // Recover the old browser client and content client.
     GetContentClient()->set_browser_for_testing(old_browser_client_);

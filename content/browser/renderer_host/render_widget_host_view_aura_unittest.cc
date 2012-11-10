@@ -87,7 +87,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     aura_test_helper_->TearDown();
 
     message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
  protected:

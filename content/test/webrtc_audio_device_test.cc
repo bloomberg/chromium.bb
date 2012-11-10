@@ -154,7 +154,7 @@ void WebRTCAudioDeviceTest::TearDown() {
   SetAudioUtilCallback(NULL);
 
   // Run any pending cleanup tasks that may have been posted to the main thread.
-  ChildProcess::current()->main_thread()->message_loop()->RunAllPending();
+  ChildProcess::current()->main_thread()->message_loop()->RunUntilIdle();
 
   // Kick of the cleanup process by closing the channel. This queues up
   // OnStreamClosed calls to be executed on the audio thread.

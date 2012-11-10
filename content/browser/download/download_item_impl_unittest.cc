@@ -141,7 +141,7 @@ class DownloadItemTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    ui_thread_.DeprecatedGetThreadObject()->message_loop()->RunAllPending();
+    ui_thread_.DeprecatedGetThreadObject()->message_loop()->RunUntilIdle();
     STLDeleteElements(&allocated_downloads_);
     allocated_downloads_.clear();
   }
@@ -188,7 +188,7 @@ class DownloadItemTest : public testing::Test {
     }
 
     item->Start(download_file.Pass());
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
 
     // So that we don't have a function writing to a stack variable
     // lying around if the above failed.
@@ -205,7 +205,7 @@ class DownloadItemTest : public testing::Test {
     EXPECT_CALL(*download_file, Cancel());
     EXPECT_CALL(delegate_, DownloadStopped(item));
     item->Cancel(true);
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
   }
 
   // Destroy a previously created download item.
@@ -215,7 +215,7 @@ class DownloadItemTest : public testing::Test {
   }
 
   void RunAllPendingInMessageLoops() {
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
   }
 
   MockDelegate* mock_delegate() {

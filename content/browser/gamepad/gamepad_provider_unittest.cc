@@ -79,7 +79,7 @@ TEST_F(GamepadProviderTest, PollingAccess) {
   GamepadProvider* provider = CreateProvider(test_data);
   provider->Resume();
 
-  message_loop().RunAllPending();
+  message_loop().RunUntilIdle();
 
   mock_data_fetcher_->WaitForDataRead();
 
@@ -135,7 +135,7 @@ TEST_F(GamepadProviderTest, UserGesture) {
   mock_data_fetcher_->WaitForDataRead();
 
   // It should not have issued our callback.
-  message_loop().RunAllPending();
+  message_loop().RunUntilIdle();
   EXPECT_FALSE(listener.has_user_gesture());
 
   // Set a button down and wait for it to be read twice.
@@ -150,7 +150,7 @@ TEST_F(GamepadProviderTest, UserGesture) {
   mock_data_fetcher_->WaitForDataRead();
 
   // It should have issued our callback.
-  message_loop().RunAllPending();
+  message_loop().RunUntilIdle();
   EXPECT_TRUE(listener.has_user_gesture());
 }
 

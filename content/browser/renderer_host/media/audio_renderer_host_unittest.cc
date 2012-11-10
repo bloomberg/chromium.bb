@@ -217,7 +217,7 @@ class AudioRendererHostTest : public testing::Test {
     // Send a message to AudioRendererHost to tell it we want to close the
     // stream.
     host_->OnCloseStream(kStreamId);
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
   }
 
   void Play() {
@@ -245,7 +245,7 @@ class AudioRendererHostTest : public testing::Test {
                 OnSetAudioStreamVolume(_, kStreamId, volume));
 
     host_->OnSetVolume(kStreamId, volume);
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
   }
 
   void SimulateError() {

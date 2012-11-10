@@ -117,14 +117,14 @@ TEST_F(PluginLoaderPosixTest, QueueRequests) {
   EXPECT_EQ(2u, plugin_loader()->number_of_pending_callbacks());
 
   EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(2);
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
 
   EXPECT_EQ(0, did_callback);
 
   plugin_loader()->canonical_list()->clear();
   plugin_loader()->canonical_list()->push_back(plugin1_.path);
   plugin_loader()->TestOnPluginLoaded(0, plugin1_);
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
 
   EXPECT_EQ(1, did_callback);
   EXPECT_EQ(1u, plugin_loader()->number_of_pending_callbacks());
@@ -132,7 +132,7 @@ TEST_F(PluginLoaderPosixTest, QueueRequests) {
   plugin_loader()->canonical_list()->clear();
   plugin_loader()->canonical_list()->push_back(plugin1_.path);
   plugin_loader()->TestOnPluginLoaded(0, plugin1_);
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
 
   EXPECT_EQ(2, did_callback);
   EXPECT_EQ(0u, plugin_loader()->number_of_pending_callbacks());
@@ -146,7 +146,7 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoads) {
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
 
   EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
 
   AddThreePlugins();
 
@@ -160,7 +160,7 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoads) {
   EXPECT_EQ(1u, plugins.size());
   EXPECT_EQ(plugin1_.name, plugins[0].name);
 
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
   EXPECT_EQ(0, did_callback);
 
   plugin_loader()->TestOnPluginLoaded(1, plugin2_);
@@ -168,14 +168,14 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoads) {
   EXPECT_EQ(2u, plugins.size());
   EXPECT_EQ(plugin2_.name, plugins[1].name);
 
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
   EXPECT_EQ(0, did_callback);
 
   plugin_loader()->TestOnPluginLoaded(2, plugin3_);
   EXPECT_EQ(3u, plugins.size());
   EXPECT_EQ(plugin3_.name, plugins[2].name);
 
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
   EXPECT_EQ(1, did_callback);
 }
 
@@ -187,7 +187,7 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoadsThenCrash) {
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
 
   EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(2);
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
 
   AddThreePlugins();
 
@@ -201,7 +201,7 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoadsThenCrash) {
   EXPECT_EQ(1u, plugins.size());
   EXPECT_EQ(plugin1_.name, plugins[0].name);
 
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
   EXPECT_EQ(0, did_callback);
 
   plugin_loader()->TestOnPluginLoaded(1, plugin2_);
@@ -209,14 +209,14 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoadsThenCrash) {
   EXPECT_EQ(2u, plugins.size());
   EXPECT_EQ(plugin2_.name, plugins[1].name);
 
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
   EXPECT_EQ(0, did_callback);
 
   plugin_loader()->TestOnPluginLoaded(2, plugin3_);
   EXPECT_EQ(3u, plugins.size());
   EXPECT_EQ(plugin3_.name, plugins[2].name);
 
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
   EXPECT_EQ(1, did_callback);
 
   plugin_loader()->OnProcessCrashed(42);
@@ -230,7 +230,7 @@ TEST_F(PluginLoaderPosixTest, TwoFailures) {
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
 
   EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
 
   AddThreePlugins();
 
@@ -243,7 +243,7 @@ TEST_F(PluginLoaderPosixTest, TwoFailures) {
   EXPECT_EQ(1u, plugin_loader()->next_load_index());
   EXPECT_EQ(0u, plugins.size());
 
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
   EXPECT_EQ(0, did_callback);
 
   plugin_loader()->TestOnPluginLoaded(1, plugin2_);
@@ -251,13 +251,13 @@ TEST_F(PluginLoaderPosixTest, TwoFailures) {
   EXPECT_EQ(1u, plugins.size());
   EXPECT_EQ(plugin2_.name, plugins[0].name);
 
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
   EXPECT_EQ(0, did_callback);
 
   plugin_loader()->TestOnPluginLoadFailed(2, plugin3_.path);
   EXPECT_EQ(1u, plugins.size());
 
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
   EXPECT_EQ(1, did_callback);
 }
 
@@ -269,7 +269,7 @@ TEST_F(PluginLoaderPosixTest, CrashedProcess) {
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
 
   EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
 
   AddThreePlugins();
 
@@ -283,7 +283,7 @@ TEST_F(PluginLoaderPosixTest, CrashedProcess) {
   EXPECT_EQ(1u, plugins.size());
   EXPECT_EQ(plugin1_.name, plugins[0].name);
 
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
   EXPECT_EQ(0, did_callback);
 
   EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
@@ -302,7 +302,7 @@ TEST_F(PluginLoaderPosixTest, InternalPlugin) {
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
 
   EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
 
   plugin2_.path = FilePath("/internal/plugin.plugin");
 
@@ -321,7 +321,7 @@ TEST_F(PluginLoaderPosixTest, InternalPlugin) {
   EXPECT_EQ(1u, plugins.size());
   EXPECT_EQ(plugin1_.name, plugins[0].name);
 
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
   EXPECT_EQ(0, did_callback);
 
   // Internal plugins can fail to load if they're built-in with manual
@@ -332,14 +332,14 @@ TEST_F(PluginLoaderPosixTest, InternalPlugin) {
   EXPECT_EQ(plugin2_.name, plugins[1].name);
   EXPECT_EQ(0u, plugin_loader()->internal_plugins()->size());
 
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
   EXPECT_EQ(0, did_callback);
 
   plugin_loader()->TestOnPluginLoaded(2, plugin3_);
   EXPECT_EQ(3u, plugins.size());
   EXPECT_EQ(plugin3_.name, plugins[2].name);
 
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
   EXPECT_EQ(1, did_callback);
 }
 
@@ -352,7 +352,7 @@ TEST_F(PluginLoaderPosixTest, AllCrashed) {
 
   // Spin the loop so that the canonical list of plugins can be set.
   EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
   AddThreePlugins();
 
   EXPECT_EQ(0u, plugin_loader()->next_load_index());
@@ -370,7 +370,7 @@ TEST_F(PluginLoaderPosixTest, AllCrashed) {
   plugin_loader()->OnProcessCrashed(42);
   plugin_loader()->OnProcessCrashed(42);
 
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
   EXPECT_EQ(1, did_callback);
 
   EXPECT_EQ(0u, plugin_loader()->loaded_plugins().size());

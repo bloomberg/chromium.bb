@@ -192,7 +192,7 @@ void RenderViewTest::TearDown() {
   // After telling the view to close and resetting mock_process_ we may get
   // some new tasks which need to be processed before shutting down WebKit
   // (http://crbug.com/21508).
-  msg_loop_.RunAllPending();
+  msg_loop_.RunUntilIdle();
 
   WebKit::shutdown();
 

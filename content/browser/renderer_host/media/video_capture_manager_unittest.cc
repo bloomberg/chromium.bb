@@ -106,7 +106,7 @@ TEST_F(VideoCaptureManagerTest, CreateAndClose) {
   vcm_->EnumerateDevices();
 
   // Wait to get device callback.
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 
   int video_session_id = vcm_->Open(listener_->devices_.front());
 
@@ -121,7 +121,7 @@ TEST_F(VideoCaptureManagerTest, CreateAndClose) {
   vcm_->Close(video_session_id);
 
   // Wait to check callbacks before removing the listener.
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
   vcm_->Unregister();
 }
 
@@ -135,7 +135,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwice) {
   vcm_->EnumerateDevices();
 
   // Wait to get device callback.
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 
   int video_session_id_first = vcm_->Open(listener_->devices_.front());
 
@@ -148,7 +148,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwice) {
   vcm_->Close(video_session_id_second);
 
   // Wait to check callbacks before removing the listener.
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
   vcm_->Unregister();
 }
 
@@ -162,7 +162,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwo) {
   vcm_->EnumerateDevices();
 
   // Wait to get device callback.
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 
   StreamDeviceInfoArray::iterator it = listener_->devices_.begin();
 
@@ -174,7 +174,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwo) {
   vcm_->Close(video_session_id_second);
 
   // Wait to check callbacks before removing the listener.
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
   vcm_->Unregister();
 }
 
@@ -190,7 +190,7 @@ TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
   vcm_->EnumerateDevices();
 
   // Wait to get device callback.
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 
   MediaStreamType stream_type = MEDIA_DEVICE_VIDEO_CAPTURE;
   std::string device_name("device_doesnt_exist");
@@ -201,7 +201,7 @@ TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
   vcm_->Open(dummy_device);
 
   // Wait to check callbacks before removing the listener.
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
   vcm_->Unregister();
 }
 
@@ -224,7 +224,7 @@ TEST_F(VideoCaptureManagerTest, StartUsingId) {
   vcm_->Stop(VideoCaptureManager::kStartOpenSessionId, base::Closure());
 
   // Wait to check callbacks before removing the listener.
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
   vcm_->Unregister();
 }
 
@@ -238,7 +238,7 @@ TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
   vcm_->EnumerateDevices();
 
   // Wait to get device callback.
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 
   int video_session_id = vcm_->Open(listener_->devices_.front());
 
@@ -255,7 +255,7 @@ TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
   vcm_->Stop(video_session_id, base::Closure());
 
   // Wait to check callbacks before removing the listener
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
   vcm_->Unregister();
 }
 

@@ -463,10 +463,10 @@ class DownloadManagerTest : public testing::Test {
 
     download_manager_->Shutdown();
     download_manager_ = NULL;
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     ASSERT_EQ(NULL, mock_download_item_factory_.get());
     ASSERT_EQ(NULL, mock_download_file_factory_.get());
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     mock_download_manager_delegate_.reset();
     mock_browser_context_.reset();
   }

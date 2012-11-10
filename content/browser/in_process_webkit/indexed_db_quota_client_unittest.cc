@@ -50,7 +50,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
     idb_context_ = static_cast<IndexedDBContextImpl*>(
         BrowserContext::GetDefaultStoragePartition(browser_context_.get())->
             GetIndexedDBContext());
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     setup_temp_dir();
   }
   void setup_temp_dir() {
@@ -68,7 +68,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
     // doesn't outlive BrowserThread::WEBKIT_DEPRECATED.
     idb_context_ = NULL;
     browser_context_.reset();
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
 
   int64 GetOriginUsage(
@@ -80,7 +80,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         origin, type,
         base::Bind(&IndexedDBQuotaClientTest::OnGetOriginUsageComplete,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     EXPECT_GT(usage_, -1);
     return usage_;
   }
@@ -94,7 +94,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         type,
         base::Bind(&IndexedDBQuotaClientTest::OnGetOriginsComplete,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     return origins_;
   }
 
@@ -108,7 +108,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         type, host,
         base::Bind(&IndexedDBQuotaClientTest::OnGetOriginsComplete,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     return origins_;
   }
 
@@ -119,7 +119,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         origin_url, kTemp,
         base::Bind(&IndexedDBQuotaClientTest::OnDeleteOriginComplete,
                    weak_factory_.GetWeakPtr()));
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     return delete_status_;
   }
 

@@ -113,7 +113,7 @@ void AddEventsToFilter(IPC::ChannelProxy::MessageFilter* message_filter,
     message_filter->OnMessageReceived(message);
   }
 
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace
