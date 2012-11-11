@@ -1206,7 +1206,9 @@ tarball() {
   # TODO(robertm): remove this hack
   # http://code.google.com/p/nativeclient/issues/detail?id=2918
   if ! ${BUILD_PLATFORM_WIN} ; then
-    RecordRevisionInfo
+    DumpAllRevisions > "${INSTALL_ROOT}/REV"
+  else
+    echo "No rev info for windows yet" > "${INSTALL_ROOT}/REV"
   fi
   tar zcf "${tarball}" -C "${INSTALL_ROOT}" .
   ls -l ${tarball}
@@ -3282,12 +3284,11 @@ HAS_FRONTEND=0""" > "${destdir}"/driver.conf
 ######################################################################
 ######################################################################
 
-RecordRevisionInfo() {
-  if [ -d .svn ]; then
-    ${SVN} info > "${INSTALL_ROOT}/REV"
-  elif [ -d .git ]; then
-    ${GIT} log | grep git-svn | head -1 > "${INSTALL_ROOT}/REV"
-  fi
+DumpAllRevisions() {
+  one-line-rev-info ${NACL_ROOT}
+  for d in ${PNACL_ROOT}/src/*/ ${PNACL_ROOT}/git/*/ ; do
+    one-line-rev-info $d
+  done
 }
 
 ######################################################################

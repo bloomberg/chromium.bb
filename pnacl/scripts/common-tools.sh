@@ -517,6 +517,50 @@ svn-assert-no-changes() {
   fi
 }
 
+
+######################################################################
+# vcs rev info helper
+######################################################################
+get-field () {
+  cut -d " " -f $1
+}
+
+git-one-line-rev-info() {
+    local commit=$(${GIT} log -n 1 | head -1 | get-field 2)
+    local url=$(egrep "^[^a-z]+url = " .git/config | head -1 | get-field 3)
+    # variable bypass does implicit whitespace strip
+    echo "[GIT] ${url}: ${commit}"
+}
+
+svn-one-line-rev-info() {
+    local url=$(${SVN} info | egrep 'URL:' | get-field 2)
+    local rev=$(${SVN} info | egrep 'Revision:' | get-field 2)
+    echo "[SVN] ${url}: ${rev}"
+}
+
+hg-one-line-rev-info() {
+    local num=$(${HG} identify -n)
+    local id=$(${HG} identify -i)
+    local url=$(grep default .hg/hgrc | get-field 3)
+    echo "[HG]  ${url}: ${id} (${num})"
+}
+
+#+ one-line-rev-info <dir> - show one line summmary for
+one-line-rev-info() {
+  spushd $1
+  if [ -d .svn ]; then
+    svn-one-line-rev-info
+  elif [ -d .hg ]; then
+    hg-one-line-rev-info
+  elif [ -d .git ]; then
+    # we currently only
+    git-one-line-rev-info
+  else
+    echo "[$1] Unknown version control system"
+  fi
+  spopd
+}
+
 ######################################################################
 # Logging tools
 ######################################################################
