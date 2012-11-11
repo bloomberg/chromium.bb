@@ -18,27 +18,40 @@ class RenderProcessHost;
 ///////////////////////////////////////////////////////////////////////////////
 // SiteInstance interface.
 //
-// A SiteInstance is a data structure that is associated with all pages in a
-// given instance of a web site.  Here, a web site is identified by its
-// registered domain name and scheme.  An instance includes all pages
-// that are connected (i.e., either a user or a script navigated from one
-// to the other).  We represent instances using the BrowsingInstance class.
+// A SiteInstance represents a group of web pages that may be able to
+// synchronously script each other, and thus must live in the same renderer
+// process.
 //
-// In --process-per-tab, one SiteInstance is created for each tab (i.e., in the
-// WebContents constructor), unless the tab is created by script (i.e., in
-// WebContents::CreateNewView).  This corresponds to one process per
-// BrowsingInstance.
+// We identify this group using a combination of where the page comes from
+// (the site) and which tabs have references to each other (the instance).
+// Here, a "site" is similar to the page's origin, but it only includes the
+// registered domain name and scheme, not the port or subdomains.  This accounts
+// for the fact that changes to document.domain allow similar origin pages with
+// different ports or subdomains to script each other.  An "instance" includes
+// all tabs that might be able to script each other because of how they were
+// created (e.g., window.open or targeted links).  We represent instances using
+// the BrowsingInstance class.
+//
+// Process models:
 //
 // In process-per-site-instance (the current default process model),
 // SiteInstances are created (1) when the user manually creates a new tab
 // (which also creates a new BrowsingInstance), and (2) when the user navigates
 // across site boundaries (which uses the same BrowsingInstance).  If the user
-// navigates within a site, or opens links in new tabs within a site, the same
-// SiteInstance is used.
+// navigates within a site, the same SiteInstance is used.
+// (Caveat: we currently allow renderer-initiated cross-site navigations to
+// stay in the same SiteInstance, to preserve compatibility in cases like
+// cross-site iframes that open popups.)
 //
-// In --process-per-site, we consolidate all SiteInstances for a given site,
-// throughout the entire browser context.  This ensures that only one process
-// will be dedicated to each site.
+// In --process-per-tab, SiteInstances are created when the user manually
+// creates a new tab, but not when navigating across site boundaries (unless
+// a process swap is required for security reasons, such as navigating from
+// a privileged WebUI page to a normal web page).  This corresponds to one
+// process per BrowsingInstance.
+//
+// In --process-per-site, we consolidate all SiteInstances for a given site into
+// the same process, throughout the entire browser context.  This ensures that
+// only one process will be used for each site.
 //
 // Each NavigationEntry for a WebContents points to the SiteInstance that
 // rendered it.  Each RenderViewHost also points to the SiteInstance that it is
@@ -54,11 +67,19 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   virtual int32 GetId() = 0;
 
   // Whether this SiteInstance has a running process associated with it.
+  // This may return true before the first call to GetProcess(), in cases where
+  // we use process-per-site and there is an existing process available.
   virtual bool HasProcess() const = 0;
 
   // Returns the current process being used to render pages in this
-  // SiteInstance.  If the process has crashed or otherwise gone away, then
-  // this method will create a new process and update our host ID accordingly.
+  // SiteInstance.  If the process has not yet been created or has cleanly
+  // exited (e.g., when it is not actively being used), then this method will
+  // create a new process with a new ID.  Note that renderer process crashes
+  // leave the current RenderProcessHost (and ID) in place.
+  //
+  // For sites that require process-per-site mode (e.g., WebUI), this will
+  // ensure only one RenderProcessHost for the site exists/ within the
+  // BrowserContext.
   virtual content::RenderProcessHost* GetProcess() = 0;
 
   // Browser context to which this SiteInstance (and all related

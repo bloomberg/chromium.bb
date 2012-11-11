@@ -658,6 +658,32 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
 
   EXPECT_TRUE(instance->HasWrongProcessForURL(GURL("chrome://settings")));
 
+  // Test that WebUI SiteInstances reject normal web URLs.
+  const GURL webui_url("chrome://settings");
+  scoped_refptr<SiteInstanceImpl> webui_instance(static_cast<SiteInstanceImpl*>(
+      SiteInstance::Create(browser_context.get())));
+  webui_instance->SetSite(webui_url);
+  scoped_ptr<RenderProcessHost> webui_host(webui_instance->GetProcess());
+
+  // Simulate granting WebUI bindings for the process.
+  ChildProcessSecurityPolicyImpl::GetInstance()->GrantWebUIBindings(
+      webui_host->GetID());
+
+  EXPECT_TRUE(webui_instance->HasProcess());
+  EXPECT_FALSE(webui_instance->HasWrongProcessForURL(webui_url));
+  EXPECT_TRUE(webui_instance->HasWrongProcessForURL(GURL("http://google.com")));
+
+  // WebUI uses process-per-site, so another instance will use the same process
+  // even if we haven't called GetProcess yet.  Make sure HasWrongProcessForURL
+  // doesn't crash (http://crbug.com/137070).
+  scoped_refptr<SiteInstanceImpl> webui_instance2(
+      static_cast<SiteInstanceImpl*>(
+          SiteInstance::Create(browser_context.get())));
+  webui_instance2->SetSite(webui_url);
+  EXPECT_FALSE(webui_instance2->HasWrongProcessForURL(webui_url));
+  EXPECT_TRUE(
+      webui_instance2->HasWrongProcessForURL(GURL("http://google.com")));
+
   DrainMessageLoops();
 }
 
