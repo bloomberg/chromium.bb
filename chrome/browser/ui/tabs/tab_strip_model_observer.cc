@@ -16,7 +16,7 @@ void TabStripModelObserver::TabClosingAt(TabStripModel* tab_strip_model,
                                          int index) {
 }
 
-void TabStripModelObserver::TabDetachedAt(TabContents* contents,
+void TabStripModelObserver::TabDetachedAt(WebContents* contents,
                                           int index) {
 }
 

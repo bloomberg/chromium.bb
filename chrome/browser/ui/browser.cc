@@ -1055,7 +1055,7 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
   SetAsDelegate(contents, NULL);
 }
 
-void Browser::TabDetachedAt(TabContents* contents, int index) {
+void Browser::TabDetachedAt(WebContents* contents, int index) {
   TabDetachedAtImpl(contents, index, DETACH_TYPE_DETACH);
 }
 
@@ -1149,7 +1149,7 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
                             TabContents* old_contents,
                             TabContents* new_contents,
                             int index) {
-  TabDetachedAtImpl(old_contents, index, DETACH_TYPE_REPLACE);
+  TabDetachedAtImpl(old_contents->web_contents(), index, DETACH_TYPE_REPLACE);
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
@@ -2162,37 +2162,38 @@ void Browser::CloseFrame() {
   window_->Close();
 }
 
-void Browser::TabDetachedAtImpl(TabContents* contents, int index,
+void Browser::TabDetachedAtImpl(content::WebContents* contents,
+                                int index,
                                 DetachType type) {
   if (type == DETACH_TYPE_DETACH) {
     // Save the current location bar state, but only if the tab being detached
     // is the selected tab.  Because saving state can conditionally revert the
     // location bar, saving the current tab's location bar state to a
     // non-selected tab can corrupt both tabs.
-    if (contents == chrome::GetActiveTabContents(this)) {
+    if (contents == chrome::GetActiveWebContents(this)) {
       LocationBar* location_bar = window()->GetLocationBar();
       if (location_bar)
-        location_bar->SaveStateToContents(contents->web_contents());
+        location_bar->SaveStateToContents(contents);
     }
 
     if (!tab_strip_model_->closing_all())
       SyncHistoryWithTabs(0);
   }
 
-  SetAsDelegate(contents->web_contents(), NULL);
-  RemoveScheduledUpdatesFor(contents->web_contents());
+  SetAsDelegate(contents, NULL);
+  RemoveScheduledUpdatesFor(contents);
 
   if (find_bar_controller_.get() && index == active_index()) {
     find_bar_controller_->ChangeWebContents(NULL);
   }
 
   // Stop observing search model changes for this tab.
-  search_delegate_->OnTabDetached(contents->web_contents());
+  search_delegate_->OnTabDetached(contents);
 
   registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-                    content::Source<WebContents>(contents->web_contents()));
+                    content::Source<WebContents>(contents));
   registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_DETACHED,
-                    content::Source<WebContents>(contents->web_contents()));
+                    content::Source<WebContents>(contents));
 }
 
 bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,

@@ -120,7 +120,8 @@ void UnloadController::TabInsertedAt(content::WebContents* contents,
   TabAttachedImpl(contents);
 }
 
-void UnloadController::TabDetachedAt(TabContents* contents, int index) {
+void UnloadController::TabDetachedAt(content::WebContents* contents,
+                                     int index) {
   TabDetachedImpl(contents);
 }
 
@@ -128,7 +129,7 @@ void UnloadController::TabReplacedAt(TabStripModel* tab_strip_model,
                                      TabContents* old_contents,
                                      TabContents* new_contents,
                                      int index) {
-  TabDetachedImpl(old_contents);
+  TabDetachedImpl(old_contents->web_contents());
   TabAttachedImpl(new_contents->web_contents());
 }
 
@@ -150,13 +151,12 @@ void UnloadController::TabAttachedImpl(content::WebContents* contents) {
       content::Source<content::WebContents>(contents));
 }
 
-void UnloadController::TabDetachedImpl(TabContents* contents) {
+void UnloadController::TabDetachedImpl(content::WebContents* contents) {
   if (is_attempting_to_close_browser_)
-    ClearUnloadState(contents->web_contents(), false);
-  registrar_.Remove(
-      this,
-      content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-      content::Source<content::WebContents>(contents->web_contents()));
+    ClearUnloadState(contents, false);
+  registrar_.Remove(this,
+                    content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+                    content::Source<content::WebContents>(contents));
 }
 
 void UnloadController::ProcessPendingTabs() {

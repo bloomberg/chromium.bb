@@ -1401,7 +1401,7 @@ ToolbarView* BrowserView::GetToolbarView() const {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, TabStripModelObserver implementation:
 
-void BrowserView::TabDetachedAt(TabContents* contents, int index) {
+void BrowserView::TabDetachedAt(WebContents* contents, int index) {
   // We use index here rather than comparing |contents| because by this time
   // the model has already removed |contents| from its list, so
   // browser_->GetActiveWebContents() will return NULL or something else.

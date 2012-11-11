@@ -96,7 +96,8 @@ class BrowserCommandController : public CommandUpdater::CommandUpdaterDelegate,
   virtual void TabInsertedAt(content::WebContents* contents,
                              int index,
                              bool foreground) OVERRIDE;
-  virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE;
+  virtual void TabDetachedAt(content::WebContents* contents,
+                             int index) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              TabContents* old_contents,
                              TabContents* new_contents,
@@ -161,7 +162,7 @@ class BrowserCommandController : public CommandUpdater::CommandUpdaterDelegate,
   // Add/remove observers for interstitial attachment/detachment from
   // |contents|.
   void AddInterstitialObservers(content::WebContents* contents);
-  void RemoveInterstitialObservers(TabContents* contents);
+  void RemoveInterstitialObservers(content::WebContents* contents);
 
   inline BrowserWindow* window();
   inline Profile* profile();

@@ -433,7 +433,8 @@ class Browser : public TabStripModelObserver,
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
                             content::WebContents* contents,
                             int index) OVERRIDE;
-  virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE;
+  virtual void TabDetachedAt(content::WebContents* contents,
+                             int index) OVERRIDE;
   virtual void TabDeactivated(TabContents* contents) OVERRIDE;
   virtual void ActiveTabChanged(TabContents* old_contents,
                                 TabContents* new_contents,
@@ -785,7 +786,9 @@ class Browser : public TabStripModelObserver,
   //             after a return to the message loop.
   void CloseFrame();
 
-  void TabDetachedAtImpl(TabContents* contents, int index, DetachType type);
+  void TabDetachedAtImpl(content::WebContents* contents,
+                         int index,
+                         DetachType type);
 
   // Shared code between Reload() and ReloadIgnoringCache().
   void ReloadInternal(WindowOpenDisposition disposition, bool ignore_cache);

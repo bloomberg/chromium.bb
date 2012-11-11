@@ -74,7 +74,7 @@ class BrowserTabStripController : public TabStripController,
   virtual void TabInsertedAt(content::WebContents* contents,
                              int model_index,
                              bool is_active) OVERRIDE;
-  virtual void TabDetachedAt(TabContents* contents,
+  virtual void TabDetachedAt(content::WebContents* contents,
                              int model_index) OVERRIDE;
   virtual void TabSelectionChanged(
       TabStripModel* tab_strip_model,

@@ -90,7 +90,8 @@ class BrowserLauncherItemController : public LauncherItemController,
   virtual void TabInsertedAt(content::WebContents* contents,
                              int index,
                              bool foreground) OVERRIDE;
-  virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE;
+  virtual void TabDetachedAt(content::WebContents* contents,
+                             int index) OVERRIDE;
   virtual void TabChangedAt(
       TabContents* tab,
       int index,

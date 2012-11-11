@@ -55,11 +55,11 @@ class TabStripModelObserver {
                             content::WebContents* contents,
                             int index);
 
-  // The specified TabContents at |index| is being detached, perhaps to
+  // The specified WebContents at |index| is being detached, perhaps to
   // be inserted in another TabStripModel. The implementer should take whatever
-  // action is necessary to deal with the TabContents no longer being
+  // action is necessary to deal with the WebContents no longer being
   // present.
-  virtual void TabDetachedAt(TabContents* contents, int index);
+  virtual void TabDetachedAt(content::WebContents* contents, int index);
 
   // The active TabContents is about to change from |old_contents|.
   // This gives observers a chance to prepare for an impending switch before it

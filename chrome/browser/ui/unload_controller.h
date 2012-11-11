@@ -74,7 +74,8 @@ class UnloadController : public content::NotificationObserver,
   virtual void TabInsertedAt(content::WebContents* contents,
                              int index,
                              bool foreground) OVERRIDE;
-  virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE;
+  virtual void TabDetachedAt(content::WebContents* contents,
+                             int index) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              TabContents* old_contents,
                              TabContents* new_contents,
@@ -82,7 +83,7 @@ class UnloadController : public content::NotificationObserver,
   virtual void TabStripEmpty() OVERRIDE;
 
   void TabAttachedImpl(content::WebContents* contents);
-  void TabDetachedImpl(TabContents* contents);
+  void TabDetachedImpl(content::WebContents* contents);
 
   // Processes the next tab that needs it's beforeunload/unload event fired.
   void ProcessPendingTabs();

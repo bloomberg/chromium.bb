@@ -188,7 +188,8 @@ class BrowserWindowGtk
                                    const std::string& pref_name) OVERRIDE;
 
   // Overridden from TabStripModelObserver:
-  virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE;
+  virtual void TabDetachedAt(content::WebContents* contents,
+                             int index) OVERRIDE;
   virtual void ActiveTabChanged(TabContents* old_contents,
                                 TabContents* new_contents,
                                 int index,

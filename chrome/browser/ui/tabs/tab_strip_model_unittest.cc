@@ -306,9 +306,8 @@ class MockTabStripModelObserver : public TabStripModelObserver {
                             int index) OVERRIDE {
     states_.push_back(State(contents, index, CLOSE));
   }
-  virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE {
-    states_.push_back(
-        State(contents ? contents->web_contents() : NULL, index, DETACH));
+  virtual void TabDetachedAt(WebContents* contents, int index) OVERRIDE {
+    states_.push_back(State(contents, index, DETACH));
   }
   virtual void TabDeactivated(TabContents* contents) OVERRIDE {
     states_.push_back(State(contents ? contents->web_contents() : NULL,

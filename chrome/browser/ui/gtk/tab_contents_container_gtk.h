@@ -43,7 +43,7 @@ class TabContentsContainerGtk : public content::NotificationObserver,
   TabContents* GetVisibleTab() const { return preview_ ? preview_ : tab_; }
 
   // Remove the tab from the hierarchy.
-  void DetachTab(TabContents* tab);
+  void DetachTab(content::WebContents* tab);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

@@ -320,7 +320,8 @@ class TabCountChangeObserver : public TabStripModelObserver {
   virtual void TabInsertedAt(content::WebContents* contents,
                              int index,
                              bool foreground) OVERRIDE;
-  virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE;
+  virtual void TabDetachedAt(content::WebContents* contents,
+                             int index) OVERRIDE;
   virtual void TabStripModelDeleted() OVERRIDE;
 
  private:

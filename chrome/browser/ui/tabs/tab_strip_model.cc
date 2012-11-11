@@ -241,7 +241,7 @@ TabContents* TabStripModel::DetachTabContentsAt(int index) {
   if (empty())
     closing_all_ = true;
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-      TabDetachedAt(removed_contents, index));
+                    TabDetachedAt(removed_contents->web_contents(), index));
   if (empty()) {
     selection_model_.Clear();
     // TabDetachedAt() might unregister observers, so send |TabStripEmpty()| in

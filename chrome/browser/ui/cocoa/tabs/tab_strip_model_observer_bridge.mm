@@ -52,12 +52,11 @@ void TabStripModelObserverBridge::TabClosingAt(TabStripModel* tab_strip_model,
   }
 }
 
-void TabStripModelObserverBridge::TabDetachedAt(TabContents* contents,
+void TabStripModelObserverBridge::TabDetachedAt(WebContents* contents,
                                                 int index) {
   if ([controller_ respondsToSelector:
           @selector(tabDetachedWithContents:atIndex:)]) {
-    [controller_ tabDetachedWithContents:WebContentsOf(contents)
-                                 atIndex:index];
+    [controller_ tabDetachedWithContents:contents atIndex:index];
   }
 }
 

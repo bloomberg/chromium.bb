@@ -718,7 +718,7 @@ void BrowserCommandController::TabInsertedAt(WebContents* contents,
   AddInterstitialObservers(contents);
 }
 
-void BrowserCommandController::TabDetachedAt(TabContents* contents, int index) {
+void BrowserCommandController::TabDetachedAt(WebContents* contents, int index) {
   RemoveInterstitialObservers(contents);
 }
 
@@ -726,7 +726,7 @@ void BrowserCommandController::TabReplacedAt(TabStripModel* tab_strip_model,
                                              TabContents* old_contents,
                                              TabContents* new_contents,
                                              int index) {
-  RemoveInterstitialObservers(old_contents);
+  RemoveInterstitialObservers(old_contents->web_contents());
   AddInterstitialObservers(new_contents->web_contents());
 }
 
@@ -1172,11 +1172,11 @@ void BrowserCommandController::AddInterstitialObservers(WebContents* contents) {
 }
 
 void BrowserCommandController::RemoveInterstitialObservers(
-    TabContents* contents) {
+    WebContents* contents) {
   registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-                    content::Source<WebContents>(contents->web_contents()));
+                    content::Source<WebContents>(contents));
   registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_DETACHED,
-                    content::Source<WebContents>(contents->web_contents()));
+                    content::Source<WebContents>(contents));
 }
 
 BrowserWindow* BrowserCommandController::window() {

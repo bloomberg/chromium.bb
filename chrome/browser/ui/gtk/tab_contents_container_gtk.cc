@@ -132,8 +132,8 @@ void TabContentsContainerGtk::HideTab(TabContents* tab) {
                     content::Source<WebContents>(tab->web_contents()));
 }
 
-void TabContentsContainerGtk::DetachTab(TabContents* tab) {
-  gfx::NativeView widget = tab->web_contents()->GetNativeView();
+void TabContentsContainerGtk::DetachTab(WebContents* tab) {
+  gfx::NativeView widget = tab->GetNativeView();
 
   // It is possible to detach an unrealized, unparented WebContents if you
   // slow things down enough in valgrind. Might happen in the real world, too.

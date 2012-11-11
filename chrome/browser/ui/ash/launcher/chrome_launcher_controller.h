@@ -236,7 +236,7 @@ class ChromeLauncherController
 
   // Notify the controller that the state of an non platform app's tabs
   // have changed,
-  void UpdateAppState(content::WebContents* tab, AppState app_state);
+  void UpdateAppState(content::WebContents* contents, AppState app_state);
 
   // Limits application refocusing to urls that match |url| for |id|.
   void SetRefocusURLPattern(ash::LauncherID id, const GURL& url);

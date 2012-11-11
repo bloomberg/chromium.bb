@@ -1204,7 +1204,7 @@ void BrowserWindowGtk::OnPreferenceChanged(PrefServiceBase* service,
   }
 }
 
-void BrowserWindowGtk::TabDetachedAt(TabContents* contents, int index) {
+void BrowserWindowGtk::TabDetachedAt(WebContents* contents, int index) {
   // We use index here rather than comparing |contents| because by this time
   // the model has already removed |contents| from its list, so
   // chrome::GetActiveWebContents(browser_.get()) will return NULL or something
@@ -2321,8 +2321,10 @@ void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
 
   // Replace tab contents.
   if (devtools_window_ != new_devtools_window) {
-    if (devtools_window_)
-      devtools_container_->DetachTab(devtools_window_->tab_contents());
+    if (devtools_window_) {
+      devtools_container_->DetachTab(
+          devtools_window_->tab_contents()->web_contents());
+    }
     devtools_container_->SetTab(
         new_devtools_window ? new_devtools_window->tab_contents() : NULL);
     if (new_devtools_window) {
