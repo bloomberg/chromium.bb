@@ -22,7 +22,7 @@ gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size,
   NSRect main_area = [[[NSScreen screens] objectAtIndex:0] frame];
   NSPoint corner = NSMakePoint(NSMinX(work_area), NSMaxY(work_area));
 
-  if (Browser* browser = browser::FindLastActiveWithHostDesktopType(type)) {
+  if (Browser* browser = chrome::FindLastActiveWithHostDesktopType(type)) {
     NSWindow* window = browser->window()->GetNativeWindow();
     NSRect window_frame = [window frame];
 

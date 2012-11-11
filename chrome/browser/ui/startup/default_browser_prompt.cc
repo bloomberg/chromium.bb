@@ -159,7 +159,7 @@ bool DefaultBrowserInfoBarDelegate::ShouldExpireInternal(
 }
 
 void NotifyNotDefaultBrowserCallback(chrome::HostDesktopType desktop_type) {
-  Browser* browser = browser::FindLastActiveWithHostDesktopType(desktop_type);
+  Browser* browser = chrome::FindLastActiveWithHostDesktopType(desktop_type);
   if (!browser)
     return;  // Reached during ui tests.
 

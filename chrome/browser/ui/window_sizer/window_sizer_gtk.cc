@@ -26,7 +26,7 @@ gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size,
       GetPrimaryDisplay().work_area();
   gfx::Point corner(monitor_bounds.x(), monitor_bounds.y());
 
-  if (Browser* browser = browser::FindLastActiveWithHostDesktopType(type)) {
+  if (Browser* browser = chrome::FindLastActiveWithHostDesktopType(type)) {
     GtkWindow* window =
         reinterpret_cast<GtkWindow*>(browser->window()->GetNativeWindow());
     int x = 0, y = 0;

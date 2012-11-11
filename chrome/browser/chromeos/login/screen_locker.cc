@@ -325,7 +325,7 @@ void ScreenLocker::Show() {
   }
 
   // Exit fullscreen.
-  Browser* browser = browser::FindLastActiveWithHostDesktopType(
+  Browser* browser = chrome::FindLastActiveWithHostDesktopType(
       chrome::HOST_DESKTOP_TYPE_ASH);
   // browser can be NULL if we receive a lock request before the first browser
   // window is shown.

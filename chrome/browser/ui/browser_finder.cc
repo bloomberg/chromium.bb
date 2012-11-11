@@ -202,17 +202,16 @@ Browser* FindLastActiveWithProfile(Profile* profile) {
       Browser::FEATURE_NONE, kMatchAny);
 }
 
-Browser* FindLastActiveWithHostDesktopType(chrome::HostDesktopType type) {
-  chrome::BrowserListImpl* browser_list_impl =
-      chrome::BrowserListImpl::GetInstance(type);
+}  // namespace browser
+
+namespace chrome {
+
+Browser* FindLastActiveWithHostDesktopType(HostDesktopType type) {
+  BrowserListImpl* browser_list_impl = BrowserListImpl::GetInstance(type);
   if (browser_list_impl)
     return browser_list_impl->GetLastActive();
   return NULL;
 }
-
-}  // namespace browser
-
-namespace chrome {
 
 size_t GetBrowserCount(Profile* profile) {
   return GetBrowserCountImpl(profile, kDefaultHostDesktopType, kMatchAny);

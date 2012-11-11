@@ -20,7 +20,7 @@ gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size,
   SystemParametersInfo(SPI_GETWORKAREA, 0, &area, 0);
   gfx::Point corner(area.left, area.top);
 
-  if (Browser* browser = browser::FindLastActiveWithHostDesktopType(type)) {
+  if (Browser* browser = chrome::FindLastActiveWithHostDesktopType(type)) {
     RECT browser_rect;
     HWND window = reinterpret_cast<HWND>(browser->window()->GetNativeWindow());
     if (GetWindowRect(window, &browser_rect)) {
