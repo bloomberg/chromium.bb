@@ -160,7 +160,7 @@ get_touchpad_model(struct evdev_device *device)
 	if (ioctl(device->fd, EVIOCGID, &id) < 0)
 		return TOUCHPAD_MODEL_UNKNOWN;
 
-	for (i = 0; ARRAY_LENGTH(touchpad_spec_table); i++)
+	for (i = 0; i < ARRAY_LENGTH(touchpad_spec_table); i++)
 		if (touchpad_spec_table[i].vendor == id.vendor &&
 		    (!touchpad_spec_table[i].product ||
 		     touchpad_spec_table[i].product == id.product))
