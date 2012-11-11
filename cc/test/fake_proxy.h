@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FakeCCProxy_h
-#define FakeCCProxy_h
+#ifndef CC_TEST_FAKE_PROXY_H_
+#define CC_TEST_FAKE_PROXY_H_
 
 #include "cc/layer_tree_host.h"
 #include "cc/proxy.h"
@@ -43,6 +43,6 @@ private:
     RendererCapabilities m_capabilities;
 };
 
-}
+}  // namespace cc
 
-#endif
+#endif  // CC_TEST_FAKE_PROXY_H_

@@ -92,6 +92,6 @@ class Tile : public base::RefCounted<Tile> {
   ScopedVector<TileVersion> versions_;
 };
 
-
 }  // namespace cc
-#endif
+
+#endif  // CC_TILE_H_

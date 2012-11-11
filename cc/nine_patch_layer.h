@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NinePatchLayer_h
-#define NinePatchLayer_h
+#ifndef CC_NINE_PATCH_LAYER_H_
+#define CC_NINE_PATCH_LAYER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
@@ -50,6 +50,6 @@ private:
     gfx::Rect m_imageAperture;
 };
 
-}
+}  // namespace cc
 
-#endif
+#endif  // CC_NINE_PATCH_LAYER_H_

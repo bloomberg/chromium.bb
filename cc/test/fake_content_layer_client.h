@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CC_TEST_FAKE_CONTENT_LAYER_CLIENT_H_
+#define CC_TEST_FAKE_CONTENT_LAYER_CLIENT_H_
+
 #include "base/compiler_specific.h"
 #include "cc/content_layer_client.h"
 
@@ -20,3 +23,5 @@ private:
 };
 
 }  // namespace WebKitTests
+
+#endif  // CC_TEST_FAKE_CONTENT_LAYER_CLIENT_H_

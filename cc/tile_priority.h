@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TILE_PRIORTY_H_
-#define CC_TILE_PRIORTY_H_
+#ifndef CC_TILE_PRIORITY_H_
+#define CC_TILE_PRIORITY_H_
 
 #include "base/memory/ref_counted.h"
 #include "cc/picture_pile.h"
@@ -46,7 +46,7 @@ enum TileMemoryLimitPolicy {
 };
 
 class GlobalStateThatImpactsTilePriority {
-public:
+ public:
   GlobalStateThatImpactsTilePriority()
     : memory_limit_policy(ALLOW_NOTHING)
     , memory_limit_in_bytes(0)
@@ -70,7 +70,7 @@ public:
 class TilePriorityComparator {
  public:
   TilePriorityComparator(GlobalStateThatImpactsTilePriority& global_state)
-   : global_state_(global_state) {}
+      : global_state_(global_state) {}
 
   int compare(const TilePriority& a, const TilePriority& b) {
     // TODO(nduca,enne): Implement a comparator using the attributes here.
@@ -82,4 +82,5 @@ class TilePriorityComparator {
 };
 
 }  // namespace cc
-#endif
+
+#endif  // CC_TILE_PRIORITY_H_

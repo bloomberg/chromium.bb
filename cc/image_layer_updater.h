@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ImageLayerUpdater_h
-#define ImageLayerUpdater_h
+#ifndef CC_IMAGE_LAYER_UPDATER_H_
+#define CC_IMAGE_LAYER_UPDATER_H_
 
 #include "cc/layer_updater.h"
 
@@ -43,6 +43,6 @@ private:
     SkBitmap m_bitmap;
 };
 
-}
+}  // namespace cc
 
-#endif
+#endif  // CC_IMAGE_LAYER_UPDATER_H_

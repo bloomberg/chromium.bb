@@ -21,7 +21,7 @@ class TileManagerClient {
   virtual void ScheduleManageTiles() = 0;
 
  protected:
-  ~TileManagerClient() { }
+  virtual ~TileManagerClient() {}
 };
 
 // This class manages tiles, deciding which should get rasterized and which
@@ -53,6 +53,6 @@ class TileManager {
   std::vector<TileVersion*> tile_versions_;
 };
 
-}
+}  // namespace cc
 
-#endif
+#endif  // CC_TILE_MANAGER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TRANSERABLE_RESOURCE_H_
-#define CC_TRANSERABLE_RESOURCE_H_
+#ifndef CC_TRANSFERABLE_RESOURCE_H_
+#define CC_TRANSFERABLE_RESOURCE_H_
 
 #include <vector>
 
@@ -44,4 +44,4 @@ struct CC_EXPORT TransferableResourceList :
 
 }  // namespace cc
 
-#endif  // CC_TRANSERABLE_RESOURCE_H_
+#endif  // CC_TRANSFERABLE_RESOURCE_H_
