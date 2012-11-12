@@ -74,7 +74,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.3",
+  "version": "4.4",
   "entries": [
     {
       "id": 1,
@@ -902,7 +902,7 @@
         "number": "8.15.11.8593"
       },
       "blacklist": [
-        "all"
+        "accelerated_video_decode"
       ]
     },
     {
