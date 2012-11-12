@@ -247,10 +247,6 @@ class InstantController {
   // True if the last match passed to Update() was a search (versus a URL).
   bool last_match_was_search_;
 
-  // True if we've received a response from the loader for the last Update(),
-  // thus indicating that the page is ready to be shown.
-  bool loader_processed_last_update_;
-
   // True if the omnibox is focused, false otherwise.
   bool is_omnibox_focused_;
 
