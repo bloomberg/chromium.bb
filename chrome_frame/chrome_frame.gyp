@@ -268,6 +268,8 @@
         'test/test_server.cc',
         'test/test_server.h',
         'test/test_server_test.cc',
+        'test/test_with_web_server.cc',
+        'test/test_with_web_server.h',
         'test/ui_test.cc',
         'test/urlmon_moniker_tests.h',
         'test/urlmon_moniker_integration_test.cc',
