@@ -67,9 +67,9 @@ var STUN_SERVER = 'stun.l.google.com:19302';
 /**
  * Connects to the provided peerconnection_server.
  *
- * @param {string} serverUrl The server URL in string form without an ending
+ * @param{string} serverUrl The server URL in string form without an ending
  *     slash, something like http://localhost:8888.
- * @param {string} clientName The name to use when connecting to the server.
+ * @param{string} clientName The name to use when connecting to the server.
  */
 function connect(serverUrl, clientName) {
   if (gOurPeerId != null)

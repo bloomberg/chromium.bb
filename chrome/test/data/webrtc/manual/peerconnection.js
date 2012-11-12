@@ -5,29 +5,34 @@
  */
 
 // The *Here functions are called from peerconnection.html and will make calls
-// into our underlying javascript library with the values from the page.
+// into our underlying JavaScript library with the values from the page
+// (have to be named differently to avoid name clashes with existing functions).
 
 function getUserMediaFromHere() {
-  var audio = document.getElementById('audio').checked;
-  var video = document.getElementById('video').checked;
-  var hints = document.getElementById('media-hints').value;
-
+  var constraints = $('getusermedia-constraints').value;
   try {
-    getUserMedia(video, audio, hints);
+    getUserMedia(constraints);
   } catch (exception) {
     print_('getUserMedia says: ' + exception);
   }
 }
 
 function connectFromHere() {
-  var server = document.getElementById('server').value;
-  // Generate a random name to distinguish us from other tabs:
-  var name = 'peer_' + Math.floor(Math.random() * 10000);
-  debug('Our name from now on will be ' + name);
-  connect(server, name);
+  var server = $('server').value;
+  if ($('peer-id').value == '') {
+    // Generate a random name to distinguish us from other tabs:
+    $('peer-id').value = 'peer_' + Math.floor(Math.random() * 10000);
+    debug('Our name from now on will be ' + $('peer-id').value);
+  }
+  connect(server, $('peer-id').value);
 }
 
 function callFromHere() {
+  // Set the global variables used in jsep01_call.js with values from our UI.
+  setCreateOfferConstraints(getEvaluatedJavaScript_(
+      $('pc-createoffer-constraints').value));
+  setCreateAnswerConstraints(getEvaluatedJavaScript_(
+      $('pc-createanswer-constraints').value));
   call();
 }
 
@@ -73,7 +78,7 @@ function stopLocalFromHere() {
 }
 
 function forceOpusChanged() {
-  var forceOpus = document.getElementById('force-opus').checked;
+  var forceOpus = $('force-opus').checked;
   if (forceOpus) {
     forceOpus_();
   } else {
@@ -81,16 +86,30 @@ function forceOpusChanged() {
   }
 }
 
+/**
+ * Updates the constraints in the getusermedia-constraints text box with a
+ * MediaStreamConstraints string. This string is created based on the status of
+ * the checkboxes for audio and video.
+ */
+function updateGetUserMediaConstraints() {
+  var constraints = {
+     audio: $('audio').checked,
+     video: $('video').checked
+  };
+  $('getusermedia-constraints').value =
+      JSON.stringify(constraints, null, ' ');
+}
+
 function showServerHelp() {
-  alert('You need to build and run a peerconnection_server on some '
-    + 'suitable machine. To build it in chrome, just run make/ninja '
-    + 'peerconnection_server. Otherwise, read in https://code.google'
-    + '.com/searchframe#xSWYf0NTG_Q/trunk/peerconnection/README&q=REA'
-    + 'DME%20package:webrtc%5C.googlecode%5C.com.');
+  alert('You need to build and run a peerconnection_server on some ' +
+        'suitable machine. To build it in chrome, just run make/ninja ' +
+        'peerconnection_server. Otherwise, read in https://code.google' +
+        '.com/searchframe#xSWYf0NTG_Q/trunk/peerconnection/README&q=REA' +
+        'DME%20package:webrtc%5C.googlecode%5C.com.');
 }
 
 function toggleHelp() {
-  var help = document.getElementById('help');
+  var help = $('help');
   if (help.style.display == 'none')
     help.style.display = 'inline';
   else
@@ -98,45 +117,80 @@ function toggleHelp() {
 }
 
 function clearLog() {
-  document.getElementById('messages').innerHTML = '';
-  document.getElementById('debug').innerHTML = '';
+  $('messages').innerHTML = '';
+  $('debug').innerHTML = '';
 }
 
+/**
+ * Prepopulate constraints from JS to the UI and setup callbacks in the scripts
+ * shared with PyAuto tests.
+ */
 window.onload = function() {
+  $('pc-createoffer-constraints').value = JSON.stringify(
+      gCreateOfferConstraints, null, ' ');
+  $('pc-createanswer-constraints').value = JSON.stringify(
+    gCreateAnswerConstraints, null, ' ');
   replaceReturnCallback(print_);
   replaceDebugCallback(debug_);
+  updateGetUserMediaConstraints();
   doNotAutoAddLocalStreamWhenCalled();
-}
+};
 
+/**
+ * Disconnect before the tab is closed.
+ */
 window.onunload = function() {
   if (!isDisconnected())
     disconnect();
-}
+};
 
 // Internals.
 
-/** @private */
-function disabled_(element) {
-  return document.getElementById(element).disabled;
-}
-
-/** @private */
+/**
+ * @private
+ * @param {string} message Text to print.
+ */
 function print_(message) {
   // Filter out uninteresting noise.
   if (message == 'ok-no-errors')
     return;
 
   console.log(message);
-  document.getElementById('messages').innerHTML += message + '<br>';
+  $('messages').innerHTML += message + '<br>';
 }
 
-/** @private */
+/**
+ * @private
+ * @param {string} message Text to print.
+ */
 function debug_(message) {
   console.log(message);
-  document.getElementById('debug').innerHTML += message + '<br>';
+  $('debug').innerHTML += message + '<br>';
 }
 
-/** @private */
+/**
+ * @private
+ * @param {string} stringRepresentation JavaScript as a string.
+ * @return {Object} The PeerConnection constraints as a JavaScript dictionary.
+ */
+function getEvaluatedJavaScript_(stringRepresentation) {
+  try {
+    var evaluatedJavaScript;
+    eval('evaluatedJavaScript = ' + stringRepresentation);
+  } catch (exception) {
+    failTest('Not valid JavaScript expression: ' + stringRepresentation);
+  }
+  return evaluatedJavaScript;
+}
+
+/**
+ * Swaps lines within a SDP message.
+ * @private
+ * @param {string} sdp The full SDP message.
+ * @param {string} line The line to swap with swapWith.
+ * @param {string} swapWith The other line.
+ * @return {string} The altered SDP message.
+ */
 function swapSdpLines_(sdp, line, swapWith) {
   var lines = sdp.split('\r\n');
   var lineStart = lines.indexOf(line);
@@ -161,8 +215,8 @@ function preferOpus_() {
     // TODO(phoglund): We need to swap the a= lines too. I don't think this
     // should be needed but it apparently is right now.
     return swapSdpLines_(sdp,
-                         "a=rtpmap:103 ISAC/16000",
-                         "a=rtpmap:111 opus/48000");
+                         'a=rtpmap:103 ISAC/16000',
+                         'a=rtpmap:111 opus/48000');
   });
 }
 
@@ -181,3 +235,7 @@ function forceOpus_() {
 function dontTouchSdp_() {
   setOutgoingSdpTransform(function(sdp) { return sdp; });
 }
+
+$ = function(id) {
+  return document.getElementById(id);
+};
