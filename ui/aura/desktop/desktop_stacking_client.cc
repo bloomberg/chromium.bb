@@ -17,6 +17,7 @@ namespace aura {
 
 DesktopStackingClient::DesktopStackingClient()
     : window_event_filter_(NULL) {
+  client::SetStackingClient(this);
 }
 
 DesktopStackingClient::~DesktopStackingClient() {
@@ -26,8 +27,7 @@ DesktopStackingClient::~DesktopStackingClient() {
   client::SetStackingClient(NULL);
 }
 
-Window* DesktopStackingClient::GetDefaultParent(Window* context,
-                                                Window* window,
+Window* DesktopStackingClient::GetDefaultParent(Window* window,
                                                 const gfx::Rect& bounds) {
   if (!null_parent_.get())
     CreateNULLParent();

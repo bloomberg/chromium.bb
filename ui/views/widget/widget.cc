@@ -159,8 +159,7 @@ Widget::InitParams::InitParams()
       native_widget(NULL),
       desktop_root_window_host(NULL),
       top_level(false),
-      layer_type(ui::LAYER_TEXTURED),
-      context(NULL) {
+      layer_type(ui::LAYER_TEXTURED) {
 }
 
 Widget::InitParams::InitParams(Type type)
@@ -185,8 +184,7 @@ Widget::InitParams::InitParams(Type type)
       native_widget(NULL),
       desktop_root_window_host(NULL),
       top_level(false),
-      layer_type(ui::LAYER_TEXTURED),
-      context(NULL) {
+      layer_type(ui::LAYER_TEXTURED) {
 }
 
 gfx::NativeView Widget::InitParams::GetParent() const {

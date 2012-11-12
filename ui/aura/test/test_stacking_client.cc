@@ -18,8 +18,7 @@ TestStackingClient::~TestStackingClient() {
   client::SetStackingClient(NULL);
 }
 
-Window* TestStackingClient::GetDefaultParent(Window* context,
-                                             Window* window,
+Window* TestStackingClient::GetDefaultParent(Window* window,
                                              const gfx::Rect& bounds) {
   return root_window_;
 }
