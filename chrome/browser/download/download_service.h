@@ -25,11 +25,6 @@ class DownloadService : public ProfileKeyedService {
   explicit DownloadService(Profile* profile);
   virtual ~DownloadService();
 
-  // Register a callback to be called whenever the DownloadManager is created.
-  typedef base::Callback<void(content::DownloadManager*)>
-      OnManagerCreatedCallback;
-  void OnManagerCreated(const OnManagerCreatedCallback& cb);
-
   // Get the download manager delegate, creating it if it doesn't already exist.
   ChromeDownloadManagerDelegate* GetDownloadManagerDelegate();
 
@@ -60,8 +55,6 @@ class DownloadService : public ProfileKeyedService {
   // the history service/DB thread and must be kept alive for those
   // callbacks.
   scoped_refptr<ChromeDownloadManagerDelegate> manager_delegate_;
-
-  std::vector<OnManagerCreatedCallback> on_manager_created_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadService);
 };

@@ -25,16 +25,6 @@ DownloadService::DownloadService(Profile* profile)
 
 DownloadService::~DownloadService() {}
 
-void DownloadService::OnManagerCreated(
-    const DownloadService::OnManagerCreatedCallback& cb) {
-  if (download_manager_created_) {
-    DownloadManager* dm = BrowserContext::GetDownloadManager(profile_);
-    cb.Run(dm);
-  } else {
-    on_manager_created_callbacks_.push_back(cb);
-  }
-}
-
 ChromeDownloadManagerDelegate* DownloadService::GetDownloadManagerDelegate() {
   DownloadManager* manager = BrowserContext::GetDownloadManager(profile_);
   // If we've already created the delegate, just return it.
@@ -55,14 +45,6 @@ ChromeDownloadManagerDelegate* DownloadService::GetDownloadManagerDelegate() {
   // Include this download manager in the set monitored by the
   // global status updater.
   g_browser_process->download_status_updater()->AddManager(manager);
-
-  download_manager_created_ = true;
-  for (std::vector<OnManagerCreatedCallback>::iterator cb =
-           on_manager_created_callbacks_.begin();
-       cb != on_manager_created_callbacks_.end(); ++cb) {
-    cb->Run(manager);
-  }
-  on_manager_created_callbacks_.clear();
 
   return manager_delegate_.get();
 }
