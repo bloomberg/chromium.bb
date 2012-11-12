@@ -26,7 +26,7 @@ namespace sync_file_system {
 namespace {
 
 const char kOrigin[] = "http://www.example.com";
-const char kServiceName[] = "test";
+const char kServiceName[] = "drive";
 
 typedef DriveMetadataStore::ResourceIDMap ResourceIDMap;
 

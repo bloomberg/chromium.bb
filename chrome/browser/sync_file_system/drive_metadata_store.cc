@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_path.h"
@@ -25,6 +27,7 @@ using fileapi::FileSystemURL;
 using fileapi::SyncStatusCode;
 
 namespace {
+const char kServiceName[] = "drive";
 const FilePath::CharType kDatabaseName[] = FILE_PATH_LITERAL("DriveMetadata");
 const char kChangeStampKey[] = "CHANGE_STAMP";
 const char kSyncRootDirectoryKey[] = "SYNC_ROOT_DIR";
@@ -256,10 +259,12 @@ SyncStatusCode DriveMetadataStore::UpdateEntry(const FileSystemURL& url,
                                                const DriveMetadata& metadata) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
-  std::pair<MetadataMap::iterator, bool> result =
-      metadata_map_.insert(std::make_pair(url, metadata));
+
+  std::pair<PathToMetadata::iterator, bool> result =
+      metadata_map_[url.origin()].insert(std::make_pair(url.path(), metadata));
   if (!result.second)
     result.first->second = metadata;
+
   base::PostTaskAndReplyWithResult(
       file_task_runner_, FROM_HERE,
       base::Bind(&DriveMetadataDB::UpdateEntry, base::Unretained(db_.get()),
@@ -272,7 +277,11 @@ SyncStatusCode DriveMetadataStore::UpdateEntry(const FileSystemURL& url,
 
 SyncStatusCode DriveMetadataStore::DeleteEntry(const FileSystemURL& url) {
   DCHECK(CalledOnValidThread());
-  if (metadata_map_.erase(url) == 1) {
+  MetadataMap::iterator found = metadata_map_.find(url.origin());
+  if (found == metadata_map_.end())
+    return fileapi::SYNC_DATABASE_ERROR_NOT_FOUND;
+
+  if (found->second.erase(url.path()) == 1) {
     base::PostTaskAndReplyWithResult(
         file_task_runner_, FROM_HERE,
         base::Bind(&DriveMetadataDB::DeleteEntry,
@@ -288,10 +297,15 @@ SyncStatusCode DriveMetadataStore::ReadEntry(const FileSystemURL& url,
   DCHECK(CalledOnValidThread());
   DCHECK(metadata);
 
-  MetadataMap::const_iterator itr = metadata_map_.find(url);
-  if (itr == metadata_map_.end())
+  MetadataMap::const_iterator found_origin = metadata_map_.find(url.origin());
+  if (found_origin == metadata_map_.end())
     return fileapi::SYNC_DATABASE_ERROR_NOT_FOUND;
-  *metadata = itr->second;
+
+  PathToMetadata::const_iterator found = found_origin->second.find(url.path());
+  if (found == found_origin->second.end())
+    return fileapi::SYNC_DATABASE_ERROR_NOT_FOUND;
+
+  *metadata = found->second;
   return fileapi::SYNC_STATUS_OK;
 }
 
@@ -375,11 +389,17 @@ SyncStatusCode DriveMetadataStore::GetConflictURLs(
   DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
 
   urls->clear();
-  for (MetadataMap::const_iterator itr = metadata_map_.begin();
-       itr != metadata_map_.end();
-       ++itr) {
-    if ((*itr).second.conflicted())
-      urls->insert((*itr).first);
+  for (MetadataMap::const_iterator origin_itr = metadata_map_.begin();
+       origin_itr != metadata_map_.end();
+       ++origin_itr) {
+    for (PathToMetadata::const_iterator itr = origin_itr->second.begin();
+         itr != origin_itr->second.end();
+         ++itr) {
+      if (itr->second.conflicted()) {
+        urls->insert(fileapi::CreateSyncableFileSystemURL(
+            origin_itr->first, kServiceName, itr->first));
+      }
+    }
   }
   return fileapi::SYNC_STATUS_OK;
 }
@@ -441,8 +461,8 @@ SyncStatusCode DriveMetadataDB::ReadContents(
       success = metadata.ParseFromString(itr->value().ToString());
       DCHECK(success);
 
-      success = contents->metadata_map.insert(
-          std::make_pair(url, metadata)).second;
+      success = contents->metadata_map[url.origin()].insert(
+          std::make_pair(url.path(), metadata)).second;
       DCHECK(success);
     }
   }

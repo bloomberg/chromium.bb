@@ -36,9 +36,8 @@ class DriveMetadataStore
       public base::SupportsWeakPtr<DriveMetadataStore> {
  public:
   typedef std::map<GURL, std::string> ResourceIDMap;
-  typedef std::map<fileapi::FileSystemURL,
-                   DriveMetadata,
-                   fileapi::FileSystemURL::Comparator> MetadataMap;
+  typedef std::map<FilePath, DriveMetadata> PathToMetadata;
+  typedef std::map<GURL, PathToMetadata> MetadataMap;
   typedef base::Callback<void(fileapi::SyncStatusCode status, bool created)>
       InitializationCallback;
 
