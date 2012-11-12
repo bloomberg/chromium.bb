@@ -60,7 +60,7 @@ void CanvasSkiaPaint::Init(bool opaque) {
 
   ui::ScaleFactor scale_factor = ui::GetScaleFactorFromScale(scale);
   gfx::Size size(NSWidth(rectangle_), NSHeight(rectangle_));
-  this->RecreateBackingCanvas(size, scale_factor, opaque);
+  RecreateBackingCanvas(size, scale_factor, opaque);
   skia::PlatformCanvas* canvas = platform_canvas();
   canvas->clear(SkColorSetARGB(0, 0, 0, 0));
 
