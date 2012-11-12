@@ -543,6 +543,20 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::EnterZone(
   return OK;
 }
 
+// IsValidTerminalRRType returns true if the given RR type is one that we
+// accept as the terminal record in a DNSSEC chain.
+bool DNSSECChainVerifier::IsValidTerminalRRType(uint16 rrtype) {
+  switch (rrtype) {
+  case kDNS_CAA:
+  case kDNS_CERT:
+  case kDNS_TLSA:
+  case kDNS_TXT:
+    return true;
+  }
+
+  return false;
+}
+
 // LeaveZone transitions out of the current zone, either by following DS
 // records to validate the entry key of the next zone, or because the final
 // resource records are given.
@@ -562,7 +576,7 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::LeaveZone(
 
   if (rrtype == kDNS_DS) {
     err = ReadDSSet(&rrdatas, *next_name);
-  } else if (rrtype == kDNS_CERT || rrtype == kDNS_TXT || rrtype == kDNS_CAA) {
+  } else if (IsValidTerminalRRType(rrtype)) {
     err = ReadGenericRRs(&rrdatas);
   } else if (rrtype == kDNS_CNAME) {
     err = ReadCNAME(&rrdatas);
@@ -582,7 +596,7 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::LeaveZone(
     // 'closer' to the target than the current zone.
     if (MatchingLabels(target_, *next_name) <= current_zone_->matching_labels)
       return OFF_COURSE;
-  } else if (rrtype == kDNS_CERT || rrtype == kDNS_TXT || rrtype == kDNS_CAA) {
+  } else if (IsValidTerminalRRType(rrtype)) {
     // If this is the final entry in the chain then the name must match target_
     if (next_name->size() != target_.size() ||
         memcmp(next_name->data(), target_.data(), target_.size())) {
@@ -744,6 +758,7 @@ struct CAAHashFunctionOID {
 // The values here are taken from NSS's freebl/hasht.h. Sadly, we cannot
 // include it because it pulls in #defines that conflict with Chromium headers.
 // However, these values are part of NSS's public API and so are stable.
+static const int kHashNone = 0;
 static const int kHashSHA256 = 4;
 static const int kHashSHA384 = 5;
 static const int kHashSHA512 = 6;
@@ -914,6 +929,67 @@ DnsCAARecord::ParseResult DnsCAARecord::Parse(
     return DISCARD;
 
   return SUCCESS;
+}
+
+void DnsTLSARecord::Parse(
+    const std::vector<base::StringPiece>& rrdatas,
+    std::vector<DnsTLSARecord::Match>* output) {
+  // see https://tools.ietf.org/html/rfc6698#section-2.1
+  output->clear();
+
+  for (std::vector<base::StringPiece>::const_iterator
+       ii = rrdatas.begin(); ii != rrdatas.end(); ++ii) {
+    base::StringPiece i = *ii;
+
+    if (i.size() < 3)
+      continue;
+
+    const uint8 cert_usage = i[0];
+    const uint8 selector = i[1];
+    const uint8 match_type = i[2];
+    i.remove_prefix(3);
+
+    if (cert_usage != 3) {
+      // Type 3 is a "domain issued certificate" - i.e. a certificate (or
+      // public key) which is granted authority by the TLSA record.
+      continue;
+    }
+
+    Match match;
+
+    switch (selector) {
+      case 0:
+        match.target = Match::CERTIFICATE;
+        break;
+      case 1:
+        match.target = Match::SUBJECT_PUBLIC_KEY_INFO;
+        break;
+      default:
+        continue;
+    }
+
+    switch (match_type) {
+      case 0:
+        match.algorithm = kHashNone;
+        break;
+      case 1:
+        match.algorithm = kHashSHA256;
+        break;
+      case 2:
+        match.algorithm = kHashSHA512;
+        break;
+      default:
+        continue;
+    }
+
+    if (match.algorithm != kHashNone &&
+        i.size() != DigestLength(match.algorithm)) {
+      continue;
+    }
+
+    match.data = i.as_string();
+    output->push_back(match);
+  }
 }
 
 }  // namespace net

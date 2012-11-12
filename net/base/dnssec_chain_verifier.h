@@ -78,6 +78,7 @@ class NET_EXPORT_PRIVATE DNSSECChainVerifier {
                  uint8 algorithm);
 
   Error EnterRoot();
+  static bool IsValidTerminalRRType(uint16 rrtype);
   Error EnterZone(const base::StringPiece& zone);
   Error LeaveZone(base::StringPiece* next_name);
   Error ReadDSSet(std::vector<base::StringPiece>*,
@@ -103,6 +104,7 @@ class NET_EXPORT_PRIVATE DNSSECChainVerifier {
 // Authority Authorization records. These are DNS records which can express
 // limitations regarding acceptable certificates for a domain. See
 // http://tools.ietf.org/html/draft-hallambaker-donotissue-04
+// TODO(agl): remove once DANE support has been released.
 class NET_EXPORT_PRIVATE DnsCAARecord {
  public:
   enum ParseResult {
@@ -142,6 +144,32 @@ class NET_EXPORT_PRIVATE DnsCAARecord {
   // result.
   static ParseResult Parse(const std::vector<base::StringPiece>& rrdatas,
                            Policy* output);
+};
+
+class NET_EXPORT_PRIVATE DnsTLSARecord {
+ public:
+  // A Match is an authorized certificate or public key from the TLSA records.
+  struct NET_EXPORT_PRIVATE Match {
+    // A HashTarget identifies the object that we are hashing.
+    enum HashTarget {
+      CERTIFICATE,
+      SUBJECT_PUBLIC_KEY_INFO,
+    };
+
+    HashTarget target;  // what do we hash?
+    // algorithm is an NSS HASH_HashType (i.e. HASH_AlgSHA1). But note that
+    // it can also be HASH_AlgNULL to indicate that |data| isn't hashed at
+    // all.
+    int algorithm;
+    std::string data;  // digest, or raw data if |algorithm == HASH_AlgNULL|.
+  };
+
+  // Parse parses a series of TLSA resource records and sets |output| to the
+  // result. Unknown or invalid records are ignored, as are records with a
+  // usage other than "domain-issued certificate" (type 3). See
+  // https://tools.ietf.org/html/rfc6698#section-2.1.1.
+  static void Parse(const std::vector<base::StringPiece>& rrdatas,
+                    std::vector<Match>* output);
 };
 
 }  // namespace net
