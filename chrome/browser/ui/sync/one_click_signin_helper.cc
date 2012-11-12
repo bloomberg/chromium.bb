@@ -56,6 +56,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#include <functional>
+
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(OneClickSigninHelper)
 
 namespace {
