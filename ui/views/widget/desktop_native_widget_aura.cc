@@ -512,10 +512,6 @@ scoped_refptr<ui::Texture> DesktopNativeWidgetAura::CopyTexture() {
 // DesktopNativeWidgetAura, ui::EventHandler implementation:
 
 ui::EventResult DesktopNativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
-  if (GetWidget()->HasFocusManager() &&
-      !GetWidget()->GetFocusManager()->OnKeyEvent(*event)) {
-    return ui::ER_CONSUMED;
-  }
   if (event->is_char()) {
     // If a ui::InputMethod object is attached to the root window, character
     // events are handled inside the object and are not passed to this function.
@@ -527,8 +523,15 @@ ui::EventResult DesktopNativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
   // and the window may be invisible by that time.
   if (!window_->IsVisible())
     return ui::ER_UNHANDLED;
-  return native_widget_delegate_->OnKeyEvent(*event) ?
-      ui::ER_HANDLED : ui::ER_UNHANDLED;;
+
+  if (native_widget_delegate_->OnKeyEvent(*event))
+    return ui::ER_HANDLED;
+
+  if (GetWidget()->HasFocusManager() &&
+      !GetWidget()->GetFocusManager()->OnKeyEvent(*event))
+    return ui::ER_HANDLED;
+
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
