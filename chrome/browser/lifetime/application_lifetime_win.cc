@@ -9,9 +9,7 @@
 namespace browser {
 
 void HandleAppExitingForPlatform() {
-#if !defined(USE_AURA)
   views::Widget::CloseAllSecondaryWidgets();
-#endif
 }
 
 }  // namespace browser

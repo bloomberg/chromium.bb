@@ -45,6 +45,7 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/views/widget/desktop_root_window_host_win.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -895,9 +896,26 @@ void Widget::NotifyLocaleChanged() {
   // Deliberately not implemented.
 }
 
+#if defined(OS_WIN)
+namespace {
+BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
+  aura::Window* root_window =
+      DesktopRootWindowHostWin::GetContentWindowForHWND(hwnd);
+  if (root_window) {
+    Widget* widget = Widget::GetWidgetForNativeView(root_window);
+    if (widget && widget->is_secondary_widget())
+      widget->Close();
+  }
+  return TRUE;
+}
+}  // namespace
+#endif
+
 // static
 void Widget::CloseAllSecondaryWidgets() {
-  // Deliberately not implemented.
+#if defined(OS_WIN)
+  EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc, 0);
+#endif
 }
 
 bool Widget::ConvertRect(const Widget* source,

@@ -8,6 +8,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(USE_ASH)
 #include "ash/shell.h"
@@ -33,8 +34,7 @@ void HandleAppExitingForPlatform() {
   g_browser_process->notification_ui_manager()->CancelAll();
 #endif
 
-  // TODO(oshima): Close all non browser windows here while
-  // the message loop is still alive.
+  views::Widget::CloseAllSecondaryWidgets();
 
 #if defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
