@@ -44,9 +44,12 @@ TEST_F(ResourcesTest, MAYBE_ProductName) {
 }
 
 TEST_F(ResourcesTest, MAYBE_ProductLogo) {
-  gfx::Image logo = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+  gfx::Image logo16 = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       IDR_PRODUCT_LOGO_16);
-  EXPECT_FALSE(logo.IsEmpty());
+  EXPECT_FALSE(logo16.IsEmpty());
+  gfx::Image logo32 = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_PRODUCT_LOGO_32);
+  EXPECT_FALSE(logo32.IsEmpty());
 }
 
 }  // namespace remoting

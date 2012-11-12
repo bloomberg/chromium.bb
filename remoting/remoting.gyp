@@ -1221,7 +1221,6 @@
       ],
       'sources': [
         'webapp/build-webapp.py',
-        'webapp/verify-webapp.py',
         '<(remoting_version_path)',
         '<(chrome_version_path)',
         '<@(remoting_webapp_files)',
@@ -1234,38 +1233,6 @@
       # seem to guarantee the ordering of 2 copies statements
       # when the actual project is generated.
       'actions': [
-        {
-          'action_name': 'Verify Remoting WebApp i18n',
-          'inputs': [
-            'host/plugin/host_script_object.cc',
-            '<(webapp_locale_dir)/en/messages.json',
-            'webapp/client_screen.js',
-            'webapp/host_controller.js',
-            'webapp/host_table_entry.js',
-            'webapp/host_setup_dialog.js',
-            'webapp/main.html',
-            'webapp/manifest.json',
-            'webapp/remoting.js',
-            'webapp/verify-webapp.py',
-          ],
-          'outputs': [
-            '<(PRODUCT_DIR)/remoting/webapp_verified.stamp',
-          ],
-          'action': [
-            'python',
-            'webapp/verify-webapp.py',
-            '<(PRODUCT_DIR)/remoting/webapp_verified.stamp',
-            '<(webapp_locale_dir)/en/messages.json',
-            'webapp/client_screen.js',
-            'webapp/host_controller.js',
-            'webapp/host_table_entry.js',
-            'webapp/host_setup_dialog.js',
-            'webapp/main.html',
-            'webapp/manifest.json',
-            'webapp/remoting.js',
-            'host/plugin/host_script_object.cc',
-         ],
-        },
         {
           'action_name': 'Build Remoting WebApp',
           'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp',
@@ -1305,8 +1272,39 @@
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)',
         'grit_resource_ids': 'resource_ids',
+        'sources': [
+          'base/resources_unittest.cc',
+          'host/plugin/host_script_object.cc',
+          'webapp/client_screen.js',
+          'webapp/host_controller.js',
+          'webapp/host_table_entry.js',
+          'webapp/host_setup_dialog.js',
+          'webapp/main.html',
+          'webapp/manifest.json',
+          'webapp/remoting.js',
+        ],
       },
       'actions': [
+        {
+          'action_name': 'verify_resources',
+          'inputs': [
+            'resources/string_resources.grd',
+            'resources/common_resources.grd',
+            'tools/verify_resources.py',
+            '<@(sources)'
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/remoting_resources_verified.stamp',
+          ],
+          'action': [
+            'python',
+            'tools/verify_resources.py',
+            '-t', '<(PRODUCT_DIR)/remoting_resources_verified.stamp',
+            '-r', 'resources/string_resources.grd',
+            '-r', 'resources/common_resources.grd',
+            '<@(sources)',
+         ],
+        },
         {
           'action_name': 'string_resources',
           'variables': {
