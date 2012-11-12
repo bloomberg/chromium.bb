@@ -100,7 +100,7 @@ const char* kBrowserSupportedExtensions[] = {
     ".pdf",
 #endif
     ".bmp", ".jpg", ".jpeg", ".png", ".webp", ".gif", ".txt", ".html", ".htm",
-    ".mhtml", ".mht"
+    ".mhtml", ".mht", ".svg"
 };
 
 // Keep in sync with 'open-hosted' task handler in the File Browser manifest.
