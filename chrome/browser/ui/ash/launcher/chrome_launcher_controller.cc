@@ -843,7 +843,7 @@ void ChromeLauncherController::PersistPinnedState() {
   // Mutating kPinnedLauncherApps is going to notify us and trigger us to
   // process the change. We don't want that to happen so remove ourselves as a
   // listener.
-  pref_change_registrar_.Remove(prefs::kPinnedLauncherApps, this);
+  pref_change_registrar_.Remove(prefs::kPinnedLauncherApps);
   {
     ListPrefUpdate updater(profile_->GetPrefs(), prefs::kPinnedLauncherApps);
     updater->Clear();

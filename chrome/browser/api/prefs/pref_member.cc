@@ -4,7 +4,8 @@
 
 #include "chrome/browser/api/prefs/pref_member.h"
 
-#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/prefs/public/pref_service_base.h"
 #include "base/value_conversions.h"
@@ -14,8 +15,7 @@ using base::MessageLoopProxy;
 namespace subtle {
 
 PrefMemberBase::PrefMemberBase()
-    : observer_(NULL),
-      prefs_(NULL),
+    : prefs_(NULL),
       setting_value_(false) {
 }
 
@@ -25,13 +25,13 @@ PrefMemberBase::~PrefMemberBase() {
 
 void PrefMemberBase::Init(const char* pref_name,
                           PrefServiceBase* prefs,
-                          PrefObserver* observer) {
+                          const NamedChangeCallback& observer) {
   DCHECK(pref_name);
   DCHECK(prefs);
   DCHECK(pref_name_.empty());  // Check that Init is only called once.
-  observer_ = observer;
   prefs_ = prefs;
   pref_name_ = pref_name;
+  observer_ = observer;
   // Check that the preference is registered.
   DCHECK(prefs_->FindPreference(pref_name_.c_str()))
       << pref_name << " not registered.";
@@ -60,8 +60,8 @@ void PrefMemberBase::OnPreferenceChanged(PrefServiceBase* service,
                                          const std::string& pref_name) {
   VerifyValuePrefName();
   UpdateValueFromPref();
-  if (!setting_value_ && observer_)
-    observer_->OnPreferenceChanged(service, pref_name);
+  if (!setting_value_ && !observer_.is_null())
+    observer_.Run(pref_name);
 }
 
 void PrefMemberBase::UpdateValueFromPref() const {
@@ -80,6 +80,11 @@ void PrefMemberBase::VerifyPref() const {
   VerifyValuePrefName();
   if (!internal())
     UpdateValueFromPref();
+}
+
+void PrefMemberBase::InvokeUnnamedCallback(const base::Closure& callback,
+                                           const std::string& pref_name) {
+  callback.Run();
 }
 
 PrefMemberBase::Internal::Internal()
