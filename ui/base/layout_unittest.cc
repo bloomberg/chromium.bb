@@ -79,6 +79,8 @@ TEST(LayoutTest, GetMaxScaleFactor) {
           switches::kForceDeviceScaleFactor))
     EXPECT_EQ(SCALE_FACTOR_100P, GetMaxScaleFactor());
 #else
+  std::vector<ScaleFactor> original_supported_factors =
+      GetSupportedScaleFactors();
   {
     ScaleFactor scale_factors[] = { SCALE_FACTOR_100P };
     std::vector<ScaleFactor> supported_factors(
@@ -106,6 +108,7 @@ TEST(LayoutTest, GetMaxScaleFactor) {
     test::SetSupportedScaleFactors(supported_factors);
     EXPECT_EQ(SCALE_FACTOR_200P, GetMaxScaleFactor());
   }
+  test::SetSupportedScaleFactors(original_supported_factors);
 #endif
 }
 
