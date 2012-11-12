@@ -234,7 +234,7 @@ DriverArgPatterns = [
 
 
 def ShouldExpandCommandFile(arg):
-  """ On windows, we may be given files with commandline arguments.
+  """ We may be given files with commandline arguments.
   Read in the arguments so that they can be handled as usual. """
   if arg.startswith('@'):
     possible_file = pathtools.normalize(arg[1:])
@@ -261,8 +261,7 @@ def DoExpandCommandFile(argv, i):
     more_args += list(lex)
 
   fd.close()
-  if more_args:
-    argv = argv[:i] + more_args + argv[i+1:]
+  argv = argv[:i] + more_args + argv[i+1:]
   return argv
 
 
