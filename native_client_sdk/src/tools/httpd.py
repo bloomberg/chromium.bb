@@ -1,7 +1,9 @@
+#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import BaseHTTPServer
 import imp
 import logging
 import multiprocessing
@@ -9,14 +11,12 @@ import optparse
 import os
 import SimpleHTTPServer  # pylint: disable=W0611
 import sys
+import time
+import urlparse
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_SDK_ROOT = os.path.dirname(SCRIPT_DIR)
-
-
-serve_dir = None
-delegate_map = {}
 
 
 # We only run from the examples directory so that not too much is exposed
@@ -37,14 +37,27 @@ def SanityCheckDirectory(dirname):
   sys.exit(1)
 
 
+class PluggableHTTPServer(BaseHTTPServer.HTTPServer):
+  def __init__(self, *args, **kwargs):
+    BaseHTTPServer.HTTPServer.__init__(self, *args)
+    self.serve_dir = kwargs.get('serve_dir', '.')
+    self.delegate_map = {}
+    self.running = True
+    self.result = 0
+
+  def Shutdown(self, result=0):
+    self.running = False
+    self.result = result
+
+
 class PluggableHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
   def _FindDelegateAtPath(self, dirname):
     # First check the cache...
     logging.debug('Looking for cached delegate in %s...' % dirname)
     handler_script = os.path.join(dirname, 'handler.py')
 
-    if dirname in delegate_map:
-      result = delegate_map[dirname]
+    if dirname in self.server.delegate_map:
+      result = self.server.delegate_map[dirname]
       if result is None:
         logging.debug('Found None.')
       else:
@@ -79,7 +92,7 @@ class PluggableHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         delegate = self._FindDelegateForURLRecurse(parent_dir, abs_root)
 
     logging.debug('Adding delegate to cache for %s.' % cur_dir)
-    delegate_map[cur_dir] = delegate
+    self.server.delegate_map[cur_dir] = delegate
     return delegate
 
   def _FindDelegateForURL(self, url_path):
@@ -89,7 +102,7 @@ class PluggableHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     else:
       dirname = os.path.dirname(path)
 
-    abs_serve_dir = os.path.abspath(serve_dir)
+    abs_serve_dir = os.path.abspath(self.server.serve_dir)
     delegate = self._FindDelegateForURLRecurse(dirname, abs_serve_dir)
     if not delegate:
       logging.info('No handler found for path %s. Using default.' % url_path)
@@ -105,6 +118,19 @@ class PluggableHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     return SimpleHTTPServer.SimpleHTTPRequestHandler.send_head(self)
 
   def do_GET(self):
+    # TODO(binji): pyauto tests use the ?quit=1 method to kill the server.
+    # Remove this when we kill the pyauto tests.
+    _, _, _, query, _ = urlparse.urlsplit(self.path)
+    if query:
+      params = urlparse.parse_qs(query)
+      if '1' in params.get('quit', None):
+        self.send_response(200, 'OK')
+        self.send_header('Content-type', 'text/html')
+        self.send_header('Content-length', '0')
+        self.end_headers()
+        self.server.Shutdown()
+        return
+
     delegate = self._FindDelegateForURL(self.path)
     if delegate:
       return delegate.do_GET(self)
@@ -127,12 +153,12 @@ class LocalHTTPServer(object):
   """Class to start a local HTTP server as a child process."""
 
   def __init__(self, dirname, port):
-    global serve_dir
-    serve_dir = dirname
     parent_conn, child_conn = multiprocessing.Pipe()
     self.process = multiprocessing.Process(
         target=_HTTPServerProcess,
-        args=(child_conn, serve_dir, port))
+        args=(child_conn, dirname, port, {
+          'serve_dir': dirname,
+        }))
     self.process.start()
     if parent_conn.poll(10):  # wait 10 seconds
       self.port = parent_conn.recv()
@@ -140,6 +166,47 @@ class LocalHTTPServer(object):
       raise Exception('Unable to launch HTTP server.')
 
     self.conn = parent_conn
+
+  def ServeForever(self):
+    """Serve until the child HTTP process tells us to stop.
+
+    Returns:
+      The result from the child (as an errorcode), or 0 if the server was
+      killed not by the child (by KeyboardInterrupt for example).
+    """
+    child_result = 0
+    try:
+      # Block on this pipe, waiting for a response from the child process.
+      child_result = self.conn.recv()
+    except KeyboardInterrupt:
+      pass
+    finally:
+      self.Shutdown()
+    return child_result
+
+  def ServeUntilSubprocessDies(self, process):
+    """Serve until the child HTTP process tells us to stop or |subprocess| dies.
+
+    Returns:
+      The result from the child (as an errorcode), or 0 if |subprocess| died,
+      or the server was killed some other way (by KeyboardInterrupt for
+      example).
+    """
+    child_result = 0
+    try:
+      while True:
+        if process.poll() is not None:
+          child_result = 0
+          break
+        if self.conn.poll():
+          child_result = self.conn.recv()
+          break
+        time.sleep(0)
+    except KeyboardInterrupt:
+      pass
+    finally:
+      self.Shutdown()
+    return child_result
 
   def Shutdown(self):
     """Send a message to the child HTTP server process and wait for it to
@@ -157,7 +224,7 @@ class LocalHTTPServer(object):
     return 'http://localhost:%d/%s' % (self.port, rel_url)
 
 
-def _HTTPServerProcess(conn, dirname, port):
+def _HTTPServerProcess(conn, dirname, port, server_kwargs):
   """Run a local httpserver with the given port or an ephemeral port.
 
   This function assumes it is run as a child process using multiprocessing.
@@ -165,29 +232,30 @@ def _HTTPServerProcess(conn, dirname, port):
   Args:
     conn: A connection to the parent process. The child process sends
         the local port, and waits for a message from the parent to
-        stop serving.
+        stop serving. It also sends a "result" back to the parent -- this can
+        be used to allow a client-side test to notify the server of results.
     dirname: The directory to serve. All files are accessible through
        http://localhost:<port>/path/to/filename.
     port: The port to serve on. If 0, an ephemeral port will be chosen.
+    server_kwargs: A dict that will be passed as kwargs to the server.
   """
-  import BaseHTTPServer
-
   try:
     os.chdir(dirname)
-    httpd = BaseHTTPServer.HTTPServer(('', port), PluggableHTTPRequestHandler)
+    httpd = PluggableHTTPServer(('', port), PluggableHTTPRequestHandler,
+                                **server_kwargs)
     conn.send(httpd.server_address[1])  # the chosen port number
     httpd.timeout = 0.5  # seconds
-    running = True
-    while running:
+    while httpd.running:
       # Flush output for MSVS Add-In.
       sys.stdout.flush()
       sys.stderr.flush()
       httpd.handle_request()
       if conn.poll():
-        running = conn.recv()
+        httpd.running = conn.recv()
   except KeyboardInterrupt:
     pass
   finally:
+    conn.send(httpd.result)
     conn.close()
 
 
@@ -206,18 +274,12 @@ def main(args):
   if options.do_safe_check:
     SanityCheckDirectory(options.serve_dir)
 
-  server = LocalHTTPServer(options.serve_dir, options.port)
+  server = LocalHTTPServer(options.serve_dir, int(options.port))
 
-  # Serve forever.
+  # Serve until the client tells us to stop. When it does, it will give us an
+  # errorcode.
   print 'Serving %s on %s...' % (options.serve_dir, server.GetURL(''))
-  try:
-    while True:
-      pass
-  except KeyboardInterrupt:
-    pass
-  finally:
-    print 'Stopping server.'
-    server.Shutdown()
+  return server.ServeForever()
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
