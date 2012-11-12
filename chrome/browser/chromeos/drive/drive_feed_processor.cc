@@ -148,10 +148,8 @@ void DriveFeedProcessor::ApplyEntryProto(const DriveEntryProto& entry_proto) {
   if (entry->is_deleted()) {
     // Deleted file/directory.
     DVLOG(1) << "Removing file " << entry->base_name();
-    if (!old_entry)
-      return;
-    RemoveEntryFromParent(old_entry);
-
+    if (old_entry)
+      RemoveEntryFromParent(old_entry);
   } else if (old_entry) {
     // Change or move of existing entry.
     // Please note that entry rename is just a special case of change here
