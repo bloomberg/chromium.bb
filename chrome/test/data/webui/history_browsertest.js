@@ -83,7 +83,7 @@ TEST_F('HistoryWebUITest', 'basicTest', function() {
 
   // Check that there are two days of entries.
   var dayHeaders = document.querySelectorAll('.day');
-  expectEquals(2, dayHeaders.length);
+  assertEquals(2, dayHeaders.length);
   expectNotEquals(dayHeaders[0].textContent, dayHeaders[1].textContent);
 
   // Check that the entries in each day are time-ordered, and that no
@@ -133,6 +133,14 @@ TEST_F('HistoryWebUITest', 'basicTest', function() {
 
   // Check that the two pages include all of the entries.
   expectEquals(TOTAL_RESULT_COUNT, resultCount);
+
+  // Check that the day header was properly continued -- the header for the
+  // last day on the first page should be a substring of the header on the
+  // second page. E.g. "Wed, Oct 8, 2008" and "Web, Oct 8, 2008 - cont'd".
+  var newDayHeaders = document.querySelectorAll('.day');
+  expectEquals(1, newDayHeaders.length);
+  expectEquals(0,
+      newDayHeaders[0].textContent.indexOf(dayHeaders[1].textContent));
 
   // Check that the "Newest" and "Newer" links are now visible, but the "Older"
   // link is hidden.

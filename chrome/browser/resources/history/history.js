@@ -526,9 +526,6 @@ function HistoryView(model) {
   this.currentVisits_ = [];
 
   var self = this;
-  window.onresize = function() {
-    self.updateEntryAnchorWidth_();
-  };
 
   $('clear-browsing-data').addEventListener('click', openClearBrowsingData);
   $('remove-selected').addEventListener('click', removeItems);
@@ -670,10 +667,10 @@ HistoryView.prototype.displayResults_ = function() {
       if (visit.isRendered)
         continue;
 
-      // Break across day boundaries and insert gaps for browsing pauses.
-      // Create a dayResults element to contain results for each day
       var thisTime = visit.time.getTime();
 
+      // Break across day boundaries and insert gaps for browsing pauses.
+      // Create a dayResults element to contain results for each day.
       if ((i == 0 && visit.continued) || !visit.continued) {
         // It's the first visit of the day, or the day is continued from
         // the previous page. Create a header for the day on the current page.
@@ -684,31 +681,21 @@ HistoryView.prototype.displayResults_ = function() {
               loadTimeData.getString('cont')));
         }
 
-        // If there is an existing dayResults element, append it.
-        if (dayResults)
-          resultsFragment.appendChild(dayResults);
         resultsFragment.appendChild(day);
         dayResults = createElementWithClassName('ol', 'day-results');
-      } else if (lastTime - thisTime > BROWSING_GAP_TIME) {
-        if (dayResults)
-          dayResults.appendChild(createElementWithClassName('li', 'gap'));
+        resultsFragment.appendChild(dayResults);
+      } else if (dayResults && lastTime - thisTime > BROWSING_GAP_TIME) {
+        dayResults.appendChild(createElementWithClassName('li', 'gap'));
       }
       lastTime = thisTime;
 
       // Add the entry to the appropriate day.
-      if (dayResults) {
-        dayResults.appendChild(visit.getResultDOM(false));
-        this.setVisitRendered_(visit);
-      }
+      dayResults.appendChild(visit.getResultDOM(false));
+      this.setVisitRendered_(visit);
     }
-    // Add the final dayResults element to the page.
-    if (dayResults)
-      resultsFragment.appendChild(dayResults);
-
     this.resultDiv_.appendChild(resultsFragment);
   }
   this.updateNavBar_();
-  this.updateEntryAnchorWidth_();
 };
 
 /**
@@ -719,38 +706,6 @@ HistoryView.prototype.updateNavBar_ = function() {
   $('newest-button').hidden = this.pageIndex_ == 0;
   $('newer-button').hidden = this.pageIndex_ == 0;
   $('older-button').hidden = !this.model_.hasMoreResults();
-};
-
-/**
- * Updates the CSS rule for the entry anchor.
- * @private
- */
-HistoryView.prototype.updateEntryAnchorWidth_ = function() {
-  // We need to have at least on .title div to be able to calculate the
-  // desired width of the anchor.
-  var titleElement = document.querySelector('.entry .title');
-  if (!titleElement)
-    return;
-
-  // Create new CSS rules and add them last to the last stylesheet.
-  // TODO(jochen): The following code does not work due to WebKit bug #32309
-  // if (!this.entryAnchorRule_) {
-  //   var styleSheets = document.styleSheets;
-  //   var styleSheet = styleSheets[styleSheets.length - 1];
-  //   var rules = styleSheet.cssRules;
-  //   var createRule = function(selector) {
-  //     styleSheet.insertRule(selector + '{}', rules.length);
-  //     return rules[rules.length - 1];
-  //   };
-  //   this.entryAnchorRule_ = createRule('.entry .title > a');
-  //   // The following rule needs to be more specific to have higher priority.
-  //   this.entryAnchorStarredRule_ = createRule('.entry .title.starred > a');
-  // }
-  //
-  // var anchorMaxWith = titleElement.offsetWidth;
-  // this.entryAnchorRule_.style.maxWidth = anchorMaxWith + 'px';
-  // // Adjust by the width of star plus its margin.
-  // this.entryAnchorStarredRule_.style.maxWidth = anchorMaxWith - 23 + 'px';
 };
 
 ///////////////////////////////////////////////////////////////////////////////
