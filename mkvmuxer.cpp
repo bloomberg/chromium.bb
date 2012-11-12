@@ -2005,7 +2005,7 @@ bool Segment::AddCuePoint(uint64 timestamp, uint64 track) {
     return false;
 
   cue->set_time(timestamp / segment_info_.timecode_scale());
-  cue->set_block_number(cluster->blocks_added() + 1);
+  cue->set_block_number(cluster->blocks_added());
   cue->set_cluster_pos(cluster->position_for_cues());
   cue->set_track(track);
   if (!cues_.AddCue(cue))

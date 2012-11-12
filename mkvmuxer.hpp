@@ -869,8 +869,9 @@ class Segment {
   Chapter* AddChapter();
 
   // Adds a cue point to the Cues element. |timestamp| is the time in
-  // nanoseconds of the cue's time. |track| is the Track of the Cue. Returns
-  // true on success.
+  // nanoseconds of the cue's time. |track| is the Track of the Cue. This
+  // function must be called after AddFrame to calculate the correct
+  // BlockNumber for the CuePoint. Returns true on success.
   bool AddCuePoint(uint64 timestamp, uint64 track);
 
   // Adds a frame to be output in the file. Returns true on success.
