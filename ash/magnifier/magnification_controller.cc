@@ -8,12 +8,12 @@
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ui/aura/client/cursor_client.h"
-#include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_handler.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -39,7 +39,7 @@ namespace internal {
 // MagnificationControllerImpl:
 
 class MagnificationControllerImpl : virtual public MagnificationController,
-                                    public aura::EventFilter,
+                                    public ui::EventHandler,
                                     public ui::ImplicitAnimationObserver {
  public:
   MagnificationControllerImpl();
@@ -116,17 +116,12 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   // Correct the givin scale value if nessesary.
   void ValidateScale(float* scale);
 
-  // aura::EventFilter overrides:
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 ui::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleTouchEvent(
-      aura::Window* target,
-      ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleGestureEvent(
-      aura::Window* target,
-      ui::GestureEvent* event) OVERRIDE;
+  // ui::EventHandler overrides:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   aura::RootWindow* root_window_;
 
@@ -151,11 +146,11 @@ MagnificationControllerImpl::MagnificationControllerImpl()
       is_on_zooming_(false),
       is_enabled_(false),
       scale_(std::numeric_limits<double>::min()) {
-  Shell::GetInstance()->AddEnvEventFilter(this);
+  Shell::GetInstance()->AddPreTargetHandler(this);
 }
 
 MagnificationControllerImpl::~MagnificationControllerImpl() {
-  Shell::GetInstance()->RemoveEnvEventFilter(this);
+  Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
 void MagnificationControllerImpl::RedrawKeepingMousePosition(
@@ -451,17 +446,16 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
 ////////////////////////////////////////////////////////////////////////////////
 // MagnificationControllerImpl: aura::EventFilter implementation
 
-bool MagnificationControllerImpl::PreHandleKeyEvent(aura::Window* target,
-                                                    ui::KeyEvent* event) {
-  return false;
+ui::EventResult MagnificationControllerImpl::OnKeyEvent(ui::KeyEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
-bool MagnificationControllerImpl::PreHandleMouseEvent(aura::Window* target,
-                                                      ui::MouseEvent* event) {
+ui::EventResult MagnificationControllerImpl::OnMouseEvent(
+    ui::MouseEvent* event) {
   if (event->IsAltDown() && event->IsControlDown()) {
     if (event->type() == ui::ET_SCROLL_FLING_START ||
         event->type() == ui::ET_SCROLL_FLING_CANCEL) {
-      return true;
+      return ui::ER_CONSUMED;
     }
 
     if (event->type() == ui::ET_SCROLL) {
@@ -469,11 +463,12 @@ bool MagnificationControllerImpl::PreHandleMouseEvent(aura::Window* target,
       float scale = GetScale();
       scale += scroll_event->y_offset() * kScrollScaleChangeFactor;
       SetScale(scale, true);
-      return true;
+      return ui::ER_CONSUMED;
     }
   }
 
   if (IsMagnified() && event->type() == ui::ET_MOUSE_MOVED) {
+    aura::Window* target = static_cast<aura::Window*>(event->target());
     aura::RootWindow* current_root = target->GetRootWindow();
     gfx::Rect root_bounds = current_root->bounds();
 
@@ -485,17 +480,20 @@ bool MagnificationControllerImpl::PreHandleMouseEvent(aura::Window* target,
     }
   }
 
-  return false;
+  return ui::ER_UNHANDLED;
 }
 
-ui::EventResult MagnificationControllerImpl::PreHandleTouchEvent(
-    aura::Window* target,
+ui::EventResult MagnificationControllerImpl::OnScrollEvent(
+    ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult MagnificationControllerImpl::OnTouchEvent(
     ui::TouchEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult MagnificationControllerImpl::PreHandleGestureEvent(
-    aura::Window* target,
+ui::EventResult MagnificationControllerImpl::OnGestureEvent(
     ui::GestureEvent* event) {
   return ui::ER_UNHANDLED;
 }

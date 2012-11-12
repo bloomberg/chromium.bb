@@ -159,7 +159,7 @@ void AppListController::SetView(app_list::AppListView* view) {
     view_ = view;
     views::Widget* widget = view_->GetWidget();
     widget->AddObserver(this);
-    Shell::GetInstance()->AddEnvEventFilter(this);
+    Shell::GetInstance()->AddPreTargetHandler(this);
     Launcher::ForWindow(GetWindow())->AddIconObserver(this);
     widget->GetNativeView()->GetRootWindow()->AddRootWindowObserver(this);
     widget->GetNativeView()->GetFocusManager()->AddObserver(this);
@@ -179,7 +179,7 @@ void AppListController::ResetView() {
   views::Widget* widget = view_->GetWidget();
   widget->RemoveObserver(this);
   GetLayer(widget)->GetAnimator()->RemoveObserver(this);
-  Shell::GetInstance()->RemoveEnvEventFilter(this);
+  Shell::GetInstance()->RemovePreTargetHandler(this);
   Launcher::ForWindow(GetWindow())->RemoveIconObserver(this);
   widget->GetNativeView()->GetRootWindow()->RemoveRootWindowObserver(this);
   widget->GetNativeView()->GetFocusManager()->RemoveObserver(this);
@@ -213,10 +213,10 @@ void AppListController::ScheduleAnimation() {
   widget->SetBounds(target_bounds);
 }
 
-void AppListController::ProcessLocatedEvent(aura::Window* target,
-                                            const ui::LocatedEvent& event) {
+void AppListController::ProcessLocatedEvent(ui::LocatedEvent* event) {
   // If the event happened on a menu, then the event should not close the app
   // list.
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   if (target) {
     RootWindowController* root_controller =
         GetRootWindowController(target->GetRootWindow());
@@ -230,7 +230,7 @@ void AppListController::ProcessLocatedEvent(aura::Window* target,
 
   if (view_ && is_visible_) {
     aura::Window* window = view_->GetWidget()->GetNativeView();
-    gfx::Point window_local_point(event.root_location());
+    gfx::Point window_local_point(event->root_location());
     aura::Window::ConvertPointToTarget(window->GetRootWindow(),
                                        window,
                                        &window_local_point);
@@ -248,29 +248,27 @@ void AppListController::UpdateBounds() {
 ////////////////////////////////////////////////////////////////////////////////
 // AppListController, aura::EventFilter implementation:
 
-bool AppListController::PreHandleKeyEvent(aura::Window* target,
-                                          ui::KeyEvent* event) {
-  return false;
-}
-
-bool AppListController::PreHandleMouseEvent(aura::Window* target,
-                                            ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED)
-    ProcessLocatedEvent(target, *event);
-  return false;
-}
-
-ui::EventResult AppListController::PreHandleTouchEvent(
-    aura::Window* target,
-    ui::TouchEvent* event) {
+ui::EventResult AppListController::OnKeyEvent(ui::KeyEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult AppListController::PreHandleGestureEvent(
-    aura::Window* target,
-    ui::GestureEvent* event) {
+ui::EventResult AppListController::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    ProcessLocatedEvent(event);
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult AppListController::OnScrollEvent(ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult AppListController::OnTouchEvent(ui::TouchEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult AppListController::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP)
-    ProcessLocatedEvent(target, *event);
+    ProcessLocatedEvent(event);
   return ui::ER_UNHANDLED;
 }
 

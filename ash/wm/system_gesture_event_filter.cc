@@ -43,8 +43,7 @@ namespace ash {
 namespace internal {
 
 SystemGestureEventFilter::SystemGestureEventFilter()
-    : aura::EventFilter(),
-      system_gestures_enabled_(CommandLine::ForCurrentProcess()->
+    : system_gestures_enabled_(CommandLine::ForCurrentProcess()->
           HasSwitch(ash::switches::kAshEnableAdvancedGestures)),
       bezel_gestures_(new BezelGestureHandler),
       long_press_affordance_(new LongPressAffordanceHandler),
@@ -54,13 +53,11 @@ SystemGestureEventFilter::SystemGestureEventFilter()
 SystemGestureEventFilter::~SystemGestureEventFilter() {
 }
 
-bool SystemGestureEventFilter::PreHandleKeyEvent(aura::Window* target,
-                                                 ui::KeyEvent* event) {
-  return false;
+ui::EventResult SystemGestureEventFilter::OnKeyEvent(ui::KeyEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
-bool SystemGestureEventFilter::PreHandleMouseEvent(aura::Window* target,
-                                                   ui::MouseEvent* event) {
+ui::EventResult SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
 #if defined(OS_CHROMEOS)
   if (event->type() == ui::ET_MOUSE_PRESSED && event->native_event() &&
       ui::TouchFactory::GetInstance()->IsTouchDevicePresent() &&
@@ -69,20 +66,24 @@ bool SystemGestureEventFilter::PreHandleMouseEvent(aura::Window* target,
       UMA_MOUSE_DOWN);
   }
 #endif
-  return false;
+  return ui::ER_UNHANDLED;
 }
 
-ui::EventResult SystemGestureEventFilter::PreHandleTouchEvent(
-    aura::Window* target,
-    ui::TouchEvent* event) {
+ui::EventResult SystemGestureEventFilter::OnScrollEvent(
+    ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult SystemGestureEventFilter::OnTouchEvent(ui::TouchEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   touch_uma_.RecordTouchEvent(target, *event);
   long_press_affordance_->ProcessEvent(target, event, event->touch_id());
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult SystemGestureEventFilter::PreHandleGestureEvent(
-    aura::Window* target,
+ui::EventResult SystemGestureEventFilter::OnGestureEvent(
     ui::GestureEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   touch_uma_.RecordGestureEvent(target, *event);
   long_press_affordance_->ProcessEvent(target, event,
       event->GetLowestTouchId());

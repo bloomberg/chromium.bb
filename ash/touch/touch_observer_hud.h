@@ -6,7 +6,7 @@
 #define ASH_TOUCH_TOUCH_OBSERVER_HUD_H_
 
 #include "ash/shell.h"
-#include "ui/aura/event_filter.h"
+#include "ui/base/events/event_handler.h"
 #include "ui/gfx/point.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -25,7 +25,7 @@ namespace internal {
 class TouchHudCanvas;
 
 // An event filter which handles system level gesture events.
-class TouchObserverHUD : public aura::EventFilter,
+class TouchObserverHUD : public ui::EventHandler,
                          public views::WidgetObserver {
  public:
   TouchObserverHUD();
@@ -34,17 +34,12 @@ class TouchObserverHUD : public aura::EventFilter,
  private:
   void UpdateTouchPointLabel(int index);
 
-  // Overriden from aura::EventFilter:
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 ui::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleTouchEvent(
-      aura::Window* target,
-      ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleGestureEvent(
-      aura::Window* target,
-      ui::GestureEvent* event) OVERRIDE;
+  // Overriden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;

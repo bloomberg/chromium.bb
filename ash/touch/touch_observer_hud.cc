@@ -182,19 +182,19 @@ void TouchObserverHUD::UpdateTouchPointLabel(int index) {
   touch_labels_[index]->SetText(UTF8ToUTF16(string));
 }
 
-bool TouchObserverHUD::PreHandleKeyEvent(aura::Window* target,
-                                         ui::KeyEvent* event) {
-  return false;
+ui::EventResult TouchObserverHUD::OnKeyEvent(ui::KeyEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
-bool TouchObserverHUD::PreHandleMouseEvent(aura::Window* target,
-                                           ui::MouseEvent* event) {
-  return false;
+ui::EventResult TouchObserverHUD::OnMouseEvent(ui::MouseEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
-ui::EventResult TouchObserverHUD::PreHandleTouchEvent(
-    aura::Window* target,
-    ui::TouchEvent* event) {
+ui::EventResult TouchObserverHUD::OnScrollEvent(ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult TouchObserverHUD::OnTouchEvent(ui::TouchEvent* event) {
   if (event->touch_id() >= kMaxTouchPoints)
     return ui::ER_UNHANDLED;
 
@@ -213,9 +213,7 @@ ui::EventResult TouchObserverHUD::PreHandleTouchEvent(
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult TouchObserverHUD::PreHandleGestureEvent(
-    aura::Window* target,
-    ui::GestureEvent* event) {
+ui::EventResult TouchObserverHUD::OnGestureEvent(ui::GestureEvent* event) {
   return ui::ER_UNHANDLED;
 }
 

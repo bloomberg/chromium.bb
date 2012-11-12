@@ -204,7 +204,7 @@ TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
 
   // Without the event filter, the touch shouldn't be consumed by the
   // system event handler.
-  Shell::GetInstance()->RemoveEnvEventFilter(
+  Shell::GetInstance()->RemovePreTargetHandler(
       shell_test.system_gesture_event_filter());
 
   scoped_ptr<ui::GestureEvent> event2(CreateGesture(

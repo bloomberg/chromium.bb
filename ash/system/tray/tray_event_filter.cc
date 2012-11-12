@@ -22,43 +22,44 @@ namespace internal {
 
 TrayEventFilter::TrayEventFilter(TrayBubbleWrapper* wrapper)
     : wrapper_(wrapper) {
-  ash::Shell::GetInstance()->AddEnvEventFilter(this);
+  ash::Shell::GetInstance()->AddPreTargetHandler(this);
 }
 
 TrayEventFilter::~TrayEventFilter() {
-  ash::Shell::GetInstance()->RemoveEnvEventFilter(this);
+  ash::Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
-bool TrayEventFilter::PreHandleKeyEvent(aura::Window* target,
-                                        ui::KeyEvent* event) {
-  return false;
+ui::EventResult TrayEventFilter::OnKeyEvent(ui::KeyEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
-bool TrayEventFilter::PreHandleMouseEvent(aura::Window* target,
-                                          ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED)
-    return ProcessLocatedEvent(target, *event);
-  return false;
-}
-
-ui::EventResult TrayEventFilter::PreHandleTouchEvent(aura::Window* target,
-                                                     ui::TouchEvent* event) {
-  if (event->type() == ui::ET_TOUCH_PRESSED) {
-    if (ProcessLocatedEvent(target, *event))
-      return ui::ER_CONSUMED;
+ui::EventResult TrayEventFilter::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED &&
+      ProcessLocatedEvent(event)) {
+    return ui::ER_CONSUMED;
   }
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult TrayEventFilter::PreHandleGestureEvent(
-    aura::Window* target,
-    ui::GestureEvent* event) {
+ui::EventResult TrayEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-bool TrayEventFilter::ProcessLocatedEvent(aura::Window* target,
-                                          const ui::LocatedEvent& event) {
-  if (target) {
+ui::EventResult TrayEventFilter::OnTouchEvent(ui::TouchEvent* event) {
+  if (event->type() == ui::ET_TOUCH_PRESSED &&
+      ProcessLocatedEvent(event)) {
+    return ui::ER_CONSUMED;
+  }
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult TrayEventFilter::OnGestureEvent(ui::GestureEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+bool TrayEventFilter::ProcessLocatedEvent(ui::LocatedEvent* event) {
+  if (event->target()) {
+    aura::Window* target = static_cast<aura::Window*>(event->target());
     // Don't process events that occurred inside an embedded menu.
     ash::internal::RootWindowController* root_controller =
         ash::GetRootWindowController(target->GetRootWindow());
@@ -74,13 +75,13 @@ bool TrayEventFilter::ProcessLocatedEvent(aura::Window* target,
   gfx::Insets insets;
   wrapper_->bubble_view()->GetBorderInsets(&insets);
   bounds.Inset(insets);
-  if (bounds.Contains(event.root_location()))
+  if (bounds.Contains(event->root_location()))
     return false;
   if (wrapper_->tray()) {
     // If the user clicks on the parent tray, don't process the event here,
     // let the tray logic handle the event and determine show/hide behavior.
     bounds = wrapper_->tray()->GetWidget()->GetClientAreaBoundsInScreen();
-    if (bounds.Contains(event.root_location()))
+    if (bounds.Contains(event->root_location()))
       return false;
   }
   // Handle clicking outside the bubble and tray and return true if the

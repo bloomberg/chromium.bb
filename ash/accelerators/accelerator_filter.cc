@@ -67,13 +67,12 @@ AcceleratorFilter::~AcceleratorFilter() {
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorFilter, EventFilter implementation:
 
-bool AcceleratorFilter::PreHandleKeyEvent(aura::Window* target,
-                                          ui::KeyEvent* event) {
+ui::EventResult AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
   const ui::EventType type = event->type();
   if (type != ui::ET_KEY_PRESSED && type != ui::ET_KEY_RELEASED)
-    return false;
+    return ui::ER_UNHANDLED;
   if (event->is_char())
-    return false;
+    return ui::ER_UNHANDLED;
 
   ui::Accelerator accelerator(event->key_code(),
                               event->flags() & kModifierFlagMask);
@@ -84,25 +83,26 @@ bool AcceleratorFilter::PreHandleKeyEvent(aura::Window* target,
   Shell::GetInstance()->accelerator_controller()->context()->
       UpdateContext(accelerator);
 
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   if (!ShouldProcessAcceleratorsNow(accelerator, target))
-    return false;
-  return Shell::GetInstance()->accelerator_controller()->Process(accelerator);
+    return ui::ER_UNHANDLED;
+  return Shell::GetInstance()->accelerator_controller()->Process(accelerator) ?
+      ui::ER_CONSUMED : ui::ER_UNHANDLED;
 }
 
-bool AcceleratorFilter::PreHandleMouseEvent(aura::Window* target,
-                                            ui::MouseEvent* event) {
-  return false;
-}
-
-ui::EventResult AcceleratorFilter::PreHandleTouchEvent(
-    aura::Window* target,
-    ui::TouchEvent* event) {
+ui::EventResult AcceleratorFilter::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult AcceleratorFilter::PreHandleGestureEvent(
-    aura::Window* target,
-    ui::GestureEvent* event) {
+ui::EventResult AcceleratorFilter::OnScrollEvent(ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult AcceleratorFilter::OnTouchEvent(ui::TouchEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult AcceleratorFilter::OnGestureEvent(ui::GestureEvent* event) {
   return ui::ER_UNHANDLED;
 }
 

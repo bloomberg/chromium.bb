@@ -236,12 +236,12 @@ Shell::~Shell() {
   RemoveEnvEventFilter(window_modality_controller_.get());
   if (mouse_cursor_filter_.get())
     RemoveEnvEventFilter(mouse_cursor_filter_.get());
-  RemoveEnvEventFilter(system_gesture_filter_.get());
+  RemovePreTargetHandler(system_gesture_filter_.get());
 #if !defined(OS_MACOSX)
-  RemoveEnvEventFilter(accelerator_filter_.get());
+  RemovePreTargetHandler(accelerator_filter_.get());
 #endif
   if (touch_observer_hud_.get())
-    RemoveEnvEventFilter(touch_observer_hud_.get());
+    RemovePreTargetHandler(touch_observer_hud_.get());
 
   // TooltipController is deleted with the Shell so removing its references.
   RemoveEnvEventFilter(tooltip_controller_.get());
@@ -427,11 +427,11 @@ void Shell::Init() {
 
 #if !defined(OS_MACOSX)
   accelerator_filter_.reset(new internal::AcceleratorFilter);
-  AddEnvEventFilter(accelerator_filter_.get());
+  AddPreTargetHandler(accelerator_filter_.get());
 #endif
 
   system_gesture_filter_.reset(new internal::SystemGestureEventFilter);
-  AddEnvEventFilter(system_gesture_filter_.get());
+  AddPreTargetHandler(system_gesture_filter_.get());
 
   capture_controller_.reset(new internal::CaptureController);
 
@@ -445,7 +445,7 @@ void Shell::Init() {
 
   if (command_line->HasSwitch(switches::kAshTouchHud)) {
     touch_observer_hud_.reset(new internal::TouchObserverHUD);
-    AddEnvEventFilter(touch_observer_hud_.get());
+    AddPreTargetHandler(touch_observer_hud_.get());
   }
 
   mouse_cursor_filter_.reset(new internal::MouseCursorEventFilter());
