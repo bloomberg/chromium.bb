@@ -171,14 +171,14 @@ bool AppWindowCreateFunction::RunImpl() {
     if (maximum_size.width() &&
         create_params.bounds.width() > maximum_size.width())
       create_params.bounds.set_width(maximum_size.width());
-    if (create_params.bounds.width() != INT_MIN &&
+    if (create_params.bounds.width() != 0 &&
         create_params.bounds.width() < minimum_size.width())
       create_params.bounds.set_width(minimum_size.width());
 
     if (maximum_size.height() &&
         create_params.bounds.height() > maximum_size.height())
       create_params.bounds.set_height(maximum_size.height());
-    if (create_params.bounds.height() != INT_MIN &&
+    if (create_params.bounds.height() != 0 &&
         create_params.bounds.height() < minimum_size.height())
       create_params.bounds.set_height(minimum_size.height());
 

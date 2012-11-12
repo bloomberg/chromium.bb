@@ -235,7 +235,7 @@ TEST(DrawQuadTest, copyTextureDrawQuad)
 {
     unsigned resourceId = 82;
     bool premultipliedAlpha = true;
-    gfx::RectF uvRect(0.5, 224, -51, 36);
+    gfx::RectF uvRect(0.5, 224, 51, 36);
     bool flipped = true;
 
     CREATE_SHARED_STATE();
