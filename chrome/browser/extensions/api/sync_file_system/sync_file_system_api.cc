@@ -18,6 +18,7 @@
 #include "content/public/common/content_client.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/quota/quota_manager.h"
 
 using content::BrowserContext;
@@ -39,6 +40,8 @@ const char kQuotaError[] = "Quota error %d.";
 }  // namespace
 
 bool SyncFileSystemDeleteFileSystemFunction::RunImpl() {
+  // TODO(calvinlo): Move error code to util function. (http://crbug.com/160496)
+
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       BrowserContext::GetStoragePartition(
           profile(),
@@ -84,6 +87,7 @@ bool SyncFileSystemRequestFileSystemFunction::RunImpl() {
   std::string service_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &service_name));
 
+  // TODO(calvinlo): Move error code to util function. (http://crbug.com/160496)
   if (service_name != std::string(kDriveCloudService)) {
     error_ = base::StringPrintf(kNotSupportedService, service_name.c_str());
     return false;
@@ -147,10 +151,13 @@ void SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem(
 }
 
 bool SyncFileSystemGetUsageAndQuotaFunction::RunImpl() {
-  std::string service_name;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &service_name));
+  std::string url;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
+  fileapi::FileSystemURL file_system_url((GURL(url)));
 
   // TODO(calvinlo): For now only gDrive cloud service is supported.
+  // TODO(calvinlo): Move error code to util function. (http://crbug.com/160496)
+  const std::string service_name = file_system_url.filesystem_id();
   if (service_name != std::string(kDriveCloudService)) {
     error_ = base::StringPrintf(kNotSupportedService, service_name.c_str());
     return false;

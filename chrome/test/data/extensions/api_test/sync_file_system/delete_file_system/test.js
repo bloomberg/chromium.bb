@@ -40,7 +40,7 @@ var testStep = [
   },
   // Then try to delete the file system.
   function() {
-    chrome.syncFileSystem.deleteFileSystem(testStep.shift());
+    chrome.syncFileSystem.deleteFileSystem(fileSystem, testStep.shift());
   },
   function(result) {
     chrome.test.assertTrue(result);
@@ -66,5 +66,5 @@ function errorHandler() {
 }
 
 chrome.test.runTests([
-  testStep[0]()
+  testStep[0]
 ]);

@@ -26,10 +26,11 @@ namespace syncFileSystem {
                                   GetFileSystemCallback callback);
                                   
     // Get usage and quota in bytes for sync file system with |serviceName|.
-    static void getUsageAndQuota(DOMString serviceName,
+    static void getUsageAndQuota([instanceOf=DOMFileSystem] object fileSystem,
                                  QuotaAndUsageCallback callback);
                                  
     // Deletes everything in the syncable filesystem.
-    static void deleteFileSystem(DeleteFileSystemCallback callback);
+    static void deleteFileSystem([instanceOf=DOMFileSystem] object fileSystem,
+                                  DeleteFileSystemCallback callback);
   };
 };
