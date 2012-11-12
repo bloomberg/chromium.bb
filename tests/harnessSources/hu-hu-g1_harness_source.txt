@@ -2825,6 +2825,11 @@ puskászászlóalj
 testmode: backtranslate
 puskászászlóalj 
 
+rajzsablon
+
+testmode: backtranslate
+rajzsablon
+
 rácság
 
 testmode: backtranslate
@@ -2839,6 +2844,11 @@ rakásszámra
 
 testmode: backtranslate
 rakásszámra
+
+Rákosszentmihály
+
+testmode: backtranslate
+Rákosszentmihály
 
 rándulásszerűen
 

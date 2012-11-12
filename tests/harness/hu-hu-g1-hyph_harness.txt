@@ -2280,6 +2280,10 @@
           "output": "pus-ká-s-zász-ló-alj"
         }, 
         {
+          "input": "rajzsablon", 
+          "output": "rajz-sab-lon"
+        }, 
+        {
           "input": "rácság", 
           "output": "rác-ság"
         }, 
@@ -2290,6 +2294,10 @@
         {
           "input": "rakásszámra", 
           "output": "ra-kás-szám-ra"
+        }, 
+        {
+          "input": "Rákosszentmihály", 
+          "output": "Rá-kos-szent-mi-hály"
         }, 
         {
           "input": "rándulásszerűen", 

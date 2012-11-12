@@ -2267,6 +2267,10 @@
           "output": "puskászászlóalj "
         }, 
         {
+          "input": "⠗⠁⠚⠣⠎⠁⠃⠇⠕⠝", 
+          "output": "rajzsablon"
+        }, 
+        {
           "input": "⠗⠈⠉⠎⠈⠛", 
           "output": "rácság"
         }, 
@@ -2277,6 +2281,10 @@
         {
           "input": "⠗⠁⠅⠈⠎⠱⠈⠍⠗⠁", 
           "output": "rakásszámra"
+        }, 
+        {
+          "input": "⠨⠗⠈⠅⠕⠎⠱⠑⠝⠞⠍⠊⠓⠈⠸", 
+          "output": "Rákosszentmihály"
         }, 
         {
           "input": "⠗⠈⠝⠙⠥⠇⠈⠎⠱⠑⠗⠾⠑⠝", 
@@ -5475,6 +5483,10 @@
           "output": "⠏⠥⠎⠅⠈⠎⠣⠈⠱⠇⠪⠁⠇⠚ "
         }, 
         {
+          "input": "rajzsablon", 
+          "output": "⠗⠁⠚⠣⠎⠁⠃⠇⠕⠝"
+        }, 
+        {
           "input": "rácság", 
           "output": "⠗⠈⠉⠎⠈⠛"
         }, 
@@ -5485,6 +5497,10 @@
         {
           "input": "rakásszámra", 
           "output": "⠗⠁⠅⠈⠎⠱⠈⠍⠗⠁"
+        }, 
+        {
+          "input": "Rákosszentmihály", 
+          "output": "⠨⠗⠈⠅⠕⠎⠱⠑⠝⠞⠍⠊⠓⠈⠸"
         }, 
         {
           "input": "rándulásszerűen", 
