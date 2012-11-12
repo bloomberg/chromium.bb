@@ -72,6 +72,18 @@ void OnSyncCompleted(const tracked_objects::Location& where,
   oncompleted.Run();
 }
 
+void OnGetFileMetadata(const tracked_objects::Location& where,
+                       const base::Closure& oncompleted,
+                       SyncStatusCode* status_out,
+                       SyncFileMetadata* metadata_out,
+                       SyncStatusCode status,
+                       const SyncFileMetadata& metadata) {
+  SCOPED_TRACE(testing::Message() << where.ToString());
+  *status_out = status;
+  *metadata_out = metadata;
+  oncompleted.Run();
+}
+
 class MockLocalChangeProcessor : public LocalChangeProcessor {
  public:
   MockLocalChangeProcessor() {}
@@ -476,6 +488,33 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_MultipleChanges) {
 
   // We have one more change for kOther.
   EXPECT_EQ(1, GetNumChangesInTracker());
+}
+
+TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_GetLocalMetadata) {
+  const FileSystemURL kURL(file_system_->URL("foo"));
+  const base::Time kTime = base::Time::FromDoubleT(333);
+  const int kSize = 555;
+
+  base::RunLoop run_loop;
+
+  // Creates a file.
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_->CreateFile(kURL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_->TruncateFile(kURL, kSize));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_->TouchFile(kURL, base::Time(), kTime));
+
+  SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
+  SyncFileMetadata metadata;
+  local_service_->GetLocalFileMetadata(
+      kURL,
+      base::Bind(&OnGetFileMetadata, FROM_HERE, run_loop.QuitClosure(),
+                 &status, &metadata));
+
+  run_loop.Run();
+
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
+  EXPECT_EQ(kTime, metadata.last_modified);
+  EXPECT_EQ(kSize, metadata.size);
 }
 
 // TODO(kinuko): Add tests for multiple file changes and multiple

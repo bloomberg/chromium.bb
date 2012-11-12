@@ -210,6 +210,28 @@ void LocalFileSyncContext::ApplyRemoteChange(
   }
 }
 
+void LocalFileSyncContext::GetFileMetadata(
+    FileSystemContext* file_system_context,
+    const FileSystemURL& url,
+    const SyncFileMetadataCallback& callback) {
+  // This is initially called on UI thread and to be relayed to IO thread.
+  if (!io_task_runner_->RunsTasksOnCurrentThread()) {
+    DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&LocalFileSyncContext::GetFileMetadata, this,
+                   make_scoped_refptr(file_system_context), url, callback));
+    return;
+  }
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  LocalFileSystemOperation* operation = CreateFileSystemOperationForSync(
+      file_system_context);
+  DCHECK(operation);
+  operation->GetMetadata(
+      url, base::Bind(&LocalFileSyncContext::DidGetFileMetadata,
+                      this, callback));
+}
+
 void LocalFileSyncContext::AddOriginChangeObserver(
     LocalOriginChangeObserver* observer) {
   origin_change_observers_.AddObserver(observer);
@@ -512,6 +534,26 @@ void LocalFileSyncContext::DidApplyRemoteChange(
       FROM_HERE,
       base::Bind(callback_on_ui,
                  PlatformFileErrorToSyncStatusCode(file_error)));
+}
+
+void LocalFileSyncContext::DidGetFileMetadata(
+    const SyncFileMetadataCallback& callback,
+    base::PlatformFileError file_error,
+    const base::PlatformFileInfo& file_info,
+    const FilePath& platform_path) {
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  SyncFileMetadata metadata;
+  if (file_error == base::PLATFORM_FILE_OK) {
+    metadata.file_type = file_info.is_directory ? SYNC_FILE_TYPE_DIRECTORY
+                                                : SYNC_FILE_TYPE_FILE;
+    metadata.size = file_info.size;
+    metadata.last_modified = file_info.last_modified;
+  }
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(callback,
+                 PlatformFileErrorToSyncStatusCode(file_error),
+                 metadata));
 }
 
 base::TimeDelta LocalFileSyncContext::NotifyChangesDuration() {

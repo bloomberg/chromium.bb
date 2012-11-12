@@ -110,6 +110,12 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       const FileSystemURL& url,
       const SyncStatusCallback& callback);
 
+  // This must be called on UI thread.
+  void GetFileMetadata(
+      FileSystemContext* file_system_context,
+      const FileSystemURL& url,
+      const SyncFileMetadataCallback& callback);
+
   // They must be called on UI thread.
   void AddOriginChangeObserver(LocalOriginChangeObserver* observer);
   void RemoveOriginChangeObserver(LocalOriginChangeObserver* observer);
@@ -199,6 +205,12 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   void DidApplyRemoteChange(
       const SyncStatusCallback& callback_on_ui,
       base::PlatformFileError file_error);
+
+  void DidGetFileMetadata(
+      const SyncFileMetadataCallback& callback,
+      base::PlatformFileError file_error,
+      const base::PlatformFileInfo& file_info,
+      const FilePath& platform_path);
 
   base::TimeDelta NotifyChangesDuration();
 

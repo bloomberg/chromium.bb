@@ -138,8 +138,8 @@ void LocalFileSyncService::GetLocalFileMetadata(
     const fileapi::FileSystemURL& url,
     const SyncFileMetadataCallback& callback) {
   DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
-  // TODO(kinuko): implement.
-  NOTIMPLEMENTED();
+  sync_context_->GetFileMetadata(origin_to_contexts_[url.origin()],
+                                 url, callback);
 }
 
 void LocalFileSyncService::PrepareForProcessRemoteChange(

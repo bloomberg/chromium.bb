@@ -16,6 +16,9 @@ namespace fileapi {
 class WEBKIT_STORAGE_EXPORT SyncFileMetadata {
  public:
   SyncFileMetadata();
+  SyncFileMetadata(SyncFileType file_type,
+                   int64 size,
+                   const base::Time& last_modified);
   ~SyncFileMetadata();
 
   SyncFileType file_type;
