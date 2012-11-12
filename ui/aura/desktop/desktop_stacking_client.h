@@ -12,6 +12,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/views_export.h"
 
+namespace views {
+namespace corewm {
+class CompoundEventFilter;
+class InputMethodEventFilter;
+}
+}
+
 namespace aura {
 class DesktopActivationClient;
 class FocusManager;
@@ -20,11 +27,6 @@ class Window;
 
 namespace client {
 class DefaultCaptureClient;
-}
-
-namespace shared {
-class CompoundEventFilter;
-class InputMethodEventFilter;
 }
 
 // A stacking client for the desktop; always sets the default parent to the
@@ -50,8 +52,8 @@ class VIEWS_EXPORT DesktopStackingClient : public client::StackingClient {
   // Depends on focus_manager_.
   scoped_ptr<DesktopActivationClient> activation_client_;
 
-  scoped_ptr<shared::InputMethodEventFilter> input_method_filter_;
-  shared::CompoundEventFilter* window_event_filter_;
+  scoped_ptr<views::corewm::InputMethodEventFilter> input_method_filter_;
+  views::corewm::CompoundEventFilter* window_event_filter_;
 
   scoped_ptr<client::DefaultCaptureClient> capture_client_;
 
