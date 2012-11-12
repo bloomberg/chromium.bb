@@ -47,10 +47,10 @@ void DesktopStackingClient::CreateNULLParent() {
 
   client::SetActivationClient(null_parent_.get(), activation_client_.get());
 
-  window_event_filter_ = new shared::CompoundEventFilter;
+  window_event_filter_ = new views::corewm::CompoundEventFilter;
   null_parent_->SetEventFilter(window_event_filter_);
 
-  input_method_filter_.reset(new shared::InputMethodEventFilter);
+  input_method_filter_.reset(new views::corewm::InputMethodEventFilter);
   input_method_filter_->SetInputMethodPropertyInRootWindow(null_parent_.get());
   window_event_filter_->AddFilter(input_method_filter_.get());
 
