@@ -1117,6 +1117,7 @@
         'browser/ui/webui/options/preferences_browsertest.cc',
         'browser/ui/webui/options/preferences_browsertest.h',
         'browser/ui/webui/options/search_engine_manager_browsertest.js',
+        'browser/ui/webui/options/settings_format_browsertest.js',
         'browser/ui/webui/print_preview/print_preview_ui_browsertest.cc',
         'browser/ui/webui/sync_setup_browsertest.js',
         'browser/ui/webui/test_web_dialog_delegate.cc',
