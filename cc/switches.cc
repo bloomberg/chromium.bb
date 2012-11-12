@@ -22,12 +22,16 @@ const char kEnablePerTilePainting[]         = "enable-per-tile-painting";
 // compositor.
 const char kEnablePinchInCompositor[]       = "enable-pinch-in-compositor";
 
+// Paint content on the compositor thread instead of the main thread.
+const char kImplSidePainting[] = "impl-side-painting";
+
 // When threaded compositing is turned on, wait until the entire frame has
 // content (i.e. jank) instead of showing checkerboards for missing content.
 const char kJankInsteadOfCheckerboard[] = "jank-instead-of-checkerboard";
 
-// Paint content on the compositor thread instead of the main thread.
-const char kImplSidePainting[] = "impl-side-painting";
+// Show metrics about overdraw in about:tracing recordings, such as the number
+// of pixels culled, and the number of pixels drawn, for each frame.
+const char kTraceOverdraw[] = "trace-overdraw";
 
 }  // namespace switches
 }  // namespace cc

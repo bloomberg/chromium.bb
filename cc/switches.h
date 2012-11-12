@@ -20,8 +20,9 @@ CC_EXPORT extern const char kDisableThreadedAnimation[];
 CC_EXPORT extern const char kEnablePartialSwap[];
 CC_EXPORT extern const char kEnablePerTilePainting[];
 CC_EXPORT extern const char kEnablePinchInCompositor[];
-CC_EXPORT extern const char kJankInsteadOfCheckerboard[];
 CC_EXPORT extern const char kImplSidePainting[];
+CC_EXPORT extern const char kJankInsteadOfCheckerboard[];
+CC_EXPORT extern const char kTraceOverdraw[];
 
 }  // namespace switches
 }  // namespace cc

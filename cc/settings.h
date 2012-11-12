@@ -21,6 +21,7 @@ public:
     static bool pageScalePinchZoomEnabled();
     static bool jankInsteadOfCheckerboard();
     static bool backgroundColorInsteadOfCheckerboard();
+    static bool traceOverdraw();
 
     static void setPartialSwapEnabled(bool);
     static void setPerTilePaintingEnabled(bool);

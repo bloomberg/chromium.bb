@@ -15,6 +15,7 @@ static bool s_acceleratedAnimationEnabled = false;
 static bool s_pageScalePinchZoomEnabled = false;
 static bool s_jankInsteadOfCheckerboard = false;
 static bool s_backgroundColorInsteadOfCheckerboard = false;
+static bool s_traceOverdraw = false;
 
 void reset()
 {
@@ -26,6 +27,7 @@ void reset()
     s_pageScalePinchZoomEnabled = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnablePinchInCompositor);
     s_jankInsteadOfCheckerboard = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kJankInsteadOfCheckerboard);
     s_backgroundColorInsteadOfCheckerboard = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kBackgroundColorInsteadOfCheckerboard);
+    s_traceOverdraw = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kTraceOverdraw);
 }
 
 }
@@ -72,6 +74,13 @@ bool Settings::backgroundColorInsteadOfCheckerboard()
     if (!s_settingsInitialized)
         reset();
     return s_backgroundColorInsteadOfCheckerboard;
+}
+
+bool Settings::traceOverdraw()
+{
+    if (!s_settingsInitialized)
+        reset();
+    return s_traceOverdraw;
 }
 
 void Settings::resetForTest()

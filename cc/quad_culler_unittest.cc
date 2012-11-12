@@ -221,7 +221,7 @@ TEST(QuadCullerTest, verifyCullCenterTileNonIntegralSize1)
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 2u);
 
-    EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsDrawnOpaque(), 20000, 1);
+    EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsDrawnOpaque(), 20363, 1);
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsDrawnTranslucent(), 0, 1);
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 0, 1);
 }
@@ -249,7 +249,7 @@ TEST(QuadCullerTest, verifyCullCenterTileNonIntegralSize2)
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 2u);
 
-    EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsDrawnOpaque(), 20000, 1);
+    EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsDrawnOpaque(), 19643, 1);
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsDrawnTranslucent(), 0, 1);
     EXPECT_NEAR(occlusionTracker.overdrawMetrics().pixelsCulledForDrawing(), 0, 1);
 }

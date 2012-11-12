@@ -666,7 +666,7 @@ bool LayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, 
     typedef LayerIterator<Layer, LayerList, RenderSurface, LayerIteratorActions::FrontToBack> LayerIteratorType;
 
     bool needMoreUpdates = false;
-    bool recordMetricsForFrame = base::debug::TraceLog::GetInstance() && base::debug::TraceLog::GetInstance()->IsEnabled();
+    bool recordMetricsForFrame = Settings::traceOverdraw() && base::debug::TraceLog::GetInstance() && base::debug::TraceLog::GetInstance()->IsEnabled();
     OcclusionTracker occlusionTracker(m_rootLayer->renderSurface()->contentRect(), recordMetricsForFrame);
     occlusionTracker.setMinimumTrackingSize(m_settings.minimumOcclusionTrackingSize);
 

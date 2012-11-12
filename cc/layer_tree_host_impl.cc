@@ -384,7 +384,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
         renderSurfaceLayer->renderSurface()->appendRenderPasses(frame);
     }
 
-    bool recordMetricsForFrame = base::debug::TraceLog::GetInstance() && base::debug::TraceLog::GetInstance()->IsEnabled();
+    bool recordMetricsForFrame = Settings::traceOverdraw() && base::debug::TraceLog::GetInstance() && base::debug::TraceLog::GetInstance()->IsEnabled();
     OcclusionTrackerImpl occlusionTracker(m_rootLayerImpl->renderSurface()->contentRect(), recordMetricsForFrame);
     occlusionTracker.setMinimumTrackingSize(m_settings.minimumOcclusionTrackingSize);
 

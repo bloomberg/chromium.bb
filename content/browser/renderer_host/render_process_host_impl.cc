@@ -865,6 +865,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kEnablePerTilePainting,
     cc::switches::kEnablePinchInCompositor,
     cc::switches::kJankInsteadOfCheckerboard,
+    cc::switches::kTraceOverdraw,
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
