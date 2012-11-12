@@ -455,7 +455,8 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_NavigateURLAbsolute) {
 const wchar_t kNavigateURLRelativePage[] =
     L"navigateurl_relative_host.html";
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_NavigateURLRelative) {
+// Flaky, crbug.com/160497.
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_NavigateURLRelative) {
   SimpleBrowserTest(IE, kNavigateURLRelativePage);
 }
 
@@ -467,7 +468,9 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_ObjectFocus) {
 
 const wchar_t kiframeBasicPage[] = L"iframe_basic_host.html";
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_iframeBasic) {
+
+// Flaky, crbug.com/160497.
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_iframeBasic) {
   SimpleBrowserTest(IE, kiframeBasicPage);
 }
 
@@ -503,7 +506,8 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceFallback) {
 
 const wchar_t kCFINoSrcPage[] = L"CFInstance_no_src_host.html";
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceNoSrc) {
+// Flaky, crbug.com/160497.
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_CFInstanceNoSrc) {
   SimpleBrowserTest(IE, kCFINoSrcPage);
 }
 
@@ -634,7 +638,8 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_CFHttpHeaderFrameSet) {
 
 const wchar_t kVersionPage[] = L"version.html";
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_Version) {
+// Flaky, crbug.com/160497.
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_Version) {
   VersionTest(IE, kVersionPage);
 }
 
@@ -651,7 +656,8 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_PrivilegedApis) {
 }
 
 const wchar_t kMetaTagPage[] = L"meta_tag.html";
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_MetaTag) {
+// Flaky, crbug.com/160497.
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_MetaTag) {
   SimpleBrowserTest(IE, kMetaTagPage);
 }
 
@@ -693,7 +699,8 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_SubIFrame) {
 const wchar_t kXMLHttpRequestTestUrl[] =
     L"xmlhttprequest_test.html";
 
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRTest) {
+// Flaky, crbug.com/160497.
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_XHRTest) {
   SimpleBrowserTest(IE, kXMLHttpRequestTestUrl);
 }
 
@@ -785,7 +792,8 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_TestPostReissue) {
 
 // Test whether following a link from an mshtml page to a CF page will cause
 // multiple network requests.  It should not.
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
+// Flaky, crbug.com/160497.
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_TestMultipleGet) {
   // The order of pages in this array is assumed to be mshtml, cf, script.
   const wchar_t* kPages[] = {
     L"full_tab_get_mshtml.html",
