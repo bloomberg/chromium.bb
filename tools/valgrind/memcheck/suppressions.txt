@@ -6062,7 +6062,7 @@
    fun:_ZL27initial_reordering_syllablePK18hb_ot_shape_plan_tP11hb_buffer_tjj
    fun:_ZL18initial_reorderingPK18hb_ot_shape_plan_tP9hb_font_tP11hb_buffer_t
    ...
-   fun:_ZN7WebCore14HarfBuzzShaper17shapeHarfBuzzRunsEv
+   fun:_ZN7WebCore14HarfBuzzShaper17shapeHarfBuzzRuns*
 }
 {
    bug_158998b
@@ -6073,7 +6073,7 @@
    fun:_Z21hb_shape_plan_executeP15hb_shape_plan_tP9hb_font_tP11hb_buffer_tPK12hb_feature_tj
    fun:hb_shape_full
    fun:hb_shape
-   fun:_ZN7WebCore14HarfBuzzShaper17shapeHarfBuzzRunsEv
+   fun:_ZN7WebCore14HarfBuzzShaper17shapeHarfBuzzRuns*
 }
 {
    bug_158998c
@@ -6088,6 +6088,14 @@
    fun:_ZNK2OT18hb_apply_context_t16should_skip_markEP15hb_glyph_info_tjPj
    fun:_ZN2OT18hb_apply_context_t32mark_skipping_forward_iterator_t4nextEPjj
    fun:_ZN2OT18hb_apply_context_t32mark_skipping_forward_iterator_t4nextEPj
+   ...
+   fun:hb_shape
+}
+{
+   bug_158998e
+   Memcheck:Uninitialized
+   fun:_ZNK2OT18hb_apply_context_t16should_skip_markEP15hb_glyph_info_tjPj
+   fun:_ZN2OT18hb_apply_context_t33mark_skipping_backward_iterator_t4prevEPjj
    ...
    fun:hb_shape
 }
