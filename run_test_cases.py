@@ -475,14 +475,19 @@ class RunSome(object):
     self._lock = threading.Lock()
     self._passed = 0
     self._failures = 0
+    self.stopped = False
 
   def should_stop(self):
     """Stops once a threshold was reached. This includes retries."""
     with self._lock:
+      if self.stopped:
+        return True
       # Accept at least the minimum number of failures.
       if self._failures <= self._min_failures_tolerated:
         return False
-      return self._failures >= self._max_failures_tolerated
+      if self._failures >= self._max_failures_tolerated:
+        self.stopped = True
+      return self.stopped
 
   def got_result(self, passed):
     with self._lock:
@@ -502,9 +507,12 @@ class RunSome(object):
 
 class RunAll(object):
   """Never fails."""
+  stopped = False
+
   @staticmethod
   def should_stop():
     return False
+
   @staticmethod
   def got_result(_):
     pass
@@ -705,7 +713,7 @@ def run_test_cases(
       len(results),
       nb_runs,
       nb_runs / duration if duration else 0))
-  return int(bool(fail))
+  return int(bool(fail)) or decider.stopped
 
 
 class OptionParserWithLogging(optparse.OptionParser):

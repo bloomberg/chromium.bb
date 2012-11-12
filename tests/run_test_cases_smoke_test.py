@@ -7,8 +7,10 @@ import json
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -18,14 +20,12 @@ sys.path.append(os.path.join(ROOT_DIR, 'tests', 'gtest_fake'))
 import gtest_fake_base
 
 
-def RunTest(test_file, extra_flags):
-  target = os.path.join(ROOT_DIR, 'tests', 'gtest_fake', test_file)
+def RunTest(arguments):
   cmd = [
       sys.executable,
       os.path.join(ROOT_DIR, 'run_test_cases.py'),
-  ] + extra_flags
+  ] + arguments
 
-  cmd.append(target)
   logging.debug(' '.join(cmd))
   proc = subprocess.Popen(
       cmd,
@@ -80,11 +80,15 @@ class RunTestCases(unittest.TestCase):
     self.assertEqual(len(test_cases), len(actual['test_cases']))
     for (entry_name, entry_count) in test_cases:
       self.assertTrue(entry_name in actual['test_cases'])
-      self.assertEqual(entry_count, len(actual['test_cases'][entry_name]))
+      self.assertEqual(
+          entry_count, len(actual['test_cases'][entry_name]), entry_name)
 
   def test_simple_pass(self):
     out, err, return_code = RunTest(
-        'gtest_fake_pass.py', ['--result', self.filename])
+        [
+          '--result', self.filename,
+          os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py'),
+        ])
 
     self.assertEqual(0, return_code)
 
@@ -113,7 +117,10 @@ class RunTestCases(unittest.TestCase):
 
   def test_simple_fail(self):
     out, err, return_code = RunTest(
-        'gtest_fake_fail.py', ['--result', self.filename])
+        [
+          '--result', self.filename,
+          os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_fail.py'),
+        ])
 
     self.assertEqual(1, return_code)
 
@@ -159,7 +166,10 @@ class RunTestCases(unittest.TestCase):
 
   def test_simple_gtest_list_error(self):
     out, err, return_code = RunTest(
-        'gtest_fake_error.py', ['--no-dump'])
+        [
+          '--no-dump',
+          os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_error.py'),
+        ])
 
     expected_out_re = [
         'Failed to list test cases',
@@ -179,7 +189,10 @@ class RunTestCases(unittest.TestCase):
 
   def test_gtest_list_tests(self):
     out, err, return_code = RunTest(
-        'gtest_fake_fail.py', ['--gtest_list_tests'])
+        [
+          '--gtest_list_tests',
+          os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_fail.py'),
+        ])
 
     expected_out = (
       'Foo.\n  Bar1\n  Bar2\n  Bar3\nBaz.\n  Fail\n'
@@ -187,6 +200,38 @@ class RunTestCases(unittest.TestCase):
     self.assertEqual('', err)
     self.assertEqual(expected_out, out)
     self.assertEqual(0, return_code)
+
+  def test_flaky_stop_early(self):
+    tempdir = tempfile.mkdtemp(prefix='run_test_cases')
+    try:
+      out, err, return_code = RunTest(
+          [
+            '--result', self.filename,
+            # Make it determinist.
+            '--jobs', '1',
+            '--retries', '1',
+            '--max-failures', '2',
+            os.path.join(
+              ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_flaky.py'),
+            tempdir,
+          ])
+      self.assertEqual(1, return_code)
+      # Give up on checking the stdout.
+      self.assertTrue('STOPPED EARLY' in out, out)
+      self.assertEqual('', err)
+      # The order is determined by the test shuffling.
+      test_cases = [
+          ('Foo.Bar1', 2),
+          ('Foo.Bar4', 1),
+          ('Foo.Bar5', 2),
+      ]
+      self._check_results_file(
+          fail=[u'Foo.Bar4'],
+          flaky=[u'Foo.Bar1', u'Foo.Bar5'],
+          success=[],
+          test_cases=test_cases)
+    finally:
+      shutil.rmtree(tempdir)
 
 
 if __name__ == '__main__':
