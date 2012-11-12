@@ -231,4 +231,17 @@ TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingSources) {
             ms_impl_->request_state());
 }
 
+// This test what happens if stop is called on a stream after the frame has
+// been reloaded.
+TEST_F(MediaStreamImplTest, StopStreamAfterReload) {
+  WebKit::WebMediaStreamDescriptor mixed_desc = RequestLocalMediaStream(true,
+                                                                        true);
+  EXPECT_EQ(0, ms_dispatcher_->stop_stream_counter());
+  EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
+  ms_impl_->FrameWillClose(NULL);
+  EXPECT_EQ(1, ms_dispatcher_->stop_stream_counter());
+  ms_impl_->OnLocalMediaStreamStop(mixed_desc.label().utf8());
+  EXPECT_EQ(1, ms_dispatcher_->stop_stream_counter());
+}
+
 }  // namespace content

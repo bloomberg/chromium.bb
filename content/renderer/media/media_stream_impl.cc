@@ -122,13 +122,16 @@ MediaStreamImpl::~MediaStreamImpl() {
 
 void MediaStreamImpl::OnLocalMediaStreamStop(
     const std::string& label) {
-  DVLOG(1) << "MediaStreamImpl::OnLocalMediaStreamStop";
+  DVLOG(1) << "MediaStreamImpl::OnLocalMediaStreamStop(" << label << ")";
 
   UserMediaRequestInfo* user_media_request = FindUserMediaRequestInfo(label);
-  CHECK(user_media_request);
-
-  media_stream_dispatcher_->StopStream(label);
-  DeleteUserMediaRequestInfo(user_media_request);
+  if (user_media_request) {
+    media_stream_dispatcher_->StopStream(label);
+    DeleteUserMediaRequestInfo(user_media_request);
+  } else {
+    DVLOG(1) << "MediaStreamImpl::OnLocalMediaStreamStop: the stream has "
+             << "already been stopped.";
+  }
 }
 
 void MediaStreamImpl::requestUserMedia(
