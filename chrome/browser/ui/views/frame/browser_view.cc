@@ -1648,14 +1648,17 @@ bool BrowserView::GetSavedWindowPlacement(
   chrome::GetSavedWindowBoundsAndShowState(browser_.get(), bounds, show_state);
 
 #if defined(USE_ASH)
+  if (chrome::IsNativeWindowInAsh(
+          const_cast<BrowserView*>(this)->GetNativeWindow())) {
   if (browser_->is_type_popup() || browser_->is_type_panel()) {
-    // In case of a popup or panel with an 'unspecified' location we are looking
-    // for a good screen location. We are interpreting (0,0) as an unspecified
-    // location.
+      // In case of a popup or panel with an 'unspecified' location we are
+      // looking for a good screen location. We are interpreting (0,0) as an
+      // unspecified location.
     if (bounds->x() == 0 && bounds->y() == 0) {
       *bounds = ChromeShellDelegate::instance()->window_positioner()->
           GetPopupPosition(*bounds);
     }
+  }
   }
 #endif
 

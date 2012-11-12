@@ -13,11 +13,18 @@
 #include "ui/views/views_export.h"
 
 namespace aura {
+class DesktopActivationClient;
+class FocusManager;
 class RootWindow;
 class Window;
 
 namespace client {
 class DefaultCaptureClient;
+}
+
+namespace shared {
+class CompoundEventFilter;
+class InputMethodEventFilter;
 }
 
 // A stacking client for the desktop; always sets the default parent to the
@@ -32,10 +39,21 @@ class VIEWS_EXPORT DesktopStackingClient : public client::StackingClient {
                                    const gfx::Rect& bounds) OVERRIDE;
 
  private:
-  // Windows with NULL parents are parented to this.
-  scoped_ptr<aura::RootWindow> null_parent_;
+  void CreateNULLParent();
 
-  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
+  // Windows with NULL parents are parented to this.
+  scoped_ptr<RootWindow> null_parent_;
+
+  // All the member variables below are necessary for the NULL parent root
+  // window to function.
+  scoped_ptr<FocusManager> focus_manager_;
+  // Depends on focus_manager_.
+  scoped_ptr<DesktopActivationClient> activation_client_;
+
+  scoped_ptr<shared::InputMethodEventFilter> input_method_filter_;
+  shared::CompoundEventFilter* window_event_filter_;
+
+  scoped_ptr<client::DefaultCaptureClient> capture_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopStackingClient);
 };
