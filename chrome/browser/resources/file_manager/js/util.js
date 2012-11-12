@@ -772,7 +772,11 @@ util.platform = {
    * @param {function(Object)} callback Function accepting a preference map.
    */
   getPreferences: function(callback) {
-    chrome.storage.local.get(callback);
+    try {
+      callback(window.localStorage);
+    } catch (ignore) {
+      chrome.storage.local.get(callback);
+    }
   },
 
   /**
@@ -780,9 +784,13 @@ util.platform = {
    * @param {function(string)} callback Function accepting the preference value.
    */
   getPreference: function(key, callback) {
-    chrome.storage.local.get(function(items) {
-      callback(items[key]);
-    });
+    try {
+      callback(window.localStorage[key]);
+    } catch (ignore) {
+      chrome.storage.local.get(function(items) {
+        callback(items[key]);
+      });
+    }
   },
 
   /**
@@ -791,9 +799,14 @@ util.platform = {
    * @param {function} callback Completion callback.
    */
   setPreference: function(key, value, opt_callback) {
-    var items = {};
-    items[key] = value;
-    chrome.storage.local.set(items, opt_callback);
+    try {
+      window.localStorage[key] = value;
+      if (opt_callback) opt_callback();
+    } catch (ignore) {
+      var items = {};
+      items[key] = value;
+      chrome.storage.local.set(items, opt_callback);
+    }
   },
 
   /**
@@ -905,61 +918,6 @@ util.loadScripts = function(urls, onload) {
     script.onerror = done;
   }
 };
-
-// TODO(serya): remove it when have migrated to AppsV2.
-if (!chrome.storage) {
-  var storageArea = {
-    type_: undefined,
-    set: function(items, opt_callback) {
-      var changes = {};
-      for (var i in items) {
-        changes[i] = {oldValue: localStorage[i], newValue: items[i]};
-        localStorage[i] = items[i];
-      }
-      if (opt_callback)
-        callback();
-      var listeners = chrome.storage.listeners_;
-      for (var i = 0; i < listeners.length; i++) {
-        listeners[i](changes, this.type_);
-      }
-    },
-    get: function(keys, callback) {
-      if (!callback) {
-        // Since key is optionsl it's the callback.
-        keys(localStorage);
-        return;
-      }
-      if (typeof(keys) == 'string')
-        keys = [keys];
-      var result = {};
-      for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        result[key] = localStorage[key];
-      }
-      callback(result);
-    }
-  };
-
-  /**
-   * Simulation of the AppsV2 storage interface.
-   * @type {object}
-   */
-  chrome.storage = {
-    listeners_: [],
-    local: { __proto__: storageArea, type_: 'local' },
-    sync: { __proto__: storageArea, type_: 'sync' },
-    onChanged: {
-      addListener: function(l) {
-        chrome.storage.listeners_.push(l);
-      },
-      removeListener: function(l) {
-        for (var i = 0; i < chrome.storage.listeners_.length; i++) {
-          chrome.storage.listeners_.splice(i, 1);
-        }
-      }
-    }
-  };
-}
 
 /**
  * Attach page load handler.
