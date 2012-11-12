@@ -18,6 +18,7 @@
 #include "chrome/browser/policy/auto_enrollment_client.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
+#include "chrome/browser/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -343,23 +344,37 @@ void EnterpriseEnrollmentScreen::RegisterForDevicePolicy(
     const std::string& token) {
   policy::BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
-  if (!connector->device_cloud_policy_subsystem()) {
+  if (connector->IsEnterpriseManaged() &&
+      connector->GetEnterpriseDomain() != gaia::ExtractDomainName(user_)) {
+    LOG(ERROR) << "Trying to re-enroll to a different domain than "
+               << connector->GetEnterpriseDomain();
+    UMAFailure(policy::kMetricEnrollmentWrongUserError);
+    actor_->ShowUIError(
+        EnterpriseEnrollmentScreenActor::UI_ERROR_DOMAIN_MISMATCH);
+    NotifyTestingObservers(false);
+    return;
+  }
+
+  // If a device cloud policy manager instance is available (i.e. new-style
+  // policy is switched on), use that path.
+  // TODO(mnissler): Remove the old-style enrollment code path once the code has
+  // switched to the new policy code by default.
+  if (connector->GetDeviceCloudPolicyManager()) {
+    policy::DeviceCloudPolicyManagerChromeOS::AllowedDeviceModes modes;
+    modes[policy::DEVICE_MODE_ENTERPRISE] = true;
+    modes[policy::DEVICE_MODE_KIOSK] = !is_auto_enrollment_;
+    connector->ScheduleServiceInitialization(0);
+    connector->GetDeviceCloudPolicyManager()->StartEnrollment(
+        token, modes,
+        base::Bind(&EnterpriseEnrollmentScreen::ReportEnrollmentStatus,
+                   weak_ptr_factory_.GetWeakPtr()));
+    return;
+  } else if (!connector->device_cloud_policy_subsystem()) {
     LOG(ERROR) << "Cloud policy subsystem not initialized.";
   } else if (connector->device_cloud_policy_subsystem()->state() ==
       policy::CloudPolicySubsystem::SUCCESS) {
     LOG(ERROR) << "A previous enrollment already succeeded!";
   } else {
-    if (connector->IsEnterpriseManaged() &&
-        connector->GetEnterpriseDomain() != gaia::ExtractDomainName(user_)) {
-      LOG(ERROR) << "Trying to re-enroll to a different domain than "
-                 << connector->GetEnterpriseDomain();
-      UMAFailure(policy::kMetricEnrollmentWrongUserError);
-      actor_->ShowUIError(
-          EnterpriseEnrollmentScreenActor::UI_ERROR_DOMAIN_MISMATCH);
-      NotifyTestingObservers(false);
-      return;
-    }
-
     // Make sure the device policy subsystem is in a clean slate.
     connector->ResetDevicePolicy();
     connector->ScheduleServiceInitialization(0);
@@ -372,6 +387,7 @@ void EnterpriseEnrollmentScreen::RegisterForDevicePolicy(
                                        connector->IsEnterpriseManaged());
     return;
   }
+
   NOTREACHED();
   UMAFailure(policy::kMetricEnrollmentOtherFailed);
   actor_->ShowUIError(EnterpriseEnrollmentScreenActor::UI_ERROR_FATAL);
