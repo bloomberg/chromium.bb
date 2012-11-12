@@ -6,12 +6,6 @@
 
 namespace cc {
 
-// TODO(danakj) Use method from ui/gfx/skia_utils.h when it exists.
-static inline SkIRect ToSkIRect(gfx::Rect rect)
-{
-  return SkIRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height());
-}
-
 Region::Region() {
 }
 
@@ -20,14 +14,14 @@ Region::Region(const Region& region)
 }
 
 Region::Region(gfx::Rect rect)
-    : skregion_(ToSkIRect(rect)) {
+    : skregion_(gfx::RectToSkIRect(rect)) {
 }
 
 Region::~Region() {
 }
 
 const Region& Region::operator=(gfx::Rect rect) {
-  skregion_ = SkRegion(ToSkIRect(rect));
+  skregion_ = SkRegion(gfx::RectToSkIRect(rect));
   return *this;
 }
 
@@ -55,7 +49,7 @@ bool Region::Contains(gfx::Point point) const {
 bool Region::Contains(gfx::Rect rect) const {
   if (rect.IsEmpty())
     return true;
-  return skregion_.contains(ToSkIRect(rect));
+  return skregion_.contains(gfx::RectToSkIRect(rect));
 }
 
 bool Region::Contains(const Region& region) const {
@@ -65,7 +59,7 @@ bool Region::Contains(const Region& region) const {
 }
 
 bool Region::Intersects(gfx::Rect rect) const {
-  return skregion_.intersects(ToSkIRect(rect));
+  return skregion_.intersects(gfx::RectToSkIRect(rect));
 }
 
 bool Region::Intersects(const Region& region) const {
@@ -73,7 +67,7 @@ bool Region::Intersects(const Region& region) const {
 }
 
 void Region::Subtract(gfx::Rect rect) {
-  skregion_.op(ToSkIRect(rect), SkRegion::kDifference_Op);
+  skregion_.op(gfx::RectToSkIRect(rect), SkRegion::kDifference_Op);
 }
 
 void Region::Subtract(const Region& region) {
@@ -81,7 +75,7 @@ void Region::Subtract(const Region& region) {
 }
 
 void Region::Union(gfx::Rect rect) {
-  skregion_.op(ToSkIRect(rect), SkRegion::kUnion_Op);
+  skregion_.op(gfx::RectToSkIRect(rect), SkRegion::kUnion_Op);
 }
 
 void Region::Union(const Region& region) {
@@ -89,7 +83,7 @@ void Region::Union(const Region& region) {
 }
 
 void Region::Intersect(gfx::Rect rect) {
-  skregion_.op(ToSkIRect(rect), SkRegion::kIntersect_Op);
+  skregion_.op(gfx::RectToSkIRect(rect), SkRegion::kIntersect_Op);
 }
 
 void Region::Intersect(const Region& region) {

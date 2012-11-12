@@ -18,21 +18,25 @@
 
 namespace gfx {
 
-SkRect RectToSkRect(const gfx::Rect& rect) {
+SkRect RectToSkRect(const Rect& rect) {
   SkRect r;
   r.iset(rect.x(), rect.y(), rect.right(), rect.bottom());
   return r;
 }
 
-SkIRect RectToSkIRect(const gfx::Rect& rect) {
+SkIRect RectToSkIRect(const Rect& rect) {
   return SkIRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
-gfx::Rect SkRectToRect(const SkRect& rect) {
-  return gfx::Rect(static_cast<int>(rect.left()),
-                   static_cast<int>(rect.top()),
-                   static_cast<int>(rect.width()),
-                   static_cast<int>(rect.height()));
+Rect SkRectToRect(const SkRect& rect) {
+  return Rect(static_cast<int>(rect.left()),
+              static_cast<int>(rect.top()),
+              static_cast<int>(rect.width()),
+              static_cast<int>(rect.height()));
+}
+
+Rect SkIRectToRect(const SkIRect& rect) {
+  return Rect(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
 SkShader* CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
