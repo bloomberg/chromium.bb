@@ -720,6 +720,8 @@
         'browser/ui/cocoa/tabs/tab_window_controller.mm',
         'browser/ui/cocoa/tabs/throbber_view.h',
         'browser/ui/cocoa/tabs/throbber_view.mm',
+        'browser/ui/cocoa/tabs/throbbing_image_view.h',
+        'browser/ui/cocoa/tabs/throbbing_image_view.mm',
         'browser/ui/cocoa/task_manager_mac.h',
         'browser/ui/cocoa/task_manager_mac.mm',
         'browser/ui/cocoa/themed_window.h',

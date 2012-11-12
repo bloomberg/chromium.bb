@@ -22,6 +22,8 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/media/media_internals.h"
+#include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,6 +45,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
+#import "chrome/browser/ui/cocoa/tabs/throbbing_image_view.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
@@ -56,6 +59,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -66,6 +71,7 @@
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 
@@ -102,6 +108,9 @@ const NSTimeInterval kAnimationDuration = 0.125;
 // The amount by wich the profile menu button is offset (from tab tabs or new
 // tab button).
 const CGFloat kProfileMenuButtonOffset = 6.0;
+
+// Throbbing duration on webrtc "this web page is watching you" favicon overlay.
+const int kRecordingDurationMs = 1000;
 
 // Helper class for doing NSAnimationContext calls that takes a bool to disable
 // all the work.  Useful for code that wants to conditionally animate.
@@ -1501,7 +1510,30 @@ private:
     NSView* iconView = nil;
     if (newHasIcon) {
       if (newState == kTabDone) {
-        iconView = [self iconImageViewForContents:contents];
+        NSImageView* imageView = [self iconImageViewForContents:contents];
+
+        int render_process_id = contents->GetRenderProcessHost()->GetID();
+        int render_view_id = contents->GetRenderViewHost()->GetRoutingID();
+        scoped_refptr<MediaStreamCaptureIndicator> capture_indicator =
+            MediaInternals::GetInstance()->GetMediaStreamCaptureIndicator();
+        ui::ThemeProvider* theme = [[tabStripView_ window] themeProvider];
+        if (capture_indicator->IsProcessCapturing(render_process_id,
+                                                  render_view_id) && theme) {
+          NSImage* recording = theme->GetNSImageNamed(IDR_TAB_RECORDING, true);
+
+          NSRect frame =
+              NSMakeRect(0, 0, kIconWidthAndHeight, kIconWidthAndHeight);
+          ThrobbingImageView* recordingView =
+              [[[ThrobbingImageView alloc] initWithFrame:frame
+                                         backgroundImage:[imageView image]
+                                              throbImage:recording
+                                              durationMS:kRecordingDurationMs]
+                  autorelease];
+
+          iconView = recordingView;
+        } else {
+          iconView = imageView;
+        }
       } else if (newState == kTabCrashed) {
         NSImage* oldImage = [[self iconImageViewForContents:contents] image];
         NSRect frame =
