@@ -249,8 +249,7 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
       break;
     }
     case kOpenContentSettingsCommand: {
-      Browser* browser =
-          browser::FindLastActiveWithProfile(balloon_->profile());
+      Browser* browser = chrome::FindLastActiveWithProfile(balloon_->profile());
       if (!browser) {
         // It is possible that there is no browser window (e.g. when there are
         // background pages, or for a chrome frame process on windows).

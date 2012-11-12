@@ -44,7 +44,7 @@ ExtensionInstallPrompt* CreateExtensionInstallPrompt(
   } else {
     content::WebContents* web_contents = download_item.GetWebContents();
     if (!web_contents) {
-      Browser* browser = browser::FindLastActiveWithProfile(profile);
+      Browser* browser = chrome::FindLastActiveWithProfile(profile);
       if (!browser)
         browser = new Browser(Browser::CreateParams(profile));
       web_contents = browser->tab_strip_model()->GetActiveWebContents();

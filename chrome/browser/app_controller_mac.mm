@@ -103,7 +103,7 @@ bool g_is_opening_new_window = false;
 // not possible. If the last active browser is minimized (in particular, if
 // there are only minimized windows), it will unminimize it.
 Browser* ActivateBrowser(Profile* profile) {
-  Browser* browser = browser::FindLastActiveWithProfile(profile);
+  Browser* browser = chrome::FindLastActiveWithProfile(profile);
   if (browser)
     browser->window()->Activate();
   return browser;

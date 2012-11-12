@@ -261,7 +261,7 @@ WebContents* ChromeDownloadManagerDelegate::
 #else
   // Start the download in the last active browser. This is not ideal but better
   // than fully hiding the download from the user.
-  Browser* last_active = browser::FindLastActiveWithProfile(profile_);
+  Browser* last_active = chrome::FindLastActiveWithProfile(profile_);
   return last_active ? chrome::GetActiveWebContents(last_active) : NULL;
 #endif
 }

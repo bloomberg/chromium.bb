@@ -194,6 +194,10 @@ Browser* FindBrowserWithWebContents(const WebContents* web_contents) {
   return NULL;
 }
 
+}  // namespace browser
+
+namespace chrome {
+
 Browser* FindLastActiveWithProfile(Profile* profile) {
   // We are only interested in last active browsers, so we don't fall back to
   // all browsers like FindBrowserWith* do.
@@ -201,10 +205,6 @@ Browser* FindLastActiveWithProfile(Profile* profile) {
       BrowserList::begin_last_active(), BrowserList::end_last_active(), profile,
       Browser::FEATURE_NONE, kMatchAny);
 }
-
-}  // namespace browser
-
-namespace chrome {
 
 Browser* FindLastActiveWithHostDesktopType(HostDesktopType type) {
   BrowserListImpl* browser_list_impl = BrowserListImpl::GetInstance(type);

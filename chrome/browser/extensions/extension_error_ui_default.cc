@@ -23,7 +23,7 @@ ExtensionErrorUIDefault::~ExtensionErrorUIDefault() {
 
 bool ExtensionErrorUIDefault::ShowErrorInBubbleView() {
   Browser* browser =
-      browser::FindLastActiveWithProfile(extension_service()->profile());
+      chrome::FindLastActiveWithProfile(extension_service()->profile());
   if (!browser)
     return false;
 

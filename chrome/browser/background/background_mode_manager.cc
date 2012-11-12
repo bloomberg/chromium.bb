@@ -93,7 +93,7 @@ void BackgroundModeManager::BackgroundModeData::ExecuteCommand(int item) {
 }
 
 Browser* BackgroundModeManager::BackgroundModeData::GetBrowserWindow() {
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
+  Browser* browser = chrome::FindLastActiveWithProfile(profile_);
   return browser ? browser : chrome::OpenEmptyWindow(profile_);
 }
 

@@ -614,7 +614,7 @@ void BackgroundContentsService::AddWebContents(
     const gfx::Rect& initial_pos,
     bool user_gesture,
     bool* was_blocked) {
-  Browser* browser = browser::FindLastActiveWithProfile(
+  Browser* browser = chrome::FindLastActiveWithProfile(
       Profile::FromBrowserContext(new_contents->GetBrowserContext()));
   if (browser) {
     chrome::AddWebContents(browser, NULL, new_contents, disposition,

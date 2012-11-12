@@ -64,14 +64,14 @@ Browser* FindBrowserWithWindow(gfx::NativeWindow window);
 // |web_contents| must not be NULL.
 Browser* FindBrowserWithWebContents(const content::WebContents* web_contents);
 
+}  // namespace browser
+
+namespace chrome {
+
 // Identical in behavior to BrowserList::GetLastActive(), except that the most
 // recently open browser owned by |profile| is returned. If none exist, returns
 // NULL.  WARNING: see warnings in BrowserList::GetLastActive().
 Browser* FindLastActiveWithProfile(Profile* profile);
-
-}  // namespace browser
-
-namespace chrome {
 
 // Identical in behavior to BrowserList::GetLastActive(), except that the most
 // recently open browser owned on the desktop described by |type| is returned.

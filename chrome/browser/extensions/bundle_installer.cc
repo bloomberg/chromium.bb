@@ -272,7 +272,7 @@ void BundleInstaller::ShowPrompt() {
     if (!browser) {
       // The browser that we got initially could have gone away during our
       // thread hopping.
-      browser = browser::FindLastActiveWithProfile(profile_);
+      browser = chrome::FindLastActiveWithProfile(profile_);
     }
     content::WebContents* web_contents = NULL;
     if (browser)

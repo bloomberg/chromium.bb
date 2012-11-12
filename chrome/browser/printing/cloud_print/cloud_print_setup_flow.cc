@@ -62,7 +62,7 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
     const base::WeakPtr<Delegate>& delegate,
     gfx::NativeWindow parent_window) {
   DCHECK(profile);
-  Browser* browser = browser::FindLastActiveWithProfile(profile);
+  Browser* browser = chrome::FindLastActiveWithProfile(profile);
   // Set the arguments for showing the gaia login page.
   DictionaryValue args;
   args.SetString("user", "");

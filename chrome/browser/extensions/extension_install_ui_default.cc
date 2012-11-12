@@ -158,7 +158,7 @@ void ExtensionInstallUIDefault::OnInstallFailure(
   if (disable_failure_ui_for_tests || skip_post_install_ui_)
     return;
 
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
+  Browser* browser = chrome::FindLastActiveWithProfile(profile_);
   WebContents* web_contents = chrome::GetActiveWebContents(browser);
   if (!web_contents)
     return;
@@ -285,6 +285,6 @@ ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithBrowser(
 // static
 ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithProfile(
     Profile* profile) {
-  Browser* browser = browser::FindLastActiveWithProfile(profile);
+  Browser* browser = chrome::FindLastActiveWithProfile(profile);
   return CreateInstallPromptWithBrowser(browser);
 }
