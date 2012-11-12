@@ -872,7 +872,7 @@ struct LayoutMetrics {
 - (int)indexOfButton:(BookmarkButton*)button {
   if (button == nil)
     return -1;
-  int index = [buttons_ indexOfObject:button];
+  NSInteger index = [buttons_ indexOfObject:button];
   return (index == NSNotFound) ? -1 : index;
 }
 
