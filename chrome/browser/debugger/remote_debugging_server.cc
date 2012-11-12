@@ -19,7 +19,7 @@ RemoteDebuggingServer::RemoteDebuggingServer(Profile* profile,
   devtools_http_handler_ = content::DevToolsHttpHandler::Start(
       new net::TCPListenSocketFactory(ip, port),
       frontend_url,
-      new BrowserListTabContentsProvider());
+      new BrowserListTabContentsProvider(profile));
 }
 
 RemoteDebuggingServer::~RemoteDebuggingServer() {

@@ -12,10 +12,12 @@
 #include "base/compiler_specific.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
 
+class Profile;
+
 class BrowserListTabContentsProvider
     : public content::DevToolsHttpHandlerDelegate {
  public:
-  BrowserListTabContentsProvider();
+  explicit BrowserListTabContentsProvider(Profile* profile);
   virtual ~BrowserListTabContentsProvider();
 
   // DevToolsHttpProtocolHandler::Delegate overrides.
@@ -26,6 +28,7 @@ class BrowserListTabContentsProvider
   virtual content::RenderViewHost* CreateNewTarget() OVERRIDE;
 
  private:
+  Profile* profile_;
   DISALLOW_COPY_AND_ASSIGN(BrowserListTabContentsProvider);
 };
 
