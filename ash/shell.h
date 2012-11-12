@@ -31,6 +31,7 @@ class FocusManager;
 class RootWindow;
 class Window;
 namespace client {
+class StackingClient;
 class UserActionClient;
 }
 }
@@ -99,7 +100,6 @@ class RootWindowLayoutManager;
 class ScreenPositionController;
 class ShadowController;
 class SlowAnimationEventFilter;
-class StackingController;
 class StatusAreaWidget;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
@@ -410,6 +410,8 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   }
 #endif  // defined(OS_CHROMEOS)
 
+ aura::client::StackingClient* stacking_client();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
@@ -468,7 +470,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
 
   scoped_ptr<internal::AppListController> app_list_controller_;
 
-  scoped_ptr<internal::StackingController> stacking_controller_;
+  scoped_ptr<aura::client::StackingClient> stacking_client_;
   scoped_ptr<internal::ActivationController> activation_controller_;
   scoped_ptr<internal::CaptureController> capture_controller_;
   scoped_ptr<internal::WindowModalityController> window_modality_controller_;

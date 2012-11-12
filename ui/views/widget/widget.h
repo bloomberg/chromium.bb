@@ -191,6 +191,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // Only used by NativeWidgetAura. Specifies the type of layer for the
     // aura::Window. Default is LAYER_TEXTURED.
     ui::LayerType layer_type;
+    // Only used by Aura. Provides additional context (generally a RootWindow)
+    // during creation to allow the widget to determine which desktop type it
+    // will belong to. NULL indicates a normal native desktop.
+    gfx::NativeView context;
   };
 
   Widget();

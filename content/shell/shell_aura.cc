@@ -290,6 +290,7 @@ void Shell::PlatformInitialize() {
       gfx::SCREEN_TYPE_NATIVE, new ash::ScreenAsh);
 #else
   stacking_client_ = new aura::DesktopStackingClient();
+  aura::client::SetStackingClient(stacking_client_);
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, aura::CreateDesktopScreen());
 #endif

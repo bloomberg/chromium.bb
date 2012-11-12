@@ -66,6 +66,7 @@
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/display_manager.h"
 #include "ui/aura/env.h"
@@ -454,7 +455,9 @@ void Shell::Init() {
   // Create Controllers that may need root window.
   // TODO(oshima): Move as many controllers before creating
   // RootWindowController as possible.
-  stacking_controller_.reset(new internal::StackingController);
+  stacking_client_.reset(delegate_->CreateStackingClient());
+  if (stacking_client_.get())
+    aura::client::SetStackingClient(stacking_client_.get());
   visibility_controller_.reset(new internal::VisibilityController);
   drag_drop_controller_.reset(new internal::DragDropController);
   user_action_client_.reset(delegate_->CreateUserActionClient());
@@ -769,6 +772,10 @@ void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
 void Shell::DoInitialWorkspaceAnimation() {
   return GetPrimaryRootWindowController()->workspace_controller()->
       DoInitialAnimation();
+}
+
+aura::client::StackingClient* Shell::stacking_client() {
+  return stacking_client_.get();
 }
 
 void Shell::InitRootWindowController(

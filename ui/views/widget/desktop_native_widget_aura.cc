@@ -29,33 +29,6 @@ namespace views {
 DEFINE_WINDOW_PROPERTY_KEY(DesktopNativeWidgetAura*,
                            kDesktopNativeWidgetAuraKey, NULL);
 
-namespace {
-
-class DesktopNativeWidgetAuraStackingClient :
-    public aura::client::StackingClient {
- public:
-  explicit DesktopNativeWidgetAuraStackingClient(aura::RootWindow* root_window)
-      : root_window_(root_window) {
-    aura::client::SetStackingClient(root_window_, this);
-  }
-  virtual ~DesktopNativeWidgetAuraStackingClient() {
-    aura::client::SetStackingClient(root_window_, NULL);
-  }
-
-  // Overridden from client::StackingClient:
-  virtual aura::Window* GetDefaultParent(aura::Window* window,
-                                         const gfx::Rect& bounds) OVERRIDE {
-    return root_window_;
-  }
-
- private:
-  aura::RootWindow* root_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAuraStackingClient);
-};
-
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, public:
 
@@ -108,8 +81,6 @@ void DesktopNativeWidgetAura::InitNativeWidget(
                                     this, params.bounds);
   root_window_.reset(
       desktop_root_window_host_->Init(window_, params));
-  stacking_client_.reset(
-      new DesktopNativeWidgetAuraStackingClient(root_window_.get()));
 
   aura::client::SetActivationDelegate(window_, this);
 }

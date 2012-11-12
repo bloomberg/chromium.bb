@@ -325,7 +325,8 @@ void RenderWidgetHostViewAura::InitAsPopup(
     gfx::Point origin_in_screen(bounds_in_display.origin());
     screen_position_client->ConvertPointToScreen(root, &origin_in_screen);
     parent = aura::client::GetStackingClient()->GetDefaultParent(
-        window_, gfx::Rect(origin_in_screen, bounds_in_display.size()));
+        window_, window_,
+        gfx::Rect(origin_in_screen, bounds_in_display.size()));
   }
   window_->SetParent(parent);
   SetBounds(bounds_in_display);
@@ -352,7 +353,8 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
     aura::client::StackingClient* stacking_client =
         aura::client::GetStackingClient();
     if (stacking_client)
-      parent = stacking_client->GetDefaultParent(window_, display.bounds());
+      parent = stacking_client->GetDefaultParent(
+          window_, window_, display.bounds());
   }
   window_->SetParent(parent);
   Show();
