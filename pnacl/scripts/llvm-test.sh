@@ -58,7 +58,8 @@ llvm-regression() {
   if ${PNACL_BUILDBOT}; then
     cat make-check.log
   fi
-  "${PARSE_REPORT}" make-check.log -l -x "${LIT_KNOWN_FAILURES}"
+  "${PARSE_REPORT}" make-check.log -l -x "${LIT_KNOWN_FAILURES}" \
+    --attribute ${BUILD_PLATFORM}
   popd
 }
 

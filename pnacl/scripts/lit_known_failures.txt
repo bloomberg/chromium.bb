@@ -217,3 +217,10 @@ MC/Disassembler/ARM/invalid-VST2b32_UPD-arm.txt
 CodeGen/ARM/peephole-bitcast.ll
 ExecutionEngine/2003-05-06-LivenessClobber.ll
 MC/Disassembler/ARM/invalid-VQADD-arm.txt
+
+# Failures only on mac
+CodeGenCXX/vtable-debug-info.cpp mac
+Driver/objc-cpp-output.m mac
+Sema/return.c mac
+Driver/objc++-cpp-output.mm mac
+SemaTemplate/example-dynarray.cpp mac

@@ -33,7 +33,7 @@ ARCHIVED_TOOLCHAIN_REV=9908
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 readonly TORTURE_TEST="tools/toolchain_tester/torture_test.sh"
-readonly LLVM_TESTSUITE="pnacl/scripts/llvm-test-suite.sh"
+readonly LLVM_TESTSUITE="pnacl/scripts/llvm-test.sh"
 
 # build.sh, llvm test suite and torture tests all use this value
 export PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-4}
