@@ -44,6 +44,7 @@
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_RESTORE_H" file="win/app_window_restore_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_RESTORE_P" file="win/app_window_restore_active.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE" file="win/app_window_maximize.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE_D" file="win/app_window_maximize_disabled.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE_H" file="win/app_window_maximize_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE_P" file="win/app_window_maximize_active.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE" file="win/app_window_minimize.png" />

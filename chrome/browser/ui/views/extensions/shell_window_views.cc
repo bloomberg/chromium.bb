@@ -131,6 +131,8 @@ void ShellWindowFrameView::Init(views::Widget* frame) {
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_H).ToImageSkia());
     maximize_button_->SetImage(views::CustomButton::BS_PUSHED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_P).ToImageSkia());
+    maximize_button_->SetImage(views::CustomButton::BS_DISABLED,
+        rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_D).ToImageSkia());
     maximize_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
     AddChildView(maximize_button_);
@@ -293,6 +295,10 @@ void ShellWindowFrameView::Layout() {
       close_size.width(),
       close_size.height());
 
+  bool can_ever_resize = frame_->widget_delegate() ?
+      frame_->widget_delegate()->CanResize() :
+      false;
+  maximize_button_->SetEnabled(can_ever_resize);
   gfx::Size maximize_size = maximize_button_->GetPreferredSize();
   maximize_button_->SetBounds(
       close_button_->x() - kButtonSpacing - maximize_size.width(),
