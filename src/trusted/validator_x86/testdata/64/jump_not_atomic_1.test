@@ -34,5 +34,7 @@
   0000000000000000: eb 02                                        [P] dontcarejump %rip (s), 0x4 (u)
   0000000000000002: 83 e2 e0                                     and %edx, 0xe0
 @rdfa_output:
-  4: [0] bad jump to here
+  0: [0] bad jump target
   return code: 1
+@validators_disagree:
+  Because rdfaval reported jump location, not target.

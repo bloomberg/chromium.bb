@@ -66,9 +66,11 @@
   000000000000001a: 2e 74 02                                     [P] dontcarecondjump %rip (s), 0x1f (u)
   000000000000001d: 3e 74 02                                     [P] dontcarecondjump %rip (s), 0x22 (u)
 @rdfa_output:
+  1a: [0] bad jump target
   1d: [0] direct jump out of range
-  1f: [0] bad jump to here
   return code: 1
+@validators_disagree:
+  Because rdfaval reported jump location, not target.
 ----------------------------------------------------------------------
 @hex:
   # Forbidden prefixes.

@@ -268,7 +268,7 @@ env.AddNodeToTestSuite(
     STANDARD_TESTS,
     node_name='run_x86_old_validator_testdata_tests')
 
-rdfaval = '$STAGING_DIR/validator_test$PROGSUFFIX'
+rdfaval = '$STAGING_DIR/ncval_new$PROGSUFFIX'
 
 rdfa_testdata_tests = env.AutoDepsCommand(
     'x86_rdfa_validator_testdata_tests.out',

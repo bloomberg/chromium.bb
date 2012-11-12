@@ -7,6 +7,7 @@ import glob
 import optparse
 import os
 import re
+import struct
 import subprocess
 import sys
 import tempfile
@@ -44,6 +45,59 @@ def ParseHex(hex_content):
       yield ''.join(bytes)
 
 
+def CreateElfContent(bits, text_segment):
+  e_ident = {
+      32: '\177ELF\1',
+      64: '\177ELF\2'}[bits]
+  e_machine = {
+      32: 3,
+      64: 62}[bits]
+
+  e_phoff = 256
+  e_phnum = 1
+  e_phentsize = 0
+
+  elf_header_fmt = {
+      32: '<16sHHIIIIIHHHHHH',
+      64: '<16sHHIQQQIHHHHHH'}[bits]
+
+  elf_header = struct.pack(
+      elf_header_fmt,
+      e_ident, 0, e_machine, 0, 0, e_phoff, 0, 0, 0,
+      e_phentsize, e_phnum, 0, 0, 0)
+
+  p_type = 1  # PT_LOAD
+  p_flags = 5  # r-x
+  p_filesz = len(text_segment)
+  p_memsz = p_filesz
+  p_vaddr = 0
+  p_offset = 512
+  p_align = 0
+  p_paddr = 0
+
+  pheader_fmt = {
+      32: '<IIIIIIII',
+      64: '<IIQQQQQQ'}[bits]
+
+  pheader_fields = {
+      32: (p_type, p_offset, p_vaddr, p_paddr,
+           p_filesz, p_memsz, p_flags, p_align),
+      64: (p_type, p_flags, p_offset, p_vaddr,
+           p_paddr, p_filesz, p_memsz, p_align)}[bits]
+
+  pheader = struct.pack(pheader_fmt, *pheader_fields)
+
+  result = elf_header
+  assert len(result) <= e_phoff
+  result += '\0' * (e_phoff - len(result))
+  result += pheader
+  assert len(result) <= p_offset
+  result += '\0' * (p_offset - len(result))
+  result += text_segment
+
+  return result
+
+
 def RunRdfaValidator(options, data):
   # Add nops to make it bundle-sized.
   data += (-len(data) % BUNDLE_SIZE) * '\x90'
@@ -51,11 +105,10 @@ def RunRdfaValidator(options, data):
 
   try:
     tmp = tempfile.NamedTemporaryFile(mode='wb', delete=False)
-    tmp.write(data)
+    tmp.write(CreateElfContent(options.bits, data))
     tmp.close()
 
-    command = [options.rdfaval, '--raw%s' % options.bits, tmp.name]
-    proc = subprocess.Popen(command,
+    proc = subprocess.Popen([options.rdfaval, tmp.name],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
@@ -82,18 +135,18 @@ def ParseRdfaMessages(stdout):
     line = line.strip()
     if line == '':
       continue
-    if re.match(r"file '.*' can not be fully validated$", line):
+    if re.match(r"(Valid|Invalid)\.$", line):
       continue
-    m = re.match(r'bad jump to around 0x([0-9a-f]+)$', line, re.IGNORECASE)
-    if m is not None:
-      offset = int(m.group(1), 16)
-      yield offset, 'bad jump to here'
+    if re.match(r"Validating .*\.\.\.$", line):
       continue
-    m = re.match(r'offset 0x([0-9a-f]+): (.*)$', line, re.IGNORECASE)
+
+    m = re.match(r'([0-9a-f]+): (.*)$', line, re.IGNORECASE)
     assert m is not None, "can't parse line '%s'" % line
     offset = int(m.group(1), 16)
     message = m.group(2)
-    yield offset, message
+
+    if not message.startswith('warning - '):
+      yield offset, message
 
 
 def RunRdfaWithNopPatching(options, data_chunks):

@@ -55,5 +55,7 @@
    2:	83 e0 e0            	and %esp, 0xffffffffffffffe0
    5:	ff d0               	call * %edx
 @rdfa_output:
-  5: [0] bad jump to here
+  0: [0] bad jump target
   return code: 1
+@validators_disagree:
+  Because rdfaval reported jump location, not target.

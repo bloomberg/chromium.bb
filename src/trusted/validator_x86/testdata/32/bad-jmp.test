@@ -51,5 +51,7 @@
    0:	7f ff               	jg 0x1
    2:	f4                  	hlt
 @rdfa_output:
-  1: [0] bad jump to here
+  0: [0] bad jump target
   return code: 1
+@validators_disagree:
+  Because rdfaval reported jump location, not target.
