@@ -61,10 +61,10 @@ class TabStripModelObserver {
   // present.
   virtual void TabDetachedAt(content::WebContents* contents, int index);
 
-  // The active TabContents is about to change from |old_contents|.
+  // The active WebContents is about to change from |old_contents|.
   // This gives observers a chance to prepare for an impending switch before it
   // happens.
-  virtual void TabDeactivated(TabContents* contents);
+  virtual void TabDeactivated(content::WebContents* contents);
 
   // Sent when the active tab changes. The previously active tab is identified
   // by |old_contents| and the newly active tab by |new_contents|. |index| is

@@ -90,7 +90,7 @@ class FullscreenController : public content::NotificationObserver {
   // Callbacks /////////////////////////////////////////////////////////////////
 
   // Called by Browser::TabDeactivated.
-  void OnTabDeactivated(TabContents* contents);
+  void OnTabDeactivated(content::WebContents* web_contents);
 
   // Called by Browser::TabClosingAt.
   void OnTabClosing(content::WebContents* web_contents);

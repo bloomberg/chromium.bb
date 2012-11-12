@@ -1059,13 +1059,13 @@ void Browser::TabDetachedAt(WebContents* contents, int index) {
   TabDetachedAtImpl(contents, index, DETACH_TYPE_DETACH);
 }
 
-void Browser::TabDeactivated(TabContents* contents) {
+void Browser::TabDeactivated(WebContents* contents) {
   fullscreen_controller_->OnTabDeactivated(contents);
-  search_delegate_->OnTabDeactivated(contents->web_contents());
+  search_delegate_->OnTabDeactivated(contents);
 
   // Save what the user's currently typing, so it can be restored when we
   // switch back to this tab.
-  window_->GetLocationBar()->SaveStateToContents(contents->web_contents());
+  window_->GetLocationBar()->SaveStateToContents(contents);
 }
 
 void Browser::ActiveTabChanged(TabContents* old_contents,

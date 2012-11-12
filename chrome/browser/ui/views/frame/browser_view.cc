@@ -1415,12 +1415,12 @@ void BrowserView::TabDetachedAt(WebContents* contents, int index) {
   }
 }
 
-void BrowserView::TabDeactivated(TabContents* contents) {
+void BrowserView::TabDeactivated(WebContents* contents) {
   // We do not store the focus when closing the tab to work-around bug 4633.
   // Some reports seem to show that the focus manager and/or focused view can
   // be garbage at that point, it is not clear why.
-  if (!contents->in_destructor())
-    contents->web_contents()->GetView()->StoreFocus();
+  if (!contents->IsBeingDestroyed())
+    contents->GetView()->StoreFocus();
 }
 
 void BrowserView::ActiveTabChanged(TabContents* old_contents,

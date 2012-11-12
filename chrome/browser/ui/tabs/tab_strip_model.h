@@ -541,7 +541,7 @@ class TabStripModel : public content::NotificationObserver {
   content::WebContents* GetWebContentsAtImpl(int index) const;
 
   // Notifies the observers if the active tab is being deactivated.
-  void NotifyIfTabDeactivated(TabContents* contents);
+  void NotifyIfTabDeactivated(content::WebContents* contents);
 
   // Notifies the observers if the active tab has changed.
   void NotifyIfActiveTabChanged(TabContents* old_contents,

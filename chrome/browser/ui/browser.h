@@ -435,7 +435,7 @@ class Browser : public TabStripModelObserver,
                             int index) OVERRIDE;
   virtual void TabDetachedAt(content::WebContents* contents,
                              int index) OVERRIDE;
-  virtual void TabDeactivated(TabContents* contents) OVERRIDE;
+  virtual void TabDeactivated(content::WebContents* contents) OVERRIDE;
   virtual void ActiveTabChanged(TabContents* old_contents,
                                 TabContents* new_contents,
                                 int index,

@@ -20,7 +20,7 @@ void TabStripModelObserver::TabDetachedAt(WebContents* contents,
                                           int index) {
 }
 
-void TabStripModelObserver::TabDeactivated(TabContents* contents) {
+void TabStripModelObserver::TabDeactivated(WebContents* contents) {
 }
 
 void TabStripModelObserver::ActiveTabChanged(TabContents* old_contents,

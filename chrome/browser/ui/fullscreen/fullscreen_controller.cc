@@ -236,7 +236,8 @@ void FullscreenController::RequestToLockMouse(WebContents* web_contents,
   UpdateFullscreenExitBubbleContent();
 }
 
-void FullscreenController::OnTabDeactivated(TabContents* contents) {
+void FullscreenController::OnTabDeactivated(WebContents* web_contents) {
+  const TabContents* contents = TabContents::FromWebContents(web_contents);
   if (contents &&
       (contents == fullscreened_tab_ || contents == mouse_lock_tab_)) {
     ExitTabFullscreenOrMouseLockIfNecessary();

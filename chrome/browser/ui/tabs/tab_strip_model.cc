@@ -253,7 +253,7 @@ TabContents* TabStripModel::DetachTabContentsAt(int index) {
     TabStripSelectionModel old_model;
     old_model.Copy(selection_model_);
     if (index == old_active) {
-      NotifyIfTabDeactivated(removed_contents);
+      NotifyIfTabDeactivated(removed_contents->web_contents());
       if (!selection_model_.empty()) {
         // The active tab was removed, but there is still something selected.
         // Move the active and anchor to the first selected index.
@@ -1180,7 +1180,7 @@ WebContents* TabStripModel::GetWebContentsAtImpl(int index) const {
   return contents_data_[index]->contents;
 }
 
-void TabStripModel::NotifyIfTabDeactivated(TabContents* contents) {
+void TabStripModel::NotifyIfTabDeactivated(WebContents* contents) {
   if (contents) {
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
                       TabDeactivated(contents));
@@ -1219,7 +1219,7 @@ void TabStripModel::SetSelection(
   TabStripSelectionModel old_model;
   old_model.Copy(selection_model_);
   if (new_model.active() != selection_model_.active())
-    NotifyIfTabDeactivated(old_contents);
+    NotifyIfTabDeactivated(old_contents ? old_contents->web_contents() : NULL);
   selection_model_.Copy(new_model);
   NotifyIfActiveOrSelectionChanged(old_contents, notify_types, old_model);
 }
