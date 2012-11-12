@@ -291,12 +291,20 @@ FileCopyManager.prototype.sendEvent_ = function(eventName, eventArgs) {
     if (w.fileCopyManagerWrapper)
       w.fileCopyManagerWrapper.onEvent(eventName, eventArgs);
   }
+};
 
+/**
+ * Unloads the host page in 5 secs of idleing. Need to be called
+ * each time this.copyTasks_.length or this.deleteTasks_.length
+ * changed.
+ * @private
+ */
+FileCopyManager.prototype.maybeScheduleCloseBackgroundPage_ = function() {
   if (this.copyTasks_.length === 0 && this.deleteTasks_.length === 0) {
     if (this.unloadTimeout_ === null)
       this.unloadTimeout_ = setTimeout(close, 5000);
   } else if (this.unloadTimeout_) {
-    this.log_('Unload timeout is set, but all tasks have not finished yet.');
+    clearTimeout(this.unloadTimeout_);
     this.unloadTimeout_ = null;
   }
 };
@@ -351,6 +359,7 @@ FileCopyManager.prototype.resetQueue_ = function() {
 
   this.copyTasks_ = [];
   this.cancelObservers_ = [];
+  this.maybeScheduleCloseBackgroundPage_();
 };
 
 /**
@@ -522,6 +531,7 @@ FileCopyManager.prototype.queueCopy = function(sourceDirEntry,
   copyTask.targetOnGData = targetOnGData;
   copyTask.setEntries(entries, function() {
     self.copyTasks_.push(copyTask);
+    self.maybeScheduleCloseBackgroundPage_();
     if (self.copyTasks_.length == 1) {
       // Assume self.cancelRequested_ == false.
       // This moved us from 0 to 1 active tasks, let the servicing begin!
@@ -594,6 +604,7 @@ FileCopyManager.prototype.serviceNextTask_ = function(
 
   function onTaskComplete() {
     self.copyTasks_.shift();
+    self.maybeScheduleCloseBackgroundPage_();
     successCallback(task);
   }
 
@@ -1046,6 +1057,7 @@ FileCopyManager.prototype.deleteEntries = function(entries, callback) {
         FileCopyManager.DELETE_TIMEOUT)
   };
   this.deleteTasks_.push(task);
+  this.maybeScheduleCloseBackgroundPage_();
   callback(id);
   this.sendDeleteEvent_(task, 'SCHEDULED');
 };
@@ -1079,6 +1091,7 @@ FileCopyManager.prototype.findDeleteTaskAndCancelTimeout_ = function(id) {
     var task = this.deleteTasks_[index];
     if (task.id == id) {
       this.deleteTasks_.splice(index, 1);
+      this.maybeScheduleCloseBackgroundPage_();
       if (task.timeout) {
         clearTimeout(task.timeout);
         task.timeout = null;
