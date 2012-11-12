@@ -122,11 +122,6 @@ class SetAsDefaultBrowserHandler
   // made the default browser.
   bool ShouldAttemptImmersiveRestart();
 
-  // Handles Chrome being made the default browser on the FILE thread. This
-  // determines whether or not the browser should be restarted in immersive
-  // mode, then concludes the interaction.
-  void HandleDefaultOnFileThread();
-
   scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
   bool set_default_returned_;
   bool set_default_result_;
@@ -167,10 +162,8 @@ void SetAsDefaultBrowserHandler::SetDefaultWebClientUIState(
     // chrome the default.
     ConcludeInteraction(MAKE_CHROME_DEFAULT_REGRETTED);
   } else if (state == ShellIntegration::STATE_IS_DEFAULT) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&SetAsDefaultBrowserHandler::HandleDefaultOnFileThread,
-                   base::Unretained(this)));
+    ConcludeInteraction(ShouldAttemptImmersiveRestart() ?
+        MAKE_CHROME_DEFAULT_ACCEPTED_IMMERSE : MAKE_CHROME_DEFAULT_ACCEPTED);
   }
 
   // Otherwise, keep the dialog open since the user probably didn't make a
@@ -215,26 +208,6 @@ bool SetAsDefaultBrowserHandler::ShouldAttemptImmersiveRestart() {
               prefs::kSuppressSwitchToMetroModeOnSetDefault));
 }
 
-void SetAsDefaultBrowserHandler::HandleDefaultOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  MakeChromeDefaultResult result = MAKE_CHROME_DEFAULT_ACCEPTED;
-
-  if (ShouldAttemptImmersiveRestart()) {
-    result = MAKE_CHROME_DEFAULT_ACCEPTED_IMMERSE;
-    // If the sentinel was created for this launch, remove it before restarting
-    // in immersive mode so that the user is taken through the full first-run
-    // flow there.
-    if (first_run::IsChromeFirstRun())
-      first_run::RemoveSentinel();
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&SetAsDefaultBrowserHandler::ConcludeInteraction,
-                 base::Unretained(this), result));
-}
-
 // A web dialog delegate implementation for when 'Make Chrome Metro' UI
 // is displayed on a dialog.
 class SetAsDefaultBrowserDialogImpl : public ui::WebDialogDelegate,
@@ -265,6 +238,12 @@ class SetAsDefaultBrowserDialogImpl : public ui::WebDialogDelegate,
   virtual void SetDialogInteractionResult(MakeChromeDefaultResult result);
 
  private:
+  // Reset the first-run sentinel file, so must be called on the FILE thread.
+  // This is needed if the browser should be restarted in immersive mode.
+  // The method is static because the dialog could be destroyed
+  // before the task arrives on the FILE thread.
+  static void AttemptImmersiveFirstRunRestartOnFileThread();
+
   Profile* profile_;
   Browser* browser_;
   mutable bool owns_handler_;
@@ -342,11 +321,10 @@ void SetAsDefaultBrowserDialogImpl::OnDialogClosed(
                             MAKE_CHROME_DEFAULT_MAX);
 
   if (dialog_interation_result_ == MAKE_CHROME_DEFAULT_ACCEPTED_IMMERSE) {
-    // Do a straight-up restart rather than a mode-switch restart.
-    // delegate_execute.exe will choose an immersive launch on the basis of the
-    // same IsMachineATablet check, but will not store this as the user's
-    // choice.
-    browser::AttemptRestart();
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&SetAsDefaultBrowserDialogImpl::
+            AttemptImmersiveFirstRunRestartOnFileThread));
   } else {
     // Carry on with a normal chrome session. For the purpose of surfacing this
     // dialog the actual browser window had to remain hidden. Now it's time to
@@ -378,6 +356,25 @@ bool SetAsDefaultBrowserDialogImpl::HandleContextMenu(
 void SetAsDefaultBrowserDialogImpl::SetDialogInteractionResult(
     MakeChromeDefaultResult result) {
   dialog_interation_result_ = result;
+}
+
+void SetAsDefaultBrowserDialogImpl::
+    AttemptImmersiveFirstRunRestartOnFileThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // If the sentinel was created for this launch, remove it before restarting
+  // in immersive mode so that the user is taken through the full first-run
+  // flow there.
+  if (first_run::IsChromeFirstRun())
+    first_run::RemoveSentinel();
+
+  // Do a straight-up restart rather than a mode-switch restart.
+  // delegate_execute.exe will choose an immersive launch on the basis of the
+  // same IsMachineATablet check, but will not store this as the user's
+  // choice.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&browser::AttemptRestart));
 }
 
 }  // namespace
