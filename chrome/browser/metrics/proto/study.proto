@@ -4,6 +4,8 @@
 
 syntax = "proto2";
 
+option optimize_for = LITE_RUNTIME;
+
 package chrome_variations;
 
 // This defines the Protocol Buffer representation of a Chrome Variations study

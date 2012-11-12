@@ -11,6 +11,8 @@
 
 syntax = "proto2";
 
+option optimize_for = LITE_RUNTIME;
+
 package safe_browsing;
 
 message ClientPhishingRequest {

@@ -6,6 +6,9 @@
 
 syntax = "proto2";
 
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
 package sync_pb;
 
 // A flag to enable support for keystore encryption.

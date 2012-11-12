@@ -11,6 +11,9 @@
 
 syntax = "proto2";
 
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
 package sync_pb;
 
 import "extension_setting_specifics.proto";

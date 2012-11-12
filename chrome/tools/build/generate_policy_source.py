@@ -279,6 +279,8 @@ def _WritePolicyConstantSource(template_file_contents, args, opts):
 PROTO_HEAD = '''
 syntax = "proto2";
 
+option optimize_for = LITE_RUNTIME;
+
 package enterprise_management;
 
 message StringList {

@@ -18,6 +18,9 @@ syntax = "proto2";
 
 package chrome_browser_net;
 
+// Chrome requires this.
+option optimize_for = LITE_RUNTIME;
+
 // Protocol types
 message CertLoggerRequest {
   // The hostname being accessed (required as the cert could be valid for

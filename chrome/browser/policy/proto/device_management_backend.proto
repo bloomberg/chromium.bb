@@ -4,6 +4,8 @@
 
 syntax = "proto2";
 
+option optimize_for = LITE_RUNTIME;
+
 package enterprise_management;
 
 // Request from device to server to register device.

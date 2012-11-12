@@ -4,6 +4,8 @@
 
 syntax = "proto2";
 
+option optimize_for = LITE_RUNTIME;
+
 package enterprise_management;
 
 // This file keeps the deprecated GenericNamedValue based format for policies

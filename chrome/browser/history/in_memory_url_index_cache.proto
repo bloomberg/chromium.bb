@@ -10,6 +10,8 @@
 
 syntax = "proto2";
 
+option optimize_for = LITE_RUNTIME;
+
 package in_memory_url_index;
 
 message InMemoryURLIndexCacheItem {

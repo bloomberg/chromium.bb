@@ -6,6 +6,8 @@
 
 syntax = "proto2";
 
+option optimize_for = LITE_RUNTIME;
+
 package sync_file_system;
 
 message DriveMetadata {
