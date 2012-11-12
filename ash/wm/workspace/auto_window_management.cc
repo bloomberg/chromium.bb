@@ -178,7 +178,7 @@ void RearrangeVisibleWindowOnShow(aura::Window* added_window) {
     gfx::Rect other_bounds = other_shown_window->bounds();
     ash::wm::SetPreAutoManageWindowBounds(other_shown_window, other_bounds);
 
-    bool move_right = other_bounds.CenterPoint().x() < work_area.width() / 2;
+    bool move_right = other_bounds.CenterPoint().x() > work_area.width() / 2;
     if (MoveRectToOneSide(work_area.width(), move_right, &other_bounds))
       SetBoundsAnimated(other_shown_window, other_bounds);
 

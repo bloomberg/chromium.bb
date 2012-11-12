@@ -1244,11 +1244,11 @@ TEST_F(WorkspaceManagerTest, TestUserMovedWindowRepositioning) {
   // positionable again (user movement cleared).
   window2->Show();
 
-  // |window1| should be flush right and |window3| flush left.
-  EXPECT_EQ(base::IntToString(
-                desktop_area.width() - window1->bounds().width()) +
-            ",32 640x320", window1->bounds().ToString());
-  EXPECT_EQ("0,48 256x512", window2->bounds().ToString());
+  // |window1| should be flush left and |window3| flush right.
+  EXPECT_EQ("0,32 640x320", window1->bounds().ToString());
+  EXPECT_EQ(
+      base::IntToString(desktop_area.width() - window2->bounds().width()) +
+      ",48 256x512", window2->bounds().ToString());
   // FLag should now be reset.
   EXPECT_FALSE(ash::wm::HasUserChangedWindowPositionOrSize(window1.get()));
   EXPECT_FALSE(ash::wm::HasUserChangedWindowPositionOrSize(window1.get()));
@@ -1256,9 +1256,7 @@ TEST_F(WorkspaceManagerTest, TestUserMovedWindowRepositioning) {
   // Going back to one shown window should keep the state.
   ash::wm::SetUserHasChangedWindowPositionOrSize(window1.get(), true);
   window2->Hide();
-  EXPECT_EQ(base::IntToString(
-                desktop_area.width() - window1->bounds().width()) +
-            ",32 640x320", window1->bounds().ToString());
+  EXPECT_EQ("0,32 640x320", window1->bounds().ToString());
   EXPECT_TRUE(ash::wm::HasUserChangedWindowPositionOrSize(window1.get()));
 }
 
@@ -1284,12 +1282,12 @@ TEST_F(WorkspaceManagerTest, TestUserHandledWindowRestore) {
   EXPECT_EQ(user_pos.ToString(), window1->bounds().ToString());
   window2->Show();
 
-  // |window1| should be flush right and |window2| flush left.
-  EXPECT_EQ(base::IntToString(
-                desktop_area.width() - window1->bounds().width()) + "," +
-            base::IntToString(user_pos.y()) +
+  // |window1| should be flush left and |window2| flush right.
+  EXPECT_EQ("0," + base::IntToString(user_pos.y()) +
             " 640x320", window1->bounds().ToString());
-  EXPECT_EQ("0,48 256x512", window2->bounds().ToString());
+  EXPECT_EQ(
+      base::IntToString(desktop_area.width() - window2->bounds().width()) +
+      ",48 256x512", window2->bounds().ToString());
   window2->Hide();
 
   // After the other window get hidden the window has to move back to the
