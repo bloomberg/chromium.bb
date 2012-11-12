@@ -11,11 +11,6 @@ using cc::IOSurfaceLayer;
 
 namespace WebKit {
 
-WebIOSurfaceLayer* WebIOSurfaceLayer::create()
-{
-    return new WebIOSurfaceLayerImpl();
-}
-
 WebIOSurfaceLayerImpl::WebIOSurfaceLayerImpl()
     : m_layer(new WebLayerImpl(IOSurfaceLayer::create()))
 {

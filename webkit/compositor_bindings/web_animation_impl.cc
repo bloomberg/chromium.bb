@@ -15,11 +15,6 @@ using cc::ActiveAnimation;
 
 namespace WebKit {
 
-WebAnimation* WebAnimation::create(const WebAnimationCurve& curve, TargetProperty targetProperty, int animationId)
-{
-    return new WebAnimationImpl(curve, targetProperty, animationId, 0);
-}
-
 WebAnimationImpl::WebAnimationImpl(const WebAnimationCurve& webCurve, TargetProperty targetProperty, int animationId, int groupId)
 {
     static int nextAnimationId = 1;

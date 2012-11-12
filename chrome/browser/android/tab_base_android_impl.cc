@@ -13,6 +13,8 @@
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "jni/TabBase_jni.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "ui/gfx/android/window_android.h"
 
@@ -58,8 +60,9 @@ TabBaseAndroidImpl::TabBaseAndroidImpl(JNIEnv* env,
                                        jobject obj,
                                        WebContents* web_contents,
                                        WindowAndroid* window_android)
-    : web_contents_(web_contents),
-      tab_layer_(WebKit::WebLayer::create()) {
+    : web_contents_(web_contents) {
+  tab_layer_.reset(
+      WebKit::Platform::current()->compositorSupport()->createLayer());
   InitTabHelpers(web_contents);
   WindowAndroidHelper::FromWebContents(web_contents)->
       SetWindowAndroid(window_android);

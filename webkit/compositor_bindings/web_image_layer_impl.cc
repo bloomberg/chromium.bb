@@ -11,11 +11,6 @@ using cc::ImageLayer;
 
 namespace WebKit {
 
-WebImageLayer* WebImageLayer::create()
-{
-    return new WebImageLayerImpl();
-}
-
 WebImageLayerImpl::WebImageLayerImpl()
     : m_layer(new WebLayerImpl(ImageLayer::create()))
 {
