@@ -28,7 +28,7 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary {
   const chrome::spellcheck_common::WordList& GetCustomWords() const;
   void CustomWordAddedLocally(const std::string& word);
   void LoadDictionaryIntoCustomWordList(
-      chrome::spellcheck_common::WordList& custom_words);
+      chrome::spellcheck_common::WordList* custom_words);
 
  private:
   // In-memory cache of the custom words file.

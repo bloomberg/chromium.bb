@@ -8,8 +8,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
-#include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_messages.h"
@@ -68,19 +68,16 @@ void SpellCheckMessageFilter::OnSpellCheckerRequestDictionary() {
   // generally only be called once per session, as after the first call, all
   // future renderers will be passed the initialization information on startup
   // (or when the dictionary changes in some way).
-  SpellCheckHost* spell_check_host =
-      SpellCheckFactory::GetHostForProfile(profile);
+  SpellcheckService* spellcheck_service =
+      SpellcheckServiceFactory::GetForProfile(profile);
 
-  if (spell_check_host) {
-    // The spellchecker initialization already started and finished; just send
-    // it to the renderer.
-    spell_check_host->InitForRenderer(host);
-  } else {
-    // We may have gotten multiple requests from different renderers. We don't
-    // want to initialize multiple times in this case, so we set |force| to
-    // false.
-    SpellCheckFactory::ReinitializeSpellCheckHost(profile, false);
-  }
+  DCHECK(spellcheck_service);
+  // The spellchecker initialization already started and finished; just send
+  // it to the renderer.
+  spellcheck_service->InitForRenderer(host);
+
+  // TODO(rlp): Ensure that we do not initialize the hunspell dictionary more
+  // than once if we get requests from different renderers.
 }
 
 void SpellCheckMessageFilter::OnNotifyChecked(const string16& word,
@@ -91,10 +88,11 @@ void SpellCheckMessageFilter::OnNotifyChecked(const string16& word,
     return;  // Teardown.
   // Delegates to SpellCheckHost which tracks the stats of our spellchecker.
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-  SpellCheckHost* spellcheck_host =
-      SpellCheckFactory::GetHostForProfile(profile);
-  if (spellcheck_host && spellcheck_host->GetMetrics())
-    spellcheck_host->GetMetrics()->RecordCheckedWordStats(word, misspelled);
+  SpellcheckService* spellcheck_service =
+      SpellcheckServiceFactory::GetForProfile(profile);
+  DCHECK(spellcheck_service);
+  if (spellcheck_service->GetMetrics())
+    spellcheck_service->GetMetrics()->RecordCheckedWordStats(word, misspelled);
 }
 
 #if !defined(OS_MACOSX)

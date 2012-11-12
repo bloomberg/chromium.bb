@@ -14,7 +14,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 class Profile;
-class SpellCheckHostImpl;
+class SpellcheckService;
 
 namespace net {
 class URLFetcher;
@@ -32,7 +32,7 @@ class SpellcheckHunspellDictionary
       Profile* profile,
       const std::string& language,
       net::URLRequestContextGetter* request_context_getter,
-      SpellCheckHostImpl* host);
+      SpellcheckService* spellcheck_service);
   virtual ~SpellcheckHunspellDictionary();
 
   virtual void Load() OVERRIDE;
@@ -104,8 +104,7 @@ class SpellcheckHunspellDictionary
 
   base::WeakPtrFactory<SpellcheckHunspellDictionary> weak_ptr_factory_;
 
-  // TODO(rlp): Temporary reference to host to maintain functionality.
-  SpellCheckHostImpl* host_;
+  SpellcheckService* spellcheck_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckHunspellDictionary);
 };

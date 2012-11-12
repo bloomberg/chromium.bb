@@ -9,34 +9,23 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
-class SpellCheckHost;
-class SpellCheckProfile;
+class SpellcheckService;
 
 // Entry into the SpellCheck system.
 //
-// Internally, this owns all SpellCheckProfile objects, but these aren't
-// exposed to the callers. Instead, the SpellCheckProfile may or may not hand
-// out SpellCheckHost objects for consumption outside the SpellCheck system.
-class SpellCheckFactory : public ProfileKeyedServiceFactory {
+// Internally, this owns all SpellcheckService objects.
+class SpellcheckServiceFactory : public ProfileKeyedServiceFactory {
  public:
   // Returns the spell check host. This may be NULL.
-  static SpellCheckHost* GetHostForProfile(Profile* profile);
+  static SpellcheckService* GetForProfile(Profile* profile);
 
-  // If |force| is false, and the spellchecker is already initialized (or is in
-  // the process of initializing), then do nothing. Otherwise clobber the
-  // current spellchecker and replace it with a new one.
-  static void ReinitializeSpellCheckHost(Profile* profile, bool force);
-
-  static SpellCheckFactory* GetInstance();
+  static SpellcheckServiceFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<SpellCheckFactory>;
+  friend struct DefaultSingletonTraits<SpellcheckServiceFactory>;
 
-  SpellCheckFactory();
-  virtual ~SpellCheckFactory();
-
-  // Fetches the internal object for |profile|.
-  SpellCheckProfile* GetSpellCheckProfile(Profile* profile);
+  SpellcheckServiceFactory();
+  virtual ~SpellcheckServiceFactory();
 
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
@@ -45,7 +34,7 @@ class SpellCheckFactory : public ProfileKeyedServiceFactory {
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(SpellCheckFactory);
+  DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceFactory);
 };
 
 #endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_FACTORY_H_

@@ -1018,7 +1018,7 @@
         'browser/speech/extension_api/tts_extension_apitest.cc',
         'browser/speech/speech_input_extension_apitest.cc',
         'browser/speech/speech_recognition_bubble_browsertest.cc',
-        'browser/spellchecker/spellcheck_host_browsertest.cc',
+        'browser/spellchecker/spellcheck_service_browsertest.cc',
         'browser/ssl/ssl_browser_tests.cc',
         'browser/sync_file_system/mock_remote_file_sync_service.cc',
         'browser/sync_file_system/mock_remote_file_sync_service.h',
@@ -1409,7 +1409,7 @@
           'sources!': [
             # TODO(hbono): This test depends on hunspell and we cannot run it on
             # Mac, which does not use hunspell by default.
-            'browser/spellchecker/spellcheck_host_browsertest.cc',
+            'browser/spellchecker/spellcheck_service_browsertest.cc',
             # ProcessSingletonMac doesn't do anything.
             'browser/process_singleton_browsertest.cc',
             # This test depends on GetCommandLineForRelaunch, which is not

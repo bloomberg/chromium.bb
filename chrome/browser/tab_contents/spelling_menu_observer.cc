@@ -11,7 +11,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
-#include "chrome/browser/spellchecker/spellcheck_host.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
@@ -104,12 +104,12 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
   if (!params.dictionary_suggestions.empty()) {
     proxy_->AddSeparator();
 
-    // |spellcheck_host| can be null when the suggested word is
+    // |spellcheck_service| can be null when the suggested word is
     // provided by Web SpellCheck API.
-    SpellCheckHost* spellcheck_host =
-        SpellCheckFactory::GetHostForProfile(profile);
-    if (spellcheck_host && spellcheck_host->GetMetrics())
-      spellcheck_host->GetMetrics()->RecordSuggestionStats(1);
+    SpellcheckService* spellcheck_service =
+        SpellcheckServiceFactory::GetForProfile(profile);
+    if (spellcheck_service && spellcheck_service->GetMetrics())
+      spellcheck_service->GetMetrics()->RecordSuggestionStats(1);
   }
 
   // If word is misspelled, give option for "Add to dictionary" and a check item
@@ -194,10 +194,10 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
     // provided by Web SpellCheck API.
     Profile* profile = proxy_->GetProfile();
     if (profile) {
-      SpellCheckHost* spellcheck_host =
-          SpellCheckFactory::GetHostForProfile(profile);
-      if (spellcheck_host && spellcheck_host->GetMetrics())
-        spellcheck_host->GetMetrics()->RecordReplacedWordStats(1);
+      SpellcheckService* spellcheck_service =
+          SpellcheckServiceFactory::GetForProfile(profile);
+      if (spellcheck_service && spellcheck_service->GetMetrics())
+        spellcheck_service->GetMetrics()->RecordReplacedWordStats(1);
     }
     return;
   }
@@ -216,9 +216,10 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
     // provided by Web SpellCheck API.
     Profile* profile = proxy_->GetProfile();
     if (profile) {
-      SpellCheckHost* host = SpellCheckFactory::GetHostForProfile(profile);
-      if (host)
-        host->AddWord(UTF16ToUTF8(misspelled_word_));
+      SpellcheckService* spellcheck_service =
+            SpellcheckServiceFactory::GetForProfile(profile);
+      if (spellcheck_service)
+        spellcheck_service->AddWord(UTF16ToUTF8(misspelled_word_));
     }
 #if defined(OS_MACOSX)
     spellcheck_mac::AddWord(misspelled_word_);

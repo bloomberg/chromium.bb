@@ -267,7 +267,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   SpeechInputExtensionManager::InitializeFactory();
   ChromeSpeechRecognitionPreferences::InitializeFactory();
 #endif
-  SpellCheckFactory::GetInstance();
+  SpellcheckServiceFactory::GetInstance();
 #if defined(OS_WIN)
   syncer::CredentialCacheServiceFactory::GetInstance();
 #endif  // OS_WIN

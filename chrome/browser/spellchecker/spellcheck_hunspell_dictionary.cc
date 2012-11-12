@@ -8,10 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-// TODO(rlp): Remove once spellcheck host and profile are combined.
-// This is only here to pull in some enums.
-#include "chrome/browser/spellchecker/spellcheck_host.h"
-#include "chrome/browser/spellchecker/spellcheck_host_impl.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/spellcheck_common.h"
@@ -39,7 +36,7 @@ SpellcheckHunspellDictionary::SpellcheckHunspellDictionary(
     Profile* profile,
     const std::string& language,
     net::URLRequestContextGetter* request_context_getter,
-    SpellCheckHostImpl* host)
+    SpellcheckService* spellcheck_service)
     : SpellcheckDictionary(profile),
       dictionary_saved_(false),
       language_(language),
@@ -48,7 +45,7 @@ SpellcheckHunspellDictionary::SpellcheckHunspellDictionary(
       use_platform_spellchecker_(false),
       request_context_getter_(request_context_getter),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      host_(host) {
+      spellcheck_service_(spellcheck_service) {
 }
 
 SpellcheckHunspellDictionary::~SpellcheckHunspellDictionary() {
@@ -118,7 +115,8 @@ void SpellcheckHunspellDictionary::InitializeDictionaryLocation() {
 
     // Notify browser tests that this dictionary is corrupted. We also skip
     // downloading the dictionary when we run this function on browser tests.
-    if (host_->SignalStatusEvent(SpellCheckHost::BDICT_CORRUPTED))
+    if (spellcheck_service_->SignalStatusEvent(
+        SpellcheckService::BDICT_CORRUPTED))
       tried_to_download_ = true;
   } else {
     file_ = base::CreatePlatformFile(
@@ -282,7 +280,7 @@ bool SpellcheckHunspellDictionary::IsReady() const {
 }
 
 void SpellcheckHunspellDictionary::InformProfileOfInitialization() {
-  host_->InformProfileOfInitialization();
+  spellcheck_service_->InformProfileOfInitializationWithCustomWords(NULL);
 }
 
 const base::PlatformFile&

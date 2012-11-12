@@ -29,7 +29,7 @@ SpellcheckCustomDictionary::~SpellcheckCustomDictionary() {
 }
 
 void SpellcheckCustomDictionary::LoadDictionaryIntoCustomWordList(
-    WordList& custom_words) {
+    WordList* custom_words) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::string contents;
@@ -37,15 +37,18 @@ void SpellcheckCustomDictionary::LoadDictionaryIntoCustomWordList(
   if (contents.empty())
     return;
 
-  base::SplitString(contents, '\n', &custom_words);
+  base::SplitString(contents, '\n', custom_words);
   // Clear out empty words.
-  custom_words.erase(remove_if(custom_words.begin(), custom_words.end(),
-    mem_fun_ref(&std::string::empty)), custom_words.end());
+  custom_words->erase(remove_if(custom_words->begin(), custom_words->end(),
+    mem_fun_ref(&std::string::empty)), custom_words->end());
 }
 
 void SpellcheckCustomDictionary::Load() {
   custom_words_.clear();
-  LoadDictionaryIntoCustomWordList(custom_words_);
+  // We are not guaranteed to be on the FILE thread so post the task.
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
+      &SpellcheckCustomDictionary::LoadDictionaryIntoCustomWordList,
+      base::Unretained(this), &custom_words_));
 }
 
 void SpellcheckCustomDictionary::WriteWordToCustomDictionary(
