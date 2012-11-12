@@ -318,6 +318,7 @@ class SafeBrowsingService
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<SafeBrowsingService>;
+  friend class SafeBrowsingServerTest;
   friend class SafeBrowsingServiceTest;
   friend class SafeBrowsingServiceCookieTest;
   friend class SafeBrowsingURLRequestContextGetter;

@@ -166,7 +166,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
                            TestGetHashBackOffTimes);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestNextChunkUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestUpdateUrl);
-  friend class SafeBrowsingServiceTest;
+  friend class SafeBrowsingServerTest;
   friend class SBProtocolManagerFactoryImpl;
 
   // Internal API for fetching information from the SafeBrowsing servers. The
