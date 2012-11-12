@@ -40,6 +40,7 @@ EXPECTED_MODES = (
 
 # These are per test case, not per mode.
 RELATIVE_CWD = {
+  'all_items_invalid': '.',
   'fail': '.',
   'missing_trailing_slash': '.',
   'no_run': '.',
@@ -52,6 +53,7 @@ RELATIVE_CWD = {
 }
 
 DEPENDENCIES = {
+  'all_items_invalid' : ['empty.py'],
   'fail': ['fail.py'],
   'missing_trailing_slash': [],
   'no_run': [
@@ -318,6 +320,45 @@ class IsolateModeBase(IsolateBase):
   def saved_state(self):
     return isolate.isolatedfile_to_state(self.isolated)
 
+  def _test_missing_trailing_slash(self, mode):
+    try:
+      self._execute(mode, 'missing_trailing_slash.isolate', [], False)
+      self.fail()
+    except subprocess.CalledProcessError as e:
+      self.assertEquals('', e.output)
+      out = e.stderr
+    self._expect_no_tree()
+    self._expect_no_result()
+    expected = (
+      '\n'
+      'Error: Input directory %s must have a trailing slash\n' %
+          os.path.join(ROOT_DIR, 'tests', 'isolate', 'files1')
+    )
+    self.assertEquals(expected, out)
+
+  def _test_non_existent(self, mode):
+    try:
+      self._execute(mode, 'non_existent.isolate', [], False)
+      self.fail()
+    except subprocess.CalledProcessError as e:
+      self.assertEquals('', e.output)
+      out = e.stderr
+    self._expect_no_tree()
+    self._expect_no_result()
+    expected = (
+      '\n'
+      'Error: Input file %s doesn\'t exist\n' %
+          os.path.join(ROOT_DIR, 'tests', 'isolate', 'A_file_that_do_not_exist')
+    )
+    self.assertEquals(expected, out)
+
+  def _test_all_items_invalid(self, mode):
+    out = self._execute(mode, 'all_items_invalid.isolate',
+                        ['--ignore_broken_item'], False)
+    self._expect_results(['empty.py'], None, None, None)
+
+    return out or ''
+
 
 class Isolate(unittest.TestCase):
   # Does not inherit from the other *Base classes.
@@ -376,22 +417,15 @@ class Isolate_check(IsolateModeBase):
     self._expect_results(['fail.py'], None, None, None)
 
   def test_missing_trailing_slash(self):
-    try:
-      self._execute('check', 'missing_trailing_slash.isolate', [], False)
-      self.fail()
-    except subprocess.CalledProcessError:
-      pass
-    self._expect_no_tree()
-    self._expect_no_result()
+    self._test_missing_trailing_slash('check')
 
   def test_non_existent(self):
-    try:
-      self._execute('check', 'non_existent.isolate', [], False)
-      self.fail()
-    except subprocess.CalledProcessError:
-      pass
+    self._test_non_existent('check')
+
+  def test_all_items_invalid(self):
+    out = self._test_all_items_invalid('check')
+    self.assertEquals('', out)
     self._expect_no_tree()
-    self._expect_no_result()
 
   def test_no_run(self):
     self._execute('check', 'no_run.isolate', [], False)
@@ -447,22 +481,15 @@ class Isolate_hashtable(IsolateModeBase):
     self._expect_results(['fail.py'], None, None, None)
 
   def test_missing_trailing_slash(self):
-    try:
-      self._execute('hashtable', 'missing_trailing_slash.isolate', [], False)
-      self.fail()
-    except subprocess.CalledProcessError:
-      pass
-    self._expect_no_tree()
-    self._expect_no_result()
+    self._test_missing_trailing_slash('hashtable')
 
   def test_non_existent(self):
-    try:
-      self._execute('hashtable', 'non_existent.isolate', [], False)
-      self.fail()
-    except subprocess.CalledProcessError:
-      pass
-    self._expect_no_tree()
-    self._expect_no_result()
+    self._test_non_existent('hashtable')
+
+  def test_all_items_invalid(self):
+    out = self._test_all_items_invalid('hashtable')
+    self.assertEquals('', out)
+    self._expected_hash_tree(None)
 
   def test_no_run(self):
     self._execute('hashtable', 'no_run.isolate', [], False)
@@ -513,7 +540,6 @@ class Isolate_hashtable(IsolateModeBase):
       self._expect_results(['symlink_partial.py'], None, None, None)
 
 
-
 class Isolate_remap(IsolateModeBase):
   def test_fail(self):
     self._execute('remap', 'fail.isolate', [], False)
@@ -521,22 +547,15 @@ class Isolate_remap(IsolateModeBase):
     self._expect_results(['fail.py'], None, None, None)
 
   def test_missing_trailing_slash(self):
-    try:
-      self._execute('remap', 'missing_trailing_slash.isolate', [], False)
-      self.fail()
-    except subprocess.CalledProcessError:
-      pass
-    self._expect_no_tree()
-    self._expect_no_result()
+    self._test_missing_trailing_slash('remap')
 
   def test_non_existent(self):
-    try:
-      self._execute('remap', 'non_existent.isolate', [], False)
-      self.fail()
-    except subprocess.CalledProcessError:
-      pass
-    self._expect_no_tree()
-    self._expect_no_result()
+    self._test_non_existent('remap')
+
+  def test_all_items_invalid(self):
+    out = self._test_all_items_invalid('remap')
+    self.assertTrue(out.startswith('Remapping'))
+    self._expected_tree()
 
   def test_no_run(self):
     self._execute('remap', 'no_run.isolate', [], False)
@@ -588,22 +607,15 @@ class Isolate_run(IsolateModeBase):
     self._expect_results(['fail.py'], None, None, None)
 
   def test_missing_trailing_slash(self):
-    try:
-      self._execute('run', 'missing_trailing_slash.isolate', [], False)
-      self.fail()
-    except subprocess.CalledProcessError:
-      pass
-    self._expect_no_tree()
-    self._expect_no_result()
+    self._test_missing_trailing_slash('run')
 
   def test_non_existent(self):
-    try:
-      self._execute('run', 'non_existent.isolate', [], False)
-      self.fail()
-    except subprocess.CalledProcessError:
-      pass
+    self._test_non_existent('run')
+
+  def test_all_items_invalid(self):
+    out = self._test_all_items_invalid('run')
+    self.assertEqual('', out)
     self._expect_no_tree()
-    self._expect_no_result()
 
   def test_no_run(self):
     try:
@@ -682,36 +694,15 @@ class Isolate_trace_read_merge(IsolateModeBase):
     self._check_merge('fail.isolate')
 
   def test_missing_trailing_slash(self):
-    try:
-      self._execute('trace', 'missing_trailing_slash.isolate', [], True)
-      self.fail()
-    except subprocess.CalledProcessError, e:
-      self.assertEquals('', e.output)
-      out = e.stderr
-    self._expect_no_tree()
-    self._expect_no_result()
-    expected = (
-      '\n'
-      'Error: Input directory %s must have a trailing slash\n' %
-          os.path.join(ROOT_DIR, 'tests', 'isolate', 'files1')
-    )
-    self.assertEquals(expected, out)
+    self._test_missing_trailing_slash('trace')
 
   def test_non_existent(self):
-    try:
-      self._execute('trace', 'non_existent.isolate', [], True)
-      self.fail()
-    except subprocess.CalledProcessError, e:
-      self.assertEquals('', e.output)
-      out = e.stderr
+    self._test_non_existent('trace')
+
+  def test_all_items_invalid(self):
+    out = self._test_all_items_invalid('trace')
+    self.assertEqual('', out)
     self._expect_no_tree()
-    self._expect_no_result()
-    expected = (
-      '\n'
-      'Error: Input file %s doesn\'t exist\n' %
-          os.path.join(ROOT_DIR, 'tests', 'isolate', 'A_file_that_do_not_exist')
-    )
-    self.assertEquals(expected, out)
 
   def test_no_run(self):
     try:

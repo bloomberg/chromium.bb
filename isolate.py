@@ -172,7 +172,8 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
     return [relfile]
 
 
-def expand_directories_and_symlinks(indir, infiles, blacklist):
+def expand_directories_and_symlinks(indir, infiles, blacklist,
+    ignore_broken_items):
   """Expands the directories and the symlinks, applies the blacklist and
   verifies files exist.
 
@@ -180,7 +181,13 @@ def expand_directories_and_symlinks(indir, infiles, blacklist):
   """
   outfiles = []
   for relfile in infiles:
-    outfiles.extend(expand_directory_and_symlink(indir, relfile, blacklist))
+    try:
+      outfiles.extend(expand_directory_and_symlink(indir, relfile, blacklist))
+    except run_isolated.MappingError as e:
+      if ignore_broken_items:
+        logging.info('warning: %s', e)
+      else:
+        raise
   return outfiles
 
 
@@ -1230,7 +1237,7 @@ class CompleteState(object):
         IsolatedFile.load_file(isolated_filepath),
         SavedState.load_file(isolatedfile_to_state(isolated_filepath)))
 
-  def load_isolate(self, isolate_file, variables):
+  def load_isolate(self, isolate_file, variables, ignore_broken_items):
     """Updates self.isolated and self.saved_state with information loaded from a
     .isolate file.
 
@@ -1276,7 +1283,8 @@ class CompleteState(object):
     infiles = expand_directories_and_symlinks(
         root_dir,
         infiles,
-        lambda x: re.match(r'.*\.(git|svn|pyc)$', x))
+        lambda x: re.match(r'.*\.(git|svn|pyc)$', x),
+        ignore_broken_items)
 
     # Finally, update the new stuff in the foo.isolated file, the file that is
     # used by run_isolated.py.
@@ -1371,7 +1379,8 @@ def load_complete_state(options, subdir):
           options.isolate, complete_state.saved_state.isolate_file))
 
   # Then load the .isolate and expands directories.
-  complete_state.load_isolate(options.isolate, options.variables)
+  complete_state.load_isolate(options.isolate, options.variables,
+                              options.ignore_broken_items)
 
   # Regenerate complete_state.isolated.files.
   if subdir:
@@ -1757,6 +1766,10 @@ class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
             'will be used. Otherwise, for run and remap, uses a /tmp '
             'subdirectory. For the other modes, defaults to the directory '
             'containing --isolated')
+    group.add_option(
+        '--ignore_broken_items', action='store_true',
+        help='Indicates that invalid entries in the isolated file won\'t '
+            'cause exceptions, but instead will just be logged.')
     self.add_option_group(group)
     self.require_isolated = require_isolated
 

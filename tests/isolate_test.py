@@ -817,6 +817,7 @@ class IsolateLoad(unittest.TestCase):
       outdir = os.path.join(self.directory, 'outdir')
       isolate = isolate_file
       variables = {'foo': 'bar'}
+      ignore_broken_items = False
     return Options()
 
   def _cleanup_isolated(self, expected_isolated, actual_isolated):
