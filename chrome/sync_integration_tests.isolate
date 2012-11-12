@@ -58,6 +58,8 @@
           '../third_party/pywebsocket/src/mod_pywebsocket/',
           '../third_party/tlslite/tlslite/',
           '<(PRODUCT_DIR)/pyproto/google/__init__.py',
+          '<(PRODUCT_DIR)/pyproto/google/protobuf/',
+          '<(PRODUCT_DIR)/pyproto/sync/protocol/',
           '<(PRODUCT_DIR)/resources.pak',
           '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
         ],
