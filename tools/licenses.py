@@ -177,11 +177,7 @@ SPECIAL_CASES = {
     os.path.join('third_party', 'v8-i18n'): {
         "Name": "Internationalization Library for v8",
         "URL": "http://code.google.com/p/v8-i18n/",
-        "License": "Apache 2.0, BSD and others",
-        # Marked Android compatible for http://crbug.com/160221 - license
-        # data here should be updated once that's resolved and then this can be
-        # removed.
-        "License Android Compatible": "yes",
+        "License": "Apache 2.0",
     },
     os.path.join('third_party', 'WebKit'): {
         "Name": "WebKit",
