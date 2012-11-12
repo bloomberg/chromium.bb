@@ -1570,11 +1570,10 @@ LRESULT HWNDMessageHandler::OnNCActivate(BOOL active) {
   if (!delegate_->CanActivate())
     return TRUE;
 
-  // The frame may need to redraw as a result of the activation change.
-  // We can get WM_NCACTIVATE before we're actually visible. If we're not
-  // visible, no need to paint.
-  if (IsVisible())
-    delegate_->SchedulePaint();
+  // On activation, lift any prior restriction against rendering as inactive.
+  bool inactive_rendering_disabled = delegate_->IsInactiveRenderingDisabled();
+  if (active && inactive_rendering_disabled)
+    delegate_->EnableInactiveRendering();
 
   if (delegate_->IsUsingCustomFrame()) {
     // TODO(beng, et al): Hack to redraw this window and child windows
@@ -1587,10 +1586,11 @@ LRESULT HWNDMessageHandler::OnNCActivate(BOOL active) {
     EnumChildWindows(hwnd(), EnumChildWindowsForRedraw, NULL);
   }
 
-  // On activation, lift any prior restriction against rendering as inactive.
-  bool inactive_rendering_disabled = delegate_->IsInactiveRenderingDisabled();
-  if (active && inactive_rendering_disabled)
-    delegate_->EnableInactiveRendering();
+  // The frame may need to redraw as a result of the activation change.
+  // We can get WM_NCACTIVATE before we're actually visible. If we're not
+  // visible, no need to paint.
+  if (IsVisible())
+    delegate_->SchedulePaint();
 
   // Avoid DefWindowProc non-client rendering over our custom frame on newer
   // Windows versions only (breaks taskbar activation indication on XP/Vista).
