@@ -21,19 +21,14 @@ import optparse
 import os
 import re
 import sys
-import socket
 import time
 
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
+from chromite.lib import gclient
 from chromite.lib.cros_build_lib import RunCommand, Info, Warning
 from chromite.scripts import cros_mark_as_stable
-
-if socket.getfqdn().endswith('.golo.chromium.org'):
-  BASE_CHROME_SVN_URL = 'svn://svn-mirror.golo.chromium.org/chrome'
-else:
-  BASE_CHROME_SVN_URL = 'http://src.chromium.org/svn'
 
 # Helper regex's for finding ebuilds.
 _CHROME_VERSION_REGEX = '\d+\.\d+\.\d+\.\d+'
@@ -432,7 +427,7 @@ def main(argv):
   usage = '%s OPTIONS [%s]' % (__file__, usage_options)
   parser = optparse.OptionParser(usage)
   parser.add_option('-b', '--boards', default='x86-generic')
-  parser.add_option('-c', '--chrome_url', default=BASE_CHROME_SVN_URL)
+  parser.add_option('-c', '--chrome_url', default=gclient.GetBaseURLs()[0])
   parser.add_option('-f', '--force_revision', default=None)
   parser.add_option('-s', '--srcroot', default=os.path.join(os.environ['HOME'],
                                                             'trunk', 'src'),
