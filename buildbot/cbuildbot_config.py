@@ -902,6 +902,7 @@ internal_paladin.add_config('alex-paladin',
 internal_paladin.add_config('stumpy-paladin',
   boards=['stumpy'],
   paladin_builder_name='stumpy paladin',
+  upload_hw_test_artifacts=True,
 )
 
 internal_paladin.add_config('lumpy-paladin',
