@@ -92,14 +92,17 @@ def main(args):
     buildbot_common.Run(['git', 'checkout', git_rev], cwd=MONO_DIR)
 
   arch_to_bitsize = {'x86-32': '32',
-                     'x86-64': '64'}
-  arch_to_output_folder = {'x86-32': 'runtime-build',
-                           'x86-64': 'runtime64-build'}
+                     'x86-64': '64',
+                     'arm':    'pnacl'}
+  arch_to_output_folder = {'x86-32': 'runtime-x86-32-build',
+                           'x86-64': 'runtime-x86-64-build',
+                           'arm':    'runtime-arm-build'}
 
   buildbot_common.BuildStep(build_prefix + 'Configure Mono')
   os.environ['NACL_SDK_ROOT'] = sdk_dir
+  os.environ['TARGET_ARCH'] = options.arch
   os.environ['TARGET_BITSIZE'] = arch_to_bitsize[options.arch]
-  buildbot_common.Run(['./autogen.sh'], cwd=MONO_DIR) 
+  buildbot_common.Run(['./autogen.sh'], cwd=MONO_DIR)
   buildbot_common.Run(['make', 'distclean'], cwd=MONO_DIR)
 
   buildbot_common.BuildStep(build_prefix + 'Build and Install Mono')
