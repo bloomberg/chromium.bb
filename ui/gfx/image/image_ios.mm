@@ -26,14 +26,7 @@ void PNGFromUIImage(UIImage* uiimage, std::vector<unsigned char>* png) {
 }
 
 UIImage* CreateUIImageFromPNG(const std::vector<unsigned char>& png) {
-  // iOS only supports one scale factor.
-  std::vector<ui::ScaleFactor> supported_scale_factors =
-      ui::GetSupportedScaleFactors();
-  DCHECK_EQ(1U, supported_scale_factors.size());
-  if (supported_scale_factors.size() < 1)
-    return nil;
-
-  ui::ScaleFactor scale_factor = supported_scale_factors[0];
+  ui::ScaleFactor scale_factor = ui::GetMaxScaleFactor();
   float scale = ui::GetScaleFactorScale(scale_factor);
 
   NSData* data = [NSData dataWithBytes:&png.front() length:png.size()];

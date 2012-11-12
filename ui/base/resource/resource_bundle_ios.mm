@@ -107,10 +107,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
     // Load the raw data from the resource pack at the current supported scale
     // factor.  This code assumes that only one of the possible scale factors is
     // supported at runtime, based on the device resolution.
-    std::vector<ui::ScaleFactor> supported_scale_factors =
-              ui::GetSupportedScaleFactors();
-    DCHECK_EQ(1U, supported_scale_factors.size());
-    ui::ScaleFactor scale_factor = supported_scale_factors[0];
+    ui::ScaleFactor scale_factor = ui::GetMaxScaleFactor();
 
     scoped_refptr<base::RefCountedStaticMemory> data(
         LoadDataResourceBytesForScale(resource_id, scale_factor));

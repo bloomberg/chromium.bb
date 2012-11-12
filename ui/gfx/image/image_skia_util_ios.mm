@@ -19,14 +19,7 @@ gfx::ImageSkia ImageSkiaFromUIImage(UIImage* image) {
   if (!image)
     return image_skia;
 
-  // iOS only supports one scale factor.
-  std::vector<ui::ScaleFactor> supported_scale_factors =
-      ui::GetSupportedScaleFactors();
-  DCHECK_EQ(1U, supported_scale_factors.size());
-  if (supported_scale_factors.size() < 1)
-    return image_skia;
-
-  ui::ScaleFactor scale_factor = supported_scale_factors[0];
+  ui::ScaleFactor scale_factor = ui::GetMaxScaleFactor();
   float scale = ui::GetScaleFactorScale(scale_factor);
   CGSize size = image.size;
   CGSize desired_size_for_scale =
@@ -43,18 +36,10 @@ UIImage* UIImageFromImageSkia(const gfx::ImageSkia& image_skia) {
   if (image_skia.isNull())
     return nil;
 
-  // iOS only supports one scale factor.
-  std::vector<ui::ScaleFactor> supported_scale_factors =
-      ui::GetSupportedScaleFactors();
-  DCHECK_EQ(1U, supported_scale_factors.size());
-  if (supported_scale_factors.size() < 1)
-    return nil;
-
-  ui::ScaleFactor scale_factor = supported_scale_factors[0];
+  ui::ScaleFactor scale_factor = ui::GetMaxScaleFactor();
   float scale = ui::GetScaleFactorScale(scale_factor);
   image_skia.EnsureRepsForSupportedScaleFactors();
-  const ImageSkiaRep& rep =
-      image_skia.GetRepresentation(supported_scale_factors[0]);
+  const ImageSkiaRep& rep = image_skia.GetRepresentation(scale_factor);
   base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateDeviceRGB());
   return gfx::SkBitmapToUIImageWithColorSpace(rep.sk_bitmap(), scale,
