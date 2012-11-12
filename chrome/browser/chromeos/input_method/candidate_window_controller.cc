@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
+#include "chrome/browser/chromeos/input_method/infolist_window_view.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_ASH)
