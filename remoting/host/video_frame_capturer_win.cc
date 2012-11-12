@@ -103,14 +103,14 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
   scoped_array<uint8> last_cursor_;
   SkISize last_cursor_size_;
 
-  // Queue of the frames buffers.
-  VideoFrameQueue queue_;
-
   ScopedThreadDesktop desktop_;
 
   // GDI resources used for screen capture.
   scoped_ptr<base::win::ScopedGetDC> desktop_dc_;
   base::win::ScopedCreateDC memory_dc_;
+
+  // Queue of the frames buffers.
+  VideoFrameQueue queue_;
 
   // Rectangle describing the bounds of the desktop device context.
   SkIRect desktop_dc_rect_;
@@ -348,14 +348,18 @@ void VideoFrameCapturerWin::CaptureImage() {
 
   // Select the target bitmap into the memory dc and copy the rect from desktop
   // to memory.
-  VideoFrameWin* current =
-      static_cast<VideoFrameWin*>(queue_.current_frame());
-  if (SelectObject(memory_dc_, current->GetBitmap()) != NULL) {
+  VideoFrameWin* current = static_cast<VideoFrameWin*>(queue_.current_frame());
+  HGDIOBJ previous_object = SelectObject(memory_dc_, current->GetBitmap());
+  if (previous_object != NULL) {
     BitBlt(memory_dc_,
            0, 0, desktop_dc_rect_.width(), desktop_dc_rect_.height(),
            *desktop_dc_,
            desktop_dc_rect_.x(), desktop_dc_rect_.y(),
            SRCCOPY | CAPTUREBLT);
+
+    // Select back the previously selected object to that the device contect
+    // could be destroyed independently of the bitmap if needed.
+    SelectObject(memory_dc_, previous_object);
   }
 }
 

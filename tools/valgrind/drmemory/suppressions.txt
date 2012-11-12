@@ -390,12 +390,3 @@ content.dll!*
 KERNEL32.dll!*
 ntdll.dll!*
 ntdll.dll!*
-
-GDI USAGE ERROR
-name=http://crbug.com/160477
-system call NtGdiDeleteObjectApp
-GDI32.dll!DeleteDC
-*!base::win::CreateDCTraits::CloseHandle
-*!base::win::GenericScopedHandle<base::win::CreateDCTraits,base::win::VerifierTraits>::Close
-*!base::win::GenericScopedHandle<base::win::CreateDCTraits,base::win::VerifierTraits>::~GenericScopedHandle<base::win::CreateDCTraits,base::win::VerifierTraits>
-*!remoting::`anonymous namespace'::VideoFrameCapturerWin::~VideoFrameCapturerWin
