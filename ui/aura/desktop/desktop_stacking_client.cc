@@ -9,9 +9,9 @@
 #include "ui/aura/desktop/desktop_activation_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/shared/compound_event_filter.h"
-#include "ui/aura/shared/input_method_event_filter.h"
 #include "ui/aura/window.h"
+#include "ui/views/corewm/compound_event_filter.h"
+#include "ui/views/corewm/input_method_event_filter.h"
 
 namespace aura {
 
