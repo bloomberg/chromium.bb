@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -326,3 +325,5 @@ webkit/tools/test_shell/resources/test_shell.rc
 # String "Copyright" used in comments.
 cc/copyfiles.py
 webkit/compositor_bindings/copyfiles.py
+# String LegalCopyright used in file.
+win8/delegate_execute/delegate_execute.rc
