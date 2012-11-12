@@ -106,6 +106,10 @@ void DeviceListener::RunInternal() {
   while (!must_exit_) {
     scoped_ptr<Socket> device_data_socket(new Socket);
     if (!listener_socket_.Accept(device_data_socket.get())) {
+      if (listener_socket_.exited()) {
+        LOG(INFO) << "Received exit notification, stopped accepting clients.";
+        break;
+      }
       LOG(WARNING) << "Could not Accept in ListenerSocket.";
       SendCommand(command::ACCEPT_ERROR,
                   listener_port_,
@@ -160,7 +164,8 @@ bool DeviceListener::BindListenerSocket() {
                 adb_control_socket_.get());
     is_alive_ = true;
   } else {
-    LOG(ERROR) << "Device could not bind and listen to local port.";
+    LOG(ERROR) << "Device could not bind and listen to local port "
+               << listener_port_;
     SendCommand(command::BIND_ERROR,
                 listener_port_,
                 adb_control_socket_.get());

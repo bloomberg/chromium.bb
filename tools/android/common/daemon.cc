@@ -73,4 +73,3 @@ void SpawnDaemon(int exit_status) {
 }
 
 }  // namespace tools
-

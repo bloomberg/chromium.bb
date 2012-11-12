@@ -35,7 +35,7 @@ void HostController::StartForwarder(
     scoped_ptr<Socket> host_server_data_socket) {
   scoped_ptr<Socket> adb_data_socket(new Socket);
   if (!adb_data_socket->ConnectTcp("", adb_port_)) {
-    LOG(ERROR) << "Could not Connect AdbDataSocket on port: "
+    LOG(ERROR) << "Could not connect AdbDataSocket on port: "
                << adb_port_;
     return;
   }
@@ -63,7 +63,7 @@ void HostController::StartForwarder(
 
 bool HostController::Connect() {
   if (!adb_control_socket_.ConnectTcp("", adb_port_)) {
-    LOG(ERROR) << "Could not Connect HostController socket on port: "
+    LOG(ERROR) << "Could not connect HostController socket on port: "
                << adb_port_;
     return false;
   }
@@ -91,6 +91,11 @@ void HostController::Run() {
   while (true) {
     if (!ReceivedCommand(command::ACCEPT_SUCCESS,
                          &adb_control_socket_)) {
+      // TODO(pliard): This can also happen if device_forwarder was
+      // intentionally killed before host_forwarder. In that case,
+      // device_forwarder should send a notification to the host.  Currently the
+      // error message below is always emitted to the log file although this is
+      // not necessarily an error.
       LOG(ERROR) << "Device socket error on accepting using port "
                  << device_port_;
       break;

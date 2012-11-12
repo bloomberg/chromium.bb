@@ -52,6 +52,7 @@ bool DeviceController::Init(const std::string& adb_unix_socket) {
                << adb_unix_socket << ": " << safe_strerror(errno);
     return false;
   }
+  LOG(INFO) << "Listening on Unix Domain Socket " << adb_unix_socket;
   return true;
 }
 
@@ -60,8 +61,10 @@ void DeviceController::Start() {
     CleanUpDeadListeners();
     scoped_ptr<Socket> socket(new Socket);
     if (!kickstart_adb_socket_.Accept(socket.get())) {
-      LOG(ERROR) << "Could not Accept DeviceController socket: "
-                 << safe_strerror(errno);
+      if (!kickstart_adb_socket_.exited()) {
+        LOG(ERROR) << "Could not Accept DeviceController socket: "
+                   << safe_strerror(errno);
+      }
       break;
     }
     // So that |socket| doesn't block on read if it has notifications.
@@ -97,7 +100,7 @@ void DeviceController::Start() {
         const int listener_port = new_listener->listener_port();
         // |new_listener| is now owned by listeners_ map.
         listeners_.AddWithID(new_listener.release(), listener_port);
-        printf("Forwarding device port %d to host.\n", listener_port);
+        LOG(INFO) << "Forwarding device port " << listener_port << " to host.";
         break;
       }
       case command::DATA_CONNECTION:
@@ -121,8 +124,6 @@ void DeviceController::Start() {
         LOG(ERROR) << "Invalid command received. Port: " << port
                    << " Command: " << command;
         socket->Close();
-        continue;
-        break;
     }
   }
   KillAllListeners();

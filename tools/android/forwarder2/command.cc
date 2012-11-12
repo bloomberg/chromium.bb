@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "base/logging.h"
+#include "base/safe_strerror_posix.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "tools/android/forwarder2/socket.h"
@@ -46,9 +47,14 @@ bool ReadCommand(Socket* socket,
   // To make logging easier.
   command_buffer[kCommandStringSize] = '\0';
 
-  if (socket->ReadNumBytes(command_buffer, kCommandStringSize) !=
-      kCommandStringSize) {
-    LOG(ERROR) << "Not enough data received from the socket.";
+  int bytes_read = socket->ReadNumBytes(command_buffer, kCommandStringSize);
+  if (bytes_read != kCommandStringSize) {
+    if (bytes_read < 0)
+      LOG(ERROR) << "Read() error: " << safe_strerror(errno);
+    else if (!bytes_read)
+      LOG(ERROR) << "Read() error, endpoint was unexpectedly closed.";
+    else
+      LOG(ERROR) << "Read() error, not enough data received from the socket.";
     return false;
   }
 

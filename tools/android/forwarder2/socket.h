@@ -46,23 +46,24 @@ class Socket {
   // Just a wrapper around unix read() function.
   // Reads up to buffer_size, but may read less then buffer_size.
   // Returns the number of bytes read.
-  int Read(char* buffer, size_t buffer_size);
+  int Read(void* buffer, size_t buffer_size);
 
   // Same as Read(), just a wrapper around write().
-  int Write(const char* buffer, size_t count);
+  int Write(const void* buffer, size_t count);
 
   // Calls Read() multiple times until num_bytes is written to the provided
   // buffer. No bounds checking is performed.
   // Returns number of bytes read, which can be different from num_bytes in case
   // of errror.
-  int ReadNumBytes(char* buffer, size_t num_bytes);
+  int ReadNumBytes(void* buffer, size_t num_bytes);
 
   // Calls Write() multiple times until num_bytes is written. No bounds checking
   // is performed. Returns number of bytes written, which can be different from
   // num_bytes in case of errror.
-  int WriteNumBytes(const char* buffer, size_t num_bytes);
+  int WriteNumBytes(const void* buffer, size_t num_bytes);
 
-  // Calls WriteNumBytes for the given std::string.
+  // Calls WriteNumBytes for the given std::string. Note that the null
+  // terminator is not written to the socket.
   int WriteString(const std::string& buffer);
 
   bool has_error() const { return socket_error_; }
@@ -76,6 +77,10 @@ class Socket {
   // Unset the |exit_notifier_fd_| so that it will not receive notifications
   // anymore.
   void reset_exit_notifier_fd() { exit_notifier_fd_ = -1; }
+
+  // Returns whether Accept() or Connect() was interrupted because the socket
+  // received an exit notification.
+  bool exited() const { return exited_; }
 
   static int GetHighestFileDescriptor(const Socket& s1, const Socket& s2);
 
@@ -104,12 +109,9 @@ class Socket {
     WRITE
   };
 
-  // Waits until either the Socket or the |exit_notifier_fd_| has received a
-  // read event (accept or read). Returns false iff an exit notification was
-  // received.  If |read| is false, it waits until Socket is ready to write,
-  // instead.  If |timeout_secs| is a non-negative value, it sets the timeout,
-  // for the select operation.
-  bool WaitForEvent(EventType type, int timeout_secs) const;
+  // Waits until either the Socket or the |exit_notifier_fd_| has received an
+  // event.
+  bool WaitForEvent(EventType type, int timeout_secs);
 
   int socket_;
   int port_;
@@ -132,6 +134,8 @@ class Socket {
   // exit notifications before calling socket blocking operations such as Read
   // and Accept.
   int exit_notifier_fd_;
+
+  bool exited_;
 
   DISALLOW_COPY_AND_ASSIGN(Socket);
 };

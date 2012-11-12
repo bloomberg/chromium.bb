@@ -17,21 +17,7 @@
 #include "base/logging.h"
 #include "base/safe_strerror_posix.h"
 #include "tools/android/common/net.h"
-
-// This is used in Close and Shutdown.
-// Preserving errno for Close() is important because the function is very often
-// used in cleanup code, after an error occurred, and it is very easy to pass an
-// invalid file descriptor to close() in this context, or more rarely, a
-// spurious signal might make close() return -1 + setting errno to EINTR,
-// masking the real reason for the original error. This leads to very unpleasant
-// debugging sessions.
-#define PRESERVE_ERRNO_HANDLE_EINTR(Func)                     \
-  do {                                                        \
-    int local_errno = errno;                                  \
-    (void) HANDLE_EINTR(Func);                                \
-    errno = local_errno;                                      \
-  } while (false);
-
+#include "tools/android/forwarder2/common.h"
 
 namespace {
 const int kNoTimeout = -1;
@@ -88,12 +74,13 @@ Socket::Socket()
       abstract_(false),
       addr_ptr_(reinterpret_cast<sockaddr*>(&addr_.addr4)),
       addr_len_(sizeof(sockaddr)),
-      exit_notifier_fd_(-1) {
+      exit_notifier_fd_(-1),
+      exited_(false) {
   memset(&addr_, 0, sizeof(addr_));
 }
 
 Socket::~Socket() {
-  CHECK(IsClosed());
+  Close();
 }
 
 void Socket::Shutdown() {
@@ -104,7 +91,7 @@ void Socket::Shutdown() {
 
 void Socket::Close() {
   if (!IsClosed()) {
-    PRESERVE_ERRNO_HANDLE_EINTR(close(socket_));
+    CloseFD(socket_);
     socket_ = -1;
   }
 }
@@ -242,7 +229,20 @@ bool Socket::Connect() {
     PRESERVE_ERRNO_HANDLE_EINTR(fcntl(socket_, F_SETFL, kFlags));
     return false;
   }
-  // Disable non-block since our code assumes blocking semantics.
+  int socket_errno;
+  socklen_t opt_len = sizeof(socket_errno);
+  if (!getsockopt(socket_, SOL_SOCKET, SO_ERROR, &socket_errno, &opt_len) < 0) {
+    LOG(ERROR) << "getsockopt(): " << safe_strerror(errno);
+    SetSocketError();
+    PRESERVE_ERRNO_HANDLE_EINTR(fcntl(socket_, F_SETFL, kFlags));
+    return false;
+  }
+  if (socket_errno != 0) {
+    LOG(ERROR) << "Could not connect to host: " << safe_strerror(socket_errno);
+    SetSocketError();
+    PRESERVE_ERRNO_HANDLE_EINTR(fcntl(socket_, F_SETFL, kFlags));
+    return false;
+  }
   fcntl(socket_, F_SETFL, kFlags);
   return true;
 }
@@ -297,11 +297,11 @@ bool Socket::AddFdToSet(fd_set* fds) const {
   return true;
 }
 
-int Socket::ReadNumBytes(char* buffer, size_t num_bytes) {
+int Socket::ReadNumBytes(void* buffer, size_t num_bytes) {
   int bytes_read = 0;
   int ret = 1;
   while (bytes_read < num_bytes && ret > 0) {
-    ret = Read(buffer + bytes_read, num_bytes - bytes_read);
+    ret = Read(static_cast<char*>(buffer) + bytes_read, num_bytes - bytes_read);
     if (ret >= 0)
       bytes_read += ret;
   }
@@ -315,7 +315,7 @@ void Socket::SetSocketError() {
   Close();
 }
 
-int Socket::Read(char* buffer, size_t buffer_size) {
+int Socket::Read(void* buffer, size_t buffer_size) {
   if (!WaitForEvent(READ, kNoTimeout)) {
     SetSocketError();
     return 0;
@@ -326,7 +326,7 @@ int Socket::Read(char* buffer, size_t buffer_size) {
   return ret;
 }
 
-int Socket::Write(const char* buffer, size_t count) {
+int Socket::Write(const void* buffer, size_t count) {
   int ret = HANDLE_EINTR(send(socket_, buffer, count, MSG_NOSIGNAL));
   if (ret < 0)
     SetSocketError();
@@ -337,18 +337,19 @@ int Socket::WriteString(const std::string& buffer) {
   return WriteNumBytes(buffer.c_str(), buffer.size());
 }
 
-int Socket::WriteNumBytes(const char* buffer, size_t num_bytes) {
+int Socket::WriteNumBytes(const void* buffer, size_t num_bytes) {
   int bytes_written = 0;
   int ret = 1;
   while (bytes_written < num_bytes && ret > 0) {
-    ret = Write(buffer + bytes_written, num_bytes - bytes_written);
+    ret = Write(static_cast<const char*>(buffer) + bytes_written,
+                num_bytes - bytes_written);
     if (ret >= 0)
       bytes_written += ret;
   }
   return bytes_written;
 }
 
-bool Socket::WaitForEvent(EventType type, int timeout_secs) const {
+bool Socket::WaitForEvent(EventType type, int timeout_secs) {
   if (exit_notifier_fd_ == -1 || socket_ == -1)
     return true;
   const int nfds = std::max(socket_, exit_notifier_fd_) + 1;
@@ -371,7 +372,11 @@ bool Socket::WaitForEvent(EventType type, int timeout_secs) const {
   }
   if (HANDLE_EINTR(select(nfds, &read_fds, &write_fds, NULL, tv_ptr)) <= 0)
     return false;
-  return !FD_ISSET(exit_notifier_fd_, &read_fds);
+  if (FD_ISSET(exit_notifier_fd_, &read_fds)) {
+    exited_ = true;
+    return false;
+  }
+  return true;
 }
 
 // static

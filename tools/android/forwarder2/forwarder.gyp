@@ -38,6 +38,7 @@
       ],
       'sources': [
         'command.cc',
+        'common.cc',
         'device_controller.cc',
         'device_forwarder_main.cc',
         'device_listener.cc',
@@ -60,6 +61,8 @@
       ],
       'sources': [
         'command.cc',
+        'common.cc',
+        'daemon.cc',
         'forwarder.cc',
         'host_controller.cc',
         'host_forwarder_main.cc',
