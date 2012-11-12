@@ -75,6 +75,8 @@ DriveResourceMetadataTest::DriveResourceMetadataTest()
 }
 
 void DriveResourceMetadataTest::Init() {
+  resource_metadata_.InitializeRootEntry(kWAPIRootDirectoryResourceId);
+
   int sequence_id = 1;
   DriveDirectory* dir1 = AddDirectory(resource_metadata_.root(), sequence_id++);
   DriveDirectory* dir2 = AddDirectory(resource_metadata_.root(), sequence_id++);
@@ -124,7 +126,7 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
   DriveEntryProto* mutable_entry =
       proto.mutable_drive_directory()->mutable_drive_entry();
   mutable_entry->mutable_file_info()->set_is_directory(true);
-  mutable_entry->set_resource_id(kDriveRootDirectoryResourceId);
+  mutable_entry->set_resource_id(kWAPIRootDirectoryResourceId);
   mutable_entry->set_upload_url(kResumableCreateMediaUrl);
   mutable_entry->set_title("drive");
 
@@ -158,9 +160,15 @@ TEST_F(DriveResourceMetadataTest, GetEntryByResourceId_RootDirectory) {
   DriveResourceMetadata resource_metadata;
   // Look up the root directory by its resource ID.
   DriveEntry* entry = resource_metadata.GetEntryByResourceId(
-      kDriveRootDirectoryResourceId);
+      kWAPIRootDirectoryResourceId);
+  ASSERT_FALSE(entry);
+  // Initialize root and look it up again.
+  resource_metadata.InitializeRootEntry(kWAPIRootDirectoryResourceId);
+  entry = resource_metadata.GetEntryByResourceId(
+      kWAPIRootDirectoryResourceId);
   ASSERT_TRUE(entry);
-  EXPECT_EQ(kDriveRootDirectoryResourceId, entry->resource_id());
+
+  EXPECT_EQ(kWAPIRootDirectoryResourceId, entry->resource_id());
 }
 
 TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId) {
@@ -351,6 +359,7 @@ TEST_F(DriveResourceMetadataTest, DBTest) {
 
   // InitFromDB should succeed.
   DriveResourceMetadata test_resource_metadata;
+  test_resource_metadata.InitializeRootEntry(kWAPIRootDirectoryResourceId);
   test_resource_metadata.InitFromDB(db_path, blocking_task_runner,
       base::Bind(&InitFromDBCallback, DRIVE_FILE_OK));
   google_apis::test_util::RunBlockingPoolTask();
@@ -442,7 +451,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
 
   // Try removing root. This should fail.
   resource_metadata_.RemoveEntryFromParent(
-      kDriveRootDirectoryResourceId,
+      resource_metadata_.root()->resource_id(),
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
           &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();

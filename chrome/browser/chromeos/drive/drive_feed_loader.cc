@@ -377,7 +377,9 @@ void DriveFeedLoader::OnGetAboutResource(
   }
 
   int64 largest_changestamp = about_resource->largest_change_id();
-  resource_metadata_->InitializeRootEntry(about_resource->root_folder_id());
+
+  // Copy the root resource ID for use in UpdateFromFeed().
+  params->root_resource_id = about_resource->root_folder_id();
 
   if (local_changestamp >= largest_changestamp) {
     if (local_changestamp > largest_changestamp) {
@@ -482,6 +484,7 @@ void DriveFeedLoader::OnFeedFromServerLoaded(scoped_ptr<LoadFeedParams> params,
   UpdateFromFeed(params->feed_list,
                  params->start_changestamp,
                  params->root_feed_changestamp,
+                 params->root_resource_id,
                  base::Bind(&DriveFeedLoader::OnUpdateFromFeed,
                             weak_ptr_factory_.GetWeakPtr(),
                             params->load_finished_callback));
@@ -840,15 +843,28 @@ void DriveFeedLoader::UpdateFromFeed(
     const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp,
+    const std::string& root_resource_id,
     const base::Closure& update_finished_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!update_finished_callback.is_null());
   DVLOG(1) << "Updating directory with a feed";
 
+  if (start_changestamp == 0) {
+    // This is a full fetch and on full fetch the root has to be initialized
+    // before children are added by DriveFeedProcessor.
+    if (google_apis::util::IsDriveV2ApiEnabled()) {
+      resource_metadata_->InitializeRootEntry(root_resource_id);
+    } else {
+      // Use fixed root resource ID for WAPI.
+      resource_metadata_->InitializeRootEntry(kWAPIRootDirectoryResourceId);
+    }
+  }
+
   feed_processor_.reset(new DriveFeedProcessor(resource_metadata_));
   // Don't send directory content change notification while performing
   // the initial content retrieval.
   const bool should_notify_changed_directories = (start_changestamp != 0);
+
   feed_processor_->ApplyFeeds(
       feed_list,
       start_changestamp,

@@ -77,6 +77,9 @@ struct LoadFeedParams {
   FileOperationCallback load_finished_callback;
   ScopedVector<google_apis::DocumentFeed> feed_list;
   scoped_ptr<GetDocumentsUiState> ui_state;
+  // On initial feed load for Drive API, remember root ID for
+  // DriveResourceData initialization later in UpdateFromFeed().
+  std::string root_resource_id;
 };
 
 // Defines set of parameters sent to callback OnProtoLoaded().
@@ -139,11 +142,13 @@ class DriveFeedLoader {
   //
   // See comments at DriveFeedProcessor::ApplyFeeds() for
   // |start_changestamp| and |root_feed_changestamp|.
+  // |root_resource_id| is used for Drive API.
   // |update_finished_callback| must not be null.
   void UpdateFromFeed(
     const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp,
+    const std::string& root_resource_id,
     const base::Closure& update_finished_callback);
 
   // Indicates whether there is a feed refreshing server request is in flight.
