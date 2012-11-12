@@ -8,7 +8,6 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
@@ -46,22 +45,16 @@ FreeDiskSpaceGetterInterface* global_free_disk_getter_for_testing = NULL;
 
 // Gets the amount of free disk space. Use
 // |global_free_disk_getter_for_testing| if set.
-int64 GetAmountOfFreeDiskSpace() {
+int64 GetAmountOfFreeDiskSpace(const FilePath& path) {
   if (global_free_disk_getter_for_testing)
     return global_free_disk_getter_for_testing->AmountOfFreeDiskSpace();
-
-  FilePath path;
-  if (!PathService::Get(base::DIR_HOME, &path)) {
-    LOG(ERROR) << "Home directory not found";
-    return -1;
-  }
   return base::SysInfo::AmountOfFreeDiskSpace(path);
 }
 
 // Returns true if we have sufficient space to store the given number of
 // bytes, while keeping kMinFreeSpace bytes on the disk.
-bool HasEnoughSpaceFor(int64 num_bytes) {
-  int64 free_space = GetAmountOfFreeDiskSpace();
+bool HasEnoughSpaceFor(int64 num_bytes, const FilePath& path) {
+  int64 free_space = GetAmountOfFreeDiskSpace(path);
   // Subtract this as if this portion does not exist.
   free_space -= kMinFreeSpace;
   return (free_space >= num_bytes);
@@ -316,7 +309,7 @@ bool DriveCache::FreeDiskSpaceOnBlockingPoolIfNeededFor(int64 num_bytes) {
   AssertOnSequencedWorkerPool();
 
   // Do nothing and return if we have enough space.
-  if (HasEnoughSpaceFor(num_bytes))
+  if (HasEnoughSpaceFor(num_bytes, cache_root_path_))
     return true;
 
   // Otherwise, try to free up the disk space.
@@ -327,7 +320,7 @@ bool DriveCache::FreeDiskSpaceOnBlockingPoolIfNeededFor(int64 num_bytes) {
   RemoveAllFiles(GetCacheDirectoryPath(CACHE_TYPE_TMP));
 
   // Check the disk space again.
-  return HasEnoughSpaceFor(num_bytes);
+  return HasEnoughSpaceFor(num_bytes, cache_root_path_);
 }
 
 void DriveCache::GetFile(const std::string& resource_id,
