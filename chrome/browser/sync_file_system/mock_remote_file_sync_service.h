@@ -48,8 +48,9 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   }
 
  private:
-  void ProcessRemoteChangeStub(RemoteChangeProcessor* processor,
-                               const fileapi::SyncFileCallback& callback);
+  void ProcessRemoteChangeStub(
+      RemoteChangeProcessor* processor,
+      const fileapi::SyncFileCallback& callback);
 
   scoped_ptr<LocalChangeProcessor> local_change_processor_;
 

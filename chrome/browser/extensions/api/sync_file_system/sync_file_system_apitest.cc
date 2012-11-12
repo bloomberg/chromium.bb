@@ -5,9 +5,17 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/sync_file_system/local_change_processor.h"
+#include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
+#include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "webkit/quota/quota_manager.h"
+
+using sync_file_system::MockRemoteFileSyncService;
+using sync_file_system::RemoteFileSyncService;
+using sync_file_system::SyncFileSystemServiceFactory;
+using ::testing::_;
 
 namespace chrome {
 
@@ -22,6 +30,10 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
   }
 
   void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    mock_remote_service_ = new ::testing::NiceMock<MockRemoteFileSyncService>;
+    SyncFileSystemServiceFactory::GetInstance()->set_mock_remote_file_service(
+        scoped_ptr<RemoteFileSyncService>(mock_remote_service_));
+
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     // TODO(calvinlo): Update test code after default quota is made const
     // (http://crbug.com/155488).
@@ -33,8 +45,13 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
     quota::QuotaManager::kSyncableStorageDefaultHostQuota = real_default_quota_;
   }
 
+  ::testing::NiceMock<MockRemoteFileSyncService>* mock_remote_service() {
+    return mock_remote_service_;
+  }
+
  private:
   extensions::Feature::ScopedCurrentChannel current_channel_;
+  ::testing::NiceMock<MockRemoteFileSyncService>* mock_remote_service_;
   int64 real_default_quota_;
 };
 
@@ -52,7 +69,9 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetUsageAndQuota) {
 }
 
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, RequestFileSystem) {
-  ASSERT_TRUE(RunExtensionTest("sync_file_system/request_file_system"))
+  EXPECT_CALL(*mock_remote_service(),
+              RegisterOriginForTrackingChanges(_, _)).Times(1);
+  ASSERT_TRUE(RunPlatformAppTest("sync_file_system/request_file_system"))
       << message_;
 }
 

@@ -27,7 +27,6 @@ MockRemoteFileSyncService::MockRemoteFileSyncService() {
 
 MockRemoteFileSyncService::~MockRemoteFileSyncService() {
 }
-
 void MockRemoteFileSyncService::ProcessRemoteChangeStub(
     RemoteChangeProcessor* processor,
     const fileapi::SyncFileCallback& callback) {

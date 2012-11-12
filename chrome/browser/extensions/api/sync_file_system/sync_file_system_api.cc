@@ -93,9 +93,6 @@ bool SyncFileSystemRequestFileSystemFunction::RunImpl() {
     return false;
   }
 
-  // TODO(kinuko): Set up sync service, see if the user is signed in
-  // and can access the service (i.e. Drive).
-
   // Initializes sync context for this extension and continue to open
   // a new file system.
   SyncFileSystemServiceFactory::GetForProfile(profile())->

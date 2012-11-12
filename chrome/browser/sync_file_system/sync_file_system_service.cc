@@ -112,8 +112,8 @@ void SyncFileSystemService::Initialize(
   local_file_service_ = local_file_service.Pass();
   remote_file_service_ = remote_file_service.Pass();
 
-  // TODO(tzik): Uncomment this line after RemoteChangeObserver lands.
-  // remote_file_service_->AddObserver(this);
+  if (remote_file_service_)
+    remote_file_service_->AddObserver(this);
 }
 
 // SyncFileSystemServiceFactory -----------------------------------------------
@@ -130,6 +130,11 @@ SyncFileSystemServiceFactory* SyncFileSystemServiceFactory::GetInstance() {
   return Singleton<SyncFileSystemServiceFactory>::get();
 }
 
+void SyncFileSystemServiceFactory::set_mock_remote_file_service(
+    scoped_ptr<RemoteFileSyncService> mock_remote_service) {
+  mock_remote_file_service_ = mock_remote_service.Pass();
+}
+
 SyncFileSystemServiceFactory::SyncFileSystemServiceFactory()
     : ProfileKeyedServiceFactory("SyncFileSystemService",
                                  ProfileDependencyManager::GetInstance()) {
@@ -141,13 +146,14 @@ ProfileKeyedService* SyncFileSystemServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   SyncFileSystemService* service = new SyncFileSystemService(profile);
 
-  // TODO(kinuko): Set up mock services if it is called for testing.
-
   scoped_ptr<LocalFileSyncService> local_file_service(
       new LocalFileSyncService);
 
   scoped_ptr<RemoteFileSyncService> remote_file_service;
   // TODO(tzik): Instantiate DriveFileSyncService.
+
+  if (mock_remote_file_service_)
+    remote_file_service = mock_remote_file_service_.Pass();
 
   service->Initialize(local_file_service.Pass(),
                       remote_file_service.Pass());

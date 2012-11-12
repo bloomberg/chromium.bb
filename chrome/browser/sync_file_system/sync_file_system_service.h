@@ -84,6 +84,13 @@ class SyncFileSystemServiceFactory : public ProfileKeyedServiceFactory {
   static SyncFileSystemService* FindForProfile(Profile* profile);
   static SyncFileSystemServiceFactory* GetInstance();
 
+  // This overrides the remote service for testing.
+  // This must be called before GetForProfile is called.
+  // (Since we use scoped_ptr it's one-off and the instance is passed
+  // to the newly created SyncFileSystemService.)
+  void set_mock_remote_file_service(
+      scoped_ptr<RemoteFileSyncService> mock_remote_service);
+
  private:
   friend struct DefaultSingletonTraits<SyncFileSystemServiceFactory>;
   SyncFileSystemServiceFactory();
@@ -92,6 +99,8 @@ class SyncFileSystemServiceFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory overrides.
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
+
+  mutable scoped_ptr<RemoteFileSyncService> mock_remote_file_service_;
 };
 
 }  // namespace sync_file_system
