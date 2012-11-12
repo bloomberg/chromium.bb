@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
@@ -25,6 +26,77 @@ using fileapi::SyncStatusCallback;
 using fileapi::SyncStatusCode;
 
 namespace sync_file_system {
+
+namespace {
+
+// Run the given join_callback when all the callbacks created by this runner
+// are run, or may dispatch it earlier if we get an error in any of the sub
+// callbacks.
+class SharedCallbackRunner
+    : public base::RefCounted<SharedCallbackRunner>,
+      public base::NonThreadSafe {
+ public:
+  SharedCallbackRunner(const SyncStatusCallback& join_callback)
+      : join_callback_(join_callback),
+        num_shared_callbacks_(0) {}
+
+  template <typename R>
+  base::Callback<void(SyncStatusCode, const R& in)>
+  CreateAssignAndRunCallback(R* out) {
+    ++num_shared_callbacks_;
+    return base::Bind(&SharedCallbackRunner::AssignAndRun<R>, this, out);
+  }
+
+ private:
+  virtual ~SharedCallbackRunner() {}
+  friend class base::RefCounted<SharedCallbackRunner>;
+
+  template <typename R>
+  void AssignAndRun(R* out, SyncStatusCode status, const R& in) {
+    DCHECK(out);
+    DCHECK_GT(num_shared_callbacks_, 0);
+    if (join_callback_.is_null())
+      return;
+    *out = in;
+    if (status != fileapi::SYNC_STATUS_OK) {
+      join_callback_.Run(status);
+      join_callback_.Reset();
+      return;
+    }
+    if (--num_shared_callbacks_ > 0)
+      return;
+    join_callback_.Run(status);
+    join_callback_.Reset();
+  }
+
+  SyncStatusCallback join_callback_;
+  int num_shared_callbacks_;
+};
+
+void VerifyFileSystemURLSetCallback(
+    base::WeakPtr<SyncFileSystemService> service,
+    const GURL& app_origin,
+    const std::string& service_name,
+    const fileapi::SyncFileSetCallback& callback,
+    fileapi::SyncStatusCode status,
+    const fileapi::FileSystemURLSet& urls) {
+  if (!service.get())
+    return;
+
+#ifndef NDEBUG
+  if (status == fileapi::SYNC_STATUS_OK) {
+    for (fileapi::FileSystemURLSet::const_iterator iter = urls.begin();
+         iter != urls.end(); ++iter) {
+      DCHECK(iter->origin() == app_origin);
+      DCHECK(iter->filesystem_id() == service_name);
+    }
+  }
+#endif
+
+  callback.Run(status, urls);
+}
+
+}  // namespace
 
 void SyncFileSystemService::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -50,8 +122,11 @@ void SyncFileSystemService::InitializeForApp(
   DCHECK(local_file_service_);
   DCHECK(app_origin == app_origin.GetOrigin());
 
-  // TODO(kinuko,tzik): Instantiate the remote_file_service for the given
-  // |service_name| if it hasn't been initialized.
+  bool inserted = initialized_app_origins_.insert(app_origin).second;
+  if (!inserted) {
+    callback.Run(fileapi::SYNC_STATUS_OK);
+    return;
+  }
 
   local_file_service_->MaybeInitializeFileSystemContext(
       app_origin, service_name, file_system_context, callback);
@@ -67,10 +142,19 @@ void SyncFileSystemService::GetConflictFiles(
     const GURL& app_origin,
     const std::string& service_name,
     const fileapi::SyncFileSetCallback& callback) {
+  DCHECK(remote_file_service_);
   DCHECK(app_origin == app_origin.GetOrigin());
 
-  // TODO(kinuko): Implement.
-  NOTIMPLEMENTED();
+  // TODO(kinuko): Should we just call Initialize first?
+  if (!ContainsKey(initialized_app_origins_, app_origin)) {
+    callback.Run(fileapi::SYNC_STATUS_NOT_INITIALIZED,
+                 fileapi::FileSystemURLSet());
+    return;
+  }
+
+  remote_file_service_->GetConflictFiles(
+      app_origin, base::Bind(&VerifyFileSystemURLSetCallback,
+                             AsWeakPtr(), app_origin, service_name, callback));
 }
 
 void SyncFileSystemService::GetConflictFileInfo(
@@ -79,10 +163,31 @@ void SyncFileSystemService::GetConflictFileInfo(
     const FileSystemURL& url,
     const ConflictFileInfoCallback& callback) {
   DCHECK(local_file_service_);
+  DCHECK(remote_file_service_);
   DCHECK(app_origin == app_origin.GetOrigin());
 
-  // TODO(kinuko): Implement.
-  NOTIMPLEMENTED();
+  // TODO(kinuko): Should we just call Initialize first?
+  if (!ContainsKey(initialized_app_origins_, app_origin)) {
+    callback.Run(fileapi::SYNC_STATUS_NOT_INITIALIZED,
+                 fileapi::ConflictFileInfo());
+    return;
+  }
+
+  // Call DidGetConflictFileInfo when both remote and local service's
+  // GetFileMetadata calls are done.
+  SyncFileMetadata* remote_metadata = new SyncFileMetadata;
+  SyncFileMetadata* local_metadata = new SyncFileMetadata;
+  SyncStatusCallback completion_callback =
+      base::Bind(&SyncFileSystemService::DidGetConflictFileInfo,
+                 AsWeakPtr(), callback, url,
+                 base::Owned(local_metadata),
+                 base::Owned(remote_metadata));
+  scoped_refptr<SharedCallbackRunner> callback_runner(
+      new SharedCallbackRunner(completion_callback));
+  local_file_service_->GetLocalFileMetadata(
+      url, callback_runner->CreateAssignAndRunCallback(local_metadata));
+  remote_file_service_->GetRemoteFileMetadata(
+      url, callback_runner->CreateAssignAndRunCallback(remote_metadata));
 }
 
 void SyncFileSystemService::OnLocalChangeAvailable(int64 pending_changes) {
@@ -114,6 +219,21 @@ void SyncFileSystemService::Initialize(
 
   if (remote_file_service_)
     remote_file_service_->AddObserver(this);
+}
+
+void SyncFileSystemService::DidGetConflictFileInfo(
+    const ConflictFileInfoCallback& callback,
+    const FileSystemURL& url,
+    const SyncFileMetadata* local_metadata,
+    const SyncFileMetadata* remote_metadata,
+    SyncStatusCode status) {
+  DCHECK(local_metadata);
+  DCHECK(remote_metadata);
+  fileapi::ConflictFileInfo info;
+  info.url = url;
+  info.local_metadata = *local_metadata;
+  info.remote_metadata = *remote_metadata;
+  callback.Run(status, info);
 }
 
 // SyncFileSystemServiceFactory -----------------------------------------------

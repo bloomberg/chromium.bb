@@ -18,6 +18,10 @@ enum SyncStatusCode {
   SYNC_STATUS_OK = 0,
   SYNC_STATUS_UNKNOWN = -1000,
 
+  // Generic error code which is not specifically related to a specific
+  // submodule error code (yet).
+  SYNC_STATUS_FAILED = -1001,
+
   // Basic ones that could be directly mapped to PlatformFileError.
   SYNC_FILE_ERROR_FAILED = -1,
   SYNC_FILE_ERROR_IN_USE = -2,
@@ -50,7 +54,7 @@ enum SyncStatusCode {
   SYNC_STATUS_RETRY = -105,
   SYNC_STATUS_NETWORK_ERROR = -106,
   SYNC_STATUS_AUTHENTICATION_FAILED = -107,
-  SYNC_STATUS_FAILED = -108
+  SYNC_STATUS_NOT_INITIALIZED = -108,
 };
 
 WEBKIT_STORAGE_EXPORT SyncStatusCode LevelDBStatusToSyncStatusCode(

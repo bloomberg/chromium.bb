@@ -5,13 +5,16 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_MOCK_REMOTE_FILE_SYNC_SERVICE_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_MOCK_REMOTE_FILE_SYNC_SERVICE_H_
 
+#include <map>
+
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
-
-class GURL;
+#include "webkit/fileapi/syncable/sync_file_metadata.h"
 
 namespace sync_file_system {
 
@@ -47,12 +50,38 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
     local_change_processor_ = processor.Pass();
   }
 
+  // Sets conflict file information.  The information is returned by
+  // the default action for GetConflictFiles and GetRemoteConflictFileInfo.
+  void add_conflict_file(const fileapi::FileSystemURL& url,
+                         const fileapi::SyncFileMetadata& metadata) {
+    conflict_file_urls_[url.origin()].insert(url);
+    conflict_file_metadata_[url] = metadata;
+  }
+
+  void reset_conflict_files() {
+    conflict_file_urls_.clear();
+    conflict_file_metadata_.clear();
+  }
+
  private:
+  typedef std::map<GURL, fileapi::FileSystemURLSet> OriginToURLSetMap;
+  typedef std::map<fileapi::FileSystemURL, fileapi::SyncFileMetadata,
+                   fileapi::FileSystemURL::Comparator> FileMetadataMap;
+
   void ProcessRemoteChangeStub(
       RemoteChangeProcessor* processor,
       const fileapi::SyncFileCallback& callback);
+  void GetConflictFilesStub(
+      const GURL& origin,
+      const fileapi::SyncFileSetCallback& callback);
+  void GetRemoteFileMetadataStub(
+      const fileapi::FileSystemURL& url,
+      const fileapi::SyncFileMetadataCallback& callback);
 
   scoped_ptr<LocalChangeProcessor> local_change_processor_;
+
+  OriginToURLSetMap conflict_file_urls_;
+  FileMetadataMap conflict_file_metadata_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRemoteFileSyncService);
 };

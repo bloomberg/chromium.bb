@@ -5,19 +5,20 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_SERVICE_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_SERVICE_H_
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
+#include "googleurl/src/gurl.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
-
-class GURL;
 
 namespace fileapi {
 class FileSystemContext;
@@ -28,7 +29,8 @@ namespace sync_file_system {
 class SyncFileSystemService
     : public ProfileKeyedService,
       public LocalFileSyncService::Observer,
-      public RemoteFileSyncService::Observer {
+      public RemoteFileSyncService::Observer,
+      public base::SupportsWeakPtr<SyncFileSystemService> {
  public:
   // ProfileKeyedService overrides.
   virtual void Shutdown() OVERRIDE;
@@ -54,12 +56,20 @@ class SyncFileSystemService
 
  private:
   friend class SyncFileSystemServiceFactory;
+  friend class SyncFileSystemServiceTest;
+  friend class scoped_ptr<SyncFileSystemService>;
 
   explicit SyncFileSystemService(Profile* profile);
   virtual ~SyncFileSystemService();
 
   void Initialize(scoped_ptr<LocalFileSyncService> local_file_service,
                   scoped_ptr<RemoteFileSyncService> remote_file_service);
+
+  void DidGetConflictFileInfo(const fileapi::ConflictFileInfoCallback& callback,
+                              const fileapi::FileSystemURL& url,
+                              const fileapi::SyncFileMetadata* local_metadata,
+                              const fileapi::SyncFileMetadata* remote_metadata,
+                              fileapi::SyncStatusCode status);
 
   // RemoteFileSyncService::Observer overrides.
   virtual void OnLocalChangeAvailable(int64 pending_changes) OVERRIDE;
@@ -74,6 +84,8 @@ class SyncFileSystemService
 
   scoped_ptr<LocalFileSyncService> local_file_service_;
   scoped_ptr<RemoteFileSyncService> remote_file_service_;
+
+  std::set<GURL> initialized_app_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemService);
 };
