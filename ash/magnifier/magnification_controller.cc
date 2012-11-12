@@ -9,7 +9,6 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/events/event.h"
@@ -19,6 +18,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/compound_event_filter.h"
 
 namespace {
 

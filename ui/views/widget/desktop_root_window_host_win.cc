@@ -13,8 +13,8 @@
 #include "ui/aura/desktop/desktop_dispatcher_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/shared/compound_event_filter.h"
-#include "ui/aura/shared/input_method_event_filter.h"
+#include "ui/views/corewm/compound_event_filter.h"
+#include "ui/views/corewm/input_method_event_filter.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/native_theme/native_theme_aura.h"
@@ -133,10 +133,10 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
   // CEF sets focus to the window the user clicks down on.
   // TODO(beng): see if we can't do this some other way. CEF seems a heavy-
   //             handed way of accomplishing focus.
-  root_window_event_filter_ = new aura::shared::CompoundEventFilter;
+  root_window_event_filter_ = new views::corewm::CompoundEventFilter;
   root_window_->SetEventFilter(root_window_event_filter_);
 
-  input_method_filter_.reset(new aura::shared::InputMethodEventFilter);
+  input_method_filter_.reset(new views::corewm::InputMethodEventFilter);
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window_);
   root_window_event_filter_->AddFilter(input_method_filter_.get());
 

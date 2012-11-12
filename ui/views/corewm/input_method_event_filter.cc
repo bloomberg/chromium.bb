@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/shared/input_method_event_filter.h"
+#include "ui/views/corewm/input_method_event_filter.h"
 
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -10,8 +10,8 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 
-namespace aura {
-namespace shared {
+namespace views {
+namespace corewm {
 
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodEventFilter, public:
@@ -97,5 +97,5 @@ void InputMethodEventFilter::DispatchFabricatedKeyEventPostIME(
   target_root_window_->AsRootWindowHostDelegate()->OnHostKeyEvent(&aura_event);
 }
 
-}  // namespace shared
-}  // namespace aura
+}  // namespace corewm
+}  // namespace views

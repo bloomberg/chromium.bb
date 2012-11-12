@@ -30,15 +30,15 @@ namespace client {
 class DefaultCaptureClient;
 class ScreenPositionClient;
 }
-namespace shared {
-class CompoundEventFilter;
-class InputMethodEventFilter;
-}
 }
 
 namespace views {
 class X11DesktopWindowMoveClient;
 class X11WindowEventFilter;
+namespace corewm {
+class CompoundEventFilter;
+class InputMethodEventFilter;
+}
 
 class VIEWS_EXPORT DesktopRootWindowHostLinux
     : public DesktopRootWindowHost,
@@ -222,10 +222,10 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   ::Cursor invisible_cursor_;
 
   // Toplevel event filter which dispatches to other event filters.
-  aura::shared::CompoundEventFilter* root_window_event_filter_;
+  views::corewm::CompoundEventFilter* root_window_event_filter_;
 
   // An event filter that pre-handles all key events to send them to an IME.
-  scoped_ptr<aura::shared::InputMethodEventFilter> input_method_filter_;
+  scoped_ptr<views::corewm::InputMethodEventFilter> input_method_filter_;
   scoped_ptr<X11WindowEventFilter> x11_window_event_filter_;
   scoped_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 

@@ -12,7 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/shared/compound_event_filter.h"
+#include "ui/views/corewm/compound_event_filter.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"

@@ -15,7 +15,6 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -23,6 +22,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -101,7 +101,7 @@ class MultiWindowResizeController::ResizeView : public views::View {
   virtual gfx::NativeCursor GetCursor(
       const ui::MouseEvent& event) OVERRIDE {
     int component = (direction_ == LEFT_RIGHT) ? HTRIGHT : HTBOTTOM;
-    return aura::shared::CompoundEventFilter::CursorForWindowComponent(
+    return views::corewm::CompoundEventFilter::CursorForWindowComponent(
         component);
   }
 

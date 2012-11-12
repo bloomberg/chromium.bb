@@ -33,10 +33,6 @@ class Window;
 namespace client {
 class UserActionClient;
 }
-namespace shared {
-class CompoundEventFilter;
-class InputMethodEventFilter;
-}
 }
 namespace chromeos {
 class OutputConfigurator;
@@ -56,6 +52,10 @@ class Layer;
 namespace views {
 class NonClientFrameView;
 class Widget;
+namespace corewm {
+class CompoundEventFilter;
+class InputMethodEventFilter;
+}
 }
 
 namespace ash {
@@ -132,7 +132,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
     explicit TestApi(Shell* shell);
 
     internal::RootWindowLayoutManager* root_window_layout();
-    aura::shared::InputMethodEventFilter* input_method_event_filter();
+    views::corewm::InputMethodEventFilter* input_method_event_filter();
     internal::SystemGestureEventFilter* system_gesture_event_filter();
     internal::WorkspaceController* workspace_controller();
     internal::ScreenPositionController* screen_position_controller();
@@ -267,7 +267,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   }
 #endif  // !defined(OS_MACOSX)
 
-  aura::shared::CompoundEventFilter* env_filter() {
+  views::corewm::CompoundEventFilter* env_filter() {
     return env_filter_.get();
   }
   internal::TooltipController* tooltip_controller() {
@@ -451,7 +451,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   aura::RootWindow* active_root_window_;
 
   // The CompoundEventFilter owned by aura::Env object.
-  scoped_ptr<aura::shared::CompoundEventFilter> env_filter_;
+  scoped_ptr<views::corewm::CompoundEventFilter> env_filter_;
 
   std::vector<WindowAndBoundsPair> to_restore_;
 
@@ -510,7 +510,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
 #endif
 
   // An event filter that pre-handles all key events to send them to an IME.
-  scoped_ptr<aura::shared::InputMethodEventFilter> input_method_filter_;
+  scoped_ptr<views::corewm::InputMethodEventFilter> input_method_filter_;
 
   // An event filter that silently keeps track of all touch events and controls
   // a heads-up display. This is enabled only if --ash-touch-hud flag is used.

@@ -14,8 +14,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/shared/compound_event_filter.h"
-#include "ui/aura/shared/input_method_event_filter.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_event_filter.h"
@@ -25,6 +23,8 @@
 #include "ui/base/events/event.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/compound_event_filter.h"
+#include "ui/views/corewm/input_method_event_filter.h"
 
 namespace {
 
@@ -525,7 +525,7 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
   scoped_ptr<aura::test::TestEventFilter> f2(new aura::test::TestEventFilter);
 
   // Adds them to root window event filter.
-  aura::shared::CompoundEventFilter* env_filter =
+  views::corewm::CompoundEventFilter* env_filter =
       Shell::GetInstance()->env_filter();
   env_filter->AddFilter(f1.get());
   env_filter->AddFilter(f2.get());

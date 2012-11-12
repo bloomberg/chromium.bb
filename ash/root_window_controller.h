@@ -13,19 +13,22 @@
 
 class SkBitmap;
 
-namespace gfx {
-class Point;
-}
-
 namespace aura {
 class EventFilter;
 class RootWindow;
 class Window;
-namespace shared {
+}
+
+namespace gfx {
+class Point;
+}
+
+namespace views {
+namespace corewm {
 class InputMethodEventFilter;
 class RootWindowEventFilter;
-}  // namespace shared
-}  // namespace aura
+}
+}
 
 namespace ash {
 class Launcher;

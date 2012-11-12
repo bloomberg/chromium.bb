@@ -15,10 +15,6 @@ class Window;
 namespace client {
 class DefaultCaptureClient;
 }
-namespace shared {
-class CompoundEventFilter;
-class InputMethodEventFilter;
-}
 namespace test {
 class TestActivationClient;
 }
@@ -26,6 +22,13 @@ class TestActivationClient;
 
 namespace gfx {
 class Rect;
+}
+
+namespace views {
+namespace corewm {
+class CompoundEventFilter;
+class InputMethodEventFilter;
+}
 }
 
 namespace content {
@@ -46,10 +49,10 @@ class ShellStackingClientAsh : public aura::client::StackingClient {
   scoped_ptr<aura::RootWindow> root_window_;
 
   // Owned by RootWindow
-  aura::shared::CompoundEventFilter* root_window_event_filter_;
+  views::corewm::CompoundEventFilter* root_window_event_filter_;
 
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
-  scoped_ptr<aura::shared::InputMethodEventFilter> input_method_filter_;
+  scoped_ptr<views::corewm::InputMethodEventFilter> input_method_filter_;
   scoped_ptr<aura::test::TestActivationClient> test_activation_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellStackingClientAsh);

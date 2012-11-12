@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHARED_COMPOUND_EVENT_FILTER_H_
-#define UI_AURA_SHARED_COMPOUND_EVENT_FILTER_H_
+#ifndef UI_VIEWS_COREWM_COMPOUND_EVENT_FILTER_H_
+#define UI_VIEWS_COREWM_COMPOUND_EVENT_FILTER_H_
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
@@ -11,6 +11,11 @@
 #include "ui/base/events/event.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
+
+namespace aura {
+class CursorManager;
+class RootWindow;
+}
 
 namespace ui {
 class GestureEvent;
@@ -20,11 +25,8 @@ class MouseEvent;
 class TouchEvent;
 }
 
-namespace aura {
-class CursorManager;
-class RootWindow;
-
-namespace shared {
+namespace views {
+namespace corewm {
 
 // CompoundEventFilter gets all events first and can provide actions to those
 // events. It implements global features such as click to activate a window and
@@ -34,7 +36,7 @@ namespace shared {
 // consumed by any of those filters. If an event is consumed by a filter, the
 // rest of the filter(s) and CompoundEventFilter will not see the consumed
 // event.
-class VIEWS_EXPORT CompoundEventFilter : public EventFilter {
+class VIEWS_EXPORT CompoundEventFilter : public aura::EventFilter {
  public:
   CompoundEventFilter();
   virtual ~CompoundEventFilter();
@@ -52,13 +54,13 @@ class VIEWS_EXPORT CompoundEventFilter : public EventFilter {
   // the EventFilter.
   // NOTE: EventFilters are deprecated. Use env::AddPreTargetEventHandler etc.
   // instead.
-  void AddFilter(EventFilter* filter);
-  void RemoveFilter(EventFilter* filter);
+  void AddFilter(aura::EventFilter* filter);
+  void RemoveFilter(aura::EventFilter* filter);
 
  private:
   // Updates the cursor if the target provides a custom one, and provides
   // default resize cursors for window edges.
-  void UpdateCursor(Window* target, ui::MouseEvent* event);
+  void UpdateCursor(aura::Window* target, ui::MouseEvent* event);
 
   // Dispatches event to additional filters.
   ui::EventResult FilterKeyEvent(ui::KeyEvent* event);
@@ -81,8 +83,9 @@ class VIEWS_EXPORT CompoundEventFilter : public EventFilter {
   virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
   virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+
   // Additional event filters that pre-handles events.
-  ObserverList<EventFilter, true> filters_;
+  ObserverList<aura::EventFilter, true> filters_;
 
   // True if the cursur was hidden by the filter.
   bool cursor_hidden_by_filter_;
@@ -90,7 +93,7 @@ class VIEWS_EXPORT CompoundEventFilter : public EventFilter {
   DISALLOW_COPY_AND_ASSIGN(CompoundEventFilter);
 };
 
-}  // namespace shared
-}  // namespace aura
+}  // namespace corewm
+}  // namespace views
 
-#endif  // UI_AURA_COMPOUND_EVENT_FILTER_H_
+#endif  // UI_VIEWS_COREWM_COMPOUND_EVENT_FILTER_H_

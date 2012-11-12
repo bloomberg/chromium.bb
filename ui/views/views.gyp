@@ -238,11 +238,10 @@
         'controls/tree/tree_view_views.h',
         'controls/tree/tree_view_win.cc',
         'controls/tree/tree_view_win.h',
-        # TODO(beng): rename to 'corewm/' hence this sort order:
-        '../aura/shared/compound_event_filter.cc',
-        '../aura/shared/compound_event_filter.h',
-        '../aura/shared/input_method_event_filter.cc',
-        '../aura/shared/input_method_event_filter.h',
+        'corewm/compound_event_filter.cc',
+        'corewm/compound_event_filter.h',
+        'corewm/input_method_event_filter.cc',
+        'corewm/input_method_event_filter.h',
         'debug_utils.cc',
         'debug_utils.h',
         'drag_controller.h',
@@ -455,8 +454,8 @@
         }],
         ['use_aura==0', {
           'sources/': [
-            ['exclude', '../aura/shared/'],
             ['exclude', '../aura/desktop/'],
+            ['exclude', 'corewm'],
             ['exclude', '/desktop_[^/]*\\.cc$'],
             ['exclude', '/x11_[^/]*\\.cc$'],
             ['exclude', 'widget/native_widget_aura_window_observer.cc'],
@@ -626,9 +625,8 @@
         'controls/textfield/native_textfield_views_unittest.cc',
         'controls/textfield/textfield_views_model_unittest.cc',
         'controls/tree/tree_view_views_unittest.cc',
-        # TODO(beng): rename 'corewm/' hence this sort order
-        '../aura/shared/compound_event_filter_unittest.cc',
-        '../aura/shared/input_method_event_filter_unittest.cc',
+        'corewm/compound_event_filter_unittest.cc',
+        'corewm/input_method_event_filter_unittest.cc',
         'focus/focus_manager_test.h',
         'focus/focus_manager_test.cc',
         'focus/focus_manager_unittest.cc',
@@ -681,9 +679,9 @@
           ],
         }, {
           'sources/': [
-            ['exclude', '../aura/shared/'],
             ['exclude', '../aura/test/test_desktop_delegate.cc'],
             ['exclude', '../aura/test/test_desktop_delegate.h'],
+            ['exclude', 'corewm'],
             ['exclude', 'widget/native_widget_aura_unittest.cc'],
           ],
         }],

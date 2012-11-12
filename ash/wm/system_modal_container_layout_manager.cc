@@ -16,7 +16,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/shared/compound_event_filter.h"
+#include "ui/views/corewm/compound_event_filter.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
 #include "ui/compositor/layer.h"

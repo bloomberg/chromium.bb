@@ -7,9 +7,9 @@
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/shared/compound_event_filter.h"
-#include "ui/aura/shared/input_method_event_filter.h"
 #include "ui/aura/test/test_activation_client.h"
+#include "ui/views/corewm/compound_event_filter.h"
+#include "ui/views/corewm/input_method_event_filter.h"
 
 namespace content {
 
@@ -35,11 +35,11 @@ aura::Window* ShellStackingClientAsh::GetDefaultParent(
     root_window_->Init();
     root_window_->set_focus_manager(focus_manager);
 
-    root_window_event_filter_ = new aura::shared::CompoundEventFilter;
+    root_window_event_filter_ = new views::corewm::CompoundEventFilter;
     // Pass ownership of the filter to the root_window.
     root_window_->SetEventFilter(root_window_event_filter_);
 
-    input_method_filter_.reset(new aura::shared::InputMethodEventFilter());
+    input_method_filter_.reset(new views::corewm::InputMethodEventFilter);
     input_method_filter_->SetInputMethodPropertyInRootWindow(
         root_window_.get());
     root_window_event_filter_->AddFilter(input_method_filter_.get());

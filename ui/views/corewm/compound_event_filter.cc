@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/shared/compound_event_filter.h"
+#include "ui/views/corewm/compound_event_filter.h"
 
 #include "base/hash_tables.h"
 #include "ui/aura/client/activation_client.h"
@@ -16,20 +16,20 @@
 #include "ui/base/events/event.h"
 #include "ui/base/hit_test.h"
 
-namespace aura {
-namespace shared {
+namespace views {
+namespace corewm {
 
 namespace {
 
-Window* FindFocusableWindowFor(Window* window) {
+aura::Window* FindFocusableWindowFor(aura::Window* window) {
   while (window && !window->CanFocus())
     window = window->parent();
   return window;
 }
 
-Window* GetActiveWindow(Window* window) {
+aura::Window* GetActiveWindow(aura::Window* window) {
   DCHECK(window->GetRootWindow());
-  return client::GetActivationClient(window->GetRootWindow())->
+  return aura::client::GetActivationClient(window->GetRootWindow())->
       GetActiveWindow();
 }
 
@@ -116,28 +116,29 @@ gfx::NativeCursor CompoundEventFilter::CursorForWindowComponent(
   }
 }
 
-void CompoundEventFilter::AddFilter(EventFilter* filter) {
+void CompoundEventFilter::AddFilter(aura::EventFilter* filter) {
   filters_.AddObserver(filter);
 }
 
-void CompoundEventFilter::RemoveFilter(EventFilter* filter) {
+void CompoundEventFilter::RemoveFilter(aura::EventFilter* filter) {
   filters_.RemoveObserver(filter);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // CompoundEventFilter, private:
 
-void CompoundEventFilter::UpdateCursor(Window* target, ui::MouseEvent* event) {
+void CompoundEventFilter::UpdateCursor(aura::Window* target,
+                                       ui::MouseEvent* event) {
   // If drag and drop is in progress, let the drag drop client set the cursor
   // instead of setting the cursor here.
   aura::RootWindow* root_window = target->GetRootWindow();
-  client::DragDropClient* drag_drop_client =
-      client::GetDragDropClient(root_window);
+  aura::client::DragDropClient* drag_drop_client =
+      aura::client::GetDragDropClient(root_window);
   if (drag_drop_client && drag_drop_client->IsDragDropInProgress())
     return;
 
-  client::CursorClient* cursor_client =
-      client::GetCursorClient(root_window);
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(root_window);
   if (cursor_client) {
     gfx::NativeCursor cursor = target->GetCursor(event->location());
     if (event->flags() & ui::EF_IS_NON_CLIENT) {
@@ -153,7 +154,7 @@ void CompoundEventFilter::UpdateCursor(Window* target, ui::MouseEvent* event) {
 ui::EventResult CompoundEventFilter::FilterKeyEvent(ui::KeyEvent* event) {
   int result = ui::ER_UNHANDLED;
   if (filters_.might_have_observers()) {
-    ObserverListBase<EventFilter>::Iterator it(filters_);
+    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
     EventFilter* filter;
     while (!(result & ui::ER_CONSUMED) && (filter = it.GetNext()) != NULL)
       result |= filter->OnKeyEvent(event);
@@ -164,7 +165,7 @@ ui::EventResult CompoundEventFilter::FilterKeyEvent(ui::KeyEvent* event) {
 ui::EventResult CompoundEventFilter::FilterMouseEvent(ui::MouseEvent* event) {
   int result = ui::ER_UNHANDLED;
   if (filters_.might_have_observers()) {
-    ObserverListBase<EventFilter>::Iterator it(filters_);
+    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
     EventFilter* filter;
     while (!(result & ui::ER_CONSUMED) && (filter = it.GetNext()) != NULL)
       result |= filter->OnMouseEvent(event);
@@ -175,7 +176,7 @@ ui::EventResult CompoundEventFilter::FilterMouseEvent(ui::MouseEvent* event) {
 ui::EventResult CompoundEventFilter::FilterTouchEvent(ui::TouchEvent* event) {
   int result = ui::ER_UNHANDLED;
   if (filters_.might_have_observers()) {
-    ObserverListBase<EventFilter>::Iterator it(filters_);
+    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
     EventFilter* filter;
     while (!(result & ui::ER_CONSUMED) && (filter = it.GetNext()) != NULL) {
       result |= filter->OnTouchEvent(event);
@@ -188,8 +189,8 @@ void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
                                                      ui::Event* event,
                                                      bool show) {
   if (!(event->flags() & ui::EF_IS_SYNTHESIZED)) {
-    client::CursorClient* client =
-        client::GetCursorClient(target->GetRootWindow());
+    aura::client::CursorClient* client =
+        aura::client::GetCursorClient(target->GetRootWindow());
     if (client) {
       if (show && cursor_hidden_by_filter_) {
         cursor_hidden_by_filter_ = false;
@@ -209,15 +210,15 @@ void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
 ui::EventResult CompoundEventFilter::OnKeyEvent(ui::KeyEvent* event) {
   if (ShouldHideCursorOnKeyEvent(*event)) {
     SetCursorVisibilityOnEvent(
-        static_cast<Window*>(event->target()), event, false);
+        static_cast<aura::Window*>(event->target()), event, false);
   }
 
   return FilterKeyEvent(event);
 }
 
 ui::EventResult CompoundEventFilter::OnMouseEvent(ui::MouseEvent* event) {
-  Window* window = static_cast<Window*>(event->target());
-  WindowTracker window_tracker;
+  aura::Window* window = static_cast<aura::Window*>(event->target());
+  aura::WindowTracker window_tracker;
   window_tracker.Add(window);
 
   // We must always update the cursor, otherwise the cursor can get stuck if an
@@ -269,13 +270,13 @@ ui::EventResult CompoundEventFilter::OnTouchEvent(ui::TouchEvent* event) {
 ui::EventResult CompoundEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   int result = ui::ER_UNHANDLED;
   if (filters_.might_have_observers()) {
-    ObserverListBase<EventFilter>::Iterator it(filters_);
+    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
     EventFilter* filter;
     while (!(result & ui::ER_CONSUMED) && (filter = it.GetNext()) != NULL)
       result |= filter->OnGestureEvent(event);
   }
 
-  Window* window = static_cast<Window*>(event->target());
+  aura::Window* window = static_cast<aura::Window*>(event->target());
   if (event->type() == ui::ET_GESTURE_BEGIN &&
       event->details().touch_points() == 1 &&
       !(result & ui::ER_CONSUMED) &&
@@ -288,5 +289,5 @@ ui::EventResult CompoundEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   return static_cast<ui::EventResult>(result);
 }
 
-}  // namespace shared
-}  // namespace aura
+}  // namespace corewm
+}  // namespace views

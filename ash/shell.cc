@@ -72,8 +72,6 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/shared/compound_event_filter.h"
-#include "ui/aura/shared/input_method_event_filter.h"
 #include "ui/aura/ui_controls_aura.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -83,6 +81,8 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/ui_controls/ui_controls.h"
+#include "ui/views/corewm/compound_event_filter.h"
+#include "ui/views/corewm/input_method_event_filter.h"
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
@@ -165,7 +165,7 @@ internal::RootWindowLayoutManager* Shell::TestApi::root_window_layout() {
   return shell_->GetPrimaryRootWindowController()->root_window_layout();
 }
 
-aura::shared::InputMethodEventFilter*
+views::corewm::InputMethodEventFilter*
     Shell::TestApi::input_method_event_filter() {
   return shell_->input_method_filter_.get();
 }
@@ -388,7 +388,7 @@ void Shell::Init() {
   // Launcher, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
-  env_filter_.reset(new aura::shared::CompoundEventFilter);
+  env_filter_.reset(new views::corewm::CompoundEventFilter);
   AddEnvEventFilter(env_filter_.get());
 
   focus_manager_.reset(new aura::FocusManager);
@@ -422,7 +422,7 @@ void Shell::Init() {
   AddEnvEventFilter(overlay_filter_.get());
   AddShellObserver(overlay_filter_.get());
 
-  input_method_filter_.reset(new aura::shared::InputMethodEventFilter());
+  input_method_filter_.reset(new views::corewm::InputMethodEventFilter);
   AddEnvEventFilter(input_method_filter_.get());
 
 #if !defined(OS_MACOSX)

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/shared/input_method_event_filter.h"
+#include "ui/views/corewm/input_method_event_filter.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/shared/compound_event_filter.h"
+#include "ui/views/corewm/compound_event_filter.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_activation_client.h"
@@ -23,24 +23,23 @@
 DISABLED_TestInputMethodKeyEventPropagation
 #endif
 
-namespace aura {
-namespace test {
+namespace views {
+namespace corewm {
 
-typedef AuraTestBase InputMethodEventFilterTest;
+typedef aura::test::AuraTestBase InputMethodEventFilterTest;
 
 TEST_F(InputMethodEventFilterTest, TestInputMethodProperty) {
-  aura::shared::CompoundEventFilter* root_filter =
-      new aura::shared::CompoundEventFilter;
+  CompoundEventFilter* root_filter = new CompoundEventFilter;
   root_window()->SetEventFilter(root_filter);
 
   // Add the InputMethodEventFilter before the TestEventFilter.
-  aura::shared::InputMethodEventFilter input_method_event_filter;
+  InputMethodEventFilter input_method_event_filter;
   root_filter->AddFilter(&input_method_event_filter);
 
   // Tests if InputMethodEventFilter adds a window property on its
   // construction.
-  EXPECT_TRUE(
-      root_window()->GetProperty(aura::client::kRootWindowInputMethodKey));
+  EXPECT_TRUE(root_window()->GetProperty(
+      aura::client::kRootWindowInputMethodKey));
 
   root_filter->RemoveFilter(&input_method_event_filter);
 }
@@ -48,12 +47,11 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodProperty) {
 // Tests if InputMethodEventFilter dispatches a ui::ET_TRANSLATED_KEY_* event to
 // the root window.
 TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
-  aura::shared::CompoundEventFilter* root_filter =
-      new shared::CompoundEventFilter;
+  CompoundEventFilter* root_filter = new CompoundEventFilter;
   root_window()->SetEventFilter(root_filter);
 
   // Add the InputMethodEventFilter before the TestEventFilter.
-  aura::shared::InputMethodEventFilter input_method_event_filter;
+  InputMethodEventFilter input_method_event_filter;
   root_filter->AddFilter(&input_method_event_filter);
 
   // Add TestEventFilter to the RootWindow.
@@ -89,5 +87,5 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
   window.reset();
 }
 
-}  // namespace test
-}  // namespace aura
+}  // namespace corewm
+}  // namespace views

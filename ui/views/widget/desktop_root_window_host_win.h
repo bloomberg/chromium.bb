@@ -19,14 +19,14 @@ namespace client {
 class DefaultCaptureClient;
 class ScreenPositionClient;
 }
-namespace shared {
-class CompoundEventFilter;
-class InputMethodEventFilter;
-}
 }
 
 namespace views {
 class HWNDMessageHandler;
+namespace corewm {
+class CompoundEventFilter;
+class InputMethodEventFilter;
+}
 
 class VIEWS_EXPORT DesktopRootWindowHostWin
     : public DesktopRootWindowHost,
@@ -213,7 +213,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   scoped_ptr<aura::FocusManager> focus_manager_;
   // Depends on focus_manager_.
   scoped_ptr<aura::DesktopActivationClient> activation_client_;
-  scoped_ptr<aura::shared::InputMethodEventFilter> input_method_filter_;
+  scoped_ptr<views::corewm::InputMethodEventFilter> input_method_filter_;
 
   // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura
   //             instead of providing this route back to Widget.
@@ -232,7 +232,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   scoped_ptr<aura::DesktopCursorClient> cursor_client_;
 
   // The RootWindow's CompoundEventFilter.
-  aura::shared::CompoundEventFilter* root_window_event_filter_;
+  views::corewm::CompoundEventFilter* root_window_event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostWin);
 };
