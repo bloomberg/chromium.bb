@@ -14,9 +14,6 @@ namespace android_webview {
 class AwContentClient : public content::ContentClient {
  public:
   // ContentClient implementation.
-  virtual void AddAdditionalSchemes(
-      std::vector<std::string>* standard_schemes,
-      std::vector<std::string>* savable_schemes) OVERRIDE;
   virtual std::string GetProduct() const OVERRIDE;
   virtual std::string GetUserAgent() const OVERRIDE;
   virtual string16 GetLocalizedString(int message_id) const OVERRIDE;
