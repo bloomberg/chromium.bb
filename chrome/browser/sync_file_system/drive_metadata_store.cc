@@ -62,6 +62,7 @@ class DriveMetadataDB {
                                          const std::string& resource_id);
   SyncStatusCode UpdateSyncOriginAsIncremental(const GURL& origin,
                                                const std::string& resource_id);
+  SyncStatusCode RemoveOrigin(const GURL& origin);
 
   SyncStatusCode GetSyncOrigins(ResourceIDMap* batch_sync_origins,
                                 ResourceIDMap* incremental_sync_origins);
@@ -371,6 +372,29 @@ void DriveMetadataStore::MoveBatchSyncOriginToIncremental(const GURL& origin) {
   batch_sync_origins_.erase(found);
 }
 
+void DriveMetadataStore::RemoveOrigin(
+    const GURL& origin,
+    const fileapi::SyncStatusCallback& callback) {
+  DCHECK(CalledOnValidThread());
+
+  metadata_map_.erase(origin);
+  batch_sync_origins_.erase(origin);
+  incremental_sync_origins_.erase(origin);
+
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_, FROM_HERE,
+      base::Bind(&DriveMetadataDB::RemoveOrigin,
+                 base::Unretained(db_.get()), origin),
+      base::Bind(&DriveMetadataStore::DidRemoveOrigin, AsWeakPtr(), callback));
+}
+
+void DriveMetadataStore::DidRemoveOrigin(
+    const fileapi::SyncStatusCallback& callback,
+    fileapi::SyncStatusCode status) {
+  UpdateDBStatus(status);
+  callback.Run(status);
+}
+
 void DriveMetadataStore::UpdateDBStatus(SyncStatusCode status) {
   DCHECK(CalledOnValidThread());
   if (db_status_ != fileapi::SYNC_STATUS_OK &&
@@ -567,6 +591,39 @@ SyncStatusCode DriveMetadataDB::UpdateSyncOriginAsIncremental(
   batch.Put(CreateKeyForIncrementalSyncOrigin(origin), resource_id);
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
 
+  return fileapi::LevelDBStatusToSyncStatusCode(status);
+}
+
+SyncStatusCode DriveMetadataDB::RemoveOrigin(const GURL& origin) {
+  DCHECK(CalledOnValidThread());
+
+  leveldb::WriteBatch batch;
+  batch.Delete(kDriveBatchSyncOriginKeyPrefix + origin.spec());
+  batch.Delete(kDriveIncrementalSyncOriginKeyPrefix + origin.spec());
+
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  std::string serialized_origin;
+  bool success = fileapi::SerializeSyncableFileSystemURL(
+      fileapi::CreateSyncableFileSystemURL(origin, kServiceName, FilePath()),
+      &serialized_origin);
+  DCHECK(success);
+  for (itr->Seek(kDriveMetadataKeyPrefix + serialized_origin);
+       itr->Valid(); itr->Next()) {
+    std::string key = itr->key().ToString();
+    if (!StartsWithASCII(key, kDriveMetadataKeyPrefix, true))
+      break;
+    std::string serialized_url(key.begin() + kDriveMetadataKeyPrefixLength - 1,
+                               key.end());
+    FileSystemURL url;
+    bool success = fileapi::DeserializeSyncableFileSystemURL(
+        serialized_url, &url);
+    DCHECK(success);
+    if (url.origin() != origin)
+      break;
+    batch.Delete(key);
+  }
+
+  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
   return fileapi::LevelDBStatusToSyncStatusCode(status);
 }
 
