@@ -73,18 +73,17 @@ bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
       request_.devices.find(content::MEDIA_TAB_AUDIO_CAPTURE);
   if (tab_video != request_.devices.end() ||
       tab_audio != request_.devices.end()) {
-    extensions::TabCaptureRegistry* registry =
-        extensions::TabCaptureRegistryFactory::GetForProfile(profile_);
-
-    DCHECK(!tab_audio->second.empty() || !tab_video->second.empty());
     std::string audio_device_id;
     std::string video_device_id;
 
-    if (!tab_audio->second.empty())
+    if ((tab_audio != request_.devices.end()) && !tab_audio->second.empty())
       audio_device_id = tab_audio->second[0].device_id;
-    if (!tab_video->second.empty())
+    if ((tab_video != request_.devices.end()) && !tab_video->second.empty())
       video_device_id = tab_video->second[0].device_id;
 
+    DCHECK(!audio_device_id.empty() || !video_device_id.empty());
+    extensions::TabCaptureRegistry* registry =
+        extensions::TabCaptureRegistryFactory::GetForProfile(profile_);
     if (!registry->VerifyRequest(!video_device_id.empty() ?
                                  video_device_id : audio_device_id)) {
       Deny();
