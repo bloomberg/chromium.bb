@@ -642,7 +642,7 @@ use_output(struct weston_output *output)
 }
 
 static void
-weston_compositor_use_shader(struct weston_compositor *compositor,
+use_shader(struct weston_compositor *compositor,
 			     struct weston_shader *shader)
 {
 	if (compositor->current_shader == shader)
@@ -653,7 +653,7 @@ weston_compositor_use_shader(struct weston_compositor *compositor,
 }
 
 static void
-weston_shader_uniforms(struct weston_shader *shader,
+shader_uniforms(struct weston_shader *shader,
 		       struct weston_surface *surface,
 		       struct weston_output *output)
 {
@@ -696,12 +696,12 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 	if (ec->fan_debug) {
-		weston_compositor_use_shader(ec, &ec->solid_shader);
-		weston_shader_uniforms(&ec->solid_shader, es, output);
+		use_shader(ec, &ec->solid_shader);
+		shader_uniforms(&ec->solid_shader, es, output);
 	}
 
-	weston_compositor_use_shader(ec, es->shader);
-	weston_shader_uniforms(es->shader, es, output);
+	use_shader(ec, es->shader);
+	shader_uniforms(es->shader, es, output);
 
 	if (es->transform.enabled || output->zoom.active)
 		filter = GL_LINEAR;
@@ -727,8 +727,8 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 			 * that forces texture alpha = 1.0.
 			 * Xwayland surfaces need this.
 			 */
-			weston_compositor_use_shader(ec, &ec->texture_shader_rgbx);
-			weston_shader_uniforms(&ec->texture_shader_rgbx, es, output);
+			use_shader(ec, &ec->texture_shader_rgbx);
+			shader_uniforms(&ec->texture_shader_rgbx, es, output);
 		}
 
 		if (es->alpha < 1.0)
@@ -740,7 +740,7 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	}
 
 	if (pixman_region32_not_empty(&surface_blend)) {
-		weston_compositor_use_shader(ec, es->shader);
+		use_shader(ec, es->shader);
 		glEnable(GL_BLEND);
 		repaint_region(es, &repaint, &surface_blend);
 	}
@@ -849,8 +849,7 @@ draw_border(struct weston_output *output)
 	int n;
 
 	glDisable(GL_BLEND);
-	glUseProgram(shader->program);
-	ec->current_shader = shader;
+	use_shader(ec, shader);
 
 	glUniformMatrix4fv(shader->proj_uniform,
 			   1, GL_FALSE, output->matrix.d);
@@ -1307,7 +1306,7 @@ compile_shader(GLenum type, int count, const char **sources)
 }
 
 static int
-weston_shader_init(struct weston_shader *shader, struct weston_compositor *ec,
+shader_init(struct weston_shader *shader, struct weston_compositor *ec,
 		   const char *vertex_source, const char *fragment_source)
 {
 	char msg[512];
@@ -1359,7 +1358,7 @@ weston_shader_init(struct weston_shader *shader, struct weston_compositor *ec,
 }
 
 static void
-weston_shader_release(struct weston_shader *shader)
+shader_release(struct weston_shader *shader)
 {
 	glDeleteShader(shader->vertex_shader);
 	glDeleteShader(shader->fragment_shader);
@@ -1682,26 +1681,26 @@ gles2_renderer_display(struct weston_compositor *ec)
 static int
 compile_shaders(struct weston_compositor *ec)
 {
-	if (weston_shader_init(&ec->texture_shader_rgba, ec,
+	if (shader_init(&ec->texture_shader_rgba, ec,
 			     vertex_shader, texture_fragment_shader_rgba) < 0)
 		return -1;
-	if (weston_shader_init(&ec->texture_shader_rgbx, ec,
+	if (shader_init(&ec->texture_shader_rgbx, ec,
 			     vertex_shader, texture_fragment_shader_rgbx) < 0)
 		return -1;
 	if (ec->has_egl_image_external &&
-			weston_shader_init(&ec->texture_shader_egl_external, ec,
+			shader_init(&ec->texture_shader_egl_external, ec,
 				vertex_shader, texture_fragment_shader_egl_external) < 0)
 		return -1;
-	if (weston_shader_init(&ec->texture_shader_y_uv, ec,
+	if (shader_init(&ec->texture_shader_y_uv, ec,
 			       vertex_shader, texture_fragment_shader_y_uv) < 0)
 		return -1;
-	if (weston_shader_init(&ec->texture_shader_y_u_v, ec,
+	if (shader_init(&ec->texture_shader_y_u_v, ec,
 			       vertex_shader, texture_fragment_shader_y_u_v) < 0)
 		return -1;
-	if (weston_shader_init(&ec->texture_shader_y_xuxv, ec,
+	if (shader_init(&ec->texture_shader_y_xuxv, ec,
 			       vertex_shader, texture_fragment_shader_y_xuxv) < 0)
 		return -1;
-	if (weston_shader_init(&ec->solid_shader, ec,
+	if (shader_init(&ec->solid_shader, ec,
 			     vertex_shader, solid_fragment_shader) < 0)
 		return -1;
 
@@ -1719,13 +1718,13 @@ fragment_debug_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 
 	renderer->fragment_shader_debug ^= 1;
 
-	weston_shader_release(&ec->texture_shader_rgba);
-	weston_shader_release(&ec->texture_shader_rgbx);
-	weston_shader_release(&ec->texture_shader_egl_external);
-	weston_shader_release(&ec->texture_shader_y_uv);
-	weston_shader_release(&ec->texture_shader_y_u_v);
-	weston_shader_release(&ec->texture_shader_y_xuxv);
-	weston_shader_release(&ec->solid_shader);
+	shader_release(&ec->texture_shader_rgba);
+	shader_release(&ec->texture_shader_rgbx);
+	shader_release(&ec->texture_shader_egl_external);
+	shader_release(&ec->texture_shader_y_uv);
+	shader_release(&ec->texture_shader_y_u_v);
+	shader_release(&ec->texture_shader_y_xuxv);
+	shader_release(&ec->solid_shader);
 
 	compile_shaders(ec);
 
