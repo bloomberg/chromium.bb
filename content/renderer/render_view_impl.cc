@@ -88,7 +88,6 @@
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view_impl_params.h"
 #include "content/renderer/render_view_mouse_lock_dispatcher.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_accessibility.h"
@@ -360,9 +359,6 @@ static const float kScalingIncrementForGesture = 0.01f;
 static const size_t kContentIntentDelayMilliseconds = 700;
 #endif
 
-static RenderViewImpl* (*g_create_render_view_impl)(RenderViewImplParams*) =
-    NULL;
-
 static RenderViewImpl* FromRoutingID(int32 routing_id) {
   return static_cast<RenderViewImpl*>(
       ChildThread::current()->ResolveRoute(routing_id));
@@ -540,11 +536,22 @@ int64 ExtractPostId(const WebHistoryItem& item) {
 
 }  // namespace
 
-RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
-    : RenderWidget(WebKit::WebPopupTypeNone,
-                   params->screen_info,
-                   params->swapped_out),
-      webkit_preferences_(params->webkit_prefs),
+RenderViewImpl::RenderViewImpl(
+    int32 opener_id,
+    const RendererPreferences& renderer_prefs,
+    const WebPreferences& webkit_prefs,
+    SharedRenderViewCounter* counter,
+    int32 routing_id,
+    int32 surface_id,
+    int64 session_storage_namespace_id,
+    const string16& frame_name,
+    bool is_renderer_created,
+    bool swapped_out,
+    int32 next_page_id,
+    const WebKit::WebScreenInfo& screen_info,
+    AccessibilityMode accessibility_mode)
+    : RenderWidget(WebKit::WebPopupTypeNone, screen_info, swapped_out),
+      webkit_preferences_(webkit_prefs),
       send_content_state_immediately_(false),
       enabled_bindings_(0),
       send_preferred_size_changes_(false),
@@ -554,7 +561,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       opener_suppressed_(false),
       page_id_(-1),
       last_page_id_sent_to_browser_(-1),
-      next_page_id_(params->next_page_id),
+      next_page_id_(next_page_id),
       history_list_offset_(-1),
       history_list_length_(0),
       target_url_status_(TARGET_NONE),
@@ -584,7 +591,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           load_progress_tracker_(new LoadProgressTracker(this))),
 #endif
-      session_storage_namespace_id_(params->session_storage_namespace_id),
+      session_storage_namespace_id_(session_storage_namespace_id),
       handling_select_range_(false),
 #if defined(OS_WIN)
       focused_plugin_id_(-1),
@@ -594,11 +601,11 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       target_process_id_(0),
       target_routing_id_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)) {
-  set_throttle_input_events(params->renderer_prefs.throttle_input_events);
-  routing_id_ = params->routing_id;
-  surface_id_ = params->surface_id;
-  if (params->opener_id != MSG_ROUTING_NONE && params->is_renderer_created)
-    opener_id_ = params->opener_id;
+  set_throttle_input_events(renderer_prefs.throttle_input_events);
+  routing_id_ = routing_id;
+  surface_id_ = surface_id;
+  if (opener_id != MSG_ROUTING_NONE && is_renderer_created)
+    opener_id_ = opener_id;
 
   // Ensure we start with a valid next_page_id_ from the browser.
   DCHECK_GE(next_page_id_, 0);
@@ -631,10 +638,10 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       new EmailDetector()));
 #endif
 
-  if (params->counter) {
-    shared_popup_counter_ = params->counter;
+  if (counter) {
+    shared_popup_counter_ = counter;
     // Only count this if it isn't swapped out upon creation.
-    if (!params->swapped_out)
+    if (!swapped_out)
       shared_popup_counter_->data++;
     decrement_shared_popup_at_destruction_ = true;
   } else {
@@ -658,13 +665,13 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
   webview()->setDeviceScaleFactor(device_scale_factor_);
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
-  if (!params->frame_name.empty())
-    webview()->mainFrame()->setName(params->frame_name);
+  if (!frame_name.empty())
+    webview()->mainFrame()->setName(frame_name);
   webview()->settings()->setMinimumTimerInterval(
       is_hidden() ? webkit_glue::kBackgroundTabTimerInterval :
           webkit_glue::kForegroundTabTimerInterval);
 
-  OnSetRendererPrefs(params->renderer_prefs);
+  OnSetRendererPrefs(renderer_prefs);
 
 #if defined(ENABLE_WEBRTC)
   if (!media_stream_dispatcher_)
@@ -688,7 +695,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
   intents_host_ = new WebIntentsHost(this);
 
   // Create renderer_accessibility_ if needed.
-  OnSetAccessibilityMode(params->accessibility_mode);
+  OnSetAccessibilityMode(accessibility_mode);
 
   new IdleUserDetector(this);
 
@@ -701,8 +708,8 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
 
   // If we have an opener_id but we weren't created by a renderer, then
   // it's the browser asking us to set our opener to another RenderView.
-  if (params->opener_id != MSG_ROUTING_NONE && !params->is_renderer_created) {
-    RenderViewImpl* opener_view = FromRoutingID(params->opener_id);
+  if (opener_id != MSG_ROUTING_NONE && !is_renderer_created) {
+    RenderViewImpl* opener_view = FromRoutingID(opener_id);
     if (opener_view)
       webview()->mainFrame()->setOpener(opener_view->webview()->mainFrame());
   }
@@ -786,7 +793,7 @@ RenderViewImpl* RenderViewImpl::Create(
     const WebKit::WebScreenInfo& screen_info,
     AccessibilityMode accessibility_mode) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
-  RenderViewImplParams params(
+  return new RenderViewImpl(
       opener_id,
       renderer_prefs,
       webkit_prefs,
@@ -800,16 +807,6 @@ RenderViewImpl* RenderViewImpl::Create(
       next_page_id,
       screen_info,
       accessibility_mode);
-  if (g_create_render_view_impl)
-    return g_create_render_view_impl(&params);
-  return new RenderViewImpl(&params);
-}
-
-// static
-void RenderViewImpl::InstallCreateHook(
-    RenderViewImpl* (*create_render_view_impl)(RenderViewImplParams*)) {
-  CHECK(!g_create_render_view_impl);
-  g_create_render_view_impl = create_render_view_impl;
 }
 
 void RenderViewImpl::AddObserver(RenderViewObserver* observer) {
