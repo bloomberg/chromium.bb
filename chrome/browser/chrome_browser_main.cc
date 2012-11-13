@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chrome_browser_main.h"
 
+#if defined(TOOLKIT_GTK)
+#include <gtk/gtk.h>
+#endif
+
 #include <algorithm>
 #include <string>
 #include <vector>

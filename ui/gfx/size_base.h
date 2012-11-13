@@ -5,10 +5,6 @@
 #ifndef UI_GFX_SIZE_BASE_H_
 #define UI_GFX_SIZE_BASE_H_
 
-#include <string>
-
-#include "base/compiler_specific.h"
-#include "build/build_config.h"
 #include "ui/base/ui_export.h"
 
 namespace gfx {
