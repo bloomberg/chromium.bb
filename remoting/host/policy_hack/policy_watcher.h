@@ -64,6 +64,9 @@ class PolicyWatcher {
   // The name of the policy for requiring curtain-mode.
   static const char kHostRequireCurtainPolicyName[];
 
+  // The name of the policy for overriding policies, for use in testing.
+  static const char kHostDebugOverridePoliciesName[];
+
  protected:
   virtual void StartWatchingInternal() = 0;
   virtual void StopWatchingInternal() = 0;

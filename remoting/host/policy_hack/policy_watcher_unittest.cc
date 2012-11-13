@@ -56,6 +56,23 @@ class PolicyWatcherTest : public testing::Test {
         PolicyWatcher::kNatPolicyName, true);
     nat_true_domain_empty_others_default_.SetString(
         PolicyWatcher::kHostDomainPolicyName, "");
+    unknown_policies_.SetString("UnknownPolicyOne", "");
+    unknown_policies_.SetString("UnknownPolicyTwo", "");
+
+    const char kOverrideNatTraversalToFalse[] =
+      "{ \"RemoteAccessHostFirewallTraversal\": false }";
+    nat_true_and_overridden_.SetBoolean(PolicyWatcher::kNatPolicyName, true);
+    nat_true_and_overridden_.SetString(
+        PolicyWatcher::kHostDebugOverridePoliciesName,
+        kOverrideNatTraversalToFalse);
+#if !defined(NDEBUG)
+    SetDefaults(nat_false_overridden_others_default_);
+    nat_false_overridden_others_default_.SetBoolean(
+        PolicyWatcher::kNatPolicyName, false);
+    nat_false_overridden_others_default_.SetString(
+        PolicyWatcher::kHostDebugOverridePoliciesName,
+        kOverrideNatTraversalToFalse);
+#endif
   }
 
  protected:
@@ -92,6 +109,9 @@ class PolicyWatcherTest : public testing::Test {
   base::DictionaryValue nat_false_domain_empty_;
   base::DictionaryValue nat_false_domain_full_;
   base::DictionaryValue nat_true_domain_empty_others_default_;
+  base::DictionaryValue unknown_policies_;
+  base::DictionaryValue nat_true_and_overridden_;
+  base::DictionaryValue nat_false_overridden_others_default_;
 
  private:
   void SetDefaults(base::DictionaryValue& dict) {
@@ -102,6 +122,9 @@ class PolicyWatcherTest : public testing::Test {
     dict.SetString(PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
                    kDefaultHostTalkGadgetPrefix);
     dict.SetBoolean(PolicyWatcher::kHostRequireCurtainPolicyName, false);
+#if !defined(NDEBUG)
+    dict.SetString(PolicyWatcher::kHostDebugOverridePoliciesName, "");
+#endif
   }
 };
 
@@ -250,6 +273,32 @@ TEST_F(PolicyWatcherTest, ChangeOneRepeatedlyThenTwo) {
   policy_watcher_->SetPolicies(&nat_false_domain_full_);
   policy_watcher_->SetPolicies(&nat_false_domain_empty_);
   policy_watcher_->SetPolicies(&nat_true_domain_full_);
+  StopWatching();
+}
+
+TEST_F(PolicyWatcherTest, FilterUnknownPolicies) {
+  testing::InSequence sequence;
+  EXPECT_CALL(mock_policy_callback_,
+              OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
+
+  StartWatching();
+  policy_watcher_->SetPolicies(&empty_);
+  policy_watcher_->SetPolicies(&unknown_policies_);
+  policy_watcher_->SetPolicies(&empty_);
+  StopWatching();
+}
+
+TEST_F(PolicyWatcherTest, DebugOverrideNatPolicy) {
+#if !defined(NDEBUG)
+  EXPECT_CALL(mock_policy_callback_,
+      OnPolicyUpdatePtr(IsPolicies(&nat_false_overridden_others_default_)));
+#else
+  EXPECT_CALL(mock_policy_callback_,
+      OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
+#endif
+
+  StartWatching();
+  policy_watcher_->SetPolicies(&nat_true_and_overridden_);
   StopWatching();
 }
 

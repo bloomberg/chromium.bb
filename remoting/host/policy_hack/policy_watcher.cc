@@ -17,6 +17,10 @@
 #include "base/values.h"
 #include "remoting/host/dns_blackhole_checker.h"
 
+#if !defined(NDEBUG)
+#include "base/json/json_reader.h"
+#endif
+
 namespace remoting {
 namespace policy_hack {
 
@@ -52,6 +56,19 @@ scoped_ptr<base::DictionaryValue> CopyGoodValuesAndAddDefaults(
     to->Set(i.key(), value->DeepCopy());
   }
 
+#if !defined(NDEBUG)
+  // Replace values with those specified in DebugOverridePolicies, if present.
+  std::string policy_overrides;
+  if (from->GetString(PolicyWatcher::kHostDebugOverridePoliciesName,
+                      &policy_overrides)) {
+    scoped_ptr<base::Value> value(base::JSONReader::Read(policy_overrides));
+    const base::DictionaryValue* override_values;
+    if (value && value->GetAsDictionary(&override_values)) {
+      to->MergeDictionary(override_values);
+    }
+  }
+#endif // defined(NDEBUG)
+
   return to.Pass();
 }
 
@@ -75,6 +92,9 @@ const char PolicyWatcher::kHostTalkGadgetPrefixPolicyName[] =
 const char PolicyWatcher::kHostRequireCurtainPolicyName[] =
     "RemoteAccessHostRequireCurtain";
 
+const char PolicyWatcher::kHostDebugOverridePoliciesName[] =
+    "RemoteAccessHostDebugOverridePolicies";
+
 PolicyWatcher::PolicyWatcher(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
@@ -89,6 +109,9 @@ PolicyWatcher::PolicyWatcher(
   default_values_->SetString(kHostDomainPolicyName, "");
   default_values_->SetString(kHostTalkGadgetPrefixPolicyName,
                                kDefaultHostTalkGadgetPrefix);
+#if !defined(NDEBUG)
+  default_values_->SetString(kHostDebugOverridePoliciesName, "");
+#endif
 
   // Initialize the fall-back values to use for unreadable policies.
   // For most policies these match the defaults.
