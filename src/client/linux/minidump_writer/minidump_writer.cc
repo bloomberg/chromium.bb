@@ -1253,7 +1253,7 @@ class MinidumpWriter {
             my_strlcpy(vendor_id, value, sizeof(vendor_id));
             // we don't want the trailing newline
             if (length < sizeof(vendor_id) && vendor_id[length - 1] == '\n')
-              vendor_id[length - 1] == '\0';
+              vendor_id[length - 1] = '\0';
           }
         }
 
