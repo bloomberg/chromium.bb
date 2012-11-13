@@ -28,6 +28,20 @@ var KEY = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
                           0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c]);
 // Stores a failure message that is read by the browser test when it fails.
 var failMessage = '';
+// Heart beat message header.
+var HEART_BEAT_HEADER = 'HEARTBEAT';
+
+function isHeartBeatMessage(msg) {
+  if (msg.length < HEART_BEAT_HEADER.length)
+    return false;
+
+  for (var i = 0; i < HEART_BEAT_HEADER.length; ++i) {
+    if (HEART_BEAT_HEADER[i] != String.fromCharCode(msg[i]))
+      return false;
+  }
+
+  return true;
+}
 
 function failTest(msg) {
   if (msg instanceof Event)
@@ -95,17 +109,24 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key) {
   }
 
   function onKeyMessage(e) {
-    console.log('onKeyMessage', e);
+    if (isHeartBeatMessage(e.message)) {
+      console.log('onKeyMessage - heart beat', e);
+      return;
+    }
+
+    console.log('onKeyMessage - key request', e);
     video.webkitAddKey(keySystem, key, e.message);
   }
 
   var mediaSource = new WebKitMediaSource();
-  video.src = window.URL.createObjectURL(mediaSource);
+
   mediaSource.addEventListener('webkitsourceopen', onSourceOpen);
   video.addEventListener('webkitneedkey', onNeedKey);
   video.addEventListener('webkitkeymessage', onKeyMessage);
   video.addEventListener('webkitkeyerror', failTest);
   video.addEventListener('webkitkeyadded', onKeyAdded);
   installTitleEventHandler(video, 'error');
+
+  video.src = window.URL.createObjectURL(mediaSource);
   return mediaSource;
 }

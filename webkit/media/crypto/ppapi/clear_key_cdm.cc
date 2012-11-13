@@ -4,6 +4,9 @@
 
 #include "webkit/media/crypto/ppapi/clear_key_cdm.h"
 
+#include <algorithm>
+#include <sstream>
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
@@ -54,8 +57,15 @@ static bool InitializeFFmpegLibraries() {
 static bool g_cdm_module_initialized = InitializeFFmpegLibraries();
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 
-static const char kClearKeyCdmVersion[] = "0.1.0.0";
+static const char kClearKeyCdmVersion[] = "0.1.0.1";
 static const char kExternalClearKey[] = "org.chromium.externalclearkey";
+static const int64 kSecondsPerMinute = 60;
+static const int64 kMsPerSecond = 1000;
+static const int64 kInitialTimerDelayMs = 200;
+static const int64 kMaxTimerDelayMs = 1 * kSecondsPerMinute * kMsPerSecond;
+// Heart beat message header. If a key message starts with |kHeartBeatHeader|,
+// it's a heart beat message. Otherwise, it's a key request.
+static const char kHeartBeatHeader[] = "HEARTBEAT";
 
 // Copies |input_buffer| into a media::DecoderBuffer. If the |input_buffer| is
 // empty, an empty (end-of-stream) media::DecoderBuffer is returned.
@@ -188,9 +198,12 @@ void ClearKeyCdm::Client::NeedKey(const std::string& key_system,
   NOTREACHED();
 }
 
-ClearKeyCdm::ClearKeyCdm(cdm::Allocator* allocator, cdm::CdmHost*)
+ClearKeyCdm::ClearKeyCdm(cdm::Allocator* allocator, cdm::CdmHost* cdm_host)
     : decryptor_(&client_),
-      allocator_(allocator) {
+      allocator_(allocator),
+      cdm_host_(cdm_host),
+      timer_delay_ms_(kInitialTimerDelayMs),
+      timer_set_(false) {
   DCHECK(allocator_);
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   channel_count_ = 0;
@@ -220,18 +233,18 @@ cdm::Status ClearKeyCdm::GenerateKeyRequest(const char* type, int type_size,
   DCHECK(key_request);
   key_request->set_session_id(client_.session_id().data(),
                               client_.session_id().size());
+  latest_session_id_ = client_.session_id();
 
   // TODO(tomfinegan): Get rid of this copy.
   key_request->set_message(allocator_->Allocate(client_.key_message_length()));
-
   DCHECK(key_request->message());
   DCHECK_EQ(key_request->message()->size(), client_.key_message_length());
-  memcpy(reinterpret_cast<void*>(key_request->message()->data()),
-         reinterpret_cast<const void*>(client_.key_message()),
-         client_.key_message_length());
+  memcpy(key_request->message()->data(),
+         client_.key_message(), client_.key_message_length());
 
   key_request->set_default_url(client_.default_url().data(),
                                client_.default_url().size());
+
   return cdm::kSuccess;
 }
 
@@ -250,6 +263,11 @@ cdm::Status ClearKeyCdm::AddKey(const char* session_id,
   if (client_.status() != Client::kKeyAdded)
     return cdm::kSessionError;
 
+  if (!timer_set_) {
+    cdm_host_->SetTimer(timer_delay_ms_);
+    timer_set_ = true;
+  }
+
   return cdm::kSuccess;
 }
 
@@ -263,8 +281,24 @@ cdm::Status ClearKeyCdm::CancelKeyRequest(const char* session_id,
 }
 
 void ClearKeyCdm::TimerExpired(cdm::KeyMessage* msg, bool* populated) {
-  // TODO(xhwang): do something with this?
-  NOTREACHED() << "Wouldn't it be nice if CdmHost::SetTimer() was used?";
+  std::ostringstream msg_stream;
+  msg_stream << kHeartBeatHeader << " from ClearKey CDM at time "
+             << cdm_host_->GetCurrentWallTimeInSeconds() << ".";
+  std::string msg_string = msg_stream.str();
+
+  msg->set_message(allocator_->Allocate(msg_string.length()));
+  memcpy(msg->message()->data(), msg_string.data(), msg_string.length());
+  msg->set_session_id(latest_session_id_.data(), latest_session_id_.length());
+  msg->set_default_url(NULL, 0);
+
+  *populated = true;
+
+  cdm_host_->SetTimer(timer_delay_ms_);
+
+  // Use a smaller timer delay at start-up to facilitate testing. Increase the
+  // timer delay up to a limit to avoid message spam.
+  if (timer_delay_ms_ < kMaxTimerDelayMs)
+    timer_delay_ms_ = std::min(2 * timer_delay_ms_, kMaxTimerDelayMs);
 }
 
 static void CopyDecryptResults(

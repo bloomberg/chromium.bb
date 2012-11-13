@@ -42,7 +42,7 @@ class FFmpegCdmVideoDecoder;
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
 class ClearKeyCdm : public cdm::ContentDecryptionModule {
  public:
-  explicit ClearKeyCdm(cdm::Allocator* allocator, cdm::CdmHost*);
+  ClearKeyCdm(cdm::Allocator* allocator, cdm::CdmHost* cdm_host);
   virtual ~ClearKeyCdm();
 
   // ContentDecryptionModule implementation.
@@ -159,6 +159,16 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
   base::Lock client_lock_;
 
   cdm::Allocator* const allocator_;
+  cdm::CdmHost* cdm_host_;
+
+  std::string latest_session_id_;
+
+  // Timer delay in milliseconds for the next cdm_host_->SetTimer() call.
+  int64 timer_delay_ms_;
+
+  // Indicates whether a timer has been set to prevent multiple timers from
+  // running.
+  bool timer_set_;
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   int channel_count_;
