@@ -21,6 +21,7 @@
     '../ui/surface/surface.gyp:surface',
     '../ui/ui.gyp:ui',
     '../third_party/angle/src/build_angle.gyp:translator_glsl',
+    '../third_party/smhasher/smhasher.gyp:cityhash',
   ],
   'sources': [
     'command_buffer/service/buffer_manager.h',

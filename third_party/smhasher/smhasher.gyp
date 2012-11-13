@@ -20,5 +20,13 @@
         'src/PMurHash.c',
       ],
     },
+    {
+      'target_name': 'cityhash',
+      'type': 'static_library',
+      'sources': [
+        'src/City.cpp',
+        'src/City.h',
+      ],
+    },
   ],
 }

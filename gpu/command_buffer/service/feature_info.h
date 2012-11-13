@@ -41,6 +41,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool use_arb_occlusion_query_for_occlusion_query_boolean;
     bool native_vertex_array_object;
     bool disable_workarounds;
+    bool enable_shader_name_hashing;
   };
 
   struct Workarounds {

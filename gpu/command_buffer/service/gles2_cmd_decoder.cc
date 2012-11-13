@@ -66,11 +66,21 @@
 #define GL_DEPTH24_STENCIL8 0x88F0
 #endif
 
+// TODO(zmo): we can't include "City.h" due to type def conflicts.
+extern uint64 CityHash64(const char*, size_t);
+
 namespace gpu {
 namespace gles2 {
 
 namespace {
+
 static const char kOESDerivativeExtension[] = "GL_OES_standard_derivatives";
+
+khronos_uint64_t CityHashForAngle(const char* name, unsigned int len) {
+  return static_cast<khronos_uint64_t>(
+      CityHash64(name, static_cast<size_t>(len)));
+}
+
 }
 
 class GLES2DecoderImpl;
@@ -2313,6 +2323,9 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     resources.OES_EGL_image_external =
         features().oes_egl_image_external ? 1 : 0;
   }
+
+  if (features().enable_shader_name_hashing)
+    resources.HashFunction = &CityHashForAngle;
 
   ShShaderSpec shader_spec = force_webgl_glsl_validation_ ||
       features().chromium_webglsl ? SH_WEBGL_SPEC : SH_GLES2_SPEC;

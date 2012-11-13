@@ -26,6 +26,9 @@ const char kEnableGPUCommandLogging[]       = "enable-gpu-command-logging";
 // Turn on Calling GL Error after every command.
 const char kEnableGPUDebugging[]            = "enable-gpu-debugging";
 
+// Turn on user-defined name hashing in shaders.
+const char kEnableShaderNameHashing[]       = "enable-shader-name-hashing";
+
 // Turn off gpu program caching
 const char kDisableGpuProgramCache[]        = "disable-gpu-program-cache";
 
