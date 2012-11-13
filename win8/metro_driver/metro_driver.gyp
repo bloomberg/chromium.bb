@@ -9,6 +9,7 @@
       },
       'includes': [
         '../../build/win_precompile.gypi',
+        '../../chrome/version.gypi',
       ],
       'target_defaults': {
         'msvs_settings': {
@@ -22,6 +23,31 @@
       },
       'targets': [
         {
+          'target_name': 'metro_driver_version_resources',
+          'type': 'none',
+          'conditions': [
+            ['branding == "Chrome"', {
+              'variables': {
+                 'branding_path': '../../chrome/app/theme/google_chrome/BRANDING',
+              },
+            }, { # else branding!="Chrome"
+              'variables': {
+                 'branding_path': '../../chrome/app/theme/chromium/BRANDING',
+              },
+            }],
+          ],
+          'variables': {
+            'output_dir': 'metro_driver',
+            'template_input_path': '../../chrome/app/chrome_version.rc.version',
+          },
+          'sources': [
+            'metro_driver_dll.ver',
+          ],
+          'includes': [
+            '../../chrome/version_resource_rules.gypi',
+          ],
+        },
+        {
           'target_name': 'metro_driver',
           'type': 'shared_library',
           'dependencies': [
@@ -33,6 +59,7 @@
             '../../sandbox/sandbox.gyp:sandbox',
             '../../ui/metro_viewer/metro_viewer.gyp:metro_viewer',
             '../win8.gyp:check_sdk_patch',
+            'metro_driver_version_resources',
           ],
           'sources': [
             'metro_driver.cc',
@@ -40,6 +67,7 @@
             'stdafx.h',
             'winrt_utils.cc',
             'winrt_utils.h',
+            '<(SHARED_INTERMEDIATE_DIR)/metro_driver/metro_driver_dll_version.rc',
           ],
           'conditions': [          
             ['use_aura==1', {
