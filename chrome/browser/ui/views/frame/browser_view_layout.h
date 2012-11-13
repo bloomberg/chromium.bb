@@ -125,7 +125,7 @@ class BrowserViewLayout : public views::LayoutManager {
 
   // The distance the constrained window is from the top of the window,
   // in pixels.
-  int constrained_window_top_y;
+  int constrained_window_top_y_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewLayout);
 };

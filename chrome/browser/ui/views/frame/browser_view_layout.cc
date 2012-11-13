@@ -66,7 +66,8 @@ BrowserViewLayout::BrowserViewLayout()
       download_shelf_(NULL),
       active_bookmark_bar_(NULL),
       browser_view_(NULL),
-      find_bar_y_(0) {
+      find_bar_y_(0),
+      constrained_window_top_y_(-1) {
 }
 
 BrowserViewLayout::~BrowserViewLayout() {
@@ -74,8 +75,8 @@ BrowserViewLayout::~BrowserViewLayout() {
 
 bool BrowserViewLayout::GetConstrainedWindowTopY(int* top_y) {
   DCHECK(top_y);
-  *top_y = constrained_window_top_y;
-  return (constrained_window_top_y >= 0);
+  *top_y = constrained_window_top_y_;
+  return (constrained_window_top_y_ >= 0);
 }
 
 gfx::Size BrowserViewLayout::GetMinimumSize() {
@@ -379,7 +380,7 @@ int BrowserViewLayout::LayoutToolbar(int top) {
 }
 
 int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
-  constrained_window_top_y =
+  constrained_window_top_y_ =
       top + browser_view_->y() - kConstrainedWindowOverlap;
   find_bar_y_ = top + browser_view_->y() - 1;
   if (active_bookmark_bar_) {
