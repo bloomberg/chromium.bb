@@ -124,7 +124,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     // the |window_| using the desired |window_bounds|.
     if (!parent) {
       parent = aura::client::GetStackingClient(params.GetParent())->
-          GetDefaultParent(params.context, window_, window_bounds);
+          GetDefaultParent(window_, window_bounds);
     } else if (window_bounds == gfx::Rect()) {
       // If a parent is specified but no bounds are given,
       // use the origin of the parent's display so that the widget

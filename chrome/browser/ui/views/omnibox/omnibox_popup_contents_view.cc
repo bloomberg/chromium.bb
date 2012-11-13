@@ -215,7 +215,6 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     params.transparent = true;
     params.parent_widget = location_bar_->GetWidget();
     params.bounds = GetPopupBounds();
-    params.context = location_bar_->GetWidget()->GetNativeView();
     popup_->Init(params);
 #if defined(USE_ASH)
     ash::SetWindowVisibilityAnimationType(

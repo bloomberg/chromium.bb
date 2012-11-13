@@ -21,15 +21,10 @@ class AURA_EXPORT StackingClient {
   virtual ~StackingClient() {}
 
   // Called by the Window when its parent is set to NULL, returns the window
-  // that |window| should be added to instead. |context| provides a Window
-  // (generally a RootWindow) that can be used to determine which desktop type
-  // the default parent should be chosen from.
+  // that |window| should be added to instead.
   // NOTE: this may have side effects. It should only be used when |window| is
   // going to be immediately added.
-  virtual Window* GetDefaultParent(
-      Window* context,
-      Window* window,
-      const gfx::Rect& bounds) = 0;
+  virtual Window* GetDefaultParent(Window* window, const gfx::Rect& bounds) = 0;
 };
 
 // Set/Get the default stacking client.
@@ -44,7 +39,6 @@ AURA_EXPORT StackingClient* GetStackingClient();
 AURA_EXPORT void SetStackingClient(Window* window,
                                    StackingClient* stacking_client);
 AURA_EXPORT StackingClient* GetStackingClient(Window* window);
-
 
 }  // namespace client
 }  // namespace aura

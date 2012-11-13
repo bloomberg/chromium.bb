@@ -293,7 +293,6 @@ void Shell::PlatformInitialize() {
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
 #endif
-  aura::client::SetStackingClient(stacking_client_);
   views_delegate_ = new ShellViewsDelegateAura();
 }
 

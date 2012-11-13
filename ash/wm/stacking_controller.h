@@ -5,7 +5,6 @@
 #ifndef ASH_WM_STACKING_CONTROLLER_H_
 #define ASH_WM_STACKING_CONTROLLER_H_
 
-#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,19 +15,17 @@ class RootWindow;
 }
 
 namespace ash {
-
 namespace internal {
-class AlwaysOnTopController;
-}
 
-class ASH_EXPORT StackingController : public aura::client::StackingClient {
+class AlwaysOnTopController;
+
+class StackingController : public aura::client::StackingClient {
  public:
   StackingController();
   virtual ~StackingController();
 
   // Overridden from aura::client::StackingClient:
-  virtual aura::Window* GetDefaultParent(aura::Window* context,
-                                         aura::Window* window,
+  virtual aura::Window* GetDefaultParent(aura::Window* window,
                                          const gfx::Rect& bounds) OVERRIDE;
 
  private:
@@ -47,6 +44,7 @@ class ASH_EXPORT StackingController : public aura::client::StackingClient {
   DISALLOW_COPY_AND_ASSIGN(StackingController);
 };
 
+}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_STACKING_CONTROLLER_H_

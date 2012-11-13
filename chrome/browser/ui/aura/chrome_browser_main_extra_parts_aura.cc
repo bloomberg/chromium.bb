@@ -6,7 +6,6 @@
 
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/toolkit_extra_parts.h"
-#include "chrome/browser/ui/aura/stacking_client_aura.h"
 #include "ui/aura/env.h"
 #include "ui/aura/single_display_manager.h"
 #include "ui/gfx/screen.h"
@@ -17,7 +16,6 @@
 #if defined(OS_LINUX)
 #include "chrome/browser/ui/libgtk2ui/gtk2_ui.h"
 #include "ui/base/linux_ui.h"
-#else
 #endif
 
 #if defined(USE_ASH)
@@ -39,8 +37,7 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
                                    views::CreateDesktopScreen());
     aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
-    stacking_client_.reset(new StackingClientAura);
-    aura::client::SetStackingClient(stacking_client_.get());
+    stacking_client_.reset(new views::DesktopStackingClient);
   }
 #endif
 

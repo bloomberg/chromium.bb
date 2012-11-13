@@ -317,8 +317,6 @@ class PrerenderTest : public testing::Test {
   int last_prerender_id_;
 };
 
-// TODO(scottmg): http://crbug.com/128578
-#if !defined(OS_WIN) && !defined(USE_AURA)
 TEST_F(PrerenderTest, FoundTest) {
   GURL url("http://www.google.com/");
   DummyPrerenderContents* prerender_contents =
@@ -1162,7 +1160,5 @@ TEST_F(PrerenderTest, LinkManagerCancelThenAddAgain) {
             prerender_manager()->FindAndUseEntry(url));
   EXPECT_FALSE(IsEmptyPrerenderLinkManager());
 }
-
-#endif // OS_WIN && USE_AURA
 
 }  // namespace prerender

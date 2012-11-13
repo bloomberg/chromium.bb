@@ -37,8 +37,7 @@ class VIEWS_EXPORT DesktopStackingClient : public client::StackingClient {
   virtual ~DesktopStackingClient();
 
   // Overridden from client::StackingClient:
-  virtual Window* GetDefaultParent(Window* context,
-                                   Window* window,
+  virtual Window* GetDefaultParent(Window* window,
                                    const gfx::Rect& bounds) OVERRIDE;
 
  private:
