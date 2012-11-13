@@ -24,15 +24,74 @@ using syncable::SERVER_SPECIFICS;
 using syncable::SPECIFICS;
 using syncable::SYNCER;
 
-void ApplyControlDataUpdates(syncable::Directory* dir) {
+void ApplyControlDataUpdates(sessions::SyncSession* session) {
+  syncable::Directory* dir = session->context()->directory();
   syncable::WriteTransaction trans(FROM_HERE, SYNCER, dir);
 
-  if (ApplyNigoriUpdates(&trans, dir->GetCryptographer(&trans))) {
-    dir->set_initial_sync_ended_for_type(NIGORI, true);
+  std::vector<int64> handles;
+  dir->GetUnappliedUpdateMetaHandles(
+      &trans, ToFullModelTypeSet(ControlTypes()), &handles);
+
+  // First, go through and manually apply any new top level datatype nodes (so
+  // that we don't have to worry about hitting a CONFLICT_HIERARCHY with an
+  // entry because we haven't applied its parent yet).
+  // TODO(sync): if at some point we support control datatypes with actual
+  // hierarchies we'll need to revisit this logic.
+  for (ModelTypeSet::Iterator iter = ControlTypes().First(); iter.Good();
+       iter.Inc()) {
+    syncable::MutableEntry entry(&trans,
+                                 syncable::GET_BY_SERVER_TAG,
+                                 ModelTypeToRootTag(iter.Get()));
+    if (!entry.good())
+      continue;
+    if (!entry.Get(syncable::IS_UNAPPLIED_UPDATE))
+      continue;
+
+    ModelType type = entry.GetServerModelType();
+    if (type == NIGORI) {
+      // Nigori node applications never fail.
+      ApplyNigoriUpdate(&trans,
+                        &entry,
+                        dir->GetCryptographer(&trans));
+    } else {
+      ApplyControlUpdate(&trans,
+                         &entry,
+                         dir->GetCryptographer(&trans));
+    }
+  }
+
+  // Go through the rest of the unapplied control updates, skipping over any
+  // top level folders.
+  for (std::vector<int64>::const_iterator iter = handles.begin();
+       iter != handles.end(); ++iter) {
+    syncable::MutableEntry entry(&trans, syncable::GET_BY_HANDLE, *iter);
+    CHECK(entry.good());
+    ModelType type = entry.GetServerModelType();
+    CHECK(ControlTypes().Has(type));
+    if (!entry.Get(syncable::UNIQUE_SERVER_TAG).empty()) {
+      // We should have already applied all top level control nodes.
+      DCHECK(!entry.Get(syncable::IS_UNAPPLIED_UPDATE));
+      continue;
+    }
+
+    ApplyControlUpdate(&trans,
+                       &entry,
+                       dir->GetCryptographer(&trans));
+  }
+
+  // Set initial sync ended bits for all control types requested.
+  for (ModelTypeSet::Iterator it =
+           session->status_controller().updates_request_types().First();
+       it.Good(); it.Inc()) {
+    if (!IsControlType(it.Get()))
+        continue;
+
+    // This gets persisted to the directory's backing store.
+    dir->set_initial_sync_ended_for_type(it.Get(), true);
   }
 }
 
-// Update the sync encryption handler with the server's nigori node.
+// Update the nigori handler with the server's nigori node.
 //
 // If we have a locally modified nigori node, we merge them manually. This
 // handles the case where two clients both set a different passphrase. The
@@ -43,24 +102,18 @@ void ApplyControlDataUpdates(syncable::Directory* dir) {
 // passphrase, the cryptographer will preserve the encryption keys based on the
 // local passphrase, while the nigori node will preserve the server encryption
 // keys.
-bool ApplyNigoriUpdates(syncable::WriteTransaction* trans,
-                        Cryptographer* cryptographer) {
-  syncable::MutableEntry nigori_node(trans, GET_BY_SERVER_TAG,
-                                     ModelTypeToRootTag(NIGORI));
-
-  // Mainly for unit tests.  We should have a Nigori node by this point.
-  if (!nigori_node.good()) {
-    return false;
-  }
-
-  if (!nigori_node.Get(IS_UNAPPLIED_UPDATE)) {
-    return true;
-  }
+void ApplyNigoriUpdate(syncable::WriteTransaction* const trans,
+                       syncable::MutableEntry* const entry,
+                       Cryptographer* cryptographer) {
+  DCHECK(entry->Get(IS_UNAPPLIED_UPDATE));
 
   // We apply the nigori update regardless of whether there's a conflict or
   // not in order to preserve any new encrypted types or encryption keys.
+  // TODO(zea): consider having this return a bool reflecting whether it was a
+  // valid update or not, and in the case of invalid updates not overwrite the
+  // local data.
   const sync_pb::NigoriSpecifics& nigori =
-      nigori_node.Get(SERVER_SPECIFICS).nigori();
+      entry->Get(SERVER_SPECIFICS).nigori();
   trans->directory()->GetNigoriHandler()->ApplyNigoriUpdate(nigori, trans);
 
   // Make sure any unsynced changes are properly encrypted as necessary.
@@ -82,19 +135,19 @@ bool ApplyNigoriUpdates(syncable::WriteTransaction* trans,
     syncable::ProcessUnsyncedChangesForEncryption(trans);
   }
 
-  if (!nigori_node.Get(IS_UNSYNCED)) {  // Update only.
-    UpdateLocalDataFromServerData(trans, &nigori_node);
+  if (!entry->Get(IS_UNSYNCED)) {  // Update only.
+    UpdateLocalDataFromServerData(trans, entry);
   } else {  // Conflict.
     const sync_pb::EntitySpecifics& server_specifics =
-        nigori_node.Get(SERVER_SPECIFICS);
+        entry->Get(SERVER_SPECIFICS);
     const sync_pb::NigoriSpecifics& server_nigori = server_specifics.nigori();
     const sync_pb::EntitySpecifics& local_specifics =
-        nigori_node.Get(SPECIFICS);
+        entry->Get(SPECIFICS);
     const sync_pb::NigoriSpecifics& local_nigori = local_specifics.nigori();
 
     // We initialize the new nigori with the server state, and will override
     // it as necessary below.
-    sync_pb::EntitySpecifics new_specifics = nigori_node.Get(SERVER_SPECIFICS);
+    sync_pb::EntitySpecifics new_specifics = entry->Get(SERVER_SPECIFICS);
     sync_pb::NigoriSpecifics* new_nigori = new_specifics.mutable_nigori();
 
     // If the cryptographer is not ready, another client set a new encryption
@@ -145,18 +198,35 @@ bool ApplyNigoriUpdates(syncable::WriteTransaction* trans,
         new_nigori,
         trans);
 
-    nigori_node.Put(SPECIFICS, new_specifics);
+    entry->Put(SPECIFICS, new_specifics);
     DVLOG(1) << "Resolving simple conflict, merging nigori nodes: "
-             << nigori_node;
+             << entry;
 
-    conflict_util::OverwriteServerChanges(&nigori_node);
+    conflict_util::OverwriteServerChanges(entry);
 
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
                               ConflictResolver::NIGORI_MERGE,
                               ConflictResolver::CONFLICT_RESOLUTION_SIZE);
   }
+}
 
-  return true;
+void ApplyControlUpdate(syncable::WriteTransaction* const trans,
+                        syncable::MutableEntry* const entry,
+                        Cryptographer* cryptographer) {
+  DCHECK_NE(entry->GetServerModelType(), NIGORI);
+  DCHECK(entry->Get(IS_UNAPPLIED_UPDATE));
+  if (entry->Get(IS_UNSYNCED)) {
+      // We just let the server win all conflicts with control types.
+    DVLOG(1) << "Ignoring local changes for control update.";
+    conflict_util::IgnoreLocalChanges(entry);
+    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
+                              ConflictResolver::OVERWRITE_LOCAL,
+                              ConflictResolver::CONFLICT_RESOLUTION_SIZE);
+  }
+
+  UpdateAttemptResponse response = AttemptToUpdateEntry(
+      trans, entry, cryptographer);
+  DCHECK_EQ(SUCCESS, response);
 }
 
 }  // namespace syncer

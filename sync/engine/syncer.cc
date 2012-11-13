@@ -144,7 +144,7 @@ bool Syncer::SyncShare(sessions::SyncSession* session,
       }
       case APPLY_UPDATES: {
         // These include encryption updates that should be applied early.
-        ApplyControlDataUpdates(session->context()->directory());
+        ApplyControlDataUpdates(session);
 
         ApplyUpdatesAndResolveConflictsCommand apply_updates;
         apply_updates.Execute(session);
