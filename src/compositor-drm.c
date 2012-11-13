@@ -1003,18 +1003,8 @@ on_drm_input(int fd, uint32_t mask, void *data)
 static int
 init_egl(struct drm_compositor *ec, struct udev_device *device)
 {
-	EGLint major, minor, n;
 	const char *filename, *sysnum;
 	int fd;
-	static const EGLint config_attribs[] = {
-		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-		EGL_RED_SIZE, 1,
-		EGL_GREEN_SIZE, 1,
-		EGL_BLUE_SIZE, 1,
-		EGL_ALPHA_SIZE, 0,
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-		EGL_NONE
-	};
 
 	sysnum = udev_device_get_sysnum(device);
 	if (sysnum)
@@ -1037,20 +1027,10 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 
 	ec->drm.fd = fd;
 	ec->gbm = gbm_create_device(ec->drm.fd);
-	ec->base.egl_display = eglGetDisplay(ec->gbm);
-	if (ec->base.egl_display == NULL) {
-		weston_log("failed to create display\n");
-		return -1;
-	}
 
-	if (!eglInitialize(ec->base.egl_display, &major, &minor)) {
-		weston_log("failed to initialize display\n");
-		return -1;
-	}
-
-	if (!eglChooseConfig(ec->base.egl_display, config_attribs,
-			     &ec->base.egl_config, 1, &n) || n != 1) {
-		weston_log("failed to choose config: %d\n", n);
+	if (gles2_renderer_create(&ec->base, ec->gbm, gles2_renderer_opaque_attribs,
+			NULL) < 0) {
+		gbm_device_destroy(ec->gbm);
 		return -1;
 	}
 
@@ -1969,12 +1949,6 @@ drm_destroy(struct weston_compositor *ec)
 
 	gles2_renderer_destroy(ec);
 
-	/* Work around crash in egl_dri2.c's dri2_make_current() */
-	eglMakeCurrent(ec->egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
-		       EGL_NO_CONTEXT);
-	eglTerminate(ec->egl_display);
-	eglReleaseThread();
-
 	destroy_sprites(d);
 	gbm_device_destroy(d->gbm);
 	if (weston_launcher_drm_set_master(&d->base, d->drm.fd, 0) < 0)
@@ -2257,12 +2231,9 @@ err_drm_source:
 	wl_event_source_remove(ec->drm_source);
 	wl_list_for_each_safe(weston_seat, next, &ec->base.seat_list, link)
 		evdev_input_destroy(weston_seat);
-	eglMakeCurrent(ec->base.egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
-		       EGL_NO_CONTEXT);
-	eglTerminate(ec->base.egl_display);
-	eglReleaseThread();
-	gbm_device_destroy(ec->gbm);
 err_sprite:
+	gles2_renderer_destroy(&ec->base);
+	gbm_device_destroy(ec->gbm);
 	destroy_sprites(ec);
 err_udev_dev:
 	udev_device_unref(drm_device);

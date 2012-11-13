@@ -286,9 +286,6 @@ struct weston_renderer {
 struct weston_compositor {
 	struct wl_signal destroy_signal;
 
-	EGLDisplay egl_display;
-	EGLContext egl_context;
-	EGLConfig egl_config;
 	struct weston_shader texture_shader_rgba;
 	struct weston_shader texture_shader_rgbx;
 	struct weston_shader texture_shader_egl_external;
@@ -838,6 +835,14 @@ weston_surface_destroy(struct weston_surface *surface);
 int
 weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode);
 
+extern const EGLint gles2_renderer_opaque_attribs[];
+extern const EGLint gles2_renderer_alpha_attribs[];
+
+int
+gles2_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
+	const EGLint *attribs, const EGLint *visual_id);
+EGLDisplay
+gles2_renderer_display(struct weston_compositor *ec);
 int
 gles2_renderer_output_create(struct weston_output *output,
 				    EGLNativeWindowType window);

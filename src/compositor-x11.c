@@ -307,53 +307,6 @@ x11_input_destroy(struct x11_compositor *compositor)
 	weston_seat_release(&compositor->core_seat);
 }
 
-static int
-x11_compositor_init_egl(struct x11_compositor *c)
-{
-	EGLint major, minor;
-	EGLint n;
-	EGLint config_attribs[] = {
-		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-		EGL_RED_SIZE, 1,
-		EGL_GREEN_SIZE, 1,
-		EGL_BLUE_SIZE, 1,
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-		EGL_NONE
-	};
-
-	c->base.egl_display = eglGetDisplay(c->dpy);
-	if (c->base.egl_display == NULL) {
-		weston_log("failed to create display\n");
-		return -1;
-	}
-
-	if (!eglInitialize(c->base.egl_display, &major, &minor)) {
-		weston_log("failed to initialize display\n");
-		return -1;
-	}
-
-	if (!eglChooseConfig(c->base.egl_display, config_attribs,
-			     &c->base.egl_config, 1, &n) || n == 0) {
-		weston_log("failed to choose config: %d\n", n);
-		return -1;
-	}
-
-	return 0;
-}
-
-static void
-x11_compositor_fini_egl(struct x11_compositor *compositor)
-{
-	gles2_renderer_destroy(&compositor->base);
-
-	eglMakeCurrent(compositor->base.egl_display,
-		       EGL_NO_SURFACE, EGL_NO_SURFACE,
-		       EGL_NO_CONTEXT);
-
-	eglTerminate(compositor->base.egl_display);
-	eglReleaseThread();
-}
-
 static void
 x11_output_repaint(struct weston_output *output_base,
 		   pixman_region32_t *damage)
@@ -1153,7 +1106,7 @@ x11_destroy(struct weston_compositor *ec)
 
 	weston_compositor_shutdown(ec); /* destroys outputs, too */
 
-	x11_compositor_fini_egl(compositor);
+	gles2_renderer_destroy(ec);
 
 	XCloseDisplay(compositor->dpy);
 	free(ec);
@@ -1201,14 +1154,15 @@ x11_compositor_create(struct wl_display *display,
 	x11_compositor_get_resources(c);
 
 	c->base.wl_display = display;
-	if (x11_compositor_init_egl(c) < 0)
+	if (gles2_renderer_create(&c->base, c->dpy, gles2_renderer_opaque_attribs,
+			NULL) < 0)
 		goto err_xdisplay;
 
 	c->base.destroy = x11_destroy;
 	c->base.restore = x11_restore;
 
 	if (x11_input_create(c, no_input) < 0)
-		goto err_egl;
+		goto err_gles2;
 
 	width = option_width ? option_width : 1024;
 	height = option_height ? option_height : 640;
@@ -1252,8 +1206,8 @@ x11_compositor_create(struct wl_display *display,
 
 err_x11_input:
 	x11_input_destroy(c);
-err_egl:
-	x11_compositor_fini_egl(c);
+err_gles2:
+	gles2_renderer_destroy(&c->base);
 err_xdisplay:
 	XCloseDisplay(c->dpy);
 err_free:

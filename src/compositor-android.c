@@ -78,42 +78,6 @@ to_android_compositor(struct weston_compositor *base)
 	return container_of(base, struct android_compositor, base);
 }
 
-static const char *
-egl_error_string(EGLint code)
-{
-#define MYERRCODE(x) case x: return #x;
-	switch (code) {
-	MYERRCODE(EGL_SUCCESS)
-	MYERRCODE(EGL_NOT_INITIALIZED)
-	MYERRCODE(EGL_BAD_ACCESS)
-	MYERRCODE(EGL_BAD_ALLOC)
-	MYERRCODE(EGL_BAD_ATTRIBUTE)
-	MYERRCODE(EGL_BAD_CONTEXT)
-	MYERRCODE(EGL_BAD_CONFIG)
-	MYERRCODE(EGL_BAD_CURRENT_SURFACE)
-	MYERRCODE(EGL_BAD_DISPLAY)
-	MYERRCODE(EGL_BAD_SURFACE)
-	MYERRCODE(EGL_BAD_MATCH)
-	MYERRCODE(EGL_BAD_PARAMETER)
-	MYERRCODE(EGL_BAD_NATIVE_PIXMAP)
-	MYERRCODE(EGL_BAD_NATIVE_WINDOW)
-	MYERRCODE(EGL_CONTEXT_LOST)
-	default:
-		return "unknown";
-	}
-#undef MYERRCODE
-}
-
-static void
-print_egl_error_state(void)
-{
-	EGLint code;
-
-	code = eglGetError();
-	weston_log("EGL error state: %s (0x%04lx)\n",
-		egl_error_string(code), (long)code);
-}
-
 static void
 android_finish_frame(void *data)
 {
@@ -319,113 +283,23 @@ android_seat_create(struct android_compositor *compositor)
 }
 
 static int
-android_egl_choose_config(struct android_compositor *compositor,
-			  struct android_framebuffer *fb,
-			  const EGLint *attribs)
-{
-	EGLBoolean ret;
-	EGLint count = 0;
-	EGLint matched = 0;
-	EGLConfig *configs;
-	int i;
-
-	/*
-	 * The logic is copied from Android frameworks/base/services/
-	 * surfaceflinger/DisplayHardware/DisplayHardware.cpp
-	 */
-
-	compositor->base.egl_config = NULL;
-
-	ret = eglGetConfigs(compositor->base.egl_display, NULL, 0, &count);
-	if (ret == EGL_FALSE || count < 1)
-		return -1;
-
-	configs = calloc(count, sizeof *configs);
-	if (!configs)
-		return -1;
-
-	ret = eglChooseConfig(compositor->base.egl_display, attribs, configs,
-			      count, &matched);
-	if (ret == EGL_FALSE || matched < 1)
-		goto out;
-
-	for (i = 0; i < matched; ++i) {
-		EGLint id;
-		ret = eglGetConfigAttrib(compositor->base.egl_display,
-					 configs[i], EGL_NATIVE_VISUAL_ID,
-					 &id);
-		if (ret == EGL_FALSE)
-			continue;
-		if (id > 0 && fb->format == id) {
-			compositor->base.egl_config = configs[i];
-			break;
-		}
-	}
-
-out:
-	free(configs);
-	if (!compositor->base.egl_config)
-		return -1;
-
-	return 0;
-}
-
-static int
 android_init_egl(struct android_compositor *compositor,
 		 struct android_output *output)
 {
-	EGLint eglmajor, eglminor;
-	int ret;
+	EGLint visual_id = output->fb->format;
 
-	static const EGLint config_attrs[] = {
-		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-		EGL_RED_SIZE, 1,
-		EGL_GREEN_SIZE, 1,
-		EGL_BLUE_SIZE, 1,
-		EGL_ALPHA_SIZE, 0,
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-		EGL_NONE
-	};
-
-	compositor->base.egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	if (compositor->base.egl_display == EGL_NO_DISPLAY) {
-		weston_log("Failed to create EGL display.\n");
-		print_egl_error_state();
+	if (gles2_renderer_create(&compositor->base,
+			EGL_DEFAULT_DISPLAY, gles2_renderer_opaque_attribs,
+			&visual_id) < 0)
 		return -1;
-	}
-
-	ret = eglInitialize(compositor->base.egl_display, &eglmajor, &eglminor);
-	if (!ret) {
-		weston_log("Failed to initialise EGL.\n");
-		print_egl_error_state();
-		return -1;
-	}
-
-	ret = android_egl_choose_config(compositor, output->fb, config_attrs);
-	if (ret < 0) {
-		weston_log("Failed to find an EGL config.\n");
-		print_egl_error_state();
-		return -1;
-	}
 
 	if (gles2_renderer_output_create(&output->base,
-			output->fb->native_window) < 0)
+			output->fb->native_window) < 0) {
+		gles2_renderer_destroy(&compositor->base);
 		return -1;
+	}
 
 	return 0;
-}
-
-static void
-android_fini_egl(struct android_compositor *compositor)
-{
-	gles2_renderer_destroy(&compositor->base);
-
-	eglMakeCurrent(compositor->base.egl_display,
-		       EGL_NO_SURFACE, EGL_NO_SURFACE,
-		       EGL_NO_CONTEXT);
-
-	eglTerminate(compositor->base.egl_display);
-	eglReleaseThread();
 }
 
 static void
@@ -435,10 +309,10 @@ android_compositor_destroy(struct weston_compositor *base)
 
 	android_seat_destroy(compositor->seat);
 
+	gles2_renderer_destroy(base);
+
 	/* destroys outputs, too */
 	weston_compositor_shutdown(&compositor->base);
-
-	android_fini_egl(compositor);
 
 	free(compositor);
 }
@@ -475,12 +349,12 @@ android_compositor_create(struct wl_display *display, int argc, char *argv[],
 
 	compositor->seat = android_seat_create(compositor);
 	if (!compositor->seat)
-		goto err_egl;
+		goto err_gles2;
 
 	return &compositor->base;
 
-err_egl:
-	android_fini_egl(compositor);
+err_gles2:
+	gles2_renderer_destroy(&compositor->base);
 err_output:
 	android_output_destroy(&output->base);
 err_compositor:

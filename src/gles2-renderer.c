@@ -31,20 +31,29 @@
 
 #include "compositor.h"
 
-struct gles2_renderer {
-	struct weston_renderer base;
-	int fragment_shader_debug;
-};
-
 struct gles2_output_state {
 	EGLSurface egl_surface;
 };
 
+struct gles2_renderer {
+	struct weston_renderer base;
+	int fragment_shader_debug;
+
+	EGLDisplay egl_display;
+	EGLContext egl_context;
+	EGLConfig egl_config;
+};
 
 static inline struct gles2_output_state *
 get_output_state(struct weston_output *output)
 {
 	return (struct gles2_output_state *)output->renderer_state;
+}
+
+static inline struct gles2_renderer *
+get_renderer(struct weston_compositor *ec)
+{
+	return (struct gles2_renderer *)ec->renderer;
 }
 
 static const char *
@@ -719,6 +728,7 @@ gles2_renderer_repaint_output(struct weston_output *output,
 {
 	struct gles2_output_state *go = get_output_state(output);
 	struct weston_compositor *compositor = output->compositor;
+	struct gles2_renderer *gr = get_renderer(compositor);
 	EGLBoolean ret;
 	static int errored;
 	int32_t width, height, i;
@@ -730,8 +740,8 @@ gles2_renderer_repaint_output(struct weston_output *output,
 
 	glViewport(0, 0, width, height);
 
-	ret = eglMakeCurrent(compositor->egl_display, go->egl_surface,
-			     go->egl_surface, compositor->egl_context);
+	ret = eglMakeCurrent(gr->egl_display, go->egl_surface,
+			     go->egl_surface, gr->egl_context);
 	if (ret == EGL_FALSE) {
 		if (errored)
 			return;
@@ -767,7 +777,7 @@ gles2_renderer_repaint_output(struct weston_output *output,
 
 	wl_signal_emit(&output->frame_signal, output);
 
-	ret = eglSwapBuffers(compositor->egl_display, go->egl_surface);
+	ret = eglSwapBuffers(gr->egl_display, go->egl_surface);
 	if (ret == EGL_FALSE && !errored) {
 		errored = 1;
 		weston_log("Failed in eglSwapBuffers.\n");
@@ -855,12 +865,13 @@ static void
 gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 {
 	struct weston_compositor *ec = es->compositor;
+	struct gles2_renderer *gr = get_renderer(ec);
 	EGLint attribs[3], format;
 	int i, num_planes;
 
 	if (!buffer) {
 		for (i = 0; i < es->num_images; i++) {
-			ec->destroy_image(ec->egl_display, es->images[i]);
+			ec->destroy_image(gr->egl_display, es->images[i]);
 			es->images[i] = NULL;
 		}
 		es->num_images = 0;
@@ -882,10 +893,10 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 			es->shader = &ec->texture_shader_rgbx;
 		else
 			es->shader = &ec->texture_shader_rgba;
-	} else if (ec->query_buffer(ec->egl_display, buffer,
+	} else if (ec->query_buffer(gr->egl_display, buffer,
 				    EGL_TEXTURE_FORMAT, &format)) {
 		for (i = 0; i < es->num_images; i++)
-			ec->destroy_image(ec->egl_display, es->images[i]);
+			ec->destroy_image(gr->egl_display, es->images[i]);
 		es->num_images = 0;
 		es->target = GL_TEXTURE_2D;
 		switch (format) {
@@ -919,7 +930,7 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 			attribs[0] = EGL_WAYLAND_PLANE_WL;
 			attribs[1] = i;
 			attribs[2] = EGL_NONE;
-			es->images[i] = ec->create_image(ec->egl_display,
+			es->images[i] = ec->create_image(gr->egl_display,
 							 NULL,
 							 EGL_WAYLAND_BUFFER_WL,
 							 buffer, attribs);
@@ -945,12 +956,13 @@ static void
 gles2_renderer_destroy_surface(struct weston_surface *surface)
 {
 	struct weston_compositor *ec = surface->compositor;
+	struct gles2_renderer *gr = get_renderer(ec);
 	int i;
 
 	glDeleteTextures(surface->num_textures, surface->textures);
 
 	for (i = 0; i < surface->num_images; i++)
-		ec->destroy_image(ec->egl_display, surface->images[i]);
+		ec->destroy_image(gr->egl_display, surface->images[i]);
 }
 
 static const char vertex_shader[] =
@@ -1233,14 +1245,15 @@ gles2_renderer_output_create(struct weston_output *output,
 				    EGLNativeWindowType window)
 {
 	struct weston_compositor *ec = output->compositor;
+	struct gles2_renderer *gr = get_renderer(ec);
 	struct gles2_output_state *go = calloc(1, sizeof *go);
 
 	if (!go)
 		return -1;
 
 	go->egl_surface =
-		eglCreateWindowSurface(ec->egl_display,
-				       ec->egl_config,
+		eglCreateWindowSurface(gr->egl_display,
+				       gr->egl_config,
 				       window, NULL);
 
 	if (go->egl_surface == EGL_NO_SURFACE) {
@@ -1249,7 +1262,7 @@ gles2_renderer_output_create(struct weston_output *output,
 		return -1;
 	}
 
-	if (ec->egl_context == NULL)
+	if (gr->egl_context == NULL)
 		if (gles2_renderer_setup(ec, go->egl_surface) < 0) {
 			free(go);
 			return -1;
@@ -1263,9 +1276,10 @@ gles2_renderer_output_create(struct weston_output *output,
 WL_EXPORT void
 gles2_renderer_output_destroy(struct weston_output *output)
 {
+	struct gles2_renderer *gr = get_renderer(output->compositor);
 	struct gles2_output_state *go = get_output_state(output);
 
-	eglDestroySurface(output->compositor->egl_display, go->egl_surface);
+	eglDestroySurface(gr->egl_display, go->egl_surface);
 
 	free(go);
 }
@@ -1279,8 +1293,131 @@ gles2_renderer_output_surface(struct weston_output *output)
 WL_EXPORT void
 gles2_renderer_destroy(struct weston_compositor *ec)
 {
+	struct gles2_renderer *gr = get_renderer(ec);
+
 	if (ec->has_bind_display)
-		ec->unbind_display(ec->egl_display, ec->wl_display);
+		ec->unbind_display(gr->egl_display, ec->wl_display);
+
+	/* Work around crash in egl_dri2.c's dri2_make_current() - when does this apply? */
+	eglMakeCurrent(gr->egl_display,
+		       EGL_NO_SURFACE, EGL_NO_SURFACE,
+		       EGL_NO_CONTEXT);
+
+	eglTerminate(gr->egl_display);
+	eglReleaseThread();
+}
+
+static int
+egl_choose_config(struct gles2_renderer *gr, const EGLint *attribs,
+	const EGLint *visual_id)
+{
+	EGLint count = 0;
+	EGLint matched = 0;
+	EGLConfig *configs;
+	int i;
+
+	if (!eglGetConfigs(gr->egl_display, NULL, 0, &count) || count < 1)
+		return -1;
+
+	configs = calloc(count, sizeof *configs);
+	if (!configs)
+		return -1;
+
+	if (!eglChooseConfig(gr->egl_display, attribs, configs,
+			      count, &matched))
+		goto out;
+
+	for (i = 0; i < matched; ++i) {
+		EGLint id;
+
+		if (visual_id) {
+			if (!eglGetConfigAttrib(gr->egl_display,
+					configs[i], EGL_NATIVE_VISUAL_ID,
+					&id))
+				continue;
+
+			if (id != *visual_id)
+				continue;
+		}
+
+		gr->egl_config = configs[i];
+
+		free(configs);
+		return 0;
+	}
+
+out:
+	free(configs);
+	return -1;
+}
+
+WL_EXPORT const EGLint gles2_renderer_opaque_attribs[] = {
+	EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+	EGL_RED_SIZE, 1,
+	EGL_GREEN_SIZE, 1,
+	EGL_BLUE_SIZE, 1,
+	EGL_ALPHA_SIZE, 0,
+	EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+	EGL_NONE
+};
+
+WL_EXPORT const EGLint gles2_renderer_alpha_attribs[] = {
+	EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+	EGL_RED_SIZE, 1,
+	EGL_GREEN_SIZE, 1,
+	EGL_BLUE_SIZE, 1,
+	EGL_ALPHA_SIZE, 1,
+	EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+	EGL_NONE
+};
+
+WL_EXPORT int
+gles2_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
+	const EGLint *attribs, const EGLint *visual_id)
+{
+	struct gles2_renderer *gr;
+	EGLint major, minor;
+
+	gr = calloc(1, sizeof *gr);
+
+	if (gr == NULL)
+		return -1;
+
+	gr->base.repaint_output = gles2_renderer_repaint_output;
+	gr->base.flush_damage = gles2_renderer_flush_damage;
+	gr->base.attach = gles2_renderer_attach;
+	gr->base.destroy_surface = gles2_renderer_destroy_surface;
+
+	gr->egl_display = eglGetDisplay(display);
+	if (gr->egl_display == EGL_NO_DISPLAY) {
+		weston_log("failed to create display\n");
+		goto err_egl;
+	}
+
+	if (!eglInitialize(gr->egl_display, &major, &minor)) {
+		weston_log("failed to initialize display\n");
+		goto err_egl;
+	}
+
+	if (egl_choose_config(gr, attribs, visual_id) < 0) {
+		weston_log("failed to choose EGL config\n");
+		goto err_egl;
+	}
+
+	ec->renderer = &gr->base;
+
+	return 0;
+
+err_egl:
+	print_egl_error_state();
+	free(gr);
+	return -1;
+}
+
+WL_EXPORT EGLDisplay
+gles2_renderer_display(struct weston_compositor *ec)
+{
+	return get_renderer(ec)->egl_display;
 }
 
 static int
@@ -1340,7 +1477,7 @@ fragment_debug_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 static int
 gles2_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 {
-	struct gles2_renderer *renderer;
+	struct gles2_renderer *gr = get_renderer(ec);
 	const char *extensions;
 	EGLBoolean ret;
 
@@ -1349,35 +1486,31 @@ gles2_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 		EGL_NONE
 	};
 
-	renderer = calloc(1, sizeof *renderer);
-	if (renderer == NULL)
-		return -1;
-
 	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
 		weston_log("failed to bind EGL_OPENGL_ES_API\n");
 		print_egl_error_state();
 		return -1;
 	}
 
-	log_egl_config_info(ec->egl_display, ec->egl_config);
+	log_egl_config_info(gr->egl_display, gr->egl_config);
 
-	ec->egl_context = eglCreateContext(ec->egl_display, ec->egl_config,
+	gr->egl_context = eglCreateContext(gr->egl_display, gr->egl_config,
 					   EGL_NO_CONTEXT, context_attribs);
-	if (ec->egl_context == NULL) {
+	if (gr->egl_context == NULL) {
 		weston_log("failed to create context\n");
 		print_egl_error_state();
 		return -1;
 	}
 
-	ret = eglMakeCurrent(ec->egl_display, egl_surface,
-			     egl_surface, ec->egl_context);
+	ret = eglMakeCurrent(gr->egl_display, egl_surface,
+			     egl_surface, gr->egl_context);
 	if (ret == EGL_FALSE) {
 		weston_log("Failed to make EGL context current.\n");
 		print_egl_error_state();
 		return -1;
 	}
 
-	log_egl_gl_info(ec->egl_display);
+	log_egl_gl_info(gr->egl_display);
 
 	ec->image_target_texture_2d =
 		(void *) eglGetProcAddress("glEGLImageTargetTexture2DOES");
@@ -1415,7 +1548,7 @@ gles2_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 		ec->has_egl_image_external = 1;
 
 	extensions =
-		(const char *) eglQueryString(ec->egl_display, EGL_EXTENSIONS);
+		(const char *) eglQueryString(gr->egl_display, EGL_EXTENSIONS);
 	if (!extensions) {
 		weston_log("Retrieving EGL extension string failed.\n");
 		return -1;
@@ -1424,18 +1557,12 @@ gles2_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 	if (strstr(extensions, "EGL_WL_bind_wayland_display"))
 		ec->has_bind_display = 1;
 	if (ec->has_bind_display) {
-		ret = ec->bind_display(ec->egl_display, ec->wl_display);
+		ret = ec->bind_display(gr->egl_display, ec->wl_display);
 		if (!ret)
 			ec->has_bind_display = 0;
 	}
 
 	glActiveTexture(GL_TEXTURE0);
-
-	renderer->base.repaint_output = gles2_renderer_repaint_output;
-	renderer->base.flush_damage = gles2_renderer_flush_damage;
-	renderer->base.attach = gles2_renderer_attach;
-	renderer->base.destroy_surface = gles2_renderer_destroy_surface;
-	ec->renderer = &renderer->base;
 
 	if (compile_shaders(ec))
 		return -1;
@@ -1450,6 +1577,7 @@ gles2_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 			    ec->has_unpack_subimage ? "yes" : "no");
 	weston_log_continue(STAMP_SPACE "EGL Wayland extension: %s\n",
 			    ec->has_bind_display ? "yes" : "no");
+
 
 	return 0;
 }

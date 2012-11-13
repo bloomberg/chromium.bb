@@ -1089,7 +1089,7 @@ rpi_output_create(struct rpi_compositor *compositor)
 			(EGLNativeWindowType)&output->egl_window) < 0)
 		goto out_output;
 
-	if (!eglSurfaceAttrib(compositor->base.egl_display,
+	if (!eglSurfaceAttrib(gles2_renderer_display(&compositor->base),
 			     gles2_renderer_output_surface(&output->base),
 			      EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED)) {
 		print_egl_error_state();
@@ -1355,63 +1355,6 @@ evdev_input_destroy(struct weston_seat *seat_base)
 	free(seat);
 }
 
-static int
-rpi_init_egl(struct rpi_compositor *compositor)
-{
-	EGLint eglmajor, eglminor;
-	int ret;
-	EGLint num_config;
-
-	static const EGLint config_attrs[] = {
-		EGL_SURFACE_TYPE, EGL_WINDOW_BIT |
-				  EGL_SWAP_BEHAVIOR_PRESERVED_BIT,
-		EGL_RED_SIZE, 1,
-		EGL_GREEN_SIZE, 1,
-		EGL_BLUE_SIZE, 1,
-		EGL_ALPHA_SIZE, 0,
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-		EGL_NONE
-	};
-
-	compositor->base.egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	if (compositor->base.egl_display == EGL_NO_DISPLAY) {
-		weston_log("Failed to create EGL display.\n");
-		print_egl_error_state();
-		return -1;
-	}
-
-	ret = eglInitialize(compositor->base.egl_display, &eglmajor, &eglminor);
-	if (!ret) {
-		weston_log("Failed to initialise EGL.\n");
-		print_egl_error_state();
-		return -1;
-	}
-
-	ret = eglChooseConfig(compositor->base.egl_display, config_attrs,
-			      &compositor->base.egl_config, 1, &num_config);
-	if (ret < 0 || num_config != 1) {
-		weston_log("Failed to find an EGL config (found %d configs).\n",
-			   num_config);
-		print_egl_error_state();
-		return -1;
-	}
-
-	return 0;
-}
-
-static void
-rpi_fini_egl(struct rpi_compositor *compositor)
-{
-	gles2_renderer_destroy(&compositor->base);
-
-	eglMakeCurrent(compositor->base.egl_display,
-		       EGL_NO_SURFACE, EGL_NO_SURFACE,
-		       EGL_NO_CONTEXT);
-
-	eglTerminate(compositor->base.egl_display);
-	eglReleaseThread();
-}
-
 static void
 rpi_compositor_destroy(struct weston_compositor *base)
 {
@@ -1424,7 +1367,7 @@ rpi_compositor_destroy(struct weston_compositor *base)
 	/* destroys outputs, too */
 	weston_compositor_shutdown(&compositor->base);
 
-	rpi_fini_egl(compositor);
+	gles2_renderer_destroy(&compositor->base);
 	tty_destroy(compositor->tty);
 
 	bcm_host_deinit();
@@ -1506,6 +1449,16 @@ rpi_compositor_create(struct wl_display *display, int argc, char *argv[],
 	struct rpi_compositor *compositor;
 	const char *seat = default_seat;
 	uint32_t key;
+	static const EGLint config_attrs[] = {
+		EGL_SURFACE_TYPE, EGL_WINDOW_BIT |
+				  EGL_SWAP_BEHAVIOR_PRESERVED_BIT,
+		EGL_RED_SIZE, 1,
+		EGL_GREEN_SIZE, 1,
+		EGL_BLUE_SIZE, 1,
+		EGL_ALPHA_SIZE, 0,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+		EGL_NONE
+	};
 
 	weston_log("initializing Raspberry Pi backend\n");
 
@@ -1556,18 +1509,19 @@ rpi_compositor_create(struct wl_display *display, int argc, char *argv[],
 	 */
 	bcm_host_init();
 
-	if (rpi_init_egl(compositor) < 0)
+	if (gles2_renderer_create(&compositor->base, EGL_DEFAULT_DISPLAY,
+		config_attrs, NULL) < 0)
 		goto out_tty;
 
 	if (rpi_output_create(compositor) < 0)
-		goto out_egl;
+		goto out_gles2;
 
 	evdev_input_create(&compositor->base, compositor->udev, seat);
 
 	return &compositor->base;
 
-out_egl:
-	rpi_fini_egl(compositor);
+out_gles2:
+	gles2_renderer_destroy(&compositor->base);
 
 out_tty:
 	tty_destroy(compositor->tty);
