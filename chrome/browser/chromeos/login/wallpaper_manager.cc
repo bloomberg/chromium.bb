@@ -1071,7 +1071,7 @@ void WallpaperManager::OnWallpaperDecoded(const std::string& email,
                            ash::CENTER_CROPPED,
                            User::DEFAULT,
                            base::Time::Now().LocalMidnight()
-                       };
+                         };
     SetUserWallpaperInfo(email, info, true);
 
     if (update_wallpaper) {
@@ -1167,6 +1167,13 @@ void WallpaperManager::StartLoad(const std::string& email,
                                  bool update_wallpaper,
                                  const FilePath& wallpaper_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Avoid loading the same file.
+  if (current_wallpaper_path_ == wallpaper_path)
+    return;
+
+  if (update_wallpaper)
+    current_wallpaper_path_ = wallpaper_path;
 
   wallpaper_loader_->Start(wallpaper_path.value(), 0,
                            base::Bind(&WallpaperManager::OnWallpaperDecoded,

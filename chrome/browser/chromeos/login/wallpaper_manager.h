@@ -283,7 +283,8 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // will create a deadlock. (issue 142440)
   bool ShouldPersistDataForUser(const std::string& email);
 
-  // Starts to load wallpaper at |wallpaper_path|. Must be called on UI thread.
+  // Starts to load wallpaper at |wallpaper_path|. If |wallpaper_path| is the
+  // same as |current_wallpaper_path_|, do nothing. Must be called on UI thread.
   void StartLoad(const std::string& email,
                  const WallpaperInfo& info,
                  bool update_wallpaper,
@@ -309,6 +310,9 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
 
   // Loads user wallpaper from its file.
   scoped_refptr<UserImageLoader> wallpaper_loader_;
+
+  // The file path of current loaded/loading custom/online wallpaper.
+  FilePath current_wallpaper_path_;
 
   // Logged-in user wallpaper type.
   User::WallpaperType current_user_wallpaper_type_;

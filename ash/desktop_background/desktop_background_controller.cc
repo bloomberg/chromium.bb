@@ -93,6 +93,10 @@ class DesktopBackgroundController::WallpaperOperation
     cancel_flag_.Set();
   }
 
+  int index() const {
+    return index_;
+  }
+
   WallpaperData* ReleaseWallpaperData() {
     return wallpaper_data_.release();
   }
@@ -198,8 +202,13 @@ void DesktopBackgroundController::SetDefaultWallpaper(int index) {
     return;
   }
 
-  if (current_wallpaper_.get() && current_wallpaper_->wallpaper_index == index)
+  // Prevents loading of the same wallpaper as the currently loading/loaded
+  // one.
+  if ((wallpaper_op_.get() && wallpaper_op_->index() == index) ||
+      (current_wallpaper_.get() &&
+       current_wallpaper_->wallpaper_index == index)) {
     return;
+  }
 
   CancelPendingWallpaperOperation();
 
@@ -225,6 +234,11 @@ void DesktopBackgroundController::SetCustomWallpaper(
     const gfx::ImageSkia& wallpaper,
     WallpaperLayout layout) {
   CancelPendingWallpaperOperation();
+  if (current_wallpaper_.get() &&
+      current_wallpaper_->wallpaper_image.BackedBySameObjectAs(wallpaper)) {
+    return;
+  }
+
   current_wallpaper_.reset(new WallpaperData(layout, wallpaper));
   FOR_EACH_OBSERVER(DesktopBackgroundControllerObserver, observers_,
                     OnWallpaperDataChanged());
