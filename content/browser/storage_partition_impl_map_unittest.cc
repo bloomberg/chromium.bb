@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/storage_partition_impl.h"
+#include "content/browser/storage_partition_impl_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -13,17 +13,17 @@ class StoragePartitionConfigTest : public testing::Test {
 // Test that the Less comparison function is implemented properly to uniquely
 // identify storage partitions used as keys in a std::map.
 TEST_F(StoragePartitionConfigTest, OperatorLess) {
-  StoragePartitionImpl::StoragePartitionConfig c1("", "", false);
-  StoragePartitionImpl::StoragePartitionConfig c2("", "", false);
-  StoragePartitionImpl::StoragePartitionConfig c3("", "", true);
-  StoragePartitionImpl::StoragePartitionConfig c4("a", "", true);
-  StoragePartitionImpl::StoragePartitionConfig c5("b", "", true);
-  StoragePartitionImpl::StoragePartitionConfig c6("", "abc", false);
-  StoragePartitionImpl::StoragePartitionConfig c7("", "abc", true);
-  StoragePartitionImpl::StoragePartitionConfig c8("a", "abc", false);
-  StoragePartitionImpl::StoragePartitionConfig c9("a", "abc", true);
+  StoragePartitionImplMap::StoragePartitionConfig c1("", "", false);
+  StoragePartitionImplMap::StoragePartitionConfig c2("", "", false);
+  StoragePartitionImplMap::StoragePartitionConfig c3("", "", true);
+  StoragePartitionImplMap::StoragePartitionConfig c4("a", "", true);
+  StoragePartitionImplMap::StoragePartitionConfig c5("b", "", true);
+  StoragePartitionImplMap::StoragePartitionConfig c6("", "abc", false);
+  StoragePartitionImplMap::StoragePartitionConfig c7("", "abc", true);
+  StoragePartitionImplMap::StoragePartitionConfig c8("a", "abc", false);
+  StoragePartitionImplMap::StoragePartitionConfig c9("a", "abc", true);
 
-  StoragePartitionImpl::StoragePartitionConfigLess less;
+  StoragePartitionImplMap::StoragePartitionConfigLess less;
 
   // Let's ensure basic comparison works.
   EXPECT_TRUE(less(c1, c3));

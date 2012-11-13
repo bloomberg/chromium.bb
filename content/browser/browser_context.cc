@@ -53,12 +53,6 @@ StoragePartition* GetStoragePartitionFromConfig(
   if (browser_context->IsOffTheRecord())
     in_memory = true;
 
-  // TODO(nasko): Webview tags with named partitions will have both
-  // partition_domain and partition_name set. In this case, mark them in-memory
-  // until the on-disk storage code has landed. http://crbug.com/159464
-  if (!partition_domain.empty() && !partition_name.empty())
-    in_memory = true;
-
   return partition_map->Get(partition_domain, partition_name, in_memory);
 }
 

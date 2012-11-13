@@ -321,7 +321,7 @@
         'browser/speech/google_streaming_remote_engine_unittest.cc',
         'browser/speech/speech_recognizer_unittest.cc',
         'browser/ssl/ssl_host_state_unittest.cc',
-        'browser/storage_partition_impl_unittest.cc',
+        'browser/storage_partition_impl_map_unittest.cc',
         'browser/system_message_window_win_unittest.cc',
         'browser/trace_subscriber_stdio_unittest.cc',
         'browser/web_contents/navigation_controller_impl_unittest.cc',

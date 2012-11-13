@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
@@ -32,62 +31,17 @@ class StoragePartitionImpl : public StoragePartition {
   virtual IndexedDBContextImpl* GetIndexedDBContext() OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(StoragePartitionConfigTest, OperatorLess);
   friend class StoragePartitionImplMap;
 
-  // Each StoragePartition is uniquely identified by which partition domain
-  // it belongs to (such as an app or the browser itself), the user supplied
-  // partition name and the bit indicating whether it should be persisted on
-  // disk or not. This structure contains those elements and is used as
-  // uniqueness key to lookup StoragePartition objects in the global map.
+  // The |partition_path| is the absolute path to the root of this
+  // StoragePartition's on-disk storage.
   //
-  // TODO(nasko): It is equivalent, though not identical to the same structure
-  // that lives in chrome profiles. The difference is that this one has
-  // partition_domain and partition_name separate, while the latter one has
-  // the path produced by combining the two pieces together.
-  // The fix for http://crbug.com/159193 will remove the chrome version.
-  struct StoragePartitionConfig {
-    const std::string partition_domain;
-    const std::string partition_name;
-    const bool in_memory;
-
-    StoragePartitionConfig(const std::string& domain,
-                               const std::string& partition,
-                               const bool& in_memory_only)
-      : partition_domain(domain),
-        partition_name(partition),
-        in_memory(in_memory_only) {}
-  };
-
-  // Functor for operator <.
-  struct StoragePartitionConfigLess {
-    bool operator()(const StoragePartitionConfig& lhs,
-                    const StoragePartitionConfig& rhs) const {
-      if (lhs.partition_domain != rhs.partition_domain)
-        return lhs.partition_domain < rhs.partition_domain;
-      else if (lhs.partition_name != rhs.partition_name)
-        return lhs.partition_name < rhs.partition_name;
-      else if (lhs.in_memory != rhs.in_memory)
-        return lhs.in_memory < rhs.in_memory;
-      else
-        return false;
-    }
-  };
-
-  // TODO(ajwong): Break the direct dependency on |context|. We only
-  // need 3 pieces of info from it.
-  static StoragePartitionImpl* Create(
-      BrowserContext* context,
-      const StoragePartitionConfig& partition_id,
-      const FilePath& profile_path);
-
-  // Returns the relative path from the profile's base directory, to the
-  // directory that holds all the state for storage contexts in
-  // |partition_config|. If any of the strings in |partition_config| contain
-  // embedded nuls, the values will be truncated and only the portion prior to
-  // the nul will be used.
-  static FilePath GetStoragePartitionPath(
-      const StoragePartitionConfig& partition_config);
+  // If |in_memory| is true, the |partition_path| is (ab)used as a way of
+  // distinguishing different in-memory partitions, but nothing is persisted
+  // on to disk.
+  static StoragePartitionImpl* Create(BrowserContext* context,
+                                      bool in_memory,
+                                      const FilePath& profile_path);
 
   StoragePartitionImpl(
       const FilePath& partition_path,

@@ -32,12 +32,23 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   // the expected process allocation and storage partition assignment.
   // The |navigate_to_url| parameter is used to navigate the main browser
   // window.
+  //
+  // TODO(ajwong): This function is getting to be too large. Either refactor it
+  // so the test can specify a configuration of WebView tags that we will
+  // dynamically inject JS to generate, or move this test wholesale into
+  // something that RunPlatformAppTest() can execute purely in Javascript. This
+  // won't let us do a white-box examination of the StoragePartition equivalence
+  // directly, but we will be able to view the black box effects which is good
+  // enough.  http://crbug.com/160361
   void NavigateAndOpenAppForIsolation(
       GURL navigate_to_url,
       content::WebContents** default_tag_contents1,
       content::WebContents** default_tag_contents2,
       content::WebContents** named_partition_contents1,
-      content::WebContents** named_partition_contents2) {
+      content::WebContents** named_partition_contents2,
+      content::WebContents** persistent_partition_contents1,
+      content::WebContents** persistent_partition_contents2,
+      content::WebContents** persistent_partition_contents3) {
     GURL::Replacements replace_host;
     std::string host_str("localhost");  // Must stay in scope with replace_host.
     replace_host.SetHostStr(host_str);
@@ -56,6 +67,15 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     GURL tag_url4 = test_server()->GetURL(
         "files/extensions/platform_apps/web_view_isolation/storage2.html");
     tag_url4 = tag_url4.ReplaceComponents(replace_host);
+    GURL tag_url5 = test_server()->GetURL(
+        "files/extensions/platform_apps/web_view_isolation/storage1.html#p1");
+    tag_url5 = tag_url5.ReplaceComponents(replace_host);
+    GURL tag_url6 = test_server()->GetURL(
+        "files/extensions/platform_apps/web_view_isolation/storage1.html#p2");
+    tag_url6 = tag_url6.ReplaceComponents(replace_host);
+    GURL tag_url7 = test_server()->GetURL(
+        "files/extensions/platform_apps/web_view_isolation/storage1.html#p3");
+    tag_url7 = tag_url7.ReplaceComponents(replace_host);
 
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), navigate_to_url, CURRENT_TAB,
@@ -69,11 +89,20 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         tag_url3, content::NotificationService::AllSources());
     ui_test_utils::UrlLoadObserver observer4(
         tag_url4, content::NotificationService::AllSources());
+    ui_test_utils::UrlLoadObserver observer5(
+        tag_url5, content::NotificationService::AllSources());
+    ui_test_utils::UrlLoadObserver observer6(
+        tag_url6, content::NotificationService::AllSources());
+    ui_test_utils::UrlLoadObserver observer7(
+        tag_url7, content::NotificationService::AllSources());
     LoadAndLaunchPlatformApp("web_view_isolation");
     observer1.Wait();
     observer2.Wait();
     observer3.Wait();
     observer4.Wait();
+    observer5.Wait();
+    observer6.Wait();
+    observer7.Wait();
 
     content::Source<content::NavigationController> source1 = observer1.source();
     EXPECT_TRUE(source1->GetWebContents()->GetRenderProcessHost()->IsGuest());
@@ -83,6 +112,12 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     EXPECT_TRUE(source3->GetWebContents()->GetRenderProcessHost()->IsGuest());
     content::Source<content::NavigationController> source4 = observer4.source();
     EXPECT_TRUE(source4->GetWebContents()->GetRenderProcessHost()->IsGuest());
+    content::Source<content::NavigationController> source5 = observer5.source();
+    EXPECT_TRUE(source5->GetWebContents()->GetRenderProcessHost()->IsGuest());
+    content::Source<content::NavigationController> source6 = observer6.source();
+    EXPECT_TRUE(source6->GetWebContents()->GetRenderProcessHost()->IsGuest());
+    content::Source<content::NavigationController> source7 = observer7.source();
+    EXPECT_TRUE(source7->GetWebContents()->GetRenderProcessHost()->IsGuest());
 
     // Check that the first two tags use the same process and it is different
     // than the process used by the other two.
@@ -119,10 +154,41 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         source3->GetWebContents()->GetRenderProcessHost()->
             GetStoragePartition());
 
+    // Ensure the persistent storage partitions are different.
+    EXPECT_EQ(
+        source5->GetWebContents()->GetRenderProcessHost()->
+            GetStoragePartition(),
+        source6->GetWebContents()->GetRenderProcessHost()->
+            GetStoragePartition());
+    EXPECT_NE(
+        source5->GetWebContents()->GetRenderProcessHost()->
+            GetStoragePartition(),
+        source7->GetWebContents()->GetRenderProcessHost()->
+            GetStoragePartition());
+    EXPECT_NE(
+        source1->GetWebContents()->GetRenderProcessHost()->
+            GetStoragePartition(),
+        source5->GetWebContents()->GetRenderProcessHost()->
+            GetStoragePartition());
+    EXPECT_NE(
+        source1->GetWebContents()->GetRenderProcessHost()->
+            GetStoragePartition(),
+        source7->GetWebContents()->GetRenderProcessHost()->
+            GetStoragePartition());
+
     *default_tag_contents1 = source1->GetWebContents();
     *default_tag_contents2 = source2->GetWebContents();
     *named_partition_contents1 = source3->GetWebContents();
     *named_partition_contents2 = source4->GetWebContents();
+    if (persistent_partition_contents1) {
+      *persistent_partition_contents1 = source5->GetWebContents();
+    }
+    if (persistent_partition_contents2) {
+      *persistent_partition_contents2 = source6->GetWebContents();
+    }
+    if (persistent_partition_contents3) {
+      *persistent_partition_contents3 = source7->GetWebContents();
+    }
   }
 
   void ExecuteScriptWaitForTitle(content::WebContents* web_contents,
@@ -182,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
 
   NavigateAndOpenAppForIsolation(set_cookie_url, &cookie_contents1,
                                  &cookie_contents2, &named_partition_contents1,
-                                 &named_partition_contents2);
+                                 &named_partition_contents2, NULL, NULL, NULL);
 
   EXPECT_TRUE(content::ExecuteJavaScript(
       cookie_contents1->GetRenderViewHost(), std::wstring(), cookie_script1));
@@ -219,6 +285,157 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
   EXPECT_EQ("", cookie_value);
 }
 
+// This tests that in-memory storage partitions are reset on browser restart,
+// but persistent ones maintain state for cookies and HTML5 storage.
+IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_StoragePersistence) {
+  ASSERT_TRUE(StartTestServer());
+  const std::wstring kExpire =
+      L"var expire = new Date(Date.now() + 24 * 60 * 60 * 1000);";
+  std::wstring cookie_script1(kExpire);
+  cookie_script1.append(
+      L"document.cookie = 'inmemory=true; path=/; expires=' + expire + ';';");
+  std::wstring cookie_script2(kExpire);
+  cookie_script2.append(
+      L"document.cookie = 'persist1=true; path=/; expires=' + expire + ';';");
+  std::wstring cookie_script3(kExpire);
+  cookie_script3.append(
+      L"document.cookie = 'persist2=true; path=/; expires=' + expire + ';';");
+
+  // We don't care where the main browser is on this test.
+  GURL blank_url("about:blank");
+
+  // The first two partitions will be used to set cookies and ensure they are
+  // shared. The named partition is used to ensure that cookies are isolated
+  // between partitions within the same app.
+  content::WebContents* cookie_contents1;
+  content::WebContents* cookie_contents2;
+  content::WebContents* named_partition_contents1;
+  content::WebContents* named_partition_contents2;
+  content::WebContents* persistent_partition_contents1;
+  content::WebContents* persistent_partition_contents2;
+  content::WebContents* persistent_partition_contents3;
+  NavigateAndOpenAppForIsolation(blank_url, &cookie_contents1,
+                                 &cookie_contents2, &named_partition_contents1,
+                                 &named_partition_contents2,
+                                 &persistent_partition_contents1,
+                                 &persistent_partition_contents2,
+                                 &persistent_partition_contents3);
+
+  // Set the inmemory=true cookie for tags with inmemory partitions.
+  EXPECT_TRUE(content::ExecuteJavaScript(
+      cookie_contents1->GetRenderViewHost(), std::wstring(),
+      cookie_script1));
+  EXPECT_TRUE(content::ExecuteJavaScript(
+      named_partition_contents1->GetRenderViewHost(), std::wstring(),
+      cookie_script1));
+
+  // For the two different persistent storage partitions, set the
+  // two different cookies so we can check that they aren't comingled below.
+  EXPECT_TRUE(content::ExecuteJavaScript(
+      persistent_partition_contents1->GetRenderViewHost(), std::wstring(),
+      cookie_script2));
+
+  EXPECT_TRUE(content::ExecuteJavaScript(
+      persistent_partition_contents3->GetRenderViewHost(), std::wstring(),
+      cookie_script3));
+
+  int cookie_size;
+  std::string cookie_value;
+
+  // Check that all in-memory partitions have a cookie set.
+  automation_util::GetCookies(GURL("http://localhost"),
+                              cookie_contents1,
+                              &cookie_size, &cookie_value);
+  EXPECT_EQ("inmemory=true", cookie_value);
+  automation_util::GetCookies(GURL("http://localhost"),
+                              cookie_contents2,
+                              &cookie_size, &cookie_value);
+  EXPECT_EQ("inmemory=true", cookie_value);
+  automation_util::GetCookies(GURL("http://localhost"),
+                              named_partition_contents1,
+                              &cookie_size, &cookie_value);
+  EXPECT_EQ("inmemory=true", cookie_value);
+  automation_util::GetCookies(GURL("http://localhost"),
+                              named_partition_contents2,
+                              &cookie_size, &cookie_value);
+  EXPECT_EQ("inmemory=true", cookie_value);
+
+  // Check that all persistent partitions kept their state.
+  automation_util::GetCookies(GURL("http://localhost"),
+                              persistent_partition_contents1,
+                              &cookie_size, &cookie_value);
+  EXPECT_EQ("persist1=true", cookie_value);
+  automation_util::GetCookies(GURL("http://localhost"),
+                              persistent_partition_contents2,
+                              &cookie_size, &cookie_value);
+  EXPECT_EQ("persist1=true", cookie_value);
+  automation_util::GetCookies(GURL("http://localhost"),
+                              persistent_partition_contents3,
+                              &cookie_size, &cookie_value);
+  EXPECT_EQ("persist2=true", cookie_value);
+}
+
+// This is the post-reset portion of the StoragePersistence test.  See
+// PRE_StoragePersistence for main comment.
+IN_PROC_BROWSER_TEST_F(WebViewTest, StoragePersistence) {
+  ASSERT_TRUE(StartTestServer());
+
+  // We don't care where the main browser is on this test.
+  GURL blank_url("about:blank");
+
+  // The first two partitions will be used to set cookies and ensure they are
+  // shared. The named partition is used to ensure that cookies are isolated
+  // between partitions within the same app.
+  content::WebContents* cookie_contents1;
+  content::WebContents* cookie_contents2;
+  content::WebContents* named_partition_contents1;
+  content::WebContents* named_partition_contents2;
+  content::WebContents* persistent_partition_contents1;
+  content::WebContents* persistent_partition_contents2;
+  content::WebContents* persistent_partition_contents3;
+  NavigateAndOpenAppForIsolation(blank_url, &cookie_contents1,
+                                 &cookie_contents2, &named_partition_contents1,
+                                 &named_partition_contents2,
+                                 &persistent_partition_contents1,
+                                 &persistent_partition_contents2,
+                                 &persistent_partition_contents3);
+
+  int cookie_size;
+  std::string cookie_value;
+
+  // Check that all in-memory partitions lost their state.
+  automation_util::GetCookies(GURL("http://localhost"),
+                              cookie_contents1,
+                              &cookie_size, &cookie_value);
+  EXPECT_EQ("", cookie_value);
+  automation_util::GetCookies(GURL("http://localhost"),
+                              cookie_contents2,
+                              &cookie_size, &cookie_value);
+  EXPECT_EQ("", cookie_value);
+  automation_util::GetCookies(GURL("http://localhost"),
+                              named_partition_contents1,
+                              &cookie_size, &cookie_value);
+  EXPECT_EQ("", cookie_value);
+  automation_util::GetCookies(GURL("http://localhost"),
+                              named_partition_contents2,
+                              &cookie_size, &cookie_value);
+  EXPECT_EQ("", cookie_value);
+
+  // Check that all persistent partitions kept their state.
+  automation_util::GetCookies(GURL("http://localhost"),
+                              persistent_partition_contents1,
+                              &cookie_size, &cookie_value);
+  EXPECT_EQ("persist1=true", cookie_value);
+  automation_util::GetCookies(GURL("http://localhost"),
+                              persistent_partition_contents2,
+                              &cookie_size, &cookie_value);
+  EXPECT_EQ("persist1=true", cookie_value);
+  automation_util::GetCookies(GURL("http://localhost"),
+                              persistent_partition_contents3,
+                              &cookie_size, &cookie_value);
+  EXPECT_EQ("persist2=true", cookie_value);
+}
+
 // This tests DOM storage isolation for packaged apps with webview tags. It
 // loads an app with multiple webview tags and each tag sets DOM storage
 // entries, which the test checks to ensure proper storage isolation is
@@ -240,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DOMStorageIsolation) {
 
   NavigateAndOpenAppForIsolation(regular_url, &default_tag_contents1,
                                  &default_tag_contents2, &storage_contents1,
-                                 &storage_contents2);
+                                 &storage_contents2, NULL, NULL, NULL);
 
   // Initialize the storage for the first of the two tags that share a storage
   // partition.
@@ -321,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
 
   NavigateAndOpenAppForIsolation(regular_url, &default_tag_contents1,
                                  &default_tag_contents2, &storage_contents1,
-                                 &storage_contents2);
+                                 &storage_contents2, NULL, NULL, NULL);
 
   // Initialize the storage for the first of the two tags that share a storage
   // partition.

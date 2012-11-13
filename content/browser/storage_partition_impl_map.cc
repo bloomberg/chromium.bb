@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
+#include "crypto/sha2.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/appcache/view_appcache_internals_job.h"
@@ -183,7 +185,85 @@ void InitializeURLRequestContext(
   // TODO(jam): Add the ProtocolHandlerRegistryIntercepter here!
 }
 
+// These constants are used to create the directory structure under the profile
+// where renderers with a non-default storage partition keep their persistent
+// state. This will contain a set of directories that partially mirror the
+// directory structure of BrowserContext::GetPath().
+//
+// The kStoragePartitionDirname contains an extensions directory which is
+// further partitioned by extension id, followed by another level of directories
+// for the "default" extension storage partition and one directory for each
+// persistent partition used by a webview tag. Example:
+//
+//   Storage/ext/ABCDEF/def
+//   Storage/ext/ABCDEF/hash(partition name)
+//
+// The code in GetStoragePartitionPath() constructs these path names.
+//
+// TODO(nasko): Move extension related path code out of content.
+const FilePath::CharType kStoragePartitionDirname[] =
+    FILE_PATH_LITERAL("Storage");
+const FilePath::CharType kExtensionsDirname[] =
+    FILE_PATH_LITERAL("ext");
+const FilePath::CharType kDefaultPartitionDirname[] =
+    FILE_PATH_LITERAL("def");
+
+// Because partition names are user specified, they can be arbitrarily long
+// which makes them unsuitable for paths names. We use a truncation of a
+// SHA256 hash to perform a deterministic shortening of the string. The
+// kPartitionNameHashBytes constant controls the length of the truncation.
+// We use 6 bytes, which gives us 99.999% reliability against collisions over
+// 1 million partition domains.
+//
+// Analysis:
+// We assume that all partition names within one partition domain are
+// controlled by the the same entity. Thus there is no chance for adverserial
+// attack and all we care about is accidental collision. To get 5 9s over
+// 1 million domains, we need the probability of a collision in any one domain
+// to be
+//
+//    p < nroot(1000000, .99999) ~= 10^-11
+//
+// We use the following birthday attack approximation to calculate the max
+// number of unique names for this probability:
+//
+//    n(p,H) = sqrt(2*H * ln(1/(1-p)))
+//
+// For a 6-byte hash, H = 2^(6*8).  n(10^-11, H) ~= 75
+//
+// An average partition domain is likely to have less than 10 unique
+// partition names which is far lower than 75.
+//
+// Note, that for 4 9s of reliability, the limit is 237 partition names per
+// partition domain.
+const int kPartitionNameHashBytes = 6;
+
 }  // namespace
+
+// static
+FilePath StoragePartitionImplMap::GetStoragePartitionPath(
+    const std::string& partition_domain,
+    const std::string& partition_name) {
+  if (partition_domain.empty())
+    return FilePath();
+
+  CHECK(IsStringUTF8(partition_domain));
+
+  FilePath path = FilePath(kStoragePartitionDirname).Append(kExtensionsDirname)
+      .Append(FilePath::FromUTF8Unsafe(partition_domain));
+
+  if (!partition_name.empty()) {
+    // For analysis of why we can ignore collisions, see the comment above
+    // kPartitionNameHashBytes.
+    char buffer[kPartitionNameHashBytes];
+    crypto::SHA256HashString(partition_name, &buffer[0],
+                             sizeof(buffer));
+    return path.AppendASCII(base::HexEncode(buffer, sizeof(buffer)));
+  }
+
+  return path.Append(kDefaultPartitionDirname);
+}
+
 
 StoragePartitionImplMap::StoragePartitionImplMap(
     BrowserContext* browser_context)
@@ -210,17 +290,19 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   }
 
   // Find the previously created partition if it's available.
-  StoragePartitionImpl::StoragePartitionConfig partition_config(
+  StoragePartitionConfig partition_config(
       partition_domain, partition_name, in_memory);
 
   PartitionMap::const_iterator it = partitions_.find(partition_config);
   if (it != partitions_.end())
     return it->second;
 
-  // There was no previous partition, so let's make a new one.
+  FilePath partition_path =
+      browser_context_->GetPath().Append(
+          GetStoragePartitionPath(partition_domain, partition_name));
   StoragePartitionImpl* partition =
-      StoragePartitionImpl::Create(browser_context_, partition_config,
-                                   browser_context_->GetPath());
+      StoragePartitionImpl::Create(browser_context_, in_memory,
+                                   partition_path);
   partitions_[partition_config] = partition;
 
   // These calls must happen after StoragePartitionImpl::Create().
