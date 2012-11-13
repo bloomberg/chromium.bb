@@ -6,6 +6,8 @@
 
 #include <windows.h>
 #include <tchar.h>
+
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -35,7 +37,9 @@ const wchar_t kBrowserAppGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
 
 // Copied from util_constants.cc.
 const wchar_t kChromeAppHostExe[] = L"app_host.exe";
+const char kChromeAppLauncher[] = "app-launcher";
 const wchar_t kChromeExe[] = L"chrome.exe";
+const wchar_t kUninstallArgumentsField[] = L"UninstallArguments";
 const wchar_t kUninstallStringField[] = L"UninstallString";
 
 #ifndef OFFICIAL_BUILD
@@ -50,11 +54,12 @@ FilePath GetDevelopmentExe(const wchar_t* exe_file) {
 }
 #endif
 
-// Reads the path to setup.exe from the value "UninstallString" within the
-// specified product's "ClientState" registry key. Returns an empty FilePath if
-// an error occurs or the product is not installed at the specified level.
-FilePath GetSetupExeFromRegistry(InstallationLevel level,
-                                 const wchar_t* app_guid) {
+// Reads a string value from the specified product's "ClientState" registry key.
+// Returns true iff the value is present and successfully read.
+bool GetClientStateValue(InstallationLevel level,
+                         const wchar_t* app_guid,
+                         const wchar_t* value_name,
+                         string16* value) {
   HKEY root_key = (level == USER_LEVEL_INSTALLATION) ?
       HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
   string16 subkey(kGoogleRegClientStateKey);
@@ -62,12 +67,36 @@ FilePath GetSetupExeFromRegistry(InstallationLevel level,
   base::win::RegKey reg_key;
   if (reg_key.Open(root_key, subkey.c_str(),
                    KEY_QUERY_VALUE) == ERROR_SUCCESS) {
-    string16 uninstall;
-    if (reg_key.ReadValue(kUninstallStringField, &uninstall) == ERROR_SUCCESS) {
-      FilePath setup_exe_path(uninstall);
-      if (file_util::PathExists(setup_exe_path))
-        return setup_exe_path;
+    if (reg_key.ReadValue(value_name, value) == ERROR_SUCCESS) {
+      return true;
     }
+  }
+  return false;
+}
+
+bool IsAppLauncherEnabledAtLevel(InstallationLevel level) {
+  string16 uninstall_arguments;
+  if (GetClientStateValue(level,
+                          kAppHostAppId,
+                          kUninstallArgumentsField,
+                          &uninstall_arguments)) {
+    return CommandLine::FromString(L"dummy.exe " + uninstall_arguments)
+        .HasSwitch(kChromeAppLauncher) &&
+        !GetAppHostPathForInstallationLevel(level).empty();
+  }
+  return false;
+}
+
+// Reads the path to setup.exe from the value "UninstallString" within the
+// specified product's "ClientState" registry key. Returns an empty FilePath if
+// an error occurs or the product is not installed at the specified level.
+FilePath GetSetupExeFromRegistry(InstallationLevel level,
+                                 const wchar_t* app_guid) {
+  string16 uninstall;
+  if (GetClientStateValue(level, app_guid, kUninstallStringField, &uninstall)) {
+    FilePath setup_exe_path(uninstall);
+    if (file_util::PathExists(setup_exe_path))
+      return setup_exe_path;
   }
   return FilePath();
 }
@@ -147,6 +176,11 @@ FilePath GetAnyAppHostPath() {
 bool IsAppHostPresent() {
   FilePath app_host_exe = GetAnyAppHostPath();
   return !app_host_exe.empty();
+}
+
+bool IsAppLauncherPresent() {
+  return IsAppLauncherEnabledAtLevel(USER_LEVEL_INSTALLATION) ||
+      IsAppLauncherEnabledAtLevel(SYSTEM_LEVEL_INSTALLATION);
 }
 
 }  // namespace chrome_launcher_support

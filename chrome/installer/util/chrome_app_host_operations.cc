@@ -139,11 +139,7 @@ void ChromeAppHostOperations::AddDefaultShortcutProperties(
 
   if (!properties->has_app_id()) {
     std::vector<string16> components;
-    string16 suffix;
-    ShellUtil::GetUserSpecificRegistrySuffix(&suffix);
-    string16 base_app_id(dist->GetBaseAppId());
-    base_app_id.append(suffix);
-    components.push_back(base_app_id);
+    components.push_back(dist->GetBaseAppId());
     properties->set_app_id(ShellUtil::BuildAppModelId(components));
   }
 }

@@ -48,6 +48,9 @@ FilePath GetAnyAppHostPath();
 // or in the same directory as the current executable.
 bool IsAppHostPresent();
 
+// Returns true if App Launcher is installed (system-level or user-level).
+bool IsAppLauncherPresent();
+
 }  // namespace chrome_launcher_support
 
 #endif  // CHROME_INSTALLER_LAUNCHER_SUPPORT_CHROME_LAUNCHER_SUPPORT_H_
