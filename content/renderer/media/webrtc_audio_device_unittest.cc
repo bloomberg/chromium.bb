@@ -297,8 +297,8 @@ TEST_F(WebRTCAudioDeviceTest, StartPlayout) {
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_timeout()));
   WaitForIOThreadCompletion();
 
-  EXPECT_TRUE(webrtc_audio_device->Playing());
-  EXPECT_FALSE(webrtc_audio_device->Recording());
+  EXPECT_TRUE(webrtc_audio_device->playing());
+  EXPECT_FALSE(webrtc_audio_device->recording());
   EXPECT_EQ(ch, media_process->channel_id());
   EXPECT_EQ(webrtc::kPlaybackPerChannel, media_process->type());
   EXPECT_EQ(80, media_process->packet_size());
@@ -373,8 +373,8 @@ TEST_F(WebRTCAudioDeviceTest, StartRecording) {
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_timeout()));
   WaitForIOThreadCompletion();
 
-  EXPECT_FALSE(webrtc_audio_device->Playing());
-  EXPECT_TRUE(webrtc_audio_device->Recording());
+  EXPECT_FALSE(webrtc_audio_device->playing());
+  EXPECT_TRUE(webrtc_audio_device->recording());
   EXPECT_EQ(ch, media_process->channel_id());
   EXPECT_EQ(webrtc::kRecordingPerChannel, media_process->type());
   EXPECT_EQ(80, media_process->packet_size());
