@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -19,13 +20,6 @@ namespace {
 // The number of milliseconds the bubble should stay on the screen if it will
 // close automatically.
 const int kBubbleCloseDelay = 1500;
-
-// The number of pixels between the separator and the button.
-const int kSeparatorButtonSpacing = 2;
-
-// How many pixels larger the percentage label font should be, compared to the
-// default font.
-const int kPercentageFontIncrease = 5;
 
 }  // namespace
 
@@ -148,13 +142,11 @@ void ZoomBubbleView::Init() {
   int zoom_percent = zoom_controller->zoom_percent();
   label_ = new views::Label(
       l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM, zoom_percent));
-  gfx::Font font = label_->font().DeriveFont(kPercentageFontIncrease);
-  label_->SetFont(font);
+  label_->SetFont(
+      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
   AddChildView(label_);
 
-  AddChildView(new views::Separator());
-
-  views::TextButton* set_default_button = new views::TextButton(
+  views::NativeTextButton* set_default_button = new views::NativeTextButton(
       this, l10n_util::GetStringUTF16(IDS_ZOOM_SET_DEFAULT));
   set_default_button->set_alignment(views::TextButtonBase::ALIGN_CENTER);
   AddChildView(set_default_button);
