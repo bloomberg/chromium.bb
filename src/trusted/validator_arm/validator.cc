@@ -721,6 +721,12 @@ bool SfiValidator::validate_fallthrough(const CodeSegment& segment,
     pred.Copy(inst);
   }
 
+  // Validate the last instruction, paired with a nop.
+  const Instruction nop(nacl_arm_dec::kNop);
+  DecodedInstruction one_past_end(segment.end_addr(), nop,
+                                  decode_state_.decode(nop));
+  complete_success &= apply_patterns(pred, one_past_end, critical, out);
+
   return complete_success;
 }
 

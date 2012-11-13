@@ -26,6 +26,7 @@ using nacl_val_arm_test::kDataRegionSize;
 using nacl_val_arm_test::kAbiReadOnlyRegisters;
 using nacl_val_arm_test::kAbiDataAddrRegisters;
 using nacl_val_arm_test::arm_inst;
+using nacl_arm_dec::kNop;
 using nacl_arm_dec::Instruction;
 using nacl_arm_dec::ClassDecoder;
 
@@ -94,6 +95,12 @@ void test_if_dynamic_code_replacement_sentinels_unchanged(
           std::hex << sentinel.Bits() << ": " << insts[i].about;
     }
   }
+}
+
+TEST_F(ValidatorTests, NopBundle) {
+  vector<arm_inst> code(_validator.InstructionsPerBundle(), kNop);
+  validation_should_pass(&code[0], code.size(), kDefaultBaseAddr,
+                         "NOP bundle");
 }
 
 /*
@@ -524,9 +531,9 @@ TEST_F(ValidatorTests, PcRelativeFirstInst) {
   // Note: This tests the fix for issue 2771.
   static const arm_inst pcrel_boundary_tests[] = {
     0xe59f0000,  // ldr     r0, [pc, #0]
-    0xe320f000,  // nop     {0}
-    0xe320f000,  // nop     {0}
-    0xe320f000,  // nop     {0}"
+    kNop,
+    kNop,
+    kNop,
   };
   validation_should_pass(pcrel_boundary_tests,
                          NACL_ARRAY_SIZE(pcrel_boundary_tests),
@@ -537,10 +544,10 @@ TEST_F(ValidatorTests, PcRelativeFirstInst) {
 TEST_F(ValidatorTests, PcRelativeFirst2ndBundle) {
   // Note: This tests the fix for issue 2771.
   static const arm_inst pcrel_boundary_tests[] = {
-    0xe320f000,  // nop     {0}
-    0xe320f000,  // nop     {0}
-    0xe320f000,  // nop     {0}
-    0xe320f000,  // nop     {0}
+    kNop,
+    kNop,
+    kNop,
+    kNop,
     0xe59f0000,  // ldr     r0, [pc, #0]
   };
   validation_should_pass(pcrel_boundary_tests,
@@ -929,6 +936,35 @@ TEST_F(ValidatorTests, AlwaysDominatesTest) {
 
 // TODO(karl): Add pattern rules and test cases for using bfc to update SP.
 
+TEST_F(ValidatorTests, UnmaskedSpUpdate) {
+  vector<arm_inst> code(_validator.InstructionsPerBundle(), kNop);
+  for (vector<arm_inst>::size_type i = 0; i < code.size(); ++i) {
+    std::fill(code.begin(), code.end(), kNop);
+    code[i] = 0xE1A0D000;  // MOV SP, R0
+    validation_should_fail(&code[0], code.size(), kDefaultBaseAddr,
+                           "unmasked SP update");
+  }
+}
+
+TEST_F(ValidatorTests, MaskedSpUpdate) {
+  vector<arm_inst> code(_validator.InstructionsPerBundle() * 2, kNop);
+  for (vector<arm_inst>::size_type i = 0; i < code.size() - 1; ++i) {
+    std::fill(code.begin(), code.end(), kNop);
+    code[i] = 0xE1A0D000;      // MOV SP, R0
+    code[i + 1] = 0xE3CDD2FF;  // BIC SP, SP, #-268435441 ; 0xf000000f
+    if (i == _validator.InstructionsPerBundle() - 1) {
+      validation_should_fail(&code[0], code.size(), kDefaultBaseAddr,
+                             "masked SP update straddling a bundle boundary"
+                             " (this is technically safe, but we simplify the "
+                             "validator by disallowing instruction pairs that "
+                             "straddle a bundle boundary)");
+    } else {
+      validation_should_pass(&code[0], code.size(), kDefaultBaseAddr,
+                             "masked SP update");
+    }
+  }
+}
+
 TEST_F(ValidatorTests, AddConstToSpTest) {
   // Show that we can add a constant to the stack pointer is fine,
   // so long as we follow it with a mask instruction.
@@ -1158,7 +1194,7 @@ TEST_F(ValidatorTests, LiteralPoolBranch) {
       // Don't try putting the branch in the middle of the literal pool.
       continue;
     }
-    std::fill(code.begin(), code.end(), 0xE320F000);  // NOP
+    std::fill(code.begin(), code.end(), kNop);
     code[bundle_pos] = nacl_arm_dec::kLiteralPoolHead;
     for (size_t b_target = 0; b_target < code.size(); ++b_target) {
       // PC reads as current instruction address plus 8 (e.g. two instructions

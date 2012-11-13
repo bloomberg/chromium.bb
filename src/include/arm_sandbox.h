@@ -67,4 +67,12 @@
  */
 #define NACL_INSTR_ARM_FAIL_VALIDATION   0xE7FEDEF1
 
+/*
+ * NOP.
+ *
+ * This NOP encoding is the newer NOP instead of being the one that aliases
+ * to MOV. Note: It can actually decrease performance compared to MOV.
+ */
+#define NACL_INSTR_ARM_NOP               0xE320F000
+
 #endif  /* NATIVE_CLIENT_SRC_INCLUDE_ARM_SANDBOX_H_ */

@@ -286,6 +286,9 @@ static const uint32_t kHaltFill = NACL_INSTR_ARM_HALT_FILL;
 static const uint32_t kAbortNow = NACL_INSTR_ARM_ABORT_NOW;
 static const uint32_t kFailValidation = NACL_INSTR_ARM_FAIL_VALIDATION;
 
+// Not-so-special instructions.
+static const uint32_t kNop = NACL_INSTR_ARM_NOP;
+
 // Models an instruction, either a 32-bit ARM instruction of unspecified type,
 // or one word (16-bit) and two word (32-bit) THUMB instructions.
 //
