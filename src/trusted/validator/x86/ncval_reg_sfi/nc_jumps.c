@@ -272,9 +272,11 @@ static void NaClAddRegisterJumpIndirect64(NaClValidatorState* vstate,
     and_reg32 = NaClGetAndMaskReg32(vstate, 2);
     if (RegUnknown == and_reg32) break;
 
-    /* Get corresponding 64-bit register for 32-bit result of and. */
+    /* Get corresponding 64-bit register for 32-bit result of 'and',
+     * and make sure it matches the jump register.
+     */
     and_reg64 = NaClGet64For32BitReg(and_reg32);
-    if (RegUnknown == and_reg64) break;
+    if (and_reg64 != jump_reg) break;
 
     /* Check that the middle instruction is an appropriate add instruction. */
     if (!NaClIsAddRbaseToReg64(vstate, 1, and_reg64)) break;

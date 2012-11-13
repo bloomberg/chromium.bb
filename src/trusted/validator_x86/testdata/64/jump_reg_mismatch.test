@@ -1,0 +1,46 @@
+@hex:
+  # Models a jump where the mask and the jump registers don't match.
+  # and %ebx, $~0x1f
+  83 e3 e0
+  # add %rbx, %r15
+  4c 01 fb
+  # jmp %rax
+  ff e0
+@val:
+  VALIDATOR: 0000000000000006: ff e0                                        jmp %rax
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rval:
+  VALIDATOR: 0000000000000006: ff e0                                        jmp %rax
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000006: ff e0                                        jmp %rax
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking block alignment and jump targets: 0 to 8
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000006: ff e0                                        [P] dontcarejump %rip (s), %rax (u)
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 83 e3 e0                                     and %ebx, 0xe0
+  0000000000000003: 4c 01 fb                                     add %rbx, %r15
+  0000000000000006: ff e0                                        jmp %rax
+@vdis:
+  0000000000000000: 83 e3 e0                                     and %ebx, 0xe0
+  0000000000000003: 4c 01 fb                                     add %rbx, %r15
+  0000000000000006: ff e0                                        [P] dontcarejump %rip (s), %rax (u)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  6: [1] unrecognized instruction
+  return code: 1
+@validators_disagree:
+  errors reported by rdfa  but not old validator:
+    0x0 (both report 0x6).
