@@ -14,6 +14,7 @@
 #include "chrome/browser/android/tab_base_android_impl.h"
 #include "content/public/browser/android/content_view_layer_renderer.h"
 #include "jni/TabManager_jni.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 
 #include <android/native_window_jni.h>
 

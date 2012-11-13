@@ -15,8 +15,6 @@
 #include "content/public/browser/android/content_view_layer_renderer.h"
 #include "content/public/browser/android/draw_delegate.h"
 #include "jni/ContentViewRenderView_jni.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "ui/gfx/size.h"
 
@@ -92,8 +90,7 @@ void InitCompositor() {
   g_global_state.Get().compositor.reset(
       Compositor::Create(&g_global_state.Get().client));
   DCHECK(!g_global_state.Get().root_layer.get());
-  g_global_state.Get().root_layer.reset(
-      WebKit::Platform::current()->compositorSupport()->createLayer());
+  g_global_state.Get().root_layer.reset(WebKit::WebLayer::create());
   g_global_state.Get().layer_renderer.reset(new ContentViewLayerRendererImpl());
 }
 

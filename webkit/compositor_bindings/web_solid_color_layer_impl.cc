@@ -11,6 +11,11 @@ using cc::SolidColorLayer;
 
 namespace WebKit {
 
+WebSolidColorLayer* WebSolidColorLayer::create()
+{
+    return new WebSolidColorLayerImpl();
+}
+
 WebSolidColorLayerImpl::WebSolidColorLayerImpl()
     : m_layer(new WebLayerImpl(SolidColorLayer::create()))
 {

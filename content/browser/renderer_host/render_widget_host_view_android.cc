@@ -54,8 +54,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       is_hidden_(!content_view_core),
       content_view_core_(content_view_core),
       ime_adapter_android_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      texture_layer_(WebKit::Platform::current()->
-          compositorSupport()->createExternalTextureLayer()),
+      texture_layer_(WebKit::WebExternalTextureLayer::create()),
       texture_id_in_layer_(0) {
   host_->SetView(this);
   // RenderWidgetHost is initialized as visible. If is_hidden_ is true, tell

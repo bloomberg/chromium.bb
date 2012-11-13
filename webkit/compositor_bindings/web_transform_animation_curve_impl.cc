@@ -10,6 +10,11 @@
 
 namespace WebKit {
 
+WebTransformAnimationCurve* WebTransformAnimationCurve::create()
+{
+    return new WebTransformAnimationCurveImpl();
+}
+
 WebTransformAnimationCurveImpl::WebTransformAnimationCurveImpl()
     : m_curve(cc::KeyframedTransformAnimationCurve::create())
 {

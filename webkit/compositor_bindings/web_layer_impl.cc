@@ -59,6 +59,11 @@ SkMatrix44 skMatrix44FromTransformationMatrix(const WebTransformationMatrix& mat
 
 }
 
+WebLayer* WebLayer::create()
+{
+    return new WebLayerImpl();
+}
+
 WebLayerImpl::WebLayerImpl()
     : m_layer(Layer::create())
 {

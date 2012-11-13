@@ -11,6 +11,11 @@
 
 namespace WebKit {
 
+WebVideoLayer* WebVideoLayer::create(WebVideoFrameProvider* provider)
+{
+    return new WebVideoLayerImpl(provider);
+}
+
 WebVideoLayerImpl::WebVideoLayerImpl(WebVideoFrameProvider* provider)
     : m_layer(new WebLayerImpl(
         cc::VideoLayer::create(

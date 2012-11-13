@@ -15,6 +15,11 @@ using namespace cc;
 
 namespace WebKit {
 
+WebExternalTextureLayer* WebExternalTextureLayer::create(WebExternalTextureLayerClient* client)
+{
+    return new WebExternalTextureLayerImpl(client);
+}
+
 WebExternalTextureLayerImpl::WebExternalTextureLayerImpl(WebExternalTextureLayerClient* client)
     : m_client(client)
 {
