@@ -30,7 +30,8 @@ TestingBrowserProcess::TestingBrowserProcess()
       app_locale_("en"),
       local_state_(NULL),
       render_widget_snapshot_taker_(new RenderWidgetSnapshotTaker),
-      io_thread_(NULL) {
+      io_thread_(NULL),
+      system_request_context_(NULL) {
 }
 
 TestingBrowserProcess::~TestingBrowserProcess() {
@@ -124,7 +125,7 @@ TestingBrowserProcess::safe_browsing_detection_service() {
 }
 
 net::URLRequestContextGetter* TestingBrowserProcess::system_request_context() {
-  return NULL;
+  return system_request_context_;
 }
 
 #if defined(OS_CHROMEOS)
@@ -250,6 +251,11 @@ BookmarkPromptController* TestingBrowserProcess::bookmark_prompt_controller() {
 void TestingBrowserProcess::SetBookmarkPromptController(
     BookmarkPromptController* controller) {
   bookmark_prompt_controller_.reset(controller);
+}
+
+void TestingBrowserProcess::SetSystemRequestContext(
+    net::URLRequestContextGetter* context_getter) {
+  system_request_context_ = context_getter;
 }
 
 void TestingBrowserProcess::SetLocalState(PrefService* local_state) {

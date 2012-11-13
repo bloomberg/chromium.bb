@@ -107,6 +107,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetBrowserPolicyConnector(policy::BrowserPolicyConnector* connector);
   void SetSafeBrowsingService(SafeBrowsingService* sb_service);
   void SetBookmarkPromptController(BookmarkPromptController* controller);
+  void SetSystemRequestContext(net::URLRequestContextGetter* context_getter);
 
  private:
   scoped_ptr<content::NotificationService> notification_service_;
@@ -130,6 +131,7 @@ class TestingBrowserProcess : public BrowserProcess {
   IOThread* io_thread_;
   scoped_refptr<SafeBrowsingService> sb_service_;
   scoped_ptr<BookmarkPromptController> bookmark_prompt_controller_;
+  net::URLRequestContextGetter* system_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };
