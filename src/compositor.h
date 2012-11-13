@@ -333,21 +333,7 @@ struct weston_compositor {
 
 	struct weston_renderer *renderer;
 
-	PFNGLEGLIMAGETARGETRENDERBUFFERSTORAGEOESPROC
-		image_target_renderbuffer_storage;
-	PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
-	PFNEGLCREATEIMAGEKHRPROC create_image;
-	PFNEGLDESTROYIMAGEKHRPROC destroy_image;
-
-	int has_unpack_subimage;
 	pixman_format_code_t read_format;
-
-	PFNEGLBINDWAYLANDDISPLAYWL bind_display;
-	PFNEGLUNBINDWAYLANDDISPLAYWL unbind_display;
-	PFNEGLQUERYWAYLANDBUFFERWL query_buffer;
-	int has_bind_display;
-
-	int has_egl_image_external;
 
 	void (*destroy)(struct weston_compositor *ec);
 	void (*restore)(struct weston_compositor *ec);

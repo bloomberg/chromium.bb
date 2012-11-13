@@ -70,6 +70,19 @@ struct gles2_renderer {
 		int32_t width, height;
 	} border;
 
+	PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
+	PFNEGLCREATEIMAGEKHRPROC create_image;
+	PFNEGLDESTROYIMAGEKHRPROC destroy_image;
+
+	int has_unpack_subimage;
+
+	PFNEGLBINDWAYLANDDISPLAYWL bind_display;
+	PFNEGLUNBINDWAYLANDDISPLAYWL unbind_display;
+	PFNEGLQUERYWAYLANDBUFFERWL query_buffer;
+	int has_bind_display;
+
+	int has_egl_image_external;
+
 	struct gles2_shader texture_shader_rgba;
 	struct gles2_shader texture_shader_rgbx;
 	struct gles2_shader texture_shader_egl_external;
@@ -1001,6 +1014,7 @@ gles2_renderer_read_pixels(struct weston_output *output,
 static void
 gles2_renderer_flush_damage(struct weston_surface *surface)
 {
+	struct gles2_renderer *gr = get_renderer(surface->compositor);
 	struct gles2_surface_state *gs = get_surface_state(surface);
 
 #ifdef GL_UNPACK_ROW_LENGTH
@@ -1023,7 +1037,7 @@ gles2_renderer_flush_damage(struct weston_surface *surface)
 
 	glBindTexture(GL_TEXTURE_2D, gs->textures[0]);
 
-	if (!surface->compositor->has_unpack_subimage) {
+	if (!gr->has_unpack_subimage) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
 			     surface->pitch, surface->buffer->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
@@ -1084,7 +1098,7 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 
 	if (!buffer) {
 		for (i = 0; i < gs->num_images; i++) {
-			ec->destroy_image(gr->egl_display, gs->images[i]);
+			gr->destroy_image(gr->egl_display, gs->images[i]);
 			gs->images[i] = NULL;
 		}
 		gs->num_images = 0;
@@ -1106,10 +1120,10 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 			gs->shader = &gr->texture_shader_rgbx;
 		else
 			gs->shader = &gr->texture_shader_rgba;
-	} else if (ec->query_buffer(gr->egl_display, buffer,
+	} else if (gr->query_buffer(gr->egl_display, buffer,
 				    EGL_TEXTURE_FORMAT, &format)) {
 		for (i = 0; i < gs->num_images; i++)
-			ec->destroy_image(gr->egl_display, gs->images[i]);
+			gr->destroy_image(gr->egl_display, gs->images[i]);
 		gs->num_images = 0;
 		gs->target = GL_TEXTURE_2D;
 		switch (format) {
@@ -1143,7 +1157,7 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 			attribs[0] = EGL_WAYLAND_PLANE_WL;
 			attribs[1] = i;
 			attribs[2] = EGL_NONE;
-			gs->images[i] = ec->create_image(gr->egl_display,
+			gs->images[i] = gr->create_image(gr->egl_display,
 							 NULL,
 							 EGL_WAYLAND_BUFFER_WL,
 							 buffer, attribs);
@@ -1155,7 +1169,7 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 
 			glActiveTexture(GL_TEXTURE0 + i);
 			glBindTexture(gs->target, gs->textures[i]);
-			ec->image_target_texture_2d(gs->target,
+			gr->image_target_texture_2d(gs->target,
 						    gs->images[i]);
 		}
 
@@ -1199,14 +1213,13 @@ static void
 gles2_renderer_destroy_surface(struct weston_surface *surface)
 {
 	struct gles2_surface_state *gs = get_surface_state(surface);
-	struct weston_compositor *ec = surface->compositor;
-	struct gles2_renderer *gr = get_renderer(ec);
+	struct gles2_renderer *gr = get_renderer(surface->compositor);
 	int i;
 
 	glDeleteTextures(gs->num_textures, gs->textures);
 
 	for (i = 0; i < gs->num_images; i++)
-		ec->destroy_image(gr->egl_display, gs->images[i]);
+		gr->destroy_image(gr->egl_display, gs->images[i]);
 
 	free(gs);
 }
@@ -1584,8 +1597,8 @@ gles2_renderer_destroy(struct weston_compositor *ec)
 {
 	struct gles2_renderer *gr = get_renderer(ec);
 
-	if (ec->has_bind_display)
-		ec->unbind_display(gr->egl_display, ec->wl_display);
+	if (gr->has_bind_display)
+		gr->unbind_display(gr->egl_display, ec->wl_display);
 
 	/* Work around crash in egl_dri2.c's dri2_make_current() - when does this apply? */
 	eglMakeCurrent(gr->egl_display,
@@ -1723,7 +1736,7 @@ compile_shaders(struct weston_compositor *ec)
 	if (shader_init(&gr->texture_shader_rgbx, ec,
 			     vertex_shader, texture_fragment_shader_rgbx) < 0)
 		return -1;
-	if (ec->has_egl_image_external &&
+	if (gr->has_egl_image_external &&
 			shader_init(&gr->texture_shader_egl_external, ec,
 				vertex_shader, texture_fragment_shader_egl_external) < 0)
 		return -1;
@@ -1805,17 +1818,15 @@ gles2_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 
 	log_egl_gl_info(gr->egl_display);
 
-	ec->image_target_texture_2d =
+	gr->image_target_texture_2d =
 		(void *) eglGetProcAddress("glEGLImageTargetTexture2DOES");
-	ec->image_target_renderbuffer_storage = (void *)
-		eglGetProcAddress("glEGLImageTargetRenderbufferStorageOES");
-	ec->create_image = (void *) eglGetProcAddress("eglCreateImageKHR");
-	ec->destroy_image = (void *) eglGetProcAddress("eglDestroyImageKHR");
-	ec->bind_display =
+	gr->create_image = (void *) eglGetProcAddress("eglCreateImageKHR");
+	gr->destroy_image = (void *) eglGetProcAddress("eglDestroyImageKHR");
+	gr->bind_display =
 		(void *) eglGetProcAddress("eglBindWaylandDisplayWL");
-	ec->unbind_display =
+	gr->unbind_display =
 		(void *) eglGetProcAddress("eglUnbindWaylandDisplayWL");
-	ec->query_buffer =
+	gr->query_buffer =
 		(void *) eglGetProcAddress("eglQueryWaylandBufferWL");
 
 	extensions = (const char *) glGetString(GL_EXTENSIONS);
@@ -1835,10 +1846,10 @@ gles2_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 		ec->read_format = PIXMAN_a8b8g8r8;
 
 	if (strstr(extensions, "GL_EXT_unpack_subimage"))
-		ec->has_unpack_subimage = 1;
+		gr->has_unpack_subimage = 1;
 
 	if (strstr(extensions, "GL_OES_EGL_image_external"))
-		ec->has_egl_image_external = 1;
+		gr->has_egl_image_external = 1;
 
 	extensions =
 		(const char *) eglQueryString(gr->egl_display, EGL_EXTENSIONS);
@@ -1848,11 +1859,11 @@ gles2_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 	}
 
 	if (strstr(extensions, "EGL_WL_bind_wayland_display"))
-		ec->has_bind_display = 1;
-	if (ec->has_bind_display) {
-		ret = ec->bind_display(gr->egl_display, ec->wl_display);
+		gr->has_bind_display = 1;
+	if (gr->has_bind_display) {
+		ret = gr->bind_display(gr->egl_display, ec->wl_display);
 		if (!ret)
-			ec->has_bind_display = 0;
+			gr->has_bind_display = 0;
 	}
 
 	glActiveTexture(GL_TEXTURE0);
@@ -1867,9 +1878,9 @@ gles2_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 	weston_log_continue(STAMP_SPACE "read-back format: %s\n",
 			    ec->read_format == GL_BGRA_EXT ? "BGRA" : "RGBA");
 	weston_log_continue(STAMP_SPACE "wl_shm sub-image to texture: %s\n",
-			    ec->has_unpack_subimage ? "yes" : "no");
+			    gr->has_unpack_subimage ? "yes" : "no");
 	weston_log_continue(STAMP_SPACE "EGL Wayland extension: %s\n",
-			    ec->has_bind_display ? "yes" : "no");
+			    gr->has_bind_display ? "yes" : "no");
 
 
 	return 0;
