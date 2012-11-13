@@ -30,7 +30,7 @@ class DevToolsFrontendHost : public DevToolsClientHost,
  private:
   virtual ~DevToolsFrontendHost();
 
-  // DevToolsFrontendHost implementation.
+  // DevToolsClientHost implementation.
   virtual void DispatchOnInspectorFrontend(const std::string& message) OVERRIDE;
   virtual void InspectedContentsClosing() OVERRIDE;
   virtual void FrameNavigating(const std::string& url) OVERRIDE;

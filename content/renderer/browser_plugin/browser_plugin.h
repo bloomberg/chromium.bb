@@ -135,6 +135,9 @@ class CONTENT_EXPORT BrowserPlugin :
   // Informs the BrowserPlugin of the cursor that the guest has requested.
   void SetCursor(const WebCursor& cursor);
 
+  bool InBounds(const gfx::Point& point) const;
+  gfx::Point ToLocalCoordinates(const gfx::Point& point) const;
+
   // WebKit::WebPlugin implementation.
   virtual WebKit::WebPluginContainer* container() const OVERRIDE;
   virtual bool initialize(WebKit::WebPluginContainer* container) OVERRIDE;
@@ -198,6 +201,8 @@ class CONTENT_EXPORT BrowserPlugin :
 
   int width() const { return plugin_rect_.width(); }
   int height() const { return plugin_rect_.height(); }
+  int instance_id() const { return instance_id_; }
+  int render_view_routing_id() const { return render_view_routing_id_; }
 
   // Virtual to allow for mocking in tests.
   virtual float GetDeviceScaleFactor() const;

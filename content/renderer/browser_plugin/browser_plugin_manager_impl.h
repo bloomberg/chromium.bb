@@ -12,6 +12,10 @@ struct BrowserPluginMsg_LoadCommit_Params;
 struct BrowserPluginMsg_UpdateRect_Params;
 class WebCursor;
 
+namespace gfx {
+class Point;
+}
+
 namespace content {
 
 class BrowserPluginManagerImpl : public BrowserPluginManager {
@@ -54,6 +58,9 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
                       bool is_top_level);
   void OnSetCursor(int instance_id,
                    const WebCursor& cursor);
+  void OnPluginAtPositionRequest(int source_routing_id,
+                                 int request_id,
+                                 const gfx::Point& position);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManagerImpl);
 };
