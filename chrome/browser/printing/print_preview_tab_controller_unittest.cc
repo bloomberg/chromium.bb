@@ -16,7 +16,9 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/common/url_constants.h"
+#include "webkit/plugins/npapi/mock_plugin_list.h"
 
 // Test crashes on Aura due to initiator tab's native view having no parent.
 // http://crbug.com/104284
@@ -39,8 +41,16 @@ class PrintPreviewTabControllerUnitTest : public BrowserWithTestWindowTest {
   virtual void SetUp() OVERRIDE {
     BrowserWithTestWindowTest::SetUp();
 
+    // The PluginService will be destroyed at the end of the test (due to the
+    // ShadowingAtExitManager in our base class).
+    content::PluginService::GetInstance()->SetPluginListForTesting(
+        &plugin_list_);
+
     profile()->GetPrefs()->SetBoolean(prefs::kPrintPreviewDisabled, false);
   }
+
+ private:
+  webkit::npapi::MockPluginList plugin_list_;
 };
 
 // Create/Get a preview tab for initiator tab.

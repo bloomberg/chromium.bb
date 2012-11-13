@@ -15,10 +15,12 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
 #include "printing/print_job_constants.h"
+#include "webkit/plugins/npapi/mock_plugin_list.h"
 
 using content::WebContents;
 using content::WebContentsTester;
@@ -49,10 +51,18 @@ class PrintPreviewUIUnitTest : public BrowserWithTestWindowTest {
   virtual void SetUp() OVERRIDE {
     BrowserWithTestWindowTest::SetUp();
 
+    // The PluginService will be destroyed at the end of the test (due to the
+    // ShadowingAtExitManager in our base class).
+    content::PluginService::GetInstance()->SetPluginListForTesting(
+        &plugin_list_);
+
     profile()->GetPrefs()->SetBoolean(prefs::kPrintPreviewDisabled, false);
 
     chrome::NewTab(browser());
   }
+
+ private:
+  webkit::npapi::MockPluginList plugin_list_;
 };
 
 // Create/Get a preview tab for initiator tab.
