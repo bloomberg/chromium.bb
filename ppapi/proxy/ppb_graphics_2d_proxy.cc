@@ -198,6 +198,7 @@ PP_Resource PPB_Graphics2D_Proxy::CreateProxyResource(
 bool PPB_Graphics2D_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Graphics2D_Proxy, msg)
+#if !defined(OS_NACL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics2D_Create,
                         OnHostMsgCreate)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics2D_PaintImageData,
@@ -210,7 +211,7 @@ bool PPB_Graphics2D_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgFlush)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics2D_Dev_SetScale,
                         OnHostMsgSetScale)
-
+#endif  // !defined(OS_NACL)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBGraphics2D_FlushACK,
                         OnPluginMsgFlushACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -219,6 +220,7 @@ bool PPB_Graphics2D_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+#if !defined(OS_NACL)
 void PPB_Graphics2D_Proxy::OnHostMsgCreate(PP_Instance instance,
                                            const PP_Size& size,
                                            PP_Bool is_always_opaque,
@@ -289,6 +291,7 @@ void PPB_Graphics2D_Proxy::OnHostMsgSetScale(const HostResource& graphics_2d,
     return;
   enter.object()->SetScale(scale);
 }
+#endif  // !defined(OS_NACL)
 
 void PPB_Graphics2D_Proxy::OnPluginMsgFlushACK(
     const HostResource& host_resource,
@@ -298,12 +301,14 @@ void PPB_Graphics2D_Proxy::OnPluginMsgFlushACK(
     static_cast<Graphics2D*>(enter.object())->FlushACK(pp_error);
 }
 
+#if !defined(OS_NACL)
 void PPB_Graphics2D_Proxy::SendFlushACKToPlugin(
     int32_t result,
     const HostResource& graphics_2d) {
   dispatcher()->Send(new PpapiMsg_PPBGraphics2D_FlushACK(kApiID, graphics_2d,
                                                          result));
 }
+#endif  // !defined(OS_NACL)
 
 }  // namespace proxy
 }  // namespace ppapi

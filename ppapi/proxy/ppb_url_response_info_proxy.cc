@@ -87,16 +87,19 @@ PP_Resource PPB_URLResponseInfo_Proxy::CreateResponseForResource(
 bool PPB_URLResponseInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_URLResponseInfo_Proxy, msg)
+#if !defined(OS_NACL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLResponseInfo_GetProperty,
                         OnMsgGetProperty)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef,
                         OnMsgGetBodyAsFileRef)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw): handle bad messages.
   return handled;
 }
 
+#if !defined(OS_NACL)
 void PPB_URLResponseInfo_Proxy::OnMsgGetProperty(
     const HostResource& response,
     int32_t property,
@@ -123,6 +126,7 @@ void PPB_URLResponseInfo_Proxy::OnMsgGetBodyAsFileRef(
       dispatcher()->GetInterfaceProxy(API_ID_PPB_FILE_REF));
   file_ref_proxy->SerializeFileRef(file_ref, result);
 }
+#endif  // !defined(OS_NACL)
 
 }  // namespace proxy
 }  // namespace ppapi

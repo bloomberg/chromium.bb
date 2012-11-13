@@ -492,10 +492,11 @@ PP_Resource PPB_ImageData_Proxy::CreateProxyResource(PP_Instance instance,
 bool PPB_ImageData_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_ImageData_Proxy, msg)
+#if !defined(OS_NACL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_Create, OnHostMsgCreate)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_CreateNaCl,
                         OnHostMsgCreateNaCl)
-
+#endif
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBImageData_NotifyUnusedImageData,
                         OnPluginMsgNotifyUnusedImageData)
 
@@ -504,6 +505,7 @@ bool PPB_ImageData_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+#if !defined(OS_NACL)
 void PPB_ImageData_Proxy::OnHostMsgCreate(PP_Instance instance,
                                           int32_t format,
                                           const PP_Size& size,
@@ -511,11 +513,6 @@ void PPB_ImageData_Proxy::OnHostMsgCreate(PP_Instance instance,
                                           HostResource* result,
                                           std::string* image_data_desc,
                                           ImageHandle* result_image_handle) {
-#if defined(OS_NACL)
-  // This message should never be received in untrusted code. To minimize the
-  // size of the IRT, we just don't handle it.
-  return;
-#else
   *result_image_handle = ImageData::NullHandle();
 
   thunk::EnterResourceCreation enter(instance);
@@ -547,7 +544,6 @@ void PPB_ImageData_Proxy::OnHostMsgCreate(PP_Instance instance,
     *result_image_handle = ImageData::HandleFromInt(handle);
 #endif  // defined(OS_WIN)
   }
-#endif  // defined(OS_NACL)
 }
 
 void PPB_ImageData_Proxy::OnHostMsgCreateNaCl(
@@ -558,11 +554,6 @@ void PPB_ImageData_Proxy::OnHostMsgCreateNaCl(
     HostResource* result,
     std::string* image_data_desc,
     ppapi::proxy::SerializedHandle* result_image_handle) {
-#if defined(OS_NACL)
-  // This message should never be received in untrusted code. To minimize the
-  // size of the IRT, we just don't handle it.
-  return;
-#else
   result_image_handle->set_null_shmem();
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher)
@@ -604,8 +595,8 @@ void PPB_ImageData_Proxy::OnHostMsgCreateNaCl(
   result_image_handle->set_shmem(
       dispatcher->ShareHandleWithRemote(platform_file, false),
       byte_count);
-#endif  // defined(OS_NACL)
 }
+#endif  // !defined(OS_NACL)
 
 void PPB_ImageData_Proxy::OnPluginMsgNotifyUnusedImageData(
     const HostResource& old_image_data) {

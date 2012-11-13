@@ -28,6 +28,7 @@ namespace proxy {
 
 namespace {
 
+#if !defined(OS_NACL)
 PP_Bool IsFlashFullscreen(PP_Instance instance,
                           HostDispatcher* dispatcher) {
   const PPB_FlashFullscreen* flash_fullscreen_interface =
@@ -119,6 +120,7 @@ static const PPP_Instance_1_1 instance_interface = {
   &DidChangeFocus,
   &HandleDocumentLoad
 };
+#endif  // !defined(OS_NACL)
 
 }  // namespace
 
@@ -142,10 +144,12 @@ PPP_Instance_Proxy::PPP_Instance_Proxy(Dispatcher* dispatcher)
 PPP_Instance_Proxy::~PPP_Instance_Proxy() {
 }
 
+#if !defined(OS_NACL)
 // static
 const PPP_Instance* PPP_Instance_Proxy::GetInstanceInterface() {
   return &instance_interface;
 }
+#endif  // !defined(OS_NACL)
 
 bool PPP_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;

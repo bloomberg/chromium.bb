@@ -48,6 +48,7 @@ namespace {
 // asked for a larger buffer.
 const int32_t kMaxReadBufferSize = 16777216;  // 16MB
 
+#if !defined(OS_NACL)
 // Called in the renderer when the byte counts have changed. We send a message
 // to the plugin to synchronize its counts so it can respond to status polls
 // from the plugin.
@@ -57,7 +58,6 @@ void UpdateResourceLoadStatus(PP_Instance pp_instance,
                               int64 total_bytes_to_be_sent,
                               int64 bytes_received,
                               int64 total_bytes_to_be_received) {
-#if !defined(OS_NACL)
   Dispatcher* dispatcher = HostDispatcher::GetForInstance(pp_instance);
   if (!dispatcher)
     return;
@@ -71,8 +71,8 @@ void UpdateResourceLoadStatus(PP_Instance pp_instance,
   params.total_bytes_to_be_received = total_bytes_to_be_received;
   dispatcher->Send(new PpapiMsg_PPBURLLoader_UpdateProgress(
       API_ID_PPB_URL_LOADER, params));
-#endif
 }
+#endif  // !defined(OS_NACL)
 
 InterfaceProxy* CreateURLLoaderProxy(Dispatcher* dispatcher) {
   return new PPB_URLLoader_Proxy(dispatcher);
@@ -412,6 +412,7 @@ PP_Resource PPB_URLLoader_Proxy::CreateProxyResource(PP_Instance pp_instance) {
 bool PPB_URLLoader_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_URLLoader_Proxy, msg)
+#if !defined(OS_NACL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLLoader_Create,
                         OnMsgCreate)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLLoader_Open,
@@ -428,6 +429,8 @@ bool PPB_URLLoader_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgClose)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLLoader_GrantUniversalAccess,
                         OnMsgGrantUniversalAccess)
+#endif  // !defined(OS_NACL)
+
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBURLLoader_UpdateProgress,
                         OnMsgUpdateProgress)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBURLLoader_ReadResponseBody_Ack,
@@ -440,6 +443,7 @@ bool PPB_URLLoader_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+#if !defined(OS_NACL)
 void PPB_URLLoader_Proxy::PrepareURLLoaderForSendingToPlugin(
     PP_Resource resource) {
   // So the plugin can query load status, we need to register our status
@@ -553,6 +557,7 @@ void PPB_URLLoader_Proxy::OnMsgGrantUniversalAccess(
   if (enter.succeeded())
     enter.object()->GrantUniversalAccess();
 }
+#endif  // !defined(OS_NACL)
 
 // Called in the Plugin.
 void PPB_URLLoader_Proxy::OnMsgUpdateProgress(
@@ -602,6 +607,7 @@ void PPB_URLLoader_Proxy::OnMsgCallbackComplete(
     static_cast<URLLoader*>(enter.object())->CallbackComplete(result);
 }
 
+#if !defined(OS_NACL)
 void PPB_URLLoader_Proxy::OnReadCallback(int32_t result,
                                          IPC::Message* message) {
   int32_t bytes_read = 0;
@@ -619,6 +625,7 @@ void PPB_URLLoader_Proxy::OnCallback(int32_t result,
   dispatcher()->Send(new PpapiMsg_PPBURLLoader_CallbackComplete(
       API_ID_PPB_URL_LOADER, resource, result));
 }
+#endif  // !defined(OS_NACL)
 
 }  // namespace proxy
 }  // namespace ppapi

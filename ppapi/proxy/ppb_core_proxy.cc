@@ -104,16 +104,19 @@ const PPB_Core* PPB_Core_Proxy::GetPPB_Core_Interface() {
 bool PPB_Core_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Core_Proxy, msg)
+#if !defined(OS_NACL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBCore_AddRefResource,
                         OnMsgAddRefResource)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBCore_ReleaseResource,
                         OnMsgReleaseResource)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw) handle bad messages!
   return handled;
 }
 
+#if !defined(OS_NACL)
 void PPB_Core_Proxy::OnMsgAddRefResource(const HostResource& resource) {
   ppb_core_impl_->AddRefResource(resource.host_resource());
 }
@@ -121,6 +124,7 @@ void PPB_Core_Proxy::OnMsgAddRefResource(const HostResource& resource) {
 void PPB_Core_Proxy::OnMsgReleaseResource(const HostResource& resource) {
   ppb_core_impl_->ReleaseResource(resource.host_resource());
 }
+#endif  // !defined(OS_NACL)
 
 }  // namespace proxy
 }  // namespace ppapi

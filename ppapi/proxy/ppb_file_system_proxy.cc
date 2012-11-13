@@ -135,14 +135,17 @@ PP_Resource PPB_FileSystem_Proxy::CreateProxyResource(
 bool PPB_FileSystem_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_FileSystem_Proxy, msg)
+#if !defined(OS_NACL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFileSystem_Create, OnMsgCreate)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFileSystem_Open, OnMsgOpen)
+#endif
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBFileSystem_OpenComplete, OnMsgOpenComplete)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
+#if !defined(OS_NACL)
 void PPB_FileSystem_Proxy::OnMsgCreate(PP_Instance instance,
                                        int type,
                                        HostResource* result) {
@@ -164,6 +167,7 @@ void PPB_FileSystem_Proxy::OnMsgOpen(const HostResource& host_resource,
   if (enter.succeeded())
     enter.SetResult(enter.object()->Open(expected_size, enter.callback()));
 }
+#endif  // !defined(OS_NACL)
 
 // Called in the plugin to handle the open callback.
 void PPB_FileSystem_Proxy::OnMsgOpenComplete(const HostResource& host_resource,
@@ -173,12 +177,14 @@ void PPB_FileSystem_Proxy::OnMsgOpenComplete(const HostResource& host_resource,
     static_cast<FileSystem*>(enter.object())->OpenComplete(result);
 }
 
+#if !defined(OS_NACL)
 void PPB_FileSystem_Proxy::OpenCompleteInHost(
     int32_t result,
     const HostResource& host_resource) {
   dispatcher()->Send(new PpapiMsg_PPBFileSystem_OpenComplete(
       API_ID_PPB_FILE_SYSTEM, host_resource, result));
 }
+#endif  // !defined(OS_NACL)
 
 }  // namespace proxy
 }  // namespace ppapi

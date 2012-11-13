@@ -264,8 +264,10 @@ InterfaceList::InterfaceList() {
   // PPP (plugin) interfaces.
   // TODO(brettw) move these to interface_list*.h
   AddProxy(API_ID_PPP_INSTANCE, &ProxyFactory<PPP_Instance_Proxy>);
+  #if !defined(OS_NACL)
   AddPPP(PPP_INSTANCE_INTERFACE_1_1, API_ID_PPP_INSTANCE,
          PPP_Instance_Proxy::GetInstanceInterface());
+  #endif
   AddProxy(API_ID_PPP_PRINTING, &ProxyFactory<PPP_Printing_Proxy>);
   AddPPP(PPP_PRINTING_DEV_INTERFACE, API_ID_PPP_PRINTING,
          PPP_Printing_Proxy::GetProxyInterface());
@@ -328,6 +330,8 @@ InterfaceProxy::Factory InterfaceList::GetFactoryForID(ApiID id) const {
 const void* InterfaceList::GetInterfaceForPPB(const std::string& name) const {
   NameToInterfaceInfoMap::const_iterator found =
       name_to_browser_info_.find(name);
+  printf("GetInterfaceForPPB:name=%s,found=%i\n",
+      name.c_str(), (int)(found != name_to_browser_info_.end()));
   if (found == name_to_browser_info_.end())
     return NULL;
 
@@ -340,6 +344,8 @@ const void* InterfaceList::GetInterfaceForPPB(const std::string& name) const {
 const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
   NameToInterfaceInfoMap::const_iterator found =
       name_to_plugin_info_.find(name);
+  printf("GetInterfaceForPPP:name=%s,found=%i\n",
+      name.c_str(), (int)(found != name_to_plugin_info_.end()));
   if (found == name_to_plugin_info_.end())
     return NULL;
   return found->second.iface;

@@ -342,6 +342,7 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
 bool PPB_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Graphics3D_Proxy, msg)
+#if !defined(OS_NACL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_Create,
                         OnMsgCreate)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_InitCommandBuffer,
@@ -362,6 +363,7 @@ bool PPB_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgGetTransferBuffer)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_SwapBuffers,
                         OnMsgSwapBuffers)
+#endif  // !defined(OS_NACL)
 
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBGraphics3D_SwapBuffersACK,
                         OnMsgSwapBuffersACK)
@@ -372,6 +374,7 @@ bool PPB_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+#if !defined(OS_NACL)
 void PPB_Graphics3D_Proxy::OnMsgCreate(PP_Instance instance,
                                        HostResource share_context,
                                        const std::vector<int32_t>& attribs,
@@ -487,6 +490,7 @@ void PPB_Graphics3D_Proxy::OnMsgSwapBuffers(const HostResource& context) {
   if (enter.succeeded())
     enter.SetResult(enter.object()->SwapBuffers(enter.callback()));
 }
+#endif  // !defined(OS_NACL)
 
 void PPB_Graphics3D_Proxy::OnMsgSwapBuffersACK(const HostResource& resource,
                                               int32_t pp_error) {
@@ -495,12 +499,14 @@ void PPB_Graphics3D_Proxy::OnMsgSwapBuffersACK(const HostResource& resource,
     static_cast<Graphics3D*>(enter.object())->SwapBuffersACK(pp_error);
 }
 
+#if !defined(OS_NACL)
 void PPB_Graphics3D_Proxy::SendSwapBuffersACKToPlugin(
     int32_t result,
     const HostResource& context) {
   dispatcher()->Send(new PpapiMsg_PPBGraphics3D_SwapBuffersACK(
       API_ID_PPB_GRAPHICS_3D, context, result));
 }
+#endif  // !defined(OS_NACL)
 
 }  // namespace proxy
 }  // namespace ppapi

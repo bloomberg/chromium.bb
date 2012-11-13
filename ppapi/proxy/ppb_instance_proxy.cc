@@ -97,10 +97,13 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
   // This must happen OUTSIDE of ExecuteScript since the SerializedVars use
   // the dispatcher upon return of the function (converting the
   // SerializedVarReturnValue/OutParam to a SerializedVar in the destructor).
+#if !defined(OS_NACL)
   ScopedModuleReference death_grip(dispatcher());
+#endif
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Instance_Proxy, msg)
+#if !defined(OS_NACL)
     // Plugin -> Host messages.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetWindowObject,
                         OnHostMsgGetWindowObject)
@@ -146,9 +149,10 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgCancelCompositionText)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_UpdateSurroundingText,
                         OnHostMsgUpdateSurroundingText)
+#endif  // !defined(OS_NACL)
+    // This message is needed to implement PPB_Testing_Dev.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetDocumentURL,
                         OnHostMsgGetDocumentURL)
-
 #if !defined(OS_NACL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ResolveRelativeToDocument,
                         OnHostMsgResolveRelativeToDocument)
@@ -784,6 +788,7 @@ void PPB_Instance_Proxy::UpdateSurroundingText(PP_Instance instance,
       API_ID_PPB_INSTANCE, instance, text, caret, anchor));
 }
 
+#if !defined(OS_NACL)
 void PPB_Instance_Proxy::OnHostMsgGetWindowObject(
     PP_Instance instance,
     SerializedVarReturnValue result) {
@@ -927,6 +932,7 @@ void PPB_Instance_Proxy::OnHostMsgUnlockMouse(PP_Instance instance) {
   if (enter.succeeded())
     enter.functions()->UnlockMouse(instance);
 }
+#endif  // !defined(OS_NACL)
 
 void PPB_Instance_Proxy::OnHostMsgGetDocumentURL(
     PP_Instance instance,
@@ -1111,7 +1117,6 @@ void PPB_Instance_Proxy::OnHostMsgDeliverSamples(
   if (enter.succeeded())
     enter.functions()->DeliverSamples(instance, audio_frames, &block_info);
 }
-#endif  // !defined(OS_NACL)
 
 void  PPB_Instance_Proxy::OnHostMsgSetCursor(
     PP_Instance instance,
@@ -1159,6 +1164,7 @@ void PPB_Instance_Proxy::OnHostMsgUpdateSurroundingText(
                                              anchor);
   }
 }
+#endif  // !defined(OS_NACL)
 
 void PPB_Instance_Proxy::OnPluginMsgMouseLockComplete(PP_Instance instance,
                                                       int32_t result) {
@@ -1174,11 +1180,13 @@ void PPB_Instance_Proxy::OnPluginMsgMouseLockComplete(PP_Instance instance,
   data->mouse_lock_callback->Run(result);
 }
 
+#if !defined(OS_NACL)
 void PPB_Instance_Proxy::MouseLockCompleteInHost(int32_t result,
                                                  PP_Instance instance) {
   dispatcher()->Send(new PpapiMsg_PPBInstance_MouseLockComplete(
       API_ID_PPB_INSTANCE, instance, result));
 }
+#endif  // !defined(OS_NACL)
 
 void PPB_Instance_Proxy::CancelAnyPendingRequestSurroundingText(
     PP_Instance instance) {
