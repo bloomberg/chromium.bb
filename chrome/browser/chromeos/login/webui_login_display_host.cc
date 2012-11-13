@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 
 #include "ash/ash_switches.h"
-#include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"

@@ -74,6 +74,7 @@
         'desktop_background/desktop_background_view.h',
         'desktop_background/desktop_background_widget_controller.cc',
         'desktop_background/desktop_background_widget_controller.h',
+        'desktop_background/user_wallpaper_delegate.h',
         'display/display_controller.cc',
         'display/display_controller.h',
         'display/display_error_dialog.cc',

@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/desktop_background/desktop_background_resources.h"
-#include "ash/wm/window_animations.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -35,40 +34,6 @@ ASH_EXPORT extern const int kLargeWallpaperMaxWidth;
 ASH_EXPORT extern const int kLargeWallpaperMaxHeight;
 
 class DesktopBackgroundControllerObserver;
-
-class UserWallpaperDelegate {
- public:
-  virtual ~UserWallpaperDelegate() {}
-
-  // Returns the type of window animation that should be used when showing the
-  // wallpaper.
-  virtual ash::WindowVisibilityAnimationType GetAnimationType() = 0;
-
-  // Should the slower initial animation be shown (as opposed to the faster
-  // animation that's used e.g. when switching from one user's wallpaper to
-  // another's on the login screen)?
-  virtual bool ShouldShowInitialAnimation() = 0;
-
-  // Updates current wallpaper. It may switch the size of wallpaper based on the
-  // current display's resolution.
-  virtual void UpdateWallpaper() = 0;
-
-  // Initialize wallpaper.
-  virtual void InitializeWallpaper() = 0;
-
-  // Opens the set wallpaper page in the browser.
-  virtual void OpenSetWallpaperPage() = 0;
-
-  // Returns true if user can open set wallpaper page. Only guest user returns
-  // false currently.
-  virtual bool CanOpenSetWallpaperPage() = 0;
-
-  // Notifies delegate that wallpaper animation has finished.
-  virtual void OnWallpaperAnimationFinished() = 0;
-
-  // Notifies delegate that wallpaper boot animation has finished.
-  virtual void OnWallpaperBootAnimationFinished() = 0;
-};
 
 // Loads selected desktop wallpaper from file system asynchronously and updates
 // background layer if loaded successfully.

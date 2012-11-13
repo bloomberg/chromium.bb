@@ -13,6 +13,7 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_resources.h"
 #include "ash/desktop_background/desktop_background_view.h"
+#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/multi_display_manager.h"

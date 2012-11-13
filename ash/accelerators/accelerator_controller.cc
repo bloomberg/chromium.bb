@@ -12,6 +12,7 @@
 #include "ash/ash_switches.h"
 #include "ash/caps_lock_delegate.h"
 #include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/multi_display_manager.h"
 #include "ash/focus_cycler.h"

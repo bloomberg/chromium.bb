@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/set_wallpaper_options_handler.h"
 
 #include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
