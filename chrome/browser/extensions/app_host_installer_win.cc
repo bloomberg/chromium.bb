@@ -18,8 +18,11 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/string16.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
+#include "chrome/installer/util/util_constants.h"
 
 namespace {
 
@@ -101,7 +104,8 @@ string16 GetQuickEnableAppHostCommand(bool system_level) {
 
 // Launches the Google Update command to quick-enable App Host.
 // Returns true if the command is launched.
-bool LaunchQuickEnableAppHost(base::win::ScopedHandle* process) {
+bool LaunchQuickEnableAppHost(
+    bool with_launcher, base::win::ScopedHandle* process) {
   DCHECK(!process->IsValid());
   bool success = false;
 
@@ -110,6 +114,15 @@ bool LaunchQuickEnableAppHost(base::win::ScopedHandle* process) {
     cmd_str = GetQuickEnableAppHostCommand(false);
   if (!cmd_str.empty()) {
     VLOG(1) << "Quick-enabling application host: " << cmd_str;
+    if (!with_launcher) {
+      // Not pretty, but it seems better than building the entire command line
+      // here. This will go away when launcher is always-on.
+      ReplaceFirstSubstringAfterOffset(
+          &cmd_str, 0,
+          ASCIIToUTF16(installer::switches::kChromeAppLauncher),
+          ASCIIToUTF16(installer::switches::kChromeAppHost));
+    }
+
     if (!base::LaunchProcess(cmd_str, base::LaunchOptions(),
                              process->Receive())) {
       LOG(ERROR) << "Failed to quick-enable application host.";
@@ -126,6 +139,9 @@ namespace extensions {
 using content::BrowserThread;
 
 // static
+bool AppHostInstaller::install_with_launcher_ = false;
+
+// static
 void AppHostInstaller::EnsureAppHostInstalled(
     const OnAppHostInstallationCompleteCallback& completion_callback) {
   BrowserThread::ID caller_thread_id;
@@ -137,6 +153,11 @@ void AppHostInstaller::EnsureAppHostInstalled(
   // AppHostInstaler will delete itself
   (new AppHostInstaller(completion_callback, caller_thread_id))->
       EnsureAppHostInstalledInternal();
+}
+
+void AppHostInstaller::SetInstallWithLauncher(
+    bool install_with_launcher) {
+  install_with_launcher_ = install_with_launcher;
 }
 
 AppHostInstaller::AppHostInstaller(
@@ -158,16 +179,20 @@ void AppHostInstaller::EnsureAppHostInstalledInternal() {
     return;
   }
 
-  if (chrome_launcher_support::IsAppHostPresent())
+  if ((install_with_launcher_ &&
+       chrome_launcher_support::IsAppLauncherPresent()) ||
+      (!install_with_launcher_ &&
+       chrome_launcher_support::IsAppHostPresent())) {
     FinishOnCallerThread(true);
-  else
+  } else {
     InstallAppHostOnFileThread();
+  }
 }
 
 void AppHostInstaller::InstallAppHostOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!process_.IsValid());
-  if (!LaunchQuickEnableAppHost(&process_)) {
+  if (!LaunchQuickEnableAppHost(install_with_launcher_, &process_)) {
     FinishOnCallerThread(false);
   } else {
     DCHECK(process_.IsValid());

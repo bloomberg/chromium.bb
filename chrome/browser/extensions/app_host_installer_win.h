@@ -34,6 +34,8 @@ class AppHostInstaller {
   static void EnsureAppHostInstalled(
       const OnAppHostInstallationCompleteCallback& completion_callback);
 
+  static void SetInstallWithLauncher(bool install_with_launcher);
+
  private:
   // Constructs an AppHostInstaller, which will call |completion_callback|
   // on the specified thread upon installation completion.
@@ -61,6 +63,8 @@ class AppHostInstaller {
   base::win::ScopedHandle process_;
   scoped_ptr<base::win::ObjectWatcher::Delegate> delegate_;
   base::win::ObjectWatcher watcher_;
+
+  static bool install_with_launcher_;
 
   DISALLOW_COPY_AND_ASSIGN(AppHostInstaller);
 };
