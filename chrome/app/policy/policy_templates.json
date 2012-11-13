@@ -568,7 +568,7 @@
 
       If you enable this setting, SafeSearch in Google Search is always active.
 
-      If you disable this setting, SafeSearch in Google Search is not enforced.''',
+      If you disable this setting or do not set a value, SafeSearch in Google Search is not enforced.''',
     },
     {
       'name': 'SafeBrowsingEnabled',
