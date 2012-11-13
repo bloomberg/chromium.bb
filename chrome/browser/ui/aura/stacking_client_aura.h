@@ -34,7 +34,7 @@ class StackingClientAura : public aura::client::StackingClient {
                                          const gfx::Rect& bounds) OVERRIDE;
 
  private:
-  scoped_ptr<views::DesktopStackingClient> desktop_stacking_client_;
+  scoped_ptr<aura::DesktopStackingClient> desktop_stacking_client_;
 
   DISALLOW_COPY_AND_ASSIGN(StackingClientAura);
 };
