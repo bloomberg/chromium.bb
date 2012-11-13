@@ -2590,10 +2590,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="The download experienced an error and was interrupted, size downloaded/total.">
         Download Error
       </message>
-      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION"
-               desc="Download page message: Generic.">
-        Oh no! Something broke while Chrome was downloading the file.
-      </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_ACCESS_DENIED"
                desc="Cannot write to the directory/file due to insufficient permissions. Please select another directory.">
         Insufficient Permissions
