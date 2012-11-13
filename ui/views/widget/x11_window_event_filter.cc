@@ -10,11 +10,11 @@
 #include <X11/Xlib.h>
 
 #include "base/message_pump_aurax11.h"
-#include "ui/aura/desktop/desktop_activation_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/events/event.h"
 #include "ui/base/hit_test.h"
+#include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace {
@@ -59,7 +59,7 @@ namespace views {
 
 X11WindowEventFilter::X11WindowEventFilter(
     aura::RootWindow* root_window,
-    aura::DesktopActivationClient* activation_client)
+    DesktopActivationClient* activation_client)
     : activation_client_(activation_client),
       xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
       xwindow_(root_window->GetAcceleratedWidget()),

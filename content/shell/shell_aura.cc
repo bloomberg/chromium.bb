@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
-#include "ui/aura/desktop/desktop_screen.h"
 #include "ui/aura/display_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -25,6 +24,7 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -33,7 +33,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/shell/shell_stacking_client_ash.h"
 #else
-#include "ui/aura/desktop/desktop_stacking_client.h"
+#include "ui/views/widget/desktop_aura/desktop_stacking_client.h"
 #endif
 
 // ViewDelegate implementation for aura content shell
@@ -289,9 +289,9 @@ void Shell::PlatformInitialize() {
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, new ash::ScreenAsh);
 #else
-  stacking_client_ = new aura::DesktopStackingClient();
+  stacking_client_ = new views::DesktopStackingClient();
   gfx::Screen::SetScreenInstance(
-      gfx::SCREEN_TYPE_NATIVE, aura::CreateDesktopScreen());
+      gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
 #endif
   views_delegate_ = new ShellViewsDelegateAura();
 }

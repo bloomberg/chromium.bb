@@ -16,7 +16,6 @@
 #include "ui/views/views_export.h"
 
 namespace aura {
-class DesktopActivationClient;
 class RootWindow;
 class Window;
 }
@@ -26,14 +25,14 @@ class Point;
 }
 
 namespace views {
+class DesktopActivationClient;
 class NativeWidgetAura;
 
 // An EventFilter that sets properties on X11 windows.
 class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter {
  public:
-  explicit X11WindowEventFilter(
-      aura::RootWindow* root_window,
-      aura::DesktopActivationClient* activation_client);
+  explicit X11WindowEventFilter(aura::RootWindow* root_window,
+                                DesktopActivationClient* activation_client);
   virtual ~X11WindowEventFilter();
 
   // Changes whether borders are shown on this |root_window|.
@@ -57,7 +56,7 @@ class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter {
   bool DispatchHostWindowDragMovement(int hittest,
                                       const gfx::Point& screen_location);
 
-  aura::DesktopActivationClient* activation_client_;
+  DesktopActivationClient* activation_client_;
 
   // The display and the native X window hosting the root window.
   Display* xdisplay_;

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/desktop/desktop_dispatcher_client.h"
+#include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
 
 #include "base/run_loop.h"
 
-namespace aura {
+namespace views {
 
 DesktopDispatcherClient::DesktopDispatcherClient() {}
 
@@ -31,5 +31,4 @@ void DesktopDispatcherClient::RunWithDispatcher(
   loop->SetNestableTasksAllowed(did_allow_task_nesting);
 }
 
-}  // namespace aura
-
+}  // namespace views

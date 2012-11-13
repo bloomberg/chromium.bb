@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/desktop/desktop_screen_win.h"
+#include "ui/views/widget/desktop_aura/desktop_screen_win.h"
 
 #include "base/logging.h"
-#include "ui/aura/desktop/desktop_screen.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/gfx/display.h"
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
 
 namespace {
 
@@ -28,7 +28,7 @@ gfx::Display GetDisplay(MONITORINFO& monitor_info) {
 
 }  // namespace
 
-namespace aura {
+namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopScreenWin, public:
@@ -57,7 +57,7 @@ HWND DesktopScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
 
 gfx::NativeWindow DesktopScreenWin::GetNativeWindowFromHWND(HWND hwnd) const {
   return (::IsWindow(hwnd)) ?
-      RootWindow::GetForAcceleratedWidget(hwnd) : NULL;
+      aura::RootWindow::GetForAcceleratedWidget(hwnd) : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,4 +66,4 @@ gfx::Screen* CreateDesktopScreen() {
   return new DesktopScreenWin;
 }
 
-}  // namespace aura
+}  // namespace views

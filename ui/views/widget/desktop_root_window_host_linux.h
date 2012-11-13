@@ -22,9 +22,6 @@
 #include "ui/views/widget/desktop_root_window_host.h"
 
 namespace aura {
-class DesktopActivationClient;
-class DesktopCursorClient;
-class DesktopDispatcherClient;
 class FocusManager;
 namespace client {
 class DefaultCaptureClient;
@@ -33,6 +30,9 @@ class ScreenPositionClient;
 }
 
 namespace views {
+class DesktopActivationClient;
+class DesktopCursorClient;
+class DesktopDispatcherClient;
 class X11DesktopWindowMoveClient;
 class X11WindowEventFilter;
 namespace corewm {
@@ -210,9 +210,9 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   // aura:: objects that we own.
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
   scoped_ptr<aura::FocusManager> focus_manager_;
-  scoped_ptr<aura::DesktopActivationClient> activation_client_;
-  scoped_ptr<aura::DesktopCursorClient> cursor_client_;
-  scoped_ptr<aura::DesktopDispatcherClient> dispatcher_client_;
+  scoped_ptr<DesktopActivationClient> activation_client_;
+  scoped_ptr<DesktopCursorClient> cursor_client_;
+  scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
   scoped_ptr<aura::client::ScreenPositionClient> position_client_;
 
   // Current Aura cursor.
@@ -222,10 +222,10 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   ::Cursor invisible_cursor_;
 
   // Toplevel event filter which dispatches to other event filters.
-  views::corewm::CompoundEventFilter* root_window_event_filter_;
+  corewm::CompoundEventFilter* root_window_event_filter_;
 
   // An event filter that pre-handles all key events to send them to an IME.
-  scoped_ptr<views::corewm::InputMethodEventFilter> input_method_filter_;
+  scoped_ptr<corewm::InputMethodEventFilter> input_method_filter_;
   scoped_ptr<X11WindowEventFilter> x11_window_event_filter_;
   scoped_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 

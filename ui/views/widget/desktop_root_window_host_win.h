@@ -11,9 +11,6 @@
 #include "ui/views/win/hwnd_message_handler_delegate.h"
 
 namespace aura {
-class DesktopActivationClient;
-class DesktopCursorClient;
-class DesktopDispatcherClient;
 class FocusManager;
 namespace client {
 class DefaultCaptureClient;
@@ -22,6 +19,9 @@ class ScreenPositionClient;
 }
 
 namespace views {
+class DesktopActivationClient;
+class DesktopCursorClient;
+class DesktopDispatcherClient;
 class HWNDMessageHandler;
 namespace corewm {
 class CompoundEventFilter;
@@ -209,11 +209,11 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
 
   scoped_ptr<HWNDMessageHandler> message_handler_;
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
-  scoped_ptr<aura::DesktopDispatcherClient> dispatcher_client_;
+  scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
   scoped_ptr<aura::FocusManager> focus_manager_;
   // Depends on focus_manager_.
-  scoped_ptr<aura::DesktopActivationClient> activation_client_;
-  scoped_ptr<views::corewm::InputMethodEventFilter> input_method_filter_;
+  scoped_ptr<DesktopActivationClient> activation_client_;
+  scoped_ptr<corewm::InputMethodEventFilter> input_method_filter_;
 
   // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura
   //             instead of providing this route back to Widget.
@@ -229,7 +229,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   scoped_ptr<aura::client::ScreenPositionClient> position_client_;
 
   // A simple cursor client which just forwards events to the RootWindow.
-  scoped_ptr<aura::DesktopCursorClient> cursor_client_;
+  scoped_ptr<DesktopCursorClient> cursor_client_;
 
   // The RootWindow's CompoundEventFilter.
   views::corewm::CompoundEventFilter* root_window_event_filter_;

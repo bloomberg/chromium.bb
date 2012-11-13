@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/desktop/desktop_cursor_client.h"
+#include "ui/views/widget/desktop_aura/desktop_cursor_client.h"
 
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor_loader.h"
 
-namespace aura {
+namespace views {
 
 DesktopCursorClient::DesktopCursorClient(aura::RootWindow* window)
     : root_window_(window),
@@ -56,4 +56,4 @@ void DesktopCursorClient::UnlockCursor() {
   NOTIMPLEMENTED();
 }
 
-}  // namespace aura
+}  // namespace views

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_DESKTOP_DESKTOP_SCREEN_WIN_H_
-#define UI_AURA_DESKTOP_DESKTOP_SCREEN_WIN_H_
+#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_SCREEN_WIN_H_
+#define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_SCREEN_WIN_H_
 
 #include "ui/gfx/screen_win.h"
 #include "ui/views/views_export.h"
 
-namespace aura {
+namespace views {
 
 class VIEWS_EXPORT DesktopScreenWin : public gfx::ScreenWin {
 public:
@@ -26,6 +26,6 @@ public:
   DISALLOW_COPY_AND_ASSIGN(DesktopScreenWin);
 };
 
-}  // namespace aura
+}  // namespace views
 
-#endif  // UI_AURA_DESKTOP_DESKTOP_SCREEN_WIN_H_
+#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_SCREEN_WIN_H_

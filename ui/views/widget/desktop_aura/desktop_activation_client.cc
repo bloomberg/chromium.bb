@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/desktop/desktop_activation_client.h"
+#include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
@@ -12,9 +12,10 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
-namespace aura {
+namespace views {
 
-DesktopActivationClient::DesktopActivationClient(FocusManager* focus_manager)
+DesktopActivationClient::DesktopActivationClient(
+    aura::FocusManager* focus_manager)
     : focus_manager_(focus_manager),
       current_active_(NULL),
       updating_activation_(false),
@@ -27,16 +28,16 @@ DesktopActivationClient::~DesktopActivationClient() {
 }
 
 void DesktopActivationClient::AddObserver(
-    client::ActivationChangeObserver* observer) {
+    aura::client::ActivationChangeObserver* observer) {
   observers_.AddObserver(observer);
 }
 
 void DesktopActivationClient::RemoveObserver(
-    client::ActivationChangeObserver* observer) {
+    aura::client::ActivationChangeObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void DesktopActivationClient::ActivateWindow(Window* window) {
+void DesktopActivationClient::ActivateWindow(aura::Window* window) {
   // Prevent recursion when called from focus.
   if (updating_activation_)
     return;
@@ -61,31 +62,31 @@ void DesktopActivationClient::ActivateWindow(Window* window) {
   if (window && !observer_manager_.IsObserving(window))
     observer_manager_.Add(window);
 
-  FOR_EACH_OBSERVER(client::ActivationChangeObserver,
+  FOR_EACH_OBSERVER(aura::client::ActivationChangeObserver,
                     observers_,
                     OnWindowActivated(window, old_active));
 
   // Invoke OnLostActive after we've changed the active window. That way if the
   // delegate queries for active state it doesn't think the window is still
   // active.
-  if (old_active && client::GetActivationDelegate(old_active))
-    client::GetActivationDelegate(old_active)->OnLostActive();
+  if (old_active && aura::client::GetActivationDelegate(old_active))
+    aura::client::GetActivationDelegate(old_active)->OnLostActive();
 
   // Send an activation event to the new window
-  if (window && client::GetActivationDelegate(window))
-    client::GetActivationDelegate(window)->OnActivated();
+  if (window && aura::client::GetActivationDelegate(window))
+    aura::client::GetActivationDelegate(window)->OnActivated();
 }
 
-void DesktopActivationClient::DeactivateWindow(Window* window) {
+void DesktopActivationClient::DeactivateWindow(aura::Window* window) {
   if (window == current_active_)
     current_active_ = NULL;
 }
 
-Window* DesktopActivationClient::GetActiveWindow() {
+aura::Window* DesktopActivationClient::GetActiveWindow() {
   return current_active_;
 }
 
-bool DesktopActivationClient::OnWillFocusWindow(Window* window,
+bool DesktopActivationClient::OnWillFocusWindow(aura::Window* window,
                                                 const ui::Event* event) {
   return CanActivateWindow(GetActivatableWindow(window));
 }
@@ -131,4 +132,4 @@ aura::Window* DesktopActivationClient::GetActivatableWindow(
   return NULL;
 }
 
-}  // namespace aura
+}  // namespace views

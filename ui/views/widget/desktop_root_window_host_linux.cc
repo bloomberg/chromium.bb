@@ -14,9 +14,6 @@
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/user_action_client.h"
-#include "ui/aura/desktop/desktop_activation_client.h"
-#include "ui/aura/desktop/desktop_cursor_client.h"
-#include "ui/aura/desktop/desktop_dispatcher_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/views/corewm/compound_event_filter.h"
@@ -27,6 +24,9 @@
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/views/ime/input_method_bridge.h"
+#include "ui/views/widget/desktop_aura/desktop_activation_client.h"
+#include "ui/views/widget/desktop_aura/desktop_cursor_client.h"
+#include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
 #include "ui/views/widget/desktop_layout_manager.h"
 #include "ui/views/widget/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_screen_position_client.h"
@@ -218,28 +218,28 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   root_window_->set_focus_manager(focus_manager_.get());
 
   activation_client_.reset(
-      new aura::DesktopActivationClient(root_window_->GetFocusManager()));
+      new DesktopActivationClient(root_window_->GetFocusManager()));
   aura::client::SetActivationClient(root_window_,
                                     activation_client_.get());
 
-  dispatcher_client_.reset(new aura::DesktopDispatcherClient);
+  dispatcher_client_.reset(new DesktopDispatcherClient);
   aura::client::SetDispatcherClient(root_window_,
                                     dispatcher_client_.get());
 
-  cursor_client_.reset(new aura::DesktopCursorClient(root_window_));
+  cursor_client_.reset(new DesktopCursorClient(root_window_));
   aura::client::SetCursorClient(root_window_,
                                 cursor_client_.get());
 
-  position_client_.reset(new DesktopScreenPositionClient());
+  position_client_.reset(new DesktopScreenPositionClient);
   aura::client::SetScreenPositionClient(root_window_,
                                         position_client_.get());
 
   // No event filter for aura::Env. Create CompoundEvnetFilter per RootWindow.
-  root_window_event_filter_ = new views::corewm::CompoundEventFilter;
+  root_window_event_filter_ = new corewm::CompoundEventFilter;
   // Pass ownership of the filter to the root_window.
   root_window_->SetEventFilter(root_window_event_filter_);
 
-  input_method_filter_.reset(new views::corewm::InputMethodEventFilter);
+  input_method_filter_.reset(new corewm::InputMethodEventFilter);
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window_);
   root_window_event_filter_->AddFilter(input_method_filter_.get());
 

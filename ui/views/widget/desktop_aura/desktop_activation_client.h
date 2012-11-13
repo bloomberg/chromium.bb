@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_DESKTOP_DESTKOP_ACTIVATION_CLIENT_H_
-#define UI_AURA_DESKTOP_DESTKOP_ACTIVATION_CLIENT_H_
+#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESTKOP_ACTIVATION_CLIENT_H_
+#define UI_VIEWS_WIDGET_DESKTOP_AURA_DESTKOP_ACTIVATION_CLIENT_H_
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
@@ -20,27 +20,32 @@ class FocusManager;
 namespace client {
 class ActivationChangeObserver;
 }
+}
+
+namespace views {
 
 // An activation client that handles activation events in a single
 // RootWindow. Used only on the Desktop where there can be multiple RootWindow
 // objects.
-class VIEWS_EXPORT DesktopActivationClient : public client::ActivationClient,
-                                             public WindowObserver,
-                                             public FocusChangeObserver {
+class VIEWS_EXPORT DesktopActivationClient
+    : public aura::client::ActivationClient,
+      public aura::WindowObserver,
+      public aura::FocusChangeObserver {
  public:
-  explicit DesktopActivationClient(FocusManager* focus_manager);
+  explicit DesktopActivationClient(aura::FocusManager* focus_manager);
   virtual ~DesktopActivationClient();
 
   // ActivationClient:
-  virtual void AddObserver(client::ActivationChangeObserver* observer) OVERRIDE;
+  virtual void AddObserver(
+      aura::client::ActivationChangeObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
-      client::ActivationChangeObserver* observer) OVERRIDE;
-  virtual void ActivateWindow(Window* window) OVERRIDE;
-  virtual void DeactivateWindow(Window* window) OVERRIDE;
+      aura::client::ActivationChangeObserver* observer) OVERRIDE;
+  virtual void ActivateWindow(aura::Window* window) OVERRIDE;
+  virtual void DeactivateWindow(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetActiveWindow() OVERRIDE;
-  virtual bool OnWillFocusWindow(Window* window,
+  virtual bool OnWillFocusWindow(aura::Window* window,
                                  const ui::Event* event) OVERRIDE;
-  virtual bool CanActivateWindow(Window* window) const OVERRIDE;
+  virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE;
 
   // Overridden from aura::WindowObserver:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
@@ -54,22 +59,22 @@ class VIEWS_EXPORT DesktopActivationClient : public client::ActivationClient,
   aura::Window* GetActivatableWindow(aura::Window* window);
 
   // The focus manager that we collaborate with.
-  FocusManager* focus_manager_;
+  aura::FocusManager* focus_manager_;
 
   // The current active window.
-  Window* current_active_;
+  aura::Window* current_active_;
 
   // True inside ActivateWindow(). Used to prevent recursion of focus
   // change notifications causing activation.
   bool updating_activation_;
 
-  ObserverList<client::ActivationChangeObserver> observers_;
+  ObserverList<aura::client::ActivationChangeObserver> observers_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopActivationClient);
 };
 
-}  // namespace aura
+}  // namespace views
 
-#endif  // UI_AURA_DESKTOP_DESTKOP_ACTIVATION_CLIENT_H_
+#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_DESTKOP_ACTIVATION_CLIENT_H_

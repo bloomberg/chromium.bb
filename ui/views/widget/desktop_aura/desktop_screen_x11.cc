@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/desktop/desktop_screen.h"
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
 
 #include <X11/Xlib.h>
 
@@ -126,10 +126,10 @@ gfx::Display DesktopScreenX11::GetPrimaryDisplay() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-namespace aura {
+namespace views {
 
 gfx::Screen* CreateDesktopScreen() {
   return new DesktopScreenX11;
 }
 
-}  // namespace aura
+}  // namespace views

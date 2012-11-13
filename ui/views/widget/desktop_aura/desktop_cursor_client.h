@@ -2,24 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_DESKTOP_DESKTOP_CURSOR_CLIENT_H_
-#define UI_AURA_DESKTOP_DESKTOP_CURSOR_CLIENT_H_
+#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_CURSOR_CLIENT_H_
+#define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_CURSOR_CLIENT_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/views/views_export.h"
 
+namespace aura {
+class RootWindow;
+}
+
 namespace ui {
 class CursorLoader;
 }
 
-namespace aura {
-class RootWindow;
+namespace views {
 
 // A CursorClient that interacts with only one RootWindow. (Unlike the one in
 // ash, which interacts with all the RootWindows.)
-class VIEWS_EXPORT DesktopCursorClient : public client::CursorClient {
+class VIEWS_EXPORT DesktopCursorClient : public aura::client::CursorClient {
  public:
   explicit DesktopCursorClient(aura::RootWindow* window);
   virtual ~DesktopCursorClient();
@@ -42,6 +45,6 @@ class VIEWS_EXPORT DesktopCursorClient : public client::CursorClient {
   DISALLOW_COPY_AND_ASSIGN(DesktopCursorClient);
 };
 
-}  // namespace aura
+}  // namespace views
 
-#endif  // UI_AURA_DESKTOP_DESKTOP_CURSOR_CLIENT_H_
+#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_CURSOR_CLIENT_H_

@@ -8,9 +8,6 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/default_capture_client.h"
-#include "ui/aura/desktop/desktop_activation_client.h"
-#include "ui/aura/desktop/desktop_cursor_client.h"
-#include "ui/aura/desktop/desktop_dispatcher_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/views/corewm/compound_event_filter.h"
@@ -23,6 +20,9 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path_win.h"
 #include "ui/views/ime/input_method_win.h"
+#include "ui/views/widget/desktop_aura/desktop_activation_client.h"
+#include "ui/views/widget/desktop_aura/desktop_cursor_client.h"
+#include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
 #include "ui/views/widget/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_screen_position_client.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -114,15 +114,15 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
   root_window_->set_focus_manager(focus_manager_.get());
 
   activation_client_.reset(
-      new aura::DesktopActivationClient(root_window_->GetFocusManager()));
+      new DesktopActivationClient(root_window_->GetFocusManager()));
   aura::client::SetActivationClient(root_window_,
                                     activation_client_.get());
 
-  dispatcher_client_.reset(new aura::DesktopDispatcherClient);
+  dispatcher_client_.reset(new DesktopDispatcherClient);
   aura::client::SetDispatcherClient(root_window_,
                                     dispatcher_client_.get());
 
-  cursor_client_.reset(new aura::DesktopCursorClient(root_window_));
+  cursor_client_.reset(new DesktopCursorClient(root_window_));
   aura::client::SetCursorClient(root_window_, cursor_client_.get());
 
 
