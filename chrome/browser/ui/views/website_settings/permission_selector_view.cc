@@ -27,63 +27,23 @@ const int kPermissionIconMarginLeft = 6;
 // The width of the column that contains the permissions icons.
 const int kPermissionIconColumnWidth = 20;
 
-// An array with |ContentSetting|s ordered by CommandID. The array is used to
-// lookup a content setting for a given command id.
-const ContentSetting kSettingsForCommandIDs[] = {
-  CONTENT_SETTING_DEFAULT,  // COMMAND_SET_TO_DEFAULT
-  CONTENT_SETTING_ALLOW,    // COMMAND_SET_TO_ALLOW
-  CONTENT_SETTING_BLOCK,    // COMMAND_SET_TO_BLOCK
-};
+ContentSetting CommandIdToContentSetting(int command_id) {
+  switch (command_id) {
+    case PermissionMenuModel::COMMAND_SET_TO_DEFAULT:
+      return CONTENT_SETTING_DEFAULT;
+    case PermissionMenuModel::COMMAND_SET_TO_ALLOW:
+      return CONTENT_SETTING_ALLOW;
+    case PermissionMenuModel::COMMAND_SET_TO_BLOCK:
+      return CONTENT_SETTING_BLOCK;
+    default:
+      NOTREACHED();
+      return CONTENT_SETTING_DEFAULT;
+  }
+}
 
 }  // namespace
 
 namespace internal {
-
-// TODO(markusheintz): Replace this model with the one in
-// chrome/browser/ui/website_settings.
-class PermissionMenuModel : public ui::SimpleMenuModel,
-                            public ui::SimpleMenuModel::Delegate {
- public:
-  PermissionMenuModel(ContentSettingsType site_permission,
-                      ContentSetting default_setting,
-                      ContentSetting current_setting,
-                      PermissionSelectorView* selector);
-
-  ContentSettingsType site_permission() const { return site_permission_; }
-  ContentSetting default_setting() const { return default_setting_; }
-  ContentSetting current_setting() const { return current_setting_; }
-
-  // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
-
- private:
-  enum CommandID {
-    COMMAND_SET_TO_DEFAULT,
-    COMMAND_SET_TO_ALLOW,
-    COMMAND_SET_TO_BLOCK,
-  };
-
-  // The site permission (the |ContentSettingsType|) for which the menu model
-  // provides settings.
-  ContentSettingsType site_permission_;
-
-  // The global default setting for the |site_permission_|.
-  ContentSetting default_setting_;
-
-  // The currently active setting for the |site_permission|.
-  ContentSetting current_setting_;
-
-  // The |permission_selector_|s SelectionChanged method is called whenever the
-  // |current_setting_| is changed.
-  PermissionSelectorView* permission_selector_;  // Owned by views hierarchy.
-
-  DISALLOW_COPY_AND_ASSIGN(PermissionMenuModel);
-};
 
 // The |PermissionMenuButton| provides a menu for selecting a setting a
 // permissions type.
@@ -119,72 +79,6 @@ class PermissionMenuButton : public views::MenuButton,
 
   DISALLOW_COPY_AND_ASSIGN(PermissionMenuButton);
 };
-
-///////////////////////////////////////////////////////////////////////////////
-// PermissionMenuModel
-///////////////////////////////////////////////////////////////////////////////
-
-PermissionMenuModel::PermissionMenuModel(
-    ContentSettingsType site_permission,
-    ContentSetting default_setting,
-    ContentSetting current_setting,
-    PermissionSelectorView* parent)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
-      site_permission_(site_permission),
-      default_setting_(default_setting),
-      current_setting_(current_setting),
-      permission_selector_(parent) {
-  string16 label;
-  switch (default_setting_) {
-    case CONTENT_SETTING_ALLOW:
-      label = l10n_util::GetStringUTF16(
-          IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ALLOW);
-      break;
-    case CONTENT_SETTING_BLOCK:
-      label = l10n_util::GetStringUTF16(
-          IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_BLOCK);
-      break;
-    case CONTENT_SETTING_ASK:
-      label = l10n_util::GetStringUTF16(
-          IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK);
-      break;
-    default:
-      break;
-  }
-  AddCheckItem(COMMAND_SET_TO_DEFAULT, label);
-
-  if (site_permission != CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
-    label = l10n_util::GetStringUTF16(
-        IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);
-    AddCheckItem(COMMAND_SET_TO_ALLOW, label);
-  }
-  if (site_permission != CONTENT_SETTINGS_TYPE_FULLSCREEN &&
-      site_permission != CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
-    label = l10n_util::GetStringUTF16(
-        IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK);
-    AddCheckItem(COMMAND_SET_TO_BLOCK, label);
-  }
-}
-
-bool PermissionMenuModel::IsCommandIdChecked(int command_id) const {
-  return current_setting_ == kSettingsForCommandIDs[command_id];
-}
-
-bool PermissionMenuModel::IsCommandIdEnabled(int command_id) const {
-  return true;
-}
-
-bool PermissionMenuModel::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) {
-  // Accelerators are not supported.
-  return false;
-}
-
-void PermissionMenuModel::ExecuteCommand(int command_id) {
-  current_setting_ = kSettingsForCommandIDs[command_id];
-  permission_selector_->SelectionChanged();
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // PermissionMenuButton
@@ -261,7 +155,10 @@ PermissionSelectorView::PermissionSelectorView(
     ContentSetting current_setting,
     content_settings::SettingSource source)
     : icon_(NULL),
-      menu_button_(NULL) {
+      menu_button_(NULL),
+      type_(type),
+      default_setting_(default_setting),
+      current_setting_(current_setting) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
   const int column_set_id = 0;
@@ -310,8 +207,8 @@ PermissionSelectorView::PermissionSelectorView(
                   views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
   // Create the permission menu button.
-  menu_button_model_.reset(new internal::PermissionMenuModel(
-      type, default_setting, current_setting, this));
+  menu_button_model_.reset(new PermissionMenuModel(
+      this, type, default_setting, current_setting));
   bool button_enabled = source == content_settings::SETTING_SOURCE_USER;
   menu_button_ = new internal::PermissionMenuButton(
       WebsiteSettingsUI::PermissionActionToUIString(current_setting,
@@ -331,34 +228,6 @@ void PermissionSelectorView::AddObserver(
   observer_list_.AddObserver(observer);
 }
 
-void PermissionSelectorView::SelectionChanged() {
-  // Update the icon to reflect the new setting.
-  ContentSetting effective_setting = menu_button_model_->current_setting();
-  if (effective_setting == CONTENT_SETTING_DEFAULT)
-    effective_setting = menu_button_model_->default_setting();
-  const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(
-      menu_button_model_->site_permission(), effective_setting);
-  icon_->SetImage(image.ToImageSkia());
-
-  // Update the menu button text to reflect the new setting.
-  menu_button_->SetText(WebsiteSettingsUI::PermissionActionToUIString(
-      menu_button_model_->current_setting(),
-      menu_button_model_->default_setting(),
-      content_settings::SETTING_SOURCE_USER));
-
-  FOR_EACH_OBSERVER(PermissionSelectorViewObserver,
-                    observer_list_,
-                    OnPermissionChanged(this));
-}
-
-ContentSetting PermissionSelectorView::GetSelectedSetting() const {
-  return menu_button_model_->current_setting();
-}
-
-ContentSettingsType PermissionSelectorView::GetPermissionType() const {
-  return menu_button_model_->site_permission();
-}
-
 void PermissionSelectorView::ChildPreferredSizeChanged(View* child) {
   SizeToPreferredSize();
   // FIXME: The parent is only a plain |View| that is used as a
@@ -369,4 +238,30 @@ void PermissionSelectorView::ChildPreferredSizeChanged(View* child) {
 }
 
 PermissionSelectorView::~PermissionSelectorView() {
+}
+
+void PermissionSelectorView::ExecuteCommand(int command_id) {
+  current_setting_ = CommandIdToContentSetting(command_id);
+
+  // Change the permission icon to reflect the selected setting.
+  ContentSetting effective_setting = current_setting_;
+  if (effective_setting == CONTENT_SETTING_DEFAULT)
+    effective_setting = default_setting_;
+  const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(
+      type_, effective_setting);
+  icon_->SetImage(image.ToImageSkia());
+
+  // Update the menu button text to reflect the new setting.
+  menu_button_->SetText(WebsiteSettingsUI::PermissionActionToUIString(
+      current_setting_,
+      default_setting_,
+      content_settings::SETTING_SOURCE_USER));
+
+  FOR_EACH_OBSERVER(PermissionSelectorViewObserver,
+                    observer_list_,
+                    OnPermissionChanged(this));
+}
+
+bool PermissionSelectorView::IsCommandIdChecked(int command_id) {
+  return current_setting_ == CommandIdToContentSetting(command_id);
 }

@@ -29,7 +29,7 @@ class PermissionSelector : public PermissionMenuModel::Delegate {
   // |CONTENT_SETTING_DEFAULT| as value for |setting|. |default_setting| is the
   // effective default setting for the given permission |type|. It is not
   // allowed to pass |CONTENT_SETTING_DEFAULT| as value for |default_setting|.
-  PermissionSelector(GtkThemeService* theme_service_,
+  PermissionSelector(GtkThemeService* theme_service,
                      ContentSettingsType type,
                      ContentSetting setting,
                      ContentSetting default_setting,
@@ -54,7 +54,7 @@ class PermissionSelector : public PermissionMenuModel::Delegate {
   CHROMEGTK_CALLBACK_1(PermissionSelector, gboolean, OnMenuButtonPressEvent,
                        GdkEventButton*);
 
-  // PermissionMenuModel::PermissionMenuDelegate implementation.
+  // PermissionMenuModel::Delegate implementation.
   virtual void ExecuteCommand(int command_id) OVERRIDE;
   virtual bool IsCommandIdChecked(int command_id) OVERRIDE;
 

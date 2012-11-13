@@ -356,9 +356,8 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
 void WebsiteSettingsPopupView::OnPermissionChanged(
     PermissionSelectorView* permission_selector) {
   DCHECK(permission_selector);
-  presenter_->OnSitePermissionChanged(
-      permission_selector->GetPermissionType(),
-      permission_selector->GetSelectedSetting());
+  presenter_->OnSitePermissionChanged(permission_selector->type(),
+                                      permission_selector->current_setting());
 }
 
 void WebsiteSettingsPopupView::OnWidgetClosing(views::Widget* widget) {
