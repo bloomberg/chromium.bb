@@ -104,15 +104,14 @@ FilePath CreateChromeDesktopShortcutIconForProfile(
 }
 
 string16 CreateProfileShortcutFlags(const FilePath& profile_path) {
-    return base::StringPrintf(L"--%ls=\"%ls\"",
-      ASCIIToUTF16(switches::kProfileDirectory).c_str(),
-      profile_path.BaseName().value().c_str());
+  return base::StringPrintf(L"--%ls=\"%ls\"",
+                            ASCIIToUTF16(switches::kProfileDirectory).c_str(),
+                            profile_path.BaseName().value().c_str());
 }
 
 // Wrap a ShellUtil/FileUtil function that returns a bool so it can be posted
 // in a task to the FILE thread.
-void CallBoolFunction(
-    const base::Callback<bool(void)>& bool_function) {
+void CallBoolFunction(const base::Callback<bool(void)>& bool_function) {
   bool_function.Run();
 }
 
@@ -129,7 +128,7 @@ void RenameChromeDesktopShortcutForProfile(
     FilePath old_shortcut_path = shortcut_path.Append(old_shortcut_file);
     FilePath new_shortcut_path = shortcut_path.Append(new_shortcut_file);
     if (!file_util::Move(old_shortcut_path, new_shortcut_path))
-       LOG(ERROR) << "Could not rename Windows profile desktop shortcut.";
+      LOG(ERROR) << "Could not rename Windows profile desktop shortcut.";
   }
 }
 
@@ -223,11 +222,11 @@ string16 ProfileShortcutManager::GetShortcutNameForProfile(
 
 ProfileShortcutManagerWin::ProfileShortcutManagerWin(ProfileManager* manager)
     : profile_manager_(manager) {
-    profile_manager_->GetProfileInfoCache().AddObserver(this);
+  profile_manager_->GetProfileInfoCache().AddObserver(this);
 }
 
 ProfileShortcutManagerWin::~ProfileShortcutManagerWin() {
-    profile_manager_->GetProfileInfoCache().RemoveObserver(this);
+  profile_manager_->GetProfileInfoCache().RemoveObserver(this);
 }
 
 void ProfileShortcutManagerWin::CreateProfileShortcut(
@@ -241,8 +240,7 @@ void ProfileShortcutManagerWin::OnProfileAdded(const FilePath& profile_path) {
   if (profile_count == 1) {
     UpdateShortcutForProfileAtPath(profile_path, true);
   } else if (profile_count == 2) {
-    UpdateShortcutForProfileAtPath(
-        GetOtherProfilePath(profile_path), false);
+    UpdateShortcutForProfileAtPath(GetOtherProfilePath(profile_path), false);
   }
 }
 
@@ -301,7 +299,7 @@ void ProfileShortcutManagerWin::StartProfileShortcutNameChange(
   const ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
   size_t profile_index = cache.GetIndexOfProfileWithPath(profile_path);
   if (profile_index == std::string::npos)
-      return;
+    return;
   // If the shortcut will have an appended name, get the profile name.
   string16 new_profile_name;
   if (cache.GetNumberOfProfiles() != 1)
@@ -318,11 +316,11 @@ void ProfileShortcutManagerWin::StartProfileShortcutNameChange(
 
 FilePath ProfileShortcutManagerWin::GetOtherProfilePath(
     const FilePath& profile_path) {
-  DCHECK_EQ(2U, profile_manager_->GetProfileInfoCache().GetNumberOfProfiles());
+  const ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
+  DCHECK_EQ(2U, cache.GetNumberOfProfiles());
   // Get the index of the current profile, in order to find the index of the
   // other profile.
-  size_t current_profile_index = profile_manager_->GetProfileInfoCache().
-    GetIndexOfProfileWithPath(profile_path);
+  size_t current_profile_index = cache.GetIndexOfProfileWithPath(profile_path);
   size_t other_profile_index = (current_profile_index == 0) ? 1 : 0;
   return profile_manager_->GetProfileInfoCache().
       GetPathOfProfileAtIndex(other_profile_index);
@@ -334,21 +332,20 @@ void ProfileShortcutManagerWin::UpdateShortcutForProfileAtPath(
   ProfileInfoCache* cache = &profile_manager_->GetProfileInfoCache();
   size_t profile_index = cache->GetIndexOfProfileWithPath(profile_path);
   if (profile_index == std::string::npos)
-      return;
+    return;
   bool remove_badging = cache->GetNumberOfProfiles() == 1;
 
   string16 old_shortcut_appended_name =
       cache->GetShortcutNameOfProfileAtIndex(profile_index);
 
   string16 new_shortcut_appended_name;
-  if (!remove_badging) {
-    new_shortcut_appended_name =
-        cache->GetNameOfProfileAtIndex(profile_index);
-  }
+  if (!remove_badging)
+    new_shortcut_appended_name = cache->GetNameOfProfileAtIndex(profile_index);
 
   if (!create_always &&
-      new_shortcut_appended_name != old_shortcut_appended_name)
+      new_shortcut_appended_name != old_shortcut_appended_name) {
     StartProfileShortcutNameChange(profile_path, old_shortcut_appended_name);
+  }
 
   SkBitmap profile_avatar_bitmap_copy;
   if (!remove_badging) {
@@ -359,12 +356,11 @@ void ProfileShortcutManagerWin::UpdateShortcutForProfileAtPath(
             cache->GetDefaultAvatarIconResourceIDAtIndex(profile_icon_index));
 
     DCHECK(!profile_avatar_image.IsEmpty());
-    const SkBitmap* profile_avatar_bitmap =
-        profile_avatar_image.ToSkBitmap();
+    const SkBitmap* profile_avatar_bitmap = profile_avatar_image.ToSkBitmap();
     // Make a copy of the SkBitmap to ensure that we can safely use the image
     // data on the FILE thread.
-    profile_avatar_bitmap->deepCopyTo(
-        &profile_avatar_bitmap_copy, profile_avatar_bitmap->getConfig());
+    profile_avatar_bitmap->deepCopyTo(&profile_avatar_bitmap_copy,
+                                      profile_avatar_bitmap->getConfig());
   }
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -372,6 +368,6 @@ void ProfileShortcutManagerWin::UpdateShortcutForProfileAtPath(
                  profile_path, new_shortcut_appended_name,
                  profile_avatar_bitmap_copy, create_always));
 
-  cache->SetShortcutNameOfProfileAtIndex(
-      profile_index, new_shortcut_appended_name);
+  cache->SetShortcutNameOfProfileAtIndex(profile_index,
+                                         new_shortcut_appended_name);
 }
