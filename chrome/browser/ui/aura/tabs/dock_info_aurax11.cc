@@ -8,9 +8,12 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/views/widget/desktop_root_window_host_linux.h"
 
-#if !defined(USE_ASH)
+#if !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_linux.h"
+#endif
+
+#if !defined(OS_CHROMEOS)
 
 namespace {
 

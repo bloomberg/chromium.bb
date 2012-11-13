@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/desktop_screen_position_client.h"
+#include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
 
 #include "ui/aura/root_window.h"
-#include "ui/views/widget/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
 namespace views {
 

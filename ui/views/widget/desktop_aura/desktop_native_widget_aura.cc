@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
 #include "base/bind.h"
 #include "ui/aura/client/stacking_client.h"
@@ -16,7 +16,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/ime/input_method.h"
-#include "ui/views/widget/desktop_root_window_host.h"
+#include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
 #include "ui/views/widget/native_widget_aura_window_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_aura_utils.h"

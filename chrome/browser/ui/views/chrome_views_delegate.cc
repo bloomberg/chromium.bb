@@ -25,8 +25,8 @@
 #endif
 
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/native_widget_aura.h"
-#include "ui/views/widget/desktop_native_widget_aura.h"
 #endif
 
 #if defined(USE_ASH)

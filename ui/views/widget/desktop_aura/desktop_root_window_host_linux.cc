@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/desktop_root_window_host_linux.h"
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_linux.h"
 
 #include <X11/extensions/XInput2.h>
 #include <X11/Xatom.h>
@@ -27,12 +27,12 @@
 #include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_client.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
-#include "ui/views/widget/desktop_layout_manager.h"
-#include "ui/views/widget/desktop_native_widget_aura.h"
-#include "ui/views/widget/desktop_screen_position_client.h"
-#include "ui/views/widget/x11_desktop_handler.h"
-#include "ui/views/widget/x11_desktop_window_move_client.h"
-#include "ui/views/widget/x11_window_event_filter.h"
+#include "ui/views/widget/desktop_aura/desktop_layout_manager.h"
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
+#include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
+#include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
+#include "ui/views/widget/desktop_aura/x11_window_event_filter.h"
 
 namespace views {
 

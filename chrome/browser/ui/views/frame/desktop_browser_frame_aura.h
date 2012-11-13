@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/widget/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
 class BrowserDesktopRootWindowHost;
 class BrowserFrame;

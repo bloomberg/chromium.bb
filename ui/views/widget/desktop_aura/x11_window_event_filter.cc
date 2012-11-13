@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/x11_window_event_filter.h"
+#include "ui/views/widget/desktop_aura/x11_window_event_filter.h"
 
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/x11_desktop_window_move_client.h"
+#include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
 
 #include <X11/Xlib.h>
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.

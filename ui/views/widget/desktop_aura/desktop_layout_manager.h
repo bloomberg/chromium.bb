@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_DESKTOP_LAYOUT_MANAGER_H_
-#define UI_VIEWS_WIDGET_DESKTOP_LAYOUT_MANAGER_H_
+#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_LAYOUT_MANAGER_H_
+#define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_LAYOUT_MANAGER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -46,4 +46,4 @@ class VIEWS_EXPORT DesktopLayoutManager : public aura::LayoutManager {
 
 }  // namespace views
 
-#endif  // UI_VIEWS_WIDGET_DESKTOP_LAYOUT_MANAGER_H_
+#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_LAYOUT_MANAGER_H_

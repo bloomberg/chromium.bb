@@ -2252,6 +2252,8 @@
             ['exclude', 'browser/system_monitor/removable_device_notifications_linux.h'],
             ['exclude', 'browser/ui/views/frame/desktop_browser_frame_aura.cc'],
             ['exclude', 'browser/ui/views/frame/desktop_browser_frame_aura.h'],
+            ['exclude', 'browser/ui/views/frame/browser_desktop_root_window_host_linux.cc'],
+            ['exclude', 'browser/ui/views/frame/browser_desktop_root_window_host_linux.h'],
             ['exclude', 'browser/ui/webui/help/version_updater_basic.cc'],
             ['exclude', 'browser/ui/webui/help/version_updater_basic.h'],
             ['exclude', 'browser/upgrade_detector_impl.cc'],

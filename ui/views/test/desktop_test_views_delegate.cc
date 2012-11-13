@@ -4,7 +4,7 @@
 
 #include "ui/views/test/desktop_test_views_delegate.h"
 
-#include "ui/views/widget/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace views {

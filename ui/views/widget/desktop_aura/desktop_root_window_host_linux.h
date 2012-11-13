@@ -2,13 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_DESKTOP_ROOT_WINDOW_HOST_WIN_H_
-#define UI_VIEWS_WIDGET_DESKTOP_ROOT_WINDOW_HOST_WIN_H_
+#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_LINUX_H_
+#define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_LINUX_H_
 
+#include <X11/Xlib.h>
+
+// Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
+#undef RootWindow
+
+#include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window_host.h"
+#include "ui/gfx/rect.h"
+#include "ui/base/cursor/cursor_loader_x11.h"
+#include "ui/base/x/x11_atom_cache.h"
+#include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
-#include "ui/views/widget/desktop_root_window_host.h"
-#include "ui/views/win/hwnd_message_handler_delegate.h"
+#include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
 
 namespace aura {
 class FocusManager;
@@ -22,27 +33,65 @@ namespace views {
 class DesktopActivationClient;
 class DesktopCursorClient;
 class DesktopDispatcherClient;
-class HWNDMessageHandler;
+class X11DesktopWindowMoveClient;
+class X11WindowEventFilter;
 namespace corewm {
 class CompoundEventFilter;
 class InputMethodEventFilter;
 }
 
-class VIEWS_EXPORT DesktopRootWindowHostWin
+class VIEWS_EXPORT DesktopRootWindowHostLinux
     : public DesktopRootWindowHost,
       public aura::RootWindowHost,
-      public HWNDMessageHandlerDelegate {
+      public views::internal::InputMethodDelegate,
+      public MessageLoop::Dispatcher {
  public:
-  DesktopRootWindowHostWin(
+  DesktopRootWindowHostLinux(
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura,
       const gfx::Rect& initial_bounds);
-  virtual ~DesktopRootWindowHostWin();
+  virtual ~DesktopRootWindowHostLinux();
 
-  // A way of converting an HWND into a content window.
-  static aura::Window* GetContentWindowForHWND(HWND hwnd);
+  // A way of converting an X11 |xid| host window into a |content_window_|.
+  static aura::Window* GetContentWindowForXID(XID xid);
 
- protected:
+  // A way of converting an X11 |xid| host window into this object.
+  static DesktopRootWindowHostLinux* GetHostForXID(XID xid);
+
+  // Called by X11DesktopHandler to notify us that the native windowing system
+  // has changed our activation.
+  void HandleNativeWidgetActivationChanged(bool active);
+
+ private:
+  // Initializes our X11 surface to draw on. This method performs all
+  // initialization related to talking to the X11 server.
+  void InitX11Window(const Widget::InitParams& params);
+
+  // Creates an aura::RootWindow to contain the |content_window|, along with
+  // all aura client objects that direct behavior.
+  aura::RootWindow* InitRootWindow(const Widget::InitParams& params);
+
+  // Returns true if there's an X window manager present... in most cases.  Some
+  // window managers (notably, ion3) don't implement enough of ICCCM for us to
+  // detect that they're there.
+  bool IsWindowManagerPresent();
+
+  // Sends a message to the x11 window manager, enabling or disabling the
+  // states |state1| and |state2|.
+  void SetWMSpecState(bool enabled, ::Atom state1, ::Atom state2);
+
+  // Checks if the window manager has set a specific state.
+  bool HasWMSpecProperty(const char* property) const;
+
+  // Called when another DRWHL takes capture, or when capture is released
+  // entirely.
+  void OnCaptureReleased();
+
+  // Dispatches a mouse event, taking mouse capture into account. If a
+  // different host has capture, we translate the event to its coordinate space
+  // and dispatch it to that host instead.
+  void DispatchMouseEvent(ui::MouseEvent* event);
+
   // Overridden from DesktopRootWindowHost:
   virtual aura::RootWindow* Init(aura::Window* content_window,
                                  const Widget::InitParams& params) OVERRIDE;
@@ -125,95 +174,60 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
 
-  // Overridden from HWNDMessageHandlerDelegate:
-  virtual bool IsWidgetWindow() const OVERRIDE;
-  virtual bool IsUsingCustomFrame() const OVERRIDE;
-  virtual void SchedulePaint() OVERRIDE;
-  virtual void EnableInactiveRendering() OVERRIDE;
-  virtual bool IsInactiveRenderingDisabled() OVERRIDE;
-  virtual bool CanResize() const OVERRIDE;
-  virtual bool CanMaximize() const OVERRIDE;
-  virtual bool CanActivate() const OVERRIDE;
-  virtual bool WidgetSizeIsClientSize() const OVERRIDE;
-  virtual bool CanSaveFocus() const OVERRIDE;
-  virtual void SaveFocusOnDeactivate() OVERRIDE;
-  virtual void RestoreFocusOnActivate() OVERRIDE;
-  virtual void RestoreFocusOnEnable() OVERRIDE;
-  virtual bool IsModal() const OVERRIDE;
-  virtual int GetInitialShowState() const OVERRIDE;
-  virtual bool WillProcessWorkAreaChange() const OVERRIDE;
-  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
-  virtual void GetWindowMask(const gfx::Size& size, gfx::Path* path) OVERRIDE;
-  virtual bool GetClientAreaInsets(gfx::Insets* insets) const OVERRIDE;
-  virtual void GetMinMaxSize(gfx::Size* min_size,
-                             gfx::Size* max_size) const OVERRIDE;
-  virtual gfx::Size GetRootViewSize() const OVERRIDE;
-  virtual void ResetWindowControls() OVERRIDE;
-  virtual void PaintLayeredWindow(gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
-  virtual InputMethod* GetInputMethod() OVERRIDE;
-  virtual void HandleAppDeactivated() OVERRIDE;
-  virtual void HandleActivationChanged(bool active) OVERRIDE;
-  virtual bool HandleAppCommand(short command) OVERRIDE;
-  virtual void HandleCaptureLost() OVERRIDE;
-  virtual void HandleClose() OVERRIDE;
-  virtual bool HandleCommand(int command) OVERRIDE;
-  virtual void HandleAccelerator(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual void HandleCreate() OVERRIDE;
-  virtual void HandleDestroying() OVERRIDE;
-  virtual void HandleDestroyed() OVERRIDE;
-  virtual bool HandleInitialFocus() OVERRIDE;
-  virtual void HandleDisplayChange() OVERRIDE;
-  virtual void HandleBeginWMSizeMove() OVERRIDE;
-  virtual void HandleEndWMSizeMove() OVERRIDE;
-  virtual void HandleMove() OVERRIDE;
-  virtual void HandleWorkAreaChanged() OVERRIDE;
-  virtual void HandleVisibilityChanged(bool visible) OVERRIDE;
-  virtual void HandleClientSizeChanged(const gfx::Size& new_size) OVERRIDE;
-  virtual void HandleFrameChanged() OVERRIDE;
-  virtual void HandleNativeFocus(HWND last_focused_window) OVERRIDE;
-  virtual void HandleNativeBlur(HWND focused_window) OVERRIDE;
-  virtual bool HandleMouseEvent(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool HandleKeyEvent(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool HandleUntranslatedKeyEvent(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool HandleIMEMessage(UINT message,
-                                WPARAM w_param,
-                                LPARAM l_param,
-                                LRESULT* result) OVERRIDE;
-  virtual void HandleInputLanguageChange(DWORD character_set,
-                                         HKL input_language_id) OVERRIDE;
-  virtual bool HandlePaintAccelerated(const gfx::Rect& invalid_rect) OVERRIDE;
-  virtual void HandlePaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void HandleScreenReaderDetected() OVERRIDE;
-  virtual bool HandleTooltipNotify(int w_param,
-                                   NMHDR* l_param,
-                                   LRESULT* l_result) OVERRIDE;
-  virtual void HandleTooltipMouseMove(UINT message,
-                                      WPARAM w_param,
-                                      LPARAM l_param) OVERRIDE;
-  virtual bool PreHandleMSG(UINT message,
-                            WPARAM w_param,
-                            LPARAM l_param,
-                            LRESULT* result) OVERRIDE;
-  virtual void PostHandleMSG(UINT message,
-                             WPARAM w_param,
-                             LPARAM l_param) OVERRIDE;
+  // Overridden from views::internal::InputMethodDelegate:
+  virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
 
-  Widget* GetWidget();
-  const Widget* GetWidget() const;
-  HWND GetHWND() const;
+  // Overridden from Dispatcher:
+  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
- private:
+  base::WeakPtrFactory<DesktopRootWindowHostLinux> close_widget_factory_;
+
+  // X11 things
+  // The display and the native X window hosting the root window.
+  Display* xdisplay_;
+  ::Window xwindow_;
+
+  // The native root window.
+  ::Window x_root_window_;
+
+  ui::X11AtomCache atom_cache_;
+
+  // Is the window mapped to the screen?
+  bool window_mapped_;
+
+  // The bounds of |xwindow_|.
+  gfx::Rect bounds_;
+
+  // True if the window should be focused when the window is shown.
+  bool focus_when_shown_;
+
+  // The window manager state bits.
+  std::set< ::Atom> window_properties_;
+
   // We are owned by the RootWindow, but we have to have a back pointer to it.
   aura::RootWindow* root_window_;
 
-  scoped_ptr<HWNDMessageHandler> message_handler_;
+  // aura:: objects that we own.
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
-  scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
   scoped_ptr<aura::FocusManager> focus_manager_;
-  // Depends on focus_manager_.
   scoped_ptr<DesktopActivationClient> activation_client_;
+  scoped_ptr<DesktopCursorClient> cursor_client_;
+  scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
+  scoped_ptr<aura::client::ScreenPositionClient> position_client_;
+
+  // Current Aura cursor.
+  gfx::NativeCursor current_cursor_;
+
+  // The invisible cursor.
+  ::Cursor invisible_cursor_;
+
+  // Toplevel event filter which dispatches to other event filters.
+  corewm::CompoundEventFilter* root_window_event_filter_;
+
+  // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr<corewm::InputMethodEventFilter> input_method_filter_;
+  scoped_ptr<X11WindowEventFilter> x11_window_event_filter_;
+  scoped_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 
   // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura
   //             instead of providing this route back to Widget.
@@ -224,19 +238,16 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   aura::RootWindowHostDelegate* root_window_host_delegate_;
   aura::Window* content_window_;
 
-  // In some cases, we set a screen position client on |root_window_|. If we
-  // do, we're responsible for the lifetime.
-  scoped_ptr<aura::client::ScreenPositionClient> position_client_;
+  // The current root window host that has capture. While X11 has something
+  // like Windows SetCapture()/ReleaseCapture(), it is entirely implicit and
+  // there are no notifications when this changes. We need to track this so we
+  // can notify widgets when they have lost capture, which controls a bunch of
+  // things in views like hiding menus.
+  static DesktopRootWindowHostLinux* g_current_capture;
 
-  // A simple cursor client which just forwards events to the RootWindow.
-  scoped_ptr<DesktopCursorClient> cursor_client_;
-
-  // The RootWindow's CompoundEventFilter.
-  views::corewm::CompoundEventFilter* root_window_event_filter_;
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostWin);
+  DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostLinux);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_WIDGET_DESKTOP_ROOT_WINDOW_HOST_WIN_H_
+#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_ROOT_WINDOW_HOST_LINUX_H_

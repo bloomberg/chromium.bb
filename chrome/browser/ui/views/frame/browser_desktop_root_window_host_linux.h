@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_LINUX_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_LINUX_H_
 
-#include "ui/views/widget/desktop_root_window_host_linux.h"
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_linux.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_root_window_host.h"
 
 class BrowserFrame;

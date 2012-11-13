@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_DESKTOP_SCREEN_POSITION_CLIENT_H_
-#define UI_VIEWS_WIDGET_DESKTOP_SCREEN_POSITION_CLIENT_H_
+#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_SCREEN_POSITION_CLIENT_H_
+#define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_SCREEN_POSITION_CLIENT_H_
 
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/views/views_export.h"
@@ -32,4 +32,4 @@ class VIEWS_EXPORT DesktopScreenPositionClient
 
 }  // namespace views
 
-#endif  // UI_VIEWS_WIDGET_DESKTOP_SCREEN_POSITION_CLIENT_H_
+#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_SCREEN_POSITION_CLIENT_H_

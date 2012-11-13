@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/desktop_root_window_host_win.h"
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
 
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -23,8 +23,8 @@
 #include "ui/views/widget/desktop_aura/desktop_activation_client.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_client.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
-#include "ui/views/widget/desktop_native_widget_aura.h"
-#include "ui/views/widget/desktop_screen_position_client.h"
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_hwnd_utils.h"
 #include "ui/views/win/fullscreen_handler.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/desktop_layout_manager.h"
+#include "ui/views/widget/desktop_aura/desktop_layout_manager.h"
 
 #include "ui/aura/root_window.h"
 #include "ui/gfx/rect.h"

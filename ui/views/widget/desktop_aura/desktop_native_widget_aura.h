@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_DESKTOP_NATIVE_WIDGET_AURA_H_
-#define UI_VIEWS_WIDGET_DESKTOP_NATIVE_WIDGET_AURA_H_
+#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_NATIVE_WIDGET_AURA_H_
+#define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_NATIVE_WIDGET_AURA_H_
 
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/activation_delegate.h"
@@ -187,4 +187,4 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
 }  // namespace views
 
-#endif  // UI_VIEWS_WIDGET_DESKTOP_NATIVE_WIDGET_AURA_H_
+#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_NATIVE_WIDGET_AURA_H_

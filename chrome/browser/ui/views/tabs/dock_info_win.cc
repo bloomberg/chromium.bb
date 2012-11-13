@@ -14,7 +14,10 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/widget/desktop_root_window_host_win.h"
+
+#if defined(USE_AURA)
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
+#endif
 
 namespace {
 

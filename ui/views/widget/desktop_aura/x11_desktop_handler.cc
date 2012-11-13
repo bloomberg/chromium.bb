@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/x11_desktop_handler.h"
+#include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 
 #include "base/message_loop.h"
 #include "ui/aura/env.h"
@@ -13,7 +13,7 @@
 
 #if !defined(OS_CHROMEOS)
 #include "ui/views/ime/input_method.h"
-#include "ui/views/widget/desktop_root_window_host_linux.h"
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_linux.h"
 #endif
 
 namespace {

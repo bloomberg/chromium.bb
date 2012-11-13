@@ -32,7 +32,7 @@
 #include "ui/views/drag_utils.h"
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/views_delegate.h"
-#include "ui/views/widget/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_aura_window_observer.h"
 #include "ui/views/widget/native_widget_delegate.h"
@@ -45,11 +45,11 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/views/widget/desktop_root_window_host_win.h"
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
-#include "ui/views/widget/desktop_root_window_host.h"
+#include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
 #endif
 
 namespace views {
