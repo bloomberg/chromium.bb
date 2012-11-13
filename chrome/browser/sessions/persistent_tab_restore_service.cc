@@ -102,13 +102,11 @@ const SessionCommand::id_type kCommandSetExtensionAppID = 6;
 const SessionCommand::id_type kCommandSetWindowAppName = 7;
 const SessionCommand::id_type kCommandSetTabUserAgentOverride = 8;
 
-enum {
-  // Number of entries (not commands) before we clobber the file and write
-  // everything.
-  kEntriesPerReset = 40,
+// Number of entries (not commands) before we clobber the file and write
+// everything.
+const int kEntriesPerReset = 40;
 
-  kMaxEntries = TabRestoreServiceHelper::kMaxEntries,
-};
+const size_t kMaxEntries = TabRestoreServiceHelper::kMaxEntries;
 
 }  // namespace
 
