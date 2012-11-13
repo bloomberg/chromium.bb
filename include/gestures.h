@@ -398,9 +398,6 @@ struct GestureInterpreter {
   void* timer_provider_data_;
   GesturesTimer* interpret_timer_;
 
-  GesturesPropProvider* prop_provider_;
-  void* prop_provider_data_;
-
   LoggingFilterInterpreter* loggingFilter_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureInterpreter);

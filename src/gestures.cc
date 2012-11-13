@@ -263,9 +263,7 @@ GestureInterpreter::GestureInterpreter(int version)
       callback_data_(NULL),
       timer_provider_(NULL),
       timer_provider_data_(NULL),
-      interpret_timer_(NULL),
-      prop_provider_(NULL),
-      prop_provider_data_(NULL) {
+      interpret_timer_(NULL) {
   prop_reg_.reset(new PropRegistry);
   tracer_.reset(new Tracer(prop_reg_.get(), TraceMarker::StaticTraceWrite));
   finger_metrics_.reset(new FingerMetrics(prop_reg_.get()));
