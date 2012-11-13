@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: Fri Nov  9 15:24:06 2012. */
+/* Last generated from IDL: Mon Nov 12 11:22:17 2012. */
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"
@@ -34,6 +34,7 @@
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_network_state_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
+#include "ppapi/c/dev/ppp_selection_dev.h"
 #include "ppapi/c/dev/ppp_text_input_dev.h"
 #include "ppapi/c/dev/ppp_video_capture_dev.h"
 #include "ppapi/c/dev/ppp_video_decoder_dev.h"
@@ -196,6 +197,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Widget_Dev_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Zoom_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_NetworkState_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Printing_Dev_0_6;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Selection_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_TextInput_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_VideoCapture_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_VideoDecoder_Dev_0_9;
@@ -1913,6 +1915,16 @@ void Pnacl_M14_PPB_VideoDecoder_Dev_Destroy(PP_Resource video_decoder) {
 /* Not generating wrapper methods for PPP_NetworkState_Dev_0_1 */
 
 /* Not generating wrapper methods for PPP_Printing_Dev_0_6 */
+
+/* Begin wrapper methods for PPP_Selection_Dev_0_3 */
+
+static struct PP_Var Pnacl_M13_PPP_Selection_Dev_GetSelectedText(PP_Instance instance, PP_Bool html) {
+  const struct PPP_Selection_Dev_0_3 *iface = Pnacl_WrapperInfo_PPP_Selection_Dev_0_3.real_iface;
+  struct PP_Var (__attribute__((pnaclcall)) *temp_fp)(PP_Instance instance, PP_Bool html) = ((struct PP_Var (__attribute__((pnaclcall)) *)(PP_Instance instance, PP_Bool html))iface->GetSelectedText);
+  return temp_fp(instance, html);
+}
+
+/* End wrapper methods for PPP_Selection_Dev_0_3 */
 
 /* Not generating wrapper methods for PPP_TextInput_Dev_0_1 */
 
@@ -3872,6 +3884,10 @@ struct PPB_VideoDecoder_Dev_0_16 Pnacl_Wrappers_PPB_VideoDecoder_Dev_0_16 = {
 
 /* Not generating wrapper interface for PPP_Printing_Dev_0_6 */
 
+struct PPP_Selection_Dev_0_3 Pnacl_Wrappers_PPP_Selection_Dev_0_3 = {
+    .GetSelectedText = (struct PP_Var (*)(PP_Instance instance, PP_Bool html))&Pnacl_M13_PPP_Selection_Dev_GetSelectedText
+};
+
 /* Not generating wrapper interface for PPP_TextInput_Dev_0_1 */
 
 /* Not generating wrapper interface for PPP_VideoCapture_Dev_0_1 */
@@ -4718,6 +4734,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Printing_Dev_0_6 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Selection_Dev_0_3 = {
+  .iface_macro = PPP_SELECTION_DEV_INTERFACE_0_3,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPP_Selection_Dev_0_3,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_TextInput_Dev_0_1 = {
   .iface_macro = PPP_TEXTINPUT_DEV_INTERFACE_0_1,
   .wrapped_iface = NULL /* Still need slot for real_iface */,
@@ -5116,6 +5138,7 @@ static struct __PnaclWrapperInfo *s_ppp_wrappers[] = {
   &Pnacl_WrapperInfo_PPP_MouseLock_1_0,
   &Pnacl_WrapperInfo_PPP_NetworkState_Dev_0_1,
   &Pnacl_WrapperInfo_PPP_Printing_Dev_0_6,
+  &Pnacl_WrapperInfo_PPP_Selection_Dev_0_3,
   &Pnacl_WrapperInfo_PPP_TextInput_Dev_0_1,
   &Pnacl_WrapperInfo_PPP_VideoCapture_Dev_0_1,
   &Pnacl_WrapperInfo_PPP_VideoDecoder_Dev_0_9,
