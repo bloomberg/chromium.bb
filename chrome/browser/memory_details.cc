@@ -173,9 +173,12 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
 
   std::vector<ProcessMemoryInformation> child_info;
 
-  // Collect the list of child processes.
+  // Collect the list of child processes. A 0 |handle| means that
+  // the process is being launched, so we skip it.
   for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
     ProcessMemoryInformation info;
+    if (!iter.GetData().handle)
+      continue;
     info.pid = base::GetProcId(iter.GetData().handle);
     if (!info.pid)
       continue;
