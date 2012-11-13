@@ -65,7 +65,8 @@ LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)
       transition_duration_(transition_duration),
       tween_type_(Tween::LINEAR),
       is_started_(false),
-      disable_timer_for_test_(false) {
+      disable_timer_for_test_(false),
+      adding_animations_(false) {
 }
 
 LayerAnimator::~LayerAnimator() {
@@ -230,6 +231,45 @@ void LayerAnimator::ScheduleAnimation(LayerAnimationSequence* animation) {
   }
   UpdateAnimationState();
 }
+
+void LayerAnimator::StartTogether(
+    const std::vector<LayerAnimationSequence*>& animations) {
+  scoped_refptr<LayerAnimator> retain(this);
+  if (preemption_strategy_ == IMMEDIATELY_SET_NEW_TARGET) {
+    std::vector<LayerAnimationSequence*>::const_iterator iter;
+    for (iter = animations.begin(); iter != animations.end(); ++iter) {
+      StartAnimation(*iter);
+    }
+    return;
+  }
+  adding_animations_ = true;
+
+  // Collect all the affected properties.
+  LayerAnimationElement::AnimatableProperties animated_properties;
+  std::vector<LayerAnimationSequence*>::const_iterator iter;
+  for (iter = animations.begin(); iter != animations.end(); ++iter) {
+    animated_properties.insert((*iter)->properties().begin(),
+                               (*iter)->properties().end());
+  }
+
+  // Starting a zero duration pause that affects all the animated properties
+  // will prevent any of the sequences from animating until there are no
+  // running animations that affect any of these properties, as well as
+  // handle preemption strategy.
+  StartAnimation(new LayerAnimationSequence(
+      LayerAnimationElement::CreatePauseElement(animated_properties,
+                                                base::TimeDelta())));
+
+  // These animations (provided they don't animate any common properties) will
+  // now animate together if trivially scheduled.
+  for (iter = animations.begin(); iter != animations.end(); ++iter) {
+    ScheduleAnimation(*iter);
+  }
+
+  adding_animations_ = false;
+  UpdateAnimationState();
+}
+
 
 void LayerAnimator::ScheduleTogether(
     const std::vector<LayerAnimationSequence*>& animations) {
@@ -691,7 +731,7 @@ bool LayerAnimator::StartSequenceImmediately(LayerAnimationSequence* sequence) {
   // last_tick_time() from there to ensure animations started during the same
   // event complete at the same time.
   base::TimeTicks start_time;
-  if (is_animating())
+  if (is_animating() || adding_animations_)
     start_time = last_step_time_;
   else if (GetAnimationContainer()->is_running())
     start_time = GetAnimationContainer()->last_tick_time();

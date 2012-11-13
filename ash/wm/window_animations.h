@@ -5,6 +5,8 @@
 #ifndef ASH_WM_WINDOW_ANIMATIONS_H_
 #define ASH_WM_WINDOW_ANIMATIONS_H_
 
+#include <vector>
+
 #include "ash/ash_export.h"
 
 namespace aura {
@@ -19,6 +21,7 @@ class Rect;
 namespace ui {
 class ImplicitAnimationObserver;
 class Layer;
+class LayerAnimationSequence;
 }
 
 namespace ash {
@@ -95,6 +98,13 @@ namespace internal {
 // Returns false if the |window| didn't animate.
 ASH_EXPORT bool AnimateOnChildWindowVisibilityChanged(aura::Window* window,
                                                       bool visible);
+
+// Creates vector of animation sequences that lasts for |duration| and changes
+// brightness and grayscale to |target_value|. Caller takes ownership of
+// returned LayerAnimationSequence objects.
+ASH_EXPORT std::vector<ui::LayerAnimationSequence*>
+CreateBrightnessGrayscaleAnimationSequence(float target_value,
+                                           base::TimeDelta duration);
 
 }  // namespace internal
 }  // namespace ash

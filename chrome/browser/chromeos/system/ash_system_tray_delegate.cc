@@ -22,6 +22,7 @@
 #include "ash/system/user/update_observer.h"
 #include "ash/system/user/user_observer.h"
 #include "ash/volume_control_delegate.h"
+#include "ash/wm/session_state_controller.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/chromeos/chromeos_version.h"
@@ -353,9 +354,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShutDown() OVERRIDE {
-    DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown();
-    if (!base::chromeos::IsRunningOnChromeOS())
-      browser::AttemptUserExit();
+    ash::Shell::GetInstance()->session_state_controller()->RequestShutdown();
   }
 
   virtual void SignOut() OVERRIDE {

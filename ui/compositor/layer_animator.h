@@ -113,7 +113,12 @@ class COMPOSITOR_EXPORT LayerAnimator
   // of this animation sequence.
   void ScheduleAnimation(LayerAnimationSequence* animation);
 
-  // Schedules the animations to be run together. Obviously will no work if
+  // Starts the animations to be run together. Obviously will not work if
+  // they animate any common properties. The animator takes ownership of the
+  // animation sequences. Takes PreemptionStrategy into account.
+  void StartTogether(const std::vector<LayerAnimationSequence*>& animations);
+
+  // Schedules the animations to be run together. Obviously will not work if
   // they animate any common properties. The animator takes ownership of the
   // animation sequences.
   void ScheduleTogether(const std::vector<LayerAnimationSequence*>& animations);
@@ -330,6 +335,10 @@ class COMPOSITOR_EXPORT LayerAnimator
   // This prevents the animator from automatically stepping through animations
   // and allows for manual stepping.
   bool disable_timer_for_test_;
+
+  // Prevents timer adjustments in case when we start multiple animations
+  // with preemption strategies that discard previous animations.
+  bool adding_animations_;
 
   // This causes all animations to complete immediately.
   static bool disable_animations_for_test_;

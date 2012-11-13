@@ -23,9 +23,6 @@ const int SessionStateController::kLockTimeoutMs = 400;
 const int SessionStateController::kShutdownTimeoutMs = 400;
 const int SessionStateController::kLockFailTimeoutMs = 4000;
 const int SessionStateController::kLockToShutdownTimeoutMs = 150;
-const int SessionStateController::kSlowCloseAnimMs = 400;
-const int SessionStateController::kUndoSlowCloseAnimMs = 100;
-const int SessionStateController::kFastCloseAnimMs = 150;
 const int SessionStateController::kShutdownRequestDelayMs = 50;
 
 SessionStateController::SessionStateController()

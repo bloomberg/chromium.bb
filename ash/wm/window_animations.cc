@@ -450,45 +450,18 @@ void AnimateShowHideWindowCommon_BrightnessGrayscale(aura::Window* window,
     window->layer()->SetVisible(true);
   }
 
-  int animation_duration = kBrightnessGrayscaleFadeDurationMs;
-  ui::Tween::Type animation_type = ui::Tween::EASE_OUT;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshBootAnimationFunction2)) {
-    animation_type = ui::Tween::EASE_OUT_2;
-  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
-                  ash::switches::kAshBootAnimationFunction3)) {
-    animation_type = ui::Tween::EASE_OUT_3;
-  }
+  base::TimeDelta duration =
+      base::TimeDelta::FromMilliseconds(kBrightnessGrayscaleFadeDurationMs);
 
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(animation_duration));
+  settings.SetTransitionDuration(duration);
   if (!show)
     settings.AddObserver(new HidingWindowAnimationObserver(window));
 
-  scoped_ptr<ui::LayerAnimationSequence> brightness_sequence(
-      new ui::LayerAnimationSequence());
-  scoped_ptr<ui::LayerAnimationSequence> grayscale_sequence(
-      new ui::LayerAnimationSequence());
-
-  scoped_ptr<ui::LayerAnimationElement> brightness_element(
-      ui::LayerAnimationElement::CreateBrightnessElement(
-          end_value,
-          base::TimeDelta::FromMilliseconds(animation_duration)));
-  brightness_element->set_tween_type(animation_type);
-  brightness_sequence->AddElement(brightness_element.release());
-
-  scoped_ptr<ui::LayerAnimationElement> grayscale_element(
-      ui::LayerAnimationElement::CreateGrayscaleElement(
-          end_value,
-          base::TimeDelta::FromMilliseconds(animation_duration)));
-  grayscale_element->set_tween_type(animation_type);
-  grayscale_sequence->AddElement(grayscale_element.release());
-
-   std::vector<ui::LayerAnimationSequence*> animations;
-   animations.push_back(brightness_sequence.release());
-   animations.push_back(grayscale_sequence.release());
-   window->layer()->GetAnimator()->ScheduleTogether(animations);
+   window->layer()->GetAnimator()->
+       ScheduleTogether(
+           internal::CreateBrightnessGrayscaleAnimationSequence(end_value,
+                                                                duration));
    if (!show) {
      window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
      window->layer()->SetVisible(false);
@@ -880,6 +853,41 @@ bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
     return window->layer()->GetTargetOpacity() != 0.0f &&
         AnimateHideWindow(window);
   }
+}
+
+std::vector<ui::LayerAnimationSequence*>
+CreateBrightnessGrayscaleAnimationSequence(float target_value,
+                                           base::TimeDelta duration) {
+  ui::Tween::Type animation_type = ui::Tween::EASE_OUT;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshBootAnimationFunction2)) {
+    animation_type = ui::Tween::EASE_OUT_2;
+  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
+                  ash::switches::kAshBootAnimationFunction3)) {
+    animation_type = ui::Tween::EASE_OUT_3;
+  }
+  scoped_ptr<ui::LayerAnimationSequence> brightness_sequence(
+      new ui::LayerAnimationSequence());
+  scoped_ptr<ui::LayerAnimationSequence> grayscale_sequence(
+      new ui::LayerAnimationSequence());
+
+  scoped_ptr<ui::LayerAnimationElement> brightness_element(
+      ui::LayerAnimationElement::CreateBrightnessElement(
+          target_value, duration));
+  brightness_element->set_tween_type(animation_type);
+  brightness_sequence->AddElement(brightness_element.release());
+
+  scoped_ptr<ui::LayerAnimationElement> grayscale_element(
+      ui::LayerAnimationElement::CreateGrayscaleElement(
+          target_value, duration));
+  grayscale_element->set_tween_type(animation_type);
+  grayscale_sequence->AddElement(grayscale_element.release());
+
+  std::vector<ui::LayerAnimationSequence*> animations;
+  animations.push_back(brightness_sequence.release());
+  animations.push_back(grayscale_sequence.release());
+
+  return animations;
 }
 
 }  // namespace internal

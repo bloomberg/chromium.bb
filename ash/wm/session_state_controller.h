@@ -63,20 +63,6 @@ class ASH_EXPORT SessionStateController : public aura::RootWindowObserver,
   // starting the pre-shutdown animation.
   static const int kLockToShutdownTimeoutMs;
 
-  // Amount of time taken to scale the snapshot of the screen down to a
-  // slightly-smaller size once the user starts holding the power button.  Used
-  // for both the pre-lock and pre-shutdown animations.
-  static const int kSlowCloseAnimMs;
-
-  // Amount of time taken to scale the snapshot of the screen back to its
-  // original size when the button is released.
-  static const int kUndoSlowCloseAnimMs;
-
-  // Amount of time taken to scale the snapshot down to a point in the center of
-  // the screen once the screen has been locked or we've been notified that the
-  // system is shutting down.
-  static const int kFastCloseAnimMs;
-
   // Additional time (beyond kFastCloseAnimMs) to wait after starting the
   // fast-close shutdown animation before actually requesting shutdown, to give
   // the animation time to finish.
