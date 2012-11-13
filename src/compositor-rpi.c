@@ -44,6 +44,7 @@
 #endif
 
 #include "compositor.h"
+#include "gl-renderer.h"
 #include "evdev.h"
 
 /*

@@ -22,6 +22,9 @@
 
 #define _GNU_SOURCE
 
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -29,7 +32,10 @@
 #include <assert.h>
 #include <linux/input.h>
 
-#include "compositor.h"
+#include "gl-renderer.h"
+
+#include <EGL/eglext.h>
+#include "weston-egl-ext.h"
 
 struct gles2_shader {
 	GLuint program;

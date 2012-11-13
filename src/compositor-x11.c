@@ -45,10 +45,8 @@
 
 #include <xkbcommon/xkbcommon.h>
 
-#include <GLES2/gl2.h>
-#include <EGL/egl.h>
-
 #include "compositor.h"
+#include "gl-renderer.h"
 #include "../shared/config-parser.h"
 
 #define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)

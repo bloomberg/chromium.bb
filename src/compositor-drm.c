@@ -40,6 +40,7 @@
 #include <libudev.h>
 
 #include "compositor.h"
+#include "gl-renderer.h"
 #include "evdev.h"
 #include "launcher-util.h"
 

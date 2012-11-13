@@ -33,9 +33,9 @@
 #include <unistd.h>
 
 #include <EGL/egl.h>
-#include <GLES2/gl2.h>
 
 #include "compositor.h"
+#include "gl-renderer.h"
 #include "android-framebuffer.h"
 #include "evdev.h"
 
