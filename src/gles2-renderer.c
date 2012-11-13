@@ -31,12 +31,22 @@
 
 #include "compositor.h"
 
+struct gles2_shader {
+	GLuint program;
+	GLuint vertex_shader, fragment_shader;
+	GLint proj_uniform;
+	GLint tex_uniforms[3];
+	GLint alpha_uniform;
+	GLint color_uniform;
+};
+
 struct gles2_output_state {
 	EGLSurface egl_surface;
 };
 
 struct gles2_surface_state {
 	GLfloat color[4];
+	struct gles2_shader *shader;
 };
 
 struct gles2_renderer {
@@ -52,6 +62,16 @@ struct gles2_renderer {
 		GLuint texture;
 		int32_t width, height;
 	} border;
+
+	struct gles2_shader texture_shader_rgba;
+	struct gles2_shader texture_shader_rgbx;
+	struct gles2_shader texture_shader_egl_external;
+	struct gles2_shader texture_shader_y_uv;
+	struct gles2_shader texture_shader_y_u_v;
+	struct gles2_shader texture_shader_y_xuxv;
+	struct gles2_shader invert_color_shader;
+	struct gles2_shader solid_shader;
+	struct gles2_shader *current_shader;
 };
 
 static inline struct gles2_output_state *
@@ -539,6 +559,7 @@ static void
 triangle_fan_debug(struct weston_surface *surface, int first, int count)
 {
 	struct weston_compositor *compositor = surface->compositor;
+	struct gles2_renderer *gr = get_renderer(compositor);
 	int i;
 	GLushort *buffer;
 	GLushort *index;
@@ -566,11 +587,11 @@ triangle_fan_debug(struct weston_surface *surface, int first, int count)
 		*index++ = first + i;
 	}
 
-	glUseProgram(compositor->solid_shader.program);
-	glUniform4fv(compositor->solid_shader.color_uniform, 1,
+	glUseProgram(gr->solid_shader.program);
+	glUniform4fv(gr->solid_shader.color_uniform, 1,
 			color[color_idx++ % ARRAY_LENGTH(color)]);
 	glDrawElements(GL_LINES, nelems, GL_UNSIGNED_SHORT, buffer);
-	glUseProgram(compositor->current_shader->program);
+	glUseProgram(gr->current_shader->program);
 	free(buffer);
 }
 
@@ -642,18 +663,18 @@ use_output(struct weston_output *output)
 }
 
 static void
-use_shader(struct weston_compositor *compositor,
-			     struct weston_shader *shader)
+use_shader(struct gles2_renderer *gr,
+			     struct gles2_shader *shader)
 {
-	if (compositor->current_shader == shader)
+	if (gr->current_shader == shader)
 		return;
 
 	glUseProgram(shader->program);
-	compositor->current_shader = shader;
+	gr->current_shader = shader;
 }
 
 static void
-shader_uniforms(struct weston_shader *shader,
+shader_uniforms(struct gles2_shader *shader,
 		       struct weston_surface *surface,
 		       struct weston_output *output)
 {
@@ -674,6 +695,8 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	     pixman_region32_t *damage) /* in global coordinates */
 {
 	struct weston_compositor *ec = es->compositor;
+	struct gles2_renderer *gr = get_renderer(ec);
+	struct gles2_surface_state *gs = get_surface_state(es);
 	/* repaint bounding region in global coordinates: */
 	pixman_region32_t repaint;
 	/* non-opaque region in surface coordinates: */
@@ -696,12 +719,12 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 	if (ec->fan_debug) {
-		use_shader(ec, &ec->solid_shader);
-		shader_uniforms(&ec->solid_shader, es, output);
+		use_shader(gr, &gr->solid_shader);
+		shader_uniforms(&gr->solid_shader, es, output);
 	}
 
-	use_shader(ec, es->shader);
-	shader_uniforms(es->shader, es, output);
+	use_shader(gr, gs->shader);
+	shader_uniforms(gs->shader, es, output);
 
 	if (es->transform.enabled || output->zoom.active)
 		filter = GL_LINEAR;
@@ -721,14 +744,14 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	pixman_region32_subtract(&surface_blend, &surface_blend, &es->opaque);
 
 	if (pixman_region32_not_empty(&es->opaque)) {
-		if (es->shader == &ec->texture_shader_rgba) {
+		if (gs->shader == &gr->texture_shader_rgba) {
 			/* Special case for RGBA textures with possibly
 			 * bad data in alpha channel: use the shader
 			 * that forces texture alpha = 1.0.
 			 * Xwayland surfaces need this.
 			 */
-			use_shader(ec, &ec->texture_shader_rgbx);
-			shader_uniforms(&ec->texture_shader_rgbx, es, output);
+			use_shader(gr, &gr->texture_shader_rgbx);
+			shader_uniforms(&gr->texture_shader_rgbx, es, output);
 		}
 
 		if (es->alpha < 1.0)
@@ -740,7 +763,7 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	}
 
 	if (pixman_region32_not_empty(&surface_blend)) {
-		use_shader(ec, es->shader);
+		use_shader(gr, gs->shader);
 		glEnable(GL_BLEND);
 		repaint_region(es, &repaint, &surface_blend);
 	}
@@ -844,12 +867,12 @@ draw_border(struct weston_output *output)
 {
 	struct weston_compositor *ec = output->compositor;
 	struct gles2_renderer *gr = get_renderer(ec);
-	struct weston_shader *shader = &ec->texture_shader_rgba;
+	struct gles2_shader *shader = &gr->texture_shader_rgba;
 	GLfloat *v;
 	int n;
 
 	glDisable(GL_BLEND);
-	use_shader(ec, shader);
+	use_shader(gr, shader);
 
 	glUniformMatrix4fv(shader->proj_uniform,
 			   1, GL_FALSE, output->matrix.d);
@@ -1046,6 +1069,7 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 {
 	struct weston_compositor *ec = es->compositor;
 	struct gles2_renderer *gr = get_renderer(ec);
+	struct gles2_surface_state *gs = get_surface_state(es);
 	EGLint attribs[3], format;
 	int i, num_planes;
 
@@ -1070,9 +1094,9 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 			     es->pitch, buffer->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
 		if (wl_shm_buffer_get_format(buffer) == WL_SHM_FORMAT_XRGB8888)
-			es->shader = &ec->texture_shader_rgbx;
+			gs->shader = &gr->texture_shader_rgbx;
 		else
-			es->shader = &ec->texture_shader_rgba;
+			gs->shader = &gr->texture_shader_rgba;
 	} else if (ec->query_buffer(gr->egl_display, buffer,
 				    EGL_TEXTURE_FORMAT, &format)) {
 		for (i = 0; i < es->num_images; i++)
@@ -1084,24 +1108,24 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 		case EGL_TEXTURE_RGBA:
 		default:
 			num_planes = 1;
-			es->shader = &ec->texture_shader_rgba;
+			gs->shader = &gr->texture_shader_rgba;
 			break;
 		case EGL_TEXTURE_EXTERNAL_WL:
 			num_planes = 1;
 			es->target = GL_TEXTURE_EXTERNAL_OES;
-			es->shader = &ec->texture_shader_egl_external;
+			gs->shader = &gr->texture_shader_egl_external;
 			break;
 		case EGL_TEXTURE_Y_UV_WL:
 			num_planes = 2;
-			es->shader = &ec->texture_shader_y_uv;
+			gs->shader = &gr->texture_shader_y_uv;
 			break;
 		case EGL_TEXTURE_Y_U_V_WL:
 			num_planes = 3;
-			es->shader = &ec->texture_shader_y_u_v;
+			gs->shader = &gr->texture_shader_y_u_v;
 			break;
 		case EGL_TEXTURE_Y_XUXV_WL:
 			num_planes = 2;
-			es->shader = &ec->texture_shader_y_xuxv;
+			gs->shader = &gr->texture_shader_y_xuxv;
 			break;
 		}
 
@@ -1137,13 +1161,14 @@ gles2_renderer_surface_set_color(struct weston_surface *surface,
 		 float red, float green, float blue, float alpha)
 {
 	struct gles2_surface_state *gs = get_surface_state(surface);
+	struct gles2_renderer *gr = get_renderer(surface->compositor);
 
 	gs->color[0] = red;
 	gs->color[1] = green;
 	gs->color[2] = blue;
 	gs->color[3] = alpha;
 
-	surface->shader = &surface->compositor->solid_shader;
+	gs->shader = &gr->solid_shader;
 }
 
 static int
@@ -1306,7 +1331,7 @@ compile_shader(GLenum type, int count, const char **sources)
 }
 
 static int
-shader_init(struct weston_shader *shader, struct weston_compositor *ec,
+shader_init(struct gles2_shader *shader, struct weston_compositor *ec,
 		   const char *vertex_source, const char *fragment_source)
 {
 	char msg[512];
@@ -1358,7 +1383,7 @@ shader_init(struct weston_shader *shader, struct weston_compositor *ec,
 }
 
 static void
-shader_release(struct weston_shader *shader)
+shader_release(struct gles2_shader *shader)
 {
 	glDeleteShader(shader->vertex_shader);
 	glDeleteShader(shader->fragment_shader);
@@ -1681,26 +1706,28 @@ gles2_renderer_display(struct weston_compositor *ec)
 static int
 compile_shaders(struct weston_compositor *ec)
 {
-	if (shader_init(&ec->texture_shader_rgba, ec,
+	struct gles2_renderer *gr = get_renderer(ec);
+
+	if (shader_init(&gr->texture_shader_rgba, ec,
 			     vertex_shader, texture_fragment_shader_rgba) < 0)
 		return -1;
-	if (shader_init(&ec->texture_shader_rgbx, ec,
+	if (shader_init(&gr->texture_shader_rgbx, ec,
 			     vertex_shader, texture_fragment_shader_rgbx) < 0)
 		return -1;
 	if (ec->has_egl_image_external &&
-			shader_init(&ec->texture_shader_egl_external, ec,
+			shader_init(&gr->texture_shader_egl_external, ec,
 				vertex_shader, texture_fragment_shader_egl_external) < 0)
 		return -1;
-	if (shader_init(&ec->texture_shader_y_uv, ec,
+	if (shader_init(&gr->texture_shader_y_uv, ec,
 			       vertex_shader, texture_fragment_shader_y_uv) < 0)
 		return -1;
-	if (shader_init(&ec->texture_shader_y_u_v, ec,
+	if (shader_init(&gr->texture_shader_y_u_v, ec,
 			       vertex_shader, texture_fragment_shader_y_u_v) < 0)
 		return -1;
-	if (shader_init(&ec->texture_shader_y_xuxv, ec,
+	if (shader_init(&gr->texture_shader_y_xuxv, ec,
 			       vertex_shader, texture_fragment_shader_y_xuxv) < 0)
 		return -1;
-	if (shader_init(&ec->solid_shader, ec,
+	if (shader_init(&gr->solid_shader, ec,
 			     vertex_shader, solid_fragment_shader) < 0)
 		return -1;
 
@@ -1712,19 +1739,18 @@ fragment_debug_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 		       void *data)
 {
 	struct weston_compositor *ec = data;
-	struct gles2_renderer *renderer =
-		(struct gles2_renderer *) ec->renderer;
+	struct gles2_renderer *gr = get_renderer(ec);
 	struct weston_output *output;
 
-	renderer->fragment_shader_debug ^= 1;
+	gr->fragment_shader_debug ^= 1;
 
-	shader_release(&ec->texture_shader_rgba);
-	shader_release(&ec->texture_shader_rgbx);
-	shader_release(&ec->texture_shader_egl_external);
-	shader_release(&ec->texture_shader_y_uv);
-	shader_release(&ec->texture_shader_y_u_v);
-	shader_release(&ec->texture_shader_y_xuxv);
-	shader_release(&ec->solid_shader);
+	shader_release(&gr->texture_shader_rgba);
+	shader_release(&gr->texture_shader_rgbx);
+	shader_release(&gr->texture_shader_egl_external);
+	shader_release(&gr->texture_shader_y_uv);
+	shader_release(&gr->texture_shader_y_u_v);
+	shader_release(&gr->texture_shader_y_xuxv);
+	shader_release(&gr->solid_shader);
 
 	compile_shaders(ec);
 

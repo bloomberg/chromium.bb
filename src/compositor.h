@@ -249,15 +249,6 @@ struct weston_seat {
 	struct input_method *input_method;
 };
 
-struct weston_shader {
-	GLuint program;
-	GLuint vertex_shader, fragment_shader;
-	GLint proj_uniform;
-	GLint tex_uniforms[3];
-	GLint alpha_uniform;
-	GLint color_uniform;
-};
-
 enum {
 	WESTON_COMPOSITOR_ACTIVE,
 	WESTON_COMPOSITOR_IDLE,		/* shell->unlock called on activity */
@@ -294,14 +285,6 @@ struct weston_renderer {
 struct weston_compositor {
 	struct wl_signal destroy_signal;
 
-	struct weston_shader texture_shader_rgba;
-	struct weston_shader texture_shader_rgbx;
-	struct weston_shader texture_shader_egl_external;
-	struct weston_shader texture_shader_y_uv;
-	struct weston_shader texture_shader_y_u_v;
-	struct weston_shader texture_shader_y_xuxv;
-	struct weston_shader solid_shader;
-	struct weston_shader *current_shader;
 	struct wl_display *wl_display;
 	struct weston_shell_interface shell_interface;
 
@@ -424,7 +407,6 @@ struct weston_surface {
 	int32_t pitch;
 	struct wl_list link;
 	struct wl_list layer_link;
-	struct weston_shader *shader;
 	float alpha;
 	struct weston_plane *plane;
 
