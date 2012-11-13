@@ -8,10 +8,14 @@
 #include <windows.foundation.h>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/threading/thread.h"
 #include "base/win/metro.h"
 #include "base/win/win_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
@@ -68,14 +72,41 @@ class ChromeChannelListener : public IPC::Listener {
     DVLOG(1) << "Channel error";
     MetroExit();
   }
+};
 
-  void Init(IPC::Sender* s) {
-    sender_ = s;
+bool LaunchChromeAndWaitForIPCConnection(const std::string& channel_name) {
+  FilePath chrome_path;
+  if (!PathService::Get(base::FILE_EXE, &chrome_path))
+    return false;
+  CommandLine cl(chrome_path);
+
+  FilePath user_data_dir = CommandLine::ForCurrentProcess()->
+      GetSwitchValuePath(switches::kUserDataDir);
+  if (!user_data_dir.empty())
+    cl.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
+
+  // Prevent a Chrome window from showing up on the desktop.
+  cl.AppendSwitch(switches::kSilentLaunch);
+
+  // Tell Chrome the IPC channel name to use.
+  cl.AppendSwitchASCII(switches::kViewerConnection, channel_name);
+
+  base::LaunchOptions launch_options;
+  launch_options.force_breakaway_from_job_ = true;
+  launch_options.start_hidden = true;
+
+  if (base::LaunchProcess(cl, launch_options, NULL)) {
+    int ms_elapsed = 0;
+    while (!IPC::Channel::IsNamedServerInitialized(channel_name) &&
+           ms_elapsed < 10000) {
+      ms_elapsed += 500;
+      Sleep(500);
+    }
+    return IPC::Channel::IsNamedServerInitialized(channel_name);
   }
 
- private:
-  IPC::Sender* sender_;
-};
+  return false;
+}
 
 // This class helps decoding the pointer properties of an event.
 class PointerInfoHandler {
@@ -189,8 +220,7 @@ uint32 GetKeyboardEventFlags() {
 }  // namespace
 
 ChromeAppViewAsh::ChromeAppViewAsh()
-    : ui_channel_(nullptr),
-      ui_channel_listener_(nullptr) {
+    : ui_channel_(nullptr) {
   globals.previous_state =
       winapp::Activation::ApplicationExecutionState_NotRunning;
 }
@@ -284,26 +314,28 @@ ChromeAppViewAsh::Run() {
   MessageLoop msg_loop(MessageLoop::TYPE_UI);
 
   // Create the IPC channel IO thread. It needs to out-live the ChannelProxy.
-  base::Thread thread("metro_IO_thread");
+  base::Thread io_thread("metro_IO_thread");
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
-  thread.StartWithOptions(options);
+  io_thread.StartWithOptions(options);
 
-  // In Aura mode we create an IPC channel to the browser which should
-  // be already running.
+  std::string ipc_channel_name("viewer");
+  ipc_channel_name.append(IPC::Channel::GenerateUniqueRandomChannelID());
+
+  // Start up Chrome and wait for the desired IPC server connection to exist.
+  LaunchChromeAndWaitForIPCConnection(ipc_channel_name);
+
+  // In Aura mode we create an IPC channel to the browser, then ask it to
+  // connect to us.
   ChromeChannelListener ui_channel_listener;
-  IPC::ChannelProxy ui_channel("viewer",
+  IPC::ChannelProxy ui_channel(ipc_channel_name,
                                IPC::Channel::MODE_NAMED_CLIENT,
                                &ui_channel_listener,
-                               thread.message_loop_proxy());
-  ui_channel_listener.Init(&ui_channel);
-
-  ui_channel_listener_ = &ui_channel_listener;
+                               io_thread.message_loop_proxy());
   ui_channel_ = &ui_channel;
 
   ui_channel_->Send(new MetroViewerHostMsg_SetTargetSurface(
                     gfx::NativeViewId(globals.core_window)));
-
   DVLOG(1) << "ICoreWindow sent " << globals.core_window;
 
   // And post the task that'll do the inner Metro message pumping to it.

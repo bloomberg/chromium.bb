@@ -53,6 +53,7 @@
           'dependencies': [
             '../../base/base.gyp:base',
             '../../build/temp_gyp/googleurl.gyp:googleurl',
+            '../../chrome/common_constants.gyp:common_constants',
             '../../crypto/crypto.gyp:crypto',
             '../../google_update/google_update.gyp:google_update',
             '../../ipc/ipc.gyp:ipc',
@@ -69,7 +70,7 @@
             'winrt_utils.h',
             '<(SHARED_INTERMEDIATE_DIR)/metro_driver/metro_driver_dll_version.rc',
           ],
-          'conditions': [          
+          'conditions': [
             ['use_aura==1', {
               'sources': [
                 'chrome_app_view_ash.cc',

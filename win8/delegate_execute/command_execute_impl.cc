@@ -61,6 +61,8 @@ HRESULT GetUrlFromShellItem(IShellItem* shell_item, string16* url) {
 
 }  // namespace
 
+bool CommandExecuteImpl::path_provider_initialized_ = false;
+
 // CommandExecuteImpl is resposible for activating chrome in Windows 8. The
 // flow is complicated and this tries to highlight the important events.
 // The current approach is to have a single instance of chrome either
@@ -123,9 +125,14 @@ CommandExecuteImpl::CommandExecuteImpl()
       chrome_mode_(ECHUIM_SYSTEM_LAUNCHER) {
   memset(&start_info_, 0, sizeof(start_info_));
   start_info_.cb = sizeof(start_info_);
+
   // We need to query the user data dir of chrome so we need chrome's
-  // path provider.
-  chrome::RegisterPathProvider();
+  // path provider. We can be created multiplie times in a single instance
+  // however so make sure we do this only once.
+  if (!path_provider_initialized_) {
+    chrome::RegisterPathProvider();
+    path_provider_initialized_ = true;
+  }
 }
 
 // CommandExecuteImpl

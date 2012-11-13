@@ -1198,6 +1198,10 @@ const char kSideloadWipeout[]               = "sideload-wipeout";
 // specified.
 const char kSilentDumpOnDCHECK[]            = "silent-dump-on-dcheck";
 
+// Causes Chrome to launch without opening any windows by default. Useful if
+// one wishes to use Chrome as an ash server.
+const char kSilentLaunch[]                  = "silent-launch";
+
 // Simulates an update being available.
 const char kSimulateUpgrade[]               = "simulate-upgrade";
 
@@ -1343,6 +1347,10 @@ const char kVariationsServerURL[]            = "variations-server-url";
 
 // Prints version information and quits.
 const char kVersion[]                       = "version";
+
+// Requests that Chrome connect to a remote viewer process using an IPC
+// channel of the given name.
+const char kViewerConnection[]              = "viewer-connection";
 
 // Cycle through a series of URLs listed in the specified file.
 const char kVisitURLs[]                     = "visit-urls";

@@ -13,11 +13,10 @@
 #include "ui/metro_viewer/metro_viewer_messages.h"
 #include "ui/surface/accelerated_surface_win.h"
 
-MetroViewerProcessHost::MetroViewerProcessHost() {
+MetroViewerProcessHost::MetroViewerProcessHost(
+    const std::string& ipc_channel_name) {
   channel_.reset(new IPC::ChannelProxy(
-      // TODO(scottmg): Need to have a secure way to randomize and request
-      // this name from the viewer-side.
-      "viewer",
+      ipc_channel_name.c_str(),
       IPC::Channel::MODE_NAMED_SERVER,
       this,
       content::BrowserThread::GetMessageLoopProxyForThread(

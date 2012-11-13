@@ -21,7 +21,7 @@ class MetroViewerProcessHost : public IPC::Listener,
                                public IPC::Sender,
                                public base::NonThreadSafe {
  public:
-  MetroViewerProcessHost();
+  explicit MetroViewerProcessHost(const std::string& ipc_channel_name);
   virtual ~MetroViewerProcessHost();
 
   // IPC::Sender implementation.

@@ -259,8 +259,16 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopRun() {
   ChromeBrowserMainParts::PreMainMessageLoopRun();
 
   removable_device_notifications_window_->Init();
+
 #if defined(USE_AURA)
-  metro_viewer_process_host_.reset(new MetroViewerProcessHost);
+  CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kViewerConnection) &&
+      !metro_viewer_process_host_) {
+    // Tell the metro viewer process host to connect to the given IPC channel.
+    metro_viewer_process_host_.reset(
+        new MetroViewerProcessHost(
+            command_line.GetSwitchValueASCII(switches::kViewerConnection)));
+  }
 #endif
 
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {

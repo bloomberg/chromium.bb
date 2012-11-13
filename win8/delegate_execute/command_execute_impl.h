@@ -86,6 +86,9 @@ class ATL_NO_VTABLE DECLSPEC_UUID("A2DF06F9-A21A-44A8-8A99-8B9C84F29160")
 
  private:
   static bool FindChromeExe(FilePath* chrome_exe);
+
+  static bool path_provider_initialized_;
+
   bool GetLaunchScheme(string16* display_name, INTERNET_SCHEME* scheme);
   HRESULT LaunchDesktopChrome();
   // Returns the launch mode, i.e. desktop launch/metro launch, etc.

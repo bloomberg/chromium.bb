@@ -392,6 +392,15 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
       return false;
   }
 
+  if (command_line.HasSwitch(switches::kSilentLaunch)) {
+    std::vector<GURL> urls_to_open = GetURLsFromCommandLine(
+        command_line, cur_dir, last_used_profile);
+    size_t expected_tabs =
+        std::max(static_cast<int>(urls_to_open.size()), 0);
+    if (expected_tabs == 0)
+      silent_launch = true;
+  }
+
   if (command_line.HasSwitch(switches::kAutomationClientChannelID)) {
     std::string automation_channel_id = command_line.GetSwitchValueASCII(
         switches::kAutomationClientChannelID);

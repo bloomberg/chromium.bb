@@ -69,7 +69,6 @@ class ChromeAppViewAsh
 
   metro_driver::Direct3DHelper direct3d_helper_;
 
-  IPC::Listener* ui_channel_listener_;
   IPC::ChannelProxy* ui_channel_;
 };
 
