@@ -6,7 +6,7 @@
   "permissions": ["syncFileSystem"],
   "app": {
     "background": {
-        "scripts": ["test.js"]
+      "scripts": ["test.js"]
     }
   }
 }
