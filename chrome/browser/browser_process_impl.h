@@ -17,7 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
 #include "chrome/browser/browser_process.h"
@@ -42,8 +41,7 @@ class PolicyService;
 
 // Real implementation of BrowserProcess that creates and returns the services.
 class BrowserProcessImpl : public BrowserProcess,
-                           public base::NonThreadSafe,
-                           public PrefObserver {
+                           public base::NonThreadSafe {
  public:
   // |local_state_task_runner| must be a shutdown-blocking task runner.
   BrowserProcessImpl(base::SequencedTaskRunner* local_state_task_runner,
@@ -119,10 +117,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual ComponentUpdateService* component_updater() OVERRIDE;
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
   virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
-
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
  private:
   void CreateMetricsService();

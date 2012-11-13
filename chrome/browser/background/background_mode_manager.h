@@ -9,7 +9,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -48,7 +47,6 @@ class BackgroundModeManager
     : public content::NotificationObserver,
       public BackgroundApplicationListModel::Observer,
       public ProfileInfoCacheObserver,
-      public PrefObserver,
       public ui::SimpleMenuModel::Delegate {
  public:
   BackgroundModeManager(CommandLine* command_line,
@@ -159,10 +157,6 @@ class BackgroundModeManager
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // Called when the kBackgroundModeEnabled preference changes.
   void OnBackgroundModeEnabledPrefChanged();

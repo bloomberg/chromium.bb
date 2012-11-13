@@ -18,7 +18,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
@@ -67,7 +66,6 @@ class Message;
 class AutofillManager : public content::WebContentsObserver,
                         public AutofillDownloadManager::Observer,
                         public ProfileSyncServiceObserver,
-                        public PrefObserver,
                         public base::RefCounted<AutofillManager> {
  public:
   static void CreateForWebContentsAndDelegate(
@@ -191,9 +189,8 @@ class AutofillManager : public content::WebContentsObserver,
   // Register as an observer with the sync service.
   void RegisterWithSyncService();
 
-  // PrefObserver.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
+  // Called when password generation preference state changes.
+  void OnPasswordGenerationEnabledChanged();
 
   // Determines what the current state of password generation is, and if it has
   // changed from |password_generation_enabled_|. If it has changed or if
