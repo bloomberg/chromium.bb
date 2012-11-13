@@ -162,12 +162,13 @@ static struct NaClDesc *NaClResourceNaClAppFileOpen(
   if (0 == strcmp(resource_locator, NACL_RESOURCE_FILE_DEV_NULL)) {
     rv = NaClResourceNullFactory();
     if (NULL == rv) {
-      NaClLog(LOG_FATAL, "Could not create Null device");
+      NaClLog(LOG_ERROR, "Could not create Null device. Redirect failed.\n");
     }
   } else {
     rv = NaClResourceFileFactory(resource_locator, nacl_flags, mode);
     if (NULL == rv) {
-      NaClLog(LOG_FATAL, "Could not open file \"%s\".", resource_locator);
+      NaClLog(LOG_ERROR, "Could not open file \"%s\". Redirect failed.\n",
+              resource_locator);
     }
   }
   NaClLog(4, "NaClResourceNaClAppFileOpen returning 0x%"NACL_PRIxPTR"\n",

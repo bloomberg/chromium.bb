@@ -592,8 +592,6 @@ struct NaClAppThread *NaClGetThreadMu(struct NaClApp  *nap,
 
 void NaClAppInitialDescriptorHookup(struct NaClApp  *nap);
 
-void NaClAppDescriptorHookupCheck(struct NaClApp *nap);
-
 void NaClCreateServiceSocket(struct NaClApp *nap);
 
 void NaClSetUpBootstrapChannel(struct NaClApp  *nap,

@@ -783,8 +783,6 @@ int NaClSelLdrMain(int argc, char **argv) {
     }
   }
 
-  NaClAppDescriptorHookupCheck(nap);
-
   /*
    * error reporting done; can quit now if there was an error earlier.
    */

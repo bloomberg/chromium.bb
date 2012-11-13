@@ -739,6 +739,7 @@ static void NaClProcessRedirControl(struct NaClApp *nap) {
   struct NaClDesc *ndp;
 
   for (ix = 0; ix < NACL_ARRAY_SIZE(g_nacl_redir_control); ++ix) {
+    ndp = NULL;
     if (NULL != (env = getenv(g_nacl_redir_control[ix].env_name))) {
       NaClLog(4, "getenv(%s) -> %s\n", g_nacl_redir_control[ix].env_name, env);
       ndp = NaClResourceOpen((struct NaClResource *) &nap->resources,
@@ -747,14 +748,14 @@ static void NaClProcessRedirControl(struct NaClApp *nap) {
                              g_nacl_redir_control[ix].mode);
       NaClLog(4, " NaClResourceOpen returned %"NACL_PRIxPTR"\n",
               (uintptr_t) ndp);
-      if (NULL != ndp) {
-        NaClLog(4, "Setting descriptor %d\n", (int) ix);
-        NaClSetDesc(nap, (int) ix, ndp);
-        ndp = NULL;
-      }
+    }
+
+    if (NULL != ndp) {
+      NaClLog(4, "Setting descriptor %d\n", (int) ix);
+      NaClSetDesc(nap, (int) ix, ndp);
     } else if (NACL_RESOURCE_PHASE_START == nap->resource_phase) {
       /*
-       * Environment not set -- handle default inheritance.
+       * Environment not set or redirect failed -- handle default inheritance.
        */
       NaClAddHostDescriptor(nap, DUP(g_nacl_redir_control[ix].d),
                             g_nacl_redir_control[ix].nacl_flags, (int) ix);
@@ -781,25 +782,6 @@ void NaClAppInitialDescriptorHookup(struct NaClApp  *nap) {
   nap->resource_phase = NACL_RESOURCE_PHASE_START;
   NaClProcessRedirControl(nap);
   NaClLog(4, "... done.\n");
-}
-
-void NaClAppDescriptorHookupCheck(struct NaClApp *nap) {
-  size_t ix;
-  char const *env;
-  struct NaClDesc *ndp;
-
-  for (ix = 0; ix < NACL_ARRAY_SIZE(g_nacl_redir_control); ++ix) {
-    if (NULL != (env = getenv(g_nacl_redir_control[ix].env_name))) {
-      ndp = NaClGetDesc(nap, g_nacl_redir_control[ix].d);
-      if (NULL == ndp) {
-        NaClLog(LOG_FATAL,
-                ("NaClAppDescriptorHookupCheck: I/O redirection for %s => %s"
-                 " failed\n"),
-                g_nacl_redir_control[ix].env_name, env);
-      }
-      NaClDescUnref(ndp);
-    }
-  }
 }
 
 void NaClCreateServiceSocket(struct NaClApp *nap) {
