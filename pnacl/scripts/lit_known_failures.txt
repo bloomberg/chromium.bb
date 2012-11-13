@@ -50,6 +50,9 @@ CodeGen/ARM/tls1.ll
 CodeGen/ARM/unaligned_load_store.ll
 CodeGen/ARM/vmul.ll
 CodeGen/ARM/widen-vmovs.ll
+CodeGen/Mips/brdelayslot.ll
+CodeGen/Mips/fastcc.ll
+CodeGen/Mips/null.ll
 CodeGen/Thumb/thumb_jump24_fixup.ll
 CodeGen/Thumb2/aligned-spill.ll
 CodeGen/Thumb2/buildvector-crash.ll
