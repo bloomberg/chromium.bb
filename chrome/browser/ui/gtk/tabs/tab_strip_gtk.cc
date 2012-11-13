@@ -1102,7 +1102,7 @@ void TabStripGtk::TabSelectionChanged(TabStripModel* tab_strip_model,
   }
 }
 
-void TabStripGtk::TabMoved(TabContents* contents,
+void TabStripGtk::TabMoved(WebContents* contents,
                            int from_index,
                            int to_index) {
   gfx::Rect start_bounds = GetIdealBounds(from_index);

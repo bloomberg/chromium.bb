@@ -386,7 +386,7 @@ void BrowserTabStripController::TabSelectionChanged(
   tabstrip_->SetSelection(old_model, model_->selection_model());
 }
 
-void BrowserTabStripController::TabMoved(TabContents* contents,
+void BrowserTabStripController::TabMoved(WebContents* contents,
                                          int from_model_index,
                                          int to_model_index) {
   // Cancel any pending tab transition.
@@ -394,8 +394,7 @@ void BrowserTabStripController::TabMoved(TabContents* contents,
 
   // Pass in the TabRendererData as the pinned state may have changed.
   TabRendererData data;
-  SetTabRendererDataFromModel(contents->web_contents(), to_model_index, &data,
-                              EXISTING_TAB);
+  SetTabRendererDataFromModel(contents, to_model_index, &data, EXISTING_TAB);
   tabstrip_->MoveTab(from_model_index, to_model_index, data);
 }
 

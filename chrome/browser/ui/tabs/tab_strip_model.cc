@@ -1249,10 +1249,8 @@ void TabStripModel::MoveTabContentsAtImpl(int index,
     selection_model_.SetSelectedIndex(to_position);
   }
 
-  TabContents* tab_contents =
-      TabContents::FromWebContents(moved_data->contents);
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabMoved(tab_contents, index, to_position));
+                    TabMoved(moved_data->contents, index, to_position));
 }
 
 void TabStripModel::MoveSelectedTabsToImpl(int index,

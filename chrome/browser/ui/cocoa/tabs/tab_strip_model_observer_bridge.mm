@@ -75,12 +75,12 @@ void TabStripModelObserverBridge::ActiveTabChanged(
   }
 }
 
-void TabStripModelObserverBridge::TabMoved(TabContents* contents,
+void TabStripModelObserverBridge::TabMoved(WebContents* contents,
                                            int from_index,
                                            int to_index) {
   if ([controller_ respondsToSelector:
        @selector(tabMovedWithContents:fromIndex:toIndex:)]) {
-    [controller_ tabMovedWithContents:WebContentsOf(contents)
+    [controller_ tabMovedWithContents:contents
                             fromIndex:from_index
                               toIndex:to_index];
   }

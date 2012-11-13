@@ -313,23 +313,23 @@ void BrowserEventRouter::TabSelectionChanged(
                 EventRouter::USER_GESTURE_UNKNOWN);
 }
 
-void BrowserEventRouter::TabMoved(TabContents* contents,
+void BrowserEventRouter::TabMoved(WebContents* contents,
                                   int from_index,
                                   int to_index) {
   scoped_ptr<ListValue> args(new ListValue());
-  args->Append(Value::CreateIntegerValue(
-      ExtensionTabUtil::GetTabId(contents->web_contents())));
+  args->Append(Value::CreateIntegerValue(ExtensionTabUtil::GetTabId(contents)));
 
   DictionaryValue* object_args = new DictionaryValue();
   object_args->Set(tab_keys::kWindowIdKey, Value::CreateIntegerValue(
-      ExtensionTabUtil::GetWindowIdOfTab(contents->web_contents())));
+      ExtensionTabUtil::GetWindowIdOfTab(contents)));
   object_args->Set(tab_keys::kFromIndexKey, Value::CreateIntegerValue(
       from_index));
   object_args->Set(tab_keys::kToIndexKey, Value::CreateIntegerValue(
       to_index));
   args->Append(object_args);
 
-  DispatchEvent(contents->profile(), events::kOnTabMoved, args.Pass(),
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  DispatchEvent(profile, events::kOnTabMoved, args.Pass(),
                 EventRouter::USER_GESTURE_UNKNOWN);
 }
 

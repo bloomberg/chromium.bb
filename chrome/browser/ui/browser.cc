@@ -1137,7 +1137,7 @@ void Browser::ActiveTabChanged(TabContents* old_contents,
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_SWITCH);
 }
 
-void Browser::TabMoved(TabContents* contents,
+void Browser::TabMoved(WebContents* contents,
                        int from_index,
                        int to_index) {
   DCHECK(from_index >= 0 && to_index >= 0);

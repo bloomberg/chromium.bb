@@ -34,7 +34,7 @@ void TabStripModelObserver::TabSelectionChanged(
     const TabStripSelectionModel& model) {
 }
 
-void TabStripModelObserver::TabMoved(TabContents* contents,
+void TabStripModelObserver::TabMoved(WebContents* contents,
                                      int from_index,
                                      int to_index) {
 }

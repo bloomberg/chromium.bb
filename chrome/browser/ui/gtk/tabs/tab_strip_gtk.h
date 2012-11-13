@@ -114,7 +114,7 @@ class TabStripGtk : public TabStripModelObserver,
                              bool foreground) OVERRIDE;
   virtual void TabDetachedAt(content::WebContents* contents,
                              int index) OVERRIDE;
-  virtual void TabMoved(TabContents* contents,
+  virtual void TabMoved(content::WebContents* contents,
                         int from_index,
                         int to_index) OVERRIDE;
   virtual void ActiveTabChanged(TabContents* old_contents,

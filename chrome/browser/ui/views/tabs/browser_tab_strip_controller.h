@@ -79,7 +79,7 @@ class BrowserTabStripController : public TabStripController,
   virtual void TabSelectionChanged(
       TabStripModel* tab_strip_model,
       const TabStripSelectionModel& old_model) OVERRIDE;
-  virtual void TabMoved(TabContents* contents,
+  virtual void TabMoved(content::WebContents* contents,
                         int from_model_index,
                         int to_model_index) OVERRIDE;
   virtual void TabChangedAt(TabContents* contents,

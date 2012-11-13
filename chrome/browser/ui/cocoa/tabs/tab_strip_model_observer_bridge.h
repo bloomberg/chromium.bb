@@ -40,7 +40,7 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                                 TabContents* new_contents,
                                 int index,
                                 bool user_gesture) OVERRIDE;
-  virtual void TabMoved(TabContents* contents,
+  virtual void TabMoved(content::WebContents* contents,
                         int from_index,
                         int to_index) OVERRIDE;
   virtual void TabChangedAt(TabContents* contents, int index,

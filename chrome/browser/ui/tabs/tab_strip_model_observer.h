@@ -90,8 +90,8 @@ class TabStripModelObserver {
   virtual void TabSelectionChanged(TabStripModel* tab_strip_model,
                                    const TabStripSelectionModel& old_model);
 
-  // The specified TabContents at |from_index| was moved to |to_index|.
-  virtual void TabMoved(TabContents* contents,
+  // The specified WebContents at |from_index| was moved to |to_index|.
+  virtual void TabMoved(content::WebContents* contents,
                         int from_index,
                         int to_index);
 

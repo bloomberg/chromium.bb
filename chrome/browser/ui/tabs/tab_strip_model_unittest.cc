@@ -293,10 +293,10 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     s.src_index = old_model.active();
     states_.push_back(s);
   }
-  virtual void TabMoved(TabContents* contents,
+  virtual void TabMoved(WebContents* contents,
                         int from_index,
                         int to_index) OVERRIDE {
-    State s(contents ? contents->web_contents() : NULL, to_index, MOVE);
+    State s(contents, to_index, MOVE);
     s.src_index = from_index;
     states_.push_back(s);
   }
