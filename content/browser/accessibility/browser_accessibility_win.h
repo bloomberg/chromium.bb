@@ -144,7 +144,7 @@ BrowserAccessibilityWin
 
   // Retrieves the specified object's shortcut.
   CONTENT_EXPORT STDMETHODIMP get_accKeyboardShortcut(VARIANT var_id,
-      BSTR* access_key);
+                                                      BSTR* access_key);
 
   // Retrieves the name of the specified object.
   CONTENT_EXPORT STDMETHODIMP get_accName(VARIANT var_id, BSTR* name);
@@ -208,8 +208,8 @@ BrowserAccessibilityWin
                                            IAccessibleRelation** relation);
 
   CONTENT_EXPORT STDMETHODIMP get_relations(LONG max_relations,
-      IAccessibleRelation** relations,
-      LONG* n_relations);
+                                            IAccessibleRelation** relations,
+                                            LONG* n_relations);
 
   CONTENT_EXPORT STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type);
 
@@ -309,7 +309,7 @@ BrowserAccessibilityWin
                                               long column,
                                               long* n_rows_spanned);
 
-  CONTENT_EXPORT STDMETHODIMP get_rowHeader(IAccessibleTable **accessible_table,
+  CONTENT_EXPORT STDMETHODIMP get_rowHeader(IAccessibleTable** accessible_table,
                                             long* starting_column_index);
 
   CONTENT_EXPORT STDMETHODIMP get_rowIndex(long cell_index,
@@ -432,32 +432,38 @@ BrowserAccessibilityWin
                                             LONG* start_offset,
                                             LONG* end_offset);
 
-  CONTENT_EXPORT STDMETHODIMP get_text(LONG start_offset, LONG end_offset,
+  CONTENT_EXPORT STDMETHODIMP get_text(LONG start_offset,
+                                       LONG end_offset,
                                        BSTR* text);
 
   CONTENT_EXPORT STDMETHODIMP get_textAtOffset(
       LONG offset,
       enum IA2TextBoundaryType boundary_type,
-      LONG* start_offset, LONG* end_offset,
+      LONG* start_offset,
+      LONG* end_offset,
       BSTR* text);
 
   CONTENT_EXPORT STDMETHODIMP get_textBeforeOffset(
       LONG offset,
       enum IA2TextBoundaryType boundary_type,
-      LONG* start_offset, LONG* end_offset,
+      LONG* start_offset,
+      LONG* end_offset,
       BSTR* text);
 
   CONTENT_EXPORT STDMETHODIMP get_textAfterOffset(
       LONG offset,
       enum IA2TextBoundaryType boundary_type,
-      LONG* start_offset, LONG* end_offset,
+      LONG* start_offset,
+      LONG* end_offset,
       BSTR* text);
 
   CONTENT_EXPORT STDMETHODIMP get_newText(IA2TextSegment* new_text);
 
   CONTENT_EXPORT STDMETHODIMP get_oldText(IA2TextSegment* old_text);
 
-  CONTENT_EXPORT STDMETHODIMP get_offsetAtPoint(LONG x, LONG y,
+  CONTENT_EXPORT STDMETHODIMP get_offsetAtPoint(
+      LONG x,
+      LONG y,
       enum IA2CoordinateType coord_type,
       LONG* offset);
 
@@ -490,8 +496,10 @@ BrowserAccessibilityWin
   }
   CONTENT_EXPORT STDMETHODIMP get_characterExtents(LONG offset,
       enum IA2CoordinateType coord_type,
-      LONG* x, LONG* y,
-      LONG* width, LONG* height) {
+      LONG* x,
+      LONG* y,
+      LONG* width,
+      LONG* height) {
     return E_NOTIMPL;
   }
 
@@ -501,20 +509,18 @@ BrowserAccessibilityWin
 
   CONTENT_EXPORT STDMETHODIMP get_nHyperlinks(long* hyperlink_count);
 
-  CONTENT_EXPORT STDMETHODIMP get_hyperlink(
-      long index,
-      IAccessibleHyperlink** hyperlink);
+  CONTENT_EXPORT STDMETHODIMP get_hyperlink(long index,
+                                            IAccessibleHyperlink** hyperlink);
 
   CONTENT_EXPORT STDMETHODIMP get_hyperlinkIndex(long char_index,
-      long* hyperlink_index);
+                                                 long* hyperlink_index);
 
   // IAccessibleHyperlink not implemented.
   CONTENT_EXPORT STDMETHODIMP get_anchor(long index, VARIANT* anchor) {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_anchorTarget(
-      long index,
-      VARIANT* anchor_target) {
+  CONTENT_EXPORT STDMETHODIMP get_anchorTarget(long index,
+                                               VARIANT* anchor_target) {
     return E_NOTIMPL;
   }
   CONTENT_EXPORT STDMETHODIMP get_startIndex( long* index) {
@@ -534,24 +540,21 @@ BrowserAccessibilityWin
   CONTENT_EXPORT STDMETHODIMP doAction(long action_index) {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_description(
-      long action_index,
-      BSTR* description) {
+  CONTENT_EXPORT STDMETHODIMP get_description(long action_index,
+                                              BSTR* description) {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_keyBinding(
-      long action_index,
-      long n_max_bindings,
-      BSTR** key_bindings,
-      long* n_bindings) {
+  CONTENT_EXPORT STDMETHODIMP get_keyBinding(long action_index,
+                                             long n_max_bindings,
+                                             BSTR** key_bindings,
+                                             long* n_bindings) {
     return E_NOTIMPL;
   }
   CONTENT_EXPORT STDMETHODIMP get_name(long action_index, BSTR* name) {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_localizedName(
-      long action_index,
-      BSTR* localized_name) {
+  CONTENT_EXPORT STDMETHODIMP get_localizedName(long action_index,
+                                                BSTR* localized_name) {
     return E_NOTIMPL;
   }
 
@@ -579,12 +582,12 @@ BrowserAccessibilityWin
 
   CONTENT_EXPORT STDMETHODIMP get_docType(BSTR* doc_type);
 
-  CONTENT_EXPORT STDMETHODIMP get_nameSpaceURIForID(
-      short name_space_id, BSTR *name_space_uri) {
+  CONTENT_EXPORT STDMETHODIMP get_nameSpaceURIForID(short name_space_id,
+                                                    BSTR* name_space_uri) {
     return E_NOTIMPL;
   }
   CONTENT_EXPORT STDMETHODIMP put_alternateViewMediaTypes(
-      BSTR *comma_separated_media_types) {
+      BSTR* comma_separated_media_types) {
     return E_NOTIMPL;
   }
 
@@ -592,20 +595,18 @@ BrowserAccessibilityWin
   // ISimpleDOMNode methods.
   //
 
-  CONTENT_EXPORT STDMETHODIMP get_nodeInfo(
-      BSTR* node_name,
-      short* name_space_id,
-      BSTR* node_value,
-      unsigned int* num_children,
-      unsigned int* unique_id,
-      unsigned short* node_type);
+  CONTENT_EXPORT STDMETHODIMP get_nodeInfo(BSTR* node_name,
+                                           short* name_space_id,
+                                           BSTR* node_value,
+                                           unsigned int* num_children,
+                                           unsigned int* unique_id,
+                                           unsigned short* node_type);
 
-  CONTENT_EXPORT STDMETHODIMP get_attributes(
-      unsigned short max_attribs,
-      BSTR* attrib_names,
-      short* name_space_id,
-      BSTR* attrib_values,
-      unsigned short* num_attribs);
+  CONTENT_EXPORT STDMETHODIMP get_attributes(unsigned short max_attribs,
+                                             BSTR* attrib_names,
+                                             short* name_space_id,
+                                             BSTR* attrib_values,
+                                             unsigned short* num_attribs);
 
   CONTENT_EXPORT STDMETHODIMP get_attributesForNames(
       unsigned short num_attribs,
@@ -638,9 +639,8 @@ BrowserAccessibilityWin
 
   CONTENT_EXPORT STDMETHODIMP get_nextSibling(ISimpleDOMNode** node);
 
-  CONTENT_EXPORT STDMETHODIMP get_childAt(
-      unsigned int child_index,
-      ISimpleDOMNode** node);
+  CONTENT_EXPORT STDMETHODIMP get_childAt(unsigned int child_index,
+                                          ISimpleDOMNode** node);
 
   CONTENT_EXPORT STDMETHODIMP get_innerHTML(BSTR* innerHTML) {
     return E_NOTIMPL;
@@ -680,9 +680,8 @@ BrowserAccessibilityWin
     return E_NOTIMPL;
   }
 
-  CONTENT_EXPORT STDMETHODIMP scrollToSubstring(
-      unsigned int start_index,
-      unsigned int end_index)  {
+  CONTENT_EXPORT STDMETHODIMP scrollToSubstring(unsigned int start_index,
+                                                unsigned int end_index)  {
     return E_NOTIMPL;
   }
 
@@ -694,8 +693,9 @@ BrowserAccessibilityWin
   // IServiceProvider methods.
   //
 
-  CONTENT_EXPORT STDMETHODIMP QueryService(REFGUID guidService, REFIID riid,
-      void** object);
+  CONTENT_EXPORT STDMETHODIMP QueryService(REFGUID guidService,
+                                           REFIID riid,
+                                           void** object);
 
   // IAccessibleEx methods not implemented.
   CONTENT_EXPORT STDMETHODIMP GetObjectForChild(long child_id,
@@ -743,7 +743,8 @@ BrowserAccessibilityWin
   // CComObjectRootEx methods.
   //
 
-  CONTENT_EXPORT HRESULT WINAPI InternalQueryInterface(void* this_ptr,
+  CONTENT_EXPORT HRESULT WINAPI InternalQueryInterface(
+      void* this_ptr,
       const _ATL_INTMAP_ENTRY* entries,
       REFIID iid,
       void** object);
@@ -754,7 +755,7 @@ BrowserAccessibilityWin
   int32 ia2_role() const { return ia2_role_; }
   int32 ia2_state() const { return ia2_state_; }
   const std::vector<string16>& ia2_attributes() const {
-    return ia2_attributes_;\
+    return ia2_attributes_;
   }
 
  private:
@@ -778,22 +779,23 @@ BrowserAccessibilityWin
   // if found and nonempty, allocate a new BSTR (with SysAllocString)
   // and return S_OK. If not found or empty, return S_FALSE.
   HRESULT GetStringAttributeAsBstr(
-      AccessibilityNodeData::StringAttribute attribute, BSTR* value_bstr);
+      AccessibilityNodeData::StringAttribute attribute,
+      BSTR* value_bstr);
 
   // If the string attribute |attribute| is present, add its value as an
   // IAccessible2 attribute with the name |ia2_attr|.
-  void StringAttributeToIA2(
-      AccessibilityNodeData::StringAttribute attribute, const char* ia2_attr);
+  void StringAttributeToIA2(AccessibilityNodeData::StringAttribute attribute,
+                            const char* ia2_attr);
 
   // If the bool attribute |attribute| is present, add its value as an
   // IAccessible2 attribute with the name |ia2_attr|.
-  void BoolAttributeToIA2(
-      AccessibilityNodeData::BoolAttribute attribute, const char* ia2_attr);
+  void BoolAttributeToIA2(AccessibilityNodeData::BoolAttribute attribute,
+                          const char* ia2_attr);
 
   // If the int attribute |attribute| is present, add its value as an
   // IAccessible2 attribute with the name |ia2_attr|.
-  void IntAttributeToIA2(
-      AccessibilityNodeData::IntAttribute attribute, const char* ia2_attr);
+  void IntAttributeToIA2(AccessibilityNodeData::IntAttribute attribute,
+                         const char* ia2_attr);
 
   // Get the text of this node for the purposes of IAccessibleText - it may
   // be the name, it may be the value, etc. depending on the role.
