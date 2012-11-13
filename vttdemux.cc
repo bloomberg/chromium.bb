@@ -26,13 +26,22 @@ typedef std::auto_ptr<mkvparser::Segment> segment_ptr_t;
 // WebVTT metadata tracks have a type (encoded in the CodecID for the track).
 // We use |type| to synthesize a filename for the out-of-band WebVTT |file|.
 struct MetadataInfo {
-  enum Type { kSubtitles, kCaptions, kDescriptions, kMetadata } type;
+  enum Type {
+    kSubtitles,
+    kCaptions,
+    kDescriptions,
+    kMetadata,
+    kChapters } type;
   FILE* file;
 };
 
 // We use a map, indexed by track number, to collect information about
 // each track in the input file.
 typedef std::map<long, MetadataInfo> metadata_map_t;  // NOLINT
+
+// The distinguished key value we use to store the chapters
+// information in the metadata map.
+enum { kChaptersKey = 0 };
 
 // The data from the original WebVTT Cue is stored as a WebM block.
 // The FrameParser is used to parse the lines of text out from the
@@ -72,6 +81,44 @@ class FrameParser : public libwebvtt::LineReader {
   FrameParser& operator=(const FrameParser&);
 };
 
+// The data from the original WebVTT Cue is stored as an MKV Chapters
+// Atom element (the cue payload is stored as a Display sub-element).
+// The ChapterAtomParser is used to parse the lines of text out from
+// the String sub-element of the Display element (though it would be
+// admittedly odd if there were more than one line).
+class ChapterAtomParser : public libwebvtt::LineReader {
+ public:
+  explicit ChapterAtomParser(const mkvparser::Chapters::Display* display);
+  virtual ~ChapterAtomParser();
+
+  const mkvparser::Chapters::Display* const display_;
+
+ protected:
+  // Read the next character from the character stream (the title
+  // member of the atom's display).  We increment the stream pointer
+  // |str_| as each character from the stream is consumed.
+  virtual int GetChar(char* c);
+
+  // End-of-line handling requires that we put a character back into
+  // the stream.  Here we need only decrement the stream pointer |str_|
+  // to unconsume the character.
+  virtual void UngetChar(char c);
+
+  // The current position in the character stream (the title of the
+  // atom's display).
+  const char* str_;
+
+  // The position of the end of the character stream. When the current
+  // position |str_| equals the end position |str_end_|, the entire
+  // stream (title of the display) has been consumed and end-of-stream
+  // is indicated.
+  const char* str_end_;
+
+ private:
+  ChapterAtomParser(const ChapterAtomParser&);
+  ChapterAtomParser& operator=(const ChapterAtomParser&);
+};
+
 // Parse the EBML header of the WebM input file, to determine whether we
 // actually have a WebM file.  Returns false if this is not a WebM file.
 bool ParseHeader(mkvparser::IMkvReader* reader, mkvpos_t* pos);
@@ -83,8 +130,37 @@ bool ParseSegment(
     mkvpos_t pos,
     segment_ptr_t* segment);
 
-// Iterate over the tracks of the input file and cache information about
-// each metadata track.
+// If |segment| has a Chapters element (in which case, there will be a
+// corresponding entry in |metadata_map|), convert the MKV chapters to
+// WebVTT chapter cues and write them to the output file.  Returns
+// false on error.
+bool WriteChaptersFile(
+    const metadata_map_t& metadata_map,
+    const mkvparser::Segment* segment);
+
+// Convert an MKV Chapters Atom to a WebVTT cue and write it to the
+// output |file|.  Returns false on error.
+bool WriteChaptersCue(
+    FILE* file,
+    const mkvparser::Chapters* chapters,
+    const mkvparser::Chapters::Atom* atom,
+    const mkvparser::Chapters::Display* display);
+
+// Use the timecodes from the chapters |atom| to write just the
+// timings line of the WebVTT cue.  Returns false on error.
+bool WriteChaptersCueTimings(
+    FILE* file,
+    const mkvparser::Chapters* chapters,
+    const mkvparser::Chapters::Atom* atom);
+
+// Parse the String sub-element of the |display| and write the payload
+// of the WebVTT cue.  Returns false on error.
+bool WriteChaptersCuePayload(
+    FILE* file,
+    const mkvparser::Chapters::Display* display);
+
+// Iterate over the tracks of the input file (and any chapters
+// element) and cache information about each metadata track.
 void BuildMap(const mkvparser::Segment* segment, metadata_map_t* metadata_map);
 
 // For each track listed in the cache, synthesize its output filename
@@ -184,8 +260,8 @@ int main(int argc, const char* argv[]) {
   BuildMap(segment_ptr.get(), &metadata_map);
 
   if (metadata_map.empty()) {
-    printf("no metadata tracks found\n");
-    return EXIT_FAILURE;  // TODO(matthewjheaney): correct result?
+    printf("no WebVTT metadata found\n");
+    return EXIT_FAILURE;
   }
 
   if (!OpenFiles(&metadata_map, filename)) {
@@ -245,6 +321,32 @@ void FrameParser::UngetChar(char /* c */ ) {
   --pos_;
 }
 
+ChapterAtomParser::ChapterAtomParser(
+    const mkvparser::Chapters::Display* display)
+    : display_(display) {
+  str_ = display->GetString();
+  const size_t len = strlen(str_);
+  str_end_ = str_ + len;
+}
+
+ChapterAtomParser::~ChapterAtomParser() {
+}
+
+int ChapterAtomParser::GetChar(char* c) {
+  if (str_ >= str_end_)  // end-of-stream
+    return 1;  // per the semantics of libwebvtt::Reader::GetChar
+
+  *c = *str_++;  // consume this character in the stream
+  return 0;
+}
+
+void ChapterAtomParser::UngetChar(char /* c */ ) {
+  // All we need to do here is decrement the position in the stream.
+  // The next time GetChar is called the same character will be
+  // re-read from the input file.
+  --str_;
+}
+
 }  // namespace vttdemux
 
 bool vttdemux::ParseHeader(
@@ -297,6 +399,17 @@ bool vttdemux::ParseSegment(
 void vttdemux::BuildMap(
     const mkvparser::Segment* segment,
     metadata_map_t* map_ptr) {
+  metadata_map_t& m = *map_ptr;
+  m.clear();
+
+  if (segment->GetChapters()) {
+    MetadataInfo info;
+    info.file = NULL;
+    info.type = MetadataInfo::kChapters;
+
+    m[kChaptersKey] = info;
+  }
+
   const mkvparser::Tracks* const tt = segment->GetTracks();
   if (tt == NULL)
     return;
@@ -305,8 +418,6 @@ void vttdemux::BuildMap(
   if (tc <= 0)
     return;
 
-  metadata_map_t& m = *map_ptr;
-
   // Iterate over the tracks in the intput file.  We determine whether
   // a track holds metadata by inspecting its CodecID.
 
@@ -314,6 +425,11 @@ void vttdemux::BuildMap(
     const mkvparser::Track* const t = tt->GetTrackByIndex(idx);
 
     if (t == NULL)  // weird
+      continue;
+
+    const long tn = t->GetNumber();  // NOLINT
+
+    if (tn <= 0)  // weird
       continue;
 
     const char* const codec_id = t->GetCodecId();
@@ -336,7 +452,6 @@ void vttdemux::BuildMap(
       continue;
     }
 
-    const long tn = t->GetNumber();  // NOLINT
     m[tn] = info;  // create an entry in the cache for this track
   }
 }
@@ -415,6 +530,10 @@ bool vttdemux::OpenFiles(metadata_map_t* metadata_map, const char* filename) {
         name += "_METADATA";
         break;
 
+      case MetadataInfo::kChapters:
+        name += "_CHAPTERS";
+        break;
+
       default:
         return false;
     }
@@ -476,6 +595,9 @@ bool vttdemux::WriteFiles(const metadata_map_t& m, mkvparser::Segment* s) {
 
   InitializeFiles(m);
 
+  if (!WriteChaptersFile(m, s))
+    return false;
+
   // Now iterate over the clusters, writing the WebVTT cue as we parse
   // each metadata block.
 
@@ -508,6 +630,165 @@ bool vttdemux::InitializeFiles(const metadata_map_t& m) {
       return false;
     }
   }
+
+  return true;
+}
+
+bool vttdemux::WriteChaptersFile(
+    const metadata_map_t& m,
+    const mkvparser::Segment* s) {
+  const metadata_map_t::const_iterator info_iter = m.find(kChaptersKey);
+  if (info_iter == m.end())  // no chapters, so nothing to do
+    return true;
+
+  const mkvparser::Chapters* const chapters = s->GetChapters();
+  if (chapters == NULL)  // weird
+    return true;
+
+  const MetadataInfo& info = info_iter->second;
+  FILE* const file = info.file;
+
+  const int edition_count = chapters->GetEditionCount();
+
+  if (edition_count <= 0)  // weird
+    return true;  // nothing to do
+
+  if (edition_count > 1) {
+    // TODO(matthewjheaney): figure what to do here
+    printf("more than one chapter edition detected\n");
+    return false;
+  }
+
+  const mkvparser::Chapters::Edition* const edition = chapters->GetEdition(0);
+
+  const int atom_count = edition->GetAtomCount();
+
+  for (int idx = 0; idx < atom_count; ++idx) {
+    const mkvparser::Chapters::Atom* const atom = edition->GetAtom(idx);
+    const int display_count = atom->GetDisplayCount();
+
+    if (display_count <= 0)
+      continue;
+
+    if (display_count > 1) {
+      // TODO(matthewjheaney): handle case of multiple languages
+      printf("more than 1 display in atom detected\n");
+      return false;
+    }
+
+    const mkvparser::Chapters::Display* const display = atom->GetDisplay(0);
+
+    if (const char* language = display->GetLanguage()) {
+      if (strcmp(language, "eng") != 0) {
+        // TODO(matthewjheaney): handle case of multiple languages.
+
+        // We must create a separate webvtt file for each language.
+        // This isn't a simple problem (which is why we defer it for
+        // now), because there's nothing in the header that tells us
+        // what languages we have as cues.  We must parse the displays
+        // of each atom to determine that.
+
+        // One solution is to make two passes over the input data.
+        // First parse the displays, creating an in-memory cache of
+        // all the chapter cues, sorted according to their language.
+        // After we have read all of the chapter atoms from the input
+        // file, we can then write separate output files for each
+        // language.
+
+        printf("only English-language chapter cues are supported\n");
+        return false;
+      }
+    }
+
+    if (!WriteChaptersCue(file, chapters, atom, display))
+      return false;
+  }
+
+  return true;
+}
+
+bool vttdemux::WriteChaptersCue(
+    FILE* f,
+    const mkvparser::Chapters* chapters,
+    const mkvparser::Chapters::Atom* atom,
+    const mkvparser::Chapters::Display* display) {
+  // We start a new cue by writing a cue separator (an empty line)
+  // into the stream.
+
+  if (fputc('\n', f) < 0)
+    return false;
+
+  // A WebVTT Cue comprises 3 things: a cue identifier, followed by
+  // the cue timings, followed by the payload of the cue.  We write
+  // each part of the cue in sequence.
+
+  // TODO(matthewjheaney): write cue identifier
+  // if (!WriteChaptersCueIdentifier(f, atom))
+  //   return false;
+
+  if (!WriteChaptersCueTimings(f, chapters, atom))
+    return false;
+
+  if (!WriteChaptersCuePayload(f, display))
+    return false;
+
+  return true;
+}
+
+bool vttdemux::WriteChaptersCueTimings(
+    FILE* f,
+    const mkvparser::Chapters* chapters,
+    const mkvparser::Chapters::Atom* atom) {
+  const mkvtime_t start_ns = atom->GetStartTime(chapters);
+
+  if (start_ns < 0)
+    return false;
+
+  const mkvtime_t stop_ns = atom->GetStopTime(chapters);
+
+  if (stop_ns < 0)
+    return false;
+
+  if (!WriteCueTime(f, start_ns))
+    return false;
+
+  if (fputs(" --> ", f) < 0)
+    return false;
+
+  if (!WriteCueTime(f, stop_ns))
+    return false;
+
+  if (fputc('\n', f) < 0)
+    return false;
+
+  return true;
+}
+
+bool vttdemux::WriteChaptersCuePayload(
+    FILE* f,
+    const mkvparser::Chapters::Display* display) {
+  // Bind a Chapter parser object to the display, which allows us to
+  // extract each line of text from the title-part of the display.
+  ChapterAtomParser parser(display);
+
+  int count = 0;  // count of lines of payload text written to output file
+  for (string line;;) {
+    const int e = parser.GetLine(&line);
+
+    if (e < 0)  // error (only -- we allow EOS here)
+      return false;
+
+    if (line.empty())  // TODO(matthewjheaney): retain this check?
+      break;
+
+    if (fprintf(f, "%s\n", line.c_str()) < 0)
+      return false;
+
+    ++count;
+  }
+
+  if (count <= 0)  // WebVTT cue requires non-empty payload
+    return false;
 
   return true;
 }
