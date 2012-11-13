@@ -9,6 +9,8 @@
       'target_name': 'test_support_common',
       'type': 'static_library',
       'dependencies': [
+        # NOTE: New dependencies should generally be added in the OS!="ios"
+        # dependencies block below, rather than here.
         'app/policy/cloud_policy_codegen.gyp:policy',
         'browser',
         '../sync/protocol/sync_proto.gyp:sync_proto',
@@ -16,32 +18,17 @@
         'chrome_resources.gyp:chrome_strings',
         'chrome_resources.gyp:theme_resources',
         'common',
-        'common/extensions/api/api.gyp:api',
-        'plugin',
-        'renderer',
-        'utility',
         '../base/base.gyp:test_support_base',
         '../content/content.gyp:content_app',
-        '../content/content.gyp:content_gpu',
-        '../content/content.gyp:content_plugin',
-        '../content/content.gyp:content_ppapi_plugin',
-        '../content/content.gyp:content_renderer',
-        '../content/content.gyp:content_utility',
-        '../content/content.gyp:content_worker',
         '../content/content.gyp:test_support_content',
-        '../ipc/ipc.gyp:test_support_ipc',
         '../media/media.gyp:media_test_support',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
-        '../ppapi/ppapi_internal.gyp:ppapi_shared',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        '../ui/compositor/compositor.gyp:compositor_test_support',
       ],
       'export_dependent_settings': [
-        'renderer',
         'app/policy/cloud_policy_codegen.gyp:policy',
         '../base/base.gyp:test_support_base',
       ],
@@ -272,6 +259,35 @@
         '../webkit/quota/mock_quota_manager.h',
       ],
       'conditions': [
+        ['OS!="ios"', {
+          'dependencies': [
+            'common/extensions/api/api.gyp:api',
+            'plugin',
+            'renderer',
+            'utility',
+            '../content/content.gyp:content_gpu',
+            '../content/content.gyp:content_plugin',
+            '../content/content.gyp:content_ppapi_plugin',
+            '../content/content.gyp:content_renderer',
+            '../content/content.gyp:content_utility',
+            '../content/content.gyp:content_worker',
+            '../ipc/ipc.gyp:test_support_ipc',
+            '../ppapi/ppapi_internal.gyp:ppapi_shared',
+            '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+            '../ui/compositor/compositor.gyp:compositor_test_support',
+          ],
+          'export_dependent_settings': [
+            'renderer',
+          ],
+        }, {  # OS=="ios"
+          'sources/': [
+            # Exclude everything but iOS-specific files.
+            ['exclude', '\\.(cc|mm)$'],
+            ['include', '_ios\\.(cc|mm)$'],
+            ['include', '(^|/)ios/'],
+            # TODO(ios): Add files here as they are updated to compile on iOS.
+          ],
+        }],
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
@@ -348,16 +364,16 @@
       'target_name': 'unit_tests',
       'type': '<(gtest_target_type)',
       'dependencies': [
-        # unit tests should only depend on
+        # NOTE: New dependencies should generally be added in the OS!="ios"
+        # dependencies block below, rather than here.
+        # Unit tests should only depend on:
         # 1) everything that the chrome binaries depend on:
         '<@(chromium_dependencies)',
         # 2) test-specific support libraries:
         '../base/base.gyp:test_support_base',
-        '../gpu/gpu.gyp:gpu_unittest_utils',
         '../media/media.gyp:media_test_support',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
-        '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'test_support_common',
@@ -371,27 +387,16 @@
         '../skia/skia.gyp:skia',
         '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
-        '../third_party/cld/cld.gyp:cld',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libxml/libxml.gyp:libxml',
-        '../tools/json_schema_compiler/test/json_schema_compiler_tests.gyp:json_schema_compiler_tests',
-        '../ui/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui_resources',
         '../ui/ui.gyp:ui_test_support',
-        '../v8/tools/gyp/v8.gyp:v8',
-        'common/extensions/api/api.gyp:api',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
       ],
       'include_dirs': [
         '..',
-      ],
-      # TODO(scr): Use this in browser_tests too.
-      'includes': [
-        'js_unittest_rules.gypi',
       ],
       'defines': [
         'CLD_WINDOWS',
@@ -1043,7 +1048,7 @@
         'browser/sync/glue/data_type_controller_mock.cc',
         'browser/sync/glue/data_type_controller_mock.h',
         'browser/sync/glue/data_type_error_handler_mock.cc',
-        'browser/sync/glue/data_type_error_handler_mock.cc',
+        'browser/sync/glue/data_type_error_handler_mock.h',
         'browser/sync/glue/data_type_manager_impl_unittest.cc',
         'browser/sync/glue/data_type_manager_mock.cc',
         'browser/sync/glue/data_type_manager_mock.h',
@@ -1396,6 +1401,7 @@
         'browser/visitedlink/visitedlink_unittest.cc',
         'browser/web_applications/web_app_mac_unittest.mm',
         'browser/web_applications/web_app_unittest.cc',
+        'browser/web_resource/promo_resource_service_mobile_ntp_unittest.cc',
         'browser/web_resource/promo_resource_service_unittest.cc',
         'browser/webdata/autofill_entry_unittest.cc',
         'browser/webdata/autofill_profile_syncable_service_unittest.cc',
@@ -1613,6 +1619,47 @@
         '../webkit/quota/mock_storage_client.h',
       ],
       'conditions': [
+        ['OS!="ios"', {
+          'dependencies': [
+            'common/extensions/api/api.gyp:api',
+            '../gpu/gpu.gyp:gpu_unittest_utils',
+            '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
+            '../third_party/cld/cld.gyp:cld',
+            '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+            '../third_party/libjingle/libjingle.gyp:libjingle',
+            '../tools/json_schema_compiler/test/json_schema_compiler_tests.gyp:json_schema_compiler_tests',
+            '../ui/gl/gl.gyp:gl',
+            '../v8/tools/gyp/v8.gyp:v8',
+          ],
+          # TODO(scr): Use this in browser_tests too.
+          'includes': [
+            'js_unittest_rules.gypi',
+          ],
+        }, {  # OS=="ios"
+          'dependencies': [
+            '../third_party/ocmock/ocmock.gyp:ocmock',
+          ],
+          'sources/': [
+            # Exclude everything but iOS-specific files.
+            ['exclude', '\\.(cc|mm)$'],
+            ['include', '_ios\\.(cc|mm)$'],
+            ['include', '(^|/)ios/'],
+            # TODO(ios): Add files here as they are updated to compile on iOS.
+          ],
+          'actions': [
+            {
+              'action_name': 'copy_test_data',
+              'variables': {
+                'test_data_files': [
+                  'test/data/zip',
+                ],
+                'test_data_prefix': 'chrome',
+              },
+              'includes': [ '../build/copy_test_data_ios.gypi' ],
+            },
+          ],
+          'xcode_settings': {'OTHER_LDFLAGS': ['-ObjC']},
+        }],
         ['enable_background==0', {
           'sources/': [
             ['exclude', '^browser/background/'],
@@ -1632,7 +1679,7 @@
             'nacl/nacl_validation_query_unittest.cc',
           ],
         }],
-        ['target_arch!="arm"', {
+        ['target_arch!="arm" and OS!="ios"', {
           'dependencies': [
             # build time dependency.
             '../v8/tools/gyp/v8.gyp:v8_shell#host',
@@ -1848,7 +1895,7 @@
             },
           },
         }],
-        ['os_posix == 1 and OS != "mac" and OS != "android"', {
+        ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
@@ -1880,7 +1927,8 @@
           # but when we tried to pull it up to the common.gypi level, it broke
           # other things like the ui, startup, and page_cycler tests. *shrug*
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
-        }, { # OS != "mac"
+        }],
+        ['OS!="mac" and OS!="ios"', {
           'dependencies': [
             'chrome_resources.gyp:packed_extra_resources',
             'chrome_resources.gyp:packed_resources',
@@ -1965,10 +2013,12 @@
             '../skia/ext/vector_canvas_unittest.cc',
           ],
         }],
-        ['OS=="android"', {
-          'sources': [
+        ['OS!="android" and OS!="ios"', {
+          'sources!': [
             'browser/web_resource/promo_resource_service_mobile_ntp_unittest.cc',
           ],
+        }],
+        ['OS=="android"', {
           'sources!': [
             # Bookmark export/import are handled via the BookmarkColumns
             # ContentProvider.
