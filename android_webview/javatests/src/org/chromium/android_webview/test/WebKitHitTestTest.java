@@ -164,6 +164,54 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
      * BUG=158284
      */
     @FlakyTest
+    public void testSrcEmailType() throws Throwable {
+        String email = "foo@bar.com";
+        String prefix = "mailto:";
+        String page = fullPageLink(prefix + email, ANCHOR_TEXT);
+        setServerResponseAndLoad(page);
+        simulateTouchCenterOfWebViewOnUiThread();
+        assertTrue(pollForHitTestDataOnUiThread(HitTestResult.EMAIL_TYPE, email));
+        assertTrue(pollForHrefAndImageSrcOnUiThread(prefix+ email, ANCHOR_TEXT, null));
+    }
+
+    /*
+     * @SmallTest
+     * @Feature({"AndroidWebView", "WebKitHitTest"})
+     * BUG=158284
+     */
+    @FlakyTest
+    public void testSrcGeoType() throws Throwable {
+        String location = "Jilin";
+        String prefix = "geo:0,0?q=";
+        String page = fullPageLink(prefix + location, ANCHOR_TEXT);
+        setServerResponseAndLoad(page);
+        simulateTouchCenterOfWebViewOnUiThread();
+        assertTrue(pollForHitTestDataOnUiThread(HitTestResult.GEO_TYPE, location));
+        assertTrue(pollForHrefAndImageSrcOnUiThread(prefix + location, ANCHOR_TEXT, null));
+    }
+
+    /*
+     * @SmallTest
+     * @Feature({"AndroidWebView", "WebKitHitTest"})
+     * BUG=158284
+     */
+    @FlakyTest
+    public void testSrcPhoneType() throws Throwable {
+        String phone_num = "1234567890";
+        String prefix = "tel:";
+        String page = fullPageLink("tel:" + phone_num, ANCHOR_TEXT);
+        setServerResponseAndLoad(page);
+        simulateTouchCenterOfWebViewOnUiThread();
+        assertTrue(pollForHitTestDataOnUiThread(HitTestResult.PHONE_TYPE, phone_num));
+        assertTrue(pollForHrefAndImageSrcOnUiThread(prefix + phone_num, ANCHOR_TEXT, null));
+    }
+
+    /*
+     * @SmallTest
+     * @Feature({"AndroidWebView", "WebKitHitTest"})
+     * BUG=158284
+     */
+    @FlakyTest
     public void testSrcImgeAnchorType() throws Throwable {
         String relImageSrc = "/nonexistent.jpg";
         String fullImageSrc = mWebServer.getResponseUrl(relImageSrc);

@@ -4,10 +4,13 @@
 
 #include "android_webview/renderer/aw_render_view_ext.h"
 
+#include <string>
+
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/common/render_view_messages.h"
+#include "base/string_piece.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/url_constants.h"
+#include "content/public/renderer/android_content_detection_prefixes.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
@@ -23,6 +26,22 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 namespace android_webview {
+
+namespace {
+
+bool RemovePrefixAndAssignIfMatches(const base::StringPiece& prefix,
+                                    const GURL& url,
+                                    std::string* dest) {
+  const base::StringPiece spec(url.spec());
+
+  if (spec.starts_with(prefix)) {
+    dest->assign(spec.begin() + prefix.length(), spec.end());
+    return true;
+  }
+  return false;
+}
+
+}
 
 AwRenderViewExt::AwRenderViewExt(content::RenderView* render_view)
     : content::RenderViewObserver(render_view) {
@@ -126,8 +145,25 @@ void AwRenderViewExt::OnDoHitTest(int view_x, int view_y) {
   if (result.absoluteLinkURL().isValid() &&
       !result.absoluteImageURL().isValid() &&
       !is_javascript_scheme) {
-    data.type = AwHitTestData::SRC_LINK_TYPE;
-    data.extra_data_for_type = url.spec();
+    if (RemovePrefixAndAssignIfMatches(
+        content::kAddressPrefix,
+        url,
+        &data.extra_data_for_type)) {
+      data.type = AwHitTestData::GEO_TYPE;
+    } else if (RemovePrefixAndAssignIfMatches(
+        content::kPhoneNumberPrefix,
+        url,
+        &data.extra_data_for_type)) {
+      data.type = AwHitTestData::PHONE_TYPE;
+    } else if (RemovePrefixAndAssignIfMatches(
+        content::kEmailPrefix,
+        url,
+        &data.extra_data_for_type)) {
+      data.type = AwHitTestData::EMAIL_TYPE;
+    } else {
+      data.type = AwHitTestData::SRC_LINK_TYPE;
+      data.extra_data_for_type = url.spec();
+    }
   } else if (result.absoluteLinkURL().isValid() &&
              result.absoluteImageURL().isValid() &&
              !is_javascript_scheme) {
@@ -140,8 +176,6 @@ void AwRenderViewExt::OnDoHitTest(int view_x, int view_y) {
   } else if (result.isContentEditable()) {
     data.type = AwHitTestData::EDIT_TEXT_TYPE;
     DCHECK(data.extra_data_for_type.length() == 0);
-  } else {
-    // TODO(boliu): Do content detection here.
   }
 
   Send(new AwViewHostMsg_UpdateHitTestData(routing_id(), data));

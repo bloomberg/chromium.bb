@@ -25,8 +25,10 @@ struct AwHitTestData {
     // their normal values for the respective type.
     UNKNOWN_TYPE = 0,
 
-    // Content detection types. Not used yet.
-    // TODO(boliu): Hook up content detection.
+    // Special case urls for SRC_LINK_TYPE below. Each type corresponds to a
+    // different prefix in content url_constants. |extra_data_for_type| will
+    // contain the url but with the prefix removed. Other fields are the same
+    // as SRC_LINK_TYPE.
     PHONE_TYPE = 2,
     GEO_TYPE = 3,
     EMAIL_TYPE = 4,

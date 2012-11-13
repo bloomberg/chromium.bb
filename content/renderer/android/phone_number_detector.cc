@@ -8,6 +8,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/renderer/android_content_detection_prefixes.h"
 #include "net/base/escape.h"
 #include "third_party/libphonenumber/src/phonenumber_api.h"
 #include "third_party/libphonenumber/src/phonenumbers/phonenumbermatch.h"
@@ -23,9 +24,6 @@ namespace {
 
 // Maximum number of characters to look around for phone number detection.
 const size_t kMaximumTelephoneLength = 20;
-
-// Prefix used for telephone number intent URIs.
-const char kPhoneNumberSchemaPrefix[] = "tel:";
 
 }  // anonymous namespace
 
@@ -52,7 +50,7 @@ GURL PhoneNumberDetector::GetIntentURL(const std::string& content_text) {
   if (content_text.empty())
     return GURL();
 
-  return GURL(kPhoneNumberSchemaPrefix +
+  return GURL(kPhoneNumberPrefix +
       net::EscapeQueryParamValue(content_text, true));
 }
 

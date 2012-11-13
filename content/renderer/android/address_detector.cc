@@ -9,12 +9,10 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/common/android/address_parser.h"
+#include "content/public/renderer/android_content_detection_prefixes.h"
 #include "net/base/escape.h"
 
 namespace {
-
-// Prefix used for geographical address intent URIs.
-static const char kAddressSchemaPrefix[] = "geo:0,0?q=";
 
 // Maximum text length to be searched for address detection.
 static const size_t kMaxAddressLength = 250;
@@ -30,7 +28,7 @@ AddressDetector::~AddressDetector() {
 }
 
 GURL AddressDetector::GetIntentURL(const std::string& content_text) {
-  return GURL(kAddressSchemaPrefix +
+  return GURL(kAddressPrefix +
       net::EscapeQueryParamValue(content_text, true));
 }
 
