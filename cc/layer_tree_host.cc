@@ -4,6 +4,7 @@
 
 #include "cc/layer_tree_host.h"
 
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "cc/font_atlas.h"
@@ -21,6 +22,7 @@
 #include "cc/overdraw_metrics.h"
 #include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
+#include "cc/switches.h"
 #include "cc/thread.h"
 #include "cc/thread_proxy.h"
 #include "cc/tree_synchronizer.h"
@@ -51,6 +53,12 @@ LayerTreeSettings::LayerTreeSettings()
     , maxUntiledLayerSize(gfx::Size(512, 512))
     , minimumOcclusionTrackingSize(gfx::Size(160, 160))
 {
+    // TODO(danakj): Move this to chromium when we don't go through the WebKit API anymore.
+    showPropertyChangedRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowPropertyChangedRects);
+    showSurfaceDamageRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowSurfaceDamageRects);
+    showScreenSpaceRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowScreenSpaceRects);
+    showReplicaScreenSpaceRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowReplicaScreenSpaceRects);
+    showOccludingRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowOccludingRects);
 }
 
 LayerTreeSettings::~LayerTreeSettings()
