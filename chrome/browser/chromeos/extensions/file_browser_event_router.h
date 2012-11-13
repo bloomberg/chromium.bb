@@ -196,11 +196,6 @@ class FileBrowserEventRouter
   // zero.
   void HandleRemoteUpdateRequestOnUIThread(bool start);
 
-  // Used to implement MountDrive(). Called after the authentication.
-  void OnAuthenticated(const base::Closure& callback,
-                       google_apis::GDataErrorCode error,
-                       const std::string& tokeni);
-
   scoped_refptr<FileWatcherDelegate> delegate_;
   WatcherMap file_watchers_;
   scoped_ptr<FileBrowserNotifications> notifications_;

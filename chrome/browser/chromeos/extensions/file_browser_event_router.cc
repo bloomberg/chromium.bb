@@ -232,30 +232,6 @@ void FileBrowserEventRouter::MountDrive(
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveSystemService* system_service =
-      DriveSystemServiceFactory::GetForProfile(profile_);
-  if (system_service) {
-    system_service->drive_service()->Authenticate(
-        base::Bind(&FileBrowserEventRouter::OnAuthenticated,
-                   this,
-                   callback));
-  }
-}
-
-void FileBrowserEventRouter::OnAuthenticated(
-    const base::Closure& callback,
-    google_apis::GDataErrorCode error,
-    const std::string& token) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  chromeos::MountError error_code;
-  // For the file manager to work offline, GDATA_NO_CONNECTION is allowed.
-  if (error == google_apis::HTTP_SUCCESS ||
-      error == google_apis::GDATA_NO_CONNECTION)
-    error_code = chromeos::MOUNT_ERROR_NONE;
-  else
-    error_code = chromeos::MOUNT_ERROR_NOT_AUTHENTICATED;
-
   // Pass back the gdata mount point path as source path.
   const std::string& gdata_path = drive::util::GetDriveMountPointPathAsString();
   DiskMountManager::MountPointInfo mount_info(
@@ -265,7 +241,11 @@ void FileBrowserEventRouter::OnAuthenticated(
       chromeos::disks::MOUNT_CONDITION_NONE);
 
   // Raise mount event.
-  MountCompleted(DiskMountManager::MOUNTING, error_code, mount_info);
+  // We can pass chromeos::MOUNT_ERROR_NONE even when authentication is failed
+  // or network is unreachable. These two errors will be handled later.
+  MountCompleted(DiskMountManager::MOUNTING,
+                 chromeos::MOUNT_ERROR_NONE,
+                 mount_info);
 
   if (!callback.is_null())
     callback.Run();
