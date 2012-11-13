@@ -172,6 +172,9 @@
 #define SK_SCALAR_IS_FLOAT
 #undef SK_SCALAR_IS_FIXED
 
+#define SK_MSCALAR_IS_DOUBLE
+#undef SK_MSCALAR_IS_FLOAT
+
 #define GR_MAX_OFFSCREEN_AA_DIM     512
 
 // Log the file and line number for assertions.

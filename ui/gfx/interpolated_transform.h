@@ -46,6 +46,7 @@ class UI_EXPORT InterpolatedTransform {
   void SetReversed(bool reversed) { reversed_ = reversed; }
   bool Reversed() const { return reversed_; }
 
+  // NOTE: this function is soon to be deprecated.
   static bool FactorTRS(const gfx::Transform& transform,
                         gfx::Point* translation,
                         float* rotation,

@@ -15,12 +15,15 @@
 
 namespace {
 
-static const float EPSILON = 1e-6f;
+static const double EPSILON = 1e-6;
 
-bool IsMultipleOfNinetyDegrees(float degrees)
-{
-  float remainder = fabs(fmod(degrees, 90.0f));
-  return remainder < EPSILON || 90.0f - remainder < EPSILON;
+bool IsMultipleOfNinetyDegrees(double degrees) {
+  double remainder = fabs(fmod(degrees, 90.0));
+  return remainder < EPSILON || 90.0 - remainder < EPSILON;
+}
+
+bool IsApproximatelyZero(double value) {
+  return fabs(value) < EPSILON;
 }
 
 // Returns false if |degrees| is not a multiple of ninety degrees or if
@@ -29,8 +32,7 @@ bool IsMultipleOfNinetyDegrees(float degrees)
 // the rotation matrix corresponding to |degrees| which has entries that are all
 // either 0, 1 or -1.
 bool MassageRotationIfMultipleOfNinetyDegrees(gfx::Transform* rotation,
-                                              float degrees)
-{
+                                              float degrees) {
   if (!IsMultipleOfNinetyDegrees(degrees) || !rotation)
     return false;
 
@@ -107,53 +109,54 @@ bool InterpolatedTransform::FactorTRS(const gfx::Transform& transform,
                                       float* rotation,
                                       gfx::Point3F* scale) {
   const SkMatrix44& m = transform.matrix();
-  float m00 = m.get(0, 0);
-  float m01 = m.get(0, 1);
-  float m10 = m.get(1, 0);
-  float m11 = m.get(1, 1);
+  double m00 = SkMScalarToDouble(m.get(0, 0));
+  double m01 = SkMScalarToDouble(m.get(0, 1));
+  double m10 = SkMScalarToDouble(m.get(1, 0));
+  double m11 = SkMScalarToDouble(m.get(1, 1));
 
   // A factorable 2D TRS matrix must be of the form:
   //    [ sx*cos_theta -(sy*sin_theta) 0 tx ]
   //    [ sx*sin_theta   sy*cos_theta  0 ty ]
   //    [ 0              0             1 0  ]
   //    [ 0              0             0 1  ]
-  if (m.get(0, 2) != 0 ||
-      m.get(1, 2) != 0 ||
-      m.get(2, 0) != 0 ||
-      m.get(2, 1) != 0 ||
-      m.get(2, 2) != 1 ||
-      m.get(2, 3) != 0 ||
-      m.get(3, 0) != 0 ||
-      m.get(3, 1) != 0 ||
-      m.get(3, 2) != 0 ||
-      m.get(3, 3) != 1) {
+  if (!IsApproximatelyZero(SkMScalarToDouble(m.get(0, 2))) ||
+      !IsApproximatelyZero(SkMScalarToDouble(m.get(1, 2))) ||
+      !IsApproximatelyZero(SkMScalarToDouble(m.get(2, 0))) ||
+      !IsApproximatelyZero(SkMScalarToDouble(m.get(2, 1))) ||
+      !IsApproximatelyZero(SkMScalarToDouble(m.get(2, 2)) - 1) ||
+      !IsApproximatelyZero(SkMScalarToDouble(m.get(2, 3))) ||
+      !IsApproximatelyZero(SkMScalarToDouble(m.get(3, 0))) ||
+      !IsApproximatelyZero(SkMScalarToDouble(m.get(3, 1))) ||
+      !IsApproximatelyZero(SkMScalarToDouble(m.get(3, 2))) ||
+      !IsApproximatelyZero(SkMScalarToDouble(m.get(3, 3)) - 1)) {
     return false;
   }
 
-  float scale_x = sqrt(m00 * m00 + m10 * m10);
-  float scale_y = sqrt(m01 * m01 + m11 * m11);
+  double scale_x = std::sqrt(m00 * m00 + m10 * m10);
+  double scale_y = std::sqrt(m01 * m01 + m11 * m11);
 
   if (scale_x == 0 || scale_y == 0)
     return false;
 
-  float cos_theta = m00 / scale_x;
-  float sin_theta = m10 / scale_x;
+  double cos_theta = m00 / scale_x;
+  double sin_theta = m10 / scale_x;
 
-  if ((fabs(cos_theta - (m11 / scale_y))) > EPSILON ||
-      (fabs(sin_theta + (m01 / scale_y))) > EPSILON ||
-      (fabs(cos_theta*cos_theta + sin_theta*sin_theta - 1.0f) > EPSILON)) {
+  if (!IsApproximatelyZero(cos_theta - (m11 / scale_y)) ||
+      !IsApproximatelyZero(sin_theta + (m01 / scale_y)) ||
+      !IsApproximatelyZero(cos_theta*cos_theta + sin_theta*sin_theta - 1.0f))
     return false;
-  }
 
-  float radians = atan2(sin_theta, cos_theta);
+  double radians = std::atan2(sin_theta, cos_theta);
 
   if (translation)
-    *translation = gfx::Point(m.get(0, 3), m.get(1, 3));
+    *translation = gfx::Point(SkMScalarToFloat(m.get(0, 3)),
+                              SkMScalarToFloat(m.get(1, 3)));
   if (rotation)
-    *rotation = radians * 180 / M_PI;
+    *rotation = static_cast<float>(radians * 180.0 / M_PI);
   if (scale)
-    *scale = gfx::Point3F(scale_x, scale_y, 1.0f);
-
+    *scale = gfx::Point3F(static_cast<float>(scale_x),
+                          static_cast<float>(scale_y),
+                          1.0f);
   return true;
 }
 
