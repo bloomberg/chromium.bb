@@ -1320,6 +1320,8 @@
         'browser/ui/views/ash/balloon_view_ash.h',
         'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.cc',
         'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h',
+        'browser/ui/views/ash/tab_scrubber.h',
+        'browser/ui/views/ash/tab_scrubber.cc',
         'browser/ui/views/autofill/autofill_dialog_views.cc',
         'browser/ui/views/autofill/autofill_dialog_views.h',
         'browser/ui/views/autofill/autofill_external_delegate_views.cc',

@@ -373,6 +373,10 @@ extern const char kPluginsMetadataServerURL[];
 extern const char kTabletUI[];
 #endif
 
+#if defined(USE_ASH)
+extern const char kAshEnableTabScrubbing[];
+#endif
+
 #if defined(OS_CHROMEOS)
 // Keep switches in alphabetical order.
 extern const char kAshWebUIInit[];

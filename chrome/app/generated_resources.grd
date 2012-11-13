@@ -6529,6 +6529,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ADVANCED_GESTURES_DESCRIPTION" desc="Title for the flag to enable advanced gestures.">
         Enables advanced gestures (e.g. 4-finger pinch to minimize window etc.).
       </message>
+      <message name="IDS_FLAGS_ENABLE_TAB_SCRUBBING_NAME" desc="Title for the flag to enable advanced gestures.">
+        Enable tab scrubbing
+      </message>
+      <message name="IDS_FLAGS_ENABLE_TAB_SCRUBBING_DESCRIPTION" desc="Title for the flag to enable advanced gestures.">
+        Enables tab switching via ctrl + left drag.
+      </message>      
       <message name="IDS_FLAGS_ENABLE_MEMORY_MONITOR_NAME" desc="Title for the flag to enable advanced gestures.">
         Enable memory monitor
       </message>

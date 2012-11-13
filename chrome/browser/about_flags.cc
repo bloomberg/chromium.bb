@@ -1000,6 +1000,12 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshEnableAdvancedGestures),
   },
+  { "ash-enable-tab-scrubbing",
+    IDS_FLAGS_ENABLE_TAB_SCRUBBING_NAME,
+    IDS_FLAGS_ENABLE_TAB_SCRUBBING_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kAshEnableTabScrubbing),
+  },
 #if defined(OS_LINUX)
   { "ash-enable-memory-monitor",
       IDS_FLAGS_ENABLE_MEMORY_MONITOR_NAME,

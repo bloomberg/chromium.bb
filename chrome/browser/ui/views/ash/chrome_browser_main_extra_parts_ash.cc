@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/views/ash/tab_scrubber.h"
+#include "chrome/common/chrome_switches.h"
 #include "ui/aura/desktop/desktop_screen.h"
 #include "ui/aura/desktop/desktop_stacking_client.h"
 #include "ui/aura/env.h"
@@ -44,6 +47,10 @@ ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (chrome::ShouldOpenAshOnStartup()) {
     chrome::OpenAsh();
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kAshEnableTabScrubbing)) {
+      TabScrubber::GetInstance();
+    }
   } else {
 #if !defined(OS_CHROMEOS)
     gfx::Screen::SetScreenTypeDelegate(new ScreenTypeDelegateWin);

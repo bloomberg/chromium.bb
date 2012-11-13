@@ -1378,6 +1378,10 @@ const char kPluginsMetadataServerURL[]      = "plugins-metadata-server-url";
 const char kTabletUI[]                      = "tablet-ui";
 #endif
 
+#if defined(USE_ASH)
+const char kAshEnableTabScrubbing[]            = "ash-enable-tab-scrubbing";
+#endif
+
 #if defined(OS_CHROMEOS)
 // When wallpaper boot animation is not disabled this switch
 // is used to override OOBE/sign in WebUI init type.
