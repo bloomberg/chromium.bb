@@ -237,6 +237,11 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsInline) {
   EXPECT_TRUE([controller userCountField]);
   EXPECT_NE(0u, [[[controller userCountField] stringValue] length]);
 
+  EXPECT_TRUE([controller storeLinkButton]);
+  EXPECT_NE(0u, [[[controller storeLinkButton] stringValue] length]);
+  EXPECT_NE('^',
+            [[[controller storeLinkButton] stringValue] characterAtIndex:0]);
+
   // Though we have no permissions warnings, these should still be hooked up,
   // just invisible.
   EXPECT_TRUE([controller outlineView]);

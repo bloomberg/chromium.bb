@@ -2,10 +2,10 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">12B19</string>
+		<string key="IBDocument.SystemVersion">12C54</string>
 		<string key="IBDocument.InterfaceBuilderVersion">2549</string>
-		<string key="IBDocument.AppKitVersion">1187</string>
-		<string key="IBDocument.HIToolboxVersion">624.00</string>
+		<string key="IBDocument.AppKitVersion">1187.34</string>
+		<string key="IBDocument.HIToolboxVersion">625.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
 			<string key="NS.object.0">2549</string>
@@ -54,7 +54,7 @@
 					<object class="NSButton" id="478302198">
 						<reference key="NSNextResponder" ref="232836874"/>
 						<int key="NSvFlags">289</int>
-						<string key="NSFrame">{{88, 14}, {96, 28}}</string>
+						<string key="NSFrame">{{246, 19}, {96, 28}}</string>
 						<reference key="NSSuperview" ref="232836874"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="806362510"/>
@@ -81,7 +81,7 @@
 					<object class="NSButton" id="806362510">
 						<reference key="NSNextResponder" ref="232836874"/>
 						<int key="NSvFlags">289</int>
-						<string key="NSFrame">{{194, 14}, {96, 28}}</string>
+						<string key="NSFrame">{{352, 19}, {96, 28}}</string>
 						<reference key="NSSuperview" ref="232836874"/>
 						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
@@ -125,7 +125,7 @@ ARcABAAAAAEAAAACARwAAwAAAAEAAQAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 					<object class="NSTextField" id="592145570">
 						<reference key="NSNextResponder" ref="232836874"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{17, 120}, {186, 17}}</string>
+						<string key="NSFrame">{{19, 120}, {347, 17}}</string>
 						<reference key="NSSuperview" ref="232836874"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="561354826"/>
@@ -135,8 +135,8 @@ ARcABAAAAAEAAAACARwAAwAAAAEAAQAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 							<int key="NSCellFlags2">272629760</int>
 							<string key="NSContents">Title</string>
 							<object class="NSFont" key="NSSupport">
-								<string key="NSName">LucidaGrande-Bold</string>
-								<double key="NSSize">13</double>
+								<string key="NSName">LucidaGrande</string>
+								<double key="NSSize">15</double>
 								<int key="NSfFlags">16</int>
 							</object>
 							<reference key="NSControlView" ref="592145570"/>
@@ -151,7 +151,7 @@ ARcABAAAAAEAAAACARwAAwAAAAEAAQAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 							</object>
 							<object class="NSColor" key="NSTextColor">
 								<int key="NSColorSpace">1</int>
-								<bytes key="NSRGB">MC4yMTU2ODYyNzQ1IDAuMjE1Njg2Mjc0NSAwLjIxNTY4NjI3NDUAA</bytes>
+								<bytes key="NSRGB">MCAwIDAAA</bytes>
 							</object>
 						</object>
 						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
@@ -171,7 +171,7 @@ ARcABAAAAAEAAAACARwAAwAAAAEAAQAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 								<string>NeXT TIFF v4.0 pasteboard type</string>
 							</object>
 						</object>
-						<string key="NSFrame">{{221, 68}, {69, 69}}</string>
+						<string key="NSFrame">{{380, 66}, {69, 69}}</string>
 						<reference key="NSSuperview" ref="232836874"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="478302198"/>
@@ -188,7 +188,7 @@ ARcABAAAAAEAAAACARwAAwAAAAEAAQAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 						<bool key="NSEditable">YES</bool>
 					</object>
 				</object>
-				<string key="NSFrameSize">{307, 151}</string>
+				<string key="NSFrameSize">{468, 151}</string>
 				<reference key="NSSuperview"/>
 				<reference key="NSWindow"/>
 				<reference key="NSNextKeyView" ref="592145570"/>
@@ -520,6 +520,7 @@ ARcABAAAAAEAAAACARwAAwAAAAEAAQAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 							<string>outlineView_</string>
 							<string>ratingCountField_</string>
 							<string>ratingStars_</string>
+							<string>storeLinkButton_</string>
 							<string>titleField_</string>
 							<string>userCountField_</string>
 							<string>warningsSeparator_</string>
@@ -533,6 +534,7 @@ ARcABAAAAAEAAAACARwAAwAAAAEAAQAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 							<string>NSOutlineView</string>
 							<string>NSTextField</string>
 							<string>NSView</string>
+							<string>NSButton</string>
 							<string>NSTextField</string>
 							<string>NSTextField</string>
 							<string>NSBox</string>
@@ -549,6 +551,7 @@ ARcABAAAAAEAAAACARwAAwAAAAEAAQAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 							<string>outlineView_</string>
 							<string>ratingCountField_</string>
 							<string>ratingStars_</string>
+							<string>storeLinkButton_</string>
 							<string>titleField_</string>
 							<string>userCountField_</string>
 							<string>warningsSeparator_</string>
@@ -582,6 +585,10 @@ ARcABAAAAAEAAAACARwAAwAAAAEAAQAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 							<object class="IBToOneOutletInfo">
 								<string key="name">ratingStars_</string>
 								<string key="candidateClassName">NSView</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">storeLinkButton_</string>
+								<string key="candidateClassName">NSButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">titleField_</string>

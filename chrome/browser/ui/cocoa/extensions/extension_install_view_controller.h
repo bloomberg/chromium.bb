@@ -39,6 +39,7 @@ class PageNavigator;
   IBOutlet NSView* ratingStars_;
   IBOutlet NSTextField* ratingCountField_;
   IBOutlet NSTextField* userCountField_;
+  IBOutlet NSButton* storeLinkButton_;
 
   content::PageNavigator* navigator_;  // weak
   ExtensionInstallPrompt::Delegate* delegate_;  // weak
@@ -59,6 +60,7 @@ class PageNavigator;
 @property(nonatomic, readonly) NSView* ratingStars;
 @property(nonatomic, readonly) NSTextField* ratingCountField;
 @property(nonatomic, readonly) NSTextField* userCountField;
+@property(nonatomic, readonly) NSButton* storeLinkButton;
 
 - (id)initWithNavigator:(content::PageNavigator*)navigator
                delegate:(ExtensionInstallPrompt::Delegate*)delegate

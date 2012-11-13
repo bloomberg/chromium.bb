@@ -12,6 +12,8 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
+#import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
+#include "chrome/browser/ui/constrained_window.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"
@@ -108,7 +110,7 @@ void AppendRatingStarsShim(const gfx::ImageSkia* skiaImage, void* data) {
 
 void DrawBulletInFrame(NSRect frame) {
   NSRect rect;
-  rect.size.width = std::min(NSWidth(frame), NSHeight(frame)) * 0.38;
+  rect.size.width = std::min(NSWidth(frame), NSHeight(frame)) * 0.25;
   rect.size.height = NSWidth(rect);
   rect.origin.x = frame.origin.x + (NSWidth(frame) - NSWidth(rect)) / 2.0;
   rect.origin.y = frame.origin.y + (NSHeight(frame) - NSHeight(rect)) / 2.0;
@@ -132,6 +134,7 @@ void DrawBulletInFrame(NSRect frame) {
 @synthesize ratingStars = ratingStars_;
 @synthesize ratingCountField = ratingCountField_;
 @synthesize userCountField = userCountField_;
+@synthesize storeLinkButton = storeLinkButton_;
 
 - (id)initWithNavigator:(content::PageNavigator*)navigator
                delegate:(ExtensionInstallPrompt::Delegate*)delegate
@@ -193,6 +196,9 @@ void DrawBulletInFrame(NSRect frame) {
         prompt_->GetRatingCount())];
     [userCountField_ setStringValue:base::SysUTF16ToNSString(
         prompt_->GetUserCount())];
+    [[storeLinkButton_ cell] setUnderlineOnHover:YES];
+    [[storeLinkButton_ cell] setTextColor:
+        gfx::SkColorToCalibratedNSColor(ConstrainedWindow::GetLinkColor())];
   }
 
   // The bundle install dialog has no icon.
@@ -394,9 +400,9 @@ void DrawBulletInFrame(NSRect frame) {
      forTableColumn:(NSTableColumn *)tableColumn
                item:(id)item {
   if ([[item objectForKey:kIsGroupItemKey] boolValue])
-    [cell setFont:[NSFont boldSystemFontOfSize:11.0]];
+    [cell setFont:[NSFont boldSystemFontOfSize:12.0]];
   else
-    [cell setFont:[NSFont systemFontOfSize:11.0]];
+    [cell setFont:[NSFont systemFontOfSize:12.0]];
 }
 
 - (void)outlineView:(NSOutlineView *)outlineView
