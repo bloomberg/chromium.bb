@@ -127,6 +127,16 @@ class ConstrainedWebDialogDelegateViewViews
   virtual views::View* GetContentsView() OVERRIDE {
     return this;
   }
+  virtual void OnWidgetMove() OVERRIDE {
+    // We need to check the existence of the widget because when running on
+    // WinXP this could get executed before the widget is entirely created.
+    if (!GetWidget())
+      return;
+
+    GetWidget()->CenterWindow(
+        GetWidget()->non_client_view()->GetPreferredSize());
+    views::WidgetDelegate::OnWidgetMove();
+  }
 
   // views::WebView overrides.
   virtual bool AcceleratorPressed(
