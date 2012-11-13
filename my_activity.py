@@ -677,14 +677,14 @@ class MyActivity(object):
     assert(self.webkit_repo)
     git_dir = os.path.normpath(self.webkit_repo + "/.git")
     if not os.path.exists(git_dir):
-      print "%s doesn't exist, turning off WebKit checks." % git_dir
+      print "%s doesn't exist, skipping WebKit checks." % git_dir
       self.webkit_repo = None
       return
 
     try:
       self.git_cmd(self.webkit_repo, "fetch", "origin")
     except subprocess.CalledProcessError:
-      print "Failed to update WebKit repo, turning off WebKit checks."
+      print "Failed to update WebKit repo, skipping WebKit checks."
       self.webkit_repo = None
       return
 
@@ -696,13 +696,13 @@ class MyActivity(object):
       global webkitpy
       webkitpy = __import__('webkitpy.common.config.committers')
     except ImportError:
-      print "Failed to import WebKit committer list, turning off WebKit checks."
+      print "Failed to import WebKit committer list, skipping WebKit checks."
       self.webkit_repo = None
       return
 
     if not webkit_account(self.user):
       email = self.user + "@chromium.org"
-      print "No %s in committers.py, turning off WebKit checks." % email
+      print "No %s in committers.py, skipping WebKit checks." % email
       self.webkit_repo = None
 
   @staticmethod
