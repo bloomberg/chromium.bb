@@ -9,22 +9,13 @@ namespace syncer {
 
 class Cryptographer;
 
-namespace sessions {
-class SyncSession;
-}
-
 namespace syncable {
 class Directory;
-class MutableEntry;
 class WriteTransaction;
 }
 
-void ApplyControlDataUpdates(sessions::SyncSession* session);
-void ApplyNigoriUpdate(syncable::WriteTransaction* trans,
-                       syncable::MutableEntry* const entry,
-                       Cryptographer* cryptographer);
-void ApplyControlUpdate(syncable::WriteTransaction* const trans,
-                        syncable::MutableEntry* const entry,
+void ApplyControlDataUpdates(syncable::Directory* dir);
+bool ApplyNigoriUpdates(syncable::WriteTransaction* trans,
                         Cryptographer* cryptographer);
 
 }  // namespace syncer

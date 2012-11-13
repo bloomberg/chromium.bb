@@ -27,7 +27,7 @@ TestEntryFactory::TestEntryFactory(syncable::Directory *dir)
 
 TestEntryFactory::~TestEntryFactory() { }
 
-int64 TestEntryFactory::CreateUnappliedNewItemWithParent(
+void TestEntryFactory::CreateUnappliedNewItemWithParent(
     const string& item_id,
     const sync_pb::EntitySpecifics& specifics,
     const string& parent_id) {
@@ -42,7 +42,6 @@ int64 TestEntryFactory::CreateUnappliedNewItemWithParent(
   entry.Put(syncable::SERVER_PARENT_ID, Id::CreateFromServerId(parent_id));
   entry.Put(syncable::SERVER_IS_DIR, true);
   entry.Put(syncable::SERVER_SPECIFICS, specifics);
-  return entry.Get(syncable::META_HANDLE);
 }
 
 int64 TestEntryFactory::CreateUnappliedNewItem(
@@ -57,12 +56,10 @@ int64 TestEntryFactory::CreateUnappliedNewItem(
   entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
   entry.Put(syncable::SERVER_NON_UNIQUE_NAME, item_id);
   entry.Put(syncable::SERVER_PARENT_ID, syncable::GetNullId());
-  entry.Put(syncable::SERVER_IS_DIR, is_unique);
+  entry.Put(syncable::SERVER_IS_DIR, false);
   entry.Put(syncable::SERVER_SPECIFICS, specifics);
-  if (is_unique) { // For top-level nodes.
-    entry.Put(syncable::UNIQUE_SERVER_TAG,
-              ModelTypeToRootTag(GetModelTypeFromSpecifics(specifics)));
-  }
+  if (is_unique)  // For top-level nodes.
+    entry.Put(syncable::UNIQUE_SERVER_TAG, item_id);
   return entry.Get(syncable::META_HANDLE);
 }
 
@@ -122,7 +119,8 @@ int64 TestEntryFactory::CreateUnappliedAndUnsyncedItem(
 }
 
 int64 TestEntryFactory::CreateSyncedItem(
-    const std::string& name, ModelType model_type, bool is_folder) {
+    const std::string& name, ModelType
+    model_type, bool is_folder) {
   WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
 
   syncable::Id parent_id(TestIdFactory::root());

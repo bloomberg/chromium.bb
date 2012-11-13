@@ -281,6 +281,12 @@ ModelTypeSet ControlTypes() {
     set.Put(ModelTypeFromInt(i));
   }
 
+  // TODO(rlarocque): Re-enable this when the server supports it.
+  set.Remove(DEVICE_INFO);
+
+  // TODO(rlarocque): Re-enable this when the server supports it.
+  set.Remove(EXPERIMENTS);
+
   return set;
 }
 

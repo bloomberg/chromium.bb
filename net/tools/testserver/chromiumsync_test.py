@@ -50,8 +50,7 @@ class SyncDataModelTest(unittest.TestCase):
       declared_specs.add(spec.tag)
 
     unique_datatypes = set([x.sync_type for x in specs])
-    self.assertEqual(unique_datatypes,
-                     set(chromiumsync.ALL_TYPES[1:]),
+    self.assertEqual(unique_datatypes, set(chromiumsync.ALL_TYPES),
                      'Every sync datatype should have a permanent folder '
                      'associated with it')
 
@@ -71,17 +70,19 @@ class SyncDataModelTest(unittest.TestCase):
 
   def testCreatePermanentItems(self):
     self.model._CreateDefaultPermanentItems(chromiumsync.ALL_TYPES)
-    self.assertEqual(len(chromiumsync.ALL_TYPES) + 1,
+    self.assertEqual(len(chromiumsync.ALL_TYPES) + 2,
                      len(self.model._entries))
 
   def ExpectedPermanentItemCount(self, sync_type):
     if sync_type == chromiumsync.BOOKMARK:
       if self._expect_synced_bookmarks_folder:
-        return 4
+        return 5
       else:
-        return 3
-    else:
+        return 4
+    elif sync_type == chromiumsync.TOP_LEVEL:
       return 1
+    else:
+      return 2
 
   def testGetChangesFromTimestampZeroForEachType(self):
     all_types = chromiumsync.ALL_TYPES[1:]
@@ -95,6 +96,7 @@ class SyncDataModelTest(unittest.TestCase):
       expected_count = self.ExpectedPermanentItemCount(sync_type)
       self.assertEqual(expected_count, version)
       self.assertEqual(expected_count, len(changes))
+      self.assertEqual('google_chrome', changes[0].server_defined_unique_tag)
       for change in changes:
         self.assertTrue(change.HasField('server_defined_unique_tag'))
         self.assertEqual(change.version, change.sync_timestamp)

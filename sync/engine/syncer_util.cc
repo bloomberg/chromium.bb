@@ -209,7 +209,7 @@ UpdateAttemptResponse AttemptToUpdateEntry(
     // We can't decrypt this node yet.
     DVLOG(1) << "Received an undecryptable "
              << ModelTypeToString(entry->GetServerModelType())
-             << " update, returning conflict_encryption.";
+             << " update, returning encryption_conflict.";
     return CONFLICT_ENCRYPTION;
   } else if (specifics.has_password() &&
              entry->Get(UNIQUE_SERVER_TAG).empty()) {
@@ -217,7 +217,7 @@ UpdateAttemptResponse AttemptToUpdateEntry(
     const sync_pb::PasswordSpecifics& password = specifics.password();
     if (!cryptographer->CanDecrypt(password.encrypted())) {
       DVLOG(1) << "Received an undecryptable password update, returning "
-               << "conflict_encryption.";
+               << "encryption_conflict.";
       return CONFLICT_ENCRYPTION;
     }
   }
@@ -232,7 +232,6 @@ UpdateAttemptResponse AttemptToUpdateEntry(
     // different ways we deal with it once here to reduce the amount of code and
     // potential errors.
     if (!parent.good() || parent.Get(IS_DEL) || !parent.Get(IS_DIR)) {
-      DVLOG(1) <<  "Entry has bad parent, returning conflict_hierarchy.";
       return CONFLICT_HIERARCHY;
     }
     if (entry->Get(PARENT_ID) != new_parent) {

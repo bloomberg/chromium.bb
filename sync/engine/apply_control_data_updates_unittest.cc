@@ -41,13 +41,11 @@ class ApplyControlDataUpdatesTest : public SyncerCommandTest {
     workers()->push_back(make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
     workers()->push_back(
         make_scoped_refptr(new FakeModelWorker(GROUP_PASSWORD)));
+    (*mutable_routing_info())[BOOKMARKS] = GROUP_UI;
+    (*mutable_routing_info())[PASSWORDS] = GROUP_PASSWORD;
     (*mutable_routing_info())[NIGORI] = GROUP_PASSIVE;
-    (*mutable_routing_info())[EXPERIMENTS] = GROUP_PASSIVE;
     SyncerCommandTest::SetUp();
     entry_factory_.reset(new TestEntryFactory(directory()));
-
-    session()->mutable_status_controller()->set_updates_request_types(
-        ControlTypes());
 
     syncable::ReadTransaction trans(FROM_HERE, directory());
   }
@@ -92,7 +90,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriUpdate) {
       ModelTypeToRootTag(NIGORI), specifics, true);
   EXPECT_FALSE(cryptographer->has_pending_keys());
 
-  ApplyControlDataUpdates(session());
+  ApplyControlDataUpdates(directory());
 
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
@@ -172,7 +170,7 @@ TEST_F(ApplyControlDataUpdatesTest, EncryptUnsyncedChanges) {
     EXPECT_EQ(2*batch_s+1, handles.size());
   }
 
-  ApplyControlDataUpdates(session());
+  ApplyControlDataUpdates(directory());
 
   EXPECT_FALSE(cryptographer->has_pending_keys());
   EXPECT_TRUE(cryptographer->is_ready());
@@ -200,7 +198,7 @@ TEST_F(ApplyControlDataUpdatesTest, EncryptUnsyncedChanges) {
     entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
   }
 
-  ApplyControlDataUpdates(session());
+  ApplyControlDataUpdates(directory());
 
   EXPECT_FALSE(cryptographer->has_pending_keys());
   EXPECT_TRUE(cryptographer->is_ready());
@@ -287,7 +285,7 @@ TEST_F(ApplyControlDataUpdatesTest, CannotEncryptUnsyncedChanges) {
     EXPECT_EQ(2*batch_s+1, handles.size());
   }
 
-  ApplyControlDataUpdates(session());
+  ApplyControlDataUpdates(directory());
 
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
@@ -365,7 +363,7 @@ TEST_F(ApplyControlDataUpdatesTest,
 
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
-  ApplyControlDataUpdates(session());
+  ApplyControlDataUpdates(directory());
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
 
@@ -444,7 +442,7 @@ TEST_F(ApplyControlDataUpdatesTest,
 
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
-  ApplyControlDataUpdates(session());
+  ApplyControlDataUpdates(directory());
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
 
@@ -518,7 +516,7 @@ TEST_F(ApplyControlDataUpdatesTest,
 
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
-  ApplyControlDataUpdates(session());
+  ApplyControlDataUpdates(directory());
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
 
@@ -598,7 +596,7 @@ TEST_F(ApplyControlDataUpdatesTest,
 
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
-  ApplyControlDataUpdates(session());
+  ApplyControlDataUpdates(directory());
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
 
@@ -681,7 +679,7 @@ TEST_F(ApplyControlDataUpdatesTest,
 
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
-  ApplyControlDataUpdates(session());
+  ApplyControlDataUpdates(directory());
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
 
@@ -762,7 +760,7 @@ TEST_F(ApplyControlDataUpdatesTest,
 
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
-  ApplyControlDataUpdates(session());
+  ApplyControlDataUpdates(directory());
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
 
@@ -843,7 +841,7 @@ TEST_F(ApplyControlDataUpdatesTest,
 
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
-  ApplyControlDataUpdates(session());
+  ApplyControlDataUpdates(directory());
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
 
@@ -868,74 +866,6 @@ TEST_F(ApplyControlDataUpdatesTest,
     syncable::ReadTransaction trans(FROM_HERE, directory());
     EXPECT_TRUE(directory()->initial_sync_ended_types().Has(NIGORI));
   }
-}
-
-// Check that we can apply a simple control datatype node successfully.
-TEST_F(ApplyControlDataUpdatesTest, ControlApply) {
-  EXPECT_FALSE(directory()->initial_sync_ended_types().Has(EXPERIMENTS));
-
-  std::string experiment_id = "experiment";
-  sync_pb::EntitySpecifics specifics;
-  specifics.mutable_experiments()->mutable_keystore_encryption()->
-      set_enabled(true);
-  int64 experiment_handle = entry_factory_->CreateUnappliedNewItem(
-      experiment_id, specifics, false);
-  ApplyControlDataUpdates(session());
-
-  EXPECT_TRUE(directory()->initial_sync_ended_types().Has(EXPERIMENTS));
-  EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(experiment_handle));
-  EXPECT_TRUE(
-      entry_factory_->GetLocalSpecificsForItem(experiment_handle).
-          experiments().keystore_encryption().enabled());
-}
-
-// Verify that we apply top level folders before their children.
-TEST_F(ApplyControlDataUpdatesTest, ControlApplyParentBeforeChild) {
-  EXPECT_FALSE(directory()->initial_sync_ended_types().Has(EXPERIMENTS));
-
-  std::string parent_id = "parent";
-  std::string experiment_id = "experiment";
-  sync_pb::EntitySpecifics specifics;
-  specifics.mutable_experiments()->mutable_keystore_encryption()->
-      set_enabled(true);
-  int64 experiment_handle = entry_factory_->CreateUnappliedNewItemWithParent(
-      experiment_id, specifics, parent_id);
-  int64 parent_handle = entry_factory_->CreateUnappliedNewItem(
-      parent_id, specifics, true);
-  ApplyControlDataUpdates(session());
-
-  EXPECT_TRUE(directory()->initial_sync_ended_types().Has(EXPERIMENTS));
-  EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(parent_handle));
-  EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(experiment_handle));
-  EXPECT_TRUE(
-      entry_factory_->GetLocalSpecificsForItem(experiment_handle).
-          experiments().keystore_encryption().enabled());
-}
-
-// Verify that we handle control datatype conflicts by preserving the server
-// data.
-TEST_F(ApplyControlDataUpdatesTest, ControlConflict) {
-  EXPECT_FALSE(directory()->initial_sync_ended_types().Has(EXPERIMENTS));
-
-  std::string experiment_id = "experiment";
-  sync_pb::EntitySpecifics local_specifics, server_specifics;
-  server_specifics.mutable_experiments()->mutable_keystore_encryption()->
-      set_enabled(true);
-  local_specifics.mutable_experiments()->mutable_keystore_encryption()->
-      set_enabled(false);
-  int64 experiment_handle = entry_factory_->CreateSyncedItem(
-      experiment_id, EXPERIMENTS, false);
-  entry_factory_->SetServerSpecificsForItem(experiment_handle,
-                                            server_specifics);
-  entry_factory_->SetLocalSpecificsForItem(experiment_handle,
-                                           local_specifics);
-  ApplyControlDataUpdates(session());
-
-  EXPECT_TRUE(directory()->initial_sync_ended_types().Has(EXPERIMENTS));
-  EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(experiment_handle));
-  EXPECT_TRUE(
-      entry_factory_->GetLocalSpecificsForItem(experiment_handle).
-          experiments().keystore_encryption().enabled());
 }
 
 }  // namespace syncer

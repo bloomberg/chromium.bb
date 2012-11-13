@@ -24,7 +24,7 @@ class TestEntryFactory {
   ~TestEntryFactory();
 
   // Create a new unapplied folder node with a parent.
-  int64 CreateUnappliedNewItemWithParent(
+  void CreateUnappliedNewItemWithParent(
       const std::string& item_id,
       const sync_pb::EntitySpecifics& specifics,
       const std::string& parent_id);
