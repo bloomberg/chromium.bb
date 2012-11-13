@@ -236,10 +236,11 @@ void ProfileShortcutManagerWin::CreateProfileShortcut(
 }
 
 void ProfileShortcutManagerWin::OnProfileAdded(const FilePath& profile_path) {
-  if (profile_manager_->GetProfileInfoCache().GetNumberOfProfiles() == 1) {
+  const size_t profile_count =
+      profile_manager_->GetProfileInfoCache().GetNumberOfProfiles();
+  if (profile_count == 1) {
     UpdateShortcutForProfileAtPath(profile_path, true);
-  } else if (
-      profile_manager_->GetProfileInfoCache().GetNumberOfProfiles() == 2) {
+  } else if (profile_count == 2) {
     UpdateShortcutForProfileAtPath(
         GetOtherProfilePath(profile_path), false);
   }
@@ -252,16 +253,14 @@ void ProfileShortcutManagerWin::OnProfileWillBeRemoved(
 void ProfileShortcutManagerWin::OnProfileWasRemoved(
     const FilePath& profile_path,
     const string16& profile_name) {
+  const ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
   // If there is only one profile remaining, remove the badging information
   // from an existing shortcut.
-  if (profile_manager_->GetProfileInfoCache().GetNumberOfProfiles() == 1) {
-    UpdateShortcutForProfileAtPath(
-        profile_manager_->GetProfileInfoCache().GetPathOfProfileAtIndex(0),
-        false);
-  }
+  if (cache.GetNumberOfProfiles() == 1)
+    UpdateShortcutForProfileAtPath(cache.GetPathOfProfileAtIndex(0), false);
 
   string16 profile_name_updated;
-  if (profile_manager_->GetProfileInfoCache().GetNumberOfProfiles() != 0)
+  if (cache.GetNumberOfProfiles() != 0)
     profile_name_updated = profile_name;
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
@@ -299,16 +298,14 @@ void ProfileShortcutManagerWin::OnProfileAvatarChanged(
 void ProfileShortcutManagerWin::StartProfileShortcutNameChange(
     const FilePath& profile_path,
     const string16& old_profile_name) {
-  size_t profile_index = profile_manager_->GetProfileInfoCache().
-      GetIndexOfProfileWithPath(profile_path);
+  const ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
+  size_t profile_index = cache.GetIndexOfProfileWithPath(profile_path);
   if (profile_index == std::string::npos)
       return;
   // If the shortcut will have an appended name, get the profile name.
-  string16 new_profile_name =
-      (profile_manager_->GetProfileInfoCache().GetNumberOfProfiles() == 1) ?
-          string16() :
-          profile_manager_->GetProfileInfoCache().
-              GetNameOfProfileAtIndex(profile_index);
+  string16 new_profile_name;
+  if (cache.GetNumberOfProfiles() != 1)
+    new_profile_name = cache.GetNameOfProfileAtIndex(profile_index);
 
   string16 old_shortcut_file(GetShortcutNameForProfile(old_profile_name));
   string16 new_shortcut_file(GetShortcutNameForProfile(new_profile_name));
@@ -334,22 +331,19 @@ FilePath ProfileShortcutManagerWin::GetOtherProfilePath(
 void ProfileShortcutManagerWin::UpdateShortcutForProfileAtPath(
     const FilePath& profile_path,
     bool create_always) {
-  size_t profile_index = profile_manager_->GetProfileInfoCache().
-      GetIndexOfProfileWithPath(profile_path);
+  ProfileInfoCache* cache = &profile_manager_->GetProfileInfoCache();
+  size_t profile_index = cache->GetIndexOfProfileWithPath(profile_path);
   if (profile_index == std::string::npos)
       return;
-  bool remove_badging = profile_manager_->GetProfileInfoCache().
-      GetNumberOfProfiles() == 1;
+  bool remove_badging = cache->GetNumberOfProfiles() == 1;
 
   string16 old_shortcut_appended_name =
-      profile_manager_->GetProfileInfoCache().
-          GetShortcutNameOfProfileAtIndex(profile_index);
+      cache->GetShortcutNameOfProfileAtIndex(profile_index);
 
   string16 new_shortcut_appended_name;
   if (!remove_badging) {
     new_shortcut_appended_name =
-        profile_manager_->GetProfileInfoCache().
-            GetNameOfProfileAtIndex(profile_index);
+        cache->GetNameOfProfileAtIndex(profile_index);
   }
 
   if (!create_always &&
@@ -358,12 +352,11 @@ void ProfileShortcutManagerWin::UpdateShortcutForProfileAtPath(
 
   SkBitmap profile_avatar_bitmap_copy;
   if (!remove_badging) {
-    size_t profile_icon_index = profile_manager_->GetProfileInfoCache().
-      GetAvatarIconIndexOfProfileAtIndex(profile_index);
+    size_t profile_icon_index =
+        cache->GetAvatarIconIndexOfProfileAtIndex(profile_index);
     gfx::Image profile_avatar_image = ResourceBundle::GetSharedInstance().
         GetNativeImageNamed(
-            profile_manager_->GetProfileInfoCache().
-                GetDefaultAvatarIconResourceIDAtIndex(profile_icon_index));
+            cache->GetDefaultAvatarIconResourceIDAtIndex(profile_icon_index));
 
     DCHECK(!profile_avatar_image.IsEmpty());
     const SkBitmap* profile_avatar_bitmap =
@@ -379,6 +372,6 @@ void ProfileShortcutManagerWin::UpdateShortcutForProfileAtPath(
                  profile_path, new_shortcut_appended_name,
                  profile_avatar_bitmap_copy, create_always));
 
-  profile_manager_->GetProfileInfoCache().SetShortcutNameOfProfileAtIndex(
+  cache->SetShortcutNameOfProfileAtIndex(
       profile_index, new_shortcut_appended_name);
 }
