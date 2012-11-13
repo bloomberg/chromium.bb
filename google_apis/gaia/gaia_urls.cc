@@ -38,6 +38,9 @@ const char kOAuth2IssueTokenUrl[] =
     "https://www.googleapis.com/oauth2/v2/IssueToken";
 const char kOAuth1LoginScope[] =
     "https://www.google.com/accounts/OAuthLogin";
+const char kOAuthUserInfoUrl[] =
+    "https://www.googleapis.com/oauth2/v1/userinfo";
+
 
 void GetSwitchValueWithDefault(const char* switch_value,
                                const char* default_value,
@@ -96,7 +99,6 @@ GaiaUrls::GaiaUrls() {
   // TODO(joaodasilva): these aren't configurable for now, but are managed here
   // so that users of Gaia URLs don't have to use static constants.
   // http://crbug.com/97126
-  oauth_user_info_url_ = "https://www.googleapis.com/oauth2/v1/userinfo";
   oauth_wrap_bridge_user_info_scope_ =
       "https://www.googleapis.com/auth/userinfo.email";
   client_oauth_url_ = "https://accounts.google.com/ClientOAuth";
@@ -115,6 +117,9 @@ GaiaUrls::GaiaUrls() {
   GetSwitchValueWithDefault(switches::kOAuth2IssueTokenUrl,
                             kOAuth2IssueTokenUrl,
                             &oauth2_issue_token_url_);
+  GetSwitchValueWithDefault(switches::kOAuthUserInfoUrl,
+                            kOAuthUserInfoUrl,
+                            &oauth_user_info_url_);
 
   gaia_login_form_realm_ = "https://accounts.google.com/";
 }

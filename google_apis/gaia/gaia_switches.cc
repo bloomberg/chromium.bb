@@ -12,5 +12,6 @@ const char kGaiaUrlPath[]                   = "gaia-url-path";
 const char kOAuth1LoginScope[]              = "oauth1-login-scope";
 const char kOAuth2IssueTokenUrl[]           = "oauth2-issue-token-url";
 const char kOAuth2TokenUrl[]                = "oauth2-token-url";
+const char kOAuthUserInfoUrl[]              = "oauth-user-info-url";
 
 }  // namespace switches

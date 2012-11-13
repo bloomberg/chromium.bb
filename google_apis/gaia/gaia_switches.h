@@ -29,6 +29,8 @@ extern const char kOAuth2IssueTokenUrl[];
 // Specifies custom OAuth2 token URL for testing purposes.
 extern const char kOAuth2TokenUrl[];
 
+// Specifies custom OAuth user info URL for testing purposes.
+extern const char kOAuthUserInfoUrl[];
 }  // namespace switches
 
 #endif  // GOOGLE_APIS_GAIA_GAIA_SWITCHES_H_
