@@ -42,7 +42,8 @@ class ShellStackingClientAsh : public aura::client::StackingClient {
   virtual ~ShellStackingClientAsh();
 
   // Overridden from client::StackingClient:
-  virtual aura::Window* GetDefaultParent(aura::Window* window,
+  virtual aura::Window* GetDefaultParent(aura::Window* context,
+                                         aura::Window* window,
                                          const gfx::Rect& bounds) OVERRIDE;
 
  private:

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 
+#include "ash/shell.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -16,6 +17,8 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
 #include "chrome/common/chrome_switches.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/native_widget.h"
@@ -61,6 +64,12 @@ void BrowserFrame::InitBrowserFrame() {
     // activation.
     params.type = views::Widget::InitParams::TYPE_PANEL;
   }
+#if defined(USE_ASH)
+  if (browser_view_->browser()->host_desktop_type() ==
+      chrome::HOST_DESKTOP_TYPE_ASH) {
+    params.context = ash::Shell::GetAllRootWindows()[0];
+  }
+#endif
   Init(params);
 
   native_browser_frame_->InitSystemContextMenu();

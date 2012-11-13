@@ -575,6 +575,7 @@ void StatusBubbleViews::Init() {
     params.accept_events = false;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.parent_widget = frame;
+    params.context = frame->GetNativeView();
     popup_->Init(params);
     // We do our own animation and don't want any from the system.
     popup_->SetVisibilityChangedAnimationsEnabled(false);

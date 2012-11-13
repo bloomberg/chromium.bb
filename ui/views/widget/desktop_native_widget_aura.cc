@@ -43,7 +43,8 @@ class DesktopNativeWidgetAuraStackingClient :
   }
 
   // Overridden from client::StackingClient:
-  virtual aura::Window* GetDefaultParent(aura::Window* window,
+  virtual aura::Window* GetDefaultParent(aura::Window* context,
+                                         aura::Window* window,
                                          const gfx::Rect& bounds) OVERRIDE {
     return root_window_;
   }

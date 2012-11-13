@@ -173,5 +173,9 @@ ui::MenuModel* ShellDelegateImpl::CreateContextMenu(aura::RootWindow* root) {
   return new ContextMenu(root);
 }
 
+aura::client::StackingClient* ShellDelegateImpl::CreateStackingClient() {
+  return NULL;
+}
+
 }  // namespace shell
 }  // namespace ash

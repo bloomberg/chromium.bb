@@ -14,7 +14,6 @@
 namespace content {
 
 ShellStackingClientAsh::ShellStackingClientAsh() {
-  aura::client::SetStackingClient(this);
 }
 
 ShellStackingClientAsh::~ShellStackingClientAsh() {
@@ -25,6 +24,7 @@ ShellStackingClientAsh::~ShellStackingClientAsh() {
 }
 
 aura::Window* ShellStackingClientAsh::GetDefaultParent(
+    aura::Window* context,
     aura::Window* window,
     const gfx::Rect& bounds) {
   if (!root_window_.get()) {
