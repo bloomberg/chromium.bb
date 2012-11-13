@@ -5,7 +5,7 @@
 OBJDIR = obj
 
 OBJECTS=\
-	$(OBJDIR)/keyboard_touchpad_helper_main.o
+	$(OBJDIR)/lid_touchpad_helper_main.o
 
 DESTDIR = .
 
@@ -45,9 +45,9 @@ LINK_FLAGS=\
 	-lX11 \
 	-lXi
 
-CONF=keyboard_touchpad_helper.conf
+CONF=lid_touchpad_helper.conf
 
-EXE=keyboard_touchpad_helper
+EXE=lid_touchpad_helper
 
 all: $(EXE)
 

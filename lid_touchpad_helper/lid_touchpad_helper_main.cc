@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/input.h>
@@ -12,7 +13,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <vector>
 
 #include <base/memory/scoped_ptr.h>
 #include <base/string_number_conversions.h>
@@ -26,47 +26,28 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#ifndef EVIOCSCLOCKID
-#define EVIOCSCLOCKID  _IOW('E', 0xa0, int)
-#endif
+#define BITS_PER_LONG (sizeof(long) * 8)
+#define NBITS(x) ((((x)-1)/BITS_PER_LONG)+1)
+#define OFF(x)  ((x)%BITS_PER_LONG)
+#define LONG(x) ((x)/BITS_PER_LONG)
+#define test_bit(bit, array)((array[LONG(bit)] >> OFF(bit)) & 1)
+
+const char kDevInputEvent[] = "/dev/input";
+const char kEventDevName[] = "event";
+const char kTapEnableName[] = "Tap Enable";
 
 using std::string;
-using std::vector;
 
 DEFINE_string(display, "", "X display. Default: use env var DISPLAY");
-DEFINE_string(exclude_keycodes, "1,125,42,29,56,100,97,54",
-              "Comma separated list of keycodes to ignore. Default excludes "
-              "ESC, modifier keys, and search key on US keyboards.");
 DEFINE_bool(foreground, false, "Don't daemon()ize; run in foreground.");
-DEFINE_string(keyboard_name, "AT Translated Set 2 keyboard",
-              "Name of the keyboard to monitor");
-DEFINE_string(tp_prop_name_high, "Keyboard Touched Timeval High",
-              "Touchpad property to set (timeval high)");
-DEFINE_string(tp_prop_name_low, "Keyboard Touched Timeval Low",
-              "Touchpad property to set (timeval low)");
 
-namespace keyboard_touchpad_helper {
-
-template<typename Key>
-bool VectorContainsKey(const vector<Key>& vect, const Key& key) {
-  return std::find(vect.begin(), vect.end(), key) != vect.end();
-}
+namespace lid_touchpad_helper {
 
 void PerrorAbort(const char* err) __attribute__((noreturn));
 
 void PerrorAbort(const char* err) {
   perror(err);
   exit(1);
-}
-
-vector<unsigned short> ParseExclusions() {
-  vector<unsigned short> ret;
-  vector<string> strings;
-  base::SplitString(FLAGS_exclude_keycodes, ',', &strings);
-  for (vector<string>::iterator it = strings.begin(), e = strings.end();
-       it != e; ++it)
-    ret.push_back(strtol((*it).c_str(), NULL, 10));
-  return ret;
 }
 
 class XNotifier {
@@ -77,8 +58,7 @@ class XNotifier {
       exit(1);
     }
     dev_ = XOpenDevice(display_, tp_id);
-    prop_high_ = XInternAtom(display_, FLAGS_tp_prop_name_high.c_str(), True);
-    prop_low_ = XInternAtom(display_, FLAGS_tp_prop_name_low.c_str(), True);
+    prop_tap_enable_ = XInternAtom(display_, kTapEnableName, True);
   }
   ~XNotifier() {
     if (dev_) {
@@ -86,18 +66,13 @@ class XNotifier {
       dev_ = NULL;
     }
   }
-  bool Notify(const struct timeval& tv) {
+
+  bool NotifyLidEvent(int lid_close) {
     if (!dev_)
       return false;
-    int high = tv.tv_sec;
-    int low = tv.tv_usec;
-
-    XChangeDeviceProperty(display_, dev_, prop_high_, XA_INTEGER, 32,
-                          PropModeReplace,
-                          reinterpret_cast<const unsigned char*>(&high), 1);
-    XChangeDeviceProperty(display_, dev_, prop_low_, XA_INTEGER, 32,
-                          PropModeReplace,
-                          reinterpret_cast<const unsigned char*>(&low), 1);
+    unsigned char enable_tap = lid_close ? 0 : 1;
+    XChangeDeviceProperty(display_, dev_, prop_tap_enable_, XA_INTEGER, 8,
+                          PropModeReplace, &enable_tap, 1);
     XSync(display_, False);
     return true;
   }
@@ -105,62 +80,65 @@ class XNotifier {
  private:
   Display *display_;
   XDevice* dev_;
-  Atom prop_high_;
-  Atom prop_low_;
+  Atom prop_tap_enable_;
 };
 
-string GetKeyboardPath(Display *display) {
-  Atom prop = XInternAtom(display, "Device Node", True);
-  // Fail quick if server does not have Atom
-  if (prop == None)
-    return "";
+bool SupportLidEvent(int fd) {
+  unsigned long events[EV_MAX];
+  memset(events, 0, sizeof(events));
+  if (ioctl(fd, EVIOCGBIT(0, EV_MAX), events) < 0) {
+    fprintf(stderr, "error in ioctl on fd %d for events list\n", fd);
+    return false;
+  }
 
-  int num_devices = 0;
-  XIDeviceInfo* info = XIQueryDevice(display, XIAllDevices, &num_devices);
-  if (!info)
-    PerrorAbort("XIQueryDevice");
-  int found_devid = -1;
-  for (int i = 0; i < num_devices; i++) {
-    XIDeviceInfo* device = &info[i];
-    if (device->use != XISlaveKeyboard)
+  if (test_bit(EV_SW, events)) {
+    unsigned long switch_events[NBITS(SW_LID + 1)];
+    memset(switch_events, 0, sizeof(switch_events));
+    if (ioctl(fd, EVIOCGBIT(EV_SW, SW_LID + 1), switch_events) < 0) {
+      fprintf(stderr, "Error in ioctl on fd %d for switch_events", fd);
+      return false;
+    }
+    if (test_bit(SW_LID, switch_events))
+      return true;
+  }
+
+  return false;
+}
+
+int IsEventDevice(const struct dirent *dir) {
+  return strncmp(kEventDevName, dir->d_name, sizeof(kEventDevName) - 1) == 0;
+}
+
+int GetLidFd() {
+  struct dirent **namelist;
+  int ret = -1;
+  int ndev = scandir(kDevInputEvent, &namelist, IsEventDevice, alphasort);
+  if (ndev <= 0)
+    return ret;
+
+  for (int i = 0; i < ndev; i++) {
+    char fname[64];
+    snprintf(fname, sizeof(fname),
+            "%s/%s", kDevInputEvent, namelist[i]->d_name);
+    int fd = open(fname, O_RDONLY);
+    if (fd < 0)
       continue;
-    if (strcmp(device->name, FLAGS_keyboard_name.c_str()) == 0) {
-      found_devid = device->deviceid;
+    if (SupportLidEvent(fd)) {
+      ret = fd;
       break;
     }
+    close(fd);
   }
-  XIFreeDeviceInfo(info);
-  if (found_devid < 0)
-    return "";
 
-  Atom actual_type;
-  int actual_format;
-  unsigned long num_items, bytes_after;
-  unsigned char* data;
-  if (XIGetProperty(display, found_devid, prop, 0, 1000, False,
-                    XA_STRING, &actual_type, &actual_format,
-                    &num_items, &bytes_after, &data) != Success) {
-    // XIGetProperty can generate BadAtom, BadValue, and BadWindow errors
-    fprintf(stderr, "Mysterious X server error\n");
-    return "";
-  }
-  if (actual_type == None) {
-    const char kErr[] =
-        "Property didn't exist (not xf86-input-evdev, or -evdev too old?)?\n";
-    fprintf(stderr, "%s", kErr);
-    return "";
-  } else if (actual_type != XA_STRING || actual_format != 8) {
-    fprintf(stderr, "Property not string or bad format.\n");
-    XFree(data);
-    return "";
-  }
-  string ret = string(reinterpret_cast<char*>(data));
-  XFree(data);
+  for (int i = 0; i < ndev; i++)
+    free(namelist[i]);
+  free(namelist);
+
   return ret;
 }
 
 bool IsCmtTouchpad(Display* display, int device_id) {
-  Atom prop = XInternAtom(display, FLAGS_tp_prop_name_low.c_str(), True);
+  Atom prop = XInternAtom(display, kTapEnableName, True);
   // Fail quick if server does not have Atom
   if (prop == None)
     return false;
@@ -202,17 +180,7 @@ int GetTouchpadXId(Display* display) {
   return ret;
 }
 
-class KeyboardMonitor {
- public:
-  explicit KeyboardMonitor(const vector<unsigned short>& exclude)
-      : exclude_(exclude) {}
-  bool HandleInput(int fd, XNotifier* notifier);
-
- private:
-  vector<unsigned short> exclude_;
-};
-
-bool KeyboardMonitor::HandleInput(int fd, XNotifier* notifier) {
+bool HandleInput(int fd, XNotifier* notifier) {
   const size_t kNumEvents = 16;  // Max events to read per read call.
   struct input_event events[kNumEvents];
   const size_t kEventSize = sizeof(events[0]);
@@ -236,9 +204,10 @@ bool KeyboardMonitor::HandleInput(int fd, XNotifier* notifier) {
     }
     for (size_t i = 0, cnt = readlen / kEventSize; i < cnt; i++) {
       const struct input_event& event = events[i];
-      if (event.type == EV_KEY && !VectorContainsKey(exclude_, event.code))
-        if (!notifier->Notify(event.time))
+      if (event.type == EV_SW && event.code == SW_LID) {
+        if (!notifier->NotifyLidEvent(event.value))
           return false;
+      }
     }
   }
   return true;
@@ -246,11 +215,10 @@ bool KeyboardMonitor::HandleInput(int fd, XNotifier* notifier) {
 
 class MainLoop {
  public:
-  MainLoop(Display* display, KeyboardMonitor* monitor)
-      : monitor_(monitor),
-        display_(display),
-        kb_fd_(-1),
+  MainLoop(Display* display)
+      : display_(display),
         tp_id_(-1),
+        lid_fd_(-1),
         x_fd_(ConnectionNumber(display_)),
         xiopcode_(GetXInputOpCode()) {}
   void Run() {
@@ -270,25 +238,33 @@ class MainLoop {
         RefreshDevices();
         continue;
       }
-      int max_fd_plus_1 = std::max(x_fd_, kb_fd_) + 1;
+      int max_fd_plus_1 = std::max(x_fd_, lid_fd_) + 1;
       fd_set theset;
       FD_ZERO(&theset);
       FD_SET(x_fd_, &theset);
-      FD_SET(kb_fd_, &theset);
+      FD_SET(lid_fd_, &theset);
       int rc = select(max_fd_plus_1, &theset, NULL, NULL, NULL);
       if (errno == EBADF) {
-        close(kb_fd_);
-        kb_fd_ = -1;
+        close(lid_fd_);
+        lid_fd_ = -1;
         continue;
       }
       if (rc < 0)
         PerrorAbort("select");
       if (FD_ISSET(x_fd_, &theset))
         ServiceXFd();
-      else if (FD_ISSET(kb_fd_, &theset))
-        ServiceKeyboardFd();
+      else if (FD_ISSET(lid_fd_, &theset))
+        ServiceLidFd();
     }
   }
+
+  void ServiceLidFd() {
+    if (!HandleInput(lid_fd_, notifier_.get())) {
+      close(lid_fd_);
+      lid_fd_ = -1;
+    }
+  }
+
   void ServiceXFd() {
     while (XPending(display_)) {
       XEvent ev;
@@ -304,38 +280,19 @@ class MainLoop {
       }
     }
   }
-  void ServiceKeyboardFd() {
-    if (!monitor_->HandleInput(kb_fd_, notifier_.get())) {
-      close(kb_fd_);
-      kb_fd_ = -1;
-    }
-  }
+
   void RefreshDevices() {
-    if (kb_fd_ < 0)
-      GetKeyboardFd();
+    if (lid_fd_ < 0)
+      lid_fd_ = GetLidFd();
     if (tp_id_ < 0) {
       tp_id_ = GetTouchpadXId(display_);
       if (tp_id_ >= 0)
         notifier_.reset(new XNotifier(display_, tp_id_));
     }
   }
+
   bool DevicesNeedRefresh() {
-    return kb_fd_ < 0 || tp_id_ < 0;
-  }
-  void GetKeyboardFd() {
-    string path = GetKeyboardPath(display_);
-    if (path.empty()) {
-      kb_fd_ = -1;
-      return;
-    }
-    kb_fd_ = open(path.c_str(), O_RDONLY | O_NONBLOCK, 0);
-    if (kb_fd_) {
-      // Try to get monotonic clock events
-      unsigned int clk = CLOCK_MONOTONIC;
-      int rc = ioctl(kb_fd_, EVIOCSCLOCKID, &clk);
-      if (rc < 0)
-        fprintf(stderr, "Failed to switch to monotonic timestamps\n");
-    }
+    return tp_id_ < 0 || lid_fd_ < 0;
   }
 
   // Lifted from http://codereview.chromium.org/6975057/patch/16001/17005
@@ -354,19 +311,18 @@ class MainLoop {
   }
 
  private:
-  KeyboardMonitor* monitor_;
   Display* display_;
   scoped_ptr<XNotifier> notifier_;
-  int kb_fd_;
   int tp_id_;
+  int lid_fd_;
   int x_fd_;
   int xiopcode_;
 };
 
-};  // namespace keyboard_touchpad_helper
+};  // namespace lid_touchpad_helper
 
 int main(int argc, char** argv) {
-  using namespace keyboard_touchpad_helper;
+  using namespace lid_touchpad_helper;
   google::ParseCommandLineFlags(&argc, &argv, true);
 
   if (!FLAGS_foreground && daemon(0, 0) < 0)
@@ -394,9 +350,7 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  KeyboardMonitor monitor(ParseExclusions());
-
-  MainLoop looper(dpy, &monitor);
+  MainLoop looper(dpy);
   looper.Run();
   return 0;
 }

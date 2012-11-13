@@ -108,7 +108,7 @@ CXXFLAGS+=\
 	-DGESTURES_INTERNAL=1 \
 	-I..
 
-KEYBOARD_TOUCHPAD_HELPER=keyboard_touchpad_helper
+LID_TOUCHPAD_HELPER=lid_touchpad_helper
 
 # Local compilation needs these flags, esp for code coverage testing
 ifeq (g++,$(CXX))
@@ -143,7 +143,7 @@ TEST_LINK_FLAGS=\
 	-lgtest
 
 all: $(SONAME)
-	$(MAKE) -C $(KEYBOARD_TOUCHPAD_HELPER)
+	$(MAKE) -C $(LID_TOUCHPAD_HELPER)
 
 $(SONAME): $(SO_OBJECTS)
 	$(CXX) -shared -o $@ $(SO_OBJECTS) -Wl,-h$(SONAME:$(OBJDIR)/%=%) \
@@ -160,7 +160,7 @@ $(OBJDIR)/%.o : src/%.cc
 LIBDIR = /usr/lib
 
 install: $(SONAME)
-	$(MAKE) -C $(KEYBOARD_TOUCHPAD_HELPER) install
+	$(MAKE) -C $(LID_TOUCHPAD_HELPER) install
 	install -D -m 0755 $(SONAME) \
 		$(DESTDIR)$(LIBDIR)/$(SONAME:$(OBJDIR)/%=%)
 	ln -s $(SONAME:$(OBJDIR)/%=%) \
@@ -169,7 +169,7 @@ install: $(SONAME)
 		include/gestures.h $(DESTDIR)/usr/include/gestures/gestures.h
 
 clean:
-	$(MAKE) -C $(KEYBOARD_TOUCHPAD_HELPER) clean
+	$(MAKE) -C $(LID_TOUCHPAD_HELPER) clean
 	rm -rf $(OBJDIR) $(DEPDIR) $(TEST_EXE) html app.info app.info.orig
 
 # Unittest coverage
