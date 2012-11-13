@@ -4,11 +4,9 @@
 
 #include "content/renderer/browser_plugin/browser_plugin.h"
 
+#include "base/json/json_string_value_serializer.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#if defined (OS_WIN)
-#include "base/sys_info.h"
-#endif
 #include "base/utf_string_conversions.h"
 #include "content/common/browser_plugin_messages.h"
 #include "content/common/view_messages.h"
@@ -18,8 +16,10 @@
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/v8_value_converter_impl.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMCustomEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -27,7 +27,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "webkit/plugins/sad_plugin.h"
+
+#if defined (OS_WIN)
+#include "base/sys_info.h"
+#endif
 
 using WebKit::WebCanvas;
 using WebKit::WebPlugin;
@@ -60,7 +65,7 @@ const char kPersistPrefix[] = "persist:";
 const char kProcessId[] = "processId";
 const char kSizeChangedEventName[] = "sizechanged";
 const char kSrcAttribute[] = "src";
-const char kType[] = "type";
+const char kReason[] = "reason";
 const char kURL[] = "url";
 
 static std::string TerminationStatusToString(base::TerminationStatus status) {
@@ -112,15 +117,12 @@ BrowserPlugin::BrowserPlugin(
   BrowserPluginManager::Get()->AddBrowserPlugin(instance_id, this);
   bindings_.reset(new BrowserPluginBindings(this));
 
-  InitializeEvents();
-
   ParseAttributes(params);
 }
 
 BrowserPlugin::~BrowserPlugin() {
   if (damage_buffer_)
     FreeDamageBuffer();
-  RemoveEventListeners();
   BrowserPluginManager::Get()->RemoveBrowserPlugin(instance_id_);
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_PluginDestroyed(
@@ -223,29 +225,13 @@ void BrowserPlugin::UpdateGuestAutoSizeState() {
 
 void BrowserPlugin::SizeChangedDueToAutoSize(const gfx::Size& old_view_size) {
   size_changed_in_flight_ = false;
-  if (!HasListeners(kSizeChangedEventName))
-    return;
 
-  WebKit::WebElement plugin = container()->element();
-  v8::HandleScope handle_scope;
-  v8::Context::Scope context_scope(
-      plugin.document().frame()->mainWorldScriptContext());
-
-  // Construct the sizechanged event object.
-  v8::Local<v8::Object> event = v8::Object::New();
-  event->Set(v8::String::New(kOldHeight, sizeof(kOldHeight) - 1),
-             v8::Integer::New(old_view_size.height()),
-             v8::ReadOnly);
-  event->Set(v8::String::New(kOldWidth, sizeof(kOldWidth) - 1),
-             v8::Integer::New(old_view_size.width()),
-             v8::ReadOnly);
-  event->Set(v8::String::New(kNewHeight, sizeof(kNewHeight) - 1),
-             v8::Integer::New(last_view_size_.height()),
-             v8::ReadOnly);
-  event->Set(v8::String::New(kNewWidth, sizeof(kNewWidth) - 1),
-             v8::Integer::New(last_view_size_.width()),
-             v8::ReadOnly);
-  TriggerEvent(kSizeChangedEventName, &event);
+  std::map<std::string, base::Value*> props;
+  props[kOldHeight] = base::Value::CreateIntegerValue(old_view_size.height());
+  props[kOldWidth] = base::Value::CreateIntegerValue(old_view_size.width());
+  props[kNewHeight] = base::Value::CreateIntegerValue(last_view_size_.height());
+  props[kNewWidth] = base::Value::CreateIntegerValue(last_view_size_.width());
+  TriggerEvent(kSizeChangedEventName, &props);
 }
 
 void BrowserPlugin::SetMaxHeightAttribute(int max_height) {
@@ -374,67 +360,40 @@ float BrowserPlugin::GetDeviceScaleFactor() const {
   return render_view_->GetWebView()->deviceScaleFactor();
 }
 
-void BrowserPlugin::InitializeEvents() {
-  event_listener_map_[kExitEventName] = EventListeners();
-  event_listener_map_[kLoadAbortEventName] = EventListeners();
-  event_listener_map_[kLoadCommitEventName] = EventListeners();
-  event_listener_map_[kLoadRedirectEventName] = EventListeners();
-  event_listener_map_[kLoadStartEventName] = EventListeners();
-  event_listener_map_[kLoadStopEventName] = EventListeners();
-  event_listener_map_[kSizeChangedEventName] = EventListeners();
-}
-
-void BrowserPlugin::RemoveEventListeners() {
-  EventListenerMap::iterator event_listener_map_iter =
-      event_listener_map_.begin();
-  for (; event_listener_map_iter != event_listener_map_.end();
-       ++event_listener_map_iter) {
-    EventListeners& listeners =
-        event_listener_map_[event_listener_map_iter->first];
-    EventListeners::iterator it = listeners.begin();
-    for (; it != listeners.end(); ++it) {
-      it->Dispose();
-    }
-  }
-  event_listener_map_.clear();
-}
-
-bool BrowserPlugin::IsValidEvent(const std::string& event_name) {
-  return event_listener_map_.find(event_name) != event_listener_map_.end();
-}
-
 void BrowserPlugin::TriggerEvent(const std::string& event_name,
-                                 v8::Local<v8::Object>* event) {
-  WebKit::WebElement plugin = container()->element();
+                                 std::map<std::string, base::Value*>* props) {
+  if (!container() || !container()->element().document().frame())
+    return;
+  v8::HandleScope handle_scope;
+  std::string json_string;
+  if (props) {
+    base::DictionaryValue dict;
+    for (std::map<std::string, base::Value*>::iterator iter = props->begin(),
+             end = props->end(); iter != end; ++iter) {
+      dict.Set(iter->first, iter->second);
+    }
 
-  const EventListeners& listeners = event_listener_map_[event_name.c_str()];
-  // A v8::Local copy of the listeners is created from the v8::Persistent
-  // listeners before firing them. This is to ensure that if one of these
-  // listeners mutate the list of listeners (by calling
-  // addEventListener/removeEventListener), this local copy is not affected.
-  // This means if you mutate the list of listeners for an event X while event X
-  // is firing, the mutation is deferred until all current listeners for X have
-  // fired.
-  EventListenersLocal listeners_local;
-  listeners_local.reserve(listeners.size());
-  for (EventListeners::const_iterator it = listeners.begin();
-       it != listeners.end();
-       ++it) {
-    listeners_local.push_back(v8::Local<v8::Function>::New(*it));
+    JSONStringValueSerializer serializer(&json_string);
+    if (!serializer.Serialize(dict))
+      return;
   }
 
-  (*event)->Set(v8::String::New("name"),
-                v8::String::New(event_name.c_str(), event_name.size()),
-                v8::ReadOnly);
-  v8::Local<v8::Value> argv[] = { *event };
-  for (EventListenersLocal::const_iterator it = listeners_local.begin();
-       it != listeners_local.end();
-       ++it) {
-    WebKit::WebFrame* frame = plugin.document().frame();
-    if (!frame)
-      break;
-    frame->callFunctionEvenIfScriptDisabled(*it, v8::Object::New(), 1, argv);
-  }
+  WebKit::WebFrame* frame = container()->element().document().frame();
+  WebKit::WebDOMEvent dom_event = frame->document().createEvent("CustomEvent");
+  WebKit::WebDOMCustomEvent event = dom_event.to<WebKit::WebDOMCustomEvent>();
+
+  // The events triggered directly from the plugin <object> are internal events
+  // whose implementation details can (and likely will) change over time. The
+  // wrapper/shim (e.g. <webview> tag) should receive these events, and expose a
+  // more appropriate (and stable) event to the consumers as part of the API.
+  std::string internal_name = base::StringPrintf("-internal-%s",
+                                                 event_name.c_str());
+  event.initCustomEvent(
+      WebKit::WebString::fromUTF8(internal_name.c_str()),
+      false, false,
+      WebKit::WebSerializedScriptValue::serialize(
+          v8::String::New(json_string.c_str(), json_string.size())));
+  container()->element().dispatchEvent(event);
 }
 
 void BrowserPlugin::Back() {
@@ -570,28 +529,17 @@ void BrowserPlugin::UpdateRect(
 void BrowserPlugin::GuestGone(int process_id, base::TerminationStatus status) {
   // We fire the event listeners before painting the sad graphic to give the
   // developer an opportunity to display an alternative overlay image on crash.
-  if (HasListeners(kExitEventName)) {
-    WebKit::WebElement plugin = container()->element();
-    v8::HandleScope handle_scope;
-    v8::Context::Scope context_scope(
-        plugin.document().frame()->mainWorldScriptContext());
+  std::string termination_status = TerminationStatusToString(status);
+  std::map<std::string, base::Value*> props;
+  props[kProcessId] = base::Value::CreateIntegerValue(process_id);
+  props[kReason] = base::Value::CreateStringValue(termination_status);
 
-    // Construct the exit event object.
-    v8::Local<v8::Object> event = v8::Object::New();
-    event->Set(v8::String::New(kProcessId, sizeof(kProcessId) - 1),
-               v8::Integer::New(process_id),
-               v8::ReadOnly);
-    std::string termination_status = TerminationStatusToString(status);
-    event->Set(v8::String::New(kType, sizeof(kType) - 1),
-               v8::String::New(termination_status.data(),
-                               termination_status.size()),
-               v8::ReadOnly);
-    // Event listeners may remove the BrowserPlugin from the document. If that
-    // happens, the BrowserPlugin will be scheduled for later deletion (see
-    // BrowserPlugin::destroy()). That will clear the container_ reference,
-    // but leave other member variables valid below.
-    TriggerEvent(kExitEventName, &event);
-  }
+  // Event listeners may remove the BrowserPlugin from the document. If that
+  // happens, the BrowserPlugin will be scheduled for later deletion (see
+  // BrowserPlugin::destroy()). That will clear the container_ reference,
+  // but leave other member variables valid below.
+  TriggerEvent(kExitEventName, &props);
+
   guest_crashed_ = true;
   // We won't paint the contents of the current backing store again so we might
   // as well toss it out and save memory.
@@ -603,23 +551,11 @@ void BrowserPlugin::GuestGone(int process_id, base::TerminationStatus status) {
 }
 
 void BrowserPlugin::LoadStart(const GURL& url, bool is_top_level) {
-  if (!HasListeners(kLoadStartEventName))
-    return;
+  std::map<std::string, base::Value*> props;
+  props[kURL] = base::Value::CreateStringValue(url.spec());
+  props[kIsTopLevel] = base::Value::CreateBooleanValue(is_top_level);
 
-  WebKit::WebElement plugin = container()->element();
-  v8::HandleScope handle_scope;
-  v8::Context::Scope context_scope(
-      plugin.document().frame()->mainWorldScriptContext());
-
-  // Construct the loadStart event object.
-  v8::Local<v8::Object> event = v8::Object::New();
-  event->Set(v8::String::New(kURL, sizeof(kURL) - 1),
-             v8::String::New(url.spec().data(), url.spec().size()),
-             v8::ReadOnly);
-  event->Set(v8::String::New(kIsTopLevel, sizeof(kIsTopLevel) - 1),
-             v8::Boolean::New(is_top_level),
-             v8::ReadOnly);
-  TriggerEvent(kLoadStartEventName, &event);
+  TriggerEvent(kLoadStartEventName, &props);
 }
 
 void BrowserPlugin::LoadCommit(
@@ -632,90 +568,35 @@ void BrowserPlugin::LoadCommit(
   current_nav_entry_index_ = params.current_entry_index;
   nav_entry_count_ = params.entry_count;
 
-  if (!HasListeners(kLoadCommitEventName))
-    return;
-
-  WebKit::WebElement plugin = container()->element();
-  v8::HandleScope handle_scope;
-  v8::Context::Scope context_scope(
-      plugin.document().frame()->mainWorldScriptContext());
-
-  // Construct the loadCommit event object.
-  v8::Local<v8::Object> event = v8::Object::New();
-  event->Set(v8::String::New(kURL, sizeof(kURL) - 1),
-             v8::String::New(src_.data(), src_.size()),
-             v8::ReadOnly);
-  event->Set(v8::String::New(kIsTopLevel, sizeof(kIsTopLevel) - 1),
-             v8::Boolean::New(params.is_top_level),
-             v8::ReadOnly);
-
-  TriggerEvent(kLoadCommitEventName, &event);
+  std::map<std::string, base::Value*> props;
+  props[kURL] = base::Value::CreateStringValue(src_);
+  props[kIsTopLevel] = base::Value::CreateBooleanValue(params.is_top_level);
+  TriggerEvent(kLoadCommitEventName, &props);
 }
 
 void BrowserPlugin::LoadStop() {
-  if (!HasListeners(kLoadStopEventName))
-    return;
-
-  WebKit::WebElement plugin = container()->element();
-  v8::HandleScope handle_scope;
-  v8::Context::Scope context_scope(
-      plugin.document().frame()->mainWorldScriptContext());
-
   // Construct the loadStop event object.
-  v8::Local<v8::Object> event = v8::Object::New();
-  TriggerEvent(kLoadStopEventName, &event);
+  TriggerEvent(kLoadStopEventName, NULL);
 }
 
 void BrowserPlugin::LoadAbort(const GURL& url,
                               bool is_top_level,
                               const std::string& type) {
-  if (!HasListeners(kLoadAbortEventName))
-    return;
-
-  WebKit::WebElement plugin = container()->element();
-  v8::HandleScope handle_scope;
-  v8::Context::Scope context_scope(
-      plugin.document().frame()->mainWorldScriptContext());
-
-  // Construct the loadAbort event object.
-  v8::Local<v8::Object> event = v8::Object::New();
-  event->Set(v8::String::New(kURL, sizeof(kURL) - 1),
-             v8::String::New(url.spec().data(), url.spec().size()),
-             v8::ReadOnly);
-  event->Set(v8::String::New(kIsTopLevel, sizeof(kIsTopLevel) - 1),
-             v8::Boolean::New(is_top_level),
-             v8::ReadOnly);
-  event->Set(v8::String::New(kType, sizeof(kType) - 1),
-             v8::String::New(type.data(), type.size()),
-             v8::ReadOnly);
-
-  TriggerEvent(kLoadAbortEventName, &event);
+  std::map<std::string, base::Value*> props;
+  props[kURL] = base::Value::CreateStringValue(url.spec());
+  props[kIsTopLevel] = base::Value::CreateBooleanValue(is_top_level);
+  props[kReason] = base::Value::CreateStringValue(type);
+  TriggerEvent(kLoadAbortEventName, &props);
 }
 
 void BrowserPlugin::LoadRedirect(const GURL& old_url,
                                  const GURL& new_url,
                                  bool is_top_level) {
-  if (!HasListeners(kLoadRedirectEventName))
-    return;
-
-  WebKit::WebElement plugin = container()->element();
-  v8::HandleScope handle_scope;
-  v8::Context::Scope context_scope(
-      plugin.document().frame()->mainWorldScriptContext());
-
-  // Construct the loadRedirect event object.
-  v8::Local<v8::Object> event = v8::Object::New();
-  event->Set(v8::String::New(kOldURL, sizeof(kOldURL) - 1),
-             v8::String::New(old_url.spec().data(), old_url.spec().size()),
-             v8::ReadOnly);
-  event->Set(v8::String::New(kNewURL, sizeof(kNewURL) - 1),
-             v8::String::New(new_url.spec().data(), new_url.spec().size()),
-             v8::ReadOnly);
-  event->Set(v8::String::New(kIsTopLevel, sizeof(kIsTopLevel) - 1),
-             v8::Boolean::New(is_top_level),
-             v8::ReadOnly);
-
-  TriggerEvent(kLoadRedirectEventName, &event);
+  std::map<std::string, base::Value*> props;
+  props[kOldURL] = base::Value::CreateStringValue(old_url.spec());
+  props[kNewURL] = base::Value::CreateStringValue(new_url.spec());
+  props[kIsTopLevel] = base::Value::CreateBooleanValue(is_top_level);
+  TriggerEvent(kLoadRedirectEventName, &props);
 }
 
 void BrowserPlugin::AdvanceFocus(bool reverse) {
@@ -756,43 +637,6 @@ void BrowserPlugin::GuestContentWindowReady(int content_window_routing_id) {
 void BrowserPlugin::SetAcceptTouchEvents(bool accept) {
   if (container())
     container()->setIsAcceptingTouchEvents(accept);
-}
-
-bool BrowserPlugin::HasListeners(const std::string& event_name) {
-  return IsValidEvent(event_name) &&
-         !event_listener_map_[event_name].empty();
-}
-
-bool BrowserPlugin::AddEventListener(const std::string& event_name,
-                                     v8::Local<v8::Function> function) {
-  if (!IsValidEvent(event_name))
-    return false;
-  EventListeners& listeners = event_listener_map_[event_name];
-  for (unsigned int i = 0; i < listeners.size(); ++i) {
-    if (listeners[i] == function)
-      return false;
-  }
-  v8::Persistent<v8::Function> persistent_function =
-      v8::Persistent<v8::Function>::New(function);
-  listeners.push_back(persistent_function);
-  return true;
-}
-
-bool BrowserPlugin::RemoveEventListener(const std::string& event_name,
-                                        v8::Local<v8::Function> function) {
-  if (!HasListeners(event_name))
-    return false;
-
-  EventListeners& listeners = event_listener_map_[event_name];
-  EventListeners::iterator it = listeners.begin();
-  for (; it != listeners.end(); ++it) {
-    if (*it == function) {
-      it->Dispose();
-      listeners.erase(it);
-      return true;
-    }
-  }
-  return false;
 }
 
 WebKit::WebPluginContainer* BrowserPlugin::container() const {

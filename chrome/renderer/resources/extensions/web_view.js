@@ -14,18 +14,26 @@ var WEB_VIEW_READONLY_ATTRIBUTES = ['contentWindow'];
 // All exposed api methods for <webview>, these are forwarded to the browser
 // plugin.
 var WEB_VIEW_API_METHODS = [
-    'addEventListener',
-    'back',
-    'canGoBack',
-    'canGoForward',
-    'forward',
-    'getProcessId',
-    'go',
-    'reload',
-    'removeEventListener',
-    'stop',
-    'terminate'
-    ];
+  'back',
+  'canGoBack',
+  'canGoForward',
+  'forward',
+  'getProcessId',
+  'go',
+  'reload',
+  'stop',
+  'terminate'
+];
+
+var WEB_VIEW_EVENTS = {
+  'exit' : ['processId', 'reason'],
+  'loadabort' : ['url', 'isTopLevel', 'reason'],
+  'loadcommit' : ['url', 'isTopLevel'],
+  'loadredirect' : ['oldurl', 'newurl', 'isTopLevel'],
+  'loadstart' : ['url', 'isTopLevel'],
+  'loadstop' : [],
+  'sizechanged': ['oldHeight', 'oldWidth', 'newHeight', 'newWidth'],
+};
 
 window.addEventListener('DOMContentLoaded', function() {
   // Handle <webview> tags already in the document.
@@ -111,6 +119,10 @@ function WebView(node) {
       enumerable: true
     })
   }, this);
+
+  for (var eventName in WEB_VIEW_EVENTS) {
+    this.setupEvent_(eventName, WEB_VIEW_EVENTS[eventName]);
+  }
 };
 
 /**
@@ -138,3 +150,18 @@ WebView.prototype.copyAttribute_ = function(attributeName) {
   this.objectNode_.setAttribute(
       attributeName, this.node_.getAttribute(attributeName));
 };
+
+/**
+ * @private
+ */
+WebView.prototype.setupEvent_ = function(eventname, attribs) {
+  var node = this.node_;
+  this.objectNode_.addEventListener('-internal-' + eventname, function(e) {
+    var evt = new Event(eventname);
+    var detail = e.detail ? JSON.parse(e.detail) : {};
+    attribs.forEach(function(attribName) {
+      evt[attribName] = detail[attribName];
+    });
+    node.dispatchEvent(evt);
+  });
+}

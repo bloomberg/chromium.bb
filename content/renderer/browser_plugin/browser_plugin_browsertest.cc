@@ -274,10 +274,10 @@ TEST_F(BrowserPluginTest, GuestCrash) {
   const char* kAddEventListener =
     "var msg;"
     "function exitListener(e) {"
-    "  msg = e.type;"
+    "  msg = JSON.parse(e.detail).reason;"
     "}"
     "document.getElementById('browserplugin')."
-    "    addEventListener('exit', exitListener);";
+    "    addEventListener('-internal-exit', exitListener);";
 
   ExecuteJavaScript(kAddEventListener);
 
@@ -314,14 +314,14 @@ TEST_F(BrowserPluginTest, RemovePlugin) {
 TEST_F(BrowserPluginTest, CustomEvents) {
   const char* kAddEventListener =
     "var url;"
-    "function nav(u) {"
-    "  url = u.url;"
+    "function nav(e) {"
+    "  url = JSON.parse(e.detail).url;"
     "}"
     "document.getElementById('browserplugin')."
-    "    addEventListener('loadcommit', nav);";
+    "    addEventListener('-internal-loadcommit', nav);";
   const char* kRemoveEventListener =
     "document.getElementById('browserplugin')."
-    "    removeEventListener('loadcommit', nav);";
+    "    removeEventListener('-internal-loadcommit', nav);";
   const char* kGetProcessID =
       "document.getElementById('browserplugin').getProcessId()";
   const char* kGoogleURL = "http://www.google.com/";
@@ -501,13 +501,13 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
 TEST_F(BrowserPluginTest, RemoveEventListenerInEventListener) {
   const char* kAddEventListener =
     "var url;"
-    "function nav(u) {"
-    "  url = u.url;"
+    "function nav(e) {"
+    "  url = JSON.parse(e.detail).url;"
     "  document.getElementById('browserplugin')."
-    "      removeEventListener('loadcommit', nav);"
+    "      removeEventListener('-internal-loadcommit', nav);"
     "}"
     "document.getElementById('browserplugin')."
-    "    addEventListener('loadcommit', nav);";
+    "    addEventListener('-internal-loadcommit', nav);";
   const char* kGoogleURL = "http://www.google.com/";
   const char* kGoogleNewsURL = "http://news.google.com/";
   const char* kGetProcessID =
@@ -562,9 +562,9 @@ TEST_F(BrowserPluginTest, MultipleEventListeners) {
     "  count++;"
     "}"
     "document.getElementById('browserplugin')."
-    "    addEventListener('loadcommit', nava);"
+    "    addEventListener('-internal-loadcommit', nava);"
     "document.getElementById('browserplugin')."
-    "    addEventListener('loadcommit', navb);";
+    "    addEventListener('-internal-loadcommit', navb);";
   const char* kGoogleURL = "http://www.google.com/";
   const char* kGetProcessID =
       "document.getElementById('browserplugin').getProcessId()";
@@ -616,13 +616,13 @@ TEST_F(BrowserPluginTest, RemoveBrowserPluginOnExit) {
 
   const char* kAddEventListener =
     "function exitListener(e) {"
-    "  if (e.type == 'killed') {"
+    "  if (JSON.parse(e.detail).reason == 'killed') {"
     "    var bp = document.getElementById('browserplugin');"
     "    bp.parentNode.removeChild(bp);"
     "  }"
     "}"
     "document.getElementById('browserplugin')."
-    "    addEventListener('exit', exitListener);";
+    "    addEventListener('-internal-exit', exitListener);";
 
   ExecuteJavaScript(kAddEventListener);
 

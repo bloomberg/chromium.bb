@@ -1,13 +1,14 @@
 <script type="text/javascript">
 function sizeChanged(evt) {
-  document.title = "AutoSize(" + evt.newWidth + ", " + evt.newHeight + ")";
+  var data = JSON.parse(evt.detail);
+  document.title = "AutoSize(" + data.newWidth + ", " + data.newHeight + ")";
 }
 
 function loadAbort(evt) {
-  document.title = evt.type;
+  document.title = JSON.parse(evt.detail).reason;
 }
 function loadStart(evt) {
-  document.title = evt.url;
+  document.title = JSON.parse(evt.detail).url;
 }
 function loadStop(evt) {
   document.title = "loadStop";
@@ -15,17 +16,19 @@ function loadStop(evt) {
 
 var commitIsTopLevel;
 function loadCommit(evt) {
-  document.title = "loadCommit:" + evt.url;
-  commitIsTopLevel = evt.isTopLevel;
+  var detail = JSON.parse(evt.detail);
+  document.title = "loadCommit:" + detail.url;
+  commitIsTopLevel = detail.isTopLevel;
 }
 
 var redirectOldUrl;
 var redirectNewUrl;
 function loadRedirect(event) {
   document.title = "redirected";
-  if (event.isTopLevel) {
-    redirectOldUrl = event.oldUrl;
-    redirectNewUrl = event.newUrl;
+  var detail = JSON.parse(event.detail);
+  if (detail.isTopLevel) {
+    redirectOldUrl = detail.oldUrl;
+    redirectNewUrl = detail.newUrl;
   }
 }
 function SetSrc(src) {
@@ -99,11 +102,11 @@ function receiveMessage(event) {
   }
 }
   var plugin = document.getElementById('plugin');
-  plugin.addEventListener('loadstart', loadStart);
-  plugin.addEventListener('loadabort', loadAbort);
-  plugin.addEventListener('loadredirect', loadRedirect);
+  plugin.addEventListener('-internal-loadstart', loadStart);
+  plugin.addEventListener('-internal-loadabort', loadAbort);
+  plugin.addEventListener('-internal-loadredirect', loadRedirect);
   window.addEventListener('message', receiveMessage, false);
-  plugin.addEventListener('loadstop', loadStop);
-  plugin.addEventListener('loadcommit', loadCommit);
-  plugin.addEventListener('sizechanged', sizeChanged);
+  plugin.addEventListener('-internal-loadstop', loadStop);
+  plugin.addEventListener('-internal-loadcommit', loadCommit);
+  plugin.addEventListener('-internal-sizechanged', sizeChanged);
 </script>

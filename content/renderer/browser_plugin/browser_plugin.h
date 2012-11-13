@@ -115,15 +115,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // touch events.
   void SetAcceptTouchEvents(bool accept);
 
-  // Indicates whether there are any Javascript listeners attached to a
-  // provided event_name.
-  bool HasListeners(const std::string& event_name);
-  // Add a custom event listener to this BrowserPlugin instance.
-  bool AddEventListener(const std::string& event_name,
-                        v8::Local<v8::Function> function);
-  // Remove a custom event listener from this BrowserPlugin instance.
-  bool RemoveEventListener(const std::string& event_name,
-                        v8::Local<v8::Function> function);
   // Tells the BrowserPlugin to tell the guest to navigate to the previous
   // navigation entry in the navigation history.
   void Back();
@@ -229,9 +220,10 @@ class CONTENT_EXPORT BrowserPlugin :
   // Returns whether |event_name| is a valid event.
   bool IsValidEvent(const std::string& event_name);
 
-  // Triggers the event-listeners for |event_name|.
+  // Triggers the event-listeners for |event_name|. Note that the function
+  // frees all the values in |props|.
   void TriggerEvent(const std::string& event_name,
-                    v8::Local<v8::Object>* event);
+                    std::map<std::string, base::Value*>* props);
 
   // Creates and maps transport dib. Overridden in tests.
   virtual TransportDIB* CreateTransportDIB(const size_t size);
@@ -286,11 +278,9 @@ class CONTENT_EXPORT BrowserPlugin :
   // Tracks the visibility of the browser plugin regardless of the whole
   // embedder RenderView's visibility.
   bool visible_;
-  typedef std::vector<v8::Local<v8::Function> > EventListenersLocal;
-  typedef std::vector<v8::Persistent<v8::Function> > EventListeners;
-  typedef std::map<std::string, EventListeners> EventListenerMap;
-  EventListenerMap event_listener_map_;
+
   WebCursor cursor_;
+
   gfx::Size last_view_size_;
   bool size_changed_in_flight_;
 

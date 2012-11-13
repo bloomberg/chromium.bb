@@ -359,34 +359,6 @@ class BrowserPluginMethodBinding {
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginMethodBinding);
 };
 
-class BrowserPluginBindingAddListener : public BrowserPluginMethodBinding {
- public:
-  BrowserPluginBindingAddListener()
-      : BrowserPluginMethodBinding(kAddEventListener, 2) {
-  }
-
-  virtual bool Invoke(BrowserPluginBindings* bindings,
-                      const NPVariant* args,
-                      NPVariant* result) OVERRIDE {
-    std::string event_name = StringFromNPVariant(args[0]);
-    if (event_name.empty())
-      return false;
-
-    v8::Local<v8::Value> value =
-        v8::Local<v8::Value>::New(WebBindings::toV8Value(&args[1]));
-    if (value.IsEmpty() || !value->IsFunction())
-      return false;
-
-    v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
-    BOOLEAN_TO_NPVARIANT(
-        bindings->instance()->AddEventListener(event_name, function), *result);
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingAddListener);
-};
-
 class BrowserPluginBindingBack : public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingBack()
@@ -507,36 +479,6 @@ class BrowserPluginBindingReload : public BrowserPluginMethodBinding {
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingReload);
 };
 
-class BrowserPluginBindingRemoveListener : public BrowserPluginMethodBinding {
- public:
-  BrowserPluginBindingRemoveListener()
-      : BrowserPluginMethodBinding(kRemoveEventListener, 2) {
-  }
-
-  virtual bool Invoke(BrowserPluginBindings* bindings,
-                      const NPVariant* args,
-                      NPVariant* result) OVERRIDE {
-    std::string event_name = StringFromNPVariant(args[0]);
-    if (event_name.empty())
-      return false;
-
-    v8::Local<v8::Value> value =
-        v8::Local<v8::Value>::New(WebBindings::toV8Value(&args[1]));
-
-    if (value.IsEmpty() || !value->IsFunction())
-      return false;
-
-    v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
-    BOOLEAN_TO_NPVARIANT(
-        bindings->instance()->RemoveEventListener(event_name, function),
-        *result);
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingRemoveListener);
-};
-
 class BrowserPluginBindingStop : public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingStop()
@@ -588,7 +530,6 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
   np_object_ = static_cast<BrowserPluginBindings::BrowserPluginNPObject*>(obj);
   np_object_->message_channel = weak_ptr_factory_.GetWeakPtr();
 
-  method_bindings_.push_back(new BrowserPluginBindingAddListener);
   method_bindings_.push_back(new BrowserPluginBindingBack);
   method_bindings_.push_back(new BrowserPluginBindingCanGoBack);
   method_bindings_.push_back(new BrowserPluginBindingCanGoForward);
@@ -596,7 +537,6 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
   method_bindings_.push_back(new BrowserPluginBindingGetProcessID);
   method_bindings_.push_back(new BrowserPluginBindingGo);
   method_bindings_.push_back(new BrowserPluginBindingReload);
-  method_bindings_.push_back(new BrowserPluginBindingRemoveListener);
   method_bindings_.push_back(new BrowserPluginBindingStop);
   method_bindings_.push_back(new BrowserPluginBindingTerminate);
 }
