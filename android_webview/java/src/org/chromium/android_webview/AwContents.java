@@ -398,20 +398,6 @@ public class AwContents {
     }
 
     /**
-     * This should be called from the onTouchEvent of the view.
-     */
-    public void considerMotionEventForHitTest(MotionEvent event) {
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-          int actionIndex = event.getActionIndex();
-
-          // Note this will trigger IPC back to browser even if nothing is hit.
-          nativeRequestNewHitTestDataAt(mNativeAwContents,
-                                        Math.round(event.getX(actionIndex)),
-                                        Math.round(event.getY(actionIndex)));
-        }
-    }
-
-    /**
      * Method to return all hit test values relevant to public WebView API.
      * Note that this expose more data than needed for WebView.getHitTestResult.
      */
@@ -449,6 +435,38 @@ public class AwContents {
         data.putString("url", hitTestData.imgSrc);
         msg.setData(data);
         msg.sendToTarget();
+    }
+
+    /**
+     * @see android.webkit.WebView#onTouchEvent()
+     */
+    public boolean onTouchEvent(MotionEvent event) {
+        boolean rv = mContentViewCore.onTouchEvent(event);
+
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+          int actionIndex = event.getActionIndex();
+
+          // Note this will trigger IPC back to browser even if nothing is hit.
+          nativeRequestNewHitTestDataAt(mNativeAwContents,
+                                        Math.round(event.getX(actionIndex)),
+                                        Math.round(event.getY(actionIndex)));
+        }
+
+        return rv;
+    }
+
+    /**
+     * @see android.webkit.WebView#onHoverEvent()
+     */
+    public boolean onHoverEvent(MotionEvent event) {
+        return mContentViewCore.onHoverEvent(event);
+    }
+
+    /**
+     * @see android.webkit.WebView#onGenericMotionEvent()
+     */
+    public boolean onGenericMotionEvent(MotionEvent event) {
+        return mContentViewCore.onGenericMotionEvent(event);
     }
 
     //--------------------------------------------------------------------------------------------

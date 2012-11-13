@@ -74,7 +74,7 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
             @Override
             public void run() {
                 long eventTime = SystemClock.uptimeMillis();
-                mAwContents.considerMotionEventForHitTest(MotionEvent.obtain(
+                mAwContents.onTouchEvent(MotionEvent.obtain(
                         eventTime, eventTime, MotionEvent.ACTION_DOWN,
                         (float)(mTestView.getRight() - mTestView.getLeft()) / 2,
                         (float)(mTestView.getBottom() - mTestView.getTop()) / 2,
