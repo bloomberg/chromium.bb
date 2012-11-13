@@ -8,6 +8,7 @@
 #include <shlobj.h>
 #include <windows.h>
 
+#include "base/callback.h"
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -97,7 +98,7 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
   // extension it will get updated which is the same as get it installed.
   void DoExtensionWork(ExtensionService* service) {
     if (service)
-      service->updater()->CheckNow();
+      service->updater()->CheckNow(base::Closure());
   }
 
   content::NotificationRegistrar registrar_;

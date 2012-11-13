@@ -145,20 +145,23 @@ class AppPackUpdater : public CloudPolicySubsystem::Observer,
   virtual void OnExtensionDownloadFailed(
       const std::string& id,
       Error error,
-      const PingResult& ping_result) OVERRIDE;
+      const PingResult& ping_result,
+      const std::set<int>& request_ids) OVERRIDE;
 
   virtual void OnExtensionDownloadFinished(
       const std::string& id,
       const FilePath& path,
       const GURL& download_url,
       const std::string& version,
-      const PingResult& ping_result) OVERRIDE;
+      const PingResult& ping_result,
+      const std::set<int>& request_ids) OVERRIDE;
 
   virtual void OnBlacklistDownloadFinished(
       const std::string& data,
       const std::string& package_hash,
       const std::string& version,
-      const PingResult& ping_result) OVERRIDE;
+      const PingResult& ping_result,
+      const std::set<int>& request_ids) OVERRIDE;
 
   virtual bool IsExtensionPending(const std::string& id) OVERRIDE;
 

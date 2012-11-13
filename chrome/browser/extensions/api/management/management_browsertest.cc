@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/autoupdate_interceptor.h"
@@ -168,7 +170,6 @@ class NotificationListener : public content::NotificationObserver {
   NotificationListener() : started_(false), finished_(false) {
     int types[] = {
       chrome::NOTIFICATION_EXTENSION_UPDATING_STARTED,
-      chrome::NOTIFICATION_EXTENSION_UPDATING_FINISHED,
       chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND
     };
     for (size_t i = 0; i < arraysize(types); i++) {
@@ -200,11 +201,6 @@ class NotificationListener : public content::NotificationObserver {
         started_ = true;
         break;
       }
-      case chrome::NOTIFICATION_EXTENSION_UPDATING_FINISHED: {
-        EXPECT_FALSE(finished_);
-        finished_ = true;
-        break;
-      }
       case chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND: {
         const std::string* id =
             content::Details<const std::string>(details).ptr();
@@ -214,6 +210,11 @@ class NotificationListener : public content::NotificationObserver {
       default:
         NOTREACHED();
     }
+  }
+
+  void OnFinished() {
+    EXPECT_FALSE(finished_);
+    finished_ = true;
   }
 
  private:
@@ -273,7 +274,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
 
   // Run autoupdate and make sure version 2 of the extension was installed.
   ExtensionTestMessageListener listener2("v2 installed", false);
-  service->updater()->CheckNow();
+  service->updater()->CheckNow(
+      base::Bind(&NotificationListener::OnFinished,
+                 base::Unretained(&notification_listener)));
   ASSERT_TRUE(WaitForExtensionInstall());
   listener2.WaitUntilSatisfied();
   ASSERT_EQ(size_before + 1, service->extensions()->size());
@@ -294,7 +297,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   interceptor->SetResponseOnIOThread("http://localhost/autoupdate/v3.crx",
                                      basedir.AppendASCII("v3.crx"));
 
-  service->updater()->CheckNow();
+  service->updater()->CheckNow(
+      base::Bind(&NotificationListener::OnFinished,
+                 base::Unretained(&notification_listener)));
   ASSERT_TRUE(WaitForExtensionInstallError());
   ASSERT_TRUE(notification_listener.started());
   ASSERT_TRUE(notification_listener.finished());
@@ -356,7 +361,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   ExtensionTestMessageListener listener2("v2 installed", false);
   // Run autoupdate and make sure version 2 of the extension was installed but
   // is still disabled.
-  service->updater()->CheckNow();
+  service->updater()->CheckNow(
+      base::Bind(&NotificationListener::OnFinished,
+                 base::Unretained(&notification_listener)));
   ASSERT_TRUE(WaitForExtensionInstall());
   ASSERT_EQ(disabled_size_before + 1, service->disabled_extensions()->size());
   ASSERT_EQ(enabled_size_before, service->extensions()->size());
@@ -413,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
       Extension::EXTERNAL_PREF_DOWNLOAD));
 
   // Run autoupdate and make sure version 2 of the extension was installed.
-  service->updater()->CheckNow();
+  service->updater()->CheckNow(base::Closure());
   ASSERT_TRUE(WaitForExtensionInstall());
   ASSERT_EQ(size_before + 1, service->extensions()->size());
   const Extension* extension = service->GetExtensionById(kExtensionId, false);

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_DOWNLOADER_DELEGATE_H_
 #define CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_DOWNLOADER_DELEGATE_H_
 
+#include <set>
 #include <string>
 
 #include "base/time.h"
@@ -57,28 +58,42 @@ class ExtensionDownloaderDelegate {
   // One of the following 3 methods is always invoked for a given extension
   // id, if AddExtension() or AddPendingExtension() returned true when that
   // extension was added to the ExtensionDownloader.
+  // To avoid duplicate work, ExtensionDownloader might merge multiple identical
+  // requests, so there is not necessarily a separate invocation of one of these
+  // methods for each call to AddExtension/AddPendingExtension. If it is
+  // important to be able to match up AddExtension calls with
+  // OnExtensionDownload callbacks, you need to make sure that for every call to
+  // AddExtension/AddPendingExtension the combination of extension id and
+  // request id is unique. The OnExtensionDownload related callbacks will then
+  // be called with all request ids that resulted in that extension being
+  // checked.
 
   // Invoked if the extension couldn't be downloaded. |error| contains the
   // failure reason.
   virtual void OnExtensionDownloadFailed(const std::string& id,
                                          Error error,
-                                         const PingResult& ping_result);
+                                         const PingResult& ping_result,
+                                         const std::set<int>& request_ids);
 
   // Invoked if the extension had an update available and its crx was
   // successfully downloaded to |path|. Ownership of that file is transferred
   // to the delegate.
-  virtual void OnExtensionDownloadFinished(const std::string& id,
-                                           const FilePath& path,
-                                           const GURL& download_url,
-                                           const std::string& version,
-                                           const PingResult& ping_result) = 0;
+  virtual void OnExtensionDownloadFinished(
+      const std::string& id,
+      const FilePath& path,
+      const GURL& download_url,
+      const std::string& version,
+      const PingResult& ping_result,
+      const std::set<int>& request_ids) = 0;
 
   // Same as OnExtensionDownloadFinished() but only for the kBlacklistAppID
   // extension, which passes different data to the delegate.
-  virtual void OnBlacklistDownloadFinished(const std::string& data,
-                                           const std::string& package_hash,
-                                           const std::string& version,
-                                           const PingResult& ping_result) = 0;
+  virtual void OnBlacklistDownloadFinished(
+      const std::string& data,
+      const std::string& package_hash,
+      const std::string& version,
+      const PingResult& ping_result,
+      const std::set<int>& request_ids) = 0;
 
   // The remaining methods are used by the ExtensionDownloader to retrieve
   // information about extensions from the delegate.

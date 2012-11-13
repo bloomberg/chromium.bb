@@ -418,7 +418,7 @@ void AppPackUpdater::DownloadMissingExtensions() {
   }
   for (PolicyEntryMap::iterator it = app_pack_extensions_.begin();
        it != app_pack_extensions_.end(); ++it) {
-    downloader_->AddPendingExtension(it->first, GURL(it->second.update_url));
+    downloader_->AddPendingExtension(it->first, GURL(it->second.update_url), 0);
   }
   VLOG(1) << "Downloading AppPack update manifest now";
   downloader_->StartAllPending();
@@ -427,7 +427,8 @@ void AppPackUpdater::DownloadMissingExtensions() {
 void AppPackUpdater::OnExtensionDownloadFailed(
     const std::string& id,
     extensions::ExtensionDownloaderDelegate::Error error,
-    const extensions::ExtensionDownloaderDelegate::PingResult& ping_result) {
+    const extensions::ExtensionDownloaderDelegate::PingResult& ping_result,
+    const std::set<int>& request_ids) {
   if (error == NO_UPDATE_AVAILABLE) {
     if (!ContainsKey(cached_extensions_, id))
       LOG(ERROR) << "AppPack extension " << id << " not found on update server";
@@ -443,7 +444,8 @@ void AppPackUpdater::OnExtensionDownloadFinished(
     const FilePath& path,
     const GURL& download_url,
     const std::string& version,
-    const extensions::ExtensionDownloaderDelegate::PingResult& ping_result) {
+    const extensions::ExtensionDownloaderDelegate::PingResult& ping_result,
+    const std::set<int>& request_ids) {
   // Just downloaded the latest version, no need to do further update checks
   // for this extension.
   SetUpdateChecked(id);
@@ -462,7 +464,8 @@ void AppPackUpdater::OnBlacklistDownloadFinished(
     const std::string& data,
     const std::string& package_hash,
     const std::string& version,
-    const extensions::ExtensionDownloaderDelegate::PingResult& ping_result) {
+    const extensions::ExtensionDownloaderDelegate::PingResult& ping_result,
+    const std::set<int>& request_ids) {
   NOTREACHED();
 }
 

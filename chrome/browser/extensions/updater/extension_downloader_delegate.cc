@@ -15,7 +15,8 @@ ExtensionDownloaderDelegate::~ExtensionDownloaderDelegate() {}
 void ExtensionDownloaderDelegate::OnExtensionDownloadFailed(
     const std::string& id,
     ExtensionDownloaderDelegate::Error error,
-    const ExtensionDownloaderDelegate::PingResult& ping_result) {}
+    const ExtensionDownloaderDelegate::PingResult& ping_result,
+    const std::set<int>& request_id) {}
 
 bool ExtensionDownloaderDelegate::GetPingDataForExtension(
     const std::string& id,

@@ -1775,7 +1775,7 @@ void ExtensionService::OnAllExternalProvidersReady() {
   // Install any pending extensions.
   if (update_once_all_providers_are_ready_ && updater()) {
     update_once_all_providers_are_ready_ = false;
-    updater()->CheckNow();
+    updater()->CheckNow(base::Closure());
   }
 
   // Uninstall all the unclaimed extensions.

@@ -770,7 +770,7 @@ void ExtensionSettingsHandler::HandleShowButtonMessage(const ListValue* args) {
 void ExtensionSettingsHandler::HandleAutoUpdateMessage(const ListValue* args) {
   ExtensionUpdater* updater = extension_service_->updater();
   if (updater)
-    updater->CheckNow();
+    updater->CheckNow(base::Closure());
 }
 
 void ExtensionSettingsHandler::HandleLoadUnpackedExtensionMessage(

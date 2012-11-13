@@ -112,8 +112,10 @@ ExtensionDownloader::ExtensionFetch::ExtensionFetch(
     const std::string& id,
     const GURL& url,
     const std::string& package_hash,
-    const std::string& version)
-    : id(id), url(url), package_hash(package_hash), version(version) {}
+    const std::string& version,
+    const std::set<int>& request_ids)
+    : id(id), url(url), package_hash(package_hash), version(version),
+      request_ids(request_ids) {}
 
 ExtensionDownloader::ExtensionFetch::~ExtensionFetch() {}
 
@@ -135,7 +137,8 @@ ExtensionDownloader::~ExtensionDownloader() {
   STLDeleteElements(&manifests_pending_);
 }
 
-bool ExtensionDownloader::AddExtension(const Extension& extension) {
+bool ExtensionDownloader::AddExtension(const Extension& extension,
+                                       int request_id) {
   // Skip extensions with empty update URLs converted from user
   // scripts.
   if (extension.converted_from_user_script() &&
@@ -152,18 +155,20 @@ bool ExtensionDownloader::AddExtension(const Extension& extension) {
 
   return AddExtensionData(extension.id(), *extension.version(),
                           extension.GetType(), extension.update_url(),
-                          update_url_data);
+                          update_url_data, request_id);
 }
 
 bool ExtensionDownloader::AddPendingExtension(const std::string& id,
-                                              const GURL& update_url) {
+                                              const GURL& update_url,
+                                              int request_id) {
   // Use a zero version to ensure that a pending extension will always
   // be updated, and thus installed (assuming all extensions have
   // non-zero versions).
   Version version("0.0.0.0");
   DCHECK(version.IsValid());
 
-  return AddExtensionData(id, version, Extension::TYPE_UNKNOWN, update_url, "");
+  return AddExtensionData(id, version, Extension::TYPE_UNKNOWN, update_url, "",
+                          request_id);
 }
 
 void ExtensionDownloader::StartAllPending() {
@@ -182,12 +187,13 @@ void ExtensionDownloader::StartAllPending() {
 
 void ExtensionDownloader::StartBlacklistUpdate(
     const std::string& version,
-   const ManifestFetchData::PingData& ping_data) {
+    const ManifestFetchData::PingData& ping_data,
+    int request_id) {
   // Note: it is very important that we use the https version of the update
   // url here to avoid DNS hijacking of the blacklist, which is not validated
   // by a public key signature like .crx files are.
   ManifestFetchData* blacklist_fetch =
-      new ManifestFetchData(extension_urls::GetWebstoreUpdateUrl());
+      new ManifestFetchData(extension_urls::GetWebstoreUpdateUrl(), request_id);
   DCHECK(blacklist_fetch->base_url().SchemeIsSecure());
   blacklist_fetch->AddExtension(kBlacklistAppID, version, &ping_data, "",
                                 kDefaultInstallSource);
@@ -198,7 +204,8 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
                                            const Version& version,
                                            Extension::Type extension_type,
                                            GURL update_url,
-                                           const std::string& update_url_data) {
+                                           const std::string& update_url_data,
+                                           int request_id) {
   // Skip extensions with non-empty invalid update URLs.
   if (!update_url.is_empty() && !update_url.is_valid()) {
     LOG(WARNING) << "Extension " << id << " has invalid update url "
@@ -271,7 +278,8 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
 
     // Find or create a ManifestFetchData to add this extension to.
     ManifestFetchData* fetch = NULL;
-    FetchMap::iterator existing_iter = fetches_preparing_.find(update_urls[i]);
+    FetchMap::iterator existing_iter = fetches_preparing_.find(
+        std::make_pair(request_id, update_urls[i]));
     if (existing_iter != fetches_preparing_.end() &&
         !existing_iter->second.empty()) {
       // Try to add to the ManifestFetchData at the end of the list.
@@ -285,8 +293,9 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
     if (!fetch) {
       // Otherwise add a new element to the list, if the list doesn't exist or
       // if its last element is already full.
-      fetch = new ManifestFetchData(update_urls[i]);
-      fetches_preparing_[update_urls[i]].push_back(fetch);
+      fetch = new ManifestFetchData(update_urls[i], request_id);
+      fetches_preparing_[std::make_pair(request_id, update_urls[i])].
+          push_back(fetch);
       bool added = fetch->AddExtension(id, version.GetString(),
                                        optional_ping_data,
                                        update_url_data,
@@ -324,6 +333,7 @@ void ExtensionDownloader::StartUpdateCheck(ManifestFetchData* fetch_data) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableBackgroundNetworking)) {
     NotifyExtensionsDownloadFailed(id_set,
+                                   fetch_data->request_ids(),
                                    ExtensionDownloaderDelegate::DISABLED);
     return;
   }
@@ -332,6 +342,7 @@ void ExtensionDownloader::StartUpdateCheck(ManifestFetchData* fetch_data) {
   for (i = manifests_pending_.begin(); i != manifests_pending_.end(); i++) {
     if (fetch_data->full_url() == (*i)->full_url()) {
       // This url is already scheduled to be fetched.
+      (*i)->Merge(*fetch_data);
       return;
     }
   }
@@ -407,6 +418,7 @@ void ExtensionDownloader::OnManifestFetchComplete(
             << "' response code:" << response_code;
     NotifyExtensionsDownloadFailed(
         current_manifest_fetch_->extension_ids(),
+        current_manifest_fetch_->request_ids(),
         ExtensionDownloaderDelegate::MANIFEST_FETCH_FAILED);
   }
   manifest_fetcher_.reset();
@@ -430,6 +442,7 @@ void ExtensionDownloader::HandleManifestResults(
   if (!results) {
     NotifyExtensionsDownloadFailed(
         not_updated,
+        fetch_data.request_ids(),
         ExtensionDownloaderDelegate::MANIFEST_INVALID);
     return;
   }
@@ -461,7 +474,7 @@ void ExtensionDownloader::HandleManifestResults(
       }
     }
     FetchUpdatedExtension(update->extension_id, crx_url, update->package_hash,
-                          update->version);
+                          update->version, fetch_data.request_ids());
   }
 
   // If the manifest response included a <daystart> element, we want to save
@@ -483,6 +496,7 @@ void ExtensionDownloader::HandleManifestResults(
 
   NotifyExtensionsDownloadFailed(
       not_updated,
+      fetch_data.request_ids(),
       ExtensionDownloaderDelegate::NO_UPDATE_AVAILABLE);
 }
 
@@ -557,10 +571,12 @@ void ExtensionDownloader::DetermineUpdates(
 }
 
   // Begins (or queues up) download of an updated extension.
-void ExtensionDownloader::FetchUpdatedExtension(const std::string& id,
-                                                const GURL& url,
-                                                const std::string& hash,
-                                                const std::string& version) {
+void ExtensionDownloader::FetchUpdatedExtension(
+    const std::string& id,
+    const GURL& url,
+    const std::string& hash,
+    const std::string& version,
+    const std::set<int>& request_ids) {
   if (!url.is_valid()) {
     // TODO(asargent): This can sometimes be invalid. See crbug.com/130881.
     LOG(ERROR) << "Invalid URL: '" << url.possibly_invalid_spec()
@@ -568,17 +584,22 @@ void ExtensionDownloader::FetchUpdatedExtension(const std::string& id,
     return;
   }
 
-  for (std::deque<ExtensionFetch>::const_iterator iter =
+  for (std::deque<ExtensionFetch>::iterator iter =
            extensions_pending_.begin();
        iter != extensions_pending_.end(); ++iter) {
     if (iter->id == id || iter->url == url) {
+      iter->request_ids.insert(request_ids.begin(), request_ids.end());
       return;  // already scheduled
     }
   }
 
   if (extension_fetcher_.get() != NULL) {
     if (extension_fetcher_->GetURL() != url) {
-      extensions_pending_.push_back(ExtensionFetch(id, url, hash, version));
+      extensions_pending_.push_back(ExtensionFetch(id, url, hash, version,
+                                                   request_ids));
+    } else {
+      current_extension_fetch_.request_ids.insert(request_ids.begin(),
+                                                  request_ids.end());
     }
   } else {
     extension_fetcher_.reset(net::URLFetcher::Create(
@@ -597,7 +618,8 @@ void ExtensionDownloader::FetchUpdatedExtension(const std::string& id,
     VLOG(2) << "Starting fetch of " << url << " for " << id;
 
     extension_fetcher_->Start();
-    current_extension_fetch_ = ExtensionFetch(id, url, hash, version);
+    current_extension_fetch_ = ExtensionFetch(id, url, hash, version,
+                                              request_ids);
   }
 }
 
@@ -607,6 +629,7 @@ void ExtensionDownloader::OnCRXFetchComplete(
     const net::URLRequestStatus& status,
     int response_code) {
   const std::string& id = current_extension_fetch_.id;
+  const std::set<int>& request_ids = current_extension_fetch_.request_ids;
   const ExtensionDownloaderDelegate::PingResult& ping = ping_results_[id];
 
   base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
@@ -615,7 +638,7 @@ void ExtensionDownloader::OnCRXFetchComplete(
                << "Error code is "<< error_code;
     RecordCRXWriteHistogram(false, FilePath());
     delegate_->OnExtensionDownloadFailed(
-        id, ExtensionDownloaderDelegate::CRX_FETCH_FAILED, ping);
+        id, ExtensionDownloaderDelegate::CRX_FETCH_FAILED, ping, request_ids);
   } else if (status.status() == net::URLRequestStatus::SUCCESS &&
       (response_code == 200 || url.SchemeIsFile())) {
     if (id == kBlacklistAppID) {
@@ -625,7 +648,7 @@ void ExtensionDownloader::OnCRXFetchComplete(
       // to simplify the delegate's interface.
       delegate_->OnBlacklistDownloadFinished(
           data, current_extension_fetch_.package_hash,
-          current_extension_fetch_.version, ping);
+          current_extension_fetch_.version, ping, request_ids);
     } else {
       FilePath crx_path;
       // Take ownership of the file at |crx_path|.
@@ -633,7 +656,7 @@ void ExtensionDownloader::OnCRXFetchComplete(
       RecordCRXWriteHistogram(true, crx_path);
       delegate_->OnExtensionDownloadFinished(id, crx_path, url,
                                              current_extension_fetch_.version,
-                                             ping);
+                                             ping, request_ids);
     }
   } else {
     // TODO(asargent) do things like exponential backoff, handling
@@ -642,27 +665,30 @@ void ExtensionDownloader::OnCRXFetchComplete(
     VLOG(1) << "Failed to fetch extension '" << url.possibly_invalid_spec()
             << "' response code:" << response_code;
     delegate_->OnExtensionDownloadFailed(
-        id, ExtensionDownloaderDelegate::CRX_FETCH_FAILED, ping);
+        id, ExtensionDownloaderDelegate::CRX_FETCH_FAILED, ping, request_ids);
   }
 
   extension_fetcher_.reset();
-  current_extension_fetch_ = ExtensionFetch();
   ping_results_.erase(id);
+  current_extension_fetch_ = ExtensionFetch();
 
   // If there are any pending downloads left, start the next one.
   if (!extensions_pending_.empty()) {
     ExtensionFetch next = extensions_pending_.front();
     extensions_pending_.pop_front();
-    FetchUpdatedExtension(next.id, next.url, next.package_hash, next.version);
+    FetchUpdatedExtension(next.id, next.url, next.package_hash, next.version,
+                          next.request_ids);
   }
 }
 
 void ExtensionDownloader::NotifyExtensionsDownloadFailed(
     const std::set<std::string>& extension_ids,
+    const std::set<int>& request_ids,
     ExtensionDownloaderDelegate::Error error) {
   for (std::set<std::string>::const_iterator it = extension_ids.begin();
        it != extension_ids.end(); ++it) {
-    delegate_->OnExtensionDownloadFailed(*it, error, ping_results_[*it]);
+    const ExtensionDownloaderDelegate::PingResult& ping = ping_results_[*it];
+    delegate_->OnExtensionDownloadFailed(*it, error, ping, request_ids);
     ping_results_.erase(*it);
   }
 }

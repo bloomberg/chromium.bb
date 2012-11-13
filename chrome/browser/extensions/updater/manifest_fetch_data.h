@@ -44,7 +44,7 @@ class ManifestFetchData {
         : rollcall_days(rollcall), active_days(active) {}
   };
 
-  explicit ManifestFetchData(const GURL& update_url);
+  ManifestFetchData(const GURL& update_url, int request_id);
   ~ManifestFetchData();
 
   // Returns true if this extension information was successfully added. If the
@@ -59,6 +59,7 @@ class ManifestFetchData {
   const GURL& full_url() const { return full_url_; }
   int extension_count() { return extension_ids_.size(); }
   const std::set<std::string>& extension_ids() const { return extension_ids_; }
+  const std::set<int>& request_ids() const { return request_ids_; }
 
   // Returns true if the given id is included in this manifest fetch.
   bool Includes(const std::string& extension_id) const;
@@ -67,6 +68,11 @@ class ManifestFetchData {
   // extension id.
   bool DidPing(std::string extension_id, PingType type) const;
 
+  // Assuming that both this ManifestFetchData and |other| have the same
+  // full_url, this method merges the other information associated with the
+  // fetch (in particular this adds all request ids associated with |other|
+  // to this ManifestFetchData).
+  void Merge(const ManifestFetchData& other);
  private:
   // The set of extension id's for this ManifestFetchData.
   std::set<std::string> extension_ids_;
@@ -80,6 +86,12 @@ class ManifestFetchData {
   // The base update url plus arguments indicating the id, version, etc.
   // information about each extension.
   GURL full_url_;
+
+  // The set of request ids associated with this manifest fetch. If multiple
+  // requests are trying to fetch the same manifest, they can be merged into
+  // one fetch, so potentially multiple request ids can get associated with
+  // one ManifestFetchData.
+  std::set<int> request_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestFetchData);
 };

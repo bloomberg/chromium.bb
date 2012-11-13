@@ -4143,8 +4143,10 @@ void TestingAutomationProvider::UpdateExtensionsNow(
   // Create a new observer that waits until the extensions have been fully
   // updated (we should not send the reply until after all extensions have
   // been updated).  This observer will delete itself.
-  new ExtensionsUpdatedObserver(manager, this, reply_message);
-  updater->CheckNow();
+  ExtensionsUpdatedObserver* observer = new ExtensionsUpdatedObserver(
+      manager, this, reply_message);
+  updater->CheckNow(base::Bind(&ExtensionsUpdatedObserver::UpdateCheckFinished,
+                               base::Unretained(observer)));
 }
 
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))

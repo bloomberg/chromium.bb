@@ -23,9 +23,10 @@ const int kExtensionsManifestMaxURLSize = 2000;
 
 namespace extensions {
 
-ManifestFetchData::ManifestFetchData(const GURL& update_url)
+ManifestFetchData::ManifestFetchData(const GURL& update_url, int request_id)
     : base_url_(update_url),
       full_url_(update_url) {
+  request_ids_.insert(request_id);
 }
 
 ManifestFetchData::~ManifestFetchData() {}
@@ -139,6 +140,11 @@ bool ManifestFetchData::DidPing(std::string extension_id, PingType type) const {
   else
     NOTREACHED();
   return value == kNeverPinged || value > 0;
+}
+
+void ManifestFetchData::Merge(const ManifestFetchData& other) {
+  DCHECK(full_url() == other.full_url());
+  request_ids_.insert(other.request_ids_.begin(), other.request_ids_.end());
 }
 
 }  // namespace extensions

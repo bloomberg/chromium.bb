@@ -691,18 +691,6 @@ ExtensionsUpdatedObserver::ExtensionsUpdatedObserver(
       reply_message_(reply_message), updater_finished_(false) {
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_NOT_ALLOWED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATING_FINISHED,
-                 content::NotificationService::AllSources());
 }
 
 ExtensionsUpdatedObserver::~ExtensionsUpdatedObserver() {
@@ -716,64 +704,25 @@ void ExtensionsUpdatedObserver::Observe(
     return;
   }
 
-  // We expect the following sequence of events.  First, the ExtensionUpdater
-  // service notifies of each extension that needs to be updated.  Once the
-  // ExtensionUpdater has finished searching for extensions to update, it
-  // notifies that it is finished.  Meanwhile, the extensions are updated
-  // asynchronously: either they will be updated and loaded, or else they will
-  // not load due to (1) not being allowed; (2) having updating disabled; or
-  // (3) encountering an error.  Finally, notifications are also sent whenever
-  // a view stops loading.  Updating is not considered complete if any extension
-  // views are still loading.
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND:
-      // Extension updater has identified an extension that needs to be updated.
-      in_progress_updates_.insert(
-          *(content::Details<const std::string>(details).ptr()));
-      break;
+  DCHECK(type == content::NOTIFICATION_LOAD_STOP);
+  MaybeReply();
+}
 
-    case chrome::NOTIFICATION_EXTENSION_UPDATING_FINISHED:
-      // Extension updater has completed notifying all extensions to update
-      // themselves.
-      updater_finished_ = true;
-      break;
-
-    case chrome::NOTIFICATION_EXTENSION_LOADED:
-    case chrome::NOTIFICATION_EXTENSION_INSTALL_NOT_ALLOWED:
-    case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED: {
-      // An extension has either completed update installation and is now
-      // loaded, or else the install has been skipped because it is
-      // either not allowed or else has been disabled.
-      const extensions::Extension* extension =
-          content::Details<extensions::Extension>(details).ptr();
-      in_progress_updates_.erase(extension->id());
-      break;
-    }
-
-    case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
-      // An extension had an error on update installation.
-      extensions::CrxInstaller* installer =
-          content::Source<extensions::CrxInstaller>(source).ptr();
-      in_progress_updates_.erase(installer->expected_id());
-      break;
-    }
-
-    case content::NOTIFICATION_LOAD_STOP:
-      // Break out to the conditional check below to see if all extension views
-      // have stopped loading.
-      break;
-
-    default:
-      NOTREACHED();
-      break;
+void ExtensionsUpdatedObserver::UpdateCheckFinished() {
+  if (!automation_) {
+    delete this;
+    return;
   }
 
-  // Send the reply if (1) the extension updater has finished notifying all
-  // extensions to update themselves; (2) all extensions that need to be updated
-  // have completed installation and are now loaded; and (3) all extension views
-  // have stopped loading.
-  if (updater_finished_ && in_progress_updates_.empty() &&
-      DidExtensionViewsStopLoading(manager_)) {
+  // Extension updater has completed updating all extensions.
+  updater_finished_ = true;
+  MaybeReply();
+}
+
+void ExtensionsUpdatedObserver::MaybeReply() {
+  // Send the reply if (1) the extension updater has finished updating all
+  // extensions; and (2) all extension views have stopped loading.
+  if (updater_finished_ && DidExtensionViewsStopLoading(manager_)) {
     AutomationJSONReply reply(automation_, reply_message_.release());
     reply.SendSuccess(NULL);
     delete this;

@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -49,12 +50,20 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
   // Adds |extension| to the list of extensions to check for updates.
   // Returns false if the |extension| can't be updated due to invalid details.
   // In that case, no callbacks will be performed on the |delegate_|.
-  bool AddExtension(const Extension& extension);
+  // The |request_id| is passed on as is to the various |delegate_| callbacks.
+  // This is used for example by ExtensionUpdater to keep track of when
+  // potentially concurrent update checks complete.
+  bool AddExtension(const Extension& extension, int request_id);
 
   // Adds extension |id| to the list of extensions to check for updates.
   // Returns false if the |id| can't be updated due to invalid details.
   // In that case, no callbacks will be performed on the |delegate_|.
-  bool AddPendingExtension(const std::string& id, const GURL& update_url);
+  // The |request_id| is passed on as is to the various |delegate_| callbacks.
+  // This is used for example by ExtensionUpdater to keep track of when
+  // potentially concurrent update checks complete.
+  bool AddPendingExtension(const std::string& id,
+                           const GURL& update_url,
+                           int request_id);
 
   // Schedules a fetch of the manifest of all the extensions added with
   // AddExtension() and AddPendingExtension().
@@ -62,7 +71,8 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
 
   // Schedules an update check of the blacklist.
   void StartBlacklistUpdate(const std::string& version,
-                            const ManifestFetchData::PingData& ping_data);
+                            const ManifestFetchData::PingData& ping_data,
+                            int request_id);
 
   // These are needed for unit testing, to help identify the correct mock
   // URLFetcher objects.
@@ -98,13 +108,15 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
   struct ExtensionFetch {
     ExtensionFetch();
     ExtensionFetch(const std::string& id, const GURL& url,
-                   const std::string& package_hash, const std::string& version);
+                   const std::string& package_hash, const std::string& version,
+                   const std::set<int>& request_ids);
     ~ExtensionFetch();
 
     std::string id;
     GURL url;
     std::string package_hash;
     std::string version;
+    std::set<int> request_ids;
   };
 
   // Helper for AddExtension() and AddPendingExtension().
@@ -112,7 +124,8 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
                         const Version& version,
                         Extension::Type extension_type,
                         GURL update_url,
-                        const std::string& update_url_data);
+                        const std::string& update_url_data,
+                        int request_id);
 
   // Adds all recorded stats taken so far to histogram counts.
   void ReportStats() const;
@@ -144,7 +157,8 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
   void FetchUpdatedExtension(const std::string& id,
                              const GURL& url,
                              const std::string& hash,
-                             const std::string& version);
+                             const std::string& version,
+                             const std::set<int>& request_ids);
 
   // Handles the result of a crx fetch.
   void OnCRXFetchComplete(const net::URLFetcher* source,
@@ -155,6 +169,7 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
   // Invokes OnExtensionDownloadFailed() on the |delegate_| for each extension
   // in the set, with |error| as the reason for failure.
   void NotifyExtensionsDownloadFailed(const std::set<std::string>& id_set,
+                                      const std::set<int>& request_ids,
                                       ExtensionDownloaderDelegate::Error error);
 
   // Send a notification that an update was found for |id| that we'll
@@ -178,7 +193,8 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
   // extensions grouped together in one batch to avoid running into the limits
   // on the length of http GET requests, so there might be multiple
   // ManifestFetchData* objects with the same base_url.
-  typedef std::map<GURL, std::vector<ManifestFetchData*> > FetchMap;
+  typedef std::map<std::pair<int, GURL>,
+                   std::vector<ManifestFetchData*> > FetchMap;
   FetchMap fetches_preparing_;
 
   // Outstanding url fetch requests for manifests and updates.

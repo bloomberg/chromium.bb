@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_UPDATER_H_
 
 #include <list>
+#include <map>
+#include <set>
 #include <stack>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -46,6 +49,8 @@ class ExtensionUpdaterTest;
 class ExtensionUpdater : public ExtensionDownloaderDelegate,
                          public content::NotificationObserver {
  public:
+  typedef base::Closure FinishedCallback;
+
   // Holds a pointer to the passed |service|, using it for querying installed
   // extensions and installing updated ones. The |frequency_seconds| parameter
   // controls how often update checks are scheduled.
@@ -70,7 +75,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
 
   // Starts an update check right now, instead of waiting for the next
   // regularly scheduled check or a pending check from CheckSoon().
-  void CheckNow();
+  void CheckNow(const FinishedCallback& callback);
 
   // Set blacklist checks on or off.
   void set_blacklist_checks_enabled(bool enabled) {
@@ -92,12 +97,24 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
     FetchedCRXFile();
     FetchedCRXFile(const std::string& id,
                    const FilePath& path,
-                   const GURL& download_url);
+                   const GURL& download_url,
+                   const std::set<int>& request_ids);
     ~FetchedCRXFile();
 
-    std::string id;
+    std::string extension_id;
     FilePath path;
     GURL download_url;
+    std::set<int> request_ids;
+  };
+
+  struct InProgressCheck {
+    InProgressCheck();
+    ~InProgressCheck();
+
+    int id;
+    FinishedCallback callback;
+    // The ids of extensions that have in-progress update checks.
+    std::list<std::string> in_progress_ids_;
   };
 
   // Computes when to schedule the first update check.
@@ -112,7 +129,8 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // Add fetch records for extensions that are installed to the downloader,
   // ignoring |pending_ids| so the extension isn't fetched again.
   void AddToDownloader(const ExtensionSet* extensions,
-                       const std::list<std::string>& pending_ids);
+                       const std::list<std::string>& pending_ids,
+                       InProgressCheck* request);
 
   // BaseTimer::ReceiverMethod callback.
   void TimerFired();
@@ -121,20 +139,27 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   void DoCheckSoon();
 
   // Implenentation of ExtensionDownloaderDelegate.
-  virtual void OnExtensionDownloadFailed(const std::string& id,
-                                         Error error,
-                                         const PingResult& ping) OVERRIDE;
+  virtual void OnExtensionDownloadFailed(
+      const std::string& id,
+      Error error,
+      const PingResult& ping,
+      const std::set<int>& request_ids) OVERRIDE;
 
-  virtual void OnExtensionDownloadFinished(const std::string& id,
-                                           const FilePath& path,
-                                           const GURL& download_url,
-                                           const std::string& version,
-                                           const PingResult& ping) OVERRIDE;
+  virtual void OnExtensionDownloadFinished(
+      const std::string& id,
+      const FilePath& path,
+      const GURL& download_url,
+      const std::string& version,
+      const PingResult& ping,
+      const std::set<int>& request_id) OVERRIDE;
 
-  virtual void OnBlacklistDownloadFinished(const std::string& data,
-                                           const std::string& package_hash,
-                                           const std::string& version,
-                                           const PingResult& ping) OVERRIDE;
+  virtual void OnBlacklistDownloadFinished(
+      const std::string& data,
+      const std::string& package_hash,
+      const std::string& version,
+      const PingResult& ping,
+      const std::set<int>& request_id) OVERRIDE;
+
   virtual bool GetPingDataForExtension(
       const std::string& id,
       ManifestFetchData::PingData* ping_data) OVERRIDE;
@@ -160,7 +185,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   void NotifyStarted();
 
   // Send a notification if we're finished updating.
-  void NotifyIfFinished();
+  void NotifyIfFinished(int request_id);
 
   // Whether Start() has been called but not Stop().
   bool alive_;
@@ -182,8 +207,8 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   Profile* profile_;
   bool blacklist_checks_enabled_;
 
-  // The ids of extensions that have in-progress update checks.
-  std::list<std::string> in_progress_ids_;
+  std::map<int, InProgressCheck> requests_in_progress_;
+  int next_request_id_;
 
   // Observes CRX installs we initiate.
   content::NotificationRegistrar registrar_;
@@ -194,6 +219,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
 
   // Fetched CRX files waiting to be installed.
   std::stack<FetchedCRXFile> fetched_crx_files_;
+  FetchedCRXFile current_crx_file_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUpdater);
 };
