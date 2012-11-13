@@ -20,6 +20,8 @@ class MultiDisplayManager;
 
 namespace test {
 
+class TestShellDelegate;
+
 class AshTestViewsDelegate : public views::TestViewsDelegate {
  public:
   // Overriden from TestViewsDelegate.
@@ -50,8 +52,15 @@ class AshTestBase : public testing::Test {
  protected:
   void RunAllPendingInMessageLoop();
 
+  // Utility methods to emulate user logged in or not and
+  // session started or not cases.
+  void SetSessionStarted(bool session_started);
+  void SetUserLoggedIn(bool user_logged_in);
+
  private:
   MessageLoopForUI message_loop_;
+
+  TestShellDelegate* test_shell_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };

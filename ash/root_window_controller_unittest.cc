@@ -268,5 +268,52 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
   shell->delegate()->UnlockScreen();
 }
 
+TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
+  UpdateDisplay("600x600");
+  Shell* shell = Shell::GetInstance();
+
+  // Configure login screen environment.
+  SetUserLoggedIn(false);
+  EXPECT_EQ(user::LOGGED_IN_NONE,
+            shell->tray_delegate()->GetUserLoginStatus());
+  EXPECT_FALSE(shell->delegate()->IsUserLoggedIn());
+  EXPECT_FALSE(shell->delegate()->IsSessionStarted());
+
+  internal::RootWindowController* controller =
+      shell->GetPrimaryRootWindowController();
+  EXPECT_EQ(Shell::GetContainer(controller->root_window(),
+      internal::kShellWindowId_LockSystemModalContainer)->layout_manager(),
+          controller->GetSystemModalLayoutManager(NULL));
+
+  aura::Window* lock_container =
+      Shell::GetContainer(controller->root_window(),
+                          internal::kShellWindowId_LockScreenContainer);
+  views::Widget* login_modal_widget =
+      CreateModalWidgetWithParent(gfx::Rect(300, 10, 100, 100), lock_container);
+  EXPECT_EQ(Shell::GetContainer(controller->root_window(),
+      internal::kShellWindowId_LockSystemModalContainer)->layout_manager(),
+          controller->GetSystemModalLayoutManager(
+              login_modal_widget->GetNativeView()));
+  login_modal_widget->Close();
+
+  // Configure user session environment.
+  SetUserLoggedIn(true);
+  SetSessionStarted(true);
+  EXPECT_EQ(user::LOGGED_IN_USER,
+            shell->tray_delegate()->GetUserLoginStatus());
+  EXPECT_TRUE(shell->delegate()->IsUserLoggedIn());
+  EXPECT_TRUE(shell->delegate()->IsSessionStarted());
+  EXPECT_EQ(Shell::GetContainer(controller->root_window(),
+      internal::kShellWindowId_SystemModalContainer)->layout_manager(),
+          controller->GetSystemModalLayoutManager(NULL));
+
+  views::Widget* session_modal_widget =
+        CreateModalWidget(gfx::Rect(300, 10, 100, 100));
+  EXPECT_EQ(Shell::GetContainer(controller->root_window(),
+      internal::kShellWindowId_SystemModalContainer)->layout_manager(),
+          controller->GetSystemModalLayoutManager(
+              session_modal_widget->GetNativeView()));
+}
+
 }  // namespace test
 }  // namespace ash

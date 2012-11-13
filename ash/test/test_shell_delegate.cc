@@ -19,7 +19,9 @@ namespace test {
 
 TestShellDelegate::TestShellDelegate()
     : locked_(false),
+      session_started_(true),
       spoken_feedback_enabled_(false),
+      user_logged_in_(true),
       num_exit_requests_(0) {
 }
 
@@ -27,11 +29,11 @@ TestShellDelegate::~TestShellDelegate() {
 }
 
 bool TestShellDelegate::IsUserLoggedIn() {
-  return true;
+  return user_logged_in_;
 }
 
 bool TestShellDelegate::IsSessionStarted() {
-  return true;
+  return session_started_;
 }
 
 bool TestShellDelegate::IsFirstRunAfterBoot() {
@@ -157,6 +159,18 @@ ui::MenuModel* TestShellDelegate::CreateContextMenu(aura::RootWindow* root) {
 
 double TestShellDelegate::GetSavedScreenMagnifierScale() {
   return std::numeric_limits<double>::min();
+}
+
+void TestShellDelegate::SetSessionStarted(bool session_started) {
+  session_started_ = session_started;
+  if (session_started)
+    user_logged_in_ = true;
+}
+
+void TestShellDelegate::SetUserLoggedIn(bool user_logged_in) {
+  user_logged_in_ = user_logged_in;
+  if (!user_logged_in)
+    session_started_ = false;
 }
 
 }  // namespace test

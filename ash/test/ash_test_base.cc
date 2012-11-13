@@ -32,7 +32,7 @@ content::WebContents* AshTestViewsDelegate::CreateWebContents(
                                                            site_instance);
 }
 
-AshTestBase::AshTestBase() {
+AshTestBase::AshTestBase() : test_shell_delegate_(NULL) {
 }
 
 AshTestBase::~AshTestBase() {
@@ -43,8 +43,8 @@ void AshTestBase::SetUp() {
   ui::LayerAnimator::set_disable_animations_for_test(true);
   ui::TextInputTestSupport::Initialize();
   // Creates Shell and hook with Desktop.
-  TestShellDelegate* delegate = new TestShellDelegate;
-  ash::Shell::CreateInstance(delegate);
+  test_shell_delegate_ = new TestShellDelegate;
+  ash::Shell::CreateInstance(test_shell_delegate_);
   Shell::GetPrimaryRootWindow()->Show();
   // Move the mouse cursor to far away so that native events doesn't
   // interfere test expectations.
@@ -89,6 +89,14 @@ void AshTestBase::RunAllPendingInMessageLoop() {
   base::RunLoop run_loop(aura::Env::GetInstance()->GetDispatcher());
   run_loop.RunUntilIdle();
 #endif
+}
+
+void AshTestBase::SetSessionStarted(bool session_started) {
+  test_shell_delegate_->SetSessionStarted(session_started);
+}
+
+void AshTestBase::SetUserLoggedIn(bool user_logged_in) {
+  test_shell_delegate_->SetUserLoggedIn(user_logged_in);
 }
 
 }  // namespace test

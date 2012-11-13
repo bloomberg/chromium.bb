@@ -111,9 +111,10 @@ aura::Window* StackingController::GetSystemModalContainer(
     aura::Window* window) const {
   DCHECK(IsSystemModal(window));
 
-  // If screen lock is not active, all modal windows are placed into the
-  // normal modal container.
-  if (!Shell::GetInstance()->delegate()->IsScreenLocked()) {
+  // If screen lock is not active and user session is active,
+  // all modal windows are placed into the normal modal container.
+  if (!Shell::GetInstance()->delegate()->IsScreenLocked() &&
+      Shell::GetInstance()->delegate()->IsSessionStarted()) {
     return GetContainerById(root,
                             internal::kShellWindowId_SystemModalContainer);
   }

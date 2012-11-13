@@ -5,6 +5,7 @@
 #include "ash/system/tray/test_system_tray_delegate.h"
 
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "base/utf_string_conversions.h"
 #include "base/message_loop.h"
@@ -80,8 +81,15 @@ const gfx::ImageSkia& TestSystemTrayDelegate::GetUserImage() const {
 }
 
 user::LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
-  return Shell::GetInstance()->IsScreenLocked() ? user::LOGGED_IN_LOCKED :
-      user::LOGGED_IN_USER;
+  // At new user image screen manager->IsUserLoggedIn() would return true
+  // but there's no browser session available yet so use SessionStarted().
+  if (!Shell::GetInstance()->delegate()->IsSessionStarted())
+    return ash::user::LOGGED_IN_NONE;
+  if (Shell::GetInstance()->IsScreenLocked())
+    return user::LOGGED_IN_LOCKED;
+  // TODO(nkostylev): Support LOGGED_IN_OWNER, LOGGED_IN_GUEST, LOGGED_IN_KIOSK,
+  //                  LOGGED_IN_PUBLIC.
+  return user::LOGGED_IN_USER;
 }
 
 bool TestSystemTrayDelegate::SystemShouldUpgrade() const {
