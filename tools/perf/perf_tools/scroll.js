@@ -51,16 +51,21 @@
   };
 
   function getBoundingVisibleRect(el) {
-    var r = el.getBoundingClientRect();
-    var cur = el;
-    while (cur && cur.parentElement) {
-      r.top += cur.parentElement.offsetTop;
-      r.left += cur.parentElement.offsetLeft;
-      r.height = min(r.height, cur.parentElement.offsetHeight);
-      r.width = min(r.width, cur.parentElement.offsetWidth);
-      cur = cur.parentElement;
+    var bound = el.getBoundingClientRect();
+    var rect = { top: bound.top,
+                 left: bound.left,
+                 width: bound.width,
+                 height: bound.height };
+    var outsideHeight = (rect.top + rect.height) - window.innerHeight;
+    var outsideWidth = (rect.left + rect.width) - window.innerWidth;
+
+    if (outsideHeight > 0) {
+      rect.height -= outsideHeight;
     }
-    return r;
+    if (outsideWidth > 0) {
+      rect.width -= outsideWidth;
+    }
+    return rect;
   };
 
   SmoothScrollDownGesture.prototype.start = function(callback) {
@@ -233,6 +238,6 @@
     this.renderingStats_.stop();
   };
 
-
   window.__ScrollTest = ScrollTest;
+  window.__ScrollTest_GetBoundingVisibleRect = getBoundingVisibleRect;
 })();
