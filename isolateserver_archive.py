@@ -141,7 +141,7 @@ class UploadRemote(run_isolated.Remote):
               hash_key,
             content)
       else:
-        url_open(content_url + '/store/' + namespace + '/' + hash_key, content)
+        url_open(content_url + 'store/' + namespace + '/' + hash_key, content)
     return upload_file
 
 
