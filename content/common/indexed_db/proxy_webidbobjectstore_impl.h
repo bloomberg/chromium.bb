@@ -33,15 +33,6 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
                    WebKit::WebIDBCallbacks* callbacks,
                    const WebKit::WebIDBTransaction& transaction,
                    WebKit::WebExceptionCode& ec);
-  virtual void putWithIndexKeys(
-      const WebKit::WebSerializedScriptValue&,
-      const WebKit::WebIDBKey&,
-      PutMode,
-      WebKit::WebIDBCallbacks*,
-      const WebKit::WebIDBTransaction&,
-      const WebKit::WebVector<WebKit::WebString>&,
-      const WebKit::WebVector<WebKit::WebIDBObjectStore::WebIndexKeys>&,
-      WebKit::WebExceptionCode&);
   virtual void put(
       const WebKit::WebSerializedScriptValue&,
       const WebKit::WebIDBKey&,
@@ -51,15 +42,9 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
       const WebKit::WebVector<long long>&,
       const WebKit::WebVector<WebKit::WebIDBObjectStore::WebIndexKeys>&);
   virtual void setIndexKeys(const WebKit::WebIDBKey&,
-                            const WebKit::WebVector<WebKit::WebString>&,
-                            const WebKit::WebVector<WebIndexKeys>&,
-                            const WebKit::WebIDBTransaction&);
-  virtual void setIndexKeys(const WebKit::WebIDBKey&,
                             const WebKit::WebVector<long long>&,
                             const WebKit::WebVector<WebIndexKeys>&,
                             const WebKit::WebIDBTransaction&);
-  virtual void setIndexesReady(const WebKit::WebVector<WebKit::WebString>&,
-                               const WebKit::WebIDBTransaction&);
   virtual void setIndexesReady(const WebKit::WebVector<long long>&,
                                const WebKit::WebIDBTransaction&);
   virtual void deleteFunction(const WebKit::WebIDBKeyRange& key_range,
@@ -80,13 +65,7 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
       WebKit::WebExceptionCode& ec);
 
   // Transfers ownership of the WebIDBIndex to the caller.
-  virtual WebKit::WebIDBIndex* index(const WebKit::WebString& name,
-                                     WebKit::WebExceptionCode& ec);
   virtual WebKit::WebIDBIndex* index(long long object_store_id);
-  virtual void deleteIndex(const WebKit::WebString& name,
-                           const WebKit::WebIDBTransaction& transaction,
-                           WebKit::WebExceptionCode& ec);
-
   virtual void deleteIndex(long long index_id,
                            const WebKit::WebIDBTransaction& transaction,
                            WebKit::WebExceptionCode& ec);

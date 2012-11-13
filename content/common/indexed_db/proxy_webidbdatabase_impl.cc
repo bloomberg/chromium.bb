@@ -117,16 +117,6 @@ WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
 }
 
 void RendererWebIDBDatabaseImpl::deleteObjectStore(
-    const WebString& name,
-    const WebIDBTransaction& transaction,
-    WebExceptionCode& ec) {
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_DatabaseDeleteObjectStoreOld(
-          idb_database_id_, name,
-          IndexedDBDispatcher::TransactionId(transaction), &ec));
-}
-
-void RendererWebIDBDatabaseImpl::deleteObjectStore(
     long long object_store_id,
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
@@ -144,24 +134,6 @@ void RendererWebIDBDatabaseImpl::setVersion(
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBDatabaseSetVersion(
       version, callbacks, idb_database_id_, &ec);
-}
-
-WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
-    const WebDOMStringList& names,
-    unsigned short mode,
-    WebExceptionCode& ec) {
-  std::vector<string16> object_stores;
-  object_stores.reserve(names.length());
-  for (unsigned int i = 0; i < names.length(); ++i)
-    object_stores.push_back(names.item(i));
-
-  int transaction_id;
-  IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseTransactionOld(
-      WorkerTaskRunner::Instance()->CurrentWorkerId(),
-      idb_database_id_, object_stores, mode, &transaction_id, &ec));
-  if (!transaction_id)
-    return NULL;
-  return new RendererWebIDBTransactionImpl(transaction_id);
 }
 
 WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(

@@ -21,8 +21,6 @@ class RendererWebIDBTransactionImpl : public WebKit::WebIDBTransaction {
   explicit RendererWebIDBTransactionImpl(int32 idb_transaction_id);
   virtual ~RendererWebIDBTransactionImpl();
 
-  virtual WebKit::WebIDBObjectStore* objectStore(const WebKit::WebString& name,
-                                                 WebKit::WebExceptionCode&);
   virtual WebKit::WebIDBObjectStore* objectStore(long long object_store_id,
                                                  WebKit::WebExceptionCode&);
   virtual void commit();

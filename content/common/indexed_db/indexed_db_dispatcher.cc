@@ -400,46 +400,6 @@ void IndexedDBDispatcher::RequestIDBObjectStorePut(
     WebIDBCallbacks* callbacks_ptr,
     int32 object_store_ipc_id,
     const WebIDBTransaction& transaction,
-    const WebKit::WebVector<WebKit::WebString>& index_names,
-    const WebKit::WebVector<WebKit::WebVector<WebKit::WebIDBKey> >& index_keys,
-    WebExceptionCode* ec) {
-  ResetCursorPrefetchCaches();
-  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
-  if (!value.is_null() &&
-      (value.data().length() * sizeof(char16)) > kMaxIDBValueSizeInBytes) {
-    *ec = WebKit::WebIDBDatabaseExceptionDataError;
-    return;
-  }
-  IndexedDBHostMsg_ObjectStorePutOld_Params params;
-  params.thread_id = CurrentWorkerId();
-  params.object_store_ipc_id = object_store_ipc_id;
-  params.response_id = pending_callbacks_.Add(callbacks.release());
-  params.serialized_value = value;
-  params.key = key;
-  params.put_mode = put_mode;
-  params.transaction_id = TransactionId(transaction);
-  params.index_names.resize(index_names.size());
-  for (size_t i = 0; i < index_names.size(); ++i) {
-      params.index_names[i] = index_names[i];
-  }
-
-  params.index_keys.resize(index_keys.size());
-  for (size_t i = 0; i < index_keys.size(); ++i) {
-      params.index_keys[i].resize(index_keys[i].size());
-      for (size_t j = 0; j < index_keys[i].size(); ++j) {
-          params.index_keys[i][j] = IndexedDBKey(index_keys[i][j]);
-      }
-  }
-  Send(new IndexedDBHostMsg_ObjectStorePutOld(params));
-}
-
-void IndexedDBDispatcher::RequestIDBObjectStorePut(
-    const SerializedScriptValue& value,
-    const IndexedDBKey& key,
-    WebKit::WebIDBObjectStore::PutMode put_mode,
-    WebIDBCallbacks* callbacks_ptr,
-    int32 object_store_ipc_id,
-    const WebIDBTransaction& transaction,
     const WebKit::WebVector<long long>& index_ids,
     const WebKit::WebVector<WebKit::WebVector<
         WebKit::WebIDBKey> >& index_keys) {

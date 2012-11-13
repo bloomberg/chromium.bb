@@ -33,18 +33,6 @@ RendererWebIDBTransactionImpl::~RendererWebIDBTransactionImpl() {
 }
 
 WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
-    const WebString& name,
-    WebKit::WebExceptionCode& ec) {
-  int object_store_ipc_id;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_TransactionObjectStoreOld(
-          idb_transaction_id_, name, &object_store_ipc_id, &ec));
-  if (!object_store_ipc_id)
-    return NULL;
-  return new RendererWebIDBObjectStoreImpl(object_store_ipc_id);
-}
-
-WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
     long long object_store_id,
     WebKit::WebExceptionCode& ec) {
   int idb_object_store_id;

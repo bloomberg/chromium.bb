@@ -165,17 +165,6 @@ class CONTENT_EXPORT IndexedDBDispatcher
       WebKit::WebIDBCallbacks* callbacks,
       int32 object_store_ipc_id,
       const WebKit::WebIDBTransaction& transaction,
-      const WebKit::WebVector<WebKit::WebString>& indexNames,
-      const WebKit::WebVector<WebKit::WebVector<WebKit::WebIDBKey> >& indexKeys,
-      WebKit::WebExceptionCode* ec);
-
-  void RequestIDBObjectStorePut(
-      const SerializedScriptValue& value,
-      const IndexedDBKey& key,
-      WebKit::WebIDBObjectStore::PutMode putMode,
-      WebKit::WebIDBCallbacks* callbacks,
-      int32 object_store_ipc_id,
-      const WebKit::WebIDBTransaction& transaction,
       const WebKit::WebVector<long long>& indexIds,
       const WebKit::WebVector<WebKit::WebVector<
           WebKit::WebIDBKey> >& indexKeys);
