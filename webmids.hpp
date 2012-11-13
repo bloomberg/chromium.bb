@@ -118,6 +118,7 @@ enum MkvId {
   kMkvEditionEntry            = 0x45B9,
   kMkvChapterAtom             = 0xB6,
   kMkvChapterUID              = 0x73C4,
+  kMkvChapterStringUID        = 0x5654,
   kMkvChapterTimeStart        = 0x91,
   kMkvChapterTimeEnd          = 0x92,
   kMkvChapterDisplay          = 0x80,

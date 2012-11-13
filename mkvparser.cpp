@@ -4514,6 +4514,18 @@ Chapters::Atom::~Atom()
 }
 
 
+unsigned long long Chapters::Atom::GetUID() const
+{
+    return m_uid;
+}
+
+
+const char* Chapters::Atom::GetStringUID() const
+{
+    return m_string_uid;
+}
+
+
 long long Chapters::Atom::GetStartTimecode() const
 {
     return m_start_timecode;
@@ -4558,6 +4570,7 @@ const Chapters::Display* Chapters::Atom::GetDisplay(int index) const
 
 void Chapters::Atom::Init()
 {
+    m_string_uid = NULL;
     m_uid = 0;
     m_start_timecode = -1;
     m_stop_timecode = -1;
@@ -4570,6 +4583,7 @@ void Chapters::Atom::Init()
 
 void Chapters::Atom::ShallowCopy(Atom& rhs) const
 {
+    rhs.m_string_uid = m_string_uid;
     rhs.m_uid = m_uid;
     rhs.m_start_timecode = m_start_timecode;
     rhs.m_stop_timecode = m_stop_timecode;
@@ -4582,6 +4596,9 @@ void Chapters::Atom::ShallowCopy(Atom& rhs) const
 
 void Chapters::Atom::Clear()
 {
+    delete[] m_string_uid;
+    m_string_uid = NULL;
+
     while (m_displays_count > 0)
     {
         Display& d = m_displays[--m_displays_count];
@@ -4622,6 +4639,13 @@ long Chapters::Atom::Parse(
         if (id == 0x00)  // Display ID
         {
             status = ParseDisplay(pReader, pos, size);
+
+            if (status < 0)  // error
+                return status;
+        }
+        else if (id == 0x1654)  // StringUID ID
+        {
+            status = UnserializeString(pReader, pos, size, m_string_uid);
 
             if (status < 0)  // error
                 return status;

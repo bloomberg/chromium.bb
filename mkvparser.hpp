@@ -567,10 +567,15 @@ public:
         ~Atom();
         Atom& operator=(const Atom&);
     public:
+        unsigned long long GetUID() const;
+        const char* GetStringUID() const;
+
         long long GetStartTimecode() const;
         long long GetStopTimecode() const;
+
         long long GetStartTime(const Chapters*) const;
         long long GetStopTime(const Chapters*) const;
+
         int GetDisplayCount() const;
         const Display* GetDisplay(int index) const;
     private:
@@ -583,8 +588,8 @@ public:
         long ParseDisplay(IMkvReader*, long long pos, long long size);
         bool ExpandDisplaysArray();
 
+        char* m_string_uid;
         unsigned long long m_uid;
-        // TODO(matthewjheaney): Cue Identifier (string)
         long long m_start_timecode;
         long long m_stop_timecode;
 

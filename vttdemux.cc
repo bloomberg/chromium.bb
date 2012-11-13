@@ -146,6 +146,12 @@ bool WriteChaptersCue(
     const mkvparser::Chapters::Atom* atom,
     const mkvparser::Chapters::Display* display);
 
+// Write the Cue Identifier line of the WebVTT cue, if it's present.
+// Returns false on error.
+bool WriteChaptersCueIdentifier(
+    FILE* file,
+    const mkvparser::Chapters::Atom* atom);
+
 // Use the timecodes from the chapters |atom| to write just the
 // timings line of the WebVTT cue.  Returns false on error.
 bool WriteChaptersCueTimings(
@@ -722,14 +728,28 @@ bool vttdemux::WriteChaptersCue(
   // the cue timings, followed by the payload of the cue.  We write
   // each part of the cue in sequence.
 
-  // TODO(matthewjheaney): write cue identifier
-  // if (!WriteChaptersCueIdentifier(f, atom))
-  //   return false;
+  if (!WriteChaptersCueIdentifier(f, atom))
+    return false;
 
   if (!WriteChaptersCueTimings(f, chapters, atom))
     return false;
 
   if (!WriteChaptersCuePayload(f, display))
+    return false;
+
+  return true;
+}
+
+bool vttdemux::WriteChaptersCueIdentifier(
+    FILE* f,
+    const mkvparser::Chapters::Atom* atom) {
+
+  const char* const identifier = atom->GetStringUID();
+
+  if (identifier == NULL)
+    return true;  // nothing else to do
+
+  if (fprintf(f, "%s\n", identifier) < 0)
     return false;
 
   return true;

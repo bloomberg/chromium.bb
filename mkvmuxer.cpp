@@ -1126,7 +1126,7 @@ bool Chapter::ExpandDisplaysArray() {
 
 uint64 Chapter::WriteAtom(IMkvWriter* writer) const {
   uint64 payload_size =
-      // TODO(matthewjheaney): resolve ID issue
+      EbmlElementSize(kMkvChapterStringUID, id_) +
       EbmlElementSize(kMkvChapterUID, uid_) +
       EbmlElementSize(kMkvChapterTimeStart, start_timecode_) +
       EbmlElementSize(kMkvChapterTimeEnd, end_timecode_);
@@ -1146,6 +1146,9 @@ uint64 Chapter::WriteAtom(IMkvWriter* writer) const {
   const int64 start = writer->Position();
 
   if (!WriteEbmlMasterElement(writer, kMkvChapterAtom, payload_size))
+    return 0;
+
+  if (!WriteEbmlElement(writer, kMkvChapterStringUID, id_))
     return 0;
 
   if (!WriteEbmlElement(writer, kMkvChapterUID, uid_))
