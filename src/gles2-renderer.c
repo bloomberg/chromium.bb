@@ -608,6 +608,29 @@ repaint_region(struct weston_surface *es, pixman_region32_t *region,
 	ec->vtxcnt.size = 0;
 }
 
+static int
+use_output(struct weston_output *output)
+{
+	static int errored;
+	struct gles2_output_state *go = get_output_state(output);
+	struct gles2_renderer *gr = get_renderer(output->compositor);
+	EGLBoolean ret;
+
+	ret = eglMakeCurrent(gr->egl_display, go->egl_surface,
+			     go->egl_surface, gr->egl_context);
+
+	if (ret == EGL_FALSE) {
+		if (errored)
+			return -1;
+		errored = 1;
+		weston_log("Failed to make EGL context current.\n");
+		print_egl_error_state();
+		return -1;
+	}
+
+	return 0;
+}
+
 static void
 weston_compositor_use_shader(struct weston_compositor *compositor,
 			     struct weston_shader *shader)
@@ -863,16 +886,8 @@ gles2_renderer_repaint_output(struct weston_output *output,
 
 	glViewport(0, 0, width, height);
 
-	ret = eglMakeCurrent(gr->egl_display, go->egl_surface,
-			     go->egl_surface, gr->egl_context);
-	if (ret == EGL_FALSE) {
-		if (errored)
-			return;
-		errored = 1;
-		weston_log("Failed to make EGL context current.\n");
-		print_egl_error_state();
+	if (use_output(output) < 0)
 		return;
-	}
 
 	/* if debugging, redraw everything outside the damage to clean up
 	 * debug lines from the previous draw on this buffer:
@@ -912,6 +927,35 @@ gles2_renderer_repaint_output(struct weston_output *output,
 
 	output->current_buffer ^= 1;
 
+}
+
+static int
+gles2_renderer_read_pixels(struct weston_output *output,
+			       pixman_format_code_t format, void *pixels,
+			       uint32_t x, uint32_t y,
+			       uint32_t width, uint32_t height)
+{
+	GLenum gl_format;
+
+	switch (format) {
+	case PIXMAN_a8r8g8b8:
+		gl_format = GL_BGRA_EXT;
+		break;
+	case PIXMAN_a8b8g8r8:
+		gl_format = GL_RGBA;
+		break;
+	default:
+		return -1;
+	}
+
+	if (use_output(output) < 0)
+		return -1;
+
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glReadPixels(x, y, width, height, gl_format,
+		     GL_UNSIGNED_BYTE, pixels);
+
+	return 0;
 }
 
 static void
@@ -1552,6 +1596,7 @@ gles2_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display
 	if (gr == NULL)
 		return -1;
 
+	gr->base.read_pixels = gles2_renderer_read_pixels;
 	gr->base.repaint_output = gles2_renderer_repaint_output;
 	gr->base.flush_damage = gles2_renderer_flush_damage;
 	gr->base.attach = gles2_renderer_attach;

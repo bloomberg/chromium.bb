@@ -26,6 +26,15 @@
 
 #include "compositor.h"
 
+static int
+noop_renderer_read_pixels(struct weston_output *output,
+			       pixman_format_code_t format, void *pixels,
+			       uint32_t x, uint32_t y,
+			       uint32_t width, uint32_t height)
+{
+	return 0;
+}
+
 static void
 noop_renderer_repaint_output(struct weston_output *output,
 			     pixman_region32_t *output_damage)
@@ -64,6 +73,7 @@ noop_renderer_init(struct weston_compositor *ec)
 	if (renderer == NULL)
 		return -1;
 
+	renderer->read_pixels = noop_renderer_read_pixels;
 	renderer->repaint_output = noop_renderer_repaint_output;
 	renderer->flush_damage = noop_renderer_flush_damage;
 	renderer->attach = noop_renderer_attach;
