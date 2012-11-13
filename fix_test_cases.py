@@ -79,12 +79,14 @@ def list_test_cases(isolated):
     return run_test_cases.list_test_cases(
         cmd,
         '.',
-        0,
-        0,
-        False,
-        False,
-        False,
-        1)
+        index=0,
+        shards=0,
+        disabled=False,
+        fails=False,
+        flaky=False,
+        pre=False,
+        manual=False,
+        seed=1)
   except run_test_cases.Failure, e:
     cmd = [
       sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
@@ -102,12 +104,14 @@ def list_test_cases(isolated):
     return run_test_cases.list_test_cases(
         cmd,
         '.',
-        0,
-        0,
-        False,
-        False,
-        False,
-        1)
+        index=0,
+        shards=0,
+        disabled=False,
+        fails=False,
+        flaky=False,
+        pre=False,
+        manual=False,
+        seed=1)
 
 
 def add_verbosity(cmd):

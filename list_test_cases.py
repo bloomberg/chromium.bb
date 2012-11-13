@@ -30,6 +30,14 @@ def main():
       '-F', '--flaky',
       action='store_true',
       help='Include FLAKY_ tests')
+  parser.add_option(
+      '-m', '--manual',
+      action='store_true',
+      help='Include MANUAL_ tests')
+  parser.add_option(
+      '-p', '--pre',
+      action='store_true',
+      help='Include PRE_ tests')
   options, args = parser.parse_args()
   if not args:
     parser.error('Please provide the executable to run')
@@ -39,12 +47,14 @@ def main():
     tests = run_test_cases.list_test_cases(
         cmd,
         os.getcwd(),
-        options.index,
-        options.shards,
-        options.disabled,
-        options.fails,
-        options.flaky,
-        0)
+        index=options.index,
+        shards=options.shards,
+        disabled=options.disabled,
+        fails=options.fails,
+        flaky=options.flaky,
+        pre=options.pre,
+        manual=options.manual,
+        seed=0)
     for test in tests:
       print test
   except run_test_cases.Failure, e:

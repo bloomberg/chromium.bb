@@ -351,13 +351,17 @@ def filter_shards(tests, index, shards):
   return tests[min_bound:max_bound]
 
 
-def filter_bad_tests(tests, disabled=False, fails=False, flaky=False):
-  """Filters out DISABLED_, FAILS_ or FLAKY_ tests."""
+def filter_bad_tests(tests, disabled, fails, flaky, pre, manual):
+  """Filters out PRE_, MANUAL_, DISABLED_, FAILS_ or FLAKY_ tests."""
   def starts_with(a, b, prefix):
     return a.startswith(prefix) or b.startswith(prefix)
 
   def valid(test):
     fixture, case = test.split('.', 1)
+    if not pre and starts_with(fixture, case, 'PRE_'):
+      return False
+    if not manual and starts_with(fixture, case, 'MANUAL_'):
+      return False
     if not disabled and starts_with(fixture, case, 'DISABLED_'):
       return False
     if not fails and starts_with(fixture, case, 'FAILS_'):
@@ -414,13 +418,14 @@ def parse_gtest_cases(out, seed):
   return tests
 
 
-def list_test_cases(cmd, cwd, index, shards, disabled, fails, flaky, seed):
+def list_test_cases(
+    cmd, cwd, index, shards, disabled, fails, flaky, pre, manual, seed):
   """Returns the list of test cases according to the specified criterias."""
   tests = parse_gtest_cases(gtest_list_tests(cmd, cwd), seed)
 
   if shards:
     tests = filter_shards(tests, index, shards)
-  return filter_bad_tests(tests, disabled, fails, flaky)
+  return filter_bad_tests(tests, disabled, fails, flaky, pre, manual)
 
 
 class RunSome(object):
@@ -589,7 +594,17 @@ def get_test_cases(cmd, cwd, whitelist, blacklist, index, shards, seed):
   This is done synchronously.
   """
   try:
-    tests = list_test_cases(cmd, cwd, index, shards, False, False, False, seed)
+    tests = list_test_cases(
+        cmd,
+        cwd,
+        index=index,
+        shards=shards,
+        disabled=False,
+        fails=False,
+        flaky=False,
+        pre=False,
+        manual=False,
+        seed=seed)
   except Failure, e:
     print('Failed to list test cases')
     print(e.args[0])
