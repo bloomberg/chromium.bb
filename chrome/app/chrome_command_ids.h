@@ -193,6 +193,7 @@
 #define IDC_TOGGLE_REQUEST_TABLET_SITE  40236
 #define IDC_DEV_TOOLS_TOGGLE            40237
 #define IDC_EXTERNAL_EXTENSION_ALERT    40238
+#define IDC_RECENT_TABS_MENU            40239
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

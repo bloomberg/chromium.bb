@@ -8,14 +8,15 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/button_menu_item_model.h"
 #include "ui/base/models/simple_menu_model.h"
 
+class BookmarkSubMenuModel;
 class Browser;
+class RecentTabsSubMenuModel;
 class TabStripModel;
 
 namespace {
@@ -160,6 +161,9 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
 
   // Bookmark submenu.
   scoped_ptr<BookmarkSubMenuModel> bookmark_sub_menu_model_;
+
+  // Recent Tabs submenu.
+  scoped_ptr<RecentTabsSubMenuModel> recent_tabs_sub_menu_model_;
 
   ui::AcceleratorProvider* provider_;  // weak
 

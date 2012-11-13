@@ -851,6 +851,9 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE_VIA_MENU, true);
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARKS_MENU,
                                         !Profile::IsGuestSession());
+  command_updater_.UpdateCommandEnabled(IDC_RECENT_TABS_MENU,
+                                        !Profile::IsGuestSession() &&
+                                        !profile()->IsOffTheRecord());
 
   command_updater_.UpdateCommandEnabled(
       IDC_SHOW_SYNC_SETUP, profile()->GetOriginalProfile()->IsSyncAccessible());

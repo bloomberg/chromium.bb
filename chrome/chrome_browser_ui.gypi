@@ -1287,6 +1287,8 @@
         'browser/ui/toolbar/bookmark_sub_menu_model.h',
         'browser/ui/toolbar/encoding_menu_controller.cc',
         'browser/ui/toolbar/encoding_menu_controller.h',
+        'browser/ui/toolbar/recent_tabs_sub_menu_model.cc',
+        'browser/ui/toolbar/recent_tabs_sub_menu_model.h',
         'browser/ui/toolbar/toolbar_model.h',
         'browser/ui/toolbar/toolbar_model_impl.cc',
         'browser/ui/toolbar/toolbar_model_impl.h',

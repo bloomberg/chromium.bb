@@ -33,9 +33,12 @@
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
+#include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -509,6 +512,14 @@ void WrenchMenuModel::Build(bool is_new_menu, bool supports_new_separators) {
   bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
   AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
                          bookmark_sub_menu_model_.get());
+
+  if (chrome::search::IsInstantExtendedAPIEnabled(browser_->profile())) {
+    recent_tabs_sub_menu_model_.reset(new RecentTabsSubMenuModel(provider_,
+                                                                 browser_,
+                                                                 NULL));
+    AddSubMenuWithStringId(IDC_RECENT_TABS_MENU, IDS_RECENT_TABS_MENU,
+                           recent_tabs_sub_menu_model_.get());
+  }
 
 #if defined(OS_WIN)
   if (base::win::IsMetroProcess()) {

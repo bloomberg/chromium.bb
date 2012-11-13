@@ -233,6 +233,10 @@ class SessionModelAssociator
   bool GetSyncedFaviconForPageURL(const std::string& url,
                                   std::string* png_favicon) const;
 
+  void SetCurrentMachineTagForTesting(const std::string& machine_tag) {
+    current_machine_tag_ = machine_tag;
+  }
+
  private:
   friend class SyncSessionModelAssociatorTest;
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, WriteSessionToNode);

@@ -96,6 +96,7 @@ class WrenchMenu : public views::MenuDelegate,
 
  private:
   class CutCopyPasteView;
+  class RecentTabsMenuModelDelegate;
   class ZoomView;
 
   typedef std::pair<ui::MenuModel*,int> Entry;
@@ -159,6 +160,9 @@ class WrenchMenu : public views::MenuDelegate,
 
   // Menu corresponding to IDC_FEEDBACK.
   views::MenuItemView* feedback_menu_item_;
+
+  // Used for managing "Recent tabs" menu items.
+  scoped_ptr<RecentTabsMenuModelDelegate> recent_tabs_menu_model_delegate_;
 
   // ID to use for the items representing bookmarks in the bookmark menu.
   int first_bookmark_command_id_;

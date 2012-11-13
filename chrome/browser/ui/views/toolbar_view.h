@@ -227,9 +227,11 @@ class ToolbarView : public views::AccessiblePaneView,
   // The display mode used when laying out the toolbar.
   DisplayMode display_mode_;
 
-  // Wrench menu.
-  scoped_ptr<WrenchMenu> wrench_menu_;
+  // Wrench model and menu.
+  // Note that the menu should be destroyed before the model it uses, so the
+  // menu should be listed later.
   scoped_ptr<WrenchMenuModel> wrench_menu_model_;
+  scoped_ptr<WrenchMenu> wrench_menu_;
 
   // A list of listeners to call when the menu opens.
   ObserverList<views::MenuListener> menu_listeners_;

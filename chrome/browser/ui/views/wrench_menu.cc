@@ -706,6 +706,43 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
   DISALLOW_COPY_AND_ASSIGN(ZoomView);
 };
 
+// RecentTabsMenuModelDelegate -------------------------------------------------
+
+// Provides the ui::MenuModelDelegate implementation for RecentTabsSubMenuModel
+// items.
+class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
+ public:
+  RecentTabsMenuModelDelegate(ui::MenuModel* model,
+                              views::MenuItemView* menu_item)
+      : model_(model),
+        menu_item_(menu_item) {
+    model_->SetMenuModelDelegate(this);
+  }
+
+  virtual ~RecentTabsMenuModelDelegate() {
+    model_->SetMenuModelDelegate(NULL);
+  }
+
+  // ui::MenuModelDelegate implementation:
+  virtual void OnIconChanged(int index) OVERRIDE {
+    // |index| specifies position in children items of |menu_item_| starting at
+    // 0, its corresponding command id as used in the children menu item views
+    // follows that of the parent menu item view |menu_item_|.
+    int command_id = menu_item_->GetCommand() + 1 + index;
+    views::MenuItemView* item = menu_item_->GetMenuItemByID(command_id);
+    DCHECK(item);
+    gfx::Image icon;
+    if (model_->GetIconAt(index, &icon))
+      item->SetIcon(*icon.ToImageSkia());
+  }
+
+ private:
+  ui::MenuModel* model_;
+  views::MenuItemView* menu_item_;
+
+  DISALLOW_COPY_AND_ASSIGN(RecentTabsMenuModelDelegate);
+};
+
 // WrenchMenu ------------------------------------------------------------------
 
 WrenchMenu::WrenchMenu(Browser* browser,
@@ -900,7 +937,7 @@ void WrenchMenu::ExecuteCommand(int id, int mouse_event_flags) {
     return;
   }
 
-  return entry.first->ActivatedAt(entry.second);
+  return entry.first->ActivatedAt(entry.second, mouse_event_flags);
 }
 
 bool WrenchMenu::GetAccelerator(int id, ui::Accelerator* accelerator) {
@@ -952,7 +989,6 @@ void WrenchMenu::BookmarkModelChanged() {
   if (!bookmark_menu_delegate_->is_mutating_model())
     root_->Cancel();
 }
-
 
 void WrenchMenu::Observe(int type,
                          const content::NotificationSource& source,
@@ -1020,6 +1056,15 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
       case IDC_FEEDBACK:
         DCHECK(!feedback_menu_item_);
         feedback_menu_item_ = item;
+        break;
+
+      case IDC_RECENT_TABS_MENU:
+        DCHECK(chrome::search::IsInstantExtendedAPIEnabled(
+            browser_->profile()));
+        DCHECK(!recent_tabs_menu_model_delegate_.get());
+        recent_tabs_menu_model_delegate_.reset(
+            new RecentTabsMenuModelDelegate(model->GetSubmenuModelAt(index),
+                                            item));
         break;
 
       default:
