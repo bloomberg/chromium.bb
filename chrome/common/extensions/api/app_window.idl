@@ -21,17 +21,17 @@ namespace app.window {
     // Default Y coordinate of the window.
     long? defaultTop;
 
-    // Width of the window.
-    long? width;
+    // Width of the window. (Deprecated; use 'bounds'.)
+    [nodoc] long? width;
 
-    // Height of the window.
-    long? height;
+    // Height of the window. (Deprecated; use 'bounds'.)
+    [nodoc] long? height;
 
-    // X coordinate of the window.
-    long? left;
+    // X coordinate of the window. (Deprecated; use 'bounds'.)
+    [nodoc] long? left;
 
-    // Y coordinate of the window.
-    long? top;
+    // Y coordinate of the window. (Deprecated; use 'bounds'.)
+    [nodoc] long? top;
 
     // Minimium width of the window.
     long? minWidth;
@@ -46,10 +46,16 @@ namespace app.window {
     long? maxHeight;
 
     // Window type: 'shell' (the default) is the only currently supported value.
-    DOMString? type;
+    [nodoc] DOMString? type;
 
     // Frame type: 'none' or 'chrome' (defaults to 'chrome').
     DOMString? frame;
+
+    // Size of the content in the window (excluding the titlebar). If specified
+    // in addition to any of the left/top/width/height parameters, this field
+    // takes precedence. If a frameBounds is specified, the frameBounds take
+    // precedence.
+    Bounds? bounds;
 
     // If true, the window will be created in a hidden state. Call show() on
     // the window to show it once it has been created. Defaults to false.

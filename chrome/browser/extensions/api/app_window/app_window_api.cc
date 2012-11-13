@@ -138,6 +138,18 @@ bool AppWindowCreateFunction::RunImpl() {
       create_params.restore_position = false;
     }
 
+    if (options->bounds.get()) {
+      app_window::Bounds* bounds = options->bounds.get();
+      if (bounds->width.get())
+        create_params.bounds.set_width(*bounds->width.get());
+      if (bounds->height.get())
+        create_params.bounds.set_height(*bounds->height.get());
+      if (bounds->left.get())
+        create_params.bounds.set_x(*bounds->left.get());
+      if (bounds->top.get())
+        create_params.bounds.set_y(*bounds->top.get());
+    }
+
     if (options->frame.get()) {
       if (*options->frame == kHtmlFrameOption &&
           CommandLine::ForCurrentProcess()->HasSwitch(

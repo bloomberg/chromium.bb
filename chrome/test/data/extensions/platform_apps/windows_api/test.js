@@ -60,7 +60,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
    function testContentSize() {
      chrome.app.window.create('test.html',
-         {width: 250, height: 200}, callbackPass(function(win) {
+         {bounds: { width: 250, height: 200 }}, callbackPass(function(win) {
        chrome.test.assertEq(250, win.contentWindow.innerWidth);
        chrome.test.assertEq(200, win.contentWindow.innerHeight);
        win.close();
