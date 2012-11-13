@@ -174,6 +174,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
+#include "extensions/common/constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -1880,7 +1881,7 @@ void Browser::Observe(int type,
                 details)->extension;
         for (int i = tab_strip_model_->count() - 1; i >= 0; --i) {
           WebContents* tc = chrome::GetTabContentsAt(this, i)->web_contents();
-          if (tc->GetURL().SchemeIs(chrome::kExtensionScheme) &&
+          if (tc->GetURL().SchemeIs(extensions::kExtensionScheme) &&
               tc->GetURL().host() == extension->id())
             chrome::CloseWebContents(this, tc);
         }

@@ -6,6 +6,7 @@
 
 #include "base/string_util.h"
 #include "chrome/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
 #include "net/base/net_util.h"
@@ -171,7 +172,7 @@ void PatternParser::Parse(const std::string& pattern_spec,
       builder->WithPort(port);
     }
   } else {
-    if (scheme != std::string(chrome::kExtensionScheme) &&
+    if (scheme != std::string(extensions::kExtensionScheme) &&
         scheme != std::string(chrome::kFileScheme))
       builder->WithPortWildcard();
   }
@@ -216,7 +217,7 @@ std::string PatternParser::ToString(
   }
   str += parts.host;
 
-  if (parts.scheme == std::string(chrome::kExtensionScheme)) {
+  if (parts.scheme == std::string(extensions::kExtensionScheme)) {
     str += parts.path.empty() ? std::string(kUrlPathSeparator) : parts.path;
     return str;
   }

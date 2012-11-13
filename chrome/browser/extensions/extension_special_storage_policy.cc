@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/constants.h"
 #include "webkit/glue/web_intent_service_data.h"
 
 using content::BrowserThread;
@@ -44,7 +45,7 @@ ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy(
 ExtensionSpecialStoragePolicy::~ExtensionSpecialStoragePolicy() {}
 
 bool ExtensionSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
-  if (origin.SchemeIs(chrome::kExtensionScheme))
+  if (origin.SchemeIs(extensions::kExtensionScheme))
     return true;
   base::AutoLock locker(lock_);
   return protected_apps_.Contains(origin);

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/url_pattern.h"
+#include "extensions/common/url_pattern.h"
 
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "chrome/common/url_constants.h"
+#include "content/public/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
 
@@ -24,7 +25,7 @@ const char* kValidSchemes[] = {
   chrome::kFileScheme,
   chrome::kFtpScheme,
   chrome::kChromeUIScheme,
-  chrome::kExtensionScheme,
+  extensions::kExtensionScheme,
   chrome::kFileSystemScheme,
 };
 

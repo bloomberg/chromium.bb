@@ -19,6 +19,7 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/common/constants.h"
 #include "net/base/net_util.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
@@ -399,7 +400,7 @@ TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataNoExtensions) {
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://key1.com"));
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key2"), "http://key2.com"));
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key3"),
-      std::string(chrome::kExtensionScheme) + "://blahblahblah"));
+      std::string(extensions::kExtensionScheme) + "://blahblahblah"));
   syncer::SyncDataList all_sync_data =
       model()->GetAllSyncData(syncer::SEARCH_ENGINES);
 
@@ -1008,10 +1009,10 @@ TEST_F(TemplateURLServiceSyncTest, ProcessChangesWithLocalExtensions) {
 
   // Add some extension keywords locally.  These shouldn't be synced.
   TemplateURL* extension1 = CreateTestTemplateURL(ASCIIToUTF16("keyword1"),
-      std::string(chrome::kExtensionScheme) + "://extension1");
+      std::string(extensions::kExtensionScheme) + "://extension1");
   model()->Add(extension1);
   TemplateURL* extension2 = CreateTestTemplateURL(ASCIIToUTF16("keyword2"),
-      std::string(chrome::kExtensionScheme) + "://extension2");
+      std::string(extensions::kExtensionScheme) + "://extension2");
   model()->Add(extension2);
   EXPECT_EQ(0U, processor()->change_list_size());
 

@@ -41,12 +41,12 @@
 #include "chrome/browser/chromeos/web_socket_proxy_helper.h"
 #include "chrome/browser/internal_auth.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_parse.h"
 #include "net/base/address_list.h"
@@ -155,7 +155,7 @@ std::string FetchAsciiSnippet(uint8* begin, uint8* end, AsciiFilter filter) {
 
 std::string FetchExtensionIdFromOrigin(const std::string &origin) {
   GURL url(origin);
-  if (url.SchemeIs(chrome::kExtensionScheme))
+  if (url.SchemeIs(extensions::kExtensionScheme))
     return url.host();
   else
     return std::string();

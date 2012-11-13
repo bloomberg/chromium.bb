@@ -5,7 +5,7 @@
 #include "chrome/common/extensions/file_browser_handler.h"
 
 #include "base/logging.h"
-#include "chrome/common/extensions/url_pattern.h"
+#include "extensions/common/url_pattern.h"
 #include "googleurl/src/gurl.h"
 
 namespace {

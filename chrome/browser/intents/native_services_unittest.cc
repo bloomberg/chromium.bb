@@ -10,7 +10,7 @@
 #include "chrome/browser/intents/native_services.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/url_pattern.h"
+#include "extensions/common/url_pattern.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/web_intent_service_data.h"

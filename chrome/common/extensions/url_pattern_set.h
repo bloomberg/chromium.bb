@@ -8,7 +8,7 @@
 #include <set>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/extensions/url_pattern.h"
+#include "extensions/common/url_pattern.h"
 
 class GURL;
 

@@ -9,6 +9,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -25,7 +26,7 @@ string16 GetLabelTextForType(FullscreenExitBubbleType type,
         extensions->GetExtensionOrAppByURL(ExtensionURLInfo(url));
     if (extension) {
       host = UTF8ToUTF16(extension->name());
-    } else if (url.SchemeIs(chrome::kExtensionScheme)) {
+    } else if (url.SchemeIs(extensions::kExtensionScheme)) {
       // In this case, |host| is set to an extension ID.
       // We are not going to show it because it's human-unreadable.
       host.clear();

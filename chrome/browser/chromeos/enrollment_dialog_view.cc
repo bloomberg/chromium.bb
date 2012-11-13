@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/common/page_transition_types.h"
+#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -230,7 +230,7 @@ void DialogEnrollmentDelegate::Enroll(const std::vector<std::string>& uri_list,
   for (std::vector<std::string>::const_iterator iter = uri_list.begin();
        iter != uri_list.end(); ++iter) {
     GURL uri(*iter);
-    if (uri.IsStandard() || uri.scheme() == chrome::kExtensionScheme) {
+    if (uri.IsStandard() || uri.scheme() == extensions::kExtensionScheme) {
       // If this is a "standard" scheme, like http, ftp, etc., then open that in
       // the enrollment dialog.
       EnrollmentDialogView::ShowDialog(owning_window_,

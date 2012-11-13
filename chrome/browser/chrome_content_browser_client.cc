@@ -101,6 +101,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
+#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/escape.h"
@@ -306,7 +307,7 @@ RenderProcessHostPrivilege GetPrivilegeRequiredByUrl(
   if (!url.is_valid())
     return PRIV_NORMAL;
 
-  if (url.SchemeIs(chrome::kExtensionScheme)) {
+  if (url.SchemeIs(extensions::kExtensionScheme)) {
     const Extension* extension =
         service->extensions()->GetByID(url.host());
     if (extension && extension->is_storage_isolated())
@@ -641,7 +642,7 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
   // Non-extension URLs should generally use process-per-site-instance.
   // Because we expect to use the effective URL, URLs for hosted apps (apart
   // from bookmark apps) should have an extension scheme by now.
-  if (!effective_url.SchemeIs(chrome::kExtensionScheme))
+  if (!effective_url.SchemeIs(extensions::kExtensionScheme))
     return false;
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -828,7 +829,7 @@ bool ChromeContentBrowserClient::ShouldSwapProcessesForNavigation(
     // Always choose a new process when navigating to extension URLs. The
     // process grouping logic will combine all of a given extension's pages
     // into the same process.
-    if (new_url.SchemeIs(chrome::kExtensionScheme))
+    if (new_url.SchemeIs(extensions::kExtensionScheme))
       return true;
 
     return false;
@@ -836,8 +837,8 @@ bool ChromeContentBrowserClient::ShouldSwapProcessesForNavigation(
 
   // Also, we must switch if one is an extension and the other is not the exact
   // same extension.
-  if (current_url.SchemeIs(chrome::kExtensionScheme) ||
-      new_url.SchemeIs(chrome::kExtensionScheme)) {
+  if (current_url.SchemeIs(extensions::kExtensionScheme) ||
+      new_url.SchemeIs(extensions::kExtensionScheme)) {
     if (current_url.GetOrigin() != new_url.GetOrigin())
       return true;
   }
@@ -1188,7 +1189,7 @@ net::URLRequestContext*
 ChromeContentBrowserClient::OverrideRequestContextForURL(
     const GURL& url, content::ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (url.SchemeIs(chrome::kExtensionScheme)) {
+  if (url.SchemeIs(extensions::kExtensionScheme)) {
     ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
     return io_data->extensions_request_context();
   }
@@ -1637,7 +1638,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     // the correct scheme. Without this check, chrome-guest:// schemes used by
     // webview tags as well as hosts that happen to match the id of an
     // installed extension would get the wrong preferences.
-    if (url.SchemeIs(chrome::kExtensionScheme)) {
+    if (url.SchemeIs(extensions::kExtensionScheme)) {
       extension_webkit_preferences::SetPreferences(
           extension, view_type, web_prefs);
     }
@@ -1765,8 +1766,10 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
     return false;
 
   std::string host = url.host();
-  if (url.SchemeIs(kExtensionScheme) && allowed_socket_origins_.count(host))
+  if (url.SchemeIs(extensions::kExtensionScheme) &&
+      allowed_socket_origins_.count(host)) {
     return true;
+  }
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   const Extension* extension = NULL;

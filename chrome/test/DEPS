@@ -1,6 +1,7 @@
 include_rules = [
   # The test directory can do whatever it wants in chrome.
   "+chrome",
+  "+extensions",
 
   # Tests under chrome/ shouldn't need to access the internals of content/ and
   # as such are allowed only content/public. If you find yourself wanting to

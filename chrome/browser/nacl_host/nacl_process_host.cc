@@ -28,7 +28,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_messages.h"
@@ -38,6 +37,8 @@
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/child_process_host.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/url_pattern.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
@@ -52,8 +53,8 @@
 #elif defined(OS_WIN)
 #include <windows.h>
 
-#include "base/threading/thread.h"
 #include "base/process_util.h"
+#include "base/threading/thread.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/browser/nacl_host/nacl_broker_service_win.h"
 #include "chrome/common/nacl_debug_exception_handler_win.h"
@@ -469,7 +470,8 @@ void NaClProcessHost::OnNaClGdbAttached() {
 FilePath NaClProcessHost::GetManifestPath() {
   const extensions::Extension* extension = extension_info_map_->extensions()
       .GetExtensionOrAppByURL(ExtensionURLInfo(manifest_url_));
-  if (extension != NULL && manifest_url_.SchemeIs(chrome::kExtensionScheme)) {
+  if (extension != NULL &&
+      manifest_url_.SchemeIs(extensions::kExtensionScheme)) {
     std::string path = manifest_url_.path();
     TrimString(path, "/", &path);  // Remove first slash
     return extension->path().AppendASCII(path);

@@ -14,6 +14,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/constants.h"
 
 using content::WebContents;
 
@@ -55,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideNewtab) {
     WebContents* tab = chrome::GetActiveWebContents(browser());
     ASSERT_TRUE(tab->GetController().GetActiveEntry());
     EXPECT_TRUE(tab->GetController().GetActiveEntry()->GetURL().
-                SchemeIs(chrome::kExtensionScheme));
+                SchemeIs(extensions::kExtensionScheme));
 
     ASSERT_TRUE(catcher.GetNextResult());
   }
@@ -80,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, MAYBE_OverrideNewtabIncognito) {
   WebContents* tab = chrome::GetActiveWebContents(otr_browser);
   ASSERT_TRUE(tab->GetController().GetActiveEntry());
   EXPECT_FALSE(tab->GetController().GetActiveEntry()->GetURL().
-               SchemeIs(chrome::kExtensionScheme));
+               SchemeIs(extensions::kExtensionScheme));
 }
 
 // Times out consistently on Win, http://crbug.com/45173.

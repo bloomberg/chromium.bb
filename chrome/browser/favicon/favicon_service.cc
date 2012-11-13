@@ -11,6 +11,7 @@
 #include "chrome/browser/history/select_favicon_frames.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
@@ -255,7 +256,7 @@ FaviconService::Handle FaviconService::GetFaviconForURLImpl(
   AddRequest(request, params.consumer);
   FaviconService::Handle handle = request->handle();
   if (params.page_url.SchemeIs(chrome::kChromeUIScheme) ||
-      params.page_url.SchemeIs(chrome::kExtensionScheme)) {
+      params.page_url.SchemeIs(extensions::kExtensionScheme)) {
     ChromeWebUIControllerFactory::GetInstance()->GetFaviconForURL(
         params.profile, request, params.page_url, desired_scale_factors);
   } else {

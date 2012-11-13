@@ -17,7 +17,6 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/about_protocol_handler.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/extensions/extension_resource_protocols.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/net/about_protocol_handler.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/chrome_fraudulent_certificate_reporter.h"
 #include "chrome/browser/net/chrome_http_user_agent_settings.h"
@@ -56,6 +56,7 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
+#include "extensions/common/constants.h"
 #include "net/base/server_bound_cert_service.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
@@ -337,7 +338,7 @@ ProfileIOData* ProfileIOData::FromResourceContext(
 bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
   DCHECK_EQ(scheme, StringToLowerASCII(scheme));
   static const char* const kProtocolList[] = {
-    chrome::kExtensionScheme,
+    extensions::kExtensionScheme,
     chrome::kChromeUIScheme,
     chrome::kChromeDevToolsScheme,
 #if defined(OS_CHROMEOS)
@@ -638,7 +639,7 @@ void ProfileIOData::SetUpJobFactoryDefaults(
   }
 
   set_protocol = job_factory->SetProtocolHandler(
-      chrome::kExtensionScheme,
+      extensions::kExtensionScheme,
       CreateExtensionProtocolHandler(is_incognito(), GetExtensionInfoMap()));
   DCHECK(set_protocol);
   set_protocol = job_factory->SetProtocolHandler(

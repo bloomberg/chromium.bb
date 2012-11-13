@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "chrome_frame/utils.h"
+#include "extensions/common/constants.h"
 
 NavigationConstraintsImpl::NavigationConstraintsImpl() : is_privileged_(false) {
 }
@@ -48,7 +49,7 @@ bool NavigationConstraintsImpl::IsSchemeAllowed(const GURL& url) {
 
   if (is_privileged_ &&
       (url.SchemeIs(chrome::kDataScheme) ||
-       url.SchemeIs(chrome::kExtensionScheme))) {
+       url.SchemeIs(extensions::kExtensionScheme))) {
     return true;
   }
 

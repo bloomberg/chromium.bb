@@ -12,6 +12,7 @@
 #include "chrome/common/content_settings_pattern_parser.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
 #include "ipc/ipc_message_utils.h"
@@ -209,7 +210,7 @@ bool ContentSettingsPattern::Builder::Validate(const PatternParts& parts) {
   }
 
   // If the pattern is for an extension URL test if it is valid.
-  if (parts.scheme == std::string(chrome::kExtensionScheme) &&
+  if (parts.scheme == std::string(extensions::kExtensionScheme) &&
       parts.port.empty() &&
       !parts.is_port_wildcard) {
     return true;
@@ -246,7 +247,7 @@ bool ContentSettingsPattern::Builder::LegacyValidate(
     return true;
 
   // If the pattern is for an extension URL test if it is valid.
-  if (parts.scheme == std::string(chrome::kExtensionScheme) &&
+  if (parts.scheme == std::string(extensions::kExtensionScheme) &&
       !parts.is_scheme_wildcard &&
       !parts.host.empty() &&
       !parts.has_domain_wildcard &&
@@ -457,7 +458,7 @@ bool ContentSettingsPattern::Matches(
   }
 
   // For chrome extensions URLs ignore the port.
-  if (parts_.scheme == std::string(chrome::kExtensionScheme))
+  if (parts_.scheme == std::string(extensions::kExtensionScheme))
     return true;
 
   // Match the port part.

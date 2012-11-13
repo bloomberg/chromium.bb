@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/extensions/url_pattern.h"
+#include "extensions/common/url_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "googleurl/src/gurl.h"
 

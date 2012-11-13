@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/string16.h"
-#include "chrome/common/extensions/url_pattern.h"
+#include "extensions/common/url_pattern.h"
 
 // Holds data related to a default settings for web intents service
 // selection. Holds data in a row in the web_intents_defaults table.

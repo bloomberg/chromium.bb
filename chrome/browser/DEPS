@@ -7,6 +7,7 @@ include_rules = [
   "+content/components",
   "+content/public/browser",
   "+device",
+  "+extensions/common",
   "+google/cacheinvalidation",  # Sync invalidation API protobuf files.
   "+google_apis",
   "+google_update",

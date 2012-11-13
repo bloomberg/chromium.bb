@@ -16,6 +16,7 @@
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "extensions/common/constants.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_monster.h"
@@ -92,7 +93,7 @@ void DataDeleter::StartDeleting(Profile* profile,
       webkit_database::DatabaseUtil::GetOriginIdentifier(storage_origin);
 
   scoped_refptr<net::URLRequestContextGetter> request_context;
-  if (storage_origin.SchemeIs(chrome::kExtensionScheme)) {
+  if (storage_origin.SchemeIs(extensions::kExtensionScheme)) {
     // TODO(ajwong): Cookies are not properly isolated for
     // chrome-extension:// scheme.  (http://crbug.com/158386).
     //
@@ -137,5 +138,4 @@ void DataDeleter::StartDeleting(Profile* profile,
   profile->GetExtensionService()->settings_frontend()->
       DeleteStorageSoon(extension_id);
 }
-
 }  // namespace extensions

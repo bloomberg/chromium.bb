@@ -498,7 +498,6 @@ const char* const kChromeDebugURLs[] = {
 const int kNumberOfChromeDebugURLs =
     static_cast<int>(arraysize(kChromeDebugURLs));
 
-const char kExtensionScheme[] = "chrome-extension";
 const char kExtensionResourceScheme[] = "chrome-extension-resource";
 
 // Google SafeSearch query parameters.

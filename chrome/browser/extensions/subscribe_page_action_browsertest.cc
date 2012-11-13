@@ -10,6 +10,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/common/constants.h"
 
 using content::WebContents;
 using extensions::Extension;
@@ -64,7 +65,7 @@ GURL GetFeedUrl(net::TestServer* server, const std::string& feed_page,
   if (direct_url) {
     // We navigate directly to the subscribe page for feeds where the feed
     // sniffing won't work, in other words, as is the case for malformed feeds.
-    return GURL(std::string(chrome::kExtensionScheme) +
+    return GURL(std::string(extensions::kExtensionScheme) +
         content::kStandardSchemeSeparator +
         extension_id + std::string(kSubscribePage) + std::string("?") +
         feed_url.spec() + std::string("&synchronous"));

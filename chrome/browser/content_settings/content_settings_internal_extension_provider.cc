@@ -12,10 +12,10 @@
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/common/constants.h"
 
 using extensions::UnloadedExtensionInfo;
 
@@ -104,7 +104,7 @@ void InternalExtensionProvider::SetContentSettingForExtension(
     ContentSetting setting) {
   scoped_ptr<ContentSettingsPattern::BuilderInterface> pattern_builder(
       ContentSettingsPattern::CreateBuilder(false));
-  pattern_builder->WithScheme(chrome::kExtensionScheme);
+  pattern_builder->WithScheme(extensions::kExtensionScheme);
   pattern_builder->WithHost(extension->id());
   pattern_builder->WithPathWildcard();
 

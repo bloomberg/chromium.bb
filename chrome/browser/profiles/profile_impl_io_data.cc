@@ -33,6 +33,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "extensions/common/constants.h"
 #include "net/base/server_bound_cert_service.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
@@ -380,7 +381,7 @@ void ProfileImplIOData::LazyInitializeInternal(
               lazy_params_->restore_old_session_cookies, NULL), NULL);
   // Enable cookies for devtools and extension URLs.
   const char* schemes[] = {chrome::kChromeDevToolsScheme,
-                           chrome::kExtensionScheme};
+                           extensions::kExtensionScheme};
   extensions_cookie_store->SetCookieableSchemes(schemes, 2);
 
   main_context->set_cookie_store(cookie_store);

@@ -33,6 +33,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "extensions/common/constants.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
@@ -633,7 +634,7 @@ bool ChromeNetworkDelegate::OnCanThrottleRequest(
   }
 
   return request.first_party_for_cookies().scheme() ==
-      chrome::kExtensionScheme;
+      extensions::kExtensionScheme;
 }
 
 int ChromeNetworkDelegate::OnBeforeSocketStreamConnect(

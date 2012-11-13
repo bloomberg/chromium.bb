@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/common/url_constants.h"
+#include "extensions/common/constants.h"
 
 namespace extensions {
 
@@ -83,7 +84,7 @@ bool FrameNavigationState::IsValidUrl(const GURL& url) const {
   // Allow about:blank.
   if (url.spec() == chrome::kAboutBlankURL)
     return true;
-  if (allow_extension_scheme_ && url.scheme() == chrome::kExtensionScheme)
+  if (allow_extension_scheme_ && url.scheme() == extensions::kExtensionScheme)
     return true;
   return false;
 }

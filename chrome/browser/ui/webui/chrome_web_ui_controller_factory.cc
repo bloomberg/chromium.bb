@@ -59,6 +59,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
@@ -75,10 +76,10 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/chromeos/drive_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/cryptohome_ui.h"
 #include "chrome/browser/ui/webui/chromeos/diagnostics/diagnostics_ui.h"
+#include "chrome/browser/ui/webui/chromeos/drive_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_ui.h"
 #include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -493,7 +494,7 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
 
   // All extensions but the bookmark manager get their favicon from the icons
   // part of the manifest.
-  if (url.SchemeIs(chrome::kExtensionScheme) &&
+  if (url.SchemeIs(extensions::kExtensionScheme) &&
       url.host() != extension_misc::kBookmarkManagerId) {
 #if defined(ENABLE_EXTENSIONS)
     ExtensionWebUI::GetFaviconForURL(profile, request, url);
@@ -557,7 +558,7 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     return BookmarksUI::GetFaviconResourceBytes(scale_factor);
 
   // The extension scheme is handled in GetFaviconForURL.
-  if (page_url.SchemeIs(chrome::kExtensionScheme)) {
+  if (page_url.SchemeIs(extensions::kExtensionScheme)) {
     NOTREACHED();
     return NULL;
   }

@@ -15,8 +15,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/url_pattern.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/url_pattern.h"
 #include "googleurl/src/gurl.h"
 
 namespace {

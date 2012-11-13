@@ -19,6 +19,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
+#include "extensions/common/constants.h"
 
 using content::ChildProcessSecurityPolicy;
 using content::RenderViewHost;
@@ -136,7 +137,7 @@ const Extension* ChromeRenderViewHostObserver::GetExtension() {
   SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   const GURL& site = site_instance->GetSiteURL();
 
-  if (!site.SchemeIs(chrome::kExtensionScheme))
+  if (!site.SchemeIs(extensions::kExtensionScheme))
     return NULL;
 
   ExtensionService* service = profile_->GetExtensionService();

@@ -34,6 +34,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/show_desktop_notification_params.h"
+#include "extensions/common/constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -465,7 +466,7 @@ bool DesktopNotificationService::ShowDesktopNotification(
 string16 DesktopNotificationService::DisplayNameForOrigin(
     const GURL& origin) {
   // If the source is an extension, lookup the display name.
-  if (origin.SchemeIs(chrome::kExtensionScheme)) {
+  if (origin.SchemeIs(extensions::kExtensionScheme)) {
     ExtensionService* extension_service = profile_->GetExtensionService();
     if (extension_service) {
       const extensions::Extension* extension =

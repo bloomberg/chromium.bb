@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_info.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/url_util.h"
 #include "grit/component_extension_resources_map.h"
 #include "net/base/mime_util.h"
@@ -284,7 +285,7 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
 
 // Returns true if the given URL references an icon in the given extension.
 bool URLIsForExtensionIcon(const GURL& url, const Extension* extension) {
-  DCHECK(url.SchemeIs(chrome::kExtensionScheme));
+  DCHECK(url.SchemeIs(extensions::kExtensionScheme));
 
   if (!extension)
     return false;

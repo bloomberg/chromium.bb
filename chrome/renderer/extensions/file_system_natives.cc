@@ -10,10 +10,11 @@
 #include "base/logging.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
+#include "extensions/common/constants.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 
@@ -29,7 +30,7 @@ static v8::Handle<v8::Value> GetIsolatedFileSystem(
 
   GURL context_url =
       extensions::UserScriptSlave::GetDataSourceURLForFrame(webframe);
-  CHECK(context_url.SchemeIs(chrome::kExtensionScheme));
+  CHECK(context_url.SchemeIs(extensions::kExtensionScheme));
 
   std::string name(fileapi::GetIsolatedFileSystemName(context_url.GetOrigin(),
                                                       file_system_id));

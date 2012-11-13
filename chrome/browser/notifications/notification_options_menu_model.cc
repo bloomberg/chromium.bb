@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -122,7 +123,7 @@ NotificationOptionsMenuModel::NotificationOptionsMenuModel(Balloon* balloon)
   const Notification& notification = balloon->notification();
   const GURL& origin = notification.origin_url();
 
-  if (origin.SchemeIs(chrome::kExtensionScheme)) {
+  if (origin.SchemeIs(extensions::kExtensionScheme)) {
     ExtensionService* extension_service =
         balloon_->profile()->GetExtensionService();
     const extensions::Extension* extension =
@@ -174,7 +175,7 @@ string16 NotificationOptionsMenuModel::GetLabelForCommandId(int command_id)
 
     DesktopNotificationService* service =
         DesktopNotificationServiceFactory::GetForProfile(balloon_->profile());
-    if (origin.SchemeIs(chrome::kExtensionScheme)) {
+    if (origin.SchemeIs(extensions::kExtensionScheme)) {
       ExtensionService* extension_service =
           balloon_->profile()->GetExtensionService();
       const extensions::Extension* extension =

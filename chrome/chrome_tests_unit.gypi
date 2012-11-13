@@ -49,6 +49,7 @@
         '..',
       ],
       'sources': [
+        '../extensions/common/url_pattern_unittest.cc',
         'app/breakpad_mac_stubs.mm',
         'app/chrome_main_delegate.cc',
         'app/chrome_main_delegate.h',
@@ -1479,7 +1480,6 @@
         'common/extensions/unpacker_unittest.cc',
         'common/extensions/update_manifest_unittest.cc',
         'common/extensions/url_pattern_set_unittest.cc',
-        'common/extensions/url_pattern_unittest.cc',
         'common/extensions/user_script_unittest.cc',
         'common/extensions/value_counter_unittest.cc',
         'common/extensions/api/extension_api_unittest.cc',

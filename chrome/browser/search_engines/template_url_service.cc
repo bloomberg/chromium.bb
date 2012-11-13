@@ -45,6 +45,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/common/constants.h"
 #include "net/base/net_util.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
@@ -552,7 +553,7 @@ void TemplateURLService::RegisterExtensionKeyword(
     data.SetKeyword(UTF8ToUTF16(extension->omnibox_keyword()));
     // This URL is not actually used for navigation. It holds the extension's
     // ID, as well as forcing the TemplateURL to be treated as a search keyword.
-    data.SetURL(std::string(chrome::kExtensionScheme) + "://" +
+    data.SetURL(std::string(extensions::kExtensionScheme) + "://" +
         extension->id() + "/?q={searchTerms}");
     Add(new TemplateURL(profile_, data));
   }

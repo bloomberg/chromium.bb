@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
@@ -73,7 +74,7 @@ TEST_F(BrowsingDataHelperTest, WebSafeSchemesAreWebSafe) {
 }
 
 TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotWebSafe) {
-  EXPECT_FALSE(IsWebScheme(chrome::kExtensionScheme));
+  EXPECT_FALSE(IsWebScheme(extensions::kExtensionScheme));
   EXPECT_FALSE(IsWebScheme(chrome::kAboutScheme));
   EXPECT_FALSE(IsWebScheme(chrome::kChromeDevToolsScheme));
   EXPECT_FALSE(IsWebScheme(chrome::kChromeInternalScheme));
@@ -97,7 +98,7 @@ TEST_F(BrowsingDataHelperTest, WebSafeSchemesAreNotExtensions) {
 }
 
 TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotAllExtension) {
-  EXPECT_TRUE(IsExtensionScheme(chrome::kExtensionScheme));
+  EXPECT_TRUE(IsExtensionScheme(extensions::kExtensionScheme));
 
   EXPECT_FALSE(IsExtensionScheme(chrome::kAboutScheme));
   EXPECT_FALSE(IsExtensionScheme(chrome::kChromeDevToolsScheme));

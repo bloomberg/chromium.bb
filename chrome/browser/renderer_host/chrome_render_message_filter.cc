@@ -37,9 +37,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/common/process_type.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(USE_TCMALLOC)
@@ -589,7 +590,7 @@ void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(
     const GURL& origin, bool* allowed) {
   // Since all extensions could historically write to the clipboard, preserve it
   // for compatibility.
-  *allowed = (origin.SchemeIs(chrome::kExtensionScheme) ||
+  *allowed = (origin.SchemeIs(extensions::kExtensionScheme) ||
       extension_info_map_->SecurityOriginHasAPIPermission(
           origin, render_process_id_, APIPermission::kClipboardWrite));
 }

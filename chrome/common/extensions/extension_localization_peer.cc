@@ -9,6 +9,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -35,7 +36,7 @@ ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
     const GURL& request_url) {
   // Return NULL if content is not text/css or it doesn't belong to extension
   // scheme.
-  return (request_url.SchemeIs(chrome::kExtensionScheme) &&
+  return (request_url.SchemeIs(extensions::kExtensionScheme) &&
           StartsWithASCII(mime_type, "text/css", false)) ?
       new ExtensionLocalizationPeer(peer, message_sender, request_url) : NULL;
 }

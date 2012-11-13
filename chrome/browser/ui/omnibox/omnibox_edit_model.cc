@@ -56,6 +56,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/url_util.h"
 #include "ui/gfx/image/image.h"
 
@@ -1246,7 +1247,7 @@ void OmniboxEditModel::DoPrerender(const AutocompleteMatch& match) {
 }
 
 void OmniboxEditModel::DoPreconnect(const AutocompleteMatch& match) {
-  if (!match.destination_url.SchemeIs(chrome::kExtensionScheme)) {
+  if (!match.destination_url.SchemeIs(extensions::kExtensionScheme)) {
     // Warm up DNS Prefetch cache, or preconnect to a search service.
     UMA_HISTOGRAM_ENUMERATION("Autocomplete.MatchType", match.type,
                               AutocompleteMatch::NUM_TYPES);

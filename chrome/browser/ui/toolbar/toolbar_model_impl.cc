@@ -24,6 +24,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/ssl_status.h"
+#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/cert_status_flags.h"
@@ -105,7 +106,7 @@ bool ToolbarModelImpl::ShouldDisplayURL() const {
   if (web_contents && web_contents->GetWebUIForCurrentState())
     return !web_contents->GetWebUIForCurrentState()->ShouldHideURL();
 
-  if (entry && entry->GetURL().SchemeIs(chrome::kExtensionScheme))
+  if (entry && entry->GetURL().SchemeIs(extensions::kExtensionScheme))
     return false;
 
 #if defined(OS_CHROMEOS)

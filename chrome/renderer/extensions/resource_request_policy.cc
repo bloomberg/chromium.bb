@@ -8,15 +8,16 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/common/page_transition_types.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 namespace extensions {
 
@@ -26,7 +27,7 @@ bool ResourceRequestPolicy::CanRequestResource(
     WebKit::WebFrame* frame,
     content::PageTransition transition_type,
     const ExtensionSet* loaded_extensions) {
-  CHECK(resource_url.SchemeIs(chrome::kExtensionScheme));
+  CHECK(resource_url.SchemeIs(extensions::kExtensionScheme));
 
   const Extension* extension =
       loaded_extensions->GetExtensionOrAppByURL(ExtensionURLInfo(resource_url));
@@ -99,7 +100,7 @@ bool ResourceRequestPolicy::CanRequestExtensionResourceScheme(
 
   GURL frame_url = frame->document().url();
   if (!frame_url.is_empty() &&
-      !frame_url.SchemeIs(chrome::kExtensionScheme)) {
+      !frame_url.SchemeIs(extensions::kExtensionScheme)) {
     std::string message = base::StringPrintf(
         "Denying load of %s. chrome-extension-resources:// can only be "
         "loaded from extensions.",

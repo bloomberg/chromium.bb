@@ -399,9 +399,6 @@ extern const char* const kChromeDebugURLs[];
 extern const int kNumberOfChromeDebugURLs;
 
 // Canonical schemes you can use as input to GURL.SchemeIs().
-extern const char kExtensionScheme[];
-
-// Canonical schemes you can use as input to GURL.SchemeIs().
 extern const char kExtensionResourceScheme[];
 
 #if defined(OS_CHROMEOS)

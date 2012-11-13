@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
+#include "extensions/common/url_pattern.h"
 #include "googleurl/src/gurl.h"
 
 class URLPattern;

@@ -11,11 +11,11 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/content_settings_custom_extension_provider.h"
 #include "chrome/browser/content_settings/content_settings_default_provider.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
-#include "chrome/browser/content_settings/content_settings_custom_extension_provider.h"
-#include "chrome/browser/content_settings/content_settings_observable_provider.h"
 #include "chrome/browser/content_settings/content_settings_internal_extension_provider.h"
+#include "chrome/browser/content_settings/content_settings_observable_provider.h"
 #include "chrome/browser/content_settings/content_settings_policy_provider.h"
 #include "chrome/browser/content_settings/content_settings_pref_provider.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
@@ -34,6 +34,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
@@ -507,10 +508,10 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
       primary_url.SchemeIsSecure()) {
     return true;
   }
-  if (primary_url.SchemeIs(chrome::kExtensionScheme)) {
+  if (primary_url.SchemeIs(extensions::kExtensionScheme)) {
     return content_type != CONTENT_SETTINGS_TYPE_PLUGINS &&
         (content_type != CONTENT_SETTINGS_TYPE_COOKIES ||
-            secondary_url.SchemeIs(chrome::kExtensionScheme));
+            secondary_url.SchemeIs(extensions::kExtensionScheme));
   }
   return primary_url.SchemeIs(chrome::kChromeDevToolsScheme) ||
          primary_url.SchemeIs(chrome::kChromeInternalScheme) ||

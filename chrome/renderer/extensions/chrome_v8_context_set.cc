@@ -12,14 +12,15 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/v8_value_converter.h"
 #include "content/public/renderer/render_view.h"
-#include "v8/include/v8.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "content/public/renderer/v8_value_converter.h"
+#include "extensions/common/constants.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "v8/include/v8.h"
 
 using content::RenderThread;
 using content::V8ValueConverter;
@@ -43,7 +44,7 @@ namespace {
 
   WebKit::WebDocument document =
       render_view->GetWebView()->mainFrame()->document();
-  return GURL(document.url()).SchemeIs(chrome::kExtensionScheme) &&
+  return GURL(document.url()).SchemeIs(extensions::kExtensionScheme) &&
        document.securityOrigin().canRequest(event_url);
 }
 

@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_info.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
 
@@ -67,7 +68,7 @@ bool HasWebRequestScheme(const GURL& url) {
           url.SchemeIs(chrome::kFtpScheme) ||
           url.SchemeIs(chrome::kHttpScheme) ||
           url.SchemeIs(chrome::kHttpsScheme) ||
-          url.SchemeIs(chrome::kExtensionScheme));
+          url.SchemeIs(extensions::kExtensionScheme));
 }
 
 }  // namespace

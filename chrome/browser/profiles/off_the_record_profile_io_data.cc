@@ -26,6 +26,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
+#include "extensions/common/constants.h"
 #include "net/base/default_server_bound_cert_store.h"
 #include "net/base/server_bound_cert_service.h"
 #include "net/ftp/ftp_network_layer.h"
@@ -207,7 +208,7 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
       new net::CookieMonster(NULL, NULL);
   // Enable cookies for devtools and extension URLs.
   const char* schemes[] = {chrome::kChromeDevToolsScheme,
-                           chrome::kExtensionScheme};
+                           extensions::kExtensionScheme};
   extensions_cookie_store->SetCookieableSchemes(schemes, 2);
   extensions_context->set_cookie_store(extensions_cookie_store);
 

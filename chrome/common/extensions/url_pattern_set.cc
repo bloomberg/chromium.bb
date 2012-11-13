@@ -11,8 +11,8 @@
 #include "base/memory/linked_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "chrome/common/extensions/url_pattern.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/common/url_pattern.h"
 #include "googleurl/src/gurl.h"
 
 namespace {

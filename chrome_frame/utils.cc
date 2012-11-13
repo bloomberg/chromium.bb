@@ -37,6 +37,7 @@
 #include "chrome_frame/policy_settings.h"
 #include "chrome_frame/registry_list_preferences_holder.h"
 #include "chrome_frame/simple_resource_loader.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
 #include "grit/chromium_strings.h"
@@ -974,7 +975,7 @@ bool IsValidUrlScheme(const GURL& url, bool is_privileged) {
 
   if (is_privileged &&
       (url.SchemeIs(chrome::kDataScheme) ||
-       url.SchemeIs(chrome::kExtensionScheme)))
+       url.SchemeIs(extensions::kExtensionScheme)))
     return true;
 
   return false;

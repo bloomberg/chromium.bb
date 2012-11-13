@@ -25,6 +25,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "grit/common_resources.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
@@ -379,8 +380,8 @@ void ChromeContentClient::AddNPAPIPlugins(
 void ChromeContentClient::AddAdditionalSchemes(
     std::vector<std::string>* standard_schemes,
     std::vector<std::string>* savable_schemes) {
-  standard_schemes->push_back(kExtensionScheme);
-  savable_schemes->push_back(kExtensionScheme);
+  standard_schemes->push_back(extensions::kExtensionScheme);
+  savable_schemes->push_back(extensions::kExtensionScheme);
   standard_schemes->push_back(kExtensionResourceScheme);
   savable_schemes->push_back(kExtensionResourceScheme);
 #if defined(OS_CHROMEOS)

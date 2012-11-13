@@ -15,10 +15,10 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
-#include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -41,6 +41,7 @@
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/url_constants.h"
 #include "crypto/sha2.h"
+#include "extensions/common/constants.h"
 #include "googleurl/src/url_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
@@ -520,7 +521,7 @@ Extension::Type Extension::GetType() const {
 // static
 GURL Extension::GetResourceURL(const GURL& extension_url,
                                const std::string& relative_path) {
-  DCHECK(extension_url.SchemeIs(chrome::kExtensionScheme));
+  DCHECK(extension_url.SchemeIs(extensions::kExtensionScheme));
   DCHECK_EQ("/", extension_url.path());
 
   std::string path = relative_path;
@@ -3185,7 +3186,7 @@ const gfx::ImageSkia& Extension::GetDefaultIcon(bool is_app) {
 
 // static
 GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
-  return GURL(std::string(chrome::kExtensionScheme) +
+  return GURL(std::string(extensions::kExtensionScheme) +
               content::kStandardSchemeSeparator + extension_id + "/");
 }
 
@@ -3699,7 +3700,7 @@ bool Extension::CanExecuteScriptOnPage(const GURL& document_url,
     return false;
   }
 
-  if (top_frame_url.SchemeIs(chrome::kExtensionScheme) &&
+  if (top_frame_url.SchemeIs(extensions::kExtensionScheme) &&
       top_frame_url.GetOrigin() !=
           GetBaseURLFromExtensionId(id()).GetOrigin() &&
       !CanExecuteScriptEverywhere()) {

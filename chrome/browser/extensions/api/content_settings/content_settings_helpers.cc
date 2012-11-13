@@ -7,8 +7,8 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/extensions/url_pattern.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/common/url_pattern.h"
 
 namespace {
 

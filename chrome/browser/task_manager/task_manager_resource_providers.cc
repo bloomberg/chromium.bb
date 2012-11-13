@@ -58,6 +58,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/process_type.h"
+#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -311,7 +312,7 @@ bool TaskManagerTabContentsResource::IsPrerendering() const {
 
 bool TaskManagerTabContentsResource::HostsExtension() const {
   return tab_contents_->web_contents()->GetURL().SchemeIs(
-      chrome::kExtensionScheme);
+      extensions::kExtensionScheme);
 }
 
 TaskManager::Resource::Type TaskManagerTabContentsResource::GetType() const {

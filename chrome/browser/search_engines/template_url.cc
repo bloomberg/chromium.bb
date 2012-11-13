@@ -18,6 +18,7 @@
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -765,7 +766,7 @@ std::string TemplateURL::GetExtensionId() const {
 }
 
 bool TemplateURL::IsExtensionKeyword() const {
-  return GURL(data_.url()).SchemeIs(chrome::kExtensionScheme);
+  return GURL(data_.url()).SchemeIs(extensions::kExtensionScheme);
 }
 
 size_t TemplateURL::URLCount() const {

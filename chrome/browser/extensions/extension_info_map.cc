@@ -8,6 +8,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/constants.h"
 
 using content::BrowserThread;
 using extensions::Extension;
@@ -125,7 +126,7 @@ void ExtensionInfoMap::UnregisterAllExtensionsInProcess(int process_id) {
 bool ExtensionInfoMap::SecurityOriginHasAPIPermission(
     const GURL& origin, int process_id,
     extensions::APIPermission::ID permission) const {
-  if (origin.SchemeIs(chrome::kExtensionScheme)) {
+  if (origin.SchemeIs(extensions::kExtensionScheme)) {
     const std::string& id = origin.host();
     const Extension* extension = extensions_.GetByID(id);
     CHECK(extension != NULL);

@@ -23,10 +23,11 @@
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "extensions/common/constants.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedUserGesture.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/image_resource_fetcher.h"
@@ -80,7 +81,7 @@ class ViewAccumulator : public content::RenderViewVisitor {
       return true;
 
     GURL url = render_view->GetWebView()->mainFrame()->document().url();
-    if (!url.SchemeIs(chrome::kExtensionScheme))
+    if (!url.SchemeIs(extensions::kExtensionScheme))
       return true;
     const std::string& extension_id = url.host();
     if (extension_id != extension_id_)

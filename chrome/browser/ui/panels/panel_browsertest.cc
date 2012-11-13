@@ -35,6 +35,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
+#include "extensions/common/constants.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/screen.h"
@@ -1397,7 +1398,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
 
   // Create a panel with the extension as host.
   CreatePanelParams params(extension_app_name, gfx::Rect(), SHOW_AS_INACTIVE);
-  std::string extension_domain_url(chrome::kExtensionScheme);
+  std::string extension_domain_url(extensions::kExtensionScheme);
   extension_domain_url += "://";
   extension_domain_url += extension->id();
   extension_domain_url += "/hello.html";

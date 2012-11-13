@@ -9,12 +9,13 @@
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_view.h"
+#include "extensions/common/constants.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/weburlresponse_extradata_impl.h"
 
@@ -343,7 +344,7 @@ bool ContentSettingsObserver::IsWhitelistedForContentSettings(
   if (EqualsASCII(origin.protocol(), chrome::kChromeDevToolsScheme))
     return true;  // DevTools UI elements should still work.
 
-  if (EqualsASCII(origin.protocol(), chrome::kExtensionScheme))
+  if (EqualsASCII(origin.protocol(), extensions::kExtensionScheme))
     return true;
 
   if (EqualsASCII(origin.protocol(), chrome::kChromeInternalScheme))

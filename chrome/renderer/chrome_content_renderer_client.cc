@@ -69,11 +69,15 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/renderer_resources.h"
 #include "ipc/ipc_sync_channel.h"
 #include "net/base/net_errors.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -81,9 +85,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -237,7 +238,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   // content warnings.
   WebSecurityPolicy::registerURLSchemeAsSecure(chrome_ui_scheme);
 
-  WebString extension_scheme(ASCIIToUTF16(chrome::kExtensionScheme));
+  WebString extension_scheme(ASCIIToUTF16(extensions::kExtensionScheme));
   WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
 
   // chrome-extension: resources should be allowed to receive CORS requests.
@@ -323,7 +324,7 @@ std::string ChromeContentRendererClient::GetDefaultEncoding() {
 
 const extensions::Extension* ChromeContentRendererClient::GetExtension(
     const WebSecurityOrigin& origin) const {
-  if (!EqualsASCII(origin.protocol(), chrome::kExtensionScheme))
+  if (!EqualsASCII(origin.protocol(), extensions::kExtensionScheme))
     return NULL;
 
   const std::string extension_id = origin.host().utf8().data();
@@ -716,7 +717,8 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
       error.domain == WebString::fromUTF8(net::kErrorDomain) &&
       EqualsASCII(failed_request.httpMethod(), "POST");
 
-  if (failed_url.is_valid() && !failed_url.SchemeIs(chrome::kExtensionScheme)) {
+  if (failed_url.is_valid() &&
+      !failed_url.SchemeIs(extensions::kExtensionScheme)) {
     extension = extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
         ExtensionURLInfo(failed_url));
   }
@@ -836,7 +838,7 @@ bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
     GURL* new_url) {
   // Check whether the request should be allowed. If not allowed, we reset the
   // URL to something invalid to prevent the request and cause an error.
-  if (url.SchemeIs(chrome::kExtensionScheme) &&
+  if (url.SchemeIs(extensions::kExtensionScheme) &&
       !extensions::ResourceRequestPolicy::CanRequestResource(
           url,
           frame,
