@@ -85,7 +85,7 @@ class ExtensionProtocolTest : public testing::Test {
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   net::URLRequestJobFactoryImpl job_factory_;
   const net::URLRequestJobFactory* old_factory_;
-  TestDelegate test_delegate_;
+  net::TestDelegate test_delegate_;
   content::MockResourceContext resource_context_;
 };
 

@@ -184,7 +184,7 @@ class GViewRequestInterceptorTest : public testing::Test {
   scoped_refptr<PluginPrefs> plugin_prefs_;
   net::URLRequestJobFactoryImpl job_factory_;
   const net::URLRequestJobFactory* old_factory_;
-  TestDelegate test_delegate_;
+  net::TestDelegate test_delegate_;
   FilePath pdf_path_;
   content::MockResourceContext resource_context_;
 };

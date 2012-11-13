@@ -154,8 +154,8 @@ const char kImagePngType[] = "image/png";
 class CWSIntentsRegistryTest : public testing::Test {
  public:
   virtual void SetUp() {
-    scoped_refptr<TestURLRequestContextGetter> context_getter(
-        new TestURLRequestContextGetter(ui_loop_.message_loop_proxy()));
+    scoped_refptr<net::TestURLRequestContextGetter> context_getter(
+        new net::TestURLRequestContextGetter(ui_loop_.message_loop_proxy()));
     registry_.reset(context_getter);
   }
 
