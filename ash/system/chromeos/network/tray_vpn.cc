@@ -133,6 +133,12 @@ views::View* TrayVPN::CreateDefaultView(user::LoginStatus status) {
   if (status == user::LOGGED_IN_NONE)
     return NULL;
 
+  // Do not show VPN line in uber tray bubble if VPN is not configured.
+  std::vector<NetworkIconInfo> list;
+  Shell::GetInstance()->tray_delegate()->GetVirtualNetworks(&list);
+  if (list.size() == 0)
+    return NULL;
+
   default_ = new tray::VpnDefaultView(this, status != user::LOGGED_IN_LOCKED);
   return default_;
 }
