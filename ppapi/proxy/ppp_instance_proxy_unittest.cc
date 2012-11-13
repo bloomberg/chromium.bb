@@ -161,6 +161,7 @@ TEST_F(PPP_Instance_ProxyTest, PPPInstance1_0) {
   data.is_fullscreen = false;
   data.is_page_visible = true;
   data.clip_rect = expected_clip;
+  data.device_scale = 1.0f;
   ResetReceived();
   ScopedPPResource view_resource(
       ScopedPPResource::PassRef(),
