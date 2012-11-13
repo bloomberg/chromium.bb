@@ -1751,9 +1751,9 @@ gles2_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 	}
 
 	if (strstr(extensions, "GL_EXT_read_format_bgra"))
-		ec->read_format = GL_BGRA_EXT;
+		ec->read_format = PIXMAN_a8r8g8b8;
 	else
-		ec->read_format = GL_RGBA;
+		ec->read_format = PIXMAN_a8b8g8r8;
 
 	if (strstr(extensions, "GL_EXT_unpack_subimage"))
 		ec->has_unpack_subimage = 1;

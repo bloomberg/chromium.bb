@@ -112,10 +112,10 @@ screenshooter_frame_notify(struct wl_listener *listener, void *data)
 		return;
 	}
 
-	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glReadPixels(0, 0, output->current->width, output->current->height,
-		     output->compositor->read_format,
-		     GL_UNSIGNED_BYTE, pixels);
+	output->compositor->renderer->read_pixels(output,
+			     output->compositor->read_format, pixels,
+			     0, 0, output->current->width,
+			     output->current->height);
 
 	stride = wl_shm_buffer_get_stride(l->buffer);
 
@@ -123,10 +123,10 @@ screenshooter_frame_notify(struct wl_listener *listener, void *data)
 	s = pixels + stride * (l->buffer->height - 1);
 
 	switch (output->compositor->read_format) {
-	case GL_BGRA_EXT:
+	case PIXMAN_a8r8g8b8:
 		copy_bgra_yflip(d, s, output->current->height, stride);
 		break;
-	case GL_RGBA:
+	case PIXMAN_a8b8g8r8:
 		copy_rgba_yflip(d, s, output->current->height, stride);
 		break;
 	default:
@@ -299,10 +299,10 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 	for (i = 0; i < n; i++) {
 		width = r[i].x2 - r[i].x1;
 		height = r[i].y2 - r[i].y1;
-		glReadPixels(r[i].x1, output->current->height - r[i].y2,
-			     width, height,
-			     output->compositor->read_format,
-			     GL_UNSIGNED_BYTE, recorder->rect);
+		output->compositor->renderer->read_pixels(output,
+			     output->compositor->read_format, recorder->rect,
+			     r[i].x1, output->current->height - r[i].y2,
+			     width, height);
 
 		s = recorder->rect;
 		p = recorder->rect;
@@ -367,11 +367,14 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 	header.magic = WCAP_HEADER_MAGIC;
 
 	switch (output->compositor->read_format) {
-	case GL_BGRA_EXT:
+	case PIXMAN_a8r8g8b8:
 		header.format = WCAP_FORMAT_XRGB8888;
 		break;
-	case GL_RGBA:
+	case PIXMAN_a8b8g8r8:
 		header.format = WCAP_FORMAT_XBGR8888;
+		break;
+	default:
+		weston_log("unknown recorder format\n");
 		break;
 	}
 
