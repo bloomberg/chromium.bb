@@ -595,6 +595,7 @@ chrome.fileBrowserPrivate = {
       GDATA_MOBILE_CONNECTION_OPTION: 'Do not use mobile data for sync',
       GDATA_SHOW_HOSTED_FILES_OPTION: 'Show Google Docs files',
       GDATA_CLEAR_LOCAL_CACHE: 'Clear local cache',
+      GDATA_RELOAD: 'Reload',
       GDATA_WAITING_FOR_SPACE_INFO: 'Waiting for space info...',
       GDATA_FAILED_SPACE_INFO: 'Failed to retrieve space info',
       GDATA_BUY_MORE_SPACE: 'Buy more storage...',

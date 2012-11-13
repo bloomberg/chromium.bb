@@ -13,6 +13,15 @@ var fileManager;
  * Called by main.html after the dom has been parsed.
  */
 function init() {
+  // Load test harness when running outside Chrome OS and not in an iframe.
+  if (chrome.fileBrowserPrivate.mocked &&
+      window == window.top && !window.harness) {
+    util.loadScripts(['js/harness.js'], function() {
+      harness.initEmbedded(init);
+    });
+    return;
+  }
+
   FileManager.initStrings(function() {
     metrics.startInterval('Load.Construct');
     fileManager = new FileManager(document.body);
