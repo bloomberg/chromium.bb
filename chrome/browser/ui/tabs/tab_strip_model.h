@@ -339,16 +339,16 @@ class TabStripModel : public content::NotificationObserver {
   // TabStripModelOrderController.
   void ForgetAllOpeners();
 
-  // Forgets the group affiliation of the specified TabContents. This
-  // should be called when a TabContents that is part of a logical group
+  // Forgets the group affiliation of the specified WebContents. This
+  // should be called when a WebContents that is part of a logical group
   // of tabs is moved to a new logical context by the user (e.g. by typing a new
   // URL or selecting a bookmark). This also forgets the opener, which is
   // considered a weaker relationship than group.
-  void ForgetGroup(TabContents* contents);
+  void ForgetGroup(content::WebContents* contents);
 
   // Returns true if the group/opener relationships present for |contents|
   // should be reset when _any_ selection change occurs in the model.
-  bool ShouldResetGroupOnSelect(TabContents* contents) const;
+  bool ShouldResetGroupOnSelect(content::WebContents* contents) const;
 
   // Changes the blocked state of the tab at |index|.
   void SetTabBlocked(int index, bool blocked);
@@ -544,7 +544,7 @@ class TabStripModel : public content::NotificationObserver {
   void NotifyIfTabDeactivated(content::WebContents* contents);
 
   // Notifies the observers if the active tab has changed.
-  void NotifyIfActiveTabChanged(TabContents* old_contents,
+  void NotifyIfActiveTabChanged(content::WebContents* old_contents,
                                 NotifyTypes notify_types);
 
   // Notifies the observers if the active tab or the tab selection has changed.

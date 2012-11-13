@@ -23,8 +23,8 @@ void TabStripModelObserver::TabDetachedAt(WebContents* contents,
 void TabStripModelObserver::TabDeactivated(WebContents* contents) {
 }
 
-void TabStripModelObserver::ActiveTabChanged(TabContents* old_contents,
-                                             TabContents* new_contents,
+void TabStripModelObserver::ActiveTabChanged(WebContents* old_contents,
+                                             WebContents* new_contents,
                                              int index,
                                              bool user_gesture) {
 }

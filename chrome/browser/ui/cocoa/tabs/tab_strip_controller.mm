@@ -1307,7 +1307,7 @@ private:
   DCHECK_EQ(oldContents, [oldController webContents]);
 
   // Simply create a new TabContentsController for |newContents| and place it
-  // into the array, replacing |oldContents|.  A ActiveTabChanged notification
+  // into the array, replacing |oldContents|.  An ActiveTabChanged notification
   // will follow, at which point we will install the new view.
   scoped_nsobject<TabContentsController> newController(
       [[TabContentsController alloc] initWithContents:newContents]);

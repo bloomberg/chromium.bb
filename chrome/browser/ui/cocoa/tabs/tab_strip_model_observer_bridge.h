@@ -36,8 +36,8 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                             int index) OVERRIDE;
   virtual void TabDetachedAt(content::WebContents* contents,
                              int index) OVERRIDE;
-  virtual void ActiveTabChanged(TabContents* old_contents,
-                                TabContents* new_contents,
+  virtual void ActiveTabChanged(content::WebContents* old_contents,
+                                content::WebContents* new_contents,
                                 int index,
                                 bool user_gesture) OVERRIDE;
   virtual void TabMoved(content::WebContents* contents,

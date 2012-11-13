@@ -436,8 +436,8 @@ class Browser : public TabStripModelObserver,
   virtual void TabDetachedAt(content::WebContents* contents,
                              int index) OVERRIDE;
   virtual void TabDeactivated(content::WebContents* contents) OVERRIDE;
-  virtual void ActiveTabChanged(TabContents* old_contents,
-                                TabContents* new_contents,
+  virtual void ActiveTabChanged(content::WebContents* old_contents,
+                                content::WebContents* new_contents,
                                 int index,
                                 bool user_gesture) OVERRIDE;
   virtual void TabMoved(content::WebContents* contents,
@@ -718,7 +718,7 @@ class Browser : public TabStripModelObserver,
   void UpdateToolbar(bool should_restore_state);
 
   // Updates the browser's search model with the tab's search model.
-  void UpdateSearchState(TabContents* contents);
+  void UpdateSearchState(content::WebContents* contents);
 
   // Does one or both of the following for each bit in |changed_flags|:
   // . If the update should be processed immediately, it is.

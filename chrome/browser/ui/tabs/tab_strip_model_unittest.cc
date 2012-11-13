@@ -275,13 +275,12 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     s.foreground = foreground;
     states_.push_back(s);
   }
-  virtual void ActiveTabChanged(TabContents* old_contents,
-                                TabContents* new_contents,
+  virtual void ActiveTabChanged(WebContents* old_contents,
+                                WebContents* new_contents,
                                 int index,
                                 bool user_gesture) OVERRIDE {
-    State s(
-        new_contents ? new_contents->web_contents() : NULL, index, ACTIVATE);
-    s.src_contents = old_contents ? old_contents->web_contents() : NULL;
+    State s(new_contents, index, ACTIVATE);
+    s.src_contents = old_contents;
     s.user_gesture = user_gesture;
     states_.push_back(s);
   }

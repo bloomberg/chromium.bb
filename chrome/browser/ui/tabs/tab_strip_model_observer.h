@@ -78,8 +78,8 @@ class TabStripModelObserver {
   // TabSelectionChanged.
   // Note: |old_contents| will be NULL if there was no contents previously
   // active.
-  virtual void ActiveTabChanged(TabContents* old_contents,
-                                TabContents* new_contents,
+  virtual void ActiveTabChanged(content::WebContents* old_contents,
+                                content::WebContents* new_contents,
                                 int index,
                                 bool user_gesture);
 

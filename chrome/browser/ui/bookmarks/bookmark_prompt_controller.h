@@ -59,8 +59,8 @@ class BookmarkPromptController : public chrome::BrowserListObserver,
 
  private:
   // TabStripModelObserver
-  virtual void ActiveTabChanged(TabContents* old_contents,
-                                TabContents* new_contents,
+  virtual void ActiveTabChanged(content::WebContents* old_contents,
+                                content::WebContents* new_contents,
                                 int index,
                                 bool user_gesture) OVERRIDE;
 
@@ -85,9 +85,9 @@ class BookmarkPromptController : public chrome::BrowserListObserver,
   // Set current active browser cache to |browser|. |browser| can be null.
   void SetBrowser(Browser* browser);
 
-  // Set current active WebContents cache from |tab_contents|. |tab_contents|
+  // Set current active WebContents cache from |web_contents|. |web_contents|
   // can be null.
-  void SetWebContents(TabContents* tab_contents);
+  void SetWebContents(content::WebContents* web_contents);
 
   // Current active browser cache which we will display the prompt on it.
   Browser* browser_;

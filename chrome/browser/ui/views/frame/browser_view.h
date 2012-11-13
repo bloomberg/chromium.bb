@@ -354,8 +354,8 @@ class BrowserView : public BrowserWindow,
   virtual void TabDetachedAt(content::WebContents* contents,
                              int index) OVERRIDE;
   virtual void TabDeactivated(content::WebContents* contents) OVERRIDE;
-  virtual void ActiveTabChanged(TabContents* old_contents,
-                                TabContents* new_contents,
+  virtual void ActiveTabChanged(content::WebContents* old_contents,
+                                content::WebContents* new_contents,
                                 int index,
                                 bool user_gesture) OVERRIDE;
   virtual void TabStripEmpty() OVERRIDE;
@@ -474,23 +474,23 @@ class BrowserView : public BrowserWindow,
   // Layout the Status Bubble.
   void LayoutStatusBubble();
 
-  // Prepare to show the Bookmark Bar for the specified TabContents.
+  // Prepare to show the Bookmark Bar for the specified WebContents.
   // Returns true if the Bookmark Bar can be shown (i.e. it's supported for this
   // Browser type) and there should be a subsequent re-layout to show it.
   // |contents| can be NULL.
-  bool MaybeShowBookmarkBar(TabContents* contents);
+  bool MaybeShowBookmarkBar(content::WebContents* contents);
 
-  // Prepare to show an Info Bar for the specified TabContents. Returns
+  // Prepare to show an Info Bar for the specified WebContents. Returns
   // true if there is an Info Bar to show and one is supported for this Browser
   // type, and there should be a subsequent re-layout to show it.
   // |contents| can be NULL.
-  bool MaybeShowInfoBar(TabContents* contents);
+  bool MaybeShowInfoBar(content::WebContents* contents);
 
   // Updates devtools window for given contents. This method will show docked
-  // devtools window for inspected |tab_contents| that has docked devtools
-  // and hide it for NULL or not inspected |tab_contents|. It will also make
+  // devtools window for inspected |web_contents| that has docked devtools
+  // and hide it for NULL or not inspected |web_contents|. It will also make
   // sure devtools window size and position are restored for given tab.
-  void UpdateDevToolsForContents(TabContents* tab_contents);
+  void UpdateDevToolsForContents(content::WebContents* web_contents);
 
   // Shows docked devtools.
   void ShowDevToolsContainer();
@@ -506,7 +506,7 @@ class BrowserView : public BrowserWindow,
   // Download Shelf in response to a change notification from the specified
   // |contents|. |contents| can be NULL. In this case, all optional UI will be
   // removed.
-  void UpdateUIForContents(TabContents* contents);
+  void UpdateUIForContents(content::WebContents* contents);
 
   // Updates an optional child View, e.g. Bookmarks Bar, Info Bar, Download
   // Shelf. If |*old_view| differs from new_view, the old_view is removed and

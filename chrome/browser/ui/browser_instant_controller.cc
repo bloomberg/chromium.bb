@@ -28,12 +28,11 @@ namespace {
 // Returns true iff the search model for |tab| is in an NTP state, that is, a
 // state in which the Instant overlay may be showing custom NTP content in
 // EXTENDED mode.
-bool IsSearchModelNTP(TabContents* tab) {
-  if (!tab || !tab->web_contents())
+bool IsSearchModelNTP(content::WebContents* tab) {
+  if (!tab)
     return false;
-  content::WebContents* web_contents = tab->web_contents();
   chrome::search::SearchModel* model =
-      chrome::search::SearchTabHelper::FromWebContents(web_contents)->model();
+      chrome::search::SearchTabHelper::FromWebContents(tab)->model();
   return model && model->mode().is_ntp();
 }
 
@@ -134,8 +133,8 @@ void BrowserInstantController::OnPreferenceChanged(
 // BrowserInstantController, TabStripModelObserver implementation:
 
 void BrowserInstantController::ActiveTabChanged(
-    TabContents* old_contents,
-    TabContents* new_contents,
+    content::WebContents* old_contents,
+    content::WebContents* new_contents,
     int index,
     bool user_gesture) {
   if (instant()) {

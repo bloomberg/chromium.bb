@@ -250,22 +250,23 @@ void BrowserEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
   UnregisterForTabNotifications(contents);
 }
 
-void BrowserEventRouter::ActiveTabChanged(TabContents* old_contents,
-                                          TabContents* new_contents,
+void BrowserEventRouter::ActiveTabChanged(WebContents* old_contents,
+                                          WebContents* new_contents,
                                           int index,
                                           bool user_gesture) {
   scoped_ptr<ListValue> args(new ListValue());
-  int tab_id = ExtensionTabUtil::GetTabId(new_contents->web_contents());
+  int tab_id = ExtensionTabUtil::GetTabId(new_contents);
   args->Append(Value::CreateIntegerValue(tab_id));
 
   DictionaryValue* object_args = new DictionaryValue();
   object_args->Set(tab_keys::kWindowIdKey, Value::CreateIntegerValue(
-      ExtensionTabUtil::GetWindowIdOfTab(new_contents->web_contents())));
+      ExtensionTabUtil::GetWindowIdOfTab(new_contents)));
   args->Append(object_args);
 
   // The onActivated event replaced onActiveChanged and onSelectionChanged. The
   // deprecated events take two arguments: tabId, {windowId}.
-  Profile* profile = new_contents->profile();
+  Profile* profile =
+      Profile::FromBrowserContext(new_contents->GetBrowserContext());
   EventRouter::UserGestureState gesture = user_gesture ?
       EventRouter::USER_GESTURE_ENABLED : EventRouter::USER_GESTURE_NOT_ENABLED;
   DispatchEvent(profile, events::kOnTabSelectionChanged,

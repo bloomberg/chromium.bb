@@ -192,7 +192,8 @@ TabContents* TabStripModel::ReplaceTabContentsAt(int index,
   // selected contents as the selection changing.
   if (active_index() == index) {
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                      ActiveTabChanged(old_contents, new_contents,
+                      ActiveTabChanged(old_contents->web_contents(),
+                                       new_contents->web_contents(),
                                        active_index(), false));
   }
   return old_contents;
@@ -264,7 +265,8 @@ TabContents* TabStripModel::DetachTabContentsAt(int index) {
         // selection and send out notification.
         selection_model_.SetSelectedIndex(next_selected_index);
       }
-      NotifyIfActiveTabChanged(removed_contents, NOTIFY_DEFAULT);
+      NotifyIfActiveTabChanged(removed_contents->web_contents(),
+                               NOTIFY_DEFAULT);
     }
 
     // Sending notification in case the detached tab was selected. Using
@@ -485,7 +487,7 @@ void TabStripModel::TabNavigating(TabContents* contents,
       ForgetAllOpeners();
       // In this specific case we also want to reset the group relationship,
       // since it is now technically invalid.
-      ForgetGroup(contents);
+      ForgetGroup(contents->web_contents());
     }
   }
 }
@@ -498,15 +500,15 @@ void TabStripModel::ForgetAllOpeners() {
     (*iter)->ForgetOpener();
 }
 
-void TabStripModel::ForgetGroup(TabContents* contents) {
-  int index = GetIndexOfTabContents(contents);
+void TabStripModel::ForgetGroup(WebContents* contents) {
+  int index = GetIndexOfWebContents(contents);
   DCHECK(ContainsIndex(index));
   contents_data_[index]->SetGroup(NULL);
   contents_data_[index]->ForgetOpener();
 }
 
-bool TabStripModel::ShouldResetGroupOnSelect(TabContents* contents) const {
-  int index = GetIndexOfTabContents(contents);
+bool TabStripModel::ShouldResetGroupOnSelect(WebContents* contents) const {
+  int index = GetIndexOfWebContents(contents);
   DCHECK(ContainsIndex(index));
   return contents_data_[index]->reset_group_on_select;
 }
@@ -1187,9 +1189,9 @@ void TabStripModel::NotifyIfTabDeactivated(WebContents* contents) {
   }
 }
 
-void TabStripModel::NotifyIfActiveTabChanged(TabContents* old_contents,
+void TabStripModel::NotifyIfActiveTabChanged(WebContents* old_contents,
                                              NotifyTypes notify_types) {
-  TabContents* new_contents = GetTabContentsAtImpl(active_index());
+  WebContents* new_contents = GetWebContentsAtImpl(active_index());
   if (old_contents != new_contents) {
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
                       ActiveTabChanged(old_contents, new_contents,
@@ -1204,7 +1206,8 @@ void TabStripModel::NotifyIfActiveOrSelectionChanged(
     TabContents* old_contents,
     NotifyTypes notify_types,
     const TabStripSelectionModel& old_model) {
-  NotifyIfActiveTabChanged(old_contents, notify_types);
+  NotifyIfActiveTabChanged(old_contents ? old_contents->web_contents() : NULL,
+                           notify_types);
 
   if (!selection_model().Equals(old_model)) {
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,

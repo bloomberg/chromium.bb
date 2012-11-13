@@ -163,9 +163,10 @@ void BookmarkPromptController::DisableBookmarkPrompt(
   prompt_prefs.DisableBookmarkPrompt();
 }
 
-void BookmarkPromptController::ActiveTabChanged(TabContents*,
-                                                TabContents* new_contents,
-                                                int, bool) {
+void BookmarkPromptController::ActiveTabChanged(WebContents* old_contents,
+                                                WebContents* new_contents,
+                                                int index,
+                                                bool user_gesture) {
   SetWebContents(new_contents);
 }
 
@@ -276,12 +277,10 @@ void BookmarkPromptController::SetBrowser(Browser* browser) {
   browser_ = browser;
   if (browser_)
     browser_->tab_strip_model()->AddObserver(this);
-  SetWebContents(browser_ ? chrome::GetActiveTabContents(browser_) : NULL);
+  SetWebContents(browser_ ? chrome::GetActiveWebContents(browser_) : NULL);
 }
 
-void BookmarkPromptController::SetWebContents(TabContents* tab_contents) {
-  WebContents* web_contents =
-      tab_contents ? tab_contents->web_contents() : NULL;
+void BookmarkPromptController::SetWebContents(WebContents* web_contents) {
   if (web_contents_) {
     last_prompted_url_ = GURL::EmptyGURL();
     query_url_consumer_.CancelAllRequests();

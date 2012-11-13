@@ -108,13 +108,13 @@ int TabStripModelOrderController::DetermineNewSelectedIndex(
 }
 
 void TabStripModelOrderController::ActiveTabChanged(
-    TabContents* old_contents,
-    TabContents* new_contents,
+    content::WebContents* old_contents,
+    content::WebContents* new_contents,
     int index,
     bool user_gesture) {
   content::WebContents* old_opener = NULL;
   if (old_contents) {
-    int index = tabstrip_->GetIndexOfTabContents(old_contents);
+    int index = tabstrip_->GetIndexOfWebContents(old_contents);
     if (index != TabStripModel::kNoTab) {
       old_opener = tabstrip_->GetOpenerOfWebContentsAt(index);
 
@@ -128,9 +128,9 @@ void TabStripModelOrderController::ActiveTabChanged(
 
   if (user_gesture && new_opener != old_opener &&
       ((old_contents == NULL && new_opener == NULL) ||
-          new_opener != old_contents->web_contents()) &&
+          new_opener != old_contents) &&
       ((new_contents == NULL && old_opener == NULL) ||
-          old_opener != new_contents->web_contents())) {
+          old_opener != new_contents)) {
     tabstrip_->ForgetAllOpeners();
   }
 }

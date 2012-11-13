@@ -1068,14 +1068,14 @@ void Browser::TabDeactivated(WebContents* contents) {
   window_->GetLocationBar()->SaveStateToContents(contents);
 }
 
-void Browser::ActiveTabChanged(TabContents* old_contents,
-                               TabContents* new_contents,
+void Browser::ActiveTabChanged(WebContents* old_contents,
+                               WebContents* new_contents,
                                int index,
                                bool user_gesture) {
   // On some platforms we want to automatically reload tabs that are
   // killed when the user selects them.
   bool did_reload = false;
-  if (user_gesture && ShouldReloadCrashedTab(new_contents->web_contents())) {
+  if (user_gesture && ShouldReloadCrashedTab(new_contents)) {
     LOG(WARNING) << "Reloading killed tab at " << index;
     static int reload_count = 0;
     UMA_HISTOGRAM_CUSTOM_COUNTS(
@@ -1104,8 +1104,7 @@ void Browser::ActiveTabChanged(TabContents* old_contents,
   UpdateSearchState(new_contents);
 
   // Update reload/stop state.
-  command_controller_->LoadingStateChanged(
-      new_contents->web_contents()->IsLoading(), true);
+  command_controller_->LoadingStateChanged(new_contents->IsLoading(), true);
 
   // Update commands to reflect current state.
   command_controller_->TabStateChanged();
@@ -1122,7 +1121,7 @@ void Browser::ActiveTabChanged(TabContents* old_contents,
   }
 
   if (HasFindBarController()) {
-    find_bar_controller_->ChangeWebContents(new_contents->web_contents());
+    find_bar_controller_->ChangeWebContents(new_contents);
     find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect(), true);
   }
 
@@ -1969,9 +1968,9 @@ void Browser::UpdateToolbar(bool should_restore_state) {
                          should_restore_state);
 }
 
-void Browser::UpdateSearchState(TabContents* contents) {
+void Browser::UpdateSearchState(WebContents* contents) {
   if (chrome::search::IsInstantExtendedAPIEnabled(profile_))
-    search_delegate_->OnTabActivated(contents->web_contents());
+    search_delegate_->OnTabActivated(contents);
 }
 
 void Browser::ScheduleUIUpdate(const WebContents* source,

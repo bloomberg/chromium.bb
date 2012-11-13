@@ -695,12 +695,12 @@ void BrowserView::BookmarkBarStateChanged(
         browser_->bookmark_bar_state(), change_type,
         browser_->search_model()->mode());
   }
-  if (MaybeShowBookmarkBar(GetActiveTabContents()))
+  if (MaybeShowBookmarkBar(GetActiveWebContents()))
     Layout();
 }
 
 void BrowserView::UpdateDevTools() {
-  UpdateDevToolsForContents(GetActiveTabContents());
+  UpdateDevToolsForContents(GetActiveWebContents());
   Layout();
 }
 
@@ -855,7 +855,7 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
       is_animating || (call_state == REENTRANT_FORCE_FAST_RESIZE);
   if (use_fast_resize)
     contents_container_->SetFastResize(true);
-  UpdateUIForContents(GetActiveTabContents());
+  UpdateUIForContents(GetActiveWebContents());
   if (use_fast_resize)
     contents_container_->SetFastResize(false);
 
@@ -1423,14 +1423,14 @@ void BrowserView::TabDeactivated(WebContents* contents) {
     contents->GetView()->StoreFocus();
 }
 
-void BrowserView::ActiveTabChanged(TabContents* old_contents,
-                                   TabContents* new_contents,
+void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
+                                   content::WebContents* new_contents,
                                    int index,
                                    bool user_gesture) {
   DCHECK(new_contents);
 
   // See if the Instant preview is being activated (committed).
-  if (contents_->preview_web_contents() == new_contents->web_contents()) {
+  if (contents_->preview_web_contents() == new_contents) {
     contents_->MakePreviewContentsActiveContents();
     views::WebView* old_container = contents_container_;
     contents_container_ = preview_controller_->release_preview_container();
@@ -1443,7 +1443,7 @@ void BrowserView::ActiveTabChanged(TabContents* old_contents,
   // Visibility API under Windows, as ChangeWebContents will briefly hide
   // the WebContents window.
   bool change_tab_contents =
-      contents_container_->web_contents() != new_contents->web_contents();
+      contents_container_->web_contents() != new_contents;
 
   // Update various elements that are interested in knowing the current
   // WebContents.
@@ -1454,7 +1454,7 @@ void BrowserView::ActiveTabChanged(TabContents* old_contents,
   if (change_tab_contents)
     contents_container_->SetWebContents(NULL);
   InfoBarTabHelper* new_infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(new_contents->web_contents());
+      InfoBarTabHelper::FromWebContents(new_contents);
   infobar_container_->ChangeTabContents(new_infobar_tab_helper);
   if (bookmark_bar_view_.get()) {
     bookmark_bar_view_->SetBookmarkBarState(
@@ -1469,7 +1469,7 @@ void BrowserView::ActiveTabChanged(TabContents* old_contents,
   UpdateDevToolsForContents(new_contents);
 
   if (change_tab_contents) {
-    contents_container_->SetWebContents(new_contents->web_contents());
+    contents_container_->SetWebContents(new_contents);
 #if defined(USE_AURA)
     // Put the Instant preview back on top in case it is showing custom new tab
     // page content.
@@ -1485,7 +1485,7 @@ void BrowserView::ActiveTabChanged(TabContents* old_contents,
       GetWidget()->IsVisible()) {
     // We only restore focus if our window is visible, to avoid invoking blur
     // handlers when we are eventually shown.
-    new_contents->web_contents()->GetView()->RestoreFocus();
+    new_contents->GetView()->RestoreFocus();
   }
 
   // Update all the UI bits.
@@ -2071,7 +2071,7 @@ void BrowserView::LayoutStatusBubble() {
   status_bubble_->SetBounds(origin.x(), origin.y(), width() / 3, height);
 }
 
-bool BrowserView::MaybeShowBookmarkBar(TabContents* contents) {
+bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
   views::View* new_bookmark_bar_view = NULL;
   if (browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
       contents) {
@@ -2086,23 +2086,22 @@ bool BrowserView::MaybeShowBookmarkBar(TabContents* contents) {
           BookmarkBar::DONT_ANIMATE_STATE_CHANGE,
           browser_->search_model()->mode());
     }
-    bookmark_bar_view_->SetPageNavigator(contents->web_contents());
+    bookmark_bar_view_->SetPageNavigator(contents);
     new_bookmark_bar_view = bookmark_bar_view_.get();
   }
   return UpdateChildViewAndLayout(new_bookmark_bar_view, &active_bookmark_bar_);
 }
 
-bool BrowserView::MaybeShowInfoBar(TabContents* contents) {
+bool BrowserView::MaybeShowInfoBar(WebContents* contents) {
   // TODO(beng): Remove this function once the interface between
   //             InfoBarContainer, DownloadShelfView and WebContents and this
   //             view is sorted out.
   return true;
 }
 
-void BrowserView::UpdateDevToolsForContents(TabContents* tab_contents) {
-  DevToolsWindow* new_devtools_window = tab_contents ?
-      DevToolsWindow::GetDockedInstanceForInspectedTab(
-          tab_contents->web_contents()) : NULL;
+void BrowserView::UpdateDevToolsForContents(WebContents* web_contents) {
+  DevToolsWindow* new_devtools_window = web_contents ?
+      DevToolsWindow::GetDockedInstanceForInspectedTab(web_contents) : NULL;
   // Fast return in case of the same window having same orientation.
   if (devtools_window_ == new_devtools_window) {
     if (!new_devtools_window ||
@@ -2186,7 +2185,7 @@ void BrowserView::UpdateDevToolsSplitPosition() {
   }
 }
 
-void BrowserView::UpdateUIForContents(TabContents* contents) {
+void BrowserView::UpdateUIForContents(WebContents* contents) {
   bool needs_layout = MaybeShowBookmarkBar(contents);
   needs_layout |= MaybeShowInfoBar(contents);
   if (needs_layout)

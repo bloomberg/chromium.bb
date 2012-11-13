@@ -65,7 +65,7 @@ void BrowserLauncherItemController::Init() {
   }
   // In testing scenarios we can get tab strips with no active contents.
   if (tab_model_->GetActiveTabContents())
-    UpdateLauncher(tab_model_->GetActiveTabContents());
+    UpdateLauncher(tab_model_->GetActiveWebContents());
 }
 
 // static
@@ -168,14 +168,14 @@ void BrowserLauncherItemController::LauncherItemChanged(
 }
 
 void BrowserLauncherItemController::ActiveTabChanged(
-    TabContents* old_contents,
-    TabContents* new_contents,
+    content::WebContents* old_contents,
+    content::WebContents* new_contents,
     int index,
     bool user_gesture) {
   // Update immediately on a tab change.
   if (old_contents)
-    UpdateAppState(old_contents->web_contents());
-  UpdateAppState(new_contents->web_contents());
+    UpdateAppState(old_contents);
+  UpdateAppState(new_contents);
   UpdateLauncher(new_contents);
 }
 
@@ -204,7 +204,7 @@ void BrowserLauncherItemController::TabChangedAt(
     return;
   }
 
-  UpdateLauncher(tab);
+  UpdateLauncher(tab->web_contents());
 }
 
 void BrowserLauncherItemController::TabReplacedAt(
@@ -219,7 +219,7 @@ void BrowserLauncherItemController::TabReplacedAt(
 }
 
 void BrowserLauncherItemController::FaviconUpdated() {
-  UpdateLauncher(tab_model_->GetActiveTabContents());
+  UpdateLauncher(tab_model_->GetActiveWebContents());
 }
 
 void BrowserLauncherItemController::OnWindowPropertyChanged(
@@ -245,7 +245,7 @@ void BrowserLauncherItemController::UpdateItemStatus() {
   launcher_controller()->SetItemStatus(launcher_id(), status);
 }
 
-void BrowserLauncherItemController::UpdateLauncher(TabContents* tab) {
+void BrowserLauncherItemController::UpdateLauncher(content::WebContents* tab) {
   if (type() == TYPE_APP_PANEL)
     return;  // Maintained entirely by ChromeLauncherController.
 
@@ -258,14 +258,12 @@ void BrowserLauncherItemController::UpdateLauncher(TabContents* tab) {
 
   ash::LauncherItem item = launcher_model()->items()[item_index];
   if (type() == TYPE_EXTENSION_PANEL) {
-    if (!favicon_loader_.get() ||
-        favicon_loader_->web_contents() != tab->web_contents()) {
-      favicon_loader_.reset(
-          new LauncherFaviconLoader(this, tab->web_contents()));
-    }
+    if (!favicon_loader_.get() || favicon_loader_->web_contents() != tab)
+      favicon_loader_.reset(new LauncherFaviconLoader(this, tab));
+
     // Update the icon for extension panels.
     extensions::TabHelper* extensions_tab_helper =
-        extensions::TabHelper::FromWebContents(tab->web_contents());
+        extensions::TabHelper::FromWebContents(tab);
     gfx::ImageSkia new_image = gfx::ImageSkia(favicon_loader_->GetFavicon());
     if (new_image.isNull() && extensions_tab_helper->GetExtensionAppIcon())
       new_image = gfx::ImageSkia(*extensions_tab_helper->GetExtensionAppIcon());
@@ -279,7 +277,7 @@ void BrowserLauncherItemController::UpdateLauncher(TabContents* tab) {
     DCHECK_EQ(TYPE_TABBED, type());
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     FaviconTabHelper* favicon_tab_helper =
-        FaviconTabHelper::FromWebContents(tab->web_contents());
+        FaviconTabHelper::FromWebContents(tab);
     if (favicon_tab_helper->ShouldDisplayFavicon()) {
       item.image = favicon_tab_helper->GetFavicon().AsImageSkia();
       if (item.image.isNull()) {
