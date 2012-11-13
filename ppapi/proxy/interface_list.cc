@@ -330,8 +330,6 @@ InterfaceProxy::Factory InterfaceList::GetFactoryForID(ApiID id) const {
 const void* InterfaceList::GetInterfaceForPPB(const std::string& name) const {
   NameToInterfaceInfoMap::const_iterator found =
       name_to_browser_info_.find(name);
-  printf("GetInterfaceForPPB:name=%s,found=%i\n",
-      name.c_str(), (int)(found != name_to_browser_info_.end()));
   if (found == name_to_browser_info_.end())
     return NULL;
 
@@ -344,8 +342,6 @@ const void* InterfaceList::GetInterfaceForPPB(const std::string& name) const {
 const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
   NameToInterfaceInfoMap::const_iterator found =
       name_to_plugin_info_.find(name);
-  printf("GetInterfaceForPPP:name=%s,found=%i\n",
-      name.c_str(), (int)(found != name_to_plugin_info_.end()));
   if (found == name_to_plugin_info_.end())
     return NULL;
   return found->second.iface;
