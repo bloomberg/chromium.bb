@@ -1001,12 +1001,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
     (*it)->NotifyNativeViewHierarchyChanged(false, previous_parent);
   }
 
-  // SetParent(NULL) sets the parent to StackingClient::GetDefaultParent().
-  // NativeViewHostAura needs NULL to mean remove, so we special case it here.
-  if (new_parent)
-    native_view->SetParent(new_parent);
-  else if (native_view->parent())
-    native_view->parent()->RemoveChild(native_view);
+  native_view->SetParent(new_parent);
 
   // And now, notify them that they have a brand new parent.
   for (Widget::Widgets::iterator it = widgets.begin();
