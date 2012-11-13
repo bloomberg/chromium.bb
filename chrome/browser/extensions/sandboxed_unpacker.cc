@@ -149,9 +149,15 @@ bool VerifyJunctionFreeLocation(FilePath* temp_dir) {
 // parameter even if it returns false.
 bool FindWritableTempLocation(const FilePath& extensions_dir,
                               FilePath* temp_dir) {
+// On ChromeOS, we will only attempt to unpack extension in cryptohome (profile)
+// directory to provide additional security/privacy and speed up the rest of
+// the extension install process.
+#if !defined(OS_CHROMEOS)
   PathService::Get(base::DIR_TEMP, temp_dir);
   if (VerifyJunctionFreeLocation(temp_dir))
     return true;
+#endif
+
   *temp_dir = extension_file_util::GetInstallTempDir(extensions_dir);
   if (VerifyJunctionFreeLocation(temp_dir))
     return true;
