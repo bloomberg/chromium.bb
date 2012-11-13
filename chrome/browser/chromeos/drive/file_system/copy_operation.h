@@ -50,9 +50,9 @@ class CopyOperation {
   // Performs the copy operation on the file at drive path |src_file_path|
   // with a target of |dest_file_path|. Invokes |callback| when finished with
   // the result of the operation.
-  void Copy(const FilePath& src_file_path,
-            const FilePath& dest_file_path,
-            const FileOperationCallback& callback);
+  virtual void Copy(const FilePath& src_file_path,
+                    const FilePath& dest_file_path,
+                    const FileOperationCallback& callback);
 
   // Initiates transfer of |remote_src_file_path| to |local_dest_file_path|.
   // |remote_src_file_path| is the virtual source path on the Drive file system.
@@ -60,9 +60,10 @@ class CopyOperation {
   //
   // Must be called from *UI* thread. |callback| is run on the calling thread.
   // |callback| must not be null.
-  void TransferFileFromRemoteToLocal(const FilePath& remote_src_file_path,
-                                     const FilePath& local_dest_file_path,
-                                     const FileOperationCallback& callback);
+  virtual void TransferFileFromRemoteToLocal(
+      const FilePath& remote_src_file_path,
+      const FilePath& local_dest_file_path,
+      const FileOperationCallback& callback);
 
   // Initiates transfer of |local_src_file_path| to |remote_dest_file_path|.
   // |local_src_file_path| must be a file from the local file system.
@@ -71,9 +72,10 @@ class CopyOperation {
   //
   // Must be called from *UI* thread. |callback| is run on the calling thread.
   // |callback| must not be null.
-  void TransferFileFromLocalToRemote(const FilePath& local_src_file_path,
-                                     const FilePath& remote_dest_file_path,
-                                     const FileOperationCallback& callback);
+  virtual void TransferFileFromLocalToRemote(
+      const FilePath& local_src_file_path,
+      const FilePath& remote_dest_file_path,
+      const FileOperationCallback& callback);
 
   // Initiates transfer of |local_file_path| to |remote_dest_file_path|.
   // |local_file_path| must be a regular file (i.e. not a hosted document) from
@@ -81,9 +83,9 @@ class CopyOperation {
   // path within Drive file system.
   //
   // Must be called from *UI* thread. |callback| is run on the calling thread.
-  void TransferRegularFile(const FilePath& local_file_path,
-                           const FilePath& remote_dest_file_path,
-                           const FileOperationCallback& callback);
+  virtual void TransferRegularFile(const FilePath& local_file_path,
+                                   const FilePath& remote_dest_file_path,
+                                   const FileOperationCallback& callback);
 
  private:
   // Struct used for StartFileUpload().

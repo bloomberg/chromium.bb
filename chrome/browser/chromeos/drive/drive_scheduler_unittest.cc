@@ -8,6 +8,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
+#include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -33,6 +34,32 @@ class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
                      net::NetworkChangeNotifier::ConnectionType());
 };
 
+class MockCopyOperation : public file_system::CopyOperation {
+ public:
+  MockCopyOperation()
+      : file_system::CopyOperation(NULL, NULL, NULL, NULL, NULL, NULL) {
+  }
+
+  MOCK_METHOD3(Copy, void(const FilePath& src_file_path,
+                          const FilePath& dest_file_path,
+                          const FileOperationCallback& callback));
+
+  MOCK_METHOD3(TransferFileFromRemoteToLocal,
+               void(const FilePath& remote_src_file_path,
+                    const FilePath& local_dest_file_path,
+                    const FileOperationCallback& callback));
+
+  MOCK_METHOD3(TransferFileFromLocalToRemote,
+               void(const FilePath& local_src_file_path,
+                    const FilePath& remote_dest_file_path,
+                    const FileOperationCallback& callback));
+
+  MOCK_METHOD3(TransferRegularFile,
+               void(const FilePath& local_src_file_path,
+                    const FilePath& remote_dest_file_path,
+                    const FileOperationCallback& callback));
+};
+
 class MockMoveOperation : public file_system::MoveOperation {
  public:
   MockMoveOperation()
@@ -55,9 +82,8 @@ class MockRemoveOperation : public file_system::RemoveOperation {
                             const FileOperationCallback& callback));
 };
 
-// Action used to set mock expectations for
-// DriveFunctionRemove::Remove().
-ACTION_P(MockRemove, status) {
+// Action used to set mock expectations,
+ACTION_P(MockOperation, status) {
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
                                               base::Bind(arg2, status));
 }
@@ -74,9 +100,10 @@ class DriveSchedulerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     mock_network_change_notifier_.reset(new MockNetworkChangeNotifier);
 
+    mock_copy_operation_ = new StrictMock<MockCopyOperation>();
     mock_move_operation_ = new StrictMock<MockMoveOperation>();
     mock_remove_operation_ = new StrictMock<MockRemoveOperation>();
-    drive_operations_.InitForTesting(NULL,
+    drive_operations_.InitForTesting(mock_copy_operation_,
                                      mock_move_operation_,
                                      mock_remove_operation_);
     scheduler_.reset(new DriveScheduler(profile_.get(),
@@ -133,9 +160,81 @@ class DriveSchedulerTest : public testing::Test {
   scoped_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
 
   file_system::DriveOperations drive_operations_;
+  StrictMock<MockCopyOperation>* mock_copy_operation_;
   StrictMock<MockMoveOperation>* mock_move_operation_;
   StrictMock<MockRemoveOperation>* mock_remove_operation_;
 };
+
+TEST_F(DriveSchedulerTest, CopyFile) {
+  ConnectToWifi();
+
+  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
+  FilePath dest_file(FILE_PATH_LITERAL("drive/File 1.txt"));
+  EXPECT_CALL(*mock_copy_operation_, Copy(file_in_root, dest_file, _))
+      .WillOnce(MockOperation(DRIVE_FILE_OK));
+
+  DriveFileError error(DRIVE_FILE_ERROR_FAILED);
+  scheduler_->Copy(
+      file_in_root, dest_file,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+}
+
+TEST_F(DriveSchedulerTest, TransferFileFromRemoteToLocalFile) {
+  ConnectToWifi();
+
+  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
+  FilePath dest_file(FILE_PATH_LITERAL("drive/File 1.txt"));
+  EXPECT_CALL(*mock_copy_operation_,
+              TransferFileFromRemoteToLocal(file_in_root, dest_file, _))
+      .WillOnce(MockOperation(DRIVE_FILE_OK));
+
+  DriveFileError error(DRIVE_FILE_ERROR_FAILED);
+  scheduler_->TransferFileFromRemoteToLocal(
+      file_in_root, dest_file,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+}
+
+TEST_F(DriveSchedulerTest, TransferFileFromLocalToRemoteFile) {
+  ConnectToWifi();
+
+  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
+  FilePath dest_file(FILE_PATH_LITERAL("drive/File 1.txt"));
+  EXPECT_CALL(*mock_copy_operation_,
+              TransferFileFromLocalToRemote(file_in_root, dest_file, _))
+      .WillOnce(MockOperation(DRIVE_FILE_OK));
+
+  DriveFileError error(DRIVE_FILE_ERROR_FAILED);
+  scheduler_->TransferFileFromLocalToRemote(
+      file_in_root, dest_file,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+}
+
+TEST_F(DriveSchedulerTest, TransferRegularFileFile) {
+  ConnectToWifi();
+
+  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
+  FilePath dest_file(FILE_PATH_LITERAL("drive/File 1.txt"));
+  EXPECT_CALL(*mock_copy_operation_,
+              TransferRegularFile(file_in_root, dest_file, _))
+      .WillOnce(MockOperation(DRIVE_FILE_OK));
+
+  DriveFileError error(DRIVE_FILE_ERROR_FAILED);
+  scheduler_->TransferRegularFile(
+      file_in_root, dest_file,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+}
 
 TEST_F(DriveSchedulerTest, MoveFile) {
   ConnectToWifi();
@@ -143,7 +242,7 @@ TEST_F(DriveSchedulerTest, MoveFile) {
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   FilePath dest_file(FILE_PATH_LITERAL("drive/File 1.txt"));
   EXPECT_CALL(*mock_move_operation_, Move(file_in_root, dest_file, _))
-      .WillOnce(MockRemove(DRIVE_FILE_OK));
+      .WillOnce(MockOperation(DRIVE_FILE_OK));
 
   DriveFileError error(DRIVE_FILE_ERROR_FAILED);
   scheduler_->Move(
@@ -162,8 +261,8 @@ TEST_F(DriveSchedulerTest, MoveFileRetry) {
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   FilePath dest_file(FILE_PATH_LITERAL("drive/File 1.txt"));
   EXPECT_CALL(*mock_move_operation_, Move(file_in_root, dest_file, _))
-      .WillOnce(MockRemove(DRIVE_FILE_ERROR_THROTTLED))
-      .WillOnce(MockRemove(DRIVE_FILE_OK));
+      .WillOnce(MockOperation(DRIVE_FILE_ERROR_THROTTLED))
+      .WillOnce(MockOperation(DRIVE_FILE_OK));
 
   DriveFileError error(DRIVE_FILE_ERROR_FAILED);
   scheduler_->Move(
@@ -179,7 +278,7 @@ TEST_F(DriveSchedulerTest, RemoveFile) {
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   EXPECT_CALL(*mock_remove_operation_, Remove(file_in_root, _, _))
-      .WillOnce(MockRemove(DRIVE_FILE_OK));
+      .WillOnce(MockOperation(DRIVE_FILE_OK));
 
   DriveFileError error;
   scheduler_->Remove(
@@ -197,8 +296,8 @@ TEST_F(DriveSchedulerTest, RemoveFileRetry) {
   // will retry in this case.
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   EXPECT_CALL(*mock_remove_operation_, Remove(file_in_root, _, _))
-      .WillOnce(MockRemove(DRIVE_FILE_ERROR_THROTTLED))
-      .WillOnce(MockRemove(DRIVE_FILE_OK));
+      .WillOnce(MockOperation(DRIVE_FILE_ERROR_THROTTLED))
+      .WillOnce(MockOperation(DRIVE_FILE_OK));
 
   DriveFileError error;
   scheduler_->Remove(

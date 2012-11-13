@@ -32,8 +32,12 @@ class DriveScheduler
 
   // Enum representing the type of job.
   enum JobType {
+    TYPE_COPY,
     TYPE_MOVE,
     TYPE_REMOVE,
+    TYPE_TRANSFER_LOCAL_TO_REMOTE,
+    TYPE_TRANSFER_REGULAR_FILE,
+    TYPE_TRANSFER_REMOTE_TO_LOCAL,
   };
 
   // Current state of the job.
@@ -79,6 +83,26 @@ class DriveScheduler
   // other functions.
   void Initialize();
 
+  // Adds a copy operation to the queue.
+  void Copy(const FilePath& src_file_path,
+            const FilePath& dest_file_path,
+            const FileOperationCallback& callback);
+
+  // Adds a transfer operation to the queue.
+  void TransferFileFromRemoteToLocal(const FilePath& remote_src_file_path,
+                                     const FilePath& local_dest_file_path,
+                                     const FileOperationCallback& callback);
+
+  // Adds a transfer operation to the queue.
+  void TransferFileFromLocalToRemote(const FilePath& local_src_file_path,
+                                     const FilePath& remote_dest_file_path,
+                                     const FileOperationCallback& callback);
+
+  // Adds a transfer operation to the queue.
+  void TransferRegularFile(const FilePath& local_src_file_path,
+                           const FilePath& remote_dest_file_path,
+                           const FileOperationCallback& callback);
+
   // Adds a move operation to the queue.
   void Move(const FilePath& src_file_path,
             const FilePath& dest_file_path,
@@ -102,10 +126,22 @@ class DriveScheduler
     JobInfo job_info;
 
     // Callback for when the operation completes.
-    // Used by: TYPE_MOVE, TYPE_REMOVE
+    // Used by:
+    //   TYPE_COPY,
+    //   TYPE_MOVE,
+    //   TYPE_REMOVE,
+    //   TYPE_TRANSFER_LOCAL_TO_REMOTE,
+    //   TYPE_TRANSFER_REGULAR_FILE,
+    //   TYPE_TRANSFER_REMOTE_TO_LOCAL
     FileOperationCallback callback;
 
-    // Destination of the operation.  Used by: TYPE_MOVE
+    // Destination of the operation.
+    // Used by:
+    //   TYPE_COPY,
+    //   TYPE_MOVE,
+    //   TYPE_TRANSFER_LOCAL_TO_REMOTE,
+    //   TYPE_TRANSFER_REGULAR_FILE,
+    //   TYPE_TRANSFER_REMOTE_TO_LOCAL
     FilePath dest_file_path;
 
     // Whether the operation is recursive.  Used by: TYPE_REMOVE

@@ -74,6 +74,68 @@ void DriveScheduler::Initialize() {
   initialized_ = true;
 }
 
+void DriveScheduler::Copy(const FilePath& src_file_path,
+                          const FilePath& dest_file_path,
+                          const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<QueueEntry> new_job(
+      new QueueEntry(TYPE_COPY, src_file_path, callback));
+  new_job->dest_file_path = dest_file_path;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop();
+}
+
+void DriveScheduler::TransferFileFromRemoteToLocal(
+    const FilePath& remote_src_file_path,
+    const FilePath& local_dest_file_path,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_TRANSFER_REMOTE_TO_LOCAL,
+                                                remote_src_file_path,
+                                                callback));
+  new_job->dest_file_path = local_dest_file_path;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop();
+}
+
+void DriveScheduler::TransferFileFromLocalToRemote(
+    const FilePath& local_src_file_path,
+    const FilePath& remote_dest_file_path,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_TRANSFER_LOCAL_TO_REMOTE,
+                                                local_src_file_path,
+                                                callback));
+  new_job->dest_file_path = remote_dest_file_path;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop();
+}
+
+void DriveScheduler::TransferRegularFile(
+    const FilePath& local_src_file_path,
+    const FilePath& remote_dest_file_path,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_TRANSFER_REGULAR_FILE,
+                                                local_src_file_path,
+                                                callback));
+  new_job->dest_file_path = remote_dest_file_path;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop();
+}
+
 void DriveScheduler::Move(const FilePath& src_file_path,
                           const FilePath& dest_file_path,
                           const FileOperationCallback& callback) {
@@ -145,6 +207,16 @@ void DriveScheduler::DoJobLoop() {
   job_info.state = STATE_RUNNING;
 
   switch (job_info.job_type) {
+    case TYPE_COPY: {
+      drive_operations_->Copy(
+          job_info.file_path,
+          job_iter->second->dest_file_path,
+          base::Bind(&DriveScheduler::OnJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     job_id));
+    }
+    break;
+
     case TYPE_MOVE: {
       drive_operations_->Move(
           job_info.file_path,
@@ -159,6 +231,36 @@ void DriveScheduler::DoJobLoop() {
       drive_operations_->Remove(
           job_info.file_path,
           job_iter->second->is_recursive,
+          base::Bind(&DriveScheduler::OnJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     job_id));
+    }
+    break;
+
+    case TYPE_TRANSFER_LOCAL_TO_REMOTE: {
+      drive_operations_->TransferFileFromLocalToRemote(
+          job_info.file_path,
+          job_iter->second->dest_file_path,
+          base::Bind(&DriveScheduler::OnJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     job_id));
+    }
+    break;
+
+    case TYPE_TRANSFER_REGULAR_FILE: {
+      drive_operations_->TransferRegularFile(
+          job_info.file_path,
+          job_iter->second->dest_file_path,
+          base::Bind(&DriveScheduler::OnJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     job_id));
+    }
+    break;
+
+    case TYPE_TRANSFER_REMOTE_TO_LOCAL: {
+      drive_operations_->TransferFileFromRemoteToLocal(
+          job_info.file_path,
+          job_iter->second->dest_file_path,
           base::Bind(&DriveScheduler::OnJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id));

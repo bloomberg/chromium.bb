@@ -530,9 +530,9 @@ void DriveFileSystem::TransferFileFromRemoteToLocal(
     const FilePath& local_dest_file_path,
     const FileOperationCallback& callback) {
 
-  drive_operations_.TransferFileFromRemoteToLocal(remote_src_file_path,
-                                                  local_dest_file_path,
-                                                  callback);
+  scheduler_->TransferFileFromRemoteToLocal(remote_src_file_path,
+                                            local_dest_file_path,
+                                            callback);
 }
 
 void DriveFileSystem::TransferFileFromLocalToRemote(
@@ -540,9 +540,9 @@ void DriveFileSystem::TransferFileFromLocalToRemote(
     const FilePath& remote_dest_file_path,
     const FileOperationCallback& callback) {
 
-  drive_operations_.TransferFileFromLocalToRemote(local_src_file_path,
-                                                  remote_dest_file_path,
-                                                  callback);
+  scheduler_->TransferFileFromLocalToRemote(local_src_file_path,
+                                            remote_dest_file_path,
+                                            callback);
 }
 
 void DriveFileSystem::Copy(const FilePath& src_file_path,
@@ -563,7 +563,7 @@ void DriveFileSystem::Copy(const FilePath& src_file_path,
 void DriveFileSystem::CopyOnUIThread(const FilePath& src_file_path,
                                      const FilePath& dest_file_path,
                                      const FileOperationCallback& callback) {
-  drive_operations_.Copy(src_file_path, dest_file_path, callback);
+  scheduler_->Copy(src_file_path, dest_file_path, callback);
 }
 
 void DriveFileSystem::Move(const FilePath& src_file_path,
@@ -765,9 +765,9 @@ void DriveFileSystem::OnGetEntryInfoForCreateFile(
   // No entry found at |file_path|. Let's create a brand new file.
   // For now, it is implemented by uploading an empty file (/dev/null).
   // TODO(kinaba): http://crbug.com/135143. Implement in a nicer way.
-  drive_operations_.TransferRegularFile(FilePath(kEmptyFilePath),
-                                        file_path,
-                                        callback);
+  scheduler_->TransferRegularFile(FilePath(kEmptyFilePath),
+                                  file_path,
+                                  callback);
 }
 
 void DriveFileSystem::GetFileByPath(
