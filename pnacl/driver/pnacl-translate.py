@@ -46,7 +46,16 @@ EXTRA_ENV = {
   # Library Strings
   'LD_ARGS' : '${STDLIB ? ${LD_ARGS_normal} : ${LD_ARGS_nostdlib}}',
 
+  # Note: we always requires a shim now, but the dummy shim is not doing
+  # anything useful.
+  # libpnacl_irt_shim.a is generated during the SDK packaging not
+  # during the toolchain build and there are hacks in pnacl/driver/ldtools.py
+  # and pnacl/driver/pnacl-nativeld.py that will fall back to
+  # libpnacl_irt_shim_dummy.a if libpnacl_irt_shim.a does not exist.
   'LD_ARGS_IRT_SHIM': '-l:libpnacl_irt_shim.a',
+  'LD_ARGS_IRT_SHIM_DUMMY': '-l:libpnacl_irt_shim_dummy.a',
+
+  'LD_ARGS_ENTRY': '--entry=__pnacl_start',
 
   'CRTBEGIN' : '${SHARED ? -l:crtbeginS.o : -l:crtbegin.o}',
   'CRTEND'   : '${SHARED ? -l:crtendS.o : -l:crtend.o}',
@@ -65,7 +74,7 @@ EXTRA_ENV = {
   # These are just the dependencies in the native link.
   'LD_ARGS_normal':
     '${CRTBEGIN} ${ld_inputs} ' +
-    '${USE_IRT_SHIM ? ${LD_ARGS_IRT_SHIM}} ' +
+    '${USE_IRT_SHIM ? ${LD_ARGS_IRT_SHIM} : ${LD_ARGS_IRT_SHIM_DUMMY}} ' +
     '${NEEDED_LIBRARIES} ' +
     '${STATIC ? --start-group} ' +
     '${USE_DEFAULTLIBS ? ${DEFAULTLIBS}} ' +
@@ -490,7 +499,7 @@ def RunLD(infile, outfile):
   env.set('ld_inputs', *inputs)
   args = env.get('LD_ARGS') + ['-o', outfile]
   if not env.getbool('SHARED') and env.getbool('STDLIB'):
-    args += ['--entry=__pnacl_start']
+    args += env.get('LD_ARGS_ENTRY')
   args += env.get('LD_FLAGS')
   # If there is bitcode, there is also a metadata file.
   if infile and env.getbool('USE_META'):

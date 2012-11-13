@@ -217,8 +217,6 @@ def AddPrefix(prefix, varname):
 
 DriverArgPatterns = [
   ( '--pnacl-driver-verbose',             "env.set('LOG_VERBOSE', '1')"),
-  ( '--pnacl-driver-set-([^=]+)=(.*)',    "env.set($0, $1)"),
-  ( '--pnacl-driver-append-([^=]+)=(.*)', "env.append($0, $1)"),
   ( ('-arch', '(.+)'),                 "SetArch($0)"),
   ( '--pnacl-sb',                      "env.set('SANDBOXED', '1')"),
   ( '--pnacl-use-emulator',            "env.set('USE_EMULATOR', '1')"),
@@ -231,6 +229,11 @@ DriverArgPatterns = [
   ( '-save-temps',                     "env.set('SAVE_TEMPS', '1')"),
   ( '-no-save-temps',                  "env.set('SAVE_TEMPS', '0')"),
  ]
+
+DriverArgPatternsNotInherited = [
+  ( '--pnacl-driver-set-([^=]+)=(.*)',    "env.set($0, $1)"),
+  ( '--pnacl-driver-append-([^=]+)=(.*)', "env.append($0, $1)"),
+]
 
 
 def ShouldExpandCommandFile(arg):
@@ -267,15 +270,21 @@ def DoExpandCommandFile(argv, i):
 
 def ParseArgs(argv,
               patternlist,
-              driver_patternlist=DriverArgPatterns):
+              driver_patternlist=DriverArgPatterns,
+              driver_patternlist_not_inherited=DriverArgPatternsNotInherited):
   """Parse argv using the patterns in patternlist
      Also apply the built-in DriverArgPatterns unless instructed otherwise.
      This function must be called by all (real) drivers.
   """
   if driver_patternlist:
     driver_args, argv = ParseArgsBase(argv, driver_patternlist)
+
+    # TODO(robertm): think about a less obscure mechanism to
+    #                replace the inherited args feature
     assert not env.get('INHERITED_DRIVER_ARGS')
     env.append('INHERITED_DRIVER_ARGS', *driver_args)
+
+  _, argv = ParseArgsBase(argv, driver_patternlist_not_inherited)
 
   _, unmatched = ParseArgsBase(argv, patternlist)
   if unmatched:
