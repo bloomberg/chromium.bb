@@ -172,7 +172,6 @@
   "app": {
     "background": {
       "scripts": [
-        // "js/mock_chrome.js", // Uncomment this to debug on a desktop browser.
         "js/file_copy_manager.js",
         "js/path_util.js",
         "js/util.js",

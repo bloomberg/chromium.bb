@@ -584,7 +584,12 @@ util.applyTransform = function(element, transform) {
  */
 util.makeFilesystemUrl = function(path) {
   path = path.split('/').map(encodeURIComponent).join('/');
-  return 'filesystem:' + util.platform.getURL('external' + path);
+  var prefix = 'external';
+  if (chrome.fileBrowserPrivate.mocked) {
+    prefix = (chrome.fileBrowserPrivate.FS_TYPE == window.TEMPORARY) ?
+        'temporary' : 'persistent';
+  }
+  return 'filesystem:' + util.platform.getURL(prefix + path);
 };
 
 /**
@@ -593,7 +598,8 @@ util.makeFilesystemUrl = function(path) {
  * @return {string} The path.
  */
 util.extractFilePath = function(url) {
-  var path = /^filesystem:[\w-]*:\/\/[\w]*\/(external|persistent)(\/.*)$/.
+  var path =
+      /^filesystem:[\w-]*:\/\/[\w]*\/(external|persistent|temporary)(\/.*)$/.
       exec(url)[2];
   if (!path) return null;
   return decodeURIComponent(path);
@@ -685,7 +691,9 @@ util.createChild = function(parent, opt_className, opt_tag) {
 };
 
 /**
- * Update the top window location search query and hash.
+ * Update the app state.
+ * For app v1 use the top window location search query and hash.
+ * For app v2 use the top window appState variable.
  *
  * @param {boolean} replace True if the history state should be replaced,
  *                          false if pushed.
@@ -694,12 +702,21 @@ util.createChild = function(parent, opt_className, opt_tag) {
  * @param {string|object} opt_param Search parameter. Used directly if string,
  *   stringified if object. If omitted the search query is left unchanged.
  */
-util.updateLocation = function(replace, path, opt_param) {
-  if (util.platform.v2())
+util.updateAppState = function(replace, path, opt_param) {
+  if (window.appState) {
+    // |replace| parameter is ignored. There is no stack, so saving/restoring
+    // the state is the apps responsibility.
+    if (typeof opt_param == 'string')
+      window.appState.params = {};
+    else if (typeof opt_param == 'object')
+      window.appState.params = opt_param;
+    if (path)
+      window.appState.defaultPath = path;
+    util.saveAppState();
     return;
+  }
 
-  var location = window.top.document.location;
-  var history = window.top.history;
+  var location = document.location;
 
   var search;
   if (typeof opt_param == 'string')
@@ -763,7 +780,6 @@ util.platform = {
     try {
       return !!(chrome.app && chrome.app.runtime);
     } catch (e) {
-      console.log(new Error.stack);
       return false;
     }
   },
@@ -787,7 +803,7 @@ util.platform = {
     try {
       callback(window.localStorage[key]);
     } catch (ignore) {
-      chrome.storage.local.get(function(items) {
+      chrome.storage.local.get(key, function(items) {
         callback(items[key]);
       });
     }
@@ -795,10 +811,13 @@ util.platform = {
 
   /**
    * @param {string} key Preference name.
-   * @param {string} value Preference value.
-   * @param {function} callback Completion callback.
+   * @param {string|object} value Preference value.
+   * @param {function} opt_callback Completion callback.
    */
   setPreference: function(key, value, opt_callback) {
+    if (typeof value != 'string')
+      value = JSON.stringify(value);
+
     try {
       window.localStorage[key] = value;
       if (opt_callback) opt_callback();
@@ -838,10 +857,10 @@ util.platform = {
    * @return {string} Applicaton id.
    */
   getAppId: function() {
-    try {
-      return chrome.extension.getURL('').split('/')[2];
-    } catch (ignore) {
+    if (this.v2()) {
       return chrome.runtime.id;
+    } else {
+      return chrome.extension.getURL('').split('/')[2];
     }
   },
 
@@ -850,10 +869,10 @@ util.platform = {
    * @return {string} Extension-based URL.
    */
   getURL: function(path) {
-    try {
-      return chrome.extension.getURL(path);
-    } catch (ignore) {
+    if (this.v2()) {
       return chrome.runtime.getURL(path);
+    } else {
+      return chrome.extension.getURL(path);
     }
   },
 
@@ -935,4 +954,12 @@ util.addPageLoadHandler = function(handler) {
     }
     util.platform.suppressContextMenu();
   });
+};
+
+/**
+ * Save app v2 launch data to the local storage.
+ */
+util.saveAppState = function() {
+  if (window.appState)
+    util.platform.setPreference(window.appID, window.appState);
 };

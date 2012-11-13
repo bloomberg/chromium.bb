@@ -16,9 +16,17 @@
 function FileManager(dialogDom) {
   this.dialogDom_ = dialogDom;
   this.filesystem_ = null;
-  this.params_ = location.search ?
-                 JSON.parse(decodeURIComponent(location.search.substr(1))) :
-                 window.launchData || {};
+
+  if (window.appState) {
+    this.params_ = window.appState.params || {};
+    this.defaultPath = window.appState.defaultPath;
+    util.saveAppState();
+  } else {
+    this.params_ = location.search ?
+                   JSON.parse(decodeURIComponent(location.search.substr(1))) :
+                   {};
+    this.defaultPath = this.params_.defaultPath;
+  }
   this.listType_ = null;
   this.showDelayTimeout_ = null;
 
@@ -57,6 +65,15 @@ FileManager.THUMBNAIL_SHOW_DELAY = 100;
 FileManager.prototype = {
   __proto__: cr.EventTarget.prototype
 };
+
+/**
+ * Unload the file manager.
+ * Used by background.js (when running in the packaged mode).
+ */
+function unload() {
+  fileManager.onBeforeUnload_();
+  fileManager.onUnload_();
+}
 
 /**
  * List of dialog types.
@@ -338,10 +355,10 @@ DialogType.isModal = function(type) {
 
     var self = this;
     var downcount = 3;
-    var startupPrefs = {};
+    var viewOptions = {};
     function done() {
       if (--downcount == 0)
-        self.init_(startupPrefs);
+        self.init_(viewOptions);
     }
 
     chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
@@ -355,9 +372,17 @@ DialogType.isModal = function(type) {
     this.updateNetworkStateAndPreferences_(done);
 
     util.platform.getPreference(this.startupPrefName_, function(value) {
+      // Load the global default options.
       try {
-        startupPrefs = JSON.parse(value);
+        viewOptions = JSON.parse(value);
       } catch (ignore) {}
+      // Override with window-specific options.
+      if (window.appState && window.appState.viewOptions) {
+        for (var key in window.appState.viewOptions) {
+          if (window.appState.viewOptions.hasOwnProperty(key))
+            viewOptions[key] = window.appState.viewOptions[key];
+        }
+      }
       done();
     }.bind(this));
   };
@@ -857,7 +882,14 @@ DialogType.isModal = function(type) {
     };
     if (DialogType.isModal(this.dialogType))
       prefs.listType = this.listType;
+    // Save the global default.
     util.platform.setPreference(this.startupPrefName_, JSON.stringify(prefs));
+
+    // Save the window-specific preference.
+    if (window.appState) {
+      window.appState.viewOptions = prefs;
+      util.saveAppState();
+    }
   };
 
   /**
@@ -1253,7 +1285,7 @@ DialogType.isModal = function(type) {
   FileManager.prototype.setupCurrentDirectory_ = function(pageLoading) {
     var path = location.hash ?  // Location hash has the highest priority.
         decodeURI(location.hash.substr(1)) :
-        this.params_.defaultPath;
+        this.defaultPath;
 
     if (!pageLoading && path == this.directoryModel_.getCurrentDirPath())
       return;
@@ -2283,7 +2315,7 @@ DialogType.isModal = function(type) {
       input.selectionEnd = selectionEnd;
     }
     // Clear, so we never do this again.
-    this.params_.defaultPath = '';
+    this.defaultPath = '';
   };
 
   /**
@@ -2388,7 +2420,7 @@ DialogType.isModal = function(type) {
     this.updateColumnModel_();
     this.updateSearchBoxOnDirChange_();
 
-    util.updateLocation(event.initial, this.getCurrentDirectory());
+    util.updateAppState(event.initial, this.getCurrentDirectory());
 
     if (this.closeOnUnmount_ && !event.initial &&
           PathUtil.getRootPath(event.previousDirEntry.fullPath) !=

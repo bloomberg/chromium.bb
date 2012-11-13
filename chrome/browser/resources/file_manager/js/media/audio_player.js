@@ -70,7 +70,7 @@ AudioPlayer.load = function() {
     AudioPlayer.instance =
         new AudioPlayer(document.querySelector('.audio-player'));
     chrome.mediaPlayerPrivate.onPlaylistChanged.addListener(getPlaylist);
-    reload(window.launchData);
+    reload();
   });
 };
 
@@ -84,13 +84,13 @@ function unload() {
 }
 
 /**
- * @param {Object} launchData Launch data.
  * Reload the player.
  */
-function reload(launchData) {
-  if (launchData) {
+function reload() {
+  if (window.appState) {
     // Launching/reloading a v2 app.
-    AudioPlayer.instance.load(launchData);
+    util.saveAppState();
+    AudioPlayer.instance.load(window.appState);
     return;
   }
 
@@ -125,15 +125,18 @@ AudioPlayer.prototype.load = function(playlist) {
         var restoredPlaylist = {
           items: JSON.parse(prefs[AudioPlayer.PLAYLIST_KEY]),
           position: Number(prefs[AudioPlayer.TRACK_KEY]),
-          restore: true
+          time: true // Force restoring time from document.location.
         };
         if (restoredPlaylist.items.length)
           this.load(restoredPlaylist);
       } catch (ignore) {}
     }.bind(this));
     return;
-  } else {
+  }
+
+  if (!window.appState) {
     // Remember the playlist for the restart.
+    // App v2 handles that in the background page.
     util.platform.setPreference(
         AudioPlayer.PLAYLIST_KEY, JSON.stringify(playlist.items));
     util.platform.setPreference(
@@ -176,7 +179,7 @@ AudioPlayer.prototype.load = function(playlist) {
         new AudioPlayer.TrackInfo(this.trackStack_, url, onClick));
   }
 
-  this.select_(playlist.position, playlist.restore);
+  this.select_(playlist.position, !!playlist.time);
 
   // This class will be removed if at least one track has art.
   this.container_.classList.add('noart');
@@ -226,7 +229,14 @@ AudioPlayer.prototype.select_ = function(newTrack, opt_restoreState) {
   this.changeSelectionInStack_(this.currentTrack_, newTrack);
 
   this.currentTrack_ = newTrack;
-  util.platform.setPreference(AudioPlayer.TRACK_KEY, this.currentTrack_);
+
+  if (window.appState) {
+    window.appState.position = this.currentTrack_;
+    window.appState.time = 0;
+    util.saveAppState();
+  } else {
+    util.platform.setPreference(AudioPlayer.TRACK_KEY, this.currentTrack_);
+  }
 
   this.scrollToCurrent_(false);
 
@@ -559,20 +569,19 @@ FullWindowAudioControls.prototype.load = function(src, restore) {
 };
 
 /**
- * Save the current play state in the location hash so that it survives
- * the page reload.
+ * Save the current state so that it survives page/app reload.
  */
 FullWindowAudioControls.prototype.onPlayStateChanged = function() {
-  this.encodeStateIntoLocation();
+  this.encodeState();
 };
 
 /**
- * Restore the Save the play state from the location hash.
+ * Restore the state after page/app reload.
  */
 FullWindowAudioControls.prototype.restorePlayState = function() {
   if (this.restoreWhenLoaded_) {
     this.restoreWhenLoaded_ = false;  // This should only work once.
-    if (this.decodeStateFromLocation())
+    if (this.decodeState())
       return;
   }
   this.play();

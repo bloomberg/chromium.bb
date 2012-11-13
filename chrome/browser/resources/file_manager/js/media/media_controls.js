@@ -441,11 +441,17 @@ MediaControls.prototype.onPlayStateChanged = function() {};
 MediaControls.prototype.restorePlayState = function() {};
 
 /**
- * Encode current play/pause status and the current time into the page URL.
+ * Encode current state into the page URL or the app state.
  */
-MediaControls.prototype.encodeStateIntoLocation = function() {
+MediaControls.prototype.encodeState = function() {
   if (!this.media_.duration)
     return;
+
+  if (window.appState) {
+    window.appState.time = this.media_.currentTime;
+    util.saveAppState();
+    return;
+  }
 
   var playState = JSON.stringify({
       play: this.isPlaying(),
@@ -459,10 +465,20 @@ MediaControls.prototype.encodeStateIntoLocation = function() {
 };
 
 /**
- * Decode current play/pause status and the current time from the page URL.
+ * Decode current state from the page URL or the app state.
  * @return {boolean} True if decode succeeded.
  */
-MediaControls.prototype.decodeStateFromLocation = function() {
+MediaControls.prototype.decodeState = function() {
+  if (window.appState) {
+    if (!('time' in window.appState))
+      return false;
+    // There is no page reload for apps v2, only app restart.
+    // Always restart in paused state.
+    this.media_.currentTime = appState.time;
+    this.pause();
+    return true;
+  }
+
   var hash = document.location.hash.substring(1);
   if (hash) {
     try {

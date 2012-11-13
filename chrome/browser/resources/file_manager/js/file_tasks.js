@@ -388,20 +388,25 @@ FileTasks.prototype.openGallery = function(urls) {
 
   if (this.params_ && this.params_.gallery) {
     // Remove the Gallery state from the location, we do not need it any more.
-    util.updateLocation(
+    util.updateAppState(
         true /* replace */, null /* keep path */, '' /* remove search. */);
   }
 
+  var savedAppState = window.appState;
+  var savedTitle = document.title;
+
   // Push a temporary state which will be replaced every time the selection
   // changes in the Gallery and popped when the Gallery is closed.
-  util.updateLocation(false /*push*/);
+  util.updateAppState(false /*push*/);
 
   function onClose(selectedUrls) {
     fm.directoryModel_.selectUrls(selectedUrls);
     if (util.platform.v2()) {
-      // TODO: might need to restore document title.
       galleryFrame.contentWindow.Gallery.instance.unload();
       fm.closeFilePopup_();
+      window.appState = savedAppState;
+      util.saveAppState();
+      document.title = savedTitle;
     } else {
       history.back(1);  // This will restore document.title.
     }

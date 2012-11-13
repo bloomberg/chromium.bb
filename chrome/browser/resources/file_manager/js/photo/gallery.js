@@ -641,7 +641,7 @@ Gallery.prototype.updateSelectionAndState_ = function() {
 
   window.top.document.title = fullName || this.context_.curDirEntry.name;
 
-  util.updateLocation(true /*replace*/,
+  window.top.util.updateAppState(true /*replace*/,
       this.context_.curDirEntry.fullPath + '/' + fullName,
       {gallery: (this.currentMode_ == this.mosaicMode_ ? 'mosaic' : 'slide')});
 

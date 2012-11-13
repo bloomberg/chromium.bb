@@ -51,6 +51,11 @@ function cloneShallow(object) {
  */
 chrome.fileBrowserPrivate = {
   /**
+   * Used to distinguish the mock object from the real one.
+   */
+  mocked: true,
+
+  /**
    * window.PERSISTENT is a little nicer but not yet supported by packaged apps.
    */
   FS_TYPE: window.TEMPORARY,
