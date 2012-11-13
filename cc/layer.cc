@@ -153,11 +153,11 @@ void Layer::addChild(scoped_refptr<Layer> child)
 
 void Layer::insertChild(scoped_refptr<Layer> child, size_t index)
 {
-    index = min(index, m_children.size());
     child->removeFromParent();
     child->setParent(this);
     child->m_stackingOrderChanged = true;
 
+    index = min(index, m_children.size());
     LayerList::iterator iter = m_children.begin();
     m_children.insert(iter + index, child);
     setNeedsCommit();

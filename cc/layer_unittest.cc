@@ -163,6 +163,24 @@ TEST_F(LayerTest, addAndRemoveChild)
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(AtLeast(1), child->removeFromParent());
 }
 
+TEST_F(LayerTest, addSameChildTwice)
+{
+    scoped_refptr<Layer> parent = Layer::create();
+    scoped_refptr<Layer> child = Layer::create();
+
+    m_layerTreeHost->setRootLayer(parent);
+
+    ASSERT_EQ(0u, parent->children().size());
+
+    parent->addChild(child);
+    ASSERT_EQ(1u, parent->children().size());
+    EXPECT_EQ(parent.get(), child->parent());
+
+    parent->addChild(child);
+    ASSERT_EQ(1u, parent->children().size());
+    EXPECT_EQ(parent.get(), child->parent());
+}
+
 TEST_F(LayerTest, insertChild)
 {
     scoped_refptr<Layer> parent = Layer::create();
