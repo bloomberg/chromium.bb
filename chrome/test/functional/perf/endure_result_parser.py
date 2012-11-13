@@ -35,14 +35,19 @@ import urllib2
 
 
 CHROME_ENDURE_SLAVE_NAMES = [
-  'Linux (perf0)',
-  'Linux (perf1)',
-  'Linux (perf2)',
-  'Linux (perf3)',
-  'Linux (perf4)',
+  'Linux QA Perf (0)',
+  'Linux QA Perf (1)',
+  'Linux QA Perf (2)',
+  'Linux QA Perf (3)',
+  'Linux QA Perf (4)',
+  'Linux QA Perf (dbg)(0)',
+  'Linux QA Perf (dbg)(1)',
+  'Linux QA Perf (dbg)(2)',
+  'Linux QA Perf (dbg)(3)',
+  'Linux QA Perf (dbg)(4)',
 ]
 
-BUILDER_URL_BASE = 'http://build.chromium.org/p/chromium.pyauto/builders/'
+BUILDER_URL_BASE = 'http://build.chromium.org/p/chromium.endure/builders/'
 LAST_BUILD_NUM_PROCESSED_FILE = os.path.join(os.path.dirname(__file__),
                                              '_parser_last_processed.txt')
 LOCAL_GRAPH_DIR = '/home/%s/www/chrome_endure_clean' % getpass.getuser()
