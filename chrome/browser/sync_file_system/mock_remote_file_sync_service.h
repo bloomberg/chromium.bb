@@ -68,6 +68,12 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   typedef std::map<fileapi::FileSystemURL, fileapi::SyncFileMetadata,
                    fileapi::FileSystemURL::Comparator> FileMetadataMap;
 
+  void RegisterOriginForTrackingChangesStub(
+      const GURL& origin,
+      const fileapi::SyncStatusCallback& callback);
+  void UnregisterOriginForTrackingChangesStub(
+      const GURL& origin,
+      const fileapi::SyncStatusCallback& callback);
   void ProcessRemoteChangeStub(
       RemoteChangeProcessor* processor,
       const fileapi::SyncFileCallback& callback);

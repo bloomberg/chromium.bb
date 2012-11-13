@@ -36,9 +36,14 @@ class SharedCallbackRunner
     : public base::RefCounted<SharedCallbackRunner>,
       public base::NonThreadSafe {
  public:
-  SharedCallbackRunner(const SyncStatusCallback& join_callback)
+  explicit SharedCallbackRunner(const SyncStatusCallback& join_callback)
       : join_callback_(join_callback),
         num_shared_callbacks_(0) {}
+
+  SyncStatusCallback CreateCallback() {
+    ++num_shared_callbacks_;
+    return base::Bind(&SharedCallbackRunner::Done, this);
+  }
 
   template <typename R>
   base::Callback<void(SyncStatusCode, const R& in)>
@@ -58,6 +63,10 @@ class SharedCallbackRunner
     if (join_callback_.is_null())
       return;
     *out = in;
+    Done(status);
+  }
+
+  void Done(SyncStatusCode status) {
     if (status != fileapi::SYNC_STATUS_OK) {
       join_callback_.Run(status);
       join_callback_.Reset();
@@ -128,13 +137,15 @@ void SyncFileSystemService::InitializeForApp(
     return;
   }
 
+  scoped_refptr<SharedCallbackRunner> callback_runner(
+      new SharedCallbackRunner(callback));
   local_file_service_->MaybeInitializeFileSystemContext(
-      app_origin, service_name, file_system_context, callback);
+      app_origin, service_name, file_system_context,
+      callback_runner->CreateCallback());
 
   if (remote_file_service_) {
-    // TODO(tzik): Handle errors in the completion callback.
     remote_file_service_->RegisterOriginForTrackingChanges(
-        app_origin, fileapi::SyncStatusCallback());
+        app_origin, callback_runner->CreateCallback());
   }
 }
 

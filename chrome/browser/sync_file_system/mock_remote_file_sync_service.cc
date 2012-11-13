@@ -18,6 +18,11 @@ namespace sync_file_system {
 
 MockRemoteFileSyncService::MockRemoteFileSyncService() {
   typedef MockRemoteFileSyncService self;
+  ON_CALL(*this, RegisterOriginForTrackingChanges(_, _))
+      .WillByDefault(Invoke(this, &self::RegisterOriginForTrackingChangesStub));
+  ON_CALL(*this, UnregisterOriginForTrackingChanges(_, _))
+      .WillByDefault(
+          Invoke(this, &self::UnregisterOriginForTrackingChangesStub));
   ON_CALL(*this, ProcessRemoteChange(_, _))
       .WillByDefault(Invoke(this, &self::ProcessRemoteChangeStub));
   ON_CALL(*this, GetLocalChangeProcessor())
@@ -30,6 +35,23 @@ MockRemoteFileSyncService::MockRemoteFileSyncService() {
 
 MockRemoteFileSyncService::~MockRemoteFileSyncService() {
 }
+
+void MockRemoteFileSyncService::RegisterOriginForTrackingChangesStub(
+    const GURL& origin,
+    const fileapi::SyncStatusCallback& callback) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, fileapi::SYNC_STATUS_OK));
+}
+
+void MockRemoteFileSyncService::UnregisterOriginForTrackingChangesStub(
+    const GURL& origin,
+    const fileapi::SyncStatusCallback& callback) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, fileapi::SYNC_STATUS_OK));
+}
+
 void MockRemoteFileSyncService::ProcessRemoteChangeStub(
     RemoteChangeProcessor* processor,
     const fileapi::SyncFileCallback& callback) {
