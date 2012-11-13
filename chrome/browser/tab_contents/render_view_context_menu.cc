@@ -40,7 +40,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
-#include "chrome/browser/spellchecker/spellcheck_host.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/tab_contents/spellchecker_submenu_observer.h"
