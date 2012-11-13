@@ -19,6 +19,7 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/quota/quota_manager.h"
 
 using content::BrowserContext;
@@ -41,6 +42,9 @@ const char kQuotaError[] = "Quota error %d.";
 
 bool SyncFileSystemDeleteFileSystemFunction::RunImpl() {
   // TODO(calvinlo): Move error code to util function. (http://crbug.com/160496)
+  std::string url;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
+  fileapi::FileSystemURL file_system_url((GURL(url)));
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       BrowserContext::GetStoragePartition(
@@ -52,7 +56,7 @@ bool SyncFileSystemDeleteFileSystemFunction::RunImpl() {
       Bind(&fileapi::FileSystemContext::DeleteFileSystem,
            file_system_context,
            source_url().GetOrigin(),
-           fileapi::kFileSystemTypeSyncable,
+           file_system_url.type(),
            Bind(&SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem,
                 this)));
   return true;
@@ -171,7 +175,7 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunImpl() {
       Bind(&quota::QuotaManager::GetUsageAndQuota,
            quota_manager,
            source_url().GetOrigin(),
-           quota::kStorageTypeSyncable,
+           fileapi::FileSystemTypeToQuotaStorageType(file_system_url.type()),
            Bind(&SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota,
                 this)));
 
