@@ -6,12 +6,12 @@
     "mmap-tcmalloc",
     "FROM_HERE_FOR_TOTAL",
     "mustbezero",
-    "nonprofiled-absent",
-    "nonprofiled-anonymous",
-    "nonprofiled-file-exec",
-    "nonprofiled-file-nonexec",
-    "nonprofiled-stack",
-    "nonprofiled-other",
+    "unhooked-absent",
+    "unhooked-anonymous",
+    "unhooked-file-exec",
+    "unhooked-file-nonexec",
+    "unhooked-stack",
+    "unhooked-other",
     "no-bucket",
     "mmap-v8",
     "mmap-catch-all",
@@ -66,32 +66,32 @@
       "allocator": "optional"
     },
     {
-      "name": "nonprofiled-absent",
+      "name": "unhooked-absent",
       "stacktrace": "optional",
       "allocator": "optional"
     },
     {
-      "name": "nonprofiled-anonymous",
+      "name": "unhooked-anonymous",
       "stacktrace": "optional",
       "allocator": "optional"
     },
     {
-      "name": "nonprofiled-file-exec",
+      "name": "unhooked-file-exec",
       "stacktrace": "optional",
       "allocator": "optional"
     },
     {
-      "name": "nonprofiled-file-nonexec",
+      "name": "unhooked-file-nonexec",
       "stacktrace": "optional",
       "allocator": "optional"
     },
     {
-      "name": "nonprofiled-stack",
+      "name": "unhooked-stack",
       "stacktrace": "optional",
       "allocator": "optional"
     },
     {
-      "name": "nonprofiled-other",
+      "name": "unhooked-other",
       "stacktrace": "optional",
       "allocator": "optional"
     },
