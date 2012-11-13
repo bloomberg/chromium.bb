@@ -346,6 +346,35 @@ bool ParseIPConfig(const std::string& device_path,
   return true;
 }
 
+void ListIPConfigsCallback(const NetworkGetIPConfigsCallback& callback,
+                           const std::string& device_path,
+                           DBusMethodCallStatus call_status,
+                           const base::DictionaryValue& properties) {
+  NetworkIPConfigVector ipconfig_vector;
+  std::string hardware_address;
+  const ListValue* ips = NULL;
+  if (call_status != DBUS_METHOD_CALL_SUCCESS ||
+      !properties.GetListWithoutPathExpansion(flimflam::kIPConfigsProperty,
+                                              &ips)) {
+    callback.Run(ipconfig_vector, hardware_address);
+    return;
+  }
+
+  for (size_t i = 0; i < ips->GetSize(); i++) {
+    std::string ipconfig_path;
+    if (!ips->GetString(i, &ipconfig_path)) {
+      LOG(WARNING) << "Found NULL ip for device " << device_path;
+      continue;
+    }
+    ParseIPConfig(device_path, ipconfig_path, &ipconfig_vector);
+  }
+  // Get the hardware address as well.
+  properties.GetStringWithoutPathExpansion(flimflam::kAddressProperty,
+                                           &hardware_address);
+
+  callback.Run(ipconfig_vector, hardware_address);
+}
+
 }  // namespace
 
 SMS::SMS()
@@ -654,10 +683,18 @@ bool CrosSetOfflineMode(bool offline) {
   return true;
 }
 
-bool CrosListIPConfigs(const std::string& device_path,
-                       NetworkIPConfigVector* ipconfig_vector,
-                       std::vector<std::string>* ipconfig_paths,
-                       std::string* hardware_address) {
+void CrosListIPConfigs(const std::string& device_path,
+                       const NetworkGetIPConfigsCallback& callback) {
+  const dbus::ObjectPath device_object_path(device_path);
+  DBusThreadManager::Get()->GetShillDeviceClient()->GetProperties(
+      device_object_path,
+      base::Bind(&ListIPConfigsCallback, callback, device_path));
+}
+
+bool CrosListIPConfigsAndBlock(const std::string& device_path,
+                               NetworkIPConfigVector* ipconfig_vector,
+                               std::vector<std::string>* ipconfig_paths,
+                               std::string* hardware_address) {
   if (hardware_address)
     hardware_address->clear();
   const dbus::ObjectPath device_object_path(device_path);

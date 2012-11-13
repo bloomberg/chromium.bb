@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 
 namespace chromeos {
 
@@ -42,6 +43,14 @@ struct NetworkIPConfig {
 };
 
 typedef std::vector<NetworkIPConfig> NetworkIPConfigVector;
+
+// Used to return the list of IP configs and hardware address from an
+// asynchronous call to Shill. The hardware address is usually a MAC address
+// like "0011AA22BB33". |hardware_address| will be an empty string, if no
+// hardware address is found.
+typedef base::Callback<void(const NetworkIPConfigVector& ip_configs,
+                            const std::string& hardware_address)>
+    NetworkGetIPConfigsCallback;
 
 }  // namespace chromeos
 

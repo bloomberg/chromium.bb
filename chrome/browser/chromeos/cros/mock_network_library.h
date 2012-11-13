@@ -181,9 +181,13 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(EnableWimaxNetworkDevice, void(bool));
   MOCK_METHOD1(EnableMobileNetworkDevice, void(bool));
   MOCK_METHOD1(EnableOfflineMode, void(bool));
-  MOCK_METHOD3(GetIPConfigs, NetworkIPConfigVector(const std::string&,
-                                                   std::string*,
-                                                   HardwareAddressFormat));
+  MOCK_METHOD3(GetIPConfigs, void(const std::string&,
+                                  HardwareAddressFormat,
+                                  const NetworkGetIPConfigsCallback&));
+  MOCK_METHOD3(GetIPConfigsAndBlock,
+               NetworkIPConfigVector(const std::string&,
+                                     std::string*,
+                                     HardwareAddressFormat));
   MOCK_METHOD6(SetIPParameters, void(const std::string&,
                                      const std::string&,
                                      const std::string&,

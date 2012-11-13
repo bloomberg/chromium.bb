@@ -580,6 +580,18 @@ class Network {
     ui_data_.set_certificate_type(type);
   }
 
+  // Set the profile path and update the flimflam property.
+  void SetProfilePath(const std::string& profile_path);
+
+  // Trigger an asynchronous initialization the IP address field.
+  void InitIPAddress();
+
+  // Initialize the IP address field.
+  static void InitIPAddressCallback(
+      const std::string& service_path,
+      const NetworkIPConfigVector& ip_configs,
+      const std::string& hardware_address);
+
   std::string device_path_;
   std::string name_;
   std::string ip_address_;
@@ -598,12 +610,6 @@ class Network {
 
   // Unique identifier, set the first time the network is parsed.
   std::string unique_id_;
-
-  // Set the profile path and update the flimfalm property.
-  void SetProfilePath(const std::string& profile_path);
-
-  // Initialize the IP address field
-  void InitIPAddress();
 
   // Priority value, corresponds to index in list from shill (0 = first)
   int priority_order_;
@@ -1208,9 +1214,6 @@ class WimaxNetwork : public WirelessNetwork {
   std::string eap_identity_;
   std::string eap_passphrase_;
 
-  // Weak pointer factory for wrapping pointers to this network in callbacks.
-  base::WeakPtrFactory<WimaxNetwork> weak_pointer_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(WimaxNetwork);
 };
 
@@ -1691,11 +1694,18 @@ class NetworkLibrary {
   // Enables/disables offline mode.
   virtual void EnableOfflineMode(bool enable) = 0;
 
-  // Fetches IP configs and hardware address for a given device_path.
-  // The hardware address is usually a MAC address like "0011AA22BB33".
+  // Fetches IP configs and hardware address for a given device_path and returns
+  // them via the given callback.
+  virtual void GetIPConfigs(const std::string& device_path,
+                            HardwareAddressFormat format,
+                            const NetworkGetIPConfigsCallback& callback) = 0;
+
+  // DEPRECATED: DO NOT USE. Instead, use the asynchronous GetIPConfigs above.
+  // Fetches IP configs and hardware address for a given device_path. The
+  // hardware address is usually a MAC address like "0011AA22BB33".
   // |hardware_address| will be an empty string, if no hardware address is
   // found.
-  virtual NetworkIPConfigVector GetIPConfigs(
+  virtual NetworkIPConfigVector GetIPConfigsAndBlock(
       const std::string& device_path,
       std::string* hardware_address,
       HardwareAddressFormat) = 0;

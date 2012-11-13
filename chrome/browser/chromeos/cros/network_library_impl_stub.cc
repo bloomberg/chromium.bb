@@ -691,7 +691,14 @@ void NetworkLibraryImplStub::EnableOfflineMode(bool enable) {
   }
 }
 
-NetworkIPConfigVector NetworkLibraryImplStub::GetIPConfigs(
+void NetworkLibraryImplStub::GetIPConfigs(
+    const std::string& device_path,
+    HardwareAddressFormat format,
+    const NetworkGetIPConfigsCallback& callback) {
+  callback.Run(ip_configs_, hardware_address_);
+}
+
+NetworkIPConfigVector NetworkLibraryImplStub::GetIPConfigsAndBlock(
     const std::string& device_path,
     std::string* hardware_address,
     HardwareAddressFormat format) {

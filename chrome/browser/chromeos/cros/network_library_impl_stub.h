@@ -75,7 +75,11 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
 
   virtual void EnableOfflineMode(bool enable) OVERRIDE;
 
-  virtual NetworkIPConfigVector GetIPConfigs(
+  virtual void GetIPConfigs(
+      const std::string& device_path,
+      HardwareAddressFormat format,
+      const NetworkGetIPConfigsCallback& callback) OVERRIDE;
+  virtual NetworkIPConfigVector GetIPConfigsAndBlock(
       const std::string& device_path,
       std::string* hardware_address,
       HardwareAddressFormat format) OVERRIDE;

@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/cros/network_constants.h"
+#include "chrome/browser/chromeos/cros/network_ip_config.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -126,9 +127,13 @@ class InternetOptionsHandler
   // This is the second half of PopulateDictionaryDetails after the asynchronous
   // request for Shill's service properties.
   void PopulateDictionaryDetailsCallback(
-      const chromeos::Network* network,
       const std::string& service_path,
       const base::DictionaryValue* shill_properties);
+  void PopulateIPConfigsCallback(
+      const std::string& service_path,
+      base::DictionaryValue* shill_properties,
+      const chromeos::NetworkIPConfigVector& ipconfigs,
+      const std::string& hardware_address);
   void PopulateWifiDetails(const chromeos::WifiNetwork* wifi,
                            base::DictionaryValue* dictionary);
   void PopulateWimaxDetails(const chromeos::WimaxNetwork* wimax,

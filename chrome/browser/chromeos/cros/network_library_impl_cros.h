@@ -71,7 +71,11 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
 
   virtual void EnableOfflineMode(bool enable) OVERRIDE;
 
-  virtual NetworkIPConfigVector GetIPConfigs(
+  virtual void GetIPConfigs(
+      const std::string& device_path,
+      HardwareAddressFormat format,
+      const NetworkGetIPConfigsCallback& callback) OVERRIDE;
+  virtual NetworkIPConfigVector GetIPConfigsAndBlock(
       const std::string& device_path,
       std::string* hardware_address,
       HardwareAddressFormat format) OVERRIDE;
@@ -92,6 +96,11 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   // Cellular specific updates. Returns false if update was ignored / reverted
   // and notification should be skipped.
   bool UpdateCellularDeviceStatus(NetworkDevice* device, PropertyIndex index);
+
+  void GetIPConfigsCallback(const NetworkGetIPConfigsCallback& callback,
+                            HardwareAddressFormat format,
+                            const NetworkIPConfigVector& ipconfig_vector,
+                            const std::string& hardware_address);
 
   void PinOperationCallback(const std::string& path,
                             NetworkMethodErrorType error,

@@ -864,7 +864,7 @@ void MoreMenuModel::InitMenuItems(bool should_open_button_options) {
   const NetworkDevice* ether = cros->FindEthernetDevice();
   if (ether) {
     std::string hardware_address;
-    cros->GetIPConfigs(ether->device_path(), &hardware_address,
+    cros->GetIPConfigsAndBlock(ether->device_path(), &hardware_address,
         NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
     if (!hardware_address.empty()) {
       std::string label = l10n_util::GetStringUTF8(
@@ -878,7 +878,7 @@ void MoreMenuModel::InitMenuItems(bool should_open_button_options) {
     const NetworkDevice* wifi = cros->FindWifiDevice();
     if (wifi) {
       std::string hardware_address;
-      cros->GetIPConfigs(wifi->device_path(),
+      cros->GetIPConfigsAndBlock(wifi->device_path(),
           &hardware_address, NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
       if (!hardware_address.empty()) {
         std::string label = l10n_util::GetStringUTF8(

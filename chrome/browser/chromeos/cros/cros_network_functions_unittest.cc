@@ -901,7 +901,7 @@ TEST_F(CrosNetworkFunctionsTest, CrosSetOfflineMode) {
   CrosSetOfflineMode(kOffline);
 }
 
-TEST_F(CrosNetworkFunctionsTest, CrosListIPConfigs) {
+TEST_F(CrosNetworkFunctionsTest, CrosListIPConfigsAndBlock) {
   const std::string device_path = "/device/path";
   std::string ipconfig_path = "/ipconfig/path";
 
@@ -970,8 +970,10 @@ TEST_F(CrosNetworkFunctionsTest, CrosListIPConfigs) {
   std::vector<std::string> result_ipconfig_paths;
   std::string result_hardware_address;
   EXPECT_TRUE(
-      CrosListIPConfigs(device_path, &result_ipconfigs, &result_ipconfig_paths,
-                        &result_hardware_address));
+      CrosListIPConfigsAndBlock(device_path,
+                                &result_ipconfigs,
+                                &result_ipconfig_paths,
+                                &result_hardware_address));
 
   EXPECT_EQ(hardware_address, result_hardware_address);
   ASSERT_EQ(1U, result_ipconfigs.size());

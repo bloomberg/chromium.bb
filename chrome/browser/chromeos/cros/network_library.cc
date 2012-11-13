@@ -320,7 +320,6 @@ void Network::SetState(ConnectionState new_state) {
   } else if (new_state != STATE_UNKNOWN) {
     notify_failure_ = false;
     // State changed, so refresh IP address.
-    // Note: blocking DBus call. TODO(stevenjb): refactor this.
     InitIPAddress();
   }
   VLOG(1) << name() << ".State [" << service_path() << "]: " << GetStateString()
@@ -513,17 +512,28 @@ void Network::InitIPAddress() {
   ip_address_.clear();
   if (!EnsureCrosLoaded())
     return;
-  // If connected, get ip config.
+  // If connected, get IPConfig.
   if (connected() && !device_path_.empty()) {
-    NetworkIPConfigVector ipconfigs;
-    if (CrosListIPConfigs(device_path_, &ipconfigs, NULL, NULL)) {
-      for (size_t i = 0; i < ipconfigs.size(); ++i) {
-        const NetworkIPConfig& ipconfig = ipconfigs[i];
-        if (ipconfig.address.size() > 0) {
-          ip_address_ = ipconfig.address;
-          break;
-        }
-      }
+    CrosListIPConfigs(device_path_,
+                      base::Bind(&Network::InitIPAddressCallback,
+                                 service_path_));
+  }
+}
+
+// static
+void Network::InitIPAddressCallback(
+    const std::string& service_path,
+    const NetworkIPConfigVector& ip_configs,
+    const std::string& hardware_address) {
+  Network* network =
+      CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(service_path);
+  if (!network)
+    return;
+  for (size_t i = 0; i < ip_configs.size(); ++i) {
+    const NetworkIPConfig& ipconfig = ip_configs[i];
+    if (ipconfig.address.size() > 0) {
+      network->ip_address_ = ipconfig.address;
+      break;
     }
   }
 }
@@ -1313,8 +1323,7 @@ void WifiNetwork::MatchCertificatePattern(bool allow_enroll,
 
 WimaxNetwork::WimaxNetwork(const std::string& service_path)
     : WirelessNetwork(service_path, TYPE_WIMAX),
-      passphrase_required_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_pointer_factory_(this)) {
+      passphrase_required_(false) {
 }
 
 WimaxNetwork::~WimaxNetwork() {

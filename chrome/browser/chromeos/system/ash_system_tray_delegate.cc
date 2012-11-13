@@ -587,14 +587,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     *ethernet_mac_address = std::string();
     const NetworkDevice* ether = crosnet->FindEthernetDevice();
     if (ether)
-      crosnet->GetIPConfigs(ether->device_path(), ethernet_mac_address,
+      crosnet->GetIPConfigsAndBlock(ether->device_path(), ethernet_mac_address,
           NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
 
     *wifi_mac_address = std::string();
     const NetworkDevice* wifi = crosnet->wifi_enabled() ?
         crosnet->FindWifiDevice() : NULL;
     if (wifi)
-      crosnet->GetIPConfigs(wifi->device_path(), wifi_mac_address,
+      crosnet->GetIPConfigsAndBlock(wifi->device_path(), wifi_mac_address,
           NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
   }
 

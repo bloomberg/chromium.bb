@@ -131,9 +131,24 @@ void NetworkChangeNotifierChromeos::OnNetworkChanged(
 void NetworkChangeNotifierChromeos::UpdateNetworkState(
     chromeos::NetworkLibrary* lib) {
   const chromeos::Network* network = lib->active_network();
+  if (network) {
+    lib->GetIPConfigs(
+        network->device_path(),
+        chromeos::NetworkLibrary::FORMAT_COLON_SEPARATED_HEX,
+        base::Bind(&NetworkChangeNotifierChromeos::UpdateNetworkStateCallback,
+                   weak_factory_.GetWeakPtr(),
+                   lib));
+  }
+}
+
+void NetworkChangeNotifierChromeos::UpdateNetworkStateCallback(
+    chromeos::NetworkLibrary* lib,
+    const NetworkIPConfigVector& ipconfigs,
+    const std::string& hardware_address) {
+  const chromeos::Network* network = lib->active_network();
 
   if (network) {
-    VLOG(1) << "UpdateNetworkState: " << network->name()
+    VLOG(1) << "UpdateNetworkStateCallback: " << network->name()
             << ", type= " << network->type()
             << ", device= " << network->device_path()
             << ", state= " << network->state();

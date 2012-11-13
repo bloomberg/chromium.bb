@@ -1220,13 +1220,32 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   chromeos::CrosRequestNetworkServiceProperties(
       network->service_path(),
       base::Bind(&InternetOptionsHandler::PopulateDictionaryDetailsCallback,
-                 weak_factory_.GetWeakPtr(), network));
+                 weak_factory_.GetWeakPtr()));
 }
 
 void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
-    const chromeos::Network* network,
     const std::string& service_path,
     const base::DictionaryValue* shill_properties) {
+  chromeos::Network* network = cros_->FindNetworkByPath(service_path);
+  if (!network)
+    return;
+  // Have to copy the properties because the object will go out of scope when
+  // this function call completes (it's owned by the calling function).
+  base::DictionaryValue* shill_props_copy = shill_properties->DeepCopy();
+  cros_->GetIPConfigs(
+      network->device_path(),
+      chromeos::NetworkLibrary::FORMAT_COLON_SEPARATED_HEX,
+      base::Bind(&InternetOptionsHandler::PopulateIPConfigsCallback,
+                 weak_factory_.GetWeakPtr(),
+                 service_path,
+                 base::Owned(shill_props_copy)));
+}
+
+void InternetOptionsHandler::PopulateIPConfigsCallback(
+    const std::string& service_path,
+    base::DictionaryValue* shill_properties,
+    const chromeos::NetworkIPConfigVector& ipconfigs,
+    const std::string& hardware_address) {
   if (VLOG_IS_ON(2)) {
     std::string properties_json;
     base::JSONWriter::WriteWithOptions(shill_properties,
@@ -1234,9 +1253,12 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
                                        &properties_json);
     VLOG(2) << "Shill Properties: " << std::endl << properties_json;
   }
+  chromeos::Network* network = cros_->FindNetworkByPath(service_path);
+  if (!network)
+    return;
 
   Profile::FromWebUI(web_ui())->GetProxyConfigTracker()->UISetCurrentNetwork(
-      network->service_path());
+      service_path);
 
   const chromeos::NetworkUIData& ui_data = network->ui_data();
   const chromeos::NetworkPropertyUIData property_ui_data(ui_data);
@@ -1244,10 +1266,6 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
       cros_->FindOncForNetwork(network->unique_id());
 
   base::DictionaryValue dictionary;
-  std::string hardware_address;
-  chromeos::NetworkIPConfigVector ipconfigs = cros_->GetIPConfigs(
-      network->device_path(), &hardware_address,
-      chromeos::NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
   if (!hardware_address.empty())
     dictionary.SetString(kTagHardwareAddress, hardware_address);
 

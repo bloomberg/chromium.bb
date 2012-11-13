@@ -61,8 +61,14 @@ class NetworkChangeNotifierChromeos
   // is actually scheduled.
   void OnOnlineStateNotificationFired();
 
-  // Updates data members that keep the track the network stack state.
+  // Initiates an update of data members that keep the track the network stack
+  // state.
   void UpdateNetworkState(chromeos::NetworkLibrary* cros);
+  // Called when a network state update has completed. Updates data members that
+  // keep the track the network stack state.
+  void UpdateNetworkStateCallback(chromeos::NetworkLibrary* cros,
+                                  const NetworkIPConfigVector& ip_configs,
+                                  const std::string& hardware_address);
   // Updates network connectivity state.
   void UpdateConnectivityState(const chromeos::Network* network);
 

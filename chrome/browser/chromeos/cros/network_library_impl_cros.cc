@@ -518,12 +518,51 @@ void NetworkLibraryImplCros::EnableOfflineMode(bool enable) {
     offline_mode_ = enable;
 }
 
-NetworkIPConfigVector NetworkLibraryImplCros::GetIPConfigs(
+
+void NetworkLibraryImplCros::GetIPConfigsCallback(
+    const NetworkGetIPConfigsCallback& callback,
+    HardwareAddressFormat format,
+    const NetworkIPConfigVector& ipconfig_vector,
+    const std::string& hardware_address) {
+  std::string hardware_address_tmp = hardware_address;
+  for (size_t i = 0; i < hardware_address_tmp.size(); ++i)
+    hardware_address_tmp[i] = toupper(hardware_address_tmp[i]);
+  if (format == FORMAT_COLON_SEPARATED_HEX) {
+    if (hardware_address_tmp.size() % 2 == 0) {
+      std::string output;
+      for (size_t i = 0; i < hardware_address_tmp.size(); ++i) {
+        if ((i != 0) && (i % 2 == 0))
+          output.push_back(':');
+        output.push_back(hardware_address_tmp[i]);
+      }
+      hardware_address_tmp.swap(output);
+    }
+  } else {
+    DCHECK_EQ(format, FORMAT_RAW_HEX);
+  }
+  callback.Run(ipconfig_vector, hardware_address_tmp);
+}
+
+void NetworkLibraryImplCros::GetIPConfigs(
+    const std::string& device_path,
+    HardwareAddressFormat format,
+    const NetworkGetIPConfigsCallback& callback) {
+  CrosListIPConfigs(device_path,
+                    base::Bind(&NetworkLibraryImplCros::GetIPConfigsCallback,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               callback,
+                               format));
+}
+
+NetworkIPConfigVector NetworkLibraryImplCros::GetIPConfigsAndBlock(
     const std::string& device_path,
     std::string* hardware_address,
     HardwareAddressFormat format) {
   NetworkIPConfigVector ipconfig_vector;
-  CrosListIPConfigs(device_path, &ipconfig_vector, NULL, hardware_address);
+  CrosListIPConfigsAndBlock(device_path,
+                            &ipconfig_vector,
+                            NULL,
+                            hardware_address);
 
   for (size_t i = 0; i < hardware_address->size(); ++i)
     (*hardware_address)[i] = toupper((*hardware_address)[i]);
