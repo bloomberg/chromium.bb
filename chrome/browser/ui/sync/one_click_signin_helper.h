@@ -37,6 +37,13 @@ class OneClickSigninHelper
     REJECTED_FOR_PROFILE
   };
 
+  // Return value of CanOfferOnIOThread().
+  enum Offer {
+    CAN_OFFER,
+    DONT_OFFER,
+    IGNORE_REQUEST
+  };
+
   virtual ~OneClickSigninHelper();
 
   // Called only by tests to associate information with a given request.
@@ -57,9 +64,9 @@ class OneClickSigninHelper
   // It can be offered if the io_data is not in an incognito window and if the
   // origin of |url| is a valid Gaia sign in origin.  This function is meant
   // to called only from the IO thread.
-  static bool CanOfferOnIOThread(const GURL& url,
-                                 base::SupportsUserData* request,
-                                 ProfileIOData* io_data);
+  static Offer CanOfferOnIOThread(const GURL& url,
+                                  base::SupportsUserData* request,
+                                  ProfileIOData* io_data);
 
   // Initialize a finch experiment for the infobar.
   static void InitializeFieldTrial();

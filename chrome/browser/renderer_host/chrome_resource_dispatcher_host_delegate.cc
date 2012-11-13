@@ -160,9 +160,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   AppendChromeMetricsHeaders(request, resource_context, resource_type);
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
-  // TODO(rogerta): this call also needs to be made on each new redirect
-  // request.  However, URLRequest does not yet support changing the headers
-  // for redirects.  This is being tracked in crbug.com/157154.
   AppendChromeSyncGaiaHeader(request, resource_context);
 #endif
 
@@ -342,10 +339,21 @@ void ChromeResourceDispatcherHostDelegate::AppendChromeMetricsHeaders(
 void ChromeResourceDispatcherHostDelegate::AppendChromeSyncGaiaHeader(
     net::URLRequest* request,
     content::ResourceContext* resource_context) {
+  static const char kAllowChromeSignIn[] = "Allow-Chrome-SignIn";
+
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  if (OneClickSigninHelper::CanOfferOnIOThread(request->url(), request,
-                                               io_data)) {
-    request->SetExtraRequestHeaderByName("Allow-Chrome-SignIn", "1", false);
+  OneClickSigninHelper::Offer offer =
+      OneClickSigninHelper::CanOfferOnIOThread(request->url(), request,
+                                               io_data);
+  switch (offer) {
+    case OneClickSigninHelper::CAN_OFFER:
+      request->SetExtraRequestHeaderByName(kAllowChromeSignIn, "1", false);
+      break;
+    case OneClickSigninHelper::DONT_OFFER:
+      request->RemoveRequestHeaderByName(kAllowChromeSignIn);
+      break;
+    case OneClickSigninHelper::IGNORE_REQUEST:
+      break;
   }
 }
 #endif
@@ -419,6 +427,8 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+
+  AppendChromeSyncGaiaHeader(request, resource_context);
 
   // See if the response contains the Google-Accounts-SignIn header.  If so,
   // then the user has just finished signing in, and the server is allowing the

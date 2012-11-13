@@ -433,37 +433,38 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
 }
 
 // static
-bool OneClickSigninHelper::CanOfferOnIOThread(const GURL& url,
-                                              base::SupportsUserData* request,
-                                              ProfileIOData* io_data) {
+OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThread(
+    const GURL& url,
+    base::SupportsUserData* request,
+    ProfileIOData* io_data) {
+  if (!gaia::IsGaiaSignonRealm(url.GetOrigin()))
+    return IGNORE_REQUEST;
+
   if (!io_data)
-    return false;
+    return DONT_OFFER;
 
   if (!UseWebBasedSigninFlow())
-    return false;
+    return DONT_OFFER;
 
   if (!ProfileSyncService::IsSyncEnabled())
-    return false;
+    return DONT_OFFER;
 
   // Check for incognito before other parts of the io_data, since those
   // members may not be initalized.
   if (io_data->is_incognito())
-    return false;
+    return DONT_OFFER;
 
   if (!io_data->reverse_autologin_enabled()->GetValue())
-    return false;
-
-  if (!gaia::IsGaiaSignonRealm(url.GetOrigin()))
-    return false;
+    return DONT_OFFER;
 
   if (!io_data->google_services_username()->GetValue().empty())
-    return false;
+    return DONT_OFFER;
 
   if (!SigninManager::AreSigninCookiesAllowed(io_data->GetCookieSettings()))
-    return false;
+    return DONT_OFFER;
 
   if (!io_data->reverse_autologin_enabled()->GetValue())
-    return false;
+    return DONT_OFFER;
 
   // The checks below depend on chrome already knowing what account the user
   // signed in with.  This happens only after receiving the response containing
@@ -476,7 +477,7 @@ bool OneClickSigninHelper::CanOfferOnIOThread(const GURL& url,
   if (one_click_data) {
     if (!SigninManager::IsAllowedUsername(one_click_data->email(),
             io_data->google_services_username_pattern()->GetValue())) {
-      return false;
+      return DONT_OFFER;
     }
 
     std::vector<std::string> rejected_emails =
@@ -484,16 +485,16 @@ bool OneClickSigninHelper::CanOfferOnIOThread(const GURL& url,
     if (std::count_if(rejected_emails.begin(), rejected_emails.end(),
                       std::bind2nd(std::equal_to<std::string>(),
                                    one_click_data->email())) > 0) {
-      return false;
+      return DONT_OFFER;
     }
 
     if (io_data->signin_names()->GetEmails().count(
             UTF8ToUTF16(one_click_data->email())) > 0) {
-      return false;
+      return DONT_OFFER;
     }
   }
 
-  return true;
+  return CAN_OFFER;
 }
 
 // static

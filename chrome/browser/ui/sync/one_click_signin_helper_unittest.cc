@@ -423,36 +423,44 @@ TEST_F(OneClickSigninHelperTest, CanOfferNoSigninCookies) {
   EXPECT_FALSE(OneClickSigninHelper::CanOffer(web_contents(), "", false));
 }
 
+// I/O thread tests
+
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThread) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
-  EXPECT_TRUE(OneClickSigninHelper::CanOfferOnIOThread(
-      valid_gaia_url_, &request_, io_data.get()));
+  EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
+            OneClickSigninHelper::CanOfferOnIOThread(valid_gaia_url_,
+                                                     &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadIncognito) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(true));
-  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
-      valid_gaia_url_, &request_, io_data.get()));
+  EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
+            OneClickSigninHelper::CanOfferOnIOThread(valid_gaia_url_,
+                                                     &request_, NULL));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadNoIOData) {
-  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
-      valid_gaia_url_, &request_, NULL));
+  EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
+            OneClickSigninHelper::CanOfferOnIOThread(valid_gaia_url_,
+                                                     &request_, NULL));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadBadURL) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
-  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
-      GURL("https://foo.com/"), &request_, io_data.get()));
-  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
-      GURL("http://accounts.google.com/"), &request_, io_data.get()));
+  EXPECT_EQ(OneClickSigninHelper::IGNORE_REQUEST,
+            OneClickSigninHelper::CanOfferOnIOThread(GURL("https://foo.com/"),
+                                                     &request_, io_data.get()));
+  EXPECT_EQ(OneClickSigninHelper::IGNORE_REQUEST,
+            OneClickSigninHelper::CanOfferOnIOThread(
+                GURL("http://accounts.google.com/"), &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabled) {
   EnableOneClick(false);
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
-  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
-      valid_gaia_url_, &request_, io_data.get()));
+  EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
+            OneClickSigninHelper::CanOfferOnIOThread(valid_gaia_url_,
+                                                     &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadSignedIn) {
@@ -462,15 +470,17 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadSignedIn) {
   pref_service->SetString(prefs::kGoogleServicesUsername, "user@gmail.com");
 
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
-  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
-      valid_gaia_url_, &request_, io_data.get()));
+  EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
+            OneClickSigninHelper::CanOfferOnIOThread(valid_gaia_url_,
+                                                     &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailNotAllowed) {
   SetAllowedUsernamePattern("*@example.com");
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
-  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
-      valid_gaia_url_, &request_, io_data.get()));
+  EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
+            OneClickSigninHelper::CanOfferOnIOThread(valid_gaia_url_,
+                                                     &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailAlreadyUsed) {
@@ -481,20 +491,23 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailAlreadyUsed) {
                            UTF8ToUTF16("user@gmail.com"), 0);
 
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
-  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
-      valid_gaia_url_, &request_, io_data.get()));
+  EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
+            OneClickSigninHelper::CanOfferOnIOThread(valid_gaia_url_,
+                                                     &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadWithRejectedEmail) {
   AddEmailToOneClickRejectedList("user@gmail.com");
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
-  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
-      valid_gaia_url_, &request_, io_data.get()));
+  EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
+            OneClickSigninHelper::CanOfferOnIOThread(valid_gaia_url_,
+                                                     &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadNoSigninCookies) {
   AllowSigninCookies(false);
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
-  EXPECT_FALSE(OneClickSigninHelper::CanOfferOnIOThread(
-      valid_gaia_url_, &request_, io_data.get()));
+  EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
+            OneClickSigninHelper::CanOfferOnIOThread(valid_gaia_url_,
+                                                     &request_, io_data.get()));
 }
