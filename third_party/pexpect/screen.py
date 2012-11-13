@@ -3,7 +3,23 @@ emulation. The screen representation and state is implemented in this class.
 Most of the methods are inspired by ANSI screen control codes. The ANSI class
 extends this class to add parsing of ANSI escape codes.
 
-$Id: screen.py 486 2007-07-13 01:04:16Z noah $
+PEXPECT LICENSE
+
+    This license is approved by the OSI and FSF as GPL-compatible.
+        http://opensource.org/licenses/isc-license.txt
+
+    Copyright (c) 2012, Noah Spurrier <noah@noah.org>
+    PERMISSION TO USE, COPY, MODIFY, AND/OR DISTRIBUTE THIS SOFTWARE FOR ANY
+    PURPOSE WITH OR WITHOUT FEE IS HEREBY GRANTED, PROVIDED THAT THE ABOVE
+    COPYRIGHT NOTICE AND THIS PERMISSION NOTICE APPEAR IN ALL COPIES.
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
 """
 
 import copy
@@ -159,7 +175,7 @@ class screen:
 
         r = constrain (r, 1, self.rows)
         c = constrain (c, 1, self.cols)
-        for ci in range (self.cols, c, -1): 
+        for ci in range (self.cols, c, -1):
             self.put_abs (r,ci, self.get_abs(r,ci-1))
         self.put_abs (r,c,ch)
 
@@ -168,7 +184,7 @@ class screen:
         self.insert_abs (self.cur_r, self.cur_c, ch)
 
     def get_abs (self, r, c):
-    
+
         r = constrain (r, 1, self.rows)
         c = constrain (c, 1, self.cols)
         return self.w[r-1][c-1]

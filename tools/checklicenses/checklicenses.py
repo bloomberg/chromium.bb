@@ -332,9 +332,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/ply/__init__.py': [
         'UNKNOWN',
     ],
-    'third_party/pexpect': [ # http://crbug.com/156113
-        'UNKNOWN',
-    ],
     'third_party/protobuf': [  # http://crbug.com/98455
         'UNKNOWN',
     ],
@@ -455,7 +452,9 @@ def check_licenses(options, args):
                                                    'devscripts',
                                                    'licensecheck.pl'))
 
-  licensecheck = subprocess.Popen([licensecheck_path, '-r', start_dir],
+  licensecheck = subprocess.Popen([licensecheck_path,
+                                   '-l', '100',
+                                   '-r', start_dir],
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE)
   stdout, stderr = licensecheck.communicate()

@@ -64,6 +64,24 @@ current_state then the FSM will raise an exception. This may be desirable, but
 you can always prevent this just by defining a default transition.
 
 Noah Spurrier 20020822
+
+PEXPECT LICENSE
+
+    This license is approved by the OSI and FSF as GPL-compatible.
+        http://opensource.org/licenses/isc-license.txt
+
+    Copyright (c) 2012, Noah Spurrier <noah@noah.org>
+    PERMISSION TO USE, COPY, MODIFY, AND/OR DISTRIBUTE THIS SOFTWARE FOR ANY
+    PURPOSE WITH OR WITHOUT FEE IS HEREBY GRANTED, PROVIDED THAT THE ABOVE
+    COPYRIGHT NOTICE AND THIS PERMISSION NOTICE APPEAR IN ALL COPIES.
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
 """
 
 class ExceptionFSM(Exception):
@@ -237,7 +255,7 @@ class FSM:
 # process an RPN expression. Run this module from the command line. You will
 # get a prompt > for input. Enter an RPN Expression. Numbers may be integers.
 # Operators are * / + - Use the = sign to evaluate and print the expression.
-# For example: 
+# For example:
 #
 #    167 3 2 2 * * * 1 - =
 #
@@ -249,7 +267,7 @@ class FSM:
 import sys, os, traceback, optparse, time, string
 
 #
-# These define the actions. 
+# These define the actions.
 # Note that "memory" is a list being used as a stack.
 #
 
@@ -311,7 +329,7 @@ def main():
 if __name__ == '__main__':
     try:
         start_time = time.time()
-        parser = optparse.OptionParser(formatter=optparse.TitledHelpFormatter(), usage=globals()['__doc__'], version='$Id: FSM.py 490 2007-12-07 15:46:24Z noah $')
+        parser = optparse.OptionParser(formatter=optparse.TitledHelpFormatter(), usage=globals()['__doc__'], version='$Id: FSM.py 533 2012-10-20 02:19:33Z noah $')
         parser.add_option ('-v', '--verbose', action='store_true', default=False, help='verbose output')
         (options, args) = parser.parse_args()
         if options.verbose: print time.asctime()
