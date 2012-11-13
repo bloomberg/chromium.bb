@@ -298,6 +298,13 @@
               '-Wsign-compare',
               '-Wundef',
             ],
+            'cflags_c': [
+              # Require defining functions as "foo(void)" rather than
+              # "foo()" because, in C (but not C++), the latter
+              # defines a function with unspecified arguments rather
+              # than no arguments.
+              '-Wstrict-prototypes',
+            ],
           }],
           [ 'target_arch=="arm"', {
               'cflags': [

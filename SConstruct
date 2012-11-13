@@ -2165,7 +2165,15 @@ def MakeUnixLikeEnv():
   # (building and testing on Linux is faster).
   # TODO(nfullagar): should we consider switching to -std=c99 ?
   unix_like_env.Prepend(
-    CFLAGS = ['-std=gnu99', '-Wdeclaration-after-statement' ],
+    CFLAGS = [
+        '-std=gnu99',
+        '-Wdeclaration-after-statement',
+        # Require defining functions as "foo(void)" rather than
+        # "foo()" because, in C (but not C++), the latter defines a
+        # function with unspecified arguments rather than no
+        # arguments.
+        '-Wstrict-prototypes',
+        ],
     CCFLAGS = [
         # '-malign-double',
         '-Wall',

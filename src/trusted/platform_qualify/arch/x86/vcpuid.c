@@ -441,7 +441,7 @@ static int SawBadInst(void) {
  * DoTest tests for a particular CPU feature using thetest().
  * It returns 0 if the feature is present, 1 if it is not.
  */
-static int DoTest(int (*thetest)(), const char *s) {
+static int DoTest(int (*thetest)(void), const char *s) {
   SignalInit();
   if (0 != (signum = sigsetjmp(crash_load, 1))) {
     SetSawBadInst();
@@ -467,7 +467,7 @@ static int DoTest(int (*thetest)(), const char *s) {
  * DoTest tests for a particular CPU feature using thetest().
  * It returns 0 if the feature is present, 1 if it is not.
  */
-static int DoTest(int (*thetest)(), const char *s) {
+static int DoTest(int (*thetest)(void), const char *s) {
   int hasfeature = 0;
 
   __try {
@@ -490,7 +490,7 @@ static int DoTest(int (*thetest)(), const char *s) {
 #endif
 
 static int DoCPUFeatureTest(NaClCPUFeaturesX86 *features, NaClCPUFeatureID id,
-                            int (*thetest)()) {
+                            int (*thetest)(void)) {
   if (NaClGetCPUFeature(features, id))
     return DoTest(thetest, NaClGetCPUFeatureName(id));
   else

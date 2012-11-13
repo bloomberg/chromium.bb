@@ -21,7 +21,8 @@ static void handle_warning_en(const int en, const char *s) {
   NaClLog(LOG_WARNING, "%s: %s\n", s, strerror_r(en, errs, sizeof(errs)));
 }
 
-void NaClThreadNiceInit() { }
+void NaClThreadNiceInit(void) {
+}
 
 /* Linux version - threads are processes, so use setpriority in lieu
  * of RLIMIT_RTPRIO.

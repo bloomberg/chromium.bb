@@ -58,7 +58,7 @@ static int32_t %(name)sDecoder(struct NaClAppThread *natp) {
  * Check that the function being wrapped has the same type as the type
  * declared in SYSCALL_LIST.
  */
-static INLINE void AssertSameType_%(name)s() {
+static INLINE void AssertSameType_%(name)s(void) {
   /* This assignment will give an error if the argument types don't match. */
   int32_t (*dummy)(%(arg_type_list)s) = %(name)s;
   /* 'dummy' is not actually a parameter but this suppresses the warning. */

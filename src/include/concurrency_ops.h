@@ -14,7 +14,7 @@
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
-static INLINE void NaClWriteMemoryBarrier() {
+static INLINE void NaClWriteMemoryBarrier(void) {
 #if NACL_WINDOWS
   /* Inline assembly is not available in x86-64 MSVC.  Use built-in. */
   _mm_sfence();
@@ -25,7 +25,7 @@ static INLINE void NaClWriteMemoryBarrier() {
 
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 
-static INLINE void NaClWriteMemoryBarrier() {
+static INLINE void NaClWriteMemoryBarrier(void) {
   /* Note that this depends on ARMv7. */
   __asm__ __volatile__("dsb");
 
@@ -38,7 +38,7 @@ static INLINE void NaClWriteMemoryBarrier() {
 
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
 
-static INLINE void NaClWriteMemoryBarrier() {
+static INLINE void NaClWriteMemoryBarrier(void) {
   __asm__ __volatile__("sync" : : : "memory");
 }
 

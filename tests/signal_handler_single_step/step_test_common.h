@@ -17,7 +17,7 @@
 #endif
 
 /* Start single-stepping by setting the trap flag (bit 8). */
-static INLINE void SetTrapFlag() {
+static INLINE void SetTrapFlag(void) {
   __asm__("pushf\n"
 #if NACL_BUILD_SUBARCH == 32
           "btsl $8, (%esp)\n"
@@ -28,7 +28,7 @@ static INLINE void SetTrapFlag() {
 }
 
 /* Stop single-stepping by unsetting the trap flag (bit 8). */
-static INLINE void UnsetTrapFlag() {
+static INLINE void UnsetTrapFlag(void) {
   __asm__("pushf\n"
 #if NACL_BUILD_SUBARCH == 32
           "btrl $8, (%esp)\n"
@@ -38,7 +38,7 @@ static INLINE void UnsetTrapFlag() {
           "popf\n");
 }
 
-static INLINE uintptr_t GetTrapFlag() {
+static INLINE uintptr_t GetTrapFlag(void) {
   uintptr_t flags;
 #if NACL_BUILD_SUBARCH == 32
   __asm__("pushf\n"

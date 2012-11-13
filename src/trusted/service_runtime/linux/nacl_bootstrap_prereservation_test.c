@@ -69,7 +69,7 @@ int IsPageMappable(uintptr_t addr) {
   return 1;
 }
 
-uintptr_t FindLowestMappableAddress() {
+uintptr_t FindLowestMappableAddress(void) {
   uintptr_t mmap_addr;
   uintptr_t low_addr;
 

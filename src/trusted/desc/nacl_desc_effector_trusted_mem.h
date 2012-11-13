@@ -23,7 +23,7 @@ EXTERN_C_BEGIN
 
 extern const struct NaClDescEffector NaClDescEffectorTrustedMemStruct;
 
-static INLINE struct NaClDescEffector *NaClDescEffectorTrustedMem() {
+static INLINE struct NaClDescEffector *NaClDescEffectorTrustedMem(void) {
   /* This struct is read-only, although other NaClDescEffectors need not be. */
   return (struct NaClDescEffector *) &NaClDescEffectorTrustedMemStruct;
 }
