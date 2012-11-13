@@ -1096,6 +1096,7 @@
         'browser/sync/test_profile_sync_service.cc',
         'browser/sync/test_profile_sync_service.h',
         'browser/sync_file_system/drive_file_sync_client_unittest.cc',
+        'browser/sync_file_system/drive_file_sync_service_unittest.cc',
         'browser/sync_file_system/drive_metadata_store_unittest.cc',
         'browser/sync_file_system/local_file_sync_service_unittest.cc',
         'browser/sync_file_system/mock_remote_file_sync_service.cc',

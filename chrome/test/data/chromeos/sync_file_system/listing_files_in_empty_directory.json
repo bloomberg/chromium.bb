@@ -1,0 +1,55 @@
+ {
+   "encoding": "UTF-8",
+   "feed": {
+      "author": [ {
+         "email": { "$t": "tester@example.com" },
+         "name": { "$t": "testing" }
+      } ],
+      "category": [ {
+         "label": "item",
+         "scheme": "http://schemas.google.com/g/2005#kind",
+         "term": "http://schemas.google.com/docs/2007#item"
+      } ],
+      "gd$etag": "W/\"D0QBQHk7eSt7ImA9WhNRE0s.\"",
+      "id": { "$t": "https://docs.google.com/feeds/default/private/full/folder%3A0B5ABxZbXmXlnS2VnNVRoVVpIZlU/contents" },
+      "link": [ {
+         "href": "https://docs.google.com/#folders/folder.0.0B5ABxZbXmXlnS2VnNVRoVVpIZlU",
+         "rel": "alternate",
+         "type": "text/html"
+      }, {
+         "href": "https://docs.google.com/feeds/upload/create-session/default/private/full/folder%3A0B5ABxZbXmXlnS2VnNVRoVVpIZlU/contents",
+         "rel": "http://schemas.google.com/g/2005#resumable-create-media",
+         "type": "application/atom+xml"
+      }, {
+         "href": "https://docs.google.com/feeds/upload/file/default/private/full/folder%3A0B5ABxZbXmXlnS2VnNVRoVVpIZlU/contents",
+         "rel": "http://schemas.google.com/docs/2007#alt-post",
+         "type": "application/atom+xml"
+      }, {
+         "href": "https://docs.google.com/feeds/default/private/full/folder%3A0B5ABxZbXmXlnS2VnNVRoVVpIZlU/contents",
+         "rel": "http://schemas.google.com/g/2005#feed",
+         "type": "application/atom+xml"
+      }, {
+         "href": "https://docs.google.com/feeds/default/private/full/folder%3A0B5ABxZbXmXlnS2VnNVRoVVpIZlU/contents",
+         "rel": "http://schemas.google.com/g/2005#post",
+         "type": "application/atom+xml"
+      }, {
+         "href": "https://docs.google.com/feeds/default/private/full/folder%3A0B5ABxZbXmXlnS2VnNVRoVVpIZlU/contents/batch",
+         "rel": "http://schemas.google.com/g/2005#batch",
+         "type": "application/atom+xml"
+      }, {
+         "href": "https://docs.google.com/feeds/default/private/full/folder%3A0B5ABxZbXmXlnS2VnNVRoVVpIZlU/contents/-/mine?alt=json&max-results=500&include-installed-apps=true&showfolders=true",
+         "rel": "self",
+         "type": "application/atom+xml"
+      } ],
+      "openSearch$itemsPerPage": { "$t": "500" },
+      "openSearch$startIndex": { "$t": "1" },
+      "title": { "$t": "Documents in \"chrome-extension://mbcmbbbbacgkaoodkjcccfpfhijdimbc/\"" },
+      "updated": { "$t": "2012-11-08T09:02:31.701Z" },
+      "xmlns": "http://www.w3.org/2005/Atom",
+      "xmlns$batch": "http://schemas.google.com/gdata/batch",
+      "xmlns$docs": "http://schemas.google.com/docs/2007",
+      "xmlns$gd": "http://schemas.google.com/g/2005",
+      "xmlns$openSearch": "http://a9.com/-/spec/opensearch/1.1/"
+   },
+   "version": "1.0"
+}

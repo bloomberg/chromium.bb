@@ -97,9 +97,10 @@ class SyncFileSystemServiceFactory : public ProfileKeyedServiceFactory {
   static SyncFileSystemServiceFactory* GetInstance();
 
   // This overrides the remote service for testing.
-  // This must be called before GetForProfile is called.
-  // (Since we use scoped_ptr it's one-off and the instance is passed
-  // to the newly created SyncFileSystemService.)
+  // For testing this must be called before GetForProfile is called.
+  // Otherwise a new DriveFileSyncService is created for the new service.
+  // Since we use scoped_ptr it's one-off and the instance is passed
+  // to the newly created SyncFileSystemService.
   void set_mock_remote_file_service(
       scoped_ptr<RemoteFileSyncService> mock_remote_service);
 

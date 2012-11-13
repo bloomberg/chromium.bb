@@ -139,6 +139,7 @@ class DriveFileSyncClient : public base::NonThreadSafe,
 
  private:
   friend class DriveFileSyncClientTest;
+  friend class DriveFileSyncServiceTest;
 
   // Constructor for test use.
   DriveFileSyncClient(

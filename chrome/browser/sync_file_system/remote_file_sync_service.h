@@ -48,13 +48,13 @@ class RemoteFileSyncService {
   virtual void RemoveObserver(Observer* observer) = 0;
 
   // Registers |origin| to track remote side changes for the |origin|.
-  // Upon completion, invokes |callback| if it's non-empty.
+  // Upon completion, invokes |callback|.
   virtual void RegisterOriginForTrackingChanges(
       const GURL& origin,
       const fileapi::SyncStatusCallback& callback) = 0;
 
   // Unregisters |origin| to track remote side changes for the |origin|.
-  // Upon completion, invokes |callback| if it's non-empty.
+  // Upon completion, invokes |callback|.
   virtual void UnregisterOriginForTrackingChanges(
       const GURL& origin,
       const fileapi::SyncStatusCallback& callback) = 0;

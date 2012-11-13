@@ -187,6 +187,7 @@ void DriveFileSyncClient::DidCreateDirectory(
     callback.Run(error, std::string());
     return;
   }
+  error = google_apis::HTTP_CREATED;
 
   // TODO(tzik): Confirm if there's no confliction. If another client tried
   // to create the directory, we might make duplicated directories.

@@ -1,0 +1,77 @@
+{
+   "encoding": "UTF-8",
+   "entry": {
+      "app$edited": {
+         "$t": "2012-11-08T06:06:18.799Z",
+         "xmlns$app": "http://www.w3.org/2007/app"
+      },
+      "author": [ {
+         "email": { "$t": "tester@example.com" },
+         "name": { "$t": "testing" }
+      } ],
+      "category": [ {
+         "label": "viewed",
+         "scheme": "http://schemas.google.com/g/2005/labels",
+         "term": "http://schemas.google.com/g/2005/labels#viewed"
+      }, {
+         "label": "folder",
+         "scheme": "http://schemas.google.com/g/2005#kind",
+         "term": "http://schemas.google.com/docs/2007#folder"
+      } ],
+      "content": {
+         "src": "https://sync_root_content_url",
+         "type": "application/atom+xml;type=feed"
+      },
+      "docs$writersCanInvite": { "value": "true" },
+      "gd$etag": "\"UB8LFERXQCt7ImBk\"",
+      "gd$feedLink": [ {
+         "href": "https://docs.google.com/feeds/default/private/full/folder%3A0B5ABxZbXmXlnNkZuZS1zcXFRem8/acl",
+         "rel": "http://schemas.google.com/acl/2007#accessControlList"
+      } ],
+      "gd$lastModifiedBy": {
+         "email": { "$t": "tester@example.com" },
+         "name": { "$t": "testing" }
+      },
+      "gd$lastViewed": { "$t": "2012-11-08T06:06:18.782Z" },
+      "gd$quotaBytesUsed": { "$t": "0" },
+      "gd$resourceId": { "$t": "folder:0B5ABxZbXmXlnNkZuZS1zcXFRem8" },
+      "id": { "$t": "https://docs.google.com/feeds/id/folder%3A0B5ABxZbXmXlnNkZuZS1zcXFRem8" },
+      "link": [ {
+         "href": "https://docs.google.com/#folders/folder.0.0B5ABxZbXmXlnNkZuZS1zcXFRem8",
+         "rel": "alternate",
+         "type": "text/html"
+      }, {
+         "href": "https://ssl.gstatic.com/docs/doclist/images/icon_9_collection_list.png",
+         "rel": "http://schemas.google.com/docs/2007#icon",
+         "type": "image/png"
+      }, {
+         "href": "https://docs.google.com/feeds/upload/create-session/default/private/full/folder%3A0B5ABxZbXmXlnNkZuZS1zcXFRem8/contents",
+         "rel": "http://schemas.google.com/g/2005#resumable-create-media",
+         "type": "application/atom+xml"
+      }, {
+         "href": "https://docs.google.com/feeds/upload/file/default/private/full/folder%3A0B5ABxZbXmXlnNkZuZS1zcXFRem8/contents",
+         "rel": "http://schemas.google.com/docs/2007#alt-post",
+         "type": "application/atom+xml"
+      }, {
+         "href": "https://drive.google.com/share?subapp=10&id=0B5ABxZbXmXlnNkZuZS1zcXFRem8&shareProtocolVersion=2&popupWindowsEnabled=false&theme=2&client=desktop&foreignService=chromedrive&command=settings&shareUiType=default&authuser=0&hl=en_US",
+         "rel": "http://schemas.google.com/docs/2007#share",
+         "type": "text/html"
+      }, {
+         "href": "https://docs.google.com/feeds/default/private/full/folder%3A0B5ABxZbXmXlnNkZuZS1zcXFRem8",
+         "rel": "self",
+         "type": "application/atom+xml"
+      }, {
+         "href": "https://docs.google.com/feeds/default/private/full/folder%3A0B5ABxZbXmXlnNkZuZS1zcXFRem8",
+         "rel": "edit",
+         "type": "application/atom+xml"
+      } ],
+      "published": { "$t": "2012-11-08T05:56:59.407Z" },
+      "title": { "$t": "Chrome Syncable FileSystem" },
+      "updated": { "$t": "2012-11-08T05:56:59.407Z" },
+      "xmlns": "http://www.w3.org/2005/Atom",
+      "xmlns$batch": "http://schemas.google.com/gdata/batch",
+      "xmlns$docs": "http://schemas.google.com/docs/2007",
+      "xmlns$gd": "http://schemas.google.com/g/2005"
+   },
+   "version": "1.0"
+}

@@ -10,8 +10,8 @@
 #include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
-#include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -128,6 +128,7 @@ void SyncFileSystemService::InitializeForApp(
     const GURL& app_origin,
     const SyncStatusCallback& callback) {
   DCHECK(local_file_service_);
+  DCHECK(remote_file_service_);
   DCHECK(app_origin == app_origin.GetOrigin());
 
   bool inserted = initialized_app_origins_.insert(app_origin).second;
@@ -142,10 +143,8 @@ void SyncFileSystemService::InitializeForApp(
       app_origin, service_name, file_system_context,
       callback_runner->CreateCallback());
 
-  if (remote_file_service_) {
-    remote_file_service_->RegisterOriginForTrackingChanges(
-        app_origin, callback_runner->CreateCallback());
-  }
+  remote_file_service_->RegisterOriginForTrackingChanges(
+      app_origin, callback_runner->CreateCallback());
 }
 
 void SyncFileSystemService::GetConflictFiles(
@@ -222,13 +221,13 @@ void SyncFileSystemService::Initialize(
     scoped_ptr<RemoteFileSyncService> remote_file_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(local_file_service);
+  DCHECK(remote_file_service);
   DCHECK(profile_);
 
   local_file_service_ = local_file_service.Pass();
   remote_file_service_ = remote_file_service.Pass();
 
-  if (remote_file_service_)
-    remote_file_service_->AddObserver(this);
+  remote_file_service_->AddObserver(this);
 }
 
 void SyncFileSystemService::DidGetConflictFileInfo(
@@ -280,10 +279,10 @@ ProfileKeyedService* SyncFileSystemServiceFactory::BuildServiceInstanceFor(
       new LocalFileSyncService);
 
   scoped_ptr<RemoteFileSyncService> remote_file_service;
-  // TODO(tzik): Instantiate DriveFileSyncService.
-
   if (mock_remote_file_service_)
     remote_file_service = mock_remote_file_service_.Pass();
+  else
+    remote_file_service.reset(new DriveFileSyncService(profile));
 
   service->Initialize(local_file_service.Pass(),
                       remote_file_service.Pass());
