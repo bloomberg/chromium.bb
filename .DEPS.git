@@ -332,7 +332,7 @@ deps_os = {
         'src/third_party/libmtp':
             Var('git_url') + '/chromium/deps/libmtp.git@f2c4f811688bba3ef82c0d12ed79b9d3abef7b26',
         'src/third_party/lss':
-            Var('git_url') + '/external/linux-syscall-support/lss.git@2c73abf02fd8af961e38024882b9ce0df6b4d19b',
+            Var('git_url') + '/external/linux-syscall-support/lss.git@8dce3586424b5811ca0c8c1938bc7d0826558e77',
         'src/third_party/mtpd/source':
             Var('git_url') + '/chromiumos/platform/mtpd.git@47f8e78eefbeeda76ec43cac3d2bdc54a010115c',
         'src/third_party/openssl':
