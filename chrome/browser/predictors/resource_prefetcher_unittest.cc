@@ -46,7 +46,7 @@ class TestResourcePrefetcher : public ResourcePrefetcher {
 class TestResourcePrefetcherDelegate : public ResourcePrefetcher::Delegate {
  public:
   explicit TestResourcePrefetcherDelegate(MessageLoop* loop)
-      : request_context_getter_(new net::TestURLRequestContextGetter(
+      : request_context_getter_(new TestURLRequestContextGetter(
           loop->message_loop_proxy())) { }
   ~TestResourcePrefetcherDelegate() { }
 
@@ -59,7 +59,7 @@ class TestResourcePrefetcherDelegate : public ResourcePrefetcher::Delegate {
                     ResourcePrefetcher::RequestVector* requests));
 
  private:
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+  scoped_refptr<TestURLRequestContextGetter> request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(TestResourcePrefetcherDelegate);
 };

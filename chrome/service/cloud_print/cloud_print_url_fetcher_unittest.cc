@@ -27,7 +27,7 @@ const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
 int g_request_context_getter_instances = 0;
 class TrackingTestURLRequestContextGetter
-    : public net::TestURLRequestContextGetter {
+    : public TestURLRequestContextGetter {
  public:
   explicit TrackingTestURLRequestContextGetter(
       base::MessageLoopProxy* io_message_loop_proxy,
@@ -38,9 +38,9 @@ class TrackingTestURLRequestContextGetter
     g_request_context_getter_instances++;
   }
 
-  virtual net::TestURLRequestContext* GetURLRequestContext() OVERRIDE {
+  virtual TestURLRequestContext* GetURLRequestContext() OVERRIDE {
     if (!context_.get()) {
-      context_.reset(new net::TestURLRequestContext(true));
+      context_.reset(new TestURLRequestContext(true));
       context_->set_throttler_manager(throttler_manager_);
       context_->Init();
     }
@@ -55,7 +55,7 @@ class TrackingTestURLRequestContextGetter
  private:
   // Not owned here.
   net::URLRequestThrottlerManager* throttler_manager_;
-  scoped_ptr<net::TestURLRequestContext> context_;
+  scoped_ptr<TestURLRequestContext> context_;
 };
 
 class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {

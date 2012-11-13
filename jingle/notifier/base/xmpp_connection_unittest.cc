@@ -75,7 +75,7 @@ class XmppConnectionTest : public testing::Test {
  protected:
   XmppConnectionTest()
       : mock_pre_xmpp_auth_(new MockPreXmppAuth()),
-        url_request_context_getter_(new net::TestURLRequestContextGetter(
+        url_request_context_getter_(new TestURLRequestContextGetter(
             message_loop_.message_loop_proxy())) {}
 
   virtual ~XmppConnectionTest() {}
@@ -89,7 +89,7 @@ class XmppConnectionTest : public testing::Test {
   MessageLoop message_loop_;
   MockXmppConnectionDelegate mock_xmpp_connection_delegate_;
   scoped_ptr<MockPreXmppAuth> mock_pre_xmpp_auth_;
-  scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
+  scoped_refptr<TestURLRequestContextGetter> url_request_context_getter_;
 };
 
 TEST_F(XmppConnectionTest, CreateDestroy) {

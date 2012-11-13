@@ -123,7 +123,7 @@ TEST(WebRequestActionTest, PerlToRe2Style) {
 TEST(WebRequestActionTest, TestPermissions) {
   // Necessary for TestURLRequest.
   MessageLoop message_loop(MessageLoop::TYPE_IO);
-  net::TestURLRequestContext context;
+  TestURLRequestContext context;
 
   std::string error;
   bool bad_message = false;
@@ -146,7 +146,7 @@ TEST(WebRequestActionTest, TestPermissions) {
   ASSERT_TRUE(action.get());
 
   // Check that redirect works on regular URLs but not on protected URLs.
-  net::TestURLRequest regular_request(GURL("http://test.com"), NULL, &context);
+  TestURLRequest regular_request(GURL("http://test.com"), NULL, &context);
   std::list<LinkedPtrEventResponseDelta> deltas =
       action_set->CreateDeltas(
           NULL, "ext1",
@@ -154,8 +154,8 @@ TEST(WebRequestActionTest, TestPermissions) {
           false, base::Time());
   EXPECT_EQ(1u, deltas.size());
 
-  net::TestURLRequest protected_request(GURL("http://clients1.google.com"),
-                                        NULL, &context);
+  TestURLRequest protected_request(GURL("http://clients1.google.com"),
+                                   NULL, &context);
   deltas = action_set->CreateDeltas(
       NULL, "ext1",
       WebRequestRule::RequestData(&protected_request, ON_BEFORE_REQUEST),

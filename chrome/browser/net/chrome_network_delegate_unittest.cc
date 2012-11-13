@@ -46,12 +46,12 @@ class ChromeNetworkDelegateTest : public testing::Test {
   void NeverThrottleLogicImpl() {
     scoped_ptr<ChromeNetworkDelegate> delegate(CreateNetworkDelegate());
 
-    net::TestURLRequestContext context;
-    net::TestURLRequest extension_request(
+    TestURLRequestContext context;
+    TestURLRequest extension_request(
         GURL("http://example.com/"), NULL, &context);
     extension_request.set_first_party_for_cookies(
         GURL("chrome-extension://abcdef/bingo.html"));
-    net::TestURLRequest web_page_request(
+    TestURLRequest web_page_request(
         GURL("http://example.com/"), NULL, &context);
     web_page_request.set_first_party_for_cookies(
         GURL("http://example.com/helloworld.html"));
@@ -130,7 +130,7 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
     // Show the URL in the trace so we know where we failed.
     SCOPED_TRACE(url_string);
 
-    net::TestURLRequest request(GURL(url_string), &delegate_, &context_);
+    TestURLRequest request(GURL(url_string), &delegate_, &context_);
 
     request.Start();
     MessageLoop::current()->RunUntilIdle();
@@ -145,8 +145,8 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
   BooleanPrefMember enable_referrers_;
   BooleanPrefMember force_google_safe_search_;
   scoped_ptr<net::URLRequest> request_;
-  net::TestURLRequestContext context_;
-  net::TestDelegate delegate_;
+  TestURLRequestContext context_;
+  TestDelegate delegate_;
   MessageLoopForIO message_loop_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
 };

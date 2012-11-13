@@ -564,7 +564,7 @@ class IOThread : public base::Thread {
     job_factory_.reset(new net::URLRequestJobFactoryImpl);
     job_factory_->SetProtocolHandler("http", new MockHttpServerJobFactory);
     job_factory_->SetProtocolHandler("https", new MockHttpServerJobFactory);
-    request_context_.reset(new net::TestURLRequestContext());
+    request_context_.reset(new TestURLRequestContext());
     request_context_->set_job_factory(job_factory_.get());
   }
 

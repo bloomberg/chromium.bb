@@ -28,8 +28,7 @@ class InvalidatorFactoryTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     notifier_options_.request_context_getter =
-        new net::TestURLRequestContextGetter(
-            message_loop_.message_loop_proxy());
+        new TestURLRequestContextGetter(message_loop_.message_loop_proxy());
   }
 
   virtual void TearDown() OVERRIDE {

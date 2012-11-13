@@ -23,10 +23,7 @@
 class CommandLine;
 class FakeBrowserProcessImpl;
 class ProcessSingleton;
-
-namespace net {
 class ScopedCustomUrlRequestTestHttpHost;
-}  // namespace net
 
 namespace content {
 class NotificationService;
@@ -125,7 +122,7 @@ class CFUrlRequestUnittestRunner
   base::ProcessHandle crash_service_;
   DWORD test_thread_id_;
 
-  scoped_ptr<net::ScopedCustomUrlRequestTestHttpHost> override_http_host_;
+  scoped_ptr<ScopedCustomUrlRequestTestHttpHost> override_http_host_;
 
   scoped_ptr<test_server::SimpleWebServer> test_http_server_;
   test_server::SimpleResponse chrome_frame_html_;

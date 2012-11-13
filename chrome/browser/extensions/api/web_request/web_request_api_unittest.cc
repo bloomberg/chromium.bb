@@ -164,7 +164,7 @@ class ExtensionWebRequestTest : public testing::Test {
         event_router_.get(), NULL, NULL, NULL, &profile_,
         CookieSettings::Factory::GetForProfile(&profile_), &enable_referrers_,
         NULL, NULL, NULL));
-    context_.reset(new net::TestURLRequestContext(true));
+    context_.reset(new TestURLRequestContext(true));
     context_->set_network_delegate(network_delegate_.get());
     context_->Init();
   }
@@ -180,13 +180,13 @@ class ExtensionWebRequestTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   TestingProfile profile_;
-  net::TestDelegate delegate_;
+  TestDelegate delegate_;
   BooleanPrefMember enable_referrers_;
   TestIPCSender ipc_sender_;
   scoped_refptr<extensions::EventRouterForwarder> event_router_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_ptr<ChromeNetworkDelegate> network_delegate_;
-  scoped_ptr<net::TestURLRequestContext> context_;
+  scoped_ptr<TestURLRequestContext> context_;
 };
 
 // Tests that we handle disagreements among extensions about responses to
@@ -707,7 +707,7 @@ class ExtensionWebRequestHeaderModificationTest :
         event_router_.get(), NULL, NULL, NULL, &profile_,
         CookieSettings::Factory::GetForProfile(&profile_), &enable_referrers_,
         NULL, NULL, NULL));
-    context_.reset(new net::TestURLRequestContext(true));
+    context_.reset(new TestURLRequestContext(true));
     host_resolver_.reset(new net::MockHostResolver());
     host_resolver_->rules()->AddSimulatedFailure("doesnotexist");
     context_->set_host_resolver(host_resolver_.get());
@@ -719,14 +719,14 @@ class ExtensionWebRequestHeaderModificationTest :
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   TestingProfile profile_;
-  net::TestDelegate delegate_;
+  TestDelegate delegate_;
   BooleanPrefMember enable_referrers_;
   TestIPCSender ipc_sender_;
   scoped_refptr<extensions::EventRouterForwarder> event_router_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_ptr<ChromeNetworkDelegate> network_delegate_;
   scoped_ptr<net::MockHostResolver> host_resolver_;
-  scoped_ptr<net::TestURLRequestContext> context_;
+  scoped_ptr<TestURLRequestContext> context_;
 };
 
 TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {

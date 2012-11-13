@@ -205,7 +205,7 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
                                          MessageLoop::current()));
 
   // Populate our resource context.
-  test_request_context_.reset(new net::TestURLRequestContext());
+  test_request_context_.reset(new TestURLRequestContext());
   MockRTCResourceContext* resource_context =
       static_cast<MockRTCResourceContext*>(resource_context_.get());
   resource_context->set_request_context(test_request_context_.get());

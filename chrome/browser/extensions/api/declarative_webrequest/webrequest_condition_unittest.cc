@@ -69,15 +69,14 @@ TEST(WebRequestConditionTest, CreateCondition) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
 
-  net::TestURLRequestContext context;
-  net::TestURLRequest match_request(
-      GURL("http://www.example.com"), NULL, &context);
+  TestURLRequestContext context;
+  TestURLRequest match_request(GURL("http://www.example.com"), NULL, &context);
   content::ResourceRequestInfo::AllocateForTesting(&match_request,
       ResourceType::MAIN_FRAME, NULL, -1, -1);
   EXPECT_TRUE(result->IsFulfilled(
       WebRequestRule::RequestData(&match_request, ON_BEFORE_REQUEST)));
 
-  net::TestURLRequest wrong_resource_type(
+  TestURLRequest wrong_resource_type(
       GURL("https://www.example.com"), NULL, &context);
   content::ResourceRequestInfo::AllocateForTesting(&wrong_resource_type,
       ResourceType::SUB_FRAME, NULL, -1, -1);
@@ -141,8 +140,8 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   // Test that the result is correct and matches http://www.example.com and
   // https://www.example.com
   GURL http_url("http://www.example.com");
-  net::TestURLRequestContext context;
-  net::TestURLRequest http_request(http_url, NULL, &context);
+  TestURLRequestContext context;
+  TestURLRequest http_request(http_url, NULL, &context);
   url_match_ids = matcher.MatchURL(http_url);
   for (std::set<URLMatcherConditionSet::ID>::iterator i = url_match_ids.begin();
        i != url_match_ids.end(); ++i) {
@@ -154,7 +153,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
 
   GURL https_url("https://www.example.com");
   url_match_ids = matcher.MatchURL(https_url);
-  net::TestURLRequest https_request(https_url, NULL, &context);
+  TestURLRequest https_request(https_url, NULL, &context);
   number_matches = 0;
   for (std::set<URLMatcherConditionSet::ID>::iterator i = url_match_ids.begin();
        i != url_match_ids.end(); ++i) {
@@ -167,7 +166,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   // Check that both, hostPrefix and hostSuffix are evaluated.
   GURL https_foo_url("https://foo.example.com");
   url_match_ids = matcher.MatchURL(https_foo_url);
-  net::TestURLRequest https_foo_request(https_foo_url, NULL, &context);
+  TestURLRequest https_foo_request(https_foo_url, NULL, &context);
   number_matches = 0;
   for (std::set<URLMatcherConditionSet::ID>::iterator i = url_match_ids.begin();
        i != url_match_ids.end(); ++i) {
@@ -224,23 +223,23 @@ TEST(WebRequestConditionTest, TestPortFilter) {
 
   // Test various URLs.
   GURL http_url("http://www.example.com");
-  net::TestURLRequestContext context;
-  net::TestURLRequest http_request(http_url, NULL, &context);
+  TestURLRequestContext context;
+  TestURLRequest http_request(http_url, NULL, &context);
   url_match_ids = matcher.MatchURL(http_url);
   ASSERT_EQ(1u, url_match_ids.size());
 
   GURL http_url_80("http://www.example.com:80");
-  net::TestURLRequest http_request_80(http_url_80, NULL, &context);
+  TestURLRequest http_request_80(http_url_80, NULL, &context);
   url_match_ids = matcher.MatchURL(http_url_80);
   ASSERT_EQ(1u, url_match_ids.size());
 
   GURL http_url_1000("http://www.example.com:1000");
-  net::TestURLRequest http_request_1000(http_url_1000, NULL, &context);
+  TestURLRequest http_request_1000(http_url_1000, NULL, &context);
   url_match_ids = matcher.MatchURL(http_url_1000);
   ASSERT_EQ(1u, url_match_ids.size());
 
   GURL http_url_2000("http://www.example.com:2000");
-  net::TestURLRequest http_request_2000(http_url_2000, NULL, &context);
+  TestURLRequest http_request_2000(http_url_2000, NULL, &context);
   url_match_ids = matcher.MatchURL(http_url_2000);
   ASSERT_EQ(0u, url_match_ids.size());
 }

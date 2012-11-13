@@ -43,7 +43,7 @@ class NonBlockingInvalidatorTestDelegate {
     options.message_loop_type = MessageLoop::TYPE_IO;
     io_thread_.StartWithOptions(options);
     request_context_getter_ =
-        new net::TestURLRequestContextGetter(io_thread_.message_loop_proxy());
+        new TestURLRequestContextGetter(io_thread_.message_loop_proxy());
     notifier::NotifierOptions invalidator_options;
     invalidator_options.request_context_getter = request_context_getter_;
     invalidator_.reset(

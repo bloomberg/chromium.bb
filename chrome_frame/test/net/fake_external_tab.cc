@@ -752,7 +752,7 @@ void CFUrlRequestUnittestRunner::OnInitializationTimeout() {
 
 void CFUrlRequestUnittestRunner::OverrideHttpHost() {
   override_http_host_.reset(
-      new net::ScopedCustomUrlRequestTestHttpHost(
+      new ScopedCustomUrlRequestTestHttpHost(
           chrome_frame_test::GetLocalIPv4Address()));
 }
 

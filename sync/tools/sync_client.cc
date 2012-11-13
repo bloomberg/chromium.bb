@@ -101,7 +101,7 @@ class NullInvalidationStateTracker
 };
 
 // Needed to use a real host resolver.
-class MyTestURLRequestContext : public net::TestURLRequestContext {
+class MyTestURLRequestContext : public TestURLRequestContext {
  public:
   MyTestURLRequestContext() : TestURLRequestContext(true) {
     context_storage_.set_host_resolver(
@@ -114,13 +114,13 @@ class MyTestURLRequestContext : public net::TestURLRequestContext {
   virtual ~MyTestURLRequestContext() {}
 };
 
-class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
+class MyTestURLRequestContextGetter : public TestURLRequestContextGetter {
  public:
   explicit MyTestURLRequestContextGetter(
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy)
       : TestURLRequestContextGetter(io_message_loop_proxy) {}
 
-  virtual net::TestURLRequestContext* GetURLRequestContext() OVERRIDE {
+  virtual TestURLRequestContext* GetURLRequestContext() OVERRIDE {
     // Construct |context_| lazily so it gets constructed on the right
     // thread (the IO thread).
     if (!context_.get())

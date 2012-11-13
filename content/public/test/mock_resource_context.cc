@@ -10,7 +10,7 @@
 namespace content {
 
 MockResourceContext::MockResourceContext()
-    : test_request_context_(new net::TestURLRequestContext) {
+    : test_request_context_(new TestURLRequestContext) {
 }
 
 MockResourceContext::~MockResourceContext() {}

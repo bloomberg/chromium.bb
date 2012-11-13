@@ -618,7 +618,7 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForRenderProcess(
 void TestingProfile::CreateRequestContext() {
   if (!request_context_)
     request_context_ =
-        new net::TestURLRequestContextGetter(
+        new TestURLRequestContextGetter(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 }
 
