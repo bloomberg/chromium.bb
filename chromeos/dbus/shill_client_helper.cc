@@ -150,21 +150,6 @@ bool ShillClientHelper::CallVoidMethodAndBlock(
   return true;
 }
 
-dbus::ObjectPath ShillClientHelper::CallObjectPathMethodAndBlock(
-    dbus::MethodCall* method_call) {
-  scoped_ptr<dbus::Response> response(
-      blocking_method_caller_.CallMethodAndBlock(method_call));
-  if (!response.get())
-    return dbus::ObjectPath();
-
-  dbus::MessageReader reader(response.get());
-  dbus::ObjectPath result;
-  if (!reader.PopObjectPath(&result))
-    return dbus::ObjectPath();
-
-  return result;
-}
-
 base::DictionaryValue* ShillClientHelper::CallDictionaryValueMethodAndBlock(
     dbus::MethodCall* method_call) {
   scoped_ptr<dbus::Response> response(

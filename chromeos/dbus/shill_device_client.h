@@ -111,16 +111,6 @@ class CHROMEOS_EXPORT ShillDeviceClient {
                            const std::string& method,
                            const ObjectPathDBusMethodCallback& callback) = 0;
 
-  // DEPRECATED DO NOT USE: Calls AddIPConfig method and blocks until the method
-  // call finishes.
-  // This method returns an empty path when method call fails.
-  //
-  // TODO(hashimoto): Refactor CrosAddIPConfig and remove this method.
-  // crosbug.com/29902
-  virtual dbus::ObjectPath CallAddIPConfigAndBlock(
-      const dbus::ObjectPath& device_path,
-      const std::string& method) = 0;
-
   // Calls the RequirePin method.
   // |callback| is called after the method call finishes.
   virtual void RequirePin(const dbus::ObjectPath& device_path,

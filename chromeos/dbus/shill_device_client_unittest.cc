@@ -246,23 +246,6 @@ TEST_F(ShillDeviceClientTest, AddIPConfig) {
   message_loop_.RunUntilIdle();
 }
 
-TEST_F(ShillDeviceClientTest, CallAddIPConfigAndBlock) {
-  const dbus::ObjectPath expected_result("/result/path");
-  // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(response.get());
-  writer.AppendObjectPath(expected_result);
-
-  // Set expectations.
-  PrepareForMethodCall(flimflam::kAddIPConfigFunction,
-                       base::Bind(&ExpectStringArgument, flimflam::kTypeDHCP),
-                       response.get());
-  // Call method.
-  const dbus::ObjectPath result = client_->CallAddIPConfigAndBlock(
-      dbus::ObjectPath(kExampleDevicePath), flimflam::kTypeDHCP);
-  EXPECT_EQ(expected_result, result);
-}
-
 TEST_F(ShillDeviceClientTest, RequirePin) {
   const char kPin[] = "123456";
   const bool kRequired = true;

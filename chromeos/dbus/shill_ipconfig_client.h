@@ -92,13 +92,6 @@ class CHROMEOS_EXPORT ShillIPConfigClient {
   virtual void Remove(const dbus::ObjectPath& ipconfig_path,
                       const VoidDBusMethodCallback& callback) = 0;
 
-  // DEPRECATED DO NOT USE: Calls Remove method and blocks until the method call
-  // finishes.
-  //
-  // TODO(hashimoto): Refactor CrosRemoveIPConfig to remove this method.
-  // crosbug.com/29902
-  virtual bool CallRemoveAndBlock(const dbus::ObjectPath& ipconfig_path) = 0;
-
  protected:
   // Create() should be used instead.
   ShillIPConfigClient();

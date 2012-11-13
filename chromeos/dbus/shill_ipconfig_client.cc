@@ -53,8 +53,6 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
                              const VoidDBusMethodCallback& callback) OVERRIDE;
   virtual void Remove(const dbus::ObjectPath& ipconfig_path,
                       const VoidDBusMethodCallback& callback) OVERRIDE;
-  virtual bool CallRemoveAndBlock(
-      const dbus::ObjectPath& ipconfig_path) OVERRIDE;
 
  private:
   typedef std::map<std::string, ShillClientHelper*> HelperMap;
@@ -171,13 +169,6 @@ void ShillIPConfigClientImpl::Remove(
   GetHelper(ipconfig_path)->CallVoidMethod(&method_call, callback);
 }
 
-bool ShillIPConfigClientImpl::CallRemoveAndBlock(
-    const dbus::ObjectPath& ipconfig_path) {
-  dbus::MethodCall method_call(flimflam::kFlimflamIPConfigInterface,
-                               flimflam::kRemoveConfigFunction);
-  return GetHelper(ipconfig_path)->CallVoidMethodAndBlock(&method_call);
-}
-
 // A stub implementation of ShillIPConfigClient.
 class ShillIPConfigClientStubImpl : public ShillIPConfigClient {
  public:
@@ -229,11 +220,6 @@ class ShillIPConfigClientStubImpl : public ShillIPConfigClient {
                       const VoidDBusMethodCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
-  }
-
-  virtual bool CallRemoveAndBlock(
-      const dbus::ObjectPath& ipconfig_path) OVERRIDE {
-    return true;
   }
 
  private:

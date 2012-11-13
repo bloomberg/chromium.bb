@@ -692,49 +692,6 @@ bool CrosListIPConfigs(const std::string& device_path,
   return true;
 }
 
-bool CrosAddIPConfig(const std::string& device_path, IPConfigType type) {
-  std::string type_str;
-  switch (type) {
-    case IPCONFIG_TYPE_IPV4:
-      type_str = flimflam::kTypeIPv4;
-      break;
-    case IPCONFIG_TYPE_IPV6:
-      type_str = flimflam::kTypeIPv6;
-      break;
-    case IPCONFIG_TYPE_DHCP:
-      type_str = flimflam::kTypeDHCP;
-      break;
-    case IPCONFIG_TYPE_BOOTP:
-      type_str = flimflam::kTypeBOOTP;
-      break;
-    case IPCONFIG_TYPE_ZEROCONF:
-      type_str = flimflam::kTypeZeroConf;
-      break;
-    case IPCONFIG_TYPE_DHCP6:
-      type_str = flimflam::kTypeDHCP6;
-      break;
-    case IPCONFIG_TYPE_PPP:
-      type_str = flimflam::kTypePPP;
-      break;
-    default:
-      return false;
-  };
-  const dbus::ObjectPath result =
-      DBusThreadManager::Get()->GetShillDeviceClient()->
-      CallAddIPConfigAndBlock(dbus::ObjectPath(device_path), type_str);
-  if (result.value().empty()) {
-    LOG(ERROR) << "Add IPConfig failed for device path " << device_path
-               << " and type " << type_str;
-    return false;
-  }
-  return true;
-}
-
-bool CrosRemoveIPConfig(const std::string& ipconfig_path) {
-  return DBusThreadManager::Get()->GetShillIPConfigClient()->
-      CallRemoveAndBlock(dbus::ObjectPath(ipconfig_path));
-}
-
 void CrosRequestIPConfigRefresh(const std::string& ipconfig_path) {
   DBusThreadManager::Get()->GetShillIPConfigClient()->Refresh(
       dbus::ObjectPath(ipconfig_path),

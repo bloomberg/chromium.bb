@@ -985,23 +985,6 @@ TEST_F(CrosNetworkFunctionsTest, CrosListIPConfigs) {
   EXPECT_EQ(ipconfig_path, result_ipconfig_paths[0]);
 }
 
-TEST_F(CrosNetworkFunctionsTest, CrosAddIPConfig) {
-  const std::string device_path = "/device/path";
-  const dbus::ObjectPath result_path("/result/path");
-  EXPECT_CALL(*mock_device_client_,
-              CallAddIPConfigAndBlock(dbus::ObjectPath(device_path),
-                                      flimflam::kTypeDHCP))
-      .WillOnce(Return(result_path));
-  EXPECT_TRUE(CrosAddIPConfig(device_path, IPCONFIG_TYPE_DHCP));
-}
-
-TEST_F(CrosNetworkFunctionsTest, CrosRemoveIPConfig) {
-  const std::string path = "/path";
-  EXPECT_CALL(*mock_ipconfig_client_,
-              CallRemoveAndBlock(dbus::ObjectPath(path))).Times(1);
-  CrosRemoveIPConfig(path);
-}
-
 TEST_F(CrosNetworkFunctionsTest, CrosGetWifiAccessPoints) {
   const std::string device_path = "/device/path";
   base::ListValue* devices = new base::ListValue;

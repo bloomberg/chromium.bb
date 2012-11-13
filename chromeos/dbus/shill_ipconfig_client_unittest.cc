@@ -216,17 +216,4 @@ TEST_F(ShillIPConfigClientTest, Remove) {
   message_loop_.RunUntilIdle();
 }
 
-TEST_F(ShillIPConfigClientTest, CallRemoveAndBlock) {
-  // Create response.
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
-
-  // Set expectations.
-  PrepareForMethodCall(flimflam::kRemoveConfigFunction,
-                       base::Bind(&ExpectNoArgument),
-                       response.get());
-  // Call method.
-  EXPECT_TRUE(client_->CallRemoveAndBlock(
-      dbus::ObjectPath(kExampleIPConfigPath)));
-}
-
 }  // namespace chromeos

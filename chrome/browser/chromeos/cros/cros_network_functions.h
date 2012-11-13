@@ -272,12 +272,6 @@ bool CrosListIPConfigs(const std::string& device_path,
                        std::vector<std::string>* ipconfig_paths,
                        std::string* hardware_address);
 
-// Adds a IPConfig of the given type to the device
-bool CrosAddIPConfig(const std::string& device_path, IPConfigType type);
-
-// Removes an existing IP Config
-bool CrosRemoveIPConfig(const std::string& ipconfig_path);
-
 // Refreshes the IP config |ipconfig_path| to pick up changes in
 // configuration, and renew the DHCP lease, if any.
 void CrosRequestIPConfigRefresh(const std::string& ipconfig_path);

@@ -100,16 +100,6 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
     GetHelper(device_path)->CallObjectPathMethod(&method_call, callback);
   }
 
-  virtual dbus::ObjectPath CallAddIPConfigAndBlock(
-      const dbus::ObjectPath& device_path,
-      const std::string& method) OVERRIDE {
-    dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
-                                 flimflam::kAddIPConfigFunction);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(method);
-    return GetHelper(device_path)->CallObjectPathMethodAndBlock(&method_call);
-  }
-
   virtual void RequirePin(const dbus::ObjectPath& device_path,
                           const std::string& pin,
                           bool require,
@@ -310,12 +300,6 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
                                      base::Bind(callback,
                                                 DBUS_METHOD_CALL_SUCCESS,
                                                 dbus::ObjectPath()));
-  }
-
-  virtual dbus::ObjectPath CallAddIPConfigAndBlock(
-      const dbus::ObjectPath& device_path,
-      const std::string& method) OVERRIDE {
-    return dbus::ObjectPath();
   }
 
   virtual void RequirePin(const dbus::ObjectPath& device_path,
