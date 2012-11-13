@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
-namespace aura {
+namespace views {
 class DesktopStackingClient;
 }
 
