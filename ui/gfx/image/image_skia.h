@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/image/image_skia_rep.h"
 
@@ -78,7 +79,7 @@ class UI_EXPORT ImageSkia {
   // If you want to create a deep copy with ImageSkiaReps for supported
   // scale factors, you need to explicitly call
   // |EnsureRepsForSupportedScaleFactors()| first.
-  ImageSkia DeepCopy() const;
+  scoped_ptr<ImageSkia> DeepCopy() const;
 
   // Returns true if this object is backed by the same ImageSkiaStorage as
   // |other|. Will also return true if both images are isNull().

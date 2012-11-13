@@ -223,23 +223,23 @@ ImageSkia& ImageSkia::operator=(const ImageSkia& other) {
 ImageSkia::~ImageSkia() {
 }
 
-ImageSkia ImageSkia::DeepCopy() const {
-  ImageSkia copy;
+scoped_ptr<ImageSkia> ImageSkia::DeepCopy() const {
+  ImageSkia* copy = new ImageSkia;
   if (isNull())
-    return copy;
+    return scoped_ptr<ImageSkia>(copy);
 
   CHECK(CanRead());
 
   std::vector<gfx::ImageSkiaRep>& reps = storage_->image_reps();
   for (std::vector<gfx::ImageSkiaRep>::iterator iter = reps.begin();
        iter != reps.end(); ++iter) {
-    copy.AddRepresentation(*iter);
+    copy->AddRepresentation(*iter);
   }
   // The copy has its own storage. Detach the copy from the current
   // thread so that other thread can use this.
-  if (!copy.isNull())
-    copy.storage_->DetachFromThread();
-  return copy;
+  if (!copy->isNull())
+    copy->storage_->DetachFromThread();
+  return scoped_ptr<ImageSkia>(copy);
 }
 
 bool ImageSkia::BackedBySameObjectAs(const gfx::ImageSkia& other) const {

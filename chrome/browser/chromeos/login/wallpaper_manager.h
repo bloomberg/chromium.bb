@@ -206,7 +206,7 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
 
   // Generates a 128x80 thumbnail and caches it.
   void CacheThumbnail(const std::string& email,
-                      const gfx::ImageSkia& wallpaper);
+                      scoped_ptr<gfx::ImageSkia> wallpaper);
 
   // Deletes a list of wallpaper files in |file_list|.
   void DeleteWallpaperInList(const std::vector<FilePath>& file_list);

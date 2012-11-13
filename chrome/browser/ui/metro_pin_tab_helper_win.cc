@@ -337,7 +337,7 @@ void MetroPinTabHelper::FaviconDownloader::OnDidDownloadFavicon(
 
       // If we don't have a best candidate yet, this is better so just grab it.
       if (best_candidate_.isNull()) {
-        best_candidate_ = gfx::ImageSkia(*iter).DeepCopy();
+        best_candidate_ = *gfx::ImageSkia(*iter).DeepCopy().get();
         continue;
       }
 
@@ -348,7 +348,7 @@ void MetroPinTabHelper::FaviconDownloader::OnDidDownloadFavicon(
       }
 
       // Othewise it is our new best candidate.
-      best_candidate_ = gfx::ImageSkia(*iter).DeepCopy();
+      best_candidate_ = *gfx::ImageSkia(*iter).DeepCopy().get();
     }
    }
 
@@ -395,11 +395,12 @@ void MetroPinTabHelper::TogglePinnedToStartScreen() {
   GURL url = web_contents()->GetURL();
   string16 url_str = UTF8ToUTF16(url.spec());
   string16 title = web_contents()->GetTitle();
+  // TODO(oshima): Use scoped_ptr::Pass to pass it to other thread.
   gfx::ImageSkia favicon;
   FaviconTabHelper* favicon_tab_helper = FaviconTabHelper::FromWebContents(
       web_contents());
   if (favicon_tab_helper->FaviconIsValid())
-    favicon = favicon_tab_helper->GetFavicon().AsImageSkia().DeepCopy();
+    favicon = *favicon_tab_helper->GetFavicon().AsImageSkia().DeepCopy().get();
 
   favicon_downloader_.reset(new FaviconDownloader(this, title, url_str,
                                                   favicon));

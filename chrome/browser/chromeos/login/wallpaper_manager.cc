@@ -737,9 +737,10 @@ void WallpaperManager::CacheUserWallpaper(const std::string& email) {
 }
 
 void WallpaperManager::CacheThumbnail(const std::string& email,
-                                      const gfx::ImageSkia& wallpaper) {
+                                      scoped_ptr<gfx::ImageSkia> wallpaper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  custom_wallpaper_thumbnail_cache_[email] = GetWallpaperThumbnail(wallpaper);
+  custom_wallpaper_thumbnail_cache_[email] =
+      GetWallpaperThumbnail(*wallpaper.get());
 }
 
 void WallpaperManager::DeleteWallpaperInList(
@@ -1083,13 +1084,16 @@ void WallpaperManager::OnWallpaperDecoded(const std::string& email,
     }
     return;
   }
+  // Generate all reps before passing to another thread.
+  wallpaper.image().EnsureRepsForSupportedScaleFactors();
+  scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.image().DeepCopy());
 
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
       base::Bind(&WallpaperManager::CacheThumbnail,
                  base::Unretained(this), email,
-                 wallpaper.image().DeepCopy()));
+                 base::Passed(&deep_copy)));
   // Only cache user wallpaper at login screen.
   if (!UserManager::Get()->IsUserLoggedIn()) {
     wallpaper_cache_.insert(std::make_pair(email, wallpaper.image()));
