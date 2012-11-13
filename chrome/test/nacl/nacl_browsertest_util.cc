@@ -244,3 +244,7 @@ FilePath::StringType NaClBrowserTestNewlib::Variant() {
 FilePath::StringType NaClBrowserTestGLibc::Variant() {
   return FILE_PATH_LITERAL("glibc");
 }
+
+FilePath::StringType NaClBrowserTestPnaclNexe::Variant() {
+  return FILE_PATH_LITERAL("pnacl");
+}
