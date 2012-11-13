@@ -127,6 +127,36 @@ class ConstrainedWebDialogDelegateViewViews
   virtual views::View* GetContentsView() OVERRIDE {
     return this;
   }
+  virtual void OnWidgetMove() OVERRIDE {
+    if (!GetWidget()) {
+      LOG(ERROR) << "There is no widget associated with this window";
+      return;
+    }
+    // TODO(skuhne): Remove TEST CODE
+    LOG(ERROR) << "OnWidgetMode IN (BOUNDS=" <<
+        GetWidget()->GetWindowBoundsInScreen().ToString() <<
+        " | work_area=" <<
+        GetWidget()->GetWorkAreaBoundsInScreen().ToString() <<
+        ")";
+    static bool inside = false;
+    if (inside) {
+      LOG(ERROR) << "OnWidgetMode BAIL on Recursion";
+      return;
+    }
+    inside = true;
+    // TODO(skuhne): Remove to here.
+    GetWidget()->CenterWindow(
+        GetWidget()->non_client_view()->GetPreferredSize());
+    views::WidgetDelegate::OnWidgetMove();
+    // TODO(skuhne): Remove TEST CODE
+    LOG(ERROR) << "OnWidgetMode OUT (BOUNDS=" <<
+        GetWidget()->GetWindowBoundsInScreen().ToString() <<
+        " | work_area=" <<
+        GetWidget()->GetWorkAreaBoundsInScreen().ToString() <<
+        ")";
+    inside = false;
+    // TODO(skuhne): Remove to here.
+  }
 
   // views::WebView overrides.
   virtual bool AcceleratorPressed(
