@@ -74,6 +74,7 @@
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/task_manager_gtk.h"
+#include "chrome/browser/ui/gtk/unity_service.h"
 #include "chrome/browser/ui/gtk/update_recommended_dialog.h"
 #include "chrome/browser/ui/gtk/website_settings/website_settings_popup_gtk.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -1398,10 +1399,29 @@ gboolean BrowserWindowGtk::OnWindowState(GtkWidget* sender,
         content::NotificationService::NoDetails());
   }
 
+  // This is a dirty dirty hack to fix double titlebar chrome when using Unity.
+  // http://crbug.com/75485
+  if (unity::IsRunning() && !(state_ & GDK_WINDOW_STATE_MAXIMIZED) &&
+      UseCustomFrame()) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&BrowserWindowGtk::SetDecoratedHack,
+                   base::Unretained(this)));
+  }
+
   titlebar_->UpdateCustomFrame(UseCustomFrame() && !IsFullscreen());
   UpdateWindowShape(bounds_.width(), bounds_.height());
   SaveWindowPosition();
   return FALSE;
+}
+
+void BrowserWindowGtk::SetDecoratedHack() {
+  if (!window_)
+    return;
+
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  bool orig_value = prefs->GetBoolean(prefs::kUseCustomChromeFrame);
+  prefs->SetBoolean(prefs::kUseCustomChromeFrame, !orig_value);
+  prefs->SetBoolean(prefs::kUseCustomChromeFrame, orig_value);
 }
 
 // Callback for the delete event.  This event is fired when the user tries to
