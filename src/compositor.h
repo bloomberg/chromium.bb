@@ -397,8 +397,6 @@ struct weston_region {
 struct weston_surface {
 	struct wl_surface surface;
 	struct weston_compositor *compositor;
-	GLuint textures[3];
-	int num_textures;
 	pixman_region32_t texture_damage;
 	pixman_region32_t clip;
 	pixman_region32_t damage;
@@ -457,10 +455,6 @@ struct weston_surface {
 	uint32_t output_mask;
 
 	struct wl_list frame_callback_list;
-
-	EGLImageKHR images[3];
-	GLenum target;
-	int num_images;
 
 	struct wl_buffer *buffer;
 	struct wl_listener buffer_destroy_listener;

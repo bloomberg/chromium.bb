@@ -47,6 +47,13 @@ struct gles2_output_state {
 struct gles2_surface_state {
 	GLfloat color[4];
 	struct gles2_shader *shader;
+
+	GLuint textures[3];
+	int num_textures;
+
+	EGLImageKHR images[3];
+	GLenum target;
+	int num_images;
 };
 
 struct gles2_renderer {
@@ -686,7 +693,7 @@ shader_uniforms(struct gles2_shader *shader,
 	glUniform4fv(shader->color_uniform, 1, gs->color);
 	glUniform1f(shader->alpha_uniform, surface->alpha);
 
-	for (i = 0; i < surface->num_textures; i++)
+	for (i = 0; i < gs->num_textures; i++)
 		glUniform1i(shader->tex_uniforms[i], i);
 }
 
@@ -731,11 +738,11 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	else
 		filter = GL_NEAREST;
 
-	for (i = 0; i < es->num_textures; i++) {
+	for (i = 0; i < gs->num_textures; i++) {
 		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(es->target, es->textures[i]);
-		glTexParameteri(es->target, GL_TEXTURE_MIN_FILTER, filter);
-		glTexParameteri(es->target, GL_TEXTURE_MAG_FILTER, filter);
+		glBindTexture(gs->target, gs->textures[i]);
+		glTexParameteri(gs->target, GL_TEXTURE_MIN_FILTER, filter);
+		glTexParameteri(gs->target, GL_TEXTURE_MAG_FILTER, filter);
 	}
 
 	/* blended region is whole surface minus opaque region: */
@@ -994,6 +1001,8 @@ gles2_renderer_read_pixels(struct weston_output *output,
 static void
 gles2_renderer_flush_damage(struct weston_surface *surface)
 {
+	struct gles2_surface_state *gs = get_surface_state(surface);
+
 #ifdef GL_UNPACK_ROW_LENGTH
 	pixman_box32_t *rectangles;
 	void *data;
@@ -1012,7 +1021,7 @@ gles2_renderer_flush_damage(struct weston_surface *surface)
 	if (!pixman_region32_not_empty(&surface->texture_damage))
 		return;
 
-	glBindTexture(GL_TEXTURE_2D, surface->textures[0]);
+	glBindTexture(GL_TEXTURE_2D, gs->textures[0]);
 
 	if (!surface->compositor->has_unpack_subimage) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
@@ -1045,23 +1054,23 @@ done:
 }
 
 static void
-ensure_textures(struct weston_surface *es, int num_textures)
+ensure_textures(struct gles2_surface_state *gs, int num_textures)
 {
 	int i;
 
-	if (num_textures <= es->num_textures)
+	if (num_textures <= gs->num_textures)
 		return;
 
-	for (i = es->num_textures; i < num_textures; i++) {
-		glGenTextures(1, &es->textures[i]);
-		glBindTexture(es->target, es->textures[i]);
-		glTexParameteri(es->target,
+	for (i = gs->num_textures; i < num_textures; i++) {
+		glGenTextures(1, &gs->textures[i]);
+		glBindTexture(gs->target, gs->textures[i]);
+		glTexParameteri(gs->target,
 				GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(es->target,
+		glTexParameteri(gs->target,
 				GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
-	es->num_textures = num_textures;
-	glBindTexture(es->target, 0);
+	gs->num_textures = num_textures;
+	glBindTexture(gs->target, 0);
 }
 
 static void
@@ -1074,22 +1083,22 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 	int i, num_planes;
 
 	if (!buffer) {
-		for (i = 0; i < es->num_images; i++) {
-			ec->destroy_image(gr->egl_display, es->images[i]);
-			es->images[i] = NULL;
+		for (i = 0; i < gs->num_images; i++) {
+			ec->destroy_image(gr->egl_display, gs->images[i]);
+			gs->images[i] = NULL;
 		}
-		es->num_images = 0;
-		glDeleteTextures(es->num_textures, es->textures);
-		es->num_textures = 0;
+		gs->num_images = 0;
+		glDeleteTextures(gs->num_textures, gs->textures);
+		gs->num_textures = 0;
 		return;
 	}
 
 	if (wl_buffer_is_shm(buffer)) {
 		es->pitch = wl_shm_buffer_get_stride(buffer) / 4;
-		es->target = GL_TEXTURE_2D;
+		gs->target = GL_TEXTURE_2D;
 
-		ensure_textures(es, 1);
-		glBindTexture(GL_TEXTURE_2D, es->textures[0]);
+		ensure_textures(gs, 1);
+		glBindTexture(GL_TEXTURE_2D, gs->textures[0]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
 			     es->pitch, buffer->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
@@ -1099,10 +1108,10 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 			gs->shader = &gr->texture_shader_rgba;
 	} else if (ec->query_buffer(gr->egl_display, buffer,
 				    EGL_TEXTURE_FORMAT, &format)) {
-		for (i = 0; i < es->num_images; i++)
-			ec->destroy_image(gr->egl_display, es->images[i]);
-		es->num_images = 0;
-		es->target = GL_TEXTURE_2D;
+		for (i = 0; i < gs->num_images; i++)
+			ec->destroy_image(gr->egl_display, gs->images[i]);
+		gs->num_images = 0;
+		gs->target = GL_TEXTURE_2D;
 		switch (format) {
 		case EGL_TEXTURE_RGB:
 		case EGL_TEXTURE_RGBA:
@@ -1112,7 +1121,7 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 			break;
 		case EGL_TEXTURE_EXTERNAL_WL:
 			num_planes = 1;
-			es->target = GL_TEXTURE_EXTERNAL_OES;
+			gs->target = GL_TEXTURE_EXTERNAL_OES;
 			gs->shader = &gr->texture_shader_egl_external;
 			break;
 		case EGL_TEXTURE_Y_UV_WL:
@@ -1129,25 +1138,25 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 			break;
 		}
 
-		ensure_textures(es, num_planes);
+		ensure_textures(gs, num_planes);
 		for (i = 0; i < num_planes; i++) {
 			attribs[0] = EGL_WAYLAND_PLANE_WL;
 			attribs[1] = i;
 			attribs[2] = EGL_NONE;
-			es->images[i] = ec->create_image(gr->egl_display,
+			gs->images[i] = ec->create_image(gr->egl_display,
 							 NULL,
 							 EGL_WAYLAND_BUFFER_WL,
 							 buffer, attribs);
-			if (!es->images[i]) {
+			if (!gs->images[i]) {
 				weston_log("failed to create img for plane %d\n", i);
 				continue;
 			}
-			es->num_images++;
+			gs->num_images++;
 
 			glActiveTexture(GL_TEXTURE0 + i);
-			glBindTexture(es->target, es->textures[i]);
-			ec->image_target_texture_2d(es->target,
-						    es->images[i]);
+			glBindTexture(gs->target, gs->textures[i]);
+			ec->image_target_texture_2d(gs->target,
+						    gs->images[i]);
 		}
 
 		es->pitch = buffer->width;
@@ -1194,10 +1203,10 @@ gles2_renderer_destroy_surface(struct weston_surface *surface)
 	struct gles2_renderer *gr = get_renderer(ec);
 	int i;
 
-	glDeleteTextures(surface->num_textures, surface->textures);
+	glDeleteTextures(gs->num_textures, gs->textures);
 
-	for (i = 0; i < surface->num_images; i++)
-		ec->destroy_image(gr->egl_display, surface->images[i]);
+	for (i = 0; i < gs->num_images; i++)
+		ec->destroy_image(gr->egl_display, gs->images[i]);
 
 	free(gs);
 }

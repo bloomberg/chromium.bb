@@ -242,8 +242,6 @@ weston_surface_create(struct weston_compositor *compositor)
 		return NULL;
 	}
 
-	surface->num_textures = 0;
-	surface->num_images = 0;
 	pixman_region32_init(&surface->texture_damage);
 
 	surface->buffer = NULL;
