@@ -345,19 +345,20 @@ void NewTabButton::GetHitTestMask(gfx::Path* path) const {
   DCHECK(path);
 
   SkScalar w = SkIntToScalar(width());
+  SkScalar v_offset = SkIntToScalar(newtab_button_v_offset());
 
   // These values are defined by the shape of the new tab image. Should that
   // image ever change, these values will need to be updated. They're so
   // custom it's not really worth defining constants for.
   // These values are correct for regular and USE_ASH versions of the image.
-  path->moveTo(0, 1);
-  path->lineTo(w - 7, 1);
-  path->lineTo(w - 4, 4);
-  path->lineTo(w, 16);
-  path->lineTo(w - 1, 17);
-  path->lineTo(7, 17);
-  path->lineTo(4, 13);
-  path->lineTo(0, 1);
+  path->moveTo(0, v_offset + 1);
+  path->lineTo(w - 7, v_offset + 1);
+  path->lineTo(w - 4, v_offset + 4);
+  path->lineTo(w, v_offset + 16);
+  path->lineTo(w - 1, v_offset + 17);
+  path->lineTo(7, v_offset + 17);
+  path->lineTo(4, v_offset + 13);
+  path->lineTo(0, v_offset + 1);
   path->close();
 }
 
@@ -1484,12 +1485,15 @@ void TabStrip::Init() {
   newtab_button_bounds_.SetRect(0,
                                 0,
                                 newtab_button_asset_width(),
-                                newtab_button_asset_height());
+                                newtab_button_asset_height() +
+                                    newtab_button_v_offset());
   newtab_button_ = new NewTabButton(this, this);
   newtab_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
   newtab_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_NEWTAB));
+  newtab_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
+                                    views::ImageButton::ALIGN_BOTTOM);
   AddChildView(newtab_button_);
   if (drop_indicator_width == 0) {
     // Direction doesn't matter, both images are the same size.
@@ -1610,16 +1614,6 @@ void TabStrip::DoLayout() {
 
   SchedulePaint();
 
-  if (SizeTabButtonToTopOfTabStrip()) {
-    newtab_button_bounds_.set_height(
-        newtab_button_asset_height() + newtab_button_v_offset());
-    newtab_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
-                                      views::ImageButton::ALIGN_BOTTOM);
-  } else {
-    newtab_button_bounds_.set_height(newtab_button_asset_height());
-    newtab_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
-                                      views::ImageButton::ALIGN_TOP);
-  }
   bounds_animator_.StopAnimatingView(newtab_button_);
   newtab_button_->SetBoundsRect(newtab_button_bounds_);
 }
@@ -2308,8 +2302,7 @@ void TabStrip::PrepareForAnimation() {
 }
 
 void TabStrip::GenerateIdealBounds() {
-  int new_tab_y =
-      SizeTabButtonToTopOfTabStrip() ? 0 : newtab_button_v_offset();
+  int new_tab_y = 0;
 
   if (touch_layout_.get()) {
     if (tabs_.view_size() == 0)
