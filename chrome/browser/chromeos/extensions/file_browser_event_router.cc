@@ -154,11 +154,19 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
      network_library->AddNetworkManagerObserver(this);
 
   pref_change_registrar_->Init(profile_->GetPrefs());
-  pref_change_registrar_->Add(prefs::kDisableDriveOverCellular, this);
-  pref_change_registrar_->Add(prefs::kDisableDriveHostedFiles, this);
-  pref_change_registrar_->Add(prefs::kDisableDrive, this);
-  pref_change_registrar_->Add(prefs::kUse24HourClock, this);
-  pref_change_registrar_->Add(prefs::kExternalStorageDisabled, this);
+
+  pref_change_registrar_->Add(
+      prefs::kExternalStorageDisabled,
+      base::Bind(&FileBrowserEventRouter::OnExternalStorageDisabledChanged,
+                 base::Unretained(this)));
+
+  base::Closure callback =
+      base::Bind(&FileBrowserEventRouter::OnFileBrowserPrefsChanged,
+                 base::Unretained(this));
+  pref_change_registrar_->Add(prefs::kDisableDriveOverCellular, callback);
+  pref_change_registrar_->Add(prefs::kDisableDriveHostedFiles, callback);
+  pref_change_registrar_->Add(prefs::kDisableDrive, callback);
+  pref_change_registrar_->Add(prefs::kUse24HourClock, callback);
 }
 
 // File watch setup routines.
@@ -365,19 +373,11 @@ void FileBrowserEventRouter::OnNetworkManagerChanged(
           scoped_ptr<ListValue>(new ListValue()), NULL, GURL());
 }
 
-void FileBrowserEventRouter::OnPreferenceChanged(PrefServiceBase* service,
-                                                 const std::string& pref_name) {
-  if (!profile_ ||
-      !extensions::ExtensionSystem::Get(profile_)->event_router()) {
-    NOTREACHED();
-    return;
-  }
-
+void FileBrowserEventRouter::OnExternalStorageDisabledChanged() {
   // If the policy just got disabled we have to unmount every device currently
   // mounted. The opposite is fine - we can let the user re-plug her device to
   // make it available.
-  if (pref_name == prefs::kExternalStorageDisabled &&
-      profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
+  if (profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
     DiskMountManager* manager = DiskMountManager::GetInstance();
     DiskMountManager::MountPointMap mounts(manager->mount_points());
     for (DiskMountManager::MountPointMap::const_iterator it = mounts.begin();
@@ -387,16 +387,20 @@ void FileBrowserEventRouter::OnPreferenceChanged(PrefServiceBase* service,
       manager->UnmountPath(it->second.mount_path,
                            chromeos::UNMOUNT_OPTIONS_NONE);
     }
-    return;
-  } else if (pref_name == prefs::kDisableDriveOverCellular ||
-             pref_name == prefs::kDisableDriveHostedFiles ||
-             pref_name == prefs::kDisableDrive ||
-             pref_name == prefs::kUse24HourClock) {
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToRenderers(
-            extensions::event_names::kOnFileBrowserPreferencesChanged,
-            scoped_ptr<ListValue>(new ListValue()), NULL, GURL());
   }
+}
+
+void FileBrowserEventRouter::OnFileBrowserPrefsChanged() {
+  if (!profile_ ||
+      !extensions::ExtensionSystem::Get(profile_)->event_router()) {
+    NOTREACHED();
+    return;
+  }
+
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      DispatchEventToRenderers(
+          extensions::event_names::kOnFileBrowserPreferencesChanged,
+          scoped_ptr<ListValue>(new ListValue()), NULL, GURL());
 }
 
 void FileBrowserEventRouter::OnProgressUpdate(

@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_feed_loader_observer.h"
@@ -52,8 +51,7 @@ class RemoveOperation;
 // The production implementation of DriveFileSystemInterface.
 class DriveFileSystem : public DriveFileSystemInterface,
                         public DriveFeedLoaderObserver,
-                        public file_system::OperationObserver,
-                        public PrefObserver {
+                        public file_system::OperationObserver {
  public:
   DriveFileSystem(Profile* profile,
                   DriveCache* cache,
@@ -139,10 +137,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                const FileOperationCallback& callback) OVERRIDE;
   virtual DriveFileSystemMetadata GetMetadata() const OVERRIDE;
   virtual void Reload() OVERRIDE;
-
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // file_system::OperationObserver overrides.
   virtual void OnDirectoryChangedByOperation(
@@ -239,6 +233,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Initializes DriveResourceMetadata and related instances (DriveFeedLoader
   // and DriveOperations). This is a part of the initialization.
   void ResetResourceMetadata();
+
+  // Called on preference change.
+  void OnDisableDriveHostedFilesChanged();
 
   // Callback passed to |LoadFeedFromServer| from |Search| method.
   // |callback| is that should be run with data received from

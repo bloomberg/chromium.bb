@@ -168,8 +168,11 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
       CONTENT_SETTING_NUM_SETTINGS);
 
   pref_change_registrar_.Init(prefs_);
-  pref_change_registrar_.Add(prefs::kDefaultContentSettings, this);
-  pref_change_registrar_.Add(prefs::kGeolocationDefaultContentSetting, this);
+  PrefChangeRegistrar::NamedChangeCallback callback = base::Bind(
+      &DefaultProvider::OnPreferenceChanged, base::Unretained(this));
+  pref_change_registrar_.Add(prefs::kDefaultContentSettings, callback);
+  pref_change_registrar_.Add(
+      prefs::kGeolocationDefaultContentSetting, callback);
 }
 
 DefaultProvider::~DefaultProvider() {
@@ -276,10 +279,8 @@ void DefaultProvider::ShutdownOnUIThread() {
   prefs_ = NULL;
 }
 
-void DefaultProvider::OnPreferenceChanged(PrefServiceBase* service,
-                                          const std::string& name) {
+void DefaultProvider::OnPreferenceChanged(const std::string& name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(prefs_, service);
   if (updating_preferences_)
     return;
 

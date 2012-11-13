@@ -12,7 +12,6 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -39,7 +38,6 @@ class FileBrowserEventRouter
     : public RefcountedProfileKeyedService,
       public chromeos::disks::DiskMountManager::Observer,
       public chromeos::NetworkLibrary::NetworkManagerObserver,
-      public PrefObserver,
       public drive::DriveFileSystemObserver,
       public google_apis::DriveServiceObserver {
  public:
@@ -76,10 +74,6 @@ class FileBrowserEventRouter
   // chromeos::NetworkLibrary::NetworkManagerObserver override.
   virtual void OnNetworkManagerChanged(
       chromeos::NetworkLibrary* network_library) OVERRIDE;
-
-  // Overridden from PrefObserver.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // drive::DriveServiceObserver overrides.
   virtual void OnProgressUpdate(
@@ -160,6 +154,12 @@ class FileBrowserEventRouter
   void OnDeviceScanned(const std::string& device_path);
   void OnFormattingStarted(const std::string& device_path, bool success);
   void OnFormattingFinished(const std::string& device_path, bool success);
+
+  // Called on change to kExternalStorageDisabled pref.
+  void OnExternalStorageDisabledChanged();
+
+  // Called when prefs related to file browser change.
+  void OnFileBrowserPrefsChanged();
 
   // Process file watch notifications.
   void HandleFileWatchNotification(const FilePath& path,

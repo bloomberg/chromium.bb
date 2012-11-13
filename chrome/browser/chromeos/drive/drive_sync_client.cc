@@ -116,8 +116,10 @@ void DriveSyncClient::Initialize() {
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 
   registrar_->Init(profile_->GetPrefs());
-  registrar_->Add(prefs::kDisableDrive, this);
-  registrar_->Add(prefs::kDisableDriveOverCellular, this);
+  base::Closure callback = base::Bind(
+      &DriveSyncClient::OnDriveSyncPreferenceChanged, base::Unretained(this));
+  registrar_->Add(prefs::kDisableDrive, callback);
+  registrar_->Add(prefs::kDisableDriveOverCellular, callback);
 }
 
 void DriveSyncClient::StartProcessingBacklog() {
@@ -435,8 +437,7 @@ void DriveSyncClient::OnUploadFileComplete(const std::string& resource_id,
   DoSyncLoop();
 }
 
-void DriveSyncClient::OnPreferenceChanged(PrefServiceBase* service,
-                                          const std::string& pref_name) {
+void DriveSyncClient::OnDriveSyncPreferenceChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Resume the sync loop if gdata preferences are changed. Note that we

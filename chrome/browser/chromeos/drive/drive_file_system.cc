@@ -2052,11 +2052,8 @@ DriveFileSystemMetadata DriveFileSystem::GetMetadata() const {
   return metadata;
 }
 
-void DriveFileSystem::OnPreferenceChanged(PrefServiceBase* service,
-                                          const std::string& pref_name) {
+void DriveFileSystem::OnDisableDriveHostedFilesChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(pref_name == prefs::kDisableDriveHostedFiles);
-
   PrefService* pref_service = profile_->GetPrefs();
   SetHideHostedDocuments(
       pref_service->GetBoolean(prefs::kDisableDriveHostedFiles));
@@ -2083,7 +2080,10 @@ void DriveFileSystem::InitializePreferenceObserver() {
 
   pref_registrar_.reset(new PrefChangeRegistrar());
   pref_registrar_->Init(profile_->GetPrefs());
-  pref_registrar_->Add(prefs::kDisableDriveHostedFiles, this);
+  pref_registrar_->Add(
+      prefs::kDisableDriveHostedFiles,
+      base::Bind(&DriveFileSystem::OnDisableDriveHostedFilesChanged,
+                 base::Unretained(this)));
 }
 
 void DriveFileSystem::OpenFile(const FilePath& file_path,
