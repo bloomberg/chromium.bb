@@ -81,9 +81,6 @@ class DriveMetadataStore
   // |origin| must be a batch sync origin.
   void MoveBatchSyncOriginToIncremental(const GURL& origin);
 
-  void RemoveOrigin(const GURL& origin,
-                    const fileapi::SyncStatusCallback& callback);
-
   // Sets the directory identified by |resource_id| as the sync data directory.
   // All data for the Sync FileSystem should be store into the directory.
   // It is invalid to overwrite the directory.
@@ -114,8 +111,6 @@ class DriveMetadataStore
   void DidInitialize(const InitializationCallback& callback,
                      DriveMetadataDBContents* contents,
                      fileapi::SyncStatusCode error);
-  void DidRemoveOrigin(const fileapi::SyncStatusCallback& callback,
-                       fileapi::SyncStatusCode status);
 
   // These are only for testing.
   void RestoreSyncRootDirectory(const fileapi::SyncStatusCallback& callback);
