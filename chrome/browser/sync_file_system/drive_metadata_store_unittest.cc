@@ -141,8 +141,24 @@ class DriveMetadataStoreTest : public testing::Test {
     message_loop_.Run();
   }
 
+  void RemoveOrigin(const GURL& url) {
+    drive_metadata_store_->RemoveOrigin(
+        url, base::Bind(&DriveMetadataStoreTest::DidRemoveOrigin,
+                        base::Unretained(this)));
+    message_loop_.Run();
+  }
+
+  void DidRemoveOrigin(fileapi::SyncStatusCode status) {
+    EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
+    message_loop_.Quit();
+  }
+
   DriveMetadataStore* drive_metadata_store() {
     return drive_metadata_store_.get();
+  }
+
+  DriveMetadataStore::MetadataMap* metadata_map() {
+    return &drive_metadata_store_->metadata_map_;
   }
 
  private:
@@ -316,6 +332,65 @@ TEST_F(DriveMetadataStoreTest, StoreSyncOrigin) {
   EXPECT_EQ(kResourceID1,
             GetResourceID(store->incremental_sync_origins(), kOrigin1));
   EXPECT_EQ(kResourceID2, GetResourceID(store->batch_sync_origins(), kOrigin2));
+}
+
+TEST_F(DriveMetadataStoreTest, RemoveOrigin) {
+  const GURL kOrigin1("http://hoge.example.com");
+  const GURL kOrigin2("http://fuga.example.net");
+  const GURL kOrigin3("http://piyo.example.net");
+  const GURL kOrigin4("http://mogo.example.net");
+  const std::string kResourceId1("hogera");
+  const std::string kResourceId2("fugaga");
+  const std::string kResourceId3("piyopiyo");
+
+  InitializeDatabase();
+  drive_metadata_store()->SetLargestChangeStamp(1);
+
+  DriveMetadataStore* store = drive_metadata_store();
+  store->AddBatchSyncOrigin(kOrigin1, kResourceId1);
+  store->AddBatchSyncOrigin(kOrigin2, kResourceId2);
+  store->MoveBatchSyncOriginToIncremental(kOrigin2);
+  store->AddBatchSyncOrigin(kOrigin3, kResourceId3);
+
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            store->UpdateEntry(
+                fileapi::CreateSyncableFileSystemURL(
+                    kOrigin1, kServiceName, FilePath(FPL("guf"))),
+                CreateMetadata("foo", "spam", false)));
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            store->UpdateEntry(
+                fileapi::CreateSyncableFileSystemURL(
+                    kOrigin2, kServiceName, FilePath(FPL("mof"))),
+                CreateMetadata("bar", "ham", false)));
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            store->UpdateEntry(
+                fileapi::CreateSyncableFileSystemURL(
+                    kOrigin3, kServiceName, FilePath(FPL("waf"))),
+                CreateMetadata("baz", "egg", false)));
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            store->UpdateEntry(
+                fileapi::CreateSyncableFileSystemURL(
+                    kOrigin4, kServiceName, FilePath(FPL("cue"))),
+                CreateMetadata("lat", "fork", false)));
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            store->UpdateEntry(
+                fileapi::CreateSyncableFileSystemURL(
+                    kOrigin1, kServiceName, FilePath(FPL("tic"))),
+                CreateMetadata("zav", "sause", false)));
+
+  RemoveOrigin(kOrigin1);
+  RemoveOrigin(kOrigin2);
+  RemoveOrigin(kOrigin4);
+
+  DropDatabase();
+  InitializeDatabase();
+
+  // kOrigin3 should be only remaining batch sync origin.
+  EXPECT_EQ(1u, store->batch_sync_origins().size());
+  EXPECT_TRUE(store->IsBatchSyncOrigin(kOrigin3));
+  EXPECT_TRUE(store->incremental_sync_origins().empty());
+  EXPECT_EQ(1u, metadata_map()->size());
+  EXPECT_EQ(1u, (*metadata_map())[kOrigin3].size());
 }
 
 }  // namespace sync_file_system
