@@ -75,7 +75,7 @@ void SuspendRenderViewHost(RenderViewHost* rvh) {
 
 ShellWindow::CreateParams::CreateParams()
   : frame(ShellWindow::CreateParams::FRAME_CHROME),
-    bounds(INT_MIN, INT_MIN, 0, 0),
+    bounds(INT_MIN, INT_MIN, INT_MIN, INT_MIN),
     restore_position(true), restore_size(true),
     creator_process_id(0), hidden(false) {
 }
@@ -122,9 +122,9 @@ void ShellWindow::Init(const GURL& url,
 
   gfx::Rect bounds = params.bounds;
 
-  if (bounds.width() == 0)
+  if (bounds.width() == INT_MIN)
     bounds.set_width(kDefaultWidth);
-  if (bounds.height() == 0)
+  if (bounds.height() == INT_MIN)
     bounds.set_height(kDefaultHeight);
 
   // If left and top are left undefined, the native shell window will center
