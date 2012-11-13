@@ -287,11 +287,10 @@ setup-libstdcpp-env() {
     CXX="${pnacl_cxx}"
     RAW_CXX_FOR_TARGET="${pnacl_cxx}"
     LD="${ILLEGAL_TOOL}"
-    CFLAGS=""
-    CPPFLAGS=""
-    CXXFLAGS=""
-    CFLAGS_FOR_TARGET=""
-    CPPFLAGS_FOR_TARGET=""
+    CFLAGS="-O2 -mllvm -inline-threshold=5"
+    CXXFLAGS="-O2 -mllvm -inline-threshold=5"
+    CFLAGS_FOR_TARGET="-O2 -mllvm -inline-threshold=5"
+    CXXFLAGS_FOR_TARGET="-O2 -mllvm -inline-threshold=5"
     CC_FOR_TARGET="${pnacl_cc}"
     GCC_FOR_TARGET="${pnacl_cc}"
     CXX_FOR_TARGET="${pnacl_cxx}"
@@ -308,9 +307,9 @@ setup-libstdcpp-env() {
 setup-newlib-env() {
   STD_ENV_FOR_NEWLIB=(
     # TODO(robertm): get rid of '-allow-asm' here once we have a way of
-    # distinguishing "good" from "bad" asms
-    CFLAGS_FOR_TARGET="-allow-asm"
-    CPPFLAGS_FOR_TARGET="-allow-asm"
+    # distinguishing "good" from "bad" asms.
+    CFLAGS_FOR_TARGET="-allow-asm -O2 -mllvm -inline-threshold=5"
+    CXXFLAGS_FOR_TARGET="-allow-asm -O2 -mllvm -inline-threshold=5"
     CC_FOR_TARGET="${PNACL_CC_NEWLIB}"
     GCC_FOR_TARGET="${PNACL_CC_NEWLIB}"
     CXX_FOR_TARGET="${PNACL_CXX_NEWLIB}"

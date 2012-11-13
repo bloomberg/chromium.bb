@@ -321,6 +321,8 @@ GCCPatterns = [
   ( ('-x', '(.+)'),    HandleDashX),
   ( '-x(.+)',          HandleDashX),
 
+  ( ('(-mllvm)', '(.+)'), AddCCFlag),
+
   # Ignore these gcc flags
   ( '(-msse)',                ""),
   ( '(-march=armv7-a)',       ""),
