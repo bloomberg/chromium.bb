@@ -65,9 +65,10 @@ CurtainModeMac::~CurtainModeMac() {
 
 void CurtainModeMac::SetActivated(bool activated) {
   if (activated) {
-    if (!ActivateCurtain()) {
-      on_error_.Run();
-    }
+    // Curtain-mode has issues on Mac OS X 10.7, so is currently disabled.
+    //if (!ActivateCurtain()) {
+    on_error_.Run();
+    //}
   } else {
     RemoveEventHandler();
   }

@@ -21,17 +21,19 @@ CurtainingHostObserver::~CurtainingHostObserver() {
   curtain_->SetActivated(false);
 }
 
-// TODO(jamiewalch): This code assumes at most one client connection at a time.
-// Add OnFirstClientConnected and OnLastClientDisconnected optional callbacks
-// to the HostStatusObserver interface to address this.
+void CurtainingHostObserver::SetEnableCurtaining(bool enable) {
+  enable_curtaining_ = enable;
+  curtain_->SetActivated(enable_curtaining_ && !active_clients_.empty());
+}
+
 void CurtainingHostObserver::OnClientAuthenticated(const std::string& jid) {
-  if (curtain_->required()) {
-    curtain_->SetActivated(true);
-  }
+  active_clients_.insert(jid);
+  curtain_->SetActivated(enable_curtaining_ && !active_clients_.empty());
 }
 
 void CurtainingHostObserver::OnClientDisconnected(const std::string& jid) {
-  curtain_->SetActivated(false);
+  active_clients_.erase(jid);
+  curtain_->SetActivated(enable_curtaining_ && !active_clients_.empty());
 }
 
 }  // namespace remoting

@@ -29,12 +29,6 @@ class CurtainMode {
       const base::Closure& on_session_activate,
       const base::Closure& on_error);
 
-  // Sets/gets whether the curtain mode is required by policy.
-  // TODO(rmsousa): Remove this piece of implementation from the interface once
-  // we have a good way to do so.
-  void set_required(bool required) { required_ = required; }
-  bool required() { return required_; }
-
   // Activate or deactivate curtain mode.
   // If activated is true (meaning a remote client has just logged in), the
   // implementation must immediately activate the curtain, or call on_error if
@@ -47,11 +41,9 @@ class CurtainMode {
   virtual void SetActivated(bool activated) = 0;
 
  protected:
-  CurtainMode() : required_(false) {}
+  CurtainMode() {}
 
  private:
-  bool required_;
-
   DISALLOW_COPY_AND_ASSIGN(CurtainMode);
 };
 

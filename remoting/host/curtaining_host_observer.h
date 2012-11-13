@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_CURTAINING_HOST_OBSERVER_H_
 #define REMOTING_HOST_CURTAINING_HOST_OBSERVER_H_
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -24,13 +25,19 @@ class CurtainingHostObserver : public HostStatusObserver {
                          scoped_refptr<ChromotingHost> host);
   virtual ~CurtainingHostObserver();
 
-  // From HostStatusObserver.
+  // Enables/disables curtaining when one or more clients are connected.
+  // Takes immediate effect if clients are already connected.
+  void SetEnableCurtaining(bool enable);
+
+  // HostStatusObserver interface.
   virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
   virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
 
  private:
   CurtainMode* curtain_;
   scoped_refptr<ChromotingHost> host_;
+  std::set<std::string> active_clients_;
+  bool enable_curtaining_;
 };
 
 }  // namespace remoting
