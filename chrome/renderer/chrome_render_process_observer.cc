@@ -4,6 +4,9 @@
 
 #include "chrome/renderer/chrome_render_process_observer.h"
 
+#include <limits>
+#include <vector>
+
 #include "base/allocator/allocator_extension.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -269,7 +272,11 @@ void ChromeRenderProcessObserver::OnGetCacheResourceStats() {
 void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
     const std::string& field_trial_name,
     const std::string& group_name) {
-  base::FieldTrialList::CreateFieldTrial(field_trial_name, group_name);
+  base::FieldTrial* trial =
+      base::FieldTrialList::CreateFieldTrial(field_trial_name, group_name);
+  // Ensure the trial is marked as "used" by calling group() on it. This is
+  // needed to ensure the trial is properly reported in renderer crash reports.
+  trial->group();
   chrome_variations::SetChildProcessLoggingVariationList();
 }
 
