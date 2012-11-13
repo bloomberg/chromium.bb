@@ -67,13 +67,25 @@ validator_test_exe = env.ComponentProgram(
     ['unreviewed/validator_test.c'],
     EXTRA_LIBS=['dfa_validate_x86_32', 'dfa_validate_x86_64'])
 
-benchmark = env.Command(
-    target='validator_ragel_benchmark_py.out',
-    source=['validator_benchmark.py', validator_test_exe, env.GetIrtNexe()],
-    action='${PYTHON} ${SOURCES[0]} ${SOURCES[1]} ${SOURCES[2]}'
+env.ComponentLibrary(
+    'elf_load',
+    ['elf_load.cc'],
+    EXTRA_LIBS=['platform'])
+
+validator_benchmark = env.ComponentProgram(
+    'rdfa_validator_benchmark',
+    ['validator_benchmark.cc'],
+    EXTRA_LIBS=['dfa_validate_x86_32', 'dfa_validate_x86_64', 'platform',
+                'elf_load']
 )
 
-env.AlwaysBuild(env.Alias('dfavalidatorbenchmark', benchmark))
+run_benchmark = env.Command(
+    target='run_validator_ragel_benchmark.out',
+    source=[validator_benchmark, env.GetIrtNexe()],
+    action='${SOURCES[0]} ${SOURCES[1]} 10000'
+)
+
+env.AlwaysBuild(env.Alias('dfavalidatorbenchmark', run_benchmark))
 
 # Python-based regression test. TODO(pasko): remove it when validator_tests are
 # migrated to be able to run with the new validator.
@@ -86,8 +98,9 @@ if env.Bit('validator_ragel') and env.Bit('host_linux'):
 
 ncval_new = env.ComponentProgram(
     'ncval_new',
-    ['ncval.cc', 'elf_load.cc'],
-    EXTRA_LIBS=['dfa_validate_x86_32', 'dfa_validate_x86_64', 'platform']
+    ['ncval.cc'],
+    EXTRA_LIBS=['dfa_validate_x86_32', 'dfa_validate_x86_64', 'platform',
+                'elf_load']
 )
 
 # Source generation:
