@@ -712,18 +712,15 @@ DirectoryModel.prototype.onRootChange_ = function(event) {
  * @param {string} path New current directory path or new root.
  */
 DirectoryModel.prototype.changeRoot = function(path) {
-  if ((!DirectoryModel.isMountableRoot(path) ||
-       this.volumeManager_.isMounted(path)) &&
-      this.getCurrentRootPath() == path)
+  var currentDir = this.currentDirByRoot_[path] || path;
+  if (currentDir == this.getCurrentDirPath())
     return;
-  if (this.currentDirByRoot_[path]) {
-    this.resolveDirectory(
-        this.currentDirByRoot_[path],
-        this.changeDirectoryEntry_.bind(this, false),
-        this.changeDirectory.bind(this, path));
-  } else {
-    this.changeDirectory(path);
-  }
+  var onError = path != currentDir && path != this.getCurrentDirPath() ?
+      this.changeDirectory.bind(this, path) : null;
+  this.resolveDirectory(
+      currentDir,
+      this.changeDirectoryEntry_.bind(this, false),
+      onError);
 };
 
 /**
