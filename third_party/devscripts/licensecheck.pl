@@ -481,8 +481,8 @@ sub parselicense($) {
         $license = "BSD-like $license";
     }
 
-    if ($licensetext =~ /Mozilla Public License Version ([^ ]+)/) {
-	$license = "MPL (v$1) $license";
+    if ($licensetext =~ /Mozilla Public License( Version|, v.) ([^ ]+[^. ])/) {
+	$license = "MPL (v$2) $license";
     }
 
     if ($licensetext =~ /Released under the terms of the Artistic License ([^ ]+)/) {

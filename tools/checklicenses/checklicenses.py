@@ -73,6 +73,7 @@ WHITELISTED_LICENSES = [
     'MPL (v1.1,) BSD (3 clause) GPL (unversioned/unknown version) '
         'LGPL (v2.1 or later)',
     'MPL (v1.1) GPL (unversioned/unknown version)',
+    'MPL (v2.0)',
 
     # TODO(phajdan.jr): Make licensecheck not print the comma after 1.1.
     'MPL (v1.1,) GPL (unversioned/unknown version) LGPL (v2 or later)',
