@@ -550,7 +550,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         ClassifyPage(controller_->GetTabContents()->
                      web_contents()->GetURL()),
         base::TimeTicks::Now() - time_user_first_modified_omnibox_,
-        0,  // inline autocomplete length; possibly set later
+        string16::npos,  // inline autocomplete length; possibly set later
         result());
     DCHECK(user_input_in_progress_ ||
            match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST)

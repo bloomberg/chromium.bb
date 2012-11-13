@@ -63,7 +63,8 @@ struct AutocompleteLog {
   // unit tests), this elapsed time is set to -1 milliseconds.
   base::TimeDelta elapsed_time_since_user_first_modified_omnibox;
 
-  // Inline autocompleted length (if displayed).
+  // Inline autocompleted length (if displayed).  Set to string16::npos
+  // if not available.
   size_t inline_autocompleted_length;
 
   // Result set.
