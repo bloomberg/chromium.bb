@@ -17,6 +17,7 @@
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/net/load_time_stats.h"
+#include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
@@ -128,6 +129,7 @@ TabContents::TabContents(WebContents* contents)
   BlockedContentTabHelper::CreateForWebContents(contents);
   BookmarkTabHelper::CreateForWebContents(contents);
   chrome_browser_net::LoadTimeStatsTabHelper::CreateForWebContents(contents);
+  chrome_browser_net::NetErrorTabHelper::CreateForWebContents(contents);
   ConstrainedWindowTabHelper::CreateForWebContents(contents);
   CoreTabHelper::CreateForWebContents(contents);
   extensions::TabHelper::CreateForWebContents(contents);
