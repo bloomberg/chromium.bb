@@ -80,13 +80,20 @@
   margin-bottom: 0.5em;
   margin-top: 0.5em;
   max-width: 450px;
+  outline: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.footer-menu-item:not(:hover) {
+.footer-menu-item:not(:hover),
+.footer-menu-item:not(:focus) {
   text-decoration: none;
+}
+
+.footer-menu-item:hover,
+.footer-menu-item:focus {
+  text-decoration: underline;
 }
 
 .footer-menu-item:first-of-type {

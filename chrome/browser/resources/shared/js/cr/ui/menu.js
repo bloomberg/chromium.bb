@@ -34,6 +34,7 @@ cr.define('cr.ui', function() {
       this.addEventListener('mouseout', this.handleMouseOut_);
 
       this.classList.add('decorated');
+      this.setAttribute('role', 'menu');
       this.hidden = true;  // Hide the menu by default.
 
       // Decorate the children as menu items.
@@ -124,6 +125,20 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Focuses the selected item. If selectedIndex is invalid, set it to 0
+     * first.
+     */
+    focusSelectedItem: function() {
+      if (this.selectedIndex < 0 ||
+          this.selectedIndex > this.children.length) {
+        this.selectedIndex = 0;
+      }
+
+      if (this.selectedItem)
+        this.selectedItem.focus();
+    },
+
+    /**
      * Menu length
      */
     get length() {
@@ -173,14 +188,19 @@ cr.define('cr.ui', function() {
       switch (e.keyIdentifier) {
         case 'Down':
           selectNextAvailable(1);
+          this.focusSelectedItem();
           return true;
         case 'Up':
           selectNextAvailable(-1);
+          this.focusSelectedItem();
           return true;
         case 'Enter':
         case 'U+0020': // Space
           if (item) {
-            if (cr.dispatchSimpleEvent(item, 'activate', true, true)) {
+            var activationEvent = cr.doc.createEvent('Event');
+            activationEvent.initEvent('activate', true, true);
+            activationEvent.originalEvent = e;
+            if (item.dispatchEvent(activationEvent)) {
               if (item.command)
                 item.command.execute();
             }
@@ -205,8 +225,10 @@ cr.define('cr.ui', function() {
 
   function selectedIndexChanged(selectedIndex, oldSelectedIndex) {
     var oldSelectedItem = this.children[oldSelectedIndex];
-    if (oldSelectedItem)
+    if (oldSelectedItem) {
       oldSelectedItem.selected = false;
+      oldSelectedItem.blur();
+    }
     var item = this.selectedItem;
     if (item)
       item.selected = true;

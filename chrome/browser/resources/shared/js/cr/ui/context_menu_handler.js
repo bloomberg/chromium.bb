@@ -39,7 +39,7 @@ cr.define('cr.ui', function() {
       var doc = menu.ownerDocument;
       doc.addEventListener('keydown', this, true);
       doc.addEventListener('mousedown', this, true);
-      doc.addEventListener('blur', this, true);
+      doc.addEventListener('focus', this, true);
       doc.defaultView.addEventListener('resize', this);
       menu.addEventListener('contextmenu', this);
       menu.addEventListener('activate', this);
@@ -59,7 +59,7 @@ cr.define('cr.ui', function() {
       var doc = menu.ownerDocument;
       doc.removeEventListener('keydown', this, true);
       doc.removeEventListener('mousedown', this, true);
-      doc.removeEventListener('blur', this, true);
+      doc.removeEventListener('focus', this, true);
       doc.defaultView.removeEventListener('resize', this);
       menu.removeEventListener('contextmenu', this);
       menu.removeEventListener('activate', this);
@@ -146,8 +146,12 @@ cr.define('cr.ui', function() {
           }
           break;
 
+        case 'focus':
+          if (!this.menu.contains(e.target))
+            this.hideMenu();
+          break;
+
         case 'activate':
-        case 'blur':
         case 'resize':
           this.hideMenu();
           break;
