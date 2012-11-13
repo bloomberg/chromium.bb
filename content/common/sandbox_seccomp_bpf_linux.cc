@@ -48,6 +48,14 @@ inline bool IsChromeOS() {
 #endif
 }
 
+inline bool IsArchitectureI386() {
+#if defined(__i386__)
+  return true;
+#else
+  return false;
+#endif
+}
+
 inline bool IsArchitectureArm() {
 #if defined(__arm__)
   return true;
@@ -1193,11 +1201,18 @@ bool IsBaselinePolicyWatched(int sysno) {
   }
 }
 
-// x86_64 and ARM for now. Needs to be adapted and tested for i386.
 ErrorCode BaselinePolicy(int sysno) {
   if (IsBaselinePolicyAllowed(sysno)) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
+
+#if defined(__i386__)
+  // socketcall(2) should be tightened.
+  if (IsSocketCall(sysno)) {
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  }
+#endif
+
   // TODO(jln): some system calls in those sets are not supposed to
   // return ENOENT. Return the appropriate error.
   if (IsFileSystem(sysno) || IsCurrentDirectory(sysno)) {
@@ -1272,8 +1287,13 @@ ErrorCode RendererOrWorkerProcessPolicy(int sysno, void *) {
     case __NR_prlimit64:
       return ErrorCode(EPERM);  // See crbug.com/160157.
     default:
+      // These need further tightening.
 #if defined(__x86_64__) || defined(__arm__)
       if (IsSystemVSharedMemory(sysno))
+        return ErrorCode(ErrorCode::ERR_ALLOWED);
+#endif
+#if defined(__i386__)
+      if (IsSystemVIpc(sysno))
         return ErrorCode(ErrorCode::ERR_ALLOWED);
 #endif
 
@@ -1282,7 +1302,6 @@ ErrorCode RendererOrWorkerProcessPolicy(int sysno, void *) {
   }
 }
 
-// x86_64 and ARM for now. Needs to be adapted and tested for i386.
 ErrorCode FlashProcessPolicy(int sysno, void *) {
   switch (sysno) {
     case __NR_sched_getaffinity:
@@ -1292,10 +1311,13 @@ ErrorCode FlashProcessPolicy(int sysno, void *) {
     case __NR_ioctl:
       return ErrorCode(ENOTTY);  // Flash Access.
     default:
+      // These need further tightening.
 #if defined(__x86_64__) || defined(__arm__)
-      // These are under investigation, and hopefully not here for the long
-      // term.
       if (IsSystemVSharedMemory(sysno))
+        return ErrorCode(ErrorCode::ERR_ALLOWED);
+#endif
+#if defined(__i386__)
+      if (IsSystemVIpc(sysno))
         return ErrorCode(ErrorCode::ERR_ALLOWED);
 #endif
 
@@ -1348,11 +1370,11 @@ void WarmupPolicy(Sandbox::EvaluateSyscall policy) {
 Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
     const CommandLine& command_line,
     const std::string& process_type) {
-#if defined(__x86_64__) || defined(__arm__)
   if (process_type == switches::kGpuProcess) {
     // On Chrome OS, --enable-gpu-sandbox enables the more restrictive policy.
-    // However, we never enable the more restrictive GPU process policy on ARM.
-    if (IsArchitectureArm() ||
+    // However, we don't yet enable the more restrictive GPU process policy
+    // on i386 or ARM.
+    if (IsArchitectureI386() || IsArchitectureArm() ||
         (IsChromeOS() && !command_line.HasSwitch(switches::kEnableGpuSandbox)))
       return BlacklistDebugAndNumaPolicy;
     else
@@ -1377,12 +1399,6 @@ Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
   NOTREACHED();
   // This will be our default if we need one.
   return AllowAllPolicy;
-#else
-  // On other architectures (currently IA32),
-  // we only have a small blacklist at the moment.
-  (void) process_type;
-  return BlacklistDebugAndNumaPolicy;
-#endif  // __x86_64__ || __arm__
 }
 
 // Initialize the seccomp-bpf sandbox.
