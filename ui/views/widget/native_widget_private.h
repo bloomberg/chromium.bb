@@ -98,8 +98,8 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual ui::Compositor* GetCompositor() = 0;
 
   // See description in View for details.
-  virtual void CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
-                                                  ui::Layer** layer_parent) = 0;
+  virtual gfx::Vector2d CalculateOffsetToAncestorWithLayer(
+      ui::Layer** layer_parent) = 0;
 
   // Notifies the NativeWidget that a view was removed from the Widget's view
   // hierarchy.

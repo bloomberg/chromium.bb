@@ -1006,10 +1006,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Returns false if it cannot create a layer to which to assign the texture.
   bool SetExternalTexture(ui::Texture* texture);
 
-  // Returns the offset from this view to the nearest ancestor with a layer.
-  // If |ancestor| is non-NULL it is set to the nearest ancestor with a layer.
-  virtual void CalculateOffsetToAncestorWithLayer(
-      gfx::Point* offset,
+  // Returns the offset from this view to the nearest ancestor with a layer. If
+  // |layer_parent| is non-NULL it is set to the nearest ancestor with a layer.
+  virtual gfx::Vector2d CalculateOffsetToAncestorWithLayer(
       ui::Layer** layer_parent);
 
   // If this view has a layer, the layer is reparented to |parent_layer| and its
@@ -1022,7 +1021,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Called to update the bounds of any child layers within this View's
   // hierarchy when something happens to the hierarchy.
-  virtual void UpdateChildLayerBounds(const gfx::Point& offset);
+  virtual void UpdateChildLayerBounds(const gfx::Vector2d& offset);
 
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
@@ -1273,7 +1272,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Parents this view's layer to |parent_layer|, and sets its bounds and other
   // properties in accordance to |offset|, the view's offset from the
   // |parent_layer|.
-  void ReparentLayer(const gfx::Point& offset, ui::Layer* parent_layer);
+  void ReparentLayer(const gfx::Vector2d& offset, ui::Layer* parent_layer);
 
   // Called to update the layer visibility. The layer will be visible if the
   // View itself, and all its parent Views are visible. This also updates

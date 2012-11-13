@@ -1208,18 +1208,18 @@ bool View::SetExternalTexture(ui::Texture* texture) {
   return true;
 }
 
-void View::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
-                                              ui::Layer** layer_parent) {
+gfx::Vector2d View::CalculateOffsetToAncestorWithLayer(
+    ui::Layer** layer_parent) {
   if (layer()) {
     if (layer_parent)
       *layer_parent = layer();
-    return;
+    return gfx::Vector2d();
   }
   if (!parent_)
-    return;
+    return gfx::Vector2d();
 
-  offset->Offset(GetMirroredX(), y());
-  parent_->CalculateOffsetToAncestorWithLayer(offset, layer_parent);
+  return gfx::Vector2d(GetMirroredX(), y()) +
+      parent_->CalculateOffsetToAncestorWithLayer(layer_parent);
 }
 
 void View::MoveLayerToParent(ui::Layer* parent_layer,
@@ -1256,14 +1256,14 @@ void View::UpdateChildLayerVisibility(bool ancestor_visible) {
   }
 }
 
-void View::UpdateChildLayerBounds(const gfx::Point& offset) {
+void View::UpdateChildLayerBounds(const gfx::Vector2d& offset) {
   if (layer()) {
-    SetLayerBounds(gfx::Rect(offset.x(), offset.y(), width(), height()));
+    SetLayerBounds(GetLocalBounds() + offset);
   } else {
     for (int i = 0, count = child_count(); i < count; ++i) {
-      gfx::Point new_offset(offset.x() + child_at(i)->GetMirroredX(),
-                            offset.y() + child_at(i)->y());
-      child_at(i)->UpdateChildLayerBounds(new_offset);
+      View* child = child_at(i);
+      child->UpdateChildLayerBounds(
+          offset + gfx::Vector2d(child->GetMirroredX(), child->y()));
     }
   }
 }
@@ -1696,10 +1696,9 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
   if (use_acceleration_when_possible) {
     if (layer()) {
       if (parent_) {
-        gfx::Point offset;
-        parent_->CalculateOffsetToAncestorWithLayer(&offset, NULL);
-        offset.Offset(GetMirroredX(), y());
-        SetLayerBounds(gfx::Rect(offset, size()));
+        SetLayerBounds(GetLocalBounds() +
+                       gfx::Vector2d(GetMirroredX(), y()) +
+                       parent_->CalculateOffsetToAncestorWithLayer(NULL));
       } else {
         SetLayerBounds(bounds_);
       }
@@ -1714,9 +1713,7 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
     } else {
       // If our bounds have changed, then any descendant layer bounds may
       // have changed. Update them accordingly.
-      gfx::Point offset;
-      CalculateOffsetToAncestorWithLayer(&offset, NULL);
-      UpdateChildLayerBounds(offset);
+      UpdateChildLayerBounds(CalculateOffsetToAncestorWithLayer(NULL));
     }
   }
 
@@ -1879,15 +1876,15 @@ void View::UpdateParentLayer() {
     return;
 
   ui::Layer* parent_layer = NULL;
-  gfx::Point offset(GetMirroredX(), y());
+  gfx::Vector2d offset(GetMirroredX(), y());
 
   // TODO(sad): The NULL check here for parent_ essentially is to check if this
   // is the RootView. Instead of doing this, this function should be made
   // virtual and overridden from the RootView.
   if (parent_)
-    parent_->CalculateOffsetToAncestorWithLayer(&offset, &parent_layer);
+    offset += parent_->CalculateOffsetToAncestorWithLayer(&parent_layer);
   else if (!parent_ && GetWidget())
-    GetWidget()->CalculateOffsetToAncestorWithLayer(&offset, &parent_layer);
+    offset += GetWidget()->CalculateOffsetToAncestorWithLayer(&parent_layer);
 
   ReparentLayer(offset, parent_layer);
 }
@@ -1905,8 +1902,8 @@ void View::OrphanLayers() {
     child_at(i)->OrphanLayers();
 }
 
-void View::ReparentLayer(const gfx::Point& offset, ui::Layer* parent_layer) {
-  layer_->SetBounds(gfx::Rect(offset.x(), offset.y(), width(), height()));
+void View::ReparentLayer(const gfx::Vector2d& offset, ui::Layer* parent_layer) {
+  layer_->SetBounds(GetLocalBounds() + offset);
   DCHECK_NE(layer(), parent_layer);
   if (parent_layer)
     parent_layer->Add(layer());
@@ -1929,9 +1926,7 @@ void View::DestroyLayer() {
   if (new_parent)
     ReorderLayers();
 
-  gfx::Point offset;
-  CalculateOffsetToAncestorWithLayer(&offset, NULL);
-  UpdateChildLayerBounds(offset);
+  UpdateChildLayerBounds(CalculateOffsetToAncestorWithLayer(NULL));
 
   SchedulePaint();
 

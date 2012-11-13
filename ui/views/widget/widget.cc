@@ -838,15 +838,14 @@ ui::Compositor* Widget::GetCompositor() {
   return native_widget_->GetCompositor();
 }
 
-void Widget::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
-                                                ui::Layer** layer_parent) {
-  native_widget_->CalculateOffsetToAncestorWithLayer(offset, layer_parent);
+gfx::Vector2d Widget::CalculateOffsetToAncestorWithLayer(
+    ui::Layer** layer_parent) {
+  return native_widget_->CalculateOffsetToAncestorWithLayer(layer_parent);
 }
 
 void Widget::ReorderLayers() {
-  gfx::Point point;
   ui::Layer* layer = NULL;
-  CalculateOffsetToAncestorWithLayer(&point, &layer);
+  CalculateOffsetToAncestorWithLayer(&layer);
   if (layer)
     root_view_->ReorderChildLayers(layer);
 }

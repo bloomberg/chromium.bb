@@ -2908,8 +2908,7 @@ class ViewLayerTest : public ViewsTestBase {
   // Returns the Layer used by the RootView.
   ui::Layer* GetRootLayer() {
     ui::Layer* root_layer = NULL;
-    gfx::Point origin;
-    widget()->CalculateOffsetToAncestorWithLayer(&origin, &root_layer);
+    widget()->CalculateOffsetToAncestorWithLayer(&root_layer);
     return root_layer;
   }
 
@@ -2944,8 +2943,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
   // Because we lazily create textures the calls to DrawTree are necessary to
   // ensure we trigger creation of textures.
   ui::Layer* root_layer = NULL;
-  gfx::Point origin;
-  widget()->CalculateOffsetToAncestorWithLayer(&origin, &root_layer);
+  widget()->CalculateOffsetToAncestorWithLayer(&root_layer);
   View* content_view = new View;
   widget()->SetContentsView(content_view);
 

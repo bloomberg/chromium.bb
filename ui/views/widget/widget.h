@@ -546,8 +546,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   ui::Compositor* GetCompositor();
 
   // Invokes method of same name on the NativeWidget.
-  void CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
-                                          ui::Layer** layer_parent);
+  gfx::Vector2d CalculateOffsetToAncestorWithLayer(
+      ui::Layer** layer_parent);
 
   // Invokes method of same name on the NativeWidget.
   void ReorderLayers();

@@ -591,11 +591,12 @@ void RootView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 }
 
-void RootView::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
-                                                  ui::Layer** layer_parent) {
-  View::CalculateOffsetToAncestorWithLayer(offset, layer_parent);
+gfx::Vector2d RootView::CalculateOffsetToAncestorWithLayer(
+    ui::Layer** layer_parent) {
+  gfx::Vector2d offset(View::CalculateOffsetToAncestorWithLayer(layer_parent));
   if (!layer())
-    widget_->CalculateOffsetToAncestorWithLayer(offset, layer_parent);
+    offset += widget_->CalculateOffsetToAncestorWithLayer(layer_parent);
+  return offset;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
