@@ -554,11 +554,10 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   // The position and size of the bitmap.
   IPC_STRUCT_MEMBER(gfx::Rect, bitmap_rect)
 
-  // The scroll offset.  Only one of these can be non-zero, and if they are
-  // both zero, then it means there is no scrolling and the scroll_rect is
-  // ignored.
-  IPC_STRUCT_MEMBER(int, dx)
-  IPC_STRUCT_MEMBER(int, dy)
+  // The scroll delta.  Only one of the delta components can be non-zero, and if
+  // they are both zero, then it means there is no scrolling and the scroll_rect
+  // is ignored.
+  IPC_STRUCT_MEMBER(gfx::Vector2d, scroll_delta)
 
   // The rectangular region to scroll.
   IPC_STRUCT_MEMBER(gfx::Rect, scroll_rect)

@@ -30,6 +30,7 @@
 #include "ui/base/range/range.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/vector2d.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/glue/webcursor.h"
 
@@ -116,7 +117,8 @@ class CONTENT_EXPORT RenderWidget
   // WebKit::WebWidgetClient
   virtual void willBeginCompositorFrame();
   virtual void didInvalidateRect(const WebKit::WebRect&);
-  virtual void didScrollRect(int dx, int dy, const WebKit::WebRect& clipRect);
+  virtual void didScrollRect(int dx, int dy,
+                             const WebKit::WebRect& clipRect);
   virtual void didAutoResize(const WebKit::WebSize& new_size);
   virtual void didActivateCompositor(int input_handler_identifier);
   virtual void didDeactivateCompositor();

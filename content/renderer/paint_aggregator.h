@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/vector2d.h"
 
 namespace content {
 
@@ -35,7 +36,7 @@ class CONTENT_EXPORT PaintAggregator {
     // Returns the smallest rect containing all paint rects.
     gfx::Rect GetPaintBounds() const;
 
-    gfx::Point scroll_delta;
+    gfx::Vector2d scroll_delta;
     gfx::Rect scroll_rect;
     std::vector<gfx::Rect> paint_rects;
   };
@@ -52,10 +53,11 @@ class CONTENT_EXPORT PaintAggregator {
   void InvalidateRect(const gfx::Rect& rect);
 
   // The given rect should be scrolled by the given amounts.
-  void ScrollRect(int dx, int dy, const gfx::Rect& clip_rect);
+  void ScrollRect(const gfx::Vector2d& delta, const gfx::Rect& clip_rect);
 
  private:
-  gfx::Rect ScrollPaintRect(const gfx::Rect& paint_rect, int dx, int dy) const;
+  gfx::Rect ScrollPaintRect(const gfx::Rect& paint_rect,
+                            const gfx::Vector2d& delta) const;
   bool ShouldInvalidateScrollRect(const gfx::Rect& rect) const;
   void InvalidateScrollRect();
   void CombinePaintRects();

@@ -8,6 +8,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
+#include "ui/gfx/vector2d_conversions.h"
 #include "ui/surface/transport_dib.h"
 
 namespace content {
@@ -75,21 +76,20 @@ void BrowserPluginBackingStore::PaintToBackingStore(
 }
 
 void BrowserPluginBackingStore::ScrollBackingStore(
-    int dx,
-    int dy,
+    const gfx::Vector2d& delta,
     const gfx::Rect& clip_rect,
     const gfx::Size& view_size) {
   gfx::Rect pixel_rect = gfx::ToEnclosingRect(
       gfx::ScaleRect(clip_rect, scale_factor_));
-  int pixel_dx = dx * scale_factor_;
-  int pixel_dy = dy * scale_factor_;
+  gfx::Vector2d pixel_delta = gfx::ToFlooredVector2d(
+      gfx::ScaleVector2d(delta, scale_factor_));
 
-  int x = std::min(pixel_rect.x(), pixel_rect.x() - pixel_dx);
-  int y = std::min(pixel_rect.y(), pixel_rect.y() - pixel_dy);
-  int w = pixel_rect.width() + abs(pixel_dx);
-  int h = pixel_rect.height() + abs(pixel_dy);
+  int x = std::min(pixel_rect.x(), pixel_rect.x() - pixel_delta.x());
+  int y = std::min(pixel_rect.y(), pixel_rect.y() - pixel_delta.y());
+  int w = pixel_rect.width() + abs(pixel_delta.x());
+  int h = pixel_rect.height() + abs(pixel_delta.y());
   SkIRect rect = SkIRect::MakeXYWH(x, y, w, h);
-  bitmap_.scrollRect(&rect, pixel_dx, pixel_dy);
+  bitmap_.scrollRect(&rect, pixel_delta.x(), pixel_delta.y());
 }
 
 void BrowserPluginBackingStore::Clear(SkColor clear_color) {

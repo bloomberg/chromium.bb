@@ -546,8 +546,7 @@ void BrowserPlugin::UpdateRect(
 
   // Update the backing store.
   if (!params.scroll_rect.IsEmpty()) {
-    backing_store_->ScrollBackingStore(params.dx,
-                                       params.dy,
+    backing_store_->ScrollBackingStore(params.scroll_delta,
                                        params.scroll_rect,
                                        params.view_size);
   }

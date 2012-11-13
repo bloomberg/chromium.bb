@@ -30,7 +30,7 @@ bool TestBackingStore::CopyFromBackingStore(const gfx::Rect& rect,
   return false;
 }
 
-void TestBackingStore::ScrollBackingStore(int dx, int dy,
+void TestBackingStore::ScrollBackingStore(const gfx::Vector2d& delta,
                                           const gfx::Rect& clip_rect,
                                           const gfx::Size& view_size) {
 }

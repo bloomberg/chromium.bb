@@ -69,7 +69,7 @@ class CONTENT_EXPORT BackingStoreGtk : public BackingStore {
       bool* scheduled_completion_callback) OVERRIDE;
   virtual bool CopyFromBackingStore(const gfx::Rect& rect,
                                     skia::PlatformBitmap* output) OVERRIDE;
-  virtual void ScrollBackingStore(int dx, int dy,
+  virtual void ScrollBackingStore(const gfx::Vector2d& delta,
                                   const gfx::Rect& clip_rect,
                                   const gfx::Size& view_size) OVERRIDE;
 

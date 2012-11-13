@@ -607,35 +607,36 @@ bool BackingStoreGtk::CopyFromBackingStore(const gfx::Rect& rect,
   return true;
 }
 
-void BackingStoreGtk::ScrollBackingStore(int dx, int dy,
+void BackingStoreGtk::ScrollBackingStore(const gfx::Vector2d& delta,
                                          const gfx::Rect& clip_rect,
                                          const gfx::Size& view_size) {
   if (!display_)
     return;
 
   // We only support scrolling in one direction at a time.
-  DCHECK(dx == 0 || dy == 0);
+  DCHECK(delta.x() == 0 || delta.y() == 0);
 
-  if (dy) {
-    // Positive values of |dy| scroll up
-    if (abs(dy) < clip_rect.height()) {
+  if (delta.y()) {
+    // Positive values of |delta|.y() scroll up
+    if (abs(delta.y()) < clip_rect.height()) {
       XCopyArea(display_, pixmap_, pixmap_, static_cast<GC>(pixmap_gc_),
                 clip_rect.x() /* source x */,
-                std::max(clip_rect.y(), clip_rect.y() - dy),
+                std::max(clip_rect.y(), clip_rect.y() - delta.y()),
                 clip_rect.width(),
-                clip_rect.height() - abs(dy),
+                clip_rect.height() - abs(delta.y()),
                 clip_rect.x() /* dest x */,
-                std::max(clip_rect.y(), clip_rect.y() + dy) /* dest y */);
+                std::max(clip_rect.y(), clip_rect.y() + delta.y()) /* dest y */
+                );
     }
-  } else if (dx) {
-    // Positive values of |dx| scroll right
-    if (abs(dx) < clip_rect.width()) {
+  } else if (delta.x()) {
+    // Positive values of |delta|.x() scroll right
+    if (abs(delta.x()) < clip_rect.width()) {
       XCopyArea(display_, pixmap_, pixmap_, static_cast<GC>(pixmap_gc_),
-                std::max(clip_rect.x(), clip_rect.x() - dx),
+                std::max(clip_rect.x(), clip_rect.x() - delta.x()),
                 clip_rect.y() /* source y */,
-                clip_rect.width() - abs(dx),
+                clip_rect.width() - abs(delta.x()),
                 clip_rect.height(),
-                std::max(clip_rect.x(), clip_rect.x() + dx) /* dest x */,
+                std::max(clip_rect.x(), clip_rect.x() + delta.x()) /* dest x */,
                 clip_rect.y() /* dest x */);
     }
   }

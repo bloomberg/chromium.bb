@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/vector2d.h"
 
 class SkCanvas;
 class TransportDIB;
@@ -39,8 +40,7 @@ class BrowserPluginBackingStore {
       const std::vector<gfx::Rect>& copy_rects,
       TransportDIB* dib);
 
-  void ScrollBackingStore(int dx,
-                          int dy,
+  void ScrollBackingStore(const gfx::Vector2d& delta,
                           const gfx::Rect& clip_rect,
                           const gfx::Size& view_size);
 

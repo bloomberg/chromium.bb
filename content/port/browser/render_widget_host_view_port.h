@@ -122,7 +122,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // Thus implementers should generally paint as much of |rect| as possible
   // synchronously with as little overpainting as possible.
   virtual void DidUpdateBackingStore(
-      const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
+      const gfx::Rect& scroll_rect,
+      const gfx::Vector2d& scroll_delta,
       const std::vector<gfx::Rect>& copy_rects) = 0;
 
   // Notifies the View that the renderer has ceased to exist.

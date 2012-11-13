@@ -1514,7 +1514,7 @@ void RenderWidgetHostImpl::OnMsgUpdateRect(
 
       // Scroll the backing store.
       if (!params.scroll_rect.IsEmpty()) {
-        ScrollBackingStoreRect(params.dx, params.dy,
+        ScrollBackingStoreRect(params.scroll_delta,
                                params.scroll_rect,
                                params.view_size);
       }
@@ -1596,7 +1596,7 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
   // Now paint the view. Watch out: it might be destroyed already.
   if (view_ && !is_accelerated_compositing_active_) {
     view_being_painted_ = true;
-    view_->DidUpdateBackingStore(params.scroll_rect, params.dx, params.dy,
+    view_->DidUpdateBackingStore(params.scroll_rect, params.scroll_delta,
                                  params.copy_rects);
     view_being_painted_ = false;
   }
@@ -1977,7 +1977,7 @@ bool RenderWidgetHostImpl::PaintBackingStoreRect(
   return scheduled_completion_callback;
 }
 
-void RenderWidgetHostImpl::ScrollBackingStoreRect(int dx, int dy,
+void RenderWidgetHostImpl::ScrollBackingStoreRect(const gfx::Vector2d& delta,
                                                   const gfx::Rect& clip_rect,
                                                   const gfx::Size& view_size) {
   if (is_hidden_) {
@@ -1994,7 +1994,7 @@ void RenderWidgetHostImpl::ScrollBackingStoreRect(int dx, int dy,
   BackingStore* backing_store = BackingStoreManager::Lookup(this);
   if (!backing_store || (backing_store->size() != view_size))
     return;
-  backing_store->ScrollBackingStore(dx, dy, clip_rect, view_size);
+  backing_store->ScrollBackingStore(delta, clip_rect, view_size);
 }
 
 void RenderWidgetHostImpl::Replace(const string16& word) {

@@ -169,14 +169,14 @@ bool BackingStoreWin::CopyFromBackingStore(const gfx::Rect& rect,
   return true;
 }
 
-void BackingStoreWin::ScrollBackingStore(int dx, int dy,
+void BackingStoreWin::ScrollBackingStore(const gfx::Vector2d& delta,
                                          const gfx::Rect& clip_rect,
                                          const gfx::Size& view_size) {
-  RECT damaged_rect, r = clip_rect.ToRECT();
-  ScrollDC(hdc_, dx, dy, NULL, &r, NULL, &damaged_rect);
+  // TODO(darin): this doesn't work if delta x() and y() are both non-zero!
+  DCHECK(delta.x() == 0 || delta.y() == 0);
 
-  // TODO(darin): this doesn't work if dx and dy are both non-zero!
-  DCHECK(dx == 0 || dy == 0);
+  RECT damaged_rect, r = clip_rect.ToRECT();
+  ScrollDC(hdc_, delta.x(), delta.y(), NULL, &r, NULL, &damaged_rect);
 }
 
 }  // namespace content

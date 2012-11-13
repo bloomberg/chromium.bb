@@ -722,7 +722,8 @@ void RenderWidgetHostViewWin::Redraw() {
 }
 
 void RenderWidgetHostViewWin::DidUpdateBackingStore(
-    const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
+    const gfx::Rect& scroll_rect,
+    const gfx::Vector2d& scroll_delta,
     const std::vector<gfx::Rect>& copy_rects) {
   if (is_hidden_)
     return;
@@ -737,8 +738,8 @@ void RenderWidgetHostViewWin::DidUpdateBackingStore(
 
   if (!scroll_rect.IsEmpty()) {
     RECT clip_rect = scroll_rect.ToRECT();
-    ScrollWindowEx(scroll_dx, scroll_dy, NULL, &clip_rect, NULL, NULL,
-                   SW_INVALIDATE);
+    ScrollWindowEx(scroll_delta.x(), scroll_delta.y(), NULL, &clip_rect,
+                   NULL, NULL, SW_INVALIDATE);
   }
 
   if (!about_to_validate_and_paint_)

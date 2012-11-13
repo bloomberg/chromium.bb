@@ -1004,8 +1004,7 @@ void RenderWidget::DoDeferredUpdate() {
   float dib_scale_factor = 1;
   DCHECK(!pending_update_params_.get());
   pending_update_params_.reset(new ViewHostMsg_UpdateRect_Params);
-  pending_update_params_->dx = update.scroll_delta.x();
-  pending_update_params_->dy = update.scroll_delta.y();
+  pending_update_params_->scroll_delta = update.scroll_delta;
   pending_update_params_->scroll_rect = update.scroll_rect;
   pending_update_params_->view_size = size_;
   pending_update_params_->plugin_window_moves.swap(plugin_window_moves_);
@@ -1142,7 +1141,8 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
       FROM_HERE, base::Bind(&RenderWidget::InvalidationCallback, this));
 }
 
-void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
+void RenderWidget::didScrollRect(int dx, int dy,
+                                 const WebRect& clip_rect) {
   // Drop scrolls on the floor when we are in compositing mode.
   // TODO(nduca): stop WebViewImpl from sending scrolls in the first place.
   if (is_accelerated_compositing_active_)
@@ -1154,7 +1154,7 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
   if (damaged_rect.IsEmpty())
     return;
 
-  paint_aggregator_.ScrollRect(dx, dy, damaged_rect);
+  paint_aggregator_.ScrollRect(gfx::Vector2d(dx, dy), damaged_rect);
 
   // We may not need to schedule another call to DoDeferredUpdate.
   if (invalidation_task_posted_)

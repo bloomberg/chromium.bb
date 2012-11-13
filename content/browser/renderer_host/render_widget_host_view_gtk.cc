@@ -847,7 +847,8 @@ void RenderWidgetHostViewGtk::ImeCancelComposition() {
 }
 
 void RenderWidgetHostViewGtk::DidUpdateBackingStore(
-    const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
+    const gfx::Rect& scroll_rect,
+    const gfx::Vector2d& scroll_delta,
     const std::vector<gfx::Rect>& copy_rects) {
   TRACE_EVENT0("ui::gtk", "RenderWidgetHostViewGtk::DidUpdateBackingStore");
 

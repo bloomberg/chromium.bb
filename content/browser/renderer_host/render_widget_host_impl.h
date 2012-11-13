@@ -641,7 +641,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Scrolls the given |clip_rect| in the backing by the given dx/dy amount. The
   // |dib| and its corresponding location |bitmap_rect| in the backing store
   // is the newly painted pixels by the renderer.
-  void ScrollBackingStoreRect(int dx, int dy, const gfx::Rect& clip_rect,
+  void ScrollBackingStoreRect(const gfx::Vector2d& delta,
+                              const gfx::Rect& clip_rect,
                               const gfx::Size& view_size);
 
   // Called by OnMsgInputEventAck() to process a keyboard event ack message.

@@ -215,8 +215,7 @@ void RenderWidgetHostProcess::InitUpdateRectParams(
     current_update_buf_ = TransportDIB::Create(pixel_size, 0);
   params->bitmap = current_update_buf_->id();
   params->bitmap_rect = gfx::Rect(0, 0, w, h);
-  params->dx = 0;
-  params->dy = 0;
+  params->scroll_delta = gfx::Vector2d();
   params->copy_rects.push_back(params->bitmap_rect);
   params->view_size = gfx::Size(w, h);
   params->flags = update_msg_reply_flags_;

@@ -158,9 +158,10 @@ void PaintAggregator::InvalidateRect(const gfx::Rect& rect) {
                        update_.paint_rects.size());
 }
 
-void PaintAggregator::ScrollRect(int dx, int dy, const gfx::Rect& clip_rect) {
+void PaintAggregator::ScrollRect(const gfx::Vector2d& delta,
+                                 const gfx::Rect& clip_rect) {
   // We only support scrolling along one axis at a time.
-  if (dx != 0 && dy != 0) {
+  if (delta.x() != 0 && delta.y() != 0) {
     InvalidateRect(clip_rect);
     return;
   }
@@ -173,7 +174,8 @@ void PaintAggregator::ScrollRect(int dx, int dy, const gfx::Rect& clip_rect) {
 
   // Again, we only support scrolling along one axis at a time.  Make sure this
   // update doesn't scroll on a different axis than any existing one.
-  if ((dx && update_.scroll_delta.y()) || (dy && update_.scroll_delta.x())) {
+  if ((delta.x() && update_.scroll_delta.y()) ||
+      (delta.y() && update_.scroll_delta.x())) {
     InvalidateRect(clip_rect);
     return;
   }
@@ -181,10 +183,10 @@ void PaintAggregator::ScrollRect(int dx, int dy, const gfx::Rect& clip_rect) {
   // The scroll rect is new or isn't changing (though the scroll amount may
   // be changing).
   update_.scroll_rect = clip_rect;
-  update_.scroll_delta.Offset(dx, dy);
+  update_.scroll_delta += delta;
 
   // We might have just wiped out a pre-existing scroll.
-  if (update_.scroll_delta == gfx::Point()) {
+  if (update_.scroll_delta.IsZero()) {
     update_.scroll_rect = gfx::Rect();
     return;
   }
@@ -192,7 +194,7 @@ void PaintAggregator::ScrollRect(int dx, int dy, const gfx::Rect& clip_rect) {
   // Adjust any contained paint rects and check for any overlapping paints.
   for (size_t i = 0; i < update_.paint_rects.size(); ++i) {
     if (update_.scroll_rect.Contains(update_.paint_rects[i])) {
-      update_.paint_rects[i] = ScrollPaintRect(update_.paint_rects[i], dx, dy);
+      update_.paint_rects[i] = ScrollPaintRect(update_.paint_rects[i], delta);
       // The rect may have been scrolled out of view.
       if (update_.paint_rects[i].IsEmpty()) {
         update_.paint_rects.erase(update_.paint_rects.begin() + i);
@@ -211,10 +213,8 @@ void PaintAggregator::ScrollRect(int dx, int dy, const gfx::Rect& clip_rect) {
 }
 
 gfx::Rect PaintAggregator::ScrollPaintRect(const gfx::Rect& paint_rect,
-                                           int dx, int dy) const {
-  gfx::Rect result = paint_rect;
-
-  result.Offset(dx, dy);
+                                           const gfx::Vector2d& delta) const {
+  gfx::Rect result = paint_rect + delta;
   result.Intersect(update_.scroll_rect);
 
   // Subtract out the scroll damage rect to avoid redundant painting.
@@ -251,7 +251,7 @@ bool PaintAggregator::ShouldInvalidateScrollRect(const gfx::Rect& rect) const {
 void PaintAggregator::InvalidateScrollRect() {
   gfx::Rect scroll_rect = update_.scroll_rect;
   update_.scroll_rect = gfx::Rect();
-  update_.scroll_delta = gfx::Point();
+  update_.scroll_delta = gfx::Vector2d();
   InvalidateRect(scroll_rect);
 }
 

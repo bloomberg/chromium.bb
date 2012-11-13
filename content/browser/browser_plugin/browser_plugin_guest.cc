@@ -348,8 +348,7 @@ void BrowserPluginGuest::UpdateRect(
   }
   BrowserPluginMsg_UpdateRect_Params relay_params;
   relay_params.bitmap_rect = params.bitmap_rect;
-  relay_params.dx = params.dx;
-  relay_params.dy = params.dy;
+  relay_params.scroll_delta = params.scroll_delta;
   relay_params.scroll_rect = params.scroll_rect;
   relay_params.copy_rects = params.copy_rects;
   relay_params.view_size = params.view_size;
