@@ -221,6 +221,8 @@
     'renderer/render_view_impl.cc',
     'renderer/render_view_impl.h',
     'renderer/render_view_impl_android.cc',
+    'renderer/render_view_impl_params.cc',
+    'renderer/render_view_impl_params.h',
     'renderer/render_view_linux.cc',
     'renderer/render_view_mouse_lock_dispatcher.cc',
     'renderer/render_view_mouse_lock_dispatcher.h',

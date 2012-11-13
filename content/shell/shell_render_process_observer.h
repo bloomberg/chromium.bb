@@ -38,6 +38,10 @@ class ShellRenderProcessObserver : public RenderProcessObserver {
   virtual void WebKitInitialized() OVERRIDE;
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  WebTestRunner::WebTestInterfaces* test_interfaces() const {
+    return test_interfaces_.get();
+  }
+
  private:
   // Message handlers.
   void OnResetAll();

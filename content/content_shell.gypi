@@ -30,6 +30,7 @@
         'content_shell_resources',
         'content_utility',
         'content_worker',
+        'test_support_content',
         'content_resources.gyp:content_resources',
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',

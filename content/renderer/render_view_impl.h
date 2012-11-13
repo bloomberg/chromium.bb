@@ -163,6 +163,7 @@ class WebPluginDelegateProxy;
 class WebUIBindings;
 struct CustomContextMenuContext;
 struct FileChooserParams;
+struct RenderViewImplParams;
 
 #if defined(OS_ANDROID)
 class WebMediaPlayerProxyImplAndroid;
@@ -186,15 +187,16 @@ typedef base::RefCountedData<int> SharedRenderViewCounter;
 // RenderView is an object that manages a WebView object, and provides a
 // communication interface with an embedding application process
 //
-class RenderViewImpl : public RenderWidget,
-                       public WebKit::WebViewClient,
-                       public WebKit::WebFrameClient,
-                       public WebKit::WebPageSerializerClient,
-                       public RenderView,
-                       public webkit::npapi::WebPluginPageDelegate,
-                       public webkit_media::WebMediaPlayerDelegate,
-                       public WebGraphicsContext3DSwapBuffersClient,
-                       public base::SupportsWeakPtr<RenderViewImpl> {
+class CONTENT_EXPORT RenderViewImpl
+    : public RenderWidget,
+      public WebKit::WebViewClient,
+      public WebKit::WebFrameClient,
+      public WebKit::WebPageSerializerClient,
+      public RenderView,
+      public webkit::npapi::WebPluginPageDelegate,
+      public webkit_media::WebMediaPlayerDelegate,
+      public WebGraphicsContext3DSwapBuffersClient,
+      public base::SupportsWeakPtr<RenderViewImpl> {
  public:
   // Creates a new RenderView. If this is a blocked popup or as a new tab,
   // opener_id is the routing ID of the RenderView responsible for creating this
@@ -214,6 +216,11 @@ class RenderViewImpl : public RenderWidget,
       int32 next_page_id,
       const WebKit::WebScreenInfo& screen_info,
       AccessibilityMode accessibility_mode);
+
+  // Used by content_layouttest_support to hook into the creation of
+  // RenderViewImpls.
+  static void InstallCreateHook(
+      RenderViewImpl* (*create_render_view_impl)(RenderViewImplParams*));
 
   // Returns the RenderViewImpl containing the given WebView.
   CONTENT_EXPORT static RenderViewImpl* FromWebView(WebKit::WebView* webview);
@@ -767,6 +774,12 @@ class RenderViewImpl : public RenderWidget,
   virtual bool CanComposeInline() OVERRIDE;
   virtual bool WebWidgetHandlesCompositorScheduling() const OVERRIDE;
 
+ protected:
+  RenderViewImpl(RenderViewImplParams* params);
+
+  // Do not delete directly.  This class is reference counted.
+  virtual ~RenderViewImpl();
+
  private:
   // For unit tests.
   friend class ExternalPopupMenuTest;
@@ -813,23 +826,6 @@ class RenderViewImpl : public RenderWidget,
     HTTP_404,
     CONNECTION_ERROR,
   };
-
-  RenderViewImpl(int32 opener_id,
-                 const RendererPreferences& renderer_prefs,
-                 const webkit_glue::WebPreferences& webkit_prefs,
-                 SharedRenderViewCounter* counter,
-                 int32 routing_id,
-                 int32 surface_id,
-                 int64 session_storage_namespace_id,
-                 const string16& frame_name,
-                 bool is_renderer_created,
-                 bool swapped_out,
-                 int32 next_page_id,
-                 const WebKit::WebScreenInfo& screen_info,
-                 AccessibilityMode accessibility_mode);
-
-  // Do not delete directly.  This class is reference counted.
-  virtual ~RenderViewImpl();
 
   void UpdateURL(WebKit::WebFrame* frame);
   void UpdateTitle(WebKit::WebFrame* frame, const string16& title,
