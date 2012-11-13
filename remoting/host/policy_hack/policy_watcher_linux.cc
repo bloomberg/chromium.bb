@@ -69,8 +69,9 @@ class PolicyWatcherLinux : public PolicyWatcher {
     if (!config_dir_.empty() &&
         !watcher_->Watch(
             config_dir_,
-            new FilePathWatcherDelegate(weak_factory_.GetWeakPtr()))) {
-      OnFilePathError(config_dir_);
+            base::Bind(&PolicyWatcherLinux::OnFilePathChanged,
+                       weak_factory_.GetWeakPtr()))) {
+      OnFilePathChanged(config_dir_, true);
     }
 
     // There might have been changes to the directory in the time between
@@ -87,46 +88,15 @@ class PolicyWatcherLinux : public PolicyWatcher {
     watcher_.reset();
   }
 
-  // Called by FilePathWatcherDelegate.
-  virtual void OnFilePathError(const FilePath& path) {
-    LOG(ERROR) << "PolicyWatcherLinux on " << path.value()
-               << " failed.";
-  }
-
-  // Called by FilePathWatcherDelegate.
-  virtual void OnFilePathChanged(const FilePath& path) {
+ private:
+  void OnFilePathChanged(const FilePath& path, bool error) {
     DCHECK(OnPolicyWatcherThread());
 
-    Reload();
+    if (!error)
+      Reload();
+    else
+      LOG(ERROR) << "PolicyWatcherLinux on " << path.value() << " failed.";
   }
-
- private:
-  // Needed to avoid refcounting PolicyWatcherLinux.
-  class FilePathWatcherDelegate :
-    public base::files::FilePathWatcher::Delegate {
-   public:
-    FilePathWatcherDelegate(base::WeakPtr<PolicyWatcherLinux> policy_watcher)
-        : policy_watcher_(policy_watcher) {
-    }
-
-    virtual void OnFilePathError(const FilePath& path) {
-      if (policy_watcher_) {
-        policy_watcher_->OnFilePathError(path);
-      }
-    }
-
-    virtual void OnFilePathChanged(const FilePath& path) {
-      if (policy_watcher_) {
-        policy_watcher_->OnFilePathChanged(path);
-      }
-    }
-
-   protected:
-    virtual ~FilePathWatcherDelegate() {}
-
-   private:
-    base::WeakPtr<PolicyWatcherLinux> policy_watcher_;
-  };
 
   base::Time GetLastModification() {
     DCHECK(OnPolicyWatcherThread());
