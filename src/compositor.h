@@ -851,6 +851,9 @@ gles2_renderer_output_destroy(struct weston_output *output);
 EGLSurface
 gles2_renderer_output_surface(struct weston_output *output);
 void
+gles2_renderer_set_border(struct weston_compositor *ec, int32_t width, int32_t height, void *data,
+			  int32_t *edges);
+void
 gles2_renderer_destroy(struct weston_compositor *ec);
 
 int

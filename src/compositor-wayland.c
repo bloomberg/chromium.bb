@@ -36,8 +36,6 @@
 #include <wayland-client.h>
 #include <wayland-egl.h>
 
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
@@ -63,8 +61,6 @@ struct wayland_compositor {
 
 	struct {
 		int32_t top, bottom, left, right;
-		GLuint texture;
-		int32_t width, height;
 	} border;
 
 	struct wl_list input_list;
@@ -72,7 +68,6 @@ struct wayland_compositor {
 
 struct wayland_output {
 	struct weston_output	base;
-	struct wl_listener	frame_listener;
 	struct {
 		struct wl_surface	*surface;
 		struct wl_shell_surface	*shell_surface;
@@ -95,126 +90,11 @@ struct wayland_input {
 	struct wayland_output *output;
 };
 
-
-static int
-texture_border(struct wayland_output *output)
-{
-	struct wayland_compositor *c =
-		(struct wayland_compositor *) output->base.compositor;
-	GLfloat *d;
-	unsigned int *p;
-	int i, j, k, n;
-	GLfloat x[4], y[4], u[4], v[4];
-
-	x[0] = -c->border.left;
-	x[1] = 0;
-	x[2] = output->base.current->width;
-	x[3] = output->base.current->width + c->border.right;
-
-	y[0] = -c->border.top;
-	y[1] = 0;
-	y[2] = output->base.current->height;
-	y[3] = output->base.current->height + c->border.bottom;
-
-	u[0] = 0.0;
-	u[1] = (GLfloat) c->border.left / c->border.width;
-	u[2] = (GLfloat) (c->border.width - c->border.right) / c->border.width;
-	u[3] = 1.0;
-
-	v[0] = 0.0;
-	v[1] = (GLfloat) c->border.top / c->border.height;
-	v[2] = (GLfloat) (c->border.height - c->border.bottom) / c->border.height;
-	v[3] = 1.0;
-
-	n = 8;
-	d = wl_array_add(&c->base.vertices, n * 16 * sizeof *d);
-	p = wl_array_add(&c->base.indices, n * 6 * sizeof *p);
-
-	k = 0;
-	for (i = 0; i < 3; i++)
-		for (j = 0; j < 3; j++) {
-
-			if (i == 1 && j == 1)
-				continue;
-
-			d[ 0] = x[i];
-			d[ 1] = y[j];
-			d[ 2] = u[i];
-			d[ 3] = v[j];
-
-			d[ 4] = x[i];
-			d[ 5] = y[j + 1];
-			d[ 6] = u[i];
-			d[ 7] = v[j + 1];
-
-			d[ 8] = x[i + 1];
-			d[ 9] = y[j];
-			d[10] = u[i + 1];
-			d[11] = v[j];
-
-			d[12] = x[i + 1];
-			d[13] = y[j + 1];
-			d[14] = u[i + 1];
-			d[15] = v[j + 1];
-
-			p[0] = k + 0;
-			p[1] = k + 1;
-			p[2] = k + 2;
-			p[3] = k + 2;
-			p[4] = k + 1;
-			p[5] = k + 3;
-
-			d += 16;
-			p += 6;
-			k += 4;
-		}
-
-	return k / 4;
-}
-
-static void
-draw_border(struct wayland_output *output)
-{
-	struct wayland_compositor *c =
-		(struct wayland_compositor *) output->base.compositor;
-	struct weston_shader *shader = &c->base.texture_shader_rgba;
-	GLfloat *v;
-	int n;
-
-	glDisable(GL_BLEND);
-	glUseProgram(shader->program);
-	c->base.current_shader = shader;
-
-	glUniformMatrix4fv(shader->proj_uniform,
-			   1, GL_FALSE, output->base.matrix.d);
-
-	glUniform1i(shader->tex_uniforms[0], 0);
-	glUniform1f(shader->alpha_uniform, 1);
-
-	n = texture_border(output);
-
-	glBindTexture(GL_TEXTURE_2D, c->border.texture);
-
-	v = c->base.vertices.data;
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[0]);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[2]);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-
-	glDrawElements(GL_TRIANGLES, n * 6,
-		       GL_UNSIGNED_INT, c->base.indices.data);
-
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(0);
-
-	c->base.vertices.size = 0;
-	c->base.indices.size = 0;
-}
-
 static void
 create_border(struct wayland_compositor *c)
 {
 	pixman_image_t *image;
+	int32_t edges[4];
 
 	image = load_image(DATADIR "/weston/border.png");
 	if (!image) {
@@ -222,21 +102,14 @@ create_border(struct wayland_compositor *c)
 		return;
 	}
 
-	c->border.width = pixman_image_get_width(image);
-	c->border.height = pixman_image_get_height(image);
+	edges[0] = c->border.left;
+	edges[1] = c->border.right;
+	edges[2] = c->border.top;
+	edges[3] = c->border.bottom;
 
-	glGenTextures(1, &c->border.texture);
-	glBindTexture(GL_TEXTURE_2D, c->border.texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
-		     c->border.width,
-		     c->border.height,
-		     0, GL_BGRA_EXT, GL_UNSIGNED_BYTE,
-		     pixman_image_get_data(image));
+	gles2_renderer_set_border(&c->base, pixman_image_get_width(image),
+		pixman_image_get_height(image),
+		pixman_image_get_data(image), edges);
 
 	pixman_image_unref(image);
 }
@@ -253,16 +126,6 @@ frame_done(void *data, struct wl_callback *callback, uint32_t time)
 static const struct wl_callback_listener frame_listener = {
 	frame_done
 };
-
-static void
-wayland_output_frame_notify(struct wl_listener *listener, void *data)
-{
-	struct wayland_output *output =
-		container_of(listener,
-			     struct wayland_output, frame_listener);
-
-	draw_border(output);
-}
 
 static void
 wayland_output_repaint(struct weston_output *output_base,
@@ -316,10 +179,6 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	weston_output_init(&output->base, &c->base, 0, 0, width, height,
 						WL_OUTPUT_TRANSFORM_NORMAL);
 
-	output->base.border.top = c->border.top;
-	output->base.border.bottom = c->border.bottom;
-	output->base.border.left = c->border.left;
-	output->base.border.right = c->border.right;
 	output->base.make = "waywayland";
 	output->base.model = "none";
 
@@ -358,9 +217,6 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	output->base.switch_mode = NULL;
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
-
-	output->frame_listener.notify = wayland_output_frame_notify;
-	wl_signal_add(&output->base.frame_signal, &output->frame_listener);
 
 	return 0;
 
