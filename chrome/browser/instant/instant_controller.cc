@@ -42,15 +42,6 @@
 
 namespace {
 
-enum PreviewUsageType {
-  PREVIEW_CREATED = 0,
-  PREVIEW_DELETED,
-  PREVIEW_LOADED,
-  PREVIEW_SHOWED,
-  PREVIEW_COMMITTED,
-  PREVIEW_NUM_TYPES,
-};
-
 // An artificial delay (in milliseconds) we introduce before telling the Instant
 // page about the new omnibox bounds, in cases where the bounds shrink. This is
 // to avoid the page jumping up/down very fast in response to bounds changes.
@@ -73,15 +64,6 @@ std::string ModeToString(InstantController::Mode mode) {
 
   NOTREACHED();
   return std::string();
-}
-
-void AddPreviewUsageForHistogram(InstantController::Mode mode,
-                                 PreviewUsageType usage) {
-  DCHECK(0 <= usage && usage < PREVIEW_NUM_TYPES) << usage;
-  base::Histogram* histogram = base::LinearHistogram::FactoryGet(
-      "Instant.Previews" + ModeToString(mode), 1, PREVIEW_NUM_TYPES,
-      PREVIEW_NUM_TYPES + 1, base::Histogram::kUmaTargetedHistogramFlag);
-  histogram->Add(usage);
 }
 
 void AddSessionStorageHistogram(InstantController::Mode mode,
@@ -156,8 +138,6 @@ InstantModel::PreviewState GetNewPreviewState(InstantShownReason reason) {
 }  // namespace
 
 InstantController::~InstantController() {
-  if (GetPreviewContents())
-    AddPreviewUsageForHistogram(mode_, PREVIEW_DELETED);
 }
 
 // static
@@ -414,7 +394,6 @@ void InstantController::CommitCurrentPreview(InstantCommitType type) {
                      history::SOURCE_BROWSED, false);
   }
 
-  AddPreviewUsageForHistogram(mode_, PREVIEW_COMMITTED);
   DeleteLoader();
 
   preview->web_contents()->GetController().PruneAllButActive();
@@ -628,7 +607,6 @@ void InstantController::ShowInstantPreview(InstantLoader* loader,
 }
 
 void InstantController::InstantLoaderPreviewLoaded(InstantLoader* loader) {
-  AddPreviewUsageForHistogram(mode_, PREVIEW_LOADED);
 }
 
 void InstantController::InstantSupportDetermined(InstantLoader* loader,
@@ -689,8 +667,6 @@ void InstantController::ResetLoader(const std::string& instant_url,
       loader_->OnAutocompleteLostFocus();
     loader_->OnActiveTabModeChanged(active_tab_is_ntp_);
 
-    AddPreviewUsageForHistogram(mode_, PREVIEW_CREATED);
-
     // Reset the loader timer.
     stale_loader_timer_.Stop();
     stale_loader_timer_.Start(
@@ -742,10 +718,9 @@ void InstantController::DeleteLoader() {
   last_match_was_search_ = false;
   last_omnibox_bounds_ = gfx::Rect();
   url_for_history_ = GURL();
-  if (GetPreviewContents()) {
-    AddPreviewUsageForHistogram(mode_, PREVIEW_DELETED);
+  if (GetPreviewContents())
     model_.SetPreviewState(InstantModel::NOT_READY, 0, INSTANT_SIZE_PERCENT);
-  }
+
   // Schedule the deletion for later, since we may have gotten here from a call
   // within a |loader_| method (i.e., it's still on the stack). If we deleted
   // the loader immediately, things would still be fine so long as the caller
@@ -765,9 +740,6 @@ void InstantController::Show(InstantShownReason reason,
       model_.preview_state() == InstantModel::NOT_READY)
     return;
 
-  if (model_.preview_state() == InstantModel::NOT_READY ||
-      model_.preview_state() == InstantModel::AWAITING_SUGGESTIONS)
-    AddPreviewUsageForHistogram(mode_, PREVIEW_SHOWED);
   model_.SetPreviewState(GetNewPreviewState(reason), height, units);
 }
 
