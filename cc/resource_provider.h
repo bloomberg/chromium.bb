@@ -197,11 +197,6 @@ public:
         DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockSoftware);
     };
 
-     // Temporary functions for debugging crashes in issue 151428 in canary.
-     // Do not use these!
-     static void debugNotifyEnterZone(unsigned int index);
-     static void debugNotifyLeaveZone();
-
 private:
     struct Resource {
         Resource();

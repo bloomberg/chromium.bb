@@ -249,9 +249,7 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     DCHECK(m_proxy->isImplThread());
 
     m_contentsTextureManager->updateBackingsInDrawingImplTree();
-    ResourceProvider::debugNotifyEnterZone(0xA000000);
     m_contentsTextureManager->reduceMemory(hostImpl->resourceProvider());
-    ResourceProvider::debugNotifyLeaveZone();
 
     hostImpl->setRootLayer(TreeSynchronizer::synchronizeTrees(rootLayer(), hostImpl->detachLayerTree(), hostImpl));
 

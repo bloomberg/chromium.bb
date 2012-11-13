@@ -23,15 +23,6 @@
 
 using WebKit::WebGraphicsContext3D;
 
-namespace {
-   // Temporary variables for debugging crashes in issue 151428 in canary.
-   // Do not use these!
-   const int g_debugMaxResourcesTracked = 64;
-   unsigned int g_debugZone = 0;
-   int64 g_debugResDestroyedCount = 0;
-   cc::ResourceProvider::ResourceId g_debugResDestroyed[g_debugMaxResourcesTracked] = { 0 };
-}
-
 namespace cc {
 
 static GLenum textureToStorageFormat(GLenum textureFormat)
@@ -233,7 +224,6 @@ void ResourceProvider::deleteResourceInternal(ResourceMap::iterator it)
     if (resource->pixels)
         delete[] resource->pixels;
 
-    g_debugResDestroyed[g_debugResDestroyedCount % g_debugMaxResourcesTracked] = (*it).first | g_debugZone;
     m_resources.erase(it);
 }
 
@@ -352,23 +342,7 @@ const ResourceProvider::Resource* ResourceProvider::lockForRead(ResourceId id)
 {
     DCHECK(m_threadChecker.CalledOnValidThread());
     ResourceMap::iterator it = m_resources.find(id);
-
-    if (it == m_resources.end()) {
-        int resourceCount = m_resources.size();
-        int64 resDestroyedCount = g_debugResDestroyedCount;
-        ResourceId resDestroyed[g_debugMaxResourcesTracked];
-        for (int64 i = 0; i < g_debugMaxResourcesTracked; ++i)
-            resDestroyed[i] = g_debugResDestroyed[i];
-        ResourceId resToDestroy = id;
-
-        base::debug::Alias(&resourceCount);
-        base::debug::Alias(&resDestroyedCount);
-        for (int64 i = 0; i < g_debugMaxResourcesTracked; ++i)
-            base::debug::Alias(&resDestroyed[i]);
-        base::debug::Alias(&resToDestroy);
-        CHECK(it != m_resources.end());
-    }
-
+    CHECK(it != m_resources.end());
     Resource* resource = &it->second;
     DCHECK(!resource->lockedForWrite);
     DCHECK(!resource->exported);
@@ -677,16 +651,5 @@ bool ResourceProvider::transferResource(WebGraphicsContext3D* context, ResourceI
     GLC(context, context->produceTextureCHROMIUM(GL_TEXTURE_2D, resource->mailbox.name));
     return true;
 }
-
-void ResourceProvider::debugNotifyEnterZone(unsigned int zone)
-{
-    g_debugZone = zone;
-}
-
-void ResourceProvider::debugNotifyLeaveZone()
-{
-    g_debugZone = 0;
-}
-
 
 }  // namespace cc
