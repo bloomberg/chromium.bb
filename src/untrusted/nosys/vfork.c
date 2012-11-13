@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-pid_t vfork() {
+pid_t vfork(void) {
   errno = ENOSYS;
   return -1;
 }

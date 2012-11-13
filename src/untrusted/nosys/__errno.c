@@ -10,7 +10,7 @@
 
 extern int errno;
 
-int *__errno() {
+int *__errno(void) {
   return &errno;
 }
 

@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-typedef void (*TYPE_nacl_gc_hook)();
+typedef void (*TYPE_nacl_gc_hook)(void);
 
 extern void nacl_register_gc_hooks(TYPE_nacl_gc_hook prehook,
                                    TYPE_nacl_gc_hook posthook);

@@ -30,7 +30,7 @@ int nacl_tls_init(void *thread_ptr) {
   return -NACL_SYSCALL(second_tls_set)(thread_ptr);
 }
 
-void *nacl_tls_get() {
+void *nacl_tls_get(void) {
   /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
 #if defined(__i386__)
   /*
@@ -46,6 +46,6 @@ void *nacl_tls_get() {
 #endif
 }
 
-void *__nacl_read_tp() {
+void *__nacl_read_tp(void) {
   return nacl_tls_get();
 }

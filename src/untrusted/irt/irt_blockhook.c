@@ -35,13 +35,13 @@ static void (*post_block_hook)(void);
  */
 __thread int g_is_irt_internal_thread;
 
-void IRT_pre_irtcall_hook() {
+void IRT_pre_irtcall_hook(void) {
   if (pre_block_hook != NULL && !g_is_irt_internal_thread) {
     pre_block_hook();
   }
 }
 
-void IRT_post_irtcall_hook() {
+void IRT_post_irtcall_hook(void) {
   if (post_block_hook != NULL && !g_is_irt_internal_thread) {
     post_block_hook();
   }

@@ -37,7 +37,7 @@ static void push(void* function_address) {
   ++top_loc;
 }
 
-static void pop() {
+static void pop(void) {
   /*
    * It's possible the calls and returns won't match.  Don't decrement past the
    * bottom of the stack.
@@ -55,7 +55,7 @@ void __cyg_profile_func_exit(void* this_fn, void* call_site) {
   pop();
 }
 
-void __nacl_dump_stack_trace() {
+void __nacl_dump_stack_trace(void) {
   int i;
   int top_to_display;
   if (top_loc > STACK_MAX_DEPTH) {

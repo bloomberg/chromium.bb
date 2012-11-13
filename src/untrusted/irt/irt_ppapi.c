@@ -22,7 +22,7 @@ int32_t PPP_InitializeModule(PP_Module module_id,
   return g_pp_functions.PPP_InitializeModule(module_id, get_browser_interface);
 }
 
-void PPP_ShutdownModule() {
+void PPP_ShutdownModule(void) {
   g_pp_functions.PPP_ShutdownModule();
 }
 

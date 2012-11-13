@@ -9,7 +9,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
-static int IrtInit() {
+static int IrtInit(void) {
   static int initialized = 0;
   if (initialized) {
     return 0;

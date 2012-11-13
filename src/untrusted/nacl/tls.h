@@ -21,9 +21,9 @@ void __pthread_initialize_minimal(size_t tdb_size);
  * Initializes the thread-local data of newlib (which achieves
  * reentrancy by making heavy use of TLS).
  */
-void __newlib_thread_init();
+void __newlib_thread_init(void);
 
-void __newlib_thread_exit();
+void __newlib_thread_exit(void);
 
 
 /*

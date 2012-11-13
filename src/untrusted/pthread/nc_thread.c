@@ -90,7 +90,7 @@ int __nc_memory_block_counter[2];
 
 /* Internal functions */
 
-static inline void nc_abort() {
+static inline void nc_abort(void) {
   while (1) *(volatile int *) 0 = 0;  /* Crash.  */
 }
 
