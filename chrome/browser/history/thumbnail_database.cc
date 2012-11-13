@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
@@ -197,6 +198,10 @@ sql::InitStatus ThumbnailDatabase::Init(
     return sql::INIT_FAILURE;
   }
 
+  // Log in a UMA histogram if the structure of the favicons database is not
+  // what it should be.
+  LogIfFaviconDBStructureIncorrect();
+
   return sql::INIT_OK;
 }
 
@@ -319,6 +324,11 @@ bool ThumbnailDatabase::InitFaviconBitmapsIndex() {
   // Add an index on the icon_id column.
   return db_.Execute("CREATE INDEX IF NOT EXISTS favicon_bitmaps_icon_id ON "
                      "favicon_bitmaps(icon_id)");
+}
+
+void ThumbnailDatabase::LogIfFaviconDBStructureIncorrect() {
+  if (!db_.IsSQLValid("SELECT id, url, icon_type, sizes FROM favicons"))
+    UMA_HISTOGRAM_BOOLEAN("ThumbnailDatabase.InvalidFaviconsDBStructure", true);
 }
 
 void ThumbnailDatabase::BeginTransaction() {
