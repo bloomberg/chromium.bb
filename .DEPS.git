@@ -104,7 +104,7 @@ deps = {
     'src/third_party/skia/src':
         Var('git_url') + '/external/skia/src.git@a29024e9f900c5565340a27e925bca7d0f6ea8e1',
     'src/third_party/smhasher/src':
-        Var('git_url') + '/external/smhasher.git@6895dced6534c9a041ceba5cabed231d3b2d8518',
+        Var('git_url') + '/external/smhasher.git@e813f9b95be7adad5a2e441f4484278c453e5261',
     'src/third_party/snappy/src':
         Var('git_url') + '/external/snappy.git@5a4a7d94c947c66a7608cfc38258beb32274d9c8',
     'src/third_party/speex':
@@ -138,7 +138,7 @@ deps = {
     'src/tools/swarm_client':
         Var('git_url') + '/chromium/tools/swarm_client.git@4a393b72111f19b014e461319359e3ae454b9857',
     'src/v8':
-        Var('git_url') + '/external/v8.git@fc2a4f46ef23bff79ae0056b02a52a2e8ac5f339',
+        Var('git_url') + '/external/v8.git@f755b16db8c1e30ebe89225f8fbd066dbcdd2ae9',
 }
 
 deps_os = {
