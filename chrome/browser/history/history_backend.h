@@ -8,9 +8,9 @@
 #include <string>
 #include <utility>
 
+#include "base/containers/mru_cache.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/mru_cache.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/archived_database.h"

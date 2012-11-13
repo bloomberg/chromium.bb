@@ -20,8 +20,8 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/containers/mru_cache.h"
 #include "base/hash_tables.h"
-#include "base/memory/mru_cache.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string_piece.h"

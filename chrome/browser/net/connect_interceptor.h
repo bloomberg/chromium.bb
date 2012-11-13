@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_NET_CONNECT_INTERCEPTOR_H_
 #define CHROME_BROWSER_NET_CONNECT_INTERCEPTOR_H_
 
+#include "base/containers/mru_cache.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/mru_cache.h"
 #include "base/time.h"
 #include "net/url_request/url_request_job_factory.h"
 

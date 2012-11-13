@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_NACL_HOST_NACL_VALIDATION_CACHE_H_
 #define CHROME_BROWSER_NACL_HOST_NACL_VALIDATION_CACHE_H_
 
-#include "base/memory/mru_cache.h"
+#include "base/containers/mru_cache.h"
 
 class Pickle;
 
