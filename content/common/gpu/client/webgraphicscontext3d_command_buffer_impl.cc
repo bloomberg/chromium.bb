@@ -1475,6 +1475,11 @@ void WebGraphicsContext3DCommandBufferImpl::OnMemoryAllocationChanged(
   if (memory_allocation_changed_callback_)
     memory_allocation_changed_callback_->onMemoryAllocationChanged(
         web_allocation);
+
+  // We may have allocated transfer buffers in order to free GL resources in a
+  // backgrounded tab. Re-free the transfer buffers.
+  if (!visible_)
+    gl_->FreeEverything();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::setErrorMessageCallback(
