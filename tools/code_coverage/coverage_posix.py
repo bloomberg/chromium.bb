@@ -602,6 +602,7 @@ class Coverage(object):
     # If asked, run all we can find.
     if self.options.all_unittests:
       self.tests += glob.glob(os.path.join(self.directory, '*_unittests'))
+      self.tests += glob.glob(os.path.join(self.directory, '*unit_tests'))
 
     # Tests can come in as args directly, indirectly (through a file
     # of test lists) or as a file of bundles.
