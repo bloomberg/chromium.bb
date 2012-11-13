@@ -2034,11 +2034,17 @@ DialogType.isModal = function(type) {
   FileManager.prototype.onExternalLinkClick_ = function(event) {
     if (event.target.tagName != 'A' || !event.target.href)
       return;
-    chrome.tabs.create({url: event.target.href});
+
+    // In a packaged apps links with targer='_blank' open in a new tab by
+    // default, other links do not open at all.
+    if (!util.platform.v2()) {
+      chrome.tabs.create({url: event.target.href});
+      event.preventDefault();
+    }
+
     if (this.dialogType != DialogType.FULL_PAGE) {
       this.onCancel_();
     }
-    event.preventDefault();
   };
 
   /**

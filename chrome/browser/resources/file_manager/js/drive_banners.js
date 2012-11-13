@@ -131,10 +131,11 @@ FileListBannerController.prototype.showBanner_ = function(type, messageId) {
     more.textContent = str('GDATA_LEARN_MORE');
     more.href = GOOGLE_DRIVE_FAQ_URL;
   }
+  more.target = '_blank';
 
   var dismiss;
   if (this.newWelcome_)
-    dismiss = util.createChild(links, 'gdata-welcome-button', 'a');
+    dismiss = util.createChild(links, 'gdata-welcome-button');
   else
     dismiss = util.createChild(links, 'plain-link');
 
@@ -430,6 +431,7 @@ FileListBannerController.prototype.showLowDownloadsSpaceWarning_ =
     box.innerHTML = html;
     var link = box.querySelector('a');
     link.href = DOWNLOADS_FAQ_URL;
+    link.target = '_blank';
   } else {
     box.innerHTML = '';
   }
@@ -477,6 +479,7 @@ FileListBannerController.prototype.ensureGDataUnmountedPanelInitialized_ =
   var learnMore = create(panel, 'a', 'learn-more plain-link',
                          str('GDATA_LEARN_MORE'));
   learnMore.href = GOOGLE_DRIVE_ERROR_HELP_URL;
+  learnMore.target = '_blank';
 };
 
 /**
