@@ -543,7 +543,7 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
     double throb_value = GetThrobValue();
     if (throb_value > 0) {
       canvas->SaveLayerAlpha(static_cast<int>(throb_value * 0xff),
-                             gfx::Rect(width(), height()));
+                             GetLocalBounds());
       PaintActiveTabBackground(canvas);
       canvas->Restore();
     }

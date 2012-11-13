@@ -458,7 +458,7 @@ gfx::ImageSkia NewTabButton::GetBackgroundImage(
 
   // White highlight on hover.
   if (state == views::CustomButton::BS_HOT)
-    canvas.FillRect(gfx::Rect(size()), SkColorSetARGB(64, 255, 255, 255));
+    canvas.FillRect(GetLocalBounds(), SkColorSetARGB(64, 255, 255, 255));
 
   return gfx::ImageSkiaOperations::CreateMaskedImage(
       gfx::ImageSkia(canvas.ExtractImageRep()), *mask);

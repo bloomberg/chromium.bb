@@ -101,7 +101,7 @@ void BrowserActionView::PaintChildren(gfx::Canvas* canvas) {
   ExtensionAction* action = button()->browser_action();
   int tab_id = delegate_->GetCurrentTabId();
   if (tab_id >= 0)
-    action->PaintBadge(canvas, gfx::Rect(width(), height()), tab_id);
+    action->PaintBadge(canvas, GetLocalBounds(), tab_id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

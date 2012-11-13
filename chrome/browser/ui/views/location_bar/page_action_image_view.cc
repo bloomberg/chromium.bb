@@ -259,10 +259,8 @@ void PageActionImageView::OnIconChanged() {
 
 void PageActionImageView::PaintChildren(gfx::Canvas* canvas) {
   View::PaintChildren(canvas);
-  if (current_tab_id_ >= 0) {
-    page_action_->PaintBadge(canvas, gfx::Rect(width(), height()),
-                             current_tab_id_);
-  }
+  if (current_tab_id_ >= 0)
+    page_action_->PaintBadge(canvas, GetLocalBounds(), current_tab_id_);
 }
 
 void PageActionImageView::ShowPopupWithURL(
