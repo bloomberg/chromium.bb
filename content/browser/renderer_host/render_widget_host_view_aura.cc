@@ -312,6 +312,16 @@ void RenderWidgetHostViewAura::InitAsPopup(
     const gfx::Rect& bounds_in_display) {
   popup_parent_host_view_ =
       static_cast<RenderWidgetHostViewAura*>(parent_host_view);
+
+  RenderWidgetHostViewAura* old_child =
+      popup_parent_host_view_->popup_child_host_view_;
+  if (old_child) {
+    // TODO(jhorwich): Allow multiple popup_child_host_view_ per view, or
+    // similar mechanism to ensure a second popup doesn't cause the first one
+    // to never get a chance to filter events. See crbug.com/160589.
+    DCHECK(old_child->popup_parent_host_view_ == popup_parent_host_view_);
+    old_child->popup_parent_host_view_ = NULL;
+  }
   popup_parent_host_view_->popup_child_host_view_ = this;
   window_->SetType(aura::client::WINDOW_TYPE_MENU);
   window_->Init(ui::LAYER_TEXTURED);
@@ -1778,9 +1788,15 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   }
   window_->RemoveObserver(window_observer_.get());
   UnlockMouse();
-  if (popup_type_ != WebKit::WebPopupTypeNone) {
-    DCHECK(popup_parent_host_view_);
+  if (popup_type_ != WebKit::WebPopupTypeNone && popup_parent_host_view_) {
+    DCHECK(popup_parent_host_view_->popup_child_host_view_ == NULL ||
+           popup_parent_host_view_->popup_child_host_view_ == this);
     popup_parent_host_view_->popup_child_host_view_ = NULL;
+  }
+  if (popup_child_host_view_) {
+    DCHECK(popup_child_host_view_->popup_parent_host_view_ == NULL ||
+           popup_child_host_view_->popup_parent_host_view_ == this);
+    popup_child_host_view_->popup_parent_host_view_ = NULL;
   }
   aura::client::SetTooltipText(window_, NULL);
   aura::DisplayManager* display_manager =
