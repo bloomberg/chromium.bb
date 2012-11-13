@@ -15,6 +15,8 @@
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #elif defined(OS_LINUX)
 #include "base/linux_util.h"
+#elif defined(OS_IOS)
+#include "sync/util/get_session_name_ios.h"
 #elif defined(OS_MACOSX)
 #include "sync/util/get_session_name_mac.h"
 #elif defined(OS_WIN)
@@ -44,6 +46,8 @@ std::string GetSessionNameSynchronously() {
   session_name = board.substr(0, 6) == "stumpy" ? "Chromebox" : "Chromebook";
 #elif defined(OS_LINUX)
   session_name = base::GetLinuxDistro();
+#elif defined(OS_IOS)
+  session_name = internal::GetComputerName();
 #elif defined(OS_MACOSX)
   session_name = internal::GetHardwareModelName();
 #elif defined(OS_WIN)

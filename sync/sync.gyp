@@ -222,6 +222,8 @@
         'util/extensions_activity_monitor.h',
         'util/get_session_name.cc',
         'util/get_session_name.h',
+        'util/get_session_name_ios.mm',
+        'util/get_session_name_ios.h',
         'util/get_session_name_mac.mm',
         'util/get_session_name_mac.h',
         'util/get_session_name_win.cc',
@@ -273,7 +275,12 @@
         'notifier/object_id_invalidation_map.h',
       ],
       'conditions': [
-        ['OS != "android"', {
+        ['OS == "ios"', {
+          'sources!': [
+            'notifier/invalidator_factory.cc',
+          ],
+        }],
+        ['OS != "android" and OS != "ios"', {
           'sources': [
             'notifier/ack_tracker.cc',
             'notifier/ack_tracker.h',
@@ -695,7 +702,15 @@
           'notifier/invalidator_factory_unittest.cc',
         ],
         'conditions': [
-          ['OS != "android"', {
+          ['OS == "ios"', {
+            'sources!': [
+              # TODO(ios): Re-enable this test on iOS once there is an iOS
+              # implementation of invalidator_factory.
+              'notifier/invalidator_factory_unittest.cc',
+              'notifier/sync_notifier_factory_unittest.cc',
+            ],
+          }],
+          ['OS != "android" and OS != "ios"', {
             'sources': [
               'notifier/ack_tracker_unittest.cc',
               'notifier/fake_invalidator_unittest.cc',
@@ -772,6 +787,13 @@
           'internal_api/syncapi_server_connection_manager_unittest.cc',
           'internal_api/sync_encryption_handler_impl_unittest.cc',
           'internal_api/sync_manager_impl_unittest.cc',
+        ],
+        'conditions': [
+          ['OS == "ios"', {
+            'sources!': [
+              'internal_api/http_bridge_unittest.cc',
+            ],
+          }],
         ],
       },
     },
