@@ -105,7 +105,7 @@ create_border(struct wayland_compositor *c)
 	edges[2] = c->border.top;
 	edges[3] = c->border.bottom;
 
-	gles2_renderer_set_border(&c->base, pixman_image_get_width(image),
+	gl_renderer_set_border(&c->base, pixman_image_get_width(image),
 		pixman_image_get_height(image),
 		pixman_image_get_data(image), edges);
 
@@ -144,7 +144,7 @@ wayland_output_destroy(struct weston_output *output_base)
 {
 	struct wayland_output *output = (struct wayland_output *) output_base;
 
-	gles2_renderer_output_destroy(output_base);
+	gl_renderer_output_destroy(output_base);
 
 	wl_egl_window_destroy(output->parent.egl_window);
 	free(output);
@@ -195,7 +195,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 		goto cleanup_output;
 	}
 
-	if (gles2_renderer_output_create(&output->base,
+	if (gl_renderer_output_create(&output->base,
 			output->parent.egl_window) < 0)
 		goto cleanup_window;
 
@@ -607,7 +607,7 @@ wayland_restore(struct weston_compositor *ec)
 static void
 wayland_destroy(struct weston_compositor *ec)
 {
-	gles2_renderer_destroy(ec);
+	gl_renderer_destroy(ec);
 
 	weston_compositor_shutdown(ec);
 
@@ -646,8 +646,8 @@ wayland_compositor_create(struct wl_display *display,
 	wl_display_dispatch(c->parent.wl_display);
 
 	c->base.wl_display = display;
-	if (gles2_renderer_create(&c->base, c->parent.wl_display,
-			gles2_renderer_alpha_attribs,
+	if (gl_renderer_create(&c->base, c->parent.wl_display,
+			gl_renderer_alpha_attribs,
 			NULL) < 0)
 		goto err_display;
 
@@ -661,9 +661,9 @@ wayland_compositor_create(struct wl_display *display,
 
 	/* requires border fields */
 	if (wayland_compositor_create_output(c, width, height) < 0)
-		goto err_gles2;
+		goto err_gl;
 
-	/* requires gles2_renderer_output_state_create called
+	/* requires gl_renderer_output_state_create called
 	 * by wayland_compositor_create_output */
 	create_border(c);
 
@@ -674,14 +674,14 @@ wayland_compositor_create(struct wl_display *display,
 		wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE,
 				     wayland_compositor_handle_event, c);
 	if (c->parent.wl_source == NULL)
-		goto err_gles2;
+		goto err_gl;
 
 	wl_event_source_check(c->parent.wl_source);
 
 	return &c->base;
 
-err_gles2:
-	gles2_renderer_destroy(&c->base);
+err_gl:
+	gl_renderer_destroy(&c->base);
 err_display:
 	wl_display_disconnect(c->parent.wl_display);
 err_compositor:

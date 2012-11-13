@@ -37,7 +37,7 @@
 #include <EGL/eglext.h>
 #include "weston-egl-ext.h"
 
-struct gles2_shader {
+struct gl_shader {
 	GLuint program;
 	GLuint vertex_shader, fragment_shader;
 	GLint proj_uniform;
@@ -46,13 +46,13 @@ struct gles2_shader {
 	GLint color_uniform;
 };
 
-struct gles2_output_state {
+struct gl_output_state {
 	EGLSurface egl_surface;
 };
 
-struct gles2_surface_state {
+struct gl_surface_state {
 	GLfloat color[4];
-	struct gles2_shader *shader;
+	struct gl_shader *shader;
 
 	GLuint textures[3];
 	int num_textures;
@@ -62,7 +62,7 @@ struct gles2_surface_state {
 	int num_images;
 };
 
-struct gles2_renderer {
+struct gl_renderer {
 	struct weston_renderer base;
 	int fragment_shader_debug;
 
@@ -89,33 +89,33 @@ struct gles2_renderer {
 
 	int has_egl_image_external;
 
-	struct gles2_shader texture_shader_rgba;
-	struct gles2_shader texture_shader_rgbx;
-	struct gles2_shader texture_shader_egl_external;
-	struct gles2_shader texture_shader_y_uv;
-	struct gles2_shader texture_shader_y_u_v;
-	struct gles2_shader texture_shader_y_xuxv;
-	struct gles2_shader invert_color_shader;
-	struct gles2_shader solid_shader;
-	struct gles2_shader *current_shader;
+	struct gl_shader texture_shader_rgba;
+	struct gl_shader texture_shader_rgbx;
+	struct gl_shader texture_shader_egl_external;
+	struct gl_shader texture_shader_y_uv;
+	struct gl_shader texture_shader_y_u_v;
+	struct gl_shader texture_shader_y_xuxv;
+	struct gl_shader invert_color_shader;
+	struct gl_shader solid_shader;
+	struct gl_shader *current_shader;
 };
 
-static inline struct gles2_output_state *
+static inline struct gl_output_state *
 get_output_state(struct weston_output *output)
 {
-	return (struct gles2_output_state *)output->renderer_state;
+	return (struct gl_output_state *)output->renderer_state;
 }
 
-static inline struct gles2_surface_state *
+static inline struct gl_surface_state *
 get_surface_state(struct weston_surface *surface)
 {
-	return (struct gles2_surface_state *)surface->renderer_state;
+	return (struct gl_surface_state *)surface->renderer_state;
 }
 
-static inline struct gles2_renderer *
+static inline struct gl_renderer *
 get_renderer(struct weston_compositor *ec)
 {
-	return (struct gles2_renderer *)ec->renderer;
+	return (struct gl_renderer *)ec->renderer;
 }
 
 static const char *
@@ -585,7 +585,7 @@ static void
 triangle_fan_debug(struct weston_surface *surface, int first, int count)
 {
 	struct weston_compositor *compositor = surface->compositor;
-	struct gles2_renderer *gr = get_renderer(compositor);
+	struct gl_renderer *gr = get_renderer(compositor);
 	int i;
 	GLushort *buffer;
 	GLushort *index;
@@ -669,8 +669,8 @@ static int
 use_output(struct weston_output *output)
 {
 	static int errored;
-	struct gles2_output_state *go = get_output_state(output);
-	struct gles2_renderer *gr = get_renderer(output->compositor);
+	struct gl_output_state *go = get_output_state(output);
+	struct gl_renderer *gr = get_renderer(output->compositor);
 	EGLBoolean ret;
 
 	ret = eglMakeCurrent(gr->egl_display, go->egl_surface,
@@ -689,8 +689,8 @@ use_output(struct weston_output *output)
 }
 
 static void
-use_shader(struct gles2_renderer *gr,
-			     struct gles2_shader *shader)
+use_shader(struct gl_renderer *gr,
+			     struct gl_shader *shader)
 {
 	if (gr->current_shader == shader)
 		return;
@@ -700,12 +700,12 @@ use_shader(struct gles2_renderer *gr,
 }
 
 static void
-shader_uniforms(struct gles2_shader *shader,
+shader_uniforms(struct gl_shader *shader,
 		       struct weston_surface *surface,
 		       struct weston_output *output)
 {
 	int i;
-	struct gles2_surface_state *gs = get_surface_state(surface);
+	struct gl_surface_state *gs = get_surface_state(surface);
 
 	glUniformMatrix4fv(shader->proj_uniform,
 			   1, GL_FALSE, output->matrix.d);
@@ -721,8 +721,8 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	     pixman_region32_t *damage) /* in global coordinates */
 {
 	struct weston_compositor *ec = es->compositor;
-	struct gles2_renderer *gr = get_renderer(ec);
-	struct gles2_surface_state *gs = get_surface_state(es);
+	struct gl_renderer *gr = get_renderer(ec);
+	struct gl_surface_state *gs = get_surface_state(es);
 	/* repaint bounding region in global coordinates: */
 	pixman_region32_t repaint;
 	/* non-opaque region in surface coordinates: */
@@ -816,7 +816,7 @@ static int
 texture_border(struct weston_output *output)
 {
 	struct weston_compositor *ec = output->compositor;
-	struct gles2_renderer *gr = get_renderer(ec);
+	struct gl_renderer *gr = get_renderer(ec);
 	GLfloat *d;
 	unsigned int *p;
 	int i, j, k, n;
@@ -892,8 +892,8 @@ static void
 draw_border(struct weston_output *output)
 {
 	struct weston_compositor *ec = output->compositor;
-	struct gles2_renderer *gr = get_renderer(ec);
-	struct gles2_shader *shader = &gr->texture_shader_rgba;
+	struct gl_renderer *gr = get_renderer(ec);
+	struct gl_shader *shader = &gr->texture_shader_rgba;
 	GLfloat *v;
 	int n;
 
@@ -928,12 +928,12 @@ draw_border(struct weston_output *output)
 }
 
 static void
-gles2_renderer_repaint_output(struct weston_output *output,
+gl_renderer_repaint_output(struct weston_output *output,
 			      pixman_region32_t *output_damage)
 {
-	struct gles2_output_state *go = get_output_state(output);
+	struct gl_output_state *go = get_output_state(output);
 	struct weston_compositor *compositor = output->compositor;
-	struct gles2_renderer *gr = get_renderer(compositor);
+	struct gl_renderer *gr = get_renderer(compositor);
 	EGLBoolean ret;
 	static int errored;
 	int32_t width, height, i;
@@ -989,7 +989,7 @@ gles2_renderer_repaint_output(struct weston_output *output,
 }
 
 static int
-gles2_renderer_read_pixels(struct weston_output *output,
+gl_renderer_read_pixels(struct weston_output *output,
 			       pixman_format_code_t format, void *pixels,
 			       uint32_t x, uint32_t y,
 			       uint32_t width, uint32_t height)
@@ -1018,10 +1018,10 @@ gles2_renderer_read_pixels(struct weston_output *output,
 }
 
 static void
-gles2_renderer_flush_damage(struct weston_surface *surface)
+gl_renderer_flush_damage(struct weston_surface *surface)
 {
-	struct gles2_renderer *gr = get_renderer(surface->compositor);
-	struct gles2_surface_state *gs = get_surface_state(surface);
+	struct gl_renderer *gr = get_renderer(surface->compositor);
+	struct gl_surface_state *gs = get_surface_state(surface);
 
 #ifdef GL_UNPACK_ROW_LENGTH
 	pixman_box32_t *rectangles;
@@ -1074,7 +1074,7 @@ done:
 }
 
 static void
-ensure_textures(struct gles2_surface_state *gs, int num_textures)
+ensure_textures(struct gl_surface_state *gs, int num_textures)
 {
 	int i;
 
@@ -1094,11 +1094,11 @@ ensure_textures(struct gles2_surface_state *gs, int num_textures)
 }
 
 static void
-gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
+gl_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 {
 	struct weston_compositor *ec = es->compositor;
-	struct gles2_renderer *gr = get_renderer(ec);
-	struct gles2_surface_state *gs = get_surface_state(es);
+	struct gl_renderer *gr = get_renderer(ec);
+	struct gl_surface_state *gs = get_surface_state(es);
 	EGLint attribs[3], format;
 	int i, num_planes;
 
@@ -1186,11 +1186,11 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 }
 
 static void
-gles2_renderer_surface_set_color(struct weston_surface *surface,
+gl_renderer_surface_set_color(struct weston_surface *surface,
 		 float red, float green, float blue, float alpha)
 {
-	struct gles2_surface_state *gs = get_surface_state(surface);
-	struct gles2_renderer *gr = get_renderer(surface->compositor);
+	struct gl_surface_state *gs = get_surface_state(surface);
+	struct gl_renderer *gr = get_renderer(surface->compositor);
 
 	gs->color[0] = red;
 	gs->color[1] = green;
@@ -1201,9 +1201,9 @@ gles2_renderer_surface_set_color(struct weston_surface *surface,
 }
 
 static int
-gles2_renderer_create_surface(struct weston_surface *surface)
+gl_renderer_create_surface(struct weston_surface *surface)
 {
-	struct gles2_surface_state *gs;
+	struct gl_surface_state *gs;
 
 	gs = calloc(1, sizeof *gs);
 
@@ -1216,10 +1216,10 @@ gles2_renderer_create_surface(struct weston_surface *surface)
 }
 
 static void
-gles2_renderer_destroy_surface(struct weston_surface *surface)
+gl_renderer_destroy_surface(struct weston_surface *surface)
 {
-	struct gles2_surface_state *gs = get_surface_state(surface);
-	struct gles2_renderer *gr = get_renderer(surface->compositor);
+	struct gl_surface_state *gs = get_surface_state(surface);
+	struct gl_renderer *gr = get_renderer(surface->compositor);
 	int i;
 
 	glDeleteTextures(gs->num_textures, gs->textures);
@@ -1359,15 +1359,14 @@ compile_shader(GLenum type, int count, const char **sources)
 }
 
 static int
-shader_init(struct gles2_shader *shader, struct weston_compositor *ec,
+shader_init(struct gl_shader *shader, struct weston_compositor *ec,
 		   const char *vertex_source, const char *fragment_source)
 {
 	char msg[512];
 	GLint status;
 	int count;
 	const char *sources[3];
-	struct gles2_renderer *renderer =
-		(struct gles2_renderer *) ec->renderer;
+	struct gl_renderer *renderer = get_renderer(ec);
 
 	shader->vertex_shader =
 		compile_shader(GL_VERTEX_SHADER, 1, &vertex_source);
@@ -1411,7 +1410,7 @@ shader_init(struct gles2_shader *shader, struct weston_compositor *ec,
 }
 
 static void
-shader_release(struct gles2_shader *shader)
+shader_release(struct gl_shader *shader)
 {
 	glDeleteShader(shader->vertex_shader);
 	glDeleteShader(shader->fragment_shader);
@@ -1503,7 +1502,7 @@ log_egl_config_info(EGLDisplay egldpy, EGLConfig eglconfig)
 }
 
 static void
-output_apply_border(struct weston_output *output, struct gles2_renderer *gr)
+output_apply_border(struct weston_output *output, struct gl_renderer *gr)
 {
 	output->border.top = gr->border.top;
 	output->border.bottom = gr->border.bottom;
@@ -1512,10 +1511,10 @@ output_apply_border(struct weston_output *output, struct gles2_renderer *gr)
 }
 
 WL_EXPORT void
-gles2_renderer_set_border(struct weston_compositor *ec, int32_t width, int32_t height, void *data,
+gl_renderer_set_border(struct weston_compositor *ec, int32_t width, int32_t height, void *data,
 			  int32_t *edges)
 {
-	struct gles2_renderer *gr = get_renderer(ec);
+	struct gl_renderer *gr = get_renderer(ec);
 	struct weston_output *output;
 
 	gr->border.left = edges[0];
@@ -1544,15 +1543,15 @@ gles2_renderer_set_border(struct weston_compositor *ec, int32_t width, int32_t h
 }
 
 static int
-gles2_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface);
+gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface);
 
 WL_EXPORT int
-gles2_renderer_output_create(struct weston_output *output,
+gl_renderer_output_create(struct weston_output *output,
 				    EGLNativeWindowType window)
 {
 	struct weston_compositor *ec = output->compositor;
-	struct gles2_renderer *gr = get_renderer(ec);
-	struct gles2_output_state *go = calloc(1, sizeof *go);
+	struct gl_renderer *gr = get_renderer(ec);
+	struct gl_output_state *go = calloc(1, sizeof *go);
 
 	if (!go)
 		return -1;
@@ -1569,7 +1568,7 @@ gles2_renderer_output_create(struct weston_output *output,
 	}
 
 	if (gr->egl_context == NULL)
-		if (gles2_renderer_setup(ec, go->egl_surface) < 0) {
+		if (gl_renderer_setup(ec, go->egl_surface) < 0) {
 			free(go);
 			return -1;
 		}
@@ -1582,10 +1581,10 @@ gles2_renderer_output_create(struct weston_output *output,
 }
 
 WL_EXPORT void
-gles2_renderer_output_destroy(struct weston_output *output)
+gl_renderer_output_destroy(struct weston_output *output)
 {
-	struct gles2_renderer *gr = get_renderer(output->compositor);
-	struct gles2_output_state *go = get_output_state(output);
+	struct gl_renderer *gr = get_renderer(output->compositor);
+	struct gl_output_state *go = get_output_state(output);
 
 	eglDestroySurface(gr->egl_display, go->egl_surface);
 
@@ -1593,15 +1592,15 @@ gles2_renderer_output_destroy(struct weston_output *output)
 }
 
 WL_EXPORT EGLSurface
-gles2_renderer_output_surface(struct weston_output *output)
+gl_renderer_output_surface(struct weston_output *output)
 {
 	return get_output_state(output)->egl_surface;
 }
 
 WL_EXPORT void
-gles2_renderer_destroy(struct weston_compositor *ec)
+gl_renderer_destroy(struct weston_compositor *ec)
 {
-	struct gles2_renderer *gr = get_renderer(ec);
+	struct gl_renderer *gr = get_renderer(ec);
 
 	if (gr->has_bind_display)
 		gr->unbind_display(gr->egl_display, ec->wl_display);
@@ -1616,7 +1615,7 @@ gles2_renderer_destroy(struct weston_compositor *ec)
 }
 
 static int
-egl_choose_config(struct gles2_renderer *gr, const EGLint *attribs,
+egl_choose_config(struct gl_renderer *gr, const EGLint *attribs,
 	const EGLint *visual_id)
 {
 	EGLint count = 0;
@@ -1659,7 +1658,7 @@ out:
 	return -1;
 }
 
-WL_EXPORT const EGLint gles2_renderer_opaque_attribs[] = {
+WL_EXPORT const EGLint gl_renderer_opaque_attribs[] = {
 	EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 	EGL_RED_SIZE, 1,
 	EGL_GREEN_SIZE, 1,
@@ -1669,7 +1668,7 @@ WL_EXPORT const EGLint gles2_renderer_opaque_attribs[] = {
 	EGL_NONE
 };
 
-WL_EXPORT const EGLint gles2_renderer_alpha_attribs[] = {
+WL_EXPORT const EGLint gl_renderer_alpha_attribs[] = {
 	EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 	EGL_RED_SIZE, 1,
 	EGL_GREEN_SIZE, 1,
@@ -1680,10 +1679,10 @@ WL_EXPORT const EGLint gles2_renderer_alpha_attribs[] = {
 };
 
 WL_EXPORT int
-gles2_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
+gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
 	const EGLint *attribs, const EGLint *visual_id)
 {
-	struct gles2_renderer *gr;
+	struct gl_renderer *gr;
 	EGLint major, minor;
 
 	gr = calloc(1, sizeof *gr);
@@ -1691,13 +1690,13 @@ gles2_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display
 	if (gr == NULL)
 		return -1;
 
-	gr->base.read_pixels = gles2_renderer_read_pixels;
-	gr->base.repaint_output = gles2_renderer_repaint_output;
-	gr->base.flush_damage = gles2_renderer_flush_damage;
-	gr->base.attach = gles2_renderer_attach;
-	gr->base.create_surface = gles2_renderer_create_surface;
-	gr->base.surface_set_color = gles2_renderer_surface_set_color;
-	gr->base.destroy_surface = gles2_renderer_destroy_surface;
+	gr->base.read_pixels = gl_renderer_read_pixels;
+	gr->base.repaint_output = gl_renderer_repaint_output;
+	gr->base.flush_damage = gl_renderer_flush_damage;
+	gr->base.attach = gl_renderer_attach;
+	gr->base.create_surface = gl_renderer_create_surface;
+	gr->base.surface_set_color = gl_renderer_surface_set_color;
+	gr->base.destroy_surface = gl_renderer_destroy_surface;
 
 	gr->egl_display = eglGetDisplay(display);
 	if (gr->egl_display == EGL_NO_DISPLAY) {
@@ -1726,7 +1725,7 @@ err_egl:
 }
 
 WL_EXPORT EGLDisplay
-gles2_renderer_display(struct weston_compositor *ec)
+gl_renderer_display(struct weston_compositor *ec)
 {
 	return get_renderer(ec)->egl_display;
 }
@@ -1734,7 +1733,7 @@ gles2_renderer_display(struct weston_compositor *ec)
 static int
 compile_shaders(struct weston_compositor *ec)
 {
-	struct gles2_renderer *gr = get_renderer(ec);
+	struct gl_renderer *gr = get_renderer(ec);
 
 	if (shader_init(&gr->texture_shader_rgba, ec,
 			     vertex_shader, texture_fragment_shader_rgba) < 0)
@@ -1767,7 +1766,7 @@ fragment_debug_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 		       void *data)
 {
 	struct weston_compositor *ec = data;
-	struct gles2_renderer *gr = get_renderer(ec);
+	struct gl_renderer *gr = get_renderer(ec);
 	struct weston_output *output;
 
 	gr->fragment_shader_debug ^= 1;
@@ -1787,9 +1786,9 @@ fragment_debug_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 }
 
 static int
-gles2_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
+gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 {
-	struct gles2_renderer *gr = get_renderer(ec);
+	struct gl_renderer *gr = get_renderer(ec);
 	const char *extensions;
 	EGLBoolean ret;
 

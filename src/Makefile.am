@@ -35,7 +35,7 @@ weston_SOURCES =				\
 	matrix.c				\
 	matrix.h				\
 	gl-renderer.h				\
-	gles2-renderer.c			\
+	gl-renderer.c				\
 	noop-renderer.c				\
 	weston-launch.h				\
 	weston-egl-ext.h

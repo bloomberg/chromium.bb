@@ -109,7 +109,7 @@ android_output_destroy(struct weston_output *base)
 	wl_list_remove(&output->base.link);
 	weston_output_destroy(&output->base);
 
-	gles2_renderer_output_destroy(base);
+	gl_renderer_output_destroy(base);
 
 	android_framebuffer_destroy(output->fb);
 
@@ -288,14 +288,14 @@ android_init_egl(struct android_compositor *compositor,
 {
 	EGLint visual_id = output->fb->format;
 
-	if (gles2_renderer_create(&compositor->base,
-			EGL_DEFAULT_DISPLAY, gles2_renderer_opaque_attribs,
+	if (gl_renderer_create(&compositor->base,
+			EGL_DEFAULT_DISPLAY, gl_renderer_opaque_attribs,
 			&visual_id) < 0)
 		return -1;
 
-	if (gles2_renderer_output_create(&output->base,
+	if (gl_renderer_output_create(&output->base,
 			output->fb->native_window) < 0) {
-		gles2_renderer_destroy(&compositor->base);
+		gl_renderer_destroy(&compositor->base);
 		return -1;
 	}
 
@@ -309,7 +309,7 @@ android_compositor_destroy(struct weston_compositor *base)
 
 	android_seat_destroy(compositor->seat);
 
-	gles2_renderer_destroy(base);
+	gl_renderer_destroy(base);
 
 	/* destroys outputs, too */
 	weston_compositor_shutdown(&compositor->base);
@@ -349,12 +349,12 @@ android_compositor_create(struct wl_display *display, int argc, char *argv[],
 
 	compositor->seat = android_seat_create(compositor);
 	if (!compositor->seat)
-		goto err_gles2;
+		goto err_gl;
 
 	return &compositor->base;
 
-err_gles2:
-	gles2_renderer_destroy(&compositor->base);
+err_gl:
+	gl_renderer_destroy(&compositor->base);
 err_output:
 	android_output_destroy(&output->base);
 err_compositor:

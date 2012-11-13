@@ -341,7 +341,7 @@ x11_output_destroy(struct weston_output *output_base)
 	wl_list_remove(&output->base.link);
 	wl_event_source_remove(output->finish_frame_timer);
 
-	gles2_renderer_output_destroy(output_base);
+	gl_renderer_output_destroy(output_base);
 
 	xcb_destroy_window(compositor->conn, output->window);
 
@@ -570,7 +570,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	weston_output_init(&output->base, &c->base,
 			   x, y, width, height, transform);
 
-	if (gles2_renderer_output_create(&output->base, output->window) < 0)
+	if (gl_renderer_output_create(&output->base, output->window) < 0)
 		return NULL;
 
 	loop = wl_display_get_event_loop(c->base.wl_display);
@@ -1104,7 +1104,7 @@ x11_destroy(struct weston_compositor *ec)
 
 	weston_compositor_shutdown(ec); /* destroys outputs, too */
 
-	gles2_renderer_destroy(ec);
+	gl_renderer_destroy(ec);
 
 	XCloseDisplay(compositor->dpy);
 	free(ec);
@@ -1152,7 +1152,7 @@ x11_compositor_create(struct wl_display *display,
 	x11_compositor_get_resources(c);
 
 	c->base.wl_display = display;
-	if (gles2_renderer_create(&c->base, c->dpy, gles2_renderer_opaque_attribs,
+	if (gl_renderer_create(&c->base, c->dpy, gl_renderer_opaque_attribs,
 			NULL) < 0)
 		goto err_xdisplay;
 
@@ -1160,7 +1160,7 @@ x11_compositor_create(struct wl_display *display,
 	c->base.restore = x11_restore;
 
 	if (x11_input_create(c, no_input) < 0)
-		goto err_gles2;
+		goto err_gl;
 
 	width = option_width ? option_width : 1024;
 	height = option_height ? option_height : 640;
@@ -1204,8 +1204,8 @@ x11_compositor_create(struct wl_display *display,
 
 err_x11_input:
 	x11_input_destroy(c);
-err_gles2:
-	gles2_renderer_destroy(&c->base);
+err_gl:
+	gl_renderer_destroy(&c->base);
 err_xdisplay:
 	XCloseDisplay(c->dpy);
 err_free:

@@ -24,23 +24,23 @@
 
 #include <EGL/egl.h>
 
-extern const EGLint gles2_renderer_opaque_attribs[];
-extern const EGLint gles2_renderer_alpha_attribs[];
+extern const EGLint gl_renderer_opaque_attribs[];
+extern const EGLint gl_renderer_alpha_attribs[];
 
 int
-gles2_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
+gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
 	const EGLint *attribs, const EGLint *visual_id);
 EGLDisplay
-gles2_renderer_display(struct weston_compositor *ec);
+gl_renderer_display(struct weston_compositor *ec);
 int
-gles2_renderer_output_create(struct weston_output *output,
+gl_renderer_output_create(struct weston_output *output,
 				    EGLNativeWindowType window);
 void
-gles2_renderer_output_destroy(struct weston_output *output);
+gl_renderer_output_destroy(struct weston_output *output);
 EGLSurface
-gles2_renderer_output_surface(struct weston_output *output);
+gl_renderer_output_surface(struct weston_output *output);
 void
-gles2_renderer_set_border(struct weston_compositor *ec, int32_t width, int32_t height, void *data,
+gl_renderer_set_border(struct weston_compositor *ec, int32_t width, int32_t height, void *data,
 			  int32_t *edges);
 void
-gles2_renderer_destroy(struct weston_compositor *ec);
+gl_renderer_destroy(struct weston_compositor *ec);

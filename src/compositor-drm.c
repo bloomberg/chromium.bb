@@ -830,7 +830,7 @@ drm_output_destroy(struct weston_output *output_base)
 	c->crtc_allocator &= ~(1 << output->crtc_id);
 	c->connector_allocator &= ~(1 << output->connector_id);
 
-	gles2_renderer_output_destroy(output_base);
+	gl_renderer_output_destroy(output_base);
 
 	gbm_surface_destroy(output->surface);
 
@@ -936,9 +936,9 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 		return -1;
 	}
 
-	gles2_renderer_output_destroy(&output->base);
+	gl_renderer_output_destroy(&output->base);
 
-	if (!gles2_renderer_output_create(&output->base, surface)) {
+	if (!gl_renderer_output_create(&output->base, surface)) {
 		weston_log("failed to create renderer output\n");
 		goto err_gbm;
 	}
@@ -949,7 +949,7 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 			     &output->connector_id, 1, &drm_mode->mode_info);
 	if (ret) {
 		weston_log("failed to set mode\n");
-		goto err_gles2;
+		goto err_gl;
 	}
 
 	/* reset rendering stuff. */
@@ -980,8 +980,8 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 	weston_output_move(&output->base, output->base.x, output->base.y);
 	return 0;
 
-err_gles2:
-	gles2_renderer_output_destroy(&output->base);
+err_gl:
+	gl_renderer_output_destroy(&output->base);
 err_gbm:
 	gbm_surface_destroy(surface);
 	return -1;
@@ -1029,7 +1029,7 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 	ec->drm.fd = fd;
 	ec->gbm = gbm_create_device(ec->drm.fd);
 
-	if (gles2_renderer_create(&ec->base, ec->gbm, gles2_renderer_opaque_attribs,
+	if (gl_renderer_create(&ec->base, ec->gbm, gl_renderer_opaque_attribs,
 			NULL) < 0) {
 		gbm_device_destroy(ec->gbm);
 		return -1;
@@ -1368,7 +1368,7 @@ create_output_for_connector(struct drm_compositor *ec,
 			   connector->mmWidth, connector->mmHeight,
 			   o ? o->transform : WL_OUTPUT_TRANSFORM_NORMAL);
 
-	if (gles2_renderer_output_create(&output->base, output->surface) < 0)
+	if (gl_renderer_output_create(&output->base, output->surface) < 0)
 		goto err_output;
 
 	output->cursor_bo[0] =
@@ -1948,7 +1948,7 @@ drm_destroy(struct weston_compositor *ec)
 
 	weston_compositor_shutdown(ec);
 
-	gles2_renderer_destroy(ec);
+	gl_renderer_destroy(ec);
 
 	destroy_sprites(d);
 	gbm_device_destroy(d->gbm);
@@ -2233,7 +2233,7 @@ err_drm_source:
 	wl_list_for_each_safe(weston_seat, next, &ec->base.seat_list, link)
 		evdev_input_destroy(weston_seat);
 err_sprite:
-	gles2_renderer_destroy(&ec->base);
+	gl_renderer_destroy(&ec->base);
 	gbm_device_destroy(ec->gbm);
 	destroy_sprites(ec);
 err_udev_dev:

@@ -971,7 +971,7 @@ rpi_output_destroy(struct weston_output *base)
 	vc_dispmanx_element_remove(update, output->egl_element);
 	vc_dispmanx_update_submit_sync(update);
 
-	gles2_renderer_output_destroy(base);
+	gl_renderer_output_destroy(base);
 
 	wl_list_for_each_safe(element, tmp, &output->element_list, link)
 		rpi_element_destroy(element);
@@ -1086,16 +1086,16 @@ rpi_output_create(struct rpi_compositor *compositor)
 			   0, 0, round(mm_width), round(mm_height),
 			   WL_OUTPUT_TRANSFORM_NORMAL);
 
-	if (gles2_renderer_output_create(&output->base,
+	if (gl_renderer_output_create(&output->base,
 			(EGLNativeWindowType)&output->egl_window) < 0)
 		goto out_output;
 
-	if (!eglSurfaceAttrib(gles2_renderer_display(&compositor->base),
-			     gles2_renderer_output_surface(&output->base),
+	if (!eglSurfaceAttrib(gl_renderer_display(&compositor->base),
+			     gl_renderer_output_surface(&output->base),
 			      EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED)) {
 		print_egl_error_state();
 		weston_log("Failed to set swap behaviour to preserved.\n");
-		goto out_gles2;
+		goto out_gl;
 	}
 
 	wl_list_insert(compositor->base.output_list.prev, &output->base.link);
@@ -1107,8 +1107,8 @@ rpi_output_create(struct rpi_compositor *compositor)
 
 	return 0;
 
-out_gles2:
-	gles2_renderer_output_destroy(&output->base);
+out_gl:
+	gl_renderer_output_destroy(&output->base);
 out_output:
 	weston_output_destroy(&output->base);
 	update = vc_dispmanx_update_start(0);
@@ -1368,7 +1368,7 @@ rpi_compositor_destroy(struct weston_compositor *base)
 	/* destroys outputs, too */
 	weston_compositor_shutdown(&compositor->base);
 
-	gles2_renderer_destroy(&compositor->base);
+	gl_renderer_destroy(&compositor->base);
 	tty_destroy(compositor->tty);
 
 	bcm_host_deinit();
@@ -1510,19 +1510,19 @@ rpi_compositor_create(struct wl_display *display, int argc, char *argv[],
 	 */
 	bcm_host_init();
 
-	if (gles2_renderer_create(&compositor->base, EGL_DEFAULT_DISPLAY,
+	if (gl_renderer_create(&compositor->base, EGL_DEFAULT_DISPLAY,
 		config_attrs, NULL) < 0)
 		goto out_tty;
 
 	if (rpi_output_create(compositor) < 0)
-		goto out_gles2;
+		goto out_gl;
 
 	evdev_input_create(&compositor->base, compositor->udev, seat);
 
 	return &compositor->base;
 
-out_gles2:
-	gles2_renderer_destroy(&compositor->base);
+out_gl:
+	gl_renderer_destroy(&compositor->base);
 
 out_tty:
 	tty_destroy(compositor->tty);
