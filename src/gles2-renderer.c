@@ -36,6 +36,17 @@ struct gles2_renderer {
 	int fragment_shader_debug;
 };
 
+struct gles2_output_state {
+	EGLSurface egl_surface;
+};
+
+
+static inline struct gles2_output_state *
+get_output_state(struct weston_output *output)
+{
+	return (struct gles2_output_state *)output->renderer_state;
+}
+
 static const char *
 egl_error_string(EGLint code)
 {
@@ -706,6 +717,7 @@ static void
 gles2_renderer_repaint_output(struct weston_output *output,
 			      pixman_region32_t *output_damage)
 {
+	struct gles2_output_state *go = get_output_state(output);
 	struct weston_compositor *compositor = output->compositor;
 	EGLBoolean ret;
 	static int errored;
@@ -718,8 +730,8 @@ gles2_renderer_repaint_output(struct weston_output *output,
 
 	glViewport(0, 0, width, height);
 
-	ret = eglMakeCurrent(compositor->egl_display, output->egl_surface,
-			     output->egl_surface, compositor->egl_context);
+	ret = eglMakeCurrent(compositor->egl_display, go->egl_surface,
+			     go->egl_surface, compositor->egl_context);
 	if (ret == EGL_FALSE) {
 		if (errored)
 			return;
@@ -755,7 +767,7 @@ gles2_renderer_repaint_output(struct weston_output *output,
 
 	wl_signal_emit(&output->frame_signal, output);
 
-	ret = eglSwapBuffers(compositor->egl_display, output->egl_surface);
+	ret = eglSwapBuffers(compositor->egl_display, go->egl_surface);
 	if (ret == EGL_FALSE && !errored) {
 		errored = 1;
 		weston_log("Failed in eglSwapBuffers.\n");
@@ -1213,6 +1225,57 @@ log_egl_config_info(EGLDisplay egldpy, EGLConfig eglconfig)
 		weston_log_continue(" unknown\n");
 }
 
+static int
+gles2_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface);
+
+WL_EXPORT int
+gles2_renderer_output_create(struct weston_output *output,
+				    EGLNativeWindowType window)
+{
+	struct weston_compositor *ec = output->compositor;
+	struct gles2_output_state *go = calloc(1, sizeof *go);
+
+	if (!go)
+		return -1;
+
+	go->egl_surface =
+		eglCreateWindowSurface(ec->egl_display,
+				       ec->egl_config,
+				       window, NULL);
+
+	if (go->egl_surface == EGL_NO_SURFACE) {
+		weston_log("failed to create egl surface\n");
+		free(go);
+		return -1;
+	}
+
+	if (ec->egl_context == NULL)
+		if (gles2_renderer_setup(ec, go->egl_surface) < 0) {
+			free(go);
+			return -1;
+		}
+
+	output->renderer_state = go;
+
+	return 0;
+}
+
+WL_EXPORT void
+gles2_renderer_output_destroy(struct weston_output *output)
+{
+	struct gles2_output_state *go = get_output_state(output);
+
+	eglDestroySurface(output->compositor->egl_display, go->egl_surface);
+
+	free(go);
+}
+
+WL_EXPORT EGLSurface
+gles2_renderer_output_surface(struct weston_output *output)
+{
+	return get_output_state(output)->egl_surface;
+}
+
 WL_EXPORT void
 gles2_renderer_destroy(struct weston_compositor *ec)
 {
@@ -1274,12 +1337,11 @@ fragment_debug_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 		weston_output_damage(output);
 }
 
-WL_EXPORT int
-gles2_renderer_init(struct weston_compositor *ec)
+static int
+gles2_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 {
 	struct gles2_renderer *renderer;
 	const char *extensions;
-	struct weston_output *output;
 	EGLBoolean ret;
 
 	static const EGLint context_attribs[] = {
@@ -1307,10 +1369,8 @@ gles2_renderer_init(struct weston_compositor *ec)
 		return -1;
 	}
 
-	output = container_of(ec->output_list.next,
-			      struct weston_output, link);
-	ret = eglMakeCurrent(ec->egl_display, output->egl_surface,
-			     output->egl_surface, ec->egl_context);
+	ret = eglMakeCurrent(ec->egl_display, egl_surface,
+			     egl_surface, ec->egl_context);
 	if (ret == EGL_FALSE) {
 		weston_log("Failed to make EGL context current.\n");
 		print_egl_error_state();

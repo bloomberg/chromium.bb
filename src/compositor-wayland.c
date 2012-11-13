@@ -317,9 +317,9 @@ static void
 wayland_output_destroy(struct weston_output *output_base)
 {
 	struct wayland_output *output = (struct wayland_output *) output_base;
-	struct weston_compositor *ec = output->base.compositor;
 
-	eglDestroySurface(ec->egl_display, output->base.egl_surface);
+	gles2_renderer_output_destroy(output_base);
+
 	wl_egl_window_destroy(output->parent.egl_window);
 	free(output);
 
@@ -373,13 +373,9 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 		goto cleanup_output;
 	}
 
-	output->base.egl_surface =
-		eglCreateWindowSurface(c->base.egl_display, c->base.egl_config,
-				       output->parent.egl_window, NULL);
-	if (!output->base.egl_surface) {
-		weston_log("failed to create window surface\n");
+	if (gles2_renderer_output_create(&output->base,
+			output->parent.egl_window) < 0)
 		goto cleanup_window;
-	}
 
 	output->parent.shell_surface =
 		wl_shell_get_shell_surface(c->parent.shell,
@@ -844,10 +840,6 @@ wayland_compositor_create(struct wl_display *display,
 
 	/* requires border fields */
 	if (wayland_compositor_create_output(c, width, height) < 0)
-		goto err_display;
-
-	/* requires wayland_compositor_create_output */
-	if (gles2_renderer_init(&c->base) < 0)
 		goto err_display;
 
 	/* requires gles2_renderer_init */

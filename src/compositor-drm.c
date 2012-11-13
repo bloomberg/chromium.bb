@@ -829,7 +829,8 @@ drm_output_destroy(struct weston_output *output_base)
 	c->crtc_allocator &= ~(1 << output->crtc_id);
 	c->connector_allocator &= ~(1 << output->connector_id);
 
-	eglDestroySurface(c->base.egl_display, output->base.egl_surface);
+	gles2_renderer_output_destroy(output_base);
+
 	gbm_surface_destroy(output->surface);
 
 	weston_plane_release(&output->fb_plane);
@@ -875,7 +876,6 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 	int ret;
 	struct drm_compositor *ec;
 	struct gbm_surface *surface;
-	EGLSurface egl_surface;
 
 	if (output_base == NULL) {
 		weston_log("output is NULL.\n");
@@ -935,14 +935,11 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 		return -1;
 	}
 
-	egl_surface =
-		eglCreateWindowSurface(ec->base.egl_display,
-				       ec->base.egl_config,
-				       surface, NULL);
+	gles2_renderer_output_destroy(&output->base);
 
-	if (egl_surface == EGL_NO_SURFACE) {
-		weston_log("failed to create egl surface\n");
-		goto err;
+	if (!gles2_renderer_output_create(&output->base, surface)) {
+		weston_log("failed to create renderer output\n");
+		goto err_gbm;
 	}
 
 	ret = drmModeSetCrtc(ec->drm.fd,
@@ -951,7 +948,7 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 			     &output->connector_id, 1, &drm_mode->mode_info);
 	if (ret) {
 		weston_log("failed to set mode\n");
-		goto err;
+		goto err_gles2;
 	}
 
 	/* reset rendering stuff. */
@@ -973,9 +970,7 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 	}
 	output->next = NULL;
 
-	eglDestroySurface(ec->base.egl_display, output->base.egl_surface);
 	gbm_surface_destroy(output->surface);
-	output->base.egl_surface = egl_surface;
 	output->surface = surface;
 
 	/*update output*/
@@ -984,8 +979,9 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 	weston_output_move(&output->base, output->base.x, output->base.y);
 	return 0;
 
-err:
-	eglDestroySurface(ec->base.egl_display, egl_surface);
+err_gles2:
+	gles2_renderer_output_destroy(&output->base);
+err_gbm:
 	gbm_surface_destroy(surface);
 	return -1;
 }
@@ -1387,15 +1383,12 @@ create_output_for_connector(struct drm_compositor *ec,
 		goto err_free;
 	}
 
-	output->base.egl_surface =
-		eglCreateWindowSurface(ec->base.egl_display,
-				       ec->base.egl_config,
-				       output->surface,
-				       NULL);
-	if (output->base.egl_surface == EGL_NO_SURFACE) {
-		weston_log("failed to create egl surface\n");
-		goto err_surface;
-	}
+	weston_output_init(&output->base, &ec->base, x, y,
+			   connector->mmWidth, connector->mmHeight,
+			   o ? o->transform : WL_OUTPUT_TRANSFORM_NORMAL);
+
+	if (gles2_renderer_output_create(&output->base, output->surface) < 0)
+		goto err_output;
 
 	output->cursor_bo[0] =
 		gbm_bo_create(ec->gbm, 64, 64, GBM_FORMAT_ARGB8888,
@@ -1414,10 +1407,6 @@ create_output_for_connector(struct drm_compositor *ec,
 		output->base.set_backlight = drm_set_backlight;
 		output->base.backlight_current = drm_get_backlight(output);
 	}
-
-	weston_output_init(&output->base, &ec->base, x, y,
-			   connector->mmWidth, connector->mmHeight,
-			   o ? o->transform : WL_OUTPUT_TRANSFORM_NORMAL);
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
@@ -1445,7 +1434,8 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	return 0;
 
-err_surface:
+err_output:
+	weston_output_destroy(&output->base);
 	gbm_surface_destroy(output->surface);
 err_free:
 	wl_list_for_each_safe(drm_mode, next, &output->base.mode_list,
@@ -2227,9 +2217,6 @@ drm_compositor_create(struct wl_display *display,
 		goto err_sprite;
 	}
 
-	if (gles2_renderer_init(&ec->base) < 0)
-		goto err_egl;
-
 	path = NULL;
 
 	evdev_input_create(&ec->base, ec->udev, seat);
@@ -2270,7 +2257,6 @@ err_drm_source:
 	wl_event_source_remove(ec->drm_source);
 	wl_list_for_each_safe(weston_seat, next, &ec->base.seat_list, link)
 		evdev_input_destroy(weston_seat);
-err_egl:
 	eglMakeCurrent(ec->base.egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
 		       EGL_NO_CONTEXT);
 	eglTerminate(ec->base.egl_display);

@@ -390,8 +390,7 @@ x11_output_destroy(struct weston_output *output_base)
 	wl_list_remove(&output->base.link);
 	wl_event_source_remove(output->finish_frame_timer);
 
-	eglDestroySurface(compositor->base.egl_display,
-			  output->base.egl_surface);
+	gles2_renderer_output_destroy(output_base);
 
 	xcb_destroy_window(compositor->conn, output->window);
 
@@ -607,18 +606,6 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 
 	x11_output_wait_for_map(c, output);
 
-	output->base.egl_surface = 
-		eglCreateWindowSurface(c->base.egl_display, c->base.egl_config,
-				       output->window, NULL);
-	if (!output->base.egl_surface) {
-		weston_log("failed to create window surface\n");
-		return NULL;
-	}
-
-	loop = wl_display_get_event_loop(c->base.wl_display);
-	output->finish_frame_timer =
-		wl_event_loop_add_timer(loop, finish_frame_handler, output);
-
 	output->base.origin = output->base.current;
 	output->base.repaint = x11_output_repaint;
 	output->base.destroy = x11_output_destroy;
@@ -631,6 +618,13 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->base.model = "none";
 	weston_output_init(&output->base, &c->base,
 			   x, y, width, height, transform);
+
+	if (gles2_renderer_output_create(&output->base, output->window) < 0)
+		return NULL;
+
+	loop = wl_display_get_event_loop(c->base.wl_display);
+	output->finish_frame_timer =
+		wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 
@@ -1246,9 +1240,6 @@ x11_compositor_create(struct wl_display *display,
 			goto err_x11_input;
 		x = pixman_region32_extents(&output->base.region)->x2;
 	}
-
-	if (gles2_renderer_init(&c->base) < 0)
-		goto err_egl;
 
 	c->xcb_source =
 		wl_event_loop_add_fd(c->base.input_loop,

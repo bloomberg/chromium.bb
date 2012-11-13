@@ -145,6 +145,8 @@ android_output_destroy(struct weston_output *base)
 	wl_list_remove(&output->base.link);
 	weston_output_destroy(&output->base);
 
+	gles2_renderer_output_destroy(base);
+
 	android_framebuffer_destroy(output->fb);
 
 	free(output);
@@ -406,16 +408,9 @@ android_init_egl(struct android_compositor *compositor,
 		return -1;
 	}
 
-	output->base.egl_surface =
-		eglCreateWindowSurface(compositor->base.egl_display,
-				       compositor->base.egl_config,
-				       output->fb->native_window,
-				       NULL);
-	if (output->base.egl_surface == EGL_NO_SURFACE) {
-		weston_log("Failed to create FB EGLSurface.\n");
-		print_egl_error_state();
+	if (gles2_renderer_output_create(&output->base,
+			output->fb->native_window) < 0)
 		return -1;
-	}
 
 	return 0;
 }
@@ -477,9 +472,6 @@ android_compositor_create(struct wl_display *display, int argc, char *argv[],
 		goto err_output;
 
 	android_compositor_add_output(compositor, output);
-
-	if (gles2_renderer_init(&compositor->base) < 0)
-		goto err_egl;
 
 	compositor->seat = android_seat_create(compositor);
 	if (!compositor->seat)

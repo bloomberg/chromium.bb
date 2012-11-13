@@ -154,7 +154,8 @@ enum dpms_enum {
 struct weston_output {
 	uint32_t id;
 
-	EGLSurface egl_surface;
+	void *renderer_state;
+
 	struct wl_list link;
 	struct wl_list resource_list;
 	struct wl_global *global;
@@ -838,7 +839,12 @@ int
 weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode);
 
 int
-gles2_renderer_init(struct weston_compositor *ec);
+gles2_renderer_output_create(struct weston_output *output,
+				    EGLNativeWindowType window);
+void
+gles2_renderer_output_destroy(struct weston_output *output);
+EGLSurface
+gles2_renderer_output_surface(struct weston_output *output);
 void
 gles2_renderer_destroy(struct weston_compositor *ec);
 

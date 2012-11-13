@@ -970,8 +970,7 @@ rpi_output_destroy(struct weston_output *base)
 	vc_dispmanx_element_remove(update, output->egl_element);
 	vc_dispmanx_update_submit_sync(update);
 
-	eglDestroySurface(output->compositor->base.egl_display,
-			  output->base.egl_surface);
+	gles2_renderer_output_destroy(base);
 
 	wl_list_for_each_safe(element, tmp, &output->element_list, link)
 		rpi_element_destroy(element);
@@ -1050,25 +1049,6 @@ rpi_output_create(struct rpi_compositor *compositor)
 	output->egl_window.width = modeinfo.width;
 	output->egl_window.height = modeinfo.height;
 
-	output->base.egl_surface =
-		eglCreateWindowSurface(compositor->base.egl_display,
-				       compositor->base.egl_config,
-				       (EGLNativeWindowType)&output->egl_window,
-				       NULL);
-	if (output->base.egl_surface == EGL_NO_SURFACE) {
-		print_egl_error_state();
-		weston_log("Failed to create output surface.\n");
-		goto out_dmx;
-	}
-
-	if (!eglSurfaceAttrib(compositor->base.egl_display,
-			      output->base.egl_surface,
-			      EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED)) {
-		print_egl_error_state();
-		weston_log("Failed to set swap behaviour to preserved.\n");
-		goto out_surface;
-	}
-
 	output->base.repaint = rpi_output_repaint;
 	output->base.destroy = rpi_output_destroy;
 	if (compositor->max_planes > 0)
@@ -1104,6 +1084,19 @@ rpi_output_create(struct rpi_compositor *compositor)
 	weston_output_init(&output->base, &compositor->base,
 			   0, 0, round(mm_width), round(mm_height),
 			   WL_OUTPUT_TRANSFORM_NORMAL);
+
+	if (gles2_renderer_output_create(&output->base,
+			(EGLNativeWindowType)&output->egl_window) < 0)
+		goto out_output;
+
+	if (!eglSurfaceAttrib(compositor->base.egl_display,
+			     gles2_renderer_output_surface(&output->base),
+			      EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED)) {
+		print_egl_error_state();
+		weston_log("Failed to set swap behaviour to preserved.\n");
+		goto out_gles2;
+	}
+
 	wl_list_insert(compositor->base.output_list.prev, &output->base.link);
 
 	weston_log("Raspberry Pi HDMI output %dx%d px\n",
@@ -1113,11 +1106,10 @@ rpi_output_create(struct rpi_compositor *compositor)
 
 	return 0;
 
-out_surface:
-	eglDestroySurface(compositor->base.egl_display,
-			  output->base.egl_surface);
-
-out_dmx:
+out_gles2:
+	gles2_renderer_output_destroy(&output->base);
+out_output:
+	weston_output_destroy(&output->base);
 	update = vc_dispmanx_update_start(0);
 	vc_dispmanx_element_remove(update, output->egl_element);
 	vc_dispmanx_update_submit_sync(update);
@@ -1512,7 +1504,6 @@ rpi_compositor_create(struct wl_display *display, int argc, char *argv[],
 		      const char *config_file, struct rpi_parameters *param)
 {
 	struct rpi_compositor *compositor;
-	struct weston_output *output;
 	const char *seat = default_seat;
 	uint32_t key;
 
@@ -1571,16 +1562,9 @@ rpi_compositor_create(struct wl_display *display, int argc, char *argv[],
 	if (rpi_output_create(compositor) < 0)
 		goto out_egl;
 
-	if (gles2_renderer_init(&compositor->base) < 0)
-		goto out_output;
-
 	evdev_input_create(&compositor->base, compositor->udev, seat);
 
 	return &compositor->base;
-
-out_output:
-	wl_list_for_each(output, &compositor->base.output_list, link)
-		rpi_output_destroy(output);
 
 out_egl:
 	rpi_fini_egl(compositor);
