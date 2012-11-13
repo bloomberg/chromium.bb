@@ -35,6 +35,10 @@ struct gles2_output_state {
 	EGLSurface egl_surface;
 };
 
+struct gles2_surface_state {
+	GLfloat color[4];
+};
+
 struct gles2_renderer {
 	struct weston_renderer base;
 	int fragment_shader_debug;
@@ -54,6 +58,12 @@ static inline struct gles2_output_state *
 get_output_state(struct weston_output *output)
 {
 	return (struct gles2_output_state *)output->renderer_state;
+}
+
+static inline struct gles2_surface_state *
+get_surface_state(struct weston_surface *surface)
+{
+	return (struct gles2_surface_state *)surface->renderer_state;
 }
 
 static inline struct gles2_renderer *
@@ -648,10 +658,11 @@ weston_shader_uniforms(struct weston_shader *shader,
 		       struct weston_output *output)
 {
 	int i;
+	struct gles2_surface_state *gs = get_surface_state(surface);
 
 	glUniformMatrix4fv(shader->proj_uniform,
 			   1, GL_FALSE, output->matrix.d);
-	glUniform4fv(shader->color_uniform, 1, surface->color);
+	glUniform4fv(shader->color_uniform, 1, gs->color);
 	glUniform1f(shader->alpha_uniform, surface->alpha);
 
 	for (i = 0; i < surface->num_textures; i++)
@@ -1123,8 +1134,38 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 }
 
 static void
+gles2_renderer_surface_set_color(struct weston_surface *surface,
+		 float red, float green, float blue, float alpha)
+{
+	struct gles2_surface_state *gs = get_surface_state(surface);
+
+	gs->color[0] = red;
+	gs->color[1] = green;
+	gs->color[2] = blue;
+	gs->color[3] = alpha;
+
+	surface->shader = &surface->compositor->solid_shader;
+}
+
+static int
+gles2_renderer_create_surface(struct weston_surface *surface)
+{
+	struct gles2_surface_state *gs;
+
+	gs = calloc(1, sizeof *gs);
+
+	if (!gs)
+		return -1;
+
+	surface->renderer_state = gs;
+
+	return 0;
+}
+
+static void
 gles2_renderer_destroy_surface(struct weston_surface *surface)
 {
+	struct gles2_surface_state *gs = get_surface_state(surface);
 	struct weston_compositor *ec = surface->compositor;
 	struct gles2_renderer *gr = get_renderer(ec);
 	int i;
@@ -1133,6 +1174,8 @@ gles2_renderer_destroy_surface(struct weston_surface *surface)
 
 	for (i = 0; i < surface->num_images; i++)
 		ec->destroy_image(gr->egl_display, surface->images[i]);
+
+	free(gs);
 }
 
 static const char vertex_shader[] =
@@ -1600,6 +1643,8 @@ gles2_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display
 	gr->base.repaint_output = gles2_renderer_repaint_output;
 	gr->base.flush_damage = gles2_renderer_flush_damage;
 	gr->base.attach = gles2_renderer_attach;
+	gr->base.create_surface = gles2_renderer_create_surface;
+	gr->base.surface_set_color = gles2_renderer_surface_set_color;
 	gr->base.destroy_surface = gles2_renderer_destroy_surface;
 
 	gr->egl_display = eglGetDisplay(display);

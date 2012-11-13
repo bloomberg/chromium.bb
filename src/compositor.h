@@ -284,6 +284,10 @@ struct weston_renderer {
 			       pixman_region32_t *output_damage);
 	void (*flush_damage)(struct weston_surface *surface);
 	void (*attach)(struct weston_surface *es, struct wl_buffer *buffer);
+	int (*create_surface)(struct weston_surface *surface);
+	void (*surface_set_color)(struct weston_surface *surface,
+			       float red, float green,
+			       float blue, float alpha);
 	void (*destroy_surface)(struct weston_surface *surface);
 };
 
@@ -421,9 +425,10 @@ struct weston_surface {
 	struct wl_list link;
 	struct wl_list layer_link;
 	struct weston_shader *shader;
-	GLfloat color[4];
 	float alpha;
 	struct weston_plane *plane;
+
+	void *renderer_state;
 
 	/* Surface geometry state, mutable.
 	 * If you change anything, set dirty = 1.

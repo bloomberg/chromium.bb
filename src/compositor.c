@@ -237,6 +237,11 @@ weston_surface_create(struct weston_compositor *compositor)
 	surface->alpha = 1.0;
 	surface->pitch = 1;
 
+	if (compositor->renderer->create_surface(surface) < 0) {
+		free(surface);
+		return NULL;
+	}
+
 	surface->num_textures = 0;
 	surface->num_images = 0;
 	pixman_region32_init(&surface->texture_damage);
@@ -276,11 +281,7 @@ WL_EXPORT void
 weston_surface_set_color(struct weston_surface *surface,
 		 float red, float green, float blue, float alpha)
 {
-	surface->color[0] = red;
-	surface->color[1] = green;
-	surface->color[2] = blue;
-	surface->color[3] = alpha;
-	surface->shader = &surface->compositor->solid_shader;
+	surface->compositor->renderer->surface_set_color(surface, red, green, blue, alpha);
 }
 
 WL_EXPORT void
