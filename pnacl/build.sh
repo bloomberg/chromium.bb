@@ -1312,7 +1312,7 @@ llvm-configure() {
              --enable-shared \
              --disable-jit \
              --with-binutils-include=${binutils_include} \
-             --enable-targets=x86,arm \
+             --enable-targets=x86,arm,mips \
              --target=${CROSS_TARGET_ARM} \
              --prefix="${LLVM_INSTALL_DIR}" \
              --program-prefix= \
@@ -2441,7 +2441,7 @@ binutils-gold-configure() {
   # pnacl/src/gold/gold/configure.tgt
   # removing it causes undefined symbols during linking of gold.
   # The potential savings are guesstimated to be 300kB in binary size
-  local gold_targets="i686-pc-nacl,x86_64-pc-nacl,arm-pc-nacl"
+  local gold_targets="i686-pc-nacl,x86_64-pc-nacl,arm-pc-nacl,mips32-pc-nacl"
 
   mkdir -p "${objdir}/gold"
   spushd "${objdir}/gold"
