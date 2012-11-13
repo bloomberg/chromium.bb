@@ -282,8 +282,12 @@ def SyncURL(url, filename=None, stamp_dir=None, min_time=None,
   assert url and filename
 
   # If we are not keeping the tarball, or we already have it, we can
-  # skip downloading it for this reason.
-  tarball_ok = not keep or os.path.isfile(filename)
+  # skip downloading it for this reason. If we are keeping it,
+  # it must exist.
+  if keep:
+    tarball_ok = os.path.isfile(filename)
+  else:
+    tarball_ok = True
 
   # If we don't need the tarball and the stamp_file matches the url, then
   # we must be up to date.  If the URL differs but the recorded hash matches

@@ -224,12 +224,12 @@ def SyncFlavor(flavor, urls, dst, hashes, min_time, keep=False, force=False,
   for url, hash_val in zip(urls, hashes):
     # Build the tarfile name from the url
     # http://foo..../bar.tar.gz -> bar
-    filepath = url.split('/')[-1].split('.')[0]
+    filepath, ext = url.split('/')[-1].split('.', 1)
     # For filenames containing _SHA1s, drop the sha1 part.
     if SHA1_IN_FILENAME.match(filepath) is not None:
       filepath = filepath.rsplit('_', 1)[0]
-    # Put it in the download dir and add tgz.
-    filepath = os.path.join(download_dir, filepath + '.tgz')
+    # Put it in the download dir and add back extension.
+    filepath = os.path.join(download_dir, '.'.join([filepath, ext]))
     filepaths.append(filepath)
     # If we did not need to synchronize, then we are done
     if download_utils.SyncURL(url, filepath, stamp_dir=stamp_dir,
