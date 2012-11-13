@@ -56,8 +56,14 @@ if env.Bit('bitcode') and env.Bit('target_x86_64'):
 if env.Bit('target_arm'):
   settings['allow_double'] = 0
 
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=3143
+if env.Bit('bitcode') and env.Bit('target_arm'):
+  settings['allow_struct'] = 0
+
 # Environments for building module sources
 envlist = []
+
+is_broken = False
 
 if env.Bit('bitcode'):
   # For PNaCl, we do a mixed test.
@@ -65,13 +71,22 @@ if env.Bit('bitcode'):
   # For each environment, we compile a test module straight to native code.
   pnacl_env = base_env.Clone()
   pnacl_env.PNaClForceNative()
+
+  if env.Bit('target_arm'):
+    # For ARM, PNaCl only uses the standard ABI if given special flags.
+    pnacl_env.Append(CCFLAGS=[
+        '--pnacl-frontend-triple=armv7a-unknown-nacl-gnueabi',
+        '-mfloat-abi=hard',
+        ])
+
   envlist.append(pnacl_env)
 
-  # On X86-32 and X86-64, test against nacl-gcc also.
-  # For ARM, we can only test PNaCl's self-consistency.
-  if not base_env.Bit('target_arm'):
-    native_env = base_env.PNaClGetNNaClEnv()
-    envlist.append(native_env)
+  native_env = base_env.PNaClGetNNaClEnv()
+  envlist.append(native_env)
+
+  # TODO(mcgrathr): Remove after fix for:
+  # https://code.google.com/p/nativeclient/issues/detail?id=3143
+  is_broken = env.Bit('target_arm')
 
   link_env = pnacl_env
 else:
@@ -132,4 +147,5 @@ node = link_env.CommandSelLdrTestNacl(
          stdout_golden=nodes[0])
 
 env.AddNodeToTestSuite(node, ['medium_tests', 'nonpexe_tests'],
-                       'run_callingconv_test')
+                       'run_callingconv_test',
+                       is_broken=is_broken)
