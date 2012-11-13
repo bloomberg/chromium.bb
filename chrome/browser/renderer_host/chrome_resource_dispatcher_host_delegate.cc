@@ -22,7 +22,7 @@
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
-#include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
+#include "chrome/browser/renderer_host/safe_browsing_resource_throttle_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/auto_login_prompter.h"
 #include "chrome/browser/ui/login/login_prompt.h"
@@ -275,7 +275,7 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
 }
 
 void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
-    const net::URLRequest* request,
+    net::URLRequest* request,
     content::ResourceContext* resource_context,
     int child_id,
     int route_id,
@@ -287,7 +287,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
   bool is_subresource_request = resource_type != ResourceType::MAIN_FRAME;
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   if (io_data->safe_browsing_enabled()->GetValue()) {
-    throttles->push_back(SafeBrowsingResourceThrottle::Create(
+    throttles->push_back(SafeBrowsingResourceThrottleFactory::Create(
         request, child_id, route_id, is_subresource_request, safe_browsing_));
   }
 #endif

@@ -1618,6 +1618,7 @@
         'browser/renderer_host/plugin_info_message_filter.h',
         'browser/renderer_host/safe_browsing_resource_throttle.cc',
         'browser/renderer_host/safe_browsing_resource_throttle.h',
+        'browser/renderer_host/safe_browsing_resource_throttle_factory.h',
         'browser/renderer_host/web_cache_manager.cc',
         'browser/renderer_host/web_cache_manager.h',
         'browser/renderer_preferences_util.cc',
@@ -2327,6 +2328,7 @@
           'sources!': [
             'browser/renderer_host/safe_browsing_resource_throttle.cc',
             'browser/renderer_host/safe_browsing_resource_throttle.h',
+            'browser/renderer_host/safe_browsing_resource_throttle_factory.h',
           ],
           'sources/': [
             ['exclude', '^browser/safe_browsing/'],

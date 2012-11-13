@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
+#include "chrome/browser/renderer_host/safe_browsing_resource_throttle_factory.h"
 #include "content/public/browser/resource_controller.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
@@ -21,15 +22,15 @@ static const int kCheckUrlTimeoutMs = 5000;
 //               unit test coverage.
 
 // static
-SafeBrowsingResourceThrottle* SafeBrowsingResourceThrottle::Create(
-    const net::URLRequest* request,
+content::ResourceThrottle* SafeBrowsingResourceThrottleFactory::Create(
+    net::URLRequest* request,
     int render_process_host_id,
     int render_view_id,
     bool is_subresource,
-    SafeBrowsingService* safe_browsing) {
+    SafeBrowsingService* service) {
   return new SafeBrowsingResourceThrottle(
       request, render_process_host_id, render_view_id, is_subresource,
-      safe_browsing);
+      service);
 }
 
 SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(

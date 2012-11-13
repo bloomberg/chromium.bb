@@ -47,12 +47,11 @@ class SafeBrowsingResourceThrottle
       public SafeBrowsingService::Client,
       public base::SupportsWeakPtr<SafeBrowsingResourceThrottle> {
  public:
-  static SafeBrowsingResourceThrottle* Create(
-      const net::URLRequest* request,
-      int render_process_host_id,
-      int render_view_id,
-      bool is_subresource,
-      SafeBrowsingService* safe_browsing);
+  SafeBrowsingResourceThrottle(const net::URLRequest* request,
+                               int render_process_host_id,
+                               int render_view_id,
+                               bool is_subresource,
+                               SafeBrowsingService* safe_browsing);
 
   // content::ResourceThrottle implementation (called on IO thread):
   virtual void WillStartRequest(bool* defer) OVERRIDE;
@@ -76,12 +75,6 @@ class SafeBrowsingResourceThrottle
     DEFERRED_START,
     DEFERRED_REDIRECT,
   };
-
-  SafeBrowsingResourceThrottle(const net::URLRequest* request,
-                               int render_process_host_id,
-                               int render_view_id,
-                               bool is_subresource,
-                               SafeBrowsingService* safe_browsing);
 
   virtual ~SafeBrowsingResourceThrottle();
 
