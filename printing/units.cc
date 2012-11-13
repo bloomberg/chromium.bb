@@ -52,13 +52,4 @@ double ConvertPointsToPixelDouble(double points) {
   return ConvertUnitDouble(points, kPointsPerInch, kPixelsPerInch);
 }
 
-double GetHeaderFooterSegmentWidth(double page_width) {
-  // Interstice is left at both ends of the page as well as between
-  // each region, so 1 is added.
-  double total_interstice_width = (kSettingHeaderFooterHorizontalRegions + 1) *
-      kSettingHeaderFooterInterstice;
-  return (page_width - total_interstice_width) /
-      kSettingHeaderFooterHorizontalRegions;
-}
-
 }  // namespace printing

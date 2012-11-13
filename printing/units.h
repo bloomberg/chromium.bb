@@ -42,10 +42,6 @@ PRINTING_EXPORT double ConvertPixelsToPointDouble(double pixels);
 // Converts from 1 point to 1 pixel using doubles.
 double ConvertPointsToPixelDouble(double points);
 
-// Splits the horizontal width equally into segments with an interstice
-// between each segment. Returns the width of a segment.
-PRINTING_EXPORT double GetHeaderFooterSegmentWidth(double page_width);
-
 }  // namespace printing
 
 #endif  // PRINTING_UNITS_H_

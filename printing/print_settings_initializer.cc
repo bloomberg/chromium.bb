@@ -35,34 +35,15 @@ void PrintSettingsInitializer::InitHeaderFooterStrings(
 
   string16 date = base::TimeFormatShortDateNumeric(base::Time::Now());
   string16 title;
-  std::string url;
+  string16 url;
   if (!job_settings.GetString(kSettingHeaderFooterTitle, &title) ||
       !job_settings.GetString(kSettingHeaderFooterURL, &url)) {
     NOTREACHED();
   }
 
-  gfx::Font font(
-      kSettingHeaderFooterFontName,
-      ceil(ConvertPointsToPixelDouble(kSettingHeaderFooterFontSize)));
-  double segment_width = GetHeaderFooterSegmentWidth(ConvertUnitDouble(
-      print_settings->page_setup_device_units().physical_size().width(),
-      print_settings->device_units_per_inch(), kPixelsPerInch));
-  date = ui::ElideText(date, font, segment_width, ui::ELIDE_AT_END);
   print_settings->date = date;
-
-  // Calculate the available title width. If the date string is not long
-  // enough, increase the available space for the title.
-  // Assumes there is no header text to RIGHT of title.
-  double date_width = font.GetStringWidth(date);
-  double max_title_width = std::min(2 * segment_width,
-                                    2 * (segment_width - date_width) +
-                                        segment_width);
-  print_settings->title =
-      ui::ElideText(title, font, max_title_width, ui::ELIDE_AT_END);
-
-  double max_url_width = 2 * segment_width;
-  GURL gurl(url);
-  print_settings->url = ui::ElideUrl(gurl, font, max_url_width, std::string());
+  print_settings->title = title;
+  print_settings->url = ui::ElideUrl(GURL(url), gfx::Font(), 0, std::string());
 }
 
 }  // namespace printing

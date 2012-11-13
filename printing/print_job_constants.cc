@@ -55,22 +55,6 @@ const char kSettingGenerateDraftData[] = "generateDraftData";
 // Option to print headers and Footers: true if selected, false if not.
 const char kSettingHeaderFooterEnabled[] = "headerFooterEnabled";
 
-// Default character spacing for text while printing headers and footers.
-// (For CoreGraphics only).
-const int kSettingHeaderFooterCharacterSpacing = 0;
-
-// Default font family name for printing the headers and footers.
-const char kSettingHeaderFooterFontFamilyName[] = "sans";
-
-// Default font name for printing the headers and footers.
-const char kSettingHeaderFooterFontName[] = "Helvetica";
-
-// Default font size for printing the headers and footers.
-const int kSettingHeaderFooterFontSize = 8;
-
-// Number of horizontal regions for headers and footers.
-const float kSettingHeaderFooterHorizontalRegions = 3;
-
 // Interstice or gap between different header footer components. Hardcoded to
 // about 0.5cm, match the value in PrintSettings::SetPrinterPrintableArea.
 const float kSettingHeaderFooterInterstice = 14.2f;

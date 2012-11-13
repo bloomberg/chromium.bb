@@ -112,9 +112,13 @@ void PrintWebViewHelper::RenderPage(
     *content_rect = content_area;
 
   scale_factor *= webkit_shrink_factor;
+
+  gfx::Rect canvas_area =
+      params.display_header_footer ? gfx::Rect(*page_size) : content_area;
+
   {
     SkDevice* device = metafile->StartPageForVectorCanvas(
-        *page_size, content_area, scale_factor);
+        *page_size, canvas_area, scale_factor);
     if (!device)
       return;
 
@@ -125,15 +129,14 @@ void PrintWebViewHelper::RenderPage(
     skia::SetIsDraftMode(*canvas, is_print_ready_metafile_sent_);
     skia::SetIsPreviewMetafile(*canvas, is_preview);
 
-    frame->printPage(page_number, canvas_ptr);
-
     if (print_pages_params_->params.display_header_footer) {
-      // |page_number| is 0-based, so 1 is added.
       PrintHeaderAndFooter(canvas_ptr, page_number + 1,
                            print_preview_context_.total_page_count(),
                            scale_factor, page_layout_in_points,
                            *header_footer_info_, params);
     }
+    RenderPageContent(frame, page_number, canvas_area, content_area,
+                      scale_factor, canvas_ptr);
   }
 
   // Done printing. Close the device context to retrieve the compiled metafile.
