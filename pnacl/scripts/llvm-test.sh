@@ -54,10 +54,15 @@ readonly LIT_KNOWN_FAILURES="$(pwd)/pnacl/scripts/lit_known_failures.txt"
 
 llvm-regression() {
   pushd "${TC_BUILD_LLVM}"
-  make check-all VERBOSE=1 > make-check.log || true
+
   if ${PNACL_BUILDBOT}; then
-    cat make-check.log
+    make check-all VERBOSE=1 | tee make-check.log || true
+  else
+    # VERBOSE=1 is still required because the report parser needs to know
+    # about all the tests
+    make check-all VERBOSE=1 > make-check.log || true
   fi
+
   "${PARSE_REPORT}" make-check.log -l -x "${LIT_KNOWN_FAILURES}" \
     --attribute ${BUILD_PLATFORM}
   popd
