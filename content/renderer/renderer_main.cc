@@ -52,13 +52,17 @@ namespace {
 CFArrayRef ChromeTISCreateInputSourceList(
    CFDictionaryRef properties,
    Boolean includeAllInstalled) {
-  CFTypeRef values[] = { CFSTR("") };
+  base::mac::ScopedCFTypeRef<TISInputSourceRef> input_source(
+      TISCopyCurrentKeyboardInputSource());
+  base::mac::ScopedCFTypeRef<TISInputSourceRef> layout_source(
+      TISCopyCurrentKeyboardLayoutInputSource());
+  CFTypeRef values[] = { input_source.get(), layout_source.get() };
   return CFArrayCreate(
       kCFAllocatorDefault, values, arraysize(values), &kCFTypeArrayCallBacks);
 }
 
 void InstallFrameworkHacks() {
-  // See http://crbug.com/31225
+  // See http://crbug.com/31225 and http://crbug.com/152566
   // TODO: Don't do this on newer OS X revisions that have a fix for
   // http://openradar.appspot.com/radar?id=1156410
   // To check if this is broken:
