@@ -274,14 +274,7 @@ void PrintViewManager::OnDidPrintPage(
       web_contents()->Stop();
       return;
     }
-  } else if (!print_job_->settings().supports_alpha_blend() &&
-             metafile->IsAlphaBlendUsed()) {
-    scoped_ptr<NativeMetafile> raster_metafile(
-        metafile->RasterizeAlphaBlend());
-    if (raster_metafile.get())
-      metafile.swap(raster_metafile);
   }
-
 #endif
 
   // Update the rendered document. It will send notifications to the listener.

@@ -38,7 +38,7 @@ void PrintWebViewHelper::PrintPageInternal(
     WebFrame* frame) {
   // Generate a memory-based metafile. It will use the current screen's DPI.
   // Each metafile contains a single page.
-  scoped_ptr<Metafile> metafile(new printing::NativeMetafile);
+  scoped_ptr<printing::NativeMetafile> metafile(new printing::NativeMetafile);
   metafile->Init();
   DCHECK(metafile->context());
   skia::InitializeDC(metafile->context());
@@ -61,6 +61,13 @@ void PrintWebViewHelper::PrintPageInternal(
   // Close the device context to retrieve the compiled metafile.
   if (!metafile->FinishDocument())
     NOTREACHED();
+
+  if (!params.params.supports_alpha_blend && metafile->IsAlphaBlendUsed()) {
+    scoped_ptr<printing::NativeMetafile> raster_metafile(
+        metafile->RasterizeAlphaBlend());
+    if (raster_metafile.get())
+      metafile.swap(raster_metafile);
+  }
 
   // Get the size of the compiled metafile.
   uint32 buf_size = metafile->GetDataSize();
