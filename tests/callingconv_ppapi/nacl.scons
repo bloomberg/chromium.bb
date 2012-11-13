@@ -34,19 +34,7 @@ env_pnacl_cc_called.Append(
     # force both defined and invoked functions to have the "pnacl" prefix
     CPPDEFINES=['FUNCTION_PREFIX=pnacl', 'INVOCATION_PREFIX=pnacl'])
 
-if env.Bit('target_arm'):
-  # Note, this is not a true gcc environment but rather a
-  # clang environment being switched into "eabi" mode
-  # TODO: replace this by the nacl-gcc/arm TC as soon
-  # as it becomes available.
-  ARM_TRIPLE='armv7a-none-linux-gnueabihf'
-  gcc_cc_env = env_pnacl_cc.Clone()
-  gcc_cc_env.Append(CCFLAGS=['--pnacl-frontend-triple=' + ARM_TRIPLE,
-                             '-mfloat-abi=hard'],
-                    # without the proper triple we need to add this manually
-                    CPPDEFINES=['__native_client__'])
-else:
-  gcc_cc_env = env_pnacl_cc.PNaClGetNNaClEnv()
+gcc_cc_env = env_pnacl_cc.PNaClGetNNaClEnv()
 
 env_gcc_cc_calling = gcc_cc_env.Clone()
 env_gcc_cc_calling.Append(

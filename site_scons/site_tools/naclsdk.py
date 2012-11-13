@@ -407,7 +407,6 @@ def PNaClForceNative(env):
 # Get an environment for nacl-gcc when in PNaCl mode.
 def PNaClGetNNaClEnv(env):
   assert(env.Bit('bitcode'))
-  assert(not env.Bit('target_arm'))
   assert(not env.Bit('target_mips32'))
 
   # This is kind of a hack. We clone the environment,
