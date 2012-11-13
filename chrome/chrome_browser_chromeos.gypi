@@ -295,6 +295,8 @@
         'browser/chromeos/input_method/browser_state_monitor.h',
         'browser/chromeos/input_method/candidate_window_controller.cc',
         'browser/chromeos/input_method/candidate_window_controller.h',
+        'browser/chromeos/input_method/candidate_window_controller_impl.cc',
+        'browser/chromeos/input_method/candidate_window_controller_impl.h',
         'browser/chromeos/input_method/candidate_window_view.cc',
         'browser/chromeos/input_method/candidate_window_view.h',
         'browser/chromeos/input_method/hidable_area.cc',
