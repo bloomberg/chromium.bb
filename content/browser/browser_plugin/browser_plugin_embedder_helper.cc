@@ -54,8 +54,6 @@ bool BrowserPluginEmbedderHelper::OnMessageReceived(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_DragStatusUpdate,
                         OnDragStatusUpdate)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetAutoSize, OnSetAutoSize)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginAtPositionResponse,
-                        OnPluginAtPositionResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -136,11 +134,6 @@ void BrowserPluginEmbedderHelper::OnUpdateRectACK(int instance_id,
 
 void BrowserPluginEmbedderHelper::OnSetFocus(int instance_id, bool focused) {
   embedder_->SetFocus(instance_id, focused);
-}
-
-void BrowserPluginEmbedderHelper::OnPluginAtPositionResponse(
-    int instance_id, int request_id, const gfx::Point& location) {
-  embedder_->PluginAtPositionResponse(instance_id, request_id, location);
 }
 
 void BrowserPluginEmbedderHelper::OnPluginDestroyed(int instance_id) {

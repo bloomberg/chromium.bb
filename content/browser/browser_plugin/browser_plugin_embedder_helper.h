@@ -82,9 +82,6 @@ class BrowserPluginEmbedderHelper : public RenderViewHostObserver {
       int instance_id,
       const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
       const BrowserPluginHostMsg_ResizeGuest_Params& resize_guest_params);
-  void OnPluginAtPositionResponse(int instance_id,
-                                  int request_id,
-                                  const gfx::Point& position);
 
   BrowserPluginEmbedder* embedder_;
 

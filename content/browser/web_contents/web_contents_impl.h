@@ -187,10 +187,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
-  virtual void GetRenderViewHostAtPosition(
-      int x,
-      int y,
-      const GetRenderViewHostCallback& callback) OVERRIDE;
   virtual int GetRoutingID() const OVERRIDE;
   virtual RenderWidgetHostView* GetRenderWidgetHostView() const OVERRIDE;
   virtual WebContentsView* GetView() const OVERRIDE;

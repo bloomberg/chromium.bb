@@ -35,9 +35,11 @@
 #endif
 
 using WebKit::WebCanvas;
+using WebKit::WebPlugin;
 using WebKit::WebPluginContainer;
 using WebKit::WebPluginParams;
 using WebKit::WebPoint;
+using WebKit::WebString;
 using WebKit::WebRect;
 using WebKit::WebURL;
 using WebKit::WebVector;
@@ -703,19 +705,6 @@ void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
   float inverse_scale_factor =  1.0f / backing_store_->GetScaleFactor();
   canvas->scale(inverse_scale_factor, inverse_scale_factor);
   canvas->drawBitmap(backing_store_->GetBitmap(), 0, 0);
-}
-
-bool BrowserPlugin::InBounds(const gfx::Point& position) const {
-  bool result = position.x() >= plugin_rect_.x() &&
-      position.x() < plugin_rect_.x() + plugin_rect_.width() &&
-      position.y() >= plugin_rect_.y() &&
-      position.y() < plugin_rect_.y() + plugin_rect_.height();
-  return result;
-}
-
-gfx::Point BrowserPlugin::ToLocalCoordinates(const gfx::Point& point) const {
-  // TODO(lazyboy): Css transformations? http://crbug.com/160350.
-  return gfx::Point(point.x() - plugin_rect_.x(), point.y() - plugin_rect_.y());
 }
 
 void BrowserPlugin::updateGeometry(

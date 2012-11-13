@@ -157,7 +157,7 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetFocus,
 IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_Stop,
                     int /* instance_id */)
 
-// Tell the guest to reload.
+/// Tell the guest to reload.
 IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_Reload,
                     int /* instance_id */)
 
@@ -204,13 +204,6 @@ IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_DragStatusUpdate,
                     WebDropData /* drop_data */,
                     WebKit::WebDragOperationsMask /* operation_mask */,
                     gfx::Point /* plugin_location */)
-
-// Response to BrowserPluginMsg_PluginAtPositionRequest, returns the browser
-// plugin instace id and the coordinates (local to the plugin).
-IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_PluginAtPositionResponse,
-                    int /* instance_id */,
-                    int /* request_id */,
-                    gfx::Point /* position */);
 
 // -----------------------------------------------------------------------------
 // These messages are from the guest renderer to the browser process
@@ -297,12 +290,3 @@ IPC_MESSAGE_CONTROL3(BrowserPluginMsg_UpdateRect,
                      int /* instance_id */,
                      int /* message_id */,
                      BrowserPluginMsg_UpdateRect_Params)
-
-// Requests the renderer to find out if a browser plugin is at position
-// (|x|, |y|) within the embedder.
-// The response message is BrowserPluginHostMsg_PluginAtPositionResponse.
-// The |request_id| uniquely identifies a request from an embedder.
-IPC_MESSAGE_CONTROL3(BrowserPluginMsg_PluginAtPositionRequest,
-                     int /* source_routing_id */,
-                     int /* request_id */,
-                     gfx::Point /* position */)
