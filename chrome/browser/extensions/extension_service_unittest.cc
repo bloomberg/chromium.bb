@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -4545,6 +4546,9 @@ TEST(ExtensionServiceTestSimple, DISABLED_Enabledness) {
   scoped_ptr<CommandLine> command_line;
   FilePath install_dir = profile->GetPath()
       .AppendASCII(ExtensionService::kInstallDirectoryName);
+
+  // Make sure the PluginService singleton is destroyed at the end of the test.
+  base::ShadowingAtExitManager at_exit;
   webkit::npapi::MockPluginList plugin_list;
   PluginService::GetInstance()->SetPluginListForTesting(&plugin_list);
 
