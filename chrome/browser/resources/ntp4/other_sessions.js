@@ -244,10 +244,7 @@ cr.define('ntp', function() {
       }
 
       // The menu button is shown iff tab sync is enabled.
-      if (isTabSyncEnabled)
-        this.classList.remove('invisible');
-      else
-        this.classList.add('invisible');
+      this.hidden = !isTabSyncEnabled;
     },
 
     /**
@@ -259,7 +256,7 @@ cr.define('ntp', function() {
       if (signedIn)
         chrome.send('getForeignSessions');
       else
-        this.classList.add('invisible');
+        this.hidden = true;
     },
   };
 

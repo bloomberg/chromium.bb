@@ -508,8 +508,11 @@ cr.define('ntp', function() {
         this.appendTilePage(tempPage, pageName, true);
       }
 
-      if (ntp.getCurrentlyDraggingTile().firstChild.canBeRemoved())
+      if (ntp.getCurrentlyDraggingTile().firstChild.canBeRemoved()) {
         $('footer').classList.add('showing-trash-mode');
+        $('footer-menu-container').style.minWidth = $('trash').offsetWidth -
+            $('chrome-web-store-link').offsetWidth + 'px';
+      }
 
       document.documentElement.classList.add('dragging-mode');
     },
@@ -532,6 +535,7 @@ cr.define('ntp', function() {
       }
 
       $('footer').classList.remove('showing-trash-mode');
+      $('footer-menu-container').style.minWidth = '';
       document.documentElement.classList.remove('dragging-mode');
     },
 

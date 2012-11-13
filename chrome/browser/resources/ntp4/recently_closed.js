@@ -36,7 +36,7 @@ cr.define('ntp', function() {
       document.body.appendChild(this.menu);
 
       this.needsRebuild_ = true;
-      this.classList.add('invisible');
+      this.hidden = true;
       this.anchorType = cr.ui.AnchorType.ABOVE;
       this.invertLeftRight = true;
     },
@@ -64,10 +64,7 @@ cr.define('ntp', function() {
     set dataItems(dataItems) {
       this.dataItems_ = dataItems;
       this.needsRebuild_ = true;
-      if (dataItems.length)
-        this.classList.remove('invisible');
-      else
-        this.classList.add('invisible');
+      this.hidden = !dataItems.length;
     },
 
     /**
