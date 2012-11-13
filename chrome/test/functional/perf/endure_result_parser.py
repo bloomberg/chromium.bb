@@ -338,6 +338,7 @@ def UpdatePerfDataForSlaveAndBuild(slave_info, build_num):
   logging.debug('  %s, build %d.', slave_info['slave_name'], build_num)
   build_url = (BUILDER_URL_BASE + urllib.quote(slave_info['slave_name']) +
                '/builds/' + str(build_num))
+  is_dbg = '(dbg)' in slave_info['slave_name']
 
   url_contents = ''
   fp = None
@@ -378,6 +379,7 @@ def UpdatePerfDataForSlaveAndBuild(slave_info, build_num):
         return False
     match = match[0]
     webapp_name = match[0] + '_wpr' if found_wpr_result else match[0]
+    webapp_name = webapp_name + '_dbg' if is_dbg else webapp_name
     test_name = match[1]
     stdio_urls.append({
       'link': build_url + link + '/text',
