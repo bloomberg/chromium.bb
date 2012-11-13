@@ -33,8 +33,7 @@ namespace {
 // are run, or may dispatch it earlier if we get an error in any of the sub
 // callbacks.
 class SharedCallbackRunner
-    : public base::RefCounted<SharedCallbackRunner>,
-      public base::NonThreadSafe {
+    : public base::RefCountedThreadSafe<SharedCallbackRunner> {
  public:
   explicit SharedCallbackRunner(const SyncStatusCallback& join_callback)
       : join_callback_(join_callback),
@@ -54,7 +53,7 @@ class SharedCallbackRunner
 
  private:
   virtual ~SharedCallbackRunner() {}
-  friend class base::RefCounted<SharedCallbackRunner>;
+  friend class base::RefCountedThreadSafe<SharedCallbackRunner>;
 
   template <typename R>
   void AssignAndRun(R* out, SyncStatusCode status, const R& in) {

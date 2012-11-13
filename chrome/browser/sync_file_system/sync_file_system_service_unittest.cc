@@ -153,7 +153,7 @@ TEST_F(SyncFileSystemServiceTest, GetConflictFilesWithoutInitialize) {
   }
 }
 
-TEST_F(SyncFileSystemServiceTest, FLAKY_GetConflictFiles) {
+TEST_F(SyncFileSystemServiceTest, GetConflictFiles) {
   InitializeApp();
 
   // 1. Sets up (conflicting) files.
