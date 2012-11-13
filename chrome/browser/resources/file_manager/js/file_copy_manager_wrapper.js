@@ -12,6 +12,28 @@ var fileCopyManagerWrapper = null;
  */
 function FileCopyManagerWrapper(root) {
   this.root_ = root;
+
+  this.status_ = {
+    pendingItems: 0,
+    pendingFiles: 0,
+    pendingDirectories: 0,
+    pendingBytes: 0,
+
+    completedItems: 0,
+    completedFiles: 0,
+    completedDirectories: 0,
+    completedBytes: 0,
+
+    totalItems: 0,
+    totalFiles: 0,
+    totalDirectories: 0,
+    totalBytes: 0,
+
+    percentage: NaN,
+    pendingCopies: 0,
+    pendingMoves: 0,
+    filename: ''  // In case pendingItems == 1
+  };
 }
 
 /**
@@ -29,18 +51,6 @@ FileCopyManagerWrapper.getInstance = function(root) {
     fileCopyManagerWrapper = new FileCopyManagerWrapper(root);
   }
   return fileCopyManagerWrapper;
-};
-
-/**
- * @private
- * @return {FileCopyManager?} Copy manager instance in the background page or
- *     NULL if background page is not loaded.
- */
-FileCopyManagerWrapper.prototype.getCopyManagerSync_ = function() {
-  var bg = chrome.extension.getBackgroundPage();
-  if (!bg)
-    return null;
-  return bg.FileCopyManager.getInstance(this.root_);
 };
 
 /**
@@ -81,6 +91,8 @@ FileCopyManagerWrapper.prototype.getCopyManagerAsync_ = function(callback) {
  * @param {Object} eventArgs Arbitratry field written to event object.
  */
 FileCopyManagerWrapper.prototype.onEvent = function(eventName, eventArgs) {
+  this.status_ = eventArgs.status;
+
   var event = new cr.Event(eventName);
   for (var arg in eventArgs)
     if (eventArgs.hasOwnProperty(arg))
@@ -93,31 +105,7 @@ FileCopyManagerWrapper.prototype.onEvent = function(eventName, eventArgs) {
  * @return {Object} Status object.
  */
 FileCopyManagerWrapper.prototype.getStatus = function() {
-  var cm = this.getCopyManagerSync_();
-  if (cm)
-    return cm.getStatus();
-
-  return {
-    pendingItems: 0,
-    pendingFiles: 0,
-    pendingDirectories: 0,
-    pendingBytes: 0,
-
-    completedItems: 0,
-    completedFiles: 0,
-    completedDirectories: 0,
-    completedBytes: 0,
-
-    totalItems: 0,
-    totalFiles: 0,
-    totalDirectories: 0,
-    totalBytes: 0,
-
-    percentage: NaN,
-    pendingCopies: 0,
-    pendingMoves: 0,
-    filename: ''  // In case pendingItems == 1
-  };
+  return this.status_;
 };
 
 /**

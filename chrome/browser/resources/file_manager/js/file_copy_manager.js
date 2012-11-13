@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+if (chrome.extension) {
+  function getContentWindows() {
+    return chrome.extension.getViews();
+  }
+}
+
 /**
  * @constructor
  * @param {DirectoryEntry} root Root directory entry.
@@ -285,7 +291,9 @@ FileCopyManager.prototype.sendEvent_ = function(eventName, eventArgs) {
   if (this.cancelRequested_)
     return;  // Swallow events until cancellation complete.
 
-  var windows = chrome.extension.getViews();
+  eventArgs.status = this.getStatus();
+
+  var windows = getContentWindows();
   for (var i = 0; i < windows.length; i++) {
     var w = windows[i];
     if (w.fileCopyManagerWrapper)
@@ -314,7 +322,7 @@ FileCopyManager.prototype.maybeScheduleCloseBackgroundPage_ = function() {
  * @private
  */
 FileCopyManager.prototype.log_ = function() {
-  var windows = chrome.extension.getViews();
+  var windows = getContentWindows();
   for (var i = 0; i < windows.length; i++) {
     windows[i].console.log.apply(windows[i].console, arguments);
   }
