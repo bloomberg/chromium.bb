@@ -43,7 +43,6 @@
         'action': [
           '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)chrome<(EXECUTABLE_SUFFIX)',
           '--enable-pepper-testing',
-          '--enable-accelerated-plugins',
           '--register-pepper-plugins=$(TargetPath);application/x-ppapi-tests',
           'file://$(ProjectDir)/tests/test_case.html?testcase=',
         ],
