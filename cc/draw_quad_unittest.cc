@@ -150,11 +150,6 @@ void compareDrawQuad(DrawQuad* quad, DrawQuad* copy, SharedQuadState* copyShared
     scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g, h, i)); \
     SETUP_AND_COPY_QUAD(Type, quad);
 
-#define CREATE_QUAD_10(Type, a, b, c, d, e, f, g, h, i, j) \
-    QUAD_DATA \
-    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g, h, i, j)); \
-    SETUP_AND_COPY_QUAD(Type, quad);
-
 TEST(DrawQuadTest, copyCheckerboardDrawQuad)
 {
     SkColor color = 0xfabb0011;
@@ -252,7 +247,6 @@ TEST(DrawQuadTest, copyTileDrawQuad)
     unsigned resourceId = 104;
     gfx::Vector2d textureOffset(-31, 47);
     gfx::Size textureSize(85, 32);
-    GLint textureFilter = 82;
     bool swizzleContents = true;
     bool leftEdgeAA = true;
     bool topEdgeAA = true;
@@ -260,12 +254,11 @@ TEST(DrawQuadTest, copyTileDrawQuad)
     bool bottomEdgeAA = true;
 
     CREATE_SHARED_STATE();
-    CREATE_QUAD_10(TileDrawQuad, opaqueRect, resourceId, textureOffset, textureSize, textureFilter, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA);
+    CREATE_QUAD_9(TileDrawQuad, opaqueRect, resourceId, textureOffset, textureSize, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA);
     EXPECT_RECT_EQ(opaqueRect, copyQuad->opaqueRect());
     EXPECT_EQ(resourceId, copyQuad->resourceId());
     EXPECT_EQ(textureOffset, copyQuad->textureOffset());
     EXPECT_EQ(textureSize, copyQuad->textureSize());
-    EXPECT_EQ(textureFilter, copyQuad->textureFilter());
     EXPECT_EQ(swizzleContents, copyQuad->swizzleContents());
     EXPECT_EQ(leftEdgeAA, copyQuad->leftEdgeAA());
     EXPECT_EQ(topEdgeAA, copyQuad->topEdgeAA());

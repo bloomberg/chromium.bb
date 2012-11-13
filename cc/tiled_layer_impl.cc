@@ -196,8 +196,7 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
             bool rightEdgeAA = i == m_tiler->numTilesX() - 1 && useAA;
             bool bottomEdgeAA = j == m_tiler->numTilesY() - 1 && useAA;
 
-            const GLint textureFilter = m_tiler->hasBorderTexels() ? GL_LINEAR : GL_NEAREST;
-            quadSink.append(TileDrawQuad::create(sharedQuadState, tileRect, tileOpaqueRect, tile->resourceId(), textureOffset, textureSize, textureFilter, tile->contentsSwizzled(), leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA).PassAs<DrawQuad>(), appendQuadsData);
+            quadSink.append(TileDrawQuad::create(sharedQuadState, tileRect, tileOpaqueRect, tile->resourceId(), textureOffset, textureSize, tile->contentsSwizzled(), leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA).PassAs<DrawQuad>(), appendQuadsData);
         }
     }
 }

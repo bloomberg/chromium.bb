@@ -39,7 +39,7 @@ void TestRenderPass::appendOneOfEveryQuadType(cc::ResourceProvider* resourceProv
     appendQuad(cc::StreamVideoDrawQuad::create(sharedState.get(), rect, 1, WebKit::WebTransformationMatrix()).PassAs<DrawQuad>());
     appendQuad(cc::TextureDrawQuad::create(sharedState.get(), rect, textureResource, false, rect, false).PassAs<DrawQuad>());
 
-    appendQuad(cc::TileDrawQuad::create(sharedState.get(), rect, rect, textureResource, gfx::Vector2d(), gfx::Size(100, 100), GL_LINEAR, false, false, false, false, false).PassAs<DrawQuad>());
+    appendQuad(cc::TileDrawQuad::create(sharedState.get(), rect, rect, textureResource, gfx::Vector2d(), gfx::Size(100, 100), false, false, false, false, false).PassAs<DrawQuad>());
 
     cc::VideoLayerImpl::FramePlane planes[3];
     for (int i = 0; i < 3; ++i) {

@@ -760,8 +760,6 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     GLC(context(), context()->uniform1i(uniforms.samplerLocation, 0));
     ResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resourceId());
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, quadResourceLock.textureId()));
-    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, quad->textureFilter()));
-    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, quad->textureFilter()));
 
     bool useAA = !clipped && quad->isAntialiased();
     if (useAA) {
@@ -970,13 +968,6 @@ void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQua
     ResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resourceId());
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, quadResourceLock.textureId()));
 
-    // FIXME: setting the texture parameters every time is redundant. Move this code somewhere
-    // where it will only happen once per texture.
-    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-
     if (!quad->premultipliedAlpha()) {
         // As it turns out, the premultiplied alpha blending function (ONE, ONE_MINUS_SRC_ALPHA)
         // will never cause the alpha channel to be set to anything less than 1.0 if it is
@@ -1088,10 +1079,6 @@ void GLRenderer::copyTextureToFramebuffer(const DrawingFrame& frame, int texture
     const RenderPassProgram* program = renderPassProgram();
 
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, textureId));
-    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
     GLC(context(), context()->useProgram(program->program()));
     GLC(context(), context()->uniform1i(program->fragmentShader().samplerLocation(), 0));

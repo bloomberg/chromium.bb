@@ -265,8 +265,7 @@ void SoftwareRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQua
     SkRect uvRect = SkRect::MakeXYWH(
         quad->textureOffset().x(), quad->textureOffset().y(),
         quad->quadRect().width(), quad->quadRect().height());
-    if (quad->textureFilter() != GL_NEAREST)
-        m_skCurrentPaint.setFilterBitmap(true);
+    m_skCurrentPaint.setFilterBitmap(true);
     m_skCurrentCanvas->drawBitmapRectToRect(*lock.skBitmap(), &uvRect,
                                             toSkRect(quadVertexRect()),
                                             &m_skCurrentPaint);

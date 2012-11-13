@@ -1557,7 +1557,7 @@ public:
             opaqueRect = m_opaqueContentRect;
 
         SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
-        scoped_ptr<TileDrawQuad> testBlendingDrawQuad = TileDrawQuad::create(sharedQuadState, m_quadRect, opaqueRect, m_resourceId, gfx::Vector2d(), gfx::Size(1, 1), 0, false, false, false, false, false);
+        scoped_ptr<TileDrawQuad> testBlendingDrawQuad = TileDrawQuad::create(sharedQuadState, m_quadRect, opaqueRect, m_resourceId, gfx::Vector2d(), gfx::Size(1, 1), false, false, false, false, false);
         testBlendingDrawQuad->setQuadVisibleRect(m_quadVisibleRect);
         EXPECT_EQ(m_blend, testBlendingDrawQuad->needsBlending());
         EXPECT_EQ(m_hasRenderSurface, !!renderSurface());
@@ -2457,7 +2457,7 @@ public:
     StrictWebGraphicsContext3D()
         : FakeWebGraphicsContext3D()
     {
-        m_nextTextureId = 7; // Start allocating texture ids larger than any other resource IDs so we can tell if someone's mixing up their resource types.
+        m_nextTextureId = 8; // Start allocating texture ids larger than any other resource IDs so we can tell if someone's mixing up their resource types.
     }
 
     virtual WebGLId createBuffer() { return 2; }
@@ -2465,6 +2465,8 @@ public:
     virtual WebGLId createProgram() { return 4; }
     virtual WebGLId createRenderbuffer() { return 5; }
     virtual WebGLId createShader(WGC3Denum) { return 6; }
+
+    static const WebGLId kExternalTextureId = 7;
 
     virtual void deleteBuffer(WebGLId id)
     {
@@ -2504,6 +2506,8 @@ public:
     }
     virtual void deleteTexture(WebGLId id)
     {
+        if (id == kExternalTextureId)
+            ADD_FAILURE() << "Trying to delete external texture";
         if (!ContainsKey(m_allocatedTextureIds, id))
             ADD_FAILURE() << "Trying to delete texture id " << id;
         m_allocatedTextureIds.erase(id);
@@ -2541,7 +2545,7 @@ public:
 
     virtual void bindTexture(WGC3Denum, WebGLId id)
     {
-        if (id && !ContainsKey(m_allocatedTextureIds, id))
+        if (id && id != kExternalTextureId && !ContainsKey(m_allocatedTextureIds, id))
             ADD_FAILURE() << "Trying to bind texture id " << id;
     }
 
@@ -2699,7 +2703,7 @@ TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     textureLayer->setAnchorPoint(gfx::PointF(0, 0));
     textureLayer->setContentBounds(gfx::Size(10, 10));
     textureLayer->setDrawsContent(true);
-    textureLayer->setTextureId(1);
+    textureLayer->setTextureId(StrictWebGraphicsContext3D::kExternalTextureId);
     rootLayer->addChild(textureLayer.PassAs<LayerImpl>());
 
     scoped_ptr<TiledLayerImpl> maskLayer = TiledLayerImpl::create(layerId++);
@@ -2716,7 +2720,7 @@ TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     textureLayerWithMask->setAnchorPoint(gfx::PointF(0, 0));
     textureLayerWithMask->setContentBounds(gfx::Size(10, 10));
     textureLayerWithMask->setDrawsContent(true);
-    textureLayerWithMask->setTextureId(1);
+    textureLayerWithMask->setTextureId(StrictWebGraphicsContext3D::kExternalTextureId);
     textureLayerWithMask->setMaskLayer(maskLayer.PassAs<LayerImpl>());
     rootLayer->addChild(textureLayerWithMask.PassAs<LayerImpl>());
 
@@ -2825,7 +2829,7 @@ TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     // Create dummy resources so that looking up an old resource will get an
     // invalid texture id mapping.
     for (unsigned i = 0; i < numResources; ++i)
-        m_hostImpl->resourceProvider()->createResourceFromExternalTexture(1);
+        m_hostImpl->resourceProvider()->createResourceFromExternalTexture(StrictWebGraphicsContext3D::kExternalTextureId);
 
     // The WebVideoFrameProvider is expected to recreate its textures after a
     // lost context (or not serve a frame).

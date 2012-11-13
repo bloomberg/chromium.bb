@@ -188,7 +188,15 @@ ResourceProvider::ResourceId ResourceProvider::createBitmap(int pool, const gfx:
 ResourceProvider::ResourceId ResourceProvider::createResourceFromExternalTexture(unsigned textureId)
 {
     DCHECK(m_threadChecker.CalledOnValidThread());
-    DCHECK(m_context->context3D());
+
+    WebGraphicsContext3D* context3d = m_context->context3D();
+    DCHECK(context3d);
+    GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, textureId));
+    GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+
     ResourceId id = m_nextId++;
     Resource resource(textureId, 0, gfx::Size(), 0);
     resource.external = true;

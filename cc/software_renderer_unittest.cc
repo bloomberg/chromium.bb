@@ -128,8 +128,8 @@ TEST_F(SoftwareRendererTest, tileQuad)
     scoped_ptr<SharedQuadState> sharedQuadState = SharedQuadState::create(WebTransformationMatrix(), outerRect, outerRect, 1.0, true);
     RenderPass::Id rootRenderPassId = RenderPass::Id(1, 1);
     scoped_ptr<TestRenderPass> rootRenderPass = TestRenderPass::create(rootRenderPassId, gfx::Rect(gfx::Point(), deviceViewportSize()), WebTransformationMatrix());
-    scoped_ptr<DrawQuad> outerQuad = TileDrawQuad::create(sharedQuadState.get(), outerRect, outerRect, resourceYellow, gfx::Vector2d(), outerSize, 0, false, false, false, false, false).PassAs<DrawQuad>();
-    scoped_ptr<DrawQuad> innerQuad = TileDrawQuad::create(sharedQuadState.get(), innerRect, innerRect, resourceCyan, gfx::Vector2d(), innerSize, 0, false, false, false, false, false).PassAs<DrawQuad>();
+    scoped_ptr<DrawQuad> outerQuad = TileDrawQuad::create(sharedQuadState.get(), outerRect, outerRect, resourceYellow, gfx::Vector2d(), outerSize, false, false, false, false, false).PassAs<DrawQuad>();
+    scoped_ptr<DrawQuad> innerQuad = TileDrawQuad::create(sharedQuadState.get(), innerRect, innerRect, resourceCyan, gfx::Vector2d(), innerSize, false, false, false, false, false).PassAs<DrawQuad>();
     rootRenderPass->appendQuad(innerQuad.Pass());
     rootRenderPass->appendQuad(outerQuad.Pass());
 

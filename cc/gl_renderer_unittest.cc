@@ -485,10 +485,11 @@ TEST(GLRendererTest2, visibilityChangeIsLastCall)
 }
 
 
-class ActiveTextureTrackingContext : public FakeWebGraphicsContext3D {
+class TextureStateTrackingContext : public FakeWebGraphicsContext3D {
 public:
-    ActiveTextureTrackingContext()
+    TextureStateTrackingContext()
         : m_activeTexture(GL_INVALID_ENUM)
+        , m_inDraw(false)
     {
     }
 
@@ -497,6 +498,16 @@ public:
         if (name == GL_EXTENSIONS)
             return WebString("GL_OES_EGL_image_external");
         return WebString();
+    }
+
+    // We shouldn't set any texture parameters during the draw sequence, although
+    // we might when creating the quads.
+    void setInDraw() { m_inDraw = true; }
+
+    virtual void texParameteri(WGC3Denum target, WGC3Denum pname, WGC3Dint param)
+    {
+        if (m_inDraw)
+            ADD_FAILURE();
     }
 
     virtual void activeTexture(WGC3Denum texture)
@@ -508,14 +519,15 @@ public:
     WGC3Denum activeTexture() const { return m_activeTexture; }
 
 private:
+    bool m_inDraw;
     WGC3Denum m_activeTexture;
 };
 
 TEST(GLRendererTest2, activeTextureState)
 {
     FakeRendererClient fakeClient;
-    scoped_ptr<GraphicsContext> outputSurface(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ActiveTextureTrackingContext)));
-    ActiveTextureTrackingContext* context = static_cast<ActiveTextureTrackingContext*>(outputSurface->context3D());
+    scoped_ptr<GraphicsContext> outputSurface(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new TextureStateTrackingContext)));
+    TextureStateTrackingContext* context = static_cast<TextureStateTrackingContext*>(outputSurface->context3D());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
     FakeRendererGL renderer(&fakeClient, resourceProvider.get());
 
@@ -524,6 +536,8 @@ TEST(GLRendererTest2, activeTextureState)
     cc::RenderPass::Id id(1, 1);
     scoped_ptr<TestRenderPass> pass = TestRenderPass::create(id, gfx::Rect(0, 0, 100, 100), WebTransformationMatrix());
     pass->appendOneOfEveryQuadType(resourceProvider.get());
+
+    context->setInDraw();
 
     cc::DirectRenderer::DrawingFrame drawingFrame;
     renderer.beginDrawingFrame(drawingFrame);

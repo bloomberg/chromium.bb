@@ -9,17 +9,16 @@
 
 namespace cc {
 
-scoped_ptr<TileDrawQuad> TileDrawQuad::create(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Vector2d& textureOffset, const gfx::Size& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
+scoped_ptr<TileDrawQuad> TileDrawQuad::create(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Vector2d& textureOffset, const gfx::Size& textureSize, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
 {
-    return make_scoped_ptr(new TileDrawQuad(sharedQuadState, quadRect, opaqueRect, resourceId, textureOffset, textureSize, textureFilter, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA));
+    return make_scoped_ptr(new TileDrawQuad(sharedQuadState, quadRect, opaqueRect, resourceId, textureOffset, textureSize, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA));
 }
 
-TileDrawQuad::TileDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Vector2d& textureOffset, const gfx::Size& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
+TileDrawQuad::TileDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Vector2d& textureOffset, const gfx::Size& textureSize, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
     : DrawQuad(sharedQuadState, DrawQuad::TiledContent, quadRect)
     , m_resourceId(resourceId)
     , m_textureOffset(textureOffset)
     , m_textureSize(textureSize)
-    , m_textureFilter(textureFilter)
     , m_swizzleContents(swizzleContents)
     , m_leftEdgeAA(leftEdgeAA)
     , m_topEdgeAA(topEdgeAA)
