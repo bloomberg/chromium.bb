@@ -109,17 +109,10 @@ class NaClBrowserTestGLibc : public NaClBrowserTestBase {
   virtual FilePath::StringType Variant() OVERRIDE;
 };
 
-class NaClBrowserTestPnaclNexe : public NaClBrowserTestBase {
- public:
-  virtual FilePath::StringType Variant() OVERRIDE;
-};
-
 #define NACL_BROWSER_TEST_F(suite, name, body) \
 IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
 body \
 IN_PROC_BROWSER_TEST_F(suite##GLibc, name) \
-body \
-IN_PROC_BROWSER_TEST_F(suite##PnaclNexe, name) \
 body
 
 #endif  // CHROME_TEST_NACL_NACL_BROWSERTEST_UTIL_H_

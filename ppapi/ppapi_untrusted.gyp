@@ -20,7 +20,6 @@
         'nso_target': 'libppapi_cpp.so',
         'build_glibc': 1,
         'build_newlib': 1,
-        'build_pnacl_newlib': 1,
         'sources': [
           '<@(cpp_source_files)',
           'cpp/module_embedder.h',
@@ -39,7 +38,6 @@
         'nso_target': 'libppapi_gles2.so',
         'build_glibc': 1,
         'build_newlib': 1,
-        'build_pnacl_newlib': 1,
         'include_dirs': [
           'lib/gl/include',
         ],

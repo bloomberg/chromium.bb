@@ -17,7 +17,6 @@
       'test_files': [],
       'nacl_newlib_out_dir': '<(PRODUCT_DIR)/nacl_test_data/newlib',
       'nacl_glibc_out_dir': '<(PRODUCT_DIR)/nacl_test_data/glibc',
-      'nacl_pnacl_out_dir': '<(PRODUCT_DIR)/nacl_test_data/pnacl',
       'target_conditions': [
         ['nexe_target!=""', {
           # These variables are used for nexe building and for library building,
@@ -26,11 +25,6 @@
           'out_newlib64': '>(nacl_newlib_out_dir)/>(nexe_target)_newlib_x86_64.nexe',
           'out_newlib_arm': '>(nacl_newlib_out_dir)/>(nexe_target)_newlib_arm.nexe',
           'nmf_newlib': '>(nacl_newlib_out_dir)/>(nexe_target).nmf',
-          'out_pnacl_newlib': '>(nacl_pnacl_out_dir)/>(nexe_target)_newlib.pexe',
-          'out_pnacl_newlib_arm_nexe': '>(nacl_pnacl_out_dir)/>(nexe_target)_pnacl_newlib_arm.nexe',
-          'out_pnacl_newlib_x86_32_nexe': '>(nacl_pnacl_out_dir)/>(nexe_target)_pnacl_newlib_x86_32.nexe',
-          'out_pnacl_newlib_x86_64_nexe': '>(nacl_pnacl_out_dir)/>(nexe_target)_pnacl_newlib_x86_64.nexe',
-          'nmf_pnacl_nexe': '>(nacl_pnacl_out_dir)/>(nexe_target).nmf',
           'out_glibc32': '>(nacl_glibc_out_dir)/>(nexe_target)_glibc_x86_32.nexe',
           'out_glibc64': '>(nacl_glibc_out_dir)/>(nexe_target)_glibc_x86_64.nexe',
           'out_glibc_arm': '>(nacl_glibc_out_dir)/>(nexe_target)_glibc_arm.nexe',
@@ -42,7 +36,6 @@
        '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib',
        '<(DEPTH)/ppapi/ppapi_untrusted.gyp:ppapi_cpp_lib',
        '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
-       '<(DEPTH)/ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:pnacl_irt_shim',
     ],
     'target_conditions': [
       ['test_files!=[] and build_newlib==1', {
@@ -59,16 +52,6 @@
         'copies': [
           {
             'destination': '>(nacl_glibc_out_dir)',
-            'files': [
-              '>@(test_files)',
-            ],
-          },
-        ],
-      }],
-      ['test_files!=[] and build_pnacl_newlib==1', {
-        'copies': [
-          {
-            'destination': '>(nacl_pnacl_out_dir)',
             'files': [
               '>@(test_files)',
             ],
@@ -119,38 +102,6 @@
                   }],
                   ['enable_arm==1', {
                     'inputs': ['>(out_newlib_arm)'],
-                  }],
-                ],
-              },
-            ],
-          }],
-          ['build_pnacl_newlib==1', {
-            'actions': [
-              {
-                'action_name': 'Generate PNACL NEWLIB NMF',
-                # Unlike glibc, nexes are not actually inputs - only the names matter.
-                # We don't have the nexes as inputs because the ARM nexe may not
-                # exist.  However, VS 2010 seems to blackhole this entire target if
-                # there are no inputs to this action.  To work around this we add a
-                # bogus input.
-                'inputs': [],
-                'outputs': ['>(nmf_pnacl_nexe)'],
-                'action': [
-                  'python',
-                  '<(DEPTH)/native_client_sdk/src/tools/create_nmf.py',
-                  '>@(_inputs)',
-                  '--output=>(nmf_pnacl_nexe)',
-                  '--toolchain=newlib',
-                ],
-                'target_conditions': [
-                  ['enable_x86_64==1', {
-                    'inputs': ['>(out_pnacl_newlib_x86_64_nexe)'],
-                  }],
-                  ['enable_x86_32==1', {
-                    'inputs': ['>(out_pnacl_newlib_x86_32_nexe)'],
-                  }],
-                  ['enable_arm==1', {
-                    'inputs': ['>(out_pnacl_newlib_arm_nexe)'],
                   }],
                 ],
               },
