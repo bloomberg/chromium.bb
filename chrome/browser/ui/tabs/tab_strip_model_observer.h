@@ -95,12 +95,12 @@ class TabStripModelObserver {
                         int from_index,
                         int to_index);
 
-  // The specified TabContents at |index| changed in some way. |contents|
+  // The specified WebContents at |index| changed in some way. |contents|
   // may be an entirely different object and the old value is no longer
   // available by the time this message is delivered.
   //
   // See TabChangeType for a description of |change_type|.
-  virtual void TabChangedAt(TabContents* contents,
+  virtual void TabChangedAt(content::WebContents* contents,
                             int index,
                             TabChangeType change_type);
 

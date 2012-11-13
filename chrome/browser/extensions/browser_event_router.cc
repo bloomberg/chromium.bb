@@ -468,10 +468,10 @@ void BrowserEventRouter::Observe(int type,
   }
 }
 
-void BrowserEventRouter::TabChangedAt(TabContents* contents,
+void BrowserEventRouter::TabChangedAt(WebContents* contents,
                                       int index,
                                       TabChangeType change_type) {
-  TabUpdated(contents->web_contents(), false);
+  TabUpdated(contents, false);
 }
 
 void BrowserEventRouter::TabReplacedAt(TabStripModel* tab_strip_model,

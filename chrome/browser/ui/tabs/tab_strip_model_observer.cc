@@ -39,7 +39,7 @@ void TabStripModelObserver::TabMoved(WebContents* contents,
                                      int to_index) {
 }
 
-void TabStripModelObserver::TabChangedAt(TabContents* contents,
+void TabStripModelObserver::TabChangedAt(WebContents* contents,
                                          int index,
                                          TabChangeType change_type) {
 }
