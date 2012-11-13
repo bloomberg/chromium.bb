@@ -82,7 +82,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   }
 
   void TestRequestHelper(const GURL& url, bool run_to_completion) {
-    delegate_.reset(new TestDelegate());
+    delegate_.reset(new net::TestDelegate());
     delegate_->set_quit_on_redirect(true);
     request_.reset(empty_context_.CreateRequest(url, delegate_.get()));
     job_ = new FileSystemDirURLRequestJob(
@@ -214,7 +214,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
 
   ScopedTempDir temp_dir_;
   net::URLRequestContext empty_context_;
-  scoped_ptr<TestDelegate> delegate_;
+  scoped_ptr<net::TestDelegate> delegate_;
   scoped_ptr<net::URLRequest> request_;
   scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<FileSystemContext> file_system_context_;

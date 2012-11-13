@@ -16,7 +16,7 @@ using content::ResourceRequestInfo;
 
 TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
   MessageLoopForIO message_loop;
-  TestURLRequestContext context;
+  net::TestURLRequestContext context;
   scoped_refptr<ExtensionInfoMap> extension_info_map(new ExtensionInfoMap);
   const char* sensitive_urls[] = {
       "http://clients2.google.com",
@@ -36,7 +36,7 @@ TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
   // Check that requests are rejected based on the destination
   for (size_t i = 0; i < arraysize(sensitive_urls); ++i) {
     GURL sensitive_url(sensitive_urls[i]);
-    TestURLRequest request(sensitive_url, NULL, &context);
+    net::TestURLRequest request(sensitive_url, NULL, &context);
     EXPECT_TRUE(
         WebRequestPermissions::HideRequest(extension_info_map.get(), &request))
         << sensitive_urls[i];
@@ -44,7 +44,7 @@ TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
   // Check that requests are accepted if they don't touch sensitive urls.
   for (size_t i = 0; i < arraysize(non_sensitive_urls); ++i) {
     GURL non_sensitive_url(non_sensitive_urls[i]);
-    TestURLRequest request(non_sensitive_url, NULL, &context);
+    net::TestURLRequest request(non_sensitive_url, NULL, &context);
     EXPECT_FALSE(
         WebRequestPermissions::HideRequest(extension_info_map.get(), &request))
         << non_sensitive_urls[i];
@@ -54,14 +54,14 @@ TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
   // WebStore.
   // Normally this request is not protected:
   GURL non_sensitive_url("http://www.google.com/test.js");
-  TestURLRequest non_sensitive_request(non_sensitive_url, NULL, &context);
+  net::TestURLRequest non_sensitive_request(non_sensitive_url, NULL, &context);
   EXPECT_FALSE(WebRequestPermissions::HideRequest(extension_info_map.get(),
                                                   &non_sensitive_request));
   // If the origin is labeled by the WebStoreAppId, it becomes protected.
   int process_id = 42;
   int site_instance_id = 23;
   int frame_id = 17;
-  TestURLRequest sensitive_request(non_sensitive_url, NULL, &context);
+  net::TestURLRequest sensitive_request(non_sensitive_url, NULL, &context);
   ResourceRequestInfo::AllocateForTesting(&sensitive_request,
       ResourceType::SCRIPT, NULL, process_id, frame_id);
   extension_info_map->RegisterExtensionProcess(extension_misc::kWebStoreAppId,

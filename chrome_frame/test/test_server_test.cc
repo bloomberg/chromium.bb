@@ -65,7 +65,7 @@ class TestURLRequest : public net::URLRequest {
  public:
   TestURLRequest(const GURL& url,
                  Delegate* delegate,
-                 TestURLRequestContext* context)
+                 net::TestURLRequestContext* context)
       : net::URLRequest(url, delegate, context) {
   }
 };
@@ -81,7 +81,7 @@ class UrlTaskChain {
 
     MessageLoopForIO loop;
 
-    TestURLRequestContext context;
+    net::TestURLRequestContext context;
     TestURLRequest r(GURL(url_), &delegate_, &context);
     r.Start();
     EXPECT_TRUE(r.is_pending());
@@ -103,7 +103,7 @@ class UrlTaskChain {
 
  protected:
   std::string url_;
-  TestDelegate delegate_;
+  net::TestDelegate delegate_;
   UrlTaskChain* next_;
 };
 

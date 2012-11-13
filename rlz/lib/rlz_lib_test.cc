@@ -432,8 +432,8 @@ TEST_F(RlzLibTest, SendFinancialPing) {
   base::Thread io_thread("rlz_unittest_io_thread");
   ASSERT_TRUE(io_thread.StartWithOptions(options));
 
-  scoped_refptr<TestURLRequestContextGetter> context =
-      new TestURLRequestContextGetter(
+  scoped_refptr<net::TestURLRequestContextGetter> context =
+      new net::TestURLRequestContextGetter(
           io_thread.message_loop()->message_loop_proxy());
   rlz_lib::SetURLRequestContext(context.get());
 

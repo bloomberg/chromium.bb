@@ -94,7 +94,7 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
     // TODO(rtenneti): Leaks StatisticsRecorder and will update suppressions.
     base::StatisticsRecorder::Initialize();
     ASSERT_TRUE(test_server_.Start());
-    context_ = new TestURLRequestContextGetter(
+    context_ = new net::TestURLRequestContextGetter(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
     context_->AddRef();
 
@@ -204,7 +204,7 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
 
   MessageLoopForIO message_loop_;
   net::TestServer test_server_;
-  TestURLRequestContextGetter* context_;
+  net::TestURLRequestContextGetter* context_;
   content::TestBrowserThread io_thread_;
 
  private:

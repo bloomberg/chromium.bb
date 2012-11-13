@@ -70,7 +70,7 @@ class FakeDelegate : public SingleLoginAttempt::Delegate {
   ServerInformation redirect_server_;
 };
 
-class MyTestURLRequestContext : public TestURLRequestContext {
+class MyTestURLRequestContext : public net::TestURLRequestContext {
  public:
   MyTestURLRequestContext() : TestURLRequestContext(true) {
     context_storage_.set_host_resolver(
@@ -85,9 +85,10 @@ class SingleLoginAttemptTest : public ::testing::Test {
   SingleLoginAttemptTest()
       : login_settings_(
           buzz::XmppClientSettings(),
-          new TestURLRequestContextGetter(
+          new net::TestURLRequestContextGetter(
               base::MessageLoopProxy::current(),
-              scoped_ptr<TestURLRequestContext>(new MyTestURLRequestContext())),
+              scoped_ptr<net::TestURLRequestContext>(
+                  new MyTestURLRequestContext())),
           ServerList(
               1,
               ServerInformation(

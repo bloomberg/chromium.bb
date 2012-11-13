@@ -64,7 +64,7 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
   virtual size_t UrlSizeLimit() OVERRIDE { return 256; }
 
   virtual net::URLRequestContextGetter* RequestContext() OVERRIDE {
-    return new TestURLRequestContextGetter(
+    return new net::TestURLRequestContextGetter(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
 

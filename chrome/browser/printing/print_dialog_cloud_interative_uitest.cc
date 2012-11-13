@@ -119,10 +119,10 @@ class TestController {
   const GURL expected_url() {
     return expected_url_;
   }
-  void set_delegate(TestDelegate* delegate) {
+  void set_delegate(net::TestDelegate* delegate) {
     delegate_ = delegate;
   }
-  TestDelegate* delegate() {
+  net::TestDelegate* delegate() {
     return delegate_;
   }
   void set_use_delegate(bool value) {
@@ -140,7 +140,7 @@ class TestController {
   bool result_;
   bool use_delegate_;
   GURL expected_url_;
-  TestDelegate* delegate_;
+  net::TestDelegate* delegate_;
 
   friend struct DefaultSingletonTraits<TestController>;
 };
@@ -156,7 +156,7 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
   // Must be static for handing into AddHostnameHandler.
   static net::URLRequest::ProtocolFactory Factory;
 
-  class AutoQuitDelegate : public TestDelegate {
+  class AutoQuitDelegate : public net::TestDelegate {
    public:
     AutoQuitDelegate() {}
 

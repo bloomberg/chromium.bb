@@ -84,14 +84,15 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute.get());
 
-  TestURLRequestContext context;
-  TestURLRequest url_request_ok(GURL("http://www.example.com"), NULL, &context);
+  net::TestURLRequestContext context;
+  net::TestURLRequest url_request_ok(
+      GURL("http://www.example.com"), NULL, &context);
   content::ResourceRequestInfo::AllocateForTesting(&url_request_ok,
       ResourceType::MAIN_FRAME, NULL, -1, -1);
   EXPECT_TRUE(attribute->IsFulfilled(
       WebRequestRule::RequestData(&url_request_ok, ON_BEFORE_REQUEST)));
 
-  TestURLRequest url_request_fail(
+  net::TestURLRequest url_request_fail(
       GURL("http://www.example.com"), NULL, &context);
   content::ResourceRequestInfo::AllocateForTesting(&url_request_ok,
       ResourceType::SUB_FRAME, NULL, -1, -1);
@@ -113,10 +114,10 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
           "chrome/test/data/extensions/api_test/webrequest/declarative")));
   ASSERT_TRUE(test_server.Start());
 
-  TestURLRequestContext context;
-  TestDelegate delegate;
-  TestURLRequest url_request(test_server.GetURL("files/headers.html"),
-                                                &delegate, &context);
+  net::TestURLRequestContext context;
+  net::TestDelegate delegate;
+  net::TestURLRequest url_request(test_server.GetURL("files/headers.html"),
+                                                     &delegate, &context);
   url_request.Start();
   MessageLoop::current()->Run();
 
@@ -190,9 +191,9 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
   const GURL url_empty;
   const GURL url_a("http://a.com");
   const GURL url_b("http://b.com");
-  TestURLRequestContext context;
-  TestDelegate delegate;
-  TestURLRequest url_request(url_a, &delegate, &context);
+  net::TestURLRequestContext context;
+  net::TestDelegate delegate;
+  net::TestURLRequest url_request(url_a, &delegate, &context);
 
   for (unsigned int i = 1; i <= kLastActiveStage; i <<= 1) {
     if (!(kActiveStages & i))
@@ -277,9 +278,9 @@ TEST(WebRequestConditionAttributeTest, Stages) {
   }
 
   const GURL url_empty;
-  TestURLRequestContext context;
-  TestDelegate delegate;
-  TestURLRequest url_request(url_empty, &delegate, &context);
+  net::TestURLRequestContext context;
+  net::TestDelegate delegate;
+  net::TestURLRequest url_request(url_empty, &delegate, &context);
 
   for (size_t i = 0; i < arraysize(active_stages); ++i) {
     EXPECT_FALSE(empty_attribute->IsFulfilled(WebRequestRule::RequestData(
@@ -399,10 +400,10 @@ TEST(WebRequestConditionAttributeTest, RequestHeaders) {
   // Necessary for TestURLRequest.
   MessageLoop message_loop(MessageLoop::TYPE_IO);
 
-  TestURLRequestContext context;
-  TestDelegate delegate;
-  TestURLRequest url_request(GURL("http://example.com"),  // Dummy URL.
-                             &delegate, &context);
+  net::TestURLRequestContext context;
+  net::TestDelegate delegate;
+  net::TestURLRequest url_request(GURL("http://example.com"),  // Dummy URL.
+                                  &delegate, &context);
   url_request.SetExtraRequestHeaderByName(
       "Custom-header", "custom/value", true /* overwrite */);
   url_request.Start();
@@ -484,10 +485,10 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
           "chrome/test/data/extensions/api_test/webrequest/declarative")));
   ASSERT_TRUE(test_server.Start());
 
-  TestURLRequestContext context;
-  TestDelegate delegate;
-  TestURLRequest url_request(test_server.GetURL("files/headers.html"),
-                             &delegate, &context);
+  net::TestURLRequestContext context;
+  net::TestDelegate delegate;
+  net::TestURLRequest url_request(test_server.GetURL("files/headers.html"),
+                                  &delegate, &context);
   url_request.Start();
   MessageLoop::current()->Run();
 

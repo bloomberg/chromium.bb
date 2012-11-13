@@ -97,7 +97,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
   void TestRequestHelper(const GURL& url,
                          const net::HttpRequestHeaders* headers,
                          bool run_to_completion) {
-    delegate_.reset(new TestDelegate());
+    delegate_.reset(new net::TestDelegate());
     // Make delegate_ exit the MessageLoop when the request is done.
     delegate_->set_quit_on_complete(true);
     delegate_->set_quit_on_redirect(true);
@@ -205,7 +205,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
   net::URLRequestContext empty_context_;
 
   // NOTE: order matters, request must die before delegate
-  scoped_ptr<TestDelegate> delegate_;
+  scoped_ptr<net::TestDelegate> delegate_;
   scoped_ptr<net::URLRequest> request_;
 
   scoped_refptr<net::URLRequestJob> pending_job_;

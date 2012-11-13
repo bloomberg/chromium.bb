@@ -133,11 +133,12 @@ class UserScriptListenerTest
   }
 
  protected:
-  TestURLRequest* StartTestRequest(net::URLRequest::Delegate* delegate,
-                                   const std::string& url_string,
-                                   TestURLRequestContext* context) {
+  net::TestURLRequest* StartTestRequest(net::URLRequest::Delegate* delegate,
+                                        const std::string& url_string,
+                                        net::TestURLRequestContext* context) {
     GURL url(url_string);
-    TestURLRequest* request = new TestURLRequest(url, delegate, context);
+    net::TestURLRequest* request =
+        new net::TestURLRequest(url, delegate, context);
 
     ResourceThrottle* throttle =
         listener_->CreateResourceThrottle(url, ResourceType::MAIN_FRAME);
@@ -182,9 +183,9 @@ TEST_F(UserScriptListenerTest, DelayAndUpdate) {
   LoadTestExtension();
   MessageLoop::current()->RunAllPending();
 
-  TestDelegate delegate;
-  TestURLRequestContext context;
-  scoped_ptr<TestURLRequest> request(
+  net::TestDelegate delegate;
+  net::TestURLRequestContext context;
+  scoped_ptr<net::TestURLRequest> request(
       StartTestRequest(&delegate, kMatchingUrl, &context));
   ASSERT_FALSE(request->is_pending());
 
@@ -200,9 +201,9 @@ TEST_F(UserScriptListenerTest, DelayAndUnload) {
   LoadTestExtension();
   MessageLoop::current()->RunAllPending();
 
-  TestDelegate delegate;
-  TestURLRequestContext context;
-  scoped_ptr<TestURLRequest> request(
+  net::TestDelegate delegate;
+  net::TestURLRequestContext context;
+  scoped_ptr<net::TestURLRequest> request(
       StartTestRequest(&delegate, kMatchingUrl, &context));
   ASSERT_FALSE(request->is_pending());
 
@@ -222,9 +223,9 @@ TEST_F(UserScriptListenerTest, DelayAndUnload) {
 }
 
 TEST_F(UserScriptListenerTest, NoDelayNoExtension) {
-  TestDelegate delegate;
-  TestURLRequestContext context;
-  scoped_ptr<TestURLRequest> request(
+  net::TestDelegate delegate;
+  net::TestURLRequestContext context;
+  scoped_ptr<net::TestURLRequest> request(
       StartTestRequest(&delegate, kMatchingUrl, &context));
 
   // The request should be started immediately.
@@ -238,11 +239,11 @@ TEST_F(UserScriptListenerTest, NoDelayNotMatching) {
   LoadTestExtension();
   MessageLoop::current()->RunAllPending();
 
-  TestDelegate delegate;
-  TestURLRequestContext context;
-  scoped_ptr<TestURLRequest> request(StartTestRequest(&delegate,
-                                                      kNotMatchingUrl,
-                                                      &context));
+  net::TestDelegate delegate;
+  net::TestURLRequestContext context;
+  scoped_ptr<net::TestURLRequest> request(StartTestRequest(&delegate,
+                                                           kNotMatchingUrl,
+                                                           &context));
 
   // The request should be started immediately.
   ASSERT_TRUE(request->is_pending());
@@ -268,9 +269,9 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
       content::Source<Profile>(&profile2),
       content::Details<Extension>(extension.get()));
 
-  TestDelegate delegate;
-  TestURLRequestContext context;
-  scoped_ptr<TestURLRequest> request(
+  net::TestDelegate delegate;
+  net::TestURLRequestContext context;
+  scoped_ptr<net::TestURLRequest> request(
       StartTestRequest(&delegate, kMatchingUrl, &context));
   ASSERT_FALSE(request->is_pending());
 
@@ -299,11 +300,11 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
 TEST_F(UserScriptListenerTest, ResumeBeforeStart) {
   LoadTestExtension();
   MessageLoop::current()->RunAllPending();
-  TestDelegate delegate;
-  TestURLRequestContext context;
+  net::TestDelegate delegate;
+  net::TestURLRequestContext context;
   GURL url(kMatchingUrl);
-  scoped_ptr<TestURLRequest> request(
-      new TestURLRequest(url, &delegate, &context));
+  scoped_ptr<net::TestURLRequest> request(
+      new net::TestURLRequest(url, &delegate, &context));
 
   ResourceThrottle* throttle =
       listener_->CreateResourceThrottle(url, ResourceType::MAIN_FRAME);
