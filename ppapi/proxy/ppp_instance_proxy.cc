@@ -70,6 +70,13 @@ void DidChangeView(PP_Instance instance, PP_Resource view_resource) {
     return;
   }
 
+  // TODO(yzshen): For debugging crbug.com/156730. According to the crash
+  // report, sometimes the plugin side receives a ViewData object with mostly
+  // default values, e.g., device_scale is set to 0. We crash here to find out
+  // in what circumstances the renderer side would send such a value.
+  // Must be revomved on the next day.
+  CHECK(enter.object()->GetData().device_scale > 0.0f);
+
   dispatcher->Send(new PpapiMsg_PPPInstance_DidChangeView(
       API_ID_PPP_INSTANCE, instance, enter.object()->GetData(),
       IsFlashFullscreen(instance, dispatcher)));

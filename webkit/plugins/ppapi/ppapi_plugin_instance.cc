@@ -821,6 +821,14 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
   view_data_.rect = PP_FromGfxRect(position);
   view_data_.clip_rect = PP_FromGfxRect(clip);
   view_data_.device_scale = container_->deviceScaleFactor();
+
+  // TODO(yzshen): For debugging crbug.com/156730. According to the crash
+  // report, sometimes the plugin side receives a ViewData object with mostly
+  // default values, e.g., device_scale is set to 0. We crash here to find out
+  // in what circumstances the renderer side would send such a value.
+  // Must be revomved on the next day.
+  CHECK(view_data_.device_scale > 0.0f);
+
   view_data_.css_scale = container_->pageZoomFactor() *
                          container_->pageScaleFactor();
 
