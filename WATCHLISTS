@@ -246,7 +246,7 @@
       'filepath': 'sandbox/linux/',
     },
     'linux-seccomp-bpf': {
-      'filepath': 'content/common/sandbox_init_linux.cc',
+      'filepath': 'content/common/sandbox.*linux.cc',
     },
     'locale_settings': {
       'filepath': 'chrome/app/resources/locale_settings',
