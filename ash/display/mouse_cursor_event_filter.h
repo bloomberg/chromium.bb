@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/event_filter.h"
+#include "ui/base/events/event_handler.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
@@ -24,7 +24,7 @@ class SharedDisplayEdgeIndicator;
 
 // An event filter that controls mouse location in extended desktop
 // environment.
-class ASH_EXPORT MouseCursorEventFilter : public aura::EventFilter {
+class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler {
  public:
   enum MouseWarpMode {
     WARP_ALWAYS,   // Always warp the mouse when possible.
@@ -46,17 +46,12 @@ class ASH_EXPORT MouseCursorEventFilter : public aura::EventFilter {
   void ShowSharedEdgeIndicator(const aura::RootWindow* from);
   void HideSharedEdgeIndicator();
 
-  // Overridden from aura::EventFilter:
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 ui::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleTouchEvent(
-      aura::Window* target,
-      ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleGestureEvent(
-      aura::Window* target,
-      ui::GestureEvent* event) OVERRIDE;
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest, SetMouseWarpModeFlag);

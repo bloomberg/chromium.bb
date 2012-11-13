@@ -73,7 +73,7 @@ TEST_F(WindowManagerTest, Focus) {
   // The IME event filter interferes with the basic key event propagation we
   // attempt to do here, so we remove it.
   Shell::TestApi shell_test(Shell::GetInstance());
-  Shell::GetInstance()->RemoveEnvEventFilter(
+  Shell::GetInstance()->RemovePreTargetHandler(
       shell_test.input_method_event_filter());
 
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
@@ -510,7 +510,7 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
   // The IME event filter interferes with the basic key event propagation we
   // attempt to do here, so we remove it.
   Shell::TestApi shell_test(Shell::GetInstance());
-  Shell::GetInstance()->RemoveEnvEventFilter(
+  Shell::GetInstance()->RemovePreTargetHandler(
       shell_test.input_method_event_filter());
 
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();

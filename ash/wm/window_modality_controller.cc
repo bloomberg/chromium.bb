@@ -74,25 +74,30 @@ WindowModalityController::~WindowModalityController() {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowModalityController, aura::EventFilter implementation:
 
-bool WindowModalityController::PreHandleKeyEvent(aura::Window* target,
-                                                 ui::KeyEvent* event) {
-  return !!wm::GetWindowModalTransient(target);
+ui::EventResult WindowModalityController::OnKeyEvent(ui::KeyEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  return wm::GetWindowModalTransient(target) ? ui::ER_CONSUMED :
+                                               ui::ER_UNHANDLED;
 }
 
-bool WindowModalityController::PreHandleMouseEvent(aura::Window* target,
-                                                   ui::MouseEvent* event) {
-  return ProcessLocatedEvent(target, event);
-}
-
-ui::EventResult WindowModalityController::PreHandleTouchEvent(
-    aura::Window* target,
-    ui::TouchEvent* event) {
+ui::EventResult WindowModalityController::OnMouseEvent(ui::MouseEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   return ProcessLocatedEvent(target, event) ? ui::ER_CONSUMED :
                                               ui::ER_UNHANDLED;
 }
 
-ui::EventResult WindowModalityController::PreHandleGestureEvent(
-    aura::Window* target,
+ui::EventResult WindowModalityController::OnScrollEvent(
+    ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult WindowModalityController::OnTouchEvent(ui::TouchEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  return ProcessLocatedEvent(target, event) ? ui::ER_CONSUMED :
+                                              ui::ER_UNHANDLED;
+}
+
+ui::EventResult WindowModalityController::OnGestureEvent(
     ui::GestureEvent* event) {
   // TODO: make gestures work with modals.
   return ui::ER_UNHANDLED;

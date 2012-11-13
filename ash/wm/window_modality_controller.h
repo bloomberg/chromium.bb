@@ -10,8 +10,8 @@
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/env_observer.h"
-#include "ui/aura/event_filter.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/events/event_handler.h"
 
 namespace ui {
 class LocatedEvent;
@@ -30,24 +30,19 @@ namespace internal {
 // WindowModalityController is an event filter that consumes events sent to
 // windows that are the transient parents of window-modal windows. This filter
 // must be added to the CompoundEventFilter so that activation works properly.
-class WindowModalityController : public aura::EventFilter,
+class WindowModalityController : public ui::EventHandler,
                                  public aura::EnvObserver,
                                  public aura::WindowObserver {
  public:
   WindowModalityController();
   virtual ~WindowModalityController();
 
-  // Overridden from aura::EventFilter:
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 ui::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleTouchEvent(
-      aura::Window* target,
-      ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleGestureEvent(
-      aura::Window* target,
-      ui::GestureEvent* event) OVERRIDE;
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from aura::EnvObserver:
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;

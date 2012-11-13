@@ -149,7 +149,7 @@ LauncherTooltipManager::LauncherTooltipManager(
   if (shelf_layout_manager)
     shelf_layout_manager->AddObserver(this);
   if (Shell::HasInstance())
-    Shell::GetInstance()->AddEnvEventFilter(this);
+    Shell::GetInstance()->AddPreTargetHandler(this);
 }
 
 LauncherTooltipManager::~LauncherTooltipManager() {
@@ -158,7 +158,7 @@ LauncherTooltipManager::~LauncherTooltipManager() {
   if (shelf_layout_manager_)
     shelf_layout_manager_->RemoveObserver(this);
   if (Shell::HasInstance())
-    Shell::GetInstance()->RemoveEnvEventFilter(this);
+    Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
 void LauncherTooltipManager::ShowDelayed(views::View* anchor,
@@ -254,25 +254,23 @@ bool LauncherTooltipManager::IsVisible() {
   return widget_ && widget_->IsVisible();
 }
 
-bool LauncherTooltipManager::PreHandleKeyEvent(aura::Window* target,
-                                               ui::KeyEvent* event) {
-  // Not handled.
-  return false;
+ui::EventResult LauncherTooltipManager::OnKeyEvent(ui::KeyEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
-bool LauncherTooltipManager::PreHandleMouseEvent(aura::Window* target,
-                                                 ui::MouseEvent* event) {
-  DCHECK(target);
+ui::EventResult LauncherTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
+  DCHECK(event->target());
   DCHECK(event);
   if (!widget_ || !widget_->IsVisible())
-    return false;
+    return ui::ER_UNHANDLED;
 
   DCHECK(view_);
   DCHECK(launcher_view_);
 
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   if (widget_->GetNativeWindow()->GetRootWindow() != target->GetRootWindow()) {
     CloseSoon();
-    return false;
+    return ui::ER_UNHANDLED;
   }
 
   gfx::Point location_in_launcher_view = event->location();
@@ -292,18 +290,22 @@ bool LauncherTooltipManager::PreHandleMouseEvent(aura::Window* target,
     CloseSoon();
   }
 
-  return false;
+  return ui::ER_UNHANDLED;
 }
 
-ui::EventResult LauncherTooltipManager::PreHandleTouchEvent(
-    aura::Window* target, ui::TouchEvent* event) {
+ui::EventResult LauncherTooltipManager::OnScrollEvent(ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult LauncherTooltipManager::OnTouchEvent(ui::TouchEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   if (widget_ && widget_->IsVisible() && widget_->GetNativeWindow() != target)
     Close();
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult LauncherTooltipManager::PreHandleGestureEvent(
-    aura::Window* target, ui::GestureEvent* event) {
+ui::EventResult LauncherTooltipManager::OnGestureEvent(
+    ui::GestureEvent* event) {
   if (widget_ && widget_->IsVisible()) {
     // Because this mouse event may arrive to |view_|, here we just schedule
     // the closing event rather than directly calling Close().

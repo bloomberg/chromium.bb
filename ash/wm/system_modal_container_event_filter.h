@@ -5,32 +5,28 @@
 #ifndef ASH_WM_SYSTEM_MODAL_CONTAINER_EVENT_FILTER_H_
 #define ASH_WM_SYSTEM_MODAL_CONTAINER_EVENT_FILTER_H_
 
-#include "base/compiler_specific.h"
-#include "ui/aura/event_filter.h"
 #include "ash/ash_export.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "ui/base/events/event_handler.h"
 
 namespace ash {
 namespace internal {
 
 class SystemModalContainerEventFilterDelegate;
 
-class ASH_EXPORT SystemModalContainerEventFilter : public aura::EventFilter {
+class ASH_EXPORT SystemModalContainerEventFilter : public ui::EventHandler {
  public:
   explicit SystemModalContainerEventFilter(
       SystemModalContainerEventFilterDelegate* delegate);
   virtual ~SystemModalContainerEventFilter();
 
-  // Overridden from aura::EventFilter:
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 ui::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleTouchEvent(
-      aura::Window* target,
-      ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleGestureEvent(
-      aura::Window* target,
-      ui::GestureEvent* event) OVERRIDE;
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   SystemModalContainerEventFilterDelegate* delegate_;

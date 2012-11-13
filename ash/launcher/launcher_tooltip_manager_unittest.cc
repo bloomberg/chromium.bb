@@ -11,12 +11,22 @@
 #include "ash/wm/window_util.h"
 #include "base/string16.h"
 #include "base/time.h"
-#include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
+#include "ui/base/events/event_handler.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/widget/widget.h"
+
+namespace {
+
+void SetEventTarget(ui::EventTarget* target,
+                    ui::Event* event) {
+  ui::Event::DispatcherApi dispatch_helper(event);
+  dispatch_helper.set_target(target);
+}
+
+}
 
 namespace ash {
 namespace test {
@@ -59,7 +69,7 @@ class LauncherTooltipManagerTest : public AshTestBase {
     return tooltip_manager_->timer_.get() != NULL;
   }
 
-  aura::EventFilter* GetEventFilter() {
+  ui::EventHandler* GetEventHandler() {
     return tooltip_manager_.get();
   }
 
@@ -143,26 +153,29 @@ TEST_F(LauncherTooltipManagerTest, ShouldHideForEvents) {
   ASSERT_TRUE(TooltipIsVisible());
 
   aura::RootWindow* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
-  aura::EventFilter* event_filter = GetEventFilter();
+  ui::EventHandler* event_handler = GetEventHandler();
 
   // Should not hide for key events.
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
-  EXPECT_FALSE(event_filter->PreHandleKeyEvent(root_window, &key_event));
+  SetEventTarget(root_window, &key_event);
+  EXPECT_EQ(ui::ER_UNHANDLED,
+            event_handler->OnKeyEvent(&key_event));
   EXPECT_TRUE(TooltipIsVisible());
 
   // Should hide for touch events.
   ui::TouchEvent touch_event(
       ui::ET_TOUCH_PRESSED, gfx::Point(), 0, base::TimeDelta());
+  SetEventTarget(root_window, &touch_event);
   EXPECT_EQ(ui::ER_UNHANDLED,
-            event_filter->PreHandleTouchEvent(root_window, &touch_event));
+            event_handler->OnTouchEvent(&touch_event));
   EXPECT_FALSE(TooltipIsVisible());
 
   // Shouldn't hide if the touch happens on the tooltip.
   ShowImmediately();
   views::Widget* tooltip_widget = GetTooltipWidget();
+  SetEventTarget(tooltip_widget->GetNativeWindow(), &touch_event);
   EXPECT_EQ(ui::ER_UNHANDLED,
-            event_filter->PreHandleTouchEvent(
-                tooltip_widget->GetNativeWindow(), &touch_event));
+            event_handler->OnTouchEvent(&touch_event));
   EXPECT_TRUE(TooltipIsVisible());
 
   // Should hide for gesture events.
@@ -170,8 +183,9 @@ TEST_F(LauncherTooltipManagerTest, ShouldHideForEvents) {
       ui::ET_GESTURE_BEGIN, 0, 0, ui::EF_NONE,
       base::TimeDelta::FromMilliseconds(base::Time::Now().ToDoubleT() * 1000),
       ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0.0f, 0.0f), 0);
+  SetEventTarget(tooltip_widget->GetNativeWindow(), &gesture_event);
   EXPECT_EQ(ui::ER_UNHANDLED,
-            event_filter->PreHandleGestureEvent(root_window, &gesture_event));
+            event_handler->OnGestureEvent(&gesture_event));
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(TooltipIsVisible());
 }
@@ -181,7 +195,7 @@ TEST_F(LauncherTooltipManagerTest, HideForMouseEvent) {
   ASSERT_TRUE(TooltipIsVisible());
 
   aura::RootWindow* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
-  aura::EventFilter* event_filter = GetEventFilter();
+  ui::EventHandler* event_handler = GetEventHandler();
 
   gfx::Rect tooltip_rect = GetTooltipWidget()->GetNativeWindow()->bounds();
   ASSERT_FALSE(tooltip_rect.IsEmpty());
@@ -191,12 +205,15 @@ TEST_F(LauncherTooltipManagerTest, HideForMouseEvent) {
                              tooltip_rect.CenterPoint(), ui::EF_NONE);
   ui::LocatedEvent::TestApi test_api(&mouse_event);
 
-  EXPECT_FALSE(event_filter->PreHandleMouseEvent(root_window, &mouse_event));
+  SetEventTarget(root_window, &mouse_event);
+  EXPECT_EQ(ui::ER_UNHANDLED,
+            event_handler->OnMouseEvent(&mouse_event));
   EXPECT_TRUE(TooltipIsVisible());
 
   // Should hide if the mouse is out of the tooltip.
   test_api.set_location(tooltip_rect.origin() + gfx::Vector2d(-1, -1));
-  EXPECT_FALSE(event_filter->PreHandleMouseEvent(root_window, &mouse_event));
+  EXPECT_EQ(ui::ER_UNHANDLED,
+            event_handler->OnMouseEvent(&mouse_event));
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(TooltipIsVisible());
 }

@@ -72,10 +72,11 @@ bool AcceleratorDispatcher::Dispatch(const base::NativeEvent& event) {
     // Modifiers can be changed by the user preference, so we need to rewrite
     // the event explicitly.
     ui::KeyEvent key_event(event, false);
-    aura::EventFilter* event_rewriter =
+    ui::EventHandler* event_rewriter =
         ash::Shell::GetInstance()->event_rewriter_filter();
     DCHECK(event_rewriter);
-    if (event_rewriter->PreHandleKeyEvent(associated_window_, &key_event))
+    ui::EventResult result = event_rewriter->OnKeyEvent(&key_event);
+    if (result & ui::ER_CONSUMED)
       return true;
     ash::AcceleratorController* accelerator_controller =
         ash::Shell::GetInstance()->accelerator_controller();

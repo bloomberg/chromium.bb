@@ -46,11 +46,11 @@ DragDropController::DragDropController()
       drag_operation_(0),
       drag_window_(NULL),
       should_block_during_drag_drop_(true) {
-  Shell::GetInstance()->AddEnvEventFilter(this);
+  Shell::GetInstance()->AddPreTargetHandler(this);
 }
 
 DragDropController::~DragDropController() {
-  Shell::GetInstance()->RemoveEnvEventFilter(this);
+  Shell::GetInstance()->RemovePreTargetHandler(this);
   Cleanup();
   if (drag_image_.get())
     drag_image_.reset();
@@ -196,23 +196,21 @@ bool DragDropController::IsDragDropInProgress() {
   return !!drag_drop_tracker_.get();
 }
 
-bool DragDropController::PreHandleKeyEvent(aura::Window* target,
-                                           ui::KeyEvent* event) {
+ui::EventResult DragDropController::OnKeyEvent(ui::KeyEvent* event) {
   if (IsDragDropInProgress() && event->key_code() == ui::VKEY_ESCAPE) {
     DragCancel();
-    return true;
+    return ui::ER_CONSUMED;
   }
-  return false;
+  return ui::ER_UNHANDLED;
 }
 
-bool DragDropController::PreHandleMouseEvent(aura::Window* target,
-                                             ui::MouseEvent* event) {
+ui::EventResult DragDropController::OnMouseEvent(ui::MouseEvent* event) {
   if (!IsDragDropInProgress())
-    return false;
+    return ui::ER_UNHANDLED;
   aura::Window* translated_target = drag_drop_tracker_->GetTarget(*event);
   if (!translated_target) {
     DragCancel();
-    return true;
+    return ui::ER_CONSUMED;
   }
   scoped_ptr<ui::MouseEvent> translated_event(
       drag_drop_tracker_->ConvertMouseEvent(translated_target, *event));
@@ -229,15 +227,18 @@ bool DragDropController::PreHandleMouseEvent(aura::Window* target,
       // (aura::RootWindow::PostMouseMoveEventAfterWindowChange).
       break;
   }
-  return true;
+  return ui::ER_CONSUMED;
 }
 
-ui::EventResult DragDropController::PreHandleTouchEvent(
-    aura::Window* target,
-    ui::TouchEvent* event) {
+ui::EventResult DragDropController::OnScrollEvent(ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult DragDropController::OnTouchEvent(ui::TouchEvent* event) {
   // TODO(sad): Also check for the touch-id.
   // TODO(varunjain): Add code for supporting drag-and-drop across displays
   // (http://crbug.com/114755).
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   if (!IsDragDropInProgress())
     return ui::ER_UNHANDLED;
   switch (event->type()) {
@@ -256,9 +257,7 @@ ui::EventResult DragDropController::PreHandleTouchEvent(
   return ui::ER_CONSUMED;
 }
 
-ui::EventResult DragDropController::PreHandleGestureEvent(
-    aura::Window* target,
-    ui::GestureEvent* event) {
+ui::EventResult DragDropController::OnGestureEvent(ui::GestureEvent* event) {
   return ui::ER_UNHANDLED;
 }
 

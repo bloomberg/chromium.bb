@@ -12,9 +12,9 @@
 #include "ash/wm/window_cycle_list.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
-#include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_handler.h"
 
 namespace ash {
 
@@ -28,22 +28,17 @@ const int kContainerIds[] = {
 
 // Filter to watch for the termination of a keyboard gesture to cycle through
 // multiple windows.
-class WindowCycleEventFilter : public aura::EventFilter {
+class WindowCycleEventFilter : public ui::EventHandler {
  public:
   WindowCycleEventFilter();
   virtual ~WindowCycleEventFilter();
 
-  // Overridden from aura::EventFilter:
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 ui::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleTouchEvent(
-      aura::Window* target,
-      ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleGestureEvent(
-      aura::Window* target,
-      ui::GestureEvent* event) OVERRIDE;
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowCycleEventFilter);
 };
@@ -55,34 +50,31 @@ WindowCycleEventFilter::WindowCycleEventFilter() {
 WindowCycleEventFilter::~WindowCycleEventFilter() {
 }
 
-bool WindowCycleEventFilter::PreHandleKeyEvent(
-    aura::Window* target,
-    ui::KeyEvent* event) {
+ui::EventResult WindowCycleEventFilter::OnKeyEvent(ui::KeyEvent* event) {
   // Views uses VKEY_MENU for both left and right Alt keys.
   if (event->key_code() == ui::VKEY_MENU &&
       event->type() == ui::ET_KEY_RELEASED) {
     Shell::GetInstance()->window_cycle_controller()->AltKeyReleased();
     // Warning: |this| will be deleted from here on.
   }
-  return false;  // Always let the event propagate.
+  return ui::ER_UNHANDLED;  // Always let the event propagate.
 }
 
-bool WindowCycleEventFilter::PreHandleMouseEvent(
-    aura::Window* target,
-    ui::MouseEvent* event) {
-  return false;  // Not handled.
+ui::EventResult WindowCycleEventFilter::OnMouseEvent(ui::MouseEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
-ui::EventResult WindowCycleEventFilter::PreHandleTouchEvent(
-    aura::Window* target,
-    ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;  // Not handled.
+ui::EventResult WindowCycleEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
-ui::EventResult WindowCycleEventFilter::PreHandleGestureEvent(
-    aura::Window* target,
+ui::EventResult WindowCycleEventFilter::OnTouchEvent(ui::TouchEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult WindowCycleEventFilter::OnGestureEvent(
     ui::GestureEvent* event) {
-  return ui::ER_UNHANDLED;  // Not handled.
+  return ui::ER_UNHANDLED;
 }
 
 // Adds all the children of |window| to |windows|.
@@ -267,9 +259,9 @@ void WindowCycleController::Step(Direction direction) {
 void WindowCycleController::StopCycling() {
   windows_.reset();
   // Remove our key event filter.
-  if (event_filter_.get()) {
-    Shell::GetInstance()->RemoveEnvEventFilter(event_filter_.get());
-    event_filter_.reset();
+  if (event_handler_.get()) {
+    Shell::GetInstance()->RemovePreTargetHandler(event_handler_.get());
+    event_handler_.reset();
   }
 
   // Add the currently focused window to the MRU list
@@ -291,8 +283,8 @@ bool WindowCycleController::IsTrackedContainer(aura::Window* window) {
 }
 
 void WindowCycleController::InstallEventFilter() {
-  event_filter_.reset(new WindowCycleEventFilter());
-  Shell::GetInstance()->AddEnvEventFilter(event_filter_.get());
+  event_handler_.reset(new WindowCycleEventFilter());
+  Shell::GetInstance()->AddPreTargetHandler(event_handler_.get());
 }
 
 void WindowCycleController::OnWindowActivated(aura::Window* active,

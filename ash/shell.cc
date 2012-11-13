@@ -229,13 +229,13 @@ Shell::~Shell() {
     active_root_window_->GetFocusManager()->SetFocusedWindow(NULL, NULL);
 
   // Please keep in same order as in Init() because it's easy to miss one.
-  RemoveEnvEventFilter(user_activity_detector_.get());
-  RemoveEnvEventFilter(event_rewriter_filter_.get());
-  RemoveEnvEventFilter(overlay_filter_.get());
-  RemoveEnvEventFilter(input_method_filter_.get());
-  RemoveEnvEventFilter(window_modality_controller_.get());
+  RemovePreTargetHandler(user_activity_detector_.get());
+  RemovePreTargetHandler(event_rewriter_filter_.get());
+  RemovePreTargetHandler(overlay_filter_.get());
+  RemovePreTargetHandler(input_method_filter_.get());
+  RemovePreTargetHandler(window_modality_controller_.get());
   if (mouse_cursor_filter_.get())
-    RemoveEnvEventFilter(mouse_cursor_filter_.get());
+    RemovePreTargetHandler(mouse_cursor_filter_.get());
   RemovePreTargetHandler(system_gesture_filter_.get());
 #if !defined(OS_MACOSX)
   RemovePreTargetHandler(accelerator_filter_.get());
@@ -244,7 +244,7 @@ Shell::~Shell() {
     RemovePreTargetHandler(touch_observer_hud_.get());
 
   // TooltipController is deleted with the Shell so removing its references.
-  RemoveEnvEventFilter(tooltip_controller_.get());
+  RemovePreTargetHandler(tooltip_controller_.get());
 
   // AppList needs to be released before shelf layout manager, which is
   // destroyed with launcher container in the loop below. However, app list
@@ -389,7 +389,7 @@ void Shell::Init() {
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
   env_filter_.reset(new views::corewm::CompoundEventFilter);
-  AddEnvEventFilter(env_filter_.get());
+  AddPreTargetHandler(env_filter_.get());
 
   focus_manager_.reset(new aura::FocusManager);
   activation_controller_.reset(
@@ -413,17 +413,17 @@ void Shell::Init() {
 
   // The order in which event filters are added is significant.
   user_activity_detector_.reset(new UserActivityDetector);
-  AddEnvEventFilter(user_activity_detector_.get());
+  AddPreTargetHandler(user_activity_detector_.get());
 
   event_rewriter_filter_.reset(new internal::EventRewriterEventFilter);
-  AddEnvEventFilter(event_rewriter_filter_.get());
+  AddPreTargetHandler(event_rewriter_filter_.get());
 
   overlay_filter_.reset(new internal::OverlayEventFilter);
-  AddEnvEventFilter(overlay_filter_.get());
+  AddPreTargetHandler(overlay_filter_.get());
   AddShellObserver(overlay_filter_.get());
 
   input_method_filter_.reset(new views::corewm::InputMethodEventFilter);
-  AddEnvEventFilter(input_method_filter_.get());
+  AddPreTargetHandler(input_method_filter_.get());
 
 #if !defined(OS_MACOSX)
   accelerator_filter_.reset(new internal::AcceleratorFilter);
@@ -449,7 +449,7 @@ void Shell::Init() {
   }
 
   mouse_cursor_filter_.reset(new internal::MouseCursorEventFilter());
-  AddEnvEventFilter(mouse_cursor_filter_.get());
+  AddPreTargetHandler(mouse_cursor_filter_.get());
 
   // Create Controllers that may need root window.
   // TODO(oshima): Move as many controllers before creating
@@ -459,7 +459,7 @@ void Shell::Init() {
   drag_drop_controller_.reset(new internal::DragDropController);
   user_action_client_.reset(delegate_->CreateUserActionClient());
   window_modality_controller_.reset(new internal::WindowModalityController);
-  AddEnvEventFilter(window_modality_controller_.get());
+  AddPreTargetHandler(window_modality_controller_.get());
 
   magnification_controller_.reset(
       internal::MagnificationController::CreateInstance());
@@ -471,7 +471,7 @@ void Shell::Init() {
 
   tooltip_controller_.reset(new internal::TooltipController(
       drag_drop_controller_.get()));
-  AddEnvEventFilter(tooltip_controller_.get());
+  AddPreTargetHandler(tooltip_controller_.get());
 
   event_client_.reset(new internal::EventClientImpl);
 
@@ -527,14 +527,6 @@ void Shell::Init() {
   // Cursor might have been hidden by somethign other than chrome.
   // Let the first mouse event show the cursor.
   env_filter_->set_cursor_hidden_by_filter(true);
-}
-
-void Shell::AddEnvEventFilter(aura::EventFilter* filter) {
-  AddPreTargetHandler(filter);
-}
-
-void Shell::RemoveEnvEventFilter(aura::EventFilter* filter) {
-  RemovePreTargetHandler(filter);
 }
 
 void Shell::ShowContextMenu(const gfx::Point& location_in_screen) {
@@ -704,7 +696,7 @@ void Shell::SetDimming(bool should_dim) {
 void Shell::CreateModalBackground(aura::Window* window) {
   if (!modality_filter_.get()) {
     modality_filter_.reset(new internal::SystemModalContainerEventFilter(this));
-    AddEnvEventFilter(modality_filter_.get());
+    AddPreTargetHandler(modality_filter_.get());
   }
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
@@ -721,7 +713,7 @@ void Shell::OnModalWindowRemoved(aura::Window* removed) {
         ActivateNextModalWindow();
   }
   if (!activated) {
-    RemoveEnvEventFilter(modality_filter_.get());
+    RemovePreTargetHandler(modality_filter_.get());
     modality_filter_.reset();
     for (RootWindowControllerList::iterator iter = controllers.begin();
          iter != controllers.end(); ++iter)

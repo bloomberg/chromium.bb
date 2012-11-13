@@ -15,9 +15,12 @@
 #include "ui/aura/window_observer.h"
 
 namespace aura {
-class EventFilter;
 class RootWindow;
 class Window;
+}
+
+namespace ui {
+class EventHandler;
 }
 
 namespace ash {
@@ -106,8 +109,8 @@ class ASH_EXPORT WindowCycleController
 
   scoped_ptr<WindowCycleList> windows_;
 
-  // Event filter to watch for release of alt key.
-  scoped_ptr<aura::EventFilter> event_filter_;
+  // Event handler to watch for release of alt key.
+  scoped_ptr<ui::EventHandler> event_handler_;
 
   // List of windows that have been activated in containers that we cycle
   // through, sorted by most recently used.

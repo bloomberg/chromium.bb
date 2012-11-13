@@ -23,23 +23,24 @@ namespace internal {
 PanelWindowEventFilter::PanelWindowEventFilter(
     aura::Window* panel_container,
     PanelLayoutManager* layout_manager)
-    : aura::EventFilter(),
-      panel_container_(panel_container),
+    : panel_container_(panel_container),
       layout_manager_(layout_manager),
       dragged_panel_(NULL),
       drag_state_(DRAG_NONE) {
+  panel_container_->AddObserver(this);
 }
 
 PanelWindowEventFilter::~PanelWindowEventFilter() {
+  panel_container_->RemoveObserver(this);
+  panel_container_->RemovePreTargetHandler(this);
 }
 
-bool PanelWindowEventFilter::PreHandleKeyEvent(aura::Window* target,
-                                               ui::KeyEvent* event) {
-  return false;
+ui::EventResult PanelWindowEventFilter::OnKeyEvent(ui::KeyEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
-bool PanelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
-                                                 ui::MouseEvent* event) {
+ui::EventResult PanelWindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED: {
       int hitResult = target->delegate()->
@@ -49,12 +50,12 @@ bool PanelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
           dragged_panel_ = target;
           drag_location_in_dragged_window_ = event->location();
           drag_state_ = DRAG_CLICKED;
-          return true;
+          return ui::ER_CONSUMED;
         } else {
-          return false;
+          return ui::ER_UNHANDLED;
         }
       } else {
-        return false;
+        return ui::ER_UNHANDLED;
       }
     }
 
@@ -64,48 +65,54 @@ bool PanelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
         layout_manager_->StartDragging(dragged_panel_);
       }
       if (drag_state_ == DRAG_STARTED)
-        return HandleDrag(target, event);
+        return HandleDrag(target, event) ? ui::ER_CONSUMED : ui::ER_UNHANDLED;
       else
-        return false;
+        return ui::ER_UNHANDLED;
 
     case ui::ET_MOUSE_CAPTURE_CHANGED:
       if (drag_state_ == DRAG_STARTED) {
         FinishDrag();
-        return true;
+        return ui::ER_CONSUMED;
       } else if (drag_state_ == DRAG_CLICKED) {
         drag_state_ = DRAG_NONE;
         dragged_panel_ = NULL;
-        return true;
+        return ui::ER_CONSUMED;
       }
-      return false;
+      return ui::ER_UNHANDLED;
 
     case ui::ET_MOUSE_RELEASED:
       if (drag_state_ == DRAG_STARTED) {
         FinishDrag();
-        return true;
+        return ui::ER_CONSUMED;
       } else if (dragged_panel_ != NULL) {
         drag_state_ = DRAG_NONE;
         layout_manager_->ToggleMinimize(dragged_panel_);
         dragged_panel_ = NULL;
-        return true;
+        return ui::ER_CONSUMED;
       }
-      return false;
+      return ui::ER_UNHANDLED;
     default:
-      return false;
+      return ui::ER_UNHANDLED;
   }
 }
 
-ui::EventResult PanelWindowEventFilter::PreHandleTouchEvent(
-    aura::Window* target,
-    ui::TouchEvent* event) {
+ui::EventResult PanelWindowEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult PanelWindowEventFilter::PreHandleGestureEvent(
-    aura::Window* target, ui::GestureEvent* event) {
+ui::EventResult PanelWindowEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
+ui::EventResult PanelWindowEventFilter::OnGestureEvent(
+    ui::GestureEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+void PanelWindowEventFilter::OnWindowDestroying(aura::Window* window) {
+  CHECK_EQ(panel_container_, window);
+  delete this;
+}
 
 bool PanelWindowEventFilter::HandleDrag(aura::Window* target,
                                         ui::LocatedEvent* event) {

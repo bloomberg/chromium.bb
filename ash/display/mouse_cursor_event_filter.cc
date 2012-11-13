@@ -71,35 +71,35 @@ void MouseCursorEventFilter::HideSharedEdgeIndicator() {
   shared_display_edge_indicator_->Hide();
 }
 
-bool MouseCursorEventFilter::PreHandleKeyEvent(aura::Window* target,
-                                               ui::KeyEvent* event) {
-  return false;
+ui::EventResult MouseCursorEventFilter::OnKeyEvent(ui::KeyEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
-bool MouseCursorEventFilter::PreHandleMouseEvent(aura::Window* target,
-                                                 ui::MouseEvent* event) {
+ui::EventResult MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   // Handle both MOVED and DRAGGED events here because when the mouse pointer
   // enters the other root window while dragging, the underlying window system
   // (at least X11) stops generating a ui::ET_MOUSE_MOVED event.
   if (event->type() != ui::ET_MOUSE_MOVED &&
       event->type() != ui::ET_MOUSE_DRAGGED) {
-      return false;
+      return ui::ER_UNHANDLED;
   }
 
   gfx::Point point_in_screen(event->location());
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   wm::ConvertPointToScreen(target, &point_in_screen);
-  return
-      WarpMouseCursorIfNecessary(target->GetRootWindow(), point_in_screen);
+  return WarpMouseCursorIfNecessary(target->GetRootWindow(), point_in_screen) ?
+      ui::ER_CONSUMED : ui::ER_UNHANDLED;
 }
 
-ui::EventResult MouseCursorEventFilter::PreHandleTouchEvent(
-    aura::Window* target,
-    ui::TouchEvent* event) {
+ui::EventResult MouseCursorEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult MouseCursorEventFilter::PreHandleGestureEvent(
-    aura::Window* target,
+ui::EventResult MouseCursorEventFilter::OnTouchEvent(ui::TouchEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult MouseCursorEventFilter::OnGestureEvent(
     ui::GestureEvent* event) {
   return ui::ER_UNHANDLED;
 }

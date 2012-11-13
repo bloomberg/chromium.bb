@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/event_filter.h"
+#include "ui/base/events/event_handler.h"
 
 namespace ash {
 
@@ -18,7 +18,7 @@ class EventRewriterDelegate;
 namespace internal {
 
 // An event filter that rewrites or drops an event.
-class ASH_EXPORT EventRewriterEventFilter : public aura::EventFilter {
+class ASH_EXPORT EventRewriterEventFilter : public ui::EventHandler {
  public:
   EventRewriterEventFilter();
   virtual ~EventRewriterEventFilter();
@@ -26,17 +26,12 @@ class ASH_EXPORT EventRewriterEventFilter : public aura::EventFilter {
   void SetEventRewriterDelegate(scoped_ptr<EventRewriterDelegate> delegate);
 
  private:
-  // Overridden from aura::EventFilter:
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 ui::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleTouchEvent(
-      aura::Window* target,
-      ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleGestureEvent(
-      aura::Window* target,
-      ui::GestureEvent* event) OVERRIDE;
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   scoped_ptr<EventRewriterDelegate> delegate_;
 

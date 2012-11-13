@@ -34,32 +34,31 @@ void UserActivityDetector::OnAllOutputsTurnedOff() {
   ignore_next_mouse_event_ = true;
 }
 
-bool UserActivityDetector::PreHandleKeyEvent(aura::Window* target,
-                                             ui::KeyEvent* event) {
+ui::EventResult UserActivityDetector::OnKeyEvent(ui::KeyEvent* event) {
   MaybeNotify();
-  return false;
+  return ui::ER_UNHANDLED;
 }
 
-bool UserActivityDetector::PreHandleMouseEvent(aura::Window* target,
-                                               ui::MouseEvent* event) {
+ui::EventResult UserActivityDetector::OnMouseEvent(ui::MouseEvent* event) {
   VLOG_IF(1, ignore_next_mouse_event_) << "ignoring mouse event";
   if (!(event->flags() & ui::EF_IS_SYNTHESIZED) &&
       !ignore_next_mouse_event_)
     MaybeNotify();
   ignore_next_mouse_event_ = false;
-  return false;
+  return ui::ER_UNHANDLED;
 }
 
-ui::EventResult UserActivityDetector::PreHandleTouchEvent(
-    aura::Window* target,
-    ui::TouchEvent* event) {
+ui::EventResult UserActivityDetector::OnScrollEvent(ui::ScrollEvent* event) {
   MaybeNotify();
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult UserActivityDetector::PreHandleGestureEvent(
-    aura::Window* target,
-    ui::GestureEvent* event) {
+ui::EventResult UserActivityDetector::OnTouchEvent(ui::TouchEvent* event) {
+  MaybeNotify();
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult UserActivityDetector::OnGestureEvent(ui::GestureEvent* event) {
   MaybeNotify();
   return ui::ER_UNHANDLED;
 }

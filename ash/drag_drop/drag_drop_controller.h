@@ -8,10 +8,10 @@
 #include "ash/ash_export.h"
 #include "base/callback.h"
 #include "ui/aura/client/drag_drop_client.h"
-#include "ui/aura/event_filter.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events/event_constants.h"
+#include "ui/base/events/event_handler.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/point.h"
 
@@ -37,7 +37,7 @@ class DragImageView;
 
 class ASH_EXPORT DragDropController
     : public aura::client::DragDropClient,
-      public aura::EventFilter,
+      public ui::EventHandler,
       public ui::ImplicitAnimationObserver,
       public aura::WindowObserver {
  public:
@@ -63,17 +63,12 @@ class ASH_EXPORT DragDropController
   virtual void DragCancel() OVERRIDE;
   virtual bool IsDragDropInProgress() OVERRIDE;
 
-  // Overridden from aura::EventFilter:
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 ui::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleTouchEvent(
-      aura::Window* target,
-      ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleGestureEvent(
-      aura::Window* target,
-      ui::GestureEvent* event) OVERRIDE;
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from aura::WindowObserver.
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;

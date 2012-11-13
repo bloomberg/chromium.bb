@@ -7,7 +7,8 @@
 
 #include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
-#include "ui/aura/event_filter.h"
+#include "ui/aura/window.h"
+#include "ui/base/events/event_handler.h"
 
 namespace ash {
 namespace internal {
@@ -18,7 +19,7 @@ namespace internal {
 // called.  The main task of this event filter is just to stop propagation
 // of any key events during activation, and also signal cancellation when keys
 // for canceling are pressed.
-class OverlayEventFilter : public aura::EventFilter,
+class OverlayEventFilter : public ui::EventHandler,
                            public ShellObserver {
  public:
   // Windows that need to receive events from OverlayEventFilter implement this.
@@ -49,15 +50,12 @@ class OverlayEventFilter : public aura::EventFilter,
   // Cancels the partial screenshot UI.  Do nothing if it's not activated.
   void Cancel();
 
-  // aura::EventFilter overrides:
-  virtual bool PreHandleKeyEvent(
-      aura::Window* target, ui::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(
-      aura::Window* target, ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleTouchEvent(
-      aura::Window* target, ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleGestureEvent(
-      aura::Window* target, ui::GestureEvent* event) OVERRIDE;
+  // ui::EventHandler overrides:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // ShellObserver overrides:
   virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;

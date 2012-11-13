@@ -193,11 +193,6 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
     active_root_window_ = active_root_window;
   }
 
-  // Adds or removes |filter| from the aura::Env's pre-target event-handler
-  // list.
-  void AddEnvEventFilter(aura::EventFilter* filter);
-  void RemoveEnvEventFilter(aura::EventFilter* filter);
-
   // Shows the context menu for the background and launcher at
   // |location_in_screen| (in screen coordinates).
   void ShowContextMenu(const gfx::Point& location_in_screen);

@@ -291,7 +291,7 @@ void RootWindowController::InitForPrimaryDisplay() {
       internal::kShellWindowId_PanelContainer);
   panel_layout_manager_ =
       new internal::PanelLayoutManager(panel_container);
-  panel_container->SetEventFilter(
+  panel_container->AddPreTargetHandler(
       new internal::PanelWindowEventFilter(
           panel_container, panel_layout_manager_));
   panel_container->SetLayoutManager(panel_layout_manager_);

@@ -10,14 +10,14 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "base/time.h"
-#include "ui/aura/event_filter.h"
+#include "ui/base/events/event_handler.h"
 
 namespace ash {
 
 class UserActivityObserver;
 
 // Watches for input events and notifies observers that the user is active.
-class ASH_EXPORT UserActivityDetector : public aura::EventFilter {
+class ASH_EXPORT UserActivityDetector : public ui::EventHandler {
  public:
   // Minimum amount of time between notifications to observers.
   static const double kNotifyIntervalMs;
@@ -34,19 +34,12 @@ class ASH_EXPORT UserActivityDetector : public aura::EventFilter {
   // Called when chrome has received a request to turn of all displays.
   void OnAllOutputsTurnedOff();
 
-  // aura::EventFilter implementation.
-  virtual bool PreHandleKeyEvent(
-      aura::Window* target,
-      ui::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(
-      aura::Window* target,
-      ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleTouchEvent(
-      aura::Window* target,
-      ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleGestureEvent(
-      aura::Window* target,
-      ui::GestureEvent* event) OVERRIDE;
+  // ui::EventHandler implementation.
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   // Notifies observers if enough time has passed since the last notification.

@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_TAB_SCRUBBER_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_TAB_SCRUBBER_H_
 
-#include "ui/aura/event_filter.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/aura/window.h"
+#include "ui/base/events/event_handler.h"
 
 class Browser;
 class Tab;
@@ -16,7 +17,7 @@ class Tab;
 // Notes: this is experimental, and disables ctrl-clicks. It should not be
 // enabled other than through flags until we implement 3 finger drag as the
 // mechanism to invoke it. At that point we will add test coverage.
-class TabScrubber : public aura::EventFilter,
+class TabScrubber : public ui::EventHandler,
                     public content::NotificationObserver {
  public:
   static TabScrubber* GetInstance();
@@ -25,9 +26,12 @@ class TabScrubber : public aura::EventFilter,
   TabScrubber();
   virtual ~TabScrubber();
 
-  // aura::EventFilter overrides:
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   ui::MouseEvent* event) OVERRIDE;
+  // ui::EventHandler overrides:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,

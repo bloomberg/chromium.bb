@@ -5,8 +5,9 @@
 #ifndef ASH_WM_PANEL_WINDOW_EVENT_FILTER_H
 #define ASH_WM_PANEL_WINDOW_EVENT_FILTER_H
 
-#include "ui/aura/event_filter.h"
 #include "ash/wm/panel_layout_manager.h"
+#include "ui/aura/window_observer.h"
+#include "ui/base/events/event_handler.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
@@ -21,23 +22,22 @@ class LocatedEvent;
 namespace ash {
 namespace internal {
 
-class PanelWindowEventFilter : public aura::EventFilter {
+class PanelWindowEventFilter : public ui::EventHandler,
+                               public aura::WindowObserver {
  public:
   PanelWindowEventFilter(aura::Window* panel_container,
                          PanelLayoutManager* layout_manager);
   virtual ~PanelWindowEventFilter();
 
-  // Overriden from aura::EventFilter:
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 ui::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleTouchEvent(
-      aura::Window* target,
-      ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleGestureEvent(
-      aura::Window* target,
-      ui::GestureEvent* event) OVERRIDE;
+  // Overriden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+
+  // Overridden from aura::WindowObserver:
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
  private:
   enum DragState {

@@ -247,8 +247,7 @@ void TooltipController::SetTooltipsEnabled(bool enable) {
   UpdateTooltip(tooltip_window_);
 }
 
-bool TooltipController::PreHandleKeyEvent(aura::Window* target,
-                                          ui::KeyEvent* event) {
+ui::EventResult TooltipController::OnKeyEvent(ui::KeyEvent* event) {
   // On key press, we want to hide the tooltip and not show it until change.
   // This is the same behavior as hiding tooltips on timeout. Hence, we can
   // simply simulate a timeout.
@@ -256,11 +255,11 @@ bool TooltipController::PreHandleKeyEvent(aura::Window* target,
     tooltip_shown_timer_.Stop();
     TooltipShownTimerFired();
   }
-  return false;
+  return ui::ER_UNHANDLED;
 }
 
-bool TooltipController::PreHandleMouseEvent(aura::Window* target,
-                                            ui::MouseEvent* event) {
+ui::EventResult TooltipController::OnMouseEvent(ui::MouseEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
     case ui::ET_MOUSE_DRAGGED:
@@ -298,12 +297,14 @@ bool TooltipController::PreHandleMouseEvent(aura::Window* target,
     default:
       break;
   }
-  return false;
+  return ui::ER_UNHANDLED;
 }
 
-ui::EventResult TooltipController::PreHandleTouchEvent(
-    aura::Window* target,
-    ui::TouchEvent* event) {
+ui::EventResult TooltipController::OnScrollEvent(ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult TooltipController::OnTouchEvent(ui::TouchEvent* event) {
   // TODO(varunjain): need to properly implement tooltips for
   // touch events.
   // Hide the tooltip for touch events.
@@ -315,9 +316,7 @@ ui::EventResult TooltipController::PreHandleTouchEvent(
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult TooltipController::PreHandleGestureEvent(
-    aura::Window* target,
-    ui::GestureEvent* event) {
+ui::EventResult TooltipController::OnGestureEvent(ui::GestureEvent* event) {
   return ui::ER_UNHANDLED;
 }
 

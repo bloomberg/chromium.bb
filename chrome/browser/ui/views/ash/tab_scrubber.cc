@@ -30,20 +30,23 @@ TabScrubber::TabScrubber()
       browser_(NULL),
       initial_tab_index_(-1),
       initial_x_(-1) {
-  ash::Shell::GetInstance()->AddEnvEventFilter(this);
+  ash::Shell::GetInstance()->AddPreTargetHandler(this);
 }
 
 TabScrubber::~TabScrubber() {
 }
 
-bool TabScrubber::PreHandleMouseEvent(aura::Window* target,
-                                      ui::MouseEvent* event) {
+ui::EventResult TabScrubber::OnKeyEvent(ui::KeyEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult TabScrubber::OnMouseEvent(ui::MouseEvent* event) {
   Browser* browser = GetActiveBrowser();
 
   if (!(event->type() == ui::ET_MOUSE_PRESSED ||
       event->type() == ui::ET_MOUSE_DRAGGED ||
       event->type() == ui::ET_MOUSE_RELEASED))
-    return false;
+    return ui::ER_UNHANDLED;
 
   if (!browser ||
       (event->type() == ui::ET_MOUSE_RELEASED) ||
@@ -52,7 +55,7 @@ bool TabScrubber::PreHandleMouseEvent(aura::Window* target,
       (browser_ && browser != browser_)) {
     if (scrubbing_)
       StopScrubbing();
-    return false;
+    return ui::ER_UNHANDLED;
   }
 
   if (!scrubbing_) {
@@ -72,7 +75,7 @@ bool TabScrubber::PreHandleMouseEvent(aura::Window* target,
     Tab* initial_tab = tab_strip->tab_at(initial_tab_index_);
     if (!initial_tab) {
       StopScrubbing();
-      return false;
+      return ui::ER_UNHANDLED;
     }
 
     gfx::Point tab_point((initial_tab->width() / 2) + event->x() - initial_x_,
@@ -84,7 +87,19 @@ bool TabScrubber::PreHandleMouseEvent(aura::Window* target,
     }
   }
 
-  return true;
+  return ui::ER_CONSUMED;
+}
+
+ui::EventResult TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult TabScrubber::OnTouchEvent(ui::TouchEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult TabScrubber::OnGestureEvent(ui::GestureEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
 void TabScrubber::Observe(int type,
