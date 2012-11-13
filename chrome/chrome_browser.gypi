@@ -252,8 +252,6 @@
         'browser/autofill/phone_number.h',
         'browser/autofill/phone_number_i18n.cc',
         'browser/autofill/phone_number_i18n.h',
-        'browser/autofill/select_control_handler.cc',
-        'browser/autofill/select_control_handler.h',
         'browser/auto_launch_trial.cc',
         'browser/auto_launch_trial.h',
         'browser/automation/automation_browser_tracker.cc',

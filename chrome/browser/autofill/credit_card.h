@@ -13,6 +13,8 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_group.h"
 
+struct FormFieldData;
+
 // A form group that stores credit card information.
 class CreditCard : public FormGroup {
  public:
@@ -58,6 +60,9 @@ class CreditCard : public FormGroup {
   // returns false.
   bool UpdateFromImportedCard(const CreditCard& imported_card)
       WARN_UNUSED_RESULT;
+
+  // Set |field|'s value based on |type| and contents of |this|.
+  void FillFormField(AutofillFieldType type, FormFieldData* field) const;
 
   // Comparison for Sync.  Returns 0 if the credit card is the same as |this|,
   // or < 0, or > 0 if it is different.  The implied ordering can be used for

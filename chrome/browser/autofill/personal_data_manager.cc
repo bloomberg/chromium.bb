@@ -18,11 +18,11 @@
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_regexes.h"
+#include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
-#include "chrome/browser/autofill/select_control_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
@@ -603,7 +603,7 @@ bool PersonalDataManager::IsValidLearnableProfile(
   // Reject profiles with invalid US state information.
   string16 state = profile.GetRawInfo(ADDRESS_HOME_STATE);
   if (profile.CountryCode() == "US" &&
-      !state.empty() && !autofill::IsValidState(state)) {
+      !state.empty() && !FormGroup::IsValidState(state)) {
     return false;
   }
 

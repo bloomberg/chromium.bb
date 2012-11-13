@@ -38,7 +38,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
-#include "chrome/browser/autofill/select_control_handler.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -614,11 +613,11 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
         if (profile) {
           DCHECK_NE(AutofillType::CREDIT_CARD,
                     AutofillType(field_type).group());
-          FillFormField(*profile, *autofill_field, variant, &(*iter));
+          profile->FillFormField(*autofill_field, variant, &(*iter));
         } else {
           DCHECK_EQ(AutofillType::CREDIT_CARD,
                     AutofillType(field_type).group());
-          FillCreditCardFormField(*credit_card, field_type, &(*iter));
+          credit_card->FillFormField(field_type, &(*iter));
         }
 
         // Mark the cached field as autofilled, so that we can detect when a
@@ -654,15 +653,15 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
         //   (b) part of the same logical unit, e.g. name or phone number,
         // then take the multi-profile "variant" into account.
         // Otherwise fill with the default (zeroth) variant.
+        size_t use_variant = 0;
         if (result.fields[i] == field ||
             field_group_type == initiating_group_type) {
-          FillFormField(*profile, *cached_field, variant, &result.fields[i]);
-        } else {
-          FillFormField(*profile, *cached_field, 0, &result.fields[i]);
+          use_variant = variant;
         }
+        profile->FillFormField(*cached_field, use_variant, &result.fields[i]);
       } else {
         DCHECK_EQ(AutofillType::CREDIT_CARD, field_group_type);
-        FillCreditCardFormField(*credit_card, field_type, &result.fields[i]);
+        credit_card->FillFormField(field_type, &result.fields[i]);
       }
 
       // Mark the cached field as autofilled, so that we can detect when a user
@@ -1248,83 +1247,6 @@ void AutofillManager::GetCreditCardSuggestions(
                                       GUIDPair(std::string(), 0)));
     }
   }
-}
-
-void AutofillManager::FillCreditCardFormField(const CreditCard& credit_card,
-                                              AutofillFieldType type,
-                                              FormFieldData* field) {
-  DCHECK_EQ(AutofillType::CREDIT_CARD, AutofillType(type).group());
-  DCHECK(field);
-
-  if (field->form_control_type == "select-one") {
-    autofill::FillSelectControl(credit_card, type, field);
-  } else if (field->form_control_type == "month") {
-    // HTML5 input="month" consists of year-month.
-    string16 year =
-        credit_card.GetCanonicalizedInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR);
-    string16 month = credit_card.GetCanonicalizedInfo(CREDIT_CARD_EXP_MONTH);
-    if (!year.empty() && !month.empty()) {
-      // Fill the value only if |credit_card| includes both year and month
-      // information.
-      field->value = year + ASCIIToUTF16("-") + month;
-    }
-  } else {
-    field->value = credit_card.GetCanonicalizedInfo(type);
-  }
-}
-
-void AutofillManager::FillFormField(const AutofillProfile& profile,
-                                    const AutofillField& cached_field,
-                                    size_t variant,
-                                    FormFieldData* field) {
-  AutofillFieldType type = cached_field.type();
-  DCHECK_NE(AutofillType::CREDIT_CARD, AutofillType(type).group());
-  DCHECK(field);
-
-  if (type == PHONE_HOME_NUMBER) {
-    FillPhoneNumberField(profile, cached_field, variant, field);
-  } else {
-    if (field->form_control_type == "select-one") {
-      autofill::FillSelectControl(profile, type, field);
-    } else {
-      std::vector<string16> values;
-      profile.GetCanonicalizedMultiInfo(type, &values);
-      if (variant >= values.size()) {
-        // If the variant is unavailable, bail.  This case is reachable, for
-        // example if Sync updates a profile during the filling process.
-        return;
-      }
-
-      field->value = values[variant];
-    }
-  }
-}
-
-void AutofillManager::FillPhoneNumberField(const AutofillProfile& profile,
-                                           const AutofillField& cached_field,
-                                           size_t variant,
-                                           FormFieldData* field) {
-  std::vector<string16> values;
-  profile.GetCanonicalizedMultiInfo(cached_field.type(), &values);
-  DCHECK(variant < values.size());
-
-  // If we are filling a phone number, check to see if the size field
-  // matches the "prefix" or "suffix" sizes and fill accordingly.
-  string16 number = values[variant];
-  if (number.length() ==
-          (PhoneNumber::kPrefixLength + PhoneNumber::kSuffixLength)) {
-    if (cached_field.phone_part() == AutofillField::PHONE_PREFIX ||
-        field->max_length == PhoneNumber::kPrefixLength) {
-      number = number.substr(PhoneNumber::kPrefixOffset,
-                             PhoneNumber::kPrefixLength);
-    } else if (cached_field.phone_part() == AutofillField::PHONE_SUFFIX ||
-               field->max_length == PhoneNumber::kSuffixLength) {
-      number = number.substr(PhoneNumber::kSuffixOffset,
-                             PhoneNumber::kSuffixLength);
-    }
-  }
-
-  field->value = number;
 }
 
 void AutofillManager::ParseForms(const std::vector<FormData>& forms) {

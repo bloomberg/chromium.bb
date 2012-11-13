@@ -6,6 +6,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/credit_card.h"
+#include "chrome/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -153,7 +154,7 @@ TEST(CreditCardTest, InvalidMastercardNumber) {
 }
 
 // Verify that we preserve exactly what the user typed for credit card numbers.
-TEST(CreditCardTest, SetInfoCreditCardNumber) {
+TEST(CreditCardTest, SetRawInfoCreditCardNumber) {
   CreditCard card;
 
   autofill_test::SetCreditCardInfo(&card, "Bob Dylan",
@@ -163,7 +164,7 @@ TEST(CreditCardTest, SetInfoCreditCardNumber) {
 }
 
 // Verify that we can handle both numeric and named months.
-TEST(CreditCardTest, SetInfoExpirationMonth) {
+TEST(CreditCardTest, SetRawInfoExpirationMonth) {
   CreditCard card;
 
   card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("05"));
@@ -197,4 +198,161 @@ TEST(CreditCardTest, CreditCardVerificationCode) {
   // The verification code cannot be set, as Chrome does not store this data.
   card.SetRawInfo(CREDIT_CARD_VERIFICATION_CODE, ASCIIToUTF16("999"));
   EXPECT_EQ(string16(), card.GetRawInfo(CREDIT_CARD_VERIFICATION_CODE));
+}
+
+
+TEST(CreditCardTest, CreditCardMonthExact) {
+  const char* const kMonthsNumeric[] = {
+    "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12",
+  };
+  std::vector<string16> options(arraysize(kMonthsNumeric));
+  for (size_t i = 0; i < arraysize(kMonthsNumeric); ++i) {
+    options[i] = ASCIIToUTF16(kMonthsNumeric[i]);
+  }
+
+  FormFieldData field;
+  field.form_control_type = "select-one";
+  field.option_values = options;
+  field.option_contents = options;
+
+  CreditCard credit_card;
+  credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
+  credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, &field);
+  EXPECT_EQ(ASCIIToUTF16("01"), field.value);
+}
+
+TEST(CreditCardTest, CreditCardMonthAbbreviated) {
+  const char* const kMonthsAbbreviated[] = {
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  };
+  std::vector<string16> options(arraysize(kMonthsAbbreviated));
+  for (size_t i = 0; i < arraysize(kMonthsAbbreviated); ++i) {
+    options[i] = ASCIIToUTF16(kMonthsAbbreviated[i]);
+  }
+
+  FormFieldData field;
+  field.form_control_type = "select-one";
+  field.option_values = options;
+  field.option_contents = options;
+
+  CreditCard credit_card;
+  credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
+  credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, &field);
+  EXPECT_EQ(ASCIIToUTF16("Jan"), field.value);
+}
+
+TEST(CreditCardTest, CreditCardMonthFull) {
+  const char* const kMonthsFull[] = {
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  };
+  std::vector<string16> options(arraysize(kMonthsFull));
+  for (size_t i = 0; i < arraysize(kMonthsFull); ++i) {
+    options[i] = ASCIIToUTF16(kMonthsFull[i]);
+  }
+
+  FormFieldData field;
+  field.form_control_type = "select-one";
+  field.option_values = options;
+  field.option_contents = options;
+
+  CreditCard credit_card;
+  credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
+  credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, &field);
+  EXPECT_EQ(ASCIIToUTF16("January"), field.value);
+}
+
+TEST(CreditCardTest, CreditCardMonthNumeric) {
+  const char* const kMonthsNumeric[] = {
+    "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+  };
+  std::vector<string16> options(arraysize(kMonthsNumeric));
+  for (size_t i = 0; i < arraysize(kMonthsNumeric); ++i) {
+    options[i] = ASCIIToUTF16(kMonthsNumeric[i]);
+  }
+
+  FormFieldData field;
+  field.form_control_type = "select-one";
+  field.option_values = options;
+  field.option_contents = options;
+
+  CreditCard credit_card;
+  credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
+  credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, &field);
+  EXPECT_EQ(ASCIIToUTF16("1"), field.value);
+}
+
+TEST(CreditCardTest, CreditCardTwoDigitYear) {
+  const char* const kYears[] = {
+    "12", "13", "14", "15", "16", "17", "18", "19"
+  };
+  std::vector<string16> options(arraysize(kYears));
+  for (size_t i = 0; i < arraysize(kYears); ++i) {
+    options[i] = ASCIIToUTF16(kYears[i]);
+  }
+
+  FormFieldData field;
+  field.form_control_type = "select-one";
+  field.option_values = options;
+  field.option_contents = options;
+
+  CreditCard credit_card;
+  credit_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2017"));
+  credit_card.FillSelectControl(CREDIT_CARD_EXP_4_DIGIT_YEAR, &field);
+  EXPECT_EQ(ASCIIToUTF16("17"), field.value);
+}
+
+TEST(CreditCardTest, CreditCardTypeSelectControl) {
+  const char* const kCreditCardTypes[] = {
+    "Visa", "Master Card", "AmEx", "discover"
+  };
+  std::vector<string16> options(arraysize(kCreditCardTypes));
+  for (size_t i = 0; i < arraysize(kCreditCardTypes); ++i) {
+    options[i] = ASCIIToUTF16(kCreditCardTypes[i]);
+  }
+
+  FormFieldData field;
+  field.form_control_type = "select-one";
+  field.option_values = options;
+  field.option_contents = options;
+
+  // Credit card types are inferred from the numbers, so we use test numbers for
+  // each card type. Test card numbers are drawn from
+  // http://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
+
+  {
+    // Normal case:
+    CreditCard credit_card;
+    credit_card.SetRawInfo(CREDIT_CARD_NUMBER,
+                           ASCIIToUTF16("4111111111111111"));
+    credit_card.FillSelectControl(CREDIT_CARD_TYPE, &field);
+    EXPECT_EQ(ASCIIToUTF16("Visa"), field.value);
+  }
+
+  {
+    // Filling should be able to handle intervening whitespace:
+    CreditCard credit_card;
+    credit_card.SetRawInfo(CREDIT_CARD_NUMBER,
+                           ASCIIToUTF16("5105105105105100"));
+    credit_card.FillSelectControl(CREDIT_CARD_TYPE, &field);
+    EXPECT_EQ(ASCIIToUTF16("Master Card"), field.value);
+  }
+
+  {
+    // American Express is sometimes abbreviated as AmEx:
+    CreditCard credit_card;
+    credit_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("371449635398431"));
+    credit_card.FillSelectControl(CREDIT_CARD_TYPE, &field);
+    EXPECT_EQ(ASCIIToUTF16("AmEx"), field.value);
+  }
+
+  {
+    // Case insensitivity:
+    CreditCard credit_card;
+    credit_card.SetRawInfo(CREDIT_CARD_NUMBER,
+                           ASCIIToUTF16("6011111111111117"));
+    credit_card.FillSelectControl(CREDIT_CARD_TYPE, &field);
+    EXPECT_EQ(ASCIIToUTF16("discover"), field.value);
+  }
 }
