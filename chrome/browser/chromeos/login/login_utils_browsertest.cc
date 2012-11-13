@@ -11,7 +11,9 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
@@ -94,6 +96,17 @@ void SetFlag(bool* flag) {
   *flag = true;
 }
 
+// Single task of the fake IO loop used in the test, that just waits until
+// it is signaled to quit or perform some work.
+// |completion| is the event to wait for, and |work| is the task to invoke
+// when signaled. If the task returns false then this quits the IO loop.
+void BlockLoop(base::WaitableEvent* completion, base::Callback<bool()> work) {
+  do {
+    completion->Wait();
+  } while (work.Run());
+  MessageLoop::current()->QuitNow();
+}
+
 ACTION_P(MockSessionManagerClientRetrievePolicyCallback, policy) {
   arg0.Run(*policy);
 }
@@ -115,20 +128,49 @@ class LoginUtilsTest : public testing::Test,
   // however, at one point in the test, temporarily set the message
   // loop for the IO thread.
   LoginUtilsTest()
-      : loop_(MessageLoop::TYPE_IO),
+      : fake_io_thread_completion_(false, false),
+        fake_io_thread_("fake_io_thread"),
+        loop_(MessageLoop::TYPE_IO),
         browser_process_(
             static_cast<TestingBrowserProcess*>(g_browser_process)),
         local_state_(browser_process_),
-        ui_thread_(content::BrowserThread::UI, &loop_),
-        db_thread_(content::BrowserThread::DB),
-        file_thread_(content::BrowserThread::FILE, &loop_),
-        io_thread_(content::BrowserThread::IO),
+        ui_thread_(BrowserThread::UI, &loop_),
+        db_thread_(BrowserThread::DB),
+        file_thread_(BrowserThread::FILE, &loop_),
         mock_async_method_caller_(NULL),
         connector_(NULL),
         cryptohome_(NULL),
         prepared_profile_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
+    // This test is not a full blown InProcessBrowserTest, and doesn't have
+    // all the usual threads running. However a lot of subsystems pulled from
+    // ProfileImpl post to IO (usually from ProfileIOData), and DCHECK that
+    // those tasks were posted. Those tasks in turn depend on a lot of other
+    // components that aren't there during this test, so this kludge is used to
+    // have a running IO loop that doesn't really execute any tasks.
+    //
+    // See InvokeOnIO() below for a way to perform specific tasks on IO, when
+    // that's necessary.
+
+    // A thread is needed to create a new MessageLoop, since there can be only
+    // one loop per thread.
+    fake_io_thread_.StartWithOptions(
+        base::Thread::Options(MessageLoop::TYPE_IO, 0));
+    MessageLoop* fake_io_loop = fake_io_thread_.message_loop();
+    // Make this loop enter the single task, BlockLoop(). Pass in the completion
+    // event and the work callback.
+    fake_io_loop->PostTask(
+        FROM_HERE,
+        base::Bind(
+          BlockLoop,
+          &fake_io_thread_completion_,
+          base::Bind(&LoginUtilsTest::DoIOWork, base::Unretained(this))));
+    // Map BrowserThread::IO to this loop. This allows posting to IO but nothing
+    // will be executed.
+    io_thread_.reset(
+        new content::TestBrowserThread(BrowserThread::IO, fake_io_loop));
+
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
 
     CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -227,34 +269,24 @@ class LoginUtilsTest : public testing::Test,
     cryptohome::AsyncMethodCaller::Shutdown();
     mock_async_method_caller_ = NULL;
 
-    RunUntilIdle();
-    {
-      // chrome_browser_net::Predictor usually skips its shutdown routines on
-      // unit_tests, but does the full thing when
-      // g_browser_process->profile_manager() is valid during initialization.
-      // Run a task on a temporary BrowserThread::IO that allows skipping
-      // these routines.
-      //
-      // It is important to not have a fake message loop on the IO
-      // thread for the whole test, see comment on LoginUtilsTest
-      // constructor for details.
-      io_thread_.DeprecatedSetMessageLoop(&loop_);
-      loop_.PostTask(FROM_HERE,
-                     base::Bind(&LoginUtilsTest::TearDownOnIO,
-                                base::Unretained(this)));
-      RunUntilIdle();
-      io_thread_.DeprecatedSetMessageLoop(NULL);
-    }
+    InvokeOnIO(
+        base::Bind(&LoginUtilsTest::TearDownOnIO, base::Unretained(this)));
 
     // These trigger some tasks that have to run while BrowserThread::UI
     // exists. Delete all the profiles before deleting the connector.
     browser_process_->SetProfileManager(NULL);
     connector_ = NULL;
     browser_process_->SetBrowserPolicyConnector(NULL);
+    QuitIOLoop();
     RunUntilIdle();
   }
 
   void TearDownOnIO() {
+    // chrome_browser_net::Predictor usually skips its shutdown routines on
+    // unit_tests, but does the full thing when
+    // g_browser_process->profile_manager() is valid during initialization.
+    // That includes a WaitableEvent on UI waiting for a task on IO, so that
+    // task must execute. Do it directly from here now.
     std::vector<Profile*> profiles =
         browser_process_->profile_manager()->GetLoadedProfiles();
     for (size_t i = 0; i < profiles.size(); ++i) {
@@ -271,6 +303,33 @@ class LoginUtilsTest : public testing::Test,
     loop_.RunUntilIdle();
     BrowserThread::GetBlockingPool()->FlushForTesting();
     loop_.RunUntilIdle();
+  }
+
+  // Invokes |task| on the IO loop and returns after it has executed.
+  void InvokeOnIO(const base::Closure& task) {
+    fake_io_thread_work_ = task;
+    fake_io_thread_completion_.Signal();
+    content::RunMessageLoop();
+  }
+
+  // Makes the fake IO loop return.
+  void QuitIOLoop() {
+    fake_io_thread_completion_.Signal();
+    content::RunMessageLoop();
+  }
+
+  // Helper for BlockLoop, InvokeOnIO and QuitIOLoop.
+  bool DoIOWork() {
+    bool has_work = !fake_io_thread_work_.is_null();
+    if (has_work)
+      fake_io_thread_work_.Run();
+    fake_io_thread_work_.Reset();
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        MessageLoop::QuitWhenIdleClosure());
+    // If there was work then keep waiting for more work.
+    // If there was no work then quit the fake IO loop.
+    return has_work;
   }
 
   virtual void OnProfilePrepared(Profile* profile) OVERRIDE {
@@ -378,6 +437,10 @@ class LoginUtilsTest : public testing::Test,
  protected:
   ScopedStubCrosEnabler stub_cros_enabler_;
 
+  base::Closure fake_io_thread_work_;
+  base::WaitableEvent fake_io_thread_completion_;
+  base::Thread fake_io_thread_;
+
   MessageLoop loop_;
   TestingBrowserProcess* browser_process_;
   ScopedTestingLocalState local_state_;
@@ -385,7 +448,7 @@ class LoginUtilsTest : public testing::Test,
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
+  scoped_ptr<content::TestBrowserThread> io_thread_;
   scoped_ptr<IOThread> io_thread_state_;
 
   MockDBusThreadManager mock_dbus_thread_manager_;
