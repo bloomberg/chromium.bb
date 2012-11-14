@@ -280,6 +280,27 @@ void WebContentsDelegateAndroid::ShowRepostFormWarningDialog(
       content_view_core.obj());
 }
 
+void WebContentsDelegateAndroid::ToggleFullscreenModeForTab(
+    WebContents* web_contents,
+    bool enter_fullscreen) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return;
+  Java_WebContentsDelegateAndroid_toggleFullscreenModeForTab(
+      env, obj.obj(), enter_fullscreen);
+}
+
+bool WebContentsDelegateAndroid::IsFullscreenForTabOrPending(
+    const WebContents* web_contents) const {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return false;
+  return Java_WebContentsDelegateAndroid_isFullscreenForTabOrPending(
+      env, obj.obj());
+}
+
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------

@@ -93,6 +93,11 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   virtual void ShowRepostFormWarningDialog(
       content::WebContents* source) OVERRIDE;
 
+  virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents,
+                                          bool enter_fullscreen) OVERRIDE;
+  virtual bool IsFullscreenForTabOrPending(
+      const content::WebContents* web_contents) const OVERRIDE;
+
  protected:
   base::android::ScopedJavaLocalRef<jobject> GetJavaDelegate(JNIEnv* env) const;
 

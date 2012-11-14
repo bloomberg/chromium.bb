@@ -115,4 +115,13 @@ public class WebContentsDelegateAndroid {
     @CalledByNative
     public void showRepostFormWarningDialog(ContentViewCore contentViewCore) {
     }
+
+    @CalledByNative
+    public void toggleFullscreenModeForTab(boolean enterFullscreen) {
+    }
+
+    @CalledByNative
+    public boolean isFullscreenForTabOrPending() {
+        return false;
+    }
 }
