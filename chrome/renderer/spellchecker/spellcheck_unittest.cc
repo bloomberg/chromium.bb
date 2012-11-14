@@ -1064,8 +1064,11 @@ TEST_F(SpellCheckTest, CreateTextCheckingResults) {
     spellcheck_results.push_back(SpellCheckResult(
         SpellCheckResult::SPELLING, 0, 2, string16()));
     WebKit::WebVector<WebKit::WebTextCheckingResult> textcheck_results;
-    spell_check()->CreateTextCheckingResults(
-        0, text, spellcheck_results, &textcheck_results);
+    spell_check()->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER,
+                                             0,
+                                             text,
+                                             spellcheck_results,
+                                             &textcheck_results);
     EXPECT_EQ(spellcheck_results.size(), textcheck_results.size());
     EXPECT_EQ(WebKit::WebTextCheckingTypeSpelling, textcheck_results[0].type);
     EXPECT_EQ(spellcheck_results[0].location, textcheck_results[0].location);
@@ -1080,8 +1083,11 @@ TEST_F(SpellCheckTest, CreateTextCheckingResults) {
     spellcheck_results.push_back(SpellCheckResult(
         SpellCheckResult::SPELLING, 7, 4, string16()));
     WebKit::WebVector<WebKit::WebTextCheckingResult> textcheck_results;
-    spell_check()->CreateTextCheckingResults(
-        0, text, spellcheck_results, &textcheck_results);
+    spell_check()->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER,
+                                             0,
+                                             text,
+                                             spellcheck_results,
+                                             &textcheck_results);
     EXPECT_EQ(spellcheck_results.size(), textcheck_results.size());
     EXPECT_EQ(WebKit::WebTextCheckingTypeGrammar, textcheck_results[0].type);
     EXPECT_EQ(spellcheck_results[0].location, textcheck_results[0].location);
