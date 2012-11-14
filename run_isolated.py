@@ -296,14 +296,10 @@ class WorkerThread(threading.Thread):
     while True:
       task = self._tasks.get()
       if task is None:
-        logging.debug('Worker thread %s exiting, no more tasks found',
-                      self.name)
         # We're done.
         return
       try:
         func, args, kwargs = task
-        logging.debug('Runnings %s with parameters %s and %s', func, args,
-                      kwargs)
         self.outputs.append(func(*args, **kwargs))
       except Exception, e:
         logging.error('Caught exception! %s' % e)
