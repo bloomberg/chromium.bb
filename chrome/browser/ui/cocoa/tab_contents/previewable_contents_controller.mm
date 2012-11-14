@@ -42,6 +42,9 @@ using content::WebContents;
 
   previewContents_ = preview;
   NSView* previewView = previewContents_->GetNativeView();
+
+  // Set the autoresizing of the the preview correctly.
+  [previewView setAutoresizingMask:NSViewHeightSizable|NSViewWidthSizable];
   [previewView setFrame:[[self view] bounds]];
 
   // Add the preview contents.
