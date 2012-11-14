@@ -94,6 +94,8 @@ public:
 
     // As setNeedsCommit(), but ensures the beginFrame will definitely happen even if
     // we are not visible.
+    // After this call we expect to go through the forced commit flow and then return
+    // to waiting for a non-forced beginFrame to finish.
     void setNeedsForcedCommit();
 
     // Call this only in response to receiving an ACTION_BEGIN_FRAME
@@ -145,6 +147,7 @@ protected:
     bool m_needsForcedRedrawAfterNextCommit;
     bool m_needsCommit;
     bool m_needsForcedCommit;
+    bool m_expectImmediateBeginFrame;
     bool m_mainThreadNeedsLayerTextures;
     bool m_insideVSync;
     bool m_visible;

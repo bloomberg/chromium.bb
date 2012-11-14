@@ -80,7 +80,6 @@ public:
 private:
     ThreadProxy(LayerTreeHost*, scoped_ptr<Thread> implThread);
 
-    // Set on impl thread, read on main thread.
     struct BeginFrameAndCommitState {
         BeginFrameAndCommitState();
         ~BeginFrameAndCommitState();
@@ -91,10 +90,9 @@ private:
         PrioritizedResourceManager::BackingList evictedContentsTexturesBackings;
         size_t memoryAllocationLimitBytes;
     };
-    scoped_ptr<BeginFrameAndCommitState> m_pendingBeginFrameRequest;
 
     // Called on main thread
-    void beginFrame();
+    void beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameState);
     void didCommitAndDrawFrame();
     void didCompleteSwapBuffers();
     void setAnimationEvents(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime);
@@ -132,7 +130,6 @@ private:
     bool m_animateRequested; // Set only when setNeedsAnimate is called.
     bool m_commitRequested; // Set only when setNeedsCommit is called.
     bool m_commitRequestSentToImplThread; // Set by setNeedsCommit and setNeedsAnimate.
-    bool m_forcedCommitRequested;
     base::CancelableClosure m_contextRecreationCallback;
     LayerTreeHost* m_layerTreeHost;
     bool m_rendererInitialized;
@@ -176,7 +173,7 @@ private:
     size_t m_totalCommitCount;
 
     bool m_deferCommits;
-    bool m_deferredCommitPending;
+    scoped_ptr<BeginFrameAndCommitState> m_pendingDeferredCommit;
 };
 
 }  // namespace cc
