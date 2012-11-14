@@ -1505,7 +1505,7 @@ gboolean LocationBarViewGtk::OnZoomButtonPress(GtkWidget* widget,
   if (event->button == 1 && GetWebContents()) {
     // If the zoom icon is clicked, show the zoom bubble and keep it open until
     // it loses focus.
-    ZoomBubbleGtk::Show(zoom_.get(), GetTabContents(), false);
+    ZoomBubbleGtk::Show(zoom_.get(), GetWebContents(), false);
     return TRUE;
   }
   return FALSE;
@@ -1533,7 +1533,7 @@ void LocationBarViewGtk::ShowZoomBubble() {
   if (!zoom_.get() || toolbar_model_->GetInputInProgress())
     return;
 
-  ZoomBubbleGtk::Show(zoom_.get(), GetTabContents(), true);
+  ZoomBubbleGtk::Show(zoom_.get(), GetWebContents(), true);
 }
 
 void LocationBarViewGtk::ShowStarBubble(const GURL& url,

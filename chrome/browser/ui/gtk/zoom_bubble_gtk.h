@@ -10,21 +10,27 @@
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-class TabContents;
-
 typedef struct _GtkWidget GtkWidget;
+
+namespace content {
+class WebContents;
+}
 
 class ZoomBubbleGtk {
  public:
   // Shows the zoom bubble, pointing at |anchor_widget|.
-  static void Show(GtkWidget* anchor, TabContents* tab_contents,
-      bool auto_close);
+  static void Show(GtkWidget* anchor,
+                   content::WebContents* web_contents,
+                   bool auto_close);
 
   // Closes the zoom bubble.
   static void Close();
 
  private:
-  ZoomBubbleGtk(GtkWidget* anchor, TabContents* tab_contents, bool auto_close);
+  ZoomBubbleGtk(GtkWidget* anchor,
+                content::WebContents* tab_contents,
+                bool auto_close);
+
   virtual ~ZoomBubbleGtk();
 
   // Convenience method to start |timer_| if |auto_close_| is true.
@@ -61,8 +67,8 @@ class ZoomBubbleGtk {
   // Timer used to close the bubble when |auto_close_| is true.
   base::OneShotTimer<ZoomBubbleGtk> timer_;
 
-  // The TabContents for the page whose zoom has changed.
-  TabContents* tab_contents_;
+  // The WebContents for the page whose zoom has changed.
+  content::WebContents* web_contents_;
 
   // An event box that wraps the content of the bubble.
   GtkWidget* event_box_;
