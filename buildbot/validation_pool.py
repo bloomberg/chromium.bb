@@ -287,17 +287,29 @@ class PatchSeries(object):
       remote = constants.INTERNAL_REMOTE
     helper = self._helper_pool.GetHelper(remote)
 
-    # TODO(ferringb, sosa): Update this for gerrit number support.
-    # Note this forces FormatChangeId to 1) ensure that the query
-    # is a valid one, 2) to force our internal ChangeId format into
-    # gerrit's format (ie, no leading * for internal changes).
-    query_text = cros_patch.FormatPatchDep(query, force_external=True)
+    query = query_text = cros_patch.FormatPatchDep(query, force_external=True)
     if parent_lookup:
       query_text = "project:%s AND branch:%s AND %s" % (
           change.project,
           self.GetTrackingBranchForChange(change, True),
           query_text)
     change = helper.QuerySingleRecord(query_text, must_match=True)
+    # If the query was a gerrit number based query, check the projects/change-id
+    # to see if we already have it locally, but couldn't map it since we didn't
+    # know the gerrit number at the time of the initial injection.
+    existing = self._lookup_cache[
+        cros_patch.FormatChangeId(
+            change.change_id, force_internal=change.internal, strict=False)]
+    if query.isdigit() and existing is not None:
+      if ((existing.project == change.project
+          and existing.tracking_branch == change.tracking_branch)
+          or not parent_lookup):
+        key = cros_patch.FormatGerritNumber(
+            str(change.gerrit_number), force_internal=change.internal,
+            strict=False)
+        self._lookup_cache.InjectCustomKey(key, existing)
+        return existing
+
     self.InjectLookupCache([change])
     if change.IsAlreadyMerged():
       self.InjectCommittedPatches([change])
@@ -346,13 +358,6 @@ class PatchSeries(object):
         continue
       elif limit_to is not None and dep_change not in limit_to:
         raise DependencyNotReadyForCommit(parent, dep)
-
-      # Note the startswith; that is to handle short form ChangeIds
-      # from CQ-DEPEND, when we decide to allow it.
-      assert (dep in dep_change.LookupAliases() or
-              cros_patch.FormatChangeId(
-                  dep_change.change_id, force_external=True
-                  ).startswith(dep))
 
       unsatisfied.append(dep_change)
 

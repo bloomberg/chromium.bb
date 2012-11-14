@@ -112,7 +112,8 @@ class base(cros_test_lib.MoxTestCase):
 
   @staticmethod
   def _LookupAliases(patch):
-    return [patch.change_id, patch.sha1, patch.gerrit_number]
+    return [getattr(patch, x) for x in ('change_id', 'sha1', 'gerrit_number')
+            if hasattr(patch, x)]
 
   def GetPatches(self, how_many=1, **kwargs):
     l = [self.MockPatch(**kwargs) for _ in xrange(how_many)]
@@ -208,7 +209,7 @@ class TestPatchSeries(base):
                           frozen=frozen, manifest=manifest)
 
     _GetIds = lambda seq:[x.id for x in seq]
-    _GetFailedIds = lambda seq:_GetIds(x.patch for x in seq)
+    _GetFailedIds = lambda seq: _GetIds(x.patch for x in seq)
 
     applied_result = _GetIds(result[0])
     failed_tot_result, failed_inflight_result = map(_GetFailedIds, result[1:])
@@ -220,6 +221,7 @@ class TestPatchSeries(base):
     self.assertEqual(
         [applied, failed_tot, failed_inflight],
         [applied_result, failed_tot_result, failed_inflight_result])
+    return result
 
   def testApplyWithDeps(self):
     """Test that we can apply changes correctly and respect deps.
@@ -291,6 +293,37 @@ class TestPatchSeries(base):
     self.assertResults(series, patches, [patch1, patch2, patch3])
     self.mox.VerifyAll()
 
+  def testGerritLazyMapping(self):
+    """Given a patch lacking a gerrit number, via gerrit, map it to that change.
+
+    Literally, this ensures that local patches pushed up- lacking a gerrit
+    number- are mapped back to a changeid via asking gerrit for that number,
+    then the local matching patch is used if available.
+    """
+    series = self.GetPatchSeries()
+
+    patch1 = self.MockPatch()
+    del patch1.gerrit_number
+    del patch1.url
+    patch2 = self.MockPatch(change_id=int(patch1.change_id[1:]))
+    patch3 = self.MockPatch()
+
+    self.SetPatchDeps(patch3, cq=[patch2.gerrit_number])
+    self.SetPatchDeps(patch2)
+    self.SetPatchDeps(patch1)
+
+    self.SetPatchApply(patch1)
+    self.SetPatchApply(patch3)
+
+    self._SetQuery(series, patch2, query=patch2.gerrit_number,
+        is_parent=False).AndReturn(patch2)
+
+    self.mox.ReplayAll()
+    applied = self.assertResults(series, [patch1, patch3], [patch3, patch1])[0]
+    self.assertIs(applied[0], patch3)
+    self.assertIs(applied[1], patch1)
+    self.mox.VerifyAll()
+
   def testCrosGerritDeps(self):
     """Test that we can apply changes correctly and respect deps.
 
@@ -318,9 +351,9 @@ class TestPatchSeries(base):
     self.mox.VerifyAll()
 
   @staticmethod
-  def _SetQuery(series, change, is_parent=False):
+  def _SetQuery(series, change, is_parent=False, query=None):
     helper = series._helper_pool.GetHelper(change.remote)
-    query = change.id
+    query = change.id if query is None else query
     if is_parent:
       query = "project:%s AND branch:%s AND %s" % (
           change.project, os.path.basename(change.tracking_branch), query)
