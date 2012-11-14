@@ -248,9 +248,11 @@ chrome::HostDesktopType kDefaultHostDesktopType =
 #endif
 
 bool ShouldReloadCrashedTab(WebContents* contents) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  return (command_line.HasSwitch(switches::kReloadKilledTabs) &&
-      contents->IsCrashed());
+#if defined(OS_CHROMEOS)
+  return contents->IsCrashed();
+#else
+  return false;
+#endif
 }
 
 }  // namespace

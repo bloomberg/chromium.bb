@@ -1112,9 +1112,6 @@ const char kRecordStats[]                   = "record-stats";
 // See also kPlaybackMode.
 const char kRecordMode[]                    = "record-mode";
 
-// Reloads pages that have been killed when they are next focused by the user.
-const char kReloadKilledTabs[]              = "reload-killed-tabs";
-
 // Uses custom front-end URL for the remote debugging.
 const char kRemoteDebuggingFrontend[]       = "remote-debugging-frontend";
 
