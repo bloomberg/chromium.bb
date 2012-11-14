@@ -223,10 +223,6 @@ extern const char kEnableWebViewSynchronousAPIs[];
 extern const char kChildCleanExit[];
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-extern const char kScrollPixels[];
-#endif
-
 #if defined(OS_MACOSX) || defined(OS_WIN)
 extern const char kUseSystemSSL[];
 #endif

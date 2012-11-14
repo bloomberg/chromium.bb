@@ -692,11 +692,6 @@ const char kEnableWebViewSynchronousAPIs[] = "enable-webview-synchronous-apis";
 const char kChildCleanExit[]                = "child-clean-exit";
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-// Specify the amount the trackpad should scroll by.
-const char kScrollPixels[]                  = "scroll-pixels";
-#endif
-
 #if defined(OS_MACOSX) || defined(OS_WIN)
 // Use the system SSL library (Secure Transport on Mac, SChannel on Windows)
 // instead of NSS for SSL.

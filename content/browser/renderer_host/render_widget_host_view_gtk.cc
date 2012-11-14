@@ -456,27 +456,6 @@ class RenderWidgetHostViewGtkWidget {
     return TRUE;
   }
 
-  // Allow the vertical scroll delta to be overridden from the command line.
-  // This will allow us to test more easily to discover the amount
-  // (either hard coded or computed) that's best.
-  static float GetScrollPixelsPerTick() {
-    static float scroll_pixels = -1;
-    if (scroll_pixels < 0) {
-      // TODO(brettw): Remove the command line switch (crbug.com/63525)
-      scroll_pixels = kDefaultScrollPixelsPerTick;
-      CommandLine* command_line = CommandLine::ForCurrentProcess();
-      std::string scroll_pixels_option =
-          command_line->GetSwitchValueASCII(switches::kScrollPixels);
-      if (!scroll_pixels_option.empty()) {
-        double v;
-        if (base::StringToDouble(scroll_pixels_option, &v))
-          scroll_pixels = static_cast<float>(v);
-      }
-      DCHECK_GT(scroll_pixels, 0);
-    }
-    return scroll_pixels;
-  }
-
   // Return the net up / down (or left / right) distance represented by events
   // in the  events will be removed from the queue. We only look at the top of
   // queue...any other type of event will cause us not to look farther.
@@ -522,7 +501,7 @@ class RenderWidgetHostViewGtkWidget {
       gdk_event_put(event);
       gdk_event_free(event);
     }
-    return num_clicks * GetScrollPixelsPerTick();
+    return num_clicks * kDefaultScrollPixelsPerTick;
   }
 
   static gboolean OnMouseScrollEvent(GtkWidget* widget,
@@ -546,15 +525,15 @@ class RenderWidgetHostViewGtkWidget {
     if (event->direction == GDK_SCROLL_UP ||
         event->direction == GDK_SCROLL_DOWN) {
       if (event->direction == GDK_SCROLL_UP)
-        web_event.deltaY = GetScrollPixelsPerTick();
+        web_event.deltaY = kDefaultScrollPixelsPerTick;
       else
-        web_event.deltaY = -GetScrollPixelsPerTick();
+        web_event.deltaY = -kDefaultScrollPixelsPerTick;
       web_event.deltaY += GetPendingScrollDelta(true, event->state);
     } else {
       if (event->direction == GDK_SCROLL_LEFT)
-        web_event.deltaX = GetScrollPixelsPerTick();
+        web_event.deltaX = kDefaultScrollPixelsPerTick;
       else
-        web_event.deltaX = -GetScrollPixelsPerTick();
+        web_event.deltaX = -kDefaultScrollPixelsPerTick;
       web_event.deltaX += GetPendingScrollDelta(false, event->state);
     }
     RenderWidgetHostImpl::From(

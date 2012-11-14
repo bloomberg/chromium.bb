@@ -774,7 +774,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kGpuStartupDialog,
       ::switches::kHasChromeOSKeyboard,
       ::switches::kLoginProfile,
-      ::switches::kScrollPixels,
       ::switches::kNaturalScrollDefault,
       ::switches::kNoFirstRun,
       ::switches::kNoSandbox,
