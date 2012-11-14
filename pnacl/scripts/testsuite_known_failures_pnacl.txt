@@ -8,8 +8,6 @@
 # runtime errors
 # EH: exception not caught
 inlined_cleanup x86-64
-# EH: infinite loop
-exception_spec_test arm
 # some output incorrect
 anagram
 sphereflake
