@@ -9,7 +9,8 @@
 # installed (for 'packagesbuild').
 # Packages: http://s.sudre.free.fr/Software/Packages/about.html
 #
-# usage: sign_and_build.sh output_dir input_dir codesign_keychain codesign_id
+# usage: do_signing.sh output_dir input_dir [codesign_keychain codesign_id
+#            [productsign_id]]
 #
 # The final disk image (dmg) is placed in |output_dir|.
 
@@ -180,26 +181,48 @@ cleanup() {
 }
 
 usage() {
-  echo "Usage: ${ME}: output_dir input_dir keychain codesign_id"\
-      "[productsign_id]" >&2
+  echo "Usage: ${ME} output_dir input_dir [keychain codesign_id"\
+      "[productsign_id]]" >&2
+  echo "  Sign the binaries using the specified <codesign_id>, build" >&2
+  echo "  the installer and then sign the installer using the given" >&2
+  echo "  <productsign_id>." >&2
+  echo "  If the <keychain> and signing ids are not specified then the" >&2
+  echo "  installer is built without signing any binaries." >&2
 }
 
 main() {
   local output_dir="$(shell_safe_path "${1}")"
   local input_dir="$(shell_safe_path "${2}")"
-  local keychain="$(shell_safe_path "${3}")"
-  local codesign_id="${4}"
+  local do_sign_binaries=0
+  local keychain=""
+  if [[ ${#} -ge 3 ]]; then
+    keychain="$(shell_safe_path "${3}")"
+    do_sign_binaries=1
+    echo "Signing binaries using ${keychain}"
+  else
+    echo "Not signing binaries (no keychain or identify specified)"
+  fi
+  local codesign_id=""
+  if [[ ${#} -ge 4 ]]; then
+    codesign_id="${4}"
+  fi
   local productsign_id=""
   if [[ ${#} -ge 5 ]]; then
     productsign_id="${5}"
   fi
 
+  if [[ "${do_sign_binaries}" == 1 && -z "${codesign_id}" ]]; then
+    err_exit "Can't sign binaries - please specify a codesign_id"
+  fi
+
   setup "${input_dir}"
   verify_clean_dir "${output_dir}"
 
-  sign_binaries "${input_dir}" "${keychain}" "${codesign_id}"
+  if [[ "${do_sign_binaries}" == 1 ]]; then
+    sign_binaries "${input_dir}" "${keychain}" "${codesign_id}"
+  fi
   build_packages "${input_dir}"
-  if [[ -n "${productsign_id}" ]]; then
+  if [[ "${do_sign_binaries}" == 1 && -n "${productsign_id}" ]]; then
     echo "Signing installer..."
     sign_installer "${input_dir}" "${keychain}" "${productsign_id}"
   fi
@@ -208,7 +231,7 @@ main() {
   cleanup
 }
 
-if [[ ${#} < 4 ]]; then
+if [[ ${#} < 2 ]]; then
   usage
   exit 1
 fi
