@@ -21,13 +21,10 @@
 #include "webkit/glue/webkit_glue_export.h"
 
 class SkBitmap;
+class SkCanvas;
 
 namespace net {
 class URLRequest;
-}
-
-namespace skia {
-class PlatformCanvas;
 }
 
 namespace WebKit {
@@ -99,7 +96,7 @@ WEBKIT_GLUE_EXPORT void PlatformFileInfoToWebFileInfo(
     WebKit::WebFileInfo* web_file_info);
 
 // Returns a WebCanvas pointer associated with the given Skia canvas.
-WEBKIT_GLUE_EXPORT WebKit::WebCanvas* ToWebCanvas(skia::PlatformCanvas*);
+WEBKIT_GLUE_EXPORT WebKit::WebCanvas* ToWebCanvas(SkCanvas*);
 
 // Returns the number of currently-active glyph pages this process is using.
 // There can be many such pages (maps of 256 character -> glyph) so this is

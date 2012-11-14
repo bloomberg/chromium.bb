@@ -52,13 +52,10 @@ CanvasSkiaPaint::~CanvasSkiaPaint() {
 
 void CanvasSkiaPaint::Init(bool opaque) {
   GdkRectangle bounds = rectangle();
+  RecreateBackingCanvas(gfx::Size(bounds.width, bounds.height),
+                        ui::SCALE_FACTOR_100P, opaque);
+
   skia::PlatformCanvas* canvas = platform_canvas();
-  if (!canvas->initialize(bounds.width, bounds.height, opaque, NULL)) {
-    // Cause a deliberate crash;
-    CHECK(false);
-  }
-  // No need to clear the canvas, because cairo automatically performs the
-  // clear.
 
   // Need to translate so that the dirty region appears at the origin of the
   // surface.

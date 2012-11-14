@@ -70,10 +70,8 @@ skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
   // will map it again.
   DCHECK(!memory()) << "Mapped file twice in the same process.";
 
-  scoped_ptr<skia::PlatformCanvas> canvas(new skia::PlatformCanvas);
-  if (!canvas->initialize(w, h, true, handle()))
-    return NULL;
-  return canvas.release();
+  return skia::CreatePlatformCanvas(w, h, true, handle(),
+                                    skia::RETURN_NULL_ON_FAILURE);
 }
 
 bool TransportDIB::Map() {

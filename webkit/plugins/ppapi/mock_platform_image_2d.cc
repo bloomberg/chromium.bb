@@ -18,7 +18,7 @@ MockPlatformImage2D::~MockPlatformImage2D() {
 }
 
 skia::PlatformCanvas* MockPlatformImage2D::Map() {
-  return new skia::PlatformCanvas(width_, height_, true);
+  return skia::CreatePlatformCanvas(width_, height_, true);
 }
 
 intptr_t MockPlatformImage2D::GetSharedMemoryHandle(uint32* byte_count) const {

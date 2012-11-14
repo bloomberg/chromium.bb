@@ -762,7 +762,7 @@ void BrowserPlugin::FreeDamageBuffer() {
 TransportDIB* BrowserPlugin::PopulateResizeGuestParameters(
     BrowserPluginHostMsg_ResizeGuest_Params* params,
     int view_width, int view_height) {
-  const size_t stride = skia::PlatformCanvas::StrideForWidth(view_width);
+  const size_t stride = skia::PlatformCanvasStrideForWidth(view_width);
   // Make sure the size of the damage buffer is at least four bytes so that we
   // can fit in a magic word to verify that the memory is shared correctly.
   size_t size =

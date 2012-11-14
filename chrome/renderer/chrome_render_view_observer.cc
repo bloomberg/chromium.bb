@@ -150,22 +150,6 @@ enum {
 // Constants for mixed-content blocking.
 static const char kGoogleDotCom[] = "google.com";
 
-static bool PaintViewIntoCanvas(WebView* view,
-                                skia::PlatformCanvas& canvas) {
-  view->layout();
-  const WebSize& size = view->size();
-
-  if (!canvas.initialize(size.width, size.height, true))
-    return false;
-
-  view->paint(webkit_glue::ToWebCanvas(&canvas),
-              WebRect(0, 0, size.width, size.height));
-  // TODO: Add a way to snapshot the whole page, not just the currently
-  // visible part.
-
-  return true;
-}
-
 static FaviconURL::IconType ToFaviconType(WebIconURL::Type type) {
   switch (type) {
     case WebIconURL::TypeFavicon:
@@ -904,11 +888,21 @@ bool ChromeRenderViewObserver::CaptureSnapshot(WebView* view,
                                                SkBitmap* snapshot) {
   base::TimeTicks beginning_time = base::TimeTicks::Now();
 
-  skia::PlatformCanvas canvas;
-  if (!PaintViewIntoCanvas(view, canvas))
+  view->layout();
+  const WebSize& size = view->size();
+
+  SkCanvas* canvas = skia::CreatePlatformCanvas(size.width, size.height, true,
+                                            NULL, skia::RETURN_NULL_ON_FAILURE);
+  if (!canvas)
     return false;
 
-  SkDevice* device = skia::GetTopDevice(canvas);
+  SkAutoUnref au(canvas);
+  view->paint(webkit_glue::ToWebCanvas(canvas),
+              WebRect(0, 0, size.width, size.height));
+  // TODO: Add a way to snapshot the whole page, not just the currently
+  // visible part.
+
+  SkDevice* device = skia::GetTopDevice(*canvas);
 
   const SkBitmap& bitmap = device->accessBitmap(false);
   if (!bitmap.copyTo(snapshot, SkBitmap::kARGB_8888_Config))

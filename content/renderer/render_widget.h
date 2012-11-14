@@ -47,10 +47,6 @@ class WebMouseEvent;
 class WebTouchEvent;
 }
 
-namespace skia {
-class PlatformCanvas;
-}
-
 namespace ui {
 class Range;
 }
@@ -227,10 +223,10 @@ class CONTENT_EXPORT RenderWidget
   // shared memory segment returned by AllocPaintBuf on Windows). The caller
   // must ensure that the given rect fits within the bounds of the WebWidget.
   void PaintRect(const gfx::Rect& rect, const gfx::Point& canvas_origin,
-                 skia::PlatformCanvas* canvas);
+                 SkCanvas* canvas);
 
   // Paints a border at the given rect for debugging purposes.
-  void PaintDebugBorder(const gfx::Rect& rect, skia::PlatformCanvas* canvas);
+  void PaintDebugBorder(const gfx::Rect& rect, SkCanvas* canvas);
 
   bool IsRenderingVSynced();
   void AnimationCallback();

@@ -18,9 +18,7 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_browser_font_trusted_api.h"
 
-namespace skia {
-class PlatformCanvas;
-}
+class SkCanvas;
 
 namespace WebKit {
 class WebFont;
@@ -73,7 +71,7 @@ class PPAPI_SHARED_EXPORT PPB_BrowserFont_Trusted_Shared
                                  const Preferences& prefs);
 
   // Internal version of DrawTextAt that takes a mapped PlatformCanvas.
-  void DrawTextToCanvas(skia::PlatformCanvas* destination,
+  void DrawTextToCanvas(SkCanvas* destination,
                         const PP_BrowserFont_Trusted_TextRun& text,
                         const PP_Point* position,
                         uint32_t color,

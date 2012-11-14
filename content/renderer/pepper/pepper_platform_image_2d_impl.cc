@@ -63,7 +63,7 @@ PepperPlatformImage2DImpl* PepperPlatformImage2DImpl::Create(int width,
   return new PepperPlatformImage2DImpl(width, height, dib);
 }
 
-skia::PlatformCanvas* PepperPlatformImage2DImpl::Map() {
+SkCanvas* PepperPlatformImage2DImpl::Map() {
   return dib_->GetPlatformCanvas(width_, height_);
 }
 

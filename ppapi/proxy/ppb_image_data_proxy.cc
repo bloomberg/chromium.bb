@@ -386,7 +386,7 @@ int32_t ImageData::GetSharedMemory(int* /* handle */,
   return PP_ERROR_NOACCESS;
 }
 
-skia::PlatformCanvas* ImageData::GetPlatformCanvas() {
+SkCanvas* ImageData::GetPlatformCanvas() {
 #if defined(OS_NACL)
   return NULL;  // No canvas in NaCl.
 #else

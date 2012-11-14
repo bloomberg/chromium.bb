@@ -260,12 +260,23 @@ const SkBitmap& BitmapPlatformDevice::onAccessBitmap(SkBitmap* bitmap) {
 }
 
 SkDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
-    SkBitmap::Config config, int width, int height, bool isOpaque,
-    Usage /*usage*/) {
+    SkBitmap::Config config, int width, int height, bool isOpaque, Usage) {
   SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  SkDevice* bitmap_device = BitmapPlatformDevice::CreateAndClear(width, height,
-                                                                 isOpaque);
-  return bitmap_device;
+  return BitmapPlatformDevice::CreateAndClear(width, height, isOpaque);
+}
+
+// PlatformCanvas impl
+
+SkCanvas* CreatePlatformCanvas(int width,
+                               int height,
+                               bool is_opaque,
+                               HANDLE shared_section,
+                               OnFailureType failureType) {
+  SkDevice* dev = BitmapPlatformDevice::Create(width,
+                                               height,
+                                               is_opaque,
+                                               shared_section);
+  return CreateCanvas(dev, failureType);
 }
 
 // Port of PlatformBitmap to win

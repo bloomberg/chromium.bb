@@ -173,7 +173,7 @@ void WebWidgetHost::Paint() {
   if (!canvas_.get()) {
     ResetScrollRect();
     paint_rect_ = client_rect;
-    canvas_.reset(new skia::PlatformCanvas(
+    canvas_.reset(skia::CreatePlatformCanvas(
         paint_rect_.width(), paint_rect_.height(), true));
   }
 

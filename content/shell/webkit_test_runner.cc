@@ -113,16 +113,17 @@ std::string DumpFrameScrollPosition(WebFrame* frame, bool recursive) {
   return result;
 }
 
-bool PaintViewIntoCanvas(WebView* view, skia::PlatformCanvas& canvas) {
+SkCanvas* PaintViewIntoCanvas(WebView* view) {
   view->layout();
   const WebSize& size = view->size();
 
-  if (!canvas.initialize(size.width, size.height, true))
-    return false;
-
-  view->paint(webkit_glue::ToWebCanvas(&canvas),
-              WebRect(0, 0, size.width, size.height));
-  return true;
+  SkCanvas* canvas = skia::CreatePlatformCanvas(size.width, size.height, true,
+                                              0, skia::RETURN_NULL_ON_FAILURE);
+  if (canvas) {
+    view->paint(webkit_glue::ToWebCanvas(canvas),
+                WebRect(0, 0, size.width, size.height));
+  }
+  return canvas;
 }
 
 #if !defined(OS_MACOSX)
@@ -138,11 +139,11 @@ void MakeBitmapOpaque(SkBitmap* bitmap) {
 #endif
 
 void CaptureSnapshot(WebView* view, SkBitmap* snapshot) {
-  skia::PlatformCanvas canvas;
-  if (!PaintViewIntoCanvas(view, canvas))
+  SkCanvas* canvas = PaintViewIntoCanvas(view);
+  if (!canvas)
     return;
 
-  SkDevice* device = skia::GetTopDevice(canvas);
+  SkDevice* device = skia::GetTopDevice(*canvas);
 
   const SkBitmap& bitmap = device->accessBitmap(false);
   bitmap.copyTo(snapshot, SkBitmap::kARGB_8888_Config);

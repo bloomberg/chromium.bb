@@ -57,7 +57,7 @@ class ImageData : public ppapi::Resource,
   virtual void* Map() OVERRIDE;
   virtual void Unmap() OVERRIDE;
   virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;
-  virtual skia::PlatformCanvas* GetPlatformCanvas() OVERRIDE;
+  virtual SkCanvas* GetPlatformCanvas() OVERRIDE;
   virtual SkCanvas* GetCanvas() OVERRIDE;
 
   const PP_ImageDataDesc& desc() const { return desc_; }
@@ -84,7 +84,7 @@ class ImageData : public ppapi::Resource,
   scoped_ptr<TransportDIB> transport_dib_;
 
   // Null when the image isn't mapped.
-  scoped_ptr<skia::PlatformCanvas> mapped_canvas_;
+  scoped_ptr<SkCanvas> mapped_canvas_;
 #endif
 
   // Set to true when this ImageData has been used in a call to

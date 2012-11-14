@@ -35,6 +35,7 @@
 
 class GURL;
 class SkBitmap;
+class SkCanvas;
 class TransportDIB;
 struct PP_HostResolver_Private_Hint;
 struct PP_NetAddress_Private;
@@ -69,10 +70,6 @@ class ResourceCreationAPI;
 }
 
 }  // namespace ppapi
-
-namespace skia {
-class PlatformCanvas;
-}
 
 namespace WebKit {
 class WebGamepads;
@@ -160,7 +157,7 @@ class PluginDelegate {
     virtual ~PlatformImage2D() {}
 
     // Caller will own the returned pointer, returns NULL on failure.
-    virtual skia::PlatformCanvas* Map() = 0;
+    virtual SkCanvas* Map() = 0;
 
     // Returns the platform-specific shared memory handle of the data backing
     // this image. This is used by PPAPI proxying to send the image to the

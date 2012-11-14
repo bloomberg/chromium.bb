@@ -61,78 +61,78 @@ void VerifyCanvasValues(skia::PlatformCanvas* canvas, uint8 values[h][w]) {
 TEST(Blit, ScrollCanvas) {
   static const int kCanvasWidth = 5;
   static const int kCanvasHeight = 5;
-  skia::PlatformCanvas canvas(kCanvasWidth, kCanvasHeight, true);
+  skia::ScopedPlatformCanvas canvas(kCanvasWidth, kCanvasHeight, true);
   uint8 initial_values[kCanvasHeight][kCanvasWidth] = {
       { 0x00, 0x01, 0x02, 0x03, 0x04 },
       { 0x10, 0x11, 0x12, 0x13, 0x14 },
       { 0x20, 0x21, 0x22, 0x23, 0x24 },
       { 0x30, 0x31, 0x32, 0x33, 0x34 },
       { 0x40, 0x41, 0x42, 0x43, 0x44 }};
-  SetToCanvas<5, 5>(&canvas, initial_values);
+  SetToCanvas<5, 5>(canvas, initial_values);
 
   // Sanity check on input.
-  VerifyCanvasValues<5, 5>(&canvas, initial_values);
+  VerifyCanvasValues<5, 5>(canvas, initial_values);
 
   // Scroll none and make sure it's a NOP.
-  gfx::ScrollCanvas(&canvas,
+  gfx::ScrollCanvas(canvas,
                     gfx::Rect(0, 0, kCanvasWidth, kCanvasHeight),
                     gfx::Vector2d(0, 0));
-  VerifyCanvasValues<5, 5>(&canvas, initial_values);
+  VerifyCanvasValues<5, 5>(canvas, initial_values);
 
   // Scroll the center 3 pixels up one.
   gfx::Rect center_three(1, 1, 3, 3);
-  gfx::ScrollCanvas(&canvas, center_three, gfx::Vector2d(0, -1));
+  gfx::ScrollCanvas(canvas, center_three, gfx::Vector2d(0, -1));
   uint8 scroll_up_expected[kCanvasHeight][kCanvasWidth] = {
       { 0x00, 0x01, 0x02, 0x03, 0x04 },
       { 0x10, 0x21, 0x22, 0x23, 0x14 },
       { 0x20, 0x31, 0x32, 0x33, 0x24 },
       { 0x30, 0x31, 0x32, 0x33, 0x34 },
       { 0x40, 0x41, 0x42, 0x43, 0x44 }};
-  VerifyCanvasValues<5, 5>(&canvas, scroll_up_expected);
+  VerifyCanvasValues<5, 5>(canvas, scroll_up_expected);
 
   // Reset and scroll the center 3 pixels down one.
-  SetToCanvas<5, 5>(&canvas, initial_values);
-  gfx::ScrollCanvas(&canvas, center_three, gfx::Vector2d(0, 1));
+  SetToCanvas<5, 5>(canvas, initial_values);
+  gfx::ScrollCanvas(canvas, center_three, gfx::Vector2d(0, 1));
   uint8 scroll_down_expected[kCanvasHeight][kCanvasWidth] = {
       { 0x00, 0x01, 0x02, 0x03, 0x04 },
       { 0x10, 0x11, 0x12, 0x13, 0x14 },
       { 0x20, 0x11, 0x12, 0x13, 0x24 },
       { 0x30, 0x21, 0x22, 0x23, 0x34 },
       { 0x40, 0x41, 0x42, 0x43, 0x44 }};
-  VerifyCanvasValues<5, 5>(&canvas, scroll_down_expected);
+  VerifyCanvasValues<5, 5>(canvas, scroll_down_expected);
 
   // Reset and scroll the center 3 pixels right one.
-  SetToCanvas<5, 5>(&canvas, initial_values);
-  gfx::ScrollCanvas(&canvas, center_three, gfx::Vector2d(1, 0));
+  SetToCanvas<5, 5>(canvas, initial_values);
+  gfx::ScrollCanvas(canvas, center_three, gfx::Vector2d(1, 0));
   uint8 scroll_right_expected[kCanvasHeight][kCanvasWidth] = {
       { 0x00, 0x01, 0x02, 0x03, 0x04 },
       { 0x10, 0x11, 0x11, 0x12, 0x14 },
       { 0x20, 0x21, 0x21, 0x22, 0x24 },
       { 0x30, 0x31, 0x31, 0x32, 0x34 },
       { 0x40, 0x41, 0x42, 0x43, 0x44 }};
-  VerifyCanvasValues<5, 5>(&canvas, scroll_right_expected);
+  VerifyCanvasValues<5, 5>(canvas, scroll_right_expected);
 
   // Reset and scroll the center 3 pixels left one.
-  SetToCanvas<5, 5>(&canvas, initial_values);
-  gfx::ScrollCanvas(&canvas, center_three, gfx::Vector2d(-1, 0));
+  SetToCanvas<5, 5>(canvas, initial_values);
+  gfx::ScrollCanvas(canvas, center_three, gfx::Vector2d(-1, 0));
   uint8 scroll_left_expected[kCanvasHeight][kCanvasWidth] = {
       { 0x00, 0x01, 0x02, 0x03, 0x04 },
       { 0x10, 0x12, 0x13, 0x13, 0x14 },
       { 0x20, 0x22, 0x23, 0x23, 0x24 },
       { 0x30, 0x32, 0x33, 0x33, 0x34 },
       { 0x40, 0x41, 0x42, 0x43, 0x44 }};
-  VerifyCanvasValues<5, 5>(&canvas, scroll_left_expected);
+  VerifyCanvasValues<5, 5>(canvas, scroll_left_expected);
 
   // Diagonal scroll.
-  SetToCanvas<5, 5>(&canvas, initial_values);
-  gfx::ScrollCanvas(&canvas, center_three, gfx::Vector2d(2, 2));
+  SetToCanvas<5, 5>(canvas, initial_values);
+  gfx::ScrollCanvas(canvas, center_three, gfx::Vector2d(2, 2));
   uint8 scroll_diagonal_expected[kCanvasHeight][kCanvasWidth] = {
       { 0x00, 0x01, 0x02, 0x03, 0x04 },
       { 0x10, 0x11, 0x12, 0x13, 0x14 },
       { 0x20, 0x21, 0x22, 0x23, 0x24 },
       { 0x30, 0x31, 0x32, 0x11, 0x34 },
       { 0x40, 0x41, 0x42, 0x43, 0x44 }};
-  VerifyCanvasValues<5, 5>(&canvas, scroll_diagonal_expected);
+  VerifyCanvasValues<5, 5>(canvas, scroll_diagonal_expected);
 }
 
 #if defined(OS_WIN)
@@ -140,11 +140,13 @@ TEST(Blit, ScrollCanvas) {
 TEST(Blit, WithSharedMemory) {
   const int kCanvasWidth = 5;
   const int kCanvasHeight = 5;
-  skia::PlatformCanvas canvas;
   base::SharedMemory shared_mem;
   ASSERT_TRUE(shared_mem.CreateAnonymous(kCanvasWidth * kCanvasHeight));
   base::SharedMemoryHandle section = shared_mem.handle();
-  ASSERT_TRUE(canvas.initialize(kCanvasWidth, kCanvasHeight, true, section));
+  SkCanvas* canvas = skia::CreatePlatformCanvas(kCanvasWidth, kCanvasHeight,
+                                   true, section, skia::RETURN_NULL_ON_FAILURE);
+  ASSERT_TRUE(NULL != canvas);
+  SkAutoUnref aur(canvas);
   shared_mem.Close();
 
   uint8 initial_values[kCanvasHeight][kCanvasWidth] = {
@@ -153,10 +155,10 @@ TEST(Blit, WithSharedMemory) {
       { 0x20, 0x21, 0x22, 0x23, 0x24 },
       { 0x30, 0x31, 0x32, 0x33, 0x34 },
       { 0x40, 0x41, 0x42, 0x43, 0x44 }};
-  SetToCanvas<5, 5>(&canvas, initial_values);
+  SetToCanvas<5, 5>(canvas, initial_values);
 
   // Sanity check on input.
-  VerifyCanvasValues<5, 5>(&canvas, initial_values);
+  VerifyCanvasValues<5, 5>(canvas, initial_values);
 }
 
 #endif

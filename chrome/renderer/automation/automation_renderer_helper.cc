@@ -67,9 +67,9 @@ bool AutomationRendererHelper::SnapshotEntirePage(
   view->layout();
   frame->setScrollOffset(WebSize(0, 0));
 
-  skia::PlatformCanvas canvas(
-      new_size.width, new_size.height, true /* is_opaque */);
-  view->paint(webkit_glue::ToWebCanvas(&canvas),
+  skia::ScopedPlatformCanvas canvas(new_size.width, new_size.height, true);
+
+  view->paint(webkit_glue::ToWebCanvas(canvas),
               gfx::Rect(0, 0, new_size.width, new_size.height));
 
   frame->setCanHaveScrollbars(true);
@@ -80,7 +80,7 @@ bool AutomationRendererHelper::SnapshotEntirePage(
   frame->setScrollOffset(WebSize(old_scroll.width - min_scroll.width,
                                  old_scroll.height - min_scroll.height));
 
-  const SkBitmap& bmp = skia::GetTopDevice(canvas)->accessBitmap(false);
+  const SkBitmap& bmp = skia::GetTopDevice(*canvas)->accessBitmap(false);
   SkAutoLockPixels lock_pixels(bmp);
   // EncodeBGRA uses FORMAT_SkBitmap, which doesn't work on windows for some
   // cases dealing with transparency. See crbug.com/96317. Use FORMAT_BGRA.

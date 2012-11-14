@@ -8,9 +8,7 @@
 #include "base/timer.h"
 #include "content/renderer/render_process.h"
 
-namespace skia {
-class PlatformCanvas;
-}
+class SkCanvas;
 
 namespace content {
 
@@ -23,7 +21,7 @@ class RenderProcessImpl : public RenderProcess {
   virtual ~RenderProcessImpl();
 
   // RenderProcess implementation.
-  virtual skia::PlatformCanvas* GetDrawingCanvas(
+  virtual SkCanvas* GetDrawingCanvas(
       TransportDIB** memory,
       const gfx::Rect& rect) OVERRIDE;
   virtual void ReleaseTransportDIB(TransportDIB* memory) OVERRIDE;

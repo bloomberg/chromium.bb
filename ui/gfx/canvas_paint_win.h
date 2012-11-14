@@ -8,6 +8,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_paint.h"
+#include "ui/gfx/size.h"
 
 namespace gfx {
 
@@ -102,18 +103,17 @@ class UI_EXPORT CanvasSkiaPaint : public Canvas {
   }
 
   void init(bool opaque) {
-    skia::PlatformCanvas* canvas = platform_canvas();
     // FIXME(brettw) for ClearType, we probably want to expand the bounds of
     // painting by one pixel so that the boundaries will be correct (ClearType
     // text can depend on the adjacent pixel). Then we would paint just the
     // inset pixels to the screen.
     const int width = ps_.rcPaint.right - ps_.rcPaint.left;
     const int height = ps_.rcPaint.bottom - ps_.rcPaint.top;
-    if (!canvas->initialize(width, height, opaque, NULL)) {
-      // Cause a deliberate crash;
-      __debugbreak();
-      _exit(1);
-    }
+
+    RecreateBackingCanvas(gfx::Size(width, height), ui::SCALE_FACTOR_100P,
+                          opaque);
+    skia::PlatformCanvas* canvas = platform_canvas();
+
     canvas->clear(SkColorSetARGB(0, 0, 0, 0));
 
     // This will bring the canvas into the screen coordinate system for the

@@ -321,7 +321,7 @@ PP_Bool PPB_BrowserFont_Trusted_Shared::DrawTextAt(
 
   PPB_ImageData_API* image = static_cast<PPB_ImageData_API*>(
       enter.object());
-  skia::PlatformCanvas* canvas = image->GetPlatformCanvas();
+  SkCanvas* canvas = image->GetPlatformCanvas();
   bool needs_unmapping = false;
   if (!canvas) {
     needs_unmapping = true;
@@ -399,7 +399,7 @@ int32_t PPB_BrowserFont_Trusted_Shared::PixelOffsetForCharacter(
 }
 
 void PPB_BrowserFont_Trusted_Shared::DrawTextToCanvas(
-    skia::PlatformCanvas* destination,
+    SkCanvas* destination,
     const PP_BrowserFont_Trusted_TextRun& text,
     const PP_Point* position,
     uint32_t color,

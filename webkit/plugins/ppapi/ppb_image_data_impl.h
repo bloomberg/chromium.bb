@@ -15,11 +15,8 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
-namespace skia {
-class PlatformCanvas;
-}
-
 class SkBitmap;
+class SkCanvas;
 
 namespace webkit {
 namespace ppapi {
@@ -42,7 +39,7 @@ class WEBKIT_PLUGINS_EXPORT PPB_ImageData_Impl
     virtual void* Map() = 0;
     virtual void Unmap() = 0;
     virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) = 0;
-    virtual skia::PlatformCanvas* GetPlatformCanvas() = 0;
+    virtual SkCanvas* GetPlatformCanvas() = 0;
     virtual SkCanvas* GetCanvas() = 0;
     virtual const SkBitmap* GetMappedBitmap() const = 0;
   };
@@ -92,7 +89,7 @@ class WEBKIT_PLUGINS_EXPORT PPB_ImageData_Impl
   virtual void* Map() OVERRIDE;
   virtual void Unmap() OVERRIDE;
   virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;
-  virtual skia::PlatformCanvas* GetPlatformCanvas() OVERRIDE;
+  virtual SkCanvas* GetPlatformCanvas() OVERRIDE;
   virtual SkCanvas* GetCanvas() OVERRIDE;
 
   const SkBitmap* GetMappedBitmap() const;
@@ -119,7 +116,7 @@ class ImageDataPlatformBackend : public PPB_ImageData_Impl::Backend {
   virtual void* Map() OVERRIDE;
   virtual void Unmap() OVERRIDE;
   virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;
-  virtual skia::PlatformCanvas* GetPlatformCanvas() OVERRIDE;
+  virtual SkCanvas* GetPlatformCanvas() OVERRIDE;
   virtual SkCanvas* GetCanvas() OVERRIDE;
   virtual const SkBitmap* GetMappedBitmap() const OVERRIDE;
 
@@ -129,7 +126,7 @@ class ImageDataPlatformBackend : public PPB_ImageData_Impl::Backend {
   scoped_ptr<PluginDelegate::PlatformImage2D> platform_image_;
 
   // When the device is mapped, this is the image. Null when umapped.
-  scoped_ptr<skia::PlatformCanvas> mapped_canvas_;
+  scoped_ptr<SkCanvas> mapped_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDataPlatformBackend);
 };
@@ -147,7 +144,7 @@ class ImageDataNaClBackend : public PPB_ImageData_Impl::Backend {
   virtual void* Map() OVERRIDE;
   virtual void Unmap() OVERRIDE;
   virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;
-  virtual skia::PlatformCanvas* GetPlatformCanvas() OVERRIDE;
+  virtual SkCanvas* GetPlatformCanvas() OVERRIDE;
   virtual SkCanvas* GetCanvas() OVERRIDE;
   virtual const SkBitmap* GetMappedBitmap() const OVERRIDE;
 

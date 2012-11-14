@@ -6,6 +6,7 @@
 #define WEBKIT_PLUGINS_PPAPI_MOCK_PLATFORM_IMAGE_2D_H_
 
 #include "webkit/plugins/ppapi/plugin_delegate.h"
+#include "skia/ext/platform_canvas.h"
 
 namespace webkit {
 namespace ppapi {

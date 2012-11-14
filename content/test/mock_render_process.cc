@@ -20,7 +20,7 @@ MockRenderProcess::~MockRenderProcess() {
 skia::PlatformCanvas* MockRenderProcess::GetDrawingCanvas(
     TransportDIB** memory,
     const gfx::Rect& rect) {
-  size_t stride = skia::PlatformCanvas::StrideForWidth(rect.width());
+  size_t stride = skia::PlatformCanvasStrideForWidth(rect.width());
   size_t size = stride * rect.height();
 
   // Unlike RenderProcessImpl, when we're a test, we can just create transport

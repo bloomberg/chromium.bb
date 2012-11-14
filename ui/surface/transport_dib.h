@@ -18,9 +18,7 @@
 #include "ui/base/x/x11_util.h"
 #endif
 
-namespace skia {
-class PlatformCanvas;
-}
+class SkCanvas;
 
 // -----------------------------------------------------------------------------
 // A TransportDIB is a block of memory that is used to transport pixels
@@ -168,7 +166,7 @@ class SURFACE_EXPORT TransportDIB {
   //
   // Will return NULL on allocation failure. This could be because the image
   // is too large to map into the current process' address space.
-  skia::PlatformCanvas* GetPlatformCanvas(int w, int h);
+  SkCanvas* GetPlatformCanvas(int w, int h);
 
   // Map the DIB into the current process if it is not already. This is used to
   // map a DIB that has already been created. Returns true if the DIB is mapped.

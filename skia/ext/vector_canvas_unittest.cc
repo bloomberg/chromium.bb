@@ -392,7 +392,7 @@ class VectorCanvasTest : public ImageTest {
     bitmap_ = new Bitmap(*context_, size_, size_);
     vcanvas_ = new VectorCanvas(VectorPlatformDeviceEmf::CreateDevice(
         size_, size_, true, context_->context()));
-    pcanvas_ = new PlatformCanvas(size_, size_, false);
+    pcanvas_ = CreatePlatformCanvas(size_, size_, false);
 
     // Clear white.
     vcanvas_->drawARGB(255, 255, 255, 255, SkXfermode::kSrc_Mode);

@@ -31,9 +31,9 @@ Canvas::Canvas(const gfx::Size& size,
         canvas_(NULL) {
   gfx::Size pixel_size = gfx::ToFlooredSize(
       gfx::ScaleSize(size, ui::GetScaleFactorScale(scale_factor)));
-  owned_canvas_.reset(new skia::PlatformCanvas(pixel_size.width(),
-                                               pixel_size.height(),
-                                               is_opaque));
+  owned_canvas_.reset(skia::CreatePlatformCanvas(pixel_size.width(),
+                                                 pixel_size.height(),
+                                                 is_opaque));
   canvas_ = owned_canvas_.get();
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // skia::PlatformCanvas instances are initialized to 0 by Cairo on Linux, but
@@ -48,7 +48,7 @@ Canvas::Canvas(const gfx::Size& size,
 
 Canvas::Canvas(const gfx::ImageSkiaRep& image_rep, bool is_opaque)
     : scale_factor_(image_rep.scale_factor()),
-      owned_canvas_(new skia::PlatformCanvas(image_rep.pixel_width(),
+    owned_canvas_(skia::CreatePlatformCanvas(image_rep.pixel_width(),
                                              image_rep.pixel_height(),
                                              is_opaque)),
       canvas_(owned_canvas_.get()) {
@@ -59,7 +59,7 @@ Canvas::Canvas(const gfx::ImageSkiaRep& image_rep, bool is_opaque)
 
 Canvas::Canvas()
     : scale_factor_(ui::SCALE_FACTOR_100P),
-      owned_canvas_(new skia::PlatformCanvas()),
+      owned_canvas_(skia::CreatePlatformCanvas(0, 0, false)),
       canvas_(owned_canvas_.get()) {
 }
 
@@ -78,9 +78,9 @@ void Canvas::RecreateBackingCanvas(const gfx::Size& size,
   scale_factor_ = scale_factor;
   gfx::Size pixel_size = gfx::ToFlooredSize(
       gfx::ScaleSize(size, ui::GetScaleFactorScale(scale_factor)));
-  owned_canvas_.reset(new skia::PlatformCanvas(pixel_size.width(),
-                                               pixel_size.height(),
-                                               is_opaque));
+  owned_canvas_.reset(skia::CreatePlatformCanvas(pixel_size.width(),
+                                                 pixel_size.height(),
+                                                 is_opaque));
   canvas_ = owned_canvas_.get();
   SkScalar scale = SkFloatToScalar(ui::GetScaleFactorScale(scale_factor_));
   canvas_->scale(scale, scale);

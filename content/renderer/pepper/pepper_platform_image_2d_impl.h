@@ -21,7 +21,7 @@ class PepperPlatformImage2DImpl
   static PepperPlatformImage2DImpl* Create(int width, int height);
 
   // PlatformImage2D implementation.
-  virtual skia::PlatformCanvas* Map() OVERRIDE;
+  virtual SkCanvas* Map() OVERRIDE;
   virtual intptr_t GetSharedMemoryHandle(uint32* byte_count) const OVERRIDE;
   virtual TransportDIB* GetTransportDIB() const OVERRIDE;
 

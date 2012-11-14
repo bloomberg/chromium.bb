@@ -629,7 +629,7 @@ void WebPluginDelegateProxy::ResetWindowlessBitmaps() {
 
 static size_t BitmapSizeForPluginRect(const gfx::Rect& plugin_rect) {
   const size_t stride =
-      skia::PlatformCanvas::StrideForWidth(plugin_rect.width());
+      skia::PlatformCanvasStrideForWidth(plugin_rect.width());
   return stride * plugin_rect.height();
 }
 
@@ -641,8 +641,9 @@ bool WebPluginDelegateProxy::CreateLocalBitmap(
   memory->resize(size);
   if (memory->size() != size)
     return false;
-  canvas->reset(new skia::PlatformCanvas(
-      plugin_rect_.width(), plugin_rect_.height(), true, &((*memory)[0])));
+  canvas->reset(skia::CreatePlatformCanvas(
+      plugin_rect_.width(), plugin_rect_.height(), true, &((*memory)[0]),
+      skia::CRASH_ON_FAILURE));
   return true;
 }
 #endif
@@ -1039,7 +1040,7 @@ void WebPluginDelegateProxy::CopyFromBackBufferToFrontBuffer(
   // the goal is just to move the raw pixels between two bitmaps with the same
   // pixel format (no compositing, color correction, etc.), it's safe.
   const size_t stride =
-      skia::PlatformCanvas::StrideForWidth(plugin_rect_.width());
+      skia::PlatformCanvasStrideForWidth(plugin_rect_.width());
   const size_t chunk_size = 4 * rect.width();
   DCHECK(back_buffer_dib() != NULL);
   uint8* source_data = static_cast<uint8*>(back_buffer_dib()->memory()) +

@@ -35,10 +35,6 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace skia {
-class PlatformCanvas;
-}
-
 namespace webkit {
 namespace npapi {
 class WebPlugin;
@@ -144,7 +140,7 @@ class WebPluginDelegateProxy
     ~SharedBitmap();
 
     scoped_ptr<TransportDIB> dib;
-    scoped_ptr<skia::PlatformCanvas> canvas;
+    scoped_ptr<SkCanvas> canvas;
   };
 
   // Message handlers for messages that proxy WebPlugin methods, which
@@ -227,11 +223,11 @@ class WebPluginDelegateProxy
     return 1 - front_buffer_index_;
   }
 
-  skia::PlatformCanvas* front_buffer_canvas() const {
+  SkCanvas* front_buffer_canvas() const {
     return transport_stores_[front_buffer_index()].canvas.get();
   }
 
-  skia::PlatformCanvas* back_buffer_canvas() const {
+  SkCanvas* back_buffer_canvas() const {
     return transport_stores_[back_buffer_index()].canvas.get();
   }
 
@@ -247,12 +243,12 @@ class WebPluginDelegateProxy
   // Creates a process-local memory section and canvas. PlatformCanvas on
   // Windows only works with a DIB, not arbitrary memory.
   bool CreateLocalBitmap(std::vector<uint8>* memory,
-                         scoped_ptr<skia::PlatformCanvas>* canvas);
+                         scoped_ptr<SkCanvas>* canvas);
 #endif
 
   // Creates a shared memory section and canvas.
   bool CreateSharedBitmap(scoped_ptr<TransportDIB>* memory,
-                          scoped_ptr<skia::PlatformCanvas>* canvas);
+                          scoped_ptr<SkCanvas>* canvas);
 
   // Called for cleanup during plugin destruction. Normally right before the
   // plugin window gets destroyed, or when the plugin has crashed (at which

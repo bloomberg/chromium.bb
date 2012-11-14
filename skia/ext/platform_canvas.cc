@@ -9,35 +9,6 @@
 
 namespace skia {
 
-PlatformCanvas::PlatformCanvas() {}
-
-// static
-size_t PlatformCanvas::StrideForWidth(unsigned width) {
-  return 4 * width;
-}
-
-bool PlatformCanvas::initializeWithDevice(SkDevice* device) {
-  if (!device)
-    return false;
-
-  setDevice(device);
-  device->unref();  // Was created with refcount 1, and setDevice also refs.
-  return true;
-}
-
-SkCanvas* CreateBitmapCanvas(int width, int height, bool is_opaque) {
-  return new PlatformCanvas(width, height, is_opaque);
-}
-
-SkCanvas* TryCreateBitmapCanvas(int width, int height, bool is_opaque) {
-  PlatformCanvas* canvas = new PlatformCanvas();
-  if (!canvas->initialize(width, height, is_opaque)) {
-    delete canvas;
-    canvas = NULL;
-  }
-  return canvas;
-}
-
 SkDevice* GetTopDevice(const SkCanvas& canvas) {
   return canvas.getTopDevice(true);
 }
@@ -85,6 +56,20 @@ void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height) {
   // install our custom mode
   paint.setXfermode(new SkProcXfermode(MakeOpaqueXfermodeProc))->unref();
   canvas->drawRect(rect, paint);
+}
+
+size_t PlatformCanvasStrideForWidth(unsigned width) {
+  return 4 * width;
+}
+
+SkCanvas* CreateCanvas(SkDevice* device, OnFailureType failureType) {
+  if (!device) {
+    if (CRASH_ON_FAILURE == failureType)
+      SK_CRASH();
+    return NULL;
+  }
+  SkAutoUnref aur(device);
+  return new SkCanvas(device);
 }
 
 PlatformBitmap::PlatformBitmap() : surface_(0), platform_extra_(0) {}

@@ -27,9 +27,7 @@
 #include "ui/surface/transport_dib.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
-namespace skia {
-class PlatformCanvas;
-}
+class SkCanvas;
 
 namespace webkit {
 namespace npapi {
@@ -215,7 +213,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
 #if defined(OS_WIN)
   void CreateCanvasFromHandle(const TransportDIB::Handle& dib_handle,
                               const gfx::Rect& window_rect,
-                              SkAutoTUnref<skia::PlatformCanvas>* canvas);
+                              SkAutoTUnref<SkCanvas>* canvas);
 #elif defined(OS_MACOSX)
   static void CreateDIBAndCGContextFromHandle(
       const TransportDIB::Handle& dib_handle,
@@ -227,7 +225,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
       const TransportDIB::Handle& dib_handle,
       const gfx::Rect& window_rect,
       scoped_refptr<SharedTransportDIB>* dib_out,
-      SkAutoTUnref<skia::PlatformCanvas>* canvas);
+      SkAutoTUnref<SkCanvas>* canvas);
 
   static void CreateShmPixmapFromDIB(
       TransportDIB* dib,
@@ -245,7 +243,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
     return windowless_contexts_[windowless_buffer_index_].get();
   }
 #else
-  skia::PlatformCanvas* windowless_canvas() const {
+  SkCanvas* windowless_canvas() const {
     return windowless_canvases_[windowless_buffer_index_].get();
   }
 
@@ -282,7 +280,8 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   base::mac::ScopedCFTypeRef<CGContextRef> windowless_contexts_[2];
   scoped_ptr<WebPluginAcceleratedSurfaceProxy> accelerated_surface_;
 #else
-  SkAutoTUnref<skia::PlatformCanvas> windowless_canvases_[2];
+  SkAutoTUnref<SkCanvas> windowless_canvases_[2];
+  SkAutoTUnref<SkCanvas> background_canvas_;
 
 #if defined(USE_X11)
   scoped_refptr<SharedTransportDIB> windowless_dibs_[2];

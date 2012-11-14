@@ -72,6 +72,14 @@ void BitmapPlatformDevice::DrawToNativeContext(
   SkASSERT(false);
 }
 
+// PlatformCanvas impl
+
+SkCanvas* CreatePlatformCanvas(int width, int height, bool is_opaque,
+                               uint8_t* data, OnFailureType failureType) {
+  SkDevice* dev = BitmapPlatformDevice::Create(width, height, is_opaque, data);
+  return CreateCanvas(dev, failureType);
+}
+
 // Port of PlatformBitmap to android
 
 PlatformBitmap::~PlatformBitmap() {}

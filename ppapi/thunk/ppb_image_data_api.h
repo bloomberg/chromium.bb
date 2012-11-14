@@ -8,10 +8,6 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/ppb_image_data.h"
 
-namespace skia {
-class PlatformCanvas;
-}
-
 class SkCanvas;
 
 namespace ppapi {
@@ -39,7 +35,7 @@ class PPB_ImageData_API {
   // a platform-specific canvas (e.g., for use with platform-specific APIs).
   // Anything that relies on having a PlatformCanvas will not work for ImageDat
   // objects created from NaCl.
-  virtual skia::PlatformCanvas* GetPlatformCanvas() = 0;
+  virtual SkCanvas* GetPlatformCanvas() = 0;
 
   // Get the canvas that backs this ImageData, if there is one.
   // The canvas will be NULL:

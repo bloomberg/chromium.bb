@@ -13,73 +13,90 @@
 
 namespace skia {
 
-// This class is a specialization of the regular SkCanvas that is designed to
-// work with a PlatformDevice to manage platform-specific drawing. It allows
-// using both Skia operations and platform-specific operations.
-class SK_API PlatformCanvas : public SkCanvas {
- public:
-  // If you use the version with no arguments, you MUST call initialize()
-  PlatformCanvas();
-  // Set is_opaque if you are going to erase the bitmap and not use
-  // transparency: this will enable some optimizations.
-  PlatformCanvas(int width, int height, bool is_opaque);
+typedef SkCanvas PlatformCanvas;
+
+//
+//  Note about error handling.
+//
+//  Creating a canvas can fail at times, most often because we fail to allocate
+//  the backing-store (pixels). This can be from out-of-memory, or something
+//  more opaque, like GDI or cairo reported a failure.
+//
+//  To allow the caller to handle the failure, every Create... factory takes an
+//  enum as its last parameter. The default value is kCrashOnFailure. If the
+//  caller passes kReturnNullOnFailure, then the caller is responsible to check
+//  the return result.
+//
+enum OnFailureType {
+  CRASH_ON_FAILURE,
+  RETURN_NULL_ON_FAILURE
+};
 
 #if defined(WIN32)
   // The shared_section parameter is passed to gfx::PlatformDevice::create.
   // See it for details.
-  PlatformCanvas(int width, int height, bool is_opaque, HANDLE shared_section);
+  SK_API SkCanvas* CreatePlatformCanvas(int width,
+                                        int height,
+                                        bool is_opaque,
+                                        HANDLE shared_section,
+                                        OnFailureType failure_type);
 #elif defined(__APPLE__)
-  PlatformCanvas(int width, int height, bool is_opaque,
-                 CGContextRef context);
-  PlatformCanvas(int width, int height, bool is_opaque, uint8_t* context);
+  SK_API SkCanvas* CreatePlatformCanvas(CGContextRef context,
+                                        int width,
+                                        int height,
+                                        bool is_opaque,
+                                        OnFailureType failure_type);
+
+  SK_API SkCanvas* CreatePlatformCanvas(int width,
+                                        int height,
+                                        bool is_opaque,
+                                        uint8_t* context,
+                                        OnFailureType failure_type);
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || \
       defined(__sun) || defined(ANDROID)
   // Linux ---------------------------------------------------------------------
 
   // Construct a canvas from the given memory region. The memory is not cleared
   // first. @data must be, at least, @height * StrideForWidth(@width) bytes.
-  PlatformCanvas(int width, int height, bool is_opaque, uint8_t* data);
+  SK_API SkCanvas* CreatePlatformCanvas(int width,
+                                        int height,
+                                        bool is_opaque,
+                                        uint8_t* data,
+                                        OnFailureType failure_type);
 #endif
 
-  virtual ~PlatformCanvas();
+static inline SkCanvas* CreatePlatformCanvas(int width,
+                                             int height,
+                                             bool is_opaque) {
+  return CreatePlatformCanvas(width, height, is_opaque, 0, CRASH_ON_FAILURE);
+}
 
-#if defined(WIN32)
-  // For two-part init, call if you use the no-argument constructor above. Note
-  // that we want this to optionally match the Linux initialize if you only
-  // pass 3 arguments, hence the evil default argument.
-  bool initialize(int width, int height, bool is_opaque,
-                  HANDLE shared_section = NULL);
-#elif defined(__APPLE__)
-  // For two-part init, call if you use the no-argument constructor above
-  bool initialize(CGContextRef context, int width, int height, bool is_opaque);
-  bool initialize(int width, int height, bool is_opaque, uint8_t* data = NULL);
+// Takes ownership of the device, so the caller need not call unref().
+SK_API SkCanvas* CreateCanvas(SkDevice* device, OnFailureType failure_type);
 
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || \
-      defined(__sun) || defined(ANDROID)
-  // For two-part init, call if you use the no-argument constructor above
-  bool initialize(int width, int height, bool is_opaque, uint8_t* data = NULL);
-#endif
+static inline SkCanvas* CreateBitmapCanvas(int width,
+                                           int height,
+                                           bool is_opaque) {
+  return CreatePlatformCanvas(width, height, is_opaque, 0, CRASH_ON_FAILURE);
+}
 
-  // Shared --------------------------------------------------------------------
+static inline SkCanvas* TryCreateBitmapCanvas(int width,
+                                              int height,
+                                              bool is_opaque) {
+  return CreatePlatformCanvas(width, height, is_opaque, 0,
+                              RETURN_NULL_ON_FAILURE);
+}
 
-  // Return the stride (length of a line in bytes) for the given width. Because
-  // we use 32-bits per pixel, this will be roughly 4*width. However, for
-  // alignment reasons we may wish to increase that.
-  static size_t StrideForWidth(unsigned width);
-
-  // Allow callers to see the non-virtual function even though we have an
-  // override of a virtual one.
-  // FIXME(brettw) is this necessary?
-  using SkCanvas::clipRect;
-
- private:
-  // Helper method used internally by the initialize() methods.
-  bool initializeWithDevice(SkDevice* device);
-
-  // Disallow copy and assign
-  PlatformCanvas(const PlatformCanvas&);
-  PlatformCanvas& operator=(const PlatformCanvas&);
+class SK_API ScopedPlatformCanvas : public SkAutoTUnref<SkCanvas> {
+ public:
+  ScopedPlatformCanvas(int width, int height, bool is_opaque)
+      : SkAutoTUnref<SkCanvas>(CreatePlatformCanvas(width, height, is_opaque)){}
 };
+
+// Return the stride (length of a line in bytes) for the given width. Because
+// we use 32-bits per pixel, this will be roughly 4*width. However, for
+// alignment reasons we may wish to increase that.
+SK_API size_t PlatformCanvasStrideForWidth(unsigned width);
 
 // Returns the SkDevice pointer of the topmost rect with a non-empty
 // clip. In practice, this is usually either the top layer or nothing, since
@@ -96,18 +113,6 @@ class SK_API PlatformCanvas : public SkCanvas {
 // by the next call to save() or restore().
 SK_API SkDevice* GetTopDevice(const SkCanvas& canvas);
 
-// Creates a canvas with raster bitmap backing.
-// Set is_opaque if you are going to erase the bitmap and not use
-// transparency: this will enable some optimizations.
-SK_API SkCanvas* CreateBitmapCanvas(int width, int height, bool is_opaque);
-
-// Non-crashing version of CreateBitmapCanvas
-// returns NULL if allocation fails for any reason.
-// Use this instead of CreateBitmapCanvas in places that are likely to
-// attempt to allocate very large canvases (therefore likely to fail),
-// and where it is possible to recover gracefully from the failed allocation.
-SK_API SkCanvas* TryCreateBitmapCanvas(int width, int height, bool is_opaque);
-
 // Returns true if native platform routines can be used to draw on the
 // given canvas. If this function returns false, BeginPlatformPaint will
 // return NULL PlatformSurface.
@@ -116,8 +121,11 @@ SK_API bool SupportsPlatformPaint(const SkCanvas* canvas);
 // Draws into the a native platform surface, |context|.  Forwards to
 // DrawToNativeContext on a PlatformDevice instance bound to the top device.
 // If no PlatformDevice instance is bound, is a no-operation.
-SK_API void DrawToNativeContext(SkCanvas* canvas, PlatformSurface context,
-                                int x, int y, const PlatformRect* src_rect);
+SK_API void DrawToNativeContext(SkCanvas* canvas,
+                                PlatformSurface context,
+                                int x,
+                                int y,
+                                const PlatformRect* src_rect);
 
 // Sets the opacity of each pixel in the specified region to be opaque.
 SK_API void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height);
