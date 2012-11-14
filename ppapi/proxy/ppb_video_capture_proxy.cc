@@ -18,6 +18,7 @@
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_video_capture_shared.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
@@ -491,12 +492,12 @@ void PPP_VideoCapture_Proxy::OnMsgOnDeviceInfo(
 
   VideoCapture* capture = static_cast<VideoCapture*>(enter.object());
   capture->SetBufferCount(buffers.size());
-  ppp_video_capture_impl_->OnDeviceInfo(
+  CallWhileUnlocked(ppp_video_capture_impl_->OnDeviceInfo,
       host_resource.instance(),
       capture->pp_resource(),
       &info,
-      buffers.size(),
-      resources.get());
+      static_cast<uint32_t>(buffers.size()),
+      const_cast<const PP_Resource*>(resources.get()));
   for (size_t i = 0; i < buffers.size(); ++i)
     tracker->ReleaseResource(resources[i]);
 }
@@ -510,7 +511,7 @@ void PPP_VideoCapture_Proxy::OnMsgOnStatus(const HostResource& host_resource,
   VideoCapture* capture = static_cast<VideoCapture*>(enter.object());
   if (!capture->OnStatus(static_cast<PP_VideoCaptureStatus_Dev>(status)))
     return;
-  ppp_video_capture_impl_->OnStatus(
+  CallWhileUnlocked(ppp_video_capture_impl_->OnStatus,
       host_resource.instance(), capture->pp_resource(), status);
 }
 
@@ -522,7 +523,7 @@ void PPP_VideoCapture_Proxy::OnMsgOnError(const HostResource& host_resource,
 
   VideoCapture* capture = static_cast<VideoCapture*>(enter.object());
   capture->set_status(PP_VIDEO_CAPTURE_STATUS_STOPPED);
-  ppp_video_capture_impl_->OnError(
+  CallWhileUnlocked(ppp_video_capture_impl_->OnError,
       host_resource.instance(), capture->pp_resource(), error_code);
 }
 
@@ -534,7 +535,7 @@ void PPP_VideoCapture_Proxy::OnMsgOnBufferReady(
 
   VideoCapture* capture = static_cast<VideoCapture*>(enter.object());
   capture->SetBufferInUse(buffer);
-  ppp_video_capture_impl_->OnBufferReady(
+  CallWhileUnlocked(ppp_video_capture_impl_->OnBufferReady,
       host_resource.instance(), capture->pp_resource(), buffer);
 }
 
