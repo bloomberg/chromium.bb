@@ -50,7 +50,7 @@ private:
     void drawHudContents(SkCanvas*);
     int drawFPSCounter(SkCanvas*, FrameRateCounter*);
     void drawFPSCounterText(SkCanvas*, SkPaint&, FrameRateCounter*, SkRect);
-    void drawFPSCounterGraph(SkCanvas*, SkPaint&, FrameRateCounter*, SkRect);
+    void drawFPSCounterGraphAndHistogram(SkCanvas* canvas, SkPaint& paint, FrameRateCounter* fpsCounter, SkRect graphBounds, SkRect histogramBounds);
     void drawDebugRects(SkCanvas*, DebugRectHistory*);
 
     scoped_ptr<FontAtlas> m_fontAtlas;
@@ -58,7 +58,8 @@ private:
     scoped_ptr<SkCanvas> m_hudCanvas;
 
     double m_averageFPS;
-    double m_stdDeviation;
+    double m_minFPS;
+    double m_maxFPS;
 
     base::TimeTicks textUpdateTime;
 

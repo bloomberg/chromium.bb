@@ -32,15 +32,20 @@ void HeadsUpDisplayLayer::update(ResourceUpdateQueue&, const OcclusionTracker*, 
     int maxTextureSize = layerTreeHost()->rendererCapabilities().maxTextureSize;
 
     gfx::Size bounds;
+    WebKit::WebTransformationMatrix matrix;
+    matrix.makeIdentity();
+
     if (settings.showPlatformLayerTree || settings.showDebugRects()) {
         int width = std::min(maxTextureSize, layerTreeHost()->deviceViewportSize().width());
         int height = std::min(maxTextureSize, layerTreeHost()->deviceViewportSize().height());
         bounds = gfx::Size(width, height);
     } else {
         bounds = gfx::Size(256, 128);
+        matrix.translate(layerTreeHost()->deviceViewportSize().width() - 256, 0);
     }
 
     setBounds(bounds);
+    setTransform(matrix);
 }
 
 bool HeadsUpDisplayLayer::drawsContent() const

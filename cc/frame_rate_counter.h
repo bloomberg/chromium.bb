@@ -12,7 +12,7 @@
 namespace cc {
 
 // This class maintains a history of timestamps, and provides functionality to
-// intelligently compute average frames per second (and standard deviation).
+// intelligently compute average frames per second.
 class FrameRateCounter {
 public:
     static scoped_ptr<FrameRateCounter> create(bool hasImplThread);
@@ -20,7 +20,7 @@ public:
     void markBeginningOfFrame(base::TimeTicks timestamp);
     void markEndOfFrame();
     int currentFrameNumber() const { return m_currentFrameNumber; }
-    void getAverageFPSAndStandardDeviation(double& averageFPS, double& standardDeviation) const;
+    double getAverageFPS() const;
     int timeStampHistorySize() const { return kTimeStampHistorySize; }
 
     // n = 0 returns the oldest frame retained in the history,

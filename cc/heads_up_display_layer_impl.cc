@@ -4,6 +4,8 @@
 
 #include "cc/heads_up_display_layer_impl.h"
 
+#include <limits>
+
 #include "base/stringprintf.h"
 #include "cc/debug_rect_history.h"
 #include "cc/font_atlas.h"
@@ -37,13 +39,15 @@ static inline SkPaint createPaint()
 
     SkPaint paint;
     paint.setColorFilter(new SkColorMatrixFilter(swizzleMatrix))->unref();
+
     return paint;
 }
 
 HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(int id)
     : LayerImpl(id)
     , m_averageFPS(0)
-    , m_stdDeviation(0)
+    , m_minFPS(0)
+    , m_maxFPS(0)
     , m_showFPSCounter(false)
 {
 }
@@ -166,17 +170,21 @@ void HeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
 
 int HeadsUpDisplayLayerImpl::drawFPSCounter(SkCanvas* canvas, FrameRateCounter* fpsCounter)
 {
-    const int left = 2;
-    const int top = 2;
-
     const int padding = 4;
+    const int gap = 6;
 
     const int fontHeight = m_fontAtlas.get() ? m_fontAtlas->fontHeight() : 0;
-    const int graphWidth = fpsCounter->timeStampHistorySize() - 3;
+
+    const int graphWidth = 120;
     const int graphHeight = 40;
 
-    const int width = graphWidth + 2 * padding;
+    const int histogramWidth = 37;
+
+    const int width = graphWidth + histogramWidth + 4 * padding;
     const int height = fontHeight + graphHeight + 4 * padding + 2;
+
+    const int left = bounds().width() - width - 2;
+    const int top = 2;
 
     SkPaint paint = createPaint();
 
@@ -184,11 +192,12 @@ int HeadsUpDisplayLayerImpl::drawFPSCounter(SkCanvas* canvas, FrameRateCounter* 
     paint.setColor(SkColorSetARGB(215, 17, 17, 17));
     canvas->drawRect(SkRect::MakeXYWH(left, top, width, height), paint);
 
-    SkRect textBounds = SkRect::MakeXYWH(left + padding, top + padding, graphWidth, fontHeight);
+    SkRect textBounds = SkRect::MakeXYWH(left + padding, top + padding, graphWidth + histogramWidth + gap + 2, fontHeight);
     SkRect graphBounds = SkRect::MakeXYWH(left + padding, textBounds.bottom() + 2 * padding, graphWidth, graphHeight);
+    SkRect histogramBounds = SkRect::MakeXYWH(graphBounds.right() + gap, graphBounds.top(), histogramWidth, graphHeight);
 
     drawFPSCounterText(canvas, paint, fpsCounter, textBounds);
-    drawFPSCounterGraph(canvas, paint, fpsCounter, graphBounds);
+    drawFPSCounterGraphAndHistogram(canvas, paint, fpsCounter, graphBounds, histogramBounds);
 
     return top + height;
 }
@@ -197,72 +206,107 @@ void HeadsUpDisplayLayerImpl::drawFPSCounterText(SkCanvas* canvas, SkPaint& pain
 {
     // Update FPS text - not every frame so text is readable
     if (base::TimeDelta(fpsCounter->timeStampOfRecentFrame(0) - textUpdateTime).InSecondsF() > 0.25) {
-        fpsCounter->getAverageFPSAndStandardDeviation(m_averageFPS, m_stdDeviation);
+        m_averageFPS = fpsCounter->getAverageFPS();
         textUpdateTime = fpsCounter->timeStampOfRecentFrame(0);
     }
 
     // Draw FPS text.
     if (m_fontAtlas.get()) {
         std::string fpsText = base::StringPrintf("FPS:%5.1f", m_averageFPS);
-        std::string deviationText = base::StringPrintf("+/-%4.1f", m_stdDeviation);
+        std::string minMaxText = base::StringPrintf("%.0f-%.0f", std::min( m_minFPS, m_maxFPS), m_maxFPS);
 
-        int deviationWidth = m_fontAtlas->textSize(deviationText).width();
+        int minMaxWidth = m_fontAtlas->textSize(minMaxText).width();
         gfx::Size textArea(bounds.width(), bounds.height());
 
         paint.setColor(SK_ColorRED);
         m_fontAtlas->drawText(canvas, paint, fpsText, gfx::Point(bounds.left(), bounds.top()), textArea);
-        m_fontAtlas->drawText(canvas, paint, deviationText, gfx::Point(bounds.right() - deviationWidth, bounds.top()), textArea);
+        m_fontAtlas->drawText(canvas, paint, minMaxText, gfx::Point(bounds.right() - minMaxWidth, bounds.top()), textArea);
     }
 }
 
-void HeadsUpDisplayLayerImpl::drawFPSCounterGraph(SkCanvas* canvas, SkPaint& paint, FrameRateCounter* fpsCounter, SkRect bounds)
+void HeadsUpDisplayLayerImpl::drawFPSCounterGraphAndHistogram(SkCanvas* canvas, SkPaint& paint, FrameRateCounter* fpsCounter, SkRect graphBounds, SkRect histogramBounds)
 {
     const double loFPS = 0;
-    const double hiFPS = 80;
-
-    paint.setStyle(SkPaint::kStroke_Style);
-    paint.setStrokeWidth(1);
+    const double hiFPS = std::max(m_maxFPS + 10.0, 80.0);
 
     // Draw top and bottom line.
-    paint.setColor(SkColorSetRGB(150, 150, 150));
-    canvas->drawLine(bounds.left(), bounds.top() - 1, bounds.right(), bounds.top() - 1, paint);
-    canvas->drawLine(bounds.left(), bounds.bottom(), bounds.right(), bounds.bottom(), paint);
+    paint.setColor(SkColorSetRGB(130, 130, 130));
+    canvas->drawLine(graphBounds.left(), graphBounds.top() - 1, graphBounds.right(), graphBounds.top() - 1, paint);
+    canvas->drawLine(graphBounds.left(), graphBounds.bottom(), graphBounds.right(), graphBounds.bottom(), paint);
 
     // Draw 60fps line.
+    const double top60 = graphBounds.top() + graphBounds.height() * (1 - ((60 - loFPS) / (hiFPS - loFPS))) - 1;
     paint.setColor(SkColorSetRGB(100, 100, 100));
-    canvas->drawLine(bounds.left(), bounds.top() + bounds.height() / 4, bounds.right(), bounds.top() + bounds.height() / 4, paint);
+    canvas->drawLine(graphBounds.left(), top60, graphBounds.right(), top60, paint);
 
-    // Draw FPS graph.
-    int x = 0;
+    // Collect graph and histogram data.
+    double x = 0;
+    const double timeScale = 60; // in pixels/second
     SkPath path;
 
-    for (int i = 1; i < fpsCounter->timeStampHistorySize() - 1; ++i) {
+    m_minFPS = std::numeric_limits<double>::max();
+    m_maxFPS = 0;
+
+    const int histogramSize = 20;
+    double histogram[histogramSize] = {0};
+    double maxBucketValue = 0;
+
+    for (int i = fpsCounter->timeStampHistorySize() - 2; i > 0 && x <= graphBounds.width(); --i) {
         base::TimeDelta delta = fpsCounter->timeStampOfRecentFrame(i + 1) - fpsCounter->timeStampOfRecentFrame(i);
 
-        // Skip plotting this particular instantaneous frame rate if it is not likely to have been valid.
+        // Skip this particular instantaneous frame rate if it is not likely to have been valid.
         if (!fpsCounter->isBadFrameInterval(delta)) {
+
             double fps = 1.0 / delta.InSecondsF();
 
+            m_minFPS = std::min(fps, m_minFPS);
+            m_maxFPS = std::max(fps, m_maxFPS);
+
             // Clamp the FPS to the range we want to plot visually.
-            double p = 1 - ((fps - loFPS) / (hiFPS - loFPS));
+            double p = (fps - loFPS) / (hiFPS - loFPS);
             if (p < 0)
                 p = 0;
             if (p > 1)
                 p = 1;
 
             // Plot this data point.
-            SkPoint cur = SkPoint::Make(bounds.left() + x, bounds.top() + p * bounds.height());
+            SkPoint cur = SkPoint::Make(graphBounds.right() - x, graphBounds.bottom() - p * graphBounds.height());
             if (path.isEmpty())
                 path.moveTo(cur);
             else
                 path.lineTo(cur);
+
+            // Use the fps value to find the right bucket in the histogram.
+            int bucketIndex = floor(p * (histogramSize - 1));
+
+            // Add the delta time to take the time spent at that fps rate into account.
+            histogram[bucketIndex] += delta.InSecondsF();
+            maxBucketValue = std::max(histogram[bucketIndex], maxBucketValue);
         }
 
-        x += 1;
+        x += delta.InSecondsF() * timeScale;
     }
 
-    paint.setAntiAlias(true);
+    // Draw FPS histogram.
+    paint.setColor(SkColorSetRGB(130, 130, 130));
+    canvas->drawLine(histogramBounds.left() - 1, histogramBounds.top() - 1, histogramBounds.left() - 1, histogramBounds.bottom() + 1, paint);
+    canvas->drawLine(histogramBounds.right() + 1, histogramBounds.top() - 1, histogramBounds.right() + 1, histogramBounds.bottom() + 1, paint);
+
     paint.setColor(SK_ColorRED);
+    const double barHeight = histogramBounds.height() / histogramSize;
+
+    for (int i = histogramSize - 1; i >= 0; --i) {
+        if (histogram[i] > 0) {
+            double barWidth = histogram[i] / maxBucketValue * histogramBounds.width();
+            canvas->drawRect(SkRect::MakeXYWH(histogramBounds.left(), histogramBounds.bottom() - (i + 1) * barHeight, barWidth, 1), paint);
+        }
+    }
+
+    // Draw FPS graph.
+    paint.setAntiAlias(true);
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStrokeWidth(1);
+
     canvas->drawPath(path, paint);
 }
 

@@ -12,7 +12,7 @@
 namespace cc {
 
 const double FrameRateCounter::kFrameTooFast = 1.0 / 70.0; // measured in seconds
-const double FrameRateCounter::kFrameTooSlow = 1.0 / 12.0;
+const double FrameRateCounter::kFrameTooSlow = 1.0 / 4.0;
 const double FrameRateCounter::kDroppedFrameTime = 1.0 / 50.0;
 
 // safeMod works on -1, returning m-1 in that case.
@@ -81,17 +81,15 @@ bool FrameRateCounter::isBadFrame(int frameNumber) const
     return isBadFrameInterval(frameInterval(frameNumber));
 }
 
-void FrameRateCounter::getAverageFPSAndStandardDeviation(double& averageFPS, double& standardDeviation) const
+double FrameRateCounter::getAverageFPS() const
 {
     int frameNumber = m_currentFrameNumber - 1;
     int frameCount = 0;
-    double fpsVarianceNumerator = 0;
-
-    averageFPS = 0;
-    standardDeviation = 0;
+    double frameTimesTotal = 0;
+    double averageFPS = 0;
 
     // Walk backwards through the samples looking for a run of good frame
-    // timings from which to compute the mean and standard deviation.
+    // timings from which to compute the mean.
     //
     // Slow frames occur just because the user is inactive, and should be
     // ignored. Fast frames are ignored if the scheduler is in single-thread
@@ -99,27 +97,24 @@ void FrameRateCounter::getAverageFPSAndStandardDeviation(double& averageFPS, dou
     // the first few swapbuffers happen instantly which skews the statistics
     // too much for short lived animations.
     //
-    // isBadFrame encapsulates the frame too slow/frame too fast logic.
+    // isBadFrameInterval encapsulates the frame too slow/frame too fast logic.
 
-    // Go through all available historical data.
-    while (frameIndex(frameNumber) != frameIndex(m_currentFrameNumber) && frameNumber >= 0) {
+    while (frameIndex(frameNumber) != frameIndex(m_currentFrameNumber) && frameNumber >= 0 && frameTimesTotal < 1.0) {
         base::TimeDelta delta = frameInterval(frameNumber);
 
         if (!isBadFrameInterval(delta)) {
             frameCount++;
-            double x = 1.0 / delta.InSecondsF();
-            double deltaFromAverage = x - averageFPS;
-            // Change with caution - numerics. http://en.wikipedia.org/wiki/Standard_deviation
-            averageFPS += deltaFromAverage / frameCount;
-            fpsVarianceNumerator += deltaFromAverage * (x - averageFPS);
+            frameTimesTotal += delta.InSecondsF();
         } else if (frameCount)
-            // We've gathered a run of good samples, so stop.
             break;
+
         frameNumber--;
     }
 
     if (frameCount)
-        standardDeviation = sqrt(fpsVarianceNumerator / frameCount);
+        averageFPS = frameCount / frameTimesTotal;
+
+    return averageFPS;
 }
 
 base::TimeTicks FrameRateCounter::timeStampOfRecentFrame(int n) const
