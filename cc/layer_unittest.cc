@@ -8,12 +8,10 @@
 #include "cc/layer_impl.h"
 #include "cc/layer_painter.h"
 #include "cc/layer_tree_host.h"
-#include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/thread.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
@@ -568,15 +566,15 @@ class FakeLayerImplTreeHost : public LayerTreeHost {
 public:
     static scoped_ptr<FakeLayerImplTreeHost> create()
     {
-        scoped_ptr<FakeLayerImplTreeHost> host(new FakeLayerImplTreeHost);
+        scoped_ptr<FakeLayerImplTreeHost> host(new FakeLayerImplTreeHost(LayerTreeSettings()));
         // The initialize call will fail, since our client doesn't provide a valid GraphicsContext3D, but it doesn't matter in the tests that use this fake so ignore the return value.
         host->initialize(scoped_ptr<Thread>(NULL));
         return host.Pass();
     }
 
 private:
-    FakeLayerImplTreeHost()
-        : LayerTreeHost(&m_client, LayerTreeSettings())
+    FakeLayerImplTreeHost(const LayerTreeSettings& settings)
+        : LayerTreeHost(&m_client, settings)
     {
     }
 
@@ -775,9 +773,6 @@ TEST(LayerLayerTreeHostTest, shouldNotAddAnimationWithoutLayerTreeHost)
     // if a composited layer's addAnimation() returns true. However, without a layerTreeHost,
     // layers cannot actually animate yet. So, to prevent violating this WebCore assumption,
     // the animation should not be accepted if the layer doesn't already have a layerTreeHost.
-
-    ScopedSettings scopedSettings;
-    Settings::setAcceleratedAnimationEnabled(true);
 
     scoped_refptr<Layer> layer = Layer::create();
 

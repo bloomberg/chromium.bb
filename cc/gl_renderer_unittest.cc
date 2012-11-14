@@ -7,10 +7,8 @@
 #include "cc/draw_quad.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/resource_provider.h"
-#include "cc/settings.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
-#include "cc/test/test_common.h"
 #include "cc/test/render_pass_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -138,7 +136,6 @@ protected:
     FakeRendererClient m_mockClient;
     scoped_ptr<ResourceProvider> m_resourceProvider;
     FakeRendererGL m_renderer;
-    ScopedSettings m_scopedSettings;
 };
 
 // Test GLRenderer discardFramebuffer functionality:
@@ -295,7 +292,6 @@ public:
 // This test isn't using the same fixture as GLRendererTest, and you can't mix TEST() and TEST_F() with the same name, hence LRC2.
 TEST(GLRendererTest2, initializationDoesNotMakeSynchronousCalls)
 {
-    ScopedSettings scopedSettings;
     FakeRendererClient mockClient;
     scoped_ptr<GraphicsContext> context(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ForbidSynchronousCallContext)));
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
@@ -339,7 +335,6 @@ private:
 
 TEST(GLRendererTest2, initializationWithQuicklyLostContextDoesNotAssert)
 {
-    ScopedSettings scopedSettings;
     FakeRendererClient mockClient;
     scoped_ptr<GraphicsContext> context(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new LoseContextOnFirstGetContext)));
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));

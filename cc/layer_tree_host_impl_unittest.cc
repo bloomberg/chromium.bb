@@ -21,7 +21,6 @@
 #include "cc/render_pass_draw_quad.h"
 #include "cc/scrollbar_geometry_fixed_thumb.h"
 #include "cc/scrollbar_layer_impl.h"
-#include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/test/animation_test_common.h"
@@ -32,7 +31,6 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/render_pass_test_common.h"
-#include "cc/test/test_common.h"
 #include "cc/texture_draw_quad.h"
 #include "cc/texture_layer_impl.h"
 #include "cc/tile_draw_quad.h"
@@ -62,9 +60,9 @@ namespace cc {
 namespace {
 
 // This test is parametrized to run all tests with the
-// Settings::pageScalePinchZoomEnabled field enabled and disabled.
+// m_settings.pageScalePinchZoomEnabled field enabled and disabled.
 class LayerTreeHostImplTest : public testing::TestWithParam<bool>,
-                                public LayerTreeHostImplClient {
+                              public LayerTreeHostImplClient {
 public:
     LayerTreeHostImplTest()
         : m_proxy(scoped_ptr<Thread>(NULL))
@@ -80,9 +78,9 @@ public:
 
     virtual void SetUp()
     {
-        Settings::setPageScalePinchZoomEnabled(GetParam());
         LayerTreeSettings settings;
         settings.minimumOcclusionTrackingSize = gfx::Size();
+        settings.pageScalePinchZoomEnabled = GetParam();
 
         m_hostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
         m_hostImpl->initializeRenderer(createContext());
@@ -107,10 +105,9 @@ public:
 
     scoped_ptr<LayerTreeHostImpl> createLayerTreeHost(bool partialSwap, scoped_ptr<GraphicsContext> graphicsContext, scoped_ptr<LayerImpl> root)
     {
-        Settings::setPartialSwapEnabled(partialSwap);
-
         LayerTreeSettings settings;
         settings.minimumOcclusionTrackingSize = gfx::Size();
+        settings.partialSwapEnabled = partialSwap;
 
         scoped_ptr<LayerTreeHostImpl> myHostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
 
@@ -204,7 +201,6 @@ protected:
     bool m_didRequestCommit;
     bool m_didRequestRedraw;
     bool m_reduceMemoryResult;
-    ScopedSettings m_scopedSettings;
 };
 
 class FakeWebGraphicsContext3DMakeCurrentFails : public FakeWebGraphicsContext3D {
@@ -528,7 +524,7 @@ TEST_P(LayerTreeHostImplTest, maxScrollOffsetChangedByDeviceScaleFactor)
 TEST_P(LayerTreeHostImplTest, implPinchZoom)
 {
     // This test is specific to the page-scale based pinch zoom.
-    if (!Settings::pageScalePinchZoomEnabled())
+    if (!m_hostImpl->settings().pageScalePinchZoomEnabled)
         return;
 
     setupScrollAndContentsLayers(gfx::Size(100, 100));
@@ -591,7 +587,7 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
     LayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
     DCHECK(scrollLayer);
 
-    const float minPageScale = Settings::pageScalePinchZoomEnabled() ? 1 : 0.5;
+    const float minPageScale = m_hostImpl->settings().pageScalePinchZoomEnabled ? 1 : 0.5;
     const float maxPageScale = 4;
     const WebTransformationMatrix identityScaleTransform;
 
@@ -642,7 +638,7 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
 
-        if (!Settings::pageScalePinchZoomEnabled()) {
+        if (!m_hostImpl->settings().pageScalePinchZoomEnabled) {
             // Pushed to (0,0) via clamping against contents layer size.
             expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(-50, -50));
         } else {
@@ -730,7 +726,7 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZooming)
     LayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
     DCHECK(scrollLayer);
 
-    const float minPageScale = Settings::pageScalePinchZoomEnabled() ? 1 : 0.5;
+    const float minPageScale = m_hostImpl->settings().pageScalePinchZoomEnabled ? 1 : 0.5;
     const float maxPageScale = 4;
 
     // Pinch zoom in.
@@ -751,7 +747,7 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZooming)
         m_hostImpl->pinchGestureEnd();
         scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, zoomInDelta);
-        if (!Settings::pageScalePinchZoomEnabled()) {
+        if (!m_hostImpl->settings().pageScalePinchZoomEnabled) {
             expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(25, 25));
         } else {
             EXPECT_TRUE(scrollInfo->scrolls.empty());
@@ -769,7 +765,7 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZooming)
         // Since we are pinch zooming out, we should get an update to zoom all
         // the way out to the minimum page scale.
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
-        if (!Settings::pageScalePinchZoomEnabled()) {
+        if (!m_hostImpl->settings().pageScalePinchZoomEnabled) {
             EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
             expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(0, 0));
         } else {
@@ -780,7 +776,7 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZooming)
         // Once the gesture ends, we get the final scroll and page scale values.
         m_hostImpl->pinchGestureEnd();
         scrollInfo = m_hostImpl->processScrollDeltas();
-        if (Settings::pageScalePinchZoomEnabled()) {
+        if (m_hostImpl->settings().pageScalePinchZoomEnabled) {
             EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
             expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(25, 25));
         } else {
@@ -809,7 +805,7 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPage
     const float pageScaleDelta = 2;
     gfx::Vector2d target(25, 25);
     gfx::Vector2d scaledTarget = target;
-    if (!Settings::pageScalePinchZoomEnabled())
+    if (!m_hostImpl->settings().pageScalePinchZoomEnabled)
       scaledTarget = gfx::Vector2d(12, 12);
 
     m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
@@ -1199,7 +1195,7 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
     // Set new page scale from main thread.
     m_hostImpl->setPageScaleFactorAndLimits(pageScale, pageScale, pageScale);
 
-    if (!Settings::pageScalePinchZoomEnabled()) {
+    if (!m_hostImpl->settings().pageScalePinchZoomEnabled) {
         // The scale should apply to the scroll delta.
         expectedScrollDelta = gfx::ToFlooredVector2d(gfx::ScaleVector2d(expectedScrollDelta, pageScale));
     }
@@ -1322,7 +1318,7 @@ TEST_P(LayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
 
     m_hostImpl->updateRootScrollLayerImplTransform();
 
-    if (!Settings::pageScalePinchZoomEnabled()) {
+    if (!m_hostImpl->settings().pageScalePinchZoomEnabled) {
         // The scale should apply to the scroll delta.
         expectedScrollDelta = gfx::ToFlooredVector2d(gfx::ScaleVector2d(expectedScrollDelta, pageScale));
     }
@@ -1986,7 +1982,7 @@ TEST_P(LayerTreeHostImplTest, partialSwapReceivesDamageRect)
     // This test creates its own LayerTreeHostImpl, so
     // that we can force partial swap enabled.
     LayerTreeSettings settings;
-    Settings::setPartialSwapEnabled(true);
+    settings.partialSwapEnabled = true;
     scoped_ptr<LayerTreeHostImpl> layerTreeHostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
     layerTreeHostImpl->initializeRenderer(outputSurface.Pass());
     layerTreeHostImpl->setViewportSize(gfx::Size(500, 500), gfx::Size(500, 500));
@@ -2269,11 +2265,10 @@ public:
 
 static scoped_ptr<LayerTreeHostImpl> setupLayersForOpacity(bool partialSwap, LayerTreeHostImplClient* client, Proxy* proxy)
 {
-    Settings::setPartialSwapEnabled(partialSwap);
-
     scoped_ptr<GraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<GraphicsContext>();
 
     LayerTreeSettings settings;
+    settings.partialSwapEnabled = partialSwap;
     scoped_ptr<LayerTreeHostImpl> myHostImpl = LayerTreeHostImpl::create(settings, client, proxy);
     myHostImpl->initializeRenderer(context.Pass());
     myHostImpl->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
@@ -3079,10 +3074,9 @@ public:
 
 TEST_P(LayerTreeHostImplTest, textureCachingWithClipping)
 {
-    Settings::setPartialSwapEnabled(true);
-
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
+    settings.partialSwapEnabled = true;
     scoped_ptr<LayerTreeHostImpl> myHostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
 
     LayerImpl* rootPtr;
@@ -3176,8 +3170,6 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithClipping)
 
 TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusion)
 {
-    Settings::setPartialSwapEnabled(false);
-
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
     scoped_ptr<LayerTreeHostImpl> myHostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
@@ -3292,8 +3284,6 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusion)
 
 TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionEarlyOut)
 {
-    Settings::setPartialSwapEnabled(false);
-
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
     scoped_ptr<LayerTreeHostImpl> myHostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
@@ -3408,8 +3398,6 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionEarlyOut)
 
 TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionExternalOverInternal)
 {
-    Settings::setPartialSwapEnabled(false);
-
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
     scoped_ptr<LayerTreeHostImpl> myHostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
@@ -3497,8 +3485,6 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionExternalOverInternal)
 
 TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionExternalNotAligned)
 {
-    Settings::setPartialSwapEnabled(false);
-
     LayerTreeSettings settings;
     scoped_ptr<LayerTreeHostImpl> myHostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
 
@@ -3571,10 +3557,9 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionExternalNotAligned)
 
 TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionPartialSwap)
 {
-    Settings::setPartialSwapEnabled(true);
-
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
+    settings.partialSwapEnabled = true;
     scoped_ptr<LayerTreeHostImpl> myHostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
 
     // Layers are structure as follows:
@@ -3684,8 +3669,6 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionPartialSwap)
 
 TEST_P(LayerTreeHostImplTest, textureCachingWithScissor)
 {
-    Settings::setPartialSwapEnabled(false);
-
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
     scoped_ptr<LayerTreeHostImpl> myHostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
@@ -3791,10 +3774,9 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithScissor)
 
 TEST_P(LayerTreeHostImplTest, surfaceTextureCaching)
 {
-    Settings::setPartialSwapEnabled(true);
-
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
+    settings.partialSwapEnabled = true;
     scoped_ptr<LayerTreeHostImpl> myHostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
 
     LayerImpl* rootPtr;
@@ -3952,8 +3934,6 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCaching)
 
 TEST_P(LayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
 {
-    Settings::setPartialSwapEnabled(false);
-
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
     scoped_ptr<LayerTreeHostImpl> myHostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);

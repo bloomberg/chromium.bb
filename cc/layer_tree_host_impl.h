@@ -86,7 +86,7 @@ public:
     // this constraint.
     gfx::Vector2dF applyScroll(const gfx::Vector2dF&);
 
-    WebKit::WebTransformationMatrix implTransform() const;
+    WebKit::WebTransformationMatrix implTransform(bool pageScalePinchZoomEnabled) const;
 
 private:
     float m_pageScaleFactor;

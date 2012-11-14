@@ -19,7 +19,6 @@
 #include "cc/render_pass.h"
 #include "cc/render_surface_filters.h"
 #include "cc/scoped_resource.h"
-#include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/stream_video_draw_quad.h"
 #include "cc/texture_draw_quad.h"
@@ -70,8 +69,7 @@ scoped_ptr<GLRenderer> GLRenderer::create(RendererClient* client, ResourceProvid
     return renderer.Pass();
 }
 
-GLRenderer::GLRenderer(RendererClient* client,
-                           ResourceProvider* resourceProvider)
+GLRenderer::GLRenderer(RendererClient* client, ResourceProvider* resourceProvider)
     : DirectRenderer(client, resourceProvider)
     , m_offscreenFramebufferId(0)
     , m_sharedGeometryQuad(gfx::RectF(-0.5f, -0.5f, 1.0f, 1.0f))
@@ -107,7 +105,7 @@ bool GLRenderer::initialize()
 
     m_capabilities.contextHasCachedFrontBuffer = extensions.count("GL_CHROMIUM_front_buffer_cached");
 
-    m_capabilities.usingPartialSwap = Settings::partialSwapEnabled() && extensions.count("GL_CHROMIUM_post_sub_buffer");
+    m_capabilities.usingPartialSwap = settings().partialSwapEnabled && extensions.count("GL_CHROMIUM_post_sub_buffer");
 
     // Use the swapBuffers callback only with the threaded proxy.
     if (m_client->hasImplThread())

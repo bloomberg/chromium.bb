@@ -185,8 +185,6 @@
       'scrollbar_layer.h',
       'scrollbar_layer_impl.cc',
       'scrollbar_layer_impl.h',
-      'settings.cc',
-      'settings.h',
       'shader.cc',
       'shader.h',
       'shared_quad_state.cc',

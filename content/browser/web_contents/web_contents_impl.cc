@@ -511,12 +511,12 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.accelerated_filters_enabled =
       GpuProcessHost::gpu_enabled() &&
       command_line.HasSwitch(switches::kEnableAcceleratedFilters);
-  prefs.accelerated_layers_enabled =
-      prefs.accelerated_animation_enabled =
+  prefs.accelerated_compositing_for_3d_transforms_enabled =
+      prefs.accelerated_compositing_for_animation_enabled =
           !command_line.HasSwitch(switches::kDisableAcceleratedLayers);
-  prefs.accelerated_plugins_enabled =
+  prefs.accelerated_compositing_for_plugins_enabled =
       !command_line.HasSwitch(switches::kDisableAcceleratedPlugins);
-  prefs.accelerated_video_enabled =
+  prefs.accelerated_compositing_for_video_enabled =
       !command_line.HasSwitch(switches::kDisableAcceleratedVideo);
   prefs.fullscreen_enabled =
       !command_line.HasSwitch(switches::kDisableFullScreen);
@@ -571,19 +571,19 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
     if (blacklist_type & GPU_FEATURE_TYPE_MULTISAMPLING)
       prefs.gl_multisampling_enabled = false;
     if (blacklist_type & GPU_FEATURE_TYPE_3D_CSS) {
-      prefs.accelerated_layers_enabled = false;
-      prefs.accelerated_animation_enabled = false;
+      prefs.accelerated_compositing_for_3d_transforms_enabled = false;
+      prefs.accelerated_compositing_for_animation_enabled = false;
     }
     if (blacklist_type & GPU_FEATURE_TYPE_ACCELERATED_VIDEO)
-      prefs.accelerated_video_enabled = false;
+      prefs.accelerated_compositing_for_video_enabled = false;
 
     // Accelerated video and animation are slower than regular when using a
     // software 3d rasterizer. 3D CSS may also be too slow to be worthwhile.
     if (gpu_data_manager->ShouldUseSoftwareRendering()) {
-      prefs.accelerated_video_enabled = false;
-      prefs.accelerated_animation_enabled = false;
-      prefs.accelerated_layers_enabled = false;
-      prefs.accelerated_plugins_enabled = false;
+      prefs.accelerated_compositing_for_video_enabled = false;
+      prefs.accelerated_compositing_for_animation_enabled = false;
+      prefs.accelerated_compositing_for_3d_transforms_enabled = false;
+      prefs.accelerated_compositing_for_plugins_enabled = false;
     }
   }
 
@@ -623,8 +623,16 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   if (gfx::Screen::GetNativeScreen()->IsDIPEnabled()) {
     // Only apply when using DIP coordinate system as this setting interferes
     // with fixed layout mode.
+    // TODO(danakj): Fixed layout mode is going away, so turn this on always.
     prefs.apply_default_device_scale_factor_in_compositor = true;
   }
+
+  prefs.apply_page_scale_factor_in_compositor =
+      command_line.HasSwitch(cc::switches::kEnablePinchInCompositor);
+  prefs.per_tile_painting_enabled =
+      command_line.HasSwitch(cc::switches::kEnablePerTilePainting);
+  prefs.accelerated_compositing_for_animation_enabled =
+      !command_line.HasSwitch(cc::switches::kDisableThreadedAnimation);
 
   prefs.fixed_position_creates_stacking_context = !command_line.HasSwitch(
       switches::kDisableFixedPositionCreatesStackingContext);
@@ -633,9 +641,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       switches::kEnableGestureTapHighlight);
 
   prefs.number_of_cpu_cores = base::SysInfo::NumberOfProcessors();
-
-  prefs.apply_page_scale_factor_in_compositor =
-      command_line.HasSwitch(cc::switches::kEnablePinchInCompositor);
 
   prefs.deferred_image_decoding_enabled =
       command_line.HasSwitch(switches::kEnableDeferredImageDecoding);

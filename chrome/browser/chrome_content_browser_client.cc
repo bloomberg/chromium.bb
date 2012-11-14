@@ -1654,10 +1654,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     // See http://crbug.com/96005 and http://crbug.com/96006
     web_prefs->force_compositing_mode = false;
     web_prefs->accelerated_compositing_enabled = false;
-    web_prefs->accelerated_2d_canvas_enabled = false;
-    web_prefs->accelerated_video_enabled = false;
-    web_prefs->accelerated_painting_enabled = false;
-    web_prefs->accelerated_plugins_enabled = false;
   }
 
 #if defined(FILE_MANAGER_EXTENSION)

@@ -9,11 +9,11 @@
 #include "cc/debug_border_draw_quad.h"
 #include "cc/geometry.h"
 #include "cc/layer_sorter.h"
+#include "cc/layer_tree_host_impl.h"
 #include "cc/math_util.h"
 #include "cc/proxy.h"
 #include "cc/quad_sink.h"
 #include "cc/scrollbar_animation_controller.h"
-#include "cc/settings.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
@@ -234,7 +234,7 @@ InputHandlerClient::ScrollStatus LayerImpl::tryScroll(const gfx::PointF& screenS
 
 bool LayerImpl::drawCheckerboardForMissingTiles() const
 {
-    return m_drawCheckerboardForMissingTiles && !Settings::backgroundColorInsteadOfCheckerboard();
+    return m_drawCheckerboardForMissingTiles && !m_layerTreeHostImpl->settings().backgroundColorInsteadOfCheckerboard;
 }
 
 gfx::Rect LayerImpl::layerRectToContentRect(const gfx::RectF& layerRect) const

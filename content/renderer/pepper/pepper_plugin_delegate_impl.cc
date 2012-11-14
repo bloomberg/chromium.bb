@@ -808,7 +808,8 @@ webkit::ppapi::PluginDelegate::PlatformContext3D*
   // If accelerated compositing of plugins is disabled, fail to create a 3D
   // context, because it won't be visible. This allows graceful fallback in the
   // modules.
-  if (!render_view_->webkit_preferences().accelerated_plugins_enabled)
+  const webkit_glue::WebPreferences& prefs = render_view_->webkit_preferences();
+  if (!prefs.accelerated_compositing_for_plugins_enabled)
     return NULL;
   return new PlatformContext3DImpl(this);
 #else

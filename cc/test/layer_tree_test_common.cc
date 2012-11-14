@@ -13,14 +13,12 @@
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/scoped_thread_proxy.h"
-#include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/thread_impl.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/occlusion_tracker_test_common.h"
-#include "cc/test/test_common.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "cc/timing_function.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -33,7 +31,6 @@ using cc::LayerTreeHostImplClient;
 using cc::LayerTreeSettings;
 using cc::Proxy;
 using cc::ScopedThreadProxy;
-using cc::Settings;
 
 using namespace WebKit;
 
@@ -504,10 +501,6 @@ void ThreadedTest::dispatchDidAddAnimation()
 
 void ThreadedTest::runTest(bool threaded)
 {
-    // For these tests, we will enable threaded animations.
-    ScopedSettings scopedSettings;
-    Settings::setAcceleratedAnimationEnabled(true);
-
     if (threaded) {
         m_implThread.reset(new base::Thread("ThreadedTest"));
         ASSERT_TRUE(m_implThread->Start());

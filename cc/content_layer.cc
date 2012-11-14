@@ -11,7 +11,6 @@
 #include "cc/content_layer_client.h"
 #include "cc/layer_painter.h"
 #include "cc/layer_tree_host.h"
-#include "cc/settings.h"
 
 namespace cc {
 
@@ -87,7 +86,7 @@ void ContentLayer::createUpdaterIfNeeded()
     scoped_ptr<LayerPainter> painter = ContentLayerPainter::create(m_client).PassAs<LayerPainter>();
     if (layerTreeHost()->settings().acceleratePainting)
         m_updater = SkPictureContentLayerUpdater::create(painter.Pass());
-    else if (Settings::perTilePaintingEnabled())
+    else if (layerTreeHost()->settings().perTilePaintingEnabled)
         m_updater = BitmapSkPictureContentLayerUpdater::create(painter.Pass());
     else
         m_updater = BitmapContentLayerUpdater::create(painter.Pass());

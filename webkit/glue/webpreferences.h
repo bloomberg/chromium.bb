@@ -48,6 +48,9 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   int minimum_logical_font_size;
   std::string default_encoding;
   bool apply_default_device_scale_factor_in_compositor;
+  bool apply_page_scale_factor_in_compositor;
+  bool per_tile_painting_enabled;
+  bool accelerated_animation_enabled;
   bool javascript_enabled;
   bool web_security_enabled;
   bool javascript_can_open_windows_automatically;
@@ -104,15 +107,15 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool accelerated_compositing_enabled;
   bool force_compositing_mode;
   bool fixed_position_compositing_enabled;
-  bool accelerated_layers_enabled;
-  bool accelerated_animation_enabled;
-  bool accelerated_video_enabled;
+  bool accelerated_compositing_for_3d_transforms_enabled;
+  bool accelerated_compositing_for_animation_enabled;
+  bool accelerated_compositing_for_video_enabled;
   bool accelerated_2d_canvas_enabled;
   bool deferred_2d_canvas_enabled;
   bool accelerated_painting_enabled;
   bool accelerated_filters_enabled;
   bool gesture_tap_highlight_enabled;
-  bool accelerated_plugins_enabled;
+  bool accelerated_compositing_for_plugins_enabled;
   bool memory_info_enabled;
   bool fullscreen_enabled;
   bool allow_displaying_insecure_content;
@@ -142,8 +145,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   // define custom getters and setters from within a unique security content
   // without raising a DOM security exception.
   bool cookie_enabled;
-
-  bool apply_page_scale_factor_in_compositor;
 
 #if defined(OS_ANDROID)
   bool text_autosizing_enabled;

@@ -39,6 +39,9 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
     settings.showPlatformLayerTree = webSettings.showPlatformLayerTree;
     settings.showPaintRects = webSettings.showPaintRects;
     settings.renderVSyncEnabled = webSettings.renderVSyncEnabled;
+    settings.perTilePaintingEnabled = webSettings.perTilePaintingEnabled;
+    settings.acceleratedAnimationEnabled = webSettings.acceleratedAnimationEnabled;
+    settings.pageScalePinchZoomEnabled = webSettings.pageScalePinchZoomEnabled;
     settings.refreshRate = webSettings.refreshRate;
     settings.defaultTileSize = webSettings.defaultTileSize;
     settings.maxUntiledLayerSize = webSettings.maxUntiledLayerSize;

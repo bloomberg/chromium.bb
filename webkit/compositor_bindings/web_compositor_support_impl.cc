@@ -7,7 +7,6 @@
 #include "base/debug/trace_event.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
-#include "cc/settings.h"
 #include "cc/thread_impl.h"
 #include "webkit/compositor_bindings/web_animation_impl.h"
 #include "webkit/compositor_bindings/web_content_layer_impl.h"
@@ -80,19 +79,19 @@ void WebCompositorSupportImpl::shutdown() {
 }
 
 void WebCompositorSupportImpl::setPerTilePaintingEnabled(bool enabled) {
-  cc::Settings::setPerTilePaintingEnabled(enabled);
+  NOTREACHED();
 }
 
 void WebCompositorSupportImpl::setPartialSwapEnabled(bool enabled) {
-  cc::Settings::setPartialSwapEnabled(enabled);
+  NOTREACHED();
 }
 
 void WebCompositorSupportImpl::setAcceleratedAnimationEnabled(bool enabled) {
-  cc::Settings::setAcceleratedAnimationEnabled(enabled);
+  NOTREACHED();
 }
 
 void WebCompositorSupportImpl::setPageScalePinchZoomEnabled(bool enabled) {
-  cc::Settings::setPageScalePinchZoomEnabled(enabled);
+  NOTREACHED();
 }
 
 WebLayerTreeView* WebCompositorSupportImpl::createLayerTreeView(

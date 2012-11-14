@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "cc/settings.h"
 
 namespace cc {
 

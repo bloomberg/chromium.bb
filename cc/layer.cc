@@ -9,7 +9,6 @@
 #include "cc/layer_animation_controller.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host.h"
-#include "cc/settings.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/rect_conversions.h"
 #include <public/WebAnimationDelegate.h>
@@ -768,7 +767,7 @@ bool Layer::addAnimation(scoped_ptr <ActiveAnimation> animation)
     if (!m_layerTreeHost)
         return false;
 
-    if (!Settings::acceleratedAnimationEnabled())
+    if (!m_layerTreeHost->settings().acceleratedAnimationEnabled)
         return false;
 
     m_layerAnimationController->addAnimation(animation.Pass());

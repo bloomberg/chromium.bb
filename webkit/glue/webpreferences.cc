@@ -37,6 +37,9 @@ WebPreferences::WebPreferences()
       minimum_logical_font_size(6),
       default_encoding("ISO-8859-1"),
       apply_default_device_scale_factor_in_compositor(false),
+      apply_page_scale_factor_in_compositor(false),
+      per_tile_painting_enabled(false),
+      accelerated_animation_enabled(false),
       javascript_enabled(true),
       web_security_enabled(true),
       javascript_can_open_windows_automatically(true),
@@ -86,15 +89,15 @@ WebPreferences::WebPreferences()
       accelerated_compositing_enabled(false),
       force_compositing_mode(false),
       fixed_position_compositing_enabled(false),
-      accelerated_layers_enabled(false),
-      accelerated_animation_enabled(false),
-      accelerated_video_enabled(false),
+      accelerated_compositing_for_3d_transforms_enabled(false),
+      accelerated_compositing_for_animation_enabled(false),
+      accelerated_compositing_for_video_enabled(false),
       accelerated_2d_canvas_enabled(false),
       deferred_2d_canvas_enabled(false),
       accelerated_painting_enabled(false),
       accelerated_filters_enabled(false),
       gesture_tap_highlight_enabled(false),
-      accelerated_plugins_enabled(false),
+      accelerated_compositing_for_plugins_enabled(false),
       memory_info_enabled(false),
       fullscreen_enabled(false),
       allow_displaying_insecure_content(true),
@@ -117,8 +120,7 @@ WebPreferences::WebPreferences()
       sync_xhr_in_documents_enabled(true),
       deferred_image_decoding_enabled(false),
       number_of_cpu_cores(1),
-      cookie_enabled(true),
-      apply_page_scale_factor_in_compositor(false)
+      cookie_enabled(true)
 #if defined(OS_ANDROID)
       ,
       text_autosizing_enabled(true),
@@ -254,6 +256,8 @@ void WebPreferences::Apply(WebView* web_view) const {
       apply_default_device_scale_factor_in_compositor);
   settings->setApplyPageScaleFactorInCompositor(
       apply_page_scale_factor_in_compositor);
+  settings->setPerTilePaintingEnabled(per_tile_painting_enabled);
+  settings->setAcceleratedAnimationEnabled(accelerated_animation_enabled);
   settings->setJavaScriptEnabled(javascript_enabled);
   settings->setWebSecurityEnabled(web_security_enabled);
   settings->setJavaScriptCanOpenWindowsAutomatically(
@@ -375,15 +379,15 @@ void WebPreferences::Apply(WebView* web_view) const {
   // Enabling accelerated layers from the command line enabled accelerated
   // 3D CSS, Video, and Animations.
   settings->setAcceleratedCompositingFor3DTransformsEnabled(
-      accelerated_layers_enabled);
+      accelerated_compositing_for_3d_transforms_enabled);
   settings->setAcceleratedCompositingForVideoEnabled(
-      accelerated_video_enabled);
+      accelerated_compositing_for_video_enabled);
   settings->setAcceleratedCompositingForAnimationEnabled(
-      accelerated_animation_enabled);
+      accelerated_compositing_for_animation_enabled);
 
   // Enabling accelerated plugins if specified from the command line.
   settings->setAcceleratedCompositingForPluginsEnabled(
-      accelerated_plugins_enabled);
+      accelerated_compositing_for_plugins_enabled);
 
   // WebGL and accelerated 2D canvas are always gpu composited.
   settings->setAcceleratedCompositingForCanvasEnabled(
@@ -430,9 +434,6 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   settings->setFixedPositionCreatesStackingContext(
       fixed_position_creates_stacking_context);
-
-  settings->setApplyPageScaleFactorInCompositor(
-      apply_page_scale_factor_in_compositor);
 
   settings->setDeferredImageDecodingEnabled(deferred_image_decoding_enabled);
 

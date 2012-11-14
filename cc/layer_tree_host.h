@@ -63,6 +63,12 @@ struct CC_EXPORT LayerTreeSettings {
     bool showReplicaScreenSpaceRects;
     bool showOccludingRects;
     bool renderVSyncEnabled;
+    bool perTilePaintingEnabled;
+    bool partialSwapEnabled;
+    bool acceleratedAnimationEnabled;
+    bool pageScalePinchZoomEnabled;
+    bool backgroundColorInsteadOfCheckerboard;
+    bool showOverdrawInTracing;
     double refreshRate;
     size_t maxPartialTextureUpdates;
     gfx::Size defaultTileSize;

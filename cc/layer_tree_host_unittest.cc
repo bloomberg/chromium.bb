@@ -9,7 +9,6 @@
 #include "cc/content_layer_client.h"
 #include "cc/graphics_context.h"
 #include "cc/layer_tree_host_impl.h"
-#include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_web_compositor_output_surface.h"

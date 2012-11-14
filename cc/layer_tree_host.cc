@@ -20,7 +20,6 @@
 #include "cc/math_util.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/overdraw_metrics.h"
-#include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/switches.h"
 #include "cc/thread.h"
@@ -47,6 +46,12 @@ LayerTreeSettings::LayerTreeSettings()
     , showReplicaScreenSpaceRects(false)
     , showOccludingRects(false)
     , renderVSyncEnabled(true)
+    , perTilePaintingEnabled(false)
+    , partialSwapEnabled(false)
+    , acceleratedAnimationEnabled(true)
+    , pageScalePinchZoomEnabled(false)
+    , backgroundColorInsteadOfCheckerboard(false)
+    , showOverdrawInTracing(false)
     , refreshRate(0)
     , maxPartialTextureUpdates(std::numeric_limits<size_t>::max())
     , defaultTileSize(gfx::Size(256, 256))
@@ -59,6 +64,9 @@ LayerTreeSettings::LayerTreeSettings()
     showScreenSpaceRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowScreenSpaceRects);
     showReplicaScreenSpaceRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowReplicaScreenSpaceRects);
     showOccludingRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowOccludingRects);
+    partialSwapEnabled = CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePartialSwap);
+    backgroundColorInsteadOfCheckerboard = CommandLine::ForCurrentProcess()->HasSwitch(switches::kBackgroundColorInsteadOfCheckerboard);
+    showOverdrawInTracing = CommandLine::ForCurrentProcess()->HasSwitch(switches::kTraceOverdraw);
 }
 
 LayerTreeSettings::~LayerTreeSettings()
@@ -545,7 +553,7 @@ void LayerTreeHost::updateLayers(Layer* rootLayer, ResourceUpdateQueue& queue)
     LayerList updateList;
 
     {
-        if (Settings::pageScalePinchZoomEnabled()) {
+        if (m_settings.pageScalePinchZoomEnabled) {
             Layer* rootScroll = findFirstScrollableLayer(rootLayer);
             if (rootScroll)
                 rootScroll->setImplTransform(m_implTransform);
@@ -672,7 +680,7 @@ bool LayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, 
     typedef LayerIterator<Layer, LayerList, RenderSurface, LayerIteratorActions::FrontToBack> LayerIteratorType;
 
     bool needMoreUpdates = false;
-    bool recordMetricsForFrame = Settings::traceOverdraw() && base::debug::TraceLog::GetInstance() && base::debug::TraceLog::GetInstance()->IsEnabled();
+    bool recordMetricsForFrame = m_settings.showOverdrawInTracing && base::debug::TraceLog::GetInstance() && base::debug::TraceLog::GetInstance()->IsEnabled();
     OcclusionTracker occlusionTracker(m_rootLayer->renderSurface()->contentRect(), recordMetricsForFrame);
     occlusionTracker.setMinimumTrackingSize(m_settings.minimumOcclusionTrackingSize);
 
@@ -803,7 +811,7 @@ void LayerTreeHost::setDeviceScaleFactor(float deviceScaleFactor)
 
 void LayerTreeHost::animateLayers(base::TimeTicks time)
 {
-    if (!Settings::acceleratedAnimationEnabled() || !m_needsAnimateLayers)
+    if (!m_settings.acceleratedAnimationEnabled || !m_needsAnimateLayers)
         return;
 
     TRACE_EVENT0("cc", "LayerTreeHostImpl::animateLayers");

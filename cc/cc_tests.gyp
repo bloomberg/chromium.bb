@@ -84,7 +84,6 @@
       'test/render_pass_test_common.h',
       'test/scheduler_test_common.cc',
       'test/scheduler_test_common.h',
-      'test/test_common.h',
       'test/tiled_layer_test_common.cc',
       'test/tiled_layer_test_common.h',
     ],
