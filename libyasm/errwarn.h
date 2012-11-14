@@ -2,10 +2,6 @@
  * \file libyasm/errwarn.h
  * \brief YASM error and warning reporting interface.
  *
- * \rcs
- * $Id: errwarn.h 2130 2008-10-07 05:38:11Z peter $
- * \endrcs
- *
  * \license
  *  Copyright (C) 2001-2007  Peter Johnson
  *

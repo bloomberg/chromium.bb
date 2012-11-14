@@ -1,4 +1,4 @@
-/* $Id: genmodule.c 1827 2007-04-22 05:09:49Z peter $
+/*
  *
  * Generate module.c from module.in and Makefile.am or Makefile.
  *

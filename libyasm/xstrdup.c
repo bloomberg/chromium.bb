@@ -29,7 +29,6 @@
  * SUCH DAMAGE.
  */
 #include "util.h"
-RCSID("$Id: xstrdup.c 1893 2007-07-14 03:11:32Z peter $");
 
 #include "coretype.h"
 

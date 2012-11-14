@@ -27,7 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: floatnum.c 1954 2007-09-16 20:41:16Z peter $");
 
 #include <ctype.h>
 

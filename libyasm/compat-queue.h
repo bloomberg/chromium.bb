@@ -1,4 +1,4 @@
-/* $Id: compat-queue.h 1825 2007-04-22 03:32:46Z peter $
+/*
  * <sys/queue.h> implementation for systems that don't have it.
  *
  * Copyright (c) 1991, 1993

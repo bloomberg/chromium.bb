@@ -1,4 +1,4 @@
-/* $Id: nasm-parser.h 2277 2010-01-19 07:03:15Z peter $
+/*
  * NASM-compatible parser header file
  *
  *  Copyright (C) 2002-2007  Peter Johnson

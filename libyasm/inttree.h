@@ -1,4 +1,3 @@
-/* $Id: inttree.h 2101 2008-05-23 06:46:51Z peter $ */
 #ifndef YASM_INTTREE_H
 #define YASM_INTTREE_H
 

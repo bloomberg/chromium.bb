@@ -1,6 +1,5 @@
 /* Modified for use with yasm by Peter Johnson. */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: phash.c 1893 2007-07-14 03:11:32Z peter $");
 
 /*
 --------------------------------------------------------------------

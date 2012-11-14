@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: raw-preproc.c 2172 2009-01-27 06:38:14Z peter $");
 
 #include <libyasm.h>
 

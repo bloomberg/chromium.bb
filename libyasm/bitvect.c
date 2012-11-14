@@ -1,5 +1,4 @@
 #include "util.h"
-RCSID("$Id: bitvect.c 2063 2008-04-12 08:30:22Z peter $");
 
 #include "coretype.h"
 

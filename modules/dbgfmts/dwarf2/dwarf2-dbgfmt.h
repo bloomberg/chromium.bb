@@ -1,4 +1,4 @@
-/* $Id$
+/*
  * DWARF2 debugging format
  *
  *  Copyright (C) 2006-2007  Peter Johnson
@@ -66,6 +66,7 @@ typedef struct dwarf2_loc {
     unsigned long file;     /* index into table of filenames */
     unsigned long line;     /* source line number */
     unsigned long column;   /* source column */
+    unsigned long discriminator;
     int isa_change;
     unsigned long isa;
     enum {

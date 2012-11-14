@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: bc-reserve.c 2130 2008-10-07 05:38:11Z peter $");
 
 #include "libyasm-stdint.h"
 #include "coretype.h"
@@ -50,7 +49,8 @@ static int bc_reserve_elem_size(yasm_bytecode *bc);
 static int bc_reserve_calc_len(yasm_bytecode *bc,
                                yasm_bc_add_span_func add_span,
                                void *add_span_data);
-static int bc_reserve_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
+static int bc_reserve_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                              unsigned char *bufstart, void *d,
                               yasm_output_value_func output_value,
                               /*@null@*/ yasm_output_reloc_func output_reloc);
 
@@ -114,7 +114,8 @@ bc_reserve_calc_len(yasm_bytecode *bc, yasm_bc_add_span_func add_span,
 }
 
 static int
-bc_reserve_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
+bc_reserve_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                   unsigned char *bufstart, void *d,
                    yasm_output_value_func output_value,
                    /*@unused@*/ yasm_output_reloc_func output_reloc)
 {

@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: bytecode.c 2233 2009-10-31 21:45:55Z peter $");
 
 #include "libyasm-stdint.h"
 #include "coretype.h"
@@ -73,7 +72,8 @@ yasm_bc_expand_common(yasm_bytecode *bc, int span, long old_val, long new_val,
 }
 
 int
-yasm_bc_tobytes_common(yasm_bytecode *bc, unsigned char **bufp, void *d,
+yasm_bc_tobytes_common(yasm_bytecode *bc, unsigned char **buf,
+                       unsigned char *bufstart, void *d,
                        yasm_output_value_func output_value,
                        /*@null@*/ yasm_output_reloc_func output_reloc)
 {
@@ -305,6 +305,7 @@ yasm_bc_tobytes(yasm_bytecode *bc, unsigned char *buf, unsigned long *bufsize,
     /*@sets *buf@*/
 {
     /*@only@*/ /*@null@*/ unsigned char *mybuf = NULL;
+    unsigned char *bufstart;
     unsigned char *origbuf, *destbuf;
     long i;
     int error = 0;
@@ -329,6 +330,7 @@ yasm_bc_tobytes(yasm_bytecode *bc, unsigned char *buf, unsigned long *bufsize,
         destbuf = mybuf;
     } else
         destbuf = buf;
+    bufstart = destbuf;
 
     *bufsize = bc->len*bc->mult_int;
 
@@ -336,7 +338,7 @@ yasm_bc_tobytes(yasm_bytecode *bc, unsigned char *buf, unsigned long *bufsize,
         yasm_internal_error(N_("got empty bytecode in bc_tobytes"));
     else for (i=0; i<bc->mult_int; i++) {
         origbuf = destbuf;
-        error = bc->callback->tobytes(bc, &destbuf, d, output_value,
+        error = bc->callback->tobytes(bc, &destbuf, bufstart, d, output_value,
                                       output_reloc);
 
         if (!error && ((unsigned long)(destbuf - origbuf) != bc->len))

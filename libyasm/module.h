@@ -1,4 +1,4 @@
-/* $Id: module.h 2101 2008-05-23 06:46:51Z peter $
+/*
  * YASM module loader header file
  *
  *  Copyright (C) 2002-2007  Peter Johnson

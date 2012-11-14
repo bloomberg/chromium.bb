@@ -1,4 +1,4 @@
-/* $Id: coff-objfmt.h 1825 2007-04-22 03:32:46Z peter $
+/*
  * COFF (DJGPP) object format
  *
  *  Copyright (C) 2007  Peter Johnson

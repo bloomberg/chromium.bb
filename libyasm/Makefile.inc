@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2111 2008-07-06 22:26:49Z peter $
-
 libyasm_a_SOURCES += libyasm/assocdat.c
 libyasm_a_SOURCES += libyasm/bitvect.c
 libyasm_a_SOURCES += libyasm/bc-align.c

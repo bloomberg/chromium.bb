@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: null-dbgfmt.c 1893 2007-07-14 03:11:32Z peter $");
 
 #include <libyasm.h>
 

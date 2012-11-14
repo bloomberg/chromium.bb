@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: bc-incbin.c 2130 2008-10-07 05:38:11Z peter $");
 
 #include "libyasm-stdint.h"
 #include "coretype.h"
@@ -58,7 +57,8 @@ static void bc_incbin_print(const void *contents, FILE *f, int indent_level);
 static void bc_incbin_finalize(yasm_bytecode *bc, yasm_bytecode *prev_bc);
 static int bc_incbin_calc_len(yasm_bytecode *bc, yasm_bc_add_span_func add_span,
                               void *add_span_data);
-static int bc_incbin_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
+static int bc_incbin_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                             unsigned char *bufstart, void *d,
                              yasm_output_value_func output_value,
                              /*@null@*/ yasm_output_reloc_func output_reloc);
 
@@ -195,7 +195,8 @@ bc_incbin_calc_len(yasm_bytecode *bc, yasm_bc_add_span_func add_span,
 }
 
 static int
-bc_incbin_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
+bc_incbin_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                  unsigned char *bufstart, void *d,
                   yasm_output_value_func output_value,
                   /*@unused@*/ yasm_output_reloc_func output_reloc)
 {

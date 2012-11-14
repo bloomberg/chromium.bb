@@ -1,4 +1,4 @@
-/* $Id: elf.h 2208 2009-07-22 05:45:03Z peter $
+/*
  * ELF object format helpers
  *
  *  Copyright (C) 2003-2007  Michael Urman

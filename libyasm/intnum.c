@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: intnum.c 2253 2010-01-01 20:47:58Z peter $");
 
 #include <ctype.h>
 #include <limits.h>

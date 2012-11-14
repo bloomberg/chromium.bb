@@ -30,8 +30,6 @@
  * SUCH DAMAGE.
  */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: strcasecmp.c 1893 2007-07-14 03:11:32Z peter $");
-
 
 #ifndef USE_OUR_OWN_STRCASECMP
 #undef yasm__strcasecmp

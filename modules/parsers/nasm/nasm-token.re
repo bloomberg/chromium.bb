@@ -27,7 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-RCSID("$Id: nasm-token.re 2277 2010-01-19 07:03:15Z peter $");
 
 #include <libyasm.h>
 

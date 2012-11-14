@@ -2,10 +2,6 @@
  * \file libyasm/file.h
  * \brief YASM file helpers.
  *
- * \rcs
- * $Id: file.h 2287 2010-02-13 08:42:27Z peter $
- * \endrcs
- *
  * \license
  *  Copyright (C) 2001-2007  Peter Johnson
  *

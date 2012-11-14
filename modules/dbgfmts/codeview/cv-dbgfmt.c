@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: cv-dbgfmt.c 1894 2007-07-14 04:34:41Z peter $");
 
 #include <libyasm.h>
 

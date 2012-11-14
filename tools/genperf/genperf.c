@@ -1,4 +1,4 @@
-/* $Id: genperf.c 2235 2009-11-03 05:15:37Z peter $
+/*
  *
  * Generate Minimal Perfect Hash (genperf)
  *

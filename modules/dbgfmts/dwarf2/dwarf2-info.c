@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: dwarf2-info.c 2130 2008-10-07 05:38:11Z peter $");
 
 #include <libyasm.h>
 
@@ -197,7 +196,7 @@ static void dwarf2_abbrev_bc_print(const void *contents, FILE *f,
 static int dwarf2_abbrev_bc_calc_len
     (yasm_bytecode *bc, yasm_bc_add_span_func add_span, void *add_span_data);
 static int dwarf2_abbrev_bc_tobytes
-    (yasm_bytecode *bc, unsigned char **bufp, void *d,
+    (yasm_bytecode *bc, unsigned char **bufp, unsigned char *bufstart, void *d,
      yasm_output_value_func output_value,
      /*@null@*/ yasm_output_reloc_func output_reloc);
 
@@ -337,7 +336,10 @@ yasm_dwarf2__generate_info(yasm_object *object, yasm_section *debug_line,
 
     /* producer - assembler name */
     abc->len += dwarf2_add_abbrev_attr(abbrev, DW_AT_producer, DW_FORM_string);
-    dwarf2_append_str(debug_info, PACKAGE " " VERSION);
+    if (getenv("YASM_TEST_SUITE"))
+        dwarf2_append_str(debug_info, "yasm HEAD");
+    else
+        dwarf2_append_str(debug_info, PACKAGE_STRING);
 
     /* language - no standard code for assembler, use MIPS as a substitute */
     abc->len += dwarf2_add_abbrev_attr(abbrev, DW_AT_language, DW_FORM_data2);
@@ -394,7 +396,8 @@ dwarf2_abbrev_bc_calc_len(yasm_bytecode *bc, yasm_bc_add_span_func add_span,
 }
 
 static int
-dwarf2_abbrev_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
+dwarf2_abbrev_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                         unsigned char *bufstart, void *d,
                          yasm_output_value_func output_value,
                          yasm_output_reloc_func output_reloc)
 {

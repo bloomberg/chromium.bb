@@ -28,7 +28,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: cv-type.c 2130 2008-10-07 05:38:11Z peter $");
 
 #include <libyasm.h>
 
@@ -483,7 +482,7 @@ static void cv_type_bc_print(const void *contents, FILE *f, int indent_level);
 static int cv_type_bc_calc_len
     (yasm_bytecode *bc, yasm_bc_add_span_func add_span, void *add_span_data);
 static int cv_type_bc_tobytes
-    (yasm_bytecode *bc, unsigned char **bufp, void *d,
+    (yasm_bytecode *bc, unsigned char **bufp, unsigned char *bufstart, void *d,
      yasm_output_value_func output_value,
      /*@null@*/ yasm_output_reloc_func output_reloc);
 
@@ -732,7 +731,8 @@ cv_type_bc_calc_len(yasm_bytecode *bc, yasm_bc_add_span_func add_span,
 }
 
 static int
-cv_type_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
+cv_type_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                   unsigned char *bufstart, void *d,
                    yasm_output_value_func output_value,
                    yasm_output_reloc_func output_reloc)
 {

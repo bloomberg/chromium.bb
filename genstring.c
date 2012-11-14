@@ -1,4 +1,4 @@
-/* $Id: genstring.c 1827 2007-04-22 05:09:49Z peter $
+/*
  *
  * Generate array-of-const-string from text file.
  *

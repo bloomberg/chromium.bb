@@ -28,7 +28,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-RCSID("$Id: gas-parse-intel.c 2279 2010-01-19 07:57:43Z peter $");
 
 #include <libyasm.h>
 

@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: bin-objfmt.c 2310 2010-03-28 19:28:54Z peter $");
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>

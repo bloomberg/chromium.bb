@@ -1,4 +1,4 @@
-/* $Id: lc3barch.h 1914 2007-08-20 05:13:35Z peter $
+/*
  * LC-3b Architecture header file
  *
  *  Copyright (C) 2003-2007  Peter Johnson

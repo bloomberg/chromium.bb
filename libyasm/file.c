@@ -25,12 +25,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: file.c 2287 2010-02-13 08:42:27Z peter $");
 
-/* Need either unistd.h or direct.h (on Windows) to prototype getcwd() */
-#if defined(HAVE_UNISTD_H)
+/* Need either unistd.h or direct.h to prototype getcwd() and mkdir() */
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#elif defined(HAVE_DIRECT_H)
+#endif
+
+#ifdef HAVE_DIRECT_H
 #include <direct.h>
 #endif
 
@@ -243,6 +244,12 @@ yasm__getcwd(void)
 
     size = 1024;
     buf = yasm_xmalloc(size);
+
+    if (getenv("YASM_TEST_SUITE")) {
+        strcpy(buf, "./");
+        return buf;
+    }
+
     while (getcwd(buf, size-1) == NULL) {
         if (errno != ERANGE) {
             yasm__fatal(N_("could not determine current working directory"));

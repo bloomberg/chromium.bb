@@ -1,4 +1,4 @@
-/* $Id: gas-parser.h 2279 2010-01-19 07:57:43Z peter $
+/*
  * GAS-compatible parser header file
  *
  *  Copyright (C) 2005-2007  Peter Johnson

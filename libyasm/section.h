@@ -2,10 +2,6 @@
  * \file libyasm/section.h
  * \brief YASM section interface.
  *
- * \rcs
- * $Id: section.h 2109 2008-06-08 09:06:05Z peter $
- * \endrcs
- *
  * \license
  *  Copyright (C) 2001-2007  Peter Johnson
  *

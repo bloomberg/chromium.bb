@@ -28,7 +28,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-RCSID("$Id: gas-token.re 2266 2010-01-03 22:02:30Z peter $");
 
 #include <libyasm.h>
 
@@ -523,8 +522,8 @@ stringconst_scan:
     SCANINIT();
 
     /*!re2c
-        /* Handle escaped double-quote by copying and continuing */
-        "\\\""      {
+        /* Handle escaped character by copying both and continuing. */
+        "\\".   {
             if (cursor == s->eof) {
                 yasm_error_set(YASM_ERROR_SYNTAX,
                                N_("unexpected end of file in string"));
@@ -532,7 +531,8 @@ stringconst_scan:
                 lvalp->str.len = count;
                 RETURN(STRING);
             }
-            strbuf_append(count++, cursor, s, '"');
+            strbuf_append(count++, cursor, s, '\\');
+            strbuf_append(count++, cursor, s, s->tok[1]);
             goto stringconst_scan;
         }
 

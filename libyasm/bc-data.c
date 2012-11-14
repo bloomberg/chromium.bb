@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: bc-data.c 2133 2008-10-07 05:59:29Z peter $");
 
 #include "libyasm-stdint.h"
 #include "coretype.h"
@@ -70,7 +69,8 @@ static void bc_data_finalize(yasm_bytecode *bc, yasm_bytecode *prev_bc);
 static int bc_data_item_size(yasm_bytecode *bc);
 static int bc_data_calc_len(yasm_bytecode *bc, yasm_bc_add_span_func add_span,
                             void *add_span_data);
-static int bc_data_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
+static int bc_data_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                           unsigned char *bufstart, void *d,
                            yasm_output_value_func output_value,
                            /*@null@*/ yasm_output_reloc_func output_reloc);
 
@@ -203,13 +203,13 @@ bc_data_calc_len(yasm_bytecode *bc, yasm_bc_add_span_func add_span,
 }
 
 static int
-bc_data_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
+bc_data_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                unsigned char *bufstart, void *d,
                 yasm_output_value_func output_value,
                 /*@unused@*/ yasm_output_reloc_func output_reloc)
 {
     bytecode_data *bc_data = (bytecode_data *)bc->contents;
     yasm_dataval *dv;
-    unsigned char *bufp_orig = *bufp;
     yasm_intnum *intn;
     unsigned int val_len;
     unsigned long multiple, i;
@@ -224,7 +224,7 @@ bc_data_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
                 val_len = dv->data.val.size/8;
                 for (i=0; i<multiple; i++) {
                     if (output_value(&dv->data.val, *bufp, val_len,
-                                     (unsigned long)(*bufp-bufp_orig), bc, 1,
+                                     (unsigned long)(*bufp-bufstart), bc, 1,
                                      d))
                         return 1;
                     *bufp += val_len;
@@ -478,6 +478,14 @@ yasm_dv_create_reserve(void)
     retval->multiple = NULL;
 
     return retval;
+}
+
+yasm_value *
+yasm_dv_get_value(yasm_dataval *dv)
+{
+    if (dv->type != DV_VALUE)
+        return NULL;
+    return &dv->data.val;
 }
 
 void

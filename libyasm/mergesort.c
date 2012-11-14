@@ -32,7 +32,6 @@
  * SUCH DAMAGE.
  */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: mergesort.c 1893 2007-07-14 03:11:32Z peter $");
 
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "@(#)merge.c     8.2 (Berkeley) 2/14/94";

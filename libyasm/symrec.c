@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: symrec.c 2130 2008-10-07 05:38:11Z peter $");
 
 #include <limits.h>
 #include <ctype.h>

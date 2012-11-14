@@ -30,7 +30,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: hamt.c 1907 2007-08-05 16:44:07Z peter $");
 
 #include <ctype.h>
 

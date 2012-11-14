@@ -91,7 +91,6 @@
 */
 
 #include <util.h>
-/*@unused@*/ RCSID("$Id: macho-objfmt.c 2345 2010-08-01 01:27:40Z peter $");
 
 #include <libyasm.h>
 

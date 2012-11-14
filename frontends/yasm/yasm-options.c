@@ -29,7 +29,6 @@
  */
 #include <util.h>
 #include <ctype.h>
-/*@unused@*/ RCSID("$Id: yasm-options.c 2248 2009-12-26 04:41:21Z peter $");
 
 #include "yasm-options.h"
 

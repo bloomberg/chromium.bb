@@ -26,14 +26,13 @@
  */
 
 #include <util.h>
-/*@unused@*/ RCSID("$Id: elf-x86-x86.c 2321 2010-05-15 07:45:48Z peter $");
 
 #include <libyasm.h>
 #define YASM_OBJFMT_ELF_INTERNAL
 #include "elf.h"
 #include "elf-machine.h"
 
-static const elf_machine_ssym elf_x86_x86_ssyms[] = {
+static elf_machine_ssym elf_x86_x86_ssyms[] = {
     {"plt",         ELF_SSYM_SYM_RELATIVE,  R_386_PLT32,        32},
     {"gotoff",      0,                      R_386_GOTOFF,       32},
     /* special one for NASM */

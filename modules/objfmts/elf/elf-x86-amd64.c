@@ -26,7 +26,6 @@
  */
 
 #include <util.h>
-/*@unused@*/ RCSID("$Id: elf-x86-amd64.c 2210 2009-07-22 05:51:35Z peter $");
 
 #include <libyasm.h>
 #define YASM_OBJFMT_ELF_INTERNAL

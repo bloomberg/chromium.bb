@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: lc3barch.c 1963 2007-09-19 07:47:10Z peter $");
 
 #include <libyasm.h>
 

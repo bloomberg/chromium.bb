@@ -1,5 +1,4 @@
 #include "util.h"
-/*@unused@*/ RCSID("$Id: inttree.c 2262 2010-01-03 02:46:11Z peter $");
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: nasm-preproc.c 2185 2009-03-24 06:33:32Z peter $");
 
 #include <libyasm.h>
 

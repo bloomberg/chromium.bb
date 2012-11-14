@@ -28,7 +28,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: cv-symline.c 2258 2010-01-03 01:04:18Z peter $");
 
 #include <libyasm.h>
 
@@ -163,7 +162,7 @@ static void cv8_symhead_bc_print(const void *contents, FILE *f,
 static int cv8_symhead_bc_calc_len
     (yasm_bytecode *bc, yasm_bc_add_span_func add_span, void *add_span_data);
 static int cv8_symhead_bc_tobytes
-    (yasm_bytecode *bc, unsigned char **bufp, void *d,
+    (yasm_bytecode *bc, unsigned char **bufp, unsigned char *bufstart, void *d,
      yasm_output_value_func output_value,
      /*@null@*/ yasm_output_reloc_func output_reloc);
 
@@ -173,7 +172,7 @@ static void cv8_fileinfo_bc_print(const void *contents, FILE *f,
 static int cv8_fileinfo_bc_calc_len
     (yasm_bytecode *bc, yasm_bc_add_span_func add_span, void *add_span_data);
 static int cv8_fileinfo_bc_tobytes
-    (yasm_bytecode *bc, unsigned char **bufp, void *d,
+    (yasm_bytecode *bc, unsigned char **bufp, unsigned char *bufstart, void *d,
      yasm_output_value_func output_value,
      /*@null@*/ yasm_output_reloc_func output_reloc);
 
@@ -183,7 +182,7 @@ static void cv8_lineinfo_bc_print(const void *contents, FILE *f,
 static int cv8_lineinfo_bc_calc_len
     (yasm_bytecode *bc, yasm_bc_add_span_func add_span, void *add_span_data);
 static int cv8_lineinfo_bc_tobytes
-    (yasm_bytecode *bc, unsigned char **bufp, void *d,
+    (yasm_bytecode *bc, unsigned char **bufp, unsigned char *bufstart, void *d,
      yasm_output_value_func output_value,
      /*@null@*/ yasm_output_reloc_func output_reloc);
 
@@ -192,7 +191,7 @@ static void cv_sym_bc_print(const void *contents, FILE *f, int indent_level);
 static int cv_sym_bc_calc_len
     (yasm_bytecode *bc, yasm_bc_add_span_func add_span, void *add_span_data);
 static int cv_sym_bc_tobytes
-    (yasm_bytecode *bc, unsigned char **bufp, void *d,
+    (yasm_bytecode *bc, unsigned char **bufp, unsigned char *bufstart, void *d,
      yasm_output_value_func output_value,
      /*@null@*/ yasm_output_reloc_func output_reloc);
 
@@ -638,9 +637,12 @@ yasm_cv__generate_symline(yasm_object *object, yasm_linemap *linemap,
     /* add object and compile flag first */
     cv8_add_sym_objname(info.debug_symline,
                         yasm__abspath(object->obj_filename));
-    cv8_add_sym_compile(object, info.debug_symline,
-                        yasm__xstrdup(PACKAGE_NAME " " PACKAGE_INTVER "."
-                                      PACKAGE_BUILD));
+    if (getenv("YASM_TEST_SUITE"))
+        cv8_add_sym_compile(object, info.debug_symline,
+                            yasm__xstrdup("yasm HEAD"));
+    else
+        cv8_add_sym_compile(object, info.debug_symline,
+                            yasm__xstrdup(PACKAGE_STRING));
     /* then iterate through symbol table */
     yasm_symtab_traverse(object->symtab, &info, cv_generate_sym);
     cv8_set_symhead_end(head, yasm_section_bcs_last(info.debug_symline));
@@ -724,7 +726,8 @@ cv8_symhead_bc_calc_len(yasm_bytecode *bc, yasm_bc_add_span_func add_span,
 }
 
 static int
-cv8_symhead_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
+cv8_symhead_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                       unsigned char *bufstart, void *d,
                        yasm_output_value_func output_value,
                        yasm_output_reloc_func output_reloc)
 {
@@ -797,7 +800,8 @@ cv8_fileinfo_bc_calc_len(yasm_bytecode *bc, yasm_bc_add_span_func add_span,
 }
 
 static int
-cv8_fileinfo_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
+cv8_fileinfo_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                        unsigned char *bufstart, void *d,
                         yasm_output_value_func output_value,
                         yasm_output_reloc_func output_reloc)
 {
@@ -864,7 +868,8 @@ cv8_lineinfo_bc_calc_len(yasm_bytecode *bc, yasm_bc_add_span_func add_span,
 }
 
 static int
-cv8_lineinfo_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
+cv8_lineinfo_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                        unsigned char *bufstart, void *d,
                         yasm_output_value_func output_value,
                         yasm_output_reloc_func output_reloc)
 {
@@ -876,7 +881,8 @@ cv8_lineinfo_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
     cv8_lineset *ls;
 
     /* start offset and section */
-    cv_out_sym(li->sectsym, 0, bc, &buf, d, output_value);
+    cv_out_sym(li->sectsym, (unsigned long)(buf - bufstart), bc, &buf,
+               d, output_value);
 
     /* Two bytes of pad/alignment */
     YASM_WRITE_8(buf, 0);
@@ -1019,7 +1025,8 @@ cv_sym_bc_calc_len(yasm_bytecode *bc, yasm_bc_add_span_func add_span,
 }
 
 static int
-cv_sym_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
+cv_sym_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                  unsigned char *bufstart, void *d,
                   yasm_output_value_func output_value,
                   yasm_output_reloc_func output_reloc)
 {
@@ -1061,7 +1068,7 @@ cv_sym_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
                 break;
             case 'Y':
                 cv_out_sym((yasm_symrec *)cvs->args[arg++].p,
-                           (unsigned long)(buf-(*bufp)), bc, &buf, d,
+                           (unsigned long)(buf-bufstart), bc, &buf, d,
                            output_value);
                 break;
             case 'T':

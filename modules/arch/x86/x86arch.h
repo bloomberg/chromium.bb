@@ -1,4 +1,4 @@
-/* $Id: x86arch.h 2346 2010-08-01 01:37:37Z peter $
+/*
  * x86 Architecture header file
  *
  *  Copyright (C) 2001-2007  Peter Johnson
@@ -78,6 +78,11 @@
 #define CPU_XSAVEOPT 44     /* Intel XSAVEOPT instruction */
 #define CPU_EPTVPID 45      /* Intel INVEPT, INVVPID instructions */
 #define CPU_SMX     46      /* Intel SMX instruction (GETSEC) */
+#define CPU_AVX2    47      /* Intel AVX2 instructions */
+#define CPU_BMI1    48      /* Intel BMI1 instructions */
+#define CPU_BMI2    49      /* Intel BMI2 instructions */
+#define CPU_INVPCID 50      /* Intel INVPCID instruction */
+#define CPU_LZCNT   51      /* Intel LZCNT instruction */
 
 enum x86_parser_type {
     X86_PARSER_NASM = 0,
@@ -171,6 +176,9 @@ int yasm_x86__set_rex_from_reg(unsigned char *rex, unsigned char *low3,
 /* Effective address type */
 typedef struct x86_effaddr {
     yasm_effaddr ea;            /* base structure */
+
+    /* VSIB uses the normal SIB byte, but this flag enables it. */
+    unsigned char vsib_mode;    /* 0 if not, 1 if XMM, 2 if YMM */
 
     /* How the spare (register) bits in Mod/RM are handled:
      * Even if valid_modrm=0, the spare bits are still valid (don't overwrite!)

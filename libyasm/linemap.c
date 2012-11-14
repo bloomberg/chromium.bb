@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: linemap.c 2259 2010-01-03 01:58:23Z peter $");
 
 #include "coretype.h"
 #include "hamt.h"

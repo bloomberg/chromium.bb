@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2234 2009-10-31 21:52:42Z peter $
-
 # These utility programs have to be built for BUILD host in cross-build.
 # This makes things rather non-standard automake
 

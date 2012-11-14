@@ -1,6 +1,4 @@
-/* Modified for use with yasm by Peter Johnson.
- * $Id: phash.h 2101 2008-05-23 06:46:51Z peter $
- */
+/* Modified for use with yasm by Peter Johnson. */
 /*
 ------------------------------------------------------------------------------
 By Bob Jenkins, September 1996.

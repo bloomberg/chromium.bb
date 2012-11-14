@@ -25,7 +25,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 %{
 #include <util.h>
-RCSID("$Id: x86regtmod.gperf 2061 2008-04-12 01:33:54Z peter $");
 
 #include <ctype.h>
 #include <libyasm.h>

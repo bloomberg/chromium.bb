@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: win64-except.c 2130 2008-10-07 05:38:11Z peter $");
 
 #include <libyasm.h>
 
@@ -48,7 +47,7 @@ static int win64_uwinfo_bc_expand(yasm_bytecode *bc, int span, long old_val,
                                   long new_val, /*@out@*/ long *neg_thres,
                                   /*@out@*/ long *pos_thres);
 static int win64_uwinfo_bc_tobytes
-    (yasm_bytecode *bc, unsigned char **bufp, void *d,
+    (yasm_bytecode *bc, unsigned char **bufp, unsigned char *bufstart, void *d,
      yasm_output_value_func output_value,
      /*@null@*/ yasm_output_reloc_func output_reloc);
 
@@ -63,7 +62,7 @@ static int win64_uwcode_bc_expand(yasm_bytecode *bc, int span, long old_val,
                                   long new_val, /*@out@*/ long *neg_thres,
                                   /*@out@*/ long *pos_thres);
 static int win64_uwcode_bc_tobytes
-    (yasm_bytecode *bc, unsigned char **bufp, void *d,
+    (yasm_bytecode *bc, unsigned char **bufp, unsigned char *bufstart, void *d,
      yasm_output_value_func output_value,
      /*@null@*/ yasm_output_reloc_func output_reloc);
 
@@ -279,7 +278,8 @@ win64_uwinfo_bc_expand(yasm_bytecode *bc, int span, long old_val, long new_val,
 }
 
 static int
-win64_uwinfo_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
+win64_uwinfo_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                        unsigned char *bufstart, void *d,
                         yasm_output_value_func output_value,
                         yasm_output_reloc_func output_reloc)
 {
@@ -295,12 +295,12 @@ win64_uwinfo_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
         YASM_WRITE_8(buf, 1);
 
     /* Size of prolog */
-    output_value(&info->prolog_size, buf, 1, (unsigned long)(buf-*bufp),
+    output_value(&info->prolog_size, buf, 1, (unsigned long)(buf-bufstart),
                  bc, 1, d);
     buf += 1;
 
     /* Count of codes */
-    output_value(&info->codes_count, buf, 1, (unsigned long)(buf-*bufp),
+    output_value(&info->codes_count, buf, 1, (unsigned long)(buf-bufstart),
                  bc, 1, d);
     buf += 1;
 
@@ -459,7 +459,8 @@ win64_uwcode_bc_expand(yasm_bytecode *bc, int span, long old_val, long new_val,
 }
 
 static int
-win64_uwcode_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
+win64_uwcode_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp,
+                        unsigned char *bufstart, void *d,
                         yasm_output_value_func output_value,
                         yasm_output_reloc_func output_reloc)
 {
@@ -476,7 +477,7 @@ win64_uwcode_bc_tobytes(yasm_bytecode *bc, unsigned char **bufp, void *d,
         yasm_expr_create(YASM_EXPR_SUB, yasm_expr_sym(code->loc),
                          yasm_expr_sym(code->proc), bc->line),
         8);
-    output_value(&val, buf, 1, (unsigned long)(buf-*bufp), bc, 1, d);
+    output_value(&val, buf, 1, (unsigned long)(buf-bufstart), bc, 1, d);
     buf += 1;
     yasm_value_delete(&val);
 

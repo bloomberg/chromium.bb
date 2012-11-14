@@ -30,7 +30,6 @@
  */
 #define NO_STRING_INLINES
 #include "util.h"
-/*@unused@*/ RCSID("$Id: strsep.c 1893 2007-07-14 03:11:32Z peter $");
 
 
 #if defined(LIBC_SCCS) && !defined(lint)

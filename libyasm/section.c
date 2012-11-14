@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: section.c 2310 2010-03-28 19:28:54Z peter $");
 
 #include <limits.h>
 

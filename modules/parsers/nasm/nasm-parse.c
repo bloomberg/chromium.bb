@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-RCSID("$Id: nasm-parse.c 2323 2010-05-16 03:37:00Z peter $");
 
 #include <libyasm.h>
 

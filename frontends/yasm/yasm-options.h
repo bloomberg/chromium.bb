@@ -1,4 +1,4 @@
-/* $Id: yasm-options.h 1825 2007-04-22 03:32:46Z peter $
+/*
  * Generic Options Support Header File
  *
  * Copyright (c) 2001  Stanislav Karchebny <berk@madfire.net>

@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "util.h"
-RCSID("$Id: xmalloc.c 2101 2008-05-23 06:46:51Z peter $");
 
 #include "coretype.h"
 #include "errwarn.h"

@@ -2,10 +2,6 @@
  * \file libyasm/valparam.h
  * \brief YASM value/parameter interface.
  *
- * \rcs
- * $Id: valparam.h 2101 2008-05-23 06:46:51Z peter $
- * \endrcs
- *
  * \license
  *  Copyright (C) 2001-2007  Peter Johnson
  *

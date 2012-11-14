@@ -1,4 +1,4 @@
-/* $Id: genmacro.c 2084 2008-05-09 07:08:17Z peter $
+/*
  *
  * C version of NASM's macros.pl
  *

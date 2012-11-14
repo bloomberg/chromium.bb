@@ -25,7 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: valparam.c 2010 2007-11-14 08:33:32Z peter $");
 
 #include "libyasm-stdint.h"
 #include "coretype.h"

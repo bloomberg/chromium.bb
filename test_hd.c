@@ -1,4 +1,4 @@
-/* $Id: test_hd.c 1827 2007-04-22 05:09:49Z peter $
+/*
  *
  * Simple hexidecimal dump, two hex digits per line.
  *
