@@ -20,7 +20,9 @@ class PointCoordTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    gl_.Initialize(gfx::Size(kResolution, kResolution));
+    GLManager::Options options;
+    options.size = gfx::Size(kResolution, kResolution);
+    gl_.Initialize(options);
   }
 
   virtual void TearDown() {

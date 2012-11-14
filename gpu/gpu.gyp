@@ -252,6 +252,7 @@
         'command_buffer/tests/gl_manager.h',
         'command_buffer/tests/gl_pointcoord_unittest.cc',
         'command_buffer/tests/gl_program_unittests.cc',
+        'command_buffer/tests/gl_shared_resources_unittests.cc',
         'command_buffer/tests/gl_tests_main.cc',
         'command_buffer/tests/gl_test_utils.cc',
         'command_buffer/tests/gl_test_utils.h',

@@ -24,65 +24,53 @@
 
 namespace gpu {
 
+GLManager::Options::Options()
+    : size(4, 4),
+      share_group_manager(NULL),
+      share_mailbox_manager(NULL),
+      virtual_manager(NULL),
+      bind_generates_resource(false) {
+}
+
 GLManager::GLManager() {
 }
 
 GLManager::~GLManager() {
 }
 
-void GLManager::Initialize(const gfx::Size& size) {
-  Setup(size, NULL, NULL, NULL, NULL, NULL);
-}
-
-void GLManager::InitializeShared(
-    const gfx::Size& size, GLManager* gl_manager) {
-  DCHECK(gl_manager);
-  Setup(
-      size,
-      gl_manager->mailbox_manager(),
-      gl_manager->share_group(),
-      gl_manager->decoder_->GetContextGroup(),
-      gl_manager->gles2_implementation()->share_group(),
-      NULL);
-}
-
-void GLManager::InitializeSharedMailbox(
-     const gfx::Size& size, GLManager* gl_manager) {
-  DCHECK(gl_manager);
-  Setup(
-      size,
-      gl_manager->mailbox_manager(),
-      gl_manager->share_group(),
-      NULL,
-      NULL,
-      NULL);
-}
-
-void GLManager::InitializeVirtual(
-    const gfx::Size& size, GLManager* real_gl_manager) {
-  DCHECK(real_gl_manager);
-  Setup(
-      size,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      real_gl_manager->context());
-}
-
-void GLManager::Setup(
-    const gfx::Size& size,
-    gles2::MailboxManager* mailbox_manager,
-    gfx::GLShareGroup* share_group,
-    gles2::ContextGroup* context_group,
-    gles2::ShareGroup* client_share_group,
-    gfx::GLContext* real_gl_context) {
+void GLManager::Initialize(const GLManager::Options& options) {
   const int32 kCommandBufferSize = 1024 * 1024;
   const size_t kStartTransferBufferSize = 4 * 1024 * 1024;
   const size_t kMinTransferBufferSize = 1 * 256 * 1024;
   const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
-  const bool kBindGeneratesResource = false;
   const bool kShareResources = true;
+
+  gles2::MailboxManager* mailbox_manager = NULL;
+  if (options.share_mailbox_manager) {
+    mailbox_manager = options.share_mailbox_manager->mailbox_manager();
+  } else if (options.share_group_manager) {
+    mailbox_manager = options.share_group_manager->mailbox_manager();
+  }
+
+  gfx::GLShareGroup* share_group = NULL;
+  if (options.share_group_manager) {
+    share_group = options.share_group_manager->share_group();
+  } else if (options.share_mailbox_manager) {
+    share_group = options.share_mailbox_manager->share_group();
+  }
+
+  gles2::ContextGroup* context_group = NULL;
+  gles2::ShareGroup* client_share_group = NULL;
+  if (options.share_group_manager) {
+    context_group = options.share_group_manager->decoder_->GetContextGroup();
+    client_share_group =
+      options.share_group_manager->gles2_implementation()->share_group();
+  }
+
+  gfx::GLContext* real_gl_context = NULL;
+  if (options.virtual_manager) {
+    options.virtual_manager->context();
+  }
 
   // From <EGL/egl.h>.
   const int32 EGL_ALPHA_SIZE = 0x3021;
@@ -116,7 +104,7 @@ void GLManager::Setup(
     context_group = new gles2::ContextGroup(mailbox_manager_.get(),
                                             NULL,
                                             NULL,
-                                            kBindGeneratesResource);
+                                            options.bind_generates_resource);
   }
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group));
@@ -132,7 +120,7 @@ void GLManager::Setup(
 
   decoder_->set_engine(gpu_scheduler_.get());
 
-  surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, size);
+  surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, options.size);
   ASSERT_TRUE(surface_.get() != NULL) << "could not create offscreen surface";
 
   if (real_gl_context) {
@@ -153,7 +141,7 @@ void GLManager::Setup(
       surface_.get(),
       context_.get(),
       true,
-      size,
+      options.size,
       ::gpu::gles2::DisallowedFeatures(),
       allowed_extensions,
       attribs)) << "could not initialize decoder";
@@ -176,7 +164,7 @@ void GLManager::Setup(
       client_share_group,
       transfer_buffer_.get(),
       kShareResources,
-      kBindGeneratesResource));
+      options.bind_generates_resource));
 
   ASSERT_TRUE(gles2_implementation_->Initialize(
       kStartTransferBufferSize,

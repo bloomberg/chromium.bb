@@ -22,10 +22,15 @@ class GLVirtualContextsTest : public testing::Test {
   static const int kSize2 = 16;
 
   virtual void SetUp() {
-    gl_real_.Initialize(gfx::Size(kSize0, kSize0));
-    gl_real_shared_.Initialize(gfx::Size(kSize0, kSize0));
-    gl1_.InitializeVirtual(gfx::Size(kSize1, kSize1), &gl_real_shared_);
-    gl2_.InitializeVirtual(gfx::Size(kSize2, kSize2), &gl_real_shared_);
+    GLManager::Options options;
+    options.size = gfx::Size(kSize0, kSize0);
+    gl_real_.Initialize(options);
+    gl_real_shared_.Initialize(options);
+    options.virtual_manager = &gl_real_shared_;
+    options.size = gfx::Size(kSize1, kSize1);
+    gl1_.Initialize(options);
+    options.size = gfx::Size(kSize2, kSize2);
+    gl2_.Initialize(options);
   }
 
   virtual void TearDown() {

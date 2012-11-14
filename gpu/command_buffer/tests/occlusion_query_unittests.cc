@@ -15,7 +15,9 @@ namespace gpu {
 class OcclusionQueryTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    gl_.Initialize(gfx::Size(512, 512));
+    GLManager::Options options;
+    options.size = gfx::Size(512, 512);
+    gl_.Initialize(options);
   }
 
   virtual void TearDown() {

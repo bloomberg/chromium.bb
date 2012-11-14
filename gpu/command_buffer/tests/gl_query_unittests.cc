@@ -16,7 +16,7 @@ namespace gpu {
 class QueryTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    gl_.Initialize(gfx::Size(2, 2));
+    gl_.Initialize(GLManager::Options());
   }
 
   virtual void TearDown() {
