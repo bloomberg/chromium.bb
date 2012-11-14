@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_SRC_POLICY_ENGINE_OPCODES_H__
-#define SANDBOX_SRC_POLICY_ENGINE_OPCODES_H__
+#ifndef SANDBOX_WIN_SRC_POLICY_ENGINE_OPCODES_H_
+#define SANDBOX_WIN_SRC_POLICY_ENGINE_OPCODES_H_
 
 #include "sandbox/win/src/policy_engine_params.h"
 #include "base/basictypes.h"
@@ -287,6 +287,11 @@ class OpcodeFactory {
     memory_bottom_ = &memory_top_[memory_size];
   }
 
+  // Returns the available memory to make opcodes.
+  size_t memory_size() const {
+    return memory_bottom_ - memory_top_;
+  }
+
   // Creates an OpAlwaysFalse opcode.
   PolicyOpcode* MakeOpAlwaysFalse(uint32 options);
 
@@ -358,11 +363,6 @@ class OpcodeFactory {
   // returns the displacement with respect to start.
   ptrdiff_t AllocRelative(void* start, const wchar_t* str, size_t lenght);
 
-  // Returns the available memory to make opcodes.
-  size_t memory_size() const {
-    return memory_bottom_ - memory_top_;
-  }
-
   // Points to the lowest currently available address of the memory
   // used to make the opcodes. This pointer increments as opcodes are made.
   char* memory_top_;
@@ -377,4 +377,4 @@ class OpcodeFactory {
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_SRC_POLICY_ENGINE_OPCODES_H__
+#endif  // SANDBOX_WIN_SRC_POLICY_ENGINE_OPCODES_H_

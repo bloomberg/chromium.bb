@@ -136,9 +136,9 @@ PolicyRule::PolicyRule(const PolicyRule& other) {
   memcpy(buffer_, other.buffer_, buffer_size);
 
   char* opcode_buffer = reinterpret_cast<char*>(&buffer_->opcodes[0]);
-  char* buffer_end = &opcode_buffer[kRuleBufferSize + sizeof(PolicyOpcode)];
   char* next_opcode = &opcode_buffer[GetOpcodeCount() * sizeof(PolicyOpcode)];
-  opcode_factory_ = new OpcodeFactory(next_opcode, buffer_end - next_opcode);
+  opcode_factory_ =
+      new OpcodeFactory(next_opcode, other.opcode_factory_->memory_size());
 }
 
 // This function get called from a simple state machine implemented in
