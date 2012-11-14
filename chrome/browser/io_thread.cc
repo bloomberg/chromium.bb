@@ -27,6 +27,7 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/connect_interceptor.h"
+#include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/http_pipelining_compatibility_client.h"
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
@@ -464,6 +465,7 @@ void IOThread::Init() {
       new net::ServerBoundCertService(
           new net::DefaultServerBoundCertStore(NULL),
           base::WorkerPool::GetTaskRunner(true)));
+  globals_->dns_probe_service.reset(new chrome_browser_net::DnsProbeService());
   globals_->load_time_stats.reset(new chrome_browser_net::LoadTimeStats());
   globals_->host_mapping_rules.reset(new net::HostMappingRules());
   globals_->http_user_agent_settings.reset(

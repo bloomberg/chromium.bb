@@ -24,6 +24,7 @@ class PrefService;
 class SystemURLRequestContextGetter;
 
 namespace chrome_browser_net {
+class DnsProbeService;
 class HttpPipeliningCompatibilityClient;
 class LoadTimeStats;
 }
@@ -121,6 +122,10 @@ class IOThread : public content::BrowserThreadDelegate {
     bool http_pipelining_enabled;
     uint16 testing_fixed_http_port;
     uint16 testing_fixed_https_port;
+    // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
+    // main frame load fails with a DNS error in order to provide more useful
+    // information to the renderer so it can show a more specific error page.
+    scoped_ptr<chrome_browser_net::DnsProbeService> dns_probe_service;
   };
 
   // |net_log| must either outlive the IOThread or be NULL.

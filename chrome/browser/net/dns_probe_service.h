@@ -28,7 +28,7 @@ class DnsProbeService {
   typedef base::Callback<void(Result result)> CallbackType;
 
   DnsProbeService();
-  ~DnsProbeService();
+  virtual ~DnsProbeService();
 
   void ProbeDns(const CallbackType& callback);
 
