@@ -68,7 +68,7 @@ bool Movie::Open(const wchar_t* file_path, VideoRendererBase* video_renderer) {
 
   // Open the file.
   scoped_refptr<FileDataSource> data_source = new FileDataSource();
-  if (!data_source->Initialize(FilePath(file_path)) {
+  if (!data_source->Initialize(FilePath(file_path))) {
     return false;
   }
 
