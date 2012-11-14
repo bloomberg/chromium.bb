@@ -124,10 +124,12 @@ bool PPP_Printing_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPP_Printing_Proxy::OnPluginMsgQuerySupportedFormats(PP_Instance instance,
                                                           uint32_t* result) {
-  if (ppp_printing_impl_)
-    *result = ppp_printing_impl_->QuerySupportedFormats(instance);
-  else
+  if (ppp_printing_impl_) {
+    *result = CallWhileUnlocked(ppp_printing_impl_->QuerySupportedFormats,
+                                instance);
+  } else {
     *result = 0;
+  }
 }
 
 void PPP_Printing_Proxy::OnPluginMsgBegin(PP_Instance instance,
@@ -140,8 +142,11 @@ void PPP_Printing_Proxy::OnPluginMsgBegin(PP_Instance instance,
     return;
   memcpy(&settings, &settings_string[0], sizeof(settings));
 
-  if (ppp_printing_impl_)
-    *result = ppp_printing_impl_->Begin(instance, &settings);
+  if (ppp_printing_impl_) {
+    *result = CallWhileUnlocked(ppp_printing_impl_->Begin,
+        instance,
+        const_cast<const PP_PrintSettings_Dev*>(&settings));
+  }
 }
 
 void PPP_Printing_Proxy::OnPluginMsgPrintPages(
@@ -151,7 +156,8 @@ void PPP_Printing_Proxy::OnPluginMsgPrintPages(
   if (!ppp_printing_impl_ || pages.empty())
     return;
 
-  PP_Resource plugin_resource = ppp_printing_impl_->PrintPages(
+  PP_Resource plugin_resource = CallWhileUnlocked(
+      ppp_printing_impl_->PrintPages,
       instance, &pages[0], static_cast<uint32_t>(pages.size()));
   ResourceTracker* resource_tracker = PpapiGlobals::Get()->GetResourceTracker();
   Resource* resource_object = resource_tracker->GetResource(plugin_resource);
@@ -166,15 +172,17 @@ void PPP_Printing_Proxy::OnPluginMsgPrintPages(
 
 void PPP_Printing_Proxy::OnPluginMsgEnd(PP_Instance instance) {
   if (ppp_printing_impl_)
-    ppp_printing_impl_->End(instance);
+    CallWhileUnlocked(ppp_printing_impl_->End, instance);
 }
 
 void PPP_Printing_Proxy::OnPluginMsgIsScalingDisabled(PP_Instance instance,
                                                       bool* result) {
-  if (ppp_printing_impl_)
-    *result = PP_ToBool(ppp_printing_impl_->IsScalingDisabled(instance));
-  else
+  if (ppp_printing_impl_) {
+    *result = PP_ToBool(CallWhileUnlocked(ppp_printing_impl_->IsScalingDisabled,
+                                          instance));
+  } else {
     *result = false;
+  }
 }
 
 }  // namespace proxy
