@@ -248,31 +248,22 @@ void DriveFeedLoader::ReloadFromServerIfNeeded(
            << ", loaded=" << resource_metadata_->loaded();
 
   // Sets the refreshing flag, so that the caller does not send refresh requests
-  // in parallel (see DriveFileSystem::CheckForUpdates).
-  //
-  // Corresponding "refresh_ = false" is reached as follows.
-  // - Control flows to OnGetAboutResource / OnGetAccountMetadata, in which,
-  //   - if feed is up to date, "refresh_ = false" and return.
-  //   - otherwise always call LoadFromServer() with callback function
-  //     OnFeedFromServerLoaded. There we do "refresh_ = false".
+  // in parallel (see DriveFileSystem::CheckForUpdates). Corresponding
+  // "refresh_ = false" is in OnGetAccountMetadata when the cached feed is up to
+  // date, or in OnFeedFromServerLoaded called back from LoadFromServer().
   refreshing_ = true;
 
-  // First fetch the latest changestamp to see if there were any new changes
-  // there at all.
   if (google_apis::util::IsDriveV2ApiEnabled()) {
-    drive_service_->GetAccountMetadata(
-        base::Bind(&DriveFeedLoader::OnGetAboutResource,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
     // Drive v2 needs a separate application list fetch operation.
-    // TODO(kochi): Application list rarely changes and is not necessarily
+    // TODO(haruki): Application list rarely changes and is not necessarily
     // refreshed as often as files.
     drive_service_->GetApplicationInfo(
         base::Bind(&DriveFeedLoader::OnGetApplicationList,
                    weak_ptr_factory_.GetWeakPtr()));
-    return;
   }
 
+  // First fetch the latest changestamp to see if there were any new changes
+  // there at all.
   drive_service_->GetAccountMetadata(
       base::Bind(&DriveFeedLoader::OnGetAccountMetadata,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -288,23 +279,29 @@ void DriveFeedLoader::OnGetAccountMetadata(
   DCHECK(refreshing_);
 
   int64 local_changestamp = resource_metadata_->largest_changestamp();
+  int64 remote_changestamp = 0;
+  std::string root_id;
 
-  scoped_ptr<LoadFeedParams> params(new LoadFeedParams(
-      base::Bind(&DriveFeedLoader::OnFeedFromServerLoaded,
-                 weak_ptr_factory_.GetWeakPtr())));
-  params->start_changestamp = local_changestamp > 0 ? local_changestamp + 1 : 0;
-  params->load_finished_callback = callback;
+  // When account metadata successfully fetched, parse the latest changestamp.
+  if (util::GDataToDriveFileError(status) == DRIVE_FILE_OK && feed_data) {
+    if (google_apis::util::IsDriveV2ApiEnabled()) {
+      scoped_ptr<google_apis::AboutResource> about_resource =
+          google_apis::AboutResource::CreateFrom(*feed_data);
+      if (about_resource) {
+        // In DriveV2 API, root ID is not fixed and must be get from the feed.
+        root_id = about_resource->root_folder_id();
+        remote_changestamp = about_resource->largest_change_id();
+      }
+    } else {
+      scoped_ptr<google_apis::AccountMetadataFeed> account_metadata =
+          google_apis::AccountMetadataFeed::CreateFrom(*feed_data);
+      if (account_metadata) {
+        // In WAPI, application list is packed in this account feed.
+        webapps_registry_->UpdateFromFeed(*account_metadata);
+        remote_changestamp = account_metadata->largest_changestamp();
+      }
+    }
 
-  DriveFileError error = util::GDataToDriveFileError(status);
-  if (error != DRIVE_FILE_OK) {
-    // Get changes starting from the next changestamp from what we have locally.
-    LoadFromServer(params.Pass());
-    return;
-  }
-
-  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata;
-  if (feed_data.get()) {
-    account_metadata = google_apis::AccountMetadataFeed::CreateFrom(*feed_data);
 #ifndef NDEBUG
     // Save account metadata feed for analysis.
     const FilePath path =
@@ -317,19 +314,12 @@ void DriveFeedLoader::OnGetAccountMetadata(
 #endif
   }
 
-  if (!account_metadata.get()) {
-    LoadFromServer(params.Pass());
-    return;
-  }
-
-  webapps_registry_->UpdateFromFeed(*account_metadata.get());
-
-  if (local_changestamp >= account_metadata->largest_changestamp()) {
-    if (local_changestamp > account_metadata->largest_changestamp()) {
+  if (remote_changestamp > 0 && local_changestamp >= remote_changestamp) {
+    if (local_changestamp > remote_changestamp) {
       LOG(WARNING) << "Cached client feed is fresher than server, client = "
                    << local_changestamp
                    << ", server = "
-                   << account_metadata->largest_changestamp();
+                   << remote_changestamp;
     }
 
     // No changes detected, tell the client that the loading was successful.
@@ -339,63 +329,13 @@ void DriveFeedLoader::OnGetAccountMetadata(
   }
 
   // Load changes from the server.
-  params->root_feed_changestamp = account_metadata->largest_changestamp();
-  LoadFromServer(params.Pass());
-}
-
-void DriveFeedLoader::OnGetAboutResource(
-    const FileOperationCallback& callback,
-    google_apis::GDataErrorCode status,
-    scoped_ptr<base::Value> feed_data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  DCHECK(refreshing_);
-
-  int64 local_changestamp = resource_metadata_->largest_changestamp();
-
   scoped_ptr<LoadFeedParams> params(new LoadFeedParams(
       base::Bind(&DriveFeedLoader::OnFeedFromServerLoaded,
                  weak_ptr_factory_.GetWeakPtr())));
   params->start_changestamp = local_changestamp > 0 ? local_changestamp + 1 : 0;
   params->load_finished_callback = callback;
-
-  DriveFileError error = util::GDataToDriveFileError(status);
-  if (error != DRIVE_FILE_OK) {
-    // Get changes starting from the next changestamp from what we have locally.
-    LoadFromServer(params.Pass());
-    return;
-  }
-
-  scoped_ptr<google_apis::AboutResource> about_resource;
-  if (feed_data.get())
-    about_resource = google_apis::AboutResource::CreateFrom(*feed_data);
-
-  if (!about_resource.get()) {
-    LoadFromServer(params.Pass());
-    return;
-  }
-
-  int64 largest_changestamp = about_resource->largest_change_id();
-
-  // Copy the root resource ID for use in UpdateFromFeed().
-  params->root_resource_id = about_resource->root_folder_id();
-
-  if (local_changestamp >= largest_changestamp) {
-    if (local_changestamp > largest_changestamp) {
-      LOG(WARNING) << "Cached client feed is fresher than server, client = "
-                   << local_changestamp
-                   << ", server = "
-                   << largest_changestamp;
-    }
-
-    // No changes detected, tell the client that the loading was successful.
-    refreshing_ = false;
-    callback.Run(DRIVE_FILE_OK);
-    return;
-  }
-
-  // Load changes from the server.
-  params->root_feed_changestamp = largest_changestamp;
+  params->root_feed_changestamp = remote_changestamp;
+  params->root_resource_id = root_id;
   LoadFromServer(params.Pass());
 }
 
