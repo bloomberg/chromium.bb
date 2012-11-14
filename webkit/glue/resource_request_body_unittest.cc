@@ -36,13 +36,13 @@ TEST(ResourceRequestBodyTest, CreateUploadDataWithoutBlob) {
       request_body->ResolveElementsAndCreateUploadData(NULL);
 
   EXPECT_EQ(kIdentifier, upload->identifier());
-  ASSERT_EQ(request_body->elements()->size(), upload->elements()->size());
+  ASSERT_EQ(request_body->elements()->size(), upload->elements().size());
 
-  const net::UploadElement& e1 = upload->elements()->at(0);
+  const net::UploadElement& e1 = *upload->elements()[0];
   EXPECT_EQ(net::UploadElement::TYPE_BYTES, e1.type());
   EXPECT_EQ(kData, std::string(e1.bytes(), e1.bytes_length()));
 
-  const net::UploadElement& e2 = upload->elements()->at(1);
+  const net::UploadElement& e2 = *upload->elements()[1];
   EXPECT_EQ(net::UploadElement::TYPE_FILE, e2.type());
   EXPECT_EQ(kFilePath, e2.file_path().value());
   EXPECT_EQ(kFileOffset, e2.file_range_offset());
@@ -107,9 +107,9 @@ TEST(ResourceRequestBodyTest, ResolveBlobAndCreateUploadData) {
       request_body->ResolveElementsAndCreateUploadData(
           &blob_storage_controller);
 
-  ASSERT_EQ(upload->elements()->size(), 2U);
-  EXPECT_TRUE(upload->elements()->at(0) == upload_element1);
-  EXPECT_TRUE(upload->elements()->at(1) == upload_element2);
+  ASSERT_EQ(2U, upload->elements().size());
+  EXPECT_TRUE(*upload->elements()[0] == upload_element1);
+  EXPECT_TRUE(*upload->elements()[1] == upload_element2);
 
   // Test having only one blob reference that refers to empty blob data.
   request_body = new ResourceRequestBody();
@@ -117,7 +117,7 @@ TEST(ResourceRequestBodyTest, ResolveBlobAndCreateUploadData) {
 
   upload = request_body->ResolveElementsAndCreateUploadData(
       &blob_storage_controller);
-  ASSERT_EQ(upload->elements()->size(), 0U);
+  ASSERT_EQ(0U, upload->elements().size());
 
   // Test having only one blob reference.
   request_body = new ResourceRequestBody();
@@ -125,9 +125,9 @@ TEST(ResourceRequestBodyTest, ResolveBlobAndCreateUploadData) {
 
   upload = request_body->ResolveElementsAndCreateUploadData(
       &blob_storage_controller);
-  ASSERT_EQ(upload->elements()->size(), 2U);
-  EXPECT_TRUE(upload->elements()->at(0) == blob_element1);
-  EXPECT_TRUE(upload->elements()->at(1) == blob_element2);
+  ASSERT_EQ(2U, upload->elements().size());
+  EXPECT_TRUE(*upload->elements()[0] == blob_element1);
+  EXPECT_TRUE(*upload->elements()[1] == blob_element2);
 
   // Test having one blob reference at the beginning.
   request_body = new ResourceRequestBody();
@@ -143,11 +143,11 @@ TEST(ResourceRequestBodyTest, ResolveBlobAndCreateUploadData) {
 
   upload = request_body->ResolveElementsAndCreateUploadData(
       &blob_storage_controller);
-  ASSERT_EQ(upload->elements()->size(), 4U);
-  EXPECT_TRUE(upload->elements()->at(0) == blob_element1);
-  EXPECT_TRUE(upload->elements()->at(1) == blob_element2);
-  EXPECT_TRUE(upload->elements()->at(2) == upload_element1);
-  EXPECT_TRUE(upload->elements()->at(3) == upload_element2);
+  ASSERT_EQ(4U, upload->elements().size());
+  EXPECT_TRUE(*upload->elements()[0] == blob_element1);
+  EXPECT_TRUE(*upload->elements()[1] == blob_element2);
+  EXPECT_TRUE(*upload->elements()[2] == upload_element1);
+  EXPECT_TRUE(*upload->elements()[3] == upload_element2);
 
   // Test having one blob reference at the end.
   request_body = new ResourceRequestBody();
@@ -163,11 +163,11 @@ TEST(ResourceRequestBodyTest, ResolveBlobAndCreateUploadData) {
 
   upload = request_body->ResolveElementsAndCreateUploadData(
       &blob_storage_controller);
-  ASSERT_EQ(upload->elements()->size(), 4U);
-  EXPECT_TRUE(upload->elements()->at(0) == upload_element1);
-  EXPECT_TRUE(upload->elements()->at(1) == upload_element2);
-  EXPECT_TRUE(upload->elements()->at(2) == blob_element1);
-  EXPECT_TRUE(upload->elements()->at(3) == blob_element2);
+  ASSERT_EQ(4U, upload->elements().size());
+  EXPECT_TRUE(*upload->elements()[0] == upload_element1);
+  EXPECT_TRUE(*upload->elements()[1] == upload_element2);
+  EXPECT_TRUE(*upload->elements()[2] == blob_element1);
+  EXPECT_TRUE(*upload->elements()[3] == blob_element2);
 
   // Test having one blob reference in the middle.
   request_body = new ResourceRequestBody();
@@ -183,11 +183,11 @@ TEST(ResourceRequestBodyTest, ResolveBlobAndCreateUploadData) {
 
   upload = request_body->ResolveElementsAndCreateUploadData(
       &blob_storage_controller);
-  ASSERT_EQ(upload->elements()->size(), 4U);
-  EXPECT_TRUE(upload->elements()->at(0) == upload_element1);
-  EXPECT_TRUE(upload->elements()->at(1) == blob_element1);
-  EXPECT_TRUE(upload->elements()->at(2) == blob_element2);
-  EXPECT_TRUE(upload->elements()->at(3) == upload_element2);
+  ASSERT_EQ(4U, upload->elements().size());
+  EXPECT_TRUE(*upload->elements()[0] == upload_element1);
+  EXPECT_TRUE(*upload->elements()[1] == blob_element1);
+  EXPECT_TRUE(*upload->elements()[2] == blob_element2);
+  EXPECT_TRUE(*upload->elements()[3] == upload_element2);
 
   // Test having multiple blob references.
   request_body = new ResourceRequestBody();
@@ -205,15 +205,15 @@ TEST(ResourceRequestBodyTest, ResolveBlobAndCreateUploadData) {
 
   upload = request_body->ResolveElementsAndCreateUploadData(
       &blob_storage_controller);
-  ASSERT_EQ(upload->elements()->size(), 8U);
-  EXPECT_TRUE(upload->elements()->at(0) == blob_element1);
-  EXPECT_TRUE(upload->elements()->at(1) == blob_element2);
-  EXPECT_TRUE(upload->elements()->at(2) == upload_element1);
-  EXPECT_TRUE(upload->elements()->at(3) == blob_element1);
-  EXPECT_TRUE(upload->elements()->at(4) == blob_element2);
-  EXPECT_TRUE(upload->elements()->at(5) == blob_element1);
-  EXPECT_TRUE(upload->elements()->at(6) == blob_element2);
-  EXPECT_TRUE(upload->elements()->at(7) == upload_element2);
+  ASSERT_EQ(8U, upload->elements().size());
+  EXPECT_TRUE(*upload->elements()[0] == blob_element1);
+  EXPECT_TRUE(*upload->elements()[1] == blob_element2);
+  EXPECT_TRUE(*upload->elements()[2] == upload_element1);
+  EXPECT_TRUE(*upload->elements()[3] == blob_element1);
+  EXPECT_TRUE(*upload->elements()[4] == blob_element2);
+  EXPECT_TRUE(*upload->elements()[5] == blob_element1);
+  EXPECT_TRUE(*upload->elements()[6] == blob_element2);
+  EXPECT_TRUE(*upload->elements()[7] == upload_element2);
 }
 
 }  // namespace webkit_glue

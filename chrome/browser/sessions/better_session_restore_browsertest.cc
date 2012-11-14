@@ -55,11 +55,11 @@ net::URLRequestJob* URLRequestFakerForPostRequests(
   const net::UploadData* upload_data = request->get_upload();
   g_last_upload_bytes.Get().clear();
   if (upload_data) {
-    const std::vector<net::UploadElement>* elements = upload_data->elements();
-    for (size_t i = 0; elements && i < elements->size(); ++i) {
-      if ((*elements)[i].type() == net::UploadElement::TYPE_BYTES) {
+    const ScopedVector<net::UploadElement>& elements = upload_data->elements();
+    for (size_t i = 0; i < elements.size(); ++i) {
+      if (elements[i]->type() == net::UploadElement::TYPE_BYTES) {
         g_last_upload_bytes.Get() +=
-            std::string((*elements)[i].bytes(), (*elements)[i].bytes_length());
+            std::string(elements[i]->bytes(), elements[i]->bytes_length());
       }
     }
   }

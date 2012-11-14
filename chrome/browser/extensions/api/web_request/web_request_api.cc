@@ -196,13 +196,13 @@ void ExtractRequestInfoBody(const net::URLRequest* request,
     keys::kRequestBodyRawKey
   };
 
-  const std::vector<net::UploadElement>* elements =
+  const ScopedVector<net::UploadElement>& elements =
       request->get_upload()->elements();
   bool some_succeeded = false;
   for (size_t i = 0; !some_succeeded && i < arraysize(presenters); ++i) {
-    std::vector<net::UploadElement>::const_iterator element;
-    for (element = elements->begin(); element != elements->end(); ++element)
-      presenters[i]->FeedNext(*element);
+    ScopedVector<net::UploadElement>::const_iterator element;
+    for (element = elements.begin(); element != elements.end(); ++element)
+      presenters[i]->FeedNext(**element);
     if (presenters[i]->Succeeded()) {
       requestBody->Set(kKeys[i], presenters[i]->Result().release());
       some_succeeded = true;

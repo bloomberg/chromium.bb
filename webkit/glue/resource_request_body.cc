@@ -63,18 +63,18 @@ net::UploadData* ResourceRequestBody::ResolveElementsAndCreateUploadData(
   // bytes for TYPE_BYTES.
   upload_data->SetUserData(
       this, new base::UserDataAdapter<ResourceRequestBody>(this));
-  std::vector<net::UploadElement>* elements =
+  ScopedVector<net::UploadElement>* elements =
       upload_data->elements_mutable();
   for (size_t i = 0; i < resolved_elements.size(); ++i) {
     const Element& element = *resolved_elements[i];
     switch (element.type()) {
       case Element::TYPE_BYTES:
-        elements->push_back(net::UploadElement());
-        elements->back().SetToSharedBytes(element.bytes(), element.length());
+        elements->push_back(new net::UploadElement());
+        elements->back()->SetToSharedBytes(element.bytes(), element.length());
         break;
       case Element::TYPE_FILE:
-        elements->push_back(net::UploadElement());
-        elements->back().SetToFilePathRange(
+        elements->push_back(new net::UploadElement());
+        elements->back()->SetToFilePathRange(
             element.path(),
             element.offset(),
             element.length(),

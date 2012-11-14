@@ -49,10 +49,10 @@ class CannedResponseInterceptor : public net::URLRequest::Interceptor {
     if (request->url().GetOrigin() == service_url_.GetOrigin() &&
         request->url().path() == service_url_.path() &&
         upload != NULL &&
-        upload->elements()->size() == 1) {
+        upload->elements().size() == 1) {
       std::string response_data;
-      ConstructResponse(upload->elements()->at(0).bytes(),
-                        upload->elements()->at(0).bytes_length(),
+      ConstructResponse(upload->elements()[0]->bytes(),
+                        upload->elements()[0]->bytes_length(),
                         &response_data);
       return new net::URLRequestTestJob(request,
                                         network_delegate,

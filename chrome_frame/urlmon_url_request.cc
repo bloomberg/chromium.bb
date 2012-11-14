@@ -1078,10 +1078,10 @@ void UrlmonUrlRequestManager::StartRequestHelper(
 
   // Format upload data if it's chunked.
   if (request_info.upload_data && request_info.upload_data->is_chunked()) {
-    std::vector<net::UploadElement>* elements =
+    ScopedVector<net::UploadElement>* elements =
         request_info.upload_data->elements_mutable();
     for (size_t i = 0; i < elements->size(); ++i) {
-      net::UploadElement* element = &(*elements)[i];
+      net::UploadElement* element = (*elements)[i];
       DCHECK(element->type() == net::UploadElement::TYPE_BYTES);
       std::string chunk_length = StringPrintf(
           "%X\r\n", static_cast<unsigned int>(element->bytes_length()));
