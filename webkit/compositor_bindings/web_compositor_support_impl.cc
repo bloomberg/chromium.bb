@@ -79,19 +79,15 @@ void WebCompositorSupportImpl::shutdown() {
 }
 
 void WebCompositorSupportImpl::setPerTilePaintingEnabled(bool enabled) {
-  NOTREACHED();
 }
 
 void WebCompositorSupportImpl::setPartialSwapEnabled(bool enabled) {
-  NOTREACHED();
 }
 
 void WebCompositorSupportImpl::setAcceleratedAnimationEnabled(bool enabled) {
-  NOTREACHED();
 }
 
 void WebCompositorSupportImpl::setPageScalePinchZoomEnabled(bool enabled) {
-  NOTREACHED();
 }
 
 WebLayerTreeView* WebCompositorSupportImpl::createLayerTreeView(
