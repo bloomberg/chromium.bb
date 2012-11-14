@@ -501,9 +501,6 @@ void ThreadWatcherList::ParseCommandLine(
     uint32* live_threads_threshold) {
   // Determine |unresponsive_threshold| based on switches::kCrashOnHangSeconds.
   *unresponsive_threshold = kUnresponsiveCount;
-  // TODO(rtenneti): A temporary change to crash FILE thread if it doesn't
-  // respond for 40 seconds.
-  *unresponsive_threshold = 20;
 
   // Increase the unresponsive_threshold on the Stable and Beta channels to
   // reduce the number of crashes due to ThreadWatcher.
@@ -540,9 +537,6 @@ void ThreadWatcherList::ParseCommandLine(
     crash_on_hang_threads = "";
   else
     crash_on_hang_threads = "UI,IO";
-  // TODO(rtenneti): A temporary change to crash FILE thread if it doesn't
-  // respond for 40 seconds.
-  crash_on_hang_threads = "FILE";
 
   if (command_line.HasSwitch(switches::kCrashOnHangThreads)) {
     crash_on_hang_threads =
@@ -554,9 +548,6 @@ void ThreadWatcherList::ParseCommandLine(
 
   // Determine |live_threads_threshold| based on switches::kCrashOnLive.
   *live_threads_threshold = kLiveThreadsThreshold;
-  // TODO(rtenneti): A temporary change to crash FILE thread if it doesn't
-  // respond for 40 seconds.
-  *live_threads_threshold = INT_MAX;
   if (command_line.HasSwitch(switches::kCrashOnLive)) {
     std::string live_threads =
         command_line.GetSwitchValueASCII(switches::kCrashOnLive);
