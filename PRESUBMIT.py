@@ -37,6 +37,11 @@ _TEST_ONLY_WARNING = (
     'Email joi@chromium.org if you have questions.')
 
 
+_INCLUDE_ORDER_WARNING = (
+    'Your #include order seems to be broken. Send mail to\n'
+    'marja@chromium.org if this is not the case.')
+
+
 _BANNED_OBJC_FUNCTIONS = (
     (
       'addTrackingRect:',
@@ -500,6 +505,123 @@ def _CheckNoAuraWindowPropertyHInHeaders(input_api, output_api):
   return results
 
 
+def _CheckIncludeOrderForScope(scope, input_api, file_path, changed_linenums):
+  """Checks that the lines in scope occur in the right order.
+
+  1. C system files in alphabetical order
+  2. C++ system files in alphabetical order
+  3. Project's .h files
+  """
+
+  c_system_include_pattern = input_api.re.compile(r'\s*#include <.*\.h>')
+  cpp_system_include_pattern = input_api.re.compile(r'\s*#include <.*>')
+  custom_include_pattern = input_api.re.compile(r'\s*#include ".*')
+
+  C_SYSTEM_INCLUDES, CPP_SYSTEM_INCLUDES, CUSTOM_INCLUDES = range(3)
+
+  state = C_SYSTEM_INCLUDES
+
+  previous_line = ''
+  problem_linenums = []
+  for line_num, line in scope:
+    if c_system_include_pattern.match(line):
+      if state != C_SYSTEM_INCLUDES:
+        problem_linenums.append(line_num)
+      elif previous_line and previous_line > line:
+        problem_linenums.append(line_num)
+    elif cpp_system_include_pattern.match(line):
+      if state == C_SYSTEM_INCLUDES:
+        state = CPP_SYSTEM_INCLUDES
+      elif state == CUSTOM_INCLUDES:
+        problem_linenums.append(line_num)
+      elif previous_line and previous_line > line:
+        problem_linenums.append(line_num)
+    elif custom_include_pattern.match(line):
+      if state != CUSTOM_INCLUDES:
+        state = CUSTOM_INCLUDES
+      elif previous_line and previous_line > line:
+        problem_linenums.append(line_num)
+    else:
+      problem_linenums.append(line_num)
+    previous_line = line
+
+  warnings = []
+  for line_num in problem_linenums:
+    if line_num in changed_linenums or line_num - 1 in changed_linenums:
+      warnings.append('    %s:%d' % (file_path, line_num))
+  return warnings
+
+
+def _CheckIncludeOrderInFile(input_api, output_api, f, is_source,
+                             changed_linenums):
+  """Checks the #include order for the given file f."""
+
+  include_pattern = input_api.re.compile(r'\s*#include.*')
+  if_pattern = input_api.re.compile(r'\s*#if.*')
+  endif_pattern = input_api.re.compile(r'\s*#endif.*')
+
+  contents = f.NewContents()
+  warnings = []
+  line_num = 0
+
+  # Handle the special first include for source files.
+  if is_source:
+    for line in contents:
+      line_num += 1
+      if include_pattern.match(line):
+        expected = '#include "%s"' % f.LocalPath().replace('.cc', '.h')
+        if line != expected:
+          # Maybe there was no special first include, and that's fine. Process
+          # the line again along with the normal includes.
+          line_num -= 1
+        break
+
+  # Split into scopes: Each region between #if and #endif is its own scope.
+  scopes = []
+  current_scope = []
+  for line in contents[line_num:]:
+    line_num += 1
+    if if_pattern.match(line) or endif_pattern.match(line):
+      scopes.append(current_scope)
+      current_scope = []
+    elif include_pattern.match(line):
+      current_scope.append((line_num, line))
+  scopes.append(current_scope)
+
+  for scope in scopes:
+    warnings.extend(_CheckIncludeOrderForScope(scope, input_api, f.LocalPath(),
+                                               changed_linenums))
+  return warnings
+
+
+def _CheckIncludeOrder(input_api, output_api):
+  """Checks that the #include order is correct.
+
+  1. The corresponding header for source files.
+  2. C system files in alphabetical order
+  3. C++ system files in alphabetical order
+  4. Project's .h files in alphabetical order
+
+  Each region between #if and #endif follows these rules separately.
+  """
+
+  warnings = []
+  for f in input_api.AffectedFiles():
+    changed_linenums = set([line_num for line_num, _ in f.ChangedContents()])
+    if f.LocalPath().endswith('.cc'):
+      warnings = _CheckIncludeOrderInFile(input_api, output_api, f, True,
+                                          changed_linenums)
+    elif f.LocalPath().endswith('.h'):
+      warnings = _CheckIncludeOrderInFile(input_api, output_api, f, False,
+                                          changed_linenums)
+
+  results = []
+  if warnings:
+    results.append(output_api.PresubmitPromptWarning(_INCLUDE_ORDER_WARNING,
+                                                     warnings))
+  return results
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -518,6 +640,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckUnwantedDependencies(input_api, output_api))
   results.extend(_CheckFilePermissions(input_api, output_api))
   results.extend(_CheckNoAuraWindowPropertyHInHeaders(input_api, output_api))
+  results.extend(_CheckIncludeOrder(input_api, output_api))
   return results
 
 
