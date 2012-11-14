@@ -1367,6 +1367,7 @@
             'browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc',
             'browser/ui/ash/launcher/launcher_favicon_loader_browsertest.cc',
             'browser/ui/views/frame/app_non_client_frame_view_ash_browsertest.cc',
+            'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
           ],
         }, { # else: OS != "win"
           'sources!': [
@@ -2674,7 +2675,7 @@
                 # Win bot needs to be turned into an interactive bot.
                 'interactive_ui_tests',
                 # Disabled from running in coverage_posix.py.
-                # We need to build this during compile step, so enabling here.
+                # We need to build this during compile step, so enabling here. 
                 'browser_tests',
                 '../courgette/courgette.gyp:courgette_unittests',
                 '../crypto/crypto.gyp:crypto_unittests',
