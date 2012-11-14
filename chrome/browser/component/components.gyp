@@ -18,15 +18,9 @@
           'dependencies': [
               # TODO(jknotten) Remove this dependency once external deps have
               # been updated to refer directly to the below.
-              '../../../content/content.gyp:navigation_interception_jni_headers'
+              '../../../content/content.gyp:navigation_interception_jni_headers',
+              '../../../content/content.gyp:web_contents_delegate_android_jni_headers'
            ],
-          'sources': [
-            'web_contents_delegate_android/java/src/org/chromium/chrome/browser/component/web_contents_delegate_android/WebContentsDelegateAndroid.java',
-          ],
-          'variables': {
-            'jni_gen_dir': 'chrome/browser_component',
-          },
-          'includes': [ '../../../build/jni_generator.gypi' ],
         },
       ],
     }],

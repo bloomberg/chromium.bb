@@ -11,7 +11,7 @@
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base_static',
-        '../../chrome/browser/component/components.gyp:web_contents_delegate_android',
+        '../../content/content.gyp:web_contents_delegate_android',
         'android_webview_native_jni',
       ],
       'include_dirs': [

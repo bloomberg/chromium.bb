@@ -28,7 +28,8 @@ LOCAL_SRC_FILES += \
 
 # browser components
 LOCAL_SRC_FILES += \
-    $(call all-java-files-under, ../chrome/browser/component/web_contents_delegate_android/java/src) \
+    $(call all-java-files-under, \
+        ../content/components/web_contents_delegate_android/java/src) \
     $(call all-java-files-under, \
         ../content/components/navigation_interception/java/src) \
 

@@ -2439,7 +2439,7 @@
         }],
         ['OS=="android"', {
           'dependencies': [
-            'browser/component/components.gyp:web_contents_delegate_android',
+            '../content/content.gyp:web_contents_delegate_android',
             'chrome_browser_jni_headers',
           ],
           'sources': [

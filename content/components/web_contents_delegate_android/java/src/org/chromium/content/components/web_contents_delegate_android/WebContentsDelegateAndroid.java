@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.component.web_contents_delegate_android;
+package org.chromium.content.components.web_contents_delegate_android;
 
 import android.graphics.Rect;
 import android.view.KeyEvent;
@@ -14,7 +14,7 @@ import org.chromium.content.browser.ContentViewCore;
 /**
  * Java peer of the native class of the same name.
  */
-@JNINamespace("web_contents_delegate_android")
+@JNINamespace("content")
 public class WebContentsDelegateAndroid {
 
     // Equivalent of WebCore::WebConsoleMessage::LevelTip.
@@ -79,11 +79,6 @@ public class WebContentsDelegateAndroid {
 
     @CalledByNative
     public boolean takeFocus(boolean reverse) {
-        return false;
-    }
-
-    @CalledByNative
-    public boolean shouldOverrideUrlLoading(String url) {
         return false;
     }
 

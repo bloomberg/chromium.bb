@@ -28,11 +28,10 @@
       'target_name': 'android_webview_common',
       'type': 'static_library',
       'dependencies': [
+        '../android_webview/native/webview_native.gyp:webview_native',
         '../content/content.gyp:content',
         '../content/content.gyp:navigation_interception',
-        '../android_webview/native/webview_native.gyp:webview_native',
-        '../chrome/browser/component/components.gyp:web_contents_delegate_android',
-        '../chrome/browser/component/components.gyp:browser_component_jni_headers',
+        '../content/content.gyp:web_contents_delegate_android',
         '../ui/ui.gyp:ui_resources',
       ],
       'include_dirs': [
@@ -106,7 +105,7 @@
       'dependencies': [
         '../content/content.gyp:content_java',
         '../content/content.gyp:navigation_interception_java',
-        '../chrome/browser/component/components.gyp:web_contents_delegate_android_java',
+        '../content/content.gyp:web_contents_delegate_android_java',
         '../ui/ui.gyp:ui_java',
       ],
       'variables': {
@@ -120,11 +119,11 @@
       'type': 'none',
       'dependencies': [
         '../base/base.gyp:base_java',
-        '../chrome/browser/component/components.gyp:web_contents_delegate_android_java',
         '../chrome/chrome_resources.gyp:packed_extra_resources',
         '../chrome/chrome_resources.gyp:packed_resources',
         '../content/content.gyp:content_java',
         '../content/content.gyp:navigation_interception_java',
+        '../content/content.gyp:web_contents_delegate_android_java',
         '../media/media.gyp:media_java',
         '../net/net.gyp:net_java',
         '../ui/ui.gyp:ui_java',

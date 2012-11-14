@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.chrome.browser.component.web_contents_delegate_android.WebContentsDelegateAndroid;
+import org.chromium.content.components.web_contents_delegate_android.WebContentsDelegateAndroid;
 
 /**
  * Chromium Android specific WebContentsDelegate.

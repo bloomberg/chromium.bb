@@ -1052,9 +1052,9 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base',
-            '../chrome/browser/component/components.gyp:web_contents_delegate_android_java',
-            '../content/content.gyp:navigation_interception_java',
             '../content/content.gyp:content_java',
+            '../content/content.gyp:navigation_interception_java',
+            '../content/content.gyp:web_contents_delegate_android_java',
             '../ui/ui.gyp:ui_java',
           ],
           'variables': {

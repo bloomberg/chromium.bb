@@ -23,9 +23,6 @@ class RenderViewHost;
 class WebContents;
 class WebContentsObserver;
 struct NativeWebKeyboardEvent;
-}
-
-namespace web_contents_delegate_android {
 
 enum WebContentsDelegateLogLevel {
   // Equivalent of WebCore::WebConsoleMessage::LevelTip.
@@ -43,7 +40,7 @@ enum WebContentsDelegateLogLevel {
 // delegate for WebContents to forward calls to the java peer. The embedding
 // application may subclass and override methods on either the C++ or Java side
 // as required.
-class WebContentsDelegateAndroid : public content::WebContentsDelegate {
+class WebContentsDelegateAndroid : public WebContentsDelegate {
  public:
   WebContentsDelegateAndroid(JNIEnv* env, jobject obj);
   virtual ~WebContentsDelegateAndroid();
@@ -51,47 +48,46 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   // Binds this WebContentsDelegateAndroid to the passed WebContents instance,
   // such that when that WebContents is destroyed, this
   // WebContentsDelegateAndroid instance will be destroyed too.
-  void SetOwnerWebContents(content::WebContents* contents);
+  void SetOwnerWebContents(WebContents* contents);
 
   // Overridden from WebContentsDelegate:
-  virtual content::WebContents* OpenURLFromTab(
-      content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
+  virtual WebContents* OpenURLFromTab(
+      WebContents* source,
+      const OpenURLParams& params) OVERRIDE;
 
-  virtual void NavigationStateChanged(const content::WebContents* source,
+  virtual void NavigationStateChanged(const WebContents* source,
                                       unsigned changed_flags) OVERRIDE;
-  virtual void AddNewContents(content::WebContents* source,
-                              content::WebContents* new_contents,
+  virtual void AddNewContents(WebContents* source,
+                              WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
-  virtual void ActivateContents(content::WebContents* contents) OVERRIDE;
-  virtual void DeactivateContents(content::WebContents* contents) OVERRIDE;
-  virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
-  virtual void LoadProgressChanged(content::WebContents* source,
+  virtual void ActivateContents(WebContents* contents) OVERRIDE;
+  virtual void DeactivateContents(WebContents* contents) OVERRIDE;
+  virtual void LoadingStateChanged(WebContents* source) OVERRIDE;
+  virtual void LoadProgressChanged(WebContents* source,
                                    double load_progress) OVERRIDE;
-  virtual void CloseContents(content::WebContents* source) OVERRIDE;
-  virtual void MoveContents(content::WebContents* source,
+  virtual void CloseContents(WebContents* source) OVERRIDE;
+  virtual void MoveContents(WebContents* source,
                             const gfx::Rect& pos) OVERRIDE;
-  virtual bool AddMessageToConsole(content::WebContents* source,
+  virtual bool AddMessageToConsole(WebContents* source,
                                    int32 level,
                                    const string16& message,
                                    int32 line_no,
                                    const string16& source_id) OVERRIDE;
   // TODO(merge): WARNING! method no longer available on the base class.
   // See http://crbug.com/149477
-  virtual void URLStarredChanged(content::WebContents* source, bool starred);
-  virtual void UpdateTargetURL(content::WebContents* source,
+  virtual void URLStarredChanged(WebContents* source, bool starred);
+  virtual void UpdateTargetURL(WebContents* source,
                                int32 page_id,
                                const GURL& url) OVERRIDE;
   virtual void HandleKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual bool TakeFocus(content::WebContents* source, bool reverse) OVERRIDE;
+      WebContents* source,
+      const NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual bool TakeFocus(WebContents* source, bool reverse) OVERRIDE;
 
-  virtual void ShowRepostFormWarningDialog(
-      content::WebContents* source) OVERRIDE;
+  virtual void ShowRepostFormWarningDialog(WebContents* source) OVERRIDE;
 
   virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents,
                                           bool enter_fullscreen) OVERRIDE;
@@ -110,6 +106,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
 
 bool RegisterWebContentsDelegateAndroid(JNIEnv* env);
 
-}  // namespace web_contents_delegate_android
+}  // namespace content
 
 #endif  // CHROME_BROWSER_COMPONENT_WEB_CONTENTS_DELEGATE_ANDROID_WEB_CONTENTS_DELEGATE_ANDROID_H_

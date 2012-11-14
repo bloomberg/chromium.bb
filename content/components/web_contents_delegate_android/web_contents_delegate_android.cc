@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component/web_contents_delegate_android/web_contents_delegate_android.h"
+#include "content/components/web_contents_delegate_android/web_contents_delegate_android.h"
 
 #include <android/keycodes.h>
 
@@ -26,9 +26,8 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::HasClass;
 using base::android::ScopedJavaLocalRef;
-using content::WebContents;
 
-namespace web_contents_delegate_android {
+namespace content {
 
 WebContentsDelegateAndroid::WebContentsDelegateAndroid(JNIEnv* env, jobject obj)
     : weak_java_delegate_(env, obj) {
@@ -51,10 +50,10 @@ WebContentsDelegateAndroid::GetJavaDelegate(JNIEnv* env) const {
 // RenderViewImpl::decidePolicyForNavigation for more details).
 WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
     WebContents* source,
-    const content::OpenURLParams& params) {
+    const OpenURLParams& params) {
   const GURL& url = params.url;
   WindowOpenDisposition disposition = params.disposition;
-  content::PageTransition transition(
+  PageTransition transition(
       PageTransitionFromInt(params.transition));
 
   if (!source || (disposition != CURRENT_TAB &&
@@ -90,7 +89,7 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
 
 void WebContentsDelegateAndroid::NavigationStateChanged(
     const WebContents* source, unsigned changed_flags) {
-  if (changed_flags & content::INVALIDATE_TYPE_TITLE) {
+  if (changed_flags & INVALIDATE_TYPE_TITLE) {
     JNIEnv* env = AttachCurrentThread();
     ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
     if (obj.is_null())
@@ -244,8 +243,8 @@ void WebContentsDelegateAndroid::UpdateTargetURL(WebContents* source,
 }
 
 void WebContentsDelegateAndroid::HandleKeyboardEvent(
-    content::WebContents* source,
-    const content::NativeWebKeyboardEvent& event) {
+    WebContents* source,
+    const NativeWebKeyboardEvent& event) {
   jobject key_event = event.os_event;
   if (key_event) {
     JNIEnv* env = AttachCurrentThread();
@@ -273,7 +272,7 @@ void WebContentsDelegateAndroid::ShowRepostFormWarningDialog(
   if (obj.is_null())
     return;
   ScopedJavaLocalRef<jobject> content_view_core =
-      content::ContentViewCore::FromWebContents(source)->GetJavaObject();
+      ContentViewCore::FromWebContents(source)->GetJavaObject();
   if (content_view_core.is_null())
     return;
   Java_WebContentsDelegateAndroid_showRepostFormWarningDialog(env, obj.obj(),
@@ -315,4 +314,4 @@ bool RegisterWebContentsDelegateAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace web_contents_delegate_android
+}  // namespace content

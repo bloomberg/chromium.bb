@@ -7,13 +7,13 @@
 
 #include <jni.h>
 
-namespace web_contents_delegate_android {
+namespace content {
 
 // Register all JNI bindings necessary for the web_contents_delegate_android
 // component.
-bool RegisterJni(JNIEnv* env);
+bool RegisterWebContentsDelegateAndroidJni(JNIEnv* env);
 
-} // namespace web_contents_delegate_android
+}  // namespace content
 
 #endif  // CHROME_BROWSER_COMPONENT_WEB_CONTENTS_DELEGATE_ANDROID_COMPONENT_JNI_REGISTRAR_H_
 
