@@ -1117,6 +1117,9 @@ bool PluginInstance::LoadPdfInterface() {
 }
 
 bool PluginInstance::LoadPrintInterface() {
+  // Only check for the interface if the plugin has dev permission.
+  if (!module_->permissions().HasPermission(::ppapi::PERMISSION_DEV))
+    return false;
   if (!plugin_print_interface_) {
     plugin_print_interface_ = static_cast<const PPP_Printing_Dev*>(
         module_->GetPluginInterface(PPP_PRINTING_DEV_INTERFACE));

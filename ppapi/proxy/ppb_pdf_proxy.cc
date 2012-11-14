@@ -155,6 +155,10 @@ const InterfaceProxy::Info* PPB_PDF_Proxy::GetInfo() {
 }
 
 bool PPB_PDF_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  // This is a private interface, plugin must have permission.
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_PDF_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBPDF_GetFontFileWithFallback,
