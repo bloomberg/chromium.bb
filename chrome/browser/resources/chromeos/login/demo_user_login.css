@@ -38,6 +38,11 @@ body {
 }
 
 #demo-login-text {
-  font-size: 24px;
-  padding-top: 80px;
+  font-size: 14px;
+  padding-left: 30px;
+  padding-top: 10px;
+}
+
+#lower-container {
+  height: 40px;
 }
