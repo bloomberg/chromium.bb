@@ -165,9 +165,14 @@ const char kLivenessRequestedSignal[] = "LivenessRequested";
 }  // namespace chromium
 
 namespace power_manager {
+// powerd
 const char kPowerManagerInterface[] = "org.chromium.PowerManager";
 const char kPowerManagerServicePath[] = "/org/chromium/PowerManager";
 const char kPowerManagerServiceName[] = "org.chromium.PowerManager";
+// powerm
+const char kRootPowerManagerInterface[] = "org.chromium.RootPowerManager";
+const char kRootPowerManagerServicePath[] = "/org/chromium/RootPowerManager";
+const char kRootPowerManagerServiceName[] = "org.chromium.RootPowerManager";
 // Methods
 const char kDecreaseScreenBrightness[] = "DecreaseScreenBrightness";
 const char kIncreaseScreenBrightness[] = "IncreaseScreenBrightness";
@@ -185,15 +190,6 @@ const char kGetPowerAccumulationMethod[] = "GetPowerAccumulation";
 const char kHandleUserActivityMethod[] = "HandleUserActivity";
 const char kHandleVideoActivityMethod[] = "HandleVideoActivity";
 const char kSetIsProjectingMethod[] = "SetIsProjecting";
-// DEPRECATED
-const char kPowerManagerDecreaseScreenBrightness[] =
-    "DecreaseScreenBrightness";
-const char kPowerManagerIncreaseScreenBrightness[] =
-    "IncreaseScreenBrightness";
-const char kPowerManagerDecreaseKeyboardBrightness[] =
-    "DecreaseKeyboardBrightness";
-const char kPowerManagerIncreaseKeyboardBrightness[] =
-    "IncreaseKeyboardBrightness";
 // Signals
 const char kRequestSuspendSignal[] = "RequestSuspend";
 const char kCleanShutdown[] = "CleanShutdown";
@@ -211,9 +207,6 @@ const char kButtonEventSignal[] = "ButtonEvent";
 const char kStateOverrideCancel[] = "StateOverrideCancel";
 const char kSoftwareScreenDimmingRequestedSignal[] =
     "SoftwareScreenDimmingRequested";
-// kUseNewMonitorConfigSignal is temporary until Chrome monitor configuration
-// lands.
-const char kUseNewMonitorConfigSignal[] = "UseNewMonitorConfigSignal";
 const char kSetScreenPowerSignal[] = "SetScreenPowerSignal";
 // Values
 const char kPowerButtonName[] = "power";
