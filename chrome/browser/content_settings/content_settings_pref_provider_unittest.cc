@@ -11,7 +11,6 @@
 #include "base/prefs/default_pref_store.h"
 #include "base/prefs/overlay_user_pref_store.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
@@ -53,7 +52,7 @@ class DeadlockCheckerThread : public base::PlatformThread::Delegate {
 
 // A helper for observing an preference changes and testing whether
 // |PrefProvider| holds a lock when the preferences change.
-class DeadlockCheckerObserver : public PrefObserver {
+class DeadlockCheckerObserver {
  public:
   // |DeadlockCheckerObserver| doesn't take the ownership of |prefs| or
   // ||provider|.
@@ -61,12 +60,20 @@ class DeadlockCheckerObserver : public PrefObserver {
       : provider_(provider),
       notification_received_(false) {
     pref_change_registrar_.Init(prefs);
-    pref_change_registrar_.Add(prefs::kContentSettingsPatternPairs, this);
+    pref_change_registrar_.Add(
+        prefs::kContentSettingsPatternPairs,
+        base::Bind(
+            &DeadlockCheckerObserver::OnContentSettingsPatternPairsChanged,
+            base::Unretained(this)));
   }
   virtual ~DeadlockCheckerObserver() {}
 
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) {
+  bool notification_received() const {
+    return notification_received_;
+  }
+
+ private:
+  void OnContentSettingsPatternPairsChanged() {
     // Check whether |provider_| holds its lock. For this, we need a
     // separate thread.
     DeadlockCheckerThread thread(provider_);
@@ -76,11 +83,6 @@ class DeadlockCheckerObserver : public PrefObserver {
     notification_received_ = true;
   }
 
-  bool notification_received() const {
-    return notification_received_;
-  }
-
- private:
   PrefProvider* provider_;
   PrefChangeRegistrar pref_change_registrar_;
   bool notification_received_;

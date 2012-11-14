@@ -174,20 +174,26 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
   ReadManagedContentSettings(false);
 
   pref_change_registrar_.Init(prefs_);
-  pref_change_registrar_.Add(prefs::kManagedAutoSelectCertificateForUrls, this);
-  pref_change_registrar_.Add(prefs::kManagedCookiesBlockedForUrls, this);
-  pref_change_registrar_.Add(prefs::kManagedCookiesAllowedForUrls, this);
-  pref_change_registrar_.Add(prefs::kManagedCookiesSessionOnlyForUrls, this);
-  pref_change_registrar_.Add(prefs::kManagedImagesBlockedForUrls, this);
-  pref_change_registrar_.Add(prefs::kManagedImagesAllowedForUrls, this);
-  pref_change_registrar_.Add(prefs::kManagedJavaScriptBlockedForUrls, this);
-  pref_change_registrar_.Add(prefs::kManagedJavaScriptAllowedForUrls, this);
-  pref_change_registrar_.Add(prefs::kManagedPluginsBlockedForUrls, this);
-  pref_change_registrar_.Add(prefs::kManagedPluginsAllowedForUrls, this);
-  pref_change_registrar_.Add(prefs::kManagedPopupsBlockedForUrls, this);
-  pref_change_registrar_.Add(prefs::kManagedPopupsAllowedForUrls, this);
-  pref_change_registrar_.Add(prefs::kManagedNotificationsAllowedForUrls, this);
-  pref_change_registrar_.Add(prefs::kManagedNotificationsBlockedForUrls, this);
+  PrefChangeRegistrar::NamedChangeCallback callback =
+      base::Bind(&PolicyProvider::OnPreferenceChanged, base::Unretained(this));
+  pref_change_registrar_.Add(
+      prefs::kManagedAutoSelectCertificateForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedCookiesBlockedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedCookiesAllowedForUrls, callback);
+  pref_change_registrar_.Add(
+      prefs::kManagedCookiesSessionOnlyForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedImagesBlockedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedImagesAllowedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedJavaScriptBlockedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedJavaScriptAllowedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedPluginsBlockedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedPluginsAllowedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedPopupsBlockedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedPopupsAllowedForUrls, callback);
+  pref_change_registrar_.Add(
+      prefs::kManagedNotificationsAllowedForUrls, callback);
+  pref_change_registrar_.Add(
+      prefs::kManagedNotificationsBlockedForUrls, callback);
   // The following preferences are only used to indicate if a
   // default content setting is managed and to hold the managed default setting
   // value. If the value for any of the following perferences is set then the
@@ -195,14 +201,17 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
   // in parallel to the preference default content settings.  If a
   // default content settings type is managed any user defined excpetions
   // (patterns) for this type are ignored.
-  pref_change_registrar_.Add(prefs::kManagedDefaultCookiesSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultImagesSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultJavaScriptSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultPluginsSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultPopupsSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultGeolocationSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultNotificationsSetting, this);
-  pref_change_registrar_.Add(prefs::kManagedDefaultMediaStreamSetting, this);
+  pref_change_registrar_.Add(prefs::kManagedDefaultCookiesSetting, callback);
+  pref_change_registrar_.Add(prefs::kManagedDefaultImagesSetting, callback);
+  pref_change_registrar_.Add(prefs::kManagedDefaultJavaScriptSetting, callback);
+  pref_change_registrar_.Add(prefs::kManagedDefaultPluginsSetting, callback);
+  pref_change_registrar_.Add(prefs::kManagedDefaultPopupsSetting, callback);
+  pref_change_registrar_.Add(
+      prefs::kManagedDefaultGeolocationSetting, callback);
+  pref_change_registrar_.Add(
+      prefs::kManagedDefaultNotificationsSetting, callback);
+  pref_change_registrar_.Add(
+      prefs::kManagedDefaultMediaStreamSetting, callback);
 }
 
 PolicyProvider::~PolicyProvider() {
@@ -422,10 +431,8 @@ void PolicyProvider::ShutdownOnUIThread() {
   prefs_ = NULL;
 }
 
-void PolicyProvider::OnPreferenceChanged(PrefServiceBase* service,
-                                         const std::string& name) {
+void PolicyProvider::OnPreferenceChanged(const std::string& name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(prefs_, service);
 
   if (name == prefs::kManagedDefaultCookiesSetting) {
     UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES);

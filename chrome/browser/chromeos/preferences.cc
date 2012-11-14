@@ -290,83 +290,89 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
 void Preferences::InitUserPrefs(PrefService* prefs) {
   prefs_ = prefs;
 
-  tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, this);
-  tap_dragging_enabled_.Init(prefs::kTapDraggingEnabled, prefs, this);
+  BooleanPrefMember::NamedChangeCallback callback =
+      base::Bind(&Preferences::OnPreferenceChanged, base::Unretained(this));
+
+  tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, callback);
+  tap_dragging_enabled_.Init(prefs::kTapDraggingEnabled, prefs, callback);
   three_finger_click_enabled_.Init(prefs::kEnableTouchpadThreeFingerClick,
-      prefs, this);
+      prefs, callback);
   three_finger_swipe_enabled_.Init(prefs::kEnableTouchpadThreeFingerSwipe,
-      prefs, this);
-  natural_scroll_.Init(prefs::kNaturalScroll, prefs, this);
-  accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled, prefs, this);
-  mouse_sensitivity_.Init(prefs::kMouseSensitivity, prefs, this);
-  touchpad_sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
-  use_24hour_clock_.Init(prefs::kUse24HourClock, prefs, this);
-  disable_drive_.Init(prefs::kDisableDrive, prefs, this);
+      prefs, callback);
+  natural_scroll_.Init(prefs::kNaturalScroll, prefs, callback);
+  accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled, prefs, callback);
+  mouse_sensitivity_.Init(prefs::kMouseSensitivity, prefs, callback);
+  touchpad_sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, callback);
+  use_24hour_clock_.Init(prefs::kUse24HourClock, prefs, callback);
+  disable_drive_.Init(prefs::kDisableDrive, prefs, callback);
   disable_drive_over_cellular_.Init(prefs::kDisableDriveOverCellular,
-                                   prefs, this);
+                                   prefs, callback);
   disable_drive_hosted_files_.Init(prefs::kDisableDriveHostedFiles,
-                                   prefs, this);
+                                   prefs, callback);
   download_default_directory_.Init(prefs::kDownloadDefaultDirectory,
-                                   prefs, this);
+                                   prefs, callback);
   primary_mouse_button_right_.Init(prefs::kPrimaryMouseButtonRight,
-                                   prefs, this);
+                                   prefs, callback);
   preferred_languages_.Init(prefs::kLanguagePreferredLanguages,
-                            prefs, this);
-  preload_engines_.Init(prefs::kLanguagePreloadEngines, prefs, this);
+                            prefs, callback);
+  preload_engines_.Init(prefs::kLanguagePreloadEngines, prefs, callback);
   filtered_extension_imes_.Init(prefs::kLanguageFilteredExtensionImes,
-                                prefs, this);
-  current_input_method_.Init(prefs::kLanguageCurrentInputMethod, prefs, this);
-  previous_input_method_.Init(prefs::kLanguagePreviousInputMethod, prefs, this);
+                                prefs, callback);
+  current_input_method_.Init(prefs::kLanguageCurrentInputMethod,
+                             prefs, callback);
+  previous_input_method_.Init(prefs::kLanguagePreviousInputMethod,
+                              prefs, callback);
 
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     chewing_boolean_prefs_[i].Init(
-        language_prefs::kChewingBooleanPrefs[i].pref_name, prefs, this);
+        language_prefs::kChewingBooleanPrefs[i].pref_name, prefs, callback);
   }
   for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs; ++i) {
     chewing_multiple_choice_prefs_[i].Init(
-        language_prefs::kChewingMultipleChoicePrefs[i].pref_name, prefs, this);
+        language_prefs::kChewingMultipleChoicePrefs[i].pref_name,
+        prefs, callback);
   }
   chewing_hsu_sel_key_type_.Init(
-      language_prefs::kChewingHsuSelKeyType.pref_name, prefs, this);
+      language_prefs::kChewingHsuSelKeyType.pref_name, prefs, callback);
   for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
     chewing_integer_prefs_[i].Init(
-        language_prefs::kChewingIntegerPrefs[i].pref_name, prefs, this);
+        language_prefs::kChewingIntegerPrefs[i].pref_name, prefs, callback);
   }
-  hangul_keyboard_.Init(prefs::kLanguageHangulKeyboard, prefs, this);
+  hangul_keyboard_.Init(prefs::kLanguageHangulKeyboard, prefs, callback);
   hangul_hanja_binding_keys_.Init(
-      prefs::kLanguageHangulHanjaBindingKeys, prefs, this);
+      prefs::kLanguageHangulHanjaBindingKeys, prefs, callback);
   for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
     pinyin_boolean_prefs_[i].Init(
-        language_prefs::kPinyinBooleanPrefs[i].pref_name, prefs, this);
+        language_prefs::kPinyinBooleanPrefs[i].pref_name, prefs, callback);
   }
   for (size_t i = 0; i < language_prefs::kNumPinyinIntegerPrefs; ++i) {
     pinyin_int_prefs_[i].Init(
-        language_prefs::kPinyinIntegerPrefs[i].pref_name, prefs, this);
+        language_prefs::kPinyinIntegerPrefs[i].pref_name, prefs, callback);
   }
   pinyin_double_pinyin_schema_.Init(
-      language_prefs::kPinyinDoublePinyinSchema.pref_name, prefs, this);
+      language_prefs::kPinyinDoublePinyinSchema.pref_name, prefs, callback);
   for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
     mozc_boolean_prefs_[i].Init(
-        language_prefs::kMozcBooleanPrefs[i].pref_name, prefs, this);
+        language_prefs::kMozcBooleanPrefs[i].pref_name, prefs, callback);
   }
   for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
     mozc_multiple_choice_prefs_[i].Init(
-        language_prefs::kMozcMultipleChoicePrefs[i].pref_name, prefs, this);
+        language_prefs::kMozcMultipleChoicePrefs[i].pref_name, prefs, callback);
   }
   for (size_t i = 0; i < language_prefs::kNumMozcIntegerPrefs; ++i) {
     mozc_integer_prefs_[i].Init(
-        language_prefs::kMozcIntegerPrefs[i].pref_name, prefs, this);
+        language_prefs::kMozcIntegerPrefs[i].pref_name, prefs, callback);
   }
   xkb_auto_repeat_enabled_.Init(
-      prefs::kLanguageXkbAutoRepeatEnabled, prefs, this);
+      prefs::kLanguageXkbAutoRepeatEnabled, prefs, callback);
   xkb_auto_repeat_delay_pref_.Init(
-      prefs::kLanguageXkbAutoRepeatDelay, prefs, this);
+      prefs::kLanguageXkbAutoRepeatDelay, prefs, callback);
   xkb_auto_repeat_interval_pref_.Init(
-      prefs::kLanguageXkbAutoRepeatInterval, prefs, this);
+      prefs::kLanguageXkbAutoRepeatInterval, prefs, callback);
 
-  enable_screen_lock_.Init(prefs::kEnableScreenLock, prefs, this);
+  enable_screen_lock_.Init(prefs::kEnableScreenLock, prefs, callback);
 
-  enable_drm_.Init(prefs::kEnableCrosDRM, prefs, this);
+  enable_drm_.Init(prefs::kEnableCrosDRM, prefs, callback);
 }
 
 void Preferences::Init(PrefService* prefs) {
@@ -392,8 +398,7 @@ void Preferences::SetInputMethodListForTesting() {
   SetInputMethodList();
 }
 
-void Preferences::OnPreferenceChanged(PrefServiceBase* service,
-                                      const std::string& pref_name) {
+void Preferences::OnPreferenceChanged(const std::string& pref_name) {
   NotifyPrefChanged(&pref_name);
 }
 

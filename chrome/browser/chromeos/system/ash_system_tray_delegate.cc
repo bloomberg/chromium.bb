@@ -29,7 +29,6 @@
 #include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
@@ -155,7 +154,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public NetworkLibrary::NetworkManagerObserver,
                            public NetworkLibrary::NetworkObserver,
                            public NetworkLibrary::CellularDataPlanObserver,
-                           public PrefObserver,
                            public google_apis::DriveServiceObserver,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
@@ -219,8 +217,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
 
-    accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled,
-                                g_browser_process->local_state(), this);
+    accessibility_enabled_.Init(
+        prefs::kSpokenFeedbackEnabled,
+        g_browser_process->local_state(),
+        base::Bind(&SystemTrayDelegate::OnSpokenFeedbackEnabledChanged,
+                   base::Unretained(this)));
 
     network_icon_->SetResourceColorTheme(NetworkMenuIcon::COLOR_LIGHT);
     network_icon_dark_->SetResourceColorTheme(NetworkMenuIcon::COLOR_DARK);
@@ -755,11 +756,20 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     PrefService* prefs = profile->GetPrefs();
     pref_registrar_.reset(new PrefChangeRegistrar);
     pref_registrar_->Init(prefs);
-    pref_registrar_->Add(prefs::kUse24HourClock, this);
-    pref_registrar_->Add(prefs::kLanguageRemapSearchKeyTo, this);
-    pref_registrar_->Add(prefs::kShowLogoutButtonInTray, this);
-    UpdateClockType(prefs);
-    UpdateShowLogoutButtonInTray(prefs);
+    pref_registrar_->Add(
+        prefs::kUse24HourClock,
+        base::Bind(&SystemTrayDelegate::UpdateClockType,
+                   base::Unretained(this)));
+    pref_registrar_->Add(
+        prefs::kLanguageRemapSearchKeyTo,
+        base::Bind(&SystemTrayDelegate::OnLanguageRemapSearchKeyToChanged,
+                   base::Unretained(this)));
+    pref_registrar_->Add(
+        prefs::kShowLogoutButtonInTray,
+        base::Bind(&SystemTrayDelegate::UpdateShowLogoutButtonInTray,
+                   base::Unretained(this)));
+    UpdateClockType();
+    UpdateShowLogoutButtonInTray();
     search_key_mapped_to_ =
         profile->GetPrefs()->GetInteger(prefs::kLanguageRemapSearchKeyTo);
   }
@@ -772,15 +782,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     system_service->drive_service()->AddObserver(this);
   }
 
-  void UpdateClockType(PrefServiceBase* service) {
-    clock_type_ = service->GetBoolean(prefs::kUse24HourClock) ?
+  void UpdateClockType() {
+    clock_type_ = pref_registrar_->prefs()->GetBoolean(prefs::kUse24HourClock) ?
         base::k24HourClock : base::k12HourClock;
     GetSystemTrayNotifier()->NotifyDateFormatChanged();
   }
 
-  void UpdateShowLogoutButtonInTray(PrefServiceBase* service) {
+  void UpdateShowLogoutButtonInTray() {
     GetSystemTrayNotifier()->NotifyShowLoginButtonChanged(
-        service->GetBoolean(prefs::kShowLogoutButtonInTray));
+        pref_registrar_->prefs()->GetBoolean(prefs::kShowLogoutButtonInTray));
   }
 
   void NotifyRefreshNetwork() {
@@ -1084,21 +1094,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     }
   }
 
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref) OVERRIDE {
-    if (pref == prefs::kUse24HourClock) {
-      UpdateClockType(service);
-    } else if (pref == prefs::kLanguageRemapSearchKeyTo) {
-      search_key_mapped_to_ =
-          service->GetInteger(prefs::kLanguageRemapSearchKeyTo);
-    } else if (pref == prefs::kSpokenFeedbackEnabled) {
-      GetSystemTrayNotifier()->NotifyAccessibilityModeChanged(
-          service->GetBoolean(prefs::kSpokenFeedbackEnabled));
-    } else if (pref == prefs::kShowLogoutButtonInTray) {
-      UpdateShowLogoutButtonInTray(service);
-    } else {
-      NOTREACHED();
-    }
+  void OnLanguageRemapSearchKeyToChanged() {
+    search_key_mapped_to_ = pref_registrar_->prefs()->GetInteger(
+        prefs::kLanguageRemapSearchKeyTo);
+  }
+
+  void OnSpokenFeedbackEnabledChanged() {
+    GetSystemTrayNotifier()->NotifyAccessibilityModeChanged(
+        accessibility_enabled_.prefs()->GetBoolean(
+            prefs::kSpokenFeedbackEnabled));
   }
 
   // Overridden from InputMethodManager::Observer.

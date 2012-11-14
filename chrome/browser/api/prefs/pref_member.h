@@ -47,6 +47,9 @@ class PrefMemberBase : public PrefObserver {
   // the pref that is changing.
   typedef base::Callback<void(const std::string&)> NamedChangeCallback;
 
+  PrefServiceBase* prefs() { return prefs_; }
+  const PrefServiceBase* prefs() const { return prefs_; }
+
  protected:
   class Internal : public base::RefCountedThreadSafe<Internal> {
    public:
@@ -125,8 +128,6 @@ class PrefMemberBase : public PrefObserver {
   void VerifyPref() const;
 
   const std::string& pref_name() const { return pref_name_; }
-  PrefServiceBase* prefs() { return prefs_; }
-  const PrefServiceBase* prefs() const { return prefs_; }
 
   virtual Internal* internal() const = 0;
 

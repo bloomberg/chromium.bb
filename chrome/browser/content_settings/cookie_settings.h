@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
@@ -29,8 +28,7 @@ class Profile;
 // thread and read on any thread. One instance per profile.
 
 class CookieSettings
-    : public PrefObserver,
-      public RefcountedProfileKeyedService {
+    : public RefcountedProfileKeyedService {
  public:
   CookieSettings(
       HostContentSettingsMap* host_content_settings_map,
@@ -91,10 +89,6 @@ class CookieSettings
   void ResetCookieSetting(const ContentSettingsPattern& primary_pattern,
                           const ContentSettingsPattern& secondary_pattern);
 
-  // |PrefObserver| implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
-
   // Detaches the |CookieSettings| from all |Profile|-related objects like
   // |PrefService|. This methods needs to be called before destroying the
   // |Profile|. Afterwards, only const methods can be called.
@@ -133,6 +127,8 @@ class CookieSettings
 
  private:
   virtual ~CookieSettings();
+
+  void OnBlockThirdPartyCookiesChanged();
 
   // Returns true if the "block third party cookies" preference is set.
   //

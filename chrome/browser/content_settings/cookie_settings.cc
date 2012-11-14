@@ -95,7 +95,10 @@ CookieSettings::CookieSettings(
   }
 
   pref_change_registrar_.Init(prefs);
-  pref_change_registrar_.Add(prefs::kBlockThirdPartyCookies, this);
+  pref_change_registrar_.Add(
+      prefs::kBlockThirdPartyCookies,
+      base::Bind(&CookieSettings::OnBlockThirdPartyCookiesChanged,
+                 base::Unretained(this)));
 }
 
 ContentSetting
@@ -155,16 +158,6 @@ void CookieSettings::ResetCookieSetting(
       CONTENT_SETTING_DEFAULT);
 }
 
-void CookieSettings::OnPreferenceChanged(PrefServiceBase* prefs,
-                                         const std::string& name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(std::string(prefs::kBlockThirdPartyCookies), name);
-
-  base::AutoLock auto_lock(lock_);
-  block_third_party_cookies_ = prefs->GetBoolean(
-      prefs::kBlockThirdPartyCookies);
-}
-
 void CookieSettings::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   pref_change_registrar_.RemoveAll();
@@ -214,6 +207,14 @@ ContentSetting CookieSettings::GetCookieSetting(
 }
 
 CookieSettings::~CookieSettings() {}
+
+void CookieSettings::OnBlockThirdPartyCookiesChanged() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  base::AutoLock auto_lock(lock_);
+  block_third_party_cookies_ = pref_change_registrar_.prefs()->GetBoolean(
+      prefs::kBlockThirdPartyCookies);
+}
 
 bool CookieSettings::ShouldBlockThirdPartyCookies() const {
   base::AutoLock auto_lock(lock_);

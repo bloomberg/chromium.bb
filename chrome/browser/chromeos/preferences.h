@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 
@@ -24,7 +23,7 @@ class InputMethodManager;
 // is first initialized, it will initialize the OS settings to what's stored in
 // the preferences. These include touchpad settings, etc.
 // When the preferences change, we change the settings to reflect the new value.
-class Preferences : public PrefObserver {
+class Preferences {
  public:
   Preferences();
   explicit Preferences(
@@ -37,16 +36,15 @@ class Preferences : public PrefObserver {
   // This method will initialize Chrome OS settings to values in user prefs.
   void Init(PrefService* prefs);
 
-  // Overridden from PrefObserver:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
-
   void InitUserPrefsForTesting(PrefService* prefs);
   void SetInputMethodListForTesting();
 
  private:
   // Initializes all member prefs.
   void InitUserPrefs(PrefService* prefs);
+
+  // Callback method for preference changes.
+  void OnPreferenceChanged(const std::string& pref_name);
 
   // This will set the OS settings when the preference changes.
   // If this method is called with NULL, it will set all OS settings to what's

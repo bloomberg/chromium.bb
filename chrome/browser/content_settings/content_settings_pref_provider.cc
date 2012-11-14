@@ -120,7 +120,10 @@ PrefProvider::PrefProvider(PrefService* prefs,
   }
 
   pref_change_registrar_.Init(prefs_);
-  pref_change_registrar_.Add(prefs::kContentSettingsPatternPairs, this);
+  pref_change_registrar_.Add(
+      prefs::kContentSettingsPatternPairs,
+      base::Bind(&PrefProvider::OnContentSettingsPatternPairsChanged,
+                 base::Unretained(this)));
 }
 
 bool PrefProvider::SetWebsiteSetting(
@@ -214,23 +217,6 @@ void PrefProvider::ClearAllContentSettingsRules(
   NotifyObservers(ContentSettingsPattern(),
                   ContentSettingsPattern(),
                   content_type,
-                  std::string());
-}
-
-void PrefProvider::OnPreferenceChanged(PrefServiceBase* service,
-                                       const std::string& name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(prefs_, service);
-  DCHECK_EQ(std::string(prefs::kContentSettingsPatternPairs), name);
-
-  if (updating_preferences_)
-    return;
-
-  ReadContentSettingsFromPref(true);
-
-  NotifyObservers(ContentSettingsPattern(),
-                  ContentSettingsPattern(),
-                  CONTENT_SETTINGS_TYPE_DEFAULT,
                   std::string());
 }
 
@@ -382,6 +368,20 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
       }
     }
   }
+}
+
+void PrefProvider::OnContentSettingsPatternPairsChanged() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (updating_preferences_)
+    return;
+
+  ReadContentSettingsFromPref(true);
+
+  NotifyObservers(ContentSettingsPattern(),
+                  ContentSettingsPattern(),
+                  CONTENT_SETTINGS_TYPE_DEFAULT,
+                  std::string());
 }
 
 void PrefProvider::UpdatePatternPairsSettings(
