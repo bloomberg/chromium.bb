@@ -175,6 +175,7 @@ bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectGraphicsInfo");
 
   DCHECK(gpu_info);
+  *gpu_info = content::GPUInfo();
 
   gpu_info->performance_stats = RetrieveGpuPerformanceStats();
 

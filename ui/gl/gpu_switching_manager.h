@@ -38,6 +38,8 @@ class GL_EXPORT GpuSwitchingManager {
   // --supports-dual-gpus commandline switch.
   bool SupportsDualGpus();
 
+  void SetGpuCount(size_t gpu_count);
+
  private:
   friend struct DefaultSingletonTraits<GpuSwitchingManager>;
 
@@ -55,6 +57,8 @@ class GL_EXPORT GpuSwitchingManager {
 
   bool supports_dual_gpus_;
   bool supports_dual_gpus_set_;
+
+  size_t gpu_count_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuSwitchingManager);
 };

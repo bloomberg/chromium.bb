@@ -123,7 +123,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   // Update the GPU switching status.
   // This should only be called once at initialization time.
-  void UpdateGpuSwitchingManager();
+  void UpdateGpuSwitchingManager(const GPUInfo& gpu_info);
 
   // Notify all observers whenever there is a GPU info update.
   void NotifyGpuInfoUpdate();

@@ -13,60 +13,6 @@
 #include "ui/gl/gl_context_cgl.h"
 #endif  // OS_MACOSX
 
-namespace {
-
-#if defined(OS_MACOSX)
-bool SupportsOnlineAndOfflineRenderers() {
-  // Enumerate all hardware-accelerated renderers. If we find one
-  // online and one offline, assume we're on a dual-GPU system.
-  GLuint display_mask = static_cast<GLuint>(-1);
-  CGLRendererInfoObj renderer_info = NULL;
-  GLint num_renderers = 0;
-
-  bool found_online = false;
-  bool found_offline = false;
-
-  if (CGLQueryRendererInfo(display_mask,
-                           &renderer_info,
-                           &num_renderers) != kCGLNoError) {
-    return false;
-  }
-
-  gfx::ScopedCGLRendererInfoObj scoper(renderer_info);
-
-  for (GLint i = 0; i < num_renderers; ++i) {
-    GLint accelerated = 0;
-    if (CGLDescribeRenderer(renderer_info,
-                            i,
-                            kCGLRPAccelerated,
-                            &accelerated) != kCGLNoError) {
-      return false;
-    }
-
-    if (!accelerated)
-      continue;
-
-    GLint online = 0;
-    if (CGLDescribeRenderer(renderer_info,
-                            i,
-                            kCGLRPOnline,
-                            &online) != kCGLNoError) {
-      return false;
-    }
-
-    if (online) {
-      found_online = true;
-    } else {
-      found_offline = true;
-    }
-  }
-
-  return (found_online && found_offline);
-}
-#endif  // OS_MACOSX
-
-}  // namespace anonymous
-
 namespace ui {
 
 // static
@@ -78,7 +24,8 @@ GpuSwitchingManager::GpuSwitchingManager()
     : gpu_switching_option_(gfx::PreferIntegratedGpu),
       gpu_switching_option_set_(false),
       supports_dual_gpus_(false),
-      supports_dual_gpus_set_(false) {
+      supports_dual_gpus_set_(false),
+      gpu_count_(0) {
 #if defined(OS_MACOSX)
   discrete_pixel_format_ = NULL;
 #endif  // OS_MACOSX
@@ -135,7 +82,7 @@ bool GpuSwitchingManager::SupportsDualGpus() {
       // Browser process.
       // We only compute this flag in the browser process.
 #if defined(OS_MACOSX)
-      flag = SupportsOnlineAndOfflineRenderers();
+      flag = (gpu_count_ == 2);
       if (flag && command_line.HasSwitch(switches::kUseGL) &&
           command_line.GetSwitchValueASCII(switches::kUseGL) !=
             gfx::kGLImplementationDesktopName)
@@ -149,6 +96,10 @@ bool GpuSwitchingManager::SupportsDualGpus() {
     supports_dual_gpus_set_ = true;
   }
   return supports_dual_gpus_;
+}
+
+void GpuSwitchingManager::SetGpuCount(size_t gpu_count) {
+  gpu_count_ = gpu_count;
 }
 
 gfx::GpuPreference GpuSwitchingManager::AdjustGpuPreference(

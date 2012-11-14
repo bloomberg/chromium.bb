@@ -159,7 +159,7 @@ void GpuDataManagerImpl::InitializeImpl(
   }
 
   UpdateGpuInfo(gpu_info);
-  UpdateGpuSwitchingManager();
+  UpdateGpuSwitchingManager(gpu_info);
   UpdatePreliminaryBlacklistedFeatures();
 }
 
@@ -273,6 +273,8 @@ GpuFeatureType GpuDataManagerImpl::GetBlacklistedFeatures() const {
 }
 
 GpuSwitchingOption GpuDataManagerImpl::GetGpuSwitchingOption() const {
+  if (!ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus())
+    return GPU_SWITCHING_OPTION_UNKNOWN;
   return gpu_switching_;
 }
 
@@ -523,7 +525,10 @@ void GpuDataManagerImpl::UpdateBlacklistedFeatures(
   EnableSoftwareRenderingIfNecessary();
 }
 
-void GpuDataManagerImpl::UpdateGpuSwitchingManager() {
+void GpuDataManagerImpl::UpdateGpuSwitchingManager(const GPUInfo& gpu_info) {
+  ui::GpuSwitchingManager::GetInstance()->SetGpuCount(
+      gpu_info.secondary_gpus.size() + 1);
+
   if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
     switch (gpu_switching_) {
       case GPU_SWITCHING_OPTION_FORCE_DISCRETE:

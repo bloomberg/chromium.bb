@@ -160,6 +160,7 @@ namespace gpu_info_collector {
 
 bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
+  *gpu_info = content::GPUInfo();
 
   TRACE_EVENT0("gpu", "gpu_info_collector::CollectGraphicsInfo");
 
