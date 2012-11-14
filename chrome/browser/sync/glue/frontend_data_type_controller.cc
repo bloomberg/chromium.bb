@@ -160,26 +160,31 @@ bool FrontendDataTypeController::StartModels() {
 
 bool FrontendDataTypeController::Associate() {
   DCHECK_EQ(state_, ASSOCIATING);
+  syncer::SyncMergeResult local_merge_result(type());
+  syncer::SyncMergeResult syncer_merge_result(type());
   CreateSyncComponents();
   if (!model_associator()->CryptoReadyIfNecessary()) {
-    StartFailed(NEEDS_CRYPTO, syncer::SyncError());
+    StartDone(NEEDS_CRYPTO, local_merge_result, syncer_merge_result);
     return false;
   }
 
   bool sync_has_nodes = false;
   if (!model_associator()->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
     syncer::SyncError error(FROM_HERE, "Failed to load sync nodes", type());
-    StartFailed(UNRECOVERABLE_ERROR, error);
+    local_merge_result.set_error(error);
+    StartDone(UNRECOVERABLE_ERROR, local_merge_result, syncer_merge_result);
     return false;
   }
 
+  // TODO(zea): Have AssociateModels fill the local and syncer merge results.
   base::TimeTicks start_time = base::TimeTicks::Now();
   syncer::SyncError error;
   error = model_associator()->AssociateModels();
   // TODO(lipalani): crbug.com/122690 - handle abort.
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
   if (error.IsSet()) {
-    StartFailed(ASSOCIATION_FAILED, error);
+    local_merge_result.set_error(error);
+    StartDone(ASSOCIATION_FAILED, local_merge_result, syncer_merge_result);
     return false;
   }
 
@@ -189,7 +194,9 @@ bool FrontendDataTypeController::Associate() {
   // FinishStart() invokes the DataTypeManager callback, which can lead to a
   // call to Stop() if one of the other data types being started generates an
   // error.
-  FinishStart(!sync_has_nodes ? OK_FIRST_RUN : OK);
+  StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK,
+            local_merge_result,
+            syncer_merge_result);
   // Return false if we're not in the RUNNING state (due to Stop() being called
   // from FinishStart()).
   // TODO(zea/atwilson): Should we maybe move the call to FinishStart() out of
@@ -208,29 +215,6 @@ void FrontendDataTypeController::CleanUp() {
   change_processor_.reset();
 }
 
-void FrontendDataTypeController::StartFailed(StartResult result,
-                                             const syncer::SyncError& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (IsUnrecoverableResult(result))
-    RecordUnrecoverableError(FROM_HERE, "StartFailed");
-
-  CleanUp();
-  if (result == ASSOCIATION_FAILED) {
-    state_ = DISABLED;
-  } else {
-    state_ = NOT_RUNNING;
-  }
-  RecordStartFailure(result);
-
-  // We have to release the callback before we call it, since it's possible
-  // invoking the callback will trigger a call to STOP(), which will get
-  // confused by the non-NULL start_callback_.
-  StartCallback callback = start_callback_;
-  start_callback_.Reset();
-  callback.Run(result, error);
-}
-
 void FrontendDataTypeController::AbortModelLoad() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CleanUp();
@@ -242,15 +226,30 @@ void FrontendDataTypeController::AbortModelLoad() {
                                             type()));
 }
 
-void FrontendDataTypeController::FinishStart(StartResult result) {
+void FrontendDataTypeController::StartDone(
+    StartResult start_result,
+    const syncer::SyncMergeResult& local_merge_result,
+    const syncer::SyncMergeResult& syncer_merge_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!IsSuccessfulResult(start_result)) {
+    if (IsUnrecoverableResult(start_result))
+      RecordUnrecoverableError(FROM_HERE, "StartFailed");
+
+    CleanUp();
+    if (start_result == ASSOCIATION_FAILED) {
+      state_ = DISABLED;
+    } else {
+      state_ = NOT_RUNNING;
+    }
+    RecordStartFailure(start_result);
+  }
 
   // We have to release the callback before we call it, since it's possible
   // invoking the callback will trigger a call to STOP(), which will get
   // confused by the non-NULL start_callback_.
   StartCallback callback = start_callback_;
   start_callback_.Reset();
-  callback.Run(result, syncer::SyncError());
+  callback.Run(start_result, local_merge_result, syncer_merge_result);
 }
 
 void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {

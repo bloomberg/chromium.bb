@@ -40,12 +40,15 @@ class NewNonFrontendDataTypeController : public NonFrontendDataTypeController {
   virtual void OnModelLoaded() OVERRIDE;
 
   // Overrides of NonFrontendDataTypeController methods.
-  virtual void StartDone(DataTypeController::StartResult result,
-                         DataTypeController::State new_state,
-                         const syncer::SyncError& error) OVERRIDE;
-  virtual void StartDoneImpl(DataTypeController::StartResult result,
-                             DataTypeController::State new_state,
-                             const syncer::SyncError& error) OVERRIDE;
+  virtual void StartDone(
+      DataTypeController::StartResult start_result,
+      const syncer::SyncMergeResult& local_merge_result,
+      const syncer::SyncMergeResult& syncer_merge_result) OVERRIDE;
+  virtual void StartDoneImpl(
+      DataTypeController::StartResult start_result,
+      DataTypeController::State new_state,
+      const syncer::SyncMergeResult& local_merge_result,
+      const syncer::SyncMergeResult& syncer_merge_result) OVERRIDE;
 
  private:
   // This overrides the same method in |NonFrontendDataTypeController|.

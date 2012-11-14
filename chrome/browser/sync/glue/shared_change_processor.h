@@ -14,6 +14,7 @@
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory.h"
+#include "sync/api/sync_merge_result.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 
 class ProfileSyncComponentsFactory;
@@ -63,7 +64,8 @@ class SharedChangeProcessor
     ProfileSyncComponentsFactory* sync_factory,
     ProfileSyncService* sync_service,
     DataTypeErrorHandler* error_handler,
-    syncer::ModelType type);
+    syncer::ModelType type,
+    const base::WeakPtr<syncer::SyncMergeResult>& merge_result);
 
   // Disconnects from the generic change processor. May be called from any
   // thread. After this, all attempts to interact with the change processor by

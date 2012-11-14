@@ -11,6 +11,8 @@
 #include "base/timer.h"
 
 #include "chrome/browser/sync/glue/data_type_manager.h"
+#include "sync/internal_api/public/data_type_debug_info_listener.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 
 // |ModelAssociationManager| does the heavy lifting for doing the actual model
 // association. It instructs DataTypeControllers to load models, start
@@ -39,8 +41,11 @@ class ModelAssociationResultProcessor {
 // The class that is responsible for model association.
 class ModelAssociationManager {
  public:
-  ModelAssociationManager(const DataTypeController::TypeMap* controllers,
-                          ModelAssociationResultProcessor* processor);
+  ModelAssociationManager(
+      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+          debug_info_listener,
+      const DataTypeController::TypeMap* controllers,
+      ModelAssociationResultProcessor* processor);
   virtual ~ModelAssociationManager();
 
   // Initializes the state to do the model association in future. This
@@ -95,8 +100,9 @@ class ModelAssociationManager {
 
   // Callback passed to each data type controller on starting association. This
   // callback will be invoked when the model association is done.
-  void TypeStartCallback(DataTypeController::StartResult result,
-                         const syncer::SyncError& error);
+  void TypeStartCallback(DataTypeController::StartResult start_result,
+                         const syncer::SyncMergeResult& local_merge_result,
+                         const syncer::SyncMergeResult& syncer_merge_result);
 
   // Callback that will be invoked when the models finish loading. This callback
   // will be passed to |LoadModels| function.
@@ -159,9 +165,20 @@ class ModelAssociationManager {
 
   // Set of all registered controllers.
   const DataTypeController::TypeMap* controllers_;
+
+  // The processor in charge of handling model association results.
   ModelAssociationResultProcessor* result_processor_;
-  base::WeakPtrFactory<ModelAssociationManager> weak_ptr_factory_;
+
+  // Timer to track and limit how long a datatype takes to model associate.
   base::OneShotTimer<ModelAssociationManager> timer_;
+
+  // Sync's datatype debug info listener, which we pass model association
+  // statistics to.
+  const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
+      debug_info_listener_;
+
+  base::WeakPtrFactory<ModelAssociationManager> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(ModelAssociationManager);
 };
 }  // namespace browser_sync

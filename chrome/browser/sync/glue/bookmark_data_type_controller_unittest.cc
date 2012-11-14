@@ -150,7 +150,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartDependentsReady) {
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
   Start();
   EXPECT_EQ(DataTypeController::RUNNING, bookmark_dtc_->state());
 }
@@ -160,7 +160,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
   EXPECT_CALL(*bookmark_model_, IsLoaded()).WillRepeatedly(Return(false));
   SetAssociateExpectations();
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
       bookmark_dtc_->LoadModels(
         base::Bind(&ModelLoadCallbackMock::Run,
                    base::Unretained(&model_load_callback_)));
@@ -208,7 +208,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartFirstRun) {
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(true)));
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _, _));
   Start();
 }
 
@@ -231,7 +231,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartOk) {
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
   Start();
 }
 
@@ -249,7 +249,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartAssociationFailed) {
                                      syncer::BOOKMARKS)));
 
   EXPECT_CALL(start_callback_,
-              Run(DataTypeController::ASSOCIATION_FAILED, _));
+              Run(DataTypeController::ASSOCIATION_FAILED, _, _));
   Start();
   EXPECT_EQ(DataTypeController::DISABLED, bookmark_dtc_->state());
 }
@@ -264,7 +264,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest,
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(false), Return(false)));
   EXPECT_CALL(start_callback_,
-              Run(DataTypeController::UNRECOVERABLE_ERROR, _));
+              Run(DataTypeController::UNRECOVERABLE_ERROR, _, _));
   Start();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
 }
@@ -289,7 +289,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, Stop) {
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
   Start();
   EXPECT_EQ(DataTypeController::RUNNING, bookmark_dtc_->state());
   bookmark_dtc_->Stop();
@@ -306,7 +306,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
                                  &BookmarkDataTypeController::Stop));
   SetStopExpectations();
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
   Start();
   // This should cause bookmark_dtc_->Stop() to be called.
   bookmark_dtc_->OnSingleDatatypeUnrecoverableError(FROM_HERE, "Test");

@@ -13,6 +13,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "content/public/browser/browser_thread.h"
+#include "sync/api/sync_merge_result.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
@@ -63,7 +64,8 @@ class DataTypeController
   };
 
   typedef base::Callback<void(StartResult,
-                              const syncer::SyncError&)> StartCallback;
+                              const syncer::SyncMergeResult&,
+                              const syncer::SyncMergeResult&)> StartCallback;
 
   typedef base::Callback<void(syncer::ModelType,
                               syncer::SyncError)> ModelLoadCallback;
@@ -75,6 +77,9 @@ class DataTypeController
   // Returns true if the start result should trigger an unrecoverable error.
   // Public so unit tests can use this function as well.
   static bool IsUnrecoverableResult(StartResult result);
+
+  // Returns true if the datatype started successfully.
+  static bool IsSuccessfulResult(StartResult result);
 
   // Begins asynchronous operation of loading the model to get it ready for
   // model association. Once the models are loaded the callback will be invoked

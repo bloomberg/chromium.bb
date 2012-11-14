@@ -16,11 +16,12 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
  public:
   SharedChangeProcessorMock();
 
-  MOCK_METHOD4(Connect, base::WeakPtr<syncer::SyncableService>(
+  MOCK_METHOD5(Connect, base::WeakPtr<syncer::SyncableService>(
       ProfileSyncComponentsFactory*,
       ProfileSyncService*,
       DataTypeErrorHandler*,
-      syncer::ModelType));
+      syncer::ModelType,
+      const base::WeakPtr<syncer::SyncMergeResult>&));
   MOCK_METHOD0(Disconnect, bool());
   MOCK_METHOD2(ProcessSyncChanges,
                syncer::SyncError(const tracked_objects::Location&,

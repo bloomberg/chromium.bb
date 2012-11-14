@@ -171,7 +171,7 @@ TEST_F(SyncAppNotificationDataTypeControllerTest, StartManagerReady) {
   SetActivateExpectations();
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, app_notif_dtc_->state());
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
   Start();
   EXPECT_EQ(DataTypeController::RUNNING, app_notif_dtc_->state());
 }
@@ -204,7 +204,7 @@ TEST_F(SyncAppNotificationDataTypeControllerTest, StartFirstRun) {
   SetStartExpectations();
   InitAndLoadManager();
   SetActivateExpectations();
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _, _));
   change_processor_->set_sync_model_has_user_created_nodes(false);
 
   Start();
@@ -216,7 +216,7 @@ TEST_F(SyncAppNotificationDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
   InitAndLoadManager();
   EXPECT_CALL(start_callback_,
-              Run(DataTypeController::ASSOCIATION_FAILED, _));
+              Run(DataTypeController::ASSOCIATION_FAILED, _, _));
   syncable_service_.set_merge_data_and_start_syncing_error(
       syncer::SyncError(FROM_HERE, "Error", syncer::APP_NOTIFICATIONS));
 
@@ -230,7 +230,7 @@ TEST_F(SyncAppNotificationDataTypeControllerTest,
   SetStartExpectations();
   InitAndLoadManager();
   EXPECT_CALL(start_callback_,
-              Run(DataTypeController::UNRECOVERABLE_ERROR, _));
+              Run(DataTypeController::UNRECOVERABLE_ERROR, _, _));
   // Set up association to fail with an unrecoverable error.
   change_processor_->set_sync_model_has_user_created_nodes_success(false);
 
@@ -244,7 +244,7 @@ TEST_F(SyncAppNotificationDataTypeControllerTest, Stop) {
   InitAndLoadManager();
   SetActivateExpectations();
   SetStopExpectations();
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, app_notif_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
@@ -266,7 +266,7 @@ TEST_F(SyncAppNotificationDataTypeControllerTest,
                                  &AppNotificationDataTypeController::Stop));
   SetStopExpectations();
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
   Start();
   EXPECT_EQ(DataTypeController::RUNNING, app_notif_dtc_->state());
   EXPECT_TRUE(syncable_service_.syncing());

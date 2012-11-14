@@ -113,7 +113,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceReady) {
   // We want to start ready.
   PreloadTemplateURLService();
   SetActivateExpectations();
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
@@ -148,7 +148,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartFirstRun) {
   PreloadTemplateURLService();
   SetActivateExpectations();
   change_processor_->set_sync_model_has_user_created_nodes(false);
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _, _));
 
   Start();
   EXPECT_TRUE(syncable_service_.syncing());
@@ -159,7 +159,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartAssociationFailed) {
   PreloadTemplateURLService();
   SetStopExpectations();
   EXPECT_CALL(start_callback_,
-              Run(DataTypeController::ASSOCIATION_FAILED, _));
+              Run(DataTypeController::ASSOCIATION_FAILED, _, _));
   syncable_service_.set_merge_data_and_start_syncing_error(
       syncer::SyncError(FROM_HERE, "Error", syncer::SEARCH_ENGINES));
 
@@ -176,7 +176,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest,
   SetStartExpectations();
   PreloadTemplateURLService();
   EXPECT_CALL(start_callback_,
-              Run(DataTypeController::UNRECOVERABLE_ERROR, _));
+              Run(DataTypeController::UNRECOVERABLE_ERROR, _, _));
   // Set up association to fail with an unrecoverable error.
   change_processor_->set_sync_model_has_user_created_nodes_success(false);
 
@@ -190,7 +190,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, Stop) {
   PreloadTemplateURLService();
   SetActivateExpectations();
   SetStopExpectations();
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
@@ -212,7 +212,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest,
                                  &SearchEngineDataTypeController::Stop));
   SetStopExpectations();
 
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
   Start();
   // This should cause search_engine_dtc_->Stop() to be called.
   search_engine_dtc_->OnSingleDatatypeUnrecoverableError(FROM_HERE, "Test");

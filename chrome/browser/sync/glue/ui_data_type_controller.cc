@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/ui_data_type_controller.h"
 
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/shared_change_processor_ref.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
@@ -116,21 +117,32 @@ bool UIDataTypeController::StartModels() {
 
 void UIDataTypeController::Associate() {
   DCHECK_EQ(state_, ASSOCIATING);
+  syncer::SyncMergeResult local_merge_result(type());
+  syncer::SyncMergeResult syncer_merge_result(type());
+  base::WeakPtrFactory<syncer::SyncMergeResult> weak_ptr_factory(
+      &syncer_merge_result);
 
   // Connect |shared_change_processor_| to the syncer and get the
   // syncer::SyncableService associated with type().
-  local_service_ = shared_change_processor_->Connect(profile_sync_factory_,
-                                                     sync_service_,
-                                                     this,
-                                                     type());
+  local_service_ = shared_change_processor_->Connect(
+      profile_sync_factory_,
+      sync_service_,
+      this,
+      type(),
+      weak_ptr_factory.GetWeakPtr());
   if (!local_service_.get()) {
     syncer::SyncError error(FROM_HERE, "Failed to connect to syncer.", type());
-    StartFailed(UNRECOVERABLE_ERROR, error);
+    local_merge_result.set_error(error);
+    StartDone(UNRECOVERABLE_ERROR,
+              local_merge_result,
+              syncer_merge_result);
     return;
   }
 
   if (!shared_change_processor_->CryptoReadyIfNecessary()) {
-    StartFailed(NEEDS_CRYPTO, syncer::SyncError());
+    StartDone(NEEDS_CRYPTO,
+              local_merge_result,
+              syncer_merge_result);
     return;
   }
 
@@ -138,7 +150,10 @@ void UIDataTypeController::Associate() {
   if (!shared_change_processor_->SyncModelHasUserCreatedNodes(
           &sync_has_nodes)) {
     syncer::SyncError error(FROM_HERE, "Failed to load sync nodes", type());
-    StartFailed(UNRECOVERABLE_ERROR, error);
+    local_merge_result.set_error(error);
+    StartDone(UNRECOVERABLE_ERROR,
+              local_merge_result,
+              syncer_merge_result);
     return;
   }
 
@@ -147,11 +162,19 @@ void UIDataTypeController::Associate() {
   syncer::SyncDataList initial_sync_data;
   error = shared_change_processor_->GetSyncData(&initial_sync_data);
   if (error.IsSet()) {
-    StartFailed(ASSOCIATION_FAILED, error);
+    local_merge_result.set_error(error);
+    StartDone(ASSOCIATION_FAILED,
+              local_merge_result,
+              syncer_merge_result);
     return;
   }
 
   // Passes a reference to |shared_change_processor_|.
+  // TODO(zea): have SyncableService return a SyncMergeResult and pass that on
+  // to the ModelAssociationManager.
+  // TODO(zea): Call shared_change_processor_->GetAllSyncData(..) before
+  // and after MergeDataAndStartSyncing and store the item counts into
+  // syncer_merge_result.
   error = local_service_->MergeDataAndStartSyncing(
       type(),
       initial_sync_data,
@@ -161,39 +184,18 @@ void UIDataTypeController::Associate() {
           new SharedChangeProcessorRef(shared_change_processor_)));
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
   if (error.IsSet()) {
-    StartFailed(ASSOCIATION_FAILED, error);
+    local_merge_result.set_error(error);
+    StartDone(ASSOCIATION_FAILED,
+              local_merge_result,
+              syncer_merge_result);
     return;
   }
 
   shared_change_processor_->ActivateDataType(model_safe_group());
   state_ = RUNNING;
-  StartDone(sync_has_nodes ? OK : OK_FIRST_RUN);
-}
-
-void UIDataTypeController::StartFailed(StartResult result,
-                                       const syncer::SyncError& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (IsUnrecoverableResult(result))
-    RecordUnrecoverableError(FROM_HERE, "StartFailed");
-  StopModels();
-  if (result == ASSOCIATION_FAILED) {
-    state_ = DISABLED;
-  } else {
-    state_ = NOT_RUNNING;
-  }
-  RecordStartFailure(result);
-
-  if (shared_change_processor_.get()) {
-    shared_change_processor_->Disconnect();
-    shared_change_processor_ = NULL;
-  }
-
-  // We have to release the callback before we call it, since it's possible
-  // invoking the callback will trigger a call to Stop(), which will get
-  // confused by the non-NULL start_callback_.
-  StartCallback callback = start_callback_;
-  start_callback_.Reset();
-  callback.Run(result, error);
+  StartDone(sync_has_nodes ? OK : OK_FIRST_RUN,
+            local_merge_result,
+            syncer_merge_result);
 }
 
 void UIDataTypeController::AbortModelLoad() {
@@ -211,15 +213,36 @@ void UIDataTypeController::AbortModelLoad() {
                                             type()));
 }
 
-void UIDataTypeController::StartDone(StartResult result) {
+void UIDataTypeController::StartDone(
+    StartResult start_result,
+    const syncer::SyncMergeResult& local_merge_result,
+    const syncer::SyncMergeResult& syncer_merge_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!IsSuccessfulResult(start_result)) {
+    if (IsUnrecoverableResult(start_result))
+      RecordUnrecoverableError(FROM_HERE, "StartFailed");
+
+    StopModels();
+    if (start_result == ASSOCIATION_FAILED) {
+      state_ = DISABLED;
+    } else {
+      state_ = NOT_RUNNING;
+    }
+    RecordStartFailure(start_result);
+
+    if (shared_change_processor_.get()) {
+      shared_change_processor_->Disconnect();
+      shared_change_processor_ = NULL;
+    }
+  }
 
   // We have to release the callback before we call it, since it's possible
   // invoking the callback will trigger a call to Stop(), which will get
   // confused by the non-NULL start_callback_.
   StartCallback callback = start_callback_;
   start_callback_.Reset();
-  callback.Run(result, syncer::SyncError());
+  callback.Run(start_result, local_merge_result, syncer_merge_result);
 }
 
 void UIDataTypeController::Stop() {

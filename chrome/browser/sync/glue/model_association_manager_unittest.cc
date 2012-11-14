@@ -53,9 +53,9 @@ ACTION_P(VerifyResult, expected_result) {
   EXPECT_TRUE(arg0.waiting_to_start.Equals(expected_result.waiting_to_start));
 }
 
-class ModelAssociationManagerTest : public testing::Test {
+class SyncModelAssociationManagerTest : public testing::Test {
  public:
-  ModelAssociationManagerTest() :
+  SyncModelAssociationManagerTest() :
       ui_thread_(content::BrowserThread::UI, &ui_loop_) {
   }
 
@@ -68,11 +68,13 @@ class ModelAssociationManagerTest : public testing::Test {
 
 // Start a type and make sure ModelAssociationManager callst the |Start|
 // method and calls the callback when it is done.
-TEST_F(ModelAssociationManagerTest, SimpleModelStart) {
+TEST_F(SyncModelAssociationManagerTest, SimpleModelStart) {
   controllers_[syncer::BOOKMARKS] =
       new FakeDataTypeController(syncer::BOOKMARKS);
-  ModelAssociationManager model_association_manager(&controllers_,
-                                                    &result_processor_);
+  ModelAssociationManager model_association_manager(
+      syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(),
+      &controllers_,
+      &result_processor_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
   DataTypeManager::ConfigureResult expected_result(
@@ -94,11 +96,13 @@ TEST_F(ModelAssociationManagerTest, SimpleModelStart) {
 }
 
 // Start a type and call stop before it finishes associating.
-TEST_F(ModelAssociationManagerTest, StopModelBeforeFinish) {
+TEST_F(SyncModelAssociationManagerTest, StopModelBeforeFinish) {
   controllers_[syncer::BOOKMARKS] =
       new FakeDataTypeController(syncer::BOOKMARKS);
-  ModelAssociationManager model_association_manager(&controllers_,
-                                                    &result_processor_);
+  ModelAssociationManager model_association_manager(
+      syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(),
+      &controllers_,
+      &result_processor_);
 
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
@@ -124,11 +128,13 @@ TEST_F(ModelAssociationManagerTest, StopModelBeforeFinish) {
 }
 
 // Start a type, let it finish and then call stop.
-TEST_F(ModelAssociationManagerTest, StopAfterFinish) {
+TEST_F(SyncModelAssociationManagerTest, StopAfterFinish) {
   controllers_[syncer::BOOKMARKS] =
       new FakeDataTypeController(syncer::BOOKMARKS);
-  ModelAssociationManager model_association_manager(&controllers_,
-                                                    &result_processor_);
+  ModelAssociationManager model_association_manager(
+      syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(),
+      &controllers_,
+      &result_processor_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
   DataTypeManager::ConfigureResult expected_result(
@@ -154,11 +160,13 @@ TEST_F(ModelAssociationManagerTest, StopAfterFinish) {
 }
 
 // Make a type fail model association and verify correctness.
-TEST_F(ModelAssociationManagerTest, TypeFailModelAssociation) {
+TEST_F(SyncModelAssociationManagerTest, TypeFailModelAssociation) {
   controllers_[syncer::BOOKMARKS] =
       new FakeDataTypeController(syncer::BOOKMARKS);
-  ModelAssociationManager model_association_manager(&controllers_,
-                                                    &result_processor_);
+  ModelAssociationManager model_association_manager(
+      syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(),
+      &controllers_,
+      &result_processor_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
   std::list<syncer::SyncError> errors;
@@ -183,11 +191,13 @@ TEST_F(ModelAssociationManagerTest, TypeFailModelAssociation) {
 }
 
 // Ensure configuring stops when a type returns a unrecoverable error.
-TEST_F(ModelAssociationManagerTest, TypeReturnUnrecoverableError) {
+TEST_F(SyncModelAssociationManagerTest, TypeReturnUnrecoverableError) {
   controllers_[syncer::BOOKMARKS] =
       new FakeDataTypeController(syncer::BOOKMARKS);
-  ModelAssociationManager model_association_manager(&controllers_,
-                                                    &result_processor_);
+  ModelAssociationManager model_association_manager(
+      syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(),
+      &controllers_,
+      &result_processor_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
   std::list<syncer::SyncError> errors;
@@ -211,15 +221,17 @@ TEST_F(ModelAssociationManagerTest, TypeReturnUnrecoverableError) {
       DataTypeController::UNRECOVERABLE_ERROR);
 }
 
-TEST_F(ModelAssociationManagerTest, InitializeAbortsLoad) {
+TEST_F(SyncModelAssociationManagerTest, InitializeAbortsLoad) {
   controllers_[syncer::BOOKMARKS] =
       new FakeDataTypeController(syncer::BOOKMARKS);
   controllers_[syncer::THEMES] =
       new FakeDataTypeController(syncer::THEMES);
 
   GetController(controllers_, syncer::BOOKMARKS)->SetDelayModelLoad();
-  ModelAssociationManager model_association_manager(&controllers_,
-                                                    &result_processor_);
+  ModelAssociationManager model_association_manager(
+      syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(),
+      &controllers_,
+      &result_processor_);
   syncer::ModelTypeSet types(syncer::BOOKMARKS, syncer::THEMES);
 
   syncer::ModelTypeSet expected_types_waiting_to_load;
@@ -283,14 +295,16 @@ TEST_F(ModelAssociationManagerTest, InitializeAbortsLoad) {
 
 // Start 2 types. One of which timeout loading. Ensure that type is
 // fully configured eventually.
-TEST_F(ModelAssociationManagerTest, ModelStartWithSlowLoadingType) {
+TEST_F(SyncModelAssociationManagerTest, ModelStartWithSlowLoadingType) {
   controllers_[syncer::BOOKMARKS] =
       new FakeDataTypeController(syncer::BOOKMARKS);
   controllers_[syncer::APPS] =
       new FakeDataTypeController(syncer::APPS);
   GetController(controllers_, syncer::BOOKMARKS)->SetDelayModelLoad();
-  ModelAssociationManager model_association_manager(&controllers_,
-                                                    &result_processor_);
+  ModelAssociationManager model_association_manager(
+      syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(),
+      &controllers_,
+      &result_processor_);
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
   types.Put(syncer::APPS);

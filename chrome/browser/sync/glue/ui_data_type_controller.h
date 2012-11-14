@@ -77,9 +77,10 @@ class UIDataTypeController : public DataTypeController {
   // DataTypeController interface.
   virtual void OnModelLoaded() OVERRIDE;
 
-  // Helper methods for cleaning up state and invoking the start callback.
-  virtual void StartFailed(StartResult result, const syncer::SyncError& error);
-  virtual void StartDone(StartResult result);
+  // Helper method for cleaning up state and invoking the start callback.
+  virtual void StartDone(StartResult result,
+                         const syncer::SyncMergeResult& local_merge_result,
+                         const syncer::SyncMergeResult& syncer_merge_result);
 
   // Record association time.
   virtual void RecordAssociationTime(base::TimeDelta time);

@@ -57,7 +57,12 @@ bool PasswordDataTypeController::StartModels() {
         FROM_HERE,
         "PasswordStore not initialized, password datatype controller aborting.",
         type());
-    StartDoneImpl(ASSOCIATION_FAILED, DISABLED, error);
+    syncer::SyncMergeResult local_merge_result(type());
+    local_merge_result.set_error(error);
+    StartDoneImpl(ASSOCIATION_FAILED,
+                  DISABLED,
+                  local_merge_result,
+                  syncer::SyncMergeResult(type()));
     return false;
   }
   return true;

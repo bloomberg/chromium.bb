@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/new_non_frontend_data_type_controller.h"
 
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync/glue/shared_change_processor_ref.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -77,7 +78,12 @@ void NewNonFrontendDataTypeController::StartAssociating(
   if (!StartAssociationAsync()) {
     syncer::SyncError error(
         FROM_HERE, "Failed to post StartAssociation", type());
-    StartDoneImpl(ASSOCIATION_FAILED, NOT_RUNNING, error);
+    syncer::SyncMergeResult local_merge_result(type());
+    local_merge_result.set_error(error);
+    StartDoneImpl(ASSOCIATION_FAILED,
+                  NOT_RUNNING,
+                  local_merge_result,
+                  syncer::SyncMergeResult(type()));
     // StartDoneImpl should have called ClearSharedChangeProcessor();
     DCHECK(!shared_change_processor_.get());
     return;
@@ -105,7 +111,10 @@ void NewNonFrontendDataTypeController::Stop() {
       return;  // The datatype was never activated, we're done.
     case ASSOCIATING:
       set_state(STOPPING);
-      StartDoneImpl(ABORTED, NOT_RUNNING, syncer::SyncError());
+      StartDoneImpl(ABORTED,
+                    NOT_RUNNING,
+                    syncer::SyncMergeResult(type()),
+                    syncer::SyncMergeResult(type()));
       // We continue on to deactivate the datatype and stop the local service.
       break;
     case DISABLED:
@@ -140,31 +149,49 @@ NewNonFrontendDataTypeController::NewNonFrontendDataTypeController() {}
 NewNonFrontendDataTypeController::~NewNonFrontendDataTypeController() {}
 
 void NewNonFrontendDataTypeController::StartDone(
-    DataTypeController::StartResult result,
-    DataTypeController::State new_state,
-    const syncer::SyncError& error) {
+    DataTypeController::StartResult start_result,
+    const syncer::SyncMergeResult& local_merge_result,
+    const syncer::SyncMergeResult& syncer_merge_result) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DataTypeController::State new_state;
+  if (IsSuccessfulResult(start_result)) {
+    new_state = RUNNING;
+  } else {
+    new_state = (start_result == ASSOCIATION_FAILED ? DISABLED : NOT_RUNNING);
+  }
+
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(
           &NewNonFrontendDataTypeController::StartDoneImpl,
           this,
-          result,
+          start_result,
           new_state,
-          error));
+          local_merge_result,
+          syncer_merge_result));
 }
 
 void NewNonFrontendDataTypeController::StartDoneImpl(
-    DataTypeController::StartResult result,
+    DataTypeController::StartResult start_result,
     DataTypeController::State new_state,
-    const syncer::SyncError& error) {
+    const syncer::SyncMergeResult& local_merge_result,
+    const syncer::SyncMergeResult& syncer_merge_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (IsUnrecoverableResult(start_result))
+    RecordUnrecoverableError(FROM_HERE, "StartFailed");
+
   // If we failed to start up, and we haven't been stopped yet, we need to
   // ensure we clean up the local service and shared change processor properly.
   if (new_state != RUNNING && state() != NOT_RUNNING && state() != STOPPING) {
     ClearSharedChangeProcessor();
     StopLocalServiceAsync();
   }
-  NonFrontendDataTypeController::StartDoneImpl(result, new_state, error);
+
+  NonFrontendDataTypeController::StartDoneImpl(start_result,
+                                               new_state,
+                                               local_merge_result,
+                                               syncer_merge_result);
 }
 
 void NewNonFrontendDataTypeController::AbortModelStarting() {
@@ -199,53 +226,79 @@ void NewNonFrontendDataTypeController::
         const scoped_refptr<SharedChangeProcessor>& shared_change_processor) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(shared_change_processor.get());
+  syncer::SyncMergeResult local_merge_result(type());
+  syncer::SyncMergeResult syncer_merge_result(type());
+  base::WeakPtrFactory<syncer::SyncMergeResult> weak_ptr_factory(
+      &syncer_merge_result);
 
   // Connect |shared_change_processor| to the syncer and get the
   // syncer::SyncableService associated with type().
   // Note that it's possible the shared_change_processor has already been
   // disconnected at this point, so all our accesses to the syncer from this
   // point on are through it.
-  local_service_ = shared_change_processor->Connect(profile_sync_factory(),
-                                                    profile_sync_service(),
-                                                    this,
-                                                    type());
+  local_service_ = shared_change_processor->Connect(
+      profile_sync_factory(),
+      profile_sync_service(),
+      this,
+      type(),
+      weak_ptr_factory.GetWeakPtr());
   if (!local_service_.get()) {
     syncer::SyncError error(FROM_HERE, "Failed to connect to syncer.", type());
-    StartFailed(ASSOCIATION_FAILED, error);
+    local_merge_result.set_error(error);
+    StartDone(ASSOCIATION_FAILED,
+              local_merge_result,
+              syncer_merge_result);
     return;
   }
 
   if (!shared_change_processor->CryptoReadyIfNecessary()) {
-    StartFailed(NEEDS_CRYPTO, syncer::SyncError());
+    StartDone(NEEDS_CRYPTO,
+              local_merge_result,
+              syncer_merge_result);
     return;
   }
 
   bool sync_has_nodes = false;
   if (!shared_change_processor->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
     syncer::SyncError error(FROM_HERE, "Failed to load sync nodes", type());
-    StartFailed(UNRECOVERABLE_ERROR, error);
+    local_merge_result.set_error(error);
+    StartDone(UNRECOVERABLE_ERROR,
+              local_merge_result,
+              syncer_merge_result);
     return;
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
-  syncer::SyncError error;
   syncer::SyncDataList initial_sync_data;
-  error = shared_change_processor->GetSyncData(&initial_sync_data);
+  syncer::SyncError error =
+      shared_change_processor->GetSyncData(&initial_sync_data);
   if (error.IsSet()) {
-    StartFailed(ASSOCIATION_FAILED, error);
+    local_merge_result.set_error(error);
+    StartDone(ASSOCIATION_FAILED,
+              local_merge_result,
+              syncer_merge_result);
     return;
   }
   // Passes a reference to |shared_change_processor|.
-  error = local_service_->MergeDataAndStartSyncing(
-      type(),
-      initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor>(
-          new SharedChangeProcessorRef(shared_change_processor)),
-      scoped_ptr<syncer::SyncErrorFactory>(
-          new SharedChangeProcessorRef(shared_change_processor)));
+  // TODO(zea): have SyncableService return a SyncMergeResult and pass that on
+  // to the ModelAssociationManager.
+  // TODO(zea): Call shared_change_processor_->GetAllSyncData(..) before
+  // and after MergeDataAndStartSyncing and store the item counts into
+  // syncer_merge_result.
+  error =
+      local_service_->MergeDataAndStartSyncing(
+          type(),
+          initial_sync_data,
+          scoped_ptr<syncer::SyncChangeProcessor>(
+              new SharedChangeProcessorRef(shared_change_processor)),
+          scoped_ptr<syncer::SyncErrorFactory>(
+              new SharedChangeProcessorRef(shared_change_processor)));
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
   if (error.IsSet()) {
-    StartFailed(ASSOCIATION_FAILED, error);
+    local_merge_result.set_error(error);
+    StartDone(ASSOCIATION_FAILED,
+              local_merge_result,
+              syncer_merge_result);
     return;
   }
 
@@ -256,7 +309,9 @@ void NewNonFrontendDataTypeController::
   // doesn't start trying to push changes from its thread before we activate
   // the datatype.
   shared_change_processor->ActivateDataType(model_safe_group());
-  StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK, RUNNING, syncer::SyncError());
+  StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK,
+            local_merge_result,
+            syncer_merge_result);
 }
 
 void NewNonFrontendDataTypeController::ClearSharedChangeProcessor() {

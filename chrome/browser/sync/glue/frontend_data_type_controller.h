@@ -87,9 +87,11 @@ class FrontendDataTypeController : public DataTypeController {
   // the datatype controller. The default implementation is a no-op.
   virtual void CleanUpState();
 
-  // Helper methods for cleaning up state an running the start callback.
-  virtual void StartFailed(StartResult result, const syncer::SyncError& error);
-  virtual void FinishStart(StartResult result);
+  // Helper method for cleaning up state and running the start callback.
+  virtual void StartDone(
+      StartResult start_result,
+      const syncer::SyncMergeResult& local_merge_result,
+      const syncer::SyncMergeResult& syncer_merge_result);
 
   // Record association time.
   virtual void RecordAssociationTime(base::TimeDelta time);

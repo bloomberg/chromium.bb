@@ -49,7 +49,8 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
     ProfileSyncComponentsFactory* sync_factory,
     ProfileSyncService* sync_service,
     DataTypeErrorHandler* error_handler,
-    syncer::ModelType type) {
+    syncer::ModelType type,
+    const base::WeakPtr<syncer::SyncMergeResult>& merge_result) {
   DCHECK(sync_factory);
   DCHECK(sync_service);
   DCHECK(error_handler);
@@ -68,6 +69,8 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
     disconnected_ = true;
     return base::WeakPtr<syncer::SyncableService>();
   }
+
+  // TODO(zea): Pass |merge_result| to the generic change processor.
   generic_change_processor_ =
       sync_factory->CreateGenericChangeProcessor(sync_service_,
                                                  error_handler,

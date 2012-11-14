@@ -96,9 +96,10 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
 
   // Passed to AutofillDTC::Start().
   void OnStartFinished(DataTypeController::StartResult result,
-                       const syncer::SyncError& error) {
+                       const syncer::SyncMergeResult& local_merge_result,
+                       const syncer::SyncMergeResult& syncer_merge_result) {
     last_start_result_ = result;
-    last_start_error_ = error;
+    last_start_error_ = local_merge_result.error();
   }
 
   void OnLoadFinished(syncer::ModelType type, syncer::SyncError error) {

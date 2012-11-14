@@ -38,14 +38,15 @@ class NewNonFrontendDataTypeControllerMock
                     const base::Closure&));
   MOCK_METHOD0(StartAssociation, void());
   MOCK_METHOD0(CreateSyncComponents, void());
-  MOCK_METHOD2(StartFailed, void(StartResult result,
-                                 const syncer::SyncError& error));
-  MOCK_METHOD3(StartDone, void(DataTypeController::StartResult result,
-                               DataTypeController::State new_state,
-                               const syncer::SyncError& error));
-  MOCK_METHOD3(StartDoneImpl, void(DataTypeController::StartResult result,
-                                   DataTypeController::State new_state,
-                                   const syncer::SyncError& error));
+  MOCK_METHOD3(StartDone,
+               void(DataTypeController::StartResult result,
+                    const syncer::SyncMergeResult& local_merge_result,
+                    const syncer::SyncMergeResult& syncer_merge_result));
+  MOCK_METHOD4(StartDoneImpl,
+               void(DataTypeController::StartResult result,
+                    DataTypeController::State new_state,
+                    const syncer::SyncMergeResult& local_merge_result,
+                    const syncer::SyncMergeResult& syncer_merge_result));
   MOCK_METHOD0(StopModels, void());
   MOCK_METHOD0(StopAssociationAsync, bool());
   MOCK_METHOD0(StopAssociation, void());

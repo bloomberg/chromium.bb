@@ -415,6 +415,8 @@
         'api/sync_error.cc',
         'api/sync_error_factory.h',
         'api/sync_error_factory.cc',
+        'api/sync_merge_result.h',
+        'api/sync_merge_result.cc',
         'api/time.h',
       ],
     },
@@ -612,6 +614,7 @@
           'internal_api/public/base/ordinal_unittest.cc',
           'internal_api/public/engine/model_safe_worker_unittest.cc',
           'internal_api/public/util/immutable_unittest.cc',
+          'internal_api/public/util/weak_handle_unittest.cc',
           'engine/apply_control_data_updates_unittest.cc',
           'engine/apply_updates_and_resolve_conflicts_command_unittest.cc',
           'engine/backoff_delay_provider_unittest.cc',
@@ -647,7 +650,6 @@
           'util/get_session_name_unittest.cc',
           'util/nigori_unittest.cc',
           'util/protobuf_unittest.cc',
-          'internal_api/public/util/weak_handle_unittest.cc',
         ],
         'conditions': [
           ['OS == "ios" and coverage != 0', {
@@ -832,6 +834,7 @@
         'sources': [
           'api/sync_change_unittest.cc',
           'api/sync_error_unittest.cc',
+          'api/sync_merge_result_unittest.cc',
         ],
       },
     },

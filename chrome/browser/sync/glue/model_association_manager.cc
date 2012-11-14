@@ -2,23 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
-#include <functional>
-
-#include "base/debug/trace_event.h"
-
-#include "base/logging.h"
-#include "base/message_loop.h"
-#include "base/metrics/histogram.h"
-
 #include "chrome/browser/sync/glue/model_association_manager.h"
 
 #include <algorithm>
 #include <functional>
-#include "content/public/browser/browser_thread.h"
 
 #include "base/debug/trace_event.h"
-
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -77,15 +66,49 @@ class SortComparator : public std::binary_function<DataTypeController*,
   std::map<syncer::ModelType, int>* order_;
 };
 
+syncer::DataTypeAssociationStats BuildAssociationStatsFromMergeResults(
+    const syncer::SyncMergeResult& local_merge_result,
+    const syncer::SyncMergeResult& syncer_merge_result) {
+  DCHECK_EQ(local_merge_result.model_type(), syncer_merge_result.model_type());
+  syncer::DataTypeAssociationStats stats;
+  stats.model_type = local_merge_result.model_type();
+  stats.had_error = local_merge_result.error().IsSet() ||
+                    syncer_merge_result.error().IsSet();
+  stats.num_local_items_before_association =
+      local_merge_result.num_items_before_association();
+  stats.num_sync_items_before_association =
+      syncer_merge_result.num_items_before_association();
+  stats.num_local_items_after_association =
+      local_merge_result.num_items_after_association();
+  stats.num_sync_items_after_association =
+      syncer_merge_result.num_items_after_association();
+  stats.num_local_items_added =
+      local_merge_result.num_items_added();
+  stats.num_local_items_deleted =
+      local_merge_result.num_items_deleted();
+  stats.num_local_items_modified =
+      local_merge_result.num_items_modified();
+  stats.num_sync_items_added =
+      syncer_merge_result.num_items_added();
+  stats.num_sync_items_deleted =
+      syncer_merge_result.num_items_deleted();
+  stats.num_sync_items_modified =
+      syncer_merge_result.num_items_modified();
+  return stats;
+}
+
 }  // namespace
 
 ModelAssociationManager::ModelAssociationManager(
+    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+        debug_info_listener,
     const DataTypeController::TypeMap* controllers,
     ModelAssociationResultProcessor* processor)
     : state_(IDLE),
       currently_associating_(NULL),
       controllers_(controllers),
       result_processor_(processor),
+      debug_info_listener_(debug_info_listener),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 
   // Ensure all data type controllers are stopped.
@@ -276,8 +299,9 @@ void ModelAssociationManager::AppendToFailedDatatypesAndLogError(
 }
 
 void ModelAssociationManager::TypeStartCallback(
-    DataTypeController::StartResult result,
-    const syncer::SyncError& error) {
+    DataTypeController::StartResult start_result,
+    const syncer::SyncMergeResult& local_merge_result,
+    const syncer::SyncMergeResult& syncer_merge_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TRACE_EVENT_END0("sync", "ModelAssociation");
 
@@ -297,32 +321,47 @@ void ModelAssociationManager::TypeStartCallback(
   DataTypeController* started_dtc = currently_associating_;
   currently_associating_ = NULL;
 
-  if (result == DataTypeController::ASSOCIATION_FAILED) {
+  if (start_result == DataTypeController::ASSOCIATION_FAILED) {
     DVLOG(1) << "ModelAssociationManager: Encountered a failed type";
-    AppendToFailedDatatypesAndLogError(result, error);
+    AppendToFailedDatatypesAndLogError(start_result,
+                                       local_merge_result.error());
+  }
+
+  // Track the merge results if we succeeded or an association failure
+  // occurred.
+  if ((DataTypeController::IsSuccessfulResult(start_result) ||
+       start_result == DataTypeController::ASSOCIATION_FAILED) &&
+      debug_info_listener_.IsInitialized()) {
+    syncer::DataTypeAssociationStats stats =
+        BuildAssociationStatsFromMergeResults(local_merge_result,
+                                              syncer_merge_result);
+    debug_info_listener_.Call(
+        FROM_HERE,
+        &syncer::DataTypeDebugInfoListener::OnDataTypeAssociationComplete,
+        stats);
   }
 
   // If the type started normally, continue to the next type.
   // If the type is waiting for the cryptographer, continue to the next type.
   // Once the cryptographer is ready, we'll attempt to restart this type.
   // If this type encountered a type specific error continue to the next type.
-  if (result == DataTypeController::NEEDS_CRYPTO ||
-      result == DataTypeController::OK ||
-      result == DataTypeController::OK_FIRST_RUN ||
-      result == DataTypeController::ASSOCIATION_FAILED) {
+  if (start_result == DataTypeController::NEEDS_CRYPTO ||
+      DataTypeController::IsSuccessfulResult(start_result) ||
+      start_result == DataTypeController::ASSOCIATION_FAILED) {
+
     DVLOG(1) << "ModelAssociationManager: type start callback returned "
-             << result << " so calling LoadModelForNextType";
+             << start_result << " so calling LoadModelForNextType";
     LoadModelForNextType();
     return;
   }
 
   // Any other result requires reconfiguration. Pass it on through the callback.
   LOG(ERROR) << "Failed to configure " << started_dtc->name();
-  DCHECK(error.IsSet());
-  DCHECK_EQ(started_dtc->type(), error.type());
+  DCHECK(local_merge_result.error().IsSet());
+  DCHECK_EQ(started_dtc->type(), local_merge_result.error().type());
   DataTypeManager::ConfigureStatus configure_status =
       DataTypeManager::ABORTED;
-  switch (result) {
+  switch (start_result) {
     case DataTypeController::ABORTED:
       configure_status = DataTypeManager::ABORTED;
       break;
@@ -335,7 +374,7 @@ void ModelAssociationManager::TypeStartCallback(
   }
 
   std::list<syncer::SyncError> errors;
-  errors.push_back(error);
+  errors.push_back(local_merge_result.error());
 
   // Put our state to idle.
   state_ = IDLE;

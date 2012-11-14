@@ -119,7 +119,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
 
   void SetActivateExpectations(DataTypeController::StartResult result) {
     EXPECT_CALL(service_, ActivateDataType(_, _, _));
-    EXPECT_CALL(start_callback_, Run(result,_));
+    EXPECT_CALL(start_callback_, Run(result, _, _));
   }
 
   void SetStopExpectations() {
@@ -134,7 +134,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
       EXPECT_CALL(*dtc_mock_, RecordUnrecoverableError(_, _));
     EXPECT_CALL(*dtc_mock_, CleanUpState());
     EXPECT_CALL(*dtc_mock_, RecordStartFailure(result));
-    EXPECT_CALL(start_callback_, Run(result,_));
+    EXPECT_CALL(start_callback_, Run(result, _, _));
   }
 
   void Start() {
@@ -209,7 +209,7 @@ TEST_F(SyncFrontendDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_CALL(*model_associator_, AssociateModels()).
       WillOnce(Return(syncer::SyncError(FROM_HERE,
                                 "error",
-                                syncer::PREFERENCES)));
+                                syncer::BOOKMARKS)));
 
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   SetStartFailExpectations(DataTypeController::ASSOCIATION_FAILED);

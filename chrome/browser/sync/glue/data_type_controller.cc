@@ -13,6 +13,10 @@ bool DataTypeController::IsUnrecoverableResult(StartResult result) {
   return (result == UNRECOVERABLE_ERROR);
 }
 
+bool DataTypeController::IsSuccessfulResult(StartResult result) {
+  return (result == OK || result == OK_FIRST_RUN);
+}
+
 syncer::SyncError DataTypeController::CreateAndUploadError(
     const tracked_objects::Location& location,
     const std::string& message,

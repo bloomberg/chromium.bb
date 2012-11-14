@@ -113,7 +113,7 @@ class SyncUIDataTypeControllerTest : public testing::Test {
 // state.
 TEST_F(SyncUIDataTypeControllerTest, Start) {
   SetActivateExpectations();
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
@@ -127,7 +127,7 @@ TEST_F(SyncUIDataTypeControllerTest, Start) {
 TEST_F(SyncUIDataTypeControllerTest, StartStop) {
   SetActivateExpectations();
   SetStopExpectations();
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
@@ -144,7 +144,7 @@ TEST_F(SyncUIDataTypeControllerTest, StartStop) {
 TEST_F(SyncUIDataTypeControllerTest, StartStopFirstRun) {
   SetActivateExpectations();
   SetStopExpectations();
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _, _));
   change_processor_->set_sync_model_has_user_created_nodes(false);
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
@@ -163,7 +163,7 @@ TEST_F(SyncUIDataTypeControllerTest, StartStopFirstRun) {
 TEST_F(SyncUIDataTypeControllerTest, StartAssociationFailed) {
   SetStopExpectations();
   EXPECT_CALL(start_callback_,
-              Run(DataTypeController::ASSOCIATION_FAILED, _));
+              Run(DataTypeController::ASSOCIATION_FAILED, _, _));
   syncable_service_.set_merge_data_and_start_syncing_error(
       syncer::SyncError(FROM_HERE, "Error", type_));
 
@@ -183,7 +183,7 @@ TEST_F(SyncUIDataTypeControllerTest, StartAssociationFailed) {
 TEST_F(SyncUIDataTypeControllerTest,
        StartAssociationTriggersUnrecoverableError) {
   EXPECT_CALL(start_callback_,
-              Run(DataTypeController::UNRECOVERABLE_ERROR, _));
+              Run(DataTypeController::UNRECOVERABLE_ERROR, _, _));
   change_processor_->set_sync_model_has_user_created_nodes_success(false);
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
@@ -201,7 +201,7 @@ TEST_F(SyncUIDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
       WillOnce(InvokeWithoutArgs(preference_dtc_.get(),
                                  &UIDataTypeController::Stop));
   SetStopExpectations();
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
+  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
