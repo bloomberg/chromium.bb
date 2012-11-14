@@ -102,6 +102,7 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
   } else {
     info->SetString(kInstallReason, kInstallReasonInstall);
   }
+  DCHECK(system->event_router());
   system->event_router()->AddLazyEventListener(kOnInstalledEvent, extension_id);
   system->event_router()->DispatchEventToExtension(
       extension_id, kOnInstalledEvent, event_args.Pass(), NULL, GURL());
@@ -120,6 +121,7 @@ void RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
 
   scoped_ptr<ListValue> args(new ListValue);
   args->Append(manifest->DeepCopy());
+  DCHECK(system->event_router());
   system->event_router()->DispatchEventToExtension(
       extension_id, kOnUpdateAvailableEvent, args.Pass(), NULL, GURL());
 }

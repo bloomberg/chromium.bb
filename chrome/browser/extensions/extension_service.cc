@@ -2951,8 +2951,14 @@ bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {
 }
 
 bool ExtensionService::IsExtensionIdle(const std::string& extension_id) const {
-  ExtensionProcessManager* pm = system_->process_manager();
+  ExtensionProcessManager* process_manager = system_->process_manager();
+
+  // If there is no ExtensionProcessManager then assume the process is idle.
+  // This is commonly the case in unit-tests.
+  if (process_manager == NULL)
+    return true;
+
   extensions::ExtensionHost* host =
-      pm->GetBackgroundHostForExtension(extension_id);
+      process_manager->GetBackgroundHostForExtension(extension_id);
   return !host;
 }
