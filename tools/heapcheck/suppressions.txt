@@ -200,7 +200,6 @@
 {
    bug_146464_c
    Heapcheck:Leak
-   fun:??
    ...
    fun:RootWindowHostLinux
    fun:aura::RootWindowHost::Create
