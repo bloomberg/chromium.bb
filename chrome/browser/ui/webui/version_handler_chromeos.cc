@@ -14,16 +14,17 @@ VersionHandlerChromeOS::~VersionHandlerChromeOS() {
 
 void VersionHandlerChromeOS::HandleRequestVersionInfo(const ListValue* args) {
   // Start the asynchronous load of the version.
-  loader_.GetVersion(
-      chromeos::VersionLoader::VERSION_FULL,
-      base::Bind(&VersionHandlerChromeOS::OnVersion, base::Unretained(this)),
-      &tracker_);
+  loader_.GetVersion(&consumer_,
+                     base::Bind(&VersionHandlerChromeOS::OnVersion,
+                                base::Unretained(this)),
+                     chromeos::VersionLoader::VERSION_FULL);
 
   // Parent class takes care of the rest.
   VersionHandler::HandleRequestVersionInfo(args);
 }
 
-void VersionHandlerChromeOS::OnVersion(const std::string& version) {
+void VersionHandlerChromeOS::OnVersion(chromeos::VersionLoader::Handle handle,
+                                       const std::string& version) {
   StringValue arg(version);
   web_ui()->CallJavascriptFunction("returnOsVersion", arg);
 }

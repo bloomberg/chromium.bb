@@ -135,13 +135,13 @@ DeviceStatusCollector::DeviceStatusCollector(
   UpdateReportingSettings();
 
   // Get the the OS and firmware version info.
-  version_loader_.GetVersion(
-      VersionLoader::VERSION_FULL,
-      base::Bind(&DeviceStatusCollector::OnOSVersion, base::Unretained(this)),
-      &tracker_);
-  version_loader_.GetFirmware(
-      base::Bind(&DeviceStatusCollector::OnOSFirmware, base::Unretained(this)),
-      &tracker_);
+  version_loader_.GetVersion(&consumer_,
+                             base::Bind(&DeviceStatusCollector::OnOSVersion,
+                                        base::Unretained(this)),
+                             VersionLoader::VERSION_FULL);
+  version_loader_.GetFirmware(&consumer_,
+                              base::Bind(&DeviceStatusCollector::OnOSFirmware,
+                                         base::Unretained(this)));
 }
 
 DeviceStatusCollector::~DeviceStatusCollector() {
@@ -367,11 +367,13 @@ void DeviceStatusCollector::GetStatus(em::DeviceStatusReportRequest* request) {
     GetLocation(request);
 }
 
-void DeviceStatusCollector::OnOSVersion(const std::string& version) {
+void DeviceStatusCollector::OnOSVersion(VersionLoader::Handle handle,
+                                        const std::string& version) {
   os_version_ = version;
 }
 
-void DeviceStatusCollector::OnOSFirmware(const std::string& version) {
+void DeviceStatusCollector::OnOSFirmware(VersionLoader::Handle handle,
+                                         const std::string& version) {
   firmware_version_ = version;
 }
 

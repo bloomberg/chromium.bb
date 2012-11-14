@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chrome_browser_main_posix.h"
-#include "chrome/common/cancelable_task_tracker.h"
+#include "chrome/browser/common/cancelable_request.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/version_loader.h"
@@ -41,7 +41,7 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
 #if defined(OS_CHROMEOS)
   // TODO(stevenjb): Move these to ChromeBrowserMainChromeos.
   chromeos::VersionLoader cros_version_loader_;
-  CancelableTaskTracker tracker_;
+  CancelableRequestConsumer cros_consumer_;
 #else
   scoped_refptr<chrome::RemovableDeviceNotificationsLinux>
       removable_device_notifications_linux_;

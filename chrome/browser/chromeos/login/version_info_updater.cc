@@ -54,10 +54,11 @@ VersionInfoUpdater::~VersionInfoUpdater() {
 void VersionInfoUpdater::StartUpdate(bool is_official_build) {
   if (base::chromeos::IsRunningOnChromeOS()) {
     version_loader_.GetVersion(
-        is_official_build ? VersionLoader::VERSION_SHORT_WITH_DATE
-                          : VersionLoader::VERSION_FULL,
+        &version_consumer_,
         base::Bind(&VersionInfoUpdater::OnVersion, base::Unretained(this)),
-        &tracker_);
+        is_official_build ?
+            VersionLoader::VERSION_SHORT_WITH_DATE :
+            VersionLoader::VERSION_FULL);
     boot_times_loader_.GetBootTimes(
         &boot_times_consumer_,
         base::Bind(is_official_build ? &VersionInfoUpdater::OnBootTimesNoop :
@@ -189,7 +190,8 @@ void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name,
   }
 }
 
-void VersionInfoUpdater::OnVersion(const std::string& version) {
+void VersionInfoUpdater::OnVersion(
+    VersionLoader::Handle handle, const std::string& version) {
   version_text_ = version;
   UpdateVersionLabel();
 }

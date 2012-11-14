@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/common/cancelable_request.h"
-#include "chrome/common/cancelable_task_tracker.h"
 
 namespace chromeos {
 
@@ -41,18 +40,27 @@ class VersionLoader : public CancelableRequestProvider {
   };
 
   // Signature
-  typedef base::Callback<void(const std::string&)> GetVersionCallback;
-  typedef base::Callback<void(const std::string&)> GetFirmwareCallback;
+  typedef base::Callback<void(Handle, const std::string&)> GetVersionCallback;
+  typedef CancelableRequest<GetVersionCallback> GetVersionRequest;
+
+  typedef base::Callback<void(Handle, const std::string&)> GetFirmwareCallback;
+  typedef CancelableRequest<GetFirmwareCallback> GetFirmwareRequest;
 
   // Asynchronously requests the version.
   // If |full_version| is true version string with extra info is extracted,
   // otherwise it's in short format x.x.xx.x.
-  CancelableTaskTracker::TaskId GetVersion(VersionFormat format,
-                                           const GetVersionCallback& callback,
-                                           CancelableTaskTracker* tracker);
+  Handle GetVersion(CancelableRequestConsumerBase* consumer,
+                    const GetVersionCallback& callback,
+                    VersionFormat format);
 
-  CancelableTaskTracker::TaskId GetFirmware(const GetFirmwareCallback& callback,
-                                            CancelableTaskTracker* tracker);
+  Handle GetFirmware(CancelableRequestConsumerBase* consumer,
+                     const GetFirmwareCallback& callback);
+
+  // Parse the version information as a Chrome platfrom, not Chrome OS
+  // TODO(rkc): Change this and everywhere it is used once we switch Chrome OS
+  // over to xx.yyy.zz version numbers instead of 0.xx.yyy.zz
+  // Refer to http://code.google.com/p/chromium-os/issues/detail?id=15789
+  void EnablePlatformVersions(bool enable);
 
   static const char kFullVersionPrefix[];
   static const char kVersionPrefix[];
@@ -72,11 +80,12 @@ class VersionLoader : public CancelableRequestProvider {
     // Calls ParseVersion to get the version # and notifies request.
     // This is invoked on the file thread.
     // If |full_version| is true then extra info is passed in version string.
-    void GetVersion(VersionFormat format, std::string* version);
+    void GetVersion(scoped_refptr<GetVersionRequest> request,
+                    VersionFormat format);
 
     // Calls ParseFirmware to get the firmware # and notifies request.
     // This is invoked on the file thread.
-    void GetFirmware(std::string* firmware);
+    void GetFirmware(scoped_refptr<GetFirmwareRequest> request);
 
    private:
     friend class base::RefCountedThreadSafe<Backend>;

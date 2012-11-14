@@ -248,13 +248,11 @@ void HelpHandler::Observe(int type, const content::NotificationSource& source,
 void HelpHandler::OnPageLoaded(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   // Version information is loaded from a callback
-  loader_.GetVersion(
-      chromeos::VersionLoader::VERSION_FULL,
-      base::Bind(&HelpHandler::OnOSVersion, base::Unretained(this)),
-      &tracker_);
-  loader_.GetFirmware(
-      base::Bind(&HelpHandler::OnOSFirmware, base::Unretained(this)),
-      &tracker_);
+  loader_.GetVersion(&consumer_, base::Bind(&HelpHandler::OnOSVersion,
+                                            base::Unretained(this)),
+                     chromeos::VersionLoader::VERSION_FULL);
+  loader_.GetFirmware(&consumer_, base::Bind(&HelpHandler::OnOSFirmware,
+                                             base::Unretained(this)));
 
   scoped_ptr<base::Value> can_change_channel_value(
       base::Value::CreateBooleanValue(CanChangeReleaseChannel()));
@@ -399,13 +397,15 @@ void HelpHandler::SetPromotionState(VersionUpdater::PromotionState state) {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_CHROMEOS)
-void HelpHandler::OnOSVersion(const std::string& version) {
+void HelpHandler::OnOSVersion(chromeos::VersionLoader::Handle handle,
+                              const std::string& version) {
   scoped_ptr<Value> version_string(Value::CreateStringValue(version));
   web_ui()->CallJavascriptFunction("help.HelpPage.setOSVersion",
                                    *version_string);
 }
 
-void HelpHandler::OnOSFirmware(const std::string& firmware) {
+void HelpHandler::OnOSFirmware(chromeos::VersionLoader::Handle handle,
+                               const std::string& firmware) {
   scoped_ptr<Value> firmware_string(Value::CreateStringValue(firmware));
   web_ui()->CallJavascriptFunction("help.HelpPage.setOSFirmware",
                                    *firmware_string);
