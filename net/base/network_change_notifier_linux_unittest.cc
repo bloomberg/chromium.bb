@@ -76,7 +76,7 @@ class NetworkChangeNotifierLinuxTest : public testing::Test {
     event.Wait();
     // Run any tasks queued on the main thread, e.g. by
     // ObserverListThreadSafe.
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
 
   void SendResponse(uint32 state) {
