@@ -125,6 +125,7 @@ typedef struct _drm_intel_bufmgr_gem {
 	unsigned int has_wait_timeout : 1;
 	unsigned int bo_reuse : 1;
 	unsigned int no_exec : 1;
+	unsigned int has_vebox : 1;
 	bool fenced_relocs;
 
 	FILE *aub_file;
@@ -2213,6 +2214,10 @@ do_exec2(drm_intel_bo *bo, int used, drm_intel_context *ctx,
 		if (!bufmgr_gem->has_bsd)
 			return -EINVAL;
 		break;
+	case I915_EXEC_VEBOX:
+		if (!bufmgr_gem->has_vebox)
+			return -EINVAL;
+		break;
 	case I915_EXEC_RENDER:
 	case I915_EXEC_DEFAULT:
 		break;
@@ -3125,6 +3130,10 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 				IS_GEN7(bufmgr_gem->pci_device));
 	} else
 		bufmgr_gem->has_llc = *gp.value;
+
+	gp.param = I915_PARAM_HAS_VEBOX;
+	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
+	bufmgr_gem->has_vebox = (ret == 0) & (*gp.value > 0);
 
 	if (bufmgr_gem->gen < 4) {
 		gp.param = I915_PARAM_NUM_FENCES_AVAIL;
