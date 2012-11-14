@@ -226,6 +226,7 @@ EXTRA_TRANSLATOR_FLAGS=-sfi-zero-based-sandbox
 else
 EXTRA_TRANSLATOR_FLAGS=
 endif
+PNACL_TRANSLATOR_FLAGS_FAST=-translate-fast
 
 PNACL_BIN=$(PNACL_ROOT)/bin
 # Sandboxed translation uses the standalone translator install (which only
@@ -296,6 +297,12 @@ $(IT).pnacl_translator.opt.arm: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB_EMU) $(PNACL_FLAGS) $^ -o $@ -arch arm
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
+$(IT).pnacl_translator_fast.opt.arm: $(IT).opt.stripped.pexe
+	$(PNACL_TRANSLATOR_SB_EMU) $(PNACL_FLAGS) ${PNACL_TRANSLATOR_FLAGS_FAST} \
+	  $^ -o $@ -arch arm
+	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
+
+
 # For arm translator testing, the pexes are built on x86 and copied to the
 # arm boards, but the intermediate .bc files are removed to keep the transfer
 # small. To keep make from trying to rebuild the pexe, use a phony target
@@ -310,8 +317,15 @@ $(IT).pnacl_translator.opt.hw.arm:
 	 -o $@ -arch arm
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
+$(IT).pnacl_translator_fast.opt.hw.arm:
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(IT).opt.stripped.pexe \
+	 ${PNACL_TRANSLATOR_FLAGS_FAST} -o $@ -arch arm
+	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
+
+
 .PHONY: $(IT).pnacl_translator.hw.arm
 .PHONY: $(IT).pnacl_translator.opt.hw.arm
+.PHONY: $(IT).pnacl_translator_fast.opt.hw.arm
 
 ######################################################################
 # BITCODE - BACKEND - X8632 (sandboxed and non-sandboxed translators)
@@ -332,6 +346,12 @@ $(IT).pnacl_translator.opt.x8632: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch x86-32	
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
+$(IT).pnacl_translator_fast.opt.x8632: $(IT).opt.stripped.pexe
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) ${PNACL_TRANSLATOR_FLAGS_FAST} \
+	  $^ -o $@ -arch x86-32
+	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
+
+
 ######################################################################
 # BITCODE - BACKEND - X8664 (sandboxed and non-sandboxed translators)
 
@@ -349,4 +369,9 @@ $(IT).pnacl_translator.x8664: $(IT).unopt.stripped.pexe
 
 $(IT).pnacl_translator.opt.x8664: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch x86-64
+	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
+
+$(IT).pnacl_translator_fast.opt.x8664: $(IT).opt.stripped.pexe
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) ${PNACL_TRANSLATOR_FLAGS_FAST} \
+	  $^ -o $@ -arch x86-64
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))

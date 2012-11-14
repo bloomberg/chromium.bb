@@ -157,8 +157,10 @@ download-test-binaries() {
 pnacl-trybot-arm-qemu() {
   clobber
   build-prerequisites "arm" "bitcode"
-  build-tests SetupPnaclArmOpt "${TRYBOT_TESTS}" 0 1
-  run-tests SetupPnaclArmOpt "${TRYBOT_TESTS}" 0 1
+  build-tests SetupPnaclArmOpt "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclArmOpt "${TRYBOT_TESTS}" 1 1
+  build-tests SetupPnaclTranslatorFastArmOpt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorFastArmOpt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
 }
 
 pnacl-trybot-arm-buildonly() {
@@ -173,21 +175,25 @@ pnacl-trybot-arm-hw() {
   clobber
   ${BUILDBOT_PNACL} unarchive-for-hw-bots "${NAME_ARM_TRY_DOWNLOAD}" try
   download-test-binaries try
-  build-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 0 1
-  run-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 0 1
+  build-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 1 1
   pushd ${SPEC_BASE};
   ./run_all.sh TimeValidation SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" ||\
     handle-error
   popd
+  build-tests SetupPnaclTranslatorFastArmOptHW "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorFastArmOptHW "${TRYBOT_TESTS}" 1 1
 }
 
 pnacl-trybot-x8632() {
   clobber
   build-prerequisites "x86-32" "bitcode"
-  build-tests SetupPnaclX8632Opt "${TRYBOT_TESTS}" 0 1
-  run-tests SetupPnaclX8632Opt "${TRYBOT_TESTS}" 0 1
-  build-tests SetupPnaclTranslatorX8632Opt "${TRYBOT_TRANSLATOR_TESTS}" 0 1
-  run-tests SetupPnaclTranslatorX8632Opt "${TRYBOT_TRANSLATOR_TESTS}" 0 1
+  build-tests SetupPnaclX8632Opt "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclX8632Opt "${TRYBOT_TESTS}" 1 1
+  build-tests SetupPnaclTranslatorX8632Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorX8632Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
+  build-tests SetupPnaclTranslatorFastX8632Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorFastX8632Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
 }
 
 pnacl-x86-64-zero-based-sandbox() {
@@ -195,18 +201,20 @@ pnacl-x86-64-zero-based-sandbox() {
   export NACL_ENABLE_INSECURE_ZERO_BASED_SANDBOX=1
   build-prerequisites "x86-64" "bitcode" "x86_64_zero_based_sandbox=1"
   build-tests SetupPnaclX8664ZBSOpt \
-    "${TRYBOT_X86_64_ZERO_BASED_SANDBOX_TESTS}" 0 1
+    "${TRYBOT_X86_64_ZERO_BASED_SANDBOX_TESTS}" 1 1
   run-tests SetupPnaclX8664ZBSOpt \
-    "${TRYBOT_X86_64_ZERO_BASED_SANDBOX_TESTS}" 0 1
+    "${TRYBOT_X86_64_ZERO_BASED_SANDBOX_TESTS}" 1 1
 }
 
 pnacl-trybot-x8664() {
   clobber
   build-prerequisites "x86-64" "bitcode"
-  build-tests SetupPnaclX8664Opt "${TRYBOT_TESTS}" 0 1
-  run-tests SetupPnaclX8664Opt "${TRYBOT_TESTS}" 0 1
-  build-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 0 1
-  run-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 0 1
+  build-tests SetupPnaclX8664Opt "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclX8664Opt "${TRYBOT_TESTS}" 1 1
+  build-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
+  build-tests SetupPnaclTranslatorFastX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorFastX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 1 1
   pnacl-x86-64-zero-based-sandbox
 }
 
@@ -234,6 +242,8 @@ pnacl-arm-hw() {
   download-test-binaries regular
   build-tests SetupPnaclTranslatorArmOptHW all 1 1
   run-tests SetupPnaclTranslatorArmOptHW all 1 2
+  build-tests SetupPnaclTranslatorFastArmOptHW all 1 1
+  run-tests SetupPnaclTranslatorFastArmOptHW all 1 2
 }
 
 pnacl-x8664() {
@@ -242,7 +252,8 @@ pnacl-x8664() {
   local setups="SetupPnaclX8664 \
                SetupPnaclX8664Opt \
                SetupPnaclTranslatorX8664 \
-               SetupPnaclTranslatorX8664Opt"
+               SetupPnaclTranslatorX8664Opt \
+               SetupPnaclTranslatorFastX8664Opt"
   build-tests "${setups}" all 1 3
   run-tests "${setups}" all 1 3
   pnacl-x86-64-zero-based-sandbox
@@ -254,7 +265,8 @@ pnacl-x8632() {
   local setups="SetupPnaclX8632 \
                 SetupPnaclX8632Opt \
                 SetupPnaclTranslatorX8632 \
-                SetupPnaclTranslatorX8632Opt"
+                SetupPnaclTranslatorX8632Opt \
+                SetupPnaclTranslatorFastX8632Opt"
   build-tests "${setups}" all 1 3
   run-tests "${setups}" all 1 3
 }

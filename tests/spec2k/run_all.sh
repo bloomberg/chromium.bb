@@ -281,6 +281,16 @@ SetupPnaclTranslatorX8664Opt() {
   SUFFIX=pnacl_translator.opt.x8664
 }
 
+#@
+#@ SetupPnaclTranslatorFastX8664Opt
+#@    use pnacl x8664 translator fast mode (with lto)
+SetupPnaclTranslatorFastX8664Opt() {
+  SetupPnaclX8664Common
+  SUFFIX=pnacl_translator_fast.opt.x8664
+}
+
+
+
 SetupPnaclTranslatorJITX8632Common() {
  SetupSelLdr x86-32 "" "-S" "${RUNNABLE_LD_X8632} -- --library-path ${NNACL_TC}/x86_64-nacl/lib32 ${NACL_ROOT}/toolchain/pnacl_linux_x86/glibc/tools-sb/x8632/nonsrpc/bin/lli.x8632.nexe -asm-verbose=false -march=x86 -mcpu=pentium4 -mtriple=i686-none-nacl-gnu -jit-emit-debug=false -disable-lazy-compilation"
   DO_SIZE=false
@@ -341,6 +351,15 @@ SetupPnaclTranslatorX8632Opt() {
 }
 
 #@
+#@ SetupPnaclTranslatorFastX8632Opt
+#@    use pnacl x8632 translator fast mode (with lto)
+SetupPnaclTranslatorFastX8632Opt() {
+  SetupPnaclX8632Common
+  SUFFIX=pnacl_translator_fast.opt.x8632
+}
+
+
+#@
 #@ SetupGccArm
 #@   use CS cross compiler
 SetupGccArm() {
@@ -385,6 +404,16 @@ SetupPnaclTranslatorArmOpt() {
   SUFFIX=pnacl_translator.opt.arm
 }
 
+#@
+#@ SetupPnaclTranslatorFastArmOpt
+#@    use pnacl arm translator fast mode (with lto)
+SetupPnaclTranslatorFastArmOpt() {
+  SetupPnaclArmCommon
+  SUFFIX=pnacl_translator_fast.opt.arm
+}
+
+
+
 SetupPnaclArmCommonHW() {
   SetupSelLdr arm
 }
@@ -420,6 +449,15 @@ SetupPnaclTranslatorArmOptHW() {
   SetupPnaclArmCommonHW
   SUFFIX=pnacl_translator.opt.hw.arm
 }
+
+#@
+#@ SetupPnaclTranslatorFastArmOptHW
+#@    use pnacl arm translator fast mode (with lto) -- run on ARM hardware
+SetupPnaclTranslatorFastArmOptHW() {
+  SetupPnaclArmCommonHW
+  SUFFIX=pnacl_translator_fast.opt.hw.arm
+}
+
 
 ConfigInfo() {
   SubBanner "Config Info"
