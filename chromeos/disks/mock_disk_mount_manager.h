@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/observer_list.h"
-#include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,11 +52,7 @@ class MockDiskMountManager : public DiskMountManager {
   void CreateDiskEntryForMountDevice(
       const DiskMountManager::MountPointInfo& mount_info,
       const std::string& device_id,
-      const std::string& device_label,
-      const std::string& vendor_name,
-      const std::string& product_name,
-      DeviceType device_type,
-      uint64 total_size_in_bytes);
+      const std::string& device_label);
 
   // Removes the fake disk entry associated with the mounted device. This
   // function is primarily for RemovableDeviceNotificationsTest.

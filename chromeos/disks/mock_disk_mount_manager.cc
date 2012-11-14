@@ -183,11 +183,7 @@ void MockDiskMountManager::SetupDefaultReplies() {
 void MockDiskMountManager::CreateDiskEntryForMountDevice(
     const DiskMountManager::MountPointInfo& mount_info,
     const std::string& device_id,
-    const std::string& device_label,
-    const std::string& vendor_name,
-    const std::string& product_name,
-    DeviceType device_type,
-    uint64 total_size_in_bytes) {
+    const std::string& device_label) {
   Disk* disk = new DiskMountManager::Disk(std::string(mount_info.source_path),
                                           std::string(mount_info.mount_path),
                                           std::string(),  // system_path
@@ -195,13 +191,13 @@ void MockDiskMountManager::CreateDiskEntryForMountDevice(
                                           device_label,  // device_label
                                           std::string(),  // drive_label
                                           std::string(),  // vendor_id
-                                          vendor_name,
+                                          std::string(),  // vendor_name
                                           std::string(),  // product_id
-                                          product_name,
+                                          std::string(),  // product_name
                                           device_id,  // fs_uuid
                                           std::string(),  // system_path_prefix
-                                          device_type,
-                                          total_size_in_bytes,
+                                          DEVICE_TYPE_USB,  // device_type
+                                          1073741824,  // total_size_in_bytes
                                           false,  // is_parent
                                           false,  // is_read_only
                                           true,  // has_media
