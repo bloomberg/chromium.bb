@@ -708,52 +708,6 @@ TEST_F(TabStripModelTest, TestLTRInsertionOptions) {
   EXPECT_TRUE(tabstrip.empty());
 }
 
-// Tests inserting tabs with InsertAfter set to false.
-TEST_F(TabStripModelTest, InsertBefore) {
-  TabStripDummyDelegate delegate;
-  TabStripModel tabstrip(&delegate, profile());
-  tabstrip.SetInsertionPolicy(TabStripModel::INSERT_BEFORE);
-  EXPECT_TRUE(tabstrip.empty());
-
-  TabContents* contents1 = CreateTabContents();
-  TabContents* contents2 = CreateTabContents();
-  TabContents* contents3 = CreateTabContents();
-
-  InsertTabContentses(&tabstrip, contents1, contents2, contents3);
-
-  // The order should be reversed.
-  EXPECT_EQ(contents3, tabstrip.GetTabContentsAt(0));
-  EXPECT_EQ(contents2, tabstrip.GetTabContentsAt(1));
-  EXPECT_EQ(contents1, tabstrip.GetTabContentsAt(2));
-
-  tabstrip.CloseAllTabs();
-  EXPECT_TRUE(tabstrip.empty());
-}
-
-// Tests opening background tabs with InsertAfter set to false.
-TEST_F(TabStripModelTest, InsertBeforeOpeners) {
-  TabStripDummyDelegate delegate;
-  TabStripModel tabstrip(&delegate, profile());
-  tabstrip.SetInsertionPolicy(TabStripModel::INSERT_BEFORE);
-  EXPECT_TRUE(tabstrip.empty());
-  TabContents* opener_contents = CreateTabContents();
-  tabstrip.AppendTabContents(opener_contents, true);
-
-  TabContents* contents1 = CreateTabContents();
-  TabContents* contents2 = CreateTabContents();
-  TabContents* contents3 = CreateTabContents();
-
-  InsertTabContentses(&tabstrip, contents1, contents2, contents3);
-
-  // The order should be reversed.
-  EXPECT_EQ(contents3, tabstrip.GetTabContentsAt(0));
-  EXPECT_EQ(contents2, tabstrip.GetTabContentsAt(1));
-  EXPECT_EQ(contents1, tabstrip.GetTabContentsAt(2));
-
-  tabstrip.CloseAllTabs();
-  EXPECT_TRUE(tabstrip.empty());
-}
-
 // This test constructs a tabstrip, and then simulates loading several tabs in
 // the background from link clicks on the first tab. Then it simulates opening
 // a new tab from the first tab in the foreground via a link click, verifies

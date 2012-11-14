@@ -18,12 +18,6 @@ class WebContents;
 
 namespace chrome {
 
-// Returns the index to insert a tab at during session restore and startup.
-// |relative_index| gives the index of the url into the number of tabs that
-// are going to be opened. For example, if three urls are passed in on the
-// command line this is invoked three times with the values 0, 1 and 2.
-int GetIndexForInsertionDuringRestore(Browser* browser, int relative_index);
-
 // Add a tab with its session history restored from the SessionRestore
 // system. If select is true, the tab is selected. |tab_index| gives the index
 // to insert the tab at. |selected_navigation| is the index of the

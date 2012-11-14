@@ -39,12 +39,7 @@ NavigationController::RestoreType GetRestoreType(
       NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY;
 }
 
-}
-
-int GetIndexForInsertionDuringRestore(Browser* browser, int relative_index) {
-  return (browser->tab_strip_model()->insertion_policy() ==
-      TabStripModel::INSERT_AFTER) ? browser->tab_count() : relative_index;
-}
+}  // namespace
 
 content::WebContents* AddRestoredTab(
     Browser* browser,

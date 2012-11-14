@@ -21,22 +21,11 @@ class TabStripModelOrderController : public TabStripModelObserver {
   explicit TabStripModelOrderController(TabStripModel* tabstrip);
   virtual ~TabStripModelOrderController();
 
-  // Sets the insertion policy. Default is INSERT_AFTER.
-  void set_insertion_policy(TabStripModel::InsertionPolicy policy) {
-    insertion_policy_ = policy;
-  }
-  TabStripModel::InsertionPolicy insertion_policy() const {
-    return insertion_policy_;
-  }
-
   // Determine where to place a newly opened tab by using the supplied
   // transition and foreground flag to figure out how it was opened.
   int DetermineInsertionIndex(TabContents* new_contents,
                               content::PageTransition transition,
                               bool foreground);
-
-  // Returns the index to append tabs at.
-  int DetermineInsertionIndexForAppending();
 
   // Determine where to shift selection after a tab is closed.
   int DetermineNewSelectedIndex(int removed_index) const;
@@ -54,8 +43,6 @@ class TabStripModelOrderController : public TabStripModelObserver {
   int GetValidIndex(int index, int removing_index) const;
 
   TabStripModel* tabstrip_;
-
-  TabStripModel::InsertionPolicy insertion_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStripModelOrderController);
 };

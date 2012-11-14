@@ -21,7 +21,6 @@ class TabStripModelDelegate;
 class TabStripModelOrderController;
 
 namespace content {
-class NavigationController;
 class WebContents;
 }
 
@@ -63,15 +62,6 @@ class WebContents;
 ////////////////////////////////////////////////////////////////////////////////
 class TabStripModel : public content::NotificationObserver {
  public:
-  // Policy for how new tabs are inserted.
-  enum InsertionPolicy {
-    // Newly created tabs are created after the selection. This is the default.
-    INSERT_AFTER,
-
-    // Newly created tabs are inserted before the selection.
-    INSERT_BEFORE,
-  };
-
   // Used to specify what should happen when the tab is closed.
   enum CloseTypes {
     CLOSE_NONE                     = 0,
@@ -166,14 +156,6 @@ class TabStripModel : public content::NotificationObserver {
   TabStripModelOrderController* order_controller() const {
     return order_controller_.get();
   }
-
-  // Sets the insertion policy. Default is INSERT_AFTER.
-  void SetInsertionPolicy(InsertionPolicy policy);
-  InsertionPolicy insertion_policy() const;
-
-  // Returns true if |observer| is in the list of observers. This is intended
-  // for debugging.
-  bool HasObserver(TabStripModelObserver* observer);
 
   // Basic API /////////////////////////////////////////////////////////////////
 
@@ -285,11 +267,6 @@ class TabStripModel : public content::NotificationObserver {
       int index,
       TabStripModelObserver::TabChangeType change_type);
 
-  // Make sure there is an auto-generated New Tab tab in the TabStripModel.
-  // If |force_create| is true, the New Tab will be created even if the
-  // preference is set to false (used by startup).
-  void EnsureNewTabVisible(bool force_create);
-
   // Close all tabs at once. Code can use closing_all() above to defer
   // operations that might otherwise by invoked by the flurry of detach/select
   // notifications this method causes.
@@ -314,11 +291,6 @@ class TabStripModel : public content::NotificationObserver {
   int GetIndexOfNextWebContentsOpenedBy(const content::WebContents* opener,
                                         int start_index,
                                         bool use_group) const;
-
-  // Returns the index of the first WebContents in the model opened by the
-  // specified opener.
-  int GetIndexOfFirstWebContentsOpenedBy(const content::WebContents* opener,
-                                         int start_index) const;
 
   // Returns the index of the last WebContents in the model opened by the
   // specified opener, starting at |start_index|.
@@ -449,7 +421,6 @@ class TabStripModel : public content::NotificationObserver {
     CommandRestoreTab,
     CommandTogglePinned,
     CommandBookmarkAllTabs,
-    CommandUseCompactNavigationBar,
     CommandSelectByDomain,
     CommandSelectByOpener,
     CommandLast
@@ -507,7 +478,7 @@ class TabStripModel : public content::NotificationObserver {
   std::vector<int> GetIndicesForCommand(int index) const;
 
   // Returns true if the specified TabContents is a New Tab at the end of
-  // the TabStrip. We check for this because opener relationships are _not_
+  // the tabstrip. We check for this because opener relationships are _not_
   // forgotten for the New Tab page opened as a result of a New Tab gesture
   // (e.g. Ctrl+T, etc) since the user may open a tab transiently to look up
   // something related to their current activity.
@@ -561,9 +532,6 @@ class TabStripModel : public content::NotificationObserver {
   // following order: TabDeactivated, ActiveTabChanged, TabSelectionChanged.
   void SetSelection(const TabStripSelectionModel& new_model,
                     NotifyTypes notify_types);
-
-  // Returns the number of New Tab tabs in the TabStripModel.
-  int GetNewTabCount() const;
 
   // Selects either the next tab (|forward| is true), or the previous tab
   // (|forward| is false).
@@ -657,7 +625,7 @@ class TabStripModel : public content::NotificationObserver {
   typedef std::vector<WebContentsData*> WebContentsDataVector;
   WebContentsDataVector contents_data_;
 
-  // A profile associated with this TabStripModel, used when creating new Tabs.
+  // A profile associated with this TabStripModel.
   Profile* profile_;
 
   // True if all tabs are currently being closed via CloseAllTabs.

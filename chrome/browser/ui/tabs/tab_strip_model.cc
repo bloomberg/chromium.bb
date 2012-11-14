@@ -8,38 +8,25 @@
 #include <map>
 #include <string>
 
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
-#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
 
-using content::NavigationController;
-using content::NavigationEntry;
 using content::UserMetricsAction;
 using content::WebContents;
 
@@ -90,26 +77,13 @@ void TabStripModel::RemoveObserver(TabStripModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void TabStripModel::SetInsertionPolicy(InsertionPolicy policy) {
-  order_controller_->set_insertion_policy(policy);
-}
-
-TabStripModel::InsertionPolicy TabStripModel::insertion_policy() const {
-  return order_controller_->insertion_policy();
-}
-
-bool TabStripModel::HasObserver(TabStripModelObserver* observer) {
-  return observers_.HasObserver(observer);
-}
-
 bool TabStripModel::ContainsIndex(int index) const {
   return index >= 0 && index < count();
 }
 
 void TabStripModel::AppendTabContents(TabContents* contents,
                                       bool foreground) {
-  int index = order_controller_->DetermineInsertionIndexForAppending();
-  InsertTabContentsAt(index, contents,
+  InsertTabContentsAt(count(), contents,
                       foreground ? (ADD_INHERIT_GROUP | ADD_ACTIVE) :
                                    ADD_NONE);
 }
@@ -446,18 +420,6 @@ int TabStripModel::GetIndexOfNextWebContentsOpenedBy(const WebContents* opener,
   return kNoTab;
 }
 
-int TabStripModel::GetIndexOfFirstWebContentsOpenedBy(const WebContents* opener,
-                                                      int start_index) const {
-  DCHECK(opener);
-  DCHECK(ContainsIndex(start_index));
-
-  for (int i = 0; i < start_index; ++i) {
-    if (contents_data_[i]->opener == opener)
-      return i;
-  }
-  return kNoTab;
-}
-
 int TabStripModel::GetIndexOfLastWebContentsOpenedBy(const WebContents* opener,
                                                      int start_index) const {
   DCHECK(opener);
@@ -669,7 +631,7 @@ void TabStripModel::AddTabContents(TabContents* contents,
     // For all other types, respect what was passed to us, normalizing -1s and
     // values that are too large.
     if (index < 0 || index > count())
-      index = order_controller_->DetermineInsertionIndexForAppending();
+      index = count();
   }
 
   if (transition == content::PAGE_TRANSITION_TYPED && index == count()) {
