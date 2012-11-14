@@ -4276,6 +4276,21 @@
    fun:_ZN7WebCoreL12parseUASheetERKN3WTF6StringE
 }
 {
+   bug_107698c
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   ...
+   fun:_Z10cssyyparsePN7WebCore9CSSParserE
+   fun:_ZN7WebCore9CSSParser13parseSelectorERKN3WTF6StringERNS_15CSSSelectorListE
+   fun:_ZN7WebCore18HTMLContentElement18ensureSelectParsedEv
+   fun:_ZN7WebCore18HTMLContentElement13isSelectValidEv
+   fun:_ZN7WebCore9Internals20isValidContentSelectEPNS_7ElementERi
+   fun:_ZN7WebCore19InternalsV8InternalL28isValidContentSelectCallbackERKN2v89ArgumentsE
+   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+}
+{
    bug_107699
    Memcheck:Leak
    fun:malloc
