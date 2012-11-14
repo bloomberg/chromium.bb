@@ -24,7 +24,8 @@ BrowserPluginManager* BrowserPluginManager::Get() {
   return manager;
 }
 
-BrowserPluginManager::BrowserPluginManager() {
+BrowserPluginManager::BrowserPluginManager()
+    : browser_plugin_counter_(0) {
   lazy_tls.Pointer()->Set(this);
   RenderThread::Get()->AddObserver(this);
 }

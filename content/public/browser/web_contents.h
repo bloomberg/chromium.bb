@@ -107,6 +107,18 @@ class WebContents : public PageNavigator,
   // Gets the current RenderViewHost for this tab.
   virtual RenderViewHost* GetRenderViewHost() const = 0;
 
+  typedef base::Callback<void(RenderViewHost* /* render_view_host */,
+                              int /* x */,
+                              int /* y */)> GetRenderViewHostCallback;
+  // Gets the RenderViewHost at coordinates (|x|, |y|) for this WebContents via
+  // |callback|.
+  // This can be different than the current RenderViewHost if there is a
+  // BrowserPlugin at the specified position.
+  virtual void GetRenderViewHostAtPosition(
+      int x,
+      int y,
+      const GetRenderViewHostCallback& callback) = 0;
+
   // Gets the current RenderViewHost's routing id. Returns
   // MSG_ROUTING_NONE when there is no RenderViewHost.
   virtual int GetRoutingID() const = 0;

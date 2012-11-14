@@ -224,6 +224,10 @@ bool ShouldShowTranslateItem(const GURL& page_url) {
 
   return true;
 }
+
+void DevToolsInspectElementAt(RenderViewHost* rvh, int x, int y) {
+  DevToolsWindow::InspectElement(rvh, x, y);
+}
 }  // namespace
 
 // static
@@ -1837,8 +1841,8 @@ void RenderViewContextMenu::CopyImageAt(int x, int y) {
 
 void RenderViewContextMenu::Inspect(int x, int y) {
   content::RecordAction(UserMetricsAction("DevTools_InspectElement"));
-  DevToolsWindow::InspectElement(
-      source_web_contents_->GetRenderViewHost(), x, y);
+  source_web_contents_->GetRenderViewHostAtPosition(
+      x, y, base::Bind(&DevToolsInspectElementAt));
 }
 
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {

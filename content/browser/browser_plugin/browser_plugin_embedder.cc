@@ -32,7 +32,8 @@ BrowserPluginEmbedder::BrowserPluginEmbedder(
     RenderViewHost* render_view_host)
     : WebContentsObserver(web_contents),
       render_view_host_(render_view_host),
-      visible_(true) {
+      visible_(true),
+      next_get_render_view_request_id_(0) {
   // Listen to visibility changes so that an embedder hides its guests
   // as well.
   registrar_.Add(this,
@@ -44,8 +45,7 @@ BrowserPluginEmbedder::BrowserPluginEmbedder(
 }
 
 BrowserPluginEmbedder::~BrowserPluginEmbedder() {
-  // Destroy guests that are managed by the current embedder.
-  DestroyGuests();
+  CleanUp();
 }
 
 // static
@@ -219,11 +219,17 @@ void BrowserPluginEmbedder::SetFocus(int instance_id,
     guest->SetFocus(focused);
 }
 
-void BrowserPluginEmbedder::DestroyGuests() {
+void BrowserPluginEmbedder::CleanUp() {
+  // Destroy guests that are managed by the current embedder.
   STLDeleteContainerPairSecondPointers(
       guest_web_contents_by_instance_id_.begin(),
       guest_web_contents_by_instance_id_.end());
   guest_web_contents_by_instance_id_.clear();
+
+  // CleanUp gets called when BrowserPluginEmbedder's WebContents goes away
+  // or the associated RenderViewHost is destroyed or swapped out. Therefore we
+  // don't need to care about the pending callbacks anymore.
+  pending_get_render_view_callbacks_.clear();
 }
 
 void BrowserPluginEmbedder::HandleInputEvent(int instance_id,
@@ -252,7 +258,7 @@ void BrowserPluginEmbedder::RenderViewDeleted(
 }
 
 void BrowserPluginEmbedder::RenderViewGone(base::TerminationStatus status) {
-  DestroyGuests();
+  CleanUp();
 }
 
 void BrowserPluginEmbedder::WebContentsVisibilityChanged(bool visible) {
@@ -320,6 +326,39 @@ void BrowserPluginEmbedder::TerminateGuest(int instance_id) {
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
   if (guest)
     guest->Terminate();
+}
+
+void BrowserPluginEmbedder::GetRenderViewHostAtPosition(
+    int x,
+    int y,
+    const WebContents::GetRenderViewHostCallback& callback) {
+  // Store the callback so we can call it later when we have the response.
+  pending_get_render_view_callbacks_.insert(
+      std::make_pair(next_get_render_view_request_id_, callback));
+  render_view_host_->Send(
+      new BrowserPluginMsg_PluginAtPositionRequest(
+          render_view_host_->GetRoutingID(),
+          next_get_render_view_request_id_,
+          gfx::Point(x, y)));
+  ++next_get_render_view_request_id_;
+}
+
+void BrowserPluginEmbedder::PluginAtPositionResponse(
+    int instance_id, int request_id, const gfx::Point& position) {
+  const std::map<int, WebContents::GetRenderViewHostCallback>::iterator
+      callback_iter = pending_get_render_view_callbacks_.find(request_id);
+  if (callback_iter == pending_get_render_view_callbacks_.end())
+    return;
+
+  RenderViewHost* render_view_host;
+  BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
+  if (guest)
+    render_view_host = guest->GetWebContents()->GetRenderViewHost();
+  else  // No plugin, use embedder's RenderViewHost.
+    render_view_host = render_view_host_;
+
+  callback_iter->second.Run(render_view_host, position.x(), position.y());
+  pending_get_render_view_callbacks_.erase(callback_iter);
 }
 
 void BrowserPluginEmbedder::Observe(int type,
