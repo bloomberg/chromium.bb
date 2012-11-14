@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_system.h"
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -107,7 +108,8 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   message_service_.reset(new MessageService(lazy_background_task_queue_.get()));
   navigation_observer_.reset(new NavigationObserver(profile_));
 
-  ExtensionErrorReporter::Init(true);  // allow noisy errors.
+  bool allow_noisy_errors = !command_line->HasSwitch(switches::kNoErrorDialogs);
+  ExtensionErrorReporter::Init(allow_noisy_errors);
 
   user_script_master_ = new UserScriptMaster(profile_);
 
