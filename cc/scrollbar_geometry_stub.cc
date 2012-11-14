@@ -4,6 +4,8 @@
 
 #include "cc/scrollbar_geometry_stub.h"
 
+#include <cmath>
+
 using WebKit::WebRect;
 using WebKit::WebScrollbar;
 using WebKit::WebScrollbarThemeGeometry;
@@ -31,7 +33,7 @@ int ScrollbarGeometryStub::thumbPosition(WebScrollbar* scrollbar)
 
 int ScrollbarGeometryStub::thumbLength(WebScrollbar* scrollbar)
 {
-    return m_geometry->thumbLength(scrollbar);
+    return std::max(0, m_geometry->thumbLength(scrollbar));
 }
 
 int ScrollbarGeometryStub::trackPosition(WebScrollbar* scrollbar)
