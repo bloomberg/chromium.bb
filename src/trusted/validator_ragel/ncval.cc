@@ -190,7 +190,7 @@ Bool ProcessError(
 
 typedef Bool ValidateChunkFunc(
     const uint8_t *data, size_t size,
-    enum ValidationOptions options,
+    uint32_t options,
     const NaClCPUFeaturesX86 *cpu_features,
     ValidationCallbackFunc user_callback,
     void *callback_data);
@@ -231,7 +231,7 @@ bool Validate(
   // for testing.
   CHECK(result == validate_chunk(
       segment.data, segment.size,
-      static_cast<ValidationOptions>(0), cpu_features,
+      0, cpu_features,
       ProcessError, NULL));
 
   return static_cast<bool>(result);

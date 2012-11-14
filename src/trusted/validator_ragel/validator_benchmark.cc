@@ -82,13 +82,13 @@ int main(int argc, char *argv[]) {
       case EM_386:
         result = ValidateChunkIA32(
             segment.data, segment.size,
-            static_cast<ValidationOptions>(0), cpu_features,
+            0, cpu_features,
             ProcessError, NULL);
         break;
       case EM_X86_64:
         result = ValidateChunkAMD64(
             segment.data, segment.size,
-            static_cast<ValidationOptions>(0), cpu_features,
+            0, cpu_features,
             ProcessError, NULL);
         break;
       default:

@@ -129,7 +129,7 @@ Bool ProcessErrorOrWarning(const uint8_t *begin, const uint8_t *end,
 
 Bool ValidateElf32(const uint8_t *data, size_t data_size,
                    Bool warnings,
-                   enum ValidationOptions options,
+                   uint32_t options,
                    const NaClCPUFeaturesX86 *cpu_features) {
   Elf32_Ehdr *header;
   int index;
@@ -170,7 +170,7 @@ Bool ValidateElf32(const uint8_t *data, size_t data_size,
 
 Bool ValidateElf64(const uint8_t *data, size_t data_size,
                    Bool warnings,
-                   enum ValidationOptions options,
+                   uint32_t options,
                    const NaClCPUFeaturesX86 *cpu_features) {
   Elf64_Ehdr *header;
   int index;
@@ -215,7 +215,7 @@ Bool ValidateElf64(const uint8_t *data, size_t data_size,
 Bool ValidateElf(const char *filename,
                  const uint8_t *data, size_t data_size,
                  Bool warnings,
-                 enum ValidationOptions options,
+                 uint32_t options,
                  const NaClCPUFeaturesX86 *cpu_features) {
   if (data[4] == 1) {
     return ValidateElf32(data, data_size, warnings, options, cpu_features);
@@ -231,7 +231,7 @@ void ProcessFile(const char *filename,
                  int repeat_count,
                  int raw_bitness,
                  Bool warnings,
-                 enum ValidationOptions options,
+                 uint32_t options,
                  const NaClCPUFeaturesX86 *cpu_features) {
   size_t data_size;
   uint8_t *data;
@@ -277,7 +277,7 @@ int main(int argc, char **argv) {
   const NaClCPUFeaturesX86 *cpu_features = &kFullCPUIDFeatures;
   int raw_bitness = 0;
   Bool warnings = FALSE;
-  enum ValidationOptions options = 0;
+  uint32_t options = 0;
 
   if (argc == 1) {
     printf("%s: no input files\n", argv[0]);

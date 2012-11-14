@@ -25,7 +25,7 @@ static const int x86_64_validator_en_main = 891;
 
 
 Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
-                        enum ValidationOptions options,
+                        uint32_t options,
                         const NaClCPUFeaturesX86 *cpu_features,
                         ValidationCallbackFunc user_callback,
                         void *callback_data) {

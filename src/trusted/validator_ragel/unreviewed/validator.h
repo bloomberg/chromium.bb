@@ -126,7 +126,7 @@ typedef Bool (*ValidationCallbackFunc) (const uint8_t *instruction_start,
  * placed there.
  */
 Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
-                        enum ValidationOptions options,
+                        uint32_t options,
                         const NaClCPUFeaturesX86 *cpu_features,
                         ValidationCallbackFunc user_callback,
                         void *callback_data);
@@ -135,7 +135,7 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
  * See ValidateChunkAMD64
  */
 Bool ValidateChunkIA32(const uint8_t *data, size_t size,
-                       enum ValidationOptions options,
+                       uint32_t options,
                        const NaClCPUFeaturesX86 *cpu_features,
                        ValidationCallbackFunc user_callback,
                        void *callback_data);
