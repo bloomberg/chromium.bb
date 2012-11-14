@@ -93,8 +93,11 @@ class ShellWindowCocoa : public NativeShellWindow {
   // Called to handle a mouse event.
   void HandleMouseEvent(NSEvent* event);
 
+  // Returns true if |point| in local Cocoa coordinate system falls within
+  // the draggable region.
+  bool IsWithinDraggableRegion(NSPoint point) const;
+
   bool use_system_drag() const { return use_system_drag_; }
-  SkRegion* draggable_region() const { return draggable_region_.get(); }
 
  protected:
   // NativeShellWindow implementation.

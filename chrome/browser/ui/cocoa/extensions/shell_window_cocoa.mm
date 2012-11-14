@@ -165,10 +165,8 @@
 }
 
 - (NSView*)hitTest:(NSPoint)aPoint {
-  if (shellWindow_->use_system_drag())
-    return nil;
-  if (!shellWindow_->draggable_region() ||
-      !shellWindow_->draggable_region()->contains(aPoint.x, aPoint.y)) {
+  if (shellWindow_->use_system_drag() ||
+      !shellWindow_->IsWithinDraggableRegion(aPoint)) {
     return nil;
   }
   return self;
@@ -709,6 +707,17 @@ void ShellWindowCocoa::HandleMouseEvent(NSEvent* event) {
     [window() setFrameOrigin:frame_origin];
     last_mouse_location_ = current_mouse_location;
   }
+}
+
+bool ShellWindowCocoa::IsWithinDraggableRegion(NSPoint point) const {
+  if (!draggable_region_)
+    return false;
+  NSView* webView = web_contents()->GetView()->GetNativeView();
+  NSInteger webViewHeight = NSHeight([webView bounds]);
+  // |draggable_region_| is stored in local platform-indepdent coordiate system
+  // while |point| is in local Cocoa coordinate system. Do the conversion
+  // to match these two.
+  return draggable_region_->contains(point.x, webViewHeight - point.y);
 }
 
 ShellWindowCocoa::~ShellWindowCocoa() {
