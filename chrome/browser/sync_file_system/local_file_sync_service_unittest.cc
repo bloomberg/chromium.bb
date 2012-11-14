@@ -259,7 +259,14 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_->DirectoryExists(kDir));
 
-  // Run ApplyRemoteChange for kDir deletion.
+  // Run PrepareForProcessRemoteChange and ApplyRemoteChange for
+  // kDir once again for deletion.
+  expected_metadata.file_type = fileapi::SYNC_FILE_TYPE_DIRECTORY;
+  expected_metadata.size = 0;
+  PrepareForProcessRemoteChange(kDir, FROM_HERE,
+                                fileapi::SYNC_STATUS_OK,
+                                expected_metadata);
+
   change = FileChange(FileChange::FILE_CHANGE_DELETE,
                       fileapi::SYNC_FILE_TYPE_UNKNOWN);
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,

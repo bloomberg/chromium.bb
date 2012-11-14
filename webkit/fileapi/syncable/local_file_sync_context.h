@@ -203,6 +203,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
 
   // Callback routine for ApplyRemoteChange.
   void DidApplyRemoteChange(
+      const FileSystemURL& url,
       const SyncStatusCallback& callback_on_ui,
       base::PlatformFileError file_error);
 

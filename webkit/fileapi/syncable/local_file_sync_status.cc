@@ -30,6 +30,7 @@ void LocalFileSyncStatus::EndWriting(const FileSystemURL& url) {
 void LocalFileSyncStatus::StartSyncing(const FileSystemURL& url) {
   DCHECK(CalledOnValidThread());
   DCHECK(!IsChildOrParentWriting(url));
+  DCHECK(!IsChildOrParentSyncing(url));
   syncing_.insert(url);
 }
 
@@ -47,6 +48,11 @@ bool LocalFileSyncStatus::IsWriting(const FileSystemURL& url) const {
 bool LocalFileSyncStatus::IsWritable(const FileSystemURL& url) const {
   DCHECK(CalledOnValidThread());
   return !IsChildOrParentSyncing(url);
+}
+
+bool LocalFileSyncStatus::IsSyncable(const FileSystemURL& url) const {
+  DCHECK(CalledOnValidThread());
+  return !IsChildOrParentSyncing(url) && !IsChildOrParentWriting(url);
 }
 
 void LocalFileSyncStatus::AddObserver(Observer* observer) {

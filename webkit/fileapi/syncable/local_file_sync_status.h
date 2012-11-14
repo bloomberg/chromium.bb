@@ -23,9 +23,8 @@ namespace fileapi {
 // and syncing (flag).  Writing counter keeps track of which URL is in
 // writing and syncing flag indicates which URL is in syncing.
 //
-// An invariant of this class is: no FileSystem objects should be both
-// in syncing_ and writing_ status, i.e. trying to increment writing
-// while the target url is in syncing must fail and vice versa.
+// An entry can have multiple writers but sync is exclusive and cannot overwrap
+// with any writes or syncs.
 class WEBKIT_STORAGE_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
  public:
   class WEBKIT_STORAGE_EXPORT Observer {
@@ -49,7 +48,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
   void EndWriting(const FileSystemURL& url);
 
   // Start syncing for |url| and disable writing.
-  // This should not be called if |url| is in writing.
+  // This should not be called if |url| is in syncing or in writing.
   void StartSyncing(const FileSystemURL& url);
 
   // Clears the syncing flag for |url| and enable writing.
@@ -60,6 +59,10 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
 
   // Returns true if the |url| is enabled for writing (i.e. not in syncing).
   bool IsWritable(const FileSystemURL& url) const;
+
+  // Returns true if the |url| is enabled for syncing (i.e. neither in
+  // syncing nor writing).
+  bool IsSyncable(const FileSystemURL& url) const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

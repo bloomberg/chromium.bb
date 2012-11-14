@@ -130,15 +130,15 @@ void LocalFileSyncContext::PrepareForSync(
     return;
   }
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  const bool writing = sync_status()->IsWriting(url);
+  const bool syncable = sync_status()->IsSyncable(url);
   // Disable writing if it's ready to be synced.
-  if (!writing)
+  if (syncable)
     sync_status()->StartSyncing(url);
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LocalFileSyncContext::DidGetWritingStatusForSync,
                  this, make_scoped_refptr(file_system_context),
-                 writing ? SYNC_STATUS_FILE_BUSY : SYNC_STATUS_OK,
+                 syncable ? SYNC_STATUS_OK : SYNC_STATUS_FILE_BUSY,
                  url, callback));
 }
 
@@ -187,7 +187,7 @@ void LocalFileSyncContext::ApplyRemoteChange(
   DCHECK(operation);
   FileSystemOperation::StatusCallback operation_callback =
       base::Bind(&LocalFileSyncContext::DidApplyRemoteChange,
-                 this, callback);
+                 this, url, callback);
   switch (change.change()) {
     case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
       switch (change.file_type()) {
@@ -527,6 +527,7 @@ void LocalFileSyncContext::EnableWritingOnIOThread(
 }
 
 void LocalFileSyncContext::DidApplyRemoteChange(
+    const FileSystemURL& url,
     const SyncStatusCallback& callback_on_ui,
     base::PlatformFileError file_error) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
@@ -534,6 +535,7 @@ void LocalFileSyncContext::DidApplyRemoteChange(
       FROM_HERE,
       base::Bind(callback_on_ui,
                  PlatformFileErrorToSyncStatusCode(file_error)));
+  EnableWritingOnIOThread(url);
 }
 
 void LocalFileSyncContext::DidGetFileMetadata(
