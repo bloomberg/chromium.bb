@@ -1,7 +1,8 @@
+# For Linux sandboxing
+cevans@chromium.org
+jln@chromium.org
+
 # For security review of sandboxes
-per-file sandbox*_linux.*=set noparent
-per-file sandbox*_linux.*=cevans@chromium.org
-per-file sandbox*_linux.*=jln@chromium.org
 per-file sandbox_policy.cc=set noparent
 per-file sandbox_policy.cc=jschuh@chromium.org
 per-file sandbox_policy.cc=cpu@chromium.org
