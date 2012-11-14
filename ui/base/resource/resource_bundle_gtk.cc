@@ -66,7 +66,7 @@ FilePath GetResourcesPakFilePath(const std::string& pak_name) {
 
 void ResourceBundle::LoadCommonResources() {
   AddDataPackFromPath(GetResourcesPakFilePath("chrome.pak"),
-                      SCALE_FACTOR_100P);
+                      SCALE_FACTOR_NONE);
   AddDataPackFromPath(GetResourcesPakFilePath(
                       "chrome_100_percent.pak"),
                       SCALE_FACTOR_100P);

@@ -64,7 +64,7 @@ bool UseTouchOptimizedUI() {
 }
 #endif  // defined(OS_WIN)
 
-const float kScaleFactorScales[] = {1.0f, 1.4f, 1.8f, 2.0f};
+const float kScaleFactorScales[] = {1.0f, 1.0f, 1.4f, 1.8f, 2.0f};
 COMPILE_ASSERT(NUM_SCALE_FACTORS == arraysize(kScaleFactorScales),
                kScaleFactorScales_incorrect_size);
 const size_t kScaleFactorScalesLength = arraysize(kScaleFactorScales);
@@ -94,7 +94,8 @@ std::vector<ScaleFactor>& GetSupportedScaleFactorsInternal() {
       supported_scale_factors->push_back(SCALE_FACTOR_140P);
       supported_scale_factors->push_back(SCALE_FACTOR_180P);
     }
-#elif defined(USE_ASH)
+#elif defined(OS_CHROMEOS)
+    // TODO(oshima): Include 200P only if the device support 200P
     supported_scale_factors->push_back(SCALE_FACTOR_200P);
 #endif
     std::sort(supported_scale_factors->begin(),
@@ -134,6 +135,7 @@ ScaleFactor GetScaleFactorFromScale(float scale) {
       smallest_diff = diff;
     }
   }
+  DCHECK_NE(closest_match, SCALE_FACTOR_NONE);
   return closest_match;
 }
 

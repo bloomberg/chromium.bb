@@ -75,7 +75,7 @@ void ParseQueryParams(const std::string& query,
   if (icon_size)
     *icon_size = IconLoader::NORMAL;
   if (scale_factor)
-    *scale_factor = ui::SCALE_FACTOR_NONE;
+    *scale_factor = ui::SCALE_FACTOR_100P;
   base::SplitStringIntoKeyValuePairs(query, '=', '&', &parameters);
   for (std::vector<KVPair>::const_iterator iter = parameters.begin();
        iter != parameters.end(); ++iter) {

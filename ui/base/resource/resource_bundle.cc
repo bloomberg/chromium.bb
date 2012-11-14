@@ -123,7 +123,7 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
       ui::ScaleFactor scale_factor) OVERRIDE {
     SkBitmap image;
     bool fell_back_to_1x = false;
-    bool found = rb_->LoadBitmap(resource_id_, scale_factor,
+    bool found = rb_->LoadBitmap(resource_id_, &scale_factor,
                                  &image, &fell_back_to_1x);
     if (!found)
       return gfx::ImageSkiaRep();
@@ -375,14 +375,18 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
     DCHECK(!delegate_ && !data_packs_.empty()) <<
         "Missing call to SetResourcesDataDLL?";
 
-    // TODO(oshima): This should be GetPrimaryDisplay().device_scale_factor(),
-    // but GetPrimaryDisplay() crashes at startup.
-    ScaleFactor primary_scale_factor = SCALE_FACTOR_100P;
+    // TODO(oshima): Consider reading the image size from png IHDR chunk and
+    // skip decoding here and remove #ifdef below.
     // ResourceBundle::GetSharedInstance() is destroyed after the
     // BrowserMainLoop has finished running. |image_skia| is guaranteed to be
     // destroyed before the resource bundle is destroyed.
+#if defined(OS_CHROMEOS)
+    ui::ScaleFactor scale_factor_to_load = ui::GetMaxScaleFactor();
+#else
+    ui::ScaleFactor scale_factor_to_load = ui::SCALE_FACTOR_100P;
+#endif
     gfx::ImageSkia image_skia(new ResourceBundleImageSource(this, resource_id),
-                              primary_scale_factor);
+                              scale_factor_to_load);
     if (image_skia.isNull()) {
       LOG(WARNING) << "Unable to load image with id " << resource_id;
       NOTREACHED();  // Want to assert in debug mode.
@@ -452,7 +456,8 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
     }
   }
   for (size_t i = 0; i < data_packs_.size(); i++) {
-    if (data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_100P &&
+    if ((data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_100P ||
+         data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_NONE) &&
         data_packs_[i]->GetStringPiece(resource_id, &data))
       return data;
   }
@@ -577,15 +582,6 @@ void ResourceBundle::AddDataPackFromPathInternal(const FilePath& path,
 void ResourceBundle::AddDataPack(DataPack* data_pack) {
   data_packs_.push_back(data_pack);
 
-#if defined(OS_CHROMEOS)
-  // When Chrome is running on desktop and force-device-scale-factor is not
-  // specified, use SCALE_FACTOR_100P as |max_scale_factor_|.
-  if (!base::chromeos::IsRunningOnChromeOS() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceDeviceScaleFactor))
-    return;
-#endif
-
   if (GetScaleFactorScale(data_pack->GetScaleFactor()) >
       GetScaleFactorScale(max_scale_factor_))
     max_scale_factor_ = data_pack->GetScaleFactor();
@@ -674,14 +670,23 @@ bool ResourceBundle::LoadBitmap(const ResourceHandle& data_handle,
 }
 
 bool ResourceBundle::LoadBitmap(int resource_id,
-                                ScaleFactor scale_factor,
+                                ScaleFactor* scale_factor,
                                 SkBitmap* bitmap,
                                 bool* fell_back_to_1x) const {
   DCHECK(fell_back_to_1x);
   for (size_t i = 0; i < data_packs_.size(); ++i) {
-    if (data_packs_[i]->GetScaleFactor() == scale_factor) {
-      if (LoadBitmap(*data_packs_[i], resource_id, bitmap, fell_back_to_1x))
-        return true;
+    // If the resource is in the package with SCALE_FACTOR_NONE, it
+    // can be used in any scale factor, but set 100P in ImageSkia so
+    // that it will be scaled property.
+    if (data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_NONE &&
+        LoadBitmap(*data_packs_[i], resource_id, bitmap, fell_back_to_1x)) {
+      *scale_factor = ui::SCALE_FACTOR_100P;
+      DCHECK(!*fell_back_to_1x);
+      return true;
+    }
+    if (data_packs_[i]->GetScaleFactor() == *scale_factor &&
+        LoadBitmap(*data_packs_[i], resource_id, bitmap, fell_back_to_1x)) {
+      return true;
     }
   }
   return false;

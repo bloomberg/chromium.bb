@@ -85,7 +85,7 @@ WindowOpenDisposition GetDispositionFromClick(const ListValue* args,
 
 bool ParseScaleFactor(const base::StringPiece& identifier,
                       ui::ScaleFactor* scale_factor) {
-  *scale_factor = ui::SCALE_FACTOR_NONE;
+  *scale_factor = ui::SCALE_FACTOR_100P;
   for (size_t i = 0; i < arraysize(kScaleFactorMap); i++) {
     if (identifier == kScaleFactorMap[i].name) {
       *scale_factor = kScaleFactorMap[i].scale_factor;

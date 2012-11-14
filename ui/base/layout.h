@@ -32,12 +32,12 @@ UI_EXPORT DisplayLayout GetDisplayLayout();
 
 // Supported UI scale factors for the platform. This is used as an index
 // into the array |kScaleFactorScales| which maps the enum value to a float.
+// SCALE_FACTOR_NONE is used for density independent resources such as
+// string, html/js files or an image that can be used for any scale factors
+// (such as wallpapers).
 enum ScaleFactor {
-  SCALE_FACTOR_100P = 0,
-
-  // The scale factor used for unscaled binary data, the 1x (default) scale
-  // factor data packs.
-  SCALE_FACTOR_NONE = SCALE_FACTOR_100P,
+  SCALE_FACTOR_NONE = 0,
+  SCALE_FACTOR_100P,
   SCALE_FACTOR_140P,
   SCALE_FACTOR_180P,
   SCALE_FACTOR_200P,
@@ -51,6 +51,7 @@ UI_EXPORT float GetScaleFactorScale(ScaleFactor scale_factor);
 // Returns the supported ScaleFactor which most closely matches |scale|.
 // Converting from float to ScaleFactor is inefficient and should be done as
 // little as possible.
+// TODO(oshima): Make ScaleFactor a class and remove this.
 UI_EXPORT ScaleFactor GetScaleFactorFromScale(float scale);
 
 // Returns the ScaleFactor used by |view|.

@@ -423,19 +423,28 @@ TEST_F(ResourceBundleImageTest, GetRawDataResource) {
 // Test requesting image reps at various scale factors from the image returned
 // via ResourceBundle::GetImageNamed().
 TEST_F(ResourceBundleImageTest, GetImageNamed) {
-  FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
-  FilePath data_2x_path = dir_path().Append(FILE_PATH_LITERAL("sample_2x.pak"));
+  FilePath data_1x_path = dir_path().AppendASCII("sample_1x.pak");
+  FilePath data_2x_path = dir_path().AppendASCII("sample_2x.pak");
 
   // Create the pak files.
-  CreateDataPackWithSingleBitmap(data_path, 10, base::StringPiece());
+  CreateDataPackWithSingleBitmap(data_1x_path, 10, base::StringPiece());
   CreateDataPackWithSingleBitmap(data_2x_path, 20, base::StringPiece());
 
   // Load the regular and 2x pak files.
   ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
-  resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);
+  resource_bundle->AddDataPackFromPath(data_1x_path, SCALE_FACTOR_100P);
   resource_bundle->AddDataPackFromPath(data_2x_path, SCALE_FACTOR_200P);
 
+  EXPECT_EQ(SCALE_FACTOR_200P, resource_bundle->max_scale_factor());
+
   gfx::ImageSkia* image_skia = resource_bundle->GetImageSkiaNamed(3);
+
+#if defined(OS_CHROMEOS)
+  // ChromeOS loads highest scale factor first.
+  EXPECT_EQ(ui::SCALE_FACTOR_200P, image_skia->image_reps()[0].scale_factor());
+#else
+  EXPECT_EQ(ui::SCALE_FACTOR_100P, image_skia->image_reps()[0].scale_factor());
+#endif
 
   // Resource ID 3 exists in both 1x and 2x paks. Image reps should be
   // available for both scale factors in |image_skia|.
@@ -480,6 +489,22 @@ TEST_F(ResourceBundleImageTest, GetImageNamedFallback1x) {
   EXPECT_EQ(ui::SCALE_FACTOR_200P, image_rep.scale_factor());
   EXPECT_EQ(20, image_rep.pixel_width());
   EXPECT_EQ(20, image_rep.pixel_height());
+}
+
+TEST_F(ResourceBundleImageTest, FallbackToNone) {
+  FilePath data_default_path = dir_path().AppendASCII("sample.pak");
+
+  // Create the pak files.
+  CreateDataPackWithSingleBitmap(data_default_path, 10, base::StringPiece());
+
+    // Load the regular pak files only.
+  ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
+  resource_bundle->AddDataPackFromPath(data_default_path, SCALE_FACTOR_NONE);
+
+  gfx::ImageSkia* image_skia = resource_bundle->GetImageSkiaNamed(3);
+  EXPECT_EQ(1u, image_skia->image_reps().size());
+  EXPECT_EQ(ui::SCALE_FACTOR_100P,
+            image_skia->image_reps()[0].scale_factor());
 }
 
 }  // namespace ui

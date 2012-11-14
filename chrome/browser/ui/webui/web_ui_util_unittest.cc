@@ -14,7 +14,7 @@ TEST(WebUIUtilTest, ParsePathAndScale) {
 
   web_ui_util::ParsePathAndScale(url, &path, &factor);
   EXPECT_EQ("random/username@email/and/more", path);
-  EXPECT_EQ(ui::SCALE_FACTOR_NONE, factor);
+  EXPECT_EQ(ui::SCALE_FACTOR_100P, factor);
 
   GURL url2("chrome://some/random/username@email/and/more@2x");
   web_ui_util::ParsePathAndScale(url2, &path, &factor);
@@ -29,5 +29,5 @@ TEST(WebUIUtilTest, ParsePathAndScale) {
   GURL url4("chrome://some/random/username/and/more");
   web_ui_util::ParsePathAndScale(url4, &path, &factor);
   EXPECT_EQ("random/username/and/more", path);
-  EXPECT_EQ(ui::SCALE_FACTOR_NONE, factor);
+  EXPECT_EQ(ui::SCALE_FACTOR_100P, factor);
 }

@@ -72,12 +72,10 @@ TEST(LayoutTest, GetScaleFactorFromScaleAllSupported) {
 
 TEST(LayoutTest, GetMaxScaleFactor) {
 #if defined(OS_CHROMEOS)
-  // On Chrome OS, the maximum scale factor differs depending on the devices and
-  // force-device-scale-factor flag. Tests only the cases not affected by these.
-  if (!base::chromeos::IsRunningOnChromeOS() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceDeviceScaleFactor))
-    EXPECT_EQ(SCALE_FACTOR_100P, GetMaxScaleFactor());
+  // On Chrome OS, the maximum scale factor is based on
+  // the available resource pack. In testing environment,
+  // we always have 200P.
+  EXPECT_EQ(SCALE_FACTOR_200P, GetMaxScaleFactor());
 #else
   std::vector<ScaleFactor> original_supported_factors =
       GetSupportedScaleFactors();

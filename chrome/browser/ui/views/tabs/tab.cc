@@ -847,6 +847,7 @@ gfx::ImageSkia Tab::GetCachedImage(int resource_id,
 void Tab::SetCachedImage(int resource_id,
                          ui::ScaleFactor scale_factor,
                          const gfx::ImageSkia& image) {
+  DCHECK_NE(scale_factor, ui::SCALE_FACTOR_NONE);
   ImageCacheEntry entry;
   entry.resource_id = resource_id;
   entry.scale_factor = scale_factor;

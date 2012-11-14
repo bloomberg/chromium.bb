@@ -47,12 +47,12 @@ void FaviconSource::StartDataRequest(const std::string& path,
   FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (!favicon_service || path.empty()) {
-    SendDefaultResponse(IconRequest(request_id, 16, ui::SCALE_FACTOR_NONE));
+    SendDefaultResponse(IconRequest(request_id, 16, ui::SCALE_FACTOR_100P));
     return;
   }
 
   int size_in_dip = gfx::kFaviconSize;
-  ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_NONE;
+  ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_100P;
 
   FaviconService::Handle handle;
   if (path.size() > 8 &&

@@ -35,7 +35,7 @@ void ResourceBundle::LoadCommonResources() {
   // scale factor to gfx::ImageSkia::AddRepresentation.
 
   AddDataPackFromPath(GetResourcesPakFilePath("chrome.pak"),
-                      SCALE_FACTOR_100P);
+                      SCALE_FACTOR_NONE);
   AddDataPackFromPath(GetResourcesPakFilePath(
       "chrome_100_percent.pak"), SCALE_FACTOR_100P);
 
