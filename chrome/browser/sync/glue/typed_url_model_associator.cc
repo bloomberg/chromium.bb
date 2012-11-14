@@ -151,7 +151,9 @@ bool TypedUrlModelAssociator::ShouldIgnoreVisits(
   return true;
 }
 
-syncer::SyncError TypedUrlModelAssociator::AssociateModels() {
+syncer::SyncError TypedUrlModelAssociator::AssociateModels(
+    syncer::SyncMergeResult* local_merge_result,
+    syncer::SyncMergeResult* syncer_merge_result) {
   ClearErrorStats();
   syncer::SyncError error = DoAssociateModels();
   UMA_HISTOGRAM_PERCENTAGE("Sync.TypedUrlModelAssociationErrors",

@@ -57,7 +57,9 @@ class BookmarkModelAssociator
   // node.  After successful completion, the models should be identical and
   // corresponding. Returns true on success.  On failure of this step, we
   // should abort the sync operation and report an error to the user.
-  virtual syncer::SyncError AssociateModels() OVERRIDE;
+  virtual syncer::SyncError AssociateModels(
+      syncer::SyncMergeResult* local_merge_result,
+      syncer::SyncMergeResult* syncer_merge_result) OVERRIDE;
 
   virtual syncer::SyncError DisassociateModels() OVERRIDE;
 

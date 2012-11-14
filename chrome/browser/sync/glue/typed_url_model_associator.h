@@ -57,7 +57,9 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   // AssociatorInterface implementation.
   //
   // Iterates through the sync model looking for matched pairs of items.
-  virtual syncer::SyncError AssociateModels() OVERRIDE;
+  virtual syncer::SyncError AssociateModels(
+      syncer::SyncMergeResult* local_merge_result,
+      syncer::SyncMergeResult* syncer_merge_result) OVERRIDE;
 
   // Clears all associations.
   virtual syncer::SyncError DisassociateModels() OVERRIDE;

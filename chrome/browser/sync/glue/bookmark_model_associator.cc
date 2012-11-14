@@ -357,7 +357,9 @@ bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
   return true;
 }
 
-syncer::SyncError BookmarkModelAssociator::AssociateModels() {
+syncer::SyncError BookmarkModelAssociator::AssociateModels(
+    syncer::SyncMergeResult* local_merge_result,
+    syncer::SyncMergeResult* syncer_merge_result) {
   CheckModelSyncState();
 
   scoped_ptr<ScopedAssociationUpdater> association_updater(

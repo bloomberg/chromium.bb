@@ -12,6 +12,7 @@
 
 namespace syncer {
 class BaseNode;
+class SyncMergeResult;
 }
 
 namespace browser_sync {
@@ -28,7 +29,9 @@ class AssociatorInterface {
   // should be identical and corresponding. Returns true on
   // success. On failure of this step, we should abort the sync
   // operation and report an error to the user.
-  virtual syncer::SyncError AssociateModels() = 0;
+  virtual syncer::SyncError AssociateModels(
+      syncer::SyncMergeResult* local_merge_result,
+      syncer::SyncMergeResult* syncer_merge_result) = 0;
 
   // Clears all the associations between the chrome and sync models.
   virtual syncer::SyncError DisassociateModels() = 0;

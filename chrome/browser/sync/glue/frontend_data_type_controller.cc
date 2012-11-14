@@ -179,7 +179,9 @@ bool FrontendDataTypeController::Associate() {
   // TODO(zea): Have AssociateModels fill the local and syncer merge results.
   base::TimeTicks start_time = base::TimeTicks::Now();
   syncer::SyncError error;
-  error = model_associator()->AssociateModels();
+  error = model_associator()->AssociateModels(
+      &local_merge_result,
+      &syncer_merge_result);
   // TODO(lipalani): crbug.com/122690 - handle abort.
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
   if (error.IsSet()) {

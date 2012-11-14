@@ -106,7 +106,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _));
     EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
         WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-    EXPECT_CALL(*model_associator_, AssociateModels()).
+    EXPECT_CALL(*model_associator_, AssociateModels(_, _)).
         WillRepeatedly(Return(syncer::SyncError()));
     EXPECT_CALL(service_, ActivateDataType(_, _, _));
   }
@@ -243,7 +243,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartAssociationFailed) {
       WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(*model_associator_, AssociateModels()).
+  EXPECT_CALL(*model_associator_, AssociateModels(_, _)).
       WillRepeatedly(Return(syncer::SyncError(FROM_HERE,
                                      "error",
                                      syncer::BOOKMARKS)));

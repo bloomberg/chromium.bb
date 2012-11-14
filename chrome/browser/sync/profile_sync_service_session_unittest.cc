@@ -1033,7 +1033,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingHeaderAndTab) {
     extra_header.SetSessionSpecifics(specifics);
   }
 
-  error = model_associator_->AssociateModels();
+  error = model_associator_->AssociateModels(NULL, NULL);
   ASSERT_FALSE(error.IsSet());
 }
 
@@ -1065,7 +1065,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MultipleHeaders) {
     specifics.mutable_header();
     extra_header.SetSessionSpecifics(specifics);
   }
-  error = model_associator_->AssociateModels();
+  error = model_associator_->AssociateModels(NULL, NULL);
   ASSERT_FALSE(error.IsSet());
 }
 
@@ -1097,7 +1097,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedForeign) {
     specifics.set_session_tag(foreign_tag);
     extra_header.SetSessionSpecifics(specifics);
   }
-  error = model_associator_->AssociateModels();
+  error = model_associator_->AssociateModels(NULL, NULL);
   ASSERT_FALSE(error.IsSet());
 }
 
@@ -1125,7 +1125,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingLocalTabNode) {
     ASSERT_TRUE(tab_node.InitByClientTagLookup(syncer::SESSIONS, tab_tag));
     tab_node.Remove();
   }
-  error = model_associator_->AssociateModels();
+  error = model_associator_->AssociateModels(NULL, NULL);
   ASSERT_FALSE(error.IsSet());
 
   // Add some more tabs to ensure we don't conflict with the pre-existing tab
@@ -1198,7 +1198,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedLocalHeader) {
   }
   // Ensure we associate properly despite the pre-existing node with our local
   // tag.
-  error = model_associator_->AssociateModels();
+  error = model_associator_->AssociateModels(NULL, NULL);
   ASSERT_FALSE(error.IsSet());
 }
 

@@ -376,7 +376,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
         BookmarkModelFactory::GetForProfile(&profile_),
         test_user_share_.user_share(),
         &mock_error_handler_));
-    syncer::SyncError error = model_associator_->AssociateModels();
+    syncer::SyncError error = model_associator_->AssociateModels(NULL, NULL);
     EXPECT_FALSE(error.IsSet());
     MessageLoop::current()->RunAllPending();
 

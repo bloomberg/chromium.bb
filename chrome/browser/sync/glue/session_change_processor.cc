@@ -236,7 +236,7 @@ void SessionChangeProcessor::Observe(
     LOG(WARNING) << "Reassociation of local models triggered.";
     syncer::SyncError error;
     error = session_model_associator_->DisassociateModels();
-    error = session_model_associator_->AssociateModels();
+    error = session_model_associator_->AssociateModels(NULL, NULL);
     if (error.IsSet()) {
       error_handler()->OnSingleDatatypeUnrecoverableError(
           error.location(),
