@@ -602,11 +602,10 @@ void PepperMessageFilter::OnHostResolverResolve(
     uint32 host_resolver_id,
     const ppapi::HostPortPair& host_port,
     const PP_HostResolver_Private_Hint& hint) {
-  // Support all in-process plugins, and ones with "private" permissions.
-  if (process_type_ != RENDERER &&
-      !permissions_.HasPermission(ppapi::PERMISSION_PRIVATE))
-    return;
-
+  // Allow any Pepper plugin to resolve host names. This should be OK, since
+  // a page can already resolve host names by doing an XHR to an accessible
+  // and cooperative server.
+  // TODO(bbudge) Use permissions to restrict this when they handle this.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::HostResolver::RequestInfo request_info(
       net::HostPortPair(host_port.host, host_port.port));
