@@ -93,6 +93,10 @@ handle-error() {
   echo "@@@STEP_FAILURE@@@"
 }
 
+ignore-error() {
+  echo "@==  IGNORING AN ERROR  ==@"
+}
+
 #### Support for running arm sbtc tests on this bot, since we have
 # less coverage on the main waterfall now:
 # http://code.google.com/p/nativeclient/issues/detail?id=2581
@@ -139,9 +143,11 @@ scons-tests-translator() {
       # For ARM we use less parallelism to avoid mysterious QEMU crashes.
       # We also force a timeout for translation only.
       export QEMU_PREFIX_HOOK="timeout 120"
+      # Run sb translation twice in case we failed to translate some of the
+      # pexes.  If there was an error in the first run this shouldn't
+      # trigger a buildbot error.  Only the second run can make the bot red.
       ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} \
-          do_not_run_tests=1 || handle-error
-      # Run it again in case we failed to translate some of the pexes
+          do_not_run_tests=1 || ignore-error
       ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} \
           do_not_run_tests=1 || handle-error
       # Do not use the prefix hook for running actual tests as
@@ -166,8 +172,11 @@ scons-tests-translator() {
       # For ARM we use less parallelism to avoid mysterious QEMU crashes.
       # We also force a timeout for translation only.
       export QEMU_PREFIX_HOOK="timeout 120"
+      # Run sb translation twice in case we failed to translate some of the
+      # pexes.  If there was an error in the first run this shouldn't
+      # trigger a buildbot error.  Only the second run can make the bot red.
       ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} \
-          do_not_run_tests=1 || handle-error
+          do_not_run_tests=1 || ignore-error
       ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} \
           do_not_run_tests=1 || handle-error
       # Do not use the prefix hook for running actual tests as
