@@ -163,6 +163,7 @@ class WebPluginDelegateProxy;
 class WebUIBindings;
 struct CustomContextMenuContext;
 struct FileChooserParams;
+struct RenderViewImplParams;
 
 #if defined(OS_ANDROID)
 class WebMediaPlayerProxyImplAndroid;
@@ -186,21 +187,22 @@ typedef base::RefCountedData<int> SharedRenderViewCounter;
 // RenderView is an object that manages a WebView object, and provides a
 // communication interface with an embedding application process
 //
-class RenderViewImpl : public RenderWidget,
-                       public WebKit::WebViewClient,
-                       public WebKit::WebFrameClient,
-                       public WebKit::WebPageSerializerClient,
-                       public RenderView,
-                       public webkit::npapi::WebPluginPageDelegate,
-                       public webkit_media::WebMediaPlayerDelegate,
-                       public WebGraphicsContext3DSwapBuffersClient,
-                       public base::SupportsWeakPtr<RenderViewImpl> {
+class CONTENT_EXPORT RenderViewImpl
+    : public RenderWidget,
+      NON_EXPORTED_BASE(public WebKit::WebViewClient),
+      NON_EXPORTED_BASE(public WebKit::WebFrameClient),
+      NON_EXPORTED_BASE(public WebKit::WebPageSerializerClient),
+      public RenderView,
+      NON_EXPORTED_BASE(public webkit::npapi::WebPluginPageDelegate),
+      NON_EXPORTED_BASE(public webkit_media::WebMediaPlayerDelegate),
+      NON_EXPORTED_BASE(public WebGraphicsContext3DSwapBuffersClient),
+      public base::SupportsWeakPtr<RenderViewImpl> {
  public:
   // Creates a new RenderView. If this is a blocked popup or as a new tab,
   // opener_id is the routing ID of the RenderView responsible for creating this
   // RenderView. |counter| is either a currently initialized counter, or NULL
   // (in which case we treat this RenderView as a top level window).
-  CONTENT_EXPORT static RenderViewImpl* Create(
+  static RenderViewImpl* Create(
       int32 opener_id,
       const RendererPreferences& renderer_prefs,
       const webkit_glue::WebPreferences& webkit_prefs,
@@ -215,11 +217,16 @@ class RenderViewImpl : public RenderWidget,
       const WebKit::WebScreenInfo& screen_info,
       AccessibilityMode accessibility_mode);
 
+  // Used by content_layouttest_support to hook into the creation of
+  // RenderViewImpls.
+  static void InstallCreateHook(
+      RenderViewImpl* (*create_render_view_impl)(RenderViewImplParams*));
+
   // Returns the RenderViewImpl containing the given WebView.
-  CONTENT_EXPORT static RenderViewImpl* FromWebView(WebKit::WebView* webview);
+  static RenderViewImpl* FromWebView(WebKit::WebView* webview);
 
   // May return NULL when the view is closing.
-  CONTENT_EXPORT WebKit::WebView* webview() const;
+  WebKit::WebView* webview() const;
 
   // WebGraphicsContext3DSwapBuffersClient implementation.
 
@@ -351,11 +358,11 @@ class RenderViewImpl : public RenderWidget,
   // |actual_mime_type| is the actual mime type supported by the
   // plugin found that match the URL given (one for each item in
   // |info|).
-  CONTENT_EXPORT bool GetPluginInfo(const GURL& url,
-                                    const GURL& page_url,
-                                    const std::string& mime_type,
-                                    webkit::WebPluginInfo* plugin_info,
-                                    std::string* actual_mime_type);
+  bool GetPluginInfo(const GURL& url,
+                     const GURL& page_url,
+                     const std::string& mime_type,
+                     webkit::WebPluginInfo* plugin_info,
+                     std::string* actual_mime_type);
 
   void TransferActiveWheelFlingAnimation(
       const WebKit::WebActiveWheelFlingParameters& params);
@@ -767,6 +774,12 @@ class RenderViewImpl : public RenderWidget,
   virtual bool CanComposeInline() OVERRIDE;
   virtual bool WebWidgetHandlesCompositorScheduling() const OVERRIDE;
 
+ protected:
+  RenderViewImpl(RenderViewImplParams* params);
+
+  // Do not delete directly.  This class is reference counted.
+  virtual ~RenderViewImpl();
+
  private:
   // For unit tests.
   friend class ExternalPopupMenuTest;
@@ -814,23 +827,6 @@ class RenderViewImpl : public RenderWidget,
     CONNECTION_ERROR,
   };
 
-  RenderViewImpl(int32 opener_id,
-                 const RendererPreferences& renderer_prefs,
-                 const webkit_glue::WebPreferences& webkit_prefs,
-                 SharedRenderViewCounter* counter,
-                 int32 routing_id,
-                 int32 surface_id,
-                 int64 session_storage_namespace_id,
-                 const string16& frame_name,
-                 bool is_renderer_created,
-                 bool swapped_out,
-                 int32 next_page_id,
-                 const WebKit::WebScreenInfo& screen_info,
-                 AccessibilityMode accessibility_mode);
-
-  // Do not delete directly.  This class is reference counted.
-  virtual ~RenderViewImpl();
-
   void UpdateURL(WebKit::WebFrame* frame);
   void UpdateTitle(WebKit::WebFrame* frame, const string16& title,
                    WebKit::WebTextDirection title_direction);
@@ -875,7 +871,7 @@ class RenderViewImpl : public RenderWidget,
   // The documentation for these functions should be in
   // render_messages_internal.h for the message that the function is handling.
 
-  CONTENT_EXPORT void OnAllowBindings(int enabled_bindings_flags);
+  void OnAllowBindings(int enabled_bindings_flags);
   void OnAllowScriptToClose(bool script_can_close);
   void OnAsyncFileOpened(base::PlatformFileError error_code,
                          IPC::PlatformFileForTransit file_for_transit,
@@ -922,7 +918,7 @@ class RenderViewImpl : public RenderWidget,
   void OnDisableAutoResize(const gfx::Size& new_size);
   void OnEnumerateDirectoryResponse(int id, const std::vector<FilePath>& paths);
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
-  CONTENT_EXPORT void OnExtendSelectionAndDelete(int before, int after);
+  void OnExtendSelectionAndDelete(int before, int after);
   void OnFileChooserResponse(
       const std::vector<ui::SelectedFileInfo>& files);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
@@ -940,7 +936,7 @@ class RenderViewImpl : public RenderWidget,
   void OnPluginActionAt(const gfx::Point& location,
                         const WebKit::WebPluginAction& action);
   void OnMoveOrResizeStarted();
-  CONTENT_EXPORT void OnNavigate(const ViewMsg_Navigate_Params& params);
+  void OnNavigate(const ViewMsg_Navigate_Params& params);
   void OnPaste();
   void OnPasteAndMatchStyle();
   void OnPostMessageEvent(const ViewMsg_PostMessage_Params& params);
@@ -948,7 +944,7 @@ class RenderViewImpl : public RenderWidget,
   void OnReleaseDisambiguationPopupDIB(TransportDIB::Handle dib_handle);
   void OnReloadFrame();
   void OnReplace(const string16& text);
-  CONTENT_EXPORT void OnReplaceAll(const string16& text);
+  void OnReplaceAll(const string16& text);
   void OnResetPageEncodingToDefault();
   void OnScriptEvalRequest(const string16& frame_xpath,
                            const string16& jscript,
@@ -956,40 +952,37 @@ class RenderViewImpl : public RenderWidget,
                            bool notify_result);
   void OnSelectAll();
   void OnSelectRange(const gfx::Point& start, const gfx::Point& end);
-  CONTENT_EXPORT void OnSetAccessibilityMode(AccessibilityMode new_mode);
+  void OnSetAccessibilityMode(AccessibilityMode new_mode);
   void OnSetActive(bool active);
   void OnSetAltErrorPageURL(const GURL& gurl);
   void OnSetBackground(const SkBitmap& background);
-  CONTENT_EXPORT void OnSetCompositionFromExistingText(
+  void OnSetCompositionFromExistingText(
       int start, int end,
       const std::vector<WebKit::WebCompositionUnderline>& underlines);
-  CONTENT_EXPORT void OnSetEditableSelectionOffsets(int start, int end);
+  void OnSetEditableSelectionOffsets(int start, int end);
   void OnSetNavigationStartTime(
       const base::TimeTicks& browser_navigation_start);
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
-  CONTENT_EXPORT void OnSetEditCommandsForNextKeyEvent(
+  void OnSetEditCommandsForNextKeyEvent(
       const EditCommands& edit_commands);
-  CONTENT_EXPORT void OnSetHistoryLengthAndPrune(int history_length,
-                                                 int32 minimum_page_id);
+  void OnSetHistoryLengthAndPrune(int history_length, int32 minimum_page_id);
   void OnSetInitialFocus(bool reverse);
   void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
   void OnSetPageEncoding(const std::string& encoding_name);
   void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);
   void OnSetZoomLevel(double zoom_level);
-  CONTENT_EXPORT void OnSetZoomLevelForLoadingURL(const GURL& url,
-                                                  double zoom_level);
+  void OnSetZoomLevelForLoadingURL(const GURL& url, double zoom_level);
   void OnExitFullscreen();
   void OnShouldClose();
   void OnStop();
   void OnStopFinding(StopFindAction action);
-  CONTENT_EXPORT void OnSwapOut(const ViewMsg_SwapOut_Params& params);
+  void OnSwapOut(const ViewMsg_SwapOut_Params& params);
   void OnThemeChanged();
   void OnUndo();
   void OnUpdateTargetURLAck();
   void OnUpdateTimezone();
-  CONTENT_EXPORT void OnUpdateWebPreferences(
-      const webkit_glue::WebPreferences& prefs);
-  CONTENT_EXPORT void OnUnselect();
+  void OnUpdateWebPreferences(const webkit_glue::WebPreferences& prefs);
+  void OnUnselect();
 
   void OnZoom(PageZoom zoom);
   void OnZoomFactor(PageZoom zoom, int zoom_center_x, int zoom_center_y);
@@ -1015,7 +1008,7 @@ class RenderViewImpl : public RenderWidget,
 #elif defined(OS_MACOSX)
   void OnCopyToFindPboard();
   void OnPluginImeCompositionCompleted(const string16& text, int plugin_id);
-  CONTENT_EXPORT void OnSelectPopupMenuItem(int selected_index);
+  void OnSelectPopupMenuItem(int selected_index);
   void OnSetInLiveResize(bool in_live_resize);
   void OnSetWindowVisibility(bool visible);
   void OnWindowFrameChanged(const gfx::Rect& window_frame,

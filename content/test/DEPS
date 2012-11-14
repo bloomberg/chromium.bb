@@ -4,4 +4,5 @@ include_rules = [
   "+media/base",  # For ChannelLayout in WebRTC tests.
   "+ui/aura/test/test_aura_initializer.h",
   "+ui/base/resource/data_pack.h",
+  "+third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public",
 ]
