@@ -81,14 +81,15 @@ class RendererCrashTest : public InProcessBrowserTest,
     if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
         status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
       saw_crash_ = true;
+      MessageLoopForUI::current()->Quit();
     }
-    MessageLoopForUI::current()->Quit();
   }
 
   bool saw_crash_;
   content::NotificationRegistrar registrar_;
 };
 
+// Flaky, http://crbug.com/107226 .
 IN_PROC_BROWSER_TEST_F(RendererCrashTest, FLAKY_Crash) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllSources());
