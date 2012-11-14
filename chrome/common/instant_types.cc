@@ -20,9 +20,7 @@ InstantSuggestion::InstantSuggestion(const string16& in_text,
 InstantSuggestion::~InstantSuggestion() {
 }
 
-InstantAutocompleteResult::InstantAutocompleteResult()
-    : is_search(false),
-      relevance(0) {
+InstantAutocompleteResult::InstantAutocompleteResult() : relevance(0) {
 }
 
 InstantAutocompleteResult::~InstantAutocompleteResult() {

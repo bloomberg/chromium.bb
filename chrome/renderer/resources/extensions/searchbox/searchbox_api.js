@@ -10,7 +10,6 @@ if (!chrome.searchBox) {
     // =========================================================================
     //                                  Constants
     // =========================================================================
-
     var MAX_CLIENT_SUGGESTIONS_TO_DEDUPE = 6;
     var MAX_ALLOWED_DEDUPE_ATTEMPTS = 5;
 
@@ -38,7 +37,6 @@ if (!chrome.searchBox) {
     native function SetQuerySuggestionFromAutocompleteResult();
     native function SetQuery();
     native function SetQueryFromAutocompleteResult();
-    native function SetPreviewHeight();
     native function Show();
 
     // Returns the |restrictedText| wrapped in a ShadowDOM.
@@ -185,21 +183,17 @@ if (!chrome.searchBox) {
     this.setAutocompleteText = function(text, behavior) {
       SetQuerySuggestion(text, behavior);
     };
-    this.setRestrictedAutocompleteText = function(resultId, behavior) {
-      SetQuerySuggestionFromAutocompleteResult(resultId, behavior);
+    this.setRestrictedAutocompleteText = function(resultId) {
+      SetQuerySuggestionFromAutocompleteResult(resultId);
     };
     this.setValue = function(text, type) {
       SetQuery(text, type);
     };
-    this.setRestrictedValue = function(resultId, behavior) {
-      SetQueryFromAutocompleteResult(resultId, behavior);
+    this.setRestrictedValue = function(resultId) {
+      SetQueryFromAutocompleteResult(resultId);
     };
-    // Deprecated. TODO(jered): Delete this once it is no longer called.
-    this.setNonNativeDropdownHeight = function(height) {
-      SetPreviewHeight(height);
-    };
-    this.show = function(reason, opt_height) {
-      Show(reason, opt_height);
+    this.show = function(reason, height) {
+      Show(reason, height);
     };
     this.markDuplicateSuggestions = function(clientSuggestions) {
       return DedupeClientSuggestions(clientSuggestions);

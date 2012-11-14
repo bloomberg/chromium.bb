@@ -198,9 +198,11 @@ void SearchBox::OnActiveTabModeChanged(bool active_tab_is_ntp) {
 void SearchBox::Reset() {
   query_.clear();
   verbatim_ = false;
-  selection_start_ = selection_end_ = 0;
+  selection_start_ = 0;
+  selection_end_ = 0;
   results_base_ = 0;
   rect_ = gfx::Rect();
   autocomplete_results_.clear();
   is_focused_ = false;
+  active_tab_is_ntp_ = false;
 }

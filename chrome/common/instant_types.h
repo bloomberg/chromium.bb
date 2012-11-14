@@ -49,21 +49,19 @@ struct InstantAutocompleteResult {
   InstantAutocompleteResult();
   ~InstantAutocompleteResult();
 
-  // The provider name. May be empty.
+  // The provider name, as returned by AutocompleteProvider::GetName().
   string16 provider;
 
-  // True iff this is a search suggestion.
-  bool is_search;
+  // The type of the result, as returned by AutocompleteMatch::TypeToString().
+  string16 type;
 
-  // The title of the match.
-  string16 contents;
+  // The description (title), same as AutocompleteMatch::description.
+  string16 description;
 
-  // The URL of the match.
-  // TODO(dhollowa): Remove this once the privacy story is sorted out.
-  GURL destination_url;
+  // The URL of the match, same as AutocompleteMatch::destination_url.
+  string16 destination_url;
 
-  // The relevance score of this match. Same as the relevance score stored in
-  // AutocompleteMatch.
+  // The relevance score of this match, same as AutocompleteMatch::relevance.
   int relevance;
 };
 

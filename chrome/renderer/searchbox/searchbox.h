@@ -36,12 +36,12 @@ class SearchBox : public content::RenderViewObserver,
                           int height,
                           InstantSizeUnits units);
 
-  bool is_focused() const { return is_focused_; }
   const string16& query() const { return query_; }
   bool verbatim() const { return verbatim_; }
   size_t selection_start() const { return selection_start_; }
   size_t selection_end() const { return selection_end_; }
   int results_base() const { return results_base_; }
+  bool is_focused() const { return is_focused_; }
   bool active_tab_is_ntp() const { return active_tab_is_ntp_; }
 
   gfx::Rect GetRect();

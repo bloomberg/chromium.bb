@@ -4,9 +4,6 @@
 
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 
-#include <ctype.h>
-
-#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/renderer/searchbox/searchbox.h"
@@ -22,19 +19,6 @@
 
 namespace {
 
-// Splits the string in |number| into two pieces, a leading number token (saved
-// in |number|) and the rest (saved in |suffix|). Either piece may become empty,
-// depending on whether the input had no digits or only digits. Neither argument
-// may be NULL.
-// TODO(jered): Delete this when deleting SetPreviewHeight.
-void SplitLeadingNumberToken(std::string* number, std::string* suffix) {
-  size_t i = 0;
-  while (i < number->size() && isdigit((*number)[i]))
-    ++i;
-  suffix->assign(*number, i, number->size() - i);
-  number->resize(i);
-}
-
 // Converts a V8 value to a string16.
 string16 V8ValueToUTF16(v8::Handle<v8::Value> v) {
   v8::String::Value s(v);
@@ -44,6 +28,11 @@ string16 V8ValueToUTF16(v8::Handle<v8::Value> v) {
 // Converts string16 to V8 String.
 v8::Handle<v8::String> UTF16ToV8String(const string16& s) {
   return v8::String::New(reinterpret_cast<const uint16_t*>(s.data()), s.size());
+}
+
+void Dispatch(WebKit::WebFrame* frame, const WebKit::WebString& script) {
+  if (!frame) return;
+  frame->executeScript(WebKit::WebScriptSource(script));
 }
 
 }  // namespace
@@ -220,11 +209,6 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static v8::Handle<v8::Value> SetQueryFromAutocompleteResult(
       const v8::Arguments& args);
 
-  // Resize the preview to the given height.
-  // Deprecated, use Show().
-  // TODO(jered): Delete this once it is no longer called.
-  static v8::Handle<v8::Value> SetPreviewHeight(const v8::Arguments& args);
-
   // Requests the preview be shown with the specified contents and height.
   static v8::Handle<v8::Value> Show(const v8::Arguments& args);
 
@@ -239,46 +223,42 @@ SearchBoxExtensionWrapper::SearchBoxExtensionWrapper(
 
 v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     v8::Handle<v8::String> name) {
-  if (name->Equals(v8::String::New("GetQuery"))) {
+  if (name->Equals(v8::String::New("GetQuery")))
     return v8::FunctionTemplate::New(GetQuery);
-  } else if (name->Equals(v8::String::New("GetVerbatim"))) {
+  if (name->Equals(v8::String::New("GetVerbatim")))
     return v8::FunctionTemplate::New(GetVerbatim);
-  } else if (name->Equals(v8::String::New("GetSelectionStart"))) {
+  if (name->Equals(v8::String::New("GetSelectionStart")))
     return v8::FunctionTemplate::New(GetSelectionStart);
-  } else if (name->Equals(v8::String::New("GetSelectionEnd"))) {
+  if (name->Equals(v8::String::New("GetSelectionEnd")))
     return v8::FunctionTemplate::New(GetSelectionEnd);
-  } else if (name->Equals(v8::String::New("GetX"))) {
+  if (name->Equals(v8::String::New("GetX")))
     return v8::FunctionTemplate::New(GetX);
-  } else if (name->Equals(v8::String::New("GetY"))) {
+  if (name->Equals(v8::String::New("GetY")))
     return v8::FunctionTemplate::New(GetY);
-  } else if (name->Equals(v8::String::New("GetWidth"))) {
+  if (name->Equals(v8::String::New("GetWidth")))
     return v8::FunctionTemplate::New(GetWidth);
-  } else if (name->Equals(v8::String::New("GetHeight"))) {
+  if (name->Equals(v8::String::New("GetHeight")))
     return v8::FunctionTemplate::New(GetHeight);
-  } else if (name->Equals(v8::String::New("GetAutocompleteResults"))) {
+  if (name->Equals(v8::String::New("GetAutocompleteResults")))
     return v8::FunctionTemplate::New(GetAutocompleteResults);
-  } else if (name->Equals(v8::String::New("GetIsFocused"))) {
+  if (name->Equals(v8::String::New("GetIsFocused")))
     return v8::FunctionTemplate::New(GetIsFocused);
-  } else if (name->Equals(v8::String::New("GetContext"))) {
+  if (name->Equals(v8::String::New("GetContext")))
     return v8::FunctionTemplate::New(GetContext);
-  } else if (name->Equals(v8::String::New("NavigateContentWindow"))) {
+  if (name->Equals(v8::String::New("NavigateContentWindow")))
     return v8::FunctionTemplate::New(NavigateContentWindow);
-  } else if (name->Equals(v8::String::New("SetSuggestions"))) {
+  if (name->Equals(v8::String::New("SetSuggestions")))
     return v8::FunctionTemplate::New(SetSuggestions);
-  } else if (name->Equals(v8::String::New("SetQuerySuggestion"))) {
+  if (name->Equals(v8::String::New("SetQuerySuggestion")))
     return v8::FunctionTemplate::New(SetQuerySuggestion);
-  } else if (name->Equals(v8::String::New(
-      "SetQuerySuggestionFromAutocompleteResult"))) {
+  if (name->Equals(v8::String::New("SetQuerySuggestionFromAutocompleteResult")))
     return v8::FunctionTemplate::New(SetQuerySuggestionFromAutocompleteResult);
-  } else if (name->Equals(v8::String::New("SetQuery"))) {
+  if (name->Equals(v8::String::New("SetQuery")))
     return v8::FunctionTemplate::New(SetQuery);
-  } else if (name->Equals(v8::String::New("SetQueryFromAutocompleteResult"))) {
+  if (name->Equals(v8::String::New("SetQueryFromAutocompleteResult")))
     return v8::FunctionTemplate::New(SetQueryFromAutocompleteResult);
-  } else if (name->Equals(v8::String::New("SetPreviewHeight"))) {
-    return v8::FunctionTemplate::New(SetPreviewHeight);
-  } else if (name->Equals(v8::String::New("Show"))) {
+  if (name->Equals(v8::String::New("Show")))
     return v8::FunctionTemplate::New(Show);
-  }
   return v8::Handle<v8::FunctionTemplate>();
 }
 
@@ -298,6 +278,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetQuery(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
+
   return UTF16ToV8String(SearchBox::Get(render_view)->query());
 }
 
@@ -306,6 +287,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetVerbatim(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
+
   return v8::Boolean::New(SearchBox::Get(render_view)->verbatim());
 }
 
@@ -314,6 +296,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetSelectionStart(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
+
   return v8::Uint32::New(SearchBox::Get(render_view)->selection_start());
 }
 
@@ -322,6 +305,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetSelectionEnd(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
+
   return v8::Uint32::New(SearchBox::Get(render_view)->selection_end());
 }
 
@@ -330,6 +314,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetX(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
+
   return v8::Int32::New(SearchBox::Get(render_view)->GetRect().x());
 }
 
@@ -338,6 +323,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetY(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
+
   return v8::Int32::New(SearchBox::Get(render_view)->GetRect().y());
 }
 
@@ -346,6 +332,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetWidth(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
+
   return v8::Int32::New(SearchBox::Get(render_view)->GetRect().width());
 }
 
@@ -354,6 +341,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetHeight(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
+
   return v8::Int32::New(SearchBox::Get(render_view)->GetRect().height());
 }
 
@@ -362,18 +350,21 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetAutocompleteResults(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
+
   const std::vector<InstantAutocompleteResult>& results =
       SearchBox::Get(render_view)->GetAutocompleteResults();
   const size_t results_base = SearchBox::Get(render_view)->results_base();
+
   v8::Handle<v8::Array> results_array = v8::Array::New(results.size());
   for (size_t i = 0; i < results.size(); ++i) {
     v8::Handle<v8::Object> result = v8::Object::New();
     result->Set(v8::String::New("provider"),
                 UTF16ToV8String(results[i].provider));
+    result->Set(v8::String::New("type"), UTF16ToV8String(results[i].type));
     result->Set(v8::String::New("contents"),
-                UTF16ToV8String(results[i].contents));
+                UTF16ToV8String(results[i].description));
     result->Set(v8::String::New("destination_url"),
-                v8::String::New(results[i].destination_url.spec().c_str()));
+                UTF16ToV8String(results[i].destination_url));
     result->Set(v8::String::New("rid"), v8::Uint32::New(results_base + i));
 
     v8::Handle<v8::Object> ranking_data = v8::Object::New();
@@ -383,7 +374,6 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetAutocompleteResults(
 
     results_array->Set(i, result);
   }
-
   return results_array;
 }
 
@@ -392,6 +382,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetIsFocused(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
+
   return v8::Boolean::New(SearchBox::Get(render_view)->is_focused());
 }
 
@@ -400,6 +391,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetContext(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
+
   v8::Handle<v8::Object> context = v8::Object::New();
   context->Set(
       v8::String::New("isNewTabPage"),
@@ -414,93 +406,81 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateContentWindow(
   if (!render_view || !args.Length()) return v8::Undefined();
 
   GURL destination_url;
-  if (args[0]->IsString()) {
-    destination_url = GURL(*v8::String::Utf8Value(args[0]));
-  } else if (args[0]->IsNumber()) {
-    // Get the restricted_id.
-    const size_t restricted_id = args[0]->Uint32Value();
-    const InstantAutocompleteResult* result =
-        SearchBox::Get(render_view)->GetAutocompleteResultWithId(restricted_id);
+  if (args[0]->IsNumber()) {
+    const InstantAutocompleteResult* result = SearchBox::Get(render_view)->
+        GetAutocompleteResultWithId(args[0]->Uint32Value());
     if (result)
-      destination_url = result->destination_url;
+      destination_url = GURL(result->destination_url);
+  } else {
+    destination_url = GURL(V8ValueToUTF16(args[0]));
   }
+
   // Navigate the main frame.
   if (destination_url.is_valid()) {
     WebKit::WebURLRequest request(destination_url);
     render_view->GetWebView()->mainFrame()->loadRequest(request);
   }
+
   return v8::Undefined();
 }
 
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
     const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view || !args.Length()) return v8::Undefined();
+
+  v8::Handle<v8::Object> suggestion_json = args[0]->ToObject();
+
+  InstantCompleteBehavior behavior = INSTANT_COMPLETE_NOW;
+  InstantSuggestionType type = INSTANT_SUGGESTION_SEARCH;
+  v8::Handle<v8::Value> complete_value =
+      suggestion_json->Get(v8::String::New("complete_behavior"));
+  if (complete_value->Equals(v8::String::New("now"))) {
+    behavior = INSTANT_COMPLETE_NOW;
+  } else if (complete_value->Equals(v8::String::New("never"))) {
+    behavior = INSTANT_COMPLETE_NEVER;
+  } else if (complete_value->Equals(v8::String::New("replace"))) {
+    behavior = INSTANT_COMPLETE_REPLACE;
+  }
+
   std::vector<InstantSuggestion> suggestions;
 
-  if (args.Length() && args[0]->IsObject()) {
-    v8::Handle<v8::Object> suggestion_json = args[0]->ToObject();
-
-    InstantCompleteBehavior behavior = INSTANT_COMPLETE_NOW;
-    InstantSuggestionType type = INSTANT_SUGGESTION_SEARCH;
-    v8::Handle<v8::Value> complete_value =
-          suggestion_json->Get(v8::String::New("complete_behavior"));
-    if (complete_value->IsString()) {
-      if (complete_value->Equals(v8::String::New("now"))) {
-        behavior = INSTANT_COMPLETE_NOW;
-      } else if (complete_value->Equals(v8::String::New("never"))) {
-        behavior = INSTANT_COMPLETE_NEVER;
-      } else if (complete_value->Equals(v8::String::New("replace"))) {
-        behavior = INSTANT_COMPLETE_REPLACE;
-      } else {
-        VLOG(1) << "Unsupported complete behavior '"
-                << *v8::String::Utf8Value(complete_value) << "'";
-      }
-    }
-    v8::Handle<v8::Value> suggestions_field =
-        suggestion_json->Get(v8::String::New("suggestions"));
-    if (suggestions_field->IsArray()) {
-      v8::Handle<v8::Array> suggestions_array =
-          suggestions_field.As<v8::Array>();
-      size_t length = suggestions_array->Length();
-      for (size_t i = 0; i < length; i++) {
-        v8::Handle<v8::Value> suggestion_value = suggestions_array->Get(i);
-        if (!suggestion_value->IsObject()) continue;
-
-        v8::Handle<v8::Object> suggestion_object = suggestion_value->ToObject();
-        v8::Handle<v8::Value> suggestion_object_value =
-            suggestion_object->Get(v8::String::New("value"));
-        if (!suggestion_object_value->IsString()) continue;
-        string16 text = V8ValueToUTF16(suggestion_object_value);
-
-        suggestions.push_back(InstantSuggestion(text, behavior, type));
-      }
+  v8::Handle<v8::Value> suggestions_field =
+      suggestion_json->Get(v8::String::New("suggestions"));
+  if (suggestions_field->IsArray()) {
+    v8::Handle<v8::Array> suggestions_array = suggestions_field.As<v8::Array>();
+    for (size_t i = 0; i < suggestions_array->Length(); i++) {
+      string16 text = V8ValueToUTF16(
+          suggestions_array->Get(i)->ToObject()->Get(v8::String::New("value")));
+      suggestions.push_back(InstantSuggestion(text, behavior, type));
     }
   }
 
-  if (content::RenderView* render_view = GetRenderView())
-    SearchBox::Get(render_view)->SetSuggestions(suggestions);
+  SearchBox::Get(render_view)->SetSuggestions(suggestions);
+
   return v8::Undefined();
 }
 
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetQuerySuggestion(
     const v8::Arguments& args) {
-  if (1 <= args.Length() && args.Length() <= 2 && args[0]->IsString()) {
-    string16 text = V8ValueToUTF16(args[0]);
-    InstantCompleteBehavior behavior = INSTANT_COMPLETE_NOW;
-    InstantSuggestionType type = INSTANT_SUGGESTION_URL;
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view || args.Length() < 2) return v8::Undefined();
 
-    if (args.Length() >= 2 && args[1]->Uint32Value() == 2) {
-      behavior = INSTANT_COMPLETE_NEVER;
-      type = INSTANT_SUGGESTION_SEARCH;
-    }
+  string16 text = V8ValueToUTF16(args[0]);
+  InstantCompleteBehavior behavior = INSTANT_COMPLETE_NOW;
+  InstantSuggestionType type = INSTANT_SUGGESTION_URL;
 
-    if (content::RenderView* render_view = GetRenderView()) {
-      std::vector<InstantSuggestion> suggestions;
-      suggestions.push_back(InstantSuggestion(text, behavior, type));
-      SearchBox::Get(render_view)->SetSuggestions(suggestions);
-    }
+  if (args[1]->Uint32Value() == 2) {
+    behavior = INSTANT_COMPLETE_NEVER;
+    type = INSTANT_SUGGESTION_SEARCH;
   }
+
+  std::vector<InstantSuggestion> suggestions;
+  suggestions.push_back(InstantSuggestion(text, behavior, type));
+  SearchBox::Get(render_view)->SetSuggestions(suggestions);
+
   return v8::Undefined();
 }
 
@@ -509,52 +489,41 @@ v8::Handle<v8::Value>
     SearchBoxExtensionWrapper::SetQuerySuggestionFromAutocompleteResult(
         const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
-  if (1 <= args.Length() && args.Length() <= 2 && args[0]->IsNumber() &&
-      render_view) {
-    const size_t results_id = args[0]->Uint32Value();
+  if (!render_view || !args.Length()) return v8::Undefined();
 
-    const InstantAutocompleteResult* result =
-        SearchBox::Get(render_view)->GetAutocompleteResultWithId(results_id);
-    if (result) {
-      string16 text = UTF8ToUTF16(result->destination_url.spec());
-      InstantCompleteBehavior behavior = INSTANT_COMPLETE_NOW;
-      InstantSuggestionType type = INSTANT_SUGGESTION_URL;
+  const InstantAutocompleteResult* result = SearchBox::Get(render_view)->
+      GetAutocompleteResultWithId(args[0]->Uint32Value());
+  if (!result) return v8::Undefined();
 
-      if (args.Length() >= 2 && args[1]->Uint32Value() == 2)
-        behavior = INSTANT_COMPLETE_NEVER;
+  // We only support selecting autocomplete results that are URLs.
+  string16 text = result->destination_url;
+  InstantCompleteBehavior behavior = INSTANT_COMPLETE_NOW;
+  InstantSuggestionType type = INSTANT_SUGGESTION_URL;
 
-      if (result->is_search) {
-        text = result->contents;
-        type = INSTANT_SUGGESTION_SEARCH;
-      }
+  std::vector<InstantSuggestion> suggestions;
+  suggestions.push_back(InstantSuggestion(text, behavior, type));
+  SearchBox::Get(render_view)->SetSuggestions(suggestions);
 
-      std::vector<InstantSuggestion> suggestions;
-      suggestions.push_back(InstantSuggestion(text, behavior, type));
-      SearchBox::Get(render_view)->SetSuggestions(suggestions);
-    } else {
-      VLOG(1) << "Invalid results_id " << results_id;
-    }
-  }
   return v8::Undefined();
 }
 
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetQuery(
     const v8::Arguments& args) {
-  if (1 <= args.Length() && args.Length() <= 2 && args[0]->IsString()) {
-    string16 text = V8ValueToUTF16(args[0]);
-    InstantCompleteBehavior behavior = INSTANT_COMPLETE_REPLACE;
-    InstantSuggestionType type = INSTANT_SUGGESTION_URL;
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view || args.Length() < 2) return v8::Undefined();
 
-    if (args.Length() >= 2 && args[1]->Uint32Value() == 0)
-      type = INSTANT_SUGGESTION_SEARCH;
+  string16 text = V8ValueToUTF16(args[0]);
+  InstantCompleteBehavior behavior = INSTANT_COMPLETE_REPLACE;
+  InstantSuggestionType type = INSTANT_SUGGESTION_SEARCH;
 
-    if (content::RenderView* render_view = GetRenderView()) {
-      std::vector<InstantSuggestion> suggestions;
-      suggestions.push_back(InstantSuggestion(text, behavior, type));
-      SearchBox::Get(render_view)->SetSuggestions(suggestions);
-    }
-  }
+  if (args[1]->Uint32Value() == 1)
+    type = INSTANT_SUGGESTION_URL;
+
+  std::vector<InstantSuggestion> suggestions;
+  suggestions.push_back(InstantSuggestion(text, behavior, type));
+  SearchBox::Get(render_view)->SetSuggestions(suggestions);
+
   return v8::Undefined();
 }
 
@@ -562,61 +531,23 @@ v8::Handle<v8::Value>
     SearchBoxExtensionWrapper::SetQueryFromAutocompleteResult(
         const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
-  if (1 <= args.Length() && args.Length() <= 2 && args[0]->IsNumber() &&
-      render_view) {
-    const size_t results_id = args[0]->Uint32Value();
-    const InstantAutocompleteResult* result =
-        SearchBox::Get(render_view)->GetAutocompleteResultWithId(results_id);
-    if (result) {
-      string16 text = UTF8ToUTF16(result->destination_url.spec());
-      InstantCompleteBehavior behavior = INSTANT_COMPLETE_REPLACE;
-      // TODO(jered): Distinguish between history URLs and search provider
-      // navsuggest URLs so that we can do proper accounting on history URLs.
-      InstantSuggestionType type = INSTANT_SUGGESTION_URL;
+  if (!render_view || !args.Length()) return v8::Undefined();
 
-      if ((args.Length() >= 2 && args[1]->Uint32Value() == 0) ||
-          (args.Length() < 2 && result->is_search)) {
-        text = result->contents;
-        type = INSTANT_SUGGESTION_SEARCH;
-      }
+  const InstantAutocompleteResult* result = SearchBox::Get(render_view)->
+      GetAutocompleteResultWithId(args[0]->Uint32Value());
+  if (!result) return v8::Undefined();
 
-      std::vector<InstantSuggestion> suggestions;
-      suggestions.push_back(InstantSuggestion(text, behavior, type));
-      SearchBox::Get(render_view)->SetSuggestions(suggestions);
-    } else {
-      VLOG(1) << "Invalid results_id " << results_id;
-    }
-  }
-  return v8::Undefined();
-}
+  // We only support selecting autocomplete results that are URLs.
+  string16 text = result->destination_url;
+  InstantCompleteBehavior behavior = INSTANT_COMPLETE_REPLACE;
+  // TODO(jered): Distinguish between history URLs and search provider
+  // navsuggest URLs so that we can do proper accounting on history URLs.
+  InstantSuggestionType type = INSTANT_SUGGESTION_URL;
 
-// static
-v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetPreviewHeight(
-    const v8::Arguments& args) {
-  if (args.Length() == 1) {
-    int height = 0;
-    InstantSizeUnits units = INSTANT_SIZE_PIXELS;
-    if (args[0]->IsInt32()) {
-      height = args[0]->Int32Value();
-    } else if (args[0]->IsString()) {
-      std::string height_str = *v8::String::Utf8Value(args[0]);
-      std::string units_str;
-      SplitLeadingNumberToken(&height_str, &units_str);
-      if (!base::StringToInt(height_str, &height))
-        return v8::Undefined();
-      if (units_str == "%") {
-        units = INSTANT_SIZE_PERCENT;
-      } else if (!units_str.empty() && units_str != "px") {
-        return v8::Undefined();
-      }
-    } else {
-      return v8::Undefined();
-    }
-    content::RenderView* render_view = GetRenderView();
-    if (render_view && height >= 0)
-      SearchBox::Get(render_view)->ShowInstantPreview(
-          INSTANT_SHOWN_NOT_SPECIFIED, height, units);
-  }
+  std::vector<InstantSuggestion> suggestions;
+  suggestions.push_back(InstantSuggestion(text, behavior, type));
+  SearchBox::Get(render_view)->SetSuggestions(suggestions);
+
   return v8::Undefined();
 }
 
@@ -624,41 +555,26 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetPreviewHeight(
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::Show(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
-  if (render_view &&
-      ((args.Length() == 1 && args[0]->IsInt32()) ||
-       (args.Length() == 2 && args[0]->IsInt32() && args[1]->IsInt32()))) {
-    InstantShownReason reason = INSTANT_SHOWN_NOT_SPECIFIED;
-    switch (args[0]->Int32Value()) {
-      case 0:
-        reason = INSTANT_SHOWN_NOT_SPECIFIED;
-        break;
-      case 1:
-        reason = INSTANT_SHOWN_CUSTOM_NTP_CONTENT;
-        break;
-      case 2:
-        reason = INSTANT_SHOWN_QUERY_SUGGESTIONS;
-        break;
-      case 3:
-        reason = INSTANT_SHOWN_ZERO_SUGGESTIONS;
-        break;
-      default:
-        return v8::Undefined();
-    }
-    int height = 100;
-    InstantSizeUnits units = INSTANT_SIZE_PERCENT;
-    if (args.Length() == 2) {
-      height = args[1]->Int32Value();
-      units = INSTANT_SIZE_PIXELS;
-    }
-    SearchBox::Get(render_view)->ShowInstantPreview(reason, height, units);
-  }
-  return v8::Undefined();
-}
+  if (!render_view || args.Length() < 2) return v8::Undefined();
 
-// static
-void Dispatch(WebKit::WebFrame* frame, const WebKit::WebString& script) {
-  if (!frame) return;
-  frame->executeScript(WebKit::WebScriptSource(script));
+  InstantShownReason reason = INSTANT_SHOWN_NOT_SPECIFIED;
+  switch (args[0]->Uint32Value()) {
+    case 0: reason = INSTANT_SHOWN_NOT_SPECIFIED; break;
+    case 1: reason = INSTANT_SHOWN_CUSTOM_NTP_CONTENT; break;
+    case 2: reason = INSTANT_SHOWN_QUERY_SUGGESTIONS; break;
+    case 3: reason = INSTANT_SHOWN_ZERO_SUGGESTIONS; break;
+  }
+
+  int height = 100;
+  InstantSizeUnits units = INSTANT_SIZE_PERCENT;
+  if (args[1]->IsInt32()) {
+    height = args[1]->Int32Value();
+    units = INSTANT_SIZE_PIXELS;
+  }
+
+  SearchBox::Get(render_view)->ShowInstantPreview(reason, height, units);
+
+  return v8::Undefined();
 }
 
 // static
@@ -679,6 +595,23 @@ void SearchBoxExtension::DispatchCancel(WebKit::WebFrame* frame) {
 // static
 void SearchBoxExtension::DispatchResize(WebKit::WebFrame* frame) {
   Dispatch(frame, kDispatchResizeEventScript);
+}
+
+// static
+bool SearchBoxExtension::PageSupportsInstant(WebKit::WebFrame* frame) {
+  if (!frame) return false;
+
+  v8::Handle<v8::Value> v = frame->executeScriptAndReturnValue(
+      WebKit::WebScriptSource(kSupportsInstantScript));
+  bool supports_instant = !v.IsEmpty() && v->BooleanValue();
+
+  // Send a resize message to tell the page that Chrome is actively using the
+  // searchbox API with it. The page uses the message to transition from
+  // "homepage" mode to "search" mode.
+  if (supports_instant)
+    DispatchResize(frame);
+
+  return supports_instant;
 }
 
 // static
@@ -710,28 +643,9 @@ void SearchBoxExtension::DispatchContextChange(WebKit::WebFrame* frame) {
 }
 
 // static
-bool SearchBoxExtension::PageSupportsInstant(WebKit::WebFrame* frame) {
-  if (!frame) return false;
-
-  v8::Handle<v8::Value> v = frame->executeScriptAndReturnValue(
-      WebKit::WebScriptSource(kSupportsInstantScript));
-  bool supports_instant = !v.IsEmpty() && v->BooleanValue();
-
-  // Send a resize message to tell the page that Chrome is actively using the
-  // searchbox API with it. The page uses the message to transition from
-  // "homepage" mode to "search" mode.
-  if (supports_instant)
-    DispatchResize(frame);
-
-  return supports_instant;
-}
-
-// static
 v8::Extension* SearchBoxExtension::Get() {
-  const base::StringPiece code =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_SEARCHBOX_API);
-  return new SearchBoxExtensionWrapper(code);
+  return new SearchBoxExtensionWrapper(ResourceBundle::GetSharedInstance().
+      GetRawDataResource(IDR_SEARCHBOX_API));
 }
 
 }  // namespace extensions_v8

@@ -286,9 +286,9 @@ void InstantController::HandleAutocompleteResults(
          match != (*provider)->matches().end(); ++match) {
       InstantAutocompleteResult result;
       result.provider = UTF8ToUTF16((*provider)->GetName());
-      result.is_search = AutocompleteMatch::IsSearchType(match->type);
-      result.contents = match->description;
-      result.destination_url = match->destination_url;
+      result.type = UTF8ToUTF16(AutocompleteMatch::TypeToString(match->type));
+      result.description = match->description;
+      result.destination_url = UTF8ToUTF16(match->destination_url.spec());
       result.relevance = match->relevance;
       results.push_back(result);
     }
