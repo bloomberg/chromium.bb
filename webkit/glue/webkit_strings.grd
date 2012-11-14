@@ -308,6 +308,9 @@ below:
       <message name="IDS_FORM_THIS_WEEK_LABEL" desc="Label for button in week picker to select this week.">
         This week
       </message>
+      <message name="IDS_FORM_WEEK_NUMBER_LABEL" desc="Label for week number column in a calendar.">
+        Week
+      </message>
 
       <message name="IDS_RECENT_SEARCHES_NONE" desc="Label for only item in menu that appears when clicking on the search field image, when no searches have been performed">
         No recent searches
