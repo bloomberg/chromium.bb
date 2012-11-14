@@ -15,6 +15,22 @@ import time
 import traceback
 
 
+ARCH_MAP = {
+    '32': {
+        'gyp_arch': 'ia32',
+        'scons_platform': 'x86-32',
+        },
+    '64': {
+        'gyp_arch': 'x64',
+        'scons_platform': 'x86-64',
+        },
+    'arm': {
+        'gyp_arch': 'arm',
+        'scons_platform': 'arm',
+        },
+    }
+
+
 def GetHostPlatform():
   sys_platform = sys.platform.lower()
   if sys_platform.startswith('linux'):
@@ -57,15 +73,15 @@ def ParseStandardCommandLine(context):
   options, args = parser.parse_args()
 
   if len(args) != 3:
-    parser.error('Expected 3 arguments: mode bits clib')
+    parser.error('Expected 3 arguments: mode arch clib')
 
   # script + 3 args == 4
-  mode, bits, clib = args
+  mode, arch, clib = args
   if mode not in ('dbg', 'opt'):
     parser.error('Invalid mode %r' % mode)
 
-  if bits not in ('32', '64'):
-    parser.error('Invalid bits %r' % bits)
+  if arch not in ARCH_MAP:
+    parser.error('Invalid arch %r' % arch)
 
   if clib not in ('newlib', 'glibc'):
     parser.error('Invalid clib %r' % clib)
@@ -75,21 +91,20 @@ def ParseStandardCommandLine(context):
 
   context['platform'] = platform
   context['mode'] = mode
-  context['bits'] = bits
+  context['arch'] = arch
   # ASan is Clang, so set the flag to simplify other checks.
   context['clang'] = options.clang or options.asan
   context['validator'] = options.validator
   context['asan'] = options.asan
   # TODO(ncbray) turn derived values into methods.
   context['gyp_mode'] = {'opt': 'Release', 'dbg': 'Debug'}[mode]
-  context['gyp_arch'] = {'32': 'ia32', '64': 'x64'}[bits]
+  context['gyp_arch'] = ARCH_MAP[arch]['gyp_arch']
   context['gyp_vars'] = []
   if context['clang']:
     context['gyp_vars'].append('clang=1')
   if context['asan']:
     context['gyp_vars'].append('asan=1')
-  context['vc_arch'] = {'32': 'x86', '64': 'x64'}[bits]
-  context['default_scons_platform'] = 'x86-'+bits
+  context['default_scons_platform'] = ARCH_MAP[arch]['scons_platform']
   context['default_scons_mode'] = [mode + '-host', 'nacl']
   context['use_glibc'] = clib == 'glibc'
   context['max_jobs'] = 8
@@ -267,6 +282,11 @@ def SCons(context, mode=None, platform=None, parallel=False, browser_test=False,
       '-j%d' % jobs,
       '--mode='+','.join(mode),
       'platform='+platform,
+      # native_code=1 is to defeat the default of bitcode=1
+      # when platform=arm and has no effect for other platforms.
+      # TODO(mcgrathr): Eventually just make the scons default
+      # consistently bitcode=0 and require bitcode=1 for pnacl-arm.
+      'native_code=1',
       ])
   if context['clang']: cmd.append('--clang')
   if context['asan']: cmd.append('--asan')
