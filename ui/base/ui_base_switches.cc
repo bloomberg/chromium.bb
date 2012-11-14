@@ -9,26 +9,11 @@ namespace switches {
 // Enable support for bezel touch.
 const char kEnableBezelTouch[] = "enable-bezel-touch";
 
-// Whether or not ImageSkiaOperations methods can scale one of images
-// if they don't have the same scale factor.
-const char kDisableScalingInImageSkiaOperations[] =
-    "disable-scaling-in-image-skia-operations";
-
-// Let text glyphs have X-positions that aren't snapped to the pixel grid in
-// the browser UI.
-const char kEnableBrowserTextSubpixelPositioning[] =
-    "enable-browser-text-subpixel-positioning";
-
 // Enable support for touch events.
 const char kEnableTouchEvents[] = "enable-touch-events";
 
 // Enables the Views textfield on Windows.
 const char kEnableViewsTextfield[] = "enable-views-textfield";
-
-// Enable text glyphs to have X-positions that aren't snapped to the pixel grid
-// in webkit renderers.
-const char kEnableWebkitTextSubpixelPositioning[] =
-    "enable-webkit-text-subpixel-positioning";
 
 // Overrides the device scale factor for the browser UI and the
 // contents.

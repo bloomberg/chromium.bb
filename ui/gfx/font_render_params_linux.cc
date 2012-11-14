@@ -11,7 +11,7 @@
 #else
 #include <fontconfig/fontconfig.h>
 #include "base/command_line.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/gfx/switches.h"
 #endif
 
 namespace gfx {

@@ -89,6 +89,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 
@@ -757,7 +758,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kDisableOobeAnimation,
       ::switches::kDisableSeccompFilterSandbox,
       ::switches::kDisableSeccompSandbox,
-      ::switches::kEnableBrowserTextSubpixelPositioning,
       ::switches::kEnableCompositingForFixedPosition,
       ::switches::kEnableEncryptedMedia,
       ::switches::kEnableGView,
@@ -768,7 +768,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kEnableSmoothScrolling,
       ::switches::kEnableThreadedCompositing,
       ::switches::kEnableViewport,
-      ::switches::kEnableWebkitTextSubpixelPositioning,
       ::switches::kDisableThreadedCompositing,
       ::switches::kForceCompositingMode,
       ::switches::kGpuStartupDialog,
@@ -790,14 +789,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kTouchDevices,
       ::switches::kTouchOptimizedUI,
       ::switches::kOldCheckboxStyle,
-      ash::switches::kAshTouchHud,
-      ash::switches::kAshWindowAnimationsDisabled,
-      ash::switches::kAuraLegacyPowerButton,
-      ash::switches::kAuraNoShadows,
-      ash::switches::kAshDisablePanelFitting,
-      cc::switches::kDisableThreadedAnimation,
-      cc::switches::kEnablePartialSwap,
-      cc::switches::kEnablePinchInCompositor,
       ::switches::kUIEnablePartialSwap,
       ::switches::kUIEnableThreadedCompositing,
       ::switches::kUIPrioritizeInGpuProcess,
@@ -806,7 +797,17 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
 #endif
       ::switches::kUseGL,
       ::switches::kUserDataDir,
+      ash::switches::kAshTouchHud,
+      ash::switches::kAshWindowAnimationsDisabled,
+      ash::switches::kAuraLegacyPowerButton,
+      ash::switches::kAuraNoShadows,
+      ash::switches::kAshDisablePanelFitting,
+      cc::switches::kDisableThreadedAnimation,
+      cc::switches::kEnablePartialSwap,
+      cc::switches::kEnablePinchInCompositor,
       chromeos::switches::kDbusStub,
+      gfx::switches::kEnableBrowserTextSubpixelPositioning,
+      gfx::switches::kEnableWebkitTextSubpixelPositioning,
   };
   command_line->CopySwitchesFrom(base_command_line,
                                  kForwardSwitches,
