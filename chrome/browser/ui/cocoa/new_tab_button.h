@@ -7,17 +7,12 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
-
 // Overrides hit-test behavior to only accept clicks inside the image of the
 // button, not just inside the bounding box. This could be abstracted to general
 // use, but no other buttons are so irregularly shaped with respect to their
 // bounding box.
 
-@interface NewTabButton : NSButton {
- @private
-  scoped_nsobject<NSBezierPath> imagePath_;
-}
+@interface NewTabButton : NSButton
 
 // Returns YES if the given point is over the button.  |point| is in the
 // superview's coordinate system.

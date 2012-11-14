@@ -100,7 +100,7 @@ const CGFloat kLastMiniTabSpacing = 3.0;
 const CGFloat kIconWidthAndHeight = 16.0;
 
 // The amount by which the new tab button is offset (from the tabs).
-const CGFloat kNewTabButtonOffset = 8.0;
+const CGFloat kNewTabButtonOffset = 9.0;
 
 // Time (in seconds) in which tabs animate to their final position.
 const NSTimeInterval kAnimationDuration = 0.125;
@@ -401,11 +401,13 @@ private:
     // Set the images from code because Cocoa fails to find them in our sub
     // bundle during tests.
     [[newTabButton_ cell] setImageID:IDR_NEWTAB_BUTTON
-                    forButtonState:image_button_cell::kDefaultState];
+                      forButtonState:image_button_cell::kDefaultState];
     [[newTabButton_ cell] setImageID:IDR_NEWTAB_BUTTON_H
-                    forButtonState:image_button_cell::kHoverState];
+                      forButtonState:image_button_cell::kHoverState];
     [[newTabButton_ cell] setImageID:IDR_NEWTAB_BUTTON_P
-                    forButtonState:image_button_cell::kPressedState];
+                      forButtonState:image_button_cell::kPressedState];
+    [[newTabButton_ cell] setImageID:IDR_NEWTAB_BUTTON_MASK
+                      forButtonState:image_button_cell::kMaskState];
     newTabButtonShowingHoverImage_ = NO;
     newTabTrackingArea_.reset(
         [[CrTrackingArea alloc] initWithRect:[newTabButton_ bounds]

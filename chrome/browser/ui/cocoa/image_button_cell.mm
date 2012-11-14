@@ -30,8 +30,8 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 
 @implementation ImageButtonCell
 
-@synthesize isMouseInside = isMouseInside_;
 @synthesize overlayImageID = overlayImageID_;
+@synthesize isMouseInside = isMouseInside_;
 
 // For nib instantiations
 - (id)initWithCoder:(NSCoder*)decoder {
@@ -71,12 +71,36 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   imageRect.origin.y = cellFrame.origin.y +
     roundf((NSHeight(cellFrame) - NSHeight(imageRect)) / 2.0);
 
-  [image drawInRect:imageRect
-           fromRect:NSZeroRect
-          operation:NSCompositeSourceOver
-           fraction:alpha
-     respectFlipped:YES
-              hints:nil];
+  if (!imageID_[image_button_cell::kMaskState] ||
+      [self currentButtonState] == image_button_cell::kPressedState) {
+    [image drawInRect:imageRect
+             fromRect:NSZeroRect
+            operation:NSCompositeSourceOver
+             fraction:alpha
+       respectFlipped:YES
+                hints:nil];
+  } else {
+    image = [self imageForID:imageID_[image_button_cell::kMaskState]
+                 controlView:controlView];
+    [image drawInRect:imageRect
+             fromRect:NSZeroRect
+            operation:NSCompositeSourceOver
+             fraction:alpha * 0.5
+       respectFlipped:YES
+                hints:nil];
+
+    if ([self currentButtonState] == image_button_cell::kDefaultState ||
+        [self currentButtonState] == image_button_cell::kHoverState) {
+      image = [self imageForID:imageID_[[self currentButtonState]]
+                   controlView:controlView];
+      [image drawInRect:imageRect
+               fromRect:NSZeroRect
+              operation:NSCompositeSourceOver
+               fraction:alpha
+         respectFlipped:YES
+                  hints:nil];
+    }
+  }
 
   if (overlayImageID_) {
     NSImage* overlayImage = [self imageForID:overlayImageID_

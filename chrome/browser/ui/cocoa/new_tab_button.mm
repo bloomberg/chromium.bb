@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
+#include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 // A simple override of the ImageButtonCell to disable handling of
 // -mouseEntered.
@@ -28,29 +30,21 @@
   return [NewTabButtonCell class];
 }
 
-// Approximate the shape. It doesn't need to be perfect. This will need to be
-// updated if the size or shape of the icon ever changes.
-// TODO(pinkerton): use a click mask image instead of hard-coding points.
-- (NSBezierPath*)pathForButton {
-  if (imagePath_.get())
-    return imagePath_.get();
-
-  // Cache the path as it doesn't change (the coordinates are local to this
-  // view). There's not much point making constants for these, as they are
-  // custom.
-  imagePath_.reset([[NSBezierPath bezierPath] retain]);
-  [imagePath_ moveToPoint:NSMakePoint(9, 7)];
-  [imagePath_ lineToPoint:NSMakePoint(26, 7)];
-  [imagePath_ lineToPoint:NSMakePoint(33, 23)];
-  [imagePath_ lineToPoint:NSMakePoint(14, 23)];
-  [imagePath_ lineToPoint:NSMakePoint(9, 7)];
-  return imagePath_;
-}
-
 - (BOOL)pointIsOverButton:(NSPoint)point {
   NSPoint localPoint = [self convertPoint:point fromView:[self superview]];
-  NSBezierPath* buttonPath = [self pathForButton];
-  return [buttonPath containsPoint:localPoint];
+  NSRect pointRect = NSMakeRect(localPoint.x, localPoint.y, 1, 1);
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  NSImage* buttonMask =
+      bundle.GetNativeImageNamed(IDR_NEWTAB_BUTTON_MASK).ToNSImage();
+  NSRect destinationRect = NSMakeRect(
+      (NSWidth(self.bounds) - [buttonMask size].width) / 2,
+      (NSHeight(self.bounds) - [buttonMask size].height) / 2,
+      [buttonMask size].width, [buttonMask size].height);
+  return [buttonMask hitTestRect:pointRect
+        withImageDestinationRect:destinationRect
+                         context:nil
+                           hints:nil
+                         flipped:YES];
 }
 
 // Override to only accept clicks within the bounds of the defined path, not

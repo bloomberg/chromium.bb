@@ -15,6 +15,7 @@ enum ButtonState {
   kHoverState,
   kPressedState,
   kDisabledState,
+  kMaskState,
   kButtonStateCount
 };
 
@@ -36,8 +37,8 @@ enum ButtonState {
   BOOL isMouseInside_;
 }
 
-@property(assign, nonatomic) BOOL isMouseInside;
 @property(assign, nonatomic) NSInteger overlayImageID;
+@property(assign, nonatomic) BOOL isMouseInside;
 
 // Sets the image for the given button state using an image ID.
 // The image will be lazy loaded from a resource pak.
