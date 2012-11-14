@@ -63,12 +63,13 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
   void SaveToFile();
 
   // Sets wallpaper to the decoded image.
-  void SetDecodedWallpaper();
+  void SetDecodedWallpaper(scoped_ptr<gfx::ImageSkia> wallpaper);
 
   // Layout of the downloaded wallpaper.
   ash::WallpaperLayout layout_;
 
-  // The decoded wallpaper.
+  // The decoded wallpaper. It may accessed from UI thread to set wallpaper or
+  // FILE thread to resize and save wallpaper to disk.
   gfx::ImageSkia wallpaper_;
 
   // Email address of logged in user.

@@ -286,10 +286,14 @@ void WallpaperSetWallpaperFunction::SaveToFile() {
   if (file_util::PathExists(file_path) ||
       file_util::WriteFile(file_path, image_data_.c_str(),
                            image_data_.size()) != -1 ) {
+    wallpaper_.EnsureRepsForSupportedScaleFactors();
+    scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper_.DeepCopy());
+    // ImageSkia is not RefCountedThreadSafe. Use a deep copied ImageSkia if
+    // post to another thread.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&WallpaperSetWallpaperFunction::SetDecodedWallpaper,
-                   this));
+                   this, base::Passed(&deep_copy)));
     chromeos::UserImage wallpaper(wallpaper_);
 
     // Generates and saves small resolution wallpaper. Uses CENTER_CROPPED to
@@ -309,10 +313,11 @@ void WallpaperSetWallpaperFunction::SaveToFile() {
   }
 }
 
-void WallpaperSetWallpaperFunction::SetDecodedWallpaper() {
+void WallpaperSetWallpaperFunction::SetDecodedWallpaper(
+    scoped_ptr<gfx::ImageSkia> wallpaper) {
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
-  wallpaper_manager->SetWallpaperFromImageSkia(wallpaper_, layout_);
+  wallpaper_manager->SetWallpaperFromImageSkia(*wallpaper.get(), layout_);
   bool is_persistent =
       !chromeos::UserManager::Get()->IsCurrentUserEphemeral();
   chromeos::WallpaperInfo info = {

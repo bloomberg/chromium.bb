@@ -265,6 +265,15 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   void OnWallpaperEncoded(const FilePath& path,
                           scoped_refptr<base::RefCountedBytes> data);
 
+  // Generates thumbnail of custom wallpaper on FILE thread. If |persistent| is
+  // true, saves original custom image and resized images to disk.
+  void ProcessCustomWallpaper(const std::string& email,
+                              bool persistent,
+                              const WallpaperInfo& info,
+                              base::WeakPtr<WallpaperDelegate> delegate,
+                              scoped_ptr<gfx::ImageSkia> image,
+                              const UserImage::RawImage& raw_image);
+
   // Record data for User Metrics Analysis.
   void RecordUma(User::WallpaperType type, int index);
 

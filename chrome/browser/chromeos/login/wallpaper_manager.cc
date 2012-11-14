@@ -467,25 +467,28 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
 
   bool is_persistent = ShouldPersistDataForUser(username);
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&WallpaperManager::GenerateUserWallpaperThumbnail,
-                 base::Unretained(this), username, type, delegate,
-                 wallpaper.image()));
+  wallpaper.image().EnsureRepsForSupportedScaleFactors();
+  scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.image().DeepCopy());
 
-  if (is_persistent) {
-    BrowserThread::PostTask(
+  WallpaperInfo wallpaper_info = {
+      wallpaper_path,
+      layout,
+      type,
+      // Date field is not used.
+      base::Time::Now().LocalMidnight()
+  };
+  // TODO(bshe): This may break if RawImage becomes RefCountedMemory.
+  BrowserThread::PostTask(
         BrowserThread::FILE,
         FROM_HERE,
-        base::Bind(&WallpaperManager::SaveCustomWallpaper,
+        base::Bind(&WallpaperManager::ProcessCustomWallpaper,
                    base::Unretained(this),
                    username,
-                   FilePath(wallpaper_path),
-                   layout,
-                   wallpaper));
-  }
-
+                   is_persistent,
+                   wallpaper_info,
+                   delegate,
+                   base::Passed(&deep_copy),
+                   wallpaper.raw_image()));
   ash::Shell::GetInstance()->desktop_background_controller()->
       SetCustomWallpaper(wallpaper.image(), layout);
 
@@ -1102,6 +1105,19 @@ void WallpaperManager::OnWallpaperDecoded(const std::string& email,
     ash::Shell::GetInstance()->desktop_background_controller()->
         SetCustomWallpaper(wallpaper.image(), layout);
   }
+}
+
+void WallpaperManager::ProcessCustomWallpaper(
+    const std::string& email,
+    bool persistent,
+    const WallpaperInfo& info,
+    base::WeakPtr<WallpaperDelegate> delegate,
+    scoped_ptr<gfx::ImageSkia> image,
+    const UserImage::RawImage& raw_image) {
+  UserImage wallpaper(*image.get(), raw_image);
+  GenerateUserWallpaperThumbnail(email, info.type, delegate, wallpaper.image());
+  if (persistent)
+    SaveCustomWallpaper(email, FilePath(info.file), info.layout, wallpaper);
 }
 
 void WallpaperManager::OnWallpaperEncoded(const FilePath& path,
