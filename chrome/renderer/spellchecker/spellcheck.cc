@@ -77,13 +77,16 @@ void SpellCheck::OnInit(IPC::PlatformFileForTransit bdict_file,
 }
 
 void SpellCheck::OnWordAdded(const std::string& word) {
-  platform_spelling_engine_->OnWordAdded(word);
+  if (platform_spelling_engine_)
+    platform_spelling_engine_->OnWordAdded(word);
 }
 
 void SpellCheck::OnEnableAutoSpellCorrect(bool enable) {
   auto_spell_correct_turned_on_ = enable;
 }
 
+// TODO(groby): Make sure we always have a spelling engine, even before Init()
+// is called.
 void SpellCheck::Init(base::PlatformFile file,
                       const std::vector<std::string>& custom_words,
                       const std::string& language) {
@@ -121,7 +124,8 @@ bool SpellCheck::SpellCheckWord(
     return true;
 
   // Do nothing if spell checking is disabled.
-  if (!platform_spelling_engine_->IsEnabled())
+  if (!platform_spelling_engine_ ||
+      !platform_spelling_engine_->IsEnabled())
     return true;
 
   *misspelling_start = 0;
@@ -290,8 +294,10 @@ bool SpellCheck::InitializeIfNeeded() {
 // When called, relays the request to check the spelling to the proper
 // backend, either hunspell or a platform-specific backend.
 bool SpellCheck::CheckSpelling(const string16& word_to_check, int tag) {
-  DCHECK(platform_spelling_engine_.get());
-  return platform_spelling_engine_->CheckSpelling(word_to_check, tag);
+  if (platform_spelling_engine_.get())
+    return platform_spelling_engine_->CheckSpelling(word_to_check, tag);
+  else
+    return true;
 }
 
 #if !defined(OS_MACOSX) // OSX doesn't have |pending_request_param_|
@@ -309,9 +315,9 @@ void SpellCheck::PostDelayedSpellCheckTask(SpellcheckRequest* request) {
 #if !defined(OS_MACOSX)  // Mac uses its native engine instead.
 void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
   DCHECK(param);
-  DCHECK(platform_spelling_engine_.get());
 
-  if (!platform_spelling_engine_->IsEnabled()) {
+  if (!platform_spelling_engine_.get() ||
+      !platform_spelling_engine_->IsEnabled()) {
     param->completion()->didCancelCheckingText();
   } else {
     WebKit::WebVector<WebKit::WebTextCheckingResult> results;
@@ -324,8 +330,9 @@ void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
 void SpellCheck::FillSuggestionList(
     const string16& wrong_word,
     std::vector<string16>* optional_suggestions) {
-  platform_spelling_engine_->FillSuggestionList(wrong_word,
-                                                optional_suggestions);
+  if (platform_spelling_engine_.get())
+    platform_spelling_engine_->FillSuggestionList(wrong_word,
+                                                  optional_suggestions);
 }
 
 // Returns whether or not the given string is a valid contraction.
