@@ -34,7 +34,8 @@ enum {
 
 TranslateInfoBarBase::TranslateInfoBarBase(InfoBarTabHelper* owner,
                                            TranslateInfoBarDelegate* delegate)
-    : InfoBarGtk(owner, delegate) {
+    : InfoBarGtk(owner, delegate),
+      background_error_percent_(0) {
   DCHECK(delegate);
   TranslateInfoBarDelegate::BackgroundAnimationType animation =
       delegate->background_animation_type();
