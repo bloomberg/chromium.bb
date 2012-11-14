@@ -103,8 +103,8 @@ class DriveFileSyncService
 
   typedef std::priority_queue<RemoteChange, std::vector<RemoteChange>,
                               RemoteChangeComparator> ChangeQueue;
-  typedef std::map<fileapi::FileSystemURL, int64,
-                   fileapi::FileSystemURL::Comparator> ChangeStampMap;
+  typedef std::map<FilePath, int64> PathToChangeStamp;
+  typedef std::map<GURL, PathToChangeStamp> ChangeStampMap;
 
   DriveFileSyncService(scoped_ptr<DriveFileSyncClient> sync_client,
                        scoped_ptr<DriveMetadataStore> metadata_store);
@@ -137,6 +137,10 @@ class DriveFileSyncService
       int64 largest_changestamp,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::DocumentFeed> feed);
+  void DidRemoveOriginOnMetadataStore(
+      scoped_ptr<TaskToken> token,
+      const fileapi::SyncStatusCallback& callback,
+      fileapi::SyncStatusCode status);
 
   void TryResumePendingTasks();
   void AppendNewRemoteChange(const GURL& origin,

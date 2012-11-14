@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -237,8 +238,35 @@ void DriveFileSyncService::DidGetDirectoryForOrigin(
 void DriveFileSyncService::UnregisterOriginForTrackingChanges(
     const GURL& origin,
     const fileapi::SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(fileapi::SYNC_STATUS_FAILED);
+  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
+  if (!token) {
+    pending_tasks_.push_back(base::Bind(
+        &DriveFileSyncService::UnregisterOriginForTrackingChanges,
+        weak_factory_.GetWeakPtr(), origin, callback));
+    return;
+  }
+
+  changestamp_map_.erase(origin);
+
+  std::vector<RemoteChange> new_queue;
+  while (!pending_changes_.empty()) {
+    if (pending_changes_.top().url.origin() != origin)
+      new_queue.push_back(pending_changes_.top());
+    pending_changes_.pop();
+  }
+  pending_changes_ = ChangeQueue(new_queue.begin(), new_queue.end());
+
+  metadata_store_->RemoveOrigin(origin, base::Bind(
+      &DriveFileSyncService::DidRemoveOriginOnMetadataStore,
+      weak_factory_.GetWeakPtr(), base::Passed(&token), callback));
+}
+
+void DriveFileSyncService::DidRemoveOriginOnMetadataStore(
+    scoped_ptr<TaskToken> token,
+    const fileapi::SyncStatusCallback& callback,
+    fileapi::SyncStatusCode status) {
+  NotifyTaskDone(status, token.Pass());
+  callback.Run(status);
 }
 
 LocalChangeProcessor* DriveFileSyncService::GetLocalChangeProcessor() {
@@ -370,8 +398,9 @@ void DriveFileSyncService::AppendNewRemoteChange(
   fileapi::FileChange file_change(change_type, file_type);
   RemoteChange change(changestamp, url, file_change);
 
-  std::pair<ChangeStampMap::iterator, bool> inserted =
-      changestamp_map_.insert(std::make_pair(url, changestamp));
+  std::pair<PathToChangeStamp::iterator, bool> inserted =
+      changestamp_map_[url.origin()].insert(
+          std::make_pair(url.path(), changestamp));
   if (!inserted.second) {
     int64 another_changestamp = inserted.first->second;
     if (another_changestamp > changestamp)

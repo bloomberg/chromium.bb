@@ -43,8 +43,11 @@ void DidInitialize(bool* done, fileapi::SyncStatusCode status, bool created) {
   EXPECT_TRUE(created);
 }
 
-template<typename T>
-void ExpectEq(T expected, T actual) {
+void ExpectEqStatus(bool* done,
+                    fileapi::SyncStatusCode expected,
+                    fileapi::SyncStatusCode actual) {
+  EXPECT_FALSE(*done);
+  *done = true;
   EXPECT_EQ(expected, actual);
 }
 
@@ -222,13 +225,13 @@ TEST_F(DriveFileSyncServiceTest, BatchSyncOnInitialization) {
 
   InSequence sequence;
 
-  scoped_ptr<Value> get_account_metadata_result(LoadJSONFile(
+  scoped_ptr<Value> account_metadata(LoadJSONFile(
       "gdata/account_metadata.json"));
   EXPECT_CALL(*mock_drive_service(),
               GetAccountMetadata(_))
       .WillOnce(InvokeGetDataCallback0(
           google_apis::HTTP_SUCCESS,
-          base::Passed(&get_account_metadata_result)));
+          base::Passed(&account_metadata)));
 
   scoped_ptr<Value> listing_files_in_directory(LoadJSONFile(
       "sync_file_system/listing_files_in_directory.json"));
@@ -313,10 +316,11 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
           base::Passed(&listing_files_in_empty_directory)));
 
   SetUpDriveSyncService();
+  bool done = false;
   sync_service()->RegisterOriginForTrackingChanges(
-      kOrigin, base::Bind(&ExpectEq<fileapi::SyncStatusCode>,
-                          fileapi::SYNC_STATUS_OK));
+      kOrigin, base::Bind(&ExpectEqStatus, &done, fileapi::SYNC_STATUS_OK));
   message_loop()->RunUntilIdle();
+  EXPECT_TRUE(done);
 
   EXPECT_EQ(1u, metadata_store()->batch_sync_origins().size());
   EXPECT_TRUE(metadata_store()->incremental_sync_origins().empty());
@@ -360,10 +364,11 @@ TEST_F(DriveFileSyncServiceTest, RegisterExistingOrigin) {
           base::Passed(&listing_files_in_directory)));
 
   SetUpDriveSyncService();
+  bool done = false;
   sync_service()->RegisterOriginForTrackingChanges(
-      kOrigin, base::Bind(&ExpectEq<fileapi::SyncStatusCode>,
-                          fileapi::SYNC_STATUS_OK));
+      kOrigin, base::Bind(&ExpectEqStatus, &done, fileapi::SYNC_STATUS_OK));
   message_loop()->RunUntilIdle();
+  EXPECT_TRUE(done);
 
   // The origin should be registered as a batch sync origin.
   EXPECT_EQ(1u, metadata_store()->batch_sync_origins().size());
@@ -371,6 +376,56 @@ TEST_F(DriveFileSyncServiceTest, RegisterExistingOrigin) {
 
   // |listing_files_in_directory| contains 4 items to sync.
   EXPECT_EQ(4u, pending_changes().size());
+}
+
+TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
+  const GURL kOrigin1("chrome-extension://example1");
+  const GURL kOrigin2("chrome-extension://example2");
+  const std::string kDirectoryResourceId1(
+      "folder:origin_directory_resource_id");
+  const std::string kDirectoryResourceId2(
+      "folder:origin_directory_resource_id2");
+  const std::string kSyncRootResourceId("folder:sync_root_resource_id");
+
+  metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
+  metadata_store()->AddBatchSyncOrigin(kOrigin1, kDirectoryResourceId1);
+  metadata_store()->AddBatchSyncOrigin(kOrigin2, kDirectoryResourceId2);
+  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
+
+  InSequence sequence;
+
+  scoped_ptr<Value> account_metadata(LoadJSONFile(
+      "gdata/account_metadata.json"));
+  EXPECT_CALL(*mock_drive_service(),
+              GetAccountMetadata(_))
+      .WillOnce(InvokeGetDataCallback0(
+          google_apis::HTTP_SUCCESS,
+          base::Passed(&account_metadata)));
+
+  scoped_ptr<Value> listing_files_in_directory(LoadJSONFile(
+      "sync_file_system/listing_files_in_directory.json"));
+  EXPECT_CALL(*mock_drive_service(),
+              GetDocuments(GURL(), 0, std::string(), kDirectoryResourceId1, _))
+      .WillOnce(InvokeGetDataCallback4(
+          google_apis::HTTP_SUCCESS,
+          base::Passed(&listing_files_in_directory)));
+
+  SetUpDriveSyncService();
+  message_loop()->RunUntilIdle();
+
+  EXPECT_EQ(1u, metadata_store()->batch_sync_origins().size());
+  EXPECT_EQ(1u, metadata_store()->incremental_sync_origins().size());
+  EXPECT_EQ(4u, pending_changes().size());
+
+  bool done = false;
+  sync_service()->UnregisterOriginForTrackingChanges(
+      kOrigin1, base::Bind(&ExpectEqStatus, &done, fileapi::SYNC_STATUS_OK));
+  message_loop()->RunUntilIdle();
+  EXPECT_TRUE(done);
+
+  EXPECT_TRUE(metadata_store()->batch_sync_origins().empty());
+  EXPECT_EQ(1u, metadata_store()->incremental_sync_origins().size());
+  EXPECT_TRUE(pending_changes().empty());
 }
 
 #endif  // !defined(OS_ANDROID)
