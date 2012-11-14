@@ -14,7 +14,7 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/display/display_controller.h"
-#include "ash/display/multi_display_manager.h"
+#include "ash/display/display_manager.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime_control_delegate.h"
 #include "ash/launcher/launcher.h"
@@ -117,7 +117,7 @@ bool HandleToggleSpokenFeedback() {
 void HandleCycleDisplayMode() {
   Shell* shell = Shell::GetInstance();
   if (!base::chromeos::IsRunningOnChromeOS()) {
-    internal::MultiDisplayManager::CycleDisplay();
+    internal::DisplayManager::CycleDisplay();
   } else if (shell->output_configurator()->connected_output_count() > 1) {
     internal::OutputConfiguratorAnimation* animation =
         shell->output_configurator_animation();
@@ -739,7 +739,7 @@ bool AcceleratorController::PerformAction(int action,
     case TOGGLE_ROOT_WINDOW_FULL_SCREEN:
       return HandleToggleRootWindowFullScreen();
     case DISPLAY_TOGGLE_SCALE:
-      internal::MultiDisplayManager::ToggleDisplayScale();
+      internal::DisplayManager::ToggleDisplayScale();
       return true;
     case MAGNIFY_SCREEN_ZOOM_IN:
       return HandleMagnifyScreen(1);
@@ -798,12 +798,9 @@ bool AcceleratorController::PerformAction(int action,
 
 void AcceleratorController::SetBrightnessControlDelegate(
     scoped_ptr<BrightnessControlDelegate> brightness_control_delegate) {
-  internal::MultiDisplayManager* display_manager =
-      static_cast<internal::MultiDisplayManager*>(
-          aura::Env::GetInstance()->display_manager());
   // Install brightness control delegate only when internal
   // display exists.
-  if (display_manager->HasInternalDisplay())
+  if (Shell::GetInstance()->display_manager()->HasInternalDisplay())
     brightness_control_delegate_.swap(brightness_control_delegate);
 }
 

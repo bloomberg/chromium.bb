@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/views/ash/tab_scrubber.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/env.h"
-#include "ui/aura/single_display_manager.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/screen_type_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"

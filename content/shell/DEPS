@@ -19,8 +19,6 @@ include_rules = [
   # The content_shell for aura must work with the views and aura
   "+ui/aura",
   "+ui/views",
-  # Ash is needed for ScreenAsh on ChromeOS.
-  "+ash",
 
   # For WebTestRunner library
   "+third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public",

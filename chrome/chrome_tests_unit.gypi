@@ -1560,9 +1560,6 @@
         'test/data/unit/framework_unittest.gtestjs',
         'test/logging/win/mof_data_parser_unittest.cc',
         'tools/convert_dict/convert_dict_unittest.cc',
-        '../ash/test/test_launcher_delegate.cc',
-        '../ash/test/test_launcher_delegate.h',
-        '../ash/test/test_shell_delegate.cc',
 
         # TODO(joi): Move to 'base_prefs' target in base/base.gyp once
         # Prefs move is complete and dependencies have been broken.
@@ -1700,6 +1697,7 @@
           ],
           'dependencies': [
             '../ash/ash.gyp:ash_resources',
+            '../ash/ash.gyp:test_support_ash',
           ],
           # We eventually want to compile both in Win Aura builds, see
           # http://crbug.com/155545.
@@ -1725,12 +1723,6 @@
             ['exclude', '^browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc'],
             ['exclude', '^browser/ui/panels/display_settings_provider_win_unittest.cc'],
             ['exclude', '^browser/bookmarks/bookmark_node_data_unittest.cc'],
-          ],
-          'sources': [
-            '../ash/test/multi_display_manager_test_api.cc',
-            '../ash/test/multi_display_manager_test_api.h',
-            '../ash/test/ash_test_base.cc',
-            '../ash/test/ash_test_base.h',
           ],
         }],
         ['enable_task_manager==0', {

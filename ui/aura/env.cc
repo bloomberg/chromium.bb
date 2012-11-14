@@ -8,7 +8,6 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/event_filter.h"
-#include "ui/aura/display_manager.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
@@ -16,7 +15,6 @@
 
 #if defined(USE_X11)
 #include "base/message_pump_aurax11.h"
-#include "ui/aura/display_change_observer_x11.h"
 #endif
 
 namespace aura {
@@ -89,14 +87,6 @@ void Env::SetCursorShown(bool cursor_shown) {
   }
 }
 
-void Env::SetDisplayManager(DisplayManager* display_manager) {
-  display_manager_.reset(display_manager);
-#if defined(USE_X11)
-  // Update the display manager with latest info.
-  display_change_observer_->NotifyDisplayChange();
-#endif
-}
-
 #if !defined(OS_MACOSX)
 MessageLoop::Dispatcher* Env::GetDispatcher() {
 #if defined(USE_X11)
@@ -115,8 +105,6 @@ void Env::Init() {
   dispatcher_.reset(CreateDispatcher());
 #endif
 #if defined(USE_X11)
-  display_change_observer_.reset(new internal::DisplayChangeObserverX11);
-
   // We can't do this with a root window listener because XI_HierarchyChanged
   // messages don't have a target window.
   base::MessagePumpAuraX11::Current()->AddObserver(

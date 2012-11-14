@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/test/multi_display_manager_test_api.h"
+#include "ash/test/display_manager_test_api.h"
 
 #include <vector>
 
-#include "ash/display/multi_display_manager.h"
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/string_split.h"
+#include "ui/aura/display_util.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/display.h"
 
@@ -23,21 +24,21 @@ std::vector<gfx::Display> CreateDisplaysFromString(
   base::SplitString(specs, ',', &parts);
   for (std::vector<std::string>::const_iterator iter = parts.begin();
        iter != parts.end(); ++iter) {
-    displays.push_back(aura::DisplayManager::CreateDisplayFromSpec(*iter));
+    displays.push_back(aura::CreateDisplayFromSpec(*iter));
   }
   return displays;
 }
 
 }  // namespace
 
-MultiDisplayManagerTestApi::MultiDisplayManagerTestApi(
-    internal::MultiDisplayManager* display_manager)
+DisplayManagerTestApi::DisplayManagerTestApi(
+    internal::DisplayManager* display_manager)
         : display_manager_(display_manager) {
 }
 
-MultiDisplayManagerTestApi::~MultiDisplayManagerTestApi() {}
+DisplayManagerTestApi::~DisplayManagerTestApi() {}
 
-void MultiDisplayManagerTestApi::UpdateDisplay(
+void DisplayManagerTestApi::UpdateDisplay(
     const std::string& display_specs) {
   std::vector<gfx::Display> displays = CreateDisplaysFromString(display_specs);
   display_manager_->SetDisplayIdsForTest(&displays);
@@ -65,7 +66,6 @@ void MultiDisplayManagerTestApi::UpdateDisplay(
     }
   }
 }
-
 
 }  // namespace test
 }  // namespace ash

@@ -13,8 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
-#include "ui/aura/display_observer.h"
-#include "ui/aura/display_manager.h"
+#include "ui/gfx/display_observer.h"
 #include "ui/gfx/display.h"
 
 namespace aura {
@@ -68,7 +67,7 @@ struct ASH_EXPORT DisplayLayout {
 
 // DisplayController owns and maintains RootWindows for each attached
 // display, keeping them in sync with display configuration changes.
-class ASH_EXPORT DisplayController : public aura::DisplayObserver {
+class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
  public:
   class ASH_EXPORT Observer {
    public:
@@ -86,6 +85,9 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   // Gets primary display. This information is stored in global
   // object as this can be accessed after Shell is closed.
   static const gfx::Display& GetPrimaryDisplay();
+
+  // True if the primary display has been initialized.
+  static bool HasPrimaryDisplay();
 
   // Initializes primary display.
   void InitPrimaryDisplay();
@@ -126,7 +128,7 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   std::vector<internal::RootWindowController*> GetAllRootWindowControllers();
 
   // Returns the current overscan insets for the specified |display_id|. See
-  // multi_display_manager.h for the details.
+  // display_manager.h for the details.
   gfx::Insets GetOverscanInsets(int64 display_id) const;
 
   const DisplayLayout& default_display_layout() const {

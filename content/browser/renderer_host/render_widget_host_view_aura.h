@@ -17,10 +17,10 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "ui/aura/client/activation_delegate.h"
-#include "ui/aura/display_observer.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/gfx/display_observer.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webcursor.h"
 
@@ -48,7 +48,7 @@ class RenderWidgetHostViewAura
     : public RenderWidgetHostViewBase,
       public ui::CompositorObserver,
       public ui::TextInputClient,
-      public aura::DisplayObserver,
+      public gfx::DisplayObserver,
       public aura::WindowDelegate,
       public aura::client::ActivationDelegate,
       public ImageTransportFactoryObserver,
@@ -163,7 +163,7 @@ class RenderWidgetHostViewAura
       base::i18n::TextDirection direction) OVERRIDE;
   virtual void ExtendSelectionAndDelete(size_t before, size_t after) OVERRIDE;
 
-  // Overridden from aura::DisplayObserver:
+  // Overridden from gfx::DisplayObserver:
   virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;

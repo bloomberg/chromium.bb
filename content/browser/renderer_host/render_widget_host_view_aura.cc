@@ -34,7 +34,6 @@
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/client/window_types.h"
-#include "ui/aura/display_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -292,11 +291,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
   window_->AddObserver(window_observer_.get());
   aura::client::SetTooltipText(window_, &tooltip_);
   aura::client::SetActivationDelegate(window_, this);
-  aura::DisplayManager* display_manager =
-      aura::Env::GetInstance()->display_manager();
-  // display_manager can be NULL in tests.
-  if (display_manager)
-    display_manager->AddObserver(this);
+  gfx::Screen::GetScreenFor(window_)->AddObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1316,7 +1311,7 @@ void RenderWidgetHostViewAura::ExtendSelectionAndDelete(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostViewAura, aura::DisplayObserver implementation:
+// RenderWidgetHostViewAura, gfx::DisplayObserver implementation:
 
 void RenderWidgetHostViewAura::OnDisplayBoundsChanged(
     const gfx::Display& display) {
@@ -1802,11 +1797,7 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
     popup_child_host_view_->popup_parent_host_view_ = NULL;
   }
   aura::client::SetTooltipText(window_, NULL);
-  aura::DisplayManager* display_manager =
-      aura::Env::GetInstance()->display_manager();
-  // display_manager can be NULL in tests.
-  if (display_manager)
-    display_manager->RemoveObserver(this);
+  gfx::Screen::GetScreenFor(window_)->RemoveObserver(this);
 
   // This call is usually no-op since |this| object is already removed from the
   // Aura root window and we don't have a way to get an input method object

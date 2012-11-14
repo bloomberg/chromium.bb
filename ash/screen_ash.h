@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
 #include "ui/gfx/screen.h"
 
 namespace gfx {
@@ -55,12 +56,16 @@ class ASH_EXPORT ScreenAsh : public gfx::Screen {
   // invalid display if no such display is connected.
   static const gfx::Display& GetDisplayForId(int64 display_id);
 
+  // Notifies observers of display configuration changes.
+  void NotifyBoundsChanged(const gfx::Display& display);
+  void NotifyDisplayAdded(const gfx::Display& display);
+  void NotifyDisplayRemoved(const gfx::Display& display);
+
  protected:
   // Implementation of gfx::Screen:
   virtual bool IsDIPEnabled() OVERRIDE;
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
   virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;
-
   virtual int GetNumDisplays() OVERRIDE;
   virtual gfx::Display GetDisplayNearestWindow(
       gfx::NativeView view) const OVERRIDE;
@@ -69,8 +74,12 @@ class ASH_EXPORT ScreenAsh : public gfx::Screen {
   virtual gfx::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const OVERRIDE;
   virtual gfx::Display GetPrimaryDisplay() const OVERRIDE;
+  virtual void AddObserver(gfx::DisplayObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE;
 
  private:
+  ObserverList<gfx::DisplayObserver> observers_;
+
   DISALLOW_COPY_AND_ASSIGN(ScreenAsh);
 };
 

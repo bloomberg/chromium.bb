@@ -5,7 +5,7 @@
 #include "ash/screen_ash.h"
 
 #include "ash/display/display_controller.h"
-#include "ash/display/multi_display_manager.h"
+#include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/display_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -22,9 +21,8 @@
 namespace ash {
 
 namespace {
-internal::MultiDisplayManager* GetDisplayManager() {
-  return static_cast<internal::MultiDisplayManager*>(
-      aura::Env::GetInstance()->display_manager());
+internal::DisplayManager* GetDisplayManager() {
+  return Shell::GetInstance()->display_manager();
 }
 }  // namespace
 
@@ -89,6 +87,20 @@ const gfx::Display& ScreenAsh::GetDisplayForId(int64 display_id) {
   return GetDisplayManager()->GetDisplayForId(display_id);
 }
 
+void ScreenAsh::NotifyBoundsChanged(const gfx::Display& display) {
+  FOR_EACH_OBSERVER(gfx::DisplayObserver, observers_,
+                    OnDisplayBoundsChanged(display));
+}
+
+void ScreenAsh::NotifyDisplayAdded(const gfx::Display& display) {
+  FOR_EACH_OBSERVER(gfx::DisplayObserver, observers_, OnDisplayAdded(display));
+}
+
+void ScreenAsh::NotifyDisplayRemoved(const gfx::Display& display) {
+  FOR_EACH_OBSERVER(
+      gfx::DisplayObserver, observers_, OnDisplayRemoved(display));
+}
+
 bool ScreenAsh::IsDIPEnabled() {
   return true;
 }
@@ -120,6 +132,14 @@ gfx::Display ScreenAsh::GetDisplayMatching(const gfx::Rect& match_rect) const {
 
 gfx::Display ScreenAsh::GetPrimaryDisplay() const {
   return DisplayController::GetPrimaryDisplay();
+}
+
+void ScreenAsh::AddObserver(gfx::DisplayObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ScreenAsh::RemoveObserver(gfx::DisplayObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace ash

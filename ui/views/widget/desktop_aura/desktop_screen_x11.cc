@@ -47,6 +47,8 @@ class DesktopScreenX11 : public gfx::Screen {
   virtual gfx::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const OVERRIDE;
   virtual gfx::Display GetPrimaryDisplay() const OVERRIDE;
+  virtual void AddObserver(gfx::DisplayObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DesktopScreenX11);
@@ -120,6 +122,15 @@ gfx::Display DesktopScreenX11::GetDisplayMatching(
 gfx::Display DesktopScreenX11::GetPrimaryDisplay() const {
   // TODO(erg): Do the right thing once we know what that is.
   return gfx::Display(0, gfx::Rect(GetPrimaryDisplaySize()));
+}
+
+void DesktopScreenX11::AddObserver(gfx::DisplayObserver* observer) {
+  // TODO(erg|oshima): Do the right thing once we know what that is.
+  // crbug.com/122863
+}
+void DesktopScreenX11::RemoveObserver(gfx::DisplayObserver* observer) {
+  // TODO(erg|oshima): Do the right thing once we know what that is.
+  // crbug.com/122863
 }
 
 }  // namespace

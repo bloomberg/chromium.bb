@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "ui/aura/display_observer.h"
+#include "ui/gfx/display_observer.h"
 
 namespace base {
 class DictionaryValue;
@@ -22,7 +22,7 @@ namespace options {
 
 // Display options overlay page UI handler.
 class DisplayOptionsHandler : public ::options::OptionsPageUIHandler,
-                              public aura::DisplayObserver {
+                              public gfx::DisplayObserver {
  public:
   DisplayOptionsHandler();
   virtual ~DisplayOptionsHandler();
@@ -35,7 +35,7 @@ class DisplayOptionsHandler : public ::options::OptionsPageUIHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // aura::DisplayObserver implementation.
+  // gfx::DisplayObserver implementation.
   virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;

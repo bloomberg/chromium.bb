@@ -4,12 +4,12 @@
 
 #include "ash/display/display_controller.h"
 
+#include "ash/display/display_manager.h"
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
-#include "ui/aura/display_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_tracker.h"
@@ -92,7 +92,7 @@ TEST_F(DisplayControllerTest, MAYBE_SecondaryDisplayLayout) {
   UpdateDisplay("500x500,400x400");
   EXPECT_EQ(2, observer.CountAndReset());  // resize and add
   gfx::Display* secondary_display =
-      aura::Env::GetInstance()->display_manager()->GetDisplayAt(1);
+      Shell::GetInstance()->display_manager()->GetDisplayAt(1);
   gfx::Insets insets(5, 5, 5, 5);
   secondary_display->UpdateWorkAreaFromInsets(insets);
 
@@ -165,7 +165,7 @@ TEST_F(DisplayControllerTest, MAYBE_BoundsUpdated) {
   EXPECT_EQ(3, observer.CountAndReset());
 
   gfx::Display* secondary_display =
-      aura::Env::GetInstance()->display_manager()->GetDisplayAt(1);
+      Shell::GetInstance()->display_manager()->GetDisplayAt(1);
   gfx::Insets insets(5, 5, 5, 5);
   secondary_display->UpdateWorkAreaFromInsets(insets);
 
@@ -235,7 +235,7 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
   gfx::Display secondary_display = ScreenAsh::GetSecondaryDisplay();
 
-  std::string secondary_name = aura::Env::GetInstance()->
+  std::string secondary_name = Shell::GetInstance()->
       display_manager()->GetDisplayNameFor(secondary_display);
   DisplayLayout secondary_layout(DisplayLayout::RIGHT, 50);
   display_controller->SetLayoutForDisplayName(secondary_name, secondary_layout);
@@ -325,7 +325,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
   gfx::Display secondary_display = ScreenAsh::GetSecondaryDisplay();
 
-  std::string secondary_name = aura::Env::GetInstance()->
+  std::string secondary_name = Shell::GetInstance()->
       display_manager()->GetDisplayNameFor(secondary_display);
   DisplayLayout secondary_layout(DisplayLayout::RIGHT, 50);
   display_controller->SetLayoutForDisplayName(secondary_name, secondary_layout);
@@ -395,8 +395,8 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   std::vector<gfx::Display> displays;
   displays.push_back(primary_display);
   displays.push_back(secondary_display);
-  aura::DisplayManager* display_manager =
-      aura::Env::GetInstance()->display_manager();
+  internal::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
   display_manager->OnNativeDisplaysChanged(displays);
 
   EXPECT_EQ(2, Shell::GetScreen()->GetNumDisplays());

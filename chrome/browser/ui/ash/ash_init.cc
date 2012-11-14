@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/ash/screenshot_taker.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/aura_switches.h"
-#include "ui/aura/display_manager.h"
+#include "ui/aura/display_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/compositor/compositor_setup.h"
@@ -56,16 +56,14 @@ void OpenAsh() {
     ui::HideHostCursor();
   }
 #endif
-
   if (use_fullscreen) {
-    aura::DisplayManager::set_use_fullscreen_host_window(true);
+    aura::SetUseFullscreenHostWindow(true);
 #if defined(OS_CHROMEOS)
     // Hide the mouse cursor completely at boot.
     if (!chromeos::UserManager::Get()->IsUserLoggedIn())
       ash::Shell::set_initially_hide_cursor(true);
 #endif
   }
-
   // Its easier to mark all windows as persisting and exclude the ones we care
   // about (browser windows), rather than explicitly excluding certain windows.
   ash::SetDefaultPersistsAcrossAllWorkspaces(true);

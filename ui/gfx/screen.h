@@ -13,6 +13,7 @@
 #include "ui/gfx/screen_type_delegate.h"
 
 namespace gfx {
+class DisplayObserver;
 class Rect;
 
 // A utility class for getting various info about screen size, displays,
@@ -69,6 +70,10 @@ class UI_EXPORT Screen {
 
   // Returns the primary display.
   virtual gfx::Display GetPrimaryDisplay() const = 0;
+
+  // Adds/Removes display observers.
+  virtual void AddObserver(DisplayObserver* observer) = 0;
+  virtual void RemoveObserver(DisplayObserver* observer) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Screen);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/display_change_observer_x11.h"
+#include "ash/display/display_change_observer_x11.h"
 
 #include <algorithm>
 #include <map>
@@ -11,14 +11,14 @@
 
 #include <X11/extensions/Xrandr.h>
 
+#include "ash/display/display_manager.h"
+#include "ash/shell.h"
 #include "base/message_pump_aurax11.h"
-#include "ui/aura/env.h"
-#include "ui/aura/display_manager.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
 
-namespace aura {
+namespace ash {
 namespace internal {
 
 namespace {
@@ -99,9 +99,6 @@ bool DisplayChangeObserverX11::Dispatch(const base::NativeEvent& event) {
 }
 
 void DisplayChangeObserverX11::NotifyDisplayChange() {
-  if (!DisplayManager::use_fullscreen_host_window())
-    return;  // Use the default display that display manager determined.
-
   XRRScreenResources* screen_resources =
       XRRGetScreenResources(xdisplay_, x_root_window_);
   std::map<XID, XRRCrtcInfo*> crtc_info_map;
@@ -185,9 +182,9 @@ void DisplayChangeObserverX11::NotifyDisplayChange() {
       ++id;
     }
   }
-
-  Env::GetInstance()->display_manager()->OnNativeDisplaysChanged(displays);
+  // DisplayManager can be null during the boot.
+  Shell::GetInstance()->display_manager()->OnNativeDisplaysChanged(displays);
 }
 
 }  // namespace internal
-}  // namespace aura
+}  // namespace ash

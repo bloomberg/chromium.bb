@@ -29,6 +29,8 @@ class UI_EXPORT ScreenWin : public gfx::Screen {
   virtual gfx::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const OVERRIDE;
   virtual gfx::Display GetPrimaryDisplay() const OVERRIDE;
+  virtual void AddObserver(DisplayObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(DisplayObserver* observer) OVERRIDE;
 
   // Returns the HWND associated with the NativeView.
   virtual HWND GetHWNDFromNativeView(NativeView window) const;

@@ -87,6 +87,8 @@ class AcceleratorFilter;
 class ActivationController;
 class AppListController;
 class CaptureController;
+class DisplayChangeObserverX11;
+class DisplayManager;
 class DragDropController;
 class EventClientImpl;
 class EventRewriterEventFilter;
@@ -263,6 +265,9 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   }
 #endif  // !defined(OS_MACOSX)
 
+  internal::DisplayManager* display_manager() {
+    return display_manager_.get();
+  }
   views::corewm::CompoundEventFilter* env_filter() {
     return env_filter_.get();
   }
@@ -322,7 +327,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
     return magnification_controller_.get();
   }
 
-  const ScreenAsh* screen() { return screen_; }
+  ScreenAsh* screen() { return screen_; }
 
   // Force the shelf to query for it's current visibility state.
   void UpdateShelfVisibility();
@@ -519,11 +524,16 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   // a heads-up display. This is enabled only if --ash-touch-hud flag is used.
   scoped_ptr<internal::TouchObserverHUD> touch_observer_hud_;
 
+  scoped_ptr<internal::DisplayManager> display_manager_;
+
 #if defined(OS_CHROMEOS)
   // Controls video output device state.
   scoped_ptr<chromeos::OutputConfigurator> output_configurator_;
   scoped_ptr<internal::OutputConfiguratorAnimation>
       output_configurator_animation_;
+
+  // Receives output change events and udpates the display manager.
+  scoped_ptr<internal::DisplayChangeObserverX11> display_change_observer_;
 #endif  // defined(OS_CHROMEOS)
 
   CursorManager cursor_manager_;

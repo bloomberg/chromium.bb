@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/display/display_preferences.h"
 
 #include "ash/display/display_controller.h"
-#include "ash/display/multi_display_manager.h"
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -18,8 +18,6 @@
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_util.h"
-#include "ui/aura/display_manager.h"
-#include "ui/aura/env.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/insets.h"
 
@@ -70,9 +68,8 @@ void InsetsToValue(const gfx::Insets& insets, base::DictionaryValue* value) {
   value->SetInteger("right", insets.right());
 }
 
-ash::internal::MultiDisplayManager* GetDisplayManager() {
-  return static_cast<ash::internal::MultiDisplayManager*>(
-      aura::Env::GetInstance()->display_manager());
+ash::internal::DisplayManager* GetDisplayManager() {
+  return ash::Shell::GetInstance()->display_manager();
 }
 
 // Returns true id the current user can write display preferences to
@@ -118,7 +115,7 @@ void NotifyDisplayLayoutChanged(PrefService* pref_service) {
 
 void NotifyDisplayOverscans() {
   PrefService* local_state = g_browser_process->local_state();
-  ash::internal::MultiDisplayManager* display_manager = GetDisplayManager();
+  ash::internal::DisplayManager* display_manager = GetDisplayManager();
 
   const base::DictionaryValue* overscans = local_state->GetDictionary(
       prefs::kDisplayOverscans);
@@ -142,6 +139,8 @@ void NotifyDisplayOverscans() {
       continue;
     }
 
+    // TODO(oshima|mukai): DisplayManager is internal class.
+    // Move |SetOverscanInsets| to display controller.
     display_manager->SetOverscanInsets(display_id, insets);
   }
 }
@@ -183,10 +182,8 @@ void SetDisplayLayoutPref(PrefService* pref_service,
     ash::DisplayLayout display_layout(
         static_cast<ash::DisplayLayout::Position>(layout), offset);
 
-    aura::DisplayManager* display_manager =
-        aura::Env::GetInstance()->display_manager();
     std::string name;
-    EscapeDisplayName(display_manager->GetDisplayNameFor(display),
+    EscapeDisplayName(GetDisplayManager()->GetDisplayNameFor(display),
                       &name);
     DCHECK(!name.empty());
 

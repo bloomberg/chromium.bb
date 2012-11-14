@@ -90,6 +90,14 @@ gfx::Display ScreenWin::GetPrimaryDisplay() const {
   return display;
 }
 
+void ScreenWin::AddObserver(DisplayObserver* observer) {
+  // TODO(oshima): crbug.com/122863.
+}
+
+void ScreenWin::RemoveObserver(DisplayObserver* observer) {
+  // TODO(oshima): crbug.com/122863.
+}
+
 HWND ScreenWin::GetHWNDFromNativeView(NativeView window) const {
 #if defined(USE_AURA)
   NOTREACHED();

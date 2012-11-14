@@ -16,7 +16,7 @@
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
-#include "ash/display/multi_display_manager.h"
+#include "ash/display/display_manager.h"
 #include "ash/display/screen_position_controller.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/focus_cycler.h"
@@ -70,7 +70,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/user_action_client.h"
-#include "ui/aura/display_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
@@ -97,7 +96,9 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "ash/display/display_change_observer_x11.h"
 #include "ash/display/output_configurator_animation.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/message_pump_aurax11.h"
 #include "chromeos/display/output_configurator.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -202,6 +203,7 @@ Shell::Shell(ShellDelegate* delegate)
       browser_context_(NULL),
       simulate_modal_window_open_for_testing_(false) {
   DCHECK(delegate_.get());
+  display_manager_.reset(new internal::DisplayManager);
   ANNOTATE_LEAKING_OBJECT_PTR(screen_);  // see crbug.com/156466
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_);
   if (!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE))
@@ -304,8 +306,6 @@ Shell::~Shell() {
 // static
 Shell* Shell::CreateInstance(ShellDelegate* delegate) {
   CHECK(!instance_);
-  aura::Env::GetInstance()->SetDisplayManager(
-      new internal::MultiDisplayManager());
   instance_ = new Shell(delegate);
   instance_->Init();
   return instance_;
@@ -392,6 +392,13 @@ bool Shell::IsLauncherPerDisplayEnabled() {
 }
 
 void Shell::Init() {
+#if defined(OS_CHROMEOS)
+  if (base::chromeos::IsRunningOnChromeOS()) {
+    display_change_observer_.reset(new internal::DisplayChangeObserverX11);
+    display_change_observer_->NotifyDisplayChange();
+  }
+#endif
+
   // Install the custom factory first so that views::FocusManagers for Tray,
   // Launcher, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
@@ -612,10 +619,7 @@ void Shell::RotateFocus(Direction direction) {
 
 void Shell::SetDisplayWorkAreaInsets(Window* contains,
                                      const gfx::Insets& insets) {
-  internal::MultiDisplayManager* display_manager =
-      static_cast<internal::MultiDisplayManager*>(
-          aura::Env::GetInstance()->display_manager());
-  if (!display_manager->UpdateWorkAreaOfDisplayNearestWindow(contains, insets))
+  if (!display_manager_->UpdateWorkAreaOfDisplayNearestWindow(contains, insets))
     return;
   FOR_EACH_OBSERVER(ShellObserver, observers_,
                     OnDisplayWorkAreaInsetsChanged());

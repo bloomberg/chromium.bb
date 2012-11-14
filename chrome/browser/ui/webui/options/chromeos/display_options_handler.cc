@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ash/display/display_controller.h"
+#include "ash/display/display_manager.h"
 #include "ash/display/output_configurator_animation.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
@@ -22,8 +23,6 @@
 #include "chromeos/display/output_configurator.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
-#include "ui/aura/env.h"
-#include "ui/aura/display_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
@@ -33,11 +32,11 @@ namespace chromeos {
 namespace options {
 
 DisplayOptionsHandler::DisplayOptionsHandler() {
-  aura::Env::GetInstance()->display_manager()->AddObserver(this);
+  ash::Shell::GetScreen()->AddObserver(this);
 }
 
 DisplayOptionsHandler::~DisplayOptionsHandler() {
-  aura::Env::GetInstance()->display_manager()->RemoveObserver(this);
+  ash::Shell::GetScreen()->RemoveObserver(this);
 }
 
 void DisplayOptionsHandler::GetLocalizedValues(
@@ -133,8 +132,8 @@ void DisplayOptionsHandler::UpdateDisplaySectionVisibility() {
 }
 
 void DisplayOptionsHandler::SendDisplayInfo() {
-  aura::DisplayManager* display_manager =
-      aura::Env::GetInstance()->display_manager();
+  ash::internal::DisplayManager* display_manager =
+      ash::Shell::GetInstance()->display_manager();
   ash::DisplayController* display_controller =
       ash::Shell::GetInstance()->display_controller();
   chromeos::OutputConfigurator* output_configurator =

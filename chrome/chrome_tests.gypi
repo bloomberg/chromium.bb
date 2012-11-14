@@ -659,7 +659,7 @@
         '../testing/gtest.gyp:gtest',
       ],
       'include_dirs': [
-        '..',
+        '..,'
       ],
       'sources': [
         'test/chromedriver/chrome_finder_unittest.cc',

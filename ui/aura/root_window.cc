@@ -18,7 +18,6 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/display_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
@@ -70,9 +69,9 @@ void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
   }
 }
 
-float GetDeviceScaleFactorFromDisplay(const Window* window) {
-  DisplayManager* display_manager = Env::GetInstance()->display_manager();
-  return display_manager->GetDisplayNearestWindow(window).device_scale_factor();
+float GetDeviceScaleFactorFromDisplay(Window* window) {
+  return gfx::Screen::GetScreenFor(window)->
+      GetDisplayNearestWindow(window).device_scale_factor();
 }
 
 Window* ConsumerToWindow(ui::GestureConsumer* consumer) {

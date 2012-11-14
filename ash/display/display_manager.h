@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_MULTI_DISPLAY_MANAGER_H_
-#define ASH_DISPLAY_MULTI_DISPLAY_MANAGER_H_
+#ifndef ASH_DISPLAY_DISPLAY_MANAGER_H_
+#define ASH_DISPLAY_DISPLAY_MANAGER_H_
 
 #include <string>
 #include <vector>
@@ -11,7 +11,6 @@
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "ui/aura/display_manager.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
 
@@ -24,29 +23,28 @@ class Rect;
 namespace ash {
 class AcceleratorControllerTest;
 namespace test {
-class MultiDisplayManagerTestApi;
+class DisplayManagerTestApi;
 class SystemGestureEventFilterTest;
 }
 namespace internal {
 
-// MultiDisplayManager maintains the current display configurations,
+// DisplayManager maintains the current display configurations,
 // and notifies observers when configuration changes.
 // This is exported for unittest.
 //
 // TODO(oshima): gfx::Screen needs to return translated coordinates
 // if the root window is translated. crbug.com/119268.
-class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
-                                       public aura::RootWindowObserver {
+class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
  public:
-  MultiDisplayManager();
-  virtual ~MultiDisplayManager();
+  DisplayManager();
+  virtual ~DisplayManager();
 
   // Used to emulate display change when run in a desktop environment instead
   // of on a device.
   static void CycleDisplay();
   static void ToggleDisplayScale();
 
-  // When set to true, the MultiMonitorManager calls OnDisplayBoundsChanged
+  // When set to true, the MonitorManager calls OnDisplayBoundsChanged
   // even if the display's bounds didn't change. Used to swap primary
   // display.
   void set_force_bounds_changed(bool force_bounds_changed) {
@@ -83,21 +81,35 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   // the display.
   gfx::Insets GetOverscanInsets(int64 display_id) const;
 
-  // DisplayManager overrides:
-  virtual void OnNativeDisplaysChanged(
-      const std::vector<gfx::Display>& displays) OVERRIDE;
-  virtual aura::RootWindow* CreateRootWindowForDisplay(
-      const gfx::Display& display) OVERRIDE;
-  virtual gfx::Display* GetDisplayAt(size_t index) OVERRIDE;
+  // Called when display configuration has changed. The new display
+  // configurations is passed as a vector of Display object, which
+  // contains each display's new infomration.
+  void OnNativeDisplaysChanged(const std::vector<gfx::Display>& displays);
 
-  virtual size_t GetNumDisplays() const OVERRIDE;
-  virtual const gfx::Display& GetDisplayNearestPoint(
-      const gfx::Point& point) const OVERRIDE;
-  virtual const gfx::Display& GetDisplayNearestWindow(
-      const aura::Window* window) const OVERRIDE;
-  virtual const gfx::Display& GetDisplayMatching(
-      const gfx::Rect& match_rect)const OVERRIDE;
-  virtual std::string GetDisplayNameFor(const gfx::Display& display) OVERRIDE;
+  // Create a root window for given |display|.
+  aura::RootWindow* CreateRootWindowForDisplay(const gfx::Display& display);
+
+  // Obsoleted: Do not use in new code.
+  // Returns the display at |index|. The display at 0 is
+  // no longer considered "primary".
+  gfx::Display* GetDisplayAt(size_t index);
+
+  size_t GetNumDisplays() const;
+
+  // Returns the display object nearest given |window|.
+  const gfx::Display& GetDisplayNearestPoint(
+      const gfx::Point& point) const;
+
+  // Returns the display object nearest given |point|.
+  const gfx::Display& GetDisplayNearestWindow(
+      const aura::Window* window) const;
+
+  // Returns the display that most closely intersects |match_rect|.
+  const gfx::Display& GetDisplayMatching(
+      const gfx::Rect& match_rect)const;
+
+  // Returns the human-readable name for the display specified by |display|.
+  std::string GetDisplayNameFor(const gfx::Display& display);
 
   // RootWindowObserver overrides:
   virtual void OnRootWindowResized(const aura::RootWindow* root,
@@ -105,12 +117,12 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, ConvertPoint);
-  FRIEND_TEST_ALL_PREFIXES(MultiDisplayManagerTest, TestNativeDisplaysChanged);
-  FRIEND_TEST_ALL_PREFIXES(MultiDisplayManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest, TestNativeDisplaysChanged);
+  FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest,
                            NativeDisplaysChangedAfterPrimaryChange);
   friend class ash::AcceleratorControllerTest;
-  friend class test::MultiDisplayManagerTestApi;
-  friend class MultiDisplayManagerTest;
+  friend class test::DisplayManagerTestApi;
+  friend class DisplayManagerTest;
   friend class test::SystemGestureEventFilterTest;
 
   typedef std::vector<gfx::Display> DisplayList;
@@ -158,7 +170,7 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   // The cached display's name for the display ID.
   std::map<int64, std::string> display_names_;
 
-  DISALLOW_COPY_AND_ASSIGN(MultiDisplayManager);
+  DISALLOW_COPY_AND_ASSIGN(DisplayManager);
 };
 
 extern const aura::WindowProperty<int64>* const kDisplayIdKey;
@@ -166,4 +178,4 @@ extern const aura::WindowProperty<int64>* const kDisplayIdKey;
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_DISPLAY_MULTI_DISPLAY_MANAGER_H_
+#endif  // ASH_DISPLAY_DISPLAY_MANAGER_H_

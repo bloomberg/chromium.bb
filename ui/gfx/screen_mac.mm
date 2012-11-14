@@ -168,6 +168,14 @@ class ScreenMac : public gfx::Screen {
     return display;
   }
 
+  virtual void AddObserver(gfx::DisplayObserver* observer) OVERRIDE {
+    // TODO(oshima): crbug.com/122863.
+  }
+
+  virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE {
+    // TODO(oshima): crbug.com/122863.
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenMac);
 };

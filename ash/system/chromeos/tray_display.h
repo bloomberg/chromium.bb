@@ -7,7 +7,7 @@
 
 #include "ash/system/tray/system_tray_item.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/display_observer.h"
+#include "ui/gfx/display_observer.h"
 
 #include "chromeos/display/output_configurator.h"
 
@@ -22,7 +22,7 @@ class DisplayView;
 
 class TrayDisplay : public SystemTrayItem,
                     public chromeos::OutputConfigurator::Observer,
-                    public aura::DisplayObserver {
+                    public gfx::DisplayObserver {
  public:
   TrayDisplay();
   virtual ~TrayDisplay();

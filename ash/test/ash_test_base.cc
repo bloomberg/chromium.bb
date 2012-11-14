@@ -8,14 +8,13 @@
 #include <vector>
 
 #include "ash/display/display_controller.h"
-#include "ash/display/multi_display_manager.h"
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
-#include "ash/test/multi_display_manager_test_api.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/run_loop.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/aura/env.h"
-#include "ui/aura/display_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/ime/text_input_test_support.h"
 #include "ui/compositor/layer_animator.h"
@@ -70,17 +69,13 @@ void AshTestBase::ChangeDisplayConfig(float scale,
   display.SetScaleAndBounds(scale, bounds_in_pixel);
   std::vector<gfx::Display> displays;
   displays.push_back(display);
-  aura::Env::GetInstance()->display_manager()->OnNativeDisplaysChanged(
-      displays);
+  Shell::GetInstance()->display_manager()->OnNativeDisplaysChanged(displays);
 }
 
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
-  internal::MultiDisplayManager* multi_display_manager =
-      static_cast<internal::MultiDisplayManager*>(
-          aura::Env::GetInstance()->display_manager());
-  MultiDisplayManagerTestApi multi_display_manager_test_api(
-      multi_display_manager);
-  multi_display_manager_test_api.UpdateDisplay(display_specs);
+  DisplayManagerTestApi display_manager_test_api(
+      Shell::GetInstance()->display_manager());
+  display_manager_test_api.UpdateDisplay(display_specs);
 }
 
 void AshTestBase::RunAllPendingInMessageLoop() {

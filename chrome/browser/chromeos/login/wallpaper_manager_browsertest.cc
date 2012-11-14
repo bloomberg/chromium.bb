@@ -7,9 +7,9 @@
 #include "ash/desktop_background/desktop_background_resources.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
-#include "ash/display/multi_display_manager.h"
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
-#include "ash/test/multi_display_manager_test_api.h"
+#include "ash/test/display_manager_test_api.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
@@ -20,7 +20,6 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "ui/aura/env.h"
-#include "ui/aura/display_manager.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using namespace ash;
@@ -70,15 +69,12 @@ class WallpaperManagerBrowserTest : public CrosInProcessBrowserTest,
   }
 
   // Update the display configuration as given in |display_specs|.
-  // See ash::test::MultiDisplayManagerTestApi::UpdateDisplay for more
+  // See ash::test::DisplayManagerTestApi::UpdateDisplay for more
   // details.
   void UpdateDisplay(const std::string& display_specs) {
-    internal::MultiDisplayManager* multi_display_manager =
-        static_cast<internal::MultiDisplayManager*>(
-            aura::Env::GetInstance()->display_manager());
-    ash::test::MultiDisplayManagerTestApi multi_display_manager_test_api(
-        multi_display_manager);
-    multi_display_manager_test_api.UpdateDisplay(display_specs);
+    ash::test::DisplayManagerTestApi display_manager_test_api(
+        ash::Shell::GetInstance()->display_manager());
+    display_manager_test_api.UpdateDisplay(display_specs);
   }
 
   void WaitAsyncWallpaperLoad() {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_DISPLAY_CHANGE_OBSERVER_X11_H
-#define UI_AURA_DISPLAY_CHANGE_OBSERVER_X11_H
+#ifndef ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_X11_H
+#define ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_X11_H
 
 #include <X11/Xlib.h>
 
@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 
-namespace aura {
+namespace ash {
 namespace internal {
 
 // An object that observes changes in display configuration and
@@ -41,6 +41,6 @@ class DisplayChangeObserverX11 : public MessageLoop::Dispatcher {
 };
 
 }  // namespace internal
-}  // namespace aura
+}  // namespace ash
 
-#endif  // UI_AURA_DISPLAY_CHANGE_OBSERVER_X11_H
+#endif  // ASH_DISPLAY_AURA_DISPLAY_CHANGE_OBSERVER_X11_H

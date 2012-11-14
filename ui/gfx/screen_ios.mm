@@ -63,6 +63,14 @@ class ScreenIos : public gfx::Screen {
     display.set_device_scale_factor([mainScreen scale]);
     return display;
   }
+
+  virtual void AddObserver(gfx::DisplayObserver* observer) OVERRIDE {
+    // no display change on iOS.
+  }
+
+  virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE {
+    // no display change on iOS.
+  }
 };
 
 }  // namespace

@@ -5,7 +5,7 @@
 #include "ash/system/chromeos/tray_display.h"
 
 #include "ash/display/display_controller.h"
-#include "ash/display/multi_display_manager.h"
+#include "ash/display/display_manager.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
@@ -15,7 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
-#include "ui/aura/display_manager.h"
 #include "ui/aura/env.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -78,8 +77,7 @@ class DisplayView : public ash::internal::ActionableView {
  private:
   // Returns the name of the currently connected external display.
   string16 GetExternalDisplayName() {
-    MultiDisplayManager* display_manager = static_cast<MultiDisplayManager*>(
-        aura::Env::GetInstance()->display_manager());
+    DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
     gfx::Display external_display(gfx::Display::kInvalidDisplayID);
     if (display_manager->HasInternalDisplay()) {
@@ -118,13 +116,13 @@ class DisplayView : public ash::internal::ActionableView {
 
 TrayDisplay::TrayDisplay()
     : default_(NULL) {
-  aura::Env::GetInstance()->display_manager()->AddObserver(this);
-  ash::Shell::GetInstance()->output_configurator()->AddObserver(this);
+  Shell::GetScreen()->AddObserver(this);
+  Shell::GetInstance()->output_configurator()->AddObserver(this);
 }
 
 TrayDisplay::~TrayDisplay() {
-  aura::Env::GetInstance()->display_manager()->RemoveObserver(this);
-  ash::Shell::GetInstance()->output_configurator()->RemoveObserver(this);
+  Shell::GetScreen()->RemoveObserver(this);
+  Shell::GetInstance()->output_configurator()->RemoveObserver(this);
 }
 
 views::View* TrayDisplay::CreateDefaultView(user::LoginStatus status) {

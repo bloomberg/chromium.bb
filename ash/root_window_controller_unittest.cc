@@ -5,7 +5,6 @@
 #include "ash/root_window_controller.h"
 
 #include "ash/display/display_controller.h"
-#include "ash/display/multi_display_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"

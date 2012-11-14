@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/multi_display_manager.h"
+#include "ash/display/display_manager.h"
 
 #include "ash/display/display_controller.h"
 #include "ash/screen_ash.h"
@@ -10,10 +10,10 @@
 #include "ash/test/ash_test_base.h"
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
-#include "ui/aura/display_observer.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/gfx/display_observer.h"
 #include "ui/gfx/display.h"
 
 namespace ash {
@@ -22,30 +22,29 @@ namespace internal {
 using std::vector;
 using std::string;
 
-class MultiDisplayManagerTest : public test::AshTestBase,
-                                public aura::DisplayObserver,
-                                public aura::WindowObserver {
+class DisplayManagerTest : public test::AshTestBase,
+                           public gfx::DisplayObserver,
+                           public aura::WindowObserver {
  public:
-  MultiDisplayManagerTest()
+  DisplayManagerTest()
       : removed_count_(0U),
         root_window_destroyed_(false) {
   }
-  virtual ~MultiDisplayManagerTest() {}
+  virtual ~DisplayManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
-    display_manager()->AddObserver(this);
+    Shell::GetScreen()->AddObserver(this);
     Shell::GetPrimaryRootWindow()->AddObserver(this);
   }
   virtual void TearDown() OVERRIDE {
     Shell::GetPrimaryRootWindow()->RemoveObserver(this);
-    display_manager()->RemoveObserver(this);
+    Shell::GetScreen()->RemoveObserver(this);
     AshTestBase::TearDown();
   }
 
-  MultiDisplayManager* display_manager() {
-    return static_cast<MultiDisplayManager*>(
-        aura::Env::GetInstance()->display_manager());
+  DisplayManager* display_manager() {
+    return Shell::GetInstance()->display_manager();
   }
   const vector<gfx::Display>& changed() const { return changed_; }
   const vector<gfx::Display>& added() const { return added_; }
@@ -93,7 +92,7 @@ class MultiDisplayManagerTest : public test::AshTestBase,
   size_t removed_count_;
   bool root_window_destroyed_;
 
-  DISALLOW_COPY_AND_ASSIGN(MultiDisplayManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(DisplayManagerTest);
 };
 
 #if defined(OS_CHROMEOS)
@@ -110,9 +109,7 @@ class MultiDisplayManagerTest : public test::AshTestBase,
 #define MAYBE_ZeroOverscanInsets DISABLED_ZeroOverscanInsets
 #endif
 
-TEST_F(MultiDisplayManagerTest, MAYBE_NativeDisplayTest) {
-  aura::DisplayManager::set_use_fullscreen_host_window(true);
-
+TEST_F(DisplayManagerTest, MAYBE_NativeDisplayTest) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
   // Update primary and add seconary.
@@ -197,32 +194,30 @@ TEST_F(MultiDisplayManagerTest, MAYBE_NativeDisplayTest) {
   EXPECT_EQ("1000,1000 600x400",
             display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
   reset();
-
-  aura::DisplayManager::set_use_fullscreen_host_window(false);
 }
 
 // Test in emulation mode (use_fullscreen_host_window=false)
-TEST_F(MultiDisplayManagerTest, MAYBE_EmulatorTest) {
+TEST_F(DisplayManagerTest, MAYBE_EmulatorTest) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
-  MultiDisplayManager::CycleDisplay();
+  DisplayManager::CycleDisplay();
   // Update primary and add seconary.
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0 1 0", GetCountSummary());
   reset();
 
-  MultiDisplayManager::CycleDisplay();
+  DisplayManager::CycleDisplay();
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0 0 1", GetCountSummary());
   reset();
 
-  MultiDisplayManager::CycleDisplay();
+  DisplayManager::CycleDisplay();
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0 1 0", GetCountSummary());
   reset();
 }
 
-TEST_F(MultiDisplayManagerTest, MAYBE_OverscanInsetsTest) {
+TEST_F(DisplayManagerTest, MAYBE_OverscanInsetsTest) {
   UpdateDisplay("0+0-500x500,0+501-400x400");
   reset();
   ASSERT_EQ(2u, display_manager()->GetNumDisplays());
@@ -279,7 +274,7 @@ TEST_F(MultiDisplayManagerTest, MAYBE_OverscanInsetsTest) {
   EXPECT_EQ("188x190", display_manager()->GetDisplayAt(1)->size().ToString());
 }
 
-TEST_F(MultiDisplayManagerTest, MAYBE_ZeroOverscanInsets) {
+TEST_F(DisplayManagerTest, MAYBE_ZeroOverscanInsets) {
   // Make sure the display change events is emitted for overscan inset changes.
   UpdateDisplay("0+0-500x500,0+501-400x400");
   ASSERT_EQ(2u, display_manager()->GetNumDisplays());
@@ -313,8 +308,7 @@ TEST_F(MultiDisplayManagerTest, MAYBE_ZeroOverscanInsets) {
   DISABLED_NativeDisplaysChangedAfterPrimaryChange
 #endif
 
-TEST_F(MultiDisplayManagerTest, MAYBE_TestDeviceScaleOnlyChange) {
-  aura::DisplayManager::set_use_fullscreen_host_window(true);
+TEST_F(DisplayManagerTest, MAYBE_TestDeviceScaleOnlyChange) {
   UpdateDisplay("1000x600");
   EXPECT_EQ(1,
             Shell::GetPrimaryRootWindow()->compositor()->device_scale_factor());
@@ -325,10 +319,9 @@ TEST_F(MultiDisplayManagerTest, MAYBE_TestDeviceScaleOnlyChange) {
             Shell::GetPrimaryRootWindow()->compositor()->device_scale_factor());
   EXPECT_EQ("500x300",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
-  aura::DisplayManager::set_use_fullscreen_host_window(false);
 }
 
-TEST_F(MultiDisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
+TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
   const int64 internal_display_id =
       display_manager()->SetFirstDisplayAsInternalDisplayForTest();
   const gfx::Display native_display(internal_display_id,
@@ -403,7 +396,7 @@ TEST_F(MultiDisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
   DISABLED_EnsurePointerInDisplays_2ndOnLeft
 #endif
 
-TEST_F(MultiDisplayManagerTest, MAYBE_EnsurePointerInDisplays) {
+TEST_F(DisplayManagerTest, MAYBE_EnsurePointerInDisplays) {
   UpdateDisplay("200x200,300x300");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
@@ -441,7 +434,7 @@ TEST_F(MultiDisplayManagerTest, MAYBE_EnsurePointerInDisplays) {
   EXPECT_EQ("150,140", env->last_mouse_location().ToString());
 }
 
-TEST_F(MultiDisplayManagerTest, MAYBE_EnsurePointerInDisplays_2ndOnLeft) {
+TEST_F(DisplayManagerTest, MAYBE_EnsurePointerInDisplays_2ndOnLeft) {
   UpdateDisplay("200x200,300x300");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
@@ -476,7 +469,7 @@ TEST_F(MultiDisplayManagerTest, MAYBE_EnsurePointerInDisplays_2ndOnLeft) {
   EXPECT_EQ("150,150", env->last_mouse_location().ToString());
 }
 
-TEST_F(MultiDisplayManagerTest, MAYBE_NativeDisplaysChangedAfterPrimaryChange) {
+TEST_F(DisplayManagerTest, MAYBE_NativeDisplaysChangedAfterPrimaryChange) {
   const int64 internal_display_id =
       display_manager()->SetFirstDisplayAsInternalDisplayForTest();
   const gfx::Display native_display(internal_display_id,

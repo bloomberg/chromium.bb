@@ -6,10 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
-#include "ui/aura/display_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/single_display_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -29,9 +27,9 @@
 #include "ui/views/widget/widget_delegate.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/screen_ash.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/shell/shell_stacking_client_ash.h"
+#include "ui/aura/test/test_screen.h"
 #else
 #include "ui/views/widget/desktop_aura/desktop_stacking_client.h"
 #endif
@@ -283,11 +281,10 @@ void Shell::PlatformInitialize() {
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Initialize();
 #endif
-  aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
 #if defined(OS_CHROMEOS)
   stacking_client_ = new content::ShellStackingClientAsh();
   gfx::Screen::SetScreenInstance(
-      gfx::SCREEN_TYPE_NATIVE, new ash::ScreenAsh);
+      gfx::SCREEN_TYPE_NATIVE, new aura::TestScreen);
 #else
   stacking_client_ = new views::DesktopStackingClient();
   gfx::Screen::SetScreenInstance(

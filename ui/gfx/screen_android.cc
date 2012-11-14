@@ -48,6 +48,14 @@ class ScreenAndroid : public Screen {
     return GetPrimaryDisplay();
   }
 
+  virtual void AddObserver(DisplayObserver* observer) OVERRIDE {
+    // no display change on Android.
+  }
+
+  virtual void RemoveObserver(DisplayObserver* observer) OVERRIDE {
+    // no display change on Android.
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenAndroid);
 };

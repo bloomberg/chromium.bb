@@ -5,7 +5,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/caps_lock_delegate.h"
-#include "ash/display/multi_display_manager.h"
+#include "ash/display/display_manager.h"
 #include "ash/ime_control_delegate.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
@@ -17,7 +17,6 @@
 #include "ash/test/test_shell_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_util.h"
-#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -314,8 +313,7 @@ class AcceleratorControllerTest : public test::AshTestBase {
 
  protected:
   void EnableInternalDisplay() {
-    static_cast<internal::MultiDisplayManager*>(
-        aura::Env::GetInstance()->display_manager())->
+    Shell::GetInstance()->display_manager()->
         SetFirstDisplayAsInternalDisplayForTest();
   }
 

@@ -15,7 +15,7 @@
 
 namespace ash {
 namespace internal {
-class MultiDisplayManager;
+class DisplayManager;
 }  // internal
 
 namespace test {
@@ -46,7 +46,7 @@ class AshTestBase : public testing::Test {
   void ChangeDisplayConfig(float scale, const gfx::Rect& bounds);
 
   // Update the display configuration as given in |display_specs|.
-  // See ash::test::MultiDisplayManagerTestApi::UpdateDisplay for more details.
+  // See ash::test::DisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_specs);
 
  protected:

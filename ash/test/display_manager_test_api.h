@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TEST_MULTI_DISPLAY_MANAGER_TEST_API_H_
-#define ASH_TEST_MULTI_DISPLAY_MANAGER_TEST_API_H_
+#ifndef ASH_TEST_DISPLAY_MANAGER_TEST_API_H_
+#define ASH_TEST_DISPLAY_MANAGER_TEST_API_H_
 
 #include <string>
 
@@ -11,16 +11,15 @@
 
 namespace ash {
 namespace internal {
-class MultiDisplayManager;
+class DisplayManager;
 }  // internal
 
 namespace test {
 
-class MultiDisplayManagerTestApi {
+class DisplayManagerTestApi {
  public:
-  explicit MultiDisplayManagerTestApi(
-      internal::MultiDisplayManager* display_manager);
-  virtual ~MultiDisplayManagerTestApi();
+  explicit DisplayManagerTestApi(internal::DisplayManager* display_manager);
+  virtual ~DisplayManagerTestApi();
 
   // Update the display configuration as given in |display_specs|. The format of
   // |display_spec| is a list of comma separated spec for each displays. Please
@@ -29,12 +28,12 @@ class MultiDisplayManagerTestApi {
   void UpdateDisplay(const std::string& display_specs);
 
  private:
-  internal::MultiDisplayManager* display_manager_;  // not owned
+  internal::DisplayManager* display_manager_;  // not owned
 
-  DISALLOW_COPY_AND_ASSIGN(MultiDisplayManagerTestApi);
+  DISALLOW_COPY_AND_ASSIGN(DisplayManagerTestApi);
 };
 
 }  // namespace test
 }  // namespace ash
 
-#endif  // ASH_TEST_MULTI_DISPLAY_MANAGER_TEST_API_H_
+#endif  // ASH_TEST_DISPLAY_MANAGER_TEST_API_H_

@@ -24,10 +24,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/screen.h"
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "ui/aura/env.h"
+#include "ui/aura/test/test_screen.h"
 #endif
 
 #if defined(OS_WIN) || defined(USE_AURA)
@@ -389,6 +391,10 @@ class RenderWidgetHostTest : public testing::Test {
     browser_context_.reset(new TestBrowserContext());
     delegate_.reset(new MockRenderWidgetHostDelegate());
     process_ = new RenderWidgetHostProcess(browser_context_.get());
+#if defined(USE_AURA)
+    screen_.reset(new aura::TestScreen);
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
+#endif
     host_.reset(
         new MockRenderWidgetHost(delegate_.get(), process_, MSG_ROUTING_NONE));
     view_.reset(new TestView(host_.get()));
@@ -404,6 +410,7 @@ class RenderWidgetHostTest : public testing::Test {
 
 #if defined(USE_AURA)
     aura::Env::DeleteInstance();
+    screen_.reset();
 #endif
 
     // Process all pending tasks to avoid leaks.
@@ -520,6 +527,7 @@ class RenderWidgetHostTest : public testing::Test {
   scoped_ptr<MockRenderWidgetHostDelegate> delegate_;
   scoped_ptr<MockRenderWidgetHost> host_;
   scoped_ptr<TestView> view_;
+  scoped_ptr<gfx::Screen> screen_;
 
  private:
   WebTouchEvent touch_event_;
