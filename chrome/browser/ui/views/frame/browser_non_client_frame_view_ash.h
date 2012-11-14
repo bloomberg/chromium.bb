@@ -94,6 +94,9 @@ class BrowserNonClientFrameViewAsh
   views::ImageButton* size_button_;
   views::ImageButton* close_button_;
 
+  // Optional button to trigger immersive UI. May be NULL.
+  views::ImageButton* immersive_button_;
+
   // For popups, the window icon.
   TabIconView* window_icon_;
 

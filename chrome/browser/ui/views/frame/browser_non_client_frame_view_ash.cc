@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 
+#include "ash/ash_switches.h"
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/workspace/frame_maximize_button.h"
+#include "base/command_line.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
@@ -72,6 +74,7 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     : BrowserNonClientFrameView(frame, browser_view),
       size_button_(NULL),
       close_button_(NULL),
+      immersive_button_(NULL),
       window_icon_(NULL),
       frame_painter_(new ash::FramePainter),
       size_button_minimizes_(false) {
@@ -114,6 +117,16 @@ void BrowserNonClientFrameViewAsh::Init() {
   // Frame painter handles layout of these buttons.
   frame_painter_->Init(frame(), window_icon_, size_button_, close_button_,
                        size_button_behavior);
+
+  // Button to enter immersive mode.
+  if (CommandLine::ForCurrentProcess()->
+        HasSwitch(ash::switches::kAshImmersive)) {
+    immersive_button_ = new views::ImageButton(this);
+    immersive_button_->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_ACCNAME_IMMERSIVE));
+    AddChildView(immersive_button_);
+    frame_painter_->AddImmersiveButton(immersive_button_);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -289,6 +302,9 @@ void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
     // |this| may be deleted - some windows delete their frames on maximize.
   } else if (sender == close_button_) {
     frame()->Close();
+  } else if (sender == immersive_button_) {
+    // TODO(jamescook): Enter immersive mode.
+    frame()->SetFullscreen(true);
   }
 
   if (event.IsShiftDown())

@@ -127,6 +127,37 @@ TEST_F(FramePainterTest, Basics) {
   EXPECT_EQ(0u, FramePainter::instances_->size());
 }
 
+// Ensure that the immersive button is created and visible when it should be.
+TEST_F(FramePainterTest, ImmersiveButton) {
+  scoped_ptr<Widget> widget(CreateTestWidget());
+  views::NonClientFrameView* frame = widget->non_client_view()->frame_view();
+  FramePainter painter;
+  ImageButton size(NULL);
+  ImageButton close(NULL);
+  painter.Init(
+      widget.get(), NULL, &size, &close, FramePainter::SIZE_BUTTON_MAXIMIZES);
+
+  // No immersive button by default.
+  EXPECT_EQ(NULL, painter.immersive_button_);
+
+  // Add an immersive button.
+  ImageButton immersive(NULL);
+  painter.AddImmersiveButton(&immersive);
+
+  // Immersive button starts invisible.
+  widget->Show();
+  EXPECT_FALSE(immersive.visible());
+
+  // Maximizing the window makes it visible.
+  widget->Maximize();
+  EXPECT_TRUE(immersive.visible());
+
+  // A point in the button is treated as client area, so button can be clicked.
+  painter.LayoutHeader(frame, false);
+  gfx::Point point = immersive.bounds().CenterPoint();
+  EXPECT_EQ(HTCLIENT, painter.NonClientHitTest(frame, point));
+}
+
 TEST_F(FramePainterTest, CreateAndDeleteSingleWindow) {
   // Ensure that creating/deleting a window works well and doesn't cause
   // crashes.  See crbug.com/155634

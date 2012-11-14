@@ -57,6 +57,10 @@ const char kAshEnableOak[] = "ash-enable-oak";
 // Enables showing the tray bubble by dragging on the shelf.
 const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
 
+// Enables experimental "immersive" mode, a nearly-fullscreen view of the web
+// content without a tab strip or omnibox.
+const char kAshImmersive[] = "ash-immersive";
+
 // Enables creating a launcher per display.
 const char kAshLauncherPerDisplay[] = "ash-launcher-per-display";
 

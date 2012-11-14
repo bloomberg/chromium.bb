@@ -7446,6 +7446,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_NEWTAB" desc="The accessible name for the New Tab (+) button.">
         New Tab
       </message>
+      <message name="IDS_ACCNAME_IMMERSIVE" desc="The accessible name for the immersive mode button.">
+        Immersive Mode
+      </message>
       <message name="IDS_ACCNAME_MINIMIZE" desc="The accessible name for the Minimize button.">
         Minimize
       </message>
