@@ -27,7 +27,7 @@
 TEST(surface_to_from_global)
 {
 	struct weston_surface *surface;
-	GLfloat x, y;
+	float x, y;
 	wl_fixed_t fx, fy;
 	int32_t ix, iy;
 
