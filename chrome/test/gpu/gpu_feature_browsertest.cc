@@ -215,8 +215,15 @@ class AcceleratedCompositingBlockedTest : public GpuFeatureTest {
   }
 };
 
+#if defined(OS_WIN) && defined(USE_AURA)
+// Compositing is always on for Windows Aura.
+#define MAYBE_AcceleratedCompositingBlocked DISABLED_AcceleratedCompositingBlocked
+#else
+#define MAYBE_AcceleratedCompositingBlocked AcceleratedCompositingBlocked
+#endif
+
 IN_PROC_BROWSER_TEST_F(AcceleratedCompositingBlockedTest,
-    AcceleratedCompositingBlocked) {
+    MAYBE_AcceleratedCompositingBlocked) {
   GpuFeatureType type =
       GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   type = IgnoreGpuFeatures(type);
@@ -259,8 +266,16 @@ class AcceleratedCompositingTest : public GpuFeatureTest {
   }
 };
 
+#if defined(OS_WIN) && defined(USE_AURA)
+// Compositing is always on for Windows Aura.
+#define MAYBE_AcceleratedCompositingDisabled DISABLED_AcceleratedCompositingDisabled
+#else
+#define MAYBE_AcceleratedCompositingDisabled AcceleratedCompositingDisabled
+#endif
+
 IN_PROC_BROWSER_TEST_F(AcceleratedCompositingTest,
-                       AcceleratedCompositingDisabled) {
+                       MAYBE_AcceleratedCompositingDisabled) {
+// Compositing is always on for Windows Aura.
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
   RunEventTest(url, kSwapBuffersEvent, false);
 }
