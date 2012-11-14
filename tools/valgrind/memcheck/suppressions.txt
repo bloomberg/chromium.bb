@@ -6109,3 +6109,14 @@
    fun:_ZN7WebCore11RenderBlock14styleDidChangeENS_15StyleDifferenceEPKNS_11RenderStyleE
    fun:_ZN7WebCore12RenderObject8setStyleEN3WTF10PassRefPtrINS_11RenderStyleEEE
 }
+{
+   bug_160877
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN7content*DummyListenSocketC1Ev
+   fun:_ZNK7content*DummyListenSocketFactory15CreateAndListenEPN3net18StreamListenSocket8DelegateE
+   ...
+   fun:_ZN3net10HttpServerC1ERKNS_25StreamListenSocketFactoryEPNS0_8DelegateE
+   fun:_ZN7content23DevToolsHttpHandlerImpl4InitEv
+}

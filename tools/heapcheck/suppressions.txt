@@ -1643,3 +1643,11 @@
    fun:net::FileStream::Context::Orphan
    fun:net::FileStream::~FileStream
 }
+{
+   bug_160877
+   Heapcheck:Leak
+   fun:*DummyListenSocket
+   fun:content::::DummyListenSocketFactory::CreateAndListen
+   fun:*HttpServer
+   fun:content::DevToolsHttpHandlerImpl::Init
+}
