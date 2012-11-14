@@ -378,8 +378,8 @@ class NinjaWriter:
     if self.flavor == 'win':
       self.msvs_settings = gyp.msvs_emulation.MsvsSettings(spec,
                                                            generator_flags)
-      target_platform = self.msvs_settings.GetTargetPlatform(config_name)
-      self.ninja.variable('arch', self.win_env[target_platform])
+      arch = self.msvs_settings.GetArch(config_name)
+      self.ninja.variable('arch', self.win_env[arch])
 
     # Compute predepends for all rules.
     # actions_depends is the dependencies this target depends on before running
@@ -435,7 +435,7 @@ class NinjaWriter:
             lambda path, lang: self.GypPathToUniqueOutput(path + '-' + lang))
       link_deps = self.WriteSources(
           config_name, config, sources, compile_depends_stamp, pch,
-          case_sensitive_filesystem)
+          case_sensitive_filesystem, spec)
       # Some actions/rules output 'sources' that are already object files.
       link_deps += [self.GypPathToNinja(f)
           for f in sources if f.endswith(self.obj_ext)]
@@ -721,7 +721,7 @@ class NinjaWriter:
     bundle_depends.append(out)
 
   def WriteSources(self, config_name, config, sources, predepends,
-                   precompiled_header, case_sensitive_filesystem):
+                   precompiled_header, case_sensitive_filesystem, spec):
     """Write build rules to compile all of |sources|."""
     if self.toolset == 'host':
       self.ninja.variable('ar', '$ar_host')
@@ -798,7 +798,8 @@ class NinjaWriter:
       elif ext == 's' and self.flavor != 'win':  # Doesn't generate .o.d files.
         command = 'cc_s'
       elif (self.flavor == 'win' and ext == 'asm' and
-            self.msvs_settings.GetTargetPlatform(config_name) == 'Win32'):
+            self.msvs_settings.GetArch(config_name) == 'x86' and
+            not self.msvs_settings.HasExplicitAsmRules(spec)):
         # Asm files only get auto assembled for x86 (not x64).
         command = 'asm'
         # Add the _asm suffix as msvs is capable of handling .cc and
