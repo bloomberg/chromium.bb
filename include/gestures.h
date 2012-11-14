@@ -381,6 +381,10 @@ struct GestureInterpreter {
   void SetTimerProvider(GesturesTimerProvider* tp, void* data);
   void SetPropProvider(GesturesPropProvider* pp, void* data);
 
+  // Initialize GestureInterpreter based on device configuration.  This must be
+  // called after GesturesPropProvider is set and before it accepts any inputs.
+  void Initialize(void);
+
   Interpreter* interpreter() const { return interpreter_.get(); }
   PropRegistry* prop_reg() const { return prop_reg_.get(); }
 
@@ -436,6 +440,8 @@ void GestureInterpreterSetTimerProvider(GestureInterpreter*,
 void GestureInterpreterSetPropProvider(GestureInterpreter*,
                                        GesturesPropProvider*,
                                        void*);
+
+void GestureInterpreterInitialize(GestureInterpreter*);
 
 #ifdef __cplusplus
 }

@@ -256,6 +256,10 @@ void GestureInterpreterSetPropProvider(GestureInterpreter* obj,
   obj->SetPropProvider(pp, data);
 }
 
+void GestureInterpreterInitialize(GestureInterpreter* obj) {
+  obj->Initialize();
+}
+
 // C++ API:
 
 GestureInterpreter::GestureInterpreter(int version)
@@ -263,10 +267,96 @@ GestureInterpreter::GestureInterpreter(int version)
       callback_data_(NULL),
       timer_provider_(NULL),
       timer_provider_data_(NULL),
-      interpret_timer_(NULL) {
+      interpret_timer_(NULL),
+      loggingFilter_(NULL) {
   prop_reg_.reset(new PropRegistry);
   tracer_.reset(new Tracer(prop_reg_.get(), TraceMarker::StaticTraceWrite));
   finger_metrics_.reset(new FingerMetrics(prop_reg_.get()));
+  TraceMarker::CreateTraceMarker();
+}
+
+GestureInterpreter::~GestureInterpreter() {
+  SetTimerProvider(NULL, NULL);
+  SetPropProvider(NULL, NULL);
+  TraceMarker::DeleteTraceMarker();
+}
+
+namespace {
+stime_t InternalTimerCallback(stime_t now, void* callback_data) {
+  Log("TimerCallback called");
+  GestureInterpreter* gi = reinterpret_cast<GestureInterpreter*>(callback_data);
+  stime_t next = -1.0;
+  gi->TimerCallback(now, &next);
+  return next;
+}
+}
+
+void GestureInterpreter::PushHardwareState(HardwareState* hwstate) {
+  if (!interpreter_.get()) {
+    Err("Filters are not composed yet!");
+    return;
+  }
+  stime_t timeout = -1.0;
+  Gesture* gs = interpreter_->SyncInterpret(hwstate, &timeout);
+  if (gs && callback_)
+    (*callback_)(callback_data_, gs);
+  if (timer_provider_ && interpret_timer_) {
+    if (timeout <= 0.0) {
+      timer_provider_->cancel_fn(timer_provider_data_, interpret_timer_);
+    } else {
+      timer_provider_->set_fn(timer_provider_data_,
+                              interpret_timer_,
+                              timeout,
+                              InternalTimerCallback,
+                              this);
+      Log("Setting timer for %f s out.", timeout);
+    }
+  } else {
+    Err("No timer!");
+  }
+}
+
+void GestureInterpreter::SetHardwareProperties(
+    const HardwareProperties& hwprops) {
+  if (!interpreter_.get()) {
+    Err("Filters are not composed yet!");
+    return;
+  }
+  interpreter_->SetHardwareProperties(hwprops);
+}
+
+void GestureInterpreter::TimerCallback(stime_t now, stime_t* timeout) {
+  if (!interpreter_.get()) {
+    Err("Filters are not composed yet!");
+    return;
+  }
+  Gesture* gs = interpreter_->HandleTimer(now, timeout);
+  if (gs && callback_)
+    (*callback_)(callback_data_, gs);
+}
+
+void GestureInterpreter::SetTimerProvider(GesturesTimerProvider* tp,
+                                          void* data) {
+  if (timer_provider_ == tp && timer_provider_data_ == data)
+    return;
+  if (timer_provider_ && interpret_timer_) {
+    timer_provider_->free_fn(timer_provider_data_, interpret_timer_);
+    interpret_timer_ = NULL;
+  }
+  if (interpret_timer_)
+    Log("How was interpret_timer_ not NULL?!");
+  timer_provider_ = tp;
+  timer_provider_data_ = data;
+  if (timer_provider_)
+    interpret_timer_ = timer_provider_->create_fn(timer_provider_data_);
+}
+
+void GestureInterpreter::SetPropProvider(GesturesPropProvider* pp,
+                                         void* data) {
+  prop_reg_->SetPropProvider(pp, data);
+}
+
+void GestureInterpreter::Initialize(void) {
   Interpreter* temp = new ImmediateInterpreter(prop_reg_.get(),
                                                finger_metrics_.get(),
                                                tracer_.get());
@@ -293,76 +383,6 @@ GestureInterpreter::GestureInterpreter(int version)
                                                        tracer_.get());
   interpreter_.reset(temp);
   temp = NULL;
-  TraceMarker::CreateTraceMarker();
-}
-
-GestureInterpreter::~GestureInterpreter() {
-  SetTimerProvider(NULL, NULL);
-  SetPropProvider(NULL, NULL);
-  TraceMarker::DeleteTraceMarker();
-}
-
-namespace {
-stime_t InternalTimerCallback(stime_t now, void* callback_data) {
-  Log("TimerCallback called");
-  GestureInterpreter* gi = reinterpret_cast<GestureInterpreter*>(callback_data);
-  stime_t next = -1.0;
-  gi->TimerCallback(now, &next);
-  return next;
-}
-}
-
-void GestureInterpreter::PushHardwareState(HardwareState* hwstate) {
-  stime_t timeout = -1.0;
-  Gesture* gs = interpreter_->SyncInterpret(hwstate, &timeout);
-  if (gs && callback_)
-    (*callback_)(callback_data_, gs);
-  if (timer_provider_ && interpret_timer_) {
-    if (timeout <= 0.0) {
-      timer_provider_->cancel_fn(timer_provider_data_, interpret_timer_);
-    } else {
-      timer_provider_->set_fn(timer_provider_data_,
-                              interpret_timer_,
-                              timeout,
-                              InternalTimerCallback,
-                              this);
-      Log("Setting timer for %f s out.", timeout);
-    }
-  } else {
-    Err("No timer!");
-  }
-}
-
-void GestureInterpreter::SetHardwareProperties(
-    const HardwareProperties& hwprops) {
-  interpreter_->SetHardwareProperties(hwprops);
-}
-
-void GestureInterpreter::TimerCallback(stime_t now, stime_t* timeout) {
-  Gesture* gs = interpreter_->HandleTimer(now, timeout);
-  if (gs && callback_)
-    (*callback_)(callback_data_, gs);
-}
-
-void GestureInterpreter::SetTimerProvider(GesturesTimerProvider* tp,
-                                          void* data) {
-  if (timer_provider_ == tp && timer_provider_data_ == data)
-    return;
-  if (timer_provider_ && interpret_timer_) {
-    timer_provider_->free_fn(timer_provider_data_, interpret_timer_);
-    interpret_timer_ = NULL;
-  }
-  if (interpret_timer_)
-    Log("How was interpret_timer_ not NULL?!");
-  timer_provider_ = tp;
-  timer_provider_data_ = data;
-  if (timer_provider_)
-    interpret_timer_ = timer_provider_->create_fn(timer_provider_data_);
-}
-
-void GestureInterpreter::SetPropProvider(GesturesPropProvider* pp,
-                                         void* data) {
-  prop_reg_->SetPropProvider(pp, data);
 }
 
 std::string GestureInterpreter::EncodeActivityLog() {

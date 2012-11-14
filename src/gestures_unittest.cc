@@ -162,6 +162,7 @@ TEST(GesturesTest, SimpleTest) {
   // Simple allocate/free test
   scoped_ptr<GestureInterpreter> gs(NewGestureInterpreter());
   EXPECT_NE(static_cast<GestureInterpreter*>(NULL), gs.get());
+  EXPECT_EQ(static_cast<Interpreter*>(NULL), gs.get()->interpreter());
 }
 
 TEST(GesturesTest, CtorTest) {
