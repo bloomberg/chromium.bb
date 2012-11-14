@@ -386,8 +386,11 @@ ExtensionService::ExtensionService(Profile* profile,
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
   pref_change_registrar_.Init(profile->GetPrefs());
-  pref_change_registrar_.Add(prefs::kExtensionInstallAllowList, this);
-  pref_change_registrar_.Add(prefs::kExtensionInstallDenyList, this);
+  base::Closure callback =
+      base::Bind(&ExtensionService::OnExtensionInstallPrefChanged,
+                 base::Unretained(this));
+  pref_change_registrar_.Add(prefs::kExtensionInstallAllowList, callback);
+  pref_change_registrar_.Add(prefs::kExtensionInstallDenyList, callback);
 
   // Set up the ExtensionUpdater
   if (autoupdate_enabled) {
@@ -2697,11 +2700,7 @@ void ExtensionService::Observe(int type,
   }
 }
 
-void ExtensionService::OnPreferenceChanged(PrefServiceBase* service,
-                                           const std::string& pref_name) {
-  DCHECK(pref_name == prefs::kExtensionInstallAllowList ||
-         pref_name == prefs::kExtensionInstallDenyList)
-      << "Unexpected preference name " << pref_name;
+void ExtensionService::OnExtensionInstallPrefChanged() {
   IdentifyAlertableExtensions();
   CheckManagementPolicy();
 }

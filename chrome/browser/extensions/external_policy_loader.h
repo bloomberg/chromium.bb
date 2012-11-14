@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -22,8 +21,7 @@ namespace extensions {
 // registered.
 class ExternalPolicyLoader
     : public ExternalLoader,
-      public content::NotificationObserver,
-      public PrefObserver {
+      public content::NotificationObserver {
  public:
   explicit ExternalPolicyLoader(Profile* profile);
 
@@ -31,10 +29,6 @@ class ExternalPolicyLoader
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // PrefObserver implementation
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
  protected:
   virtual void StartLoading() OVERRIDE;

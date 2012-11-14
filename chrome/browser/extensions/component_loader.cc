@@ -77,7 +77,10 @@ ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
 
   // This pref is set by policy. We have to watch it for change because on
   // ChromeOS, policy isn't loaded until after the browser process is started.
-  pref_change_registrar_.Add(prefs::kEnterpriseWebStoreURL, this);
+  pref_change_registrar_.Add(
+      prefs::kEnterpriseWebStoreURL,
+      base::Bind(&ComponentLoader::AddOrReloadEnterpriseWebStore,
+                 base::Unretained(this)));
 }
 
 ComponentLoader::~ComponentLoader() {
@@ -397,12 +400,6 @@ void ComponentLoader::AddDefaultComponentExtensions() {
 #endif
 
   AddScriptBubble();
-}
-
-void ComponentLoader::OnPreferenceChanged(PrefServiceBase* service,
-                                          const std::string& pref_name) {
-  DCHECK_EQ(std::string(prefs::kEnterpriseWebStoreURL), pref_name);
-  AddOrReloadEnterpriseWebStore();
 }
 
 // static

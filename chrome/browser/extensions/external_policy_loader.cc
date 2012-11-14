@@ -41,7 +41,9 @@ bool CheckExtension(const std::string& id, const std::string& update_url) {
 ExternalPolicyLoader::ExternalPolicyLoader(Profile* profile)
     : profile_(profile) {
   pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(prefs::kExtensionInstallForceList, this);
+  pref_change_registrar_.Add(prefs::kExtensionInstallForceList,
+                             base::Bind(&ExternalPolicyLoader::StartLoading,
+                                        base::Unretained(this)));
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::Source<Profile>(profile_));
@@ -85,14 +87,6 @@ void ExternalPolicyLoader::Observe(
     notification_registrar_.RemoveAll();
     pref_change_registrar_.RemoveAll();
     profile_ = NULL;
-  }
-}
-
-void ExternalPolicyLoader::OnPreferenceChanged(PrefServiceBase* service,
-                                               const std::string& pref_name) {
-  if (service == profile_->GetPrefs()) {
-    DCHECK_EQ(std::string(prefs::kExtensionInstallForceList), pref_name);
-    StartLoading();
   }
 }
 

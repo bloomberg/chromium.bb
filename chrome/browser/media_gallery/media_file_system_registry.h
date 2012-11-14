@@ -19,7 +19,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/system_monitor/system_monitor.h"
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
@@ -80,8 +79,7 @@ typedef base::Callback<void(const std::vector<MediaFileSystemInfo>&)>
     MediaFileSystemsCallback;
 
 class MediaFileSystemRegistry
-    : public base::SystemMonitor::DevicesChangedObserver,
-      public PrefObserver {
+    : public base::SystemMonitor::DevicesChangedObserver {
  public:
   // The instance is lazily created per browser process.
   static MediaFileSystemRegistry* GetInstance();
@@ -131,9 +129,7 @@ class MediaFileSystemRegistry
   MediaFileSystemRegistry();
   virtual ~MediaFileSystemRegistry();
 
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
+  void OnMediaGalleriesRememberedGalleriesChanged(PrefServiceBase* service);
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // Returns ScopedMTPDeviceMapEntry object for the given |device_location|.

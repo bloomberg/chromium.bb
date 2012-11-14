@@ -490,7 +490,12 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
   if (!ContainsKey(pref_change_registrar_map_, profile)) {
     PrefChangeRegistrar* pref_registrar = new PrefChangeRegistrar;
     pref_registrar->Init(profile->GetPrefs());
-    pref_registrar->Add(prefs::kMediaGalleriesRememberedGalleries, this);
+    pref_registrar->Add(
+        prefs::kMediaGalleriesRememberedGalleries,
+        base::Bind(&MediaFileSystemRegistry::
+                   OnMediaGalleriesRememberedGalleriesChanged,
+                   base::Unretained(this),
+                   pref_registrar->prefs()));
     pref_change_registrar_map_[profile] = pref_registrar;
   }
 
@@ -672,11 +677,8 @@ MediaFileSystemRegistry::~MediaFileSystemRegistry() {
     system_monitor->RemoveDevicesChangedObserver(this);
 }
 
-void MediaFileSystemRegistry::OnPreferenceChanged(
-    PrefServiceBase* prefs,
-    const std::string& pref_name) {
-  DCHECK_EQ(std::string(prefs::kMediaGalleriesRememberedGalleries), pref_name);
-
+void MediaFileSystemRegistry::OnMediaGalleriesRememberedGalleriesChanged(
+    PrefServiceBase* prefs) {
   // Find the Profile that contains the source PrefService.
   PrefChangeRegistrarMap::iterator pref_change_it =
       pref_change_registrar_map_.begin();

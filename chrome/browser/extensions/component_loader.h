@@ -11,7 +11,6 @@
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/values.h"
 
 class ExtensionServiceInterface;
@@ -22,7 +21,7 @@ namespace extensions {
 class Extension;
 
 // For registering, loading, and unloading component extensions.
-class ComponentLoader : public PrefObserver {
+class ComponentLoader {
  public:
   ComponentLoader(ExtensionServiceInterface* extension_service,
                   PrefService* prefs,
@@ -68,10 +67,6 @@ class ComponentLoader : public PrefObserver {
 
   // Adds the default component extensions.
   void AddDefaultComponentExtensions();
-
-  // PrefObserver implementation
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   static void RegisterUserPrefs(PrefService* prefs);
 

@@ -246,17 +246,18 @@ PreferenceEventRouter::PreferenceEventRouter(Profile* profile)
   registrar_.Init(profile_->GetPrefs());
   incognito_registrar_.Init(profile_->GetOffTheRecordPrefs());
   for (size_t i = 0; i < arraysize(kPrefMapping); ++i) {
-    registrar_.Add(kPrefMapping[i].browser_pref, this);
-    incognito_registrar_.Add(kPrefMapping[i].browser_pref, this);
+    registrar_.Add(kPrefMapping[i].browser_pref,
+                   base::Bind(&PreferenceEventRouter::OnPrefChanged,
+                              base::Unretained(this),
+                              registrar_.prefs()));
+    incognito_registrar_.Add(kPrefMapping[i].browser_pref,
+                             base::Bind(&PreferenceEventRouter::OnPrefChanged,
+                                        base::Unretained(this),
+                                        incognito_registrar_.prefs()));
   }
 }
 
 PreferenceEventRouter::~PreferenceEventRouter() { }
-
-void PreferenceEventRouter::OnPreferenceChanged(PrefServiceBase* service,
-                                                const std::string& pref_name) {
-  OnPrefChanged(service, pref_name);
-}
 
 void PreferenceEventRouter::OnPrefChanged(PrefServiceBase* pref_service,
                                           const std::string& browser_pref) {

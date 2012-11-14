@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/notification_observer.h"
 
@@ -20,16 +19,12 @@ class Value;
 
 namespace extensions {
 
-class PreferenceEventRouter : public PrefObserver {
+class PreferenceEventRouter {
  public:
   explicit PreferenceEventRouter(Profile* profile);
   virtual ~PreferenceEventRouter();
 
  private:
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
-
   void OnPrefChanged(PrefServiceBase* pref_service,
                      const std::string& pref_key);
 

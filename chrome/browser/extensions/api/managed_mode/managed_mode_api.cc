@@ -42,17 +42,16 @@ namespace extensions {
 ExtensionManagedModeEventRouter::ExtensionManagedModeEventRouter(
     Profile* profile) : profile_(profile) {
   registrar_.Init(g_browser_process->local_state());
-  registrar_.Add(prefs::kInManagedMode, this);
+  registrar_.Add(
+      prefs::kInManagedMode,
+      base::Bind(&ExtensionManagedModeEventRouter::OnInManagedModeChanged,
+                 base::Unretained(this)));
 }
 
 ExtensionManagedModeEventRouter::~ExtensionManagedModeEventRouter() {
 }
 
-void ExtensionManagedModeEventRouter::OnPreferenceChanged(
-    PrefServiceBase* service,
-    const std::string& pref_name) {
-  DCHECK_EQ(std::string(prefs::kInManagedMode), pref_name);
-
+void ExtensionManagedModeEventRouter::OnInManagedModeChanged() {
   DictionaryValue* dict = new DictionaryValue();
   dict->SetBoolean(
       keys::kValue,
