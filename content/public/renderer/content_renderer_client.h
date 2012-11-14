@@ -12,6 +12,8 @@
 #include "ipc/ipc_message.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_transition_types.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"
 #include "v8/include/v8.h"
 
@@ -129,6 +131,14 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Returns true if the given url can create popup windows.
   virtual bool AllowPopup(const GURL& creator);
+
+  // Returns true if the navigation was handled by the embedder and should be
+  // ignored by WebKit. This method is used by CEF.
+  virtual bool HandleNavigation(WebKit::WebFrame* frame,
+                                const WebKit::WebURLRequest& request,
+                                WebKit::WebNavigationType type,
+                                WebKit::WebNavigationPolicy default_policy,
+                                bool is_redirect);
 
   // Returns true if we should fork a new process for the given navigation.
   virtual bool ShouldFork(WebKit::WebFrame* frame,

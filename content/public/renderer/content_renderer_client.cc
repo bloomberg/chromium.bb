@@ -56,6 +56,15 @@ bool ContentRendererClient::AllowPopup(const GURL& creator) {
   return false;
 }
 
+bool ContentRendererClient::HandleNavigation(
+    WebKit::WebFrame* frame,
+    const WebKit::WebURLRequest& request,
+    WebKit::WebNavigationType type,
+    WebKit::WebNavigationPolicy default_policy,
+    bool is_redirect) {
+  return false;
+}
+
 bool ContentRendererClient::ShouldFork(WebKit::WebFrame* frame,
                                        const GURL& url,
                                        bool is_initial_navigation,
