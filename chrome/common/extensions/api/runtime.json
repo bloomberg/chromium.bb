@@ -86,6 +86,38 @@
         "type": "function",
         "unprivileged": true,
         "parameters": []
+      },
+      {
+        "name": "requestUpdateCheck",
+        "type": "function",
+        "unprivileged": true,
+        "description": "Requests an update check for this app/extension.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "status",
+                "type": "string",
+                "enum": ["throttled", "no_update", "update_available"],
+                "description": "Result of the update check."
+              },
+              {
+                "name": "details",
+                "type": "object",
+                "optional": true,
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "description": "The version of the available update."
+                  }
+                },
+                "description": "If an update is available, this contains more information about the available update."
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [

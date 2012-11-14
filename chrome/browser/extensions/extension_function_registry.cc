@@ -515,6 +515,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   // Runtime
   RegisterFunction<extensions::RuntimeGetBackgroundPageFunction>();
   RegisterFunction<extensions::RuntimeReloadFunction>();
+  RegisterFunction<extensions::RuntimeRequestUpdateCheckFunction>();
 
   // Generated APIs
   extensions::api::GeneratedFunctionRegistry::RegisterAll(this);

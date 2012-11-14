@@ -51,6 +51,24 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
  public:
   typedef base::Closure FinishedCallback;
 
+  struct CheckParams {
+    // Creates a default CheckParams instance that checks for all extensions and
+    // the extension blacklist.
+    CheckParams();
+    ~CheckParams();
+
+    // The set of extensions that should be checked for updates. If empty
+    // all extensions will be included in the update check.
+    std::list<std::string> ids;
+
+    // If true, the extension blacklist will also be updated.
+    bool check_blacklist;
+
+    // Callback to call when the update check is complete. Can be null, if
+    // you're not interested in when this happens.
+    FinishedCallback callback;
+  };
+
   // Holds a pointer to the passed |service|, using it for querying installed
   // extensions and installing updated ones. The |frequency_seconds| parameter
   // controls how often update checks are scheduled.
@@ -73,19 +91,26 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // already a pending task that has not yet run.
   void CheckSoon();
 
+  // Starts an update check for the specified extension soon. If a check
+  // is already running, or finished too recently without an update being
+  // installed, this method returns false and the check won't be scheduled.
+  bool CheckExtensionSoon(const std::string& extension_id,
+                          const FinishedCallback& callback);
+
   // Starts an update check right now, instead of waiting for the next
   // regularly scheduled check or a pending check from CheckSoon().
-  void CheckNow(const FinishedCallback& callback);
-
-  // Set blacklist checks on or off.
-  void set_blacklist_checks_enabled(bool enabled) {
-    blacklist_checks_enabled_ = enabled;
-  }
+  void CheckNow(const CheckParams& params);
 
   // Returns true iff CheckSoon() has been called but the update check
   // hasn't been performed yet.  This is used mostly by tests; calling
   // code should just call CheckSoon().
   bool WillCheckSoon() const;
+
+  // Changes the params that are used for the automatic periodic update checks,
+  // as well as for explicit calls to CheckSoon.
+  void set_default_check_params(const CheckParams& params) {
+    default_params_ = params;
+  }
 
  private:
   friend class ExtensionUpdaterTest;
@@ -116,6 +141,8 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
     // The ids of extensions that have in-progress update checks.
     std::list<std::string> in_progress_ids_;
   };
+
+  struct ThrottleInfo;
 
   // Computes when to schedule the first update check.
   base::TimeDelta DetermineFirstCheckDelay();
@@ -187,6 +214,9 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // Send a notification if we're finished updating.
   void NotifyIfFinished(int request_id);
 
+  void ExtensionCheckFinished(const std::string& extension_id,
+                              const FinishedCallback& callback);
+
   // Whether Start() has been called but not Stop().
   bool alive_;
 
@@ -205,7 +235,6 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   ExtensionPrefs* extension_prefs_;
   PrefService* prefs_;
   Profile* profile_;
-  bool blacklist_checks_enabled_;
 
   std::map<int, InProgressCheck> requests_in_progress_;
   int next_request_id_;
@@ -220,6 +249,12 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // Fetched CRX files waiting to be installed.
   std::stack<FetchedCRXFile> fetched_crx_files_;
   FetchedCRXFile current_crx_file_;
+
+  CheckParams default_params_;
+
+  // Keeps track of when an extension tried to update itself, so we can throttle
+  // checks to prevent too many requests from being made.
+  std::map<std::string, ThrottleInfo> throttle_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUpdater);
 };

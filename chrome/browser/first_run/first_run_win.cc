@@ -98,7 +98,7 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
   // extension it will get updated which is the same as get it installed.
   void DoExtensionWork(ExtensionService* service) {
     if (service)
-      service->updater()->CheckNow(base::Closure());
+      service->updater()->CheckNow(extensions::ExtensionUpdater::CheckParams());
   }
 
   content::NotificationRegistrar registrar_;

@@ -144,7 +144,7 @@ class NotificationsObserver : public content::NotificationObserver {
         count_[i]++;
         if (type == chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND) {
           updated_.insert(
-              *(content::Details<const std::string>(details).ptr()));
+              content::Details<UpdateDetails>(details)->id);
         }
         return;
       }
@@ -504,7 +504,9 @@ class ExtensionUpdaterTest : public testing::Test {
     updater.Start();
     // Disable blacklist checks (tested elsewhere) so that we only see the
     // update HTTP request.
-    updater.set_blacklist_checks_enabled(false);
+    ExtensionUpdater::CheckParams check_params;
+    check_params.check_blacklist = false;
+    updater.set_default_check_params(check_params);
 
     // Tell the update that it's time to do update checks.
     SimulateTimerFired(&updater);
@@ -1181,9 +1183,10 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);
-    updater.set_blacklist_checks_enabled(false);
+    ExtensionUpdater::CheckParams params;
+    params.check_blacklist = false;
     updater.Start();
-    updater.CheckNow(base::Closure());
+    updater.CheckNow(params);
 
     // Make the updater do manifest fetching, and note the urls it tries to
     // fetch.
@@ -1401,9 +1404,10 @@ TEST_F(ExtensionUpdaterTest, TestNonAutoUpdateableLocations) {
   EXPECT_CALL(delegate, GetPingDataForExtension(updateable_id, _));
 
   service.set_extensions(extensions);
-  updater.set_blacklist_checks_enabled(false);
+  ExtensionUpdater::CheckParams params;
+  params.check_blacklist = false;
   updater.Start();
-  updater.CheckNow(base::Closure());
+  updater.CheckNow(params);
 }
 
 TEST_F(ExtensionUpdaterTest, TestUpdatingDisabledExtensions) {
@@ -1439,9 +1443,10 @@ TEST_F(ExtensionUpdaterTest, TestUpdatingDisabledExtensions) {
 
   service.set_extensions(enabled_extensions);
   service.set_disabled_extensions(disabled_extensions);
-  updater.set_blacklist_checks_enabled(false);
+  ExtensionUpdater::CheckParams params;
+  params.check_blacklist = false;
   updater.Start();
-  updater.CheckNow(base::Closure());
+  updater.CheckNow(params);
 }
 
 TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {

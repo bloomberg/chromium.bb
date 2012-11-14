@@ -670,8 +670,9 @@ enum NotificationType {
   NOTIFICATION_EXTENSION_UPDATING_STARTED,
 
   // The extension updater found an update and will attempt to download and
-  // install it. The source is a Profile, and the details are an extension id
-  // (const std::string).
+  // install it. The source is a Profile, and the details are an
+  // extensions::UpdateDetails object with the extension id and version of the
+  // found update.
   NOTIFICATION_EXTENSION_UPDATE_FOUND,
 
   // An installed app changed notification state (added or removed

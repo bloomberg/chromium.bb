@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
+#include "chrome/browser/extensions/updater/extension_downloader.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -202,9 +203,9 @@ class NotificationListener : public content::NotificationObserver {
         break;
       }
       case chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND: {
-        const std::string* id =
-            content::Details<const std::string>(details).ptr();
-        updates_.insert(*id);
+        const std::string& id =
+            content::Details<extensions::UpdateDetails>(details)->id;
+        updates_.insert(id);
         break;
       }
       default:
@@ -270,13 +271,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   ASSERT_EQ("1.0", extension->VersionString());
 
   // We don't want autoupdate blacklist checks.
-  service->updater()->set_blacklist_checks_enabled(false);
+  extensions::ExtensionUpdater::CheckParams params;
+  params.check_blacklist = false;
+  params.callback =
+      base::Bind(&NotificationListener::OnFinished,
+                 base::Unretained(&notification_listener));
 
   // Run autoupdate and make sure version 2 of the extension was installed.
   ExtensionTestMessageListener listener2("v2 installed", false);
-  service->updater()->CheckNow(
-      base::Bind(&NotificationListener::OnFinished,
-                 base::Unretained(&notification_listener)));
+  service->updater()->CheckNow(params);
   ASSERT_TRUE(WaitForExtensionInstall());
   listener2.WaitUntilSatisfied();
   ASSERT_EQ(size_before + 1, service->extensions()->size());
@@ -297,9 +300,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   interceptor->SetResponseOnIOThread("http://localhost/autoupdate/v3.crx",
                                      basedir.AppendASCII("v3.crx"));
 
-  service->updater()->CheckNow(
-      base::Bind(&NotificationListener::OnFinished,
-                 base::Unretained(&notification_listener)));
+  service->updater()->CheckNow(params);
   ASSERT_TRUE(WaitForExtensionInstallError());
   ASSERT_TRUE(notification_listener.started());
   ASSERT_TRUE(notification_listener.finished());
@@ -356,14 +357,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   ASSERT_EQ("1.0", extension->VersionString());
 
   // We don't want autoupdate blacklist checks.
-  service->updater()->set_blacklist_checks_enabled(false);
+  extensions::ExtensionUpdater::CheckParams params;
+  params.check_blacklist = false;
+  params.callback =
+      base::Bind(&NotificationListener::OnFinished,
+                 base::Unretained(&notification_listener));
 
   ExtensionTestMessageListener listener2("v2 installed", false);
   // Run autoupdate and make sure version 2 of the extension was installed but
   // is still disabled.
-  service->updater()->CheckNow(
-      base::Bind(&NotificationListener::OnFinished,
-                 base::Unretained(&notification_listener)));
+  service->updater()->CheckNow(params);
   ASSERT_TRUE(WaitForExtensionInstall());
   ASSERT_EQ(disabled_size_before + 1, service->disabled_extensions()->size());
   ASSERT_EQ(enabled_size_before, service->extensions()->size());
@@ -390,7 +393,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
   // We don't want autoupdate blacklist checks.
-  service->updater()->set_blacklist_checks_enabled(false);
+  extensions::ExtensionUpdater::CheckParams params;
+  params.check_blacklist = false;
 
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
 
@@ -420,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
       Extension::EXTERNAL_PREF_DOWNLOAD));
 
   // Run autoupdate and make sure version 2 of the extension was installed.
-  service->updater()->CheckNow(base::Closure());
+  service->updater()->CheckNow(params);
   ASSERT_TRUE(WaitForExtensionInstall());
   ASSERT_EQ(size_before + 1, service->extensions()->size());
   const Extension* extension = service->GetExtensionById(kExtensionId, false);
@@ -474,7 +478,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
   // We don't want autoupdate blacklist checks.
-  service->updater()->set_blacklist_checks_enabled(false);
+  extensions::ExtensionUpdater::CheckParams params;
+  params.check_blacklist = false;
 
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
 
@@ -549,7 +554,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
                        MAYBE_PolicyOverridesUserInstall) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
-  service->updater()->set_blacklist_checks_enabled(false);
+  extensions::ExtensionUpdater::CheckParams params;
+  params.check_blacklist = false;
+  service->updater()->set_default_check_params(params);
   const size_t size_before = service->extensions()->size();
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   ASSERT_TRUE(service->disabled_extensions()->is_empty());

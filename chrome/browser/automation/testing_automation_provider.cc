@@ -4145,8 +4145,10 @@ void TestingAutomationProvider::UpdateExtensionsNow(
   // been updated).  This observer will delete itself.
   ExtensionsUpdatedObserver* observer = new ExtensionsUpdatedObserver(
       manager, this, reply_message);
-  updater->CheckNow(base::Bind(&ExtensionsUpdatedObserver::UpdateCheckFinished,
-                               base::Unretained(observer)));
+  extensions::ExtensionUpdater::CheckParams params;
+  params.callback = base::Bind(&ExtensionsUpdatedObserver::UpdateCheckFinished,
+                               base::Unretained(observer));
+  updater->CheckNow(params);
 }
 
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))

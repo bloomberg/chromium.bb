@@ -102,6 +102,12 @@ void RecordCRXWriteHistogram(bool success, const FilePath& crx_path) {
 
 }  // namespace
 
+UpdateDetails::UpdateDetails(const std::string& id, const Version& version)
+    : id(id), version(version) {}
+
+UpdateDetails::~UpdateDetails() {}
+
+
 ExtensionDownloader::ExtensionFetch::ExtensionFetch()
     : id(""),
       url(),
@@ -457,7 +463,7 @@ void ExtensionDownloader::HandleManifestResults(
 
     GURL crx_url = update->crx_url;
     if (id != kBlacklistAppID) {
-      NotifyUpdateFound(update->extension_id);
+      NotifyUpdateFound(update->extension_id, update->version);
     } else {
       // The URL of the blacklist file is returned by the server and we need to
       // be sure that we continue to be able to reliably detect whether a URL
@@ -693,11 +699,13 @@ void ExtensionDownloader::NotifyExtensionsDownloadFailed(
   }
 }
 
-void ExtensionDownloader::NotifyUpdateFound(const std::string& id) {
+void ExtensionDownloader::NotifyUpdateFound(const std::string& id,
+                                            const std::string& version) {
+  UpdateDetails updateInfo(id, Version(version));
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND,
       content::NotificationService::AllBrowserContextsAndSources(),
-      content::Details<const std::string>(&id));
+      content::Details<UpdateDetails>(&updateInfo));
 }
 
 }  // namespace extensions

@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
+#include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/extension.h"
@@ -30,6 +31,10 @@ const char kInstallReasonChromeUpdate[] = "chrome_update";
 const char kInstallReasonUpdate[] = "update";
 const char kInstallReasonInstall[] = "install";
 const char kInstallPreviousVersion[] = "previousVersion";
+const char kUpdatesDisabledError[] = "Autoupdate is not enabled.";
+const char kUpdateFound[] = "update_available";
+const char kUpdateNotFound[] = "no_update";
+const char kUpdateThrottled[] = "throttled";
 
 static void DispatchOnStartupEventImpl(
     Profile* profile,
@@ -164,6 +169,61 @@ bool RuntimeReloadFunction::RunImpl() {
                  profile()->GetExtensionService()->AsWeakPtr(),
                  extension_id()));
   return true;
+}
+
+RuntimeRequestUpdateCheckFunction::RuntimeRequestUpdateCheckFunction() {
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND,
+                 content::NotificationService::AllSources());
+}
+
+bool RuntimeRequestUpdateCheckFunction::RunImpl() {
+  ExtensionSystem* system = ExtensionSystem::Get(profile());
+  ExtensionService* service = system->extension_service();
+  ExtensionUpdater* updater = service->updater();
+  if (!updater) {
+    error_ = kUpdatesDisabledError;
+    return false;
+  }
+
+  did_reply_ = false;
+  if (!updater->CheckExtensionSoon(extension_id(), base::Bind(
+      &RuntimeRequestUpdateCheckFunction::CheckComplete, this))) {
+    did_reply_ = true;
+    SetResult(new base::StringValue(kUpdateThrottled));
+    SendResponse(true);
+  }
+  return true;
+}
+
+void RuntimeRequestUpdateCheckFunction::CheckComplete() {
+  if (did_reply_)
+    return;
+
+  did_reply_ = true;
+  SetResult(new base::StringValue(kUpdateNotFound));
+  SendResponse(true);
+}
+
+void RuntimeRequestUpdateCheckFunction::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (did_reply_)
+    return;
+
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND);
+  typedef const std::pair<std::string, Version> UpdateDetails;
+  const std::string& id = content::Details<UpdateDetails>(details)->first;
+  const Version& version = content::Details<UpdateDetails>(details)->second;
+  if (id == extension_id()) {
+    did_reply_ = true;
+    results_.reset(new base::ListValue);
+    results_->AppendString(kUpdateFound);
+    base::DictionaryValue* details = new base::DictionaryValue;
+    results_->Append(details);
+    details->SetString("version", version.GetString());
+    SendResponse(true);
+  }
 }
 
 }   // namespace extensions

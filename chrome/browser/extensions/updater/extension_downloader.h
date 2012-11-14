@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/version.h"
 #include "chrome/browser/extensions/updater/extension_downloader_delegate.h"
 #include "chrome/browser/extensions/updater/manifest_fetch_data.h"
 #include "chrome/common/extensions/extension.h"
@@ -32,6 +33,14 @@ class URLRequestStatus;
 }
 
 namespace extensions {
+
+struct UpdateDetails {
+  UpdateDetails(const std::string& id, const Version& version);
+  ~UpdateDetails();
+
+  std::string id;
+  Version version;
+};
 
 class ExtensionUpdaterTest;
 
@@ -174,7 +183,7 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
 
   // Send a notification that an update was found for |id| that we'll
   // attempt to download.
-  void NotifyUpdateFound(const std::string& id);
+  void NotifyUpdateFound(const std::string& id, const std::string& version);
 
   // The delegate that receives the crx files downloaded by the
   // ExtensionDownloader, and that fills in optional ping and update url data.
