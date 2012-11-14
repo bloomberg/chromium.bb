@@ -589,6 +589,7 @@ HistoryView.prototype.getPage = function() {
  */
 HistoryView.prototype.onModelReady = function() {
   this.displayResults_();
+  this.updateNavBar_();
 };
 
 /**
@@ -695,7 +696,6 @@ HistoryView.prototype.displayResults_ = function() {
     }
     this.resultDiv_.appendChild(resultsFragment);
   }
-  this.updateNavBar_();
 };
 
 /**

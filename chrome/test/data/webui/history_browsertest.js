@@ -5,13 +5,30 @@
 /** @const */ var TOTAL_RESULT_COUNT = 160;
 
 /**
- * TestFixture for History WebUI testing.
+ * Create a fake history result with the given timestamp.
+ * @param {Number} timestamp Timestamp of the entry, in ms since the epoch.
+ * @return {Object} An object representing a history entry.
+ */
+function createHistoryEntry(timestamp) {
+  var d = new Date(timestamp);
+  return {
+    dateTimeOfDay: d.getHours() + ':' + d.getMinutes(),
+    dateRelativeDay: d.toDateString(),
+    starred: false,
+    time: timestamp / 1000,  // History front-end expects timestamp in secs.
+    title: d.toString(),  // Use the stringified date as the title.
+    url: 'http://google.com/' + timestamp
+  };
+}
+
+/**
+ * Base fixture for History WebUI testing.
  * @extends {testing.Test}
  * @constructor
  */
-function HistoryWebUITest() {}
+function BaseHistoryWebUITest() {}
 
-HistoryWebUITest.prototype = {
+BaseHistoryWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
   /**
@@ -26,6 +43,40 @@ HistoryWebUITest.prototype = {
    * @override
    */
   preLoad: function() {
+    // Mock4JS doesn't pass in the actual arguments to the stub, but it _will_
+    // pass the original args to the matcher object. SaveMockArguments acts as
+    // a proxy for another matcher, but keeps track of all the arguments it was
+    // asked to match.
+    var savedArgs = new SaveMockArguments();
+
+    this.makeAndRegisterMockHandler(['queryHistory']);
+    this.mockHandler.stubs().queryHistory(savedArgs.match(ANYTHING)).will(
+        callFunctionWithSavedArgs(savedArgs, this.queryHistoryStub_));
+  },
+
+  /**
+   * Default stub for the queryHistory message to the history backend.
+   * Simulates an empty history database. Override this to customize this
+   * behavior for particular tests.
+   * @param {Array} arguments The original arguments to queryHistory.
+   */
+  queryHistoryStub_: function(args) {
+      historyResult({ term: args[0], finished: true, }, []);
+  },
+};
+
+/**
+ * Fixture for History WebUI testing which returns some fake history results
+ * to the frontend.
+ * @extends {BaseHistoryWebUITest}
+ * @constructor
+ */
+function HistoryWebUITest() {}
+
+HistoryWebUITest.prototype = {
+  __proto__: BaseHistoryWebUITest.prototype,
+
+  queryHistoryStub_: (function() {
     // The number of results to return per call to getHistory/searchHistory.
     var RESULT_SIZE = 20;
 
@@ -34,49 +85,26 @@ HistoryWebUITest.prototype = {
     var timestamp = new Date(2008, 9, 2, 1, 0).getTime();
     var history = [];
     for (var i = 0; i < TOTAL_RESULT_COUNT; i++) {
-      history.push(this.createHistoryEntry_(timestamp));
+      history.push(createHistoryEntry(timestamp));
       timestamp -= 2 * 60 * 1000;  // Next visit is two minutes earlier.
     }
 
-    // Stub out the calls to get history results from the backend.
-
-    // Mock4JS doesn't pass in the actual arguments to the stub, but it _will_
-    // pass the original args to the matcher object. SaveMockArguments acts as
-    // a proxy for another matcher, but keeps track of all the arguments it was
-    // asked to match.
-    var savedArgs = new SaveMockArguments();
-
-    function queryHistoryStub(args) {
+    return function (args) {
       var start = args[1] * RESULT_SIZE;
       var results = history.slice(start, start + RESULT_SIZE);
       historyResult(
           { term: args[0], finished: start + RESULT_SIZE >= history.length, },
           results);
     }
-
-    this.makeAndRegisterMockHandler(['queryHistory']);
-    this.mockHandler.stubs().queryHistory(savedArgs.match(ANYTHING)).will(
-        callFunctionWithSavedArgs(savedArgs, queryHistoryStub));
-  },
-
-  /**
-   * Create a fake history result with the given timestamp.
-   * @param {Number} timestamp Timestamp of the entry, in ms since the epoch.
-   * @return {Object} An object representing a history entry.
-   * @private
-   */
-  createHistoryEntry_: function(timestamp) {
-    var d = new Date(timestamp);
-    return {
-      dateTimeOfDay: d.getHours() + ':' + d.getMinutes(),
-      dateRelativeDay: d.toDateString(),
-      starred: false,
-      time: timestamp / 1000,  // History front-end expects timestamp in secs.
-      title: d.toString(),  // Use the stringified date as the title.
-      url: 'http://google.com/' + timestamp
-    };
-  },
+  }()),
 };
+
+TEST_F('BaseHistoryWebUITest', 'emptyHistory', function() {
+  expectTrue($('newest-button').hidden);
+  expectTrue($('newer-button').hidden);
+  expectTrue($('older-button').hidden);
+  testDone();
+});
 
 TEST_F('HistoryWebUITest', 'basicTest', function() {
   var resultCount = document.querySelectorAll('.entry').length;
