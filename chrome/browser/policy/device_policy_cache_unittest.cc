@@ -36,7 +36,6 @@ class MockCloudPolicyCacheObserver : public CloudPolicyCacheBase::Observer {
  public:
   virtual ~MockCloudPolicyCacheObserver() {}
 
-  MOCK_METHOD1(OnCacheGoingAway, void(CloudPolicyCacheBase*));
   MOCK_METHOD1(OnCacheUpdate, void(CloudPolicyCacheBase*));
 };
 

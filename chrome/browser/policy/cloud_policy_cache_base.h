@@ -24,7 +24,6 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   class Observer {
    public:
     virtual ~Observer() {}
-    virtual void OnCacheGoingAway(CloudPolicyCacheBase*) = 0;
     virtual void OnCacheUpdate(CloudPolicyCacheBase*) = 0;
   };
 

@@ -42,7 +42,6 @@ class MockCloudPolicyCacheBaseObserver
   MockCloudPolicyCacheBaseObserver() {}
   virtual ~MockCloudPolicyCacheBaseObserver() {}
   MOCK_METHOD1(OnCacheUpdate, void(CloudPolicyCacheBase*));
-  void OnCacheGoingAway(CloudPolicyCacheBase*) {}
 };
 
 // Tests the device management policy cache.

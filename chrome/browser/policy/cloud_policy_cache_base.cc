@@ -24,9 +24,7 @@ CloudPolicyCacheBase::CloudPolicyCacheBase()
   public_key_version_.valid = false;
 }
 
-CloudPolicyCacheBase::~CloudPolicyCacheBase() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnCacheGoingAway(this));
-}
+CloudPolicyCacheBase::~CloudPolicyCacheBase() {}
 
 void CloudPolicyCacheBase::SetFetchingDone() {
   // NotifyObservers only fires notifications if the cache is ready.

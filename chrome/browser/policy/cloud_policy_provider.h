@@ -25,12 +25,12 @@ class CloudPolicyProvider : public ConfigurationPolicyProvider,
   virtual ~CloudPolicyProvider();
 
   // Sets the user policy cache. This must be invoked only once, and |cache|
-  // must not be NULL.
+  // must not be NULL. |cache| must be valid until Shutdown() has been called.
   void SetUserPolicyCache(CloudPolicyCacheBase* cache);
 
 #if defined(OS_CHROMEOS)
   // Sets the device policy cache. This must be invoked only once, and |cache|
-  // must not be NULL.
+  // must not be NULL. |cache| must be valid until Shutdown() has been called.
   void SetDevicePolicyCache(CloudPolicyCacheBase* cache);
 #endif
 
@@ -41,7 +41,6 @@ class CloudPolicyProvider : public ConfigurationPolicyProvider,
 
   // CloudPolicyCacheBase::Observer implementation.
   virtual void OnCacheUpdate(CloudPolicyCacheBase* cache) OVERRIDE;
-  virtual void OnCacheGoingAway(CloudPolicyCacheBase* cache) OVERRIDE;
 
  private:
   // Indices of the known caches in |caches_|.

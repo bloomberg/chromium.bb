@@ -146,6 +146,19 @@ void BrowserPolicyConnector::Init() {
 void BrowserPolicyConnector::Shutdown() {
   is_initialized_ = false;
 
+  if (g_testing_provider)
+    g_testing_provider->Shutdown();
+  // Drop g_testing_provider so that tests executed with --single_process can
+  // call SetPolicyProviderForTesting() again. It is still owned by the test.
+  g_testing_provider = NULL;
+  if (platform_provider_)
+    platform_provider_->Shutdown();
+  // The |cloud_provider_| must be shut down before destroying the cloud
+  // policy subsystems, which own the caches that |cloud_provider_| uses.
+  if (cloud_provider_)
+    cloud_provider_->Shutdown();
+  user_cloud_policy_provider_.Shutdown();
+
 #if defined(OS_CHROMEOS)
   // Shutdown device cloud policy.
   if (device_cloud_policy_subsystem_)
@@ -168,17 +181,6 @@ void BrowserPolicyConnector::Shutdown() {
   user_data_store_.reset();
 
   device_management_service_.reset();
-
-  if (g_testing_provider)
-    g_testing_provider->Shutdown();
-  // Drop g_testing_provider so that tests executed with --single_process can
-  // call SetPolicyProviderForTesting() again. It is still owned by the test.
-  g_testing_provider = NULL;
-  if (platform_provider_)
-    platform_provider_->Shutdown();
-  if (cloud_provider_)
-    cloud_provider_->Shutdown();
-  user_cloud_policy_provider_.Shutdown();
 }
 
 scoped_ptr<UserCloudPolicyManager>

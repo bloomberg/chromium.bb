@@ -38,8 +38,10 @@ void CloudPolicyProvider::SetDevicePolicyCache(CloudPolicyCacheBase* cache) {
 
 void CloudPolicyProvider::Shutdown() {
   for (size_t i = 0; i < CACHE_SIZE; ++i) {
-    if (caches_[i])
+    if (caches_[i]) {
       caches_[i]->RemoveObserver(this);
+      caches_[i] = NULL;
+    }
   }
   ConfigurationPolicyProvider::Shutdown();
 }
@@ -63,19 +65,6 @@ void CloudPolicyProvider::OnCacheUpdate(CloudPolicyCacheBase* cache) {
   pending_updates_.erase(cache);
   if (pending_updates_.empty())
     Merge();
-}
-
-void CloudPolicyProvider::OnCacheGoingAway(CloudPolicyCacheBase* cache) {
-  for (size_t i = 0; i < CACHE_SIZE; ++i) {
-    if (caches_[i] == cache) {
-      caches_[i] = NULL;
-      cache->RemoveObserver(this);
-      pending_updates_.erase(cache);
-      Merge();
-      return;
-    }
-  }
-  NOTREACHED();
 }
 
 void CloudPolicyProvider::Merge() {
