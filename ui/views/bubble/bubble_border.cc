@@ -165,8 +165,7 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
                                   const gfx::Size& contents_size) const {
   // Desired size is size of contents enlarged by the size of the border images.
   gfx::Size border_size(contents_size);
-  gfx::Insets insets;
-  GetInsets(&insets);
+  gfx::Insets insets = GetInsets();
   border_size.Enlarge(insets.width(), insets.height());
 
   // Ensure the bubble has a minimum size that draws arrows correctly.
@@ -270,12 +269,12 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
   return gfx::Rect(x, y, border_size.width(), border_size.height());
 }
 
-void BubbleBorder::GetInsets(gfx::Insets* insets) const {
-  return GetInsetsForArrowLocation(insets, arrow_location());
+gfx::Insets BubbleBorder::GetInsets() const {
+  return GetInsetsForArrowLocation(arrow_location());
 }
 
-void BubbleBorder::GetInsetsForArrowLocation(gfx::Insets* insets,
-                                             ArrowLocation arrow_loc) const {
+gfx::Insets BubbleBorder::GetInsetsForArrowLocation(
+    ArrowLocation arrow_loc) const {
   int top = images_->top.height();
   int bottom = images_->bottom.height();
   int left = images_->left.width();
@@ -310,7 +309,7 @@ void BubbleBorder::GetInsetsForArrowLocation(gfx::Insets* insets,
       // Nothing to do.
       break;
   }
-  insets->Set(top, left, bottom, right);
+  return gfx::Insets(top, left, bottom, right);
 }
 
 int BubbleBorder::GetBorderThickness() const {
@@ -395,8 +394,7 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   const int bl_width = images_->bottom_left.width();
   const int bl_height = images_->bottom_left.height();
 
-  gfx::Insets insets;
-  GetInsets(&insets);
+  gfx::Insets insets = GetInsets();
   const int top = insets.top() - t_height;
   const int bottom = view.height() - insets.bottom() + b_height;
   const int left = insets.left() - l_width;

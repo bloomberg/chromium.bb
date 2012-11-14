@@ -100,10 +100,10 @@ class FullscreenButton : public ImageButton {
   // Overridden from ImageButton.
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     gfx::Size pref = ImageButton::GetPreferredSize();
-    gfx::Insets insets;
-    if (border())
-      border()->GetInsets(&insets);
-    pref.Enlarge(insets.width(), insets.height());
+    if (border()) {
+      gfx::Insets insets = border()->GetInsets();
+      pref.Enlarge(insets.width(), insets.height());
+    }
     return pref;
   }
 
@@ -127,8 +127,8 @@ class MenuButtonBorder : public views::Border {
     // Painting of border is done in MenuButtonBackground.
   }
 
-  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
-    *insets = insets_;
+  virtual gfx::Insets GetInsets() const OVERRIDE {
+    return insets_;
   }
 
  private:
@@ -659,9 +659,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
   // Calculates the max width the zoom string can be.
   int MaxWidthForZoomLabel() {
     gfx::Font font = zoom_label_->font();
-    gfx::Insets insets;
-    if (zoom_label_->border())
-      zoom_label_->border()->GetInsets(&insets);
+    int border_width =
+        zoom_label_->border() ? zoom_label_->border()->GetInsets().width() : 0;
 
     int max_w = 0;
 
@@ -681,7 +680,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
           l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, 100));
     }
 
-    return max_w + insets.width();
+    return max_w + border_width;
   }
 
   // Index of the fullscreen menu item in the model.

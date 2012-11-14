@@ -36,7 +36,7 @@ class InfoBarColoredButtonBorder : public views::Border {
 
   // Border overrides:
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
-  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
+  virtual gfx::Insets GetInsets() const OVERRIDE;
 
   virtual ~InfoBarColoredButtonBorder();
 
@@ -87,11 +87,11 @@ void InfoBarColoredButtonBorder::Paint(const views::View& view,
   canvas->sk_canvas()->drawRoundRect(bounds, kRadius, kRadius, paint);
 }
 
-void InfoBarColoredButtonBorder::GetInsets(gfx::Insets* insets) const {
-  insets->Set(browser_defaults::kInfoBarBorderPaddingVertical,
-              kPreferredPaddingHorizontal,
-              browser_defaults::kInfoBarBorderPaddingVertical,
-              kPreferredPaddingHorizontal);
+gfx::Insets InfoBarColoredButtonBorder::GetInsets() const {
+  return gfx::Insets(browser_defaults::kInfoBarBorderPaddingVertical,
+                     kPreferredPaddingHorizontal,
+                     browser_defaults::kInfoBarBorderPaddingVertical,
+                     kPreferredPaddingHorizontal);
 }
 
 InfoBarColoredButtonBorder::~InfoBarColoredButtonBorder() {

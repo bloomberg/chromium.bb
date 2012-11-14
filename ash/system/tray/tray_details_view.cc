@@ -30,8 +30,8 @@ class ScrollBorder : public views::Border {
                      kBorderLightColor);
   }
 
-  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
-    insets->Set(0, 0, 1, 0);
+  virtual gfx::Insets GetInsets() const OVERRIDE {
+    return gfx::Insets(0, 0, 1, 0);
   }
 
   bool visible_;

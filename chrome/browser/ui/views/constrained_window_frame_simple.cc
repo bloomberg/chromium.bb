@@ -47,8 +47,7 @@ ConstrainedWindowFrameSimple::ConstrainedWindowFrameSimple(
   if (client_insets_ == ConstrainedWindowViews::NO_INSETS)
     return;
 
-  gfx::Insets border_insets;
-  border()->GetInsets(&border_insets);
+  gfx::Insets border_insets = border()->GetInsets();
 
   views::GridLayout* layout = new views::GridLayout(this);
   const int kHeaderTopPadding = std::min(
@@ -109,11 +108,8 @@ ConstrainedWindowFrameSimple::~ConstrainedWindowFrameSimple() {
 gfx::Insets ConstrainedWindowFrameSimple::GetClientInsets() const {
   gfx::Insets insets;
 
-  if (border()) {
-    gfx::Insets border_insets;
-    border()->GetInsets(&border_insets);
-    insets += border_insets;
-  }
+  if (border())
+    insets += border()->GetInsets();
 
   if (client_insets_ == ConstrainedWindowViews::DEFAULT_INSETS) {
     const int kHeaderTopPadding = std::min(

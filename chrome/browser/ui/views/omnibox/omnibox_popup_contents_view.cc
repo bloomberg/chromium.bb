@@ -525,8 +525,7 @@ gfx::Rect OmniboxPopupContentsView::CalculateTargetBounds(int h) {
   if (border) {
     // Adjust for the border so that the bubble and location bar borders are
     // aligned.
-    gfx::Insets insets;
-    border->GetInsets(&insets);
+    gfx::Insets insets = border->GetInsets();
     location_bar_bounds.Inset(insets.left(), 0, insets.right(), 0);
   } else {
     // The normal location bar is drawn using a background graphic that includes

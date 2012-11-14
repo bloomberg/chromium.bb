@@ -72,8 +72,8 @@ class SpecialPopupRowBorder : public views::Border {
         gfx::Rect(gfx::Size(view.width(), kBorderHeight)));
   }
 
-  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
-    insets->Set(kBorderHeight, 0, 0, 0);
+  virtual gfx::Insets GetInsets() const OVERRIDE {
+    return gfx::Insets(kBorderHeight, 0, 0, 0);
   }
 
   scoped_ptr<views::Painter> painter_;

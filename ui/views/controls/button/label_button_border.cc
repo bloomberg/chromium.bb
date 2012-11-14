@@ -89,15 +89,15 @@ void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
     view.focus_border()->Paint(view, canvas);
 }
 
-void LabelButtonBorder::GetInsets(gfx::Insets* insets) const {
+gfx::Insets LabelButtonBorder::GetInsets() const {
   if (native_theme()) {
-    insets->Set(kPreferredNativeThemePaddingVertical,
-                kPreferredNativeThemePaddingHorizontal,
-                kPreferredNativeThemePaddingVertical,
-                kPreferredNativeThemePaddingHorizontal);
+    return gfx::Insets(kPreferredNativeThemePaddingVertical,
+                       kPreferredNativeThemePaddingHorizontal,
+                       kPreferredNativeThemePaddingVertical,
+                       kPreferredNativeThemePaddingHorizontal);
   } else {
-    insets->Set(kPreferredPaddingVertical, kPreferredPaddingHorizontal,
-                kPreferredPaddingVertical, kPreferredPaddingHorizontal);
+    return gfx::Insets(kPreferredPaddingVertical, kPreferredPaddingHorizontal,
+                       kPreferredPaddingVertical, kPreferredPaddingHorizontal);
   }
 }
 

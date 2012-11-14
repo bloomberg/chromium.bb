@@ -26,9 +26,9 @@ class CheckboxNativeThemeBorder : public TextButtonNativeThemeBorder {
   // with the checkmark in it. The insets do not visibly affect the checkbox,
   // except to ensure that there is enough padding between this and other
   // elements.
-  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
-    TextButtonNativeThemeBorder::GetInsets(insets);
-    insets->Set(insets->top(), 0, insets->bottom(), 0);
+  virtual gfx::Insets GetInsets() const OVERRIDE {
+    gfx::Insets insets = TextButtonNativeThemeBorder::GetInsets();
+    return gfx::Insets(insets.top(), 0, insets.bottom(), 0);
   }
 
  private:

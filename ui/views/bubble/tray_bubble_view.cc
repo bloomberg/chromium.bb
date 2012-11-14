@@ -60,8 +60,7 @@ class TrayBubbleBorder : public views::BubbleBorder {
     }
 
     gfx::Size border_size(contents_size);
-    gfx::Insets insets;
-    GetInsets(&insets);
+    gfx::Insets insets = GetInsets();
     border_size.Enlarge(insets.width(), insets.height());
 
     const int x = position_relative_to.x() +
@@ -314,8 +313,8 @@ void TrayBubbleView::SetPaintArrow(bool paint_arrow) {
   bubble_border_->set_paint_arrow(paint_arrow);
 }
 
-void TrayBubbleView::GetBorderInsets(gfx::Insets* insets) const {
-  bubble_border_->GetInsets(insets);
+gfx::Insets TrayBubbleView::GetBorderInsets() const {
+  return bubble_border_->GetInsets();
 }
 
 void TrayBubbleView::Init() {

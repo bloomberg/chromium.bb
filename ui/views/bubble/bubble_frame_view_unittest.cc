@@ -81,8 +81,7 @@ TEST_F(BubbleFrameViewTest, GetBoundsForClientView) {
 
   int margin_x = frame.content_margins().left();
   int margin_y = frame.content_margins().top();
-  gfx::Insets insets;
-  frame.bubble_border()->GetInsets(&insets);
+  gfx::Insets insets = frame.bubble_border()->GetInsets();
   EXPECT_EQ(insets.left() + margin_x, frame.GetBoundsForClientView().x());
   EXPECT_EQ(insets.top() + margin_y, frame.GetBoundsForClientView().y());
 }
@@ -105,8 +104,7 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBounds) {
   TestBubbleFrameView frame;
   gfx::Rect window_bounds;
 
-  gfx::Insets insets;
-  frame.bubble_border()->GetInsets(&insets);
+  gfx::Insets insets = frame.bubble_border()->GetInsets();
   int xposition = 95 - insets.width();
 
   // Test that the info bubble displays normally when it fits.

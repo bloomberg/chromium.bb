@@ -65,7 +65,7 @@ class VIEWS_EXPORT Border {
   virtual void Paint(const View& view, gfx::Canvas* canvas) = 0;
 
   // Sets the specified insets to the the border insets.
-  virtual void GetInsets(gfx::Insets* insets) const = 0;
+  virtual gfx::Insets GetInsets() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Border);

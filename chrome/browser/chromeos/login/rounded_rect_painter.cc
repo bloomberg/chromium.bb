@@ -119,7 +119,7 @@ class RoundedRectBorder : public views::Border {
   }
 
   virtual void Paint(const views::View& view, gfx::Canvas* canvas);
-  virtual void GetInsets(gfx::Insets* insets) const;
+  virtual gfx::Insets GetInsets() const;
 
  private:
   const BorderDefinition* const border_;
@@ -131,11 +131,10 @@ void RoundedRectBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   // Don't paint anything. RoundedRectBorder is used to provide insets only.
 }
 
-void RoundedRectBorder::GetInsets(gfx::Insets* insets) const {
-  DCHECK(insets);
+gfx::Insets RoundedRectBorder::GetInsets() const {
   int shadow = border_->shadow;
   int inset = border_->corner_radius / 2 + border_->padding + shadow;
-  insets->Set(inset - shadow / 3, inset, inset + shadow / 3, inset);
+  return gfx::Insets(inset - shadow / 3, inset, inset + shadow / 3, inset);
 }
 
 // Simple solid round background.

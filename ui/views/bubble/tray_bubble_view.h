@@ -117,7 +117,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
   void SetPaintArrow(bool paint_arrow);
 
   // Returns the border insets. Called by TrayEventFilter.
-  void GetBorderInsets(gfx::Insets* insets) const;
+  gfx::Insets GetBorderInsets() const;
 
   // Called when the delegate is destroyed.
   void reset_delegate() { delegate_ = NULL; }

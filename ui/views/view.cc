@@ -304,11 +304,8 @@ void View::SetY(int y) {
 
 gfx::Rect View::GetContentsBounds() const {
   gfx::Rect contents_bounds(GetLocalBounds());
-  if (border_.get()) {
-    gfx::Insets insets;
-    border_->GetInsets(&insets);
-    contents_bounds.Inset(insets);
-  }
+  if (border_.get())
+    contents_bounds.Inset(border_->GetInsets());
   return contents_bounds;
 }
 
@@ -322,10 +319,7 @@ gfx::Rect View::GetLayerBoundsInPixel() const {
 
 
 gfx::Insets View::GetInsets() const {
-  gfx::Insets insets;
-  if (border_.get())
-    border_->GetInsets(&insets);
-  return insets;
+  return border_.get() ? border_->GetInsets() : gfx::Insets();
 }
 
 gfx::Rect View::GetVisibleBounds() const {

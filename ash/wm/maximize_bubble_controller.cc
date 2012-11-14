@@ -92,8 +92,7 @@ MaximizeBubbleBorder::MaximizeBubbleBorder(views::View* content_view,
 }
 
 void MaximizeBubbleBorder::GetMask(gfx::Path* mask) {
-  gfx::Insets inset;
-  GetInsets(&inset);
+  gfx::Insets inset = GetInsets();
   // Note: Even though the tip could be added as activatable, it is left out
   // since it would not change the action behavior in any way plus it makes
   // more sense to keep the focus on the underlying button for clicks.
@@ -113,8 +112,7 @@ gfx::Rect MaximizeBubbleBorder::GetBounds(
     const gfx::Rect& position_relative_to,
     const gfx::Size& contents_size) const {
   gfx::Size border_size(contents_size);
-  gfx::Insets insets;
-  GetInsets(&insets);
+  gfx::Insets insets = GetInsets();
   border_size.Enlarge(insets.width(), insets.height());
 
   // Position the bubble to center the box on the anchor.
@@ -129,8 +127,7 @@ gfx::Rect MaximizeBubbleBorder::GetBounds(
 }
 
 void MaximizeBubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
-  gfx::Insets inset;
-  GetInsets(&inset);
+  gfx::Insets inset = GetInsets();
 
   // Draw the border line around everything.
   int y = inset.top();

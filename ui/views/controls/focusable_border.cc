@@ -41,8 +41,8 @@ void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) {
   canvas->DrawPath(path, paint);
 }
 
-void FocusableBorder::GetInsets(gfx::Insets* insets) const {
-  *insets = insets_;
+gfx::Insets FocusableBorder::GetInsets() const {
+  return insets_;
 }
 
 void FocusableBorder::SetInsets(int top, int left, int bottom, int right) {

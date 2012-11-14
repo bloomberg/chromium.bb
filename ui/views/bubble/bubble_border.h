@@ -147,7 +147,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   int GetArrowOffset(const gfx::Size& border_size) const;
 
   // Overridden from Border:
-  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
+  virtual gfx::Insets GetInsets() const OVERRIDE;
 
   // How many pixels the bubble border is from the edge of the images.
   virtual int GetBorderThickness() const;
@@ -158,8 +158,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   // Calculates the insets for a specific arrow location. Normally called from
   // GetInsets(arrow_location()), but may be called by specialized BubbleBorder
   // implementations.
-  virtual void GetInsetsForArrowLocation(gfx::Insets* insets,
-                                         ArrowLocation arrow_loc) const;
+  virtual gfx::Insets GetInsetsForArrowLocation(ArrowLocation arrow_loc) const;
 
  private:
   struct BorderImages;

@@ -240,10 +240,10 @@ class ChromeStyleTextButtonBorder : public views::Border {
     bounds.Inset(border_inset, border_inset, border_inset, border_inset);
     Painter::PaintPainterAt(canvas, painter_.get(), bounds);
   }
-  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
-    DCHECK(insets);
-    int inset = GetButtonInset();
-    insets->Set(inset, inset, inset, inset);
+
+  virtual gfx::Insets GetInsets() const OVERRIDE {
+    const int inset = GetButtonInset();
+    return gfx::Insets(inset, inset, inset, inset);
   }
 
   void SetColor(SkColor color) {

@@ -201,8 +201,7 @@ ui::EventResult OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {
 
 gfx::Rect OverflowBubbleView::GetBubbleBounds() {
   views::BubbleBorder* border = GetBubbleFrameView()->bubble_border();
-  gfx::Insets bubble_insets;
-  border->GetInsets(&bubble_insets);
+  gfx::Insets bubble_insets = border->GetInsets();
 
   const int border_size =
       views::BubbleBorder::is_arrow_on_horizontal(arrow_location()) ?

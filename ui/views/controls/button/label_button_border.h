@@ -24,7 +24,7 @@ class VIEWS_EXPORT LabelButtonBorder : public Border {
 
   // Overridden from Border:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
-  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
+  virtual gfx::Insets GetInsets() const OVERRIDE;
 
   // Get or set the images shown for the specified button state.
   BorderImages* GetImages(CustomButton::ButtonState state);

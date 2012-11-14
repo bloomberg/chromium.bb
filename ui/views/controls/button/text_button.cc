@@ -122,9 +122,9 @@ void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
   }
 }
 
-void TextButtonBorder::GetInsets(gfx::Insets* insets) const {
-  insets->Set(vertical_padding_, kPreferredPaddingHorizontal,
-              vertical_padding_, kPreferredPaddingHorizontal);
+gfx::Insets TextButtonBorder::GetInsets() const {
+  return gfx::Insets(vertical_padding_, kPreferredPaddingHorizontal,
+                     vertical_padding_, kPreferredPaddingHorizontal);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -170,11 +170,11 @@ void TextButtonNativeThemeBorder::Paint(const View& view, gfx::Canvas* canvas) {
   }
 }
 
-void TextButtonNativeThemeBorder::GetInsets(gfx::Insets* insets) const {
-  insets->Set(kPreferredNativeThemePaddingVertical,
-              kPreferredNativeThemePaddingHorizontal,
-              kPreferredNativeThemePaddingVertical,
-              kPreferredNativeThemePaddingHorizontal);
+gfx::Insets TextButtonNativeThemeBorder::GetInsets() const {
+  return gfx::Insets(kPreferredNativeThemePaddingVertical,
+                     kPreferredNativeThemePaddingHorizontal,
+                     kPreferredNativeThemePaddingVertical,
+                     kPreferredNativeThemePaddingHorizontal);
 }
 
 

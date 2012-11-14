@@ -72,9 +72,7 @@ bool TrayEventFilter::ProcessLocatedEvent(ui::LocatedEvent* event) {
     return false;
 
   gfx::Rect bounds = wrapper_->bubble_widget()->GetWindowBoundsInScreen();
-  gfx::Insets insets;
-  wrapper_->bubble_view()->GetBorderInsets(&insets);
-  bounds.Inset(insets);
+  bounds.Inset(wrapper_->bubble_view()->GetBorderInsets());
   if (bounds.Contains(event->root_location()))
     return false;
   if (wrapper_->tray()) {

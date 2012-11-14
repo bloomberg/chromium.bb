@@ -54,7 +54,7 @@ class VIEWS_EXPORT TextButtonBorder : public Border {
  private:
   // Border:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
-  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
+  virtual gfx::Insets GetInsets() const OVERRIDE;
 
   BorderImages normal_set_;
   BorderImages hot_set_;
@@ -82,7 +82,7 @@ class VIEWS_EXPORT TextButtonNativeThemeBorder : public Border {
 
   // Implementation of Border:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
-  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
+  virtual gfx::Insets GetInsets() const OVERRIDE;
 
  private:
   // The delegate the controls the appearance of this border.

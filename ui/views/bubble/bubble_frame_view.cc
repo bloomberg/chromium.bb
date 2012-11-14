@@ -49,8 +49,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& margins,
 BubbleFrameView::~BubbleFrameView() {}
 
 gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
-  gfx::Insets margin;
-  bubble_border()->GetInsets(&margin);
+  gfx::Insets margin = bubble_border()->GetInsets();
   margin += content_margins();
   return gfx::Rect(margin.left(), margin.top(),
                    std::max(width() - margin.width(), 0),
