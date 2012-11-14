@@ -135,7 +135,7 @@
       'type': 'executable',
       'dependencies': [
         '../sync/protocol/sync_proto.gyp:sync_proto',
-        '../sync/sync.gyp:syncapi_core',
+        '../sync/sync.gyp:sync_api',
         'chrome',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
@@ -385,7 +385,7 @@
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
-        '../sync/sync.gyp:syncapi_core',
+        '../sync/sync.gyp:sync_api',
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -713,7 +713,8 @@
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
         '../sync/protocol/sync_proto.gyp:sync_proto',
-        '../sync/sync.gyp:test_support_syncapi_service',
+        '../sync/sync.gyp:sync_notifier',
+        '../sync/sync.gyp:test_support_sync_api',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/cld/cld.gyp:cld',
@@ -1930,6 +1931,7 @@
         '../net/net.gyp:net_test_support',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
+        '../sync/sync.gyp:sync_notifier',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
@@ -2091,6 +2093,7 @@
         'common/extensions/api/api.gyp:api',
         'test_support_common',
         '../skia/skia.gyp:skia',
+        '../sync/sync.gyp:sync_notifier',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
       ],
@@ -2373,7 +2376,7 @@
             '../base/base.gyp:base',
             '../net/net.gyp:net_test_support',
             '../skia/skia.gyp:skia',
-            '../sync/sync.gyp:syncapi_core',
+            '../sync/sync.gyp:sync_api',
           ],
           'include_dirs': [
             '..',
@@ -2436,7 +2439,7 @@
             'debugger',
             'test_support_common',
             '../skia/skia.gyp:skia',
-            '../sync/sync.gyp:syncapi_core',
+            '../sync/sync.gyp:sync_api',
             '../testing/gtest.gyp:gtest',
           ],
           'export_dependent_settings': [
@@ -2672,7 +2675,7 @@
                 # Win bot needs to be turned into an interactive bot.
                 'interactive_ui_tests',
                 # Disabled from running in coverage_posix.py.
-                # We need to build this during compile step, so enabling here. 
+                # We need to build this during compile step, so enabling here.
                 'browser_tests',
                 '../courgette/courgette.gyp:courgette_unittests',
                 '../crypto/crypto.gyp:crypto_unittests',

@@ -37,9 +37,9 @@
         '../media/media.gyp:media',
         '../skia/skia.gyp:skia',
         '../sync/protocol/sync_proto.gyp:sync_proto',
-        # TODO(akalin): Depend only on syncapi_service from sync.
-        '../sync/sync.gyp:syncapi_core',
-        '../sync/sync.gyp:syncapi_service',
+        # TODO(akalin): Depend only on sync_api from sync.
+        '../sync/sync.gyp:sync_api',
+        '../sync/sync.gyp:sync_internal_api',
         '../sync/sync.gyp:sync_notifier',
         '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',

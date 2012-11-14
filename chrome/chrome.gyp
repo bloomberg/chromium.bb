@@ -20,7 +20,7 @@
       '../content/content.gyp:content_gpu',
       '../content/content.gyp:content_ppapi_plugin',
       '../content/content.gyp:content_worker',
-      '../sync/sync.gyp:syncapi_core',
+      '../sync/sync.gyp:sync_core',
       '../printing/printing.gyp:printing',
       '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:inspector_resources',
     ],
@@ -368,6 +368,7 @@
       'dependencies': [
         'test_support_common',
         '../skia/skia.gyp:skia',
+        '../sync/sync.gyp:sync_core',
       ],
       'include_dirs': [
          '..',

@@ -377,10 +377,10 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'test_support_common',
-        '../sync/sync.gyp:test_support_sync',
+        '../sync/sync.gyp:test_support_sync_api',
+        '../sync/sync.gyp:test_support_sync_core',
+        '../sync/sync.gyp:test_support_sync_internal_api',
         '../sync/sync.gyp:test_support_sync_notifier',
-        '../sync/sync.gyp:test_support_syncapi_core',
-        '../sync/sync.gyp:test_support_syncapi_service',
         'test_support_unit',
         # 3) anything tests directly depend on
         '../device/device.gyp:device_bluetooth_mocks',
