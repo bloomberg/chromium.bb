@@ -296,3 +296,4 @@ PCH/cxx11-lambdas.mm win
 ARCMT/check-with-serialized-diag.m win
 ARCMT/init.m win
 SemaCXX/ast-print.cpp win
+Tooling/clang-check-ast-dump.cpp
