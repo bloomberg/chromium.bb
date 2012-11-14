@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/string16.h"
-#include "base/time.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/notifications/notification_types.h"
@@ -35,17 +34,8 @@ class MESSAGE_CENTER_EXPORT NotificationList {
     std::string extension_id;
 
     // Begin unpacked values from optional_fields
-    string16 message_intent;
-    int priority;
-    base::Time timestamp;
-    gfx::ImageSkia second_image;
-    int unread_count;
-    string16 button_one_title;
-    string16 button_one_intent;
-    string16 button_two_title;
-    string16 button_two_intent;
-    string16 expanded_message;
-    string16 image_url;
+    string16 extra_field;
+    string16 second_extra_field;
     // End unpacked values
 
     gfx::ImageSkia image;

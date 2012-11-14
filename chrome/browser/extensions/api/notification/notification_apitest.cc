@@ -23,7 +23,7 @@ class NotificationApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestSimpleNotification) {
+IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestNormalNotification) {
   scoped_refptr<extensions::NotificationShowFunction>
       notification_show_function(new extensions::NotificationShowFunction());
   scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
@@ -34,7 +34,6 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestSimpleNotification) {
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
       notification_show_function,
       "[{"
-      "\"notificationType\": \"simple\","
       "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
       "common/images/chrome_logo_2x.png\","
       "\"title\": \"Attention!\","
@@ -44,43 +43,4 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestSimpleNotification) {
       browser(), utils::NONE));
 
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
-
-  // TODO(miket): confirm that the show succeeded.
-}
-
-IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestBaseFormatNotification) {
-  scoped_refptr<extensions::NotificationShowFunction>
-      notification_show_function(new extensions::NotificationShowFunction());
-  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
-
-  notification_show_function->set_extension(empty_extension.get());
-  notification_show_function->set_has_callback(true);
-
-  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      notification_show_function,
-      "[{"
-      "\"notificationType\": \"base\","
-      "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
-      "common/images/chrome_logo_2x.png\","
-      "\"title\": \"Attention!\","
-      "\"message\": \"Check out Cirque du Soleil\","
-      "\"messageIntent\": \"[pending]\","
-      "\"priority\": 1,"
-      "\"timestamp\": \"Tue, 15 Nov 1994 12:45:26 GMT\","
-      "\"secondIconUrl\": \"http://www.google.com/logos/2012/"
-      "Day-Of-The-Dead-12-hp.jpg\","
-      "\"unreadCount\": 42,"
-      "\"buttonOneTitle\": \"Up\","
-      "\"buttonOneIntent\": \"[pending]\","
-      "\"buttonTwoTitle\": \"Down\","
-      "\"buttonTwoIntent\": \"[pending]\","
-      "\"expandedMessage\": \"This is a longer expanded message.\","
-      "\"imageUrl\": \"http://www.google.com/logos/2012/election12-hp.jpg\","
-      "\"replaceId\": \"12345678\""
-      "}]",
-      browser(), utils::NONE));
-
-  ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
-
-  // TODO(miket): confirm that the show succeeded.
 }

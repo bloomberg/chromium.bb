@@ -4,7 +4,6 @@
 
 #include "ui/message_center/notification_list.h"
 
-#include "base/time.h"
 #include "base/values.h"
 
 namespace message_center {
@@ -59,11 +58,6 @@ void NotificationList::AddNotification(
   notification.message = message;
   notification.display_source = display_source;
   notification.extension_id = extension_id;
-
-  // Initialize primitive fields before unpacking optional fields.
-  // timestamp initializes to default NULL time.
-  notification.priority = 0;
-
   UnpackOptionalFields(optional_fields, notification);
 
   PushNotification(notification);
@@ -74,42 +68,12 @@ void NotificationList::UnpackOptionalFields(
   if (!optional_fields)
     return;
 
-  if (optional_fields->HasKey(ui::notifications::kMessageIntentKey))
-    optional_fields->GetString(ui::notifications::kMessageIntentKey,
-                               &notification.message_intent);
-  if (optional_fields->HasKey(ui::notifications::kPriorityKey))
-    optional_fields->GetInteger(ui::notifications::kPriorityKey,
-                                &notification.priority);
-  if (optional_fields->HasKey(ui::notifications::kTimestampKey)) {
-    std::string time_string;
-    optional_fields->GetString(ui::notifications::kTimestampKey, &time_string);
-    base::Time::FromString(time_string.c_str(), &notification.timestamp);
-  }
-  // TODO
-  // if (optional_fields->HasKey(ui::notifications::kSecondIconUrlKey))
-  //   optional_fields->GetString(ui::notifications::kSecondIconUrlKey,
-  //                              &notification.second_icon_url);
-  if (optional_fields->HasKey(ui::notifications::kUnreadCountKey))
-    optional_fields->GetInteger(ui::notifications::kUnreadCountKey,
-                                &notification.unread_count);
-  if (optional_fields->HasKey(ui::notifications::kButtonOneTitleKey))
-    optional_fields->GetString(ui::notifications::kButtonOneTitleKey,
-                               &notification.button_one_title);
-  if (optional_fields->HasKey(ui::notifications::kButtonOneIntentKey))
-    optional_fields->GetString(ui::notifications::kButtonOneIntentKey,
-                               &notification.button_one_intent);
-  if (optional_fields->HasKey(ui::notifications::kButtonTwoTitleKey))
-    optional_fields->GetString(ui::notifications::kButtonTwoTitleKey,
-                               &notification.button_two_title);
-  if (optional_fields->HasKey(ui::notifications::kButtonTwoIntentKey))
-    optional_fields->GetString(ui::notifications::kButtonTwoIntentKey,
-                               &notification.button_two_intent);
-  if (optional_fields->HasKey(ui::notifications::kExpandedMessageKey))
-    optional_fields->GetString(ui::notifications::kExpandedMessageKey,
-                               &notification.expanded_message);
-  if (optional_fields->HasKey(ui::notifications::kImageUrlKey))
-    optional_fields->GetString(ui::notifications::kImageUrlKey,
-                               &notification.image_url);
+  if (optional_fields->HasKey(ui::notifications::kExtraFieldKey))
+    optional_fields->GetString(ui::notifications::kExtraFieldKey,
+                               &notification.extra_field);
+  if (optional_fields->HasKey(ui::notifications::kSecondExtraFieldKey))
+    optional_fields->GetString(ui::notifications::kSecondExtraFieldKey,
+                               &notification.second_extra_field);
 }
 
 void NotificationList::UpdateNotificationMessage(const std::string& old_id,

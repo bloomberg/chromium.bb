@@ -12,6 +12,7 @@
 
 namespace views {
 class ImageButton;
+class ImageView;
 class ScrollView;
 }
 
@@ -60,6 +61,7 @@ class MessageView : public views::SlideOutView,
 
   NotificationList::Delegate* list_delegate_;
   NotificationList::Notification notification_;
+  views::ImageView* icon_;
   views::ImageButton* close_button_;
 
   views::ScrollView* scroller_;
