@@ -8,14 +8,13 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "unicode/timezone.h"
 
 namespace chromeos {
 namespace system {
 
 // This interface provides access to Chrome OS timezone settings.
-class TimezoneSettings : public CancelableRequestProvider {
+class TimezoneSettings {
  public:
   class Observer {
    public:

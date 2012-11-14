@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -129,8 +130,7 @@ class RegisterPageHandler : public WebUIMessageHandler,
   void HandleGetUserInfo(const ListValue* args);
 
   // Callback from chromeos::VersionLoader giving the version.
-  void OnVersion(chromeos::VersionLoader::Handle handle,
-                 const std::string& version);
+  void OnVersion(const std::string& version);
 
   // Skips registration logging |error_msg| with log type ERROR.
   void SkipRegistration(const std::string& error_msg);
@@ -142,7 +142,7 @@ class RegisterPageHandler : public WebUIMessageHandler,
   chromeos::VersionLoader version_loader_;
 
   // Used to request the version.
-  CancelableRequestConsumer version_consumer_;
+  CancelableTaskTracker tracker_;
 
   std::string version_;
 
@@ -220,16 +220,15 @@ void RegisterPageHandler::HandleGetRegistrationUrl(const ListValue* args) {
 void RegisterPageHandler::HandleGetUserInfo(const ListValue* args) {
   if (base::chromeos::IsRunningOnChromeOS()) {
      version_loader_.GetVersion(
-         &version_consumer_,
+         chromeos::VersionLoader::VERSION_FULL,
          base::Bind(&RegisterPageHandler::OnVersion, base::Unretained(this)),
-         chromeos::VersionLoader::VERSION_FULL);
+         &tracker_);
   } else {
     SkipRegistration("Not running on ChromeOS.");
   }
 }
 
-void RegisterPageHandler::OnVersion(chromeos::VersionLoader::Handle handle,
-                                    const std::string& version) {
+void RegisterPageHandler::OnVersion(const std::string& version) {
   version_ = version;
   SendUserInfo();
 }

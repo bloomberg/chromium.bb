@@ -12,9 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/idle.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/geolocation.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/common/geoposition.h"
@@ -86,10 +86,8 @@ class DeviceStatusCollector : public content::NotificationObserver {
   void AddActivePeriod(base::Time start, base::Time end);
 
   // Callbacks from chromeos::VersionLoader.
-  void OnOSVersion(chromeos::VersionLoader::Handle handle,
-                   const std::string& version);
-  void OnOSFirmware(chromeos::VersionLoader::Handle handle,
-                    const std::string& version);
+  void OnOSVersion(const std::string& version);
+  void OnOSFirmware(const std::string& version);
 
   // Helpers for the various portions of the status.
   void GetActivityTimes(
@@ -130,7 +128,7 @@ class DeviceStatusCollector : public content::NotificationObserver {
   base::OneShotTimer<DeviceStatusCollector> geolocation_update_timer_;
 
   chromeos::VersionLoader version_loader_;
-  CancelableRequestConsumer consumer_;
+  CancelableTaskTracker tracker_;
 
   std::string os_version_;
   std::string firmware_version_;
