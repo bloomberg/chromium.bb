@@ -107,8 +107,7 @@ class ScopedSettingsStorageFactory : public SettingsStorageFactory {
 
   // SettingsStorageFactory implementation.
   virtual ValueStore* Create(const FilePath& base_path,
-                             const std::string& extension_id,
-                             std::string* error) OVERRIDE;
+                             const std::string& extension_id) OVERRIDE;
 
  private:
   // SettingsStorageFactory is refcounted.

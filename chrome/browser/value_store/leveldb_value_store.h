@@ -18,12 +18,16 @@
 // All methods must be run on the FILE thread.
 class LeveldbValueStore : public ValueStore {
  public:
+  // Creates a database bound to |path|. The underlying database won't be
+  // opened (i.e. may not be created) until one of the get/set/etc methods are
+  // called - this is because opening the database may fail, and extensions
+  // need to be notified of that, but we don't want to permanently give up.
+  //
+  // Must be created on the FILE thread.
+  explicit LeveldbValueStore(const FilePath& path);
+
   // Must be deleted on the FILE thread.
   virtual ~LeveldbValueStore();
-
-  // Create and open the database at the given path.
-  // On failure, returns NULL and populates |error| with an error message.
-  static LeveldbValueStore* Create(const FilePath& path, std::string* error);
 
   // ValueStore implementation.
   virtual size_t GetBytesInUse(const std::string& key) OVERRIDE;
@@ -43,8 +47,10 @@ class LeveldbValueStore : public ValueStore {
   virtual WriteResult Clear() OVERRIDE;
 
  private:
-  // Ownership of db is taken.
-  LeveldbValueStore(const FilePath& db_path, leveldb::DB* db);
+  // Tries to open the database if it hasn't been opened already.  Returns the
+  // error message on failure, or "" on success (guaranteeding that |db_| is
+  // non-NULL),
+  std::string EnsureDbIsOpen();
 
   // Reads a setting from the database. Returns the error message on failure,
   // or "" on success in which case |setting| will be reset to the Value read
