@@ -335,9 +335,11 @@ void AwContents::RequestNewHitTestDataAt(JNIEnv* env, jobject obj,
   render_view_host_ext_->RequestNewHitTestDataAt(x, y);
 }
 
-base::android::ScopedJavaLocalRef<jobject> AwContents::GetLastHitTestData(
-    JNIEnv* env, jobject obj) {
+void AwContents::UpdateLastHitTestData(JNIEnv* env, jobject obj) {
+  if (!render_view_host_ext_->HasNewHitTestData()) return;
+
   const AwHitTestData& data = render_view_host_ext_->GetLastHitTestData();
+  render_view_host_ext_->MarkHitTestDataRead();
 
   // Make sure to null the Java object if data is empty/invalid.
   ScopedJavaLocalRef<jstring> extra_data_for_type;
@@ -357,12 +359,13 @@ base::android::ScopedJavaLocalRef<jobject> AwContents::GetLastHitTestData(
   if (data.img_src.is_valid())
     img_src = ConvertUTF8ToJavaString(env, data.img_src.spec());
 
-  return Java_AwContents_createHitTestData(env,
-                                           data.type,
-                                           extra_data_for_type.obj(),
-                                           href.obj(),
-                                           anchor_text.obj(),
-                                           img_src.obj());
+  Java_AwContents_updateHitTestData(env,
+                                    obj,
+                                    data.type,
+                                    extra_data_for_type.obj(),
+                                    href.obj(),
+                                    anchor_text.obj(),
+                                    img_src.obj());
 }
 
 }  // namespace android_webview

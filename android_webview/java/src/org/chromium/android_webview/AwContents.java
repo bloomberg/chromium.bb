@@ -58,25 +58,13 @@ public class AwContents {
      */
     public static class HitTestData {
         // Used in getHitTestResult.
-        public final int hitTestResultType;
-        public final String hitTestResultExtraData;
+        public int hitTestResultType;
+        public String hitTestResultExtraData;
 
         // Used in requestFocusNodeHref (all three) and requestImageRef (only imgSrc).
-        public final String href;
-        public final String anchorText;
-        public final String imgSrc;
-
-        private HitTestData(int type,
-                            String extra,
-                            String href,
-                            String anchorText,
-                            String imgSrc) {
-            this.hitTestResultType = type;
-            this.hitTestResultExtraData = extra;
-            this.href = href;
-            this.anchorText = anchorText;
-            this.imgSrc = imgSrc;
-        }
+        public String href;
+        public String anchorText;
+        public String imgSrc;
     }
 
     private int mNativeAwContents;
@@ -87,6 +75,9 @@ public class AwContents {
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
     private final IoThreadClientHandler mIoThreadClientHandler;
+
+    // Must call nativeUpdateLastHitTestData first to update this before use.
+    private final HitTestData mPossiblyStaleHitTestData;
 
     private static final class DestroyRunnable implements Runnable {
         private int mNativeAwContents;
@@ -203,6 +194,8 @@ public class AwContents {
         mSettings = new AwSettings(mContentViewCore.getContext());
         setIoThreadClient(new IoThreadClientImpl());
         setInterceptNavigationDelegate(new InterceptNavigationDelegateImpl());
+
+        mPossiblyStaleHitTestData = new HitTestData();
     }
 
     public ContentViewCore getContentViewCore() {
@@ -400,9 +393,12 @@ public class AwContents {
     /**
      * Method to return all hit test values relevant to public WebView API.
      * Note that this expose more data than needed for WebView.getHitTestResult.
+     * Unsafely returning reference to mutable internal object to avoid excessive
+     * garbage allocation on repeated calls.
      */
     public HitTestData getLastHitTestResult() {
-        return nativeGetLastHitTestData(mNativeAwContents);
+        nativeUpdateLastHitTestData(mNativeAwContents);
+        return mPossiblyStaleHitTestData;
     }
 
     /**
@@ -413,11 +409,11 @@ public class AwContents {
             return;
         }
 
-        HitTestData hitTestData = nativeGetLastHitTestData(mNativeAwContents);
+        nativeUpdateLastHitTestData(mNativeAwContents);
         Bundle data = msg.getData();
-        data.putString("url", hitTestData.href);
-        data.putString("title", hitTestData.anchorText);
-        data.putString("src", hitTestData.imgSrc);
+        data.putString("url", mPossiblyStaleHitTestData.href);
+        data.putString("title", mPossiblyStaleHitTestData.anchorText);
+        data.putString("src", mPossiblyStaleHitTestData.imgSrc);
         msg.setData(data);
         msg.sendToTarget();
     }
@@ -430,9 +426,9 @@ public class AwContents {
             return;
         }
 
-        HitTestData hitTestData = nativeGetLastHitTestData(mNativeAwContents);
+        nativeUpdateLastHitTestData(mNativeAwContents);
         Bundle data = msg.getData();
-        data.putString("url", hitTestData.imgSrc);
+        data.putString("url", mPossiblyStaleHitTestData.imgSrc);
         msg.setData(data);
         msg.sendToTarget();
     }
@@ -498,10 +494,15 @@ public class AwContents {
         mContentsClient.onFindResultReceived(activeMatchOrdinal, numberOfMatches, isDoneCounting);
     }
 
+    // Called as a result of nativeUpdateLastHitTestData.
     @CalledByNative
-    private static HitTestData createHitTestData(
+    private void updateHitTestData(
             int type, String extra, String href, String anchorText, String imgSrc) {
-        return new HitTestData(type, extra, href, anchorText, imgSrc);
+        mPossiblyStaleHitTestData.hitTestResultType = type;
+        mPossiblyStaleHitTestData.hitTestResultExtraData = extra;
+        mPossiblyStaleHitTestData.href = href;
+        mPossiblyStaleHitTestData.anchorText = anchorText;
+        mPossiblyStaleHitTestData.imgSrc = imgSrc;
     }
 
     // -------------------------------------------------------------------------------------------
@@ -603,5 +604,5 @@ public class AwContents {
     private native void nativeClearCache(int nativeAwContents, boolean includeDiskFiles);
     private native byte[] nativeGetCertificate(int nativeAwContents);
     private native void nativeRequestNewHitTestDataAt(int nativeAwContents, int x, int y);
-    private native HitTestData nativeGetLastHitTestData(int nativeAwContents);
+    private native void nativeUpdateLastHitTestData(int nativeAwContents);
 }

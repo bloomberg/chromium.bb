@@ -14,7 +14,8 @@
 namespace android_webview {
 
 AwRenderViewHostExt::AwRenderViewHostExt(content::WebContents* contents)
-    : content::WebContentsObserver(contents) {
+    : content::WebContentsObserver(contents),
+      has_new_hit_test_data_(false) {
 }
 
 AwRenderViewHostExt::~AwRenderViewHostExt() {}
@@ -35,6 +36,14 @@ void AwRenderViewHostExt::DocumentHasImages(DocumentHasImagesResult result) {
 void AwRenderViewHostExt::ClearCache() {
   DCHECK(CalledOnValidThread());
   Send(new AwViewMsg_ClearCache);
+}
+
+bool AwRenderViewHostExt::HasNewHitTestData() const {
+  return has_new_hit_test_data_;
+}
+
+void AwRenderViewHostExt::MarkHitTestDataRead() {
+  has_new_hit_test_data_ = false;
 }
 
 void AwRenderViewHostExt::RequestNewHitTestDataAt(int view_x, int view_y) {
@@ -89,6 +98,7 @@ void AwRenderViewHostExt::OnUpdateHitTestData(
     const AwHitTestData& hit_test_data) {
   DCHECK(CalledOnValidThread());
   last_hit_test_data_ = hit_test_data;
+  has_new_hit_test_data_ = true;
 }
 
 }  // namespace android_webview
