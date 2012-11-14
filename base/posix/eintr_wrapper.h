@@ -7,8 +7,8 @@
 //
 // On Windows, this wrapper macro does nothing.
 
-#ifndef BASE_EINTR_WRAPPER_H_
-#define BASE_EINTR_WRAPPER_H_
+#ifndef BASE_POSIX_EINTR_WRAPPER_H_
+#define BASE_POSIX_EINTR_WRAPPER_H_
 
 #include "build/build_config.h"
 
@@ -30,4 +30,4 @@
 
 #endif  // OS_POSIX
 
-#endif  // BASE_EINTR_WRAPPER_H_
+#endif  // BASE_POSIX_EINTR_WRAPPER_H_

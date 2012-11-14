@@ -9,7 +9,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "base/eintr_wrapper.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/single_thread_task_runner.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"

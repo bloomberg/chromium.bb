@@ -17,8 +17,8 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/eintr_wrapper.h"
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/safe_strerror_posix.h"
 #include "net/base/big_endian.h"
 #include "net/base/net_util.h"

@@ -15,8 +15,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "base/eintr_wrapper.h"
 #include "base/file_util.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"

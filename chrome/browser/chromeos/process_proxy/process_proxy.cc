@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/eintr_wrapper.h"
 #include "base/file_util.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/process_util.h"
 #include "base/logging.h"
 #include "base/threading/thread.h"

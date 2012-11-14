@@ -13,8 +13,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/eintr_wrapper.h"
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 
 // Preserving errno for Close() is important because the function is very often
 // used in cleanup code, after an error occurred, and it is very easy to pass an

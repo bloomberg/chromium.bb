@@ -21,13 +21,13 @@
 #include <map>
 
 #include "base/command_line.h"
-#include "base/eintr_wrapper.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"

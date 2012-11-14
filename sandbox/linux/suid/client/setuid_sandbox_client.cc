@@ -6,10 +6,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "base/eintr_wrapper.h"
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/string_number_conversions.h"
 
 #include "sandbox/linux/suid/common/sandbox.h"

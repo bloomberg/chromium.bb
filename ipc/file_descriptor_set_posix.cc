@@ -8,8 +8,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "base/eintr_wrapper.h"
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 
 FileDescriptorSet::FileDescriptorSet()
     : consumed_descriptor_highwater_(0) {

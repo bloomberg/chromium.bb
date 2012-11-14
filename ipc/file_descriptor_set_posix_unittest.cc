@@ -10,7 +10,7 @@
 #include <fcntl.h>
 
 #include "base/basictypes.h"
-#include "base/eintr_wrapper.h"
+#include "base/posix/eintr_wrapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

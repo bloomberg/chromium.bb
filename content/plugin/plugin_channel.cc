@@ -20,7 +20,7 @@
 #include "webkit/plugins/npapi/plugin_instance.h"
 
 #if defined(OS_POSIX)
-#include "base/eintr_wrapper.h"
+#include "base/posix/eintr_wrapper.h"
 #include "ipc/ipc_channel_posix.h"
 #endif
 

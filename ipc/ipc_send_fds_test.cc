@@ -14,8 +14,8 @@ extern "C" {
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "base/eintr_wrapper.h"
 #include "base/message_loop.h"
+#include "base/posix/eintr_wrapper.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_multiprocess_test.h"

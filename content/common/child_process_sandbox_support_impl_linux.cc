@@ -6,9 +6,9 @@
 
 #include <sys/stat.h>
 
-#include "base/eintr_wrapper.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
 #include "content/common/sandbox_linux.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/linux/WebFontFamily.h"

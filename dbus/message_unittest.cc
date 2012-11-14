@@ -5,9 +5,9 @@
 #include "dbus/message.h"
 
 #include "base/basictypes.h"
-#include "base/eintr_wrapper.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/posix/eintr_wrapper.h"
 #include "dbus/object_path.h"
 #include "dbus/test_proto.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -17,10 +17,10 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/eintr_wrapper.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/perftimer.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/metrics_service.h"

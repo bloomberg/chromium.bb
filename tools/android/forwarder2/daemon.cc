@@ -17,10 +17,10 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/eintr_wrapper.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/safe_strerror_posix.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"

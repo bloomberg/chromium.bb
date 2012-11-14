@@ -15,9 +15,9 @@
 
 #include <fstream>
 
-#include "base/eintr_wrapper.h"
 #include "base/mac/scoped_launch_data.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/posix/eintr_wrapper.h"
 #include "remoting/host/constants_mac.h"
 #include "remoting/host/host_config.h"
 #import "remoting/host/mac/me2me_preference_pane_confirm_pin.h"

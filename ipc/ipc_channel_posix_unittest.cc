@@ -12,12 +12,12 @@
 #include <unistd.h>
 
 #include "base/basictypes.h"
-#include "base/eintr_wrapper.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "ipc/ipc_listener.h"

@@ -6,8 +6,8 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/eintr_wrapper.h"
 #include "base/message_loop_proxy.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/common/multi_process_lock.h"
 

@@ -13,10 +13,10 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/eintr_wrapper.h"
 #include "base/logging.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/process_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"

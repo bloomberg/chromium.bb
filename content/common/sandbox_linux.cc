@@ -9,10 +9,10 @@
 #include <sys/types.h>
 
 #include "base/command_line.h"
-#include "base/eintr_wrapper.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/time.h"
 #include "content/common/sandbox_linux.h"
 #include "content/common/seccomp_sandbox.h"

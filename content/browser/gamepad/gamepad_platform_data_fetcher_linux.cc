@@ -13,8 +13,8 @@
 #include <unistd.h>
 
 #include "base/debug/trace_event.h"
-#include "base/eintr_wrapper.h"
 #include "base/message_loop.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"

@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/eintr_wrapper.h"
 #include "base/lazy_instance.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"

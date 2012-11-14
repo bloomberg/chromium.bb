@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/eintr_wrapper.h"
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/process_util.h"
 
 #include "testing/gtest/include/gtest/gtest.h"

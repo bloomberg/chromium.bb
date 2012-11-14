@@ -11,7 +11,6 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/eintr_wrapper.h"
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/linux_util.h"
@@ -20,6 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"

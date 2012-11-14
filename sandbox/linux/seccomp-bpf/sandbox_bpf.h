@@ -42,8 +42,8 @@
 
 #ifndef SECCOMP_BPF_STANDALONE
 #include "base/basictypes.h"
-#include "base/eintr_wrapper.h"
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #endif
 
 #if defined(SECCOMP_BPF_VALGRIND_HACKS)

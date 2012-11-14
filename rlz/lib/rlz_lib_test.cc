@@ -13,7 +13,7 @@
 // The "GGLA" brand is used to test the normal code flow of the code, and the
 // "TEST" brand is used to test the supplementary brand code code flow.
 
-#include "base/eintr_wrapper.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"

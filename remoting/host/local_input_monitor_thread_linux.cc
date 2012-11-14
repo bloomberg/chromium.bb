@@ -11,8 +11,8 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/eintr_wrapper.h"
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "remoting/host/mouse_move_observer.h"
 #include "third_party/skia/include/core/SkPoint.h"
 

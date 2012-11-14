@@ -9,8 +9,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#include "base/eintr_wrapper.h"
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/safe_strerror_posix.h"
 
 namespace forwarder2 {

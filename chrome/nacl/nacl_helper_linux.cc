@@ -18,10 +18,10 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/eintr_wrapper.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/rand_util.h"

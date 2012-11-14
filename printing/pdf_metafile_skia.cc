@@ -4,11 +4,11 @@
 
 #include "printing/pdf_metafile_skia.h"
 
-#include "base/eintr_wrapper.h"
 #include "base/file_descriptor_posix.h"
 #include "base/file_util.h"
 #include "base/hash_tables.h"
 #include "base/metrics/histogram.h"
+#include "base/posix/eintr_wrapper.h"
 #include "skia/ext/vector_platform_device_skia.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"

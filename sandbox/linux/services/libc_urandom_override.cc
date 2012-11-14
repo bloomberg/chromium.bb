@@ -10,8 +10,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "base/eintr_wrapper.h"
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
 
 // Note: this file is used by the zygote and nacl_helper.
