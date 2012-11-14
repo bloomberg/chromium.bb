@@ -288,7 +288,7 @@ void LayerTreeHostImpl::animate(base::TimeTicks monotonicTime, base::Time wallCl
     animateScrollbars(monotonicTime);
 }
 
-void LayerTreeHostImpl::startPageScaleAnimation(gfx::Vector2d targetPosition, bool anchorPoint, float pageScale, base::TimeTicks startTime, base::TimeDelta duration)
+void LayerTreeHostImpl::startPageScaleAnimation(gfx::Vector2d targetOffset, bool anchorPoint, float pageScale, base::TimeTicks startTime, base::TimeDelta duration)
 {
     if (!m_rootScrollLayerImpl)
         return;
@@ -305,15 +305,15 @@ void LayerTreeHostImpl::startPageScaleAnimation(gfx::Vector2d targetPosition, bo
     m_pageScaleAnimation = PageScaleAnimation::create(scrollTotal, m_pinchZoomViewport.totalPageScaleFactor(), viewportSize, scaledContentSize, startTimeSeconds);
 
     if (anchorPoint) {
-        gfx::Vector2dF anchor(targetPosition);
+        gfx::Vector2dF anchor(targetOffset);
         if (!Settings::pageScalePinchZoomEnabled())
             anchor.Scale(1 / pageScale);
         m_pageScaleAnimation->zoomWithAnchor(anchor, pageScale, duration.InSecondsF());
     } else {
-        gfx::Vector2dF scaledTargetPosition = targetPosition;
+        gfx::Vector2dF scaledTargetOffset = targetOffset;
         if (!Settings::pageScalePinchZoomEnabled())
-            scaledTargetPosition.Scale(1 / pageScale);
-        m_pageScaleAnimation->zoomTo(scaledTargetPosition, pageScale, duration.InSecondsF());
+            scaledTargetOffset.Scale(1 / pageScale);
+        m_pageScaleAnimation->zoomTo(scaledTargetOffset, pageScale, duration.InSecondsF());
     }
 
     m_client->setNeedsRedrawOnImplThread();

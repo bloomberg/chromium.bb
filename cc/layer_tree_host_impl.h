@@ -116,7 +116,7 @@ public:
     virtual void pinchGestureBegin() OVERRIDE;
     virtual void pinchGestureUpdate(float, gfx::Point) OVERRIDE;
     virtual void pinchGestureEnd() OVERRIDE;
-    virtual void startPageScaleAnimation(gfx::Vector2d targetPosition, bool anchorPoint, float pageScale, base::TimeTicks startTime, base::TimeDelta duration) OVERRIDE;
+    virtual void startPageScaleAnimation(gfx::Vector2d targetOffset, bool anchorPoint, float pageScale, base::TimeTicks startTime, base::TimeDelta duration) OVERRIDE;
     virtual void scheduleAnimation() OVERRIDE;
 
     struct CC_EXPORT FrameData : public RenderPassSink {

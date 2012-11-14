@@ -58,9 +58,11 @@ private:
     void clampTargetScrollOffset();
     void inferTargetScrollOffsetFromStartAnchor();
     void inferTargetAnchorFromScrollOffsets();
-    gfx::SizeF viewportSizeAtScale(float pageScaleFactor) const;
 
+    gfx::SizeF startViewportSize() const;
+    gfx::SizeF targetViewportSize() const;
     float interpAtTime(double time) const;
+    gfx::SizeF viewportSizeAt(float interp) const;
     gfx::Vector2dF scrollOffsetAt(float interp) const;
     gfx::Vector2dF anchorAt(float interp) const;
     gfx::Vector2dF viewportRelativeAnchorAt(float interp) const;
