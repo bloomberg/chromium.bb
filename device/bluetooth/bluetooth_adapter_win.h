@@ -13,9 +13,11 @@
 namespace device {
 
 class BluetoothAdapterFactory;
+class BluetoothAdapterWinTest;
 class BluetoothDevice;
 
 class BluetoothAdapterWin : public BluetoothAdapter {
+ public:
   // BluetoothAdapter override
   virtual void AddObserver(BluetoothAdapter::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(BluetoothAdapter::Observer* observer) OVERRIDE;
@@ -38,11 +40,23 @@ class BluetoothAdapterWin : public BluetoothAdapter {
       const BluetoothOutOfBandPairingDataCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE;
 
- private:
-  friend class device::BluetoothAdapterFactory;
-
+ protected:
   BluetoothAdapterWin();
   virtual ~BluetoothAdapterWin();
+
+  virtual void UpdateAdapterState();
+
+ private:
+  friend class BluetoothAdapterFactory;
+  friend class BluetoothAdapterWinTest;
+
+  // Obtains the default adapter info (the first bluetooth radio info found on
+  // the system) and tracks future changes to it.
+  void TrackDefaultAdapter();
+
+  void PollAdapterState();
+
+  static const int kPollIntervalMs;
 
   // NOTE: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
