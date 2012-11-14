@@ -30,6 +30,17 @@ function FileListBannerController(directoryModel, volumeManager, document) {
   this.unmountedPanel_ = this.document_.querySelector('#unmounted-panel');
   this.volumeManager_.addEventListener('gdata-status-changed',
         this.updateGDataUnmountedPanel_.bind(this));
+
+  util.storage.onChanged.addListener(this.onStorageChange_.bind(this));
+  this.welcomeHeaderCounter_ = WELCOME_HEADER_COUNTER_LIMIT;
+  this.warningDismissedCounter_ = 0;
+  util.storage.sync.get([WELCOME_HEADER_COUNTER_KEY, WARNING_DISMISSED_KEY],
+                          function(values) {
+    this.welcomeHeaderCounter_ =
+        parseInt(values[WELCOME_HEADER_COUNTER_KEY]) || 0;
+    this.warningDismissedCounter_ =
+        parseInt(values[WARNING_DISMISSED_KEY]) || 0;
+  }.bind(this));
 }
 
 /**
@@ -42,6 +53,11 @@ FileListBannerController.prototype.__proto__ = cr.EventTarget.prototype;
  * banner has shown.
  */
 var WELCOME_HEADER_COUNTER_KEY = 'gdataWelcomeHeaderCounter';
+
+// If the warning was dismissed before, this key stores the quota value
+// (as of the moment of dismissal).
+// If the warning was never dismissed or was reset this key stores 0.
+var WARNING_DISMISSED_KEY = 'gdriveSpaceWarningDismissed';
 
 /**
  * Maximum times Drive Welcome banner could have shown.
@@ -76,11 +92,41 @@ var GOOGLE_DRIVE_ERROR_HELP_URL =
     'https://support.google.com/chromeos/?p=filemanager_driveerror';
 
 /**
- * @return {number} How many times the Drive Welcome header banner has shown.
+ * @param {number} value How many times the Drive Welcome header banner
+ * has shown.
  * @private
  */
-FileListBannerController.prototype.getHeaderCounter_ = function() {
-  return parseInt(localStorage[WELCOME_HEADER_COUNTER_KEY] || '0');
+FileListBannerController.prototype.setWelcomeHeaderCounter_ = function(value) {
+  var values = {};
+  values[WELCOME_HEADER_COUNTER_KEY] = value;
+  util.storage.local.set(values);
+};
+
+/**
+ * @param {number} value How many times the low space warning has dismissed.
+ * @private
+ */
+FileListBannerController.prototype.setWarningDismissedCounter_ =
+    function(value) {
+  var values = {};
+  values[WARNING_DISMISSED_KEY] = value;
+  util.storage.local.set(values);
+};
+
+/**
+ * util.storage.onChanged event handler.
+ * @param {Object.<string, Object>} changes Changes values.
+ * @param {string} areaName "local" or "sync".
+ * @private
+ */
+FileListBannerController.prototype.onStorageChange_ = function(changes,
+                                                               areaName) {
+  if (areaName == 'local' && WELCOME_HEADER_COUNTER_KEY in changes) {
+    this.welcomeHeaderCounter_ = changes[WELCOME_HEADER_COUNTER_KEY].newValue;
+  }
+  if (areaName == 'local' && WARNING_DISMISSED_KEY in changes) {
+    this.warningDismissedCounter_ = changes[WARNING_DISMISSED_KEY].newValue;
+  }
 };
 
 /**
@@ -157,11 +203,12 @@ FileListBannerController.prototype.maybeShowBanner_ = function() {
     return;
   }
 
-  if (this.getHeaderCounter_() >= WELCOME_HEADER_COUNTER_LIMIT)
+  if (this.welcomeHeaderCounter_ >= WELCOME_HEADER_COUNTER_LIMIT ||
+      !this.directoryModel_.isDriveMounted())
     return;
 
-  var counter = this.getHeaderCounter_();
-  if (this.directoryModel_.getFileList().length == 0 && counter == 0) {
+  if (this.directoryModel_.getFileList().length == 0 &&
+      this.welcomeHeaderCounter_ == 0) {
     // Only show the full page banner if the header banner was never shown.
     // Do not increment the counter.
     // The timeout below is required because sometimes another
@@ -170,18 +217,18 @@ FileListBannerController.prototype.maybeShowBanner_ = function() {
     setTimeout(this.preparePromo_.bind(this, function() {
       var container = self.document_.querySelector('.dialog-container');
       if (self.isOnGData() &&
-          self.getHeaderCounter_() == 0) {
+          self.welcomeHeaderCounter_ == 0) {
         self.showBanner_('page', 'GDATA_WELCOME_TEXT_LONG');
       }
     }, 2000));
-  } else if (counter < WELCOME_HEADER_COUNTER_LIMIT) {
+  } else if (this.welcomeHeaderCounter_ < WELCOME_HEADER_COUNTER_LIMIT) {
     // We do not want to increment the counter when the user navigates
     // between different directories on GDrive, but we increment the counter
     // once anyway to prevent the full page banner from showing.
-     if (!this.previousDirWasOnGData_ || counter == 0) {
+     if (!this.previousDirWasOnGData_ || this.welcomeHeaderCounter_ == 0) {
        var self = this;
+       this.setWelcomeHeaderCounter_(this.welcomeHeaderCounter_ + 1);
        this.preparePromo_(function() {
-         localStorage[WELCOME_HEADER_COUNTER_KEY] = ++counter;
          self.showBanner_('header', 'GDATA_WELCOME_TEXT_SHORT');
        });
      }
@@ -210,21 +257,16 @@ FileListBannerController.prototype.showLowGDriveSpaceWarning_ =
   if (box.hidden == !show)
     return;
 
-  // If the warning was dismissed before, this key stores the quota value
-  // (as of the moment of dismissal).
-  // If the warning was never dismissed or was reset this key stores 0.
-  var WARNING_DISMISSED_KEY = 'gdriveSpaceWarningDismissed';
-  var dismissed = parseInt(localStorage[WARNING_DISMISSED_KEY] || '0');
-
-  if (dismissed) {
-    if (dismissed == sizeStats.totalSizeKB &&  // Quota had not changed
+  if (this.warningDismissedCounter_) {
+    if (this.warningDismissedCounter_ ==
+            sizeStats.totalSizeKB && // Quota had not changed
         sizeStats.remainingSizeKB / sizeStats.totalSizeKB < 0.15) {
       // Since the last dismissal decision the quota has not changed AND
       // the user did not free up significant space. Obey the dismissal.
       show = false;
     } else {
       // Forget the dismissal. Warning will be shown again.
-      localStorage[WARNING_DISMISSED_KEY] = 0;
+      this.setWarningDismissedCounter_(0);
     }
   }
 
@@ -333,7 +375,7 @@ FileListBannerController.prototype.checkFreeSpace_ = function(currentPath) {
 FileListBannerController.prototype.closeBanner_ = function() {
   this.cleanupGDataWelcome_();
   // Stop showing the welcome banner.
-  localStorage[WELCOME_HEADER_COUNTER_KEY] = WELCOME_HEADER_COUNTER_LIMIT;
+  this.setWelcomeHeaderCounter_(WELCOME_HEADER_COUNTER_LIMIT);
 };
 
 /**
@@ -497,7 +539,7 @@ FileListBannerController.prototype.updateGDataUnmountedPanel_ = function() {
       this.ensureGDataUnmountedPanelInitialized_();
     }
     if (status == VolumeManager.GDataStatus.MOUNTING &&
-        this.getHeaderCounter_() == 0) {
+        this.welcomeHeaderCounter_ == 0) {
       // Do not increment banner counter in order to not prevent the full
       // page banner of being shown (otherwise it would never be shown).
       this.showBanner_('header', 'GDATA_WELCOME_TEXT_SHORT');

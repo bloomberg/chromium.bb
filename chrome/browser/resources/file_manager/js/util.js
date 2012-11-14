@@ -938,6 +938,73 @@ util.loadScripts = function(urls, onload) {
   }
 };
 
+// TODO(serya): remove it when have migrated to AppsV2.
+util.__defineGetter__('storage', function() {
+  var storage;
+  if (storage)
+    return storage;
+
+  if (chrome.storage) {
+    storage = chrome.storage;
+    return;
+  }
+
+  var listeners = [];
+
+  function StorageArea(type) {
+    this.type_ = type;
+  }
+
+  StorageArea.prototype.set = function(items, opt_callback) {
+    var changes = {};
+    for (var i in items) {
+      changes[i] = {oldValue: localStorage[i], newValue: items[i]};
+      localStorage[i] = items[i];
+    }
+    if (opt_callback)
+      callback();
+    for (var i = 0; i < listeners.length; i++) {
+      listeners[i](changes, this.type_);
+    }
+  };
+
+  StorageArea.prototype.get = function(keys, callback) {
+    if (!callback) {
+      // Since key is optionsl it's the callback.
+      keys(localStorage);
+      return;
+    }
+    if (typeof(keys) == 'string')
+      keys = [keys];
+    var result = {};
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      result[key] = localStorage[key];
+    }
+    callback(result);
+  };
+
+  /**
+   * Simulation of the AppsV2 storage interface.
+   * @type {object}
+   */
+  storage = {
+    local: new StorageArea('local'),
+    sync: new StorageArea('sync'),
+    onChanged: {
+      addListener: function(l) {
+        listeners.push(l);
+      },
+      removeListener: function(l) {
+        for (var i = 0; i < listeners.length; i++) {
+          listeners.splice(i, 1);
+        }
+      }
+    }
+  };
+  return storage;
+});
+
 /**
  * Attach page load handler.
  * Loads mock chrome.* APIs is the real ones are not present.

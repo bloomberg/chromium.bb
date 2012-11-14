@@ -658,7 +658,7 @@ DirectoryModel.prototype.changeDirectory = function(path) {
 DirectoryModel.prototype.resolveDirectory = function(path, successCallback,
                                                      errorCallback) {
   if (PathUtil.getRootType(path) == RootType.GDATA) {
-    if (!this.isGDataMounted_()) {
+    if (!this.isDriveMounted()) {
       if (path == DirectoryModel.fakeGDataEntry_.fullPath)
         successCallback(DirectoryModel.fakeGDataEntry_);
       else  // Subdirectory.
@@ -1016,7 +1016,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
 
   if (this.gDataEnabled_) {
     var fake = [DirectoryModel.fakeGDataEntry_];
-    if (this.isGDataMounted_()) {
+    if (this.isDriveMounted()) {
       readSingle(RootDirectory.GDATA.substring(1), 'gdata', fake);
     } else {
       groups.gdata = fake;
@@ -1066,9 +1066,8 @@ DirectoryModel.prototype.updateRootsListSelection_ = function() {
 
 /**
  * @return {boolean} True if GDATA is fully mounted.
- * @private
  */
-DirectoryModel.prototype.isGDataMounted_ = function() {
+DirectoryModel.prototype.isDriveMounted = function() {
   return this.volumeManager_.getGDataStatus() ==
       VolumeManager.GDataStatus.MOUNTED;
 };
@@ -1096,7 +1095,7 @@ DirectoryModel.prototype.onGDataStatusChanged_ = function() {
   if (this.getCurrentRootType() != RootType.GDATA)
      return;
 
-  var mounted = this.isGDataMounted_();
+  var mounted = this.isDriveMounted();
   if (this.getCurrentDirEntry() == DirectoryModel.fakeGDataEntry_) {
     if (mounted) {
       // Change fake entry to real one and rescan.
