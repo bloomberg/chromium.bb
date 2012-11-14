@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2010 2007-11-14 08:33:32Z peter $
-
 TESTS += modules/objfmts/bin/tests/multisect/bin_multi_test.sh
 
 EXTRA_DIST += modules/objfmts/bin/tests/multisect/bin_multi_test.sh

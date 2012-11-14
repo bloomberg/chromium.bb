@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 1928 2007-09-07 22:03:34Z peter $
-
 TESTS += modules/arch/lc3b/tests/lc3b_test.sh
 
 EXTRA_DIST += modules/arch/lc3b/tests/lc3b_test.sh

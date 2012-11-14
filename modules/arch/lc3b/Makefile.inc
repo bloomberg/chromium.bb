@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2111 2008-07-06 22:26:49Z peter $
-
 libyasm_a_SOURCES += modules/arch/lc3b/lc3barch.c
 libyasm_a_SOURCES += modules/arch/lc3b/lc3barch.h
 libyasm_a_SOURCES += modules/arch/lc3b/lc3bbc.c

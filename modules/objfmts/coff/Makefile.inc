@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2082 2008-05-09 06:46:02Z peter $
-
 libyasm_a_SOURCES += modules/objfmts/coff/coff-objfmt.c
 libyasm_a_SOURCES += modules/objfmts/coff/coff-objfmt.h
 libyasm_a_SOURCES += modules/objfmts/coff/win64-except.c

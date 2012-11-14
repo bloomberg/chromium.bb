@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2311 2010-04-08 03:32:04Z peter $
-
 TESTS += modules/preprocs/nasm/tests/nasmpp_test.sh
 
 EXTRA_DIST += modules/preprocs/nasm/tests/nasmpp_test.sh

@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 1428 2006-03-27 02:15:19Z peter $
-
 libyasm_a_SOURCES += modules/dbgfmts/codeview/cv-dbgfmt.h
 libyasm_a_SOURCES += modules/dbgfmts/codeview/cv-dbgfmt.c
 libyasm_a_SOURCES += modules/dbgfmts/codeview/cv-symline.c

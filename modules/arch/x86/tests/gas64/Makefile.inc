@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2238 2009-11-30 03:43:10Z peter $
-
 TESTS += modules/arch/x86/tests/gas64/x86_gas64_test.sh
 
 EXTRA_DIST += modules/arch/x86/tests/gas64/x86_gas64_test.sh

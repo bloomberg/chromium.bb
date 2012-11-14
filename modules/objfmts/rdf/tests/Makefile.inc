@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 1653 2006-10-17 06:58:41Z peter $
-
 TESTS += modules/objfmts/rdf/tests/rdf_test.sh
 
 EXTRA_DIST += modules/objfmts/rdf/tests/rdf_test.sh

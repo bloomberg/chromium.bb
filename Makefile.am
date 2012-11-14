@@ -1,5 +1,3 @@
-# $Id: Makefile.am 2299 2010-03-04 05:08:00Z peter $
-
 SUBDIRS = po .
 
 ACLOCAL_AMFLAGS = -I m4
@@ -33,6 +31,8 @@ EXTRA_DIST = config/config.rpath
 
 # libyasm-stdint.h doesn't clean up after itself?
 CONFIG_CLEAN_FILES = libyasm-stdint.h
+CONFIG_CLEAN_FILES += YASM-VERSION-FILE
+CONFIG_CLEAN_FILES += YASM-VERSION.h
 
 EXTRA_DIST += tools/Makefile.inc
 EXTRA_DIST += libyasm/Makefile.inc
@@ -57,6 +57,7 @@ EXTRA_DIST += BSD.txt
 EXTRA_DIST += GNU_GPL-2.0
 EXTRA_DIST += GNU_LGPL-2.0
 EXTRA_DIST += splint.sh
+EXTRA_DIST += YASM-VERSION-GEN.sh
 EXTRA_DIST += Mkfiles/Makefile.flat
 EXTRA_DIST += Mkfiles/Makefile.dj
 EXTRA_DIST += Mkfiles/dj/config.h
@@ -89,6 +90,7 @@ EXTRA_DIST += Mkfiles/vc10/config.h
 EXTRA_DIST += Mkfiles/vc10/crt_secure_no_deprecate.props
 EXTRA_DIST += Mkfiles/vc10/crt_secure_no_deprecate.vsprops
 EXTRA_DIST += Mkfiles/vc10/libyasm-stdint.h
+EXTRA_DIST += Mkfiles/vc10/out_copy_rename.bat
 EXTRA_DIST += Mkfiles/vc10/readme.vc10.txt
 EXTRA_DIST += Mkfiles/vc10/vsyasm.props
 EXTRA_DIST += Mkfiles/vc10/vsyasm.targets
@@ -123,6 +125,15 @@ EXTRA_DIST += Mkfiles/vc10/re2c/run.bat
 
 # Until this gets fixed in automake
 DISTCLEANFILES += libyasm/stamp-h libyasm/stamp-h[0-9]*
+
+dist-hook: YASM-VERSION-FILE YASM-VERSION.h
+	cp YASM-VERSION-FILE $(distdir)/version
+	cp YASM-VERSION.h $(distdir)/Mkfiles/dj/
+	cp YASM-VERSION.h $(distdir)/Mkfiles/vc9/
+	cp YASM-VERSION.h $(distdir)/Mkfiles/vc10/
+
+YASM-VERSION-FILE: $(top_srcdir)/YASM-VERSION-GEN.sh
+	$(top_srcdir)/YASM-VERSION-GEN.sh
 
 distclean-local:
 	-rm -rf results

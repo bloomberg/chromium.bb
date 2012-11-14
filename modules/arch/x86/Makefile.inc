@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2111 2008-07-06 22:26:49Z peter $
-
 libyasm_a_SOURCES += modules/arch/x86/x86arch.c
 libyasm_a_SOURCES += modules/arch/x86/x86arch.h
 libyasm_a_SOURCES += modules/arch/x86/x86bc.c

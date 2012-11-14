@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2269 2010-01-07 07:00:05Z peter $
-
 EXTRA_DIST += modules/dbgfmts/codeview/Makefile.inc
 EXTRA_DIST += modules/dbgfmts/dwarf2/Makefile.inc
 EXTRA_DIST += modules/dbgfmts/null/Makefile.inc

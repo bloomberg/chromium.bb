@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2130 2008-10-07 05:38:11Z peter $
-
 libyasm_a_SOURCES += modules/preprocs/nasm/nasm-preproc.c
 libyasm_a_SOURCES += modules/preprocs/nasm/nasm-pp.h
 libyasm_a_SOURCES += modules/preprocs/nasm/nasm-pp.c

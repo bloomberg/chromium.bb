@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 1598 2006-08-10 04:02:59Z peter $
-
 EXTRA_DIST += modules/arch/Makefile.inc
 EXTRA_DIST += modules/listfmts/Makefile.inc
 EXTRA_DIST += modules/parsers/Makefile.inc
