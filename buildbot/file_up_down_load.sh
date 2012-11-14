@@ -3,7 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-#@ This script for up/downloading native client toolchains.
+#@ This script for up/downloading native client toolchains, etc..
+#@ To manually inspect what is on the store servers point your
+#@ browser at:
+#@ http://gsdview.appspot.com/nativeclient-archive2/
 
 #set -o xtrace
 set -o nounset
@@ -38,17 +41,17 @@ SanityCheck() {
 
 readonly GS_UTIL=${GS_UTIL:-buildbot/gsutil.sh}
 
-# raw data store url
+readonly DIR_ARCHIVE=nativeclient-archive2
+readonly DIR_TRYBOT=nativeclient-trybot
+
 readonly URL_PREFIX_RAW=https://commondatastorage.googleapis.com
-# appengine app that constructs a synthetic directory listing
-# for the data store
-readonly URL_PREFIX_UI=http://gsdview.appspot.com
-readonly BASE_TOOLCHAIN_COMPONENT=nativeclient-archive2/toolchain
+readonly URL_PREFIX_ARCHIVE="${URL_PREFIX_RAW}/${DIR_ARCHIVE}"
+readonly URL_PREFIX_TRYBOT="${URL_PREFIX_RAW}/${DIR_TRYBOT}"
 
-readonly BASE_BETWEEN_BOTS_TRY=nativeclient-trybot/between_builders
-readonly BASE_BETWEEN_BOTS=nativeclient-archive2/between_builders
+readonly GS_PREFIX_ARCHIVE="gs://${DIR_ARCHIVE}"
+readonly GS_PREFIX_TRYBOT="gs://${DIR_TRYBOT}"
 
-
+readonly URL_PREFIX_UI="http://gsdview.appspot.com"
 ######################################################################
 # UTIL
 ######################################################################
@@ -60,18 +63,51 @@ GetFileSizeK() {
 
 Upload() {
   local size_kb=$(GetFileSizeK $1)
-  echo  "uploading: $2 (${size_kb}kB)"
-  echo  "@@@STEP_LINK@download (${size_kb}kB)@${URL_PREFIX_UI}/$2@@@"
-  ${GS_UTIL} cp -a public-read $1 gs://$2
+  echo "uploading: $2 (${size_kb}kB)"
+  local path=${2:5}
+  echo "@@@STEP_LINK@download (${size_kb}kB)@${URL_PREFIX_UI}/${path}@@@"
+  ${GS_UTIL} cp -a public-read $1 $2
 }
 
+CheckPath() {
+  if [[ $1 != toolchain/* &&
+       $1 != between_builders/* &&
+       $1 != canned_nexe/* ]] ; then
+      echo "ERROR: Bad component name: $1"
+      exit -1
+  fi
+}
 
-UploadToolchainComponent() {
-  local rev=$1
-  local name=$2
-  local tarball=$3
+UploadArchive() {
+  local path=$1
+  local tarball=$2
 
-  Upload ${tarball} ${BASE_TOOLCHAIN_COMPONENT}/${rev}/${name}
+  CheckPath ${path}
+  Upload ${tarball} ${GS_PREFIX_ARCHIVE}/${path}
+}
+
+DownloadArchive() {
+  local path=$1
+  local tarball=$2
+
+  CheckPath ${path}
+  curl -L ${URL_PREFIX_ARCHIVE}/${path} -o ${tarball}
+}
+
+UploadTrybot() {
+  local path=$1
+  local tarball=$2
+
+  CheckPath ${path}
+  Upload ${tarball} ${GS_PREFIX_TRYBOT}/${path}
+}
+
+DownloadTrybot() {
+  local path=$1
+  local tarball=$2
+
+  CheckPath ${path}
+  curl -L ${URL_PREFIX_TRYBOT}/${path} -o ${tarball}
 }
 
 ComputeSha1() {
@@ -95,19 +131,17 @@ UploadArmTrustedToolchain() {
   local rev=$1
   local tarball=$2
 
-  UploadToolchainComponent ${rev} naclsdk_linux_arm-trusted.tgz ${tarball}
+  UploadArchive toolchain/${rev}/naclsdk_linux_arm-trusted.tgz ${tarball}
 }
 
 DownloadArmTrustedToolchain() {
   local rev=$1
   local tarball=$2
-  curl -L \
-     ${URL_PREFIX_RAW}/${BASE_TOOLCHAIN_COMPONENT}/${rev}/naclsdk_linux_arm-trusted.tgz \
-     -o ${tarball}
+  DownloadArchive toolchain/${rev}/naclsdk_linux_arm-trusted.tgz ${tarball}
 }
 
 ShowRecentArmTrustedToolchains() {
-   local url=gs://${BASE_TOOLCHAIN_COMPONENT}/*/naclsdk_linux_arm-trusted.tgz
+   local url=${GS_PREFIX_ARCHIVE}/toolchain/*/naclsdk_linux_arm-trusted.tgz
    local recent=$(${GS_UTIL} ls ${url} | tail -5)
    for url in ${recent} ; do
      if ${GS_UTIL} ls -L "${url}" ; then
@@ -132,10 +166,10 @@ UploadPnaclToolchains() {
   local tarball=$3
 
   ComputeSha1 ${tarball} > ${tarball}.sha1hash
-  UploadToolchainComponent ${rev} naclsdk_${label}.tgz.sha1hash ${tarball}.sha1hash
+  UploadArchive toolchain/${rev}/naclsdk_${label}.tgz.sha1hash ${tarball}.sha1hash
 
   # NOTE: only the last link is shown on the waterfall so this should come last
-  UploadToolchainComponent ${rev} naclsdk_${label}.tgz ${tarball}
+  UploadArchive toolchain/${rev}/naclsdk_${label}.tgz ${tarball}
 }
 
 DownloadPnaclToolchains() {
@@ -143,14 +177,12 @@ DownloadPnaclToolchains() {
   local label=$2
   local tarball=$3
 
-  curl -L \
-      ${URL_PREFIX_RAW}/${BASE_TOOLCHAIN_COMPONENT}/${rev}/naclsdk_${label}.tgz\
-      -o ${tarball}
+  DownloadComponent toolchain/${rev}/naclsdk_${label}.tgz ${tarball}
 }
 
 ShowRecentPnaclToolchains() {
   local label=$1
-  local url="gs://${BASE_TOOLCHAIN_COMPONENT}/*/naclsdk_${label}.tgz"
+  local url="${GS_PREFIX_ARCHIVE}/toolchain/*/naclsdk_${label}.tgz"
 
   local recent=$(${GS_UTIL} ls ${url} | tail -5)
   for url in ${recent} ; do
@@ -158,6 +190,28 @@ ShowRecentPnaclToolchains() {
       echo "====="
     fi
   done
+}
+
+######################################################################
+# Nexes for regression/speed tests
+######################################################################
+
+UploadArchivedNexes() {
+  local rev=$1
+  local label="archived_nexes_$2.tar.bz2"
+  local tarball=$3
+
+  # TODO(robertm,bradn): find another place to store this and
+  #                      negotiate long term storage guarantees
+  UploadArchive canned_nexe/${rev}/${label} ${tarball}
+}
+
+DownloadArchivedNexes() {
+  local rev=$1
+  local label="archived_nexes_$2.tar.bz2"
+  local tarball=$3
+
+  DownloadArchive canned_nexe/${rev}/${label} ${tarball}
 }
 
 ######################################################################
@@ -171,16 +225,15 @@ UploadArchivedPexes() {
 
   # TODO(robertm,bradn): find another place to store this and
   #                      negotiate long term storage guarantees
-  UploadToolchainComponent ${rev} ${label} ${tarball}
+  # Note, we store the pexes with the toolchain rev for now
+  UploadArchive toolchain/${rev}/${label} ${tarball}
 }
 
 DownloadArchivedPexes() {
   local rev=$1
   local label="archived_pexes_$2.tar.bz2"
   local tarball=$3
-
-  curl -L ${URL_PREFIX_RAW}/${BASE_TOOLCHAIN_COMPONENT}/${rev}/${label} \
-      -o ${tarball}
+  DownloadArchive toolchain/${rev}/${label} ${tarball}
 }
 
 UploadArchivedPexesTranslator() {
@@ -205,16 +258,14 @@ DownloadArchivedPexesSpec2k() {
 UploadArmBinariesForHWBots() {
   local name=$1
   local tarball=$2
-  Upload ${tarball} ${BASE_BETWEEN_BOTS}/${name}/$(basename ${tarball})
+  UploadArchive between_builders/${name}/$(basename ${tarball}) ${tarball}
 }
 
 
 DownloadArmBinariesForHWBots() {
   local name=$1
   local tarball=$2
-  curl -L \
-     ${URL_PREFIX_RAW}/${BASE_BETWEEN_BOTS}/${name}/$(basename ${tarball}) \
-     -o ${tarball}
+  DownloadArchive between_builders/${name}/$(basename ${tarball}) ${tarball}
 }
 
 ######################################################################
@@ -224,16 +275,14 @@ DownloadArmBinariesForHWBots() {
 UploadArmBinariesForHWBotsTry() {
   local name=$1
   local tarball=$2
-  Upload ${tarball} ${BASE_BETWEEN_BOTS_TRY}/${name}/$(basename ${tarball})
+  UploadTrybot between_builders/${name}/$(basename ${tarball}) ${tarball}
 }
 
 
 DownloadArmBinariesForHWBotsTry() {
   local name=$1
   local tarball=$2
-  curl -L \
-     ${URL_PREFIX_RAW}/${BASE_BETWEEN_BOTS_TRY}/${name}/$(basename ${tarball})\
-     -o ${tarball}
+  DownloadTrybot between_builders/${name}/$(basename ${tarball}) ${tarball}
 }
 
 ######################################################################
