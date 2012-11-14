@@ -255,7 +255,8 @@ void WebKitTestController::RenderViewReady() {
 }
 
 void WebKitTestController::RenderViewGone(base::TerminationStatus status) {
-  printer_->AddErrorMessage("#CRASHED - renderer");
+  if (status == base::TERMINATION_STATUS_PROCESS_CRASHED)
+    printer_->AddErrorMessage("#CRASHED - renderer");
 }
 
 void WebKitTestController::WebContentsDestroyed(WebContents* web_contents) {
