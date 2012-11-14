@@ -47,6 +47,8 @@ class TestActivationClient : public client::ActivationClient,
   // fail.
   std::vector<Window*> active_windows_;
 
+  ObserverList<client::ActivationChangeObserver> observers_;
+
   DISALLOW_COPY_AND_ASSIGN(TestActivationClient);
 };
 

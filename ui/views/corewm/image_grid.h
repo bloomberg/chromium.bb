@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_IMAGE_GRID_H_
-#define ASH_WM_IMAGE_GRID_H_
+#ifndef UI_VIEWS_COREWM_IMAGE_GRID_H_
+#define UI_VIEWS_COREWM_IMAGE_GRID_H_
 
-#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -13,13 +12,14 @@
 #include "ui/compositor/layer_delegate.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "ui/views/views_export.h"
 
 namespace gfx {
 class Image;
 }  // namespace gfx
 
-namespace ash {
-namespace internal {
+namespace views {
+namespace corewm {
 
 // An ImageGrid is a 3x3 array of ui::Layers, each containing an image.
 //
@@ -57,10 +57,10 @@ namespace internal {
 //   | xXX|
 //   ...
 //
-class ASH_EXPORT ImageGrid {
+class VIEWS_EXPORT ImageGrid {
  public:
   // Helper class for use by tests.
-  class ASH_EXPORT TestAPI {
+  class VIEWS_EXPORT TestAPI {
    public:
     TestAPI(ImageGrid* grid) : grid_(grid) {}
 
@@ -212,7 +212,7 @@ class ASH_EXPORT ImageGrid {
   DISALLOW_COPY_AND_ASSIGN(ImageGrid);
 };
 
-}  // namespace internal
-}  // namespace ash
+}  // namespace corewm
+}  // namespace views
 
-#endif  // ASH_WM_IMAGE_GRID_H_
+#endif  // UI_VIEWS_COREWM_IMAGE_GRID_H_

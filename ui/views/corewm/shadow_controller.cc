@@ -2,14 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/shadow_controller.h"
+#include "ui/views/corewm/shadow_controller.h"
 
 #include <utility>
 
-#include "ash/shell.h"
-#include "ash/wm/shadow.h"
-#include "ash/wm/shadow_types.h"
-#include "ash/wm/window_properties.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "ui/aura/client/activation_client.h"
@@ -17,11 +13,13 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/views/corewm/shadow.h"
+#include "ui/views/corewm/shadow_types.h"
 
 using std::make_pair;
 
-namespace ash {
-namespace internal {
+namespace views {
+namespace corewm {
 
 namespace {
 
@@ -68,17 +66,16 @@ Shadow::Style GetShadowStyleForWindowLosingActive(
 
 }  // namespace
 
-ShadowController::ShadowController()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
+ShadowController::ShadowController(aura::RootWindow* root_window)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)),
+      root_window_(root_window) {
   aura::Env::GetInstance()->AddObserver(this);
   // Watch for window activation changes.
-  aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
-      AddObserver(this);
+  aura::client::GetActivationClient(root_window_)->AddObserver(this);
 }
 
 ShadowController::~ShadowController() {
-  aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
-      RemoveObserver(this);
+  aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
   aura::Env::GetInstance()->RemoveObserver(this);
 }
 
@@ -165,5 +162,5 @@ void ShadowController::CreateShadowForWindow(aura::Window* window) {
   window->layer()->Add(shadow->layer());
 }
 
-}  // namespace internal
-}  // namespace ash
+}  // namespace corewm
+}  // namespace views

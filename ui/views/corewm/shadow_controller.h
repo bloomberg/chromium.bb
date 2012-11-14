@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_SHADOW_CONTROLLER_H_
-#define ASH_WM_SHADOW_CONTROLLER_H_
+#ifndef UI_VIEWS_COREWM_SHADOW_CONTROLLER_H_
+#define UI_VIEWS_COREWM_SHADOW_CONTROLLER_H_
 
 #include <map>
 
-#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
@@ -15,22 +14,24 @@
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
+#include "ui/views/views_export.h"
 
 namespace aura {
+class RootWindow;
 class Window;
 }
 namespace gfx {
 class Rect;
 }
 
-namespace ash {
-namespace internal {
+namespace views {
+namespace corewm {
 
 class Shadow;
 
 // ShadowController observes changes to windows and creates and updates drop
 // shadows as needed.
-class ASH_EXPORT ShadowController :
+class VIEWS_EXPORT ShadowController :
     public aura::EnvObserver,
     public aura::WindowObserver,
     public aura::client::ActivationChangeObserver {
@@ -50,7 +51,7 @@ class ASH_EXPORT ShadowController :
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
-  explicit ShadowController();
+  explicit ShadowController(aura::RootWindow* root_window);
   virtual ~ShadowController();
 
   // aura::EnvObserver override:
@@ -95,10 +96,12 @@ class ASH_EXPORT ShadowController :
 
   ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
 
+  aura::RootWindow* root_window_;
+
   DISALLOW_COPY_AND_ASSIGN(ShadowController);
 };
 
-}  // namespace internal
-}  // namespace ash
+}  // namespace corewm
+}  // namespace views
 
-#endif  // ASH_WM_SHADOW_CONTROLLER_H_
+#endif  // UI_VIEWS_COREWM_SHADOW_CONTROLLER_H_

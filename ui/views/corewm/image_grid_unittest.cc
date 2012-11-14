@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/test/ash_test_base.h"
-#include "ash/wm/image_grid.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/corewm/image_grid.h"
 
-using ash::internal::ImageGrid;
-
-namespace ash {
-namespace test {
+namespace views {
+namespace corewm {
 
 namespace {
 
@@ -24,7 +22,7 @@ gfx::Image* CreateImage(const gfx::Size& size) {
 
 }  // namespace
 
-typedef ash::test::AshTestBase ImageGridTest;
+typedef ViewsTestBase ImageGridTest;
 
 // Test that an ImageGrid's layers are transformed correctly when SetSize() is
 // called.
@@ -338,5 +336,5 @@ TEST_F(ImageGridTest, TooSmall) {
   EXPECT_TRUE(test_api.bottom_right_clip_rect().IsEmpty());
 }
 
-}  // namespace test
-}  // namespace ash
+}  // namespace corewm
+}  // namespace views

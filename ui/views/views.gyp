@@ -5,7 +5,6 @@
   'variables': {
     'chromium_code': 1,
   },
-
   'target_defaults': {
     'conditions': [
       ['use_aura==1', {
@@ -240,8 +239,16 @@
         'controls/tree/tree_view_win.h',
         'corewm/compound_event_filter.cc',
         'corewm/compound_event_filter.h',
+        'corewm/image_grid.cc',
+        'corewm/image_grid.h',
         'corewm/input_method_event_filter.cc',
         'corewm/input_method_event_filter.h',
+        'corewm/shadow.cc',
+        'corewm/shadow.h',
+        'corewm/shadow_controller.cc',
+        'corewm/shadow_controller.h',
+        'corewm/shadow_types.cc',
+        'corewm/shadow_types.h',
         'debug_utils.cc',
         'debug_utils.h',
         'drag_controller.h',
@@ -621,7 +628,9 @@
         'controls/textfield/textfield_views_model_unittest.cc',
         'controls/tree/tree_view_views_unittest.cc',
         'corewm/compound_event_filter_unittest.cc',
+        'corewm/image_grid_unittest.cc',
         'corewm/input_method_event_filter_unittest.cc',
+        'corewm/shadow_controller_unittest.cc',
         'focus/focus_manager_test.h',
         'focus/focus_manager_test.cc',
         'focus/focus_manager_unittest.cc',

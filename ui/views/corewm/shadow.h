@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_SHADOW_H_
-#define ASH_WM_SHADOW_H_
+#ifndef UI_VIEWS_COREWM_SHADOW_H_
+#define UI_VIEWS_COREWM_SHADOW_H_
 
-#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/views_export.h"
 
 namespace ui {
 class Layer;
 }  // namespace ui
 
-namespace ash {
-namespace internal {
+namespace views {
+namespace corewm {
 
 class ImageGrid;
 
 // Simple class that draws a drop shadow around content at given bounds.
-class ASH_EXPORT Shadow : public ui::ImplicitAnimationObserver {
+class VIEWS_EXPORT Shadow : public ui::ImplicitAnimationObserver {
  public:
   enum Style {
     // Active windows have more opaque shadows, shifted down to make the window
@@ -78,7 +78,7 @@ class ASH_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(Shadow);
 };
 
-}  // namespace internal
-}  // namespace ash
+}  // namespace corewm
+}  // namespace views
 
-#endif  // ASH_WM_SHADOW_H_
+#endif  // UI_VIEWS_COREWM_SHADOW_H_

@@ -8,9 +8,6 @@
 #include "ash/launcher/launcher.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/shadow.h"
-#include "ash/wm/shadow_controller.h"
-#include "ash/wm/shadow_types.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -21,6 +18,9 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/shadow.h"
+#include "ui/views/corewm/shadow_controller.h"
+#include "ui/views/corewm/shadow_types.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {

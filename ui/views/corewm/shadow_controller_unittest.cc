@@ -2,27 +2,52 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/shadow_controller.h"
+#include "ui/views/corewm/shadow_controller.h"
 
 #include <algorithm>
 #include <vector>
 
-#include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
-#include "ash/wm/shadow.h"
-#include "ash/wm/shadow_types.h"
-#include "ash/wm/window_properties.h"
-#include "ash/wm/window_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/views/corewm/shadow.h"
+#include "ui/views/corewm/shadow_types.h"
 
-namespace ash {
-namespace internal {
+namespace views {
+namespace corewm {
 
-typedef ash::test::AshTestBase ShadowControllerTest;
+class ShadowControllerTest : public aura::test::AuraTestBase {
+ public:
+  ShadowControllerTest() {}
+  virtual ~ShadowControllerTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    AuraTestBase::SetUp();
+    shadow_controller_.reset(new ShadowController(root_window()));
+  }
+  virtual void TearDown() OVERRIDE {
+    shadow_controller_.reset();
+    AuraTestBase::TearDown();
+  }
+
+ protected:
+  ShadowController* shadow_controller() { return shadow_controller_.get(); }
+
+  void ActivateWindow(aura::Window* window) {
+    DCHECK(window);
+    DCHECK(window->GetRootWindow());
+    aura::client::GetActivationClient(window->GetRootWindow())->ActivateWindow(
+        window);
+  }
+
+ private:
+  scoped_ptr<ShadowController> shadow_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShadowControllerTest);
+};
 
 // Tests that various methods in Window update the Shadow object as expected.
 TEST_F(ShadowControllerTest, Shadow) {
@@ -33,9 +58,8 @@ TEST_F(ShadowControllerTest, Shadow) {
 
   // We should create the shadow before the window is visible (the shadow's
   // layer won't get drawn yet since it's a child of the window's layer).
-  internal::ShadowController::TestApi api(
-      ash::Shell::GetInstance()->shadow_controller());
-  const internal::Shadow* shadow = api.GetShadowForWindow(window.get());
+  ShadowController::TestApi api(shadow_controller());
+  const Shadow* shadow = api.GetShadowForWindow(window.get());
   ASSERT_TRUE(shadow != NULL);
   EXPECT_TRUE(shadow->layer()->visible());
 
@@ -46,10 +70,10 @@ TEST_F(ShadowControllerTest, Shadow) {
   EXPECT_TRUE(shadow->layer()->visible());
 
   // If the shadow is disabled, it should be hidden.
-  internal::SetShadowType(window.get(), internal::SHADOW_TYPE_NONE);
+  SetShadowType(window.get(), SHADOW_TYPE_NONE);
   window->Show();
   EXPECT_FALSE(shadow->layer()->visible());
-  internal::SetShadowType(window.get(), internal::SHADOW_TYPE_RECTANGULAR);
+  SetShadowType(window.get(), SHADOW_TYPE_RECTANGULAR);
   EXPECT_TRUE(shadow->layer()->visible());
 
   // The shadow's layer should be a child of the window's layer.
@@ -74,10 +98,9 @@ TEST_F(ShadowControllerTest, ShadowBounds) {
 
   // When the shadow is first created, it should use the window's size (but
   // remain at the origin, since it's a child of the window's layer).
-  internal::SetShadowType(window.get(), internal::SHADOW_TYPE_RECTANGULAR);
-  internal::ShadowController::TestApi api(
-      ash::Shell::GetInstance()->shadow_controller());
-  const internal::Shadow* shadow = api.GetShadowForWindow(window.get());
+  SetShadowType(window.get(), SHADOW_TYPE_RECTANGULAR);
+  ShadowController::TestApi api(shadow_controller());
+  const Shadow* shadow = api.GetShadowForWindow(window.get());
   ASSERT_TRUE(shadow != NULL);
   EXPECT_EQ(gfx::Rect(kOldBounds.size()).ToString(),
             shadow->content_bounds().ToString());
@@ -91,8 +114,7 @@ TEST_F(ShadowControllerTest, ShadowBounds) {
 
 // Tests that activating a window changes the shadow style.
 TEST_F(ShadowControllerTest, ShadowStyle) {
-  ShadowController::TestApi api(
-      ash::Shell::GetInstance()->shadow_controller());
+  ShadowController::TestApi api(shadow_controller());
 
   scoped_ptr<aura::Window> window1(new aura::Window(NULL));
   window1->SetType(aura::client::WINDOW_TYPE_NORMAL);
@@ -100,7 +122,7 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
   window1->SetParent(NULL);
   window1->SetBounds(gfx::Rect(10, 20, 300, 400));
   window1->Show();
-  wm::ActivateWindow(window1.get());
+  ActivateWindow(window1.get());
 
   // window1 is active, so style should have active appearance.
   Shadow* shadow1 = api.GetShadowForWindow(window1.get());
@@ -114,7 +136,7 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
   window2->SetParent(NULL);
   window2->SetBounds(gfx::Rect(11, 21, 301, 401));
   window2->Show();
-  wm::ActivateWindow(window2.get());
+  ActivateWindow(window2.get());
 
   // window1 is now inactive, so shadow should go inactive.
   Shadow* shadow2 = api.GetShadowForWindow(window2.get());
@@ -125,8 +147,7 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
 
 // Tests that we use smaller shadows for tooltips and menus.
 TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
-  ShadowController::TestApi api(
-      ash::Shell::GetInstance()->shadow_controller());
+  ShadowController::TestApi api(shadow_controller());
 
   scoped_ptr<aura::Window> tooltip_window(new aura::Window(NULL));
   tooltip_window->SetType(aura::client::WINDOW_TYPE_TOOLTIP);
@@ -154,8 +175,7 @@ TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
 // http://crbug.com/120210 - transient parents of certain types of transients
 // should not lose their shadow when they lose activation to the transient.
 TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
-  ShadowController::TestApi api(
-      ash::Shell::GetInstance()->shadow_controller());
+  ShadowController::TestApi api(shadow_controller());
 
   scoped_ptr<aura::Window> window1(new aura::Window(NULL));
   window1->SetType(aura::client::WINDOW_TYPE_NORMAL);
@@ -163,7 +183,7 @@ TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
   window1->SetParent(NULL);
   window1->SetBounds(gfx::Rect(10, 20, 300, 400));
   window1->Show();
-  wm::ActivateWindow(window1.get());
+  ActivateWindow(window1.get());
 
   // window1 is active, so style should have active appearance.
   Shadow* shadow1 = api.GetShadowForWindow(window1.get());
@@ -181,11 +201,11 @@ TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
   window1->AddTransientChild(window2.get());
   aura::client::SetHideOnDeactivate(window2.get(), true);
   window2->Show();
-  wm::ActivateWindow(window2.get());
+  ActivateWindow(window2.get());
 
   // window1 is now inactive, but its shadow should still appear active.
   EXPECT_EQ(Shadow::STYLE_ACTIVE, shadow1->style());
 }
 
-}  // namespace internal
-}  // namespace ash
+}  // namespace corewm
+}  // namespace views

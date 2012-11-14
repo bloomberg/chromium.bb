@@ -7,7 +7,6 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
-#include "ash/wm/shadow_types.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
@@ -21,6 +20,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/corewm/shadow_types.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -180,7 +180,8 @@ void PhantomWindowController::CreatePhantomWidget(const gfx::Rect& bounds,
     phantom_widget_->SetContentsView(content_view);
   } else if (style_ == STYLE_DRAGGING) {
     // Show shadow for the dragging window.
-    SetShadowType(phantom_widget_->GetNativeWindow(), SHADOW_TYPE_RECTANGULAR);
+    SetShadowType(phantom_widget_->GetNativeWindow(),
+                  views::corewm::SHADOW_TYPE_RECTANGULAR);
   }
   SetBoundsInternal(bounds);
   if (phantom_below_window_)

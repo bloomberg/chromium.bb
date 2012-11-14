@@ -4,6 +4,7 @@
 
 #include "ui/aura/test/test_activation_client.h"
 
+#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -29,20 +30,27 @@ TestActivationClient::~TestActivationClient() {
 
 void TestActivationClient::AddObserver(
     client::ActivationChangeObserver* observer) {
+  observers_.AddObserver(observer);
 }
 
 void TestActivationClient::RemoveObserver(
     client::ActivationChangeObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void TestActivationClient::ActivateWindow(Window* window) {
-  Window *last_active = GetActiveWindow();
+  Window* last_active = GetActiveWindow();
   if (last_active == window)
     return;
 
   RemoveActiveWindow(window);
   active_windows_.push_back(window);
   window->AddObserver(this);
+
+  FOR_EACH_OBSERVER(client::ActivationChangeObserver,
+                    observers_,
+                    OnWindowActivated(window, last_active));
+
   if (aura::client::GetActivationDelegate(window))
     aura::client::GetActivationDelegate(window)->OnActivated();
 

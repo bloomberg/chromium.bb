@@ -14,7 +14,6 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/web_notification/web_notification_tray.h"
-#include "ash/wm/shadow_types.h"
 #include "base/bind.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -26,6 +25,7 @@
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/corewm/shadow_types.h"
 #include "ui/views/examples/examples_window_with_content.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
@@ -185,8 +185,8 @@ void InitWindowTypeLauncher() {
       views::Widget::CreateWindowWithBounds(new WindowTypeLauncher,
                                             gfx::Rect(120, 150, 300, 410));
   widget->GetNativeView()->SetName("WindowTypeLauncher");
-  ash::internal::SetShadowType(widget->GetNativeView(),
-                               ash::internal::SHADOW_TYPE_RECTANGULAR);
+  views::corewm::SetShadowType(widget->GetNativeView(),
+                               views::corewm::SHADOW_TYPE_RECTANGULAR);
   widget->Show();
 }
 

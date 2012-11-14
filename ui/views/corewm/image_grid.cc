@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/image_grid.h"
+#include "ui/views/corewm/image_grid.h"
 
 #include <algorithm>
 
@@ -17,8 +17,8 @@
 using std::max;
 using std::min;
 
-namespace ash {
-namespace internal {
+namespace views {
+namespace corewm {
 
 gfx::RectF ImageGrid::TestAPI::GetTransformedLayerBounds(
     const ui::Layer& layer) {
@@ -280,5 +280,5 @@ void ImageGrid::SetImage(const gfx::Image* image,
   layer_->Add(layer_ptr->get());
 }
 
-}  // namespace internal
-}  // namespace ash
+}  // namespace corewm
+}  // namespace views

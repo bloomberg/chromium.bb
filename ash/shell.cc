@@ -51,7 +51,6 @@
 #include "ash/wm/session_state_controller.h"
 #include "ash/wm/session_state_controller_impl.h"
 #include "ash/wm/session_state_controller_impl2.h"
-#include "ash/wm/shadow_controller.h"
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/system_gesture_event_filter.h"
 #include "ash/wm/system_modal_container_event_filter.h"
@@ -85,6 +84,7 @@
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/input_method_event_filter.h"
+#include "ui/views/corewm/shadow_controller.h"
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
@@ -505,7 +505,8 @@ void Shell::Init() {
 
   if (!command_line->HasSwitch(switches::kAuraNoShadows)) {
     resize_shadow_controller_.reset(new internal::ResizeShadowController());
-    shadow_controller_.reset(new internal::ShadowController());
+    shadow_controller_.reset(
+        new views::corewm::ShadowController(GetPrimaryRootWindow()));
   }
 
   // Create system_tray_notifier_ before the delegate.

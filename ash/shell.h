@@ -56,6 +56,7 @@ class Widget;
 namespace corewm {
 class CompoundEventFilter;
 class InputMethodEventFilter;
+class ShadowController;
 }
 }
 
@@ -101,7 +102,6 @@ class ResizeShadowController;
 class RootWindowController;
 class RootWindowLayoutManager;
 class ScreenPositionController;
-class ShadowController;
 class SlowAnimationEventFilter;
 class StatusAreaWidget;
 class SystemGestureEventFilter;
@@ -391,7 +391,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   }
 
   // Made available for tests.
-  internal::ShadowController* shadow_controller() {
+  views::corewm::ShadowController* shadow_controller() {
     return shadow_controller_.get();
   }
 
@@ -482,7 +482,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   scoped_ptr<internal::WindowModalityController> window_modality_controller_;
   scoped_ptr<internal::DragDropController> drag_drop_controller_;
   scoped_ptr<internal::ResizeShadowController> resize_shadow_controller_;
-  scoped_ptr<internal::ShadowController> shadow_controller_;
+  scoped_ptr<views::corewm::ShadowController> shadow_controller_;
   scoped_ptr<internal::TooltipController> tooltip_controller_;
   scoped_ptr<internal::VisibilityController> visibility_controller_;
   scoped_ptr<DesktopBackgroundController> desktop_background_controller_;

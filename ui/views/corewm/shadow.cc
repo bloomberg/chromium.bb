@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/shadow.h"
+#include "ui/views/corewm/shadow.h"
 
-#include "ash/wm/image_grid.h"
-#include "grit/ash_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/views/corewm/image_grid.h"
 
 namespace {
 
@@ -20,13 +19,13 @@ const float kSmallShadowOpacity = 1.0f;
 // Duration for opacity animation in milliseconds.
 const int kShadowAnimationDurationMs = 100;
 
-float GetOpacityForStyle(ash::internal::Shadow::Style style) {
+float GetOpacityForStyle(views::corewm::Shadow::Style style) {
   switch (style) {
-    case ash::internal::Shadow::STYLE_ACTIVE:
+    case views::corewm::Shadow::STYLE_ACTIVE:
       return kActiveShadowOpacity;
-    case ash::internal::Shadow::STYLE_INACTIVE:
+    case views::corewm::Shadow::STYLE_INACTIVE:
       return kInactiveShadowOpacity;
-    case ash::internal::Shadow::STYLE_SMALL:
+    case views::corewm::Shadow::STYLE_SMALL:
       return kSmallShadowOpacity;
     default:
       NOTREACHED() << "Unhandled style " << style;
@@ -36,8 +35,8 @@ float GetOpacityForStyle(ash::internal::Shadow::Style style) {
 
 }  // namespace
 
-namespace ash {
-namespace internal {
+namespace views {
+namespace corewm {
 
 Shadow::Shadow() : style_(STYLE_ACTIVE) {
 }
@@ -172,5 +171,5 @@ void Shadow::UpdateImageGridBounds() {
   image_grid_->SetContentBounds(content_bounds_);
 }
 
-}  // namespace internal
-}  // namespace ash
+}  // namespace corewm
+}  // namespace views

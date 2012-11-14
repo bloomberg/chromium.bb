@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/shadow_types.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 
@@ -50,10 +49,6 @@ extern const aura::WindowProperty<ui::WindowShowState>* const
 
 extern const aura::WindowProperty<RootWindowController*>* const
     kRootWindowControllerKey;
-
-// A property key describing the drop shadow that should be displayed under the
-// window.  If unset, no shadow is displayed.
-extern const aura::WindowProperty<ShadowType>* const kShadowTypeKey;
 
 // A property key to remember the frame painter for the solo-window in the root
 // window. It is only available for root windows.

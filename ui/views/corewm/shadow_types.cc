@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/shadow_types.h"
+#include "ui/views/corewm/shadow_types.h"
 
-#include "ash/wm/window_properties.h"
-#include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 
-namespace ash {
-namespace internal {
+DECLARE_WINDOW_PROPERTY_TYPE(views::corewm::ShadowType);
+
+namespace views {
+namespace corewm {
 
 void SetShadowType(aura::Window* window, ShadowType shadow_type) {
   window->SetProperty(kShadowTypeKey, shadow_type);
@@ -18,5 +19,7 @@ ShadowType GetShadowType(aura::Window* window) {
   return window->GetProperty(kShadowTypeKey);
 }
 
-}  // namespace internal
-}  // namespace ash
+DEFINE_WINDOW_PROPERTY_KEY(ShadowType, kShadowTypeKey, SHADOW_TYPE_NONE);
+
+}  // namespace corewm
+}  // namespace views
