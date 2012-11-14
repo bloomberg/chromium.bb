@@ -4533,10 +4533,8 @@ class ExtensionsReadyRecorder : public content::NotificationObserver {
 //
 // Also tests that we always fire EXTENSIONS_READY, no matter whether we are
 // enabled or not.
-//
-// This test causes any ExtensionServiceTest tests that run after it to hang
-// trying to acquire the NPAPI plugin-list lock (see crbug.com/159754).
-TEST(ExtensionServiceTestSimple, DISABLED_Enabledness) {
+TEST(ExtensionServiceTestSimple, Enabledness) {
+  base::ShadowingAtExitManager at_exit_manager;
   ExtensionErrorReporter::Init(false);  // no noisy errors
   ExtensionsReadyRecorder recorder;
   scoped_ptr<TestingProfile> profile(new TestingProfile());
