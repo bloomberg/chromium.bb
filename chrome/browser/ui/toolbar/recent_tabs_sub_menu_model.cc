@@ -26,11 +26,11 @@
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/favicon_size.h"
 
 #if defined(USE_ASH)
@@ -309,7 +309,8 @@ void RecentTabsSubMenuModel::BuildDevices() {
          ++k) {
       BuildForeignTabItem(session_tag, *tabs_in_session[k],
           // Only need |session_name| for the first tab of the session.
-          !k ? session->session_name : std::string(), need_separator);
+          !k ? session->session_name : std::string(), session->device_type,
+          need_separator);
       need_separator = false;
     }  // for all tabs in one session
 
@@ -322,12 +323,15 @@ void RecentTabsSubMenuModel::BuildForeignTabItem(
     const std::string& session_tag,
     const SessionTab& tab,
     const std::string& session_name,
+    browser_sync::SyncedSession::DeviceType device_type,
     bool need_separator) {
   if (need_separator)
     AddSeparator(ui::NORMAL_SEPARATOR);
 
-  if (!session_name.empty())
+  if (!session_name.empty()) {
     AddItem(kDisabledCommandId, UTF8ToUTF16(session_name));
+    AddDeviceFavicon(GetItemCount() - 1, device_type);
+  }
 
   const TabNavigation& current_navigation =
       tab.navigations.at(tab.normalized_navigation_index());
@@ -335,14 +339,58 @@ void RecentTabsSubMenuModel::BuildForeignTabItem(
                       current_navigation.virtual_url());
   int command_id = ModelIndexToCommandId(model_.size());
   AddItem(command_id, current_navigation.title());
-  AddFavicon(model_.size(), command_id, item.url);
+  AddTabFavicon(model_.size(), command_id, item.url);
   model_.push_back(item);
 }
 
-void RecentTabsSubMenuModel::AddFavicon(int model_index, int command_id,
-                                        const GURL& url) {
+void RecentTabsSubMenuModel::AddDeviceFavicon(
+    int index_in_menu,
+    browser_sync::SyncedSession::DeviceType device_type) {
+  int favicon_id = -1;
+  switch (device_type) {
+    case browser_sync::SyncedSession::TYPE_PHONE:
+      favicon_id = IDR_PHONE_FAVICON;
+      break;
+
+    case browser_sync::SyncedSession::TYPE_TABLET:
+      favicon_id = IDR_TABLET_FAVICON;
+      break;
+
+    case browser_sync::SyncedSession::TYPE_CHROMEOS:
+    case browser_sync::SyncedSession::TYPE_WIN:
+    case browser_sync::SyncedSession::TYPE_MACOSX:
+    case browser_sync::SyncedSession::TYPE_LINUX:
+    case browser_sync::SyncedSession::TYPE_OTHER:
+    case browser_sync::SyncedSession::TYPE_UNSET:
+      favicon_id = IDR_LAPTOP_FAVICON;
+      break;
+  };
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  SetIcon(index_in_menu, rb.GetNativeImageNamed(favicon_id));
+}
+
+void RecentTabsSubMenuModel::AddTabFavicon(int model_index,
+                                           int command_id,
+                                           const GURL& url) {
+  int index_in_menu = GetIndexOfCommandId(command_id);
+
+  // If tab has synced favicon, use it.
+  // Note that currently, foreign tab only has favicon if --sync-tab-favicons
+  // switch is on; according to zea@, this flag is now automatically enabled for
+  // iOS and android, and they're looking into enabling it for other platforms.
+  browser_sync::SessionModelAssociator* associator = GetModelAssociator();
+  std::string favicon_png;
+  if (associator &&
+      associator->GetSyncedFaviconForPageURL(url.spec(), &favicon_png)) {
+    SetIcon(index_in_menu, gfx::Image(reinterpret_cast<const unsigned char*>(
+        favicon_png.data()), favicon_png.size()));
+    return;
+  }
+
+  // Otherwise, start to fetch the favicon from local history asynchronously.
   // Set default icon first.
-  SetIcon(GetIndexOfCommandId(command_id), default_favicon_);
+  SetIcon(index_in_menu, default_favicon_);
   // Start request to fetch actual icon if possible.
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
       browser_->profile(), Profile::EXPLICIT_ACCESS);

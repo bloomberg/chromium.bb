@@ -736,6 +736,19 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
       item->SetIcon(*icon.ToImageSkia());
   }
 
+  // Return the specific menu width of recent tab menu item if |command_id|
+  // refers to one of recent tabs menu items, else return -1.
+  int GetMaxWidthForMenu(MenuItemView* menu) {
+    views::SubmenuView* submenu = menu_item_->GetSubmenu();
+    if (!submenu)
+      return -1;
+    const int kMaxMenuItemWidth = 320;
+    return menu->GetCommand() >= menu_item_->GetCommand() &&
+        menu->GetCommand() <=
+            menu_item_->GetCommand() + submenu->GetMenuItemCount() ?
+        kMaxMenuItemWidth : -1;
+  }
+
  private:
   ui::MenuModel* model_;
   views::MenuItemView* menu_item_;
@@ -893,9 +906,17 @@ int WrenchMenu::GetDragOperations(MenuItemView* sender) {
 }
 
 int WrenchMenu::GetMaxWidthForMenu(MenuItemView* menu) {
-  return is_bookmark_command(menu->GetCommand()) ?
-      bookmark_menu_delegate_->GetMaxWidthForMenu(menu) :
-      MenuDelegate::GetMaxWidthForMenu(menu);
+  if (is_bookmark_command(menu->GetCommand()))
+    return bookmark_menu_delegate_->GetMaxWidthForMenu(menu);
+  int max_width = -1;
+  // If recent tabs menu is available, it will decide if |menu| is one of recent
+  // tabs; if yes, it would return the menu width for recent tabs.
+  // otherwise, it would return -1.
+  if (recent_tabs_menu_model_delegate_.get())
+    max_width = recent_tabs_menu_model_delegate_->GetMaxWidthForMenu(menu);
+  if (max_width == -1)
+    max_width = MenuDelegate::GetMaxWidthForMenu(menu);
+  return max_width;
 }
 
 bool WrenchMenu::IsItemChecked(int id) const {

@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sync/glue/synced_session.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -59,11 +60,15 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   void Build();
   void BuildLastClosed();
   void BuildDevices();
-  void BuildForeignTabItem(const std::string& session_tag,
-                           const SessionTab& tab,
-                           const std::string& session_name,
-                           bool need_separator);
-  void AddFavicon(int model_index, int command_id, const GURL& url);
+  void BuildForeignTabItem(
+      const std::string& session_tag,
+      const SessionTab& tab,
+      const std::string& session_name,
+      browser_sync::SyncedSession::DeviceType device_type,
+      bool need_separator);
+  void AddDeviceFavicon(int index_in_menu,
+                        browser_sync::SyncedSession::DeviceType device_type);
+  void AddTabFavicon(int model_index, int command_id, const GURL& url);
   void OnFaviconDataAvailable(FaviconService::Handle handle,
                               const history::FaviconImageResult& image_result);
   browser_sync::SessionModelAssociator* GetModelAssociator();
