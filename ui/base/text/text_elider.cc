@@ -795,7 +795,8 @@ class RectangleText {
         current_height_(0),
         last_line_ended_in_lf_(false),
         lines_(lines),
-        full_(false) {}
+        insufficient_width_(false),
+        insufficient_height_(false) {}
 
   // Perform deferred initializions following creation.  Must be called
   // before any input can be added via AddString().
@@ -808,9 +809,10 @@ class RectangleText {
   void AddString(const string16& input);
 
   // Perform any deferred output processing.  Must be called after the last
-  // AddString() call has occured.  Returns |true| if the text had to be
-  // truncated to fit the available height.
-  bool Finalize();
+  // AddString() call has occured. Returns a combination of
+  // |ReformattingResultFlags| indicating whether the given width or height was
+  // insufficient, leading to elision or truncation.
+  int Finalize();
 
  private:
   // Add a line to the rectangular region at the current position,
@@ -867,8 +869,12 @@ class RectangleText {
   // The output vector of lines.
   std::vector<string16>* lines_;
 
+  // Indicates whether a word was so long that it had to be truncated or elided
+  // to fit the available width.
+  bool insufficient_width_;
+
   // Indicates whether there were too many lines for the available height.
-  bool full_;
+  bool insufficient_height_;
 
   DISALLOW_COPY_AND_ASSIGN(RectangleText);
 };
@@ -877,7 +883,7 @@ void RectangleText::AddString(const string16& input) {
   base::i18n::BreakIterator lines(input,
                                   base::i18n::BreakIterator::BREAK_NEWLINE);
   if (lines.Init()) {
-    while (!full_ && lines.Advance()) {
+    while (!insufficient_height_ && lines.Advance()) {
       string16 line = lines.GetString();
       // The BREAK_NEWLINE iterator will keep the trailing newline character,
       // except in the case of the last line, which may not have one.  Remove
@@ -892,17 +898,18 @@ void RectangleText::AddString(const string16& input) {
   }
 }
 
-bool RectangleText::Finalize() {
+int RectangleText::Finalize() {
   // Remove trailing whitespace from the last line or remove the last line
   // completely, if it's just whitespace.
-  if (!full_ && !lines_->empty()) {
+  if (!insufficient_height_ && !lines_->empty()) {
     TrimWhitespace(lines_->back(), TRIM_TRAILING, &lines_->back());
     if (lines_->back().empty() && !last_line_ended_in_lf_)
       lines_->pop_back();
   }
   if (last_line_ended_in_lf_)
     lines_->push_back(string16());
-  return full_;
+  return (insufficient_width_ ? ui::INSUFFICIENT_SPACE_HORIZONTAL : 0) |
+         (insufficient_height_ ? ui::INSUFFICIENT_SPACE_VERTICAL : 0);
 }
 
 void RectangleText::AddLine(const string16& line) {
@@ -945,7 +952,7 @@ int RectangleText::WrapWord(const string16& word) {
   string16 text = word;
   int lines_added = 0;
   bool first_fragment = true;
-  while (!full_ && !text.empty()) {
+  while (!insufficient_height_ && !text.empty()) {
     const string16 fragment =
         ui::ElideText(text, font_, available_pixel_width_, ui::TRUNCATE_AT_END);
     if (!first_fragment && NewLine())
@@ -979,6 +986,7 @@ int RectangleText::AddWordOverflow(const string16& word) {
     const string16 elided_word =
         ui::ElideText(word, font_, available_pixel_width_, elide_behavior);
     AddToCurrentLine(elided_word);
+    insufficient_width_ = true;
   }
 
   return lines_added;
@@ -1009,7 +1017,7 @@ void RectangleText::AddToCurrentLine(const string16& text) {
 void RectangleText::AddToCurrentLineWithWidth(const string16& text,
                                               int text_width) {
   if (current_height_ >= available_pixel_height_) {
-    full_ = true;
+    insufficient_height_ = true;
     return;
   }
   current_line_.append(text);
@@ -1023,7 +1031,7 @@ bool RectangleText::NewLine() {
     current_line_.clear();
     line_added = true;
   } else {
-    full_ = true;
+    insufficient_height_ = true;
   }
   current_height_ += line_height_;
   current_width_ = 0;
@@ -1042,7 +1050,7 @@ bool ElideRectangleString(const string16& input, size_t max_rows,
   return rect.Finalize();
 }
 
-bool ElideRectangleText(const string16& input,
+int ElideRectangleText(const string16& input,
                         const gfx::Font& font,
                         int available_pixel_width,
                         int available_pixel_height,

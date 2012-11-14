@@ -524,7 +524,7 @@ TEST(TextEliderTest, ElideRectangleText) {
     const char* input;
     int available_pixel_width;
     int available_pixel_height;
-    bool truncated;
+    bool truncated_y;
     const char* output;
   } cases[] = {
     { "", 0, 0, false, NULL },
@@ -556,7 +556,7 @@ TEST(TextEliderTest, ElideRectangleText) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     std::vector<string16> lines;
-    EXPECT_EQ(cases[i].truncated,
+    EXPECT_EQ(cases[i].truncated_y ? INSUFFICIENT_SPACE_VERTICAL : 0,
               ElideRectangleText(UTF8ToUTF16(cases[i].input),
                                  font,
                                  cases[i].available_pixel_width,
@@ -583,12 +583,12 @@ TEST(TextEliderTest, ElideRectangleTextPunctuation) {
     int available_pixel_width;
     int available_pixel_height;
     bool wrap_words;
-    bool truncated;
+    bool truncated_x;
     const char* output;
   } cases[] = {
     { "Test T.", test_t_width, line_height * 2, false, false, "Test|T." },
     { "Test T ?", test_t_width, line_height * 2, false, false, "Test|T ?" },
-    { "Test. Test", test_width, line_height * 3, false, false, "Test|Test" },
+    { "Test. Test", test_width, line_height * 3, false, true, "Test|Test" },
     { "Test. Test", test_width, line_height * 3, true, false, "Test|.|Test" },
   };
 
@@ -596,7 +596,7 @@ TEST(TextEliderTest, ElideRectangleTextPunctuation) {
     std::vector<string16> lines;
     const WordWrapBehavior wrap_behavior =
         (cases[i].wrap_words ? WRAP_LONG_WORDS : TRUNCATE_LONG_WORDS);
-    EXPECT_EQ(cases[i].truncated,
+    EXPECT_EQ(cases[i].truncated_x ? INSUFFICIENT_SPACE_HORIZONTAL : 0,
               ElideRectangleText(UTF8ToUTF16(cases[i].input),
                                  font,
                                  cases[i].available_pixel_width,
@@ -623,45 +623,47 @@ TEST(TextEliderTest, ElideRectangleTextLongWords) {
     const char* input;
     int available_pixel_width;
     WordWrapBehavior wrap_behavior;
+    bool truncated_x;
     const char* output;
   } cases[] = {
-    { "Testing", test_width, IGNORE_LONG_WORDS, "Testing" },
-    { "X Testing", test_width, IGNORE_LONG_WORDS, "X|Testing" },
-    { "Test Testing", test_width, IGNORE_LONG_WORDS, "Test|Testing" },
-    { "Test\nTesting", test_width, IGNORE_LONG_WORDS, "Test|Testing" },
-    { "Test Tests ", test_width, IGNORE_LONG_WORDS, "Test|Tests" },
-    { "Test Tests T", test_width, IGNORE_LONG_WORDS, "Test|Tests|T" },
+    { "Testing", test_width, IGNORE_LONG_WORDS, false, "Testing" },
+    { "X Testing", test_width, IGNORE_LONG_WORDS, false, "X|Testing" },
+    { "Test Testing", test_width, IGNORE_LONG_WORDS, false, "Test|Testing" },
+    { "Test\nTesting", test_width, IGNORE_LONG_WORDS, false, "Test|Testing" },
+    { "Test Tests ", test_width, IGNORE_LONG_WORDS, false, "Test|Tests" },
+    { "Test Tests T", test_width, IGNORE_LONG_WORDS, false, "Test|Tests|T" },
 
-    { "Testing", elided_width, ELIDE_LONG_WORDS, "Tes..." },
-    { "X Testing", elided_width, ELIDE_LONG_WORDS, "X|Tes..." },
-    { "Test Testing", elided_width, ELIDE_LONG_WORDS, "Test|Tes..." },
-    { "Test\nTesting", elided_width, ELIDE_LONG_WORDS, "Test|Tes..." },
+    { "Testing", elided_width, ELIDE_LONG_WORDS, true, "Tes..." },
+    { "X Testing", elided_width, ELIDE_LONG_WORDS, true, "X|Tes..." },
+    { "Test Testing", elided_width, ELIDE_LONG_WORDS, true, "Test|Tes..." },
+    { "Test\nTesting", elided_width, ELIDE_LONG_WORDS, true, "Test|Tes..." },
 
-    { "Testing", test_width, TRUNCATE_LONG_WORDS, "Test" },
-    { "X Testing", test_width, TRUNCATE_LONG_WORDS, "X|Test" },
-    { "Test Testing", test_width, TRUNCATE_LONG_WORDS, "Test|Test" },
-    { "Test\nTesting", test_width, TRUNCATE_LONG_WORDS, "Test|Test" },
-    { "Test Tests ", test_width, TRUNCATE_LONG_WORDS, "Test|Test" },
-    { "Test Tests T", test_width, TRUNCATE_LONG_WORDS, "Test|Test|T" },
+    { "Testing", test_width, TRUNCATE_LONG_WORDS, true, "Test" },
+    { "X Testing", test_width, TRUNCATE_LONG_WORDS, true, "X|Test" },
+    { "Test Testing", test_width, TRUNCATE_LONG_WORDS, true, "Test|Test" },
+    { "Test\nTesting", test_width, TRUNCATE_LONG_WORDS, true, "Test|Test" },
+    { "Test Tests ", test_width, TRUNCATE_LONG_WORDS, true, "Test|Test" },
+    { "Test Tests T", test_width, TRUNCATE_LONG_WORDS, true, "Test|Test|T" },
 
-    { "Testing", test_width, WRAP_LONG_WORDS, "Test|ing" },
-    { "X Testing", test_width, WRAP_LONG_WORDS, "X|Test|ing" },
-    { "Test Testing", test_width, WRAP_LONG_WORDS, "Test|Test|ing" },
-    { "Test\nTesting", test_width, WRAP_LONG_WORDS, "Test|Test|ing" },
-    { "Test Tests ", test_width, WRAP_LONG_WORDS, "Test|Test|s" },
-    { "Test Tests T", test_width, WRAP_LONG_WORDS, "Test|Test|s T" },
-    { "TestTestTest", test_width, WRAP_LONG_WORDS, "Test|Test|Test" },
-    { "TestTestTestT", test_width, WRAP_LONG_WORDS, "Test|Test|Test|T" },
+    { "Testing", test_width, WRAP_LONG_WORDS, false, "Test|ing" },
+    { "X Testing", test_width, WRAP_LONG_WORDS, false, "X|Test|ing" },
+    { "Test Testing", test_width, WRAP_LONG_WORDS, false, "Test|Test|ing" },
+    { "Test\nTesting", test_width, WRAP_LONG_WORDS, false, "Test|Test|ing" },
+    { "Test Tests ", test_width, WRAP_LONG_WORDS, false, "Test|Test|s" },
+    { "Test Tests T", test_width, WRAP_LONG_WORDS, false, "Test|Test|s T" },
+    { "TestTestTest", test_width, WRAP_LONG_WORDS, false, "Test|Test|Test" },
+    { "TestTestTestT", test_width, WRAP_LONG_WORDS, false, "Test|Test|Test|T" },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     std::vector<string16> lines;
-    ElideRectangleText(UTF8ToUTF16(cases[i].input),
-                       font,
-                       cases[i].available_pixel_width,
-                       kAvailableHeight,
-                       cases[i].wrap_behavior,
-                       &lines);
+    EXPECT_EQ(cases[i].truncated_x ? INSUFFICIENT_SPACE_HORIZONTAL : 0,
+              ElideRectangleText(UTF8ToUTF16(cases[i].input),
+                                 font,
+                                 cases[i].available_pixel_width,
+                                 kAvailableHeight,
+                                 cases[i].wrap_behavior,
+                                 &lines));
     std::string expected_output(cases[i].output);
     ReplaceSubstringsAfterOffset(&expected_output, 0, "...", kEllipsis);
     const std::string result = UTF16ToUTF8(JoinString(lines, '|'));
