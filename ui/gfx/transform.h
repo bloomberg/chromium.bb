@@ -10,7 +10,7 @@
 
 namespace gfx {
 
-class Rect;
+class RectF;
 class Point;
 class Point3F;
 
@@ -102,13 +102,13 @@ class UI_EXPORT Transform {
   // Applies transformation on the rectangle. Returns true if the transformed
   // rectangle was axis aligned. If it returns false, rect will be the
   // smallest axis aligned bounding box containing the transformed rect.
-  void TransformRect(Rect* rect) const;
+  void TransformRect(RectF* rect) const;
 
   // Applies the reverse transformation on the rectangle. Returns true if
   // the transformed rectangle was axis aligned. If it returns false,
   // rect will be the smallest axis aligned bounding box containing the
   // transformed rect.
-  bool TransformRectReverse(Rect* rect) const;
+  bool TransformRectReverse(RectF* rect) const;
 
   // Returns the underlying matrix.
   const SkMatrix44& matrix() const { return matrix_; }

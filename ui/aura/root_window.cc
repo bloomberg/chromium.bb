@@ -39,6 +39,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/point_conversions.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
 
 using std::vector;
@@ -927,14 +928,15 @@ void RootWindow::OnHostResized(const gfx::Size& size) {
   DispatchHeldMouseMove();
   // The compositor should have the same size as the native root window host.
   // Get the latest scale from display because it might have been changed.
-  compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(this),
-                               size);
-  gfx::Size old(bounds().size());
+  compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(this), size);
+
   // The layer, and all the observers should be notified of the
   // transformed size of the root window.
-  gfx::Rect bounds(ui::ConvertSizeToDIP(layer(), size));
+  gfx::Size old(bounds().size());
+  gfx::RectF bounds(ui::ConvertSizeToDIP(layer(), size));
   layer()->transform().TransformRect(&bounds);
-  SetBounds(bounds);
+  // The transform is expected to produce an integer rect as its output.
+  SetBounds(gfx::ToNearestRect(bounds));
   FOR_EACH_OBSERVER(RootWindowObserver, observers_,
                     OnRootWindowResized(this, old));
 }

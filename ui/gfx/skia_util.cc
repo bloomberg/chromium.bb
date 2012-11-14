@@ -14,6 +14,7 @@
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_f.h"
 #include "ui/gfx/shadow_value.h"
 
 namespace gfx {
@@ -28,16 +29,24 @@ SkIRect RectToSkIRect(const Rect& rect) {
   return SkIRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
-Rect SkRectToRect(const SkRect& rect) {
-  return Rect(static_cast<int>(rect.left()),
-              static_cast<int>(rect.top()),
-              static_cast<int>(rect.width()),
-              static_cast<int>(rect.height()));
-}
-
 Rect SkIRectToRect(const SkIRect& rect) {
   return Rect(rect.x(), rect.y(), rect.width(), rect.height());
 }
+
+SkRect RectFToSkRect(const RectF& rect) {
+  return SkRect::MakeXYWH(SkFloatToScalar(rect.x()),
+                          SkFloatToScalar(rect.y()),
+                          SkFloatToScalar(rect.width()),
+                          SkFloatToScalar(rect.height()));
+}
+
+RectF SkRectToRectF(const SkRect& rect) {
+  return RectF(SkScalarToFloat(rect.x()),
+               SkScalarToFloat(rect.y()),
+               SkScalarToFloat(rect.width()),
+               SkScalarToFloat(rect.height()));
+}
+
 
 SkShader* CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
                                SkShader::TileMode tile_mode,

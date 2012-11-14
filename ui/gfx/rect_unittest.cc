@@ -394,10 +394,18 @@ TEST(RectTest, SharesEdgeWith) {
   EXPECT_FALSE(r.SharesEdgeWith(just_right_no_edge));
 }
 
-TEST(RectTest, SkRectToRect) {
-  Rect src(10, 20, 30, 40);
-  SkRect skrect = RectToSkRect(src);
-  EXPECT_EQ(src, SkRectToRect(skrect));
+TEST(RectTest, SkiaRectConversions) {
+  Rect isrc(10, 20, 30, 40);
+  RectF fsrc(10.5f, 20.5f, 30.5f, 40.5f);
+
+  SkIRect skirect = RectToSkIRect(isrc);
+  EXPECT_EQ(isrc.ToString(), SkIRectToRect(skirect).ToString());
+
+  SkRect skrect = RectToSkRect(isrc);
+  EXPECT_EQ(gfx::RectF(isrc).ToString(), SkRectToRectF(skrect).ToString());
+
+  skrect = RectFToSkRect(fsrc);
+  EXPECT_EQ(fsrc.ToString(), SkRectToRectF(skrect).ToString());
 }
 
 // Similar to EXPECT_FLOAT_EQ, but lets NaN equal NaN
@@ -549,6 +557,17 @@ TEST(RectTest, ToEnclosingRect) {
     EXPECT_FLOAT_AND_NAN_EQ(r2.width(), enclosed.width());
     EXPECT_FLOAT_AND_NAN_EQ(r2.height(), enclosed.height());
   }
+}
+
+TEST(RectTest, ToNearestRect) {
+  Rect rect;
+  EXPECT_EQ(rect.ToString(), ToNearestRect(RectF(rect)).ToString());
+
+  rect = Rect(-1, -1, 3, 3);
+  EXPECT_EQ(rect.ToString(), ToNearestRect(RectF(rect)).ToString());
+
+  RectF rectf(-1.00001f, -0.999999f, 3.0000001f, 2.999999f);
+  EXPECT_EQ(rect.ToString(), ToNearestRect(rectf).ToString());
 }
 
 TEST(RectTest, ToFlooredRect) {

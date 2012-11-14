@@ -421,12 +421,20 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
       CreateTestWindow(SK_ColorRED, 1111, gfx::Rect(5, 5, 50, 50), w111.get()));
 
   RootWindow* root = root_window();
+
+  // The root window expects transforms that produce integer rects.
+  gfx::Transform root_transform;
+  root_transform.ConcatScale(2.0f, 3.0f);
+  root_transform.ConcatTranslate(-50, -50);
+  root_transform.ConcatRotate(-90.0f);
+  root_transform.ConcatTranslate(60, 70);
+
   gfx::Transform transform;
   transform.ConcatScale(0.3f, 0.5f);
   transform.ConcatRotate(10.0f);
   transform.ConcatTranslate(10, 20);
 
-  root->SetTransform(transform);
+  root->SetTransform(root_transform);
   w1->SetTransform(transform);
   w11->SetTransform(transform);
   w111->SetTransform(transform);
@@ -435,8 +443,8 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
   w1111->MoveCursorTo(gfx::Point(10, 10));
 
 #if !defined(OS_WIN)
-  // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.OD
-  EXPECT_EQ("11,47", root->QueryMouseLocationForTest().ToString());
+  // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.
+  EXPECT_EQ("169,80", root->QueryMouseLocationForTest().ToString());
 #endif
   EXPECT_EQ("20,53",
       gfx::Screen::GetScreenFor(root)->GetCursorScreenPoint().ToString());

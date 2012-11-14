@@ -78,7 +78,7 @@ class ASH_EXPORT ImageGrid {
     }
 
     // Returns |layer|'s bounds after applying the layer's current transform.
-    gfx::Rect GetTransformedLayerBounds(const ui::Layer& layer);
+    gfx::RectF GetTransformedLayerBounds(const ui::Layer& layer);
 
    private:
     ImageGrid* grid_;  // not owned

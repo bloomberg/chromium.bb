@@ -50,6 +50,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 
@@ -603,7 +604,7 @@ void RenderWidgetHostViewAura::DidUpdateBackingStore(
   if (paint_canvas_) {
     SkRect sk_clip_rect;
     if (paint_canvas_->sk_canvas()->getClipBounds(&sk_clip_rect))
-      clip_rect = gfx::SkRectToRect(sk_clip_rect);
+      clip_rect = gfx::ToEnclosingRect(gfx::SkRectToRectF(sk_clip_rect));
   }
 
   if (!scroll_rect.IsEmpty())

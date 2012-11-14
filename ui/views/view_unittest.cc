@@ -2483,9 +2483,8 @@ TEST_F(ViewTest, ConvertRectWithTransform) {
   EXPECT_EQ(gfx::Rect(25, 100, 40, 15), v2->ConvertRectToParent(rect));
 
   // |v2| now occupies (20, 20) to (120, 70) in |widget|
-  // There are some rounding of floating values here. These values may change if
-  // floating operations are improved/changed.
-  EXPECT_EQ(gfx::Rect(22, 60, 20, 7), v2->ConvertRectToWidget(rect));
+  EXPECT_EQ(gfx::Rect(22, 60, 21, 8).ToString(),
+            v2->ConvertRectToWidget(rect).ToString());
 
   widget->CloseNow();
 }

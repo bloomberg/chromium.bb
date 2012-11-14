@@ -9,6 +9,7 @@
 #include "ui/base/models/table_model.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/table/table_view_observer.h"
@@ -220,7 +221,9 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
   {
     SkRect sk_clip_rect;
     if (canvas->sk_canvas()->getClipBounds(&sk_clip_rect)) {
-      gfx::Rect clip_rect = gfx::SkRectToRect(sk_clip_rect);
+      // Pixels partially inside the clip rect should be included.
+      gfx::Rect clip_rect = gfx::ToEnclosingRect(
+          gfx::SkRectToRectF(sk_clip_rect));
       min_y = clip_rect.y();
       max_y = clip_rect.bottom();
     } else {

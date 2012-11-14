@@ -24,6 +24,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/point3_f.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/background.h"
@@ -354,8 +355,10 @@ gfx::Rect View::GetVisibleBounds() const {
   if (vis_bounds.IsEmpty())
     return vis_bounds;
   // Convert back to this views coordinate system.
-  transform.TransformRectReverse(&vis_bounds);
-  return vis_bounds;
+  gfx::RectF views_vis_bounds(vis_bounds);
+  transform.TransformRectReverse(&views_vis_bounds);
+  // Partially visible pixels should be considered visible.
+  return gfx::ToEnclosingRect(views_vis_bounds);
 }
 
 gfx::Rect View::GetBoundsInScreen() const {
@@ -677,10 +680,11 @@ void View::ConvertPointFromScreen(const View* dst, gfx::Point* p) {
 }
 
 gfx::Rect View::ConvertRectToParent(const gfx::Rect& rect) const {
-  gfx::Rect x_rect = rect;
+  gfx::RectF x_rect = rect;
   GetTransform().TransformRect(&x_rect);
   x_rect.Offset(GetMirroredPosition().OffsetFromOrigin());
-  return x_rect;
+  // Pixels we partially occupy in the parent should be included.
+  return gfx::ToEnclosingRect(x_rect);
 }
 
 gfx::Rect View::ConvertRectToWidget(const gfx::Rect& rect) const {

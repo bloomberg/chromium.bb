@@ -4,8 +4,9 @@
 
 #include "ui/gfx/transform.h"
 
+#include "ui/gfx/point.h"
 #include "ui/gfx/point3_f.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/rect_f.h"
 #include "ui/gfx/safe_integer_conversions.h"
 #include "ui/gfx/skia_util.h"
 
@@ -151,21 +152,21 @@ bool Transform::TransformPointReverse(Point3F& point) const {
   return true;
 }
 
-void Transform::TransformRect(Rect* rect) const {
-  SkRect src = RectToSkRect(*rect);
+void Transform::TransformRect(RectF* rect) const {
+  SkRect src = RectFToSkRect(*rect);
   const SkMatrix& matrix = matrix_;
   matrix.mapRect(&src);
-  *rect = SkRectToRect(src);
+  *rect = SkRectToRectF(src);
 }
 
-bool Transform::TransformRectReverse(Rect* rect) const {
+bool Transform::TransformRectReverse(RectF* rect) const {
   SkMatrix44 inverse;
   if (!matrix_.invert(&inverse))
     return false;
   const SkMatrix& matrix = inverse;
-  SkRect src = RectToSkRect(*rect);
+  SkRect src = RectFToSkRect(*rect);
   matrix.mapRect(&src);
-  *rect = SkRectToRect(src);
+  *rect = SkRectToRectF(src);
   return true;
 }
 

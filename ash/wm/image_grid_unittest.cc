@@ -57,31 +57,31 @@ TEST_F(ImageGridTest, Basic) {
   grid.SetSize(size);
 
   // The top-left layer should be flush with the top-left corner and unscaled.
-  EXPECT_EQ(gfx::Rect(0, 0, kBorder, kBorder).ToString(),
+  EXPECT_EQ(gfx::RectF(0, 0, kBorder, kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
                 *grid.top_left_layer()).ToString());
 
   // The top layer should be flush with the top edge and stretched horizontally
   // between the two top corners.
-  EXPECT_EQ(gfx::Rect(
+  EXPECT_EQ(gfx::RectF(
                 kBorder, 0, size.width() - 2 * kBorder, kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
                 *grid.top_layer()).ToString());
 
   // The top-right layer should be flush with the top-right corner and unscaled.
-  EXPECT_EQ(gfx::Rect(size.width() - kBorder, 0, kBorder, kBorder).ToString(),
+  EXPECT_EQ(gfx::RectF(size.width() - kBorder, 0, kBorder, kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
                 *grid.top_right_layer()).ToString());
 
   // The left layer should be flush with the left edge and stretched vertically
   // between the two left corners.
-  EXPECT_EQ(gfx::Rect(
+  EXPECT_EQ(gfx::RectF(
                 0, kBorder, kBorder, size.height() - 2 * kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
                 *grid.left_layer()).ToString());
 
   // The center layer should fill the space in the middle of the grid.
-  EXPECT_EQ(gfx::Rect(
+  EXPECT_EQ(gfx::RectF(
                 kBorder, kBorder, size.width() - 2 * kBorder,
                 size.height() - 2 * kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
@@ -89,7 +89,7 @@ TEST_F(ImageGridTest, Basic) {
 
   // The right layer should be flush with the right edge and stretched
   // vertically between the two right corners.
-  EXPECT_EQ(gfx::Rect(
+  EXPECT_EQ(gfx::RectF(
                 size.width() - kBorder, kBorder,
                 kBorder, size.height() - 2 * kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
@@ -97,13 +97,13 @@ TEST_F(ImageGridTest, Basic) {
 
   // The bottom-left layer should be flush with the bottom-left corner and
   // unscaled.
-  EXPECT_EQ(gfx::Rect(0, size.height() - kBorder, kBorder, kBorder).ToString(),
+  EXPECT_EQ(gfx::RectF(0, size.height() - kBorder, kBorder, kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
                 *grid.bottom_left_layer()).ToString());
 
   // The bottom layer should be flush with the bottom edge and stretched
   // horizontally between the two bottom corners.
-  EXPECT_EQ(gfx::Rect(
+  EXPECT_EQ(gfx::RectF(
                 kBorder, size.height() - kBorder,
                 size.width() - 2 * kBorder, kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
@@ -111,7 +111,7 @@ TEST_F(ImageGridTest, Basic) {
 
   // The bottom-right layer should be flush with the bottom-right corner and
   // unscaled.
-  EXPECT_EQ(gfx::Rect(
+  EXPECT_EQ(gfx::RectF(
                 size.width() - kBorder, size.height() - kBorder,
                 kBorder, kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
@@ -142,7 +142,7 @@ TEST_F(ImageGridTest, SetContentBounds) {
 
   // The master layer is positioned above the top-left corner of the content
   // bounds and has height/width that contain the grid and bounds.
-  EXPECT_EQ(gfx::Rect(origin.x() - kBorder,
+  EXPECT_EQ(gfx::RectF(origin.x() - kBorder,
                       origin.y() - kBorder,
                       size.width() + 2 * kBorder,
                       size.height() + 2 * kBorder).ToString(),
@@ -175,7 +175,7 @@ TEST_F(ImageGridTest, SingleImage) {
 
   // The top layer should be scaled horizontally across the entire width, but it
   // shouldn't be scaled vertically.
-  EXPECT_EQ(gfx::Rect(0, 0, kSize.width(), kBorder).ToString(),
+  EXPECT_EQ(gfx::RectF(0, 0, kSize.width(), kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
                 *grid.top_layer()).ToString());
 }
@@ -245,21 +245,21 @@ TEST_F(ImageGridTest, SmallerSides) {
 
   // The top layer should be flush with the top edge and stretched horizontally
   // between the two top corners.
-  EXPECT_EQ(gfx::Rect(
+  EXPECT_EQ(gfx::RectF(
                 kCorner, 0, kSize.width() - 2 * kCorner, kEdge).ToString(),
             test_api.GetTransformedLayerBounds(
                 *grid.top_layer()).ToString());
 
   // The left layer should be flush with the left edge and stretched vertically
   // between the top left corner and the bottom.
-  EXPECT_EQ(gfx::Rect(
+  EXPECT_EQ(gfx::RectF(
                 0, kCorner, kEdge, kSize.height() - kCorner).ToString(),
             test_api.GetTransformedLayerBounds(
                 *grid.left_layer()).ToString());
 
   // The right layer should be flush with the right edge and stretched
   // vertically between the top right corner and the bottom.
-  EXPECT_EQ(gfx::Rect(
+  EXPECT_EQ(gfx::RectF(
                 kSize.width() - kEdge, kCorner,
                 kEdge, kSize.height() - kCorner).ToString(),
             test_api.GetTransformedLayerBounds(

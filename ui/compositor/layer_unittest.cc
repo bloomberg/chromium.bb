@@ -1038,7 +1038,7 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
     return value;
   }
 
-  const gfx::Rect& last_clip_rect() const { return last_clip_rect_; }
+  const gfx::RectF& last_clip_rect() const { return last_clip_rect_; }
 
  private:
   // Overridden from LayerDelegate:
@@ -1050,7 +1050,7 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
     }
     SkRect sk_clip_rect;
     if (canvas->sk_canvas()->getClipBounds(&sk_clip_rect))
-      last_clip_rect_ = gfx::SkRectToRect(sk_clip_rect);
+      last_clip_rect_ = gfx::SkRectToRectF(sk_clip_rect);
   }
 
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
@@ -1063,7 +1063,7 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
   int paint_count_;
   Layer* layer_;
   gfx::Rect schedule_paint_rect_;
-  gfx::Rect last_clip_rect_;
+  gfx::RectF last_clip_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulePaintLayerDelegate);
 };

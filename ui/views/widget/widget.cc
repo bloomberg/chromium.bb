@@ -1062,7 +1062,7 @@ bool Widget::OnNativeWidgetPaintAccelerated(const gfx::Rect& dirty_region) {
       force_clear = true;
     } else {
       // Determine if the layer fills the client area.
-      gfx::Rect layer_bounds = GetRootView()->layer()->bounds();
+      gfx::RectF layer_bounds = GetRootView()->layer()->bounds();
       layer_transform.TransformRect(&layer_bounds);
       gfx::Rect client_bounds = GetClientAreaBoundsInScreen();
       // Translate bounds to origin (client area bounds are offset to account

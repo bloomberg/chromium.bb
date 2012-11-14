@@ -11,6 +11,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
 using std::max;
@@ -19,9 +20,9 @@ using std::min;
 namespace ash {
 namespace internal {
 
-gfx::Rect ImageGrid::TestAPI::GetTransformedLayerBounds(
+gfx::RectF ImageGrid::TestAPI::GetTransformedLayerBounds(
     const ui::Layer& layer) {
-  gfx::Rect bounds = layer.bounds();
+  gfx::RectF bounds = layer.bounds();
   layer.transform().TransformRect(&bounds);
   return bounds;
 }
