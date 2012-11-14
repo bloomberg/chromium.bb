@@ -6,9 +6,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
@@ -45,10 +48,16 @@ class GPUCrashTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(GPUCrashTest, MANUAL_Kill) {
   DOMMessageQueue message_queue;
 
+  // Load page and wait for it to load.
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
   NavigateToURL(
       shell(),
       GetFileUrlWithQuery(
           gpu_test_dir_.AppendASCII("webgl.html"), "query=kill"));
+  observer.Wait();
+
   scoped_ptr<Shell> shell(CreateBrowser());
   SimulateGPUCrash(shell.get());
 

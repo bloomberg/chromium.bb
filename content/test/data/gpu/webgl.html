@@ -29,9 +29,11 @@ function testHorizontalBands() {
 
 function testContextLost(e) {
   e.preventDefault();
-  setTimeout(function() {
-    extension.restoreContext();
-  }, 0);
+  if (extension) {
+    setTimeout(function() {
+      extension.restoreContext();
+    }, 0);
+  }
 }
 
 function testContextRestored() {
