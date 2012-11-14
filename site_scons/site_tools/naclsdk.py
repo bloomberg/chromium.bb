@@ -414,20 +414,21 @@ def PNaClGetNNaClEnv(env):
   native_env = env.Clone()
   native_env.ClearBits('bitcode')
   native_env.SetBits('native_code')
-  native_env = native_env.Clone(tools=['naclsdk'])
-  if native_env.Bit('pnacl_generate_pexe'):
-    native_env.Replace(CC='NO-NATIVE-CC-INVOCATION-ALLOWED',
-                       CXX='NO-NATIVE-CXX-INVOCATION-ALLOWED')
-  else:
-    # These are unfortunately clobbered by running Tool.
-    native_env.Replace(EXTRA_CFLAGS=env['EXTRA_CFLAGS'],
-                       EXTRA_CXXFLAGS=env['EXTRA_CXXFLAGS'],
-                       CCFLAGS=env['CCFLAGS'],
-                       CFLAGS=env['CFLAGS'],
-                       CXXFLAGS=env['CXXFLAGS'])
   if env.Bit('built_elsewhere'):
     native_env.Replace(CC='true', CXX='true', LINK='true', LD='true',
                        AR='true', RANLIB='true')
+  else:
+    native_env = native_env.Clone(tools=['naclsdk'])
+    if native_env.Bit('pnacl_generate_pexe'):
+      native_env.Replace(CC='NO-NATIVE-CC-INVOCATION-ALLOWED',
+                         CXX='NO-NATIVE-CXX-INVOCATION-ALLOWED')
+    else:
+      # These are unfortunately clobbered by running Tool.
+      native_env.Replace(EXTRA_CFLAGS=env['EXTRA_CFLAGS'],
+                         EXTRA_CXXFLAGS=env['EXTRA_CXXFLAGS'],
+                         CCFLAGS=env['CCFLAGS'],
+                         CFLAGS=env['CFLAGS'],
+                         CXXFLAGS=env['CXXFLAGS'])
   return native_env
 
 
