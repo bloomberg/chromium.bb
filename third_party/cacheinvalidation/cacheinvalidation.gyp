@@ -7,19 +7,22 @@
     # This library should build cleanly with the extra warnings turned on
     # for Chromium.
     'chromium_code': 1,
-    # The relative path of the cacheinvalidation proto files from 'src'.
-    # TODO(akalin): Add a RULE_INPUT_DIR predefined variable to gyp so
-    # we don't need this variable.
-    'proto_dir_relpath': 'google/cacheinvalidation',
-    # Where files generated from proto files are put.
-    'proto_in_dir': 'src/<(proto_dir_relpath)',
-    'proto_out_dir': '<(proto_dir_relpath)',
   },
   'targets': [
     # The C++ files generated from the cache invalidation protocol buffers.
     {
       'target_name': 'cacheinvalidation_proto_cpp',
       'type': 'static_library',
+      'variables': {
+        # The relative path of the cacheinvalidation proto files from this
+        # gyp-file.
+        # TODO(akalin): Add a RULE_INPUT_DIR predefined variable to gyp so
+        # we don't need this variable.
+        'proto_dir_relpath': 'google/cacheinvalidation',
+        # Where files generated from proto files are put.
+        'proto_in_dir': 'src/<(proto_dir_relpath)',
+        'proto_out_dir': '<(proto_dir_relpath)',
+      },
       'sources': [
         '<(proto_in_dir)/client.proto',
         '<(proto_in_dir)/client_gateway.proto',
@@ -163,6 +166,72 @@
           'sources': [
             'cacheinvalidation_unittests.isolate',
           ],
+        },
+      ],
+    }],
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'cacheinvalidation_proto_java',
+          'type': 'none',
+          'variables': {
+            'proto_in_dir': '../../third_party/cacheinvalidation/src/proto',
+          },
+          'sources': [
+            '<(proto_in_dir)/android_channel.proto',
+            '<(proto_in_dir)/android_service.proto',
+            '<(proto_in_dir)/android_state.proto',
+            '<(proto_in_dir)/channel.proto',
+            '<(proto_in_dir)/channel_common.proto',
+            '<(proto_in_dir)/client.proto',
+            '<(proto_in_dir)/client_protocol.proto',
+            '<(proto_in_dir)/java_client.proto',
+            '<(proto_in_dir)/types.proto',
+          ],
+          'includes': [ '../../build/protoc_java.gypi' ],
+        },
+        {
+          'target_name': 'cacheinvalidation_javalib',
+          'type': 'none',
+          'dependencies': [
+            '../../third_party/android_tools/android_tools.gyp:android_gcm',
+            'cacheinvalidation_aidl_javalib',
+            'cacheinvalidation_guava_javalib',
+            'cacheinvalidation_proto_java',
+          ],
+          'variables': {
+            'package_name': '<(_target_name)',
+            'java_in_dir': '../../build/android/empty',
+            'additional_src_dirs': [ 'src/java/' ],
+          },
+          'includes': [ '../../build/java.gypi' ],
+        },
+        {
+          'target_name': 'cacheinvalidation_aidl_javalib',
+          'type': 'none',
+          'variables': {
+            'package_name': '<(_target_name)',
+            # TODO(shashishekhar): aidl_interface_file should be made optional.
+            'aidl_interface_file':'<(android_sdk)/framework.aidl'
+          },
+          'sources': [
+            'src/java/com/google/ipc/invalidation/external/client/android/service/InvalidationService.aidl',
+            'src/java/com/google/ipc/invalidation/external/client/android/service/ListenerService.aidl',
+            'src/java/com/google/ipc/invalidation/testing/android/InvalidationTest.aidl',
+          ],
+          'includes': [ '../../build/java_aidl.gypi' ],
+        },
+        # TODO(nyquist): Depend on guava from third_party/guava. See http://crbug.com/159873.
+        {
+          'target_name': 'cacheinvalidation_guava_javalib',
+          'type' : 'none',
+          'all_dependent_settings': {
+            'variables': {
+              'input_jars_paths' : [
+                'src/example-app-build/libs/guava-13.0.1.jar',
+              ],
+            }
+          }
         },
       ],
     }],
