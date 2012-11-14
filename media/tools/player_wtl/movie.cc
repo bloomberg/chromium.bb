@@ -53,7 +53,7 @@ void Movie::SetFrameBuffer(HBITMAP hbmp, HWND hwnd) {
   movie_hwnd_ = hwnd;
 }
 
-bool Movie::Open(const wchar_t* file_path, VideoRendererBase* video_renderer) {
+bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
   // Close previous movie.
   if (pipeline_) {
     Close();
@@ -67,8 +67,9 @@ bool Movie::Open(const wchar_t* file_path, VideoRendererBase* video_renderer) {
   pipeline_ = new Pipeline(pipeline_loop, new media::MediaLog());
 
   // Open the file.
+  std::string url_utf8 = WideToUTF8(string16(url));
   scoped_refptr<FileDataSource> data_source = new FileDataSource();
-  if (!data_source->Initialize(FilePath(file_path)) {
+  if (!data_source->Initialize(url_utf8)) {
     return false;
   }
 

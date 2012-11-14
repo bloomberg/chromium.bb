@@ -27,7 +27,7 @@ class Movie {
   static Movie* GetInstance();
 
   // Open a movie.
-  bool Open(const wchar_t* file_path, VideoRendererBase* video_renderer);
+  bool Open(const wchar_t* url, VideoRendererBase* video_renderer);
 
   // Set playback rate.
   void Play(float rate);
