@@ -13,6 +13,11 @@
 #include "chrome/browser/usb/usb_device.h"
 #include "third_party/libusb/libusb.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/permission_broker_client.h"
+#endif  // defined(OS_CHROMEOS)
+
 using std::vector;
 
 // The UsbEventHandler works around a design flaw in the libusb interface. There
@@ -63,16 +68,44 @@ void UsbService::Cleanup() {
   event_handler_ = NULL;
 }
 
-bool UsbService::FindDevices(const uint16 vendor_id,
+void UsbService::FindDevices(const uint16 vendor_id,
                              const uint16 product_id,
                              vector<scoped_refptr<UsbDevice> >* devices) {
   DCHECK(event_handler_) << "FindDevices called after event handler stopped.";
+#if defined(OS_CHROMEOS)
+  chromeos::PermissionBrokerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
+  DCHECK(client) << "Could not get permission broker client.";
+  if (!client)
+    return;
+  client->RequestUsbAccess(vendor_id,
+                           product_id,
+                           base::Bind(&UsbService::FindDevicesImpl,
+                                      base::Unretained(this),
+                                      vendor_id,
+                                      product_id,
+                                      devices));
+#else
+  FindDevicesImpl(vendor_id, product_id, devices, true);
+#endif  // defined(OS_CHROMEOS)
+}
+
+void UsbService::FindDevicesImpl(const uint16 vendor_id,
+                                 const uint16 product_id,
+                                 vector<scoped_refptr<UsbDevice> >* devices,
+                                 bool success) {
   devices->clear();
+
+  // If the permission broker was unable to obtain permission for the specified
+  // devices then there is no point in attempting to enumerate the devices. On
+  // platforms without a permission broker, we assume permission is granted.
+  if (!success)
+    return;
 
   DeviceVector enumerated_devices;
   EnumerateDevices(&enumerated_devices);
   if (enumerated_devices.empty())
-    return false;
+    return;
 
   for (unsigned int i = 0; i < enumerated_devices.size(); ++i) {
     PlatformUsbDevice device = enumerated_devices[i].device();
@@ -82,8 +115,6 @@ bool UsbService::FindDevices(const uint16 vendor_id,
         devices->push_back(wrapper);
     }
   }
-
-  return !devices->empty();
 }
 
 void UsbService::CloseDevice(scoped_refptr<UsbDevice> device) {
