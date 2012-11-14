@@ -34,14 +34,14 @@ AppListButton::AppListButton(views::ButtonListener* listener,
       host_(host) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SetImage(
-      views::CustomButton::BS_NORMAL,
+      views::CustomButton::STATE_NORMAL,
       rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST).ToImageSkia());
   SetImage(
-      views::CustomButton::BS_HOT,
+      views::CustomButton::STATE_HOVERED,
       rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_HOT).
           ToImageSkia());
   SetImage(
-      views::CustomButton::BS_PUSHED,
+      views::CustomButton::STATE_PRESSED,
       rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED).
           ToImageSkia());
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE));

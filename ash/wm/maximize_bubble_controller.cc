@@ -820,9 +820,11 @@ BubbleDialogButton::BubbleDialogButton(
     : views::ImageButton(button_row),
       button_row_(button_row) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  SetImage(views::CustomButton::BS_NORMAL, rb.GetImageSkiaNamed(normal_image));
-  SetImage(views::CustomButton::BS_HOT, rb.GetImageSkiaNamed(hovered_image));
-  SetImage(views::CustomButton::BS_PUSHED,
+  SetImage(views::CustomButton::STATE_NORMAL,
+           rb.GetImageSkiaNamed(normal_image));
+  SetImage(views::CustomButton::STATE_HOVERED,
+           rb.GetImageSkiaNamed(hovered_image));
+  SetImage(views::CustomButton::STATE_PRESSED,
            rb.GetImageSkiaNamed(pressed_image));
   button_row->AddChildView(this);
 }

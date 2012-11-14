@@ -32,11 +32,11 @@ void CustomButton::SetState(ButtonState state) {
   if (animate_on_state_change_ &&
       (!is_throbbing_ || !hover_animation_->is_animating())) {
     is_throbbing_ = false;
-    if (state_ == BS_NORMAL && state == BS_HOT) {
+    if (state_ == STATE_NORMAL && state == STATE_HOVERED) {
       // Button is hovered from a normal state, start hover animation.
       hover_animation_->Show();
-    } else if ((state_ == BS_HOT || state_ == BS_PUSHED)
-          && state == BS_NORMAL) {
+    } else if ((state_ == STATE_HOVERED || state_ == STATE_PRESSED)
+          && state == STATE_NORMAL) {
       // Button is returning to a normal state from hover, start hover
       // fade animation.
       hover_animation_->Hide();
@@ -81,8 +81,8 @@ bool CustomButton::IsMouseHovered() const {
 }
 
 void CustomButton::SetHotTracked(bool is_hot_tracked) {
-  if (state_ != BS_DISABLED)
-    SetState(is_hot_tracked ? BS_HOT : BS_NORMAL);
+  if (state_ != STATE_DISABLED)
+    SetState(is_hot_tracked ? STATE_HOVERED : STATE_NORMAL);
 
   if (is_hot_tracked && GetWidget()) {
     GetWidget()->NotifyAccessibilityEvent(
@@ -91,20 +91,20 @@ void CustomButton::SetHotTracked(bool is_hot_tracked) {
 }
 
 bool CustomButton::IsHotTracked() const {
-  return state_ == BS_HOT;
+  return state_ == STATE_HOVERED;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, View overrides:
 
 void CustomButton::OnEnabledChanged() {
-  if (enabled() ? (state_ != BS_DISABLED) : (state_ == BS_DISABLED))
+  if (enabled() ? (state_ != STATE_DISABLED) : (state_ == STATE_DISABLED))
     return;
 
   if (enabled())
-    SetState(IsMouseHovered() ? BS_HOT : BS_NORMAL);
+    SetState(IsMouseHovered() ? STATE_HOVERED : STATE_NORMAL);
   else
-    SetState(BS_DISABLED);
+    SetState(STATE_DISABLED);
 }
 
 std::string CustomButton::GetClassName() const {
@@ -112,9 +112,9 @@ std::string CustomButton::GetClassName() const {
 }
 
 bool CustomButton::OnMousePressed(const ui::MouseEvent& event) {
-  if (state_ != BS_DISABLED) {
+  if (state_ != STATE_DISABLED) {
     if (ShouldEnterPushedState(event) && HitTestPoint(event.location()))
-      SetState(BS_PUSHED);
+      SetState(STATE_PRESSED);
     if (request_focus_on_press_)
       RequestFocus();
   }
@@ -122,25 +122,25 @@ bool CustomButton::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 bool CustomButton::OnMouseDragged(const ui::MouseEvent& event) {
-  if (state_ != BS_DISABLED) {
+  if (state_ != STATE_DISABLED) {
     if (HitTestPoint(event.location()))
-      SetState(ShouldEnterPushedState(event) ? BS_PUSHED : BS_HOT);
+      SetState(ShouldEnterPushedState(event) ? STATE_PRESSED : STATE_HOVERED);
     else
-      SetState(BS_NORMAL);
+      SetState(STATE_NORMAL);
   }
   return true;
 }
 
 void CustomButton::OnMouseReleased(const ui::MouseEvent& event) {
-  if (state_ == BS_DISABLED)
+  if (state_ == STATE_DISABLED)
     return;
 
   if (!HitTestPoint(event.location())) {
-    SetState(BS_NORMAL);
+    SetState(STATE_NORMAL);
     return;
   }
 
-  SetState(BS_HOT);
+  SetState(STATE_HOVERED);
   if (IsTriggerableEvent(event)) {
     NotifyClick(event);
     // NOTE: We may be deleted at this point (by the listener's notification
@@ -150,37 +150,37 @@ void CustomButton::OnMouseReleased(const ui::MouseEvent& event) {
 
 void CustomButton::OnMouseCaptureLost() {
   // Starting a drag results in a MouseCaptureLost, we need to ignore it.
-  if (state_ != BS_DISABLED && !InDrag())
-    SetState(BS_NORMAL);
+  if (state_ != STATE_DISABLED && !InDrag())
+    SetState(STATE_NORMAL);
 }
 
 void CustomButton::OnMouseEntered(const ui::MouseEvent& event) {
-  if (state_ != BS_DISABLED)
-    SetState(BS_HOT);
+  if (state_ != STATE_DISABLED)
+    SetState(STATE_HOVERED);
 }
 
 void CustomButton::OnMouseExited(const ui::MouseEvent& event) {
   // Starting a drag results in a MouseExited, we need to ignore it.
-  if (state_ != BS_DISABLED && !InDrag())
-    SetState(BS_NORMAL);
+  if (state_ != STATE_DISABLED && !InDrag())
+    SetState(STATE_NORMAL);
 }
 
 void CustomButton::OnMouseMoved(const ui::MouseEvent& event) {
-  if (state_ != BS_DISABLED)
-    SetState(HitTestPoint(event.location()) ? BS_HOT : BS_NORMAL);
+  if (state_ != STATE_DISABLED)
+    SetState(HitTestPoint(event.location()) ? STATE_HOVERED : STATE_NORMAL);
 }
 
 bool CustomButton::OnKeyPressed(const ui::KeyEvent& event) {
-  if (state_ == BS_DISABLED)
+  if (state_ == STATE_DISABLED)
     return false;
 
   // Space sets button state to pushed. Enter clicks the button. This matches
   // the Windows native behavior of buttons, where Space clicks the button on
   // KeyRelease and Enter clicks the button on KeyPressed.
   if (event.key_code() == ui::VKEY_SPACE) {
-    SetState(BS_PUSHED);
+    SetState(STATE_PRESSED);
   } else if (event.key_code() == ui::VKEY_RETURN) {
-    SetState(BS_NORMAL);
+    SetState(STATE_NORMAL);
     // TODO(beng): remove once NotifyClick takes ui::Event.
     ui::MouseEvent synthetic_event(ui::ET_MOUSE_RELEASED,
                                    gfx::Point(),
@@ -194,10 +194,10 @@ bool CustomButton::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 bool CustomButton::OnKeyReleased(const ui::KeyEvent& event) {
-  if ((state_ == BS_DISABLED) || (event.key_code() != ui::VKEY_SPACE))
+  if ((state_ == STATE_DISABLED) || (event.key_code() != ui::VKEY_SPACE))
     return false;
 
-  SetState(BS_NORMAL);
+  SetState(STATE_NORMAL);
   // TODO(beng): remove once NotifyClick takes ui::Event.
   ui::MouseEvent synthetic_event(ui::ET_MOUSE_RELEASED,
                                  gfx::Point(),
@@ -208,31 +208,31 @@ bool CustomButton::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 ui::EventResult CustomButton::OnGestureEvent(ui::GestureEvent* event) {
-  if (state_ == BS_DISABLED)
+  if (state_ == STATE_DISABLED)
     return Button::OnGestureEvent(event);
 
   if (event->type() == ui::ET_GESTURE_TAP && IsTriggerableEvent(*event)) {
     // Set the button state to hot and start the animation fully faded in. The
-    // TAP_UP event issued immediately after will set the state to BS_NORMAL
+    // TAP_UP event issued immediately after will set the state to STATE_NORMAL
     // beginning the fade out animation. See http://crbug.com/131184.
-    SetState(BS_HOT);
+    SetState(STATE_HOVERED);
     hover_animation_->Reset(1.0);
     NotifyClick(*event);
     return ui::ER_CONSUMED;
   } else if (event->type() == ui::ET_GESTURE_TAP_DOWN &&
              ShouldEnterPushedState(*event)) {
-    SetState(BS_PUSHED);
+    SetState(STATE_PRESSED);
     if (request_focus_on_press_)
       RequestFocus();
     return ui::ER_CONSUMED;
   } else {
-    SetState(BS_NORMAL);
+    SetState(STATE_NORMAL);
   }
   return Button::OnGestureEvent(event);
 }
 
 bool CustomButton::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  SetState(BS_NORMAL);
+  SetState(STATE_NORMAL);
   /*
   ui::KeyEvent key_event(ui::ET_KEY_RELEASED, accelerator.key_code(),
                          accelerator.modifiers());
@@ -252,29 +252,29 @@ void CustomButton::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
 
   // We're about to show the context menu. Showing the context menu likely means
   // we won't get a mouse exited and reset state. Reset it now to be sure.
-  if (state_ != BS_DISABLED)
-    SetState(BS_NORMAL);
+  if (state_ != STATE_DISABLED)
+    SetState(STATE_NORMAL);
   View::ShowContextMenu(p, is_mouse_gesture);
 }
 
 void CustomButton::OnDragDone() {
-  SetState(BS_NORMAL);
+  SetState(STATE_NORMAL);
 }
 
 void CustomButton::GetAccessibleState(ui::AccessibleViewState* state) {
   Button::GetAccessibleState(state);
   switch (state_) {
-    case BS_HOT:
+    case STATE_HOVERED:
       state->state = ui::AccessibilityTypes::STATE_HOTTRACKED;
       break;
-    case BS_PUSHED:
+    case STATE_PRESSED:
       state->state = ui::AccessibilityTypes::STATE_PRESSED;
       break;
-    case BS_DISABLED:
+    case STATE_DISABLED:
       state->state = ui::AccessibilityTypes::STATE_UNAVAILABLE;
       break;
-    case BS_NORMAL:
-    case BS_COUNT:
+    case STATE_NORMAL:
+    case STATE_COUNT:
       // No additional accessibility state set for this button state.
       break;
   }
@@ -292,7 +292,7 @@ void CustomButton::AnimationProgressed(const ui::Animation* animation) {
 
 CustomButton::CustomButton(ButtonListener* listener)
     : Button(listener),
-      state_(BS_NORMAL),
+      state_(STATE_NORMAL),
       animate_on_state_change_(true),
       is_throbbing_(false),
       triggerable_event_flags_(ui::EF_LEFT_MOUSE_BUTTON),
@@ -318,15 +318,16 @@ bool CustomButton::ShouldEnterPushedState(const ui::Event& event) {
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, View overrides (protected):
 
-void CustomButton::ViewHierarchyChanged(bool is_add, View *parent,
-                                        View *child) {
-  if (!is_add && state_ != BS_DISABLED)
-    SetState(BS_NORMAL);
+void CustomButton::ViewHierarchyChanged(bool is_add,
+                                        View* parent,
+                                        View* child) {
+  if (!is_add && state_ != STATE_DISABLED)
+    SetState(STATE_NORMAL);
 }
 
 void CustomButton::OnBlur() {
   if (IsHotTracked())
-    SetState(BS_NORMAL);
+    SetState(STATE_NORMAL);
 }
 
 }  // namespace views

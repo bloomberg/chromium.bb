@@ -37,7 +37,7 @@ TEST_F(ImageButtonTest, Basics) {
 
   // Set a normal image.
   gfx::ImageSkia normal_image = CreateTestImage(10, 20);
-  button.SetImage(CustomButton::BS_NORMAL, &normal_image);
+  button.SetImage(CustomButton::STATE_NORMAL, &normal_image);
 
   // Image uses normal image for painting.
   EXPECT_FALSE(button.GetImageToPaint().isNull());
@@ -49,7 +49,7 @@ TEST_F(ImageButtonTest, Basics) {
 
   // Set a pushed image.
   gfx::ImageSkia pushed_image = CreateTestImage(11, 21);
-  button.SetImage(CustomButton::BS_PUSHED, &pushed_image);
+  button.SetImage(CustomButton::STATE_PRESSED, &pushed_image);
 
   // By convention, preferred size doesn't change, even though pushed image
   // is bigger.
@@ -83,7 +83,7 @@ TEST_F(ImageButtonTest, Basics) {
 TEST_F(ImageButtonTest, ImagePositionWithBorder) {
   ImageButton button(NULL);
   gfx::ImageSkia image = CreateTestImage(20, 30);
-  button.SetImage(CustomButton::BS_NORMAL, &image);
+  button.SetImage(CustomButton::STATE_NORMAL, &image);
 
   // The image should be painted at the top-left corner.
   EXPECT_EQ(gfx::Point().ToString(),

@@ -377,9 +377,9 @@ void OpaqueBrowserFrameView::GetWindowMask(const gfx::Size& size,
 void OpaqueBrowserFrameView::ResetWindowControls() {
   if (!ShouldAddDefaultCaptionButtons())
     return;
-  restore_button_->SetState(views::CustomButton::BS_NORMAL);
-  minimize_button_->SetState(views::CustomButton::BS_NORMAL);
-  maximize_button_->SetState(views::CustomButton::BS_NORMAL);
+  restore_button_->SetState(views::CustomButton::STATE_NORMAL);
+  minimize_button_->SetState(views::CustomButton::STATE_NORMAL);
+  maximize_button_->SetState(views::CustomButton::STATE_NORMAL);
   // The close button isn't affected by this constraint.
 }
 
@@ -519,11 +519,11 @@ views::ImageButton* OpaqueBrowserFrameView::InitWindowCaptionButton(
     int accessibility_string_id) {
   views::ImageButton* button = new views::ImageButton(this);
   ui::ThemeProvider* tp = frame()->GetThemeProvider();
-  button->SetImage(views::CustomButton::BS_NORMAL,
+  button->SetImage(views::CustomButton::STATE_NORMAL,
                    tp->GetImageSkiaNamed(normal_image_id));
-  button->SetImage(views::CustomButton::BS_HOT,
+  button->SetImage(views::CustomButton::STATE_HOVERED,
                    tp->GetImageSkiaNamed(hot_image_id));
-  button->SetImage(views::CustomButton::BS_PUSHED,
+  button->SetImage(views::CustomButton::STATE_PRESSED,
                    tp->GetImageSkiaNamed(pushed_image_id));
   if (browser_view()->IsBrowserTypeNormal()) {
     button->SetBackground(

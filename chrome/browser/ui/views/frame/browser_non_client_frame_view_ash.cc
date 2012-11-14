@@ -197,7 +197,7 @@ void BrowserNonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
 }
 
 void BrowserNonClientFrameViewAsh::ResetWindowControls() {
-  size_button_->SetState(views::CustomButton::BS_NORMAL);
+  size_button_->SetState(views::CustomButton::STATE_NORMAL);
   // The close button isn't affected by this constraint.
 }
 

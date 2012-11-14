@@ -24,7 +24,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   virtual ~LabelButton();
 
   // Get or set the image shown for the specified button state.
-  // GetImage returns the image for BS_NORMAL if the state's image is empty.
+  // GetImage returns the image for STATE_NORMAL if the state's image is empty.
   const gfx::ImageSkia& GetImage(ButtonState for_state);
   void SetImage(ButtonState for_state, const gfx::ImageSkia& image);
 
@@ -100,11 +100,11 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   Label* label_;
 
   // The images and colors for each button state.
-  gfx::ImageSkia button_state_images_[BS_COUNT];
-  SkColor button_state_colors_[BS_COUNT];
+  gfx::ImageSkia button_state_images_[STATE_COUNT];
+  SkColor button_state_colors_[STATE_COUNT];
 
   // Used to track whether SetTextColor() has been invoked.
-  bool explicitly_set_colors_[BS_COUNT];
+  bool explicitly_set_colors_[STATE_COUNT];
 
   // |min_size_| increases monotonically with the preferred size.
   gfx::Size min_size_;

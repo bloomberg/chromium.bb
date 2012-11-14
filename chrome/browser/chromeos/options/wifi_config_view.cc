@@ -1051,19 +1051,19 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
         l10n_util::GetStringUTF16(
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE_HIDE));
     passphrase_visible_button_->SetImage(
-        views::ImageButton::BS_NORMAL,
+        views::ImageButton::STATE_NORMAL,
         ResourceBundle::GetSharedInstance().
         GetImageSkiaNamed(IDR_NETWORK_SHOW_PASSWORD));
     passphrase_visible_button_->SetImage(
-        views::ImageButton::BS_HOT,
+        views::ImageButton::STATE_HOVERED,
         ResourceBundle::GetSharedInstance().
         GetImageSkiaNamed(IDR_NETWORK_SHOW_PASSWORD_HOVER));
     passphrase_visible_button_->SetToggledImage(
-        views::ImageButton::BS_NORMAL,
+        views::ImageButton::STATE_NORMAL,
         ResourceBundle::GetSharedInstance().
         GetImageSkiaNamed(IDR_NETWORK_HIDE_PASSWORD));
     passphrase_visible_button_->SetToggledImage(
-        views::ImageButton::BS_HOT,
+        views::ImageButton::STATE_HOVERED,
         ResourceBundle::GetSharedInstance().
         GetImageSkiaNamed(IDR_NETWORK_HIDE_PASSWORD_HOVER));
     passphrase_visible_button_->SetImageAlignment(

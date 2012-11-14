@@ -292,24 +292,24 @@ void WebNotificationTray::ToggleMessageCenterBubble() {
 void WebNotificationTray::UpdateTray() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (message_center_->UnreadNotificationCount() > 0) {
-    button_->SetImage(views::CustomButton::BS_NORMAL, rb.GetImageSkiaNamed(
+    button_->SetImage(views::CustomButton::STATE_NORMAL, rb.GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_NORMAL));
-    button_->SetImage(views::CustomButton::BS_HOT, rb.GetImageSkiaNamed(
+    button_->SetImage(views::CustomButton::STATE_HOVERED, rb.GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_HOVER));
-    button_->SetImage(views::CustomButton::BS_PUSHED, rb.GetImageSkiaNamed(
+    button_->SetImage(views::CustomButton::STATE_PRESSED, rb.GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_PRESSED));
   } else {
-    button_->SetImage(views::CustomButton::BS_NORMAL, rb.GetImageSkiaNamed(
+    button_->SetImage(views::CustomButton::STATE_NORMAL, rb.GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_INACTIVE_NORMAL));
-    button_->SetImage(views::CustomButton::BS_HOT, rb.GetImageSkiaNamed(
+    button_->SetImage(views::CustomButton::STATE_HOVERED, rb.GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_INACTIVE_HOVER));
-    button_->SetImage(views::CustomButton::BS_PUSHED, rb.GetImageSkiaNamed(
+    button_->SetImage(views::CustomButton::STATE_PRESSED, rb.GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_INACTIVE_PRESSED));
   }
   if (message_center_bubble())
-    button_->SetState(views::CustomButton::BS_PUSHED);
+    button_->SetState(views::CustomButton::STATE_PRESSED);
   else
-    button_->SetState(views::CustomButton::BS_NORMAL);
+    button_->SetState(views::CustomButton::STATE_NORMAL);
   bool is_visible =
       (status_area_widget()->login_status() != user::LOGGED_IN_NONE) &&
       (status_area_widget()->login_status() != user::LOGGED_IN_LOCKED) &&

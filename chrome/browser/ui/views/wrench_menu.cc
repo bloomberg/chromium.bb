@@ -174,7 +174,7 @@ class MenuButtonBackground : public views::Background {
   virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE {
     CustomButton::ButtonState state =
         (view->GetClassName() == views::Label::kViewClassName) ?
-        CustomButton::BS_NORMAL : static_cast<CustomButton*>(view)->state();
+        CustomButton::STATE_NORMAL : static_cast<CustomButton*>(view)->state();
     int w = view->width();
     int h = view->height();
 #if defined(USE_AURA)
@@ -187,7 +187,7 @@ class MenuButtonBackground : public views::Background {
       if (type_ != RIGHT_BUTTON) {
         border = 1;
         canvas->FillRect(gfx::Rect(0, 0, border, h),
-                         border_color(CustomButton::BS_NORMAL));
+                         border_color(CustomButton::STATE_NORMAL));
       }
       canvas->FillRect(gfx::Rect(border, 0, w - border, h),
                        touch_background_color(state));
@@ -207,12 +207,12 @@ class MenuButtonBackground : public views::Background {
       case CENTER_BUTTON: {
         canvas->FillRect(gfx::Rect(1, 1, w - 2, h - 2),
                          background_color(state));
-        SkColor left_color = state != CustomButton::BS_NORMAL ?
+        SkColor left_color = state != CustomButton::STATE_NORMAL ?
             border_color(state) : border_color(left_button_->state());
         canvas->FillRect(gfx::Rect(0, 0, 1, h), left_color);
         canvas->FillRect(gfx::Rect(1, 0, w - 2, 1), border_color(state));
         canvas->FillRect(gfx::Rect(1, h - 1, w - 2, 1), border_color(state));
-        SkColor right_color = state != CustomButton::BS_NORMAL ?
+        SkColor right_color = state != CustomButton::STATE_NORMAL ?
             border_color(state) : border_color(right_button_->state());
         canvas->FillRect(gfx::Rect(w - 1, 0, 1, h), right_color);
         break;
@@ -250,25 +250,25 @@ class MenuButtonBackground : public views::Background {
  private:
   static SkColor border_color(CustomButton::ButtonState state) {
     switch (state) {
-      case CustomButton::BS_HOT:    return kHotBorderColor;
-      case CustomButton::BS_PUSHED: return kPushedBorderColor;
-      default:                      return kBorderColor;
+      case CustomButton::STATE_HOVERED: return kHotBorderColor;
+      case CustomButton::STATE_PRESSED: return kPushedBorderColor;
+      default:                          return kBorderColor;
     }
   }
 
   static SkColor background_color(CustomButton::ButtonState state) {
     switch (state) {
-      case CustomButton::BS_HOT:    return kHotBackgroundColor;
-      case CustomButton::BS_PUSHED: return kPushedBackgroundColor;
-      default:                      return kBackgroundColor;
+      case CustomButton::STATE_HOVERED: return kHotBackgroundColor;
+      case CustomButton::STATE_PRESSED: return kPushedBackgroundColor;
+      default:                          return kBackgroundColor;
     }
   }
 
   static SkColor touch_background_color(CustomButton::ButtonState state) {
     switch (state) {
-      case CustomButton::BS_HOT:    return kHotTouchBackgroundColor;
-      case CustomButton::BS_PUSHED: return kPushedTouchBackgroundColor;
-      default:                      return kTouchBackgroundColor;
+      case CustomButton::STATE_HOVERED: return kHotTouchBackgroundColor;
+      case CustomButton::STATE_PRESSED: return kPushedTouchBackgroundColor;
+      default:                          return kTouchBackgroundColor;
     }
   }
 
@@ -536,7 +536,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     gfx::ImageSkia* full_screen_image =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_FULLSCREEN_MENU_BUTTON);
-    fullscreen_button_->SetImage(ImageButton::BS_NORMAL, full_screen_image);
+    fullscreen_button_->SetImage(ImageButton::STATE_NORMAL, full_screen_image);
     if (menu_->use_new_menu()) {
       zoom_label_->SetEnabledColor(kTouchButtonText);
       decrement_button_->SetEnabledColor(kTouchButtonText);

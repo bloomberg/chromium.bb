@@ -130,13 +130,13 @@ ui::NativeTheme::State ExampleNativeThemeButton::GetThemeState(
   int selected = cb_state_->selected_index();
   if (selected > 3) {
     switch (state()) {
-      case BS_DISABLED:
+      case STATE_DISABLED:
         return ui::NativeTheme::kDisabled;
-      case BS_NORMAL:
+      case STATE_NORMAL:
         return ui::NativeTheme::kNormal;
-      case BS_HOT:
+      case STATE_HOVERED:
         return ui::NativeTheme::kHovered;
-      case BS_PUSHED:
+      case STATE_PRESSED:
         return ui::NativeTheme::kPressed;
       default:
         NOTREACHED();

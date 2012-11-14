@@ -33,11 +33,11 @@ class VIEWS_EXPORT CustomButton : public Button,
 
   // Possible states
   enum ButtonState {
-    BS_NORMAL = 0,
-    BS_HOT,
-    BS_PUSHED,
-    BS_DISABLED,
-    BS_COUNT
+    STATE_NORMAL = 0,
+    STATE_HOVERED,
+    STATE_PRESSED,
+    STATE_DISABLED,
+    STATE_COUNT
   };
 
   // Get/sets the current display state of the button.

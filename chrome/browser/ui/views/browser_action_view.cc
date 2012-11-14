@@ -214,11 +214,11 @@ void BrowserActionButton::UpdateState() {
   SetShowMultipleIconStates(delegate_->NeedToShowMultipleIconStates());
 
   if (!IsEnabled(tab_id)) {
-    SetState(views::CustomButton::BS_DISABLED);
+    SetState(views::CustomButton::STATE_DISABLED);
   } else {
     SetState(menu_visible_ ?
-             views::CustomButton::BS_PUSHED :
-             views::CustomButton::BS_NORMAL);
+             views::CustomButton::STATE_PRESSED :
+             views::CustomButton::STATE_NORMAL);
   }
 
   gfx::ImageSkia icon = *icon_factory_.GetIcon(tab_id).ToImageSkia();
@@ -357,12 +357,12 @@ bool BrowserActionButton::AcceleratorPressed(
 }
 
 void BrowserActionButton::SetButtonPushed() {
-  SetState(views::CustomButton::BS_PUSHED);
+  SetState(views::CustomButton::STATE_PRESSED);
   menu_visible_ = true;
 }
 
 void BrowserActionButton::SetButtonNotPushed() {
-  SetState(views::CustomButton::BS_NORMAL);
+  SetState(views::CustomButton::STATE_NORMAL);
   menu_visible_ = false;
 }
 

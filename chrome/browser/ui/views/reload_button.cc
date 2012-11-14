@@ -91,15 +91,15 @@ void ReloadButton::ChangeMode(Mode mode, bool force) {
 }
 
 void ReloadButton::LoadImages(ui::ThemeProvider* tp) {
-  DCHECK_EQ(static_cast<int>(arraysize(kReloadImages)), BS_COUNT);
-  DCHECK_EQ(static_cast<int>(arraysize(kStopImages)), BS_COUNT);
+  DCHECK_EQ(static_cast<int>(arraysize(kReloadImages)), STATE_COUNT);
+  DCHECK_EQ(static_cast<int>(arraysize(kStopImages)), STATE_COUNT);
 
   gfx::ImageSkia* reload_images = images_;
   gfx::ImageSkia* stop_images = alternate_images_;
   if (visible_mode_ == MODE_STOP)
     std::swap(reload_images, stop_images);
 
-  for (int i = 0; i < BS_COUNT; i++) {
+  for (int i = 0; i < STATE_COUNT; i++) {
     reload_images[i] = *(tp->GetImageSkiaNamed(kReloadImages[i]));
     stop_images[i] = *(tp->GetImageSkiaNamed(kStopImages[i]));
   }
@@ -260,7 +260,7 @@ void ReloadButton::ChangeModeInternal(Mode mode) {
   if (visible_mode_ == mode)
     return;
 
-  for (size_t i = 0; i < BS_COUNT; ++i)
+  for (size_t i = 0; i < STATE_COUNT; ++i)
     std::swap(images_[i], alternate_images_[i]);
   visible_mode_ = mode;
   SchedulePaint();

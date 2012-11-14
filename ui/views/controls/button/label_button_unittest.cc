@@ -29,16 +29,16 @@ TEST_F(LabelButtonTest, Init) {
   const string16 text(ASCIIToUTF16("abc"));
   LabelButton button(NULL, text);
 
-  EXPECT_TRUE(button.GetImage(CustomButton::BS_NORMAL).isNull());
-  EXPECT_TRUE(button.GetImage(CustomButton::BS_HOT).isNull());
-  EXPECT_TRUE(button.GetImage(CustomButton::BS_PUSHED).isNull());
-  EXPECT_TRUE(button.GetImage(CustomButton::BS_DISABLED).isNull());
+  EXPECT_TRUE(button.GetImage(CustomButton::STATE_NORMAL).isNull());
+  EXPECT_TRUE(button.GetImage(CustomButton::STATE_HOVERED).isNull());
+  EXPECT_TRUE(button.GetImage(CustomButton::STATE_PRESSED).isNull());
+  EXPECT_TRUE(button.GetImage(CustomButton::STATE_DISABLED).isNull());
 
   EXPECT_EQ(text, button.GetText());
   EXPECT_EQ(gfx::ALIGN_LEFT, button.GetHorizontalAlignment());
   EXPECT_FALSE(button.default_button());
   EXPECT_FALSE(button.native_theme());
-  EXPECT_EQ(CustomButton::BS_NORMAL, button.state());
+  EXPECT_EQ(CustomButton::STATE_NORMAL, button.state());
 
   EXPECT_EQ(button.image_->parent(), &button);
   EXPECT_EQ(button.label_->parent(), &button);
@@ -85,15 +85,15 @@ TEST_F(LabelButtonTest, Image) {
   // The width increases monotonically with image size (it does not shrink).
   EXPECT_LT(button.GetPreferredSize().width(), small_size);
   EXPECT_LT(button.GetPreferredSize().height(), small_size);
-  button.SetImage(CustomButton::BS_NORMAL, small_image);
+  button.SetImage(CustomButton::STATE_NORMAL, small_image);
   EXPECT_GT(button.GetPreferredSize().width(), small_size);
   EXPECT_GT(button.GetPreferredSize().height(), small_size);
   EXPECT_LT(button.GetPreferredSize().width(), large_size);
   EXPECT_LT(button.GetPreferredSize().height(), large_size);
-  button.SetImage(CustomButton::BS_NORMAL, large_image);
+  button.SetImage(CustomButton::STATE_NORMAL, large_image);
   EXPECT_GT(button.GetPreferredSize().width(), large_size);
   EXPECT_GT(button.GetPreferredSize().height(), large_size);
-  button.SetImage(CustomButton::BS_NORMAL, small_image);
+  button.SetImage(CustomButton::STATE_NORMAL, small_image);
   EXPECT_GT(button.GetPreferredSize().width(), large_size);
   EXPECT_GT(button.GetPreferredSize().height(), large_size);
 
@@ -127,7 +127,7 @@ TEST_F(LabelButtonTest, LabelAndImage) {
   EXPECT_GT(button.GetPreferredSize().height(), font.GetHeight());
   EXPECT_LT(button.GetPreferredSize().width(), text_width + image_size);
   EXPECT_LT(button.GetPreferredSize().height(), image_size);
-  button.SetImage(CustomButton::BS_NORMAL, image);
+  button.SetImage(CustomButton::STATE_NORMAL, image);
   EXPECT_GT(button.GetPreferredSize().width(), text_width + image_size);
   EXPECT_GT(button.GetPreferredSize().height(), image_size);
 
@@ -149,7 +149,7 @@ TEST_F(LabelButtonTest, LabelAndImage) {
   button.SetText(string16());
   EXPECT_GT(button.GetPreferredSize().width(), text_width + image_size);
   EXPECT_GT(button.GetPreferredSize().height(), image_size);
-  button.SetImage(CustomButton::BS_NORMAL, gfx::ImageSkia());
+  button.SetImage(CustomButton::STATE_NORMAL, gfx::ImageSkia());
   EXPECT_GT(button.GetPreferredSize().width(), text_width + image_size);
   EXPECT_GT(button.GetPreferredSize().height(), image_size);
 

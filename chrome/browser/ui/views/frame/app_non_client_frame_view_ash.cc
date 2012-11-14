@@ -111,7 +111,7 @@ class AppNonClientFrameViewAsh::ControlView
     if (sender == close_button_) {
       owner_->frame()->Close();
     } else if (sender == restore_button_) {
-      restore_button_->SetState(views::CustomButton::BS_NORMAL);
+      restore_button_->SetState(views::CustomButton::STATE_NORMAL);
       owner_->frame()->Restore();
     }
   }
@@ -132,11 +132,11 @@ class AppNonClientFrameViewAsh::ControlView
   void SetButtonImages(views::ImageButton* button, int normal_image_id,
                        int hot_image_id, int pushed_image_id) {
     ui::ThemeProvider* theme_provider = GetThemeProvider();
-    button->SetImage(views::CustomButton::BS_NORMAL,
+    button->SetImage(views::CustomButton::STATE_NORMAL,
                      theme_provider->GetImageSkiaNamed(normal_image_id));
-    button->SetImage(views::CustomButton::BS_HOT,
+    button->SetImage(views::CustomButton::STATE_HOVERED,
                      theme_provider->GetImageSkiaNamed(hot_image_id));
-    button->SetImage(views::CustomButton::BS_PUSHED,
+    button->SetImage(views::CustomButton::STATE_PRESSED,
                      theme_provider->GetImageSkiaNamed(pushed_image_id));
   }
 

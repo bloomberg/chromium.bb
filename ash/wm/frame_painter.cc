@@ -694,11 +694,11 @@ void FramePainter::SetButtonImages(views::ImageButton* button,
                                    int hot_image_id,
                                    int pushed_image_id) {
   ui::ThemeProvider* theme_provider = frame_->GetThemeProvider();
-  button->SetImage(views::CustomButton::BS_NORMAL,
+  button->SetImage(views::CustomButton::STATE_NORMAL,
                    theme_provider->GetImageSkiaNamed(normal_image_id));
-  button->SetImage(views::CustomButton::BS_HOT,
+  button->SetImage(views::CustomButton::STATE_HOVERED,
                    theme_provider->GetImageSkiaNamed(hot_image_id));
-  button->SetImage(views::CustomButton::BS_PUSHED,
+  button->SetImage(views::CustomButton::STATE_PRESSED,
                    theme_provider->GetImageSkiaNamed(pushed_image_id));
 }
 

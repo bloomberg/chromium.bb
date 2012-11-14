@@ -103,7 +103,7 @@ ui::NativeTheme::ExtraParams
   ui::NativeTheme::ExtraParams params;
 
   switch (state_) {
-    case CustomButton::BS_HOT:
+    case CustomButton::STATE_HOVERED:
       params.scrollbar_arrow.is_hovering = true;
       break;
     default:
@@ -135,16 +135,16 @@ ui::NativeTheme::State
   ui::NativeTheme::State state;
 
   switch (state_) {
-    case CustomButton::BS_HOT:
+    case CustomButton::STATE_HOVERED:
       state = ui::NativeTheme::kHovered;
       break;
-    case CustomButton::BS_PUSHED:
+    case CustomButton::STATE_PRESSED:
       state = ui::NativeTheme::kPressed;
       break;
-    case CustomButton::BS_DISABLED:
+    case CustomButton::STATE_DISABLED:
       state = ui::NativeTheme::kDisabled;
       break;
-    case CustomButton::BS_NORMAL:
+    case CustomButton::STATE_NORMAL:
     default:
       state = ui::NativeTheme::kNormal;
       break;
@@ -185,7 +185,7 @@ ui::NativeTheme::ExtraParams
   ui::NativeTheme::ExtraParams params;
 
   switch (GetState()) {
-    case CustomButton::BS_HOT:
+    case CustomButton::STATE_HOVERED:
       params.scrollbar_thumb.is_hovering = true;
       break;
     default:
@@ -206,16 +206,16 @@ ui::NativeTheme::State ScrollBarThumb::GetNativeThemeState() const {
   ui::NativeTheme::State state;
 
   switch (GetState()) {
-    case CustomButton::BS_HOT:
+    case CustomButton::STATE_HOVERED:
       state = ui::NativeTheme::kHovered;
       break;
-    case CustomButton::BS_PUSHED:
+    case CustomButton::STATE_PRESSED:
       state = ui::NativeTheme::kPressed;
       break;
-    case CustomButton::BS_DISABLED:
+    case CustomButton::STATE_DISABLED:
       state = ui::NativeTheme::kDisabled;
       break;
-    case CustomButton::BS_NORMAL:
+    case CustomButton::STATE_NORMAL:
     default:
       state = ui::NativeTheme::kNormal;
       break;

@@ -218,7 +218,7 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
     int alpha = SkColorGetA(kHoverAndPushedColor) *
         hover_animation_->GetCurrentValue();
     canvas->FillRect(rect, SkColorSetA(kHoverAndPushedColor, alpha));
-  } else if (state() == BS_HOT || state() == BS_PUSHED) {
+  } else if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
     canvas->FillRect(rect, kHoverAndPushedColor);
   } else if (apps_grid_view_->IsSelectedView(this)) {
     canvas->FillRect(rect, kSelectedColor);
@@ -248,7 +248,7 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
 }
 
 void AppListItemView::StateChanged() {
-  if (state() == BS_HOT || state() == BS_PUSHED) {
+  if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
     apps_grid_view_->SetSelectedView(this);
     title_->SetEnabledColor(kTitleHoverColor);
   } else {

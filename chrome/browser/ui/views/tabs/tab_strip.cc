@@ -368,7 +368,7 @@ void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
     gfx::Point point(event.x(), event.y());
     views::View::ConvertPointToScreen(this, &point);
     ui::ShowSystemMenu(GetWidget()->GetNativeView(), point.x(), point.y());
-    SetState(BS_NORMAL);
+    SetState(views::CustomButton::STATE_NORMAL);
     return;
   }
   views::ImageButton::OnMouseReleased(event);
@@ -410,11 +410,11 @@ gfx::ImageSkia NewTabButton::GetBackgroundImage(
 
   int alpha = 0;
   switch (state) {
-    case views::CustomButton::BS_NORMAL:
-    case views::CustomButton::BS_HOT:
+    case views::CustomButton::STATE_NORMAL:
+    case views::CustomButton::STATE_HOVERED:
       alpha = ShouldUseNativeFrame() ? kNativeFrameInactiveTabAlpha : 255;
       break;
-    case views::CustomButton::BS_PUSHED:
+    case views::CustomButton::STATE_PRESSED:
       alpha = 145;
       break;
     default:
@@ -457,7 +457,7 @@ gfx::ImageSkia NewTabButton::GetBackgroundImage(
   }
 
   // White highlight on hover.
-  if (state == views::CustomButton::BS_HOT)
+  if (state == views::CustomButton::STATE_HOVERED)
     canvas.FillRect(GetLocalBounds(), SkColorSetARGB(64, 255, 255, 255));
 
   return gfx::ImageSkiaOperations::CreateMaskedImage(
@@ -472,10 +472,10 @@ gfx::ImageSkia NewTabButton::GetImageForState(
   // through the variations server.
   if (base::FieldTrialList::FindFullName(kNewTabButtonFieldTrialName) ==
           kNewTabButtonFieldTrialPlusGroupName) {
-    overlay_id = state == views::CustomButton::BS_PUSHED ?
+    overlay_id = state == views::CustomButton::STATE_PRESSED ?
         IDR_NEWTAB_BUTTON_P_PLUS : IDR_NEWTAB_BUTTON_PLUS;
   } else {
-    overlay_id = state == views::CustomButton::BS_PUSHED ?
+    overlay_id = state == views::CustomButton::STATE_PRESSED ?
         IDR_NEWTAB_BUTTON_P : IDR_NEWTAB_BUTTON;
   }
   gfx::ImageSkia* overlay = GetThemeProvider()->GetImageSkiaNamed(overlay_id);
@@ -498,8 +498,8 @@ gfx::ImageSkia NewTabButton::GetImage(ui::ScaleFactor scale_factor) const {
   if (!hover_animation_->is_animating())
     return GetImageForState(state(), scale_factor);
   return gfx::ImageSkiaOperations::CreateBlendedImage(
-      GetImageForState(views::CustomButton::BS_NORMAL, scale_factor),
-      GetImageForState(views::CustomButton::BS_HOT, scale_factor),
+      GetImageForState(views::CustomButton::STATE_NORMAL, scale_factor),
+      GetImageForState(views::CustomButton::STATE_HOVERED, scale_factor),
       hover_animation_->GetCurrentValue());
 }
 

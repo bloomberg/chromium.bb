@@ -47,17 +47,17 @@ void ButtonExample::CreateExampleView(View* container) {
 
   label_button_ = new LabelButton(this, ASCIIToUTF16("Label Button"));
   label_button_->set_focusable(true);
-  label_button_->SetTextColor(CustomButton::BS_HOT, SK_ColorRED);
+  label_button_->SetTextColor(CustomButton::STATE_HOVERED, SK_ColorRED);
   container->AddChildView(label_button_);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image_button_ = new ImageButton(this);
   image_button_->set_focusable(true);
-  image_button_->SetImage(ImageButton::BS_NORMAL,
+  image_button_->SetImage(ImageButton::STATE_NORMAL,
                           rb.GetImageNamed(IDR_CLOSE).ToImageSkia());
-  image_button_->SetImage(ImageButton::BS_HOT,
+  image_button_->SetImage(ImageButton::STATE_HOVERED,
                           rb.GetImageNamed(IDR_CLOSE_H).ToImageSkia());
-  image_button_->SetImage(ImageButton::BS_PUSHED,
+  image_button_->SetImage(ImageButton::STATE_PRESSED,
                           rb.GetImageNamed(IDR_CLOSE_P).ToImageSkia());
   image_button_->SetOverlayImage(rb.GetImageNamed(
       IDR_MENU_CHECK).ToImageSkia());
@@ -150,8 +150,8 @@ void ButtonExample::LabelButtonPressed(const ui::Event& event) {
             string16() : ASCIIToUTF16("Label Button"));
       }
     } else if (event.IsAltDown()) {
-      label_button_->SetImage(CustomButton::BS_NORMAL,
-          label_button_->GetImage(CustomButton::BS_NORMAL).isNull() ?
+      label_button_->SetImage(CustomButton::STATE_NORMAL,
+          label_button_->GetImage(CustomButton::STATE_NORMAL).isNull() ?
           *icon_ : gfx::ImageSkia());
     } else {
       label_button_->SetHorizontalAlignment(

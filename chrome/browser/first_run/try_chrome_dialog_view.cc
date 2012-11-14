@@ -182,11 +182,11 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   layout->AddView(label);
   // The close button is custom.
   views::ImageButton* close_button = new views::ImageButton(this);
-  close_button->SetImage(views::CustomButton::BS_NORMAL,
+  close_button->SetImage(views::CustomButton::STATE_NORMAL,
                          rb.GetNativeImageNamed(IDR_CLOSE_BAR).ToImageSkia());
-  close_button->SetImage(views::CustomButton::BS_HOT,
+  close_button->SetImage(views::CustomButton::STATE_HOVERED,
                          rb.GetNativeImageNamed(IDR_CLOSE_BAR_H).ToImageSkia());
-  close_button->SetImage(views::CustomButton::BS_PUSHED,
+  close_button->SetImage(views::CustomButton::STATE_PRESSED,
                          rb.GetNativeImageNamed(IDR_CLOSE_BAR_P).ToImageSkia());
   close_button->set_tag(BT_CLOSE_BUTTON);
   layout->AddView(close_button);
@@ -309,13 +309,13 @@ void TryChromeDialogView::ButtonPressed(views::Button* sender,
   if (sender->tag() == BT_DONT_BUG_RADIO) {
     if (make_default_) {
       make_default_->SetChecked(false);
-      make_default_->SetState(views::CustomButton::BS_DISABLED);
+      make_default_->SetState(views::CustomButton::STATE_DISABLED);
     }
     return;
   } else if (sender->tag() == BT_TRY_IT_RADIO) {
     if (make_default_) {
       make_default_->SetChecked(true);
-      make_default_->SetState(views::CustomButton::BS_NORMAL);
+      make_default_->SetState(views::CustomButton::STATE_NORMAL);
     }
     return;
   } else if (sender->tag() == BT_CLOSE_BUTTON) {

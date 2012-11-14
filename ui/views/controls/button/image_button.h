@@ -70,7 +70,7 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   void UpdateButtonBackground(ui::ScaleFactor scale_factor);
 
   // The images used to render the different states of this button.
-  gfx::ImageSkia images_[BS_COUNT];
+  gfx::ImageSkia images_[STATE_COUNT];
 
   gfx::ImageSkia background_image_;
 
@@ -127,7 +127,7 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   // The parent class's images_ member is used for the current images,
   // and this array is used to hold the alternative images.
   // We swap between the two when toggling.
-  gfx::ImageSkia alternate_images_[BS_COUNT];
+  gfx::ImageSkia alternate_images_[STATE_COUNT];
 
   // True if the button is currently toggled.
   bool toggled_;

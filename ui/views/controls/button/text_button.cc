@@ -104,8 +104,9 @@ void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
 
   BorderImages* set = &normal_set_;
   if (button->show_multiple_icon_states() &&
-      ((state == TextButton::BS_HOT) || (state == TextButton::BS_PUSHED))) {
-    set = (state == TextButton::BS_HOT) ? &hot_set_ : &pushed_set_;
+      ((state == TextButton::STATE_HOVERED) ||
+       (state == TextButton::STATE_PRESSED))) {
+    set = (state == TextButton::STATE_HOVERED) ? &hot_set_ : &pushed_set_;
   }
   if (!set->IsEmpty()) {
     if (button->GetAnimation()->is_animating()) {
@@ -464,7 +465,8 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     text_bounds.set_x(GetMirroredXForRect(text_bounds));
 
     SkColor text_color = (show_multiple_icon_states_ &&
-        (state() == BS_HOT || state() == BS_PUSHED)) ? color_hover_ : color_;
+        (state() == STATE_HOVERED || state() == STATE_PRESSED)) ?
+            color_hover_ : color_;
 
     int draw_string_flags = gfx::Canvas::DefaultCanvasTextAlignment() |
         ComputeCanvasStringFlags();
@@ -553,13 +555,13 @@ ui::NativeTheme::State TextButtonBase::GetThemeState(
     ui::NativeTheme::ExtraParams* params) const {
   GetExtraParams(params);
   switch(state()) {
-    case BS_DISABLED:
+    case STATE_DISABLED:
       return ui::NativeTheme::kDisabled;
-    case BS_NORMAL:
+    case STATE_NORMAL:
       return ui::NativeTheme::kNormal;
-    case BS_HOT:
+    case STATE_HOVERED:
       return ui::NativeTheme::kHovered;
-    case BS_PUSHED:
+    case STATE_PRESSED:
       return ui::NativeTheme::kPressed;
     default:
       NOTREACHED() << "Unknown state: " << state();
@@ -730,9 +732,9 @@ gfx::Rect TextButton::GetTextBounds() const {
 
 const gfx::ImageSkia& TextButton::GetImageToPaint() const {
   if (show_multiple_icon_states_) {
-    if (has_hover_icon_ && (state() == BS_HOT))
+    if (has_hover_icon_ && (state() == STATE_HOVERED))
       return icon_hover_;
-    if (has_pushed_icon_ && (state() == BS_PUSHED))
+    if (has_pushed_icon_ && (state() == STATE_PRESSED))
       return icon_pushed_;
   }
   return icon_;

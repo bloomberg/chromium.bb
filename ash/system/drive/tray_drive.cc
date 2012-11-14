@@ -171,10 +171,10 @@ class DriveDetailedView : public TrayDetailsView,
       AddChildView(label_container_);
 
       cancel_button_ = new views::ImageButton(this);
-      cancel_button_->SetImage(views::ImageButton::BS_NORMAL,
+      cancel_button_->SetImage(views::ImageButton::STATE_NORMAL,
           ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_AURA_UBER_TRAY_DRIVE_CANCEL));
-      cancel_button_->SetImage(views::ImageButton::BS_HOT,
+      cancel_button_->SetImage(views::ImageButton::STATE_HOVERED,
           ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_AURA_UBER_TRAY_DRIVE_CANCEL_HOVER));
 

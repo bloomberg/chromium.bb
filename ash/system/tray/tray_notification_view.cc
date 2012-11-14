@@ -39,7 +39,7 @@ void TrayNotificationView::InitView(views::View* contents) {
   SetLayoutManager(layout);
 
   views::ImageButton* close_button = new views::ImageButton(this);
-  close_button->SetImage(views::CustomButton::BS_NORMAL,
+  close_button->SetImage(views::CustomButton::STATE_NORMAL,
                          ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                              IDR_MESSAGE_CLOSE));
   close_button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,

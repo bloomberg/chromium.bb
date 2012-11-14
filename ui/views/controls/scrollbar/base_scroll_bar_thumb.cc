@@ -20,7 +20,7 @@ BaseScrollBarThumb::BaseScrollBarThumb(BaseScrollBar* scroll_bar)
     : scroll_bar_(scroll_bar),
       drag_start_position_(-1),
       mouse_offset_(-1),
-      state_(CustomButton::BS_NORMAL) {
+      state_(CustomButton::STATE_NORMAL) {
 }
 
 BaseScrollBarThumb::~BaseScrollBarThumb() {
@@ -66,17 +66,17 @@ int BaseScrollBarThumb::GetPosition() const {
 }
 
 void BaseScrollBarThumb::OnMouseEntered(const ui::MouseEvent& event) {
-  SetState(CustomButton::BS_HOT);
+  SetState(CustomButton::STATE_HOVERED);
 }
 
 void BaseScrollBarThumb::OnMouseExited(const ui::MouseEvent& event) {
-  SetState(CustomButton::BS_NORMAL);
+  SetState(CustomButton::STATE_NORMAL);
 }
 
 bool BaseScrollBarThumb::OnMousePressed(const ui::MouseEvent& event) {
   mouse_offset_ = scroll_bar_->IsHorizontal() ? event.x() : event.y();
   drag_start_position_ = GetPosition();
-  SetState(CustomButton::BS_PUSHED);
+  SetState(CustomButton::STATE_PRESSED);
   return true;
 }
 
@@ -112,7 +112,7 @@ void BaseScrollBarThumb::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 void BaseScrollBarThumb::OnMouseCaptureLost() {
-  SetState(CustomButton::BS_HOT);
+  SetState(CustomButton::STATE_HOVERED);
 }
 
 CustomButton::ButtonState BaseScrollBarThumb::GetState() const {

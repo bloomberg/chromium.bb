@@ -99,13 +99,13 @@ FindBarView::FindBarView(FindBarHost* host)
   find_previous_button_ = new views::ImageButton(this);
   find_previous_button_->set_tag(FIND_PREVIOUS_TAG);
   find_previous_button_->set_focusable(true);
-  find_previous_button_->SetImage(views::CustomButton::BS_NORMAL,
+  find_previous_button_->SetImage(views::CustomButton::STATE_NORMAL,
       rb.GetImageSkiaNamed(IDR_FINDINPAGE_PREV));
-  find_previous_button_->SetImage(views::CustomButton::BS_HOT,
+  find_previous_button_->SetImage(views::CustomButton::STATE_HOVERED,
       rb.GetImageSkiaNamed(IDR_FINDINPAGE_PREV_H));
-  find_previous_button_->SetImage(views::CustomButton::BS_PUSHED,
+  find_previous_button_->SetImage(views::CustomButton::STATE_PRESSED,
       rb.GetImageSkiaNamed(IDR_FINDINPAGE_PREV_P));
-  find_previous_button_->SetImage(views::CustomButton::BS_DISABLED,
+  find_previous_button_->SetImage(views::CustomButton::STATE_DISABLED,
       rb.GetImageSkiaNamed(IDR_FINDINPAGE_PREV_D));
   find_previous_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP));
@@ -116,13 +116,13 @@ FindBarView::FindBarView(FindBarHost* host)
   find_next_button_ = new views::ImageButton(this);
   find_next_button_->set_tag(FIND_NEXT_TAG);
   find_next_button_->set_focusable(true);
-  find_next_button_->SetImage(views::CustomButton::BS_NORMAL,
+  find_next_button_->SetImage(views::CustomButton::STATE_NORMAL,
       rb.GetImageSkiaNamed(IDR_FINDINPAGE_NEXT));
-  find_next_button_->SetImage(views::CustomButton::BS_HOT,
+  find_next_button_->SetImage(views::CustomButton::STATE_HOVERED,
       rb.GetImageSkiaNamed(IDR_FINDINPAGE_NEXT_H));
-  find_next_button_->SetImage(views::CustomButton::BS_PUSHED,
+  find_next_button_->SetImage(views::CustomButton::STATE_PRESSED,
       rb.GetImageSkiaNamed(IDR_FINDINPAGE_NEXT_P));
-  find_next_button_->SetImage(views::CustomButton::BS_DISABLED,
+  find_next_button_->SetImage(views::CustomButton::STATE_DISABLED,
       rb.GetImageSkiaNamed(IDR_FINDINPAGE_NEXT_D));
   find_next_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_NEXT_TOOLTIP));
@@ -133,11 +133,11 @@ FindBarView::FindBarView(FindBarHost* host)
   close_button_ = new views::ImageButton(this);
   close_button_->set_tag(CLOSE_TAG);
   close_button_->set_focusable(true);
-  close_button_->SetImage(views::CustomButton::BS_NORMAL,
+  close_button_->SetImage(views::CustomButton::STATE_NORMAL,
                           rb.GetImageSkiaNamed(IDR_TAB_CLOSE));
-  close_button_->SetImage(views::CustomButton::BS_HOT,
+  close_button_->SetImage(views::CustomButton::STATE_HOVERED,
                           rb.GetImageSkiaNamed(IDR_TAB_CLOSE_H));
-  close_button_->SetImage(views::CustomButton::BS_PUSHED,
+  close_button_->SetImage(views::CustomButton::STATE_PRESSED,
                           rb.GetImageSkiaNamed(IDR_TAB_CLOSE_P));
   close_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP));

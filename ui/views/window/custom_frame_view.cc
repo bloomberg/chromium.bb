@@ -200,9 +200,9 @@ void CustomFrameView::GetWindowMask(const gfx::Size& size,
 }
 
 void CustomFrameView::ResetWindowControls() {
-  restore_button_->SetState(CustomButton::BS_NORMAL);
-  minimize_button_->SetState(CustomButton::BS_NORMAL);
-  maximize_button_->SetState(CustomButton::BS_NORMAL);
+  restore_button_->SetState(CustomButton::STATE_NORMAL);
+  minimize_button_->SetState(CustomButton::STATE_NORMAL);
+  maximize_button_->SetState(CustomButton::STATE_NORMAL);
   // The close button isn't affected by this constraint.
 }
 
@@ -498,11 +498,11 @@ void CustomFrameView::LayoutWindowControls() {
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  close_button_->SetImage(CustomButton::BS_NORMAL,
+  close_button_->SetImage(CustomButton::STATE_NORMAL,
                           rb.GetImageNamed(normal_part).ToImageSkia());
-  close_button_->SetImage(CustomButton::BS_HOT,
+  close_button_->SetImage(CustomButton::STATE_HOVERED,
                           rb.GetImageNamed(hot_part).ToImageSkia());
-  close_button_->SetImage(CustomButton::BS_PUSHED,
+  close_button_->SetImage(CustomButton::STATE_PRESSED,
                           rb.GetImageNamed(pushed_part).ToImageSkia());
 }
 
@@ -546,11 +546,11 @@ ImageButton* CustomFrameView::InitWindowCaptionButton(
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   ImageButton* button = new ImageButton(this);
   button->SetAccessibleName(l10n_util::GetStringUTF16(accessibility_string_id));
-  button->SetImage(CustomButton::BS_NORMAL,
+  button->SetImage(CustomButton::STATE_NORMAL,
                    rb.GetImageNamed(normal_image_id).ToImageSkia());
-  button->SetImage(CustomButton::BS_HOT,
+  button->SetImage(CustomButton::STATE_HOVERED,
                    rb.GetImageNamed(hot_image_id).ToImageSkia());
-  button->SetImage(CustomButton::BS_PUSHED,
+  button->SetImage(CustomButton::STATE_PRESSED,
                    rb.GetImageNamed(pushed_image_id).ToImageSkia());
   AddChildView(button);
   return button;

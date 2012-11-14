@@ -78,12 +78,12 @@ views::Button* MakeWindowSwitcherButton(views::ButtonListener* listener,
   // The button in the incognito window has the hot-cold images inverted
   // with respect to the regular browser window.
   switcher_button->SetImage(
-      views::ImageButton::BS_NORMAL,
+      views::ImageButton::STATE_NORMAL,
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           is_off_the_record ? IDR_INCOGNITO_SWITCH_ON :
                               IDR_INCOGNITO_SWITCH_OFF));
   switcher_button->SetImage(
-      views::ImageButton::BS_HOT,
+      views::ImageButton::STATE_HOVERED,
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           is_off_the_record ? IDR_INCOGNITO_SWITCH_OFF :
                               IDR_INCOGNITO_SWITCH_ON));

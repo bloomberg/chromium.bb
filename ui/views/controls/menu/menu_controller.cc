@@ -398,7 +398,7 @@ MenuItemView* MenuController::Run(Widget* parent,
   // If we stopped running because one of the menus was destroyed chances are
   // the button was also destroyed.
   if (exit_type_ != EXIT_DESTROYED && menu_button_) {
-    menu_button_->SetState(CustomButton::BS_NORMAL);
+    menu_button_->SetState(CustomButton::STATE_NORMAL);
     menu_button_->SchedulePaint();
   }
 
@@ -1184,10 +1184,10 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
 
   // There is a sibling menu, update the button state, hide the current menu
   // and show the new one.
-  menu_button_->SetState(CustomButton::BS_NORMAL);
+  menu_button_->SetState(CustomButton::STATE_NORMAL);
   menu_button_->SchedulePaint();
   menu_button_ = button;
-  menu_button_->SetState(CustomButton::BS_PUSHED);
+  menu_button_->SetState(CustomButton::STATE_PRESSED);
   menu_button_->SchedulePaint();
 
   // Need to reset capture when we show the menu again, otherwise we aren't

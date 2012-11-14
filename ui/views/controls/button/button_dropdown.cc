@@ -110,15 +110,15 @@ void ButtonDropDown::OnMouseExited(const ui::MouseEvent& event) {
   // Starting a drag results in a MouseExited, we need to ignore it.
   // A right click release triggers an exit event. We want to
   // remain in a PUSHED state until the drop down menu closes.
-  if (state_ != BS_DISABLED && !InDrag() && state_ != BS_PUSHED)
-    SetState(BS_NORMAL);
+  if (state_ != STATE_DISABLED && !InDrag() && state_ != STATE_PRESSED)
+    SetState(STATE_NORMAL);
 }
 
 void ButtonDropDown::ShowContextMenu(const gfx::Point& p,
                                      bool is_mouse_gesture) {
   show_menu_factory_.InvalidateWeakPtrs();
   ShowDropDownMenu();
-  SetState(BS_HOT);
+  SetState(STATE_HOVERED);
 }
 
 void ButtonDropDown::GetAccessibleState(ui::AccessibleViewState* state) {
@@ -175,7 +175,7 @@ void ButtonDropDown::ShowDropDownMenu() {
     menu_position.set_x(left_bound);
 
   // Make the button look depressed while the menu is open.
-  SetState(BS_PUSHED);
+  SetState(STATE_PRESSED);
 
   menu_showing_ = true;
 
@@ -212,8 +212,8 @@ void ButtonDropDown::ShowDropDownMenu() {
   SetMouseHandler(NULL);
 
   // Set the state back to normal after the drop down menu is closed.
-  if (state_ != BS_DISABLED)
-    SetState(BS_NORMAL);
+  if (state_ != STATE_DISABLED)
+    SetState(STATE_NORMAL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

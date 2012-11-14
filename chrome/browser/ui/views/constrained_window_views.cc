@@ -300,11 +300,11 @@ ConstrainedWindowFrameView::ConstrainedWindowFrameView(
   container->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  close_button_->SetImage(views::CustomButton::BS_NORMAL,
+  close_button_->SetImage(views::CustomButton::STATE_NORMAL,
                           rb.GetImageSkiaNamed(IDR_CLOSE_SA));
-  close_button_->SetImage(views::CustomButton::BS_HOT,
+  close_button_->SetImage(views::CustomButton::STATE_HOVERED,
                           rb.GetImageSkiaNamed(IDR_CLOSE_SA_H));
-  close_button_->SetImage(views::CustomButton::BS_PUSHED,
+  close_button_->SetImage(views::CustomButton::STATE_PRESSED,
                           rb.GetImageSkiaNamed(IDR_CLOSE_SA_P));
   close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                    views::ImageButton::ALIGN_MIDDLE);

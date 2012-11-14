@@ -151,18 +151,18 @@ EditProfileLink::EditProfileLink(const string16& title,
                                  HighlightDelegate* delegate)
     : views::Link(title),
       delegate_(delegate),
-      state_(views::CustomButton::BS_NORMAL) {
+      state_(views::CustomButton::STATE_NORMAL) {
 }
 
 void EditProfileLink::OnMouseEntered(const ui::MouseEvent& event) {
   views::Link::OnMouseEntered(event);
-  state_ = views::CustomButton::BS_HOT;
+  state_ = views::CustomButton::STATE_HOVERED;
   delegate_->OnHighlightStateChanged();
 }
 
 void EditProfileLink::OnMouseExited(const ui::MouseEvent& event) {
   views::Link::OnMouseExited(event);
-  state_ = views::CustomButton::BS_NORMAL;
+  state_ = views::CustomButton::STATE_NORMAL;
   delegate_->OnHighlightStateChanged();
 }
 
@@ -173,7 +173,7 @@ void EditProfileLink::OnFocus() {
 
 void EditProfileLink::OnBlur() {
   views::Link::OnBlur();
-  state_ = views::CustomButton::BS_NORMAL;
+  state_ = views::CustomButton::STATE_NORMAL;
   delegate_->OnFocusStateChanged(false);
 }
 
@@ -357,8 +357,8 @@ void ProfileItemView::OnHighlightStateChanged() {
 }
 
 void ProfileItemView::OnFocusStateChanged(bool has_focus) {
-  if (!has_focus && state() != views::CustomButton::BS_DISABLED)
-    SetState(views::CustomButton::BS_NORMAL);
+  if (!has_focus && state() != views::CustomButton::STATE_DISABLED)
+    SetState(views::CustomButton::STATE_NORMAL);
   OnHighlightStateChanged();
 }
 
@@ -376,10 +376,10 @@ gfx::ImageSkia ProfileItemView::GetBadgedIcon(const gfx::ImageSkia& icon) {
 }
 
 bool ProfileItemView::IsHighlighted() {
-  return state() == views::CustomButton::BS_PUSHED ||
-         state() == views::CustomButton::BS_HOT ||
-         edit_link_->state() == views::CustomButton::BS_PUSHED ||
-         edit_link_->state() == views::CustomButton::BS_HOT ||
+  return state() == views::CustomButton::STATE_PRESSED ||
+         state() == views::CustomButton::STATE_HOVERED ||
+         edit_link_->state() == views::CustomButton::STATE_PRESSED ||
+         edit_link_->state() == views::CustomButton::STATE_HOVERED ||
          HasFocus() ||
          edit_link_->HasFocus();
 }

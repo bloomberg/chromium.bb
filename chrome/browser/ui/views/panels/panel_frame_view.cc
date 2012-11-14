@@ -189,11 +189,11 @@ void PanelFrameView::Init() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   close_button_ = new views::ImageButton(this);
-  close_button_->SetImage(views::CustomButton::BS_NORMAL,
+  close_button_->SetImage(views::CustomButton::STATE_NORMAL,
                           rb.GetImageSkiaNamed(IDR_PANEL_CLOSE));
-  close_button_->SetImage(views::CustomButton::BS_HOT,
+  close_button_->SetImage(views::CustomButton::STATE_HOVERED,
                           rb.GetImageSkiaNamed(IDR_PANEL_CLOSE_H));
-  close_button_->SetImage(views::CustomButton::BS_PUSHED,
+  close_button_->SetImage(views::CustomButton::STATE_PRESSED,
                           rb.GetImageSkiaNamed(IDR_PANEL_CLOSE_C));
   string16 tooltip_text = l10n_util::GetStringUTF16(IDS_PANEL_CLOSE_TOOLTIP);
   close_button_->SetTooltipText(tooltip_text);
@@ -201,11 +201,11 @@ void PanelFrameView::Init() {
   AddChildView(close_button_);
 
   minimize_button_ = new views::ImageButton(this);
-  minimize_button_->SetImage(views::CustomButton::BS_NORMAL,
+  minimize_button_->SetImage(views::CustomButton::STATE_NORMAL,
                              rb.GetImageSkiaNamed(IDR_PANEL_MINIMIZE));
-  minimize_button_->SetImage(views::CustomButton::BS_HOT,
+  minimize_button_->SetImage(views::CustomButton::STATE_HOVERED,
                              rb.GetImageSkiaNamed(IDR_PANEL_MINIMIZE_H));
-  minimize_button_->SetImage(views::CustomButton::BS_PUSHED,
+  minimize_button_->SetImage(views::CustomButton::STATE_PRESSED,
                              rb.GetImageSkiaNamed(IDR_PANEL_MINIMIZE_C));
   tooltip_text = l10n_util::GetStringUTF16(IDS_PANEL_MINIMIZE_TOOLTIP);
   minimize_button_->SetTooltipText(tooltip_text);
@@ -213,11 +213,11 @@ void PanelFrameView::Init() {
   AddChildView(minimize_button_);
 
   restore_button_ = new views::ImageButton(this);
-  restore_button_->SetImage(views::CustomButton::BS_NORMAL,
+  restore_button_->SetImage(views::CustomButton::STATE_NORMAL,
                             rb.GetImageSkiaNamed(IDR_PANEL_RESTORE));
-  restore_button_->SetImage(views::CustomButton::BS_HOT,
+  restore_button_->SetImage(views::CustomButton::STATE_HOVERED,
                             rb.GetImageSkiaNamed(IDR_PANEL_RESTORE_H));
-  restore_button_->SetImage(views::CustomButton::BS_PUSHED,
+  restore_button_->SetImage(views::CustomButton::STATE_PRESSED,
                             rb.GetImageSkiaNamed(IDR_PANEL_RESTORE_C));
   tooltip_text = l10n_util::GetStringUTF16(IDS_PANEL_RESTORE_TOOLTIP);
   restore_button_->SetTooltipText(tooltip_text);
@@ -255,8 +255,8 @@ void PanelFrameView::UpdateTitlebarMinimizeRestoreButtonVisibility() {
 
   // Reset the button states in case that the hover states are not cleared when
   // mouse is clicked but not moved.
-  minimize_button_->SetState(views::CustomButton::BS_NORMAL);
-  restore_button_->SetState(views::CustomButton::BS_NORMAL);
+  minimize_button_->SetState(views::CustomButton::STATE_NORMAL);
+  restore_button_->SetState(views::CustomButton::STATE_NORMAL);
 }
 
 gfx::Rect PanelFrameView::GetBoundsForClientView() const {

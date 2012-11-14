@@ -103,11 +103,11 @@ void EnableChildViews(views::View* view, bool enabled) {
 views::ImageButton* CreateCloseButton(views::ButtonListener* listener) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::ImageButton* close_button = new views::ImageButton(listener);
-  close_button->SetImage(views::CustomButton::BS_NORMAL,
+  close_button->SetImage(views::CustomButton::STATE_NORMAL,
                          rb.GetImageSkiaNamed(IDR_WEB_UI_CLOSE));
-  close_button->SetImage(views::CustomButton::BS_HOT,
+  close_button->SetImage(views::CustomButton::STATE_HOVERED,
                          rb.GetImageSkiaNamed(IDR_WEB_UI_CLOSE_HOVER));
-  close_button->SetImage(views::CustomButton::BS_PUSHED,
+  close_button->SetImage(views::CustomButton::STATE_PRESSED,
                          rb.GetImageSkiaNamed(IDR_WEB_UI_CLOSE_PRESSED));
   return close_button;
 }

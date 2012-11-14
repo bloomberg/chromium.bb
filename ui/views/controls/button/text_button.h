@@ -36,8 +36,8 @@ class VIEWS_EXPORT TextButtonBorder : public Border {
   TextButtonBorder();
   virtual ~TextButtonBorder();
 
-  // By default BS_NORMAL is drawn with no border.  Call this to instead draw it
-  // with the same border as the "hot" state.
+  // By default STATE_NORMAL is drawn with no border.  Call this to instead draw
+  // it with the same border as the "hot" state.
   // TODO(pkasting): You should also call set_animate_on_state_change(false) on
   // the button in this case... we should fix this.
   void copy_normal_set_to_hot_set() { set_normal_set(hot_set_); }

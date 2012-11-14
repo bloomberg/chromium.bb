@@ -171,7 +171,7 @@ class ContextMenuButtonBackground : public Background {
   virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE {
     CustomButton::ButtonState state = static_cast<CustomButton*>(view)->state();
     SkColor background_color, border_color;
-    if (state == CustomButton::BS_NORMAL) {
+    if (state == CustomButton::STATE_NORMAL) {
       background_color = SkColorSetARGB(102, 255, 255, 255);
       border_color = SkColorSetARGB(36, 0, 0, 0);
     } else {

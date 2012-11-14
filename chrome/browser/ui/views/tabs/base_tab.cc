@@ -198,11 +198,11 @@ BaseTab::BaseTab(TabController* controller)
   // Add the Close Button.
   close_button_ = new TabCloseButton(this);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  close_button_->SetImage(views::CustomButton::BS_NORMAL,
+  close_button_->SetImage(views::CustomButton::STATE_NORMAL,
                           rb.GetImageSkiaNamed(IDR_TAB_CLOSE));
-  close_button_->SetImage(views::CustomButton::BS_HOT,
+  close_button_->SetImage(views::CustomButton::STATE_HOVERED,
                           rb.GetImageSkiaNamed(IDR_TAB_CLOSE_H));
-  close_button_->SetImage(views::CustomButton::BS_PUSHED,
+  close_button_->SetImage(views::CustomButton::STATE_PRESSED,
                           rb.GetImageSkiaNamed(IDR_TAB_CLOSE_P));
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));

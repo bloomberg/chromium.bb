@@ -57,7 +57,7 @@ class PageSwitcherButton : public views::CustomButton {
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    if (state() == BS_HOT) {
+    if (state() == STATE_HOVERED) {
       PaintButton(canvas, kHoverColor);
     } else {
       PaintButton(canvas, kNormalColor);
@@ -160,14 +160,14 @@ void PageSwitcher::UpdateUIForDragPoint(const gfx::Point& point) {
   if (page >= 0 && page < button_count) {
     PageSwitcherButton* button =
         static_cast<PageSwitcherButton*>(buttons_->child_at(page));
-    button->SetState(views::CustomButton::BS_HOT);
+    button->SetState(views::CustomButton::STATE_HOVERED);
     return;
   }
 
   for (int i = 0; i < button_count; ++i) {
     PageSwitcherButton* button =
         static_cast<PageSwitcherButton*>(buttons_->child_at(i));
-    button->SetState(views::CustomButton::BS_NORMAL);
+    button->SetState(views::CustomButton::STATE_NORMAL);
   }
 }
 

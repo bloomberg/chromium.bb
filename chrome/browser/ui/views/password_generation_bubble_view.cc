@@ -157,13 +157,13 @@ void PasswordGenerationBubbleView::Init() {
 
   regenerate_button_ = new views::ImageButton(this);
   regenerate_button_->SetImage(
-      views::CustomButton::BS_NORMAL,
+      views::CustomButton::STATE_NORMAL,
       theme_provider_->GetImageSkiaNamed(IDR_RELOAD_DIMMED));
   regenerate_button_->SetImage(
-      views::CustomButton::BS_HOT,
+      views::CustomButton::STATE_HOVERED,
       theme_provider_->GetImageSkiaNamed(IDR_RELOAD));
   regenerate_button_->SetImage(
-      views::CustomButton::BS_PUSHED,
+      views::CustomButton::STATE_PRESSED,
       theme_provider_->GetImageSkiaNamed(IDR_RELOAD));
 
   textfield_ = new views::Textfield();

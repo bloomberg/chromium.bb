@@ -121,7 +121,7 @@ class TraySms::SmsMessageView : public views::View,
  private:
   void LayoutDetailedView() {
     views::ImageButton* close_button = new views::ImageButton(this);
-    close_button->SetImage(views::CustomButton::BS_NORMAL,
+    close_button->SetImage(views::CustomButton::STATE_NORMAL,
         ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_AURA_WINDOW_CLOSE));
 

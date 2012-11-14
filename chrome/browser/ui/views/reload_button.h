@@ -106,7 +106,7 @@ class ReloadButton : public views::ButtonDropDown,
   // The parent class's images_ member is used for the current images,
   // and this array is used to hold the alternative images.
   // We swap between the two when changing mode.
-  gfx::ImageSkia alternate_images_[BS_COUNT];
+  gfx::ImageSkia alternate_images_[STATE_COUNT];
 
   // TESTING ONLY
   // True if we should pretend the button is hovered.

@@ -95,14 +95,14 @@ class ShellWindowDelegateView : public WidgetDelegateView,
   void SetWindowTitle(const string16& title) { title_ = title; }
   void EnableUIControl(UIControl control, bool is_enabled) {
     if (control == BACK_BUTTON) {
-      back_button_->SetState(is_enabled ? CustomButton::BS_NORMAL
-          : CustomButton::BS_DISABLED);
+      back_button_->SetState(is_enabled ? CustomButton::STATE_NORMAL
+          : CustomButton::STATE_DISABLED);
     } else if (control == FORWARD_BUTTON) {
-      forward_button_->SetState(is_enabled ? CustomButton::BS_NORMAL
-          : CustomButton::BS_DISABLED);
+      forward_button_->SetState(is_enabled ? CustomButton::STATE_NORMAL
+          : CustomButton::STATE_DISABLED);
     } else if (control == STOP_BUTTON) {
-      stop_button_->SetState(is_enabled ? CustomButton::BS_NORMAL
-          : CustomButton::BS_DISABLED);
+      stop_button_->SetState(is_enabled ? CustomButton::STATE_NORMAL
+          : CustomButton::STATE_DISABLED);
     }
   }
 

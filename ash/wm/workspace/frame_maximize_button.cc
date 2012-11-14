@@ -356,9 +356,9 @@ bool FrameMaximizeButton::ProcessEndEvent(const ui::LocatedEvent& event) {
   if (!should_snap || snap_type_ == SNAP_NONE)
     return false;
 
-  SetState(BS_NORMAL);
+  SetState(views::CustomButton::STATE_NORMAL);
   // SetState will not call SchedulePaint() if state was already set to
-  // BS_NORMAL during a drag.
+  // STATE_NORMAL during a drag.
   SchedulePaint();
   phantom_window_.reset();
   // Since Snap might destroy |this|, but the snap_sizer needs to be destroyed,

@@ -125,11 +125,11 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
     views::ImageButton* button = new views::ImageButton(listener);
-    button->SetImage(views::CustomButton::BS_NORMAL,
+    button->SetImage(views::CustomButton::STATE_NORMAL,
                      rb.GetImageSkiaNamed(IDR_CLOSE_BAR));
-    button->SetImage(views::CustomButton::BS_HOT,
+    button->SetImage(views::CustomButton::STATE_HOVERED,
                      rb.GetImageSkiaNamed(IDR_CLOSE_BAR_H));
-    button->SetImage(views::CustomButton::BS_PUSHED,
+    button->SetImage(views::CustomButton::STATE_PRESSED,
                      rb.GetImageSkiaNamed(IDR_CLOSE_BAR_P));
     layout->AddView(button);
   }

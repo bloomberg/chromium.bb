@@ -302,15 +302,15 @@ class ChromeStyleStateChangedUpdater
     SetBackgroundForState(state);
 
     // Update text shadow when transitioning to/from pushed state.
-    if (state == CustomButton::BS_PUSHED ||
-        prior_state_ == CustomButton::BS_PUSHED) {
+    if (state == CustomButton::STATE_PRESSED ||
+        prior_state_ == CustomButton::STATE_PRESSED) {
       SetShadowForState(state);
     }
 
     // Update border color.  We need to change it in all cases except hot
     // followed by pushed.
-    if (!(state == CustomButton::BS_PUSHED &&
-          prior_state_ == CustomButton::BS_HOT)) {
+    if (!(state == CustomButton::STATE_PRESSED &&
+          prior_state_ == CustomButton::STATE_HOVERED)) {
       SetBorderColorForState(state);
     }
 
@@ -328,28 +328,28 @@ class ChromeStyleStateChangedUpdater
     SkAlpha inset_shadow_alpha;
 
     switch (state) {
-      case CustomButton::BS_NORMAL:
+      case CustomButton::STATE_NORMAL:
         top = kNormalBackgroundTopColor;
         bottom = kNormalBackgroundBottomColor;
         shadow_alpha = kNormalShadowAlpha;
         inset_shadow_alpha = kNormalInsetShadowAlpha;
         break;
 
-      case CustomButton::BS_HOT:
+      case CustomButton::STATE_HOVERED:
         top = kHotBackgroundTopColor;
         bottom = kHotBackgroundBottomColor;
         shadow_alpha = kHotShadowAlpha;
         inset_shadow_alpha = kHotInsetShadowAlpha;
         break;
 
-      case CustomButton::BS_PUSHED:
+      case CustomButton::STATE_PRESSED:
         top = kPushedBackgroundTopColor;
         bottom = kPushedBackgroundBottomColor;
         shadow_alpha = kPushedShadowAlpha;
         inset_shadow_alpha = kPushedInsetShadowAlpha;
         break;
 
-      case CustomButton::BS_DISABLED:
+      case CustomButton::STATE_DISABLED:
         top = kDisabledBackgroundTopColor;
         bottom = kDisabledBackgroundBottomColor;
         shadow_alpha = kDisabledShadowAlpha;
@@ -368,7 +368,7 @@ class ChromeStyleStateChangedUpdater
   }
 
   void SetShadowForState(CustomButton::ButtonState state) {
-    if (state == CustomButton::BS_PUSHED) {
+    if (state == CustomButton::STATE_PRESSED) {
       // Turn off text shadow.
       button_->ClearEmbellishing();
     } else {
@@ -384,16 +384,16 @@ class ChromeStyleStateChangedUpdater
     SkColor border_color;
 
     switch (state) {
-      case CustomButton::BS_NORMAL:
+      case CustomButton::STATE_NORMAL:
         border_color = kBorderNormalColor;
         break;
 
-      case CustomButton::BS_HOT:
-      case CustomButton::BS_PUSHED:
+      case CustomButton::STATE_HOVERED:
+      case CustomButton::STATE_PRESSED:
         border_color = kBorderActiveColor;
         break;
 
-      case CustomButton::BS_DISABLED:
+      case CustomButton::STATE_DISABLED:
         border_color = kBorderDisabledColor;
         break;
 

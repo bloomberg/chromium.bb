@@ -196,7 +196,7 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
   bool selected = list_view_->IsResultViewSelected(this);
   if (selected) {
     canvas->FillRect(content_rect, kSelectedBackgroundColor);
-  } else if (state() == BS_HOT || state() == BS_PUSHED) {
+  } else if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
     canvas->FillRect(content_rect, kHoverAndPushedColor);
   }
 
@@ -298,9 +298,9 @@ void SearchResultView::OnActionIconsChanged() {
     for (size_t i = 0; i < icons.size(); ++i) {
       const SearchResult::ActionIconSet& icon = icons.at(i);
       views::ImageButton* button = action_buttons_[i];
-      button->SetImage(views::CustomButton::BS_NORMAL, &icon.base_image);
-      button->SetImage(views::CustomButton::BS_HOT, &icon.hover_image);
-      button->SetImage(views::CustomButton::BS_PUSHED, &icon.pressed_image);
+      button->SetImage(views::CustomButton::STATE_NORMAL, &icon.base_image);
+      button->SetImage(views::CustomButton::STATE_HOVERED, &icon.hover_image);
+      button->SetImage(views::CustomButton::STATE_PRESSED, &icon.pressed_image);
       button->SetTooltipText(icon.tooltip_text);
     }
   }

@@ -72,7 +72,7 @@ MenuButton::~MenuButton() {
 ////////////////////////////////////////////////////////////////////////////////
 
 bool MenuButton::Activate() {
-  SetState(BS_PUSHED);
+  SetState(STATE_PRESSED);
   if (listener_) {
     gfx::Rect lb = GetLocalBounds();
 
@@ -126,7 +126,7 @@ bool MenuButton::Activate() {
     // somewhere else (user clicked elsewhere on screen to close the menu
     // or selected an item) and we will inevitably refresh the hot state
     // in the event the mouse _is_ over the view.
-    SetState(BS_NORMAL);
+    SetState(STATE_NORMAL);
 
     // We must return false here so that the RootView does not get stuck
     // sending all mouse pressed events to us instead of the appropriate
@@ -178,7 +178,7 @@ std::string MenuButton::GetClassName() const {
 
 bool MenuButton::OnMousePressed(const ui::MouseEvent& event) {
   RequestFocus();
-  if (state() != BS_DISABLED) {
+  if (state() != STATE_DISABLED) {
     // If we're draggable (GetDragOperations returns a non-zero value), then
     // don't pop on press, instead wait for release.
     if (event.IsOnlyLeftMouseButton() &&
@@ -200,7 +200,7 @@ void MenuButton::OnMouseReleased(const ui::MouseEvent& event) {
   // the menu and context menu (this would happen if the right button is not
   // triggerable and there's a context menu).
   if (GetDragOperations(event.location()) != ui::DragDropTypes::DRAG_NONE &&
-      state() != BS_DISABLED && !InDrag() && event.IsOnlyLeftMouseButton() &&
+      state() != STATE_DISABLED && !InDrag() && event.IsOnlyLeftMouseButton() &&
       HitTestPoint(event.location())) {
     Activate();
   } else {
@@ -211,16 +211,16 @@ void MenuButton::OnMouseReleased(const ui::MouseEvent& event) {
 // The reason we override View::OnMouseExited is because we get this event when
 // we display the menu. If we don't override this method then
 // BaseButton::OnMouseExited will get the event and will set the button's state
-// to BS_NORMAL instead of keeping the state BM_PUSHED. This, in turn, will
+// to STATE_NORMAL instead of keeping the state BM_PUSHED. This, in turn, will
 // cause the button to appear depressed while the menu is displayed.
 void MenuButton::OnMouseExited(const ui::MouseEvent& event) {
-  if ((state_ != BS_DISABLED) && (!menu_visible_) && (!InDrag())) {
-    SetState(BS_NORMAL);
+  if ((state_ != STATE_DISABLED) && (!menu_visible_) && (!InDrag())) {
+    SetState(STATE_NORMAL);
   }
 }
 
 ui::EventResult MenuButton::OnGestureEvent(ui::GestureEvent* event) {
-  if (state() != BS_DISABLED && event->type() == ui::ET_GESTURE_TAP) {
+  if (state() != STATE_DISABLED && event->type() == ui::ET_GESTURE_TAP) {
     if (Activate())
       return ui::ER_CONSUMED;
     return ui::ER_UNHANDLED;

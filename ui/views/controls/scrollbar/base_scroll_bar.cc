@@ -40,7 +40,7 @@ BaseScrollBar::BaseScrollBar(bool horizontal, BaseScrollBarThumb* thumb)
       thumb_(thumb),
       contents_size_(0),
       contents_scroll_offset_(0),
-      thumb_track_state_(CustomButton::BS_NORMAL),
+      thumb_track_state_(CustomButton::STATE_NORMAL),
       last_scroll_amount_(SCROLL_NONE),
       ALLOW_THIS_IN_INITIALIZER_LIST(repeater_(
           base::Bind(&BaseScrollBar::TrackClicked, base::Unretained(this)))),
@@ -403,7 +403,7 @@ int BaseScrollBar::GetScrollIncrement(bool is_page, bool is_positive) {
 // BaseScrollBar, private:
 
 void BaseScrollBar::ProcessPressEvent(const ui::LocatedEvent& event) {
-  SetThumbTrackState(CustomButton::BS_PUSHED);
+  SetThumbTrackState(CustomButton::STATE_PRESSED);
   gfx::Rect thumb_bounds = thumb_->bounds();
   if (IsHorizontal()) {
     if (event.x() < thumb_bounds.x()) {
@@ -423,7 +423,7 @@ void BaseScrollBar::ProcessPressEvent(const ui::LocatedEvent& event) {
 }
 
 void BaseScrollBar::ResetState() {
-  SetThumbTrackState(CustomButton::BS_NORMAL);
+  SetThumbTrackState(CustomButton::STATE_NORMAL);
   repeater_.Stop();
 }
 

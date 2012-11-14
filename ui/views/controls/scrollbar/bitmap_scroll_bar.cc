@@ -154,7 +154,7 @@ class BitmapScrollBarThumb : public BaseScrollBarThumb {
   // transparently over the background image.
   gfx::ImageSkia* grippy_image() const {
     return scroll_bar_->images_[BitmapScrollBar::THUMB_GRIPPY]
-        [CustomButton::BS_NORMAL];
+        [CustomButton::STATE_NORMAL];
   }
 
   // The BitmapScrollBar that owns us.
@@ -190,7 +190,7 @@ void BitmapScrollBar::SetImage(ScrollBarPart part,
                                CustomButton::ButtonState state,
                                gfx::ImageSkia* image_skia) {
   DCHECK(part < PART_COUNT);
-  DCHECK(state < CustomButton::BS_COUNT);
+  DCHECK(state < CustomButton::STATE_COUNT);
   switch (part) {
     case PREV_BUTTON:
       prev_button_->SetImage(state, image_skia);

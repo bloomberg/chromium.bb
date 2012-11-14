@@ -78,7 +78,7 @@ class VIEWS_EXPORT BitmapScrollBar : public BaseScrollBar,
 
   // The thumb needs to be able to access the part images.
   friend BitmapScrollBarThumb;
-  gfx::ImageSkia* images_[PART_COUNT][CustomButton::BS_COUNT];
+  gfx::ImageSkia* images_[PART_COUNT][CustomButton::STATE_COUNT];
 
   // True if the scroll buttons at each end of the scroll bar should be shown.
   bool show_scroll_buttons_;

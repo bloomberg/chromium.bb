@@ -54,8 +54,8 @@ LabelButton::LabelButton(ButtonListener* listener, const string16& text)
 LabelButton::~LabelButton() {}
 
 const gfx::ImageSkia& LabelButton::GetImage(ButtonState for_state) {
-  if (for_state != BS_NORMAL && button_state_images_[for_state].isNull())
-    return button_state_images_[BS_NORMAL];
+  if (for_state != STATE_NORMAL && button_state_images_[for_state].isNull())
+    return button_state_images_[STATE_NORMAL];
   return button_state_images_[for_state];
 }
 
@@ -74,7 +74,7 @@ void LabelButton::SetText(const string16& text) {
 
 void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {
   button_state_colors_[for_state] = color;
-  if (for_state == BS_DISABLED)
+  if (for_state == STATE_DISABLED)
     label_->SetDisabledColor(color);
   else if (for_state == state())
     label_->SetEnabledColor(color);
@@ -125,7 +125,7 @@ void LabelButton::SetNativeTheme(bool native_theme) {
 
 void LabelButton::ResetColorsFromNativeTheme(bool reset_all) {
   const ui::NativeTheme* theme = GetNativeTheme();
-  SkColor colors[BS_COUNT] = {
+  SkColor colors[STATE_COUNT] = {
     theme->GetSystemColor(ui::NativeTheme::kColorId_TextButtonEnabledColor),
     theme->GetSystemColor(ui::NativeTheme::kColorId_TextButtonHoverColor),
     theme->GetSystemColor(ui::NativeTheme::kColorId_TextButtonHoverColor),
@@ -133,13 +133,13 @@ void LabelButton::ResetColorsFromNativeTheme(bool reset_all) {
   };
 #if defined(OS_WIN)
   if (native_theme_ && theme == ui::NativeThemeWin::instance()) {
-    colors[BS_NORMAL] = color_utils::GetSysSkColor(COLOR_BTNTEXT);
-    colors[BS_HOT] = color_utils::GetSysSkColor(COLOR_BTNTEXT);
-    colors[BS_PUSHED] = color_utils::GetSysSkColor(COLOR_BTNTEXT);
-    colors[BS_DISABLED] = color_utils::GetSysSkColor(COLOR_GRAYTEXT);
+    colors[STATE_NORMAL] = color_utils::GetSysSkColor(COLOR_BTNTEXT);
+    colors[STATE_HOVERED] = color_utils::GetSysSkColor(COLOR_BTNTEXT);
+    colors[STATE_PRESSED] = color_utils::GetSysSkColor(COLOR_BTNTEXT);
+    colors[STATE_DISABLED] = color_utils::GetSysSkColor(COLOR_GRAYTEXT);
   }
 #endif
-  for (size_t state = BS_NORMAL; state < BS_COUNT; ++state) {
+  for (size_t state = STATE_NORMAL; state < STATE_COUNT; ++state) {
     if (reset_all || !explicitly_set_colors_[state]) {
       SetTextColor(static_cast<ButtonState>(state), colors[state]);
       explicitly_set_colors_[state] = false;
@@ -151,7 +151,7 @@ void LabelButton::StateChanged() {
   const gfx::Size previous_image_size(image_->GetPreferredSize());
   image_->SetImage(GetImage(state()));
   const SkColor color = button_state_colors_[state()];
-  if (state() != BS_DISABLED && label_->enabled_color() != color)
+  if (state() != STATE_DISABLED && label_->enabled_color() != color)
     label_->SetEnabledColor(color);
   if (image_->GetPreferredSize() != previous_image_size)
     Layout();
@@ -241,11 +241,11 @@ ui::NativeTheme::State LabelButton::GetThemeState(
     ui::NativeTheme::ExtraParams* params) const {
   GetExtraParams(params);
   switch(state()) {
-    case BS_NORMAL:   return ui::NativeTheme::kNormal;
-    case BS_HOT:      return ui::NativeTheme::kHovered;
-    case BS_PUSHED:   return ui::NativeTheme::kPressed;
-    case BS_DISABLED: return ui::NativeTheme::kDisabled;
-    case BS_COUNT:    NOTREACHED() << "Unknown state: " << state();
+    case STATE_NORMAL:   return ui::NativeTheme::kNormal;
+    case STATE_HOVERED:  return ui::NativeTheme::kHovered;
+    case STATE_PRESSED:  return ui::NativeTheme::kPressed;
+    case STATE_DISABLED: return ui::NativeTheme::kDisabled;
+    case STATE_COUNT:    NOTREACHED() << "Unknown state: " << state();
   }
   return ui::NativeTheme::kNormal;
 }

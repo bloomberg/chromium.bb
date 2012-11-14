@@ -457,13 +457,13 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
                                              int accessible_name_id)
     : views::ToggleImageButton(listener) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  SetImage(views::CustomButton::BS_NORMAL,
+  SetImage(views::CustomButton::STATE_NORMAL,
       bundle.GetImageNamed(enabled_resource_id).ToImageSkia());
-  SetToggledImage(views::CustomButton::BS_NORMAL,
+  SetToggledImage(views::CustomButton::STATE_NORMAL,
       bundle.GetImageNamed(disabled_resource_id).ToImageSkia());
-  SetImage(views::CustomButton::BS_HOT,
+  SetImage(views::CustomButton::STATE_HOVERED,
       bundle.GetImageNamed(enabled_resource_id_hover).ToImageSkia());
-  SetToggledImage(views::CustomButton::BS_HOT,
+  SetToggledImage(views::CustomButton::STATE_HOVERED,
       bundle.GetImageNamed(disabled_resource_id_hover).ToImageSkia());
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);

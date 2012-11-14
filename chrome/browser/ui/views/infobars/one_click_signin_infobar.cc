@@ -82,7 +82,7 @@ void InfoBarColoredButtonBorder::Paint(const views::View& view,
   canvas->sk_canvas()->drawRoundRect(bounds, kRadius, kRadius, paint);
 
   paint.setStyle(SkPaint::kStroke_Style);
-  paint.setColor(state == views::CustomButton::BS_NORMAL ?
+  paint.setColor(state == views::CustomButton::STATE_NORMAL ?
       border_color_ : border_color_hot_);
   canvas->sk_canvas()->drawRoundRect(bounds, kRadius, kRadius, paint);
 }

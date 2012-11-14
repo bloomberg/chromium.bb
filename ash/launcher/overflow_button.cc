@@ -100,7 +100,7 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
     PaintBackground(
         canvas,
         kButtonHoverAlpha * hover_animation_->GetCurrentValue());
-  } else if (state() == BS_HOT || state() == BS_PUSHED) {
+  } else if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
     PaintBackground(canvas, kButtonHoverAlpha);
   }
 

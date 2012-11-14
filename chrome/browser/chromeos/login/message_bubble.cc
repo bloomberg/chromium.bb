@@ -80,11 +80,11 @@ void MessageBubble::Init() {
   layout->AddView(label);
 
   close_button_ = new views::ImageButton(this);
-  close_button_->SetImage(views::CustomButton::BS_NORMAL,
+  close_button_->SetImage(views::CustomButton::STATE_NORMAL,
       rb.GetImageSkiaNamed(IDR_CLOSE_BAR));
-  close_button_->SetImage(views::CustomButton::BS_HOT,
+  close_button_->SetImage(views::CustomButton::STATE_HOVERED,
       rb.GetImageSkiaNamed(IDR_CLOSE_BAR_H));
-  close_button_->SetImage(views::CustomButton::BS_PUSHED,
+  close_button_->SetImage(views::CustomButton::STATE_PRESSED,
       rb.GetImageSkiaNamed(IDR_CLOSE_BAR_P));
   layout->AddView(close_button_);
 

@@ -173,10 +173,10 @@ void TakePhotoView::Init(int image_width, int image_height) {
 
   snapshot_button_ = new views::ImageButton(this);
   snapshot_button_->set_focusable(true);
-  snapshot_button_->SetImage(views::CustomButton::BS_NORMAL,
+  snapshot_button_->SetImage(views::CustomButton::STATE_NORMAL,
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_USER_IMAGE_CAPTURE));
-  snapshot_button_->SetImage(views::CustomButton::BS_DISABLED,
+  snapshot_button_->SetImage(views::CustomButton::STATE_DISABLED,
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_USER_IMAGE_CAPTURE_DISABLED));
   snapshot_button_->SetAccessibleName(l10n_util::GetStringUTF16(
@@ -234,7 +234,7 @@ void TakePhotoView::UpdateVideoFrame(const SkBitmap& frame) {
 
 void TakePhotoView::ShowCameraInitializing() {
   is_capturing_ = true;
-  snapshot_button_->SetImage(views::CustomButton::BS_NORMAL,
+  snapshot_button_->SetImage(views::CustomButton::STATE_NORMAL,
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_USER_IMAGE_CAPTURE));
   snapshot_button_->SetVisible(true);
@@ -267,7 +267,7 @@ void TakePhotoView::CaptureImage() {
   if (is_capturing_ && user_image_->HasSnapshot()) {
     is_capturing_ = false;
     snapshot_button_->SetImage(
-        views::CustomButton::BS_NORMAL,
+        views::CustomButton::STATE_NORMAL,
         ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_USER_IMAGE_RECYCLE));
     delegate_->OnCapturingStopped();
@@ -292,7 +292,7 @@ void TakePhotoView::FlipCapturingState() {
   } else {
     is_capturing_ = true;
     snapshot_button_->SetImage(
-        views::CustomButton::BS_NORMAL,
+        views::CustomButton::STATE_NORMAL,
         ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_USER_IMAGE_CAPTURE));
     delegate_->OnCapturingStarted();

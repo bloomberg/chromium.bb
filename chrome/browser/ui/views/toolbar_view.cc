@@ -335,10 +335,10 @@ gfx::ImageSkia ToolbarView::GetAppMenuIcon(
 
   int id = 0;
   switch (state) {
-    case views::CustomButton::BS_NORMAL: id = IDR_TOOLS;   break;
-    case views::CustomButton::BS_HOT:    id = IDR_TOOLS_H; break;
-    case views::CustomButton::BS_PUSHED: id = IDR_TOOLS_P; break;
-    default:                             NOTREACHED();     break;
+    case views::CustomButton::STATE_NORMAL:  id = IDR_TOOLS;   break;
+    case views::CustomButton::STATE_HOVERED: id = IDR_TOOLS_H; break;
+    case views::CustomButton::STATE_PRESSED: id = IDR_TOOLS_P; break;
+    default:                                 NOTREACHED();     break;
   }
   gfx::ImageSkia icon = *tp->GetImageSkiaNamed(id);
 
@@ -856,36 +856,36 @@ int ToolbarView::PopupTopSpacing() const {
 void ToolbarView::LoadImages() {
   ui::ThemeProvider* tp = GetThemeProvider();
 
-  back_->SetImage(views::CustomButton::BS_NORMAL,
+  back_->SetImage(views::CustomButton::STATE_NORMAL,
       tp->GetImageSkiaNamed(IDR_BACK));
-  back_->SetImage(views::CustomButton::BS_HOT,
+  back_->SetImage(views::CustomButton::STATE_HOVERED,
       tp->GetImageSkiaNamed(IDR_BACK_H));
-  back_->SetImage(views::CustomButton::BS_PUSHED,
+  back_->SetImage(views::CustomButton::STATE_PRESSED,
       tp->GetImageSkiaNamed(IDR_BACK_P));
-  back_->SetImage(views::CustomButton::BS_DISABLED,
+  back_->SetImage(views::CustomButton::STATE_DISABLED,
       tp->GetImageSkiaNamed(IDR_BACK_D));
 
-  forward_->SetImage(views::CustomButton::BS_NORMAL,
+  forward_->SetImage(views::CustomButton::STATE_NORMAL,
       tp->GetImageSkiaNamed(IDR_FORWARD));
-  forward_->SetImage(views::CustomButton::BS_HOT,
+  forward_->SetImage(views::CustomButton::STATE_HOVERED,
       tp->GetImageSkiaNamed(IDR_FORWARD_H));
-  forward_->SetImage(views::CustomButton::BS_PUSHED,
+  forward_->SetImage(views::CustomButton::STATE_PRESSED,
       tp->GetImageSkiaNamed(IDR_FORWARD_P));
-  forward_->SetImage(views::CustomButton::BS_DISABLED,
+  forward_->SetImage(views::CustomButton::STATE_DISABLED,
       tp->GetImageSkiaNamed(IDR_FORWARD_D));
 
   reload_->LoadImages(tp);
 
-  home_->SetImage(views::CustomButton::BS_NORMAL,
+  home_->SetImage(views::CustomButton::STATE_NORMAL,
       tp->GetImageSkiaNamed(IDR_HOME));
-  home_->SetImage(views::CustomButton::BS_HOT,
+  home_->SetImage(views::CustomButton::STATE_HOVERED,
       tp->GetImageSkiaNamed(IDR_HOME_H));
-  home_->SetImage(views::CustomButton::BS_PUSHED,
+  home_->SetImage(views::CustomButton::STATE_PRESSED,
       tp->GetImageSkiaNamed(IDR_HOME_P));
 
-  app_menu_->SetIcon(GetAppMenuIcon(views::CustomButton::BS_NORMAL));
-  app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::BS_HOT));
-  app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::BS_PUSHED));
+  app_menu_->SetIcon(GetAppMenuIcon(views::CustomButton::STATE_NORMAL));
+  app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::STATE_HOVERED));
+  app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::STATE_PRESSED));
 }
 
 void ToolbarView::ShowCriticalNotification() {
@@ -905,8 +905,8 @@ void ToolbarView::UpdateAppMenuState() {
   }
   app_menu_->SetAccessibleName(accname_app);
 
-  app_menu_->SetIcon(GetAppMenuIcon(views::CustomButton::BS_NORMAL));
-  app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::BS_HOT));
-  app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::BS_PUSHED));
+  app_menu_->SetIcon(GetAppMenuIcon(views::CustomButton::STATE_NORMAL));
+  app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::STATE_HOVERED));
+  app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::STATE_PRESSED));
   SchedulePaint();
 }
