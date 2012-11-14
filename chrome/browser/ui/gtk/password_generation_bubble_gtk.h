@@ -18,7 +18,9 @@ namespace autofill {
 class PasswordGenerator;
 }
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 // PasswordGenerationBubbleGtk is a bubble use to show possible generated
 // passwords to users. It is set in page content, anchored at |anchor_rect|.
@@ -28,7 +30,7 @@ class PasswordGenerationBubbleGtk : public BubbleDelegateGtk {
  public:
   PasswordGenerationBubbleGtk(const gfx::Rect& anchor_rect,
                               const content::PasswordForm& form,
-                              TabContents* tab,
+                              content::WebContents* web_contents,
                               autofill::PasswordGenerator* password_generator);
   virtual ~PasswordGenerationBubbleGtk();
 
@@ -51,8 +53,8 @@ class PasswordGenerationBubbleGtk : public BubbleDelegateGtk {
   // for. Used by the password_manager_.
   content::PasswordForm form_;
 
-  // TabContents associated with the button that spawned this bubble.
-  TabContents* tab_;
+  // WebContents associated with the button that spawned this bubble.
+  content::WebContents* web_contents_;
 
   // Object that deals with generating passwords. The class won't take the
   // ownership of it.
