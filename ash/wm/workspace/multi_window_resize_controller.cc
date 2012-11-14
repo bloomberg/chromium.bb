@@ -13,7 +13,6 @@
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"

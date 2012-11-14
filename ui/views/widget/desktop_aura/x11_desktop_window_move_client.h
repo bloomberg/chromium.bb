@@ -14,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "ui/aura/client/window_move_client.h"
-#include "ui/aura/event_filter.h"
 #include "ui/views/views_export.h"
 #include "ui/gfx/point.h"
 

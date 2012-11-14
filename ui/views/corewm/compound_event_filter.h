@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
-#include "ui/aura/event_filter.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
@@ -36,7 +36,7 @@ namespace corewm {
 // consumed by any of those filters. If an event is consumed by a filter, the
 // rest of the filter(s) and CompoundEventFilter will not see the consumed
 // event.
-class VIEWS_EXPORT CompoundEventFilter : public aura::EventFilter {
+class VIEWS_EXPORT CompoundEventFilter : public ui::EventHandler {
  public:
   CompoundEventFilter();
   virtual ~CompoundEventFilter();
@@ -51,11 +51,11 @@ class VIEWS_EXPORT CompoundEventFilter : public aura::EventFilter {
   }
 
   // Adds/removes additional event filters. This does not take ownership of
-  // the EventFilter.
-  // NOTE: EventFilters are deprecated. Use env::AddPreTargetEventHandler etc.
+  // the EventHandler.
+  // NOTE: These handlers are deprecated. Use env::AddPreTargetEventHandler etc.
   // instead.
-  void AddFilter(aura::EventFilter* filter);
-  void RemoveFilter(aura::EventFilter* filter);
+  void AddHandler(ui::EventHandler* filter);
+  void RemoveHandler(ui::EventHandler* filter);
 
  private:
   // Updates the cursor if the target provides a custom one, and provides
@@ -84,8 +84,8 @@ class VIEWS_EXPORT CompoundEventFilter : public aura::EventFilter {
   virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
-  // Additional event filters that pre-handles events.
-  ObserverList<aura::EventFilter, true> filters_;
+  // Additional pre-target event handlers.
+  ObserverList<ui::EventHandler, true> handlers_;
 
   // True if the cursur was hidden by the filter.
   bool cursor_hidden_by_filter_;

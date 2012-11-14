@@ -8,7 +8,6 @@
 #include <map>
 
 #include "ash/shell.h"
-#include "ui/aura/event_filter.h"
 #include "ui/gfx/point.h"
 #include "ui/views/widget/widget.h"
 

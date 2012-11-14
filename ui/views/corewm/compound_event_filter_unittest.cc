@@ -57,32 +57,30 @@ namespace corewm {
 namespace {
 
 // An event filter that consumes all gesture events.
-class ConsumeGestureEventFilter : public aura::EventFilter {
+class ConsumeGestureEventFilter : public ui::EventHandler {
  public:
   ConsumeGestureEventFilter() {}
   virtual ~ConsumeGestureEventFilter() {}
 
  private:
-  // Overridden from EventFilter.
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 ui::KeyEvent* event) OVERRIDE {
-    return false;
-  }
-
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   ui::MouseEvent* event) OVERRIDE {
-    return false;
-  }
-
-  virtual ui::EventResult PreHandleTouchEvent(
-      aura::Window* target,
-      ui::TouchEvent* event) OVERRIDE {
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
     return ui::ER_UNHANDLED;
   }
 
-  virtual ui::EventResult PreHandleGestureEvent(
-      aura::Window* target,
-      ui::GestureEvent* event) OVERRIDE {
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    return ui::ER_UNHANDLED;
+  }
+
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
+    return ui::ER_UNHANDLED;
+  }
+
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+    return ui::ER_UNHANDLED;
+  }
+
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* e) OVERRIDE {
     return ui::ER_CONSUMED;
   }
 
@@ -165,8 +163,8 @@ TEST_F(CompoundEventFilterTest, GestureFocusesWindow) {
 // window.
 TEST_F(CompoundEventFilterTest, FilterConsumedGesture) {
   scoped_ptr<CompoundEventFilter> compound_filter(new CompoundEventFilter);
-  scoped_ptr<aura::EventFilter> gesture_filter(new ConsumeGestureEventFilter);
-  compound_filter->AddFilter(gesture_filter.get());
+  scoped_ptr<ui::EventHandler> gesure_handler(new ConsumeGestureEventFilter);
+  compound_filter->AddHandler(gesure_handler.get());
   aura::Env::GetInstance()->AddPreTargetHandler(compound_filter.get());
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(&delegate, 1234,
@@ -182,7 +180,7 @@ TEST_F(CompoundEventFilterTest, FilterConsumedGesture) {
   generator.PressTouch();
   EXPECT_FALSE(window->HasFocus());
 
-  compound_filter->RemoveFilter(gesture_filter.get());
+  compound_filter->RemoveHandler(gesure_handler.get());
   aura::Env::GetInstance()->AddPreTargetHandler(compound_filter.get());
 }
 

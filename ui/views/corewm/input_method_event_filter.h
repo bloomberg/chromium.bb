@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/event_filter.h"
+#include "ui/base/events/event_handler.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
 
@@ -26,7 +26,7 @@ namespace corewm {
 // An event filter that forwards a KeyEvent to a system IME, and dispatches a
 // TranslatedKeyEvent to the root window as needed.
 class VIEWS_EXPORT InputMethodEventFilter
-    : public aura::EventFilter,
+    : public ui::EventHandler,
       public ui::internal::InputMethodDelegate {
  public:
   InputMethodEventFilter();
@@ -37,17 +37,12 @@ class VIEWS_EXPORT InputMethodEventFilter
   ui::InputMethod* input_method() const { return input_method_.get(); }
 
  private:
-  // Overridden from EventFilter:
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 ui::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleTouchEvent(
-      aura::Window* target,
-      ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleGestureEvent(
-      aura::Window* target,
-      ui::GestureEvent* event) OVERRIDE;
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from ui::internal::InputMethodDelegate.
   virtual void DispatchKeyEventPostIME(const base::NativeEvent& event) OVERRIDE;

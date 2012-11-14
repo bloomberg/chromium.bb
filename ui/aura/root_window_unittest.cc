@@ -9,14 +9,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_event_handler.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_handler.h"
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -73,68 +74,20 @@ class NonClientDelegate : public test::TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(NonClientDelegate);
 };
 
-// A simple EventFilter that keeps track of the number of key events that it's
-// seen.
-class EventCountFilter : public EventFilter {
+// A simple event handler that consumes key events.
+class ConsumeKeyHandler : public test::TestEventHandler {
  public:
-  EventCountFilter()
-      : num_key_events_(0),
-        num_mouse_events_(0),
-        num_touch_events_(0),
-        num_scroll_events_(0) {
-  }
-  virtual ~EventCountFilter() {}
+  ConsumeKeyHandler() {}
+  virtual ~ConsumeKeyHandler() {}
 
-  int num_key_events() const { return num_key_events_; }
-  int num_mouse_events() const { return num_mouse_events_; }
-  int num_touch_events() const { return num_touch_events_; }
-  int num_scroll_events() const { return num_scroll_events_; }
-
-  void Reset() {
-    num_key_events_ = 0;
-    num_mouse_events_ = 0;
-    num_touch_events_ = 0;
-    num_scroll_events_ = 0;
-  }
-
-  // EventFilter overrides:
-  virtual bool PreHandleKeyEvent(Window* target, ui::KeyEvent* event) OVERRIDE {
-    num_key_events_++;
-    return true;
-  }
-  virtual bool PreHandleMouseEvent(Window* target,
-                                   ui::MouseEvent* event) OVERRIDE {
-    num_mouse_events_++;
-    return true;
-  }
-  virtual ui::EventResult PreHandleTouchEvent(
-      Window* target, ui::TouchEvent* event) OVERRIDE {
-    num_touch_events_++;
-    return ui::ER_UNHANDLED;
-  }
-  virtual ui::EventResult PreHandleGestureEvent(
-      Window* target, ui::GestureEvent* event) OVERRIDE {
-    return ui::ER_UNHANDLED;
-  }
-
-  // ui::EventHandler overrides:
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
-    num_scroll_events_++;
-    return ui::ER_UNHANDLED;
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+    test::TestEventHandler::OnKeyEvent(event);
+    return ui::ER_CONSUMED;
   }
 
  private:
-  // How many key events have been received?
-  int num_key_events_;
-
-  // How many mouse events have been received?
-  int num_mouse_events_;
-
-  int num_touch_events_;
-
-  int num_scroll_events_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventCountFilter);
+  DISALLOW_COPY_AND_ASSIGN(ConsumeKeyHandler);
 };
 
 Window* CreateWindow(int id, Window* parent, WindowDelegate* delegate) {
@@ -364,8 +317,8 @@ TEST_F(RootWindowTest, CanProcessEventsWithinSubtree) {
   TestEventClient client(root_window());
   test::TestWindowDelegate d;
 
-  EventCountFilter* nonlock_ef = new EventCountFilter;
-  EventCountFilter* lock_ef = new EventCountFilter;
+  test::TestEventHandler* nonlock_ef = new test::TestEventHandler;
+  test::TestEventHandler* lock_ef = new test::TestEventHandler;
   client.GetNonLockWindow()->SetEventFilter(nonlock_ef);
   client.GetLockWindow()->SetEventFilter(lock_ef);
 
@@ -416,7 +369,7 @@ TEST_F(RootWindowTest, CanProcessEventsWithinSubtree) {
 }
 
 TEST_F(RootWindowTest, IgnoreUnknownKeys) {
-  EventCountFilter* filter = new EventCountFilter;
+  test::TestEventHandler* filter = new ConsumeKeyHandler;
   root_window()->SetEventFilter(filter);  // passes ownership
 
   ui::KeyEvent unknown_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0, false);
@@ -433,7 +386,7 @@ TEST_F(RootWindowTest, IgnoreUnknownKeys) {
 // Tests that touch-events that are beyond the bounds of the root-window do get
 // propagated to the event filters correctly with the root as the target.
 TEST_F(RootWindowTest, TouchEventsOutsideBounds) {
-  EventCountFilter* filter = new EventCountFilter;
+  test::TestEventHandler* filter = new test::TestEventHandler;
   root_window()->SetEventFilter(filter);  // passes ownership
 
   gfx::Point position = root_window()->bounds().origin();
@@ -452,7 +405,7 @@ TEST_F(RootWindowTest, TouchEventsOutsideBounds) {
 
 // Tests that scroll events are dispatched correctly.
 TEST_F(RootWindowTest, ScrollEventDispatch) {
-  EventCountFilter* filter = new EventCountFilter;
+  test::TestEventHandler* filter = new test::TestEventHandler;
   root_window()->SetEventFilter(filter);
 
   test::TestWindowDelegate delegate;
@@ -473,7 +426,7 @@ TEST_F(RootWindowTest, ScrollEventDispatch) {
 namespace {
 
 // FilterFilter that tracks the types of events it's seen.
-class EventFilterRecorder : public EventFilter {
+class EventFilterRecorder : public ui::EventHandler {
  public:
   typedef std::vector<ui::EventType> Events;
 
@@ -481,25 +434,28 @@ class EventFilterRecorder : public EventFilter {
 
   Events& events() { return events_; }
 
-  // EventFilter overrides:
-  virtual bool PreHandleKeyEvent(Window* target, ui::KeyEvent* event) OVERRIDE {
-    events_.push_back(event->type());
-    return true;
-  }
-  virtual bool PreHandleMouseEvent(Window* target,
-                                   ui::MouseEvent* event) OVERRIDE {
-    events_.push_back(event->type());
-    return true;
-  }
-  virtual ui::EventResult PreHandleTouchEvent(
-      Window* target,
-      ui::TouchEvent* event) OVERRIDE {
+  // ui::EventHandler overrides:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
     events_.push_back(event->type());
     return ui::ER_UNHANDLED;
   }
-  virtual ui::EventResult PreHandleGestureEvent(
-      Window* target,
-      ui::GestureEvent* event) OVERRIDE {
+
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    events_.push_back(event->type());
+    return ui::ER_UNHANDLED;
+  }
+
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
+    events_.push_back(event->type());
+    return ui::ER_UNHANDLED;
+  }
+
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+    events_.push_back(event->type());
+    return ui::ER_UNHANDLED;
+  }
+
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     events_.push_back(event->type());
     return ui::ER_UNHANDLED;
   }
@@ -669,7 +625,7 @@ TEST_F(RootWindowTest, HoldMouseMove) {
   EXPECT_TRUE(filter->events().empty());
 }
 
-class DeletingEventFilter : public EventFilter {
+class DeletingEventFilter : public ui::EventHandler {
  public:
   DeletingEventFilter()
       : delete_during_pre_handle_(false) {}
@@ -680,19 +636,29 @@ class DeletingEventFilter : public EventFilter {
   }
 
  private:
-  // Overridden from EventFilter:
-  virtual bool PreHandleKeyEvent(Window* target,
-                                 ui::KeyEvent* event) OVERRIDE {
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
     if (delete_during_pre_handle_)
-      delete target;
-    return false;
+      delete event->target();
+    return ui::ER_UNHANDLED;
   }
 
-  virtual bool PreHandleMouseEvent(Window* target,
-                                   ui::MouseEvent* event) OVERRIDE {
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     if (delete_during_pre_handle_)
-      delete target;
-    return false;
+      delete event->target();
+    return ui::ER_UNHANDLED;
+  }
+
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
+    return ui::ER_UNHANDLED;
+  }
+
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+    return ui::ER_UNHANDLED;
+  }
+
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    return ui::ER_UNHANDLED;
   }
 
   bool delete_during_pre_handle_;

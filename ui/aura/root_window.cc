@@ -19,7 +19,6 @@
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/root_window_observer.h"
@@ -57,16 +56,6 @@ bool IsNonClientLocation(Window* target, const gfx::Point& location) {
     return false;
   int hit_test_code = target->delegate()->GetNonClientComponent(location);
   return hit_test_code != HTCLIENT && hit_test_code != HTNOWHERE;
-}
-
-typedef std::vector<EventFilter*> EventFilters;
-
-void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
-  while (target) {
-    if (target->event_filter())
-      filters->push_back(target->event_filter());
-    target = target->parent();
-  }
 }
 
 float GetDeviceScaleFactorFromDisplay(Window* window) {

@@ -138,7 +138,7 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
 
   input_method_filter_.reset(new views::corewm::InputMethodEventFilter);
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window_);
-  root_window_event_filter_->AddFilter(input_method_filter_.get());
+  root_window_event_filter_->AddHandler(input_method_filter_.get());
 
   focus_manager_->SetFocusedWindow(content_window_, NULL);
   root_window_->SetProperty(kContentWindowForRootWindow, content_window_);
@@ -613,7 +613,7 @@ void DesktopRootWindowHostWin::HandleDestroying() {
 }
 
 void DesktopRootWindowHostWin::HandleDestroyed() {
-  root_window_event_filter_->RemoveFilter(input_method_filter_.get());
+  root_window_event_filter_->RemoveHandler(input_method_filter_.get());
   desktop_native_widget_aura_->OnHostClosed();
 }
 

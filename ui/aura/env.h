@@ -20,7 +20,6 @@
 
 namespace aura {
 class EnvObserver;
-class EventFilter;
 class Window;
 
 #if !defined(USE_X11)

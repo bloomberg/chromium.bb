@@ -87,7 +87,7 @@ CompoundEventFilter::CompoundEventFilter() : cursor_hidden_by_filter_(false) {
 
 CompoundEventFilter::~CompoundEventFilter() {
   // Additional filters are not owned by CompoundEventFilter and they
-  // should all be removed when running here. |filters_| has
+  // should all be removed when running here. |handlers_| has
   // check_empty == true and will DCHECK failure if it is not empty.
 }
 
@@ -116,12 +116,12 @@ gfx::NativeCursor CompoundEventFilter::CursorForWindowComponent(
   }
 }
 
-void CompoundEventFilter::AddFilter(aura::EventFilter* filter) {
-  filters_.AddObserver(filter);
+void CompoundEventFilter::AddHandler(ui::EventHandler* handler) {
+  handlers_.AddObserver(handler);
 }
 
-void CompoundEventFilter::RemoveFilter(aura::EventFilter* filter) {
-  filters_.RemoveObserver(filter);
+void CompoundEventFilter::RemoveHandler(ui::EventHandler* handler) {
+  handlers_.RemoveObserver(handler);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -153,33 +153,33 @@ void CompoundEventFilter::UpdateCursor(aura::Window* target,
 
 ui::EventResult CompoundEventFilter::FilterKeyEvent(ui::KeyEvent* event) {
   int result = ui::ER_UNHANDLED;
-  if (filters_.might_have_observers()) {
-    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
-    EventFilter* filter;
-    while (!(result & ui::ER_CONSUMED) && (filter = it.GetNext()) != NULL)
-      result |= filter->OnKeyEvent(event);
+  if (handlers_.might_have_observers()) {
+    ObserverListBase<ui::EventHandler>::Iterator it(handlers_);
+    ui::EventHandler* handler;
+    while (!(result & ui::ER_CONSUMED) && (handler = it.GetNext()) != NULL)
+      result |= handler->OnKeyEvent(event);
   }
   return static_cast<ui::EventResult>(result);
 }
 
 ui::EventResult CompoundEventFilter::FilterMouseEvent(ui::MouseEvent* event) {
   int result = ui::ER_UNHANDLED;
-  if (filters_.might_have_observers()) {
-    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
-    EventFilter* filter;
-    while (!(result & ui::ER_CONSUMED) && (filter = it.GetNext()) != NULL)
-      result |= filter->OnMouseEvent(event);
+  if (handlers_.might_have_observers()) {
+    ObserverListBase<ui::EventHandler>::Iterator it(handlers_);
+    ui::EventHandler* handler;
+    while (!(result & ui::ER_CONSUMED) && (handler = it.GetNext()) != NULL)
+      result |= handler->OnMouseEvent(event);
   }
   return static_cast<ui::EventResult>(result);
 }
 
 ui::EventResult CompoundEventFilter::FilterTouchEvent(ui::TouchEvent* event) {
   int result = ui::ER_UNHANDLED;
-  if (filters_.might_have_observers()) {
-    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
-    EventFilter* filter;
-    while (!(result & ui::ER_CONSUMED) && (filter = it.GetNext()) != NULL) {
-      result |= filter->OnTouchEvent(event);
+  if (handlers_.might_have_observers()) {
+    ObserverListBase<ui::EventHandler>::Iterator it(handlers_);
+    ui::EventHandler* handler;
+    while (!(result & ui::ER_CONSUMED) && (handler = it.GetNext()) != NULL) {
+      result |= handler->OnTouchEvent(event);
     }
   }
   return static_cast<ui::EventResult>(result);
@@ -269,11 +269,11 @@ ui::EventResult CompoundEventFilter::OnTouchEvent(ui::TouchEvent* event) {
 
 ui::EventResult CompoundEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   int result = ui::ER_UNHANDLED;
-  if (filters_.might_have_observers()) {
-    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
-    EventFilter* filter;
-    while (!(result & ui::ER_CONSUMED) && (filter = it.GetNext()) != NULL)
-      result |= filter->OnGestureEvent(event);
+  if (handlers_.might_have_observers()) {
+    ObserverListBase<ui::EventHandler>::Iterator it(handlers_);
+    ui::EventHandler* handler;
+    while (!(result & ui::ER_CONSUMED) && (handler = it.GetNext()) != NULL)
+      result |= handler->OnGestureEvent(event);
   }
 
   aura::Window* window = static_cast<aura::Window*>(event->target());

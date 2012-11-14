@@ -241,13 +241,13 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
 
   input_method_filter_.reset(new corewm::InputMethodEventFilter);
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window_);
-  root_window_event_filter_->AddFilter(input_method_filter_.get());
+  root_window_event_filter_->AddHandler(input_method_filter_.get());
 
   // TODO(erg): Unify this code once the other consumer goes away.
   x11_window_event_filter_.reset(
       new X11WindowEventFilter(root_window_, activation_client_.get()));
   x11_window_event_filter_->SetUseHostWindowBorders(false);
-  root_window_event_filter_->AddFilter(x11_window_event_filter_.get());
+  root_window_event_filter_->AddHandler(x11_window_event_filter_.get());
 
   x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
   aura::client::SetWindowMoveClient(root_window_,
@@ -331,8 +331,8 @@ void DesktopRootWindowHostLinux::Close() {
 void DesktopRootWindowHostLinux::CloseNow() {
   // Remove the event listeners we've installed. We need to remove these
   // because otherwise we get assert during ~RootWindow().
-  root_window_event_filter_->RemoveFilter(x11_window_event_filter_.get());
-  root_window_event_filter_->RemoveFilter(input_method_filter_.get());
+  root_window_event_filter_->RemoveHandler(x11_window_event_filter_.get());
+  root_window_event_filter_->RemoveHandler(input_method_filter_.get());
 
   // Actually free our native resources.
   base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(xwindow_);

@@ -11,8 +11,8 @@
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_event_handler.h"
 #include "ui/aura/test/test_activation_client.h"
-#include "ui/aura/test/test_event_filter.h"
 #include "ui/aura/test/test_windows.h"
 
 #if !defined(OS_WIN) && !defined(USE_X11)
@@ -32,16 +32,15 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodProperty) {
   CompoundEventFilter* root_filter = new CompoundEventFilter;
   root_window()->SetEventFilter(root_filter);
 
-  // Add the InputMethodEventFilter before the TestEventFilter.
   InputMethodEventFilter input_method_event_filter;
-  root_filter->AddFilter(&input_method_event_filter);
+  root_filter->AddHandler(&input_method_event_filter);
 
   // Tests if InputMethodEventFilter adds a window property on its
   // construction.
   EXPECT_TRUE(root_window()->GetProperty(
       aura::client::kRootWindowInputMethodKey));
 
-  root_filter->RemoveFilter(&input_method_event_filter);
+  root_filter->RemoveHandler(&input_method_event_filter);
 }
 
 // Tests if InputMethodEventFilter dispatches a ui::ET_TRANSLATED_KEY_* event to
@@ -52,11 +51,11 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
 
   // Add the InputMethodEventFilter before the TestEventFilter.
   InputMethodEventFilter input_method_event_filter;
-  root_filter->AddFilter(&input_method_event_filter);
+  root_filter->AddHandler(&input_method_event_filter);
 
   // Add TestEventFilter to the RootWindow.
-  aura::test::TestEventFilter test_filter;
-  root_filter->AddFilter(&test_filter);
+  aura::test::TestEventHandler test_filter;
+  root_filter->AddHandler(&test_filter);
 
   // We need an active window. Otherwise, the root window will not forward a key
   // event to event filters.
@@ -74,14 +73,14 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
   // ui::ET_TRANSLATED_KEY_* event to the root window, which will be consumed by
   // the test event filter.
   aura::test::EventGenerator generator(root_window());
-  EXPECT_EQ(0, test_filter.key_event_count());
+  EXPECT_EQ(0, test_filter.num_key_events());
   generator.PressKey(ui::VKEY_SPACE, 0);
-  EXPECT_EQ(1, test_filter.key_event_count());
+  EXPECT_EQ(1, test_filter.num_key_events());
   generator.ReleaseKey(ui::VKEY_SPACE, 0);
-  EXPECT_EQ(2, test_filter.key_event_count());
+  EXPECT_EQ(2, test_filter.num_key_events());
 
-  root_filter->RemoveFilter(&input_method_event_filter);
-  root_filter->RemoveFilter(&test_filter);
+  root_filter->RemoveHandler(&input_method_event_filter);
+  root_filter->RemoveHandler(&test_filter);
 
   // Reset window before |test_delegate| gets deleted.
   window.reset();

@@ -17,7 +17,6 @@
 #include "ash/shell.h"
 #include "ash/wm/event_rewriter_event_filter.h"
 #include "ui/aura/env.h"
-#include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/events/event.h"

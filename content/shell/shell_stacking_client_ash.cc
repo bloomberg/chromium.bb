@@ -18,7 +18,7 @@ ShellStackingClientAsh::ShellStackingClientAsh() {
 
 ShellStackingClientAsh::~ShellStackingClientAsh() {
   if (root_window_.get())
-    root_window_event_filter_->RemoveFilter(input_method_filter_.get());
+    root_window_event_filter_->RemoveHandler(input_method_filter_.get());
 
   aura::client::SetStackingClient(NULL);
 }
@@ -42,7 +42,7 @@ aura::Window* ShellStackingClientAsh::GetDefaultParent(
     input_method_filter_.reset(new views::corewm::InputMethodEventFilter);
     input_method_filter_->SetInputMethodPropertyInRootWindow(
         root_window_.get());
-    root_window_event_filter_->AddFilter(input_method_filter_.get());
+    root_window_event_filter_->AddHandler(input_method_filter_.get());
 
     test_activation_client_.reset(
         new aura::test::TestActivationClient(root_window_.get()));

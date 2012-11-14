@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "ui/aura/event_filter.h"
+#include "ui/base/events/event_handler.h"
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"
 
@@ -29,7 +29,7 @@ class DesktopActivationClient;
 class NativeWidgetAura;
 
 // An EventFilter that sets properties on X11 windows.
-class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter {
+class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {
  public:
   explicit X11WindowEventFilter(aura::RootWindow* root_window,
                                 DesktopActivationClient* activation_client);
@@ -38,17 +38,12 @@ class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter {
   // Changes whether borders are shown on this |root_window|.
   void SetUseHostWindowBorders(bool use_os_border);
 
-  // Overridden from EventFilter:
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 ui::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleTouchEvent(
-      aura::Window* target,
-      ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleGestureEvent(
-      aura::Window* target,
-      ui::GestureEvent* event) OVERRIDE;
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   // Dispatches a _NET_WM_MOVERESIZE message to the window manager to tell it

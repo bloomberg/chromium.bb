@@ -19,7 +19,6 @@
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/visibility_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
@@ -453,7 +452,7 @@ gfx::NativeCursor Window::GetCursor(const gfx::Point& point) const {
   return delegate_ ? delegate_->GetCursor(point) : gfx::kNullCursor;
 }
 
-void Window::SetEventFilter(EventFilter* event_filter) {
+void Window::SetEventFilter(ui::EventHandler* event_filter) {
   if (event_filter_.get())
     RemovePreTargetHandler(event_filter_.get());
   event_filter_.reset(event_filter);

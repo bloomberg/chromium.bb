@@ -22,7 +22,7 @@ DesktopStackingClient::DesktopStackingClient()
 
 DesktopStackingClient::~DesktopStackingClient() {
   if (window_event_filter_)
-    window_event_filter_->RemoveFilter(input_method_filter_.get());
+    window_event_filter_->RemoveHandler(input_method_filter_.get());
 
   aura::client::SetStackingClient(NULL);
 }
@@ -54,7 +54,7 @@ void DesktopStackingClient::CreateNULLParent() {
 
   input_method_filter_.reset(new corewm::InputMethodEventFilter);
   input_method_filter_->SetInputMethodPropertyInRootWindow(null_parent_.get());
-  window_event_filter_->AddFilter(input_method_filter_.get());
+  window_event_filter_->AddHandler(input_method_filter_.get());
 
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(null_parent_.get()));

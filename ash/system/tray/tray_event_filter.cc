@@ -13,7 +13,6 @@
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
-#include "ui/aura/event_filter.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 

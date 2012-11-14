@@ -16,7 +16,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
-#include "ui/aura/test/test_event_filter.h"
+#include "ui/aura/test/test_event_handler.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/cursor/cursor.h"
@@ -31,6 +31,43 @@ namespace {
 base::TimeDelta getTime() {
   return base::Time::NowFromSystemTime() - base::Time();
 }
+
+// A slightly changed TestEventHandler which can be configured to return a
+// specified value for key/mouse event handling.
+class CustomEventHandler : public aura::test::TestEventHandler {
+ public:
+  CustomEventHandler()
+      : key_result_(ui::ER_UNHANDLED),
+        mouse_result_(ui::ER_UNHANDLED) {
+  }
+
+  virtual ~CustomEventHandler() {}
+
+  void set_key_event_handling_result(ui::EventResult result) {
+    key_result_ = result;
+  }
+
+  void set_mouse_event_handling_result(ui::EventResult result) {
+    mouse_result_ = result;
+  }
+
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+    ui::EventResult result = aura::test::TestEventHandler::OnKeyEvent(event);
+    return key_result_ == ui::ER_UNHANDLED ? result : key_result_;
+  }
+
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    ui::EventResult result = aura::test::TestEventHandler::OnMouseEvent(event);
+    return mouse_result_ == ui::ER_UNHANDLED ? result : mouse_result_;
+  }
+
+ private:
+  ui::EventResult key_result_;
+  ui::EventResult mouse_result_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomEventHandler);
+};
 
 }  // namespace
 
@@ -521,14 +558,14 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
   wm::ActivateWindow(w1.get());
 
   // Creates two addition filters
-  scoped_ptr<aura::test::TestEventFilter> f1(new aura::test::TestEventFilter);
-  scoped_ptr<aura::test::TestEventFilter> f2(new aura::test::TestEventFilter);
+  scoped_ptr<CustomEventHandler> f1(new CustomEventHandler);
+  scoped_ptr<CustomEventHandler> f2(new CustomEventHandler);
 
   // Adds them to root window event filter.
   views::corewm::CompoundEventFilter* env_filter =
       Shell::GetInstance()->env_filter();
-  env_filter->AddFilter(f1.get());
-  env_filter->AddFilter(f2.get());
+  env_filter->AddHandler(f1.get());
+  env_filter->AddHandler(f2.get());
 
   // Dispatches mouse and keyboard events.
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, false);
@@ -538,13 +575,13 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_pressed);
 
   // Both filters should get the events.
-  EXPECT_EQ(1, f1->key_event_count());
-  EXPECT_EQ(1, f1->mouse_event_count());
-  EXPECT_EQ(1, f2->key_event_count());
-  EXPECT_EQ(1, f2->mouse_event_count());
+  EXPECT_EQ(1, f1->num_key_events());
+  EXPECT_EQ(1, f1->num_mouse_events());
+  EXPECT_EQ(1, f2->num_key_events());
+  EXPECT_EQ(1, f2->num_mouse_events());
 
-  f1->ResetCounts();
-  f2->ResetCounts();
+  f1->Reset();
+  f2->Reset();
 
   // Makes f1 consume events.
   f1->set_key_event_handling_result(ui::ER_CONSUMED);
@@ -557,28 +594,28 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_released);
 
   // f1 should still get the events but f2 no longer gets them.
-  EXPECT_EQ(1, f1->key_event_count());
-  EXPECT_EQ(1, f1->mouse_event_count());
-  EXPECT_EQ(0, f2->key_event_count());
-  EXPECT_EQ(0, f2->mouse_event_count());
+  EXPECT_EQ(1, f1->num_key_events());
+  EXPECT_EQ(1, f1->num_mouse_events());
+  EXPECT_EQ(0, f2->num_key_events());
+  EXPECT_EQ(0, f2->num_mouse_events());
 
-  f1->ResetCounts();
-  f2->ResetCounts();
+  f1->Reset();
+  f2->Reset();
 
   // Remove f1 from additonal filters list.
-  env_filter->RemoveFilter(f1.get());
+  env_filter->RemoveHandler(f1.get());
 
   // Dispatches events.
   root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&key_event);
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_pressed);
 
   // f1 should get no events since it's out and f2 should get them.
-  EXPECT_EQ(0, f1->key_event_count());
-  EXPECT_EQ(0, f1->mouse_event_count());
-  EXPECT_EQ(1, f2->key_event_count());
-  EXPECT_EQ(1, f2->mouse_event_count());
+  EXPECT_EQ(0, f1->num_key_events());
+  EXPECT_EQ(0, f1->num_mouse_events());
+  EXPECT_EQ(1, f2->num_key_events());
+  EXPECT_EQ(1, f2->num_mouse_events());
 
-  env_filter->RemoveFilter(f2.get());
+  env_filter->RemoveHandler(f2.get());
 }
 
 // We should show and hide the cursor in response to mouse and touch events as
