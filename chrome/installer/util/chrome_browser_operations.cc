@@ -110,7 +110,6 @@ void ChromeBrowserOperations::AddDefaultShortcutProperties(
       BrowserDistribution* dist,
       const FilePath& target_exe,
       ShellUtil::ShortcutProperties* properties) const {
-  DCHECK(target_exe.BaseName() == FilePath(installer::kChromeExe));
   if (!properties->has_target())
     properties->set_target(target_exe);
 
