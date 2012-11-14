@@ -100,7 +100,8 @@ class DemoStackingClient : public aura::client::StackingClient {
   }
 
   // Overridden from aura::client::StackingClient:
-  virtual aura::Window* GetDefaultParent(aura::Window* window,
+  virtual aura::Window* GetDefaultParent(aura::Window* context,
+                                         aura::Window* window,
                                          const gfx::Rect& bounds) OVERRIDE {
     if (!capture_client_.get()) {
       capture_client_.reset(

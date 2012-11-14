@@ -10,8 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
-namespace views {
-class DesktopStackingClient;
+namespace aura {
+namespace client {
+class StackingClient;
+}
 }
 
 class ChromeBrowserMainExtraPartsAura : public ChromeBrowserMainExtraParts {
@@ -24,7 +26,7 @@ class ChromeBrowserMainExtraPartsAura : public ChromeBrowserMainExtraParts {
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
  private:
-  scoped_ptr<views::DesktopStackingClient> stacking_client_;
+  scoped_ptr<aura::client::StackingClient> stacking_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAura);
 };

@@ -6,14 +6,14 @@
 
 #include "ash/shell.h"
 #include "ash/wm/stacking_controller.h"
-#include "ui/aura/desktop/desktop_stacking_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/views/widget/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_stacking_client.h"
 
 StackingClientAura::StackingClientAura() {
-  desktop_stacking_client_.reset(new aura::DesktopStackingClient);
+  desktop_stacking_client_.reset(new views::DesktopStackingClient);
 }
 
 StackingClientAura::~StackingClientAura() {

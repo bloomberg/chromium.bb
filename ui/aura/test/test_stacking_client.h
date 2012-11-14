@@ -20,7 +20,8 @@ class TestStackingClient : public client::StackingClient {
   virtual ~TestStackingClient();
 
   // Overridden from client::StackingClient:
-  virtual Window* GetDefaultParent(Window* window,
+  virtual Window* GetDefaultParent(Window* context,
+                                   Window* window,
                                    const gfx::Rect& bounds) OVERRIDE;
 
  private:

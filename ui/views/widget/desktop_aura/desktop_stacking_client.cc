@@ -27,7 +27,8 @@ DesktopStackingClient::~DesktopStackingClient() {
   aura::client::SetStackingClient(NULL);
 }
 
-aura::Window* DesktopStackingClient::GetDefaultParent(aura::Window* window,
+aura::Window* DesktopStackingClient::GetDefaultParent(aura::Window* context,
+                                                      aura::Window* window,
                                                       const gfx::Rect& bounds) {
   if (!null_parent_.get())
     CreateNULLParent();

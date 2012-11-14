@@ -36,7 +36,8 @@ class VIEWS_EXPORT DesktopStackingClient : public aura::client::StackingClient {
   virtual ~DesktopStackingClient();
 
   // Overridden from aura::client::StackingClient:
-  virtual aura::Window* GetDefaultParent(aura::Window* window,
+  virtual aura::Window* GetDefaultParent(aura::Window* context,
+                                         aura::Window* window,
                                          const gfx::Rect& bounds) OVERRIDE;
 
  private:
