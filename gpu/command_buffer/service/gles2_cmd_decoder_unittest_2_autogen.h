@@ -215,10 +215,10 @@ TEST_F(GLES2DecoderTest2, IsTextureInvalidArgsBadSharedMemoryId) {
 }
 
 TEST_F(GLES2DecoderTest2, LineWidthValidArgs) {
-  EXPECT_CALL(*gl_, LineWidth(1));
+  EXPECT_CALL(*gl_, LineWidth(0.5f));
   SpecializedSetup<LineWidth, 0>(true);
   LineWidth cmd;
-  cmd.Init(1);
+  cmd.Init(0.5f);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -359,19 +359,19 @@ TEST_F(GLES2DecoderTest2, StencilMaskSeparateValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest2, StencilOpValidArgs) {
-  EXPECT_CALL(*gl_, StencilOp(GL_KEEP, GL_KEEP, GL_KEEP));
+  EXPECT_CALL(*gl_, StencilOp(GL_KEEP, GL_INCR, GL_KEEP));
   SpecializedSetup<StencilOp, 0>(true);
   StencilOp cmd;
-  cmd.Init(GL_KEEP, GL_KEEP, GL_KEEP);
+  cmd.Init(GL_KEEP, GL_INCR, GL_KEEP);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, StencilOpSeparateValidArgs) {
-  EXPECT_CALL(*gl_, StencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_KEEP));
+  EXPECT_CALL(*gl_, StencilOpSeparate(GL_FRONT, GL_INCR, GL_KEEP, GL_KEEP));
   SpecializedSetup<StencilOpSeparate, 0>(true);
   StencilOpSeparate cmd;
-  cmd.Init(GL_FRONT, GL_KEEP, GL_KEEP, GL_KEEP);
+  cmd.Init(GL_FRONT, GL_INCR, GL_KEEP, GL_KEEP);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
