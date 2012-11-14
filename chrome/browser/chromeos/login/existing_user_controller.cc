@@ -343,6 +343,9 @@ void ExistingUserController::CompleteLogin(const std::string& username,
 
 void ExistingUserController::CompleteLoginInternal(std::string username,
                                                    std::string password) {
+  // TODO(nkostylev): Remove debug log, see http://crbug.com/160786
+  LOG(WARNING) << "login: CompleteLoginInternal";
+
   // Disable UI while loading user profile.
   login_display_->SetUIEnabled(false);
 
@@ -384,6 +387,9 @@ void ExistingUserController::PerformLogin(
     LoginPerformer::AuthorizationMode auth_mode,
     DeviceSettingsService::OwnershipStatus ownership_status,
     bool is_owner) {
+  // TODO(nkostylev): Remove debug log, see http://crbug.com/160786
+  LOG(WARNING) << "login: PerformLogin";
+
   // If the device is not owned yet, successfully logged in user will be owner.
   is_owner_login_ = ownership_status == DeviceSettingsService::OWNERSHIP_NONE;
 
