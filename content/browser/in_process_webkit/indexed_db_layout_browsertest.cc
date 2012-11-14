@@ -25,7 +25,8 @@ static const char* kBasicTests[] = {
   "basics-shared-workers.html",
   // Failing on Precise bot (crbug.com/145592).
   // "basics-workers.html",
-  "database-basics.html",
+  // Failing on all platforms (crbug.com/160961).
+  // "database-basics.html",
   "factory-basics.html",
   "index-basics.html",
   "objectstore-basics.html",
