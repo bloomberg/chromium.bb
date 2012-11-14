@@ -408,6 +408,12 @@ void ObjectProxy::OnConnected(OnConnectedCallback on_connected_callback,
   on_connected_callback.Run(interface_name, signal_name, success);
 }
 
+void ObjectProxy::SetNameOwnerChangedCallback(SignalCallback callback) {
+  bus_->AssertOnOriginThread();
+
+  name_owner_changed_callback_ = callback;
+}
+
 DBusHandlerResult ObjectProxy::HandleMessage(
     DBusConnection* connection,
     DBusMessage* raw_message) {
@@ -430,7 +436,7 @@ DBusHandlerResult ObjectProxy::HandleMessage(
     if (path.value() == kDbusSystemObjectPath &&
         signal->GetMember() == "NameOwnerChanged") {
       // Handle NameOwnerChanged separately
-      return HandleNameOwnerChanged(signal.get());
+      return HandleNameOwnerChanged(signal.Pass());
     }
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
@@ -619,7 +625,8 @@ void ObjectProxy::UpdateNameOwnerAndBlock() {
     service_name_owner_.clear();
 }
 
-DBusHandlerResult ObjectProxy::HandleNameOwnerChanged(Signal* signal) {
+DBusHandlerResult ObjectProxy::HandleNameOwnerChanged(
+    scoped_ptr<Signal> signal) {
   DCHECK(signal);
   bus_->AssertOnDBusThread();
 
@@ -627,13 +634,23 @@ DBusHandlerResult ObjectProxy::HandleNameOwnerChanged(Signal* signal) {
   if (signal->GetMember() == "NameOwnerChanged" &&
       signal->GetInterface() == "org.freedesktop.DBus" &&
       signal->GetSender() == "org.freedesktop.DBus") {
-    MessageReader reader(signal);
+    MessageReader reader(signal.get());
     std::string name, old_owner, new_owner;
     if (reader.PopString(&name) &&
         reader.PopString(&old_owner) &&
         reader.PopString(&new_owner) &&
         name == service_name_) {
       service_name_owner_ = new_owner;
+      if (!name_owner_changed_callback_.is_null()) {
+        const base::TimeTicks start_time = base::TimeTicks::Now();
+        Signal* released_signal = signal.release();
+        bus_->PostTaskToOriginThread(FROM_HERE,
+                                     base::Bind(&ObjectProxy::RunMethod,
+                                                this,
+                                                start_time,
+                                                name_owner_changed_callback_,
+                                                released_signal));
+      }
       return DBUS_HANDLER_RESULT_HANDLED;
     }
   }

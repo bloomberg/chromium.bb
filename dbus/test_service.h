@@ -66,7 +66,12 @@ class TestService : public base::Thread {
   void SendTestSignalFromRoot(const std::string& message);
 
   // Request the ownership of a well-known name "TestService".
-  void RequestOwnership();
+  // |callback| will be called with the result when an ownership request is
+  // completed.
+  void RequestOwnership(base::Callback<void(bool)> callback);
+
+  // Returns whether this instance has the name ownership or not.
+  bool has_ownership() const { return has_ownership_; }
 
  private:
   // Helper function for SendTestSignal().
@@ -79,7 +84,12 @@ class TestService : public base::Thread {
   void ShutdownAndBlockInternal();
 
   // Called when an ownership request is completed.
-  void OnOwnership(const std::string& service_name,
+  // |callback| is the callback to be called with the result. |service_name| is
+  // the requested well-known bus name. |callback| and |service_name| are bound
+  // when the service requests the ownership. |success| is the result of the
+  // completed request, and is propagated to |callback|.
+  void OnOwnership(base::Callback<void(bool)> callback,
+                   const std::string& service_name,
                    bool success);
 
   // Called when a method is exported.
@@ -131,12 +141,15 @@ class TestService : public base::Thread {
   void SendPropertyChangedSignalInternal(const std::string& name);
 
   // Helper function for RequestOwnership().
-  void RequestOwnershipInternal();
+  void RequestOwnershipInternal(base::Callback<void(bool)> callback);
 
   scoped_refptr<base::MessageLoopProxy> dbus_thread_message_loop_proxy_;
   base::WaitableEvent on_all_methods_exported_;
   // The number of methods actually exported.
   int num_exported_methods_;
+
+  // True iff this instance has successfully acquired the name ownership.
+  bool has_ownership_;
 
   scoped_refptr<Bus> bus_;
   ExportedObject* exported_object_;

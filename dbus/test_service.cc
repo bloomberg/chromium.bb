@@ -13,6 +13,13 @@
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 
+namespace {
+
+void EmptyCallback(bool /* success */) {
+}
+
+}  // namespace
+
 namespace dbus {
 
 // Echo, SlowEcho, AsyncEcho, BrokenMethod, GetAll, Get, Set.
@@ -95,7 +102,8 @@ void TestService::SendTestSignalFromRootInternal(const std::string& message) {
 
   bus_->RequestOwnership("org.chromium.TestService",
                          base::Bind(&TestService::OnOwnership,
-                                    base::Unretained(this)));
+                                    base::Unretained(this),
+                                    base::Bind(&EmptyCallback)));
 
   // Use "/" just like dbus-send does.
   ExportedObject* root_object =
@@ -103,22 +111,28 @@ void TestService::SendTestSignalFromRootInternal(const std::string& message) {
   root_object->SendSignal(&signal);
 }
 
-void TestService::RequestOwnership() {
+void TestService::RequestOwnership(base::Callback<void(bool)> callback) {
   message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&TestService::RequestOwnershipInternal,
-                 base::Unretained(this)));
+                 base::Unretained(this),
+                 callback));
 }
 
-void TestService::RequestOwnershipInternal() {
+void TestService::RequestOwnershipInternal(
+    base::Callback<void(bool)> callback) {
   bus_->RequestOwnership("org.chromium.TestService",
                          base::Bind(&TestService::OnOwnership,
-                                    base::Unretained(this)));
+                                    base::Unretained(this),
+                                    callback));
 }
 
-void TestService::OnOwnership(const std::string& service_name,
+void TestService::OnOwnership(base::Callback<void(bool)> callback,
+                              const std::string& service_name,
                               bool success) {
+  has_ownership_ = success;
   LOG_IF(ERROR, !success) << "Failed to own: " << service_name;
+  callback.Run(success);
 }
 
 void TestService::OnExported(const std::string& interface_name,
@@ -146,7 +160,8 @@ void TestService::Run(MessageLoop* message_loop) {
 
   bus_->RequestOwnership("org.chromium.TestService",
                          base::Bind(&TestService::OnOwnership,
-                                    base::Unretained(this)));
+                                    base::Unretained(this),
+                                    base::Bind(&EmptyCallback)));
 
   exported_object_ = bus_->GetExportedObject(
       dbus::ObjectPath("/org/chromium/TestObject"));
