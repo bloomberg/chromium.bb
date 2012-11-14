@@ -479,6 +479,35 @@ TEST_P(LayerTreeHostImplTest, nonFastScrollableRegionWithOffset)
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(10, 10), InputHandlerClient::Wheel), InputHandlerClient::ScrollOnMainThread);
 }
 
+TEST_P(LayerTreeHostImplTest, scrollByReturnsCorrectValue)
+{
+    setupScrollAndContentsLayers(gfx::Size(200, 200));
+    m_hostImpl->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
+
+    initializeRendererAndDrawFrame();
+
+    EXPECT_EQ(InputHandlerClient::ScrollStarted,
+        m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture));
+
+    // Trying to scroll to the left/top will not succeed.
+    EXPECT_FALSE(m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(-10, 0)));
+    EXPECT_FALSE(m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(0, -10)));
+    EXPECT_FALSE(m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(-10, -10)));
+
+    // Scrolling to the right/bottom will succeed.
+    EXPECT_TRUE(m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(10, 0)));
+    EXPECT_TRUE(m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(0, 10)));
+    EXPECT_TRUE(m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(10, 10)));
+
+    // Scrolling to left/top will now succeed.
+    EXPECT_TRUE(m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(-10, 0)));
+    EXPECT_TRUE(m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(0, -10)));
+    EXPECT_TRUE(m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(-10, -10)));
+
+    // Trying to scroll more than the available space will also succeed.
+    EXPECT_TRUE(m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(5000, 5000)));
+}
+
 TEST_P(LayerTreeHostImplTest, maxScrollOffsetChangedByDeviceScaleFactor)
 {
     setupScrollAndContentsLayers(gfx::Size(100, 100));

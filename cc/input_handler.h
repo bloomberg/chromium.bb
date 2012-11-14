@@ -41,9 +41,11 @@ public:
     // should be in viewport (logical pixel) coordinates. Otherwise they are in
     // scrolling layer's (logical pixel) space. If there is no room to move the
     // layer in the requested direction, its first ancestor layer that can be
-    // scrolled will be moved instead. Should only be called if scrollBegin()
-    // returned ScrollStarted.
-    virtual void scrollBy(gfx::Point, gfx::Vector2d) = 0;
+    // scrolled will be moved instead. If no layer can be moved in the requested
+    // direction at all, then false is returned. If any layer is moved, then
+    // true is returned.
+    // Should only be called if scrollBegin() returned ScrollStarted.
+    virtual bool scrollBy(const gfx::Point&, const gfx::Vector2d&) = 0;
 
     // Stop scrolling the selected layer. Should only be called if scrollBegin()
     // returned ScrollStarted.

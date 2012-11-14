@@ -1145,11 +1145,12 @@ static gfx::Vector2dF scrollLayerWithLocalDelta(LayerImpl& layerImpl, gfx::Vecto
     return layerImpl.scrollDelta() - previousDelta;
 }
 
-void LayerTreeHostImpl::scrollBy(gfx::Point viewportPoint, gfx::Vector2d scrollDelta)
+bool LayerTreeHostImpl::scrollBy(const gfx::Point& viewportPoint,
+                                 const gfx::Vector2d& scrollDelta)
 {
     TRACE_EVENT0("cc", "LayerTreeHostImpl::scrollBy");
     if (!m_currentlyScrollingLayerImpl)
-        return;
+        return false;
 
     gfx::Vector2dF pendingDelta = scrollDelta;
 
@@ -1190,7 +1191,9 @@ void LayerTreeHostImpl::scrollBy(gfx::Point viewportPoint, gfx::Vector2d scrollD
     if (!scrollDelta.IsZero() && gfx::ToFlooredVector2d(pendingDelta).IsZero()) {
         m_client->setNeedsCommitOnImplThread();
         m_client->setNeedsRedrawOnImplThread();
+        return true;
     }
+    return false;
 }
 
 void LayerTreeHostImpl::clearCurrentlyScrollingLayer()

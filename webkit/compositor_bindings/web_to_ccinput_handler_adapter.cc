@@ -47,9 +47,14 @@ public:
         return static_cast<WebInputHandlerClient::ScrollStatus>(m_client->scrollBegin(point, static_cast<cc::InputHandlerClient::ScrollInputType>(type)));
     }
 
-    virtual void scrollBy(WebPoint point, WebSize offset) OVERRIDE
+    virtual void scrollBy(WebPoint point, WebSize offset)
     {
-        m_client->scrollBy(point, offset);
+        scrollByIfPossible(point, offset);
+    }
+
+    virtual bool scrollByIfPossible(WebPoint point, WebSize offset)
+    {
+      return m_client->scrollBy(point, offset);
     }
 
     virtual void scrollEnd() OVERRIDE
