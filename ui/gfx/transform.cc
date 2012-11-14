@@ -26,81 +26,91 @@ bool Transform::operator!=(const Transform& rhs) const {
   return !(*this == rhs);
 }
 
-void Transform::SetRotate(float degree) {
-  matrix_.setRotateDegreesAbout(0, 0, 1, SkFloatToScalar(degree));
+void Transform::SetRotate(double degree) {
+  matrix_.setRotateDegreesAbout(SkDoubleToMScalar(0),
+                                SkDoubleToMScalar(0),
+                                SkDoubleToMScalar(1),
+                                SkDoubleToMScalar(degree));
 }
 
-void Transform::SetRotateAbout(const Point3F& axis, float degree) {
-  matrix_.setRotateDegreesAbout(axis.x(),
-                                axis.y(),
-                                axis.z(),
-                                SkFloatToScalar(degree));
+void Transform::SetRotateAbout(const Point3F& axis, double degree) {
+  matrix_.setRotateDegreesAbout(SkDoubleToMScalar(axis.x()),
+                                SkDoubleToMScalar(axis.y()),
+                                SkDoubleToMScalar(axis.z()),
+                                SkDoubleToMScalar(degree));
 }
 
-void Transform::SetScaleX(float x) {
-  matrix_.set(0, 0, SkFloatToScalar(x));
+void Transform::SetScaleX(double x) {
+  matrix_.set(0, 0, SkDoubleToMScalar(x));
 }
 
-void Transform::SetScaleY(float y) {
-  matrix_.set(1, 1, SkFloatToScalar(y));
+void Transform::SetScaleY(double y) {
+  matrix_.set(1, 1, SkDoubleToMScalar(y));
 }
 
-void Transform::SetScale(float x, float y) {
-  matrix_.setScale(SkFloatToScalar(x),
-                   SkFloatToScalar(y),
+void Transform::SetScale(double x, double y) {
+  matrix_.setScale(SkDoubleToMScalar(x),
+                   SkDoubleToMScalar(y),
                    matrix_.get(2, 2));
 }
 
-void Transform::SetTranslateX(float x) {
-  matrix_.set(0, 3, SkFloatToScalar(x));
+void Transform::SetTranslateX(double x) {
+  matrix_.set(0, 3, SkDoubleToMScalar(x));
 }
 
-void Transform::SetTranslateY(float y) {
-  matrix_.set(1, 3, SkFloatToScalar(y));
+void Transform::SetTranslateY(double y) {
+  matrix_.set(1, 3, SkDoubleToMScalar(y));
 }
 
-void Transform::SetTranslate(float x, float y) {
-  matrix_.setTranslate(SkFloatToScalar(x),
-                       SkFloatToScalar(y),
+void Transform::SetTranslate(double x, double y) {
+  matrix_.setTranslate(SkDoubleToMScalar(x),
+                       SkDoubleToMScalar(y),
                        matrix_.get(2, 3));
 }
 
-void Transform::SetPerspectiveDepth(float depth) {
+void Transform::SetPerspectiveDepth(double depth) {
   SkMatrix44 m;
-  m.set(3, 2, -1 / depth);
+  m.set(3, 2, SkDoubleToMScalar(-1 / depth));
   matrix_ = m;
 }
 
-void Transform::ConcatRotate(float degree) {
+void Transform::ConcatRotate(double degree) {
   SkMatrix44 rot;
-  rot.setRotateDegreesAbout(0, 0, 1, SkFloatToScalar(degree));
+  rot.setRotateDegreesAbout(SkDoubleToMScalar(0),
+                            SkDoubleToMScalar(0),
+                            SkDoubleToMScalar(1),
+                            SkDoubleToMScalar(degree));
   matrix_.postConcat(rot);
 }
 
-void Transform::ConcatRotateAbout(const Point3F& axis, float degree) {
+void Transform::ConcatRotateAbout(const Point3F& axis, double degree) {
   SkMatrix44 rot;
-  rot.setRotateDegreesAbout(axis.x(),
-                            axis.y(),
-                            axis.z(),
-                            SkFloatToScalar(degree));
+  rot.setRotateDegreesAbout(SkDoubleToMScalar(axis.x()),
+                            SkDoubleToMScalar(axis.y()),
+                            SkDoubleToMScalar(axis.z()),
+                            SkDoubleToMScalar(degree));
   matrix_.postConcat(rot);
 }
 
-void Transform::ConcatScale(float x, float y) {
+void Transform::ConcatScale(double x, double y) {
   SkMatrix44 scale;
-  scale.setScale(SkFloatToScalar(x), SkFloatToScalar(y), 1);
+  scale.setScale(SkDoubleToMScalar(x),
+                 SkDoubleToMScalar(y),
+                 SkDoubleToMScalar(1));
   matrix_.postConcat(scale);
 }
 
-void Transform::ConcatTranslate(float x, float y) {
+void Transform::ConcatTranslate(double x, double y) {
   SkMatrix44 translate;
-  translate.setTranslate(SkFloatToScalar(x), SkFloatToScalar(y), 0);
+  translate.setTranslate(SkDoubleToMScalar(x),
+                         SkDoubleToMScalar(y),
+                         SkDoubleToMScalar(0));
   matrix_.postConcat(translate);
 }
 
-void Transform::ConcatPerspectiveDepth(float depth) {
+void Transform::ConcatPerspectiveDepth(double depth) {
   SkMatrix44 m;
-  m.set(3, 2, -1 / depth);
+  m.set(3, 2, SkDoubleToMScalar(-1 / depth));
   matrix_.postConcat(m);
 }
 
@@ -173,10 +183,11 @@ bool Transform::TransformRectReverse(RectF* rect) const {
 void Transform::TransformPointInternal(const SkMatrix44& xform,
                                        Point3F& point) const {
   SkScalar p[4] = {
-    SkFloatToScalar(point.x()),
-    SkFloatToScalar(point.y()),
-    SkFloatToScalar(point.z()),
-    1 };
+    SkDoubleToScalar(point.x()),
+    SkDoubleToScalar(point.y()),
+    SkDoubleToScalar(point.z()),
+    SkDoubleToScalar(1)
+  };
 
   xform.map(p);
 
@@ -189,8 +200,12 @@ void Transform::TransformPointInternal(const SkMatrix44& xform,
 
 void Transform::TransformPointInternal(const SkMatrix44& xform,
                                        Point& point) const {
-  SkScalar p[4] = { SkIntToScalar(point.x()),  SkIntToScalar(point.y()),
-                    0, 1 };
+  SkScalar p[4] = {
+    SkIntToScalar(point.x()),
+    SkIntToScalar(point.y()),
+    SkIntToScalar(0),
+    SkIntToScalar(1)
+  };
 
   xform.map(p);
 

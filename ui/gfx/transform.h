@@ -34,40 +34,40 @@ class UI_EXPORT Transform {
   // with the 'Set' functions.
 
   // Sets the rotation of the transformation.
-  void SetRotate(float degree);
+  void SetRotate(double degree);
 
   // Sets the rotation of the transform (about a vector).
-  void SetRotateAbout(const Point3F& point, float degree);
+  void SetRotateAbout(const Point3F& point, double degree);
 
   // Sets the scaling parameters.
-  void SetScaleX(float x);
-  void SetScaleY(float y);
-  void SetScale(float x, float y);
+  void SetScaleX(double x);
+  void SetScaleY(double y);
+  void SetScale(double x, double y);
 
   // Sets the translation parameters.
-  void SetTranslateX(float x);
-  void SetTranslateY(float y);
-  void SetTranslate(float x, float y);
+  void SetTranslateX(double x);
+  void SetTranslateY(double y);
+  void SetTranslate(double x, double y);
 
   // Creates a perspective matrix.
   // Based on the 'perspective' operation from
   // http://www.w3.org/TR/css3-3d-transforms/#transform-functions
-  void SetPerspectiveDepth(float depth);
+  void SetPerspectiveDepth(double depth);
 
   // Applies a rotation on the current transformation.
-  void ConcatRotate(float degree);
+  void ConcatRotate(double degree);
 
   // Applies an axis-angle rotation on the current transformation.
-  void ConcatRotateAbout(const Point3F& point, float degree);
+  void ConcatRotateAbout(const Point3F& point, double degree);
 
   // Applies scaling on current transform.
-  void ConcatScale(float x, float y);
+  void ConcatScale(double x, double y);
 
   // Applies translation on current transform.
-  void ConcatTranslate(float x, float y);
+  void ConcatTranslate(double x, double y);
 
   // Applies a perspective on current transform.
-  void ConcatPerspectiveDepth(float depth);
+  void ConcatPerspectiveDepth(double depth);
 
   // Applies a transformation on the current transformation
   // (i.e. 'this = this * transform;').
