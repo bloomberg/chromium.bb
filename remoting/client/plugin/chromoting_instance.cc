@@ -433,18 +433,22 @@ void ChromotingInstance::SetCursorShape(
     return;
   }
 
-  if (pp::ImageData::GetNativeImageDataFormat() !=
-      PP_IMAGEDATAFORMAT_BGRA_PREMUL) {
-    VLOG(2) << "Unable to set cursor shape - non-native image format";
-    return;
-  }
-
   int width = cursor_shape.width();
   int height = cursor_shape.height();
+
+  if (width < 0 || height < 0) {
+    return;
+  }
 
   if (width > 32 || height > 32) {
     VLOG(2) << "Cursor too large for SetCursor: "
             << width << "x" << height << " > 32x32";
+    return;
+  }
+
+  if (pp::ImageData::GetNativeImageDataFormat() !=
+      PP_IMAGEDATAFORMAT_BGRA_PREMUL) {
+    VLOG(2) << "Unable to set cursor shape - non-native image format";
     return;
   }
 
