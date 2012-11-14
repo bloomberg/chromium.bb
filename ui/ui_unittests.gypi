@@ -93,7 +93,7 @@
         'gfx/shadow_value_unittest.cc',
         'gfx/size_unittest.cc',
         'gfx/skbitmap_operations_unittest.cc',
-        'gfx/skia_util_unittest.cc',
+        'gfx/text_utils_unittest.cc',
         'gfx/vector2d_unittest.cc',
         'gfx/vector3d_unittest.cc',
         'test/run_all_unittests.cc',

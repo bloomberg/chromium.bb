@@ -21,7 +21,7 @@
 #include "ui/gfx/font_render_params_linux.h"
 #include "ui/gfx/platform_font_pango.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/text_utils.h"
 
 #if defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>

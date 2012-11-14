@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -69,16 +68,6 @@ UI_EXPORT SkDrawLooper* CreateShadowDrawLooper(
 // Returns true if the two bitmaps contain the same pixels.
 UI_EXPORT bool BitmapsAreEqual(const SkBitmap& bitmap1,
                                const SkBitmap& bitmap2);
-
-// Strip the accelerator char (typically '&') from a menu string.  A double
-// accelerator char ('&&') will be converted to a single char.  The out params
-// |accelerated_char_pos| and |accelerated_char_span| will be set to the index
-// and span of the last accelerated character, respectively, or -1 and 0 if
-// there was none.
-UI_EXPORT string16 RemoveAcceleratorChar(const string16& s,
-                                         char16 accelerator_char,
-                                         int* accelerated_char_pos,
-                                         int* accelerated_char_span);
 
 // Converts Skia ARGB format pixels in |skia| to RGBA.
 UI_EXPORT void ConvertSkiaToRGBA(const unsigned char* skia,

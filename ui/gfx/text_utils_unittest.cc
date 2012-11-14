@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/text_utils.h"
 
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-static const char16 kAcceleratorChar = '&';
+namespace gfx {
+namespace {
 
-TEST(SkiaUtilTest, RemoveAcceleratorChar) {
+const char16 kAcceleratorChar = '&';
+
+TEST(TextUtilsTest, RemoveAcceleratorChar) {
   struct TestData {
     const char* input;
     int accelerated_char_pos;
@@ -45,12 +48,15 @@ TEST(SkiaUtilTest, RemoveAcceleratorChar) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     int accelerated_char_pos;
     int accelerated_char_span;
-    string16 result = gfx::RemoveAcceleratorChar(UTF8ToUTF16(cases[i].input),
-                                                 kAcceleratorChar,
-                                                 &accelerated_char_pos,
-                                                 &accelerated_char_span);
+    string16 result = RemoveAcceleratorChar(UTF8ToUTF16(cases[i].input),
+                                            kAcceleratorChar,
+                                            &accelerated_char_pos,
+                                            &accelerated_char_span);
     EXPECT_EQ(result, UTF8ToUTF16(cases[i].output));
     EXPECT_EQ(accelerated_char_pos, cases[i].accelerated_char_pos);
     EXPECT_EQ(accelerated_char_span, cases[i].accelerated_char_span);
   }
 }
+
+}  // namespace
+}  // namespace gfx

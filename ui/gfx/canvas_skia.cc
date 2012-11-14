@@ -15,7 +15,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/shadow_value.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/text_utils.h"
 
 namespace {
 
