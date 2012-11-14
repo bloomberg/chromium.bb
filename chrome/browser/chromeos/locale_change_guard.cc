@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -171,10 +172,8 @@ void LocaleChangeGuard::Check() {
     PrepareChangingLocale(from_locale, to_locale);
   }
 
-  if (ash::Shell::GetInstance()->status_area_widget()) {
-    ash::Shell::GetInstance()->system_tray()->locale_observer()->
-        OnLocaleChanged(this, cur_locale, from_locale_, to_locale_);
-  }
+  ash::Shell::GetInstance()->system_tray_notifier()->NotifyLocaleChanged(
+      this, cur_locale, from_locale_, to_locale_);
 }
 
 void LocaleChangeGuard::AcceptLocaleChange() {

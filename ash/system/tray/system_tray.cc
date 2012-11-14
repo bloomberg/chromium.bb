@@ -18,12 +18,12 @@
 #include "ash/system/locale/tray_locale.h"
 #include "ash/system/logout_button/tray_logout_button.h"
 #include "ash/system/monitor/tray_monitor.h"
-#include "ash/system/power/power_status_observer.h"
 #include "ash/system/power/power_supply_status.h"
 #include "ash/system/power/tray_power.h"
 #include "ash/system/settings/tray_settings.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
@@ -107,23 +107,6 @@ using internal::SystemTrayBubble;
 SystemTray::SystemTray(internal::StatusAreaWidget* status_area_widget)
     : internal::TrayBackgroundView(status_area_widget),
       items_(),
-      accessibility_observer_(NULL),
-      audio_observer_(NULL),
-      bluetooth_observer_(NULL),
-      brightness_observer_(NULL),
-      caps_lock_observer_(NULL),
-      clock_observer_(NULL),
-      drive_observer_(NULL),
-      ime_observer_(NULL),
-      locale_observer_(NULL),
-      logout_button_observer_(NULL),
-#if defined(OS_CHROMEOS)
-      network_observer_(NULL),
-      vpn_observer_(NULL),
-      sms_observer_(NULL),
-#endif
-      update_observer_(NULL),
-      user_observer_(NULL),
       default_bubble_height_(0),
       hide_notifications_(false) {
   SetContentsBackground();
@@ -140,47 +123,54 @@ SystemTray::~SystemTray() {
   }
 }
 
-void SystemTray::CreateItems() {
+void SystemTray::InitializeTrayItems(SystemTrayDelegate* delegate) {
+  internal::TrayBackgroundView::Initialize();
+  CreateItems(delegate);
+}
+
+void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   internal::TrayVolume* tray_volume = new internal::TrayVolume();
   internal::TrayBluetooth* tray_bluetooth = new internal::TrayBluetooth();
   internal::TrayBrightness* tray_brightness = new internal::TrayBrightness();
   internal::TrayDate* tray_date = new internal::TrayDate();
   internal::TrayPower* tray_power = new internal::TrayPower();
-  internal::TrayIME* tray_ime = new internal::TrayIME;
-  internal::TrayUser* tray_user = new internal::TrayUser;
+  internal::TrayIME* tray_ime = new internal::TrayIME();
+  internal::TrayUser* tray_user = new internal::TrayUser();
   internal::TrayAccessibility* tray_accessibility =
-      new internal::TrayAccessibility;
-  internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock;
-  internal::TrayDrive* tray_drive = new internal::TrayDrive;
-  internal::TrayLocale* tray_locale = new internal::TrayLocale;
+      new internal::TrayAccessibility();
+  internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock();
+  internal::TrayDrive* tray_drive = new internal::TrayDrive();
+  internal::TrayLocale* tray_locale = new internal::TrayLocale();
   internal::TrayLogoutButton* tray_logout_button =
       new internal::TrayLogoutButton();
-  internal::TrayUpdate* tray_update = new internal::TrayUpdate;
+  internal::TrayUpdate* tray_update = new internal::TrayUpdate();
   internal::TraySettings* tray_settings = new internal::TraySettings();
-
-  accessibility_observer_ = tray_accessibility;
-  audio_observer_ = tray_volume;
-  bluetooth_observer_ = tray_bluetooth;
-  brightness_observer_ = tray_brightness;
-  caps_lock_observer_ = tray_caps_lock;
-  clock_observer_ = tray_date;
-  drive_observer_ = tray_drive;
-  ime_observer_ = tray_ime;
-  locale_observer_ = tray_locale;
-  logout_button_observer_ = tray_logout_button;
-  power_status_observers_.AddObserver(tray_power);
-  power_status_observers_.AddObserver(tray_settings);
-  update_observer_ = tray_update;
-  user_observer_ = tray_user;
-
 #if defined(OS_CHROMEOS)
-  internal::TrayDisplay* tray_display = new internal::TrayDisplay;
-  internal::TrayNetwork* tray_network = new internal::TrayNetwork;
-  internal::TrayVPN* tray_vpn = new internal::TrayVPN;
+  internal::TrayDisplay* tray_display = new internal::TrayDisplay();
+  internal::TrayNetwork* tray_network = new internal::TrayNetwork();
+  internal::TrayVPN* tray_vpn = new internal::TrayVPN();
   internal::TraySms* tray_sms = new internal::TraySms();
-  network_observer_ = tray_network;
-  vpn_observer_ = tray_vpn;
-  sms_observer_ = tray_sms;
+#endif
+
+  SystemTrayNotifier* notifier = Shell::GetInstance()->system_tray_notifier();
+  notifier->AddAccessibilityObserver(tray_accessibility);
+  notifier->AddAudioObserver(tray_volume);
+  notifier->AddBluetoothObserver(tray_bluetooth);
+  notifier->AddBrightnessObserver(tray_brightness);
+  notifier->AddCapsLockObserver(tray_caps_lock);
+  notifier->AddClockObserver(tray_date);
+  notifier->AddDriveObserver(tray_drive);
+  notifier->AddIMEObserver(tray_ime);
+  notifier->AddLocaleObserver(tray_locale);
+  notifier->AddLogoutButtonObserver(tray_logout_button);
+  notifier->AddPowerStatusObserver(tray_power);
+  notifier->AddPowerStatusObserver(tray_settings);
+  notifier->AddUpdateObserver(tray_update);
+  notifier->AddUserObserver(tray_user);
+#if defined(OS_CHROMEOS)
+  notifier->AddNetworkObserver(tray_network);
+  notifier->AddVpnObserver(tray_vpn);
+  notifier->AddSmsObserver(tray_sms);
 #endif
 
   AddTrayItem(tray_logout_button);
@@ -496,11 +486,6 @@ void SystemTray::UpdateNotificationBubble() {
     notification_bubble->SetVisible(false);
   else
     status_area_widget()->SetHideWebNotifications(true);
-}
-
-void SystemTray::Initialize() {
-  internal::TrayBackgroundView::Initialize();
-  CreateItems();
 }
 
 void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {

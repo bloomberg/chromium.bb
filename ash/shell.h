@@ -75,6 +75,7 @@ class ShellDelegate;
 class ShellObserver;
 class SystemTray;
 class SystemTrayDelegate;
+class SystemTrayNotifier;
 class UserActivityDetector;
 class UserWallpaperDelegate;
 class VideoDetector;
@@ -372,6 +373,10 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
     return system_tray_delegate_.get();
   }
 
+  SystemTrayNotifier* system_tray_notifier() {
+    return system_tray_notifier_.get();
+  }
+
   static void set_initially_hide_cursor(bool hide) {
     initially_hide_cursor_ = hide;
   }
@@ -460,6 +465,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
 
   scoped_ptr<ShellDelegate> delegate_;
   scoped_ptr<SystemTrayDelegate> system_tray_delegate_;
+  scoped_ptr<SystemTrayNotifier> system_tray_notifier_;
   scoped_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
   scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
 

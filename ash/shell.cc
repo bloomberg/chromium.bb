@@ -29,6 +29,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/activation_controller.h"
@@ -256,6 +257,11 @@ Shell::~Shell() {
 
   // Destroy SystemTrayDelegate before destroying the status area(s).
   system_tray_delegate_.reset();
+
+  // Destroy SystemTrayNotifier immediately after destroying SystemTrayDelegate
+  // so that it is still available when shutting down the UI, but not after
+  // the notifier observers have been destroyed.
+  system_tray_notifier_.reset();
 
   // Destroy all child windows including widgets.
   display_controller_->CloseChildWindows();
@@ -494,6 +500,9 @@ void Shell::Init() {
     resize_shadow_controller_.reset(new internal::ResizeShadowController());
     shadow_controller_.reset(new internal::ShadowController());
   }
+
+  // Create system_tray_notifier_ before the delegate.
+  system_tray_notifier_.reset(new ash::SystemTrayNotifier());
 
   // Initialize system_tray_delegate_ before initializing StatusAreaWidget.
   system_tray_delegate_.reset(delegate()->CreateSystemTrayDelegate());

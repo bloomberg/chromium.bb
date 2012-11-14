@@ -213,6 +213,8 @@
         'system/tray/system_tray_delegate.h',
         'system/tray/system_tray_item.cc',
         'system/tray/system_tray_item.h',
+        'system/tray/system_tray_notifier.cc',
+        'system/tray/system_tray_notifier.h',
         'system/tray/test_system_tray_delegate.cc',
         'system/tray/test_system_tray_delegate.h',
         'system/tray/tray_background_view.cc',

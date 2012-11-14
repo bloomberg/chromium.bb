@@ -46,13 +46,14 @@ StatusAreaWidget::~StatusAreaWidget() {
 void StatusAreaWidget::CreateTrayViews() {
   AddSystemTray();
   AddWebNotificationTray();
-  // Initialize() must be called after all trays have been created.
+  SystemTrayDelegate* delegate = ash::Shell::GetInstance()->tray_delegate();
+  DCHECK(delegate);
+  // Initialize after all trays have been created.
   if (system_tray_)
-    system_tray_->Initialize();
+    system_tray_->InitializeTrayItems(delegate);
   if (web_notification_tray_)
     web_notification_tray_->Initialize();
-  UpdateAfterLoginStatusChange(
-      ash::Shell::GetInstance()->tray_delegate()->GetUserLoginStatus());
+  UpdateAfterLoginStatusChange(delegate->GetUserLoginStatus());
 }
 
 void StatusAreaWidget::Shutdown() {

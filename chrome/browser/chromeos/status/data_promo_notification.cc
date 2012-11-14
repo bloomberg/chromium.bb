@@ -8,6 +8,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -202,12 +203,9 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
     links.push_back(l10n_util::GetStringUTF16(link_message_id));
     if (!deal_info_url_.empty())
       links.push_back(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-    if (ash::Shell::GetInstance()->system_tray()->network_observer()) {
-      ash::Shell::GetInstance()->system_tray()->network_observer()->
-          SetNetworkMessage(listener, ash::NetworkObserver::MESSAGE_DATA_PROMO,
-              string16(), message, links);
-    }
-
+    ash::Shell::GetInstance()->system_tray_notifier()->NotifySetNetworkMessage(
+        listener, ash::NetworkObserver::MESSAGE_DATA_PROMO,
+        string16(), message, links);
     check_for_promo_ = false;
     SetShow3gPromoNotification(false);
     if (carrier_deal_promo_pref != kNotificationCountPrefDefault)
@@ -216,11 +214,8 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
 }
 
 void DataPromoNotification::CloseNotification() {
-  if (ash::Shell::GetInstance()->status_area_widget() &&
-      ash::Shell::GetInstance()->system_tray()->network_observer()) {
-    ash::Shell::GetInstance()->system_tray()->network_observer()->
-        ClearNetworkMessage(ash::NetworkObserver::MESSAGE_DATA_PROMO);
-  }
+  ash::Shell::GetInstance()->system_tray_notifier()->NotifyClearNetworkMessage(
+      ash::NetworkObserver::MESSAGE_DATA_PROMO);
 }
 
 }  // namespace chromeos

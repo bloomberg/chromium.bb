@@ -8,6 +8,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/stl_util.h"
@@ -71,8 +72,8 @@ class NetworkMessageNotification : public ash::NetworkTrayDelegate {
   }
 
   void Hide() {
-    ash::Shell::GetInstance()->system_tray()->network_observer()->
-        ClearNetworkMessage(error_type_);
+    ash::Shell::GetInstance()->system_tray_notifier()->
+        NotifyClearNetworkMessage(error_type_);
   }
 
   void SetTitle(const string16& title) {
@@ -86,8 +87,8 @@ class NetworkMessageNotification : public ash::NetworkTrayDelegate {
     callback_ = callback;
     std::vector<string16> links;
     links.push_back(link_text);
-    ash::Shell::GetInstance()->system_tray()->network_observer()->
-        SetNetworkMessage(this, error_type_, title_, message, links);
+    ash::Shell::GetInstance()->system_tray_notifier()->NotifySetNetworkMessage(
+        this, error_type_, title_, message, links);
   }
 
   void ShowAlways(const string16& message,
