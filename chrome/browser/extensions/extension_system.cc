@@ -25,6 +25,8 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/extension_warning_badge_service.h"
+#include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/navigation_observer.h"
@@ -264,6 +266,10 @@ ExtensionSystemImpl::~ExtensionSystemImpl() {
 
 void ExtensionSystemImpl::Shutdown() {
   extension_process_manager_.reset();
+  if (extension_warning_service_.get()) {  // NULL for OTRProfile.
+    extension_warning_service_->RemoveObserver(
+        extension_warning_badge_service_.get());
+  }
 }
 
 void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
@@ -292,6 +298,12 @@ void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
 
   rules_registry_service_.reset(new RulesRegistryService(profile_));
   rules_registry_service_->RegisterDefaultRulesRegistries();
+
+  extension_warning_service_.reset(new ExtensionWarningService(profile_));
+  extension_warning_badge_service_.reset(
+      new ExtensionWarningBadgeService(profile_));
+  extension_warning_service_->AddObserver(
+      extension_warning_badge_service_.get());
 
   shared_->Init(extensions_enabled);
 }
@@ -373,6 +385,10 @@ ApiResourceManager<Socket>* ExtensionSystemImpl::socket_manager() {
 ApiResourceManager<UsbDeviceResource>*
 ExtensionSystemImpl::usb_device_resource_manager() {
   return usb_device_resource_manager_.get();
+}
+
+ExtensionWarningService* ExtensionSystemImpl::warning_service() {
+  return extension_warning_service_.get();
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(

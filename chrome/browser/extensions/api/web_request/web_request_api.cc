@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
@@ -29,6 +30,8 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_id_map.h"
+#include "chrome/browser/extensions/extension_warning_service.h"
+#include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
@@ -63,8 +66,10 @@ using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::ResourceRequestInfo;
 using extensions::Extension;
+using extensions::ExtensionWarning;
+using extensions::ExtensionWarningService;
+using extensions::ExtensionWarningSet;
 using extensions::Feature;
-
 using extensions::web_navigation_api_helpers::GetFrameId;
 
 namespace helpers = extension_web_request_api_helpers;
@@ -1390,7 +1395,7 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
   bool credentials_set = false;
 
   deltas.sort(&helpers::InDecreasingExtensionInstallationTimeOrder);
-  std::set<std::string> conflicting_extensions;
+  ExtensionWarningSet warnings;
 
   bool canceled = false;
   helpers::MergeCancelOfResponses(
@@ -1403,14 +1408,14 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
     helpers::MergeOnBeforeRequestResponses(
         blocked_request.response_deltas,
         blocked_request.new_url,
-        &conflicting_extensions,
+        &warnings,
         blocked_request.net_log);
   } else if (blocked_request.event == kOnBeforeSendHeaders) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnBeforeSendHeadersResponses(
         blocked_request.response_deltas,
         blocked_request.request_headers,
-        &conflicting_extensions,
+        &warnings,
         blocked_request.net_log);
   } else if (blocked_request.event == kOnHeadersReceived) {
     CHECK(!blocked_request.callback.is_null());
@@ -1418,7 +1423,7 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
         blocked_request.response_deltas,
         blocked_request.original_response_headers.get(),
         blocked_request.override_response_headers,
-        &conflicting_extensions,
+        &warnings,
         blocked_request.net_log);
   } else if (blocked_request.event == kOnAuthRequired) {
     CHECK(blocked_request.callback.is_null());
@@ -1426,20 +1431,18 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
     credentials_set = helpers::MergeOnAuthRequiredResponses(
        blocked_request.response_deltas,
        blocked_request.auth_credentials,
-       &conflicting_extensions,
+       &warnings,
        blocked_request.net_log);
   } else {
     NOTREACHED();
   }
 
-  if (!conflicting_extensions.empty()) {
+  if (!warnings.empty()) {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&ExtensionWarningSet::NotifyWarningsOnUI,
-                   profile,
-                   conflicting_extensions,
-                   ExtensionWarningSet::kNetworkConflict));
+        base::Bind(&ExtensionWarningService::NotifyWarningsOnUI,
+                   profile, warnings));
   }
 
   if (canceled) {
@@ -1872,15 +1875,14 @@ void WebRequestHandlerBehaviorChanged::GetQuotaLimitHeuristics(
 void WebRequestHandlerBehaviorChanged::OnQuotaExceeded(
     const std::string& violation_error) {
   // Post warning message.
-  std::set<std::string> extension_ids;
-  extension_ids.insert(extension_id());
+  ExtensionWarningSet warnings;
+  warnings.insert(
+      ExtensionWarning::CreateRepeatedCacheFlushesWarning(extension_id()));
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&ExtensionWarningSet::NotifyWarningsOnUI,
-                 profile_id(),
-                 extension_ids,
-                 ExtensionWarningSet::kRepeatedCacheFlushes));
+      base::Bind(&ExtensionWarningService::NotifyWarningsOnUI,
+                 profile_id(), warnings));
 
   // Continue gracefully.
   Run();

@@ -674,11 +674,6 @@ enum NotificationType {
   // (const std::string).
   NOTIFICATION_EXTENSION_UPDATE_FOUND,
 
-  // Sent when one or more extensions changed their warning status (like
-  // slowing down Chrome or conflicting with each other).
-  // The source is a Profile.
-  NOTIFICATION_EXTENSION_WARNING_CHANGED,
-
   // An installed app changed notification state (added or removed
   // notifications). The source is a Profile, and the details are a string
   // with the extension id of the app.

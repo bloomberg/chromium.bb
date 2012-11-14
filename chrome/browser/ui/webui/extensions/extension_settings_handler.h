@@ -12,9 +12,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "base/prefs/public/pref_observer.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
-#include "chrome/browser/extensions/extension_warning_set.h"
+#include "chrome/browser/extensions/extension_warning_service.h"
 #include "chrome/browser/extensions/requirements_checker.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/navigation_controller.h"
@@ -64,7 +65,8 @@ class ExtensionSettingsHandler
       public content::WebContentsObserver,
       public ui::SelectFileDialog::Listener,
       public ExtensionUninstallDialog::Delegate,
-      public base::SupportsWeakPtr<ExtensionSettingsHandler>{
+      public extensions::ExtensionWarningService::Observer,
+      public base::SupportsWeakPtr<ExtensionSettingsHandler> {
  public:
   ExtensionSettingsHandler();
   virtual ~ExtensionSettingsHandler();
@@ -73,11 +75,11 @@ class ExtensionSettingsHandler
 
   // Extension Detail JSON Struct for page. |pages| is injected for unit
   // testing.
-  // Note: |warning_set| can be NULL in unit tests.
+  // Note: |warning_service| can be NULL in unit tests.
   base::DictionaryValue* CreateExtensionDetailValue(
       const extensions::Extension* extension,
       const std::vector<ExtensionPage>& pages,
-      const ExtensionWarningSet* warning_set);
+      const extensions::ExtensionWarningService* warning_service);
 
   void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
@@ -117,6 +119,9 @@ class ExtensionSettingsHandler
   // notification about uninstall confirmation dialog selections.
   virtual void ExtensionUninstallAccepted() OVERRIDE;
   virtual void ExtensionUninstallCanceled() OVERRIDE;
+
+  // extensions::ExtensionWarningService::Observer implementation.
+  virtual void ExtensionWarningsChanged() OVERRIDE;
 
   // Helper method that reloads all unpacked extensions.
   void ReloadUnpackedExtensions();
@@ -235,6 +240,10 @@ class ExtensionSettingsHandler
   // another Check() before the previous one is complete will cause the first
   // one to abort.
   scoped_ptr<extensions::RequirementsChecker> requirements_checker_;
+
+  ScopedObserver<extensions::ExtensionWarningService,
+                 extensions::ExtensionWarningService::Observer>
+      warning_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsHandler);
 };

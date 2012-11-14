@@ -30,6 +30,8 @@ class EventRouter;
 class Extension;
 class ExtensionPrefs;
 class ExtensionSystemSharedFactory;
+class ExtensionWarningBadgeService;
+class ExtensionWarningService;
 class LazyBackgroundTaskQueue;
 class ManagementPolicy;
 class MessageService;
@@ -116,6 +118,9 @@ class ExtensionSystem : public ProfileKeyedService {
   virtual ApiResourceManager<UsbDeviceResource>*
   usb_device_resource_manager() = 0;
 
+  // The ExtensionWarningService is created at startup.
+  virtual ExtensionWarningService* warning_service() = 0;
+
   // Called by the ExtensionService that lives in this system. Gives the
   // info map a chance to react to the load event before the EXTENSION_LOADED
   // notification has fired. The purpose for handling this event first is to
@@ -168,6 +173,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual ApiResourceManager<Socket>* socket_manager() OVERRIDE;
   virtual ApiResourceManager<UsbDeviceResource>* usb_device_resource_manager()
       OVERRIDE;
+  virtual ExtensionWarningService* warning_service() OVERRIDE;
 
   virtual void RegisterExtensionWithRequestContexts(
       const Extension* extension) OVERRIDE;
@@ -245,6 +251,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
                UsbDeviceResource> > usb_device_resource_manager_;
   scoped_ptr<RulesRegistryService> rules_registry_service_;
 
+  scoped_ptr<ExtensionWarningService> extension_warning_service_;
+  scoped_ptr<ExtensionWarningBadgeService> extension_warning_badge_service_;
   DISALLOW_COPY_AND_ASSIGN(ExtensionSystemImpl);
 };
 

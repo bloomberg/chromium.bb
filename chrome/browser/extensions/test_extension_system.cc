@@ -168,6 +168,10 @@ TestExtensionSystem::usb_device_resource_manager() {
   return NULL;
 }
 
+ExtensionWarningService* TestExtensionSystem::warning_service() {
+  return NULL;
+}
+
 // static
 ProfileKeyedService* TestExtensionSystem::Build(Profile* profile) {
   return new TestExtensionSystem(profile);

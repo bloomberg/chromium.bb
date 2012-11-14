@@ -69,6 +69,7 @@ using content::RenderViewHost;
 using content::WebContents;
 using extensions::Extension;
 using extensions::ExtensionUpdater;
+using extensions::ExtensionWarning;
 using extensions::ManagementPolicy;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -82,7 +83,8 @@ ExtensionSettingsHandler::ExtensionSettingsHandler()
       management_policy_(NULL),
       ignore_notifications_(false),
       deleting_rvh_(NULL),
-      registered_for_notifications_(false) {
+      registered_for_notifications_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(warning_service_observer_(this)) {
 }
 
 ExtensionSettingsHandler::~ExtensionSettingsHandler() {
@@ -90,8 +92,6 @@ ExtensionSettingsHandler::~ExtensionSettingsHandler() {
   // away so they don't try and call back to us.
   if (load_extension_dialog_)
     load_extension_dialog_->ListenerDestroyed();
-
-  registrar_.RemoveAll();
 }
 
 ExtensionSettingsHandler::ExtensionSettingsHandler(ExtensionService* service,
@@ -100,7 +100,8 @@ ExtensionSettingsHandler::ExtensionSettingsHandler(ExtensionService* service,
       management_policy_(policy),
       ignore_notifications_(false),
       deleting_rvh_(NULL),
-      registered_for_notifications_(false) {
+      registered_for_notifications_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(warning_service_observer_(this)) {
 }
 
 // static
@@ -113,7 +114,7 @@ void ExtensionSettingsHandler::RegisterUserPrefs(PrefService* prefs) {
 DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     const Extension* extension,
     const std::vector<ExtensionPage>& pages,
-    const ExtensionWarningSet* warnings_set) {
+    const extensions::ExtensionWarningService* warning_service) {
   DictionaryValue* extension_data = new DictionaryValue();
   bool enabled = extension_service_->IsExtensionEnabled(extension->id());
   extension->GetBasicInfo(enabled, extension_data);
@@ -205,19 +206,15 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
       extension_action_manager->GetPageAction(*extension));
 
   // Add warnings.
-  if (warnings_set) {
-    std::set<ExtensionWarningSet::WarningType> warnings;
-    warnings_set->GetWarningsAffectingExtension(extension->id(), &warnings);
+  if (warning_service) {
+    std::vector<std::string> warnings =
+        warning_service->GetWarningMessagesForExtension(extension->id());
 
     if (!warnings.empty()) {
       ListValue* warnings_list = new ListValue;
-      for (std::set<ExtensionWarningSet::WarningType>::const_iterator iter =
-               warnings.begin();
-           iter != warnings.end();
-           ++iter) {
-        string16 warning_string(
-            ExtensionWarningSet::GetLocalizedWarning(*iter));
-        warnings_list->Append(Value::CreateStringValue(warning_string));
+      for (std::vector<std::string>::const_iterator iter = warnings.begin();
+           iter != warnings.end(); ++iter) {
+        warnings_list->Append(Value::CreateStringValue(*iter));
       }
       extension_data->Set("warnings", warnings_list);
     }
@@ -443,7 +440,6 @@ void ExtensionSettingsHandler::Observe(
     case chrome::NOTIFICATION_EXTENSION_LOADED:
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
     case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED:
-    case chrome::NOTIFICATION_EXTENSION_WARNING_CHANGED:
     case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED:
       MaybeUpdateAfterNotification();
       break;
@@ -490,6 +486,10 @@ void ExtensionSettingsHandler::ExtensionUninstallCanceled() {
   extension_id_prompting_ = "";
 }
 
+void ExtensionSettingsHandler::ExtensionWarningsChanged() {
+  MaybeUpdateAfterNotification();
+}
+
 void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
   const ExtensionSet* extensions = extension_service_->extensions();
   std::vector<const Extension*> unpacked_extensions;
@@ -509,10 +509,13 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
     const ListValue* args) {
   DictionaryValue results;
 
+  Profile* profile = Profile::FromWebUI(web_ui());
+
   // Add the extensions to the results structure.
   ListValue *extensions_list = new ListValue();
 
-  ExtensionWarningSet* warnings = extension_service_->extension_warnings();
+  extensions::ExtensionWarningService* warnings =
+      extensions::ExtensionSystem::Get(profile)->warning_service();
 
   const ExtensionSet* extensions = extension_service_->extensions();
   for (ExtensionSet::const_iterator extension = extensions->begin();
@@ -552,14 +555,13 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
     results.SetBoolean("developerMode", false);
   } else {
     results.SetBoolean("managedMode", false);
-    Profile* profile = Profile::FromWebUI(web_ui());
+
     bool developer_mode =
         profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
     results.SetBoolean("developerMode", developer_mode);
   }
 
   // Check to see if we have any wiped out extensions.
-  Profile* profile = Profile::FromWebUI(web_ui());
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   scoped_ptr<const ExtensionSet> wiped_out(
@@ -825,8 +827,6 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
                  content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_WARNING_CHANGED,
-                 content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
@@ -846,6 +846,9 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       content::Source<extensions::ExtensionPrefs>(
           profile->GetExtensionService()->extension_prefs()));
+
+  warning_service_observer_.Add(
+      extensions::ExtensionSystem::Get(profile)->warning_service());
 
   pref_registrar_.Init(profile->GetPrefs());
   pref_registrar_.Add(prefs::kExtensionInstallDenyList, this);

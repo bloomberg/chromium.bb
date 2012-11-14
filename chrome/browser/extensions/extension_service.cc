@@ -366,7 +366,6 @@ ExtensionService::ExtensionService(Profile* profile,
       browser_terminating_(false),
       app_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       extension_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      extension_warnings_(profile),
       app_shortcut_manager_(profile) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -866,12 +865,6 @@ bool ExtensionService::UninstallExtension(
   // Track the uninstallation.
   UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionUninstalled", 1, 2);
 
-  // Uninstalling one extension might have solved the problems of others.
-  // Therefore, we clear warnings of this type for all extensions.
-  std::set<ExtensionWarningSet::WarningType> warnings;
-  extension_warnings_.GetWarningsAffectingExtension(extension_id, &warnings);
-  extension_warnings_.ClearWarnings(warnings);
-
   return true;
 }
 
@@ -970,12 +963,6 @@ void ExtensionService::DisableExtension(
   }
 
   SyncExtensionChangeIfNeeded(*extension);
-
-  // Deactivating one extension might have solved the problems of others.
-  // Therefore, we clear warnings of this type for all extensions.
-  std::set<ExtensionWarningSet::WarningType> warnings;
-  extension_warnings_.GetWarningsAffectingExtension(extension_id, &warnings);
-  extension_warnings_.ClearWarnings(warnings);
 }
 
 void ExtensionService::GrantPermissionsAndEnableExtension(

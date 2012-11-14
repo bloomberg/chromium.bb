@@ -64,6 +64,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual ApiResourceManager<Socket>* socket_manager() OVERRIDE;
   virtual ApiResourceManager<UsbDeviceResource>* usb_device_resource_manager()
       OVERRIDE;
+  virtual ExtensionWarningService* warning_service() OVERRIDE;
 
   // Factory method for tests to use with SetTestingProfile.
   static ProfileKeyedService* Build(Profile* profile);

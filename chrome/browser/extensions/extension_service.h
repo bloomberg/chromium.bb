@@ -26,7 +26,6 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_sync_bundle.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
-#include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
 #include "chrome/browser/extensions/menu_manager.h"
@@ -660,10 +659,6 @@ class ExtensionService
   }
 #endif
 
-  ExtensionWarningSet* extension_warnings() {
-    return &extension_warnings_;
-  }
-
   extensions::AppShortcutManager* app_shortcut_manager() {
     return &app_shortcut_manager_;
   }
@@ -947,9 +942,6 @@ class ExtensionService
 
   extensions::AppSyncBundle app_sync_bundle_;
   extensions::ExtensionSyncBundle extension_sync_bundle_;
-
-  // Contains an entry for each warning that shall be currently shown.
-  ExtensionWarningSet extension_warnings_;
 
   extensions::ProcessMap process_map_;
 
