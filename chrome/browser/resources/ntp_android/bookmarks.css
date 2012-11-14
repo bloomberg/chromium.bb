@@ -227,6 +227,9 @@
   }
 
   /* tweaked spacing, presumably because of rounding error */
+  .favicon-box {
+    width: 65px;
+  }
   .favicon-box.document .fold-container {
     right: 8px;
   }
