@@ -1573,21 +1573,6 @@ ui::EventResult RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
         MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent*>(event));
     if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
       host_->ForwardWheelEvent(mouse_wheel_event);
-  } else if (event->type() == ui::ET_SCROLL) {
-    WebKit::WebGestureEvent gesture_event =
-        MakeWebGestureEventFlingCancel();
-    host_->ForwardGestureEvent(gesture_event);
-    WebKit::WebMouseWheelEvent mouse_wheel_event =
-        MakeWebMouseWheelEvent(static_cast<ui::ScrollEvent*>(event));
-    host_->ForwardWheelEvent(mouse_wheel_event);
-    RecordAction(UserMetricsAction("TrackpadScroll"));
-  } else if (event->type() == ui::ET_SCROLL_FLING_START ||
-      event->type() == ui::ET_SCROLL_FLING_CANCEL) {
-    WebKit::WebGestureEvent gesture_event =
-        MakeWebGestureEvent(static_cast<ui::ScrollEvent*>(event));
-    host_->ForwardGestureEvent(gesture_event);
-    if (event->type() == ui::ET_SCROLL_FLING_START)
-      RecordAction(UserMetricsAction("TrackpadScrollFling"));
   } else if (CanRendererHandleEvent(event)) {
     WebKit::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
     ModifyEventMovementAndCoords(&mouse_event);
@@ -1614,6 +1599,28 @@ ui::EventResult RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     window_->parent()->delegate()->OnMouseEvent(event);
 
   // Return true so that we receive released/drag events.
+  return ui::ER_HANDLED;
+}
+
+ui::EventResult RenderWidgetHostViewAura::OnScrollEvent(
+    ui::ScrollEvent* event) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnScrollEvent");
+  if (event->type() == ui::ET_SCROLL) {
+    WebKit::WebGestureEvent gesture_event =
+        MakeWebGestureEventFlingCancel();
+    host_->ForwardGestureEvent(gesture_event);
+    WebKit::WebMouseWheelEvent mouse_wheel_event =
+        MakeWebMouseWheelEvent(static_cast<ui::ScrollEvent*>(event));
+    host_->ForwardWheelEvent(mouse_wheel_event);
+    RecordAction(UserMetricsAction("TrackpadScroll"));
+  } else if (event->type() == ui::ET_SCROLL_FLING_START ||
+      event->type() == ui::ET_SCROLL_FLING_CANCEL) {
+    WebKit::WebGestureEvent gesture_event =
+        MakeWebGestureEvent(static_cast<ui::ScrollEvent*>(event));
+    host_->ForwardGestureEvent(gesture_event);
+    if (event->type() == ui::ET_SCROLL_FLING_START)
+      RecordAction(UserMetricsAction("TrackpadScrollFling"));
+  }
   return ui::ER_HANDLED;
 }
 
