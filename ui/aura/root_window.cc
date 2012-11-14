@@ -630,18 +630,19 @@ void RootWindow::HandleMouseMoved(const ui::MouseEvent& event, Window* target) {
 
 bool RootWindow::ProcessMouseEvent(Window* target, ui::MouseEvent* event) {
   AutoReset<Window*> reset(&event_dispatch_target_, target);
-  if (ProcessEvent(target, event) != ui::ER_UNHANDLED)
-    return true;
-  return false;
+  return ProcessEvent(target, event) != ui::ER_UNHANDLED;
 }
 
 bool RootWindow::ProcessKeyEvent(Window* target, ui::KeyEvent* event) {
   if (!target)
     target = this;
   AutoReset<Window*> reset(&event_dispatch_target_, target);
-  if (ProcessEvent(target, event) != ui::ER_UNHANDLED)
-    return true;
-  return false;
+  return ProcessEvent(target, event) != ui::ER_UNHANDLED;
+}
+
+bool RootWindow::ProcessScrollEvent(Window* target, ui::ScrollEvent* event) {
+  AutoReset<Window*> reset(&event_dispatch_target_, target);
+  return ProcessEvent(target, event) != ui::ER_UNHANDLED;
 }
 
 ui::EventResult RootWindow::ProcessTouchEvent(Window* target,
@@ -836,7 +837,7 @@ bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
       flags |= ui::EF_IS_NON_CLIENT;
     event->set_flags(flags);
     event->ConvertLocationToTarget(static_cast<Window*>(this), target);
-    return ProcessMouseEvent(target, event);
+    return ProcessScrollEvent(target, event);
   }
   return false;
 }

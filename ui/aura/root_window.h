@@ -281,6 +281,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   bool ProcessMouseEvent(Window* target, ui::MouseEvent* event);
   bool ProcessKeyEvent(Window* target, ui::KeyEvent* event);
+  bool ProcessScrollEvent(Window* target, ui::ScrollEvent* event);
   ui::EventResult ProcessTouchEvent(Window* target, ui::TouchEvent* event);
   ui::EventResult ProcessGestureEvent(Window* target,
                                       ui::GestureEvent* event);

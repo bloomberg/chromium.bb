@@ -513,6 +513,17 @@ ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
   }
 }
 
+ScrollEvent::ScrollEvent(EventType type,
+                         const gfx::Point& location,
+                         int flags,
+                         float x_offset,
+                         float y_offset)
+    : MouseEvent(type, location, location, flags),
+      x_offset_(x_offset),
+      y_offset_(y_offset) {
+  CHECK(IsScrollEvent());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // GestureEvent
 

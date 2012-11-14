@@ -584,6 +584,13 @@ class UI_EXPORT ScrollEvent : public MouseEvent {
         y_offset_(model.y_offset_) {
   }
 
+  // Used for tests.
+  ScrollEvent(EventType type,
+              const gfx::Point& location,
+              int flags,
+              float x_offset,
+              float y_offset);
+
   float x_offset() const { return x_offset_; }
   float y_offset() const { return y_offset_; }
 

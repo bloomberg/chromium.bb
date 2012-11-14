@@ -80,17 +80,21 @@ class EventCountFilter : public EventFilter {
   EventCountFilter()
       : num_key_events_(0),
         num_mouse_events_(0),
-        num_touch_events_(0) {
+        num_touch_events_(0),
+        num_scroll_events_(0) {
   }
   virtual ~EventCountFilter() {}
 
   int num_key_events() const { return num_key_events_; }
   int num_mouse_events() const { return num_mouse_events_; }
   int num_touch_events() const { return num_touch_events_; }
+  int num_scroll_events() const { return num_scroll_events_; }
 
   void Reset() {
     num_key_events_ = 0;
     num_mouse_events_ = 0;
+    num_touch_events_ = 0;
+    num_scroll_events_ = 0;
   }
 
   // EventFilter overrides:
@@ -113,6 +117,12 @@ class EventCountFilter : public EventFilter {
     return ui::ER_UNHANDLED;
   }
 
+  // ui::EventHandler overrides:
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
+    num_scroll_events_++;
+    return ui::ER_UNHANDLED;
+  }
+
  private:
   // How many key events have been received?
   int num_key_events_;
@@ -121,6 +131,8 @@ class EventCountFilter : public EventFilter {
   int num_mouse_events_;
 
   int num_touch_events_;
+
+  int num_scroll_events_;
 
   DISALLOW_COPY_AND_ASSIGN(EventCountFilter);
 };
@@ -436,6 +448,26 @@ TEST_F(RootWindowTest, TouchEventsOutsideBounds) {
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, position, 0, base::TimeDelta());
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_EQ(2, filter->num_touch_events());
+}
+
+// Tests that scroll events are dispatched correctly.
+TEST_F(RootWindowTest, ScrollEventDispatch) {
+  EventCountFilter* filter = new EventCountFilter;
+  root_window()->SetEventFilter(filter);
+
+  test::TestWindowDelegate delegate;
+  scoped_ptr<Window> w1(CreateWindow(1, root_window(), &delegate));
+  w1->SetBounds(gfx::Rect(20, 20, 40, 40));
+
+  // A scroll event on the root-window itself is not dispatched.
+  ui::ScrollEvent scroll1(ui::ET_SCROLL, gfx::Point(10, 10), 0, 0, -10);
+  root_window()->AsRootWindowHostDelegate()->OnHostScrollEvent(&scroll1);
+  EXPECT_EQ(0, filter->num_scroll_events());
+
+  // Scroll event on a window should be dispatched properly.
+  ui::ScrollEvent scroll2(ui::ET_SCROLL, gfx::Point(25, 30), 0, -10, 0);
+  root_window()->AsRootWindowHostDelegate()->OnHostScrollEvent(&scroll2);
+  EXPECT_EQ(1, filter->num_scroll_events());
 }
 
 namespace {
