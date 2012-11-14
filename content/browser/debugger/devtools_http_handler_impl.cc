@@ -174,28 +174,19 @@ DevToolsHttpHandler* DevToolsHttpHandler::Start(
 }
 
 DevToolsHttpHandlerImpl::~DevToolsHttpHandlerImpl() {
-  // Stop() must be called prior to destruction.
+  // Stop() must be called prior to this being called
   DCHECK(server_.get() == NULL);
-  DCHECK(thread_.get() == NULL);
+  thread_.reset();
 }
 
 void DevToolsHttpHandlerImpl::Start() {
   if (thread_.get())
     return;
   thread_.reset(new base::Thread(kDevToolsHandlerThreadName));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DevToolsHttpHandlerImpl::StartHandlerThread, this));
-}
-
-// Runs on FILE thread.
-void DevToolsHttpHandlerImpl::StartHandlerThread() {
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   if (!thread_->StartWithOptions(options)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DevToolsHttpHandlerImpl::ResetHandlerThread, this));
+    thread_.reset();
     return;
   }
 
@@ -204,17 +195,12 @@ void DevToolsHttpHandlerImpl::StartHandlerThread() {
       base::Bind(&DevToolsHttpHandlerImpl::Init, this));
 }
 
-void DevToolsHttpHandlerImpl::ResetHandlerThread() {
-  thread_.reset();
-}
-
 void DevToolsHttpHandlerImpl::Stop() {
   if (!thread_.get())
     return;
-  base::Thread* thread = thread_.release();
-  thread->message_loop()->PostTask(
+  thread_->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&DevToolsHttpHandlerImpl::TeardownAndRelease, this, thread));
+      base::Bind(&DevToolsHttpHandlerImpl::TeardownAndRelease, this));
 }
 
 void DevToolsHttpHandlerImpl::SetRenderViewHostBinding(
@@ -633,22 +619,14 @@ DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
   AddRef();
 }
 
-// Runs on the handler thread
 void DevToolsHttpHandlerImpl::Init() {
   server_ = new net::HttpServer(*socket_factory_.get(), this);
 }
 
-// Runs on the handler thread
-void DevToolsHttpHandlerImpl::TeardownAndRelease(base::Thread* thread) {
+// Run on the handler thread
+void DevToolsHttpHandlerImpl::TeardownAndRelease() {
   server_ = NULL;
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DevToolsHttpHandlerImpl::StopHandlerThread, this, thread));
-}
 
-// Runs on FILE thread to allow calling pthread_join
-void DevToolsHttpHandlerImpl::StopHandlerThread(base::Thread* thread) {
-  delete thread;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DevToolsHttpHandlerImpl::Release, this));
@@ -657,8 +635,6 @@ void DevToolsHttpHandlerImpl::StopHandlerThread(base::Thread* thread) {
 void DevToolsHttpHandlerImpl::Send200(int connection_id,
                                       const std::string& data,
                                       const std::string& mime_type) {
-  if (!thread_.get())
-    return;
   thread_->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&net::HttpServer::Send200,
@@ -688,8 +664,6 @@ void DevToolsHttpHandlerImpl::SendJson(int connection_id,
 }
 
 void DevToolsHttpHandlerImpl::Send404(int connection_id) {
-  if (!thread_.get())
-    return;
   thread_->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&net::HttpServer::Send404, server_.get(), connection_id));
@@ -697,8 +671,6 @@ void DevToolsHttpHandlerImpl::Send404(int connection_id) {
 
 void DevToolsHttpHandlerImpl::Send500(int connection_id,
                                       const std::string& message) {
-  if (!thread_.get())
-    return;
   thread_->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&net::HttpServer::Send500, server_.get(), connection_id,
@@ -708,8 +680,6 @@ void DevToolsHttpHandlerImpl::Send500(int connection_id,
 void DevToolsHttpHandlerImpl::AcceptWebSocket(
     int connection_id,
     const net::HttpServerRequestInfo& request) {
-  if (!thread_.get())
-    return;
   thread_->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&net::HttpServer::AcceptWebSocket, server_.get(),
