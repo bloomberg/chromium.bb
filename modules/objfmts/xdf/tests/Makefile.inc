@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 1851 2007-05-26 17:56:36Z peter $
-
 TESTS += modules/objfmts/xdf/tests/xdf_test.sh
 
 EXTRA_DIST += modules/objfmts/xdf/tests/xdf_test.sh

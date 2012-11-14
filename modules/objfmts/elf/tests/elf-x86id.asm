@@ -3,7 +3,7 @@
 
 	;.file	"x86id.c"
 ;#APP
-	;.ident	"$Id: elf-x86id.asm 2165 2009-01-02 08:15:58Z peter $"
+	;.ident	"$Id$"
 ;#NO_APP
 [extern yasm_internal_error_]
 [extern yasm_expr_copy]

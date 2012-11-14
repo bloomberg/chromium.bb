@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2233 2009-10-31 21:45:55Z peter $
-
 TESTS += bitvect_test
 TESTS += floatnum_test
 TESTS += leb128_test
@@ -25,6 +23,8 @@ EXTRA_DIST += libyasm/tests/equ-expand.asm
 EXTRA_DIST += libyasm/tests/equ-expand.hex
 EXTRA_DIST += libyasm/tests/expr-fold-level.asm
 EXTRA_DIST += libyasm/tests/expr-fold-level.hex
+EXTRA_DIST += libyasm/tests/expr-simplify-identity.asm
+EXTRA_DIST += libyasm/tests/expr-simplify-identity.hex
 EXTRA_DIST += libyasm/tests/expr-wide-ident.asm
 EXTRA_DIST += libyasm/tests/expr-wide-ident.hex
 EXTRA_DIST += libyasm/tests/externdef.asm

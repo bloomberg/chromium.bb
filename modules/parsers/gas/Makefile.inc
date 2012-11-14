@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2279 2010-01-19 07:57:43Z peter $
-
 libyasm_a_SOURCES += modules/parsers/gas/gas-parser.c
 libyasm_a_SOURCES += modules/parsers/gas/gas-parser.h
 libyasm_a_SOURCES += modules/parsers/gas/gas-parse.c

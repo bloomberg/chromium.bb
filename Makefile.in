@@ -15,183 +15,23 @@
 
 @SET_MAKE@
 
-# $Id: Makefile.am 2299 2010-03-04 05:08:00Z peter $
-
-# $Id: Makefile.inc 2084 2008-05-09 07:08:17Z peter $
-
-# $Id: Makefile.inc 2234 2009-10-31 21:52:42Z peter $
+# These utility programs have to be built for BUILD host in cross-build.
+# This makes things rather non-standard automake
 
 # These utility programs have to be built for BUILD host in cross-build.
 # This makes things rather non-standard automake
 
-# $Id: Makefile.inc 2234 2009-10-31 21:52:42Z peter $
-
 # These utility programs have to be built for BUILD host in cross-build.
 # This makes things rather non-standard automake
-
-# $Id: Makefile.inc 2234 2009-10-31 21:52:42Z peter $
-
-# These utility programs have to be built for BUILD host in cross-build.
-# This makes things rather non-standard automake
-
-# $Id: Makefile.inc 2256 2010-01-01 20:55:07Z peter $
-
-# $Id: Makefile.inc 1951 2007-09-14 05:19:10Z peter $
-
-# $Id: Makefile.inc 1598 2006-08-10 04:02:59Z peter $
-
-# $Id: Makefile.inc 2269 2010-01-07 07:00:05Z peter $
-
-# $Id: Makefile.inc 2111 2008-07-06 22:26:49Z peter $
-
-# $Id: Makefile.inc 2339 2010-07-23 03:35:21Z peter $
-
-# $Id: Makefile.inc 2239 2009-12-01 03:33:03Z peter $
-
-# $Id: Makefile.inc 2238 2009-11-30 03:43:10Z peter $
-
-# $Id: Makefile.inc 2111 2008-07-06 22:26:49Z peter $
-
-# $Id: Makefile.inc 1928 2007-09-07 22:03:34Z peter $
-
-# $Id: Makefile.inc 1152 2004-10-02 06:18:30Z peter $
-
-# $Id: Makefile.inc 1183 2004-12-01 07:49:18Z peter $
-
-# $Id: Makefile.inc 2269 2010-01-07 07:00:05Z peter $
-
-# $Id: Makefile.inc 2279 2010-01-19 07:57:43Z peter $
-
-# $Id: Makefile.inc 2169 2009-01-02 20:46:57Z peter $
-
-# $Id$
-
-# $Id: Makefile.inc 2278 2010-01-19 07:28:08Z peter $
-
-# $Id: Makefile.inc 2323 2010-05-16 03:37:00Z peter $
-
-# $Id: Makefile.inc 1137 2004-09-04 01:24:57Z peter $
-
-# $Id: Makefile.inc 2082 2008-05-09 06:46:02Z peter $
-
-# $Id: Makefile.inc 2063 2008-04-12 08:30:22Z peter $
-
-# $Id: Makefile.inc 2063 2008-04-12 08:30:22Z peter $
-
-# $Id: Makefile.inc 2243 2009-12-23 06:45:17Z peter $
-
-# $Id$
-
-# $Id$
-
-# $Id: Makefile.inc 2130 2008-10-07 05:38:11Z peter $
-
-# $Id: Makefile.inc 2311 2010-04-08 03:32:04Z peter $
-
-# $Id: Makefile.inc 2172 2009-01-27 06:38:14Z peter $
-
-# $Id: Makefile.inc 2176 2009-03-04 07:39:02Z peter $
 
 # Makefile for cpp module.
 # Copied from raw preprocessor module.
 
-# $Id: Makefile.inc 2268 2010-01-07 06:55:03Z peter $
-
-# $Id: Makefile.inc 2243 2009-12-23 06:45:17Z peter $
-
 #TESTS += modules/preprocs/gas/tests/rawpp_test.sh
 
-# $Id: Makefile.inc 2269 2010-01-07 07:00:05Z peter $
-
-# $Id: Makefile.inc 1428 2006-03-27 02:15:19Z peter $
-
-# $Id: Makefile.inc 1378 2006-02-12 01:27:39Z peter $
-
-# $Id: Makefile.inc 1350 2006-01-29 21:11:03Z peter $
-
-# $Id: Makefile.inc 1851 2007-05-26 17:56:36Z peter $
-
-# $Id: Makefile.inc 1617 2006-09-16 05:43:41Z peter $
-
-# $Id: Makefile.inc 1350 2006-01-29 21:11:03Z peter $
-
-# $Id: Makefile.inc 1183 2004-12-01 07:49:18Z peter $
-
-# $Id: Makefile.inc 1183 2004-12-01 07:49:18Z peter $
-
-# $Id$
-
-# $Id: Makefile.inc 2269 2010-01-07 07:00:05Z peter $
-
-# $Id: Makefile.inc 1183 2004-12-01 07:49:18Z peter $
-
-# $Id: Makefile.inc 2130 2008-10-07 05:38:11Z peter $
-
-# $Id: Makefile.inc 2010 2007-11-14 08:33:32Z peter $
-
-# $Id: Makefile.inc 2010 2007-11-14 08:33:32Z peter $
-
-# $Id: Makefile.inc 1252 2005-09-28 05:50:51Z peter $
-
-# $Id: Makefile.inc 2036 2008-02-09 04:06:47Z peter $
-
-# $Id: Makefile.inc 2126 2008-10-03 08:13:00Z peter $
-
-# $Id: Makefile.inc 2206 2009-07-21 06:48:42Z peter $
-
-# $Id: Makefile.inc 1168 2004-10-31 01:07:52Z peter $
-
-# $Id: Makefile.inc 2082 2008-05-09 06:46:02Z peter $
-
-# $Id: Makefile.inc 1617 2006-09-16 05:43:41Z peter $
-
-# $Id: Makefile.inc 1732 2007-01-13 19:34:04Z peter $
-
-# $Id: Makefile.inc 1777 2007-02-19 08:21:17Z peter $
-
-# $Id: Makefile.inc 1782 2007-02-21 06:45:39Z peter $
-
-# $Id: Makefile.inc 2108 2008-06-05 08:48:21Z peter $
-
-# $Id: Makefile.inc 2345 2010-08-01 01:27:40Z peter $
-
-# $Id: Makefile.inc 2108 2008-06-05 08:48:21Z peter $
-
-# $Id: Makefile.inc 1653 2006-10-17 06:58:41Z peter $
-
-# $Id: Makefile.inc 1653 2006-10-17 06:58:41Z peter $
-
-# $Id: Makefile.inc 1183 2004-12-01 07:49:18Z peter $
-
 # Assume objfmt_coff is included
 
-# $Id: Makefile.inc 2166 2009-01-02 08:33:21Z peter $
-
-# $Id: Makefile.inc 2166 2009-01-02 08:33:21Z peter $
-
-# $Id: Makefile.inc 1331 2006-01-15 22:48:55Z peter $
-
 # Assume objfmt_coff is included
-
-# $Id: Makefile.inc 2120 2008-09-04 04:45:30Z peter $
-
-# $Id: Makefile.inc 2082 2008-05-09 06:46:02Z peter $
-
-# $Id: Makefile.inc 1183 2004-12-01 07:49:18Z peter $
-
-# $Id: Makefile.inc 1851 2007-05-26 17:56:36Z peter $
-
-# $Id: Makefile.inc 2111 2008-07-06 22:26:49Z peter $
-
-# $Id: Makefile.inc 2233 2009-10-31 21:45:55Z peter $
-
-# $Id: Makefile.inc 2284 2010-02-06 09:27:32Z peter $
-
-# $Id: Makefile.inc 1463 2006-04-05 05:39:23Z peter $
-
-# $Id: Makefile.inc 1463 2006-04-05 05:39:23Z peter $
-
-# $Id: Makefile.inc 1463 2006-04-05 05:39:23Z peter $
 
 
 
@@ -228,6 +68,7 @@ TESTS = $(am__append_3) modules/arch/x86/tests/x86_test.sh \
 	modules/preprocs/tasm/tests/tasmpp_test.sh \
 	modules/preprocs/nasm/tests/nasmpp_test.sh \
 	modules/preprocs/raw/tests/rawpp_test.sh \
+	modules/dbgfmts/dwarf2/tests/gen64/dwarf2_gen64_test.sh \
 	modules/dbgfmts/dwarf2/tests/pass32/dwarf2_pass32_test.sh \
 	modules/dbgfmts/dwarf2/tests/pass64/dwarf2_pass64_test.sh \
 	modules/dbgfmts/dwarf2/tests/passwin64/dwarf2_passwin64_test.sh \
@@ -280,6 +121,7 @@ DIST_COMMON = README $(am__configure_deps) $(dist_man_MANS) \
 	$(srcdir)/modules/dbgfmts/codeview/Makefile.inc \
 	$(srcdir)/modules/dbgfmts/dwarf2/Makefile.inc \
 	$(srcdir)/modules/dbgfmts/dwarf2/tests/Makefile.inc \
+	$(srcdir)/modules/dbgfmts/dwarf2/tests/gen64/Makefile.inc \
 	$(srcdir)/modules/dbgfmts/dwarf2/tests/pass32/Makefile.inc \
 	$(srcdir)/modules/dbgfmts/dwarf2/tests/pass64/Makefile.inc \
 	$(srcdir)/modules/dbgfmts/dwarf2/tests/passwin64/Makefile.inc \
@@ -601,6 +443,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 INTLLIBS = @INTLLIBS@
+INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 LDFLAGS = @LDFLAGS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
@@ -801,10 +644,16 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	modules/arch/x86/tests/avx.asm modules/arch/x86/tests/avx.hex \
 	modules/arch/x86/tests/avx16.asm \
 	modules/arch/x86/tests/avx16.hex \
+	modules/arch/x86/tests/avx2.asm \
+	modules/arch/x86/tests/avx2.hex \
 	modules/arch/x86/tests/avxcc.asm \
 	modules/arch/x86/tests/avxcc.hex \
 	modules/arch/x86/tests/bittest.asm \
 	modules/arch/x86/tests/bittest.hex \
+	modules/arch/x86/tests/bmi1.asm \
+	modules/arch/x86/tests/bmi1.hex \
+	modules/arch/x86/tests/bmi2.asm \
+	modules/arch/x86/tests/bmi2.hex \
 	modules/arch/x86/tests/bswap64.asm \
 	modules/arch/x86/tests/bswap64.hex \
 	modules/arch/x86/tests/clmul.asm \
@@ -854,6 +703,8 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	modules/arch/x86/tests/imm64.asm \
 	modules/arch/x86/tests/imm64.errwarn \
 	modules/arch/x86/tests/imm64.hex \
+	modules/arch/x86/tests/invpcid.asm \
+	modules/arch/x86/tests/invpcid.hex \
 	modules/arch/x86/tests/iret.asm \
 	modules/arch/x86/tests/iret.hex \
 	modules/arch/x86/tests/jmp64-1.asm \
@@ -870,11 +721,17 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	modules/arch/x86/tests/jmp64-6.hex \
 	modules/arch/x86/tests/jmpfar.asm \
 	modules/arch/x86/tests/jmpfar.hex \
+	modules/arch/x86/tests/larlsl.asm \
+	modules/arch/x86/tests/larlsl.hex \
 	modules/arch/x86/tests/lds.asm modules/arch/x86/tests/lds.hex \
+	modules/arch/x86/tests/lfs64.asm \
+	modules/arch/x86/tests/lfs64.hex \
 	modules/arch/x86/tests/loopadsz.asm \
 	modules/arch/x86/tests/loopadsz.hex \
 	modules/arch/x86/tests/lsahf.asm \
 	modules/arch/x86/tests/lsahf.hex \
+	modules/arch/x86/tests/lzcnt.asm \
+	modules/arch/x86/tests/lzcnt.hex \
 	modules/arch/x86/tests/mem64-err.asm \
 	modules/arch/x86/tests/mem64-err.errwarn \
 	modules/arch/x86/tests/mem64.asm \
@@ -948,6 +805,8 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	modules/arch/x86/tests/segoff-err.errwarn \
 	modules/arch/x86/tests/shift.asm \
 	modules/arch/x86/tests/shift.hex \
+	modules/arch/x86/tests/shift64.asm \
+	modules/arch/x86/tests/shift64.hex \
 	modules/arch/x86/tests/simd-1.asm \
 	modules/arch/x86/tests/simd-1.hex \
 	modules/arch/x86/tests/simd-2.asm \
@@ -988,6 +847,12 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	modules/arch/x86/tests/vmx.asm modules/arch/x86/tests/vmx.hex \
 	modules/arch/x86/tests/vmx-err.asm \
 	modules/arch/x86/tests/vmx-err.errwarn \
+	modules/arch/x86/tests/vsib.asm \
+	modules/arch/x86/tests/vsib.hex \
+	modules/arch/x86/tests/vsib-err.asm \
+	modules/arch/x86/tests/vsib-err.errwarn \
+	modules/arch/x86/tests/vsib2-err.asm \
+	modules/arch/x86/tests/vsib2-err.errwarn \
 	modules/arch/x86/tests/x86label.asm \
 	modules/arch/x86/tests/x86label.hex \
 	modules/arch/x86/tests/xchg64.asm \
@@ -1021,6 +886,8 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	modules/arch/x86/tests/gas32/gas-movdq32.hex \
 	modules/arch/x86/tests/gas32/gas-movsd.asm \
 	modules/arch/x86/tests/gas32/gas-movsd.hex \
+	modules/arch/x86/tests/gas32/gas-pop.asm \
+	modules/arch/x86/tests/gas32/gas-pop.hex \
 	modules/arch/x86/tests/gas32/gas32-jmpcall.asm \
 	modules/arch/x86/tests/gas32/gas32-jmpcall.hex \
 	modules/arch/x86/tests/gas64/x86_gas64_test.sh \
@@ -1128,6 +995,8 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	modules/parsers/gas/tests/bin/gas-macro.hex \
 	modules/parsers/gas/tests/bin/gas-set.asm \
 	modules/parsers/gas/tests/bin/gas-set.hex \
+	modules/parsers/gas/tests/bin/gas-str.asm \
+	modules/parsers/gas/tests/bin/gas-str.hex \
 	modules/parsers/gas/tests/bin/rept-err.asm \
 	modules/parsers/gas/tests/bin/rept-err.errwarn \
 	modules/parsers/gas/tests/bin/reptempty.asm \
@@ -1185,6 +1054,8 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	modules/parsers/nasm/tests/strucalign.hex \
 	modules/parsers/nasm/tests/struczero.asm \
 	modules/parsers/nasm/tests/struczero.hex \
+	modules/parsers/nasm/tests/strucbase.asm \
+	modules/parsers/nasm/tests/strucbase.hex \
 	modules/parsers/nasm/tests/syntax-err.asm \
 	modules/parsers/nasm/tests/syntax-err.errwarn \
 	modules/parsers/nasm/tests/uscore.asm \
@@ -1283,9 +1154,13 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	modules/dbgfmts/stabs/Makefile.inc \
 	modules/dbgfmts/codeview/cv8.txt \
 	modules/dbgfmts/dwarf2/tests/Makefile.inc \
+	modules/dbgfmts/dwarf2/tests/gen64/Makefile.inc \
 	modules/dbgfmts/dwarf2/tests/pass32/Makefile.inc \
 	modules/dbgfmts/dwarf2/tests/pass64/Makefile.inc \
 	modules/dbgfmts/dwarf2/tests/passwin64/Makefile.inc \
+	modules/dbgfmts/dwarf2/tests/gen64/dwarf2_gen64_test.sh \
+	modules/dbgfmts/dwarf2/tests/gen64/dwarf64_pathname.asm \
+	modules/dbgfmts/dwarf2/tests/gen64/dwarf64_pathname.hex \
 	modules/dbgfmts/dwarf2/tests/pass32/dwarf2_pass32_test.sh \
 	modules/dbgfmts/dwarf2/tests/pass32/dwarf32-err.asm \
 	modules/dbgfmts/dwarf2/tests/pass32/dwarf32-err.errwarn \
@@ -1448,6 +1323,8 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	modules/objfmts/elf/tests/amd64/elfso64.hex \
 	modules/objfmts/elf/tests/amd64/gotpcrel.asm \
 	modules/objfmts/elf/tests/amd64/gotpcrel.hex \
+	modules/objfmts/elf/tests/amd64/multiplefixup.asm \
+	modules/objfmts/elf/tests/amd64/multiplefixup.hex \
 	modules/objfmts/elf/tests/gas32/elf_gas32_test.sh \
 	modules/objfmts/elf/tests/gas32/elf_gas32_ssym.asm \
 	modules/objfmts/elf/tests/gas32/elf_gas32_ssym.hex \
@@ -1493,6 +1370,8 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	modules/objfmts/macho/tests/nasm32/machotest.hex \
 	modules/objfmts/macho/tests/nasm32/macho-reloc.asm \
 	modules/objfmts/macho/tests/nasm32/macho-reloc.hex \
+	modules/objfmts/macho/tests/nasm32/macho32-pext.asm \
+	modules/objfmts/macho/tests/nasm32/macho32-pext.hex \
 	modules/objfmts/macho/tests/nasm32/macho32-pic.asm \
 	modules/objfmts/macho/tests/nasm32/macho32-pic.hex \
 	modules/objfmts/macho/tests/nasm32/macho32-sect.asm \
@@ -1549,6 +1428,10 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	modules/objfmts/win32/tests/gas/win32_gas_test.sh \
 	modules/objfmts/win32/tests/gas/win32at.asm \
 	modules/objfmts/win32/tests/gas/win32at.hex \
+	modules/objfmts/win32/tests/gas/win32def.asm \
+	modules/objfmts/win32/tests/gas/win32def.hex \
+	modules/objfmts/win32/tests/gas/win32secrel32.asm \
+	modules/objfmts/win32/tests/gas/win32secrel32.hex \
 	modules/objfmts/win64/tests/Makefile.inc \
 	modules/objfmts/win64/tests/win64_test.sh \
 	modules/objfmts/win64/tests/sce1.asm \
@@ -1577,6 +1460,8 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	modules/objfmts/win64/tests/win64-dataref2.asm \
 	modules/objfmts/win64/tests/win64-dataref2.hex \
 	modules/objfmts/win64/tests/win64-dataref2.masm \
+	modules/objfmts/win64/tests/win64-imagebase.hex \
+	modules/objfmts/win64/tests/win64-imagebase.asm \
 	modules/objfmts/win64/tests/gas/Makefile.inc \
 	modules/objfmts/win64/tests/gas/win64_gas_test.sh \
 	modules/objfmts/win64/tests/gas/win64-gas-sce.asm \
@@ -1610,6 +1495,8 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	libyasm/tests/emptydata.hex libyasm/tests/equ-expand.asm \
 	libyasm/tests/equ-expand.hex libyasm/tests/expr-fold-level.asm \
 	libyasm/tests/expr-fold-level.hex \
+	libyasm/tests/expr-simplify-identity.asm \
+	libyasm/tests/expr-simplify-identity.hex \
 	libyasm/tests/expr-wide-ident.asm \
 	libyasm/tests/expr-wide-ident.hex libyasm/tests/externdef.asm \
 	libyasm/tests/externdef.errwarn libyasm/tests/externdef.hex \
@@ -1663,8 +1550,9 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	m4/lib-prefix.m4 m4/longlong.m4 m4/progtest.m4 m4/stdint_h.m4 \
 	m4/uintmax_t.m4 m4/pythonhead.m4 m4/cython.m4 out_test.sh \
 	Artistic.txt BSD.txt GNU_GPL-2.0 GNU_LGPL-2.0 splint.sh \
-	Mkfiles/Makefile.flat Mkfiles/Makefile.dj Mkfiles/dj/config.h \
-	Mkfiles/dj/libyasm-stdint.h Mkfiles/vc9/config.h \
+	YASM-VERSION-GEN.sh Mkfiles/Makefile.flat Mkfiles/Makefile.dj \
+	Mkfiles/dj/config.h Mkfiles/dj/libyasm-stdint.h \
+	Mkfiles/vc9/config.h \
 	Mkfiles/vc9/crt_secure_no_deprecate.vsprops \
 	Mkfiles/vc9/libyasm-stdint.h Mkfiles/vc9/readme.vc9.txt \
 	Mkfiles/vc9/vc98_swap.py Mkfiles/vc9/vsyasm.vcproj \
@@ -1685,11 +1573,12 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	Mkfiles/vc10/config.h \
 	Mkfiles/vc10/crt_secure_no_deprecate.props \
 	Mkfiles/vc10/crt_secure_no_deprecate.vsprops \
-	Mkfiles/vc10/libyasm-stdint.h Mkfiles/vc10/readme.vc10.txt \
-	Mkfiles/vc10/vsyasm.props Mkfiles/vc10/vsyasm.targets \
-	Mkfiles/vc10/vsyasm.vcxproj Mkfiles/vc10/vsyasm.xml \
-	Mkfiles/vc10/yasm.sln Mkfiles/vc10/yasm.vcxproj \
-	Mkfiles/vc10/yasm.vcxproj.filters Mkfiles/vc10/ytasm.vcxproj \
+	Mkfiles/vc10/libyasm-stdint.h Mkfiles/vc10/out_copy_rename.bat \
+	Mkfiles/vc10/readme.vc10.txt Mkfiles/vc10/vsyasm.props \
+	Mkfiles/vc10/vsyasm.targets Mkfiles/vc10/vsyasm.vcxproj \
+	Mkfiles/vc10/vsyasm.xml Mkfiles/vc10/yasm.sln \
+	Mkfiles/vc10/yasm.vcxproj Mkfiles/vc10/yasm.vcxproj.filters \
+	Mkfiles/vc10/ytasm.vcxproj \
 	Mkfiles/vc10/genmacro/genmacro.vcxproj \
 	Mkfiles/vc10/genmacro/genmacro.vcxproj.filters \
 	Mkfiles/vc10/genmacro/run.bat \
@@ -1714,7 +1603,7 @@ EXTRA_DIST = config/config.rpath tools/Makefile.inc \
 	Mkfiles/vc10/re2c/run.bat genstring.c
 
 # libyasm-stdint.h doesn't clean up after itself?
-CONFIG_CLEAN_FILES = libyasm-stdint.h
+CONFIG_CLEAN_FILES = libyasm-stdint.h YASM-VERSION-FILE YASM-VERSION.h
 re2c_SOURCES = 
 re2c_LDADD = re2c-main.$(OBJEXT) re2c-code.$(OBJEXT) \
 	re2c-dfa.$(OBJEXT) re2c-parser.$(OBJEXT) \
@@ -1851,7 +1740,7 @@ all: $(BUILT_SOURCES) config.h
 .SUFFIXES: .gperf .c .o .obj
 am--refresh:
 	@:
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(srcdir)/tools/Makefile.inc $(srcdir)/tools/re2c/Makefile.inc $(srcdir)/tools/genmacro/Makefile.inc $(srcdir)/tools/genperf/Makefile.inc $(srcdir)/tools/python-yasm/Makefile.inc $(srcdir)/tools/python-yasm/tests/Makefile.inc $(srcdir)/modules/Makefile.inc $(srcdir)/modules/arch/Makefile.inc $(srcdir)/modules/arch/x86/Makefile.inc $(srcdir)/modules/arch/x86/tests/Makefile.inc $(srcdir)/modules/arch/x86/tests/gas32/Makefile.inc $(srcdir)/modules/arch/x86/tests/gas64/Makefile.inc $(srcdir)/modules/arch/lc3b/Makefile.inc $(srcdir)/modules/arch/lc3b/tests/Makefile.inc $(srcdir)/modules/listfmts/Makefile.inc $(srcdir)/modules/listfmts/nasm/Makefile.inc $(srcdir)/modules/parsers/Makefile.inc $(srcdir)/modules/parsers/gas/Makefile.inc $(srcdir)/modules/parsers/gas/tests/Makefile.inc $(srcdir)/modules/parsers/gas/tests/bin/Makefile.inc $(srcdir)/modules/parsers/nasm/Makefile.inc $(srcdir)/modules/parsers/nasm/tests/Makefile.inc $(srcdir)/modules/parsers/nasm/tests/worphan/Makefile.inc $(srcdir)/modules/parsers/tasm/Makefile.inc $(srcdir)/modules/parsers/tasm/tests/Makefile.inc $(srcdir)/modules/parsers/tasm/tests/exe/Makefile.inc $(srcdir)/modules/preprocs/Makefile.inc $(srcdir)/modules/preprocs/tasm/Makefile.inc $(srcdir)/modules/preprocs/tasm/tests/Makefile.inc $(srcdir)/modules/preprocs/nasm/Makefile.inc $(srcdir)/modules/preprocs/nasm/tests/Makefile.inc $(srcdir)/modules/preprocs/raw/Makefile.inc $(srcdir)/modules/preprocs/raw/tests/Makefile.inc $(srcdir)/modules/preprocs/cpp/Makefile.inc $(srcdir)/modules/preprocs/gas/Makefile.inc $(srcdir)/modules/preprocs/gas/tests/Makefile.inc $(srcdir)/modules/dbgfmts/Makefile.inc $(srcdir)/modules/dbgfmts/codeview/Makefile.inc $(srcdir)/modules/dbgfmts/dwarf2/Makefile.inc $(srcdir)/modules/dbgfmts/dwarf2/tests/Makefile.inc $(srcdir)/modules/dbgfmts/dwarf2/tests/pass32/Makefile.inc $(srcdir)/modules/dbgfmts/dwarf2/tests/pass64/Makefile.inc $(srcdir)/modules/dbgfmts/dwarf2/tests/passwin64/Makefile.inc $(srcdir)/modules/dbgfmts/null/Makefile.inc $(srcdir)/modules/dbgfmts/stabs/Makefile.inc $(srcdir)/modules/dbgfmts/stabs/tests/Makefile.inc $(srcdir)/modules/objfmts/Makefile.inc $(srcdir)/modules/objfmts/dbg/Makefile.inc $(srcdir)/modules/objfmts/bin/Makefile.inc $(srcdir)/modules/objfmts/bin/tests/Makefile.inc $(srcdir)/modules/objfmts/bin/tests/multisect/Makefile.inc $(srcdir)/modules/objfmts/elf/Makefile.inc $(srcdir)/modules/objfmts/elf/tests/Makefile.inc $(srcdir)/modules/objfmts/elf/tests/amd64/Makefile.inc $(srcdir)/modules/objfmts/elf/tests/gas32/Makefile.inc $(srcdir)/modules/objfmts/elf/tests/gas64/Makefile.inc $(srcdir)/modules/objfmts/coff/Makefile.inc $(srcdir)/modules/objfmts/coff/tests/Makefile.inc $(srcdir)/modules/objfmts/macho/Makefile.inc $(srcdir)/modules/objfmts/macho/tests/Makefile.inc $(srcdir)/modules/objfmts/macho/tests/gas32/Makefile.inc $(srcdir)/modules/objfmts/macho/tests/gas64/Makefile.inc $(srcdir)/modules/objfmts/macho/tests/nasm32/Makefile.inc $(srcdir)/modules/objfmts/macho/tests/nasm64/Makefile.inc $(srcdir)/modules/objfmts/rdf/Makefile.inc $(srcdir)/modules/objfmts/rdf/tests/Makefile.inc $(srcdir)/modules/objfmts/win32/Makefile.inc $(srcdir)/modules/objfmts/win32/tests/Makefile.inc $(srcdir)/modules/objfmts/win32/tests/gas/Makefile.inc $(srcdir)/modules/objfmts/win64/Makefile.inc $(srcdir)/modules/objfmts/win64/tests/Makefile.inc $(srcdir)/modules/objfmts/win64/tests/gas/Makefile.inc $(srcdir)/modules/objfmts/xdf/Makefile.inc $(srcdir)/modules/objfmts/xdf/tests/Makefile.inc $(srcdir)/libyasm/Makefile.inc $(srcdir)/libyasm/tests/Makefile.inc $(srcdir)/frontends/Makefile.inc $(srcdir)/frontends/yasm/Makefile.inc $(srcdir)/frontends/tasm/Makefile.inc $(srcdir)/frontends/vsyasm/Makefile.inc $(srcdir)/m4/Makefile.inc $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(srcdir)/tools/Makefile.inc $(srcdir)/tools/re2c/Makefile.inc $(srcdir)/tools/genmacro/Makefile.inc $(srcdir)/tools/genperf/Makefile.inc $(srcdir)/tools/python-yasm/Makefile.inc $(srcdir)/tools/python-yasm/tests/Makefile.inc $(srcdir)/modules/Makefile.inc $(srcdir)/modules/arch/Makefile.inc $(srcdir)/modules/arch/x86/Makefile.inc $(srcdir)/modules/arch/x86/tests/Makefile.inc $(srcdir)/modules/arch/x86/tests/gas32/Makefile.inc $(srcdir)/modules/arch/x86/tests/gas64/Makefile.inc $(srcdir)/modules/arch/lc3b/Makefile.inc $(srcdir)/modules/arch/lc3b/tests/Makefile.inc $(srcdir)/modules/listfmts/Makefile.inc $(srcdir)/modules/listfmts/nasm/Makefile.inc $(srcdir)/modules/parsers/Makefile.inc $(srcdir)/modules/parsers/gas/Makefile.inc $(srcdir)/modules/parsers/gas/tests/Makefile.inc $(srcdir)/modules/parsers/gas/tests/bin/Makefile.inc $(srcdir)/modules/parsers/nasm/Makefile.inc $(srcdir)/modules/parsers/nasm/tests/Makefile.inc $(srcdir)/modules/parsers/nasm/tests/worphan/Makefile.inc $(srcdir)/modules/parsers/tasm/Makefile.inc $(srcdir)/modules/parsers/tasm/tests/Makefile.inc $(srcdir)/modules/parsers/tasm/tests/exe/Makefile.inc $(srcdir)/modules/preprocs/Makefile.inc $(srcdir)/modules/preprocs/tasm/Makefile.inc $(srcdir)/modules/preprocs/tasm/tests/Makefile.inc $(srcdir)/modules/preprocs/nasm/Makefile.inc $(srcdir)/modules/preprocs/nasm/tests/Makefile.inc $(srcdir)/modules/preprocs/raw/Makefile.inc $(srcdir)/modules/preprocs/raw/tests/Makefile.inc $(srcdir)/modules/preprocs/cpp/Makefile.inc $(srcdir)/modules/preprocs/gas/Makefile.inc $(srcdir)/modules/preprocs/gas/tests/Makefile.inc $(srcdir)/modules/dbgfmts/Makefile.inc $(srcdir)/modules/dbgfmts/codeview/Makefile.inc $(srcdir)/modules/dbgfmts/dwarf2/Makefile.inc $(srcdir)/modules/dbgfmts/dwarf2/tests/Makefile.inc $(srcdir)/modules/dbgfmts/dwarf2/tests/gen64/Makefile.inc $(srcdir)/modules/dbgfmts/dwarf2/tests/pass32/Makefile.inc $(srcdir)/modules/dbgfmts/dwarf2/tests/pass64/Makefile.inc $(srcdir)/modules/dbgfmts/dwarf2/tests/passwin64/Makefile.inc $(srcdir)/modules/dbgfmts/null/Makefile.inc $(srcdir)/modules/dbgfmts/stabs/Makefile.inc $(srcdir)/modules/dbgfmts/stabs/tests/Makefile.inc $(srcdir)/modules/objfmts/Makefile.inc $(srcdir)/modules/objfmts/dbg/Makefile.inc $(srcdir)/modules/objfmts/bin/Makefile.inc $(srcdir)/modules/objfmts/bin/tests/Makefile.inc $(srcdir)/modules/objfmts/bin/tests/multisect/Makefile.inc $(srcdir)/modules/objfmts/elf/Makefile.inc $(srcdir)/modules/objfmts/elf/tests/Makefile.inc $(srcdir)/modules/objfmts/elf/tests/amd64/Makefile.inc $(srcdir)/modules/objfmts/elf/tests/gas32/Makefile.inc $(srcdir)/modules/objfmts/elf/tests/gas64/Makefile.inc $(srcdir)/modules/objfmts/coff/Makefile.inc $(srcdir)/modules/objfmts/coff/tests/Makefile.inc $(srcdir)/modules/objfmts/macho/Makefile.inc $(srcdir)/modules/objfmts/macho/tests/Makefile.inc $(srcdir)/modules/objfmts/macho/tests/gas32/Makefile.inc $(srcdir)/modules/objfmts/macho/tests/gas64/Makefile.inc $(srcdir)/modules/objfmts/macho/tests/nasm32/Makefile.inc $(srcdir)/modules/objfmts/macho/tests/nasm64/Makefile.inc $(srcdir)/modules/objfmts/rdf/Makefile.inc $(srcdir)/modules/objfmts/rdf/tests/Makefile.inc $(srcdir)/modules/objfmts/win32/Makefile.inc $(srcdir)/modules/objfmts/win32/tests/Makefile.inc $(srcdir)/modules/objfmts/win32/tests/gas/Makefile.inc $(srcdir)/modules/objfmts/win64/Makefile.inc $(srcdir)/modules/objfmts/win64/tests/Makefile.inc $(srcdir)/modules/objfmts/win64/tests/gas/Makefile.inc $(srcdir)/modules/objfmts/xdf/Makefile.inc $(srcdir)/modules/objfmts/xdf/tests/Makefile.inc $(srcdir)/libyasm/Makefile.inc $(srcdir)/libyasm/tests/Makefile.inc $(srcdir)/frontends/Makefile.inc $(srcdir)/frontends/yasm/Makefile.inc $(srcdir)/frontends/tasm/Makefile.inc $(srcdir)/frontends/vsyasm/Makefile.inc $(srcdir)/m4/Makefile.inc $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -3737,6 +3626,9 @@ distdir: $(DISTFILES)
 	      || exit 1; \
 	  fi; \
 	done
+	$(MAKE) $(AM_MAKEFLAGS) \
+	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
+	  dist-hook
 	-test -n "$(am__skip_mode_fix)" \
 	|| find "$(distdir)" -type d ! -perm -755 \
 		-exec chmod u+rwx,go+rx {} \; -o \
@@ -3982,8 +3874,8 @@ uninstall-man: uninstall-man1 uninstall-man7
 	all all-am all-local am--refresh check check-TESTS check-am \
 	clean clean-binPROGRAMS clean-checkPROGRAMS clean-generic \
 	clean-libLIBRARIES clean-noinstPROGRAMS ctags ctags-recursive \
-	dist dist-all dist-bzip2 dist-gzip dist-lzma dist-shar \
-	dist-tarZ dist-xz dist-zip distcheck distclean \
+	dist dist-all dist-bzip2 dist-gzip dist-hook dist-lzma \
+	dist-shar dist-tarZ dist-xz dist-zip distcheck distclean \
 	distclean-compile distclean-generic distclean-hdr \
 	distclean-local distclean-tags distcleancheck distdir \
 	distuninstallcheck dvi dvi-am html html-am info info-am \
@@ -4197,6 +4089,15 @@ license.c: $(srcdir)/COPYING genstring$(EXEEXT)
 	$(top_builddir)/genstring$(EXEEXT) license_msg $@ $(srcdir)/COPYING
 
 $(srcdir)/frontends/vsyasm/vsyasm.c: license.c
+
+dist-hook: YASM-VERSION-FILE YASM-VERSION.h
+	cp YASM-VERSION-FILE $(distdir)/version
+	cp YASM-VERSION.h $(distdir)/Mkfiles/dj/
+	cp YASM-VERSION.h $(distdir)/Mkfiles/vc9/
+	cp YASM-VERSION.h $(distdir)/Mkfiles/vc10/
+
+YASM-VERSION-FILE: $(top_srcdir)/YASM-VERSION-GEN.sh
+	$(top_srcdir)/YASM-VERSION-GEN.sh
 
 distclean-local:
 	-rm -rf results

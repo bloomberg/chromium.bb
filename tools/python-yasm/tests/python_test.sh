@@ -1,7 +1,6 @@
 #!/bin/sh
 # Based on _sanity.sh from Quod Libet
 # http://www.sacredchao.net/quodlibet/
-# $Id: python_test.sh 1502 2006-04-17 03:53:04Z peter $
 
 set -e
 

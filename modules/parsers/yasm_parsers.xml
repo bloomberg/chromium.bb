@@ -2,8 +2,6 @@
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
           "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 
-<!-- $Id: yasm_parsers.xml 2286 2010-02-13 07:25:23Z peter $ -->     
-
 <refentry id="yasm_parsers">
 
  <refentryinfo>

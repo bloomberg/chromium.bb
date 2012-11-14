@@ -1,4 +1,4 @@
-/* $Id: splitpath_test.c 1892 2007-07-13 20:56:28Z peter $
+/*
  *
  *  Copyright (C) 2006-2007  Peter Johnson
  *

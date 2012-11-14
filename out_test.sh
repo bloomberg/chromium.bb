@@ -1,5 +1,4 @@
 #! /bin/sh
-# $Id: out_test.sh 2226 2009-07-30 02:19:38Z peter $
 
 YASM_TEST_SUITE=1
 export YASM_TEST_SUITE

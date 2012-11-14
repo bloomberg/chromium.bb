@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2036 2008-02-09 04:06:47Z peter $
-
 TESTS += modules/objfmts/elf/tests/elf_test.sh
 
 EXTRA_DIST += modules/objfmts/elf/tests/elf_test.sh

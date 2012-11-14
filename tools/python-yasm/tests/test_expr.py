@@ -1,4 +1,3 @@
-# $Id: test_expr.py 1527 2006-05-07 16:41:16Z mu $
 from tests import TestCase, add
 from yasm import Expression
 import operator

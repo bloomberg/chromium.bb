@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2169 2009-01-02 20:46:57Z peter $
-
 TESTS += modules/parsers/gas/tests/gas_test.sh
 
 EXTRA_DIST += modules/parsers/gas/tests/gas_test.sh

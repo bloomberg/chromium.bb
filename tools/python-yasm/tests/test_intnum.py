@@ -1,4 +1,3 @@
-# $Id: test_intnum.py 1739 2007-01-20 19:37:02Z peter $
 from tests import TestCase, add
 from yasm import IntNum
 

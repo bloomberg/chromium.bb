@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2323 2010-05-16 03:37:00Z peter $
-
 TESTS += modules/parsers/nasm/tests/nasm_test.sh
 
 EXTRA_DIST += modules/parsers/nasm/tests/nasm_test.sh
@@ -41,6 +39,8 @@ EXTRA_DIST += modules/parsers/nasm/tests/strucalign.asm
 EXTRA_DIST += modules/parsers/nasm/tests/strucalign.hex
 EXTRA_DIST += modules/parsers/nasm/tests/struczero.asm
 EXTRA_DIST += modules/parsers/nasm/tests/struczero.hex
+EXTRA_DIST += modules/parsers/nasm/tests/strucbase.asm
+EXTRA_DIST += modules/parsers/nasm/tests/strucbase.hex
 EXTRA_DIST += modules/parsers/nasm/tests/syntax-err.asm
 EXTRA_DIST += modules/parsers/nasm/tests/syntax-err.errwarn
 EXTRA_DIST += modules/parsers/nasm/tests/uscore.asm

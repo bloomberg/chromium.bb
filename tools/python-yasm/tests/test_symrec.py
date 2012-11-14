@@ -1,4 +1,3 @@
-# $Id: test_symrec.py 1527 2006-05-07 16:41:16Z mu $
 from tests import TestCase, add
 from yasm import SymbolTable, Expression, YasmError
 

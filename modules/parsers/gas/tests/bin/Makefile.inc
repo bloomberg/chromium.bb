@@ -1,5 +1,3 @@
-# $Id$
-
 TESTS += modules/parsers/gas/tests/bin/gas_bin_test.sh
 
 EXTRA_DIST += modules/parsers/gas/tests/bin/gas_bin_test.sh
@@ -14,6 +12,8 @@ EXTRA_DIST += modules/parsers/gas/tests/bin/gas-macro.asm
 EXTRA_DIST += modules/parsers/gas/tests/bin/gas-macro.hex
 EXTRA_DIST += modules/parsers/gas/tests/bin/gas-set.asm
 EXTRA_DIST += modules/parsers/gas/tests/bin/gas-set.hex
+EXTRA_DIST += modules/parsers/gas/tests/bin/gas-str.asm
+EXTRA_DIST += modules/parsers/gas/tests/bin/gas-str.hex
 EXTRA_DIST += modules/parsers/gas/tests/bin/rept-err.asm
 EXTRA_DIST += modules/parsers/gas/tests/bin/rept-err.errwarn
 EXTRA_DIST += modules/parsers/gas/tests/bin/reptempty.asm

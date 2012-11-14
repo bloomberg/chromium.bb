@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2256 2010-01-01 20:55:07Z peter $
-
 PYBINDING_DEPS  = tools/python-yasm/bytecode.pxi
 PYBINDING_DEPS += tools/python-yasm/errwarn.pxi
 PYBINDING_DEPS += tools/python-yasm/expr.pxi

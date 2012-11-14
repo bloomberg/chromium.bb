@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 1252 2005-09-28 05:50:51Z peter $
-
 libyasm_a_SOURCES += modules/objfmts/elf/elf.c
 libyasm_a_SOURCES += modules/objfmts/elf/elf.h
 libyasm_a_SOURCES += modules/objfmts/elf/elf-objfmt.c

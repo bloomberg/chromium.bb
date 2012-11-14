@@ -1,5 +1,3 @@
-# $Id: Makefile.inc 2278 2010-01-19 07:28:08Z peter $
-
 libyasm_a_SOURCES += modules/parsers/nasm/nasm-parser.c
 libyasm_a_SOURCES += modules/parsers/nasm/nasm-parser.h
 libyasm_a_SOURCES += modules/parsers/nasm/nasm-parser-struct.h
