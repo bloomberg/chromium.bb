@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
+#include "chrome/browser/google_apis/gdata_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,7 +76,8 @@ DriveResourceMetadataTest::DriveResourceMetadataTest()
 }
 
 void DriveResourceMetadataTest::Init() {
-  resource_metadata_.InitializeRootEntry(kWAPIRootDirectoryResourceId);
+  resource_metadata_.InitializeRootEntry(
+      kWAPIRootDirectoryResourceIdForTesting);
 
   int sequence_id = 1;
   DriveDirectory* dir1 = AddDirectory(resource_metadata_.root(), sequence_id++);
@@ -126,7 +128,7 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
   DriveEntryProto* mutable_entry =
       proto.mutable_drive_directory()->mutable_drive_entry();
   mutable_entry->mutable_file_info()->set_is_directory(true);
-  mutable_entry->set_resource_id(kWAPIRootDirectoryResourceId);
+  mutable_entry->set_resource_id(kWAPIRootDirectoryResourceIdForTesting);
   mutable_entry->set_upload_url(kResumableCreateMediaUrl);
   mutable_entry->set_title("drive");
 
@@ -163,12 +165,12 @@ TEST_F(DriveResourceMetadataTest, GetEntryByResourceId_RootDirectory) {
       kWAPIRootDirectoryResourceId);
   ASSERT_FALSE(entry);
   // Initialize root and look it up again.
-  resource_metadata.InitializeRootEntry(kWAPIRootDirectoryResourceId);
+  resource_metadata.InitializeRootEntry(kWAPIRootDirectoryResourceIdForTesting);
   entry = resource_metadata.GetEntryByResourceId(
-      kWAPIRootDirectoryResourceId);
+      kWAPIRootDirectoryResourceIdForTesting);
   ASSERT_TRUE(entry);
 
-  EXPECT_EQ(kWAPIRootDirectoryResourceId, entry->resource_id());
+  EXPECT_EQ(kWAPIRootDirectoryResourceIdForTesting, entry->resource_id());
 }
 
 TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId) {
@@ -359,7 +361,8 @@ TEST_F(DriveResourceMetadataTest, DBTest) {
 
   // InitFromDB should succeed.
   DriveResourceMetadata test_resource_metadata;
-  test_resource_metadata.InitializeRootEntry(kWAPIRootDirectoryResourceId);
+  test_resource_metadata.InitializeRootEntry(
+      kWAPIRootDirectoryResourceIdForTesting);
   test_resource_metadata.InitFromDB(db_path, blocking_task_runner,
       base::Bind(&InitFromDBCallback, DRIVE_FILE_OK));
   google_apis::test_util::RunBlockingPoolTask();

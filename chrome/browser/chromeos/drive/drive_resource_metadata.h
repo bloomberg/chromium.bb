@@ -54,6 +54,10 @@ const FilePath::CharType kDriveRootDirectory[] = FILE_PATH_LITERAL("drive");
 // unique ID given in About resource.
 const char kWAPIRootDirectoryResourceId[] = "folder:root";
 
+// The root directory resource ID for testing for WAPI.
+// TODO(haruki): Make Drive API equivalent work. http://crbug.com/157114
+const char kWAPIRootDirectoryResourceIdForTesting[] = "folder:testroot";
+
 // This should be incremented when incompatibility change is made in
 // drive.proto.
 const int32 kProtoVersion = 2;

@@ -131,7 +131,7 @@ bool LoadChangeFeed(const std::string& relative_path,
       feed_list,
       start_changestamp,
       root_feed_changestamp,
-      kWAPIRootDirectoryResourceId,
+      kWAPIRootDirectoryResourceIdForTesting,
       base::Bind(&base::DoNothing));
   // DriveFeedLoader::UpdateFromFeed is asynchronous, so wait for it to finish.
   google_apis::test_util::RunBlockingPoolTask();
