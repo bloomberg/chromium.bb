@@ -12,6 +12,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "dbus/dbus_statistics.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
@@ -25,7 +26,7 @@ const char kErrorServiceUnknown[] = "org.freedesktop.DBus.Error.ServiceUnknown";
 const int kSuccessRatioHistogramMaxValue = 2;
 
 // The path of D-Bus Object sending NameOwnerChanged signal.
-const char kDbusSystemObjectPath[] = "/org/freedesktop/DBus";
+const char kDBusSystemObjectPath[] = "/org/freedesktop/DBus";
 
 // Gets the absolute signal name by concatenating the interface name and
 // the signal name. Used for building keys for method_table_ in
@@ -83,6 +84,9 @@ Response* ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
   UMA_HISTOGRAM_ENUMERATION("DBus.SyncMethodCallSuccess",
                             response_message ? 1 : 0,
                             kSuccessRatioHistogramMaxValue);
+  statistics::AddBlockingSentMethodCall(service_name_,
+                                        method_call->GetInterface(),
+                                        method_call->GetMember());
 
   if (!response_message) {
     LogMethodCallFailure(method_call->GetInterface(),
@@ -144,6 +148,10 @@ void ObjectProxy::CallMethodWithErrorCallback(MethodCall* method_call,
                                   callback,
                                   error_callback,
                                   start_time);
+  statistics::AddSentMethodCall(service_name_,
+                                method_call->GetInterface(),
+                                method_call->GetMember());
+
   // Wait for the response in the D-Bus thread.
   bus_->PostTaskToDBusThread(FROM_HERE, task);
 }
@@ -433,7 +441,7 @@ DBusHandlerResult ObjectProxy::HandleMessage(
   // allow other object proxies to handle instead.
   const dbus::ObjectPath path = signal->GetPath();
   if (path != object_path_) {
-    if (path.value() == kDbusSystemObjectPath &&
+    if (path.value() == kDBusSystemObjectPath &&
         signal->GetMember() == "NameOwnerChanged") {
       // Handle NameOwnerChanged separately
       return HandleNameOwnerChanged(signal.Pass());
@@ -443,6 +451,8 @@ DBusHandlerResult ObjectProxy::HandleMessage(
 
   const std::string interface = signal->GetInterface();
   const std::string member = signal->GetMember();
+
+  statistics::AddReceivedSignal(service_name_, interface, member);
 
   // Check if we know about the signal.
   const std::string absolute_signal_name = GetAbsoluteSignalName(

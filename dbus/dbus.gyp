@@ -25,6 +25,8 @@
         'bus.cc',
         'bus.h',
         'dbus_export.h',
+        'dbus_statistics.cc',
+        'dbus_statistics.h',
         'exported_object.cc',
         'exported_object.h',
         'file_descriptor.cc',
@@ -91,6 +93,7 @@
       ],
       'sources': [
         'bus_unittest.cc',
+        'dbus_statistics_unittest.cc',
         'end_to_end_async_unittest.cc',
         'end_to_end_sync_unittest.cc',
         'message_unittest.cc',

@@ -45,6 +45,7 @@
 #include "chromeos/dbus/speech_synthesizer_client.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "dbus/bus.h"
+#include "dbus/dbus_statistics.h"
 
 namespace chromeos {
 
@@ -504,9 +505,11 @@ void DBusThreadManager::Shutdown() {
 }
 
 DBusThreadManager::DBusThreadManager() {
+  dbus::statistics::Initialize();
 }
 
 DBusThreadManager::~DBusThreadManager() {
+  dbus::statistics::Shutdown();
 }
 
 // static

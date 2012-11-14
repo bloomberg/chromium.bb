@@ -623,6 +623,8 @@
         'browser/chromeos/system_key_event_listener.h',
         'browser/chromeos/system_logs/command_line_log_source.cc',
         'browser/chromeos/system_logs/command_line_log_source.h',
+        'browser/chromeos/system_logs/dbus_log_source.cc',
+        'browser/chromeos/system_logs/dbus_log_source.h',
         'browser/chromeos/system_logs/debug_daemon_log_source.cc',
         'browser/chromeos/system_logs/debug_daemon_log_source.h',
         'browser/chromeos/system_logs/lsb_release_log_source.cc',
