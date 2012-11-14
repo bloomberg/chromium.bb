@@ -249,7 +249,7 @@ class SyncInvalidationListenerTest : public testing::Test {
     EXPECT_TRUE(fake_invalidation_client_->IsAckedHandle(ack_handle));
     // Pump message loop to trigger
     // InvalidationStateTracker::SetMaxVersion().
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   // |payload| can be NULL, but not |type_name|.
@@ -272,7 +272,7 @@ class SyncInvalidationListenerTest : public testing::Test {
     client_.WriteState(new_state);
     // Pump message loop to trigger
     // InvalidationStateTracker::WriteState().
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   void EnableNotifications() {
@@ -309,7 +309,7 @@ class SyncInvalidationListenerTest : public testing::Test {
     // avoid leaking the inner task.  client_.StopForTest() does not
     // schedule any tasks, so it's both necessary and sufficient to
     // drain the task queue before calling it.
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     fake_invalidation_client_ = NULL;
     client_.StopForTest();
   }

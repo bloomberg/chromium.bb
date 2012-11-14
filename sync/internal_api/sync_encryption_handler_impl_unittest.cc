@@ -111,7 +111,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
   }
 
   void PumpLoop() {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   // Getters for tests.

@@ -36,7 +36,7 @@ class JsMutationEventObserverTest : public testing::Test {
   JsMutationEventObserver js_mutation_event_observer_;
 
   void PumpLoop() {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 };
 

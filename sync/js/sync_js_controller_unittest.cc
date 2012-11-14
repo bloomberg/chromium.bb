@@ -23,7 +23,7 @@ using ::testing::StrictMock;
 class SyncJsControllerTest : public testing::Test {
  protected:
   void PumpLoop() {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
  private:

@@ -1125,12 +1125,12 @@ TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
   scheduler()->ScheduleNudgeAsync(
       zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(BOOKMARKS), FROM_HERE);
   // Should save the nudge for until after the server is reachable.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
   scheduler()->OnConnectionStatusChange();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(SyncSchedulerTest, ServerConnectionChangeDuringBackoff) {
@@ -1158,7 +1158,7 @@ TEST_F(SyncSchedulerTest, ServerConnectionChangeDuringBackoff) {
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
   scheduler()->OnConnectionStatusChange();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(SyncSchedulerTest, ConnectionChangeCanaryPreemptedByNudge) {

@@ -33,7 +33,7 @@ class InvalidatorFactoryTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     EXPECT_EQ(0, fake_handler_.GetInvalidationCount());
   }
 

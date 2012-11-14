@@ -56,12 +56,12 @@ class InvalidationNotifierTestDelegate {
     // another task, so they must be run in order to avoid leaking the inner
     // task.  Stopping does not schedule any tasks, so it's both necessary and
     // sufficient to drain the task queue before stopping the notifier.
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     invalidator_.reset();
   }
 
   void WaitForInvalidator() {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   void TriggerOnInvalidatorStateChange(InvalidatorState state) {

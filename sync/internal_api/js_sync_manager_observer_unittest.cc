@@ -40,7 +40,7 @@ class JsSyncManagerObserverTest : public testing::Test {
   JsSyncManagerObserver js_sync_manager_observer_;
 
   void PumpLoop() {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 };
 

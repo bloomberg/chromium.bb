@@ -53,7 +53,7 @@ class WeakHandleTest : public ::testing::Test {
   }
 
   void PumpLoop() {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   static void CallTestFromOtherThread(tracked_objects::Location from_here,

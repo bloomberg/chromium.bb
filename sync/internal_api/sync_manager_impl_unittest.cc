@@ -854,7 +854,7 @@ class SyncManagerTest : public testing::Test,
   }
 
   void PumpLoop() {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   void SendJsMessage(const std::string& name, const JsArgList& args,

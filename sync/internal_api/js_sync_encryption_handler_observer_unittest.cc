@@ -41,7 +41,7 @@ class JsSyncEncryptionHandlerObserverTest : public testing::Test {
   JsSyncEncryptionHandlerObserver js_sync_encryption_handler_observer_;
 
   void PumpLoop() {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 };
 
