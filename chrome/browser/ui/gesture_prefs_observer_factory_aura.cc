@@ -46,6 +46,10 @@ class GesturePrefsObserver : public PrefObserver,
 // Note that this collection of settings should correspond to the settings used
 // in ui/base/gestures/gesture_configuration.h
 const char* kPrefsToObserve[] = {
+  prefs::kFlingAccelerationCurveCoefficient0,
+  prefs::kFlingAccelerationCurveCoefficient1,
+  prefs::kFlingAccelerationCurveCoefficient2,
+  prefs::kFlingAccelerationCurveCoefficient3,
   prefs::kLongPressTimeInSeconds,
   prefs::kMaxDistanceForTwoFingerTapInPixels,
   prefs::kMaxSecondsBetweenDoubleClick,
@@ -64,7 +68,6 @@ const char* kPrefsToObserve[] = {
   prefs::kRailBreakProportion,
   prefs::kRailStartProportion,
   prefs::kSemiLongPressTimeInSeconds,
-  prefs::kTouchScreenFlingAccelerationAdjustment,
 };
 
 GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
@@ -87,6 +90,14 @@ void GesturePrefsObserver::OnPreferenceChanged(PrefServiceBase* service,
 }
 
 void GesturePrefsObserver::Update() {
+  GestureConfiguration::set_fling_acceleration_curve_coefficients(0,
+      prefs_->GetDouble(prefs::kFlingAccelerationCurveCoefficient0));
+  GestureConfiguration::set_fling_acceleration_curve_coefficients(1,
+      prefs_->GetDouble(prefs::kFlingAccelerationCurveCoefficient1));
+  GestureConfiguration::set_fling_acceleration_curve_coefficients(2,
+      prefs_->GetDouble(prefs::kFlingAccelerationCurveCoefficient2));
+  GestureConfiguration::set_fling_acceleration_curve_coefficients(3,
+      prefs_->GetDouble(prefs::kFlingAccelerationCurveCoefficient3));
   GestureConfiguration::set_long_press_time_in_seconds(
       prefs_->GetDouble(
           prefs::kLongPressTimeInSeconds));
@@ -144,9 +155,6 @@ void GesturePrefsObserver::Update() {
   GestureConfiguration::set_rail_start_proportion(
       prefs_->GetDouble(
           prefs::kRailStartProportion));
-  GestureConfiguration::set_touchscreen_fling_acceleration_adjustment(
-      prefs_->GetDouble(
-          prefs::kTouchScreenFlingAccelerationAdjustment));
 }
 
 }  // namespace
@@ -169,6 +177,22 @@ ProfileKeyedService* GesturePrefsObserverFactoryAura::BuildServiceInstanceFor(
 }
 
 void GesturePrefsObserverFactoryAura::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterDoublePref(
+      prefs::kFlingAccelerationCurveCoefficient0,
+      GestureConfiguration::fling_acceleration_curve_coefficients(0),
+      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(
+      prefs::kFlingAccelerationCurveCoefficient1,
+      GestureConfiguration::fling_acceleration_curve_coefficients(1),
+      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(
+      prefs::kFlingAccelerationCurveCoefficient2,
+      GestureConfiguration::fling_acceleration_curve_coefficients(2),
+      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(
+      prefs::kFlingAccelerationCurveCoefficient3,
+      GestureConfiguration::fling_acceleration_curve_coefficients(3),
+      PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kLongPressTimeInSeconds,
       GestureConfiguration::long_press_time_in_seconds(),
@@ -245,10 +269,14 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(PrefService* prefs) {
       prefs::kRailStartProportion,
       GestureConfiguration::rail_start_proportion(),
       PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterDoublePref(
-      prefs::kTouchScreenFlingAccelerationAdjustment,
-      GestureConfiguration::touchscreen_fling_acceleration_adjustment(),
-      PrefService::UNSYNCABLE_PREF);
+
+  // TODO(rjkroege): Remove this in M29. http://crbug.com/160243.
+  const char kTouchScreenFlingAccelerationAdjustment[] =
+      "gesture.touchscreen_fling_acceleration_adjustment";
+  prefs->RegisterDoublePref(kTouchScreenFlingAccelerationAdjustment,
+                            0.0,
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->ClearPref(kTouchScreenFlingAccelerationAdjustment);
 }
 
 bool GesturePrefsObserverFactoryAura::ServiceIsCreatedWithProfile() const {

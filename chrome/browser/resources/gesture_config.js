@@ -114,9 +114,24 @@ var gesture_config = (function() {
       units: '%'
     },
     {
-      key: 'touchscreen_fling_acceleration_adjustment',
-      label: 'Touchscreen Fling Acceleration Adjustment',
-      units: 'pixels/sec.'
+      key: 'fling_acceleration_curve_coefficient_0',
+      label: 'Touchscreen Fling Acceleration',
+      units: 'x<sup>3</sup>'
+    },
+    {
+      key: 'fling_acceleration_curve_coefficient_1',
+      label: '+',
+      units: 'x<sup>2</sup>'
+    },
+    {
+      key: 'fling_acceleration_curve_coefficient_2',
+      label: '+',
+      units: 'x<sup>1</sup>'
+    },
+    {
+      key: 'fling_acceleration_curve_coefficient_3',
+      label: '+',
+      units: 'x<sup>0</sup>'
     }
   ];
 

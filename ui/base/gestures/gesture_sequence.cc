@@ -7,7 +7,6 @@
 #include <cmath>
 #include <stdlib.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
@@ -286,66 +285,18 @@ unsigned int ComputeTouchBitmask(const GesturePoint* points) {
 
 const float kFlingCurveNormalization = 1.0f / 1875.f;
 
-// TODO(rjkroege): Make this configurable from the config page.
-// Touchscreen fling acceleration is cubic function of four
-// parameters. These are empirically determined defaults.
-// Do not adjust the default values without empirical validation.
-static float fling_acceleration_curve_coefficients[4] = {
-    0.0166667f,
-    -0.0238095f,
-    0.0452381f,
-    0.8f
-};
-
-// Read 4 comma-separated floating point values from an environment
-// variable and use that to configure the fling acceleration curve.
-void ReadFlingVelocityScalingIfNecessary() {
-  static bool did_setup_scaling = false;
-  if (did_setup_scaling)
-    return;
-  did_setup_scaling = true;
-  char* pk = getenv("FLING_ACCELERATION_CURVE_COEFFICIENTS");
-  if (!pk)
-      return;
-  LOG(INFO) << "Attempting to configure fling from environment.\n";
-
-  unsigned coefficient_count = arraysize(fling_acceleration_curve_coefficients);
-  unsigned i = 0;
-  CStringTokenizer t(pk, pk + strlen(pk), ",");
-  while (t.GetNext() && i < coefficient_count) {
-    double d;
-    if (base::StringToDouble(t.token(), &d)) {
-      fling_acceleration_curve_coefficients[i++] = d;
-    } else {
-      LOG(WARNING)
-          << "BANDED_FLING_VELOCITY_ADJUSTMENT bad value: "
-          << t.token();
-    }
-  }
-}
-
-float SmoothFlingVelocityAdjustment(float velocity) {
-  ReadFlingVelocityScalingIfNecessary();
-  unsigned last_coefficient =
-      arraysize(fling_acceleration_curve_coefficients) - 1;
+float CalibrateFlingVelocity(float velocity) {
+  const unsigned last_coefficient =
+      GestureConfiguration::NumAccelParams - 1;
   float normalized_velocity = fabs(velocity * kFlingCurveNormalization);
   float nu = 0.0f, x = 1.f;
 
   for (int i = last_coefficient ; i >= 0; i--) {
-    nu += x * fling_acceleration_curve_coefficients[i];
+    float a = GestureConfiguration::fling_acceleration_curve_coefficients(i);
+    nu += x * a;
     x *= normalized_velocity;
   }
   return nu * velocity;
-}
-
-// TODO(rjkroege): Provide a nicer means to turn this feature on/off.
-float CalibrateFlingVelocity(float velocity) {
- const float velocity_scaling  =
-    GestureConfiguration::touchscreen_fling_acceleration_adjustment();
-  if (velocity_scaling < 0.5f)
-    return SmoothFlingVelocityAdjustment(velocity);
-  else
-    return velocity_scaling * velocity;
 }
 
 }  // namespace
