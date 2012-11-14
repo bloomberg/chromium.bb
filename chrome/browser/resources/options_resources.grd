@@ -10,9 +10,6 @@
     <structures>
       <structure name="IDR_OPTIONS_BUNDLE_JS" file="options/options_bundle.js" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_OPTIONS_HTML" file="options/options.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
-      <if expr="is_win">
-        <structure name="IDR_OPTIONS_SETTINGS_APP_JS" file="options/options_settings_app.js" flattenhtml="true" type="chrome_html" />
-      </if>
     </structures>
   </release>
 </grit>

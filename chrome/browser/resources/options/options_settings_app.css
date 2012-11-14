@@ -2,17 +2,17 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-body.uber-frame.settings-app {
+html.settings-app body.uber-frame {
    /* Don't use the large margin used for navigating settings. */
   -webkit-margin-start: 30px;
 }
 
-body.uber-frame.settings-app header {
+html.settings-app body.uber-frame header {
   left: 12px;
   min-width: 400px;
 }
 
-body.settings-app #content-settings-page .content-area {
+html.settings-app #content-settings-page .content-area {
   -webkit-margin-start: 18px;
 }
 
@@ -22,36 +22,36 @@ body.settings-app #content-settings-page .content-area {
  * the width is trimmed proportional to (half) the reduction due to the removal
  * of the left margin.
  */
-body.settings-app .language-options-left {
+html.settings-app .language-options-left {
   height: 300px;
   width: 228px;
 }
 
-body.settings-app .language-options-right {
+html.settings-app .language-options-right {
   height: 300px;
   width: 288px;
 }
 
 /* Hide all sections by default. */
-body.settings-app section {
+html.settings-app section {
   display: none;
 }
 
 /* Sections white-listed for Settings App. */
-body.settings-app #advanced-settings,
-body.settings-app #handlers-section,
-body.settings-app #languages-section,
-body.settings-app #media-galleries-section,
-body.settings-app #network-section,
-body.settings-app #notifications-section,
-body.settings-app #privacy-section,
-body.settings-app #sync-section,
-body.settings-app #sync-users-section {
+html.settings-app #advanced-settings,
+html.settings-app #handlers-section,
+html.settings-app #languages-section,
+html.settings-app #media-galleries-section,
+html.settings-app #network-section,
+html.settings-app #notifications-section,
+html.settings-app #privacy-section,
+html.settings-app #sync-section,
+html.settings-app #sync-users-section {
   display: inline;
 }
 
 /* Hide irrelevant parts of privacy section. */
-body.settings-app #privacy-section > div > .checkbox,
-body.settings-app #privacy-section > div > #privacy-explanation {
+html.settings-app #privacy-section > div > .checkbox,
+html.settings-app #privacy-section > div > #privacy-explanation {
   display: none;
 }

@@ -20,13 +20,7 @@ cr.define('options', function() {
     this.pageDiv = $(this.pageDivName);
     this.tab = null;
     this.lastFocusedElement = null;
-
-    // Offset of page container in pixels, to allow room for side menu.
-    // Simplified settings pages can override this if they don't use the menu.
-    this.horizontalOffset = DEFAULT_HORIZONTAL_OFFSET;
   }
-
-  /** @const */ var DEFAULT_HORIZONTAL_OFFSET = 155;
 
   /**
    * This is the absolute difference maintained between standard and
@@ -34,6 +28,14 @@ cr.define('options', function() {
    * @const
    */
   OptionsPage.SIZE_DIFFERENCE_FIXED_STANDARD = 3;
+
+  /**
+   * Offset of page container in pixels, to allow room for side menu.
+   * Simplified settings pages can override this if they don't use the menu.
+   * The default (155) comes from -webkit-margin-start in uber_shared.css
+   * @private
+   */
+  OptionsPage.horizontalOffset = 155;
 
   /**
    * Main level option pages. Maps lower-case page names to the respective page
@@ -669,15 +671,21 @@ cr.define('options', function() {
    * @private
    */
   OptionsPage.updateFrozenElementHorizontalPosition_ = function(e) {
-    if (isRTL())
-      e.style.right = this.horizontalOffset + 'px';
-    else
-      e.style.left = this.horizontalOffset - document.body.scrollLeft + 'px';
+    if (isRTL()) {
+      e.style.right = OptionsPage.horizontalOffset + 'px';
+    } else {
+      e.style.left = OptionsPage.horizontalOffset -
+          document.body.scrollLeft + 'px';
+    }
   };
 
+  /**
+   * Change the horizontal offset used to reposition elements while showing an
+   * overlay from the default.
+   */
   OptionsPage.setHorizontalOffset = function(value) {
-    this.horizontalOffset = value;
-  }
+    OptionsPage.horizontalOffset = value;
+  };
 
   OptionsPage.setClearPluginLSODataEnabled = function(enabled) {
     if (enabled) {
