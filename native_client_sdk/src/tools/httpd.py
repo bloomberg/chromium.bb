@@ -41,6 +41,7 @@ class PluggableHTTPServer(BaseHTTPServer.HTTPServer):
   def __init__(self, *args, **kwargs):
     BaseHTTPServer.HTTPServer.__init__(self, *args)
     self.serve_dir = kwargs.get('serve_dir', '.')
+    self.test_mode = kwargs.get('test_mode', False)
     self.delegate_map = {}
     self.running = True
     self.result = 0
@@ -108,6 +109,13 @@ class PluggableHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
       logging.info('No handler found for path %s. Using default.' % url_path)
     return delegate
 
+  def _SendNothingAndDie(self, result=0):
+    self.send_response(200, 'OK')
+    self.send_header('Content-type', 'text/html')
+    self.send_header('Content-length', '0')
+    self.end_headers()
+    self.server.Shutdown(result)
+
   def send_head(self):
     delegate = self._FindDelegateForURL(self.path)
     if delegate:
@@ -124,11 +132,7 @@ class PluggableHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     if query:
       params = urlparse.parse_qs(query)
       if '1' in params.get('quit', None):
-        self.send_response(200, 'OK')
-        self.send_header('Content-type', 'text/html')
-        self.send_header('Content-length', '0')
-        self.end_headers()
-        self.server.Shutdown()
+        self._SendNothingAndDie()
         return
 
     delegate = self._FindDelegateForURL(self.path)
@@ -146,18 +150,23 @@ class PluggableHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     return self.base_do_POST()
 
   def base_do_POST(self):
-    pass
+    if self.server.test_mode:
+      if self.path == '/ok':
+        self._SendNothingAndDie(0)
+      elif self.path == '/fail':
+        self._SendNothingAndDie(1)
 
 
 class LocalHTTPServer(object):
   """Class to start a local HTTP server as a child process."""
 
-  def __init__(self, dirname, port):
+  def __init__(self, dirname, port, test_mode):
     parent_conn, child_conn = multiprocessing.Pipe()
     self.process = multiprocessing.Process(
         target=_HTTPServerProcess,
         args=(child_conn, dirname, port, {
           'serve_dir': dirname,
+          'test_mode': test_mode,
         }))
     self.process.start()
     if parent_conn.poll(10):  # wait 10 seconds
@@ -270,11 +279,16 @@ def main(args):
   parser.add_option('--no_dir_check',
       help='No check to ensure serving from safe directory.',
       dest='do_safe_check', action='store_false', default=True)
+  parser.add_option('--test-mode',
+      help='Listen for posts to /ok or /fail and shut down the server with '
+          ' errorcodes 0 and 1 respectively.',
+      dest='test_mode', action='store_true')
   options, args = parser.parse_args(args)
   if options.do_safe_check:
     SanityCheckDirectory(options.serve_dir)
 
-  server = LocalHTTPServer(options.serve_dir, int(options.port))
+  server = LocalHTTPServer(options.serve_dir, int(options.port),
+                           options.test_mode)
 
   # Serve until the client tells us to stop. When it does, it will give us an
   # errorcode.

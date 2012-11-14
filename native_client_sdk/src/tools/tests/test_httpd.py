@@ -4,10 +4,10 @@
 # found in the LICENSE file.
 
 import os
-import re
+import Queue
 import sys
 import subprocess
-import tempfile
+import threading
 import unittest
 import urllib2
 
@@ -21,7 +21,7 @@ import httpd
 
 class HTTPDTest(unittest.TestCase):
   def setUp(self):
-    self.server = httpd.LocalHTTPServer('.', 0)
+    self.server = httpd.LocalHTTPServer('.', 0, False)
 
   def tearDown(self):
     self.server.Shutdown()
@@ -35,74 +35,77 @@ class HTTPDTest(unittest.TestCase):
 class RunTest(unittest.TestCase):
   def setUp(self):
     self.process = None
-    self.tempscript = None
 
   def tearDown(self):
     if self.process and self.process.returncode is None:
       self.process.kill()
-    if self.tempscript:
-      os.remove(self.tempscript)
 
-  def _Run(self, args=None):
+  @staticmethod
+  def _SubprocessThread(process, queue):
+    stdout, stderr = process.communicate()
+    queue.put((process.returncode, stdout, stderr))
+
+  def _Run(self, args=None, timeout=None):
     args = args or []
     run_py = os.path.join(PARENT_DIR, 'run.py')
     cmd = [sys.executable, run_py]
     cmd.extend(args)
     self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
-    stdout, stderr = self.process.communicate()
-    try:
-      self.assertEqual(0, self.process.returncode)
-    except AssertionError:
-      print 'subprocess failed: %s:\nstdout: %s\nstderr:%s\n' % (
-          ' '.join(cmd), stdout, stderr)
-    return stdout
+    queue = Queue.Queue()
+    thread = threading.Thread(target=RunTest._SubprocessThread,
+                              args=(self.process, queue))
+    thread.daemon = True
+    thread.start()
+    thread.join(timeout)
+    if not thread.is_alive():
+      returncode, stdout, stderr = queue.get(False)
+      return returncode, stdout, stderr
 
-  def _WriteTempScript(self, script):
-    fd, filename = tempfile.mkstemp(suffix='.py')
-    lines = script.splitlines()
-    assert len(lines[0]) == 0  # First line is always empty.
-    # Count the number of spaces after the first newline.
-    m = re.match(r'\s*', lines[1])
-    assert m
-    indent = len(m.group(0))
-    script = '\n'.join(line[indent:] for line in lines[1:])
+    return -1, None, None
 
-    os.write(fd, script)
-    os.close(fd)
-    self.tempscript = filename
+  def _GetChromeMockArgs(self, page, http_request_type, sleep,
+                         expect_to_be_killed=True):
+    args = ['--test-mode']
+    if page:
+      args.extend(['-P', page])
+    args.append('--')
+    args.extend([sys.executable, os.path.join(SCRIPT_DIR, 'chrome_mock.py')])
+    if http_request_type:
+      args.append('--' + http_request_type)
+    if sleep:
+      args.extend(['--sleep', str(sleep)])
+    if expect_to_be_killed:
+      args.append('--expect-to-be-killed')
+    return args
 
   def testQuit(self):
-    self._WriteTempScript(r"""
-      import sys
-      import time
-      import urllib2
-
-      print 'running tempscript'
-      sys.stdout.flush()
-      f = urllib2.urlopen(sys.argv[-1] + '?quit=1')
-      f.read()
-      f.close()
-      time.sleep(10)
-
-      # Should be killed before this prints.
-      print 'Not killed yet.'
-      sys.stdout.flush()
-      sys.exit(0)
-    """)
-    stdout = self._Run(['--', sys.executable, self.tempscript])
-    self.assertTrue('running tempscript' in stdout)
-    self.assertTrue("Not killed yet" not in stdout)
+    args = self._GetChromeMockArgs('?quit=1', 'get', sleep=10)
+    _, stdout, _ = self._Run(args, timeout=20)
+    self.assertTrue('Starting' in stdout)
+    self.assertTrue('Expected to be killed' not in stdout)
 
   def testSubprocessDies(self):
-    self._WriteTempScript(r"""
-      import sys
-      print 'running tempscript'
-      sys.stdout.flush()
-      sys.exit(1)
-    """)
-    stdout = self._Run(['--', sys.executable, self.tempscript])
-    self.assertTrue('running tempscript' in stdout)
+    args = self._GetChromeMockArgs(page=None, http_request_type=None, sleep=0,
+                                   expect_to_be_killed=False)
+    returncode, stdout, _ = self._Run(args, timeout=10)
+    self.assertNotEqual(-1, returncode)
+    self.assertTrue('Starting' in stdout)
+
+  def testPostOk(self):
+    args = self._GetChromeMockArgs('ok', 'post', sleep=10)
+    returncode, stdout, _ = self._Run(args, timeout=20)
+    self.assertEqual(0, returncode)
+    self.assertTrue('Starting' in stdout)
+    self.assertTrue('Expected to be killed' not in stdout)
+
+  def testPostFail(self):
+    args = self._GetChromeMockArgs('fail', 'post', sleep=10)
+    returncode, stdout, _ = self._Run(args, timeout=20)
+    self.assertEqual(1, returncode)
+    self.assertTrue('Starting' in stdout)
+    self.assertTrue('Expected to be killed' not in stdout)
+
 
 if __name__ == '__main__':
   unittest.main()
