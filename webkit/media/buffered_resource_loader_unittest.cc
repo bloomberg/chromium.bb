@@ -195,7 +195,7 @@ class BufferedResourceLoaderTest : public testing::Test {
 
     loader_->willSendRequest(url_loader_, newRequest, redirectResponse);
 
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
 
   void StopWhenLoad() {

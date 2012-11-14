@@ -111,7 +111,7 @@ class PipelineTest : public ::testing::Test {
     EXPECT_CALL(callbacks_, OnStop());
     pipeline_->Stop(base::Bind(&CallbackHelper::OnStop,
                                base::Unretained(&callbacks_)));
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
 
     pipeline_ = NULL;
     mocks_.reset();
@@ -207,7 +207,7 @@ class PipelineTest : public ::testing::Test {
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnBufferingState,
                    base::Unretained(&callbacks_)));
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   void CreateAudioStream() {
@@ -272,7 +272,7 @@ class PipelineTest : public ::testing::Test {
 
     // We expect the time to be updated only after the seek has completed.
     EXPECT_NE(seek_time, pipeline_->GetMediaTime());
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     EXPECT_EQ(seek_time, pipeline_->GetMediaTime());
   }
 
@@ -340,7 +340,7 @@ TEST_F(PipelineTest, NeverInitializes) {
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnBufferingState,
                    base::Unretained(&callbacks_)));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
 
   // Because our callback will get executed when the test tears down, we'll
@@ -574,11 +574,11 @@ TEST_F(PipelineTest, EndedCallback) {
 
   // The ended callback shouldn't run until both renderers have ended.
   pipeline_->OnAudioRendererEnded();
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   EXPECT_CALL(callbacks_, OnEnded(PIPELINE_OK));
   pipeline_->OnVideoRendererEnded();
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 // Static function & time variable used to simulate changes in wallclock time.
@@ -612,7 +612,7 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   EXPECT_CALL(*mocks_->video_renderer(), SetPlaybackRate(playback_rate));
   EXPECT_CALL(*mocks_->audio_renderer(), SetPlaybackRate(playback_rate));
   pipeline_->SetPlaybackRate(playback_rate);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   InSequence s;
 
@@ -625,7 +625,7 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
 
   // Signal end of audio stream.
   pipeline_->OnAudioRendererEnded();
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Verify that the clock advances.
   start_time = pipeline_->GetMediaTime().ToInternalValue();
@@ -651,7 +651,7 @@ TEST_F(PipelineTest, ErrorDuringSeek) {
   EXPECT_CALL(*mocks_->demuxer(), SetPlaybackRate(playback_rate));
   EXPECT_CALL(*mocks_->audio_renderer(), SetPlaybackRate(playback_rate));
   pipeline_->SetPlaybackRate(playback_rate);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);
 
@@ -671,7 +671,7 @@ TEST_F(PipelineTest, ErrorDuringSeek) {
   pipeline_->Seek(seek_time, base::Bind(&CallbackHelper::OnSeek,
                                         base::Unretained(&callbacks_)));
   EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 // Invoked function OnError. This asserts that the pipeline does not enqueue
@@ -726,7 +726,7 @@ TEST_F(PipelineTest, NoMessageDuringTearDownFromError) {
   pipeline_->Seek(seek_time, base::Bind(&CallbackHelper::OnSeek,
                                         base::Unretained(&callbacks_)));
   EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(PipelineTest, StartTimeIsZero) {
@@ -786,7 +786,7 @@ TEST_F(PipelineTest, AudioTimeUpdateDuringSeek) {
   EXPECT_CALL(*mocks_->demuxer(), SetPlaybackRate(playback_rate));
   EXPECT_CALL(*mocks_->audio_renderer(), SetPlaybackRate(playback_rate));
   pipeline_->SetPlaybackRate(playback_rate);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Provide an initial time update so that the pipeline transitions out of the
   // "waiting for time update" state.
@@ -944,7 +944,7 @@ class PipelineTeardownTest : public PipelineTest {
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnBufferingState,
                    base::Unretained(&callbacks_)));
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   PipelineStatus SetInitializeExpectations(TeardownState state,
@@ -1062,7 +1062,7 @@ class PipelineTeardownTest : public PipelineTest {
 
     pipeline_->Seek(base::TimeDelta::FromSeconds(10), base::Bind(
         &CallbackHelper::OnSeek, base::Unretained(&callbacks_)));
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   PipelineStatus SetSeekExpectations(TeardownState state,
@@ -1177,7 +1177,7 @@ class PipelineTeardownTest : public PipelineTest {
       pipeline_->SetErrorForTesting(PIPELINE_ERROR_READ);
     }
 
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   DISALLOW_COPY_AND_ASSIGN(PipelineTeardownTest);
