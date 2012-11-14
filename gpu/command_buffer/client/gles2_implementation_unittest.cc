@@ -363,8 +363,8 @@ class GLES2ImplementationTest : public testing::Test {
     helper_.reset(new GLES2CmdHelper(command_buffer()));
     helper_->Initialize(kCommandBufferSizeBytes);
 
-    GLES2Implementation::GLStaticState state;
-    GLES2Implementation::GLStaticState::IntState& int_state = state.int_state;
+    GLES2Implementation::GLCachedState state;
+    GLES2Implementation::GLCachedState::IntState& int_state = state.int_state;
     int_state.max_combined_texture_image_units = kMaxCombinedTextureImageUnits;
     int_state.max_cube_map_texture_size = kMaxCubeMapTextureSize;
     int_state.max_fragment_uniform_vectors = kMaxFragmentUniformVectors;
@@ -2555,13 +2555,11 @@ TEST_F(GLES2ImplementationTest, CapabilitiesAreCached) {
     GLenum state = kStates[ii];
     expected.enable_cmd.Init(state);
     GLboolean result = gl_->IsEnabled(state);
-    EXPECT_EQ(static_cast<GLboolean>(ii == 0), result);
+    EXPECT_FALSE(result);
     EXPECT_TRUE(NoCommandsWritten());
     const void* commands = GetPut();
-    if (!result) {
-      gl_->Enable(state);
-      EXPECT_EQ(0, memcmp(&expected, commands, sizeof(expected)));
-    }
+    gl_->Enable(state);
+    EXPECT_EQ(0, memcmp(&expected, commands, sizeof(expected)));
     ClearCommands();
     result = gl_->IsEnabled(state);
     EXPECT_TRUE(result);
@@ -2769,37 +2767,6 @@ TEST_F(GLES2ImplementationTest, VertexArrays) {
   EXPECT_EQ(GL_NO_ERROR, CheckError());
 }
 #endif
-
-TEST_F(GLES2ImplementationTest, Disable) {
-  struct Cmds {
-    Disable cmd;
-  };
-  Cmds expected;
-  expected.cmd.Init(GL_DITHER);  // Note: DITHER defaults to enabled.
-
-  gl_->Disable(GL_DITHER);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  // Check it's cached and not called again.
-  ClearCommands();
-  gl_->Disable(GL_DITHER);
-  EXPECT_TRUE(NoCommandsWritten());
-}
-
-TEST_F(GLES2ImplementationTest, Enable) {
-  struct Cmds {
-    Enable cmd;
-  };
-  Cmds expected;
-  expected.cmd.Init(GL_BLEND);  // Note: BLEND defaults to disabled.
-
-  gl_->Enable(GL_BLEND);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  // Check it's cached and not called again.
-  ClearCommands();
-  gl_->Enable(GL_BLEND);
-  EXPECT_TRUE(NoCommandsWritten());
-}
-
 
 #include "gpu/command_buffer/client/gles2_implementation_unittest_autogen.h"
 
