@@ -479,8 +479,13 @@ def GypNinjaBuild_Pnacl(rel_out_dir, target_arch):
 def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets, out_dir):
   gyp_env = copy.copy(os.environ)
   gyp_env['GYP_GENERATORS'] = 'ninja'
+  gyp_defines = []
+  if options.mac_sdk:
+    gyp_defines.append('mac_sdk=%s' % options.mac_sdk)
   if arch:
-    gyp_env['GYP_DEFINES'] = 'target_arch=%s' % (arch,)
+    gyp_defines.append('target_arch=%s' % arch)
+
+  gyp_env['GYP_DEFINES'] = ' '.join(gyp_defines)
   gyp_generator_flags = ['-G', 'output_dir=%s' % (out_dir,)]
   gyp_depth = '--depth=.'
   buildbot_common.Run(
@@ -934,6 +939,9 @@ def main(args):
       dest='build_experimental', default=False)
   parser.add_option('--skip-toolchain', help='Skip toolchain download/untar',
       action='store_true', dest='skip_toolchain', default=False)
+  parser.add_option('--mac_sdk',
+      help='Set the mac_sdk (e.g. 10.6) to use when building with ninja.',
+      dest='mac_sdk')
 
   global options
   options, args = parser.parse_args(args[1:])
