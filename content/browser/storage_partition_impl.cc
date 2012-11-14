@@ -8,11 +8,57 @@
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/indexed_db_context.h"
+#include "net/base/completion_callback.h"
+#include "net/base/net_errors.h"
+#include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_context.h"
 #include "webkit/database/database_tracker.h"
+#include "webkit/database/database_util.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace content {
+
+namespace {
+
+void ClearDataOnIOThread(
+    const GURL& storage_origin,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    const scoped_refptr<ChromeAppCacheService>& appcache_service) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Handle the cookies.
+  net::CookieMonster* cookie_monster =
+      request_context->GetURLRequestContext()->cookie_store()->
+          GetCookieMonster();
+  if (cookie_monster)
+    cookie_monster->DeleteAllForHostAsync(
+        storage_origin, net::CookieMonster::DeleteCallback());
+
+  // Clear out appcache.
+  appcache_service->DeleteAppCachesForOrigin(storage_origin,
+                                             net::CompletionCallback());
+}
+
+void ClearDataOnFileThread(
+    const GURL& storage_origin,
+    string16 origin_id,
+    const scoped_refptr<webkit_database::DatabaseTracker> &database_tracker,
+    const scoped_refptr<fileapi::FileSystemContext>& file_system_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // Clear out the HTML5 filesystem.
+  file_system_context->DeleteDataForOriginOnFileThread(storage_origin);
+
+  // Clear out the database tracker.  We just let this run until completion
+  // without notification.
+  int rv = database_tracker->DeleteDataForOrigin(
+      origin_id, net::CompletionCallback());
+  DCHECK(rv == net::OK || rv == net::ERR_IO_PENDING);
+}
+
+}  // namespace
 
 StoragePartitionImpl::StoragePartitionImpl(
     const FilePath& partition_path,
@@ -137,6 +183,37 @@ DOMStorageContextImpl* StoragePartitionImpl::GetDOMStorageContext() {
 
 IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContext() {
   return indexed_db_context_;
+}
+
+void StoragePartitionImpl::AsyncClearDataForOrigin(
+    const GURL& storage_origin,
+    net::URLRequestContextGetter* request_context_getter) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ClearDataOnIOThread,
+                 storage_origin,
+                 make_scoped_refptr(request_context_getter),
+                 appcache_service_));
+
+  string16 origin_id =
+      webkit_database::DatabaseUtil::GetOriginIdentifier(storage_origin);
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&ClearDataOnFileThread,
+                                     storage_origin,
+                                     origin_id,
+                                     database_tracker_,
+                                     filesystem_context_));
+
+  GetDOMStorageContext()->DeleteLocalStorage(storage_origin);
+
+  BrowserThread::PostTask(
+      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
+      base::Bind(
+          &IndexedDBContext::DeleteForOrigin,
+          indexed_db_context_,
+          storage_origin));
 }
 
 void StoragePartitionImpl::SetURLRequestContext(

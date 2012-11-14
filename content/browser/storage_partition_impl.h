@@ -29,6 +29,9 @@ class StoragePartitionImpl : public StoragePartition {
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
   virtual DOMStorageContextImpl* GetDOMStorageContext() OVERRIDE;
   virtual IndexedDBContextImpl* GetIndexedDBContext() OVERRIDE;
+  virtual void AsyncClearDataForOrigin(
+      const GURL& storage_origin,
+      net::URLRequestContextGetter* request_context_getter) OVERRIDE;
 
  private:
   friend class StoragePartitionImplMap;

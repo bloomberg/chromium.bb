@@ -10,6 +10,8 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 
+class GURL;
+
 namespace appcache {
 class AppCacheService;
 }
@@ -53,6 +55,18 @@ class StoragePartition {
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
   virtual IndexedDBContext* GetIndexedDBContext() = 0;
+
+  // Starts an asynchronous task that does a best-effort clear of all the
+  // data inside this StoragePartition for the given |storage_origin|.
+  //
+  // TODO(ajwong): Right now, the embedder may have some
+  // URLRequestContextGetter objects that the StoragePartition does not know
+  // about.  This will no longer be the case when we resolve
+  // http://crbug.com/159193. Remove |request_context_getter| when that bug
+  // is fixed.
+  virtual void AsyncClearDataForOrigin(
+      const GURL& storage_origin,
+      net::URLRequestContextGetter* request_context_getter) = 0;
 
  protected:
   virtual ~StoragePartition() {}
