@@ -373,11 +373,17 @@ static WebKit::WebFrame* FindFrameByID(WebKit::WebFrame* root, int frame_id) {
 }
 
 static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
+  // Replace any occurrences of swappedout:// with about:blank.
+  const WebURL& blank_url = GURL(chrome::kAboutBlankURL);
   WebVector<WebURL> urls;
   ds->redirectChain(urls);
   result->reserve(urls.size());
-  for (size_t i = 0; i < urls.size(); ++i)
-    result->push_back(urls[i]);
+  for (size_t i = 0; i < urls.size(); ++i) {
+    if (urls[i] != GURL(kSwappedOutURL))
+      result->push_back(urls[i]);
+    else
+      result->push_back(blank_url);
+  }
 }
 
 // If |data_source| is non-null and has a DocumentState associated with it,
@@ -1079,8 +1085,12 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(params.page_id, -1);
     WebHistoryItem item = webkit_glue::HistoryItemFromString(params.state);
-    if (!item.isNull())
+    if (!item.isNull()) {
+      // Ensure we didn't save the swapped out URL in UpdateState, since the
+      // browser should never be telling us to navigate to swappedout://.
+      CHECK(item.urlString() != WebString::fromUTF8(kSwappedOutURL));
       main_frame->loadHistoryItem(item);
+    }
   } else if (!params.base_url_for_data_url.is_empty()) {
     // A loadData request with a specified base URL.
     std::string mime_type, charset, data;
@@ -2942,9 +2952,13 @@ void RenderViewImpl::willSubmitForm(WebFrame* frame,
 void RenderViewImpl::willPerformClientRedirect(
     WebFrame* frame, const WebURL& from, const WebURL& to, double interval,
     double fire_time) {
+  // Replace any occurrences of swappedout:// with about:blank.
+  const WebURL& blank_url = GURL(chrome::kAboutBlankURL);
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_,
-      WillPerformClientRedirect(frame, from, to, interval, fire_time));
+      WillPerformClientRedirect(frame,
+                                from == GURL(kSwappedOutURL) ? blank_url : from,
+                                to, interval, fire_time));
 }
 
 void RenderViewImpl::didCancelClientRedirect(WebFrame* frame) {
@@ -2954,16 +2968,20 @@ void RenderViewImpl::didCancelClientRedirect(WebFrame* frame) {
 
 void RenderViewImpl::didCompleteClientRedirect(
     WebFrame* frame, const WebURL& from) {
+  // Replace any occurrences of swappedout:// with about:blank.
+  const WebURL& blank_url = GURL(chrome::kAboutBlankURL);
   if (!frame->parent()) {
     WebDataSource* ds = frame->provisionalDataSource();
     // If there's no provisional data source, it's a reference fragment
     // navigation.
     completed_client_redirect_src_ = Referrer(
-        from, ds ? GetReferrerPolicyFromRequest(frame, ds->request()) :
+        from == GURL(kSwappedOutURL) ? blank_url : from,
+        ds ? GetReferrerPolicyFromRequest(frame, ds->request()) :
         frame->document().referrerPolicy());
   }
   FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_, DidCompleteClientRedirect(frame, from));
+      RenderViewObserver, observers_, DidCompleteClientRedirect(
+          frame, from == GURL(kSwappedOutURL) ? blank_url : from));
 }
 
 void RenderViewImpl::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
