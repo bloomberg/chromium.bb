@@ -834,8 +834,15 @@ class MinidumpWriter {
     }
 
     TypedMDRVA<uint32_t> list(&minidump_writer_);
-    if (!list.AllocateObjectAndArray(num_output_mappings, MD_MODULE_SIZE))
-      return false;
+    if (num_output_mappings) {
+      if (!list.AllocateObjectAndArray(num_output_mappings, MD_MODULE_SIZE))
+        return false;
+    } else {
+      // Still create the module list stream, although it will have zero
+      // modules.
+      if (!list.Allocate())
+        return false;
+    }
 
     dirent->stream_type = MD_MODULE_LIST_STREAM;
     dirent->location = list.location();
