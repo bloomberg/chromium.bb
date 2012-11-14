@@ -13,7 +13,6 @@ static bool s_perTilePaintingEnabled = false;
 static bool s_partialSwapEnabled = false;
 static bool s_acceleratedAnimationEnabled = false;
 static bool s_pageScalePinchZoomEnabled = false;
-static bool s_jankInsteadOfCheckerboard = false;
 static bool s_backgroundColorInsteadOfCheckerboard = false;
 static bool s_traceOverdraw = false;
 
@@ -25,7 +24,6 @@ void reset()
     s_partialSwapEnabled = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnablePartialSwap);
     s_acceleratedAnimationEnabled = !CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kDisableThreadedAnimation);
     s_pageScalePinchZoomEnabled = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnablePinchInCompositor);
-    s_jankInsteadOfCheckerboard = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kJankInsteadOfCheckerboard);
     s_backgroundColorInsteadOfCheckerboard = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kBackgroundColorInsteadOfCheckerboard);
     s_traceOverdraw = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kTraceOverdraw);
 }
@@ -60,13 +58,6 @@ bool Settings::pageScalePinchZoomEnabled()
     if (!s_settingsInitialized)
         reset();
     return s_pageScalePinchZoomEnabled;
-}
-
-bool Settings::jankInsteadOfCheckerboard()
-{
-    if (!s_settingsInitialized)
-        reset();
-    return s_jankInsteadOfCheckerboard;
 }
 
 bool Settings::backgroundColorInsteadOfCheckerboard()

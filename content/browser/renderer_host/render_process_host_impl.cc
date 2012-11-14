@@ -864,7 +864,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kEnablePartialSwap,
     cc::switches::kEnablePerTilePainting,
     cc::switches::kEnablePinchInCompositor,
-    cc::switches::kJankInsteadOfCheckerboard,
     cc::switches::kShowPropertyChangedRects,
     cc::switches::kShowSurfaceDamageRects,
     cc::switches::kShowScreenSpaceRects,

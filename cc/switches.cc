@@ -25,10 +25,6 @@ const char kEnablePinchInCompositor[]       = "enable-pinch-in-compositor";
 // Paint content on the compositor thread instead of the main thread.
 const char kImplSidePainting[] = "impl-side-painting";
 
-// When threaded compositing is turned on, wait until the entire frame has
-// content (i.e. jank) instead of showing checkerboards for missing content.
-const char kJankInsteadOfCheckerboard[] = "jank-instead-of-checkerboard";
-
 // Show rects in the HUD around layers whose properties have changed.
 const char kShowPropertyChangedRects[] = "show-property-changed-rects";
 

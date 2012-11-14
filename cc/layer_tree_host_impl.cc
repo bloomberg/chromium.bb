@@ -442,7 +442,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 
         if (appendQuadsData.hadMissingTiles) {
             bool layerHasAnimatingTransform = it->screenSpaceTransformIsAnimating() || it->drawTransformIsAnimating();
-            if (layerHasAnimatingTransform || Settings::jankInsteadOfCheckerboard())
+            if (layerHasAnimatingTransform)
                 drawFrame = false;
         }
 

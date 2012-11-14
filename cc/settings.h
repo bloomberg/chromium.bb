@@ -19,7 +19,6 @@ public:
     static bool partialSwapEnabled();
     static bool acceleratedAnimationEnabled();
     static bool pageScalePinchZoomEnabled();
-    static bool jankInsteadOfCheckerboard();
     static bool backgroundColorInsteadOfCheckerboard();
     static bool traceOverdraw();
 

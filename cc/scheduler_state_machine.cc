@@ -269,7 +269,7 @@ void SchedulerStateMachine::didDrawIfPossibleCompleted(bool success)
         m_needsRedraw = true;
         m_needsCommit = true;
         m_consecutiveFailedDraws++;
-        if (!Settings::jankInsteadOfCheckerboard() && m_consecutiveFailedDraws >= m_maximumNumberOfFailedDrawsBeforeDrawIsForced) {
+        if (m_consecutiveFailedDraws >= m_maximumNumberOfFailedDrawsBeforeDrawIsForced) {
             m_consecutiveFailedDraws = 0;
             // We need to force a draw, but it doesn't make sense to do this until
             // we've committed and have new textures.
