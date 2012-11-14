@@ -94,7 +94,7 @@ TEST_F(ReloadButtonGtkTest, DoubleClickTimer) {
              true, false);
 
   // Now fire the timer.  This should complete the mode change.
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   CheckState(true, ReloadButtonGtk::MODE_STOP, ReloadButtonGtk::MODE_STOP,
              false, false);
 }
@@ -139,7 +139,7 @@ TEST_F(ReloadButtonGtkTest, ResetOnTimer) {
   reload_.ChangeMode(ReloadButtonGtk::MODE_RELOAD, false);
 
   // Now fire the stop-to-reload timer.  This should reset the button.
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   CheckState(true, ReloadButtonGtk::MODE_RELOAD, ReloadButtonGtk::MODE_RELOAD,
              false, false);
 }

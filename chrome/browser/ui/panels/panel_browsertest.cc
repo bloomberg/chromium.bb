@@ -273,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
 
   // Ensure that the layout message can get a chance to be processed so that
   // the button visibility can be updated.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(3, panel_manager->num_panels());
   EXPECT_TRUE(docked_strip->HasPanel(panel1));
@@ -908,7 +908,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ChangeAutoHideTaskBarThickness) {
   mock_display_settings_provider()->SetDesktopBarThickness(
       DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT,
       right_bar_thickness);
-  MessageLoopForUI::current()->RunAllPending();
+  MessageLoopForUI::current()->RunUntilIdle();
   EXPECT_EQ(
       initial_starting_right_position - docked_strip->StartingRightPosition(),
       right_bar_thickness_delta);
@@ -928,7 +928,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ChangeAutoHideTaskBarThickness) {
   mock_display_settings_provider()->SetDesktopBarThickness(
       DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT,
       right_bar_thickness);
-  MessageLoopForUI::current()->RunAllPending();
+  MessageLoopForUI::current()->RunUntilIdle();
   EXPECT_EQ(
       docked_strip->StartingRightPosition() - initial_starting_right_position,
       right_bar_thickness_delta);
@@ -1036,13 +1036,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionBasic) {
   EXPECT_FALSE(panel->IsDrawingAttention());
   panel->FlashFrame(true);
   EXPECT_TRUE(panel->IsDrawingAttention());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(native_panel_testing->VerifyDrawingAttention());
 
   // Stop drawing attention.
   panel->FlashFrame(false);
   EXPECT_FALSE(panel->IsDrawingAttention());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
 
   // Draw attention, then minimize. Titlebar should remain visible.
@@ -1078,7 +1078,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
   panel->FlashFrame(true);
   EXPECT_TRUE(panel->IsDrawingAttention());
   EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(native_panel_testing->VerifyDrawingAttention());
 
   // Test that we cannot bring up other minimized panel if the mouse is over
@@ -1096,7 +1096,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
 
   // Test that the attention is cleared when activated.
   panel->Activate();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
   EXPECT_FALSE(panel->IsDrawingAttention());
   EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
@@ -1192,7 +1192,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhenActive) {
   EXPECT_FALSE(panel->IsDrawingAttention());
   panel->FlashFrame(true);
   EXPECT_FALSE(panel->IsDrawingAttention());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
 
   panel->Close();
@@ -1210,12 +1210,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnActivate) {
 
   panel->FlashFrame(true);
   EXPECT_TRUE(panel->IsDrawingAttention());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(native_panel_testing->VerifyDrawingAttention());
 
   // Test that the attention is cleared when panel gets focus.
   panel->Activate();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
   EXPECT_FALSE(panel->IsDrawingAttention());
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
@@ -1267,7 +1267,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnClick) {
 
   panel->FlashFrame(true);
   EXPECT_TRUE(panel->IsDrawingAttention());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(native_panel_testing->VerifyDrawingAttention());
 
   // Test that the attention is cleared when panel gets focus.
@@ -1275,7 +1275,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnClick) {
       panel->GetBounds().origin());
   native_panel_testing->ReleaseMouseButtonTitlebar();
 
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
   EXPECT_FALSE(panel->IsDrawingAttention());
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
@@ -1362,12 +1362,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   WaitForPanelActiveState(panel1, SHOW_AS_ACTIVE);
 
   panel1->SetExpansionState(Panel::MINIMIZED);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   WaitForPanelActiveState(panel1, SHOW_AS_INACTIVE);
   EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
 
   panel2->SetExpansionState(Panel::MINIMIZED);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   WaitForPanelActiveState(panel2, SHOW_AS_INACTIVE);
   EXPECT_EQ(Panel::MINIMIZED, panel2->expansion_state());
 

@@ -31,7 +31,7 @@ CocoaProfileTest::~CocoaProfileTest() {
   // browser, since it may trigger accesses to the profile upon destruction.
   browser_.reset();
 
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   // Some services created on the TestingProfile require deletion on the UI
   // thread. If the scoper in TestingBrowserProcess, owned by ChromeTestSuite,
   // were to delete the ProfileManager, the UI thread would at that point no
@@ -40,14 +40,14 @@ CocoaProfileTest::~CocoaProfileTest() {
       NULL);
 
   // Make sure any pending tasks run before we destroy other threads.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Drop any new tasks for the IO and FILE threads.
   io_thread_.reset();
   file_user_blocking_thread_.reset();
   file_thread_.reset();
 
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 void CocoaProfileTest::SetUp() {

@@ -70,7 +70,7 @@ class BalloonControllerTest : public ChromeRenderViewHostTestHarness {
   virtual void TearDown() {
     collection_.reset();
     browser_.reset();
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 

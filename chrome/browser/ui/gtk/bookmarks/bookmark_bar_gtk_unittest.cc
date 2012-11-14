@@ -48,7 +48,7 @@ class BookmarkBarGtkUnittest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
 
     bookmark_bar_.reset();
     origin_provider_.reset();

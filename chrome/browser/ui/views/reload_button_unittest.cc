@@ -95,7 +95,7 @@ TEST_F(ReloadButtonTest, DoubleClickTimer) {
              false);
 
   // Now fire the timer.  This should complete the mode change.
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   CheckState(true, ReloadButton::MODE_STOP, ReloadButton::MODE_STOP, false,
              false);
 }
@@ -144,7 +144,7 @@ TEST_F(ReloadButtonTest, ResetOnTimer) {
   reload_.ChangeMode(ReloadButton::MODE_RELOAD, false);
 
   // Now fire the stop-to-reload timer.  This should reset the button.
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   CheckState(true, ReloadButton::MODE_RELOAD, ReloadButton::MODE_RELOAD, false,
              false);
 }

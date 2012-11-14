@@ -976,7 +976,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
   chrome::ShowFindBar(browser());
 
   // This is needed on GTK because the reposition operation is asynchronous.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   gfx::Point start_position;
   gfx::Point position;
@@ -1415,12 +1415,12 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FitWindow) {
   popup->window()->Show();
 
   // On GTK, bounds change is asynchronous.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   EnsureFindBoxOpenForBrowser(popup);
 
   // GTK adjusts FindBar size asynchronously.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   ASSERT_LE(GetFindBarWidthForBrowser(popup),
             popup->window()->GetBounds().width());

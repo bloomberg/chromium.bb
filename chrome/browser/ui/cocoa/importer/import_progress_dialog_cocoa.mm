@@ -208,7 +208,7 @@ void ShowImportProgressDialog(uint16 items,
   while (true) {
     if ([NSApp runModalSession:session] != NSRunContinuesResponse)
         break;
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
   [NSApp endModalSession:session];
 }

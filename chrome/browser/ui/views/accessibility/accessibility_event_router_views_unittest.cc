@@ -113,7 +113,7 @@ class AccessibilityEventRouterViewsTest
     // The Widget's FocusManager is deleted using DeleteSoon - this
     // forces it to be deleted now, so we don't have any memory leaks
     // when this method exits.
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
 
 #if defined(OS_WIN)
     ole_initializer_.reset();

@@ -1257,7 +1257,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, AttachWithSqueeze) {
   EXPECT_EQ(detached_position2, panel2->GetBounds().origin());
 
   // Wait for active states to settle.
-  MessageLoopForUI::current()->RunAllPending();
+  MessageLoopForUI::current()->RunUntilIdle();
 
   // Panel positions should have shifted because of the "squeeze" mode.
   EXPECT_NE(docked_position4, panel4->GetBounds().origin());

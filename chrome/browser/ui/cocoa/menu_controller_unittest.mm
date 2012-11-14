@@ -327,7 +327,7 @@ TEST_F(MenuControllerTest, OpenClose) {
   EXPECT_FALSE(delegate.did_close_);
 
   // Pump the task that notifies the delegate.
-  message_loop.RunAllPending();
+  message_loop.RunUntilIdle();
 
   // Expect that the delegate got notified properly.
   EXPECT_TRUE(delegate.did_close_);

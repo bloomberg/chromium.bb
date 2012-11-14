@@ -1061,7 +1061,7 @@ void GtkNativePanelTesting::PressLeftMouseButtonTitlebar(
   panel_gtk_->OnTitlebarButtonPressEvent(
       NULL, reinterpret_cast<GdkEventButton*>(event));
   gdk_event_free(event);
-  MessageLoopForUI::current()->RunAllPending();
+  MessageLoopForUI::current()->RunUntilIdle();
 }
 
 void GtkNativePanelTesting::ReleaseMouseButtonTitlebar(
@@ -1078,7 +1078,7 @@ void GtkNativePanelTesting::ReleaseMouseButtonTitlebar(
         NULL, reinterpret_cast<GdkEventButton*>(event));
   }
   gdk_event_free(event);
-  MessageLoopForUI::current()->RunAllPending();
+  MessageLoopForUI::current()->RunUntilIdle();
 }
 
 void GtkNativePanelTesting::DragTitlebar(const gfx::Point& mouse_location) {
@@ -1090,14 +1090,14 @@ void GtkNativePanelTesting::DragTitlebar(const gfx::Point& mouse_location) {
   panel_gtk_->drag_helper_->OnMouseMoveEvent(
       NULL, reinterpret_cast<GdkEventMotion*>(event));
   gdk_event_free(event);
-  MessageLoopForUI::current()->RunAllPending();
+  MessageLoopForUI::current()->RunUntilIdle();
 }
 
 void GtkNativePanelTesting::CancelDragTitlebar() {
   if (!panel_gtk_->drag_helper_.get())
     return;
   panel_gtk_->drag_helper_->OnGrabBrokenEvent(NULL, NULL);
-  MessageLoopForUI::current()->RunAllPending();
+  MessageLoopForUI::current()->RunUntilIdle();
 }
 
 void GtkNativePanelTesting::FinishDragTitlebar() {

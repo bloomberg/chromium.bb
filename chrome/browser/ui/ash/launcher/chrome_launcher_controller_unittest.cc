@@ -74,7 +74,7 @@ class ChromeLauncherControllerTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     profile_.reset();
     // Execute any pending deletion tasks.
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
   }
 
   void InsertPrefValue(base::ListValue* pref_value,

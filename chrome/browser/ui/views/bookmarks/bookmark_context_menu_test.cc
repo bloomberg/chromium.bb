@@ -79,7 +79,7 @@ class BookmarkContextMenuTest : public testing::Test {
 
     BrowserThread::GetBlockingPool()->FlushForTesting();
     // Flush the message loop to make application verifiers happy.
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
  protected:
