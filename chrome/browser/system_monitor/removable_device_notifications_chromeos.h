@@ -60,12 +60,23 @@ class RemovableDeviceNotificationsCros
       const FilePath& path,
       base::SystemMonitor::RemovableStorageInfo* device_info) const;
 
+  // Returns the storage size of the device present at |location|. If the
+  // device information is unavailable, returns zero.
+  uint64 GetStorageSize(const std::string& location) const;
+
  private:
+  struct StorageObjectInfo {
+    // Basic details {storage device name, location and identifier}.
+    base::SystemMonitor::RemovableStorageInfo storage_info;
+
+    // Device storage size.
+    uint64 storage_size_in_bytes;
+  };
+
   friend class base::RefCountedThreadSafe<RemovableDeviceNotificationsCros>;
 
   // Mapping of mount path to removable mass storage info.
-  typedef std::map<std::string, base::SystemMonitor::RemovableStorageInfo>
-      MountMap;
+  typedef std::map<std::string, StorageObjectInfo> MountMap;
 
   // Private to avoid code deleting the object.
   virtual ~RemovableDeviceNotificationsCros();

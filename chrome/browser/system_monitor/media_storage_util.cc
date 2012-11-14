@@ -14,6 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/system_monitor/media_device_notifications_utils.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
@@ -256,20 +257,29 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
   if (found_device && IsRemovableDevice(device_info.device_id)) {
     if (device_id)
       *device_id = device_info.device_id;
-    if (device_name)
-      *device_name = device_info.name;
-    if (relative_path) {
-      *relative_path = FilePath();
-      FilePath mount_point(device_info.location);
-      bool success = mount_point.AppendRelativePath(path, relative_path);
-#if defined(OS_POSIX)
-      if (!relative_path->value().empty() && device_name) {
-        *device_name += ASCIIToUTF16(" (") +
-            relative_path->BaseName().LossyDisplayName() + ASCIIToUTF16(")");
-      }
-#endif
+
+    FilePath sub_folder_path;
+    if (device_name || relative_path) {
+      bool success = FilePath(device_info.location)
+          .AppendRelativePath(path, &sub_folder_path);
       DCHECK(success);
     }
+
+    if (device_name) {
+#if defined(OS_CHROMEOS)
+      *device_name = GetDisplayNameForDevice(
+          notifier->GetStorageSize(device_info.location),
+          sub_folder_path.value().empty() ?
+              device_info.name :
+              sub_folder_path.BaseName().LossyDisplayName() +
+                  ASCIIToUTF16(" - ") + device_info.name);
+#else
+      *device_name = device_info.name;
+#endif
+    }
+
+    if (relative_path)
+      *relative_path = sub_folder_path;
     return true;
   }
 
