@@ -522,32 +522,34 @@ def _CheckIncludeOrderForScope(scope, input_api, file_path, changed_linenums):
   state = C_SYSTEM_INCLUDES
 
   previous_line = ''
+  previous_line_num = 0
   problem_linenums = []
   for line_num, line in scope:
     if c_system_include_pattern.match(line):
       if state != C_SYSTEM_INCLUDES:
-        problem_linenums.append(line_num)
+        problem_linenums.append((line_num, previous_line_num))
       elif previous_line and previous_line > line:
-        problem_linenums.append(line_num)
+        problem_linenums.append((line_num, previous_line_num))
     elif cpp_system_include_pattern.match(line):
       if state == C_SYSTEM_INCLUDES:
         state = CPP_SYSTEM_INCLUDES
       elif state == CUSTOM_INCLUDES:
-        problem_linenums.append(line_num)
+        problem_linenums.append((line_num, previous_line_num))
       elif previous_line and previous_line > line:
-        problem_linenums.append(line_num)
+        problem_linenums.append((line_num, previous_line_num))
     elif custom_include_pattern.match(line):
       if state != CUSTOM_INCLUDES:
         state = CUSTOM_INCLUDES
       elif previous_line and previous_line > line:
-        problem_linenums.append(line_num)
+        problem_linenums.append((line_num, previous_line_num))
     else:
       problem_linenums.append(line_num)
     previous_line = line
+    previous_line_num = line_num
 
   warnings = []
-  for line_num in problem_linenums:
-    if line_num in changed_linenums or line_num - 1 in changed_linenums:
+  for (line_num, previous_line_num) in problem_linenums:
+    if line_num in changed_linenums or previous_line_num in changed_linenums:
       warnings.append('    %s:%d' % (file_path, line_num))
   return warnings
 
@@ -569,8 +571,12 @@ def _CheckIncludeOrderInFile(input_api, output_api, f, is_source,
     for line in contents:
       line_num += 1
       if include_pattern.match(line):
-        expected = '#include "%s"' % f.LocalPath().replace('.cc', '.h')
-        if line != expected:
+        # The file name for the first include needs to be the same as for the
+        # file checked; the path can differ.
+        expected_ending = (
+            input_api.os_path.basename(f.LocalPath()).replace('.cc', '.h') +
+            '"')
+        if not line.endswith(expected_ending):
           # Maybe there was no special first include, and that's fine. Process
           # the line again along with the normal includes.
           line_num -= 1
