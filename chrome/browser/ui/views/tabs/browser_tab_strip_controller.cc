@@ -398,7 +398,7 @@ void BrowserTabStripController::TabMoved(WebContents* contents,
   tabstrip_->MoveTab(from_model_index, to_model_index, data);
 }
 
-void BrowserTabStripController::TabChangedAt(WebContents* contents,
+void BrowserTabStripController::TabChangedAt(TabContents* contents,
                                              int model_index,
                                              TabChangeType change_type) {
   if (change_type == TITLE_NOT_LOADING) {
@@ -407,7 +407,7 @@ void BrowserTabStripController::TabChangedAt(WebContents* contents,
     return;
   }
 
-  SetTabDataAt(contents, model_index);
+  SetTabDataAt(contents->web_contents(), model_index);
 }
 
 void BrowserTabStripController::TabReplacedAt(TabStripModel* tab_strip_model,

@@ -93,7 +93,7 @@ class BrowserLauncherItemController : public LauncherItemController,
   virtual void TabDetachedAt(content::WebContents* contents,
                              int index) OVERRIDE;
   virtual void TabChangedAt(
-      content::WebContents* contents,
+      TabContents* tab,
       int index,
       TabStripModelObserver::TabChangeType change_type) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,

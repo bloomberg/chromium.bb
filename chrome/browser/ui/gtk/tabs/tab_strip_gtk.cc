@@ -1117,8 +1117,7 @@ void TabStripGtk::TabMoved(WebContents* contents,
   ReStack();
 }
 
-void TabStripGtk::TabChangedAt(WebContents* contents,
-                               int index,
+void TabStripGtk::TabChangedAt(TabContents* contents, int index,
                                TabChangeType change_type) {
   // Index is in terms of the model. Need to make sure we adjust that index in
   // case we have an animation going.
@@ -1129,7 +1128,7 @@ void TabStripGtk::TabChangedAt(WebContents* contents,
     // We'll receive another notification of the change asynchronously.
     return;
   }
-  tab->UpdateData(contents,
+  tab->UpdateData(contents->web_contents(),
                   model_->IsAppTab(index),
                   change_type == LOADING_ONLY);
   tab->UpdateFromModel();
@@ -1139,7 +1138,7 @@ void TabStripGtk::TabReplacedAt(TabStripModel* tab_strip_model,
                                 TabContents* old_contents,
                                 TabContents* new_contents,
                                 int index) {
-  TabChangedAt(new_contents->web_contents(), index, ALL);
+  TabChangedAt(new_contents, index, ALL);
 }
 
 void TabStripGtk::TabMiniStateChanged(WebContents* contents, int index) {

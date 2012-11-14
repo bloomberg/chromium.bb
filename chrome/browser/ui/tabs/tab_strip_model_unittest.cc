@@ -311,10 +311,11 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   virtual void TabDeactivated(WebContents* contents) OVERRIDE {
     states_.push_back(State(contents, model()->active_index(), DEACTIVATE));
   }
-  virtual void TabChangedAt(WebContents* contents,
+  virtual void TabChangedAt(TabContents* contents,
                             int index,
                             TabChangeType change_type) OVERRIDE {
-    states_.push_back(State(contents, index, CHANGE));
+    states_.push_back(
+        State(contents ? contents->web_contents() : NULL, index, CHANGE));
   }
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              TabContents* old_contents,

@@ -124,8 +124,7 @@ class TabStripGtk : public TabStripModelObserver,
   virtual void TabSelectionChanged(
       TabStripModel* tab_strip_model,
       const TabStripSelectionModel& old_model) OVERRIDE;
-  virtual void TabChangedAt(content::WebContents* contents,
-                            int index,
+  virtual void TabChangedAt(TabContents* contents, int index,
                             TabChangeType change_type) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              TabContents* old_contents,
