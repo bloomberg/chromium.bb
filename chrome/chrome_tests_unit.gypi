@@ -383,6 +383,7 @@
         '../sync/sync.gyp:test_support_syncapi_service',
         'test_support_unit',
         # 3) anything tests directly depend on
+        '../device/device.gyp:device_bluetooth_mocks',
         '../google_apis/google_apis.gyp:google_apis',
         '../skia/skia.gyp:skia',
         '../third_party/bzip2/bzip2.gyp:bzip2',
@@ -642,6 +643,7 @@
         'browser/extensions/admin_policy_unittest.cc',
         'browser/extensions/api/alarms/alarms_api_unittest.cc',
         'browser/extensions/api/api_resource_manager_unittest.cc',
+        'browser/extensions/api/bluetooth/bluetooth_event_router_unittest.cc',
         'browser/extensions/api/content_settings/content_settings_store_unittest.cc',
         'browser/extensions/api/content_settings/content_settings_unittest.cc',
         'browser/extensions/api/cookies/cookies_unittest.cc',

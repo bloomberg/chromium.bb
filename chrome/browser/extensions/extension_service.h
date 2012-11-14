@@ -65,7 +65,6 @@ class ContentSettingsStore;
 class CrxInstaller;
 class Extension;
 class ExtensionActionStorageManager;
-class ExtensionBluetoothEventRouter;
 class ExtensionCookiesEventRouter;
 class ExtensionManagedModeEventRouter;
 class ExtensionSyncData;
@@ -538,10 +537,6 @@ class ExtensionService
     return window_event_router_.get();
   }
 
-  extensions::ExtensionBluetoothEventRouter* bluetooth_event_router() {
-    return bluetooth_event_router_.get();
-  }
-
 #if defined(OS_CHROMEOS)
   chromeos::ExtensionInputMethodEventRouter* input_method_event_router() {
     return input_method_event_router_.get();
@@ -925,8 +920,6 @@ class ExtensionService
 
   scoped_ptr<extensions::ExtensionManagedModeEventRouter>
       managed_mode_event_router_;
-
-  scoped_ptr<extensions::ExtensionBluetoothEventRouter> bluetooth_event_router_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::ExtensionInputMethodEventRouter>

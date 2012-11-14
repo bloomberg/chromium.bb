@@ -6,7 +6,7 @@
 
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api.h"
-#include "chrome/browser/extensions/bluetooth_event_router.h"
+#include "chrome/browser/extensions/api/bluetooth/bluetooth_event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -97,8 +97,8 @@ class BluetoothApiTest : public ExtensionApiTest {
   scoped_ptr<testing::NiceMock<MockBluetoothDevice> > device2_;
 
   extensions::ExtensionBluetoothEventRouter* event_router() {
-    return browser()->profile()->GetExtensionService()->
-        bluetooth_event_router();
+    return extensions::BluetoothAPI::Get(browser()->profile())
+        ->bluetooth_event_router();
   }
 
  private:

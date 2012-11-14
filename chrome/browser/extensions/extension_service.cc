@@ -44,7 +44,6 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/app_sync_data.h"
-#include "chrome/browser/extensions/bluetooth_event_router.h"
 #include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -537,8 +536,6 @@ void ExtensionService::InitEventRouters() {
       new extensions::PushMessagingEventRouter(profile_));
   media_galleries_private_event_router_.reset(
       new extensions::MediaGalleriesPrivateEventRouter(profile_));
-  bluetooth_event_router_.reset(
-      new extensions::ExtensionBluetoothEventRouter(profile_));
 
 #if defined(OS_CHROMEOS)
   FileBrowserEventRouterFactory::GetForProfile(

@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_BLUETOOTH_EVENT_ROUTER_H_
-#define CHROME_BROWSER_EXTENSIONS_BLUETOOTH_EVENT_ROUTER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_BLUETOOTH_EVENT_ROUTER_H_
+#define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_BLUETOOTH_EVENT_ROUTER_H_
 
 #include <map>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/bluetooth.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_socket.h"
+
+class Profile;
 
 namespace extensions {
 
@@ -24,15 +25,17 @@ class ExtensionBluetoothEventRouter
 
   // adapter() will return NULL if the bluetooth adapter is not supported in the
   // current platform.
-  const device::BluetoothAdapter* adapter() const {
-    return adapter_.get();
-  }
+  scoped_refptr<const device::BluetoothAdapter> adapter();
 
   // GetMutableAdapter will return NULL if the bluetooth adapter is not
   // supported in the current platform.
-  device::BluetoothAdapter* GetMutableAdapter() {
-    return adapter_.get();
-  }
+  scoped_refptr<device::BluetoothAdapter> GetMutableAdapter();
+
+  // Called when a bluetooth event listener is added.
+  void OnListenerAdded();
+
+  // Called when a bluetooth event listener is removed.
+  void OnListenerRemoved();
 
   // Register the BluetoothSocket |socket| for use by the extensions system.
   // This class will hold onto the socket for its lifetime, or until
@@ -74,6 +77,8 @@ class ExtensionBluetoothEventRouter
     adapter_ = adapter;
   }
  private:
+  void InitializeAdapterIfNeeded();
+  void MaybeReleaseAdapter();
   void DispatchBooleanValueEvent(const char* event_name, bool value);
 
   bool send_discovery_events_;
@@ -81,6 +86,8 @@ class ExtensionBluetoothEventRouter
 
   Profile* profile_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
+
+  int num_event_listeners_;
 
   // The next id to use for referring to a BluetoothSocket.  We avoid using
   // the fd of the socket because we don't want to leak that information to
@@ -99,4 +106,4 @@ class ExtensionBluetoothEventRouter
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_BLUETOOTH_EVENT_ROUTER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_BLUETOOTH_EVENT_ROUTER_H_

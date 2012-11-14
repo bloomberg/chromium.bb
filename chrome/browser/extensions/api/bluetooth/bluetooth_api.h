@@ -8,8 +8,11 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/api_function.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace device {
@@ -20,6 +23,35 @@ struct BluetoothOutOfBandPairingData;
 }  // namespace device
 
 namespace extensions {
+
+class ExtensionBluetoothEventRouter;
+
+// The profile-keyed service that manages the bluetooth extension API.
+class BluetoothAPI : public ProfileKeyedService,
+                     public EventRouter::Observer {
+ public:
+  // Convenience method to get the BluetoothAPI for a profile.
+  static BluetoothAPI* Get(Profile* profile);
+
+  explicit BluetoothAPI(Profile* profile);
+  virtual ~BluetoothAPI();
+
+  ExtensionBluetoothEventRouter* bluetooth_event_router();
+
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
+  // EventRouter::Observer implementation.
+  virtual void OnListenerAdded(const std::string& event_name) OVERRIDE;
+  virtual void OnListenerRemoved(const std::string& event_name) OVERRIDE;
+
+ private:
+  Profile* profile_;
+
+  // Created lazily on first access.
+  scoped_ptr<ExtensionBluetoothEventRouter> bluetooth_event_router_;
+};
+
 namespace api {
 
 class BluetoothIsAvailableFunction : public SyncExtensionFunction {

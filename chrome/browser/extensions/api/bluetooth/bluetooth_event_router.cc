@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/bluetooth_event_router.h"
+#include "chrome/browser/extensions/api/bluetooth/bluetooth_event_router.h"
 
 #include <map>
+#include <string>
 
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted.h"
@@ -26,18 +27,40 @@ ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(Profile* profile)
     : send_discovery_events_(false),
       responsible_for_discovery_(false),
       profile_(profile),
-      adapter_(device::BluetoothAdapterFactory::DefaultAdapter()),
+      adapter_(NULL),
+      num_event_listeners_(0),
       next_socket_id_(1) {
   DCHECK(profile_);
-  if (adapter_.get())
-    adapter_->AddObserver(this);
 }
 
 ExtensionBluetoothEventRouter::~ExtensionBluetoothEventRouter() {
-  if (adapter_.get())
-    adapter_->RemoveObserver(this);
+  CHECK(socket_map_.size() == 0);
+  CHECK(num_event_listeners_ == 0);
+  MaybeReleaseAdapter();
+}
 
-  socket_map_.clear();
+scoped_refptr<const device::BluetoothAdapter>
+ExtensionBluetoothEventRouter::adapter() {
+  return GetMutableAdapter();
+}
+
+scoped_refptr<device::BluetoothAdapter>
+ExtensionBluetoothEventRouter::GetMutableAdapter() {
+  if (adapter_)
+    return adapter_;
+
+  return device::BluetoothAdapterFactory::DefaultAdapter();
+}
+
+void ExtensionBluetoothEventRouter::OnListenerAdded() {
+  num_event_listeners_++;
+  InitializeAdapterIfNeeded();
+}
+
+void ExtensionBluetoothEventRouter::OnListenerRemoved() {
+  num_event_listeners_--;
+  CHECK(num_event_listeners_ >= 0);
+  MaybeReleaseAdapter();
 }
 
 int ExtensionBluetoothEventRouter::RegisterSocket(
@@ -103,7 +126,7 @@ void ExtensionBluetoothEventRouter::DispatchDeviceEvent(
 
 void ExtensionBluetoothEventRouter::AdapterPresentChanged(
     device::BluetoothAdapter* adapter, bool present) {
-  if (adapter != adapter_.get()) {
+  if (adapter != adapter_) {
     DVLOG(1) << "Ignoring event for adapter " << adapter->address();
     return;
   }
@@ -115,7 +138,7 @@ void ExtensionBluetoothEventRouter::AdapterPresentChanged(
 
 void ExtensionBluetoothEventRouter::AdapterPoweredChanged(
     device::BluetoothAdapter* adapter, bool has_power) {
-  if (adapter != adapter_.get()) {
+  if (adapter != adapter_) {
     DVLOG(1) << "Ignoring event for adapter " << adapter->address();
     return;
   }
@@ -127,7 +150,7 @@ void ExtensionBluetoothEventRouter::AdapterPoweredChanged(
 
 void ExtensionBluetoothEventRouter::AdapterDiscoveringChanged(
     device::BluetoothAdapter* adapter, bool discovering) {
-  if (adapter != adapter_.get()) {
+  if (adapter != adapter_) {
     DVLOG(1) << "Ignoring event for adapter " << adapter->address();
     return;
   }
@@ -146,7 +169,7 @@ void ExtensionBluetoothEventRouter::AdapterDiscoveringChanged(
 void ExtensionBluetoothEventRouter::DeviceAdded(
     device::BluetoothAdapter* adapter,
     device::BluetoothDevice* device) {
-  if (adapter != adapter_.get()) {
+  if (adapter != adapter_) {
     DVLOG(1) << "Ignoring event for adapter " << adapter->address();
     return;
   }
@@ -162,6 +185,20 @@ void ExtensionBluetoothEventRouter::DeviceAdded(
 
   DispatchDeviceEvent(extensions::event_names::kBluetoothOnDeviceDiscovered,
                       *extension_device);
+}
+
+void ExtensionBluetoothEventRouter::InitializeAdapterIfNeeded() {
+  if (!adapter_) {
+    adapter_ = GetMutableAdapter();
+    adapter_->AddObserver(this);
+  }
+}
+
+void ExtensionBluetoothEventRouter::MaybeReleaseAdapter() {
+  if (adapter_ && num_event_listeners_ == 0) {
+    adapter_->RemoveObserver(this);
+    adapter_ = NULL;
+  }
 }
 
 void ExtensionBluetoothEventRouter::DispatchBooleanValueEvent(
