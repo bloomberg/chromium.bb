@@ -32,14 +32,10 @@ specific_include_rules = {
     "!chrome/browser/chromeos/system/timezone_settings.h",
     "!chrome/test/base/testing_profile.h",
     "!content/public/test/test_browser_thread.h",
-    "!content/public/test/test_utils.h",
   ],
   ".*_browsertest\.cc": [
     "!chrome/browser/ui/browser.h",
     "!chrome/test/base/in_process_browser_test.h",
     "!chrome/test/base/ui_test_utils.h",
-  ],
-  "http_server.cc": [
-    "!content/public/test/test_utils.h",
-  ],
+  ]
 }
