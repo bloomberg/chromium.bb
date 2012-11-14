@@ -10,7 +10,6 @@ Used by Chromium OS buildbot configuration for all Chromium OS builds including
 full and pre-flight-queue builds.
 """
 
-import collections
 import distutils.version
 import glob
 import logging
@@ -931,6 +930,10 @@ def _FinishParsing(options, args):
   Args:
     options, args: The options/args object returned by optparse
   """
+  # Populate options.pass_through_args.
+  accepted, _ = commandline.FilteringParser.FilterArgs(
+      options.parsed_args, lambda x: x.opt_inst.pass_through)
+  options.pass_through_args.extend(accepted)
 
   if options.chrome_root:
     if options.chrome_rev != constants.CHROME_REV_LOCAL:
@@ -1004,11 +1007,6 @@ def _FinishParsing(options, args):
     # 2. --remote invocations, because it needs to push changes to the tryjob
     #    repo.
     options.debug = not options.buildbot and not options.remote
-
-  # Populate options.pass_through_args.
-  accepted, _ = commandline.FilteringParser.FilterArgs(
-      options.parsed_args, lambda x: x.opt_inst.pass_through)
-  options.pass_through_args.extend(accepted)
 
   # Record the configs targeted.
   options.build_targets = args[:]

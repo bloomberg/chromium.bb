@@ -194,7 +194,9 @@ class InterfaceTest(cros_test_lib.MoxTestCase):
 
   def setUp(self):
     self.parser = cbuildbot._CreateParser()
-    self.mox.StubOutWithMock(cros_build_lib, 'Die')
+
+  def assertDieSysExit(self, *args, **kwargs):
+    self.assertRaises(cros_build_lib.DieSystemExit, *args, **kwargs)
 
   # Let this test run for a max of 3s; if it takes longer, then it's
   # likely that there is an exec loop in the pathways.
@@ -245,7 +247,6 @@ class InterfaceTest(cros_test_lib.MoxTestCase):
     args = ['-r', self._BUILD_ROOT, '--remote', '--local-patches',
             ' proj:br \t  proj2:b2 ',
             self._X86_PREFLIGHT]
-    self.mox.ReplayAll()
     (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
     self.assertEquals(options.local_patches, ['proj:br', 'proj2:b2'])
 
@@ -253,17 +254,19 @@ class InterfaceTest(cros_test_lib.MoxTestCase):
     """Test that --buildbot errors out with patches."""
     args = ['-r', self._BUILD_ROOT, '--buildbot', '-g', '1234',
             self._X86_PREFLIGHT]
-    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
-    self.mox.ReplayAll()
-    self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
+    self.assertDieSysExit(cbuildbot._ParseCommandLine, self.parser, args)
 
   def testRemoteBuildBotWithRemotePatches(self):
     """Test that --buildbot and --remote errors out with patches."""
     args = ['-r', self._BUILD_ROOT, '--buildbot', '--remote', '-g', '1234',
             self._X86_PREFLIGHT]
-    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
-    self.mox.ReplayAll()
-    self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
+    self.assertDieSysExit(cbuildbot._ParseCommandLine, self.parser, args)
+
+  def testBuildbotDebugWithPatches(self):
+    """Test we can test patches with --buildbot --debug."""
+    args = ['--remote', '-g', '1234', '--debug', '--buildbot',
+            self._X86_PREFLIGHT]
+    cbuildbot._ParseCommandLine(self.parser, args)
 
   def testBuildBotWithoutProfileOption(self):
     """Test that no --profile option gets defaulted."""
@@ -306,10 +309,7 @@ class InterfaceTest(cros_test_lib.MoxTestCase):
     """User should not be clobbering our own source."""
     cwd = os.path.dirname(os.path.realpath(__file__))
     buildroot = os.path.dirname(cwd)
-    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
-    self.mox.ReplayAll()
-    self.assertRaises(Exception, commands.ValidateClobber, buildroot)
-    self.mox.VerifyAll()
+    self.assertDieSysExit(commands.ValidateClobber, buildroot)
 
   def testBuildBotWithBadChromeRevOption(self):
     """chrome_rev can't be passed an invalid option after chrome_root."""
@@ -318,10 +318,7 @@ class InterfaceTest(cros_test_lib.MoxTestCase):
         '--chrome_root=.',
         '--chrome_rev=%s' % constants.CHROME_REV_TOT,
         self._X86_PREFLIGHT]
-    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
-    self.mox.ReplayAll()
-    self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
-    self.mox.VerifyAll()
+    self.assertDieSysExit(cbuildbot._ParseCommandLine, self.parser, args)
 
   def testBuildBotWithBadChromeRootOption(self):
     """chrome_root can't get passed after non-local chrome_rev."""
@@ -330,10 +327,7 @@ class InterfaceTest(cros_test_lib.MoxTestCase):
         '--chrome_rev=%s' % constants.CHROME_REV_TOT,
         '--chrome_root=.',
         self._X86_PREFLIGHT]
-    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
-    self.mox.ReplayAll()
-    self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
-    self.mox.VerifyAll()
+    self.assertDieSysExit(cbuildbot._ParseCommandLine, self.parser, args)
 
   def testBuildBotWithBadChromeRevOptionLocal(self):
     """chrome_rev can't be local without chrome_root."""
@@ -341,10 +335,7 @@ class InterfaceTest(cros_test_lib.MoxTestCase):
         '--buildroot=/tmp',
         '--chrome_rev=%s' % constants.CHROME_REV_LOCAL,
         self._X86_PREFLIGHT]
-    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
-    self.mox.ReplayAll()
-    self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
-    self.mox.VerifyAll()
+    self.assertDieSysExit(cbuildbot._ParseCommandLine, self.parser, args)
 
   def testBuildBotWithGoodChromeRootOption(self):
     """chrome_root can be set without chrome_rev."""
@@ -385,6 +376,12 @@ class InterfaceTest(cros_test_lib.MoxTestCase):
     (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
     self.assertEquals(options.pass_through_args, ['--lkgm', '-g', '1234'])
 
+  def testDebugPassThrough(self):
+    """Test we are passing --debug through."""
+    args = ['--remote', '--debug', '--buildbot', self._X86_PREFLIGHT]
+    (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
+    self.assertEquals(options.pass_through_args, ['--debug', '--buildbot'])
+
   def testGerritChromeOptionSet(self):
     """Test --gerrit-chrome works as expected."""
     args = ['--gerrit-chrome',  self._X86_PREFLIGHT]
@@ -395,17 +392,13 @@ class InterfaceTest(cros_test_lib.MoxTestCase):
   def testGerritChromeOptionError(self):
     """Test --gerrit-chrome error case."""
     args = ['--gerrit-chrome', '--remote-trybot', self._X86_PREFLIGHT]
-    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
-    self.mox.ReplayAll()
-    self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
+    self.assertDieSysExit(cbuildbot._ParseCommandLine, self.parser, args)
 
   def testGerritChromeOptionError2(self):
     """Test --gerrit-chrome error case 2."""
     args = ['--gerrit-chrome', '--chrome_rev=latest_release',
             self._X86_PREFLIGHT]
-    cros_build_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
-    self.mox.ReplayAll()
-    self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
+    self.assertDieSysExit(cbuildbot._ParseCommandLine, self.parser, args)
 
 
 class FullInterfaceTest(cros_test_lib.MoxTempDirTestCase):
