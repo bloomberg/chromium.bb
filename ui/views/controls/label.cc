@@ -397,6 +397,18 @@ int Label::ComputeDrawStringFlags() const {
       flags |= gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
   }
 
+  switch (horizontal_alignment_) {
+    case gfx::ALIGN_LEFT:
+      flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
+      break;
+    case gfx::ALIGN_CENTER:
+      flags |= gfx::Canvas::TEXT_ALIGN_CENTER;
+      break;
+    case gfx::ALIGN_RIGHT:
+      flags |= gfx::Canvas::TEXT_ALIGN_RIGHT;
+      break;
+  }
+
   if (!is_multi_line_)
     return flags;
 
@@ -411,17 +423,6 @@ int Label::ComputeDrawStringFlags() const {
 #endif
   if (allow_character_break_)
     flags |= gfx::Canvas::CHARACTER_BREAK;
-  switch (horizontal_alignment_) {
-    case gfx::ALIGN_LEFT:
-      flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
-      break;
-    case gfx::ALIGN_CENTER:
-      flags |= gfx::Canvas::TEXT_ALIGN_CENTER;
-      break;
-    case gfx::ALIGN_RIGHT:
-      flags |= gfx::Canvas::TEXT_ALIGN_RIGHT;
-      break;
-  }
 
   return flags;
 }
