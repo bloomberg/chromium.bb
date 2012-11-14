@@ -68,8 +68,8 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
     // http://crbug.com/155671
     //
     // ICU can accept "en-US" or "en_US", but POSIX wants "en_US".
-    // TODO(shess): "en_US.UTF-8" might be even better.
     std::replace(locale.begin(), locale.end(), '-', '_');
+    locale.append(".UTF-8");
     setlocale(LC_ALL, locale.c_str());
     setenv("LANG", locale.c_str(), 0);
 #endif
