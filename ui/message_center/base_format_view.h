@@ -25,8 +25,7 @@ class BaseFormatView : public MessageView {
   virtual void SetUpView() OVERRIDE;
 
   // views::ButtonListener
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+  virtual void ButtonPressed(views::Button* sender, const ui::Event& event);
 
  protected:
   BaseFormatView();
