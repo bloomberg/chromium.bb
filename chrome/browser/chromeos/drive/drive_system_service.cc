@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/drive/drive_prefetcher.h"
 #include "chrome/browser/chromeos/drive/drive_sync_client.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/drive/event_logger.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "chrome/browser/chromeos/drive/stale_cache_files_remover.h"
 #include "chrome/browser/download/download_service.h"
@@ -40,6 +41,8 @@ using content::BrowserThread;
 
 namespace drive {
 namespace {
+
+static const size_t kEventLogHistorySize = 100;
 
 // Used in test to setup system service.
 google_apis::DriveServiceInterface* g_test_drive_service = NULL;
@@ -88,6 +91,7 @@ void DriveSystemService::Initialize(
     const FilePath& cache_root) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  event_logger_.reset(new EventLogger(kEventLogHistorySize));
   drive_service_.reset(drive_service);
   cache_ = DriveCache::CreateDriveCache(cache_root, blocking_task_runner_);
   uploader_.reset(new google_apis::DriveUploader(drive_service_.get()));
@@ -220,6 +224,7 @@ void DriveSystemService::AddDriveMountPoint() {
       BrowserContext::GetDefaultStoragePartition(profile_)->
           GetFileSystemContext()->external_provider();
   if (provider && !provider->HasMountPoint(mount_point)) {
+    event_logger_->Log("AddDriveMountPoint");
     provider->AddRemoteMountPoint(
         mount_point,
         new DriveFileSystemProxy(file_system_.get()));
@@ -238,8 +243,10 @@ void DriveSystemService::RemoveDriveMountPoint() {
   fileapi::ExternalFileSystemMountPointProvider* provider =
       BrowserContext::GetDefaultStoragePartition(profile_)->
           GetFileSystemContext()->external_provider();
-  if (provider && provider->HasMountPoint(mount_point))
+  if (provider && provider->HasMountPoint(mount_point)) {
     provider->RemoveMountPoint(mount_point);
+    event_logger_->Log("RemoveDriveMountPoint");
+  }
 }
 
 void DriveSystemService::OnCacheInitialized(bool success) {

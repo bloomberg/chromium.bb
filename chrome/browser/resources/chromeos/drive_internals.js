@@ -188,6 +188,15 @@ function updateDeltaUpdateStatus(deltaUpdateStatus) {
 }
 
 /**
+ * Updates the event log section.
+ * @param {Array} log Array of events.
+ */
+function updateEventLog(log) {
+  var ul = $('event-log');
+  updateKeyValueList(ul, log);
+}
+
+/**
  * Creates an element named |elementName| containing the content |text|.
  * @param {string} elementName Name of the new element to be created.
  * @param {string} text Text to be contained in the new element.

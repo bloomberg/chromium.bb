@@ -29,9 +29,10 @@ class DriveCache;
 class DriveDownloadObserver;
 class DriveFileSystemInterface;
 class DriveWebAppsRegistry;
-class FileWriteHelper;
 class DriveSyncClient;
 class DrivePrefetcher;
+class EventLogger;
+class FileWriteHelper;
 class StaleCacheFilesRemover;
 
 // DriveSystemService runs the Drive system, including the Drive file system
@@ -52,6 +53,7 @@ class DriveSystemService : public ProfileKeyedService,
   FileWriteHelper* file_write_helper() { return file_write_helper_.get(); }
   google_apis::DriveUploader* uploader() { return uploader_.get(); }
   DriveWebAppsRegistry* webapps_registry() { return webapps_registry_.get(); }
+  EventLogger* event_logger() { return event_logger_.get(); }
 
   // Clears all the local cache files and in-memory data, and remounts the file
   // system.
@@ -112,6 +114,7 @@ class DriveSystemService : public ProfileKeyedService,
   bool push_notification_registered_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  scoped_ptr<EventLogger> event_logger_;
   DriveCache* cache_;
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
   scoped_ptr<google_apis::DriveUploader> uploader_;
