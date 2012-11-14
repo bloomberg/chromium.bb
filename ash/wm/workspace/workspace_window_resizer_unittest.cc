@@ -21,6 +21,7 @@
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -515,6 +516,19 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
               GetRestoreBoundsInScreen(window_.get())->ToString());
   }
 #endif
+}
+
+// Check that non resizable windows will not get resized.
+TEST_F(WorkspaceWindowResizerTest, NonResizableWindows) {
+  window_->SetBounds(gfx::Rect(20, 30, 50, 60));
+  window_->SetProperty(aura::client::kCanResizeKey, false);
+
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, -20, 0), 0);
+  resizer->CompleteDrag(0);
+  EXPECT_EQ("0,30 50x60", window_->bounds().ToString());
 }
 
 // Verifies a window can be moved from the primary display to another.

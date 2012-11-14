@@ -36,6 +36,10 @@ scoped_ptr<WindowResizer> CreateWindowResizer(aura::Window* window,
                                               const gfx::Point& point_in_parent,
                                               int window_component) {
   DCHECK(window);
+  // No need to return a resizer when the window cannot get resized.
+  if (!wm::CanResizeWindow(window) && window_component != HTCAPTION)
+    return scoped_ptr<WindowResizer>();
+
   if (window->parent() &&
       window->parent()->id() == internal::kShellWindowId_WorkspaceContainer) {
     // Allow dragging maximized windows if it's not tracked by workspace. This
@@ -287,7 +291,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   const bool in_original_root =
       wm::GetRootWindowAt(location_in_screen) == window()->GetRootWindow();
   // Hide a phantom window for snapping if the cursor is in another root window.
-  if (in_original_root) {
+  if (in_original_root && wm::CanResizeWindow(window())) {
     UpdateSnapPhantomWindow(location_in_parent, bounds);
   } else {
     snap_type_ = SNAP_NONE;

@@ -79,6 +79,10 @@ bool CanMaximizeWindow(const aura::Window* window) {
   return window->GetProperty(aura::client::kCanMaximizeKey);
 }
 
+bool CanResizeWindow(const aura::Window* window) {
+  return window->GetProperty(aura::client::kCanResizeKey);
+}
+
 bool IsWindowNormal(const aura::Window* window) {
   return IsWindowStateNormal(window->GetProperty(aura::client::kShowStateKey));
 }
