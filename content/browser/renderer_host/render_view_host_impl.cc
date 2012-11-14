@@ -1533,8 +1533,10 @@ void RenderViewHostImpl::OnAddMessageToConsole(
   int32 resolved_level =
       (enabled_bindings_ & BINDINGS_POLICY_WEB_UI) ? level : 0;
 
-  logging::LogMessage("CONSOLE", line_no, resolved_level).stream() << "\"" <<
-      message << "\", source: " << source_id << " (" << line_no << ")";
+  if (resolved_level >= ::logging::GetMinLogLevel()) {
+    logging::LogMessage("CONSOLE", line_no, resolved_level).stream() << "\"" <<
+        message << "\", source: " << source_id << " (" << line_no << ")";
+  }
 }
 
 void RenderViewHostImpl::AddObserver(RenderViewHostObserver* observer) {
