@@ -173,101 +173,89 @@ net::X509Certificate* CertIdMap::CallbackArgsToCert(
 
 // TODO(mattm): Move to some shared location?
 class FileAccessProvider
-    : public base::RefCountedThreadSafe<FileAccessProvider>,
-      public CancelableRequestProvider {
+    : public base::RefCountedThreadSafe<FileAccessProvider> {
  public:
-  // Reports 0 on success or errno on failure, and the data of the file upon
-  // success.
-  // TODO(mattm): don't pass std::string by value.. could use RefCountedBytes
-  // but it's a vector.  Maybe do the derive from CancelableRequest thing
-  // described in cancelable_request.h?
-  typedef base::Callback<void(int, std::string)> ReadCallback;
+  // The first parameter is 0 on success or errno on failure. The second
+  // parameter is read result.
+  typedef base::Callback<void(const int*, const std::string*)> ReadCallback;
 
-  // Reports 0 on success or errno on failure, and the number of bytes written,
-  // on success.
-  typedef base::Callback<void(int, int)> WriteCallback;
+  // The first parameter is 0 on success or errno on failure. The second
+  // parameter is the number of bytes written on success.
+  typedef base::Callback<void(const int*, const int*)> WriteCallback;
 
-  Handle StartRead(const FilePath& path,
-                   CancelableRequestConsumerBase* consumer,
-                   const ReadCallback& callback);
-  Handle StartWrite(const FilePath& path,
-                    const std::string& data,
-                    CancelableRequestConsumerBase* consumer,
-                    const WriteCallback& callback);
+  CancelableTaskTracker::TaskId StartRead(const FilePath& path,
+                                          const ReadCallback& callback,
+                                          CancelableTaskTracker* tracker);
+  CancelableTaskTracker::TaskId StartWrite(const FilePath& path,
+                                           const std::string& data,
+                                           const WriteCallback& callback,
+                                           CancelableTaskTracker* tracker);
 
  private:
   friend class base::RefCountedThreadSafe<FileAccessProvider>;
   virtual ~FileAccessProvider() {}
 
-  void DoRead(scoped_refptr<CancelableRequest<ReadCallback> > request,
-              FilePath path);
-  void DoWrite(scoped_refptr<CancelableRequest<WriteCallback> > request,
-              FilePath path,
-              std::string data);
+  // Reads file at |path|. |saved_errno| is 0 on success or errno on failure.
+  // When success, |data| has file content.
+  void DoRead(const FilePath& path,
+              int* saved_errno,
+              std::string* data);
+  // Writes data to file at |path|. |saved_errno| is 0 on success or errno on
+  // failure. When success, |bytes_written| has number of bytes written.
+  void DoWrite(const FilePath& path,
+               const std::string& data,
+               int* saved_errno,
+               int* bytes_written);
 };
 
-CancelableRequestProvider::Handle FileAccessProvider::StartRead(
+CancelableTaskTracker::TaskId FileAccessProvider::StartRead(
     const FilePath& path,
-    CancelableRequestConsumerBase* consumer,
-    const FileAccessProvider::ReadCallback& callback) {
-  scoped_refptr<CancelableRequest<ReadCallback> > request(
-      new CancelableRequest<ReadCallback>(callback));
-  AddRequest(request, consumer);
+    const ReadCallback& callback,
+    CancelableTaskTracker* tracker) {
+  // Owned by reply callback posted below.
+  int* saved_errno = new int(0);
+  std::string* data = new std::string();
 
-  // Send the parameters and the request to the file thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&FileAccessProvider::DoRead, this, request, path));
-
-  // The handle will have been set by AddRequest.
-  return request->handle();
+  // Post task to file thread to read file.
+  return tracker->PostTaskAndReply(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      FROM_HERE,
+      base::Bind(&FileAccessProvider::DoRead, this, path, saved_errno, data),
+      base::Bind(callback, base::Owned(saved_errno), base::Owned(data)));
 }
 
-CancelableRequestProvider::Handle FileAccessProvider::StartWrite(
+CancelableTaskTracker::TaskId FileAccessProvider::StartWrite(
     const FilePath& path,
     const std::string& data,
-    CancelableRequestConsumerBase* consumer,
-    const WriteCallback& callback) {
-  scoped_refptr<CancelableRequest<WriteCallback> > request(
-      new CancelableRequest<WriteCallback>(callback));
-  AddRequest(request, consumer);
+    const WriteCallback& callback,
+    CancelableTaskTracker* tracker) {
+  // Owned by reply callback posted below.
+  int* saved_errno = new int(0);
+  int* bytes_written = new int(0);
 
-  // Send the parameters and the request to the file thWrite.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&FileAccessProvider::DoWrite, this, request, path, data));
-
-  // The handle will have been set by AddRequest.
-  return request->handle();
+  // Post task to file thread to write file.
+  return tracker->PostTaskAndReply(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      FROM_HERE,
+      base::Bind(&FileAccessProvider::DoWrite, this,
+                 path, data, saved_errno, bytes_written),
+      base::Bind(callback,
+                 base::Owned(saved_errno), base::Owned(bytes_written)));
 }
 
-void FileAccessProvider::DoRead(
-    scoped_refptr<CancelableRequest<ReadCallback> > request,
-    FilePath path) {
-  if (request->canceled())
-    return;
-
-  std::string data;
-  VLOG(1) << "DoRead starting read";
-  bool success = file_util::ReadFileToString(path, &data);
-  int saved_errno = success ? 0 : errno;
-  VLOG(1) << "DoRead done read: " << success << " " << data.size();
-  request->ForwardResult(saved_errno, data);
+void FileAccessProvider::DoRead(const FilePath& path,
+                                int* saved_errno,
+                                std::string* data) {
+  bool success = file_util::ReadFileToString(path, data);
+  *saved_errno = success ? 0 : errno;
 }
 
-void FileAccessProvider::DoWrite(
-    scoped_refptr<CancelableRequest<WriteCallback> > request,
-    FilePath path,
-    std::string data) {
-  VLOG(1) << "DoWrite starting write";
-  int bytes_written = file_util::WriteFile(path, data.data(), data.size());
-  int saved_errno = bytes_written >= 0 ? 0 : errno;
-  VLOG(1) << "DoWrite done write " << bytes_written;
-
-  if (request->canceled())
-    return;
-
-  request->ForwardResult(saved_errno, bytes_written);
+void FileAccessProvider::DoWrite(const FilePath& path,
+                                 const std::string& data,
+                                 int* saved_errno,
+                                 int* bytes_written) {
+  *bytes_written = file_util::WriteFile(path, data.data(), data.size());
+  *saved_errno = bytes_written >= 0 ? 0 : errno;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -645,20 +633,20 @@ void CertificateManagerHandler::ExportPersonalSlotsUnlocked() {
   file_access_provider_->StartWrite(
       file_path_,
       output,
-      &consumer_,
       base::Bind(&CertificateManagerHandler::ExportPersonalFileWritten,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      &tracker_);
 }
 
-void CertificateManagerHandler::ExportPersonalFileWritten(int write_errno,
-                                                          int bytes_written) {
+void CertificateManagerHandler::ExportPersonalFileWritten(
+    const int* write_errno, const int* bytes_written) {
   web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
   ImportExportCleanup();
-  if (write_errno) {
+  if (*write_errno) {
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_EXPORT_ERROR_TITLE),
         l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_WRITE_ERROR_FORMAT,
-                                  UTF8ToUTF16(safe_strerror(write_errno))));
+                                  UTF8ToUTF16(safe_strerror(*write_errno))));
   }
 }
 
@@ -701,24 +689,24 @@ void CertificateManagerHandler::ImportPersonalPasswordSelected(
   }
   file_access_provider_->StartRead(
       file_path_,
-      &consumer_,
       base::Bind(&CertificateManagerHandler::ImportPersonalFileRead,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      &tracker_);
 }
 
 void CertificateManagerHandler::ImportPersonalFileRead(
-    int read_errno, std::string data) {
-  if (read_errno) {
+    const int* read_errno, const std::string* data) {
+  if (*read_errno) {
     ImportExportCleanup();
     web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE),
         l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_READ_ERROR_FORMAT,
-                                  UTF8ToUTF16(safe_strerror(read_errno))));
+                                  UTF8ToUTF16(safe_strerror(*read_errno))));
     return;
   }
 
-  file_data_ = data;
+  file_data_ = *data;
 
   if (use_hardware_backed_) {
     module_ = certificate_manager_model_->cert_db()->GetPrivateModule();
@@ -808,24 +796,24 @@ void CertificateManagerHandler::ImportServerFileSelected(const FilePath& path) {
   file_path_ = path;
   file_access_provider_->StartRead(
       file_path_,
-      &consumer_,
       base::Bind(&CertificateManagerHandler::ImportServerFileRead,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      &tracker_);
 }
 
-void CertificateManagerHandler::ImportServerFileRead(int read_errno,
-                                                     std::string data) {
-  if (read_errno) {
+void CertificateManagerHandler::ImportServerFileRead(const int* read_errno,
+                                                     const std::string* data) {
+  if (*read_errno) {
     ImportExportCleanup();
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_SERVER_IMPORT_ERROR_TITLE),
         l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_READ_ERROR_FORMAT,
-                                  UTF8ToUTF16(safe_strerror(read_errno))));
+                                  UTF8ToUTF16(safe_strerror(*read_errno))));
     return;
   }
 
   selected_cert_list_ = net::X509Certificate::CreateCertificateListFromBytes(
-          data.data(), data.size(), net::X509Certificate::FORMAT_AUTO);
+          data->data(), data->size(), net::X509Certificate::FORMAT_AUTO);
   if (selected_cert_list_.empty()) {
     ImportExportCleanup();
     ShowError(
@@ -866,24 +854,24 @@ void CertificateManagerHandler::ImportCAFileSelected(const FilePath& path) {
   file_path_ = path;
   file_access_provider_->StartRead(
       file_path_,
-      &consumer_,
       base::Bind(&CertificateManagerHandler::ImportCAFileRead,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      &tracker_);
 }
 
-void CertificateManagerHandler::ImportCAFileRead(int read_errno,
-                                                 std::string data) {
-  if (read_errno) {
+void CertificateManagerHandler::ImportCAFileRead(const int* read_errno,
+                                                const std::string* data) {
+  if (*read_errno) {
     ImportExportCleanup();
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE),
         l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_READ_ERROR_FORMAT,
-                                  UTF8ToUTF16(safe_strerror(read_errno))));
+                                  UTF8ToUTF16(safe_strerror(*read_errno))));
     return;
   }
 
   selected_cert_list_ = net::X509Certificate::CreateCertificateListFromBytes(
-          data.data(), data.size(), net::X509Certificate::FORMAT_AUTO);
+          data->data(), data->size(), net::X509Certificate::FORMAT_AUTO);
   if (selected_cert_list_.empty()) {
     ImportExportCleanup();
     ShowError(

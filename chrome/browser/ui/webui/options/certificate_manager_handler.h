@@ -11,8 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/certificate_manager_model.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "net/base/nss_cert_database.h"
 #include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/gfx/native_widget_types.h"
@@ -82,7 +82,8 @@ class CertificateManagerHandler
   void ExportPersonalFileSelected(const FilePath& path);
   void ExportPersonalPasswordSelected(const base::ListValue* args);
   void ExportPersonalSlotsUnlocked();
-  void ExportPersonalFileWritten(int write_errno, int bytes_written);
+  void ExportPersonalFileWritten(const int* write_errno,
+                                 const int* bytes_written);
 
   // Import from PKCS #12 file.  The sequence goes like:
   //  1. user click on import button -> StartImportPersonal -> launches file
@@ -100,7 +101,7 @@ class CertificateManagerHandler
   void StartImportPersonal(const base::ListValue* args);
   void ImportPersonalFileSelected(const FilePath& path);
   void ImportPersonalPasswordSelected(const base::ListValue* args);
-  void ImportPersonalFileRead(int read_errno, std::string data);
+  void ImportPersonalFileRead(const int* read_errno, const std::string* data);
   void ImportPersonalSlotUnlocked();
 
   // Import Server certificates from file.  Sequence goes like:
@@ -111,7 +112,7 @@ class CertificateManagerHandler
   //  4b. if import fails -> show error, ImportExportCleanup
   void ImportServer(const base::ListValue* args);
   void ImportServerFileSelected(const FilePath& path);
-  void ImportServerFileRead(int read_errno, std::string data);
+  void ImportServerFileRead(const int* read_errno, const std::string* data);
 
   // Import Certificate Authorities from file.  Sequence goes like:
   //  1. user clicks on import button -> ImportCA -> launches file selector
@@ -123,7 +124,7 @@ class CertificateManagerHandler
   //  5b. if import fails -> show error, ImportExportCleanup
   void ImportCA(const base::ListValue* args);
   void ImportCAFileSelected(const FilePath& path);
-  void ImportCAFileRead(int read_errno, std::string data);
+  void ImportCAFileRead(const int* read_errno, const std::string* data);
   void ImportCATrustSelected(const base::ListValue* args);
 
   // Export a certificate.
@@ -173,7 +174,7 @@ class CertificateManagerHandler
   scoped_refptr<net::CryptoModule> module_;
 
   // Used in reading and writing certificate files.
-  CancelableRequestConsumer consumer_;
+  CancelableTaskTracker tracker_;
   scoped_refptr<FileAccessProvider> file_access_provider_;
 
   base::WeakPtrFactory<CertificateManagerHandler> weak_ptr_factory_;
