@@ -10,6 +10,8 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
+#include "ppapi/cpp/dev/directory_entry_dev.h"
+#include "ppapi/cpp/dev/directory_reader_dev.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/file_system.h"
@@ -30,6 +32,9 @@ const char* kTempFileName = "temporary";
 const char* kParentPath = "/foo/bar";
 const char* kPersFilePath = "/foo/bar/persistent";
 const char* kTempFilePath = "/foo/bar/temporary";
+#ifndef PPAPI_OS_NACL  // Only used for a test that NaCl can't run yet.
+const char* kTerribleName = "!@#$%^&*()-_=+{}[] ;:'\"|`~\t\n\r\b?";
+#endif
 
 std::string ReportMismatch(const std::string& method_name,
                            const std::string& returned_result,
@@ -54,6 +59,9 @@ void TestFileRef::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(QueryAndTouchFile, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(DeleteFileAndDirectory, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(RenameFileAndDirectory, filter);
+#ifndef PPAPI_OS_NACL  // NaCl can't run this test yet.
+  RUN_TEST_FORCEASYNC_AND_NOT(FileNameEscaping, filter);
+#endif
 }
 
 std::string TestFileRef::TestCreate() {
@@ -670,3 +678,67 @@ std::string TestFileRef::TestRenameFileAndDirectory() {
 
   PASS();
 }
+
+#ifndef PPAPI_OS_NACL
+std::string TestFileRef::TestFileNameEscaping() {
+  // The directory methods we need only work in-process and not in NaCl for now.
+  if (testing_interface_->IsOutOfProcess())
+    PASS();
+
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+  pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  int32_t rv = file_system.Open(1024, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileSystem::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileSystem::Open", rv);
+
+  std::string test_dir_path = "/dir_for_escaping_test";
+  // Create a directory in which to test.
+  pp::FileRef test_dir_ref(file_system, test_dir_path.c_str());
+  rv = test_dir_ref.MakeDirectory(callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileRef::MakeDirectory force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileRef::MakeDirectory", rv);
+
+  // Create the file with the terrible name.
+  std::string full_file_path = test_dir_path + "/" + kTerribleName;
+  pp::FileRef file_ref(file_system, full_file_path.c_str());
+  pp::FileIO file_io(instance_);
+  rv = file_io.Open(file_ref, PP_FILEOPENFLAG_CREATE, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("FileIO::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileIO::Open", rv);
+
+  pp::DirectoryReader_Dev directory_reader(test_dir_ref);
+  pp::DirectoryEntry_Dev entry;
+
+  rv = directory_reader.GetNextEntry(&entry, callback);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
+    return ReportError("DirectoryEntry_Dev::GetNextEntry", rv);
+  if (entry.is_null())
+    return "Entry was not found.";
+  if (entry.file_ref().GetName().AsString() != kTerribleName)
+    return "Entry name did not match.";
+
+  rv = directory_reader.GetNextEntry(&entry, callback);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
+    return ReportError("DirectoryEntry_Dev::GetNextEntry", rv);
+  if (!entry.is_null())
+    return "Directory had too many entries.";
+
+  PASS();
+}
+#endif

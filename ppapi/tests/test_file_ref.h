@@ -27,6 +27,7 @@ class TestFileRef : public TestCase {
   std::string TestQueryAndTouchFile();
   std::string TestDeleteFileAndDirectory();
   std::string TestRenameFileAndDirectory();
+  std::string TestFileNameEscaping();
 };
 
 #endif  // PAPPI_TESTS_TEST_FILE_REF_H_

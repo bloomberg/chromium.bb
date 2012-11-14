@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/escape.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_system_api.h"
@@ -270,9 +271,9 @@ GURL PPB_FileRef_Impl::GetFileSystemURL() const {
   // Since |virtual_path_| starts with a '/', it looks like an absolute path.
   // We need to trim off the '/' before calling Resolve, as FileSystem URLs
   // start with a storage type identifier that looks like a path segment.
-  // TODO(ericu): Switch this to use Resolve after fixing GURL to understand
-  // FileSystem URLs.
-  return GURL(file_system_->root_url().spec() + virtual_path.substr(1));
+
+  return file_system_->root_url().Resolve(
+      net::EscapePath(virtual_path.substr(1)));
 }
 
 bool PPB_FileRef_Impl::HasValidFileSystem() const {
