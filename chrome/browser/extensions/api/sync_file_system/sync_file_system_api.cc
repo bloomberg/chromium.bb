@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/common/extensions/api/sync_file_system.h"
 #include "content/public/browser/browser_context.h"
@@ -31,7 +32,8 @@ namespace extensions {
 namespace {
 
 // This is the only supported cloud backend service for now.
-const char kDriveCloudService[] = "drive";
+const char* const kDriveCloudService =
+    sync_file_system::DriveFileSyncService::kServiceName;
 
 // Error messages.
 const char kNotSupportedService[] = "Cloud service %s not supported.";

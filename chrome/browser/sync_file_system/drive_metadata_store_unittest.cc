@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +27,7 @@ namespace sync_file_system {
 namespace {
 
 const char kOrigin[] = "http://www.example.com";
-const char kServiceName[] = "drive";
+const char* const kServiceName = DriveFileSyncService::kServiceName;
 
 typedef DriveMetadataStore::ResourceIDMap ResourceIDMap;
 

@@ -15,6 +15,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/task_runner_util.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -26,8 +27,10 @@
 using fileapi::FileSystemURL;
 using fileapi::SyncStatusCode;
 
+namespace sync_file_system {
+
 namespace {
-const char kServiceName[] = "drive";
+const char* const kServiceName = DriveFileSyncService::kServiceName;
 const FilePath::CharType kDatabaseName[] = FILE_PATH_LITERAL("DriveMetadata");
 const char kChangeStampKey[] = "CHANGE_STAMP";
 const char kSyncRootDirectoryKey[] = "SYNC_ROOT_DIR";
@@ -36,8 +39,6 @@ const char kDriveBatchSyncOriginKeyPrefix[] = "BSYNC_ORIGIN: ";
 const char kDriveIncrementalSyncOriginKeyPrefix[] = "ISYNC_ORIGIN: ";
 const size_t kDriveMetadataKeyPrefixLength = arraysize(kDriveMetadataKeyPrefix);
 }
-
-namespace sync_file_system {
 
 class DriveMetadataDB {
  public:
