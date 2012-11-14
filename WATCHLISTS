@@ -566,6 +566,7 @@
     'linux-sandboxing': ['agl@chromium.org', 'jln+watch@chromium.org'],
     'linux-seccomp-bpf': ['jln+watch@chromium.org'],
     'locale_settings': ['finnur+watch@chromium.org'],
+    'mac': ['sail+watch@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
     'metrics': ['jar@chromium.org',
