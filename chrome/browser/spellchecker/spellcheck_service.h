@@ -77,24 +77,6 @@ class SpellcheckService : public ProfileKeyedService,
   // renderer will not load Hunspell until it needs to.
   void InitForRenderer(content::RenderProcessHost* process);
 
-  // Returns in-memory cache of custom word list.
-  const chrome::spellcheck_common::WordList& GetCustomWords();
-
-  // Invoked on the Ui thread when new custom word is registered.
-  void CustomWordAddedLocally(const std::string& word);
-
-  // Loads the custom dictionary associated with this profile into the
-  // passed in WordList.
- void LoadDictionaryIntoCustomWordList(
-      chrome::spellcheck_common::WordList* custom_words);
-
-  // Writes a word to the custom dictionary associated with this profile.
-  void WriteWordToCustomDictionary(const std::string& word);
-
-  // Adds the given word to the custom words list and inform renderer of the
-  // update.
-  void AddWord(const std::string& word);
-
   // Returns true if the dictionary is ready to use.
   bool IsReady() const;
 
@@ -102,10 +84,6 @@ class SpellcheckService : public ProfileKeyedService,
   virtual const base::PlatformFile& GetDictionaryFile() const;
   virtual const std::string& GetLanguage() const;
   virtual bool IsUsingPlatformChecker() const;
-
-  // The reply point for PostTaskAndReply. Called when AddWord is finished
-  // adding a word in the background.
-  void AddWordComplete(const std::string& word);
 
   // Returns a metrics counter associated with this object,
   // or null when metrics recording is disabled.

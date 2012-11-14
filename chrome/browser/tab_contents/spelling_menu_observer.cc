@@ -219,7 +219,8 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
       SpellcheckService* spellcheck_service =
             SpellcheckServiceFactory::GetForProfile(profile);
       if (spellcheck_service)
-        spellcheck_service->AddWord(UTF16ToUTF8(misspelled_word_));
+        spellcheck_service->GetCustomDictionary()->AddWord(
+            UTF16ToUTF8(misspelled_word_));
     }
 #if defined(OS_MACOSX)
     spellcheck_mac::AddWord(misspelled_word_);

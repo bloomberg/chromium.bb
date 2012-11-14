@@ -10,6 +10,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/spellchecker/spellcheck_dictionary.h"
 #include "chrome/common/spellcheck_common.h"
 
@@ -30,12 +31,22 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary {
   void LoadDictionaryIntoCustomWordList(
       chrome::spellcheck_common::WordList* custom_words);
 
+  // Adds the given word to the custom words list and inform renderer of the
+  // update.
+  void AddWord(const std::string& word);
+
+  // The reply point for PostTaskAndReply. Called when AddWord is finished
+  // adding a word in the background.
+  void AddWordComplete(const std::string& word);
+
  private:
   // In-memory cache of the custom words file.
   chrome::spellcheck_common::WordList custom_words_;
 
   // A path for custom dictionary per profile.
   FilePath custom_dictionary_path_;
+
+  base::WeakPtrFactory<SpellcheckCustomDictionary> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckCustomDictionary);
 };

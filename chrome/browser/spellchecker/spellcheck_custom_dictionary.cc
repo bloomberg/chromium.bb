@@ -9,8 +9,11 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/spellcheck_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 
 #include <functional>
 
@@ -19,7 +22,8 @@ using chrome::spellcheck_common::WordList;
 
 SpellcheckCustomDictionary::SpellcheckCustomDictionary(Profile* profile)
     : SpellcheckDictionary(profile),
-      custom_dictionary_path_() {
+      custom_dictionary_path_(),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(profile);
   custom_dictionary_path_ =
       profile_->GetPath().Append(chrome::kCustomDictionaryFileName);
@@ -84,6 +88,28 @@ bool SpellcheckCustomDictionary::SetCustomWordList(WordList* custom_words) {
 
 const WordList& SpellcheckCustomDictionary::GetCustomWords() const {
   return custom_words_;
+}
+
+void SpellcheckCustomDictionary::AddWord(const std::string& word) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  CustomWordAddedLocally(word);
+
+  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&SpellcheckCustomDictionary::WriteWordToCustomDictionary,
+                 base::Unretained(this), word),
+      base::Bind(&SpellcheckCustomDictionary::AddWordComplete,
+                 weak_ptr_factory_.GetWeakPtr(), word));
+}
+
+void SpellcheckCustomDictionary::AddWordComplete(const std::string& word) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    i.GetCurrentValue()->Send(new SpellCheckMsg_WordAdded(word));
+  }
 }
 
 

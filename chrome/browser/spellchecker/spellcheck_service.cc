@@ -193,37 +193,6 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
       prefs->GetBoolean(prefs::kEnableAutoSpellCorrect)));
 }
 
-void SpellcheckService::AddWord(const std::string& word) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  GetCustomDictionary()->CustomWordAddedLocally(word);
-
-  // TODO(rlp): pass these on to the correct dictionary.
-  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&SpellcheckService::WriteWordToCustomDictionary,
-                 base::Unretained(this), word),
-      base::Bind(&SpellcheckService::AddWordComplete,
-                 weak_ptr_factory_.GetWeakPtr(), word));
-}
-
-const WordList& SpellcheckService::GetCustomWords() {
-  return GetCustomDictionary()->GetCustomWords();
-
-}
-
-void SpellcheckService::CustomWordAddedLocally(const std::string& word) {
-  GetCustomDictionary()->CustomWordAddedLocally(word);
-}
-
-void SpellcheckService::LoadDictionaryIntoCustomWordList(
-    WordList* custom_words){
-  GetCustomDictionary()->LoadDictionaryIntoCustomWordList(custom_words);
-}
-
-void SpellcheckService::WriteWordToCustomDictionary(const std::string& word){
-  GetCustomDictionary()->WriteWordToCustomDictionary(word);
-}
-
 void SpellcheckService::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
@@ -272,16 +241,6 @@ const base::PlatformFile& SpellcheckService::GetDictionaryFile() const {
 
 const std::string& SpellcheckService::GetLanguage() const {
   return hunspell_dictionary_->GetLanguage();
-}
-
-void SpellcheckService::AddWordComplete(const std::string& word) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  for (content::RenderProcessHost::iterator i(
-          content::RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance()) {
-    i.GetCurrentValue()->Send(new SpellCheckMsg_WordAdded(word));
-  }
 }
 
 // TODO(rlp): rename to something more logical.

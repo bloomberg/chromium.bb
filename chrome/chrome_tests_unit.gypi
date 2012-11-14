@@ -1027,6 +1027,7 @@
         'browser/signin/ubertoken_fetcher_unittest.cc',
         'browser/speech/extension_api/tts_extension_api_controller_unittest.cc',
         'browser/speech/speech_recognition_bubble_controller_unittest.cc',
+        'browser/spellchecker/spellcheck_custom_dictionary_unittest.cc',
         'browser/spellchecker/spellcheck_service_unittest.cc',
         'browser/spellchecker/spellcheck_platform_mac_unittest.cc',
         'browser/spellchecker/spelling_service_client_unittest.cc',
