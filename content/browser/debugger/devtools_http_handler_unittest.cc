@@ -84,7 +84,14 @@ class DevToolsHttpHandlerTest : public testing::Test {
   scoped_ptr<BrowserThreadImpl> file_thread_;
 };
 
-TEST_F(DevToolsHttpHandlerTest, TestStartStop) {
+// Sometimes, an assertion fails in NotificationRegistrar. http://crbug.com/161027
+#if defined(OS_ANDROID)
+#define MAYBE_TestStartStop DISABLED_TestStartStop
+#else
+#define MAYBE_TestStartStop TestStartStop
+#endif
+
+TEST_F(DevToolsHttpHandlerTest, MAYBE_TestStartStop) {
   base::RunLoop run_loop, run_loop_2;
   content::DevToolsHttpHandler* devtools_http_handler_ =
       content::DevToolsHttpHandler::Start(
