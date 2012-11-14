@@ -31,54 +31,31 @@ namespace {
 
 const char kSymLinkToDevNull[] = "/dev/null";
 
-struct InitialCacheResource {
-  const char* source_file;              // Source file to be used for cache.
-  const char* resource_id;              // Resource id of cache file.
-  const char* md5;                      // MD5 of cache file.
-  int cache_state;                      // Cache state of cache file.
-  const char* expected_file_extension;  // Expected extension of cached file.
-  // Expected CacheSubDirectoryType of cached file.
-  DriveCache::CacheSubDirectoryType expected_sub_dir_type;
-} const initial_cache_resources[] = {
+struct TestCacheResource {
+  const char* source_file;
+  const char* resource_id;
+  const char* md5;
+  bool is_pinned;
+  bool is_dirty;
+} const test_cache_resources[] = {
   // Cache resource in tmp dir, i.e. not pinned or dirty.
   { "gdata/root_feed.json", "tmp:resource_id", "md5_tmp_alphanumeric",
-    test_util::TEST_CACHE_STATE_PRESENT,
-    "md5_tmp_alphanumeric", DriveCache::CACHE_TYPE_TMP },
+    false, false },
   // Cache resource in tmp dir, i.e. not pinned or dirty, with resource_id
-  // containing non-alphanumeric characters, to test resource_id is escaped and
-  // unescaped correctly.
+  // containing non-alphanumeric characters.
   { "gdata/subdir_feed.json", "tmp:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?",
-    "md5_tmp_non_alphanumeric",
-    test_util::TEST_CACHE_STATE_PRESENT,
-    "md5_tmp_non_alphanumeric", DriveCache::CACHE_TYPE_TMP },
-  // Cache resource that is pinned, to test a pinned file is in persistent dir
-  // with a symlink in pinned dir referencing it.
+    "md5_tmp_non_alphanumeric", false, false },
+  // Cache resource that is pinned and persistent.
   { "gdata/directory_entry_atom.json", "pinned:existing", "md5_pinned_existing",
-    test_util::TEST_CACHE_STATE_PRESENT |
-    test_util::TEST_CACHE_STATE_PINNED |
-    test_util::TEST_CACHE_STATE_PERSISTENT,
-    "md5_pinned_existing", DriveCache::CACHE_TYPE_PERSISTENT },
-  // Cache resource with a non-existent source file that is pinned, to test that
-  // a pinned file can reference a non-existent file.
-  { "", "pinned:non-existent", "md5_pinned_non_existent",
-    test_util::TEST_CACHE_STATE_PINNED,
-    "md5_pinned_non_existent", DriveCache::CACHE_TYPE_TMP },
-  // Cache resource that is dirty, to test a dirty file is in persistent dir
-  // with a symlink in outgoing dir referencing it.
+    true, false },
+  // Cache resource with a non-existent source file that is pinned.
+  { "", "pinned:non-existent", "md5_pinned_non_existent", true, false },
+  // Cache resource that is dirty.
   { "gdata/account_metadata.json", "dirty:existing", "md5_dirty_existing",
-    test_util::TEST_CACHE_STATE_PRESENT |
-    test_util::TEST_CACHE_STATE_DIRTY |
-    test_util::TEST_CACHE_STATE_PERSISTENT,
-    "local", DriveCache::CACHE_TYPE_PERSISTENT },
-  // Cache resource that is pinned and dirty, to test a dirty pinned file is in
-  // persistent dir with symlink in pinned and outgoing dirs referencing it.
+    false, true },
+  // Cache resource that is pinned and dirty.
   { "gdata/basic_feed.json", "dirty_and_pinned:existing",
-    "md5_dirty_and_pinned_existing",
-    test_util::TEST_CACHE_STATE_PRESENT |
-    test_util::TEST_CACHE_STATE_PINNED |
-    test_util::TEST_CACHE_STATE_DIRTY |
-    test_util::TEST_CACHE_STATE_PERSISTENT,
-    "local", DriveCache::CACHE_TYPE_PERSISTENT },
+    "md5_dirty_and_pinned_existing", true, true },
 };
 
 const int64 kLotsOfSpace = kMinFreeSpace * 10;
@@ -117,6 +94,27 @@ void OnIterateCompleted(bool* out_is_called) {
 // Copies results from ClearAll.
 void OnClearAll(bool* out_success, bool success) {
   *out_success = success;
+}
+
+// Used as a CacheOperationCallback to copy results from DriveCache methods.
+void OnCacheOperation(DriveFileError* out_error,
+                      std::string* out_resource_id,
+                      std::string* out_md5,
+                      DriveFileError error,
+                      const std::string& resource_id,
+                      const std::string& md5) {
+  *out_error = error;
+  *out_resource_id = resource_id;
+  *out_md5 = md5;
+}
+
+// Used as a GetFileFromCacheCallback to copy results from DriveCache methods.
+void OnGetFile(DriveFileError* out_error,
+               FilePath* out_cache_file_path,
+               DriveFileError error,
+               const FilePath& cache_file_path) {
+  *out_error = error;
+  *out_cache_file_path = cache_file_path;
 }
 
 }  // namespace
@@ -171,101 +169,70 @@ class DriveCacheTest : public testing::Test {
     profile_.reset(NULL);
   }
 
-  void PrepareForInitCacheTest() {
-    DVLOG(1) << "PrepareForInitCacheTest start";
-    // Create drive cache sub directories.
-    ASSERT_TRUE(file_util::CreateDirectory(
-        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_PERSISTENT)));
-    ASSERT_TRUE(file_util::CreateDirectory(
-        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP)));
-    ASSERT_TRUE(file_util::CreateDirectory(
-        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_PINNED)));
-    ASSERT_TRUE(file_util::CreateDirectory(
-        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_OUTGOING)));
+  void PrepareTestCacheResources() {
+    EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+        .WillRepeatedly(Return(kLotsOfSpace));
 
-    // Dump some files into cache dirs so that
-    // DriveFileSystem::InitializeCacheOnBlockingPool would scan through them
-    // and populate cache map accordingly.
-
-    // Copy files from data dir to cache dir to act as cached files.
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(initial_cache_resources); ++i) {
-      const struct InitialCacheResource& resource = initial_cache_resources[i];
-      // Determine drive cache file absolute path according to cache state.
-      FilePath dest_path = cache_->GetCacheFilePath(
-          resource.resource_id,
-          resource.md5,
-          test_util::ToCacheEntry(resource.cache_state).is_pinned() ||
-          test_util::ToCacheEntry(resource.cache_state).is_dirty() ?
-                  DriveCache::CACHE_TYPE_PERSISTENT :
-                  DriveCache::CACHE_TYPE_TMP,
-          test_util::ToCacheEntry(resource.cache_state).is_dirty() ?
-              DriveCache::CACHED_FILE_LOCALLY_MODIFIED :
-              DriveCache::CACHED_FILE_FROM_SERVER);
-
-      // Copy file from data dir to cache subdir, naming it per cache files
-      // convention.
-      if (test_util::ToCacheEntry(resource.cache_state).is_present()) {
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cache_resources); ++i) {
+      const struct TestCacheResource& resource = test_cache_resources[i];
+      // Copy file from data dir to cache.
+      if (!std::string(resource.source_file).empty()) {
         FilePath source_path =
             google_apis::test_util::GetTestFilePath(resource.source_file);
-        ASSERT_TRUE(file_util::CopyFile(source_path, dest_path));
-      } else {
-        dest_path = FilePath(FILE_PATH_LITERAL(kSymLinkToDevNull));
+
+        DriveFileError error = DRIVE_FILE_OK;
+        std::string resource_id;
+        std::string md5;
+        cache_->Store(resource.resource_id,
+                      resource.md5,
+                      source_path,
+                      DriveCache::FILE_OPERATION_COPY,
+                      base::Bind(&OnCacheOperation,
+                                 &error, &resource_id, &md5));
+        google_apis::test_util::RunBlockingPoolTask();
+        EXPECT_EQ(DRIVE_FILE_OK, error);
+        EXPECT_EQ(resource.resource_id, resource_id);
+        EXPECT_EQ(resource.md5, md5);
       }
-
-      // Create symbolic link in pinned dir, naming it per cache files
-      // convention.
-      if (test_util::ToCacheEntry(resource.cache_state).is_pinned()) {
-        FilePath link_path = cache_->GetCacheFilePath(
-            resource.resource_id,
-            "",
-            DriveCache::CACHE_TYPE_PINNED,
-            DriveCache::CACHED_FILE_FROM_SERVER);
-        ASSERT_TRUE(file_util::CreateSymbolicLink(dest_path, link_path));
+      // Pin.
+      if (resource.is_pinned) {
+        DriveFileError error = DRIVE_FILE_OK;
+        std::string resource_id;
+        std::string md5;
+        EXPECT_CALL(*mock_cache_observer_,
+                    OnCachePinned(resource.resource_id, resource.md5)).Times(1);
+        cache_->Pin(resource.resource_id,
+                    resource.md5,
+                    base::Bind(&OnCacheOperation,
+                               &error, &resource_id, &md5));
+        google_apis::test_util::RunBlockingPoolTask();
+        EXPECT_EQ(DRIVE_FILE_OK, error);
+        EXPECT_EQ(resource.resource_id, resource_id);
+        EXPECT_EQ(resource.md5, md5);
       }
+      // Mark dirty.
+      if (resource.is_dirty) {
+        DriveFileError error = DRIVE_FILE_OK;
+        FilePath cache_file_path;
+        cache_->MarkDirty(resource.resource_id,
+                          resource.md5,
+                          base::Bind(&OnGetFile, &error, &cache_file_path));
+        google_apis::test_util::RunBlockingPoolTask();
+        EXPECT_EQ(DRIVE_FILE_OK, error);
 
-      // Create symbolic link in outgoing dir, naming it per cache files
-      // convention.
-      if (test_util::ToCacheEntry(resource.cache_state).is_dirty()) {
-        FilePath link_path = cache_->GetCacheFilePath(
-            resource.resource_id,
-            "",
-            DriveCache::CACHE_TYPE_OUTGOING,
-            DriveCache::CACHED_FILE_FROM_SERVER);
-        ASSERT_TRUE(file_util::CreateSymbolicLink(dest_path, link_path));
+        std::string resource_id;
+        std::string md5;
+        EXPECT_CALL(*mock_cache_observer_,
+                    OnCacheCommitted(resource.resource_id)).Times(1);
+        cache_->CommitDirty(resource.resource_id,
+                            resource.md5,
+                            base::Bind(&OnCacheOperation,
+                                       &error, &resource_id, &md5));
+        google_apis::test_util::RunBlockingPoolTask();
+        EXPECT_EQ(DRIVE_FILE_OK, error);
+        EXPECT_EQ(resource.resource_id, resource_id);
+        EXPECT_EQ(resource.md5, md5);
       }
-    }
-
-    DVLOG(1) << "PrepareForInitCacheTest finished";
-    cache_->ForceRescanForTesting();
-    google_apis::test_util::RunBlockingPoolTask();
-  }
-
-  void TestInitializeCache() {
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(initial_cache_resources); ++i) {
-      const struct InitialCacheResource& resource = initial_cache_resources[i];
-      // Check cache file.
-      num_callback_invocations_ = 0;
-      TestGetFileFromCacheByResourceIdAndMd5(
-          resource.resource_id,
-          resource.md5,
-          test_util::ToCacheEntry(resource.cache_state).is_present() ?
-          DRIVE_FILE_OK :
-          DRIVE_FILE_ERROR_NOT_FOUND,
-          resource.expected_file_extension);
-      EXPECT_EQ(1, num_callback_invocations_);
-
-      // Verify cache state.
-      std::string md5;
-      if (test_util::ToCacheEntry(resource.cache_state).is_present())
-         md5 = resource.md5;
-      DriveCacheEntry cache_entry;
-      ASSERT_TRUE(GetCacheEntryFromOriginThread(
-          resource.resource_id, md5, &cache_entry));
-      EXPECT_TRUE(test_util::CacheStatesEqual(
-          test_util::ToCacheEntry(resource.cache_state),
-          cache_entry));
-      EXPECT_EQ(resource.expected_sub_dir_type,
-                DriveCache::GetSubDirectoryType(cache_entry));
     }
   }
 
@@ -768,11 +735,6 @@ class DriveCacheTest : public testing::Test {
   std::string expected_file_extension_;
   int root_feed_changestamp_;
 };
-
-TEST_F(DriveCacheTest, InitializeCache) {
-  PrepareForInitCacheTest();
-  TestInitializeCache();
-}
 
 TEST_F(DriveCacheTest, GetCacheFilePath) {
   // Use alphanumeric characters for resource id.
@@ -1484,7 +1446,7 @@ TEST_F(DriveCacheTest, MountUnmount) {
 }
 
 TEST_F(DriveCacheTest, Iterate) {
-  PrepareForInitCacheTest();
+  PrepareTestCacheResources();
 
   std::vector<std::string> resource_ids;
   std::vector<DriveCacheEntry> cache_entries;
@@ -1510,8 +1472,6 @@ TEST_F(DriveCacheTest, Iterate) {
 
 
 TEST_F(DriveCacheTest, ClearAll) {
-  PrepareForInitCacheTest();
-
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
