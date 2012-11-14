@@ -287,6 +287,14 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
         self.assertFalse(config['chrome_tests'],
            'chrome_tests is enabled for %s without vm_tests' % (build_name,))
 
+  def testUseChromeLKGMImpliesInternal(self):
+    """Currently use_chrome_lkgm refers only to internal manifests."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if config['use_chrome_lkgm']:
+        self.assertTrue(config['internal'],
+            'Chrome lkgm currently only works with an internal manifest: %s' % (
+                build_name,))
+
   def testChromePFQsNeedChromeOSPFQs(self):
     """Make sure every Chrome PFQ has a matching ChromeOS PFQ for prebuilts.
 
@@ -360,6 +368,12 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
             len(slaves), len(set(slaves)),
             'Duplicate board in slaves of %s will cause upload prebuilts'
             ' failures' % build_name)
+
+  def testCantBeBothTypesOfLKGM(self):
+    """Using lkgm and chrome_lkgm doesn't make sense."""
+    for config in cbuildbot_config.config.values():
+      self.assertFalse(config['use_lkgm'] and config['use_chrome_lkgm'])
+
 
 if __name__ == '__main__':
   cros_test_lib.main()

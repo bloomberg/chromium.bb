@@ -342,8 +342,10 @@ class SimpleBuilder(Builder):
 
     Returns: the instance of the sync stage that was run.
     """
-    if self.options.lkgm or self.build_config['use_lkgm']:
+    if self.build_config['use_lkgm']:
       sync_stage = self._GetStageInstance(stages.LKGMSyncStage)
+    elif self.build_config['use_chrome_lkgm']:
+      sync_stage = self._GetStageInstance(stages.ChromeLKGMSyncStage)
     else:
       sync_stage = self._GetStageInstance(stages.SyncStage)
 
@@ -552,7 +554,9 @@ def _RunBuildStagesWrapper(options, build_config):
       return False
     elif build_config['build_type'] in _DISTRIBUTED_TYPES:
       chrome_rev = build_config['chrome_rev']
-      if options.chrome_rev: chrome_rev = options.chrome_rev
+      if options.chrome_rev:
+        chrome_rev = options.chrome_rev
+
       # We don't do distributed logic to TOT Chrome PFQ's, nor local
       # chrome roots (e.g. chrome try bots)
       if chrome_rev not in [constants.CHROME_REV_TOT,
@@ -782,10 +786,6 @@ def _CreateParser():
   group.add_remote_option('--hwtest', dest='hwtest', action='store_true',
                            default=False,
                            help='This adds HW test for remote trybot')
-  group.add_remote_option('--lkgm', action='store_true', dest='lkgm',
-                          default=False,
-                          help='Sync to last known good manifest blessed by '
-                               'PFQ')
   parser.add_option('--log_dir', dest='log_dir', type='path',
                     help=('Directory where logs are stored.'))
   group.add_remote_option('--maxarchives', dest='max_archive_builds',

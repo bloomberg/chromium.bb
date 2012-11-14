@@ -149,9 +149,9 @@ class LogTest(cros_test_lib.MoxTestCase):
   def _generateLogs(self, num):
     """Generates cbuildbot.log and num backups."""
     with open(os.path.join(self.tempdir, 'cbuildbot.log'), 'w') as f:
-      f.write(str(num+1))
+      f.write(str(num + 1))
 
-    for i in range(1, num+1):
+    for i in range(1, num + 1):
       with open(os.path.join(self.tempdir, 'cbuildbot.log.' + str(i)),
                 'w') as f:
         f.write(str(i))
@@ -372,9 +372,10 @@ class InterfaceTest(cros_test_lib.MoxTestCase):
 
   def testPassThroughOptions(self):
     """Test we are building up pass-through list properly."""
-    args = ['--remote', '--lkgm', '-g', '1234', self._X86_PREFLIGHT]
+    args = ['--remote', '-g', '1234', self._X86_PREFLIGHT]
     (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
-    self.assertEquals(options.pass_through_args, ['--lkgm', '-g', '1234'])
+
+    self.assertEquals(options.pass_through_args, ['-g', '1234'])
 
   def testDebugPassThrough(self):
     """Test we are passing --debug through."""
@@ -384,7 +385,7 @@ class InterfaceTest(cros_test_lib.MoxTestCase):
 
   def testGerritChromeOptionSet(self):
     """Test --gerrit-chrome works as expected."""
-    args = ['--gerrit-chrome',  self._X86_PREFLIGHT]
+    args = ['--gerrit-chrome', self._X86_PREFLIGHT]
     (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
     self.assertEquals(options.gerrit_chrome, True)
     self.assertEquals(options.chrome_rev, 'tot')

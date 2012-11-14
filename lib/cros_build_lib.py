@@ -354,8 +354,6 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     sys.stdout.flush()
     sys.stderr.flush()
 
-  # TODO(sosa): gpylint complains about redefining built-in 'input'.
-  #   Can we rename this variable?
   if input:
     stdin = subprocess.PIPE
 

@@ -18,6 +18,7 @@ from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import gclient
 
 
 # pylint: disable=E1101,W0212,R0904
@@ -472,7 +473,7 @@ class CBuildBotTest(cros_test_lib.MoxTempDirTestCase):
     """Test Complete BuildImage Command."""
     buildroot = '/paul'
     board = 'columbia'
-    images_to_build = ['bob', 'carol', 'ted', 'alice',]
+    images_to_build = ['bob', 'carol', 'ted', 'alice']
     version = '1969'
     disk_layout = '2+2'
     extra_env = {'LOVE': 'free'}
@@ -511,6 +512,40 @@ class CBuildBotTest(cros_test_lib.MoxTempDirTestCase):
     commands.PushImages(buildroot, board, branch_name, archive_url,
                         dryrun=False, profile=profile_name)
     self.mox.VerifyAll()
+
+  def _TestChromeLKGM(self, chrome_revision):
+    """Helper method for testing the GetChromeLKGM method.
+
+    Args:
+      chrome_revision: either a number or None.
+    """
+    self.mox.StubOutWithMock(gclient, 'GetBaseURLs')
+    svn_url = 'http://dontcare'
+    full_svn_url = '%s/trunk/src/chromeos/CHROMEOS_LKGM' % svn_url
+    chrome_lkgm_expected = '3322.0.0'
+    result = cros_build_lib.CommandResult(
+        output='\n%s\n\n' % chrome_lkgm_expected)
+
+    gclient.GetBaseURLs().AndReturn((svn_url, None))
+    mox_args = [mox.In(full_svn_url)]
+    if chrome_revision:
+      mox_args += [mox.In(str(chrome_revision))]
+
+    svn_cmd = mox.And(*mox_args)
+    cros_build_lib.RunCommandCaptureOutput(svn_cmd).AndReturn(result)
+
+    self.mox.ReplayAll()
+    chrome_lkgm_returned = commands.GetChromeLKGM(chrome_revision)
+    self.assertEqual(chrome_lkgm_returned, chrome_lkgm_expected)
+    self.mox.VerifyAll()
+
+  def testChromeLKGM(self):
+    """Verifies that we can get the chrome lkgm without a chrome revision."""
+    self._TestChromeLKGM(None)
+
+  def testChromeLKGMWithRevision(self):
+    """Verifies that we can get the chrome lkgm with a chrome revision."""
+    self._TestChromeLKGM(1234)
 
 
 if __name__ == '__main__':

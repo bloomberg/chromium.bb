@@ -19,6 +19,7 @@ from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import gclient
 from chromite.lib import locking
 from chromite.lib import osutils
 
@@ -120,7 +121,6 @@ def ValidateClobber(buildroot):
     cros_build_lib.Die('You are trying to clobber this chromite checkout!')
 
   if os.path.exists(buildroot):
-    warning = 'This will delete %s' % buildroot
     return cros_build_lib.BooleanPrompt(default=False)
   return True
 
@@ -320,7 +320,9 @@ def BuildImage(buildroot, board, images_to_build, version='',
                rootfs_verification=True, extra_env=None, disk_layout=None):
 
   # Default to base if images_to_build is passed empty.
-  if not images_to_build: images_to_build = ['base']
+  if not images_to_build:
+    images_to_build = ['base']
+
   version_str = '--version=%s' % version
 
   cmd = ['./build_image', '--board=%s' % board, '--replace', version_str]
@@ -532,7 +534,9 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball,
     for curr_dir, _subdirs, files in os.walk(temp_dir):
       for curr_file in files:
         # Skip crash files that were purposely generated.
-        if curr_file.find('crasher_nobreakpad') == 0: continue
+        if curr_file.find('crasher_nobreakpad') == 0:
+          continue
+
         full_file_path = os.path.join(curr_dir, curr_file)
         minidump = cros_build_lib.ReinterpretPathForChroot(full_file_path)
         minidump_stack_trace = '%s.txt' % full_file_path
@@ -675,7 +679,8 @@ def AddPackagesForPrebuilt(filename):
   """Add list of packages for upload.
 
   Process a file that lists all the packages that can be uploaded to the
-  package prebuilt bucket and generates the command line args for upload_prebuilts.
+  package prebuilt bucket and generates the command line args for
+  upload_prebuilts.
 
   Args:
     filename: file with the package full name (category/name-version), one
@@ -698,10 +703,10 @@ def AddPackagesForPrebuilt(filename):
         cmd.extend(['--packages=' + package_name])
     package_file.close()
     return cmd
-  except IOError as (errno, strerror):
+  except IOError as e:
     cros_build_lib.Warning('Problem with package file %s' % filename)
     cros_build_lib.Warning('Skipping uploading of prebuilts.')
-    cros_build_lib.Warning('ERROR(%d): %s' % (errno, strerror))
+    cros_build_lib.Warning('ERROR(%d): %s' % (e.errno, e.strerror))
     return None
 
 
@@ -1361,3 +1366,15 @@ def GenerateNPlus1Payloads(build_root, build_config, target_image_path,
          '--nplus1_archive_dir=%s' % archive_dir,
         ]
   cros_build_lib.RunCommandCaptureOutput(cmd)
+
+
+def GetChromeLKGM(svn_revision):
+  """Returns the ChromeOS LKGM from Chrome given the SVN revision."""
+  svn_url = '/'.join([gclient.GetBaseURLs()[0], 'trunk', 'src', 'chromeos',
+                      'CHROMEOS_LKGM'])
+  svn_revision_args = []
+  if svn_revision:
+    svn_revision_args = ['-r', str(svn_revision)]
+
+  svn_cmd = ['svn', 'cat', svn_url] + svn_revision_args
+  return cros_build_lib.RunCommandCaptureOutput(svn_cmd).output.strip()

@@ -321,8 +321,12 @@ _settings = dict(
 # version repositories.
   unified_manifest_version=False,
 
-# use_lkgm -- Use the Last Known Good Manifest blessed by the pre-flight-queue
+# use_lkgm -- Use the Last Known Good Manifest blessed by Paladin.
   use_lkgm=False,
+
+# use_chrome_lkgm -- LKGM for Chrome OS generated for Chrome builds that are
+# blessed from canary runs.
+  use_chrome_lkgm=False,
 
 # prebuilts -- Upload prebuilts for this build.
   prebuilts=True,
@@ -715,6 +719,13 @@ chrome_perf = chrome_info.derive(
 chrome_perf.add_config('lumpy-chrome-perf',
   boards=['lumpy'],
   trybot_list=True,
+)
+
+chrome_perf.add_config('lumpy-lkgm-chrome-perf',
+  boards=['lumpy'],
+  trybot_list=True,
+  use_chrome_lkgm=True,
+  use_lkgm=False,
 )
 
 chromium_info.add_config('x86-generic-tot-chrome-pfq-informational',

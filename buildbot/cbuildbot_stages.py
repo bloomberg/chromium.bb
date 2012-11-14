@@ -486,6 +486,29 @@ class LKGMSyncStage(SyncStage):
     return os.path.join(manifest_path, lkgm_manager.LKGMManager.LKGM_PATH)
 
 
+class ChromeLKGMSyncStage(SyncStage):
+  """Stage that syncs to the last known good manifest for Chrome."""
+
+  output_manifest_sha1 = False
+
+  def GetNextManifest(self):
+    """Override: Gets the LKGM from the Chrome tree."""
+    chrome_lkgm = commands.GetChromeLKGM(self._options.chrome_version)
+
+    # We need a full buildspecs manager here as we need an initialized manifest
+    # manager with paths to the spec.
+    manifest_manager = manifest_version.BuildSpecsManager(
+      source_repo=self.repo,
+      manifest_repo=self._GetManifestVersionsRepoUrl(read_only=False),
+      build_name=None,
+      incr_type='build',
+      force=False,
+      branch=self._target_manifest_branch)
+
+    manifest_manager.BootstrapFromVersion(chrome_lkgm)
+    return manifest_manager.GetLocalManifest(chrome_lkgm)
+
+
 class ManifestVersionedSyncStage(SyncStage):
   """Stage that generates a unique manifest file, and sync's to it."""
 
