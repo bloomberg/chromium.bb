@@ -93,36 +93,50 @@ bool NotificationShowFunction::RunImpl() {
   src_id_ = ExtractSrcId(options_dict.get());
   event_notifier_ = CreateEventNotifier(src_id_);
 
+  ui::notifications::NotificationType type =
+      ui::notifications::StringToNotificationType(options->notification_type);
   GURL icon_url(UTF8ToUTF16(options->icon_url));
   string16 title(UTF8ToUTF16(options->title));
   string16 message(UTF8ToUTF16(options->message));
 
-  // TEMP fields that are here to demonstrate usage of... fields.
-  // TODO(miket): replace with real fields from BaseFormatView.
-  string16 extra_field;
-  if (options->extra_field.get())
-    extra_field = UTF8ToUTF16(*options->extra_field);
-  string16 second_extra_field;
-  if (options->second_extra_field.get())
-    second_extra_field = UTF8ToUTF16(*options->second_extra_field);
-
-  string16 replace_id(UTF8ToUTF16(options->replace_id));
-  ui::notifications::NotificationType type;
   scoped_ptr<DictionaryValue> optional_fields(new DictionaryValue());
 
-  // TODO(miket): this is a lazy hacky way to distinguish the old and new
-  // notification types. Once we have something more than just "old" and "new,"
-  // we'll probably want to pass the type all the way up from the JS, and then
-  // we won't need this hack at all.
-  if (extra_field.empty()) {
-    type = ui::notifications::NOTIFICATION_TYPE_SIMPLE;
-  } else {
-    type = ui::notifications::NOTIFICATION_TYPE_BASE_FORMAT;
-    optional_fields->SetString(ui::notifications::kExtraFieldKey,
-                               extra_field);
-    optional_fields->SetString(ui::notifications::kSecondExtraFieldKey,
-                               second_extra_field);
-  }
+  if (options->message_intent.get())
+    optional_fields->SetString(ui::notifications::kMessageIntentKey,
+                               UTF8ToUTF16(*options->message_intent));
+  if (options->priority.get())
+    optional_fields->SetInteger(ui::notifications::kPriorityKey,
+                                *options->priority);
+  if (options->timestamp.get())
+    optional_fields->SetString(ui::notifications::kTimestampKey,
+                               *options->timestamp);
+  if (options->second_icon_url.get())
+    optional_fields->SetString(ui::notifications::kSecondIconUrlKey,
+                               UTF8ToUTF16(*options->second_icon_url));
+  if (options->unread_count.get())
+    optional_fields->SetInteger(ui::notifications::kUnreadCountKey,
+                                *options->unread_count);
+  if (options->button_one_title.get())
+    optional_fields->SetString(ui::notifications::kButtonOneTitleKey,
+                               UTF8ToUTF16(*options->button_one_title));
+  if (options->button_one_intent.get())
+    optional_fields->SetString(ui::notifications::kButtonOneIntentKey,
+                               UTF8ToUTF16(*options->button_one_intent));
+  if (options->button_two_title.get())
+    optional_fields->SetString(ui::notifications::kButtonTwoTitleKey,
+                               UTF8ToUTF16(*options->button_two_title));
+  if (options->button_two_intent.get())
+    optional_fields->SetString(ui::notifications::kButtonTwoIntentKey,
+                               UTF8ToUTF16(*options->button_two_intent));
+  if (options->expanded_message.get())
+    optional_fields->SetString(ui::notifications::kExpandedMessageKey,
+                               UTF8ToUTF16(*options->expanded_message));
+  if (options->image_url.get())
+    optional_fields->SetString(ui::notifications::kImageUrlKey,
+                               UTF8ToUTF16(*options->image_url));
+
+  string16 replace_id(UTF8ToUTF16(options->replace_id));
+
   Notification notification(type, icon_url, title, message,
                             WebKit::WebTextDirectionDefault,
                             string16(), replace_id,

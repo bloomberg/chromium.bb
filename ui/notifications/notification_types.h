@@ -5,23 +5,33 @@
 #ifndef UI_NOTIFICATIONS_NOTIFICATION_TYPES_H_
 #define UI_NOTIFICATIONS_NOTIFICATION_TYPES_H_
 
+#include <string>
+
 #include "ui/base/ui_export.h"
 
 namespace ui {
 
 namespace notifications {
 
-// TODO(miket): these are temporary field names that will be replaced very
-// shortly with real names. See
-// chrome/browser/extensions/api/notification/notification_api.cc for more
-// context.
-UI_EXPORT extern const char kExtraFieldKey[];
-UI_EXPORT extern const char kSecondExtraFieldKey[];
+// Keys for optional fields in Notification.
+UI_EXPORT extern const char kMessageIntentKey[];
+UI_EXPORT extern const char kPriorityKey[];
+UI_EXPORT extern const char kTimestampKey[];
+UI_EXPORT extern const char kSecondIconUrlKey[];
+UI_EXPORT extern const char kUnreadCountKey[];
+UI_EXPORT extern const char kButtonOneTitleKey[];
+UI_EXPORT extern const char kButtonOneIntentKey[];
+UI_EXPORT extern const char kButtonTwoTitleKey[];
+UI_EXPORT extern const char kButtonTwoIntentKey[];
+UI_EXPORT extern const char kExpandedMessageKey[];
+UI_EXPORT extern const char kImageUrlKey[];
 
 enum NotificationType {
   NOTIFICATION_TYPE_SIMPLE,
   NOTIFICATION_TYPE_BASE_FORMAT,
 };
+
+UI_EXPORT NotificationType StringToNotificationType(std::string& string_type);
 
 }  // namespace notifications
 

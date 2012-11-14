@@ -31,10 +31,10 @@ void MessageSimpleView::SetUpView() {
       kNotificationReadColor : kNotificationColor;
   set_background(views::Background::CreateSolidBackground(bg_color));
 
-  icon_ = new views::ImageView;
-  icon_->SetImageSize(
+  views::ImageView* icon = new views::ImageView;
+  icon->SetImageSize(
       gfx::Size(kWebNotificationIconSize, kWebNotificationIconSize));
-  icon_->SetImage(notification_.image);
+  icon->SetImage(notification_.image);
 
   views::Label* title = new views::Label(notification_.title);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -42,13 +42,6 @@ void MessageSimpleView::SetUpView() {
   views::Label* message = new views::Label(notification_.message);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetMultiLine(true);
-
-  close_button_ = new views::ImageButton(this);
-  close_button_->SetImage(
-      views::CustomButton::BS_NORMAL,
-      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(IDR_MESSAGE_CLOSE));
-  close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                   views::ImageButton::ALIGN_MIDDLE);
 
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
@@ -88,7 +81,7 @@ void MessageSimpleView::SetUpView() {
   layout->AddPaddingRow(0, kPaddingBetweenItems);
 
   layout->StartRow(0, 0);
-  layout->AddView(icon_, 1, 2);
+  layout->AddView(icon, 1, 2);
   layout->AddView(title, 1, 1);
   layout->AddView(close_button_, 1, 1);
 

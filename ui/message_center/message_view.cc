@@ -8,6 +8,8 @@
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -107,9 +109,14 @@ MessageView::MessageView(
     const NotificationList::Notification& notification)
     : list_delegate_(list_delegate),
       notification_(notification),
-      icon_(NULL),
       close_button_(NULL),
       scroller_(NULL) {
+  close_button_ = new views::ImageButton(this);
+  close_button_->SetImage(
+      views::CustomButton::BS_NORMAL,
+      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(IDR_MESSAGE_CLOSE));
+  close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                   views::ImageButton::ALIGN_MIDDLE);
 }
 
 MessageView::MessageView() {
@@ -152,7 +159,7 @@ ui::EventResult MessageView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void MessageView::ButtonPressed(views::Button* sender,
-                                        const ui::Event& event) {
+                                const ui::Event& event) {
   if (sender == close_button_)
     list_delegate_->SendRemoveNotification(notification_.id);
 }

@@ -8,8 +8,30 @@ namespace ui {
 
 namespace notifications {
 
-const char kExtraFieldKey[] = "extra_field";
-const char kSecondExtraFieldKey[] = "second_extra_field";
+const char kMessageIntentKey[] = "message_intent";
+const char kPriorityKey[] = "priority";
+const char kTimestampKey[] = "timestamp";
+const char kSecondIconUrlKey[] = "second_icon_url";
+const char kUnreadCountKey[] = "unread_count";
+const char kButtonOneTitleKey[] = "button_one_title";
+const char kButtonOneIntentKey[] = "button_one_intent";
+const char kButtonTwoTitleKey[] = "button_two_title";
+const char kButtonTwoIntentKey[] = "button_two_intent";
+const char kExpandedMessageKey[] = "expanded_message";
+const char kImageUrlKey[] = "image_url";
+
+const char kSimpleType[] = "simple";
+const char kBaseFormatType[] = "base";
+
+NotificationType StringToNotificationType(std::string& string_type) {
+  if (string_type == kSimpleType)
+    return NOTIFICATION_TYPE_SIMPLE;
+  if (string_type == kBaseFormatType)
+    return NOTIFICATION_TYPE_BASE_FORMAT;
+
+  // In case of unrecognized string, fall back to most common type.
+  return NOTIFICATION_TYPE_SIMPLE;
+}
 
 }  // namespace notifications
 
