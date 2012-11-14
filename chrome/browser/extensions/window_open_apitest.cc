@@ -287,7 +287,15 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
   WaitForTabsAndPopups(browser(), 1, num_popups, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, ClosePanelsOnExtensionCrash) {
+#if defined(OS_CHROMEOS)
+// TODO(derat): See if there's some way to get this to work on Chrome OS.  It
+// crashes there, apparently because we automatically reload crashed pages:
+// http:/crbug.com/161073
+#define MAYBE_ClosePanelsOnExtensionCrash DISABLED_ClosePanelsOnExtensionCrash
+#else
+#define MAYBE_ClosePanelsOnExtensionCrash ClosePanelsOnExtensionCrash
+#endif
+IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_ClosePanelsOnExtensionCrash) {
 #if defined(USE_ASH)
   // On Ash, new panel windows open as popup windows instead.
   int num_popups = 4;
