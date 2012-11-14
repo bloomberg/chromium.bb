@@ -264,8 +264,6 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_VALIDATION_VALUE_MISSING_SELECT;
     case WebLocalizedString::WeekFormatTemplate:
       return IDS_FORM_INPUT_WEEK_TEMPLATE;
-    case WebLocalizedString::WeekNumberLabel:
-      return IDS_FORM_WEEK_NUMBER_LABEL;
     // This "default:" line exists to avoid compile warnings about enum
     // coverage when we add a new symbol to WebLocalizedString.h in WebKit.
     // After a planned WebKit patch is landed, we need to add a case statement
