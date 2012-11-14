@@ -194,17 +194,17 @@ void BrowserLauncherItemController::TabDetachedAt(
 }
 
 void BrowserLauncherItemController::TabChangedAt(
-    TabContents* tab,
+    content::WebContents* contents,
     int index,
     TabStripModelObserver::TabChangeType change_type) {
-  UpdateAppState(tab->web_contents());
+  UpdateAppState(contents);
   if (index != tab_model_->active_index() ||
       !(change_type != TabStripModelObserver::LOADING_ONLY &&
         change_type != TabStripModelObserver::TITLE_NOT_LOADING)) {
     return;
   }
 
-  UpdateLauncher(tab->web_contents());
+  UpdateLauncher(contents);
 }
 
 void BrowserLauncherItemController::TabReplacedAt(

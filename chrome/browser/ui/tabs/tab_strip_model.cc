@@ -385,7 +385,7 @@ void TabStripModel::UpdateTabContentsStateAt(int index,
   DCHECK(ContainsIndex(index));
 
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-      TabChangedAt(GetTabContentsAtImpl(index), index, change_type));
+      TabChangedAt(GetWebContentsAtImpl(index), index, change_type));
 }
 
 void TabStripModel::CloseAllTabs() {

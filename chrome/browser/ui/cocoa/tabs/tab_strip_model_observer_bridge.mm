@@ -85,12 +85,12 @@ void TabStripModelObserverBridge::TabMoved(WebContents* contents,
   }
 }
 
-void TabStripModelObserverBridge::TabChangedAt(TabContents* contents,
+void TabStripModelObserverBridge::TabChangedAt(WebContents* contents,
                                                int index,
                                                TabChangeType change_type) {
   if ([controller_ respondsToSelector:
           @selector(tabChangedWithContents:atIndex:changeType:)]) {
-    [controller_ tabChangedWithContents:WebContentsOf(contents)
+    [controller_ tabChangedWithContents:contents
                                 atIndex:index
                              changeType:change_type];
   }
@@ -107,7 +107,7 @@ void TabStripModelObserverBridge::TabReplacedAt(
                         previousContents:WebContentsOf(old_contents)
                                  atIndex:index];
   } else {
-    TabChangedAt(new_contents, index, ALL);
+    TabChangedAt(WebContentsOf(new_contents), index, ALL);
   }
 }
 
