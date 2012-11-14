@@ -3450,10 +3450,14 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
     scoped_refptr<ContentLayer> child = createDrawableContentLayer(&delegate);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(2, 2), gfx::Size(10, 10), true);
 
+    scoped_refptr<ContentLayer> childEmpty = createDrawableContentLayer(&delegate);
+    setLayerPropertiesForTesting(childEmpty.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(2, 2), gfx::Size(0, 0), true);
+
     scoped_refptr<NoScaleContentLayer> childNoScale = createNoScaleDrawableContentLayer(&delegate);
     setLayerPropertiesForTesting(childNoScale.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(2, 2), gfx::Size(10, 10), true);
 
     parent->addChild(child);
+    parent->addChild(childEmpty);
     parent->addChild(childNoScale);
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
@@ -3466,6 +3470,7 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
 
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor, parent);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor, child);
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor, childEmpty);
     EXPECT_CONTENTS_SCALE_EQ(1, childNoScale);
 
     EXPECT_EQ(1u, renderSurfaceLayerList.size());
@@ -3486,22 +3491,29 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
     EXPECT_FLOAT_RECT_EQ(expectedParentDrawRect, parentDrawRect);
     EXPECT_FLOAT_RECT_EQ(expectedParentDrawRect, parentScreenSpaceRect);
 
-    // Verify child transforms
+    // Verify child and childEmpty transforms. They should match.
     WebTransformationMatrix expectedChildTransform;
     expectedChildTransform.translate(deviceScaleFactor * child->position().x(), deviceScaleFactor * child->position().y());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->screenSpaceTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, childEmpty->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, childEmpty->screenSpaceTransform());
 
-    // Verify results of transformed child rects
+    // Verify results of transformed child and childEmpty rects. They should match.
     gfx::RectF childContentBounds(gfx::PointF(), gfx::SizeF(child->contentBounds()));
 
     gfx::RectF childDrawRect = MathUtil::mapClippedRect(child->drawTransform(), childContentBounds);
     gfx::RectF childScreenSpaceRect = MathUtil::mapClippedRect(child->screenSpaceTransform(), childContentBounds);
 
+    gfx::RectF childEmptyDrawRect = MathUtil::mapClippedRect(childEmpty->drawTransform(), childContentBounds);
+    gfx::RectF childEmptyScreenSpaceRect = MathUtil::mapClippedRect(childEmpty->screenSpaceTransform(), childContentBounds);
+
     gfx::RectF expectedChildDrawRect(child->position(), child->bounds());
     expectedChildDrawRect.Scale(deviceScaleFactor);
     EXPECT_FLOAT_RECT_EQ(expectedChildDrawRect, childDrawRect);
     EXPECT_FLOAT_RECT_EQ(expectedChildDrawRect, childScreenSpaceRect);
+    EXPECT_FLOAT_RECT_EQ(expectedChildDrawRect, childEmptyDrawRect);
+    EXPECT_FLOAT_RECT_EQ(expectedChildDrawRect, childEmptyScreenSpaceRect);
 
     // Verify childNoScale transforms
     WebTransformationMatrix expectedChildNoScaleTransform = child->drawTransform();
@@ -3610,6 +3622,9 @@ TEST(LayerTreeHostCommonTest, verifyContentsScale)
     scoped_refptr<ContentLayer> childScale = createDrawableContentLayer(&delegate);
     setLayerPropertiesForTesting(childScale.get(), childScaleMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(2, 2), gfx::Size(10, 10), true);
 
+    scoped_refptr<ContentLayer> childEmpty = createDrawableContentLayer(&delegate);
+    setLayerPropertiesForTesting(childEmpty.get(), childScaleMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(2, 2), gfx::Size(0, 0), true);
+
     scoped_refptr<NoScaleContentLayer> childNoScale = createNoScaleDrawableContentLayer(&delegate);
     setLayerPropertiesForTesting(childNoScale.get(), childScaleMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(12, 12), gfx::Size(10, 10), true);
 
@@ -3623,6 +3638,7 @@ TEST(LayerTreeHostCommonTest, verifyContentsScale)
     parent->setBoundsContainPageScale(true);
 
     parent->addChild(childScale);
+    parent->addChild(childEmpty);
     parent->addChild(childNoScale);
     parent->addChild(childNoAutoScale);
 
@@ -3641,29 +3657,33 @@ TEST(LayerTreeHostCommonTest, verifyContentsScale)
 
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * initialParentScale, parent);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childScale);
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childEmpty);
     EXPECT_CONTENTS_SCALE_EQ(1, childNoScale);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * fixedRasterScale, childNoAutoScale);
 
     // The parent is scaled up and shouldn't need to scale during draw. The child that can scale its contents should
-    // also not need to scale during draw. The other should.
-    // There is some rounding error due to contentBounds being a rounded integer.
-    EXPECT_NEAR(parent->drawTransform().m11(), 1, 0.01);
-    EXPECT_NEAR(parent->drawTransform().m22(), 1, 0.01);
-    EXPECT_NEAR(childScale->drawTransform().m11(), 1, 0.01);
-    EXPECT_NEAR(childScale->drawTransform().m22(), 1, 0.01);
+    // also not need to scale during draw. This shouldn't change if the child has empty bounds. The other children should.
+    EXPECT_FLOAT_EQ(1, parent->drawTransform().m11());
+    EXPECT_FLOAT_EQ(1, parent->drawTransform().m22());
+    EXPECT_FLOAT_EQ(1, childScale->drawTransform().m11());
+    EXPECT_FLOAT_EQ(1, childScale->drawTransform().m22());
+    EXPECT_FLOAT_EQ(1, childEmpty->drawTransform().m11());
+    EXPECT_FLOAT_EQ(1, childEmpty->drawTransform().m22());
     EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childNoScale->drawTransform().m11());
     EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childNoScale->drawTransform().m22());
-    EXPECT_NEAR(childNoAutoScale->drawTransform().m11(), initialParentScale * initialChildScale / fixedRasterScale, 0.01);
-    EXPECT_NEAR(childNoAutoScale->drawTransform().m22(), initialParentScale * initialChildScale / fixedRasterScale, 0.01);
+    EXPECT_FLOAT_EQ(initialParentScale * initialChildScale / fixedRasterScale, childNoAutoScale->drawTransform().m11());
+    EXPECT_FLOAT_EQ(initialParentScale * initialChildScale / fixedRasterScale, childNoAutoScale->drawTransform().m22());
 
     // If the transform changes, we expect the contentsScale to remain unchanged.
     childScale->setTransform(identityMatrix);
+    childEmpty->setTransform(identityMatrix);
 
     renderSurfaceLayerList.clear();
     LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), deviceScaleFactor, pageScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
 
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * initialParentScale, parent);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childScale);
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childEmpty);
     EXPECT_CONTENTS_SCALE_EQ(1, childNoScale);
 
     // But if the deviceScaleFactor or pageScaleFactor changes, then it should be updated, but using the initial transform.
@@ -3680,6 +3700,7 @@ TEST(LayerTreeHostCommonTest, verifyContentsScale)
 
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * initialParentScale, parent);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childScale);
+    EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, childEmpty);
     EXPECT_CONTENTS_SCALE_EQ(1, childNoScale);
     EXPECT_CONTENTS_SCALE_EQ(deviceScaleFactor * pageScaleFactor * fixedRasterScale, childNoAutoScale);
 }

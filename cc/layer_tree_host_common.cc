@@ -531,11 +531,8 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
     // The drawTransform that gets computed below is effectively the layer's drawTransform, unless
     // the layer itself creates a renderSurface. In that case, the renderSurface re-parents the transforms.
     WebTransformationMatrix drawTransform = combinedTransform;
-    if (!layer->contentBounds().IsEmpty() && !layer->bounds().IsEmpty()) {
-        // M[draw] = M[parent] * LT * S[layer2content]
-        drawTransform.scaleNonUniform(1.0 / layer->contentsScaleX(),
-                                      1.0 / layer->contentsScaleY());
-    }
+    // M[draw] = M[parent] * LT * S[layer2content]
+    drawTransform.scaleNonUniform(1.0 / layer->contentsScaleX(), 1.0 / layer->contentsScaleY());
 
     // layerScreenSpaceTransform represents the transform between root layer's "screen space" and local content space.
     WebTransformationMatrix layerScreenSpaceTransform = fullHierarchyMatrix;
@@ -566,16 +563,14 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
 
         // The owning layer's draw transform has a scale from content to layer space which we need to undo and
         // replace with a scale from the surface's subtree into layer space.
-        if (!layer->contentBounds().IsEmpty() && !layer->bounds().IsEmpty())
-            drawTransform.scaleNonUniform(layer->contentsScaleX(), layer->contentsScaleY());
+        drawTransform.scaleNonUniform(layer->contentsScaleX(), layer->contentsScaleY());
         drawTransform.scaleNonUniform(1 / renderSurfaceSublayerScale.x(), 1 / renderSurfaceSublayerScale.y());
         renderSurface->setDrawTransform(drawTransform);
 
         // The origin of the new surface is the upper left corner of the layer.
         WebTransformationMatrix layerDrawTransform;
         layerDrawTransform.scaleNonUniform(renderSurfaceSublayerScale.x(), renderSurfaceSublayerScale.y());
-        if (!layer->contentBounds().IsEmpty() && !layer->bounds().IsEmpty())
-            layerDrawTransform.scaleNonUniform(1.0 / layer->contentsScaleX(), 1.0 / layer->contentsScaleY());
+        layerDrawTransform.scaleNonUniform(1.0 / layer->contentsScaleX(), 1.0 / layer->contentsScaleY());
         layer->setDrawTransform(layerDrawTransform);
 
         // Inside the surface's subtree, we scale everything to the owning layer's scale.
@@ -747,8 +742,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
         // The owning layer's screenSpaceTransform has a scale from content to layer space which we need to undo and
         // replace with a scale from the surface's subtree into layer space.
         WebTransformationMatrix screenSpaceTransform = layer->screenSpaceTransform();
-        if (!layer->contentBounds().IsEmpty() && !layer->bounds().IsEmpty())
-            screenSpaceTransform.scaleNonUniform(layer->contentsScaleX(), layer->contentsScaleY());
+        screenSpaceTransform.scaleNonUniform(layer->contentsScaleX(), layer->contentsScaleY());
         screenSpaceTransform.scaleNonUniform(1 / renderSurfaceSublayerScale.x(), 1 / renderSurfaceSublayerScale.y());
         renderSurface->setScreenSpaceTransform(screenSpaceTransform);
 
