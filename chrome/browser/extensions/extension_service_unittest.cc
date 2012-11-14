@@ -4532,7 +4532,9 @@ class ExtensionsReadyRecorder : public content::NotificationObserver {
 // Also tests that we always fire EXTENSIONS_READY, no matter whether we are
 // enabled or not.
 TEST(ExtensionServiceTestSimple, Enabledness) {
+  // Make sure the PluginService singleton is destroyed at the end of the test.
   base::ShadowingAtExitManager at_exit_manager;
+
   ExtensionErrorReporter::Init(false);  // no noisy errors
   ExtensionsReadyRecorder recorder;
   scoped_ptr<TestingProfile> profile(new TestingProfile());
@@ -4543,8 +4545,6 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   FilePath install_dir = profile->GetPath()
       .AppendASCII(ExtensionService::kInstallDirectoryName);
 
-  // Make sure the PluginService singleton is destroyed at the end of the test.
-  base::ShadowingAtExitManager at_exit;
   webkit::npapi::MockPluginList plugin_list;
   PluginService::GetInstance()->SetPluginListForTesting(&plugin_list);
 
@@ -4610,6 +4610,11 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   service = NULL;
   // Execute any pending deletion tasks.
   loop.RunAllPending();
+
+  // Ensure that even if the PluginService is re-used for a later test, it
+  // won't still hold a reference to the stack position of our MockPluginList.
+  // See crbug.com/159754.
+  PluginService::GetInstance()->SetPluginListForTesting(NULL);
 }
 
 // Test loading extensions that require limited and unlimited storage quotas.
