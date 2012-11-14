@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 
-class BaseTab;
 class Browser;
+class Tab;
 class TabContents;
 class TabStrip;
 class TabStripSelectionModel;
@@ -38,10 +38,10 @@ class BrowserTabStripController : public TabStripController,
   TabStripModel* model() const { return model_; }
 
   bool IsCommandEnabledForTab(TabStripModel::ContextMenuCommand command_id,
-                              BaseTab* tab) const;
+                              Tab* tab) const;
   void ExecuteCommandForTab(TabStripModel::ContextMenuCommand command_id,
-                            BaseTab* tab);
-  bool IsTabPinned(BaseTab* tab) const;
+                            Tab* tab);
+  bool IsTabPinned(Tab* tab) const;
 
   // TabStripController implementation:
   virtual const TabStripSelectionModel& GetSelectionModel() OVERRIDE;
@@ -57,7 +57,7 @@ class BrowserTabStripController : public TabStripController,
   virtual void ToggleSelected(int model_index) OVERRIDE;
   virtual void AddSelectionFromAnchorTo(int model_index) OVERRIDE;
   virtual void CloseTab(int model_index, CloseTabSource source) OVERRIDE;
-  virtual void ShowContextMenuForTab(BaseTab* tab,
+  virtual void ShowContextMenuForTab(Tab* tab,
                                      const gfx::Point& p) OVERRIDE;
   virtual void UpdateLoadingAnimations() OVERRIDE;
   virtual int HasAvailableDragActions() const OVERRIDE;
@@ -127,10 +127,10 @@ class BrowserTabStripController : public TabStripController,
 
   void StartHighlightTabsForCommand(
       TabStripModel::ContextMenuCommand command_id,
-      BaseTab* tab);
+      Tab* tab);
   void StopHighlightTabsForCommand(
       TabStripModel::ContextMenuCommand command_id,
-      BaseTab* tab);
+      Tab* tab);
 
   // Adds a tab.
   void AddTab(content::WebContents* contents, int index, bool is_active);

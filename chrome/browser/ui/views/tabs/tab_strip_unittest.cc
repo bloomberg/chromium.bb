@@ -47,7 +47,7 @@ TEST_F(TabStripTest, tab_count) {
 
 TEST_F(TabStripTest, CreateTabForDragging) {
   // Any result is good, as long as it doesn't crash.
-  scoped_ptr<BaseTab> tab(tab_strip_->CreateTabForDragging());
+  scoped_ptr<Tab> tab(tab_strip_->CreateTabForDragging());
 }
 
 TEST_F(TabStripTest, AddTabAt) {

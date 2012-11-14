@@ -80,9 +80,9 @@ ui::EventResult TabScrubber::OnMouseEvent(ui::MouseEvent* event) {
 
     gfx::Point tab_point((initial_tab->width() / 2) + event->x() - initial_x_,
                          initial_tab->height() / 2);
-    BaseTab* new_tab = tab_strip->GetTabAt(initial_tab, tab_point);
+    Tab* new_tab = tab_strip->GetTabAt(initial_tab, tab_point);
     if (new_tab && !new_tab->IsActive()) {
-      int new_index = tab_strip->GetModelIndexOfBaseTab(new_tab);
+      int new_index = tab_strip->GetModelIndexOfTab(new_tab);
       browser->tab_strip_model()->ActivateTabAt(new_index, true);
     }
   }

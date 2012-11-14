@@ -1649,8 +1649,6 @@
         'browser/ui/views/tab_icon_view_model.h',
         'browser/ui/views/tab_modal_confirm_dialog_views.cc',
         'browser/ui/views/tab_modal_confirm_dialog_views.h',
-        'browser/ui/views/tabs/base_tab.cc',
-        'browser/ui/views/tabs/base_tab.h',
         'browser/ui/views/tabs/browser_tab_strip_controller.cc',
         'browser/ui/views/tabs/browser_tab_strip_controller.h',
         'browser/ui/views/tabs/dock_info_views.cc',

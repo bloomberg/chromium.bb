@@ -27,9 +27,9 @@ class Screen;
 namespace views {
 class View;
 }
-class BaseTab;
 class Browser;
 class DraggedTabView;
+class Tab;
 struct TabRendererData;
 class TabStrip;
 class TabStripModel;
@@ -88,8 +88,8 @@ class TabDragController : public content::WebContentsDelegate,
   // strip. |initial_selection_model| is the selection model before the drag
   // started and is only non-empty if |source_tab| was not initially selected.
   void Init(TabStrip* source_tabstrip,
-            BaseTab* source_tab,
-            const std::vector<BaseTab*>& tabs,
+            Tab* source_tab,
+            const std::vector<Tab*>& tabs,
             const gfx::Point& mouse_offset,
             int source_tab_offset,
             const TabStripSelectionModel& initial_selection_model,
@@ -203,7 +203,7 @@ class TabDragController : public content::WebContentsDelegate,
     int source_model_index;
 
     // If attached this is the tab in |attached_tabstrip_|.
-    BaseTab* attached_tab;
+    Tab* attached_tab;
 
     // Is the tab pinned?
     bool pinned;
@@ -213,7 +213,7 @@ class TabDragController : public content::WebContentsDelegate,
 
   // Sets |drag_data| from |tab|. This also registers for necessary
   // notifications and resets the delegate of the TabContents.
-  void InitTabDragData(BaseTab* tab, TabDragData* drag_data);
+  void InitTabDragData(Tab* tab, TabDragData* drag_data);
 
   // Overridden from content::WebContentsDelegate:
   virtual content::WebContents* OpenURLFromTab(
@@ -376,7 +376,7 @@ class TabDragController : public content::WebContentsDelegate,
 
   // Finds the Tabs within the specified TabStrip that corresponds to the
   // WebContents of the dragged tabs. Returns an empty vector if not attached.
-  std::vector<BaseTab*> GetTabsMatchingDraggedContents(TabStrip* tabstrip);
+  std::vector<Tab*> GetTabsMatchingDraggedContents(TabStrip* tabstrip);
 
   // Returns the bounds for the tabs based on the attached tab strip. The
   // x-coordinate of each tab is offset by |x_offset|.

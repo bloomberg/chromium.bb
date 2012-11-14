@@ -22,32 +22,32 @@ class FakeTabController : public TabController {
     return selection_model_;
   }
   virtual bool SupportsMultipleSelection() OVERRIDE { return false; }
-  virtual void SelectTab(BaseTab* tab) OVERRIDE {}
-  virtual void ExtendSelectionTo(BaseTab* tab) OVERRIDE {}
-  virtual void ToggleSelected(BaseTab* tab) OVERRIDE {}
-  virtual void AddSelectionFromAnchorTo(BaseTab* tab) OVERRIDE {}
-  virtual void CloseTab(BaseTab* tab, CloseTabSource source) OVERRIDE {}
-  virtual void ShowContextMenuForTab(BaseTab* tab,
+  virtual void SelectTab(Tab* tab) OVERRIDE {}
+  virtual void ExtendSelectionTo(Tab* tab) OVERRIDE {}
+  virtual void ToggleSelected(Tab* tab) OVERRIDE {}
+  virtual void AddSelectionFromAnchorTo(Tab* tab) OVERRIDE {}
+  virtual void CloseTab(Tab* tab, CloseTabSource source) OVERRIDE {}
+  virtual void ShowContextMenuForTab(Tab* tab,
                                      const gfx::Point& p) OVERRIDE {}
-  virtual bool IsActiveTab(const BaseTab* tab) const OVERRIDE { return false; }
-  virtual bool IsTabSelected(const BaseTab* tab) const OVERRIDE {
+  virtual bool IsActiveTab(const Tab* tab) const OVERRIDE { return false; }
+  virtual bool IsTabSelected(const Tab* tab) const OVERRIDE {
     return false;
   }
-  virtual bool IsTabPinned(const BaseTab* tab) const OVERRIDE { return false; }
+  virtual bool IsTabPinned(const Tab* tab) const OVERRIDE { return false; }
   virtual void MaybeStartDrag(
-      BaseTab* tab,
+      Tab* tab,
       const ui::LocatedEvent& event,
       const TabStripSelectionModel& original_selection) OVERRIDE {}
   virtual void ContinueDrag(views::View* view,
                             const gfx::Point& location) OVERRIDE {}
   virtual bool EndDrag(EndDragReason reason) OVERRIDE { return false; }
-  virtual BaseTab* GetTabAt(BaseTab* tab,
-                            const gfx::Point& tab_in_tab_coordinates) OVERRIDE {
+  virtual Tab* GetTabAt(Tab* tab,
+                        const gfx::Point& tab_in_tab_coordinates) OVERRIDE {
     return NULL;
   }
   virtual void OnMouseEventInTab(views::View* source,
                                  const ui::MouseEvent& event) OVERRIDE {}
-  virtual bool ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) OVERRIDE {
+  virtual bool ShouldPaintTab(const Tab* tab, gfx::Rect* clip) OVERRIDE {
     return true;
   }
 

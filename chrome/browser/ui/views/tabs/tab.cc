@@ -6,19 +6,33 @@
 
 #include <limits>
 
+#include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_resources.h"
+#include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/animation/animation_container.h"
 #include "ui/base/animation/multi_animation.h"
+#include "ui/base/animation/slide_animation.h"
 #include "ui/base/animation/throb_animation.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/text/text_elider.h"
+#include "ui/base/theme_provider.h"
+
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/font.h"
@@ -31,6 +45,10 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
+#endif
+
+#if defined(USE_ASH)
+#include "ui/aura/env.h"
 #endif
 
 namespace {
@@ -147,6 +165,12 @@ int tab_icon_size() {
   return value;
 }
 
+// How long the pulse throb takes.
+const int kPulseDurationMs = 200;
+
+// How long the recording button takes to fade in/out.
+const int kRecordingDurationMs = 1000;
+
 // Width of touch tabs.
 static const int kTouchWidth = 120;
 
@@ -213,7 +237,134 @@ static const SkColor kMiniTitleChangeGradientColor2 =
 // errors may lead to tabs in the same tabstrip having different sizes.
 const size_t kMaxImageCacheSize = 4;
 
+// Draws the icon image at the center of |bounds|.
+void DrawIconCenter(gfx::Canvas* canvas,
+                    const gfx::ImageSkia& image,
+                    int image_offset,
+                    int icon_width,
+                    int icon_height,
+                    const gfx::Rect& bounds,
+                    bool filter,
+                    const SkPaint& paint) {
+  // Center the image within bounds.
+  int dst_x = bounds.x() - (icon_width - bounds.width()) / 2;
+  int dst_y = bounds.y() - (icon_height - bounds.height()) / 2;
+  // NOTE: the clipping is a work around for 69528, it shouldn't be necessary.
+  canvas->Save();
+  canvas->ClipRect(gfx::Rect(dst_x, dst_y, icon_width, icon_height));
+  canvas->DrawImageInt(image,
+                       image_offset, 0, icon_width, icon_height,
+                       dst_x, dst_y, icon_width, icon_height,
+                       filter, paint);
+  canvas->Restore();
+}
+
 }  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// FaviconCrashAnimation
+//
+//  A custom animation subclass to manage the favicon crash animation.
+class Tab::FaviconCrashAnimation : public ui::LinearAnimation,
+                                   public ui::AnimationDelegate {
+ public:
+  explicit FaviconCrashAnimation(Tab* target)
+      : ALLOW_THIS_IN_INITIALIZER_LIST(ui::LinearAnimation(1000, 25, this)),
+        target_(target) {
+  }
+  virtual ~FaviconCrashAnimation() {}
+
+  // ui::Animation overrides:
+  virtual void AnimateToState(double state) {
+    const double kHidingOffset = 27;
+
+    if (state < .5) {
+      target_->SetFaviconHidingOffset(
+          static_cast<int>(floor(kHidingOffset * 2.0 * state)));
+    } else {
+      target_->DisplayCrashedFavicon();
+      target_->SetFaviconHidingOffset(
+          static_cast<int>(
+              floor(kHidingOffset - ((state - .5) * 2.0 * kHidingOffset))));
+    }
+  }
+
+  // ui::AnimationDelegate overrides:
+  virtual void AnimationCanceled(const ui::Animation* animation) {
+    target_->SetFaviconHidingOffset(0);
+  }
+
+ private:
+  Tab* target_;
+
+  DISALLOW_COPY_AND_ASSIGN(FaviconCrashAnimation);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// TabCloseButton
+//
+//  This is a Button subclass that causes middle clicks to be forwarded to the
+//  parent View by explicitly not handling them in OnMousePressed.
+class Tab::TabCloseButton : public views::ImageButton {
+ public:
+  explicit TabCloseButton(Tab* tab) : views::ImageButton(tab), tab_(tab) {}
+  virtual ~TabCloseButton() {}
+
+  // Overridden from views::View.
+  virtual View* GetEventHandlerForPoint(const gfx::Point& point) OVERRIDE {
+    // Ignore the padding set on the button.
+    gfx::Rect rect = GetContentsBounds();
+    rect.set_x(GetMirroredXForRect(rect));
+
+#if defined(USE_ASH)
+    // Include the padding in hit-test for touch events.
+    if (aura::Env::GetInstance()->is_touch_down())
+      rect = GetLocalBounds();
+#elif defined(OS_WIN)
+    // TODO(sky): Use local-bounds if a touch-point is active.
+    // http://crbug.com/145258
+#endif
+
+    return rect.Contains(point) ? this : parent();
+  }
+
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+    if (tab_->controller())
+      tab_->controller()->OnMouseEventInTab(this, event);
+
+    bool handled = ImageButton::OnMousePressed(event);
+    // Explicitly mark midle-mouse clicks as non-handled to ensure the tab
+    // sees them.
+    return event.IsOnlyMiddleMouseButton() ? false : handled;
+  }
+
+  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE {
+    if (tab_->controller())
+      tab_->controller()->OnMouseEventInTab(this, event);
+    CustomButton::OnMouseMoved(event);
+  }
+
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
+    if (tab_->controller())
+      tab_->controller()->OnMouseEventInTab(this, event);
+    CustomButton::OnMouseReleased(event);
+  }
+
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    // Consume all gesture events here so that the parent (Tab) does not
+    // start consuming gestures.
+    ImageButton::OnGestureEvent(event);
+    return ui::ER_CONSUMED;
+  }
+
+ private:
+  Tab* tab_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabCloseButton);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// ImageCacheEntry
 
 Tab::ImageCacheEntry::ImageCacheEntry()
     : resource_id(-1),
@@ -222,12 +373,19 @@ Tab::ImageCacheEntry::ImageCacheEntry()
 
 Tab::ImageCacheEntry::~ImageCacheEntry() {}
 
-Tab::TabImage Tab::tab_alpha_ = {0};
-Tab::TabImage Tab::tab_active_ = {0};
-Tab::TabImage Tab::tab_inactive_ = {0};
+////////////////////////////////////////////////////////////////////////////////
+// Tab, statics:
 
 // static
 const char Tab::kViewClassName[] = "BrowserTab";
+// static
+Tab::TabImage Tab::tab_alpha_ = {0};
+Tab::TabImage Tab::tab_active_ = {0};
+Tab::TabImage Tab::tab_inactive_ = {0};
+// static
+gfx::Font* Tab::font_ = NULL;
+// static
+int Tab::font_height_ = 0;
 // static
 Tab::ImageCache* Tab::image_cache_ = NULL;
 
@@ -235,14 +393,132 @@ Tab::ImageCache* Tab::image_cache_ = NULL;
 // Tab, public:
 
 Tab::Tab(TabController* controller)
-    : BaseTab(controller),
+    : controller_(controller),
+      closing_(false),
+      dragging_(false),
+      favicon_hiding_offset_(0),
+      loading_animation_frame_(0),
+      should_display_crashed_favicon_(false),
+      throbber_disabled_(false),
+      theme_provider_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(hover_controller_(this)),
       showing_icon_(false),
       showing_close_button_(false),
       close_button_color_(0) {
   InitTabResources();
+
+  // So we get don't get enter/exit on children and don't prematurely stop the
+  // hover.
+  set_notify_enter_exit_on_child(true);
+
+  set_id(VIEW_ID_TAB);
+
+  // Add the Close Button.
+  close_button_ = new TabCloseButton(this);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  close_button_->SetImage(views::CustomButton::STATE_NORMAL,
+                          rb.GetImageSkiaNamed(IDR_TAB_CLOSE));
+  close_button_->SetImage(views::CustomButton::STATE_HOVERED,
+                          rb.GetImageSkiaNamed(IDR_TAB_CLOSE_H));
+  close_button_->SetImage(views::CustomButton::STATE_PRESSED,
+                          rb.GetImageSkiaNamed(IDR_TAB_CLOSE_P));
+  close_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
+  // Disable animation so that the red danger sign shows up immediately
+  // to help avoid mis-clicks.
+  close_button_->SetAnimationDuration(0);
+  AddChildView(close_button_);
+
+  set_context_menu_controller(this);
 }
 
 Tab::~Tab() {
+}
+
+void Tab::set_animation_container(ui::AnimationContainer* container) {
+  animation_container_ = container;
+  hover_controller_.SetAnimationContainer(container);
+}
+
+bool Tab::IsActive() const {
+  return controller() ? controller()->IsActiveTab(this) : true;
+}
+
+bool Tab::IsSelected() const {
+  return controller() ? controller()->IsTabSelected(this) : true;
+}
+
+void Tab::SetData(const TabRendererData& data) {
+  if (data_.Equals(data))
+    return;
+
+  TabRendererData old(data_);
+  data_ = data;
+
+  if (data_.IsCrashed()) {
+    if (!should_display_crashed_favicon_ && !IsPerformingCrashAnimation()) {
+#if defined(OS_CHROMEOS)
+      // On Chrome OS, we reload killed tabs automatically when the user
+      // switches to them.  Don't display animations for these unless they're
+      // selected (i.e. in the foreground) -- we won't reload these
+      // automatically since we don't want to get into a crash loop.
+      if (IsSelected() ||
+          data_.crashed_status != base::TERMINATION_STATUS_PROCESS_WAS_KILLED)
+        StartCrashAnimation();
+#else
+      StartCrashAnimation();
+#endif
+    }
+  } else {
+    if (IsPerformingCrashAnimation())
+      StopCrashAnimation();
+    ResetCrashedFavicon();
+  }
+
+  DataChanged(old);
+
+  Layout();
+  SchedulePaint();
+}
+
+void Tab::UpdateLoadingAnimation(TabRendererData::NetworkState state) {
+  // If this is an extension app and a command line flag is set,
+  // then disable the throbber.
+  throbber_disabled_ = data().app &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsNoThrob);
+
+  if (throbber_disabled_)
+    return;
+
+  if (state == data_.network_state &&
+      state == TabRendererData::NETWORK_STATE_NONE) {
+    // If the network state is none and hasn't changed, do nothing. Otherwise we
+    // need to advance the animation frame.
+    return;
+  }
+
+  TabRendererData::NetworkState old_state = data_.network_state;
+  data_.network_state = state;
+  AdvanceLoadingAnimation(old_state, state);
+}
+
+void Tab::StartPulse() {
+  if (!pulse_animation_.get()) {
+    pulse_animation_.reset(new ui::ThrobAnimation(this));
+    pulse_animation_->SetSlideDuration(kPulseDurationMs);
+    if (animation_container_.get())
+      pulse_animation_->SetContainer(animation_container_.get());
+  }
+  pulse_animation_->Reset();
+  pulse_animation_->StartThrobbing(std::numeric_limits<int>::max());
+}
+
+void Tab::StopPulse() {
+  if (!pulse_animation_.get())
+    return;
+
+  pulse_animation_->Stop();  // Do stop so we get notified.
+  pulse_animation_.reset(NULL);
 }
 
 void Tab::StartMiniTabTitleAnimation() {
@@ -319,24 +595,43 @@ int Tab::GetMiniWidth() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Tab, protected:
+// Tab, AnimationDelegate overrides:
 
-const gfx::Rect& Tab::GetTitleBounds() const {
-  return title_bounds_;
-}
-
-const gfx::Rect& Tab::GetIconBounds() const {
-  return favicon_bounds_;
-}
-
-void Tab::DataChanged(const TabRendererData& old) {
-  if (data().blocked == old.blocked)
+void Tab::AnimationProgressed(const ui::Animation* animation) {
+  // Ignore if the pulse animation is being performed on active tab because
+  // it repaints the same image. See |Tab::PaintTabBackground()|.
+  if (animation == pulse_animation_.get() && IsActive())
     return;
+  SchedulePaint();
+}
 
-  if (data().blocked)
-    StartPulse();
-  else
-    StopPulse();
+void Tab::AnimationCanceled(const ui::Animation* animation) {
+  SchedulePaint();
+}
+
+void Tab::AnimationEnded(const ui::Animation* animation) {
+  SchedulePaint();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Tab, views::ButtonListener overrides:
+
+void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
+  const CloseTabSource source =
+      (event.type() == ui::ET_MOUSE_RELEASED &&
+       (event.flags() & ui::EF_FROM_TOUCH) == 0) ? CLOSE_TAB_FROM_MOUSE :
+      CLOSE_TAB_FROM_TOUCH;
+  DCHECK_EQ(close_button_, sender);
+  controller()->CloseTab(this, source);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Tab, views::ContextMenuController overrides:
+
+void Tab::ShowContextMenuForView(views::View* source,
+                                     const gfx::Point& point) {
+  if (controller() && !closing())
+    controller()->ShowContextMenuForTab(this, point);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -381,7 +676,7 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
   if (!close_button_color_ || title_color != close_button_color_) {
     close_button_color_ = title_color;
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    close_button()->SetBackground(close_button_color_,
+    close_button_->SetBackground(close_button_color_,
         rb.GetImageSkiaNamed(IDR_TAB_CLOSE),
         rb.GetImageSkiaNamed(IDR_TAB_CLOSE_MASK));
   }
@@ -399,8 +694,8 @@ void Tab::Layout() {
 
   // The height of the content of the Tab is the largest of the favicon,
   // the title text and the close button graphic.
-  int content_height = std::max(tab_icon_size(), font_height());
-  gfx::Size close_button_size(close_button()->GetPreferredSize());
+  int content_height = std::max(tab_icon_size(), font_height_);
+  gfx::Size close_button_size(close_button_->GetPreferredSize());
   content_height = std::max(content_height, close_button_size.height());
 
   // Size the Favicon.
@@ -447,42 +742,42 @@ void Tab::Layout() {
     int left_border = kCloseButtonHorzFuzz;
     int right_border = width() - (lb.width() + close_button_size.width() +
         left_border);
-    close_button()->set_border(views::Border::CreateEmptyBorder(top_border,
+    close_button_->set_border(views::Border::CreateEmptyBorder(top_border,
         left_border, bottom_border, right_border));
-    close_button()->SetBounds(lb.width(), 0,
+    close_button_->SetBounds(lb.width(), 0,
         close_button_size.width() + left_border + right_border,
         close_button_size.height() + top_border + bottom_border);
-    close_button()->SetVisible(true);
+    close_button_->SetVisible(true);
   } else {
-    close_button()->SetBounds(0, 0, 0, 0);
-    close_button()->SetVisible(false);
+    close_button_->SetBounds(0, 0, 0, 0);
+    close_button_->SetVisible(false);
   }
 
   int title_left = favicon_bounds_.right() + kFaviconTitleSpacing;
   int title_top = top_padding() + kTitleTextOffsetY +
-      (content_height - font_height()) / 2;
+      (content_height - font_height_) / 2;
   // Size the Title text to fill the remaining space.
   if (!data().mini || width() >= kMiniTabRendererAsNormalTabWidth) {
     // If the user has big fonts, the title will appear rendered too far down
     // on the y-axis if we use the regular top padding, so we need to adjust it
     // so that the text appears centered.
     gfx::Size minimum_size = GetMinimumUnselectedSize();
-    int text_height = title_top + font_height() + bottom_padding();
+    int text_height = title_top + font_height_ + bottom_padding();
     if (text_height > minimum_size.height())
       title_top -= (text_height - minimum_size.height()) / 2;
 
     int title_width;
-    if (close_button()->visible()) {
+    if (close_button_->visible()) {
       // The close button has an empty border with some padding (see details
       // above where the close-button's bounds is set). Allow the title to
       // overlap the empty padding.
-      title_width = std::max(close_button()->x() +
-                             close_button()->GetInsets().left() -
+      title_width = std::max(close_button_->x() +
+                             close_button_->GetInsets().left() -
                              kTitleCloseButtonSpacing - title_left, 0);
     } else {
       title_width = std::max(lb.width() - title_left, 0);
     }
-    title_bounds_.SetRect(title_left, title_top, title_width, font_height());
+    title_bounds_.SetRect(title_left, title_top, title_width, font_height_);
   } else {
     title_bounds_.SetRect(title_left, title_top, 0, 0);
   }
@@ -517,19 +812,183 @@ void Tab::GetHitTestMask(gfx::Path* path) const {
   TabResources::GetHitTestMask(width(), height(), include_top_shadow, path);
 }
 
+bool Tab::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
+  if (data_.title.empty())
+    return false;
+
+  // Only show the tooltip if the title is truncated.
+  if (font_->GetStringWidth(data_.title) > GetTitleBounds().width()) {
+    *tooltip = data_.title;
+    return true;
+  }
+  return false;
+}
+
 bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) const {
   origin->set_x(title_bounds_.x() + 10);
   origin->set_y(-views::TooltipManager::GetTooltipHeight() - 4);
   return true;
 }
 
+ui::ThemeProvider* Tab::GetThemeProvider() const {
+  ui::ThemeProvider* tp = View::GetThemeProvider();
+  return tp ? tp : theme_provider_;
+}
+
+bool Tab::OnMousePressed(const ui::MouseEvent& event) {
+  if (!controller())
+    return false;
+
+  controller()->OnMouseEventInTab(this, event);
+
+  // Allow a right click from touch to drag, which corresponds to a long click.
+  if (event.IsOnlyLeftMouseButton() ||
+      (event.IsOnlyRightMouseButton() && event.flags() & ui::EF_FROM_TOUCH)) {
+    TabStripSelectionModel original_selection;
+    original_selection.Copy(controller()->GetSelectionModel());
+    if (controller()->SupportsMultipleSelection()) {
+      if (event.IsShiftDown() && event.IsControlDown()) {
+        controller()->AddSelectionFromAnchorTo(this);
+      } else if (event.IsShiftDown()) {
+        controller()->ExtendSelectionTo(this);
+      } else if (event.IsControlDown()) {
+        controller()->ToggleSelected(this);
+        if (!IsSelected()) {
+          // Don't allow dragging non-selected tabs.
+          return false;
+        }
+      } else if (!IsSelected()) {
+        controller()->SelectTab(this);
+      }
+    } else if (!IsSelected()) {
+      controller()->SelectTab(this);
+    }
+    controller()->MaybeStartDrag(this, event, original_selection);
+  }
+  return true;
+}
+
+bool Tab::OnMouseDragged(const ui::MouseEvent& event) {
+  if (controller())
+    controller()->ContinueDrag(this, event.location());
+  return true;
+}
+
+void Tab::OnMouseReleased(const ui::MouseEvent& event) {
+  if (!controller())
+    return;
+
+  controller()->OnMouseEventInTab(this, event);
+
+  // Notify the drag helper that we're done with any potential drag operations.
+  // Clean up the drag helper, which is re-created on the next mouse press.
+  // In some cases, ending the drag will schedule the tab for destruction; if
+  // so, bail immediately, since our members are already dead and we shouldn't
+  // do anything else except drop the tab where it is.
+  if (controller()->EndDrag(END_DRAG_COMPLETE))
+    return;
+
+  // Close tab on middle click, but only if the button is released over the tab
+  // (normal windows behavior is to discard presses of a UI element where the
+  // releases happen off the element).
+  if (event.IsMiddleMouseButton()) {
+    if (HitTestPoint(event.location())) {
+      controller()->CloseTab(this, CLOSE_TAB_FROM_MOUSE);
+    } else if (closing_) {
+      // We're animating closed and a middle mouse button was pushed on us but
+      // we don't contain the mouse anymore. We assume the user is clicking
+      // quicker than the animation and we should close the tab that falls under
+      // the mouse.
+      Tab* closest_tab = controller()->GetTabAt(this, event.location());
+      if (closest_tab)
+        controller()->CloseTab(closest_tab, CLOSE_TAB_FROM_MOUSE);
+    }
+  } else if (event.IsOnlyLeftMouseButton() && !event.IsShiftDown() &&
+             !event.IsControlDown()) {
+    // If the tab was already selected mouse pressed doesn't change the
+    // selection. Reset it now to handle the case where multiple tabs were
+    // selected.
+    controller()->SelectTab(this);
+  }
+}
+
+void Tab::OnMouseCaptureLost() {
+  if (controller())
+    controller()->EndDrag(END_DRAG_CAPTURE_LOST);
+}
+
+void Tab::OnMouseEntered(const ui::MouseEvent& event) {
+  hover_controller_.Show();
+}
+
 void Tab::OnMouseMoved(const ui::MouseEvent& event) {
-  hover_controller().SetLocation(event.location());
-  BaseTab::OnMouseMoved(event);
+  hover_controller_.SetLocation(event.location());
+  if (controller())
+    controller()->OnMouseEventInTab(this, event);
+}
+
+void Tab::OnMouseExited(const ui::MouseEvent& event) {
+  hover_controller_.Hide();
+}
+
+ui::EventResult Tab::OnGestureEvent(ui::GestureEvent* event) {
+  if (!controller())
+    return ui::ER_CONSUMED;
+
+  switch (event->type()) {
+    case ui::ET_GESTURE_BEGIN: {
+      if (event->details().touch_points() != 1)
+        return ui::ER_UNHANDLED;
+
+      TabStripSelectionModel original_selection;
+      original_selection.Copy(controller()->GetSelectionModel());
+      if (!IsSelected())
+        controller()->SelectTab(this);
+      gfx::Point loc(event->location());
+      views::View::ConvertPointToScreen(this, &loc);
+      controller()->MaybeStartDrag(this, *event, original_selection);
+      break;
+    }
+
+    case ui::ET_GESTURE_END:
+      controller()->EndDrag(END_DRAG_COMPLETE);
+      break;
+
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      controller()->ContinueDrag(this, event->location());
+      break;
+
+    default:
+      break;
+  }
+  return ui::ER_CONSUMED;
+}
+
+void Tab::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_PAGETAB;
+  state->name = data_.title;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Tab, private
+
+const gfx::Rect& Tab::GetTitleBounds() const {
+  return title_bounds_;
+}
+
+const gfx::Rect& Tab::GetIconBounds() const {
+  return favicon_bounds_;
+}
+
+void Tab::DataChanged(const TabRendererData& old) {
+  if (data().blocked == old.blocked)
+    return;
+
+  if (data().blocked)
+    StartPulse();
+  else
+    StopPulse();
+}
 
 void Tab::PaintTabBackground(gfx::Canvas* canvas) {
   if (IsActive()) {
@@ -614,7 +1073,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   }
 
   const bool can_cache = !GetThemeProvider()->HasCustomImage(tab_id) &&
-      !hover_controller().ShouldDraw();
+      !hover_controller_.ShouldDraw();
 
   if (can_cache) {
     gfx::ImageSkia cached_image(
@@ -695,8 +1154,8 @@ void Tab::PaintInactiveTabBackgroundUsingResourceId(gfx::Canvas* canvas,
       gfx::ImageSkia(background_canvas.ExtractImageRep()), 0, 0);
 
   if (!GetThemeProvider()->HasCustomImage(tab_id) &&
-      hover_controller().ShouldDraw()) {
-    hover_controller().Draw(canvas, gfx::ImageSkia(
+      hover_controller_.ShouldDraw()) {
+    hover_controller_.Draw(canvas, gfx::ImageSkia(
         background_canvas.ExtractImageRep()));
   }
 
@@ -751,6 +1210,132 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
   canvas->DrawImageInt(*tab_image->image_r, width() - tab_image->r_width, 0);
 }
 
+void Tab::PaintIcon(gfx::Canvas* canvas) {
+  gfx::Rect bounds = GetIconBounds();
+  if (bounds.IsEmpty())
+    return;
+
+  bounds.set_x(GetMirroredXForRect(bounds));
+
+  if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
+    ui::ThemeProvider* tp = GetThemeProvider();
+    gfx::ImageSkia frames(*tp->GetImageSkiaNamed(
+        (data().network_state == TabRendererData::NETWORK_STATE_WAITING) ?
+        IDR_THROBBER_WAITING : IDR_THROBBER));
+
+    int icon_size = frames.height();
+    int image_offset = loading_animation_frame_ * icon_size;
+    DrawIconCenter(canvas, frames, image_offset,
+                   icon_size, icon_size, bounds, false, SkPaint());
+  } else {
+    canvas->Save();
+    canvas->ClipRect(GetLocalBounds());
+    if (should_display_crashed_favicon_) {
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+      gfx::ImageSkia crashed_favicon(*rb.GetImageSkiaNamed(IDR_SAD_FAVICON));
+      bounds.set_y(bounds.y() + favicon_hiding_offset_);
+      DrawIconCenter(canvas, crashed_favicon, 0,
+                     crashed_favicon.width(),
+                     crashed_favicon.height(), bounds, true, SkPaint());
+    } else {
+      if (!data().favicon.isNull()) {
+        // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
+        // to using that class to render the favicon).
+        DrawIconCenter(canvas, data().favicon, 0,
+                       data().favicon.width(),
+                       data().favicon.height(),
+                       bounds, true, SkPaint());
+      }
+    }
+    canvas->Restore();
+
+    // If recording, fade the recording icon on top of the favicon.
+    if (data().recording) {
+      if (!recording_animation_.get()) {
+        recording_animation_.reset(new ui::ThrobAnimation(this));
+        recording_animation_->SetTweenType(ui::Tween::EASE_IN_OUT);
+        recording_animation_->SetThrobDuration(kRecordingDurationMs);
+        recording_animation_->StartThrobbing(-1);
+      }
+      SkPaint paint;
+      paint.setAntiAlias(true);
+      U8CPU alpha = recording_animation_->GetCurrentValue() * 0xff;
+      paint.setAlpha(alpha);
+      ui::ThemeProvider* tp = GetThemeProvider();
+      gfx::ImageSkia recording_dot(*tp->GetImageSkiaNamed(IDR_TAB_RECORDING));
+      DrawIconCenter(canvas, recording_dot, 0,
+                     recording_dot.width(), recording_dot.height(),
+                     bounds, false, paint);
+    } else {
+      recording_animation_.reset();
+    }
+  }
+}
+
+void Tab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
+  // Paint the Title.
+  const gfx::Rect& title_bounds = GetTitleBounds();
+  string16 title = data().title;
+
+  if (title.empty()) {
+    title = data().loading ?
+        l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE) :
+        CoreTabHelper::GetDefaultTitle();
+  } else {
+    Browser::FormatTitleForDisplay(&title);
+  }
+
+  canvas->DrawFadeTruncatingString(title, gfx::Canvas::TruncateFadeTail, 0,
+                                   *font_, title_color, title_bounds);
+}
+
+void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
+                                      TabRendererData::NetworkState state) {
+  static bool initialized = false;
+  static int loading_animation_frame_count = 0;
+  static int waiting_animation_frame_count = 0;
+  static int waiting_to_loading_frame_count_ratio = 0;
+  if (!initialized) {
+    initialized = true;
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    gfx::ImageSkia loading_animation(*rb.GetImageSkiaNamed(IDR_THROBBER));
+    loading_animation_frame_count =
+        loading_animation.width() / loading_animation.height();
+    gfx::ImageSkia waiting_animation(*rb.GetImageSkiaNamed(
+        IDR_THROBBER_WAITING));
+    waiting_animation_frame_count =
+        waiting_animation.width() / waiting_animation.height();
+    waiting_to_loading_frame_count_ratio =
+        waiting_animation_frame_count / loading_animation_frame_count;
+
+    base::debug::Alias(&loading_animation_frame_count);
+    base::debug::Alias(&waiting_animation_frame_count);
+    CHECK_NE(0, waiting_to_loading_frame_count_ratio) <<
+        "Number of frames in IDR_THROBBER must be equal to or greater " <<
+        "than the number of frames in IDR_THROBBER_WAITING. Please " <<
+        "investigate how this happened and update http://crbug.com/132590, " <<
+        "this is causing crashes in the wild.";
+  }
+
+  // The waiting animation is the reverse of the loading animation, but at a
+  // different rate - the following reverses and scales the animation_frame_
+  // so that the frame is at an equivalent position when going from one
+  // animation to the other.
+  if (state != old_state) {
+    loading_animation_frame_ = loading_animation_frame_count -
+        (loading_animation_frame_ / waiting_to_loading_frame_count_ratio);
+  }
+
+  if (state != TabRendererData::NETWORK_STATE_NONE) {
+    loading_animation_frame_ = (loading_animation_frame_ + 1) %
+        ((state == TabRendererData::NETWORK_STATE_WAITING) ?
+            waiting_animation_frame_count : loading_animation_frame_count);
+  } else {
+    loading_animation_frame_ = 0;
+  }
+  ScheduleIconPaint();
+}
+
 int Tab::IconCapacity() const {
   if (height() < GetMinimumUnselectedSize().height())
     return 0;
@@ -780,19 +1365,62 @@ double Tab::GetThrobValue() {
   double min = is_selected ? kSelectedTabOpacity : 0;
   double scale = is_selected ? kSelectedTabThrobScale : 1;
 
-  if (pulse_animation() && pulse_animation()->is_animating())
-    return pulse_animation()->GetCurrentValue() * kHoverOpacity * scale + min;
+  if (pulse_animation_.get() && pulse_animation_->is_animating())
+    return pulse_animation_->GetCurrentValue() * kHoverOpacity * scale + min;
 
-  if (hover_controller().ShouldDraw()) {
-    return kHoverOpacity * hover_controller().GetAnimationValue() * scale +
+  if (hover_controller_.ShouldDraw()) {
+    return kHoverOpacity * hover_controller_.GetAnimationValue() * scale +
         min;
   }
 
   return is_selected ? kSelectedTabOpacity : 0;
 }
 
+void Tab::SetFaviconHidingOffset(int offset) {
+  favicon_hiding_offset_ = offset;
+  ScheduleIconPaint();
+}
+
+void Tab::DisplayCrashedFavicon() {
+  should_display_crashed_favicon_ = true;
+}
+
+void Tab::ResetCrashedFavicon() {
+  should_display_crashed_favicon_ = false;
+}
+
+void Tab::StartCrashAnimation() {
+  if (!crash_animation_.get())
+    crash_animation_.reset(new FaviconCrashAnimation(this));
+  crash_animation_->Stop();
+  crash_animation_->Start();
+}
+
+void Tab::StopCrashAnimation() {
+  if (!crash_animation_.get())
+    return;
+  crash_animation_->Stop();
+}
+
+bool Tab::IsPerformingCrashAnimation() const {
+  return crash_animation_.get() && crash_animation_->is_animating();
+}
+
+void Tab::ScheduleIconPaint() {
+  gfx::Rect bounds = GetIconBounds();
+  if (bounds.IsEmpty())
+    return;
+
+  // Extends the area to the bottom when sad_favicon is
+  // animating.
+  if (IsPerformingCrashAnimation())
+    bounds.set_height(height() - bounds.y());
+  bounds.set_x(GetMirroredXForRect(bounds));
+  SchedulePaintInRect(bounds);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
-// Tab, private:
+// Tab, private static:
 
 // static
 void Tab::InitTabResources() {
@@ -801,6 +1429,10 @@ void Tab::InitTabResources() {
     return;
 
   initialized = true;
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  font_ = new gfx::Font(rb.GetFont(ui::ResourceBundle::BaseFont));
+  font_height_ = font_->GetHeight();
 
   image_cache_ = new ImageCache();
 

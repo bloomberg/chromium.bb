@@ -78,14 +78,14 @@ TabStripLayoutType DetermineTabStripLayout(PrefService* prefs,
 class BrowserTabStripController::TabContextMenuContents
     : public ui::SimpleMenuModel::Delegate {
  public:
-  TabContextMenuContents(BaseTab* tab,
+  TabContextMenuContents(Tab* tab,
                          BrowserTabStripController* controller)
       : tab_(tab),
         controller_(controller),
         last_command_(TabStripModel::CommandFirst) {
     model_.reset(new TabMenuModel(
         this, controller->model_,
-        controller->tabstrip_->GetModelIndexOfBaseTab(tab)));
+        controller->tabstrip_->GetModelIndexOfTab(tab)));
     menu_model_adapter_.reset(new views::MenuModelAdapter(model_.get()));
     menu_runner_.reset(
         new views::MenuRunner(menu_model_adapter_->CreateMenu()));
@@ -153,7 +153,7 @@ class BrowserTabStripController::TabContextMenuContents
   scoped_ptr<views::MenuRunner> menu_runner_;
 
   // The tab we're showing a menu for.
-  BaseTab* tab_;
+  Tab* tab_;
 
   // A pointer back to our hosting controller, for command state information.
   BrowserTabStripController* controller_;
@@ -203,22 +203,22 @@ void BrowserTabStripController::InitFromModel(TabStrip* tabstrip) {
 
 bool BrowserTabStripController::IsCommandEnabledForTab(
     TabStripModel::ContextMenuCommand command_id,
-    BaseTab* tab) const {
-  int model_index = tabstrip_->GetModelIndexOfBaseTab(tab);
+    Tab* tab) const {
+  int model_index = tabstrip_->GetModelIndexOfTab(tab);
   return model_->ContainsIndex(model_index) ?
       model_->IsContextMenuCommandEnabled(model_index, command_id) : false;
 }
 
 void BrowserTabStripController::ExecuteCommandForTab(
     TabStripModel::ContextMenuCommand command_id,
-    BaseTab* tab) {
-  int model_index = tabstrip_->GetModelIndexOfBaseTab(tab);
+    Tab* tab) {
+  int model_index = tabstrip_->GetModelIndexOfTab(tab);
   if (model_->ContainsIndex(model_index))
     model_->ExecuteContextMenuCommand(model_index, command_id);
 }
 
-bool BrowserTabStripController::IsTabPinned(BaseTab* tab) const {
-  return IsTabPinned(tabstrip_->GetModelIndexOfBaseTab(tab));
+bool BrowserTabStripController::IsTabPinned(Tab* tab) const {
+  return IsTabPinned(tabstrip_->GetModelIndexOfTab(tab));
 }
 
 const TabStripSelectionModel& BrowserTabStripController::GetSelectionModel() {
@@ -282,7 +282,7 @@ void BrowserTabStripController::CloseTab(int model_index,
                              TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 }
 
-void BrowserTabStripController::ShowContextMenuForTab(BaseTab* tab,
+void BrowserTabStripController::ShowContextMenuForTab(Tab* tab,
                                                       const gfx::Point& p) {
   context_menu_contents_.reset(new TabContextMenuContents(tab, this));
   context_menu_contents_->RunMenuAt(p);
@@ -479,10 +479,10 @@ void BrowserTabStripController::SetTabDataAt(content::WebContents* web_contents,
 
 void BrowserTabStripController::StartHighlightTabsForCommand(
     TabStripModel::ContextMenuCommand command_id,
-    BaseTab* tab) {
+    Tab* tab) {
   if (command_id == TabStripModel::CommandCloseOtherTabs ||
       command_id == TabStripModel::CommandCloseTabsToRight) {
-    int model_index = tabstrip_->GetModelIndexOfBaseTab(tab);
+    int model_index = tabstrip_->GetModelIndexOfTab(tab);
     if (IsValidIndex(model_index)) {
       std::vector<int> indices =
           model_->GetIndicesClosedByCommand(model_index, command_id);
@@ -496,7 +496,7 @@ void BrowserTabStripController::StartHighlightTabsForCommand(
 
 void BrowserTabStripController::StopHighlightTabsForCommand(
     TabStripModel::ContextMenuCommand command_id,
-    BaseTab* tab) {
+    Tab* tab) {
   if (command_id == TabStripModel::CommandCloseTabsToRight ||
       command_id == TabStripModel::CommandCloseOtherTabs) {
     // Just tell all Tabs to stop pulsing - it's safe.

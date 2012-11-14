@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/tabs/base_tab.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/dragged_tab_view.h"
 #include "chrome/browser/ui/views/tabs/native_view_photobooth.h"
@@ -416,8 +415,8 @@ TabDragController::~TabDragController() {
 
 void TabDragController::Init(
     TabStrip* source_tabstrip,
-    BaseTab* source_tab,
-    const std::vector<BaseTab*>& tabs,
+    Tab* source_tab,
+    const std::vector<Tab*>& tabs,
     const gfx::Point& mouse_offset,
     int source_tab_offset,
     const TabStripSelectionModel& initial_selection_model,
@@ -523,10 +522,10 @@ void TabDragController::EndDrag(EndDragReason reason) {
               CANCELED : NORMAL);
 }
 
-void TabDragController::InitTabDragData(BaseTab* tab,
+void TabDragController::InitTabDragData(Tab* tab,
                                         TabDragData* drag_data) {
   drag_data->source_model_index =
-      source_tabstrip_->GetModelIndexOfBaseTab(tab);
+      source_tabstrip_->GetModelIndexOfTab(tab);
   drag_data->contents = GetModel(source_tabstrip_)->GetTabContentsAt(
       drag_data->source_model_index);
   drag_data->pinned = source_tabstrip_->IsTabPinned(tab);
@@ -937,7 +936,7 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
   }
   // else case: touch tabs never shrink.
 
-  std::vector<BaseTab*> tabs(drag_data_.size());
+  std::vector<Tab*> tabs(drag_data_.size());
   for (size_t i = 0; i < drag_data_.size(); ++i)
     tabs[i] = drag_data_[i].attached_tab;
 
@@ -1132,7 +1131,7 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
   // And we don't need the dragged view.
   view_.reset();
 
-  std::vector<BaseTab*> tabs =
+  std::vector<Tab*> tabs =
       GetTabsMatchingDraggedContents(attached_tabstrip_);
 
   if (tabs.empty()) {
@@ -1196,7 +1195,7 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
 
   // The size of the dragged tab may have changed. Adjust the x offset so that
   // ratio of mouse_offset_ to original width is maintained.
-  std::vector<BaseTab*> tabs_to_source(tabs);
+  std::vector<Tab*> tabs_to_source(tabs);
   tabs_to_source.erase(tabs_to_source.begin() + source_tab_index_ + 1,
                        tabs_to_source.end());
   int new_x = attached_tabstrip_->GetSizeNeededForTabs(tabs_to_source) -
@@ -1543,7 +1542,7 @@ gfx::Point TabDragController::GetAttachedDragPoint(
       attached_tabstrip_->GetMirroredXInView(tab_loc.x()) - mouse_offset_.x();
 
   // TODO: consider caching this.
-  std::vector<BaseTab*> attached_tabs;
+  std::vector<Tab*> attached_tabs;
   for (size_t i = 0; i < drag_data_.size(); ++i)
     attached_tabs.push_back(drag_data_[i].attached_tab);
   int size = attached_tabstrip_->GetSizeNeededForTabs(attached_tabs);
@@ -1551,14 +1550,14 @@ gfx::Point TabDragController::GetAttachedDragPoint(
   return gfx::Point(std::min(std::max(x, 0), max_x), 0);
 }
 
-std::vector<BaseTab*> TabDragController::GetTabsMatchingDraggedContents(
+std::vector<Tab*> TabDragController::GetTabsMatchingDraggedContents(
     TabStrip* tabstrip) {
   TabStripModel* model = GetModel(attached_tabstrip_);
-  std::vector<BaseTab*> tabs;
+  std::vector<Tab*> tabs;
   for (size_t i = 0; i < drag_data_.size(); ++i) {
     int model_index = model->GetIndexOfTabContents(drag_data_[i].contents);
     if (model_index == TabStripModel::kNoTab)
-      return std::vector<BaseTab*>();
+      return std::vector<Tab*>();
     tabs.push_back(tabstrip->tab_at(model_index));
   }
   return tabs;
@@ -1567,7 +1566,7 @@ std::vector<BaseTab*> TabDragController::GetTabsMatchingDraggedContents(
 std::vector<gfx::Rect> TabDragController::CalculateBoundsForDraggedTabs(
     int x_offset) {
   std::vector<gfx::Rect> drag_bounds;
-  std::vector<BaseTab*> attached_tabs;
+  std::vector<Tab*> attached_tabs;
   for (size_t i = 0; i < drag_data_.size(); ++i)
     attached_tabs.push_back(drag_data_[i].attached_tab);
   attached_tabstrip_->CalculateBoundsForDraggedTabs(attached_tabs,
@@ -1639,7 +1638,7 @@ void TabDragController::EndDragImpl(EndDragType type) {
 }
 
 void TabDragController::RevertDrag() {
-  std::vector<BaseTab*> tabs;
+  std::vector<Tab*> tabs;
   for (size_t i = 0; i < drag_data_.size(); ++i) {
     if (drag_data_[i].contents) {
       // Contents is NULL if a tab was destroyed while the drag was under way.
@@ -1853,7 +1852,7 @@ void TabDragController::CreateDraggedView(
 
   std::vector<views::View*> renderers;
   for (size_t i = 0; i < drag_data_.size(); ++i) {
-    BaseTab* renderer = source_tabstrip_->CreateTabForDragging();
+    Tab* renderer = source_tabstrip_->CreateTabForDragging();
     renderer->SetData(data[i]);
     renderers.push_back(renderer);
   }

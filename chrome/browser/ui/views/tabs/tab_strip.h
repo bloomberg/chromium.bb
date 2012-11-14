@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/tabs/tab_strip_layout_type.h"
-#include "chrome/browser/ui/views/tabs/base_tab.h"
+#include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "ui/base/animation/animation_container.h"
 #include "ui/gfx/point.h"
@@ -22,7 +22,6 @@
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
-class BaseTab;
 class NewTabButton;
 class Tab;
 class TabDragController;
@@ -112,9 +111,9 @@ class TabStrip : public views::View,
   // Returns the Tab at |index|.
   Tab* tab_at(int index) const;
 
-  // Returns the index of the specified tab in the model coordiate system, or
+  // Returns the index of the specified tab in the model coordinate system, or
   // -1 if tab is closing or not valid.
-  int GetModelIndexOfBaseTab(const BaseTab* tab) const;
+  int GetModelIndexOfTab(const Tab* tab) const;
 
   // Gets the number of Tabs in the tab strip.
   int tab_count() const { return tabs_.view_size(); }
@@ -129,7 +128,7 @@ class TabStrip : public views::View,
 
   // Creates and returns a tab that can be used for dragging. Ownership passes
   // to the caller.
-  BaseTab* CreateTabForDragging();
+  Tab* CreateTabForDragging();
 
   // Returns true if a drag session is currently active.
   bool IsDragSessionActive() const;
@@ -163,28 +162,28 @@ class TabStrip : public views::View,
   // TabController overrides:
   virtual const TabStripSelectionModel& GetSelectionModel() OVERRIDE;
   virtual bool SupportsMultipleSelection() OVERRIDE;
-  virtual void SelectTab(BaseTab* tab) OVERRIDE;
-  virtual void ExtendSelectionTo(BaseTab* tab) OVERRIDE;
-  virtual void ToggleSelected(BaseTab* tab) OVERRIDE;
-  virtual void AddSelectionFromAnchorTo(BaseTab* tab) OVERRIDE;
-  virtual void CloseTab(BaseTab* tab, CloseTabSource source) OVERRIDE;
-  virtual void ShowContextMenuForTab(BaseTab* tab,
+  virtual void SelectTab(Tab* tab) OVERRIDE;
+  virtual void ExtendSelectionTo(Tab* tab) OVERRIDE;
+  virtual void ToggleSelected(Tab* tab) OVERRIDE;
+  virtual void AddSelectionFromAnchorTo(Tab* tab) OVERRIDE;
+  virtual void CloseTab(Tab* tab, CloseTabSource source) OVERRIDE;
+  virtual void ShowContextMenuForTab(Tab* tab,
                                      const gfx::Point& p) OVERRIDE;
-  virtual bool IsActiveTab(const BaseTab* tab) const OVERRIDE;
-  virtual bool IsTabSelected(const BaseTab* tab) const OVERRIDE;
-  virtual bool IsTabPinned(const BaseTab* tab) const OVERRIDE;
+  virtual bool IsActiveTab(const Tab* tab) const OVERRIDE;
+  virtual bool IsTabSelected(const Tab* tab) const OVERRIDE;
+  virtual bool IsTabPinned(const Tab* tab) const OVERRIDE;
   virtual void MaybeStartDrag(
-      BaseTab* tab,
+      Tab* tab,
       const ui::LocatedEvent& event,
       const TabStripSelectionModel& original_selection) OVERRIDE;
   virtual void ContinueDrag(views::View* view,
                             const gfx::Point& location) OVERRIDE;
   virtual bool EndDrag(EndDragReason reason) OVERRIDE;
-  virtual BaseTab* GetTabAt(BaseTab* tab,
+  virtual Tab* GetTabAt(Tab* tab,
                             const gfx::Point& tab_in_tab_coordinates) OVERRIDE;
   virtual void OnMouseEventInTab(views::View* source,
                                  const ui::MouseEvent& event) OVERRIDE;
-  virtual bool ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) OVERRIDE;
+  virtual bool ShouldPaintTab(const Tab* tab, gfx::Rect* clip) OVERRIDE;
 
   // MouseWatcherListener overrides:
   virtual void MouseMovedOutOfHost() OVERRIDE;
@@ -232,7 +231,7 @@ class TabStrip : public views::View,
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
-  typedef std::map<int, std::vector<BaseTab*> > TabsClosingMap;
+  typedef std::map<int, std::vector<Tab*> > TabsClosingMap;
 
   class RemoveTabDelegate;
 
@@ -268,7 +267,7 @@ class TabStrip : public views::View,
   void Init();
 
   // Creates and returns a new tab. The caller owners the returned tab.
-  BaseTab* CreateTab();
+  Tab* CreateTab();
 
   // Invoked from |AddTabAt| after the newly created tab has been inserted.
   void StartInsertTabAnimation(int model_index);
@@ -282,7 +281,7 @@ class TabStrip : public views::View,
 
   // Schedules the animations and bounds changes necessary for a remove tab
   // animation.
-  void ScheduleRemoveTabAnimation(BaseTab* tab);
+  void ScheduleRemoveTabAnimation(Tab* tab);
 
   // Stops any ongoing animations. If |layout| is true and an animation is
   // ongoing this does a layout.
@@ -317,20 +316,20 @@ class TabStrip : public views::View,
   // Invoked during drag to layout the tabs being dragged in |tabs| at
   // |location|. If |initial_drag| is true, this is the initial layout after the
   // user moved the mouse far enough to trigger a drag.
-  void LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
-                           BaseTab* active_tab,
+  void LayoutDraggedTabsAt(const std::vector<Tab*>& tabs,
+                           Tab* active_tab,
                            const gfx::Point& location,
                            bool initial_drag);
 
   // Calculates the bounds needed for each of the tabs, placing the result in
   // |bounds|.
   void CalculateBoundsForDraggedTabs(
-      const std::vector<BaseTab*>& tabs,
+      const std::vector<Tab*>& tabs,
       std::vector<gfx::Rect>* bounds);
 
   // Returns the size needed for the specified tabs. This is invoked during drag
   // and drop to calculate offsets and positioning.
-  int GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs);
+  int GetSizeNeededForTabs(const std::vector<Tab*>& tabs);
 
   // Adds the tab at |index| to |tabs_closing_map_| and removes the tab from
   // |tabs_|.
@@ -338,14 +337,14 @@ class TabStrip : public views::View,
 
   // Cleans up the Tab from the TabStrip. This is called from the tab animation
   // code and is not a general-purpose method.
-  void RemoveAndDeleteTab(BaseTab* tab);
+  void RemoveAndDeleteTab(Tab* tab);
 
   // Adjusts the indices of all tabs in |tabs_closing_map_| whose index is
   // >= |index| to have a new index of |index + delta|.
   void UpdateTabsClosingMap(int index, int delta);
 
   // Used by TabDragController when the user starts or stops dragging tabs.
-  void StartedDraggingTabs(const std::vector<BaseTab*>& tabs);
+  void StartedDraggingTabs(const std::vector<Tab*>& tabs);
 
   // Invoked when TabDragController detaches a set of tabs.
   void DraggedTabsDetached();
@@ -354,14 +353,14 @@ class TabStrip : public views::View,
   // true if the move behavior is TabDragController::MOVE_VISIBILE_TABS.
   // |completed| is true if the drag operation completed successfully, false if
   // it was reverted.
-  void StoppedDraggingTabs(const std::vector<BaseTab*>& tabs,
+  void StoppedDraggingTabs(const std::vector<Tab*>& tabs,
                            const std::vector<int>& initial_positions,
                            bool move_only,
                            bool completed);
 
   // Invoked from StoppedDraggingTabs to cleanup |tab|. If |tab| is known
   // |is_first_tab| is set to true.
-  void StoppedDraggingTab(BaseTab* tab, bool* is_first_tab);
+  void StoppedDraggingTab(Tab* tab, bool* is_first_tab);
 
   // Takes ownership of |controller|.
   void OwnDragController(TabDragController* controller);
