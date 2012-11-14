@@ -133,7 +133,7 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
 
   const std::string& name() const { return name_; }
   const FilePath& path() const { return path_; }
-  const ::ppapi::PpapiPermissions& permissions() const { return permissions_; }
+  const ::ppapi::PpapiPermissions permissions() const { return permissions_; }
 
   PluginInstance* CreateInstance(PluginDelegate* delegate);
 

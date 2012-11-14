@@ -34,24 +34,17 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
   if (!host_->IsValidInstance(instance))
     return scoped_ptr<ResourceHost>();
 
-  // Public interfaces.
+  // Public interfaces with no permissions required.
   switch (message.type()) {
     case PpapiHostMsg_Gamepad_Create::ID:
       return scoped_ptr<ResourceHost>(new PepperGamepadHost(
           host_, instance, params.pp_resource()));
-  }
-
-  // Dev interfaces.
-  if (host_->GetPpapiHost()->permissions().HasPermission(
-          ppapi::PERMISSION_DEV)) {
-    switch (message.type()) {
-      case PpapiHostMsg_Printing_Create::ID: {
-        scoped_ptr<PepperPrintSettingsManager> manager(
-            new PepperPrintSettingsManagerImpl());
-        return scoped_ptr<ResourceHost>(new PepperPrintingHost(
-            host_->GetPpapiHost(), instance,
-            params.pp_resource(), manager.Pass()));
-      }
+    case PpapiHostMsg_Printing_Create::ID: {
+       scoped_ptr<PepperPrintSettingsManager> manager(
+           new PepperPrintSettingsManagerImpl());
+       return scoped_ptr<ResourceHost>(new PepperPrintingHost(
+           host_->GetPpapiHost(), instance,
+           params.pp_resource(), manager.Pass()));
     }
   }
   return scoped_ptr<ResourceHost>();
