@@ -19,8 +19,8 @@ TEST(ChromotingHostContextTest, StartAndStop) {
 
   context.Start();
   EXPECT_TRUE(context.audio_task_runner());
-  EXPECT_TRUE(context.capture_task_runner());
-  EXPECT_TRUE(context.encode_task_runner());
+  EXPECT_TRUE(context.video_capture_task_runner());
+  EXPECT_TRUE(context.video_encode_task_runner());
   EXPECT_TRUE(context.file_task_runner());
   EXPECT_TRUE(context.input_task_runner());
   EXPECT_TRUE(context.network_task_runner());

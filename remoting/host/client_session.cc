@@ -30,8 +30,8 @@ namespace remoting {
 ClientSession::ClientSession(
     EventHandler* event_handler,
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     scoped_ptr<protocol::ConnectionToClient> connection,
     DesktopEnvironmentFactory* desktop_environment_factory,
@@ -54,8 +54,8 @@ ClientSession::ClientSession(
       client_clipboard_factory_(clipboard_echo_filter_.client_filter()),
       max_duration_(max_duration),
       audio_task_runner_(audio_task_runner),
-      capture_task_runner_(capture_task_runner),
-      encode_task_runner_(encode_task_runner),
+      video_capture_task_runner_(video_capture_task_runner),
+      video_encode_task_runner_(video_encode_task_runner),
       network_task_runner_(network_task_runner),
       active_recorders_(0) {
   connection_->SetEventHandler(this);
@@ -134,8 +134,8 @@ void ClientSession::OnConnectionChannelsConnected(
       CreateVideoEncoder(connection_->session()->config());
 
   // Create a VideoScheduler to pump frames from the capturer to the client.
-  video_scheduler_ = new VideoScheduler(capture_task_runner_,
-                                        encode_task_runner_,
+  video_scheduler_ = new VideoScheduler(video_capture_task_runner_,
+                                        video_encode_task_runner_,
                                         network_task_runner_,
                                         desktop_environment_->video_capturer(),
                                         video_encoder.Pass(),

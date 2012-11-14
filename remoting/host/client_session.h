@@ -88,14 +88,15 @@ class ClientSession
 
   // |event_handler| must outlive |this|. |desktop_environment_factory| is only
   // used by the constructor to create an instance of DesktopEnvironment.
-  ClientSession(EventHandler* event_handler,
-                scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
-                scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-                scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
-                scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-                scoped_ptr<protocol::ConnectionToClient> connection,
-                DesktopEnvironmentFactory* desktop_environment_factory,
-                const base::TimeDelta& max_duration);
+  ClientSession(
+      EventHandler* event_handler,
+      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+      scoped_ptr<protocol::ConnectionToClient> connection,
+      DesktopEnvironmentFactory* desktop_environment_factory,
+      const base::TimeDelta& max_duration);
 
   // protocol::HostStub interface.
   virtual void NotifyClientDimensions(
@@ -217,9 +218,10 @@ class ClientSession
   // is reached.
   base::OneShotTimer<ClientSession> max_duration_timer_;
 
+
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   // Schedulers for audio and video capture.

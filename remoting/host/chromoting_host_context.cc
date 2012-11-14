@@ -16,8 +16,8 @@ namespace remoting {
 ChromotingHostContext::ChromotingHostContext(
     scoped_refptr<AutoThreadTaskRunner> ui_task_runner)
     : audio_thread_("ChromotingAudioThread"),
-      capture_thread_("ChromotingCaptureThread"),
-      encode_thread_("ChromotingEncodeThread"),
+      video_capture_thread_("ChromotingCaptureThread"),
+      video_encode_thread_("ChromotingEncodeThread"),
       file_thread_("ChromotingFileIOThread"),
       input_thread_("ChromotingInputThread"),
       network_thread_("ChromotingNetworkThread"),
@@ -30,8 +30,8 @@ ChromotingHostContext::~ChromotingHostContext() {
 void ChromotingHostContext::ReleaseTaskRunners() {
   url_request_context_getter_ = NULL;
   audio_task_runner_ = NULL;
-  capture_task_runner_ = NULL;
-  encode_task_runner_ = NULL;
+  video_capture_task_runner_ = NULL;
+  video_encode_task_runner_ = NULL;
   file_task_runner_ = NULL;
   input_task_runner_ = NULL;
   network_task_runner_ = NULL;
@@ -42,7 +42,7 @@ bool ChromotingHostContext::Start() {
   // Start all the threads.
   base::Thread::Options io_thread_options(MessageLoop::TYPE_IO, 0);
 
-  bool started = capture_thread_.Start() && encode_thread_.Start();
+  bool started = video_capture_thread_.Start() && video_encode_thread_.Start();
 
 #if defined(OS_WIN)
   // On Windows audio capturer needs to run on a UI thread that has COM
@@ -66,11 +66,11 @@ bool ChromotingHostContext::Start() {
   audio_task_runner_ =
       new AutoThreadTaskRunner(audio_thread_.message_loop_proxy(),
                                ui_task_runner_);
-  capture_task_runner_ =
-      new AutoThreadTaskRunner(capture_thread_.message_loop_proxy(),
+  video_capture_task_runner_ =
+      new AutoThreadTaskRunner(video_capture_thread_.message_loop_proxy(),
                                ui_task_runner_);
-  encode_task_runner_ =
-      new AutoThreadTaskRunner(encode_thread_.message_loop_proxy(),
+  video_encode_task_runner_ =
+      new AutoThreadTaskRunner(video_encode_thread_.message_loop_proxy(),
                                ui_task_runner_);
   file_task_runner_ =
       new AutoThreadTaskRunner(file_thread_.message_loop_proxy(),
@@ -91,12 +91,14 @@ base::SingleThreadTaskRunner* ChromotingHostContext::audio_task_runner() {
   return audio_task_runner_;
 }
 
-base::SingleThreadTaskRunner* ChromotingHostContext::capture_task_runner() {
-  return capture_task_runner_;
+base::SingleThreadTaskRunner*
+ChromotingHostContext::video_capture_task_runner() {
+  return video_capture_task_runner_;
 }
 
-base::SingleThreadTaskRunner* ChromotingHostContext::encode_task_runner() {
-  return encode_task_runner_;
+base::SingleThreadTaskRunner*
+ChromotingHostContext::video_encode_task_runner() {
+  return video_encode_task_runner_;
 }
 
 base::SingleThreadTaskRunner* ChromotingHostContext::file_task_runner() {

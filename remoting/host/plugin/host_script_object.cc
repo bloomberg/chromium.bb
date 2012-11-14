@@ -369,8 +369,8 @@ void HostNPScriptObject::It2MeImpl::FinishConnect(
       CreateHostSessionManager(network_settings,
                                host_context_->url_request_context_getter()),
       host_context_->audio_task_runner(),
-      host_context_->capture_task_runner(),
-      host_context_->encode_task_runner(),
+      host_context_->video_capture_task_runner(),
+      host_context_->video_encode_task_runner(),
       host_context_->network_task_runner());
   host_->AddStatusObserver(this);
   log_to_server_.reset(

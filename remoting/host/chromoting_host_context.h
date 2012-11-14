@@ -44,10 +44,10 @@ class ChromotingHostContext {
 
   // Task runner for the thread used by the ScreenRecorder to capture
   // the screen.
-  virtual base::SingleThreadTaskRunner* capture_task_runner();
+  virtual base::SingleThreadTaskRunner* video_capture_task_runner();
 
   // Task runner for the thread used to encode video streams.
-  virtual base::SingleThreadTaskRunner* encode_task_runner();
+  virtual base::SingleThreadTaskRunner* video_encode_task_runner();
 
   // Task runner for the thread that is used for blocking file
   // IO. This thread is used by the URLRequestContext to read proxy
@@ -79,10 +79,10 @@ class ChromotingHostContext {
   base::Thread audio_thread_;
 
   // A thread that hosts screen capture.
-  base::Thread capture_thread_;
+  base::Thread video_capture_thread_;
 
-  // A thread that hosts all encode operations.
-  base::Thread encode_thread_;
+  // A thread that hosts video encode operations.
+  base::Thread video_encode_thread_;
 
   // Thread for blocking IO operations.
   base::Thread file_thread_;
@@ -96,8 +96,8 @@ class ChromotingHostContext {
   // Task runners wrapping the above threads. These should be declared after
   // the corresponding threads to guarantee proper order of destruction.
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;

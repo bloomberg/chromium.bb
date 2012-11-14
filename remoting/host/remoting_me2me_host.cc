@@ -809,8 +809,8 @@ void HostProcess::StartHost() {
       CreateHostSessionManager(network_settings,
                                context_->url_request_context_getter()),
       context_->audio_task_runner(),
-      context_->capture_task_runner(),
-      context_->encode_task_runner(),
+      context_->video_capture_task_runner(),
+      context_->video_encode_task_runner(),
       context_->network_task_runner());
 
   // TODO(simonmorris): Get the maximum session duration from a policy.
