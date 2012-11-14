@@ -438,6 +438,7 @@ void ExtensionServiceTestBase::InitializeExtensionService(
           autoupdate_enabled);
   service_->set_extensions_enabled(true);
   service_->set_show_extensions_prompts(false);
+  service_->set_install_updates_when_idle_for_test(false);
 
   management_policy_ = static_cast<extensions::TestExtensionSystem*>(
       ExtensionSystem::Get(profile_.get()))->CreateManagementPolicy();

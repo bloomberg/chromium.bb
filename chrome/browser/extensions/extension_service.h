@@ -667,6 +667,13 @@ class ExtensionService
     browser_terminating_ = value;
   }
 
+  // By default ExtensionService will wait with installing an updated extension
+  // until the extension is idle. Tests might not like this behavior, so you can
+  // disable it with this method.
+  void set_install_updates_when_idle_for_test(bool value) {
+    install_updates_when_idle_ = value;
+  }
+
  private:
   // Contains Extension data that can change during the life of the process,
   // but does not persist across restarts.
@@ -829,6 +836,10 @@ class ExtensionService
 
   // Whether to notify users when they attempt to install an extension.
   bool show_extensions_prompts_;
+
+  // Whether to delay installing of extension updates until the extension is
+  // idle.
+  bool install_updates_when_idle_;
 
   // Used by dispatchers to limit API quota for individual extensions.
   ExtensionsQuotaService quota_service_;

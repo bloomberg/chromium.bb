@@ -356,6 +356,7 @@ ExtensionService::ExtensionService(Profile* profile,
       install_directory_(install_directory),
       extensions_enabled_(extensions_enabled),
       show_extensions_prompts_(true),
+      install_updates_when_idle_(true),
       ready_(false),
       toolbar_model_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       menu_manager_(profile),
@@ -2334,8 +2335,8 @@ void ExtensionService::OnExtensionInstalled(
       GetExtensionByIdInternal(id, include_mask);
   // If this is an upgrade and the extension/app has a background page that can
   // be idle but isn't, we delay the upgrade until the background page is idle.
-  if (wait_for_idle && old && !IsExtensionIdle(id) &&
-      !old->has_persistent_background_page()) {
+  if (install_updates_when_idle_ && wait_for_idle && old &&
+      !IsExtensionIdle(id) && !old->has_persistent_background_page()) {
     extension_prefs_->SetIdleInstallInfo(
       extension,
       initial_enable ? Extension::ENABLED : Extension::DISABLED);
@@ -2938,12 +2939,7 @@ bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {
 
 bool ExtensionService::IsExtensionIdle(const std::string& extension_id) const {
   ExtensionProcessManager* process_manager = system_->process_manager();
-
-  // If there is no ExtensionProcessManager then assume the process is idle.
-  // This is commonly the case in unit-tests.
-  if (process_manager == NULL)
-    return true;
-
+  DCHECK(process_manager);
   extensions::ExtensionHost* host =
       process_manager->GetBackgroundHostForExtension(extension_id);
   return !host;
