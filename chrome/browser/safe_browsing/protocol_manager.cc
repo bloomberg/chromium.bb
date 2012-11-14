@@ -16,6 +16,7 @@
 #include "base/stringprintf.h"
 #include "base/timer.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/google_api_keys.h"
@@ -27,7 +28,6 @@
 
 using base::Time;
 using base::TimeDelta;
-using content::BrowserThread;
 
 // Maximum time, in seconds, from start up before we must issue an update query.
 static const int kSbTimerStartIntervalSec = 5 * 60;
@@ -64,7 +64,6 @@ SafeBrowsingProtocolManager* SafeBrowsingProtocolManager::Create(
     SafeBrowsingProtocolManagerDelegate* delegate,
     net::URLRequestContextGetter* request_context_getter,
     const SafeBrowsingProtocolConfig& config) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!factory_)
     factory_ = new SBProtocolManagerFactoryImpl();
   return factory_->CreateProtocolManager(
@@ -85,16 +84,19 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
           base::RandInt(60, kSbTimerStartIntervalSec))),
       update_state_(FIRST_REQUEST),
       chunk_pending_to_write_(false),
+      version_(config.version),
       update_size_(0),
       client_name_(config.client_name),
       request_context_getter_(request_context_getter),
       url_prefix_(config.url_prefix),
-      disable_auto_update_(config.disable_auto_update) {
+      disable_auto_update_(config.disable_auto_update),
+      url_fetcher_id_(0) {
   DCHECK(!url_prefix_.empty());
 
   // Set the backoff multiplier fuzz to a random value between 0 and 1.
   back_off_fuzz_ = static_cast<float>(base::RandDouble());
-  version_ = SafeBrowsingProtocolManagerHelper::Version();
+  if (version_.empty())
+    version_ = SafeBrowsingProtocolManagerHelper::Version();
 }
 
 // static
@@ -123,6 +125,7 @@ void SafeBrowsingProtocolManager::GetFullHash(
     const std::vector<SBPrefix>& prefixes,
     FullHashCallback callback,
     bool is_download) {
+  DCHECK(CalledOnValidThread());
   // If we are in GetHash backoff, we need to check if we're past the next
   // allowed time. If we are, we can proceed with the request. If not, we are
   // required to return empty results (i.e. treat the page as safe).
@@ -133,7 +136,7 @@ void SafeBrowsingProtocolManager::GetFullHash(
   }
   GURL gethash_url = GetHashUrl();
   net::URLFetcher* fetcher = net::URLFetcher::Create(
-      gethash_url, net::URLFetcher::POST, this);
+      url_fetcher_id_++, gethash_url, net::URLFetcher::POST, this);
   hash_requests_[fetcher] = FullHashDetails(callback, is_download);
 
   std::string get_hash;
@@ -147,6 +150,7 @@ void SafeBrowsingProtocolManager::GetFullHash(
 }
 
 void SafeBrowsingProtocolManager::GetNextUpdate() {
+  DCHECK(CalledOnValidThread());
   if (!request_.get())
     IssueUpdateRequest();
 }
@@ -163,6 +167,7 @@ void SafeBrowsingProtocolManager::GetNextUpdate() {
 //              required, the SafeBrowsing servers will tell us to get it again.
 void SafeBrowsingProtocolManager::OnURLFetchComplete(
     const net::URLFetcher* source) {
+  DCHECK(CalledOnValidThread());
   scoped_ptr<const net::URLFetcher> fetcher;
   bool parsed_ok = true;
   bool must_back_off = false;  // Reduce SafeBrowsing service query frequency.
@@ -289,6 +294,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
 bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
                                                         const char* data,
                                                         int length) {
+  DCHECK(CalledOnValidThread());
   SafeBrowsingProtocolParser parser;
 
   switch (request_type_) {
@@ -380,15 +386,16 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
 }
 
 void SafeBrowsingProtocolManager::Initialize() {
+  DCHECK(CalledOnValidThread());
   // Don't want to hit the safe browsing servers on build/chrome bots.
   scoped_ptr<base::Environment> env(base::Environment::Create());
   if (env->HasVar(env_vars::kHeadless))
     return;
-
   ScheduleNextUpdate(false /* no back off */);
 }
 
 void SafeBrowsingProtocolManager::ScheduleNextUpdate(bool back_off) {
+  DCHECK(CalledOnValidThread());
   if (disable_auto_update_) {
     // Unschedule any current timer.
     update_timer_.Stop();
@@ -401,6 +408,7 @@ void SafeBrowsingProtocolManager::ScheduleNextUpdate(bool back_off) {
 
 void SafeBrowsingProtocolManager::ForceScheduleNextUpdate(
     base::TimeDelta interval) {
+  DCHECK(CalledOnValidThread());
   DCHECK(interval >= base::TimeDelta());
   // Unschedule any current timer.
   update_timer_.Stop();
@@ -413,6 +421,7 @@ void SafeBrowsingProtocolManager::ForceScheduleNextUpdate(
 // when we receive a response from the SafeBrowsing service.
 base::TimeDelta SafeBrowsingProtocolManager::GetNextUpdateInterval(
     bool back_off) {
+  DCHECK(CalledOnValidThread());
   DCHECK(next_update_interval_ > base::TimeDelta());
   base::TimeDelta next = next_update_interval_;
   if (back_off) {
@@ -427,6 +436,7 @@ base::TimeDelta SafeBrowsingProtocolManager::GetNextUpdateInterval(
 
 base::TimeDelta SafeBrowsingProtocolManager::GetNextBackOffInterval(
     int* error_count, int* multiplier) const {
+  DCHECK(CalledOnValidThread());
   DCHECK(multiplier && error_count);
   (*error_count)++;
   if (*error_count > 1 && *error_count < 6) {
@@ -450,6 +460,7 @@ base::TimeDelta SafeBrowsingProtocolManager::GetNextBackOffInterval(
 //              otherhand, this request will only occur ~20-30 minutes so there
 //              isn't that much overhead. Measure!
 void SafeBrowsingProtocolManager::IssueUpdateRequest() {
+  DCHECK(CalledOnValidThread());
   request_type_ = UPDATE_REQUEST;
   delegate_->UpdateStarted();
   delegate_->GetChunks(
@@ -458,6 +469,7 @@ void SafeBrowsingProtocolManager::IssueUpdateRequest() {
 }
 
 void SafeBrowsingProtocolManager::IssueChunkRequest() {
+  DCHECK(CalledOnValidThread());
   // We are only allowed to have one request outstanding at any time.  Also,
   // don't get the next url until the previous one has been written to disk so
   // that we don't use too much memory.
@@ -469,7 +481,7 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
   GURL chunk_url = NextChunkUrl(next_chunk.url);
   request_type_ = CHUNK_REQUEST;
   request_.reset(net::URLFetcher::Create(
-      chunk_url, net::URLFetcher::GET, this));
+      url_fetcher_id_++, chunk_url, net::URLFetcher::GET, this));
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_);
   chunk_request_start_ = base::Time::Now();
@@ -478,6 +490,7 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
 
 void SafeBrowsingProtocolManager::OnGetChunksComplete(
     const std::vector<SBListChunkRanges>& lists, bool database_error) {
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(request_type_, UPDATE_REQUEST);
   if (database_error) {
     UpdateFinished(false);
@@ -510,7 +523,7 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
 
   GURL update_url = UpdateUrl();
   request_.reset(net::URLFetcher::Create(
-      update_url, net::URLFetcher::POST, this));
+      url_fetcher_id_++, update_url, net::URLFetcher::POST, this));
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_);
   request_->SetUploadData("text/plain", list_data);
@@ -525,6 +538,7 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
 // If we haven't heard back from the server with an update response, this method
 // will run. Close the current update session and schedule another update.
 void SafeBrowsingProtocolManager::UpdateResponseTimeout() {
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(request_type_, UPDATE_REQUEST);
   request_.reset();
   UpdateFinished(false);
@@ -532,6 +546,7 @@ void SafeBrowsingProtocolManager::UpdateResponseTimeout() {
 }
 
 void SafeBrowsingProtocolManager::OnChunkInserted() {
+  DCHECK(CalledOnValidThread());
   chunk_pending_to_write_ = false;
 
   if (chunk_request_urls_.empty()) {
@@ -562,12 +577,14 @@ std::string SafeBrowsingProtocolManager::FormatList(
 }
 
 void SafeBrowsingProtocolManager::HandleGetHashError(const Time& now) {
+  DCHECK(CalledOnValidThread());
   base::TimeDelta next = GetNextBackOffInterval(
       &gethash_error_count_, &gethash_back_off_mult_);
   next_gethash_time_ = now + next;
 }
 
 void SafeBrowsingProtocolManager::UpdateFinished(bool success) {
+  DCHECK(CalledOnValidThread());
   UMA_HISTOGRAM_COUNTS("SB2.UpdateSize", update_size_);
   update_size_ = 0;
   delegate_->UpdateFinished(success);
@@ -586,6 +603,7 @@ GURL SafeBrowsingProtocolManager::GetHashUrl() const {
 }
 
 GURL SafeBrowsingProtocolManager::NextChunkUrl(const std::string& url) const {
+  DCHECK(CalledOnValidThread());
   std::string next_url;
   if (!StartsWithASCII(url, "http://", false) &&
       !StartsWithASCII(url, "https://", false)) {

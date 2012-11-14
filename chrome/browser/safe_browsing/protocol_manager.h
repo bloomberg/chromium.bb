@@ -18,6 +18,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/safe_browsing/chunk_range.h"
@@ -48,7 +49,8 @@ struct hash<const net::URLFetcher*> {
 class SBProtocolManagerFactory;
 class SafeBrowsingProtocolManagerDelegate;
 
-class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
+class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
+                                    public base::NonThreadSafe {
  public:
   // FullHashCallback is invoked when GetFullHash completes.
   // Parameters:
@@ -329,6 +331,9 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // When true, protocol manager will not start an update unless
   // ForceScheduleNextUpdate() is called. This is set for testing purpose.
   bool disable_auto_update_;
+
+  // ID for URLFetchers for testing.
+  int url_fetcher_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingProtocolManager);
 };

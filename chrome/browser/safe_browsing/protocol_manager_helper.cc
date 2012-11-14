@@ -18,6 +18,13 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 
+SafeBrowsingProtocolConfig::SafeBrowsingProtocolConfig()
+    : disable_auto_update(false) {
+}
+
+SafeBrowsingProtocolConfig::~SafeBrowsingProtocolConfig() {
+}
+
 // static
 std::string SafeBrowsingProtocolManagerHelper::Version() {
   chrome::VersionInfo version_info;
