@@ -47,10 +47,10 @@ media::AudioManager* g_audio_manager = NULL;
 media::VideoRendererBase* g_video_renderer = NULL;
 
 scoped_refptr<media::FileDataSource> CreateFileDataSource(
-    const std::string& file) {
+    const std::string& file_path) {
   scoped_refptr<media::FileDataSource> file_data_source(
       new media::FileDataSource());
-  CHECK(file_data_source->Initialize(file));
+  CHECK(file_data_source->Initialize(FilePath(file_path)));
   return file_data_source;
 }
 
