@@ -43,7 +43,8 @@ class NetworkStateInformer
     OFFLINE = 0,
     ONLINE,
     CAPTIVE_PORTAL,
-    CONNECTING
+    CONNECTING,
+    UNKNOWN
   };
 
   class NetworkStateInformerObserver {

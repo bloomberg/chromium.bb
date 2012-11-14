@@ -15,7 +15,8 @@ cr.define('login', function() {
     OFFLINE: 0,
     ONLINE: 1,
     PORTAL: 2,
-    CONNECTING: 3
+    CONNECTING: 3,
+    UNKNOWN: 4
   };
 
   // Error reasons which are passed to updateState_() method.
@@ -87,6 +88,11 @@ cr.define('login', function() {
      * True if updateState_ method was not called.
      */
     firstUpdateStateCall_: true,
+
+    /**
+     * Last network state.
+     */
+    lastNetworkState_: NET_STATE.UNKNOWN,
 
     /*
      * Timer which is started when network moves to the connecting
@@ -242,7 +248,6 @@ cr.define('login', function() {
                   ', network=' + network + ', reason=' + reason +
                   ', lastNetworkType=' + lastNetworkType +
                   ', opt_forceUpdate=' + opt_forceUpdate);
-
       this.clearUpdateStateTimer_();
 
       // Delay first notification about offline state.
@@ -284,13 +289,18 @@ cr.define('login', function() {
       var isGaiaSignin = (currentScreen.id == SCREEN_GAIA_SIGNIN);
       var gaiaSigninReloaded = false;
 
-      // Reload frame if network is changed.
+      // Reload frame if network is changed. If current network is
+      // online, and previous network was online, frame isn't
+      // reloaded.
       if (reason == ERROR_REASONS.NETWORK_CHANGED) {
-        if (state == NET_STATE.ONLINE && isGaiaSignin && !gaiaSigninReloaded) {
+        if (state == NET_STATE.ONLINE &&
+            lastNetworkState_ != NET_STATE.ONLINE &&
+            isGaiaSignin && !gaiaSigninReloaded) {
           currentScreen.doReload();
           gaiaSigninReloaded = true;
         }
       }
+      lastNetworkState_ = state;
 
       if (reason == ERROR_REASONS.PROXY_CONFIG_CHANGED && shouldOverlay &&
           isGaiaSignin && !gaiaSigninReloaded) {
