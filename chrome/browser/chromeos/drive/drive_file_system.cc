@@ -848,9 +848,9 @@ void DriveFileSystem::GetResolvedFileByPath(
     FilePath* temp_file_path = new FilePath;
     const std::string mime_type = kMimeTypeJson;
     const DriveFileType file_type = HOSTED_DOCUMENT;
-    google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
-        FROM_HERE,
+    base::PostTaskAndReplyWithResult(
         blocking_task_runner_,
+        FROM_HERE,
         base::Bind(&CreateDocumentJsonFileOnBlockingPool,
                    cache_->GetCacheDirectoryPath(
                        DriveCache::CACHE_TYPE_TMP_DOCUMENTS),
@@ -1041,9 +1041,9 @@ void DriveFileSystem::CheckForSpaceBeforeDownload(
     return;
   }
 
-  google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
-      FROM_HERE,
+  base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
+      FROM_HERE,
       base::Bind(&DriveCache::FreeDiskSpaceOnBlockingPoolIfNeededFor,
                  base::Unretained(cache_),
                  file_size),
@@ -1350,9 +1350,9 @@ void DriveFileSystem::OnGetFileCompleteForUpdateFile(
   // Gets the size of the cache file. Since the file is locally modified, the
   // file size information stored in DriveEntry is not correct.
   int64* file_size = new int64(0);
-  google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
-      FROM_HERE,
+  base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
+      FROM_HERE,
       base::Bind(&file_util::GetFileSize,
                  cache_file_path,
                  file_size),
@@ -1736,9 +1736,9 @@ void DriveFileSystem::OnFileDownloaded(
   //
   // If we don't have enough space, we return PLATFORM_FILE_ERROR_NO_SPACE,
   // and try to free up space, even if the file was downloaded successfully.
-  google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
-      FROM_HERE,
+  base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
+      FROM_HERE,
       base::Bind(&DriveCache::FreeDiskSpaceOnBlockingPoolIfNeededFor,
                  base::Unretained(cache_),
                  0),
@@ -1787,9 +1787,8 @@ void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
     } else {
       // If we don't have enough space, remove the downloaded file, and
       // report "no space" error.
-      google_apis::util::PostBlockingPoolSequencedTask(
+      blocking_task_runner_->PostTask(
           FROM_HERE,
-          blocking_task_runner_,
           base::Bind(base::IgnoreResult(&file_util::Delete),
                      downloaded_file_path,
                      false /* recursive*/));
@@ -2380,9 +2379,9 @@ void DriveFileSystem::CheckLocalModificationAndRunAfterGetCacheFile(
 
   // If the cache is dirty, obtain the file info from the cache file itself.
   base::PlatformFileInfo* file_info = new base::PlatformFileInfo;
-  google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
-      FROM_HERE,
+  base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
+      FROM_HERE,
       base::Bind(&file_util::GetFileInfo,
                  local_cache_path,
                  base::Unretained(file_info)),

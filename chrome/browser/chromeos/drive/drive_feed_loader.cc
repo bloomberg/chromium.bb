@@ -310,9 +310,8 @@ void DriveFeedLoader::OnGetAccountMetadata(
     const FilePath path =
         cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META).Append(
             kAccountMetadataFile);
-    google_apis::util::PostBlockingPoolSequencedTask(
+    blocking_task_runner_->PostTask(
         FROM_HERE,
-        blocking_task_runner_,
         base::Bind(&SaveFeedOnBlockingPoolForDebugging,
                    path, base::Passed(&feed_data)));
 #endif
@@ -514,9 +513,8 @@ void DriveFeedLoader::OnGetDocuments(scoped_ptr<LoadFeedParams> params,
 
   scoped_ptr<google_apis::DocumentFeed>* current_feed =
       new scoped_ptr<google_apis::DocumentFeed>;
-  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      blocking_task_runner_,
       base::Bind(&ParseFeedOnBlockingPool,
                  base::Passed(&data),
                  current_feed),
@@ -637,9 +635,8 @@ void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
   std::string file_name =
       base::StringPrintf("DEBUG_changelist_%" PRId64 ".json",
                          params->start_changestamp);
-  google_apis::util::PostBlockingPoolSequencedTask(
+  blocking_task_runner_->PostTask(
       FROM_HERE,
-      blocking_task_runner_,
       base::Bind(&SaveFeedOnBlockingPoolForDebugging,
                  cache_->GetCacheDirectoryPath(
                      DriveCache::CACHE_TYPE_META).Append(file_name),
@@ -831,9 +828,8 @@ void DriveFeedLoader::SaveFileSystem() {
     resource_metadata_->SerializeToString(serialized_proto.get());
     resource_metadata_->set_last_serialized(base::Time::Now());
     resource_metadata_->set_serialized_size(serialized_proto->size());
-    google_apis::util::PostBlockingPoolSequencedTask(
+    blocking_task_runner_->PostTask(
         FROM_HERE,
-        blocking_task_runner_,
         base::Bind(&SaveProtoOnBlockingPool, path,
                    base::Passed(serialized_proto.Pass())));
   }

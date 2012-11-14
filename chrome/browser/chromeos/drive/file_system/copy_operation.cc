@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/drive/drive_files.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_upload_error.h"
-#include "chrome/browser/google_apis/gdata_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
 
@@ -161,9 +160,9 @@ void CopyOperation::OnGetFileCompleteForTransferFile(
   // GetFileByPath downloads the file from Drive to a local cache, which is then
   // copied to the actual destination path on the local file system using
   // CopyLocalFileOnBlockingPool.
-  google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
-      FROM_HERE,
+  base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
+      FROM_HERE,
       base::Bind(&CopyLocalFileOnBlockingPool,
                  local_file_path,
                  local_dest_file_path),
@@ -196,9 +195,9 @@ void CopyOperation::TransferRegularFile(
 
   int64* file_size = new int64;
   std::string* content_type = new std::string;
-  google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
-      FROM_HERE,
+  base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
+      FROM_HERE,
       base::Bind(&GetLocalFileInfoOnBlockingPool,
                  local_file_path,
                  file_size,
@@ -523,9 +522,8 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterGetEntryInfo(
   }
 
   std::string* resource_id = new std::string;
-  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      blocking_task_runner_,
       base::Bind(&GetDocumentResourceIdOnBlockingPool,
                  local_src_file_path,
                  resource_id),

@@ -12,33 +12,17 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/platform_file.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
-#include "base/tracked_objects.h"
-#include "chrome/browser/google_apis/auth_service.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace google_apis {
 namespace util {
 
 namespace {
-
-const char kGDataSpecialRootPath[] = "/special";
-
-const char kGDataMountPointPath[] = "/special/drive";
-
-const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
-                                     base::PLATFORM_FILE_READ |
-                                     base::PLATFORM_FILE_EXCLUSIVE_READ |
-                                     base::PLATFORM_FILE_ASYNC;
 
 bool ParseTimezone(const base::StringPiece& timezone,
                    bool ahead,
@@ -185,28 +169,6 @@ std::string FormatTimeAsStringLocaltime(const base::Time& time) {
       "%04d-%02d-%02dT%02d:%02d:%02d.%03d",
       exploded.year, exploded.month, exploded.day_of_month,
       exploded.hour, exploded.minute, exploded.second, exploded.millisecond);
-}
-
-void PostBlockingPoolSequencedTask(
-    const tracked_objects::Location& from_here,
-    base::SequencedTaskRunner* blocking_task_runner,
-    const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  const bool posted = blocking_task_runner->PostTask(from_here, task);
-  DCHECK(posted);
-}
-
-void PostBlockingPoolSequencedTaskAndReply(
-    const tracked_objects::Location& from_here,
-    base::SequencedTaskRunner* blocking_task_runner,
-    const base::Closure& request_task,
-    const base::Closure& reply_task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  const bool posted = blocking_task_runner->PostTaskAndReply(
-      from_here, request_task, reply_task);
-  DCHECK(posted);
 }
 
 }  // namespace util
