@@ -73,3 +73,4 @@ void __asan_report_store2() { }
 void __asan_report_store4() { }
 void __asan_report_store8() { }
 void __asan_report_store16() { }
+void __asan_set_error_report_callback() { }
