@@ -16,6 +16,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "media/base/media.h"
@@ -61,7 +62,7 @@ int main(int argc, char** argv) {
   CHECK(base::StringToUint64(argv[2], &seek_target_ms));
   scoped_refptr<media::FileDataSource> file_data_source(
       new media::FileDataSource());
-  CHECK(file_data_source->Initialize(argv[1]));
+  CHECK(file_data_source->Initialize(FilePath::FromUTF8Unsafe(argv[1])));
 
   DemuxerHostImpl host;
   MessageLoop loop;
