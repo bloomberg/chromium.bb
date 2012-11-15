@@ -550,7 +550,7 @@
             'rpm_arch': 'i386',
             'packaging_files_binaries': [
               '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
-              '<(PRODUCT_DIR)/nacl_ipc_irt_x86_32.nexe',
+              '<(PRODUCT_DIR)/nacl_irt_srpc_x86_32.nexe',
             ],
           }],
           ['target_arch=="x64"', {
@@ -558,7 +558,7 @@
             'rpm_arch': 'x86_64',
             'packaging_files_binaries': [
               '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
-              '<(PRODUCT_DIR)/nacl_ipc_irt_x86_64.nexe',
+              '<(PRODUCT_DIR)/nacl_irt_srpc_x86_64.nexe',
             ],
           }],
           ['target_arch=="arm"', {

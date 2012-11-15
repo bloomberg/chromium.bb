@@ -366,7 +366,7 @@
                         # We leave out x86-64 IRT nexes because we only
                         # support x86-32 NaCl on Mac OS X.
                         '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
-                        '<(PRODUCT_DIR)/nacl_ipc_irt_x86_32.nexe',
+                        '<(PRODUCT_DIR)/nacl_irt_srpc_x86_32.nexe',
                       ],
                     }],
                   ],

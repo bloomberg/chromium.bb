@@ -71,15 +71,15 @@
           ],
         },
         {
-          'target_name': 'nacl_irt',
+          'target_name': 'nacl_irt_srpc',
           'type': 'none',
           'variables': {
-            'nexe_target': 'nacl_irt',
+            'nexe_target': 'nacl_irt_srpc',
             # These out_* fields override the default filenames, which
             # include a "_newlib" suffix.
-            'out_newlib64': '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
-            'out_newlib32': '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
-            'out_newlib_arm': '<(PRODUCT_DIR)/nacl_irt_arm.nexe',
+            'out_newlib64': '<(PRODUCT_DIR)/nacl_irt_srpc_x86_64.nexe',
+            'out_newlib32': '<(PRODUCT_DIR)/nacl_irt_srpc_x86_32.nexe',
+            'out_newlib_arm': '<(PRODUCT_DIR)/nacl_irt_srpc_arm.nexe',
             'build_glibc': 0,
             'build_newlib': 1,
             'include_dirs': [
@@ -220,15 +220,15 @@
           ],
         },
         {
-          'target_name': 'nacl_ipc_irt',
+          'target_name': 'nacl_irt',
           'type': 'none',
           'variables': {
-            'nexe_target': 'nacl_ipc_irt',
+            'nexe_target': 'nacl_irt',
             # These out_* fields override the default filenames, which
             # include a "_newlib" suffix.
-            'out_newlib64': '<(PRODUCT_DIR)/nacl_ipc_irt_x86_64.nexe',
-            'out_newlib32': '<(PRODUCT_DIR)/nacl_ipc_irt_x86_32.nexe',
-            'out_newlib_arm': '<(PRODUCT_DIR)/nacl_ipc_irt_arm.nexe',
+            'out_newlib64': '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
+            'out_newlib32': '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
+            'out_newlib_arm': '<(PRODUCT_DIR)/nacl_irt_arm.nexe',
             'build_glibc': 0,
             'build_newlib': 1,
             'include_dirs': [
