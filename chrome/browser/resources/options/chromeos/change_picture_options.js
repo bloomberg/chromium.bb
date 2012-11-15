@@ -437,28 +437,19 @@ cr.define('options', function() {
     },
 
     /**
-     * URL of the current user image.
-     * @type {string}
-     */
-    get currentUserImageUrl() {
-      return 'chrome://userimage/' + BrowserOptions.getLoggedInUsername() +
-          '?id=' + new Date().getTime();
-    },
-
-    /**
      * Adds or updates old user image taken from file/camera (neither a profile
      * image nor a default one).
+     * @param {string} imageUrl Old user image, as data or internal URL.
      * @private
      */
-    setOldImage_: function() {
+    setOldImage_: function(imageUrl) {
       var imageGrid = $('user-image-grid');
-      var url = this.currentUserImageUrl;
       if (this.oldImage_) {
-        this.oldImage_ = imageGrid.updateItem(this.oldImage_, url);
+        this.oldImage_ = imageGrid.updateItem(this.oldImage_, imageUrl);
       } else {
         // Insert next to the profile image.
         var pos = imageGrid.indexOf(this.profileImage_) + 1;
-        this.oldImage_ = imageGrid.addItem(url, undefined, undefined, pos);
+        this.oldImage_ = imageGrid.addItem(imageUrl, undefined, undefined, pos);
         imageGrid.selectedItem = this.oldImage_;
       }
     },

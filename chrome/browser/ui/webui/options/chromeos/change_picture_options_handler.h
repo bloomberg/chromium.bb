@@ -53,6 +53,9 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
   // if any, on the page. Shouldn't be called before |SendProfileImage|.
   void UpdateProfileImage();
 
+  // Sends previous user image to the page.
+  void SendOldImage(const std::string& image_url);
+
   // Starts camera presence check.
   void CheckCameraPresence();
 
@@ -108,7 +111,7 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
 
   // Previous user image from camera/file and its data URL.
   gfx::ImageSkia previous_image_;
-  std::string previous_image_data_url_;
+  std::string previous_image_url_;
 
   // Index of the previous user image.
   int previous_image_index_;

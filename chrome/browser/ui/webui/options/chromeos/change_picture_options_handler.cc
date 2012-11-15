@@ -71,7 +71,7 @@ const char kProfileDownloadReason[] = "Preferences";
 }  // namespace
 
 ChangePictureOptionsHandler::ChangePictureOptionsHandler()
-    : previous_image_data_url_(chrome::kAboutBlankURL),
+    : previous_image_url_(chrome::kAboutBlankURL),
       previous_image_index_(User::kInvalidImageIndex),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
@@ -248,9 +248,7 @@ void ChangePictureOptionsHandler::SendSelectedImage() {
     case User::kExternalImageIndex: {
       // User has image from camera/file, record it and add to the image list.
       previous_image_ = user->image();
-      previous_image_data_url_ =
-          web_ui_util::GetBitmapDataUrl(*previous_image_.bitmap());
-      web_ui()->CallJavascriptFunction("ChangePictureOptions.setOldImage");
+      SendOldImage(web_ui_util::GetBitmapDataUrl(*previous_image_.bitmap()));
       break;
     }
     case User::kProfileImageIndex: {
@@ -269,7 +267,7 @@ void ChangePictureOptionsHandler::SendSelectedImage() {
       } else {
         // User has an old default image, so present it in the same manner as a
         // previous image from file.
-        web_ui()->CallJavascriptFunction("ChangePictureOptions.setOldImage");
+        SendOldImage(GetDefaultImageUrl(previous_image_index_));
       }
     }
   }
@@ -296,6 +294,12 @@ void ChangePictureOptionsHandler::UpdateProfileImage() {
   user_image_manager->DownloadProfileImage(kProfileDownloadReason);
 }
 
+void ChangePictureOptionsHandler::SendOldImage(const std::string& image_url) {
+  previous_image_url_ = image_url;
+  base::StringValue url(image_url);
+  web_ui()->CallJavascriptFunction("ChangePictureOptions.setOldImage", url);
+}
+
 void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
   std::string image_url;
   if (!args ||
@@ -312,14 +316,10 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
   int image_index = User::kInvalidImageIndex;
   bool waiting_for_camera_photo = false;
 
-  if (StartsWithASCII(image_url, chrome::kChromeUIUserImageURL, false)) {
-    // Image from file/camera uses |kChromeUIUserImageURL| as URL while
-    // current profile image always has a full data URL.
-    // This way transition from (current profile image) to
-    // (profile image, current image from file) is easier.
-    // Also, old (not available for selection any more) default images use
-    // this URL, too.
-
+  if (image_url == previous_image_url_) {
+    // Previous image re-selected.
+    // This must come before the IsDefaultImageUrl check in case user has an
+    // old (no longer shown in stock) default image.
     if (previous_image_index_ == User::kExternalImageIndex) {
       DCHECK(!previous_image_.isNull());
       user_image_manager->SaveUserImage(

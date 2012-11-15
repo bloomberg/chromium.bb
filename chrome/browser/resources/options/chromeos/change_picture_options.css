@@ -2,20 +2,20 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#change-picture-page .content-area {
-  min-width: 800px;
+#user-images-area {
+  display: -webkit-box;
 }
 
 #user-image-grid {
   -webkit-user-drag: none;
   -webkit-user-select: none;
-  display: inline-block;
+  height: 264px;
   margin: 10px;
   outline: none;
   /* Necessary for correct metrics calculation by grid.js. */
   overflow: hidden;
   padding: 0;
-  width: 538px;
+  width: 530px;
 }
 
 #user-image-grid * {
@@ -54,15 +54,8 @@
  */
 
 #user-image-preview {
-  display: inline-block;
-  margin-right: 10px;
-  margin-top: 20px;
+  margin: 20px 10px 0 0;
   max-width: 220px;
-  vertical-align: top;
-}
-
-html[dir=rtl] #user-image-preview {
-  float: left;
 }
 
 #user-image-preview .perspective-box {
@@ -70,20 +63,16 @@ html[dir=rtl] #user-image-preview {
 }
 
 .user-image-preview-img {
-  display: block;
+  background: white;
+  border: solid 1px #cacaca;
+  border-radius: 4px;
   max-height: 220px;
   max-width: 220px;
+  padding: 2px;
 }
 
 [camera=webrtc] .camera.live .user-image-preview-img {
   display: none;
-}
-
-.default-image .user-image-preview-img {
-  background: white;
-  border: solid 1px #cacaca;
-  border-radius: 4px;
-  padding: 2px;
 }
 
 .user-image-stream-area {
@@ -127,8 +116,7 @@ html[dir=rtl] #user-image-preview {
   display: none;
   height: 44px;
   left: 50%;
-  margin-left: -22px;
-  margin-top: -22px;
+  margin: -22px 0 0 -22px;
   position: absolute;
   top: 50%;
   width: 44px;

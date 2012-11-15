@@ -70,8 +70,10 @@ cr.define('options', function() {
     decorate: function() {
       GridItem.prototype.decorate.call(this);
       var imageEl = cr.doc.createElement('img');
+      // Force 1x scale for internal URLs. Grid elements are much smaller
+      // than actual images so there is no need in full scale on HDPI.
       if (this.dataItem.url.slice(0, CHROME_SCHEME.length) == CHROME_SCHEME)
-        imageEl.src = this.dataItem.url + '@' + window.devicePixelRatio + 'x';
+        imageEl.src = this.dataItem.url + '@1x';
       else
         imageEl.src = this.dataItem.url;
       imageEl.title = this.dataItem.title || '';
