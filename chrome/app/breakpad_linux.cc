@@ -437,12 +437,6 @@ bool FinalizeCrashDoneAndroid() {
                       "### ### ### ### ### ### ### ### ### ### ### ### ###");
   return false;
 }
-
-bool CrashDoneNonBrowserAndroid(const MinidumpDescriptor& minidump,
-                                void* context,
-                                bool succeeded) {
-  return FinalizeCrashDoneAndroid();
-}
 #endif
 
 bool CrashDone(const MinidumpDescriptor& minidump,
@@ -596,7 +590,7 @@ bool CrashDoneInProcessNoUpload(
   info.upload = false;
   info.process_start_time = g_process_start_time;
   HandleCrashDump(info);
-  return true;
+  return FinalizeCrashDoneAndroid();
 }
 
 void EnableNonBrowserCrashDumping(int minidump_fd) {
