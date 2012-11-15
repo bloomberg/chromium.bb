@@ -192,21 +192,35 @@ bool SasInjectorXp::InjectSas() {
 
   scoped_ptr<remoting::Desktop> winlogon_desktop(
       remoting::Desktop::GetDesktop(kWinlogonDesktopName));
-  if (!winlogon_desktop.get())
+  if (!winlogon_desktop.get()) {
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to open '" << kWinlogonDesktopName << "' desktop";
     return false;
+  }
 
   remoting::ScopedThreadDesktop desktop;
-  if (!desktop.SetThreadDesktop(winlogon_desktop.Pass()))
+  if (!desktop.SetThreadDesktop(winlogon_desktop.Pass())) {
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to switch to '" << kWinlogonDesktopName << "' desktop";
     return false;
+  }
 
   HWND window = FindWindow(kSasWindowClassName, kSasWindowTitle);
-  if (!window)
+  if (!window) {
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to find '" << kSasWindowTitle << "' window";
     return false;
+  }
 
-  PostMessage(window,
-              WM_HOTKEY,
-              0,
-              MAKELONG(MOD_ALT | MOD_CONTROL, VK_DELETE));
+  if (PostMessage(window,
+                  WM_HOTKEY,
+                  0,
+                  MAKELONG(MOD_ALT | MOD_CONTROL, VK_DELETE)) == 0) {
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to post WM_HOTKEY message";
+    return false;
+  }
+
   return true;
 }
 

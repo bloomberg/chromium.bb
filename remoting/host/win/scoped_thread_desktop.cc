@@ -37,7 +37,7 @@ bool ScopedThreadDesktop::SetThreadDesktop(scoped_ptr<Desktop> desktop) {
   Revert();
 
   if (initial_->IsSame(*desktop))
-    return false;
+    return true;
 
   if (!desktop->SetThreadDesktop())
     return false;
