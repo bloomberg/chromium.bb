@@ -512,9 +512,7 @@ IN_PROC_BROWSER_TEST_F(BeforeUnloadAtQuitWithTwoWindows,
 // The script must open a new tab, set its window.opener to null, and navigate
 // it to a cross-site URL.  It should also work for meta-refreshes.
 // See http://crbug.com/93517.
-// TODO(japhet): This is failing because of a WebKit patch's handling of
-// about:blank versus GURL(). See http://crbug.com/161152
-IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_NullOpenerRedirectForksProcess) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
