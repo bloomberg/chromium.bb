@@ -86,6 +86,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     test_files.push_back("cookies.html");
     test_files.push_back("local_storage.html");
     test_files.push_back("post.html");
+    test_files.push_back("post_with_password.html");
     test_files.push_back("session_cookies.html");
     test_files.push_back("session_storage.html");
     FilePath test_file_dir;
@@ -240,13 +241,6 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_Post) {
       browser(), GURL(fake_server_address_ + test_path_ + "post.html"));
   string16 final_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(title_pass_, final_title);
-  if (g_last_upload_bytes.Get().find("posted-text") == std::string::npos ||
-      g_last_upload_bytes.Get().find("text-entered") == std::string::npos) {
-    // For debugging why this test fails.
-    LOG(ERROR) << "Got uploaded bytes:";
-    LOG(ERROR) << g_last_upload_bytes.Get();
-    LOG(ERROR) << "Going to fail the test.";
-  }
   EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") !=
               std::string::npos);
   EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") !=
@@ -255,15 +249,43 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_Post) {
 
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, Post) {
   CheckReloadedPageRestored();
-  if (g_last_upload_bytes.Get().find("posted-text") == std::string::npos ||
-      g_last_upload_bytes.Get().find("text-entered") == std::string::npos) {
-    // For debugging why this test fails.
-    LOG(ERROR) << "Got uploaded bytes:";
-    LOG(ERROR) << g_last_upload_bytes.Get();
-    LOG(ERROR) << "Going to fail the test.";
-  }
   EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") !=
               std::string::npos);
   EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") !=
+              std::string::npos);
+}
+
+IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_PostWithPassword) {
+  SessionStartupPref::SetStartupPref(
+      browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
+  content::WebContents* web_contents =
+      chrome::GetActiveWebContents(browser());
+  content::TitleWatcher title_watcher(web_contents, title_pass_);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL(fake_server_address_ + test_path_ +
+           "post_with_password.html"));
+  string16 final_title = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(title_pass_, final_title);
+  EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") !=
+              std::string::npos);
+  EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") !=
+              std::string::npos);
+  EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-password") !=
+              std::string::npos);
+  EXPECT_TRUE(g_last_upload_bytes.Get().find("password-entered") !=
+              std::string::npos);
+}
+
+IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PostWithPassword) {
+  CheckReloadedPageRestored();
+  // The form data contained passwords, so it's removed completely.
+  EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") ==
+              std::string::npos);
+  EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") ==
+              std::string::npos);
+  EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-password") ==
+              std::string::npos);
+  EXPECT_TRUE(g_last_upload_bytes.Get().find("password-entered") ==
               std::string::npos);
 }
