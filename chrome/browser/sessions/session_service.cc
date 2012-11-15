@@ -1389,20 +1389,15 @@ void SessionService::BuildCommandsForBrowser(
         browser->app_name()));
   }
 
-  bool added_to_windows_to_track = false;
+  windows_to_track->insert(browser->session_id().id());
   for (int i = 0; i < browser->tab_count(); ++i) {
     TabContents* tab = chrome::GetTabContentsAt(browser, i);
     DCHECK(tab);
-    if (tab->profile() == profile() || profile() == NULL) {
-      BuildCommandsForTab(browser->session_id(), tab, i,
-                          browser->tab_strip_model()->IsTabPinned(i),
-                          commands, tab_to_available_range);
-      if (windows_to_track && !added_to_windows_to_track) {
-        windows_to_track->insert(browser->session_id().id());
-        added_to_windows_to_track = true;
-      }
-    }
+    BuildCommandsForTab(browser->session_id(), tab, i,
+                        browser->tab_strip_model()->IsTabPinned(i),
+                        commands, tab_to_available_range);
   }
+
   commands->push_back(
       CreateSetSelectedTabInWindow(browser->session_id(),
                                    browser->active_index()));
@@ -1416,9 +1411,9 @@ void SessionService::BuildCommandsFromBrowsers(
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
     Browser* browser = *i;
-    // Make sure the browser has tabs and a window. Browsers destructor
+    // Make sure the browser has tabs and a window. Browser's destructor
     // removes itself from the BrowserList. When a browser is closed the
-    // destructor is not necessarily run immediately. This means its possible
+    // destructor is not necessarily run immediately. This means it's possible
     // for us to get a handle to a browser that is about to be removed. If
     // the tab count is 0 or the window is NULL, the browser is about to be
     // deleted, so we ignore it.
