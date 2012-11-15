@@ -86,15 +86,15 @@ class WrapperGen(Generator):
     return 'ppapi/c/' + name
 
 
-  def WriteCopyrightGeneratedTime(self, out):
+  def WriteCopyright(self, out):
     now = datetime.now()
     c = """/* Copyright (c) %s The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: %s. */
-""" % (now.year, datetime.ctime(now))
+/* NOTE: this is auto-generated from IDL */
+""" % now.year
     out.Write(c)
 
   def GetWrapperMetadataName(self):
@@ -247,7 +247,7 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
   def GenerateIncludes(self, iface_releases, out):
     """Generate the list of #include that define the original interfaces.
     """
-    self.WriteCopyrightGeneratedTime(out)
+    self.WriteCopyright(out)
     # First include own header.
     out.Write('#include "%s"\n\n' % self.OwnHeaderFile())
 
@@ -459,4 +459,3 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
     out.Write(self.GetGuardEnd())
     out.Close()
     return 0
-
