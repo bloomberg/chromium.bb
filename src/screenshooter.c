@@ -254,6 +254,55 @@ component_delta(uint32_t next, uint32_t prev)
 }
 
 static void
+transform_rect(struct weston_output *output, pixman_box32_t *r)
+{
+	pixman_box32_t s = *r;
+
+	switch(output->transform) {
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		s.x1 = output->width - r->x2;
+		s.x2 = output->width - r->x1;
+		break;
+	default:
+		break;
+	}
+
+        switch(output->transform) {
+        case WL_OUTPUT_TRANSFORM_NORMAL:
+        case WL_OUTPUT_TRANSFORM_FLIPPED:
+		r->x1 = s.x1;
+		r->x2 = s.x2;
+                break;
+        case WL_OUTPUT_TRANSFORM_90:
+        case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		r->x1 = output->current->width - s.y2;
+		r->y1 = s.x1;
+		r->x2 = output->current->width - s.y1;
+		r->y2 = s.x2;
+                break;
+        case WL_OUTPUT_TRANSFORM_180:
+        case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		r->x1 = output->current->width - s.x2;
+		r->y1 = output->current->height - s.y2;
+		r->x2 = output->current->width - s.x1;
+		r->y2 = output->current->height - s.y1;
+                break;
+        case WL_OUTPUT_TRANSFORM_270:
+        case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		r->x1 = s.y1; 
+		r->y1 = output->current->height - s.x2;
+		r->x2 = s.y2; 
+		r->y2 = output->current->height - s.x1;
+                break;
+        default:
+                break;
+        }
+}
+
+static void
 weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 {
 	struct weston_recorder *recorder =
@@ -286,6 +335,9 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 	r = pixman_region32_rectangles(&damage, &n);
 	if (n == 0)
 		return;
+
+	for (i = 0; i < n; i++)
+		transform_rect(output, &r[i]);
 
 	header.msecs = msecs;
 	header.nrects = n;
