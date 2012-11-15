@@ -75,6 +75,40 @@ class IsolatedAppTest : public ExtensionBrowserTest {
 
 }  // namespace
 
+IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CrossProcessClientRedirect) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app2")));
+
+  GURL base_url = test_server()->GetURL("files/extensions/isolated_apps/");
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // Must stay in scope with replace_host.
+  replace_host.SetHostStr(host_str);
+  base_url = base_url.ReplaceComponents(replace_host);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), base_url.Resolve("app1/main.html"),
+      CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  WebContents* tab0 = chrome::GetWebContentsAt(browser(), 0);
+
+  // redirect to app2.
+  GURL redirect_url(test_server()->GetURL(
+      "client-redirect?files/extensions/isolated_apps/app2/main.html"));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), redirect_url,
+      CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  const string16 expected_title2 = ASCIIToUTF16("app1");
+  content::TitleWatcher title_watcher2(tab0, expected_title2);
+  // Go back.
+  // If bug fixed, we should go back to app1 instead of the redirect page.
+  chrome::GoBack(browser(), CURRENT_TAB);
+  string16 actual_title2 = title_watcher2.WaitAndGetTitle();
+  EXPECT_EQ(expected_title2, actual_title2);
+}
+
 // Tests that cookies set within an isolated app are not visible to normal
 // pages or other apps.
 //

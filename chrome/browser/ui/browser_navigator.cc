@@ -227,6 +227,7 @@ void LoadURLInContents(WebContents* target_contents,
   load_url_params.referrer = params->referrer;
   load_url_params.transition_type = params->transition;
   load_url_params.extra_headers = params->extra_headers;
+  load_url_params.is_cross_site_redirect = params->is_cross_site_redirect;
 
   if (params->transferred_global_request_id != GlobalRequestID()) {
     load_url_params.is_renderer_initiated = params->is_renderer_initiated;
@@ -321,7 +322,8 @@ NavigateParams::NavigateParams(Browser* a_browser,
       path_behavior(RESPECT),
       ref_behavior(IGNORE_REF),
       browser(a_browser),
-      initiating_profile(NULL) {
+      initiating_profile(NULL),
+      is_cross_site_redirect(false) {
         if (a_browser)
           host_desktop_type = a_browser->host_desktop_type();
         else
@@ -342,7 +344,8 @@ NavigateParams::NavigateParams(Browser* a_browser,
       path_behavior(RESPECT),
       ref_behavior(IGNORE_REF),
       browser(a_browser),
-      initiating_profile(NULL) {
+      initiating_profile(NULL),
+      is_cross_site_redirect(false) {
         if (a_browser)
           host_desktop_type = a_browser->host_desktop_type();
         else
@@ -366,7 +369,8 @@ NavigateParams::NavigateParams(Profile* a_profile,
       ref_behavior(IGNORE_REF),
       browser(NULL),
       initiating_profile(a_profile),
-      host_desktop_type(chrome::HOST_DESKTOP_TYPE_NATIVE) {}
+      host_desktop_type(chrome::HOST_DESKTOP_TYPE_NATIVE),
+      is_cross_site_redirect(false) {}
 
 NavigateParams::~NavigateParams() {}
 

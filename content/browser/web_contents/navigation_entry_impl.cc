@@ -45,7 +45,7 @@ NavigationEntryImpl::NavigationEntryImpl()
       restore_type_(RESTORE_NONE),
       is_overriding_user_agent_(false),
       is_renderer_initiated_(false),
-      is_cross_site_reload_(false),
+      should_replace_entry_(false),
       can_load_local_resources_(false) {
 }
 
@@ -70,7 +70,7 @@ NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
       restore_type_(RESTORE_NONE),
       is_overriding_user_agent_(false),
       is_renderer_initiated_(is_renderer_initiated),
-      is_cross_site_reload_(false),
+      should_replace_entry_(false),
       can_load_local_resources_(false) {
 }
 

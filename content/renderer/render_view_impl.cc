@@ -1661,12 +1661,17 @@ void RenderViewImpl::OpenURL(WebFrame* frame,
                              const GURL& url,
                              const Referrer& referrer,
                              WebNavigationPolicy policy) {
-  Send(new ViewHostMsg_OpenURL(
-      routing_id_,
-      url,
-      referrer,
-      NavigationPolicyToDisposition(policy),
-      frame->identifier()));
+  ViewHostMsg_OpenURL_Params params;
+  params.url = url;
+  params.referrer = referrer;
+  params.disposition = NavigationPolicyToDisposition(policy);
+  params.frame_id = frame->identifier();
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
+  params.is_cross_site_redirect =
+      document_state->navigation_state()->is_redirect_in_progress();
+
+  Send(new ViewHostMsg_OpenURL(routing_id_, params));
 }
 
 // WebViewDelegate ------------------------------------------------------------
@@ -2957,6 +2962,10 @@ void RenderViewImpl::willPerformClientRedirect(
     double fire_time) {
   // Replace any occurrences of swappedout:// with about:blank.
   const WebURL& blank_url = GURL(chrome::kAboutBlankURL);
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
+  document_state->navigation_state()->set_is_redirect_in_progress(true);
+
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_,
       WillPerformClientRedirect(frame,
@@ -2965,6 +2974,10 @@ void RenderViewImpl::willPerformClientRedirect(
 }
 
 void RenderViewImpl::didCancelClientRedirect(WebFrame* frame) {
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
+  document_state->navigation_state()->set_is_redirect_in_progress(false);
+
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidCancelClientRedirect(frame));
 }
@@ -3399,6 +3412,7 @@ void RenderViewImpl::didCommitProvisionalLoad(WebFrame* frame,
   // If this committed load was initiated by a client redirect, we're
   // at the last stop now, so clear it.
   completed_client_redirect_src_ = Referrer();
+  navigation_state->set_is_redirect_in_progress(false);
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());

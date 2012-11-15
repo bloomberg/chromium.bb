@@ -1364,16 +1364,15 @@ void RenderViewHostImpl::OnMsgToggleFullscreen(bool enter_fullscreen) {
   WasResized();
 }
 
-void RenderViewHostImpl::OnMsgOpenURL(const GURL& url,
-                                      const Referrer& referrer,
-                                      WindowOpenDisposition disposition,
-                                      int64 source_frame_id) {
-  GURL validated_url(url);
+void RenderViewHostImpl::OnMsgOpenURL(
+    const ViewHostMsg_OpenURL_Params& params) {
+  GURL validated_url(params.url);
   FilterURL(ChildProcessSecurityPolicyImpl::GetInstance(),
             GetProcess(), false, &validated_url);
 
   delegate_->RequestOpenURL(
-      this, validated_url, referrer, disposition, source_frame_id);
+      this, validated_url, params.referrer, params.disposition, params.frame_id,
+      params.is_cross_site_redirect);
 }
 
 void RenderViewHostImpl::OnMsgDidContentsPreferredSizeChange(

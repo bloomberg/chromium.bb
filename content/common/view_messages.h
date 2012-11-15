@@ -745,6 +745,15 @@ IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
   IPC_STRUCT_MEMBER(bool, can_load_local_resources)
 IPC_STRUCT_END()
 
+// Parameters for an OpenURL request.
+IPC_STRUCT_BEGIN(ViewHostMsg_OpenURL_Params)
+  IPC_STRUCT_MEMBER(GURL, url)
+  IPC_STRUCT_MEMBER(content::Referrer, referrer)
+  IPC_STRUCT_MEMBER(WindowOpenDisposition, disposition)
+  IPC_STRUCT_MEMBER(int64, frame_id)
+  IPC_STRUCT_MEMBER(bool, is_cross_site_redirect)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // Renderer-wide preferences.
   IPC_STRUCT_MEMBER(content::RendererPreferences, renderer_preferences)
@@ -1896,11 +1905,7 @@ IPC_SYNC_MESSAGE_ROUTED4_2(ViewHostMsg_RunJavaScriptMessage,
                            string16     /* out - user_input field */)
 
 // Requests that the given URL be opened in the specified manner.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_OpenURL,
-                    GURL /* url */,
-                    content::Referrer /* referrer */,
-                    WindowOpenDisposition /* disposition */,
-                    int64 /* frame id */)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_OpenURL, ViewHostMsg_OpenURL_Params)
 
 // Notifies that the preferred size of the content changed.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,

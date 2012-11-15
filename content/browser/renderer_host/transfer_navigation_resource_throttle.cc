@@ -35,7 +35,8 @@ void RequestTransferURLOnUIThread(int render_process_id,
     return;
 
   delegate->RequestTransferURL(
-      new_url, referrer, window_open_disposition, frame_id, global_request_id);
+      new_url, referrer, window_open_disposition,
+      frame_id, global_request_id, false);
 }
 
 }  // namespace
