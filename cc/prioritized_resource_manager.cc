@@ -15,9 +15,9 @@ using namespace std;
 
 namespace cc {
 
-PrioritizedResourceManager::PrioritizedResourceManager(size_t maxMemoryLimitBytes, int, int pool, const Proxy* proxy)
+PrioritizedResourceManager::PrioritizedResourceManager(int pool, const Proxy* proxy)
     : m_proxy(proxy)
-    , m_maxMemoryLimitBytes(maxMemoryLimitBytes)
+    , m_maxMemoryLimitBytes(defaultMemoryAllocationLimit())
     , m_externalPriorityCutoff(PriorityCalculator::allowEverythingCutoff())
     , m_memoryUseBytes(0)
     , m_memoryAboveCutoffBytes(0)
