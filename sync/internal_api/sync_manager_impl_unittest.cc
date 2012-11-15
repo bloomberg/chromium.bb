@@ -631,6 +631,82 @@ TEST_F(SyncApiTest, EmptyTags) {
             node.InitByTagLookup(empty_tag));
 }
 
+// Test counting nodes when the type's root node has no children.
+TEST_F(SyncApiTest, GetTotalNodeCountEmpty) {
+  int64 type_root = MakeServerNodeForType(test_user_share_.user_share(),
+                                          BOOKMARKS);
+  {
+    ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
+    ReadNode type_root_node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK,
+              type_root_node.InitByIdLookup(type_root));
+    EXPECT_EQ(1, type_root_node.GetTotalNodeCount());
+  }
+}
+
+// Test counting nodes when there is one child beneath the type's root.
+TEST_F(SyncApiTest, GetTotalNodeCountOneChild) {
+  int64 type_root = MakeServerNodeForType(test_user_share_.user_share(),
+                                          BOOKMARKS);
+  int64 parent = MakeFolderWithParent(test_user_share_.user_share(),
+                                      BOOKMARKS,
+                                      type_root,
+                                      NULL);
+  {
+    ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
+    ReadNode type_root_node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK,
+              type_root_node.InitByIdLookup(type_root));
+    EXPECT_EQ(2, type_root_node.GetTotalNodeCount());
+    ReadNode parent_node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK,
+              parent_node.InitByIdLookup(parent));
+    EXPECT_EQ(1, parent_node.GetTotalNodeCount());
+  }
+}
+
+// Test counting nodes when there are multiple children beneath the type root,
+// and one of those children has children of its own.
+TEST_F(SyncApiTest, GetTotalNodeCountMultipleChildren) {
+  int64 type_root = MakeServerNodeForType(test_user_share_.user_share(),
+                                          BOOKMARKS);
+  int64 parent = MakeFolderWithParent(test_user_share_.user_share(),
+                                      BOOKMARKS,
+                                      type_root,
+                                      NULL);
+  ignore_result(MakeFolderWithParent(test_user_share_.user_share(),
+                                     BOOKMARKS,
+                                     type_root,
+                                     NULL));
+  int64 child1 = MakeFolderWithParent(
+      test_user_share_.user_share(),
+      BOOKMARKS,
+      parent,
+      NULL);
+  ignore_result(MakeNodeWithParent(
+      test_user_share_.user_share(),
+      BOOKMARKS,
+      "c2",
+      parent));
+  ignore_result(MakeNodeWithParent(
+      test_user_share_.user_share(),
+      BOOKMARKS,
+      "c1c1",
+      child1));
+
+  {
+    ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
+    ReadNode type_root_node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK,
+              type_root_node.InitByIdLookup(type_root));
+    EXPECT_EQ(6, type_root_node.GetTotalNodeCount());
+    ReadNode node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByIdLookup(parent));
+    EXPECT_EQ(4, node.GetTotalNodeCount());
+  }
+}
+
 namespace {
 
 class TestHttpPostProviderInterface : public HttpPostProviderInterface {

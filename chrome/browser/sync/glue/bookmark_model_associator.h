@@ -114,7 +114,9 @@ class BookmarkModelAssociator
 
   // Matches up the bookmark model and the sync model to build model
   // associations.
-  syncer::SyncError BuildAssociations();
+  syncer::SyncError BuildAssociations(
+      syncer::SyncMergeResult* local_merge_result,
+      syncer::SyncMergeResult* syncer_merge_result);
 
   // Associate a top-level node of the bookmark model with a permanent node in
   // the sync domain.  Such permanent nodes are identified by a tag that is
@@ -147,8 +149,6 @@ class BookmarkModelAssociator
   // guarantees no invocations can occur if |this| has been deleted. (This
   // allows this class to be non-refcounted).
   base::WeakPtrFactory<BookmarkModelAssociator> weak_factory_;
-
-  int number_of_new_sync_nodes_created_at_association_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelAssociator);
 };

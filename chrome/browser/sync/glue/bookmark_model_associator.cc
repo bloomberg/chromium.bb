@@ -195,8 +195,7 @@ BookmarkModelAssociator::BookmarkModelAssociator(
       user_share_(user_share),
       unrecoverable_error_handler_(unrecoverable_error_handler),
       expect_mobile_bookmarks_folder_(expect_mobile_bookmarks_folder),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      number_of_new_sync_nodes_created_at_association_(0) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(bookmark_model_);
   DCHECK(user_share_);
@@ -366,10 +365,12 @@ syncer::SyncError BookmarkModelAssociator::AssociateModels(
       new ScopedAssociationUpdater(bookmark_model_));
   DisassociateModels();
 
-  return BuildAssociations();
+  return BuildAssociations(local_merge_result, syncer_merge_result);
 }
 
-syncer::SyncError BookmarkModelAssociator::BuildAssociations() {
+syncer::SyncError BookmarkModelAssociator::BuildAssociations(
+    syncer::SyncMergeResult* local_merge_result,
+    syncer::SyncMergeResult* syncer_merge_result) {
   // Algorithm description:
   // Match up the roots and recursively do the following:
   // * For each sync node for the current sync parent node, find the best
@@ -437,6 +438,14 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations() {
     dfs_stack.push(mobile_bookmarks_sync_id);
 
   syncer::WriteTransaction trans(FROM_HERE, user_share_);
+  syncer::ReadNode bm_root(&trans);
+  if (bm_root.InitByTagLookup(syncer::ModelTypeToRootTag(syncer::BOOKMARKS)) ==
+      syncer::BaseNode::INIT_OK) {
+    syncer_merge_result->set_num_items_before_association(
+        bm_root.GetTotalNodeCount());
+  }
+  local_merge_result->set_num_items_before_association(
+      bookmark_model_->root_node()->GetTotalNodeCount());
 
   while (!dfs_stack.empty()) {
     int64 sync_parent_id = dfs_stack.top();
@@ -474,10 +483,22 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations() {
       child_node = node_finder.FindBookmarkNode(sync_child_node);
       if (child_node)
         Associate(child_node, sync_child_id);
-      BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
-          &sync_child_node,
-          bookmark_model_,
-          this);
+      // All bookmarks are currently modified at association time (even if
+      // it doesn't change anything).
+      // TODO(sync): introduce logic to only modify the bookmark model if
+      // necessary.
+      const BookmarkNode* new_child_node =
+          BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
+              &sync_child_node,
+              bookmark_model_,
+              this);
+      if (new_child_node != child_node) {
+        local_merge_result->set_num_items_added(
+            local_merge_result->num_items_added() + 1);
+      } else {
+        local_merge_result->set_num_items_modified(
+            local_merge_result->num_items_modified() + 1);
+      }
       if (sync_child_node.GetIsFolder())
         dfs_stack.push(sync_child_id);
 
@@ -500,11 +521,17 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations() {
             "Failed to create sync node.",
             model_type());
       }
+      syncer_merge_result->set_num_items_added(
+          syncer_merge_result->num_items_added() + 1);
       if (parent_node->GetChild(i)->is_folder())
         dfs_stack.push(sync_child_id);
-      number_of_new_sync_nodes_created_at_association_++;
     }
   }
+
+  local_merge_result->set_num_items_after_association(
+      bookmark_model_->root_node()->GetTotalNodeCount());
+  syncer_merge_result->set_num_items_after_association(
+      bm_root.GetTotalNodeCount());
 
   return syncer::SyncError();
 }

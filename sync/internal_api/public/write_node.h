@@ -30,7 +30,6 @@ class TypedUrlSpecifics;
 namespace syncer {
 
 class Cryptographer;
-class TestBookmarkModelAssociator;
 class WriteTransaction;
 
 namespace syncable {

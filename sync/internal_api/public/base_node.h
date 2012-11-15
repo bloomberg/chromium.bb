@@ -194,6 +194,10 @@ class BaseNode {
   // children, return 0.
   int64 GetFirstChildId() const;
 
+  // Returns the total number of nodes including and beneath this node.
+  // Recursively iterates through all children.
+  int GetTotalNodeCount() const;
+
   // These virtual accessors provide access to data members of derived classes.
   virtual const syncable::Entry* GetEntry() const = 0;
   virtual const BaseTransaction* GetTransaction() const = 0;
