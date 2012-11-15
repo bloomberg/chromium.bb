@@ -24,6 +24,9 @@ html[oobe=old] podrow {
 .pod {
   border-radius: 2px;
   cursor: pointer;
+  /* TODO(nkostylev): Figure out why explicit display: block is needed.
+     See http://crbug.com/161297 */
+  display: block;
   outline: none;
   padding: 10px;
   position: relative;
