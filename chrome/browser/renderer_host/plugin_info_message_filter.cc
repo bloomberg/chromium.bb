@@ -159,9 +159,9 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
                           &uses_default_content_setting);
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
   PluginMetadata::SecurityStatus plugin_status =
       plugin_metadata->GetSecurityStatus(plugin);
+#if defined(ENABLE_PLUGIN_INSTALLATION)
   // Check if the plug-in is outdated.
   if (plugin_status == PluginMetadata::SECURITY_STATUS_OUT_OF_DATE &&
       !allow_outdated_plugins_.GetValue()) {
@@ -173,6 +173,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     }
     return;
   }
+#endif
 
   // Check if the plug-in requires authorization.
   if (plugin_status ==
@@ -194,7 +195,6 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     status->value = ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized;
     return;
   }
-#endif
 
   if (plugin_setting == CONTENT_SETTING_ASK)
     status->value = ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay;
