@@ -6142,15 +6142,6 @@
    fun:_ZN3net25FtpNetworkTransactionTest18ExecuteTransactionEPNS_21FtpSocketDataProviderEPKcii
 }
 {
-   bug_161284
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN8chromeos13VersionLoader*
-   fun:_ZN6policy21DeviceStatusCollectorC2EP11PrefServicePN8chromeos6system18StatisticsProviderEPFvRKN4base8CallbackIFvRKN7content11GeopositionEEEEE
-   fun:_ZN12_GLOBAL__N_128TestingDeviceStatusCollectorC1EP11PrefServicePN8chromeos6system18StatisticsProviderE
-}
-{
    bug_161294
    Memcheck:Leak
    fun:_Znw*

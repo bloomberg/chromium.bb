@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/settings/cros_settings_provider.h"
@@ -151,6 +152,10 @@ class DeviceStatusCollectorTest : public testing::Test {
   }
 
   ~DeviceStatusCollectorTest() {
+    // Finish pending tasks.
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    message_loop_.RunUntilIdle();
+
     // Restore the real DeviceSettingsProvider.
     EXPECT_TRUE(
       cros_settings_->RemoveSettingsProvider(&stub_settings_provider_));

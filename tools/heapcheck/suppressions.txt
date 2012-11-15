@@ -1649,13 +1649,6 @@
    fun:net::FtpNetworkTransactionTest::ExecuteTransaction
 }
 {
-   bug_161284
-   Heapcheck:Leak
-   ...
-   fun:DeviceStatusCollector
-   fun:TestingDeviceStatusCollector
-}
-{
    bug_161294a
    Heapcheck:Leak
    ...
