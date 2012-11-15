@@ -745,7 +745,8 @@ bool HostProcess::OnCurtainPolicyUpdate(bool curtain_required) {
     else
       LOG(ERROR) << "Policy does not require curtain-mode.";
     curtain_required_ = curtain_required;
-    curtaining_host_observer_->SetEnableCurtaining(curtain_required_);
+    if (curtaining_host_observer_)
+      curtaining_host_observer_->SetEnableCurtaining(curtain_required_);
     return true;
   }
   return false;
