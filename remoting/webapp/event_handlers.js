@@ -50,6 +50,10 @@ function onLoad() {
     remoting.hostSetupDialog.showForStop();
     event.stopPropagation();
   };
+  var cancelAccessCode = function() {
+    remoting.setMode(remoting.AppMode.HOME);
+    document.getElementById('access-code-entry').value = '';
+  };
   /** @type {Array.<{event: string, id: string, fn: function(Event):void}>} */
   var actions = [
       { event: 'click', id: 'sign-out', fn: remoting.signOut },
@@ -69,10 +73,8 @@ function onLoad() {
       { event: 'click', id: 'client-finished-me2me-button', fn: restartWebapp },
       { event: 'click', id: 'cancel-pin-entry-button', fn: restartWebapp },
       { event: 'click', id: 'client-reconnect-button', fn: reload },
-      { event: 'click', id: 'cancel-access-code-button',
-        fn: remoting.cancelConnect },
-      { event: 'click', id: 'cancel-connect-button',
-        fn: remoting.cancelConnect },
+      { event: 'click', id: 'cancel-access-code-button', fn: cancelAccessCode},
+      { event: 'click', id: 'cancel-connect-button', fn: restartWebapp },
       { event: 'click', id: 'toolbar-stub',
         fn: function() { remoting.toolbar.toggle(); } },
       { event: 'click', id: 'start-daemon',

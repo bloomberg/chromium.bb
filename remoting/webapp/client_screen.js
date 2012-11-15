@@ -77,8 +77,12 @@ remoting.connectIt2Me = function() {
 /**
  * Cancel an incomplete connect operation.
  *
+ * Note that this function is not currently used. It is here for reference
+ * because we'll need to reinstate something very like it when we transition
+ * to Apps v2 where we can no longer change the URL (which is what we do in
+ * lieu of calling this function to ensure correct Reload behaviour).
+ *
  * @return {void} Nothing.
- */
 remoting.cancelConnect = function() {
   if (remoting.supportHostsXhr_) {
     remoting.supportHostsXhr_.abort();
@@ -95,6 +99,7 @@ remoting.cancelConnect = function() {
     document.getElementById('access-code-entry').value = '';
   }
 };
+*/
 
 /**
  * Toggle the scale-to-fit feature for the current client session.
