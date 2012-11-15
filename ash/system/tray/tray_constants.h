@@ -35,6 +35,7 @@ extern const int kTrayBarButtonWidth;
 
 extern const SkColor kBackgroundColor;
 extern const SkColor kHoverBackgroundColor;
+extern const SkColor kPublicAccountBackgroundColor;
 
 extern const SkColor kHeaderBackgroundColorLight;
 extern const SkColor kHeaderBackgroundColorDark;

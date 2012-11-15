@@ -109,10 +109,13 @@ class UserView : public views::View,
         email_(NULL),
         signout_(NULL) {
     CHECK(login_ != ash::user::LOGGED_IN_NONE);
-    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 
+    bool public_account = login_ == ash::user::LOGGED_IN_PUBLIC;
     bool guest = login_ == ash::user::LOGGED_IN_GUEST;
     bool locked = login_ == ash::user::LOGGED_IN_LOCKED;
+
+    set_background(views::Background::CreateSolidBackground(
+        public_account ? kPublicAccountBackgroundColor : kBackgroundColor));
 
     container_ = new TrayPopupTextButtonContainer;
     container_->layout()->set_spread_blank_space(false);
