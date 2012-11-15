@@ -63,6 +63,7 @@ bool ShellContentRendererClient::OverrideCreatePlugin(
 void ShellContentRendererClient::WebTestProxyCreated(WebTestProxyBase* proxy) {
   CHECK(latest_test_runner_);
   proxy->setDelegate(latest_test_runner_);
+  latest_test_runner_->set_proxy(proxy);
   latest_test_runner_ = NULL;
   proxy->setInterfaces(
       ShellRenderProcessObserver::GetInstance()->test_interfaces());

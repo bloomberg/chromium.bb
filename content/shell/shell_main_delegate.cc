@@ -100,8 +100,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAllowFileAccessFromFiles);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kForceCompositingMode);
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kUseGL, gfx::kGLImplementationOSMesaName);
     CommandLine::ForCurrentProcess()->AppendSwitch(

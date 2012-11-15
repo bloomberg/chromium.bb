@@ -5,6 +5,7 @@
 var testRunner = testRunner || {};
 
 (function() {
+  native function Display();
   native function GetWorkerThreadCount();
   native function NotifyDone();
   native function OverridePreference();
@@ -31,6 +32,7 @@ var testRunner = testRunner || {};
   }
 
   var TestRunner = function() {
+    Object.defineProperty(this, "display", {value: Display});
     Object.defineProperty(this,
                           "workerThreadCount",
                           {value: GetWorkerThreadCount});

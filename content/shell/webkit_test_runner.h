@@ -8,12 +8,24 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer_tracker.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h"
+
+class SkCanvas;
+
+namespace WebKit {
+struct WebRect;
+}
+
+namespace WebTestRunner {
+class WebTestProxyBase;
+}
 
 namespace content {
 
 // This is the renderer side of the webkit test runner.
 class WebKitTestRunner : public RenderViewObserver,
+                         public RenderViewObserverTracker<WebKitTestRunner>,
                          public WebTestRunner::WebTestDelegate {
  public:
   explicit WebKitTestRunner(RenderView* render_view);
@@ -47,6 +59,10 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual WebKit::WebString getAbsoluteWebStringFromUTF8Path(
       const std::string& utf8_path);
 
+  void Display();
+
+  void set_proxy(WebTestRunner::WebTestProxyBase* proxy) { proxy_ = proxy; }
+
  private:
   // Message handlers.
   void OnCaptureTextDump(bool as_text, bool printing, bool recursive);
@@ -54,9 +70,18 @@ class WebKitTestRunner : public RenderViewObserver,
   void OnSetIsMainWindow();
   void OnSetCurrentWorkingDirectory(const FilePath& current_working_directory);
 
+  SkCanvas* GetCanvas();
+  void PaintRect(const WebKit::WebRect& rect);
+  void PaintInvalidatedRegion();
+  void DisplayRepaintMask();
+
+  scoped_ptr<SkCanvas> canvas_;
   scoped_ptr<WebKit::WebContextMenuData> last_context_menu_data_;
   bool is_main_window_;
   FilePath current_working_directory_;
+
+  WebTestRunner::WebTestProxyBase* proxy_;
+
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
 };
