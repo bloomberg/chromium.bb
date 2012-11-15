@@ -278,12 +278,10 @@ void WebLayerImpl::setFilter(SkImageFilter* filter)
 
 void WebLayerImpl::setDebugBorderColor(const WebColor& color)
 {
-    NOTREACHED();
 }
 
 void WebLayerImpl::setDebugBorderWidth(float width)
 {
-    NOTREACHED();
 }
 
 void WebLayerImpl::setDebugName(WebString name)
