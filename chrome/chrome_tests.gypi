@@ -960,7 +960,6 @@
         'browser/first_run/try_chrome_dialog_view_browsertest.cc',
         'browser/geolocation/access_token_store_browsertest.cc',
         'browser/geolocation/geolocation_browsertest.cc',
-        'browser/google_apis/gdata_wapi_service_browsertest.cc',
         'browser/google_apis/mock_drive_service.cc',
         'browser/google_apis/mock_drive_service.h',
         'browser/google_apis/test_util.cc',

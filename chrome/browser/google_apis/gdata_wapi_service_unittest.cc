@@ -10,44 +10,89 @@
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/test/test_server.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace google_apis {
 
 namespace {
 
-class GDataTest : public InProcessBrowserTest {
+// This class sets a request context getter for testing in
+// |testing_browser_process| and then clears the state when an instance of it
+// goes out of scope.
+class ScopedRequestContextGetterForTesting {
+ public:
+  ScopedRequestContextGetterForTesting(
+      TestingBrowserProcess* testing_browser_process)
+      : testing_browser_process_(testing_browser_process) {
+    context_getter_ = new net::TestURLRequestContextGetter(
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::IO));
+    testing_browser_process_->SetSystemRequestContext(context_getter_.get());
+  }
+
+  virtual ~ScopedRequestContextGetterForTesting() {
+    testing_browser_process_->SetSystemRequestContext(NULL);
+  }
+
+ private:
+  scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
+  TestingBrowserProcess* testing_browser_process_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedRequestContextGetterForTesting);
+};
+
+class GDataTest : public testing::Test {
  public:
   GDataTest()
-      : InProcessBrowserTest(),
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
+        file_thread_(content::BrowserThread::FILE),
+        io_thread_(content::BrowserThread::IO),
         gdata_test_server_(net::TestServer::TYPE_GDATA,
                            net::TestServer::kLocalhost,
                            FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(gdata_test_server_.Start());
+
+    file_thread_.Start();
+    io_thread_.StartIOThread();
+    profile_.reset(new TestingProfile);
+
     service_.reset(new GDataWapiService);
-    service_->Initialize(browser()->profile());
+    service_->Initialize(profile_.get());
     service_->auth_service_for_testing()->set_access_token_for_testing(
         net::TestServer::kGDataAuthToken);
+
+    // Set a context getter in |g_browser_process|. This is required to be able
+    // to use net::URLFetcher.
+    request_context_getter_.reset(
+        new ScopedRequestContextGetterForTesting(
+            static_cast<TestingBrowserProcess*>(g_browser_process)));
   }
 
-  virtual void CleanUpOnMainThread() {
+  virtual void TearDown() OVERRIDE {
     service_.reset();
+    request_context_getter_.reset();
   }
 
  protected:
   FilePath GetTestCachedFilePath(const FilePath& file_name) {
-    return browser()->profile()->GetPath().Append(file_name);
+    return profile_->GetPath().Append(file_name);
   }
 
+  MessageLoopForUI message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
+  content::TestBrowserThread io_thread_;
   net::TestServer gdata_test_server_;
+  scoped_ptr<TestingProfile> profile_;
   scoped_ptr<GDataWapiService> service_;
+  scoped_ptr<ScopedRequestContextGetterForTesting> request_context_getter_;
 };
 
 // The test callback for GDataWapiService::DownloadFile().
@@ -74,7 +119,7 @@ void TestGetDocumentsCallback(GDataErrorCode* result_code,
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(GDataTest, Download) {
+TEST_F(GDataTest, Download) {
   GDataErrorCode result = GDATA_OTHER_ERROR;
   std::string contents;
   service_->DownloadFile(
@@ -84,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, Download) {
       gdata_test_server_.GetURL("files/chromeos/gdata/testfile.txt"),
       base::Bind(&TestDownloadCallback, &result, &contents),
       GetContentCallback());
-  content::RunMessageLoop();
+  MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result);
   FilePath expected_filepath = gdata_test_server_.document_root().Append(
@@ -94,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, Download) {
   EXPECT_EQ(expected_contents, contents);
 }
 
-IN_PROC_BROWSER_TEST_F(GDataTest, NonExistingDownload) {
+TEST_F(GDataTest, NonExistingDownload) {
   GDataErrorCode result = GDATA_OTHER_ERROR;
   std::string dummy_contents;
   service_->DownloadFile(
@@ -104,13 +149,13 @@ IN_PROC_BROWSER_TEST_F(GDataTest, NonExistingDownload) {
       gdata_test_server_.GetURL("files/chromeos/gdata/no-such-file.txt"),
       base::Bind(&TestDownloadCallback, &result, &dummy_contents),
       GetContentCallback());
-  content::RunMessageLoop();
+  MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_NOT_FOUND, result);
   // Do not verify the not found message.
 }
 
-IN_PROC_BROWSER_TEST_F(GDataTest, GetDocuments) {
+TEST_F(GDataTest, GetDocuments) {
   GDataErrorCode result = GDATA_OTHER_ERROR;
   base::Value* result_data = NULL;
   service_->GetDocuments(
@@ -119,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocuments) {
       std::string(),  // search string
       std::string(),  // directory resource ID
       base::Bind(&TestGetDocumentsCallback, &result, &result_data));
-  content::RunMessageLoop();
+  MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result);
   ASSERT_TRUE(result_data);
@@ -133,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocuments) {
   delete result_data;
 }
 
-IN_PROC_BROWSER_TEST_F(GDataTest, GetDocumentsFailure) {
+TEST_F(GDataTest, GetDocumentsFailure) {
   // testfile.txt exists but the response is not JSON, so it should
   // emit a parse error instead.
   GDataErrorCode result = GDATA_OTHER_ERROR;
@@ -144,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocumentsFailure) {
       std::string(),  // search string
       std::string(),  // directory resource ID
       base::Bind(&TestGetDocumentsCallback, &result, &result_data));
-  content::RunMessageLoop();
+  MessageLoop::current()->Run();
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result);
   EXPECT_FALSE(result_data);

@@ -748,6 +748,7 @@
         'browser/google_apis/drive_api_parser_unittest.cc',
         'browser/google_apis/gdata_operations_unittest.cc',
         'browser/google_apis/gdata_wapi_parser_unittest.cc',
+        'browser/google_apis/gdata_wapi_service_unittest.cc',
         'browser/google_apis/mock_drive_service.cc',
         'browser/google_apis/mock_drive_service.h',
         'browser/google_apis/mock_drive_uploader.cc',
@@ -2062,6 +2063,9 @@
 
             'browser/sessions/persistent_tab_restore_service_browsertest.cc',
             'browser/sessions/session_backend_unittest.cc',
+
+            # net::TestServer doesn't start on Android. crbug.com/161192
+            'browser/google_apis/gdata_wapi_service_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],
