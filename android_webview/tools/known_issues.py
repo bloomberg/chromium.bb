@@ -18,6 +18,10 @@ process will stop and this list must be updated.
 
 """
 
+KNOWN_ISSUES = {
+  'third_party/usb_ids', # crbug.com/161021, doesn't have a LICENSE file
+}
+
 KNOWN_INCOMPATIBLE = {
     # Incompatible code in the main chromium repository.
     '.': [
@@ -42,3 +46,6 @@ KNOWN_INCOMPATIBLE = {
         'source/data/brkitr',
     ],
 }
+
+for directory in KNOWN_ISSUES:
+    KNOWN_INCOMPATIBLE['.'].append(directory)
