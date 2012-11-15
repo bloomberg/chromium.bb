@@ -57,6 +57,14 @@ class SessionManagerClientImpl : public SessionManagerClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&SessionManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+
+    session_manager_proxy_->ConnectToSignal(
+        chromium::kChromiumInterface,
+        chromium::kLivenessRequestedSignal,
+        base::Bind(&SessionManagerClientImpl::LivenessRequestedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&SessionManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   virtual ~SessionManagerClientImpl() {
@@ -328,6 +336,11 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void ScreenUnlockReceived(dbus::Signal* signal) {
     screen_locked_ = false;
     FOR_EACH_OBSERVER(Observer, observers_, UnlockScreen());
+  }
+
+  void LivenessRequestedReceived(dbus::Signal* signal) {
+    SimpleMethodCallToSessionManager(
+        login_manager::kSessionManagerHandleLivenessConfirmed);
   }
 
   // Called when the object is connected to the signal.
