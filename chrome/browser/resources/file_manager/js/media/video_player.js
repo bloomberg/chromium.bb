@@ -103,7 +103,7 @@ function loadVideoPlayer() {
  * Unload the player.
  */
 function unload() {
-  controls.savePosition();
+  controls.savePosition(true /* exiting */);
   controls.cleanup();
 }
 

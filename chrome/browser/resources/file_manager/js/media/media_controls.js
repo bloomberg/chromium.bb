@@ -935,25 +935,10 @@ function VideoControls(containerElement, onMediaError,
         'playback-state-icon', opt_stateIconParent);
   }
 
-  this.resumePositions_ = new TimeLimitedMap(
-      'VideoResumePosition',
-      VideoControls.RESUME_POSITIONS_CAPACITY,
-      VideoControls.RESUME_POSITION_LIFETIME);
-
   var video_controls = this;
   chrome.mediaPlayerPrivate.onTogglePlayState.addListener(
       function() { video_controls.togglePlayStateWithFeedback(); });
 }
-
-/**
- * Capacity of the resume position storage.
- */
-VideoControls.RESUME_POSITIONS_CAPACITY = 100;
-
-/**
- * Maximum lifetime of a stored position.
- */
-VideoControls.RESUME_POSITION_LIFETIME = 30 * 24 * 60 * 60 * 1000;  // 30 days.
 
 /**
  * No resume if we are withing this margin from the start or the end.
@@ -1008,25 +993,35 @@ VideoControls.prototype.togglePlayState = function() {
 
 /**
  * Save the playback position to the persistent storage.
- * @param {function} opt_callback Completion callback.
+ * @param {boolean} opt_sync True if the position must be saved synchronously
+ *   (required when closing app windows).
  */
-VideoControls.prototype.savePosition = function(opt_callback) {
+VideoControls.prototype.savePosition = function(opt_sync) {
   if (!this.media_.duration ||
-      this.media_.duration_ < VideoControls.RESUME_THRESHOLD) {
-    if (opt_callback) opt_callback();
+      this.media_.duration < VideoControls.RESUME_THRESHOLD) {
     return;
   }
 
   var ratio = this.media_.currentTime / this.media_.duration;
+  var position;
   if (ratio < VideoControls.RESUME_MARGIN ||
       ratio > (1 - VideoControls.RESUME_MARGIN)) {
     // We are too close to the beginning or the end.
     // Remove the resume position so that next time we start from the beginning.
-    this.resumePositions_.removeValue(this.media_.src, opt_callback);
+    position = null;
   } else {
-    this.resumePositions_.setValue(this.media_.src, Math.floor(Math.max(0,
-        this.media_.currentTime - VideoControls.RESUME_REWIND)),
-        opt_callback);
+    position = Math.floor(
+        Math.max(0, this.media_.currentTime - VideoControls.RESUME_REWIND));
+  }
+
+  if (opt_sync && util.platform.v2()) {
+    // Packaged apps cannot save synchronously.
+    // Pass the data to the background page.
+    if (!window.saveOnExit)
+      window.saveOnExit = [];
+    window.saveOnExit.push({ key: this.media_.src, value: position });
+  } else {
+    util.AppCache.update(this.media_.src, position);
   }
 };
 
@@ -1035,7 +1030,7 @@ VideoControls.prototype.savePosition = function(opt_callback) {
  */
 VideoControls.prototype.restorePlayState = function() {
   if (this.media_.duration >= VideoControls.RESUME_THRESHOLD) {
-    this.resumePositions_.getValue(this.media_.src, function(position) {
+    util.AppCache.getValue(this.media_.src, function(position) {
       if (position)
         this.media_.currentTime = position;
     }.bind(this));
@@ -1065,124 +1060,6 @@ VideoControls.prototype.updateStyle = function() {
   hideBelow('.volume-controls', 210);
   hideBelow('.fullscreen', 150);
 };
-
-/**
- *  TimeLimitedMap is persistent timestamped key-value storage backed by
- *  HTML5 local storage.
- *
- *  It is not designed for frequent access. In order to avoid costly
- *  localStorage iteration all data is kept in a single localStorage item.
- *  There is no in-memory caching, so concurrent access is OK.
- *
- *  @param {string} localStorageKey A key in the local storage.
- *  @param {number} capacity Maximim number of items. If exceeded, oldest items
- *                           are removed.
- *  @param {number} lifetime Maximim time to keep an item (in milliseconds).
- */
-function TimeLimitedMap(localStorageKey, capacity, lifetime) {
-  this.localStorageKey_ = localStorageKey;
-  this.capacity_ = capacity;
-  this.lifetime_ = lifetime;
-}
-
-/**
- * @param {string} key Key
- * @param {function(number)} callback Callback accepting a value.
- */
-TimeLimitedMap.prototype.getValue = function(key, callback) {
-  this.read_(function(map) {
-    var entry = map[key];
-    callback(entry && entry.value);
-  }.bind(this));
-};
-
-/**
- * @param {string} key Key.
- * @param {string} value Value.
- * @param {function} opt_callback Completion callback.
- */
-TimeLimitedMap.prototype.setValue = function(key, value, opt_callback) {
-  this.read_(function(map) {
-    map[key] = { value: value, timestamp: Date.now() };
-    this.cleanup_(map);
-    this.write_(map, opt_callback);
-  }.bind(this));
-};
-
-/**
- * @param {string} key Key to remove.
- * @param {function} opt_callback Completion callback.
- */
-TimeLimitedMap.prototype.removeValue = function(key, opt_callback) {
-  this.read_(function(map) {
-    if (key in map) {
-      delete map[key];
-      this.cleanup_(map);
-      this.write_(map, opt_callback);
-    } else {
-      if (opt_callback) opt_callback();
-    }
-  }.bind(this));
-};
-
-/**
- * @param {function(Object)} callback Callback accepting a map of timestamped
- *   key-value pairs.
- * @private
- */
-TimeLimitedMap.prototype.read_ = function(callback) {
-  util.platform.getPreference(this.localStorageKey_, function(json) {
-    if (json) {
-      try {
-        callback(JSON.parse(json));
-      } catch (e) {
-        // The local storage item somehow got messed up, start fresh.
-      }
-    }
-    callback({});
-  });
-};
-
-/**
- * @param {Object} map A map of timestamped key-value pairs.
- * @param {function} opt_callback Completion callback.
- * @private
- */
-TimeLimitedMap.prototype.write_ = function(map, opt_callback) {
-  util.platform.setPreference(
-      this.localStorageKey_, JSON.stringify(map), opt_callback);
-};
-
-/**
- * Remove over-capacity and obsolete items.
- *
- * @param {Object} map A map of timestamped key-value pairs.
- * @private
- */
-TimeLimitedMap.prototype.cleanup_ = function(map) {
-  // Sort keys by ascending timestamps.
-  var keys = [];
-  for (var key in map) {
-    keys.push(key);
-  }
-  keys.sort(function(a, b) { return map[a].timestamp > map[b].timestamp });
-
-  var cutoff = Date.now() - this.lifetime_;
-
-  var obsolete = 0;
-  while (obsolete < keys.length &&
-         map[keys[obsolete]].timestamp < cutoff) {
-    obsolete++;
-  }
-
-  var overCapacity = Math.max(0, keys.length - this.capacity_);
-
-  var itemsToDelete = Math.max(obsolete, overCapacity);
-  for (var i = 0; i != itemsToDelete; i++) {
-    delete map[keys[i]];
-  }
-};
-
 
 /**
  * Create audio controls.

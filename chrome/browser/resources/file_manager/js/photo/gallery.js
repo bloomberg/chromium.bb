@@ -16,6 +16,18 @@ util.addPageLoadHandler(function() {
 });
 
 /**
+ * Called from the main frame when unloading.
+ * @return {string?} User-visible message on null if it is OK to close.
+ */
+function beforeunload() { return Gallery.instance.onBeforeUnload() }
+
+/**
+ * Called from the main frame when unloading.
+ * @param {boolean} opt_exiting True if the app is exiting.
+ */
+function unload(opt_exiting) { Gallery.instance.onUnload(opt_exiting) }
+
+/**
  * Gallery for viewing and editing image files.
  *
  * @param {Object} context Object containing the following:
@@ -163,18 +175,23 @@ Gallery.prototype.initListeners_ = function() {
       MetadataCache.CHILDREN,
       'thumbnail',
       this.updateThumbnails_.bind(this));
+};
 
-  if (!util.platform.v2)
-    this.document_.defaultView.addEventListener(
-        'unload', this.unload.bind(this));
+/**
+ * Beforeunload handler.
+ * @return {string?} User-visible message on null if it is OK to close.
+ */
+Gallery.prototype.onBeforeUnload = function() {
+  return this.slideMode_.onBeforeUnload();
 };
 
 /**
  * Unload the Gallery.
+ * @param {boolean} exiting True if the app is exiting.
  */
-Gallery.prototype.unload = function() {
+Gallery.prototype.onUnload = function(exiting) {
   this.metadataCache_.removeObserver(this.thumbnailObserverId_);
-  this.slideMode_.onUnload();
+  this.slideMode_.onUnload(exiting);
 };
 
 /**

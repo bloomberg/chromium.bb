@@ -1030,3 +1030,123 @@ util.saveAppState = function() {
   if (window.appState)
     util.platform.setPreference(window.appID, window.appState);
 };
+
+
+/**
+ *  AppCache is a persistent timestamped key-value storage backed by
+ *  HTML5 local storage.
+ *
+ *  It is not designed for frequent access. In order to avoid costly
+ *  localStorage iteration all data is kept in a single localStorage item.
+ *  There is no in-memory caching, so concurrent access is _almost_ safe.
+ *
+ *  TODO(kaznacheev) Reimplement this based on Indexed DB.
+ */
+util.AppCache = function() {};
+
+/**
+ * Local storage key.
+ */
+util.AppCache.KEY = 'AppCache';
+
+/**
+ * Max number of items.
+ */
+util.AppCache.CAPACITY = 100;
+
+/**
+ * Default lifetime.
+ */
+util.AppCache.LIFETIME = 30 * 24 * 60 * 60 * 1000;  // 30 days.
+
+/**
+ * @param {string} key Key
+ * @param {function(number)} callback Callback accepting a value.
+ */
+util.AppCache.getValue = function(key, callback) {
+  util.AppCache.read_(function(map) {
+    var entry = map[key];
+    callback(entry && entry.value);
+  });
+};
+
+/**
+ * Update the cache.
+ *
+ * @param {string} key Key.
+ * @param {string} value Value. Remove the key if value is null.
+ * @param {number} opt_lifetime Maximim time to keep an item (in milliseconds).
+ */
+util.AppCache.update = function(key, value, opt_lifetime) {
+  util.AppCache.read_(function(map) {
+    if (value != null) {
+      map[key] = {
+        value: value,
+        expire: Date.now() + (opt_lifetime || util.AppCache.LIFETIME)
+      };
+    } else if (key in map) {
+      delete map[key];
+    } else {
+      return;  // Nothing to do.
+    }
+    util.AppCache.cleanup_(map);
+    util.AppCache.write_(map);
+  });
+};
+
+/**
+ * @param {function(Object)} callback Callback accepting a map of timestamped
+ *   key-value pairs.
+ * @private
+ */
+util.AppCache.read_ = function(callback) {
+  util.platform.getPreference(util.AppCache.KEY, function(json) {
+    if (json) {
+      try {
+        callback(JSON.parse(json));
+      } catch (e) {
+        // The local storage item somehow got messed up, start fresh.
+      }
+    }
+    callback({});
+  });
+};
+
+/**
+ * @param {Object} map A map of timestamped key-value pairs.
+ * @private
+ */
+util.AppCache.write_ = function(map) {
+  util.platform.setPreference(util.AppCache.KEY, JSON.stringify(map));
+};
+
+/**
+ * Remove over-capacity and obsolete items.
+ *
+ * @param {Object} map A map of timestamped key-value pairs.
+ * @private
+ */
+util.AppCache.cleanup_ = function(map) {
+  // Sort keys by ascending timestamps.
+  var keys = [];
+  for (var key in map) {
+    if (map.hasOwnProperty(key))
+      keys.push(key);
+  }
+  keys.sort(function(a, b) { return map[a].expire > map[b].expire });
+
+  var cutoff = Date.now();
+
+  var obsolete = 0;
+  while (obsolete < keys.length &&
+         map[keys[obsolete]].expire < cutoff) {
+    obsolete++;
+  }
+
+  var overCapacity = Math.max(0, keys.length - util.AppCache.CAPACITY);
+
+  var itemsToDelete = Math.max(obsolete, overCapacity);
+  for (var i = 0; i != itemsToDelete; i++) {
+    delete map[keys[i]];
+  }
+};

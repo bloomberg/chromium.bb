@@ -72,16 +72,6 @@ SlideMode.prototype.getName = function() { return 'slide' };
  * @private
  */
 SlideMode.prototype.initListeners_ = function() {
-  if (!util.platform.v2()) {
-    //  We need to listen to the top window 'unload' and 'beforeunload' because
-    //  the Gallery iframe does not get notified if the tab is closed.
-    this.onTopBeforeUnloadBound_ = this.onTopBeforeUnload_.bind(this);
-    window.top.addEventListener('beforeunload', this.onTopBeforeUnloadBound_);
-
-    this.onTopUnloadBound_ = this.onTopUnload_.bind(this);
-    window.top.addEventListener('unload', this.onTopUnloadBound_);
-  }
-
   window.addEventListener('resize', this.onResize_.bind(this), false);
 };
 
@@ -715,31 +705,20 @@ SlideMode.prototype.requestPrefetch = function(direction, delay) {
 // Event handlers.
 
 /**
- * Unload handler.
+ * Unload handler, to be called from the top frame.
+ * @param {boolean} exiting True if the app is exiting.
  */
-SlideMode.prototype.onUnload = function() {
-  this.saveVideoPosition_();
-  if (!util.platform.v2()) {
-    window.top.removeEventListener('beforeunload',
-        this.onTopBeforeUnloadBound_);
-    window.top.removeEventListener('unload', this.onTopUnloadBound_);
+SlideMode.prototype.onUnload = function(exiting) {
+  if (this.isShowingVideo_() && this.mediaControls_.isPlaying()) {
+    this.mediaControls_.savePosition(exiting);
   }
 };
 
 /**
- * Top window unload handler.
- * @private
- */
-SlideMode.prototype.onTopUnload_ = function() {
-  this.saveVideoPosition_();
-};
-
-/**
- * Top window beforeunload handler.
+ * beforeunload handler, to be called from the top frame.
  * @return {string} Message to show if there are unsaved changes.
- * @private
  */
-SlideMode.prototype.onTopBeforeUnload_ = function() {
+SlideMode.prototype.onBeforeUnload = function() {
   if (this.editor_.isBusy())
     return this.displayStringFunction_('unsaved_changes');
   return null;
@@ -1229,16 +1208,6 @@ SlideMode.prototype.showSpinner_ = function(on) {
  */
 SlideMode.prototype.isShowingVideo_ = function() {
   return !!this.imageView_.getVideo();
-};
-
-/**
- * Save the current video position.
- * @private
- */
-SlideMode.prototype.saveVideoPosition_ = function() {
-  if (this.isShowingVideo_() && this.mediaControls_.isPlaying()) {
-    this.mediaControls_.savePosition();
-  }
 };
 
 /**

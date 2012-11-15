@@ -402,8 +402,7 @@ FileTasks.prototype.openGallery = function(urls) {
   function onClose(selectedUrls) {
     fm.directoryModel_.selectUrls(selectedUrls);
     if (util.platform.v2()) {
-      galleryFrame.contentWindow.Gallery.instance.unload();
-      fm.closeFilePopup_();
+      fm.closeFilePopup_();  // Will call Gallery.unload.
       window.appState = savedAppState;
       util.saveAppState();
       document.title = savedTitle;

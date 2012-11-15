@@ -418,10 +418,11 @@ DialogType.isModal = function(type) {
     this.bannersController_.addEventListener('relayout',
                                              this.onResize_.bind(this));
 
-    window.addEventListener('popstate', this.onPopState_.bind(this));
-    // TODO: handle window closing properly for apps v2.
-    if (!util.platform.v2())
+    if (!util.platform.v2()) {
+      window.addEventListener('popstate', this.onPopState_.bind(this));
       window.addEventListener('unload', this.onUnload_.bind(this));
+      window.addEventListener('beforeunload', this.onBeforeUnload_.bind(this));
+    }
 
     var dm = this.directoryModel_;
     dm.addEventListener('directory-changed',
@@ -662,11 +663,6 @@ DialogType.isModal = function(type) {
       // Prevent opening an URL by dropping it onto the page.
       e.preventDefault();
     });
-
-    // TODO: handle window closing properly for apps v2.
-    if (!util.platform.v2())
-      this.document_.defaultView.addEventListener('beforeunload',
-          this.onBeforeUnload_.bind(this));
 
     this.dialogDom_.addEventListener('click',
                                      this.onExternalLinkClick_.bind(this));
@@ -2208,6 +2204,11 @@ DialogType.isModal = function(type) {
 
   FileManager.prototype.closeFilePopup_ = function() {
     if (this.filePopup_) {
+      if (this.filePopup_.contentWindow &&
+          this.filePopup_.contentWindow.unload) {
+        this.filePopup_.contentWindow.unload();
+      }
+
       this.dialogDom_.removeChild(this.filePopup_);
       this.filePopup_ = null;
       if (this.filePopupCloseCallback_) {
@@ -2474,6 +2475,11 @@ DialogType.isModal = function(type) {
    */
   FileManager.prototype.onUnload_ = function() {
     this.fileWatcher_.stop();
+    if (this.filePopup_ &&
+        this.filePopup_.contentWindow &&
+        this.filePopup_.contentWindow.unload) {
+      this.filePopup_.contentWindow.unload(true /* exiting */);
+    }
   };
 
   FileManager.prototype.initiateRename = function() {
@@ -3343,11 +3349,17 @@ DialogType.isModal = function(type) {
 
   /**
    * Window beforeunload handler.
-   * @return {string} Message to show. We don't need the message.
+   * @return {string} Message to show. Ignored when running as a packaged app.
    * @private
    */
   FileManager.prototype.onBeforeUnload_ = function() {
     this.butterBar_.forceDeleteAndHide();
+    if (this.filePopup_ &&
+        this.filePopup_.contentWindow &&
+        this.filePopup_.contentWindow.beforeunload) {
+      // The gallery might want to prevent the unload if it is busy.
+      return this.filePopup_.contentWindow.beforeunload();
+    }
     return null;
   };
 

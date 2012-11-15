@@ -78,6 +78,11 @@ AppWindowWrapper.prototype.launch = function(appState) {
     appWindow.onClosed.addListener(function() {
       if (contentWindow.unload)
         contentWindow.unload();
+      if (contentWindow.saveOnExit) {
+        contentWindow.saveOnExit.forEach(function(entry) {
+          util.AppCache.update(entry.key, entry.value);
+        });
+      }
       delete appWindows[this.id_];
       chrome.storage.local.remove(this.id_);  // Forget the persisted state.
       this.window_ = null;
