@@ -348,7 +348,7 @@ bool PluginList::ShouldLoadPluginUsingPluginList(
         (plugin1 == kJavaDeploy2 && plugin2 == kJavaDeploy1)) {
       if (!IsNewerVersion((*plugins)[j].version, info.version))
         return false;  // We have loaded a plugin whose version is newer.
-      PluginList::RemovePlugin((*plugins)[j].path, plugins);
+      plugins->erase(plugins->begin() + j);
       break;
     }
   }
@@ -398,7 +398,7 @@ bool PluginList::ShouldLoadPluginUsingPluginList(
 
     for (size_t j = 0; j < plugins->size(); ++j) {
       if ((*plugins)[j].path.BaseName().value() == kOldWMPPlugin) {
-        PluginList::RemovePlugin((*plugins)[j].path, plugins);
+        plugins->erase(plugins->begin() + j);
         break;
       }
     }

@@ -452,21 +452,6 @@ bool PluginList::SupportsExtension(const webkit::WebPluginInfo& plugin,
   return false;
 }
 
-/*static*/
-bool PluginList::RemovePlugin(const FilePath& filename,
-                              std::vector<webkit::WebPluginInfo>* plugins) {
-  bool did_remove = false;
-  for (size_t i = 0; i < plugins->size();) {
-    if ((*plugins)[i].path == filename) {
-      plugins->erase(plugins->begin() + i);
-      did_remove = true;
-    } else {
-      i++;
-    }
-  }
-  return did_remove;
-}
-
 PluginList::~PluginList() {
 }
 

@@ -217,10 +217,6 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
                          const std::string& extension,
                          std::string* actual_mime_type);
 
-  // Removes a plug-in from |plugins_list_| by its path.
-  static bool RemovePlugin(const FilePath& filename,
-                           std::vector<webkit::WebPluginInfo>* plugins);
-
   //
   // Platform functions
   //
