@@ -54,6 +54,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       is_hidden_(!content_view_core),
       content_view_core_(content_view_core),
       ime_adapter_android_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      cached_background_color_(SK_ColorWHITE),
       texture_layer_(WebKit::WebExternalTextureLayer::create()),
       texture_id_in_layer_(0) {
   host_->SetView(this);
@@ -175,6 +176,10 @@ bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
   }
 
   return true;
+}
+
+WebKit::WebLayer* RenderWidgetHostViewAndroid::GetWebLayer() {
+  return texture_layer_->layer();
 }
 
 gfx::NativeView RenderWidgetHostViewAndroid::GetNativeView() const {

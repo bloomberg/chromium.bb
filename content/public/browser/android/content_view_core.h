@@ -18,6 +18,10 @@ namespace ui {
 class WindowAndroid;
 }
 
+namespace WebKit {
+class WebLayer;
+}
+
 namespace content {
 class WebContents;
 
@@ -40,7 +44,7 @@ class ContentViewCore {
   virtual jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj) = 0;
   virtual void ShowPastePopup(int x, int y) = 0;
   virtual unsigned int GetScaledContentTexture(const gfx::Size& size) = 0;
-
+  virtual WebKit::WebLayer* GetWebLayer() = 0;
  protected:
   virtual ~ContentViewCore() {};
 };

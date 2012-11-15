@@ -495,6 +495,11 @@ unsigned int ContentViewCoreImpl::GetScaledContentTexture(
   return view->GetScaledContentTexture(size);
 }
 
+WebKit::WebLayer* ContentViewCoreImpl::GetWebLayer() {
+  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
+  return view ? view->GetWebLayer() : NULL;
+}
+
 void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
