@@ -239,7 +239,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
   unsigned int covered_stages = 0;
   for (size_t i = 0; i < arraysize(active_stages); ++i)
     covered_stages |= active_stages[i].first;
-  EXPECT_EQ(covered_stages, kActiveStages);
+  EXPECT_EQ(kActiveStages, covered_stages);
 
   std::string error;
 
