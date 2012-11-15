@@ -74,8 +74,6 @@ class AwContents : public FindHelper::Listener {
       JNIEnv* env, jobject obj);
   void RequestNewHitTestDataAt(JNIEnv* env, jobject obj, jint x, jint y);
   void UpdateLastHitTestData(JNIEnv* env, jobject obj);
-  base::android::ScopedJavaLocalRef<jobject> GetLastHitTestData(
-      JNIEnv* env, jobject obj);
   void OnSizeChanged(JNIEnv* env, jobject obj, int w, int h, int ow, int oh);
   void SetWindowViewVisibility(JNIEnv* env, jobject obj,
                                bool window_visible,
