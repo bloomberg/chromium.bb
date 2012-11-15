@@ -23,7 +23,6 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
           command_line, gfx::kGLImplementationOSMesaName)) <<
           "kUseGL must not be set by test framework code!";
 #endif
-    ui::DisableTestCompositor();
   }
 
   // This method is responsible for initializing a packaged app, which contains
