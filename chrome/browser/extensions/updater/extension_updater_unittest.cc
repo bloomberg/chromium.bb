@@ -19,6 +19,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/version.h"
+#include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
@@ -166,7 +167,8 @@ class MockService : public TestExtensionService {
  public:
   explicit MockService(TestExtensionPrefs* prefs)
       : prefs_(prefs),
-        pending_extension_manager_(ALLOW_THIS_IN_INITIALIZER_LIST(*this)) {
+        pending_extension_manager_(ALLOW_THIS_IN_INITIALIZER_LIST(*this)),
+        blacklist_(prefs_->prefs()) {
     profile_.CreateRequestContext();
   }
 
@@ -187,6 +189,8 @@ class MockService : public TestExtensionService {
   ExtensionPrefs* extension_prefs() { return prefs_->prefs(); }
 
   PrefService* pref_service() { return prefs_->pref_service(); }
+
+  Blacklist* blacklist() { return &blacklist_; }
 
   // Creates test extensions and inserts them into list. The name and
   // version are all based on their index. If |update_url| is non-null, it
@@ -215,6 +219,7 @@ class MockService : public TestExtensionService {
   TestExtensionPrefs* const prefs_;
   PendingExtensionManager pending_extension_manager_;
   TestingProfile profile_;
+  Blacklist blacklist_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockService);
@@ -373,26 +378,6 @@ class ServiceForDownloadTests : public MockService {
   mutable std::string last_inquired_extension_id_;
 };
 
-class ServiceForBlacklistTests : public MockService {
- public:
-  explicit ServiceForBlacklistTests(TestExtensionPrefs* prefs)
-     : MockService(prefs),
-       processed_blacklist_(false) {
-  }
-  virtual void UpdateExtensionBlacklist(
-    const std::vector<std::string>& blacklist) OVERRIDE {
-    processed_blacklist_ = true;
-    return;
-  }
-  bool processed_blacklist() { return processed_blacklist_; }
-  const std::string& extension_id() { return extension_id_; }
-
- private:
-  bool processed_blacklist_;
-  std::string extension_id_;
-  FilePath install_path_;
-};
-
 static const int kUpdateFrequencySecs = 15;
 
 // Takes a string with KEY=VALUE parameters separated by '&' in |params| and
@@ -500,7 +485,7 @@ class ExtensionUpdaterTest : public testing::Test {
     net::TestURLFetcherFactory factory;
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
-        service.profile(), 60*60*24);
+        service.profile(), service.blacklist(), 60*60*24);
     updater.Start();
     // Disable blacklist checks (tested elsewhere) so that we only see the
     // update HTTP request.
@@ -549,7 +534,7 @@ class ExtensionUpdaterTest : public testing::Test {
     net::TestURLFetcherFactory factory;
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
-        service.profile(), 60*60*24);
+        service.profile(), service.blacklist(), 60*60*24);
     updater.Start();
 
     // Tell the updater that it's time to do update checks.
@@ -866,6 +851,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionUpdater updater(service.get(), service->extension_prefs(),
                              service->pref_service(),
                              service->profile(),
+                             service->blacklist(),
                              kUpdateFrequencySecs);
     updater.Start();
     ResetDownloader(
@@ -920,10 +906,10 @@ class ExtensionUpdaterTest : public testing::Test {
   void TestBlacklistDownloading() {
     net::TestURLFetcherFactory factory;
     net::TestURLFetcher* fetcher = NULL;
-    ServiceForBlacklistTests service(prefs_.get());
+    MockService service(prefs_.get());
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
-        service.profile(), kUpdateFrequencySecs);
+        service.profile(), service.blacklist(), kUpdateFrequencySecs);
     updater.Start();
     ResetDownloader(
         &updater,
@@ -933,7 +919,7 @@ class ExtensionUpdaterTest : public testing::Test {
     std::string id = "com.google.crx.blacklist";
 
     std::string hash =
-        "2CE109E9D0FAF820B2434E166297934E6177B65AB9951DBC3E204CAD4689B39C";
+        "CCEA231D3CD30A348DA1383ED311EAC11E82360773CB2BA4E2C3A5FF16E337CC";
 
     std::string version = "0.0.1";
     std::set<int> requests;
@@ -942,7 +928,8 @@ class ExtensionUpdaterTest : public testing::Test {
                                                requests);
 
     // Call back the ExtensionUpdater with a 200 response and some test data.
-    std::string extension_data("aaabbb");
+    std::string extension_data("aaaabbbbcccceeeeaaaabbbbcccceeee");
+    EXPECT_FALSE(service.blacklist()->IsBlacklisted(extension_data));
 
     fetcher = factory.GetFetcherByID(ExtensionDownloader::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
@@ -956,9 +943,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     RunUntilIdle();
 
-    // The updater should have called extension service to process the
-    // blacklist.
-    EXPECT_TRUE(service.processed_blacklist());
+    EXPECT_TRUE(service.blacklist()->IsBlacklisted(extension_data));
 
     EXPECT_EQ(version, service.pref_service()->
       GetString(prefs::kExtensionBlacklistUpdateVersion));
@@ -974,7 +959,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ServiceForDownloadTests service(prefs_.get());
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
-        service.profile(), kUpdateFrequencySecs);
+        service.profile(), service.blacklist(), kUpdateFrequencySecs);
     updater.Start();
     ResetDownloader(
         &updater,
@@ -1182,7 +1167,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
-        service.profile(), kUpdateFrequencySecs);
+        service.profile(), service.blacklist(), kUpdateFrequencySecs);
     ExtensionUpdater::CheckParams params;
     params.check_blacklist = false;
     updater.Start();
@@ -1276,7 +1261,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
-        service.profile(), kUpdateFrequencySecs);
+        service.profile(), service.blacklist(), kUpdateFrequencySecs);
     updater.Start();
     ResetDownloader(
         &updater,
@@ -1383,7 +1368,7 @@ TEST_F(ExtensionUpdaterTest, TestNonAutoUpdateableLocations) {
   ServiceForManifestTests service(prefs_.get());
   ExtensionUpdater updater(&service, service.extension_prefs(),
                            service.pref_service(), service.profile(),
-                           kUpdateFrequencySecs);
+                           service.blacklist(), kUpdateFrequencySecs);
   MockExtensionDownloaderDelegate delegate;
   // Set the downloader directly, so that all its events end up in the mock
   // |delegate|.
@@ -1415,7 +1400,7 @@ TEST_F(ExtensionUpdaterTest, TestUpdatingDisabledExtensions) {
   ServiceForManifestTests service(prefs_.get());
   ExtensionUpdater updater(&service, service.extension_prefs(),
                            service.pref_service(), service.profile(),
-                           kUpdateFrequencySecs);
+                           service.blacklist(), kUpdateFrequencySecs);
   MockExtensionDownloaderDelegate delegate;
   // Set the downloader directly, so that all its events end up in the mock
   // |delegate|.
@@ -1522,7 +1507,7 @@ TEST_F(ExtensionUpdaterTest, TestCheckSoon) {
   net::TestURLFetcherFactory factory;
   ExtensionUpdater updater(
       &service, service.extension_prefs(), service.pref_service(),
-      service.profile(), kUpdateFrequencySecs);
+      service.profile(), service.blacklist(), kUpdateFrequencySecs);
   EXPECT_FALSE(updater.WillCheckSoon());
   updater.Start();
   EXPECT_FALSE(updater.WillCheckSoon());

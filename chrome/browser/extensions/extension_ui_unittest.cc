@@ -35,7 +35,7 @@ class ExtensionUITest : public testing::Test {
             extensions::ExtensionSystem::Get(profile_.get()));
     extension_service_ = system->CreateExtensionService(
         CommandLine::ForCurrentProcess(), FilePath(), false);
-    management_policy_ = system->CreateManagementPolicy();
+    management_policy_ = system->management_policy();
 
     handler_.reset(new ExtensionSettingsHandler(extension_service_,
                                                 management_policy_));

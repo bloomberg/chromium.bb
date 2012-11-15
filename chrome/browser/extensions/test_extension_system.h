@@ -30,10 +30,6 @@ class TestExtensionSystem : public ExtensionSystem {
                                            const FilePath& install_directory,
                                            bool autoupdate_enabled);
 
-  // Creates and returns a ManagementPolicy with the ExtensionService and
-  // ExtensionPrefs registered. If not invoked, the ManagementPolicy is NULL.
-  ManagementPolicy* CreateManagementPolicy();
-
   // Creates an ExtensionProcessManager. If not invoked, the
   // ExtensionProcessManager is NULL.
   void CreateExtensionProcessManager();
@@ -65,6 +61,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual ApiResourceManager<UsbDeviceResource>* usb_device_resource_manager()
       OVERRIDE;
   virtual ExtensionWarningService* warning_service() OVERRIDE;
+  virtual Blacklist* blacklist() OVERRIDE;
 
   // Factory method for tests to use with SetTestingProfile.
   static ProfileKeyedService* Build(Profile* profile);
@@ -78,6 +75,9 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<ExtensionPrefs> extension_prefs_;
   scoped_ptr<StateStore> state_store_;
   scoped_ptr<ShellWindowGeometryCache> shell_window_geometry_cache_;
+  scoped_ptr<Blacklist> blacklist_;
+  scoped_ptr<StandardManagementPolicyProvider>
+      standard_management_policy_provider_;
   scoped_ptr<ExtensionService> extension_service_;
   scoped_ptr<ManagementPolicy> management_policy_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;

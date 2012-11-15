@@ -18,6 +18,10 @@
 
 class TestingProfile;
 
+namespace extensions {
+class ManagementPolicy;
+}
+
 class ExtensionServiceTestBase : public testing::Test {
  public:
   ExtensionServiceTestBase();

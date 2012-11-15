@@ -33,25 +33,25 @@ namespace extensions {
 
 namespace {
 
-// Mock ExtensionPrefs class with artificial clock to guarantee that no two
-// extensions get the same installation time stamp and we can reliably
-// assert the installation order in the tests below.
-class MockExtensionPrefs : public ExtensionPrefs {
+// A TimeProvider which returns an incrementally later time each time
+// GetCurrentTime is called.
+class IncrementalTimeProvider : public ExtensionPrefs::TimeProvider {
  public:
-  MockExtensionPrefs(PrefService* prefs,
-                     const FilePath& root_dir,
-                     ExtensionPrefValueMap* extension_pref_value_map)
-    : ExtensionPrefs(prefs, root_dir, extension_pref_value_map),
-      currentTime(base::Time::Now()) {}
-  ~MockExtensionPrefs() {}
-
- protected:
-  mutable base::Time currentTime;
-
-  virtual base::Time GetCurrentTime() const {
-    currentTime += base::TimeDelta::FromSeconds(10);
-    return currentTime;
+  IncrementalTimeProvider() : current_time_(base::Time::Now()) {
   }
+
+  virtual ~IncrementalTimeProvider() {
+  }
+
+  virtual base::Time GetCurrentTime() const OVERRIDE {
+    current_time_ += base::TimeDelta::FromSeconds(10);
+    return current_time_;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IncrementalTimeProvider);
+
+  mutable base::Time current_time_;
 };
 
 }  // namespace
@@ -96,10 +96,15 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
   pref_service_.reset(builder.Create());
   ExtensionPrefs::RegisterUserPrefs(pref_service_.get());
 
-  prefs_.reset(new MockExtensionPrefs(pref_service_.get(),
-                                      temp_dir_.path(),
-                                      extension_pref_value_map_.get()));
-  prefs_->Init(extensions_disabled_);
+  prefs_ = ExtensionPrefs::Create(
+      pref_service_.get(),
+      temp_dir_.path(),
+      extension_pref_value_map_.get(),
+      extensions_disabled_,
+      // Guarantee that no two extensions get the same installation time
+      // stamp and we can reliably assert the installation order in the tests.
+      scoped_ptr<ExtensionPrefs::TimeProvider>(
+          new IncrementalTimeProvider()));
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtension(std::string name) {

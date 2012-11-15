@@ -61,11 +61,6 @@ bool TestExtensionService::IsExternalExtensionUninstalled(
   return false;
 }
 
-void TestExtensionService::UpdateExtensionBlacklist(
-    const std::vector<std::string>& blacklist) {
-  ADD_FAILURE();
-}
-
 void TestExtensionService::CheckManagementPolicy() {
   ADD_FAILURE();
 }

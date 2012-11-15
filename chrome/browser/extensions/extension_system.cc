@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
+#include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/navigation_observer.h"
 #include "chrome/browser/extensions/shell_window_geometry_cache.h"
+#include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/user_script_master.h"
@@ -83,11 +85,11 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
   bool extensions_disabled =
       profile_->GetPrefs()->GetBoolean(prefs::kDisableExtensions) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableExtensions);
-  extension_prefs_.reset(new ExtensionPrefs(
+  extension_prefs_ = ExtensionPrefs::Create(
       profile_->GetPrefs(),
       profile_->GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
-      ExtensionPrefValueMapFactory::GetForProfile(profile_)));
-  extension_prefs_->Init(extensions_disabled);
+      ExtensionPrefValueMapFactory::GetForProfile(profile_),
+      extensions_disabled);
   lazy_background_task_queue_.reset(new LazyBackgroundTaskQueue(profile_));
   event_router_.reset(new EventRouter(profile_, extension_prefs_.get()));
 
@@ -97,11 +99,18 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
 
   shell_window_geometry_cache_.reset(new ShellWindowGeometryCache(
     profile_, state_store_.get()));
+
+  blacklist_.reset(new Blacklist(extension_prefs_.get()));
+
+  standard_management_policy_provider_.reset(
+      new StandardManagementPolicyProvider(extension_prefs_.get(),
+                                           blacklist_.get()));
 }
 
 void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
-  DCHECK(extension_prefs_.get());
-  management_policy_->RegisterProvider(extension_prefs_.get());
+  DCHECK(standard_management_policy_provider_.get());
+  management_policy_->RegisterProvider(
+      standard_management_policy_provider_.get());
 }
 
 void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
@@ -127,6 +136,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       CommandLine::ForCurrentProcess(),
       profile_->GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
       extension_prefs_.get(),
+      blacklist_.get(),
       autoupdate_enabled,
       extensions_enabled));
 
@@ -241,6 +251,10 @@ MessageService* ExtensionSystemImpl::Shared::message_service() {
 
 EventRouter* ExtensionSystemImpl::Shared::event_router() {
   return event_router_.get();
+}
+
+Blacklist* ExtensionSystemImpl::Shared::blacklist() {
+  return blacklist_.get();
 }
 
 //
@@ -389,6 +403,10 @@ ExtensionSystemImpl::usb_device_resource_manager() {
 
 ExtensionWarningService* ExtensionSystemImpl::warning_service() {
   return extension_warning_service_.get();
+}
+
+Blacklist* ExtensionSystemImpl::blacklist() {
+  return shared_->blacklist();
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(

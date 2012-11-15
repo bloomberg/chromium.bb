@@ -343,27 +343,54 @@ bool IsBlacklistBitSet(const DictionaryValue* ext) {
 
 }  // namespace
 
-ExtensionPrefs::ExtensionPrefs(
+//
+// TimeProvider
+//
+
+ExtensionPrefs::TimeProvider::TimeProvider() {
+}
+
+ExtensionPrefs::TimeProvider::~TimeProvider() {
+}
+
+base::Time ExtensionPrefs::TimeProvider::GetCurrentTime() const {
+  return base::Time::Now();
+}
+
+//
+// ExtensionPrefs
+//
+
+// static
+scoped_ptr<ExtensionPrefs> ExtensionPrefs::Create(
     PrefService* prefs,
     const FilePath& root_dir,
-    ExtensionPrefValueMap* extension_pref_value_map)
-    : prefs_(prefs),
-      install_directory_(root_dir),
-      extension_pref_value_map_(extension_pref_value_map),
-      ALLOW_THIS_IN_INITIALIZER_LIST(extension_sorting_(
-          new ExtensionSorting(this, prefs))),
-      content_settings_store_(new ContentSettingsStore()) {
+    ExtensionPrefValueMap* extension_pref_value_map,
+    bool extensions_disabled) {
+  return ExtensionPrefs::Create(prefs,
+                                root_dir,
+                                extension_pref_value_map,
+                                extensions_disabled,
+                                make_scoped_ptr(new TimeProvider()));
+}
+
+// static
+scoped_ptr<ExtensionPrefs> ExtensionPrefs::Create(
+    PrefService* pref_service,
+    const FilePath& root_dir,
+    ExtensionPrefValueMap* extension_pref_value_map,
+    bool extensions_disabled,
+    scoped_ptr<TimeProvider> time_provider) {
+  scoped_ptr<ExtensionPrefs> prefs(
+      new ExtensionPrefs(pref_service,
+                         root_dir,
+                         extension_pref_value_map,
+                         time_provider.Pass()));
+  prefs->Init(extensions_disabled);
+  return prefs.Pass();
 }
 
 ExtensionPrefs::~ExtensionPrefs() {
-}
-
-void ExtensionPrefs::Init(bool extensions_disabled) {
-  MakePathsRelative();
-
-  InitPrefStore(extensions_disabled);
-
-  content_settings_store_->AddObserver(this);
 }
 
 // static
@@ -670,40 +697,6 @@ void ExtensionPrefs::SetAppNotificationDisabled(
                       Value::CreateBooleanValue(value));
 }
 
-std::string ExtensionPrefs::GetDebugPolicyProviderName() const {
-#ifdef NDEBUG
-  NOTREACHED();
-  return std::string();
-#else
-  return "admin policy black/white/forcelist, via the ExtensionPrefs";
-#endif
-}
-
-bool ExtensionPrefs::UserMayLoad(const Extension* extension,
-                                 string16* error) const {
-  const DictionaryValue* ext_prefs = GetExtensionPref(extension->id());
-  bool is_google_blacklisted = ext_prefs && IsBlacklistBitSet(ext_prefs);
-
-  const base::ListValue* blacklist =
-      prefs_->GetList(prefs::kExtensionInstallDenyList);
-  const base::ListValue* whitelist =
-      prefs_->GetList(prefs::kExtensionInstallAllowList);
-  const base::ListValue* forcelist =
-      prefs_->GetList(prefs::kExtensionInstallForceList);
-  return admin_policy::UserMayLoad(is_google_blacklisted, blacklist, whitelist,
-                                   forcelist, extension, error);
-}
-
-bool ExtensionPrefs::UserMayModifySettings(const Extension* extension,
-                                           string16* error) const {
-  return admin_policy::UserMayModifySettings(extension, error);
-}
-
-bool ExtensionPrefs::MustRemainEnabled(const Extension* extension,
-                                       string16* error) const {
-  return admin_policy::MustRemainEnabled(extension, error);
-}
-
 bool ExtensionPrefs::ExtensionsBlacklistedByDefault() const {
   return admin_policy::BlacklistedByDefault(
       prefs_->GetList(prefs::kExtensionInstallDenyList));
@@ -807,6 +800,11 @@ void ExtensionPrefs::UpdateBlacklist(
   for (size_t i = 0; i < remove_pref_ids.size(); ++i) {
     DeleteExtensionPrefs(remove_pref_ids[i]);
   }
+}
+
+bool ExtensionPrefs::IsExtensionBlacklisted(const std::string& id) const {
+  const DictionaryValue* ext_prefs = GetExtensionPref(id);
+  return ext_prefs && IsBlacklistBitSet(ext_prefs);
 }
 
 namespace {
@@ -1463,7 +1461,7 @@ void ExtensionPrefs::OnExtensionInstalled(
   CHECK(Extension::IdIsValid(id));
   ScopedExtensionPrefUpdate update(prefs_, id);
   DictionaryValue* extension_dict = update.Get();
-  const base::Time install_time = GetCurrentTime();
+  const base::Time install_time = time_provider_->GetCurrentTime();
   extension_dict->Set(kPrefState, Value::CreateIntegerValue(initial_state));
   extension_dict->Set(kPrefLocation,
                       Value::CreateIntegerValue(extension->location()));
@@ -1653,7 +1651,7 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledExtensionInfo(
       !extensions->GetDictionaryWithoutPathExpansion(extension_id, &ext))
     return scoped_ptr<ExtensionInfo>();
   if (IsBlacklistBitSet(ext))
-      return scoped_ptr<ExtensionInfo>();
+    return scoped_ptr<ExtensionInfo>();
   int state_value;
   if (!ext->GetInteger(kPrefState, &state_value)) {
     // This can legitimately happen if we store preferences for component
@@ -1724,7 +1722,7 @@ scoped_ptr<ExtensionPrefs::ExtensionsInfo>
 void ExtensionPrefs::SetIdleInstallInfo(
     const Extension* extension,
     Extension::State initial_state) {
-  const base::Time install_time = GetCurrentTime();
+  const base::Time install_time = time_provider_->GetCurrentTime();
   DictionaryValue* extension_dict = new DictionaryValue();
   extension_dict->Set(kPrefState, Value::CreateIntegerValue(initial_state));
   extension_dict->Set(kPrefLocation,
@@ -1766,7 +1764,7 @@ bool ExtensionPrefs::FinishIdleInstallInfo(const std::string& extension_id) {
   if (!extension_dict->GetDictionary(kIdleInstallInfo, &update_dict))
     return false;
 
-  const base::Time install_time = GetCurrentTime();
+  const base::Time install_time = time_provider_->GetCurrentTime();
   extension_dict->MergeDictionary(update_dict);
   extension_dict->Set(kPrefInstallTime,
                       Value::CreateStringValue(
@@ -1905,10 +1903,6 @@ std::string ExtensionPrefs::GetUpdateUrlData(const std::string& extension_id) {
   return data;
 }
 
-base::Time ExtensionPrefs::GetCurrentTime() const {
-  return base::Time::Now();
-}
-
 void ExtensionPrefs::OnContentSettingChanged(
     const std::string& extension_id,
     bool incognito) {
@@ -2032,7 +2026,7 @@ void ExtensionPrefs::FixMissingPrefs(const ExtensionIdList& extension_ids) {
                 << *ext_id << ". It was probably installed before setting "
                 << kPrefInstallTime << " was introduced. Updating "
                 << kPrefInstallTime << " to the current time.";
-      const base::Time install_time = GetCurrentTime();
+      const base::Time install_time = time_provider_->GetCurrentTime();
       UpdateExtensionPref(*ext_id, kPrefInstallTime, Value::CreateStringValue(
           base::Int64ToString(install_time.ToInternalValue())));
     }
@@ -2236,6 +2230,28 @@ URLPatternSet ExtensionPrefs::GetAllowedInstallSites() {
   }
 
   return result;
+}
+
+ExtensionPrefs::ExtensionPrefs(
+    PrefService* prefs,
+    const FilePath& root_dir,
+    ExtensionPrefValueMap* extension_pref_value_map,
+    scoped_ptr<TimeProvider> time_provider)
+    : prefs_(prefs),
+      install_directory_(root_dir),
+      extension_pref_value_map_(extension_pref_value_map),
+      ALLOW_THIS_IN_INITIALIZER_LIST(extension_sorting_(
+          new ExtensionSorting(this, prefs))),
+      content_settings_store_(new ContentSettingsStore()),
+      time_provider_(time_provider.Pass()) {
+}
+
+void ExtensionPrefs::Init(bool extensions_disabled) {
+  MakePathsRelative();
+
+  InitPrefStore(extensions_disabled);
+
+  content_settings_store_->AddObserver(this);
 }
 
 // static

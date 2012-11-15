@@ -65,6 +65,7 @@
 #include "chrome/browser/extensions/external_provider_interface.h"
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
+#include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
@@ -352,9 +353,11 @@ ExtensionService::ExtensionService(Profile* profile,
                                    const CommandLine* command_line,
                                    const FilePath& install_directory,
                                    extensions::ExtensionPrefs* extension_prefs,
+                                   extensions::Blacklist* blacklist,
                                    bool autoupdate_enabled,
                                    bool extensions_enabled)
-    : profile_(profile),
+    : extensions::Blacklist::Observer(blacklist),
+      profile_(profile),
       system_(extensions::ExtensionSystem::Get(profile)),
       extension_prefs_(extension_prefs),
       settings_frontend_(extensions::SettingsFrontend::Create(profile)),
@@ -411,6 +414,7 @@ ExtensionService::ExtensionService(Profile* profile,
                                                     extension_prefs,
                                                     profile->GetPrefs(),
                                                     profile,
+                                                    blacklist,
                                                     update_frequency));
   }
 
@@ -1212,18 +1216,6 @@ void ExtensionService::NotifyExtensionUnloaded(
     PluginService::GetInstance()->PurgePluginListCache(profile_, false);
 }
 
-void ExtensionService::UpdateExtensionBlacklist(
-  const std::vector<std::string>& blacklist) {
-  // Use this set to indicate if an extension in the blacklist has been used.
-  std::set<std::string> blacklist_set;
-  for (unsigned int i = 0; i < blacklist.size(); ++i) {
-    if (Extension::IdIsValid(blacklist[i]))
-      blacklist_set.insert(blacklist[i]);
-  }
-  extension_prefs_->UpdateBlacklist(blacklist_set);
-  CheckManagementPolicy();
-}
-
 Profile* ExtensionService::profile() {
   return profile_;
 }
@@ -1832,7 +1824,7 @@ bool ExtensionService::PopulateExtensionErrorUI(
   for (ExtensionSet::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     const Extension* e = *iter;
-    if (!extension_prefs_->UserMayLoad(e, NULL)) {
+    if (!system_->management_policy()->UserMayLoad(e, NULL)) {
       if (!extension_prefs_->IsBlacklistedExtensionAcknowledged(e->id())) {
         extension_error_ui->AddBlacklistedExtension(e->id());
         needs_alert = true;
@@ -2764,10 +2756,9 @@ void ExtensionService::SetBackgroundPageReady(const Extension* extension) {
 void ExtensionService::InspectBackgroundPage(const Extension* extension) {
   DCHECK(extension);
 
-  ExtensionProcessManager* pm =
-      extensions::ExtensionSystem::Get(profile_)->process_manager();
+  ExtensionProcessManager* pm = system_->process_manager();
   extensions::LazyBackgroundTaskQueue* queue =
-      extensions::ExtensionSystem::Get(profile_)->lazy_background_task_queue();
+      system_->lazy_background_task_queue();
 
   extensions::ExtensionHost* host =
       pm->GetBackgroundHostForExtension(extension->id());
@@ -2965,4 +2956,8 @@ bool ExtensionService::IsExtensionIdle(const std::string& extension_id) const {
   extensions::ExtensionHost* host =
       process_manager->GetBackgroundHostForExtension(extension_id);
   return !host;
+}
+
+void ExtensionService::OnBlacklistUpdated() {
+  CheckManagementPolicy();
 }

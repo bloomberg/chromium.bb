@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/requirements_checker.h"
 #include "chrome/browser/extensions/webstore_installer.h"

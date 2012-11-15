@@ -106,13 +106,13 @@ TEST_F(ProtectedPrefsWatcherTest, ExtensionPrefChange) {
 
   FilePath extensions_install_dir =
       profile_.GetPath().AppendASCII(ExtensionService::kInstallDirectoryName);
-  scoped_ptr<extensions::ExtensionPrefs> extension_prefs(
-      new extensions::ExtensionPrefs(profile_.GetPrefs(),
-                         extensions_install_dir,
-                         ExtensionPrefValueMapFactory::GetForProfile(
-                             &profile_)));
+  scoped_ptr<extensions::ExtensionPrefs> extension_prefs =
+      extensions::ExtensionPrefs::Create(
+          profile_.GetPrefs(),
+          extensions_install_dir,
+          ExtensionPrefValueMapFactory::GetForProfile(&profile_),
+          false);  // extensions_disabled
   std::string sample_id = extension_misc::kWebStoreAppId;
-  extension_prefs->Init(false);
   // Flip a pref value of an extension (this will actually add it to the list).
   extension_prefs->SetAppNotificationDisabled(
       sample_id, !extension_prefs->IsAppNotificationDisabled(sample_id));

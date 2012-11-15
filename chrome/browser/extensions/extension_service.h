@@ -20,6 +20,7 @@
 #include "base/string16.h"
 #include "chrome/browser/extensions/app_shortcut_manager.h"
 #include "chrome/browser/extensions/app_sync_bundle.h"
+#include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -116,8 +117,6 @@ class ExtensionServiceInterface : public syncer::SyncableService {
   virtual bool IsExternalExtensionUninstalled(
       const std::string& extension_id) const = 0;
 
-  virtual void UpdateExtensionBlacklist(
-    const std::vector<std::string>& blacklist) = 0;
   virtual void CheckManagementPolicy() = 0;
 
   // Safe to call multiple times in a row.
@@ -145,7 +144,8 @@ class ExtensionServiceInterface : public syncer::SyncableService {
 class ExtensionService
     : public ExtensionServiceInterface,
       public extensions::ExternalProviderInterface::VisitorInterface,
-      public content::NotificationObserver {
+      public content::NotificationObserver,
+      public extensions::Blacklist::Observer {
  public:
   // The name of the directory inside the profile where extensions are
   // installed to.
@@ -196,6 +196,7 @@ class ExtensionService
                    const CommandLine* command_line,
                    const FilePath& install_directory,
                    extensions::ExtensionPrefs* extension_prefs,
+                   extensions::Blacklist* blacklist,
                    bool autoupdate_enabled,
                    bool extensions_enabled);
 
@@ -441,11 +442,6 @@ class ExtensionService
   // Check to see if this extension needs to be disabled, as per the sideload
   // wipeout initiative.
   void MaybeWipeout(const extensions::Extension* extension);
-
-  // Go through each extensions in pref, unload blacklisted extensions
-  // and update the blacklist state in pref.
-  virtual void UpdateExtensionBlacklist(
-      const std::vector<std::string>& blacklist) OVERRIDE;
 
   // Go through each extension and unload those that are not allowed to run by
   // management policy providers (ie. network admin and Google-managed
@@ -809,6 +805,9 @@ class ExtensionService
   // Helper to determine if an extension is idle, and it should be safe
   // to update the extension.
   bool IsExtensionIdle(const std::string& extension_id) const;
+
+  // extensions::Blacklist::Observer implementation.
+  virtual void OnBlacklistUpdated() OVERRIDE;
 
   // The normal profile associated with this ExtensionService.
   Profile* profile_;

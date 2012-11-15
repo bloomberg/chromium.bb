@@ -45,6 +45,7 @@
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
 #include "chrome/browser/extensions/installed_loader.h"
+#include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
@@ -441,8 +442,8 @@ void ExtensionServiceTestBase::InitializeExtensionService(
   service_->set_show_extensions_prompts(false);
   service_->set_install_updates_when_idle_for_test(false);
 
-  management_policy_ = static_cast<extensions::TestExtensionSystem*>(
-      ExtensionSystem::Get(profile_.get()))->CreateManagementPolicy();
+  management_policy_ =
+      ExtensionSystem::Get(profile_.get())->management_policy();
 
   // When we start up, we want to make sure there is no external provider,
   // since the ExtensionService on Windows will use the Registry as a default
@@ -2922,7 +2923,9 @@ TEST_F(ExtensionServiceTest, SetUnsetBlacklistInPrefs) {
   blacklist.push_back(good0);
   blacklist.push_back("invalid_id");  // an invalid id
   blacklist.push_back(good1);
-  service_->UpdateExtensionBlacklist(blacklist);
+  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
+                                                                    "v1");
+
   // Make sure pref is updated
   loop_.RunAllPending();
 
@@ -2935,8 +2938,9 @@ TEST_F(ExtensionServiceTest, SetUnsetBlacklistInPrefs) {
   // remove good1, add good2
   blacklist.pop_back();
   blacklist.push_back(good2);
+  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
+                                                                    "v2");
 
-  service_->UpdateExtensionBlacklist(blacklist);
   // only good0 and good1 should be set
   ValidateBooleanPref(good0, "blacklist", true);
   EXPECT_FALSE(IsPrefExist(good1, "blacklist"));
@@ -2956,7 +2960,9 @@ TEST_F(ExtensionServiceTest, UnloadBlacklistedExtension) {
 
   std::vector<std::string> blacklist;
   blacklist.push_back(good_crx);
-  service_->UpdateExtensionBlacklist(blacklist);
+  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
+                                                                     "v1");
+
   // Make sure pref is updated
   loop_.RunAllPending();
 
@@ -2966,7 +2972,9 @@ TEST_F(ExtensionServiceTest, UnloadBlacklistedExtension) {
 
   // Remove good_crx from blacklist
   blacklist.pop_back();
-  service_->UpdateExtensionBlacklist(blacklist);
+  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
+                                                                     "v2");
+
   // Make sure pref is updated
   loop_.RunAllPending();
   // blacklist value should not be set for good_crx
@@ -2978,7 +2986,9 @@ TEST_F(ExtensionServiceTest, BlacklistedExtensionWillNotInstall) {
   InitializeEmptyExtensionService();
   std::vector<std::string> blacklist;
   blacklist.push_back(good_crx);
-  service_->UpdateExtensionBlacklist(blacklist);
+  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
+                                                                    "v1");
+
   // Make sure pref is updated
   loop_.RunAllPending();
 
@@ -3009,7 +3019,9 @@ TEST_F(ExtensionServiceTest, UnloadBlacklistedExtensionPolicy) {
 
   std::vector<std::string> blacklist;
   blacklist.push_back(good_crx);
-  service_->UpdateExtensionBlacklist(blacklist);
+  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
+                                                                    "v1");
+
   // Make sure pref is updated
 
   // Now, the good_crx is blacklisted but whitelist negates it.
@@ -3031,7 +3043,8 @@ TEST_F(ExtensionServiceTest, WhitelistGoogleBlacklistedExtension) {
 
   std::vector<std::string> blacklist;
   blacklist.push_back(good_crx);
-  service_->UpdateExtensionBlacklist(blacklist);
+  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
+                                                                    "v1");
 
   FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCRX(path, INSTALL_FAILED);
@@ -3051,7 +3064,8 @@ TEST_F(ExtensionServiceTest, ForcelistGoogleBlacklistedExtension) {
 
   std::vector<std::string> blacklist;
   blacklist.push_back(good_crx);
-  service_->UpdateExtensionBlacklist(blacklist);
+  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
+                                                                    "v1");
 
   FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCRX(path, INSTALL_FAILED);
@@ -3076,7 +3090,8 @@ TEST_F(ExtensionServiceTest, GoogleBlacklistWhitelistedExtension) {
 
   std::vector<std::string> blacklist;
   blacklist.push_back(good_crx);
-  service_->UpdateExtensionBlacklist(blacklist);
+  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
+                                                                    "v1");
 
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
 }
@@ -3093,7 +3108,8 @@ TEST_F(ExtensionServiceTest, GoogleBlacklistForcelistedExtension) {
 
   std::vector<std::string> blacklist;
   blacklist.push_back(good_crx);
-  service_->UpdateExtensionBlacklist(blacklist);
+  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
+                                                                    "v1");
 
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
 }
@@ -3113,7 +3129,9 @@ TEST_F(ExtensionServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
   // Blacklist good1.
   std::vector<std::string> blacklist;
   blacklist.push_back(good1);
-  service_->UpdateExtensionBlacklist(blacklist);
+  ExtensionSystem::Get(profile_.get())->blacklist()->SetFromUpdater(blacklist,
+                                                                    "v1");
+
   // Make sure pref is updated
   loop_.RunAllPending();
 

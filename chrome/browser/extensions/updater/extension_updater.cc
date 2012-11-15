@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
+#include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
@@ -131,12 +132,14 @@ ExtensionUpdater::ExtensionUpdater(ExtensionServiceInterface* service,
                                    ExtensionPrefs* extension_prefs,
                                    PrefService* prefs,
                                    Profile* profile,
+                                   Blacklist* blacklist,
                                    int frequency_seconds)
     : alive_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       service_(service), frequency_seconds_(frequency_seconds),
       will_check_soon_(false), extension_prefs_(extension_prefs),
-      prefs_(prefs), profile_(profile), next_request_id_(0),
+      prefs_(prefs), profile_(profile), blacklist_(blacklist),
+      next_request_id_(0),
       crx_install_is_running_(false) {
   DCHECK_GE(frequency_seconds_, 5);
   DCHECK_LE(frequency_seconds_, kMaxUpdateFrequencySeconds);
@@ -515,11 +518,7 @@ void ExtensionUpdater::OnBlacklistDownloadFinished(
   std::vector<std::string> blacklist;
   base::SplitString(data, '\n', &blacklist);
 
-  // Tell ExtensionService to update prefs.
-  service_->UpdateExtensionBlacklist(blacklist);
-
-  // Update the pref value for blacklist version
-  prefs_->SetString(kExtensionBlacklistUpdateVersion, version);
+  blacklist_->SetFromUpdater(blacklist, version);
 }
 
 bool ExtensionUpdater::GetPingDataForExtension(

@@ -9,6 +9,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/management_policy.h"
 
 namespace extensions {
 // This class provides a simple way to create providers with specific

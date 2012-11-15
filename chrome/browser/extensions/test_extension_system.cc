@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
+#include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -15,7 +16,9 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/shell_window_geometry_cache.h"
+#include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
@@ -71,30 +74,30 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
   // are not reflected in the pref service. One would need to
   // inject a new ExtensionPrefStore(extension_pref_value_map, false).
 
-  extension_prefs_.reset(new ExtensionPrefs(
+  extension_prefs_ = ExtensionPrefs::Create(
       profile_->GetPrefs(),
       install_directory,
-      ExtensionPrefValueMapFactory::GetForProfile(profile_)));
+      ExtensionPrefValueMapFactory::GetForProfile(profile_),
+      extensions_disabled);
   state_store_.reset(new StateStore(profile_, new TestingValueStore()));
   shell_window_geometry_cache_.reset(
       new ShellWindowGeometryCache(profile_, state_store_.get()));
-  extension_prefs_->Init(extensions_disabled);
+  blacklist_.reset(new Blacklist(extension_prefs_.get()));
+  standard_management_policy_provider_.reset(
+      new StandardManagementPolicyProvider(extension_prefs_.get(),
+                                           blacklist_.get()));
+  management_policy_.reset(new ManagementPolicy());
+  management_policy_->RegisterProvider(
+      standard_management_policy_provider_.get());
   extension_service_.reset(new ExtensionService(profile_,
                                                 command_line,
                                                 install_directory,
                                                 extension_prefs_.get(),
+                                                blacklist_.get(),
                                                 autoupdate_enabled,
                                                 true));
   extension_service_->ClearProvidersForTesting();
   return extension_service_.get();
-}
-
-ManagementPolicy* TestExtensionSystem::CreateManagementPolicy() {
-  management_policy_.reset(new ManagementPolicy());
-  DCHECK(extension_prefs_.get());
-  management_policy_->RegisterProvider(extension_prefs_.get());
-
-  return management_policy();
 }
 
 ExtensionService* TestExtensionSystem::extension_service() {
@@ -170,6 +173,10 @@ TestExtensionSystem::usb_device_resource_manager() {
 
 ExtensionWarningService* TestExtensionSystem::warning_service() {
   return NULL;
+}
+
+Blacklist* TestExtensionSystem::blacklist() {
+  return blacklist_.get();
 }
 
 // static

@@ -32,6 +32,7 @@ class Profile;
 
 namespace extensions {
 
+class Blacklist;
 class ExtensionDownloader;
 class ExtensionPrefs;
 class ExtensionUpdaterTest;
@@ -76,6 +77,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
                    ExtensionPrefs* extension_prefs,
                    PrefService* prefs,
                    Profile* profile,
+                   Blacklist* blacklist,
                    int frequency_seconds);
 
   virtual ~ExtensionUpdater();
@@ -235,6 +237,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   ExtensionPrefs* extension_prefs_;
   PrefService* prefs_;
   Profile* profile_;
+  Blacklist* blacklist_;
 
   std::map<int, InProgressCheck> requests_in_progress_;
   int next_request_id_;
