@@ -12,7 +12,7 @@ vars = {
 
 deps = {
     'native_client/tools/perf_expectations':
-        'https://chromium.googlesource.com/chromium/src/tools/perf_expectations.git@615a4897fd6db3b89779feef79cc9a5f8e48b3e5',
+        'https://chromium.googlesource.com/chromium/src/tools/perf_expectations.git@c86fef0280ffe5b75dafd3b69f8f67a074dd4459',
     'testing/gtest':
         'https://chromium.googlesource.com/external/googletest.git@a92a6f792395e1ad462472d474ab0c76949813fa',
     'third_party':
@@ -24,11 +24,11 @@ deps = {
     'third_party/lss':
         'https://chromium.googlesource.com/external/linux-syscall-support/lss.git@8dce3586424b5811ca0c8c1938bc7d0826558e77',
     'tools/clang':
-        'https://chromium.googlesource.com/chromium/src/tools/clang.git@b363ee90f841578d66b4c4f6481f0107bcf800e9',
+        'https://chromium.googlesource.com/chromium/src/tools/clang.git@c230083d393a40cb8d6b6d4d745a77c1a6d8b555',
     'tools/gyp':
-        'https://chromium.googlesource.com/external/gyp.git@523297f43e0c96a84e53306f8fddebeb483b27f1',
+        'https://chromium.googlesource.com/external/gyp.git@cb7a494ec635b2e8691af06ae557ed637e4e82f5',
     'tools/valgrind':
-        'https://chromium.googlesource.com/chromium/src/tools/valgrind.git@81c5e6d5156ab8541536aedf98a0dfe1b4c375c3',
+        'https://chromium.googlesource.com/chromium/src/tools/valgrind.git@4cf074f2d2291065b4df2a7c60f5f632631ed2e7',
     'validator_snapshots':
         'https://chromium.googlesource.com/native_client/src/validator_snapshots.git@4c1ea6b6ebe020993b0a091fd4e38a6487704b60',
 }
