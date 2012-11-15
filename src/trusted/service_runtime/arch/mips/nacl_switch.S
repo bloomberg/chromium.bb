@@ -24,12 +24,12 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
 
   .set noreorder
 
-/*
- * We clear registers a1, a2, a3, t0, t1, t2, t3, t4, t5 and ra to avoid
- * information leaks. The remaining registers are overwritten by the code that
- * follows after.
- */
-
+  /*
+   * We clear the following registers to avoid information leaks. The
+   * remaining registers are overwritten by the code that follows
+   * after.
+   */
+  addu $v1, $zero, $zero
   addu $a1, $zero, $zero
   addu $a2, $zero, $zero
   addu $a3, $zero, $zero
@@ -62,14 +62,19 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
   /* NACL_CALLEE_SAVE_LIST END*/
 
   lw $v0, NACL_THREAD_CONTEXT_OFFSET_SYSRET($a0)
-  lw $v1, NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR($a0)
+  lw $t9, NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR($a0)
 
   /* At startup, context->sysret contains not the the return value, but the
      first argument. Put it in a0. */
   addu $a0, $v0, $zero
 
-  /* Transfer control to untrusted code */
-  jr  $v1
+  /*
+   * Transfer control to untrusted code.
+   *
+   * We leave $t9 containing the address of the function being called,
+   * as required by the MIPS ABI.
+   */
+  jr  $t9
   nop
 
   .set reorder
