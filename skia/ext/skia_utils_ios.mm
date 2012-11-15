@@ -48,6 +48,7 @@ SkBitmap CGImageToSkBitmap(CGImageRef image, CGSize size, bool is_opaque) {
     return bitmap;
 
   CGRect imageRect = CGRectMake(0.0, 0.0, size.width, size.height);
+  CGContextSetBlendMode(context, kCGBlendModeCopy);
   CGContextDrawImage(context, imageRect, image);
 
   return bitmap;

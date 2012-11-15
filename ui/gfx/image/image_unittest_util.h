@@ -45,6 +45,7 @@ PlatformImage CopyPlatformType(const gfx::Image& image);
 
 SkColor GetPlatformImageColor(PlatformImage image, int x, int y);
 void CheckColor(SkColor color, bool is_red);
+void CheckIsTransparent(SkColor color);
 
 bool IsPlatformImageValid(PlatformImage image);
 

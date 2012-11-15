@@ -347,6 +347,49 @@ TEST_F(ImageTest, SkBitmapConversionPreservesOrientation) {
   }
 }
 
+TEST_F(ImageTest, SkBitmapConversionPreservesTransparency) {
+  const int width = 50;
+  const int height = 50;
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+  bitmap.allocPixels();
+  bitmap.setIsOpaque(false);
+  bitmap.eraseARGB(0, 0, 255, 0);
+
+  // Paint the upper half of the image in red (lower half is transparent).
+  SkCanvas canvas(bitmap);
+  SkPaint red;
+  red.setColor(SK_ColorRED);
+  canvas.drawRect(SkRect::MakeWH(width, height / 2), red);
+  {
+    SCOPED_TRACE("Checking color of the initial SkBitmap");
+    gt::CheckColor(bitmap.getColor(10, 10), true);
+    gt::CheckIsTransparent(bitmap.getColor(10, 40));
+  }
+
+  // Convert from SkBitmap to a platform representation, then check the upper
+  // half of the platform image to make sure it is red, not green.
+  gfx::Image from_skbitmap(bitmap);
+  {
+    SCOPED_TRACE("Checking color of the platform image");
+    gt::CheckColor(
+        gt::GetPlatformImageColor(gt::ToPlatformType(from_skbitmap), 10, 10),
+        true);
+    gt::CheckIsTransparent(
+        gt::GetPlatformImageColor(gt::ToPlatformType(from_skbitmap), 10, 40));
+  }
+
+  // Force a conversion back to SkBitmap and check that the upper half is red.
+  gfx::Image from_platform(gt::CopyPlatformType(from_skbitmap));
+  const SkBitmap* bitmap2 = from_platform.ToSkBitmap();
+  SkAutoLockPixels auto_lock(*bitmap2);
+  {
+    SCOPED_TRACE("Checking color after conversion back to SkBitmap");
+    gt::CheckColor(bitmap2->getColor(10, 10), true);
+    gt::CheckIsTransparent(bitmap.getColor(10, 40));
+  }
+}
+
 TEST_F(ImageTest, SwapRepresentations) {
   const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
 

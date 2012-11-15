@@ -172,6 +172,10 @@ void CheckColor(SkColor color, bool is_red) {
   EXPECT_GT(SkColorGetA(color) / 255.0, 0.95);
 }
 
+void CheckIsTransparent(SkColor color) {
+  EXPECT_LT(SkColorGetA(color) / 255.0, 0.05);
+}
+
 bool IsPlatformImageValid(PlatformImage image) {
 #if defined(OS_MACOSX) || defined(TOOLKIT_GTK)
   return image != NULL;
