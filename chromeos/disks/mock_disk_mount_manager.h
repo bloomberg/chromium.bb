@@ -33,7 +33,6 @@ class MockDiskMountManager : public DiskMountManager {
   MOCK_METHOD4(MountPath, void(const std::string&, const std::string&,
                                const std::string&, MountType));
   MOCK_METHOD2(UnmountPath, void(const std::string&, UnmountOptions));
-  MOCK_METHOD1(FormatUnmountedDevice, void(const std::string&));
   MOCK_METHOD1(FormatMountedDevice, void(const std::string&));
   MOCK_METHOD3(UnmountDeviceRecursive, void(const std::string&,
       DiskMountManager::UnmountDeviceRecursiveCallbackType, void*));
@@ -76,11 +75,11 @@ class MockDiskMountManager : public DiskMountManager {
       const std::string& source_path) const;
 
   // Notifies observers about device status update.
-  void NotifyDeviceChanged(DiskMountManagerEventType event,
+  void NotifyDeviceChanged(DeviceEvent event,
                            const std::string& path);
 
   // Notifies observers about disk status update.
-  void NotifyDiskChanged(DiskMountManagerEventType event,
+  void NotifyDiskChanged(DiskEvent event,
                          const DiskMountManager::Disk* disk);
 
   // The list of observers.

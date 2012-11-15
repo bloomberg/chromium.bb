@@ -120,18 +120,18 @@ void RemovableDeviceNotificationsCros::CheckExistingMountPointsOnUIThread() {
   }
 }
 
-void RemovableDeviceNotificationsCros::DiskChanged(
-    disks::DiskMountManagerEventType event,
+void RemovableDeviceNotificationsCros::OnDiskEvent(
+    disks::DiskMountManager::DiskEvent event,
     const disks::DiskMountManager::Disk* disk) {
 }
 
-void RemovableDeviceNotificationsCros::DeviceChanged(
-    disks::DiskMountManagerEventType event,
+void RemovableDeviceNotificationsCros::OnDeviceEvent(
+    disks::DiskMountManager::DeviceEvent event,
     const std::string& device_path) {
 }
 
-void RemovableDeviceNotificationsCros::MountCompleted(
-    disks::DiskMountManager::MountEvent event_type,
+void RemovableDeviceNotificationsCros::OnMountEvent(
+    disks::DiskMountManager::MountEvent event,
     MountError error_code,
     const disks::DiskMountManager::MountPointInfo& mount_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -145,7 +145,7 @@ void RemovableDeviceNotificationsCros::MountCompleted(
   if (mount_info.mount_condition != disks::MOUNT_CONDITION_NONE)
     return;
 
-  switch (event_type) {
+  switch (event) {
     case disks::DiskMountManager::MOUNTING: {
       if (ContainsKey(mount_map_, mount_info.mount_path)) {
         NOTREACHED();
@@ -169,6 +169,12 @@ void RemovableDeviceNotificationsCros::MountCompleted(
       break;
     }
   }
+}
+
+void RemovableDeviceNotificationsCros::OnFormatEvent(
+    disks::DiskMountManager::FormatEvent event,
+    FormatError error_code,
+    const std::string& device_path) {
 }
 
 bool RemovableDeviceNotificationsCros::GetDeviceInfoForPath(

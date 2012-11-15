@@ -45,14 +45,17 @@ class RemovableDeviceNotificationsCros
 
   static RemovableDeviceNotificationsCros* GetInstance();
 
-  virtual void DiskChanged(disks::DiskMountManagerEventType event,
+  virtual void OnDiskEvent(disks::DiskMountManager::DiskEvent event,
                            const disks::DiskMountManager::Disk* disk) OVERRIDE;
-  virtual void DeviceChanged(disks::DiskMountManagerEventType event,
+  virtual void OnDeviceEvent(disks::DiskMountManager::DeviceEvent event,
                              const std::string& device_path) OVERRIDE;
-  virtual void MountCompleted(
-      disks::DiskMountManager::MountEvent event_type,
+  virtual void OnMountEvent(
+      disks::DiskMountManager::MountEvent event,
       MountError error_code,
       const disks::DiskMountManager::MountPointInfo& mount_info) OVERRIDE;
+  virtual void OnFormatEvent(disks::DiskMountManager::FormatEvent event,
+                             FormatError error_code,
+                             const std::string& device_path) OVERRIDE;
 
   // Finds the device that contains |path| and populates |device_info|.
   // Returns false if unable to find the device.

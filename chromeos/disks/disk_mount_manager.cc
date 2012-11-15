@@ -30,7 +30,6 @@ class DiskMountManagerImpl : public DiskMountManager {
     DCHECK(dbus_thread_manager);
     cros_disks_client_ = dbus_thread_manager->GetCrosDisksClient();
     DCHECK(cros_disks_client_);
-
     cros_disks_client_->SetUpConnections(
         base::Bind(&DiskMountManagerImpl::OnMountEvent,
                    weak_ptr_factory_.GetWeakPtr()),
@@ -94,52 +93,31 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // DiskMountManager override.
-  virtual void FormatUnmountedDevice(const std::string& file_path) OVERRIDE {
-    for (DiskMountManager::DiskMap::iterator it = disks_.begin();
-         it != disks_.end(); ++it) {
-      if (it->second->file_path() == file_path &&
-          !it->second->mount_path().empty()) {
-        LOG(ERROR) << "Device is still mounted: " << file_path;
-        OnFormatDevice(file_path, false);
-        return;
-      }
-    }
-    const char kFormatVFAT[] = "vfat";
-    cros_disks_client_->FormatDevice(
-        file_path,
-        kFormatVFAT,
-        base::Bind(&DiskMountManagerImpl::OnFormatDevice,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&DiskMountManagerImpl::OnFormatDevice,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   file_path,
-                   false));
-  }
-
-  // DiskMountManager override.
   virtual void FormatMountedDevice(const std::string& mount_path) OVERRIDE {
-    Disk* disk = NULL;
-    for (DiskMountManager::DiskMap::iterator it = disks_.begin();
-         it != disks_.end(); ++it) {
-      if (it->second->mount_path() == mount_path) {
-        disk = it->second;
-        break;
-      }
-    }
-    if (!disk) {
-      LOG(ERROR) << "Device with this mount path not found: " << mount_path;
+    MountPointMap::const_iterator mount_point = mount_points_.find(mount_path);
+    if (mount_point == mount_points_.end()) {
+      LOG(ERROR) << "Mount point with path \"" << mount_path << "\" not found.";
       OnFormatDevice(mount_path, false);
       return;
     }
-    if (formatting_pending_.find(disk->device_path()) !=
-        formatting_pending_.end()) {
+
+    std::string device_path = mount_point->second.source_path;
+    DiskMap::const_iterator disk = disks_.find(device_path);
+    if (disk == disks_.end()) {
+      LOG(ERROR) << "Device with path \"" << device_path << "\" not found.";
+      OnFormatDevice(device_path, false);
+      return;
+    }
+
+    if (formatting_pending_.find(device_path) != formatting_pending_.end()) {
       LOG(ERROR) << "Formatting is already pending: " << mount_path;
-      OnFormatDevice(mount_path, false);
+      OnFormatDevice(device_path, false);
       return;
     }
+
     // Formatting process continues, after unmounting.
-    formatting_pending_[disk->device_path()] = disk->file_path();
-    UnmountPath(disk->mount_path(), UNMOUNT_OPTIONS_NONE);
+    formatting_pending_.insert(device_path);
+    UnmountPath(disk->second->mount_path(), UNMOUNT_OPTIONS_NONE);
   }
 
   // DiskMountManager override.
@@ -216,6 +194,35 @@ class DiskMountManagerImpl : public DiskMountManager {
     return mount_points_;
   }
 
+  // DiskMountManager override.
+  virtual bool AddDiskForTest(Disk* disk) OVERRIDE {
+    if (disks_.find(disk->device_path()) != disks_.end()) {
+      LOG(ERROR) << "Attempt to add a duplicate disk";
+      return false;
+    }
+
+    disks_.insert(std::make_pair(disk->device_path(), disk));
+    return true;
+  }
+
+  // DiskMountManager override.
+  // Corresponding disk should be added to the manager before this is called.
+  virtual bool AddMountPointForTest(
+      const MountPointInfo& mount_point) OVERRIDE {
+    if (mount_points_.find(mount_point.mount_path) != mount_points_.end()) {
+      LOG(ERROR) << "Attempt to add a duplicate mount point";
+      return false;
+    }
+    if (mount_point.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
+        disks_.find(mount_point.source_path) == disks_.end()) {
+      LOG(ERROR) << "Device mount points must have a disk entry.";
+      return false;
+    }
+
+    mount_points_.insert(std::make_pair(mount_point.mount_path, mount_point));
+    return true;
+  }
+
  private:
   struct UnmountDeviceRecursiveCallbackData {
     void* user_data;
@@ -285,7 +292,7 @@ class DiskMountManagerImpl : public DiskMountManager {
     const MountPointInfo mount_info(source_path, mount_path, mount_type,
                                     mount_condition);
 
-    NotifyMountCompleted(MOUNTING, error_code, mount_info);
+    NotifyMountStatusUpdate(MOUNTING, error_code, mount_info);
 
     // If the device is corrupted but it's still possible to format it, it will
     // be fake mounted.
@@ -306,7 +313,6 @@ class DiskMountManagerImpl : public DiskMountManager {
       Disk* disk = iter->second;
       DCHECK(disk);
       disk->set_mount_path(mount_info.mount_path);
-      NotifyDiskStatusUpdate(MOUNT_DISK_MOUNTED, disk);
     }
   }
 
@@ -315,7 +321,8 @@ class DiskMountManagerImpl : public DiskMountManager {
     MountPointMap::iterator mount_points_it = mount_points_.find(mount_path);
     if (mount_points_it == mount_points_.end())
       return;
-    NotifyMountCompleted(
+
+    NotifyMountStatusUpdate(
         UNMOUNTING,
         success ? MOUNT_ERROR_NONE : MOUNT_ERROR_INTERNAL,
         MountPointInfo(mount_points_it->second.source_path,
@@ -327,40 +334,48 @@ class DiskMountManagerImpl : public DiskMountManager {
     if (success)
       mount_points_.erase(mount_points_it);
 
-    DiskMap::iterator iter = disks_.find(path);
-    if (iter == disks_.end()) {
-      // disk might have been removed by now.
-      return;
+    DiskMap::iterator disk_iter = disks_.find(path);
+    if (disk_iter != disks_.end()) {
+      DCHECK(disk_iter->second);
+      if (success)
+        disk_iter->second->clear_mount_path();
     }
 
-    Disk* disk = iter->second;
-    DCHECK(disk);
-    if (success)
-      disk->clear_mount_path();
-
+    FormatTaskSet::iterator format_iter = formatting_pending_.find(path);
     // Check if there is a formatting scheduled.
-    PathMap::iterator it = formatting_pending_.find(disk->device_path());
-    if (it != formatting_pending_.end()) {
-      // Copy the string before it gets erased.
-      const std::string file_path = it->second;
-      formatting_pending_.erase(it);
-      if (success) {
-        FormatUnmountedDevice(file_path);
+    if (format_iter != formatting_pending_.end()) {
+      formatting_pending_.erase(format_iter);
+      if (success && disk_iter != disks_.end()) {
+        FormatUnmountedDevice(path);
       } else {
-        OnFormatDevice(file_path, false);
+        OnFormatDevice(path, false);
       }
     }
   }
 
+  // Starts device formatting.
+  void FormatUnmountedDevice(const std::string& device_path) {
+    DiskMap::const_iterator disk = disks_.find(device_path);
+    DCHECK(disk != disks_.end() && disk->second->mount_path().empty());
+
+    const char kFormatVFAT[] = "vfat";
+    cros_disks_client_->FormatDevice(
+        device_path,
+        kFormatVFAT,
+        base::Bind(&DiskMountManagerImpl::OnFormatDevice,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&DiskMountManagerImpl::OnFormatDevice,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   device_path,
+                   false));
+  }
+
   // Callback for FormatDevice.
+  // TODO(tbarzic): Pass FormatError instead of bool.
   void OnFormatDevice(const std::string& device_path, bool success) {
-    if (success) {
-      NotifyDeviceStatusUpdate(MOUNT_FORMATTING_STARTED, device_path);
-    } else {
-      NotifyDeviceStatusUpdate(MOUNT_FORMATTING_STARTED,
-                             std::string("!") + device_path);
-      LOG(WARNING) << "Format request failed for device " << device_path;
-    }
+    FormatError error_code =
+        success ? FORMAT_ERROR_NONE : FORMAT_ERROR_UNKNOWN;
+    NotifyFormatStatusUpdate(FORMAT_STARTED, error_code, device_path);
   }
 
   // Callbcak for GetDeviceProperties.
@@ -400,8 +415,7 @@ class DiskMountManagerImpl : public DiskMountManager {
                           disk_info.on_boot_device(),
                           disk_info.is_hidden());
     disks_.insert(std::make_pair(disk_info.device_path(), disk));
-    NotifyDiskStatusUpdate(is_new ? MOUNT_DISK_ADDED : MOUNT_DISK_CHANGED,
-                           disk);
+    NotifyDiskStatusUpdate(is_new ? DISK_ADDED : DISK_CHANGED, disk);
   }
 
   // Callbcak for RequestMountInfo.
@@ -423,7 +437,7 @@ class DiskMountManagerImpl : public DiskMountManager {
     for (DiskMap::iterator iter = disks_.begin(); iter != disks_.end(); ) {
       if (current_device_set.find(iter->first) == current_device_set.end()) {
         Disk* disk = iter->second;
-        NotifyDiskStatusUpdate(MOUNT_DISK_REMOVED, disk);
+        NotifyDiskStatusUpdate(DISK_REMOVED, disk);
         delete iter->second;
         disks_.erase(iter++);
       } else {
@@ -436,98 +450,110 @@ class DiskMountManagerImpl : public DiskMountManager {
   void OnMountEvent(MountEventType event, const std::string& device_path_arg) {
     // Take a copy of the argument so we can modify it below.
     std::string device_path = device_path_arg;
-    DiskMountManagerEventType type = MOUNT_DEVICE_ADDED;
     switch (event) {
-      case DISK_ADDED: {
+      case CROS_DISKS_DISK_ADDED: {
         cros_disks_client_->GetDeviceProperties(
             device_path,
             base::Bind(&DiskMountManagerImpl::OnGetDeviceProperties,
                        weak_ptr_factory_.GetWeakPtr()),
             base::Bind(&base::DoNothing));
-        return;
+        break;
       }
-      case DISK_REMOVED: {
+      case CROS_DISKS_DISK_REMOVED: {
         // Search and remove disks that are no longer present.
         DiskMountManager::DiskMap::iterator iter = disks_.find(device_path);
         if (iter != disks_.end()) {
           Disk* disk = iter->second;
-          NotifyDiskStatusUpdate(MOUNT_DISK_REMOVED, disk);
+          NotifyDiskStatusUpdate(DISK_REMOVED, disk);
           delete iter->second;
           disks_.erase(iter);
         }
-        return;
+        break;
       }
-      case DEVICE_ADDED: {
-        type = MOUNT_DEVICE_ADDED;
+      case CROS_DISKS_DEVICE_ADDED: {
         system_path_prefixes_.insert(device_path);
+        NotifyDeviceStatusUpdate(DEVICE_ADDED, device_path);
         break;
       }
-      case DEVICE_REMOVED: {
-        type = MOUNT_DEVICE_REMOVED;
+      case CROS_DISKS_DEVICE_REMOVED: {
         system_path_prefixes_.erase(device_path);
+        NotifyDeviceStatusUpdate(DEVICE_REMOVED, device_path);
         break;
       }
-      case DEVICE_SCANNED: {
-        type = MOUNT_DEVICE_SCANNED;
+      case CROS_DISKS_DEVICE_SCANNED: {
+        NotifyDeviceStatusUpdate(DEVICE_SCANNED, device_path);
         break;
       }
-      case FORMATTING_FINISHED: {
-        // FORMATTING_FINISHED actually returns file path instead of device
-        // path.
-        device_path = FilePathToDevicePath(device_path);
-        if (device_path.empty()) {
-          LOG(ERROR) << "Error while handling disks metadata. Cannot find "
-                     << "device that is being formatted.";
-          return;
+      case CROS_DISKS_FORMATTING_FINISHED: {
+        std::string path;
+        FormatError error_code;
+        ParseFormatFinishedPath(device_path, &path, &error_code);
+
+        if (!path.empty()) {
+          NotifyFormatStatusUpdate(FORMAT_COMPLETED, error_code, path);
+          break;
         }
-        type = MOUNT_FORMATTING_FINISHED;
+
+        LOG(ERROR) << "Error while handling disks metadata. Cannot find "
+                   << "device that is being formatted.";
         break;
       }
       default: {
         LOG(ERROR) << "Unknown event: " << event;
-        return;
       }
     }
-    NotifyDeviceStatusUpdate(type, device_path);
   }
 
   // Notifies all observers about disk status update.
-  void NotifyDiskStatusUpdate(DiskMountManagerEventType event,
+  void NotifyDiskStatusUpdate(DiskEvent event,
                               const Disk* disk) {
-    FOR_EACH_OBSERVER(Observer, observers_, DiskChanged(event, disk));
+    FOR_EACH_OBSERVER(Observer, observers_, OnDiskEvent(event, disk));
   }
 
   // Notifies all observers about device status update.
-  void NotifyDeviceStatusUpdate(DiskMountManagerEventType event,
+  void NotifyDeviceStatusUpdate(DeviceEvent event,
                                 const std::string& device_path) {
-    FOR_EACH_OBSERVER(Observer, observers_, DeviceChanged(event, device_path));
+    FOR_EACH_OBSERVER(Observer, observers_, OnDeviceEvent(event, device_path));
   }
 
   // Notifies all observers about mount completion.
-  void NotifyMountCompleted(MountEvent event_type,
-                            MountError error_code,
-                            const MountPointInfo& mount_info) {
+  void NotifyMountStatusUpdate(MountEvent event,
+                               MountError error_code,
+                               const MountPointInfo& mount_info) {
     FOR_EACH_OBSERVER(Observer, observers_,
-                      MountCompleted(event_type, error_code, mount_info));
+                      OnMountEvent(event, error_code, mount_info));
+  }
+
+  void NotifyFormatStatusUpdate(FormatEvent event,
+                                FormatError error_code,
+                                const std::string& device_path) {
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnFormatEvent(event, error_code, device_path));
   }
 
   // Converts file path to device path.
-  std::string FilePathToDevicePath(const std::string& file_path) {
-    // TODO(hashimoto): Refactor error handling code like here.
+  void ParseFormatFinishedPath(const std::string& received_path,
+                               std::string* device_path,
+                               FormatError* error_code) {
+    // TODO(tbarzic): Refactor error handling code like here.
     // Appending "!" is not the best way to indicate error.  This kind of trick
-    // also makes it difficult to simplify the code paths.  crosbug.com/22972
-    const int failed = StartsWithASCII(file_path, "!", true);
+    // also makes it difficult to simplify the code paths.
+    bool success = !StartsWithASCII(received_path, "!", true);
+    *error_code = success ? FORMAT_ERROR_NONE : FORMAT_ERROR_UNKNOWN;
+
+    std::string path = received_path.substr(success ? 0 : 1);
+
+    // Depending on cros disks implementation the event may return either file
+    // path or device path. We want to use device path.
     for (DiskMountManager::DiskMap::iterator it = disks_.begin();
          it != disks_.end(); ++it) {
       // Skip the leading '!' on the failure case.
-      if (it->second->file_path() == file_path.substr(failed)) {
-        if (failed)
-          return std::string("!") + it->second->device_path();
-        else
-          return it->second->device_path();
+      if (it->second->file_path() == path ||
+          it->second->device_path() == path) {
+        *device_path = it->second->device_path();
+        return;
       }
     }
-    return "";
   }
 
   // Finds system path prefix from |system_path|.
@@ -562,8 +588,8 @@ class DiskMountManagerImpl : public DiskMountManager {
   // Devices in this map are supposed to be formatted, but are currently waiting
   // to be unmounted. When device is in this map, the formatting process HAVEN'T
   // started yet.
-  typedef std::map<std::string, std::string> PathMap;
-  PathMap formatting_pending_;
+  typedef std::set<std::string> FormatTaskSet;
+  FormatTaskSet formatting_pending_;
 
   base::WeakPtrFactory<DiskMountManagerImpl> weak_ptr_factory_;
 
@@ -613,6 +639,14 @@ DiskMountManager::Disk::Disk(const std::string& device_path,
 }
 
 DiskMountManager::Disk::~Disk() {}
+
+bool DiskMountManager::AddDiskForTest(Disk* disk) {
+  return false;
+}
+
+bool DiskMountManager::AddMountPointForTest(const MountPointInfo& mount_point) {
+  return false;
+}
 
 // static
 std::string DiskMountManager::MountTypeToString(MountType type) {

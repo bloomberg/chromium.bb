@@ -60,16 +60,21 @@ class FileBrowserEventRouter
   void MountDrive(const base::Closure& callback);
 
   // CrosDisksClient::Observer overrides.
-  virtual void DiskChanged(chromeos::disks::DiskMountManagerEventType event,
-                           const chromeos::disks::DiskMountManager::Disk* disk)
-      OVERRIDE;
-  virtual void DeviceChanged(chromeos::disks::DiskMountManagerEventType event,
-                             const std::string& device_path) OVERRIDE;
-  virtual void MountCompleted(
-      chromeos::disks::DiskMountManager::MountEvent event_type,
+  virtual void OnDiskEvent(
+      chromeos::disks::DiskMountManager::DiskEvent event,
+      const chromeos::disks::DiskMountManager::Disk* disk) OVERRIDE;
+  virtual void OnDeviceEvent(
+      chromeos::disks::DiskMountManager::DeviceEvent event,
+      const std::string& device_path) OVERRIDE;
+  virtual void OnMountEvent(
+      chromeos::disks::DiskMountManager::MountEvent event,
       chromeos::MountError error_code,
       const chromeos::disks::DiskMountManager::MountPointInfo& mount_info)
       OVERRIDE;
+  virtual void OnFormatEvent(
+      chromeos::disks::DiskMountManager::FormatEvent event,
+      chromeos::FormatError error_code,
+      const std::string& device_path) OVERRIDE;
 
   // chromeos::NetworkLibrary::NetworkManagerObserver override.
   virtual void OnNetworkManagerChanged(
@@ -152,8 +157,8 @@ class FileBrowserEventRouter
   void OnDeviceAdded(const std::string& device_path);
   void OnDeviceRemoved(const std::string& device_path);
   void OnDeviceScanned(const std::string& device_path);
-  void OnFormattingStarted(const std::string& device_path, bool success);
-  void OnFormattingFinished(const std::string& device_path, bool success);
+  void OnFormatStarted(const std::string& device_path, bool success);
+  void OnFormatCompleted(const std::string& device_path, bool success);
 
   // Called on change to kExternalStorageDisabled pref.
   void OnExternalStorageDisabledChanged();
@@ -173,7 +178,7 @@ class FileBrowserEventRouter
   void DispatchDiskEvent(const chromeos::disks::DiskMountManager::Disk* disk,
                          bool added);
 
-  void DispatchMountCompletedEvent(
+  void DispatchMountEvent(
       chromeos::disks::DiskMountManager::MountEvent event,
       chromeos::MountError error_code,
       const chromeos::disks::DiskMountManager::MountPointInfo& mount_info);

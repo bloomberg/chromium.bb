@@ -285,6 +285,7 @@
         'dbus/ibus/ibus_text_unittest.cc',
         'dbus/introspectable_client_unittest.cc',
         'dbus/modem_messaging_client_unittest.cc',
+        'disks/disk_mount_manager_unittest.cc',
         'network/network_sms_handler_unittest.cc',
         'network/network_state_handler_unittest.cc',
         'network/shill_property_handler_unittest.cc',

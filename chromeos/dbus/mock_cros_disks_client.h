@@ -37,8 +37,28 @@ class MockCrosDisksClient : public CrosDisksClient {
   MOCK_METHOD3(GetDeviceProperties, void(const std::string&,
                                          const GetDevicePropertiesCallback&,
                                          const ErrorCallback&));
+  // Warning: if this method is mocked, SendMountEvent and
+  // SendMountCompletedEvent may not work.
   MOCK_METHOD2(SetUpConnections, void(const MountEventHandler&,
                                       const MountCompletedHandler&));
+
+  // Used to simulate signals sent by cros disks layer.
+  // Invokes handlers set in |SetUpConnections|.
+  bool SendMountEvent(MountEventType event, const std::string& path);
+  bool SendMountCompletedEvent(MountError error_code,
+                               const std::string& source_path,
+                               MountType mount_type,
+                               const std::string& mount_path);
+
+ private:
+  // Default implementation of SetupConnections.
+  // Sets internal MounteEvent and MountCompleted handlers.
+  void SetUpConnectionsInternal(
+      const MountEventHandler& mount_event_handler,
+      const MountCompletedHandler& mount_completed_handler);
+
+  MountEventHandler mount_event_handler_;
+  MountCompletedHandler mount_completed_handler_;
 };
 
 }  // namespace chromeos

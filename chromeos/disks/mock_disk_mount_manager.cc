@@ -92,13 +92,10 @@ void MockDiskMountManager::NotifyDeviceInsertEvents() {
       std::string(kTestDevicePath), disk1.get()));
 
   // Device Added
-  DiskMountManagerEventType event;
-  event = MOUNT_DEVICE_ADDED;
-  NotifyDeviceChanged(event, kTestSystemPath);
+  NotifyDeviceChanged(DEVICE_ADDED, kTestSystemPath);
 
   // Disk Added
-  event = MOUNT_DISK_ADDED;
-  NotifyDiskChanged(event, disk1.get());
+  NotifyDiskChanged(DISK_ADDED, disk1.get());
 
   // Disk Changed
   scoped_ptr<DiskMountManager::Disk> disk2(new DiskMountManager::Disk(
@@ -124,8 +121,7 @@ void MockDiskMountManager::NotifyDeviceInsertEvents() {
   disks_.clear();
   disks_.insert(std::pair<std::string, DiskMountManager::Disk*>(
       std::string(kTestDevicePath), disk2.get()));
-  event = MOUNT_DISK_CHANGED;
-  NotifyDiskChanged(event, disk2.get());
+  NotifyDiskChanged(DISK_CHANGED, disk2.get());
 }
 
 void MockDiskMountManager::NotifyDeviceRemoveEvents() {
@@ -152,7 +148,7 @@ void MockDiskMountManager::NotifyDeviceRemoveEvents() {
   disks_.clear();
   disks_.insert(std::pair<std::string, DiskMountManager::Disk*>(
       std::string(kTestDevicePath), disk.get()));
-  NotifyDiskChanged(MOUNT_DISK_REMOVED, disk.get());
+  NotifyDiskChanged(DISK_REMOVED, disk.get());
 }
 
 void MockDiskMountManager::SetupDefaultReplies() {
@@ -171,8 +167,6 @@ void MockDiskMountManager::SetupDefaultReplies() {
   EXPECT_CALL(*this, MountPath(_, _, _, _))
       .Times(AnyNumber());
   EXPECT_CALL(*this, UnmountPath(_, _))
-      .Times(AnyNumber());
-  EXPECT_CALL(*this, FormatUnmountedDevice(_))
       .Times(AnyNumber());
   EXPECT_CALL(*this, FormatMountedDevice(_))
       .Times(AnyNumber());
@@ -234,14 +228,14 @@ MockDiskMountManager::FindDiskBySourcePathInternal(
 }
 
 void MockDiskMountManager::NotifyDiskChanged(
-    DiskMountManagerEventType event,
+    DiskEvent event,
     const DiskMountManager::Disk* disk) {
-  FOR_EACH_OBSERVER(Observer, observers_, DiskChanged(event, disk));
+  FOR_EACH_OBSERVER(Observer, observers_, OnDiskEvent(event, disk));
 }
 
-void MockDiskMountManager::NotifyDeviceChanged(DiskMountManagerEventType event,
+void MockDiskMountManager::NotifyDeviceChanged(DeviceEvent event,
                                                const std::string& path) {
-  FOR_EACH_OBSERVER(Observer, observers_, DeviceChanged(event, path));
+  FOR_EACH_OBSERVER(Observer, observers_, OnDeviceEvent(event, path));
 }
 
 }  // namespace disks

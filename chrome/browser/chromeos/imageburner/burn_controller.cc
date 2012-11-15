@@ -64,29 +64,33 @@ class BurnControllerImpl
   }
 
   // disks::DiskMountManager::Observer interface.
-  virtual void DiskChanged(disks::DiskMountManagerEventType event,
-                           const disks::DiskMountManager::Disk* disk)
-      OVERRIDE {
+  virtual void OnDiskEvent(disks::DiskMountManager::DiskEvent event,
+                           const disks::DiskMountManager::Disk* disk) OVERRIDE {
     if (!IsBurnableDevice(*disk))
       return;
-    if (event == disks::MOUNT_DISK_ADDED) {
+    if (event == disks::DiskMountManager::DISK_ADDED) {
       delegate_->OnDeviceAdded(*disk);
-    } else if (event == disks::MOUNT_DISK_REMOVED) {
+    } else if (event == disks::DiskMountManager::DISK_REMOVED) {
       delegate_->OnDeviceRemoved(*disk);
       if (burn_manager_->target_device_path().value() == disk->device_path())
         ProcessError(IDS_IMAGEBURN_DEVICE_NOT_FOUND_ERROR);
     }
   }
 
-  virtual void DeviceChanged(disks::DiskMountManagerEventType event,
+  virtual void OnDeviceEvent(disks::DiskMountManager::DeviceEvent event,
                              const std::string& device_path) OVERRIDE {
   }
 
-  virtual void MountCompleted(
-      disks::DiskMountManager::MountEvent event_type,
+  virtual void OnMountEvent(
+      disks::DiskMountManager::MountEvent event,
       MountError error_code,
-      const disks::DiskMountManager::MountPointInfo& mount_info)
-      OVERRIDE {
+      const disks::DiskMountManager::MountPointInfo& mount_info) OVERRIDE {
+  }
+
+  virtual void OnFormatEvent(
+      disks::DiskMountManager::FormatEvent event,
+      FormatError error_code,
+      const std::string& device_path) OVERRIDE {
   }
 
   // BurnLibrary::Observer interface.

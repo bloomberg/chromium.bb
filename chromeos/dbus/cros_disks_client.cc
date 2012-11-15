@@ -229,13 +229,13 @@ class CrosDisksClientImpl : public CrosDisksClient {
       const MountEventHandler& mount_event_handler,
       const MountCompletedHandler& mount_completed_handler) OVERRIDE {
     static const SignalEventTuple kSignalEventTuples[] = {
-      { cros_disks::kDeviceAdded, DEVICE_ADDED },
-      { cros_disks::kDeviceScanned, DEVICE_SCANNED },
-      { cros_disks::kDeviceRemoved, DEVICE_REMOVED },
-      { cros_disks::kDiskAdded, DISK_ADDED },
-      { cros_disks::kDiskChanged, DISK_CHANGED },
-      { cros_disks::kDiskRemoved, DISK_REMOVED },
-      { cros_disks::kFormattingFinished, FORMATTING_FINISHED },
+      { cros_disks::kDeviceAdded, CROS_DISKS_DEVICE_ADDED },
+      { cros_disks::kDeviceScanned, CROS_DISKS_DEVICE_SCANNED },
+      { cros_disks::kDeviceRemoved, CROS_DISKS_DEVICE_REMOVED },
+      { cros_disks::kDiskAdded, CROS_DISKS_DISK_ADDED },
+      { cros_disks::kDiskChanged, CROS_DISKS_DISK_CHANGED },
+      { cros_disks::kDiskRemoved, CROS_DISKS_DISK_REMOVED },
+      { cros_disks::kFormattingFinished, CROS_DISKS_FORMATTING_FINISHED },
     };
     const size_t kNumSignalEventTuples = arraysize(kSignalEventTuples);
 

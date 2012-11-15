@@ -36,7 +36,6 @@
 #include "webkit/fileapi/file_system_util.h"
 
 using chromeos::disks::DiskMountManager;
-using chromeos::disks::DiskMountManagerEventType;
 using content::BrowserThread;
 using drive::DriveSystemService;
 using drive::DriveSystemServiceFactory;
@@ -251,9 +250,9 @@ void FileBrowserEventRouter::MountDrive(
   // Raise mount event.
   // We can pass chromeos::MOUNT_ERROR_NONE even when authentication is failed
   // or network is unreachable. These two errors will be handled later.
-  MountCompleted(DiskMountManager::MOUNTING,
-                 chromeos::MOUNT_ERROR_NONE,
-                 mount_info);
+  OnMountEvent(DiskMountManager::MOUNTING,
+               chromeos::MOUNT_ERROR_NONE,
+               mount_info);
 
   if (!callback.is_null())
     callback.Run();
@@ -280,58 +279,45 @@ void FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread(bool start) {
   }
 }
 
-void FileBrowserEventRouter::DiskChanged(
-    DiskMountManagerEventType event,
+void FileBrowserEventRouter::OnDiskEvent(
+    DiskMountManager::DiskEvent event,
     const DiskMountManager::Disk* disk) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Disregard hidden devices.
   if (disk->is_hidden())
     return;
-  if (event == chromeos::disks::MOUNT_DISK_ADDED) {
+  if (event == DiskMountManager::DISK_ADDED) {
     OnDiskAdded(disk);
-  } else if (event == chromeos::disks::MOUNT_DISK_REMOVED) {
+  } else if (event == DiskMountManager::DISK_REMOVED) {
     OnDiskRemoved(disk);
   }
 }
 
-void FileBrowserEventRouter::DeviceChanged(
-    DiskMountManagerEventType event,
+void FileBrowserEventRouter::OnDeviceEvent(
+    DiskMountManager::DeviceEvent event,
     const std::string& device_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (event == chromeos::disks::MOUNT_DEVICE_ADDED) {
+  if (event == DiskMountManager::DEVICE_ADDED) {
     OnDeviceAdded(device_path);
-  } else if (event == chromeos::disks::MOUNT_DEVICE_REMOVED) {
+  } else if (event == DiskMountManager::DEVICE_REMOVED) {
     OnDeviceRemoved(device_path);
-  } else if (event == chromeos::disks::MOUNT_DEVICE_SCANNED) {
+  } else if (event == DiskMountManager::DEVICE_SCANNED) {
     OnDeviceScanned(device_path);
-  } else if (event == chromeos::disks::MOUNT_FORMATTING_STARTED) {
-  // TODO(tbarzic): get rid of '!'.
-    if (device_path[0] == '!') {
-      OnFormattingStarted(device_path.substr(1), false);
-    } else {
-      OnFormattingStarted(device_path, true);
-    }
-  } else if (event == chromeos::disks::MOUNT_FORMATTING_FINISHED) {
-    if (device_path[0] == '!') {
-      OnFormattingFinished(device_path.substr(1), false);
-    } else {
-      OnFormattingFinished(device_path, true);
-    }
   }
 }
 
-void FileBrowserEventRouter::MountCompleted(
-    DiskMountManager::MountEvent event_type,
+void FileBrowserEventRouter::OnMountEvent(
+    DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
     const DiskMountManager::MountPointInfo& mount_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DispatchMountCompletedEvent(event_type, error_code, mount_info);
+  DispatchMountEvent(event, error_code, mount_info);
 
   if (mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
-      event_type == DiskMountManager::MOUNTING) {
+      event == DiskMountManager::MOUNTING) {
     DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
     const DiskMountManager::Disk* disk =
         disk_mount_manager->FindDiskBySourcePath(mount_info.source_path);
@@ -345,7 +331,7 @@ void FileBrowserEventRouter::MountCompleted(
   } else if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
     // Clear the "mounted" state for archive files in gdata cache
     // when mounting failed or unmounting succeeded.
-    if ((event_type == DiskMountManager::MOUNTING) !=
+    if ((event == DiskMountManager::MOUNTING) !=
         (error_code == chromeos::MOUNT_ERROR_NONE)) {
       FilePath source_path(mount_info.source_path);
       DriveSystemService* system_service =
@@ -357,6 +343,17 @@ void FileBrowserEventRouter::MountCompleted(
             source_path, false, drive::GetFileFromCacheCallback());
       }
     }
+  }
+}
+
+void FileBrowserEventRouter::OnFormatEvent(
+      DiskMountManager::FormatEvent event,
+      chromeos::FormatError error_code,
+      const std::string& device_path) {
+  if (event == DiskMountManager::FORMAT_STARTED) {
+    OnFormatStarted(device_path, error_code == chromeos::FORMAT_ERROR_NONE);
+  } else if (event == DiskMountManager::FORMAT_COMPLETED) {
+    OnFormatCompleted(device_path, error_code == chromeos::FORMAT_ERROR_NONE);
   }
 }
 
@@ -452,15 +449,15 @@ void FileBrowserEventRouter::OnFileSystemMounted() {
 void FileBrowserEventRouter::OnFileSystemBeingUnmounted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Raise a MountCompleted event to notify the File Manager.
+  // Raise a mount event to notify the File Manager.
   const std::string& gdata_path = drive::util::GetDriveMountPointPathAsString();
   DiskMountManager::MountPointInfo mount_info(
       gdata_path,
       gdata_path,
       chromeos::MOUNT_TYPE_GDATA,
       chromeos::disks::MOUNT_CONDITION_NONE);
-  MountCompleted(DiskMountManager::UNMOUNTING, chromeos::MOUNT_ERROR_NONE,
-                 mount_info);
+  OnMountEvent(DiskMountManager::UNMOUNTING, chromeos::MOUNT_ERROR_NONE,
+               mount_info);
 }
 
 void FileBrowserEventRouter::OnAuthenticationFailed(
@@ -470,15 +467,15 @@ void FileBrowserEventRouter::OnAuthenticationFailed(
   if (error == google_apis::GDATA_NO_CONNECTION)
     return;
 
-  // Raise a MountCompleted event to notify the File Manager.
+  // Raise a mount event to notify the File Manager.
   const std::string& gdata_path = drive::util::GetDriveMountPointPathAsString();
   DiskMountManager::MountPointInfo mount_info(
       gdata_path,
       gdata_path,
       chromeos::MOUNT_TYPE_GDATA,
       chromeos::disks::MOUNT_CONDITION_NONE);
-  MountCompleted(DiskMountManager::UNMOUNTING, chromeos::MOUNT_ERROR_NONE,
-                 mount_info);
+  OnMountEvent(DiskMountManager::UNMOUNTING, chromeos::MOUNT_ERROR_NONE,
+               mount_info);
 }
 
 void FileBrowserEventRouter::HandleFileWatchNotification(
@@ -551,7 +548,7 @@ void FileBrowserEventRouter::DispatchDiskEvent(
           GURL());
 }
 
-void FileBrowserEventRouter::DispatchMountCompletedEvent(
+void FileBrowserEventRouter::DispatchMountEvent(
     DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
     const DiskMountManager::MountPointInfo& mount_info) {
@@ -704,7 +701,7 @@ void FileBrowserEventRouter::OnDeviceScanned(
   VLOG(1) << "Device scanned : " << device_path;
 }
 
-void FileBrowserEventRouter::OnFormattingStarted(
+void FileBrowserEventRouter::OnFormatStarted(
     const std::string& device_path, bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -717,7 +714,7 @@ void FileBrowserEventRouter::OnFormattingStarted(
   }
 }
 
-void FileBrowserEventRouter::OnFormattingFinished(
+void FileBrowserEventRouter::OnFormatCompleted(
     const std::string& device_path, bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

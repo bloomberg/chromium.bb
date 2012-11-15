@@ -88,17 +88,17 @@ class RemovableDeviceNotificationsCrosTest : public testing::Test {
       disk_mount_manager_mock_->CreateDiskEntryForMountDevice(
         mount_info, unique_id, device_label);
     }
-    notifications_->MountCompleted(disks::DiskMountManager::MOUNTING,
-                                   error_code,
-                                   mount_info);
+    notifications_->OnMountEvent(disks::DiskMountManager::MOUNTING,
+                                 error_code,
+                                 mount_info);
     WaitForFileThread();
   }
 
   void UnmountDevice(MountError error_code,
                      const DiskMountManager::MountPointInfo& mount_info) {
-    notifications_->MountCompleted(disks::DiskMountManager::UNMOUNTING,
-                                   error_code,
-                                   mount_info);
+    notifications_->OnMountEvent(disks::DiskMountManager::UNMOUNTING,
+                                 error_code,
+                                 mount_info);
     if (error_code == MOUNT_ERROR_NONE) {
       disk_mount_manager_mock_->RemoveDiskEntryForMountDevice(
           mount_info);

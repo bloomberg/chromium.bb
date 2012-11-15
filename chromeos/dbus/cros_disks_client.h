@@ -18,8 +18,10 @@ class Bus;
 class Response;
 }
 
-// TODO(tbarzic): We should probably move these enums inside CrosDisksClient,
-// to be clearer where they come from.
+// TODO(tbarzic): We should move these enums inside CrosDisksClient,
+// to be clearer where they come from. Also, most of these are partially or
+// completely duplicated in third_party/dbus/service_constants.h. We should
+// probably use enums from service_contstants directly.
 namespace chromeos {
 
 // Enum describing types of mount used by cros-disks.
@@ -46,6 +48,17 @@ enum MountError {
   MOUNT_ERROR_NONE = 0,
   MOUNT_ERROR_UNKNOWN = 1,
   MOUNT_ERROR_INTERNAL = 2,
+  MOUNT_ERROR_INVALID_ARGUMENT = 3,
+  MOUNT_ERROR_INVALID_PATH = 4,
+  MOUNT_ERROR_PATH_ALREADY_MOUNTED = 5,
+  MOUNT_ERROR_PATH_NOT_MOUNTED = 6,
+  MOUNT_ERROR_DIRECTORY_CREATION_FAILED = 7,
+  MOUNT_ERROR_INVALID_MOUNT_OPTIONS = 8,
+  MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS = 9,
+  MOUNT_ERROR_INSUFFICIENT_PERMISSIONS = 10,
+  MOUNT_ERROR_MOUNT_PROGRAM_NOT_FOUND = 11,
+  MOUNT_ERROR_MOUNT_PROGRAM_FAILED = 12,
+  MOUNT_ERROR_INVALID_DEVICE_PATH = 100,
   MOUNT_ERROR_UNKNOWN_FILESYSTEM = 101,
   MOUNT_ERROR_UNSUPPORTED_FILESYSTEM = 102,
   MOUNT_ERROR_INVALID_ARCHIVE = 201,
@@ -55,15 +68,28 @@ enum MountError {
   // consider doing explicit translation from cros-disks error_types.
 };
 
+// Format error reported by cros-disks.
+enum FormatError {
+  FORMAT_ERROR_NONE,
+  FORMAT_ERROR_UNKNOWN,
+  FORMAT_ERROR_INTERNAL,
+  FORMAT_ERROR_INVALID_DEVICE_PATH,
+  FORMAT_ERROR_DEVICE_BEING_FORMATTED,
+  FORMAT_ERROR_UNSUPPORTED_FILESYSTEM,
+  FORMAT_ERROR_FORMAT_PROGRAM_NOT_FOUND,
+  FORMAT_ERROR_FORMAT_PROGRAM_FAILED,
+  FORMAT_ERROR_DEVICE_NOT_ALLOWED,
+};
+
 // Event type each corresponding to a signal sent from cros-disks.
 enum MountEventType {
-  DISK_ADDED,
-  DISK_REMOVED,
-  DISK_CHANGED,
-  DEVICE_ADDED,
-  DEVICE_REMOVED,
-  DEVICE_SCANNED,
-  FORMATTING_FINISHED,
+  CROS_DISKS_DISK_ADDED,
+  CROS_DISKS_DISK_REMOVED,
+  CROS_DISKS_DISK_CHANGED,
+  CROS_DISKS_DEVICE_ADDED,
+  CROS_DISKS_DEVICE_REMOVED,
+  CROS_DISKS_DEVICE_SCANNED,
+  CROS_DISKS_FORMATTING_FINISHED,
 };
 
 // Additional unmount flags to be added to unmount request.
