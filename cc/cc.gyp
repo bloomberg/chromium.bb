@@ -117,6 +117,8 @@
       'picture_layer.h',
       'picture_layer_impl.cc',
       'picture_layer_impl.h',
+      'picture_layer_tiling.cc',
+      'picture_layer_tiling.h',
       'picture_pile.cc',
       'picture_pile.h',
       'platform_color.h',

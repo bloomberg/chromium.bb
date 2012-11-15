@@ -73,6 +73,10 @@ class Tile : public base::RefCounted<Tile> {
   // Returns 0 if not drawable.
   ResourceProvider::ResourceId GetDrawableResourceId(int frame_number);
 
+  const gfx::Rect& opaque_rect() const { return opaque_rect_; }
+  // TODO(enne): Make this real
+  bool contents_swizzled() const { return false; }
+
  protected:
   // Methods called by TileManager.
   void DeleteVersionOnRequestOfTileManager(int frame_number);
@@ -88,6 +92,7 @@ class Tile : public base::RefCounted<Tile> {
   gfx::Rect tile_size_;
   GLenum format_;
   gfx::Rect rect_inside_picture_;
+  gfx::Rect opaque_rect_;
   TileQuality quality_;
   ScopedVector<TileVersion> versions_;
 };

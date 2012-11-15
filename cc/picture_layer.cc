@@ -31,6 +31,7 @@ void PictureLayer::pushPropertiesTo(LayerImpl* base_layer) {
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
   pile_.PushPropertiesTo(layer_impl->pile_);
 
+  // TODO(enne): Need to sync tiling from active tree prior to this?
   // TODO(nduca): Need to invalidate tiles here from pile's invalidation info.
 }
 
