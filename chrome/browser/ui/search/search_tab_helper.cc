@@ -58,10 +58,13 @@ void SearchTabHelper::OmniboxEditModelChanged(bool user_input_in_progress,
   if (!is_search_enabled_)
     return;
 
-  if (user_input_in_progress)
-    model_.SetMode(Mode(Mode::MODE_SEARCH_SUGGESTIONS, true));
-  else if (cancelling)
+  if (user_input_in_progress) {
+    const Mode new_mode = Mode(Mode::MODE_SEARCH_SUGGESTIONS,
+                               model_.mode().origin, true);
+    model_.SetMode(new_mode);
+  } else if (cancelling) {
     UpdateModelBasedOnURL(web_contents()->GetURL(), true);
+  }
 }
 
 void SearchTabHelper::NavigationEntryUpdated() {
@@ -101,11 +104,15 @@ void SearchTabHelper::Observe(
 
 void SearchTabHelper::UpdateModelBasedOnURL(const GURL& url, bool animate) {
   Mode::Type type = Mode::MODE_DEFAULT;
-  if (IsNTP(url))
+  Mode::Origin origin = Mode::ORIGIN_DEFAULT;
+  if (IsNTP(url)) {
     type = Mode::MODE_NTP;
-  else if (google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec()))
+    origin = Mode::ORIGIN_NTP;
+  } else if (google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec())) {
     type = Mode::MODE_SEARCH_RESULTS;
-  model_.SetMode(Mode(type, animate));
+    origin = Mode::ORIGIN_SEARCH;
+  }
+  model_.SetMode(Mode(type, origin, animate));
 }
 
 const content::WebContents* SearchTabHelper::web_contents() const {

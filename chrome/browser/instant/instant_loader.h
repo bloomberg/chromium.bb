@@ -118,6 +118,9 @@ class InstantLoader : public content::NotificationObserver {
   // preview content.
   bool IsPointerDownFromActivate() const;
 
+  // Returns true iff the current preview page has shown custom NTP content.
+  bool HasShownCustomNTPContent() const;
+
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,

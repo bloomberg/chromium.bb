@@ -17,6 +17,7 @@
 #include "base/timer.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/instant/instant_model.h"
+#include "chrome/browser/ui/search/search_types.h"
 #include "chrome/common/instant_types.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
@@ -131,9 +132,9 @@ class InstantController {
   // default search engine, in anticipation of the user typing a query.
   void OnAutocompleteGotFocus();
 
-  // The active tab's "NTP status" has changed. Pass the message down to the
-  // loader which will notify the renderer.
-  void OnActiveTabModeChanged(bool active_tab_is_ntp);
+  // The search mode in the active tab has changed. Pass the message down to
+  // the loader which will notify the renderer.
+  void OnActiveTabModeChanged(chrome::search::Mode new_mode);
 
   // Returns whether the preview will be committed when the mouse or touch
   // pointer is released.
@@ -208,6 +209,9 @@ class InstantController {
   // the given |height|.
   void Show(InstantShownReason reason, int height, InstantSizeUnits units);
 
+  // Send a blank query to clear out results for last search.
+  void SendBlankQuery();
+
   // Send the omnibox dropdown bounds to the page.
   void SendBoundsToPage();
 
@@ -250,8 +254,8 @@ class InstantController {
   // True if the omnibox is focused, false otherwise.
   bool is_omnibox_focused_;
 
-  // True if the active tab in the current window is the NTP, false otherwise.
-  bool active_tab_is_ntp_;
+  // The search model mode for the active tab.
+  chrome::search::Mode active_tab_mode_;
 
   // Current omnibox bounds.
   gfx::Rect omnibox_bounds_;

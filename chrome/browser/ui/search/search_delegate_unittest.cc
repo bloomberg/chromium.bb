@@ -33,7 +33,7 @@ TEST_F(SearchDelegateTest, SearchModel) {
   AddTab(browser(), GURL("http://foo/0"));
   content::WebContents* web_contents = chrome::GetWebContentsAt(browser(), 0);
   chrome::search::SearchTabHelper::FromWebContents(web_contents)->model()->
-      SetMode(Mode(Mode::MODE_NTP, false));
+      SetMode(Mode(Mode::MODE_NTP, Mode::ORIGIN_NTP, false));
   EXPECT_TRUE(browser()->search_model()->mode().is_ntp());
 
   // Add second tab, make it active, and make sure its mode changes
@@ -42,13 +42,13 @@ TEST_F(SearchDelegateTest, SearchModel) {
   chrome::ActivateTabAt(browser(), 1, true);
   web_contents = chrome::GetWebContentsAt(browser(), 1);
   chrome::search::SearchTabHelper::FromWebContents(web_contents)->model()->
-      SetMode(Mode(Mode::MODE_SEARCH_RESULTS, false));
+      SetMode(Mode(Mode::MODE_SEARCH_RESULTS, Mode::ORIGIN_DEFAULT, false));
   EXPECT_TRUE(browser()->search_model()->mode().is_search());
 
   // The first tab is not active so changes should not propagate.
   web_contents = chrome::GetWebContentsAt(browser(), 0);
   chrome::search::SearchTabHelper::FromWebContents(web_contents)->model()->
-      SetMode(Mode(Mode::MODE_NTP, false));
+      SetMode(Mode(Mode::MODE_NTP, Mode::ORIGIN_NTP, false));
   EXPECT_TRUE(browser()->search_model()->mode().is_search());
 }
 

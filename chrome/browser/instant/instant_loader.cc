@@ -55,6 +55,10 @@ class InstantLoader::WebContentsDelegateImpl
     return is_pointer_down_from_activate_;
   }
 
+  bool has_shown_custom_ntp_content() const {
+    return has_shown_custom_ntp_content_;
+  }
+
   // ConstrainedWindowTabHelperDelegate:
   virtual bool ShouldFocusConstrainedWindow() OVERRIDE;
 
@@ -108,6 +112,9 @@ class InstantLoader::WebContentsDelegateImpl
   // True if the mouse or a touch pointer is down from an activate.
   bool is_pointer_down_from_activate_;
 
+  // True if the preview has shown custom NTP content.
+  bool has_shown_custom_ntp_content_;
+
   DISALLOW_COPY_AND_ASSIGN(WebContentsDelegateImpl);
 };
 
@@ -115,7 +122,8 @@ InstantLoader::WebContentsDelegateImpl::WebContentsDelegateImpl(
     InstantLoader* loader)
     : content::WebContentsObserver(loader->preview_contents_->web_contents()),
       loader_(loader),
-      is_pointer_down_from_activate_(false) {
+      is_pointer_down_from_activate_(false),
+      has_shown_custom_ntp_content_(false) {
 }
 
 bool InstantLoader::WebContentsDelegateImpl::ShouldFocusConstrainedWindow() {
@@ -250,6 +258,8 @@ void InstantLoader::WebContentsDelegateImpl::OnShowInstantPreview(
                                         GetController().GetActiveEntry();
   if (entry && page_id == entry->GetPageID()) {
     MaybeSetAndNotifyInstantSupportDetermined(true);
+    if (reason == INSTANT_SHOWN_CUSTOM_NTP_CONTENT)
+      has_shown_custom_ntp_content_ = true;
     loader_->controller_->ShowInstantPreview(loader_, reason, height, units);
   }
 }
@@ -388,6 +398,10 @@ TabContents* InstantLoader::ReleasePreviewContents(InstantCommitType type,
 
 bool InstantLoader::IsPointerDownFromActivate() const {
   return preview_delegate_->is_pointer_down_from_activate();
+}
+
+bool InstantLoader::HasShownCustomNTPContent() const {
+  return preview_delegate_->has_shown_custom_ntp_content();
 }
 
 void InstantLoader::Observe(int type,

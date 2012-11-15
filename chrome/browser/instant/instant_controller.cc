@@ -195,7 +195,13 @@ bool InstantController::Update(const AutocompleteMatch& match,
   }
 
   if (full_text.empty()) {
-    Hide();
+    // In extended mode, blank the preview instead of flashing the NTP when the
+    // user backspaces out the omnibox text. (Assume they still intend to edit,
+    // so showing the NTP would just be distracting.)
+    if (mode_ == EXTENDED)
+      SendBlankQuery();
+    else
+      Hide();
     return false;
   }
 
@@ -310,6 +316,23 @@ bool InstantController::OnUpOrDownKeyPressed(int count) {
 }
 
 void InstantController::OnEscapeKeyPressed() {
+  if (mode_ == EXTENDED &&
+      active_tab_mode_.is_search_suggestions() &&
+      active_tab_mode_.is_origin_ntp() &&
+      loader_.get() && loader_->HasShownCustomNTPContent()) {
+    // We are showing search suggestions on top of an extended mode NTP where
+    // the page previously showed custom NTP content. The user pressed escape
+    // so will return to the NTP. To avoid janky flicker, assume the page will
+    // show custom NTP content again, and do not hide it.
+
+    // TODO(jered): Still clearing the uncommitted query here because otherwise
+    // the page behaves improperly on repeating the same query immediately. This
+    // behavior was not apparent when we used to Hide() in this case. Find out
+    // why, and then remove this call or this TODO.
+    SendBlankQuery();
+    return;
+  }
+
   if (model_.preview_state() != InstantModel::CUSTOM_NTP_CONTENT)
     Hide();
 }
@@ -332,10 +355,14 @@ void InstantController::Hide() {
 
   if (GetPreviewContents() && !last_full_text_.empty()) {
     // Send a blank query to ask the preview to clear out old results.
-    last_full_text_.clear();
-    last_user_text_.clear();
-    loader_->Update(last_full_text_, true);
+    SendBlankQuery();
   }
+}
+
+void InstantController::SendBlankQuery() {
+  last_full_text_.clear();
+  last_user_text_.clear();
+  loader_->Update(last_full_text_, true);
 }
 
 bool InstantController::IsCurrent() const {
@@ -524,12 +551,15 @@ void InstantController::OnAutocompleteGotFocus() {
   CreateDefaultLoader();
 }
 
-void InstantController::OnActiveTabModeChanged(bool active_tab_is_ntp) {
-  active_tab_is_ntp_ = active_tab_is_ntp;
-  if (GetPreviewContents()) {
-    loader_->OnActiveTabModeChanged(active_tab_is_ntp_);
-    // On navigation away from the NTP, hide custom content.
-    if (!active_tab_is_ntp_ &&
+void InstantController::OnActiveTabModeChanged(chrome::search::Mode new_mode) {
+  const bool is_ntp_changed = active_tab_mode_.is_ntp() != new_mode.is_ntp();
+  active_tab_mode_ = new_mode;
+  if (is_ntp_changed && GetPreviewContents()) {
+    loader_->OnActiveTabModeChanged(new_mode.is_ntp());
+    // On navigation away from the NTP, hide custom content. However keep
+    // the preview shown if searching, since it will soon show a suggestions
+    // dropdown and hiding it would cause flicker.
+    if (new_mode.is_default() &&
         model_.preview_state() == InstantModel::CUSTOM_NTP_CONTENT)
       Hide();
   }
@@ -654,8 +684,7 @@ InstantController::InstantController(chrome::BrowserInstantController* browser,
       last_verbatim_(false),
       last_transition_type_(content::PAGE_TRANSITION_LINK),
       last_match_was_search_(false),
-      is_omnibox_focused_(false),
-      active_tab_is_ntp_(false) {
+      is_omnibox_focused_(false) {
 }
 
 void InstantController::ResetLoader(const std::string& instant_url,
@@ -672,7 +701,7 @@ void InstantController::ResetLoader(const std::string& instant_url,
       loader_->OnAutocompleteGotFocus();
     else
       loader_->OnAutocompleteLostFocus();
-    loader_->OnActiveTabModeChanged(active_tab_is_ntp_);
+    loader_->OnActiveTabModeChanged(active_tab_mode_.is_ntp());
 
     // Reset the loader timer.
     stale_loader_timer_.Stop();
@@ -740,7 +769,8 @@ void InstantController::Show(InstantShownReason reason,
                              int height,
                              InstantSizeUnits units) {
   // Must be on NTP to show NTP content.
-  if (reason == INSTANT_SHOWN_CUSTOM_NTP_CONTENT && !active_tab_is_ntp_)
+  if (reason == INSTANT_SHOWN_CUSTOM_NTP_CONTENT &&
+      !active_tab_mode_.is_ntp())
     return;
 
   // Must have updated omnibox after most recent Hide() to show suggestions.

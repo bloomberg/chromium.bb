@@ -152,8 +152,8 @@ void BrowserInstantController::ActiveTabChanged(
 
 void BrowserInstantController::ModeChanged(const search::Mode& old_mode,
                                            const search::Mode& new_mode) {
-  if (instant() && old_mode.is_ntp() != new_mode.is_ntp())
-    instant_->OnActiveTabModeChanged(new_mode.is_ntp());
+  if (instant())
+    instant_->OnActiveTabModeChanged(new_mode);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
