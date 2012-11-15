@@ -474,6 +474,14 @@ def generate_simplified(
       r'^(\<\(PRODUCT_DIR\)\/[^\/\.]+)' +
       re.escape(variables.get('EXECUTABLE_SUFFIX', '')) +
       r'$')
+  # Ignored items.
+  IGNORED_ITEMS = (
+      # http://crbug.com/160539
+      'Media Cache/',
+      # The fr.pak is occuring when tracing on a system with a French locale.
+      '<(PRODUCT_DIR)/locales/fr.pak',
+      # 'First Run' is not created by the compile, but by the test itself.
+      '<(PRODUCT_DIR)/First Run')
 
   # Preparation work.
   relative_cwd = cleanup_path(relative_cwd)
@@ -522,9 +530,8 @@ def generate_simplified(
     if match:
       return match.group(1) + '<(EXECUTABLE_SUFFIX)'
 
-    # Blacklist logs and 'First Run' in the PRODUCT_DIR. First Run is not
-    # created by the compile, but by the test itself.
-    if LOG_FILE.match(f) or f == '<(PRODUCT_DIR)/First Run':
+    # Blacklist logs and other unimportant files.
+    if LOG_FILE.match(f) or f in IGNORED_ITEMS:
       return None
 
     if sys.platform == 'darwin':
