@@ -7,12 +7,12 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/location.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/location.h"
 #include "base/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/platform_file.h"
-#include "chrome/browser/google_apis/gdata_test_util.h"
+#include "chrome/browser/google_apis/test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;

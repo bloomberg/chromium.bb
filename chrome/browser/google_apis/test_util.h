@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_APIS_GDATA_TEST_UTIL_H_
-#define CHROME_BROWSER_GOOGLE_APIS_GDATA_TEST_UTIL_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_TEST_UTIL_H_
+#define CHROME_BROWSER_GOOGLE_APIS_TEST_UTIL_H_
 
-#include "chrome/browser/google_apis/gdata_test_util.h"
+#include "chrome/browser/google_apis/test_util.h"
 
 #include <string>
 
@@ -40,4 +40,4 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path);
 }  // namespace test_util
 }  // namespace google_apis
 
-#endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_TEST_UTIL_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_TEST_UTIL_H_
