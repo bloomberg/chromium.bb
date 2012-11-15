@@ -36,8 +36,6 @@ const char kSocketNotFoundError[] = "Socket not found";
 const char kSocketTypeInvalidError[] = "Socket type is not supported";
 const char kDnsLookupFailedError[] = "DNS resolution failed";
 const char kPermissionError[] = "App does not have permission";
-const char kExperimentalPermissionError[] =
-    "App does not have permission for experimental API";
 const char kNetworkListError[] = "Network lookup failed or unsupported";
 const char kTCPSocketBindError[] =
     "TCP socket does not support bind. For TCP server please use listen.";
@@ -286,11 +284,6 @@ SocketListenFunction::SocketListenFunction()
 SocketListenFunction::~SocketListenFunction() {}
 
 bool SocketListenFunction::Prepare() {
-  if (!GetExtension()->HasAPIPermission(APIPermission::kExperimental)) {
-    error_ = kExperimentalPermissionError;
-    return false;
-  }
-
   params_ = api::socket::Listen::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
@@ -329,11 +322,6 @@ SocketAcceptFunction::SocketAcceptFunction()
 SocketAcceptFunction::~SocketAcceptFunction() {}
 
 bool SocketAcceptFunction::Prepare() {
-  if (!GetExtension()->HasAPIPermission(APIPermission::kExperimental)) {
-    error_ = kExperimentalPermissionError;
-    return false;
-  }
-
   params_ = api::socket::Accept::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;

@@ -186,19 +186,6 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPServerExtension) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketExperimentalPermissionTest) {
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-
-  ExtensionTestMessageListener listener("ready", true);
-
-  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("socket/experimental")));
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-  listener.Reply("go");
-
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPServerUnbindOnUnload) {
   ASSERT_TRUE(RunExtensionTest("socket/unload")) << message_;
   ASSERT_TRUE(RunExtensionTest("socket/unload")) << message_;

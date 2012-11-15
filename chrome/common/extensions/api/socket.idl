@@ -197,7 +197,6 @@ namespace socket {
                        long port,
                        SendToCallback callback);
 
-    // This method is experimental and requires experimental API permission.
     // This method applies to TCP sockets only.
     // Listens for connections on the specified port and address. This
     // effectively makes this a server socket, and client socket
@@ -212,7 +211,6 @@ namespace socket {
                        optional long backlog,
                        ListenCallback callback);
 
-    // This method is experimental and requires experimental API permission.
     // This method applies to TCP sockets only.
     // Registers a callback function to be called when a connection is
     // accepted on this listening server socket. Listen must be called first.
