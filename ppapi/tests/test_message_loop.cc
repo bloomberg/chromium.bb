@@ -7,8 +7,8 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/cpp/core.h"
 #include "ppapi/cpp/logging.h"
+#include "ppapi/cpp/message_loop.h"
 #include "ppapi/cpp/module.h"
-#include "ppapi/cpp/dev/message_loop_dev.h"
 #include "ppapi/tests/testing_instance.h"
 #include "ppapi/utility/threading/simple_thread.h"
 
@@ -32,17 +32,17 @@ void TestMessageLoop::RunTests(const std::string& filter) {
 std::string TestMessageLoop::TestBasics() {
   // The main thread message loop should be valid, and equal to the "current"
   // one.
-  ASSERT_NE(0, pp::MessageLoop_Dev::GetForMainThread().pp_resource());
-  ASSERT_EQ(pp::MessageLoop_Dev::GetForMainThread().pp_resource(),
-            pp::MessageLoop_Dev::GetCurrent().pp_resource());
+  ASSERT_NE(0, pp::MessageLoop::GetForMainThread().pp_resource());
+  ASSERT_EQ(pp::MessageLoop::GetForMainThread().pp_resource(),
+            pp::MessageLoop::GetCurrent().pp_resource());
 
   // We shouldn't be able to attach a new loop to the main thread.
-  pp::MessageLoop_Dev loop(instance_);
+  pp::MessageLoop loop(instance_);
   ASSERT_EQ(PP_ERROR_INPROGRESS, loop.AttachToCurrentThread());
 
   // Nested loops aren't allowed.
   ASSERT_EQ(PP_ERROR_INPROGRESS,
-            pp::MessageLoop_Dev::GetForMainThread().Run());
+            pp::MessageLoop::GetForMainThread().Run());
 
   // We can't run on a loop that isn't attached to a thread.
   ASSERT_EQ(PP_ERROR_WRONG_THREAD, loop.Run());
@@ -52,7 +52,7 @@ std::string TestMessageLoop::TestBasics() {
 
 std::string TestMessageLoop::TestPost() {
   // Make sure we can post a task from the main thread back to the main thread.
-  pp::MessageLoop_Dev::GetCurrent().PostWork(callback_factory_.NewCallback(
+  pp::MessageLoop::GetCurrent().PostWork(callback_factory_.NewCallback(
       &TestMessageLoop::SetParamAndQuitTask, kMainToMain));
   main_loop_task_ran_.Wait();
   ASSERT_EQ(param_, kMainToMain);
@@ -77,7 +77,7 @@ std::string TestMessageLoop::TestPost() {
 
   // Nested loops aren't allowed.
   ASSERT_EQ(PP_ERROR_INPROGRESS,
-            pp::MessageLoop_Dev::GetForMainThread().Run());
+            pp::MessageLoop::GetForMainThread().Run());
   thread.message_loop().PostWork(callback_factory_.NewCallback(
       &TestMessageLoop::EchoParamToMainTask, kAfterStart));
   main_loop_task_ran_.Wait();
@@ -98,7 +98,7 @@ void TestMessageLoop::SetParamAndQuitTask(int32_t result, TestParam param) {
 
 void TestMessageLoop::EchoParamToMainTask(int32_t result, TestParam param) {
   PP_DCHECK(result == PP_OK);
-  pp::MessageLoop_Dev::GetForMainThread().PostWork(
+  pp::MessageLoop::GetForMainThread().PostWork(
       callback_factory_.NewCallback(
           &TestMessageLoop::SetParamAndQuitTask, param));
 }

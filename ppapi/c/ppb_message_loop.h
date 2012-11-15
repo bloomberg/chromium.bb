@@ -3,13 +3,31 @@
  * found in the LICENSE file.
  */
 
-/**
- * Defines the PPB_MessageLoop_Dev interface.
- */
-label Chrome {
-  M18 = 0.1
-};
+/* From ppb_message_loop.idl modified Mon Nov 12 13:33:16 2012. */
 
+#ifndef PPAPI_C_PPB_MESSAGE_LOOP_H_
+#define PPAPI_C_PPB_MESSAGE_LOOP_H_
+
+#include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
+#include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_stdint.h"
+
+#define PPB_MESSAGELOOP_INTERFACE_1_0 "PPB_MessageLoop;1.0"
+#define PPB_MESSAGELOOP_INTERFACE PPB_MESSAGELOOP_INTERFACE_1_0
+
+/**
+ * @file
+ * Defines the PPB_MessageLoop interface.
+ */
+
+
+/**
+ * @addtogroup Interfaces
+ * @{
+ */
 /**
  * A message loop allows PPAPI calls to be issued on a thread. You may not
  * issue any API calls on a thread without creating a message loop. It also
@@ -124,7 +142,7 @@ label Chrome {
  * implementation of your callback checks the "result" argument and returns
  * immediately on error.
  */
-interface PPB_MessageLoop_Dev {
+struct PPB_MessageLoop_1_0 {
   /**
    * Creates a message loop resource.
    *
@@ -132,20 +150,17 @@ interface PPB_MessageLoop_Dev {
    * issuing any other PPAPI calls on it, you must associate it with a message
    * loop by calling AttachToCurrentThread.
    */
-  PP_Resource Create(PP_Instance instance);
-
+  PP_Resource (*Create)(PP_Instance instance);
   /**
    * Returns a resource identifying the message loop for the main thread. The
    * main thread always has a message loop created by the system.
    */
-  PP_Resource GetForMainThread();
-
+  PP_Resource (*GetForMainThread)();
   /**
    * Returns a reference to the PPB_MessageLoop object attached to the current
    * thread. If there is no attached message loop, the return value will be 0.
    */
-  PP_Resource GetCurrent();
-
+  PP_Resource (*GetCurrent)();
   /**
    * Sets the given message loop resource as being the associated message loop
    * for the currently running thread.
@@ -171,8 +186,7 @@ interface PPB_MessageLoop_Dev {
    *     loop attached to it. See the interface level discussion about these
    *     special threads, which include realtime audio threads.
    */
-  int32_t AttachToCurrentThread([in] PP_Resource message_loop);
-
+  int32_t (*AttachToCurrentThread)(PP_Resource message_loop);
   /**
    * Runs the thread message loop. Running the message loop is required for you
    * to get issued completion callbacks on the thread.
@@ -195,8 +209,7 @@ interface PPB_MessageLoop_Dev {
    *     fashion (Run is already on the stack). This will occur if you attempt
    *     to call run on the main thread's message loop (see above).
    */
-  int32_t Run([in] PP_Resource message_loop);
-
+  int32_t (*Run)(PP_Resource message_loop);
   /**
    * Schedules work to run on the given message loop. This may be called from
    * any thread. Posted work will be executed in the order it was posted when
@@ -239,16 +252,16 @@ interface PPB_MessageLoop_Dev {
    *     is null (this will be the case if you pass PP_BlockUntilComplete()).
    *   - PP_ERROR_FAILED: The message loop has been destroyed.
    */
-  int32_t PostWork([in] PP_Resource message_loop,
-                   [in] PP_CompletionCallback callback,
-                   [in] int64_t delay_ms);
-
+  int32_t (*PostWork)(PP_Resource message_loop,
+                      struct PP_CompletionCallback callback,
+                      int64_t delay_ms);
   /**
    * Posts a quit message to the given message loop's work queue. Work posted
    * before that point will be processed before quitting.
    *
    * This may be called on the message loop registered for the current thread,
-   * or it may be called on the message loop registered for another thread.
+   * or it may be called on the message loop registered for another thread. It
+   * is an error to attempt to PostQuit() the main thread loop.
    *
    * @param should_destroy Marks the message loop as being in a destroyed state
    * and prevents further posting of messages.
@@ -264,5 +277,13 @@ interface PPB_MessageLoop_Dev {
    *     The main thread's message loop is managed by the system and can't be
    *     quit.
    */
-  int32_t PostQuit([in] PP_Resource message_loop, PP_Bool should_destroy);
+  int32_t (*PostQuit)(PP_Resource message_loop, PP_Bool should_destroy);
 };
+
+typedef struct PPB_MessageLoop_1_0 PPB_MessageLoop;
+/**
+ * @}
+ */
+
+#endif  /* PPAPI_C_PPB_MESSAGE_LOOP_H_ */
+

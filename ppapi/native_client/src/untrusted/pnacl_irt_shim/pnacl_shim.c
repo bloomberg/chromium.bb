@@ -20,7 +20,6 @@
 #include "ppapi/c/dev/ppb_ime_input_event_dev.h"
 #include "ppapi/c/dev/ppb_keyboard_input_event_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
-#include "ppapi/c/dev/ppb_message_loop_dev.h"
 #include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/c/dev/ppb_resource_array_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
@@ -53,6 +52,7 @@
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_message_loop.h"
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_mouse_cursor.h"
 #include "ppapi/c/ppb_mouse_lock.h"
@@ -134,6 +134,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_0_5;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MessageLoop_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Messaging_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseCursor_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseLock_1_0;
@@ -176,7 +177,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Memory_Dev_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MessageLoop_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Printing_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Printing_Dev_0_7;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ResourceArray_Dev_0_1;
@@ -759,6 +759,52 @@ PP_Bool Pnacl_M13_PPB_Instance_IsFullFrame(PP_Instance instance) {
 /* End wrapper methods for PPB_Instance_0_5 */
 
 /* Not generating wrapper methods for PPB_Instance_1_0 */
+
+/* Begin wrapper methods for PPB_MessageLoop_1_0 */
+
+static __attribute__((pnaclcall))
+PP_Resource Pnacl_M25_PPB_MessageLoop_Create(PP_Instance instance) {
+  const struct PPB_MessageLoop_1_0 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_1_0.real_iface;
+  return iface->Create(instance);
+}
+
+static __attribute__((pnaclcall))
+PP_Resource Pnacl_M25_PPB_MessageLoop_GetForMainThread() {
+  const struct PPB_MessageLoop_1_0 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_1_0.real_iface;
+  return iface->GetForMainThread();
+}
+
+static __attribute__((pnaclcall))
+PP_Resource Pnacl_M25_PPB_MessageLoop_GetCurrent() {
+  const struct PPB_MessageLoop_1_0 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_1_0.real_iface;
+  return iface->GetCurrent();
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M25_PPB_MessageLoop_AttachToCurrentThread(PP_Resource message_loop) {
+  const struct PPB_MessageLoop_1_0 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_1_0.real_iface;
+  return iface->AttachToCurrentThread(message_loop);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M25_PPB_MessageLoop_Run(PP_Resource message_loop) {
+  const struct PPB_MessageLoop_1_0 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_1_0.real_iface;
+  return iface->Run(message_loop);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M25_PPB_MessageLoop_PostWork(PP_Resource message_loop, struct PP_CompletionCallback callback, int64_t delay_ms) {
+  const struct PPB_MessageLoop_1_0 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_1_0.real_iface;
+  return iface->PostWork(message_loop, callback, delay_ms);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M25_PPB_MessageLoop_PostQuit(PP_Resource message_loop, PP_Bool should_destroy) {
+  const struct PPB_MessageLoop_1_0 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_1_0.real_iface;
+  return iface->PostQuit(message_loop, should_destroy);
+}
+
+/* End wrapper methods for PPB_MessageLoop_1_0 */
 
 /* Begin wrapper methods for PPB_Messaging_1_0 */
 
@@ -1571,52 +1617,6 @@ void Pnacl_M21_PPB_IMEInputEvent_Dev_GetSelection(PP_Resource ime_event, uint32_
 /* Not generating wrapper methods for PPB_KeyboardInputEvent_Dev_0_1 */
 
 /* Not generating wrapper methods for PPB_Memory_Dev_0_1 */
-
-/* Begin wrapper methods for PPB_MessageLoop_Dev_0_1 */
-
-static __attribute__((pnaclcall))
-PP_Resource Pnacl_M18_PPB_MessageLoop_Dev_Create(PP_Instance instance) {
-  const struct PPB_MessageLoop_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_Dev_0_1.real_iface;
-  return iface->Create(instance);
-}
-
-static __attribute__((pnaclcall))
-PP_Resource Pnacl_M18_PPB_MessageLoop_Dev_GetForMainThread() {
-  const struct PPB_MessageLoop_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_Dev_0_1.real_iface;
-  return iface->GetForMainThread();
-}
-
-static __attribute__((pnaclcall))
-PP_Resource Pnacl_M18_PPB_MessageLoop_Dev_GetCurrent() {
-  const struct PPB_MessageLoop_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_Dev_0_1.real_iface;
-  return iface->GetCurrent();
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M18_PPB_MessageLoop_Dev_AttachToCurrentThread(PP_Resource message_loop) {
-  const struct PPB_MessageLoop_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_Dev_0_1.real_iface;
-  return iface->AttachToCurrentThread(message_loop);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M18_PPB_MessageLoop_Dev_Run(PP_Resource message_loop) {
-  const struct PPB_MessageLoop_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_Dev_0_1.real_iface;
-  return iface->Run(message_loop);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M18_PPB_MessageLoop_Dev_PostWork(PP_Resource message_loop, struct PP_CompletionCallback callback, int64_t delay_ms) {
-  const struct PPB_MessageLoop_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_Dev_0_1.real_iface;
-  return iface->PostWork(message_loop, callback, delay_ms);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M18_PPB_MessageLoop_Dev_PostQuit(PP_Resource message_loop, PP_Bool should_destroy) {
-  const struct PPB_MessageLoop_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_MessageLoop_Dev_0_1.real_iface;
-  return iface->PostQuit(message_loop, should_destroy);
-}
-
-/* End wrapper methods for PPB_MessageLoop_Dev_0_1 */
 
 /* Not generating wrapper methods for PPB_Printing_Dev_0_6 */
 
@@ -3565,6 +3565,16 @@ struct PPB_Instance_0_5 Pnacl_Wrappers_PPB_Instance_0_5 = {
 
 /* Not generating wrapper interface for PPB_Instance_1_0 */
 
+struct PPB_MessageLoop_1_0 Pnacl_Wrappers_PPB_MessageLoop_1_0 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M25_PPB_MessageLoop_Create,
+    .GetForMainThread = (PP_Resource (*)())&Pnacl_M25_PPB_MessageLoop_GetForMainThread,
+    .GetCurrent = (PP_Resource (*)())&Pnacl_M25_PPB_MessageLoop_GetCurrent,
+    .AttachToCurrentThread = (int32_t (*)(PP_Resource message_loop))&Pnacl_M25_PPB_MessageLoop_AttachToCurrentThread,
+    .Run = (int32_t (*)(PP_Resource message_loop))&Pnacl_M25_PPB_MessageLoop_Run,
+    .PostWork = (int32_t (*)(PP_Resource message_loop, struct PP_CompletionCallback callback, int64_t delay_ms))&Pnacl_M25_PPB_MessageLoop_PostWork,
+    .PostQuit = (int32_t (*)(PP_Resource message_loop, PP_Bool should_destroy))&Pnacl_M25_PPB_MessageLoop_PostQuit
+};
+
 struct PPB_Messaging_1_0 Pnacl_Wrappers_PPB_Messaging_1_0 = {
     .PostMessage = (void (*)(PP_Instance instance, struct PP_Var message))&Pnacl_M14_PPB_Messaging_PostMessage
 };
@@ -3786,16 +3796,6 @@ struct PPB_IMEInputEvent_Dev_0_2 Pnacl_Wrappers_PPB_IMEInputEvent_Dev_0_2 = {
 /* Not generating wrapper interface for PPB_KeyboardInputEvent_Dev_0_1 */
 
 /* Not generating wrapper interface for PPB_Memory_Dev_0_1 */
-
-struct PPB_MessageLoop_Dev_0_1 Pnacl_Wrappers_PPB_MessageLoop_Dev_0_1 = {
-    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M18_PPB_MessageLoop_Dev_Create,
-    .GetForMainThread = (PP_Resource (*)())&Pnacl_M18_PPB_MessageLoop_Dev_GetForMainThread,
-    .GetCurrent = (PP_Resource (*)())&Pnacl_M18_PPB_MessageLoop_Dev_GetCurrent,
-    .AttachToCurrentThread = (int32_t (*)(PP_Resource message_loop))&Pnacl_M18_PPB_MessageLoop_Dev_AttachToCurrentThread,
-    .Run = (int32_t (*)(PP_Resource message_loop))&Pnacl_M18_PPB_MessageLoop_Dev_Run,
-    .PostWork = (int32_t (*)(PP_Resource message_loop, struct PP_CompletionCallback callback, int64_t delay_ms))&Pnacl_M18_PPB_MessageLoop_Dev_PostWork,
-    .PostQuit = (int32_t (*)(PP_Resource message_loop, PP_Bool should_destroy))&Pnacl_M18_PPB_MessageLoop_Dev_PostQuit
-};
 
 /* Not generating wrapper interface for PPB_Printing_Dev_0_6 */
 
@@ -4356,6 +4356,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_1_0 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MessageLoop_1_0 = {
+  .iface_macro = PPB_MESSAGELOOP_INTERFACE_1_0,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_MessageLoop_1_0,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Messaging_1_0 = {
   .iface_macro = PPB_MESSAGING_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Messaging_1_0,
@@ -4605,12 +4611,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Memory_Dev_0_1 = {
   .iface_macro = PPB_MEMORY_DEV_INTERFACE_0_1,
   .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MessageLoop_Dev_0_1 = {
-  .iface_macro = PPB_MESSAGELOOP_DEV_INTERFACE_0_1,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_MessageLoop_Dev_0_1,
   .real_iface = NULL
 };
 
@@ -5037,6 +5037,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_Instance_0_5,
   &Pnacl_WrapperInfo_PPB_Instance_1_0,
+  &Pnacl_WrapperInfo_PPB_MessageLoop_1_0,
   &Pnacl_WrapperInfo_PPB_Messaging_1_0,
   &Pnacl_WrapperInfo_PPB_MouseCursor_1_0,
   &Pnacl_WrapperInfo_PPB_MouseLock_1_0,
@@ -5073,7 +5074,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_Memory_Dev_0_1,
-  &Pnacl_WrapperInfo_PPB_MessageLoop_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_Printing_Dev_0_6,
   &Pnacl_WrapperInfo_PPB_Printing_Dev_0_7,
   &Pnacl_WrapperInfo_PPB_ResourceArray_Dev_0_1,

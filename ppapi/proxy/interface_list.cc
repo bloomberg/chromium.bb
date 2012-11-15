@@ -19,7 +19,6 @@
 #include "ppapi/c/dev/ppb_ime_input_event_dev.h"
 #include "ppapi/c/dev/ppb_keyboard_input_event_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
-#include "ppapi/c/dev/ppb_message_loop_dev.h"
 #include "ppapi/c/dev/ppb_opengles2ext_dev.h"
 #include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/c/dev/ppb_resource_array_dev.h"
@@ -40,6 +39,7 @@
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_message_loop.h"
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_mouse_lock.h"
 #include "ppapi/c/ppb_opengles2.h"
@@ -208,8 +208,8 @@ InterfaceList::InterfaceList() {
   AddProxy(API_ID_PPP_CLASS, &PPP_Class_Proxy::Create);
   AddPPB(PPB_CORE_INTERFACE_1_0, API_ID_PPB_CORE,
          PPB_Core_Proxy::GetPPB_Core_Interface(), PERMISSION_NONE);
-  AddPPB(PPB_MESSAGELOOP_DEV_INTERFACE_0_1, API_ID_NONE,
-         PPB_MessageLoop_Proxy::GetInterface(), PERMISSION_DEV);
+  AddPPB(PPB_MESSAGELOOP_INTERFACE_1_0, API_ID_NONE,
+         PPB_MessageLoop_Proxy::GetInterface(), PERMISSION_NONE);
   AddPPB(PPB_OPENGLES2_INTERFACE_1_0, API_ID_NONE,
          PPB_OpenGLES2_Shared::GetInterface(), PERMISSION_NONE);
   AddPPB(PPB_OPENGLES2_INSTANCEDARRAYS_INTERFACE_1_0, API_ID_NONE,

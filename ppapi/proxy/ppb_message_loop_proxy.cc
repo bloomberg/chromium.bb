@@ -10,8 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "ppapi/c/dev/ppb_message_loop_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_message_loop.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
@@ -248,7 +248,7 @@ int32_t PostQuit(PP_Resource message_loop, PP_Bool should_destroy) {
   return PP_ERROR_BADRESOURCE;
 }
 
-const PPB_MessageLoop_Dev_0_1 ppb_message_loop_interface = {
+const PPB_MessageLoop_1_0 ppb_message_loop_interface = {
   &Create,
   &GetForMainThread,
   &GetCurrent,
@@ -266,7 +266,7 @@ PPB_MessageLoop_Proxy::~PPB_MessageLoop_Proxy() {
 }
 
 // static
-const PPB_MessageLoop_Dev_0_1* PPB_MessageLoop_Proxy::GetInterface() {
+const PPB_MessageLoop_1_0* PPB_MessageLoop_Proxy::GetInterface() {
   return &ppb_message_loop_interface;
 }
 

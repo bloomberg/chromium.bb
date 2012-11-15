@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_CPP_DEV_MESSAGE_LOOP_DEV_H_
-#define PPAPI_CPP_DEV_MESSAGE_LOOP_DEV_H_
+#ifndef PPAPI_CPP_MESSAGE_LOOP_H_
+#define PPAPI_CPP_MESSAGE_LOOP_H_
 
 #include "ppapi/cpp/resource.h"
 
@@ -124,10 +124,10 @@ class InstanceHandle;
 /// This will run the callback with an error value, and assumes that the
 /// implementation of your callback checks the "result" argument and returns
 /// immediately on error.
-class MessageLoop_Dev : public Resource {
+class MessageLoop : public Resource {
  public:
   /// Creates an is_null() MessageLoop resource.
-  MessageLoop_Dev();
+  MessageLoop();
 
   /// Creates a message loop associated with the given instance. The resource
   /// will be is_null() on failure.
@@ -135,15 +135,15 @@ class MessageLoop_Dev : public Resource {
   /// This may be called from any thread. After your thread starts but before
   /// issuing any other PPAPI calls on it, you must associate it with a message
   /// loop by calling AttachToCurrentThread.
-  explicit MessageLoop_Dev(const InstanceHandle& instance);
+  explicit MessageLoop(const InstanceHandle& instance);
 
-  MessageLoop_Dev(const MessageLoop_Dev& other);
+  MessageLoop(const MessageLoop& other);
 
   /// Takes an additional ref to the resource.
-  explicit MessageLoop_Dev(PP_Resource pp_message_loop);
+  explicit MessageLoop(PP_Resource pp_message_loop);
 
-  static MessageLoop_Dev GetForMainThread();
-  static MessageLoop_Dev GetCurrent();
+  static MessageLoop GetForMainThread();
+  static MessageLoop GetCurrent();
 
   /// Sets the given message loop resource as being the associated message loop
   /// for the currently running thread.
@@ -238,7 +238,8 @@ class MessageLoop_Dev : public Resource {
   /// before that point will be processed before quitting.
   ///
   /// This may be called on the message loop registered for the current thread,
-  /// or it may be called on the message loop registered for another thread.
+  /// or it may be called on the message loop registered for another thread. It
+  /// is an error to attempt to quit the main thread loop.
   ///
   /// @param should_destroy Marks the message loop as being in a destroyed
   /// state and prevents further posting of messages.
@@ -258,4 +259,4 @@ class MessageLoop_Dev : public Resource {
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_DEV_MESSAGE_LOOP_DEV_H_
+#endif  // PPAPI_CPP_MESSAGE_LOOP_H_

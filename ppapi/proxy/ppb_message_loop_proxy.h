@@ -14,7 +14,7 @@
 #include "ppapi/shared_impl/ppb_message_loop_shared.h"
 #include "ppapi/thunk/ppb_message_loop_api.h"
 
-struct PPB_MessageLoop_Dev_0_1;
+struct PPB_MessageLoop_1_0;
 
 namespace ppapi {
 namespace proxy {
@@ -98,7 +98,7 @@ class PPB_MessageLoop_Proxy : public InterfaceProxy {
   explicit PPB_MessageLoop_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_MessageLoop_Proxy();
 
-  static const PPB_MessageLoop_Dev_0_1* GetInterface();
+  static const PPB_MessageLoop_1_0* GetInterface();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PPB_MessageLoop_Proxy);

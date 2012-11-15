@@ -13,7 +13,7 @@ namespace pp {
 namespace {
 
 struct ThreadData {
-  MessageLoop_Dev message_loop;
+  MessageLoop message_loop;
 
   SimpleThread::ThreadFunc func;
   void* user_data;

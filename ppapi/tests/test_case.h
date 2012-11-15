@@ -12,8 +12,8 @@
 
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
-#include "ppapi/cpp/dev/message_loop_dev.h"
 #include "ppapi/cpp/dev/scrollbar_dev.h"
+#include "ppapi/cpp/message_loop.h"
 #include "ppapi/cpp/view.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
@@ -125,7 +125,7 @@ class TestCase {
     // supported in-process). For in-process, just consider it a pass.
     if (!testing_interface_->IsOutOfProcess())
       return std::string();
-    pp::MessageLoop_Dev background_loop(instance_);
+    pp::MessageLoop background_loop(instance_);
     ThreadedTestRunner<T> runner(instance_->pp_instance(),
         static_cast<T*>(this), test_to_run, background_loop);
     RunOnThreadInternal(&ThreadedTestRunner<T>::ThreadFunction, &runner,
@@ -164,7 +164,7 @@ class TestCase {
     ThreadedTestRunner(PP_Instance instance,
                        T* test_case,
                        TestMethodType test_to_run,
-                       pp::MessageLoop_Dev loop)
+                       pp::MessageLoop loop)
         : instance_(instance),
           test_case_(test_case),
           test_to_run_(test_to_run),
@@ -191,7 +191,7 @@ class TestCase {
     PP_Instance instance_;
     T* test_case_;
     TestMethodType test_to_run_;
-    pp::MessageLoop_Dev loop_;
+    pp::MessageLoop loop_;
   };
 
   // The internals for RunOnThread. This allows us to avoid including

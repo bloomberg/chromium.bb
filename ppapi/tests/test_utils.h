@@ -11,7 +11,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/dev/message_loop_dev.h"
+#include "ppapi/cpp/message_loop.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 // Timeout to wait for some action to complete.
@@ -169,7 +169,7 @@ class TestCompletionCallback {
   unsigned run_count_;
   PP_Instance instance_;
   Delegate* delegate_;
-  pp::MessageLoop_Dev target_loop_;
+  pp::MessageLoop target_loop_;
 };
 
 // Verifies that the callback didn't record any errors. If the callback is run
