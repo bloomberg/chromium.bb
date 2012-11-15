@@ -1722,9 +1722,10 @@ void RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl* policy,
   if (empty_allowed && url->is_empty())
     return;
 
-  // TODO(creis): Change this to a DCHECK once we have crash reports from
-  // the field, indicating which messages are sending swappedout://.
-  CHECK(GURL(kSwappedOutURL) != *url);
+  // The browser process should never hear the swappedout:// URL from any
+  // of the renderer's messages.  Check for this in debug builds, but don't
+  // let it crash a release browser.
+  DCHECK(GURL(kSwappedOutURL) != *url);
 
   if (!url->is_valid()) {
     // Have to use about:blank for the denied case, instead of an empty GURL.
