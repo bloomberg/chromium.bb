@@ -86,20 +86,19 @@ ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
                        ui::kControlSpacing, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(container), label_, FALSE, FALSE, 0);
 
-  GtkWidget* separator = gtk_hseparator_new();
-  gtk_box_pack_start(GTK_BOX(container), separator, FALSE, FALSE, 0);
-
-  GtkWidget* set_default_button = theme_service->BuildChromeButton();
-  GtkWidget* label = theme_service->BuildLabel(
-      l10n_util::GetStringUTF8(IDS_ZOOM_SET_DEFAULT).c_str(), ui::kGdkBlack);
-  gtk_container_add(GTK_CONTAINER(set_default_button), label);
+  GtkWidget* set_default_button = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_ZOOM_SET_DEFAULT).c_str());
 
   GtkWidget* alignment = gtk_alignment_new(0, 0, 1, 1);
-  gtk_alignment_set_padding(
-      GTK_ALIGNMENT(alignment), 0, 0, ui::kControlSpacing, ui::kControlSpacing);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
+                            0,
+                            ui::kControlSpacing,
+                            ui::kControlSpacing,
+                            ui::kControlSpacing);
   gtk_container_add(GTK_CONTAINER(alignment), set_default_button);
 
   gtk_box_pack_start(GTK_BOX(container), alignment, FALSE, FALSE, 0);
+
   g_signal_connect(set_default_button, "clicked",
                    G_CALLBACK(&OnSetDefaultLinkClickThunk), this);
 
