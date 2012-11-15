@@ -96,6 +96,15 @@
         'browser/ui/android/window_android_helper.h',
         'browser/ui/app_list/app_list_controller.h',
         'browser/ui/app_list/app_list_controller.cc',
+        'browser/ui/app_list/app_list_view_delegate.cc',
+        'browser/ui/app_list/app_list_view_delegate.h',
+        'browser/ui/app_list/apps_model_builder.cc',
+        'browser/ui/app_list/apps_model_builder.h',
+        'browser/ui/app_list/chrome_app_list_item.h',
+        'browser/ui/app_list/extension_app_item.cc',
+        'browser/ui/app_list/extension_app_item.h',
+        'browser/ui/app_list/search_builder.cc',
+        'browser/ui/app_list/search_builder.h',
         'browser/ui/app_modal_dialogs/app_modal_dialog.cc',
         'browser/ui/app_modal_dialogs/app_modal_dialog.h',
         'browser/ui/app_modal_dialogs/app_modal_dialog_queue.cc',
@@ -2277,21 +2286,9 @@
           ],
         }],
         ['use_ash==1', {
-          'sources': [
-            'browser/ui/app_list/app_list_view_delegate.cc',
-            'browser/ui/app_list/app_list_view_delegate.h',
-            'browser/ui/app_list/apps_model_builder.cc',
-            'browser/ui/app_list/apps_model_builder.h',
-            'browser/ui/app_list/chrome_app_list_item.h',
-            'browser/ui/app_list/extension_app_item.cc',
-            'browser/ui/app_list/extension_app_item.h',
-            'browser/ui/app_list/search_builder.cc',
-            'browser/ui/app_list/search_builder.h',
-          ],
           'dependencies': [
             '../ash/ash.gyp:ash',
             '../ash/ash_strings.gyp:ash_strings',
-            '../ui/app_list/app_list.gyp:app_list',
             '../ui/message_center/message_center.gyp:message_center',
           ],
         }],
@@ -2646,15 +2643,6 @@
             '../ui/views/views.gyp:views',
           ],
           'sources': [
-            'browser/ui/app_list/app_list_view_delegate.cc',
-            'browser/ui/app_list/app_list_view_delegate.h',
-            'browser/ui/app_list/apps_model_builder.cc',
-            'browser/ui/app_list/apps_model_builder.h',
-            'browser/ui/app_list/chrome_app_list_item.h',
-            'browser/ui/app_list/extension_app_item.cc',
-            'browser/ui/app_list/extension_app_item.h',
-            'browser/ui/app_list/search_builder.cc',
-            'browser/ui/app_list/search_builder.h',
             'browser/ui/views/network_profile_bubble_view.cc',
             'browser/ui/views/network_profile_bubble_view.h',
             'browser/ui/webui/conflicts_ui.cc',
@@ -2754,6 +2742,16 @@
             ['exclude', '^browser/ui/views/select_file_dialog_extension_factory.h'],
           ]}
         ],
+        ['enable_app_list==1', {
+          'dependencies': [
+            '../ui/app_list/app_list.gyp:app_list',
+          ],
+        }, { # else: enable_app_list==0
+          'sources/': [
+            ['exclude', '^browser/ui/views/app_list/'],
+            ['exclude', '^browser/ui/app_list/'],
+          ]
+        }],
       ],
     },
   ],

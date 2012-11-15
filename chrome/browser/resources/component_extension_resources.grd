@@ -103,7 +103,7 @@
       <include name="IDR_SCRIPT_BUBBLE_POPUP_HTML" file="script_bubble/popup.html" flattenhtml="false" type="BINDATA" />
       <include name="IDR_SCRIPT_BUBBLE_POPUP_JS" file="script_bubble/popup.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_SCRIPT_BUBBLE_POPUP_ICON" file="script_bubble/16.png" flattenhtml="false" type="BINDATA" />
-      <if expr="is_win">
+      <if expr="pp_ifdef('enable_settings_app')">
         <include name="IDR_SETTINGS_APP_JS" file="settings_app/settings_app.js" type="BINDATA" />
       </if>
     </includes>

@@ -655,7 +655,7 @@
       <structure type="chrome_scaled_image" name="IDR_SEARCH_ENGINE_CHANGE_ALERT" file="protector_search_alert.png" />
       <structure type="chrome_scaled_image" name="IDR_SEARCH_ENGINE_CHANGE_BADGE" file="protector_search_badge.png" />
       <structure type="chrome_scaled_image" name="IDR_SEARCH_ENGINE_CHANGE_MENU" file="protector_search_menu.png" />
-      <if expr="is_win">
+      <if expr="pp_ifdef('enable_settings_app')">
         <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_128" file="settings_app_icon_128.png" />
         <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_16" file="settings_app_icon_16.png" />
       </if>

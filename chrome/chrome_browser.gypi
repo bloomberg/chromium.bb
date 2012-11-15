@@ -2748,7 +2748,6 @@
             '../google_update/google_update.gyp:google_update',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
-            '../ui/app_list/app_list.gyp:app_list',
             '../ui/views/controls/webview/webview.gyp:webview',
             '../ui/views/views.gyp:views',
           ],
@@ -2855,13 +2854,18 @@
             'browser/protector/settings_change_global_error_delegate.h',
           ],
         }],
-        [ 'use_openssl==1', {
+        ['use_openssl==1', {
           'sources!': [
             'browser/importer/nss_decryptor.cc',
             'browser/importer/nss_decryptor_system_nss.cc',
             'browser/importer/nss_decryptor_system_nss.h',
-          ]},
-        ],
+          ]
+        }],
+        ['enable_app_list==1', {
+          'dependencies': [
+            '../ui/app_list/app_list.gyp:app_list',
+          ]
+        }],
       ],
       'target_conditions': [
         # Need 'target_conditions' to override default filename_rules to include

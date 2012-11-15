@@ -95,6 +95,6 @@
 <include src="../sync_setup_overlay.js"></include>
 <include src="../uber/uber_utils.js"></include>
 <include src="options.js"></include>
-<if expr="is_win">
+<if expr="pp_ifdef('enable_settings_app')">
   <include src="options_settings_app.js"></include>
 </if>
