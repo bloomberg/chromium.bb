@@ -115,7 +115,7 @@ gfx::NativeWindow ScreenAsh::GetWindowAtCursorScreenPoint() {
 }
 
 int ScreenAsh::GetNumDisplays() {
-  return GetDisplayManager()->GetNumDisplays();
+  return DisplayController::GetNumDisplays();
 }
 
 gfx::Display ScreenAsh::GetDisplayNearestWindow(gfx::NativeView window) const {

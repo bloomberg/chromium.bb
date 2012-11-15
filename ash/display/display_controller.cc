@@ -34,8 +34,14 @@ namespace ash {
 namespace {
 
 // Primary display stored in global object as it can be
-// accessed after Shell is deleted.
+// accessed after Shell is deleted. A separate display instance is created
+// during the shutdown instead of always keeping two display instances
+// (one here and another one in display_manager) in sync, which is error prone.
 int64 primary_display_id = gfx::Display::kInvalidDisplayID;
+gfx::Display* primary_display_for_shutdown = NULL;
+// Keeps the number of displays during the shutdown after
+// ash::Shell:: is deleted.
+int num_displays_for_shutdown = -1;
 
 // The maximum value for 'offset' in DisplayLayout in case of outliers.  Need
 // to change this value in case to support even larger displays.
@@ -159,11 +165,19 @@ DisplayController::DisplayController()
   // Reset primary display to make sure that tests don't use
   // stale display info from previous tests.
   primary_display_id = gfx::Display::kInvalidDisplayID;
+  delete primary_display_for_shutdown;
+  primary_display_for_shutdown = NULL;
+  num_displays_for_shutdown = -1;
 
   Shell::GetScreen()->AddObserver(this);
 }
 
 DisplayController::~DisplayController() {
+  DCHECK(!primary_display_for_shutdown);
+  primary_display_for_shutdown = new gfx::Display(
+      GetDisplayManager()->GetDisplayForId(primary_display_id));
+  num_displays_for_shutdown = GetDisplayManager()->GetNumDisplays();
+
   Shell::GetScreen()->RemoveObserver(this);
   // Delete all root window controllers, which deletes root window
   // from the last so that the primary root window gets deleted last.
@@ -178,7 +192,16 @@ DisplayController::~DisplayController() {
 // static
 const gfx::Display& DisplayController::GetPrimaryDisplay() {
   DCHECK_NE(primary_display_id, gfx::Display::kInvalidDisplayID);
+  if (primary_display_for_shutdown)
+    return *primary_display_for_shutdown;
   return GetDisplayManager()->GetDisplayForId(primary_display_id);
+}
+
+// static
+int DisplayController::GetNumDisplays() {
+  if (num_displays_for_shutdown >= 0)
+    return num_displays_for_shutdown;
+  return GetDisplayManager()->GetNumDisplays();
 }
 
 // static

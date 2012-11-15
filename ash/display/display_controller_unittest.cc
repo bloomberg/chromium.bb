@@ -71,6 +71,17 @@ void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
   SetSecondaryDisplayLayoutAndOffset(position, 0);
 }
 
+class DisplayControllerShutdownTest : public test::AshTestBase {
+ public:
+  virtual void TearDown() OVERRIDE {
+    test::AshTestBase::TearDown();
+    // Make sure that primary display is accessible after shutdown.
+    gfx::Display primary = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+    EXPECT_EQ("0,0 444x333", primary.bounds().ToString());
+    EXPECT_EQ(2, gfx::Screen::GetNativeScreen()->GetNumDisplays());
+  }
+};
+
 }  // namespace
 
 typedef test::AshTestBase DisplayControllerTest;
@@ -81,11 +92,17 @@ typedef test::AshTestBase DisplayControllerTest;
 #define MAYBE_SecondaryDisplayLayout DISABLED_SecondaryDisplayLayout
 #define MAYBE_BoundsUpdated DISABLED_BoundsUpdated
 #define MAYBE_UpdateDisplayWithHostOrigin DISABLED_UpdateDisplayWithHostOrigin
+#define MAYBE_Shutdown DISABLED_Shutdown
 #else
 #define MAYBE_SecondaryDisplayLayout SecondaryDisplayLayout
 #define MAYBE_BoundsUpdated BoundsUpdated
 #define MAYBE_UpdateDisplayWithHostOrigin UpdateDisplayWithHostOrigin
+#define MAYBE_Shutdown Shutdown
 #endif
+
+TEST_F(DisplayControllerShutdownTest, MAYBE_Shutdown) {
+  UpdateDisplay("444x333, 200x200");
+}
 
 TEST_F(DisplayControllerTest, MAYBE_SecondaryDisplayLayout) {
   TestObserver observer;

@@ -82,9 +82,13 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   DisplayController();
   virtual ~DisplayController();
 
-  // Gets primary display. This information is stored in global
-  // object as this can be accessed after Shell is closed.
+  // Retruns primary display. This is safe to use after ash::Shell is
+  // deleted.
   static const gfx::Display& GetPrimaryDisplay();
+
+  // Returns the number of display. This is safe to use after
+  // ash::Shell is deleted.
+  static int GetNumDisplays();
 
   // True if the primary display has been initialized.
   static bool HasPrimaryDisplay();
