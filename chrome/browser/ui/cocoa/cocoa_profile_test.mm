@@ -9,6 +9,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread.h"
 
@@ -85,7 +86,7 @@ void CocoaProfileTest::TearDown() {
 void CocoaProfileTest::CloseBrowserWindow() {
   // Check to make sure a window was actually created.
   DCHECK(browser_->window());
-  chrome::CloseAllTabs(browser_.get());
+  browser_->tab_strip_model()->CloseAllTabs();
   chrome::CloseWindow(browser_.get());
   // |browser_| will be deleted by its BrowserWindowController.
   ignore_result(browser_.release());

@@ -25,8 +25,6 @@ class Rect;
 
 namespace chrome {
 
-int GetIndexOfTab(const Browser* browser, const content::WebContents* contents);
-
 TabContents* GetActiveTabContents(const Browser* browser);
 content::WebContents* GetActiveWebContents(const Browser* browser);
 
@@ -39,19 +37,11 @@ void ActivateTabAt(Browser* browser, int index, bool user_gesture);
 // means to append it to the end of the tab strip.
 void AddBlankTabAt(Browser* browser, int index, bool foreground);
 
-// Used by extensions.
-bool IsTabStripEditable(Browser* browser);
-
 // Adds a selected tab with the specified URL and transition, returns the
 // created TabContents.
 content::WebContents* AddSelectedTabWithURL(Browser* browser,
                                             const GURL& url,
                                             content::PageTransition transition);
-
-// Adds |tab_contents| to |browser|'s tabstrip.
-void AddTab(Browser* browser,
-            TabContents* tab_contents,
-            content::PageTransition type);
 
 // Creates a new tab with the already-created WebContents 'new_contents'.
 // The window for the added contents will be reparented correctly when this
@@ -66,8 +56,6 @@ void AddWebContents(Browser* browser,
                     bool user_gesture,
                     bool* was__blocked);
 void CloseWebContents(Browser* browser, content::WebContents* contents);
-
-void CloseAllTabs(Browser* browser);
 
 // Centralized methods for creating a TabContents, configuring and
 // installing all its supporting objects and observers.

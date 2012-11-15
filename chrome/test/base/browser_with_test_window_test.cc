@@ -151,7 +151,7 @@ void BrowserWithTestWindowTest::DestroyBrowserAndProfile() {
   if (browser_.get()) {
     // Make sure we close all tabs, otherwise Browser isn't happy in its
     // destructor.
-    chrome::CloseAllTabs(browser());
+    browser()->tab_strip_model()->CloseAllTabs();
     browser_.reset(NULL);
   }
   window_.reset(NULL);

@@ -61,7 +61,7 @@ BrowserExtensionWindowController::CreateWindowValueWithTabs(
 bool BrowserExtensionWindowController::CanClose(Reason* reason) const {
   // Don't let an extension remove the window if the user is dragging tabs
   // in that window.
-  if (!chrome::IsTabStripEditable(browser_)) {
+  if (!browser_->window()->IsTabStripEditable()) {
     *reason = extensions::WindowController::REASON_NOT_EDITABLE;
     return false;
   }

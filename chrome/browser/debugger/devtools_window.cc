@@ -159,7 +159,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     Browser* browser,
     DevToolsToggleAction action) {
   if (action == DEVTOOLS_TOGGLE_ACTION_TOGGLE && browser->is_devtools()) {
-    chrome::CloseAllTabs(browser);
+    browser->tab_strip_model()->CloseAllTabs();
     return NULL;
   }
   RenderViewHost* inspected_rvh =
@@ -276,7 +276,7 @@ void DevToolsWindow::InspectedContentsClosing() {
     // for us.
     Browser* browser = browser_;
     delete this;
-    chrome::CloseAllTabs(browser);
+    browser->tab_strip_model()->CloseAllTabs();
   }
 }
 
@@ -421,7 +421,8 @@ bool DevToolsWindow::FindInspectedBrowserAndTabIndex(Browser** browser,
 
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
-    int tab_index = chrome::GetIndexOfTab(*it, inspected_tab_->web_contents());
+    int tab_index = (*it)->tab_strip_model()->GetIndexOfWebContents(
+        inspected_tab_->web_contents());
     if (tab_index != TabStripModel::kNoTab) {
       *browser = *it;
       *tab = tab_index;

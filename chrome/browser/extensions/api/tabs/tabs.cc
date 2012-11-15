@@ -1433,7 +1433,7 @@ bool MoveTabsFunction::RunImpl() {
       return false;
 
     // Don't let the extension move the tab if the user is dragging tabs.
-    if (!chrome::IsTabStripEditable(source_browser)) {
+    if (!source_browser->window()->IsTabStripEditable()) {
       error_ = keys::kTabStripNotEditableError;
       return false;
     }
@@ -1450,7 +1450,7 @@ bool MoveTabsFunction::RunImpl() {
       if (!GetBrowserFromWindowID(this, window_id, &target_browser))
         return false;
 
-      if (!chrome::IsTabStripEditable(target_browser)) {
+      if (!target_browser->window()->IsTabStripEditable()) {
         error_ = keys::kTabStripNotEditableError;
         return false;
       }
@@ -1599,7 +1599,7 @@ bool RemoveTabsFunction::RunImpl() {
       return false;
 
     // Don't let the extension remove a tab if the user is dragging tabs around.
-    if (!chrome::IsTabStripEditable(browser)) {
+    if (!browser->window()->IsTabStripEditable()) {
       error_ = keys::kTabStripNotEditableError;
       return false;
     }

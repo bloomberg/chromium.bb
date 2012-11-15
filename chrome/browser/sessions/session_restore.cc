@@ -936,8 +936,11 @@ class SessionRestoreImpl : public content::NotificationObserver {
         RestoreTab(tab, tab_index_offset + i, browser, true);
       }
     }
-    return selected_web_contents ?
-        chrome::GetIndexOfTab(browser, selected_web_contents) : 0;
+    if (selected_web_contents) {
+      return browser->tab_strip_model()->
+          GetIndexOfWebContents(selected_web_contents);
+    }
+    return 0;
   }
 
   WebContents* RestoreTab(const SessionTab& tab,

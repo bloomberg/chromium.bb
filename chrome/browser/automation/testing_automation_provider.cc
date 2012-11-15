@@ -1037,7 +1037,8 @@ void TestingAutomationProvider::GetTabIndex(int handle, int* tabstrip_index) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = browser::FindBrowserWithWebContents(
         tab->GetWebContents());
-    *tabstrip_index = chrome::GetIndexOfTab(browser, tab->GetWebContents());
+    *tabstrip_index = browser->tab_strip_model()->GetIndexOfWebContents(
+        tab->GetWebContents());
   }
 }
 
@@ -4777,8 +4778,9 @@ void TestingAutomationProvider::SendOSLevelKeyEventToTab(
   }
   // The key events will be sent to the browser window, we need the current tab
   // containing the element we send the text in to be shown.
-  chrome::ActivateTabAt(browser, chrome::GetIndexOfTab(browser, web_contents),
-                        true);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+  tab_strip->ActivateTabAt(tab_strip->GetIndexOfWebContents(web_contents),
+                           true);
 
   BrowserWindow* browser_window = browser->window();
   if (!browser_window) {
@@ -6214,8 +6216,9 @@ void TestingAutomationProvider::ActivateTabJSON(
     reply.SendError(error);
     return;
   }
-  chrome::ActivateTabAt(browser, chrome::GetIndexOfTab(browser, web_contents),
-                        true);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+  tab_strip->ActivateTabAt(tab_strip->GetIndexOfWebContents(web_contents),
+                           true);
   reply.SendSuccess(NULL);
 }
 
@@ -6351,6 +6354,7 @@ void TestingAutomationProvider::OnRemoveProvider() {
 
 void TestingAutomationProvider::EnsureTabSelected(Browser* browser,
                                                   WebContents* tab) {
-  if (chrome::GetActiveWebContents(browser) != tab)
-    chrome::ActivateTabAt(browser, chrome::GetIndexOfTab(browser, tab), true);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+  if (tab_strip->GetActiveWebContents() != tab)
+    tab_strip->ActivateTabAt(tab_strip->GetIndexOfWebContents(tab), true);
 }

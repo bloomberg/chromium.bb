@@ -438,7 +438,7 @@ enum {
 }
 
 - (void)dealloc {
-  chrome::CloseAllTabs(browser_.get());
+  browser_->tab_strip_model()->CloseAllTabs();
   [downloadShelfController_ exiting];
 
   // Explicitly release |presentationModeController_| here, as it may call back

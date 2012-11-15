@@ -65,7 +65,7 @@ TEST_F(PinnedTabServiceTest, Popup) {
   EXPECT_EQ("http://www.google.com/::pinned:", result);
 
   // Close the popup. This shouldn't reset the saved state.
-  chrome::CloseAllTabs(popup.get());
+  popup->tab_strip_model()->CloseAllTabs();
   popup.reset(NULL);
 
   // Check the state to make sure it hasn't changed.

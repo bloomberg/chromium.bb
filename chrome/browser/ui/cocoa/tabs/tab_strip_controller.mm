@@ -1249,7 +1249,8 @@ private:
   NSInteger activeIndex = [self indexFromModelIndex:modelIndex];
 
   if (oldContents) {
-    int oldModelIndex = chrome::GetIndexOfTab(browser_, oldContents);
+    int oldModelIndex =
+        browser_->tab_strip_model()->GetIndexOfWebContents(oldContents);
     if (oldModelIndex != -1) {  // When closing a tab, the old tab may be gone.
       NSInteger oldIndex = [self indexFromModelIndex:oldModelIndex];
       TabContentsController* oldController =

@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/applescript/browsercrapplication+applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/constants_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/window_applescript.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -35,8 +36,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest, Creation) {
   }
 
   // Close the additional browsers.
-  chrome::CloseAllTabs(b1);
-  chrome::CloseAllTabs(b2);
+  b1->tab_strip_model()->CloseAllTabs();
+  b2->tab_strip_model()->CloseAllTabs();
 }
 
 // Insert a new window.

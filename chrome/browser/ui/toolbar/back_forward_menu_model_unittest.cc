@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_browser_window.h"
@@ -566,7 +567,7 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
                       new_icon_bitmap.getSize()));
 
   // Make sure the browser deconstructor doesn't have problems.
-  chrome::CloseAllTabs(browser.get());
+  browser->tab_strip_model()->CloseAllTabs();
   // This is required to prevent the message loop from hanging.
   profile()->DestroyHistoryService();
 }

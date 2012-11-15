@@ -1530,9 +1530,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   EXPECT_EQ(4, browser()->tab_count());
 
   // Close the additional browsers.
-  chrome::CloseAllTabs(popup_browser);
-  chrome::CloseAllTabs(app_browser);
-  chrome::CloseAllTabs(app_popup_browser);
+  popup_browser->tab_strip_model()->CloseAllTabs();
+  app_browser->tab_strip_model()->CloseAllTabs();
+  app_popup_browser->tab_strip_model()->CloseAllTabs();
 }
 #endif
 

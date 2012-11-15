@@ -610,7 +610,9 @@ TabContents* DuplicateTabAt(Browser* browser, int index) {
     browser->window()->Show();
 
     // The page transition below is only for the purpose of inserting the tab.
-    AddTab(browser, contents_dupe, content::PAGE_TRANSITION_LINK);
+    browser->tab_strip_model()->AddTabContents(contents_dupe, -1,
+                                               content::PAGE_TRANSITION_LINK,
+                                               TabStripModel::ADD_ACTIVE);
   }
 
   SessionService* session_service =
@@ -1042,7 +1044,9 @@ void ViewSource(Browser* browser,
     b->window()->Show();
 
     // The page transition below is only for the purpose of inserting the tab.
-    AddTab(b, view_source_contents, content::PAGE_TRANSITION_LINK);
+    b->tab_strip_model()->AddTabContents(view_source_contents, -1,
+                                         content::PAGE_TRANSITION_LINK,
+                                         TabStripModel::ADD_ACTIVE);
   }
 
   SessionService* session_service =

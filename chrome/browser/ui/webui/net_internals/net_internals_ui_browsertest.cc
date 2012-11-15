@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -284,7 +285,7 @@ void NetInternalsTest::MessageHandler::CreateIncognitoBrowser(
 void NetInternalsTest::MessageHandler::CloseIncognitoBrowser(
     const ListValue* list_value) {
   ASSERT_TRUE(incognito_browser_);
-  chrome::CloseAllTabs(incognito_browser_);
+  incognito_browser_->tab_strip_model()->CloseAllTabs();
   // Closing all a Browser's tabs will ultimately result in its destruction,
   // thought it may not have been destroyed yet.
   incognito_browser_ = NULL;
