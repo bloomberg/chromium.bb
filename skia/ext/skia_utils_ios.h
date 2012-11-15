@@ -12,8 +12,10 @@
 
 #ifdef __OBJC__
 @class UIImage;
+@class NSData;
 #else
 class UIImage;
+class NSData;
 #endif
 
 namespace gfx {
@@ -27,6 +29,11 @@ SK_API SkBitmap CGImageToSkBitmap(CGImageRef image,
 SK_API UIImage* SkBitmapToUIImageWithColorSpace(const SkBitmap& skia_bitmap,
                                                 CGFloat scale,
                                                 CGColorSpaceRef color_space);
+
+// Decodes all image representations inside the data into a vector of SkBitmaps.
+// Returns a vector of all the successfully decoded representations or an empty
+// vector if none can be decoded.
+SK_API std::vector<SkBitmap> ImageDataToSkBitmaps(NSData* image_data);
 
 }  // namespace gfx
 

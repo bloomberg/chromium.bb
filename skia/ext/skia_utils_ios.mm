@@ -4,6 +4,7 @@
 
 #include "skia/ext/skia_utils_ios.h"
 
+#import <ImageIO/ImageIO.h>
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
@@ -68,6 +69,32 @@ UIImage* SkBitmapToUIImageWithColorSpace(const SkBitmap& skia_bitmap,
   return [UIImage imageWithCGImage:cg_image.get()
                              scale:scale
                        orientation:UIImageOrientationUp];
+}
+
+std::vector<SkBitmap> ImageDataToSkBitmaps(NSData* image_data) {
+  DCHECK(image_data);
+  base::mac::ScopedCFTypeRef<CFDictionaryRef> empty_dictionary(
+      CFDictionaryCreate(NULL, NULL, NULL, 0, NULL, NULL));
+  std::vector<SkBitmap> frames;
+
+  base::mac::ScopedCFTypeRef<CGImageSourceRef> source(
+      CGImageSourceCreateWithData((CFDataRef)image_data, empty_dictionary));
+
+  size_t count = CGImageSourceGetCount(source);
+  for (size_t index = 0; index < count; ++index) {
+    base::mac::ScopedCFTypeRef<CGImageRef> cg_image(
+        CGImageSourceCreateImageAtIndex(source, index, empty_dictionary));
+
+    CGSize size = CGSizeMake(CGImageGetWidth(cg_image),
+                             CGImageGetHeight(cg_image));
+    const SkBitmap bitmap = CGImageToSkBitmap(cg_image, size, false);
+    if (!bitmap.empty())
+      frames.push_back(bitmap);
+  }
+
+  DLOG_IF(WARNING, frames.size() != count) << "Only decoded " << frames.size()
+      << " frames for " << count << " expected.";
+  return frames;
 }
 
 }  // namespace gfx

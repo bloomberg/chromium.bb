@@ -445,6 +445,11 @@
             '../third_party/skia/include/utils/ios',
             '../third_party/skia/include/utils/mac',
           ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/ImageIO.framework',
+            ],
+          },
           'dependencies': [
             'skia_opts_ios',
           ],
