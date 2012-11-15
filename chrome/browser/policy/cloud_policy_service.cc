@@ -15,7 +15,8 @@ CloudPolicyService::CloudPolicyService(CloudPolicyClient* client,
                                        CloudPolicyStore* store)
     : client_(client),
       store_(store),
-      refresh_state_(REFRESH_NONE) {
+      refresh_state_(REFRESH_NONE),
+      initialization_complete_(false) {
   client_->AddObserver(this);
   store_->AddObserver(this);
 
@@ -113,11 +114,21 @@ void CloudPolicyService::OnStoreLoaded(CloudPolicyStore* store) {
 
   if (refresh_state_ == REFRESH_POLICY_STORE)
     RefreshCompleted();
+
+  CheckInitializationCompleted();
 }
 
 void CloudPolicyService::OnStoreError(CloudPolicyStore* store) {
   if (refresh_state_ == REFRESH_POLICY_STORE)
     RefreshCompleted();
+  CheckInitializationCompleted();
+}
+
+void CloudPolicyService::CheckInitializationCompleted() {
+  if (!IsInitializationComplete() && store_->is_initialized()) {
+    initialization_complete_ = true;
+    FOR_EACH_OBSERVER(Observer, observers_, OnInitializationCompleted(this));
+  }
 }
 
 void CloudPolicyService::RefreshCompleted() {
@@ -132,6 +143,14 @@ void CloudPolicyService::RefreshCompleted() {
        ++callback) {
     callback->Run();
   }
+}
+
+void CloudPolicyService::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void CloudPolicyService::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace policy

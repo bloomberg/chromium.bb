@@ -18,6 +18,16 @@ using testing::_;
 
 namespace policy {
 
+class MockCloudPolicyServiceObserver : public CloudPolicyService::Observer {
+ public:
+  MockCloudPolicyServiceObserver() {}
+  virtual ~MockCloudPolicyServiceObserver() {}
+
+  MOCK_METHOD1(OnInitializationCompleted, void(CloudPolicyService* service));
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCloudPolicyServiceObserver);
+};
+
 class CloudPolicyServiceTest : public testing::Test {
  public:
   CloudPolicyServiceTest()
@@ -192,6 +202,33 @@ TEST_F(CloudPolicyServiceTest, RefreshPolicyConcurrent) {
   // Corresponding store operation finishes, all _three_ callbacks fire.
   EXPECT_CALL(*this, OnPolicyRefresh()).Times(3);
   store_.NotifyStoreLoaded();
+}
+
+TEST_F(CloudPolicyServiceTest, StoreAlreadyInitialized) {
+  // Service should start off initialized if the store has already loaded
+  // policy.
+  store_.NotifyStoreLoaded();
+  CloudPolicyService service(&client_, &store_);
+  EXPECT_TRUE(service.IsInitializationComplete());
+}
+
+TEST_F(CloudPolicyServiceTest, StoreLoadAfterCreation) {
+  // Service should start off un-initialized if the store has not yet loaded
+  // policy.
+  EXPECT_FALSE(service_.IsInitializationComplete());
+  MockCloudPolicyServiceObserver observer;
+  service_.AddObserver(&observer);
+  // Service should be marked as initialized and observer should be called back.
+  EXPECT_CALL(observer, OnInitializationCompleted(&service_)).Times(1);
+  store_.NotifyStoreLoaded();
+  EXPECT_TRUE(service_.IsInitializationComplete());
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // Now, the next time the store is loaded, the observer should not be called
+  // again.
+  EXPECT_CALL(observer, OnInitializationCompleted(&service_)).Times(0);
+  store_.NotifyStoreLoaded();
+  service_.RemoveObserver(&observer);
 }
 
 }  // namespace policy

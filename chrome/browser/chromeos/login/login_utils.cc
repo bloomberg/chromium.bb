@@ -513,6 +513,14 @@ void LoginUtilsImpl::PrepareProfile(
   if (wait_for_policy_fetch) {
     // Profile creation will block until user policy is fetched, which
     // requires the DeviceManagement token. Try to fetch it now.
+    // TODO(atwilson): This is somewhat racy, as we are trying to fetch a
+    // DMToken in parallel with loading the cached policy blob (there could
+    // already be a DMToken in the cached policy). Once the legacy policy
+    // framework is removed, this code can register a
+    // CloudPolicyService::Observer to check whether the CloudPolicyClient was
+    // able to register itself using the cached policy data, and then only
+    // create a PolicyOAuthFetcher if the client is still unregistered
+    // (http://crbug.com/143187).
     VLOG(1) << "Profile creation requires policy token, fetching now";
     policy_oauth_fetcher_.reset(
         new PolicyOAuthFetcher(authenticator_->authentication_profile()));

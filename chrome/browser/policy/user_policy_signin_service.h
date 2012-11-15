@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/policy/cloud_policy_service.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -30,6 +31,7 @@ class UserCloudPolicyManager;
 class UserPolicySigninService
     : public ProfileKeyedService,
       public OAuth2AccessTokenConsumer,
+      public CloudPolicyService::Observer,
       public content::NotificationObserver {
  public:
   // Creates a UserPolicySigninService associated with the passed |profile|.
@@ -40,6 +42,9 @@ class UserPolicySigninService
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // CloudPolicyService::Observer implementation.
+  virtual void OnInitializationCompleted(CloudPolicyService* service) OVERRIDE;
 
   // OAuth2AccessTokenConsumer implementation.
   virtual void OnGetTokenSuccess(const std::string& access_token,
@@ -54,6 +59,9 @@ class UserPolicySigninService
   // Fetches an OAuth token to allow the cloud policy service to register with
   // the cloud policy server.
   void RegisterCloudPolicyService();
+
+  // Helper routine to unregister for CloudPolicyService notifications.
+  void StopObserving();
 
   // Weak pointer to the profile this service is associated with.
   Profile* profile_;

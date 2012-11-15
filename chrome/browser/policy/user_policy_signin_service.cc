@@ -62,6 +62,12 @@ UserPolicySigninService::UserPolicySigninService(
 }
 
 UserPolicySigninService::~UserPolicySigninService() {
+  StopObserving();
+}
+
+void UserPolicySigninService::StopObserving() {
+  if (manager_ && manager_->cloud_policy_service())
+    manager_->cloud_policy_service()->RemoveObserver(this);
 }
 
 void UserPolicySigninService::Observe(
@@ -83,8 +89,8 @@ void UserPolicySigninService::Observe(
               details).ptr());
       if (token_details.service() ==
           GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
-        // TokenService now has a refresh token, so reconfigure the
-        // UserCloudPolicyManager to initiate a DMToken fetch if needed.
+        // TokenService now has a refresh token, so initialize the
+        // UserCloudPolicyManager.
         ConfigureUserCloudPolicyManager();
       }
       break;
@@ -107,8 +113,11 @@ void UserPolicySigninService::ConfigureUserCloudPolicyManager() {
 
   SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
   if (signin_manager->GetAuthenticatedUsername().empty()) {
+    // User has signed out - remove existing policy.
+    StopObserving();
     manager_->ShutdownAndRemovePolicy();
   } else {
+    // Initialize the UserCloudPolicyManager if it isn't already initialized.
     if (!manager_->cloud_policy_service()) {
       // Make sure we've initialized the DeviceManagementService. It's OK to
       // call this multiple times so we do it every time we initialize the
@@ -116,30 +125,37 @@ void UserPolicySigninService::ConfigureUserCloudPolicyManager() {
       g_browser_process->browser_policy_connector()->
           ScheduleServiceInitialization(
               kPolicyServiceInitializationDelayMilliseconds);
-      // Initialize the UserCloudPolicyManager if it isn't already initialized.
+      // If there is no cached DMToken then we can detect this below (or when
+      // the OnInitializationCompleted() callback is invoked.
       policy::DeviceManagementService* service = g_browser_process->
           browser_policy_connector()->device_management_service();
       manager_->Initialize(g_browser_process->local_state(),
                            service,
                            policy::USER_AFFILIATION_NONE);
       DCHECK(manager_->cloud_policy_service());
+      manager_->cloud_policy_service()->AddObserver(this);
     }
 
-    // Register the CloudPolicyService if the cloud policy store is complete.
-    // The code below is somewhat racy in that if the store is not initialized
-    // by the time we get here, we won't register the client. In practice, we
-    // handle the case where there's no policy file because checking for the
-    // file always completes before the token DB is loaded (since they use the
-    // same thread for their operations).
-    // TODO(atwilson): If there's a problem loading the stored policy, we could
-    // be left with no policy, so we should move this code to
-    // UserCloudPolicyManager and have it initiate a DMToken fetch only once
-    // the policy load is complete (http://crbug.com/143187).
-    if (!manager_->IsClientRegistered() &&
-        manager_->cloud_policy_store()->is_initialized()) {
+    // If the CloudPolicyService is initialized, but the CloudPolicyClient still
+    // needs to be registered, kick off registration.
+    if (manager_->cloud_policy_service()->IsInitializationComplete() &&
+        !manager_->IsClientRegistered()) {
       RegisterCloudPolicyService();
     }
   }
+}
+
+void UserPolicySigninService::OnInitializationCompleted(
+    CloudPolicyService* service) {
+  DCHECK_EQ(service, manager_->cloud_policy_service());
+  DCHECK(service->IsInitializationComplete());
+  // The service is now initialized - if the client is not yet registered, then
+  // it means that there is no cached policy and so we need to initiate a new
+  // client registration.
+  DVLOG_IF(1, manager_->IsClientRegistered())
+      << "Client already registered - not fetching DMToken";
+  if (!manager_->IsClientRegistered())
+    RegisterCloudPolicyService();
 }
 
 void UserPolicySigninService::RegisterCloudPolicyService() {
