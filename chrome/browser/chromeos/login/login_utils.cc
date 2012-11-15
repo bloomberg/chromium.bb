@@ -788,6 +788,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kPpapiFlashInProcess,
       ::switches::kPpapiFlashPath,
       ::switches::kPpapiFlashVersion,
+      ::switches::kPpapiOutOfProcess,
       ::switches::kRendererStartupDialog,
       ::switches::kFlingTapSuppressMaxDown,
       ::switches::kFlingTapSuppressMaxGap,
