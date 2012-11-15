@@ -10,7 +10,6 @@
 
 #include "base/message_loop.h"
 #include "ui/aura/client/capture_client.h"
-#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/events/event.h"
@@ -198,6 +197,11 @@ void RemoteRootWindowHostWin::OnChar(uint32 key_code,
                      flags,
                      true);
   delegate_->OnHostKeyEvent(&event);
+}
+
+void RemoteRootWindowHostWin::OnVisibilityChanged(bool visible) {
+  if (visible)
+    delegate_->OnHostActivated();
 }
 
 }  // namespace aura

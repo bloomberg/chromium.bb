@@ -40,6 +40,8 @@ bool MetroViewerProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_KeyDown, OnKeyDown)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_KeyUp, OnKeyUp)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_Character, OnChar)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_VisibilityChanged,
+                        OnVisibilityChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -98,4 +100,9 @@ void MetroViewerProcessHost::OnChar(uint32 key_code,
                                     uint32 flags) {
   aura::RemoteRootWindowHostWin::Instance()->OnChar(
       key_code, repeat_count, scan_code, flags);
+}
+
+void MetroViewerProcessHost::OnVisibilityChanged(bool visible) {
+  aura::RemoteRootWindowHostWin::Instance()->OnVisibilityChanged(
+      visible);
 }

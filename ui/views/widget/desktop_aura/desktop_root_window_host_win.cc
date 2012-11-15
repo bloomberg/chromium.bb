@@ -569,6 +569,8 @@ void DesktopRootWindowHostWin::HandleAppDeactivated() {
 }
 
 void DesktopRootWindowHostWin::HandleActivationChanged(bool active) {
+  if (active)
+    root_window_host_delegate_->OnHostActivated();
   native_widget_delegate_->OnNativeWidgetActivationChanged(active);
 }
 

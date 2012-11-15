@@ -38,6 +38,7 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
               uint32 repeat_count,
               uint32 scan_code,
               uint32 flags);
+  void OnVisibilityChanged(bool visible);
 
  private:
   RemoteRootWindowHostWin(const gfx::Rect& bounds);

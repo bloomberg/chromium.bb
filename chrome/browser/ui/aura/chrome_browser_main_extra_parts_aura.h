@@ -16,6 +16,8 @@ class StackingClient;
 }
 }
 
+class ActiveDesktopMonitor;
+
 class ChromeBrowserMainExtraPartsAura : public ChromeBrowserMainExtraParts {
  public:
   ChromeBrowserMainExtraPartsAura();
@@ -27,6 +29,7 @@ class ChromeBrowserMainExtraPartsAura : public ChromeBrowserMainExtraParts {
 
  private:
   scoped_ptr<aura::client::StackingClient> stacking_client_;
+  scoped_ptr<ActiveDesktopMonitor> active_desktop_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAura);
 };

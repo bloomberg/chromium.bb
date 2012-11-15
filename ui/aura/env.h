@@ -20,6 +20,7 @@
 
 namespace aura {
 class EnvObserver;
+class RootWindow;
 class Window;
 
 #if !defined(USE_X11)
@@ -77,6 +78,9 @@ class AURA_EXPORT Env : public ui::EventTarget {
 #if !defined(OS_MACOSX)
   MessageLoop::Dispatcher* GetDispatcher();
 #endif
+
+  // Invoked by RootWindow when its host is activated.
+  void RootWindowActivated(RootWindow* root_window);
 
  private:
   friend class Window;

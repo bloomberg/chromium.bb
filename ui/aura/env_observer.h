@@ -9,12 +9,16 @@
 
 namespace aura {
 
+class RootWindow;
 class Window;
 
 class AURA_EXPORT EnvObserver {
  public:
   // Called when |window| has been initialized.
   virtual void OnWindowInitialized(Window* window) = 0;
+
+  // Called when a RootWindow's host is activated.
+  virtual void OnRootWindowActivated(RootWindow* root_window) {}
 
   // Called right before Env is destroyed.
   virtual void OnWillDestroyEnv() {}

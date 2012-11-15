@@ -10,7 +10,6 @@
 
 #include "base/message_loop.h"
 #include "ui/aura/client/capture_client.h"
-#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/events/event.h"
@@ -255,6 +254,14 @@ LRESULT RootWindowHostWin::OnCaptureChanged(UINT message,
     delegate_->OnHostLostWindowCapture();
   }
   return 0;
+}
+
+LRESULT RootWindowHostWin::OnNCActivate(UINT message,
+                                        WPARAM w_param,
+                                        LPARAM l_param) {
+  if (!!w_param)
+    delegate_->OnHostActivated();
+  return DefWindowProc(hwnd(), message, w_param, l_param);
 }
 
 void RootWindowHostWin::OnPaint(HDC dc) {

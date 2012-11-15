@@ -32,6 +32,9 @@ class AURA_EXPORT RootWindowHostDelegate {
   virtual bool OnHostScrollEvent(ui::ScrollEvent* event) = 0;
   virtual bool OnHostTouchEvent(ui::TouchEvent* event) = 0;
 
+  // Called when the windowing system activates the window.
+  virtual void OnHostActivated() = 0;
+
   // Called when system focus is changed to another window.
   virtual void OnHostLostWindowCapture() = 0;
 

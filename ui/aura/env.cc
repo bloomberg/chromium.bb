@@ -96,6 +96,11 @@ MessageLoop::Dispatcher* Env::GetDispatcher() {
 }
 #endif
 
+void Env::RootWindowActivated(RootWindow* root_window) {
+  FOR_EACH_OBSERVER(EnvObserver, observers_,
+                    OnRootWindowActivated(root_window));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Env, private:
 

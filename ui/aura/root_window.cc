@@ -903,6 +903,10 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
   return ProcessGestures(gestures.get()) ? true : handled;
 }
 
+void RootWindow::OnHostActivated() {
+  Env::GetInstance()->RootWindowActivated(this);
+}
+
 void RootWindow::OnHostLostWindowCapture() {
   Window* capture_window = client::GetCaptureWindow(this);
   if (capture_window && capture_window->GetRootWindow() == this)

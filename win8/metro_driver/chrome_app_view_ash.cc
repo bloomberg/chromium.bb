@@ -40,6 +40,10 @@ typedef winfoundtn::ITypedEventHandler<
     winui::Core::CoreWindow*,
     winui::Core::CharacterReceivedEventArgs*> CharEventHandler;
 
+typedef winfoundtn::ITypedEventHandler<
+    winui::Core::CoreWindow*,
+    winui::Core::VisibilityChangedEventArgs*> VisibilityChangedHandler;
+
 // This function is exported by chrome.exe.
 typedef int (__cdecl *BreakpadExceptionHandler)(EXCEPTION_POINTERS* info);
 
@@ -283,6 +287,11 @@ ChromeAppViewAsh::SetWindow(winui::Core::ICoreWindow* window) {
       &character_received_token_);
   CheckHR(hr);
 
+  hr = window_->add_VisibilityChanged(mswr::Callback<VisibilityChangedHandler>(
+      this, &ChromeAppViewAsh::OnVisibilityChanged).Get(),
+      &visibility_changed_token_);
+  CheckHR(hr);
+
   // By initializing the direct 3D swap chain with the corewindow
   // we can now directly blit to it from the browser process.
   direct3d_helper_.Initialize(window);
@@ -485,6 +494,18 @@ HRESULT ChromeAppViewAsh::OnCharacterReceived(
                                                      status.RepeatCount,
                                                      status.ScanCode,
                                                      GetKeyboardEventFlags()));
+  return S_OK;
+}
+
+HRESULT ChromeAppViewAsh::OnVisibilityChanged(
+    winui::Core::ICoreWindow* sender,
+    winui::Core::IVisibilityChangedEventArgs* args) {
+  boolean visible = false;
+  HRESULT hr = args->get_Visible(&visible);
+  if (FAILED(hr))
+    return hr;
+
+  ui_channel_->Send(new MetroViewerHostMsg_VisibilityChanged(!!visible));
   return S_OK;
 }
 

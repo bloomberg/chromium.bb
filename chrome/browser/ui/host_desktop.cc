@@ -8,13 +8,10 @@
 #include <windows.h>
 #endif
 
-#include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/browser_list_impl.h"
-
-#if defined(OS_WIN)
 #include "ash/shell.h"
-#include "ui/aura/root_window.h"
-#endif
+#include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/aura/active_desktop_monitor.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 
 namespace chrome {
 
@@ -79,16 +76,19 @@ HostDesktopType GetHostDesktopTypeForBrowser(const Browser* browser) {
 }
 
 HostDesktopType GetActiveDesktop() {
-#if defined(OS_WIN) && defined(USE_ASH)
-  if (ash::Shell::HasInstance()) {
-    HWND active_window = GetActiveWindow();
-    typedef ash::Shell::RootWindowList RootWindowList;
-    RootWindowList roots(ash::Shell::GetAllRootWindows());
-    for (RootWindowList::const_iterator i = roots.begin(); i != roots.end();
-         ++i) {
-      if ((*i)->GetAcceleratedWidget() == active_window)
-        return HOST_DESKTOP_TYPE_ASH;
-    }
+#if defined(USE_ASH) && !defined(OS_CHROMEOS)
+  // The Ash desktop is considered active if a non-desktop RootWindow was last
+  // activated and the Ash desktop is still open.  As it is, the Ash desktop
+  // will be considered the last active if a user switches from metro Chrome to
+  // the Windows desktop but doesn't activate any Chrome windows there (e.g.,
+  // by clicking on one or otherwise giving one focus).  Consider finding a way
+  // to detect that the Windows desktop has been activated so that the native
+  // desktop can be considered active once the user switches to it if its
+  // BrowserList isn't empty.
+  if ((ActiveDesktopMonitor::GetLastActivatedDesktopType() ==
+       chrome::HOST_DESKTOP_TYPE_ASH) &&
+      ash::Shell::HasInstance()) {
+    return HOST_DESKTOP_TYPE_ASH;
   }
 #endif
   return HOST_DESKTOP_TYPE_NATIVE;

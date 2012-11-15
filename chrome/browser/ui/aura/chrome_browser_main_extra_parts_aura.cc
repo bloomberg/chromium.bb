@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/toolkit_extra_parts.h"
+#include "chrome/browser/ui/aura/active_desktop_monitor.h"
 #include "chrome/browser/ui/aura/stacking_client_aura.h"
 #include "ui/aura/env.h"
 #include "ui/gfx/screen.h"
@@ -32,6 +33,7 @@ ChromeBrowserMainExtraPartsAura::~ChromeBrowserMainExtraPartsAura() {
 void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
 #if !defined(OS_CHROMEOS)
 #if defined(USE_ASH)
+  active_desktop_monitor_.reset(new ActiveDesktopMonitor);
   if (!chrome::ShouldOpenAshOnStartup())
 #endif
   {
@@ -50,6 +52,7 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
 
 void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {
   stacking_client_.reset();
+  active_desktop_monitor_.reset();
 
   // aura::Env instance is deleted in BrowserProcessImpl::StartTearDown
   // after the metrics service is deleted.

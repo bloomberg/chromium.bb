@@ -49,6 +49,7 @@ class MetroViewerProcessHost : public IPC::Listener,
               uint32 repeat_count,
               uint32 scan_code,
               uint32 flags);
+  void OnVisibilityChanged(bool visible);
 
   scoped_ptr<IPC::ChannelProxy> channel_;
 

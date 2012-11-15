@@ -48,3 +48,6 @@ IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_Character,
                      uint32,       /* repeat count */
                      uint32,       /* scan code */
                      uint32        /* key state */);
+// Informs the browser that the visibiliy of the viewer has changed.
+IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_VisibilityChanged,
+                     bool          /* visible */);

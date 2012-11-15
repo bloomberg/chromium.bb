@@ -56,6 +56,9 @@ class ChromeAppViewAsh
   HRESULT OnCharacterReceived(winui::Core::ICoreWindow* sender,
                               winui::Core::ICharacterReceivedEventArgs* args);
 
+  HRESULT OnVisibilityChanged(winui::Core::ICoreWindow* sender,
+                              winui::Core::IVisibilityChangedEventArgs* args);
+
   mswr::ComPtr<winui::Core::ICoreWindow> window_;
   mswr::ComPtr<winapp::Core::ICoreApplicationView> view_;
   EventRegistrationToken activated_token_;
@@ -66,6 +69,7 @@ class ChromeAppViewAsh
   EventRegistrationToken keydown_token_;
   EventRegistrationToken keyup_token_;
   EventRegistrationToken character_received_token_;
+  EventRegistrationToken visibility_changed_token_;
 
   metro_driver::Direct3DHelper direct3d_helper_;
 

@@ -60,6 +60,7 @@ class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
     MESSAGE_HANDLER_EX(WM_CHAR, OnKeyEvent)
     MESSAGE_HANDLER_EX(WM_SYSCHAR, OnKeyEvent)
     MESSAGE_HANDLER_EX(WM_IME_CHAR, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_NCACTIVATE, OnNCActivate)
 
     MSG_WM_CLOSE(OnClose)
     MSG_WM_PAINT(OnPaint)
@@ -70,6 +71,7 @@ class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
   LRESULT OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnCaptureChanged(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnNCActivate(UINT message, WPARAM w_param, LPARAM l_param);
   void OnPaint(HDC dc);
   void OnSize(UINT param, const CSize& size);
 

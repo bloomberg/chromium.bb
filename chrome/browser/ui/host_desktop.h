@@ -47,6 +47,8 @@ HostDesktopType GetHostDesktopTypeForNativeWindow(
     gfx::NativeWindow native_window);
 HostDesktopType GetHostDesktopTypeForBrowser(const Browser* browser);
 
+// Returns the type of host desktop most likely to be in use.  This is the one
+// most recently activated by the user.
 HostDesktopType GetActiveDesktop();
 
 }  // namespace chrome
