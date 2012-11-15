@@ -69,39 +69,36 @@
  *
  * Rather than debug Clang, I'm just writing out the register
  * restoration in the long form.
- *
- * We load values via sp since this requires no address masking.
- * Normally one would avoid this in case an async signal arrives while
- * sp doesn't point to a valid stack, but NaCl does not have async
- * signals at the moment, and this is just test code.
  */
+# define REGS_MASK_R0 "bic r0, r0, #0xc0000000\n"
 # define ASM_WITH_REGS(regs, asm_code) \
     __asm__( \
         ".p2align 4\n" \
-        "mov sp, %0\n" \
-        "bic sp, sp, #0xc0000000\n" \
+        "mov r0, %0\n" \
         /* Set CPSR (flags) register, a.k.a. APSR for user mode */ \
-        "ldr r0, [sp, #0x40]\n" \
-        "msr apsr_nzcvqg, r0\n" \
+        REGS_MASK_R0 "ldr r1, [r0, #0x40]\n" \
+        "msr apsr_nzcvqg, r1\n" \
+        /* Set stack pointer */ \
+        REGS_MASK_R0 "ldr r1, [r0, #0x34]\n" \
+        "bic sp, r1, #0xc0000000\n" \
+        /* Ensure later superinstructions don't cross bundle boundaries */ \
+        "nop\n" \
         /* Set general purpose registers */ \
-        "ldr r0, [sp, #0x00]\n" \
-        "ldr r1, [sp, #0x04]\n" \
-        "ldr r2, [sp, #0x08]\n" \
-        "ldr r3, [sp, #0x0c]\n" \
-        "ldr r4, [sp, #0x10]\n" \
-        "ldr r5, [sp, #0x14]\n" \
-        "ldr r6, [sp, #0x18]\n" \
-        "ldr r7, [sp, #0x1c]\n" \
-        "ldr r8, [sp, #0x20]\n" \
+        REGS_MASK_R0 "ldr r1, [r0, #0x04]\n" \
+        REGS_MASK_R0 "ldr r2, [r0, #0x08]\n" \
+        REGS_MASK_R0 "ldr r3, [r0, #0x0c]\n" \
+        REGS_MASK_R0 "ldr r4, [r0, #0x10]\n" \
+        REGS_MASK_R0 "ldr r5, [r0, #0x14]\n" \
+        REGS_MASK_R0 "ldr r6, [r0, #0x18]\n" \
+        REGS_MASK_R0 "ldr r7, [r0, #0x1c]\n" \
+        REGS_MASK_R0 "ldr r8, [r0, #0x20]\n" \
         /* Skip r9, which is not supposed to be settable or readable */ \
-        "ldr r10, [sp, #0x28]\n" \
-        "ldr r11, [sp, #0x2c]\n" \
-        "ldr r12, [sp, #0x30]\n" \
-        "ldr lr, [sp, #0x38]\n" \
-        /* Align to keep the following superinstruction within a bundle */ \
-        ".p2align 4\n" \
-        "ldr sp, [sp, #0x34]\n" \
-        "bic sp, sp, #0xc0000000\n" \
+        REGS_MASK_R0 "ldr r10, [r0, #0x28]\n" \
+        REGS_MASK_R0 "ldr r11, [r0, #0x2c]\n" \
+        REGS_MASK_R0 "ldr r12, [r0, #0x30]\n" \
+        REGS_MASK_R0 "ldr lr, [r0, #0x38]\n" \
+        /* Lastly, restore r0 */ \
+        REGS_MASK_R0 "ldr r0, [r0, #0x00]\n" \
         ".p2align 4\n"  /* Align for whatever comes after */ \
         asm_code \
         : : "r"(regs) : "memory")

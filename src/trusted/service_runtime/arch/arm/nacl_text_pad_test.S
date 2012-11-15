@@ -49,8 +49,8 @@ start_of_text:
 write_num_16:
         push {r4, lr}
         mov r3, sp
-        sub sp, sp, #0x10
-        bic sp, sp, #0xc0000000
+        sub r12, sp, #0x10
+        bic sp, r12, #0xc0000000
 
         mov r2, #0
 do_digit_16:
@@ -79,8 +79,8 @@ do_digit_not_upper:
         bic r3, r3, #0xc000000f
         blx r3
 
-        add sp, sp, #0x10
-        bic sp, sp, #0xc0000000
+        add r12, sp, #0x10
+        bic sp, r12, #0xc0000000
         pop {r4, lr}
         nop
 
@@ -93,8 +93,8 @@ do_digit_not_upper:
          */
 write_char:
         push {lr}
-        sub sp, sp, #0x10
-        bic sp, sp, #0xc0000000
+        sub r12, sp, #0x10
+        bic sp, r12, #0xc0000000
         strb r1, [sp]
 
         mov r1, sp
@@ -107,8 +107,8 @@ write_char:
         bic r3, r3, #0xc000000f
         blx r3
 
-        add sp, sp, #0x10
-        bic sp, sp, #0xc0000000
+        add r12, sp, #0x10
+        bic sp, r12, #0xc0000000
         pop {lr}
         nop
 
