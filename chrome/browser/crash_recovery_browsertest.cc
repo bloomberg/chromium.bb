@@ -66,15 +66,7 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, Reload) {
 // There was an earlier bug (1270510) in process-per-site in which the max page
 // ID of the RenderProcessHost was stale, so the NavigationEntry in the new tab
 // was not committed.  This prevents regression of that bug.
-// http://crbug.com/57158 - Times out sometimes on all platforms.
-#if defined(OS_LINUX)
-// http://crbug.com/144278 - failing on linux
-#define MAYBE_LoadInNewTab DISABLED_LoadInNewTab
-#else
-#define MAYBE_LoadInNewTab LoadInNewTab
-#endif
-
-IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, MAYBE_LoadInNewTab) {
+IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, LoadInNewTab) {
   const FilePath::CharType* kTitle2File = FILE_PATH_LITERAL("title2.html");
 
   ui_test_utils::NavigateToURL(browser(),
