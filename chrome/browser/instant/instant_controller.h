@@ -278,6 +278,11 @@ class InstantController {
   // up in autocomplete history matches.
   GURL url_for_history_;
 
+  // The timestamp at which query editing began. This value is used when the
+  // first set of suggestions is processed and cleared when the overlay is
+  // hidden.
+  base::Time first_interaction_time_;
+
   DISALLOW_COPY_AND_ASSIGN(InstantController);
 };
 

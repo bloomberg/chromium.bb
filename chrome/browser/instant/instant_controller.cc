@@ -240,6 +240,10 @@ bool InstantController::Update(const AutocompleteMatch& match,
                            0, INSTANT_SIZE_PERCENT);
   }
 
+  // Store the first interaction time for use with latency histograms.
+  if (first_interaction_time_.is_null())
+    first_interaction_time_ = base::Time::Now();
+
   loader_->Update(mode_ == EXTENDED ? user_text : full_text, verbatim);
 
   content::NotificationService::current()->Notify(
@@ -322,6 +326,9 @@ void InstantController::Hide() {
   // correctly after the commit is done.
   if (GetPreviewContents())
     model_.SetPreviewState(InstantModel::NOT_READY, 0, INSTANT_SIZE_PERCENT);
+
+  // Clear the first interaction timestamp for later use.
+  first_interaction_time_ = base::Time();
 
   if (GetPreviewContents() && !last_full_text_.empty()) {
     // Send a blank query to ask the preview to clear out old results.
@@ -720,6 +727,7 @@ void InstantController::DeleteLoader() {
   url_for_history_ = GURL();
   if (GetPreviewContents())
     model_.SetPreviewState(InstantModel::NOT_READY, 0, INSTANT_SIZE_PERCENT);
+  first_interaction_time_ = base::Time();
 
   // Schedule the deletion for later, since we may have gotten here from a call
   // within a |loader_| method (i.e., it's still on the stack). If we deleted
@@ -739,6 +747,14 @@ void InstantController::Show(InstantShownReason reason,
   if (reason == INSTANT_SHOWN_QUERY_SUGGESTIONS &&
       model_.preview_state() == InstantModel::NOT_READY)
     return;
+
+  // If the preview is being shown because of the first set of suggestions to
+  // arrive for this query editing session, record a histogram value.
+  if (!first_interaction_time_.is_null() &&
+      model_.preview_state() == InstantModel::AWAITING_SUGGESTIONS) {
+    base::TimeDelta delta = base::Time::Now() - first_interaction_time_;
+    UMA_HISTOGRAM_TIMES("Instant.TimeToFirstShow", delta);
+  }
 
   model_.SetPreviewState(GetNewPreviewState(reason), height, units);
 }
