@@ -55,6 +55,7 @@
 #if defined(__ANDROID__)
 #include <sys/system_properties.h>
 #endif
+#include <sys/types.h>
 #include <sys/ucontext.h>
 #include <sys/user.h>
 #include <sys/utsname.h>
@@ -375,6 +376,22 @@ void CPUFillFromUContext(MDRawContextARM* out, const ucontext* uc,
 
 class MinidumpWriter {
  public:
+  // The following kLimit* constants are for when minidump_size_limit_ is set
+  // and the minidump size might exceed it.
+  //
+  // Estimate for how big each thread's stack will be (in bytes).
+  static const unsigned kLimitAverageThreadStackLength = 8 * 1024;
+  // Number of threads whose stack size we don't want to limit.  These base
+  // threads will simply be the first N threads returned by the dumper (although
+  // the crashing thread will never be limited).  Threads beyond this count are
+  // the extra threads.
+  static const unsigned kLimitBaseThreadCount = 20;
+  // Maximum stack size to dump for any extra thread (in bytes).
+  static const unsigned kLimitMaxExtraThreadStackLen = 2 * 1024;
+  // Make sure this number of additional bytes can fit in the minidump
+  // (exclude the stack data).
+  static const unsigned kLimitMinidumpFudgeFactor = 64 * 1024;
+
   MinidumpWriter(const char* minidump_path,
                  int minidump_fd,
                  const ExceptionHandler::CrashContext* context,
@@ -391,6 +408,7 @@ class MinidumpWriter {
         float_state_(NULL),
 #endif
         dumper_(dumper),
+        minidump_size_limit_(-1),
         memory_blocks_(dumper_->allocator()),
         mapping_list_(mappings),
         app_memory_list_(appmem) {
@@ -629,12 +647,14 @@ class MinidumpWriter {
   }
 
   bool FillThreadStack(MDRawThread* thread, uintptr_t stack_pointer,
-                       uint8_t** stack_copy) {
+                       int max_stack_len, uint8_t** stack_copy) {
     *stack_copy = NULL;
     const void* stack;
     size_t stack_len;
     if (dumper_->GetStackInfo(&stack, &stack_len, stack_pointer)) {
       UntypedMDRVA memory(&minidump_writer_);
+      if (max_stack_len >= 0 && stack_len > max_stack_len)
+        stack_len = max_stack_len;
       if (!memory.Allocate(stack_len))
         return false;
       *stack_copy = reinterpret_cast<uint8_t*>(Alloc(stack_len));
@@ -666,6 +686,21 @@ class MinidumpWriter {
 
     *list.get() = num_threads;
 
+    // If there's a minidump size limit, check if it might be exceeded.  Since
+    // most of the space is filled with stack data, just check against that.
+    // If this expects to exceed the limit, set extra_thread_stack_len such
+    // that any thread beyond the first kLimitBaseThreadCount threads will
+    // have only kLimitMaxExtraThreadStackLen bytes dumped.
+    int extra_thread_stack_len = -1;  // default to no maximum
+    if (minidump_size_limit_ >= 0) {
+      const unsigned estimated_total_stack_size = num_threads *
+          kLimitAverageThreadStackLength;
+      const off_t estimated_minidump_size = minidump_writer_.position() +
+          estimated_total_stack_size + kLimitMinidumpFudgeFactor;
+      if (estimated_minidump_size > minidump_size_limit_)
+        extra_thread_stack_len = kLimitMaxExtraThreadStackLen;
+    }
+
     for (unsigned i = 0; i < num_threads; ++i) {
       MDRawThread thread;
       my_memset(&thread, 0, sizeof(thread));
@@ -679,7 +714,7 @@ class MinidumpWriter {
           ucontext_ &&
           !dumper_->IsPostMortem()) {
         uint8_t* stack_copy;
-        if (!FillThreadStack(&thread, GetStackPointer(), &stack_copy))
+        if (!FillThreadStack(&thread, GetStackPointer(), -1, &stack_copy))
           return false;
 
         // Copy 256 bytes around crashing instruction pointer to minidump.
@@ -740,7 +775,11 @@ class MinidumpWriter {
           return false;
 
         uint8_t* stack_copy;
-        if (!FillThreadStack(&thread, info.stack_pointer, &stack_copy))
+        int max_stack_len = -1;  // default to no maximum for this thread
+        if (minidump_size_limit_ >= 0 && i >= kLimitBaseThreadCount)
+          max_stack_len = extra_thread_stack_len;
+        if (!FillThreadStack(&thread, info.stack_pointer, max_stack_len,
+            &stack_copy))
           return false;
 
         TypedMDRVA<RawContextCPU> cpu(&minidump_writer_);
@@ -1112,6 +1151,8 @@ class MinidumpWriter {
     return true;
   }
 
+  void set_minidump_size_limit(off_t limit) { minidump_size_limit_ = limit; }
+
  private:
   void* Alloc(unsigned bytes) {
     return dumper_->allocator()->Alloc(bytes);
@@ -1437,6 +1478,7 @@ class MinidumpWriter {
   const struct _libc_fpstate* const float_state_;  // ditto
   LinuxDumper* dumper_;
   MinidumpFileWriter minidump_writer_;
+  off_t minidump_size_limit_;
   MDLocationDescriptor crashing_thread_context_;
   // Blocks of memory written to the dump. These are all currently
   // written while writing the thread list stream, but saved here
@@ -1452,21 +1494,26 @@ class MinidumpWriter {
 
 bool WriteMinidumpImpl(const char* minidump_path,
                        int minidump_fd,
+                       off_t minidump_size_limit,
                        pid_t crashing_process,
                        const void* blob, size_t blob_size,
                        const MappingList& mappings,
                        const AppMemoryList& appmem) {
-  if (blob_size != sizeof(ExceptionHandler::CrashContext))
-    return false;
-  const ExceptionHandler::CrashContext* context =
-      reinterpret_cast<const ExceptionHandler::CrashContext*>(blob);
   LinuxPtraceDumper dumper(crashing_process);
-  dumper.set_crash_address(
-      reinterpret_cast<uintptr_t>(context->siginfo.si_addr));
-  dumper.set_crash_signal(context->siginfo.si_signo);
-  dumper.set_crash_thread(context->tid);
+  const ExceptionHandler::CrashContext* context = NULL;
+  if (blob) {
+    if (blob_size != sizeof(ExceptionHandler::CrashContext))
+      return false;
+    context = reinterpret_cast<const ExceptionHandler::CrashContext*>(blob);
+    dumper.set_crash_address(
+        reinterpret_cast<uintptr_t>(context->siginfo.si_addr));
+    dumper.set_crash_signal(context->siginfo.si_signo);
+    dumper.set_crash_thread(context->tid);
+  }
   MinidumpWriter writer(minidump_path, minidump_fd, context, mappings,
                         appmem, &dumper);
+  // Set desired limit for file size of minidump (-1 means no limit).
+  writer.set_minidump_size_limit(minidump_size_limit);
   if (!writer.Init())
     return false;
   return writer.Dump();
@@ -1478,13 +1525,15 @@ namespace google_breakpad {
 
 bool WriteMinidump(const char* minidump_path, pid_t crashing_process,
                    const void* blob, size_t blob_size) {
-  return WriteMinidumpImpl(minidump_path, -1, crashing_process, blob, blob_size,
+  return WriteMinidumpImpl(minidump_path, -1, -1,
+                           crashing_process, blob, blob_size,
                            MappingList(), AppMemoryList());
 }
 
 bool WriteMinidump(int minidump_fd, pid_t crashing_process,
                    const void* blob, size_t blob_size) {
-  return WriteMinidumpImpl(NULL, minidump_fd, crashing_process, blob, blob_size,
+  return WriteMinidumpImpl(NULL, minidump_fd, -1,
+                           crashing_process, blob, blob_size,
                            MappingList(), AppMemoryList());
 }
 
@@ -1505,7 +1554,8 @@ bool WriteMinidump(const char* minidump_path, pid_t crashing_process,
                    const void* blob, size_t blob_size,
                    const MappingList& mappings,
                    const AppMemoryList& appmem) {
-  return WriteMinidumpImpl(minidump_path, -1, crashing_process, blob, blob_size,
+  return WriteMinidumpImpl(minidump_path, -1, -1, crashing_process,
+                           blob, blob_size,
                            mappings, appmem);
 }
 
@@ -1513,7 +1563,28 @@ bool WriteMinidump(int minidump_fd, pid_t crashing_process,
                    const void* blob, size_t blob_size,
                    const MappingList& mappings,
                    const AppMemoryList& appmem) {
-  return WriteMinidumpImpl(NULL, minidump_fd, crashing_process, blob, blob_size,
+  return WriteMinidumpImpl(NULL, minidump_fd, -1, crashing_process,
+                           blob, blob_size,
+                           mappings, appmem);
+}
+
+bool WriteMinidump(const char* minidump_path, off_t minidump_size_limit,
+                   pid_t crashing_process,
+                   const void* blob, size_t blob_size,
+                   const MappingList& mappings,
+                   const AppMemoryList& appmem) {
+  return WriteMinidumpImpl(minidump_path, -1, minidump_size_limit,
+                           crashing_process, blob, blob_size,
+                           mappings, appmem);
+}
+
+bool WriteMinidump(int minidump_fd, off_t minidump_size_limit,
+                   pid_t crashing_process,
+                   const void* blob, size_t blob_size,
+                   const MappingList& mappings,
+                   const AppMemoryList& appmem) {
+  return WriteMinidumpImpl(NULL, minidump_fd, minidump_size_limit,
+                           crashing_process, blob, blob_size,
                            mappings, appmem);
 }
 

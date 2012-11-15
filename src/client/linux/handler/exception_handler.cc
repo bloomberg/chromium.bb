@@ -521,6 +521,7 @@ bool ExceptionHandler::DoDump(pid_t crashing_process, const void* context,
                               size_t context_size) {
   if (minidump_descriptor_.IsFD()) {
     return google_breakpad::WriteMinidump(minidump_descriptor_.fd(),
+                                          minidump_descriptor_.size_limit(),
                                           crashing_process,
                                           context,
                                           context_size,
@@ -528,6 +529,7 @@ bool ExceptionHandler::DoDump(pid_t crashing_process, const void* context,
                                           app_memory_list_);
   }
   return google_breakpad::WriteMinidump(minidump_descriptor_.path(),
+                                        minidump_descriptor_.size_limit(),
                                         crashing_process,
                                         context,
                                         context_size,
