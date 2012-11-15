@@ -173,7 +173,7 @@ public:
     void setUseParentBackfaceVisibility(bool useParentBackfaceVisibility) { m_useParentBackfaceVisibility = useParentBackfaceVisibility; }
     bool useParentBackfaceVisibility() const { return m_useParentBackfaceVisibility; }
 
-    virtual void setUseLCDText(bool);
+    void setUseLCDText(bool);
     bool useLCDText() const { return m_useLCDText; }
 
     virtual void setLayerTreeHost(LayerTreeHost*);

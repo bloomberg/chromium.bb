@@ -272,20 +272,6 @@ void TiledLayer::setNeedsDisplayRect(const gfx::RectF& dirtyRect)
     ContentsScalingLayer::setNeedsDisplayRect(dirtyRect);
 }
 
-void TiledLayer::setUseLCDText(bool useLCDText)
-{
-    ContentsScalingLayer::setUseLCDText(useLCDText);
-
-    LayerTilingData::BorderTexelOption borderTexelOption;
-#if defined(OS_ANDROID)
-    // Always want border texels and GL_LINEAR due to pinch zoom.
-    borderTexelOption = LayerTilingData::HasBorderTexels;
-#else
-    borderTexelOption = useLCDText ? LayerTilingData::NoBorderTexels : LayerTilingData::HasBorderTexels;
-#endif
-    setBorderTexelOption(borderTexelOption);
-}
-
 void TiledLayer::invalidateContentRect(const gfx::Rect& contentRect)
 {
     updateBounds();
