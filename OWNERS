@@ -6,5 +6,5 @@ per-file WATCHLISTS=*
 per-file Android.mk=benm@chromium.org
 per-file Android.mk=joth@chromium.org
 per-file Android.mk=torne@chromium.org
-per-file PRESUBMIT.py=maruel@chromium.org
-per-file PRESUBMIT.py=joi@chromium.org
+per-file PRESUBMIT*.py=maruel@chromium.org
+per-file PRESUBMIT*.py=joi@chromium.org

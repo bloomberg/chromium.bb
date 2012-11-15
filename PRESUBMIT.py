@@ -554,11 +554,11 @@ def _CheckIncludeOrderForScope(scope, input_api, file_path, changed_linenums):
   return warnings
 
 
-def _CheckIncludeOrderInFile(input_api, output_api, f, is_source,
-                             changed_linenums):
+def _CheckIncludeOrderInFile(input_api, f, is_source, changed_linenums):
   """Checks the #include order for the given file f."""
 
-  include_pattern = input_api.re.compile(r'\s*#include.*')
+  system_include_pattern = input_api.re.compile(r'\s*#include \<.*')
+  custom_include_pattern = input_api.re.compile(r'\s*#include "(?P<FILE>.*)"')
   if_pattern = input_api.re.compile(r'\s*#if.*')
   endif_pattern = input_api.re.compile(r'\s*#endif.*')
 
@@ -566,19 +566,26 @@ def _CheckIncludeOrderInFile(input_api, output_api, f, is_source,
   warnings = []
   line_num = 0
 
-  # Handle the special first include for source files.
+  # Handle the special first include for source files. If the header file is
+  # some/path/file.h, the corresponding source file can be some/path/file.cc,
+  # some/other/path/file.cc, some/path/file_platform.cc etc. It's also possible
+  # that no special first include exists.
   if is_source:
     for line in contents:
       line_num += 1
-      if include_pattern.match(line):
-        # The file name for the first include needs to be the same as for the
-        # file checked; the path can differ.
-        expected_ending = (
-            input_api.os_path.basename(f.LocalPath()).replace('.cc', '.h') +
-            '"')
-        if not line.endswith(expected_ending):
-          # Maybe there was no special first include, and that's fine. Process
-          # the line again along with the normal includes.
+      if system_include_pattern.match(line):
+        # No special first include -> process the line again along with normal
+        # includes.
+        line_num -= 1
+        break
+      match = custom_include_pattern.match(line)
+      if match:
+        match_dict = match.groupdict()
+        header_basename = input_api.os_path.basename(
+            match_dict['FILE']).replace('.h', '')
+        if header_basename not in input_api.os_path.basename(f.LocalPath()):
+          # No special first include -> process the line again along with normal
+          # includes.
           line_num -= 1
         break
 
@@ -590,7 +597,8 @@ def _CheckIncludeOrderInFile(input_api, output_api, f, is_source,
     if if_pattern.match(line) or endif_pattern.match(line):
       scopes.append(current_scope)
       current_scope = []
-    elif include_pattern.match(line):
+    elif (system_include_pattern.match(line) or
+          custom_include_pattern.match(line)):
       current_scope.append((line_num, line))
   scopes.append(current_scope)
 
@@ -615,11 +623,11 @@ def _CheckIncludeOrder(input_api, output_api):
   for f in input_api.AffectedFiles():
     changed_linenums = set([line_num for line_num, _ in f.ChangedContents()])
     if f.LocalPath().endswith('.cc'):
-      warnings = _CheckIncludeOrderInFile(input_api, output_api, f, True,
-                                          changed_linenums)
+      warnings.extend(_CheckIncludeOrderInFile(input_api, f, True,
+                                               changed_linenums))
     elif f.LocalPath().endswith('.h'):
-      warnings = _CheckIncludeOrderInFile(input_api, output_api, f, False,
-                                          changed_linenums)
+      warnings.extend(_CheckIncludeOrderInFile(input_api, f, False,
+                                               changed_linenums))
 
   results = []
   if warnings:
@@ -647,6 +655,12 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckFilePermissions(input_api, output_api))
   results.extend(_CheckNoAuraWindowPropertyHInHeaders(input_api, output_api))
   results.extend(_CheckIncludeOrder(input_api, output_api))
+
+  if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
+    results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
+        input_api, output_api,
+        input_api.PresubmitLocalPath(),
+        whitelist=[r'.+_test\.py$']))
   return results
 
 
