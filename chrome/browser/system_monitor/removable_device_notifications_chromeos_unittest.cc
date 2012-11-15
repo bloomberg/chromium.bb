@@ -28,12 +28,28 @@ using content::BrowserThread;
 using disks::DiskMountManager;
 using testing::_;
 
+const char kDeviceNameWithManufacturerDetails[] = "110 KB (CompanyA, Z101)";
 const char kDevice1[] = "/dev/d1";
-const char kDevice2[] = "/dev/disk/d2";
 const char kDevice1Name[] = "d1";
+const char kDevice1NameWithSizeInfo[] = "110 KB d1";
+const char kDevice2[] = "/dev/disk/d2";
 const char kDevice2Name[] = "d2";
+const char kDevice2NameWithSizeInfo[] = "19.8 GB d2";
+const char kEmptyDeviceLabel[] = "";
 const char kMountPointA[] = "mnt_a";
 const char kMountPointB[] = "mnt_b";
+const char kSDCardDeviceName1[] = "8.6 MB Amy_SD";
+const char kSDCardDeviceName2[] = "8.6 MB SD Card";
+const char kSDCardMountPoint1[] = "media/removable/Amy_SD";
+const char kSDCardMountPoint2[] = "media/removable/SD Card";
+const char kProductName[] = "Z101";
+const char kUniqueId1[] = "FFFF-FFFF";
+const char kUniqueId2[] = "FFFF-FF0F";
+const char kVendorName[] = "CompanyA";
+
+uint64 kDevice1SizeInBytes = 113048;
+uint64 kDevice2SizeInBytes = 21231209600;
+uint64 kSDCardSizeInBytes = 9000000;
 
 std::string GetDCIMDeviceId(const std::string& unique_id) {
   return chrome::MediaStorageUtil::MakeDeviceId(
@@ -41,6 +57,7 @@ std::string GetDCIMDeviceId(const std::string& unique_id) {
       chrome::kFSUniqueIdPrefix + unique_id);
 }
 
+// Wrapper class to test RemovableDeviceNotificationsCros.
 class RemovableDeviceNotificationsCrosTest : public testing::Test {
  public:
   RemovableDeviceNotificationsCrosTest()
@@ -50,7 +67,7 @@ class RemovableDeviceNotificationsCrosTest : public testing::Test {
   virtual ~RemovableDeviceNotificationsCrosTest() {}
 
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     file_thread_.Start();
@@ -67,7 +84,7 @@ class RemovableDeviceNotificationsCrosTest : public testing::Test {
     notifications_ = new RemovableDeviceNotificationsCros();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     notifications_ = NULL;
     disk_mount_manager_mock_ = NULL;
     DiskMountManager::Shutdown();
@@ -83,10 +100,15 @@ class RemovableDeviceNotificationsCrosTest : public testing::Test {
   void MountDevice(MountError error_code,
                    const DiskMountManager::MountPointInfo& mount_info,
                    const std::string& unique_id,
-                   const std::string& device_label) {
+                   const std::string& device_label,
+                   const std::string& vendor_name,
+                   const std::string& product_name,
+                   DeviceType device_type,
+                   uint64 device_size_in_bytes) {
     if (error_code == MOUNT_ERROR_NONE) {
       disk_mount_manager_mock_->CreateDiskEntryForMountDevice(
-        mount_info, unique_id, device_label);
+          mount_info, unique_id, device_label, vendor_name, product_name,
+          device_type, device_size_in_bytes);
     }
     notifications_->OnMountEvent(disks::DiskMountManager::MOUNTING,
                                  error_code,
@@ -106,6 +128,10 @@ class RemovableDeviceNotificationsCrosTest : public testing::Test {
     WaitForFileThread();
   }
 
+  uint64 GetDeviceStorageSize(const std::string& device_location) {
+    return notifications_->GetStorageSize(device_location);
+  }
+
   // Create a directory named |dir| relative to the test directory.
   // Set |with_dcim_dir| to true if the created directory will have a "DCIM"
   // subdirectory.
@@ -123,14 +149,12 @@ class RemovableDeviceNotificationsCrosTest : public testing::Test {
   }
 
   static void PostQuitToUIThread() {
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             MessageLoop::QuitClosure());
   }
 
   static void WaitForFileThread() {
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                             base::Bind(&PostQuitToUIThread));
     MessageLoop::current()->Run();
   }
@@ -164,16 +188,16 @@ TEST_F(RemovableDeviceNotificationsCrosTest, BasicAttachDetach) {
                                               mount_path1.value(),
                                               MOUNT_TYPE_DEVICE,
                                               disks::MOUNT_CONDITION_NONE);
-  const std::string kUniqueId0 = "FFFF-FFFF";
   EXPECT_CALL(observer(),
-              OnRemovableStorageAttached(GetDCIMDeviceId(kUniqueId0),
-                                         ASCIIToUTF16(kDevice1Name),
+              OnRemovableStorageAttached(GetDCIMDeviceId(kUniqueId1),
+                                         ASCIIToUTF16(kDevice1NameWithSizeInfo),
                                          mount_path1.value()))
       .InSequence(mock_sequence);
-  MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId0, kDevice1Name);
+  MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId1, kDevice1Name,
+              kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
 
   EXPECT_CALL(observer(),
-              OnRemovableStorageDetached(GetDCIMDeviceId(kUniqueId0)))
+              OnRemovableStorageDetached(GetDCIMDeviceId(kUniqueId1)))
       .InSequence(mock_sequence);
   UnmountDevice(MOUNT_ERROR_NONE, mount_info);
 
@@ -183,17 +207,16 @@ TEST_F(RemovableDeviceNotificationsCrosTest, BasicAttachDetach) {
                                                mount_path2.value(),
                                                MOUNT_TYPE_DEVICE,
                                                disks::MOUNT_CONDITION_NONE);
-  const std::string kUniqueId1 = "FFF0-FFF0";
-
   EXPECT_CALL(observer(),
-              OnRemovableStorageAttached(GetDCIMDeviceId(kUniqueId1),
-                                         ASCIIToUTF16(kDevice2Name),
+              OnRemovableStorageAttached(GetDCIMDeviceId(kUniqueId2),
+                                         ASCIIToUTF16(kDevice2NameWithSizeInfo),
                                          mount_path2.value()))
       .InSequence(mock_sequence);
-  MountDevice(MOUNT_ERROR_NONE, mount_info2, kUniqueId1, kDevice2Name);
+  MountDevice(MOUNT_ERROR_NONE, mount_info2, kUniqueId2, kDevice2Name,
+              kVendorName, kProductName, DEVICE_TYPE_USB, kDevice2SizeInBytes);
 
   EXPECT_CALL(observer(),
-              OnRemovableStorageDetached(GetDCIMDeviceId(kUniqueId1)))
+              OnRemovableStorageDetached(GetDCIMDeviceId(kUniqueId2)))
       .InSequence(mock_sequence);
   UnmountDevice(MOUNT_ERROR_NONE, mount_info2);
 }
@@ -212,9 +235,11 @@ TEST_F(RemovableDeviceNotificationsCrosTest, NoDCIM) {
       chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM,
       chrome::kFSUniqueIdPrefix + kUniqueId);
   EXPECT_CALL(observer(),
-              OnRemovableStorageAttached(device_id, ASCIIToUTF16(kDevice1Name),
+              OnRemovableStorageAttached(device_id,
+                                         ASCIIToUTF16(kDevice1NameWithSizeInfo),
                                          mount_path.value())).Times(1);
-  MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId, kDevice1Name);
+  MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId, kDevice1Name,
+              kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
 }
 
 // Non device mounts and mount errors are ignored.
@@ -230,18 +255,107 @@ TEST_F(RemovableDeviceNotificationsCrosTest, Ignore) {
                                               MOUNT_TYPE_DEVICE,
                                               disks::MOUNT_CONDITION_NONE);
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
-  MountDevice(MOUNT_ERROR_UNKNOWN, mount_info, kUniqueId, kDevice1Name);
+  MountDevice(MOUNT_ERROR_UNKNOWN, mount_info, kUniqueId, kDevice1Name,
+              kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
 
   // Not a device
   mount_info.mount_type = MOUNT_TYPE_ARCHIVE;
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
-  MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId, kDevice1Name);
+  MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId, kDevice1Name,
+              kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
 
   // Unsupported file system.
   mount_info.mount_type = MOUNT_TYPE_DEVICE;
   mount_info.mount_condition = disks::MOUNT_CONDITION_UNSUPPORTED_FILESYSTEM;
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
-  MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId, kDevice1Name);
+  MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId, kDevice1Name,
+              kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
+}
+
+TEST_F(RemovableDeviceNotificationsCrosTest, SDCardAttachDetach) {
+  testing::Sequence mock_sequence;
+  FilePath mount_path1 = CreateMountPoint(kSDCardMountPoint1, true);
+  ASSERT_FALSE(mount_path1.empty());
+  DiskMountManager::MountPointInfo mount_info1(kSDCardDeviceName1,
+                                               mount_path1.value(),
+                                               MOUNT_TYPE_DEVICE,
+                                               disks::MOUNT_CONDITION_NONE);
+  EXPECT_CALL(observer(),
+              OnRemovableStorageAttached(GetDCIMDeviceId(kUniqueId2),
+                                         ASCIIToUTF16(kSDCardDeviceName1),
+                                         mount_path1.value()))
+      .InSequence(mock_sequence);
+  MountDevice(MOUNT_ERROR_NONE, mount_info1, kUniqueId2, kSDCardDeviceName1,
+              kVendorName, kProductName, DEVICE_TYPE_SD, kSDCardSizeInBytes);
+
+  EXPECT_CALL(observer(),
+              OnRemovableStorageDetached(GetDCIMDeviceId(kUniqueId2)))
+      .InSequence(mock_sequence);
+  UnmountDevice(MOUNT_ERROR_NONE, mount_info1);
+
+  FilePath mount_path2 = CreateMountPoint(kSDCardMountPoint2, true);
+  ASSERT_FALSE(mount_path2.empty());
+  DiskMountManager::MountPointInfo mount_info2(kSDCardDeviceName2,
+                                               mount_path2.value(),
+                                               MOUNT_TYPE_DEVICE,
+                                               disks::MOUNT_CONDITION_NONE);
+  EXPECT_CALL(observer(),
+              OnRemovableStorageAttached(GetDCIMDeviceId(kUniqueId2),
+                                         ASCIIToUTF16(kSDCardDeviceName2),
+                                         mount_path2.value()))
+      .InSequence(mock_sequence);
+  MountDevice(MOUNT_ERROR_NONE, mount_info2, kUniqueId2, kSDCardDeviceName2,
+              kVendorName, kProductName, DEVICE_TYPE_SD, kSDCardSizeInBytes);
+
+  EXPECT_CALL(observer(),
+              OnRemovableStorageDetached(GetDCIMDeviceId(kUniqueId2)))
+      .InSequence(mock_sequence);
+  UnmountDevice(MOUNT_ERROR_NONE, mount_info2);
+}
+
+TEST_F(RemovableDeviceNotificationsCrosTest, AttachDeviceWithEmptyLabel) {
+  testing::Sequence mock_sequence;
+  FilePath mount_path1 = CreateMountPoint(kMountPointA, true);
+  ASSERT_FALSE(mount_path1.empty());
+  DiskMountManager::MountPointInfo mount_info(kEmptyDeviceLabel,
+                                              mount_path1.value(),
+                                              MOUNT_TYPE_DEVICE,
+                                              disks::MOUNT_CONDITION_NONE);
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(
+      GetDCIMDeviceId(kUniqueId1),
+      ASCIIToUTF16(kDeviceNameWithManufacturerDetails),
+      mount_path1.value()))
+      .InSequence(mock_sequence);
+  MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId1, kEmptyDeviceLabel,
+              kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
+
+  EXPECT_CALL(observer(),
+              OnRemovableStorageDetached(GetDCIMDeviceId(kUniqueId1)))
+      .InSequence(mock_sequence);
+  UnmountDevice(MOUNT_ERROR_NONE, mount_info);
+}
+
+TEST_F(RemovableDeviceNotificationsCrosTest, GetStorageSize) {
+  testing::Sequence mock_sequence;
+  FilePath mount_path1 = CreateMountPoint(kMountPointA, true);
+  ASSERT_FALSE(mount_path1.empty());
+  DiskMountManager::MountPointInfo mount_info(kEmptyDeviceLabel,
+                                              mount_path1.value(),
+                                              MOUNT_TYPE_DEVICE,
+                                              disks::MOUNT_CONDITION_NONE);
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(
+      GetDCIMDeviceId(kUniqueId1),
+      ASCIIToUTF16(kDeviceNameWithManufacturerDetails),
+      mount_path1.value()))
+      .InSequence(mock_sequence);
+  MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId1, kEmptyDeviceLabel,
+              kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
+
+  EXPECT_EQ(kDevice1SizeInBytes, GetDeviceStorageSize(mount_path1.value()));
+  EXPECT_CALL(observer(),
+              OnRemovableStorageDetached(GetDCIMDeviceId(kUniqueId1)))
+      .InSequence(mock_sequence);
+  UnmountDevice(MOUNT_ERROR_NONE, mount_info);
 }
 
 }  // namespace

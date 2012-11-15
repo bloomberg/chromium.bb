@@ -8,6 +8,7 @@
 #define CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_DEVICE_NOTIFICATIONS_UTILS_H_
 
 #include "base/file_path.h"
+#include "base/string16.h"
 
 namespace chrome {
 
@@ -17,6 +18,15 @@ namespace chrome {
 // Mac OS X behaves similarly, but this is not the only heuristic it uses.
 // TODO(vandebo) Try to figure out how Mac OS X decides this.
 bool IsMediaDevice(const FilePath::StringType& mount_point);
+
+// Constructs the device product name from |vendor_name| and |model_name|.
+string16 GetFullProductName(const std::string& vendor_name,
+                            const std::string& model_name);
+
+// Constructs the display name for device from |storage_size_in_bytes| and
+// |name|.
+string16 GetDisplayNameForDevice(uint64 storage_size_in_bytes,
+                                 const string16& name);
 
 }  // namespace chrome
 

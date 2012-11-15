@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
@@ -22,23 +23,27 @@ using base::SystemMonitor;
 
 namespace {
 
-// Construct a device name using label or manufacturer (vendor and product) name
-// details.
+// Constructs a device name using label or manufacturer (vendor and product)
+// name details.
 string16 GetDeviceName(const disks::DiskMountManager::Disk& disk) {
-  std::string device_name = disk.device_label();
-  if (device_name.empty()) {
-    device_name = disk.vendor_name();
-    const std::string& product_name = disk.product_name();
-    if (!product_name.empty()) {
-      if (!device_name.empty())
-        device_name += " ";
-      device_name += product_name;
-    }
+  if (disk.device_type() == DEVICE_TYPE_SD) {
+    // Mount path of an SD card will be one of the following:
+    // (1) /media/removable/<volume_label>
+    // (2) /media/removable/SD Card
+    // If the volume label is available, mount path will be (1) else (2).
+    FilePath mount_point(disk.mount_path());
+    const string16 display_name(mount_point.BaseName().LossyDisplayName());
+    if (!display_name.empty())
+      return display_name;
   }
-  return UTF8ToUTF16(device_name);
+
+  const std::string& device_label = disk.device_label();
+  if (!device_label.empty() && IsStringUTF8(device_label))
+    return UTF8ToUTF16(device_label);
+  return chrome::GetFullProductName(disk.vendor_name(), disk.product_name());
 }
 
-// Construct a device id using uuid or manufacturer (vendor and product) id
+// Constructs a device id using uuid or manufacturer (vendor and product) id
 // details.
 std::string MakeDeviceUniqueId(const disks::DiskMountManager::Disk& disk) {
   std::string uuid = disk.fs_uuid();
@@ -61,10 +66,11 @@ static RemovableDeviceNotificationsCros*
     g_removable_device_notifications_chromeos = NULL;
 
 // Returns true if the requested device is valid, else false. On success, fills
-// in |unique_id| and |device_label|
-bool GetDeviceInfo(const std::string& source_path, std::string* unique_id,
-                   string16* device_label) {
-  // Get the media device uuid and label if exists.
+// in |unique_id|, |device_label| and |storage_size_in_bytes|.
+bool GetDeviceInfo(const std::string& source_path,
+                   std::string* unique_id,
+                   string16* device_label,
+                   uint64* storage_size_in_bytes) {
   const disks::DiskMountManager::Disk* disk =
       disks::DiskMountManager::GetInstance()->FindDiskBySourcePath(source_path);
   if (!disk || disk->device_type() == DEVICE_TYPE_UNKNOWN)
@@ -75,12 +81,14 @@ bool GetDeviceInfo(const std::string& source_path, std::string* unique_id,
 
   if (device_label)
     *device_label = GetDeviceName(*disk);
+
+  if (storage_size_in_bytes)
+    *storage_size_in_bytes = disk->total_size_in_bytes();
   return true;
 }
 
 }  // namespace
 
-using chrome::MediaStorageUtil;
 using content::BrowserThread;
 
 RemovableDeviceNotificationsCros::RemovableDeviceNotificationsCros() {
@@ -164,7 +172,7 @@ void RemovableDeviceNotificationsCros::OnMountEvent(
       if (it == mount_map_.end())
         return;
       SystemMonitor::Get()->ProcessRemovableStorageDetached(
-          it->second.device_id);
+          it->second.storage_info.device_id);
       mount_map_.erase(it);
       break;
     }
@@ -194,8 +202,15 @@ bool RemovableDeviceNotificationsCros::GetDeviceInfoForPath(
     return false;
 
   if (device_info)
-    *device_info = info_it->second;
+    *device_info = info_it->second.storage_info;
   return true;
+}
+
+uint64 RemovableDeviceNotificationsCros::GetStorageSize(
+    const std::string& device_location) const {
+  MountMap::const_iterator info_it = mount_map_.find(device_location);
+  return (info_it != mount_map_.end()) ?
+      info_it->second.storage_size_in_bytes : 0;
 }
 
 void RemovableDeviceNotificationsCros::CheckMountedPathOnFileThread(
@@ -224,28 +239,34 @@ void RemovableDeviceNotificationsCros::AddMountedPathOnUIThread(
   // Get the media device uuid and label if exists.
   std::string unique_id;
   string16 device_label;
-  if (!GetDeviceInfo(mount_info.source_path, &unique_id, &device_label))
+  uint64 storage_size_in_bytes;
+  if (!GetDeviceInfo(mount_info.source_path, &unique_id, &device_label,
+                     &storage_size_in_bytes))
     return;
 
   // Keep track of device uuid and label, to see how often we receive empty
   // values.
-  MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id, device_label);
+  chrome::MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id,
+                                                      device_label);
   if (unique_id.empty() || device_label.empty())
     return;
 
-  MediaStorageUtil::Type type = has_dcim ?
-      MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM :
-      MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
+  chrome::MediaStorageUtil::Type type = has_dcim ?
+      chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM :
+      chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
 
   std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(type,
                                                                  unique_id);
-  SystemMonitor::RemovableStorageInfo info(device_id, device_label,
-                                           mount_info.mount_path);
-  mount_map_.insert(std::make_pair(mount_info.mount_path, info));
+  StorageObjectInfo object_info = {
+      base::SystemMonitor::RemovableStorageInfo(device_id, device_label,
+                                                mount_info.mount_path),
+      storage_size_in_bytes
+  };
+  mount_map_.insert(std::make_pair(mount_info.mount_path, object_info));
   SystemMonitor::Get()->ProcessRemovableStorageAttached(
       device_id,
-      device_label,
+      chrome::GetDisplayNameForDevice(storage_size_in_bytes, device_label),
       mount_info.mount_path);
 }
 
-}  // namespace chrome
+}  // namespace chromeos
