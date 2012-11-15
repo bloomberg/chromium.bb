@@ -184,9 +184,10 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
     return;
 
   const std::string& event_name = listener->event_name;
+  const EventListenerInfo details(event_name, listener->extension_id);
   ObserverMap::iterator observer = observers_.find(event_name);
   if (observer != observers_.end())
-    observer->second->OnListenerAdded(event_name);
+    observer->second->OnListenerAdded(details);
 
   // TODO(yoz): Migrate these to become EventRouter observers.
   // EventRouter shouldn't need to know about them.
@@ -206,9 +207,10 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
     return;
 
   const std::string& event_name = listener->event_name;
+  const EventListenerInfo details(event_name, listener->extension_id);
   ObserverMap::iterator observer = observers_.find(event_name);
   if (observer != observers_.end())
-    observer->second->OnListenerRemoved(event_name);
+    observer->second->OnListenerRemoved(details);
 
   // TODO(yoz): Migrate these to become EventRouter observers.
   // EventRouter shouldn't need to know about them.
@@ -691,5 +693,10 @@ Event::Event(const std::string& event_name,
       info(info) {}
 
 Event::~Event() {}
+
+EventListenerInfo::EventListenerInfo(const std::string& event_name,
+                                     const std::string& extension_id)
+    : event_name(event_name),
+      extension_id(extension_id) {}
 
 }  // namespace extensions

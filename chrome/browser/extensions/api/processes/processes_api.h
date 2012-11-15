@@ -107,8 +107,8 @@ class ProcessesAPI : public ProfileKeyedService,
   ProcessesEventRouter* processes_event_router();
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const std::string& event_name) OVERRIDE;
-  virtual void OnListenerRemoved(const std::string& event_name) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
 
  private:
   Profile* profile_;

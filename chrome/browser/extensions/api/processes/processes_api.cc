@@ -508,13 +508,13 @@ ProcessesEventRouter* ProcessesAPI::processes_event_router() {
   return processes_event_router_.get();
 }
 
-void ProcessesAPI::OnListenerAdded(const std::string& event_name) {
+void ProcessesAPI::OnListenerAdded(const EventListenerInfo& details) {
   // We lazily tell the TaskManager to start updating when listeners to the
   // processes.onUpdated or processes.onUpdatedWithMemory events arrive.
   processes_event_router()->ListenerAdded();
 }
 
-void ProcessesAPI::OnListenerRemoved(const std::string& event_name) {
+void ProcessesAPI::OnListenerRemoved(const EventListenerInfo& details) {
   // If a processes.onUpdated or processes.onUpdatedWithMemory event listener
   // is removed (or a process with one exits), then we let the extension API
   // know that it has one fewer listener.

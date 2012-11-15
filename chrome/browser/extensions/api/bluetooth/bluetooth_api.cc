@@ -113,11 +113,11 @@ void BluetoothAPI::Shutdown() {
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
-void BluetoothAPI::OnListenerAdded(const std::string& event_name) {
+void BluetoothAPI::OnListenerAdded(const EventListenerInfo& details) {
   bluetooth_event_router()->OnListenerAdded();
 }
 
-void BluetoothAPI::OnListenerRemoved(const std::string& event_name) {
+void BluetoothAPI::OnListenerRemoved(const EventListenerInfo& details) {
   bluetooth_event_router()->OnListenerRemoved();
 }
 

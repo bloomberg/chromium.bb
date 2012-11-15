@@ -42,8 +42,8 @@ class BluetoothAPI : public ProfileKeyedService,
   virtual void Shutdown() OVERRIDE;
 
   // EventRouter::Observer implementation.
-  virtual void OnListenerAdded(const std::string& event_name) OVERRIDE;
-  virtual void OnListenerRemoved(const std::string& event_name) OVERRIDE;
+  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+  virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
 
  private:
   Profile* profile_;

@@ -34,6 +34,7 @@ class ExtensionHost;
 class ExtensionPrefs;
 
 struct Event;
+struct EventListenerInfo;
 
 class EventRouter : public content::NotificationObserver,
                     public EventListenerMap::Delegate {
@@ -51,9 +52,9 @@ class EventRouter : public content::NotificationObserver,
   class Observer {
    public:
     // Called when a listener is added.
-    virtual void OnListenerAdded(const std::string& event_name) {}
+    virtual void OnListenerAdded(const EventListenerInfo& details) {}
     // Called when a listener is removed.
-    virtual void OnListenerRemoved(const std::string& event_name) {}
+    virtual void OnListenerRemoved(const EventListenerInfo& details) {}
   };
 
   // Sends an event via ipc_sender to the given extension. Can be called on any
@@ -304,6 +305,14 @@ struct Event {
         const EventFilteringInfo& info);
 
   ~Event();
+};
+
+struct EventListenerInfo {
+  EventListenerInfo(const std::string& event_name,
+                    const std::string& extension_id);
+
+  const std::string event_name;
+  const std::string extension_id;
 };
 
 }  // namespace extensions
