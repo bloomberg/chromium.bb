@@ -1,0 +1,1074 @@
+@hex:
+  # Originally these tests came from
+  # https://github.com/mseaborn/x86-decoder/blob/x86-64/validator_test.py
+  
+  # Check some simple allowed instructions.
+  # nop
+  90
+  # hlt
+  f4
+  # mov $0x12345678, %rax
+  48 c7 c0 78 56 34 12
+  # mov $0x1234567812345678, %rax
+  48 b8 78 56 34 12 78 56 34 12
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 13
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 90                                           nop
+  0000000000000001: f4                                           hlt
+  0000000000000002: 48 c7 c0 78 56 34 12                         mov %rax, 0x12345678
+  0000000000000009: 48 b8 78 56 34 12 78 56 34 12                mov %rax, 0x1234567812345678
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # Check a disallowed instruction.
+  # nop
+  90
+  # int $0x80
+  cd 80
+@rval:
+  VALIDATOR: 0000000000000001: cd 80                                        int 0x80
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 90                                           nop
+  0000000000000001: cd 80                                        int 0x80
+@rdfa_output:
+  1: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # ret
+  c3
+@rval:
+  VALIDATOR: 0000000000000000: c3                                           ret
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: c3                                           ret
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking jump targets: 0 to 1
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: c3                                           ret
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # syscall
+  0f 05
+@rval:
+  VALIDATOR: 0000000000000000: 0f 05                                        syscall
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: 0f 05                                        syscall
+  VALIDATOR: ERROR: System instructions are not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 0f 05                                        syscall
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov $0x1234567812345678, %rax
+  48 b8 78 56 34 12 78 56 34 12
+  # mov $0x1234567812345678, %rax
+  48 b8 78 56 34 12 78 56 34 12
+  # mov $0x1234567812345678, %rax
+  48 b8 78 56 34 12 78 56 34 12
+  # mov $0x1234567812345678, %rax
+  48 b8 78 56 34 12 78 56 34 12
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 28
+  VALIDATOR: Checking that basic blocks are aligned
+  VALIDATOR: ERROR: 20: Bad basic block alignment.
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 48 b8 78 56 34 12 78 56 34 12                mov %rax, 0x1234567812345678
+  000000000000000a: 48 b8 78 56 34 12 78 56 34 12                mov %rax, 0x1234567812345678
+  0000000000000014: 48 b8 78 56 34 12 78 56 34 12                mov %rax, 0x1234567812345678
+  000000000000001e: 48 b8 78 56 34 12 78 56 34 12                mov %rax, 0x1234567812345678
+@rdfa_output:
+  1e: [0] unrecognized instruction
+  20: [0] direct jump out of range
+  24: [0] direct jump out of range
+  return code: 1
+@validators_disagree:
+  Because RDFA validator recovered after bundle boundary.
+----------------------------------------------------------------------
+@hex:
+  # Forwards and backwards jumps.
+  # nop
+  90
+  # jmp .+6
+  eb 04
+  # jmp .+0
+  eb fe
+  # jmp .-2
+  eb fc
+  # jmp .-4
+  eb fa
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 90                                           nop
+  0000000000000001: eb 04                                        jmp 0x7
+  0000000000000003: eb fe                                        jmp 0x3
+  0000000000000005: eb fc                                        jmp 0x3
+  0000000000000007: eb fa                                        jmp 0x3
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # Out-of-range unaligned jump.
+  # jmp .-1
+  eb fd
+@rval:
+  VALIDATOR: 0000000000000000: eb fd                                        jmp 0xffffffffffffffff
+  VALIDATOR: ERROR: Instruction jumps to bad address
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: eb fd                                        jmp 0xffffffffffffffff
+@rdfa_output:
+  0: [0] direct jump out of range
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Out-of-range unaligned jump.
+  # jmp .+33
+  eb 1f
+@rval:
+  VALIDATOR: 0000000000000000: eb 1f                                        jmp 0x21
+  VALIDATOR: ERROR: Instruction jumps to bad address
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: eb 1f                                        jmp 0x21
+@rdfa_output:
+  0: [0] direct jump out of range
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Jump into instruction.
+  # mov $0x1234567812345678, %rax
+  48 b8 78 56 34 12 78 56 34 12
+  # jmp .-5
+  eb f9
+@rval:
+  VALIDATOR: Checking jump targets: 0 to c
+  VALIDATOR: ERROR: 5: Bad jump target
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 48 b8 78 56 34 12 78 56 34 12                mov %rax, 0x1234567812345678
+  000000000000000a: eb f9                                        jmp 0x5
+@rdfa_output:
+  a: [0] bad jump target
+  return code: 1
+@validators_disagree:
+  Difference in jump reporting.
+----------------------------------------------------------------------
+@hex:
+  # Unmasked indirect jumps are disallowed.
+  # jmp *%rax
+  ff e0
+@rval:
+  VALIDATOR: 0000000000000000: ff e0                                        jmp %rax
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: ff e0                                        jmp %rax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # jmp *(%rax)
+  ff 20
+@rval:
+  VALIDATOR: 0000000000000000: ff 20                                        jmp [%rax]
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: 0000000000000000: ff 20                                        jmp [%rax]
+  VALIDATOR: ERROR: Jump not native client compliant
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: ff 20                                        jmp [%rax]
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # call *%rax
+  ff d0
+@rval:
+  VALIDATOR: 0000000000000000: ff d0                                        call %rax
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: 0000000000000000: ff d0                                        call %rax
+  VALIDATOR: WARNING: Bad call alignment, return pc = 2
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: ff d0                                        call %rax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # call *(%rax)
+  ff 10
+@rval:
+  VALIDATOR: 0000000000000000: ff 10                                        call [%rax]
+  VALIDATOR: ERROR: Invalid base register in memory offset
+  VALIDATOR: 0000000000000000: ff 10                                        call [%rax]
+  VALIDATOR: ERROR: Jump not native client compliant
+  VALIDATOR: 0000000000000000: ff 10                                        call [%rax]
+  VALIDATOR: WARNING: Bad call alignment, return pc = 2
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: ff 10                                        call [%rax]
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Masking instructions on their own are allowed.
+  # and $~31, %eax
+  83 e0 e0
+  # and $~31, %ebx
+  83 e3 e0
+  # and $~31, %rax
+  48 83 e0 e0
+  # and $~31, %rbx
+  48 83 e3 e0
+@rval:
+  VALIDATOR: Checking jump targets: 0 to e
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 83 e0 e0                                     and %eax, 0xe0
+  0000000000000003: 83 e3 e0                                     and %ebx, 0xe0
+  0000000000000006: 48 83 e0 e0                                  and %rax, 0xe0
+  000000000000000a: 48 83 e3 e0                                  and %rbx, 0xe0
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # and $~31, %eax
+  83 e0 e0
+  # add %r15, %rax
+  4c 01 f8
+  
+  # and $~31, %ebx
+  83 e3 e0
+  # add %r15, %rbx
+  4c 01 fb
+@rval:
+  VALIDATOR: Checking jump targets: 0 to c
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 83 e0 e0                                     and %eax, 0xe0
+  0000000000000003: 4c 01 f8                                     add %rax, %r15
+  0000000000000006: 83 e3 e0                                     and %ebx, 0xe0
+  0000000000000009: 4c 01 fb                                     add %rbx, %r15
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # Masked indirect jumps are allowed.
+  # and $~31, %eax
+  83 e0 e0
+  # add %r15, %rax
+  4c 01 f8
+  # jmp *%rax
+  ff e0
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 83 e0 e0                                     and %eax, 0xe0
+  0000000000000003: 4c 01 f8                                     add %rax, %r15
+  0000000000000006: ff e0                                        jmp %rax
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # and $~31, %ebx
+  83 e3 e0
+  # add %r15, %rbx
+  4c 01 fb
+  # call *%rbx
+  ff d3
+@rval:
+  VALIDATOR: 0000000000000006: ff d3                                        call %rbx
+  VALIDATOR: WARNING: Bad call alignment, return pc = 8
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 83 e3 e0                                     and %ebx, 0xe0
+  0000000000000003: 4c 01 fb                                     add %rbx, %r15
+  0000000000000006: ff d3                                        call %rbx
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # The registers must match up for the mask and the jump.
+  # and $~31, %ebx
+  83 e3 e0
+  # add %r15, %rax
+  4c 01 f8
+  # jmp *%rax
+  ff e0
+@rval:
+  VALIDATOR: 0000000000000006: ff e0                                        jmp %rax
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 83 e3 e0                                     and %ebx, 0xe0
+  0000000000000003: 4c 01 f8                                     add %rax, %r15
+  0000000000000006: ff e0                                        jmp %rax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  6: [1] unrecognized instruction
+  return code: 1
+@validators_disagree:
+  Difference in error reporting.
+----------------------------------------------------------------------
+@hex:
+  # and $~31, %eax
+  83 e0 e0
+  # add %r15, %rbx
+  4c 01 fb
+  # jmp *%rax
+  ff e0
+@rval:
+  VALIDATOR: 0000000000000006: ff e0                                        jmp %rax
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 83 e0 e0                                     and %eax, 0xe0
+  0000000000000003: 4c 01 fb                                     add %rbx, %r15
+  0000000000000006: ff e0                                        jmp %rax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  6: [1] unrecognized instruction
+  return code: 1
+@validators_disagree:
+  Difference in error reporting.
+----------------------------------------------------------------------
+@hex:
+  # and $~31, %eax
+  83 e0 e0
+  # add %r15, %rax
+  4c 01 f8
+  # jmp *%rbx
+  ff e3
+@rval:
+  VALIDATOR: 0000000000000006: ff e3                                        jmp %rbx
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 83 e0 e0                                     and %eax, 0xe0
+  0000000000000003: 4c 01 f8                                     add %rax, %r15
+  0000000000000006: ff e3                                        jmp %rbx
+@rdfa_output:
+  0: [0] unrecognized instruction
+  6: [1] unrecognized instruction
+  return code: 1
+@validators_disagree:
+  Difference in error reporting.
+----------------------------------------------------------------------
+@hex:
+  # and $~31, %eax
+  83 e0 e0
+  # add %r15, %rbx
+  4c 01 fb
+  # jmp *%rbx
+  ff e3
+@rval:
+  VALIDATOR: 0000000000000006: ff e3                                        jmp %rbx
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 83 e0 e0                                     and %eax, 0xe0
+  0000000000000003: 4c 01 fb                                     add %rbx, %r15
+  0000000000000006: ff e3                                        jmp %rbx
+@rdfa_output:
+  0: [0] unrecognized instruction
+  6: [1] unrecognized instruction
+  return code: 1
+@validators_disagree:
+  Difference in error reporting.
+----------------------------------------------------------------------
+@hex:
+  # and $~31, %ebx
+  83 e3 e0
+  # add %r15, %rbx
+  4c 01 fb
+  # jmp *%rax
+  ff e0
+@rval:
+  VALIDATOR: 0000000000000006: ff e0                                        jmp %rax
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 83 e3 e0                                     and %ebx, 0xe0
+  0000000000000003: 4c 01 fb                                     add %rbx, %r15
+  0000000000000006: ff e0                                        jmp %rax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  6: [1] unrecognized instruction
+  return code: 1
+@validators_disagree:
+  Difference in error reporting.
+----------------------------------------------------------------------
+@hex:
+  # The mask and the jump must be adjacent.
+  # and $~31, %eax
+  83 e0 e0
+  # nop
+  90
+  # add %r15, %rax
+  4c 01 f8
+  # jmp *%rax
+  ff e0
+@rval:
+  VALIDATOR: 0000000000000007: ff e0                                        jmp %rax
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 83 e0 e0                                     and %eax, 0xe0
+  0000000000000003: 90                                           nop
+  0000000000000004: 4c 01 f8                                     add %rax, %r15
+  0000000000000007: ff e0                                        jmp %rax
+@rdfa_output:
+  7: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # and $~31, %eax
+  83 e0 e0
+  # add %r15, %rax
+  4c 01 f8
+  # nop
+  90
+  # jmp *%rax
+  ff e0
+@rval:
+  VALIDATOR: 0000000000000007: ff e0                                        jmp %rax
+  VALIDATOR: ERROR: Invalid indirect jump
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 83 e0 e0                                     and %eax, 0xe0
+  0000000000000003: 4c 01 f8                                     add %rax, %r15
+  0000000000000006: 90                                           nop
+  0000000000000007: ff e0                                        jmp %rax
+@rdfa_output:
+  7: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Jumping into the middle of the superinstruction must be rejected.
+  # and $~31, %eax
+  83 e0 e0
+  # add %r15, %rax
+  4c 01 f8
+  # jmp *%rax
+  ff e0
+  # jmp .-2
+  eb fc
+@rval:
+  VALIDATOR: Checking jump targets: 0 to a
+  VALIDATOR: ERROR: 6: Bad jump target
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 83 e0 e0                                     and %eax, 0xe0
+  0000000000000003: 4c 01 f8                                     add %rax, %r15
+  0000000000000006: ff e0                                        jmp %rax
+  0000000000000008: eb fc                                        jmp 0x6
+@rdfa_output:
+  8: [0] bad jump target
+  return code: 1
+@validators_disagree:
+  Difference in jump reporting.
+----------------------------------------------------------------------
+@hex:
+  # and $~31, %eax
+  83 e0 e0
+  # add %r15, %rax
+  4c 01 f8
+  # jmp *%rax
+  ff e0
+  # jmp .-5
+  eb f9
+@rval:
+  VALIDATOR: Checking jump targets: 0 to a
+  VALIDATOR: ERROR: 3: Bad jump target
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 83 e0 e0                                     and %eax, 0xe0
+  0000000000000003: 4c 01 f8                                     add %rax, %r15
+  0000000000000006: ff e0                                        jmp %rax
+  0000000000000008: eb f9                                        jmp 0x3
+@rdfa_output:
+  8: [0] bad jump target
+  return code: 1
+@validators_disagree:
+  TODO: explain this
+  Difference in jump reporting.
+----------------------------------------------------------------------
+@hex:
+  # Read-only access to special registers is allowed.
+  # push %rax
+  50
+  # push %rbp
+  55
+  # push %rsp
+  54
+  # push %r15
+  41 57
+  # mov %rsp, %rax
+  48 89 e0
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 50                                           push %rax
+  0000000000000001: 55                                           push %rbp
+  0000000000000002: 54                                           push %rsp
+  0000000000000003: 41 57                                        push %r15
+  0000000000000005: 48 89 e0                                     mov %rax, %rsp
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # Write access to special registers is not allowed.
+  # pop %rax
+  58
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 1
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 58                                           pop %rax
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # pop %rbp
+  5d
+@rval:
+  VALIDATOR: 0000000000000000: 5d                                           pop %rbp
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: Checking jump targets: 0 to 1
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 5d                                           pop %rbp
+@rdfa_output:
+  0: [0] error - %bpl or %bp is changed
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # pop %rsp
+  5c
+@rval:
+  VALIDATOR: 0000000000000000: 5c                                           pop %rsp
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking jump targets: 0 to 1
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 5c                                           pop %rsp
+@rdfa_output:
+  0: [0] error - %spl or %sp is changed
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # pop %r15
+  41 5f
+@rval:
+  VALIDATOR: 0000000000000000: 41 5f                                        pop %r15
+  VALIDATOR: ERROR: Illegal to change the value of register RegR15
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 41 5f                                        pop %r15
+@rdfa_output:
+  0: [0] error - %r15 is changed
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Memory accesses.
+  # mov %eax, %eax
+  89 c0
+  # mov (%r15, %rax), %ebx
+  41 8b 1c 07
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 6
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 89 c0                                        mov %eax, %eax
+  0000000000000002: 41 8b 1c 07                                  mov %ebx, [%r15+%rax*1]
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # Test for a top-bit-set register.
+  # mov %r12d, %r12d
+  45 89 e4
+  # mov (%r15, %r12), %ebx
+  43 8b 1c 27
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 7
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 45 89 e4                                     mov %r12d, %r12d
+  0000000000000003: 43 8b 1c 27                                  mov %ebx, [%r15+%r12*1]
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # Check %edi and %esi because the first 'mov' also begins superinstructions.
+  # mov %edi, %edi
+  89 ff
+  # mov (%r15, %rdi), %ebx
+  41 8b 1c 3f
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 6
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 89 ff                                        mov %edi, %edi
+  0000000000000002: 41 8b 1c 3f                                  mov %ebx, [%r15+%rdi*1]
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # mov %esi, %esi
+  89 f6
+  # mov (%r15, %rsi), %ebx
+  41 8b 1c 37
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 6
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 89 f6                                        mov %esi, %esi
+  0000000000000002: 41 8b 1c 37                                  mov %ebx, [%r15+%rsi*1]
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # Check mask on its own.
+  # mov %eax, %eax
+  89 c0
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 89 c0                                        mov %eax, %eax
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # mov (%r15, %rax), %ebx
+  41 8b 1c 07
+@rval:
+  VALIDATOR: 0000000000000000: 41 8b 1c 07                                  mov %ebx, [%r15+%rax*1]
+  VALIDATOR: ERROR: Invalid index register in memory offset
+  VALIDATOR: Checking jump targets: 0 to 4
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 41 8b 1c 07                                  mov %ebx, [%r15+%rax*1]
+@rdfa_output:
+  0: [0] improper memory address - bad index
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov %eax, %eax
+  89 c0
+  # mov (%r15, %rax), %ebx
+  41 8b 1c 07
+  # jmp .-4
+  eb fa
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: ERROR: 2: Bad jump target
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 89 c0                                        mov %eax, %eax
+  0000000000000002: 41 8b 1c 07                                  mov %ebx, [%r15+%rax*1]
+  0000000000000006: eb fa                                        jmp 0x2
+@rdfa_output:
+  6: [0] bad jump target
+  return code: 1
+@validators_disagree:
+  Difference in jump reporting.
+----------------------------------------------------------------------
+@hex:
+  # Check that post-conditions do not leak from a superinstruction.  In the
+  # PyDFA validator, to share DFT states, the first instruction of the
+  # nacljmp, "and $~31, %eax", records a post-condition, just as when it is
+  # used on its own.  Although the code below is safe, we don't really want
+  # the post-condition to leak through.
+  # and $~31, %eax
+  83 e0 e0
+  # add %r15, %rax
+  4c 01 f8
+  # jmp *%rax
+  ff e0
+  # %rax should not be regarded as zero-extended here.
+  # mov (%r15, %rax), %ebx
+  41 8b 1c 07
+@rval:
+  VALIDATOR: 0000000000000008: 41 8b 1c 07                                  mov %ebx, [%r15+%rax*1]
+  VALIDATOR: ERROR: Invalid index register in memory offset
+  VALIDATOR: Checking jump targets: 0 to c
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 83 e0 e0                                     and %eax, 0xe0
+  0000000000000003: 4c 01 f8                                     add %rax, %r15
+  0000000000000006: ff e0                                        jmp %rax
+  0000000000000008: 41 8b 1c 07                                  mov %ebx, [%r15+%rax*1]
+@rdfa_output:
+  8: [0] improper memory address - bad index
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov %edi, %edi
+  89 ff
+  # lea (%r15, %rdi), %rdi
+  49 8d 3c 3f
+  # rep stos %al, %es:(%rdi)
+  f3 aa
+  # %rdi should not be regarded as zero-extended here.
+  # mov (%r15, %rdi), %ebx
+  41 8b 1c 3f
+@rval:
+  VALIDATOR: 0000000000000008: 41 8b 1c 3f                                  mov %ebx, [%r15+%rdi*1]
+  VALIDATOR: ERROR: Invalid index register in memory offset
+  VALIDATOR: Checking jump targets: 0 to c
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 89 ff                                        mov %edi, %edi
+  0000000000000002: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000006: f3 aa                                        stosb [%rdi]
+  0000000000000008: 41 8b 1c 3f                                  mov %ebx, [%r15+%rdi*1]
+@rdfa_output:
+  8: [0] improper memory address - bad index
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov %esi, %esi
+  89 f6
+  # lea (%r15, %rsi), %rsi
+  49 8d 34 37
+  # mov %edi, %edi
+  89 ff
+  # lea (%r15, %rdi), %rdi
+  49 8d 3c 3f
+  # rep movsb %ds:(%rsi), %es:(%rdi)
+  f3 a4
+  # %rsi should not be regarded as zero-extended here.
+  # mov (%r15, %rsi), %ebx
+  41 8b 1c 37
+@rval:
+  VALIDATOR: 000000000000000e: 41 8b 1c 37                                  mov %ebx, [%r15+%rsi*1]
+  VALIDATOR: ERROR: Invalid index register in memory offset
+  VALIDATOR: Checking jump targets: 0 to 12
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 89 f6                                        mov %esi, %esi
+  0000000000000002: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
+  0000000000000006: 89 ff                                        mov %edi, %edi
+  0000000000000008: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000000c: f3 a4                                        movsb [%rdi], [%rsi]
+  000000000000000e: 41 8b 1c 37                                  mov %ebx, [%r15+%rsi*1]
+@rdfa_output:
+  e: [0] improper memory address - bad index
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Non-%r15-based memory accesses.
+  # mov 0x1234(%rip), %eax
+  8b 05 34 12 00 00
+  # mov 0x1234(%rsp), %eax
+  8b 84 24 34 12 00 00
+  # mov 0x1234(%rbp), %eax
+  8b 85 34 12 00 00
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 13
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 8b 05 34 12 00 00                            mov %eax, [%rip+0x1234]
+  0000000000000006: 8b 84 24 34 12 00 00                         mov %eax, [%rsp+0x1234]
+  000000000000000d: 8b 85 34 12 00 00                            mov %eax, [%rbp+0x1234]
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # mov 0x1234(%rsp, %rbx), %eax
+  8b 84 1c 34 12 00 00
+@rval:
+  VALIDATOR: 0000000000000000: 8b 84 1c 34 12 00 00                         mov %eax, [%rsp+%rbx*1+0x1234]
+  VALIDATOR: ERROR: Invalid index register in memory offset
+  VALIDATOR: Checking jump targets: 0 to 7
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 8b 84 1c 34 12 00 00                         mov %eax, [%rsp+%rbx*1+0x1234]
+@rdfa_output:
+  0: [0] improper memory address - bad index
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov 0x1234(%rbp, %rbx), %eax
+  8b 84 1d 34 12 00 00
+@rval:
+  VALIDATOR: 0000000000000000: 8b 84 1d 34 12 00 00                         mov %eax, [%rbp+%rbx*1+0x1234]
+  VALIDATOR: ERROR: Invalid index register in memory offset
+  VALIDATOR: Checking jump targets: 0 to 7
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 8b 84 1d 34 12 00 00                         mov %eax, [%rbp+%rbx*1+0x1234]
+@rdfa_output:
+  0: [0] improper memory address - bad index
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov %ebx, %ebx
+  89 db
+  # mov 0x1234(%rsp, %rbx), %eax
+  8b 84 1c 34 12 00 00
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 89 db                                        mov %ebx, %ebx
+  0000000000000002: 8b 84 1c 34 12 00 00                         mov %eax, [%rsp+%rbx*1+0x1234]
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # mov %ebx, %ebx
+  89 db
+  # mov 0x1234(%rbp, %rbx), %eax
+  8b 84 1d 34 12 00 00
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 89 db                                        mov %ebx, %ebx
+  0000000000000002: 8b 84 1d 34 12 00 00                         mov %eax, [%rbp+%rbx*1+0x1234]
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # 'lea' is not a memory access.
+  # lea (%rbx, %rcx, 4), %rax
+  48 8d 04 8b
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 4
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 48 8d 04 8b                                  lea %rax, [%rbx+%rcx*4]
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # Stack operations.
+  # mov %rsp, %rbp
+  48 89 e5
+  # mov %rbp, %rsp
+  48 89 ec
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 6
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 48 89 e5                                     mov %rbp, %rsp
+  0000000000000003: 48 89 ec                                     mov %rsp, %rbp
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # add $8, %ebp
+  83 c5 08
+  # add %r15, %rbp
+  4c 01 fd
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 6
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 83 c5 08                                     add %ebp, 0x8
+  0000000000000003: 4c 01 fd                                     add %rbp, %r15
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # add $8, %ebp
+  83 c5 08
+  # add %r15, %rbp
+  4c 01 fd
+  # jmp .-3
+  eb fb
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: ERROR: 3: Bad jump target
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 83 c5 08                                     add %ebp, 0x8
+  0000000000000003: 4c 01 fd                                     add %rbp, %r15
+  0000000000000006: eb fb                                        jmp 0x3
+@rdfa_output:
+  6: [0] bad jump target
+  return code: 1
+@validators_disagree:
+  Difference in jump reporting.
+----------------------------------------------------------------------
+@hex:
+  # A stack fixup on its own is not allowed.
+  # add %r15, %rbp
+  4c 01 fd
+@rval:
+  VALIDATOR: 0000000000000000: 4c 01 fd                                     add %rbp, %r15
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 4c 01 fd                                     add %rbp, %r15
+@rdfa_output:
+  0: [0] improper %rbp sandboxing
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # add %r15, %rsp
+  4c 01 fc
+@rval:
+  VALIDATOR: 0000000000000000: 4c 01 fc                                     add %rsp, %r15
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 4c 01 fc                                     add %rsp, %r15
+@rdfa_output:
+  0: [0] improper %rsp sandboxing
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # add %r15, %r15
+  4d 01 ff
+@rval:
+  VALIDATOR: 0000000000000000: 4d 01 ff                                     add %r15, %r15
+  VALIDATOR: ERROR: Illegal to change the value of register RegR15
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 4d 01 ff                                     add %r15, %r15
+@rdfa_output:
+  0: [0] error - %r15 is changed
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Sandboxing is not required on prefetch instructions.
+  # prefetchnta (%rax)
+  0f 18 00
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 0f 18 00                                     prefetchnta [%rax]
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # Segment register manipulations are forbidden
+  # mov %rax, %es
+  48 8e c0
+@rval:
+  VALIDATOR: 0000000000000000: 48 8e c0                                     mov %es, %ax
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: 48 8e c0                                     mov %es, %ax
+  VALIDATOR: ERROR: Illegal assignment to segment register RegES
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 48 8e c0                                     mov %es, %ax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov %es, %rax
+  48 8c c0
+@rval:
+  VALIDATOR: 0000000000000000: 48 8c c0                                     mov %rax, %es
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 48 8c c0                                     mov %rax, %es
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

@@ -87,15 +87,6 @@ run_benchmark = env.Command(
 
 env.AlwaysBuild(env.Alias('dfavalidatorbenchmark', run_benchmark))
 
-# Python-based regression test. TODO(pasko): remove it when validator_tests are
-# migrated to be able to run with the new validator.
-if env.Bit('validator_ragel') and env.Bit('host_linux'):
-  test_node = env.CommandTest('validator_test_py.out',
-                              command=['${PYTHON}',
-                                       env.File('unreviewed/validator_test.py'),
-                                       validator_test_exe])
-  env.AddNodeToTestSuite(test_node, ['small_tests'], 'run_validator_test_py')
-
 ncval_new = env.ComponentProgram(
     'ncval_new',
     ['ncval.cc'],
