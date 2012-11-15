@@ -1,8 +1,4 @@
 # This file contains known failures in the LLVM regression tests for PNaCl.
-PCH/cxx-typeid.cpp
-Analysis/Profiling/load-branch-weights-ifs.ll
-Analysis/Profiling/load-branch-weights-loops.ll
-Analysis/Profiling/load-branch-weights-switches.ll
 CodeGen/ARM/2009-10-02-NEONSubregsBug.ll
 CodeGen/ARM/2009-11-01-NeonMoves.ll
 CodeGen/ARM/2009-11-02-NegativeLane.ll
@@ -23,7 +19,6 @@ CodeGen/ARM/2012-09-25-InlineAsmScalarToVectorConv2.ll
 CodeGen/ARM/2012-10-04-AAPCS-byval-align8.ll
 CodeGen/ARM/2012-10-04-FixedFrame-vs-byval.ll
 CodeGen/ARM/2012-10-18-PR14099-ByvalFrameAddress.ll
-CodeGen/ARM/call-noret.ll
 CodeGen/ARM/debug-info-branch-folding.ll
 CodeGen/ARM/debug-info-sreg2.ll
 CodeGen/ARM/fabss.ll
@@ -53,7 +48,6 @@ CodeGen/ARM/widen-vmovs.ll
 CodeGen/Mips/brdelayslot.ll
 CodeGen/Mips/fastcc.ll
 CodeGen/Mips/null.ll
-CodeGen/Thumb/thumb_jump24_fixup.ll
 CodeGen/Thumb2/aligned-spill.ll
 CodeGen/Thumb2/buildvector-crash.ll
 CodeGen/Thumb2/cortex-fp.ll
@@ -71,74 +65,7 @@ CodeGen/X86/dbg-value-range.ll
 DebugInfo/X86/ending-run.ll
 DebugInfo/X86/prologue-stack.ll
 DebugInfo/X86/stringpool.ll
-ExecutionEngine/2003-01-04-PhiTest.ll
-ExecutionEngine/2003-01-09-SARTest.ll
-ExecutionEngine/2003-01-10-FUCOM.ll
-ExecutionEngine/2003-05-11-PHIRegAllocBug.ll
-ExecutionEngine/2003-06-04-bzip2-bug.ll
-ExecutionEngine/2003-06-05-PHIBug.ll
-ExecutionEngine/MCJIT/2002-12-16-ArgTest.ll
-ExecutionEngine/MCJIT/2003-01-04-ArgumentBug.ll
-ExecutionEngine/MCJIT/2003-01-04-LoopTest.ll
-ExecutionEngine/MCJIT/2003-01-04-PhiTest.ll
-ExecutionEngine/MCJIT/2003-01-09-SARTest.ll
-ExecutionEngine/MCJIT/2003-01-10-FUCOM.ll
-ExecutionEngine/MCJIT/2003-01-15-AlignmentTest.ll
-ExecutionEngine/MCJIT/2003-05-06-LivenessClobber.ll
-ExecutionEngine/MCJIT/2003-05-07-ArgumentTest.ll
-ExecutionEngine/MCJIT/2003-05-11-PHIRegAllocBug.ll
-ExecutionEngine/MCJIT/2003-06-04-bzip2-bug.ll
-ExecutionEngine/MCJIT/2003-06-05-PHIBug.ll
-ExecutionEngine/MCJIT/2003-08-15-AllocaAssertion.ll
-ExecutionEngine/MCJIT/2003-08-21-EnvironmentTest.ll
-ExecutionEngine/MCJIT/2003-08-23-RegisterAllocatePhysReg.ll
-ExecutionEngine/MCJIT/2003-10-18-PHINode-ConstantExpr-CondCode-Failure.ll
-ExecutionEngine/MCJIT/2005-12-02-TailCallBug.ll
-ExecutionEngine/MCJIT/hello.ll
-ExecutionEngine/MCJIT/hello2.ll
-ExecutionEngine/MCJIT/pr13727.ll
-ExecutionEngine/MCJIT/simplesttest.ll
-ExecutionEngine/MCJIT/simpletest.ll
-ExecutionEngine/MCJIT/stubs.ll
-ExecutionEngine/MCJIT/test-arith.ll
-ExecutionEngine/MCJIT/test-branch.ll
-ExecutionEngine/MCJIT/test-call-no-external-funcs.ll
-ExecutionEngine/MCJIT/test-call.ll
-ExecutionEngine/MCJIT/test-cast.ll
-ExecutionEngine/MCJIT/test-common-symbols-alignment.ll
-ExecutionEngine/MCJIT/test-common-symbols.ll
-ExecutionEngine/MCJIT/test-constantexpr.ll
-ExecutionEngine/MCJIT/test-data-align.ll
-ExecutionEngine/MCJIT/test-fp-no-external-funcs.ll
-ExecutionEngine/MCJIT/test-fp.ll
-ExecutionEngine/MCJIT/test-global-init-nonzero.ll
-ExecutionEngine/MCJIT/test-global.ll
-ExecutionEngine/MCJIT/test-loadstore.ll
-ExecutionEngine/MCJIT/test-local.ll
-ExecutionEngine/MCJIT/test-logical.ll
-ExecutionEngine/MCJIT/test-loop.ll
-ExecutionEngine/MCJIT/test-phi.ll
-ExecutionEngine/MCJIT/test-ptr-reloc.ll
-ExecutionEngine/MCJIT/test-ret.ll
-ExecutionEngine/MCJIT/test-return.ll
-ExecutionEngine/MCJIT/test-setcond-fp.ll
-ExecutionEngine/MCJIT/test-setcond-int.ll
-ExecutionEngine/MCJIT/test-shift.ll
-ExecutionEngine/simplesttest.ll
-ExecutionEngine/test-arith.ll
-ExecutionEngine/test-branch.ll
-ExecutionEngine/test-cast.ll
-ExecutionEngine/test-constantexpr.ll
-ExecutionEngine/test-logical.ll
-ExecutionEngine/test-loop.ll
-ExecutionEngine/test-phi.ll
-ExecutionEngine/test-ret.ll
-ExecutionEngine/test-return.ll
-ExecutionEngine/test-setcond-fp.ll
-ExecutionEngine/test-setcond-int.ll
-ExecutionEngine/test-shift.ll
 MC/ARM/arm_instructions.s
-MC/ARM/basic-thumb2-instructions.s
 MC/ARM/elf-thumbfunc-reloc.ll
 MC/ARM/neon-abs-encoding.s
 MC/ARM/neon-absdiff-encoding.s
@@ -188,38 +115,11 @@ MC/ARM/neont2-table-encoding.s
 MC/ARM/simple-fp-encoding.s
 MC/ARM/xscale-attributes.ll
 MC/Disassembler/ARM/neon-tests.txt
-MC/Disassembler/ARM/thumb2.txt
 MC/Disassembler/X86/enhanced.txt
 MC/MachO/ARM/nop-armv4-padding.s
-Transforms/LICM/2003-12-11-SinkingToPHI.ll
-JIT.GlobalInFunction
-JITEventListenerTest.MatchesMachineCodeInfo
-JITEventListenerTest.MultipleListenersDontInterfere
-JITEventListenerTest.Simple
-JITTest.AvailableExternallyFunctionIsntCompiled
-JITTest.AvailableExternallyGlobalIsntEmitted
-JITTest.EscapedLazyStubStillCallable
-JITTest.FarCallToKnownFunction
-JITTest.FunctionIsRecompiledAndRelinked
-JITTest.FunctionPointersOutliveTheirCreator
-JITTest.ModuleDeletion
-JITTest.NoStubs
-JITTest.NonLazyCompilationStillNeedsStubs
-JITTest.NonLazyLeaksNoStubs
-LazyLoadedJITTest.EagerCompiledRecursionThroughGhost
-LazyLoadedJITTest.MaterializableAvailableExternallyFunctionIsntCompiled
-MultiJitTest.JitPool
 MC/Disassembler/ARM/invalid-VST2b32_UPD-arm.txt
 CodeGen/ARM/peephole-bitcast.ll
-ExecutionEngine/2003-05-06-LivenessClobber.ll
 MC/Disassembler/ARM/invalid-VQADD-arm.txt
-
-# Failures only on linux
-MCJITTest.global_variable linux
-MCJITTest.add_function linux
-MCJITTest.multiple_functions linux
-MCJITTest.return_global linux
-MCJITTest.run_main linux
 
 # Failures only on mac
 CodeGenCXX/vtable-debug-info.cpp mac
@@ -296,4 +196,3 @@ PCH/cxx11-lambdas.mm win
 ARCMT/check-with-serialized-diag.m win
 ARCMT/init.m win
 SemaCXX/ast-print.cpp win
-Tooling/clang-check-ast-dump.cpp

@@ -1312,7 +1312,6 @@ llvm-configure() {
              --disable-jit \
              --with-binutils-include=${binutils_include} \
              --enable-targets=x86,arm,mips \
-             --target=${CROSS_TARGET_ARM} \
              --prefix="${LLVM_INSTALL_DIR}" \
              --program-prefix= \
              ${llvm_extra_opts}
