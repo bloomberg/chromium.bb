@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 
 #include "chrome/browser/chrome_page_zoom.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,7 +27,7 @@ ZoomBubbleView* ZoomBubbleView::zoom_bubble_ = NULL;
 
 // static
 void ZoomBubbleView::ShowBubble(views::View* anchor_view,
-                                TabContents* tab_contents,
+                                content::WebContents* web_contents,
                                 bool auto_close) {
   // If the bubble is already showing in this window and its |auto_close_| value
   // is equal to |auto_close|, the bubble can be reused and only the label text
@@ -43,7 +42,7 @@ void ZoomBubbleView::ShowBubble(views::View* anchor_view,
     // current bubble must be closed and a new one created.
     CloseBubble();
 
-    zoom_bubble_ = new ZoomBubbleView(anchor_view, tab_contents, auto_close);
+    zoom_bubble_ = new ZoomBubbleView(anchor_view, web_contents, auto_close);
     views::BubbleDelegateView::CreateBubble(zoom_bubble_);
     zoom_bubble_->Show();
   }
@@ -61,11 +60,11 @@ bool ZoomBubbleView::IsShowing() {
 }
 
 ZoomBubbleView::ZoomBubbleView(views::View* anchor_view,
-                               TabContents* tab_contents,
+                               content::WebContents* web_contents,
                                bool auto_close)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       label_(NULL),
-      tab_contents_(tab_contents),
+      web_contents_(web_contents),
       auto_close_(auto_close) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_insets(gfx::Insets(5, 0, 5, 0));
@@ -78,7 +77,7 @@ ZoomBubbleView::~ZoomBubbleView() {
 
 void ZoomBubbleView::Refresh() {
   ZoomController* zoom_controller =
-      ZoomController::FromWebContents(tab_contents_->web_contents());
+      ZoomController::FromWebContents(web_contents_);
   int zoom_percent = zoom_controller->zoom_percent();
   label_->SetText(
       l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM, zoom_percent));
@@ -123,14 +122,13 @@ ui::EventResult ZoomBubbleView::OnGestureEvent(ui::GestureEvent* event) {
 
   // If an auto-closing bubble was tapped, show a non-auto-closing bubble in
   // its place.
-  ShowBubble(zoom_bubble_->anchor_view(), zoom_bubble_->tab_contents_, false);
+  ShowBubble(zoom_bubble_->anchor_view(), zoom_bubble_->web_contents_, false);
   return ui::ER_CONSUMED;
 }
 
 void ZoomBubbleView::ButtonPressed(views::Button* sender,
                                    const ui::Event& event) {
-  chrome_page_zoom::Zoom(tab_contents_->web_contents(),
-                         content::PAGE_ZOOM_RESET);
+  chrome_page_zoom::Zoom(web_contents_, content::PAGE_ZOOM_RESET);
 }
 
 void ZoomBubbleView::Init() {
@@ -138,7 +136,7 @@ void ZoomBubbleView::Init() {
       0, 0, views::kRelatedControlVerticalSpacing));
 
   ZoomController* zoom_controller =
-      ZoomController::FromWebContents(tab_contents_->web_contents());
+      ZoomController::FromWebContents(web_contents_);
   int zoom_percent = zoom_controller->zoom_percent();
   label_ = new views::Label(
       l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM, zoom_percent));

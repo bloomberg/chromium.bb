@@ -18,11 +18,11 @@ class ZoomController;
 class ZoomView : public views::ImageView,
                  public TouchableLocationBarView {
  public:
-  // Constructor for ZoomView. Clicking on the ZoomView shows a ZoomBubbleView,
-  // which requires the current TabContents. Because the current TabContents
-  // changes as the user switches tabs, it cannot be provided in the
-  // constructor.  Instead, a LocationBarView::Delegate is passed here so that
-  // it can be queried for the current TabContents as needed.
+  // Clicking on the ZoomView shows a ZoomBubbleView, which requires the current
+  // WebContents. Because the current WebContents changes as the user switches
+  // tabs, it cannot be provided in the constructor. Instead, a
+  // LocationBarView::Delegate is passed here so that it can be queried for the
+  // current WebContents as needed.
   ZoomView(ToolbarModel* toolbar_model,
            LocationBarView::Delegate* location_bar_delegate);
   virtual ~ZoomView();
@@ -53,7 +53,7 @@ class ZoomView : public views::ImageView,
   // Toolbar model used to test whether location bar input is in progress.
   ToolbarModel* toolbar_model_;
 
-  // The delegate used to get the currently visible TabContents.
+  // The delegate used to get the currently visible WebContents.
   LocationBarView::Delegate* location_bar_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomView);

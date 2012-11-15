@@ -591,8 +591,10 @@ void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
   Layout();
   SchedulePaint();
 
-  if (can_show_bubble && zoom_view_->visible())
-    ZoomBubbleView::ShowBubble(zoom_view_, GetTabContents(), true);
+  if (can_show_bubble && zoom_view_->visible()) {
+    ZoomBubbleView::ShowBubble(
+        zoom_view_, GetWebContentsFromDelegate(delegate_), true);
+  }
 }
 
 void LocationBarView::RefreshZoomView() {

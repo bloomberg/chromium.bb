@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
 
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
@@ -87,5 +88,5 @@ int ZoomView::GetBuiltInHorizontalPadding() const {
 
 void ZoomView::ActivateBubble() {
   ZoomBubbleView::ShowBubble(
-      this, location_bar_delegate_->GetTabContents(), false);
+      this, location_bar_delegate_->GetTabContents()->web_contents(), false);
 }
