@@ -263,8 +263,6 @@ void LoginPerformer::Observe(int type,
 void LoginPerformer::PerformLogin(const std::string& username,
                                   const std::string& password,
                                   AuthorizationMode auth_mode) {
-  // TODO(nkostylev): Remove debug log, see http://crbug.com/160786
-  LOG(WARNING) << "login: lp>PerformLogin";
   auth_mode_ = auth_mode;
   username_ = username;
   password_ = password;
@@ -484,8 +482,6 @@ void LoginPerformer::ResolveScreenUnlocked() {
 }
 
 void LoginPerformer::StartLoginCompletion() {
-  // TODO(nkostylev): Remove debug log, see http://crbug.com/160786
-  LOG(WARNING) << "login: lp>StartLoginCompletion";
   DVLOG(1) << "Login completion started";
   BootTimesLoader::Get()->AddLoginTimeMarker("AuthStarted", false);
   Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();

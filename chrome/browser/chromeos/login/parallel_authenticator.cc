@@ -48,9 +48,6 @@ void TriggerResolve(AuthAttemptState* attempt,
                     bool success,
                     cryptohome::MountError return_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // TODO(nkostylev): Remove debug log, see http://crbug.com/160786
-  LOG(WARNING) << "login: TriggerResolve, success: "
-               << success << " code: " << return_code;
   attempt->RecordCryptohomeStatus(success, return_code);
   resolver->Resolve();
 }
@@ -234,8 +231,6 @@ void ParallelAuthenticator::AuthenticateToLogin(
 void ParallelAuthenticator::CompleteLogin(Profile* profile,
                                           const std::string& username,
                                           const std::string& password) {
-  // TODO(nkostylev): Remove debug log, see http://crbug.com/160786
-  LOG(WARNING) << "login: a>CompleteLogin";
   std::string canonicalized = gaia::CanonicalizeEmail(username);
   authentication_profile_ = profile;
   current_state_.reset(
@@ -463,8 +458,6 @@ void ParallelAuthenticator::Resolve() {
   bool request_pending = false;
   bool create = false;
   ParallelAuthenticator::AuthState state = ResolveState();
-  // TODO(nkostylev): Remove debug log, see http://crbug.com/160786
-  LOG(WARNING) << "login: Resolve, state: " << state;
   VLOG(1) << "Resolved state to: " << state;
   switch (state) {
     case CONTINUE:
