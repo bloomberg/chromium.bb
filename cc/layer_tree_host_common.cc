@@ -443,7 +443,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
     //        M[screenspace] = M[root] * Tr[origin] * compositeLayerTransform * S[layer2content]
     //                       = M[root] * Tr[layer->position() + anchor] * M[layer] * Tr[anchor2origin] * S[layer2content]
     //
-    //        Interpreting the math left-to-right, this transforms from the root render surface's content space to the local layer's origin in layer space.
+    //        Interpreting the math left-to-right, this transforms from the root render surface's content space to the origin of the layer in content space.
     //
     // The transform hierarchy that is passed on to children (i.e. the child's parentMatrix) is:
     //        M[parent]_for_child = M[parent] * Tr[origin] * compositeLayerTransform * compositeSublayerTransform
