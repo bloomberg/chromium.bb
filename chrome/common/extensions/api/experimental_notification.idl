@@ -4,11 +4,56 @@
 
 [nodoc] namespace experimental.notification {
   dictionary ShowOptions {
+    // Which type of notification to display.
+    //
+    // simple: icon, title, message
+    // base: our MVP, with two buttons, expanded text, etc. TEMPORARY!
+    DOMString notificationType;
+
+    // Sender's avatar, app icon, or a thumbnail for image notifications.
     DOMString iconUrl;
+
+    // Title of the notification (e.g. sender name for email).
     DOMString title;
+
+    // Main notification content.
     DOMString message;
-    DOMString? extraField;
-    DOMString? secondExtraField;
+
+    // What happens when the user clicks on the message.
+    // TODO(miket): this is imaginary.
+    DOMString? messageIntent;
+
+    // Priority ranges from -2 to 2. -2 is lowest priority. 2 is highest. Zero
+    // is default.
+    long? priority;
+
+    // A timestamp associated with the notification. An example is
+    // "Tue, 15 Nov 1994 12:45:26 GMT". Note that RFC822 doesn't specify the
+    // timezone label "UTC." To specify UTC, use "GMT" instead.
+    DOMString? timestamp;
+
+    // Smaller version of the icon.
+    DOMString? secondIconUrl;
+
+    // A number, controlled entirely by the caller, that is intended to
+    // summarize the number of outstanding notifications. TODO(miket) what does
+    // that mean?
+    long? unreadCount;
+
+    // Text and intent of the first button in the notification.
+    DOMString? buttonOneTitle;
+    DOMString? buttonOneIntent;
+
+    // Text and intent of the second button in the notification.
+    DOMString? buttonTwoTitle;
+    DOMString? buttonTwoIntent;
+
+    // Secondary notification content.
+    DOMString? expandedMessage;
+
+    // Image thumbnail for image-type notifications
+    DOMString? imageUrl;
+
     DOMString replaceId;
 
     // Used for internal event routing. Do not set or rely on its value.

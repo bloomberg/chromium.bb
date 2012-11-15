@@ -8,12 +8,13 @@
 #include "ui/message_center/message_view.h"
 #include "ui/message_center/notification_list.h"
 
+namespace views {
+class ImageView;
+}
+
 namespace message_center {
 
-// An early version of a more comprehensive message view.
-//
-// TODO: add remaining fields from prototype specification, and bring cosmetics
-// to an acceptable level of polish.
+// A comprehensive message view.
 class BaseFormatView : public MessageView {
  public:
   BaseFormatView(NotificationList::Delegate* list_delegate,
@@ -22,6 +23,9 @@ class BaseFormatView : public MessageView {
 
   // MessageView
   virtual void SetUpView() OVERRIDE;
+
+  // views::ButtonListener
+  virtual void ButtonPressed(views::Button* sender, const ui::Event& event);
 
  protected:
   BaseFormatView();

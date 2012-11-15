@@ -583,6 +583,7 @@
       'type': 'executable',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../base/base.gyp:base_i18n',
         '../../base/base.gyp:test_support_base',
         # TODO(jcivelli): ideally the resource needed by views would be
         #                 factored out. (for some reason it pulls in a bunch
