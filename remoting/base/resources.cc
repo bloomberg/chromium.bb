@@ -17,14 +17,14 @@ const char kCommonResourcesFileName[] = "chrome_remote_desktop.pak";
 }  // namespace
 
 // Loads chromoting resources.
-bool LoadResources(const std::string& locale) {
+bool LoadResources(const std::string& pref_locale) {
   FilePath path;
   if (!PathService::Get(base::DIR_MODULE, &path))
     return false;
 
   PathService::Override(ui::DIR_LOCALES,
                         path.AppendASCII(kLocaleResourcesDirName));
-  ui::ResourceBundle::InitSharedInstanceLocaleOnly(locale, NULL);
+  ui::ResourceBundle::InitSharedInstanceLocaleOnly(pref_locale, NULL);
 
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       path.AppendASCII(kCommonResourcesFileName), ui::SCALE_FACTOR_100P);
