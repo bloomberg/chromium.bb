@@ -114,6 +114,13 @@ DrawableTile* TiledLayerImpl::createTile(int i, int j)
     return addedTile;
 }
 
+void TiledLayerImpl::getDebugBorderProperties(SkColor* color, float* width) const
+{
+    // Tiled content layers are orange.
+    *color = SkColorSetARGBInline(128, 255, 128, 0);
+    *width = 2;
+}
+
 void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
 {
     const gfx::Rect& contentRect = visibleContentRect();
@@ -127,7 +134,7 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
     int left, top, right, bottom;
     m_tiler->contentRectToTileIndices(contentRect, left, top, right, bottom);
 
-    if (hasDebugBorders()) {
+    if (showDebugBorders()) {
         for (int j = top; j <= bottom; ++j) {
             for (int i = left; i <= right; ++i) {
                 DrawableTile* tile = tileAt(i, j);
@@ -164,7 +171,7 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
                     SkColor invalidatedColor = SkColorSetRGB(debugTileInvalidatedCheckerboardColorRed, debugTileEvictedCheckerboardColorGreen, debugTileEvictedCheckerboardColorBlue);
 
                     SkColor checkerColor;
-                    if (hasDebugBorders())
+                    if (showDebugBorders())
                         checkerColor = tile ? invalidatedColor : evictedColor;
                     else
                         checkerColor = defaultColor;

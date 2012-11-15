@@ -196,8 +196,6 @@ public:
     virtual void setIsMask(bool) { }
     virtual void bindContentsTexture() { }
 
-    void setDebugBorderColor(SkColor);
-    void setDebugBorderWidth(float);
     void setDebugName(const std::string&);
 
     virtual void pushPropertiesTo(LayerImpl*);
@@ -359,8 +357,6 @@ private:
     gfx::PointF m_position;
     gfx::PointF m_anchorPoint;
     SkColor m_backgroundColor;
-    SkColor m_debugBorderColor;
-    float m_debugBorderWidth;
     std::string m_debugName;
     float m_opacity;
     SkImageFilter* m_filter;

@@ -209,7 +209,7 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
     const WebTransformationMatrix& drawTransform = forReplica ? m_replicaDrawTransform : m_drawTransform;
     SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(SharedQuadState::create(drawTransform, m_contentRect, clippedRectInTarget, m_drawOpacity, isOpaque).Pass());
 
-    if (m_owningLayer->hasDebugBorders()) {
+    if (m_owningLayer->showDebugBorders()) {
         int red = forReplica ? debugReplicaBorderColorRed : debugSurfaceBorderColorRed;
         int green = forReplica ?  debugReplicaBorderColorGreen : debugSurfaceBorderColorGreen;
         int blue = forReplica ? debugReplicaBorderColorBlue : debugSurfaceBorderColorBlue;

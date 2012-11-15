@@ -36,6 +36,7 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
 {
     LayerTreeSettings settings;
     settings.acceleratePainting = webSettings.acceleratePainting;
+    settings.showDebugBorders = webSettings.showDebugBorders;
     settings.showPlatformLayerTree = webSettings.showPlatformLayerTree;
     settings.showPaintRects = webSettings.showPaintRects;
     settings.renderVSyncEnabled = webSettings.renderVSyncEnabled;

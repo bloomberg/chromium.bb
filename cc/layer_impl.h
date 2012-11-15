@@ -145,16 +145,11 @@ public:
     void setSublayerTransform(const WebKit::WebTransformationMatrix&);
     const WebKit::WebTransformationMatrix& sublayerTransform() const { return m_sublayerTransform; }
 
-    // Debug layer border - visual effect only, do not change geometry/clipping/etc.
-    void setDebugBorderColor(SkColor);
-    SkColor debugBorderColor() const { return m_debugBorderColor; }
-    void setDebugBorderWidth(float);
-    float debugBorderWidth() const { return m_debugBorderWidth; }
-    bool hasDebugBorders() const;
-
     // Debug layer name.
     void setDebugName(const std::string& debugName) { m_debugName = debugName; }
     std::string debugName() const { return m_debugName; }
+
+    bool showDebugBorders() const;
 
     RenderSurfaceImpl* renderSurface() const { return m_renderSurface.get(); }
     void createRenderSurface();
@@ -280,6 +275,9 @@ public:
 protected:
     explicit LayerImpl(int);
 
+    // Get the color and size of the layer's debug border.
+    virtual void getDebugBorderProperties(SkColor*, float* width) const;
+
     void appendDebugBorderQuad(QuadSink&, const SharedQuadState*, AppendQuadsData&) const;
 
     virtual void dumpLayerProperties(std::string*, int indent) const;
@@ -373,10 +371,6 @@ private:
     float m_drawDepth;
     float m_drawOpacity;
     bool m_drawOpacityIsAnimating;
-
-    // Debug borders.
-    SkColor m_debugBorderColor;
-    float m_debugBorderWidth;
 
     // Debug layer name.
     std::string m_debugName;

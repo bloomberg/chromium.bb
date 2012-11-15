@@ -54,8 +54,6 @@ LayerImpl::LayerImpl(int id)
     , m_drawDepth(0)
     , m_drawOpacity(0)
     , m_drawOpacityIsAnimating(false)
-    , m_debugBorderColor(0)
-    , m_debugBorderWidth(0)
     , m_filter(0)
     , m_drawTransformIsAnimating(false)
     , m_screenSpaceTransformIsAnimating(false)
@@ -146,13 +144,45 @@ void LayerImpl::didDraw(ResourceProvider*)
 #endif
 }
 
+bool LayerImpl::showDebugBorders() const
+{
+    if (!m_layerTreeHostImpl)
+        return false;
+    return m_layerTreeHostImpl->settings().showDebugBorders;
+}
+
+void LayerImpl::getDebugBorderProperties(SkColor* color, float* width) const
+{
+    if (m_drawsContent) {
+        // Non-tiled content layers are green.
+        *color = SkColorSetARGB(128, 0, 128, 32);
+        *width = 2;
+        return;
+    }
+
+    if (m_masksToBounds) {
+        // Masking layers are pale blue.
+        *color = SkColorSetARGB(48, 128, 255, 255);
+        *width = 20;
+        return;
+    }
+
+    // Other container layers are yellow.
+    *color = SkColorSetARGB(192, 255, 255, 0);
+    *width = 2;
+}
+
 void LayerImpl::appendDebugBorderQuad(QuadSink& quadList, const SharedQuadState* sharedQuadState, AppendQuadsData& appendQuadsData) const
 {
-    if (!hasDebugBorders())
+    if (!showDebugBorders())
         return;
 
+    SkColor color;
+    float width;
+    getDebugBorderProperties(&color, &width);
+
     gfx::Rect contentRect(gfx::Point(), contentBounds());
-    quadList.append(DebugBorderDrawQuad::create(sharedQuadState, contentRect, debugBorderColor(), debugBorderWidth()).PassAs<DrawQuad>(), appendQuadsData);
+    quadList.append(DebugBorderDrawQuad::create(sharedQuadState, contentRect, color, width).PassAs<DrawQuad>(), appendQuadsData);
 }
 
 bool LayerImpl::hasContributingDelegatedRenderPasses() const
@@ -585,29 +615,6 @@ void LayerImpl::setTransform(const WebTransformationMatrix& transform)
 bool LayerImpl::transformIsAnimating() const
 {
     return m_layerAnimationController->isAnimatingProperty(ActiveAnimation::Transform);
-}
-
-void LayerImpl::setDebugBorderColor(SkColor debugBorderColor)
-{
-    if (m_debugBorderColor == debugBorderColor)
-        return;
-
-    m_debugBorderColor = debugBorderColor;
-    m_layerPropertyChanged = true;
-}
-
-void LayerImpl::setDebugBorderWidth(float debugBorderWidth)
-{
-    if (m_debugBorderWidth == debugBorderWidth)
-        return;
-
-    m_debugBorderWidth = debugBorderWidth;
-    m_layerPropertyChanged = true;
-}
-
-bool LayerImpl::hasDebugBorders() const
-{
-    return SkColorGetA(m_debugBorderColor) && debugBorderWidth() > 0;
 }
 
 void LayerImpl::setContentBounds(const gfx::Size& contentBounds)

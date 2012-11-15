@@ -41,8 +41,6 @@ Layer::Layer()
     , m_touchEventHandlerRegionChanged(false)
     , m_anchorPoint(0.5, 0.5)
     , m_backgroundColor(0)
-    , m_debugBorderColor(0)
-    , m_debugBorderWidth(0)
     , m_opacity(1.0)
     , m_filter(0)
     , m_anchorPointZ(0)
@@ -564,8 +562,6 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
     layer->setBounds(m_bounds);
     layer->setContentBounds(contentBounds());
     layer->setContentsScale(contentsScaleX(), contentsScaleY());
-    layer->setDebugBorderColor(m_debugBorderColor);
-    layer->setDebugBorderWidth(m_debugBorderWidth);
     layer->setDebugName(m_debugName);
     layer->setDoubleSided(m_doubleSided);
     layer->setDrawCheckerboardForMissingTiles(m_drawCheckerboardForMissingTiles);
@@ -639,18 +635,6 @@ bool Layer::drawsContent() const
 bool Layer::needMoreUpdates()
 {
     return false;
-}
-
-void Layer::setDebugBorderColor(SkColor color)
-{
-    m_debugBorderColor = color;
-    setNeedsCommit();
-}
-
-void Layer::setDebugBorderWidth(float width)
-{
-    m_debugBorderWidth = width;
-    setNeedsCommit();
 }
 
 void Layer::setDebugName(const std::string& debugName)

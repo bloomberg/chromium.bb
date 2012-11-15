@@ -42,6 +42,8 @@ protected:
     bool hasTileAt(int, int) const;
     bool hasResourceIdForTileAt(int, int) const;
 
+    virtual void getDebugBorderProperties(SkColor*, float* width) const OVERRIDE;
+
 private:
 
     virtual const char* layerTypeAsString() const OVERRIDE;

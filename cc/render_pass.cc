@@ -54,16 +54,16 @@ scoped_ptr<RenderPass> RenderPass::copy(Id newId) const
 
 void RenderPass::appendQuadsForLayer(LayerImpl* layer, OcclusionTrackerImpl* occlusionTracker, AppendQuadsData& appendQuadsData)
 {
-    const bool forSurface = false;
-    QuadCuller quadCuller(m_quadList, m_sharedQuadStateList, layer, occlusionTracker, layer->hasDebugBorders(), forSurface);
+    bool forSurface = false;
+    QuadCuller quadCuller(m_quadList, m_sharedQuadStateList, layer, occlusionTracker, layer->showDebugBorders(), forSurface);
 
     layer->appendQuads(quadCuller, appendQuadsData);
 }
 
 void RenderPass::appendQuadsForRenderSurfaceLayer(LayerImpl* layer, const RenderPass* contributingRenderPass, OcclusionTrackerImpl* occlusionTracker, AppendQuadsData& appendQuadsData)
 {
-    const bool forSurface = true;
-    QuadCuller quadCuller(m_quadList, m_sharedQuadStateList, layer, occlusionTracker, layer->hasDebugBorders(), forSurface);
+    bool forSurface = true;
+    QuadCuller quadCuller(m_quadList, m_sharedQuadStateList, layer, occlusionTracker, layer->showDebugBorders(), forSurface);
 
     bool isReplica = false;
     layer->renderSurface()->appendQuads(quadCuller, appendQuadsData, isReplica, contributingRenderPass->id());
@@ -85,7 +85,7 @@ void RenderPass::appendQuadsToFillScreen(LayerImpl* rootLayer, SkColor screenBac
         return;
 
     bool forSurface = false;
-    QuadCuller quadCuller(m_quadList, m_sharedQuadStateList, rootLayer, &occlusionTracker, rootLayer->hasDebugBorders(), forSurface);
+    QuadCuller quadCuller(m_quadList, m_sharedQuadStateList, rootLayer, &occlusionTracker, rootLayer->showDebugBorders(), forSurface);
 
     // Manually create the quad state for the gutter quads, as the root layer
     // doesn't have any bounds and so can't generate this itself.
