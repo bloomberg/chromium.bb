@@ -108,7 +108,7 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
     self.Connect('user_1', tab_index=0)
     self.Connect('user_2', tab_index=1)
 
-    self.EstablishCall(from_tab_with_index=0)
+    self.EstablishCall(from_tab_with_index=0, to_tab_with_index=1)
 
     # Wait for JavaScript to capture all the frames. In the HTML file we specify
     # how many seconds to capture frames.

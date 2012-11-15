@@ -20,12 +20,13 @@
     thing is to start it on localhost, but you can start it on any
     machine you like and connect to hostname:8888.</li>
   <li>Click the Connect button in both tabs.</li>
-  <li>Click the Call button in one of the tabs. You should see a bunch
+  <li>Click the Call:Negotiate button in one of the tabs. You should see a bunch
     of printouts when this happens. Note that no streams are sent to
-    begin with.</li>
+    begin with (although you could run steps 5-6 before this step to get streams
+    even in the initial call).</li>
   <li>Grant media access using the checkboxes and Request button.</li>
-  <li>Send the local stream by clicking the "Send" button, in both tabs.
-    </li>
+  <li>Add the local stream by clicking the "Add" button, in both tabs.</li>
+  <li>Now you must re-negotiate the call by clicking on Negotiate again.</li>
   <li>You should now have a call up and both sides should be receiving
     media data (depending on what access you granted on the respective
     pages).</li>
@@ -43,12 +44,11 @@
     connection to the same PC server, you will get an error when
     pressing this button. The test is hard-coded to only allow 2 peers
     on the server at the same time.</li>
-  <li>Pressing the Send button for local streams will in effect add
+  <li>Pressing the Add button for local streams will in effect add
     the current local stream, such as it is, to the current
-    peerconnection and re-negotiate the call (e.g it will send SDP
-    offers back and forth).</li>
+    peerconnection.</li>
   <li>If you request user media again, it will overwrite the current
-    local stream with the new one. This means that pressing Send will
+    local stream with the new one. This means that pressing Add will
     add the stream you just got from the request. The code will not
     attempt to stop or remove the previous stream from the
     peerconnection, so depending on peerconnection's semantics the old

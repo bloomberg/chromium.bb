@@ -146,7 +146,7 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     self.Connect("user_1", tab_index=0)
     self.Connect("user_2", tab_index=1)
 
-    self.EstablishCall(from_tab_with_index=0)
+    self.EstablishCall(from_tab_with_index=0, to_tab_with_index=1)
 
     self.assertEquals('failed-with-error-1',
                       self.GetUserMedia(tab_index=0, action='deny'))
@@ -203,7 +203,7 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     self.Connect('user_1', tab_index=0)
     self.Connect('user_2', tab_index=1)
 
-    self.EstablishCall(from_tab_with_index=0)
+    self.EstablishCall(from_tab_with_index=0, to_tab_with_index=1)
 
     self._StartDetectingVideo(tab_index=0, video_element='remote-view')
     self._StartDetectingVideo(tab_index=1, video_element='remote-view')

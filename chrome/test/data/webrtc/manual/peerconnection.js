@@ -27,17 +27,20 @@ function connectFromHere() {
   connect(server, $('peer-id').value);
 }
 
-function callFromHere() {
+function negotiateCallFromHere() {
   // Set the global variables used in jsep01_call.js with values from our UI.
   setCreateOfferConstraints(getEvaluatedJavaScript_(
       $('pc-createoffer-constraints').value));
   setCreateAnswerConstraints(getEvaluatedJavaScript_(
       $('pc-createanswer-constraints').value));
-  call();
+
+  ensureHasPeerConnection_();
+  negotiateCall();
 }
 
-function sendLocalStreamFromHere() {
-  sendLocalStreamOverPeerConnection();
+function addLocalStreamFromHere() {
+  ensureHasPeerConnection_();
+  addLocalStream();
 }
 
 function removeLocalStreamFromHere() {
@@ -145,6 +148,16 @@ window.onunload = function() {
 };
 
 // Internals.
+
+/**
+ * Create the peer connection if none is up (this is just convenience to
+ * avoid having a separate button for that).
+ * @private
+ */
+function ensureHasPeerConnection_() {
+  if (getReadyState() == 'no-peer-connection')
+    preparePeerConnection();
+}
 
 /**
  * @private

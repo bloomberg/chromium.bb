@@ -48,25 +48,17 @@
       <textarea id="pc-createanswer-constraints" rows="7" cols="40"></textarea>
       <br/>
       Call:
-      <button id="call" onclick="callFromHere();">Call</button>
-      <button id="hangup" onclick="hangUpFromHere();">Hang up</button><br/>
+      <button onclick="negotiateCallFromHere();">Negotiate</button>
+      <button onclick="hangUpFromHere();">Hang up</button><br/>
       Local Stream:
-      <button id="send-local-stream" onclick="sendLocalStreamFromHere();">
-          Send</button>
-      <button id="remove-local-stream" onclick="removeLocalStreamFromHere();">
-          Remove</button>
-      <button id="stop-local" onclick="stopLocalFromHere();">
-          Stop</button>
-      <button id="toggle-local-video" onclick="toggleLocalVideoFromHere();">
-          Toggle Video</button>
-      <button id="toggle-local-audio" onclick="toggleLocalAudioFromHere();">
-          Toggle Audio</button>
-      <br/>
+      <button onclick="addLocalStreamFromHere();">Add</button>
+      <button onclick="removeLocalStreamFromHere();">Remove</button>
+      <button onclick="stopLocalFromHere();">Stop</button>
+      <button onclick="toggleLocalVideoFromHere();">Toggle Video</button>
+      <button onclick="toggleLocalAudioFromHere();">Toggle Audio</button><br/>
       Remote Stream:
-      <button id="toggle-remote-video" onclick="toggleRemoteVideoFromHere();">
-          Toggle Video</button>
-      <button id="toggle-remote-audio" onclick="toggleRemoteAudioFromHere();">
-          Toggle Audio</button><br/>
+      <button onclick="toggleRemoteVideoFromHere();">Toggle Video</button>
+      <button onclick="toggleRemoteAudioFromHere();">Toggle Audio</button><br/>
       Options:
       <input type="checkbox" id="force-opus" onclick="forceOpusChanged();"/>
           Force Opus in Outgoing SDP<br/>

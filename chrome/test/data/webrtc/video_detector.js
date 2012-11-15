@@ -51,11 +51,15 @@ function isVideoPlaying() {
   // Video is considered to be playing if at least one finger print has changed
   // since the oldest fingerprint.
   // Even small blips in the pixel data will cause this check to pass.
-  if (gFingerprints.length > 1) {
-    if (!allElementsEqualTo_(gFingerprints, gFingerprints[0])) {
-      returnToTest('video-playing');
-      return;
+  try {
+    if (gFingerprints.length > 1) {
+      if (!allElementsEqualTo_(gFingerprints, gFingerprints[0])) {
+        returnToTest('video-playing');
+        return;
+      }
     }
+  } catch (exception) {
+    failTest('Failed to detect video: ' + exception.message);
   }
   returnToTest('video-not-playing');
 }

@@ -83,20 +83,27 @@ class WebrtcTestBase(pyauto.PyUITest):
         tab_index=tab_index))
     self.AssertNoFailures(tab_index)
 
-  def EstablishCall(self, from_tab_with_index):
+  def EstablishCall(self, from_tab_with_index, to_tab_with_index):
     self.WaitUntilPeerConnects(tab_index=from_tab_with_index)
 
-    self.assertEquals('ok-got-remote-stream', self.ExecuteJavascript(
-        'call()', tab_index=from_tab_with_index))
+    self.assertEquals('ok-peerconnection-created', self.ExecuteJavascript(
+        'preparePeerConnection()', tab_index=from_tab_with_index))
     self.AssertNoFailures(from_tab_with_index)
 
-    self.assertEquals('ok-local-stream-sent', self.ExecuteJavascript(
-        'sendLocalStreamOverPeerConnection()', tab_index=from_tab_with_index))
+    self.assertEquals('ok-added', self.ExecuteJavascript(
+        'addLocalStream()', tab_index=from_tab_with_index))
     self.AssertNoFailures(from_tab_with_index)
+
+    self.assertEquals('ok-negotiating', self.ExecuteJavascript(
+        'negotiateCall()', tab_index=from_tab_with_index))
+    self.AssertNoFailures(from_tab_with_index)
+
+    self.WaitUntilReadyState(ready_state='active',
+                             tab_index=from_tab_with_index)
 
     # Double-check the call reached the other side.
-    self.assertEquals('yes', self.ExecuteJavascript(
-        'isCallActive()', tab_index=from_tab_with_index))
+    self.WaitUntilReadyState(ready_state='active',
+                             tab_index=to_tab_with_index)
 
   def HangUp(self, from_tab_with_index):
     self.assertEquals('ok-call-hung-up', self.ExecuteJavascript(
@@ -112,13 +119,18 @@ class WebrtcTestBase(pyauto.PyUITest):
     self.assertTrue(peer_connected,
                     msg='Timed out while waiting for peer to connect.')
 
-  def WaitUntilHangUpVerified(self, tab_index):
-    hung_up = self.WaitUntil(
-        function=lambda: self.ExecuteJavascript('isCallActive()',
+  def WaitUntilReadyState(self, ready_state, tab_index):
+    got_ready_state = self.WaitUntil(
+        function=lambda: self.ExecuteJavascript('getPeerConnectionReadyState()',
                                                 tab_index=tab_index),
-        expect_retval='no')
-    self.assertTrue(hung_up,
-                    msg='Timed out while waiting for hang-up to be confirmed.')
+        expect_retval=ready_state)
+    self.assertTrue(got_ready_state,
+                    msg=('Timed out while waiting for peer connection ready '
+                         'state to change to %s for tab %d.' % (ready_state,
+                                                                tab_index)))
+
+  def WaitUntilHangUpVerified(self, tab_index):
+    self.WaitUntilReadyState('no-peer-connection', tab_index=tab_index)
 
   def Disconnect(self, tab_index):
     self.assertEquals('ok-disconnected', self.ExecuteJavascript(

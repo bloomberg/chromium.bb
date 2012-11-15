@@ -11,12 +11,7 @@ var gTransformOutgoingSdp = function(sdp) { return sdp; }
 var gCreateAnswerConstraints = {};
 
 /** @private */
-var gCreateOfferConstraints = {
-  mandatory: {
-    OfferToReceiveVideo: true,
-    OfferToReceiveAudio: true,
-  }
-};
+var gCreateOfferConstraints = {};
 
 /**
  * Sets the transform to apply just before setting the local description and
@@ -82,16 +77,7 @@ function createPeerConnection(stun_server) {
   try {
     peerConnection = new webkitRTCPeerConnection(servers, null);
   } catch (exception) {
-    // TODO(phoglund): Remove once the URI-requiring revisions are gone.
-    debug('Failed to create connection: maybe we need to fall ' +
-          'back to the old API?');
-    servers = {iceServers:[{uri:"stun:" + stun_server}]};
-    try {
-      peerConnection = new webkitRTCPeerConnection(servers, null);
-      debug('Yeah, we could use the old API.');
-    } catch (exception) {
-      failTest('Failed to create peer connection: ' + exception);
-    }
+    failTest('Failed to create peer connection: ' + exception);
   }
   peerConnection.onaddstream = addStreamCallback_;
   peerConnection.onremovestream = removeStreamCallback_;
@@ -104,7 +90,7 @@ function setupCall(peerConnection) {
         JSON.stringify(gCreateOfferConstraints, null, ' '));
   peerConnection.createOffer(
       setLocalAndSendMessage_,
-      function () { success_('createOffer'); },
+      function () { failure_('createOffer'); },
       gCreateOfferConstraints);
 }
 
@@ -150,11 +136,6 @@ function addStreamCallback_(event) {
   // videoTag.onloadedmetadata = updateVideoTagSize_('remote-view');
   // Use setTimeout as a workaround for now.
   setTimeout(function() {updateVideoTagSize_('remote-view')}, 500);
-
-  // This means the call has been set up.
-  // This only mean that we have received a valid SDP message with an offer or
-  // an answer, it does not mean that audio and video works.
-  returnToTest('ok-got-remote-stream');
 }
 
 /** @private */
