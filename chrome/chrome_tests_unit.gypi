@@ -565,7 +565,6 @@
         'browser/chromeos/input_method/ibus_controller_impl_unittest.cc',
         'browser/chromeos/input_method/ibus_controller_unittest.cc',
         'browser/chromeos/input_method/ibus_ui_controller_unittest.cc',
-        'browser/chromeos/input_method/infolist_window_view_unittest.cc',
         'browser/chromeos/input_method/input_method_descriptor_unittest.cc',
         'browser/chromeos/input_method/input_method_manager_impl_unittest.cc',
         'browser/chromeos/input_method/input_method_manager_unittest.cc',

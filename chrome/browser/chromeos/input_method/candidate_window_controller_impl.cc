@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/input_method/candidate_window_controller_impl.h"
 
+#include <string>
+#include <vector>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -156,26 +159,44 @@ void CandidateWindowControllerImpl::OnUpdateLookupTable(
   candidate_window_->UpdateCandidates(lookup_table);
   candidate_window_->ShowLookupTable();
 
+  // TODO(nona): Remove mozc::commands dependencies.
   const mozc::commands::Candidates& candidates = lookup_table.mozc_candidates;
 
-  if (lookup_table.mozc_candidates.has_usages() &&
-      lookup_table.mozc_candidates.usages().information_size() > 0) {
-    infolist_window_->UpdateCandidates(lookup_table);
-    infolist_window_->ResizeAndMoveParentFrame();
-    if (candidates.has_focused_index() && candidates.candidate_size() > 0) {
-      const int focused_row =
-          candidates.focused_index() - candidates.candidate(0).index();
-      if (candidates.candidate_size() >= focused_row &&
-          candidates.candidate(focused_row).has_information_id()) {
-        infolist_window_->DelayShow(kInfolistShowDelayMilliSeconds);
-      } else {
-        infolist_window_->DelayHide(kInfolistHideDelayMilliSeconds);
-      }
+  std::vector<InfolistWindowView::Entry> infolist_entries;
+  const mozc::commands::InformationList& usages = candidates.usages();
+
+  for (int i = 0; i < usages.information_size(); ++i) {
+    InfolistWindowView::Entry entry;
+    entry.title = usages.information(i).title();
+    entry.body = usages.information(i).description();
+    infolist_entries.push_back(entry);
+  }
+
+  // If there is no infolist entry, just hide.
+  if (infolist_entries.empty()) {
+    infolist_window_->Hide();
+    return;
+  }
+
+  // TODO(nona): Return if there is no change in infolist entries after complete
+  // mozc dependency removal.
+
+  int focused_index = infolist_entries.size();
+  if (usages.has_focused_index())
+    focused_index = usages.focused_index();
+
+  infolist_window_->UpdateCandidates(infolist_entries, focused_index);
+  if (candidates.has_focused_index() && candidates.candidate_size() > 0) {
+    const int focused_row =
+        candidates.focused_index() - candidates.candidate(0).index();
+    if (candidates.candidate_size() >= focused_row &&
+        candidates.candidate(focused_row).has_information_id()) {
+      infolist_window_->DelayShow(kInfolistShowDelayMilliSeconds);
     } else {
       infolist_window_->DelayHide(kInfolistHideDelayMilliSeconds);
     }
   } else {
-    infolist_window_->Hide();
+    infolist_window_->DelayHide(kInfolistHideDelayMilliSeconds);
   }
 }
 

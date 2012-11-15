@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INFOLIST_WINDOW_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INFOLIST_WINDOW_VIEW_H_
 
+#include <string>
+#include <vector>
+
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/view.h"
-#include "third_party/mozc/session/candidates_lite.pb.h"
 #include "base/timer.h"
 
 namespace gfx {
@@ -24,18 +26,43 @@ struct InputMethodLookupTable;
 // InfolistWindowView is the main container of the infolist window UI.
 class InfolistWindowView : public views::View {
  public:
+  // Represents an infolist entry.
+  struct Entry {
+    std::string title;
+    std::string body;
+  };
+
+  // InfolistWindowView does not take the ownership of |parent_frame| or
+  // |candidate_window_frame|.
   InfolistWindowView(views::Widget* parent_frame,
                      views::Widget* candidate_window_frame);
+
   virtual ~InfolistWindowView();
   void Init();
+
+  // Shows infolsit window.
   void Show();
+
+  // Shows infolist window after |milliseconds| milli secs. This function can be
+  // called in the DelayShow/DelayHide delay duration. In such case, previous
+  // operation will be cancelled.
   void DelayShow(unsigned int milliseconds);
+
+  // Hides infolist window.
   void Hide();
+
+  // Hides infolist window after |milliseconds| milli secs. This function can be
+  // called in the DelayShow/DelayHide delay duration. In such case, previous
+  // operation will be cancelled.
   void DelayHide(unsigned int milliseconds);
-  void UpdateCandidates(const InputMethodLookupTable& lookup_table);
+
+  // Updates infolist contents with |entries| and |focused_index|. If you want
+  // unselect all entry, pass |focused_index| as -1.
+  void UpdateCandidates(const std::vector<Entry>& entries,
+                        size_t focused_index);
+
+  // Resizes to preferred size and moves to appropriate position.
   void ResizeAndMoveParentFrame();
-  gfx::Font GetTitleFont() const;
-  gfx::Font GetDescriptionFont() const;
 
  protected:
   // Override View::VisibilityChanged()
@@ -45,12 +72,8 @@ class InfolistWindowView : public views::View {
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(InfolistWindowViewTest, ShouldUpdateViewTest);
-  // Called by show_hide_timer_
+  // Called by |show_hide_timer_|
   void OnShowHideTimer();
-
-  // Information list
-  scoped_ptr<mozc::commands::InformationList> usages_;
 
   // The parent frame.
   views::Widget* parent_frame_;
@@ -65,16 +88,14 @@ class InfolistWindowView : public views::View {
   // the words.
   std::vector<InfolistView*> infolist_views_;
 
+  // True if infolist window is visible.
   bool visible_;
 
   base::OneShotTimer<InfolistWindowView> show_hide_timer_;
 
-  static bool ShouldUpdateView(
-    const mozc::commands::InformationList* old_usages,
-    const mozc::commands::InformationList* new_usages);
-
   // Information title font
   scoped_ptr<gfx::Font> title_font_;
+
   // Information description font
   scoped_ptr<gfx::Font> description_font_;
 
