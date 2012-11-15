@@ -4,6 +4,7 @@
 
 #include "cc/software_renderer.h"
 
+#include "base/debug/trace_event.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/render_pass_draw_quad.h"
 #include "cc/solid_color_draw_quad.h"
@@ -91,11 +92,13 @@ void SoftwareRenderer::viewportChanged()
 
 void SoftwareRenderer::beginDrawingFrame(DrawingFrame& frame)
 {
+    TRACE_EVENT0("cc", "SoftwareRenderer::beginDrawingFrame");
     m_skRootCanvas = make_scoped_ptr(new SkCanvas(m_outputDevice->lock(true)->getSkBitmap()));
 }
 
 void SoftwareRenderer::finishDrawingFrame(DrawingFrame& frame)
 {
+    TRACE_EVENT0("cc", "SoftwareRenderer::finishDrawingFrame");
     m_currentFramebufferLock.reset();
     m_skCurrentCanvas = 0;
     m_skRootCanvas.reset();
@@ -163,6 +166,7 @@ bool SoftwareRenderer::isSoftwareResource(ResourceProvider::ResourceId id) const
 
 void SoftwareRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
 {
+    TRACE_EVENT0("cc", "SoftwareRenderer::drawQuad");
     WebTransformationMatrix quadRectMatrix;
     quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->quadRect());
     WebTransformationMatrix contentsDeviceTransform = (frame.windowMatrix * frame.projectionMatrix * quadRectMatrix).to2dTransform();
@@ -345,6 +349,7 @@ bool SoftwareRenderer::swapBuffers()
 
 void SoftwareRenderer::getFramebufferPixels(void *pixels, const gfx::Rect& rect)
 {
+    TRACE_EVENT0("cc", "SoftwareRenderer::getFramebufferPixels");
     SkBitmap fullBitmap = m_outputDevice->lock(false)->getSkBitmap();
     SkBitmap subsetBitmap;
     SkIRect invertRect = SkIRect::MakeXYWH(rect.x(), viewportSize().height() - rect.bottom(), rect.width(), rect.height());

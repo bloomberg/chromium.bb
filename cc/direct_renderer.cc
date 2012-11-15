@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/debug/trace_event.h"
 #include "cc/math_util.h"
 #include "ui/gfx/rect_conversions.h"
 #include <public/WebTransformationMatrix.h>
@@ -152,6 +153,7 @@ void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& r
 
 void DirectRenderer::drawFrame(const RenderPassList& renderPassesInDrawOrder, const RenderPassIdHashMap& renderPassesById)
 {
+    TRACE_EVENT0("cc", "DirectRenderer::drawFrame");
     const RenderPass* rootRenderPass = renderPassesInDrawOrder.back();
     DCHECK(rootRenderPass);
 
@@ -169,6 +171,7 @@ void DirectRenderer::drawFrame(const RenderPassList& renderPassesInDrawOrder, co
 
 void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* renderPass)
 {
+    TRACE_EVENT0("cc", "DirectRenderer::drawRenderPass");
     if (!useRenderPass(frame, renderPass))
         return;
 

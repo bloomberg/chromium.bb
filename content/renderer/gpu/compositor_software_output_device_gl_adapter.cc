@@ -4,6 +4,7 @@
 
 #include "content/renderer/gpu/compositor_software_output_device_gl_adapter.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -161,6 +162,7 @@ void CompositorSoftwareOutputDeviceGLAdapter::Resize(
 }
 
 void CompositorSoftwareOutputDeviceGLAdapter::Draw(void* pixels) {
+  TRACE_EVENT0("renderer", "CompositorSoftwareOutputDeviceGLAdapter::Draw");
   if (!initialized_)
     NOTREACHED();
   if (!framebuffer_texture_id_)
