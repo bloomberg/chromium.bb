@@ -80,7 +80,7 @@ void CookieGetterTask::RequestCookies(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanUseCookiesForOrigin(renderer_id_, url)) {
+  if (!policy->CanAccessCookiesForOrigin(renderer_id_, url)) {
     callback.Run(std::string());
     return;
   }

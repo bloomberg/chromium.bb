@@ -322,8 +322,11 @@ void SiteInstanceImpl::Observe(int type,
 }
 
 void SiteInstanceImpl::LockToOrigin() {
+  // We currently only restrict this process to a particular site if the
+  // --enable-strict-site-isolation or --site-per-process flags are present.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableStrictSiteIsolation)) {
+  if (command_line.HasSwitch(switches::kEnableStrictSiteIsolation) ||
+      command_line.HasSwitch(switches::kSitePerProcess)) {
     ChildProcessSecurityPolicyImpl* policy =
         ChildProcessSecurityPolicyImpl::GetInstance();
     policy->LockToOrigin(process_->GetID(), site_);

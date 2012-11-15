@@ -474,7 +474,7 @@ void RenderMessageFilter::OnSetCookie(const IPC::Message& message,
                                       const std::string& cookie) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanUseCookiesForOrigin(render_process_id_, url))
+  if (!policy->CanAccessCookiesForOrigin(render_process_id_, url))
     return;
 
   net::CookieOptions options;
@@ -494,7 +494,7 @@ void RenderMessageFilter::OnGetCookies(const GURL& url,
                                        IPC::Message* reply_msg) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanUseCookiesForOrigin(render_process_id_, url)) {
+  if (!policy->CanAccessCookiesForOrigin(render_process_id_, url)) {
     SendGetCookiesResponse(reply_msg, std::string());
     return;
   }
@@ -524,7 +524,7 @@ void RenderMessageFilter::OnGetRawCookies(
   // TODO(ananta) We need to support retreiving raw cookies from external
   // hosts.
   if (!policy->CanReadRawCookies(render_process_id_) ||
-      !policy->CanUseCookiesForOrigin(render_process_id_, url)) {
+      !policy->CanAccessCookiesForOrigin(render_process_id_, url)) {
     SendGetRawCookiesResponse(reply_msg, net::CookieList());
     return;
   }
@@ -544,7 +544,7 @@ void RenderMessageFilter::OnDeleteCookie(const GURL& url,
                                          const std::string& cookie_name) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanUseCookiesForOrigin(render_process_id_, url))
+  if (!policy->CanAccessCookiesForOrigin(render_process_id_, url))
     return;
 
   net::URLRequestContext* context = GetRequestContextForURL(url);

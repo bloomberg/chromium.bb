@@ -2730,12 +2730,15 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
           navigation_state()->is_content_initiated();
 
   // Experimental:
-  // If --enable-strict-site-isolation is enabled, send all top-level
-  // navigations to the browser to let it swap processes when crossing site
-  // boundaries.  This is currently expected to break some script calls and
-  // navigations, such as form submissions.
+  // If --enable-strict-site-isolation or --site-per-process is enabled, send
+  // all top-level navigations to the browser to let it swap processes when
+  // crossing site boundaries.  This is currently expected to break some script
+  // calls and navigations, such as form submissions.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableStrictSiteIsolation) &&
+  bool force_swap_due_to_flag =
+      command_line.HasSwitch(switches::kEnableStrictSiteIsolation) ||
+      command_line.HasSwitch(switches::kSitePerProcess);
+  if (force_swap_due_to_flag &&
       !frame->parent() && (is_content_initiated || is_redirect)) {
     WebString origin_str = frame->document().securityOrigin().toString();
     GURL frame_url(origin_str.utf8().data());

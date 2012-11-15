@@ -343,13 +343,15 @@ const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
 const char kEnableStatsTable[]              = "enable-stats-table";
 
 // Experimentally ensures that each renderer process:
-// 1) Only handles rendering for a single page.
+// 1) Only handles rendering for pages from a single site, apart from iframes.
 // (Note that a page can reference content from multiple origins due to images,
-// iframes, etc).
+// JavaScript files, etc.  Cross-site iframes are also loaded in-process.)
 // 2) Only has authority to see or use cookies for the page's top-level origin.
-// (So if a.com iframe's b.com, the b.com network request will be sent without
-// cookies).
-// This is expected to break compatibility with many pages for now.
+// (So if a.com iframes b.com, the b.com network request will be sent without
+// cookies.)
+// This is expected to break compatibility with many pages for now.  Unlike the
+// --site-per-process flag, this allows cross-site iframes, but it blocks all
+// cookies on cross-site requests.
 const char kEnableStrictSiteIsolation[]     = "enable-strict-site-isolation";
 
 // Enable multithreaded GPU compositing of web content.
@@ -586,6 +588,20 @@ const char kSimulateTouchScreenWithMouse[]  =
 
 // Runs the renderer and plugins in the same process as the browser
 const char kSingleProcess[]                 = "single-process";
+
+// Experimentally enforces a one-site-per-process security policy.
+// All cross-site navigations force process swaps, and we can restrict a
+// renderer process's access rights based on its site.  For details, see:
+// http://www.chromium.org/developers/design-documents/site-isolation
+//
+// Unlike --enable-strict-site-isolation (which allows cross-site iframes),
+// this flag blocks cross-site documents even in iframes, until out-of-process
+// iframe support is available.  Cross-site network requests do attach the
+// normal set of cookies, but a renderer process is only allowed to view or
+// modify cookies for its own site (via JavaScript).
+// TODO(irobert): Implement the cross-site document blocking in
+// http://crbug.com/159215.
+const char kSitePerProcess[]                = "site-per-process";
 
 // Skip gpu info collection, blacklist loading, and blacklist auto-update
 // scheduling at browser startup time.

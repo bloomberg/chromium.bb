@@ -697,13 +697,15 @@ bool ChromeContentBrowserClient::IsSuitableHost(
     return true;
 
   // Experimental:
-  // If --enable-strict-site-isolation is enabled, do not allow non-WebUI pages
-  // to share a renderer process.  (We could allow pages from the same site or
-  // extensions of the same type to share, if we knew what the given process
-  // was dedicated to.  Allowing no sharing is simpler for now.)  This may
-  // cause resource exhaustion issues if too many sites are open at once.
+  // If --enable-strict-site-isolation or --site-per-process is enabled, do not
+  // allow non-WebUI pages to share a renderer process.  (We could allow pages
+  // from the same site or extensions of the same type to share, if we knew what
+  // the given process was dedicated to.  Allowing no sharing is simpler for
+  // now.)  This may cause resource exhaustion issues if too many sites are open
+  // at once.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableStrictSiteIsolation))
+  if (command_line.HasSwitch(switches::kEnableStrictSiteIsolation) ||
+      command_line.HasSwitch(switches::kSitePerProcess))
     return false;
 
   // Otherwise, just make sure the process privilege matches the privilege

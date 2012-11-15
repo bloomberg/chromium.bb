@@ -848,6 +848,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
     switches::kRendererStartupDialog,
     switches::kShowPaintRects,
+    switches::kSitePerProcess,
     switches::kTestSandbox,
     switches::kTraceStartup,
     // This flag needs to be propagated to the renderer process for

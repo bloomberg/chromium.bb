@@ -304,7 +304,7 @@ int BuildLoadFlagsForRequest(const ResourceHostMsg_Request& request_data,
 
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanUseCookiesForOrigin(child_id, request_data.url)) {
+  if (!policy->CanSendCookiesForOrigin(child_id, request_data.url)) {
     load_flags |= (net::LOAD_DO_NOT_SEND_COOKIES |
                    net::LOAD_DO_NOT_SEND_AUTH_DATA |
                    net::LOAD_DO_NOT_SAVE_COOKIES);
