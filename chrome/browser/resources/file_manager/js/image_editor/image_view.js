@@ -327,6 +327,16 @@ ImageView.prototype.load = function(url, metadata, effect,
       this.replace(video, effect); // Show the poster immediately.
       if (displayCallback) displayCallback();
     }
+
+    function onVideoLoad(error) {
+      video.removeEventListener('loadedmetadata', onVideoLoadSuccess);
+      video.removeEventListener('error', onVideoLoadError);
+      displayMainImage(ImageView.LOAD_TYPE_VIDEO_FILE, videoPreview, video,
+          error);
+    }
+    var onVideoLoadError = onVideoLoad.bind(this, 'VIDEO_ERROR');
+    var onVideoLoadSuccess = onVideoLoad.bind(this, null);
+
     video.addEventListener('loadedmetadata', onVideoLoadSuccess);
     video.addEventListener('error', onVideoLoadError);
 
@@ -334,15 +344,6 @@ ImageView.prototype.load = function(url, metadata, effect,
     video.src = (navigator.onLine && metadata.streaming &&
                  metadata.streaming.url) || url;
     video.load();
-
-    function onVideoLoad(opt_error) {
-      video.removeEventListener('loadedmetadata', onVideoLoadSuccess);
-      video.removeEventListener('error', onVideoLoadError);
-      displayMainImage(ImageView.LOAD_TYPE_VIDEO_FILE, videoPreview, video,
-          opt_error);
-    }
-    var onVideoLoadError = onVideoLoad.bind(this, 'VIDEO_ERROR');
-    var onVideoLoadSuccess = onVideoLoad.bind(this, null);
     return;
   }
   var cached = this.contentCache_.getItem(this.contentID_);
