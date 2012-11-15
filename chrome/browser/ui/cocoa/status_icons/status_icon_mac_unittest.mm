@@ -7,7 +7,7 @@
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/status_icons/status_icon_mac.h"
-#include "grit/theme_resources.h"
+#include "grit/chrome_unscaled_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/simple_menu_model.h"

@@ -58,8 +58,10 @@
     "includes": [6300],
   },
   "chrome/app/theme/theme_resources.grd": {
-    "includes": [6500],
-    "structures": [7000],
+    "structures": [6500],
+  },
+  "chrome/app/theme/chrome_unscaled_resources.grd": {
+    "includes": [7500],
   },
   "chrome_frame/resources/chrome_frame_resources.grd": {
     "includes": [8000],

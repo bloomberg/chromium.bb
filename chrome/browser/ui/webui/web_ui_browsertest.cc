@@ -327,7 +327,7 @@ void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
   FilePath resources_pack_path;
   PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
   ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      resources_pack_path, ui::SCALE_FACTOR_100P);
+      resources_pack_path, ui::SCALE_FACTOR_NONE);
 
   FilePath mockPath;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &mockPath));

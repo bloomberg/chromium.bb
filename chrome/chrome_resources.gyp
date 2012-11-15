@@ -229,6 +229,7 @@
       'target_name': 'theme_resources',
       'type': 'none',
       'dependencies': [
+        'chrome_unscaled_resources',
         'theme_resources_gen',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
       ],
@@ -396,6 +397,23 @@
           ], # conditions
         }], # end OS != "mac" and OS != "ios"
       ], # conditions
+    },
+    {
+      'target_name': 'chrome_unscaled_resources',
+      'type': 'none',
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
+      },
+      'actions': [
+        {
+          'action_name': 'chrome_unscaled_resources',
+          'variables': {
+            'grit_grd_file': 'app/theme/chrome_unscaled_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+      ],
+      'includes': [ '../build/grit_target.gypi' ],
     },
   ], # targets
 }

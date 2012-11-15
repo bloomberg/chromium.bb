@@ -427,6 +427,7 @@
       'sources': [
         'app/breakpad_mac_stubs.mm',
         'app/chrome_dll.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/chrome_unscaled_resources.rc',
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
         'browser/api/prefs/pref_member_unittest.cc',
