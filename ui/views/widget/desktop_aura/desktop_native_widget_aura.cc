@@ -542,17 +542,23 @@ ui::EventResult DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
         ui::ER_HANDLED : ui::ER_UNHANDLED;
   }
 
+  return native_widget_delegate_->OnMouseEvent(*event) ?
+      ui::ER_HANDLED : ui::ER_UNHANDLED;
+}
+
+ui::EventResult DesktopNativeWidgetAura::OnScrollEvent(ui::ScrollEvent* event) {
   if (event->type() == ui::ET_SCROLL) {
-    if (native_widget_delegate_->OnMouseEvent(*event))
-      return ui::ER_HANDLED;
+    ui::EventResult status = native_widget_delegate_->OnScrollEvent(event);
+    if (status != ui::ER_UNHANDLED)
+      return status;
 
     // Convert unprocessed scroll events into wheel events.
     ui::MouseWheelEvent mwe(*static_cast<ui::ScrollEvent*>(event));
     return native_widget_delegate_->OnMouseEvent(mwe) ?
         ui::ER_HANDLED : ui::ER_UNHANDLED;
+  } else {
+    return native_widget_delegate_->OnScrollEvent(event);
   }
-  return native_widget_delegate_->OnMouseEvent(*event) ?
-      ui::ER_HANDLED : ui::ER_UNHANDLED;
 }
 
 ui::EventResult DesktopNativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {

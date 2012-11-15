@@ -797,17 +797,22 @@ ui::EventResult NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSEWHEEL)
     return delegate_->OnMouseEvent(*event) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
 
+  if (tooltip_manager_.get())
+    tooltip_manager_->UpdateTooltip();
+  return delegate_->OnMouseEvent(*event) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
+}
+
+ui::EventResult NativeWidgetAura::OnScrollEvent(ui::ScrollEvent* event) {
   if (event->type() == ui::ET_SCROLL) {
-    if (delegate_->OnScrollEvent(static_cast<ui::ScrollEvent*>(event)))
-      return ui::ER_HANDLED;
+    ui::EventResult status = delegate_->OnScrollEvent(event);
+    if (status != ui::ER_UNHANDLED)
+      return status;
 
     // Convert unprocessed scroll events into wheel events.
     ui::MouseWheelEvent mwe(*static_cast<ui::ScrollEvent*>(event));
     return delegate_->OnMouseEvent(mwe) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
   }
-  if (tooltip_manager_.get())
-    tooltip_manager_->UpdateTooltip();
-  return delegate_->OnMouseEvent(*event) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
+  return delegate_->OnScrollEvent(event);
 }
 
 ui::EventResult NativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {

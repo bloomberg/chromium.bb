@@ -456,21 +456,6 @@ ui::EventResult MagnificationControllerImpl::OnKeyEvent(ui::KeyEvent* event) {
 
 ui::EventResult MagnificationControllerImpl::OnMouseEvent(
     ui::MouseEvent* event) {
-  if (event->IsAltDown() && event->IsControlDown()) {
-    if (event->type() == ui::ET_SCROLL_FLING_START ||
-        event->type() == ui::ET_SCROLL_FLING_CANCEL) {
-      return ui::ER_CONSUMED;
-    }
-
-    if (event->type() == ui::ET_SCROLL) {
-      ui::ScrollEvent* scroll_event = static_cast<ui::ScrollEvent*>(event);
-      float scale = GetScale();
-      scale += scroll_event->y_offset() * kScrollScaleChangeFactor;
-      SetScale(scale, true);
-      return ui::ER_CONSUMED;
-    }
-  }
-
   if (IsMagnified() && event->type() == ui::ET_MOUSE_MOVED) {
     aura::Window* target = static_cast<aura::Window*>(event->target());
     aura::RootWindow* current_root = target->GetRootWindow();
@@ -489,6 +474,21 @@ ui::EventResult MagnificationControllerImpl::OnMouseEvent(
 
 ui::EventResult MagnificationControllerImpl::OnScrollEvent(
     ui::ScrollEvent* event) {
+  if (event->IsAltDown() && event->IsControlDown()) {
+    if (event->type() == ui::ET_SCROLL_FLING_START ||
+        event->type() == ui::ET_SCROLL_FLING_CANCEL) {
+      return ui::ER_CONSUMED;
+    }
+
+    if (event->type() == ui::ET_SCROLL) {
+      ui::ScrollEvent* scroll_event = static_cast<ui::ScrollEvent*>(event);
+      float scale = GetScale();
+      scale += scroll_event->y_offset() * kScrollScaleChangeFactor;
+      SetScale(scale, true);
+      return ui::ER_CONSUMED;
+    }
+  }
+
   return ui::ER_UNHANDLED;
 }
 
