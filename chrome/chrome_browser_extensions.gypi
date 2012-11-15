@@ -877,8 +877,6 @@
             'browser/extensions/app_host/app_host_main.cc',
             'browser/extensions/app_host/binaries_installer.cc',
             'browser/extensions/app_host/binaries_installer.h',
-            'browser/extensions/app_host/binaries_installer_internal.cc',
-            'browser/extensions/app_host/binaries_installer_internal.h',
             'browser/extensions/app_host/update.cc',
             'browser/extensions/app_host/update.h',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/app_host_exe_version.rc',
