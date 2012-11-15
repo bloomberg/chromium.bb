@@ -162,9 +162,7 @@ void PreferencesBrowserTest::SetUpOnMainThread() {
 }
 
 // Forwards notifications received when pref values change in the backend.
-void PreferencesBrowserTest::OnPreferenceChanged(PrefServiceBase* service,
-                                                 const std::string& pref_name) {
-  ASSERT_EQ(pref_service_, service);
+void PreferencesBrowserTest::OnPreferenceChanged(const std::string& pref_name) {
   OnCommit(pref_service_->FindPreference(pref_name.c_str()));
 }
 
@@ -269,14 +267,20 @@ void PreferencesBrowserTest::VerifyObservedPrefs(
 }
 
 void PreferencesBrowserTest::ExpectNoCommit(const std::string& name) {
-  pref_change_registrar_.Add(name.c_str(), this);
+  pref_change_registrar_.Add(
+      name.c_str(),
+      base::Bind(&PreferencesBrowserTest::OnPreferenceChanged,
+                 base::Unretained(this)));
   EXPECT_CALL(*this, OnCommit(Property(&PrefService::Preference::name, name)))
       .Times(0);
 }
 
 void PreferencesBrowserTest::ExpectSetCommit(const std::string& name,
                                              const base::Value* value) {
-  pref_change_registrar_.Add(name.c_str(), this);
+  pref_change_registrar_.Add(
+      name.c_str(),
+      base::Bind(&PreferencesBrowserTest::OnPreferenceChanged,
+                 base::Unretained(this)));
   EXPECT_CALL(*this, OnCommit(AllOf(
       Property(&PrefService::Preference::name, name),
       Property(&PrefService::Preference::IsUserControlled, true),
@@ -284,7 +288,10 @@ void PreferencesBrowserTest::ExpectSetCommit(const std::string& name,
 }
 
 void PreferencesBrowserTest::ExpectClearCommit(const std::string& name) {
-  pref_change_registrar_.Add(name.c_str(), this);
+  pref_change_registrar_.Add(
+      name.c_str(),
+      base::Bind(&PreferencesBrowserTest::OnPreferenceChanged,
+                 base::Unretained(this)));
   EXPECT_CALL(*this, OnCommit(AllOf(
       Property(&PrefService::Preference::name, name),
       Property(&PrefService::Preference::IsUserControlled, false))));

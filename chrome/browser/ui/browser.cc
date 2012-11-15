@@ -396,9 +396,16 @@ Browser::Browser(const CreateParams& params)
                  content::NotificationService::AllSources());
 
   profile_pref_registrar_.Init(profile_->GetPrefs());
-  profile_pref_registrar_.Add(prefs::kDevToolsDisabled, this);
-  profile_pref_registrar_.Add(prefs::kShowBookmarkBar, this);
-  profile_pref_registrar_.Add(prefs::kHomePage, this);
+  profile_pref_registrar_.Add(
+      prefs::kDevToolsDisabled,
+      base::Bind(&Browser::OnDevToolsDisabledChanged, base::Unretained(this)));
+  profile_pref_registrar_.Add(
+      prefs::kShowBookmarkBar,
+      base::Bind(&Browser::UpdateBookmarkBarState, base::Unretained(this),
+                 BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE));
+  profile_pref_registrar_.Add(
+      prefs::kHomePage,
+      base::Bind(&Browser::MarkHomePageAsChanged, base::Unretained(this)));
 
   BrowserList::AddBrowser(this);
 
@@ -1940,20 +1947,6 @@ void Browser::Observe(int type,
   }
 }
 
-void Browser::OnPreferenceChanged(PrefServiceBase* service,
-                                  const std::string& pref_name) {
-  if (pref_name == prefs::kDevToolsDisabled) {
-    if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
-      content::DevToolsManager::GetInstance()->CloseAllClientHosts();
-  } else if (pref_name == prefs::kShowBookmarkBar) {
-    UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE);
-  } else if (pref_name == prefs::kHomePage) {
-    MarkHomePageAsChanged(static_cast<PrefService*>(service));
-  } else {
-    NOTREACHED();
-  }
-}
-
 void Browser::ModeChanged(const chrome::search::Mode& old_mode,
                           const chrome::search::Mode& new_mode) {
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
@@ -1962,8 +1955,13 @@ void Browser::ModeChanged(const chrome::search::Mode& old_mode,
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Command and state updating (private):
 
-void Browser::MarkHomePageAsChanged(PrefService* pref_service) {
-  pref_service->SetBoolean(prefs::kHomePageChanged, true);
+void Browser::OnDevToolsDisabledChanged() {
+  if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
+    content::DevToolsManager::GetInstance()->CloseAllClientHosts();
+}
+
+void Browser::MarkHomePageAsChanged() {
+  profile_->GetPrefs()->SetBoolean(prefs::kHomePageChanged, true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

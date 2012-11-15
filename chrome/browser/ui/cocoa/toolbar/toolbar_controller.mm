@@ -9,7 +9,6 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/singleton.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -107,8 +106,7 @@ namespace ToolbarControllerInternal {
 // preferences and upgrade available notifications. Bridges the notification
 // back to the ToolbarController.
 class NotificationBridge
-    : public content::NotificationObserver,
-      public PrefObserver {
+    : public content::NotificationObserver {
  public:
   explicit NotificationBridge(ToolbarController* controller)
       : controller_(controller) {
@@ -132,9 +130,7 @@ class NotificationBridge
     }
   }
 
-  // Overridden from PrefObserver:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE {
+  void OnPreferenceChanged(const std::string& pref_name) {
     [controller_ prefChanged:pref_name];
   }
 
@@ -280,8 +276,11 @@ class NotificationBridge
   notificationBridge_.reset(
       new ToolbarControllerInternal::NotificationBridge(self));
   PrefService* prefs = profile_->GetPrefs();
-  showHomeButton_.Init(prefs::kShowHomeButton, prefs,
-                       notificationBridge_.get());
+  showHomeButton_.Init(
+      prefs::kShowHomeButton, prefs,
+      base::Bind(
+          &ToolbarControllerInternal::NotificationBridge::OnPreferenceChanged,
+          base::Unretained(notificationBridge_.get())));
   [self showOptionalHomeButton];
   [self installWrenchMenu];
 

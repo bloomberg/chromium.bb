@@ -97,10 +97,7 @@ void RegisterPrefsToMigrate(PrefService* prefs) {
 
 // The list of prefs we want to observe.
 const char* kPrefsToObserve[] = {
-  prefs::kDefaultZoomLevel,
   prefs::kDefaultCharset,
-  prefs::kEnableReferrers,
-  prefs::kEnableDoNotTrack,
   prefs::kWebKitAllowDisplayingInsecureContent,
   prefs::kWebKitAllowRunningInsecureContent,
   prefs::kWebKitDefaultFixedFontSize,
@@ -140,9 +137,11 @@ void RegisterFontFamilyMap(PrefService* prefs,
 }
 
 // Registers |obs| to observe per-script font prefs under the path |map_name|.
-void RegisterFontFamilyMapObserver(PrefChangeRegistrar* registrar,
-                                   const char* map_name,
-                                   PrefObserver* obs) {
+void RegisterFontFamilyMapObserver(
+    PrefChangeRegistrar* registrar,
+    const char* map_name,
+    const PrefChangeRegistrar::NamedChangeCallback& obs) {
+  DCHECK(StartsWithASCII(map_name, "webkit.webprefs.", true));
   for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
     const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
     std::string pref_name = base::StringPrintf("%s.%s", map_name, script);
@@ -385,23 +384,42 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
   PrefService* prefs = GetProfile()->GetPrefs();
   pref_change_registrar_.Init(prefs);
   if (prefs) {
-    for (int i = 0; i < kPrefsToObserveLength; ++i)
-      pref_change_registrar_.Add(kPrefsToObserve[i], this);
+    base::Closure renderer_callback = base::Bind(
+        &PrefsTabHelper::UpdateRendererPreferences, base::Unretained(this));
+    pref_change_registrar_.Add(prefs::kDefaultZoomLevel, renderer_callback);
+    pref_change_registrar_.Add(prefs::kEnableDoNotTrack, renderer_callback);
+    pref_change_registrar_.Add(prefs::kEnableReferrers, renderer_callback);
+
+    PrefChangeRegistrar::NamedChangeCallback webkit_callback = base::Bind(
+        &PrefsTabHelper::OnWebPrefChanged, base::Unretained(this));
+    for (int i = 0; i < kPrefsToObserveLength; ++i) {
+      const char* pref_name = kPrefsToObserve[i];
+      DCHECK(std::string(pref_name) == prefs::kDefaultCharset ||
+             StartsWithASCII(pref_name, "webkit.webprefs.", true));
+      pref_change_registrar_.Add(pref_name, webkit_callback);
+    }
 
     RegisterFontFamilyMapObserver(&pref_change_registrar_,
-                                  prefs::kWebKitStandardFontFamilyMap, this);
+                                  prefs::kWebKitStandardFontFamilyMap,
+                                  webkit_callback);
     RegisterFontFamilyMapObserver(&pref_change_registrar_,
-                                  prefs::kWebKitFixedFontFamilyMap, this);
+                                  prefs::kWebKitFixedFontFamilyMap,
+                                  webkit_callback);
     RegisterFontFamilyMapObserver(&pref_change_registrar_,
-                                  prefs::kWebKitSerifFontFamilyMap, this);
+                                  prefs::kWebKitSerifFontFamilyMap,
+                                  webkit_callback);
     RegisterFontFamilyMapObserver(&pref_change_registrar_,
-                                  prefs::kWebKitSansSerifFontFamilyMap, this);
+                                  prefs::kWebKitSansSerifFontFamilyMap,
+                                  webkit_callback);
     RegisterFontFamilyMapObserver(&pref_change_registrar_,
-                                  prefs::kWebKitCursiveFontFamilyMap, this);
+                                  prefs::kWebKitCursiveFontFamilyMap,
+                                  webkit_callback);
     RegisterFontFamilyMapObserver(&pref_change_registrar_,
-                                  prefs::kWebKitFantasyFontFamilyMap, this);
+                                  prefs::kWebKitFantasyFontFamilyMap,
+                                  webkit_callback);
     RegisterFontFamilyMapObserver(&pref_change_registrar_,
-                                  prefs::kWebKitPictographFontFamilyMap, this);
+                                  prefs::kWebKitPictographFontFamilyMap,
+                                  webkit_callback);
   }
 
   renderer_preferences_util::UpdateFromSystemSettings(
@@ -582,21 +600,6 @@ void PrefsTabHelper::Observe(int type,
 #endif
     default:
       NOTREACHED();
-  }
-}
-
-void PrefsTabHelper::OnPreferenceChanged(PrefServiceBase* service,
-                                         const std::string& pref_name_in) {
-  DCHECK_EQ(GetProfile()->GetPrefs(), service);
-  if (pref_name_in == prefs::kDefaultCharset ||
-      StartsWithASCII(pref_name_in, "webkit.webprefs.", true)) {
-    OnWebPrefChanged(pref_name_in);
-  } else if (pref_name_in == prefs::kDefaultZoomLevel ||
-             pref_name_in == prefs::kEnableReferrers ||
-             pref_name_in == prefs::kEnableDoNotTrack) {
-    UpdateRendererPreferences();
-  } else {
-    NOTREACHED() << "unexpected pref change notification" << pref_name_in;
   }
 }
 

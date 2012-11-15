@@ -16,7 +16,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/string16.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
@@ -108,7 +107,6 @@ class Browser : public TabStripModelObserver,
                 public ZoomObserver,
                 public content::PageNavigator,
                 public content::NotificationObserver,
-                public PrefObserver,
                 public ui::SelectFileDialog::Listener,
                 public chrome::search::SearchModelObserver {
  public:
@@ -695,18 +693,17 @@ class Browser : public TabStripModelObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Overridden from PrefObserver:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
-
   // Overridden from chrome::search::SearchModelObserver:
   virtual void ModeChanged(const chrome::search::Mode& old_mode,
                            const chrome::search::Mode& new_mode) OVERRIDE;
 
   // Command and state updating ///////////////////////////////////////////////
 
+  // Handle changes to kDevTools preference.
+  void OnDevToolsDisabledChanged();
+
   // Set the preference that indicates that the home page has been changed.
-  void MarkHomePageAsChanged(PrefService* pref_service);
+  void MarkHomePageAsChanged();
 
   // UI update coalescing and handling ////////////////////////////////////////
 

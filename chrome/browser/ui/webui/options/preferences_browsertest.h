@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_types.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -33,8 +32,7 @@ class RenderViewHost;
 // Tests verifying that the JavaScript Preferences class, the underlying C++
 // CoreOptionsHandler and the specialized classes handling Chrome OS device and
 // proxy prefs behave correctly.
-class PreferencesBrowserTest : public InProcessBrowserTest,
-                               public PrefObserver {
+class PreferencesBrowserTest : public InProcessBrowserTest {
  public:
   PreferencesBrowserTest();
   ~PreferencesBrowserTest();
@@ -42,9 +40,7 @@ class PreferencesBrowserTest : public InProcessBrowserTest,
   // InProcessBrowserTest implementation:
   virtual void SetUpOnMainThread() OVERRIDE;
 
-  // PrefObserver implementation:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
+  void OnPreferenceChanged(const std::string& pref_name);
 
  protected:
   MOCK_METHOD1(OnCommit, void(const PrefService::Preference*));
