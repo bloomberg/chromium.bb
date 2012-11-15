@@ -75,7 +75,6 @@ views::TrayBubbleView::InitParams MessagePopupBubble::GetInitParams(
     views::TrayBubbleView::AnchorAlignment anchor_alignment) {
   views::TrayBubbleView::InitParams init_params =
       GetDefaultInitParams(anchor_alignment);
-  init_params.top_color = kBackgroundColor;
   init_params.arrow_color = kBackgroundColor;
   init_params.close_on_deactivate = false;
   return init_params;

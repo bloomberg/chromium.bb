@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_BUBBLE_TRAY_BUBBLE_VIEW_H_
 #define UI_VIEWS_BUBBLE_TRAY_BUBBLE_VIEW_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/views_export.h"
 
@@ -26,7 +27,7 @@ namespace views {
 
 namespace internal {
 class TrayBubbleBorder;
-class TrayBubbleBackground;
+class TrayBubbleContentMask;
 }
 
 class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
@@ -88,7 +89,6 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
     int max_height;
     bool can_activate;
     bool close_on_deactivate;
-    SkColor top_color;
     SkColor arrow_color;
     views::BubbleBorder::ArrowLocation arrow_location;
     int arrow_offset;
@@ -162,7 +162,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
   InitParams params_;
   Delegate* delegate_;
   internal::TrayBubbleBorder* bubble_border_;
-  internal::TrayBubbleBackground* bubble_background_;
+  scoped_ptr<internal::TrayBubbleContentMask> bubble_content_mask_;
   bool is_gesture_dragging_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleView);

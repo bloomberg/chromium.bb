@@ -60,7 +60,6 @@ views::TrayBubbleView::InitParams MessageBubbleBase::GetDefaultInitParams(
       views::TrayBubbleView::ANCHOR_TYPE_TRAY,
       anchor_alignment,
       kNotificationBubbleWidth);
-  init_params.top_color = kBackgroundColor;
   init_params.arrow_color = kHeaderBackgroundColorDark;
   init_params.bubble_width = kWebNotificationWidth;
   return init_params;

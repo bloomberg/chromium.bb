@@ -298,8 +298,10 @@ void Layer::SetMaskLayer(Layer* layer_mask) {
       layer_mask ? layer_mask->web_layer() : NULL);
   // We need to reference the linked object so that it can properly break the
   // link to us when it gets deleted.
-  if (layer_mask)
+  if (layer_mask) {
     layer_mask->layer_mask_back_link_ = this;
+    layer_mask->OnDeviceScaleFactorChanged(device_scale_factor_);
+  }
 }
 
 void Layer::SetBackgroundZoom(float x_offset,
@@ -521,6 +523,8 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
     delegate_->OnDeviceScaleFactorChanged(device_scale_factor);
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->OnDeviceScaleFactorChanged(device_scale_factor);
+  if (layer_mask_)
+    layer_mask_->OnDeviceScaleFactorChanged(device_scale_factor);
 }
 
 void Layer::paintContents(WebKit::WebCanvas* web_canvas,

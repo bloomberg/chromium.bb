@@ -462,10 +462,14 @@
           'sources/': [
             ['exclude', 'corewm'],
             ['exclude', 'widget/desktop_aura'],
-            ['exclude', 'widget/native_widget_aura_window_observer.cc'],
-            ['exclude', 'widget/native_widget_aura_window_observer.h'],
-            ['exclude', 'widget/widget_aura_utils.cc'],
-            ['exclude', 'widget/widget_aura_utils.h'],
+          ],
+          'sources!': [
+            'bubble/tray_bubble_view.cc',
+            'bubble/tray_bubble_view.h',
+            'widget/native_widget_aura_window_observer.cc',
+            'widget/native_widget_aura_window_observer.h',
+            'widget/widget_aura_utils.cc',
+            'widget/widget_aura_utils.h',
           ],
         }],
         ['chromeos==1', {
