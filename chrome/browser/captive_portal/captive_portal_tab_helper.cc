@@ -260,13 +260,12 @@ void CaptivePortalTabHelper::OpenLoginTab() {
 
   // Otherwise, open a login tab.  Only end up here when a captive portal result
   // was received, so it's safe to assume |profile_| has a CaptivePortalService.
-  TabContents* tab_contents = chrome::AddSelectedTabWithURL(
+  content::WebContents* web_contents = chrome::AddSelectedTabWithURL(
           browser,
           CaptivePortalServiceFactory::GetForProfile(profile_)->test_url(),
           content::PAGE_TRANSITION_TYPED);
   captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper =
-      captive_portal::CaptivePortalTabHelper::FromWebContents(
-          tab_contents->web_contents());
+      captive_portal::CaptivePortalTabHelper::FromWebContents(web_contents);
   captive_portal_tab_helper->SetIsLoginTab();
 }
 

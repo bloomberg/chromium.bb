@@ -972,9 +972,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        NavigateToCrashedSingletonTab) {
   GURL singleton_url(GetContentSettingsURL());
-  TabContents* tab_contents = chrome::AddSelectedTabWithURL(
+  WebContents* web_contents = chrome::AddSelectedTabWithURL(
       browser(), singleton_url, content::PAGE_TRANSITION_LINK);
-  WebContents* web_contents = tab_contents->web_contents();
 
   // We should have one browser with 2 tabs, the 2nd selected.
   EXPECT_EQ(1u, BrowserList::size());

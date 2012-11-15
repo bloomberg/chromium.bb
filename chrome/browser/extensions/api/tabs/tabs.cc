@@ -617,10 +617,10 @@ bool CreateWindowFunction::RunImpl() {
                                             extension_id);
 
   for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i) {
-    TabContents* tab = chrome::AddSelectedTabWithURL(
+    WebContents* tab = chrome::AddSelectedTabWithURL(
         new_window, *i, content::PAGE_TRANSITION_LINK);
     if (window_type == Browser::TYPE_PANEL) {
-      extensions::TabHelper::FromWebContents(tab->web_contents())->
+      extensions::TabHelper::FromWebContents(tab)->
           SetExtensionAppIconById(extension_id);
     }
   }

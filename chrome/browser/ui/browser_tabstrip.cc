@@ -78,13 +78,14 @@ bool IsTabStripEditable(Browser* browser) {
   return browser->window()->IsTabStripEditable();
 }
 
-TabContents* AddSelectedTabWithURL(Browser* browser,
-                                   const GURL& url,
-                                   content::PageTransition transition) {
+content::WebContents* AddSelectedTabWithURL(
+    Browser* browser,
+    const GURL& url,
+    content::PageTransition transition) {
   NavigateParams params(browser, url, transition);
   params.disposition = NEW_FOREGROUND_TAB;
   Navigate(&params);
-  return params.target_contents;
+  return params.target_contents ? params.target_contents->web_contents() : NULL;
 }
 
 void AddTab(Browser* browser,

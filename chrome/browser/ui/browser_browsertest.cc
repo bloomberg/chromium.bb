@@ -778,7 +778,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
   ASSERT_EQ(1, browser()->tab_count());
   WebContents* initial_tab = chrome::GetWebContentsAt(browser(), 0);
   WebContents* app_tab = chrome::AddSelectedTabWithURL(
-      browser(), http_url, content::PAGE_TRANSITION_TYPED)->web_contents();
+      browser(), http_url, content::PAGE_TRANSITION_TYPED);
   ASSERT_EQ(2, browser()->tab_count());
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
 

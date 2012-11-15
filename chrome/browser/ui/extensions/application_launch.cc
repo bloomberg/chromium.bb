@@ -126,18 +126,17 @@ WebContents* OpenApplicationWindow(
   if (app_browser)
     *app_browser = browser;
 
-  TabContents* tab_contents = chrome::AddSelectedTabWithURL(
+  WebContents* web_contents = chrome::AddSelectedTabWithURL(
       browser, url, content::PAGE_TRANSITION_AUTO_TOPLEVEL);
-  WebContents* contents = tab_contents->web_contents();
-  contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
-  contents->GetRenderViewHost()->SyncRendererPrefs();
+  web_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
+  web_contents->GetRenderViewHost()->SyncRendererPrefs();
 
   browser->window()->Show();
 
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
   //                focus explicitly.
-  contents->GetView()->SetInitialFocus();
-  return contents;
+  web_contents->GetView()->SetInitialFocus();
+  return web_contents;
 }
 
 WebContents* OpenApplicationTab(Profile* profile,

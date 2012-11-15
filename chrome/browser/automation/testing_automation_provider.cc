@@ -473,12 +473,12 @@ void TestingAutomationProvider::AppendTab(int handle,
     Browser* browser = browser_tracker_->GetResource(handle);
     observer = new TabAppendedNotificationObserver(browser, this,
                                                    reply_message, false);
-    TabContents* contents =
+    WebContents* contents =
         chrome::AddSelectedTabWithURL(browser, url,
                                       content::PAGE_TRANSITION_TYPED);
     if (contents) {
       append_tab_response = GetIndexForNavigationController(
-          &contents->web_contents()->GetController(), browser);
+          &contents->GetController(), browser);
     }
   }
 
@@ -5461,12 +5461,12 @@ void TestingAutomationProvider::AppendTabJSON(DictionaryValue* args,
   }
   observer = new TabAppendedNotificationObserver(browser, this, reply_message,
                                                  true);
-  TabContents* contents =
+  WebContents* contents =
       chrome::AddSelectedTabWithURL(browser, GURL(url),
                                     content::PAGE_TRANSITION_TYPED);
   if (contents) {
     append_tab_response = GetIndexForNavigationController(
-        &contents->web_contents()->GetController(), browser);
+        &contents->GetController(), browser);
   }
 
   if (!contents || append_tab_response < 0) {

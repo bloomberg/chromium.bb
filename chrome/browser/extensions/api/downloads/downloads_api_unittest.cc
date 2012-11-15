@@ -519,12 +519,12 @@ class DownloadExtensionTest : public ExtensionApiTest {
   void SetUpExtensionFunction(UIThreadExtensionFunction* function) {
     if (extension_) {
       // Recreate the tab each time for insulation.
-      TabContents* tab = chrome::AddSelectedTabWithURL(
+      content::WebContents* tab = chrome::AddSelectedTabWithURL(
           current_browser(),
           extension_->GetResourceURL("empty.html"),
           content::PAGE_TRANSITION_LINK);
       function->set_extension(extension_);
-      function->SetRenderViewHost(tab->web_contents()->GetRenderViewHost());
+      function->SetRenderViewHost(tab->GetRenderViewHost());
     }
   }
 

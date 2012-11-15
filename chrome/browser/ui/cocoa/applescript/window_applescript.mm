@@ -175,12 +175,12 @@
 
   // Set how long it takes a tab to be created.
   base::TimeTicks newTabStartTime = base::TimeTicks::Now();
-  TabContents* contents = chrome::AddSelectedTabWithURL(
+  content::WebContents* contents = chrome::AddSelectedTabWithURL(
       browser_,
       GURL(chrome::kChromeUINewTabURL),
       content::PAGE_TRANSITION_TYPED);
-  contents->web_contents()->SetNewTabStartTime(newTabStartTime);
-  [aTab setWebContents:contents->web_contents()];
+  contents->SetNewTabStartTime(newTabStartTime);
+  [aTab setWebContents:contents];
 }
 
 - (void)insertInTabs:(TabAppleScript*)aTab atIndex:(int)index {

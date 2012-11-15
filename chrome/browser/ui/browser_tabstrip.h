@@ -44,9 +44,9 @@ bool IsTabStripEditable(Browser* browser);
 
 // Adds a selected tab with the specified URL and transition, returns the
 // created TabContents.
-TabContents* AddSelectedTabWithURL(Browser* browser,
-                                   const GURL& url,
-                                   content::PageTransition transition);
+content::WebContents* AddSelectedTabWithURL(Browser* browser,
+                                            const GURL& url,
+                                            content::PageTransition transition);
 
 // Adds |tab_contents| to |browser|'s tabstrip.
 void AddTab(Browser* browser,
