@@ -382,6 +382,14 @@ void NativeTextfieldViews::AppendText(const string16& text) {
   SchedulePaint();
 }
 
+void NativeTextfieldViews::ReplaceSelection(const string16& text) {
+  if (text.empty() && !model_->HasSelection())
+    return;
+  model_->ReplaceText(text);
+  OnCaretBoundsChanged();
+  SchedulePaint();
+}
+
 base::i18n::TextDirection NativeTextfieldViews::GetTextDirection() const {
   return GetRenderText()->GetTextDirection();
 }
@@ -636,25 +644,30 @@ void NativeTextfieldViews::ExecuteCommand(int command_id) {
 
   bool text_changed = false;
   OnBeforeUserAction();
-  switch (command_id) {
-    case IDS_APP_CUT:
-      text_changed = Cut();
-      break;
-    case IDS_APP_COPY:
-      Copy();
-      break;
-    case IDS_APP_PASTE:
-      text_changed = Paste();
-      break;
-    case IDS_APP_DELETE:
-      text_changed = model_->Delete();
-      break;
-    case IDS_APP_SELECT_ALL:
-      SelectAll(false);
-      break;
-    default:
-      textfield_->GetController()->ExecuteCommand(command_id);
-      break;
+  TextfieldController* controller = textfield_->GetController();
+  if (controller && controller->HandlesCommand(command_id)) {
+    controller->ExecuteCommand(command_id);
+  } else {
+    switch (command_id) {
+      case IDS_APP_CUT:
+        text_changed = Cut();
+        break;
+      case IDS_APP_COPY:
+        Copy();
+        break;
+      case IDS_APP_PASTE:
+        text_changed = Paste();
+        break;
+      case IDS_APP_DELETE:
+        text_changed = model_->Delete();
+        break;
+      case IDS_APP_SELECT_ALL:
+        SelectAll(false);
+        break;
+      default:
+        controller->ExecuteCommand(command_id);
+        break;
+    }
   }
 
   // The cursor must have changed if text changed during cut/paste/delete.

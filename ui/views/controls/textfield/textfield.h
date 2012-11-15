@@ -84,6 +84,9 @@ class VIEWS_EXPORT Textfield : public View {
   // Appends the given string to the previously-existing text in the field.
   void AppendText(const string16& text);
 
+  // Replaces the selected text with |text|.
+  void ReplaceSelection(const string16& text);
+
   // Returns the text direction.
   base::i18n::TextDirection GetTextDirection() const;
 

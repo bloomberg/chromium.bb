@@ -18,4 +18,8 @@ string16 TextfieldController::GetLabelForCommandId(int command_id) const {
   return string16();
 }
 
+bool TextfieldController::HandlesCommand(int command_id) const {
+  return false;
+}
+
 }  // namespace views

@@ -62,6 +62,13 @@ class VIEWS_EXPORT TextfieldController {
   // Returns the label string for the |coomand_id|.
   virtual string16 GetLabelForCommandId(int command_id) const;
 
+  // Returns whether the controller handles the specified command. This is used
+  // to handle a command the textfield would normally handle. For example, to
+  // have the controller handle |IDS_APP_PASTE| override and return true if
+  // |command_id| == |IDS_APP_PASTE|.
+  // This is only invoked if the command is enabled.
+  virtual bool HandlesCommand(int command_id) const;
+
   // Execute context menu command specified by |command_id|.
   virtual void ExecuteCommand(int command_id) {}
 

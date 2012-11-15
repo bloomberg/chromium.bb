@@ -45,6 +45,9 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   // text field.
   virtual void AppendText(const string16& text) = 0;
 
+  // Replaces the selected text with |text|.
+  virtual void ReplaceSelection(const string16& text) = 0;
+
   // Returns the text direction.
   virtual base::i18n::TextDirection GetTextDirection() const = 0;
 

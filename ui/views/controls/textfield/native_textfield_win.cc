@@ -217,6 +217,11 @@ void NativeTextfieldWin::AppendText(const string16& text) {
                 reinterpret_cast<LPARAM>(text.c_str()));
 }
 
+void NativeTextfieldWin::ReplaceSelection(const string16& text) {
+  // Currently not needed.
+  NOTIMPLEMENTED();
+}
+
 base::i18n::TextDirection NativeTextfieldWin::GetTextDirection() const {
   NOTIMPLEMENTED();
   return base::i18n::UNKNOWN_DIRECTION;

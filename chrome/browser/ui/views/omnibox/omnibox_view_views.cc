@@ -56,72 +56,6 @@ using content::WebContents;
 
 namespace {
 
-// Textfield for autocomplete that intercepts events that are necessary
-// for OmniboxViewViews.
-class AutocompleteTextfield : public views::Textfield {
- public:
-  AutocompleteTextfield(OmniboxViewViews* omnibox_view,
-                        LocationBarView* location_bar_view)
-      : views::Textfield(views::Textfield::STYLE_DEFAULT),
-        omnibox_view_(omnibox_view),
-        location_bar_view_(location_bar_view) {
-    DCHECK(omnibox_view_);
-    RemoveBorder();
-    set_id(VIEW_ID_OMNIBOX);
-  }
-
-  // views::View implementation
-  virtual void OnFocus() OVERRIDE {
-    views::Textfield::OnFocus();
-    omnibox_view_->HandleFocusIn();
-  }
-
-  virtual void OnBlur() OVERRIDE {
-    views::Textfield::OnBlur();
-    omnibox_view_->HandleFocusOut();
-  }
-
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE {
-    bool handled = views::Textfield::OnKeyPressed(event);
-    return omnibox_view_->HandleAfterKeyEvent(event, handled) || handled;
-  }
-
-  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE {
-    return omnibox_view_->HandleKeyReleaseEvent(event);
-  }
-
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
-    // Pass through the views::Textfield's return value; we don't need to
-    // override its behavior.
-    bool result = views::Textfield::OnMousePressed(event);
-    omnibox_view_->HandleMousePressEvent(event);
-    return result;
-  }
-
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE {
-    bool result = views::Textfield::OnMouseDragged(event);
-    omnibox_view_->HandleMouseDragEvent(event);
-    return result;
-  }
-
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
-    views::Textfield::OnMouseReleased(event);
-    omnibox_view_->HandleMouseReleaseEvent(event);
-  }
-
- protected:
-  // views::View implementation.
-  virtual void PaintChildren(gfx::Canvas* canvas) {
-    views::Textfield::PaintChildren(canvas);
-  }
-
- private:
-  OmniboxViewViews* omnibox_view_;
-  LocationBarView* location_bar_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteTextfield);
-};
-
 // Stores omnibox state for each tab.
 struct ViewState {
   explicit ViewState(const gfx::SelectionModel& selection_model)
@@ -198,6 +132,80 @@ void DoCopy(const string16& selected_text,
 }
 
 }  // namespace
+
+// Textfield for autocomplete that intercepts events that are necessary
+// for OmniboxViewViews.
+class OmniboxViewViews::AutocompleteTextfield : public views::Textfield {
+ public:
+  AutocompleteTextfield(OmniboxViewViews* omnibox_view,
+                        LocationBarView* location_bar_view)
+      : views::Textfield(views::Textfield::STYLE_DEFAULT),
+        omnibox_view_(omnibox_view),
+        location_bar_view_(location_bar_view) {
+    DCHECK(omnibox_view_);
+    RemoveBorder();
+    set_id(VIEW_ID_OMNIBOX);
+  }
+
+  // views::View implementation
+  virtual void OnFocus() OVERRIDE {
+    views::Textfield::OnFocus();
+    omnibox_view_->HandleFocusIn();
+  }
+
+  virtual void OnBlur() OVERRIDE {
+    views::Textfield::OnBlur();
+    omnibox_view_->HandleFocusOut();
+  }
+
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE {
+    // Use our own implementation of paste. See OnPaste() for details.
+    if (!read_only() && event.IsControlDown() &&
+        event.key_code() == ui::VKEY_V) {
+      omnibox_view_->OnBeforePossibleChange();
+      omnibox_view_->OnPaste();
+      omnibox_view_->OnAfterPossibleChange();
+      return true;
+    }
+    bool handled = views::Textfield::OnKeyPressed(event);
+    return omnibox_view_->HandleAfterKeyEvent(event, handled) || handled;
+  }
+
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE {
+    return omnibox_view_->HandleKeyReleaseEvent(event);
+  }
+
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+    // Pass through the views::Textfield's return value; we don't need to
+    // override its behavior.
+    bool result = views::Textfield::OnMousePressed(event);
+    omnibox_view_->HandleMousePressEvent(event);
+    return result;
+  }
+
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE {
+    bool result = views::Textfield::OnMouseDragged(event);
+    omnibox_view_->HandleMouseDragEvent(event);
+    return result;
+  }
+
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
+    views::Textfield::OnMouseReleased(event);
+    omnibox_view_->HandleMouseReleaseEvent(event);
+  }
+
+ protected:
+  // views::View implementation.
+  virtual void PaintChildren(gfx::Canvas* canvas) {
+    views::Textfield::PaintChildren(canvas);
+  }
+
+ private:
+  OmniboxViewViews* omnibox_view_;
+  LocationBarView* location_bar_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutocompleteTextfield);
+};
 
 // static
 const char OmniboxViewViews::kViewClassName[] = "BrowserOmniboxViewViews";
@@ -811,13 +819,26 @@ string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
   return string16();
 }
 
+bool OmniboxViewViews::HandlesCommand(int command_id) const {
+  // See description in OnPaste() for details on why we need to handle paste.
+  return command_id == IDS_APP_PASTE;
+}
+
 void OmniboxViewViews::ExecuteCommand(int command_id) {
-  if (command_id == IDS_PASTE_AND_GO)
-    model()->PasteAndGo(GetClipboardText());
-  else if (command_id == IDC_COPY_URL)
-    CopyURL();
-  else
-    command_updater()->ExecuteCommand(command_id);
+  switch (command_id) {
+    case IDS_APP_PASTE:
+      OnPaste();
+      break;
+    case IDS_PASTE_AND_GO:
+      model()->PasteAndGo(GetClipboardText());
+      break;
+    case IDC_COPY_URL:
+      CopyURL();
+      break;
+    default:
+      command_updater()->ExecuteCommand(command_id);
+      break;
+  }
 }
 
 #if defined(OS_CHROMEOS)
@@ -900,4 +921,18 @@ string16 OmniboxViewViews::GetSelectedText() const {
 void OmniboxViewViews::CopyURL() {
   const string16& text = toolbar_model()->GetText(false);
   DoCopy(text, true, toolbar_model()->GetURL(), text);
+}
+
+void OmniboxViewViews::OnPaste() {
+  // Replace the selection if we have something to paste.
+  const string16 text(GetClipboardText());
+  if (!text.empty()) {
+    // Record this paste, so we can do different behavior.
+    model()->on_paste();
+    // Force a Paste operation to trigger the text_changed code in
+    // OnAfterPossibleChange(), even if identical contents are pasted into the
+    // text box.
+    text_before_change_.clear();
+    textfield_->ReplaceSelection(text);
+  }
 }
