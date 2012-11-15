@@ -464,7 +464,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   // is complete.
   NSRect drawFrame = NSInsetRect(cellFrame, 1.5 * lineWidth, 1.5 * lineWidth);
   NSRect innerFrame = NSInsetRect(cellFrame, lineWidth, lineWidth);
-  const CGFloat radius = 3.5;
+  const CGFloat radius = 3;
 
   ButtonType type = [[(NSControl*)controlView cell] tag];
   switch (type) {

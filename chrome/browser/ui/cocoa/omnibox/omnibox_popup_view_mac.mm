@@ -32,7 +32,7 @@ const int kCellHeightAdjust = 6.0;
 
 // How to round off the popup's corners.  Goal is to match star and go
 // buttons.
-const CGFloat kPopupRoundingRadius = 3.5;
+const CGFloat kPopupRoundingRadius = 3;
 
 // Gap between the field and the popup.
 const CGFloat kPopupFieldGap = 2.0;
