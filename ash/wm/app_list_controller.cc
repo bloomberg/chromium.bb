@@ -11,6 +11,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_view.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/aura/focus_manager.h"
@@ -32,9 +33,6 @@ const int kAnimationDurationMs = 200;
 
 // Offset in pixels to animation away/towards the launcher.
 const int kAnimationOffset = 8;
-
-// Duration for snap back animation after over-scroll in milliseconds.
-const int kSnapBackAnimationDurationMs = 100;
 
 // The maximum shift in pixels when over-scroll happens.
 const int kMaxOverScrollShift = 48;
@@ -348,9 +346,11 @@ void AppListController::TransitionChanged() {
     return;
 
   views::Widget* widget = view_->GetWidget();
+  ui::LayerAnimator* widget_animator = GetLayer(widget)->GetAnimator();
   if (!pagination_model_->IsRevertingCurrentTransition()) {
-    // Update cached |view_bounds_| before the first over-scroll move.
-    if (!should_snap_back_)
+    // Update cached |view_bounds_| if it is the first over-scroll move and
+    // widget does not have running animations.
+    if (!should_snap_back_ && !widget_animator->is_animating())
       view_bounds_ = widget->GetWindowBoundsInScreen();
 
     const int current_page = pagination_model_->selected_page();
@@ -365,9 +365,9 @@ void AppListController::TransitionChanged() {
     should_snap_back_ = true;
   } else if (should_snap_back_) {
     should_snap_back_ = false;
-    ui::ScopedLayerAnimationSettings animation(GetLayer(widget)->GetAnimator());
-    animation.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kSnapBackAnimationDurationMs));
+    ui::ScopedLayerAnimationSettings animation(widget_animator);
+    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+        app_list::kOverscrollPageTransitionDurationMs));
     widget->SetBounds(view_bounds_);
   }
 }

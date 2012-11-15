@@ -8,4 +8,10 @@ namespace app_list {
 
 const SkColor kContentsBackgroundColor = SkColorSetRGB(0xF5, 0xF5, 0xF5);
 
+// Duration in milliseconds for page transition.
+const int kPageTransitionDurationInMs = 180;
+
+// Duration in milliseconds for over scroll page transition.
+const int kOverscrollPageTransitionDurationMs = 50;
+
 }  // namespace app_list

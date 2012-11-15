@@ -12,6 +12,9 @@ namespace app_list {
 
 APP_LIST_EXPORT extern const SkColor kContentsBackgroundColor;
 
+APP_LIST_EXPORT extern const int kPageTransitionDurationInMs;
+APP_LIST_EXPORT extern const int kOverscrollPageTransitionDurationMs;
+
 }  // namespace app_list
 
 #endif  // UI_APP_LIST_APP_LIST_CONSTANTS_H_

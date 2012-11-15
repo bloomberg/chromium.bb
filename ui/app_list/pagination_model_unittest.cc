@@ -106,7 +106,7 @@ class PaginationModelTest : public testing::Test {
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
     pagination_.SetTotalPages(5);
-    pagination_.SetTransitionDuration(1);
+    pagination_.SetTransitionDurations(1, 1);
     observer_.set_model(&pagination_);
     pagination_.AddObserver(&observer_);
   }

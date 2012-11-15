@@ -288,7 +288,7 @@ TEST_F(AppsGridViewTest, MouseDrag) {
 
 TEST_F(AppsGridViewTest, MouseDragFlipPage) {
   test_api_->SetPageFlipDelay(10);
-  pagination_model_->SetTransitionDuration(10);
+  pagination_model_->SetTransitionDurations(10, 10);
 
   PageFlipWaiter page_flip_waiter(&message_loop_,
                                   pagination_model_.get());

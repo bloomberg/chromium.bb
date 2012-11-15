@@ -16,7 +16,8 @@ PaginationModel::PaginationModel()
       selected_page_(-1),
       transition_(-1, 0),
       pending_selected_page_(-1),
-      transition_duration_ms_(0) {
+      transition_duration_ms_(0),
+      overscroll_transition_duration_ms_(0) {
 }
 
 PaginationModel::~PaginationModel() {
@@ -44,11 +45,11 @@ void PaginationModel::SelectPage(int page, bool animate) {
         return;
 
       // Creates an animation if there is not one.
-      StartTranstionAnimation(page);
+      StartTransitionAnimation(Transition(page, 0));
       return;
     } else {
       const bool showing = transition_animation_->IsShowing();
-      const int from_page = showing ? selected_page_ :  transition_.target_page;
+      const int from_page = showing ? selected_page_ : transition_.target_page;
       const int to_page = showing ? transition_.target_page : selected_page_;
 
       if (from_page == page) {
@@ -95,8 +96,10 @@ void PaginationModel::SetTransition(const Transition& transition) {
   NotifyTransitionChanged();
 }
 
-void PaginationModel::SetTransitionDuration(int duration_ms) {
+void PaginationModel::SetTransitionDurations(int duration_ms,
+                                             int overscroll_duration_ms) {
   transition_duration_ms_ = duration_ms;
+  overscroll_transition_duration_ms_ = overscroll_duration_ms;
 }
 
 void PaginationModel::StartScroll() {
@@ -134,11 +137,8 @@ void PaginationModel::EndScroll(bool cancel) {
   if (!has_transition())
     return;
 
-  CreateTransitionAnimation();
-  transition_animation_->Reset(transition_.progress);
+  StartTransitionAnimation(transition_);
 
-  // Always call Show to ensure animation will run.
-  transition_animation_->Show();
   if (cancel)
     transition_animation_->Hide();
 }
@@ -190,19 +190,21 @@ int PaginationModel::CalculateTargetPage(int delta) const {
   return std::max(start_page, std::min(end_page, target_page));
 }
 
-void PaginationModel::StartTranstionAnimation(int target_page) {
-  DCHECK(selected_page_ != target_page);
+void PaginationModel::StartTransitionAnimation(const Transition& transition) {
+  DCHECK(selected_page_ != transition.target_page);
 
-  SetTransition(Transition(target_page, 0));
-  CreateTransitionAnimation();
-  transition_animation_->Show();
-}
+  SetTransition(transition);
 
-void PaginationModel::CreateTransitionAnimation() {
   transition_animation_.reset(new ui::SlideAnimation(this));
   transition_animation_->SetTweenType(ui::Tween::LINEAR);
-  if (transition_duration_ms_)
-    transition_animation_->SetSlideDuration(transition_duration_ms_);
+  transition_animation_->Reset(transition_.progress);
+
+  const int duration = is_valid_page(transition_.target_page) ?
+      transition_duration_ms_ : overscroll_transition_duration_ms_;
+  if (duration)
+    transition_animation_->SetSlideDuration(duration);
+
+  transition_animation_->Show();
 }
 
 void PaginationModel::ResetTransitionAnimation() {
@@ -223,10 +225,8 @@ void PaginationModel::AnimationEnded(const ui::Animation* animation) {
 
   if (transition_animation_->GetCurrentValue() == 1) {
     // Showing animation ends.
-    int target_page = transition_.target_page;
-
-    // If target page is not in valid range, reverse the animation.
-    if (target_page < 0 || target_page >= total_pages_) {
+    if (!is_valid_page(transition_.target_page)) {
+      // If target page is not in valid range, reverse the animation.
       transition_animation_->Hide();
       return;
     }

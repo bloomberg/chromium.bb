@@ -59,7 +59,7 @@ class APP_LIST_EXPORT PaginationModel : public ui::AnimationDelegate {
   void SelectPageRelative(int delta, bool animate);
 
   void SetTransition(const Transition& transition);
-  void SetTransitionDuration(int duration_ms);
+  void SetTransitionDurations(int duration_ms, int overscroll_duration_ms);
 
   // Starts a scroll transition. If there is a running transition animation,
   // cancels it but keeps the transition info.
@@ -108,8 +108,7 @@ class APP_LIST_EXPORT PaginationModel : public ui::AnimationDelegate {
   // -1 or |total_pages_| is returned to indicate the situation.
   int CalculateTargetPage(int delta) const;
 
-  void StartTranstionAnimation(int target_page);
-  void CreateTransitionAnimation();
+  void StartTransitionAnimation(const Transition& transition);
   void ResetTransitionAnimation();
 
   // ui::AnimationDelegate overrides:
@@ -128,6 +127,7 @@ class APP_LIST_EXPORT PaginationModel : public ui::AnimationDelegate {
 
   scoped_ptr<ui::SlideAnimation> transition_animation_;
   int transition_duration_ms_;  // Transition duration in millisecond.
+  int overscroll_transition_duration_ms_;
 
   ObserverList<PaginationModelObserver> observers_;
 

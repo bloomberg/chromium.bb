@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_view.h"
 #include "ui/app_list/apps_grid_view.h"
 #include "ui/app_list/pagination_model.h"
@@ -32,7 +33,6 @@ const int kMinScrollToSwitchPage = 20;
 const int kMinHorizVelocityToSwitchPage = 800;
 
 const double kFinishTransitionThreshold = 0.33;
-const int kTransitionAnimationDurationInMs = 180;
 
 // Helpers to get certain child view from |model|.
 AppsGridView* GetAppsGridView(views::ViewModel* model) {
@@ -53,7 +53,9 @@ ContentsView::ContentsView(AppListView* app_list_view,
       view_model_(new views::ViewModel),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           bounds_animator_(new views::BoundsAnimator(this))) {
-  pagination_model_->SetTransitionDuration(kTransitionAnimationDurationInMs);
+  pagination_model_->SetTransitionDurations(
+      kPageTransitionDurationInMs,
+      kOverscrollPageTransitionDurationMs);
 
   AppsGridView* apps_grid_view = new AppsGridView(app_list_view,
                                                   pagination_model);
