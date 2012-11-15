@@ -97,6 +97,10 @@ struct SYNC_EXPORT SyncStatus {
 
   // The unique identifer for this client.
   std::string unique_id;
+
+  // Counters grouped by model type
+  std::vector<int> num_entries_by_type;
+  std::vector<int> num_to_delete_entries_by_type;
 };
 
 }  // namespace syncer

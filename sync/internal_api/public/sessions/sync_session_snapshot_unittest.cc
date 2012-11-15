@@ -64,9 +64,11 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
                                source,
                                false,
                                0,
-                               base::Time::Now());
+                               base::Time::Now(),
+                               std::vector<int>(MODEL_TYPE_COUNT,0),
+                               std::vector<int>(MODEL_TYPE_COUNT, 0));
   scoped_ptr<DictionaryValue> value(snapshot.ToValue());
-  EXPECT_EQ(18u, value->size());
+  EXPECT_EQ(19u, value->size());
   ExpectDictIntegerValue(model_neutral.num_successful_commits,
                          *value, "numSuccessfulCommits");
   ExpectDictIntegerValue(model_neutral.num_successful_bookmark_commits,

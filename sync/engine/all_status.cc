@@ -58,6 +58,10 @@ SyncStatus AllStatus::CalcSyncing(const SyncEngineEvent &event) const {
   status.sync_protocol_error =
       snapshot.model_neutral_state().sync_protocol_error;
 
+  status.num_entries_by_type = snapshot.num_entries_by_type();
+  status.num_to_delete_entries_by_type =
+      snapshot.num_to_delete_entries_by_type();
+
   // Accumulate update count only once per session to avoid double-counting.
   if (event.what_happened == SyncEngineEvent::SYNC_CYCLE_ENDED) {
     status.updates_received +=

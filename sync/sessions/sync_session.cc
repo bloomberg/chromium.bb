@@ -162,7 +162,12 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
     dir->GetDownloadProgressAsString(type, &download_progress_markers[type]);
   }
 
-  return SyncSessionSnapshot(
+  std::vector<int> num_entries_by_type(MODEL_TYPE_COUNT, 0);
+  std::vector<int> num_to_delete_entries_by_type(MODEL_TYPE_COUNT, 0);
+  dir->CollectMetaHandleCounts(&num_entries_by_type,
+                               &num_to_delete_entries_by_type);
+
+  SyncSessionSnapshot snapshot(
       status_controller_->model_neutral_state(),
       is_share_useable,
       initial_sync_ended,
@@ -174,7 +179,11 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       source_,
       context_->notifications_enabled(),
       dir->GetEntriesCount(),
-      status_controller_->sync_start_time());
+      status_controller_->sync_start_time(),
+      num_entries_by_type,
+      num_to_delete_entries_by_type);
+
+  return snapshot;
 }
 
 void SyncSession::SendEventNotification(SyncEngineEvent::EventCause cause) {

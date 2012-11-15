@@ -1518,10 +1518,10 @@ void ProfileSyncService::GetModelSafeRoutingInfo(
 }
 
 Value* ProfileSyncService::GetTypeStatusMap() const {
-  ListValue* result = new ListValue();
+  scoped_ptr<ListValue> result(new ListValue());
 
   if (!backend_.get() || !backend_initialized_) {
-    return result;
+    return result.release();
   }
 
   std::vector<syncer::SyncError> errors =
@@ -1547,13 +1547,21 @@ Value* ProfileSyncService::GetTypeStatusMap() const {
 
   SyncBackendHost::Status detailed_status = backend_->GetDetailedStatus();
   ModelTypeSet &throttled_types(detailed_status.throttled_types);
-
   ModelTypeSet registered = GetRegisteredDataTypes();
+  scoped_ptr<DictionaryValue> type_status_header(new DictionaryValue());
+
+  type_status_header->SetString("name", "Model Type");
+  type_status_header->SetString("status", "header");
+  type_status_header->SetString("value", "Group Type");
+  type_status_header->SetString("num_entries", "Total Entries");
+  type_status_header->SetString("num_live", "Live Entries");
+  result->Append(type_status_header.release());
+
+  scoped_ptr<DictionaryValue> type_status;
   for (ModelTypeSet::Iterator it = registered.First(); it.Good(); it.Inc()) {
     ModelType type = it.Get();
-    DictionaryValue* type_status = new DictionaryValue();
 
-    result->Append(type_status);
+    type_status.reset(new DictionaryValue());
     type_status->SetString("name", ModelTypeToString(type));
 
     if (error_map.find(type) != error_map.end()) {
@@ -1580,8 +1588,16 @@ Value* ProfileSyncService::GetTypeStatusMap() const {
       type_status->SetString("status", "warning");
       type_status->SetString("value", "Disabled by User");
     }
+
+    int live_count = detailed_status.num_entries_by_type[type] -
+        detailed_status.num_to_delete_entries_by_type[type];
+    type_status->SetInteger("num_entries",
+                            detailed_status.num_entries_by_type[type]);
+    type_status->SetInteger("num_live", live_count);
+
+    result->Append(type_status.release());
   }
-  return result;
+  return result.release();
 }
 
 void ProfileSyncService::ActivateDataType(

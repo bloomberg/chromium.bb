@@ -86,7 +86,9 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
                                          sessions::SyncSourceInfo(),
                                          false,
                                          0,
-                                         base::Time::Now());
+                                         base::Time::Now(),
+                                         std::vector<int>(MODEL_TYPE_COUNT, 0),
+                                         std::vector<int>(MODEL_TYPE_COUNT, 0));
   DictionaryValue expected_details;
   expected_details.Set("snapshot", snapshot.ToValue());
 

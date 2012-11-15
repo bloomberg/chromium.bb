@@ -824,6 +824,22 @@ void Directory::GetUnappliedUpdateMetaHandles(
   }
 }
 
+void Directory::CollectMetaHandleCounts(
+    std::vector<int>* num_entries_by_type,
+    std::vector<int>* num_to_delete_entries_by_type) {
+  syncable::ReadTransaction trans(FROM_HERE, this);
+  ScopedKernelLock lock(this);
+
+  MetahandlesIndex::iterator it = kernel_->metahandles_index->begin();
+  for( ; it != kernel_->metahandles_index->end(); ++it) {
+    EntryKernel* entry = *it;
+    const ModelType type = GetModelTypeFromSpecifics(entry->ref(SPECIFICS));
+    (*num_entries_by_type)[type]++;
+    if(entry->ref(IS_DEL))
+      (*num_to_delete_entries_by_type)[type]++;
+  }
+}
+
 bool Directory::CheckInvariantsOnTransactionClose(
     syncable::BaseTransaction* trans,
     const EntryKernelMutationMap& mutations) {

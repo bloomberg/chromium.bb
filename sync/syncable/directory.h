@@ -423,6 +423,13 @@ class Directory {
                                      FullModelTypeSet server_types,
                                      std::vector<int64>* result);
 
+  // Get metahandle counts for various criteria to show on the
+  // about:sync page. The information is computed on the fly
+  // each time. If this results in a significant performance hit,
+  // additional data structures can be added to cache results.
+  void CollectMetaHandleCounts(std::vector<int>* num_entries_by_type,
+                               std::vector<int>* num_to_delete_entries_by_type);
+
   // Sets the level of invariant checking performed after transactions.
   void SetInvariantCheckLevel(InvariantCheckLevel check_level);
 
