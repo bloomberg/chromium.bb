@@ -10,7 +10,7 @@ import sys
 import types
 import unittest
 
-sys.path.append(os.path.join(
+sys.path.insert(0, os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir, 'pylib'))
 
 from chromedriver_launcher import ChromeDriverLauncher

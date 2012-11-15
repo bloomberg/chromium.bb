@@ -13,6 +13,17 @@ import sys
 import tempfile
 
 
+def GetPlatformName():
+  """Return a string to be used in paths for the platform."""
+  if IsWindows():
+    return 'win'
+  if IsMac():
+    return 'mac'
+  if IsLinux():
+    return 'linux'
+  raise NotImplementedError('Unknown platform "%s".' % sys.platform)
+
+
 def IsWindows():
   return sys.platform == 'cygwin' or sys.platform.startswith('win')
 

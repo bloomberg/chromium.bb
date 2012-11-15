@@ -16,7 +16,7 @@ import unittest
 import test_paths
 
 sys.path += [test_paths.PYTHON_BINDINGS]
-sys.path.append(os.path.join(
+sys.path.insert(0, os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir, 'pylib'))
 
 from chromedriver_test import ChromeDriverTest

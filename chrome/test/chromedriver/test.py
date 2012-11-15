@@ -27,4 +27,5 @@ if __name__ == '__main__':
   _CHROMEDRIVER_LIB = os.path.abspath(sys.argv[1])
   all_tests_suite = unittest.defaultTestLoader.loadTestsFromModule(
       sys.modules[__name__])
-  unittest.TextTestRunner().run(all_tests_suite)
+  result = unittest.TextTestRunner().run(all_tests_suite)
+  sys.exit(len(result.failures) + len(result.errors))
