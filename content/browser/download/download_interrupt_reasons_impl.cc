@@ -8,66 +8,65 @@
 
 namespace content {
 
-#define FILE_ERROR_TO_INTERRUPT_REASON(n, d)  \
-    case net::ERR_##n: return DOWNLOAD_INTERRUPT_REASON_FILE_##d;
-
-#define NET_ERROR_TO_INTERRUPT_REASON(n, d)  \
-    case net::ERR_##n: return DOWNLOAD_INTERRUPT_REASON_NETWORK_##d;
-
-#define SERVER_ERROR_TO_INTERRUPT_REASON(n, d)  \
-    case net::ERR_##n: return DOWNLOAD_INTERRUPT_REASON_SERVER_##d;
-
 DownloadInterruptReason ConvertNetErrorToInterruptReason(
     net::Error net_error, DownloadInterruptSource source) {
   switch (net_error) {
+    case net::OK:
+      return DOWNLOAD_INTERRUPT_REASON_NONE;
+
     // File errors.
-    case net::OK: return DOWNLOAD_INTERRUPT_REASON_NONE;
 
     // The file is too large.
-    FILE_ERROR_TO_INTERRUPT_REASON(FILE_TOO_BIG, TOO_LARGE)
+    case net::ERR_FILE_TOO_BIG:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE;
 
     // Permission to access a resource, other than the network, was denied.
-    FILE_ERROR_TO_INTERRUPT_REASON(ACCESS_DENIED, ACCESS_DENIED)
+    case net::ERR_ACCESS_DENIED:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
 
     // There were not enough resources to complete the operation.
-    FILE_ERROR_TO_INTERRUPT_REASON(INSUFFICIENT_RESOURCES, TRANSIENT_ERROR)
+    case net::ERR_INSUFFICIENT_RESOURCES:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR;
 
     // Memory allocation failed.
-    FILE_ERROR_TO_INTERRUPT_REASON(OUT_OF_MEMORY, TRANSIENT_ERROR)
+    case net::ERR_OUT_OF_MEMORY:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR;
 
     // The path or file name is too long.
-    FILE_ERROR_TO_INTERRUPT_REASON(FILE_PATH_TOO_LONG, NAME_TOO_LONG)
+    case net::ERR_FILE_PATH_TOO_LONG:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG;
 
     // Not enough room left on the disk.
-    FILE_ERROR_TO_INTERRUPT_REASON(FILE_NO_SPACE, NO_SPACE)
+    case net::ERR_FILE_NO_SPACE:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE;
 
     // The file has a virus.
-    FILE_ERROR_TO_INTERRUPT_REASON(FILE_VIRUS_INFECTED, VIRUS_INFECTED)
+    case net::ERR_FILE_VIRUS_INFECTED:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED;
 
     // The file was blocked by local policy.
-    FILE_ERROR_TO_INTERRUPT_REASON(BLOCKED_BY_CLIENT, BLOCKED)
+    case net::ERR_BLOCKED_BY_CLIENT:
+      return DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED;
 
     // Network errors.
 
     // The network operation timed out.
-    NET_ERROR_TO_INTERRUPT_REASON(TIMED_OUT, TIMEOUT)
+    case net::ERR_TIMED_OUT:
+      return DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT;
 
     // The network connection has been lost.
-    NET_ERROR_TO_INTERRUPT_REASON(INTERNET_DISCONNECTED, DISCONNECTED)
+    case net::ERR_INTERNET_DISCONNECTED:
+      return DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED;
 
     // The server has gone down.
-    NET_ERROR_TO_INTERRUPT_REASON(CONNECTION_FAILED, SERVER_DOWN)
-
-    // The server has terminated the connection.
-//    NET_ERROR_TO_INTERRUPT_REASON(CONNECTION_RESET, SERVER_DISCONNECTED)
-
-    // The server has aborted the connection.
-//    NET_ERROR_TO_INTERRUPT_REASON(CONNECTION_ABORTED, SERVER_ABORTED)
+    case net::ERR_CONNECTION_FAILED:
+      return DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN;
 
     // Server responses.
 
     // The server does not support range requests.
-    SERVER_ERROR_TO_INTERRUPT_REASON(REQUEST_RANGE_NOT_SATISFIABLE, NO_RANGE)
+    case net::ERR_REQUEST_RANGE_NOT_SATISFIABLE:
+      return DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
 
     default: break;
   }
@@ -88,10 +87,6 @@ DownloadInterruptReason ConvertNetErrorToInterruptReason(
 
   return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
-
-#undef FILE_ERROR_TO_INTERRUPT_REASON
-#undef NET_ERROR_TO_INTERRUPT_REASON
-#undef SERVER_ERROR_TO_INTERRUPT_REASON
 
 std::string InterruptReasonDebugString(DownloadInterruptReason error) {
 
