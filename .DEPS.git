@@ -36,7 +36,7 @@ deps = {
     'src/testing/gtest':
         'https://chromium.googlesource.com/external/googletest.git@a92a6f792395e1ad462472d474ab0c76949813fa',
     'src/third_party/WebKit':
-        'https://chromium.googlesource.com/external/WebKit_trimmed.git + Var('webkit_rev'),
+        'https://chromium.googlesource.com/external/WebKit_trimmed.git' + Var('webkit_rev'),
     'src/third_party/angle':
         'https://chromium.googlesource.com/external/angleproject.git@a307fde190e616daeaf1b612d5ebb22e11b70480',
     'src/third_party/bidichecker':
