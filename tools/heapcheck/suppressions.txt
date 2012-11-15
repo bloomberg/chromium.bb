@@ -1655,3 +1655,18 @@
    fun:DeviceStatusCollector
    fun:TestingDeviceStatusCollector
 }
+{
+   bug_161294a
+   Heapcheck:Leak
+   ...
+   fun:::DiskMountManagerTest::AddTestDisk
+   fun:::DiskMountManagerTest::InitDisksAndMountPoints
+   fun:::DiskMountManagerTest::SetUp
+}
+{
+   bug_161294b
+   Heapcheck:Leak
+   fun:std::basic_string::_Rep::_S_create
+   fun:chromeos::disks::DiskMountManager::Disk::clear_mount_path
+   fun:chromeos::disks::::DiskMountManagerImpl::OnUnmountPath
+}
