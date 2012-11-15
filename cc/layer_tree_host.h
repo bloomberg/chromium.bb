@@ -63,6 +63,7 @@ struct CC_EXPORT LayerTreeSettings {
     bool showScreenSpaceRects;
     bool showReplicaScreenSpaceRects;
     bool showOccludingRects;
+    bool showNonOccludingRects;
     bool renderVSyncEnabled;
     bool perTilePaintingEnabled;
     bool partialSwapEnabled;
@@ -77,7 +78,7 @@ struct CC_EXPORT LayerTreeSettings {
     gfx::Size minimumOcclusionTrackingSize;
 
     bool showDebugInfo() const { return showPlatformLayerTree || showDebugRects(); }
-    bool showDebugRects() const { return showPaintRects || showPropertyChangedRects || showSurfaceDamageRects || showScreenSpaceRects || showReplicaScreenSpaceRects || showOccludingRects; }
+    bool showDebugRects() const { return showPaintRects || showPropertyChangedRects || showSurfaceDamageRects || showScreenSpaceRects || showReplicaScreenSpaceRects || showOccludingRects || showNonOccludingRects; }
 };
 
 // Provides information on an Impl's rendering capabilities back to the LayerTreeHost

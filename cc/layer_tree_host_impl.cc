@@ -389,6 +389,8 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 
     if (settings().showOccludingRects)
         occlusionTracker.setOccludingScreenSpaceRectsContainer(&frame.occludingScreenSpaceRects);
+    if (settings().showNonOccludingRects)
+        occlusionTracker.setNonOccludingScreenSpaceRectsContainer(&frame.nonOccludingScreenSpaceRects);
 
     // Add quads to the Render passes in FrontToBack order to allow for testing occlusion and performing culling during the tree walk.
     typedef LayerIterator<LayerImpl, std::vector<LayerImpl*>, RenderSurfaceImpl, LayerIteratorActions::FrontToBack> LayerIteratorType;
@@ -693,7 +695,7 @@ void LayerTreeHostImpl::drawLayers(const FrameData& frame)
     m_fpsCounter->markBeginningOfFrame(base::TimeTicks::Now());
 
     if (m_settings.showDebugRects())
-        m_debugRectHistory->saveDebugRectsForCurrentFrame(m_rootLayerImpl.get(), *frame.renderSurfaceLayerList, frame.occludingScreenSpaceRects, settings());
+        m_debugRectHistory->saveDebugRectsForCurrentFrame(m_rootLayerImpl.get(), *frame.renderSurfaceLayerList, frame.occludingScreenSpaceRects, frame.nonOccludingScreenSpaceRects, settings());
 
     // Because the contents of the HUD depend on everything else in the frame, the contents
     // of its texture are updated as the last thing before the frame is drawn.

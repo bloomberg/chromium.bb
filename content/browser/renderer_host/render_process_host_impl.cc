@@ -866,6 +866,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kShowSurfaceDamageRects,
     cc::switches::kShowScreenSpaceRects,
     cc::switches::kShowReplicaScreenSpaceRects,
+    cc::switches::kShowNonOccludingRects,
     cc::switches::kShowOccludingRects,
     cc::switches::kTraceOverdraw,
   };

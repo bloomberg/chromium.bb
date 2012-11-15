@@ -23,6 +23,7 @@ OcclusionTrackerBase<LayerType, RenderSurfaceType>::OcclusionTrackerBase(gfx::Re
     : m_rootTargetRect(rootTargetRect)
     , m_overdrawMetrics(OverdrawMetrics::create(recordMetricsForFrame))
     , m_occludingScreenSpaceRects(0)
+    , m_nonOccludingScreenSpaceRects(0)
 {
 }
 
@@ -248,7 +249,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::leaveToRenderTarget(con
 
 // FIXME: Remove usePaintTracking when paint tracking is on for paint culling.
 template<typename LayerType>
-static inline void addOcclusionBehindLayer(Region& region, const LayerType* layer, const WebTransformationMatrix& transform, const Region& opaqueContents, const gfx::Rect& clipRectInTarget, const gfx::Size& minimumTrackingSize, std::vector<gfx::Rect>* occludingScreenSpaceRects)
+static inline void addOcclusionBehindLayer(Region& region, const LayerType* layer, const WebTransformationMatrix& transform, const Region& opaqueContents, const gfx::Rect& clipRectInTarget, const gfx::Size& minimumTrackingSize, std::vector<gfx::Rect>* occludingScreenSpaceRects, std::vector<gfx::Rect>* nonOccludingScreenSpaceRects)
 {
     DCHECK(layer->visibleContentRect().Contains(opaqueContents.bounds()));
 
@@ -266,6 +267,18 @@ static inline void addOcclusionBehindLayer(Region& region, const LayerType* laye
             if (occludingScreenSpaceRects)
                 occludingScreenSpaceRects->push_back(transformedRect);
             region.Union(transformedRect);
+        }
+    }
+
+    if (nonOccludingScreenSpaceRects) {
+        Region nonOpaqueContents = SubtractRegions(gfx::Rect(layer->contentBounds()), opaqueContents);
+        for (Region::Iterator nonOpaqueContentRects(nonOpaqueContents); nonOpaqueContentRects.has_rect(); nonOpaqueContentRects.next()) {
+            // We've already checked for clipping in the mapQuad call above, these calls should not clip anything further.
+            gfx::Rect transformedRect = gfx::ToEnclosedRect(MathUtil::mapClippedRect(transform, gfx::RectF(nonOpaqueContentRects.rect())));
+            transformedRect.Intersect(clipRectInTarget);
+            if (transformedRect.IsEmpty())
+                continue;
+            nonOccludingScreenSpaceRects->push_back(transformedRect);
         }
     }
 }
@@ -290,7 +303,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::markOccludedBehindLayer
 
     gfx::Rect clipRectInTarget = layerClipRectInTarget(layer);
     if (layerTransformsToTargetKnown(layer))
-        addOcclusionBehindLayer<LayerType>(m_stack.back().occlusionInTarget, layer, layer->drawTransform(), opaqueContents, clipRectInTarget, m_minimumTrackingSize, 0);
+        addOcclusionBehindLayer<LayerType>(m_stack.back().occlusionInTarget, layer, layer->drawTransform(), opaqueContents, clipRectInTarget, m_minimumTrackingSize, 0, 0);
 
     // We must clip the occlusion within the layer's clipRectInTarget within screen space as well. If the clip rect can't be moved to screen space and
     // remain rectilinear, then we don't add any occlusion in screen space.
@@ -303,7 +316,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::markOccludedBehindLayer
         if (clipped || !clipQuadInScreen.IsRectilinear())
             return;
         gfx::Rect clipRectInScreen = gfx::IntersectRects(m_rootTargetRect, gfx::ToEnclosedRect(clipQuadInScreen.BoundingBox()));
-        addOcclusionBehindLayer<LayerType>(m_stack.back().occlusionInScreen, layer, layer->screenSpaceTransform(), opaqueContents, clipRectInScreen, m_minimumTrackingSize, m_occludingScreenSpaceRects);
+        addOcclusionBehindLayer<LayerType>(m_stack.back().occlusionInScreen, layer, layer->screenSpaceTransform(), opaqueContents, clipRectInScreen, m_minimumTrackingSize, m_occludingScreenSpaceRects, m_nonOccludingScreenSpaceRects);
     }
 }
 

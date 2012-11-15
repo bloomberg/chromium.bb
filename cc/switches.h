@@ -27,6 +27,7 @@ CC_EXPORT extern const char kShowSurfaceDamageRects[];
 CC_EXPORT extern const char kShowScreenSpaceRects[];
 CC_EXPORT extern const char kShowReplicaScreenSpaceRects[];
 CC_EXPORT extern const char kShowOccludingRects[];
+CC_EXPORT extern const char kShowNonOccludingRects[];
 CC_EXPORT extern const char kTraceOverdraw[];
 
 }  // namespace switches

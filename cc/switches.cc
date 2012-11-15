@@ -44,6 +44,10 @@ const char kShowReplicaScreenSpaceRects[] = "show-replica-screenspace-rects";
 // considered occluding the pixels behind it.
 const char kShowOccludingRects[] = "show-occluding-rects";
 
+// Show rects in the HUD wherever something is not known to be drawn opaque and
+// is not considered to be occluding the pixels behind it.
+const char kShowNonOccludingRects[] = "show-nonoccluding-rects";
+
 // Show metrics about overdraw in about:tracing recordings, such as the number
 // of pixels culled, and the number of pixels drawn, for each frame.
 const char kTraceOverdraw[] = "trace-overdraw";

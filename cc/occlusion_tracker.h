@@ -53,6 +53,7 @@ public:
 
     // The following is used for visualization purposes. 
     void setOccludingScreenSpaceRectsContainer(std::vector<gfx::Rect>* rects) { m_occludingScreenSpaceRects = rects; }
+    void setNonOccludingScreenSpaceRectsContainer(std::vector<gfx::Rect>* rects) { m_nonOccludingScreenSpaceRects = rects; }
 
 protected:
     struct StackObject {
@@ -96,6 +97,7 @@ private:
 
     // This is used for visualizing the occlusion tracking process.
     std::vector<gfx::Rect>* m_occludingScreenSpaceRects;
+    std::vector<gfx::Rect>* m_nonOccludingScreenSpaceRects;
 
     DISALLOW_COPY_AND_ASSIGN(OcclusionTrackerBase);
 };

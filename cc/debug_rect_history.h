@@ -35,7 +35,10 @@ struct LayerTreeSettings;
 //
 // - Occluding rects: these are the regions that contribute to the occluded region.
 //
-enum DebugRectType { PaintRectType, PropertyChangedRectType, SurfaceDamageRectType, ScreenSpaceRectType, ReplicaScreenSpaceRectType, OccludingRectType };
+// - Non-Occluding rects: these are the regions of composited layers that do not
+//   contribute to the occluded region.
+//
+enum DebugRectType { PaintRectType, PropertyChangedRectType, SurfaceDamageRectType, ScreenSpaceRectType, ReplicaScreenSpaceRectType, OccludingRectType, NonOccludingRectType };
 
 struct DebugRect {
     DebugRect(DebugRectType newType, gfx::RectF newRect)
@@ -56,7 +59,7 @@ public:
     ~DebugRectHistory();
 
     // Note: Saving debug rects must happen before layers' change tracking is reset.
-    void saveDebugRectsForCurrentFrame(LayerImpl* rootLayer, const std::vector<LayerImpl*>& renderSurfaceLayerList, const std::vector<gfx::Rect>& occludingScreenSpaceRects, const LayerTreeSettings&);
+    void saveDebugRectsForCurrentFrame(LayerImpl* rootLayer, const std::vector<LayerImpl*>& renderSurfaceLayerList, const std::vector<gfx::Rect>& occludingScreenSpaceRects, const std::vector<gfx::Rect>& nonOccludingScreenSpaceRects, const LayerTreeSettings&);
 
     const std::vector<DebugRect>& debugRects() { return m_debugRects; }
 
@@ -68,6 +71,7 @@ private:
     void saveSurfaceDamageRects(const std::vector<LayerImpl* >& renderSurfaceLayerList);
     void saveScreenSpaceRects(const std::vector<LayerImpl* >& renderSurfaceLayerList);
     void saveOccludingRects(const std::vector<gfx::Rect>& occludingScreenSpaceRects);
+    void saveNonOccludingRects(const std::vector<gfx::Rect>& nonOccludingScreenSpaceRects);
 
     std::vector<DebugRect> m_debugRects;
 

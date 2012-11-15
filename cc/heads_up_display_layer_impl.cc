@@ -345,7 +345,12 @@ void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory*
             fillColor = SkColorSetARGB(10, 100, 0, 200);
             break;
         case OccludingRectType:
-            // Occluding rects in a reddish color.
+            // Occluding rects in pink.
+            strokeColor = SkColorSetARGB(255, 245, 136, 255);
+            fillColor = SkColorSetARGB(10, 245, 136, 255);
+            break;
+        case NonOccludingRectType:
+            // Non-Occluding rects in a reddish color.
             strokeColor = SkColorSetARGB(255, 200, 0, 100);
             fillColor = SkColorSetARGB(10, 200, 0, 100);
             break;

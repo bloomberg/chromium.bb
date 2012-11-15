@@ -46,6 +46,7 @@ LayerTreeSettings::LayerTreeSettings()
     , showScreenSpaceRects(false)
     , showReplicaScreenSpaceRects(false)
     , showOccludingRects(false)
+    , showNonOccludingRects(false)
     , renderVSyncEnabled(true)
     , perTilePaintingEnabled(false)
     , partialSwapEnabled(false)
@@ -65,6 +66,7 @@ LayerTreeSettings::LayerTreeSettings()
     showScreenSpaceRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowScreenSpaceRects);
     showReplicaScreenSpaceRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowReplicaScreenSpaceRects);
     showOccludingRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowOccludingRects);
+    showNonOccludingRects = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kShowNonOccludingRects);
     partialSwapEnabled = CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePartialSwap);
     backgroundColorInsteadOfCheckerboard = CommandLine::ForCurrentProcess()->HasSwitch(switches::kBackgroundColorInsteadOfCheckerboard);
     showOverdrawInTracing = CommandLine::ForCurrentProcess()->HasSwitch(switches::kTraceOverdraw);

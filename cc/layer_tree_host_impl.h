@@ -124,6 +124,7 @@ public:
         ~FrameData();
 
         std::vector<gfx::Rect> occludingScreenSpaceRects;
+        std::vector<gfx::Rect> nonOccludingScreenSpaceRects;
         RenderPassList renderPasses;
         RenderPassIdHashMap renderPassesById;
         LayerList* renderSurfaceLayerList;
