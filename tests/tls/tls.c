@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that be
+ * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
@@ -39,10 +39,12 @@ void *thread_proc(void *arg) {
 #endif
 
 int __attribute__((noinline)) AlignCheck(void *address, int align) {
-  if ((uintptr_t)address % align == 0) {
-    return 0;
+  if ((uintptr_t) address % align != 0) {
+    fprintf(stderr, "Address %p is not aligned to a multiple of %i\n",
+            address, align);
+    return 1;
   }
-  return 1;
+  return 0;
 }
 
 int main(int argc, char *argv[]) {
