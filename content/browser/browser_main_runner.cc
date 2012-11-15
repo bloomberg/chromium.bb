@@ -19,6 +19,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
+#include "base/win/windows_version.h"
 #include "ui/base/win/scoped_ole_initializer.h"
 #include "ui/base/ime/win/tsf_bridge.h"
 #endif
@@ -56,6 +57,16 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     if (parameters.command_line.HasSwitch(
             switches::kEnableTextServicesFramework)) {
       base::win::SetForceToUseTSF();
+    } else if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+      // When "Extend support of advanced text services to all programs"
+      // (a.k.a. Cicero Unaware Application Support; CUAS) is enabled on
+      // Windows XP and handwriting modules shipped with Office 2003 are
+      // installed, "penjpn.dll" and "skchui.dll" will be loaded and then crash
+      // unless a user installs Office 2003 SP3. To prevent these modules from
+      // being loaded, disable TSF entirely. crbug/160914.
+      // TODO(yukawa): Add a high-level wrapper for this instead of calling
+      // Win32 API here directly.
+      ImmDisableTextFrameService(static_cast<DWORD>(-1));
     }
 #endif  // OS_WIN
 
