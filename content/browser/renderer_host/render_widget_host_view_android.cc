@@ -568,6 +568,7 @@ void RenderWidgetHostViewPort::GetDefaultScreenInfo(
   const int height = info.GetHeight();
   results->horizontalDPI = 160 * info.GetDPIScale();
   results->verticalDPI = 160 * info.GetDPIScale();
+  results->deviceScaleFactor = info.GetDPIScale();
   results->depth = info.GetBitsPerPixel();
   results->depthPerComponent = info.GetBitsPerComponent();
   results->isMonochrome = (results->depthPerComponent == 0);

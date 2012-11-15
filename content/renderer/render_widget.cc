@@ -74,8 +74,6 @@ using WebKit::WebWidget;
 
 namespace content {
 
-static const float kStandardDPI = 160;
-
 RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
                            const WebKit::WebScreenInfo& screen_info,
                            bool swapped_out)
@@ -109,7 +107,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       animation_update_pending_(false),
       invalidation_task_posted_(false),
       screen_info_(screen_info),
-      device_scale_factor_(1),
+      device_scale_factor_(screen_info_.deviceScaleFactor),
       throttle_input_events_(true),
       next_smooth_scroll_gesture_id_(0),
       is_threaded_compositing_enabled_(false) {
@@ -118,15 +116,6 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
   DCHECK(RenderThread::Get());
   has_disable_gpu_vsync_switch_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuVsync);
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
-  device_scale_factor_ = screen_info.verticalDPI / kStandardDPI;
-  // Unless an explicit scale factor was provided for testing, ensure the scale
-  // is integral.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kForceDeviceScaleFactor))
-    device_scale_factor_ = static_cast<int>(device_scale_factor_);
-  device_scale_factor_ = std::max(1.0f, device_scale_factor_);
-#endif
   is_threaded_compositing_enabled_ =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableThreadedCompositing);
@@ -1637,6 +1626,7 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
 
 void RenderWidget::OnScreenInfoChanged(
     const WebKit::WebScreenInfo& screen_info) {
+  // TODO(oshima): Update scale factor here and remove OnSetDeviceScaleFactor.
   screen_info_ = screen_info;
 }
 

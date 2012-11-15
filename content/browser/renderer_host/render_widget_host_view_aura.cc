@@ -159,6 +159,7 @@ void GetScreenInfoForWindow(WebScreenInfo* results, aura::Window* window) {
   int default_dpi = display.device_scale_factor() * 160;
   results->verticalDPI = default_dpi;
   results->horizontalDPI = default_dpi;
+  results->deviceScaleFactor = display.device_scale_factor();
 }
 
 bool ShouldSendPinchGesture() {
