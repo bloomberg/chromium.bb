@@ -726,7 +726,8 @@ body[type='full-page'] grid .filename-label > :hover {
 }
 
 body[type='full-page'] list .filename-label > :hover,
-.breadcrumb-path:not(.breadcrumb-last):hover {
+.breadcrumb-path:not(.breadcrumb-last):hover,
+.breadcrumb-path.accepts {
   color: rgb(17, 85, 204);
   text-decoration: underline;
 }
@@ -773,6 +774,7 @@ body[type='full-page'] list .filename-label > :hover,
 }
 
 .thumbnail-grid .thumbnail-item[selected] .thumbnail-frame,
+.thumbnail-grid .thumbnail-item.accepts .thumbnail-frame,
 .thumbnail-grid .thumbnail-item:hover .thumbnail-frame {
   border-color: white;
 }
@@ -854,6 +856,7 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
 #list-container grid > [selected]:hover,
 #default-actions-list > [selected]:hover {
   background-color: rgb(193, 211, 236);
+  border-color: hsl(214, 91%, 85%);
 }
 
 #list-container list > .accepts,
@@ -862,10 +865,12 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
 #list-container grid > :hover,
 #default-actions-list > :hover {
   background-color: #f1f1f1;
+  border-color: hsl(214, 91%, 85%);
 }
 
 #list-container.nohover list > :not([selected]):hover,
-#list-container.nohover grid > :not([selected]):hover {
+#list-container.nohover grid > :not([selected]):hover,
+#list-container.nohover grid > .accepts {
   background-color: transparent;
   border-color: transparent;
 }
