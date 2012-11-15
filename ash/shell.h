@@ -213,8 +213,8 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   // Returns true if the screen is locked.
   bool IsScreenLocked() const;
 
-  // Returns true if a modal dialog window is currently open.
-  bool IsModalWindowOpen() const;
+  // Returns true if a system-modal dialog window is currently open.
+  bool IsSystemModalWindowOpen() const;
 
   // For testing only: set simulation that a modal window is open
   void SimulateModalWindowOpenForTesting(bool modal_window_open) {

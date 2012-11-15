@@ -485,20 +485,20 @@ TEST_F(ActivationControllerTest, DontActivateWindowWhenInSystemModalDialog) {
       aura::test::CreateTestWindowWithId(-2, modal_container));
   modal_window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
   wm::ActivateWindow(modal_window.get());
-  EXPECT_TRUE(ash::Shell::GetInstance()->IsModalWindowOpen());
+  EXPECT_TRUE(ash::Shell::GetInstance()->IsSystemModalWindowOpen());
   EXPECT_FALSE(wm::IsActiveWindow(normal_window.get()));
   EXPECT_TRUE(wm::IsActiveWindow(modal_window.get()));
 
   // We try to but cannot activate the normal window while we
   // have the system modal window.
   wm::ActivateWindow(normal_window.get());
-  EXPECT_TRUE(ash::Shell::GetInstance()->IsModalWindowOpen());
+  EXPECT_TRUE(ash::Shell::GetInstance()->IsSystemModalWindowOpen());
   EXPECT_FALSE(wm::IsActiveWindow(normal_window.get()));
   EXPECT_TRUE(wm::IsActiveWindow(modal_window.get()));
 
   modal_window->Hide();
   modal_window.reset();
-  EXPECT_FALSE(ash::Shell::GetInstance()->IsModalWindowOpen());
+  EXPECT_FALSE(ash::Shell::GetInstance()->IsSystemModalWindowOpen());
   EXPECT_TRUE(wm::IsActiveWindow(normal_window.get()));
 }
 

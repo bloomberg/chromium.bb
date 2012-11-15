@@ -427,7 +427,7 @@ bool AcceleratorController::PerformAction(int action,
       actions_allowed_at_lock_screen_.end()) {
     return false;
   }
-  if (shell->IsModalWindowOpen() &&
+  if (shell->IsSystemModalWindowOpen() &&
       actions_allowed_at_modal_window_.find(action) ==
       actions_allowed_at_modal_window_.end()) {
     // Note: we return true. This indicates the shortcut is handled

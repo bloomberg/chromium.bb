@@ -24,6 +24,8 @@ class ActivationChangeObserver;
 namespace ash {
 namespace internal {
 
+class ActivationControllerDelegate;
+
 // Exported for unit tests.
 class ASH_EXPORT ActivationController
     : public aura::client::ActivationClient,
@@ -31,7 +33,9 @@ class ASH_EXPORT ActivationController
       public aura::EnvObserver,
       public aura::FocusChangeObserver {
  public:
-  explicit ActivationController(aura::FocusManager* focus_manager);
+  // The ActivationController takes ownership of |delegate|.
+  ActivationController(aura::FocusManager* focus_manager,
+                       ActivationControllerDelegate* delegate);
   virtual ~ActivationController();
 
   // Returns true if |window| exists within a container that supports
@@ -92,6 +96,8 @@ class ASH_EXPORT ActivationController
   ObserverList<aura::client::ActivationChangeObserver> observers_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
+
+  scoped_ptr<ActivationControllerDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivationController);
 };

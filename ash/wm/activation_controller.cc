@@ -7,6 +7,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/activation_controller_delegate.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_modality_controller.h"
 #include "ash/wm/window_util.h"
@@ -114,7 +115,7 @@ bool CanActivateWindowWithEvent(aura::Window* window,
       SupportsChildActivation(window->parent()) &&
       (BelongsToContainerWithEqualOrGreaterId(
           window, kShellWindowId_SystemModalContainer) ||
-       !Shell::GetInstance()->IsModalWindowOpen());
+       !Shell::GetInstance()->IsSystemModalWindowOpen());
 }
 
 // When a modal window is activated, we bring its entire transient parent chain
@@ -136,11 +137,14 @@ void StackTransientParentsBelowModalWindow(aura::Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // ActivationController, public:
 
-ActivationController::ActivationController(aura::FocusManager* focus_manager)
+ActivationController::ActivationController(
+    aura::FocusManager* focus_manager,
+    ActivationControllerDelegate* delegate)
     : focus_manager_(focus_manager),
       updating_activation_(false),
       active_window_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)),
+      delegate_(delegate) {
   aura::Env::GetInstance()->AddObserver(this);
   focus_manager_->AddObserver(this);
 }
@@ -254,69 +258,44 @@ void ActivationController::OnWindowFocused(aura::Window* window) {
 
 void ActivationController::ActivateWindowWithEvent(aura::Window* window,
                                                    const ui::Event* event) {
-  aura::Window* window_modal_transient = wm::GetWindowModalTransient(window);
-  if (window_modal_transient) {
-    ActivateWindow(window_modal_transient);
-    return;
-  }
-
   // Prevent recursion when called from focus.
   if (updating_activation_)
     return;
-
   AutoReset<bool> in_activate_window(&updating_activation_, true);
-  // Nothing may actually have changed.
-  if (active_window_ == window)
+
+  // We allow the delegate to change which window gets activated, or to prevent
+  // activation changes.
+  aura::Window* original_active_window = window;
+  window = delegate_->WillActivateWindow(window);
+  // TODO(beng): note that this breaks the previous behavior where an activation
+  //             attempt by a window behind the lock screen would at least
+  //             restack that window frontmost within its container. fix this.
+  if (!window && original_active_window != window)
     return;
-  // The stacking client may impose rules on what window configurations can be
-  // activated or deactivated.
+
+  // TODO(beng): This encapsulates additional Ash-specific restrictions on
+  //             whether activation can change. Should move to the delegate.
   if (window && !CanActivateWindowWithEvent(window, event, CURRENT_VISIBILITY))
     return;
 
-  // Make sure the workspace manager switches to the workspace for window.
-  // Without this CanReceiveEvents() below returns false and activation never
-  // changes. CanReceiveEvents() returns false if |window| isn't in the active
-  // workspace, in which case its parent is not visible.
-  // TODO(sky): if I instead change the opacity of the parent this isn't an
-  // issue, but will make animations trickier... Consider which one is better.
-  if (window) {
-    internal::RootWindowController* root_window_controller =
-        GetRootWindowController(window->GetRootWindow());
-    root_window_controller->workspace_controller()->
-        SetActiveWorkspaceByWindow(window);
-  }
-
-  // Restore minimized window. This needs to be done before CanReceiveEvents()
-  // is called as that function checks window visibility.
-  if (window && wm::IsWindowMinimized(window))
-    window->Show();
-
-  // If the screen is locked, just bring the window to top so that
-  // it will be activated when the lock window is destroyed.
-  if (window && !window->CanReceiveEvents()) {
-    StackTransientParentsBelowModalWindow(window);
-    window->parent()->StackChildAtTop(window);
+  if (active_window_ == window)
     return;
-  }
-  if (window &&
-      !window->Contains(window->GetFocusManager()->GetFocusedWindow())) {
-    window->GetFocusManager()->SetFocusedWindow(window, event);
-  }
 
   aura::Window* old_active = active_window_;
   active_window_ = window;
-  if (window) {
-    DCHECK(window->GetRootWindow());
-    Shell::GetInstance()->set_active_root_window(window->GetRootWindow());
+
+  if (window &&
+      !window->Contains(window->GetFocusManager()->GetFocusedWindow())) {
+    window->GetFocusManager()->SetFocusedWindow(window, event);
   }
 
   FOR_EACH_OBSERVER(aura::client::ActivationChangeObserver,
                     observers_,
                     OnWindowActivated(window, old_active));
 
-  // Invoke OnLostActive after we've changed the active window. That way if the
-  // delegate queries for active state it doesn't think the window is still
-  // active.
+  // Invoke OnLostActive after we've changed the active window. That way if
+  // the delegate queries for active state it doesn't think the window is
+  // still active.
   if (old_active && aura::client::GetActivationDelegate(old_active))
     aura::client::GetActivationDelegate(old_active)->OnLostActive();
 

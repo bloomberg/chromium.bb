@@ -36,6 +36,7 @@
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/app_list_controller.h"
+#include "ash/wm/ash_activation_controller.h"
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/capture_controller.h"
 #include "ash/wm/coordinate_conversion.h"
@@ -410,7 +411,9 @@ void Shell::Init() {
 
   focus_manager_.reset(new aura::FocusManager);
   activation_controller_.reset(
-      new internal::ActivationController(focus_manager_.get()));
+      new internal::ActivationController(
+          focus_manager_.get(),
+          new internal::AshActivationController));
 
   focus_cycler_.reset(new internal::FocusCycler());
 
@@ -587,7 +590,7 @@ bool Shell::IsScreenLocked() const {
   return delegate_->IsScreenLocked();
 }
 
-bool Shell::IsModalWindowOpen() const {
+bool Shell::IsSystemModalWindowOpen() const {
   if (simulate_modal_window_open_for_testing_)
     return true;
   const std::vector<aura::Window*> containers = GetAllContainers(
