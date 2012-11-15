@@ -93,7 +93,9 @@ static const char* kRegressionTests[] = {
 
 const char* kIntVersionTests[] = {
   "intversion-abort-in-initial-upgradeneeded.html",
-  "intversion-and-setversion.html",
+  // Needs to be renamed after https://bugs.webkit.org/show_bug.cgi?id=102318
+  // lands and is rolled into chromium.
+//  "intversion-and-setversion.html",
   "intversion-blocked.html",
   "intversion-close-between-events.html",
   "intversion-close-in-oncomplete.html",
