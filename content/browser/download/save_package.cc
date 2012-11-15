@@ -133,6 +133,7 @@ SavePackage::SavePackage(WebContents* web_contents,
       disk_error_occurred_(false),
       save_type_(save_type),
       all_save_items_count_(0),
+      file_name_set_(&FilePath::CompareLessIgnoreCase),
       wait_state_(INITIALIZE),
       contents_id_(web_contents->GetRenderProcessHost()->GetID()),
       unique_id_(g_save_package_id++),
@@ -163,6 +164,7 @@ SavePackage::SavePackage(WebContents* web_contents)
       disk_error_occurred_(false),
       save_type_(SAVE_PAGE_TYPE_UNKNOWN),
       all_save_items_count_(0),
+      file_name_set_(&FilePath::CompareLessIgnoreCase),
       wait_state_(INITIALIZE),
       contents_id_(web_contents->GetRenderProcessHost()->GetID()),
       unique_id_(g_save_package_id++),
@@ -191,6 +193,7 @@ SavePackage::SavePackage(WebContents* web_contents,
       disk_error_occurred_(false),
       save_type_(SAVE_PAGE_TYPE_UNKNOWN),
       all_save_items_count_(0),
+      file_name_set_(&FilePath::CompareLessIgnoreCase),
       wait_state_(INITIALIZE),
       contents_id_(0),
       unique_id_(g_save_package_id++),
@@ -439,11 +442,14 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
 
   FilePath::StringType file_name = pure_file_name + file_name_ext;
 
-  // Check whether we already have same name.
-  if (file_name_set_.find(file_name) == file_name_set_.end()) {
+  // Check whether we already have same name in a case insensitive manner.
+  FileNameSet::const_iterator iter = file_name_set_.find(file_name);
+  if (iter == file_name_set_.end()) {
     file_name_set_.insert(file_name);
   } else {
     // Found same name, increase the ordinal number for the file name.
+    pure_file_name =
+        FilePath(*iter).RemoveExtension().BaseName().value();
     FilePath::StringType base_file_name = StripOrdinalNumber(pure_file_name);
 
     // We need to make sure the length of base file name plus maximum ordinal

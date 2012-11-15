@@ -166,6 +166,19 @@ static const struct {
 
   // No duplicate occurs.
   {"filename=1(11).css", "http://www.savepage.com", FPL("1(11).css"), false},
+
+  // Test for case-insensitive file names.
+  {"filename=readme.txt", "http://www.savepage.com",
+                          FPL("readme.txt"), false},
+
+  {"filename=readme.TXT", "http://www.savepage.com",
+                          FPL("readme(1).TXT"), false},
+
+  {"filename=READme.txt", "http://www.savepage.com",
+                          FPL("readme(2).txt"), false},
+
+  {"filename=Readme(1).txt", "http://www.savepage.com",
+                          FPL("readme(3).txt"), false},
 };
 
 TEST_F(SavePackageTest, TestSuccessfullyGenerateSavePackageFilename) {

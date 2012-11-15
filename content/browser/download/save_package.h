@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DOWNLOAD_SAVE_PACKAGE_H_
 
 #include <queue>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -295,7 +296,9 @@ class CONTENT_EXPORT SavePackage
   // Number of all need to be saved resources.
   size_t all_save_items_count_;
 
-  typedef base::hash_set<FilePath::StringType> FileNameSet;
+  typedef std::set<FilePath::StringType,
+                   bool (*)(const FilePath::StringType&,
+                            const FilePath::StringType&)> FileNameSet;
   // This set is used to eliminate duplicated file names in saving directory.
   FileNameSet file_name_set_;
 
