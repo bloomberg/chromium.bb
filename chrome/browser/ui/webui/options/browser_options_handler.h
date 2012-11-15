@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
@@ -36,7 +35,6 @@ namespace options {
 class BrowserOptionsHandler
     : public OptionsPageUIHandler,
       public CloudPrintSetupHandlerDelegate,
-      public PrefObserver,
       public ProfileSyncServiceObserver,
       public ui::SelectFileDialog::Listener,
       public ShellIntegration::DefaultWebClientObserver,
@@ -76,9 +74,7 @@ class BrowserOptionsHandler
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
+  void OnCloudPrintPrefsChanged();
 
   // SelectFileDialog::Listener implementation
   virtual void FileSelected(const FilePath& path,

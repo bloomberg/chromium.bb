@@ -9,14 +9,12 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/protector/base_setting_change.h"
 
 namespace protector {
 
 // BaseSettingChange subclass for PrefService-managed settings changes.
-class BasePrefsChange : public BaseSettingChange,
-                        public PrefObserver {
+class BasePrefsChange : public BaseSettingChange {
  public:
   BasePrefsChange();
   virtual ~BasePrefsChange();
@@ -35,9 +33,7 @@ class BasePrefsChange : public BaseSettingChange,
   void IgnorePrefChanges();
 
  private:
-  // PrefObserver overrides:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
+  void OnPreferenceChanged(const std::string& pref_name);
 
   PrefChangeRegistrar pref_observer_;
 

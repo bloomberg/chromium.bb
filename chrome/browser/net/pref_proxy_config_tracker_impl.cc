@@ -130,7 +130,9 @@ PrefProxyConfigTrackerImpl::PrefProxyConfigTrackerImpl(
       update_pending_(true) {
   config_state_ = ReadPrefConfig(&pref_config_);
   proxy_prefs_.Init(pref_service);
-  proxy_prefs_.Add(prefs::kProxy, this);
+  proxy_prefs_.Add(prefs::kProxy,
+                   base::Bind(&PrefProxyConfigTrackerImpl::OnProxyPrefChanged,
+                              base::Unretained(this)));
 }
 
 PrefProxyConfigTrackerImpl::~PrefProxyConfigTrackerImpl() {
@@ -287,26 +289,20 @@ bool PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(
   return false;
 }
 
-void PrefProxyConfigTrackerImpl::OnPreferenceChanged(
-    PrefServiceBase* service,
-    const std::string& pref_name) {
+void PrefProxyConfigTrackerImpl::OnProxyPrefChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (service == pref_service_) {
-    net::ProxyConfig new_config;
-    ProxyPrefs::ConfigState config_state = ReadPrefConfig(&new_config);
-    if (config_state_ != config_state ||
-        (config_state_ != ProxyPrefs::CONFIG_UNSET &&
-         !pref_config_.Equals(new_config))) {
-      config_state_ = config_state;
-      if (config_state_ != ProxyPrefs::CONFIG_UNSET)
-        pref_config_ = new_config;
-      update_pending_ = true;
-    }
-    if (update_pending_)
-      OnProxyConfigChanged(config_state, new_config);
-  } else {
-    NOTREACHED() << "Unexpected PrefService.";
+  net::ProxyConfig new_config;
+  ProxyPrefs::ConfigState config_state = ReadPrefConfig(&new_config);
+  if (config_state_ != config_state ||
+      (config_state_ != ProxyPrefs::CONFIG_UNSET &&
+       !pref_config_.Equals(new_config))) {
+    config_state_ = config_state;
+    if (config_state_ != ProxyPrefs::CONFIG_UNSET)
+      pref_config_ = new_config;
+    update_pending_ = true;
   }
+  if (update_pending_)
+    OnProxyConfigChanged(config_state, new_config);
 }
 
 ProxyPrefs::ConfigState PrefProxyConfigTrackerImpl::ReadPrefConfig(

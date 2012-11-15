@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -34,8 +33,7 @@ class PluginList;
 // This class stores information about whether a plug-in or a plug-in group is
 // enabled or disabled.
 // Except where otherwise noted, it can be used on every thread.
-class PluginPrefs : public RefcountedProfileKeyedService,
-                    public PrefObserver {
+class PluginPrefs : public RefcountedProfileKeyedService {
  public:
   enum PolicyStatus {
     NO_POLICY = 0,  // Neither enabled or disabled by policy.
@@ -85,10 +83,6 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   // RefCountedProfileKeyedBase method override.
   virtual void ShutdownOnUIThread() OVERRIDE;
 
-  // PrefObserver method override.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
-
  private:
   friend class base::RefCountedThreadSafe<PluginPrefs>;
   friend class PluginPrefsTest;
@@ -116,6 +110,11 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   };
 
   virtual ~PluginPrefs();
+
+  // Called to update one of the policy_xyz patterns below when a
+  // preference changes.
+  void UpdatePatternsAndNotify(std::set<string16>* patterns,
+                               const std::string& pref_name);
 
   // Allows unit tests to directly set enforced plug-in patterns.
   void SetPolicyEnforcedPluginPatterns(

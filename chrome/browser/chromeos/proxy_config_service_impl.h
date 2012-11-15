@@ -214,9 +214,8 @@ class ProxyConfigServiceImpl
 #endif  // defined(UNIT_TEST)
 
  private:
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
+  // Called when the kUseSharedProxies preference changes.
+  void OnUseSharedProxiesChanged();
 
   // Called from the various UISetProxyConfigTo*.
   void OnUISetProxyConfig();

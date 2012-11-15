@@ -5,6 +5,7 @@
 #include "chrome/browser/protector/protected_prefs_watcher.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
@@ -111,16 +112,18 @@ ProtectedPrefsWatcher::ProtectedPrefsWatcher(Profile* profile)
   EnsurePrefsMigration();
 
   pref_observer_.Init(profile->GetPrefs());
-  pref_observer_.Add(prefs::kHomePageIsNewTabPage, this);
-  pref_observer_.Add(prefs::kHomePage, this);
-  pref_observer_.Add(prefs::kShowHomeButton, this);
+  PrefChangeRegistrar::NamedChangeCallback callback = base::Bind(
+      &ProtectedPrefsWatcher::OnPreferenceChanged, base::Unretained(this));
+  pref_observer_.Add(prefs::kHomePageIsNewTabPage, callback);
+  pref_observer_.Add(prefs::kHomePage, callback);
+  pref_observer_.Add(prefs::kShowHomeButton, callback);
   // Session startup.
-  pref_observer_.Add(prefs::kRestoreOnStartup, this);
-  pref_observer_.Add(prefs::kURLsToRestoreOnStartup, this);
+  pref_observer_.Add(prefs::kRestoreOnStartup, callback);
+  pref_observer_.Add(prefs::kURLsToRestoreOnStartup, callback);
   // Pinned tabs.
-  pref_observer_.Add(prefs::kPinnedTabs, this);
+  pref_observer_.Add(prefs::kPinnedTabs, callback);
   // Extensions.
-  pref_observer_.Add(ExtensionPrefs::kExtensionsPref, this);
+  pref_observer_.Add(ExtensionPrefs::kExtensionsPref, callback);
 
   UpdateCachedPrefs();
   ValidateBackup();
@@ -195,8 +198,7 @@ void ProtectedPrefsWatcher::ForceUpdateBackup() {
   InitBackup();
 }
 
-void ProtectedPrefsWatcher::OnPreferenceChanged(PrefServiceBase* service,
-                                                const std::string& pref_name) {
+void ProtectedPrefsWatcher::OnPreferenceChanged(const std::string& pref_name) {
   DCHECK(pref_observer_.IsObserved(pref_name));
   if (UpdateBackupEntry(pref_name))
     UpdateBackupSignature();

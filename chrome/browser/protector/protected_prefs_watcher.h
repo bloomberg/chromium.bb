@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 
 class PrefService;
@@ -22,7 +21,7 @@ class Value;
 
 namespace protector {
 
-class ProtectedPrefsWatcher : public PrefObserver {
+class ProtectedPrefsWatcher {
  public:
   // Current backup version.
   static const int kCurrentVersionNumber;
@@ -51,9 +50,7 @@ class ProtectedPrefsWatcher : public PrefObserver {
  private:
   friend class ProtectedPrefsWatcherTest;
 
-  // PrefObserver overrides:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
+  void OnPreferenceChanged(const std::string& pref_name);
 
   // Makes sure that all protected prefs have been migrated before starting to
   // observe them.

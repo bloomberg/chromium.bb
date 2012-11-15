@@ -387,8 +387,12 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* pref_service)
       pointer_factory_(this) {
 
   // Register for notifications of UseSharedProxies user preference.
-  if (pref_service->FindPreference(prefs::kUseSharedProxies))
-    use_shared_proxies_.Init(prefs::kUseSharedProxies, pref_service, this);
+  if (pref_service->FindPreference(prefs::kUseSharedProxies)) {
+    use_shared_proxies_.Init(
+        prefs::kUseSharedProxies, pref_service,
+        base::Bind(&ProxyConfigServiceImpl::OnUseSharedProxiesChanged,
+                   base::Unretained(this)));
+  }
 
   FetchProxyPolicy();
 
@@ -586,26 +590,19 @@ void ProxyConfigServiceImpl::RegisterPrefs(PrefService* pref_service) {
 
 //------------------ ProxyConfigServiceImpl: private methods -------------------
 
-void ProxyConfigServiceImpl::OnPreferenceChanged(PrefServiceBase* service,
-                                                 const std::string& pref_name) {
-  DCHECK(service == prefs());
+void ProxyConfigServiceImpl::OnUseSharedProxiesChanged() {
   VLOG(1) << "New use-shared-proxies = " << GetUseSharedProxies();
 
-  if (pref_name == prefs::kUseSharedProxies) {
-    // Determine new proxy config which may have changed because of new
-    // use-shared-proxies. If necessary, activate it.
-    Network* network = NULL;
-    if (!active_network_.empty()) {
-      network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
-          active_network_);
-      if (!network)
-        LOG(WARNING) << "Can't find requested network " << active_network_;
-    }
-    DetermineEffectiveConfig(network, true);
-    return;
+  // Determine new proxy config which may have changed because of new
+  // use-shared-proxies. If necessary, activate it.
+  Network* network = NULL;
+  if (!active_network_.empty()) {
+    network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
+        active_network_);
+    if (!network)
+      LOG(WARNING) << "Can't find requested network " << active_network_;
   }
-
-  PrefProxyConfigTrackerImpl::OnPreferenceChanged(service, pref_name);
+  DetermineEffectiveConfig(network, true);
 }
 
 void ProxyConfigServiceImpl::OnUISetProxyConfig() {

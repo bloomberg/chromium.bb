@@ -274,25 +274,11 @@ bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) const {
   return true;
 }
 
-void PluginPrefs::OnPreferenceChanged(PrefServiceBase* service,
-                                      const std::string& pref_name) {
-  DCHECK_EQ(prefs_, service);
-  if (pref_name == prefs::kPluginsDisabledPlugins) {
-    base::AutoLock auto_lock(lock_);
-    ListValueToStringSet(prefs_->GetList(prefs::kPluginsDisabledPlugins),
-                         &policy_disabled_plugin_patterns_);
-  } else if (pref_name == prefs::kPluginsDisabledPluginsExceptions) {
-    base::AutoLock auto_lock(lock_);
-    ListValueToStringSet(
-        prefs_->GetList(prefs::kPluginsDisabledPluginsExceptions),
-        &policy_disabled_plugin_exception_patterns_);
-  } else if (pref_name == prefs::kPluginsEnabledPlugins) {
-    base::AutoLock auto_lock(lock_);
-    ListValueToStringSet(prefs_->GetList(prefs::kPluginsEnabledPlugins),
-                         &policy_enabled_plugin_patterns_);
-  } else {
-    NOTREACHED();
-  }
+void PluginPrefs::UpdatePatternsAndNotify(std::set<string16>* patterns,
+                                          const std::string& pref_name) {
+  base::AutoLock auto_lock(lock_);
+  ListValueToStringSet(prefs_->GetList(pref_name.c_str()), patterns);
+
   NotifyPluginStatusChanged();
 }
 
@@ -520,9 +506,23 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
                        &policy_enabled_plugin_patterns_);
 
   registrar_.Init(prefs_);
-  registrar_.Add(prefs::kPluginsDisabledPlugins, this);
-  registrar_.Add(prefs::kPluginsDisabledPluginsExceptions, this);
-  registrar_.Add(prefs::kPluginsEnabledPlugins, this);
+
+  // Because pointers to our own members will remain unchanged for the
+  // lifetime of |registrar_| (which we also own), we can bind their
+  // pointer values directly in the callbacks to avoid string-based
+  // lookups at notification time.
+  registrar_.Add(prefs::kPluginsDisabledPlugins,
+                 base::Bind(&PluginPrefs::UpdatePatternsAndNotify,
+                            base::Unretained(this),
+                            &policy_disabled_plugin_patterns_));
+  registrar_.Add(prefs::kPluginsDisabledPluginsExceptions,
+                 base::Bind(&PluginPrefs::UpdatePatternsAndNotify,
+                            base::Unretained(this),
+                            &policy_disabled_plugin_exception_patterns_));
+  registrar_.Add(prefs::kPluginsEnabledPlugins,
+                 base::Bind(&PluginPrefs::UpdatePatternsAndNotify,
+                            base::Unretained(this),
+                            &policy_enabled_plugin_patterns_));
 
   if (force_enable_internal_pdf || internal_pdf_enabled) {
     // See http://crbug.com/50105 for background.

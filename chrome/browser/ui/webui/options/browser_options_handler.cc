@@ -569,9 +569,11 @@ void BrowserOptionsHandler::InitializeHandler() {
   ChromeURLDataManager::AddDataSource(profile,
       new FaviconSource(profile, FaviconSource::FAVICON));
 
-  default_browser_policy_.Init(prefs::kDefaultBrowserSettingEnabled,
-                               g_browser_process->local_state(),
-                               this);
+  default_browser_policy_.Init(
+      prefs::kDefaultBrowserSettingEnabled,
+      g_browser_process->local_state(),
+      base::Bind(&BrowserOptionsHandler::UpdateDefaultBrowserState,
+                 base::Unretained(this)));
 
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                  content::NotificationService::AllSources());
@@ -599,17 +601,31 @@ void BrowserOptionsHandler::InitializeHandler() {
 #endif
 
 #if !defined(OS_CHROMEOS)
-  cloud_print_connector_email_.Init(prefs::kCloudPrintEmail, prefs, this);
-  cloud_print_connector_enabled_.Init(prefs::kCloudPrintProxyEnabled, prefs,
-                                      this);
+  base::Closure cloud_print_callback = base::Bind(
+      &BrowserOptionsHandler::OnCloudPrintPrefsChanged, base::Unretained(this));
+  cloud_print_connector_email_.Init(
+      prefs::kCloudPrintEmail, prefs, cloud_print_callback);
+  cloud_print_connector_enabled_.Init(
+      prefs::kCloudPrintProxyEnabled, prefs, cloud_print_callback);
 #endif
 
-  auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
-  default_font_size_.Init(prefs::kWebKitDefaultFontSize, prefs, this);
-  default_zoom_level_.Init(prefs::kDefaultZoomLevel, prefs, this);
+  auto_open_files_.Init(
+      prefs::kDownloadExtensionsToOpen, prefs,
+      base::Bind(&BrowserOptionsHandler::SetupAutoOpenFileTypes,
+                 base::Unretained(this)));
+  default_font_size_.Init(
+      prefs::kWebKitDefaultFontSize, prefs,
+      base::Bind(&BrowserOptionsHandler::SetupFontSizeSelector,
+                 base::Unretained(this)));
+  default_zoom_level_.Init(
+      prefs::kDefaultZoomLevel, prefs,
+      base::Bind(&BrowserOptionsHandler::SetupPageZoomSelector,
+                 base::Unretained(this)));
 #if !defined(OS_CHROMEOS)
   proxy_prefs_.Init(prefs);
-  proxy_prefs_.Add(prefs::kProxy, this);
+  proxy_prefs_.Add(prefs::kProxy,
+                   base::Bind(&BrowserOptionsHandler::SetupProxySettingsSection,
+                              base::Unretained(this)));
 #endif  // !defined(OS_CHROMEOS)
 }
 
@@ -870,29 +886,11 @@ void BrowserOptionsHandler::Observe(
   }
 }
 
-void BrowserOptionsHandler::OnPreferenceChanged(PrefServiceBase* service,
-                                                const std::string& pref_name) {
-  if (pref_name == prefs::kDefaultBrowserSettingEnabled) {
-    UpdateDefaultBrowserState();
-  } else if (pref_name == prefs::kDownloadExtensionsToOpen) {
-    SetupAutoOpenFileTypes();
+void BrowserOptionsHandler::OnCloudPrintPrefsChanged() {
 #if !defined(OS_CHROMEOS)
-  } else if (proxy_prefs_.IsObserved(pref_name)) {
-    SetupProxySettingsSection();
-#endif  // !defined(OS_CHROMEOS)
-  } else if ((pref_name == prefs::kCloudPrintEmail) ||
-             (pref_name == prefs::kCloudPrintProxyEnabled)) {
-#if !defined(OS_CHROMEOS)
-    if (cloud_print_connector_ui_enabled_)
-      SetupCloudPrintConnectorSection();
+  if (cloud_print_connector_ui_enabled_)
+    SetupCloudPrintConnectorSection();
 #endif
-  } else if (pref_name == prefs::kWebKitDefaultFontSize) {
-    SetupFontSizeSelector();
-  } else if (pref_name == prefs::kDefaultZoomLevel) {
-    SetupPageZoomSelector();
-  } else {
-    NOTREACHED();
-  }
 }
 
 void BrowserOptionsHandler::ToggleAutoLaunch(const ListValue* args) {
