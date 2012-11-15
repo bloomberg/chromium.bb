@@ -275,7 +275,7 @@ bool RootWindow::DispatchGestureEvent(ui::GestureEvent* event) {
 }
 
 void RootWindow::OnWindowDestroying(Window* window) {
-  OnWindowHidden(window, WINDOW_DESTROYED);
+  OnWindowHidden(window, WINDOW_DESTROYED, NULL);
 
   if (window->IsVisible() &&
       window->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
@@ -294,7 +294,7 @@ void RootWindow::OnWindowBoundsChanged(Window* window,
 
 void RootWindow::OnWindowVisibilityChanged(Window* window, bool is_visible) {
   if (!is_visible)
-    OnWindowHidden(window, WINDOW_HIDDEN);
+    OnWindowHidden(window, WINDOW_HIDDEN, NULL);
 
   if (window->ContainsPointInRoot(GetLastMouseLocationInRoot()))
     PostMouseMoveEventAfterWindowChange();
@@ -666,7 +666,9 @@ void RootWindow::OnWindowRemovedFromRootWindow(Window* detached,
                                                RootWindow* new_root) {
   DCHECK(aura::client::GetCaptureWindow(this) != this);
 
-  OnWindowHidden(detached, (new_root == NULL) ? WINDOW_HIDDEN : WINDOW_MOVING);
+  OnWindowHidden(detached,
+                 (new_root == NULL) ? WINDOW_HIDDEN : WINDOW_MOVING,
+                 new_root);
 
   if (detached->IsVisible() &&
       detached->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
@@ -674,16 +676,17 @@ void RootWindow::OnWindowRemovedFromRootWindow(Window* detached,
   }
 }
 
-void RootWindow::OnWindowHidden(Window* invisible, WindowHiddenReason reason) {
-  // Do not clear the focus, the capture, and the dispatch targets if the window
-  // is moving across root windows, because the target itself is actually still
-  // visible and clearing them stops further event processing, which can cause
-  // unexpected behaviors. See crbug.com/157583
-  if (reason != WINDOW_MOVING) {
+void RootWindow::OnWindowHidden(Window* invisible,
+                                WindowHiddenReason reason,
+                                RootWindow* new_root) {
     // Update the focused window state if the invisible window contains
-    // focused_window.
+  // focused_window. See the comment below, which also applies for focus with
+  // the exception for the case where the focus managers change (otherwise a
+  // focus manager might dereference a deleted root window).
+  if (reason != WINDOW_MOVING ||
+      (new_root->GetFocusManager() != focus_manager_)) {
     Window* focused_window = focus_manager_->GetFocusedWindow();
-    if (reason != WINDOW_MOVING && invisible->Contains(focused_window)) {
+    if (invisible->Contains(focused_window)) {
       Window* focus_to = invisible->transient_parent();
       if (focus_to) {
         // Has to be removed from the transient parent before focusing,
@@ -705,6 +708,13 @@ void RootWindow::OnWindowHidden(Window* invisible, WindowHiddenReason reason) {
       }
       GetFocusManager()->SetFocusedWindow(focus_to, NULL);
     }
+  }
+
+  // Do not clear the capture, and the dispatch targets if the window is moving
+  // across root windows, because the target itself is actually still visible
+  // and clearing them stops further event processing, which can cause
+  // unexpected behaviors. See crbug.com/157583
+  if (reason != WINDOW_MOVING) {
     Window* capture_window = aura::client::GetCaptureWindow(this);
     // If the ancestor of the capture window is hidden,
     // release the capture.
