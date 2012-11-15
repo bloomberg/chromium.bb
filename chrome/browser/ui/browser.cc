@@ -572,16 +572,21 @@ string16 Browser::GetWindowTitleForCurrentTab() const {
   if (title.empty())
     title = CoreTabHelper::GetDefaultTitle();
 
-#if defined(OS_MACOSX) || defined(USE_ASH)
-  // On Mac or Ash, we don't want to suffix the page title with
+#if defined(OS_MACOSX)
+  // On Mac, we don't want to suffix the page title with
   // the application name.
   return title;
-#else
+#elif defined(USE_ASH)
+  // On Ash, we don't want to suffix the page title with the application name,
+  // but on Windows, where USE_ASH can also be true, we still want the prefix
+  // on desktop.
+  if (host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
+    return title;
+#endif
   // Don't append the app name to window titles on app frames and app popups
   return is_app() ?
       title :
       l10n_util::GetStringFUTF16(IDS_BROWSER_WINDOW_TITLE_FORMAT, title);
-#endif
 }
 
 // static

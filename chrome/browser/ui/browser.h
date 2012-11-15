@@ -232,9 +232,9 @@ class Browser : public TabStripModelObserver,
   bool is_session_restore() const {
     return is_session_restore_;
   }
-  chrome::HostDesktopType host_desktop_type() {
+  chrome::HostDesktopType host_desktop_type() const {
     return host_desktop_type_;
-  };
+  }
 
   // Accessors ////////////////////////////////////////////////////////////////
 
