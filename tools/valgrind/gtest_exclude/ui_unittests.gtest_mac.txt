@@ -3,3 +3,6 @@ ImageTest.PNGEncodeFromSkiaDecodeToPlatform
 
 # See crbug.com/152203
 ImageTest.SkBitmapConversionPreservesOrientation
+
+# See crbug.com/161377
+ImageTest.SkBitmapConversionPreservesTransparency
