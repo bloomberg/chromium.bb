@@ -13,7 +13,7 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/icon_messages.h"
+#include "chrome/common/favicon_url.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -150,20 +150,6 @@ enum {
 // Constants for mixed-content blocking.
 static const char kGoogleDotCom[] = "google.com";
 
-static FaviconURL::IconType ToFaviconType(WebIconURL::Type type) {
-  switch (type) {
-    case WebIconURL::TypeFavicon:
-      return FaviconURL::FAVICON;
-    case WebIconURL::TypeTouch:
-      return FaviconURL::TOUCH_ICON;
-    case WebIconURL::TypeTouchPrecomposed:
-      return FaviconURL::TOUCH_PRECOMPOSED_ICON;
-    case WebIconURL::TypeInvalid:
-      return FaviconURL::INVALID_ICON;
-  }
-  return FaviconURL::INVALID_ICON;
-}
-
 static bool isHostInDomain(const std::string& host, const std::string& domain) {
   return (EndsWith(host, domain, false) &&
           (host.length() == domain.length() ||
@@ -213,7 +199,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
                         OnHandleMessageFromExternalHost)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_JavaScriptStressTestControl,
                         OnJavaScriptStressTestControl)
-    IPC_MESSAGE_HANDLER(IconMsg_DownloadFavicon, OnDownloadFavicon)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAllowDisplayingInsecureContent,
                         OnSetAllowDisplayingInsecureContent)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAllowRunningInsecureContent,
@@ -285,28 +270,6 @@ void ChromeRenderViewObserver::OnJavaScriptStressTestControl(int cmd,
     v8::Testing::SetStressRunType(static_cast<v8::Testing::StressType>(param));
   } else if (cmd == kJavaScriptStressTestPrepareStressRun) {
     v8::Testing::PrepareStressRun(param);
-  }
-}
-
-void ChromeRenderViewObserver::OnDownloadFavicon(int id,
-                                                 const GURL& image_url,
-                                                 int image_size) {
-  bool data_image_failed = false;
-  if (image_url.SchemeIs("data")) {
-    SkBitmap data_image = ImageFromDataUrl(image_url);
-    data_image_failed = data_image.empty();
-    if (!data_image_failed) {
-      std::vector<SkBitmap> images(1, data_image);
-      Send(new IconHostMsg_DidDownloadFavicon(
-          routing_id(), id, image_url, false, image_size, images));
-    }
-  }
-
-  if (data_image_failed ||
-      !DownloadFavicon(id, image_url, image_size)) {
-    Send(new IconHostMsg_DidDownloadFavicon(
-        routing_id(), id, image_url, true, image_size,
-        std::vector<SkBitmap>()));
   }
 }
 
@@ -680,42 +643,6 @@ void ChromeRenderViewObserver::DidStopLoading() {
         routing_id(), render_view()->GetPageId(), osd_url,
         search_provider::AUTODETECTED_PROVIDER));
   }
-
-  int icon_types = WebIconURL::TypeFavicon;
-  if (chrome::kEnableTouchIcon)
-    icon_types |= WebIconURL::TypeTouchPrecomposed | WebIconURL::TypeTouch;
-
-  WebVector<WebIconURL> icon_urls =
-      render_view()->GetWebView()->mainFrame()->iconURLs(icon_types);
-  std::vector<FaviconURL> urls;
-  for (size_t i = 0; i < icon_urls.size(); i++) {
-    WebURL url = icon_urls[i].iconURL();
-    if (!url.isEmpty())
-      urls.push_back(FaviconURL(url, ToFaviconType(icon_urls[i].iconType())));
-  }
-  if (!urls.empty()) {
-    Send(new IconHostMsg_UpdateFaviconURL(
-        routing_id(), render_view()->GetPageId(), urls));
-  }
-}
-
-void ChromeRenderViewObserver::DidChangeIcon(WebFrame* frame,
-                                             WebIconURL::Type icon_type) {
-  if (frame->parent())
-    return;
-
-  if (!chrome::kEnableTouchIcon &&
-      icon_type != WebIconURL::TypeFavicon)
-    return;
-
-  WebVector<WebIconURL> icon_urls = frame->iconURLs(icon_type);
-  std::vector<FaviconURL> urls;
-  for (size_t i = 0; i < icon_urls.size(); i++) {
-    urls.push_back(FaviconURL(icon_urls[i].iconURL(),
-                              ToFaviconType(icon_urls[i].iconType())));
-  }
-  Send(new IconHostMsg_UpdateFaviconURL(
-      routing_id(), render_view()->GetPageId(), urls));
 }
 
 void ChromeRenderViewObserver::DidCommitProvisionalLoad(
@@ -919,61 +846,6 @@ ExternalHostBindings* ChromeRenderViewObserver::GetExternalHostBindings() {
         render_view(), routing_id()));
   }
   return external_host_bindings_.get();
-}
-
-bool ChromeRenderViewObserver::DownloadFavicon(int id,
-                                               const GURL& image_url,
-                                               int image_size) {
-  // Make sure webview was not shut down.
-  if (!render_view()->GetWebView())
-    return false;
-  // Create an image resource fetcher and assign it with a call back object.
-  image_fetchers_.push_back(linked_ptr<MultiResolutionImageResourceFetcher>(
-      new MultiResolutionImageResourceFetcher(
-          image_url, render_view()->GetWebView()->mainFrame(), id,
-          WebURLRequest::TargetIsFavicon,
-          base::Bind(&ChromeRenderViewObserver::DidDownloadFavicon,
-                     base::Unretained(this), image_size))));
-  return true;
-}
-
-void ChromeRenderViewObserver::DidDownloadFavicon(
-    int requested_size,
-    MultiResolutionImageResourceFetcher* fetcher,
-    const std::vector<SkBitmap>& images) {
-  // Notify requester of image download status.
-  Send(new IconHostMsg_DidDownloadFavicon(routing_id(),
-                                          fetcher->id(),
-                                          fetcher->image_url(),
-                                          images.empty(),
-                                          requested_size,
-                                          images));
-
-  // Remove the image fetcher from our pending list. We're in the callback from
-  // MultiResolutionImageResourceFetcher, best to delay deletion.
-  ImageResourceFetcherList::iterator iter;
-  for (iter = image_fetchers_.begin(); iter != image_fetchers_.end(); ++iter) {
-    if (iter->get() == fetcher) {
-      iter->release();
-      image_fetchers_.erase(iter);
-      break;
-    }
-  }
-  MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
-}
-
-SkBitmap ChromeRenderViewObserver::ImageFromDataUrl(const GURL& url) const {
-  std::string mime_type, char_set, data;
-  if (net::DataURL::Parse(url, &mime_type, &char_set, &data) && !data.empty()) {
-    // Decode the favicon using WebKit's image decoder.
-    webkit_glue::ImageDecoder decoder(
-        gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize));
-    const unsigned char* src_data =
-        reinterpret_cast<const unsigned char*>(&data[0]);
-
-    return decoder.Decode(src_data, data.size());
-  }
-  return SkBitmap();
 }
 
 bool ChromeRenderViewObserver::IsStrictSecurityHost(const std::string& host) {

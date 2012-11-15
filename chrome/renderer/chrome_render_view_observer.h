@@ -38,10 +38,6 @@ namespace safe_browsing {
 class PhishingClassifierDelegate;
 }
 
-namespace webkit_glue {
-class MultiResolutionImageResourceFetcher;
-}
-
 // This class holds the Chrome specific parts of RenderView, and has the same
 // lifetime.
 class ChromeRenderViewObserver : public content::RenderViewObserver,
@@ -70,8 +66,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidStartLoading() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
-  virtual void DidChangeIcon(WebKit::WebFrame* frame,
-                             WebKit::WebIconURL::Type icon_type) OVERRIDE;
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
                                         bool is_new_navigation) OVERRIDE;
   virtual void DidClearWindowObject(WebKit::WebFrame* frame) OVERRIDE;
@@ -137,7 +131,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
                                        const std::string& origin,
                                        const std::string& target);
   void OnJavaScriptStressTestControl(int cmd, int param);
-  void OnDownloadFavicon(int id, const GURL& image_url, int image_size);
   void OnSetIsPrerendering(bool is_prerendering);
   void OnSetAllowDisplayingInsecureContent(bool allow);
   void OnSetAllowRunningInsecureContent(bool allow);
@@ -162,26 +155,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   bool CaptureSnapshot(WebKit::WebView* view, SkBitmap* snapshot);
 
   ExternalHostBindings* GetExternalHostBindings();
-
-  // This callback is triggered when DownloadFavicon completes, either
-  // succesfully or with a failure. See DownloadFavicon for more
-  // details.
-  void DidDownloadFavicon(
-      int requested_size,
-      webkit_glue::MultiResolutionImageResourceFetcher* fetcher,
-      const std::vector<SkBitmap>& images);
-
-  // Requests to download a favicon image. When done, the RenderView
-  // is notified by way of DidDownloadFavicon. Returns true if the
-  // request was successfully started, false otherwise. id is used to
-  // uniquely identify the request and passed back to the
-  // DidDownloadFavicon method. If the image has multiple frames, the
-  // frame whose size is image_size is returned. If the image doesn't
-  // have a frame at the specified size, the first is returned.
-  bool DownloadFavicon(int id, const GURL& image_url, int image_size);
-
-  // Decodes a data: URL image or returns an empty image in case of failure.
-  SkBitmap ImageFromDataUrl(const GURL&) const;
 
   // Determines if a host is in the strict security host set.
   bool IsStrictSecurityHost(const std::string& host);
@@ -218,13 +191,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
 
   // External host exposed through automation controller.
   scoped_ptr<ExternalHostBindings> external_host_bindings_;
-
-  typedef std::vector<
-      linked_ptr<webkit_glue::MultiResolutionImageResourceFetcher> >
-    ImageResourceFetcherList;
-
-  // ImageResourceFetchers schedule via DownloadImage.
-  ImageResourceFetcherList image_fetchers_;
 
   // A color page overlay when visually de-emaphasized.
   scoped_ptr<WebViewColorOverlay> dimmed_color_overlay_;
