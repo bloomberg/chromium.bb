@@ -6,6 +6,7 @@
 #define GOOGLE_CACHEINVALIDATION_DEPS_CALLBACK_H_
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 
 #define INVALIDATION_CALLBACK1_TYPE(Arg1) ::base::Callback<void(Arg1)>
@@ -17,8 +18,6 @@
 namespace invalidation {
 
 typedef ::base::Closure Closure;
-
-static inline void DoNothing() {}
 
 template <class T>
 bool IsCallbackRepeatable(const T* callback) {

@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -32,9 +33,6 @@ namespace browser_sync {
 namespace {
 
 using ::testing::NiceMock;
-
-// Needed by BlockForSyncThread().
-void DoNothing() {}
 
 // Since all the interesting stuff happens on the sync thread, we have
 // to be careful to use GTest/GMock only on the main thread since they
@@ -150,7 +148,7 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
     base::RunLoop run_loop;
     ASSERT_TRUE(sync_thread_.message_loop_proxy()->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&DoNothing),
+        base::Bind(&base::DoNothing),
         run_loop.QuitClosure()));
     run_loop.Run();
   }

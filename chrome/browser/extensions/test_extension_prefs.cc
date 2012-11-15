@@ -33,8 +33,6 @@ namespace extensions {
 
 namespace {
 
-void DoNothing() {}
-
 // Mock ExtensionPrefs class with artificial clock to guarantee that no two
 // extensions get the same installation time stamp and we can reliably
 // assert the installation order in the tests below.
@@ -85,7 +83,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
     ASSERT_TRUE(
         task_runner_->PostTaskAndReply(
             FROM_HERE,
-            base::Bind(&DoNothing),
+            base::Bind(&base::DoNothing),
             run_loop.QuitClosure()));
     run_loop.Run();
   }

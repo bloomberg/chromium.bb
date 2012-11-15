@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -72,18 +73,12 @@ void FakeSyncManager::UpdateInvalidatorState(InvalidatorState state) {
   }
 }
 
-namespace {
-
-void DoNothing() {}
-
-}  // namespace
-
 void FakeSyncManager::WaitForSyncThread() {
   // Post a task to |sync_task_runner_| and block until it runs.
   base::RunLoop run_loop;
   if (!sync_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&DoNothing),
+      base::Bind(&base::DoNothing),
       run_loop.QuitClosure())) {
     NOTREACHED();
   }

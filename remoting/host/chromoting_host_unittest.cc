@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "remoting/base/auto_thread_task_runner.h"
@@ -59,9 +60,6 @@ void PostQuitTask(MessageLoop* message_loop) {
 // done callbacks.
 ACTION(RunDoneTask) {
   arg1.Run();
-}
-
-void DoNothing() {
 }
 
 }  // namespace
@@ -520,7 +518,7 @@ TEST_F(ChromotingHostTest, Connect) {
   Expectation video_packet_sent = ExpectClientConnected(
       0, InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
   Expectation client_disconnected = ExpectClientDisconnected(
-      0, true, video_packet_sent, InvokeWithoutArgs(DoNothing));
+      0, true, video_packet_sent, InvokeWithoutArgs(base::DoNothing));
   EXPECT_CALL(host_status_observer_, OnShutdown()).After(client_disconnected);
 
   host_->Start(xmpp_login_);
@@ -563,14 +561,14 @@ TEST_F(ChromotingHostTest, Reconnect) {
       InvokeWithoutArgs(this, &ChromotingHostTest::DisconnectClient1),
       InvokeWithoutArgs(this, &ChromotingHostTest::QuitMainMessageLoop)));
   ExpectClientDisconnectEffects(
-      0, true, video_packet_sent1, InvokeWithoutArgs(DoNothing));
+      0, true, video_packet_sent1, InvokeWithoutArgs(base::DoNothing));
 
   // When a video packet is received on the second connection, shut down the
   // host.
   Expectation video_packet_sent2 = ExpectClientConnected(
       1, InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
   Expectation client_disconnected2 = ExpectClientDisconnected(
-      1, true, video_packet_sent2, InvokeWithoutArgs(DoNothing));
+      1, true, video_packet_sent2, InvokeWithoutArgs(base::DoNothing));
   EXPECT_CALL(host_status_observer_, OnShutdown()).After(client_disconnected2);
 
   host_->Start(xmpp_login_);
@@ -592,11 +590,11 @@ TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
               this,
               &ChromotingHostTest::SimulateClientConnection, 1, true, false)));
   ExpectClientDisconnected(
-      0, true, video_packet_sent1, InvokeWithoutArgs(DoNothing));
+      0, true, video_packet_sent1, InvokeWithoutArgs(base::DoNothing));
   Expectation video_packet_sent2 = ExpectClientConnected(
       1, InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
   Expectation client_disconnected2 = ExpectClientDisconnected(
-      1, true, video_packet_sent2, InvokeWithoutArgs(DoNothing));
+      1, true, video_packet_sent2, InvokeWithoutArgs(base::DoNothing));
   EXPECT_CALL(host_status_observer_, OnShutdown()).After(client_disconnected2);
 
   host_->Start(xmpp_login_);
@@ -690,7 +688,8 @@ TEST_F(ChromotingHostTest, OnSessionRouteChange) {
           session_jid1_, channel_name, _))
       .After(video_packet_sent)
       .WillOnce(InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
-  ExpectClientDisconnected(0, true, route_change, InvokeWithoutArgs(DoNothing));
+  ExpectClientDisconnected(0, true, route_change,
+                           InvokeWithoutArgs(base::DoNothing));
   EXPECT_CALL(host_status_observer_, OnShutdown());
 
   host_->Start(xmpp_login_);

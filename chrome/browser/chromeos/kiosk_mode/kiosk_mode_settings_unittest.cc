@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -61,16 +62,11 @@ class KioskModeSettingsTest : public testing::Test {
 
   void ReInitialize() {
     KioskModeSettings::Get()->set_initialized(false);
-    KioskModeSettings::Get()->Initialize(
-        base::Bind(&KioskModeSettingsTest::DoNothing,
-                   base::Unretained(this)));
+    KioskModeSettings::Get()->Initialize(base::Bind(&base::DoNothing));
   }
 
   void DisableKioskModeSettings() {
     KioskModeSettings::Get()->set_initialized(false);
-  }
-
-  void DoNothing() {
   }
 
   MessageLoop message_loop_;
