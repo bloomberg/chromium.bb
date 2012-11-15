@@ -206,9 +206,11 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
                                     net::CookieOptions(),
                                     blocked_by_policy);
   net::CookieList cookie_list;
-  net::ParsedCookie parsed_cookie("CookieName=CookieValue");
   scoped_ptr<net::CanonicalCookie> cookie(
-      net::CanonicalCookie::Create(GURL("http://google.com"), parsed_cookie));
+      net::CanonicalCookie::Create(GURL("http://google.com"),
+                                   "CookieName=CookieValue",
+                                   base::Time::Now(), net::CookieOptions()));
+
   cookie_list.push_back(*cookie);
   content_settings->OnCookiesRead(GURL("http://google.com"),
                                   GURL("http://google.com"),
