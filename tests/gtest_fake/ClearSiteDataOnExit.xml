@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<testsuites disabled="" errors="" failures="" name="AllTests" tests="" time="">
+  <testsuite disabled="" errors="" failures="" name="PolicyTest" tests="24" time="">
+    <testcase classname="PolicyTest" name="BookmarkBarEnabled" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="ClearSiteDataOnExit" status="run" time="1.1"/>
+    <testcase classname="PolicyTest" name="DefaultSearchProvider" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="ForceSafeSearch" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="ReplaceSearchTerms" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="DisableSpdy" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="DisabledPlugins" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="DisabledPluginsExceptions" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="EnabledPlugins" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="AlwaysAuthorizePlugins" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="DeveloperToolsDisabled" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="DownloadDirectory" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="ExtensionInstallBlacklist" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="ExtensionInstallWhitelist" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="ExtensionInstallForcelist" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="HomepageLocation" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="IncognitoEnabled" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="Javascript" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="SavingBrowserHistoryDisabled" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="TranslateEnabled" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="URLBlacklist" status="notrun" time="0.000"/>
+    <testcase classname="PolicyTest" name="DISABLED_DisableScreenshotsFeedback" status="notrun" time="0.000"/>
+  </testsuite>
+  <testsuite disabled="" errors="" failures="" name="PredictorBrowserTest" tests="2" time="">
+    <testcase classname="PredictorBrowserTest" name="ShutdownStartupCycle" status="notrun" time="0.000"/>
+  </testsuite>
+</testsuites>

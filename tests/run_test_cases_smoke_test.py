@@ -12,6 +12,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from xml.dom import minidom
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
@@ -36,6 +37,31 @@ def RunTest(arguments):
   out, err = proc.communicate() or ('', '')
 
   return (out, err, proc.returncode)
+
+
+def trim_xml_whitespace(data):
+  """Recursively remove non-important elements."""
+  children_to_remove = []
+  for child in data.childNodes:
+    if child.nodeType == minidom.Node.TEXT_NODE and not child.data.strip():
+      children_to_remove.append(child)
+    elif child.nodeType == minidom.Node.COMMENT_NODE:
+      children_to_remove.append(child)
+    elif child.nodeType == minidom.Node.ELEMENT_NODE:
+      trim_xml_whitespace(child)
+  for child in children_to_remove:
+    data.removeChild(child)
+
+
+def load_xml_as_string_and_filter(filepath):
+  """Serializes XML to a list of strings that is consistently formatted
+  (ignoring whitespace between elements) so that it may be compared.
+  """
+  with open(filepath, 'r') as f:
+    xml = minidom.parse(f)
+
+  trim_xml_whitespace(xml)
+  return xml.toprettyxml(indent='  ').splitlines()
 
 
 class RunTestCases(unittest.TestCase):
@@ -232,6 +258,21 @@ class RunTestCases(unittest.TestCase):
           test_cases=test_cases)
     finally:
       shutil.rmtree(tempdir)
+
+  def test_xml(self):
+    out, err, return_code = RunTest(
+        [
+          # In that case, it's an XML file even if it has the wrong extension.
+          '--gtest_output=xml:' + self.filename,
+          '--no-dump',
+          os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_xml.py'),
+        ])
+    self.assertEqual(0, return_code, out)
+    self.assertEqual('', err)
+    actual_xml = load_xml_as_string_and_filter(self.filename)
+    expected_xml = load_xml_as_string_and_filter(
+        os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'expected.xml'))
+    self.assertEqual(expected_xml, actual_xml)
 
 
 if __name__ == '__main__':

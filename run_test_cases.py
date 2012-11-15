@@ -16,10 +16,14 @@ import optparse
 import os
 import Queue
 import random
+import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import threading
 import time
+from xml.dom import minidom
 
 import run_isolated
 
@@ -50,7 +54,6 @@ GTEST_ENV_VARS_TO_REMOVE = [
   # TODO(maruel): Handle.
   'GTEST_ALSO_RUN_DISABLED_TESTS',
   'GTEST_FILTER',
-  # TODO(maruel): Handle.
   'GTEST_OUTPUT',
   'GTEST_RANDOM_SEED',
   # TODO(maruel): Handle.
@@ -635,9 +638,53 @@ def LogResults(result_file, results):
     json.dump(results, f, sort_keys=True, indent=2)
 
 
+def append_gtest_output_to_xml(final_xml, filepath):
+  """Combines the shard xml file with the final xml file."""
+  try:
+    with open(filepath) as shard_xml_file:
+      shard_xml = minidom.parse(shard_xml_file)
+  except IOError:
+    # If the shard crashed, gtest will not have generated an xml file.
+    return final_xml
+
+  if not final_xml:
+    # Out final xml is empty, let's prepopulate it with the first one we see.
+    return shard_xml
+
+  final_testsuites_by_name = dict(
+      (suite.getAttribute('name'), suite)
+      for suite in final_xml.documentElement.getElementsByTagName('testsuite'))
+
+  for testcase in shard_xml.documentElement.getElementsByTagName('testcase'):
+    # Don't bother updating the final xml if there is no data.
+    status = testcase.getAttribute('status')
+    if status == 'notrun':
+      continue
+
+    name = testcase.getAttribute('name')
+    # Look in our final xml to see if it's there.
+    to_remove = []
+    final_testsuite = final_testsuites_by_name[
+        testcase.getAttribute('classname')]
+    for final_testcase in final_testsuite.getElementsByTagName('testcase'):
+      # Trim all the notrun testcase instances to add the new instance there.
+      # This is to make sure it works properly in case of a testcase being run
+      # multiple times.
+      if (final_testcase.getAttribute('name') == name and
+          final_testcase.getAttribute('status') == 'notrun'):
+        to_remove.append(final_testcase)
+
+    for item in to_remove:
+      final_testsuite.removeChild(item)
+    # Reparent the XML node.
+    final_testsuite.appendChild(testcase)
+
+  return final_xml
+
+
 def run_test_cases(
-    cmd, test_cases, jobs, timeout, retries, run_all, max_failures,
-    no_cr, result_file):
+    cmd, cwd, test_cases, jobs, timeout, retries, run_all, max_failures,
+    no_cr, gtest_output, result_file):
   """Traces test cases one by one."""
   if not test_cases:
     return 0
@@ -646,16 +693,54 @@ def run_test_cases(
   else:
     # If 10% of test cases fail, just too bad.
     decider = RunSome(len(test_cases), retries, 2, 0.1, max_failures)
-  with ThreadPool(jobs, len(test_cases)) as pool:
-    function = Runner(
-        cmd, os.getcwd(), timeout, pool.tasks.progress, retries, decider).map
-    logging.debug('Adding tests to ThreadPool')
-    pool.tasks.progress.use_cr_only = not no_cr
-    for test_case in test_cases:
-      pool.add_task(function, test_case)
-    logging.debug('All tests added to the ThreadPool')
-    results = pool.join()
-    duration = time.time() - pool.tasks.progress.start
+
+  tempdir = None
+  try:
+    if gtest_output:
+      if gtest_output.startswith('xml'):
+        # Have each shard write an XML file and them merge them all.
+        tempdir = tempfile.mkdtemp(prefix='run_test_cases')
+        cmd.append('--gtest_output=' + tempdir)
+        # Figure out the result filepath in case we can't parse it, it'd be
+        # annoying to error out after running the tests.
+        if gtest_output == 'xml':
+          gtest_output = os.path.join(cwd, 'test_detail.xml')
+        else:
+          match = re.match(r'xml\:(.+)', gtest_output)
+          if not match:
+            print >> sys.stderr, 'Can\'t parse --gtest_output=%s' % gtest_output
+            return 1
+          gtest_output = os.path.join(cwd, match.group(1))
+      else:
+        print >> sys.stderr, 'Can\'t parse --gtest_output=%s' % gtest_output
+        return 1
+
+    with ThreadPool(jobs, len(test_cases)) as pool:
+      function = Runner(
+          cmd, cwd, timeout, pool.tasks.progress, retries, decider).map
+      logging.debug('Adding tests to ThreadPool')
+      pool.tasks.progress.use_cr_only = not no_cr
+      for test_case in test_cases:
+        pool.add_task(function, test_case)
+      logging.debug('All tests added to the ThreadPool')
+      results = pool.join()
+      duration = time.time() - pool.tasks.progress.start
+
+    # Merges the XMLs into one before having the directory deleted.
+    # TODO(maruel): Use two threads?
+    if gtest_output:
+      result = None
+      for i in sorted(os.listdir(tempdir)):
+        result = append_gtest_output_to_xml(result, os.path.join(tempdir, i))
+
+      if result:
+        with open(gtest_output, 'w') as f:
+          result.writexml(f)
+      else:
+        logging.error('Didn\'t find any XML file to write to %s' % gtest_output)
+  finally:
+    if tempdir:
+      shutil.rmtree(tempdir)
 
   results = dict((item[0]['test_case'], item) for item in results if item)
   # Total time taken to run each test case.
@@ -892,11 +977,19 @@ def main(argv):
   parser.add_option(
       '--result',
       help='Override the default name of the generated .run_test_cases file')
-  parser.add_option(
+
+  group = optparse.OptionGroup(parser, 'google-test compability flags')
+  group.add_option(
       '--gtest_list_tests',
       action='store_true',
       help='List all the test cases unformatted. Keeps compatibility with the '
            'executable itself.')
+  group.add_option(
+      '--gtest_output',
+      default=os.environ.get('GTEST_OUTPUT', ''),
+      help='XML output to generate')
+  parser.add_option_group(group)
+
   options, args = parser.parse_args(argv)
 
   if not args:
@@ -914,7 +1007,8 @@ def main(argv):
     # Special case, return the output of the target unmodified.
     return subprocess.call(cmd + ['--gtest_list_tests'])
 
-  test_cases = parser.process_gtest_options(cmd, os.getcwd(), options)
+  cwd = os.getcwd()
+  test_cases = parser.process_gtest_options(cmd, cwd, options)
   if not test_cases:
     # If test_cases is None then there was a problem generating the tests to
     # run, so this should be considered a failure.
@@ -927,6 +1021,7 @@ def main(argv):
 
   return run_test_cases(
       cmd,
+      cwd,
       test_cases,
       options.jobs,
       options.timeout,
@@ -934,6 +1029,7 @@ def main(argv):
       options.run_all,
       options.max_failures,
       options.no_cr,
+      options.gtest_output,
       result_file)
 
 

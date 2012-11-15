@@ -102,9 +102,10 @@ class RunTestCases(unittest.TestCase):
     old = run_test_cases.run_test_cases
     exe = os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py')
     def expect(
-        executable, test_cases, jobs, timeout, retries, run_all, max_failures,
-        no_cr, result_file):
+        executable, cwd, test_cases, jobs, timeout, retries, run_all,
+        max_failures, no_cr, gtest_output, result_file):
       self.assertEqual(run_test_cases.fix_python_path([exe]), executable)
+      self.assertEqual(os.getcwd(), cwd)
       # They are in reverse order due to test shuffling.
       self.assertEqual(['Foo.Bar1', 'Foo.Bar/3'], test_cases)
       self.assertEqual(run_test_cases.num_processors(), jobs)
@@ -112,6 +113,7 @@ class RunTestCases(unittest.TestCase):
       self.assertEqual(2, retries)
       self.assertEqual(None, run_all)
       self.assertEqual(None, no_cr)
+      self.assertEqual('', gtest_output)
       self.assertEqual(None, max_failures)
       self.assertEqual(exe + '.run_test_cases', result_file)
       return 89
