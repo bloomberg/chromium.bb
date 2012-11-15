@@ -28,7 +28,7 @@ html[oobe=new][screen=lock][lockanimations=new] .login-header-bar-animate-fast {
 }
 
 html[oobe=new][screen=lock][lockanimations=new] .login-header-bar-animate-slow {
-  -webkit-transition: opacity 1s ease-out;
+  -webkit-transition: opacity 2s ease-out;
 }
 
 html[oobe=new] .header-bar-item:first-child {
