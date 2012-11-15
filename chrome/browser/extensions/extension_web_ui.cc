@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -98,11 +99,12 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
   void Init() {
     if (extension_) {
       // Fetch resources for all supported scale factors for which there are
-      // resources. Load image reps for all supported scale factors immediately
-      // instead of in an as needed fashion to be consistent with how favicons
-      // are requested for chrome:// and page URLs.
+      // resources. Load image reps for all supported scale factors (in
+      // addition to 1x) immediately instead of in an as needed fashion to be
+      // consistent with how favicons are requested for chrome:// and page
+      // URLs.
       const std::vector<ui::ScaleFactor>& scale_factors =
-          ui::GetSupportedScaleFactors();
+          FaviconUtil::GetFaviconScaleFactors();
       std::vector<ImageLoadingTracker::ImageRepresentation> info_list;
       for (size_t i = 0; i < scale_factors.size(); ++i) {
         float scale = ui::GetScaleFactorScale(scale_factors[i]);

@@ -314,7 +314,7 @@ void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
     const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results) {
   gfx::Image resized_image = FaviconUtil::SelectFaviconFramesFromPNGs(
       favicon_bitmap_results,
-      ui::GetSupportedScaleFactors(),
+      FaviconUtil::GetFaviconScaleFactors(),
       preferred_icon_size());
   if (!resized_image.IsEmpty())
     UpdateFavicon(entry, &resized_image);
@@ -412,7 +412,8 @@ void FaviconHandler::OnDidDownloadFavicon(
              DoUrlAndIconMatch(*current_candidate(), image_url,
                                i->second.icon_type)) {
     float score = 0.0f;
-    std::vector<ui::ScaleFactor> scale_factors = ui::GetSupportedScaleFactors();
+    std::vector<ui::ScaleFactor> scale_factors =
+        FaviconUtil::GetFaviconScaleFactors();
     gfx::Image image(SelectFaviconFrames(bitmaps, scale_factors, requested_size,
                                          &score));
 
@@ -471,8 +472,7 @@ void FaviconHandler::UpdateFaviconMappingAndFetch(
   std::vector<GURL> icon_urls;
   icon_urls.push_back(icon_url);
   GetFaviconService()->UpdateFaviconMappingsAndFetch(page_url, icon_urls,
-      icon_type, preferred_icon_size(), ui::GetSupportedScaleFactors(),
-      consumer, callback);
+      icon_type, preferred_icon_size(), consumer, callback);
 }
 
 void FaviconHandler::GetFavicon(
@@ -481,7 +481,7 @@ void FaviconHandler::GetFavicon(
     CancelableRequestConsumerBase* consumer,
     const FaviconService::FaviconResultsCallback& callback) {
   GetFaviconService()->GetFavicon(icon_url, icon_type, preferred_icon_size(),
-      ui::GetSupportedScaleFactors(), consumer, callback);
+      consumer, callback);
 }
 
 void FaviconHandler::GetFaviconForURL(
@@ -492,7 +492,7 @@ void FaviconHandler::GetFaviconForURL(
   GetFaviconService()->GetFaviconForURL(
       FaviconService::FaviconForURLParams(profile_, page_url, icon_types,
                                           preferred_icon_size(), consumer),
-      ui::GetSupportedScaleFactors(), callback);
+                                          callback);
 }
 
 void FaviconHandler::SetHistoryFavicons(const GURL& page_url,

@@ -24,6 +24,14 @@ struct FaviconBitmapResult;
 // Utility class for common favicon related code.
 class FaviconUtil {
  public:
+  // Returns the scale factors at which favicons should be fetched. This is
+  // different from ui::GetSupportedScaleFactors() because clients which do
+  // not support 1x should still fetch a favicon for 1x to push to sync. This
+  // guarantees that the clients receiving sync updates pushed by this client
+  // receive a favicon (potentially of the wrong scale factor) and do not show
+  // the default favicon.
+  static std::vector<ui::ScaleFactor> GetFaviconScaleFactors();
+
   // Starts the download of the given favicon |url| from the given render view
   // host. When the download is finished, an IconHostMsg_DidDownloadFavicon IPC
   // message will be sent.

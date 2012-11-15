@@ -23,10 +23,7 @@ namespace {
 // Returns pixel size under maximal scale factor for the icon whose device
 // independent size is |size_in_dip|
 int GetSizeForMaxScaleFactor(int size_in_dip) {
-  std::vector<ui::ScaleFactor> supported_scale_factors =
-      ui::GetSupportedScaleFactors();
-  // Scale factors are in ascending order, so the last one is the one we need.
-  ui::ScaleFactor max_scale_factor = supported_scale_factors.back();
+  ui::ScaleFactor max_scale_factor = ui::GetMaxScaleFactor();
   float max_scale_factor_scale = ui::GetScaleFactorScale(max_scale_factor);
 
   return static_cast<int>(size_in_dip * max_scale_factor_scale);
@@ -35,14 +32,8 @@ int GetSizeForMaxScaleFactor(int size_in_dip) {
 // Returns bitmap for the default icon with size equal to the default icon's
 // pixel size under maximal supported scale factor.
 SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
-  std::vector<ui::ScaleFactor> supported_scale_factors =
-      ui::GetSupportedScaleFactors();
-  // Scale factors are in ascending order, so the last one is the one we need.
-  ui::ScaleFactor max_scale_factor =
-      supported_scale_factors[supported_scale_factors.size() - 1];
-
   return extensions::Extension::GetDefaultIcon(is_app).
-      GetRepresentation(max_scale_factor).sk_bitmap();
+      GetRepresentation(ui::GetMaxScaleFactor()).sk_bitmap();
 }
 
 }  // namespace
