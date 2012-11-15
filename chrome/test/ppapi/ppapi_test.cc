@@ -32,7 +32,6 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
-#include "media/audio/audio_manager.h"
 #include "net/base/net_util.h"
 #include "net/base/test_data_directory.h"
 #include "net/test/test_server.h"
@@ -53,11 +52,6 @@ const char library_name[] = "ppapi_tests.plugin";
 #elif defined(OS_POSIX)
 const char library_name[] = "libppapi_tests.so";
 #endif
-
-bool IsAudioOutputAvailable() {
-  scoped_ptr<media::AudioManager> audio_manager(media::AudioManager::Create());
-  return audio_manager->HasAudioOutputDevices();
-}
 
 }  // namespace
 
@@ -208,22 +202,12 @@ void PPAPITestBase::RunTestWithWebSocketServer(const std::string& test_case) {
 
 void PPAPITestBase::RunTestIfAudioOutputAvailable(
     const std::string& test_case) {
-  if (IsAudioOutputAvailable()) {
-    RunTest(test_case);
-  } else {
-    LOG(WARNING) << "PPAPITest: " << test_case <<
-        " was not executed because there are no audio devices available.";
-  }
+  RunTest(test_case);
 }
 
 void PPAPITestBase::RunTestViaHTTPIfAudioOutputAvailable(
     const std::string& test_case) {
-  if (IsAudioOutputAvailable()) {
-    RunTestViaHTTP(test_case);
-  } else {
-    LOG(WARNING) << "PPAPITest: " << test_case <<
-        " was not executed because there are no audio devices available.";
-  }
+  RunTestViaHTTP(test_case);
 }
 
 std::string PPAPITestBase::StripPrefixes(const std::string& test_name) {
