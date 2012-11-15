@@ -46,23 +46,23 @@ cr.define('options', function() {
      * Creates all extension items from scratch.
      * @private
      */
-     showExtensionNodes_: function() {
-       // Iterate over the extension data and add each item to the list.
-       this.data_.extensions.forEach(this.createNode_, this);
+    showExtensionNodes_: function() {
+      // Iterate over the extension data and add each item to the list.
+      this.data_.extensions.forEach(this.createNode_, this);
 
-       if (this.data_.extensions.length == 0)
-         this.classList.add('empty-extension-list');
-       else
-         this.classList.remove('empty-extension-list');
-     },
+      if (this.data_.extensions.length == 0)
+        this.classList.add('empty-extension-list');
+      else
+        this.classList.remove('empty-extension-list');
+    },
 
-     /**
-      * Synthesizes and initializes an HTML element for the extension metadata
-      * given in |extension|.
-      * @param {Object} extension A dictionary of extension metadata.
-      * @private
-      */
-     createNode_: function(extension) {
+    /**
+     * Synthesizes and initializes an HTML element for the extension metadata
+     * given in |extension|.
+     * @param {Object} extension A dictionary of extension metadata.
+     * @private
+     */
+    createNode_: function(extension) {
       var template = $('template-collection').querySelector(
           '.extension-list-item-wrapper');
       var node = template.cloneNode(true);
@@ -181,6 +181,13 @@ cr.define('options', function() {
           enable.addEventListener('click', function(e) {
             chrome.send('extensionSettingsEnable',
                         [extension.id, e.target.checked ? 'true' : 'false']);
+
+            // This may seem counter-intuitive (to not set/clear the checkmark)
+            // but this page will be updated asynchronously if the extension
+            // becomes enabled/disabled. It also might not become enabled or
+            // disabled, because the user might e.g. get prompted when enabling
+            // and choose not to.
+            e.preventDefault();
           });
         }
 
