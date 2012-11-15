@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/test/test_utils.h"
@@ -286,6 +287,7 @@ void DownloadTestFlushObserver::WaitForFlush() {
   download_manager_->AddObserver(this);
   // The wait condition may have been met before WaitForFlush() was called.
   CheckDownloadsInProgress(true);
+  BrowserThread::GetBlockingPool()->FlushForTesting();
   RunMessageLoop();
 }
 

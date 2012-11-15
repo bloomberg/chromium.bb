@@ -62,7 +62,7 @@ void ImageDecoder::DecodeImageInSandbox(
     const std::vector<unsigned char>& image_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   UtilityProcessHost* utility_process_host = UtilityProcessHost::Create(
-      this, target_thread_id_);
+      this, BrowserThread::GetMessageLoopProxyForThread(target_thread_id_));
   utility_process_host->EnableZygote();
   if (image_codec_ == ROBUST_JPEG_CODEC) {
     utility_process_host->Send(

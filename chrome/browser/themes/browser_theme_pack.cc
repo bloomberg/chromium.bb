@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -516,7 +517,6 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
 }
 
 bool BrowserThemePack::WriteToDisk(const FilePath& path) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // Add resources for each of the property arrays.
   RawDataForWriting resources;
   resources[kHeaderID] = base::StringPiece(
@@ -1100,9 +1100,6 @@ void BrowserThemePack::CreateTabBackgroundImages(ImageCache* images) const {
 
 void BrowserThemePack::RepackImages(const ImageCache& images,
                                     RawImages* reencoded_images) const {
-
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
   typedef std::vector<ui::ScaleFactor> ScaleFactors;
   for (ImageCache::const_iterator it = images.begin();
        it != images.end(); ++it) {
@@ -1150,7 +1147,6 @@ void BrowserThemePack::CopyImagesTo(const ImageCache& source,
 
 void BrowserThemePack::AddRawImagesTo(const RawImages& images,
                                       RawDataForWriting* out) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   for (RawImages::const_iterator it = images.begin(); it != images.end();
        ++it) {
     (*out)[it->first] = base::StringPiece(

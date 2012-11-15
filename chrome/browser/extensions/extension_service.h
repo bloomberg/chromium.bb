@@ -50,6 +50,10 @@ class GURL;
 class Profile;
 class Version;
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace chromeos {
 class ExtensionInputMethodEventRouter;
 }
@@ -132,6 +136,9 @@ class ExtensionServiceInterface : public syncer::SyncableService {
       const extensions::Extension& extension) = 0;
 
   virtual bool is_ready() = 0;
+
+  // Returns task runner for crx installation file I/O operations.
+  virtual base::SequencedTaskRunner* GetFileTaskRunner() = 0;
 };
 
 // Manages installed and running Chromium extensions.
@@ -509,6 +516,8 @@ class ExtensionService
   // Whether the extension service is ready.
   virtual bool is_ready() OVERRIDE;
 
+  virtual base::SequencedTaskRunner* GetFileTaskRunner() OVERRIDE;
+
   extensions::ComponentLoader* component_loader() {
     return component_loader_.get();
   }
@@ -560,6 +569,9 @@ class ExtensionService
   // For the extension in |version_path| with |id|, check to see if it's an
   // externally managed extension.  If so, uninstall it.
   void CheckExternalUninstall(const std::string& id);
+
+  // Changes sequenced task runner for crx installation tasks to |task_runner|.
+  void SetFileTaskRunnerForTesting(base::SequencedTaskRunner* task_runner);
 
   // Clear all ExternalProviders.
   void ClearProvidersForTesting();
@@ -955,6 +967,8 @@ class ExtensionService
   extensions::AppShortcutManager app_shortcut_manager_;
 
   scoped_ptr<ExtensionErrorUI> extension_error_ui_;
+  // Sequenced task runner for extension related file operations.
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
 #if defined(ENABLE_EXTENSIONS)
   scoped_ptr<extensions::ExtensionActionStorageManager>

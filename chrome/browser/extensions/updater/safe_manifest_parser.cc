@@ -51,7 +51,7 @@ void SafeManifestParser::ParseInSandbox() {
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
   if (use_utility_process) {
     content::UtilityProcessHost* host = content::UtilityProcessHost::Create(
-        this, BrowserThread::UI);
+        this, BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI));
     host->EnableZygote();
     host->Send(new ChromeUtilityMsg_ParseUpdateManifest(xml_));
   } else {

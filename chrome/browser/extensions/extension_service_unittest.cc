@@ -436,6 +436,7 @@ void ExtensionServiceTestBase::InitializeExtensionService(
           CommandLine::ForCurrentProcess(),
           extensions_install_dir,
           autoupdate_enabled);
+  service_->SetFileTaskRunnerForTesting(loop_.message_loop_proxy());
   service_->set_extensions_enabled(true);
   service_->set_show_extensions_prompts(false);
   service_->set_install_updates_when_idle_for_test(false);
@@ -679,7 +680,6 @@ class ExtensionServiceTest
         << "Path does not exist: "<< crx_path.value().c_str();
     // no client (silent install)
     scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
-
     installer->set_install_source(install_location);
     installer->InstallCrx(crx_path);
 
@@ -5814,7 +5814,7 @@ TEST_F(ExtensionServiceTest, WipeOutExtension) {
       data_dir_.AppendASCII("good.crx"));
 
   service_->CheckForExternalUpdates();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   EXPECT_FALSE(extensions::HasExternalInstallError(service_));
   EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
   EXPECT_TRUE(service_->IsExtensionEnabled(page_action));

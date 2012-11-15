@@ -19,6 +19,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -241,6 +242,11 @@ void ExtensionService::CheckExternalUninstall(const std::string& id) {
     return;
   }
   UninstallExtension(id, true, NULL);
+}
+
+void ExtensionService::SetFileTaskRunnerForTesting(
+    base::SequencedTaskRunner* task_runner) {
+  file_task_runner_ = task_runner;
 }
 
 void ExtensionService::ClearProvidersForTesting() {
@@ -634,8 +640,8 @@ bool ExtensionService::UpdateExtension(const std::string& id,
                  << " because it is not installed or pending";
     // Delete extension_path since we're not creating a CrxInstaller
     // that would do it for us.
-    if (!BrowserThread::PostTask(
-            BrowserThread::FILE, FROM_HERE,
+    if (!GetFileTaskRunner()->PostTask(
+            FROM_HERE,
             base::Bind(
                 &extension_file_util::DeleteFile, extension_path, false)))
       NOTREACHED();
@@ -826,8 +832,8 @@ bool ExtensionService::UninstallExtension(
 
   // Tell the backend to start deleting installed extensions on the file thread.
   if (Extension::LOAD != extension->location()) {
-    if (!BrowserThread::PostTask(
-            BrowserThread::FILE, FROM_HERE,
+    if (!GetFileTaskRunner()->PostTask(
+            FROM_HERE,
             base::Bind(
                 &extension_file_util::UninstallExtension,
                 install_directory_,
@@ -1236,6 +1242,22 @@ extensions::ContentSettingsStore* ExtensionService::GetContentSettingsStore() {
 
 bool ExtensionService::is_ready() {
   return ready_;
+}
+
+base::SequencedTaskRunner* ExtensionService::GetFileTaskRunner() {
+  if (file_task_runner_)
+    return file_task_runner_;
+
+  // We should be able to interrupt any part of extension install process during
+  // shutdown. SKIP_ON_SHUTDOWN ensures that not started extension install tasks
+  // will be ignored/deleted while we will block on started tasks.
+  std::string token("ext_install-");
+  token.append(profile_->GetPath().AsUTF8Unsafe());
+  file_task_runner_ = BrowserThread::GetBlockingPool()->
+      GetSequencedTaskRunnerWithShutdownBehavior(
+        BrowserThread::GetBlockingPool()->GetNamedSequenceToken(token),
+        base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  return file_task_runner_;
 }
 
 extensions::ExtensionUpdater* ExtensionService::updater() {
@@ -1982,8 +2004,8 @@ void ExtensionService::GarbageCollectExtensions() {
     extension_paths.insert(std::make_pair(info->at(i)->extension_id,
                                           info->at(i)->extension_path));
 
-  if (!BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
+  if (!GetFileTaskRunner()->PostTask(
+          FROM_HERE,
           base::Bind(
               &extension_file_util::GarbageCollectExtensions,
               install_directory_,
@@ -2284,8 +2306,8 @@ void ExtensionService::OnExtensionInstalled(
 
       // Delete the extension directory since we're not going to
       // load it.
-      if (!BrowserThread::PostTask(
-              BrowserThread::FILE, FROM_HERE,
+      if (!GetFileTaskRunner()->PostTask(
+              FROM_HERE,
               base::Bind(&extension_file_util::DeleteFile,
                          extension->path(), true))) {
         NOTREACHED();

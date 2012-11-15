@@ -104,13 +104,12 @@ class SandboxedUnpackerTest : public testing::Test {
     ASSERT_TRUE(file_util::CreateDirectory(temp_path_));
 
     sandboxed_unpacker_ =
-        new SandboxedUnpacker(crx_path, false, Extension::INTERNAL,
-                              Extension::NO_FLAGS, extensions_dir_.path(),
-                              client_);
+        new SandboxedUnpacker(
+            crx_path, false, Extension::INTERNAL, Extension::NO_FLAGS,
+            extensions_dir_.path(),
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+            client_);
 
-    // Hack since SandboxedUnpacker gets its background thread id from
-    // the Start call, but we don't call it here.
-    sandboxed_unpacker_->thread_identifier_ = BrowserThread::FILE;
     EXPECT_TRUE(PrepareUnpackerEnv());
   }
 

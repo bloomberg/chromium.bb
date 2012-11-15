@@ -261,7 +261,9 @@ void ExternalProcessImporterClient::NotifyItemFinishedOnIOThread(
 void ExternalProcessImporterClient::StartProcessOnIOThread(
     BrowserThread::ID thread_id) {
   utility_process_host_ =
-      UtilityProcessHost::Create(this, thread_id)->AsWeakPtr();
+      UtilityProcessHost::Create(
+          this,
+          BrowserThread::GetMessageLoopProxyForThread(thread_id))->AsWeakPtr();
   utility_process_host_->DisableSandbox();
 
 #if defined(OS_MACOSX)

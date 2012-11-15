@@ -16,6 +16,7 @@
 
 namespace base {
 class DictionaryValue;
+class SequencedTaskRunner;
 }
 
 namespace extensions {
@@ -77,6 +78,7 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
                     Extension::Location location,
                     int creation_flags,
                     const FilePath& extensions_dir,
+                    base::SequencedTaskRunner* unpacker_io_task_runner,
                     SandboxedUnpackerClient* client);
 
   // Start unpacking the extension. The client is called with the results.
@@ -187,11 +189,11 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   bool RewriteImageFiles();
   bool RewriteCatalogFiles();
 
+  // Cleans up temp directory artifacts.
+  void Cleanup();
+
   // The path to the CRX to unpack.
   FilePath crx_path_;
-
-  // Our client's thread. This is the thread we respond on.
-  content::BrowserThread::ID thread_identifier_;
 
   // True if unpacking should be done by the utility process.
   bool run_out_of_process_;
@@ -230,6 +232,9 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   // Creation flags to use for the extension.  These flags will be used
   // when calling Extenion::Create() by the crx installer.
   int creation_flags_;
+
+  // Sequenced task runner where file I/O operations will be performed at.
+  scoped_refptr<base::SequencedTaskRunner> unpacker_io_task_runner_;
 };
 
 }  // namespace extensions

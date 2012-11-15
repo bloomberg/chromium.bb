@@ -16,6 +16,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/sequenced_task_runner.h"
 #include "base/utf_string_conversions.h"  // TODO(viettrungluu): delete me.
 #include "chrome/browser/extensions/crx_file.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -177,19 +178,20 @@ SandboxedUnpacker::SandboxedUnpacker(
     Extension::Location location,
     int creation_flags,
     const FilePath& extensions_dir,
+    base::SequencedTaskRunner* unpacker_io_task_runner,
     SandboxedUnpackerClient* client)
     : crx_path_(crx_path),
-      thread_identifier_(BrowserThread::ID_COUNT),
       run_out_of_process_(run_out_of_process),
       client_(client),
       extensions_dir_(extensions_dir),
       got_response_(false),
       location_(location),
-      creation_flags_(creation_flags) {
+      creation_flags_(creation_flags),
+      unpacker_io_task_runner_(unpacker_io_task_runner) {
 }
 
 bool SandboxedUnpacker::CreateTempDirectory() {
-  CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_identifier_));
+  CHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
 
   FilePath temp_dir;
   if (!FindWritableTempLocation(extensions_dir_, &temp_dir)) {
@@ -216,7 +218,7 @@ bool SandboxedUnpacker::CreateTempDirectory() {
 void SandboxedUnpacker::Start() {
   // We assume that we are started on the thread that the client wants us to do
   // file IO on.
-  CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_identifier_));
+  CHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
 
   unpack_start_time_ = base::TimeTicks::Now();
 
@@ -293,9 +295,6 @@ void SandboxedUnpacker::Start() {
 }
 
 SandboxedUnpacker::~SandboxedUnpacker() {
-  base::FileUtilProxy::Delete(
-      BrowserThread::GetMessageLoopProxyForThread(thread_identifier_),
-      temp_dir_.Take(), true, base::FileUtilProxy::StatusCallback());
 }
 
 bool SandboxedUnpacker::OnMessageReceived(const IPC::Message& message) {
@@ -325,7 +324,7 @@ void SandboxedUnpacker::OnProcessCrashed(int exit_code) {
 
 void SandboxedUnpacker::StartProcessOnIOThread(const FilePath& temp_crx_path) {
   UtilityProcessHost* host = UtilityProcessHost::Create(
-      this, thread_identifier_);
+      this, unpacker_io_task_runner_);
   // Grant the subprocess access to the entire subdir the extension file is
   // in, so that it can unpack to that dir.
   host->SetExposedDir(temp_crx_path.DirName());
@@ -336,9 +335,7 @@ void SandboxedUnpacker::StartProcessOnIOThread(const FilePath& temp_crx_path) {
 
 void SandboxedUnpacker::OnUnpackExtensionSucceeded(
     const DictionaryValue& manifest) {
-  // Skip check for unittests.
-  if (thread_identifier_ != BrowserThread::ID_COUNT)
-    CHECK(BrowserThread::CurrentlyOn(thread_identifier_));
+  CHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
   got_response_ = true;
 
   scoped_ptr<DictionaryValue> final_manifest(RewriteManifestFile(manifest));
@@ -391,7 +388,7 @@ void SandboxedUnpacker::OnUnpackExtensionSucceeded(
 }
 
 void SandboxedUnpacker::OnUnpackExtensionFailed(const string16& error) {
-  CHECK(BrowserThread::CurrentlyOn(thread_identifier_));
+  CHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
   got_response_ = true;
   ReportFailure(
       UNPACKER_CLIENT_FAILED,
@@ -569,7 +566,7 @@ void SandboxedUnpacker::ReportFailure(FailureReason reason,
                             reason, NUM_FAILURE_REASONS);
   UMA_HISTOGRAM_TIMES("Extensions.SandboxUnpackFailureTime",
                       base::TimeTicks::Now() - unpack_start_time_);
-
+  Cleanup();
   client_->OnUnpackFailure(error);
 }
 
@@ -790,6 +787,14 @@ bool SandboxedUnpacker::RewriteCatalogFiles() {
   }
 
   return true;
+}
+
+void SandboxedUnpacker::Cleanup() {
+  DCHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
+  if (!temp_dir_.Delete()) {
+    LOG(WARNING) << "Can not delete temp directory at "
+                 << temp_dir_.path().value();
+  }
 }
 
 }  // namespace extensions

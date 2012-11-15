@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/message_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/common/child_process_host_impl.h"
@@ -23,15 +23,15 @@ namespace content {
 
 UtilityProcessHost* UtilityProcessHost::Create(
     UtilityProcessHostClient* client,
-    BrowserThread::ID client_thread_id) {
-  return new UtilityProcessHostImpl(client, client_thread_id);
+    base::SequencedTaskRunner* client_task_runner) {
+  return new UtilityProcessHostImpl(client, client_task_runner);
 }
 
 UtilityProcessHostImpl::UtilityProcessHostImpl(
     UtilityProcessHostClient* client,
-    BrowserThread::ID client_thread_id)
+    base::SequencedTaskRunner* client_task_runner)
     : client_(client),
-      client_thread_id_(client_thread_id),
+      client_task_runner_(client_task_runner),
       is_batch_mode_(false),
       no_sandbox_(false),
 #if defined(OS_LINUX)
@@ -176,8 +176,8 @@ bool UtilityProcessHostImpl::StartProcess() {
 }
 
 bool UtilityProcessHostImpl::OnMessageReceived(const IPC::Message& message) {
-  BrowserThread::PostTask(
-      client_thread_id_, FROM_HERE,
+  client_task_runner_->PostTask(
+      FROM_HERE,
       base::Bind(base::IgnoreResult(
           &UtilityProcessHostClient::OnMessageReceived), client_.get(),
           message));
@@ -185,8 +185,8 @@ bool UtilityProcessHostImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void UtilityProcessHostImpl::OnProcessCrashed(int exit_code) {
-  BrowserThread::PostTask(
-      client_thread_id_, FROM_HERE,
+  client_task_runner_->PostTask(
+      FROM_HERE,
       base::Bind(&UtilityProcessHostClient::OnProcessCrashed, client_.get(),
             exit_code));
 }

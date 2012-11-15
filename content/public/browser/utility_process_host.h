@@ -33,7 +33,7 @@ class UtilityProcessHost : public IPC::Sender,
   // Used to create a utility process.
   CONTENT_EXPORT static UtilityProcessHost* Create(
       UtilityProcessHostClient* client,
-      BrowserThread::ID client_thread_id);
+      base::SequencedTaskRunner* client_task_runner);
 
   virtual ~UtilityProcessHost() {}
 

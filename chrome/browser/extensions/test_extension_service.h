@@ -65,6 +65,8 @@ class TestExtensionService : public ExtensionServiceInterface {
 
   virtual bool is_ready() OVERRIDE;
 
+  virtual base::SequencedTaskRunner* GetFileTaskRunner() OVERRIDE;
+
   virtual void AddExtension(const extensions::Extension* extension) OVERRIDE;
 
   virtual void UnloadExtension(

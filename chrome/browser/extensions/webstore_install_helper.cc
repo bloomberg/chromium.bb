@@ -74,7 +74,8 @@ void WebstoreInstallHelper::Start() {
 void WebstoreInstallHelper::StartWorkOnIOThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   utility_host_ =
-      UtilityProcessHost::Create(this, BrowserThread::IO)->AsWeakPtr();
+      UtilityProcessHost::Create(
+          this, base::MessageLoopProxy::current())->AsWeakPtr();
   utility_host_->EnableZygote();
   utility_host_->StartBatchMode();
 
