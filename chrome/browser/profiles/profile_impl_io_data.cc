@@ -300,7 +300,6 @@ ProfileImplIOData::~ProfileImplIOData() {
 void ProfileImplIOData::LazyInitializeInternal(
     ProfileParams* profile_params) const {
   ChromeURLRequestContext* main_context = main_request_context();
-  ChromeURLRequestContext* extensions_context = extensions_request_context();
 
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
@@ -315,16 +314,13 @@ void ProfileImplIOData::LazyInitializeInternal(
   // Initialize context members.
 
   ApplyProfileParamsToContext(main_context);
-  ApplyProfileParamsToContext(extensions_context);
 
   if (http_server_properties_manager())
     http_server_properties_manager()->InitializeOnIOThread();
 
   main_context->set_transport_security_state(transport_security_state());
-  extensions_context->set_transport_security_state(transport_security_state());
 
   main_context->set_net_log(io_thread->net_log());
-  extensions_context->set_net_log(io_thread->net_log());
 
   main_context->set_network_delegate(network_delegate());
 
@@ -341,8 +337,6 @@ void ProfileImplIOData::LazyInitializeInternal(
       fraudulent_certificate_reporter());
 
   main_context->set_throttler_manager(
-      io_thread_globals->throttler_manager.get());
-  extensions_context->set_throttler_manager(
       io_thread_globals->throttler_manager.get());
 
   main_context->set_proxy_service(proxy_service());
@@ -374,18 +368,7 @@ void ProfileImplIOData::LazyInitializeInternal(
     cookie_store->GetCookieMonster()->SetPersistSessionCookies(true);
   }
 
-  net::CookieMonster* extensions_cookie_store =
-      new net::CookieMonster(
-          new SQLitePersistentCookieStore(
-              lazy_params_->extensions_cookie_path,
-              lazy_params_->restore_old_session_cookies, NULL), NULL);
-  // Enable cookies for devtools and extension URLs.
-  const char* schemes[] = {chrome::kChromeDevToolsScheme,
-                           extensions::kExtensionScheme};
-  extensions_cookie_store->SetCookieableSchemes(schemes, 2);
-
   main_context->set_cookie_store(cookie_store);
-  extensions_context->set_cookie_store(extensions_cookie_store);
 
   // Setup server bound cert service.
   if (!server_bound_cert_service) {
@@ -427,7 +410,6 @@ void ProfileImplIOData::LazyInitializeInternal(
   ftp_factory_.reset(
       new net::FtpNetworkLayer(io_thread_globals->host_resolver.get()));
   main_context->set_ftp_transaction_factory(ftp_factory_.get());
-  extensions_context->set_ftp_transaction_factory(ftp_factory_.get());
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 
   main_context->set_chrome_url_data_manager_backend(
@@ -435,14 +417,59 @@ void ProfileImplIOData::LazyInitializeInternal(
 
   scoped_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
       new net::URLRequestJobFactoryImpl());
-  scoped_ptr<net::URLRequestJobFactoryImpl> extensions_job_factory(
-      new net::URLRequestJobFactoryImpl());
-
   SetUpJobFactory(main_job_factory.get(),
                   profile_params->protocol_handler_interceptor.Pass(),
                   network_delegate(),
                   main_context->ftp_transaction_factory(),
                   main_context->ftp_auth_cache());
+  main_job_factory_ = main_job_factory.Pass();
+  main_context->set_job_factory(main_job_factory_.get());
+
+#if defined(ENABLE_EXTENSIONS)
+  InitializeExtensionsRequestContext(profile_params);
+#endif
+
+  // Create a media request context based on the main context, but using a
+  // media cache.  It shares the same job factory as the main context.
+  StoragePartitionDescriptor details(FilePath(), false);
+  media_request_context_.reset(InitializeMediaRequestContext(main_context,
+                                                             details));
+
+  lazy_params_.reset();
+}
+
+void ProfileImplIOData::
+    InitializeExtensionsRequestContext(ProfileParams* profile_params) const {
+  ChromeURLRequestContext* extensions_context = extensions_request_context();
+  IOThread* const io_thread = profile_params->io_thread;
+  IOThread::Globals* const io_thread_globals = io_thread->globals();
+  ApplyProfileParamsToContext(extensions_context);
+
+  extensions_context->set_transport_security_state(transport_security_state());
+
+  extensions_context->set_net_log(io_thread->net_log());
+
+  extensions_context->set_throttler_manager(
+      io_thread_globals->throttler_manager.get());
+
+  net::CookieMonster* extensions_cookie_store =
+      new net::CookieMonster(
+          new SQLitePersistentCookieStore(
+              lazy_params_->extensions_cookie_path,
+              lazy_params_->restore_old_session_cookies, NULL), NULL);
+  // Enable cookies for devtools and extension URLs.
+  const char* schemes[] = {chrome::kChromeDevToolsScheme,
+                           extensions::kExtensionScheme};
+  extensions_cookie_store->SetCookieableSchemes(schemes, 2);
+  extensions_context->set_cookie_store(extensions_cookie_store);
+
+#if !defined(DISABLE_FTP_SUPPORT)
+  DCHECK(ftp_factory_.get());
+  extensions_context->set_ftp_transaction_factory(ftp_factory_.get());
+#endif  // !defined(DISABLE_FTP_SUPPORT)
+
+  scoped_ptr<net::URLRequestJobFactoryImpl> extensions_job_factory(
+      new net::URLRequestJobFactoryImpl());
   // TODO(shalev): The extensions_job_factory has a NULL NetworkDelegate.
   // Without a network_delegate, this protocol handler will never
   // handle file: requests, but as a side effect it makes
@@ -454,19 +481,8 @@ void ProfileImplIOData::LazyInitializeInternal(
                   NULL,
                   extensions_context->ftp_transaction_factory(),
                   extensions_context->ftp_auth_cache());
-
-  main_job_factory_ = main_job_factory.Pass();
-  main_context->set_job_factory(main_job_factory_.get());
   extensions_job_factory_ = extensions_job_factory.Pass();
   extensions_context->set_job_factory(extensions_job_factory_.get());
-
-  // Create a media request context based on the main context, but using a
-  // media cache.  It shares the same job factory as the main context.
-  StoragePartitionDescriptor details(FilePath(), false);
-  media_request_context_.reset(InitializeMediaRequestContext(main_context,
-                                                             details));
-
-  lazy_params_.reset();
 }
 
 ChromeURLRequestContext*

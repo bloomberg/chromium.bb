@@ -344,6 +344,9 @@ class ProfileIOData {
   // should use the static helper functions above to implement this.
   virtual void LazyInitializeInternal(ProfileParams* profile_params) const = 0;
 
+  // Initializes the RequestContext for extensions.
+  virtual void InitializeExtensionsRequestContext(
+      ProfileParams* profile_params) const = 0;
   // Does an on-demand initialization of a RequestContext for the given
   // isolated app.
   virtual ChromeURLRequestContext* InitializeAppRequestContext(

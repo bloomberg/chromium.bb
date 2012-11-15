@@ -76,6 +76,10 @@ class TestProfileIOData : public ProfileIOData {
       ProfileParams* profile_params) const OVERRIDE {
     NOTREACHED();
   }
+  virtual void InitializeExtensionsRequestContext(
+      ProfileParams* profile_params) const OVERRIDE {
+    NOTREACHED();
+  }
   virtual ChromeURLRequestContext* InitializeAppRequestContext(
       ChromeURLRequestContext* main_context,
       const StoragePartitionDescriptor& details,

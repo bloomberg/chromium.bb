@@ -145,6 +145,8 @@ class ProfileImplIOData : public ProfileIOData {
 
   virtual void LazyInitializeInternal(
       ProfileParams* profile_params) const OVERRIDE;
+  virtual void InitializeExtensionsRequestContext(
+      ProfileParams* profile_params) const OVERRIDE;
   virtual ChromeURLRequestContext* InitializeAppRequestContext(
       ChromeURLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
