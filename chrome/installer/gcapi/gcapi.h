@@ -53,14 +53,21 @@ BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag,
 // you called CoInitialize, call CoUninitialize before calling this function).
 BOOL __stdcall LaunchGoogleChrome();
 
-// This function launches Google Chrome after a successful install at the
-// given x,y coordinates with size height,length. Set in_background to true
-// to move Google Chrome behind all other windows or false to have it appear
-// at the default z-order. Make sure that COM is NOT initialized before you call
-// this function (so if you called CoInitialize, call CoUninitialize before
-// calling this function).
-// This call is synchronous, meaning it waits for Chrome to launch and appear
-// to resize it before returning.
+// This function launches Google Chrome after a successful install, ensuring
+// that any windows that it makes are shunted to the background. Make sure COM
+// library is NOT initialized before you call this function (so if you called
+// CoInitialize, call CoUninitialize before calling this function).
+BOOL __stdcall LaunchGoogleChromeInBackground();
+
+// This function launches Google Chrome after a successful install at the given
+// x,y coordinates with size height,length. Pass -1 for x and y to avoid moving
+// the window. Pass -1 for width and height to avoid resizing the window. Set
+// in_background to true to move Google Chrome behind all other windows or false
+// to have it appear at the default z-order. Make sure that COM is NOT
+// initialized before you call this function (so if you called CoInitialize,
+// call CoUninitialize before calling this function). This call is synchronous,
+// meaning it waits for Chrome to launch and appear to resize it before
+// returning.
 BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
                                                 int y,
                                                 int width,
@@ -100,6 +107,7 @@ BOOL __stdcall ReactivateChrome(wchar_t* brand_code,
 // Function pointer type declarations to use with GetProcAddress.
 typedef BOOL (__stdcall *GCCC_CompatibilityCheck)(BOOL, int, DWORD *);
 typedef BOOL (__stdcall *GCCC_LaunchGC)();
+typedef BOOL (__stdcall *GCCC_LaunchGoogleChromeInBackground)();
 typedef BOOL (__stdcall *GCCC_LaunchGCWithDimensions)(int, int, int, int, bool);
 typedef int (__stdcall *GCCC_GoogleChromeDaysSinceLastRun)();
 typedef BOOL (__stdcall *GCCC_CanOfferReactivation)(const wchar_t*,

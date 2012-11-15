@@ -506,6 +506,12 @@ BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
   HWND hwnd_insert_after = in_background ? HWND_BOTTOM : NULL;
   DWORD set_window_flags = in_background ? SWP_NOACTIVATE : SWP_NOZORDER;
 
+  if (x == -1 && y == -1)
+    set_window_flags |= SWP_NOMOVE;
+
+  if (width == -1 && height == -1)
+    set_window_flags |= SWP_NOSIZE;
+
   SetWindowPosParams enum_params = { x, y, width, height, set_window_flags,
                                      hwnd_insert_after, false };
 
@@ -531,6 +537,10 @@ BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
   }
 
   return found_window;
+}
+
+BOOL __stdcall LaunchGoogleChromeInBackground() {
+  return LaunchGoogleChromeWithDimensions(-1, -1, -1, -1, true);
 }
 
 int __stdcall GoogleChromeDaysSinceLastRun() {
