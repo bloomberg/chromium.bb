@@ -432,8 +432,8 @@ void WrenchMenuModel::ActiveTabChanged(WebContents* old_contents,
 }
 
 void WrenchMenuModel::TabReplacedAt(TabStripModel* tab_strip_model,
-                                    TabContents* old_contents,
-                                    TabContents* new_contents,
+                                    WebContents* old_contents,
+                                    WebContents* new_contents,
                                     int index) {
   UpdateZoomControls();
 }

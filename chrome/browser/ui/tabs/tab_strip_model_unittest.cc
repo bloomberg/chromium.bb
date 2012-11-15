@@ -317,12 +317,11 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     states_.push_back(State(contents, index, CHANGE));
   }
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             TabContents* old_contents,
-                             TabContents* new_contents,
+                             WebContents* old_contents,
+                             WebContents* new_contents,
                              int index) OVERRIDE {
-    State s(
-        new_contents ? new_contents->web_contents() : NULL, index, REPLACED);
-    s.src_contents = old_contents ? old_contents->web_contents() : NULL;
+    State s(new_contents, index, REPLACED);
+    s.src_contents = old_contents;
     states_.push_back(s);
   }
   virtual void TabPinnedStateChanged(WebContents* contents,

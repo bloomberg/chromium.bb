@@ -158,8 +158,8 @@ class WebNavigationEventRouter : public TabStripModelObserver,
 
   // TabStripModelObserver implementation.
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             TabContents* old_contents,
-                             TabContents* new_contents,
+                             content::WebContents* old_contents,
+                             content::WebContents* new_contents,
                              int index) OVERRIDE;
 
   // chrome::BrowserListObserver implementation.

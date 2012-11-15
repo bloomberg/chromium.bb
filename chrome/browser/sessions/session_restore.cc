@@ -1075,7 +1075,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     if (!session_service)
       return;
     for (int i = initial_count; i < browser->tab_count(); ++i)
-      session_service->TabRestored(chrome::GetTabContentsAt(browser, i),
+      session_service->TabRestored(chrome::GetWebContentsAt(browser, i),
                                    browser->tab_strip_model()->IsTabPinned(i));
   }
 

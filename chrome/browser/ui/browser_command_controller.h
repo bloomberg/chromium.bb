@@ -99,8 +99,8 @@ class BrowserCommandController : public CommandUpdater::CommandUpdaterDelegate,
   virtual void TabDetachedAt(content::WebContents* contents,
                              int index) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             TabContents* old_contents,
-                             TabContents* new_contents,
+                             content::WebContents* old_contents,
+                             content::WebContents* new_contents,
                              int index) OVERRIDE;
 
   // Overridden from TabRestoreServiceObserver:

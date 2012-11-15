@@ -9,15 +9,6 @@
 
 using content::WebContents;
 
-namespace {
-
-// TODO(avi): Remove when TabStripModelObserver sends WebContents.
-content::WebContents* WebContentsOf(TabContents* tab_contents) {
-  return tab_contents ? tab_contents->web_contents() : NULL;
-}
-
-}  // namespace
-
 TabStripModelObserverBridge::TabStripModelObserverBridge(TabStripModel* model,
                                                          id controller)
     : controller_(controller), model_(model) {
@@ -96,24 +87,22 @@ void TabStripModelObserverBridge::TabChangedAt(WebContents* contents,
   }
 }
 
-void TabStripModelObserverBridge::TabReplacedAt(
-    TabStripModel* tab_strip_model,
-    TabContents* old_contents,
-    TabContents* new_contents,
-    int index) {
+void TabStripModelObserverBridge::TabReplacedAt(TabStripModel* tab_strip_model,
+                                                WebContents* old_contents,
+                                                WebContents* new_contents,
+                                                int index) {
   if ([controller_ respondsToSelector:
           @selector(tabReplacedWithContents:previousContents:atIndex:)]) {
-    [controller_ tabReplacedWithContents:WebContentsOf(new_contents)
-                        previousContents:WebContentsOf(old_contents)
+    [controller_ tabReplacedWithContents:new_contents
+                        previousContents:old_contents
                                  atIndex:index];
   } else {
-    TabChangedAt(WebContentsOf(new_contents), index, ALL);
+    TabChangedAt(new_contents, index, ALL);
   }
 }
 
-void TabStripModelObserverBridge::TabMiniStateChanged(
-    WebContents* contents,
-    int index) {
+void TabStripModelObserverBridge::TabMiniStateChanged(WebContents* contents,
+                                                      int index) {
   if ([controller_ respondsToSelector:
           @selector(tabMiniStateChangedWithContents:atIndex:)]) {
     [controller_ tabMiniStateChangedWithContents:contents

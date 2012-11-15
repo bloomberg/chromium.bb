@@ -452,9 +452,8 @@ void SessionService::UpdateTabNavigation(
                                                    tab_id.id(), navigation));
 }
 
-void SessionService::TabRestored(TabContents* tab, bool pinned) {
-  SessionTabHelper* session_tab_helper =
-      SessionTabHelper::FromWebContents(tab->web_contents());
+void SessionService::TabRestored(WebContents* tab, bool pinned) {
+  SessionTabHelper* session_tab_helper = SessionTabHelper::FromWebContents(tab);
   if (!ShouldTrackChangesToWindow(session_tab_helper->window_id()))
     return;
 
@@ -1284,28 +1283,24 @@ bool SessionService::CreateTabsAndWindows(
   return true;
 }
 
-void SessionService::BuildCommandsForTab(
-    const SessionID& window_id,
-    TabContents* tab,
-    int index_in_window,
-    bool is_pinned,
-    std::vector<SessionCommand*>* commands,
-    IdToRange* tab_to_available_range) {
+void SessionService::BuildCommandsForTab(const SessionID& window_id,
+                                         WebContents* tab,
+                                         int index_in_window,
+                                         bool is_pinned,
+                                         std::vector<SessionCommand*>* commands,
+                                         IdToRange* tab_to_available_range) {
   DCHECK(tab && commands && window_id.id());
-  SessionTabHelper* session_tab_helper =
-      SessionTabHelper::FromWebContents(tab->web_contents());
+  SessionTabHelper* session_tab_helper = SessionTabHelper::FromWebContents(tab);
   const SessionID& session_id(session_tab_helper->session_id());
   commands->push_back(CreateSetTabWindowCommand(window_id, session_id));
 
-  const int current_index =
-      tab->web_contents()->GetController().GetCurrentEntryIndex();
+  const int current_index = tab->GetController().GetCurrentEntryIndex();
   const int min_index = std::max(0,
                                  current_index - max_persist_navigation_count);
   const int max_index =
       std::min(current_index + max_persist_navigation_count,
-               tab->web_contents()->GetController().GetEntryCount());
-  const int pending_index =
-      tab->web_contents()->GetController().GetPendingEntryIndex();
+               tab->GetController().GetEntryCount());
+  const int pending_index = tab->GetController().GetPendingEntryIndex();
   if (tab_to_available_range) {
     (*tab_to_available_range)[session_id.id()] =
         std::pair<int, int>(min_index, max_index);
@@ -1316,7 +1311,7 @@ void SessionService::BuildCommandsForTab(
   }
 
   extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(tab->web_contents());
+      extensions::TabHelper::FromWebContents(tab);
   if (extensions_tab_helper->extension_app()) {
     commands->push_back(
         CreateSetTabExtensionAppIDCommand(
@@ -1324,7 +1319,7 @@ void SessionService::BuildCommandsForTab(
             extensions_tab_helper->extension_app()->id()));
   }
 
-  const std::string& ua_override = tab->web_contents()->GetUserAgentOverride();
+  const std::string& ua_override = tab->GetUserAgentOverride();
   if (!ua_override.empty()) {
     commands->push_back(
         CreateSetTabUserAgentOverrideCommand(
@@ -1333,8 +1328,8 @@ void SessionService::BuildCommandsForTab(
 
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?
-        tab->web_contents()->GetController().GetPendingEntry() :
-        tab->web_contents()->GetController().GetEntryAtIndex(i);
+        tab->GetController().GetPendingEntry() :
+        tab->GetController().GetEntryAtIndex(i);
     DCHECK(entry);
     if (ShouldTrackEntry(entry->GetVirtualURL())) {
       const TabNavigation navigation =
@@ -1354,7 +1349,7 @@ void SessionService::BuildCommandsForTab(
 
   // Record the association between the sessionStorage namespace and the tab.
   content::SessionStorageNamespace* session_storage_namespace =
-      tab->web_contents()->GetController().GetDefaultSessionStorageNamespace();
+      tab->GetController().GetDefaultSessionStorageNamespace();
   ScheduleCommand(CreateSessionStorageAssociatedCommand(
       session_tab_helper->session_id(),
       session_storage_namespace->persistent_id()));
@@ -1391,7 +1386,7 @@ void SessionService::BuildCommandsForBrowser(
 
   windows_to_track->insert(browser->session_id().id());
   for (int i = 0; i < browser->tab_count(); ++i) {
-    TabContents* tab = chrome::GetTabContentsAt(browser, i);
+    WebContents* tab = chrome::GetWebContentsAt(browser, i);
     DCHECK(tab);
     BuildCommandsForTab(browser->session_id(), tab, i,
                         browser->tab_strip_model()->IsTabPinned(i),

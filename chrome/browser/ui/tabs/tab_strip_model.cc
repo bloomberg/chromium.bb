@@ -159,7 +159,10 @@ TabContents* TabStripModel::ReplaceTabContentsAt(int index,
   contents_data_[index]->contents = new_contents->web_contents();
 
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabReplacedAt(this, old_contents, new_contents, index));
+                    TabReplacedAt(this,
+                                  old_contents->web_contents(),
+                                  new_contents->web_contents(),
+                                  index));
 
   // When the active tab contents is replaced send out a selection notification
   // too. We do this as nearly all observers need to treat a replacement of the

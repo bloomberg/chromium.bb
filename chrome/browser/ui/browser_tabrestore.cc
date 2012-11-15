@@ -104,7 +104,7 @@ content::WebContents* AddRestoredTab(
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(browser->profile());
   if (session_service)
-    session_service->TabRestored(tab_contents, pin);
+    session_service->TabRestored(tab_contents->web_contents(), pin);
   return new_tab;
 }
 

@@ -444,8 +444,8 @@ class Browser : public TabStripModelObserver,
                         int from_index,
                         int to_index) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             TabContents* old_contents,
-                             TabContents* new_contents,
+                             content::WebContents* old_contents,
+                             content::WebContents* new_contents,
                              int index) OVERRIDE;
   virtual void TabPinnedStateChanged(content::WebContents* contents,
                                      int index) OVERRIDE;

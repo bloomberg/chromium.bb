@@ -110,31 +110,25 @@ void WebNavigationEventRouter::OnBrowserRemoved(Browser* browser) {
 
 void WebNavigationEventRouter::TabReplacedAt(
     TabStripModel* tab_strip_model,
-    TabContents* old_contents,
-    TabContents* new_contents,
+    content::WebContents* old_contents,
+    content::WebContents* new_contents,
     int index) {
   WebNavigationTabObserver* tab_observer =
-      WebNavigationTabObserver::Get(old_contents->web_contents());
+      WebNavigationTabObserver::Get(old_contents);
   if (!tab_observer) {
     // If you hit this DCHECK(), please add reproduction steps to
     // http://crbug.com/109464.
-    DCHECK(chrome::GetViewType(old_contents->web_contents()) !=
-           chrome::VIEW_TYPE_TAB_CONTENTS);
+    DCHECK(chrome::GetViewType(old_contents) != chrome::VIEW_TYPE_TAB_CONTENTS);
     return;
   }
   const FrameNavigationState& frame_navigation_state =
       tab_observer->frame_navigation_state();
 
-  if (!frame_navigation_state.IsValidUrl(
-          old_contents->web_contents()->GetURL()) ||
-      !frame_navigation_state.IsValidUrl(
-          new_contents->web_contents()->GetURL()))
+  if (!frame_navigation_state.IsValidUrl(old_contents->GetURL()) ||
+      !frame_navigation_state.IsValidUrl(new_contents->GetURL()))
     return;
 
-  helpers::DispatchOnTabReplaced(
-      old_contents->web_contents(),
-      profile_,
-      new_contents->web_contents());
+  helpers::DispatchOnTabReplaced(old_contents, profile_, new_contents);
 }
 
 void WebNavigationEventRouter::Observe(

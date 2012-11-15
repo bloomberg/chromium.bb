@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_OBSERVER_H_
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_OBSERVER_H_
 
-class TabContents;
 class TabStripModel;
 class TabStripSelectionModel;
 
@@ -22,7 +21,7 @@ class WebContents;
 //
 //  Two major implementers are the TabStrip, which uses notifications sent
 //  via this interface to update the presentation of the strip, and the Browser
-//  object, which updates bookkeeping and shows/hides individual TabContentses.
+//  object, which updates bookkeeping and shows/hides individual WebContentses.
 //
 //  Register your TabStripModelObserver with the TabStripModel using its
 //  Add/RemoveObserver methods.
@@ -104,12 +103,12 @@ class TabStripModelObserver {
                             int index,
                             TabChangeType change_type);
 
-  // The tab contents was replaced at the specified index. This is invoked
+  // The WebContents was replaced at the specified index. This is invoked
   // when instant is enabled and the user navigates by way of instant or when
-  // prerendering swaps in a prerendered TabContents.
+  // prerendering swaps in a prerendered WebContents.
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             TabContents* old_contents,
-                             TabContents* new_contents,
+                             content::WebContents* old_contents,
+                             content::WebContents* new_contents,
                              int index);
 
   // Invoked when the pinned state of a tab changes. See note in

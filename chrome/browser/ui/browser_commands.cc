@@ -616,7 +616,7 @@ TabContents* DuplicateTabAt(Browser* browser, int index) {
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(browser->profile());
   if (session_service)
-    session_service->TabRestored(contents_dupe, pinned);
+    session_service->TabRestored(contents_dupe->web_contents(), pinned);
   return contents_dupe;
 }
 
@@ -1048,7 +1048,7 @@ void ViewSource(Browser* browser,
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(browser->profile());
   if (session_service)
-    session_service->TabRestored(view_source_contents, false);
+    session_service->TabRestored(view_source_contents->web_contents(), false);
 }
 
 void ViewSelectedSource(Browser* browser) {

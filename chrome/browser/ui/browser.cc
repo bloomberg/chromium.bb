@@ -1153,23 +1153,21 @@ void Browser::TabMoved(WebContents* contents,
 }
 
 void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
-                            TabContents* old_contents,
-                            TabContents* new_contents,
+                            WebContents* old_contents,
+                            WebContents* new_contents,
                             int index) {
-  TabDetachedAtImpl(old_contents->web_contents(), index, DETACH_TYPE_REPLACE);
+  TabDetachedAtImpl(old_contents, index, DETACH_TYPE_REPLACE);
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
-    session_service->TabClosing(old_contents->web_contents());
-  TabInsertedAt(new_contents->web_contents(), index, (index == active_index()));
+    session_service->TabClosing(old_contents);
+  TabInsertedAt(new_contents, index, (index == active_index()));
 
-  int entry_count =
-      new_contents->web_contents()->GetController().GetEntryCount();
+  int entry_count = new_contents->GetController().GetEntryCount();
   if (entry_count > 0) {
     // Send out notification so that observers are updated appropriately.
-    new_contents->web_contents()->GetController().NotifyEntryChanged(
-        new_contents->web_contents()->GetController().GetEntryAtIndex(
-            entry_count - 1),
+    new_contents->GetController().NotifyEntryChanged(
+        new_contents->GetController().GetEntryAtIndex(entry_count - 1),
         entry_count - 1);
   }
 
@@ -1181,7 +1179,7 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
   }
 
   content::DevToolsManager::GetInstance()->ContentsReplaced(
-      old_contents->web_contents(), new_contents->web_contents());
+      old_contents, new_contents);
 }
 
 void Browser::TabPinnedStateChanged(WebContents* contents, int index) {

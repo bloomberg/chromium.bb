@@ -1136,10 +1136,10 @@ void TabStripGtk::TabChangedAt(WebContents* contents,
 }
 
 void TabStripGtk::TabReplacedAt(TabStripModel* tab_strip_model,
-                                TabContents* old_contents,
-                                TabContents* new_contents,
+                                WebContents* old_contents,
+                                WebContents* new_contents,
                                 int index) {
-  TabChangedAt(new_contents->web_contents(), index, ALL);
+  TabChangedAt(new_contents, index, ALL);
 }
 
 void TabStripGtk::TabMiniStateChanged(WebContents* contents, int index) {

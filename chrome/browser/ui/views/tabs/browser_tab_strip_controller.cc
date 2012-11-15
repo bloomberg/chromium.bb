@@ -411,10 +411,10 @@ void BrowserTabStripController::TabChangedAt(WebContents* contents,
 }
 
 void BrowserTabStripController::TabReplacedAt(TabStripModel* tab_strip_model,
-                                              TabContents* old_contents,
-                                              TabContents* new_contents,
+                                              WebContents* old_contents,
+                                              WebContents* new_contents,
                                               int model_index) {
-  SetTabDataAt(new_contents->web_contents(), model_index);
+  SetTabDataAt(new_contents, model_index);
 }
 
 void BrowserTabStripController::TabPinnedStateChanged(WebContents* contents,

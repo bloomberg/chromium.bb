@@ -107,8 +107,8 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
                                 int index,
                                 bool user_gesture) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             TabContents* old_contents,
-                             TabContents* new_contents,
+                             content::WebContents* old_contents,
+                             content::WebContents* new_contents,
                              int index) OVERRIDE;
   virtual void TabStripModelDeleted() OVERRIDE;
 
