@@ -96,9 +96,12 @@ ThumbnailLoader.prototype.load = function(
   this.image_.onerror = function() {
     if (opt_onError)
       opt_onError();
-    if (this.fallbackUrl_)
+    if (this.fallbackUrl_) {
       new ThumbnailLoader(this.fallbackUrl_, null, this.mediaType_).
           load(box, fill, opt_onSuccess);
+    } else {
+      box.setAttribute('generic-thumbnail', this.mediaType_);
+    }
   }.bind(this);
 
   if (this.image_.src == this.thumbnailUrl_) {
