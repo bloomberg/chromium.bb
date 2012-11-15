@@ -232,7 +232,11 @@ int GpuMain(const MainFunctionParams& parameters) {
 #endif
 
     if (do_init_sandbox) {
+      if (watchdog_thread.get())
+        watchdog_thread->Stop();
       gpu_info.sandboxed = InitializeSandbox();
+      if (watchdog_thread.get())
+        watchdog_thread->Start();
     }
   }
 #endif
