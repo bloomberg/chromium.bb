@@ -2164,6 +2164,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   const GURL url1("http://foo/1");
   const GURL url2("http://foo/2");
   const GURL url3("http://foo/3");
+  const GURL url3_ref("http://foo/3#bar");
   const GURL url4("http://foo/4");
   const GURL transient_url("http://foo/transient");
 
@@ -2278,12 +2279,21 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   test_rvh()->SendNavigate(3, url3);
   EXPECT_EQ(url3, controller.GetVisibleEntry()->GetURL());
 
+  // Add a transient and do an in-page navigation, replacing the current entry.
+  transient_entry = new NavigationEntryImpl;
+  transient_entry->SetURL(transient_url);
+  controller.AddTransientEntry(transient_entry);
+  EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
+  test_rvh()->SendNavigate(3, url3_ref);
+  // Transient entry should be gone.
+  EXPECT_EQ(url3_ref, controller.GetActiveEntry()->GetURL());
+
   // Ensure the URLs are correct.
   EXPECT_EQ(controller.GetEntryCount(), 5);
   EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(), url0);
   EXPECT_EQ(controller.GetEntryAtIndex(1)->GetURL(), url1);
   EXPECT_EQ(controller.GetEntryAtIndex(2)->GetURL(), url2);
-  EXPECT_EQ(controller.GetEntryAtIndex(3)->GetURL(), url3);
+  EXPECT_EQ(controller.GetEntryAtIndex(3)->GetURL(), url3_ref);
   EXPECT_EQ(controller.GetEntryAtIndex(4)->GetURL(), url4);
 }
 
