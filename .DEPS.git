@@ -5,50 +5,50 @@
 # FOR HOW TO ROLL DEPS
 vars = {
     'webkit_url':
-         'http://git.chromium.org/external/WebKit_trimmed.git',
+         'https://chromium.googlesource.com/external/WebKit_trimmed.git',
     'git_url':
-         'http://git.chromium.org'
+         'https://chromium.googlesource.com'
 }
 
 deps = {
     'native_client/tools/perf_expectations':
-        'https://chromium.googlesource.com/chromium/src/tools/perf_expectations.git@c86fef0280ffe5b75dafd3b69f8f67a074dd4459',
+        Var('git_url') + '/chromium/src/tools/perf_expectations.git@c86fef0280ffe5b75dafd3b69f8f67a074dd4459',
     'testing/gtest':
-        'https://chromium.googlesource.com/external/googletest.git@a92a6f792395e1ad462472d474ab0c76949813fa',
+        Var('git_url') + '/external/googletest.git@a92a6f792395e1ad462472d474ab0c76949813fa',
     'third_party':
-        'https://chromium.googlesource.com/native_client/src/third_party.git@c3603e1b117444b7f0ed86e85157088a632fa985',
+        Var('git_url') + '/native_client/src/third_party.git@c3603e1b117444b7f0ed86e85157088a632fa985',
     'third_party/asan':
-        'https://chromium.googlesource.com/chromium/deps/asan.git@245a68a0347562da54e3e5881010f55a994c783f',
+        Var('git_url') + '/chromium/deps/asan.git@245a68a0347562da54e3e5881010f55a994c783f',
     'third_party/lcov':
-        'https://chromium.googlesource.com/chromium/src/third_party/lcov.git@ba4a791b2b525fc13d169b4cc671dede09bbfb64',
+        Var('git_url') + '/chromium/src/third_party/lcov.git@ba4a791b2b525fc13d169b4cc671dede09bbfb64',
     'third_party/lss':
-        'https://chromium.googlesource.com/external/linux-syscall-support/lss.git@8dce3586424b5811ca0c8c1938bc7d0826558e77',
+        Var('git_url') + '/external/linux-syscall-support/lss.git@8dce3586424b5811ca0c8c1938bc7d0826558e77',
     'tools/clang':
-        'https://chromium.googlesource.com/chromium/src/tools/clang.git@c230083d393a40cb8d6b6d4d745a77c1a6d8b555',
+        Var('git_url') + '/chromium/src/tools/clang.git@c230083d393a40cb8d6b6d4d745a77c1a6d8b555',
     'tools/gyp':
-        'https://chromium.googlesource.com/external/gyp.git@cb7a494ec635b2e8691af06ae557ed637e4e82f5',
+        Var('git_url') + '/external/gyp.git@cb7a494ec635b2e8691af06ae557ed637e4e82f5',
     'tools/valgrind':
-        'https://chromium.googlesource.com/chromium/src/tools/valgrind.git@4cf074f2d2291065b4df2a7c60f5f632631ed2e7',
+        Var('git_url') + '/chromium/src/tools/valgrind.git@4cf074f2d2291065b4df2a7c60f5f632631ed2e7',
     'validator_snapshots':
-        'https://chromium.googlesource.com/native_client/src/validator_snapshots.git@4c1ea6b6ebe020993b0a091fd4e38a6487704b60',
+        Var('git_url') + '/native_client/src/validator_snapshots.git@4c1ea6b6ebe020993b0a091fd4e38a6487704b60',
 }
 
 deps_os = {
     'unix':
     {
         'third_party/ragel':
-            'https://chromium.googlesource.com/native_client/deps/third_party/ragel.git@da42bb33f1b67c2d70b38ec1d2edf5263271b635',
+            Var('git_url') + '/native_client/deps/third_party/ragel.git@da42bb33f1b67c2d70b38ec1d2edf5263271b635',
     },
     'win':
     {
         'third_party/NSIS':
-            'https://chromium.googlesource.com/native_client/deps/third_party/NSIS.git@21b6ad22daa7bfc04b9f1c1805a34622e2607a93',
+            Var('git_url') + '/native_client/deps/third_party/NSIS.git@21b6ad22daa7bfc04b9f1c1805a34622e2607a93',
         'third_party/gnu_binutils':
-            'https://chromium.googlesource.com/native_client/deps/third_party/gnu_binutils.git@f4003433b61b25666565690caf3d7a7a1a4ec436',
+            Var('git_url') + '/native_client/deps/third_party/gnu_binutils.git@f4003433b61b25666565690caf3d7a7a1a4ec436',
         'third_party/mingw-w64/mingw/bin':
-            'https://chromium.googlesource.com/native_client/deps/third_party/mingw-w64/mingw/bin.git@3cc8b140b883a9fe4986d12cfd46c16a093d3527',
+            Var('git_url') + '/native_client/deps/third_party/mingw-w64/mingw/bin.git@3cc8b140b883a9fe4986d12cfd46c16a093d3527',
         'third_party/python_26':
-            'https://chromium.googlesource.com/chromium/deps/python_26.git@0f769a0323d9a5a301bb9c50e48f43166939a923',
+            Var('git_url') + '/chromium/deps/python_26.git@0f769a0323d9a5a301bb9c50e48f43166939a923',
     },
 }
 
