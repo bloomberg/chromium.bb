@@ -12,7 +12,6 @@
 
 #include <list>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_generic_obj.h"
@@ -28,6 +27,7 @@
 
 namespace chrome {
 
+using base::SystemMonitor;
 using content::BrowserThread;
 
 namespace {
@@ -51,14 +51,15 @@ const char* const kKnownFileSystems[] = {
 
 // udev device property constants.
 const char kBlockSubsystemKey[] = "block";
+const char kDevName[] = "DEVNAME";
 const char kDiskDeviceTypeKey[] = "disk";
 const char kFsUUID[] = "ID_FS_UUID";
 const char kLabel[] = "ID_FS_LABEL";
 const char kModel[] = "ID_MODEL";
 const char kModelID[] = "ID_MODEL_ID";
 const char kRemovableSysAttr[] = "removable";
+const char kSerial[] = "ID_SERIAL";
 const char kSerialShort[] = "ID_SERIAL_SHORT";
-const char kSizeSysAttr[] = "size";
 const char kVendor[] = "ID_VENDOR";
 const char kVendorID[] = "ID_VENDOR_ID";
 
@@ -147,61 +148,12 @@ void RecordGetDeviceInfoResult(bool result) {
   UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.UdevRequestSuccess", result);
 }
 
-// Returns the storage partition size of the device specified by |device_path|.
-// If the requested information is unavailable, returns 0.
-uint64 GetDeviceStorageSize(const FilePath& device_path,
-                            struct udev_device* device) {
-  // sysfs provides the device size in units of 512-byte blocks.
-  const std::string partition_size = udev_device_get_sysattr_value(
-      device, kSizeSysAttr);
-
-  // Keep track of device size, to see how often this information is
-  // unavailable.
-  UMA_HISTOGRAM_BOOLEAN(
-      "RemovableDeviceNotificationsLinux.device_partition_size_available",
-      !partition_size.empty());
-
-  uint64 total_size_in_bytes = 0;
-  if (!base::StringToUint64(partition_size, &total_size_in_bytes))
-    return 0;
-  return (total_size_in_bytes <= kuint64max / 512) ?
-      total_size_in_bytes * 512 : 0;
-}
-
-// Constructs the device name from the device properties. If the device details
-// are unavailable, returns an empty string.
-string16 GetDeviceName(struct udev_device* device) {
-  std::string device_label = GetUdevDevicePropertyValue(device, kLabel);
-  if (!device_label.empty() && IsStringUTF8(device_label))
-    return UTF8ToUTF16(device_label);
-
-  device_label = GetUdevDevicePropertyValue(device, kFsUUID);
-  // Keep track of device uuid, to see how often we receive empty uuid values.
-  UMA_HISTOGRAM_BOOLEAN(
-      "RemovableDeviceNotificationsLinux.device_file_system_uuid_available",
-      !device_label.empty());
-
-  const string16 name = GetFullProductName(
-      GetUdevDevicePropertyValue(device, kVendor),
-      GetUdevDevicePropertyValue(device, kModel));
-
-  const string16 device_label_utf16 =
-      (!device_label.empty() && IsStringUTF8(device_label)) ?
-          UTF8ToUTF16(device_label) : string16();
-  if (!name.empty() && !device_label_utf16.empty())
-    return device_label_utf16 + ASCIIToUTF16(" ") + name;
-  return name.empty() ? device_label_utf16 : name;
-}
-
 // Get the device information using udev library.
-// On success, returns true and fill in |unique_id|, |name|, |removable| and
-// |partition_size_in_bytes|.
-void GetDeviceInfo(const FilePath& device_path,
-                   std::string* unique_id,
-                   string16* name,
-                   bool* removable,
-                   uint64* partition_size_in_bytes) {
+// On success, returns true and fill in |unique_id|, |name|, and |removable|.
+void GetDeviceInfo(const FilePath& device_path, std::string* unique_id,
+                   string16* name, bool* removable) {
   DCHECK(!device_path.empty());
+
   ScopedUdevObject udev_obj(udev_new());
   if (!udev_obj.get()) {
     RecordGetDeviceInfoResult(false);
@@ -231,11 +183,29 @@ void GetDeviceInfo(const FilePath& device_path,
     return;
   }
 
-  if (name)
-    *name = GetDeviceName(device);
+  // Construct a device name using label or manufacturer (vendor and model)
+  // details.
+  if (name) {
+    std::string device_label = GetUdevDevicePropertyValue(device, kLabel);
+    if (device_label.empty())
+      device_label = GetUdevDevicePropertyValue(device, kSerial);
+    if (device_label.empty()) {
+      // Format: VendorInfo ModelInfo
+      // E.g.: KnCompany Model2010
+      device_label = GetUdevDevicePropertyValue(device, kVendor);
+      std::string model_name = GetUdevDevicePropertyValue(device, kModel);
+      if (device_label.empty())
+        device_label = model_name;
+      else if (!model_name.empty())
+        device_label += " " + model_name;
+    }
+    if (IsStringUTF8(device_label))
+      *name = UTF8ToUTF16(device_label);
+  }
 
-  if (unique_id)
+  if (unique_id) {
     *unique_id = MakeDeviceUniqueId(device);
+  }
 
   if (removable) {
     const char* value = udev_device_get_sysattr_value(device,
@@ -251,9 +221,6 @@ void GetDeviceInfo(const FilePath& device_path,
     }
     *removable = (value && atoi(value) == 1);
   }
-
-  if (partition_size_in_bytes)
-    *partition_size_in_bytes = GetDeviceStorageSize(device_path, device);
   RecordGetDeviceInfoResult(true);
 }
 
@@ -305,7 +272,7 @@ void RemovableDeviceNotificationsLinux::Init() {
 
 bool RemovableDeviceNotificationsLinux::GetDeviceInfoForPath(
     const FilePath& path,
-    base::SystemMonitor::RemovableStorageInfo* device_info) const {
+    SystemMonitor::RemovableStorageInfo* device_info) const {
   if (!path.IsAbsolute())
     return false;
 
@@ -325,14 +292,6 @@ bool RemovableDeviceNotificationsLinux::GetDeviceInfoForPath(
   return true;
 }
 
-uint64 RemovableDeviceNotificationsLinux::GetStorageSize(
-    const std::string& location) const {
-  MountMap::const_iterator mount_info = mount_info_map_.find(
-      FilePath(location));
-  return (mount_info != mount_info_map_.end()) ?
-      mount_info->second.partition_size_in_bytes : 0;
-}
-
 void RemovableDeviceNotificationsLinux::OnFilePathChanged(const FilePath& path,
                                                           bool error) {
   if (path != mtab_path_) {
@@ -347,10 +306,6 @@ void RemovableDeviceNotificationsLinux::OnFilePathChanged(const FilePath& path,
   }
 
   UpdateMtab();
-}
-
-RemovableDeviceNotificationsLinux::MountPointInfo::MountPointInfo()
-    : partition_size_in_bytes(0) {
 }
 
 void RemovableDeviceNotificationsLinux::InitOnFileThread() {
@@ -399,7 +354,7 @@ void RemovableDeviceNotificationsLinux::UpdateMtab() {
       if (MediaStorageUtil::IsRemovableDevice(old_iter->second.device_id)) {
         DCHECK(has_priority != priority->second.end());
         if (has_priority->second) {
-          base::SystemMonitor::Get()->ProcessRemovableStorageDetached(
+          SystemMonitor::Get()->ProcessRemovableStorageDetached(
               old_iter->second.device_id);
         }
         if (priority->second.size() > 1)
@@ -470,9 +425,7 @@ void RemovableDeviceNotificationsLinux::AddNewMount(
   std::string unique_id;
   string16 name;
   bool removable;
-  uint64 partition_size_in_bytes;
-  get_device_info_func_(mount_device, &unique_id, &name, &removable,
-                        &partition_size_in_bytes);
+  get_device_info_func_(mount_device, &unique_id, &name, &removable);
 
   // Keep track of device info details to see how often we get invalid values.
   MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id, name);
@@ -496,15 +449,13 @@ void RemovableDeviceNotificationsLinux::AddNewMount(
   mount_point_info.mount_device = mount_device;
   mount_point_info.device_id = device_id;
   mount_point_info.device_name = name;
-  mount_point_info.partition_size_in_bytes = partition_size_in_bytes;
 
   mount_info_map_[mount_point] = mount_point_info;
   mount_priority_map_[mount_device][mount_point] = removable;
 
   if (removable) {
-    base::SystemMonitor::Get()->ProcessRemovableStorageAttached(
-        device_id, GetDisplayNameForDevice(partition_size_in_bytes, name),
-        mount_point.value());
+    SystemMonitor::Get()->ProcessRemovableStorageAttached(device_id, name,
+                                                          mount_point.value());
   }
 }
 
