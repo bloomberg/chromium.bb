@@ -10,6 +10,7 @@
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 
 #include "native_client/src/trusted/gio/gio_shm.h"
@@ -92,7 +93,7 @@ static int NaClGioShmSetWindow(struct NaClGioShm  *self,
   NaClLog(4,
           "NaClGioShmSetWindow: Map returned 0x%"NACL_PRIxPTR"\n",
           map_result);
-  if (NACL_ABI_MAP_FAILED == (void *) map_result) {
+  if (NaClPtrIsNegErrno(&map_result)) {
     return 0;
   }
 
@@ -402,6 +403,9 @@ static int NaClGioShmCtorIntern(struct NaClGioShm  *self,
   if (!NaClGioShmSetWindow(self, 0)) {
     NaClLog(LOG_ERROR,
             ("NaClGioShmCtorIntern: initial seek to beginning failed\n"));
+    NaClDescUnref(self->shmp);
+    self->shmp = NULL;
+    self->shm_sz = 0;
     self->base.vtbl = NULL;
     goto cleanup;
   }
