@@ -18,9 +18,11 @@
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
+#include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -149,16 +151,15 @@ void WebUILoginView::Init(views::Widget* login_window) {
   webui_login_ = new views::WebView(ProfileManager::GetDefaultProfile());
   AddChildView(webui_login_);
 
-  // We create the WebContents ourselves because the TabContents assumes
-  // ownership of it. This should be reworked once we don't need to use the
-  // TabContents here.
-  WebContents* web_contents =
-      WebContents::Create(ProfileManager::GetDefaultProfile(),
-                          NULL,
-                          MSG_ROUTING_NONE,
-                          NULL);
-  tab_contents_.reset(TabContents::Factory::CreateTabContents(web_contents));
-  webui_login_->SetWebContents(web_contents);
+  WebContents* web_contents = webui_login_->GetWebContents();
+
+  // Create the password manager that is needed for the proxy.
+  PasswordManagerDelegateImpl::CreateForWebContents(web_contents);
+  PasswordManager::CreateForWebContentsAndDelegate(
+      web_contents, PasswordManagerDelegateImpl::FromWebContents(web_contents));
+
+  // LoginHandlerViews uses a constrained window for the password manager view.
+  ConstrainedWindowTabHelper::CreateForWebContents(web_contents);
 
   web_contents->SetDelegate(this);
   renderer_preferences_util::UpdateFromSystemSettings(
@@ -216,8 +217,7 @@ void WebUILoginView::LoadURL(const GURL & url) {
     background.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
     background.allocPixels();
     background.eraseARGB(0x00, 0x00, 0x00, 0x00);
-    content::RenderViewHost* host =
-        tab_contents_->web_contents()->GetRenderViewHost();
+    content::RenderViewHost* host = GetWebContents()->GetRenderViewHost();
     host->GetView()->SetBackground(background);
   }
 }
@@ -348,12 +348,11 @@ void WebUILoginView::RequestMediaAccessPermission(
     WebContents* web_contents,
     const content::MediaStreamRequest* request,
     const content::MediaResponseCallback& callback) {
-  TabContents* tab = TabContents::FromWebContents(web_contents);
-  DCHECK(tab);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
-  scoped_ptr<MediaStreamDevicesController>
-      controller(new MediaStreamDevicesController(
-          tab->profile(), request, callback));
+  scoped_ptr<MediaStreamDevicesController> controller(
+      new MediaStreamDevicesController(profile, request, callback));
   if (!controller->DismissInfoBarAndTakeActionOnSettings())
     NOTREACHED() << "Media stream not allowed for WebUI";
 }

@@ -25,11 +25,6 @@ class PanelHost;
 class Profile;
 class TabStripModel;
 
-namespace chromeos {
-class SimpleWebViewDialog;
-class WebUILoginView;
-}
-
 namespace extensions {
 class WebAuthFlow;
 }
@@ -65,8 +60,6 @@ class TabContents : public content::WebContentsObserver {
     friend class BrowserCommandsTabContentsCreator;
     friend class BrowserLauncherItemControllerContentsCreator;
     friend class BrowserTabstripTabContentsCreator;
-    friend class chromeos::SimpleWebViewDialog;
-    friend class chromeos::WebUILoginView;
     friend class ChromeWebContentsHandler;
     friend class ConstrainedWebDialogDelegateBase;
     friend class extensions::WebAuthFlow;

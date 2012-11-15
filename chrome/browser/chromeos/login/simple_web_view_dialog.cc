@@ -10,10 +10,12 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/password_manager/password_manager_delegate_impl.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
@@ -143,19 +145,19 @@ SimpleWebViewDialog::~SimpleWebViewDialog() {
 void SimpleWebViewDialog::StartLoad(const GURL& url) {
   web_view_container_.reset(new views::WebView(profile_));
   web_view_ = web_view_container_.get();
-
-  // We create the WebContents ourselves because the TabContents assumes
-  // ownership of it. This should be reworked once we don't need to use the
-  // TabContents here.
-  WebContents* web_contents =
-      WebContents::Create(ProfileManager::GetDefaultProfile(),
-                          NULL,
-                          MSG_ROUTING_NONE,
-                          NULL);
-  tab_contents_.reset(TabContents::Factory::CreateTabContents(web_contents));
-  web_view_->SetWebContents(web_contents);
-  web_contents->SetDelegate(this);
+  web_view_->GetWebContents()->SetDelegate(this);
   web_view_->LoadInitialURL(url);
+
+  WebContents* web_contents = web_view_->GetWebContents();
+  DCHECK(web_contents);
+
+  // Create the password manager that is needed for the proxy.
+  PasswordManagerDelegateImpl::CreateForWebContents(web_contents);
+  PasswordManager::CreateForWebContentsAndDelegate(
+      web_contents, PasswordManagerDelegateImpl::FromWebContents(web_contents));
+
+  // LoginHandlerViews uses a constrained window for the password manager view.
+  ConstrainedWindowTabHelper::CreateForWebContents(web_contents);
 }
 
 void SimpleWebViewDialog::Init() {
