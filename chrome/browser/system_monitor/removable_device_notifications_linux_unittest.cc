@@ -19,6 +19,7 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/system_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/browser/system_monitor/removable_device_constants.h"
 #include "content/public/test/test_browser_thread.h"
@@ -52,23 +53,28 @@ struct TestDeviceData {
   const char* unique_id;
   const char* device_name;
   MediaStorageUtil::Type type;
+  uint64 partition_size_in_bytes;
 };
 
 const TestDeviceData kTestDeviceData[] = {
   { kDeviceDCIM1, "UUID:FFF0-000F", "TEST_USB_MODEL_1",
-    MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM},
+    MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, 88997788 },
   { kDeviceDCIM2, "VendorModelSerial:ComName:Model2010:8989",
-    "TEST_USB_MODEL_2", MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM},
+    "TEST_USB_MODEL_2", MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM,
+    8773 },
   { kDeviceDCIM3, "VendorModelSerial:::WEM319X792", "TEST_USB_MODEL_3",
-    MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM},
+    MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, 22377892837 },
   { kDeviceNoDCIM, "UUID:ABCD-1234", "TEST_USB_MODEL_4",
-    MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM},
-  { kDeviceFixed, "UUID:743A91FD2349", "TEST_USB_MODEL_5",
-    MediaStorageUtil::FIXED_MASS_STORAGE},
+    MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM, 512 },
+  { kDeviceFixed, "UUID:743A-2349", "743A-2349",
+    MediaStorageUtil::FIXED_MASS_STORAGE, 172892 },
 };
 
-void GetDeviceInfo(const FilePath& device_path, std::string* id,
-                   string16* name, bool* removable) {
+void GetDeviceInfo(const FilePath& device_path,
+                   std::string* id,
+                   string16* name,
+                   bool* removable,
+                   uint64* partition_size_in_bytes) {
   for (size_t i = 0; i < arraysize(kTestDeviceData); i++) {
     if (device_path.value() == kTestDeviceData[i].device_path) {
       if (id)
@@ -81,14 +87,24 @@ void GetDeviceInfo(const FilePath& device_path, std::string* id,
           (type == MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM) ||
           (type == MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM);
       }
+      if (partition_size_in_bytes)
+        *partition_size_in_bytes = kTestDeviceData[i].partition_size_in_bytes;
       return;
     }
   }
   NOTREACHED();
 }
 
+uint64 GetDevicePartitionSize(const std::string& device) {
+  for (size_t i = 0; i < arraysize(kTestDeviceData); ++i) {
+    if (device == kTestDeviceData[i].device_path)
+      return kTestDeviceData[i].partition_size_in_bytes;
+  }
+  return 0;
+}
+
 std::string GetDeviceId(const std::string& device) {
-  for (size_t i = 0; i < arraysize(kTestDeviceData); i++) {
+  for (size_t i = 0; i < arraysize(kTestDeviceData); ++i) {
     if (device == kTestDeviceData[i].device_path) {
       return MediaStorageUtil::MakeDeviceId(kTestDeviceData[i].type,
                                             kTestDeviceData[i].unique_id);
@@ -100,6 +116,18 @@ std::string GetDeviceId(const std::string& device) {
   }
   return std::string();
 }
+
+string16 GetDeviceNameWithSizeDetails(const std::string& device) {
+  for (size_t i = 0; i < arraysize(kTestDeviceData); ++i) {
+    if (device == kTestDeviceData[i].device_path) {
+      return GetDisplayNameForDevice(
+          kTestDeviceData[i].partition_size_in_bytes,
+          ASCIIToUTF16(kTestDeviceData[i].device_name));
+    }
+  }
+  return string16();
+}
+
 string16 GetDeviceName(const std::string& device) {
   for (size_t i = 0; i < arraysize(kTestDeviceData); i++) {
     if (device == kTestDeviceData[i].device_path)
@@ -316,9 +344,10 @@ TEST_F(RemovableDeviceNotificationLinuxTest, BasicAttachDetach) {
   // Only |kDeviceDCIM2| should be attached, since |kDeviceFixed| has a bad
   // path.
   EXPECT_CALL(observer(),
-              OnRemovableStorageAttached(GetDeviceId(kDeviceDCIM2),
-                                         GetDeviceName(kDeviceDCIM2),
-                                         test_path.value()))
+              OnRemovableStorageAttached(
+                  GetDeviceId(kDeviceDCIM2),
+                  GetDeviceNameWithSizeDetails(kDeviceDCIM2),
+                  test_path.value()))
       .InSequence(mock_sequence);
   AppendToMtabAndRunLoop(test_data, arraysize(test_data));
 
@@ -338,9 +367,10 @@ TEST_F(RemovableDeviceNotificationLinuxTest, Removable) {
   };
   // |kDeviceDCIM1| should be attached as expected.
   EXPECT_CALL(observer(),
-              OnRemovableStorageAttached(GetDeviceId(kDeviceDCIM1),
-                                         GetDeviceName(kDeviceDCIM1),
-                                         test_path_a.value()))
+              OnRemovableStorageAttached(
+                  GetDeviceId(kDeviceDCIM1),
+                  GetDeviceNameWithSizeDetails(kDeviceDCIM1),
+                  test_path_a.value()))
       .InSequence(mock_sequence);
   AppendToMtabAndRunLoop(test_data1, arraysize(test_data1));
 
@@ -359,9 +389,10 @@ TEST_F(RemovableDeviceNotificationLinuxTest, Removable) {
 
   // |kDeviceNoDCIM| should be attached as expected.
   EXPECT_CALL(observer(),
-              OnRemovableStorageAttached(GetDeviceId(kDeviceNoDCIM),
-                                         GetDeviceName(kDeviceNoDCIM),
-                                         test_path_b.value()))
+              OnRemovableStorageAttached(
+                  GetDeviceId(kDeviceNoDCIM),
+                  GetDeviceNameWithSizeDetails(kDeviceNoDCIM),
+                  test_path_b.value()))
       .InSequence(mock_sequence);
   MtabTestData test_data3[] = {
     MtabTestData(kDeviceNoDCIM, test_path_b.value(), kValidFS),
@@ -632,6 +663,29 @@ TEST_F(RemovableDeviceNotificationLinuxTest, DeviceLookUp) {
 
   EXPECT_TRUE(notifier()->GetDeviceInfoForPath(test_path_c, &device_info));
   EXPECT_EQ(GetDeviceId(kDeviceFixed), device_info.device_id);
+}
+
+TEST_F(RemovableDeviceNotificationLinuxTest, DevicePartitionSize) {
+  FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
+  FilePath test_path_b = CreateMountPointWithoutDCIMDir(kMountPointB);
+  ASSERT_FALSE(test_path_a.empty());
+  ASSERT_FALSE(test_path_b.empty());
+
+  MtabTestData test_data1[] = {
+    MtabTestData(kDeviceDCIM1, test_path_a.value(), kValidFS),
+    MtabTestData(kDeviceNoDCIM, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceFixed, kInvalidPath, kInvalidFS),
+  };
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(2);
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
+  AppendToMtabAndRunLoop(test_data1, arraysize(test_data1));
+
+  EXPECT_EQ(GetDevicePartitionSize(kDeviceDCIM1),
+            notifier()->GetStorageSize(test_path_a.value()));
+  EXPECT_EQ(GetDevicePartitionSize(kDeviceNoDCIM),
+            notifier()->GetStorageSize(test_path_b.value()));
+  EXPECT_EQ(GetDevicePartitionSize(kInvalidPath),
+            notifier()->GetStorageSize(kInvalidPath));
 }
 
 }  // namespace
