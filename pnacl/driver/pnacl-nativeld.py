@@ -92,6 +92,7 @@ EXTRA_ENV = {
   'LD_EMUL_ARM'    : 'armelf_nacl',
   'LD_EMUL_X8632'  : 'elf_nacl',
   'LD_EMUL_X8664'  : 'elf64_nacl',
+  'LD_EMUL_MIPS32' : 'elf32ltsmip_nacl',
 
   'SEARCH_DIRS'        : '${SEARCH_DIRS_USER} ${SEARCH_DIRS_BUILTIN}',
   'SEARCH_DIRS_USER'   : '',
@@ -101,6 +102,7 @@ EXTRA_ENV = {
   'LIBS_ARM'         : '${BASE_LIB_NATIVE}arm',
   'LIBS_X8632'       : '${BASE_LIB_NATIVE}x86-32',
   'LIBS_X8664'       : '${BASE_LIB_NATIVE}x86-64',
+  'LIBS_MIPS32'      : '${BASE_LIB_NATIVE}mips32',
 
   # Note: this is only used in the unsandboxed case
   'RUN_LD' : '${LD} ${LD_FLAGS} ${inputs} -o ${output}' +

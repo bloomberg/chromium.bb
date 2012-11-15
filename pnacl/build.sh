@@ -604,7 +604,7 @@ libs() {
   libs-clean
   libs-support newlib
   newlib
-  for arch in arm x86-32 x86-64; do
+  for arch in arm x86-32 x86-64 mips32; do
     dummy-irt-shim ${arch}
   done
   compiler-rt-all
@@ -2853,7 +2853,7 @@ libs-support() {
   fi
   libs-support-bitcode $libmode
   local arch
-  for arch in arm x86-32 x86-64; do
+  for arch in arm x86-32 x86-64 mips32; do
     libs-support-native ${arch}
   done
 }

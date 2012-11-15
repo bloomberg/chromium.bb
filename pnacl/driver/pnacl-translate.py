@@ -100,6 +100,7 @@ EXTRA_ENV = {
   'TRIPLE_ARM'  : 'armv7a-none-nacl-gnueabi',
   'TRIPLE_X8632': 'i686-none-nacl-gnu',
   'TRIPLE_X8664': 'x86_64-none-nacl-gnu',
+  'TRIPLE_MIPS32': 'mipsel-none-nacl-gnu',
 
   'LLC_FLAGS_COMMON': '${PIC ? -relocation-model=pic} ' +
                       #  -force-tls-non-pic makes the code generator (llc)
@@ -119,6 +120,8 @@ EXTRA_ENV = {
 
   'LLC_FLAGS_X8632' : '',
   'LLC_FLAGS_X8664' : '',
+
+  'LLC_FLAGS_MIPS32': '-sfi-load -sfi-store -sfi-stack -sfi-branch -sfi-data',
 
   # LLC flags which set the target and output type.
   # These are handled separately by libLTO.
@@ -162,6 +165,7 @@ EXTRA_ENV = {
   #                       '-O2 ' +
                           '-fast-isel ' +
                           '-tail-merge-threshold=20',
+  'LLC_FLAGS_FAST_MIPS32': '-fast-isel -tail-merge-threshold=20',
 
   'LLC_FLAGS': '${LLC_FLAGS_TARGET} ' +
                '${LLC_FLAGS_COMMON} ' +
@@ -179,6 +183,7 @@ EXTRA_ENV = {
   'LLC_MCPU_ARM'    : 'cortex-a8',
   'LLC_MCPU_X8632'  : 'pentium4',
   'LLC_MCPU_X8664'  : 'core2',
+  'LLC_MCPU_MIPS32' : 'mips32r2',
 
   # Note: this is only used in the unsandboxed case
   'RUN_LLC'       : '${LLVM_LLC} ${LLC_FLAGS} ${input} -o ${output} ' +

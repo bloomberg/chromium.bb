@@ -433,6 +433,7 @@ class ELFHeader(object):
                 2: 'EXEC', # .exe
                 3: 'DYN' } # .so
   ELF_MACHINES = {  3: '386',
+                    8: 'MIPS',
                    40: 'ARM',
                    62: 'X86_64' }
   ELF_OSABI = { 0: 'UNIX',
@@ -938,7 +939,11 @@ def FixArch(arch):
 
               'arm'   : 'ARM',
               'armv7' : 'ARM',
-              'arm-thumb2' : 'ARM' }
+              'arm-thumb2' : 'ARM',
+
+              'mips32': 'MIPS32',
+              'mips'  : 'MIPS32',
+              }
   if arch not in archfix:
     Log.Fatal('Unrecognized arch "%s"!', arch)
   return archfix[arch]

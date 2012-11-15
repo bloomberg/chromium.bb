@@ -89,12 +89,14 @@ EXTRA_ENV = {
   'LIBS_ARM'         : '${BASE_GLIBC}/lib-arm',
   'LIBS_X8632'       : '${BASE_GLIBC}/lib-x86-32',
   'LIBS_X8664'       : '${BASE_GLIBC}/lib-x86-64',
+  'LIBS_MIPS32'      : '${BASE_GLIBC}/lib-mips32',
   # HACK-END
 
   'LD_GOLD_OFORMAT'        : '${LD_GOLD_OFORMAT_%ARCH%}',
   'LD_GOLD_OFORMAT_ARM'    : 'elf32-littlearm',
   'LD_GOLD_OFORMAT_X8632'  : 'elf32-nacl',
   'LD_GOLD_OFORMAT_X8664'  : 'elf64-nacl',
+  'LD_GOLD_OFORMAT_MIPS32' : 'elf32-tradlittlemips',
 
   'BCLD'      : '${LD_GOLD}',
   'BCLD_FLAGS': '--native-client --oformat ${LD_GOLD_OFORMAT} -Ttext=0x20000 ' +
