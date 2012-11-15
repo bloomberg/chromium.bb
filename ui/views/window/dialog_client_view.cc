@@ -119,8 +119,7 @@ DialogClientView::StyleParams::StyleParams()
       button_hedge_margin(kButtonHEdgeMargin),
       min_button_width(kDialogMinButtonWidth),
       button_label_spacing(kDialogButtonLabelSpacing),
-      button_content_spacing(kDialogButtonContentSpacing),
-      text_button_factory(&DialogClientView::CreateNativeStyleDialogButton) {
+      button_content_spacing(kDialogButtonContentSpacing) {
 }
 
 DialogClientView::DialogClientView(Widget* owner,
@@ -151,24 +150,13 @@ void DialogClientView::ShowDialogButtons() {
     string16 label = dd->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK);
     if (label.empty())
       label = l10n_util::GetStringUTF16(IDS_APP_OK);
-    bool is_default_button =
-        (dd->GetDefaultDialogButton() & ui::DIALOG_BUTTON_OK) != 0;
-    ok_button_ = style_params_.text_button_factory(this,
-                                                   GetWidget(),
-                                                   ui::DIALOG_BUTTON_OK,
-                                                   label);
-    ok_button_->SetGroup(kButtonGroup);
-    if (is_default_button) {
-      default_button_ = ok_button_;
-      default_button_->SetIsDefault(true);
-    }
+    ok_button_ = CreateDialogButton(ui::DIALOG_BUTTON_OK, label);
     if (!(buttons & ui::DIALOG_BUTTON_CANCEL))
       ok_button_->AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
     AddChildView(ok_button_);
   }
   if (buttons & ui::DIALOG_BUTTON_CANCEL && !cancel_button_) {
-    string16 label =
-        dd->GetDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL);
+    string16 label = dd->GetDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL);
     if (label.empty()) {
       if (buttons & ui::DIALOG_BUTTON_OK) {
         label = l10n_util::GetStringUTF16(IDS_APP_CANCEL);
@@ -176,21 +164,9 @@ void DialogClientView::ShowDialogButtons() {
         label = l10n_util::GetStringUTF16(IDS_APP_CLOSE);
       }
     }
-    bool is_default_button =
-        (dd->GetDefaultDialogButton() & ui::DIALOG_BUTTON_CANCEL)
-        != 0;
-    cancel_button_ =
-        style_params_.text_button_factory(this,
-                                          GetWidget(),
-                                          ui::DIALOG_BUTTON_CANCEL,
-                                          label);
-    cancel_button_->SetGroup(kButtonGroup);
+    cancel_button_ = CreateDialogButton(ui::DIALOG_BUTTON_CANCEL, label);
     cancel_button_->AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE,
                                                    ui::EF_NONE));
-    if (is_default_button) {
-      default_button_ = cancel_button_;
-      default_button_->SetIsDefault(true);
-    }
     AddChildView(cancel_button_);
   }
   if (!buttons) {
@@ -214,6 +190,14 @@ void DialogClientView::SetDefaultButton(TextButton* new_default_button) {
 
 void DialogClientView::OnWillChangeFocus(View* focused_before,
                                          View* focused_now) {
+  // Chrome style dialogs do not move the default button with the focus.
+  // TODO(wittman): Remove all support for updating the default button on focus
+  // change once we move completely to Chrome style.  See
+  // http://codereview.chromium.org/10230 for a rough idea of changes to be
+  // undone.
+  if (GetDialogDelegate()->UseChromeStyle())
+    return;
+
   TextButton* new_default_button = NULL;
   // TODO(wittman): Identify TextButtons in a better way than
   // enumerating every possible subclass.
@@ -278,33 +262,11 @@ void DialogClientView::CancelWindow() {
 }
 
 // static
-TextButton* DialogClientView::CreateNativeStyleDialogButton(
-    ButtonListener* listener,
-    Widget* owner,
-    ui::DialogButton type,
-    const string16& title) {
-  return new DialogButton<NativeTextButton>(listener, owner, type, title);
-}
-
-// static
-TextButton* DialogClientView::CreateChromeStyleDialogButton(
-    ButtonListener* listener,
-    Widget* owner,
-    ui::DialogButton type,
-    const string16& title) {
-  DialogButton<TextButton>* button =
-      new DialogButton<TextButton>(listener, owner, type, title);
-  ApplyChromeStyle(button);
-  return button;
-}
-
-// static
 DialogClientView::StyleParams DialogClientView::GetChromeStyleParams() {
   StyleParams params;
   params.button_vedge_margin = 0;
   params.button_hedge_margin = 0;
   params.button_label_spacing = kChromeStyleDialogButtonLabelSpacing;
-  params.text_button_factory = &CreateChromeStyleDialogButton;
   params.button_content_spacing = 0;
   return params;
 }
@@ -451,6 +413,27 @@ void DialogClientView::ButtonPressed(Button* sender, const ui::Event& event) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // DialogClientView, private:
+
+TextButton* DialogClientView::CreateDialogButton(ui::DialogButton type,
+                                                 const string16& title) {
+  TextButton* button = NULL;
+  if (GetDialogDelegate()->UseChromeStyle())
+    button = new DialogButton<TextButton>(this, GetWidget(), type, title);
+  else
+    button = new DialogButton<NativeTextButton>(this, GetWidget(), type, title);
+
+  button->SetGroup(kButtonGroup);
+
+  if (GetDialogDelegate()->GetDefaultDialogButton() & type) {
+    default_button_ = button;
+    button->SetIsDefault(true);
+  }
+
+  if (GetDialogDelegate()->UseChromeStyle())
+    ApplyChromeStyle(button);
+
+  return button;
+}
 
 void DialogClientView::PaintSizeBox(gfx::Canvas* canvas) {
   if (GetWidget()->widget_delegate()->CanResize() ||

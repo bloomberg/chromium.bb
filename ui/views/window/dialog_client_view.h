@@ -35,11 +35,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
                                       public ButtonListener,
                                       public FocusChangeListener {
  public:
-  typedef TextButton* (*TextButtonFactory)(ButtonListener* listener,
-                                           Widget* owner,
-                                           ui::DialogButton type,
-                                           const string16& title);
-
   // Parameters for the internal dialog styling.  Default construction
   // produces parameters for native dialog styling.
   struct VIEWS_EXPORT StyleParams {
@@ -50,7 +45,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
     int min_button_width;
     int button_label_spacing;
     int button_content_spacing;
-    TextButtonFactory text_button_factory;
   };
 
   DialogClientView(Widget* widget,
@@ -76,15 +70,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   TextButton* ok_button() const { return ok_button_; }
   TextButton* cancel_button() const { return cancel_button_; }
 
-  // Factory functions for creating buttons of the desired style.
-  static TextButton* CreateNativeStyleDialogButton(ButtonListener* listener,
-                                                   Widget* owner,
-                                                   ui::DialogButton type,
-                                                   const string16& title);
-  static TextButton* CreateChromeStyleDialogButton(ButtonListener* listener,
-                                                   Widget* owner,
-                                                   ui::DialogButton type,
-                                                   const string16& title);
   // Creates a StyleParams struct in Chrome style (default is native style).
   static StyleParams GetChromeStyleParams();
 
@@ -121,6 +106,9 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
                              const ui::Event& event) OVERRIDE;
 
  private:
+  // Create a dialog button of the appropriate type.
+  TextButton* CreateDialogButton(ui::DialogButton type, const string16& title);
+
   // Paint the size box in the bottom right corner of the window if it is
   // resizable.
   void PaintSizeBox(gfx::Canvas* canvas);

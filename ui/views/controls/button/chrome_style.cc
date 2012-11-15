@@ -428,6 +428,9 @@ void ApplyChromeStyle(TextButton* button) {
   button->set_min_width(kMinWidth);
   button->set_min_height(kMinHeight);
 
+  if (button->is_default())
+    button->SetFont(button->font().DeriveFont(0, gfx::Font::BOLD));
+
   button->SetEnabledColor(kEnabledTextColor);
   button->SetDisabledColor(kDisabledTextColor);
   button->SetHoverColor(kHoverTextColor);
