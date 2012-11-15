@@ -163,10 +163,6 @@ cr.define('ntp', function() {
       }
 
       document.addEventListener('keydown', this.onDocKeyDown_.bind(this));
-      // Prevent touch events from triggering any sort of native scrolling.
-      document.addEventListener('touchmove', function(e) {
-        e.preventDefault();
-      }, true);
 
       this.tilePages = this.pageList.getElementsByClassName('tile-page');
       this.appsPages = this.pageList.getElementsByClassName('apps-page');
@@ -176,11 +172,19 @@ cr.define('ntp', function() {
       this.cardSlider = new cr.ui.CardSlider(this.sliderFrame, this.pageList,
           this.sliderFrame.offsetWidth);
 
+      // Prevent touch events from triggering any sort of native scrolling if
+      // there are multiple cards in the slider frame.
+      var cardSlider = this.cardSlider;
+      cardSliderFrame.addEventListener('touchmove', function(e) {
+        if (cardSlider.cardCount <= 1)
+          return;
+        e.preventDefault();
+      }, true);
+
       // Handle mousewheel events anywhere in the card slider, so that wheel
       // events on the page switchers will still scroll the page.
       // This listener must be added before the card slider is initialized,
       // because it needs to be called before the card slider's handler.
-      var cardSlider = this.cardSlider;
       cardSliderFrame.addEventListener('mousewheel', function(e) {
         if (cardSlider.currentCardValue.handleMouseWheel(e)) {
           e.preventDefault();  // Prevent default scroll behavior.
