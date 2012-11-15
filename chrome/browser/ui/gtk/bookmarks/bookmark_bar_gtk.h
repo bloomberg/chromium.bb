@@ -167,10 +167,10 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // Queue a paint on the event box.
   void PaintEventBox();
 
-  // Finds the size of the current tab contents, if it exists and sets |size|
+  // Finds the size of the current web contents, if it exists and sets |size|
   // to the correct value. Returns false if there isn't a WebContents, a
   // condition that can happen during testing.
-  bool GetTabContentsSize(gfx::Size* size);
+  bool GetWebContentsSize(gfx::Size* size);
 
   // Connects to the "size-allocate" signal on the given widget, and causes it
   // to throb after allocation. This is called when a new item is added to the
@@ -391,9 +391,9 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
 
   content::NotificationRegistrar registrar_;
 
-  // The size of the tab contents last time we forced a paint. We keep track
+  // The size of the web contents last time we forced a paint. We keep track
   // of this so we don't force too many paints.
-  gfx::Size last_tab_contents_size_;
+  gfx::Size last_web_contents_size_;
 
   // The last coordinates recorded by OnButtonPress; used to line up the
   // drag icon during bookmark drags.
