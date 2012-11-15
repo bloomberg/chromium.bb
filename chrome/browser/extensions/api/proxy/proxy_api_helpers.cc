@@ -284,7 +284,7 @@ bool JoinUrlList(const ListValue* list,
 }
 
 bool GetBypassListFromExtensionPref(const DictionaryValue* proxy_config,
-                                    std::string *out,
+                                    std::string* out,
                                     std::string* error,
                                     bool* bad_message) {
   const DictionaryValue* proxy_rules = NULL;

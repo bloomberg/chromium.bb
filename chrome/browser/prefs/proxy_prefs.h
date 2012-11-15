@@ -60,12 +60,9 @@ extern const char kFixedServersProxyModeName[];
 extern const char kSystemProxyModeName[];
 
 bool IntToProxyMode(int in_value, ProxyMode* out_value);
-bool StringToProxyMode(const std::string& in_value,
-                       ProxyMode* out_value);
+bool StringToProxyMode(const std::string& in_value, ProxyMode* out_value);
 // Ownership of the return value is NOT passed to the caller.
 const char* ProxyModeToString(ProxyMode mode);
-
-bool DoesPrefPrecede(ConfigState config_state);
 
 }  // namespace ProxyPrefs
 

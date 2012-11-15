@@ -7,16 +7,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 
-namespace ProxyPrefs {
-
-const char kDirectProxyModeName[] = "direct";
-const char kAutoDetectProxyModeName[] = "auto_detect";
-const char kPacScriptProxyModeName[] = "pac_script";
-const char kFixedServersProxyModeName[] = "fixed_servers";
-const char kSystemProxyModeName[] = "system";
-
-}
-
 namespace {
 
 // These names are exposed to the proxy extension API. They must be in sync
@@ -27,12 +17,18 @@ const char* kProxyModeNames[] = { ProxyPrefs::kDirectProxyModeName,
                                   ProxyPrefs::kFixedServersProxyModeName,
                                   ProxyPrefs::kSystemProxyModeName };
 
+COMPILE_ASSERT(arraysize(kProxyModeNames) == ProxyPrefs::kModeCount,
+               kProxyModeNames_must_have_size_of_NUM_MODES);
+
 }  // namespace
 
 namespace ProxyPrefs {
 
-COMPILE_ASSERT(arraysize(kProxyModeNames) == kModeCount,
-               kProxyModeNames_must_have_size_of_NUM_MODES);
+const char kDirectProxyModeName[] = "direct";
+const char kAutoDetectProxyModeName[] = "auto_detect";
+const char kPacScriptProxyModeName[] = "pac_script";
+const char kFixedServersProxyModeName[] = "fixed_servers";
+const char kSystemProxyModeName[] = "system";
 
 bool IntToProxyMode(int in_value, ProxyMode* out_value) {
   DCHECK(out_value);
@@ -42,7 +38,6 @@ bool IntToProxyMode(int in_value, ProxyMode* out_value) {
   return true;
 }
 
-// static
 bool StringToProxyMode(const std::string& in_value, ProxyMode* out_value) {
   DCHECK(out_value);
   for (int i = 0; i < kModeCount; i++) {
@@ -56,4 +51,4 @@ const char* ProxyModeToString(ProxyMode mode) {
   return kProxyModeNames[mode];
 }
 
-}  // namespace
+}  // namespace ProxyPrefs
