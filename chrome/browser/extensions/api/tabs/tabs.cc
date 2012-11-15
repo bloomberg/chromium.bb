@@ -235,7 +235,8 @@ Browser* CreateBrowserWindow(const Browser::CreateParams& params,
   if (use_existing_browser_window)
     // The false parameter passed below is to ensure that we find a browser
     // object matching the profile passed in, instead of the original profile
-    new_window = browser::FindTabbedBrowserDeprecated(profile, false);
+    new_window = browser::FindTabbedBrowser(
+        profile, false, params.host_desktop_type);
 
   if (!new_window)
     new_window = new Browser(params);
