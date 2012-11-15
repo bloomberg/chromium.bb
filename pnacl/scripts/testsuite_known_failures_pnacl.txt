@@ -27,3 +27,12 @@ burg
 puzzle
 automotive-bitcount
 telecomm-fft
+
+# SSE tests use -msse* flags, which our le32 frontend doesn't understand.
+sse.isamax
+sse.shift
+sse.expandfft
+sse.stepfft
+
+# Assumes that pointers are 8 bytes (an x86-64 test).
+ms_struct-bitfield-1
