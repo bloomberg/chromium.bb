@@ -63,6 +63,10 @@ Layer::Layer()
       layer_inverted_(false),
       layer_mask_(NULL),
       layer_mask_back_link_(NULL),
+      zoom_x_offset_(0),
+      zoom_y_offset_(0),
+      zoom_(1),
+      zoom_inset_(0),
       delegate_(NULL),
       web_layer_(NULL),
       scale_content_(true),
@@ -86,6 +90,10 @@ Layer::Layer(LayerType type)
       layer_inverted_(false),
       layer_mask_(NULL),
       layer_mask_back_link_(NULL),
+      zoom_x_offset_(0),
+      zoom_y_offset_(0),
+      zoom_(1),
+      zoom_inset_(0),
       delegate_(NULL),
       scale_content_(true),
       device_scale_factor_(1.0f) {
@@ -235,12 +243,7 @@ float Layer::GetCombinedOpacity() const {
 void Layer::SetBackgroundBlur(int blur_radius) {
   background_blur_radius_ = blur_radius;
 
-  WebKit::WebFilterOperations filters;
-  if (background_blur_radius_) {
-    filters.append(WebKit::WebFilterOperation::createBlurFilter(
-        background_blur_radius_));
-  }
-  web_layer_->setBackgroundFilters(filters);
+  SetLayerBackgroundFilters();
 }
 
 void Layer::SetLayerSaturation(float saturation) {
@@ -299,6 +302,18 @@ void Layer::SetMaskLayer(Layer* layer_mask) {
     layer_mask->layer_mask_back_link_ = this;
 }
 
+void Layer::SetBackgroundZoom(float x_offset,
+                              float y_offset,
+                              float zoom,
+                              int inset) {
+  zoom_x_offset_ = x_offset;
+  zoom_y_offset_ = y_offset;
+  zoom_ = zoom;
+  zoom_inset_ = inset;
+
+  SetLayerBackgroundFilters();
+}
+
 void Layer::SetLayerFilters() {
   WebKit::WebFilterOperations filters;
   if (layer_saturation_) {
@@ -320,6 +335,24 @@ void Layer::SetLayerFilters() {
   }
 
   web_layer_->setFilters(filters);
+}
+
+void Layer::SetLayerBackgroundFilters() {
+  WebKit::WebFilterOperations filters;
+  if (zoom_ != 1) {
+    filters.append(WebKit::WebFilterOperation::createZoomFilter(
+        WebKit::WebRect(zoom_x_offset_, zoom_y_offset_,
+                        (GetTargetBounds().width() / zoom_),
+                        (GetTargetBounds().height() / zoom_)),
+        zoom_inset_));
+  }
+
+  if (background_blur_radius_) {
+    filters.append(WebKit::WebFilterOperation::createBlurFilter(
+        background_blur_radius_));
+  }
+
+  web_layer_->setBackgroundFilters(filters);
 }
 
 float Layer::GetTargetOpacity() const {

@@ -21,6 +21,7 @@
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/magnifier/magnification_controller.h"
+#include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation.h"
 #include "ash/screen_ash.h"
@@ -229,18 +230,25 @@ bool HandleToggleRootWindowFullScreen() {
 
 // Magnify the screen
 bool HandleMagnifyScreen(int delta_index) {
-  // TODO(yoshiki): Create the class like MagnifierStepScaleController, and
-  // move the following scale control to it.
-  float scale =
-       ash::Shell::GetInstance()->magnification_controller()->GetScale();
-  // Calculate rounded logarithm (base kMagnificationFactor) of scale.
-  int scale_index =
-      std::floor(std::log(scale) / std::log(kMagnificationFactor) + 0.5);
+  if (ash::Shell::GetInstance()->magnification_controller()->IsEnabled()) {
+    // TODO(yoshiki): Create the class like MagnifierStepScaleController, and
+    // move the following scale control to it.
+    float scale =
+        ash::Shell::GetInstance()->magnification_controller()->GetScale();
+    // Calculate rounded logarithm (base kMagnificationFactor) of scale.
+    int scale_index =
+        std::floor(std::log(scale) / std::log(kMagnificationFactor) + 0.5);
 
-  int new_scale_index = std::max(0, std::min(8, scale_index + delta_index));
+    int new_scale_index = std::max(0, std::min(8, scale_index + delta_index));
 
-  ash::Shell::GetInstance()->magnification_controller()->
-      SetScale(std::pow(kMagnificationFactor, new_scale_index), true);
+    ash::Shell::GetInstance()->magnification_controller()->
+        SetScale(std::pow(kMagnificationFactor, new_scale_index), true);
+  } else if (ash::Shell::GetInstance()->
+             partial_magnification_controller()->is_enabled()) {
+    float scale = delta_index > 0 ? kDefaultPartialMagnifiedScale : 1;
+    ash::Shell::GetInstance()->partial_magnification_controller()->
+        SetScale(scale);
+  }
 
   return true;
 }

@@ -22,6 +22,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
+#include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell_delegate.h"
@@ -273,6 +274,7 @@ Shell::~Shell() {
   // Alphabetical.
   drag_drop_controller_.reset();
   magnification_controller_.reset();
+  partial_magnification_controller_.reset();
   power_button_controller_.reset();
   session_state_controller_.reset();
   resize_shadow_controller_.reset();
@@ -479,7 +481,10 @@ void Shell::Init() {
   AddPreTargetHandler(window_modality_controller_.get());
 
   magnification_controller_.reset(
-      internal::MagnificationController::CreateInstance());
+      MagnificationController::CreateInstance());
+
+  partial_magnification_controller_.reset(
+      new PartialMagnificationController());
 
   high_contrast_controller_.reset(new HighContrastController);
   video_detector_.reset(new VideoDetector);

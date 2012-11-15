@@ -68,7 +68,9 @@ class DesktopBackgroundController;
 class DisplayController;
 class HighContrastController;
 class Launcher;
+class MagnificationController;
 class NestedDispatcherController;
+class PartialMagnificationController;
 class PowerButtonController;
 class ScreenAsh;
 class SessionStateController;
@@ -94,7 +96,6 @@ class DragDropController;
 class EventClientImpl;
 class EventRewriterEventFilter;
 class FocusCycler;
-class MagnificationController;
 class MouseCursorEventFilter;
 class OutputConfiguratorAnimation;
 class OverlayEventFilter;
@@ -323,8 +324,12 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
     return high_contrast_controller_.get();
   }
 
-  internal::MagnificationController* magnification_controller() {
+  MagnificationController* magnification_controller() {
     return magnification_controller_.get();
+  }
+
+  PartialMagnificationController* partial_magnification_controller() {
+    return partial_magnification_controller_.get();
   }
 
   ScreenAsh* screen() { return screen_; }
@@ -494,7 +499,8 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   scoped_ptr<internal::FocusCycler> focus_cycler_;
   scoped_ptr<DisplayController> display_controller_;
   scoped_ptr<HighContrastController> high_contrast_controller_;
-  scoped_ptr<internal::MagnificationController> magnification_controller_;
+  scoped_ptr<MagnificationController> magnification_controller_;
+  scoped_ptr<PartialMagnificationController> partial_magnification_controller_;
   scoped_ptr<aura::FocusManager> focus_manager_;
   scoped_ptr<aura::client::UserActionClient> user_action_client_;
   scoped_ptr<internal::MouseCursorEventFilter> mouse_cursor_filter_;

@@ -23,8 +23,14 @@ void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui);
 // Enable or disable the high contrast mode for Chrome.
 void EnableHighContrast(bool enabled);
 
-// Enable or disable the screen magnifier.
-void EnableScreenMagnifier(bool enabled);
+enum ScreenMagnifierType {
+  MAGNIFIER_OFF,
+  MAGNIFIER_FULL,
+  MAGNIFIER_PARTIAL,
+};
+
+// Set the type of screen magnifier, or disable it.
+void SetScreenMagnifier(ScreenMagnifierType type);
 
 // Enable or disable the virtual keyboard.
 void EnableVirtualKeyboard(bool enabled);
@@ -42,8 +48,14 @@ bool IsSpokenFeedbackEnabled();
 // Returns true if High Contrast is enabled, or false if not.
 bool IsHighContrastEnabled();
 
-// Returns true if Screen Magnifier is enabled, or false if not.
-bool IsScreenMagnifierEnabled();
+// Returns the current state of the screen magnifier.
+ScreenMagnifierType GetScreenMagnifierType();
+
+// Translates from a string to ScreenMagnifierType.
+ScreenMagnifierType ScreenMagnifierTypeFromName(const char type_name[]);
+
+// Translates from a ScreenMagnifierType to type string.
+const char* ScreenMagnifierNameFromType(ScreenMagnifierType type);
 
 // Speak the given text if the accessibility pref is already set.
 void MaybeSpeak(const std::string& utterance);

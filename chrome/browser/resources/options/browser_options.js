@@ -392,9 +392,9 @@ cr.define('options', function() {
                       [$('accessibility-high-contrast-check').checked]);
         };
 
-        $('accessibility-screen-magnifier-check').onchange = function(event) {
+        $('accessibility-screen-magnifier-type').onchange = function(event) {
           chrome.send('screenMagnifierChange',
-                      [$('accessibility-screen-magnifier-check').checked]);
+                      [$('accessibility-screen-magnifier-type').value]);
         };
       }
 
@@ -1154,11 +1154,11 @@ cr.define('options', function() {
     },
 
     /**
-     * Set the initial state of the screen magnifier checkbox.
+     * Set the initial state of the screen magnifier dropdown.
      * @private
      */
-    setScreenMagnifierCheckboxState_: function(checked) {
-      $('accessibility-screen-magnifier-check').checked = checked;
+    setScreenMagnifierTypeState_: function(type) {
+      $('accessibility-screen-magnifier-type').value = type;
     },
 
     /**
@@ -1302,7 +1302,7 @@ cr.define('options', function() {
     'setMetricsReportingSettingVisibility',
     'setPasswordGenerationSettingVisibility',
     'setProfilesInfo',
-    'setScreenMagnifierCheckboxState',
+    'setScreenMagnifierTypeState',
     'setSpokenFeedbackCheckboxState',
     'setThemesResetButtonEnabled',
     'setVirtualKeyboardCheckboxState',

@@ -168,6 +168,12 @@ class COMPOSITOR_EXPORT Layer
   // grayscale otherwise.
   float GetTargetGrayscale() const;
 
+  // Zoom the background by a factor of |zoom|.  The upper left corner of the
+  // zoomed area is offset from the top left corner of the layer by |x_offset|
+  // and |y_offset|.  The effect is blended along the edge across |inset|
+  // pixels.
+  void SetBackgroundZoom(float x_offset, float y_offset, float zoom, int inset);
+
   // Invert the layer.
   bool layer_inverted() const { return layer_inverted_; }
   void SetLayerInverted(bool inverted);
@@ -333,6 +339,9 @@ class COMPOSITOR_EXPORT Layer
   // Set all filters which got applied to the layer.
   void SetLayerFilters();
 
+  // Set all filters which got applied to the layer background.
+  void SetLayerBackgroundFilters();
+
   const LayerType type_;
 
   Compositor* compositor_;
@@ -378,6 +387,18 @@ class COMPOSITOR_EXPORT Layer
   // We keep this reference for the case that if the mask layer gets deleted
   // while attached to the main layer before the main layer is deleted.
   Layer* layer_mask_back_link_;
+
+  // When the layer is zoomed, this is the offset to the upper left corner of
+  // the area in the layer that is zoomed.
+  float zoom_x_offset_;
+  float zoom_y_offset_;
+
+  // The zoom factor to scale the layer by.  Zooming is disabled when this is
+  // set to 1.
+  float zoom_;
+
+  // Width of the border in pixels, where the scaling is blended.
+  int zoom_inset_;
 
   std::string name_;
 

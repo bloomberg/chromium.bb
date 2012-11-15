@@ -33,7 +33,6 @@ const float kScrollScaleChangeFactor = 0.05f;
 }  // namespace
 
 namespace ash {
-namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
 // MagnificationControllerImpl:
@@ -47,6 +46,7 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 
   // MagnificationController overrides:
   virtual void SetEnabled(bool enabled) OVERRIDE;
+  virtual bool IsEnabled() const OVERRIDE;
   virtual void SetScale(float scale, bool animate) OVERRIDE;
   virtual float GetScale() const OVERRIDE { return scale_; }
   virtual void MoveWindow(int x, int y, bool animate) OVERRIDE;
@@ -443,6 +443,10 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
   }
 }
 
+bool MagnificationControllerImpl::IsEnabled() const {
+  return is_enabled_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MagnificationControllerImpl: aura::EventFilter implementation
 
@@ -506,5 +510,4 @@ MagnificationController* MagnificationController::CreateInstance() {
   return new MagnificationControllerImpl();
 }
 
-}  // namespace internal
 }  // namespace ash

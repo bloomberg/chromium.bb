@@ -16,7 +16,6 @@ class RootWindow;
 }
 
 namespace ash {
-namespace internal {
 
 class MagnificationController {
  public:
@@ -28,6 +27,8 @@ class MagnificationController {
 
   // Enables (or disables if |enabled| is false) screen magnifier feature.
   virtual void SetEnabled(bool enabled) = 0;
+
+  virtual bool IsEnabled() const = 0;
 
   // Sets the magnification ratio. 1.0f means no magnification.
   virtual void SetScale(float scale, bool animate) = 0;
@@ -49,7 +50,6 @@ class MagnificationController {
   MagnificationController() {}
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_MAGNIFIER_MAGNIFICATION_CONTROLLER_H_

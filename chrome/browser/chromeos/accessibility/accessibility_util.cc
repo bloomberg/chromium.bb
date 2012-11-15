@@ -8,6 +8,7 @@
 
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
+#include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -36,6 +37,13 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::RenderViewHost;
+
+namespace {
+const char kScreenMagnifierOff[] = "";
+const char kScreenMagnifierFull[] = "full";
+const char kScreenMagnifierPartial[] = "partial";
+}
+
 
 namespace chromeos {
 namespace accessibility {
@@ -185,13 +193,17 @@ void EnableHighContrast(bool enabled) {
 #endif
 }
 
-void EnableScreenMagnifier(bool enabled) {
+void SetScreenMagnifier(ScreenMagnifierType type) {
   PrefService* pref_service = g_browser_process->local_state();
-  pref_service->SetBoolean(prefs::kScreenMagnifierEnabled, enabled);
+  pref_service->SetString(prefs::kScreenMagnifierType,
+                          ScreenMagnifierNameFromType(type));
   pref_service->CommitPendingWrite();
 
 #if defined(USE_ASH)
-  ash::Shell::GetInstance()->magnification_controller()->SetEnabled(enabled);
+  ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
+      type == MAGNIFIER_FULL);
+  ash::Shell::GetInstance()->partial_magnification_controller()->SetEnabled(
+      type == MAGNIFIER_PARTIAL);
 #endif
 }
 
@@ -244,13 +256,38 @@ bool IsHighContrastEnabled() {
   return high_contrast_enabled;
 }
 
-bool IsScreenMagnifierEnabled() {
-  if (!g_browser_process) {
-    return false;
-  }
+ScreenMagnifierType GetScreenMagnifierType() {
+  if (!g_browser_process)
+    return MAGNIFIER_OFF;
+
   PrefService* prefs = g_browser_process->local_state();
-  bool enabled = prefs && prefs->GetBoolean(prefs::kScreenMagnifierEnabled);
-  return enabled;
+  std::string screen_magnifier_type;
+  if (!prefs)
+    return MAGNIFIER_OFF;
+
+  return ScreenMagnifierTypeFromName(
+      prefs->GetString(prefs::kScreenMagnifierType).c_str());
+}
+
+ScreenMagnifierType ScreenMagnifierTypeFromName(const char type_name[]) {
+  if (0 == strcmp(type_name, kScreenMagnifierFull))
+    return MAGNIFIER_FULL;
+  else if (0 == strcmp(type_name, kScreenMagnifierPartial))
+    return MAGNIFIER_PARTIAL;
+  else
+    return MAGNIFIER_OFF;
+}
+
+const char* ScreenMagnifierNameFromType(ScreenMagnifierType type) {
+  switch (type) {
+    case MAGNIFIER_OFF:
+      return kScreenMagnifierOff;
+    case MAGNIFIER_FULL:
+      return kScreenMagnifierFull;
+    case MAGNIFIER_PARTIAL:
+      return kScreenMagnifierPartial;
+  }
+  return kScreenMagnifierOff;
 }
 
 void MaybeSpeak(const std::string& utterance) {

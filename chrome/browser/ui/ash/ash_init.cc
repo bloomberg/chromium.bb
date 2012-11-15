@@ -8,6 +8,7 @@
 #include "ash/ash_switches.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
+#include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/event_rewriter_event_filter.h"
 #include "ash/wm/property_util.h"
@@ -83,8 +84,12 @@ void OpenAsh() {
   ash::Shell::GetInstance()->high_contrast_controller()->SetEnabled(
       chromeos::accessibility::IsHighContrastEnabled());
 
+  chromeos::accessibility::ScreenMagnifierType magnifier_type =
+      chromeos::accessibility::GetScreenMagnifierType();
   ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
-      chromeos::accessibility::IsScreenMagnifierEnabled());
+      magnifier_type == chromeos::accessibility::MAGNIFIER_FULL);
+  ash::Shell::GetInstance()->partial_magnification_controller()->SetEnabled(
+      magnifier_type == chromeos::accessibility::MAGNIFIER_PARTIAL);
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableZeroBrowsersOpenForTests)) {

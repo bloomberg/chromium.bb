@@ -287,6 +287,12 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_DESCRIPTION },
     { "accessibilityTapDragging",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_TOUCHPAD_TAP_DRAGGING_DESCRIPTION },
+    { "accessibilityScreenMagnifierOff",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_OFF },
+    { "accessibilityScreenMagnifierFull",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_FULL },
+    { "accessibilityScreenMagnifierPartial",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_PARTIAL },
     { "accessibilitySpokenFeedback",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION },
     { "accessibilityTitle",
@@ -1269,10 +1275,13 @@ void BrowserOptionsHandler::HighContrastChangeCallback(const ListValue* args) {
 
 void BrowserOptionsHandler::ScreenMagnifierChangeCallback(
     const ListValue* args) {
-  bool enabled = false;
-  args->GetBoolean(0, &enabled);
+  std::string type_name;
+  args->GetString(0, &type_name);
 
-  chromeos::accessibility::EnableScreenMagnifier(enabled);
+  chromeos::accessibility::ScreenMagnifierType type =
+      chromeos::accessibility::ScreenMagnifierTypeFromName(type_name.c_str());
+
+  chromeos::accessibility::SetScreenMagnifier(type);
 }
 
 void BrowserOptionsHandler::VirtualKeyboardChangeCallback(
@@ -1312,11 +1321,13 @@ void BrowserOptionsHandler::SetupAccessibilityFeatures() {
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.setHighContrastCheckboxState",
       high_contrast_enabled);
-  base::FundamentalValue screen_magnifier_enabled(
-      pref_service->GetBoolean(prefs::kScreenMagnifierEnabled));
+
+  base::StringValue magnifier_type(
+      pref_service->GetString(prefs::kScreenMagnifierType));
   web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setScreenMagnifierCheckboxState",
-      screen_magnifier_enabled);
+      "BrowserOptions.setScreenMagnifierTypeState",
+      magnifier_type);
+
   base::FundamentalValue virtual_keyboard_enabled(
       pref_service->GetBoolean(prefs::kVirtualKeyboardEnabled));
   web_ui()->CallJavascriptFunction(
