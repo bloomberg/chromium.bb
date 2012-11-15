@@ -6125,9 +6125,13 @@
    fun:_ZN7WebCore12RenderObject8setStyleEN3WTF10PassRefPtrINS_11RenderStyleEEE
 }
 {
-   bug_160951
-   Memcheck:Uninitialized
-   fun:_ZN16sync_file_system20LocalFileSyncService15OriginChangeMap20SetOriginChangeCountERK4GURLl
-   fun:_ZN16sync_file_system20LocalFileSyncService27OnChangesAvailableInOriginsERKSt3setI4GURLSt4lessIS2_ESaIS2_EE
-   fun:_ZN7fileapi20LocalFileSyncContext22NotifyAvailableChangesERKSt3setI4GURLSt4lessIS2_ESaIS2_EE
+   bug_160877
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN7content*DummyListenSocketC1Ev
+   fun:_ZNK7content*DummyListenSocketFactory15CreateAndListenEPN3net18StreamListenSocket8DelegateE
+   ...
+   fun:_ZN3net10HttpServerC1ERKNS_25StreamListenSocketFactoryEPNS0_8DelegateE
+   fun:_ZN7content23DevToolsHttpHandlerImpl4InitEv
 }

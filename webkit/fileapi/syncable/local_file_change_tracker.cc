@@ -65,7 +65,8 @@ LocalFileChangeTracker::LocalFileChangeTracker(
     : initialized_(false),
       file_task_runner_(file_task_runner),
       tracker_db_(new TrackerDB(base_path)),
-      current_change_seq_(0) {
+      current_change_seq_(0),
+      num_changes_(0) {
 }
 
 LocalFileChangeTracker::~LocalFileChangeTracker() {
