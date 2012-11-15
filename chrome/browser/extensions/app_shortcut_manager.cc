@@ -93,9 +93,11 @@ void AppShortcutManager::Observe(int type,
           details).ptr();
       if (extension->is_platform_app()) {
 #if defined(OS_WIN)
+        scoped_refptr<Extension> extension_ref(const_cast<Extension*>(
+            extension));
         extensions::AppHostInstaller::EnsureAppHostInstalled(
             base::Bind(&AppShortcutManager::OnAppHostInstallationComplete,
-                       weak_factory_.GetWeakPtr(), extension));
+                       weak_factory_.GetWeakPtr(), extension_ref));
 #else
         UpdateApplicationShortcuts(extension);
 #endif
@@ -116,7 +118,7 @@ void AppShortcutManager::Observe(int type,
 
 #if defined(OS_WIN)
 void AppShortcutManager::OnAppHostInstallationComplete(
-    const Extension* extension, bool app_host_install_success) {
+    scoped_refptr<Extension> extension, bool app_host_install_success) {
   if (!app_host_install_success) {
     // Do not create shortcuts if App Host fails to install.
     LOG(ERROR) << "Application Runtime installation failed.";

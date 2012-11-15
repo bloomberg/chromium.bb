@@ -41,7 +41,7 @@ class AppShortcutManager : public ImageLoadingTracker::Observer,
   void UpdateApplicationShortcuts(const Extension* extension);
 
 #if defined(OS_WIN)
-  void OnAppHostInstallationComplete(const Extension* extension,
+  void OnAppHostInstallationComplete(scoped_refptr<Extension> extension,
                                      bool app_host_install_success);
 #endif
 
