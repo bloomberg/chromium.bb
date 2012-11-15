@@ -45,12 +45,9 @@ void ConnectionToClient::Disconnect() {
 
   CloseChannels();
 
-  DCHECK(session_.get());
-  scoped_ptr<Session> session = session_.Pass();
-
   // This should trigger OnConnectionClosed() event and this object
   // may be destroyed as the result.
-  session->Close();
+  session_->Close();
 }
 
 void ConnectionToClient::UpdateSequenceNumber(int64 sequence_number) {
