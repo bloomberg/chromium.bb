@@ -74,6 +74,17 @@ namespace {
 jfieldID g_native_content_view;
 
 const void* kContentViewUserDataKey = &kContentViewUserDataKey;
+
+int GetRenderProcessIdFromRenderViewHost(RenderViewHost* host) {
+  DCHECK(host);
+  RenderProcessHost* render_process = host->GetProcess();
+  DCHECK(render_process);
+  if (render_process->HasConnection())
+    return render_process->GetHandle();
+  else
+    return 0;
+}
+
 }  // namespace
 
 // Enables a callback when the underlying WebContents is destroyed, to enable
@@ -198,9 +209,12 @@ void ContentViewCoreImpl::OnJavaContentViewCoreDestroyed(JNIEnv* env,
 
 void ContentViewCoreImpl::InitWebContents() {
   DCHECK(web_contents_);
-  notification_registrar_.Add(this,
-      NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+  notification_registrar_.Add(
+      this, NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
       Source<NavigationController>(&web_contents_->GetController()));
+  notification_registrar_.Add(
+      this, NOTIFICATION_RENDERER_PROCESS_CREATED,
+      content::NotificationService::AllBrowserContextsAndSources());
 
   static_cast<WebContentsViewAndroid*>(web_contents_->GetView())->
       SetContentViewCore(this);
@@ -213,6 +227,45 @@ void ContentViewCoreImpl::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
   switch (type) {
+    case NOTIFICATION_RENDER_VIEW_HOST_CHANGED: {
+      std::pair<RenderViewHost*, RenderViewHost*>* switched_details =
+          Details<std::pair<RenderViewHost*, RenderViewHost*> >(details).ptr();
+      int old_pid = 0;
+      if (switched_details->first) {
+        old_pid = GetRenderProcessIdFromRenderViewHost(
+            switched_details->first);
+      }
+      int new_pid = GetRenderProcessIdFromRenderViewHost(
+          web_contents_->GetRenderViewHost());
+      if (new_pid != old_pid) {
+        // Notify the Java side of the change of the current renderer process.
+        JNIEnv* env = AttachCurrentThread();
+        ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+        if (!obj.is_null()) {
+          Java_ContentViewCore_onRenderProcessSwap(
+              env, obj.obj(), old_pid, new_pid);
+        }
+      }
+      break;
+    }
+    case NOTIFICATION_RENDERER_PROCESS_CREATED: {
+      // Notify the Java side of the current renderer process.
+      RenderProcessHost* source_process_host =
+          Source<RenderProcessHost>(source).ptr();
+      RenderProcessHost* current_process_host =
+          web_contents_->GetRenderViewHost()->GetProcess();
+
+      if (source_process_host == current_process_host) {
+        int pid = GetRenderProcessIdFromRenderViewHost(
+            web_contents_->GetRenderViewHost());
+        JNIEnv* env = AttachCurrentThread();
+        ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+        if (!obj.is_null()) {
+          Java_ContentViewCore_onRenderProcessSwap(env, obj.obj(), 0, pid);
+        }
+      }
+      break;
+    }
     case NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT: {
       if (!web_contents_ || Source<RenderViewHost>(source).ptr() !=
           web_contents_->GetRenderViewHost()) {
@@ -630,14 +683,8 @@ void ContentViewCoreImpl::LoadUrl(
 }
 
 jint ContentViewCoreImpl::GetCurrentRenderProcessId(JNIEnv* env, jobject obj) {
-  RenderViewHost* host = web_contents_->GetRenderViewHost();
-  DCHECK(host);
-  RenderProcessHost* render_process = host->GetProcess();
-  DCHECK(render_process);
-  if (render_process->HasConnection())
-    return render_process->GetHandle();
-  else
-    return 0;
+  return GetRenderProcessIdFromRenderViewHost(
+      web_contents_->GetRenderViewHost());
 }
 
 void ContentViewCoreImpl::SetAllUserAgentOverridesInHistory(

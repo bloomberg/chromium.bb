@@ -146,6 +146,8 @@ public class ContentViewCore implements MotionEventDelegate {
     // Native pointer to C++ ContentViewCoreImpl object which will be set by nativeInit().
     private int mNativeContentViewCore = 0;
 
+    private boolean mAttachedToWindow = false;
+
     // The vsync monitor is used to lock the compositor to the display refresh rate.
     private VSyncMonitor mVSyncMonitor;
 
@@ -1102,6 +1104,13 @@ public class ContentViewCore implements MotionEventDelegate {
      */
     @SuppressWarnings("javadoc")
     public void onAttachedToWindow() {
+        mAttachedToWindow = true;
+        if (mNativeContentViewCore != 0) {
+            int pid = nativeGetCurrentRenderProcessId(mNativeContentViewCore);
+            if (pid > 0) {
+                SandboxedProcessLauncher.bindAsHighPriority(pid);
+            }
+        }
         setAccessibilityState(true);
     }
 
@@ -1110,6 +1119,13 @@ public class ContentViewCore implements MotionEventDelegate {
      */
     @SuppressWarnings("javadoc")
     public void onDetachedFromWindow() {
+        mAttachedToWindow = false;
+        if (mNativeContentViewCore != 0) {
+            int pid = nativeGetCurrentRenderProcessId(mNativeContentViewCore);
+            if (pid > 0) {
+                SandboxedProcessLauncher.unbindAsHighPriority(pid);
+            }
+        }
         setAccessibilityState(false);
     }
 
@@ -1921,6 +1937,19 @@ public class ContentViewCore implements MotionEventDelegate {
     private void showPastePopup(int x, int y) {
         getInsertionHandleController()
                 .showHandleWithPastePopupAt(x - mNativeScrollX, y - mNativeScrollY);
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onRenderProcessSwap(int oldPid, int newPid) {
+        if (mAttachedToWindow && oldPid != newPid) {
+            if (oldPid > 0) {
+                SandboxedProcessLauncher.unbindAsHighPriority(oldPid);
+            }
+            if (newPid > 0) {
+                SandboxedProcessLauncher.bindAsHighPriority(newPid);
+            }
+        }
     }
 
     /**
