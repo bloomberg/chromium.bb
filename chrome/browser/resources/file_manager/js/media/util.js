@@ -23,6 +23,13 @@ function MouseInactivityWatcher(container, opt_timeout, opt_toolsActive) {
   this.clientX_ = 0;
   this.clientY_ = 0;
   this.container_.addEventListener('mousemove', this.onMouseMove_.bind(this));
+
+  // Show tools when the user touches the screen.
+  this.container_.addEventListener(
+      'touchstart', this.activityStarted_.bind(this));
+  var initiateFading = this.activityStopped_.bind(this, this.timeout_);
+  this.container_.addEventListener('touchend', initiateFading);
+  this.container_.addEventListener('touchcancel', initiateFading);
 }
 
 /**
@@ -52,8 +59,9 @@ MouseInactivityWatcher.prototype.isToolElement = function(element) {
 /**
  * To be called when the user started activity. Shows the tools
  * and cancels the countdown.
+ * @private
  */
-MouseInactivityWatcher.prototype.startActivity = function() {
+MouseInactivityWatcher.prototype.activityStarted_ = function() {
   this.showTools(true);
 
   if (this.timeoutID_) {
@@ -65,8 +73,9 @@ MouseInactivityWatcher.prototype.startActivity = function() {
 /**
  * Called when user activity has stopped. Re-starts the countdown.
  * @param {number} opt_timeout Timeout.
+ * @private
  */
-MouseInactivityWatcher.prototype.stopActivity = function(opt_timeout) {
+MouseInactivityWatcher.prototype.activityStopped_ = function(opt_timeout) {
   if (this.mouseOverTool_ || this.toolsActive_())
     return;
 
@@ -75,6 +84,26 @@ MouseInactivityWatcher.prototype.stopActivity = function(opt_timeout) {
 
   this.timeoutID_ = setTimeout(
       this.onTimeoutBound_, opt_timeout || this.timeout_);
+};
+
+/**
+ * Called when a user performed a short action (such as a click or a key press)
+ * that should show the tools if they are not visible.
+ * @param {number} opt_timeout Timeout.
+ */
+MouseInactivityWatcher.prototype.kick = function(opt_timeout) {
+  this.activityStarted_();
+  this.activityStopped_(opt_timeout);
+};
+
+/**
+ * Check if the tools are active and update the tools visibility accordingly.
+ */
+MouseInactivityWatcher.prototype.check = function() {
+  if (this.toolsActive_())
+    this.activityStarted_();
+  else
+    this.activityStopped_();
 };
 
 /**
@@ -92,7 +121,7 @@ MouseInactivityWatcher.prototype.onMouseMove_ = function(e) {
   this.clientX_ = e.clientX;
   this.clientY_ = e.clientY;
 
-  this.startActivity();
+  this.activityStarted_();
 
   this.mouseOverTool_ = false;
   for (var elem = e.target; elem != this.container_; elem = elem.parentNode) {
@@ -102,7 +131,7 @@ MouseInactivityWatcher.prototype.onMouseMove_ = function(e) {
     }
   }
 
-  this.stopActivity();
+  this.activityStopped_();
 };
 
 /**

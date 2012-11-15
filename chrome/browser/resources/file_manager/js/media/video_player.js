@@ -45,7 +45,7 @@ function FullWindowVideoControls(
       this.togglePlayStateWithFeedback.bind(this));
 
   var inactivityWatcher = new MouseInactivityWatcher(playerContainer);
-  inactivityWatcher.stopActivity();
+  inactivityWatcher.check();
 }
 
 FullWindowVideoControls.prototype = { __proto__: VideoControls.prototype };

@@ -158,15 +158,6 @@ Gallery.prototype.initListeners_ = function() {
   this.inactivityWatcher_ = new MouseInactivityWatcher(
       this.container_, Gallery.FADE_TIMEOUT, this.hasActiveTool.bind(this));
 
-  // Show tools when the user touches the screen.
-  this.document_.body.addEventListener('touchstart',
-      this.inactivityWatcher_.startActivity.bind(this.inactivityWatcher_));
-  var initiateFading =
-      this.inactivityWatcher_.stopActivity.bind(this.inactivityWatcher_,
-          Gallery.FADE_TIMEOUT);
-  this.document_.body.addEventListener('touchend', initiateFading);
-  this.document_.body.addEventListener('touchcancel', initiateFading);
-
   this.thumbnailObserverId_ = this.metadataCache_.addObserver(
       this.context_.curDirEntry,
       MetadataCache.CHILDREN,
@@ -307,13 +298,13 @@ Gallery.prototype.load = function(urls, selectedUrls) {
     this.setCurrentMode_(this.mosaicMode_);
     mosaic.init();
     mosaic.show();
+    this.inactivityWatcher_.check();  // Show the toolbar.
   } else {
     this.setCurrentMode_(this.slideMode_);
     /* TODO: consider nice blow-up animation for the first image */
     this.slideMode_.enter(null, function() {
         // Flash the toolbar briefly to show it is there.
-        this.inactivityWatcher_.startActivity();
-        this.inactivityWatcher_.stopActivity(Gallery.FIRST_FADE_TIMEOUT);
+        this.inactivityWatcher_.kick(Gallery.FIRST_FADE_TIMEOUT);
       }.bind(this),
       mosaic ? mosaic.init.bind(mosaic) : function() {});
   }
@@ -371,25 +362,13 @@ Gallery.prototype.hasActiveTool = function() {
 };
 
 /**
- * Check if the tools are active and notify the inactivity watcher.
- * @private
- */
-Gallery.prototype.checkActivity_ = function() {
-  if (this.hasActiveTool())
-    this.inactivityWatcher_.startActivity();
-  else
-    this.inactivityWatcher_.stopActivity();
-};
-
-/**
 * External user action event handler.
 * @private
 */
 Gallery.prototype.onUserAction_ = function() {
   this.closeShareMenu_();
   // Show the toolbar and hide it after the default timeout.
-  this.inactivityWatcher_.startActivity();
-  this.inactivityWatcher_.stopActivity();
+  this.inactivityWatcher_.kick();
 };
 
 /**
@@ -665,7 +644,7 @@ Gallery.prototype.onFilenameClick_ = function() {
   ImageUtil.setAttribute(this.filenameSpacer_, 'renaming', true);
   this.filenameEdit_.originalValue = this.filenameEdit_.value;
   setTimeout(this.filenameEdit_.select.bind(this.filenameEdit_), 0);
-  this.inactivityWatcher_.startActivity();
+  this.onUserAction_();
 };
 
 /**
@@ -702,7 +681,7 @@ Gallery.prototype.onFilenameEditBlur_ = function() {
   }
 
   ImageUtil.setAttribute(this.filenameSpacer_, 'renaming', false);
-  this.checkActivity_();
+  this.onUserAction_();
 };
 
 /**
@@ -766,7 +745,7 @@ Gallery.prototype.closeShareMenu_ = function() {
 Gallery.prototype.toggleShare_ = function() {
   if (!this.shareButton_.hasAttribute('disabled'))
     this.shareMenu_.hidden = !this.shareMenu_.hidden;
-  this.checkActivity_();
+  this.inactivityWatcher_.check();
 };
 
 /**
