@@ -142,7 +142,8 @@ ActionChoice.prototype.loadSource_ = function(source) {
         loadTimeData.getString('ACTION_CHOICE_LOADING_' +
                                deviceType.toUpperCase());
 
-    util.traverseTree(entry, onTraversed, 0 /* infinite depth */);
+    util.traverseTree(entry, onTraversed, 0 /* infinite depth */,
+        FileType.isVisible);
   }.bind(this);
 
   this.sourceEntry_ = null;

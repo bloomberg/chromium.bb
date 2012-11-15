@@ -204,6 +204,30 @@ FileType.isHosted = function(file) {
 
 /**
  * @param {string|Entry} file Reference to the file.
+ * @return {boolean} Returns true if the file is not hidden, and we should
+ *     display it.
+ */
+FileType.isVisible = function(file) {
+  if (typeof file == 'object') {
+    file = file.name;
+  }
+
+  var path = util.extractFilePath(file);
+  if (path) file = path;
+
+  file = file.split('/').pop();
+  return file.indexOf('.') != 0 && !(file in FileType.HIDDEN_NAMES);
+};
+
+/**
+ * File/directory names that we know are usually hidden.
+ */
+FileType.HIDDEN_NAMES = {
+  'RECYCLED': true
+};
+
+/**
+ * @param {string|Entry} file Reference to the file.
  * @return {string} Returns string that represents the file icon.
  *                  It refers to a file 'images/filetype_' + icon + '.png'.
  */

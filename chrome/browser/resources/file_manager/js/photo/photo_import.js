@@ -163,7 +163,8 @@ PhotoImport.prototype.loadSource_ = function(source) {
   }.bind(this);
 
   var onEntry = function(entry) {
-    util.traverseTree(entry, onTraversed, 0 /* infinite depth */);
+    util.traverseTree(entry, onTraversed, 0 /* infinite depth */,
+        FileType.isVisible);
   }.bind(this);
 
   var onError = this.onError_.bind(

@@ -598,9 +598,10 @@ util.makeFilesystemUrl = function(path) {
  * @return {string} The path.
  */
 util.extractFilePath = function(url) {
-  var path =
+  var match =
       /^filesystem:[\w-]*:\/\/[\w]*\/(external|persistent|temporary)(\/.*)$/.
-      exec(url)[2];
+      exec(url);
+  var path = match && match[2];
   if (!path) return null;
   return decodeURIComponent(path);
 };
@@ -611,8 +612,10 @@ util.extractFilePath = function(url) {
  * @param {function(Array.<Entry>)} callback The callback is called at the very
  *     end with a list of entries found.
  * @param {number?} max_depth Maximum depth. Pass zero to traverse everything.
+ * @param {function(entry):boolean=} opt_filter Optional filter to skip some
+ *     files/directories.
  */
-util.traverseTree = function(root, callback, max_depth) {
+util.traverseTree = function(root, callback, max_depth, opt_filter) {
   var list = [];
   util.forEachEntryInTree(root, function(entry) {
     if (entry) {
@@ -621,7 +624,7 @@ util.traverseTree = function(root, callback, max_depth) {
       callback(list);
     }
     return true;
-  }, max_depth);
+  }, max_depth, opt_filter);
 };
 
 /**
@@ -631,9 +634,15 @@ util.traverseTree = function(root, callback, max_depth) {
  *     entry, and then once with null passed. If callback returns false once,
  *     the whole traversal is stopped.
  * @param {number?} max_depth Maximum depth. Pass zero to traverse everything.
+ * @param {function(entry):boolean=} opt_filter Optional filter to skip some
+ *     files/directories.
  */
-util.forEachEntryInTree = function(root, callback, max_depth) {
+util.forEachEntryInTree = function(root, callback, max_depth, opt_filter) {
   if (root.isFile) {
+    if (opt_filter && !opt_filter(root)) {
+      callback(null);
+      return;
+    }
     if (callback(root))
       callback(null);
     return;
@@ -649,6 +658,7 @@ util.forEachEntryInTree = function(root, callback, max_depth) {
 
   function readEntry(entry, depth) {
     if (cancelled) return;
+    if (opt_filter && !opt_filter(entry)) return;
 
     if (!callback(entry)) {
       cancelled = true;
