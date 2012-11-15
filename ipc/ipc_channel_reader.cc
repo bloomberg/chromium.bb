@@ -4,6 +4,7 @@
 
 #include "ipc/ipc_channel_reader.h"
 
+#include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_macros.h"
 
