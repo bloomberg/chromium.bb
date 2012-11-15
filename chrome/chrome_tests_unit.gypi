@@ -2137,10 +2137,6 @@
             'browser/language_usage_metrics_unittest.cc',
           ],
         }],
-        ['enable_plugin_installation==0', {
-          'sources!': [
-          ],
-        }],
         ['enable_protector_service==0', {
           'sources/': [
             ['exclude', '^browser/protector/'],
