@@ -2267,13 +2267,6 @@ public class ContentViewCore implements MotionEventDelegate {
         }
     }
 
-    /**
-     *  Temporary shim for updateVSync.
-     */
-    public void UpdateVSync(long tickTimeMicros, long intervalMicros) {
-        updateVSync(tickTimeMicros, intervalMicros);
-    }
-
     private native int nativeInit(boolean hardwareAccelerated, int webContentsPtr,
             int windowAndroidPtr);
 
