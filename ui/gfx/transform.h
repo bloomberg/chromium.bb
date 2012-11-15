@@ -42,12 +42,20 @@ class UI_EXPORT Transform {
   // Sets the scaling parameters.
   void SetScaleX(double x);
   void SetScaleY(double y);
+  void SetScaleZ(double z);
   void SetScale(double x, double y);
+  void SetScale3d(double x, double y, double z);
 
   // Sets the translation parameters.
   void SetTranslateX(double x);
   void SetTranslateY(double y);
+  void SetTranslateZ(double z);
   void SetTranslate(double x, double y);
+  void SetTranslate3d(double x, double y, double z);
+
+  // Sets the skew parameters.
+  void SetSkewX(double angle);
+  void SetSkewY(double angle);
 
   // Creates a perspective matrix.
   // Based on the 'perspective' operation from
@@ -62,12 +70,45 @@ class UI_EXPORT Transform {
 
   // Applies scaling on current transform.
   void ConcatScale(double x, double y);
+  void ConcatScale3d(double x, double y, double z);
 
   // Applies translation on current transform.
   void ConcatTranslate(double x, double y);
+  void ConcatTranslate3d(double x, double y, double z);
 
   // Applies a perspective on current transform.
   void ConcatPerspectiveDepth(double depth);
+
+  // Applies a skew on the current transform.
+  void ConcatSkewX(double angle_x);
+  void ConcatSkewY(double angle_y);
+
+  // Applies the current transformation on a rotation and assigns the result
+  // to |this|.
+  void PreconcatRotate(double degree);
+
+  // Applies the current transformation on an axis-angle rotation and assigns
+  // the result to |this|.
+  void PreconcatRotateAbout(const Point3F& point, double degree);
+
+  // Applies the current transformation on a scaling and assigns the result
+  // to |this|.
+  void PreconcatScale(double x, double y);
+  void PreconcatScale3d(double x, double y, double z);
+
+  // Applies the current transformation on a translation and assigns the result
+  // to |this|.
+  void PreconcatTranslate(double x, double y);
+  void PreconcatTranslate3d(double x, double y, double z);
+
+  // Applies the current transformation on a skew and assigns the result
+  // to |this|.
+  void PreconcatSkewX(double angle_x);
+  void PreconcatSkewY(double angle_y);
+
+  // Applies the current transformation on a perspective transform and assigns
+  // the result to |this|.
+  void PreconcatPerspectiveDepth(double depth);
 
   // Applies a transformation on the current transformation
   // (i.e. 'this = this * transform;').
@@ -109,6 +150,17 @@ class UI_EXPORT Transform {
   // rect will be the smallest axis aligned bounding box containing the
   // transformed rect.
   bool TransformRectReverse(RectF* rect) const;
+
+  // Decomposes |this| and |from|, interpolates the decomposed values, and
+  // sets |this| to the reconstituted result. Returns false if either matrix
+  // can't be decomposed. Uses routines described in this spec:
+  // http://www.w3.org/TR/css3-3d-transforms/.
+  //
+  // Note: this call is expensive since we need to decompose the transform. If
+  // you're going to be calling this rapidly (e.g., in an animation) you should
+  // decompose once using gfx::DecomposeTransforms and reuse your
+  // DecomposedTransform.
+  bool Blend(const Transform& from, double progress);
 
   // Returns the underlying matrix.
   const SkMatrix44& matrix() const { return matrix_; }
