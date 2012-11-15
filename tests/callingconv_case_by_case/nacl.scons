@@ -83,16 +83,10 @@ else:
   envlist, link_env = MakeSelfTestEnv(env, [])
   test_configurations.append((envlist, link_env, '_self'))
   if env.Bit('target_arm'):
-    # For arm, there is no gcc, so just test pnacl (via native objects).
-    native_env = env.Clone()
-    native_env.PNaClForceNative()
-    envlist, link_env = MakeSelfTestEnv(native_env, [])
-    test_configurations.append((envlist, link_env, ''))
-    envlist, link_env = MakeSelfTestEnv(native_env,
+    envlist, link_env = MakeCrossEnvs(env, [],
         ['--pnacl-frontend-triple=armv7a-unknown-nacl-gnueabi',
          '-mfloat-abi=hard'])
-    test_configurations.append((envlist, link_env, '_eabi_self'))
-
+    test_configurations.append((envlist, link_env, ''))
   elif env.Bit('target_x86_32'):
     # For x86-32 there is gcc, but no compatibility flags.
     envlist, link_env = MakeCrossEnvs(env, ['-msse2'], [])
