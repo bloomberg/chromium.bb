@@ -341,7 +341,7 @@ GURL GetFileBrowserUrlWithParams(
       ListValue* extensions_list = new ListValue();
       for (size_t j = 0; j < file_types->extensions[i].size(); ++j) {
         extensions_list->Append(
-            new base::StringValue(file_types->extensions[i][j]));
+            Value::CreateStringValue(file_types->extensions[i][j]));
       }
 
       DictionaryValue* dict = new DictionaryValue();

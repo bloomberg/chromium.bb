@@ -34,7 +34,7 @@ base::Value* GetValueForRegistrationCodeType(std::string& type) {
     else if (type == kGroupType)
       provider->GetMachineStatistic(kGroupCodeKey, &result);
   }
-  return new base::StringValue(result);
+  return Value::CreateStringValue(result);
 }
 
 }  // namespace

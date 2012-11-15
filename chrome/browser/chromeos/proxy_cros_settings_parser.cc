@@ -56,7 +56,7 @@ namespace {
 base::Value* CreateServerHostValue(
     const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) {
   return proxy.server.is_valid() ?
-         new base::StringValue(proxy.server.host_port_pair().host()) :
+         base::Value::CreateStringValue(proxy.server.host_port_pair().host()) :
          NULL;
 }
 
@@ -298,7 +298,8 @@ bool GetProxyPrefValue(Profile* profile,
     if (config.mode ==
             chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_PAC_SCRIPT &&
         config.automatic_proxy.pac_url.is_valid()) {
-      data = new base::StringValue(config.automatic_proxy.pac_url.spec());
+      data =
+          base::Value::CreateStringValue(config.automatic_proxy.pac_url.spec());
     }
   } else if (path == kProxySingleHttp) {
     data = CreateServerHostValue(config.single_proxy);
@@ -356,7 +357,7 @@ bool GetProxyPrefValue(Profile* profile,
     ListValue* list =  new ListValue();
     net::ProxyBypassRules::RuleList bypass_rules = config.bypass_rules.rules();
     for (size_t x = 0; x < bypass_rules.size(); x++) {
-      list->Append(new base::StringValue(bypass_rules[x]->ToString()));
+      list->Append(base::Value::CreateStringValue(bypass_rules[x]->ToString()));
     }
     data = list;
   } else {
@@ -367,7 +368,7 @@ bool GetProxyPrefValue(Profile* profile,
   // Decorate pref value as CoreOptionsHandler::CreateValueForPref() does.
   DictionaryValue* dict = new DictionaryValue;
   if (!data)
-    data = new base::StringValue("");
+    data = base::Value::CreateStringValue("");
   dict->Set("value", data);
   if (path == kProxyType) {
     dict->SetString("controlledBy", controlled_by);

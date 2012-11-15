@@ -359,11 +359,12 @@ bool Network::RequiresUserProfile() const {
 void Network::CopyCredentialsFromRemembered(Network* remembered) {
 }
 
-void Network::SetValueProperty(const char* prop, const base::Value& value) {
+void Network::SetValueProperty(const char* prop, Value* value) {
   DCHECK(prop);
+  DCHECK(value);
   if (!EnsureCrosLoaded())
     return;
-  CrosSetNetworkServiceProperty(service_path_, prop, value);
+  CrosSetNetworkServiceProperty(service_path_, prop, *value);
 }
 
 void Network::ClearProperty(const char* prop) {
@@ -377,7 +378,8 @@ void Network::SetStringProperty(
     const char* prop, const std::string& str, std::string* dest) {
   if (dest)
     *dest = str;
-  SetValueProperty(prop, base::StringValue(str));
+  scoped_ptr<Value> value(Value::CreateStringValue(str));
+  SetValueProperty(prop, value.get());
 }
 
 void Network::SetOrClearStringProperty(const char* prop,
@@ -395,13 +397,15 @@ void Network::SetOrClearStringProperty(const char* prop,
 void Network::SetBooleanProperty(const char* prop, bool b, bool* dest) {
   if (dest)
     *dest = b;
-  SetValueProperty(prop, base::FundamentalValue(b));
+  scoped_ptr<Value> value(Value::CreateBooleanValue(b));
+  SetValueProperty(prop, value.get());
 }
 
 void Network::SetIntegerProperty(const char* prop, int i, int* dest) {
   if (dest)
     *dest = i;
-  SetValueProperty(prop, base::FundamentalValue(i));
+  scoped_ptr<Value> value(Value::CreateIntegerValue(i));
+  SetValueProperty(prop, value.get());
 }
 
 void Network::SetPreferred(bool preferred) {
@@ -880,7 +884,7 @@ void CellularNetwork::SetApn(const CellularApn& apn) {
     value.SetString(flimflam::kApnNetworkIdProperty, apn.network_id);
     value.SetString(flimflam::kApnUsernameProperty, apn.username);
     value.SetString(flimflam::kApnPasswordProperty, apn.password);
-    SetValueProperty(flimflam::kCellularApnProperty, value);
+    SetValueProperty(flimflam::kCellularApnProperty, &value);
   } else {
     ClearProperty(flimflam::kCellularApnProperty);
   }

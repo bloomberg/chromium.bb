@@ -54,8 +54,8 @@ bool GetChromeosInfoFunction::RunImpl() {
   for (size_t i = 0; i < list->GetSize(); ++i) {
     std::string property_name;
     EXTENSION_FUNCTION_VALIDATE(list->GetString(i, &property_name));
-    Value* value = GetValue(property_name);
-    if (value)
+    Value* value = NULL;
+    if (GetValue(property_name, &value))
       result->Set(property_name, value);
   }
   SetResult(result.release());
@@ -63,33 +63,34 @@ bool GetChromeosInfoFunction::RunImpl() {
   return true;
 }
 
-base::Value* GetChromeosInfoFunction::GetValue(
-    const std::string& property_name) {
+bool GetChromeosInfoFunction::GetValue(const std::string& property_name,
+                                       Value** value) {
   if (property_name == kPropertyHWID) {
     std::string hwid;
     chromeos::system::StatisticsProvider* provider =
         chromeos::system::StatisticsProvider::GetInstance();
     provider->GetMachineStatistic(kHardwareClass, &hwid);
-    return new base::StringValue(hwid);
+    *value = Value::CreateStringValue(hwid);
   } else if (property_name == kPropertyHomeProvider) {
     NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
-    return new base::StringValue(netlib->GetCellularHomeCarrierId());
+    *value = Value::CreateStringValue(netlib->GetCellularHomeCarrierId());
   } else if (property_name == kPropertyInitialLocale) {
-    return new base::StringValue(
+    *value = Value::CreateStringValue(
         chromeos::WizardController::GetInitialLocale());
   } else if (property_name == kPropertyBoard) {
     std::string board;
     chromeos::system::StatisticsProvider* provider =
         chromeos::system::StatisticsProvider::GetInstance();
     provider->GetMachineStatistic(kPropertyReleaseBoard, &board);
-    return new base::StringValue(board);
+    *value = Value::CreateStringValue(board);
   } else if (property_name == kPropertyOwner) {
-    return Value::CreateBooleanValue(
+    *value = Value::CreateBooleanValue(
         chromeos::UserManager::Get()->IsCurrentUserOwner());
+  } else {
+    LOG(ERROR) << "Unknown property request: " << property_name;
+    return false;
   }
-
-  DLOG(ERROR) << "Unknown property request: " << property_name;
-  return NULL;
+  return true;
 }
 
 }  // namespace extensions
