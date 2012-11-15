@@ -3468,10 +3468,4 @@ Battery full
   <message name="IDS_LOGIN_MANAGED_REPORTING_HINT" desc="Text for the hint on reporting features displayed in the enterprise notification bar on the login screen.">
     Device usage may be tracked.
   </message>
-  <message name="IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS_REVERSE" desc="Name for the flag to switch lock animations direction.">
-    New lock animations direction.
-  </message>
-  <message name="IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS_REVERSE_DESCRIPTION" desc="Description for the flag to switch lock animations direction.">
-    Changes direction of animation of user pod after lock for new lock animations.
-  </message>
 </grit-part>

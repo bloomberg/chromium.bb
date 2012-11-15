@@ -930,13 +930,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(ash::switches::kAshNewLockAnimationsEnabled),
   },
   {
-    "new-lock-animations-reverse",
-    IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS_REVERSE,
-    IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS_REVERSE_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshReverseNewLockAnimations),
-  },
-  {
     "file-manager-packaged",
     IDS_FLAGS_FILE_MANAGER_PACKAGED_NAME,
     IDS_FLAGS_FILE_MANAGER_PACKAGED_DESCRIPTION,

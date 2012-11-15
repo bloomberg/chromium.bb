@@ -71,20 +71,11 @@ void SessionStateControllerImpl2::OnLockStateChanged(bool locked) {
     base::Callback<void(void)> callback =
         base::Bind(&SessionStateControllerImpl2::OnLockScreenAnimationFinished,
         base::Unretained(this));
-    if (CommandLine::ForCurrentProcess()->
-        HasSwitch(ash::switches::kAshReverseNewLockAnimations)) {
-      animator_->StartAnimationWithCallback(
-          internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_DROP,
-          internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
-          callback);
-    } else {
-      animator_->StartAnimationWithCallback(
-          internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN,
-          internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
-          callback);
-    }
+    animator_->StartAnimationWithCallback(
+        internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+        internal::SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN,
+        internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
+        callback);
     lock_timer_.Stop();
     lock_fail_timer_.Stop();
 
@@ -325,20 +316,11 @@ void SessionStateControllerImpl2::OnRealShutdownTimeout() {
 
 void SessionStateControllerImpl2::OnLockScreenHide(
   base::Callback<void(void)>& callback) {
-  if (CommandLine::ForCurrentProcess()->
-      HasSwitch(ash::switches::kAshReverseNewLockAnimations)) {
-    animator_->StartAnimationWithCallback(
-        internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-        internal::SessionStateAnimator::ANIMATION_LIFT,
-        internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
-        callback);
-  } else {
-    animator_->StartAnimationWithCallback(
-        internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-        internal::SessionStateAnimator::ANIMATION_LOWER_BELOW_SCREEN,
-        internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
-        callback);
-  }
+  animator_->StartAnimationWithCallback(
+      internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+      internal::SessionStateAnimator::ANIMATION_LIFT,
+      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
+      callback);
 }
 
 }  // namespace ash

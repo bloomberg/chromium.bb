@@ -67,9 +67,6 @@ const char kAshLauncherPerDisplay[] = "ash-launcher-per-display";
 // If present new lock animations are enabled.
 const char kAshNewLockAnimationsEnabled[] = "ash-new-lock-animations-enabled";
 
-// If present animations for lock screen are reversed.
-const char kAshReverseNewLockAnimations[] = "ash-reverse-new-lock-animations";
-
 // Specifies the layout mode and offsets for the secondary display for
 // testing. The format is "<t|r|b|l>,<offset>" where t=TOP, r=RIGHT,
 // b=BOTTOM and L=LEFT. For example, 'r,-100' means the secondary display
