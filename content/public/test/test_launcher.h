@@ -27,11 +27,10 @@ extern const char kGTestListTestsFlag[];
 extern const char kGTestRepeatFlag[];
 extern const char kGTestRunDisabledTestsFlag[];
 extern const char kGTestOutputFlag[];
-extern const char kLaunchAsBrowser[];
-extern const char kSingleProcessTestsFlag[];
-extern const char kSingleProcessTestsAndChromeFlag[];
-extern const char kRunManualTestsFlag[];
 extern const char kHelpFlag[];
+extern const char kLaunchAsBrowser[];
+extern const char kRunManualTestsFlag[];
+extern const char kSingleProcessTestsFlag[];
 
 // Flag that causes only the kEmptyTestName test to be run.
 extern const char kWarmupFlag[];

@@ -643,7 +643,6 @@ const char kLaunchAsBrowser[] = "as-browser";
 const char kRunManualTestsFlag[] = "run-manual";
 
 const char kSingleProcessTestsFlag[]   = "single_process";
-const char kSingleProcessTestsAndChromeFlag[]   = "single-process";
 
 const char kWarmupFlag[] = "warmup";
 
@@ -696,7 +695,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   }
 
   if (command_line->HasSwitch(kSingleProcessTestsFlag) ||
-      (command_line->HasSwitch(kSingleProcessTestsAndChromeFlag) &&
+      (command_line->HasSwitch(switches::kSingleProcess) &&
        command_line->HasSwitch(kGTestFilterFlag)) ||
       command_line->HasSwitch(kGTestListTestsFlag) ||
       command_line->HasSwitch(kGTestHelpFlag)) {

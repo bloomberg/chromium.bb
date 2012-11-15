@@ -286,7 +286,7 @@ CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
       CommandLine::ForCurrentProcess()->GetSwitches();
   switches.erase(switches::kUserDataDir);
   switches.erase(content::kSingleProcessTestsFlag);
-  switches.erase(content::kSingleProcessTestsAndChromeFlag);
+  switches.erase(switches::kSingleProcess);
   new_command_line.AppendSwitch(content::kLaunchAsBrowser);
 
 #if defined(USE_AURA)
