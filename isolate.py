@@ -454,18 +454,8 @@ def classify_files(root_dir, tracked, untracked):
   return variables
 
 
-def generate_simplified(
-    tracked, untracked, touched, root_dir, variables, relative_cwd):
-  """Generates a clean and complete .isolate 'variables' dictionary.
-
-  Cleans up and extracts only files from within root_dir then processes
-  variables and relative_cwd.
-  """
-  root_dir = os.path.realpath(root_dir)
-  logging.info(
-      'generate_simplified(%d files, %s, %s, %s)' %
-      (len(tracked) + len(untracked) + len(touched),
-        root_dir, variables, relative_cwd))
+def chromium_fix(f, variables):
+  """Fixes an isolate dependnecy with Chromium-specific fixes."""
   # Constants.
   # Skip log in PRODUCT_DIR. Note that these are applied on '/' style path
   # separator.
@@ -482,6 +472,52 @@ def generate_simplified(
       '<(PRODUCT_DIR)/locales/fr.pak',
       # 'First Run' is not created by the compile, but by the test itself.
       '<(PRODUCT_DIR)/First Run')
+
+  # Now strips off known files we want to ignore and to any specific mangling
+  # as necessary. It's easier to do it here than generate a blacklist.
+  match = EXECUTABLE.match(f)
+  if match:
+    return match.group(1) + '<(EXECUTABLE_SUFFIX)'
+
+  # Blacklist logs and other unimportant files.
+  if LOG_FILE.match(f) or f in IGNORED_ITEMS:
+    logging.debug('Ignoring %s', f)
+    return None
+
+  if sys.platform == 'darwin':
+    # On OSX, the name of the output is dependent on gyp define, it can be
+    # 'Google Chrome.app' or 'Chromium.app', same for 'XXX
+    # Framework.framework'. Furthermore, they are versioned with a gyp
+    # variable.  To lower the complexity of the .isolate file, remove all the
+    # individual entries that show up under any of the 4 entries and replace
+    # them with the directory itself. Overall, this results in a bit more
+    # files than strictly necessary.
+    OSX_BUNDLES = (
+      '<(PRODUCT_DIR)/Chromium Framework.framework/',
+      '<(PRODUCT_DIR)/Chromium.app/',
+      '<(PRODUCT_DIR)/Google Chrome Framework.framework/',
+      '<(PRODUCT_DIR)/Google Chrome.app/',
+    )
+    for prefix in OSX_BUNDLES:
+      if f.startswith(prefix):
+        # Note this result in duplicate values, so the a set() must be used to
+        # remove duplicates.
+        return prefix
+  return f
+
+
+def generate_simplified(
+    tracked, untracked, touched, root_dir, variables, relative_cwd):
+  """Generates a clean and complete .isolate 'variables' dictionary.
+
+  Cleans up and extracts only files from within root_dir then processes
+  variables and relative_cwd.
+  """
+  root_dir = os.path.realpath(root_dir)
+  logging.info(
+      'generate_simplified(%d files, %s, %s, %s)' %
+      (len(tracked) + len(untracked) + len(touched),
+        root_dir, variables, relative_cwd))
 
   # Preparation work.
   relative_cwd = cleanup_path(relative_cwd)
@@ -523,42 +559,19 @@ def generate_simplified(
         f = variable + f[len(root_path):]
         logging.debug('Converted to %s' % f)
         break
-
-    # Now strips off known files we want to ignore and to any specific mangling
-    # as necessary. It's easier to do it here than generate a blacklist.
-    match = EXECUTABLE.match(f)
-    if match:
-      return match.group(1) + '<(EXECUTABLE_SUFFIX)'
-
-    # Blacklist logs and other unimportant files.
-    if LOG_FILE.match(f) or f in IGNORED_ITEMS:
-      return None
-
-    if sys.platform == 'darwin':
-      # On OSX, the name of the output is dependent on gyp define, it can be
-      # 'Google Chrome.app' or 'Chromium.app', same for 'XXX
-      # Framework.framework'. Furthermore, they are versioned with a gyp
-      # variable.  To lower the complexity of the .isolate file, remove all the
-      # individual entries that show up under any of the 4 entries and replace
-      # them with the directory itself. Overall, this results in a bit more
-      # files than strictly necessary.
-      OSX_BUNDLES = (
-        '<(PRODUCT_DIR)/Chromium Framework.framework/',
-        '<(PRODUCT_DIR)/Chromium.app/',
-        '<(PRODUCT_DIR)/Google Chrome Framework.framework/',
-        '<(PRODUCT_DIR)/Google Chrome.app/',
-      )
-      for prefix in OSX_BUNDLES:
-        if f.startswith(prefix):
-          # Note this result in duplicate values, so the a set() must be used to
-          # remove duplicates.
-          return prefix
-
     return f
 
-  tracked = set(filter(None, (fix(f.path) for f in tracked)))
-  untracked = set(filter(None, (fix(f.path) for f in untracked)))
-  touched = set(filter(None, (fix(f.path) for f in touched)))
+  def fix_all(items):
+    """Reduces the items to convert variables, removes unneeded items, apply
+    chromium-specific fixes and only return unique items.
+    """
+    variables_converted = (fix(f.path) for f in items)
+    chromium_fixed = (chromium_fix(f, variables) for f in variables_converted)
+    return set(f for f in chromium_fixed if f)
+
+  tracked = fix_all(tracked)
+  untracked = fix_all(untracked)
+  touched = fix_all(touched)
   out = classify_files(root_dir, tracked, untracked)
   if touched:
     out[KEY_TOUCHED] = sorted(touched)
