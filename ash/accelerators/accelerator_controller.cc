@@ -770,26 +770,15 @@ bool AcceleratorController::PerformAction(int action,
       }
 #endif
       // We don't do anything with these at present on the device,
-      // (power button evets are reported to us from powerm via
+      // (power button events are reported to us from powerm via
       // D-BUS), but we consume them to prevent them from getting
       // passed to apps -- see http://crbug.com/146609.
       return true;
     case LOCK_PRESSED:
     case LOCK_RELEASED:
-#if defined(OS_CHROMEOS)
-      if (!base::chromeos::IsRunningOnChromeOS()) {
-        // There is no powerd in linux desktop, so call the
-        // PowerButtonController here.
-        Shell::GetInstance()->power_button_controller()->
-            OnLockButtonEvent(action == LOCK_PRESSED, base::TimeTicks());
-        return true;
-      }
-#endif
-      // LOCK_PRESSED/RELEASED in debug only action that is meant for
-      // testing lock behavior on linux desktop. If we ever reached
-      // here (when you run a debug build on the device), pass it onto
-      // apps.
-      return false;
+      Shell::GetInstance()->power_button_controller()->
+          OnLockButtonEvent(action == LOCK_PRESSED, base::TimeTicks());
+      return true;
 #if !defined(NDEBUG)
     case PRINT_LAYER_HIERARCHY:
       return HandlePrintLayerHierarchy();

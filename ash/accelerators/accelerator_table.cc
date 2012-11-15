@@ -65,8 +65,9 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_F8, ui::EF_NONE, VOLUME_MUTE },
   { true, ui::VKEY_F9, ui::EF_NONE, VOLUME_DOWN },
   { true, ui::VKEY_F10, ui::EF_NONE, VOLUME_UP },
-  // F13 (which is also for locking screen) is handled directly in power
-  // manager.
+  // The lock key on Chrome OS keyboards produces F13 scancodes.
+  { true, ui::VKEY_F13, ui::EF_NONE, LOCK_PRESSED },
+  { false, ui::VKEY_F13, ui::EF_NONE, LOCK_RELEASED },
   { true, ui::VKEY_POWER, ui::EF_NONE, POWER_PRESSED },
   { false, ui::VKEY_POWER, ui::EF_NONE, POWER_RELEASED },
 #if !defined(NDEBUG)
@@ -81,11 +82,11 @@ const AcceleratorData kAcceleratorData[] = {
   // Extra shortcut to lock the screen on linux desktop.
   { true, ui::VKEY_F11, ui::EF_SHIFT_DOWN, LOCK_PRESSED },
   { false, ui::VKEY_F11, ui::EF_SHIFT_DOWN, LOCK_RELEASED },
-#endif
+#endif  // !defined(NDEBUG)
   { true, ui::VKEY_O, ui::EF_CONTROL_DOWN, OPEN_FILE_MANAGER_DIALOG },
   { true, ui::VKEY_M, ui::EF_CONTROL_DOWN, OPEN_FILE_MANAGER_TAB },
   { true, ui::VKEY_T, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, OPEN_CROSH },
-#endif
+#endif  // !defined(OS_CHROMEOS)
   { true, ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, OPEN_FEEDBACK_PAGE },
   { true, ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, EXIT },
   { true, ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
@@ -185,8 +186,6 @@ const AcceleratorAction kReservedActions[] = {
   CYCLE_BACKWARD_MRU,  // Shift+Alt+Tab
   CYCLE_FORWARD_MRU,  // Alt+Tab
 #if defined(OS_CHROMEOS)
-  LOCK_PRESSED,
-  LOCK_RELEASED,
   POWER_PRESSED,
   POWER_RELEASED,
 #endif

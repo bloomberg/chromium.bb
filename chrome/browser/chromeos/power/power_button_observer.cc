@@ -93,12 +93,6 @@ void PowerButtonObserver::PowerButtonStateChanged(
       OnPowerButtonEvent(down, timestamp);
 }
 
-void PowerButtonObserver::LockButtonStateChanged(
-    bool down, const base::TimeTicks& timestamp) {
-  ash::Shell::GetInstance()->power_button_controller()->
-      OnLockButtonEvent(down, timestamp);
-}
-
 void PowerButtonObserver::LockScreen() {
   ash::Shell::GetInstance()->session_state_controller()->OnStartingLock();
 }

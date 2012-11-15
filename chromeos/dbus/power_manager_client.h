@@ -67,10 +67,6 @@ class CHROMEOS_EXPORT PowerManagerClient {
     virtual void PowerButtonStateChanged(bool down,
                                          const base::TimeTicks& timestamp) {}
 
-    // Called when the lock button is pressed or released.
-    virtual void LockButtonStateChanged(bool down,
-                                        const base::TimeTicks& timestamp) {}
-
     // Called when we go idle for threshold time.
     virtual void IdleNotify(int64 threshold_secs) {}
 

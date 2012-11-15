@@ -382,9 +382,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
     if (button_name == power_manager::kPowerButtonName) {
       FOR_EACH_OBSERVER(
           Observer, observers_, PowerButtonStateChanged(down, timestamp));
-    } else if (button_name == power_manager::kLockButtonName) {
-      FOR_EACH_OBSERVER(
-          Observer, observers_, LockButtonStateChanged(down, timestamp));
     }
   }
 
