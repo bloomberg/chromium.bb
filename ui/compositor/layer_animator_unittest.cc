@@ -702,6 +702,42 @@ TEST(LayerAnimatorTest, PreemptyByReplacingQueuedAnimations) {
   EXPECT_FLOAT_EQ(delegate.GetOpacityForAnimation(), start_opacity);
 }
 
+TEST(LayerAnimatorTest, StartTogetherSetsLastStepTime) {
+  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  animator->set_disable_timer_for_test(true);
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+
+  double start_opacity(0.0);
+  double target_opacity(1.0);
+  double start_brightness(0.1);
+  double target_brightness(0.9);
+
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+
+  delegate.SetOpacityFromAnimation(start_opacity);
+  delegate.SetBrightnessFromAnimation(start_brightness);
+
+  animator->set_preemption_strategy(
+      LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+
+  animator->set_last_step_time(base::TimeTicks());
+
+  animator->StartTogether(
+      CreateMultiSequence(
+          LayerAnimationElement::CreateOpacityElement(target_opacity, delta),
+          LayerAnimationElement::CreateBrightnessElement(target_brightness,
+                                                         delta)
+      ));
+
+  // If last step time was not set correctly, the resulting delta should be
+  // miniscule (fractions of a millisecond). If set correctly, then the delta
+  // should be enormous. Arbitrarily choosing 1 minute as the threshold,
+  // though a much smaller value would probably have sufficed.
+  delta = base::TimeTicks::Now() - animator->last_step_time();
+  EXPECT_GT(60.0, delta.InSecondsF());
+}
+
 //-------------------------------------------------------
 // Preempt by immediately setting new target.
 TEST(LayerAnimatorTest, MultiPreemptBySettingNewTarget) {

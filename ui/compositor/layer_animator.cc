@@ -178,7 +178,14 @@ void LayerAnimator::StartTogether(
     }
     return;
   }
+
   adding_animations_ = true;
+  if (!is_animating()) {
+    if (GetAnimationContainer()->is_running())
+      last_step_time_ = GetAnimationContainer()->last_tick_time();
+    else
+      last_step_time_ = base::TimeTicks::Now();
+  }
 
   // Collect all the affected properties.
   LayerAnimationElement::AnimatableProperties animated_properties;

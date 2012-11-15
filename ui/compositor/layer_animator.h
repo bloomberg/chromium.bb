@@ -164,6 +164,10 @@ class COMPOSITOR_EXPORT LayerAnimator
   void set_disable_timer_for_test(bool disable_timer) {
     disable_timer_for_test_ = disable_timer;
   }
+
+  void set_last_step_time(base::TimeTicks time) {
+    last_step_time_ = time;
+  }
   base::TimeTicks last_step_time() const { return last_step_time_; }
 
   // When set all animations play slowly for visual debugging.
