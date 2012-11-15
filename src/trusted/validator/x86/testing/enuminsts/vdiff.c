@@ -448,6 +448,7 @@ static void TestAllInstructions(void) {
   WithREX(TestAllWithPrefix, 0x380f66, 3); /* SSE4+ */
   WithREX(TestAllWithPrefix, 0x380ff2, 3); /* SSE4+ */
   WithREX(TestAllWithPrefix, 0x3a0f66, 3); /* SSE4+ */
+  WithREX(TestAllWithPrefix, 0x0ff366, 3); /* SSE4+ */
   WithREX(TestAll3DNow, 0x0f0f, 2);
 }
 
