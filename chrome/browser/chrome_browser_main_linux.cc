@@ -34,8 +34,8 @@ namespace {
 
 #if defined(USE_LINUX_BREAKPAD)
 #if defined(OS_CHROMEOS)
-void ChromeOSVersionCallback(const std::string* version) {
-  base::SetLinuxDistro(std::string("CrOS ") + *version);
+void ChromeOSVersionCallback(const std::string& version) {
+  base::SetLinuxDistro(std::string("CrOS ") + version);
 }
 #else
 void GetLinuxDistroCallback() {
