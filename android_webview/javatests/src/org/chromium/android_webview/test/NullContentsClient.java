@@ -90,4 +90,9 @@ class NullContentsClient extends AwContentsClient {
     public void onFormResubmission(Message dontResend, Message resend) {
         dontResend.sendToTarget();
     }
+
+    @Override
+    public boolean onCreateWindow(boolean isDialog, boolean isUserGesture) {
+        return false;
+    }
 }

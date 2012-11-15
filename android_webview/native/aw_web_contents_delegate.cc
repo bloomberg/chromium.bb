@@ -10,8 +10,10 @@
 #include "android_webview/native/aw_javascript_dialog_creator.h"
 #include "content/public/browser/android/download_controller_android.h"
 #include "content/public/browser/web_contents.h"
+#include "jni/AwWebContentsDelegate_jni.h"
 #include "net/http/http_request_headers.h"
 
+using base::android::AttachCurrentThread;
 using content::WebContents;
 
 namespace android_webview {
@@ -62,6 +64,37 @@ bool AwWebContentsDelegate::CanDownload(content::RenderViewHost* source,
 void AwWebContentsDelegate::OnStartDownload(WebContents* source,
                                             content::DownloadItem* download) {
   NOTREACHED();  // We always return false in CanDownload.
+}
+
+void AwWebContentsDelegate::AddNewContents(content::WebContents* source,
+                                           content::WebContents* new_contents,
+                                           WindowOpenDisposition disposition,
+                                           const gfx::Rect& initial_pos,
+                                           bool user_gesture,
+                                           bool* was_blocked) {
+  JNIEnv* env = AttachCurrentThread();
+
+  bool is_dialog = disposition == NEW_POPUP;
+  bool create_popup = Java_AwWebContentsDelegate_addNewContents(env,
+      GetJavaDelegate(env).obj(), is_dialog, user_gesture);
+
+  if (create_popup) {
+    // TODO(benm): Implement, taking ownership of new_contents.
+    NOTIMPLEMENTED() << "Popup windows are currently not supported for "
+                     << "the chromium powered Android WebView.";
+  } else {
+    // The embedder has forgone their chance to display this popup
+    // window, so we're done with the WebContents now.
+    delete new_contents;
+  }
+
+  if (was_blocked) {
+    *was_blocked = !create_popup;
+  }
+}
+
+bool RegisterAwWebContentsDelegate(JNIEnv* env) {
+  return RegisterNativesImpl(env);
 }
 
 }  // namespace android_webview

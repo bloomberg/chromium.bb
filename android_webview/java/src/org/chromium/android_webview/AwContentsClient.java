@@ -136,6 +136,12 @@ public abstract class AwContentsClient extends ContentViewClient {
             Message resend = mHandler.obtainMessage(CONTINUE_PENDING_RELOAD, contentViewCore);
             AwContentsClient.this.onFormResubmission(dontResend, resend);
         }
+
+        @Override
+        public boolean addNewContents(boolean isDialog, boolean isUserGesture) {
+            return AwContentsClient.this.onCreateWindow(isDialog, isUserGesture);
+        }
+
     }
 
     class AwWebContentsObserver extends WebContentsObserverAndroid {
@@ -214,6 +220,8 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     protected abstract void handleJsPrompt(String url, String message, String defaultValue,
             JsPromptResultReceiver receiver);
+
+    protected abstract boolean onCreateWindow(boolean isDialog, boolean isUserGesture);
 
     //--------------------------------------------------------------------------------------------
     //                              Other WebView-specific methods

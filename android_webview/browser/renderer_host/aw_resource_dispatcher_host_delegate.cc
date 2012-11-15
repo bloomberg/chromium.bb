@@ -22,17 +22,82 @@ using content::InterceptNavigationDelegate;
 
 namespace {
 
+using android_webview::AwContentsIoThreadClient;
+
 base::LazyInstance<android_webview::AwResourceDispatcherHostDelegate>
     g_webview_resource_dispatcher_host_delegate = LAZY_INSTANCE_INITIALIZER;
 
-// Will unconditionally cancel this resource request.
-class CancelResourceThrottle : public content::ResourceThrottle {
+void SetOnlyAllowLoadFromCache(
+    net::URLRequest* request) {
+  int load_flags = request->load_flags();
+  load_flags &= ~(net::LOAD_BYPASS_CACHE &
+                  net::LOAD_VALIDATE_CACHE &
+                  net::LOAD_PREFERRING_CACHE);
+  load_flags |= net::LOAD_ONLY_FROM_CACHE;
+  request->set_load_flags(load_flags);
+}
+
+// May cancel this resource request based on result of Java callbacks.
+class MaybeCancelResourceThrottle : public content::ResourceThrottle {
  public:
+  MaybeCancelResourceThrottle(int child_id,
+                              int route_id,
+                              net::URLRequest* request)
+      : child_id_(child_id),
+        route_id_(route_id),
+        request_(request) { }
   virtual void WillStartRequest(bool* defer) OVERRIDE;
+
+  scoped_ptr<AwContentsIoThreadClient> GetIoThreadClient() {
+    return AwContentsIoThreadClient::FromID(child_id_, route_id_);
+  }
+
+ private:
+  int child_id_;
+  int route_id_;
+  net::URLRequest* request_;
 };
 
-void CancelResourceThrottle::WillStartRequest(bool* defer) {
-  controller()->CancelWithError(net::ERR_ACCESS_DENIED);
+void MaybeCancelResourceThrottle::WillStartRequest(bool* defer) {
+  // If there is no IO thread client set at this point, use a
+  // restrictive policy. This can happen for blocked popup
+  // windows for example.
+  // TODO(benm): Revert this to a DCHECK when the we support
+  // pop up windows being created in the WebView, as at that
+  // time we should always have an IoThreadClient at this
+  // point (i.e., the one associated with the new popup).
+  if (!GetIoThreadClient()) {
+    controller()->CancelWithError(net::ERR_ACCESS_DENIED);
+    return;
+  }
+
+  // Part of implementation of WebSettings.allowContentAccess.
+  if (request_->url().SchemeIs(android_webview::kContentScheme) &&
+      GetIoThreadClient()->ShouldBlockContentUrls()) {
+    controller()->CancelWithError(net::ERR_ACCESS_DENIED);
+    return;
+  }
+
+  // Part of implementation of WebSettings.allowFileAccess.
+  if (request_->url().SchemeIsFile() &&
+      GetIoThreadClient()->ShouldBlockFileUrls()) {
+    const GURL& url = request_->url();
+    if (!url.has_path() ||
+        // Application's assets and resources are always available.
+        (url.path().find(android_webview::kAndroidResourcePath) != 0 &&
+         url.path().find(android_webview::kAndroidAssetPath) != 0)) {
+      controller()->CancelWithError(net::ERR_ACCESS_DENIED);
+      return;
+    }
+  }
+
+  if (GetIoThreadClient()->ShouldBlockNetworkLoads()) {
+    if (request_->url().SchemeIs(chrome::kFtpScheme)) {
+      controller()->CancelWithError(net::ERR_ACCESS_DENIED);
+      return;
+    }
+    SetOnlyAllowLoadFromCache(request_);
+  }
 }
 
 }  // namespace
@@ -62,37 +127,8 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
     bool is_continuation_of_transferred_request,
     ScopedVector<content::ResourceThrottle>* throttles) {
 
-  scoped_ptr<AwContentsIoThreadClient> io_client =
-      AwContentsIoThreadClient::FromID(child_id, route_id);
-  DCHECK(io_client.get());
-
-  // Part of implementation of WebSettings.allowContentAccess.
-  if (request->url().SchemeIs(android_webview::kContentScheme) &&
-      io_client->ShouldBlockContentUrls()) {
-    throttles->push_back(new CancelResourceThrottle);
-  }
-
-  // Part of implementation of WebSettings.allowFileAccess.
-  if (request->url().SchemeIsFile() && io_client->ShouldBlockFileUrls()) {
-    const GURL& url = request->url();
-    if (!url.has_path() ||
-        // Application's assets and resources are always available.
-        (url.path().find(android_webview::kAndroidResourcePath) != 0 &&
-         url.path().find(android_webview::kAndroidAssetPath) != 0)) {
-      throttles->push_back(new CancelResourceThrottle);
-    }
-  }
-
-  // Part of implementation of WebSettings.blockNetworkLoads.
-  if (io_client->ShouldBlockNetworkLoads()) {
-    // Need to cancel ftp since it does not support net::LOAD_ONLY_FROM_CACHE
-    // flag, so must cancel the request if network load is blocked.
-    if (request->url().SchemeIs(chrome::kFtpScheme)) {
-      throttles->push_back(new CancelResourceThrottle);
-    } else {
-      SetOnlyAllowLoadFromCache(request);
-    }
-  }
+  throttles->push_back(new MaybeCancelResourceThrottle(
+      child_id, route_id, request));
 
   // We ignore POST requests because of BUG=155250.
   if (resource_type == ResourceType::MAIN_FRAME &&
@@ -122,16 +158,6 @@ bool AwResourceDispatcherHostDelegate::HandleExternalProtocol(const GURL& url,
   // gets called.
   NOTREACHED();
   return false;
-}
-
-void AwResourceDispatcherHostDelegate::SetOnlyAllowLoadFromCache(
-    net::URLRequest* request) {
-  int load_flags = request->load_flags();
-  load_flags &= ~(net::LOAD_BYPASS_CACHE &
-                  net::LOAD_VALIDATE_CACHE &
-                  net::LOAD_PREFERRING_CACHE);
-  load_flags |= net::LOAD_ONLY_FROM_CACHE;
-  request->set_load_flags(load_flags);
 }
 
 }

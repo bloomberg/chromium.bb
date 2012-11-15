@@ -32,7 +32,15 @@ class AwWebContentsDelegate
                            const std::string& request_method) OVERRIDE;
   virtual void OnStartDownload(content::WebContents* source,
                                content::DownloadItem* download) OVERRIDE;
+  virtual void AddNewContents(content::WebContents* source,
+                              content::WebContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture,
+                              bool* was_blocked) OVERRIDE;
 };
+
+bool RegisterAwWebContentsDelegate(JNIEnv* env);
 
 }  // namespace android_webview
 

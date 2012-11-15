@@ -237,10 +237,17 @@ bool AwContentBrowserClient::CanCreateWindow(
     content::ResourceContext* context,
     int render_process_id,
     bool* no_javascript_access) {
-  // TODO(boliu): Implement this to power SupportMultipleWindow.
-  NOTIMPLEMENTED();
-  *no_javascript_access = false;
-  return false;
+  // We unconditionally allow popup windows at this stage and will give
+  // the embedder the opporunity to handle displaying of the popup in
+  // WebContentsDelegate::AddContents (via the
+  // AwContentsClient.onCreateWindow callback).
+  // Note that if the embedder has blocked support for creating popup
+  // windows through AwSettings, then we won't get to this point as
+  // the popup creation will have been blocked at the WebKit level.
+  if (no_javascript_access) {
+    *no_javascript_access = false;
+  }
+  return true;
 }
 
 std::string AwContentBrowserClient::GetWorkerProcessTitle(const GURL& url,
