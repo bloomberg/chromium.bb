@@ -156,9 +156,10 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
   file_util::Delete(temp_file, false /* non-recursive */);
 }
 
+// Disabled, see http://crbug.com/159754.
 // Test send message with a real client. The client just echo's back the text
 // it recieved.
-TEST_F(NativeMessagingTest, EchoConnect) {
+TEST_F(NativeMessagingTest, DISABLED_EchoConnect) {
   NativeMessageProcessHost::Create(
       AsWeakPtr(), "echo.py", "{\"text\": \"Hello.\"}", 0,
       NativeMessageProcessHost::TYPE_CONNECT, base::Bind(
