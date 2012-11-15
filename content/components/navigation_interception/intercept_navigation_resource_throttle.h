@@ -31,6 +31,7 @@ class InterceptNavigationResourceThrottle : public content::ResourceThrottle {
   typedef base::Callback<bool(content::RenderViewHost* /* source */,
                               const GURL& /*url*/,
                               const content::Referrer& /*referrer*/,
+                              bool /*is_post*/,
                               bool /*has_user_gesture*/)>
       CheckOnUIThreadCallback;
 

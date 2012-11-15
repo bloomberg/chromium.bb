@@ -54,6 +54,7 @@ class InterceptNavigationDelegate : public base::SupportsUserData::Data {
       net::URLRequest* request);
 
   virtual bool ShouldIgnoreNavigation(const GURL& url,
+                                      bool is_post,
                                       bool has_user_gesture);
  private:
   JavaObjectWeakGlobalRef weak_jdelegate_;

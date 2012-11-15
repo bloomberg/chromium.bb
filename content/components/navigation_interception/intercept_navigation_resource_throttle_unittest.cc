@@ -45,9 +45,10 @@ void ContinueTestCase() {
 
 class MockInterceptCallbackReceiver {
  public:
-  MOCK_METHOD4(ShouldIgnoreNavigation, bool(RenderViewHost* source,
+  MOCK_METHOD5(ShouldIgnoreNavigation, bool(RenderViewHost* source,
                                             const GURL& url,
                                             const content::Referrer& referrer,
+                                            bool is_post,
                                             bool has_user_gesture));
 };
 
@@ -93,6 +94,7 @@ class MockResourceController
 class TestIOThreadState {
  public:
   TestIOThreadState(const GURL& url, int render_process_id, int render_view_id,
+                    const std::string& request_method,
                     MockInterceptCallbackReceiver* callback_receiver)
       : request_(url, NULL, resource_context_.GetRequestContext()),
         throttle_(NULL) {
@@ -110,6 +112,7 @@ class TestIOThreadState {
           base::Bind(&MockInterceptCallbackReceiver::ShouldIgnoreNavigation,
                      base::Unretained(callback_receiver))));
       throttle_->set_controller_for_testing(&throttle_controller_);
+      request_.set_method(request_method);
   }
 
   void ThrottleWillStartRequest(bool* defer) {
@@ -170,13 +173,14 @@ class InterceptNavigationResourceThrottleTest
 
   void RunThrottleWillStartRequestOnIOThread(
       const GURL& url,
+      const std::string& request_method,
       int render_process_id,
       int render_view_id,
       bool* defer) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     TestIOThreadState* io_thread_state =
         new TestIOThreadState(url, render_process_id, render_view_id,
-                              mock_callback_receiver_.get());
+                              request_method, mock_callback_receiver_.get());
 
     SetIOThreadState(io_thread_state);
     io_thread_state->ThrottleWillStartRequest(defer);
@@ -197,10 +201,10 @@ class InterceptNavigationResourceThrottleTest
       bool* defer) {
 
     ON_CALL(*mock_callback_receiver_,
-            ShouldIgnoreNavigation(_, _, _, _))
+            ShouldIgnoreNavigation(_, _, _, _, _))
       .WillByDefault(Return(callback_action == IgnoreNavigation));
     EXPECT_CALL(*mock_callback_receiver_,
-                ShouldIgnoreNavigation(rvh(), Eq(GURL(kTestUrl)), _, _))
+                ShouldIgnoreNavigation(rvh(), Eq(GURL(kTestUrl)), _, _, _))
       .Times(1);
 
     BrowserThread::PostTask(
@@ -211,6 +215,7 @@ class InterceptNavigationResourceThrottleTest
                 RunThrottleWillStartRequestOnIOThread,
             base::Unretained(this),
             GURL(kTestUrl),
+            "GET",
             web_contents()->GetRenderViewHost()->GetProcess()->GetID(),
             web_contents()->GetRenderViewHost()->GetRoutingID(),
             base::Unretained(defer)));
@@ -271,7 +276,7 @@ TEST_F(InterceptNavigationResourceThrottleTest,
           base::Unretained(this)));
 
   EXPECT_CALL(*mock_callback_receiver_,
-              ShouldIgnoreNavigation(_, _, _, _))
+              ShouldIgnoreNavigation(_, _, _, _, _))
       .Times(0);
 
   BrowserThread::PostTask(
@@ -282,6 +287,7 @@ TEST_F(InterceptNavigationResourceThrottleTest,
           RunThrottleWillStartRequestOnIOThread,
           base::Unretained(this),
           GURL(kTestUrl),
+          "GET",
           web_contents()->GetRenderViewHost()->GetProcess()->GetID(),
           web_contents()->GetRenderViewHost()->GetRoutingID(),
           base::Unretained(&defer)));
@@ -309,6 +315,7 @@ TEST_F(InterceptNavigationResourceThrottleTest,
               RunThrottleWillStartRequestOnIOThread,
           base::Unretained(this),
           GURL(kTestUrl),
+          "GET",
           MSG_ROUTING_NONE,
           MSG_ROUTING_NONE,
           base::Unretained(&defer)));
@@ -324,10 +331,10 @@ TEST_F(InterceptNavigationResourceThrottleTest,
   bool defer = false;
 
   ON_CALL(*mock_callback_receiver_,
-          ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, _))
+          ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, _, _))
       .WillByDefault(Return(false));
   EXPECT_CALL(*mock_callback_receiver_,
-              ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, _))
+              ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, _, _))
       .Times(1);
 
   BrowserThread::PostTask(
@@ -338,6 +345,57 @@ TEST_F(InterceptNavigationResourceThrottleTest,
               RunThrottleWillStartRequestOnIOThread,
           base::Unretained(this),
           GURL(kUnsafeTestUrl),
+          "GET",
+          web_contents()->GetRenderViewHost()->GetProcess()->GetID(),
+          web_contents()->GetRenderViewHost()->GetRoutingID(),
+          base::Unretained(&defer)));
+
+  // Wait for the request to finish processing.
+  message_loop_.Run();
+}
+
+TEST_F(InterceptNavigationResourceThrottleTest,
+       CallbackIsPostFalseForGet) {
+  bool defer = false;
+
+  EXPECT_CALL(*mock_callback_receiver_,
+              ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, false, _))
+      .WillOnce(Return(false));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(
+          &InterceptNavigationResourceThrottleTest::
+              RunThrottleWillStartRequestOnIOThread,
+          base::Unretained(this),
+          GURL(kTestUrl),
+          "GET",
+          web_contents()->GetRenderViewHost()->GetProcess()->GetID(),
+          web_contents()->GetRenderViewHost()->GetRoutingID(),
+          base::Unretained(&defer)));
+
+  // Wait for the request to finish processing.
+  message_loop_.Run();
+}
+
+TEST_F(InterceptNavigationResourceThrottleTest,
+       CallbackIsPostTrueForPost) {
+  bool defer = false;
+
+  EXPECT_CALL(*mock_callback_receiver_,
+              ShouldIgnoreNavigation(_, Ne(GURL(kUnsafeTestUrl)), _, true, _))
+      .WillOnce(Return(false));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(
+          &InterceptNavigationResourceThrottleTest::
+              RunThrottleWillStartRequestOnIOThread,
+          base::Unretained(this),
+          GURL(kTestUrl),
+          "POST",
           web_contents()->GetRenderViewHost()->GetProcess()->GetID(),
           web_contents()->GetRenderViewHost()->GetRoutingID(),
           base::Unretained(&defer)));

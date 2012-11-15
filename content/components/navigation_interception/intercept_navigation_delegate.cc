@@ -31,6 +31,7 @@ const void* kInterceptNavigationDelegateUserDataKey =
 bool CheckIfShouldIgnoreNavigationOnUIThread(RenderViewHost* source,
                                              const GURL& url,
                                              const content::Referrer& referrer,
+                                             bool is_post,
                                              bool has_user_gesture) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(source);
@@ -44,7 +45,7 @@ bool CheckIfShouldIgnoreNavigationOnUIThread(RenderViewHost* source,
     return false;
 
   return intercept_navigation_delegate->ShouldIgnoreNavigation(
-      url, has_user_gesture);
+      url, is_post, has_user_gesture);
 }
 
 } // namespace
@@ -81,6 +82,7 @@ InterceptNavigationDelegate::~InterceptNavigationDelegate() {
 
 bool InterceptNavigationDelegate::ShouldIgnoreNavigation(
     const GURL& url,
+    bool is_post,
     bool has_user_gesture) {
   if (!url.is_valid())
     return false;
@@ -97,6 +99,7 @@ bool InterceptNavigationDelegate::ShouldIgnoreNavigation(
       env,
       jdelegate.obj(),
       jstring_url.obj(),
+      is_post,
       has_user_gesture);
 }
 

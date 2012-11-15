@@ -79,7 +79,7 @@ public class AwContents {
     private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
-    private final IoThreadClientHandler mIoThreadClientHandler;
+    private final ClientCallbackHandler mClientCallbackHandler;
     private boolean mIsPaused;
 
     // Must call nativeUpdateLastHitTestData first to update this before use.
@@ -98,16 +98,27 @@ public class AwContents {
 
     private CleanupReference mCleanupReference;
 
-    private class IoThreadClientHandler extends Handler {
-        public static final int MSG_SHOULD_INTERCEPT_REQUEST = 1;
+    // This class is responsible for calling certain client callbacks on the UI thread. Most
+    // callbacks do no go through here, but get forwarded to AwContentsClient directly.
+    // The messages processed here may originate from the IO or UI thread.
+    // TODO(mkosiba): merge the handler in AwContentsClient.WebContentsDelegateAdapter into this.
+    private class ClientCallbackHandler extends Handler {
+        public static final int MSG_ON_LOAD_RESOURCE = 1;
+        public static final int MSG_ON_PAGE_STARTED = 2;
 
         @Override
         public void handleMessage(Message msg) {
             switch(msg.what) {
-                case MSG_SHOULD_INTERCEPT_REQUEST:
-                    final String url = (String)msg.obj;
+                case MSG_ON_LOAD_RESOURCE: {
+                    final String url = (String) msg.obj;
                     AwContents.this.mContentsClient.onLoadResource(url);
                     break;
+                }
+                case MSG_ON_PAGE_STARTED: {
+                    final String url = (String) msg.obj;
+                    AwContents.this.mContentsClient.onPageStarted(url);
+                    break;
+                }
                 default:
                     throw new IllegalStateException(
                             "IoThreadClientHandler: unhandled message " + msg.what);
@@ -122,9 +133,9 @@ public class AwContents {
             InterceptedRequestData interceptedRequestData =
                 AwContents.this.mContentsClient.shouldInterceptRequest(url);
             if (interceptedRequestData == null) {
-                mIoThreadClientHandler.sendMessage(
-                        mIoThreadClientHandler.obtainMessage(
-                            IoThreadClientHandler.MSG_SHOULD_INTERCEPT_REQUEST,
+                mClientCallbackHandler.sendMessage(
+                        mClientCallbackHandler.obtainMessage(
+                            ClientCallbackHandler.MSG_ON_LOAD_RESOURCE,
                             url));
             }
             return interceptedRequestData;
@@ -157,16 +168,41 @@ public class AwContents {
         }
 
         @Override
-        public boolean shouldIgnoreNavigation(String url, boolean isUserGestrue) {
-            // If the embedder requested the load of a certain URL then querying whether to
-            // override it is pointless.
+        public boolean shouldIgnoreNavigation(String url, boolean isPost, boolean hasUserGestrue) {
+            boolean ignoreNavigation = false;
             if (mLastLoadUrlAddress != null && mLastLoadUrlAddress.equals(url)) {
                 // Support the case where the user clicks on a link that takes them back to the
                 // same page.
                 mLastLoadUrlAddress = null;
-                return false;
+
+                // If the embedder requested the load of a certain URL via the loadUrl API, then we
+                // do not offer it to AwContentsClient.shouldIgnoreNavigation.
+                // The embedder is also not allowed to intercept POST requests because of
+                // crbug.com/155250.
+            } else if (!isPost) {
+                ignoreNavigation = AwContents.this.mContentsClient.shouldIgnoreNavigation(url);
             }
-            return AwContents.this.mContentsClient.shouldIgnoreNavigation(url);
+
+            // The existing contract is that shouldIgnoreNavigation callbacks are delivered before
+            // onPageStarted callbacks; third party apps depend on this behavior.
+            // Using a ResouceThrottle to implement the navigation interception feature results in
+            // the WebContentsObserver.didStartLoading callback happening before the
+            // ResourceThrottle has a chance to run.
+            // To preserve the ordering the onPageStarted callback is synthesized from the
+            // shouldIgnoreNavigationCallback, and only if the navigation was not ignored (this
+            // balances out with the onPageFinished callback, which is suppressed in the
+            // AwContentsClient if the navigation was ignored).
+            if (!ignoreNavigation) {
+                // The shouldIgnoreNavigation call might have resulted in posting messages to the
+                // UI thread. Using sendMessage here (instead of calling onPageStarted directly)
+                // will allow those to run.
+                mClientCallbackHandler.sendMessage(
+                        mClientCallbackHandler.obtainMessage(
+                            ClientCallbackHandler.MSG_ON_PAGE_STARTED,
+                            url));
+            }
+
+            return ignoreNavigation;
         }
     }
 
@@ -190,7 +226,7 @@ public class AwContents {
         mNativeAwContents = nativeInit(contentsClient.getWebContentsDelegate(), privateBrowsing);
         mContentsClient = contentsClient;
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
-        mIoThreadClientHandler = new IoThreadClientHandler();
+        mClientCallbackHandler = new ClientCallbackHandler();
 
         mContentViewCore.initialize(containerView, internalAccessAdapter,
                 nativeGetWebContents(mNativeAwContents), nativeWindow,

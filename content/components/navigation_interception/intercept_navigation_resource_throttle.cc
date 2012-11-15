@@ -23,26 +23,35 @@ namespace content {
 
 namespace {
 
+struct ShouldIgnoreCallbackParams {
+    int render_process_id;
+    int render_view_id;
+    GURL url;
+    Referrer referrer;
+    bool has_user_gesture;
+    bool is_post;
+};
+
 void CheckIfShouldIgnoreNavigationOnUIThread(
-    int render_process_id,
-    int render_view_id,
-    const GURL& url,
-    const Referrer& referrer,
-    bool has_user_gesture,
+    const ShouldIgnoreCallbackParams& params,
     InterceptNavigationResourceThrottle::CheckOnUIThreadCallback
-        should_ignore_callback,
+    should_ignore_callback,
     base::Callback<void(bool)> callback) {
 
   bool should_ignore_navigation = false;
   RenderViewHost* rvh =
-      RenderViewHost::FromID(render_process_id, render_view_id);
+      RenderViewHost::FromID(params.render_process_id, params.render_view_id);
 
   if (rvh) {
-    GURL validated_url(url);
+    GURL validated_url(params.url);
     RenderViewHost::FilterURL(rvh->GetProcess(), false, &validated_url);
 
     should_ignore_navigation = should_ignore_callback.Run(
-        rvh, validated_url, referrer, has_user_gesture);
+        rvh,
+        validated_url,
+        params.referrer,
+        params.is_post,
+        params.has_user_gesture);
   }
 
   BrowserThread::PostTask(
@@ -88,16 +97,21 @@ bool InterceptNavigationResourceThrottle::CheckIfShouldIgnoreNavigation(
   // This class should only be instantiated for top level frame requests.
   DCHECK(info->IsMainFrame());
 
+  ShouldIgnoreCallbackParams params;
+  params.render_process_id = render_process_id;
+  params.render_view_id = render_view_id;
+  params.url = url;
+  params.referrer = Referrer(GURL(request_->referrer()),
+                             info->GetReferrerPolicy());
+  params.has_user_gesture = info->HasUserGesture();
+  params.is_post = request_->method() == "POST";
+
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(
           &CheckIfShouldIgnoreNavigationOnUIThread,
-          render_process_id,
-          render_view_id,
-          url,
-          Referrer(GURL(request_->referrer()), info->GetReferrerPolicy()),
-          info->HasUserGesture(),
+          params,
           should_ignore_callback_,
           base::Bind(
               &InterceptNavigationResourceThrottle::OnResultObtained,

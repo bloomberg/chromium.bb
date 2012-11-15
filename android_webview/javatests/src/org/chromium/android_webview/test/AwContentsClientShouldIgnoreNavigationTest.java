@@ -14,7 +14,6 @@ import android.util.Log;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -222,12 +221,8 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
         assertEquals(TITLE, getTitleOnUiThread(awContents));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView", "Navigation"})
-     * BUG=154292
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledBeforeOnPageStarted() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -250,12 +245,8 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
 
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView", "Navigation"})
-     * BUG=154292
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationDoesNotCauseOnReceivedError() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =

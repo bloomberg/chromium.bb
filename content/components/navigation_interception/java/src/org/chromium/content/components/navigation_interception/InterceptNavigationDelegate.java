@@ -13,9 +13,10 @@ public interface InterceptNavigationDelegate {
      * certain navigations to Intents to 3rd party applications.
      *
      * @param url the target url of the navigation.
+     * @param isPost true if the the navigation method is "POST".
      * @param isUserGestrue true if the navigation was initiated by the user.
      * @return true if the navigation should be ignored.
      */
     @CalledByNative
-    boolean shouldIgnoreNavigation(String url, boolean isUserGestrue);
+    boolean shouldIgnoreNavigation(String url, boolean isPost, boolean isUserGestrue);
 }

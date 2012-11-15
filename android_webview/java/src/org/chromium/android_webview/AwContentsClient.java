@@ -40,6 +40,7 @@ public abstract class AwContentsClient extends ContentViewClient {
     //                        Adapter for WebContentsDelegate methods.
     //--------------------------------------------------------------------------------------------
 
+    // TODO(mkosiba): Merge with handler in AwContents.
     class WebContentsDelegateAdapter extends AwWebContentsDelegate {
 
         // The message ids.
@@ -147,11 +148,6 @@ public abstract class AwContentsClient extends ContentViewClient {
     class AwWebContentsObserver extends WebContentsObserverAndroid {
         public AwWebContentsObserver(ContentViewCore contentViewCore) {
             super(contentViewCore);
-        }
-
-        @Override
-        public void didStartLoading(String url) {
-            AwContentsClient.this.onPageStarted(url);
         }
 
         @Override

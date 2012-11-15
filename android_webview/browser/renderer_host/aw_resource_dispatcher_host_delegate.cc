@@ -130,9 +130,7 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
   throttles->push_back(new MaybeCancelResourceThrottle(
       child_id, route_id, request));
 
-  // We ignore POST requests because of BUG=155250.
-  if (resource_type == ResourceType::MAIN_FRAME &&
-      request->method() != "POST") {
+  if (resource_type == ResourceType::MAIN_FRAME) {
     throttles->push_back(InterceptNavigationDelegate::CreateThrottleFor(
         request));
   }
