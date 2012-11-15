@@ -124,9 +124,34 @@ Individual servers may be excluded from being proxied with the
 <code>bypassList</code>. This list may contain the following entries:
 <dl>
   <dt><code>[<em>&lt;scheme&gt;</em>://]<em>&lt;host-pattern&gt;</em>[:<em>&lt;port&gt;</em>]</code></dt>
-  <dd>Match all hostnames that match the pattern <em>&lt;host-pattern&gt;</em>.<br>
+  <dd>Match all hostnames that match the pattern <em>&lt;host-pattern&gt;</em>.
+  A leading <code>"."</code> is interpreted as a <code>"*."</code>.<br>
   Examples: <code>"foobar.com", "*foobar.com", "*.foobar.com", "*foobar.com:99",
-    "https://x.*.y.com:99"</code></dd>
+    "https://x.*.y.com:99"</code>.<br>
+  <table>
+    <tr>
+      <th>Pattern
+      <th>Matches
+      <th>Does not match
+    <tr>
+      <td><code>".foobar.com"</code>
+      <td><code>"www.foobar.com"</code>
+      <td><code>"foobar.com"</code>
+    <tr>
+      <td><code>"*.foobar.com"</code>
+      <td><code>"www.foobar.com"</code>
+      <td><code>"foobar.com"</code>
+    <tr>
+      <td><code>"foobar.com"</code>
+      <td><code>"foobar.com"</code>
+      <td><code>"www.foobar.com"</code>
+    <tr>
+      <td><code>"*foobar.com"</code>
+      <td><code>"foobar.com"</code>, <code>"www.foobar.com"</code>,
+          <code>"foofoobar.com"</code>
+      <td>
+  </table>
+  </dd>
 
   <dt><code>[<em>&lt;scheme&gt;</em>://]<em>&lt;ip-literal&gt;</em>[:<em>&lt;port&gt;</em>]</code></dt>
   <dd>Match URLs that are IP address literals.<br>
