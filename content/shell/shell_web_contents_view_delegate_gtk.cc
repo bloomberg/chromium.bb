@@ -4,6 +4,7 @@
 
 #include "content/shell/shell_web_contents_view_delegate.h"
 
+#include "base/command_line.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -16,6 +17,7 @@
 #include "content/shell/shell_browser_main_parts.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_devtools_delegate.h"
+#include "content/shell/shell_switches.h"
 #include "content/shell/shell_web_contents_view_delegate_creator.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "ui/base/gtk/focus_store_gtk.h"
@@ -43,6 +45,9 @@ ShellWebContentsViewDelegate::~ShellWebContentsViewDelegate() {
 void ShellWebContentsViewDelegate::ShowContextMenu(
     const ContextMenuParams& params,
     ContextMenuSourceType type) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return;
+
   GtkWidget* menu = gtk_menu_new();
 
   params_ = params;

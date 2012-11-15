@@ -6,6 +6,7 @@
 
 #import  <Cocoa/Cocoa.h>
 
+#include "base/command_line.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -18,6 +19,7 @@
 #include "content/shell/shell_browser_main_parts.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_devtools_delegate.h"
+#include "content/shell/shell_switches.h"
 #include "content/shell/shell_web_contents_view_delegate_creator.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 
@@ -94,6 +96,9 @@ ShellWebContentsViewDelegate::~ShellWebContentsViewDelegate() {
 void ShellWebContentsViewDelegate::ShowContextMenu(
     const ContextMenuParams& params,
     ContextMenuSourceType type) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return;
+
   params_ = params;
   bool has_link = !params_.unfiltered_link_url.is_empty();
   bool has_selection = ! params_.selection_text.empty();
