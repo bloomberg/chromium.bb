@@ -11,12 +11,8 @@
       'target_name': 'nacl_core_sdk',
       'type': 'none',
       'dependencies': [
-        '../src/shared/gio/gio.gyp:gio_lib',
-        '../src/shared/platform/platform.gyp:platform_lib',
-        '../src/shared/srpc/srpc.gyp:srpc_lib',
         '../src/trusted/service_runtime/service_runtime.gyp:sel_ldr',
         '../src/untrusted/irt/irt.gyp:irt_core_nexe',
-        '../src/untrusted/nacl/nacl.gyp:imc_syscalls_lib',
         '../src/untrusted/nacl/nacl.gyp:nacl_dynacode_lib',
         '../src/untrusted/nacl/nacl.gyp:nacl_lib',
         '../src/untrusted/nosys/nosys.gyp:nosys_lib',
@@ -26,9 +22,44 @@
         # these libraries don't currently exist on arm
         ['target_arch!="arm"', {
           'dependencies': [
-            '../src/shared/imc/imc.gyp:imc_lib',
             '../src/untrusted/valgrind/valgrind.gyp:dynamic_annotations_lib',
             '../src/untrusted/valgrind/valgrind.gyp:valgrind_lib',
+          ],
+          'copies': [
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/x86_64-nacl/lib32',
+              'files': [
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libnacl_dyncode.a',
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libnosys.a',
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libpthread.a',
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libvalgrind.a',
+              ],
+            },
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/x86_64-nacl/lib',
+              'files': [
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libnacl_dyncode.a',
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libnosys.a',
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libpthread.a',
+                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libvalgrind.a',
+              ],
+            },
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/x86_64-nacl/lib32',
+              'files': [
+                '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libnacl_dyncode.a',
+                '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libvalgrind.a',
+                '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libdynamic_annotations.a',
+              ],
+            },
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/x86_64-nacl/lib',
+              'files': [
+                '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libnacl_dyncode.a',
+                '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libvalgrind.a',
+                '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libdynamic_annotations.a',
+              ],
+            },
           ],
         }],
       ],
