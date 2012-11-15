@@ -11,10 +11,10 @@
 #include "base/win/scoped_comptr.h"
 #include "google_update/google_update_idl.h"
 
-using base::win::ScopedBstr;
-using base::win::ScopedComPtr;
 
 namespace app_host {
+
+// Helpers --------------------------------------------------------------------
 
 namespace {
 
@@ -25,89 +25,92 @@ const int kInstallationPollingIntervalMs = 50;
 HRESULT CreateInstalledApp(IAppBundle* app_bundle,
                            const wchar_t* app_guid,
                            IApp** app) {
-  ScopedComPtr<IApp> temp_app;
-  ScopedComPtr<IDispatch> idispatch;
-  HRESULT hr = app_bundle->createInstalledApp(ScopedBstr(app_guid),
+  base::win::ScopedComPtr<IDispatch> idispatch;
+  HRESULT hr = app_bundle->createInstalledApp(base::win::ScopedBstr(app_guid),
                                               idispatch.Receive());
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to configure App Bundle: " << hr;
-  } else {
-    hr = temp_app.QueryFrom(idispatch);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Unexpected error querying IApp from "
-                 << "IAppBundle->createInstalledApp return value: " << hr;
-    } else {
-      *app = temp_app.Detach();
-    }
+    return hr;
   }
 
+  base::win::ScopedComPtr<IApp> temp_app;
+  hr = temp_app.QueryFrom(idispatch);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Unexpected error querying IApp from "
+               << "IAppBundle->createInstalledApp return value: " << hr;
+  } else {
+    *app = temp_app.Detach();
+  }
+  return hr;
+}
+
+HRESULT GetAppHostApValue(IGoogleUpdate3* update3,
+                          IAppBundle* app_bundle,
+                          BSTR* ap_value) {
+  base::win::ScopedComPtr<IApp> app;
+  HRESULT hr = CreateInstalledApp(app_bundle, kAppHostAppId, app.Receive());
+  if (FAILED(hr))
+    return hr;
+
+  hr = app->get_ap(ap_value);
+  if (FAILED(hr))
+    LOG(ERROR) << "Failed to get the App Host AP value.";
   return hr;
 }
 
 HRESULT GetCurrentState(IApp* app,
                         ICurrentState** current_state,
                         CurrentState* state_value) {
-  HRESULT hr = S_OK;
-
-  ScopedComPtr<ICurrentState> temp_current_state;
-  {
-    ScopedComPtr<IDispatch> idispatch;
-    hr = app->get_currentState(idispatch.Receive());
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to get App Bundle state: " << hr;
-    } else {
-      hr = temp_current_state.QueryFrom(idispatch);
-      if (FAILED(hr)) {
-        LOG(ERROR) << "Unexpected error querying ICurrentState from "
-                   << "IApp::get_currentState return value: " << hr;
-      }
-    }
+  base::win::ScopedComPtr<IDispatch> idispatch;
+  HRESULT hr = app->get_currentState(idispatch.Receive());
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to get App Bundle state: " << hr;
+    return hr;
   }
 
+  base::win::ScopedComPtr<ICurrentState> temp_current_state;
+  hr = temp_current_state.QueryFrom(idispatch);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Unexpected error querying ICurrentState from "
+               << "IApp::get_currentState return value: " << hr;
+    return hr;
+  }
+
+  LONG long_state_value;
+  hr = temp_current_state->get_stateValue(&long_state_value);
   if (SUCCEEDED(hr)) {
-    LONG long_state_value;
-    hr = temp_current_state->get_stateValue(&long_state_value);
-    if (FAILED(hr))
-      LOG(ERROR) << "Failed to get App Bundle state value: " << hr;
     *state_value = static_cast<CurrentState>(long_state_value);
     *current_state = temp_current_state.Detach();
+  } else {
+    LOG(ERROR) << "Failed to get App Bundle state value: " << hr;
   }
-
   return hr;
 }
 
-HRESULT CheckIsBusy(IAppBundle* app_bundle, bool* is_busy) {
+bool CheckIsBusy(IAppBundle* app_bundle, HRESULT* hr) {
   VARIANT_BOOL variant_is_busy = VARIANT_TRUE;
-  HRESULT hr = app_bundle->isBusy(&variant_is_busy);
-  if (FAILED(hr))
-    LOG(ERROR) << "Failed to check app_bundle->isBusy: " << hr;
-  else
-    *is_busy = (variant_is_busy == VARIANT_TRUE);
-  return hr;
+  *hr = app_bundle->isBusy(&variant_is_busy);
+  if (FAILED(*hr))
+    LOG(ERROR) << "Failed to check app_bundle->isBusy: " << *hr;
+  return (variant_is_busy == VARIANT_TRUE);
 }
 
-HRESULT OnUpdateAvailable(IAppBundle* app_bundle) {
+void OnUpdateAvailable(IAppBundle* app_bundle, HRESULT* hr) {
   // If the app bundle is busy we will just wait some more.
-  bool is_busy = false;
-  HRESULT hr = CheckIsBusy(app_bundle, &is_busy);
-  if (SUCCEEDED(hr) && !is_busy) {
-    hr = app_bundle->download();
-    if (FAILED(hr))
-      LOG(ERROR) << "Failed to initiate bundle download: " << hr;
-  }
-  return hr;
+  if (CheckIsBusy(app_bundle, hr) || FAILED(*hr))
+    return;
+  *hr = app_bundle->download();
+  if (FAILED(*hr))
+    LOG(ERROR) << "Failed to initiate bundle download: " << *hr;
 }
 
-HRESULT OnReadyToInstall(IAppBundle* app_bundle) {
+void OnReadyToInstall(IAppBundle* app_bundle, HRESULT* hr) {
   // If the app bundle is busy we will just wait some more.
-  bool is_busy = false;
-  HRESULT hr = CheckIsBusy(app_bundle, &is_busy);
-  if (SUCCEEDED(hr) && !is_busy) {
-    hr = app_bundle->install();
-    if (FAILED(hr))
-      LOG(ERROR) << "Failed to initiate bundle install: " << hr;
-  }
-  return hr;
+  if (CheckIsBusy(app_bundle, hr) || FAILED(*hr))
+    return;
+  *hr = app_bundle->install();
+  if (FAILED(*hr))
+    LOG(ERROR) << "Failed to initiate bundle install: " << *hr;
 }
 
 HRESULT OnError(ICurrentState* current_state) {
@@ -115,27 +118,25 @@ HRESULT OnError(ICurrentState* current_state) {
   HRESULT hr = current_state->get_errorCode(&error_code);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to retrieve bundle error code: " << hr;
-  } else {
-    hr = error_code;
-
-    ScopedBstr completion_message;
-    HRESULT completion_message_hr =
-      current_state->get_completionMessage(completion_message.Receive());
-    if (FAILED(completion_message_hr)) {
-      LOG(ERROR) << "Bundle installation failed with error " << hr
-                 << ". Error message retrieval failed with error: "
-                 << completion_message_hr;
-    } else {
-      LOG(ERROR) << "Bundle installation failed with error " << hr << ": "
-                 << completion_message;
-    }
+    return hr;
   }
 
-  return hr;
+  base::win::ScopedBstr completion_message;
+  HRESULT completion_message_hr =
+    current_state->get_completionMessage(completion_message.Receive());
+  if (FAILED(completion_message_hr)) {
+    LOG(ERROR) << "Bundle installation failed with error " << error_code
+               << ". Error message retrieval failed with error: "
+               << completion_message_hr;
+  } else {
+    LOG(ERROR) << "Bundle installation failed with error " << error_code << ": "
+               << completion_message;
+  }
+  return error_code;
 }
 
 HRESULT CreateGoogleUpdate3(IGoogleUpdate3** update3) {
-  ScopedComPtr<IGoogleUpdate3> temp_update3;
+  base::win::ScopedComPtr<IGoogleUpdate3> temp_update3;
   HRESULT hr = temp_update3.CreateInstance(CLSID_GoogleUpdate3UserClass);
   if (SUCCEEDED(hr)) {
     *update3 = temp_update3.Detach();
@@ -152,211 +153,174 @@ HRESULT CreateGoogleUpdate3(IGoogleUpdate3** update3) {
 }
 
 HRESULT CreateAppBundle(IGoogleUpdate3* update3, IAppBundle** app_bundle) {
-  HRESULT hr = S_OK;
-
-  ScopedComPtr<IAppBundle> temp_app_bundle;
-  {
-    ScopedComPtr<IDispatch> idispatch;
-    hr = update3->createAppBundle(idispatch.Receive());
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to createAppBundle: " << hr;
-    } else {
-      hr = temp_app_bundle.QueryFrom(idispatch);
-      if (FAILED(hr)) {
-        LOG(ERROR) << "Unexpected error querying IAppBundle from "
-                   << "IGoogleUpdate3->createAppBundle return value: " << hr;
-      }
-    }
-  }
-
-  if (SUCCEEDED(hr)) {
-    hr = temp_app_bundle->initialize();
-    if (FAILED(hr))
-      LOG(ERROR) << "Failed to initialize App Bundle: " << hr;
-    else
-      *app_bundle = temp_app_bundle.Detach();
-  }
-
-  return hr;
-}
-
-HRESULT GetAppHostApValue(IGoogleUpdate3* update3, BSTR* ap_value) {
-  ScopedComPtr<IAppBundle> app_bundle;
-  HRESULT hr = CreateAppBundle(update3, app_bundle.Receive());
-  if (SUCCEEDED(hr)) {
-    ScopedComPtr<IApp> app;
-    hr = CreateInstalledApp(app_bundle, kAppHostAppId, app.Receive());
-    if (SUCCEEDED(hr)) {
-      hr = app->get_ap(ap_value);
-      if (FAILED(hr))
-        LOG(ERROR) << "Failed to get the App Host AP value.";
-    }
-  }
-
-  return hr;
-}
-
-HRESULT SelectBinariesApValue(IGoogleUpdate3* update3, BSTR* ap_value) {
-  HRESULT hr = GetAppHostApValue(update3, ap_value);
+  base::win::ScopedComPtr<IDispatch> idispatch;
+  HRESULT hr = update3->createAppBundle(idispatch.Receive());
   if (FAILED(hr)) {
-    // TODO(erikwright): distinguish between AppHost not installed and an
-    // error in GetAppHostApValue.
-    // TODO(erikwright): Use stable by default when App Host support is in
-    // stable.
-    ScopedBstr temp_ap_value;
-    if (NULL == temp_ap_value.Allocate(L"2.0-dev-multi-apphost")) {
-      LOG(ERROR) << "Unexpected error in ScopedBstr::Allocate.";
-      hr = E_FAIL;
-    } else {
-      *ap_value = temp_ap_value.Release();
-      hr = S_OK;
-    }
+    LOG(ERROR) << "Failed to createAppBundle: " << hr;
+    return hr;
   }
 
+  base::win::ScopedComPtr<IAppBundle> temp_app_bundle;
+  hr = temp_app_bundle.QueryFrom(idispatch);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Unexpected error querying IAppBundle from "
+               << "IGoogleUpdate3->createAppBundle return value: " << hr;
+    return hr;
+  }
+
+  hr = temp_app_bundle->initialize();
+  if (FAILED(hr))
+    LOG(ERROR) << "Failed to initialize App Bundle: " << hr;
+  else
+    *app_bundle = temp_app_bundle.Detach();
   return hr;
+}
+
+HRESULT SelectBinariesApValue(IGoogleUpdate3* update3,
+                              IAppBundle* app_bundle,
+                              BSTR* ap_value) {
+  HRESULT hr = GetAppHostApValue(update3, app_bundle, ap_value);
+  if (SUCCEEDED(hr))
+    return hr;
+
+  // TODO(erikwright): distinguish between AppHost not installed and an
+  // error in GetAppHostApValue.
+  // TODO(erikwright): Use stable by default when App Host support is in
+  // stable.
+  base::win::ScopedBstr temp_ap_value;
+  if (temp_ap_value.Allocate(L"2.0-dev-multi-apphost") == NULL) {
+    LOG(ERROR) << "Unexpected error in ScopedBstr::Allocate.";
+    return E_FAIL;
+  }
+  *ap_value = temp_ap_value.Release();
+  return S_OK;
 }
 
 HRESULT CreateBinariesIApp(IAppBundle* app_bundle, BSTR ap, IApp** app) {
-  HRESULT hr = S_OK;
-
-  ScopedComPtr<IApp> temp_app;
-  {
-    ScopedComPtr<IDispatch> idispatch;
-    hr = app_bundle->createApp(ScopedBstr(kBinariesAppId), idispatch.Receive());
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to configure App Bundle: " << hr;
-    } else {
-      hr = temp_app.QueryFrom(idispatch);
-      if (FAILED(hr)) {
-        LOG(ERROR) << "Unexpected error querying IApp from "
-                   << "IAppBundle->createApp return value: " << hr;
-      }
-    }
+  base::win::ScopedComPtr<IDispatch> idispatch;
+  HRESULT hr = app_bundle->createApp(base::win::ScopedBstr(kBinariesAppId),
+                                     idispatch.Receive());
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to configure App Bundle: " << hr;
+    return hr;
   }
 
-  if (SUCCEEDED(hr)) {
-    hr = temp_app->put_isEulaAccepted(VARIANT_TRUE);
-    if (FAILED(hr))
-      LOG(ERROR) << "Failed to set 'EULA Accepted': " << hr;
+  base::win::ScopedComPtr<IApp> temp_app;
+  hr = temp_app.QueryFrom(idispatch);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Unexpected error querying IApp from "
+               << "IAppBundle->createApp return value: " << hr;
+    return hr;
   }
 
-  if (SUCCEEDED(hr)) {
-    hr = temp_app->put_ap(ap);
-    if (FAILED(hr))
-      LOG(ERROR) << "Failed to set AP value: " << hr;
+  hr = temp_app->put_isEulaAccepted(VARIANT_TRUE);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to set 'EULA Accepted': " << hr;
+    return hr;
   }
 
-  if (SUCCEEDED(hr))
+  hr = temp_app->put_ap(ap);
+  if (FAILED(hr))
+    LOG(ERROR) << "Failed to set AP value: " << hr;
+  else
     *app = temp_app.Detach();
-
   return hr;
 }
 
 bool CheckIfDone(IAppBundle* app_bundle, IApp* app, HRESULT* hr) {
-  ScopedComPtr<ICurrentState> current_state;
+  base::win::ScopedComPtr<ICurrentState> current_state;
   CurrentState state_value;
   *hr = GetCurrentState(app, current_state.Receive(), &state_value);
+  if (FAILED(*hr))
+    return true;
 
-  bool complete = false;
+  switch (state_value) {
+    case STATE_WAITING_TO_CHECK_FOR_UPDATE:
+    case STATE_CHECKING_FOR_UPDATE:
+    case STATE_WAITING_TO_DOWNLOAD:
+    case STATE_RETRYING_DOWNLOAD:
+    case STATE_DOWNLOADING:
+    case STATE_WAITING_TO_INSTALL:
+    case STATE_INSTALLING:
+    case STATE_DOWNLOAD_COMPLETE:
+    case STATE_EXTRACTING:
+    case STATE_APPLYING_DIFFERENTIAL_PATCH:
+      // These states will all transition on their own.
+      return false;
 
-  if (SUCCEEDED(hr)) {
-    switch (state_value) {
-      case STATE_WAITING_TO_CHECK_FOR_UPDATE:
-      case STATE_CHECKING_FOR_UPDATE:
-      case STATE_WAITING_TO_DOWNLOAD:
-      case STATE_RETRYING_DOWNLOAD:
-      case STATE_DOWNLOADING:
-      case STATE_WAITING_TO_INSTALL:
-      case STATE_INSTALLING:
-      case STATE_DOWNLOAD_COMPLETE:
-      case STATE_EXTRACTING:
-      case STATE_APPLYING_DIFFERENTIAL_PATCH:
-        // These states will all transition on their own.
-        break;
+    case STATE_UPDATE_AVAILABLE:
+      OnUpdateAvailable(app_bundle, hr);
+      return FAILED(*hr);
 
-      case STATE_UPDATE_AVAILABLE:
-        *hr = OnUpdateAvailable(app_bundle);
-        break;
+    case STATE_READY_TO_INSTALL:
+      OnReadyToInstall(app_bundle, hr);
+      return FAILED(*hr);
 
-      case STATE_READY_TO_INSTALL:
-        *hr = OnReadyToInstall(app_bundle);
-        break;
+    case STATE_NO_UPDATE:
+      LOG(INFO) << "Google Update reports that the binaries are already "
+                << "installed and up-to-date.";
+      return true;
 
-      case STATE_NO_UPDATE:
-        LOG(INFO) << "Google Update reports that the binaries are already "
-                  << "installed and up-to-date.";
-        complete = true;
-        break;
+    case STATE_INSTALL_COMPLETE:
+      return true;
 
-      case STATE_INSTALL_COMPLETE:
-        complete = true;
-        break;
+    case STATE_ERROR:
+      *hr = OnError(current_state);
+      return FAILED(*hr);
 
-      case STATE_ERROR:
-        *hr = OnError(current_state);
-        break;
-
-      case STATE_INIT:
-      case STATE_PAUSED:
-      default:
-        LOG(ERROR) << "Unexpected bundle state: " << state_value << ".";
-        *hr = E_FAIL;
-        break;
-    }
+    case STATE_INIT:
+    case STATE_PAUSED:
+    default:
+      LOG(ERROR) << "Unexpected bundle state: " << state_value << ".";
+      *hr = E_FAIL;
+      return true;
   }
-
-  return FAILED(*hr) || complete;
 }
 
 }  // namespace
 
-// Attempts to install the Chrome Binaries using the IGoogleUpdate3 interface.
-// Blocks until the installation process completes, without message pumping.
+
+// Globals --------------------------------------------------------------------
+
 HRESULT InstallBinaries() {
   base::win::ScopedCOMInitializer initialize_com;
-
-  HRESULT hr = S_OK;
   if (!initialize_com.succeeded()) {
     LOG(ERROR) << "COM initialization failed";
-    hr = E_FAIL;
+    return E_FAIL;
   }
 
-  ScopedComPtr<IGoogleUpdate3> update3;
-  if (SUCCEEDED(hr)) {
-    hr = CreateGoogleUpdate3(update3.Receive());
+  base::win::ScopedComPtr<IGoogleUpdate3> update3;
+  HRESULT hr = CreateGoogleUpdate3(update3.Receive());
+  if (FAILED(hr))
+    return hr;
+
+  base::win::ScopedComPtr<IAppBundle> app_bundle;
+  hr = CreateAppBundle(update3, app_bundle.Receive());
+  if (FAILED(hr))
+    return hr;
+
+  base::win::ScopedBstr ap_value;
+  hr = SelectBinariesApValue(update3, app_bundle, ap_value.Receive());
+  if (FAILED(hr))
+    return hr;
+
+  base::win::ScopedComPtr<IApp> app;
+  hr = CreateBinariesIApp(app_bundle, ap_value, app.Receive());
+  if (FAILED(hr))
+    return hr;
+
+  hr = app_bundle->checkForUpdate();
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to initiate update check: " << hr;
+    return hr;
   }
 
-  ScopedBstr ap_value;
-  if (SUCCEEDED(hr)) {
-    hr = SelectBinariesApValue(update3, ap_value.Receive());
+  // We rely upon Omaha to eventually time out and transition to a failure
+  // state.
+  while (!CheckIfDone(app_bundle, app, &hr)) {
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
+        kInstallationPollingIntervalMs));
   }
-
-  ScopedComPtr<IAppBundle> app_bundle;
-  if (SUCCEEDED(hr)) {
-    hr = CreateAppBundle(update3, app_bundle.Receive());
-  }
-
-  ScopedComPtr<IApp> app;
-  if (SUCCEEDED(hr)) {
-    hr = CreateBinariesIApp(app_bundle, ap_value, app.Receive());
-  }
-
-  if (SUCCEEDED(hr)) {
-    hr = app_bundle->checkForUpdate();
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to initiate update check: " << hr;
-    }
-  }
-
-  if (SUCCEEDED(hr)) {
-    // We rely upon Omaha to eventually time out and transition to a failure
-    // state.
-    while (!CheckIfDone(app_bundle, app, &hr)) {
-      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
-          kInstallationPollingIntervalMs));
-    }
-  }
-
   return hr;
 }
 
