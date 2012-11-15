@@ -329,7 +329,6 @@ class COMPOSITOR_EXPORT Layer
   void CreateWebLayer();
   void RecomputeTransform();
   void RecomputeDrawsContentAndUVRect();
-  void RecomputeDebugBorderColor();
 
   // Set all filters which got applied to the layer.
   void SetLayerFilters();
@@ -393,7 +392,6 @@ class COMPOSITOR_EXPORT Layer
   scoped_ptr<WebKit::WebSolidColorLayer> solid_color_layer_;
   WebKit::WebLayer* web_layer_;
   bool web_layer_is_accelerated_;
-  bool show_debug_borders_;
 
   // If true, the layer scales the canvas and the texture with the device scale
   // factor as appropriate. When true, the texture size is in DIP.

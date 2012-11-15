@@ -374,7 +374,6 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
   fills_bounds_opaquely_ = fills_bounds_opaquely;
 
   web_layer_->setOpaque(fills_bounds_opaquely);
-  RecomputeDebugBorderColor();
 }
 
 void Layer::SetExternalTexture(Texture* texture) {
@@ -416,10 +415,8 @@ void Layer::SetExternalTexture(Texture* texture) {
     web_layer_->setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
     web_layer_->setOpaque(fills_bounds_opaquely_);
     web_layer_->setOpacity(visible_ ? opacity_ : 0.f);
-    web_layer_->setDebugBorderWidth(show_debug_borders_ ? 2 : 0);
     web_layer_->setForceRenderSurface(force_render_surface_);
     RecomputeTransform();
-    RecomputeDebugBorderColor();
   }
   RecomputeDrawsContentAndUVRect();
 }
@@ -627,7 +624,6 @@ void Layer::SetOpacityImmediately(float opacity) {
 
   if (visible_)
     web_layer_->setOpacity(opacity);
-  RecomputeDebugBorderColor();
   if (schedule_draw)
     ScheduleDraw();
 }
@@ -733,11 +729,8 @@ void Layer::CreateWebLayer() {
     web_layer_ = content_layer_->layer();
   }
   web_layer_is_accelerated_ = false;
-  show_debug_borders_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUIShowLayerBorders);
   web_layer_->setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
   web_layer_->setOpaque(true);
-  web_layer_->setDebugBorderWidth(show_debug_borders_ ? 2 : 0);
 }
 
 void Layer::RecomputeTransform() {
@@ -783,17 +776,6 @@ void Layer::RecomputeDrawsContentAndUVRect() {
     gfx::Size size_in_pixel = ConvertSizeToPixel(this, size);
     web_layer_->setBounds(size_in_pixel);
   }
-}
-
-void Layer::RecomputeDebugBorderColor() {
-  if (!show_debug_borders_)
-    return;
-  unsigned int color = 0xFF000000;
-  color |= web_layer_is_accelerated_ ? 0x0000FF00 : 0x00FF0000;
-  bool opaque = fills_bounds_opaquely_ && (GetCombinedOpacity() == 1.f);
-  if (!opaque)
-    color |= 0xFF;
-  web_layer_->setDebugBorderColor(color);
 }
 
 }  // namespace ui

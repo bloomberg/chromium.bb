@@ -305,6 +305,8 @@ Compositor::Compositor(CompositorDelegate* delegate,
       command_line->HasSwitch(switches::kUIShowLayerTree);
   settings.refreshRate =
       test_compositor_enabled ? kTestRefreshRate : kDefaultRefreshRate;
+  settings.showDebugBorders =
+      command_line->HasSwitch(switches::kUIShowLayerBorders);
 
   root_web_layer_->setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
   host_.reset(compositor_support->createLayerTreeView(this, *root_web_layer_,
