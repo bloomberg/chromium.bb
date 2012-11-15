@@ -12,7 +12,6 @@
       'dependencies': [
         # NOTE: New dependencies should generally be added in the OS!="ios"
         # dependencies block below, rather than here.
-        'browser/search_engines/prepopulated_engines.gyp:prepopulated_engines',
         'browser_ui',
         'cert_logger_proto',
         'chrome_resources.gyp:chrome_extra_resources',
