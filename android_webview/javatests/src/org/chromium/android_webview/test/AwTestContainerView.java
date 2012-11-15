@@ -52,37 +52,49 @@ class AwTestContainerView extends FrameLayout {
         mAwContents.destroy();
     }
 
-    // TODO: Required ContentViewCore changes are not upstreamed yet.
-    /*
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        mAwContents.getContentViewCore().onConfigurationChanged(newConfig);
+        mAwContents.onConfigurationChanged(newConfig);
     }
 
     @Override
     public void onAttachedToWindow() {
-        mAwContents.getContentViewCore().onAttachedToWindow();
+        mAwContents.onAttachedToWindow();
     }
 
     @Override
     public void onDetachedFromWindow() {
-        mAwContents.getContentViewCore().onDetachedFromWindow();
+        mAwContents.onDetachedFromWindow();
     }
 
     @Override
     public void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
-        mAwContents.getContentViewCore().onFocusChanged(focused, direction, previouslyFocusedRect);
+        mAwContents.onFocusChanged(focused, direction, previouslyFocusedRect);
     }
 
     @Override
     public void onSizeChanged(int w, int h, int ow, int oh) {
-        mAwContents.getContentViewCore().onSizeChanged(w, h, ow, oh);
+        mAwContents.onSizeChanged(w, h, ow, oh);
     }
-    */
+
+    @Override
+    public void onVisibilityChanged(View changedView, int visibility) {
+        mAwContents.onVisibilityChanged(changedView, visibility);
+    }
+
+    @Override
+    public void onWindowVisibilityChanged(int visibility) {
+        mAwContents.onWindowVisibilityChanged(visibility);
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        return mAwContents.getContentViewCore().onTouchEvent(ev);
+        return mAwContents.onTouchEvent(ev);
+    }
+
+    @Override
+    public void onDraw(Canvas canvas) {
+        mAwContents.onDraw(canvas);
     }
 
     // TODO: ContentViewCore could define a generic class that holds an implementation similar to

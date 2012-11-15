@@ -4,16 +4,20 @@
 
 package org.chromium.android_webview;
 
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.net.http.SslCertificate;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.ValueCallback;
 
@@ -68,6 +72,7 @@ public class AwContents {
     }
 
     private int mNativeAwContents;
+    private ViewGroup mContainerView;
     private ContentViewCore mContentViewCore;
     private AwContentsClient mContentsClient;
     private AwContentsIoThreadClient mIoThreadClient;
@@ -75,6 +80,7 @@ public class AwContents {
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
     private final IoThreadClientHandler mIoThreadClientHandler;
+    private boolean mIsPaused;
 
     // Must call nativeUpdateLastHitTestData first to update this before use.
     private final HitTestData mPossiblyStaleHitTestData;
@@ -176,6 +182,7 @@ public class AwContents {
             AwContentsClient contentsClient,
             NativeWindow nativeWindow, boolean privateBrowsing,
             boolean isAccessFromFileURLsGrantedByDefault) {
+        mContainerView = containerView;
         // Note that ContentViewCore must be set up before AwContents, as ContentViewCore
         // setup performs process initialisation work needed by AwContents.
         mContentViewCore = new ContentViewCore(containerView.getContext(),
@@ -224,6 +231,7 @@ public class AwContents {
         // methods are called on it after it's been destroyed, and other
         // code relies on AwContents.getContentViewCore to return non-null.
         mCleanupReference.cleanupNow();
+        mNativeAwContents = 0;
     }
 
     public static int getAwDrawGLFunction() {
@@ -245,23 +253,27 @@ public class AwContents {
     }
 
     public void onDraw(Canvas canvas) {
-        // TODO(joth): Implement.
-        Log.e(TAG, "Not implemented: AwContents.onDraw()");
+        // TODO(joth): Implement. For now, just clear the canvas to red.
+        canvas.drawRGB(200, 1, 4);
     }
 
     public int findAllSync(String searchString) {
+        if (mNativeAwContents == 0) return 0;
         return nativeFindAllSync(mNativeAwContents, searchString);
     }
 
     public void findAllAsync(String searchString) {
+        if (mNativeAwContents == 0) return;
         nativeFindAllAsync(mNativeAwContents, searchString);
     }
 
     public void findNext(boolean forward) {
+        if (mNativeAwContents == 0) return;
         nativeFindNext(mNativeAwContents, forward);
     }
 
     public void clearMatches() {
+        if (mNativeAwContents == 0) return;
         nativeClearMatches(mNativeAwContents);
     }
 
@@ -307,16 +319,55 @@ public class AwContents {
     //--------------------------------------------------------------------------------------------
 
     /**
+     * @see android.webkit.WebView#pauseTimers()
+     */
+    public void pauseTimers() {
+        mContentViewCore.onActivityPause();
+    }
+
+    /**
+     * @see android.webkit.WebView#resumeTimers()
+     */
+    public void resumeTimers() {
+        mContentViewCore.onActivityResume();
+    }
+
+    /**
+     * @see android.webkit.WebView#onPause()
+     */
+    public void onPause() {
+        mIsPaused = true;
+        mContentViewCore.onHide();
+    }
+
+    /**
+     * @see android.webkit.WebView#onResume()
+     */
+    public void onResume() {
+        mContentViewCore.onShow();
+        mIsPaused = false;
+    }
+
+    /**
+     * @see android.webkit.WebView#isPaused()
+     */
+    public boolean isPaused() {
+        return mIsPaused;
+    }
+
+    /**
      * Clears the resource cache. Note that the cache is per-application, so this will clear the
      * cache for all WebViews used.
      *
      * @param includeDiskFiles if false, only the RAM cache is cleared
      */
     public void clearCache(boolean includeDiskFiles) {
+        if (mNativeAwContents == 0) return;
         nativeClearCache(mNativeAwContents, includeDiskFiles);
     }
 
     public void documentHasImages(Message message) {
+        if (mNativeAwContents == 0) return;
         nativeDocumentHasImages(mNativeAwContents, message);
     }
 
@@ -365,6 +416,7 @@ public class AwContents {
      * @see android.webkit.WebView#getCertificate()
      */
     public SslCertificate getCertificate() {
+        if (mNativeAwContents == 0) return null;
         byte[] derBytes = nativeGetCertificate(mNativeAwContents);
         if (derBytes == null) {
             return null;
@@ -397,6 +449,7 @@ public class AwContents {
      * garbage allocation on repeated calls.
      */
     public HitTestData getLastHitTestResult() {
+        if (mNativeAwContents == 0) return null;
         nativeUpdateLastHitTestData(mNativeAwContents);
         return mPossiblyStaleHitTestData;
     }
@@ -405,9 +458,7 @@ public class AwContents {
      * @see android.webkit.WebView#requestFocusNodeHref()
      */
     public void requestFocusNodeHref(Message msg) {
-        if (msg == null) {
-            return;
-        }
+        if (msg == null || mNativeAwContents == 0) return;
 
         nativeUpdateLastHitTestData(mNativeAwContents);
         Bundle data = msg.getData();
@@ -422,9 +473,7 @@ public class AwContents {
      * @see android.webkit.WebView#requestImageRef()
      */
     public void requestImageRef(Message msg) {
-        if (msg == null) {
-            return;
-        }
+        if (msg == null || mNativeAwContents == 0) return;
 
         nativeUpdateLastHitTestData(mNativeAwContents);
         Bundle data = msg.getData();
@@ -433,10 +482,15 @@ public class AwContents {
         msg.sendToTarget();
     }
 
+    //--------------------------------------------------------------------------------------------
+    //  View and ViewGroup method implementations
+    //--------------------------------------------------------------------------------------------
+
     /**
-     * @see android.webkit.WebView#onTouchEvent()
+     * @see android.webkit.View#onTouchEvent()
      */
     public boolean onTouchEvent(MotionEvent event) {
+        if (mNativeAwContents == 0) return false;
         boolean rv = mContentViewCore.onTouchEvent(event);
 
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
@@ -452,18 +506,82 @@ public class AwContents {
     }
 
     /**
-     * @see android.webkit.WebView#onHoverEvent()
+     * @see android.view.View#onHoverEvent()
      */
     public boolean onHoverEvent(MotionEvent event) {
         return mContentViewCore.onHoverEvent(event);
     }
 
     /**
-     * @see android.webkit.WebView#onGenericMotionEvent()
+     * @see android.view.View#onGenericMotionEvent()
      */
     public boolean onGenericMotionEvent(MotionEvent event) {
         return mContentViewCore.onGenericMotionEvent(event);
     }
+
+    /**
+     * @see android.view.View#onConfigurationChanged()
+     */
+    public void onConfigurationChanged(Configuration newConfig) {
+        mContentViewCore.onConfigurationChanged(newConfig);
+    }
+
+    /**
+     * @see android.view.View#onAttachedToWindow()
+     */
+    public void onAttachedToWindow() {
+        mContentViewCore.onAttachedToWindow();
+    }
+
+    /**
+     * @see android.view.View#onDetachedFromWindow()
+     */
+    public void onDetachedFromWindow() {
+        mContentViewCore.onDetachedFromWindow();
+    }
+
+    /**
+     * @see android.view.View#onWindowFocusChanged()
+     */
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+    }
+
+    /**
+     * @see android.view.View#onFocusChanged()
+     */
+    public void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
+        mContentViewCore.onFocusChanged(focused, direction, previouslyFocusedRect);
+    }
+
+    /**
+     * @see android.view.View#onSizeChanged()
+     */
+    public void onSizeChanged(int w, int h, int ow, int oh) {
+        mContentViewCore.onSizeChanged(w, h, ow, oh);
+        nativeOnSizeChanged(mNativeAwContents, w, h, ow, oh);
+    }
+
+    /**
+     * @see android.view.View#onVisibilityChanged()
+     */
+    public void onVisibilityChanged(View changedView, int visibility) {
+        updateVisiblityState();
+    }
+
+    /**
+     * @see android.view.View#onWindowVisibilityChanged()
+     */
+    public void onWindowVisibilityChanged(int visibility) {
+        updateVisiblityState();
+    }
+
+    private void updateVisiblityState() {
+        if (mNativeAwContents == 0 || mIsPaused) return;
+        nativeSetWindowViewVisibility(mNativeAwContents,
+                mContainerView.getWindowVisibility() == View.VISIBLE,
+                mContainerView.getVisibility() == View.VISIBLE);
+    }
+
 
     //--------------------------------------------------------------------------------------------
     //  Methods called from native via JNI
@@ -510,7 +628,7 @@ public class AwContents {
     // -------------------------------------------------------------------------------------------
 
     private void saveWebArchiveInternal(String path, final ValueCallback<String> callback) {
-        if (path == null) {
+        if (path == null || mNativeAwContents == 0) {
             ThreadUtils.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -605,4 +723,7 @@ public class AwContents {
     private native byte[] nativeGetCertificate(int nativeAwContents);
     private native void nativeRequestNewHitTestDataAt(int nativeAwContents, int x, int y);
     private native void nativeUpdateLastHitTestData(int nativeAwContents);
+    private native void nativeOnSizeChanged(int nativeAwContents, int w, int h, int ow, int oh);
+    private native void nativeSetWindowViewVisibility(int nativeAwContents, boolean windowVisible,
+            boolean viewVisible);
 }

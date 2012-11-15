@@ -368,4 +368,15 @@ void AwContents::UpdateLastHitTestData(JNIEnv* env, jobject obj) {
                                     img_src.obj());
 }
 
+void AwContents::OnSizeChanged(JNIEnv* env, jobject obj,
+                               int w, int h, int ow, int oh) {
+  // TODO(joth): Set Compositor size.
+}
+
+void AwContents::SetWindowViewVisibility(JNIEnv* env, jobject obj,
+                                         bool window_visible,
+                                         bool view_visible) {
+  // TODO(joth): Set the Compositor visibility.
+}
+
 }  // namespace android_webview

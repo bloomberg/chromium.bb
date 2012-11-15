@@ -197,6 +197,7 @@ public class AndroidWebViewTestBase
                 awContentsClient, new ActivityNativeWindow(getActivity()),
                 incognito, false));
         getActivity().addView(testContainerView);
+        testContainerView.requestFocus();
         return testContainerView;
     }
 
