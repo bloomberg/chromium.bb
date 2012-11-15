@@ -116,6 +116,10 @@ MediaGalleriesDialogController::permissions() const {
   return known_galleries_;
 }
 
+content::WebContents* MediaGalleriesDialogController::web_contents() const {
+  return web_contents_;
+}
+
 void MediaGalleriesDialogController::FileSelected(const FilePath& path,
                                                   int index,
                                                   void* params) {

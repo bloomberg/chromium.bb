@@ -76,14 +76,12 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
                                 bool enabled);
   virtual void DialogFinished(bool accepted);
   virtual const KnownGalleryPermissions& permissions() const;
+  virtual content::WebContents* web_contents() const;
 
   // SelectFileDialog::Listener implementation:
   virtual void FileSelected(const FilePath& path,
                             int index,
                             void* params) OVERRIDE;
-  content::WebContents* web_contents() const {
-    return web_contents_;
-  }
 
  protected:
   // For use with tests.

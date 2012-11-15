@@ -15,6 +15,7 @@
 
 namespace chrome {
 
+class MediaGalleriesDialogBrowserTest;
 class MediaGalleriesDialogTest;
 
 // This class displays an alert that can be used to grant permission for
@@ -43,6 +44,7 @@ class MediaGalleriesDialogCocoa :
   virtual void DeleteDelegate() OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogBrowserTest, Close);
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, InitializeCheckboxes);
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ToggleCheckboxes);
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, UpdateAdds);

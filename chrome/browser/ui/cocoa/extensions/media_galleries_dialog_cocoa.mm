@@ -134,6 +134,8 @@ void MediaGalleriesDialogCocoa::SheetDidEnd(NSInteger result) {
       if (window_)
         window_->CloseConstrainedWindow();
       break;
+    case NSRunStoppedResponse:
+      break;
     default:
       NOTREACHED();
       break;
@@ -205,7 +207,7 @@ void MediaGalleriesDialogCocoa::DeleteDelegate() {
   // As required by ConstrainedWindowMacDelegate, close the sheet if
   // it's still open.
   if (is_sheet_open())
-    [NSApp endSheet:sheet()];
+    [NSApp endSheet:[alert_ window]];
 
   controller_->DialogFinished(accepted_);
 }
