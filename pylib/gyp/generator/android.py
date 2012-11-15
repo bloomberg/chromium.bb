@@ -1004,7 +1004,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     default_configuration = 'Default'
 
   srcdir = '.'
-  makefile_name = 'GypAndroid.mk' + options.suffix
+  makefile_name = 'GypAndroid' + options.suffix + '.mk'
   makefile_path = os.path.join(options.toplevel_dir, makefile_name)
   assert not options.generator_output, (
       'The Android backend does not support options.generator_output.')
