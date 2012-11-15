@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_audio_input_dev.idl modified Mon Oct 29 14:40:53 2012. */
+/* From dev/ppb_audio_input_dev.idl modified Wed Nov 14 15:08:54 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_AUDIO_INPUT_DEV_H_
 #define PPAPI_C_DEV_PPB_AUDIO_INPUT_DEV_H_
@@ -48,6 +48,19 @@ typedef void (*PPB_AudioInput_Callback)(const void* sample_buffer,
 /**
  * The <code>PPB_AudioInput_Dev</code> interface contains pointers to several
  * functions for handling audio input resources.
+ *
+ * TODO(brettw) before moving out of dev, we need to resolve the issue of
+ * the mismatch between the current audio config interface and this one.
+ *
+ * In particular, the params for input assume stereo, but this class takes
+ * everything as mono. We either need to not use an audio config resource, or
+ * add mono support.
+ *
+ * In addition, RecommendSampleFrameCount is completely wrong for audio input.
+ * RecommendSampleFrameCount returns the frame count for the current
+ * low-latency output device, which is likely inappropriate for a random input
+ * device. We may want to move the "recommend" functions to the input or output
+ * classes rather than the config.
  */
 struct PPB_AudioInput_Dev_0_2 {
   /**

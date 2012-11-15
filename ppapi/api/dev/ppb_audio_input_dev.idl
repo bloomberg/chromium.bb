@@ -24,6 +24,19 @@ typedef void PPB_AudioInput_Callback([in] mem_t sample_buffer,
 /**
  * The <code>PPB_AudioInput_Dev</code> interface contains pointers to several
  * functions for handling audio input resources.
+ *
+ * TODO(brettw) before moving out of dev, we need to resolve the issue of
+ * the mismatch between the current audio config interface and this one.
+ * 
+ * In particular, the params for input assume stereo, but this class takes
+ * everything as mono. We either need to not use an audio config resource, or
+ * add mono support.
+ *
+ * In addition, RecommendSampleFrameCount is completely wrong for audio input.
+ * RecommendSampleFrameCount returns the frame count for the current
+ * low-latency output device, which is likely inappropriate for a random input
+ * device. We may want to move the "recommend" functions to the input or output
+ * classes rather than the config.
  */
 [macro="PPB_AUDIO_INPUT_DEV_INTERFACE"]
 interface PPB_AudioInput_Dev {
