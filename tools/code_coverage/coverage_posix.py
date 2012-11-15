@@ -124,31 +124,7 @@ gChildPIDs = []
    Details:
      ProcessUtilTest.SpawnChild: chokes in __gcov_fork on 10.6
      IPCFuzzingTest.MsgBadPayloadArgs: ditto
-     FullscreenControllerTest.*: Fails on coverage bots thereby
-     aborting the test.
-     PageCyclerCachedBrowserTest.*: Fails with timeout exceeded error. Timeout
-     can either mean hang, or can mean test takes 10x longer because we're in
-     coverage. Consider if we should increase a test timeout somewhere.
-     FullscreenControllerBrowserTest.*': ditto.
-     PPAPITest.Fullscreen: ditto.
-     OutOfProcessPPAPITest.Fullscreen: ditto.
-     IndexedDBLayoutTest.RegressionTests: ditto.
      PanelBrowserNavigatorTest.NavigateFromCrashedPanel: Fails on coverage bot.
-     StartupBrowserCreatorTest.OpenAppShortcutPanel: Fails on coverage bot.
-     FilePathWatcherTest.Callback: Fails with error 'Unable to terminate
-     process group' in process_util_posix.cc.
-     SUIDSandboxUITest.testSUIDSandboxEnabled: crbug.com/143250
-     PPAPINaClNewlibTest.Fullscreen: crbug.com/143251
-     PPAPINaClGLibcTest.Fullscreen: ditto.
-     UnloadTest.BrowserCloseInfiniteBeforeUnload: crbug.com/143253
-     PrerenderBrowserTest.PrerenderDelayLoadPlugin: crbug.com/143257
-     PrerenderBrowserTest.PrerenderIframeDelayLoadPlugin: ditto.
-     WindowOpenPanelTest.WindowOpenPanel: crbug.com/143258
-     WindowOpenPanelTest.CloseNonExtensionPanelsOnUninstall: ditto
-     ExtensionManagementApiTest.LaunchPanelApp: crbug.com/143416
-     ClickToPlayPluginTest.Basic: crbug.com/143417
-     ClickToPlayPluginTest.LoadAllBlockedPlugins: ditto.
-     ClickToPlayPluginTest.NoCallbackAtLoad: ditto.
      WebGLConformanceTests.conformance_attribs_gl_enable_vertex_attrib: Fails
      with timeout (45000 ms) exceeded error. crbug.com/143248
      WebGLConformanceTests.conformance_attribs_gl_disabled_vertex_attrib:
@@ -211,28 +187,6 @@ gTestExclusions = {
   'darwin2': { 'base_unittests': ('ProcessUtilTest.SpawnChild',),
                'ipc_tests': ('IPCFuzzingTest.MsgBadPayloadArgs',), },
   'linux2': {
-    'browser_tests':
-        ('*FullscreenControllerTest.*',
-         '*PageCyclerCachedBrowserTest.*',
-         '*FullscreenControllerBrowserTest.*',
-         'PPAPITest.Fullscreen',
-         'OutOfProcessPPAPITest.Fullscreen',
-         'IndexedDBLayoutTest.RegressionTests',
-         'PanelBrowserNavigatorTest.NavigateFromCrashedPanel',
-         'StartupBrowserCreatorTest.OpenAppShortcutPanel',
-         'FilePathWatcherTest.Callback',
-         'SUIDSandboxUITest.testSUIDSandboxEnabled',
-         'PPAPINaClNewlibTest.Fullscreen',
-         'PPAPINaClGLibcTest.Fullscreen',
-         'UnloadTest.BrowserCloseInfiniteBeforeUnload',
-         'PrerenderBrowserTest.PrerenderDelayLoadPlugin',
-         'PrerenderBrowserTest.PrerenderIframeDelayLoadPlugin',
-         'WindowOpenPanelTest.WindowOpenPanel',
-         'WindowOpenPanelTest.CloseNonExtensionPanelsOnUninstall',
-         'ExtensionManagementApiTest.LaunchPanelApp',
-         'ClickToPlayPluginTest.Basic',
-         'ClickToPlayPluginTest.LoadAllBlockedPlugins',
-         'ClickToPlayPluginTest.NoCallbackAtLoad',),
     'gpu_tests':
         ('WebGLConformanceTests.conformance_attribs_gl_enable_vertex_attrib',
          'WebGLConformanceTests.'
@@ -289,6 +243,18 @@ gTestExclusions = {
         ('AutomatedUITest.TheOneAndOnlyTest',
          'AutomatedUITestBase.DragOut',), },
 }
+
+gTestInclusions = {
+  'linux2': {
+    'browser_tests':
+        ('DownloadTest.*',
+         'SavePageBrowserTest.*',
+         'BrowserCloseTest.*',
+         'DownloadsApiTest.*',
+         'MHTMLGenerationTest.*',),
+  },
+}
+
 
 
 def TerminateSignalHandler(sig, stack):
@@ -603,6 +569,11 @@ class Coverage(object):
     if self.options.all_unittests:
       self.tests += glob.glob(os.path.join(self.directory, '*_unittests'))
       self.tests += glob.glob(os.path.join(self.directory, '*unit_tests'))
+    elif self.options.all_browsertests:
+      # Run all tests in browser_tests and content_browsertests.
+      self.tests += glob.glob(os.path.join(self.directory, 'browser_tests'))
+      self.tests += glob.glob(os.path.join(self.directory,
+                                           'content_browsertests'))
 
     # Tests can come in as args directly, indirectly (through a file
     # of test lists) or as a file of bundles.
@@ -648,11 +619,6 @@ class Coverage(object):
       # We need 'pyautolib' to run pyauto tests and 'pyautolib' itself is not an
       # executable. So skip this test from adding into coverage_bundles.py.
       if testname == 'pyautolib':
-        continue
-      # Random tests are failing in browser_tests. Disabling it for now.
-      # crbug.com/159748
-      if testname == 'browser_tests' and self.options.bundles:
-        logging.info('Skipping browser_tests from running')
         continue
       self.tests += [os.path.join(self.directory, testname)]
       if gtest_filter:
@@ -771,6 +737,10 @@ class Coverage(object):
       if self.options.all_unittests:
         if os.path.exists(os.path.join(self.directory, 'unittests_coverage')):
           shutil.rmtree(os.path.join(self.directory, 'unittests_coverage'))
+      elif self.options.all_browsertests:
+        if os.path.exists(os.path.join(self.directory,
+                                       'browsertests_coverage')):
+          shutil.rmtree(os.path.join(self.directory, 'browsertests_coverage'))
       else:
         if os.path.exists(os.path.join(self.directory, 'total_coverage')):
           shutil.rmtree(os.path.join(self.directory, 'total_coverage'))
@@ -822,6 +792,13 @@ class Coverage(object):
           # example: if base_unittests in ../blah/blah/base_unittests.exe
           if test in fulltest:
             negative_gfilter_list += excldict[test]
+
+    inclusions = gTestInclusions
+    includedict = inclusions.get(sys.platform)
+    if includedict:
+        for test in includedict.keys():
+          if test in fulltest:
+            positive_gfilter_list += includedict[test]
 
     fulltest_basename = os.path.basename(fulltest)
     if fulltest_basename in self.test_filters:
@@ -1013,6 +990,9 @@ class Coverage(object):
     # Copy the unittests coverage information to a different folder.
     if self.options.all_unittests:
       self.CopyCoverageFileToDestination('unittests_coverage')
+    elif self.options.all_browsertests:
+      # Save browsertests only coverage information.
+      self.CopyCoverageFileToDestination('browsertests_coverage')
     else:
       # Save the overall coverage information.
       self.CopyCoverageFileToDestination('total_coverage')
@@ -1081,6 +1061,12 @@ def CoverageOptionParser():
                     dest='all_unittests',
                     default=False,
                     help='Run all tests we can find (*_unittests)')
+  parser.add_option('-b',
+                    '--all_browsertests',
+                    dest='all_browsertests',
+                    default=False,
+                    help='Run all tests in browser_tests '
+                         'and content_browsertests')
   parser.add_option('-g',
                     '--genhtml',
                     dest='genhtml',
@@ -1162,6 +1148,9 @@ def main():
 
   parser = CoverageOptionParser()
   (options, args) = parser.parse_args()
+  if options.all_unittests and options.all_browsertests:
+    print 'Error! Can not have all_unittests and all_browsertests together!'
+    sys.exit(1)
   coverage = Coverage(options, args)
   coverage.ClearData()
   coverage.FindTests()
