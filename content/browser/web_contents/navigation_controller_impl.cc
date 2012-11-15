@@ -329,7 +329,7 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
       // a reload in the renderer.
       reload_type = NavigationController::NO_RELOAD;
 
-      nav_entry->set_should_replace_entry(true);
+      nav_entry->set_is_cross_site_reload(true);
       pending_entry_ = nav_entry;
     } else {
       pending_entry_index_ = current_index;
@@ -658,8 +658,6 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
           params.is_renderer_initiated,
           params.extra_headers,
           browser_context_));
-  if (params.is_cross_site_redirect)
-    entry->set_should_replace_entry(true);
   entry->SetIsOverridingUserAgent(override);
   entry->set_transferred_global_request_id(
       params.transferred_global_request_id);
@@ -710,10 +708,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // If we are doing a cross-site reload, we need to replace the existing
   // navigation entry, not add another entry to the history. This has the side
   // effect of removing forward browsing history, if such existed.
-  // Or if we are doing a cross-site redirect navigation,
-  // we will do a similar thing.
   details->did_replace_entry =
-      pending_entry_ && pending_entry_->should_replace_entry();
+      pending_entry_ && pending_entry_->is_cross_site_reload();
 
   // is_in_page must be computed before the entry gets committed.
   details->is_in_page = IsURLInPageNavigation(

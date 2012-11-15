@@ -157,14 +157,13 @@ class CONTENT_EXPORT NavigationEntryImpl
     return transferred_global_request_id_;
   }
 
-  // Whether this (pending) navigation needs to replace current entry.
+  // Whether this (pending) navigation is reload across site instances.
   // Resets to false after commit.
-  bool should_replace_entry() const {
-    return should_replace_entry_;
+  void set_is_cross_site_reload(bool is_cross_site_reload) {
+    is_cross_site_reload_ = is_cross_site_reload;
   }
-
-  void set_should_replace_entry(bool should_replace_entry) {
-    should_replace_entry_ = should_replace_entry;
+  bool is_cross_site_reload() const {
+    return is_cross_site_reload_;
   }
 
  private:
@@ -230,15 +229,10 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   // This is set to true when this entry is being reloaded and due to changes in
   // the state of the URL, it has to be reloaded in a different site instance.
-  // For the reload case, due to changes in the state of the URL,
-  // it has to be reloaded in a different site instance.
+  // In such case, we must treat it as an existing navigation in the new site
   // instance, instead of a new navigation. This value should not be persisted
   // and is not needed after the entry commits.
-  //
-  // We also use this flag for cross-process redirect navigations, so that the
-  // browser will replace the current navigation entry (which is the page
-  // doing the redirect).
-  bool should_replace_entry_;
+  bool is_cross_site_reload_;
 
   // Set when this entry should be able to access local file:// resources. This
   // value is not needed after the entry commits and is not persisted.

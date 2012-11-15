@@ -344,15 +344,13 @@ class CONTENT_EXPORT WebContentsImpl
                               const GURL& url,
                               const Referrer& referrer,
                               WindowOpenDisposition disposition,
-                              int64 source_frame_id,
-                              bool is_cross_site_redirect) OVERRIDE;
+                              int64 source_frame_id) OVERRIDE;
   virtual void RequestTransferURL(
       const GURL& url,
       const Referrer& referrer,
       WindowOpenDisposition disposition,
       int64 source_frame_id,
-      const GlobalRequestID& transferred_global_request_id,
-      bool is_cross_site_redirect) OVERRIDE;
+      const GlobalRequestID& transferred_global_request_id) OVERRIDE;
   virtual void RouteCloseEvent(RenderViewHost* rvh) OVERRIDE;
   virtual void RouteMessageEvent(
       RenderViewHost* rvh,
