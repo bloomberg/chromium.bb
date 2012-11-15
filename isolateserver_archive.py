@@ -95,18 +95,20 @@ def url_open(url, data, content_type='application/octet-stream'):
     a response.
   """
   request = gen_url_request(url, data, content_type)
+  last_error = None
   for i in range(MAX_UPLOAD_ATTEMPTS):
     try:
       return urllib2.urlopen(request)
     except urllib2.URLError as e:
+      last_error = e
       logging.warning('Unable to connect to %s, error msg: %s', url, e)
       time.sleep(0.5 + i)
 
   # If we get no response from the server after max_retries, assume it
   # is down and raise an exception
   raise run_isolated.MappingError(
-      'Unable to connect to server, %s, to see which files are presents' %
-        url)
+      'Unable to connect to server, %s, to see which files are presents: %s' %
+        (url, last_error))
 
 
 def upload_hash_content_to_blobstore(generate_upload_url, content):
