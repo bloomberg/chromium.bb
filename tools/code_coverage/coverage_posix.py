@@ -244,18 +244,6 @@ gTestExclusions = {
          'AutomatedUITestBase.DragOut',), },
 }
 
-gTestInclusions = {
-  'linux2': {
-    'browser_tests':
-        ('DownloadTest.*',
-         'SavePageBrowserTest.*',
-         'BrowserCloseTest.*',
-         'DownloadsApiTest.*',
-         'MHTMLGenerationTest.*',),
-  },
-}
-
-
 
 def TerminateSignalHandler(sig, stack):
   """When killed, try and kill our child processes."""
@@ -781,8 +769,10 @@ class Coverage(object):
     positive_gfilter_list = []
     negative_gfilter_list = []
 
-    # Run all tests including flaky tests to get the overall coverage.
-    negative_gfilter_list += ['*.FAILS_*']
+    # Exclude all flaky, failing, disabled and maybe tests;
+    # they don't count for code coverage.
+    negative_gfilter_list += ('*.FLAKY_*', '*.FAILS_*',
+                              '*.DISABLED_*', '*.MAYBE_*')
 
     if not self.options.no_exclusions:
       exclusions = excl or gTestExclusions
@@ -792,13 +782,6 @@ class Coverage(object):
           # example: if base_unittests in ../blah/blah/base_unittests.exe
           if test in fulltest:
             negative_gfilter_list += excldict[test]
-
-    inclusions = gTestInclusions
-    includedict = inclusions.get(sys.platform)
-    if includedict:
-        for test in includedict.keys():
-          if test in fulltest:
-            positive_gfilter_list += includedict[test]
 
     fulltest_basename = os.path.basename(fulltest)
     if fulltest_basename in self.test_filters:
