@@ -6361,6 +6361,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SYNC_APP_NOTIFICATIONS_DESCRIPTION" desc="Description for the flag to disable syncing the app notifications datatype">
         Disable app notifications in the sync settings. This turns off syncing notifications received from your apps to other clients.
       </message>
+      <message name="IDS_FLAGS_SYNC_KEYSTORE_ENCRYPTION_NAME" desc="Title for the flag to enable sync's keystore encryption options">
+        Enable sync keystore encryption.
+      </message>
+      <message name="IDS_FLAGS_SYNC_KEYSTORE_ENCRYPTION_DESCRIPTION" desc="Description for the flag to enable sync's keystore encryption options">
+        Switch to sync's new server supported encryption schema. Warning: this will modify your sync data, possibly making it unreadable to other clients.
+      </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_FLAGS_SYNC_TYPED_URLS_NAME" desc="Mobile: Title for the flag to enable syncing the TypedUrl datatype">
           Enable syncing typed URLs
@@ -6542,7 +6548,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_ENABLE_TAB_SCRUBBING_DESCRIPTION" desc="Title for the flag to enable advanced gestures.">
         Enables tab switching via ctrl + left drag.
-      </message>      
+      </message>
       <message name="IDS_FLAGS_ENABLE_MEMORY_MONITOR_NAME" desc="Title for the flag to enable advanced gestures.">
         Enable memory monitor
       </message>

@@ -1298,16 +1298,26 @@ UserShare* SyncManagerImpl::GetUserShare() {
 
 bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
   ReadTransaction trans(FROM_HERE, GetUserShare());
-  ReadNode node(&trans);
-  if (node.InitByTagLookup(kNigoriTag) != BaseNode::INIT_OK) {
+  ReadNode nigori_node(&trans);
+  if (nigori_node.InitByTagLookup(kNigoriTag) != BaseNode::INIT_OK) {
     DVLOG(1) << "Couldn't find Nigori node.";
     return false;
   }
   bool found_experiment = false;
-  if (node.GetNigoriSpecifics().sync_tab_favicons()) {
+  if (nigori_node.GetNigoriSpecifics().sync_tab_favicons()) {
     experiments->sync_tab_favicons = true;
     found_experiment = true;
   }
+
+  ReadNode keystore_node(&trans);
+  if (keystore_node.InitByClientTagLookup(
+          syncer::EXPERIMENTS,
+          syncer::kKeystoreEncryptionTag) == BaseNode::INIT_OK &&
+      keystore_node.GetExperimentsSpecifics().keystore_encryption().enabled()) {
+    experiments->keystore_encryption = true;
+    found_experiment = true;
+  }
+
   return found_experiment;
 }
 

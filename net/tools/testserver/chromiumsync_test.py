@@ -604,6 +604,35 @@ class SyncDataModelTest(unittest.TestCase):
     self.assertTrue(len(key1) > 0)
     self.assertEqual(key1, key2)
 
+  def testTriggerEnableKeystoreEncryption(self):
+    version1, changes, remaining = (
+        self.GetChangesFromTimestamp([chromiumsync.EXPERIMENTS], 0))
+    keystore_encryption_id_string = (
+        self.model._ClientTagToId(
+            chromiumsync.EXPERIMENTS,
+            chromiumsync.KEYSTORE_ENCRYPTION_EXPERIMENT_TAG))
+
+    self.assertFalse(self.model._ItemExists(keystore_encryption_id_string))
+    self.model.TriggerEnableKeystoreEncryption()
+    self.assertTrue(self.model._ItemExists(keystore_encryption_id_string))
+
+    # The creation of the experiment should be downloaded on the next
+    # GetUpdates.
+    version2, changes, remaining = (
+        self.GetChangesFromTimestamp([chromiumsync.EXPERIMENTS], version1))
+    self.assertEqual(len(changes), 1)
+    self.assertEqual(changes[0].id_string, keystore_encryption_id_string)
+    self.assertNotEqual(version1, version2)
+
+    # Verify the experiment was created properly and is enabled.
+    self.assertEqual(chromiumsync.KEYSTORE_ENCRYPTION_EXPERIMENT_TAG,
+                     changes[0].client_defined_unique_tag)
+    self.assertTrue(changes[0].HasField("specifics"))
+    self.assertTrue(changes[0].specifics.HasField("experiments"))
+    self.assertTrue(
+        changes[0].specifics.experiments.HasField("keystore_encryption"))
+    self.assertTrue(
+        changes[0].specifics.experiments.keystore_encryption.enabled)
 
 if __name__ == '__main__':
   unittest.main()

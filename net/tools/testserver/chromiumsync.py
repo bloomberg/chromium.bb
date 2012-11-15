@@ -108,6 +108,9 @@ UNIX_TIME_EPOCH = (1970, 1, 1, 0, 0, 0, 3, 1, 0)
 # The number of characters in the server-generated encryption key.
 KEYSTORE_KEY_LENGTH = 16
 
+# The hashed client tag for the keystore encryption experiment node.
+KEYSTORE_ENCRYPTION_EXPERIMENT_TAG = "pis8ZRzh98/MKLtVEio2mr42LQA="
+
 class Error(Exception):
   """Error class for this module."""
 
@@ -974,6 +977,34 @@ class SyncDataModel(object):
                               if spec.name == "Synced Bookmarks"]
     self._CreatePermanentItem(synced_bookmarks_spec)
 
+  def TriggerEnableKeystoreEncryption(self):
+    """Create the keystore_encryption experiment entity and enable it.
+
+    A new entity within the EXPERIMENTS datatype is created with the unique
+    client tag "keystore_encryption" if it doesn't already exist. The
+    keystore_encryption message is then filled with |enabled| set to true.
+    """
+
+    experiment_id = self._ServerTagToId("google_chrome_experiments")
+    keystore_encryption_id = self._ClientTagToId(
+        EXPERIMENTS,
+        KEYSTORE_ENCRYPTION_EXPERIMENT_TAG)
+    keystore_entry = self._entries.get(keystore_encryption_id)
+    if keystore_entry is None:
+      keystore_entry = sync_pb2.SyncEntity()
+      keystore_entry.id_string = keystore_encryption_id
+      keystore_entry.name = "Keystore Encryption"
+      keystore_entry.client_defined_unique_tag = (
+          KEYSTORE_ENCRYPTION_EXPERIMENT_TAG)
+      keystore_entry.folder = False
+      keystore_entry.deleted = False
+      keystore_entry.specifics.CopyFrom(GetDefaultEntitySpecifics(EXPERIMENTS))
+      self._WritePosition(keystore_entry, experiment_id)
+
+    keystore_entry.specifics.experiments.keystore_encryption.enabled = True
+
+    self._SaveEntry(keystore_entry)
+
   def SetInducedError(self, error, error_frequency,
                       sync_count_before_errors):
     self.induced_error = error
@@ -1129,6 +1160,14 @@ class TestServer(object):
     return (
         200,
         '<html><title>Synced Bookmarks</title><H1>Synced Bookmarks</H1></html>')
+
+  def HandleEnableKeystoreEncryption(self):
+    """Enables the keystore encryption experiment."""
+    self.account.TriggerEnableKeystoreEncryption()
+    return (
+        200,
+        '<html><title>Enable Keystore Encryption</title>'
+            '<H1>Enable Keystore Encryption</H1></html>')
 
   def HandleCommand(self, query, raw_request):
     """Decode and handle a sync command from a raw input of bytes.

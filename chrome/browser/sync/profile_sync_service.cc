@@ -661,14 +661,9 @@ void ProfileSyncService::ClearUnrecoverableError() {
 }
 
 // static
+// TODO(sync): Consider having syncer::Experiments provide this.
 std::string ProfileSyncService::GetExperimentNameForDataType(
     syncer::ModelType data_type) {
-  switch (data_type) {
-    case syncer::SESSIONS:
-      return "sync-tabs";
-    default:
-      break;
-  }
   NOTREACHED();
   return "";
 }
@@ -915,6 +910,12 @@ void ProfileSyncService::OnExperimentsChanged(
     // setting the experiments as command line switches.
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kSyncTabFavicons);
 #endif
+  }
+
+  if (experiments.keystore_encryption) {
+    about_flags::SetExperimentEnabled(g_browser_process->local_state(),
+                                      syncer::kKeystoreEncryptionFlag,
+                                      true);
   }
 
   current_experiments = experiments;

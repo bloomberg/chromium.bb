@@ -9,17 +9,25 @@
 
 namespace syncer {
 
+const char kKeystoreEncryptionTag[] = "keystore_encryption";
+const char kKeystoreEncryptionFlag[] = "sync-keystore-encryption";
+
 // A structure to hold the enable status of experimental sync features.
 struct Experiments {
-  Experiments() : sync_tab_favicons(false) {}
+  Experiments() : sync_tab_favicons(false),
+                  keystore_encryption(false) {}
 
   bool Matches(const Experiments& rhs) {
-    return (sync_tab_favicons == rhs.sync_tab_favicons);
+    return (sync_tab_favicons == rhs.sync_tab_favicons &&
+            keystore_encryption == rhs.keystore_encryption);
   }
 
   // Enable syncing of favicons within tab sync (only has an effect if tab sync
   // is already enabled). This takes effect on the next restart.
   bool sync_tab_favicons;
+
+  // Enable keystore encryption logic and the new encryption UI.
+  bool keystore_encryption;
 };
 
 }  // namespace syncer

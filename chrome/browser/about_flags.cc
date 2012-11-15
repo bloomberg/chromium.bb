@@ -530,6 +530,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableSyncAppNotifications)
   },
   {
+    "sync-keystore-encryption",
+    IDS_FLAGS_SYNC_KEYSTORE_ENCRYPTION_NAME,
+    IDS_FLAGS_SYNC_KEYSTORE_ENCRYPTION_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kSyncKeystoreEncryption)
+  },
+  {
     "enable-gesture-tap-highlight",
     IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_NAME,
     IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_DESCRIPTION,
