@@ -39,8 +39,6 @@ class HistoryPublisher {
   void PublishPageContent(const base::Time& time, const GURL& url,
                           const string16& title,
                           const string16& contents) const;
-  void DeleteUserHistoryBetween(const base::Time& begin_time,
-                                const base::Time& end_time) const;
 
  private:
   struct PageData {

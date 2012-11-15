@@ -26,9 +26,4 @@ void HistoryPublisher::PublishDataToIndexers(const PageData& page_data)
     const {
 }
 
-void HistoryPublisher::DeleteUserHistoryBetween(const base::Time& begin_time,
-                                                const base::Time& end_time)
-    const {
-}
-
 }  // namespace history

@@ -114,16 +114,4 @@ void HistoryPublisher::PublishDataToIndexers(const PageData& page_data)
   }
 }
 
-void HistoryPublisher::DeleteUserHistoryBetween(const base::Time& begin_time,
-                                                const base::Time& end_time)
-    const {
-  base::win::ScopedVariant var_begin_time(TimeToUTCVariantTime(begin_time),
-                                          VT_DATE);
-  base::win::ScopedVariant var_end_time(TimeToUTCVariantTime(end_time),
-                                        VT_DATE);
-  for (size_t i = 0; i < indexers_.size(); ++i) {
-    indexers_[i]->DeleteUserHistoryBetween(var_begin_time, var_end_time);
-  }
-}
-
 }  // namespace history

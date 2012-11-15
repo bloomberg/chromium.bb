@@ -5,6 +5,9 @@
 import "oaidl.idl";
 import "ocidl.idl";
 
+// This class is deprecated and will be removed once all existing
+// users are gone: see http://crbug.com/161116.
+
 [
   object,
   uuid(9C1100DD-51D4-4827-AE9F-3B8FAC4AED72),
@@ -33,13 +36,7 @@ interface IChromeHistoryIndexer : IUnknown {
                        [in] BSTR thumbnail_format,
                        [in] VARIANT thumbnail);
 
-  // This method is called by Chrome when the users delete their history.
-  // |begin_time| - Represents the start time from which the history needs to be
-  //                deleted. It is given in UTC.
-  // |end_time| - Represents the end time until when the history needs to be
-  //                deleted. It is given in UTC
-  // If both begin_time and end_time are '0', full user history needs to be
-  // deleted.
+  // This method isn't used anymore.
   HRESULT DeleteUserHistoryBetween([in] VARIANT begin_time,
                                    [in] VARIANT end_time);
 };

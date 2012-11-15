@@ -2658,9 +2658,6 @@ void HistoryBackend::ExpireHistoryBetween(
     db_->GetStartDate(&first_recorded_time_);
 
   request->ForwardResult();
-
-  if (history_publisher_.get() && restrict_urls.empty())
-    history_publisher_->DeleteUserHistoryBetween(begin_time, end_time);
 }
 
 void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
