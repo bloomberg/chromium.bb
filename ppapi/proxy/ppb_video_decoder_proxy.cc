@@ -155,6 +155,9 @@ PPB_VideoDecoder_Proxy::~PPB_VideoDecoder_Proxy() {
 }
 
 bool PPB_VideoDecoder_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+    return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_VideoDecoder_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBVideoDecoder_Create,

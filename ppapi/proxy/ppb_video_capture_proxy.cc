@@ -302,6 +302,9 @@ PP_Resource PPB_VideoCapture_Proxy::CreateProxyResource(PP_Instance instance) {
 }
 
 bool PPB_VideoCapture_Proxy::OnMessageReceived(const IPC::Message& msg) {
+ if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+   return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_VideoCapture_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBVideoCapture_Create, OnMsgCreate)
