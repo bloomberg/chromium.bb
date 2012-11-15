@@ -198,11 +198,11 @@ const Experiment::Choice kAshBootAnimationFunction[] = {
 };
 
 const Experiment::Choice kChromeCaptivePortalDetectionChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_FLAGS_SHILL_CAPTIVE_PORTAL_DETECTOR,
-    switches::kDisableChromeCaptivePortalDetector, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
   { IDS_FLAGS_CHROME_CAPTIVE_PORTAL_DETECTOR,
-    switches::kEnableChromeCaptivePortalDetector, ""}
+    switches::kEnableChromeCaptivePortalDetector, ""},
+  { IDS_FLAGS_SHILL_CAPTIVE_PORTAL_DETECTOR,
+    switches::kDisableChromeCaptivePortalDetector, ""}
 };
 #endif
 

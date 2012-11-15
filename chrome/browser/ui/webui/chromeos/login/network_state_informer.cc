@@ -5,13 +5,11 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "net/proxy/proxy_config.h"
 
 namespace {
@@ -36,9 +34,8 @@ NetworkStateInformer::NetworkStateInformer()
 NetworkStateInformer::~NetworkStateInformer() {
   CrosLibrary::Get()->GetNetworkLibrary()->
       RemoveNetworkManagerObserver(this);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableChromeCaptivePortalDetector) &&
-      chromeos::NetworkPortalDetector::GetInstance()) {
+  if (NetworkPortalDetector::IsEnabled() &&
+      NetworkPortalDetector::GetInstance()) {
     NetworkPortalDetector::GetInstance()->RemoveObserver(this);
   }
 }
@@ -48,9 +45,8 @@ void NetworkStateInformer::Init() {
   UpdateState(cros);
   cros->AddNetworkManagerObserver(this);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableChromeCaptivePortalDetector) &&
-      chromeos::NetworkPortalDetector::GetInstance()) {
+  if (NetworkPortalDetector::IsEnabled() &&
+      NetworkPortalDetector::GetInstance()) {
     NetworkPortalDetector::GetInstance()->AddObserver(this);
   }
 
@@ -194,8 +190,7 @@ NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
 
 bool NetworkStateInformer::IsRestrictedPool(const Network* network) {
   DCHECK(network);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableChromeCaptivePortalDetector)) {
+  if (NetworkPortalDetector::IsEnabled()) {
     NetworkPortalDetector::CaptivePortalState state =
         NetworkPortalDetector::GetInstance()->GetCaptivePortalState(network);
     return (state == NetworkPortalDetector::CAPTIVE_PORTAL_STATE_PORTAL);

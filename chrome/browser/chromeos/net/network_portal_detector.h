@@ -65,6 +65,9 @@ class NetworkPortalDetector
   // Gets the instance of the NetworkPortalDetector.
   static NetworkPortalDetector* GetInstance();
 
+  // Returns true is NetworkPortalDetector service is enabled.
+  static bool IsEnabled();
+
  private:
   friend class NetworkPortalDetectorTest;
 
