@@ -74,7 +74,7 @@ deps = {
     'src/third_party/libsrtp':
         'https://chromium.googlesource.com/chromium/deps/libsrtp.git@d910efb188f594e12f408012c451fc5a027886a1',
     'src/third_party/libvpx':
-        'https://chromium.googlesource.com/chromium/deps/libvpx.git@e7504d180555e82e0c2701dc47fbcbd2abf5f677',
+        'https://chromium.googlesource.com/chromium/deps/libvpx.git@83d2f0fd2cf05bc0c31ad217ed7675c2f1e92e4d',
     'src/third_party/libyuv':
         'https://chromium.googlesource.com/external/libyuv.git@95730719503137a7db61a105bec02220f9ed159e',
     'src/third_party/mozc/chrome/chromeos/renderer':
