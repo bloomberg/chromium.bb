@@ -87,11 +87,13 @@ class DriveFileSyncService
 
   struct RemoteChange {
     int64 changestamp;
+    std::string resource_id;
     fileapi::FileSystemURL url;
     fileapi::FileChange change;
 
     RemoteChange();
     RemoteChange(int64 changestamp,
+                 const std::string& resource_id,
                  const fileapi::FileSystemURL& url,
                  const fileapi::FileChange& change);
     ~RemoteChange();
@@ -145,8 +147,7 @@ class DriveFileSyncService
   void TryResumePendingTasks();
   void AppendNewRemoteChange(const GURL& origin,
                              google_apis::DocumentEntry* entry,
-                             int64 changestamp,
-                             bool batch_sync);
+                             int64 changestamp);
   void DidGetBatchSyncListData(scoped_ptr<TaskToken> token,
                                const GURL& origin,
                                google_apis::GDataErrorCode error,

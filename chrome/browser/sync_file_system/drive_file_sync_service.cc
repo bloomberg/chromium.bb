@@ -357,8 +357,7 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
   typedef ScopedVector<google_apis::DocumentEntry>::const_iterator iterator;
   for (iterator itr = feed->entries().begin();
        itr != feed->entries().end(); ++itr) {
-    AppendNewRemoteChange(origin, *itr, largest_changestamp,
-                          true /* batch_sync */);
+    AppendNewRemoteChange(origin, *itr, largest_changestamp);
   }
 
   GURL next_feed_url;
@@ -376,8 +375,7 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
 void DriveFileSyncService::AppendNewRemoteChange(
     const GURL& origin,
     google_apis::DocumentEntry* entry,
-    int64 changestamp,
-    bool is_batch_sync) {
+    int64 changestamp) {
   FilePath path = FilePath::FromUTF8Unsafe(UTF16ToUTF8(entry->title()));
   fileapi::FileSystemURL url(
       fileapi::CreateSyncableFileSystemURL(origin, kServiceName, path));
@@ -396,7 +394,7 @@ void DriveFileSyncService::AppendNewRemoteChange(
   }
 
   fileapi::FileChange file_change(change_type, file_type);
-  RemoteChange change(changestamp, url, file_change);
+  RemoteChange change(changestamp, entry->resource_id(), url, file_change);
 
   std::pair<PathToChangeStamp::iterator, bool> inserted =
       changestamp_map_[url.origin()].insert(
@@ -419,9 +417,11 @@ DriveFileSyncService::RemoteChange::RemoteChange()
 
 DriveFileSyncService::RemoteChange::RemoteChange(
     int64 changestamp,
+    const std::string& resource_id,
     const fileapi::FileSystemURL& url,
     const fileapi::FileChange& change)
     : changestamp(changestamp),
+      resource_id(resource_id),
       url(url),
       change(change) {
 }
