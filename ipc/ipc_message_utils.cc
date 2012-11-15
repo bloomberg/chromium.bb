@@ -713,6 +713,7 @@ void ParamTraits<LogData>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.sent);
   WriteParam(m, p.receive);
   WriteParam(m, p.dispatch);
+  WriteParam(m, p.message_name);
   WriteParam(m, p.params);
 }
 
@@ -727,6 +728,7 @@ bool ParamTraits<LogData>::Read(const Message* m,
       ReadParam(m, iter, &r->sent) &&
       ReadParam(m, iter, &r->receive) &&
       ReadParam(m, iter, &r->dispatch) &&
+      ReadParam(m, iter, &r->message_name) &&
       ReadParam(m, iter, &r->params);
 }
 
