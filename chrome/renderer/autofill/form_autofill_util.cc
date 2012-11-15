@@ -492,6 +492,8 @@ void FillFormField(WebKit::WebFormControlElement* field,
     if (is_initiating_node) {
       int length = input_element->value().length();
       input_element->setSelectionRange(length, length);
+      // Clear the current IME composition (the underline), if there is one.
+      input_element->document().frame()->unmarkText();
     }
   } else {
     DCHECK(IsSelectElement(*field));
