@@ -40,10 +40,9 @@ class MediaTransferProtocolManager {
   typedef base::Callback<void(const std::vector<MtpFileEntry>& file_entries,
                               bool error)> ReadDirectoryCallback;
 
-  // A callback to handle the result of ReadFileByPath/Id.
+  // A callback to handle the result of ReadFileChunkByPath/Id.
   // The first argument is a string containing the file data.
   // The second argument is true if there was an error.
-  // TODO(thestig) Consider using a file descriptor instead of the data.
   typedef base::Callback<void(const std::string& data,
                               bool error)> ReadFileCallback;
 
@@ -102,14 +101,20 @@ class MediaTransferProtocolManager {
                                  const ReadDirectoryCallback& callback) = 0;
 
   // Reads file data from |path| on |storage_handle| and runs |callback|.
-  virtual void ReadFileByPath(const std::string& storage_handle,
-                              const std::string& path,
-                              const ReadFileCallback& callback) = 0;
+  // Reads |count| bytes of data starting at |offset|.
+  virtual void ReadFileChunkByPath(const std::string& storage_handle,
+                                   const std::string& path,
+                                   uint32 offset,
+                                   uint32 count,
+                                   const ReadFileCallback& callback) = 0;
 
   // Reads file data from |file_id| on |storage_handle| and runs |callback|.
-  virtual void ReadFileById(const std::string& storage_handle,
-                            uint32 file_id,
-                            const ReadFileCallback& callback) = 0;
+  // Reads |count| bytes of data starting at |offset|.
+  virtual void ReadFileChunkById(const std::string& storage_handle,
+                                 uint32 file_id,
+                                 uint32 offset,
+                                 uint32 count,
+                                 const ReadFileCallback& callback) = 0;
 
   // Gets the file metadata for |path| on |storage_handle| and runs |callback|.
   virtual void GetFileInfoByPath(const std::string& storage_handle,

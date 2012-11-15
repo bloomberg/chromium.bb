@@ -184,18 +184,19 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // MediaTransferProtocolManager override.
-  virtual void ReadFileByPath(const std::string& storage_handle,
-                              const std::string& path,
-                              const ReadFileCallback& callback) OVERRIDE {
+  virtual void ReadFileChunkByPath(const std::string& storage_handle,
+                                   const std::string& path,
+                                   uint32 offset,
+                                   uint32 count,
+                                   const ReadFileCallback& callback) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!ContainsKey(handles_, storage_handle)) {
       callback.Run(std::string(), true);
       return;
     }
     read_file_callbacks_.push(callback);
-    mtp_client_->ReadFileByPath(
-        storage_handle,
-        path,
+    mtp_client_->ReadFileChunkByPath(
+        storage_handle, path, offset, count,
         base::Bind(&MediaTransferProtocolManagerImpl::OnReadFile,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&MediaTransferProtocolManagerImpl::OnReadFileError,
@@ -203,18 +204,19 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // MediaTransferProtocolManager override.
-  virtual void ReadFileById(const std::string& storage_handle,
-                            uint32 file_id,
-                            const ReadFileCallback& callback) OVERRIDE {
+  virtual void ReadFileChunkById(const std::string& storage_handle,
+                                 uint32 file_id,
+                                 uint32 offset,
+                                 uint32 count,
+                                 const ReadFileCallback& callback) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!ContainsKey(handles_, storage_handle)) {
       callback.Run(std::string(), true);
       return;
     }
     read_file_callbacks_.push(callback);
-    mtp_client_->ReadFileById(
-        storage_handle,
-        file_id,
+    mtp_client_->ReadFileChunkById(
+        storage_handle, file_id, offset, count,
         base::Bind(&MediaTransferProtocolManagerImpl::OnReadFile,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&MediaTransferProtocolManagerImpl::OnReadFileError,

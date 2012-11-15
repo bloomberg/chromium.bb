@@ -314,11 +314,14 @@ class ReadFileWorker
   // Constructed on |media_task_runner_| thread.
   ReadFileWorker(const std::string& handle,
                  const std::string& path,
+                 uint32 total_size,
                  SequencedTaskRunner* task_runner,
                  WaitableEvent* task_completed_event,
                  WaitableEvent* shutdown_event)
       : device_handle_(handle),
         path_(path),
+        total_bytes_(total_size),
+        error_occurred_(false),
         media_task_runner_(task_runner),
         on_task_completed_event_(task_completed_event),
         on_shutdown_event_(shutdown_event) {
@@ -335,13 +338,14 @@ class ReadFileWorker
       return;
     }
 
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            Bind(&ReadFileWorker::DoWorkOnUIThread, this));
-    on_task_completed_event_->Wait();
+    while (!error_occurred_ && (data_.size() < total_bytes_)) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                              Bind(&ReadFileWorker::DoWorkOnUIThread, this));
+      on_task_completed_event_->Wait();
+    }
   }
 
-  // Returns the media file contents received by ReadFileByPath() callback
-  // function.
+  // Returns the media file contents received from mtpd.
   const std::string& data() const { return data_; }
 
   // Returns the |media_task_runner_| associated with this worker object.
@@ -365,8 +369,9 @@ class ReadFileWorker
   // contents.
   void DoWorkOnUIThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    GetMediaTransferProtocolManager()->ReadFileByPath(
-      device_handle_, path_, Bind(&ReadFileWorker::OnDidWorkOnUIThread, this));
+    GetMediaTransferProtocolManager()->ReadFileChunkByPath(
+        device_handle_, path_, data_.size(), BytesToRead(),
+        Bind(&ReadFileWorker::OnDidWorkOnUIThread, this));
   }
 
   // Query callback for DoWorkOnUIThread(). On success, |data| has the media
@@ -374,26 +379,45 @@ class ReadFileWorker
   // to unblock |media_task_runner_|.
   void OnDidWorkOnUIThread(const std::string& data, bool error) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    error_occurred_ = error;
     if (!error) {
-      // TODO(kmadhusu): Data could be really huge. Consider passing data by
-      // pointer/ref rather than by value here to avoid an extra data copy.
-      data_ = data;
+      if ((BytesToRead() == data.size())) {
+        // TODO(kmadhusu): Data could be really huge. Consider passing data by
+        // pointer/ref rather than by value here to avoid an extra data copy.
+        data_.append(data);
+      } else {
+        NOTREACHED();
+        error_occurred_ = true;
+      }
     }
     on_task_completed_event_->Signal();
   }
 
-  // Stores the device unique identifier to query the device.
+  uint32 BytesToRead() const {
+    // Read data in 1 MB chunks.
+    static const uint32 kReadChunkSize = 1024 * 1024;
+    return std::min(kReadChunkSize,
+                    total_bytes_ - static_cast<uint32>(data_.size()));
+  }
+
+  // The device unique identifier to query the device.
   const std::string device_handle_;
 
-  // Stores the media device file path.
+  // The media device file path.
   const std::string path_;
 
-  // Stores a reference to |media_task_runner_| to destruct this object on the
-  // correct thread.
-  scoped_refptr<SequencedTaskRunner> media_task_runner_;
-
-  // Stores the result of ReadFileByPath() callback.
+  // The data from mtpd.
   std::string data_;
+
+  // Number of bytes to read.
+  const uint32 total_bytes_;
+
+  // Whether an error occurred during file transfer.
+  bool error_occurred_;
+
+  // A reference to |media_task_runner_| to destruct this object on the correct
+  // thread.
+  scoped_refptr<SequencedTaskRunner> media_task_runner_;
 
   // |media_task_runner_| can wait on this event until the required operation
   // is complete.
@@ -770,9 +794,17 @@ PlatformFileError MTPDeviceDelegateImplLinux::CreateSnapshotFile(
   if (!LazyInit())
     return base::PLATFORM_FILE_ERROR_FAILED;
 
+  PlatformFileError error = GetFileInfo(device_file_path, file_info);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+
+  if (file_info->size <= 0 || file_info->size > kuint32max)
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
   scoped_refptr<ReadFileWorker> worker(new ReadFileWorker(
       device_handle_,
       GetDeviceRelativePath(device_path_, device_file_path.value()),
+      file_info->size,
       media_task_runner_, &on_task_completed_event_, &on_shutdown_event_));
   worker->Run();
 
@@ -783,8 +815,6 @@ PlatformFileError MTPDeviceDelegateImplLinux::CreateSnapshotFile(
                            data_size) != data_size) {
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
-
-  PlatformFileError error = GetFileInfo(device_file_path, file_info);
 
   // Modify the last modified time to null. This prevents the time stamp
   // verfication in LocalFileStreamReader.

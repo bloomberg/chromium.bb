@@ -131,14 +131,20 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   // MediaTransferProtocolDaemonClient override.
-  virtual void ReadFileByPath(const std::string& handle,
-                              const std::string& path,
-                              const ReadFileCallback& callback,
-                              const ErrorCallback& error_callback) OVERRIDE {
-    dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kReadFileByPath);
+  virtual void ReadFileChunkByPath(
+      const std::string& handle,
+      const std::string& path,
+      uint32 offset,
+      uint32 length,
+      const ReadFileCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
+    // TODO(thestig) Use the method constant when available.
+    dbus::MethodCall method_call(mtpd::kMtpdInterface, "ReadFileChunkByPath");
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
     writer.AppendString(path);
+    writer.AppendUint32(offset);
+    writer.AppendUint32(length);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&MediaTransferProtocolDaemonClientImpl::OnReadFile,
@@ -148,14 +154,19 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   // MediaTransferProtocolDaemonClient override.
-  virtual void ReadFileById(const std::string& handle,
-                            uint32 file_id,
-                            const ReadFileCallback& callback,
-                            const ErrorCallback& error_callback) OVERRIDE {
-    dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kReadFileById);
+  virtual void ReadFileChunkById(const std::string& handle,
+                                 uint32 file_id,
+                                 uint32 offset,
+                                 uint32 length,
+                                 const ReadFileCallback& callback,
+                                 const ErrorCallback& error_callback) OVERRIDE {
+    // TODO(thestig) Use the method constant when available.
+    dbus::MethodCall method_call(mtpd::kMtpdInterface, "ReadFileChunkById");
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
     writer.AppendUint32(file_id);
+    writer.AppendUint32(offset);
+    writer.AppendUint32(length);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&MediaTransferProtocolDaemonClientImpl::OnReadFile,
@@ -427,14 +438,20 @@ class MediaTransferProtocolDaemonClientStubImpl
       uint32 file_id,
       const ReadDirectoryCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {}
-  virtual void ReadFileByPath(const std::string& handle,
-                              const std::string& path,
-                              const ReadFileCallback& callback,
-                              const ErrorCallback& error_callback) OVERRIDE {}
-  virtual void ReadFileById(const std::string& handle,
-                            uint32 file_id,
-                            const ReadFileCallback& callback,
-                            const ErrorCallback& error_callback) OVERRIDE {}
+  virtual void ReadFileChunkByPath(
+      const std::string& handle,
+      const std::string& path,
+      uint32 offset,
+      uint32 length,
+      const ReadFileCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {}
+  virtual void ReadFileChunkById(
+      const std::string& handle,
+      uint32 file_id,
+      uint32 offset,
+      uint32 length,
+      const ReadFileCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {}
   virtual void GetFileInfoByPath(
       const std::string& handle,
       const std::string& path,
