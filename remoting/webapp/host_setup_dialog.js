@@ -252,7 +252,7 @@ remoting.HostSetupDialog.prototype.startNewFlow_ = function(sequence) {
  * @private
  */
 remoting.HostSetupDialog.prototype.updateState_ = function() {
-  remoting.hostController.updateDom();
+  remoting.updateLocalHostState();
 
   /** @param {string} tag */
   function showProcessingMessage(tag) {

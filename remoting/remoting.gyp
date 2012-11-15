@@ -1276,7 +1276,7 @@
           'base/resources_unittest.cc',
           'host/plugin/host_script_object.cc',
           'webapp/client_screen.js',
-          'webapp/host_controller.js',
+          'webapp/host_list.js',
           'webapp/host_table_entry.js',
           'webapp/host_setup_dialog.js',
           'webapp/main.html',

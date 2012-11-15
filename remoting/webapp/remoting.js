@@ -106,7 +106,6 @@ remoting.onEmail = function(email) {
 // also if the user cancels pin entry or the connection in session mode.
 remoting.initDaemonUi = function () {
   remoting.hostController = new remoting.HostController();
-  remoting.hostController.updateDom();
   remoting.setMode(getAppStartupMode_());
   remoting.hostSetupDialog =
       new remoting.HostSetupDialog(remoting.hostController);
@@ -124,19 +123,26 @@ remoting.initDaemonUi = function () {
  */
 remoting.extractThisHostAndDisplay = function(success) {
   if (success) {
-    var display = function() {
-      var hostId = null;
-      if (remoting.hostController.localHost) {
-        hostId = remoting.hostController.localHost.hostId;
-      }
-      remoting.hostList.display(hostId);
-    };
-    remoting.hostController.onHostListRefresh(remoting.hostList, display);
+    remoting.updateLocalHostState();
   } else {
-    remoting.hostController.setHost(null);
-    remoting.hostList.display(null);
+    remoting.hostList.setLocalHostStateAndId(
+        remoting.hostController.state(), null);
+    remoting.hostList.display();
   }
 };
+
+/**
+ * Fetches local host state and updates host list accordingly.
+ */
+remoting.updateLocalHostState = function() {
+  /** @param {string?} localHostId */
+  var onHostId = function(localHostId) {
+    remoting.hostList.setLocalHostStateAndId(
+        remoting.hostController.state(), localHostId);
+    remoting.hostList.display();
+  };
+  remoting.hostController.getLocalHostId(onHostId);
+}
 
 /**
  * Log information about the current extension.

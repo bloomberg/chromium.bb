@@ -14,8 +14,8 @@ remoting.HostController = function() {
   /** @type {HTMLElement} @private */
   this.container_ = document.getElementById('daemon-plugin-container');
   this.container_.appendChild(this.plugin_);
-  /** @type {remoting.Host?} */
-  this.localHost = null;
+  /** @type {string?} */
+  this.localHostId_ = null;
   /** @param {string} version */
   var printVersion = function(version) {
     if (version == '') {
@@ -74,41 +74,6 @@ remoting.HostController.prototype.getConsent = function(callback) {
 };
 
 /**
- * Show or hide daemon-specific parts of the UI.
- * @return {void} Nothing.
- */
-remoting.HostController.prototype.updateDom = function() {
-  var match = '';
-  var state = this.state();
-  var enabled = (state == remoting.HostController.State.STARTING) ||
-      (state == remoting.HostController.State.STARTED);
-  var supported = (state != remoting.HostController.State.NOT_IMPLEMENTED);
-  remoting.updateModalUi(enabled ? 'enabled' : 'disabled', 'data-daemon-state');
-  document.getElementById('daemon-control').hidden = !supported;
-  var element = document.getElementById('host-list-empty-hosting-supported');
-  element.hidden = !supported;
-  element = document.getElementById('host-list-empty-hosting-unsupported');
-  element.hidden = supported;
-};
-
-/**
- * Set tool-tips for the 'connect' action. We can't just set this on the
- * parent element because the button has no tool-tip, and therefore would
- * inherit connectStr.
- *
- * return {void} Nothing.
- */
-remoting.HostController.prototype.setTooltips = function() {
-  var connectStr = '';
-  if (this.localHost) {
-    chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_CONNECT',
-                           this.localHost.hostName);
-  }
-  document.getElementById('this-host-name').title = connectStr;
-  document.getElementById('this-host-icon').title = connectStr;
-};
-
-/**
  * Registers and starts the host.
  * @param {string} hostPin Host PIN.
  * @param {boolean} consent The user's consent to crash dump reporting.
@@ -143,20 +108,10 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
    *  @param {string} publicKey */
   function onStarted(callback, result, hostName, publicKey) {
     if (result == remoting.HostController.AsyncResult.OK) {
-      // Create a dummy remoting.Host instance to represent the local host.
-      // Refreshing the list is no good in general, because the directory
-      // information won't be in sync for several seconds. We don't know the
-      // host JID, but it can be missing from the cache with no ill effects.
-      // It will be refreshed if the user tries to connect to the local host,
-      // and we hope that the directory will have been updated by that point.
-      var localHost = new remoting.Host();
-      localHost.hostName = hostName;
-      localHost.hostId = newHostId;
-      localHost.publicKey = publicKey;
-      localHost.status = 'ONLINE';
-      that.setHost(localHost);
-      remoting.hostList.addHost(localHost);
+      that.localHostId_ = newHostId;
+      remoting.hostList.onLocalHostStarted(hostName, newHostId, publicKey);
     } else {
+      that.localHostId_ = null;
       // Unregister the host if we failed to start it.
       remoting.HostList.unregisterHostById(newHostId);
     }
@@ -247,8 +202,8 @@ remoting.HostController.prototype.stop = function(callback) {
   /** @param {remoting.HostController.AsyncResult} result */
   function onStopped(result) {
     if (result == remoting.HostController.AsyncResult.OK &&
-        that.localHost && that.localHost.hostId) {
-      remoting.HostList.unregisterHostById(that.localHost.hostId);
+        that.localHostId_) {
+      remoting.HostList.unregisterHostById(that.localHostId_);
     }
     callback(result);
   };
@@ -311,71 +266,28 @@ remoting.HostController.prototype.updatePin = function(newPin, callback) {
 };
 
 /**
- * Set the remoting.Host instance (retrieved from the Chromoting service)
- * that corresponds to the local computer, if any.
- *
- * @param {remoting.Host?} host The host, or null if not registered.
- * @return {void} Nothing.
- */
-remoting.HostController.prototype.setHost = function(host) {
-  this.localHost = host;
-  this.setTooltips();
-  /** @type {remoting.HostController} */
-  var that = this;
-  if (host) {
-    /** @param {remoting.HostTableEntry} host */
-    var renameHost = function(host) {
-      remoting.hostList.renameHost(host);
-      that.setTooltips();
-    };
-    if (!this.hostTableEntry_) {
-      /** @type {remoting.HostTableEntry} @private */
-      this.hostTableEntry_ = new remoting.HostTableEntry();
-      this.hostTableEntry_.init(host,
-                                document.getElementById('this-host-connect'),
-                                document.getElementById('this-host-name'),
-                                document.getElementById('this-host-rename'),
-                                renameHost);
-    } else {
-      // TODO(jamiewalch): This is hack to prevent multiple click handlers being
-      // registered for the same DOM elements if this method is called more than
-      // once. A better solution would be to let HostTable create the daemon row
-      // like it creates the rows for non-local hosts.
-      this.hostTableEntry_.host = host;
-    }
-  } else {
-    this.hostTableEntry_ = null;
-  }
-};
-
-/**
  * Update the internal state so that the local host can be correctly filtered
  * out of the host list.
  *
- * @param {remoting.HostList} hostList The new host list, returned by the
- *     Chromoting service.
- * @param {function():void} onDone Completion callback.
+ * @param {function(string?):void} onDone Completion callback.
  */
-remoting.HostController.prototype.onHostListRefresh =
-    function(hostList, onDone) {
+remoting.HostController.prototype.getLocalHostId = function(onDone) {
   /** @type {remoting.HostController} */
   var that = this;
   /** @param {string} configStr */
   function onConfig(configStr) {
     var config = parseHostConfig_(configStr);
     if (config) {
-      var hostId = config['host_id'];
-      that.setHost(hostList.getHostForId(hostId));
+      that.localHostId_ = config['host_id'];
+      onDone(that.localHostId_);
     } else {
-      that.setHost(null);
+      onDone(null);
     }
-    onDone();
   };
   try {
     this.plugin_.getDaemonConfig(onConfig);
   } catch (err) {
-    this.setHost(null);
-    onDone();
+    onDone(null);
   }
 };
 
