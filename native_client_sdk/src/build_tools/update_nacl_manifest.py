@@ -14,6 +14,7 @@ import buildbot_common
 import csv
 import cStringIO
 import email
+import json
 import manifest_util
 import optparse
 import os
@@ -193,8 +194,9 @@ class RealDelegate(Delegate):
 
   def GetTrunkRevision(self, version):
     """See Delegate.GetTrunkRevision"""
-    url = 'http://omahaproxy.appspot.com/revision?version=%s' % (version,)
-    return 'trunk.%s' % (urllib2.urlopen(url).read(),)
+    url = 'http://omahaproxy.appspot.com/revision.json?version=%s' % (version,)
+    data = json.loads(urllib2.urlopen(url).read())
+    return 'trunk.%s' % int(data['chromium_revision'])
 
   def GsUtil_ls(self, url):
     """See Delegate.GsUtil_ls"""

@@ -569,5 +569,20 @@ class TestUpdateVitals(unittest.TestCase):
     self.assertEqual(archive['checksum']['sha1'], self.sha1)
 
 
+class TestRealDelegate(unittest.TestCase):
+  def setUp(self):
+    self.delegate = update_nacl_manifest.RealDelegate()
+
+  def testGetTrunkRevision(self):
+    revision_dict = {
+      '21.0.1180.80': '151582',
+      '23.0.1271.89': '167132',
+      '24.0.1305.4': '164971',
+    }
+    for version, revision in revision_dict.iteritems():
+      self.assertEqual('trunk.%s' % revision,
+                       self.delegate.GetTrunkRevision(version))
+
+
 if __name__ == '__main__':
   sys.exit(unittest.main())
