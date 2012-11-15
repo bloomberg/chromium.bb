@@ -448,7 +448,7 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
 
 #if defined(OS_ANDROID)
 void ReleaseMediaResources() {
-  test_environment->media_player_manager()->ReleaseMediaResources();
+  test_environment->media_player_manager()->ReleaseMediaResourcesIfNotPlaying();
 }
 #endif
 
