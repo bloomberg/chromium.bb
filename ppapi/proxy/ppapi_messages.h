@@ -1417,19 +1417,6 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlashDeviceID_Get,
                     int32 /* routing_id */,
                     PP_Resource /* resource */)
 
-// PPB_Flash_Menu
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlashMenu_Create,
-                           PP_Instance /* instance */,
-                           ppapi::proxy::SerializedFlashMenu /* menu_data */,
-                           ppapi::HostResource /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBFlashMenu_Show,
-                           ppapi::HostResource /* menu */,
-                           PP_Point /* location */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPBFlashMenu_ShowACK,
-                    ppapi::HostResource /* menu */,
-                    int32_t /* selected_id */,
-                    int32_t /* result */)
-
 // PPB_Flash_MessageLoop.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlashMessageLoop_Create,
                            PP_Instance /* instance */,
@@ -1722,6 +1709,21 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_FlashFontFile_GetFontTable,
                      uint32_t /* table */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FlashFontFile_GetFontTableReply,
                      std::string /* output */)
+
+// FlashMenu ------------------------------------------------------------------
+
+// Creates the flash menu with the given data.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_FlashMenu_Create,
+                     ppapi::proxy::SerializedFlashMenu /* menu_data */)
+
+// Shows the menu at the given location relative to the plugin instance.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_FlashMenu_Show,
+                     PP_Point /* location */)
+
+// Reply to a show command. If the resource reply is PP_OK, the selected_id
+// will be the menu item ID chosen by the user.
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FlashMenu_ShowReply,
+                     int32_t /* selected_id */)
 
 // Flash functions.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Flash_Create)

@@ -55,8 +55,7 @@ PROXIED_IFACE(NoAPIName,
               PPB_FLASH_FONTFILE_INTERFACE_0_1,
               PPB_Flash_FontFile_0_1)
 
-PROXIED_API(PPB_Flash_Menu)
-PROXIED_IFACE(PPB_Flash_Menu,
+PROXIED_IFACE(NoAPIName,
               PPB_FLASH_MENU_INTERFACE_0_2,
               PPB_Flash_Menu_0_2)
 

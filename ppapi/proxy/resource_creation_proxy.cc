@@ -12,18 +12,18 @@
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/flash_device_id_resource.h"
 #include "ppapi/proxy/flash_font_file_resource.h"
+#include "ppapi/proxy/flash_menu_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_audio_proxy.h"
-#include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_broker_proxy.h"
+#include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_file_io_proxy.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/ppb_file_system_proxy.h"
-#include "ppapi/proxy/ppb_flash_menu_proxy.h"
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
@@ -321,7 +321,11 @@ PP_Resource ResourceCreationProxy::CreateFlashFontFile(
 PP_Resource ResourceCreationProxy::CreateFlashMenu(
     PP_Instance instance,
     const PP_Flash_Menu* menu_data) {
-  return PPB_Flash_Menu_Proxy::CreateProxyResource(instance, menu_data);
+  scoped_refptr<FlashMenuResource> flash_menu(
+      new FlashMenuResource(GetConnection(), instance));
+  if (!flash_menu->Initialize(menu_data))
+    return 0;
+  return flash_menu->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateFlashMessageLoop(

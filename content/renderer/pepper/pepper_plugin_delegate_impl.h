@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
-#include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper/pepper_parent_context_provider.h"
@@ -27,7 +26,6 @@
 #include "ppapi/shared_impl/private/udp_socket_private_impl.h"
 #include "ui/base/ime/text_input_type.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
 
 class FilePath;
 class TransportDIB;
@@ -77,8 +75,7 @@ class PepperPluginDelegateImpl
     : public webkit::ppapi::PluginDelegate,
       public base::SupportsWeakPtr<PepperPluginDelegateImpl>,
       public PepperParentContextProvider,
-      public RenderViewObserver,
-      public ContextMenuClient {
+      public RenderViewObserver {
  public:
   explicit PepperPluginDelegateImpl(RenderViewImpl* render_view);
   virtual ~PepperPluginDelegateImpl();
@@ -356,11 +353,6 @@ class PepperPluginDelegateImpl
   virtual bool X509CertificateParseDER(
       const std::vector<char>& der,
       ppapi::PPB_X509Certificate_Fields* fields) OVERRIDE;
-
-  virtual int32_t ShowContextMenu(
-      webkit::ppapi::PluginInstance* instance,
-      webkit::ppapi::PPB_Flash_Menu_Impl* menu,
-      const gfx::Point& position) OVERRIDE;
   virtual webkit::ppapi::FullscreenContainer*
       CreateFullscreenContainer(
           webkit::ppapi::PluginInstance* instance) OVERRIDE;
@@ -480,10 +472,6 @@ class PepperPluginDelegateImpl
       int plugin_child_id,
       bool is_external);
 
-  // ContextMenuClient implementation.
-  virtual void OnMenuAction(int request_id, unsigned action) OVERRIDE;
-  virtual void OnMenuClosed(int request_id) OVERRIDE;
-
   // Implementation of PepperParentContextProvider.
   virtual WebGraphicsContext3DCommandBufferImpl*
       GetParentContextForPlatformContext3D() OVERRIDE;
@@ -503,10 +491,6 @@ class PepperPluginDelegateImpl
                    MouseLockDispatcher::LockTarget*> LockTargetMap;
   LockTargetMap mouse_lock_instances_;
 
-  // Used to send a single context menu "completion" upon menu close.
-  bool has_saved_context_menu_action_;
-  unsigned saved_context_menu_action_;
-
   IDMap<AsyncOpenFileCallback> pending_async_open_files_;
 
   IDMap<webkit::ppapi::PPB_TCPSocket_Private_Impl> tcp_sockets_;
@@ -516,11 +500,6 @@ class PepperPluginDelegateImpl
   IDMap<ppapi::PPB_TCPServerSocket_Shared> tcp_server_sockets_;
 
   IDMap<ppapi::PPB_HostResolver_Shared> host_resolvers_;
-
-  // Maps context menu request IDs to the menu resource to receive the result.
-  typedef std::map<int, scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl> >
-      PendingContextMenuMap;
-  PendingContextMenuMap pending_context_menus_;
 
   typedef IDMap<scoped_refptr<PepperBrokerImpl>, IDMapOwnPointer> BrokerMap;
   BrokerMap pending_connect_broker_;

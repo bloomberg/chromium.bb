@@ -376,13 +376,6 @@ bool MockPluginDelegate::X509CertificateParseDER(
   return false;
 }
 
-int32_t MockPluginDelegate::ShowContextMenu(
-    PluginInstance* instance,
-    webkit::ppapi::PPB_Flash_Menu_Impl* menu,
-    const gfx::Point& position) {
-  return PP_ERROR_FAILED;
-}
-
 FullscreenContainer* MockPluginDelegate::CreateFullscreenContainer(
     PluginInstance* instance) {
   return NULL;

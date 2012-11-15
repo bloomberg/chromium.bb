@@ -178,11 +178,6 @@ class MockPluginDelegate : public PluginDelegate {
   virtual bool X509CertificateParseDER(
       const std::vector<char>& der,
       ::ppapi::PPB_X509Certificate_Fields* fields);
-
-  virtual int32_t ShowContextMenu(
-      PluginInstance* instance,
-      webkit::ppapi::PPB_Flash_Menu_Impl* menu,
-      const gfx::Point& position);
   virtual FullscreenContainer* CreateFullscreenContainer(
       PluginInstance* instance);
   virtual gfx::Size GetScreenSize();

@@ -13,6 +13,10 @@
 
 class FilePath;
 
+namespace gfx {
+class Point;
+}
+
 namespace IPC {
 struct ChannelHandle;
 }
@@ -91,6 +95,19 @@ class RendererPpapiHost {
   // restricted by user gestures). Returns false if the instance is invalid or
   // if there is no current user gesture.
   virtual bool HasUserGesture(PP_Instance instance) const = 0;
+
+  // Returns the routing ID for the render widget containing the given
+  // instance. This will take into account the current Flash fullscreen state,
+  // so if there is a Flash fullscreen instance active, this will return the
+  // routing ID of the fullscreen widget. Returns 0 on failure.
+  virtual int GetRoutingIDForWidget(PP_Instance instance) const = 0;
+
+  // Converts the given plugin coordinate to the containing RenderView. This
+  // will take into account the current Flash fullscreen state so will use
+  // the fullscreen widget if it's displayed.
+  virtual gfx::Point PluginPointToRenderView(
+      PP_Instance instance,
+      const gfx::Point& pt) const = 0;
 
   // Shares a file handle (HANDLE / file descriptor) with the remote side. It
   // returns a handle that should be sent in exactly one IPC message. Upon

@@ -4,6 +4,7 @@
 
 #include "content/renderer/pepper/mock_renderer_ppapi_host.h"
 
+#include "ui/gfx/point.h"
 
 namespace content {
 
@@ -48,6 +49,16 @@ WebKit::WebPluginContainer* MockRendererPpapiHost::GetContainerForInstance(
 
 bool MockRendererPpapiHost::HasUserGesture(PP_Instance instance) const {
   return has_user_gesture_;
+}
+
+int MockRendererPpapiHost::GetRoutingIDForWidget(PP_Instance instance) const {
+  return 0;
+}
+
+gfx::Point MockRendererPpapiHost::PluginPointToRenderView(
+    PP_Instance instance,
+    const gfx::Point& pt) const {
+  return gfx::Point();
 }
 
 IPC::PlatformFileForTransit MockRendererPpapiHost::ShareHandleWithRemote(

@@ -46,6 +46,10 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   virtual WebKit::WebPluginContainer* GetContainerForInstance(
       PP_Instance instance) const OVERRIDE;
   virtual bool HasUserGesture(PP_Instance instance) const OVERRIDE;
+  virtual int GetRoutingIDForWidget(PP_Instance instance) const OVERRIDE;
+  virtual gfx::Point PluginPointToRenderView(
+      PP_Instance instance,
+      const gfx::Point& pt) const OVERRIDE;
   virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
       bool should_close_source) OVERRIDE;

@@ -92,7 +92,6 @@ class FullscreenContainer;
 class PluginInstance;
 class PluginModule;
 class PPB_Broker_Impl;
-class PPB_Flash_Menu_Impl;
 class PPB_TCPSocket_Private_Impl;
 class PPB_UDPSocket_Private_Impl;
 
@@ -570,13 +569,6 @@ class PluginDelegate {
   virtual bool X509CertificateParseDER(
       const std::vector<char>& der,
       ::ppapi::PPB_X509Certificate_Fields* fields) = 0;
-
-  // Show the given context menu at the given position (in the plugin's
-  // coordinates).
-  virtual int32_t ShowContextMenu(
-      PluginInstance* instance,
-      webkit::ppapi::PPB_Flash_Menu_Impl* menu,
-      const gfx::Point& position) = 0;
 
   // Create a fullscreen container for a plugin instance. This effectively
   // switches the plugin to fullscreen.

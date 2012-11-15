@@ -10,7 +10,11 @@
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "ppapi/proxy/host_dispatcher.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "ui/gfx/point.h"
+#include "webkit/plugins/ppapi/fullscreen_container.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -173,6 +177,40 @@ bool RendererPpapiHostImpl::HasUserGesture(PP_Instance instance) const {
           ppapi::PERMISSION_BYPASS_USER_GESTURE))
     return true;
   return instance_object->IsProcessingUserGesture();
+}
+
+int RendererPpapiHostImpl::GetRoutingIDForWidget(PP_Instance instance) const {
+  webkit::ppapi::PluginInstance* plugin_instance =
+      GetAndValidateInstance(instance);
+  if (!plugin_instance)
+    return 0;
+  if (plugin_instance->flash_fullscreen()) {
+    webkit::ppapi::FullscreenContainer* container =
+        plugin_instance->fullscreen_container();
+    return static_cast<RenderWidgetFullscreenPepper*>(container)->routing_id();
+  }
+  return GetRenderViewForInstance(instance)->GetRoutingID();
+}
+
+gfx::Point RendererPpapiHostImpl::PluginPointToRenderView(
+    PP_Instance instance,
+    const gfx::Point& pt) const {
+  webkit::ppapi::PluginInstance* plugin_instance =
+      GetAndValidateInstance(instance);
+  if (!plugin_instance)
+    return pt;
+
+  RenderViewImpl* render_view = static_cast<RenderViewImpl*>(
+      GetRenderViewForInstance(instance));
+  if (plugin_instance->view_data().is_fullscreen ||
+      plugin_instance->flash_fullscreen()) {
+    WebKit::WebRect window_rect = render_view->windowRect();
+    WebKit::WebRect screen_rect = render_view->screenInfo().rect;
+    return gfx::Point(pt.x() - window_rect.x + screen_rect.x,
+                      pt.y() - window_rect.y + screen_rect.y);
+  }
+  return gfx::Point(pt.x() + plugin_instance->view_data().rect.point.x,
+                    pt.y() + plugin_instance->view_data().rect.point.y);
 }
 
 IPC::PlatformFileForTransit RendererPpapiHostImpl::ShareHandleWithRemote(
