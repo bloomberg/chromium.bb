@@ -10,11 +10,12 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/common/cancelable_request.h"
+#include "chrome/common/cancelable_task_tracker.h"
 
 namespace chromeos {
 
 // ChromeOSVersionLoader loads the version of Chrome OS from the file system.
-// Loading is done asynchronously on the file thread. Once loaded,
+// Loading is done asynchronously in the blocking thread pool. Once loaded,
 // ChromeOSVersionLoader callback to a method of your choice with the version
 // (or an empty string if the version couldn't be found).
 // To use ChromeOSVersionLoader do the following:
@@ -40,27 +41,18 @@ class VersionLoader : public CancelableRequestProvider {
   };
 
   // Signature
-  typedef base::Callback<void(Handle, const std::string&)> GetVersionCallback;
-  typedef CancelableRequest<GetVersionCallback> GetVersionRequest;
-
-  typedef base::Callback<void(Handle, const std::string&)> GetFirmwareCallback;
-  typedef CancelableRequest<GetFirmwareCallback> GetFirmwareRequest;
+  typedef base::Callback<void(const std::string&)> GetVersionCallback;
+  typedef base::Callback<void(const std::string&)> GetFirmwareCallback;
 
   // Asynchronously requests the version.
   // If |full_version| is true version string with extra info is extracted,
   // otherwise it's in short format x.x.xx.x.
-  Handle GetVersion(CancelableRequestConsumerBase* consumer,
-                    const GetVersionCallback& callback,
-                    VersionFormat format);
+  CancelableTaskTracker::TaskId GetVersion(VersionFormat format,
+                                           const GetVersionCallback& callback,
+                                           CancelableTaskTracker* tracker);
 
-  Handle GetFirmware(CancelableRequestConsumerBase* consumer,
-                     const GetFirmwareCallback& callback);
-
-  // Parse the version information as a Chrome platfrom, not Chrome OS
-  // TODO(rkc): Change this and everywhere it is used once we switch Chrome OS
-  // over to xx.yyy.zz version numbers instead of 0.xx.yyy.zz
-  // Refer to http://code.google.com/p/chromium-os/issues/detail?id=15789
-  void EnablePlatformVersions(bool enable);
+  CancelableTaskTracker::TaskId GetFirmware(const GetFirmwareCallback& callback,
+                                            CancelableTaskTracker* tracker);
 
   static const char kFullVersionPrefix[];
   static const char kVersionPrefix[];
@@ -71,21 +63,20 @@ class VersionLoader : public CancelableRequestProvider {
   FRIEND_TEST_ALL_PREFIXES(VersionLoaderTest, ParseVersion);
   FRIEND_TEST_ALL_PREFIXES(VersionLoaderTest, ParseFirmware);
 
-  // VersionLoader calls into the Backend on the file thread to load
+  // VersionLoader calls into the Backend in the blocking thread pool to load
   // and extract the version.
   class Backend : public base::RefCountedThreadSafe<Backend> {
    public:
     Backend() {}
 
     // Calls ParseVersion to get the version # and notifies request.
-    // This is invoked on the file thread.
+    // This is invoked in the blocking thread pool.
     // If |full_version| is true then extra info is passed in version string.
-    void GetVersion(scoped_refptr<GetVersionRequest> request,
-                    VersionFormat format);
+    void GetVersion(VersionFormat format, std::string* version);
 
     // Calls ParseFirmware to get the firmware # and notifies request.
-    // This is invoked on the file thread.
-    void GetFirmware(scoped_refptr<GetFirmwareRequest> request);
+    // This is invoked in the blocking thread pool.
+    void GetFirmware(std::string* firmware);
 
    private:
     friend class base::RefCountedThreadSafe<Backend>;

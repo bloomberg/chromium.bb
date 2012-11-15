@@ -73,7 +73,7 @@ class VersionInfoUpdater : public policy::CloudPolicySubsystem::Observer,
                          bool reporting_hint);
 
   // Callback from chromeos::VersionLoader giving the version.
-  void OnVersion(VersionLoader::Handle handle, const std::string& version);
+  void OnVersion(const std::string& version);
   // Callback from chromeos::InfoLoader giving the boot times.
   void OnBootTimes(
       BootTimesLoader::Handle handle, BootTimesLoader::BootTimes boot_times);
@@ -84,7 +84,7 @@ class VersionInfoUpdater : public policy::CloudPolicySubsystem::Observer,
   // Handles asynchronously loading the version.
   VersionLoader version_loader_;
   // Used to request the version.
-  CancelableRequestConsumer version_consumer_;
+  CancelableTaskTracker tracker_;
 
   // Handles asynchronously loading the boot times.
   BootTimesLoader boot_times_loader_;
