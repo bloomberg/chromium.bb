@@ -47,9 +47,9 @@ tester.addAsyncTest('trusted_crash_during_startup', function(status) {
                         'Compile process could not be created');
       status.assert(begins_with(embed.lastError, expected_error));
     } else {
-      expected_error = ('NaCl module load failed: ServiceRuntime: ' +
-                        'command channel creation failed');
-      status.assertEqual(embed.lastError, expected_error);
+      // Just make sure that the Service Runtime fails to start.
+      expected_error = ('NaCl module load failed: ServiceRuntime: ');
+      status.assert(begins_with(embed.lastError, expected_error));
     }
     status.pass();
   }), true);
