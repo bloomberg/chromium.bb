@@ -53,6 +53,8 @@ public class ContentSettings {
     // retrieve the values. After setXXX, mEventHandler.syncSettingsLocked() needs to be called.
     //
     // TODO(mnaganov): populate with the complete set of legacy WebView settings.
+    // Note: If adding a new setting to this class, make sure to add it to the initFrom()
+    // method defined below.
 
     private int mTextSizePercent = 100;
     private String mStandardFontFamily = "sans-serif";
@@ -79,7 +81,7 @@ public class ContentSettings {
     private boolean mDomStorageEnabled = false;
 
     // Not accessed by the native side.
-    private String mDefaultUserAgent = "";
+    private final String mDefaultUserAgent;
     private boolean mSupportZoom = true;
     private boolean mBuiltInZoomControls = false;
     private boolean mDisplayZoomControls = true;
@@ -203,6 +205,7 @@ public class ContentSettings {
             // PERSONALITY_CHROME
             // Chrome has zooming enabled by default. These settings are not
             // set by the native code.
+            mDefaultUserAgent = ""; // Unused by PERSONALITY_CHROME but must be initialized.
             mBuiltInZoomControls = true;
             mDisplayZoomControls = false;
             syncFromNativeOnUiThread();
@@ -973,6 +976,42 @@ public class ContentSettings {
             return MAXIMUM_FONT_SIZE;
         }
         return size;
+    }
+
+    /**
+     * Sets the settings in this object to those from another
+     * ContentSettings.
+     * Required by WebView when we swap a in a new ContentViewCore
+     * to an existing AwContents (i.e. to support displaying popup
+     * windows in an already created WebView)
+     */
+    public void initFrom(ContentSettings settings) {
+        setTextZoom(settings.getTextZoom());
+        setStandardFontFamily(settings.getStandardFontFamily());
+        setFixedFontFamily(settings.getFixedFontFamily());
+        setSansSerifFontFamily(settings.getSansSerifFontFamily());
+        setSerifFontFamily(settings.getSerifFontFamily());
+        setCursiveFontFamily(settings.getCursiveFontFamily());
+        setFantasyFontFamily(settings.getFantasyFontFamily());
+        setDefaultTextEncodingName(settings.getDefaultTextEncodingName());
+        setUserAgentString(settings.getUserAgentString());
+        setMinimumFontSize(settings.getMinimumFontSize());
+        setMinimumLogicalFontSize(settings.getMinimumLogicalFontSize());
+        setDefaultFontSize(settings.getDefaultFontSize());
+        setDefaultFixedFontSize(settings.getDefaultFixedFontSize());
+        setLoadsImagesAutomatically(settings.getLoadsImagesAutomatically());
+        setImagesEnabled(settings.getImagesEnabled());
+        setJavaScriptEnabled(settings.getJavaScriptEnabled());
+        setAllowUniversalAccessFromFileURLs(settings.getAllowUniversalAccessFromFileURLs());
+        setAllowFileAccessFromFileURLs(settings.getAllowFileAccessFromFileURLs());
+        setJavaScriptCanOpenWindowsAutomatically(
+                settings.getJavaScriptCanOpenWindowsAutomatically());
+        setSupportMultipleWindows(settings.supportMultipleWindows());
+        setPluginState(settings.getPluginState());
+        setDomStorageEnabled(settings.getDomStorageEnabled());
+        setSupportZoom(settings.supportZoom());
+        setBuiltInZoomControls(settings.getBuiltInZoomControls());
+        setDisplayZoomControls(settings.getDisplayZoomControls());
     }
 
     /**
