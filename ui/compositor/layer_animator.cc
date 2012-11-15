@@ -88,104 +88,40 @@ LayerAnimator* LayerAnimator::CreateImplicitAnimator() {
   return new LayerAnimator(kDefaultTransitionDuration);
 }
 
-void LayerAnimator::SetTransform(const gfx::Transform& transform) {
-  base::TimeDelta duration = GetTransitionDuration();
-  scoped_ptr<LayerAnimationElement> element(
-      LayerAnimationElement::CreateTransformElement(transform, duration));
-  element->set_tween_type(tween_type_);
-  StartAnimation(new LayerAnimationSequence(element.release()));
+// This macro provides the implementation for the setter and getter (well,
+// the getter of the target value) for an animated property. For example,
+// it is used for the implementations of SetTransform and GetTargetTransform.
+// It is worth noting that SetFoo avoids invoking the usual animation machinery
+// if the transition duration is zero -- in this case we just set the property
+// on the layer animation delegate immediately.
+#define ANIMATED_PROPERTY(type, property, name, member_type, member)  \
+void LayerAnimator::Set##name(type value) {                           \
+  base::TimeDelta duration = GetTransitionDuration();                 \
+  if (duration == base::TimeDelta() && delegate()) {                  \
+    StopAnimatingProperty(LayerAnimationElement::property);           \
+    delegate()->Set##name##FromAnimation(value);                      \
+    return;                                                           \
+  }                                                                   \
+  scoped_ptr<LayerAnimationElement> element(                          \
+      LayerAnimationElement::Create##name##Element(value, duration)); \
+  element->set_tween_type(tween_type_);                               \
+  StartAnimation(new LayerAnimationSequence(element.release()));      \
+}                                                                     \
+                                                                      \
+member_type LayerAnimator::GetTarget##name() const {                  \
+  LayerAnimationElement::TargetValue target(delegate());              \
+  GetTargetValue(&target);                                            \
+  return target.member;                                               \
 }
 
-gfx::Transform LayerAnimator::GetTargetTransform() const {
-  LayerAnimationElement::TargetValue target(delegate());
-  GetTargetValue(&target);
-  return target.transform;
-}
-
-void LayerAnimator::SetBounds(const gfx::Rect& bounds) {
-  base::TimeDelta duration = GetTransitionDuration();
-  scoped_ptr<LayerAnimationElement> element(
-      LayerAnimationElement::CreateBoundsElement(bounds, duration));
-  element->set_tween_type(tween_type_);
-  StartAnimation(new LayerAnimationSequence(element.release()));
-}
-
-gfx::Rect LayerAnimator::GetTargetBounds() const {
-  LayerAnimationElement::TargetValue target(delegate());
-  GetTargetValue(&target);
-  return target.bounds;
-}
-
-void LayerAnimator::SetOpacity(float opacity) {
-  base::TimeDelta duration = GetTransitionDuration();
-  scoped_ptr<LayerAnimationElement> element(
-      LayerAnimationElement::CreateOpacityElement(opacity, duration));
-  element->set_tween_type(tween_type_);
-  StartAnimation(new LayerAnimationSequence(element.release()));
-}
-
-float LayerAnimator::GetTargetOpacity() const {
-  LayerAnimationElement::TargetValue target(delegate());
-  GetTargetValue(&target);
-  return target.opacity;
-}
-
-void LayerAnimator::SetVisibility(bool visibility) {
-  base::TimeDelta duration = GetTransitionDuration();
-
-  // Tween type doesn't matter for visibility.
-  StartAnimation(new LayerAnimationSequence(
-      LayerAnimationElement::CreateVisibilityElement(
-          visibility, duration)));
-}
-
-bool LayerAnimator::GetTargetVisibility() const {
-  LayerAnimationElement::TargetValue target(delegate());
-  GetTargetValue(&target);
-  return target.visibility;
-}
-
-void LayerAnimator::SetBrightness(float brightness) {
-  base::TimeDelta duration = GetTransitionDuration();
-  scoped_ptr<LayerAnimationElement> element(
-      LayerAnimationElement::CreateBrightnessElement(brightness, duration));
-  element->set_tween_type(tween_type_);
-  StartAnimation(new LayerAnimationSequence(element.release()));
-}
-
-float LayerAnimator::GetTargetBrightness() const {
-  LayerAnimationElement::TargetValue target(delegate());
-  GetTargetValue(&target);
-  return target.brightness;
-}
-
-void LayerAnimator::SetGrayscale(float grayscale) {
-  base::TimeDelta duration = GetTransitionDuration();
-  scoped_ptr<LayerAnimationElement> element(
-      LayerAnimationElement::CreateGrayscaleElement(grayscale, duration));
-  element->set_tween_type(tween_type_);
-  StartAnimation(new LayerAnimationSequence(element.release()));
-}
-
-float LayerAnimator::GetTargetGrayscale() const {
-  LayerAnimationElement::TargetValue target(delegate());
-  GetTargetValue(&target);
-  return target.grayscale;
-}
-
-void LayerAnimator::SetColor(SkColor color) {
-  base::TimeDelta duration = GetTransitionDuration();
-  scoped_ptr<LayerAnimationElement> element(
-      LayerAnimationElement::CreateColorElement(color, duration));
-  element->set_tween_type(tween_type_);
-  StartAnimation(new LayerAnimationSequence(element.release()));
-}
-
-SkColor LayerAnimator::GetTargetColor() const {
-  LayerAnimationElement::TargetValue target(delegate());
-  GetTargetValue(&target);
-  return target.color;
-}
+ANIMATED_PROPERTY(
+    const gfx::Transform&, TRANSFORM, Transform, gfx::Transform, transform);
+ANIMATED_PROPERTY(const gfx::Rect&, BOUNDS, Bounds, gfx::Rect, bounds);
+ANIMATED_PROPERTY(float, OPACITY, Opacity, float, opacity);
+ANIMATED_PROPERTY(bool, VISIBILITY, Visibility, bool, visibility);
+ANIMATED_PROPERTY(float, BRIGHTNESS, Brightness, float, brightness);
+ANIMATED_PROPERTY(float, GRAYSCALE, Grayscale, float, grayscale);
+ANIMATED_PROPERTY(SkColor, COLOR, Color, SkColor, color);
 
 void LayerAnimator::SetDelegate(LayerAnimationDelegate* delegate) {
   delegate_ = delegate;
