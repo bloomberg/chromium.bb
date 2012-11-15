@@ -109,12 +109,6 @@ string16 CreateProfileShortcutFlags(const FilePath& profile_path) {
                             profile_path.BaseName().value().c_str());
 }
 
-// Wrap a ShellUtil/FileUtil function that returns a bool so it can be posted
-// in a task to the FILE thread.
-void CallBoolFunction(const base::Callback<bool(void)>& bool_function) {
-  bool_function.Run();
-}
-
 // Renames an existing Chrome desktop profile shortcut. Must be called on the
 // FILE thread.
 void RenameChromeDesktopShortcutForProfile(
@@ -163,6 +157,25 @@ void CreateOrUpdateProfileDesktopShortcut(
                ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING;
   ShellUtil::CreateOrUpdateShortcut(
       ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist, properties, operation);
+}
+
+// Deletes the specified desktop shortcut and corresponding icon file. Must be
+// called on the FILE thread.
+void DeleteDesktopShortcutAndIconFile(const string16& shortcut_name,
+                                      const FilePath& icon_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+    return;
+  }
+
+  ShellUtil::RemoveShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
+                            BrowserDistribution::GetDistribution(),
+                            chrome_exe.value(), ShellUtil::CURRENT_USER,
+                            &shortcut_name);
+  file_util::Delete(icon_path, false);
 }
 
 }  // namespace
@@ -261,25 +274,11 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
   if (cache.GetNumberOfProfiles() != 0)
     profile_name_updated = profile_name;
 
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  FilePath chrome_exe;
-  if (PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-            base::Bind(&CallBoolFunction, base::Bind(
-                &ShellUtil::RemoveShortcut,
-                ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-                dist, chrome_exe.value(), ShellUtil::CURRENT_USER,
-                &GetShortcutNameForProfile(profile_name_updated))));
-
-    FilePath icon_path = profile_path.AppendASCII(kProfileIconFileName);
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-            base::Bind(&CallBoolFunction, base::Bind(
-                &file_util::Delete, icon_path, false)));
-  } else {
-    NOTREACHED();
-  }
+  string16 shortcut_name = GetShortcutNameForProfile(profile_name_updated);
+  FilePath icon_path = profile_path.AppendASCII(kProfileIconFileName);
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&DeleteDesktopShortcutAndIconFile,
+                                     shortcut_name, icon_path));
 }
 
 void ProfileShortcutManagerWin::OnProfileNameChanged(
