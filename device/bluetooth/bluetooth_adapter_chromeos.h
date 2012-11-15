@@ -5,7 +5,6 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_CHROMEOS_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_CHROMEOS_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
@@ -54,11 +53,6 @@ class BluetoothAdapterChromeOs
       bool discovering,
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
-  virtual ConstDeviceList GetDevices() const OVERRIDE;
-  virtual device::BluetoothDevice* GetDevice(
-      const std::string& address) OVERRIDE;
-  virtual const device::BluetoothDevice* GetDevice(
-      const std::string& address) const OVERRIDE;
   virtual void ReadLocalOutOfBandPairingData(
       const device::BluetoothAdapter::BluetoothOutOfBandPairingDataCallback&
           callback,
@@ -225,13 +219,6 @@ class BluetoothAdapterChromeOs
   // to observers on a genuine change.
   bool powered_;
   bool discovering_;
-
-  // Devices paired with, connected to, discovered by, or visible to the
-  // adapter. The key is the Bluetooth address of the device and the value
-  // is the BluetoothDeviceChromeOs object whose lifetime is managed by the
-  // adapter instance.
-  typedef std::map<const std::string, BluetoothDeviceChromeOs*> DevicesMap;
-  DevicesMap devices_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

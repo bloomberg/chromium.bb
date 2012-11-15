@@ -25,7 +25,8 @@ using device::BluetoothOutOfBandPairingData;
 
 namespace chromeos {
 
-BluetoothAdapterChromeOs::BluetoothAdapterChromeOs() : track_default_(false),
+BluetoothAdapterChromeOs::BluetoothAdapterChromeOs() : BluetoothAdapter(),
+                                                       track_default_(false),
                                                        powered_(false),
                                                        discovering_(false),
                                                        weak_ptr_factory_(this) {
@@ -103,31 +104,6 @@ void BluetoothAdapterChromeOs::SetDiscovering(
                                  callback,
                                  error_callback));
   }
-}
-
-BluetoothAdapter::ConstDeviceList BluetoothAdapterChromeOs::GetDevices() const {
-  ConstDeviceList devices;
-  for (DevicesMap::const_iterator iter = devices_.begin();
-       iter != devices_.end();
-       ++iter)
-    devices.push_back(iter->second);
-
-  return devices;
-}
-
-BluetoothDevice* BluetoothAdapterChromeOs::GetDevice(
-    const std::string& address) {
-  return const_cast<BluetoothDevice *>(
-      const_cast<const BluetoothAdapterChromeOs *>(this)->GetDevice(address));
-}
-
-const BluetoothDevice* BluetoothAdapterChromeOs::GetDevice(
-    const std::string& address) const {
-  DevicesMap::const_iterator iter = devices_.find(address);
-  if (iter != devices_.end())
-    return iter->second;
-
-  return NULL;
 }
 
 void BluetoothAdapterChromeOs::ReadLocalOutOfBandPairingData(
@@ -364,7 +340,7 @@ void BluetoothAdapterChromeOs::UpdateDevice(
   BluetoothDeviceChromeOs* device;
   const bool update_device = (iter != devices_.end());
   if (update_device) {
-    device = iter->second;
+    device = static_cast<BluetoothDeviceChromeOs*>(iter->second);
   } else {
     device = BluetoothDeviceChromeOs::Create(this);
     devices_[address] = device;
@@ -392,7 +368,7 @@ void BluetoothAdapterChromeOs::ClearDevices() {
   devices_.swap(replace);
   for (DevicesMap::iterator iter = replace.begin();
        iter != replace.end(); ++iter) {
-    BluetoothDeviceChromeOs* device = iter->second;
+    BluetoothDevice* device = iter->second;
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                       DeviceRemoved(this, device));
 
@@ -417,7 +393,8 @@ void BluetoothAdapterChromeOs::DeviceRemoved(
 
   DevicesMap::iterator iter = devices_.begin();
   while (iter != devices_.end()) {
-    BluetoothDeviceChromeOs* device = iter->second;
+    BluetoothDeviceChromeOs* device =
+        static_cast<BluetoothDeviceChromeOs*>(iter->second);
     DevicesMap::iterator temp = iter;
     ++iter;
 
@@ -455,7 +432,7 @@ void BluetoothAdapterChromeOs::DevicesChanged(
 void BluetoothAdapterChromeOs::ClearDiscoveredDevices() {
   DevicesMap::iterator iter = devices_.begin();
   while (iter != devices_.end()) {
-    BluetoothDeviceChromeOs* device = iter->second;
+    BluetoothDevice* device = iter->second;
     DevicesMap::iterator temp = iter;
     ++iter;
 
@@ -483,7 +460,7 @@ void BluetoothAdapterChromeOs::DeviceFound(
   DevicesMap::iterator iter = devices_.find(address);
   const bool update_device = (iter != devices_.end());
   if (update_device) {
-    device = iter->second;
+    device = static_cast<BluetoothDeviceChromeOs*>(iter->second);
   } else {
     device = BluetoothDeviceChromeOs::Create(this);
     devices_[address] = device;
@@ -512,7 +489,8 @@ void BluetoothAdapterChromeOs::DeviceDisappeared(
   if (iter == devices_.end())
     return;
 
-  BluetoothDeviceChromeOs* device = iter->second;
+  BluetoothDeviceChromeOs* device =
+      static_cast<BluetoothDeviceChromeOs*>(iter->second);
 
   // DeviceDisappeared can also be called to indicate that a device we've
   // paired with is no longer visible to the adapter, so don't remove

@@ -8,6 +8,9 @@
 
 namespace device {
 
+BluetoothAdapter::BluetoothAdapter() {
+}
+
 BluetoothAdapter::~BluetoothAdapter() {
 }
 
@@ -29,6 +32,30 @@ BluetoothAdapter::DeviceList BluetoothAdapter::GetDevices() {
     devices.push_back(const_cast<BluetoothDevice *>(*i));
 
   return devices;
+}
+
+BluetoothAdapter::ConstDeviceList BluetoothAdapter::GetDevices() const {
+  ConstDeviceList devices;
+  for (DevicesMap::const_iterator iter = devices_.begin();
+       iter != devices_.end();
+       ++iter)
+    devices.push_back(iter->second);
+
+  return devices;
+}
+
+BluetoothDevice* BluetoothAdapter::GetDevice(const std::string& address) {
+  return const_cast<BluetoothDevice *>(
+      const_cast<const BluetoothAdapter *>(this)->GetDevice(address));
+}
+
+const BluetoothDevice* BluetoothAdapter::GetDevice(
+    const std::string& address) const {
+  DevicesMap::const_iterator iter = devices_.find(address);
+  if (iter != devices_.end())
+    return iter->second;
+
+  return NULL;
 }
 
 }  // namespace device

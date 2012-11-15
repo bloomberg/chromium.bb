@@ -5,6 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -126,13 +127,13 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   typedef std::vector<BluetoothDevice*> DeviceList;
   virtual DeviceList GetDevices();
   typedef std::vector<const BluetoothDevice*> ConstDeviceList;
-  virtual ConstDeviceList GetDevices() const = 0;
+  virtual ConstDeviceList GetDevices() const;
 
   // Returns a pointer to the device with the given address |address| or
   // NULL if no such device is known.
-  virtual BluetoothDevice* GetDevice(const std::string& address) = 0;
+  virtual BluetoothDevice* GetDevice(const std::string& address);
   virtual const BluetoothDevice* GetDevice(
-      const std::string& address) const = 0;
+      const std::string& address) const;
 
   // Requests the local Out Of Band pairing data.
   virtual void ReadLocalOutOfBandPairingData(
@@ -141,6 +142,7 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
 
  protected:
   friend class base::RefCounted<BluetoothAdapter>;
+  BluetoothAdapter();
   virtual ~BluetoothAdapter();
 
   // Address of the adapter.
@@ -148,6 +150,13 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
 
   // Name of the adapter.
   std::string name_;
+
+  // Devices paired with, connected to, discovered by, or visible to the
+  // adapter. The key is the Bluetooth address of the device and the value
+  // is the BluetoothDevice object whose lifetime is managed by the
+  // adapter instance.
+  typedef std::map<const std::string, BluetoothDevice*> DevicesMap;
+  DevicesMap devices_;
 };
 
 }  // namespace device
