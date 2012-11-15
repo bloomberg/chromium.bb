@@ -45,6 +45,7 @@ def GetIncompatibleDirectories():
     'L?GPL ?v?2(\.[01])?( or later)?',
     'MIT(/X11)?(-like)?',
     'MPL 1\.1 ?/ ?GPL 2(\.0)? ?/ ?LGPL 2\.1',
+    'MPL 2(\.0)?',
     'Microsoft Limited Public License',
     'Microsoft Permissive License',
     'Public Domain',
