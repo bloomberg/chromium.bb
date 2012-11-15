@@ -180,6 +180,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   aura::Window* window_;
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
+  scoped_ptr<aura::client::StackingClient> stacking_client_;
+
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAura);
 };
 

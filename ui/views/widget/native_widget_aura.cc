@@ -123,7 +123,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     // If the parent is not specified, find the default parent for
     // the |window_| using the desired |window_bounds|.
     if (!parent) {
-      parent = aura::client::GetStackingClient()->
+      parent = aura::client::GetStackingClient(params.GetParent())->
           GetDefaultParent(params.context, window_, window_bounds);
     } else if (window_bounds == gfx::Rect()) {
       // If a parent is specified but no bounds are given,
