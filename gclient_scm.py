@@ -929,7 +929,23 @@ class SVNWrapper(SCMWrapper):
       forced_revision = False
       rev_str = ''
 
-    if not os.path.exists(self.checkout_path):
+    # Get the existing scm url and the revision number of the current checkout.
+    exists = os.path.exists(self.checkout_path)
+    if exists and managed:
+      try:
+        from_info = scm.SVN.CaptureLocalInfo(
+            [], os.path.join(self.checkout_path, '.'))
+      except (gclient_utils.Error, subprocess2.CalledProcessError):
+        if options.reset and options.delete_unversioned_trees:
+          print 'Removing troublesome path %s' % self.checkout_path
+          gclient_utils.rmtree(self.checkout_path)
+          exists = False
+        else:
+          msg = ('Can\'t update/checkout %s if an unversioned directory is '
+                 'present. Delete the directory and try again.')
+          raise gclient_utils.Error(msg % self.checkout_path)
+
+    if not exists:
       gclient_utils.safe_makedirs(os.path.dirname(self.checkout_path))
       # We need to checkout.
       command = ['checkout', url, self.checkout_path]
@@ -940,15 +956,6 @@ class SVNWrapper(SCMWrapper):
     if not managed:
       print ('________ unmanaged solution; skipping %s' % self.relpath)
       return
-
-    # Get the existing scm url and the revision number of the current checkout.
-    try:
-      from_info = scm.SVN.CaptureLocalInfo(
-          [], os.path.join(self.checkout_path, '.'))
-    except (gclient_utils.Error, subprocess2.CalledProcessError):
-      raise gclient_utils.Error(
-          ('Can\'t update/checkout %s if an unversioned directory is present. '
-           'Delete the directory and try again.') % self.checkout_path)
 
     if 'URL' not in from_info:
       raise gclient_utils.Error(
