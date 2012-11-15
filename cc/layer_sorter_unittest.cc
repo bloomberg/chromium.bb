@@ -65,8 +65,8 @@ TEST(LayerSorterTest, RightAngleOverlap)
 
     // Two layers forming a right angle with a perspective viewing transform.
     WebTransformationMatrix leftFaceMatrix;
+    leftFaceMatrix.translate3d(-1, 0, -5);
     leftFaceMatrix.rotate3d(0, 1, 0, -90);
-    leftFaceMatrix.translateRight3d(-1, 0, -5);
     leftFaceMatrix.translate(-1, -1);
     LayerShape leftFace(2, 2, perspectiveMatrix * leftFaceMatrix);
     WebTransformationMatrix frontFaceMatrix;
@@ -95,8 +95,8 @@ TEST(LayerSorterTest, IntersectingLayerOverlap)
     LayerShape frontFace(2, 2, perspectiveMatrix * frontFaceMatrix);
 
     WebTransformationMatrix throughMatrix;
+    throughMatrix.translate3d(0, 0, -4);
     throughMatrix.rotate3d(0, 1, 0, 45);
-    throughMatrix.translateRight3d(0, 0, -4);
     throughMatrix.translate(-1, -1);
     LayerShape rotatedFace(2, 2, perspectiveMatrix * throughMatrix);
     overlapResult = LayerSorter::checkOverlap(&frontFace, &rotatedFace, zThreshold, weight);
