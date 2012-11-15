@@ -12073,14 +12073,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_GDATA_DIRECTORY_LABEL" desc="/drive directory label.">
         Google Drive
       </message>
-      <message name="IDS_FILE_BROWSER_MEDIA_DIRECTORY_LABEL" desc="/media directory label.">
-        External Storage
-      </message>
       <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_LABEL" desc="Downloads local directory label.">
         Downloads
-      </message>
-      <message name="IDS_FILE_BROWSER_ADD_DRIVE" desc="Label to add a new drive.">
-        Add a drive
       </message>
       <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_WARNING" desc="Warning displayed to user when viewing downloads folder.">
         <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Caution:<ph name="END_BOLD">&lt;/strong&gt;</ph>  These files are temporary and may be automatically deleted to free up disk space.  <ph name="BEGIN_LINK">&lt;a href="javascript://"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
@@ -12138,10 +12132,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_OFFLINE_COLUMN_LABEL" desc="Available offline column label.">
         Available offline
       </message>
-      <message name="IDS_FILE_BROWSER_MAKE_AVAILABLE_OFFLINE_ACTION_LABEL" desc="Name of the action to make the file available offline.">
-        Make available offline
-      </message>
-
       <message name="IDS_FILE_BROWSER_ERROR_CREATING_FOLDER" desc="Message displayed when we can't create a folder.">
         Unable to create folder "<ph name="FOLDER_NAME">$1<ex>Documents</ex></ph>". <ph name="ERROR_MESSAGE">$2<ex>An error occurred (code: ABORT)</ex></ph>
       </message>
@@ -12204,17 +12194,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_UNMOUNT_DEVICE_BUTTON_LABEL" desc="Title of the action for unmounting removable device.">
         Eject device
       </message>
-
-      <message name="IDS_FILE_BROWSER_NOT_FORMATTED_USB" desc="In the File Manager, message shown for an unformatted USB device.">
-        Your USB device is not formatted.
-      </message>
-      <message name="IDS_FILE_BROWSER_NOT_FORMATTED_SD" desc="In the File Manager, message shown for an unformatted SD card.">
-        Your SD card is not formatted.
-      </message>
-      <message name="IDS_FILE_BROWSER_NOT_FORMATTED_EXTERNAL" desc="In the File Manager, message shown for an unformatted external storage device.">
-        Your external storage device is not formatted.
-      </message>
-
       <message name="IDS_FILE_BROWSER_ACTION_VIEW" desc="Title of the action to view (no edit) a file.">
         View
       </message>
@@ -12605,9 +12584,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_HOSTED_OFFLINE_MESSAGE" desc="Message informing the user that the selected file is only available online.">
         You must be online to access this file.
       </message>
-      <message name="IDS_FILE_BROWSER_GDRIVE_OFFLINE_MESSAGE" desc="Message informing the user that they should go online to access Google Drive for the first time.">
-        You must be online to access Google Drive for the first time.
-      </message>
       <message name="IDS_FILE_BROWSER_HOSTED_OFFLINE_MESSAGE_PLURAL" desc="Message informing the user that the selected files are only available online.">
         You must be online to access these files.
       </message>
@@ -12616,9 +12592,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_FILE_BROWSER_CONFIRM_MOBILE_DATA_USE_PLURAL" desc="Message informing the user that opening several files from Google Drive will use mobile data.">
         Fetching these files will use approximately <ph name="FILE_SIZE">$1<ex>44 MB</ex></ph> of mobile data.
-      </message>
-      <message name="IDS_FILE_BROWSER_GDATA_PRODUCT_NAME" desc="Google Drive product name." translateable="false">
-        Google Drive
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_MOBILE_CONNECTION_OPTION" desc="Option that determines if we will allow Google Drive content sync over mobile connections.">
         Do not use mobile data for sync
@@ -12862,10 +12835,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_ERROR_VIEWING_FILE" desc="Error message when user attempts to open a non-supported file in the Files app via Downloads panel.">
         This file type is not supported. Please visit the Chrome Web Store to find an app that can open this type of file.
       </message>
-      <message name="IDS_FILE_BROWSER_ERROR_UNKNOWN_FILE_TYPE" desc="Error message when user attempts to open a file of unknown type in file browser.">
-        <ph name="FILENAME">$1</ph> - Unknown file type.
-      </message>
-
       <message name="IDS_FILE_BROWSER_AUDIO_PLAYER_TITLE" desc="Title of the Audio Player window.">
         Audio Player
       </message>
