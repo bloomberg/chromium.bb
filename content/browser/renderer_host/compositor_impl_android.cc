@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
@@ -20,12 +21,12 @@
 #include "content/public/common/content_switches.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
+using webkit::WebCompositorSupportImpl;
 
 namespace gfx {
 class JavaBitmap;
@@ -34,6 +35,8 @@ class JavaBitmap;
 namespace {
 
 static bool g_initialized = false;
+static base::LazyInstance<WebCompositorSupportImpl> g_compositor_support =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Adapts a pure WebGraphicsContext3D into a WebCompositorOutputSurface.
 class WebGraphicsContextToOutputSurfaceAdapter :
@@ -88,26 +91,14 @@ Compositor* Compositor::Create(Client* client) {
 
 // static
 void Compositor::Initialize() {
+  g_compositor_support.Get().initialize(NULL);
   g_initialized = true;
-  // Android WebView runs in single process, and depends on the renderer to
-  // perform WebKit::Platform initialization for the entire process. The
-  // renderer, however, does that lazily which in practice means it waits
-  // until the first page load request.
-  // The WebView-specific rendering code isn't ready yet so we only want to
-  // trick the rest of it into thinking the Compositor is initialized, which
-  // keeps us from crashing.
-  // See BUG 152904.
-  if (WebKit::Platform::current() == NULL) {
-    LOG(WARNING) << "CompositorImpl(Android)::Initialize(): WebKit::Platform "
-                 << "is not initialized, COMPOSITOR IS NOT INITIALIZED "
-                 << "(this is OK and expected if you're running Android"
-                 << "WebView tests).";
-    // We only ever want to run this hack in single process mode.
-    CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kSingleProcess));
-    return;
-  }
-  WebKit::Platform::current()->compositorSupport()->initialize(NULL);
+}
+
+// static
+WebCompositorSupportImpl* CompositorImpl::CompositorSupport() {
+  DCHECK(g_initialized);
+  return g_compositor_support.Pointer();
 }
 
 // static
@@ -120,8 +111,7 @@ CompositorImpl::CompositorImpl(Compositor::Client* client)
       surface_id_(0),
       client_(client) {
   DCHECK(client);
-  root_layer_.reset(
-      WebKit::Platform::current()->compositorSupport()->createLayer());
+  root_layer_.reset(g_compositor_support.Get().createLayer());
 }
 
 CompositorImpl::~CompositorImpl() {
@@ -159,10 +149,8 @@ void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
     DCHECK(!host_.get());
     WebKit::WebLayerTreeView::Settings settings;
     settings.refreshRate = 60.0;
-    WebKit::WebCompositorSupport* compositor_support =
-        WebKit::Platform::current()->compositorSupport();
-    host_.reset(
-        compositor_support->createLayerTreeView(this, *root_layer_, settings));
+    host_.reset(g_compositor_support.Get().createLayerTreeView(
+        this, *root_layer_, settings));
     host_->setVisible(true);
     host_->setSurfaceReady();
     host_->setViewportSize(size_);

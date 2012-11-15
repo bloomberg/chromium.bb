@@ -16,6 +16,10 @@
 
 struct ANativeWindow;
 
+namespace webkit {
+class WebCompositorSupportImpl;
+}
+
 namespace content {
 class GraphicsContext;
 
@@ -28,6 +32,7 @@ class CONTENT_EXPORT CompositorImpl : public Compositor,
   explicit CompositorImpl(Compositor::Client* client);
   virtual ~CompositorImpl();
 
+  static webkit::WebCompositorSupportImpl* CompositorSupport();
   static bool IsInitialized();
 
   // Compositor implementation.

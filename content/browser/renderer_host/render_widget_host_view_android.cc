@@ -22,9 +22,9 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
 namespace content {
 
@@ -389,8 +389,7 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
 
   // TODO(sievers): When running the impl thread in the browser we
   // need to delay the ACK until after commit.
-  DCHECK(!WebKit::Platform::current()->compositorSupport()->
-         isThreadingEnabled());
+  DCHECK(!CompositorImpl::CompositorSupport()->isThreadingEnabled());
   uint32 sync_point =
       ImageTransportFactoryAndroid::GetInstance()->InsertSyncPoint();
   RenderWidgetHostImpl::AcknowledgeBufferPresent(
