@@ -40,6 +40,15 @@ void HandlerOptionsHandler::GetLocalizedValues(
       { "handlers_active_heading", IDS_HANDLERS_ACTIVE_HEADING },
       { "handlers_ignored_heading", IDS_HANDLERS_IGNORED_HEADING },
   };
+#if defined(ENABLE_SETTINGS_APP)
+  static OptionsStringResource app_resources[] = {
+    { "handlers_allow", IDS_SETTINGS_APP_HANDLERS_ALLOW_RADIO },
+    { "handlers_block", IDS_SETTINGS_APP_HANDLERS_DONOTALLOW_RADIO },
+  };
+  DictionaryValue* app_values = NULL;
+  CHECK(localized_strings->GetDictionary(kSettingsAppKey, &app_values));
+  RegisterStrings(app_values, app_resources, arraysize(app_resources));
+#endif
   RegisterTitle(localized_strings, "handlersPage",
                 IDS_HANDLER_OPTIONS_WINDOW_TITLE);
   RegisterStrings(localized_strings, resources, arraysize(resources));

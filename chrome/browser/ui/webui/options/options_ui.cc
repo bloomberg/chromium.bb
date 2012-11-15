@@ -172,6 +172,8 @@ OptionsUIHTMLSource::~OptionsUIHTMLSource() {}
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+const char OptionsPageUIHandler::kSettingsAppKey[] = "settingsApp";
+
 OptionsPageUIHandler::OptionsPageUIHandler() {
 }
 
@@ -188,8 +190,15 @@ void OptionsPageUIHandler::RegisterStrings(
     const OptionsStringResource* resources,
     size_t length) {
   for (size_t i = 0; i < length; ++i) {
-    localized_strings->SetString(
-        resources[i].name, l10n_util::GetStringUTF16(resources[i].id));
+    string16 value;
+    if (resources[i].substitution_id == 0) {
+      value = l10n_util::GetStringUTF16(resources[i].id);
+    } else {
+      value = l10n_util::GetStringFUTF16(
+          resources[i].id,
+          l10n_util::GetStringUTF16(resources[i].substitution_id));
+    }
+    localized_strings->SetString(resources[i].name, value);
   }
 }
 
@@ -214,6 +223,8 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
       initialized_handlers_(false) {
   DictionaryValue* localized_strings = new DictionaryValue();
+  localized_strings->Set(OptionsPageUIHandler::kSettingsAppKey,
+                         new DictionaryValue());
 
   CoreOptionsHandler* core_handler;
 #if defined(OS_CHROMEOS)

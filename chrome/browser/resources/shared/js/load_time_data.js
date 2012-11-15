@@ -98,6 +98,18 @@ var loadTimeData;
       expect(value == Math.floor(value), 'Number isn\'t integer: ' + value);
       return value;
     },
+
+    /**
+     * Override values in loadTimeData with the values found in |replacements|.
+     * @param {Object} replacements The dictionary object of keys to replace.
+     */
+    overrideValues: function(replacements) {
+      expect(typeof replacements == 'object',
+             'Replacements must be a dictionary object.');
+      for (var key in replacements) {
+        this.data_[key] = replacements[key];
+      }
+    }
   };
 
   /**

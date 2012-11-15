@@ -5550,6 +5550,31 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Remove from Chrome
       </message>
 
+      <!-- chrome://settings-frame/options_settings_app.html for the App Launcher (Windows only) -->
+      <if expr="pp_ifdef('enable_settings_app')">
+        <message name="IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME" desc="Product name to use when referring to applications running in the App Launcher inside the non-browser Settings App">
+          App Launcher
+        </message>
+        <message name="IDS_SETTINGS_APP_SYNC_OVERVIEW" desc="The message that appears in the non-browser Settings App when sync has not been set up by the user.">
+          Sign in with your Google Account to allow apps to synchronize settings and provide other customized services.
+        </message>
+        <message name="IDS_SETTINGS_APP_HANDLERS_ALLOW_RADIO" desc="A radio button in the Content Settings dialog within the non-browser Settings App for allowing apps to register themselves as handlers for protocols.">
+          Allow apps to ask to become default handlers for protocols (recommended)
+        </message>
+        <message name="IDS_SETTINGS_APP_HANDLERS_DONOTALLOW_RADIO" desc="A radio button in the Content Settings dialog within the non-browser Settings App for preventing apps from registering themselves as handlers for protocols.">
+          Do not allow any app to handle protocols
+        </message>
+        <message name="IDS_SETTINGS_APP_NOTIFICATIONS_ALLOW_RADIO" desc="A radio button in Content Settings dialog within the non-browser Settings App to allow all apps to show notifications.">
+          Allow all apps to show desktop notifications
+        </message>
+        <message name="IDS_SETTINGS_APP_NOTIFICATIONS_BLOCK_RADIO" desc="A radio button in Content Settings dialog within the non-browser Settings App to deny all apps from showing notifications.">
+          Do not allow any app to show desktop notifications
+        </message>
+        <message name="IDS_SETTINGS_APP_NOTIFICATIONS_ASK_RADIO" desc="A radio button in Content Settings dialog within the non-browser Settings App to configure notifications per-app.">
+          Ask me when an app wants to show desktop notifications (recommended)
+        </message>
+      </if>
+
       <!-- Plugins -->
       <message name="IDS_PLUGINS_TITLE" desc="Title for the chrome://plugins page.">
         Plug-ins

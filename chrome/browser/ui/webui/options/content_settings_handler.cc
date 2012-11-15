@@ -425,6 +425,17 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "ppapi_broker_block", IDS_PPAPI_BROKER_BLOCK_RADIO },
   };
 
+#if defined(ENABLE_SETTINGS_APP)
+  static OptionsStringResource app_resources[] = {
+    { "notifications_allow", IDS_SETTINGS_APP_NOTIFICATIONS_ALLOW_RADIO },
+    { "notifications_ask", IDS_SETTINGS_APP_NOTIFICATIONS_ASK_RADIO },
+    { "notifications_block", IDS_SETTINGS_APP_NOTIFICATIONS_BLOCK_RADIO },
+  };
+  DictionaryValue* app_values = NULL;
+  CHECK(localized_strings->GetDictionary(kSettingsAppKey, &app_values));
+  RegisterStrings(app_values, app_resources, arraysize(app_resources));
+#endif
+
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "contentSettingsPage",
                 IDS_CONTENT_SETTINGS_TITLE);

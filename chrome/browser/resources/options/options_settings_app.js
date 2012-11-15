@@ -10,4 +10,6 @@
 
   // Override the offset in the options page.
   OptionsPage.setHorizontalOffset(30);
+
+  loadTimeData.overrideValues(loadTimeData.getValue('settingsApp'));
 }());

@@ -335,7 +335,44 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       IDS_OPTIONS_ADVANCED_SECTION_TITLE_BACKGROUND },
     { "backgroundModeCheckbox", IDS_OPTIONS_BACKGROUND_ENABLE_BACKGROUND_MODE },
 #endif
+
+    // Strings with product-name substitutions.
+#if !defined(OS_CHROMEOS)
+    { "syncOverview", IDS_SYNC_OVERVIEW, IDS_PRODUCT_NAME },
+    { "syncButtonTextStart", IDS_SYNC_START_SYNC_BUTTON_LABEL,
+      IDS_SHORT_PRODUCT_NAME },
+#endif
+    { "profilesSingleUser", IDS_PROFILES_SINGLE_USER_MESSAGE,
+      IDS_PRODUCT_NAME },
+    { "defaultBrowserUnknown", IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN,
+      IDS_PRODUCT_NAME },
+    { "defaultBrowserUseAsDefault", IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT,
+      IDS_PRODUCT_NAME },
+    { "autoLaunchText", IDS_AUTOLAUNCH_TEXT, IDS_PRODUCT_NAME },
+#if defined(OS_CHROMEOS)
+    { "factoryResetWarning", IDS_OPTIONS_FACTORY_RESET_WARNING,
+      IDS_SHORT_PRODUCT_NAME },
+    { "factoryResetDescription", IDS_OPTIONS_FACTORY_RESET_DESCRIPTION,
+      IDS_SHORT_PRODUCT_NAME },
+#endif
+    { "languageSectionLabel", IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL,
+      IDS_SHORT_PRODUCT_NAME },
   };
+
+#if defined(ENABLE_SETTINGS_APP)
+  static OptionsStringResource app_resources[] = {
+    { "syncOverview", IDS_SETTINGS_APP_SYNC_OVERVIEW },
+    { "syncButtonTextStart", IDS_SYNC_START_SYNC_BUTTON_LABEL,
+      IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
+    { "profilesSingleUser", IDS_PROFILES_SINGLE_USER_MESSAGE,
+      IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
+    { "languageSectionLabel", IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL,
+      IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
+  };
+  DictionaryValue* app_values = NULL;
+  CHECK(values->GetDictionary(kSettingsAppKey, &app_values));
+  RegisterStrings(app_values, app_resources, arraysize(app_resources));
+#endif
 
   RegisterStrings(values, resources, arraysize(resources));
   RegisterTitle(values, "instantConfirmOverlay", IDS_INSTANT_OPT_IN_TITLE);
@@ -345,23 +382,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
                 IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE);
   RegisterCloudPrintValues(values);
 
-#if !defined(OS_CHROMEOS)
-  values->SetString(
-      "syncOverview",
-      l10n_util::GetStringFUTF16(IDS_SYNC_OVERVIEW,
-                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  values->SetString(
-      "syncButtonTextStart",
-      l10n_util::GetStringFUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
-#endif
-
   values->SetString("syncLearnMoreURL", chrome::kSyncLearnMoreURL);
-  values->SetString(
-      "profilesSingleUser",
-      l10n_util::GetStringFUTF16(IDS_PROFILES_SINGLE_USER_MESSAGE,
-                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-
   string16 omnibox_url = ASCIIToUTF16(chrome::kOmniboxLearnMoreURL);
   values->SetString(
       "defaultSearchGroupLabel",
@@ -374,34 +395,9 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
                                  instant_learn_more_url));
   values->SetString("instantLearnMoreLink", instant_learn_more_url);
 
-  values->SetString(
-      "defaultBrowserUnknown",
-      l10n_util::GetStringFUTF16(IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  values->SetString(
-      "defaultBrowserUseAsDefault",
-      l10n_util::GetStringFUTF16(IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  values->SetString(
-      "autoLaunchText",
-      l10n_util::GetStringFUTF16(IDS_AUTOLAUNCH_TEXT,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-
 #if defined(OS_CHROMEOS)
   const chromeos::User* user = chromeos::UserManager::Get()->GetLoggedInUser();
   values->SetString("username", user ? user->email() : std::string());
-
-  values->SetString(
-      "factoryResetWarning",
-      l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_FACTORY_RESET_WARNING,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
-
-  values->SetString(
-      "factoryResetDescription",
-      l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_FACTORY_RESET_DESCRIPTION,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
 #endif
 
   // Pass along sync status early so it will be available during page init.
@@ -409,12 +405,6 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 
   values->SetString("privacyLearnMoreURL", chrome::kPrivacyLearnMoreURL);
   values->SetString("doNotTrackLearnMoreURL", chrome::kDoNotTrackLearnMoreURL);
-
-  values->SetString(
-      "languageSectionLabel",
-      l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
 
 #if defined(OS_CHROMEOS)
   values->SetString("cloudPrintLearnMoreURL", chrome::kCloudPrintLearnMoreURL);
