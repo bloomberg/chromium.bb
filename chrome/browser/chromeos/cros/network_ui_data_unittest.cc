@@ -127,9 +127,9 @@ TEST_F(NetworkUIDataTest, ParseOncProperty) {
   onc.Set("a.a", val_a_a.DeepCopy());
   onc.Set("a.b", val_a_b.DeepCopy());
   base::ListValue recommended;
-  recommended.Append(base::Value::CreateStringValue("b"));
-  recommended.Append(base::Value::CreateStringValue("c"));
-  recommended.Append(base::Value::CreateStringValue("a.a"));
+  recommended.Append(new base::StringValue("b"));
+  recommended.Append(new base::StringValue("c"));
+  recommended.Append(new base::StringValue("a.a"));
   onc.Set("Recommended", recommended.DeepCopy());
   onc.Set("a.Recommended", recommended.DeepCopy());
 

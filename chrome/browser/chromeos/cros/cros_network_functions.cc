@@ -537,16 +537,16 @@ void CrosRequestHiddenWifiNetworkProperties(
   base::DictionaryValue properties;
   properties.SetWithoutPathExpansion(
       flimflam::kModeProperty,
-      base::Value::CreateStringValue(flimflam::kModeManaged));
+      new base::StringValue(flimflam::kModeManaged));
   properties.SetWithoutPathExpansion(
       flimflam::kTypeProperty,
-      base::Value::CreateStringValue(flimflam::kTypeWifi));
+      new base::StringValue(flimflam::kTypeWifi));
   properties.SetWithoutPathExpansion(
       flimflam::kSSIDProperty,
-      base::Value::CreateStringValue(ssid));
+      new base::StringValue(ssid));
   properties.SetWithoutPathExpansion(
       flimflam::kSecurityProperty,
-      base::Value::CreateStringValue(security));
+      new base::StringValue(security));
   // shill.Manger.GetService() will apply the property changes in
   // |properties| and return a new or existing service to OnGetService().
   // OnGetService will then call GetProperties which will then call callback.
@@ -563,20 +563,20 @@ void CrosRequestVirtualNetworkProperties(
   base::DictionaryValue properties;
   properties.SetWithoutPathExpansion(
       flimflam::kTypeProperty,
-      base::Value::CreateStringValue(flimflam::kTypeVPN));
+      new base::StringValue(flimflam::kTypeVPN));
   properties.SetWithoutPathExpansion(
       flimflam::kProviderNameProperty,
-      base::Value::CreateStringValue(service_name));
+      new base::StringValue(service_name));
   properties.SetWithoutPathExpansion(
       flimflam::kProviderHostProperty,
-      base::Value::CreateStringValue(server_hostname));
+      new base::StringValue(server_hostname));
   properties.SetWithoutPathExpansion(
       flimflam::kProviderTypeProperty,
-      base::Value::CreateStringValue(provider_type));
+      new base::StringValue(provider_type));
   // The actual value of Domain does not matter, so just use service_name.
   properties.SetWithoutPathExpansion(
       flimflam::kVPNDomainProperty,
-      base::Value::CreateStringValue(service_name));
+      new base::StringValue(service_name));
 
   // shill.Manger.GetService() will apply the property changes in
   // |properties| and pass a new or existing service to OnGetService().

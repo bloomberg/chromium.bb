@@ -941,7 +941,7 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
   SetupHandlerHostFileAccessPermissions(handler_pid);
 
   scoped_ptr<ListValue> event_args(new ListValue());
-  event_args->Append(Value::CreateStringValue(action_id_));
+  event_args->Append(new base::StringValue(action_id_));
   DictionaryValue* details = new DictionaryValue();
   event_args->Append(details);
   // Get file definitions. These will be replaced with Entry instances by
