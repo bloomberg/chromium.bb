@@ -285,30 +285,6 @@
             'host/setup/start_host.cc',
           ],
         },  # end of target 'remoting_start_host'
-        {
-          'target_name': 'remoting_configurer',
-          'type': 'executable',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'cflags': [
-            '<!@(pkg-config --cflags webkit-1.0)',
-          ],
-          'link_settings': {
-            'ldflags': [
-              '<!@(pkg-config --libs-only-L --libs-only-other webkit-1.0)',
-            ],
-            'libraries': [
-              '<!@(pkg-config --libs-only-l webkit-1.0)',
-            ],
-          },
-          'dependencies': [
-            '../base/base.gyp:base',
-            'remoting_host_setup_base',
-            'remoting_resources'
-          ],
-          'sources': [
-            'host/setup/linux/linux_host_setup_wizard.cc',
-          ],
-        },  # end of target 'remoting_configurer'
       ],  # end of 'targets'
     }],  # 'OS=="linux"'
 
