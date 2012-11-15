@@ -586,6 +586,13 @@ gfx::Point RootWindow::QueryMouseLocationForTest() const {
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, private:
 
+void RootWindow::TransformEventForDeviceScaleFactor(ui::LocatedEvent* event) {
+  float scale = ui::GetDeviceScaleFactor(layer());
+  gfx::Transform transform = layer()->transform();
+  transform.ConcatScale(scale, scale);
+  event->UpdateForRootTransform(transform);
+}
+
 void RootWindow::HandleMouseMoved(const ui::MouseEvent& event, Window* target) {
   if (target == mouse_moved_handler_)
     return;
@@ -815,11 +822,8 @@ bool RootWindow::OnHostMouseEvent(ui::MouseEvent* event) {
 
 bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
   DispatchHeldMouseMove();
-  float scale = ui::GetDeviceScaleFactor(layer());
-  gfx::Transform transform = layer()->transform();
-  transform.ConcatScale(scale, scale);
-  event->UpdateForRootTransform(transform);
 
+  TransformEventForDeviceScaleFactor(event);
   SetLastMouseLocation(this, event->location());
   synthesize_mouse_move_ = false;
 
@@ -859,10 +863,7 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
     default:
       break;
   }
-  float scale = ui::GetDeviceScaleFactor(layer());
-  gfx::Transform transform = layer()->transform();
-  transform.ConcatScale(scale, scale);
-  event->UpdateForRootTransform(transform);
+  TransformEventForDeviceScaleFactor(event);
   bool handled = false;
   ui::EventResult result = ui::ER_UNHANDLED;
   Window* target = client::GetCaptureWindow(this);
@@ -952,10 +953,7 @@ RootWindow* RootWindow::AsRootWindow() {
 // RootWindow, private:
 
 bool RootWindow::DispatchMouseEventImpl(ui::MouseEvent* event) {
-  float scale = ui::GetDeviceScaleFactor(layer());
-  gfx::Transform transform = layer()->transform();
-  transform.ConcatScale(scale, scale);
-  event->UpdateForRootTransform(transform);
+  TransformEventForDeviceScaleFactor(event);
   Window* target = mouse_pressed_handler_ ?
       mouse_pressed_handler_ : client::GetCaptureWindow(this);
   if (!target)

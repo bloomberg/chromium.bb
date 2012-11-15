@@ -275,6 +275,13 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
                        // across root windows.
   };
 
+  // Updates the event with the appropriate transform for the device scale
+  // factor. The RootWindowHostDelegate dispatches events in the physical pixel
+  // coordinate. But the event processing from RootWindow onwards happen in
+  // device-independent pixel coordinate. So it is necessary to update the event
+  // received from the host.
+  void TransformEventForDeviceScaleFactor(ui::LocatedEvent* event);
+
   // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
   // sending exited and entered events as its value changes.
   void HandleMouseMoved(const ui::MouseEvent& event, Window* target);
