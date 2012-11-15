@@ -12051,7 +12051,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Chrome cannot access the image.
       </message>
       <message name="IDS_WALLPAPER_MANAGER_INVALID_WALLPAPER" desc="The string displayed to user when user selected wallpaper can not be set as a wallpaper.">
-        The image you selected can't be set as a wallpaper.
+        Chrome cannot set wallpaper.
       </message>
 
       <!-- File Browser -->
