@@ -10,6 +10,8 @@
 
 class CocoaSpellingEngine : public SpellingEngine {
  public:
+  virtual void Init(base::PlatformFile bdict_file,
+                    const std::vector<std::string>& custom_words) OVERRIDE;
   virtual bool InitializeIfNeeded() OVERRIDE;
   virtual bool IsEnabled() OVERRIDE;
   virtual bool CheckSpelling(const string16& word_to_check, int tag) OVERRIDE;

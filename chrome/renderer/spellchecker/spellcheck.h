@@ -37,6 +37,11 @@ struct WebTextCheckingResult;
 class SpellCheck : public content::RenderProcessObserver,
                    public base::SupportsWeakPtr<SpellCheck> {
  public:
+  enum ResultFilter {
+    DO_NOT_MODIFY = 1,  // Do not modify results.
+    USE_NATIVE_CHECKER,  // Use native checker to double-check.
+  };
+
   SpellCheck();
   virtual ~SpellCheck();
 
@@ -89,12 +94,14 @@ class SpellCheck : public content::RenderProcessObserver,
   // checks misspelled words returned by the Spelling service and changes the
   // underline colors of contextually-misspelled words.
   void CreateTextCheckingResults(
+      ResultFilter filter,
       int line_offset,
       const string16& line_text,
       const std::vector<SpellCheckResult>& spellcheck_results,
       WebKit::WebVector<WebKit::WebTextCheckingResult>* textcheck_results);
 
  private:
+  friend class SpellCheckTest;
   FRIEND_TEST_ALL_PREFIXES(SpellCheckTest, GetAutoCorrectionWord_EN_US);
   FRIEND_TEST_ALL_PREFIXES(SpellCheckTest,
       RequestSpellCheckMultipleTimesWithoutInitialization);

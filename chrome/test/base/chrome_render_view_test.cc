@@ -15,6 +15,7 @@
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
+#include "chrome/renderer/spellchecker/spellcheck.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/render_view.h"
@@ -55,6 +56,7 @@ void ChromeRenderViewTest::SetUp() {
       &chrome_content_renderer_client_);
   extension_dispatcher_ = new extensions::Dispatcher();
   chrome_content_renderer_client_.SetExtensionDispatcher(extension_dispatcher_);
+  chrome_content_renderer_client_.SetSpellcheck(new SpellCheck());
 
   chrome_render_thread_ = new ChromeMockRenderThread();
   render_thread_.reset(chrome_render_thread_);
