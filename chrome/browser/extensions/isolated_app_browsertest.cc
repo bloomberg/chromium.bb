@@ -75,6 +75,37 @@ class IsolatedAppTest : public ExtensionBrowserTest {
 
 }  // namespace
 
+IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CrossProcessClientRedirect) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app2")));
+
+  GURL base_url = test_server()->GetURL("files/extensions/isolated_apps/");
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // Must stay in scope with replace_host.
+  replace_host.SetHostStr(host_str);
+  base_url = base_url.ReplaceComponents(replace_host);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), base_url.Resolve("app1/main.html"),
+      CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // redirect to app2.
+  GURL redirect_url(test_server()->GetURL(
+      "client-redirect?files/extensions/isolated_apps/app2/main.html"));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), redirect_url,
+      CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Go back twice.
+  // If bug fixed, we cannot go back anymore.
+  // If not fixed, we will redirect back to app2 and can go back again.
+  chrome::GoBack(browser(), CURRENT_TAB);
+  chrome::GoBack(browser(), CURRENT_TAB);
+  EXPECT_FALSE(chrome::CanGoBack(browser()));
+}
+
 // Tests that cookies set within an isolated app are not visible to normal
 // pages or other apps.
 //

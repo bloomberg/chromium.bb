@@ -239,7 +239,8 @@ class CONTENT_EXPORT RenderViewHostDelegate {
                               const GURL& url,
                               const Referrer& referrer,
                               WindowOpenDisposition disposition,
-                              int64 source_frame_id) {}
+                              int64 source_frame_id,
+                              bool is_redirect) {}
 
   // The page wants to transfer the request to a new renderer.
   virtual void RequestTransferURL(
@@ -247,7 +248,8 @@ class CONTENT_EXPORT RenderViewHostDelegate {
       const Referrer& referrer,
       WindowOpenDisposition disposition,
       int64 source_frame_id,
-      const GlobalRequestID& old_request_id) {}
+      const GlobalRequestID& old_request_id,
+      bool is_redirect) {}
 
   // The page wants to close the active view in this tab.
   virtual void RouteCloseEvent(RenderViewHost* rvh) {}

@@ -1296,6 +1296,7 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
   nav_params.is_renderer_initiated = params.is_renderer_initiated;
   nav_params.transferred_global_request_id =
       params.transferred_global_request_id;
+  nav_params.is_cross_site_redirect = params.is_cross_site_redirect;
   chrome::Navigate(&nav_params);
 
   return nav_params.target_contents ?
