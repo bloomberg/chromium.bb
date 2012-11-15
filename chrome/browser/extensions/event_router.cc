@@ -179,10 +179,6 @@ void EventRouter::UnregisterObserver(Observer* observer) {
 }
 
 void EventRouter::OnListenerAdded(const EventListener* listener) {
-  // We don't care about lazy events being added.
-  if (!listener->process)
-    return;
-
   const std::string& event_name = listener->event_name;
   const EventListenerInfo details(event_name, listener->extension_id);
   ObserverMap::iterator observer = observers_.find(event_name);
@@ -191,21 +187,19 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
 
   // TODO(yoz): Migrate these to become EventRouter observers.
   // EventRouter shouldn't need to know about them.
-  ExtensionDevToolsManager* extension_devtools_manager =
-      ExtensionSystem::Get(profile_)->devtools_manager();
-  if (extension_devtools_manager)
-    extension_devtools_manager->AddEventListener(event_name,
-                                                 listener->process->GetID());
+  if (listener->process) {
+    ExtensionDevToolsManager* extension_devtools_manager =
+        ExtensionSystem::Get(profile_)->devtools_manager();
+    if (extension_devtools_manager)
+      extension_devtools_manager->AddEventListener(event_name,
+                                                   listener->process->GetID());
+  }
 
   if (SystemInfoEventRouter::IsSystemInfoEvent(event_name))
     SystemInfoEventRouter::GetInstance()->AddEventListener(event_name);
 }
 
 void EventRouter::OnListenerRemoved(const EventListener* listener) {
-  // We don't care about lazy events being removed.
-  if (!listener->process)
-    return;
-
   const std::string& event_name = listener->event_name;
   const EventListenerInfo details(event_name, listener->extension_id);
   ObserverMap::iterator observer = observers_.find(event_name);
@@ -214,11 +208,13 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
 
   // TODO(yoz): Migrate these to become EventRouter observers.
   // EventRouter shouldn't need to know about them.
-  ExtensionDevToolsManager* extension_devtools_manager =
-      ExtensionSystem::Get(profile_)->devtools_manager();
-  if (extension_devtools_manager)
-    extension_devtools_manager->RemoveEventListener(
-        event_name, listener->process->GetID());
+  if (listener->process) {
+    ExtensionDevToolsManager* extension_devtools_manager =
+        ExtensionSystem::Get(profile_)->devtools_manager();
+    if (extension_devtools_manager)
+      extension_devtools_manager->RemoveEventListener(
+          event_name, listener->process->GetID());
+  }
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

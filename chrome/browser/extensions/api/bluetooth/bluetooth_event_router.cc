@@ -35,8 +35,10 @@ ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(Profile* profile)
 
 ExtensionBluetoothEventRouter::~ExtensionBluetoothEventRouter() {
   CHECK(socket_map_.size() == 0);
-  CHECK(num_event_listeners_ == 0);
-  MaybeReleaseAdapter();
+  if (adapter_) {
+    adapter_->RemoveObserver(this);
+    adapter_ = NULL;
+  }
 }
 
 scoped_refptr<const device::BluetoothAdapter>
