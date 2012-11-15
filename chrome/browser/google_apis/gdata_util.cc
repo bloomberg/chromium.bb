@@ -10,14 +10,12 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
-#include "chrome/common/chrome_switches.h"
 
 namespace google_apis {
 namespace util {
@@ -45,11 +43,6 @@ bool ParseTimezone(const base::StringPiece& timezone,
 }
 
 }  // namespace
-
-bool IsDriveV2ApiEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDriveV2Api);
-}
 
 bool GetTimeFromString(const base::StringPiece& raw_value,
                        base::Time* parsed_time) {

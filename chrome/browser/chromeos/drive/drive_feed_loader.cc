@@ -21,8 +21,8 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
-#include "chrome/browser/google_apis/gdata_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 

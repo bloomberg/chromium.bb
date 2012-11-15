@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/drive/event_logger.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_util.h"
