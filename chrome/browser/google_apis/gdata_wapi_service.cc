@@ -12,8 +12,8 @@
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_operations.h"
 #include "chrome/browser/google_apis/gdata_operations.h"
-#include "chrome/browser/google_apis/gdata_util.h"
 #include "chrome/browser/google_apis/operation_runner.h"
+#include "chrome/browser/google_apis/time_util.h"
 #include "chrome/common/net/url_util.h"
 #include "content/public/browser/browser_thread.h"
 

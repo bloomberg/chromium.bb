@@ -16,8 +16,8 @@
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/download/download_completion_blocker.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
-#include "chrome/browser/google_apis/gdata_util.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/time_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "net/base/net_util.h"
 

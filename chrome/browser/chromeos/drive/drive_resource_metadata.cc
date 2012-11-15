@@ -8,14 +8,14 @@
 #include <utility>
 
 #include "base/message_loop_proxy.h"
-#include "base/string_number_conversions.h"
 #include "base/sequenced_task_runner.h"
+#include "base/string_number_conversions.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/chromeos/drive/document_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
-#include "chrome/browser/google_apis/gdata_util.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

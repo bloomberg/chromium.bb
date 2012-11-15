@@ -9,15 +9,15 @@
 #include <utility>
 #include <vector>
 
+#include "base/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/message_loop.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
-#include "chrome/browser/google_apis/gdata_util.h"
+#include "chrome/browser/google_apis/time_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
