@@ -14,6 +14,7 @@ extern const char kAccountsPrefAllowNewUser[];
 extern const char kAccountsPrefShowUserNamesOnSignIn[];
 extern const char kAccountsPrefUsers[];
 extern const char kAccountsPrefEphemeralUsersEnabled[];
+extern const char kAccountsPrefDeviceLocalAccounts[];
 
 extern const char kSettingProxyEverywhere[];
 

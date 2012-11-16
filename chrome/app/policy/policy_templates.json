@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 162
+#   For your editing convenience: highest ID currently used: 163
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -3058,6 +3058,24 @@
       'desc': ''' The types of connections that are allowed to use for OS updates. OS updates potentially put heavy strain on the connection due to their size and may incur additional cost. Therefore, they are by default not enabled for connection types that are considered expensive, which include WiMax, Bluetooth and Cellular at the moment.
 
       The recognized connection type identifiers are "ethernet", "wifi", "wimax", "bluetooth" and "cellular".''',
+    },
+    {
+      'name': 'DeviceLocalAccounts',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:0.25-'],
+      'device_only': True,
+      'future': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': [ "demo@example.com" ],
+      'id': 163,
+      'caption': '''Device-local accounts''',
+      'desc': '''Specifies the list of device-local accounts to be shown on the login screen.
+
+      Every list entry specifies an identifier, which is used internally to tell the different device-local accounts apart.''',
     },
     {
       'name': 'BackgroundModeEnabled',

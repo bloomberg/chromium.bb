@@ -40,6 +40,7 @@ const char* kKnownSettings[] = {
   kAccountsPrefEphemeralUsersEnabled,
   kAccountsPrefShowUserNamesOnSignIn,
   kAccountsPrefUsers,
+  kAccountsPrefDeviceLocalAccounts,
   kAppPack,
   kDeviceOwner,
   kIdleLogoutTimeout,
@@ -211,6 +212,22 @@ void DeviceSettingsProvider::SetInPolicy() {
       show->set_show_user_names(show_value);
     else
       NOTREACHED();
+  } else if (prop == kAccountsPrefDeviceLocalAccounts) {
+    em::DeviceLocalAccountsProto* device_local_accounts =
+        device_settings_.mutable_device_local_accounts();
+    base::ListValue* accounts_list;
+    if (value->GetAsList(&accounts_list)) {
+      for (base::ListValue::const_iterator entry(accounts_list->begin());
+           entry != accounts_list->end(); ++entry) {
+        std::string id;
+        if ((*entry)->GetAsString(&id))
+          device_local_accounts->add_account()->set_id(id);
+        else
+          NOTREACHED();
+      }
+    } else {
+      NOTREACHED();
+    }
   } else if (prop == kSignedDataRoamingEnabled) {
     em::DataRoamingEnabledProto* roam =
         device_settings_.mutable_data_roaming_enabled();
@@ -361,6 +378,16 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
     list->Append(base::Value::CreateStringValue(*it));
   }
   new_values_cache->SetValue(kAccountsPrefUsers, list);
+
+  base::ListValue* account_list = new base::ListValue();
+  const RepeatedPtrField<em::DeviceLocalAccountInfoProto>& accounts =
+      policy.device_local_accounts().account();
+  RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
+  for (entry = accounts.begin(); entry != accounts.end(); ++entry) {
+    if (entry->has_id())
+      account_list->AppendString(entry->id());
+  }
+  new_values_cache->SetValue(kAccountsPrefDeviceLocalAccounts, account_list);
 }
 
 void DeviceSettingsProvider::DecodeKioskPolicies(

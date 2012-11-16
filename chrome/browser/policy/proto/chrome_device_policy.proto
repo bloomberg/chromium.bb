@@ -220,6 +220,23 @@ message SystemTimezoneProto {
   optional string timezone = 1;
 }
 
+// Describes a single device-local account.
+message DeviceLocalAccountInfoProto {
+  // Identifier for the device-local account. Account identifiers loosely follow
+  // the conventions for email addresses as specified by RFC 5322, e.g. local
+  // (user name) and domain parts, separated by the '@' character.
+  // Policy-configured device-local accounts are on the same domain that the
+  // device is enrolled to. In contrast to RFC 5322 (which is more restrictive),
+  // the local part may contain any characters other than '@'.
+  optional string id = 1;
+}
+
+message DeviceLocalAccountsProto {
+  // The list of device-local accounts (i.e. accounts without an associated
+  // cloud-backed profile) that are available on the device.
+  repeated DeviceLocalAccountInfoProto account = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -241,4 +258,5 @@ message ChromeDeviceSettingsProto {
   optional StartUpUrlsProto start_up_urls = 18;
   optional PinnedAppsProto pinned_apps = 19;
   optional SystemTimezoneProto system_timezone = 20;
+  optional DeviceLocalAccountsProto device_local_accounts = 21;
 }

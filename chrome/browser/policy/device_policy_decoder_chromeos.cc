@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/policy/app_pack_updater.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -112,6 +113,23 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_SCOPE_MACHINE,
                     Value::CreateBooleanValue(
                         container.ephemeral_users_enabled()));
+    }
+  }
+
+  if (policy.has_device_local_accounts()) {
+    const RepeatedPtrField<em::DeviceLocalAccountInfoProto>& accounts =
+        policy.device_local_accounts().account();
+    if (accounts.size() > 0) {
+      ListValue* account_list = new ListValue();
+      RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
+      for (entry = accounts.begin(); entry != accounts.end(); ++entry) {
+        if (entry->has_id())
+          account_list->AppendString(entry->id());
+      }
+      policies->Set(key::kDeviceLocalAccounts,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    account_list);
     }
   }
 }

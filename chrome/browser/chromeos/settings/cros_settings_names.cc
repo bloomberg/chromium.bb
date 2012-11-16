@@ -16,6 +16,8 @@ const char kAccountsPrefShowUserNamesOnSignIn[]
 const char kAccountsPrefUsers[] = "cros.accounts.users";
 const char kAccountsPrefEphemeralUsersEnabled[] =
     "cros.accounts.ephemeralUsersEnabled";
+const char kAccountsPrefDeviceLocalAccounts[] =
+    "cros.accounts.deviceLocalAccounts";
 
 // Name of signed setting persisted on device, writeable only by owner.
 const char kSettingProxyEverywhere[] = "cros.proxy.everywhere";
