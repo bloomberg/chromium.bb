@@ -76,7 +76,6 @@ void SuspendRenderViewHost(RenderViewHost* rvh) {
 ShellWindow::CreateParams::CreateParams()
   : frame(ShellWindow::CreateParams::FRAME_CHROME),
     bounds(INT_MIN, INT_MIN, INT_MIN, INT_MIN),
-    restore_position(true), restore_size(true),
     creator_process_id(0), hidden(false) {
 }
 
@@ -133,19 +132,13 @@ void ShellWindow::Init(const GURL& url,
   if (!params.window_key.empty()) {
     window_key_ = params.window_key;
 
-    if (params.restore_position || params.restore_size) {
-      extensions::ShellWindowGeometryCache* cache =
-          extensions::ExtensionSystem::Get(profile())->
-            shell_window_geometry_cache();
-      gfx::Rect cached_bounds;
-      if (cache->GetGeometry(extension()->id(), params.window_key,
-                             &cached_bounds)) {
-        if (params.restore_position)
-          bounds.set_origin(cached_bounds.origin());
-        if (params.restore_size)
-          bounds.set_size(cached_bounds.size());
-      }
-    }
+    extensions::ShellWindowGeometryCache* cache =
+        extensions::ExtensionSystem::Get(profile())->
+          shell_window_geometry_cache();
+    gfx::Rect cached_bounds;
+    if (cache->GetGeometry(extension()->id(), params.window_key,
+                           &cached_bounds))
+      bounds = cached_bounds;
   }
 
   ShellWindow::CreateParams new_params = params;

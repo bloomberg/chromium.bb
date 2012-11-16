@@ -9,17 +9,21 @@ namespace app.window {
     // with the same id (and no explicit size or position) is later opened.
     DOMString? id;
 
-    // Default width of the window.
-    long? defaultWidth;
+    // Default width of the window. (Deprecated; regular bounds act like this
+    // now.)
+    [nodoc] long? defaultWidth;
 
-    // Default height of the window.
-    long? defaultHeight;
+    // Default height of the window. (Deprecated; regular bounds act like this
+    // now.)
+    [nodoc] long? defaultHeight;
 
-    // Default X coordinate of the window.
-    long? defaultLeft;
+    // Default X coordinate of the window. (Deprecated; regular bounds act like
+    // this now.)
+    [nodoc] long? defaultLeft;
 
-    // Default Y coordinate of the window.
-    long? defaultTop;
+    // Default Y coordinate of the window. (Deprecated; regular bounds act like
+    // this now.)
+    [nodoc] long? defaultTop;
 
     // Width of the window. (Deprecated; use 'bounds'.)
     [nodoc] long? width;
@@ -122,10 +126,11 @@ namespace app.window {
     //
     // Yet another option is to give the window a (unique) id. This id is then
     // used to remember the size and position of the window whenever it is
-    // moved or resized. This size and position is then used on subsequent
-    // opening of a window with the same id. The defaultLeft/defaultTop and
-    // defaultWidth/defaultHeight properties can be used to specify a position
-    // and size when no geometry has been stored for the window yet.
+    // moved or resized. This size and position is then used instead of the
+    // specified bounds on subsequent opening of a window with the same id. If
+    // you need to open a window with an id at a location other than the
+    // remembered default, you can create it hidden, move it to the desired
+    // location, then show it.
     //
     // You can also combine these various options, explicitly specifying for
     // example the size while having the position be remembered or other

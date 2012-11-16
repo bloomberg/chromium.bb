@@ -58,9 +58,6 @@ class ShellWindow : public content::NotificationObserver,
     // 'unspecified' for any coordinate, and should be replaced with a default
     // value.
     gfx::Rect bounds;
-    // Specify if bounds should be restored from a previous time.
-    bool restore_position;
-    bool restore_size;
 
     gfx::Size minimum_size;
     gfx::Size maximum_size;

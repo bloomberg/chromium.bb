@@ -112,6 +112,8 @@ bool AppWindowCreateFunction::RunImpl() {
       create_params.window_key = *options->id;
     }
 
+    // TODO(jeremya): remove these, since they do the same thing as
+    // left/top/width/height.
     if (options->default_width.get())
       create_params.bounds.set_width(*options->default_width.get());
     if (options->default_height.get())
@@ -121,22 +123,14 @@ bool AppWindowCreateFunction::RunImpl() {
     if (options->default_top.get())
       create_params.bounds.set_y(*options->default_top.get());
 
-
-    if (options->width.get() || options->height.get()) {
-      if (options->width.get())
-        create_params.bounds.set_width(*options->width.get());
-      if (options->height.get())
-        create_params.bounds.set_height(*options->height.get());
-      create_params.restore_size = false;
-    }
-
-    if (options->left.get() || options->top.get()) {
-      if (options->left.get())
-        create_params.bounds.set_x(*options->left.get());
-      if (options->top.get())
-        create_params.bounds.set_y(*options->top.get());
-      create_params.restore_position = false;
-    }
+    if (options->width.get())
+      create_params.bounds.set_width(*options->width.get());
+    if (options->height.get())
+      create_params.bounds.set_height(*options->height.get());
+    if (options->left.get())
+      create_params.bounds.set_x(*options->left.get());
+    if (options->top.get())
+      create_params.bounds.set_y(*options->top.get());
 
     if (options->bounds.get()) {
       app_window::Bounds* bounds = options->bounds.get();
