@@ -186,7 +186,7 @@ class Worker : public Listener, public Sender {
     // SyncChannel needs to be destructed on the thread that it was created on.
     channel_.reset();
 
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
 
     ipc_thread_.message_loop()->PostTask(
         FROM_HERE, base::Bind(&Worker::OnIPCThreadShutdown, this,
@@ -195,7 +195,7 @@ class Worker : public Listener, public Sender {
 
   void OnIPCThreadShutdown(WaitableEvent* listener_event,
                            WaitableEvent* ipc_event) {
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     ipc_event->Signal();
 
     listener_thread_.message_loop()->PostTask(
@@ -204,7 +204,7 @@ class Worker : public Listener, public Sender {
   }
 
   void OnListenerThreadShutdown2(WaitableEvent* listener_event) {
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     listener_event->Signal();
   }
 
