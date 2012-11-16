@@ -611,6 +611,9 @@ DialogType.isModal = function(type) {
     CommandUtil.registerCommand(doc, 'open-with',
             Commands.openWithCommand, this);
 
+    CommandUtil.registerCommand(doc, 'search', Commands.searchCommand, this,
+            this.dialogDom_.querySelector('#search-box'));
+
     CommandUtil.registerCommand(doc, 'cut', Commands.defaultCommand, doc);
     CommandUtil.registerCommand(doc, 'copy', Commands.defaultCommand, doc);
 

@@ -289,3 +289,15 @@ Commands.openWithCommand = {
     event.canExecute = tasks && tasks.size() > 1;
   }
 };
+
+/**
+ * Focuses search input box.
+ */
+Commands.searchCommand = {
+  execute: function(event, fileManager, elmnt) {
+    elmnt.focus();
+  },
+  canExecute: function(event, fileManager) {
+    event.canExecute = !fileManager.isRenamingInProgress();
+  }
+};
