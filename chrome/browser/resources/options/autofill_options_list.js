@@ -355,7 +355,7 @@ cr.define('options.autofillOptions', function() {
 
     /** @inheritDoc */
     deleteItemAtIndex: function(index) {
-      AutofillOptions.removeData(this.dataModel.item(index)[0]);
+      AutofillOptions.removeAddress(this.dataModel.item(index)[0]);
     },
   };
 
@@ -385,7 +385,7 @@ cr.define('options.autofillOptions', function() {
 
     /** @inheritDoc */
     deleteItemAtIndex: function(index) {
-      AutofillOptions.removeData(this.dataModel.item(index)[0]);
+      AutofillOptions.removeCreditCard(this.dataModel.item(index)[0]);
     },
   };
 

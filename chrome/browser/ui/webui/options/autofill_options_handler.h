@@ -44,9 +44,13 @@ class AutofillOptionsHandler : public OptionsPageUIHandler,
   // Loads Autofill addresses and credit cards using the PersonalDataManager.
   void LoadAutofillData();
 
-  // Removes data from the PersonalDataManager.
-  // |args| - A string, the GUID of the address or credit card to remove.
-  void RemoveData(const base::ListValue* args);
+  // Removes an address from the PersonalDataManager.
+  // |args| - A string, the GUID of the address to remove.
+  void RemoveAddress(const base::ListValue* args);
+
+  // Removes a credit card from the PersonalDataManager.
+  // |args| - A string, the GUID of the credit card to remove.
+  void RemoveCreditCard(const base::ListValue* args);
 
   // Requests profile data for a specific address. Calls into WebUI with the
   // loaded profile data to open the address editor.

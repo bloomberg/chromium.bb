@@ -318,8 +318,12 @@ void AutofillOptionsHandler::InitializePage() {
 
 void AutofillOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "removeData",
-      base::Bind(&AutofillOptionsHandler::RemoveData,
+      "removeAddress",
+      base::Bind(&AutofillOptionsHandler::RemoveAddress,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "removeCreditCard",
+      base::Bind(&AutofillOptionsHandler::RemoveCreditCard,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "loadAddressEditor",
@@ -436,7 +440,7 @@ void AutofillOptionsHandler::LoadAutofillData() {
                                    credit_cards);
 }
 
-void AutofillOptionsHandler::RemoveData(const ListValue* args) {
+void AutofillOptionsHandler::RemoveAddress(const ListValue* args) {
   DCHECK(IsPersonalDataLoaded());
 
   std::string guid;
@@ -445,7 +449,19 @@ void AutofillOptionsHandler::RemoveData(const ListValue* args) {
     return;
   }
 
-  personal_data_->RemoveByGUID(guid);
+  personal_data_->RemoveProfile(guid);
+}
+
+void AutofillOptionsHandler::RemoveCreditCard(const ListValue* args) {
+  DCHECK(IsPersonalDataLoaded());
+
+  std::string guid;
+  if (!args->GetString(0, &guid)) {
+    NOTREACHED();
+    return;
+  }
+
+  personal_data_->RemoveCreditCard(guid);
 }
 
 void AutofillOptionsHandler::LoadAddressEditor(const ListValue* args) {

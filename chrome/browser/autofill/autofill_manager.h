@@ -32,7 +32,6 @@ class AutofillField;
 class AutofillProfile;
 class AutofillMetrics;
 class CreditCard;
-class FormGroup;
 class PersonalDataManager;
 class PrefService;
 class ProfileSyncService;
@@ -230,13 +229,17 @@ class AutofillManager : public content::WebContentsObserver,
 
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.
-  bool GetHost(content::RenderViewHost** host) const WARN_UNUSED_RESULT;
+  bool GetHost(const std::vector<AutofillProfile*>& profiles,
+               const std::vector<CreditCard*>& credit_cards,
+               content::RenderViewHost** host) const WARN_UNUSED_RESULT;
 
-  // Unpacks |unique_id| and fills |form_group| and |variant| with the
-  // appropriate data source and variant index.  Returns false if the unpacked
-  // id cannot be found.
+  // Unpacks |unique_id| and fills |profile| or |credit_card| with the
+  // appropriate data source.  Returns false if the unpacked id cannot be found.
   bool GetProfileOrCreditCard(int unique_id,
-                              const FormGroup** form_group,
+                              const std::vector<AutofillProfile*>& profiles,
+                              const std::vector<CreditCard*>& credit_cards,
+                              const AutofillProfile** profile,
+                              const CreditCard** credit_card,
                               size_t* variant) const WARN_UNUSED_RESULT;
 
   // Fills |form_structure| cached element corresponding to |form|.

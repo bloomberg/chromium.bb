@@ -126,12 +126,21 @@ cr.define('options', function() {
     },
 
     /**
-     * Removes the Autofill address or credit card represented by |guid|.
+     * Removes the Autofill address represented by |guid|.
      * @param {String} guid The GUID of the address to remove.
      * @private
      */
-    removeData_: function(guid) {
-      chrome.send('removeData', [guid]);
+    removeAddress_: function(guid) {
+      chrome.send('removeAddress', [guid]);
+    },
+
+    /**
+     * Removes the Autofill credit card represented by |guid|.
+     * @param {String} guid The GUID of the credit card to remove.
+     * @private
+     */
+    removeCreditCard_: function(guid) {
+      chrome.send('removeCreditCard', [guid]);
     },
 
     /**
@@ -191,8 +200,12 @@ cr.define('options', function() {
     AutofillOptions.getInstance().setCreditCardList_(entries);
   };
 
-  AutofillOptions.removeData = function(guid) {
-    AutofillOptions.getInstance().removeData_(guid);
+  AutofillOptions.removeAddress = function(guid) {
+    AutofillOptions.getInstance().removeAddress_(guid);
+  };
+
+  AutofillOptions.removeCreditCard = function(guid) {
+    AutofillOptions.getInstance().removeCreditCard_(guid);
   };
 
   AutofillOptions.loadAddressEditor = function(guid) {

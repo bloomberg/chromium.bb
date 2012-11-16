@@ -87,8 +87,8 @@ class PersonalDataManager
   // Updates |profile| which already exists in the web database.
   void UpdateProfile(const AutofillProfile& profile);
 
-  // Removes the profile or credit card represented by |guid|.
-  virtual void RemoveByGUID(const std::string& guid);
+  // Removes the profile represented by |guid|.
+  virtual void RemoveProfile(const std::string& guid);
 
   // Returns the profile with the specified |guid|, or NULL if there is no
   // profile with the specified |guid|.
@@ -99,6 +99,9 @@ class PersonalDataManager
 
   // Updates |credit_card| which already exists in the web database.
   void UpdateCreditCard(const CreditCard& credit_card);
+
+  // Removes the credit card represented by |guid|.
+  virtual void RemoveCreditCard(const std::string& guid);
 
   // Returns the credit card with the specified |guid|, or NULL if there is
   // no credit card with the specified |guid|.

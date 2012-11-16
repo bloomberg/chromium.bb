@@ -18,7 +18,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_country.h"
-#include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_regexes.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
@@ -233,10 +232,6 @@ CreditCard::CreditCard(const CreditCard& credit_card) : FormGroup() {
 }
 
 CreditCard::~CreditCard() {}
-
-std::string CreditCard::GetGUID() const {
-  return guid();
-}
 
 string16 CreditCard::GetRawInfo(AutofillFieldType type) const {
   switch (type) {
@@ -453,25 +448,24 @@ bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card) {
   return true;
 }
 
-void CreditCard::FillFormField(const AutofillField& field,
-                               size_t /*variant*/,
-                               FormFieldData* field_data) const {
-  DCHECK_EQ(AutofillType::CREDIT_CARD, AutofillType(field.type()).group());
-  DCHECK(field_data);
+void CreditCard::FillFormField(AutofillFieldType type,
+                               FormFieldData* field) const {
+  DCHECK_EQ(AutofillType::CREDIT_CARD, AutofillType(type).group());
+  DCHECK(field);
 
-  if (field_data->form_control_type == "select-one") {
-    FillSelectControl(field.type(), field_data);
-  } else if (field_data->form_control_type == "month") {
+  if (field->form_control_type == "select-one") {
+    FillSelectControl(type, field);
+  } else if (field->form_control_type == "month") {
     // HTML5 input="month" consists of year-month.
     string16 year = GetCanonicalizedInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR);
     string16 month = GetCanonicalizedInfo(CREDIT_CARD_EXP_MONTH);
     if (!year.empty() && !month.empty()) {
       // Fill the value only if |this| includes both year and month
       // information.
-      field_data->value = year + ASCIIToUTF16("-") + month;
+      field->value = year + ASCIIToUTF16("-") + month;
     }
   } else {
-    field_data->value = GetCanonicalizedInfo(field.type());
+    field->value = GetCanonicalizedInfo(type);
   }
 }
 
