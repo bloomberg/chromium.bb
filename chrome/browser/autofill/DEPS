@@ -6,7 +6,6 @@ include_rules = [
   "+chrome/browser/api",
   "+chrome/browser/autofill",
   "+chrome/browser/common",
-  "+chrome/browser/ui/autofill",
 
   # Permanently-allowed DEPS beyond the standard Browser
   # Components-like DEPS above go here.

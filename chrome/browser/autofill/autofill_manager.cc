@@ -38,7 +38,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -769,28 +768,14 @@ void AutofillManager::OnSetDataList(const std::vector<string16>& values,
 }
 
 void AutofillManager::OnRequestAutocomplete(const FormData& form) {
-  base::Callback<void(const FormStructure*)> callback =
-      base::Bind(&AutofillManager::ReturnAutocompleteData, this);
-  autofill::AutofillDialogController* controller =
-      new autofill::AutofillDialogController(web_contents(),
-                                             form,
-                                             callback);
-  controller->Show();
-}
-
-void AutofillManager::ReturnAutocompleteData(const FormStructure* result) {
   RenderViewHost* host = web_contents()->GetRenderViewHost();
   if (!host)
     return;
 
-  if (!result) {
-    host->Send(new AutofillMsg_RequestAutocompleteFinished(
-        host->GetRoutingID(), WebKit::WebFormElement::AutocompleteResultError));
-  } else {
-    // TODO(estade): implement non-failure case.
-    host->Send(new AutofillMsg_RequestAutocompleteFinished(
-        host->GetRoutingID(), WebKit::WebFormElement::AutocompleteResultError));
-  }
+  // TODO(dbeam): implement interactive autocomplete UI. Just send an error
+  // right away until we have an implementation. (http://webk.it/100560)
+  host->Send(new AutofillMsg_RequestAutocompleteFinished(
+      host->GetRoutingID(), WebKit::WebFormElement::AutocompleteResultError));
 }
 
 void AutofillManager::OnLoadedServerPredictions(

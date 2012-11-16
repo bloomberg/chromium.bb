@@ -21,8 +21,6 @@ struct DetailInput {
   AutofillFieldType type;
   // TODO(estade): remove this, do l10n.
   const char* placeholder_text;
-  // The section suffix that the field must have to match up to this input.
-  const char* section_suffix;
   // A number between 0 and 1.0 that describes how much of the horizontal space
   // in the row should be allotted to this input. 0 is equivalent to 1.
   float expand_weight;
@@ -30,9 +28,6 @@ struct DetailInput {
 
 extern const DetailInput kEmailInputs[];
 extern const size_t kEmailInputsSize;
-
-extern const DetailInput kCCInputs[];
-extern const size_t kCCInputsSize;
 
 extern const DetailInput kBillingInputs[];
 extern const size_t kBillingInputsSize;

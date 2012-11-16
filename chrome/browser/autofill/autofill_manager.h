@@ -228,9 +228,6 @@ class AutofillManager : public content::WebContentsObserver,
   // Requests an interactive autocomplete UI be shown.
   void OnRequestAutocomplete(const FormData& form);
 
-  // Passes return data for an OnRequestAutocomplete call back to the page.
-  void ReturnAutocompleteData(const FormStructure* result);
-
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.
   bool GetHost(content::RenderViewHost** host) const WARN_UNUSED_RESULT;
