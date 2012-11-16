@@ -4,6 +4,7 @@
 
 """Routines and classes for working with Portage overlays and ebuilds."""
 
+import collections
 import filecmp
 import fileinput
 import glob
@@ -29,14 +30,19 @@ _GLOBAL_OVERLAYS = [
 # Takes two strings, package_name and commit_id.
 _GIT_COMMIT_MESSAGE = 'Marking 9999 ebuild for %s with commit(s) %s as stable.'
 
+# Define datastructures for holding PV and CPV objects.
+_PV_FIELDS = ['pv', 'package', 'version', 'version_no_rev', 'rev']
+PV = collections.namedtuple('PV', _PV_FIELDS)
+CPV = collections.namedtuple('CPV', ['category'] + _PV_FIELDS)
+
 # Package matching regexp, as dictated by package manager specification:
 # http://www.gentoo.org/proj/en/qa/pms.xml
 _pkg = '(?P<package>' + '[\w+][\w+-]*)'
 _ver = '(?P<version>' + \
-       '(?P<ver>(\d+)((\.\d+)*)([a-z]?)' + \
+       '(?P<version_no_rev>(\d+)((\.\d+)*)([a-z]?)' + \
        '((_(pre|p|beta|alpha|rc)\d*)*))' + \
-       '(?P<rev>(-r(\d+)))?)'
-_pvr_re = re.compile('^%s-%s$' % (_pkg, _ver), re.VERBOSE)
+       '(-(?P<rev>r(\d+)))?)'
+_pvr_re = re.compile('^(?P<pv>%s-%s)$' % (_pkg, _ver), re.VERBOSE)
 
 # This regex matches blank lines, commented lines, and the EAPI line.
 _blank_or_eapi_re = re.compile(r'^\s*(?:#|EAPI=|$)')
@@ -779,7 +785,7 @@ def SplitPV(pv):
   m = _pvr_re.match(pv)
   if m is None:
     return None
-  return (m.group('package'), m.group('version'))
+  return PV(**m.groupdict())
 
 
 def SplitCPV(cpv):
@@ -792,7 +798,7 @@ def SplitCPV(cpv):
   m = SplitPV(pv)
   if m is None:
     return None
-  return (category, ) + m
+  return CPV(category=category, **m.__dict__)
 
 
 def FindWorkonProjects(packages):
@@ -830,6 +836,5 @@ def ListInstalledPackages(sysroot):
     category, package, packagecheck = SplitEbuildPath(path)
     pv = SplitPV(package)
     if package == packagecheck and pv is not None:
-      pkgname, version = pv
-      packages.append(('%s/%s' % (category, pkgname), version))
+      packages.append(('%s/%s' % (category, pv.package), pv.version))
   return packages

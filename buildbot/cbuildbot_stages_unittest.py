@@ -535,8 +535,8 @@ class SDKStageTest(AbstractStageTest, cros_test_lib.TempDirTestCase):
     os.makedirs(self.fake_chroot)
     osutils.Touch(os.path.join(self.fake_chroot, 'file'))
     for package, v in self.fake_packages:
-      (c, p, v) = portage_utilities.SplitCPV('%s-%s' % (package, v))
-      key = '%s/%s' % (c, p)
+      cpv = portage_utilities.SplitCPV('%s-%s' % (package, v))
+      key = '%s/%s' % (cpv.category, cpv.package)
       self.fake_json_data.setdefault(key, []).append([v, {}])
 
   def tearDown(self):

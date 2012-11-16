@@ -603,15 +603,23 @@ class ProjectMappingTest(cros_test_lib.TestCase):
   def testSplitPV(self):
     """Test splitting PVs into package and version components."""
     pv = 'bar-1.2.3_rc1-r5'
-    components = tuple(pv.split('-', 1))
-    self.assertEquals(components, portage_utilities.SplitPV(pv))
+    package, version_no_rev, rev = tuple(pv.split('-'))
+    split_pv = portage_utilities.SplitPV(pv)
+    self.assertEquals(split_pv.pv, pv)
+    self.assertEquals(split_pv.package, package)
+    self.assertEquals(split_pv.version_no_rev, version_no_rev)
+    self.assertEquals(split_pv.rev, rev)
+    self.assertEquals(split_pv.version, '%s-%s' % (version_no_rev, rev))
 
   def testSplitCPV(self):
     """Test splitting CPV into components."""
     cpv = 'foo/bar-4.5.6_alpha-r6'
-    cat = cpv.split('/', 1)[0]
-    components = tuple([cat] + cpv.split('/', 1)[1].split('-', 1))
-    self.assertEquals(components, portage_utilities.SplitCPV(cpv))
+    cat, pv = cpv.split('/', 1)
+    split_pv = portage_utilities.SplitPV(pv)
+    split_cpv = portage_utilities.SplitCPV(cpv)
+    self.assertEquals(split_cpv.category, cat)
+    for k, v in split_pv.__dict__.iteritems():
+      self.assertEquals(split_cpv.__dict__[k], v)
 
   def testFindWorkonProjects(self):
     """Test if we can find the list of workon projects."""
@@ -663,9 +671,9 @@ class PackageDBTest(cros_test_lib.MoxTempDirTestCase):
           continue
         # Correct pkg.
         osutils.Touch(os.path.join(pkgpath, pkg + '.ebuild'))
-        (p, v) = portage_utilities.SplitPV(pkg)
-        key = '%s/%s' % (cat, p)
-        self.fake_packages.append((key, v))
+        pv = portage_utilities.SplitPV(pkg)
+        key = '%s/%s' % (cat, pv.package)
+        self.fake_packages.append((key, pv.version))
 
   def testListInstalledPackages(self):
     """Test if listing packages installed into a root works."""
