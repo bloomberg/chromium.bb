@@ -68,8 +68,8 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
-#include "ui/base/native_theme/native_theme_aura.h"
 #include "ui/compositor/layer.h"
+#include "ui/native_theme/native_theme_aura.h"
 #endif
 
 using content::UserMetricsAction;

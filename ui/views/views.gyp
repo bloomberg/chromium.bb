@@ -30,6 +30,7 @@
         '../../third_party/icu/icu.gyp:icuuc',
         '../base/strings/ui_strings.gyp:ui_strings',
         '../compositor/compositor.gyp:compositor',
+        '../native_theme/native_theme.gyp:native_theme',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
       ],

@@ -18,8 +18,8 @@
 
 #if defined(OS_WIN)
 #include "skia/ext/skia_utils_win.h"
-#include "ui/base/native_theme/native_theme_win.h"
 #include "ui/gfx/platform_font_win.h"
+#include "ui/native_theme/native_theme_win.h"
 #endif
 
 namespace views {

@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/examples/example_base.h"

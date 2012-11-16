@@ -20,7 +20,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 
-#include "ui/base/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme.h"
 #endif
 
 namespace gfx {

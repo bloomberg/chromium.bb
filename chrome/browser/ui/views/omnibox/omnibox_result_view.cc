@@ -21,19 +21,19 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/native_theme/native_theme.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/render_text.h"
+#include "ui/native_theme/native_theme.h"
 
 #if defined(OS_WIN)
-#include "ui/base/native_theme/native_theme_win.h"
+#include "ui/native_theme/native_theme_win.h"
 #endif
 
 #if defined(USE_AURA)
-#include "ui/base/native_theme/native_theme_aura.h"
+#include "ui/native_theme/native_theme_aura.h"
 #endif
 
 namespace {

@@ -156,7 +156,6 @@
         ['OS == "win"', {
           'sources': [
             'base/dragdrop/os_exchange_data_win_unittest.cc',
-            'base/native_theme/native_theme_win_unittest.cc',
             'base/win/hwnd_subclass_unittest.cc',
             'gfx/font_fallback_win_unittest.cc',
             'gfx/icon_util_unittest.cc',
@@ -261,7 +260,6 @@
           'sources!': [
             'base/dialogs/select_file_dialog_win_unittest.cc',
             'base/dragdrop/os_exchange_data_win_unittest.cc',
-            'base/native_theme/native_theme_win_unittest.cc',
             'gfx/screen_unittest.cc',
           ],
         }],

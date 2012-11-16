@@ -7,14 +7,14 @@
 #include "base/logging.h"
 #include "grit/ui_resources.h"
 #include "ui/base/animation/throb_animation.h"
-#include "ui/base/native_theme/native_theme.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/focus_border.h"
 
 #if defined(OS_WIN)
 #include "ui/gfx/color_utils.h"
-#include "ui/base/native_theme/native_theme_win.h"
+#include "ui/native_theme/native_theme_win.h"
 #endif
 
 namespace {

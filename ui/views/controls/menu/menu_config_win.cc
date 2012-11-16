@@ -12,11 +12,11 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/base/native_theme/native_theme_win.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme_win.h"
 
 #if defined(USE_AURA)
-#include "ui/base/native_theme/native_theme_aura.h"
+#include "ui/native_theme/native_theme_aura.h"
 #endif
 
 using ui::NativeTheme;

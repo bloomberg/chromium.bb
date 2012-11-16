@@ -6,7 +6,7 @@
 #define UI_VIEWS_EXAMPLES_NATIVE_THEME_CHECKBOX_EXAMPLE_H_
 
 #include "base/basictypes.h"
-#include "ui/base/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/examples/example_base.h"
 

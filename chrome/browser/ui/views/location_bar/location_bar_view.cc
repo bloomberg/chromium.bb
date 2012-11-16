@@ -34,8 +34,8 @@
 #include "chrome/browser/ui/search/search_types.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_prompt_view.h"
+#include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/location_bar/action_box_button_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
@@ -79,7 +79,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
-#include "ui/base/native_theme/native_theme_win.h"
+#include "ui/native_theme/native_theme_win.h"
 #endif
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -88,7 +88,7 @@
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/first_run_bubble.h"
-#include "ui/base/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme.h"
 #endif
 
 #if defined(USE_AURA)

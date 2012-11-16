@@ -50,6 +50,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
+        '../ui/native_theme/native_theme.gyp:native_theme',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         '../webkit/support/webkit_support.gyp:user_agent',

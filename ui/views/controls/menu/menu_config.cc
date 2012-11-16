@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 #include "ui/base/layout.h"
-#include "ui/base/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace views {
 
