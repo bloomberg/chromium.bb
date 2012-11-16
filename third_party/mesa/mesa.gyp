@@ -35,15 +35,26 @@
   },
   'targets': [
     {
+      'target_name': 'headers',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'include_dirs': [
+          'MesaLib/include',
+        ],
+      },
+    },
+    {
       'target_name': 'mesa',
       'type': 'static_library',
       'include_dirs': [
         '../talloc',
-        'MesaLib/include',
         'MesaLib/src/glsl',
         'MesaLib/src/mapi',
         'MesaLib/src/mesa',
         'MesaLib/src/mesa/main',
+      ],
+      'dependencies': [
+        'headers',
       ],
       'sources': [
         '../talloc/talloc.c',
@@ -545,6 +556,7 @@
       'type': 'loadable_module',
       'mac_bundle': 0,
       'dependencies': [
+        'headers',
         'mesa',
       ],
       # Fixes link problems on Mac OS X with missing __cxa_pure_virtual.
@@ -556,7 +568,6 @@
         }],
       ],
       'include_dirs': [
-        'MesaLib/include',
         'MesaLib/src/mapi',
         'MesaLib/src/mesa',
         'MesaLib/src/mesa/drivers',
