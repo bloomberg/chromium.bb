@@ -28,6 +28,11 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#endif
+
 namespace {
 
 const wchar_t kHelpCenterUrl[] =
@@ -261,8 +266,14 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   popup_->SetBounds(pos);
 
   // Carve the toast shape into the window.
-  SetToastRegion(popup_->GetNativeView(),
-                 preferred.width(), preferred.height());
+  HWND toast_window;
+#if defined(USE_AURA)
+  toast_window =
+      popup_->GetNativeView()->GetRootWindow()->GetAcceleratedWidget();
+#else
+  toast_window = popup_->GetNativeView();
+#endif
+  SetToastRegion(toast_window, preferred.width(), preferred.height());
 
   // Time to show the window in a modal loop. The ProcessSingleton should
   // already be locked and it will not process WM_COPYDATA requests. Change the

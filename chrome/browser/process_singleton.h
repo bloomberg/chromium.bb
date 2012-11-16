@@ -99,7 +99,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   static void DisablePromptForTesting();
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // Used in specific cases to let us know that there is an existing instance
   // of Chrome running with this profile. In general, you should not use this
   // function. Instead consider using NotifyOtherProcessOrCreate().

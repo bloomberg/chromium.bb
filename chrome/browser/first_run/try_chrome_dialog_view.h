@@ -83,7 +83,7 @@ class TryChromeDialogView : public views::ButtonListener,
 
   // Create a windows region that looks like a toast of width |w| and height
   // |h|. This is best effort, so we don't care much if the operation fails.
-  void SetToastRegion(gfx::NativeWindow window, int w, int h);
+  void SetToastRegion(HWND window, int w, int h);
 
   // views::ButtonListener:
   // We have two buttons and according to what the user clicked we set |result_|
