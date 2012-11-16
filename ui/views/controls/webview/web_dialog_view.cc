@@ -311,13 +311,6 @@ void WebDialogView::InitDialog() {
   // the comment above WebDialogUI in its header file for why.
   WebDialogUI::SetDelegate(web_contents, this);
 
-  if (delegate_) {
-    gfx::Size out;
-    delegate_->GetDialogSize(&out);
-    if (!out.IsEmpty() && GetWidget())
-      GetWidget()->CenterWindow(out);
-  }
-
   web_view_->LoadInitialURL(GetDialogContentURL());
 }
 
