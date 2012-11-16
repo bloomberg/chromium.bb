@@ -121,11 +121,6 @@ class CONTENT_EXPORT InterstitialPageImpl
       const ContextMenuParams& params,
       ContextMenuSourceType type) OVERRIDE;
 
-#if defined(OS_ANDROID)
-  virtual void AttachLayer(WebKit::WebLayer* layer) OVERRIDE;
-  virtual void RemoveLayer(WebKit::WebLayer* layer) OVERRIDE;
-#endif
-
   // RenderWidgetHostDelegate implementation:
   virtual void RenderWidgetDeleted(
       RenderWidgetHostImpl* render_widget_host) OVERRIDE;

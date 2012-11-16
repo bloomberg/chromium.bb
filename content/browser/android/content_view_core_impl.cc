@@ -59,6 +59,7 @@ using base::android::ScopedJavaLocalRef;
 using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
+using WebKit::WebLayer;
 
 // Describes the type and enabled state of a select popup item.
 // Keep in sync with the value defined in SelectPopupDialog.java
@@ -145,6 +146,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
                                          ui::WindowAndroid* window_android)
     : java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
+      root_layer_(WebLayer::create()),
       tab_crashed_(false),
       window_android_(window_android) {
   DCHECK(web_contents) <<
@@ -548,11 +550,6 @@ unsigned int ContentViewCoreImpl::GetScaledContentTexture(
   return view->GetScaledContentTexture(size);
 }
 
-WebKit::WebLayer* ContentViewCoreImpl::GetWebLayer() {
-  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
-  return view ? view->GetWebLayer() : NULL;
-}
-
 void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
@@ -602,14 +599,26 @@ gfx::Rect ContentViewCoreImpl::GetBounds() const {
                    Java_ContentViewCore_getHeight(env, j_obj.obj()));
 }
 
+void ContentViewCoreImpl::AttachWebLayer(WebLayer* layer) {
+  root_layer_->addChild(layer);
+}
+
+void ContentViewCoreImpl::RemoveWebLayer(WebLayer* layer) {
+  layer->removeFromParent();
+}
+
 void ContentViewCoreImpl::LoadUrl(
     NavigationController::LoadURLParams& params) {
   GetWebContents()->GetController().LoadURLWithParams(params);
   tab_crashed_ = false;
 }
 
-ui::WindowAndroid* ContentViewCoreImpl::GetWindowAndroid() {
+ui::WindowAndroid* ContentViewCoreImpl::GetWindowAndroid() const {
   return window_android_;
+}
+
+WebLayer* ContentViewCoreImpl::GetWebLayer() const {
+  return root_layer_.get();
 }
 
 // ----------------------------------------------------------------------------

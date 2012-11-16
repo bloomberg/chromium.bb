@@ -47,13 +47,13 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual base::android::ScopedJavaLocalRef<jobject> GetContainerViewDelegate()
       OVERRIDE;
   virtual WebContents* GetWebContents() const OVERRIDE;
-  virtual ui::WindowAndroid* GetWindowAndroid() OVERRIDE;
+  virtual ui::WindowAndroid* GetWindowAndroid() const OVERRIDE;
+  virtual WebKit::WebLayer* GetWebLayer() const OVERRIDE;
   virtual void LoadUrl(NavigationController::LoadURLParams& params) OVERRIDE;
   virtual void OnWebPreferencesUpdated() OVERRIDE;
   virtual jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj) OVERRIDE;
   virtual void ShowPastePopup(int x, int y) OVERRIDE;
   virtual unsigned int GetScaledContentTexture(const gfx::Size& size) OVERRIDE;
-  virtual WebKit::WebLayer* GetWebLayer() OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -229,8 +229,12 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   gfx::Rect GetBounds() const;
 
+  void AttachWebLayer(WebKit::WebLayer* layer);
+  void RemoveWebLayer(WebKit::WebLayer* layer);
+
  private:
   class ContentViewUserData;
+
   friend class ContentViewUserData;
   virtual ~ContentViewCoreImpl();
 
@@ -268,6 +272,9 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Reference to the current WebContents used to determine how and what to
   // display in the ContentViewCore.
   WebContentsImpl* web_contents_;
+
+  // A WebLayer containing any WebLayer that should be shown.
+  scoped_ptr<WebKit::WebLayer> root_layer_;
 
   // Whether the renderer backing this ContentViewCore has crashed.
   bool tab_crashed_;

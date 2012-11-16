@@ -685,16 +685,6 @@ void InterstitialPageImpl::ShowContextMenu(
     ContextMenuSourceType type) {
 }
 
-#if defined(OS_ANDROID)
-void InterstitialPageImpl::AttachLayer(WebKit::WebLayer* layer) {
-  web_contents_->AttachLayer(layer);
-}
-
-void InterstitialPageImpl::RemoveLayer(WebKit::WebLayer* layer) {
-  web_contents_->RemoveLayer(layer);
-}
-#endif
-
 void InterstitialPageImpl::Disable() {
   enabled_ = false;
 }

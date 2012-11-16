@@ -428,11 +428,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
     allow_privileged_mouse_lock_ = allow;
   }
 
-#if defined(OS_ANDROID)
-  virtual void AttachLayer(WebKit::WebLayer* layer) {}
-  virtual void RemoveLayer(WebKit::WebLayer* layer) {}
-#endif
-
   // Resets state variables related to tracking pending size and painting.
   //
   // We need to reset these flags when we want to repaint the contents of

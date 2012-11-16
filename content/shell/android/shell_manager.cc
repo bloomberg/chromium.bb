@@ -35,12 +35,6 @@ namespace content {
 jobject CreateShellView(Shell* shell) {
   JNIEnv* env = base::android::AttachCurrentThread();
   jobject j_shell_manager = g_global_state.Get().j_shell_manager.obj();
-
-  ContentViewLayerRenderer* content_view_layer_renderer =
-      reinterpret_cast<ContentViewLayerRenderer*>(
-          Java_ShellManager_getContentViewLayerRenderer(env, j_shell_manager));
-  shell->SetContentViewLayerRenderer(content_view_layer_renderer);
-
   return Java_ShellManager_createShell(env, j_shell_manager).Release();
 }
 

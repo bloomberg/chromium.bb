@@ -10,8 +10,6 @@ import android.content.Context;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-import org.chromium.base.JNINamespace;
-
 import org.chromium.chrome.browser.TabBase;
 import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.ui.gfx.NativeWindow;
@@ -21,13 +19,12 @@ import org.chromium.ui.gfx.NativeWindow;
  * a {@link TabBase}.  It properly builds a {@link TabBase} and makes sure that the {@link Toolbar}
  * and {@link ContentViewRenderView} show the proper content.
  */
-@JNINamespace("chrome")
 public class TabManager extends LinearLayout {
     private static final String DEFAULT_URL = "http://www.google.com";
 
     private NativeWindow mWindow;
     private ViewGroup mContentViewHolder;
-    private ContentViewRenderView mRenderTarget;
+    private ContentViewRenderView mContentViewRenderView;
     private TestShellToolbar mToolbar;
 
     private TabBase mCurrentTab;
@@ -48,13 +45,13 @@ public class TabManager extends LinearLayout {
 
         mContentViewHolder = (ViewGroup) findViewById(R.id.content_container);
         mToolbar = (TestShellToolbar) findViewById(R.id.toolbar);
-        mRenderTarget = new ContentViewRenderView(getContext()) {
+        mContentViewRenderView = new ContentViewRenderView(getContext()) {
             @Override
             protected void onReadyToRender() {
                 if (mCurrentTab == null) createTab(mStartupUrl);
             }
         };
-        mContentViewHolder.addView(mRenderTarget,
+        mContentViewHolder.addView(mContentViewRenderView,
                 new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
@@ -86,21 +83,19 @@ public class TabManager extends LinearLayout {
      * @param url The URL the new {@link TabBase} should start with.
      */
     public void createTab(String url) {
-        if (!isRenderTargetInitialized()) return;
+        if (!isContentViewRenderViewInitialized()) return;
 
         TabBase tab = new TabBase(getContext(), url, mWindow);
         setCurrentTab(tab);
     }
 
-    private boolean isRenderTargetInitialized() {
-        return mRenderTarget != null && mRenderTarget.isInitialized();
+    private boolean isContentViewRenderViewInitialized() {
+        return mContentViewRenderView != null && mContentViewRenderView.isInitialized();
     }
 
     private void setCurrentTab(TabBase tab) {
-        int nativeContentViewLayerRenderer = mRenderTarget.getNativeContentViewLayerRenderer();
         if (mCurrentTab != null) {
             mContentViewHolder.removeView(mCurrentTab.getContentView());
-            nativeHideTab(mCurrentTab.getNativeTab(), nativeContentViewLayerRenderer);
             mCurrentTab.destroy();
         }
 
@@ -108,10 +103,7 @@ public class TabManager extends LinearLayout {
 
         mToolbar.showTab(mCurrentTab);
         mContentViewHolder.addView(mCurrentTab.getContentView());
+        mContentViewRenderView.setCurrentContentView(mCurrentTab.getContentView());
         mCurrentTab.getContentView().requestFocus();
-        nativeShowTab(mCurrentTab.getNativeTab(), nativeContentViewLayerRenderer);
     }
-
-    private static native void nativeShowTab(int jtab, int contentViewLayerRenderer);
-    private static native void nativeHideTab(int jtab, int contentViewLayerRenderer);
 }

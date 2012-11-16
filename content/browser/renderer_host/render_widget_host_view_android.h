@@ -140,7 +140,6 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
 
   WebKit::WebGLId GetScaledContentTexture(const gfx::Size& size);
   bool PopulateBitmapWithContents(jobject jbitmap);
-  WebKit::WebLayer* GetWebLayer();
 
   // Select all text between the given coordinates.
   void SelectRange(const gfx::Point& start, const gfx::Point& end);

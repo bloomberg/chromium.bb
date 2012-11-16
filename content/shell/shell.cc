@@ -45,8 +45,6 @@ Shell::Shell(WebContents* web_contents)
       url_edit_view_(NULL)
 #if defined(OS_WIN) && !defined(USE_AURA)
       , default_edit_wnd_proc_(0)
-#elif defined(OS_ANDROID)
-      , content_view_layer_renderer_(NULL)
 #endif
   {
   registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,

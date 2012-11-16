@@ -418,18 +418,6 @@ class CONTENT_EXPORT WebContentsDelegate {
       const MediaStreamRequest* request,
       const MediaResponseCallback& callback) {}
 
-#if defined(OS_ANDROID)
-  // Called when a compositing layer becomes available for this web contents
-  // so the delegate can add it to the layer tree.
-  virtual void AttachLayer(WebContents* web_contents,
-                           WebKit::WebLayer* layer) {}
-
-  // Called before a compositing layer becomes invalid so the delegate can
-  // remove it from the layer tree.
-  virtual void RemoveLayer(WebContents* web_contents,
-                           WebKit::WebLayer* layer) {}
-#endif
-
  protected:
   virtual ~WebContentsDelegate();
 

@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.ui.gfx.NativeWindow;
 
@@ -80,12 +81,6 @@ public class ShellManager extends FrameLayout {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private int getContentViewLayerRenderer() {
-        return mContentViewRenderView.getNativeContentViewLayerRenderer();
-    }
-
-    @SuppressWarnings("unused")
-    @CalledByNative
     private Object createShell() {
         LayoutInflater inflater =
                 (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -94,9 +89,8 @@ public class ShellManager extends FrameLayout {
 
         removeAllViews();
         if (mActiveShell != null) {
-            if (mActiveShell.getContentView() != null) {
-                mActiveShell.getContentView().onHide();
-            }
+            ContentView contentView = mActiveShell.getContentView();
+            if (contentView != null) contentView.onHide();
             mActiveShell.setContentViewRenderView(null);
         }
 
@@ -104,7 +98,11 @@ public class ShellManager extends FrameLayout {
         addView(shellView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         mActiveShell = shellView;
-        if (mActiveShell.getContentView() != null) mActiveShell.getContentView().onShow();
+        ContentView contentView = mActiveShell.getContentView();
+        if (contentView != null) {
+            mContentViewRenderView.setCurrentContentView(contentView);
+            contentView.onShow();
+        }
 
         return shellView;
     }

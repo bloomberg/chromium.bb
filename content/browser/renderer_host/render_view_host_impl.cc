@@ -1677,13 +1677,6 @@ void RenderViewHostImpl::ForwardKeyboardEvent(
 }
 
 #if defined(OS_ANDROID)
-void RenderViewHostImpl::AttachLayer(WebKit::WebLayer* layer) {
-  delegate_->AttachLayer(layer);
-}
-
-void RenderViewHostImpl::RemoveLayer(WebKit::WebLayer* layer) {
-  delegate_->RemoveLayer(layer);
-}
 void RenderViewHostImpl::DidSelectPopupMenuItems(
     const std::vector<int>& selected_indices) {
   Send(new ViewMsg_SelectPopupMenuItems(GetRoutingID(), false,

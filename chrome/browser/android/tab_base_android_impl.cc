@@ -13,7 +13,6 @@
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "jni/TabBase_jni.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "ui/gfx/android/window_android.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -23,43 +22,11 @@ using chrome::android::ChromeWebContentsDelegateAndroid;
 using content::WebContents;
 using ui::WindowAndroid;
 
-namespace {
-class ChromeWebContentsDelegateRenderAndroid
-    : public ChromeWebContentsDelegateAndroid {
- public:
-  ChromeWebContentsDelegateRenderAndroid(TabBaseAndroidImpl* tab_android_impl,
-                                         JNIEnv* env,
-                                         jobject obj)
-      : ChromeWebContentsDelegateAndroid(env, obj),
-        tab_android_impl_(tab_android_impl) {
-  }
-
-  virtual ~ChromeWebContentsDelegateRenderAndroid() {
-  }
-
-  virtual void AttachLayer(WebContents* web_contents,
-                           WebKit::WebLayer* layer) OVERRIDE {
-    tab_android_impl_->tab_layer()->addChild(layer);
-  }
-
-  virtual void RemoveLayer(WebContents* web_contents,
-                           WebKit::WebLayer* layer) OVERRIDE {
-    layer->removeFromParent();
-  }
-
- private:
-  TabBaseAndroidImpl* tab_android_impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeWebContentsDelegateRenderAndroid);
-};
-}  // namespace
-
 TabBaseAndroidImpl::TabBaseAndroidImpl(JNIEnv* env,
                                        jobject obj,
                                        WebContents* web_contents,
                                        WindowAndroid* window_android)
-    : web_contents_(web_contents),
-      tab_layer_(WebKit::WebLayer::create()) {
+    : web_contents_(web_contents) {
   InitTabHelpers(web_contents);
   WindowAndroidHelper::FromWebContents(web_contents)->
       SetWindowAndroid(window_android);
@@ -113,9 +80,7 @@ void TabBaseAndroidImpl::InitWebContentsDelegate(
     jobject obj,
     jobject web_contents_delegate) {
   web_contents_delegate_.reset(
-      new ChromeWebContentsDelegateRenderAndroid(this,
-                                                 env,
-                                                 web_contents_delegate));
+      new ChromeWebContentsDelegateAndroid(env, web_contents_delegate));
   web_contents_->SetDelegate(web_contents_delegate_.get());
 }
 

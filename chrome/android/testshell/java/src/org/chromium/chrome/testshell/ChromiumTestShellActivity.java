@@ -62,6 +62,7 @@ public class ChromiumTestShellActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
         mDevToolsServer.destroy();
         mDevToolsServer = null;
     }

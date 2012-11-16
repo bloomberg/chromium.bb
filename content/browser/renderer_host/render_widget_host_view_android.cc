@@ -52,19 +52,19 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       // ContentViewCore.  It being NULL means that it is not attached to the
       // View system yet, so we treat it as hidden.
       is_hidden_(!content_view_core),
-      content_view_core_(content_view_core),
+      content_view_core_(NULL),
       ime_adapter_android_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       cached_background_color_(SK_ColorWHITE),
       texture_layer_(WebKit::WebExternalTextureLayer::create()),
       texture_id_in_layer_(0) {
   host_->SetView(this);
+  SetContentViewCore(content_view_core);
   // RenderWidgetHost is initialized as visible. If is_hidden_ is true, tell
   // RenderWidgetHost to hide.
   if (is_hidden_)
     host_->WasHidden();
   texture_layer_->layer()->setOpaque(true);
   texture_layer_->layer()->setDrawsContent(!is_hidden_);
-  host_->AttachLayer(texture_layer_->layer());
 }
 
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
@@ -178,10 +178,6 @@ bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
   return true;
 }
 
-WebKit::WebLayer* RenderWidgetHostViewAndroid::GetWebLayer() {
-  return texture_layer_->layer();
-}
-
 gfx::NativeView RenderWidgetHostViewAndroid::GetNativeView() const {
   return content_view_core_;
 }
@@ -230,10 +226,8 @@ bool RenderWidgetHostViewAndroid::IsSurfaceAvailableForCopy() const {
 }
 
 void RenderWidgetHostViewAndroid::Show() {
-  if (content_view_core_) {
-    host_->AttachLayer(texture_layer_->layer());
+  if (content_view_core_)
     is_hidden_ = false;
-  }
 
   texture_layer_->layer()->setDrawsContent(true);
 }
@@ -298,9 +292,10 @@ void RenderWidgetHostViewAndroid::RenderViewGone(
 }
 
 void RenderWidgetHostViewAndroid::Destroy() {
-  host_->RemoveLayer(texture_layer_->layer());
-
-  content_view_core_ = NULL;
+  if (content_view_core_) {
+    content_view_core_->RemoveWebLayer(texture_layer_->layer());
+    content_view_core_ = NULL;
+  }
 
   // The RenderWidgetHost's destruction led here, so don't call it.
   host_ = NULL;
@@ -546,12 +541,17 @@ void RenderWidgetHostViewAndroid::UpdateFrameInfo(
 
 void RenderWidgetHostViewAndroid::SetContentViewCore(
     ContentViewCoreImpl* content_view_core) {
+  if (content_view_core_)
+    content_view_core_->RemoveWebLayer(texture_layer_->layer());
+
   content_view_core_ = content_view_core;
   if (host_) {
     GpuSurfaceTracker::Get()->SetSurfaceHandle(
         host_->surface_id(), content_view_core_ ?
             GetCompositingSurface() : gfx::GLSurfaceHandle());
   }
+  if (content_view_core_)
+    content_view_core_->AttachWebLayer(texture_layer_->layer());
 }
 
 void RenderWidgetHostViewAndroid::HasTouchEventHandlers(

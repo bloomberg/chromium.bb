@@ -424,11 +424,6 @@ class CONTENT_EXPORT WebContentsImpl
       const MediaStreamRequest* request,
       const MediaResponseCallback& callback) OVERRIDE;
 
-#if defined(OS_ANDROID)
-  virtual void AttachLayer(WebKit::WebLayer* layer) OVERRIDE;
-  virtual void RemoveLayer(WebKit::WebLayer* layer) OVERRIDE;
-#endif
-
   // RenderWidgetHostDelegate --------------------------------------------------
 
   virtual void RenderWidgetDeleted(

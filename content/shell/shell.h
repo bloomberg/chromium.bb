@@ -25,9 +25,6 @@
 typedef struct _GtkToolItem GtkToolItem;
 #elif defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
-namespace content {
-class ContentViewLayerRenderer;
-}
 #elif defined(USE_AURA)
 namespace views {
 class Widget;
@@ -98,11 +95,6 @@ class Shell : public WebContentsDelegate,
 #elif defined(OS_ANDROID)
   // Registers the Android Java to native methods.
   static bool Register(JNIEnv* env);
-  // Called by the ShellManager to specify the object that should be notified of
-  // layer changes.
-  // Note that |content_view_layer_renderer| is owned by the ShellManager.
-  void SetContentViewLayerRenderer(
-      ContentViewLayerRenderer* content_view_layer_renderer);
 #endif
 
   // WebContentsDelegate
@@ -112,10 +104,6 @@ class Shell : public WebContentsDelegate,
 #if defined(OS_ANDROID)
   virtual void LoadProgressChanged(WebContents* source,
                                    double progress) OVERRIDE;
-  virtual void AttachLayer(WebContents* web_contents,
-                           WebKit::WebLayer* layer) OVERRIDE;
-  virtual void RemoveLayer(WebContents* web_contents,
-                           WebKit::WebLayer* layer) OVERRIDE;
 #endif
   virtual void CloseContents(WebContents* source) OVERRIDE;
   virtual void WebContentsCreated(WebContents* source_contents,
@@ -228,9 +216,6 @@ class Shell : public WebContentsDelegate,
   int content_height_;
 #elif defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
-  // The ContentViewLayerRenderer that should be notified of compositing layer
-  // changes.  Global so guaranteed to outlive shell.
-  ContentViewLayerRenderer* content_view_layer_renderer_;
 #elif defined(USE_AURA)
   static aura::client::StackingClient* stacking_client_;
   static views::ViewsDelegate* views_delegate_;

@@ -14,12 +14,14 @@ import org.chromium.base.JNINamespace;
 
 /***
  * This view is used by a ContentView to render its content.
- * It renders the layers added to it through the native ContentViewLayerRenderer to its SurfaceView.
- * TODO(jcivelli): the API is confusing and complicated. There should be a way to do all that
- * wihtout native code.
+ * Call {@link #setCurrentContentView(ContentView)} with the contentView that should be displayed.
+ * Note that only one ContentView can be shown at a time.
  */
 @JNINamespace("content")
 public class ContentViewRenderView extends FrameLayout {
+
+    // The native side of this object.
+    private int mNativeContentViewRenderView = 0;
 
     private SurfaceView mSurfaceView;
 
@@ -31,24 +33,25 @@ public class ContentViewRenderView extends FrameLayout {
     public ContentViewRenderView(Context context) {
         super(context);
 
-        nativeInit();
+        mNativeContentViewRenderView = nativeInit();
+        assert mNativeContentViewRenderView != 0;
 
         mSurfaceView = new SurfaceView(getContext());
         mSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-                nativeSurfaceSetSize(width, height);
+                nativeSurfaceSetSize(mNativeContentViewRenderView, width, height);
             }
 
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
-                nativeSurfaceCreated(holder.getSurface());
+                nativeSurfaceCreated(mNativeContentViewRenderView, holder.getSurface());
                 onReadyToRender();
             }
 
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
-                nativeSurfaceDestroyed();
+                nativeSurfaceDestroyed(mNativeContentViewRenderView);
             }
         });
 
@@ -59,11 +62,19 @@ public class ContentViewRenderView extends FrameLayout {
     }
 
     /**
-     * @return pointer to a native ContentViewLayerRenderer on which the layers to be added should
-     * be added removed.
+     * Should be called when the ContentViewRenderView is not needed anymore so its associated
+     * native resource can be freed.
      */
-    public int getNativeContentViewLayerRenderer() {
-        return nativeGetNativeContentViewLayerRenderer();
+    public void destroy() {
+        nativeDestroy(mNativeContentViewRenderView);
+    }
+
+    /**
+     * Makes the passed ContentView the one displayed by this ContentViewRenderView.
+     */
+    public void setCurrentContentView(ContentView contentView) {
+        nativeSetCurrentContentView(mNativeContentViewRenderView,
+                contentView.getContentViewCore().getNativeContentViewCore());
     }
 
     /**
@@ -80,10 +91,12 @@ public class ContentViewRenderView extends FrameLayout {
         return mSurfaceView.getHolder().getSurface() != null;
     }
 
-    private native void nativeInit();
-    private static native int nativeGetNativeContentViewLayerRenderer();
-    private static native void nativeSurfaceCreated(Surface surface);
-    private static native void nativeSurfaceDestroyed();
-    private static native void nativeSurfaceSetSize(int width, int height);
+    private static native int nativeInit();
+    private native void nativeDestroy(int nativeContentViewRenderView);
+    private native void nativeSetCurrentContentView(int nativeContentViewRenderView,
+            int nativeContentView);
+    private native void nativeSurfaceCreated(int nativeContentViewRenderView, Surface surface);
+    private native void nativeSurfaceDestroyed(int nativeContentViewRenderView);
+    private native void nativeSurfaceSetSize(int nativeContentViewRenderView,
+            int width, int height);
 }
-

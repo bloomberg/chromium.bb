@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_piece.h"
-#include "content/public/browser/android/content_view_layer_renderer.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/android/shell_manager.h"
 #include "jni/Shell_jni.h"
@@ -70,19 +69,6 @@ void Shell::LoadProgressChanged(WebContents* source, double progress) {
 void Shell::Close() {
   // TODO(tedchoc): Implement Close method for android shell
   NOTIMPLEMENTED();
-}
-
-void Shell::AttachLayer(WebContents* web_contents, WebKit::WebLayer* layer) {
-  content_view_layer_renderer_->AttachLayer(layer);
-}
-
-void Shell::RemoveLayer(WebContents* web_contents, WebKit::WebLayer* layer) {
-  content_view_layer_renderer_->DetachLayer(layer);
-}
-
-void Shell::SetContentViewLayerRenderer(
-    ContentViewLayerRenderer* content_view_layer_renderer) {
-  content_view_layer_renderer_ = content_view_layer_renderer;
 }
 
 // static

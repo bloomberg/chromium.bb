@@ -22,6 +22,7 @@ import android.widget.TextView.OnEditorActionListener;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.ui.gfx.NativeWindow;
 
@@ -48,7 +49,7 @@ public class Shell extends LinearLayout {
 
     private ClipDrawable mProgressDrawable;
 
-    private View mContentViewRenderView;
+    private ContentViewRenderView mContentViewRenderView;
     private NativeWindow mWindow;
 
     private boolean mLoading = false;
@@ -63,7 +64,7 @@ public class Shell extends LinearLayout {
     /**
      * Set the SurfaceView being renderered to as soon as it is available.
      */
-    public void setContentViewRenderView(View contentViewRenderView) {
+    public void setContentViewRenderView(ContentViewRenderView contentViewRenderView) {
         FrameLayout contentViewHolder = (FrameLayout) findViewById(R.id.contentview_holder);
         if (contentViewRenderView == null) {
             if (mContentViewRenderView != null) {
@@ -211,6 +212,7 @@ public class Shell extends LinearLayout {
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
         mContentView.requestFocus();
+        mContentViewRenderView.setCurrentContentView(mContentView);
     }
 
     /**
