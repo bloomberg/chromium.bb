@@ -259,7 +259,12 @@ bool BrowserPluginBindingsSetProperty(NPObject* np_obj, NPIdentifier name,
 
   if (IdentifierIsSrcAttribute(name)) {
     std::string src = StringFromNPVariant(*variant);
-    bindings->instance()->SetSrcAttribute(src);
+    std::string error_message;
+    if (!bindings->instance()->SetSrcAttribute(src, &error_message)) {
+      WebBindings::setException(
+          np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
+      return false;
+    }
     return true;
   }
 
@@ -267,7 +272,7 @@ bool BrowserPluginBindingsSetProperty(NPObject* np_obj, NPIdentifier name,
     std::string partition_id = StringFromNPVariant(*variant);
     std::string error_message;
     if (!bindings->instance()->SetPartitionAttribute(partition_id,
-                                                     error_message)) {
+                                                     &error_message)) {
       WebBindings::setException(
           np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
       return false;

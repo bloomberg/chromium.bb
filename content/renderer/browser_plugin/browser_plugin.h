@@ -39,7 +39,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // Get the src attribute value of the BrowserPlugin instance.
   std::string src_attribute() const { return src_; }
   // Set the src attribute value of the BrowserPlugin instance.
-  void SetSrcAttribute(const std::string& src);
+  bool SetSrcAttribute(const std::string& src, std::string* error_message);
   // Get the autosize attribute value.
   bool auto_size_attribute() const { return auto_size_; }
   // Sets the autosize attribute value.
@@ -77,7 +77,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // this instance of BrowserPlugin. If an error occurs, the |error_message| is
   // set appropriately to indicate the failure reason.
   bool SetPartitionAttribute(const std::string& partition_id,
-                             std::string& error_message);
+                             std::string* error_message);
 
   // Inform the BrowserPlugin to update its backing store with the pixels in
   // its damage buffer.
@@ -277,6 +277,7 @@ class CONTENT_EXPORT BrowserPlugin :
   int process_id_;
   std::string storage_partition_id_;
   bool persist_storage_;
+  bool valid_partition_id_;
   int content_window_routing_id_;
   bool plugin_focused_;
   bool embedder_focused_;

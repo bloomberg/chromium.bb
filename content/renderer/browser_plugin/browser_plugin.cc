@@ -45,6 +45,10 @@ using WebKit::WebVector;
 namespace content {
 
 namespace {
+const char kErrorAlreadyNavigated[] =
+    "The object has already navigated, so its partition cannot be changed.";
+const char kErrorInvalidPartition[] =
+    "Invalid partition attribute.";
 const char kExitEventName[] = "exit";
 const char kIsTopLevel[] = "isTopLevel";
 const char kLoadAbortEventName[] = "loadabort";
@@ -105,6 +109,7 @@ BrowserPlugin::BrowserPlugin(
       min_width_(0),
       process_id_(-1),
       persist_storage_(false),
+      valid_partition_id_(true),
       content_window_routing_id_(MSG_ROUTING_NONE),
       plugin_focused_(false),
       embedder_focused_(false),
@@ -133,9 +138,15 @@ void BrowserPlugin::Cleanup() {
     FreeDamageBuffer();
 }
 
-void BrowserPlugin::SetSrcAttribute(const std::string& src) {
+bool BrowserPlugin::SetSrcAttribute(const std::string& src,
+                                    std::string* error_message) {
+  if (!valid_partition_id_) {
+    *error_message = kErrorInvalidPartition;
+    return false;
+  }
+
   if (src.empty() || (src == src_ && !guest_crashed_))
-    return;
+    return true;
 
   // If we haven't created the guest yet, do so now. We will navigate it right
   // after creation. If |src| is empty, we can delay the creation until we
@@ -169,6 +180,7 @@ void BrowserPlugin::SetSrcAttribute(const std::string& src) {
   // so this value is used for enforcing this.
   navigate_src_sent_ = true;
   src_ = src;
+  return true;
 }
 
 void BrowserPlugin::SetAutoSizeAttribute(bool auto_size) {
@@ -302,10 +314,9 @@ bool BrowserPlugin::CanGoForward() const {
 }
 
 bool BrowserPlugin::SetPartitionAttribute(const std::string& partition_id,
-                                          std::string& error_message) {
+                                          std::string* error_message) {
   if (navigate_src_sent_) {
-    error_message =
-      "The object has already navigated, so its partition cannot be changed.";
+    *error_message = kErrorAlreadyNavigated;
     return false;
   }
 
@@ -321,7 +332,8 @@ bool BrowserPlugin::SetPartitionAttribute(const std::string& partition_id,
     // It is safe to do index + 1, since we tested for the full prefix above.
     input = input.substr(index + 1);
     if (input.empty()) {
-      error_message = "Invalid empty partition attribute.";
+      valid_partition_id_ = false;
+      *error_message = kErrorInvalidPartition;
       return false;
     }
     persist_storage_ = true;
@@ -329,6 +341,7 @@ bool BrowserPlugin::SetPartitionAttribute(const std::string& partition_id,
     persist_storage_ = false;
   }
 
+  valid_partition_id_ = true;
   storage_partition_id_ = input;
   return true;
 }
@@ -343,13 +356,14 @@ void BrowserPlugin::ParseAttributes(const WebKit::WebPluginParams& params) {
       src = params.attributeValues[i].utf8();
     } else if (LowerCaseEqualsASCII(attributeName, kPartitionAttribute)) {
       std::string error;
-      SetPartitionAttribute(params.attributeValues[i].utf8(), error);
+      SetPartitionAttribute(params.attributeValues[i].utf8(), &error);
     }
   }
 
   // Set the 'src' attribute last, as it will set the has_navigated_ flag to
   // true, which prevents changing the 'partition' attribute.
-  SetSrcAttribute(src);
+  std::string error;
+  SetSrcAttribute(src, &error);
 }
 
 float BrowserPlugin::GetDeviceScaleFactor() const {

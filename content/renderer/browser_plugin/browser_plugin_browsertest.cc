@@ -31,6 +31,10 @@ const char kHTMLForPartitionedPluginObject[] =
   "<object id='browserplugin' width='640px' height='480px'"
   "  src='foo' type='%s' partition='someid'>";
 
+const char kHTMLForInvalidPartitionedPluginObject[] =
+  "<object id='browserplugin' width='640px' height='480px'"
+  "  type='%s' partition='persist:'>";
+
 const char kHTMLForPartitionedPersistedPluginObject[] =
   "<object id='browserplugin' width='640px' height='480px'"
   "  src='foo' type='%s' partition='persist:someid'>";
@@ -425,7 +429,52 @@ TEST_F(BrowserPluginTest, PartitionAttribute) {
       "  document.title = 'success';"
       "} catch (e) { document.title = e.message; }");
   title = ExecuteScriptAndReturnString("document.title");
-  EXPECT_STREQ("Invalid empty partition attribute.", title.c_str());
+  EXPECT_STREQ("Invalid partition attribute.", title.c_str());
+}
+
+// This test verifies that BrowserPlugin enters an error state when the
+// partition attribute is invalid.
+TEST_F(BrowserPluginTest, InvalidPartition) {
+  std::string html = StringPrintf(kHTMLForInvalidPartitionedPluginObject,
+                                  content::kBrowserPluginMimeType);
+  LoadHTML(html.c_str());
+  // Attempt to navigate with an invalid partition.
+  {
+    ExecuteJavaScript(
+        "try {"
+        "  document.getElementById('browserplugin').src = 'bar';"
+        "  document.title = 'success';"
+        "} catch (e) { document.title = e.message; }");
+    std::string title = ExecuteScriptAndReturnString("document.title");
+    EXPECT_STREQ("Invalid partition attribute.", title.c_str());
+    // Verify that the 'src' attribute has not been updated.
+    EXPECT_EQ("", ExecuteScriptAndReturnString(
+        "document.getElementById('browserplugin').src"));
+  }
+
+  // Verify that the BrowserPlugin accepts changes to its src attribue after
+  // setting the partition to a valid value.
+  ExecuteJavaScript(
+      "document.getElementById('browserplugin').partition = 'persist:foo'");
+  ExecuteJavaScript("document.getElementById('browserplugin').src = 'bar'");
+  EXPECT_EQ("bar", ExecuteScriptAndReturnString(
+      "document.getElementById('browserplugin').src"));
+  // Verify that the BrowserPlugin does not 'deadlock': it can recover from
+  // the partition ID error state.
+  {
+    ExecuteJavaScript(
+        "try {"
+        "  document.getElementById('browserplugin').partition = 'persist:1337';"
+        "  document.title = 'success';"
+        "} catch (e) { document.title = e.message; }");
+    std::string title = ExecuteScriptAndReturnString("document.title");
+    EXPECT_STREQ(
+        "The object has already navigated, so its partition cannot be changed.",
+        title.c_str());
+    ExecuteJavaScript("document.getElementById('browserplugin').src = '42'");
+    EXPECT_EQ("42", ExecuteScriptAndReturnString(
+        "document.getElementById('browserplugin').src"));
+  }
 }
 
 // Test to verify that after the first navigation, the partition attribute
