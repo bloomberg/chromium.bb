@@ -136,6 +136,7 @@ SpeechRecognitionBubble* SpeechRecognitionBubble::Create(
 SpeechRecognitionBubbleBase::SpeechRecognitionBubbleBase(
     WebContents* web_contents)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      animation_step_(0),
       display_mode_(DISPLAY_MODE_RECORDING),
       web_contents_(web_contents),
       scale_factor_(ui::SCALE_FACTOR_NONE) {
