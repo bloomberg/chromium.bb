@@ -28,12 +28,11 @@ import sys
 
 # local includes
 import buildbot_common
-import build_updater
 import build_utils
 import generate_make
 import generate_notice
 import manifest_util
-from tests import test_server
+import test_sdk
 
 # Create the various paths of interest
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -45,7 +44,6 @@ SRC_DIR = os.path.dirname(SDK_DIR)
 NACL_DIR = os.path.join(SRC_DIR, 'native_client')
 OUT_DIR = os.path.join(SRC_DIR, 'out')
 PPAPI_DIR = os.path.join(SRC_DIR, 'ppapi')
-SERVER_DIR = os.path.join(OUT_DIR, 'local_server')
 
 
 # Add SDK make tools scripts to the python path.
@@ -62,10 +60,6 @@ CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
 
 
 options = None
-
-
-def BuildOutputDir(*paths):
-  return os.path.join(OUT_DIR, *paths)
 
 
 def GetGlibcToolchain(platform, arch):
@@ -142,12 +136,6 @@ def GetBuildArgs(tcname, tcpath, outdir, arch, xarch=None):
 
   print "Building %s (%s): %s" % (tcname, arch, ' '.join(args))
   return args
-
-
-def BuildStepBuildToolsTests():
-  buildbot_common.BuildStep('Run build_tools tests')
-  buildbot_common.Run([sys.executable,
-      os.path.join(SDK_SRC_DIR, 'build_tools', 'tests', 'test_all.py')])
 
 
 def BuildStepDownloadToolchains(platform):
@@ -750,6 +738,15 @@ def BuildStepTarBundle(pepper_ver, tarfile):
        'pepper_' + pepper_ver], cwd=NACL_DIR)
 
 
+def BuildStepRunTests():
+  args = []
+  if options.build_experimental:
+    args.append('--experimental')
+  if options.run_pyauto_tests:
+    args.append('--pyauto')
+  test_sdk.main(args)
+
+
 def GetManifestBundle(pepper_ver, revision, tarfile, archive_url):
   with open(tarfile, 'rb') as tarfile_stream:
     archive_sha1, archive_size = manifest_util.DownloadAndComputeHash(
@@ -769,114 +766,6 @@ def GetManifestBundle(pepper_ver, revision, tarfile, archive_url):
   bundle.recommended = 'no'
   bundle.archives = [archive]
   return bundle
-
-
-def BuildStepTestUpdater(platform, pepper_ver, revision, tarfile):
-  tarname = os.path.basename(tarfile)
-  server = None
-  try:
-    buildbot_common.BuildStep('Run local server')
-    server = test_server.LocalHTTPServer(SERVER_DIR)
-
-    buildbot_common.BuildStep('Generate manifest')
-    bundle = GetManifestBundle(pepper_ver, revision, tarfile,
-        server.GetURL(tarname))
-
-    manifest = manifest_util.SDKManifest()
-    manifest.SetBundle(bundle)
-    manifest_name = 'naclsdk_manifest2.json'
-    with open(os.path.join(SERVER_DIR, manifest_name), 'wb') as \
-        manifest_stream:
-      manifest_stream.write(manifest.GetDataAsString())
-
-    # use newly built sdk updater to pull this bundle
-    buildbot_common.BuildStep('Update from local server')
-    naclsdk_sh = os.path.join(OUT_DIR, 'nacl_sdk', 'naclsdk')
-    if platform == 'win':
-      naclsdk_sh += '.bat'
-    buildbot_common.Run([naclsdk_sh, 'update', 'pepper_' + pepper_ver,
-        '-U', server.GetURL(manifest_name), '-v'])
-
-    # Return the new pepper directory as the one inside the downloaded SDK.
-    return os.path.join(OUT_DIR, 'nacl_sdk', 'pepper_' + pepper_ver)
-
-  # kill server
-  finally:
-    if server:
-      server.Shutdown()
-
-
-def BuildStepBuildExamples(pepperdir, platform):
-  BuildStepMakeAll(pepperdir, platform, 'examples', 'Build Examples')
-
-
-TEST_EXAMPLE_LIST = [
-  'nacl_mounts_test',
-]
-
-TEST_LIBRARY_LIST = [
-  'gmock',
-  'gtest',
-  'gtest_ppapi',
-]
-
-
-def BuildStepCopyTests(pepperdir, toolchains, build_experimental, clobber):
-  buildbot_common.BuildStep('Copy Tests')
-
-  MakeDirectoryOrClobber(pepperdir, 'testlibs', clobber)
-  MakeDirectoryOrClobber(pepperdir, 'tests', clobber)
-
-  args = ['--dstroot=%s' % pepperdir, '--master']
-  for toolchain in toolchains:
-    args.append('--' + toolchain)
-
-  for library in TEST_LIBRARY_LIST:
-    dsc = os.path.join(SDK_LIBRARY_DIR, library, 'library.dsc')
-    args.append(dsc)
-
-  for example in TEST_EXAMPLE_LIST:
-    dsc = os.path.join(SDK_LIBRARY_DIR, example, 'example.dsc')
-    args.append(dsc)
-
-  if build_experimental:
-    args.append('--experimental')
-
-  if generate_make.main(args):
-    buildbot_common.ErrorExit('Failed to build tests.')
-
-
-def BuildStepBuildTests(pepperdir, platform):
-  BuildStepMakeAll(pepperdir, platform, 'testlibs', 'Build Test Libraries')
-  BuildStepMakeAll(pepperdir, platform, 'tests', 'Build Tests')
-
-
-def BuildStepRunPyautoTests(pepperdir, platform, pepper_ver):
-  buildbot_common.BuildStep('Test Examples')
-  env = copy.copy(os.environ)
-  env['PEPPER_VER'] = pepper_ver
-  env['NACL_SDK_ROOT'] = pepperdir
-
-  pyauto_script = os.path.join(SRC_DIR, 'chrome', 'test', 'functional',
-      'nacl_sdk.py')
-  pyauto_script_args = ['nacl_sdk.NaClSDKTest.NaClSDKExamples']
-
-  if platform == 'linux' and buildbot_common.IsSDKBuilder():
-    # linux buildbots need to run the pyauto tests through xvfb. Running
-    # using runtest.py does this.
-    #env['PYTHON_PATH'] = '.:' + env.get('PYTHON_PATH', '.')
-    build_dir = os.path.dirname(SRC_DIR)
-    runtest_py = os.path.join(build_dir, '..', '..', '..', 'scripts', 'slave',
-        'runtest.py')
-    buildbot_common.Run([sys.executable, runtest_py, '--target', 'Release',
-        '--build-dir', 'src/build', sys.executable,
-        pyauto_script] + pyauto_script_args,
-        cwd=build_dir, env=env)
-  else:
-    buildbot_common.Run([sys.executable, 'nacl_sdk.py',
-      'nacl_sdk.NaClSDKTest.NaClSDKExamples'],
-      cwd=os.path.dirname(pyauto_script),
-      env=env)
 
 
 def BuildStepArchiveBundle(pepper_ver, revision, tarfile):
@@ -915,20 +804,14 @@ def BuildStepArchiveSDKTools():
 
 def main(args):
   parser = optparse.OptionParser()
-  parser.add_option('--examples', help='Only build the examples.',
-      action='store_true', dest='only_examples', default=False)
-  parser.add_option('--clobber-examples',
-      help='Don\'t examples directory before copying new files',
-      action='store_true', dest='clobber_examples', default=False)
-  parser.add_option('--update', help='Only build the updater.',
-      action='store_true', dest='only_updater', default=False)
-  parser.add_option('--test-examples',
-      help='Run the pyauto tests for examples.', action='store_true',
-      dest='test_examples', default=False)
+  parser.add_option('--run-tests',
+      help='Run tests. This includes building examples.', action='store_true')
+  parser.add_option('--run-pyauto-tests',
+      help='Run the pyauto tests for examples.', action='store_true')
   parser.add_option('--skip-tar', help='Skip generating a tarball.',
-      action='store_true', dest='skip_tar', default=False)
+      action='store_true')
   parser.add_option('--archive', help='Force the archive step.',
-      action='store_true', dest='archive', default=False)
+      action='store_true')
   parser.add_option('--gyp',
       help='Use gyp to build examples/libraries/Makefiles.',
       action='store_true')
@@ -936,9 +819,9 @@ def main(args):
       dest='release', default=None)
   parser.add_option('--experimental',
       help='build experimental examples and libraries', action='store_true',
-      dest='build_experimental', default=False)
+      dest='build_experimental')
   parser.add_option('--skip-toolchain', help='Skip toolchain download/untar',
-      action='store_true', dest='skip_toolchain', default=False)
+      action='store_true')
   parser.add_option('--mac_sdk',
       help='Set the mac_sdk (e.g. 10.6) to use when building with ninja.',
       dest='mac_sdk')
@@ -953,12 +836,17 @@ def main(args):
   # TODO(binji) for now, only test examples on non-trybots. Trybots don't build
   # pyauto Chrome.
   if buildbot_common.IsSDKBuilder():
-    options.test_examples = True
+    options.run_tests = True
+    options.run_pyauto_tests = True
+    options.archive = True
+
+  if buildbot_common.IsSDKTrybot():
+    options.run_tests = True
 
   toolchains = ['newlib', 'glibc', 'pnacl', 'host']
   print 'Building: ' + ' '.join(toolchains)
 
-  if options.archive and (options.only_examples or options.skip_tar):
+  if options.archive and options.skip_tar:
     parser.error('Incompatible arguments with archive.')
 
   pepper_ver = str(int(build_utils.ChromeMajorVersion()))
@@ -967,7 +855,7 @@ def main(args):
   pepperdir_old = os.path.join(SRC_DIR, 'out', 'pepper_' + pepper_old)
   clnumber = build_utils.ChromeRevision()
   tarname = 'naclsdk_' + platform + '.tar.bz2'
-  tarfile = os.path.join(SERVER_DIR, tarname)
+  tarfile = os.path.join(OUT_DIR, tarname)
 
   if options.release:
     pepper_ver = options.release
@@ -978,56 +866,32 @@ def main(args):
     # of the build.
     del os.environ['NACL_SDK_ROOT']
 
-  if options.only_examples:
-    BuildStepCopyExamples(pepperdir, toolchains, options.build_experimental,
-                          options.clobber_examples)
-    BuildStepBuildLibraries(pepperdir, platform, 'src', False)  # Don't clean.
-    BuildStepBuildExamples(pepperdir, platform)
-    BuildStepCopyTests(pepperdir, toolchains, options.build_experimental,
-                       options.clobber_examples)
-    BuildStepBuildTests(pepperdir, platform)
-    if options.test_examples:
-      BuildStepRunPyautoTests(pepperdir, platform, pepper_ver)
-  elif options.only_updater:
-    build_updater.BuildUpdater(OUT_DIR)
-  else:  # Build everything.
-    BuildStepBuildToolsTests()
+  if not options.skip_toolchain:
+    BuildStepDownloadToolchains(platform)
+  BuildStepCleanPepperDirs(pepperdir, pepperdir_old)
+  BuildStepMakePepperDirs(pepperdir, ['include', 'toolchain', 'tools'])
+  BuildStepCopyTextFiles(pepperdir, pepper_ver, clnumber)
+  if not options.skip_toolchain:
+    BuildStepUntarToolchains(pepperdir, platform, arch, toolchains)
+  BuildStepBuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains)
+  InstallHeaders(os.path.join(pepperdir, 'include'), None, 'libs')
+  BuildStepCopyBuildHelpers(pepperdir, platform)
+  BuildStepCopyExamples(pepperdir, toolchains, options.build_experimental, True)
 
-    if not options.skip_toolchain:
-      BuildStepDownloadToolchains(platform)
-    BuildStepCleanPepperDirs(pepperdir, pepperdir_old)
-    BuildStepMakePepperDirs(pepperdir, ['include', 'toolchain', 'tools'])
-    BuildStepCopyTextFiles(pepperdir, pepper_ver, clnumber)
-    if not options.skip_toolchain:
-      BuildStepUntarToolchains(pepperdir, platform, arch, toolchains)
-    BuildStepBuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains)
-    InstallHeaders(os.path.join(pepperdir, 'include'), None, 'libs')
-    BuildStepCopyBuildHelpers(pepperdir, platform)
-    BuildStepCopyExamples(pepperdir, toolchains, options.build_experimental,
-                          True)
+  # Ship with libraries prebuilt, so run that first.
+  BuildStepBuildLibraries(pepperdir, platform, 'src')
+  BuildStepGenerateNotice(pepperdir)
 
-    # Ship with libraries prebuilt, so run that first.
-    BuildStepBuildLibraries(pepperdir, platform, 'src')
-    BuildStepGenerateNotice(pepperdir)
+  if not options.skip_tar:
+    BuildStepTarBundle(pepper_ver, tarfile)
 
-    if not options.skip_tar:
-      BuildStepTarBundle(pepper_ver, tarfile)
-      build_updater.BuildUpdater(OUT_DIR)
+  if options.run_tests:
+    BuildStepRunTests()
 
-      # BuildStepTestUpdater downloads the bundle to its own directory. Build
-      # the examples and test from this directory instead of the original.
-      pepperdir = BuildStepTestUpdater(platform, pepper_ver, clnumber, tarfile)
-      BuildStepBuildExamples(pepperdir, platform)
-      BuildStepCopyTests(pepperdir, toolchains, options.build_experimental,
-                         True)
-      BuildStepBuildTests(pepperdir, platform)
-      if options.test_examples:
-        BuildStepRunPyautoTests(pepperdir, platform, pepper_ver)
-
-      # Archive on non-trybots.
-      if options.archive or buildbot_common.IsSDKBuilder():
-        BuildStepArchiveBundle(pepper_ver, clnumber, tarfile)
-        BuildStepArchiveSDKTools()
+  # Archive on non-trybots.
+  if options.archive:
+    BuildStepArchiveBundle(pepper_ver, clnumber, tarfile)
+    BuildStepArchiveSDKTools()
 
   return 0
 

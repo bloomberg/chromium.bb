@@ -24,14 +24,20 @@ def IsSDKBuilder():
   False means it is either running on a trybot, or a user's machine.
 
   Trybot names:
-    naclsdkm-((pnacl-)?linux|mac|windows(32|64))
+    (win|mac|linux)_nacl_sdk
 
   Builder names:
-    (pnacl-)?(windows|mac|linux)-sdk-multi(rel)?
-
-    except there are currently no pnacl multirel bots, and
-    pnacl-windows-sdk-multi is actually called pnacl-win-sdk-multi."""
+    (windows|mac|linux)-sdk-multi(rel)?"""
   return '-sdk-multi' in os.getenv('BUILDBOT_BUILDERNAME', '')
+
+
+def IsSDKTrybot():
+  """Returns True if this script is running on an SDK trybot.
+
+  False means it is either running on an SDK builder, or a user's machine.
+
+  See IsSDKBuilder above for trybot/buildbot names."""
+  return '_nacl_sdk' in os.getenv('BUILDBOT_BUILDERNAME', '')
 
 
 def ErrorExit(msg):
