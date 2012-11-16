@@ -8,7 +8,7 @@ vars = {
   "sourceforge_url": "http://%(repo)s.svn.sourceforge.net/svnroot/%(repo)s",
   "webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
-  "webkit_revision": "134630",
+  "webkit_revision": "134799",
 
   "chromium_git": "http://git.chromium.org/git",
   "chromiumos_git": "http://git.chromium.org/chromiumos",
