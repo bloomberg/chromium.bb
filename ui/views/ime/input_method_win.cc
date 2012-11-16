@@ -49,6 +49,8 @@ void InputMethodWin::OnFocus() {
   // On Aura, there are different ways of getting here (HWNDMessageHandler and
   // FocusManager) and since they don't know about the focus state that each
   // other is in, this DCHECK comes up.
+  // TODO(ime): ifdefing this out is a hack, the root problem needs to be
+  // addressed.
   DCHECK(!widget_focused());
 #endif
   InputMethodBase::OnFocus();
@@ -57,6 +59,8 @@ void InputMethodWin::OnFocus() {
 
 void InputMethodWin::OnBlur() {
 #if !defined(USE_AURA)
+  // TODO(ime): ifdefing this out is a hack, the root problem needs to be
+  // addressed.
   DCHECK(widget_focused());
 #endif
   ConfirmCompositionText();
