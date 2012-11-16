@@ -4145,6 +4145,7 @@ void TestingAutomationProvider::UpdateExtensionsNow(
   ExtensionsUpdatedObserver* observer = new ExtensionsUpdatedObserver(
       manager, this, reply_message);
   extensions::ExtensionUpdater::CheckParams params;
+  params.install_immediately = true;
   params.callback = base::Bind(&ExtensionsUpdatedObserver::UpdateCheckFinished,
                                base::Unretained(observer));
   updater->CheckNow(params);

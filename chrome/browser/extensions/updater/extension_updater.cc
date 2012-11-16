@@ -91,7 +91,7 @@ int CalculateActivePingDays(const Time& last_active_ping_day,
 namespace extensions {
 
 ExtensionUpdater::CheckParams::CheckParams()
-    : check_blacklist(true) {}
+    : check_blacklist(true), install_immediately(false) {}
 
 ExtensionUpdater::CheckParams::~CheckParams() {}
 
@@ -331,6 +331,7 @@ void ExtensionUpdater::CheckNow(const CheckParams& params) {
   InProgressCheck* request = &requests_in_progress_[request_id];
   request->id = request_id;
   request->callback = params.callback;
+  request->install_immediately = params.install_immediately;
 
   if (!downloader_.get()) {
     downloader_.reset(
@@ -594,6 +595,15 @@ void ExtensionUpdater::MaybeInstallCRXFile() {
                                   &installer)) {
       crx_install_is_running_ = true;
       current_crx_file_ = crx_file;
+
+      for (std::set<int>::const_iterator it = crx_file.request_ids.begin();
+          it != crx_file.request_ids.end(); ++it) {
+        InProgressCheck& request = requests_in_progress_[*it];
+        if (request.install_immediately) {
+          installer->set_install_wait_for_idle(false);
+          break;
+        }
+      }
 
       // Source parameter ensures that we only see the completion event for the
       // the installer we started.

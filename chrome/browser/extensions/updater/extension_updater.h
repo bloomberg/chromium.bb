@@ -65,6 +65,11 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
     // If true, the extension blacklist will also be updated.
     bool check_blacklist;
 
+    // Normally extension updates get installed only when the extension is idle.
+    // Setting this to true causes any updates that are found to be installed
+    // right away.
+    bool install_immediately;
+
     // Callback to call when the update check is complete. Can be null, if
     // you're not interested in when this happens.
     FinishedCallback callback;
@@ -139,6 +144,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
     ~InProgressCheck();
 
     int id;
+    bool install_immediately;
     FinishedCallback callback;
     // The ids of extensions that have in-progress update checks.
     std::list<std::string> in_progress_ids_;

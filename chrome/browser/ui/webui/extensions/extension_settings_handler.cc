@@ -771,8 +771,11 @@ void ExtensionSettingsHandler::HandleShowButtonMessage(const ListValue* args) {
 
 void ExtensionSettingsHandler::HandleAutoUpdateMessage(const ListValue* args) {
   ExtensionUpdater* updater = extension_service_->updater();
-  if (updater)
-    updater->CheckNow(extensions::ExtensionUpdater::CheckParams());
+  if (updater) {
+    ExtensionUpdater::CheckParams params;
+    params.install_immediately = true;
+    updater->CheckNow(params);
+  }
 }
 
 void ExtensionSettingsHandler::HandleLoadUnpackedExtensionMessage(
