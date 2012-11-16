@@ -138,41 +138,8 @@ void CannedBrowsingDataCookieHelper::AddChangedCookie(
     const GURL& url,
     const std::string& cookie_line,
     const net::CookieOptions& options) {
-  base::Time creation_time = base::Time::Now();
-  base::Time server_time;
-  if (options.has_server_time())
-    server_time = options.server_time();
-  else
-    server_time = creation_time;
-
-  net::ParsedCookie pc(cookie_line);
-  if (!pc.IsValid())
-    return;
-
-  if (options.exclude_httponly() && pc.IsHttpOnly())
-    return;
-
-  std::string domain_string;
-  if (pc.HasDomain())
-    domain_string = pc.Domain();
-  std::string cookie_domain;
-  if (!net::cookie_util::GetCookieDomainWithString(url, domain_string,
-                                                   &cookie_domain))
-    return;
-
-  std::string cookie_path = net::CanonicalCookie::CanonPath(url, pc);
-  std::string mac_key = pc.HasMACKey() ? pc.MACKey() : std::string();
-  std::string mac_algorithm = pc.HasMACAlgorithm() ?
-      pc.MACAlgorithm() : std::string();
-
-  base::Time cookie_expires =
-      net::CanonicalCookie::CanonExpiration(pc, creation_time, server_time);
-
-  scoped_ptr<net::CanonicalCookie> cookie(
-      new net::CanonicalCookie(url, pc.Name(), pc.Value(), cookie_domain,
-                               cookie_path, mac_key, mac_algorithm,
-                               creation_time, cookie_expires,
-                               creation_time, pc.IsSecure(), pc.IsHttpOnly()));
+  scoped_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
+      url, cookie_line, base::Time::Now(), options));
   if (cookie.get())
     AddCookie(frame_url, *cookie);
 }
