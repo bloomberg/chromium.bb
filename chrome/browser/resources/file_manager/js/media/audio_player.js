@@ -172,7 +172,7 @@ AudioPlayer.prototype.load = function(playlist) {
 
   for (var i = 0; i != this.urls_.length; i++) {
     var url = this.urls_[i];
-    var onClick = this.select_.bind(this, i);
+    var onClick = this.select_.bind(this, i, false /* no restore */);
     this.trackListItems_.push(
         new AudioPlayer.TrackInfo(this.trackList_, url, onClick));
     this.trackStackItems_.push(
