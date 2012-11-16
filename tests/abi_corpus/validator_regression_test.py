@@ -78,6 +78,10 @@ def TestValidators(options, work_dir):
         corpus_utils.CachedPath(options.cache_dir, filename))
     if architecture != options.architecture:
       continue
+    if corpus_errors.NexeShouldBeSkipped(filename):
+      print 'Skipped, sha1: %s' % corpus_utils.Sha1FromFilename(filename)
+      progress.Skip()
+      continue
     # Validate a copy in case validator is mutating.
     corpus_utils.CopyFromCache(options.cache_dir, filename, nexe_filename)
     try:

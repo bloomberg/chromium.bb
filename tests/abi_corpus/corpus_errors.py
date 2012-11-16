@@ -19,6 +19,17 @@ BAD_NEXES = set([
 ])
 
 
+NEXES_TO_SKIP = set([
+    # TODO(shcherbina): remove when
+    # http://code.google.com/p/nativeclient/issues/detail?id=3149 is fixed.
+    'fac308d79f5c2d3a7f1f27112cfe19bf8431acfa',
+    'bb127ff5b58caa8b875b19c05b9ade8c0881a5ed',
+    '903d3e5f29b909db162f2679363685144f61e3cc',
+    '41c4a2e842da16de1c1be9e89fbfee5e695e2f4b',
+    'f4814677d321785f3bcd65f16bafa728b5dbc883',
+])
+
+
 class CrxResult(object):
   def __init__(self, id, custom=None, precidence=1):
     self.id = id
@@ -96,6 +107,17 @@ def NexeShouldValidate(path):
     Boolean indicating if the nexe should validate.
   """
   return corpus_utils.Sha1FromFilename(path) not in BAD_NEXES
+
+
+def NexeShouldBeSkipped(path):
+  """Checks if nexe is in the skip list.
+
+  Args:
+    path: path to the nexe.
+  Returns:
+    Boolean indicating if the nexe should be skipped.
+  """
+  return corpus_utils.Sha1FromFilename(path) in NEXES_TO_SKIP
 
 
 def ExpectedCrxResult(path):

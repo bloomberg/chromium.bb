@@ -317,14 +317,15 @@ class Progress(object):
     self.count = 0
     self.successes = 0
     self.failures = 0
+    self.skips = 0
     self.start = time.time()
 
   def Tally(self):
     if self.count > 0:
       tm = time.time()
       eta = (self.total - self.count) * (tm - self.start) / self.count
-      eta_minutes = int(eta / 60)
-      eta_seconds = int(eta - eta_minutes * 60)
+      eta_minutes = int(eta // 60)
+      eta_seconds = int(eta % 60)
       eta_str = ' (ETA %d:%02d)' % (eta_minutes, eta_seconds)
     else:
       eta_str = ''
@@ -337,9 +338,14 @@ class Progress(object):
     else:
       self.failures += 1
 
+  def Skip(self):
+    self.skips += 1
+
   def Summary(self, warn_only=False):
     print 'Ran tests on %d of %d items.' % (
         self.successes + self.failures, self.total)
+    if self.skips:
+      print '%d tests were skipped.' % self.skips
     if self.failures:
       # Our alternate validators don't currently cover everything.
       # For now, don't fail just emit warning (and a tally of failures).
