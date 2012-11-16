@@ -222,6 +222,10 @@ bool SetURLRequestContext(net::URLRequestContextGetter* context) {
 void RLZ_LIB_API SetIOTaskRunner(base::SequencedTaskRunner* io_task_runner) {
   RlzValueStoreChromeOS::SetIOTaskRunner(io_task_runner);
 }
+
+void RLZ_LIB_API CleanupRlz() {
+  RlzValueStoreChromeOS::Cleanup();
+}
 #endif
 
 bool GetProductEventsAsCgi(Product product, char* cgi, size_t cgi_size) {

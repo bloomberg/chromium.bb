@@ -90,6 +90,12 @@ void RlzValueStoreChromeOS::ResetForTesting() {
     GetInstance()->ReadPrefs();
 }
 
+// static
+void RlzValueStoreChromeOS::Cleanup() {
+  if (created_)
+    GetInstance()->rlz_store_ = NULL;
+}
+
 RlzValueStoreChromeOS::RlzValueStoreChromeOS() {
   ReadPrefs();
   created_ = true;
@@ -263,7 +269,6 @@ bool RlzValueStoreChromeOS::RemoveValueFromList(std::string list_name,
 
 ScopedRlzValueStoreLock::ScopedRlzValueStoreLock()
     : store_(RlzValueStoreChromeOS::GetInstance()) {
-  DCHECK(store_->CalledOnValidThread());
 }
 
 ScopedRlzValueStoreLock::~ScopedRlzValueStoreLock() {

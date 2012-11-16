@@ -81,6 +81,9 @@ bool RLZ_LIB_API SetURLRequestContext(net::URLRequestContextGetter* context);
 // Set the MessageLoopProxy used by RLZ store to run I/O tasks on. Should be
 // called before any other API calls.
 void RLZ_LIB_API SetIOTaskRunner(base::SequencedTaskRunner* io_task_runner);
+
+// Must be invoked during shutdown to finish any remaining tasks.
+void RLZ_LIB_API CleanupRlz();
 #endif
 
 // RLZ storage functions.

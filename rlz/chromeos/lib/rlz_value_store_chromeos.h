@@ -22,14 +22,16 @@ namespace rlz_lib {
 // An implementation of RlzValueStore for ChromeOS. Unlike Mac and Win
 // counterparts, it's non thread-safe and should only be accessed on a single
 // Thread instance that has a MessageLoop.
-class RlzValueStoreChromeOS : public RlzValueStore,
-                              public base::NonThreadSafe {
+class RlzValueStoreChromeOS : public RlzValueStore {
  public:
   static RlzValueStoreChromeOS* GetInstance();
 
   // Sets the MessageLoopProxy that underlying PersistentPrefStore will post I/O
   // tasks to. Must be called before the first GetInstance() call.
   static void SetIOTaskRunner(base::SequencedTaskRunner* io_task_runner);
+
+  // Must be invoked during shutdown to commit pending I/O.
+  static void Cleanup();
 
   // Resets the store to its initial state. Should only be used for testing.
   // Same restrictions as for calling GetInstance() for the first time apply,

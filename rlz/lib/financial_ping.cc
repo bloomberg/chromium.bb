@@ -297,10 +297,11 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
   fetcher->SetRequestContext(g_context);
 
   const base::TimeDelta kTimeout = base::TimeDelta::FromMinutes(5);
+  MessageLoop::ScopedNestableTaskAllower allow_nested(MessageLoop::current());
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&net::URLFetcher::Start, base::Unretained(fetcher.get())));
-  MessageLoop::current()->PostNonNestableDelayedTask(
+  MessageLoop::current()->PostDelayedTask(
       FROM_HERE, loop.QuitClosure(), kTimeout);
 
   loop.Run();
