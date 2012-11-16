@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/cancellation_flag.h"
@@ -31,6 +32,23 @@ void RunIfNotCanceledThenUntrack(const CancellationFlag* flag,
                                  const Closure& untrack) {
   RunIfNotCanceled(flag, task);
   untrack.Run();
+}
+
+bool IsCanceled(const CancellationFlag* flag,
+                base::ScopedClosureRunner* cleanup_runner) {
+  return flag->IsSet();
+}
+
+void RunAndDeleteFlag(const Closure& closure, const CancellationFlag* flag) {
+  closure.Run();
+  delete flag;
+}
+
+void RunOrPostToTaskRunner(TaskRunner* task_runner, const Closure& closure) {
+  if (task_runner->RunsTasksOnCurrentThread())
+    closure.Run();
+  else
+    task_runner->PostTask(FROM_HERE, closure);
 }
 
 }  // namespace
@@ -79,6 +97,36 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::PostTaskAndReply(
 
   if (!success)
     return kBadTaskId;
+
+  Track(id, flag);
+  return id;
+}
+
+CancelableTaskTracker::TaskId CancelableTaskTracker::NewTrackedTaskId(
+    IsCanceledCallback* is_canceled_cb) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(base::MessageLoopProxy::current());
+
+  TaskId id = next_id_;
+  next_id_++;  // int64 is big enough that we ignore the potential overflow.
+
+  // Will be deleted by |untrack_and_delete_flag| after Untrack().
+  CancellationFlag* flag = new CancellationFlag();
+
+  Closure untrack_and_delete_flag = Bind(
+      &RunAndDeleteFlag,
+      Bind(&CancelableTaskTracker::Untrack, weak_factory_.GetWeakPtr(), id),
+      flag);
+
+  // Will always run |untrack_and_delete_flag| on current MessageLoop.
+  base::ScopedClosureRunner* untrack_and_delete_flag_runner =
+      new base::ScopedClosureRunner(
+          Bind(&RunOrPostToTaskRunner,
+               base::MessageLoopProxy::current(),
+               untrack_and_delete_flag));
+
+  *is_canceled_cb = Bind(
+      &IsCanceled, flag, base::Owned(untrack_and_delete_flag_runner));
 
   Track(id, flag);
   return id;
