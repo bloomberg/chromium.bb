@@ -155,6 +155,22 @@ class IncludeOrderTest(unittest.TestCase):
     self.assertEqual(1, len(warnings))
     self.assertTrue('2' in warnings[0])
 
+  def testIfElifElseEndif(self):
+    mock_input_api = MockInputApi()
+    contents = ['#include "e.h"',
+                '#if foo',
+                '#include "d.h"',
+                '#elif bar',
+                '#include "c.h"',
+                '#else',
+                '#include "b.h"',
+                '#endif',
+                '#include "a.h"']
+    mock_file = MockFile('', contents)
+    warnings = PRESUBMIT._CheckIncludeOrderInFile(
+        mock_input_api, mock_file, True, range(1, len(contents) + 1))
+    self.assertEqual(0, len(warnings))
+
 
 if __name__ == '__main__':
   unittest.main()

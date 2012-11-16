@@ -559,8 +559,7 @@ def _CheckIncludeOrderInFile(input_api, f, is_source, changed_linenums):
 
   system_include_pattern = input_api.re.compile(r'\s*#include \<.*')
   custom_include_pattern = input_api.re.compile(r'\s*#include "(?P<FILE>.*)"')
-  if_pattern = input_api.re.compile(r'\s*#if.*')
-  endif_pattern = input_api.re.compile(r'\s*#endif.*')
+  if_pattern = input_api.re.compile(r'\s*#\s*(if|elif|else|endif).*')
 
   contents = f.NewContents()
   warnings = []
@@ -594,7 +593,7 @@ def _CheckIncludeOrderInFile(input_api, f, is_source, changed_linenums):
   current_scope = []
   for line in contents[line_num:]:
     line_num += 1
-    if if_pattern.match(line) or endif_pattern.match(line):
+    if if_pattern.match(line):
       scopes.append(current_scope)
       current_scope = []
     elif (system_include_pattern.match(line) or
@@ -654,8 +653,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckUnwantedDependencies(input_api, output_api))
   results.extend(_CheckFilePermissions(input_api, output_api))
   results.extend(_CheckNoAuraWindowPropertyHInHeaders(input_api, output_api))
-  # Causes a problem with content/renderer/render_view_impl.cc
-  #results.extend(_CheckIncludeOrder(input_api, output_api))
+  results.extend(_CheckIncludeOrder(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
