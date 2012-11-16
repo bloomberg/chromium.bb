@@ -44,10 +44,8 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
   PictureLayerTiling* tiling = tilings_[0];
   for (PictureLayerTiling::Iterator iter(tiling, visible_rect); iter; ++iter) {
     ResourceProvider::ResourceId resource;
-    if (*iter) {
-      resource = iter->GetDrawableResourceId(
-          layerTreeHostImpl()->sourceFrameNumber());
-    }
+    if (*iter)
+      resource = iter->resource_id();
 
     if (!resource) {
       // TODO(enne): draw checkerboards, etc...
@@ -89,10 +87,10 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling*,
 
   return make_scoped_refptr(new Tile(
       tile_manager,
+      &pile_,
       rect.size(),
       GL_RGBA,
-      rect,
-      NORMAL_TILE_QUALITY));
+      rect));
 }
 
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {

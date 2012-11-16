@@ -8,8 +8,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "cc/layer_tree_host_impl.h"
 #include "cc/picture_pile.h"
 #include "cc/resource_provider.h"
+#include "cc/tile_manager.h"
 #include "cc/tile_priority.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -17,84 +19,59 @@
 namespace cc {
 
 class Tile;
-class TileManager;
 
-enum TileQuality {
-  LOW_TILE_QUALITY,
-  NORMAL_TILE_QUALITY
-};
-
-class TileVersion {
-public:
-  TileVersion(Tile* tile, int frame_number,
-              PicturePile* picture_pile)
-    : tile_(tile),
-      frame_number_(frame_number),
-      picture_pile_(picture_pile),
-      resource_id_(0) {}
-
-  int frame_number() const { return frame_number_; }
+class Tile : public base::RefCounted<Tile> {
+ public:
+  Tile(TileManager* tile_manager,
+       PicturePile* picture_pile,
+       gfx::Size tile_size,
+       GLenum format,
+       gfx::Rect rect_inside_picture);
 
   const PicturePile* picture_pile() const {
     return picture_pile_;
   }
 
-  const TilePriority& priority() const {
-    return priority_;
+  const TilePriority& priority(WhichTree tree) const {
+    return priority_[tree];
   }
 
-  void ModifyPriority(const TilePriority& priority) {
-    priority_ = priority;
+  TilePriority combined_priority() const {
+    return TilePriority(priority_[ACTIVE_TREE],
+                        priority_[PENDING_TREE]);
   }
 
-  ResourceProvider::ResourceId resource_id() const {
-    return resource_id_;
-  }
-
-private:
-  Tile* tile_;
-  int frame_number_;
-  PicturePile* picture_pile_;
-  TilePriority priority_;
-  ResourceProvider::ResourceId resource_id_;
-};
-
-class Tile : public base::RefCounted<Tile> {
- public:
-  Tile(TileManager* tile_manager,
-       gfx::Size tile_size,
-       GLenum format,
-       gfx::Rect rect_inside_picture,
-       TileQuality quality);
-
-  void SetPicturePile(int frame_number, PicturePile* picture_pile);
-  void ModifyPriority(int frame_number, const TilePriority& priority);
+  void set_priority(WhichTree tree, const TilePriority& priority);
 
   // Returns 0 if not drawable.
-  ResourceProvider::ResourceId GetDrawableResourceId(int frame_number);
+  ResourceProvider::ResourceId resource_id() const { return managed_state_.resource_id; }
 
   const gfx::Rect& opaque_rect() const { return opaque_rect_; }
+
   // TODO(enne): Make this real
   bool contents_swizzled() const { return false; }
 
- protected:
-  // Methods called by TileManager.
-  void DeleteVersionOnRequestOfTileManager(int frame_number);
-
  private:
-  friend class base::RefCounted<Tile>;
+  // Methods called by by tile manager.
   friend class TileManager;
+  friend class BinComparator;
+  ManagedTileState& managed_state() { return managed_state_; }
+  const ManagedTileState& managed_state() const { return managed_state_; }
+  size_t bytes_consumed_if_allocated() const;
 
-  TileVersion* GetVersion(int frame_number);
+  // Normal private methods.
+  friend class base::RefCounted<Tile>;
   ~Tile();
 
   TileManager* tile_manager_;
+  PicturePile* picture_pile_;
   gfx::Rect tile_size_;
   GLenum format_;
   gfx::Rect rect_inside_picture_;
   gfx::Rect opaque_rect_;
-  TileQuality quality_;
-  ScopedVector<TileVersion> versions_;
+
+  TilePriority priority_[2];
+  ManagedTileState managed_state_;
 };
 
 }  // namespace cc

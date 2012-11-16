@@ -12,37 +12,63 @@
 
 namespace cc {
 
+enum TileResolution {
+  LOW_RESOLUTION = 0 ,
+  HIGH_RESOLUTION = 1,
+  NON_IDEAL_RESOLUTION = 2
+};
+
 struct TilePriority {
-  // Set to true for tiles that should be favored during, for example,
-  // scrolls.
-  bool on_primary_tree;
+  TilePriority()
+     : resolution(NON_IDEAL_RESOLUTION),
+       time_to_visible_in_seconds(std::numeric_limits<float>::max()),
+       time_to_ideal_resolution_in_seconds(std::numeric_limits<float>::max()),
+       distance_to_visible_in_pixels(std::numeric_limits<float>::max()) {}
 
-  // A given layer may have multiple tilings, of differing quality.
-  // would_be_drawn is set for the tiles that are visible that would be
-  // drawn if they were chosen.
-  bool would_be_drawn;
+  TilePriority(const TilePriority& active, const TilePriority& pending) {
+    if (active.resolution == HIGH_RESOLUTION ||
+        pending.resolution == HIGH_RESOLUTION)
+      resolution = HIGH_RESOLUTION;
+    else if (active.resolution == LOW_RESOLUTION ||
+             pending.resolution == LOW_RESOLUTION)
+      resolution = LOW_RESOLUTION;
+    else
+      resolution = NON_IDEAL_RESOLUTION;
 
-  // We expect it to be useful soon.
-  bool nice_to_have;
+    time_to_visible_in_seconds =
+      std::min(active.time_to_visible_in_seconds,
+               pending.time_to_visible_in_seconds);
+    time_to_ideal_resolution_in_seconds =
+      std::min(active.time_to_ideal_resolution_in_seconds,
+               pending.time_to_ideal_resolution_in_seconds);
+    distance_to_visible_in_pixels =
+      std::min(active.distance_to_visible_in_pixels,
+               pending.distance_to_visible_in_pixels);
+  }
 
-  // Used to prefer tiles near to the viewport.
-  float distance_to_viewport;
+  float time_to_needed_in_seconds() const {
+    return std::min(time_to_visible_in_seconds,
+                    time_to_ideal_resolution_in_seconds);
+  }
 
-  // TODO(enne): some metric that penalizes blurriness.
+  TileResolution resolution;
+  float time_to_visible_in_seconds;
+  float time_to_ideal_resolution_in_seconds;
+  float distance_to_visible_in_pixels;
 };
 
 enum TileMemoryLimitPolicy {
   // Nothing.
   ALLOW_NOTHING,
 
-  // Use as little as possible.
-  ALLOW_ONLY_REQUIRED, // On primary tree, would be drawn.
+  // You might be made visible, but you're not being interacted with.
+  ALLOW_ABSOLUTE_MINIMUM, // Tall.
 
-  // Use as little as possible.
-  ALLOW_NICE_TO_HAVE, // On either tree, nice to have
+  // You're being interacted with, but we're low on memory.
+  ALLOW_PREPAINT_ONLY, // Grande.
 
-  // Use as much memory, up to memory size.
-  ALLOW_ANYTHING,
+  // You're the only thing in town. Go crazy.
+  ALLOW_ANYTHING, // Venti.
 };
 
 class GlobalStateThatImpactsTilePriority {
@@ -50,9 +76,7 @@ class GlobalStateThatImpactsTilePriority {
   GlobalStateThatImpactsTilePriority()
     : memory_limit_policy(ALLOW_NOTHING)
     , memory_limit_in_bytes(0)
-    , smoothness_takes_priority(false)
-    , pending_tree_frame_number(-1)
-    , active_tree_frame_number(-1) {
+    , smoothness_takes_priority(false) {
   }
 
   TileMemoryLimitPolicy memory_limit_policy;
@@ -61,24 +85,6 @@ class GlobalStateThatImpactsTilePriority {
 
   // Set when scrolling.
   bool smoothness_takes_priority;
-
-  // Use -1 if no tree.
-  int pending_tree_frame_number;
-  int active_tree_frame_number;
-};
-
-class TilePriorityComparator {
- public:
-  TilePriorityComparator(GlobalStateThatImpactsTilePriority& global_state)
-      : global_state_(global_state) {}
-
-  int compare(const TilePriority& a, const TilePriority& b) {
-    // TODO(nduca,enne): Implement a comparator using the attributes here.
-    return 0;
-  }
-
- private:
-  GlobalStateThatImpactsTilePriority global_state_;
 };
 
 }  // namespace cc

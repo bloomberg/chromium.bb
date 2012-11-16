@@ -33,6 +33,13 @@ class ResourceProvider;
 struct RendererCapabilities;
 struct RenderingStats;
 
+enum WhichTree {
+  // Note: these must be 0 and 1 because we index with them in various places,
+  // e.g. in Tile::priority_.
+  ACTIVE_TREE = 0,
+  PENDING_TREE = 1
+};
+
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
 public:
