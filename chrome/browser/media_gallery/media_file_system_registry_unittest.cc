@@ -259,7 +259,7 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   EnsureMediaDirectoriesExists media_directories_;
 
   // Some test gallery directories.
-  ScopedTempDir galleries_dir_;
+  base::ScopedTempDir galleries_dir_;
   // An empty directory in |galleries_dir_|
   FilePath empty_dir_;
   // A directory in |galleries_dir_| with a DCIM directory in it.
