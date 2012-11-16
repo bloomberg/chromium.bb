@@ -9,10 +9,14 @@
 #include <set>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/field_types.h"
+#include "chrome/browser/autofill/form_structure.h"
 #include "ui/base/models/combobox_model.h"
+
+class Profile;
 
 namespace content {
 class WebContents;
@@ -27,6 +31,7 @@ struct DetailInput;
 // one of these sections. TODO(estade): add telephone number.
 enum DialogSection {
   SECTION_EMAIL,
+  SECTION_CC,
   SECTION_BILLING,
   SECTION_SHIPPING,
 };
@@ -38,7 +43,7 @@ enum DialogAction {
 };
 
 typedef std::vector<const DetailInput*> DetailInputs;
-typedef std::map<AutofillFieldType, string16> DetailOutputMap;
+typedef std::map<const DetailInput*, string16> DetailOutputMap;
 
 // This class drives the dialog that appears when a site uses the imperative
 // autocomplete API to fill out a form.
@@ -46,7 +51,8 @@ class AutofillDialogController {
  public:
   AutofillDialogController(
       content::WebContents* contents,
-      const std::vector<AutofillFieldType>& requested_data);
+      const FormData& form_structure,
+      const base::Callback<void(const FormStructure*)>& callback);
   ~AutofillDialogController();
 
   void Show();
@@ -54,10 +60,8 @@ class AutofillDialogController {
   // Called by the view.
   string16 DialogTitle() const;
   string16 IntroText() const;
-  string16 EmailSectionLabel() const;
-  string16 BillingSectionLabel() const;
+  string16 LabelForSection(DialogSection section) const;
   string16 UseBillingForShippingText() const;
-  string16 ShippingSectionLabel() const;
   string16 WalletOptionText() const;
   bool ShouldShowInput(const DetailInput& input) const;
   string16 CancelButtonText() const;
@@ -67,7 +71,7 @@ class AutofillDialogController {
   // |section|.
   const DetailInputs& RequestedFieldsForSection(DialogSection section) const;
   // Returns the model for suggestions for fields that fall under |section|.
-  ui::ComboboxModel* SuggestionModelForSection(DialogSection section);
+  ui::ComboboxModel* ComboboxModelForSection(DialogSection section);
 
   // Called when the view has been closed. The value for |action| indicates
   // whether the Autofill operation should be aborted.
@@ -82,39 +86,63 @@ class AutofillDialogController {
     SuggestionsComboboxModel();
     virtual ~SuggestionsComboboxModel();
 
-    void AddItem(const string16& item);
+    void AddItem(const string16& display_label, const std::string& key);
+    std::string GetItemKeyAt(int index);
 
     // ui::Combobox implementation:
     virtual int GetItemCount() const OVERRIDE;
     virtual string16 GetItemAt(int index) OVERRIDE;
 
    private:
-    std::vector<string16> items_;
+    // The items this model represents, in presentation order. The first
+    // string is the "key" which identifies the item. The second is the
+    // display string for the item.
+    std::vector<std::pair<std::string, string16> > items_;
 
     DISALLOW_COPY_AND_ASSIGN(SuggestionsComboboxModel);
   };
 
+  // Determines whether |input| and |field| match.
+  typedef base::Callback<bool(const DetailInput& input,
+                              const AutofillField& field)> InputFieldComparator;
+
+  // Initializes |suggested_email_| et al.
+  void GenerateComboboxModels();
+
   // Fills in |section|-related fields in |output_| according to the state of
   // |view_|.
   void FillOutputForSection(DialogSection section);
+  // As above, but uses |compare| to determine whether a DetailInput matches
+  // a field.
+  void FillOutputForSectionWithComparator(DialogSection section,
+                                          const InputFieldComparator& compare);
+
+  // Gets the SuggestionsComboboxModel for |section|.
+  SuggestionsComboboxModel* SuggestionsModelForSection(DialogSection section);
+
+  // The |profile| for |contents_|.
+  Profile* const profile_;
 
   // The WebContents where the Autofill action originated.
   content::WebContents* const contents_;
 
+  FormStructure form_structure_;
+
+  base::Callback<void(const FormStructure*)> callback_;
+
   // The fields for billing and shipping which the page has actually requested.
   DetailInputs requested_email_fields_;
+  DetailInputs requested_cc_fields_;
   DetailInputs requested_billing_fields_;
   DetailInputs requested_shipping_fields_;
 
   // Models for the suggestion views.
-  SuggestionsComboboxModel suggested_emails_;
+  SuggestionsComboboxModel suggested_email_;
+  SuggestionsComboboxModel suggested_cc_;
   SuggestionsComboboxModel suggested_billing_;
   SuggestionsComboboxModel suggested_shipping_;
 
   scoped_ptr<AutofillDialogView> view_;
-
-  // The data collected from the user, built up after the user presses 'submit'.
-  DetailOutputMap output_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogController);
 };
