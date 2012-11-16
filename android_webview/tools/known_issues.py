@@ -18,9 +18,9 @@ process will stop and this list must be updated.
 
 """
 
-KNOWN_ISSUES = set([
-    'third_party/usb_ids', # crbug.com/161021, doesn't have a LICENSE file
-])
+# If there is a temporary license-related issue with a particular third_party
+# directory, please put it here, with a comment linking to the bug entry.
+KNOWN_ISSUES = []
 
 KNOWN_INCOMPATIBLE = {
     # Incompatible code in the main chromium repository.
@@ -47,5 +47,4 @@ KNOWN_INCOMPATIBLE = {
     ],
 }
 
-for directory in KNOWN_ISSUES:
-    KNOWN_INCOMPATIBLE['.'].append(directory)
+KNOWN_INCOMPATIBLE['.'].extend(KNOWN_ISSUES)
