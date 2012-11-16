@@ -19,6 +19,7 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -226,8 +227,11 @@ int RunChromeDriver() {
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
 #if defined(OS_POSIX)
-  signal(SIGPIPE, SIG_IGN);
-#endif
+  if (!IgnoreSigPipe()) {
+    LOG(ERROR) << "Failed to ignore SIGPIPE";
+    return EXIT_FAILURE;
+  }
+#endif  // defined(OS_POSIX)
   srand((unsigned int)time(NULL));
 
   // Register Chrome's path provider so that the AutomationProxy will find our

@@ -32,6 +32,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
+#include "base/process_util.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
@@ -99,18 +100,6 @@ const char kControlMessageNetworkChange[] = { ':' };
 bool SetNonBlock(int fd) {
   int flags = fcntl(fd, F_GETFL, 0);
   return flags >= 0 && fcntl(fd, F_SETFL, flags | O_NONBLOCK) == 0;
-}
-
-// Returns true on success.
-bool IgnoreSigPipe() {
-  struct sigaction sa;
-  sa.sa_handler = SIG_IGN;
-  sa.sa_flags = 0;
-  if (sigemptyset(&sa.sa_mask) || sigaction(SIGPIPE, &sa, 0)) {
-    LOG(ERROR) << "WebSocketProxy: Failed to disable sigpipe";
-    return false;
-  }
-  return true;
 }
 
 uint64 ReadNetworkInteger(uint8* buf, int num_bytes) {
@@ -921,7 +910,7 @@ void Serv::Run() {
 
   if (evdns_init())
     LOG(WARNING) << "WebSocketProxy: Failed to initialize evDNS";
-  if (!IgnoreSigPipe()) {
+  if (!base::IgnoreSigPipe()) {
     LOG(ERROR) << "WebSocketProxy: Failed to ignore SIGPIPE";
     return;
   }

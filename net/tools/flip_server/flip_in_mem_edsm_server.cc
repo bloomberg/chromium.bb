@@ -13,6 +13,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/process_util.h"
 #include "base/synchronization/lock.h"
 #include "base/timer.h"
 #include "net/tools/flip_server/acceptor_thread.h"
@@ -163,7 +164,7 @@ int main (int argc, char**argv)
   bool wait_for_iface = false;
   int pidfile_fd;
 
-  signal(SIGPIPE, SIG_IGN);
+  CHECK(base::IgnoreSigPipe());
   signal(SIGTERM, SignalHandler);
   signal(SIGINT, SignalHandler);
   signal(SIGHUP, SignalHandler);
