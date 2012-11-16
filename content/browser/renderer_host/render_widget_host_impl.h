@@ -59,6 +59,7 @@ namespace content {
 class BackingStore;
 class GestureEventFilter;
 class MockRenderWidgetHost;
+class OverscrollController;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostViewPort;
 class SmoothScrollGesture;
@@ -444,6 +445,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Update the renderer's cache of the screen rect of the view and window.
   void SendScreenRects();
 
+  GestureEventFilter* gesture_event_filter() {
+    return gesture_event_filter_.get();
+  }
+
  protected:
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;
 
@@ -507,6 +512,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // RenderViewHostImpl can account for in-flight beforeunload/unload events.
   int increment_in_flight_event_count() { return ++in_flight_event_count_; }
   int decrement_in_flight_event_count() { return --in_flight_event_count_; }
+
+  // Creates and initializes the overscroll controller.
+  void InitializeOverscrollController();
+
+  // Returns whether an overscroll gesture is in progress.
+  bool IsInOverscrollGesture() const;
 
   void GetWebScreenInfo(WebKit::WebScreenInfo* result);
 
@@ -860,6 +871,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   scoped_ptr<TouchEventQueue> touch_event_queue_;
   scoped_ptr<GestureEventFilter> gesture_event_filter_;
+  scoped_ptr<OverscrollController> overscroll_controller_;
 
 #if defined(OS_WIN)
   std::list<HWND> dummy_windows_for_activation_;

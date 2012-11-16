@@ -1,0 +1,36 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_BROWSER_RENDERER_HOST_OVERSCROLL_CONTROLLER_DELEGATE_H_
+#define CONTENT_BROWSER_RENDERER_HOST_OVERSCROLL_CONTROLLER_DELEGATE_H_
+
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "content/browser/renderer_host/overscroll_controller.h"
+
+namespace content {
+
+// The delegate receives overscroll gesture updates from the controller and
+// should perform appropriate actions.
+class OverscrollControllerDelegate {
+ public:
+  virtual ~OverscrollControllerDelegate() {}
+
+  // This is called for each update in the overscroll amount.
+  virtual void OnOverscrollUpdate(float delta_x, float delta_y) = 0;
+
+  // This is called when the overscroll completes.
+  virtual void OnOverscrollComplete(OverscrollMode overscroll_mode) = 0;
+
+  // This is called when the direction of the overscroll changes.
+  virtual void OnOverscrollModeChange(OverscrollMode old_mode,
+                                      OverscrollMode new_mode) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OverscrollControllerDelegate);
+};
+
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_RENDERER_HOST_OVERSCROLL_CONTROLLER_DELEGATE_H_

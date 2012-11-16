@@ -52,6 +52,12 @@ class GestureEventFilter {
   // Return the |TapSuppressionController| instance.
   TapSuppressionController* GetTapSuppressionController();
 
+  // Returns whether there are any gesture event in the queue.
+  bool HasQueuedGestureEvents() const;
+
+  // Returns the last gesture event that was sent to the renderer.
+  const WebKit::WebInputEvent& GetGestureEventAwaitingAck() const;
+
  private:
   friend class MockRenderWidgetHost;
 

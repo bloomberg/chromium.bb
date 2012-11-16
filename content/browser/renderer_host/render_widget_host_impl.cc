@@ -23,6 +23,7 @@
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/gesture_event_filter.h"
+#include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
@@ -970,7 +971,10 @@ void RenderWidgetHostImpl::ForwardWheelEvent(
 void RenderWidgetHostImpl::ForwardGestureEvent(
     const WebKit::WebGestureEvent& gesture_event) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::ForwardGestureEvent");
-  if (ignore_input_events_ || process_->IgnoreInputEvents() ||
+  if (ignore_input_events_ || process_->IgnoreInputEvents())
+    return;
+
+  if (!IsInOverscrollGesture() &&
       !gesture_event_filter_->ShouldForward(gesture_event))
     return;
 
@@ -1067,6 +1071,23 @@ void RenderWidgetHostImpl::ForwardInputEvent(const WebInputEvent& input_event,
   DCHECK(!process_->IgnoreInputEvents());
 
   in_process_event_types_.push(input_event.type);
+
+  if (overscroll_controller_.get() &&
+      !overscroll_controller_->WillDispatchEvent(input_event)) {
+    // Reset the wheel-event state when appropriate.
+    if (input_event.type == WebKit::WebInputEvent::MouseWheel) {
+      mouse_wheel_pending_ = false;
+    } else if (WebInputEvent::isGestureEventType(input_event.type) &&
+               gesture_event_filter_->HasQueuedGestureEvents()) {
+      // If the gesture-event filter has queued gesture events, that implies it
+      // is awaiting an ack for the event. Since the event is being consumed by
+      // the over scroll here, it is never sent to the renderer, and so it won't
+      // receive any ACKs. So send the ACK to the gesture event filter
+      // immediately, and mark it as having been processed.
+      gesture_event_filter_->ProcessGestureAck(true, input_event.type);
+    }
+    return;
+  }
 
   IPC::Message* message = new ViewMsg_HandleInputEvent(routing_id_);
   message->WriteData(
@@ -1181,6 +1202,9 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   // Must reset these to ensure that gesture events work with a new renderer.
   gesture_event_filter_->Reset();
 
+  if (overscroll_controller_.get())
+    overscroll_controller_->Reset();
+
   // Must reset these to ensure that keyboard events work with a new renderer.
   key_queue_.clear();
   suppress_next_char_events_ = false;
@@ -1292,6 +1316,15 @@ bool RenderWidgetHostImpl::IsFullscreen() const {
 
 void RenderWidgetHostImpl::SetShouldAutoResize(bool enable) {
   should_auto_resize_ = enable;
+}
+
+void RenderWidgetHostImpl::InitializeOverscrollController() {
+  overscroll_controller_.reset(new OverscrollController(this));
+}
+
+bool RenderWidgetHostImpl::IsInOverscrollGesture() const {
+  return overscroll_controller_.get() &&
+         overscroll_controller_->overscroll_mode() != OVERSCROLL_NONE;
 }
 
 void RenderWidgetHostImpl::GetWebScreenInfo(WebKit::WebScreenInfo* result) {
@@ -1780,6 +1813,9 @@ void RenderWidgetHostImpl::OnMsgSelectRangeAck() {
 void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {
   mouse_wheel_pending_ = false;
 
+  if (overscroll_controller_.get())
+    overscroll_controller_->ReceivedEventACK(current_wheel_event_, processed);
+
   // Now send the next (coalesced) mouse wheel event.
   if (!coalesced_mouse_wheel_events_.empty()) {
     WebMouseWheelEvent next_wheel_event =
@@ -1793,6 +1829,10 @@ void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {
 }
 
 void RenderWidgetHostImpl::ProcessGestureAck(bool processed, int type) {
+  if (overscroll_controller_.get()) {
+    overscroll_controller_->ReceivedEventACK(
+        gesture_event_filter_->GetGestureEventAwaitingAck(), processed);
+  }
   gesture_event_filter_->ProcessGestureAck(processed, type);
 }
 

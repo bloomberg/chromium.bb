@@ -214,6 +214,16 @@ TapSuppressionController*  GestureEventFilter::GetTapSuppressionController() {
   return tap_suppression_controller_.get();
 }
 
+bool GestureEventFilter::HasQueuedGestureEvents() const {
+  return !coalesced_gesture_events_.empty();
+}
+
+const WebKit::WebInputEvent&
+GestureEventFilter::GetGestureEventAwaitingAck() const {
+  DCHECK(!coalesced_gesture_events_.empty());
+  return coalesced_gesture_events_.front();
+}
+
 void GestureEventFilter::FlingHasBeenHalted() {
   fling_in_progress_ = false;
 }
