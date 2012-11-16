@@ -11,9 +11,17 @@
 #include "chrome/browser/screensaver_window_finder_gtk.h"
 #endif
 
-void CalculateIdleTime(IdleTimeCallback notify) {
+void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
+  if (CheckIdleStateIsLocked()) {
+    notify.Run(IDLE_STATE_LOCKED);
+    return;
+  }
   chrome::IdleQueryLinux idle_query;
-  notify.Run(idle_query.IdleTime());
+  unsigned int idle_time = idle_query.IdleTime();
+  if (idle_time >= idle_threshold)
+    notify.Run(IDLE_STATE_IDLE);
+  else
+    notify.Run(IDLE_STATE_ACTIVE);
 }
 
 bool CheckIdleStateIsLocked() {

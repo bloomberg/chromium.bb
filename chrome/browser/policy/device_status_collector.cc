@@ -31,7 +31,7 @@ namespace em = enterprise_management;
 
 namespace {
 // How many seconds of inactivity triggers the idle state.
-const int kIdleStateThresholdSeconds = 300;
+const unsigned int kIdleStateThresholdSeconds = 300;
 
 // How many days in the past to store active periods for.
 const unsigned int kMaxStoredPastActivityDays = 30;

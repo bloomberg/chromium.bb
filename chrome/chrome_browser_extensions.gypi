@@ -184,10 +184,6 @@
         'browser/extensions/api/idle/idle_api.h',
         'browser/extensions/api/idle/idle_api_constants.cc',
         'browser/extensions/api/idle/idle_api_constants.h',
-        'browser/extensions/api/idle/idle_manager.cc',
-        'browser/extensions/api/idle/idle_manager.h',
-        'browser/extensions/api/idle/idle_manager_factory.cc',
-        'browser/extensions/api/idle/idle_manager_factory.h',
         'browser/extensions/api/idltest/idltest_api.cc',
         'browser/extensions/api/idltest/idltest_api.h',
         'browser/extensions/api/input/input.cc',
@@ -894,3 +890,4 @@
     }, ],  # 'OS=="win"'
   ],  # 'conditions'
 }
+

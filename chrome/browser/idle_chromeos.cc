@@ -4,25 +4,27 @@
 
 #include "chrome/browser/idle.h"
 
-#include <limits.h>
-
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 
-void CalculateIdleTimeNotifier(IdleTimeCallback notify,
-                               int64_t idle_time_s) {
-  if (idle_time_s > INT_MAX) {
-    // Just in case you are idle for > 100 years.
-    idle_time_s = INT_MAX;
+void CalculateIdleStateNotifier(unsigned int idle_treshold,
+                                IdleCallback notify,
+                                int64_t idle_time_s) {
+  if (idle_time_s >= (int64_t)idle_treshold) {
+    notify.Run(IDLE_STATE_IDLE);
+  } else if (idle_time_s < 0) {
+    notify.Run(IDLE_STATE_UNKNOWN);
+  } else {
+    notify.Run(IDLE_STATE_ACTIVE);
   }
-  notify.Run(static_cast<int>(idle_time_s));
 }
 
-void CalculateIdleTime(IdleTimeCallback notify) {
+void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      CalculateIdleTime(base::Bind(&CalculateIdleTimeNotifier, notify));
+      CalculateIdleTime(base::Bind(&CalculateIdleStateNotifier, idle_threshold,
+                                   notify));
 }
 
 bool CheckIdleStateIsLocked() {

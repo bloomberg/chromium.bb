@@ -50,7 +50,7 @@
 }
 
 - (void)dealloc {
-  [[NSDistributedNotificationCenter defaultCenter] removeObserver:self];
+  [[NSDistributedNotificationCenter defaultCenter] removeObject:self];
   [super dealloc];
 }
 
@@ -84,11 +84,19 @@ void StopIdleMonitor() {
   g_screenMonitor = nil;
 }
 
-void CalculateIdleTime(IdleTimeCallback notify) {
+void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
+  if (CheckIdleStateIsLocked()) {
+    notify.Run(IDLE_STATE_LOCKED);
+    return;
+  }
+
   CFTimeInterval idle_time = CGEventSourceSecondsSinceLastEventType(
       kCGEventSourceStateCombinedSessionState,
       kCGAnyInputEventType);
-  notify.Run(static_cast<int>(idle_time));
+  if (idle_time >= idle_threshold)
+    notify.Run(IDLE_STATE_IDLE);
+  else
+    notify.Run(IDLE_STATE_ACTIVE);
 }
 
 bool CheckIdleStateIsLocked() {
