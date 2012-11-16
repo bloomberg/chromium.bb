@@ -39,6 +39,7 @@ private:
     virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
 
     void createUpdaterIfNeeded();
+    void createResource();
 
     scoped_refptr<ImageLayerUpdater> m_updater;
     scoped_ptr<LayerUpdater::Resource> m_resource;

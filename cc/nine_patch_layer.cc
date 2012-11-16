@@ -32,14 +32,13 @@ scoped_ptr<LayerImpl> NinePatchLayer::createLayerImpl()
 
 void NinePatchLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
 {
-    if (m_needsDisplay && m_bitmapDirty && drawsContent()) {
-        DCHECK(!m_bitmap.isNull());
-        createUpdaterIfNeeded();
-        m_updater->setBitmap(m_bitmap);
-        m_needsDisplay = false;
-
-        if (!m_resource)
-            m_resource = m_updater->createResource(layerTreeHost()->contentsTextureManager());
+    if (m_resource && !m_resource->texture()->resourceManager()) {
+        // Release the resource here, as it is no longer tied to a resource manager.
+        m_resource.reset();
+        if (!m_bitmap.isNull())
+            createResource();
+    } else if (m_needsDisplay && m_bitmapDirty && drawsContent()) {
+        createResource();
     }
 
     if (m_resource) {
@@ -75,6 +74,17 @@ void NinePatchLayer::createUpdaterIfNeeded()
         return;
 
     m_updater = ImageLayerUpdater::create();
+}
+
+void NinePatchLayer::createResource()
+{
+    DCHECK(!m_bitmap.isNull());
+    createUpdaterIfNeeded();
+    m_updater->setBitmap(m_bitmap);
+    m_needsDisplay = false;
+
+    if (!m_resource)
+        m_resource = m_updater->createResource(layerTreeHost()->contentsTextureManager());
 }
 
 bool NinePatchLayer::drawsContent() const

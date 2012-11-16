@@ -131,6 +131,18 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     testLayer->update(queue, &occlusionTracker, stats);
     EXPECT_EQ(queue.fullUploadSize(), 1);
     EXPECT_EQ(queue.partialUploadSize(), 0);
+
+    // PrioritizedResourceManager clearing
+    m_layerTreeHost->contentsTextureManager()->unregisterTexture(params.texture);
+    EXPECT_EQ(NULL, params.texture->resourceManager());
+    testLayer->setTexturePriorities(calculator);
+    ResourceUpdateQueue queue2;
+    testLayer->update(queue2, &occlusionTracker, stats);
+    EXPECT_EQ(queue2.fullUploadSize(), 1);
+    EXPECT_EQ(queue2.partialUploadSize(), 0);
+    params = queue2.takeFirstFullUpload();
+    EXPECT_TRUE(params.texture != NULL);
+    EXPECT_EQ(params.texture->resourceManager(), m_layerTreeHost->contentsTextureManager());
 }
 
 }  // namespace
