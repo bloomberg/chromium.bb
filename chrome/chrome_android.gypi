@@ -76,23 +76,18 @@
     {
       # chromium_testshell creates a .jar as a side effect. Any java targets
       # that need that .jar in their classpath should depend on this target,
-      # chromium_testshell_java.
+      # chromium_testshell_java. Dependents of chromium_testshell receive its
+      # jar path in the variable 'apk_output_jar_path'.
       'target_name': 'chromium_testshell_java',
       'type': 'none',
       'dependencies': [
-        '../media/media.gyp:media_java',
-        'chrome.gyp:chrome_java',
         'chromium_testshell',
       ],
-      'variables': {
-        'output_jar': '<(PRODUCT_DIR)/lib.java/chromium_apk_chromium_testshell.jar'
-      },
-      'outputs': ['<(output_jar)'],
       # This all_dependent_settings is used for java targets only. This will add
       # the chromium_testshell jar to the classpath of dependent java targets.
       'all_dependent_settings': {
         'variables': {
-          'input_jars_paths': ['<(output_jar)'],
+          'input_jars_paths': ['>(apk_output_jar_path)'],
         },
       },
       # Add an action with the appropriate output. This allows the generated
@@ -101,7 +96,7 @@
         {
           'action_name': 'fake_generate_jar',
           'inputs': [],
-          'outputs': ['<(output_jar)'],
+          'outputs': ['>(apk_output_jar_path)'],
           'action': [],
         },
       ],
