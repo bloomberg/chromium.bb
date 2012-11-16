@@ -2155,6 +2155,7 @@
             ['include', '_ios\\.(cc|mm)$'],
             ['include', '(^|/)ios/'],
             # TODO(ios): Add files here as they are updated to compile on iOS.
+            ['include', '^browser/ui/profile_error_dialog\\.cc$'],
           ],
         }],
         ['enable_one_click_signin==0', {

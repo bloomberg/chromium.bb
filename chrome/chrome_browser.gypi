@@ -27,7 +27,6 @@
         'safe_browsing_report_proto',
         'variations_seed_proto',
         '../build/temp_gyp/googleurl.gyp:googleurl',
-        '../cc/cc.gyp:cc',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
@@ -2168,6 +2167,7 @@
             'debugger',
             'installer_util',
             'sync_file_system_proto',
+            '../cc/cc.gyp:cc',
             '../content/content.gyp:navigation_interception',
             '../net/net.gyp:net_with_v8',
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',  # For PpapiMsg_LoadPlugin
@@ -2205,6 +2205,7 @@
             ['include', '_ios\\.(cc|mm)$'],
             ['include', '(^|/)ios/'],
             # TODO(ios): Add files here as they are updated to compile on iOS.
+            ['include', '^browser/browser_process\\.cc$'],
           ],
           'link_settings': {
             'libraries': [

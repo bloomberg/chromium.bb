@@ -80,6 +80,7 @@
         'common/child_process_logging_win.cc',
         'common/chrome_content_client.cc',
         'common/chrome_content_client.h',
+        'common/chrome_content_client_ios.mm',
         'common/chrome_notification_types.h',
         'common/chrome_result_codes.h',
         'common/chrome_sandbox_type_mac.h',
@@ -358,7 +359,11 @@
             # TODO(ios): Include files here as they are made to work; once
             # everything is online, remove everything below here and just
             # use the exclusions above.
-            ['exclude', '.*'],
+            ['exclude', '\\.(cc|mm)$'],
+            ['include', '_ios\\.(cc|mm)$'],
+            ['include', '(^|/)ios/'],
+            ['include', '^common/chrome_version_info\\.cc$'],
+            ['include', '^common/zip'],
           ],
         }],
         ['OS=="android"', {
@@ -425,6 +430,7 @@
             # Pull in specific Mac files for iOS (which have been filtered out
             # by file name rules).
             ['include', '^common/chrome_version_info_mac\\.mm$'],
+            ['include', '^common/mac/nscoder_util\\.'],
           ],
         }],
       ],

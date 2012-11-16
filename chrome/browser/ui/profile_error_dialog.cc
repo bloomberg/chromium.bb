@@ -10,7 +10,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 void ShowProfileErrorDialog(int message_id) {
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   NOTIMPLEMENTED();
 #else
   chrome::ShowMessageBox(NULL,

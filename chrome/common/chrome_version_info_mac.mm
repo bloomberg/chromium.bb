@@ -4,7 +4,7 @@
 
 #include "chrome/common/chrome_version_info.h"
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
 #include "base/basictypes.h"
 #include "base/mac/bundle_locations.h"

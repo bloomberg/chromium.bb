@@ -304,6 +304,8 @@
             ['include', '_ios\\.(cc|mm)$'],
             ['include', '(^|/)ios/'],
             # TODO(ios): Add files here as they are updated to compile on iOS.
+            ['include', '^test/base/chrome_test_suite\\.cc$'],
+            ['include', '^test/base/testing_browser_process'],
           ],
         }],
         ['chromeos==0', {
@@ -326,7 +328,7 @@
             '../build/linux/system.gyp:ssl',
           ],
         }],
-        ['OS!="android"', {
+        ['OS!="android" and OS!="ios"', {
           'dependencies': [
             'service',
           ],
@@ -401,7 +403,6 @@
         '../sync/sync.gyp:test_support_sync_notifier',
         'test_support_unit',
         # 3) anything tests directly depend on
-        '../device/device.gyp:device_bluetooth_mocks',
         '../google_apis/google_apis.gyp:google_apis',
         '../skia/skia.gyp:skia',
         '../third_party/bzip2/bzip2.gyp:bzip2',
@@ -1641,6 +1642,7 @@
         ['OS!="ios"', {
           'dependencies': [
             'common/extensions/api/api.gyp:api',
+            '../device/device.gyp:device_bluetooth_mocks',
             '../gpu/gpu.gyp:gpu_unittest_utils',
             '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
             '../third_party/cld/cld.gyp:cld',
@@ -1664,6 +1666,8 @@
             ['include', '_ios\\.(cc|mm)$'],
             ['include', '(^|/)ios/'],
             # TODO(ios): Add files here as they are updated to compile on iOS.
+            ['include', '^common/bzip2_unittest\\.cc$'],
+            ['include', '^common/zip_'],
           ],
           'actions': [
             {

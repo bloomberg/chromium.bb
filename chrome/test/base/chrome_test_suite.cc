@@ -131,8 +131,11 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
 
     DCHECK(!content::GetContentClient());
     content_client_.reset(new chrome::ChromeContentClient);
+    // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
+#if !defined(OS_IOS)
     browser_content_client_.reset(new chrome::ChromeContentBrowserClient());
     content_client_->set_browser_for_testing(browser_content_client_.get());
+#endif
     content::SetContentClient(content_client_.get());
 
     SetUpHostResolver();
@@ -145,7 +148,10 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
     }
 
     DCHECK_EQ(content_client_.get(), content::GetContentClient());
+    // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
+#if !defined(OS_IOS)
     browser_content_client_.reset();
+#endif
     content_client_.reset();
     content::SetContentClient(NULL);
 
@@ -167,7 +173,10 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
   scoped_ptr<BrowserProcess> browser_process_;
 
   scoped_ptr<chrome::ChromeContentClient> content_client_;
+  // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
+#if !defined(OS_IOS)
   scoped_ptr<chrome::ChromeContentBrowserClient> browser_content_client_;
+#endif
 
   scoped_refptr<LocalHostResolverProc> host_resolver_proc_;
   scoped_ptr<net::ScopedDefaultHostResolverProc> scoped_host_resolver_proc_;

@@ -65,7 +65,7 @@ bool GetUserPicturesDirectory(FilePath* result);
 // Gets the path to the user's videos directory.
 bool GetUserVideosDirectory(FilePath* result);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 // The "versioned directory" is a directory in the browser .app bundle.  It
 // contains the bulk of the application, except for the things that the system
 // requires be located at spepcific locations.  The versioned directory is
@@ -96,7 +96,7 @@ bool GetGlobalApplicationSupportDirectory(FilePath* result);
 // inside the helper. In unbundled applications, such as tests, returns nil.
 NSBundle* OuterAppBundle();
 
-#endif  // OS_MACOSX
+#endif  // OS_MACOSX && !OS_IOS
 
 // Checks if the |process_type| has the rights to access the profile.
 bool ProcessNeedsProfileDir(const std::string& process_type);

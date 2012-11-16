@@ -12,13 +12,17 @@
 #include "base/base_paths.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/mac_util.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_constants.h"
 
+#if !defined(OS_IOS)
+#import "base/mac/mac_util.h"
+#endif
+
 namespace {
 
+#if !defined(OS_IOS)
 const FilePath* g_override_versioned_directory = NULL;
 
 // Return a retained (NOT autoreleased) NSBundle* as the internal
@@ -45,8 +49,11 @@ NSBundle* OuterAppBundleInternal() {
 
   return [[NSBundle bundleWithPath:outer_app_dir_ns] retain];
 }
+#endif  // !defined(OS_IOS)
 
 const char* ProductDirNameInternal() {
+  const char* product_dir_name = NULL;
+#if !defined(OS_IOS)
   base::mac::ScopedNSAutoreleasePool pool;
 
   // Use OuterAppBundle() to get the main app's bundle. This key needs to live
@@ -61,7 +68,8 @@ const char* ProductDirNameInternal() {
   NSBundle* bundle = chrome::OuterAppBundle();
   NSString* product_dir_name_ns =
       [bundle objectForInfoDictionaryKey:@"CrProductDirName"];
-  const char* product_dir_name = [product_dir_name_ns fileSystemRepresentation];
+  product_dir_name = [product_dir_name_ns fileSystemRepresentation];
+#endif
 
   if (!product_dir_name) {
 #if defined(GOOGLE_CHROME_BUILD)
@@ -105,10 +113,6 @@ bool GetUserDocumentsDirectory(FilePath* result) {
   return base::mac::GetUserDirectory(NSDocumentDirectory, result);
 }
 
-bool GetGlobalApplicationSupportDirectory(FilePath* result) {
-  return base::mac::GetLocalDirectory(NSApplicationSupportDirectory, result);
-}
-
 void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
   // If the profile directory is under ~/Library/Application Support,
   // use a suitable cache directory under ~/Library/Caches.  For
@@ -146,6 +150,8 @@ bool GetUserPicturesDirectory(FilePath* result) {
 bool GetUserVideosDirectory(FilePath* result) {
   return base::mac::GetUserDirectory(NSMoviesDirectory, result);
 }
+
+#if !defined(OS_IOS)
 
 FilePath GetVersionedDirectory() {
   if (g_override_versioned_directory)
@@ -200,12 +206,18 @@ bool GetLocalLibraryDirectory(FilePath* result) {
   return base::mac::GetLocalDirectory(NSLibraryDirectory, result);
 }
 
+bool GetGlobalApplicationSupportDirectory(FilePath* result) {
+  return base::mac::GetLocalDirectory(NSApplicationSupportDirectory, result);
+}
+
 NSBundle* OuterAppBundle() {
   // Cache this. Foundation leaks it anyway, and this should be the only call
   // to OuterAppBundleInternal().
   static NSBundle* bundle = OuterAppBundleInternal();
   return bundle;
 }
+
+#endif  // !defined(OS_IOS)
 
 bool ProcessNeedsProfileDir(const std::string& process_type) {
   // For now we have no reason to forbid this on other MacOS as we don't

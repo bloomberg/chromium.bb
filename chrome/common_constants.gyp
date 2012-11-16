@@ -65,6 +65,15 @@
         '../base/base.gyp:base',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
       ],
+      'target_conditions': [
+        ['OS=="ios"', {
+          # iOS needs chrome_paths_mac, which is excluded by filename rules;
+          # re-add it in target_conditionals so it's after that exclusion.
+          'sources/': [
+            ['include', '^common/chrome_paths_mac\\.mm$'],
+          ],
+        }],
+      ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
           'dependencies': ['../build/linux/system.gyp:gtk'],
