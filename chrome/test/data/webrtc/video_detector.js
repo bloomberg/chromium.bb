@@ -49,11 +49,12 @@ function startDetection(videoElementId, canvasId, width, height) {
  */
 function isVideoPlaying() {
   // Video is considered to be playing if at least one finger print has changed
-  // since the oldest fingerprint.
-  // Even small blips in the pixel data will cause this check to pass.
+  // since the oldest fingerprint. Even small blips in the pixel data will cause
+  // this check to pass. We only check for rough equality though to account for
+  // rounding errors.
   try {
     if (gFingerprints.length > 1) {
-      if (!allElementsEqualTo_(gFingerprints, gFingerprints[0])) {
+      if (!allElementsRoughlyEqualTo_(gFingerprints, gFingerprints[0])) {
         returnToTest('video-playing');
         return;
       }
@@ -67,11 +68,11 @@ function isVideoPlaying() {
 // Internals.
 
 /** @private */
-function allElementsEqualTo_(elements, element_to_compare) {
+function allElementsRoughlyEqualTo_(elements, element_to_compare) {
   if (elements.length == 0)
     return false;
   for (var i = 0; i < elements.length; i++) {
-    if (elements[i] != element_to_compare) {
+    if (Math.abs(elements[i] - element_to_compare) > 3) {
       return false;
     }
   }
