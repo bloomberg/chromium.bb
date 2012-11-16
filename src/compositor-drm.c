@@ -572,6 +572,9 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (es->buffer == NULL)
 		return NULL;
 
+	if (es->alpha != 1.0f)
+		return NULL;
+
 	if (wl_buffer_is_shm(es->buffer))
 		return NULL;
 
