@@ -588,8 +588,9 @@ chrome.fileBrowserPrivate = {
       OPEN_WITH_BUTTON_LABEL: 'Open with...',
 
       UNMOUNT_FAILED: 'Unable to eject: $1',
-      UNMOUNT_DEVICE_BUTTON_LABEL: 'Unmount',
-      FORMAT_DEVICE_BUTTON_LABEL: 'Format',
+      UNMOUNT_DEVICE_BUTTON_LABEL: 'Eject device',
+      CLOSE_ARCHIVE_BUTTON_LABEL: 'Close',
+      FORMAT_DEVICE_BUTTON_LABEL: 'Format device',
 
       GDATA_MENU_HELP: 'Help',
       GDATA_MOBILE_CONNECTION_OPTION: 'Do not use mobile data for sync',

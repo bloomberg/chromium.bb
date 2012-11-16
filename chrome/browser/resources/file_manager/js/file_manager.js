@@ -566,6 +566,12 @@ DialogType.isModal = function(type) {
     for (var j = 0; j < commandButtons.length; j++)
       CommandButton.decorate(commandButtons[j]);
 
+    // TODO(dzvorygin): Here we use this hack, since 'hidden' is standard
+    // attribute and we can't use it's setter as usual.
+    cr.ui.Command.prototype.setHidden = function(value) {
+      this.__lookupSetter__('hidden').call(this, value);
+    };
+
     var commands = this.dialogDom_.querySelectorAll('command');
     for (var i = 0; i < commands.length; i++)
       cr.ui.Command.decorate(commands[i]);
@@ -3341,10 +3347,7 @@ DialogType.isModal = function(type) {
 
     this.openWithCommand_.canExecuteChange();
 
-    // TODO(dzvorygin): Here we use this hack, since 'hidden' is standard
-    // attribute and we can't use it's setter as usual.
-    this.openWithCommand_.__lookupSetter__('hidden').
-        call(this.openWithCommand_, !(defaultItem && isMultiple));
+    this.openWithCommand_.setHidden(!(defaultItem && isMultiple));
     this.defaultActionMenuItem_.hidden = !defaultItem;
     defaultActionSeparator.hidden = !defaultItem;
   };

@@ -121,6 +121,9 @@ Commands.unmountCommand = {
 
     event.canExecute = (rootType == RootType.ARCHIVE ||
                         rootType == RootType.REMOVABLE);
+    event.command.label = rootType == RootType.ARCHIVE ?
+        str('CLOSE_ARCHIVE_BUTTON_LABEL') :
+        str('UNMOUNT_DEVICE_BUTTON_LABEL');
   }
 };
 
@@ -139,8 +142,10 @@ Commands.formatCommand = {
     }
   },
   canExecute: function(event, rootsList) {
-    event.canExecute = (CommandUtil.getCommandRootType(event, rootsList) ==
-                        RootType.REMOVABLE);
+    var enabled = (CommandUtil.getCommandRootType(event, rootsList) ==
+                   RootType.REMOVABLE);
+    event.canExecute = enabled;
+    event.command.setHidden(!enabled);
   }
 };
 

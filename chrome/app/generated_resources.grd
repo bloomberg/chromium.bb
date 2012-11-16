@@ -12194,6 +12194,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_UNMOUNT_DEVICE_BUTTON_LABEL" desc="Title of the action for unmounting removable device.">
         Eject device
       </message>
+      <message name="IDS_FILE_BROWSER_CLOSE_ARCHIVE_BUTTON_LABEL" desc="Title of the action for closing the archive.">
+        Close
+      </message>
       <message name="IDS_FILE_BROWSER_ACTION_VIEW" desc="Title of the action to view (no edit) a file.">
         View
       </message>
