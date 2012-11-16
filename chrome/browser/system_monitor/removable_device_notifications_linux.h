@@ -28,10 +28,12 @@
 class FilePath;
 
 // Gets device information given a |device_path|. On success, fills in
-// |unique_id|, |name|, and |removable|.
+// |unique_id|, |name|, |removable| and |partition_size_in_bytes|.
 typedef void (*GetDeviceInfoFunc)(const FilePath& device_path,
-                                  std::string* unique_id, string16* name,
-                                  bool* removable);
+                                  std::string* unique_id,
+                                  string16* name,
+                                  bool* removable,
+                                  uint64* partition_size_in_bytes);
 
 namespace chrome {
 
@@ -56,6 +58,10 @@ class RemovableDeviceNotificationsLinux
       const FilePath& path,
       base::SystemMonitor::RemovableStorageInfo* device_info) const;
 
+  // Returns the storage partition size of the device present at |location|.
+  // If the requested information is unavailable, returns 0.
+  uint64 GetStorageSize(const std::string& location) const;
+
  protected:
   // Only for use in unit tests.
   RemovableDeviceNotificationsLinux(const FilePath& path,
@@ -75,12 +81,15 @@ class RemovableDeviceNotificationsLinux
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::FILE>;
 
-  // Structure to save mounted device information such as device path and unique
-  // identifier.
+  // Structure to save mounted device information such as device path, unique
+  // identifier, device name and partition size.
   struct MountPointInfo {
+    MountPointInfo();
+
     FilePath mount_device;
     std::string device_id;
     string16 device_name;
+    uint64 partition_size_in_bytes;
   };
 
   // Mapping of mount points to MountPointInfo.
