@@ -315,12 +315,18 @@ int GoogleChromeCompatibilityCheck(unsigned* reasons) {
   unsigned local_reasons = 0;
   @autoreleasepool {
     passwd* user = GetRealUserId();
+    if (!user)
+      return GCCC_ERROR_ACCESSDENIED;
 
     if (!IsOSXVersionSupported())
       local_reasons |= GCCC_ERROR_OSNOTSUPPORTED;
 
-    if (FindChromeTicket(kSystemTicket, NULL, NULL))
+    NSString* path;
+    if (FindChromeTicket(kSystemTicket, NULL, &path)) {
       local_reasons |= GCCC_ERROR_ALREADYPRESENT;
+      if (!path)  // Ticket points to nothingness.
+        local_reasons |= GCCC_ERROR_ACCESSDENIED;
+    }
 
     if (FindChromeTicket(kUserTicket, user, NULL))
       local_reasons |= GCCC_ERROR_ALREADYPRESENT;
@@ -345,6 +351,8 @@ int InstallGoogleChrome(const char* source_path,
 
   @autoreleasepool {
     passwd* user = GetRealUserId();
+    if (!user)
+      return 0;
 
     NSString* app_path = [NSString stringWithUTF8String:source_path];
     NSString* info_plist_path =
@@ -403,6 +411,8 @@ int InstallGoogleChrome(const char* source_path,
 int LaunchGoogleChrome() {
   @autoreleasepool {
     passwd* user = GetRealUserId();
+    if (!user)
+      return 0;
 
     NSString* app_path;
 
