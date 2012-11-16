@@ -23,6 +23,7 @@
 #include "media/base/media.h"
 #include "net/socket/ssl_server_socket.h"
 #include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/mouse_cursor.h"
 #include "ppapi/cpp/rect.h"
@@ -54,6 +55,9 @@ namespace {
 const int kBytesPerPixel = 4;
 
 const int kPerfStatsIntervalMs = 1000;
+
+// URL scheme used by Chrome apps and extensions.
+const char kChromeExtensionUrlScheme[] = "chrome-extension";
 
 std::string ConnectionStateToString(protocol::ConnectionToHost::State state) {
   // Values returned by this function must match the
@@ -214,6 +218,12 @@ bool ChromotingInstance::Init(uint32_t argc,
   // http://crbug.com/91521.
   if (!media::IsMediaLibraryInitialized()) {
     LOG(ERROR) << "Media library not initialized.";
+    return false;
+  }
+
+  // Check that the calling content is part of an app or extension.
+  if (!IsCallerAppOrExtension()) {
+    LOG(ERROR) << "Not an app or extension";
     return false;
   }
 
@@ -752,6 +762,22 @@ void ChromotingInstance::ProcessLogToUI(const std::string& message) {
   data->SetString("message", message);
   PostChromotingMessage("logDebugMessage", data.Pass());
   g_logging_to_plugin = false;
+}
+
+bool ChromotingInstance::IsCallerAppOrExtension() {
+  const pp::URLUtil_Dev* url_util = pp::URLUtil_Dev::Get();
+  if (!url_util)
+    return false;
+
+  PP_URLComponents_Dev url_components;
+  pp::Var url_var = url_util->GetDocumentURL(this, &url_components);
+  if (!url_var.is_string())
+    return false;
+
+  std::string url = url_var.AsString();
+  std::string url_scheme = url.substr(url_components.scheme.begin,
+                                      url_components.scheme.len);
+  return url_scheme == kChromeExtensionUrlScheme;
 }
 
 bool ChromotingInstance::IsConnected() {
