@@ -11,10 +11,6 @@
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/history/history.h"
 
-namespace bookmark_utils {
-struct TitleMatch;
-}
-
 // HistoryContentsProvider is an AutocompleteProvider that provides results from
 // the contents (body and/or title) of previously visited pages.
 // HistoryContentsProvider gets results from two sources:
@@ -71,14 +67,6 @@ class HistoryContentsProvider : public HistoryProvider {
   // Calculates and returns the relevance of a particular result. See the
   // chart in autocomplete.h for the list of values this returns.
   int CalculateRelevance(const history::URLResult& result);
-
-  // Queries the bookmarks for any bookmarks whose title matches input. All
-  // matches are added directly to results_.
-  void QueryBookmarks(const AutocompleteInput& input);
-
-  // Converts a BookmarkModel::TitleMatch to a QueryResult and adds it to
-  // results_.
-  void AddBookmarkTitleMatchToResults(const bookmark_utils::TitleMatch& match);
 
   // Return true if the search term can be found in the title of |result|.
   bool MatchInTitle(const history::URLResult& result);

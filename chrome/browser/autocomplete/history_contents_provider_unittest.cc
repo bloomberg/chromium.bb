@@ -194,50 +194,6 @@ TEST_F(HistoryContentsProviderBodyOnlyTest, MinimalChanges) {
   EXPECT_EQ(0U, m3.size());
 }
 
-// Tests that the BookmarkModel is queried correctly.
-TEST_F(HistoryContentsProviderTest, Bookmarks) {
-  profile()->CreateBookmarkModel(false);
-  profile()->BlockUntilBookmarkModelLoaded();
-
-  // Add a bookmark.
-  GURL bookmark_url("http://www.google.com/4");
-  bookmark_utils::AddIfNotBookmarked(
-        BookmarkModelFactory::GetForProfile(profile()),
-        bookmark_url,
-        ASCIIToUTF16("bar"));
-
-  // Ask for synchronous. This should only get the bookmark.
-  AutocompleteInput sync_input(ASCIIToUTF16("bar"), string16(), true, false,
-                               true, AutocompleteInput::SYNCHRONOUS_MATCHES);
-  RunQuery(sync_input, false);
-  const ACMatches& m1 = matches();
-  ASSERT_EQ(1U, m1.size());
-  EXPECT_EQ(bookmark_url, m1[0].destination_url);
-  EXPECT_EQ(ASCIIToUTF16("bar"), m1[0].description);
-  EXPECT_TRUE(m1[0].starred);
-
-  // Ask for async. We should get the bookmark immediately.
-  AutocompleteInput async_input(ASCIIToUTF16("bar"), string16(), true, false,
-                                true, AutocompleteInput::ALL_MATCHES);
-  provider()->Start(async_input, false);
-  const ACMatches& m2 = matches();
-  ASSERT_EQ(1U, m2.size());
-  EXPECT_EQ(bookmark_url, m2[0].destination_url);
-
-  // Run the message loop (needed for async history results).
-  MessageLoop::current()->Run();
-
-  // We should have two urls now, bookmark_url and http://www.google.com/3.
-  const ACMatches& m3 = matches();
-  ASSERT_EQ(2U, m3.size());
-  if (bookmark_url == m3[0].destination_url) {
-    EXPECT_EQ("http://www.google.com/3", m3[1].destination_url.spec());
-  } else {
-    EXPECT_EQ(bookmark_url, m3[1].destination_url);
-    EXPECT_EQ("http://www.google.com/3", m3[0].destination_url.spec());
-  }
-}
-
 // Tests that history is deleted properly.
 TEST_F(HistoryContentsProviderTest, DeleteMatch) {
   AutocompleteInput input(ASCIIToUTF16("bar"), string16(), true, false, true,
@@ -282,10 +238,6 @@ TEST_F(HistoryContentsProviderTest, DeleteStarredMatch) {
                               true, AutocompleteInput::ALL_MATCHES);
   RunQuery(you_input, false);
   EXPECT_EQ(0U, matches().size());
-
-  // Run a query that matches the bookmark
-  RunQuery(input, false);
-  EXPECT_EQ(1U, matches().size());
 }
 
 }  // namespace
