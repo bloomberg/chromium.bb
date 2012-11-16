@@ -547,7 +547,7 @@ deps_os = {
   "android": {
     "src/third_party/freetype":
       Var("chromium_git") + "/chromium/src/third_party/freetype.git" +
-      "@41c2c4116acca09389cc5fe2ea393eaada546422",
+      "@96551feab72aac26836e9aaf4fae0962d39d5ab0",
 
     "src/third_party/aosp":
       "/trunk/deps/third_party/aosp@148330",
