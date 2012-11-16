@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_AUTOFILL_FORM_GROUP_H_
 #define CHROME_BROWSER_AUTOFILL_FORM_GROUP_H_
 
+#include <string>
 #include <vector>
 
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "chrome/browser/autofill/field_types.h"
 
+class AutofillField;
 struct FormFieldData;
 
 // This class is an interface for collections of form fields, grouped by type.
@@ -19,6 +21,10 @@ struct FormFieldData;
 class FormGroup {
  public:
   virtual ~FormGroup() {}
+
+  // Returns a globally unique ID for this object. It is an error to call the
+  // default implementation.
+  virtual std::string GetGUID() const;
 
   // Used to determine the type of a field based on the text that a user enters
   // into the field.  The field types can then be reported back to the server.
@@ -48,6 +54,12 @@ class FormGroup {
   // prior to storing, if appropriate.
   virtual bool SetCanonicalizedInfo(AutofillFieldType type,
                                     const string16& value);
+
+  // Set |field_data|'s value based on |field| and contents of |this| (using
+  // data variant |variant|). It is an error to call the default implementation.
+  virtual void FillFormField(const AutofillField& field,
+                             size_t variant,
+                             FormFieldData* field_data) const;
 
   // Fills in select control with data matching |type| from |this|.
   // Public for testing purposes.

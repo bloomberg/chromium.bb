@@ -20,7 +20,6 @@
 #include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/autofill/phone_number.h"
 
-class AutofillField;
 struct FormFieldData;
 
 // A collection of FormGroups stored in a profile.  AutofillProfile also
@@ -39,6 +38,7 @@ class AutofillProfile : public FormGroup {
   AutofillProfile& operator=(const AutofillProfile& profile);
 
   // FormGroup:
+  virtual std::string GetGUID() const OVERRIDE;
   virtual void GetMatchingTypes(const string16& text,
                                 FieldTypeSet* matching_types) const OVERRIDE;
   virtual string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
@@ -47,6 +47,9 @@ class AutofillProfile : public FormGroup {
   virtual string16 GetCanonicalizedInfo(AutofillFieldType type) const OVERRIDE;
   virtual bool SetCanonicalizedInfo(AutofillFieldType type,
                                     const string16& value) OVERRIDE;
+  virtual void FillFormField(const AutofillField& field,
+                             size_t variant,
+                             FormFieldData* field_data) const OVERRIDE;
 
   // Multi-value equivalents to |GetInfo| and |SetInfo|.
   void SetMultiInfo(AutofillFieldType type,
@@ -55,13 +58,6 @@ class AutofillProfile : public FormGroup {
                     std::vector<string16>* values) const;
   void GetCanonicalizedMultiInfo(AutofillFieldType type,
                                  std::vector<string16>* values) const;
-
-  // Set |field_data|'s value based on |field|'s type and contents of the
-  // |this|. The |variant| parameter specifies which value to use from a
-  // multi-valued profile.
-  void FillFormField(const AutofillField& field,
-                     size_t variant,
-                     FormFieldData* field_data) const;
 
   // Set |field_data|'s value for phone number based on contents of |this|.
   // The |field| specifies the type of the phone and whether this is a
@@ -77,6 +73,8 @@ class AutofillProfile : public FormGroup {
   const string16 Label() const;
 
   // This guid is the primary identifier for |AutofillProfile| objects.
+  // TODO(estade): remove this and just use GetGUID(). |guid_| can probably
+  // be moved to FormGroup.
   const std::string guid() const { return guid_; }
   void set_guid(const std::string& guid) { guid_ = guid; }
 

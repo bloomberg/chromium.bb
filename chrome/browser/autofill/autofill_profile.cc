@@ -253,6 +253,10 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   return *this;
 }
 
+std::string AutofillProfile::GetGUID() const {
+  return guid();
+}
+
 void AutofillProfile::GetMatchingTypes(const string16& text,
                                        FieldTypeSet* matching_types) const {
   FormGroupList info = FormGroups();

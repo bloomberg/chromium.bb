@@ -26,14 +26,18 @@ class CreditCard : public FormGroup {
   virtual ~CreditCard();
 
   // FormGroup implementation:
+  virtual std::string GetGUID() const OVERRIDE;
+  virtual void GetMatchingTypes(const string16& text,
+                                FieldTypeSet* matching_types) const OVERRIDE;
   virtual string16 GetRawInfo(AutofillFieldType type) const OVERRIDE;
   virtual void SetRawInfo(AutofillFieldType type,
                           const string16& value) OVERRIDE;
   virtual string16 GetCanonicalizedInfo(AutofillFieldType type) const OVERRIDE;
   virtual bool SetCanonicalizedInfo(AutofillFieldType type,
                                     const string16& value) OVERRIDE;
-  virtual void GetMatchingTypes(const string16& text,
-                                FieldTypeSet* matching_types) const OVERRIDE;
+  virtual void FillFormField(const AutofillField& field,
+                             size_t variant,
+                             FormFieldData* field_data) const OVERRIDE;
 
   // Credit card preview summary, for example: ******1234, Exp: 01/2020
   const string16 Label() const;
@@ -49,6 +53,7 @@ class CreditCard : public FormGroup {
   const std::string& type() const { return type_; }
 
   // The guid is the primary identifier for |CreditCard| objects.
+  // TODO(estade): remove this and just use GetGUID().
   const std::string guid() const { return guid_; }
   void set_guid(const std::string& guid) { guid_ = guid; }
 
@@ -60,9 +65,6 @@ class CreditCard : public FormGroup {
   // returns false.
   bool UpdateFromImportedCard(const CreditCard& imported_card)
       WARN_UNUSED_RESULT;
-
-  // Set |field|'s value based on |type| and contents of |this|.
-  void FillFormField(AutofillFieldType type, FormFieldData* field) const;
 
   // Comparison for Sync.  Returns 0 if the credit card is the same as |this|,
   // or < 0, or > 0 if it is different.  The implied ordering can be used for
