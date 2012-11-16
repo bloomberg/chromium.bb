@@ -1325,15 +1325,6 @@ void HostNPScriptObject::LocalizeStrings(NPObject* localize_func) {
                  &ui_strings_.product_name);
   LocalizeString(localize_func, /*i18n-content*/"DISCONNECT_OTHER_BUTTON",
                  &ui_strings_.disconnect_button_text);
-  LocalizeString(localize_func,
-#if defined(OS_WIN)
-      /*i18n-content*/"DISCONNECT_BUTTON_PLUS_SHORTCUT_WINDOWS",
-#elif defined(OS_MACOSX)
-      /*i18n-content*/"DISCONNECT_BUTTON_PLUS_SHORTCUT_MAC_OS_X",
-#else
-      /*i18n-content*/"DISCONNECT_BUTTON_PLUS_SHORTCUT_LINUX",
-#endif
-      &ui_strings_.disconnect_button_text_plus_shortcut);
   LocalizeString(localize_func, /*i18n-content*/"CONTINUE_PROMPT",
                  &ui_strings_.continue_prompt);
   LocalizeString(localize_func, /*i18n-content*/"CONTINUE_BUTTON",

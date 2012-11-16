@@ -35,9 +35,6 @@ struct UiStrings {
   // The label on the disconnect dialog button, without the keyboard shortcut.
   string16 disconnect_button_text;
 
-  // The label on the disconnect dialog button, with the keyboard shortcut.
-  string16 disconnect_button_text_plus_shortcut;
-
   // The confirmation prompt displayed by the continue window.
   string16 continue_prompt;
 

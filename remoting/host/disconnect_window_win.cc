@@ -226,11 +226,8 @@ void DisconnectWindowWin::SetStrings(const UiStrings& strings,
 
   HWND hwndButton = GetDlgItem(hwnd_, IDC_DISCONNECT);
   CHECK(hwndButton);
-  const WCHAR* label =
-    has_hotkey_ ? strings.disconnect_button_text_plus_shortcut.c_str()
-                : strings.disconnect_button_text.c_str();
   int button_old_required_width = GetControlTextWidth(hwndButton);
-  SetWindowText(hwndButton, label);
+  SetWindowText(hwndButton, strings.disconnect_button_text.c_str());
   int button_new_required_width = GetControlTextWidth(hwndButton);
 
   HWND hwndSharingWith = GetDlgItem(hwnd_, IDC_DISCONNECT_SHARINGWITH);

@@ -22,11 +22,6 @@ UiStrings::UiStrings() :
         "Your desktop and any audio output are currently shared with $1.")),
 #endif
     disconnect_button_text(ASCIIToUTF16("Disconnect")),
-    // This is the wrong shortcut on Mac OS X, but remoting_simple_host
-    // doesn't have a bundle (and hence no dialog) on that platform and
-    // the web-app will provide the correct localization for this string.
-    disconnect_button_text_plus_shortcut(
-        ASCIIToUTF16("Disconnect (Ctrl+Alt+Esc)")),
     continue_prompt(ASCIIToUTF16(
         "You are currently sharing this machine with another user. "
         "Please confirm that you want to continue sharing.")),

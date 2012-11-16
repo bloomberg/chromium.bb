@@ -111,7 +111,7 @@ void DisconnectWindowGtk::CreateWindow(const UiStrings& ui_strings) {
   gtk_container_add(GTK_CONTAINER(align), button_row);
 
   button_ = gtk_button_new_with_label(
-      UTF16ToUTF8(ui_strings.disconnect_button_text_plus_shortcut).c_str());
+      UTF16ToUTF8(ui_strings.disconnect_button_text).c_str());
   gtk_box_pack_end(GTK_BOX(button_row), button_, FALSE, FALSE, 0);
 
   g_signal_connect(button_, "clicked", G_CALLBACK(OnClickedThunk), this);

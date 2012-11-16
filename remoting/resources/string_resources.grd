@@ -297,15 +297,6 @@
       <message desc="Label for the 'yes' response to the dialog asking the user to confirm whether or not they want to disable remote access to a host." name="IDR_DISABLE_HOST">
         Disable
       </message>
-      <message desc="Label for the disconnect button including the Linux keyboard shortcut. Clicking this button disconnects the remote user." name="IDR_DISCONNECT_BUTTON_PLUS_SHORTCUT_LINUX">
-        Disconnect (Ctrl+Alt+Esc)
-      </message>
-      <message desc="Label for the disconnect button including the Mac OS X keyboard shortcut. Clicking this button disconnects the remote user." name="IDR_DISCONNECT_BUTTON_PLUS_SHORTCUT_MAC_OS_X">
-        Disconnect (Opt+Ctrl+Esc)
-      </message>
-      <message desc="Label for the disconnect button including the Windows keyboard shortcut. Clicking this button disconnects the remote user." name="IDR_DISCONNECT_BUTTON_PLUS_SHORTCUT_WINDOWS">
-        Disconnect (Ctrl+Alt+Esc)
-      </message>
       <message desc="Label for the client-side disconnect button. Clicking this button disconnects oneself from the host." name="IDR_DISCONNECT_MYSELF_BUTTON">
         Disconnect
       </message>

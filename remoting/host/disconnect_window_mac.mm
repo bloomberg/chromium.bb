@@ -112,7 +112,7 @@ scoped_ptr<DisconnectWindow> DisconnectWindow::Create() {
   [connectedToField_ setStringValue:base::SysUTF16ToNSString(text)];
 
   [disconnectButton_ setTitle:base::SysUTF16ToNSString(
-      host_->ui_strings().disconnect_button_text_plus_shortcut)];
+      host_->ui_strings().disconnect_button_text)];
 
   // Resize the window dynamically based on the content.
   CGFloat oldConnectedWidth = NSWidth([connectedToField_ bounds]);
