@@ -10,8 +10,8 @@ vars = {
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
   "webkit_revision": "134928",
 
-  "chromium_git": "http://git.chromium.org/git",
-  "chromiumos_git": "http://git.chromium.org/chromiumos",
+  "chromium_git": "http://chromium.googlesource.com",
+  "chromiumos_git": "https://chromium.googlesource.com/chromiumos",
   "swig_revision": "69281",
   "nacl_revision": "10290",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
