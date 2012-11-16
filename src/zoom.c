@@ -123,7 +123,7 @@ weston_zoom_frame_z(struct weston_animation *animation,
 		output->zoom.spring_z.current = 0.0;
 
 	if (weston_spring_done(&output->zoom.spring_z)) {
-		if (output->zoom.level <= 0.0) {
+		if (output->zoom.active && output->zoom.level <= 0.0) {
 			output->zoom.active = 0;
 			output->disable_planes--;
 		}
