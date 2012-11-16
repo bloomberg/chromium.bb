@@ -545,11 +545,6 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     content_view_core_->RemoveWebLayer(texture_layer_->layer());
 
   content_view_core_ = content_view_core;
-  if (host_) {
-    GpuSurfaceTracker::Get()->SetSurfaceHandle(
-        host_->surface_id(), content_view_core_ ?
-            GetCompositingSurface() : gfx::GLSurfaceHandle());
-  }
   if (content_view_core_)
     content_view_core_->AttachWebLayer(texture_layer_->layer());
 }
