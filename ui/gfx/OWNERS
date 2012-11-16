@@ -1,6 +1,9 @@
 # Font rendering and what not.
 asvitkine@chromium.org
 
+# Primitive graphics types (size, rect, vector ...)
+danakj@chromium.org
+
 # RenderText and related classes.
 msw@chromium.org
 
