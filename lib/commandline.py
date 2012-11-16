@@ -9,6 +9,7 @@ This ranges from optparse, to a basic script wrapper setup (much like
 what is used for chromite.bin.* ).
 """
 
+import argparse
 import collections
 import logging
 import os
@@ -16,11 +17,6 @@ import optparse
 import signal
 import sys
 import tempfile
-
-try:
-  import argparse
-except ImportError:
-  from chromite.third_party import argparse
 
 # TODO(build): sort the buildbot.constants/lib.constants issue;
 # lib shouldn't have to import from buildbot like this.
