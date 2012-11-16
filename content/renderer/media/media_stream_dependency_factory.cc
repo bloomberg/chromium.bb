@@ -316,19 +316,6 @@ bool MediaStreamDependencyFactory::PeerConnectionFactoryCreated() {
 
 scoped_refptr<webrtc::PeerConnectionInterface>
 MediaStreamDependencyFactory::CreatePeerConnection(
-    const std::string& config,
-    webrtc::PeerConnectionObserver* observer) {
-  scoped_refptr<P2PPortAllocatorFactory> pa_factory =
-      new talk_base::RefCountedObject<P2PPortAllocatorFactory>(
-          p2p_socket_dispatcher_.get(),
-          network_manager_,
-          socket_factory_.get(),
-          WebKit::WebFrame::frameForCurrentContext());
-  return pc_factory_->CreatePeerConnection(config, pa_factory, observer).get();
-}
-
-scoped_refptr<webrtc::PeerConnectionInterface>
-MediaStreamDependencyFactory::CreatePeerConnection(
     const webrtc::JsepInterface::IceServers& ice_servers,
     const webrtc::MediaConstraintsInterface* constraints,
     WebKit::WebFrame* web_frame,

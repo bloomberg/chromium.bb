@@ -286,29 +286,27 @@ void P2PPortAllocatorSession::AddConfig() {
       new cricket::PortConfiguration(stun_server_address_, "", "");
 
   if (allocator_->config_.legacy_relay) {
+    // Passing empty credentials for legacy google relay.
+    cricket::RelayServerConfig gturn_config(cricket::RELAY_GTURN);
     if (relay_ip_.ip() != 0) {
-      cricket::PortList ports;
       if (relay_udp_port_ > 0) {
         talk_base::SocketAddress address(relay_ip_.ip(), relay_udp_port_);
-        ports.push_back(cricket::ProtocolAddress(address, cricket::PROTO_UDP));
+        gturn_config.ports.push_back(cricket::ProtocolAddress(
+            address, cricket::PROTO_UDP));
       }
       if (relay_tcp_port_ > 0 && !allocator_->config_.disable_tcp_transport) {
         talk_base::SocketAddress address(relay_ip_.ip(), relay_tcp_port_);
-        ports.push_back(cricket::ProtocolAddress(address, cricket::PROTO_TCP));
+        gturn_config.ports.push_back(cricket::ProtocolAddress(
+            address, cricket::PROTO_TCP));
       }
       if (relay_ssltcp_port_ > 0 &&
           !allocator_->config_.disable_tcp_transport) {
         talk_base::SocketAddress address(relay_ip_.ip(), relay_ssltcp_port_);
-        ports.push_back(cricket::ProtocolAddress(
+        gturn_config.ports.push_back(cricket::ProtocolAddress(
             address, cricket::PROTO_SSLTCP));
       }
-      if (!ports.empty()) {
-        // Passing empty credentials, our implementation of RelayServer
-        // doesn't need credentials to allocate ports. It uses a different
-        // mechanism for authentication. After migrating to standard
-        // TURN, need to push real credentials.
-        cricket::RelayCredentials credentials;
-        config->AddRelay(ports, credentials, 0.0f);
+      if (!gturn_config.ports.empty()) {
+        config->AddRelay(gturn_config);
       }
     }
   } else {
@@ -319,14 +317,15 @@ void P2PPortAllocatorSession::AddConfig() {
       // Configuration should have same address for both stun and turn.
       DCHECK_EQ(allocator_->config_.stun_server,
                 allocator_->config_.relay_server);
-      cricket::PortList ports;
+      cricket::RelayServerConfig turn_config(cricket::RELAY_TURN);
       cricket::RelayCredentials credentials(
           allocator_->config_.relay_username,
           allocator_->config_.relay_password);
+      turn_config.credentials = credentials;
       // Using the stun resolved address if available for TURN.
-      ports.push_back(cricket::ProtocolAddress(
+      turn_config.ports.push_back(cricket::ProtocolAddress(
           stun_server_address_, cricket::PROTO_UDP));
-      config->AddRelay(ports, credentials, 0.0f);
+      config->AddRelay(turn_config);
     }
   }
   ConfigReady(config);

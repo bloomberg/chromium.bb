@@ -26,7 +26,6 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
       local_streams() OVERRIDE;
   virtual talk_base::scoped_refptr<webrtc::StreamCollectionInterface>
       remote_streams() OVERRIDE;
-  virtual void AddStream(webrtc::LocalMediaStreamInterface* stream) OVERRIDE;
   virtual bool AddStream(
       webrtc::MediaStreamInterface* local_stream,
       const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;

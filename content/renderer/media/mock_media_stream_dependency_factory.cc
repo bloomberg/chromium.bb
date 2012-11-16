@@ -334,14 +334,6 @@ bool MockMediaStreamDependencyFactory::PeerConnectionFactoryCreated() {
 
 scoped_refptr<webrtc::PeerConnectionInterface>
 MockMediaStreamDependencyFactory::CreatePeerConnection(
-    const std::string& config,
-    webrtc::PeerConnectionObserver* observer) {
-  DCHECK(mock_pc_factory_created_);
-  return new talk_base::RefCountedObject<MockPeerConnectionImpl>(this);
-}
-
-scoped_refptr<webrtc::PeerConnectionInterface>
-MockMediaStreamDependencyFactory::CreatePeerConnection(
     const webrtc::JsepInterface::IceServers& ice_servers,
     const webrtc::MediaConstraintsInterface* constraints,
     WebKit::WebFrame* frame,
