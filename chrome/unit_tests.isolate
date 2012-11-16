@@ -12,6 +12,7 @@
       '../net/tools/testserver/echo_message.py',
       '../net/tools/testserver/minica.py',
       '../net/tools/testserver/testserver.py',
+      '../net/tools/testserver/testserver_base.py',
       '../testing/test_env.py',
       '../third_party/hunspell_dictionaries/af-ZA-2-3.bdic',
       '../third_party/hunspell_dictionaries/bg-BG-2-0.bdic',
@@ -684,7 +685,6 @@
     }, {
       'variables': {
         'isolate_dependency_tracked': [
-          '../net/tools/testserver/testserver_base.py',
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
           'test/data/chromeos/gdata/account_metadata.json',
