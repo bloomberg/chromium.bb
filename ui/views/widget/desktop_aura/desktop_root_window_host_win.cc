@@ -87,7 +87,12 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
                         GetWidget()->widget_delegate(),
                         native_widget_delegate_);
 
-  message_handler_->Init(NULL, params.bounds);
+  HWND parent_hwnd = NULL;
+  aura::Window* parent_window = params.GetParent();
+  if (parent_window)
+    parent_hwnd = parent_window->GetRootWindow()->GetAcceleratedWidget();
+
+  message_handler_->Init(parent_hwnd, params.bounds);
 
   message_handler_->set_remove_standard_frame(!ShouldUseNativeFrame());
 

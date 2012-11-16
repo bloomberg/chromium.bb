@@ -246,6 +246,8 @@ void DesktopNativeWidgetAura::SetAccessibleState(
 }
 
 void DesktopNativeWidgetAura::InitModalType(ui::ModalType modal_type) {
+  // We should never be asked to create a DesktopNativeWidgetAura that is modal.
+  DCHECK_EQ(ui::MODAL_TYPE_NONE, modal_type);
 }
 
 gfx::Rect DesktopNativeWidgetAura::GetWindowBoundsInScreen() const {
