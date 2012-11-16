@@ -326,7 +326,7 @@ deps_os = {
         'src/third_party/cros_dbus_cplusplus/source':
             'http://git.chromium.org/chromiumos/third_party/dbus-cplusplus.git@5e8f6d9db5c2abfb91d91f751184f25bb5cd0900',
         'src/third_party/cros_system_api':
-            'http://git.chromium.org/chromiumos/platform/system_api.git@5c93f10ee61fa916499b523ad3a1e489e5ad4ded',
+            'http://git.chromium.org/chromiumos/platform/system_api.git@16e22d62da60372e70fb274a2bace6c10bf53003',
         'src/third_party/gold':
             Var('git_url') + '/chromium/deps/gold.git@74c34c19eadc0135b189318e393e78ca1dd431aa',
         'src/third_party/libmtp':
