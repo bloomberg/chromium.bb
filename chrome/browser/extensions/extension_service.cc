@@ -119,6 +119,10 @@
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
 
+#if defined(ENABLE_THEMES)
+#include "chrome/browser/themes/theme_service.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
@@ -1026,9 +1030,14 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   // extension.
   system_->RegisterExtensionWithRequestContexts(extension);
 
-  // Tell renderers about the new extension, unless it's a theme (renderers
-  // don't need to know about themes).
-  if (!extension->is_theme()) {
+  if (extension->is_theme()) {
+#if defined(ENABLE_THEMES)
+    // Tell the theme service about the new theme.
+    ThemeServiceFactory::GetForProfile(profile_)->SetTheme(extension);
+#endif
+  } else {
+    // Tell renderers about non-theme extensions (renderers don't need
+    // to know about themes).
     for (content::RenderProcessHost::iterator i(
             content::RenderProcessHost::AllHostsIterator());
          !i.IsAtEnd(); i.Advance()) {
