@@ -23,8 +23,11 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSolidColorLayer.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
+#include "webkit/glue/webthread_impl.h"
+#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
 using webkit::WebCompositorSupportImpl;
 
@@ -37,6 +40,8 @@ namespace {
 static bool g_initialized = false;
 static base::LazyInstance<WebCompositorSupportImpl> g_compositor_support =
     LAZY_INSTANCE_INITIALIZER;
+static WebKit::WebThread* g_impl_thread = NULL;
+static bool g_use_direct_gl = false;
 
 // Adapts a pure WebGraphicsContext3D into a WebCompositorOutputSurface.
 class WebGraphicsContextToOutputSurfaceAdapter :
@@ -91,8 +96,17 @@ Compositor* Compositor::Create(Client* client) {
 
 // static
 void Compositor::Initialize() {
-  g_compositor_support.Get().initialize(NULL);
+  DCHECK(!CompositorImpl::IsInitialized());
+  g_compositor_support.Get().initialize(g_impl_thread);
   g_initialized = true;
+}
+
+// static
+void Compositor::InitializeWithFlags(uint32 flags) {
+  g_use_direct_gl = flags & DIRECT_CONTEXT_ON_DRAW_THREAD;
+  if (flags & ENABLE_COMPOSITOR_THREAD)
+    g_impl_thread = new webkit_glue::WebThreadImpl("Browser Compositor");
+  Compositor::Initialize();
 }
 
 // static
@@ -104,6 +118,11 @@ WebCompositorSupportImpl* CompositorImpl::CompositorSupport() {
 // static
 bool CompositorImpl::IsInitialized() {
   return g_initialized;
+}
+
+// static
+bool CompositorImpl::UsesDirectGL() {
+  return g_use_direct_gl;
 }
 
 CompositorImpl::CompositorImpl(Compositor::Client* client)
@@ -135,7 +154,7 @@ void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
     ANativeWindow_release(window_);
     window_ = NULL;
     surface_id_ = 0;
-    host_.reset();
+    SetVisible(false);
   }
 
   if (window) {
@@ -145,8 +164,14 @@ void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
     tracker->SetSurfaceHandle(
         surface_id_,
         gfx::GLSurfaceHandle(gfx::kDummyPluginWindow, false));
+    SetVisible(true);
+  }
+}
 
-    DCHECK(!host_.get());
+void CompositorImpl::SetVisible(bool visible) {
+  if (!visible) {
+    host_.reset();
+  } else if (!host_.get()) {
     WebKit::WebLayerTreeView::Settings settings;
     settings.refreshRate = 60.0;
     host_.reset(g_compositor_support.Get().createLayerTreeView(
@@ -243,28 +268,38 @@ void CompositorImpl::applyScrollAndScale(const WebKit::WebSize& scrollDelta,
 }
 
 WebKit::WebCompositorOutputSurface* CompositorImpl::createOutputSurface() {
-  DCHECK(window_ && surface_id_);
-  WebKit::WebGraphicsContext3D::Attributes attrs;
-  attrs.shareResources = true;
-  attrs.noAutomaticFlushes = true;
-  GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
-  GURL url("chrome://gpu/Compositor::createContext3D");
-  base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
-      new WebGraphicsContext3DCommandBufferImpl(
-          surface_id_,
-          url,
-          factory,
-          swap_client));
-  if (!context->Initialize(
-      attrs,
-      false,
-      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE)) {
-    LOG(ERROR) << "Failed to create 3D context for compositor.";
-    return NULL;
+  if (g_use_direct_gl) {
+    WebKit::WebGraphicsContext3D::Attributes attrs;
+    attrs.shareResources = false;
+    attrs.noAutomaticFlushes = true;
+    scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessImpl> context(
+        webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWindow(
+            attrs,
+            window_,
+            NULL));
+    return new WebGraphicsContextToOutputSurfaceAdapter(context.release());
+  } else {
+    DCHECK(window_ && surface_id_);
+    WebKit::WebGraphicsContext3D::Attributes attrs;
+    attrs.shareResources = true;
+    attrs.noAutomaticFlushes = true;
+    GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
+    GURL url("chrome://gpu/Compositor::createContext3D");
+    base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;
+    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
+        new WebGraphicsContext3DCommandBufferImpl(surface_id_,
+                                                  url,
+                                                  factory,
+                                                  swap_client));
+    if (!context->Initialize(
+        attrs,
+        false,
+        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE)) {
+      LOG(ERROR) << "Failed to create 3D context for compositor.";
+      return NULL;
+    }
+    return new WebGraphicsContextToOutputSurfaceAdapter(context.release());
   }
-
-  return new WebGraphicsContextToOutputSurfaceAdapter(context.release());
 }
 
 void CompositorImpl::didRecreateOutputSurface(bool success) {

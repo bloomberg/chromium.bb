@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/surface_texture_transport_client_android.h"
 #include "content/common/android/device_info.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -22,6 +23,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
@@ -55,16 +57,25 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       content_view_core_(NULL),
       ime_adapter_android_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       cached_background_color_(SK_ColorWHITE),
-      texture_layer_(WebKit::WebExternalTextureLayer::create()),
       texture_id_in_layer_(0) {
+  if (CompositorImpl::UsesDirectGL()) {
+    surface_texture_transport_.reset(new SurfaceTextureTransportClient());
+    layer_ = surface_texture_transport_->Initialize();
+  } else {
+    // TODO: Cannot use CompositorImpl::CompositorSupport() in unit tests.
+    texture_layer_.reset(WebKit::WebExternalTextureLayer::create());
+    layer_ = texture_layer_->layer();
+  }
+
   host_->SetView(this);
   SetContentViewCore(content_view_core);
   // RenderWidgetHost is initialized as visible. If is_hidden_ is true, tell
   // RenderWidgetHost to hide.
   if (is_hidden_)
     host_->WasHidden();
-  texture_layer_->layer()->setOpaque(true);
-  texture_layer_->layer()->setDrawsContent(!is_hidden_);
+
+  layer_->setOpaque(true);
+  layer_->setDrawsContent(!is_hidden_);
 }
 
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
@@ -116,6 +127,9 @@ void RenderWidgetHostViewAndroid::WasHidden() {
 }
 
 void RenderWidgetHostViewAndroid::SetSize(const gfx::Size& size) {
+  if (surface_texture_transport_.get())
+    surface_texture_transport_->SetSize(size);
+
   host_->WasResized();
 }
 
@@ -229,13 +243,13 @@ void RenderWidgetHostViewAndroid::Show() {
   if (content_view_core_)
     is_hidden_ = false;
 
-  texture_layer_->layer()->setDrawsContent(true);
+  layer_->setDrawsContent(true);
 }
 
 void RenderWidgetHostViewAndroid::Hide() {
   is_hidden_ = true;
 
-  texture_layer_->layer()->setDrawsContent(false);
+  layer_->setDrawsContent(false);
 }
 
 bool RenderWidgetHostViewAndroid::IsShowing() {
@@ -293,7 +307,7 @@ void RenderWidgetHostViewAndroid::RenderViewGone(
 
 void RenderWidgetHostViewAndroid::Destroy() {
   if (content_view_core_) {
-    content_view_core_->RemoveWebLayer(texture_layer_->layer());
+    content_view_core_->RemoveWebLayer(layer_);
     content_view_core_ = NULL;
   }
 
@@ -378,7 +392,8 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
   texture_layer_->setTextureId(params.surface_handle);
-  texture_layer_->layer()->setBounds(params.size);
+  DCHECK(texture_layer_->layer() == layer_);
+  layer_->setBounds(params.size);
   texture_id_in_layer_ = params.surface_handle;
   texture_size_in_layer_ = params.size;
 
@@ -416,11 +431,17 @@ void RenderWidgetHostViewAndroid::StartContentIntent(
 gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
   if (CompositorImpl::IsInitialized()) {
     // The app uses the browser-side compositor.
-    if (shared_surface_.is_null())
-      shared_surface_ =
-          ImageTransportFactoryAndroid::GetInstance()->
-              CreateSharedSurfaceHandle();
-    return shared_surface_;
+    if (surface_texture_transport_.get()) {
+      return surface_texture_transport_->GetCompositingSurface(
+          host_->surface_id());
+    } else {
+      if (shared_surface_.is_null()) {
+        shared_surface_ =
+            ImageTransportFactoryAndroid::GetInstance()->
+            CreateSharedSurfaceHandle();
+      }
+      return shared_surface_;
+    }
   }
 
   // On Android, we cannot generate a window handle that can be passed to the
@@ -542,11 +563,11 @@ void RenderWidgetHostViewAndroid::UpdateFrameInfo(
 void RenderWidgetHostViewAndroid::SetContentViewCore(
     ContentViewCoreImpl* content_view_core) {
   if (content_view_core_)
-    content_view_core_->RemoveWebLayer(texture_layer_->layer());
+    content_view_core_->RemoveWebLayer(layer_);
 
   content_view_core_ = content_view_core;
   if (content_view_core_)
-    content_view_core_->AttachWebLayer(texture_layer_->layer());
+    content_view_core_->AttachWebLayer(layer_);
 }
 
 void RenderWidgetHostViewAndroid::HasTouchEventHandlers(

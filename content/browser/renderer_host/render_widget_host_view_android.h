@@ -12,7 +12,6 @@
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "ui/gfx/size.h"
 
@@ -22,6 +21,8 @@ struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 
 namespace WebKit {
+class WebExternalTextureLayer;
+class WebLayer;
 class WebTouchEvent;
 class WebMouseEvent;
 }
@@ -30,6 +31,7 @@ namespace content {
 class ContentViewCoreImpl;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
+class SurfaceTextureTransportClient;
 struct NativeWebKeyboardEvent;
 
 // -----------------------------------------------------------------------------
@@ -162,6 +164,11 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   // The texture layer for this view when using browser-side compositing.
   scoped_ptr<WebKit::WebExternalTextureLayer> texture_layer_;
 
+  // The layer used for rendering the contents of this view.
+  // It is either owned by texture_layer_ or surface_texture_transport_
+  // depending on the mode.
+  WebKit::WebLayer* layer_;
+
   // The most recent texture id that was pushed to the texture layer.
   unsigned int texture_id_in_layer_;
 
@@ -171,6 +178,9 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   // The handle for the transport surface (between renderer and browser-side
   // compositor) for this view.
   gfx::GLSurfaceHandle shared_surface_;
+
+  // Used for image transport when needing to share resources across threads.
+  scoped_ptr<SurfaceTextureTransportClient> surface_texture_transport_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };

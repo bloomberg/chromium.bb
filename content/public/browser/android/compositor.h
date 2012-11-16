@@ -38,8 +38,21 @@ class CONTENT_EXPORT Compositor {
   virtual ~Compositor() {}
 
   // Performs the global initialization needed before any compositor
-  // instance can be used.
+  // instance can be used. This should be called only once.
   static void Initialize();
+
+  enum CompositorFlags {
+    // Creates a direct GL context on the thread that draws
+    // (i.e. main or impl thread).
+    DIRECT_CONTEXT_ON_DRAW_THREAD = 1,
+
+    // Runs the compositor in threaded mode.
+    ENABLE_COMPOSITOR_THREAD = 1 << 1,
+  };
+
+  // Initialize with flags. This should only be called once instead
+  // of Initialize().
+  static void InitializeWithFlags(uint32 flags);
 
   // Creates and returns a compositor instance.
   static Compositor* Create(Client* client);
@@ -49,6 +62,11 @@ class CONTENT_EXPORT Compositor {
 
   // Set the output surface bounds.
   virtual void SetWindowBounds(const gfx::Size& size) = 0;
+
+  // Sets the window visibility. When becoming invisible, resources will get
+  // freed and other calls into the compositor are not allowed until after
+  // having been made visible again.
+  virtual void SetVisible(bool visible) = 0;
 
   // Set the output surface handle which the compositor renders into.
   virtual void SetWindowSurface(ANativeWindow* window) = 0;

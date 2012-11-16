@@ -13,6 +13,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface_stub.h"
 
 using ui::GetLastEGLErrorString;
 
@@ -46,8 +47,11 @@ GLSurface::CreateViewGLSurface(bool software, gfx::AcceleratedWidget window) {
 
   switch (GetGLImplementation()) {
     case kGLImplementationEGLGLES2: {
-      scoped_refptr<GLSurface> surface = window ?
-          new NativeViewGLSurfaceEGL(false, window) : new AndroidViewSurface();
+      scoped_refptr<GLSurface> surface;
+      if (window)
+        surface = new NativeViewGLSurfaceEGL(false, window);
+      else
+        surface = new GLSurfaceStub();
       if (!surface->Initialize())
         return NULL;
       return surface;

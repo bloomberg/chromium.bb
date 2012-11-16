@@ -35,9 +35,13 @@ class CONTENT_EXPORT CompositorImpl : public Compositor,
   static webkit::WebCompositorSupportImpl* CompositorSupport();
   static bool IsInitialized();
 
+  // Returns true if initialized with DIRECT_CONTEXT_ON_DRAW_THREAD.
+  static bool UsesDirectGL();
+
   // Compositor implementation.
   virtual void SetRootLayer(WebKit::WebLayer* root) OVERRIDE;
   virtual void SetWindowSurface(ANativeWindow* window) OVERRIDE;
+  virtual void SetVisible(bool visible) OVERRIDE;
   virtual void SetWindowBounds(const gfx::Size& size) OVERRIDE;
   virtual bool CompositeAndReadback(
       void *pixels, const gfx::Rect& rect) OVERRIDE;

@@ -10,6 +10,7 @@
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_context_stub.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface.h"
 
 namespace gfx {
 
@@ -21,7 +22,11 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
   if (GetGLImplementation() == kGLImplementationMockGL)
     return scoped_refptr<GLContext>(new GLContextStub());
 
-  scoped_refptr<GLContextEGL> context(new GLContextEGL(share_group));
+  scoped_refptr<GLContext> context;
+  if (compatible_surface->GetHandle())
+    context = new GLContextEGL(share_group);
+  else
+    context = new GLContextStub();
   if (!context->Initialize(compatible_surface, gpu_preference))
     return NULL;
   return context;

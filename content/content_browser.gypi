@@ -723,6 +723,8 @@
     'browser/renderer_host/socket_stream_dispatcher_host.h',
     'browser/renderer_host/socket_stream_host.cc',
     'browser/renderer_host/socket_stream_host.h',
+    'browser/renderer_host/surface_texture_transport_client_android.cc',
+    'browser/renderer_host/surface_texture_transport_client_android.h',
     'browser/renderer_host/sync_resource_handler.cc',
     'browser/renderer_host/sync_resource_handler.h',
     'browser/renderer_host/tap_suppression_controller_aura.cc',
