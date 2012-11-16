@@ -928,6 +928,7 @@
             'java_in_dir': '../content/shell/android/javatests',
             'resource_dir': '../res',
             'additional_src_dirs': ['../content/public/android/javatests/'],
+            'is_test_apk': 1,
           },
           'includes': [ '../build/java_apk.gypi' ],
         },

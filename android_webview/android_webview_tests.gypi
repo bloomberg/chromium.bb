@@ -18,6 +18,7 @@
         'apk_name': 'AndroidWebViewTest',
         'java_in_dir': '../android_webview/javatests',
         'resource_dir': 'res',
+        'is_test_apk': 1,
       },
       'copies': [
         {

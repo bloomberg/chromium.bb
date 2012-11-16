@@ -1071,6 +1071,9 @@
           'variables': {
             'package_name': 'chrome',
             'java_in_dir': '../chrome/android/java',
+            'has_java_resources': 1,
+            'R_package': 'org.chromium.chrome',
+            'R_package_relpath': 'org/chromium/chrome',
           },
           'includes': [
             '../build/java.gypi',

@@ -291,6 +291,9 @@
           'variables': {
             'package_name': 'content',
             'java_in_dir': '../content/public/android/java',
+            'has_java_resources': 1,
+            'R_package': 'org.chromium.content',
+            'R_package_relpath': 'org/chromium/content',
           },
           'includes': [ '../build/java.gypi' ],
         },

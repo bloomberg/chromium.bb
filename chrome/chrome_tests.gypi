@@ -2800,6 +2800,7 @@
             'java_in_dir': './android/testshell/javatests',
             'resource_dir': '../res',
             'additional_src_dirs': ['android/javatests/src'],
+            'is_test_apk': 1,
           },
           'includes': [ '../build/java_apk.gypi' ],
         },
