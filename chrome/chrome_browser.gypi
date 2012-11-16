@@ -825,6 +825,8 @@
         'browser/icon_manager_linux.cc',
         'browser/icon_manager_mac.mm',
         'browser/icon_manager_win.cc',
+        'browser/idle.cc',
+        'browser/idle.h',
         'browser/idle_android.cc',
         'browser/idle_chromeos.cc',
         'browser/idle_linux.cc',

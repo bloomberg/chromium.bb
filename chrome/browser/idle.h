@@ -23,9 +23,13 @@ void StopIdleMonitor();
 #endif
 
 typedef base::Callback<void(IdleState)> IdleCallback;
+typedef base::Callback<void(int)> IdleTimeCallback;
 
 // Calculate the Idle state and notify the callback.
-void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify);
+void CalculateIdleState(int idle_threshold, IdleCallback notify);
+
+// Calculate Idle time in seconds and notify the callback
+void CalculateIdleTime(IdleTimeCallback notify);
 
 // Checks synchronously if Idle state is IDLE_STATE_LOCKED.
 bool CheckIdleStateIsLocked();

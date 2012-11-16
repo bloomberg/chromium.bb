@@ -10,7 +10,12 @@
 // constrained devices such as Android we'll often get completely killed if
 // Chrome isn't active anyway.
 // TODO(yfriedman): Tracking in bug: 114481
-void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
+void CalculateIdleTime(IdleTimeCallback notify) {
   NOTIMPLEMENTED();
-  notify.Run(IDLE_STATE_ACTIVE);
+  notify.Run(0);
+}
+
+bool CheckIdleStateIsLocked() {
+  NOTIMPLEMENTED();
+  return false;
 }

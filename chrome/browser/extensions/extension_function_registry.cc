@@ -201,7 +201,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<SearchHistoryFunction>();
 
   // Idle
-  RegisterFunction<extensions::ExtensionIdleQueryStateFunction>();
+  RegisterFunction<extensions::IdleQueryStateFunction>();
+  RegisterFunction<extensions::IdleSetDetectionIntervalFunction>();
 
   // I18N.
   RegisterFunction<GetAcceptLanguagesFunction>();
