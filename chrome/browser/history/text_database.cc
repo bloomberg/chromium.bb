@@ -289,13 +289,18 @@ void TextDatabase::GetTextMatches(const std::string& query,
                                   base::Time* first_time_searched) {
   *first_time_searched = options.begin_time;
 
-  // TODO(mrossetti): Remove the non-body_only alternative and move the string
-  // into the statement construction when we switch to body_only permanently.
   std::string sql = "SELECT url, title, time, offsets(pages), body FROM pages "
-                    " LEFT OUTER JOIN info ON pages.rowid = info.rowid WHERE ";
+                    "LEFT OUTER JOIN info ON pages.rowid = info.rowid WHERE ";
   sql += options.body_only ? "body " : "pages ";
   sql += "MATCH ? AND time >= ? AND time < ? ORDER BY time DESC LIMIT ?";
-  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE, sql.c_str()));
+
+  // Generate unique IDs for the two possible variations of the statement,
+  // so they don't share the same cached prepared statement.
+  sql::StatementID body_only_id = SQL_FROM_HERE;
+  sql::StatementID pages_id = SQL_FROM_HERE;
+
+  sql::Statement statement(db_.GetCachedStatement(
+      (options.body_only ? body_only_id : pages_id), sql.c_str()));
 
   // When their values indicate "unspecified", saturate the numbers to the max
   // or min to get the correct result.

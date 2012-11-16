@@ -41,7 +41,7 @@ struct TestEntry {
   {"http://www.google.com/3", "Title 3", 8,
    "PAGETHREE BAR some hello world for you"},
   {"http://www.google.com/2", "Title 2", 9,
-   "PAGETWO FOO some more blah blah blah"},
+   "PAGETWO FOO some more blah blah blah Title"},
 
   // A more recent visit of the first one.
   {"http://example.com/", "Other", 6, "Other"},
@@ -250,6 +250,14 @@ TEST_F(HistoryQueryTest, FTSTitle) {
 
   QueryOptions options;
   QueryResults results;
+
+  // First execute a body-only query, to ensure that it works and that that
+  // version of the statement is not cached for the next query.
+  options.body_only = true;
+  QueryHistory("Title", options, &results);
+  EXPECT_EQ(1U, results.size());
+  EXPECT_TRUE(NthResultIs(results, 0, 3));
+  options.body_only = false;
 
   // Query all time but with a limit on the number of entries. We should
   // get the N most recent entries.
