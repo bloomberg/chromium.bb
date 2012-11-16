@@ -74,6 +74,7 @@ cr.define('cr.ui', function() {
     login.GaiaSigninScreen.register();
     oobe.UserImageScreen.register(/* lazyInit= */ false);
     login.ErrorMessageScreen.register();
+    login.TPMErrorMessageScreen.register();
 
     cr.ui.Bubble.decorate($('bubble'));
     login.HeaderBar.decorate($('login-header-bar'));
@@ -317,6 +318,13 @@ cr.define('cr.ui', function() {
    */
   Oobe.showSignInError = function(loginAttempts, message, link, helpId) {
     DisplayManager.showSignInError(loginAttempts, message, link, helpId);
+  };
+
+  /**
+   * Shows TPM error screen.
+   */
+  Oobe.showTpmError = function() {
+    DisplayManager.showTpmError();
   };
 
   /**

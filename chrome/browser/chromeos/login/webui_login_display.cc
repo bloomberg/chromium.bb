@@ -168,6 +168,13 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
   accessibility::MaybeSpeak(error_text);
 }
 
+void WebUILoginDisplay::ShowErrorScreen(LoginDisplay::SigninError error_id) {
+  VLOG(1) << "Show error screen, error_id: " << error_id;
+  if (!webui_handler_)
+    return;
+  webui_handler_->ShowErrorScreen(error_id);
+}
+
 void WebUILoginDisplay::ShowGaiaPasswordChanged(const std::string& username) {
   if (webui_handler_)
     webui_handler_->ShowGaiaPasswordChanged(username);

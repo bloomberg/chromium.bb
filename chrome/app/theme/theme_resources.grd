@@ -165,6 +165,9 @@
       <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_RECOMMENDED_LARGE" file="controlled_setting_recommended_large.png" />
       <structure type="chrome_scaled_image" name="IDR_COOKIE_ICON" file="cookie.png" />
       <structure type="chrome_scaled_image" name="IDR_COOKIE_STORAGE_ICON" file="cookie_storage.png" />
+      <if expr="pp_ifdef('chromeos')">
+        <structure type="chrome_scaled_image" name="IDR_CRITICAL_ERROR" file="cros/critical_error.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_CWS_STAR_EMPTY" file="cws_star_empty.png" />
       <structure type="chrome_scaled_image" name="IDR_CWS_STAR_FULL" file="cws_star_full.png" />
       <structure type="chrome_scaled_image" name="IDR_CWS_STAR_HALF" file="cws_star_half.png" />

@@ -50,6 +50,7 @@ class ParallelAuthenticator : public Authenticator,
     FAILED_MOUNT,    // Failed to mount existing cryptohome.
     FAILED_REMOVE,   // Failed to remove existing cryptohome.
     FAILED_TMPFS,    // Failed to mount tmpfs for guest user
+    FAILED_TPM,      // Failed to mount/create cryptohome because of TPM error.
     CREATE_NEW,      // Need to create cryptohome for a new user.
     RECOVER_MOUNT,   // After RecoverEncryptedData, mount cryptohome.
     POSSIBLE_PW_CHANGE,  // Offline login failed, user may have changed pw.

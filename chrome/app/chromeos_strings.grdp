@@ -3390,6 +3390,12 @@ Battery full
   <message name="IDS_LOGIN_ERROR_OWNER_KEY_LOST" desc="Couldn't sign in because the owner key has been lost">
     Login has been cancelled because some of the device settings have been corrupted.
   </message>
+  <message name="IDS_LOGIN_ERROR_TPM_FAILURE" desc="Couldn't sign in because of the critical TPM error.">
+    Oops, something went wrong with signing in.
+  </message>
+  <message name="IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT" desc="Notify user that Chrome OS will reboot">
+    <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> will automatically reboot to fix this error.
+  </message>
   <message name="IDS_LOGIN_FIX_CAPTIVE_PORTAL" desc="An link text to fix Internet connection (captive portal) in guest mode.">
     Enter as Guest
   </message>

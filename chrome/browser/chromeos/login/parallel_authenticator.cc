@@ -490,6 +490,15 @@ void ParallelAuthenticator::Resolve() {
           base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
                      LoginFailure(LoginFailure::COULD_NOT_MOUNT_TMPFS)));
       break;
+    case FAILED_TPM:
+      // In this case, we tried to create/mount cryptohome and failed
+      // because of the critical TPM error.
+      // Chrome will notify user and request reboot.
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
+                     LoginFailure(LoginFailure::TPM_ERROR)));
+      break;
     case CREATE_NEW:
       create = true;
     case RECOVER_MOUNT:
@@ -695,6 +704,12 @@ ParallelAuthenticator::ResolveCryptohomeFailureState() {
     return NEED_OLD_PW;
   if (check_key_attempted_)
     return LOGIN_FAILED;
+
+  if (current_state_->cryptohome_code() ==
+      cryptohome::MOUNT_ERROR_TPM_NEEDS_REBOOT) {
+    // Critical TPM error detected, reboot needed.
+    return FAILED_TPM;
+  }
 
   // Return intermediate states in the following cases:
   // 1. When there is a parallel online attempt to resolve them later;

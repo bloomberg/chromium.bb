@@ -119,7 +119,8 @@ html[oobe=new] #oobe.gaia-signin #inner-container,
 html[oobe=new] #oobe.oauth-enrollment #inner-container,
 html[oobe=new] #oobe.reset #inner-container,
 html[oobe=new] #oobe.update #inner-container,
-html[oobe=new] #oobe.user-image #inner-container {
+html[oobe=new] #oobe.user-image #inner-container,
+html[oobe=new] #oobe.tpm-error-message #inner-container {
   background: -webkit-linear-gradient(rgba(255,255,255,0.99),
                                       rgba(255,255,255,0.95));
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),

@@ -1,0 +1,28 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#tpm-error-message {
+  height: 570px;
+  /* Screen has no controls but has padding at the last text message */
+  padding: 70px 17px 50px;
+  width: 485px;
+}
+
+#tpm-error-message-body {
+  color: #606060;
+  margin: 60px 50px;
+}
+
+#tmp-error-text,
+#tmp-error-reboot-text {
+  margin-top: 15px;
+}
+
+#tpm-error-icon {
+  background: url(chrome://theme/IDR_CRITICAL_ERROR) no-repeat center center;
+  height: 130px;
+  margin-top: 45px;
+  width: 351px; /* tpm-error-message-body content width */
+}

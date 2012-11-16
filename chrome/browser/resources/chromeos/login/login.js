@@ -38,6 +38,7 @@ cr.define('cr.ui', function() {
     oobe.UserImageScreen.register(/* lazyInit= */ true);
     oobe.ResetScreen.register();
     login.ErrorMessageScreen.register();
+    login.TPMErrorMessageScreen.register();
 
     cr.ui.Bubble.decorate($('bubble'));
     login.HeaderBar.decorate($('login-header-bar'));
@@ -133,6 +134,13 @@ cr.define('cr.ui', function() {
    */
   Oobe.showSignInError = function(loginAttempts, message, link, helpId) {
     DisplayManager.showSignInError(loginAttempts, message, link, helpId);
+  };
+
+  /**
+   * Shows TPM error screen.
+   */
+  Oobe.showTpmError = function() {
+    DisplayManager.showTpmError();
   };
 
   /**

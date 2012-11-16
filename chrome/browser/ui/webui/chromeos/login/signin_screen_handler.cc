@@ -39,6 +39,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -190,6 +191,12 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_OFFLINE_LOGIN_HTML));
   localized_strings->SetString("removeUser",
       l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE));
+  localized_strings->SetString("errorTpmFailure",
+      l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_TPM_FAILURE));
+  localized_strings->SetString("errorTpmFailureReboot",
+      l10n_util::GetStringFUTF16(
+          IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
   localized_strings->SetString("disabledAddUserTooltip",
       l10n_util::GetStringUTF16(
           g_browser_process->browser_policy_connector()->IsEnterpriseManaged() ?
@@ -426,6 +433,17 @@ void SigninScreenHandler::ShowError(int login_attempts,
                                    error_message,
                                    help_link,
                                    help_id);
+}
+
+void SigninScreenHandler::ShowErrorScreen(LoginDisplay::SigninError error_id) {
+  switch (error_id) {
+    case LoginDisplay::TPM_ERROR:
+      web_ui()->CallJavascriptFunction("cr.ui.Oobe.showTpmError");
+      break;
+    default:
+      NOTREACHED() << "Unknown sign in error";
+      break;
+  }
 }
 
 void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {

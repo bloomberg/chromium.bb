@@ -31,6 +31,7 @@ class LoginFailure {
                             // passed to the login_status_consumer_ in tests
                             // only. It is never generated or seen by any of the
                             // other authenticator classes.
+    TPM_ERROR,              // Critical TPM error encountered.
     NUM_FAILURE_REASONS,    // This has to be the last item.
   };
 

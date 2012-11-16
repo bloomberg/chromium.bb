@@ -14,6 +14,7 @@
 /** @const */ var SCREEN_GAIA_SIGNIN = 'gaia-signin';
 /** @const */ var SCREEN_ACCOUNT_PICKER = 'account-picker';
 /** @const */ var SCREEN_USER_IMAGE_PICKER = 'user-image';
+/** @const */ var SCREEN_TPM_ERROR = 'tpm-error-message';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
@@ -545,6 +546,13 @@ cr.define('cr.ui.login', function() {
 
     var currentScreenId = Oobe.getInstance().currentScreen.id;
     $(currentScreenId).showErrorBubble(loginAttempts, error);
+  };
+
+  /**
+   * Shows TPM error screen.
+   */
+  DisplayManager.showTpmError = function() {
+    login.TPMErrorMessageScreen.show();
   };
 
   /**
