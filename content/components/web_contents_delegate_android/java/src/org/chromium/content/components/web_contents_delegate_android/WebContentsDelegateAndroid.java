@@ -65,7 +65,7 @@ public class WebContentsDelegateAndroid {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private final void onLoadProgressChanged(double progress) {
+    private final void notifyLoadProgressChanged(double progress) {
         mMostRecentProgress = (int) (100.0 * progress);
         onLoadProgressChanged(mMostRecentProgress);
     }

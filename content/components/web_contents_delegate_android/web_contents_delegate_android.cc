@@ -151,7 +151,7 @@ void WebContentsDelegateAndroid::LoadProgressChanged(WebContents* source,
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return;
-  Java_WebContentsDelegateAndroid_onLoadProgressChanged(
+  Java_WebContentsDelegateAndroid_notifyLoadProgressChanged(
       env,
       obj.obj(),
       progress);
