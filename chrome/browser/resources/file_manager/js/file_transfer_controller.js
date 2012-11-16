@@ -254,7 +254,7 @@ FileTransferController.prototype = {
   },
 
   onDragEnterList_: function(list, event) {
-    this.dragEnterCount_++;
+    this.lastEnteredTarget_ = event.target;
     var item = list.getListItemAncestor(event.target);
     item = item && list.isItem(item) ? item : null;
     if (item == this.dropTarget_)
@@ -270,17 +270,25 @@ FileTransferController.prototype = {
   },
 
   onDragEnterBreadcrumbs_: function(breadcrumbsContainer, event) {
+    this.lastEnteredTarget_ = event.target;
     var path = breadcrumbsContainer.getTargetPath(event);
     if (!path)
       return;
 
-    this.dragEnterCount_++;
     this.setDropTarget_(event.target, true, event.dataTransfer, path);
   },
 
   onDragLeave_: function(list, event) {
-    if (this.dragEnterCount_-- == 0)
+    // If mouse moves from one element to another the 'dragenter'
+    // event for the new element comes before the 'dragleave' event for
+    // the old one. In this case event.target != this.lastEnteredTarget_
+    // and handler of the 'dragenter' event has already caried of
+    // drop target. So event.target == this.lastEnteredTarget_
+    // could only be if mouse goes out of listened element.
+    if (event.target == this.lastEnteredTarget_) {
       this.setDropTarget_(null);
+      this.lastEnteredTarget_ = null;
+    }
     if (event.target == list)
       this.setScrollSpeed_(list, 0);
   },
@@ -312,8 +320,6 @@ FileTransferController.prototype = {
         domElement.classList.add('accepts');
         this.destinationPath_ = opt_destinationPath;
       }
-    } else {
-      this.dragEnterCount_ = 0;
     }
     if (this.dropTarget_ && this.dropTarget_.classList.contains('accepts')) {
       var oldDropTarget = this.dropTarget_;
