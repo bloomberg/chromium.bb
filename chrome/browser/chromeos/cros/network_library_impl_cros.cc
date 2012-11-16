@@ -1213,6 +1213,10 @@ void NetworkLibraryImplCros::SetIPParametersCallback(
   if (!properties)
     return;
 
+  Network* network = FindNetworkByPath(service_path);
+  if (!network)
+    return;
+
   // Find the properties we're going to set, and minimize the DBus calls below
   // by not clearing if it's already cleared, and not setting if it's already
   // set to the same value. Also, don't reconnect at the end if nothing changed.
@@ -1305,6 +1309,10 @@ void NetworkLibraryImplCros::SetIPParametersCallback(
       CrosClearNetworkServiceProperty(service_path,
                                       shill::kStaticIPNameServersProperty);
       VLOG(2) << "Clearing " << shill::kStaticIPNameServersProperty;
+
+      // Notify that the network changed, so that the DNS cache can be
+      // cleared properly.
+      NotifyNetworkChanged(network);
     }
   } else if (current_name_servers != info.name_servers){
     base::StringValue value(info.name_servers);
@@ -1314,17 +1322,18 @@ void NetworkLibraryImplCros::SetIPParametersCallback(
     CrosSetNetworkServiceProperty(service_path,
                                   shill::kStaticIPNameServersProperty,
                                   value);
+
+    // Notify that the network changed, so that the DNS cache can be
+    // cleared properly.
+    NotifyNetworkChanged(network);
   }
 
   if (!something_changed)
     return;
 
-  // Find the network associated with this service path, and attempt to refresh
-  // its IP parameters, so that the changes to the service properties can take
-  // effect.
-  Network* network = FindNetworkByPath(service_path);
-
-  if (network && network->connecting_or_connected())
+  // Attempt to refresh its IP parameters, so that the changes to the service
+  // properties can take effect.
+  if (network->connecting_or_connected())
     RefreshIPConfig(network);
 }
 

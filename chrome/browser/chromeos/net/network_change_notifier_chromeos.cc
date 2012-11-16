@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -154,10 +156,21 @@ void NetworkChangeNotifierChromeos::UpdateNetworkStateCallback(
             << ", state= " << network->state();
   }
 
+  // Find the DNS servers currently in use. This code assumes that the order of
+  // the |ipconfigs| is stable.
+  std::vector<std::string> ipconfig_name_servers;
+  for (chromeos::NetworkIPConfigVector::const_iterator it = ipconfigs.begin();
+       it != ipconfigs.end(); ++it) {
+    const chromeos::NetworkIPConfig& ipconfig = *it;
+    if (!ipconfig.name_servers.empty())
+      ipconfig_name_servers.push_back(ipconfig.name_servers);
+  }
+
   // Check if active network was added, removed or changed.
   if ((!network && has_active_network_) ||
       (network && (!has_active_network_ ||
                    network->service_path() != service_path_ ||
+                   ipconfig_name_servers != name_servers_ ||
                    network->ip_address() != ip_address_))) {
     if (has_active_network_)
       lib->RemoveObserverForAllNetworks(this);
@@ -165,12 +178,13 @@ void NetworkChangeNotifierChromeos::UpdateNetworkStateCallback(
       has_active_network_ = false;
       service_path_.clear();
       ip_address_.clear();
+      name_servers_.clear();
     } else {
       has_active_network_ = true;
       service_path_ = network->service_path();
       ip_address_ = network->ip_address();
+      name_servers_.swap(ipconfig_name_servers);
     }
-    // TODO(szym): detect user DNS changes. http://crbug.com/148394
     dns_config_service_->OnNetworkChange();
     UpdateConnectivityState(network);
     // If there is an active network, add observer to track its changes.

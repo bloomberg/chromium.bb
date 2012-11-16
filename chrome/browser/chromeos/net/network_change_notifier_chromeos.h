@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_CHANGE_NOTIFIER_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_NET_NETWORK_CHANGE_NOTIFIER_CHROMEOS_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -91,6 +93,8 @@ class NetworkChangeNotifierChromeos
   std::string service_path_;
   // Current active network's IP address.
   std::string ip_address_;
+  // Current active network's name servers.
+  std::vector<std::string> name_servers_;
 
   scoped_ptr<DnsConfigServiceChromeos> dns_config_service_;
 
