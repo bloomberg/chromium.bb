@@ -51,8 +51,6 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
     SITE_IDENTITY_STATUS_CERT,
     // The website provided a valid EV certificate.
     SITE_IDENTITY_STATUS_EV_CERT,
-    // The website provided a valid DNSSEC certificate.
-    SITE_IDENTITY_STATUS_DNSSEC_CERT,
     // The website provided a valid certificate but no revocation check could be
     // performed.
     SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN,

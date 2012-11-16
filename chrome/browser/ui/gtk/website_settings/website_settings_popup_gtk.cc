@@ -509,7 +509,6 @@ void WebsiteSettingsPopupGtk::SetIdentityInfo(
 
   switch (identity_info.identity_status) {
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
-    case WebsiteSettings::SITE_IDENTITY_STATUS_DNSSEC_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
       identity_status_text =
           l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_IDENTITY_VERIFIED);

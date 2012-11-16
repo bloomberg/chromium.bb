@@ -88,7 +88,6 @@ WebsiteSettingsUI::IdentityInfo::IdentityInfo()
 
 string16 WebsiteSettingsUI::IdentityInfo::GetIdentityStatusText() const {
   if (identity_status == WebsiteSettings::SITE_IDENTITY_STATUS_CERT ||
-      identity_status == WebsiteSettings::SITE_IDENTITY_STATUS_DNSSEC_CERT ||
       identity_status ==  WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT) {
     return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_IDENTITY_VERIFIED);
   }
@@ -239,7 +238,6 @@ const gfx::Image& WebsiteSettingsUI::GetIdentityIcon(
       break;
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
-    case WebsiteSettings::SITE_IDENTITY_STATUS_DNSSEC_CERT:
       resource_id = IDR_PAGEINFO_GOOD;
       break;
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN:

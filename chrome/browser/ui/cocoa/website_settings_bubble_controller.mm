@@ -1013,7 +1013,6 @@ NSColor* IdentityVerifiedTextColor() {
 
   WebsiteSettings::SiteIdentityStatus status = identityInfo.identity_status;
   if (status == WebsiteSettings::SITE_IDENTITY_STATUS_CERT ||
-      status == WebsiteSettings::SITE_IDENTITY_STATUS_DNSSEC_CERT ||
       status == WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT) {
     [identityStatusField_ setTextColor:IdentityVerifiedTextColor()];
   }

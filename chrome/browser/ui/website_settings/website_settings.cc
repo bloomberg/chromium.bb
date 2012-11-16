@@ -281,11 +281,6 @@ void WebsiteSettings::Init(Profile* profile,
           UTF8ToUTF16(cert->subject().organization_names[0]),
           locality,
           UTF8ToUTF16(cert->issuer().GetDisplayName())));
-    } else if (ssl.cert_status & net::CERT_STATUS_IS_DNSSEC) {
-      // DNSSEC authenticated page.
-      site_identity_status_ = SITE_IDENTITY_STATUS_DNSSEC_CERT;
-      site_identity_details_.assign(l10n_util::GetStringFUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY, UTF8ToUTF16("DNSSEC")));
     } else {
       // Non-EV OK HTTPS page.
       site_identity_status_ = SITE_IDENTITY_STATUS_CERT;

@@ -514,7 +514,6 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
   SkColor text_color = SK_ColorBLACK;
   switch (identity_info.identity_status) {
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
-    case WebsiteSettings::SITE_IDENTITY_STATUS_DNSSEC_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
       identity_status_text =
           l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_IDENTITY_VERIFIED);
