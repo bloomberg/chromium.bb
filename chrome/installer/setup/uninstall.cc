@@ -1270,18 +1270,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   if (!backup_state_file.empty())
     file_util::Delete(backup_state_file, false);
 
-  // Upon uninstalling user-level Chrome, install shortcuts to the system-level
-  // Chrome if it exists (in most such cases the user-level uninstall is a
-  // self-destruction).
-  if (product.is_chrome() && !installer_state.system_install()) {
-    const ProductState* system_level_product_state =
-        original_state.GetProductState(true, browser_dist->GetType());
-    if (system_level_product_state) {
-      FilePath system_chrome_path(GetChromeInstallPath(true, browser_dist));
-      HandleActiveSetupForBrowser(system_chrome_path, product, true);
-    }
-  }
-
   return ret;
 }
 

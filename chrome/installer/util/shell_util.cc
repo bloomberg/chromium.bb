@@ -1797,19 +1797,27 @@ bool ShellUtil::RemoveShortcut(ShellUtil::ShortcutLocation location,
   }
 
   string16 shortcut_base_name(
-      (shortcut_name ? *shortcut_name :
-                       dist->GetAppShortCutName()) + installer::kLnkExt);
+      (shortcut_name ? *shortcut_name : dist->GetAppShortCutName()) +
+      installer::kLnkExt);
   FilePath shortcut_path(shortcut_folder.Append(shortcut_base_name));
 
   if (!file_util::PathExists(shortcut_path))
     return true;
 
-  FilePath read_target;
-  if (!base::win::ResolveShortcut(shortcut_path, &read_target, NULL))
+  base::win::ScopedComPtr<IShellLink> i_shell_link;
+  base::win::ScopedComPtr<IPersistFile> i_persist_file;
+  wchar_t read_target[MAX_PATH] = {};
+  if (FAILED(i_shell_link.CreateInstance(CLSID_ShellLink, NULL,
+                                         CLSCTX_INPROC_SERVER)) ||
+      FAILED(i_persist_file.QueryFrom(i_shell_link)) ||
+      FAILED(i_persist_file->Load(shortcut_path.value().c_str(), STGM_READ)) ||
+      FAILED(i_shell_link->GetPath(read_target, MAX_PATH, NULL,
+                                   SLGP_SHORTPATH))) {
+    NOTREACHED();
     return false;
+  }
 
-  if (InstallUtil::ProgramCompare(
-          FilePath(target_exe)).Evaluate(read_target.value())) {
+  if (InstallUtil::ProgramCompare(FilePath(target_exe)).Evaluate(read_target)) {
     // Unpin the shortcut if it was ever pinned by the user or the installer.
     VLOG(1) << "Trying to unpin " << shortcut_path.value();
     if (!base::win::TaskbarUnpinShortcutLink(shortcut_path.value().c_str())) {
