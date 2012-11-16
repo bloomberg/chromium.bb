@@ -397,16 +397,13 @@ void FaviconHandler::OnDidDownloadFavicon(
   if (!i->second.callback.is_null()) {
     // Find bitmap which most closely matches |requested_size| and return it in
     // callback.
-    std::vector<gfx::Size> sizes;
-    for (size_t j = 0; j < bitmaps.size(); ++j)
-      sizes.push_back(gfx::Size(bitmaps[j].width(), bitmaps[j].height()));
+
     std::vector<ui::ScaleFactor> scale_factors;
     scale_factors.push_back(ui::SCALE_FACTOR_100P);
-    std::vector<size_t> selected_bitmap_indices;
-    SelectFaviconFrameIndices(sizes, scale_factors, requested_size,
-                              &selected_bitmap_indices, NULL);
-    DCHECK_EQ(1u, selected_bitmap_indices.size());
-    size_t closest_index = selected_bitmap_indices[0];
+    int closest_index =
+        FaviconUtil::SelectBestFaviconFromBitmaps(bitmaps,
+                                                  scale_factors,
+                                                  requested_size);
     i->second.callback.Run(id, errored, bitmaps[closest_index]);
   } else if (current_candidate() &&
              DoUrlAndIconMatch(*current_candidate(), image_url,

@@ -70,3 +70,18 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
       scale_factors, favicon_size, NULL);
   return gfx::Image(resized_image_skia);
 }
+
+// static
+size_t FaviconUtil::SelectBestFaviconFromBitmaps(
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<ui::ScaleFactor>& scale_factors,
+    int desired_size) {
+  std::vector<gfx::Size> sizes;
+  for (size_t i = 0; i < bitmaps.size(); ++i)
+    sizes.push_back(gfx::Size(bitmaps[i].width(), bitmaps[i].height()));
+  std::vector<size_t> selected_bitmap_indices;
+  SelectFaviconFrameIndices(sizes, scale_factors, desired_size,
+                            &selected_bitmap_indices, NULL);
+  DCHECK_EQ(1u, selected_bitmap_indices.size());
+  return selected_bitmap_indices[0];
+}

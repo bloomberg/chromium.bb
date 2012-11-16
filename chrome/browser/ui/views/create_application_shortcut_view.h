@@ -6,14 +6,17 @@
 #define CHROME_BROWSER_UI_VIEWS_CREATE_APPLICATION_SHORTCUT_VIEW_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/favicon/favicon_download_helper_delegate.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
 
+class FaviconDownloadHelper;
 class Profile;
 class SkBitmap;
 
@@ -82,7 +85,8 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
 };
 
 // Create an application shortcut pointing to a URL.
-class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView {
+class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView,
+                                         public FaviconDownloadHelperDelegate {
  public:
   explicit CreateUrlApplicationShortcutView(content::WebContents* web_contents);
   virtual ~CreateUrlApplicationShortcutView();
@@ -94,15 +98,22 @@ class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView {
   // The first largest icon downloaded and decoded successfully will be used.
   void FetchIcon();
 
-  // Callback of icon download.
-  void OnIconDownloaded(bool errored, const SkBitmap& image);
+  // FaviconDownloadHelperDelegate overrides.
+  virtual void OnDidDownloadFavicon(
+      int id,
+      const GURL& image_url,
+      bool errored,
+      int requested_size,
+      const std::vector<SkBitmap>& bitmaps) OVERRIDE;
 
   // The tab whose URL is being turned into an app.
   content::WebContents* web_contents_;
 
+  // Helper class to manage the downloading of favicons.
+  scoped_ptr<FaviconDownloadHelper> download_helper_;
+
   // Pending app icon download tracked by us.
-  class IconDownloadCallbackFunctor;
-  IconDownloadCallbackFunctor* pending_download_;
+  int pending_download_id_;
 
   // Unprocessed icons from the WebApplicationInfo passed in.
   web_app::IconInfoList unprocessed_icons_;

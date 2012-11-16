@@ -11,7 +11,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/favicon/favicon_download_helper.h"
+#include "chrome/browser/favicon/favicon_util.h"
+#include "chrome/browser/history/select_favicon_frames.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,6 +25,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "grit/generated_resources.h"
@@ -34,6 +38,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -219,26 +224,6 @@ void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,
 
 }  // namespace chrome
 
-class CreateUrlApplicationShortcutView::IconDownloadCallbackFunctor {
- public:
-  explicit IconDownloadCallbackFunctor(CreateUrlApplicationShortcutView* owner)
-      : owner_(owner) {
-  }
-
-  void Run(int download_id, bool errored, const SkBitmap& image) {
-    if (owner_)
-      owner_->OnIconDownloaded(errored, image);
-    delete this;
-  }
-
-  void Cancel() {
-    owner_ = NULL;
-  }
-
- private:
-  CreateUrlApplicationShortcutView* owner_;
-};
-
 CreateApplicationShortcutView::CreateApplicationShortcutView(Profile* profile)
     : profile_(profile),
       app_info_(NULL),
@@ -423,7 +408,7 @@ CreateUrlApplicationShortcutView::CreateUrlApplicationShortcutView(
     : CreateApplicationShortcutView(
           Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       web_contents_(web_contents),
-      pending_download_(NULL)  {
+      pending_download_id_(-1)  {
 
   web_app::GetShortcutInfoForTab(web_contents_, &shortcut_info_);
   const WebApplicationInfo& app_info =
@@ -437,8 +422,6 @@ CreateUrlApplicationShortcutView::CreateUrlApplicationShortcutView(
 }
 
 CreateUrlApplicationShortcutView::~CreateUrlApplicationShortcutView() {
-  if (pending_download_)
-    pending_download_->Cancel();
 }
 
 bool CreateUrlApplicationShortcutView::Accept() {
@@ -457,28 +440,45 @@ bool CreateUrlApplicationShortcutView::Accept() {
 
 void CreateUrlApplicationShortcutView::FetchIcon() {
   // There should only be fetch job at a time.
-  DCHECK(pending_download_ == NULL);
+  DCHECK_EQ(-1, pending_download_id_);
 
   if (unprocessed_icons_.empty())  // No icons to fetch.
     return;
 
-  pending_download_ = new IconDownloadCallbackFunctor(this);
-  DCHECK(pending_download_);
+  if (!download_helper_.get())
+    download_helper_.reset(new FaviconDownloadHelper(web_contents_, this));
 
-  FaviconTabHelper::FromWebContents(web_contents_)->
-      DownloadImage(unprocessed_icons_.back().url,
-                    std::max(unprocessed_icons_.back().width,
-                             unprocessed_icons_.back().height),
-                    history::FAVICON,
-                    base::Bind(&IconDownloadCallbackFunctor::Run,
-                               base::Unretained(pending_download_)));
+  pending_download_id_ = download_helper_->DownloadFavicon(
+      unprocessed_icons_.back().url,
+      std::max(unprocessed_icons_.back().width,
+               unprocessed_icons_.back().height));
 
   unprocessed_icons_.pop_back();
 }
 
-void CreateUrlApplicationShortcutView::OnIconDownloaded(bool errored,
-                                                        const SkBitmap& image) {
-  pending_download_ = NULL;
+void CreateUrlApplicationShortcutView::OnDidDownloadFavicon(
+    int id,
+    const GURL& image_url,
+    bool errored,
+    int requested_size,
+    const std::vector<SkBitmap>& bitmaps) {
+  if (id != pending_download_id_)
+    return;
+  pending_download_id_ = -1;
+
+  SkBitmap image;
+
+  if (!bitmaps.empty()) {
+    std::vector<ui::ScaleFactor> scale_factors;
+    ui::ScaleFactor scale_factor = ui::GetScaleFactorForNativeView(
+        web_contents_->GetRenderViewHost()->GetView()->GetNativeView());
+    scale_factors.push_back(scale_factor);
+    size_t closest_index = FaviconUtil::SelectBestFaviconFromBitmaps(
+        bitmaps,
+        scale_factors,
+        requested_size);
+    image = bitmaps[closest_index];
+  }
 
   if (!errored && !image.isNull()) {
     shortcut_info_.favicon = gfx::Image(image);
