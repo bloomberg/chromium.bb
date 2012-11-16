@@ -1364,8 +1364,10 @@
             # use_aura currently sets use_ash on Windows. So take these tests out
             # for win aura builds.
             # TODO: enable these for win_ash browser tests.
+            'browser/ui/ash/chrome_shell_delegate_browsertest.cc',
             'browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc',
             'browser/ui/ash/launcher/launcher_favicon_loader_browsertest.cc',
+            'browser/ui/ash/shelf_browsertest.cc',
             'browser/ui/views/frame/app_non_client_frame_view_ash_browsertest.cc',
             'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
           ],
