@@ -64,12 +64,12 @@
 #include "chrome/browser/chromeos/extensions/file_browser_handler_api.h"
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/info_private_api.h"
+#include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/power/power_api.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "chrome/browser/chromeos/media/media_player_extension_api.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
-#include "chrome/browser/extensions/extension_input_method_api.h"
 #endif
 
 // static
@@ -408,7 +408,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<WallpaperRestoreMinimizedWindowsFunction>();
 
   // InputMethod
-  RegisterFunction<GetInputMethodFunction>();
+  RegisterFunction<extensions::GetInputMethodFunction>();
 
   // Echo
   RegisterFunction<GetRegistrationCodeFunction>();

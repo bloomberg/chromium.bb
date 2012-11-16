@@ -455,8 +455,6 @@
         'browser/extensions/extension_info_map.h',
         'browser/extensions/extension_infobar_delegate.cc',
         'browser/extensions/extension_infobar_delegate.h',
-        'browser/extensions/extension_input_method_api.cc',
-        'browser/extensions/extension_input_method_api.h',
         'browser/extensions/extension_input_module_constants.cc',
         'browser/extensions/extension_input_module_constants.h',
         'browser/extensions/extension_install_prompt.cc',
@@ -669,8 +667,6 @@
             ['exclude', '^browser/extensions/api/terminal/terminal_extension_helper.h'],
             ['exclude', '^browser/extensions/api/terminal/terminal_private_api.cc'],
             ['exclude', '^browser/extensions/api/terminal/terminal_private_api.h'],
-            ['exclude', '^browser/extensions/extension_input_method_api.cc'],
-            ['exclude', '^browser/extensions/extension_input_method_api.h'],
           ],
         }, {  # chromeos==1
           'dependencies': [

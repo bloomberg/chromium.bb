@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_METHOD_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_METHOD_API_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_INPUT_METHOD_API_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_INPUT_METHOD_API_H_
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
+
+namespace extensions {
 
 // Implements the experimental.inputMethod.get method.
 class GetInputMethodFunction : public SyncExtensionFunction {
@@ -22,4 +24,6 @@ class GetInputMethodFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("inputMethodPrivate.get");
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_METHOD_API_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_INPUT_METHOD_API_H_

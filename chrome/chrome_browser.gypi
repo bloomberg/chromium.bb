@@ -2360,8 +2360,6 @@
             ['exclude', 'browser/extensions/api/terminal/terminal_extension_helper.h'],
             ['exclude', 'browser/extensions/api/terminal/terminal_private_api.cc'],
             ['exclude', 'browser/extensions/api/terminal/terminal_private_api.h'],
-            ['exclude', 'browser/extensions/extension_input_method_api.cc'],
-            ['exclude', 'browser/extensions/extension_input_method_api.h'],
             ['exclude', 'browser/net/gaia/gaia_oauth_consumer.h'],
             ['exclude', 'browser/net/gaia/gaia_oauth_fetcher.cc'],
             ['exclude', 'browser/net/gaia/gaia_oauth_fetcher.h'],

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_input_method_api.h"
+#include "chrome/browser/chromeos/extensions/input_method_api.h"
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+
+namespace extensions {
 
 GetInputMethodFunction::GetInputMethodFunction() {
 }
@@ -31,3 +33,5 @@ bool GetInputMethodFunction::RunImpl() {
   return true;
 #endif
 }
+
+}  // namespace extensions
