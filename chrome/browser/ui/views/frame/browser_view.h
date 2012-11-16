@@ -206,6 +206,11 @@ class BrowserView : public BrowserWindow,
   // used on Linux.
   void FullScreenStateChanged();
 
+  // Enables a maximized mode similar to MacOS presentation mode, with a
+  // "light bar" at the top representing open tabs.
+  void SetImmersiveMode(bool enable);
+  bool IsImmersiveMode() const;
+
   // Restores the focused view. This is also used to set the initial focus
   // when a new browser window is created.
   void RestoreFocus();
