@@ -34,6 +34,7 @@
 #include "chrome/browser/component_updater/recovery_component_installer.h"
 #include "chrome/browser/component_updater/swiftshader_component_installer.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
@@ -456,6 +457,14 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     std::string allowed_ports =
         command_line.GetSwitchValueASCII(switches::kExplicitlyAllowedPorts);
     net::SetExplicitlyAllowedPorts(allowed_ports);
+  }
+
+  if (command_line.HasSwitch(switches::kInstallFromWebstore)) {
+    extensions::StartupHelper helper;
+    helper.InstallFromWebstore(command_line, last_used_profile);
+    // Nothing more needs to be done, so return false to stop launching and
+    // quit.
+    return false;
   }
 
 #if defined(OS_CHROMEOS)
