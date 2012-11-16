@@ -16,7 +16,7 @@
 #include "chrome/browser/google_apis/test_server/http_response.h"
 #include "net/base/tcp_listen_socket.h"
 
-namespace drive {
+namespace google_apis {
 namespace test_server {
 
 // This class is required to be able to have composition instead of inheritance,
@@ -145,6 +145,6 @@ class HttpServer : private net::StreamListenSocket::Delegate {
 };
 
 }  // namespace test_servers
-}  // namespace drive
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_TEST_SERVER_HTTP_SERVER_H_

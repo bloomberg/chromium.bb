@@ -13,7 +13,7 @@
 #include "base/string_piece.h"
 #include "googleurl/src/gurl.h"
 
-namespace drive {
+namespace google_apis {
 namespace test_server {
 
 // Methods of HTTP requests supported by the test HTTP server.
@@ -110,6 +110,6 @@ class HttpRequestParser {
 };
 
 }  // namespace test_server
-}  // namespace drive
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_TEST_SERVER_HTTP_REQUEST_H_

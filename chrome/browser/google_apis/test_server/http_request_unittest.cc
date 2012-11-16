@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace drive {
+namespace google_apis {
 namespace test_server {
 
 TEST(HttpRequestTest, ParseRequest) {
@@ -79,4 +79,4 @@ TEST(HttpRequestTest, ParseRequestWithoutBody) {
 }
 
 }  // namespace test_server
-}  // namespace drive
+}  // namespace google_apis

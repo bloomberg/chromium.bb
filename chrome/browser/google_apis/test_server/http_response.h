@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 
-namespace drive {
+namespace google_apis {
 namespace test_server {
 
 enum ResponseCode {
@@ -62,6 +62,6 @@ class HttpResponse {
 };
 
 }  // namespace test_servers
-}  // namespace drive
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_TEST_SERVER_HTTP_RESPONSE_H_

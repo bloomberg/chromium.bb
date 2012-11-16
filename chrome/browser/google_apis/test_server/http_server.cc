@@ -14,7 +14,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/tools/fetch/http_listen_socket.h"
 
-namespace drive {
+namespace google_apis {
 namespace test_server {
 
 using content::BrowserThread;
@@ -254,4 +254,4 @@ HttpConnection* HttpServer::FindConnection(
 }
 
 }  // namespace test_server
-}  // namespace drive
+}  // namespace google_apis

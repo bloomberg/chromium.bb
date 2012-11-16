@@ -16,7 +16,7 @@
 #include "googleurl/src/gurl.h"
 
 
-namespace drive {
+namespace google_apis {
 namespace test_server {
 
 namespace {
@@ -200,4 +200,4 @@ HttpMethod HttpRequestParser::GetMethodType(const std::string& token) const {
 }
 
 }  // namespace test_server
-}  // namespace drive
+}  // namespace google_apis

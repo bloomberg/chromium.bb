@@ -12,7 +12,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace drive {
+namespace google_apis {
 namespace test_server {
 
 namespace {
@@ -141,4 +141,4 @@ TEST_F(HttpServerTest, DefaultNotFoundResponse) {
 // TODO(mtomasz): Write a test for a file response.
 
 }  // namespace test_server
-}  // namespace drive
+}  // namespace google_apis

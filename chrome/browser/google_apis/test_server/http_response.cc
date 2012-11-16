@@ -11,7 +11,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 
-namespace drive {
+namespace google_apis {
 namespace test_server {
 
 HttpResponse::HttpResponse() : code_(SUCCESS) {
@@ -54,4 +54,4 @@ std::string HttpResponse::ToResponseString() const {
 }
 
 }  // namespace test_server
-}  // namespace drive
+}  // namespace google_apis

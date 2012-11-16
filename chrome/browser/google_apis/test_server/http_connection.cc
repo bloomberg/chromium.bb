@@ -10,7 +10,7 @@
 #include "chrome/browser/google_apis/test_server/http_request.h"
 #include "chrome/browser/google_apis/test_server/http_response.h"
 
-namespace drive {
+namespace google_apis {
 namespace test_server {
 
 HttpConnection::HttpConnection(net::StreamListenSocket* socket,
@@ -35,4 +35,4 @@ void HttpConnection::ReceiveData(const base::StringPiece& data) {
 }
 
 }  // namespace test_server
-}  // namespace drive
+}  // namespace google_apis
