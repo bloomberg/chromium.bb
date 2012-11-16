@@ -75,6 +75,7 @@ FaviconService::Handle FaviconService::GetFavicon(
     const GURL& icon_url,
     history::IconType icon_type,
     int desired_size_in_dip,
+    const std::vector<ui::ScaleFactor>& desired_scale_factors,
     CancelableRequestConsumerBase* consumer,
     const FaviconResultsCallback& callback) {
   GetFaviconRequest* request = new GetFaviconRequest(callback);
@@ -83,7 +84,7 @@ FaviconService::Handle FaviconService::GetFavicon(
     std::vector<GURL> icon_urls;
     icon_urls.push_back(icon_url);
     history_service_->GetFavicons(request, icon_urls, icon_type,
-        desired_size_in_dip, FaviconUtil::GetFaviconScaleFactors());
+        desired_size_in_dip, desired_scale_factors);
   } else {
     ForwardEmptyResultAsync(request);
   }
@@ -95,14 +96,14 @@ FaviconService::Handle FaviconService::UpdateFaviconMappingsAndFetch(
     const std::vector<GURL>& icon_urls,
     int icon_types,
     int desired_size_in_dip,
+    const std::vector<ui::ScaleFactor>& desired_scale_factors,
     CancelableRequestConsumerBase* consumer,
     const FaviconResultsCallback& callback) {
   GetFaviconRequest* request = new GetFaviconRequest(callback);
   AddRequest(request, consumer);
   if (history_service_) {
     history_service_->UpdateFaviconMappingsAndFetch(request, page_url,
-        icon_urls, icon_types, desired_size_in_dip,
-        FaviconUtil::GetFaviconScaleFactors());
+        icon_urls, icon_types, desired_size_in_dip, desired_scale_factors);
   } else {
     ForwardEmptyResultAsync(request);
   }
@@ -118,9 +119,9 @@ FaviconService::Handle FaviconService::GetFaviconImageForURL(
       params.desired_size_in_dip,
       callback));
 
-  return GetFaviconForURLImpl(params,
-                              FaviconUtil::GetFaviconScaleFactors(),
-                              request);
+  std::vector<ui::ScaleFactor> desired_scale_factors =
+      ui::GetSupportedScaleFactors();
+  return GetFaviconForURLImpl(params, desired_scale_factors, request);
 }
 
 FaviconService::Handle FaviconService::GetRawFaviconForURL(
@@ -141,11 +142,10 @@ FaviconService::Handle FaviconService::GetRawFaviconForURL(
 
 FaviconService::Handle FaviconService::GetFaviconForURL(
     const FaviconForURLParams& params,
+    const std::vector<ui::ScaleFactor>& desired_scale_factors,
     const FaviconResultsCallback& callback) {
   GetFaviconRequest* request = new GetFaviconRequest(callback);
-  return GetFaviconForURLImpl(params,
-                              FaviconUtil::GetFaviconScaleFactors(),
-                              request);
+  return GetFaviconForURLImpl(params, desired_scale_factors, request);
 }
 
 FaviconService::Handle FaviconService::GetLargestRawFaviconForID(
@@ -282,7 +282,7 @@ void FaviconService::GetFaviconImageCallback(
   history::FaviconImageResult image_result;
   image_result.image = FaviconUtil::SelectFaviconFramesFromPNGs(
       favicon_bitmap_results,
-      FaviconUtil::GetFaviconScaleFactors(),
+      ui::GetSupportedScaleFactors(),
       desired_size_in_dip);
   image_result.icon_url = image_result.image.IsEmpty() ?
       GURL() : favicon_bitmap_results[0].icon_url;
@@ -325,13 +325,23 @@ void FaviconService::GetRawFaviconCallback(
 
   // Convert raw bytes to SkBitmap, resize via SelectFaviconFrames(), then
   // convert back.
+  SkBitmap bitmap;
+  if (!gfx::PNGCodec::Decode(bitmap_result.bitmap_data->front(),
+                             bitmap_result.bitmap_data->size(),
+                             &bitmap)) {
+    callback.Run(handle, history::FaviconBitmapResult());
+    return;
+  }
+
+  std::vector<SkBitmap> bitmaps;
+  bitmaps.push_back(bitmap);
   std::vector<ui::ScaleFactor> desired_scale_factors;
   desired_scale_factors.push_back(desired_scale_factor);
-  gfx::Image resized_image = FaviconUtil::SelectFaviconFramesFromPNGs(
-      favicon_bitmap_results, desired_scale_factors, desired_size_in_dip);
+  gfx::ImageSkia resized_image = SelectFaviconFrames(bitmaps,
+      desired_scale_factors, desired_size_in_dip, NULL);
 
   std::vector<unsigned char> resized_bitmap_data;
-  if (!gfx::PNGCodec::EncodeBGRASkBitmap(resized_image.AsBitmap(), false,
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(*resized_image.bitmap(), false,
                                          &resized_bitmap_data)) {
     callback.Run(handle, history::FaviconBitmapResult());
     return;

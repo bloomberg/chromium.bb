@@ -56,7 +56,7 @@ class FaviconService : public CancelableRequestProvider,
   // |FaviconImageResult::image| is constructed from the bitmaps for the
   // passed in URL and icon types which most which closely match the passed in
   // |desired_size_in_dip| at the scale factors supported by the current
-  // platform (eg MacOS) in addition to 1x.
+  // platform (eg MacOS).
   // |FaviconImageResult::icon_url| is the favicon that the favicon bitmaps in
   // |image| originate from.
   // TODO(pkotwicz): Enable constructing |image| from bitmaps from several
@@ -76,10 +76,9 @@ class FaviconService : public CancelableRequestProvider,
   //
   // The second argument is the set of bitmaps for the passed in URL and
   // icon types whose pixel sizes best match the passed in
-  // |desired_size_in_dip| at the scale factors supported by the current
-  // platform (eg MacOS) in addition to 1x. The vector has at most one result
-  // for each of the scale factors. There are less entries if a single result
-  // is the best bitmap to use for several scale factors.
+  // |desired_size_in_dip| and |desired_scale_factors|. The vector has at most
+  // one result for each of |desired_scale_factors|. There are less entries if
+  // a single result is the best bitmap to use for several scale factors.
   //
   // Third argument:
   // a) If the callback is called as a result of GetFaviconForURL():
@@ -124,6 +123,7 @@ class FaviconService : public CancelableRequestProvider,
   Handle GetFavicon(const GURL& icon_url,
                     history::IconType icon_type,
                     int desired_size_in_dip,
+                    const std::vector<ui::ScaleFactor>& desired_scale_factors,
                     CancelableRequestConsumerBase* consumer,
                     const FaviconResultsCallback& callback);
 
@@ -143,15 +143,15 @@ class FaviconService : public CancelableRequestProvider,
   // |icon_types| can only have multiple IconTypes if
   // |icon_types| == TOUCH_ICON | TOUCH_PRECOMPOSED_ICON.
   // The favicon bitmaps which most closely match |desired_size_in_dip|
-  // at the scale factors supported by the current platform (eg MacOS) in
-  // addition to 1x from the favicons which were just mapped to |page_url| are
-  // returned. If |desired_size_in_dip| is 0, the largest favicon bitmap is
-  // returned.
+  // and |desired_scale_factors| from the favicons which were just mapped
+  // to |page_url| are returned. If |desired_size_in_dip| is 0, the
+  // largest favicon bitmap is returned.
   Handle UpdateFaviconMappingsAndFetch(
       const GURL& page_url,
       const std::vector<GURL>& icon_urls,
       int icon_types,
       int desired_size_in_dip,
+      const std::vector<ui::ScaleFactor>& desired_scale_factors,
       CancelableRequestConsumerBase* consumer,
       const FaviconResultsCallback& callback);
 
@@ -174,6 +174,7 @@ class FaviconService : public CancelableRequestProvider,
 
   Handle GetFaviconForURL(
       const FaviconForURLParams& params,
+      const std::vector<ui::ScaleFactor>& desired_scale_factors,
       const FaviconResultsCallback& callback);
 
   // Used to request a bitmap for the favicon with |favicon_id| which is not

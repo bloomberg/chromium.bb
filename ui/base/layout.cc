@@ -73,10 +73,8 @@ std::vector<ScaleFactor>& GetSupportedScaleFactorsInternal() {
   static std::vector<ScaleFactor>* supported_scale_factors =
       new std::vector<ScaleFactor>();
   if (supported_scale_factors->empty()) {
-#if !defined(OS_IOS)
-    // On platforms other than iOS, 100P is always a supported scale factor.
+    // 100P is always a supported scale factor.
     supported_scale_factors->push_back(SCALE_FACTOR_100P);
-#endif
 
 #if defined(OS_IOS)
     // TODO(ios): 100p should not be necessary on iOS retina devices. However

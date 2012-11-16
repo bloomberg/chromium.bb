@@ -13,30 +13,6 @@
 #include "ui/gfx/image/image_skia.h"
 
 // static
-std::vector<ui::ScaleFactor> FaviconUtil::GetFaviconScaleFactors() {
-  const float kScale1x = ui::GetScaleFactorScale(ui::SCALE_FACTOR_100P);
-  std::vector<ui::ScaleFactor> favicon_scale_factors =
-      ui::GetSupportedScaleFactors();
-
-  // The scale factors returned from ui::GetSupportedScaleFactors() are sorted.
-  // Insert the 1x scale factor such that GetFaviconScaleFactors() is sorted as
-  // well.
-  size_t insert_index = favicon_scale_factors.size();
-  for (size_t i = 0; i < favicon_scale_factors.size(); ++i) {
-    float scale = ui::GetScaleFactorScale(favicon_scale_factors[i]);
-    if (scale == kScale1x) {
-      return favicon_scale_factors;
-    } else if (scale > kScale1x) {
-      insert_index = i;
-      break;
-    }
-  }
-  favicon_scale_factors.insert(favicon_scale_factors.begin() + insert_index,
-                               ui::SCALE_FACTOR_100P);
-  return favicon_scale_factors;
-}
-
-// static
 int FaviconUtil::DownloadFavicon(content::RenderViewHost* rvh,
                                  const GURL& url,
                                  int image_size) {
@@ -67,6 +43,6 @@ gfx::Image FaviconUtil::SelectFaviconFramesFromPNGs(
     return gfx::Image();
 
   gfx::ImageSkia resized_image_skia = SelectFaviconFrames(bitmaps,
-      scale_factors, favicon_size, NULL);
+      ui::GetSupportedScaleFactors(), favicon_size, NULL);
   return gfx::Image(resized_image_skia);
 }
