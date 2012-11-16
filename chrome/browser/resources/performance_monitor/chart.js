@@ -1341,6 +1341,14 @@ cr.define('performance_monitor', function() {
 
         var chartData = this.getChartSeriesAndAxes_(activeMetrics);
 
+        // There is the possibility that we have no data for this particular
+        // time window and metric, but Flot will not draw the grid without at
+        // least one data point (regardless of whether that datapoint is
+        // displayed). Thus, we will add the point (-1, -1) (which is guaranteed
+        // not to show with our axis bounds), and force Flot to show the chart.
+        if (chartData.series.length == 0)
+          chartData.series = [[-1, -1]];
+
         chart.plot = $.plot(chart.grid, chartData.series, {
           yaxes: chartData.yaxes,
           xaxis: xaxis,
