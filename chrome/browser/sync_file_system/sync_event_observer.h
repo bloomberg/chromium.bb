@@ -55,14 +55,14 @@ class SyncEventObserver {
   };
 
   // Reports there was a state change in the sync file system backend.
-  virtual void OnSyncStateUpdated(fileapi::SyncServiceState state,
+  virtual void OnSyncStateUpdated(SyncServiceState state,
                                   const std::string& description) = 0;
 
   // Reports the file |url| was updated for |operation|
   // by the sync file system backend.
   virtual void OnFileSynced(fileapi::SyncStatusCode status,
                             SyncOperation operation,
-                            const FileSystemURL& url) = 0;
+                            const fileapi::FileSystemURL& url) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncEventObserver);
