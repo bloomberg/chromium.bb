@@ -185,6 +185,10 @@ TEST_F(CommonDecoderTest, Initialize) {
   EXPECT_EQ(0, engine_.GetGetOffset());
 }
 
+TEST_F(CommonDecoderTest, DoCommonCommandInvalidCommand) {
+  EXPECT_EQ(error::kUnknownCommand, decoder_.DoCommand(999999, 0, NULL));
+}
+
 TEST_F(CommonDecoderTest, HandleNoop) {
   cmd::Noop cmd;
   const uint32 kSkipCount = 5;
@@ -634,4 +638,3 @@ TEST_F(CommonDecoderTest, GetBucketData) {
 }
 
 }  // namespace gpu
-

@@ -166,7 +166,6 @@ error::Error CommonDecoder::DoCommonCommand(
       return error::kInvalidArguments;
     }
   }
-  return DoCommonCommand(command, arg_count, cmd_data);
   return error::kUnknownCommand;
 }
 
