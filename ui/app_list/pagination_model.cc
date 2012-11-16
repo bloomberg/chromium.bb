@@ -121,6 +121,10 @@ void PaginationModel::UpdateScroll(double delta) {
       fabs(delta) * page_change_dir * transition_dir;
 
   if (progress < 0) {
+    if (transition_.progress) {
+      transition_.progress = 0;
+      NotifyTransitionChanged();
+    }
     clear_transition();
   } else if (progress > 1) {
     if (is_valid_page(transition_.target_page)) {

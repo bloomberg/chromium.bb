@@ -22,7 +22,8 @@ class TestPaginationModelObserver : public PaginationModelObserver {
       : model_(NULL),
         expected_page_selection_(0),
         expected_transition_start_(0),
-        expected_transition_end_(0) {
+        expected_transition_end_(0),
+        transition_page_(-1) {
     Reset();
   }
   virtual ~TestPaginationModelObserver() {}
@@ -45,6 +46,7 @@ class TestPaginationModelObserver : public PaginationModelObserver {
   void set_expected_transition_end(int expected_transition_end) {
     expected_transition_end_ = expected_transition_end;
   }
+  void set_transition_page(int page) { transition_page_ = page; }
 
   const std::string& selected_pages() const { return selected_pages_; }
   int selection_count() const { return selection_count_; }
@@ -70,10 +72,13 @@ class TestPaginationModelObserver : public PaginationModelObserver {
     }
   }
   virtual void TransitionChanged() OVERRIDE {
-    if (model_->transition().progress == 0)
-      ++transition_start_count_;
-    if (model_->transition().progress == 1)
-      ++transition_end_count_;
+    if (transition_page_ == -1 ||
+        model_->transition().target_page == transition_page_) {
+      if (model_->transition().progress == 0)
+        ++transition_start_count_;
+      if (model_->transition().progress == 1)
+        ++transition_end_count_;
+    }
 
     if ((expected_transition_start_ &&
          transition_start_count_ == expected_transition_start_) ||
@@ -92,6 +97,10 @@ class TestPaginationModelObserver : public PaginationModelObserver {
   int selection_count_;
   int transition_start_count_;
   int transition_end_count_;
+
+  // Indicate which page index should be counted for |transition_start_count_|
+  // and |transition_end_count_|. -1 means all the pages should be counted.
+  int transition_page_;
 
   std::string selected_pages_;
 
@@ -364,6 +373,37 @@ TEST_F(PaginationModelTest, LongScroll) {
   pagination_.EndScroll(false);
   MessageLoop::current()->Run();
   EXPECT_EQ(1, observer_.selection_count());
+}
+
+TEST_F(PaginationModelTest, FireTransitionZero) {
+  const int kStartPage = 2;
+
+  // Scroll to next page then revert the scroll and make sure transition
+  // progress 0 is fired when previous scroll is cleared.
+  SetStartPageAndExpects(kStartPage, 0, 0, 0);
+  pagination_.StartScroll();
+  pagination_.UpdateScroll(-0.1);
+
+  int target_page = kStartPage + 1;
+  EXPECT_EQ(target_page, pagination_.transition().target_page);
+  observer_.set_transition_page(target_page);
+
+  pagination_.UpdateScroll(0.2);  // This clears the transition.
+  EXPECT_EQ(1, observer_.transition_start_count());
+  pagination_.EndScroll(true);  // Cancel transition.
+
+  // Similar to above but in the other direction.
+  SetStartPageAndExpects(kStartPage, 0, 0, 0);
+  pagination_.StartScroll();
+  pagination_.UpdateScroll(0.1);
+
+  target_page = kStartPage - 1;
+  EXPECT_EQ(target_page, pagination_.transition().target_page);
+  observer_.set_transition_page(target_page);
+
+  pagination_.UpdateScroll(-0.2);  // This clears the transition.
+  EXPECT_EQ(1, observer_.transition_start_count());
+  pagination_.EndScroll(true);  // Cancel transition.
 }
 
 TEST_F(PaginationModelTest, SelectedPageIsLost) {
