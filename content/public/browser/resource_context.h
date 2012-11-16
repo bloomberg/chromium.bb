@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/supports_user_data.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 
 namespace appcache {
@@ -25,8 +26,12 @@ namespace content {
 // the UI thread. It must be destructed on the IO thread.
 class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
  public:
+#if defined(OS_IOS)
+  virtual ~ResourceContext() {}
+#else
   ResourceContext();
   virtual ~ResourceContext();
+#endif
   virtual net::HostResolver* GetHostResolver() = 0;
 
   // DEPRECATED: This is no longer a valid given isolated apps/sites and

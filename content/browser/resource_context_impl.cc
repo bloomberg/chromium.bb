@@ -5,40 +5,18 @@
 #include "content/browser/resource_context_impl.h"
 
 #include "base/logging.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
-#include "content/browser/histogram_internals_request_job.h"
 #include "content/browser/host_zoom_map_impl.h"
-#include "content/browser/in_process_webkit/indexed_db_context_impl.h"
-#include "content/browser/net/view_blob_internals_job_factory.h"
-#include "content/browser/net/view_http_cache_job_factory.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
-#include "content/browser/tcmalloc_internals_request_job.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
-#include "content/public/common/url_constants.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "webkit/appcache/appcache_service.h"
-#include "webkit/appcache/view_appcache_internals_job.h"
-#include "webkit/blob/blob_data.h"
-#include "webkit/blob/blob_url_request_job_factory.h"
-#include "webkit/database/database_tracker.h"
-#include "webkit/fileapi/file_system_url_request_job_factory.h"
 
 // Key names on ResourceContext.
 static const char* kBlobStorageContextKeyName = "content_blob_storage_context";
 static const char* kHostZoomMapKeyName = "content_host_zoom_map";
 
-using appcache::AppCacheService;
 using base::UserDataAdapter;
-using fileapi::FileSystemContext;
-using webkit_blob::BlobStorageController;
-using webkit_database::DatabaseTracker;
 
 namespace content {
 
