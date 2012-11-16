@@ -72,6 +72,11 @@ IDirect3D9Ex* DXVAVideoDecodeAccelerator::d3d9_ = NULL;
                                log << ", HRESULT: 0x" << std::hex << result, \
                                error_code, ret);
 
+// Maximum number of iterations we allow before aborting the attempt to flush
+// the batched queries to the driver and allow torn/corrupt frames to be
+// rendered.
+enum { kMaxIterationsForD3DFlush = 10 };
+
 static IMFSample* CreateEmptySample() {
   base::win::ScopedComPtr<IMFSample> sample;
   HRESULT hr = MFCreateSample(sample.Receive());
@@ -236,6 +241,7 @@ linked_ptr<DXVAVideoDecodeAccelerator::DXVAPictureBuffer>
       D3DPOOL_DEFAULT,
       picture_buffer->decoding_texture_.Receive(),
       &share_handle);
+
   RETURN_ON_HR_FAILURE(hr, "Failed to create texture",
                        linked_ptr<DXVAPictureBuffer>(NULL));
   return picture_buffer;
@@ -324,16 +330,29 @@ bool DXVAVideoDecodeAccelerator::DXVAPictureBuffer::
   // the texture. Flush it once here though.
   hr = query_->Issue(D3DISSUE_END);
   RETURN_ON_HR_FAILURE(hr, "Failed to issue END", false);
-  do {
-    hr = query_->GetData(NULL, 0, D3DGETDATA_FLUSH);
-    if (hr == S_FALSE)
-      Sleep(1);  // Poor-man's Yield().
-  } while (hr == S_FALSE);
+
+  // The DXVA decoder has its own device which it uses for decoding. ANGLE
+  // has its own device which we don't have access to.
+  // The above code attempts to copy the decoded picture into a surface
+  // which is owned by ANGLE. As there are multiple devices involved in
+  // this, the StretchRect call above is not synchronous.
+  // We attempt to flush the batched operations to ensure that the picture is
+  // copied to the surface owned by ANGLE.
+  // We need to do this in a loop and call flush multiple times.
+  // We have seen the GetData call for flushing the command buffer fail to
+  // return success occassionally on multi core machines, leading to an
+  // infinite loop.
+  // Workaround is to have an upper limit of 10 on the number of iterations to
+  // wait for the Flush to finish.
+  int iterations = 0;
+  while ((query_->GetData(NULL, 0, D3DGETDATA_FLUSH) == S_FALSE) &&
+          ++iterations < kMaxIterationsForD3DFlush) {
+    Sleep(1);  // Poor-man's Yield().
+  }
   eglBindTexImage(
       static_cast<EGLDisplay*>(eglGetDisplay(EGL_DEFAULT_DISPLAY)),
       decoding_surface_,
       EGL_BACK_BUFFER);
-
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glBindTexture(GL_TEXTURE_2D, current_texture);
   return true;
@@ -415,7 +434,6 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
   // CopyOutputSampleDataToPictureBuffer).
   hr = query_->Issue(D3DISSUE_END);
   RETURN_ON_HR_FAILURE(hr, "Failed to issue END test query", false);
-
   return true;
 }
 
