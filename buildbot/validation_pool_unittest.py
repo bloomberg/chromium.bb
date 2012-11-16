@@ -26,6 +26,7 @@ from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
+from chromite.lib import git
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
 
@@ -876,8 +877,8 @@ class TestTreeStatus(cros_test_lib.MoxTestCase):
 
   def testTreeIsOpenAlwaysOnBranches(self):
     """Tests that we return True is the tree is open."""
-    self.mox.StubOutWithMock(cros_build_lib, 'GetChromiteTrackingBranch')
-    cros_build_lib.GetChromiteTrackingBranch().AndReturn('release-ooga-booga')
+    self.mox.StubOutWithMock(git, 'GetChromiteTrackingBranch')
+    git.GetChromiteTrackingBranch().AndReturn('release-ooga-booga')
     self.mox.ReplayAll()
     self.assertTrue(validation_pool.ValidationPool._IsTreeOpen(max_timeout=10))
 

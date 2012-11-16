@@ -15,6 +15,7 @@ import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import git
 from chromite.buildbot import remote_try
 from chromite.buildbot import repository
 from chromite.scripts import cbuildbot
@@ -43,7 +44,7 @@ class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
     return out_lines[0]
 
   def _GetNewestFile(self, dirname, basehash):
-    newhash = cros_build_lib.GetGitRepoRevision(dirname)
+    newhash = git.GetGitRepoRevision(dirname)
     self.assertNotEqual(basehash, newhash)
     cmd = ['git', 'log', '--format=%H', '%s..' % basehash]
     # Make sure we have a single commit.
@@ -55,7 +56,7 @@ class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
   def _SubmitJob(self, checkout_dir, job, version=None):
     """Returns the path to the tryjob description."""
     self.assertTrue(isinstance(job, RemoteTryJobMock))
-    basehash = cros_build_lib.GetGitRepoRevision(job.ssh_url)
+    basehash = git.GetGitRepoRevision(job.ssh_url)
     if version is not None:
       self._SetMirrorVersion(version)
     job.Submit(workdir=checkout_dir, dryrun=True)
@@ -87,14 +88,13 @@ class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
         continue
       # Get ourselves a working dir.
       tmp_repo = os.path.join(self.tempdir, 'tmp-repo')
-      cros_build_lib.RunGitCommand(self.tempdir, ['clone', path, tmp_repo])
+      git.RunGit(self.tempdir, ['clone', path, tmp_repo])
       vpath = os.path.join(tmp_repo, remote_try.RemoteTryJob.TRYJOB_FORMAT_FILE)
       with open(vpath, 'w') as f:
         f.write(str(version))
-      cros_build_lib.RunGitCommand(tmp_repo, ['add', vpath])
-      cros_build_lib.RunGitCommand(
-            tmp_repo, ['commit', '-m', 'setting version to %s' % version])
-      cros_build_lib.RunGitCommand(tmp_repo, ['push', path, 'master:master'])
+      git.RunGit(tmp_repo, ['add', vpath])
+      git.RunGit(tmp_repo, ['commit', '-m', 'setting version to %s' % version])
+      git.RunGit(tmp_repo, ['push', path, 'master:master'])
       shutil.rmtree(tmp_repo)
 
   def _CreateJob(self, mirror=True):

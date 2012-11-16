@@ -25,8 +25,8 @@ import time
 
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
-from chromite.lib import cros_build_lib
 from chromite.lib import gclient
+from chromite.lib import git
 from chromite.lib.cros_build_lib import RunCommand, Info, Warning
 from chromite.scripts import cros_mark_as_stable
 
@@ -484,7 +484,7 @@ def main(argv):
     Info('No stable candidate found.')
 
   tracking_branch = 'remotes/m/%s' % os.path.basename(options.tracking_branch)
-  existing_branch = cros_build_lib.GetCurrentBranch(overlay_dir)
+  existing_branch = git.GetCurrentBranch(overlay_dir)
   work_branch = cros_mark_as_stable.GitBranch(constants.STABLE_EBUILD_BRANCH,
                                               tracking_branch, overlay_dir)
   work_branch.CreateBranch()

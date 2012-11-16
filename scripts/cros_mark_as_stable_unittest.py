@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import git
 from chromite.scripts import cros_mark_as_stable
 
 
@@ -30,17 +31,17 @@ class NonClassTests(cros_test_lib.MoxTestCase):
     self.mox.StubOutWithMock(cros_mark_as_stable, '_DoWeHaveLocalCommits')
     self.mox.StubOutWithMock(cros_mark_as_stable.GitBranch, 'CreateBranch')
     self.mox.StubOutWithMock(cros_mark_as_stable.GitBranch, 'Exists')
-    self.mox.StubOutWithMock(cros_build_lib, 'GitPushWithRetry')
-    self.mox.StubOutWithMock(cros_build_lib, 'GetTrackingBranch')
-    self.mox.StubOutWithMock(cros_build_lib, 'SyncPushBranch')
-    self.mox.StubOutWithMock(cros_build_lib, 'CreatePushBranch')
-    self.mox.StubOutWithMock(cros_build_lib, 'RunGitCommand')
+    self.mox.StubOutWithMock(git, 'PushWithRetry')
+    self.mox.StubOutWithMock(git, 'GetTrackingBranch')
+    self.mox.StubOutWithMock(git, 'SyncPushBranch')
+    self.mox.StubOutWithMock(git, 'CreatePushBranch')
+    self.mox.StubOutWithMock(git, 'RunGit')
 
     cros_mark_as_stable._DoWeHaveLocalCommits(
         self._branch, self._target_manifest_branch, '.').AndReturn(True)
-    cros_build_lib.GetTrackingBranch('.', for_push=True).AndReturn(
+    git.GetTrackingBranch('.', for_push=True).AndReturn(
         ['gerrit', 'refs/remotes/gerrit/master'])
-    cros_build_lib.SyncPushBranch('.', 'gerrit', 'refs/remotes/gerrit/master')
+    git.SyncPushBranch('.', 'gerrit', 'refs/remotes/gerrit/master')
     cros_mark_as_stable._DoWeHaveLocalCommits(
         self._branch, 'refs/remotes/gerrit/master', '.').AndReturn(True)
     result = cros_build_lib.CommandResult(output=git_log)
@@ -48,11 +49,11 @@ class NonClassTests(cros_test_lib.MoxTestCase):
         ['git', 'log', '--format=format:%s%n%n%b',
          'refs/remotes/gerrit/master..%s' % self._branch],
         cwd='.').AndReturn(result)
-    cros_build_lib.CreatePushBranch('merge_branch', '.')
-    cros_build_lib.RunGitCommand('.', ['merge', '--squash', self._branch])
-    cros_build_lib.RunGitCommand('.', ['commit', '-m', fake_description])
-    cros_build_lib.RunGitCommand('.', ['config', 'push.default', 'tracking'])
-    cros_build_lib.GitPushWithRetry('merge_branch', '.', dryrun=False)
+    git.CreatePushBranch('merge_branch', '.')
+    git.RunGit('.', ['merge', '--squash', self._branch])
+    git.RunGit('.', ['commit', '-m', fake_description])
+    git.RunGit('.', ['config', 'push.default', 'tracking'])
+    git.PushWithRetry('merge_branch', '.', dryrun=False)
     self.mox.ReplayAll()
     cros_mark_as_stable.PushChange(self._branch, self._target_manifest_branch,
                                    False, '.')

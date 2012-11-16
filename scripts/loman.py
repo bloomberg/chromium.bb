@@ -11,6 +11,7 @@ import os
 import sys
 import xml.etree.ElementTree as ElementTree
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 
 
 class Manifest(object):
@@ -157,7 +158,7 @@ def main(argv):
                     "checkout utilizing manifest groups.")
   (options, args) = parser.parse_args(argv)
 
-  repo_dir = cros_build_lib.FindRepoDir()
+  repo_dir = git.FindRepoDir()
   if not repo_dir:
     parser.error("This script must be invoked from within a repository "
                  "checkout.")
@@ -210,9 +211,9 @@ def main(argv):
 
   revision = options.revision
   if revision is not None:
-    if (not cros_build_lib.IsRefsTags(revision) and
-        not cros_build_lib.IsSHA1(revision)):
-      revision = cros_build_lib.StripLeadingRefsHeads(revision, False)
+    if (not git.IsRefsTags(revision) and
+        not git.IsSHA1(revision)):
+      revision = git.StripRefsHeads(revision, False)
 
   main_manifest = Manifest.FromPath(options.manifest_sym_path,
                                     empty_if_missing=False)

@@ -18,6 +18,7 @@ from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import constants
 from chromite.buildbot import manifest_version
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 
 
 # Paladin constants for manifest names.
@@ -278,8 +279,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
               latest, chrome_branch=version_info.chrome_branch,
               incr_type=self.incr_type)
 
-        cros_build_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
-                                        self.manifest_dir, sync=False)
+        git.CreatePushBranch(manifest_version.PUSH_BRANCH, self.manifest_dir,
+                             sync=False)
         version = self.GetNextVersion(version_info)
         self.PublishManifest(new_manifest, version)
         self.current_version = version
@@ -314,8 +315,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         self.RefreshManifestCheckout()
         self.InitializeManifestVariables(version_info)
 
-        cros_build_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
-                                        self.manifest_dir, sync=False)
+        git.CreatePushBranch(manifest_version.PUSH_BRANCH, self.manifest_dir,
+                             sync=False)
         version = os.path.splitext(os.path.basename(manifest))[0]
         self.PublishManifest(new_manifest, version)
         self.SetInFlight(version)
@@ -418,7 +419,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       try:
         if attempt > 0:
           self.RefreshManifestCheckout()
-        cros_build_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
+        git.CreatePushBranch(manifest_version.PUSH_BRANCH,
                                         self.manifest_dir, sync=False)
         manifest_version.CreateSymlink(path_to_candidate, self.lkgm_path)
         cros_build_lib.RunCommand(['git', 'add', self.LKGM_PATH],
@@ -455,7 +456,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                    'for this build type.')
       return
 
-    handler = cros_build_lib.Manifest(self.lkgm_path)
+    handler = git.Manifest(self.lkgm_path)
     reviewed_on_re = re.compile('\s*Reviewed-on:\s*(\S+)')
     author_re = re.compile('\s*Author:.*<(\S+)@\S+>\s*')
     committer_re = re.compile('\s*Commit:.*<(\S+)@\S+>\s*')

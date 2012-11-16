@@ -17,6 +17,7 @@ import time
 
 from chromite.buildbot import constants, repository
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 
@@ -57,8 +58,8 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
         result.output.rstrip() == manifest_repo):
       logging.info('Updating manifest-versions checkout.')
       try:
-        cros_build_lib.RunGitCommand(manifest_dir, ['gc', '--auto'])
-        cros_build_lib.GitCleanAndCheckoutUpstream(manifest_dir)
+        git.RunGit(manifest_dir, ['gc', '--auto'])
+        git.CleanAndCheckoutUpstream(manifest_dir)
       except cros_build_lib.RunCommandError:
         logging.warning('Could not update manifest-versions checkout.')
       else:
@@ -80,14 +81,14 @@ def _PushGitChanges(git_repo, message, dry_run=True):
     message: Commit message
     dry_run: If true, don't actually push changes to the server
   """
-  remote, push_branch = cros_build_lib.GetTrackingBranch(
+  remote, push_branch = git.GetTrackingBranch(
       git_repo, for_checkout=False, for_push=True)
-  cros_build_lib.RunGitCommand(git_repo, ['add', '-A'])
+  git.RunGit(git_repo, ['add', '-A'])
 
   # It's possible that while we are running on dry_run, someone has already
   # committed our change.
   try:
-    cros_build_lib.RunGitCommand(git_repo, ['commit', '-m', message])
+    git.RunGit(git_repo, ['commit', '-m', message])
   except cros_build_lib.RunCommandError:
     if dry_run:
       return
@@ -97,7 +98,7 @@ def _PushGitChanges(git_repo, message, dry_run=True):
   if dry_run:
     push_cmd.extend(['--dry-run', '--force'])
 
-  cros_build_lib.RunGitCommand(git_repo, push_cmd)
+  git.RunGit(git_repo, push_cmd)
 
 
 def _RemoveDirs(dir_name):
@@ -273,7 +274,7 @@ class VersionInfo(object):
     repo_dir = os.path.dirname(self.version_file)
 
     try:
-      cros_build_lib.CreatePushBranch(PUSH_BRANCH, repo_dir)
+      git.CreatePushBranch(PUSH_BRANCH, repo_dir)
 
       shutil.copyfile(temp_file, self.version_file)
       os.unlink(temp_file)
@@ -282,7 +283,7 @@ class VersionInfo(object):
     finally:
       # Update to the remote version that contains our changes. This is needed
       # to ensure that we don't build a release using a local commit.
-      cros_build_lib.GitCleanAndCheckoutUpstream(repo_dir)
+      git.CleanAndCheckoutUpstream(repo_dir)
 
     return self.VersionString()
 
@@ -613,8 +614,7 @@ class BuildSpecsManager(object):
         if self.latest_unprocessed:
           version = self.latest_unprocessed
         else:
-          cros_build_lib.CreatePushBranch(PUSH_BRANCH, self.manifest_dir,
-                                          sync=False)
+          git.CreatePushBranch(PUSH_BRANCH, self.manifest_dir, sync=False)
           version = self.GetNextVersion(version_info)
           new_manifest = self.CreateManifest()
           self.PublishManifest(new_manifest, version)
@@ -713,8 +713,7 @@ class BuildSpecsManager(object):
     for index in range(0, retries + 1):
       try:
         self.RefreshManifestCheckout()
-        cros_build_lib.CreatePushBranch(PUSH_BRANCH, self.manifest_dir,
-                                        sync=False)
+        git.CreatePushBranch(PUSH_BRANCH, self.manifest_dir, sync=False)
         commit_message = ('Automatic checkin: status=%s build_version %s for '
                           '%s' % (BuilderStatus.GetCompletedStatus(success),
                                   self.current_version,

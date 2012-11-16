@@ -14,6 +14,7 @@ import shutil
 
 from chromite.buildbot import configure_repo
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import rewrite_git_alternates
 
@@ -62,7 +63,7 @@ def IsARepoRoot(directory):
 def IsInternalRepoCheckout(root):
   """Returns whether root houses an internal 'repo' checkout."""
   manifest_dir = os.path.join(root, '.repo', 'manifests')
-  manifest_url = cros_build_lib.RunGitCommand(
+  manifest_url = git.RunGit(
       manifest_dir, ['config', 'remote.origin.url']).output.strip()
   return (os.path.splitext(os.path.basename(manifest_url))[0]
           == os.path.splitext(os.path.basename(constants.MANIFEST_INT_URL))[0])
@@ -266,7 +267,7 @@ class RepoRepository(object):
     if post_sync:
       chroot_path = os.path.join(self._referenced_repo, '.repo', 'chroot',
                                  'external')
-      chroot_path = cros_build_lib.ReinterpretPathForChroot(chroot_path)
+      chroot_path = git.ReinterpretPathForChroot(chroot_path)
       rewrite_git_alternates.RebuildRepoCheckout(
           self.directory, self._referenced_repo, chroot_path)
 
@@ -328,7 +329,7 @@ class RepoRepository(object):
       try:
         cros_build_lib.RunCommand(cmd + ['-l'], cwd=self.directory)
       except cros_build_lib.RunCommandError:
-        manifest = cros_build_lib.ManifestCheckout.Cached(self.directory)
+        manifest = git.ManifestCheckout.Cached(self.directory)
         targets = set(project['path'].split('/', 1)[0]
                       for project in manifest.projects.itervalues())
         if not targets:
@@ -375,7 +376,7 @@ class RepoRepository(object):
     # Increment it all...
     data.update((k, v + 1) for k, v in data.iteritems())
     # Zero out what is now used.
-    projects = cros_build_lib.ManifestCheckout.Cached(self.directory).projects
+    projects = git.ManifestCheckout.Cached(self.directory).projects
     data.update(('%s.git' % x['path'], 0) for x in projects.itervalues())
 
     # Finally... wipe anything that's greater than our threshold.
@@ -413,9 +414,8 @@ class RepoRepository(object):
 
     if not mark_revision:
       return output
-    modified = cros_build_lib.RunGitCommand(
-        os.path.join(self.directory, '.repo/manifests'),
-        ['rev-list', '-n1', 'HEAD'])
+    modified = git.RunGit(os.path.join(self.directory, '.repo/manifests'),
+                          ['rev-list', '-n1', 'HEAD'])
     assert modified.output
     return output.replace("<manifest>", '<manifest revision="%s">' %
                           modified.output.strip())

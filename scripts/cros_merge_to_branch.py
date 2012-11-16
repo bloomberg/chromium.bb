@@ -45,6 +45,7 @@ from chromite.buildbot import repository
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gerrit
+from chromite.lib import git
 from chromite.lib import patch as cros_patch
 
 
@@ -88,7 +89,7 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
   patch.CherryPick(work_dir, inflight=True, leave_dirty=True)
 
   # Get the new sha1 after apply.
-  new_sha1 = cros_build_lib.GetGitRepoRevision(work_dir)
+  new_sha1 = git.GetGitRepoRevision(work_dir)
 
   # Create and use a LocalPatch to Upload the change to Gerrit.
   local_patch = cros_patch.LocalPatch(
@@ -112,22 +113,21 @@ def _SetupWorkDirectoryForPatch(work_dir, patch, branch, manifest, email):
                              manifest.GetProjectPath(patch.project))
     # Use the email if email wasn't specified.
     if not email:
-      email = cros_build_lib.GetProjectUserEmail(reference)
+      email = git.GetProjectUserEmail(reference)
 
   repository.CloneGitRepo(work_dir, patch.project_url, reference=reference)
 
   # Set the git committer.
-  cros_build_lib.RunGitCommand(work_dir,
-                               ['config', '--replace-all', 'user.email', email])
+  git.RunGit(work_dir, ['config', '--replace-all', 'user.email', email])
 
-  mbranch = cros_build_lib.GitMatchSingleBranchName(
+  mbranch = git.MatchSingleBranchName(
       work_dir, branch, namespace='refs/remotes/origin/')
   logging.info('Auto resolved branch name "%s" to "%s"' % (branch, mbranch))
   branch = mbranch
 
   # Finally, create a local branch for uploading changes to the given remote
   # branch.
-  cros_build_lib.CreatePushBranch(
+  git.CreatePushBranch(
       constants.PATCH_BRANCH, work_dir, sync=False,
       remote_push_branch=('ignore', 'origin/%s' % branch))
 
@@ -138,7 +138,7 @@ def _ManifestContainsAllPatches(manifest, patches):
   """Returns true if the given manifest contains all the patches.
 
   Args:
-    manifest - an instance of cros_build_lib.Manifest
+    manifest - an instance of git.Manifest
     patches - a collection GerritPatch objects.
   """
   for patch in patches:
@@ -174,7 +174,7 @@ def main(argv):
   # both email addresses and for using your checkout as a git mirror.
   manifest = None
   if options.mirror:
-    manifest = cros_build_lib.ManifestCheckout.Cached(constants.SOURCE_ROOT)
+    manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
     if not _ManifestContainsAllPatches(manifest, patches):
       return 1
   else:
@@ -204,7 +204,7 @@ def main(argv):
         logging.info('  URL: %s', url)
 
   except (cros_build_lib.RunCommandError, cros_patch.ApplyPatchException,
-          cros_build_lib.AmbiguousBranchName) as e:
+          git.AmbiguousBranchName) as e:
     # Tell the user how far we got.
     good_changes = changes[:index]
     bad_changes = changes[index:]

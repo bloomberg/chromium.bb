@@ -21,6 +21,7 @@ from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch
 
@@ -104,7 +105,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     return tmp_manifest
 
   def setUp(self):
-    self.mox.StubOutWithMock(cros_build_lib, 'CreatePushBranch')
+    self.mox.StubOutWithMock(git, 'CreatePushBranch')
 
     self.source_repo = 'ssh://source/repo'
     self.manifest_repo = 'ssh://manifest/repo'
@@ -167,8 +168,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
 
     # Do manifest refresh work.
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    cros_build_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(),
-                                    sync=False)
+    git.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
@@ -208,8 +208,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
-    cros_build_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(),
-                                    sync=False)
+    git.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
 
     # Publish new candidate.
     lkgm_manager.LKGMManager.PublishManifest(new_manifest, version)
@@ -419,7 +418,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotLink')
 
     fake_revision = '1234567890'
-    fake_project_handler = self.mox.CreateMock(cros_build_lib.Manifest)
+    fake_project_handler = self.mox.CreateMock(git.Manifest)
     fake_project_handler.projects = { 'fake/repo': { 'name': 'fake/repo',
                                                      'path': 'fake/path',
                                                      'revision': fake_revision,
@@ -428,9 +427,9 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     fake_result = self.mox.CreateMock(cros_build_lib.CommandResult)
     fake_result.output = fake_git_log
 
-    self.mox.StubOutWithMock(cros_build_lib, 'Manifest', use_mock_anything=True)
+    self.mox.StubOutWithMock(git, 'Manifest', use_mock_anything=True)
 
-    cros_build_lib.Manifest(
+    git.Manifest(
         self.tmpmandir + '/LKGM/lkgm.xml').AndReturn(fake_project_handler)
     os.path.exists(mox.StrContains('fake/path')).AndReturn(True)
     cros_build_lib.RunCommand(['git', 'log', '--pretty=full',

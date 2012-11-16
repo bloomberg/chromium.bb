@@ -19,6 +19,7 @@ if __name__ == '__main__':
 from chromite.buildbot import repository
 from chromite.buildbot import manifest_version
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 
 
 class ChromiteUpgradeNeeded(Exception):
@@ -63,7 +64,7 @@ class RemoteTryJob(object):
     self.options = options
     self.user = getpass.getuser()
     cwd = os.path.dirname(os.path.realpath(__file__))
-    self.user_email = cros_build_lib.GetProjectUserEmail(cwd)
+    self.user_email = git.GetProjectUserEmail(cwd)
     cros_build_lib.Info('Using email:%s', self.user_email)
     # Name of the job that appears on the waterfall.
     patch_list = options.gerrit_patches + options.local_patches
@@ -88,7 +89,7 @@ class RemoteTryJob(object):
     self.ssh_url = self.EXT_SSH_URL
     self.manifest = None
     if repository.IsARepoRoot(options.sourceroot):
-      self.manifest = cros_build_lib.ManifestCheckout.Cached(options.sourceroot)
+      self.manifest = git.ManifestCheckout.Cached(options.sourceroot)
       if repository.IsInternalRepoCheckout(options.sourceroot):
         self.ssh_url = self.INT_SSH_URL
 
@@ -123,7 +124,7 @@ class RemoteTryJob(object):
     for patch in self.local_patches:
       # Isolate the name; if it's a tag or a remote, let through.
       # Else if it's a branch, get the full branch name minus refs/heads.
-      local_branch = cros_build_lib.StripLeadingRefsHeads(patch.ref, False)
+      local_branch = git.StripRefsHeads(patch.ref, False)
       ref_final = os.path.join(ref_base, local_branch, patch.sha1)
 
       self.manifest.AssertProjectIsPushable(patch.project)
@@ -141,8 +142,8 @@ class RemoteTryJob(object):
 
     push_branch = manifest_version.PUSH_BRANCH
     remote_branch = ('origin', 'refs/remotes/origin/test') if testjob else None
-    cros_build_lib.CreatePushBranch(push_branch, self.tryjob_repo, sync=False,
-                                    remote_push_branch=remote_branch)
+    git.CreatePushBranch(push_branch, self.tryjob_repo, sync=False,
+                         remote_push_branch=remote_branch)
 
     file_name = '%s.%s' % (self.user,
                            current_time)
@@ -166,7 +167,7 @@ class RemoteTryJob(object):
                               cwd=self.tryjob_repo, extra_env=extra_env)
 
     try:
-      cros_build_lib.GitPushWithRetry(
+      git.PushWithRetry(
           push_branch, self.tryjob_repo, retries=3, dryrun=dryrun)
     except cros_build_lib.RunCommandError:
       cros_build_lib.Error(

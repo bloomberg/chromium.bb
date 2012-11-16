@@ -11,6 +11,7 @@ import re
 
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 
 _MAXIMUM_GERRIT_NUMBER_LENGTH = 6
 
@@ -244,7 +245,7 @@ def FormatChangeId(text, force_internal=False, force_external=False,
 
   # Drop the leading I.
   text = text[1:].lower()
-  if not cros_build_lib.IsSHA1(text, False):
+  if not git.IsSHA1(text, False):
     raise ValueError("FormatChangeId invoked w/ a non hex ChangeId value: %s"
                      % original_text)
 
@@ -287,7 +288,7 @@ def FormatSha1(text, force_internal=False, force_external=False, strict=False):
       prefix = '*'
     text = text[1:]
 
-  if not cros_build_lib.IsSHA1(text):
+  if not git.IsSHA1(text):
     raise ValueError("FormatSha1 invoked w/ a malformed value: %r "
                      % (original_text,))
 
@@ -487,7 +488,7 @@ class GitRepoPatch(object):
       return self.sha1
 
     def _PullData(rev):
-      ret = cros_build_lib.RunGitCommand(
+      ret = git.RunGit(
           git_repo, ['log', '--pretty=format:%H%x00%s%x00%B', '-n1', rev],
           error_code_ok=True)
       if ret.returncode != 0:
@@ -509,8 +510,7 @@ class GitRepoPatch(object):
         self._is_fetched.add(git_repo)
         return self.sha1
 
-    cros_build_lib.RunGitCommand(
-        git_repo, ['fetch', self.project_url, self.ref])
+    git.RunGit(git_repo, ['fetch', self.project_url, self.ref])
 
     sha1, subject, msg = _PullData('FETCH_HEAD')
     sha1 = FormatSha1(sha1, strict=True)
@@ -548,9 +548,8 @@ class GitRepoPatch(object):
     self.Fetch(git_repo)
 
     try:
-      lines = cros_build_lib.RunGitCommand(
-          git_repo, ['diff', '--no-renames', '--name-status',
-                     '%s^..%s' % (self.sha1, self.sha1)])
+      lines = git.RunGit(git_repo, ['diff', '--no-renames', '--name-status',
+                                    '%s^..%s' % (self.sha1, self.sha1)])
     except cros_build_lib.RunCommandError, e:
       # If we get a 128, that means git couldn't find the the parent of our
       # sha1- meaning we're the first commit in the repository (there is no
@@ -583,7 +582,7 @@ class GitRepoPatch(object):
 
     reset_target = None if leave_dirty else 'HEAD'
     try:
-      cros_build_lib.RunGitCommand(git_repo, cmd)
+      git.RunGit(git_repo, cmd)
       reset_target = None
       return
     except cros_build_lib.RunCommandError, error:
@@ -600,8 +599,7 @@ class GitRepoPatch(object):
         # This means merge resolution was fine, but there was content conflicts.
         # If there are no conflicts, then this is caused by the change already
         # being merged.
-        result = cros_build_lib.RunGitCommand(
-            git_repo, ['status', '--porcelain'])
+        result = git.RunGit(git_repo, ['status', '--porcelain'])
 
         # Porcelain format is line per file, first two chars are the status
         # code, then a space, then the filename.
@@ -635,8 +633,8 @@ class GitRepoPatch(object):
       raise ApplyPatchException(self, trivial=True, inflight=inflight)
     finally:
       if reset_target is not None:
-        cros_build_lib.RunGitCommand(
-            git_repo, ['reset', '--hard', reset_target], error_code_ok=True)
+        git.RunGit(git_repo, ['reset', '--hard', reset_target],
+                   error_code_ok=True)
 
   def Apply(self, git_repo, upstream, trivial=False):
     """Apply patch into a standalone git repo.
@@ -653,17 +651,15 @@ class GitRepoPatch(object):
 
     logging.info('Attempting to cherry-pick change %s', self)
 
-    if not cros_build_lib.DoesLocalBranchExist(git_repo,
-                                               constants.PATCH_BRANCH):
+    if not git.DoesLocalBranchExist(git_repo, constants.PATCH_BRANCH):
       cmd = ['checkout', '-b', constants.PATCH_BRANCH, '-t', upstream]
-      cros_build_lib.RunGitCommand(git_repo, cmd)
+      git.RunGit(git_repo, cmd)
       inflight = False
     else:
       # Figure out if we're inflight.
       upstream, head = [
-        cros_build_lib.RunGitCommand(
-            git_repo, ['rev-list', '-n1', x]).output.strip()
-        for x in (upstream, 'HEAD')]
+          git.RunGit(git_repo, ['rev-list', '-n1', x]).output.strip()
+          for x in (upstream, 'HEAD')]
       inflight = (head != upstream)
 
     # Run appropriate sanity checks.
@@ -677,8 +673,7 @@ class GitRepoPatch(object):
     except ApplyPatchException:
       if not inflight:
         raise
-      cros_build_lib.RunGitCommand(
-          git_repo, ['checkout', '-f', '--detach', upstream])
+      git.RunGit(git_repo, ['checkout', '-f', '--detach', upstream])
 
       self.CherryPick(git_repo, trivial=trivial, inflight=False)
       # Making it here means that it was an inflight issue; throw the original.
@@ -686,9 +681,8 @@ class GitRepoPatch(object):
     finally:
       # Ensure we're on the correct branch on the way out.
       if do_checkout:
-        cros_build_lib.RunGitCommand(
-            git_repo, ['checkout', '-f', constants.PATCH_BRANCH],
-            error_code_ok=True)
+        git.RunGit(git_repo, ['checkout', '-f', constants.PATCH_BRANCH],
+                   error_code_ok=True)
 
   def ApplyAgainstManifest(self, manifest, trivial=False):
     """Applies the patch against the specified manifest.
@@ -721,7 +715,7 @@ class GitRepoPatch(object):
     rev = self.Fetch(git_repo)
 
     try:
-      return_obj = cros_build_lib.RunGitCommand(
+      return_obj = git.RunGit(
           git_repo, ['log', '-z', '-n1', '--pretty=format:%H%n%B',
                      '%s..%s^' % (upstream, rev)])
     except cros_build_lib.RunCommandError, e:
@@ -732,8 +726,7 @@ class GitRepoPatch(object):
       # that actual rev, etc), or... this is the first commit in a repository.
       # The following code checks for that, raising the original
       # exception if not.
-      result = cros_build_lib.RunGitCommand(git_repo,
-                                            ['rev-list', '-n2', rev])
+      result = git.RunGit(git_repo, ['rev-list', '-n2', rev])
       if len(result.output.split()) != 1:
         raise
       # First commit of a repository; obviously, it has no dependencies.
@@ -893,11 +886,9 @@ class GitRepoPatch(object):
 
     # Note the output of this ls-tree invocation is filename per line;
     # basically equivalent to ls -1.
-    conflicts = cros_build_lib.RunGitCommand(
-        git_repo,
-        ['ls-tree', '--full-name', '--name-only', '-z', tree_revision,
-         '--'] + targets,
-        error_code_ok=True).output.split('\0')[:-1]
+    conflicts = git.RunGit(
+        git_repo, ['ls-tree', '--full-name', '--name-only', '-z', tree_revision,
+                   '--'] + targets, error_code_ok=True).output.split('\0')[:-1]
 
     return conflicts
 
@@ -945,8 +936,7 @@ class LocalPatch(GitRepoPatch):
     fields = hash_fields + transfer_fields
 
     format_string = '%n'.join([code for _, code in fields] + ['%B'])
-    result = cros_build_lib.RunGitCommand(
-        self.project_url,
+    result = git.RunGit(self.project_url,
         ['log', '--format=%s' % format_string, '-n1', self.sha1])
     lines = result.output.splitlines()
     field_value = dict(zip([name for name, _ in fields],
@@ -968,7 +958,7 @@ class LocalPatch(GitRepoPatch):
     extra_env['GIT_COMMITTER_DATE'] = str(
         int(extra_env["GIT_COMMITER_DATE"]) - 1)
 
-    result = cros_build_lib.RunGitCommand(
+    result = git.RunGit(
         self.project_url,
         ['commit-tree', field_value['tree_hash'], '-p',
          field_value['parent_hash']],
@@ -1003,8 +993,7 @@ class LocalPatch(GitRepoPatch):
     if dryrun:
       cmd.append('--dry-run')
 
-    lines = cros_build_lib.RunGitCommand(self.project_url,
-                                         cmd).error.splitlines()
+    lines = git.RunGit(self.project_url, cmd).error.splitlines()
     urls = []
     for num, line in enumerate(lines):
       # Look for output like:
@@ -1170,7 +1159,7 @@ def GeneratePatchesFromRepo(git_repo, project, tracking_branch, branch,
   if starting_ref is None:
     starting_ref = branch
 
-  result = cros_build_lib.RunGitCommand(
+  result = git.RunGit(
       git_repo, ['rev-list', '%s..%s' % (tracking_branch, starting_ref)])
 
   sha1s = result.output.splitlines()

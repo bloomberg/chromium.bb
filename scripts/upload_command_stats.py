@@ -14,6 +14,7 @@ import urllib
 import urllib2
 
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 
 # To test with an app engine instance on localhost, set envvar
 # export CROS_BUILD_STATS_SITE="http://localhost:8080"
@@ -106,7 +107,7 @@ def UploadConditionsMet():
 
   # Verify that git user email is from chromium.org or google.com.
   cwd = os.path.dirname(os.path.realpath(__file__))
-  git_id = cros_build_lib.GetProjectUserEmail(cwd)
+  git_id = git.GetProjectUserEmail(cwd)
   if not git_id:
     logging.warning('Unable to determine current "git id".  Skipping stats'
                     ' upload.')

@@ -22,6 +22,7 @@ from chromite.buildbot import lkgm_manager
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import gerrit
+from chromite.lib import git
 from chromite.lib import patch as cros_patch
 
 _BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
@@ -230,7 +231,7 @@ class PatchSeries(object):
       gerrit: If True, give the shortened form; no refs/heads, no refs/remotes.
     """
     ref = self.manifest.GetProjectsLocalRevision(change.project)
-    return cros_build_lib.StripLeadingRefs(ref) if for_gerrit else ref
+    return git.StripRefs(ref) if for_gerrit else ref
 
   def GetGitRepoForChange(self, change):
     return self.manifest.GetProjectPath(change.project, True)
@@ -494,7 +495,7 @@ class PatchSeries(object):
           raise ValueError("manifest can't be specified when one is forced "
                            "via __init__")
       elif wipe:
-        manifest = cros_build_lib.ManifestCheckout.Cached(self._path)
+        manifest = git.ManifestCheckout.Cached(self._path)
       else:
         manifest = self.manifest
 
@@ -638,11 +639,11 @@ class PatchSeries(object):
     project_state = set(map(self.GetGitRepoForChange, commits))
     resets, checkouts = [], []
     for project_dir in project_state:
-      current_sha1 = cros_build_lib.RunGitCommand(
+      current_sha1 = git.RunGit(
           project_dir, ['rev-list', '-n1', 'HEAD']).output.strip()
       assert current_sha1
 
-      result = cros_build_lib.RunGitCommand(
+      result = git.RunGit(
           project_dir, ['symbolic-ref', 'HEAD'], error_code_ok=True)
       if result.returncode == 128: # Detached HEAD.
         checkouts.append((project_dir, current_sha1))
@@ -671,10 +672,10 @@ class PatchSeries(object):
       logging.info("Rewinding transaction: failed changes: %s .",
                    ', '.join(map(str, commits)))
       for project_dir, ref in checkouts:
-        cros_build_lib.RunGitCommand(project_dir, ['checkout', ref])
+        git.RunGit(project_dir, ['checkout', ref])
 
       for project_dir, sha1 in resets:
-        cros_build_lib.RunGitCommand(project_dir, ['reset', '--hard', sha1])
+        git.RunGit(project_dir, ['reset', '--hard', sha1])
 
       self._committed_cache = committed_cache
       raise
@@ -941,7 +942,7 @@ class ValidationPool(object):
     If a caller is not interested in this feature they should set |max_timeout|
     to 0.
     """
-    if cros_build_lib.GetChromiteTrackingBranch() != 'master':
+    if git.GetChromiteTrackingBranch() != 'master':
       cros_build_lib.Info('Not checking tree status as not tracking master.')
       return True
 
@@ -1032,7 +1033,7 @@ class ValidationPool(object):
         raw_changes.reverse()
 
         changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
-            raw_changes, cros_build_lib.ManifestCheckout.Cached(build_root))
+            raw_changes, git.ManifestCheckout.Cached(build_root))
         pool.changes.extend(changes)
         pool.non_manifest_changes.extend(non_manifest_changes)
 

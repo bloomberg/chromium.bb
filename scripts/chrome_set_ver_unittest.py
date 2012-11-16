@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import git
 from chromite.scripts import chrome_set_ver
 
 
@@ -41,7 +42,7 @@ class DEPSFileTest(cros_test_lib.MoxTempDirTestCase):
     assert(os.path.exists(self.repo_root))
 
     os.chdir(self.repo_root)
-    repo_root = cros_build_lib.FindRepoDir()
+    repo_root = git.FindRepoDir()
     assert(os.path.realpath(os.path.dirname(repo_root)) == self.repo_root)
 
 
@@ -63,7 +64,7 @@ class DEPSFileTest(cros_test_lib.MoxTempDirTestCase):
 
     for repo, revision in repos.iteritems():
       repo_path = os.path.join(self.repo_root, 'chromium', 'src', repo)
-      self.assertTrue(cros_build_lib.GetGitRepoRevision(repo_path) == revision)
+      self.assertTrue(git.GetGitRepoRevision(repo_path) == revision)
 
 
   def testParseAndRunDEPSFileNoHooks(self):
@@ -99,7 +100,7 @@ class DEPSFileTest(cros_test_lib.MoxTempDirTestCase):
 
     for repo, revision in repos.iteritems():
       repo_path = os.path.join(self.repo_root, 'chromium', 'src', repo)
-      self.assertTrue(cros_build_lib.GetGitRepoRevision(repo_path) == revision)
+      self.assertTrue(git.GetGitRepoRevision(repo_path) == revision)
 
   def testErrorOnOverlap(self):
     """Test that an overlapping entry in unix deps causes error."""
@@ -133,7 +134,7 @@ class DEPSFileTest(cros_test_lib.MoxTempDirTestCase):
     chrome_set_ver.main(['-d',
                          os.path.join(self.test_base, 'test_6/DEPS.git')])
     repo_path = os.path.join(self.repo_root, 'chromium/src/does_not_exist')
-    self.assertTrue(cros_build_lib.GetGitRepoRevision(repo_path) ==
+    self.assertTrue(git.GetGitRepoRevision(repo_path) ==
                     '8d35063e1836c79c9ef97bf81eb43f450dc111ac')
 
   def testProjectThatWeManageNowInManifest(self):

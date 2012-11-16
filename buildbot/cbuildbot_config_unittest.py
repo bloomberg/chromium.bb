@@ -16,8 +16,8 @@ import urllib
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot_config
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import git
 
 CHROMIUM_WATCHING_URL = ("http://src.chromium.org/viewvc/" +
     "chrome/trunk/tools/build/masters/" +
@@ -250,7 +250,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
 
   def testFactoryFirmwareValidity(self):
     """Ensures that firmware/factory branches have at least 1 valid name."""
-    tracking_branch = cros_build_lib.GetChromiteTrackingBranch()
+    tracking_branch = git.GetChromiteTrackingBranch()
     for branch in ['firmware', 'factory']:
       if tracking_branch.startswith(branch):
         saw_config_for_branch = False

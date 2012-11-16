@@ -20,6 +20,7 @@ from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import gclient
+from chromite.lib import git
 from chromite.lib import locking
 from chromite.lib import osutils
 
@@ -82,7 +83,7 @@ def _RunBuildScript(buildroot, cmd, capture_output=False, **kwargs):
       kwargs['extra_env'] = (kwargs.get('extra_env') or {}).copy()
       status_file = stack.Add(tempfile.NamedTemporaryFile, dir=chroot_tmp)
       kwargs['extra_env']['PARALLEL_EMERGE_STATUS_FILE'] = \
-          cros_build_lib.ReinterpretPathForChroot(status_file.name)
+          git.ReinterpretPathForChroot(status_file.name)
 
     try:
       if capture_output:
@@ -143,7 +144,7 @@ def BuildRootGitCleanup(buildroot, debug_run):
         return
 
       try:
-        cros_build_lib.GitCleanAndCheckoutUpstream(cwd, False)
+        git.CleanAndCheckoutUpstream(cwd, False)
       except cros_build_lib.RunCommandError, e:
         result = e.result
         logging.warn('\n%s', result.output)
@@ -164,13 +165,12 @@ def BuildRootGitCleanup(buildroot, debug_run):
         cros_build_lib.PrintBuildbotStepWarnings()
         return
 
-      cros_build_lib.RunGitCommand(
-          cwd, ['branch', '-D'] + list(constants.CREATED_BRANCHES),
-          error_code_ok=True)
+      git.RunGit(cwd, ['branch', '-D'] + list(constants.CREATED_BRANCHES),
+                 error_code_ok=True)
 
   # Cleanup all of the directories.
   dirs = [[os.path.join(buildroot, attrs['path'])] for attrs in
-          cros_build_lib.ManifestCheckout.Cached(buildroot).projects.values()]
+          git.ManifestCheckout.Cached(buildroot).projects.values()]
   background.RunTasksInProcessPool(RunCleanupCommands, dirs)
 
 
@@ -357,9 +357,8 @@ def RunUnitTests(buildroot, board, full, nowithdebug):
   # If we aren't running ALL tests, then restrict to just the packages
   #   uprev noticed were changed.
   if not full:
-    cmd += ['--package_file=%s' %
-            cros_build_lib.ReinterpretPathForChroot(_PACKAGE_FILE %
-                                                    {'buildroot': buildroot})]
+    package_file = _PACKAGE_FILE % {'buildroot': buildroot}
+    cmd += ['--package_file=%s' % git.ReinterpretPathForChroot(package_file)]
 
   _RunBuildScript(buildroot, cmd, enter_chroot=True)
 
@@ -538,7 +537,7 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball,
           continue
 
         full_file_path = os.path.join(curr_dir, curr_file)
-        minidump = cros_build_lib.ReinterpretPathForChroot(full_file_path)
+        minidump = git.ReinterpretPathForChroot(full_file_path)
         minidump_stack_trace = '%s.txt' % full_file_path
         cwd = os.path.join(buildroot, 'src', 'scripts')
         cros_build_lib.RunCommand(
@@ -653,10 +652,10 @@ def CleanupChromeKeywordsFile(boards, buildroot):
 def UprevPackages(buildroot, boards, overlays):
   """Uprevs non-browser chromium os packages that have changed."""
   chroot_overlays = [
-      cros_build_lib.ReinterpretPathForChroot(path) for path in overlays ]
+      git.ReinterpretPathForChroot(path) for path in overlays ]
   cmd = ['cros_mark_as_stable', '--all', '--boards=%s' % ':'.join(boards),
          '--overlays=%s' % ':'.join(chroot_overlays),
-         '--drop_file=%s' % cros_build_lib.ReinterpretPathForChroot(
+         '--drop_file=%s' % git.ReinterpretPathForChroot(
              _PACKAGE_FILE % {'buildroot': buildroot}),
          'commit']
   _RunBuildScript(buildroot, cmd, enter_chroot=True)
@@ -1033,7 +1032,7 @@ def MakeNetboot(buildroot, board, image_dir):
   image = os.path.join(image_dir, 'factory_install_shim.bin')
   cmd = ['./make_netboot.sh',
          '--board=%s' % board,
-         '--image=%s' % cros_build_lib.ReinterpretPathForChroot(image)]
+         '--image=%s' % git.ReinterpretPathForChroot(image)]
   _RunBuildScript(buildroot, cmd, capture_output=True, enter_chroot=True)
 
 
@@ -1049,7 +1048,7 @@ def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
   image = os.path.join(image_dir, 'chromiumos_base_image.bin')
   cmd = ['./mod_image_for_recovery.sh',
          '--board=%s' % board,
-         '--image=%s' % cros_build_lib.ReinterpretPathForChroot(image)]
+         '--image=%s' % git.ReinterpretPathForChroot(image)]
   _RunBuildScript(buildroot, cmd, extra_env=extra_env, capture_output=True,
                   enter_chroot=True)
 

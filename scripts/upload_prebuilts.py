@@ -29,6 +29,7 @@ from chromite.buildbot import cbuildbot_background as bg
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import binpkg
@@ -139,18 +140,16 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST', dryrun=False):
   """
   prebuilt_branch = 'prebuilt_branch'
   cwd = os.path.abspath(os.path.dirname(filename))
-  commit = cros_build_lib.RunGitCommand(
-      cwd, ['rev-parse', 'HEAD']).output.rstrip()
+  commit = git.RunGit(cwd, ['rev-parse', 'HEAD']).output.rstrip()
   description = 'Update %s="%s" in %s' % (key, value, filename)
   print description
 
   try:
-    cros_build_lib.CreatePushBranch(prebuilt_branch, cwd)
+    git.CreatePushBranch(prebuilt_branch, cwd)
     UpdateLocalFile(filename, value, key)
-    cros_build_lib.RunGitCommand(cwd, ['add', filename])
-    cros_build_lib.RunGitCommand(cwd, ['commit', '-m', description])
-    cros_build_lib.GitPushWithRetry(prebuilt_branch, cwd, dryrun=dryrun,
-                                    retries=retries)
+    git.RunGit(cwd, ['add', filename])
+    git.RunGit(cwd, ['commit', '-m', description])
+    git.PushWithRetry(prebuilt_branch, cwd, dryrun=dryrun, retries=retries)
   finally:
     cros_build_lib.RunCommand(['git', 'checkout', commit], cwd=cwd)
 

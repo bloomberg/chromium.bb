@@ -19,6 +19,7 @@ from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gclient
+from chromite.lib import git
 
 
 # pylint: disable=E1101,W0212,R0904
@@ -35,7 +36,7 @@ class RunBuildScriptTest(cros_test_lib.MoxTestCase):
     """
 
     # Mock out functions used by RunBuildScript.
-    self.mox.StubOutWithMock(cros_build_lib, 'ReinterpretPathForChroot')
+    self.mox.StubOutWithMock(git, 'ReinterpretPathForChroot')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'Error')
     self.mox.StubOutWithMock(os.path, 'exists')
@@ -52,7 +53,7 @@ class RunBuildScriptTest(cros_test_lib.MoxTestCase):
       os.path.exists(tempdir).AndReturn(tmpf is not None)
       if tmpf is not None:
         tempfile.NamedTemporaryFile(dir=tempdir).AndReturn(tmpf)
-        cros_build_lib.ReinterpretPathForChroot(tmpf.name).AndReturn(tmpf.name)
+        git.ReinterpretPathForChroot(tmpf.name).AndReturn(tmpf.name)
         kwargs['extra_env'] = {'PARALLEL_EMERGE_STATUS_FILE': tmpf.name}
 
     # Run the command, throwing an exception if it fails.
@@ -132,7 +133,7 @@ class CBuildBotTest(cros_test_lib.MoxTempDirTestCase):
                                       ['chromos-base/libcros', '12345test']]
     self._overlays = ['%s/src/third_party/chromiumos-overlay' % self._buildroot]
     self._chroot_overlays = [
-        cros_build_lib.ReinterpretPathForChroot(p) for p in self._overlays
+        git.ReinterpretPathForChroot(p) for p in self._overlays
     ]
     self._CWD = os.path.dirname(os.path.realpath(__file__))
     os.makedirs(self.tempdir + '/chroot/tmp/taco')
@@ -226,9 +227,8 @@ class CBuildBotTest(cros_test_lib.MoxTempDirTestCase):
     dump_file_dir, dump_file_name = os.path.split(dump_file)
     os.walk(mox.IgnoreArg()).AndReturn([(dump_file_dir, [''],
                                        [dump_file_name])])
-    self.mox.StubOutWithMock(cros_build_lib, 'ReinterpretPathForChroot')
-    cros_build_lib.ReinterpretPathForChroot(
-        mox.IgnoreArg()).AndReturn(dump_file)
+    self.mox.StubOutWithMock(git, 'ReinterpretPathForChroot')
+    git.ReinterpretPathForChroot(mox.IgnoreArg()).AndReturn(dump_file)
     self.mox.StubOutWithMock(commands, 'ArchiveFile')
     self.mox.StubOutWithMock(os, 'unlink')
     self.mox.StubOutWithMock(shutil, 'rmtree')
@@ -269,7 +269,7 @@ class CBuildBotTest(cros_test_lib.MoxTempDirTestCase):
     cros_build_lib.RunCommand(
         ['cros_mark_as_stable', '--all', '--boards=%s' % self._test_board,
          '--overlays=%s' % ':'.join(self._chroot_overlays),
-         '--drop_file=%s' % cros_build_lib.ReinterpretPathForChroot(drop_file),
+         '--drop_file=%s' % git.ReinterpretPathForChroot(drop_file),
          'commit'], cwd=self._buildroot, enter_chroot=True)
 
     self.mox.ReplayAll()

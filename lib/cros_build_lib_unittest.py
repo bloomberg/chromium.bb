@@ -20,6 +20,7 @@ import __builtin__
 
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -770,7 +771,7 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
         </manifest>""")
     # First, verify it properly explodes if the include can't be found.
     self.assertRaises(EnvironmentError,
-                      cros_build_lib.ManifestCheckout, self.tempdir)
+                      git.ManifestCheckout, self.tempdir)
 
     # Next, verify it can read an empty manifest; this is to ensure
     # that we can point Manifest at the empty manifest without exploding,
@@ -778,8 +779,8 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
     # to ensure no step of an include assumes everything is yet assembled.
     empty_path = os.path.join(self.manifest_dir, 'empty.xml')
     osutils.WriteFile(empty_path, '<manifest/>')
-    cros_build_lib.Manifest(empty_path)
-    cros_build_lib.ManifestCheckout(self.tempdir, manifest_path=empty_path)
+    git.Manifest(empty_path)
+    git.ManifestCheckout(self.tempdir, manifest_path=empty_path)
 
     # Next, verify include works.
     osutils.WriteFile(os.path.join(self.manifest_dir, 'include-target.xml'),
@@ -787,13 +788,13 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
         <manifest>
           <remote name="foon" fetch="http://localhost" />
         </manifest>""")
-    manifest = cros_build_lib.ManifestCheckout(self.tempdir)
+    manifest = git.ManifestCheckout(self.tempdir)
     self.assertEqual(list(manifest.projects), ['monkeys'])
     self.assertEqual(list(manifest.remotes), ['foon'])
 
   # pylint: disable=E1101
   def testGetManifestsBranch(self):
-    func = cros_build_lib.ManifestCheckout._GetManifestsBranch
+    func = git.ManifestCheckout._GetManifestsBranch
     manifest = self.manifest_dir
     repo_root = self.tempdir
 
@@ -805,19 +806,18 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
         val = locals()[key]
         key = 'branch.default.%s' % key
         if val is None:
-          cros_build_lib.RunGitCommand(manifest, ['config', '--unset', key],
-                                       error_code_ok=True)
+          git.RunGit(manifest, ['config', '--unset', key], error_code_ok=True)
         else:
-          cros_build_lib.RunGitCommand(manifest, ['config', key, val])
+          git.RunGit(manifest, ['config', key, val])
 
     # First, verify our assumptions about a fresh repo init are correct.
-    self.assertEqual('default', cros_build_lib.GetCurrentBranch(manifest))
+    self.assertEqual('default', git.GetCurrentBranch(manifest))
     self.assertEqual('master', func(repo_root))
 
     # Ensure we can handle a missing origin; this can occur jumping between
     # branches, and can be worked around.
     reconfig(origin=None)
-    self.assertEqual('default', cros_build_lib.GetCurrentBranch(manifest))
+    self.assertEqual('default', git.GetCurrentBranch(manifest))
     self.assertEqual('master', func(repo_root))
 
     # TODO(ferringb): convert this over to assertRaises2
@@ -838,35 +838,32 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
 
     # Ensure we detect if we're on the wrong branch, even if it has
     # tracking setup.
-    cros_build_lib.RunGitCommand(
-        manifest, ['checkout', '-t', 'origin/master', '-b', 'test'])
+    git.RunGit(manifest, ['checkout', '-t', 'origin/master', '-b', 'test'])
     assertExcept("It should be checked out to 'default'")
 
     # Ensure we handle detached HEAD w/ an appropriate exception.
-    cros_build_lib.RunGitCommand(manifest, ['checkout', '--detach', 'test'])
+    git.RunGit(manifest, ['checkout', '--detach', 'test'])
     assertExcept("It should be checked out to 'default'")
 
     # Finally, ensure that if the default branch is non-existant, we still throw
     # a usable exception.
-    cros_build_lib.RunGitCommand(manifest, ['branch', '-d', 'default'])
+    git.RunGit(manifest, ['branch', '-d', 'default'])
     assertExcept("It should be checked out to 'default'")
 
   def testGitMatchBranchName(self):
     git_repo = os.path.join(self.tempdir, '.repo', 'manifests')
 
-    branches = cros_build_lib.GitMatchBranchName(git_repo, 'default',
-                                                 namespace='')
+    branches = git.MatchBranchName(git_repo, 'default', namespace='')
     self.assertEqual(branches, ['refs/heads/default'])
 
-    branches = cros_build_lib.GitMatchBranchName(git_repo, 'default',
-                                                 namespace='refs/heads/')
+    branches = git.MatchBranchName(git_repo, 'default', namespace='refs/heads/')
     self.assertEqual(branches, ['default'])
 
-    branches = cros_build_lib.GitMatchBranchName(git_repo, 'origin/f.*link',
-                                                 namespace='refs/remotes/')
+    branches = git.MatchBranchName(git_repo, 'origin/f.*link',
+                                   namespace='refs/remotes/')
     self.assertTrue('firmware-link-' in branches[0])
 
-    branches = cros_build_lib.GitMatchBranchName(git_repo, 'r23')
+    branches = git.MatchBranchName(git_repo, 'r23')
     self.assertEqual(branches, ['refs/remotes/origin/release-R23-2913.B'])
 
 

@@ -18,6 +18,7 @@ import sys
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import gerrit
+from chromite.lib import git
 
 _PRIVATE_PREFIX = '%(buildroot)s/src/private-overlays'
 _GLOBAL_OVERLAYS = [
@@ -552,7 +553,7 @@ class EBuild(object):
     sense for unpinned manifests.
 
     Args:
-      manifest: cros_build_lib.ManifestCheckout object.
+      manifest: git.ManifestCheckout object.
       project: Project to look up.
 
     Raises:
@@ -560,7 +561,7 @@ class EBuild(object):
     """
     helper = gerrit.GerritHelper.FromManifestProject(manifest, project)
     manifest_branch = manifest.GetAttributeForProject(project, 'revision')
-    branch = cros_build_lib.StripLeadingRefsHeads(manifest_branch)
+    branch = git.StripRefsHeads(manifest_branch)
     return helper.GetLatestSHA1ForBranch(project, branch)
 
   @staticmethod
@@ -595,7 +596,7 @@ class EBuild(object):
       changes: Changes from Gerrit that are being pushed.
       buildroot: Path to root of build directory.
     """
-    manifest = cros_build_lib.ManifestCheckout.Cached(buildroot)
+    manifest = git.ManifestCheckout.Cached(buildroot)
     project_sha1s = {}
     overlay_list = FindOverlays(constants.BOTH_OVERLAYS, buildroot=buildroot)
     ebuild_projects = cls._GetEBuildProjects(buildroot, overlay_list, changes)

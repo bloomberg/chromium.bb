@@ -31,6 +31,7 @@ from chromite.buildbot import trybot_patch_pool
 from chromite.buildbot import validation_pool
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
@@ -128,8 +129,7 @@ class CleanUpStage(bs.BuilderStage):
     manifest = None
     if not self._options.clobber:
       try:
-        manifest = cros_build_lib.ManifestCheckout.Cached(self._build_root,
-                                                          search=False)
+        manifest = git.ManifestCheckout.Cached(self._build_root, search=False)
       except (KeyboardInterrupt, MemoryError, SystemExit):
         raise
       except Exception, e:
@@ -316,14 +316,13 @@ class BootstrapStage(PatchChangesStage):
     self._ApplyPatchSeries(patch_series, patch_pool)
     # Create the branch that 'repo init -b <target_branch> -u <patched_repo>'
     # will look for.
-    cros_build_lib.RunGitCommand(
-        checkout_dir,
-        ['branch', '-f', self._target_manifest_branch, constants.PATCH_BRANCH])
+    cmd = ['branch', '-f', self._target_manifest_branch, constants.PATCH_BRANCH]
+    git.RunGit(checkout_dir, cmd)
 
     # Verify that the patched manifest loads properly. Propagate any errors as
     # exceptions.
     # TODO(rcui): Do validation on other manifests if we start relying on them.
-    cros_build_lib.Manifest.Cached(
+    git.Manifest.Cached(
         os.path.join(checkout_dir, constants.DEFAULT_MANIFEST),
         manifest_include_dir=checkout_dir)
     return checkout_dir
@@ -368,7 +367,7 @@ class BootstrapStage(PatchChangesStage):
     reference_repo = os.path.join(constants.SOURCE_ROOT, 'chromite', '.git')
     repository.CloneGitRepo(chromite_dir, constants.CHROMITE_URL,
                             reference=reference_repo)
-    cros_build_lib.RunGitCommand(chromite_dir, ['checkout', filter_branch])
+    git.RunGit(chromite_dir, ['checkout', filter_branch])
 
     def BranchAndChromiteFilter(patch):
       return (trybot_patch_pool.BranchFilter(filter_branch, patch) and

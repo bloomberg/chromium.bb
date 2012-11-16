@@ -36,6 +36,7 @@ from chromite.lib import cleanup
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gerrit
+from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import sudo
@@ -115,7 +116,7 @@ def AcquirePoolFromOptions(options):
         cros_build_lib.Warning('Patch %s has already been merged.' % str(patch))
 
   if options.local_patches:
-    manifest = cros_build_lib.ManifestCheckout.Cached(options.sourceroot)
+    manifest = git.ManifestCheckout.Cached(options.sourceroot)
     local_patches = cros_patch.PrepareLocalPatches(manifest,
                                                    options.local_patches)
 
@@ -266,7 +267,7 @@ class Builder(object):
     stage = None
     chromite_pool = self.patch_pool.Filter(project=constants.CHROMITE_PROJECT)
     manifest_pool = self.patch_pool.FilterManifest()
-    chromite_branch = cros_build_lib.GetChromiteTrackingBranch()
+    chromite_branch = git.GetChromiteTrackingBranch()
     if (chromite_pool or manifest_pool or self.options.test_bootstrap
         or chromite_branch != self.options.branch):
       stage = stages.BootstrapStage(self.options, self.build_config,
@@ -586,7 +587,7 @@ def _CheckLocalPatches(sourceroot, local_patches):
     sourceroot: The checkout where patches are coming from.
   """
   verified_patches = []
-  manifest = cros_build_lib.ManifestCheckout.Cached(sourceroot)
+  manifest = git.ManifestCheckout.Cached(sourceroot)
   for patch in local_patches:
     components = patch.split(':')
     if len(components) > 2:
@@ -603,12 +604,12 @@ def _CheckLocalPatches(sourceroot, local_patches):
 
     # If no branch was specified, we use the project's current branch.
     if len(components) == 1:
-      branch = cros_build_lib.GetCurrentBranch(project_dir)
+      branch = git.GetCurrentBranch(project_dir)
       if not branch:
         cros_build_lib.Die('Project %s is not on a branch!' % project)
     else:
       branch = components[1]
-      if not cros_build_lib.DoesLocalBranchExist(project_dir, branch):
+      if not git.DoesLocalBranchExist(project_dir, branch):
         cros_build_lib.Die('Project %s does not have branch %s'
                            % (project, branch))
 
@@ -1020,7 +1021,7 @@ def _PostParseCheck(parser, options, args):
     options/args: The options/args object returned by optparse
   """
   if not options.branch:
-    options.branch = cros_build_lib.GetChromiteTrackingBranch()
+    options.branch = git.GetChromiteTrackingBranch()
 
   if not repository.IsARepoRoot(options.sourceroot):
     if options.local_patches:

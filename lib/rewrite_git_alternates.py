@@ -25,6 +25,7 @@ sys.path.insert(0, _path)
 del _path
 
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 from chromite.lib import osutils
 
 
@@ -202,7 +203,7 @@ def WalkReferences(repo_root, max_depth=5, suppress=()):
     yield repo_root
     seen.add(repo_root)
     base = os.path.join(repo_root, '.repo', 'manifests.git')
-    result = cros_build_lib.RunGitCommand(
+    result = git.RunGit(
         base, ['config', 'repo.reference'], error_code_ok=True)
 
     if result.returncode not in (0, 1):

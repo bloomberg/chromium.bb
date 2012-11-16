@@ -15,6 +15,7 @@ from chromite.buildbot import constants
 from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 
 
 # TODO(sosa): Remove during OO refactor.
@@ -75,11 +76,11 @@ def CleanStalePackages(boards, package_atoms):
 # TODO(build): This code needs to be gutted and rebased to cros_build_lib.
 def _DoWeHaveLocalCommits(stable_branch, tracking_branch, cwd):
   """Returns true if there are local commits."""
-  current_branch = cros_build_lib.GetCurrentBranch(cwd)
+  current_branch = git.GetCurrentBranch(cwd)
 
   if current_branch != stable_branch:
     return False
-  output = cros_build_lib.RunGitCommand(
+  output = git.RunGit(
       cwd, ['rev-parse', 'HEAD', tracking_branch]).output.split()
   return output[0] != output[1]
 
@@ -139,8 +140,8 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
   # For the commit queue, our local branch may contain commits that were
   # just tested and pushed during the CommitQueueCompletion stage. Sync
   # and rebase our local branch on top of the remote commits.
-  remote, push_branch = cros_build_lib.GetTrackingBranch(cwd, for_push=True)
-  cros_build_lib.SyncPushBranch(cwd, remote, push_branch)
+  remote, push_branch = git.GetTrackingBranch(cwd, for_push=True)
+  git.SyncPushBranch(cwd, remote, push_branch)
 
   # Check whether any local changes remain after the sync.
   if not _DoWeHaveLocalCommits(stable_branch, push_branch, cwd):
@@ -152,12 +153,11 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
        push_branch, stable_branch)], cwd=cwd).output
   description = 'Marking set of ebuilds as stable\n\n%s' % description
   cros_build_lib.Info('For %s, using description %s', cwd, description)
-  cros_build_lib.CreatePushBranch(constants.MERGE_BRANCH, cwd)
-  cros_build_lib.RunGitCommand(cwd, ['merge', '--squash', stable_branch])
-  cros_build_lib.RunGitCommand(cwd, ['commit', '-m', description])
-  cros_build_lib.RunGitCommand(cwd, ['config', 'push.default', 'tracking'])
-  cros_build_lib.GitPushWithRetry(constants.MERGE_BRANCH, cwd,
-                                  dryrun=dryrun)
+  git.CreatePushBranch(constants.MERGE_BRANCH, cwd)
+  git.RunGit(cwd, ['merge', '--squash', stable_branch])
+  git.RunGit(cwd, ['commit', '-m', description])
+  git.RunGit(cwd, ['config', 'push.default', 'tracking'])
+  git.PushWithRetry(constants.MERGE_BRANCH, cwd, dryrun=dryrun)
 
 
 class GitBranch(object):
@@ -244,7 +244,7 @@ def main(argv):
     portage_utilities.BuildEBuildDictionary(
       overlays, options.all, package_list)
 
-  manifest = cros_build_lib.ManifestCheckout.Cached(options.srcroot)
+  manifest = git.ManifestCheckout.Cached(options.srcroot)
 
   # Contains the array of packages we actually revved.
   revved_packages = []
@@ -283,14 +283,14 @@ def main(argv):
       # everything built thus far has been against it (meaning, http mirrors),
       # thus we should honor that.  During the actual push, the code switches
       # to the correct urls, and does an appropriate rebasing.
-      tracking_branch = cros_build_lib.GetTrackingBranchViaManifest(
+      tracking_branch = git.GetTrackingBranchViaManifest(
           overlay, manifest=manifest)[1]
 
       if command == 'push':
         PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,
                    options.dryrun, cwd=overlay)
       elif command == 'commit':
-        existing_branch = cros_build_lib.GetCurrentBranch(overlay)
+        existing_branch = git.GetCurrentBranch(overlay)
         work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch,
                                 cwd=overlay)
         work_branch.CreateBranch()

@@ -25,7 +25,7 @@ except ImportError:
 # TODO(build): sort the buildbot.constants/lib.constants issue;
 # lib shouldn't have to import from buildbot like this.
 from chromite.buildbot import constants
-from chromite.lib import cros_build_lib
+from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 
@@ -198,7 +198,7 @@ class BaseParser(object):
   def FindCacheDir(_parser, _opts):
     path = os.environ.get(constants.SHARED_CACHE_ENVVAR)
     if path is None:
-      path = cros_build_lib.FindRepoCheckoutRoot()
+      path = git.FindRepoCheckoutRoot()
       path = os.path.join(path, '.cache') if path else path
     if path is None:
       path = os.path.join(tempfile.gettempdir(), 'chromeos-cache')

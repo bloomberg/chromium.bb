@@ -21,6 +21,7 @@ from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
+from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 
@@ -161,7 +162,7 @@ I am the first commit.
     self.assertEqual({}, patch1.GetDiffStatus(git1))
     patch2 = self.CommitFile(git1, 'monkeys', 'blah')
     self.assertEqual({'monkeys': 'M'}, patch2.GetDiffStatus(git1))
-    cros_build_lib.RunGitCommand(git1, ['mv', 'monkeys', 'monkeys2'])
+    git.RunGit(git1, ['mv', 'monkeys', 'monkeys2'])
     patch3 = self._MkPatch(git1, self._MakeCommit(git1, commit="mv"))
     self.assertEqual({'monkeys': 'D', 'monkeys2': 'A'},
                      patch3.GetDiffStatus(git1))
@@ -220,7 +221,7 @@ I am the first commit.
     content = 'not foon%s' % ('\n' * 100)
     patch1 = self._MkPatch(git2, self._GetSha1(git2, 'HEAD'))
     patch1 = self.CommitFile(git2, 'monkeys', content)
-    cros_build_lib.RunGitCommand(
+    git.RunGit(
         git2, ['update-ref', self.DEFAULT_TRACKING, patch1.sha1])
     patch2 = self.CommitFile(git2, 'monkeys', '%sblah' % content)
     patch3 = self.CommitFile(git2, 'monkeys', '%sblahblah' % content)
@@ -230,7 +231,7 @@ I am the first commit.
     patch4 = self.CommitFile(git2, 'monkeys', content)
     patch5 = self.CommitFile(git2, 'monkeys', '%sfoon' % content)
     # Reset so we derive the next changes from patch1.
-    cros_build_lib.RunGitCommand(git2, ['reset', '--hard', patch1.sha1])
+    git.RunGit(git2, ['reset', '--hard', patch1.sha1])
     patch6 = self.CommitFile(git2, 'blah', 'some-other-file')
     patch7 = self.CommitFile(git2, 'monkeys',
                              '%sblah' % content.replace('not', 'bot'))
@@ -362,7 +363,7 @@ I am the first commit.
                          "BrokenChangeId" % (content,))
       # Now wipe those commits since they'll interfere w/ the next run, and the
       # following code.
-      cros_build_lib.RunGitCommand(git1, ['reset', '--hard', 'HEAD^^'])
+      git.RunGit(git1, ['reset', '--hard', 'HEAD^^'])
 
     # Verify that if a ChangeId is lacking, it switches back to commit based
     # ids.
@@ -654,11 +655,11 @@ class PrepareLocalPatchesTests(cros_test_lib.MoxTestCase):
   def setUp(self):
     self.patches = ['my/project:mybranch']
 
-    self.mox.StubOutWithMock(cros_build_lib, 'GetProjectDir')
-    self.mox.StubOutWithMock(cros_build_lib, 'GetCurrentBranch')
+    self.mox.StubOutWithMock(git, 'GetProjectDir')
+    self.mox.StubOutWithMock(git, 'GetCurrentBranch')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    self.mox.StubOutWithMock(cros_build_lib, 'RunGitCommand')
-    self.manifest = self.mox.CreateMock(cros_build_lib.ManifestCheckout)
+    self.mox.StubOutWithMock(git, 'RunGit')
+    self.manifest = self.mox.CreateMock(git.ManifestCheckout)
 
   def VerifyPatchInfo(self, patch_info, project, branch, tracking_branch):
     """Check the returned GitRepoPatchInfo against golden values."""
@@ -674,7 +675,7 @@ class PrepareLocalPatchesTests(cros_test_lib.MoxTestCase):
     self.manifest.GetProjectsLocalRevision('my/project').AndReturn('m/kernel')
     self.manifest.GetAttributeForProject('my/project',
                                          'remote').AndReturn('cros')
-    cros_build_lib.RunGitCommand(
+    git.RunGit(
         'mydir', mox.In('m/kernel..mybranch')).AndReturn(output_obj)
 
     # Suppress the normal parse machinery.
@@ -695,7 +696,7 @@ class PrepareLocalPatchesTests(cros_test_lib.MoxTestCase):
     self.manifest.GetProjectsLocalRevision('my/project').AndReturn('m/master')
     self.manifest.GetAttributeForProject('my/project',
                                          'remote').AndReturn('cros')
-    cros_build_lib.RunGitCommand(
+    git.RunGit(
         'mydir', mox.In('m/master..mybranch')).AndReturn(output_obj)
     self.mox.ReplayAll()
 

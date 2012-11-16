@@ -32,6 +32,7 @@ from chromite.buildbot import constants
 from chromite.buildbot import cbuildbot_background as bg
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 from chromite.lib import osutils
 import portage.const
 
@@ -51,7 +52,7 @@ class WorkonProjectsMonitor(object):
     Args:
       projects: A list of the project names we are interested in monitoring.
     """
-    manifest = cros_build_lib.ManifestCheckout.Cached(constants.SOURCE_ROOT)
+    manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
     self._tasks = [(name, manifest.GetProjectPath(name, True))
                    for name in set(projects).intersection(manifest.projects)]
     self._result_queue = multiprocessing.Queue(len(self._tasks))

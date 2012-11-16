@@ -18,6 +18,7 @@ from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib
+from chromite.lib import git
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
@@ -65,8 +66,7 @@ class HelperMethodsTest(cros_test_lib.TempDirTestCase):
         internal_build=False, read_only=False)
     git_dir = os.path.join(constants.SOURCE_ROOT, 'manifest-versions')
     manifest_version.RefreshManifestCheckout(git_dir, manifest_versions_url)
-    cros_build_lib.CreatePushBranch(manifest_version.PUSH_BRANCH, git_dir,
-                                    sync=False)
+    git.CreatePushBranch(manifest_version.PUSH_BRANCH, git_dir, sync=False)
     cros_build_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
                               input='TEST USER <test_user@chromium.org>')
     manifest_version._PushGitChanges(git_dir, 'Test appending user.',
@@ -112,17 +112,17 @@ class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
   def CommonTestIncrementVersion(self, incr_type, version):
     """Common test increment.  Returns path to new incremented file."""
     message = 'Incrementing cuz I sed so'
-    self.mox.StubOutWithMock(cros_build_lib, 'CreatePushBranch')
+    self.mox.StubOutWithMock(git, 'CreatePushBranch')
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
-    self.mox.StubOutWithMock(cros_build_lib, 'GitCleanAndCheckoutUpstream')
+    self.mox.StubOutWithMock(git, 'CleanAndCheckoutUpstream')
 
-    cros_build_lib.CreatePushBranch(manifest_version.PUSH_BRANCH, self.tempdir)
+    git.CreatePushBranch(manifest_version.PUSH_BRANCH, self.tempdir)
 
     version_file = self.CreateFakeVersionFile(self.tempdir, version)
 
     manifest_version._PushGitChanges(self.tempdir, message, dry_run=False)
 
-    cros_build_lib.GitCleanAndCheckoutUpstream(self.tempdir)
+    git.CleanAndCheckoutUpstream(self.tempdir)
     self.mox.ReplayAll()
     info = manifest_version.VersionInfo(version_file=version_file,
                                         incr_type=incr_type)
