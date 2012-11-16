@@ -222,7 +222,7 @@ void SetupSignalHandlers() {
   }
 
   // Always ignore SIGPIPE.  We check the return value of write().
-  CHECK(base::IgnoreSigPipe());
+  CHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
 }
 
 #endif  // OS_POSIX && !OS_IOS
