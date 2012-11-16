@@ -2808,6 +2808,7 @@ irt_variant_tests = [
     'tests/fib/nacl.scons',
     'tests/file/nacl.scons',
     'tests/fixedfeaturecpu/nacl.scons',
+    'tests/futexes/nacl.scons',
     'tests/gc_instrumentation/nacl.scons',
     'tests/gdb/nacl.scons',
     'tests/glibc_file64_test/nacl.scons',
