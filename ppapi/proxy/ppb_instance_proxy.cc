@@ -775,7 +775,7 @@ void PPB_Instance_Proxy::SelectionChanged(PP_Instance instance) {
   if (!data->is_request_surrounding_text_pending) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&RequestSurroundingText, instance));
+        RunWhileLocked(base::Bind(&RequestSurroundingText, instance)));
     data->is_request_surrounding_text_pending = true;
   }
 }
