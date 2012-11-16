@@ -22,9 +22,7 @@ if __name__ == '__main__':
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import gerrit
 from chromite.lib import osutils
-from chromite.lib import patch as cros_patch
 from chromite.buildbot import portage_utilities
 
 # pylint: disable=W0212,E1120
@@ -352,60 +350,34 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
 
   def testUpdateCommitHashesForChanges(self):
     """Tests that we can update the commit hashes for changes correctly."""
-    ebuild1 = self.mox.CreateMock(portage_utilities.EBuild)
+    cls = portage_utilities.EBuild
+    ebuild1 = self.mox.CreateMock(cls)
     ebuild1.ebuild_path = 'public_overlay/ebuild.ebuild'
     ebuild1.package = 'test/project'
 
-    # Mimics the behavior of BuildEBuildDictionary.
-    def addEBuild(overlay_dict, *_other_args):
-      overlay_dict['public_overlay'] = [ebuild1]
-
-    self.mox.StubOutWithMock(portage_utilities, 'BuildEBuildDictionary')
     self.mox.StubOutWithMock(portage_utilities, 'FindOverlays')
-    self.mox.StubOutWithMock(portage_utilities.EBuild, 'UpdateEBuild')
-    self.mox.StubOutWithMock(portage_utilities.EBuild, 'CommitChange')
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    self.mox.StubOutWithMock(portage_utilities.EBuild, 'GitRepoHasChanges')
-
-    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
-    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
-
-    patch1.change_id = patch1.id = 'ChangeId1'
-    patch2.change_id = patch2.id = 'ChangeId2'
-    patch1.internal = False
-    patch2.internal = False
-    patch1.project = 'fake_project1'
-    patch2.project = 'fake_project2'
-    patch1.tracking_branch = 'chromiumos/chromite'
-    patch2.tracking_branch = 'not/a/real/project'
+    self.mox.StubOutWithMock(cls, '_GetEBuildProjects')
+    self.mox.StubOutWithMock(cls, '_GetSHA1ForProject')
+    self.mox.StubOutWithMock(cls, 'UpdateEBuild')
+    self.mox.StubOutWithMock(cls, 'CommitChange')
+    self.mox.StubOutWithMock(cls, 'GitRepoHasChanges')
 
     build_root = 'fakebuildroot'
     overlays = ['public_overlay']
+    changes = ['fake change']
+    projects = ['fake_project1', 'fake_project2']
+    project_ebuilds = {ebuild1: projects}
     portage_utilities.FindOverlays(
         constants.BOTH_OVERLAYS, buildroot=build_root).AndReturn(overlays)
-    overlay_dict = dict(public_overlay=[])
-    portage_utilities.BuildEBuildDictionary(overlay_dict,
-                                            True, None).WithSideEffects(
-                                                addEBuild)
-
-    ebuild1.GetSourcePath(os.path.join(build_root, 'src')).AndReturn(
-        (['fake_project1'], ['p1_path']))
-
-    self.mox.StubOutWithMock(gerrit, 'GetGerritHelperForChange')
-    helper = self.mox.CreateMock(gerrit.GerritHelper)
-    self.mox.StubOutWithMock(helper, 'GetLatestSHA1ForBranch')
-    gerrit.GetGerritHelperForChange(patch1).AndReturn(helper)
-    helper.GetLatestSHA1ForBranch(patch1.project,
-                                  patch1.tracking_branch).AndReturn('sha1')
-
-    portage_utilities.EBuild.UpdateEBuild(ebuild1.ebuild_path,
-                                          dict(CROS_WORKON_COMMIT='sha1'))
-    portage_utilities.EBuild.GitRepoHasChanges('public_overlay').AndReturn(True)
-    portage_utilities.EBuild.CommitChange(mox.IgnoreArg(),
-                                          overlay='public_overlay')
+    cls._GetEBuildProjects(
+        build_root, overlays, changes).AndReturn(project_ebuilds)
+    for i, p in enumerate(projects):
+      cls._GetSHA1ForProject(mox.IgnoreArg(), p).InAnyOrder().AndReturn(str(i))
+    cls.UpdateEBuild(ebuild1.ebuild_path, dict(CROS_WORKON_COMMIT='("0" "1")'))
+    cls.GitRepoHasChanges('public_overlay').AndReturn(True)
+    cls.CommitChange(mox.IgnoreArg(), overlay='public_overlay')
     self.mox.ReplayAll()
-    portage_utilities.EBuild.UpdateCommitHashesForChanges([patch1, patch2],
-                                                          build_root)
+    cls.UpdateCommitHashesForChanges(changes, build_root)
     self.mox.VerifyAll()
 
   def testGitRepoHasChanges(self):

@@ -543,47 +543,73 @@ class EBuild(object):
         print_cmd=cls.VERBOSE, redirect_stdout=True)
     return ret_obj.output not in [None, '']
 
-  @classmethod
-  def UpdateCommitHashesForChanges(cls, changes, buildroot):
-    """Updates the commit hashes for the EBuilds uprevved in changes."""
-    overlay_list = FindOverlays(constants.BOTH_OVERLAYS, buildroot=buildroot)
+  @staticmethod
+  def _GetSHA1ForProject(manifest, project):
+    """Get the latest SHA1 for a given project from Gerrit.
+
+    This function looks up the remote and branch for a given project in the
+    manifest, and uses this to lookup the SHA1 from Gerrit. This only makes
+    sense for unpinned manifests.
+
+    Args:
+      manifest: cros_build_lib.ManifestCheckout object.
+      project: Project to look up.
+
+    Raises:
+      Exception if the manifest is pinned.
+    """
+    helper = gerrit.GerritHelper.FromManifestProject(manifest, project)
+    manifest_branch = manifest.GetAttributeForProject(project, 'revision')
+    branch = cros_build_lib.StripLeadingRefsHeads(manifest_branch)
+    return helper.GetLatestSHA1ForBranch(project, branch)
+
+  @staticmethod
+  def _GetEBuildProjects(buildroot, overlay_list, changes):
+    """Calculate ebuild->project map for changed ebuilds.
+
+    Args:
+      buildroot: Path to root of build directory.
+      overlay_list: List of all overlays.
+      changes: Changes from Gerrit that are being pushed.
+
+    Returns:
+      A dictionary mapping changed ebuilds to lists of associated projects.
+    """
     directory_src = os.path.join(buildroot, 'src')
     overlay_dict = dict((o, []) for o in overlay_list)
     BuildEBuildDictionary(overlay_dict, True, None)
-
-    # Generate a project->ebuild map for only projects affected by given
-    # changes.
-    project_ebuild_map = dict((c.project, []) for c in changes)
-    modified_overlays = set()
-    for overlay, ebuilds in overlay_dict.items():
+    changed_projects = set(c.project for c in changes)
+    ebuild_projects = {}
+    for overlay, ebuilds in overlay_dict.iteritems():
       for ebuild in ebuilds:
         projects = ebuild.GetSourcePath(directory_src)[0]
-        for project in projects:
-          project_ebuilds = project_ebuild_map.get(project)
-          # This is not None if there already is an entry in project_ebuilds
-          # for the given project.
-          if project_ebuilds is not None:
-            project_ebuilds.append(ebuild)
-            modified_overlays.add(overlay)
+        if changed_projects.intersection(projects):
+          ebuild_projects[ebuild] = projects
+    return ebuild_projects
 
-    # Now go through each change and update the ebuilds they affect.
-    for change in changes:
-      ebuilds_for_change = project_ebuild_map[change.project]
-      if len(ebuilds_for_change) == 0:
-        continue
+  @classmethod
+  def UpdateCommitHashesForChanges(cls, changes, buildroot):
+    """Updates the commit hashes for the EBuilds uprevved in changes.
 
-      helper = gerrit.GetGerritHelperForChange(change)
-      latest_sha1 = helper.GetLatestSHA1ForBranch(change.project,
-                                                  change.tracking_branch)
-      for ebuild in ebuilds_for_change:
-        logging.info('Updating ebuild for project %s with commit hash %s',
-                     ebuild.package, latest_sha1)
-        EBuild.UpdateEBuild(ebuild.ebuild_path,
-                            dict(CROS_WORKON_COMMIT=latest_sha1))
+    Args:
+      changes: Changes from Gerrit that are being pushed.
+      buildroot: Path to root of build directory.
+    """
+    manifest = cros_build_lib.ManifestCheckout.Cached(buildroot)
+    project_sha1s = {}
+    overlay_list = FindOverlays(constants.BOTH_OVERLAYS, buildroot=buildroot)
+    ebuild_projects = cls._GetEBuildProjects(buildroot, overlay_list, changes)
+    for ebuild, projects in ebuild_projects.iteritems():
+      for project in set(projects).difference(project_sha1s):
+        project_sha1s[project] = cls._GetSHA1ForProject(manifest, project)
+      sha1s = [project_sha1s[project] for project in projects]
+      logging.info('Updating ebuild for project %s with commit hashes %r',
+                   ebuild.package, sha1s)
+      updates = dict(CROS_WORKON_COMMIT=cls.FormatBashArray(sha1s))
+      EBuild.UpdateEBuild(ebuild.ebuild_path, updates)
 
-    for overlay in modified_overlays:
-      # For commits to repos that merge, there won't actually be any changes.
-      # Filter these out.
+    # Commit any changes to all overlays.
+    for overlay in overlay_list:
       if EBuild.GitRepoHasChanges(overlay):
         EBuild.CommitChange('Updating commit hashes in ebuilds '
                             'to match remote repository.', overlay=overlay)

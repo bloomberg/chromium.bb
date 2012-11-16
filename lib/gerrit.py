@@ -72,6 +72,17 @@ class GerritHelper(object):
     return cls(host, remote, ssh_port=port, **kwds)
 
   @classmethod
+  def FromManifestProject(cls, manifest, project, **kwds):
+    """Get the GerritHelper instance for a given project.
+
+    Args:
+      manifest: cros_build_lib.ManifestCheckout object.
+      project: Project to look up.
+    """
+    remote = manifest.GetAttributeForProject(project, 'remote')
+    return cls.FromRemote(remote, **kwds)
+
+  @classmethod
   def GetCrosInternal(cls, **kwds):
     """Convenience method for accessing private ChromeOS gerrit."""
     return cls.FromRemote(constants.INTERNAL_REMOTE, **kwds)
