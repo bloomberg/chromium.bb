@@ -841,6 +841,8 @@
       <structure type="chrome_scaled_image" name="IDR_THROBBER_WAITING" file="throbber_waiting.png" />
       <structure type="chrome_scaled_image" name="IDR_THROBBER_WAITING_LIGHT" file="throbber_waiting_light.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_RECORDING" file="tab_recording.png" />
+      <structure type="chrome_scaled_image" name="IDR_TAB_CAPTURE" file="tab_capture.png" />
+      <structure type="chrome_scaled_image" name="IDR_TAB_CAPTURE_GLOW" file="tab_capture_glow.png" />
       <if expr="pp_ifdef('use_ash')">
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_BOTTOM" file="common/toolbar_shade_bottom.png" />
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_LEFT" file="common/toolbar_shade_left.png" />
