@@ -341,10 +341,13 @@ class TrackerComm(object):
       return self._CreateIssue(feed.entry[0])
     return None
 
-  def GetTrackerIssuesByText(self, search_text, full_text=False):
+  def GetTrackerIssuesByText(self, search_text, full_text=False,
+                             only_open=True):
     """Find all Tracker Issues that contain the text search_text."""
     if not full_text:
-      search_text = 'summary:' + search_text
+      search_text = 'summary:"%s"' % search_text
+    if only_open:
+      search_text += ' is:open'
     query = gdata.projecthosting.client.Query(text_query=search_text)
     feed = self._QueryTracker(query)
     if feed:
