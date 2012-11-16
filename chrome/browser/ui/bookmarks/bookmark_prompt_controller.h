@@ -57,6 +57,9 @@ class BookmarkPromptController : public chrome::BrowserListObserver,
   // Disable bookmark prompt feature in a profile in |prefs|.
   static void DisableBookmarkPrompt(PrefServiceBase* prefs);
 
+  // True if bookmark prompt feature is enabled, otherwise false.
+  static bool IsEnabled();
+
  private:
   // TabStripModelObserver
   virtual void ActiveTabChanged(content::WebContents* old_contents,

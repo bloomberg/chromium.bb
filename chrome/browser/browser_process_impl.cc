@@ -803,7 +803,8 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 #endif
 
 #if !defined(OS_ANDROID)
-  if (browser_defaults::bookmarks_enabled)
+  if (browser_defaults::bookmarks_enabled &&
+      BookmarkPromptController::IsEnabled())
     bookmark_prompt_controller_.reset(new BookmarkPromptController());
 #endif
 }

@@ -20,7 +20,7 @@
 class BookmarkPromptControllerTest : public BrowserWithTestWindowTest {
  public:
   BookmarkPromptControllerTest() : field_trial_list_(NULL), page_id_(0) {
-    base::FieldTrialList::CreateFieldTrial("BookmarkPrompt", "V1");
+    base::FieldTrialList::CreateFieldTrial("BookmarkPrompt", "Experiment");
   }
 
  protected:

@@ -4,22 +4,10 @@
 
 #include "chrome/browser/bookmarks/bookmark_prompt_prefs.h"
 
-#include "base/metrics/field_trial.h"
 #include "base/prefs/public/pref_service_base.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
-
-// This function checks field trial "BookmarkPrompt" managed by
-// VariationsService.
-bool IsBookmarkFieldTrialActive() {
-  base::FieldTrial* trial = base::FieldTrialList::Find("BookmarkPrompt");
-  if (!trial) {
-    DVLOG(1) << "BookmarkPrompt field trial was not found.";
-    return false;
-  }
-  return trial->group_name() == "V1";
-}
 
 }  // namespace
 
@@ -44,8 +32,7 @@ void BookmarkPromptPrefs::IncrementPromptImpressionCount() {
 }
 
 bool BookmarkPromptPrefs::IsBookmarkPromptEnabled() const {
-  return prefs_->GetBoolean(prefs::kBookmarkPromptEnabled) &&
-         IsBookmarkFieldTrialActive();
+  return prefs_->GetBoolean(prefs::kBookmarkPromptEnabled);
 }
 
 // static
