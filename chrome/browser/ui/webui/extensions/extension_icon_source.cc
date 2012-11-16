@@ -15,6 +15,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
@@ -57,9 +58,7 @@ SkBitmap* ToBitmap(const unsigned char* data, size_t size) {
 
 ExtensionIconSource::ExtensionIconSource(Profile* profile)
     : DataSource(chrome::kChromeUIExtensionIconHost, MessageLoop::current()),
-      profile_(profile),
-      next_tracker_id_(0) {
-  tracker_.reset(new ImageLoadingTracker(this));
+      profile_(profile) {
 }
 
 struct ExtensionIconSource::ExtensionIconRequest {
@@ -188,11 +187,10 @@ void ExtensionIconSource::LoadDefaultImage(int request_id) {
 void ExtensionIconSource::LoadExtensionImage(const ExtensionResource& icon,
                                              int request_id) {
   ExtensionIconRequest* request = GetData(request_id);
-  tracker_map_[next_tracker_id_++] = request_id;
-  tracker_->LoadImage(request->extension,
-                      icon,
-                      gfx::Size(request->size, request->size),
-                      ImageLoadingTracker::DONT_CACHE);
+  extensions::ImageLoader::Get(profile_)->LoadImageAsync(
+      request->extension, icon,
+      gfx::Size(request->size, request->size),
+      base::Bind(&ExtensionIconSource::OnImageLoaded, this, request_id));
 }
 
 void ExtensionIconSource::LoadFaviconImage(int request_id) {
@@ -243,12 +241,8 @@ void ExtensionIconSource::OnFaviconDataAvailable(
   }
 }
 
-void ExtensionIconSource::OnImageLoaded(const gfx::Image& image,
-                                        const std::string& extension_id,
-                                        int index) {
-  int request_id = tracker_map_[index];
-  tracker_map_.erase(tracker_map_.find(index));
-
+void ExtensionIconSource::OnImageLoaded(int request_id,
+                                        const gfx::Image& image) {
   if (image.IsEmpty())
     LoadIconFailed(request_id);
   else

@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
@@ -376,9 +377,9 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(
       extension_(NULL),
       install_ui_(ExtensionInstallUI::Create(ProfileForWebContents(contents))),
       delegate_(NULL),
-      prompt_(ProfileForWebContents(contents), UNSET_PROMPT_TYPE),
-      prompt_type_(UNSET_PROMPT_TYPE),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
+      profile_(ProfileForWebContents(contents)),
+      prompt_(profile_, UNSET_PROMPT_TYPE),
+      prompt_type_(UNSET_PROMPT_TYPE) {
 }
 
 ExtensionInstallPrompt::~ExtensionInstallPrompt() {
@@ -529,16 +530,15 @@ void ExtensionInstallPrompt::SetIcon(const SkBitmap* image) {
   }
 }
 
-void ExtensionInstallPrompt::OnImageLoaded(const gfx::Image& image,
-                                           const std::string& extension_id,
-                                           int index) {
+void ExtensionInstallPrompt::OnImageLoaded(const gfx::Image& image) {
   SetIcon(image.IsEmpty() ? NULL : image.ToSkBitmap());
   FetchOAuthIssueAdviceIfNeeded();
 }
 
 void ExtensionInstallPrompt::LoadImageIfNeeded() {
   // Bundle install prompts do not have an icon.
-  if (!icon_.empty()) {
+  // Also |profile_| can be NULL in unit tests.
+  if (!icon_.empty() || !profile_) {
     FetchOAuthIssueAdviceIfNeeded();
     return;
   }
@@ -552,9 +552,9 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
   // TODO(tbarzic): We should use IconImage here and load the required bitmap
   //     lazily.
   int pixel_size = GetSizeForMaxScaleFactor(kIconSize);
-  tracker_.LoadImage(extension_, image,
-                     gfx::Size(pixel_size, pixel_size),
-                     ImageLoadingTracker::DONT_CACHE);
+  extensions::ImageLoader::Get(profile_)->LoadImageAsync(
+      extension_, image, gfx::Size(pixel_size, pixel_size),
+      base::Bind(&ExtensionInstallPrompt::OnImageLoaded, AsWeakPtr()));
 }
 
 void ExtensionInstallPrompt::FetchOAuthIssueAdviceIfNeeded() {

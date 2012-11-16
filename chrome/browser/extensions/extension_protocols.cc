@@ -18,7 +18,7 @@
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -378,7 +378,7 @@ ExtensionProtocolHandler::MaybeCreateJob(
     FilePath request_path =
         extension_file_util::ExtensionURLToRelativeFilePath(request->url());
     int resource_id;
-    if (ImageLoadingTracker::IsComponentExtensionResource(extension,
+    if (extensions::ImageLoader::IsComponentExtensionResource(extension,
         request_path, &resource_id)) {
       relative_path = relative_path.Append(request_path);
       relative_path = relative_path.NormalizePathSeparators();

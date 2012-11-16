@@ -13,7 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -78,113 +78,49 @@ void UnregisterAndReplaceOverrideForWebContents(
       content::PAGE_TRANSITION_RELOAD, std::string());
 }
 
-// Helper class that is used to track the loading of the favicon of an
-// extension.
-class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
- public:
-  ExtensionWebUIImageLoadingTracker(Profile* profile,
-                                    FaviconService::GetFaviconRequest* request,
-                                    const GURL& page_url)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
-        request_(request),
-        extension_(NULL) {
-    // Even when the extensions service is enabled by default, it's still
-    // disabled in incognito mode.
-    ExtensionService* service = profile->GetExtensionService();
-    if (service)
-      extension_ = service->extensions()->GetByID(page_url.host());
-  }
+// Forwards the result of the request. If no favicon was available then
+// |image| will be empty. Once the result has been forwarded the instance is
+// deleted.
+void ForwardFaviconResult(FaviconService::GetFaviconRequest* request,
+                          const gfx::Image& image) {
+  std::vector<history::FaviconBitmapResult> favicon_bitmap_results;
+  const std::vector<gfx::ImageSkiaRep>& image_reps =
+      image.AsImageSkia().image_reps();
+  for (size_t i = 0; i < image_reps.size(); ++i) {
+    const gfx::ImageSkiaRep& image_rep = image_reps[i];
+    scoped_refptr<base::RefCountedBytes> bitmap_data(
+        new base::RefCountedBytes());
+    if (gfx::PNGCodec::EncodeBGRASkBitmap(image_rep.sk_bitmap(),
+                                          false,
+                                          &bitmap_data->data())) {
+      history::FaviconBitmapResult bitmap_result;
+      bitmap_result.bitmap_data = bitmap_data;
+      bitmap_result.pixel_size = gfx::Size(image_rep.pixel_width(),
+                                            image_rep.pixel_height());
+      // Leave |bitmap_result|'s icon URL as the default of GURL().
+      bitmap_result.icon_type = history::FAVICON;
 
-  void Init() {
-    if (extension_) {
-      // Fetch resources for all supported scale factors for which there are
-      // resources. Load image reps for all supported scale factors immediately
-      // instead of in an as needed fashion to be consistent with how favicons
-      // are requested for chrome:// and page URLs.
-      const std::vector<ui::ScaleFactor>& scale_factors =
-          ui::GetSupportedScaleFactors();
-      std::vector<ImageLoadingTracker::ImageRepresentation> info_list;
-      for (size_t i = 0; i < scale_factors.size(); ++i) {
-        float scale = ui::GetScaleFactorScale(scale_factors[i]);
-        int pixel_size = static_cast<int>(gfx::kFaviconSize * scale);
-        ExtensionResource icon_resource =
-            extension_->GetIconResource(pixel_size,
-                                        ExtensionIconSet::MATCH_BIGGER);
-
-        info_list.push_back(
-            ImageLoadingTracker::ImageRepresentation(
-                icon_resource,
-                ImageLoadingTracker::ImageRepresentation::ALWAYS_RESIZE,
-                gfx::Size(pixel_size, pixel_size),
-                scale_factors[i]));
-      }
-
-      tracker_.LoadImages(extension_, info_list,
-                          ImageLoadingTracker::DONT_CACHE);
+      favicon_bitmap_results.push_back(bitmap_result);
     } else {
-      ForwardResult(gfx::Image());
+      NOTREACHED() << "Could not encode extension favicon";
     }
   }
 
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE {
-    ForwardResult(image);
+  // Populate IconURLSizesMap such that all the icon URLs in
+  // |favicon_bitmap_results| are present in |icon_url_sizes|.
+  // Populate the favicon sizes with the relevant pixel sizes in the
+  // extension's icon set.
+  history::IconURLSizesMap icon_url_sizes;
+  for (size_t i = 0; i < favicon_bitmap_results.size(); ++i) {
+    const history::FaviconBitmapResult& bitmap_result =
+        favicon_bitmap_results[i];
+    const GURL& icon_url = bitmap_result.icon_url;
+    icon_url_sizes[icon_url].push_back(bitmap_result.pixel_size);
   }
 
- private:
-  ~ExtensionWebUIImageLoadingTracker() {}
-
-  // Forwards the result of the request. If no favicon was available then
-  // |image| will be empty. Once the result has been forwarded the instance is
-  // deleted.
-  void ForwardResult(const gfx::Image& image) {
-    std::vector<history::FaviconBitmapResult> favicon_bitmap_results;
-    const std::vector<gfx::ImageSkiaRep>& image_reps =
-        image.AsImageSkia().image_reps();
-    for (size_t i = 0; i < image_reps.size(); ++i) {
-      const gfx::ImageSkiaRep& image_rep = image_reps[i];
-      scoped_refptr<base::RefCountedBytes> bitmap_data(
-          new base::RefCountedBytes());
-      if (gfx::PNGCodec::EncodeBGRASkBitmap(image_rep.sk_bitmap(),
-                                            false,
-                                            &bitmap_data->data())) {
-        history::FaviconBitmapResult bitmap_result;
-        bitmap_result.bitmap_data = bitmap_data;
-        bitmap_result.pixel_size = gfx::Size(image_rep.pixel_width(),
-                                             image_rep.pixel_height());
-        // Leave |bitmap_result|'s icon URL as the default of GURL().
-        bitmap_result.icon_type = history::FAVICON;
-
-        favicon_bitmap_results.push_back(bitmap_result);
-      } else {
-        NOTREACHED() << "Could not encode extension favicon";
-      }
-    }
-
-    // Populate IconURLSizesMap such that all the icon URLs in
-    // |favicon_bitmap_results| are present in |icon_url_sizes|.
-    // Populate the favicon sizes with the relevant pixel sizes in the
-    // extension's icon set.
-    history::IconURLSizesMap icon_url_sizes;
-    for (size_t i = 0; i < favicon_bitmap_results.size(); ++i) {
-      const history::FaviconBitmapResult& bitmap_result =
-          favicon_bitmap_results[i];
-      const GURL& icon_url = bitmap_result.icon_url;
-      icon_url_sizes[icon_url].push_back(bitmap_result.pixel_size);
-    }
-
-    request_->ForwardResultAsync(request_->handle(), favicon_bitmap_results,
-                                 icon_url_sizes);
-    delete this;
-  }
-
-  ImageLoadingTracker tracker_;
-  scoped_refptr<FaviconService::GetFaviconRequest> request_;
-  const Extension* extension_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionWebUIImageLoadingTracker);
-};
+  request->ForwardResultAsync(request->handle(), favicon_bitmap_results,
+                              icon_url_sizes);
+}
 
 }  // namespace
 
@@ -464,8 +400,43 @@ void ExtensionWebUI::UnregisterChromeURLOverrides(
 // static
 void ExtensionWebUI::GetFaviconForURL(Profile* profile,
     FaviconService::GetFaviconRequest* request, const GURL& page_url) {
-  // tracker deletes itself when done.
-  ExtensionWebUIImageLoadingTracker* tracker =
-      new ExtensionWebUIImageLoadingTracker(profile, request, page_url);
-  tracker->Init();
+  // Even when the extensions service is enabled by default, it's still
+  // disabled in incognito mode.
+  ExtensionService* service = profile->GetExtensionService();
+  if (!service) {
+    ForwardFaviconResult(request, gfx::Image());
+    return;
+  }
+  const Extension* extension = service->extensions()->GetByID(page_url.host());
+  if (!extension) {
+    ForwardFaviconResult(request, gfx::Image());
+    return;
+  }
+
+  // Fetch resources for all supported scale factors for which there are
+  // resources. Load image reps for all supported scale factors immediately
+  // instead of in an as needed fashion to be consistent with how favicons
+  // are requested for chrome:// and page URLs.
+  const std::vector<ui::ScaleFactor>& scale_factors =
+      ui::GetSupportedScaleFactors();
+  std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
+  for (size_t i = 0; i < scale_factors.size(); ++i) {
+    float scale = ui::GetScaleFactorScale(scale_factors[i]);
+    int pixel_size = static_cast<int>(gfx::kFaviconSize * scale);
+    ExtensionResource icon_resource =
+        extension->GetIconResource(pixel_size,
+                                   ExtensionIconSet::MATCH_BIGGER);
+
+    info_list.push_back(
+        extensions::ImageLoader::ImageRepresentation(
+            icon_resource,
+            extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
+            gfx::Size(pixel_size, pixel_size),
+            scale_factors[i]));
+  }
+
+  extensions::ImageLoader::Get(profile)->LoadImagesAsync(
+      extension, info_list,
+      base::Bind(&ForwardFaviconResult,
+                 scoped_refptr<FaviconService::GetFaviconRequest>(request)));
 }

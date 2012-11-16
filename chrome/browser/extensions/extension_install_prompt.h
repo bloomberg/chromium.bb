@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/crx_installer_error.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "extensions/common/url_pattern.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -43,8 +42,9 @@ class PermissionSet;
 }  // namespace extensions
 
 // Displays all the UI around extension installation.
-class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
-                               public OAuth2MintTokenFlow::Delegate {
+class ExtensionInstallPrompt
+    : public OAuth2MintTokenFlow::Delegate,
+      public base::SupportsWeakPtr<ExtensionInstallPrompt> {
  public:
   enum PromptType {
     UNSET_PROMPT_TYPE = -1,
@@ -260,11 +260,6 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
   // Installation failed. This is declared virtual for testing.
   virtual void OnInstallFailure(const extensions::CrxInstallerError& error);
 
-  // ImageLoadingTracker::Observer:
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE;
-
  protected:
   friend class extensions::ExtensionWebstorePrivateApiTest;
   friend class WebstoreStandaloneInstallUnpackFailureTest;
@@ -279,6 +274,9 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
   // Sets the icon that will be used in any UI. If |icon| is NULL, or contains
   // an empty bitmap, then a default icon will be used instead.
   void SetIcon(const SkBitmap* icon);
+
+  // ImageLoader callback.
+  void OnImageLoaded(const gfx::Image& image);
 
   // Starts the process of showing a confirmation UI, which is split into two.
   // 1) Set off a 'load icon' task.
@@ -319,6 +317,8 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
   // The delegate we will call Proceed/Abort on after confirmation UI.
   Delegate* delegate_;
 
+  Profile* profile_;
+
   // A pre-filled prompt.
   Prompt prompt_;
 
@@ -326,10 +326,6 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
   PromptType prompt_type_;
 
   scoped_ptr<OAuth2MintTokenFlow> token_flow_;
-
-  // Keeps track of extension images being loaded on the File thread for the
-  // purpose of showing the install UI.
-  ImageLoadingTracker tracker_;
 
   // Used to show the confirm dialog.
   ShowDialogCallback show_dialog_callback_;

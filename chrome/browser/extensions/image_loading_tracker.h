@@ -122,14 +122,6 @@ class ImageLoadingTracker : public content::NotificationObserver {
   // OnImageLoaded() the next time LoadImage() is invoked.
   int next_id() const { return next_id_; }
 
-  // Checks whether image is a component extension resource. Returns false
-  // if a given |resource| does not have a corresponding image in bundled
-  // resources. Otherwise fills |resource_id|.
-  static bool IsComponentExtensionResource(
-      const extensions::Extension* extension,
-      const FilePath& resource_path,
-      int* resource_id);
-
  private:
   // Information for pending resource load operation for one or more image
   // representations.

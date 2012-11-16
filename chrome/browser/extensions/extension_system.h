@@ -164,8 +164,9 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual ExtensionDevToolsManager* devtools_manager() OVERRIDE;
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
   virtual AlarmManager* alarm_manager() OVERRIDE;
-  virtual StateStore* state_store() OVERRIDE;
-  virtual ShellWindowGeometryCache* shell_window_geometry_cache() OVERRIDE;
+  virtual StateStore* state_store() OVERRIDE;  // shared
+  virtual ShellWindowGeometryCache* shell_window_geometry_cache()
+      OVERRIDE;  // shared
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue()
       OVERRIDE;  // shared
   virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared

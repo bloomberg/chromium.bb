@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class ExtensionIconSet;
@@ -48,8 +48,7 @@ class Extension;
 //  2) If a 16px icon was requested, the favicon for extension's launch URL.
 //  3) The default extension / application icon if there are still no matches.
 //
-class ExtensionIconSource : public ChromeURLDataManager::DataSource,
-                            public ImageLoadingTracker::Observer {
+class ExtensionIconSource : public ChromeURLDataManager::DataSource {
  public:
   explicit ExtensionIconSource(Profile* profile);
 
@@ -109,10 +108,8 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
       FaviconService::Handle request_handle,
       const history::FaviconBitmapResult& bitmap_result);
 
-  // ImageLoadingTracker::Observer
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int id) OVERRIDE;
+  // ImageLoader callback
+  void OnImageLoaded(int request_id, const gfx::Image& image);
 
   // Called when the extension doesn't have an icon. We fall back to multiple
   // sources, using the following order:
@@ -150,10 +147,6 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
 
   // Maps request_ids to ExtensionIconRequests.
   std::map<int, ExtensionIconRequest*> request_map_;
-
-  scoped_ptr<ImageLoadingTracker> tracker_;
-
-  int next_tracker_id_;
 
   scoped_ptr<SkBitmap> default_app_data_;
 

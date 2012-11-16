@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/extensions/image_loader.h"
 
 #include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
@@ -24,11 +24,11 @@
 
 using content::BrowserThread;
 using extensions::Extension;
+using extensions::ImageLoader;
 
-class ImageLoadingTrackerTest : public testing::Test,
-                                public ImageLoadingTracker::Observer {
+class ImageLoaderTest : public testing::Test {
  public:
-  ImageLoadingTrackerTest()
+  ImageLoaderTest()
       : image_loaded_count_(0),
         quit_in_image_loaded_(false),
         ui_thread_(BrowserThread::UI, &ui_loop_),
@@ -36,9 +36,7 @@ class ImageLoadingTrackerTest : public testing::Test,
         io_thread_(BrowserThread::IO) {
   }
 
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE {
+  void OnImageLoaded(const gfx::Image& image) {
     image_loaded_count_++;
     if (quit_in_image_loaded_)
       MessageLoop::current()->Quit();
@@ -108,8 +106,8 @@ class ImageLoadingTrackerTest : public testing::Test,
   content::TestBrowserThread io_thread_;
 };
 
-// Tests asking ImageLoadingTracker to cache pushes the result to the Extension.
-TEST_F(ImageLoadingTrackerTest, Cache) {
+// Tests loading an image works correctly.
+TEST_F(ImageLoaderTest, LoadImage) {
   scoped_refptr<Extension> extension(CreateExtension(
       "image_loading_tracker", Extension::INVALID));
   ASSERT_TRUE(extension.get() != NULL);
@@ -119,11 +117,12 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
                                  ExtensionIconSet::MATCH_EXACTLY);
   gfx::Size max_size(extension_misc::EXTENSION_ICON_SMALLISH,
                      extension_misc::EXTENSION_ICON_SMALLISH);
-  ImageLoadingTracker loader(this);
-  loader.LoadImage(extension.get(),
-                   image_resource,
-                   max_size,
-                   ImageLoadingTracker::CACHE);
+  ImageLoader loader;
+  loader.LoadImageAsync(extension.get(),
+                        image_resource,
+                        max_size,
+                        base::Bind(&ImageLoaderTest::OnImageLoaded,
+                                   base::Unretained(this)));
 
   // The image isn't cached, so we should not have received notification.
   EXPECT_EQ(0, image_loaded_count());
@@ -136,30 +135,11 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
   // Check that the image was loaded.
   EXPECT_EQ(extension_misc::EXTENSION_ICON_SMALLISH,
             image_.ToSkBitmap()->width());
-
-  // The image should be cached in the Extension.
-  EXPECT_TRUE(extension->HasCachedImage(image_resource, max_size));
-
-  // Make sure the image is in the extension.
-  EXPECT_EQ(extension_misc::EXTENSION_ICON_SMALLISH,
-            extension->GetCachedImage(image_resource, max_size).width());
-
-  // Ask the tracker for the image again, this should call us back immediately.
-  loader.LoadImage(extension.get(),
-                   image_resource,
-                   max_size,
-                   ImageLoadingTracker::CACHE);
-  // We should have gotten the image.
-  EXPECT_EQ(1, image_loaded_count());
-
-  // Check that the image was loaded.
-  EXPECT_EQ(extension_misc::EXTENSION_ICON_SMALLISH,
-            image_.ToSkBitmap()->width());
 }
 
 // Tests deleting an extension while waiting for the image to load doesn't cause
 // problems.
-TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
+TEST_F(ImageLoaderTest, DeleteExtensionWhileWaitingForCache) {
   scoped_refptr<Extension> extension(CreateExtension(
       "image_loading_tracker", Extension::INVALID));
   ASSERT_TRUE(extension.get() != NULL);
@@ -167,12 +147,16 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
   ExtensionResource image_resource =
       extension->GetIconResource(extension_misc::EXTENSION_ICON_SMALLISH,
                                  ExtensionIconSet::MATCH_EXACTLY);
-  ImageLoadingTracker loader(this);
-  loader.LoadImage(extension.get(),
-                   image_resource,
-                   gfx::Size(extension_misc::EXTENSION_ICON_SMALLISH,
-                             extension_misc::EXTENSION_ICON_SMALLISH),
-                   ImageLoadingTracker::CACHE);
+  gfx::Size max_size(extension_misc::EXTENSION_ICON_SMALLISH,
+                     extension_misc::EXTENSION_ICON_SMALLISH);
+  ImageLoader loader;
+  std::set<int> sizes;
+  sizes.insert(extension_misc::EXTENSION_ICON_SMALLISH);
+  loader.LoadImageAsync(extension.get(),
+                        image_resource,
+                        max_size,
+                        base::Bind(&ImageLoaderTest::OnImageLoaded,
+                                   base::Unretained(this)));
 
   // The image isn't cached, so we should not have received notification.
   EXPECT_EQ(0, image_loaded_count());
@@ -201,26 +185,28 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
 }
 
 // Tests loading multiple dimensions of the same image.
-TEST_F(ImageLoadingTrackerTest, MultipleImages) {
+TEST_F(ImageLoaderTest, MultipleImages) {
   scoped_refptr<Extension> extension(CreateExtension(
       "image_loading_tracker", Extension::INVALID));
   ASSERT_TRUE(extension.get() != NULL);
 
-  std::vector<ImageLoadingTracker::ImageRepresentation> info_list;
+  std::vector<ImageLoader::ImageRepresentation> info_list;
   int sizes[] = {extension_misc::EXTENSION_ICON_SMALLISH,
                  extension_misc::EXTENSION_ICON_BITTY};
   for (size_t i = 0; i < arraysize(sizes); ++i) {
     ExtensionResource resource =
         extension->GetIconResource(sizes[i], ExtensionIconSet::MATCH_EXACTLY);
-    info_list.push_back(ImageLoadingTracker::ImageRepresentation(
+    info_list.push_back(ImageLoader::ImageRepresentation(
         resource,
-        ImageLoadingTracker::ImageRepresentation::RESIZE_WHEN_LARGER,
+        ImageLoader::ImageRepresentation::RESIZE_WHEN_LARGER,
         gfx::Size(sizes[i], sizes[i]),
         ui::SCALE_FACTOR_NONE));
   }
 
-  ImageLoadingTracker loader(this);
-  loader.LoadImages(extension.get(), info_list, ImageLoadingTracker::CACHE);
+  ImageLoader loader;
+  loader.LoadImagesAsync(extension.get(), info_list,
+                         base::Bind(&ImageLoaderTest::OnImageLoaded,
+                                    base::Unretained(this)));
 
   // The image isn't cached, so we should not have received notification.
   EXPECT_EQ(0, image_loaded_count());
@@ -243,4 +229,24 @@ TEST_F(ImageLoadingTrackerTest, MultipleImages) {
             img_rep1->pixel_width());
   EXPECT_EQ(extension_misc::EXTENSION_ICON_SMALLISH,
             img_rep2->pixel_width());
+}
+
+// Tests IsComponentExtensionResource function.
+TEST_F(ImageLoaderTest, IsComponentExtensionResource) {
+  scoped_refptr<Extension> extension(CreateExtension(
+      "file_manager", Extension::COMPONENT));
+  ASSERT_TRUE(extension.get() != NULL);
+
+  ExtensionResource resource =
+      extension->GetIconResource(extension_misc::EXTENSION_ICON_BITTY,
+                                 ExtensionIconSet::MATCH_EXACTLY);
+
+#if defined(FILE_MANAGER_EXTENSION)
+  int resource_id;
+  ASSERT_EQ(true,
+            ImageLoader::IsComponentExtensionResource(extension.get(),
+                                                      resource.relative_path(),
+                                                      &resource_id));
+  ASSERT_EQ(IDR_FILE_MANAGER_ICON_16, resource_id);
+#endif
 }

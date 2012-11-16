@@ -16,7 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -60,7 +60,7 @@ bool ExtensionNameComparator::operator()(const Extension* x,
 // Background application representation, private to the
 // BackgroundApplicationListModel class.
 class BackgroundApplicationListModel::Application
-  : public ImageLoadingTracker::Observer {
+    : public base::SupportsWeakPtr<Application> {
  public:
   Application(BackgroundApplicationListModel* model,
               const Extension* an_extension);
@@ -68,9 +68,7 @@ class BackgroundApplicationListModel::Application
   virtual ~Application();
 
   // Invoked when a request icon is available.
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE;
+  void OnImageLoaded(const gfx::Image& image);
 
   // Uses the FILE thread to request this extension's icon, sized
   // appropriately.
@@ -79,7 +77,6 @@ class BackgroundApplicationListModel::Application
   const Extension* extension_;
   scoped_ptr<gfx::ImageSkia> icon_;
   BackgroundApplicationListModel* model_;
-  ImageLoadingTracker tracker_;
 };
 
 namespace {
@@ -141,14 +138,11 @@ BackgroundApplicationListModel::Application::Application(
     const Extension* extension)
     : extension_(extension),
       icon_(NULL),
-      model_(model),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
+      model_(model) {
 }
 
 void BackgroundApplicationListModel::Application::OnImageLoaded(
-    const gfx::Image& image,
-    const std::string& extension_id,
-    int index) {
+    const gfx::Image& image) {
   if (image.IsEmpty())
     return;
   icon_.reset(image.CopyImageSkia());
@@ -159,8 +153,9 @@ void BackgroundApplicationListModel::Application::RequestIcon(
     extension_misc::ExtensionIcons size) {
   ExtensionResource resource = extension_->GetIconResource(
       size, ExtensionIconSet::MATCH_BIGGER);
-  tracker_.LoadImage(extension_, resource, gfx::Size(size, size),
-                     ImageLoadingTracker::CACHE);
+  extensions::ImageLoader::Get(model_->profile_)->LoadImageAsync(
+      extension_, resource, gfx::Size(size, size),
+      base::Bind(&Application::OnImageLoaded, AsWeakPtr()));
 }
 
 BackgroundApplicationListModel::~BackgroundApplicationListModel() {

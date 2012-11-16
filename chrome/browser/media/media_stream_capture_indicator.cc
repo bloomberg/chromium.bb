@@ -11,6 +11,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
@@ -125,7 +126,7 @@ MediaStreamCaptureIndicator::MediaStreamCaptureIndicator()
       mic_image_(NULL),
       camera_image_(NULL),
       balloon_image_(NULL),
-      request_index_(0) {
+      should_show_balloon_(false) {
 }
 
 MediaStreamCaptureIndicator::~MediaStreamCaptureIndicator() {
@@ -228,7 +229,6 @@ void MediaStreamCaptureIndicator::CreateStatusTray() {
   status_icon_ = status_tray->CreateStatusIcon();
 
   EnsureStatusTrayIconResources();
-  EnsureImageLoadingTracker();
 }
 
 void MediaStreamCaptureIndicator::EnsureStatusTrayIconResources() {
@@ -267,14 +267,23 @@ void MediaStreamCaptureIndicator::ShowBalloon(
   const extensions::Extension* extension =
       GetExtension(render_process_id, render_view_id);
   if (extension) {
-    pending_messages_[request_index_++] =
+    string16 message =
         l10n_util::GetStringFUTF16(message_id,
                                    UTF8ToUTF16(extension->name()));
-    tracker_->LoadImage(
+
+    WebContents* web_contents = tab_util::GetWebContentsByID(
+        render_process_id, render_view_id);
+
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+    should_show_balloon_ = true;
+    extensions::ImageLoader::Get(profile)->LoadImageAsync(
         extension,
         extension->GetIconResource(32, ExtensionIconSet::MATCH_BIGGER),
         gfx::Size(32, 32),
-        ImageLoadingTracker::CACHE);
+        base::Bind(&MediaStreamCaptureIndicator::OnImageLoaded,
+                   this, message));
     return;
   }
 
@@ -285,12 +294,10 @@ void MediaStreamCaptureIndicator::ShowBalloon(
 }
 
 void MediaStreamCaptureIndicator::OnImageLoaded(
-    const gfx::Image& image,
-    const std::string& extension_id,
-    int index) {
-  string16 message;
-  message.swap(pending_messages_[index]);
-  pending_messages_.erase(index);
+    const string16& message,
+    const gfx::Image& image) {
+  if (!should_show_balloon_)
+    return;
 
   const gfx::ImageSkia* image_skia = !image.IsEmpty() ? image.ToImageSkia() :
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -302,8 +309,8 @@ void MediaStreamCaptureIndicator::Hide() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(tabs_.empty());
 
-  // We have to destroy |tracker_| on the UI thread.
-  tracker_.reset();
+  // Make sure images that finish loading don't cause a balloon to be shown.
+  should_show_balloon_ = false;
 
   if (!status_icon_)
     return;
@@ -467,14 +474,4 @@ bool MediaStreamCaptureIndicator::IsProcessCapturing(int render_process_id,
   if (iter == tabs_.end())
     return false;
   return (iter->audio_ref_count > 0 || iter->video_ref_count > 0);
-}
-
-void MediaStreamCaptureIndicator::EnsureImageLoadingTracker() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (tracker_.get())
-    return;
-
-  tracker_.reset(new ImageLoadingTracker(this));
-  pending_messages_.clear();
-  request_index_ = 0;
 }

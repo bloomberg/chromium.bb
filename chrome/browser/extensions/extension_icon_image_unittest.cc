@@ -7,7 +7,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -65,20 +65,16 @@ class MockImageSkiaSource : public gfx::ImageSkiaSource {
 };
 
 // Helper class for synchronously loading extension image resource.
-class TestImageLoader : public ImageLoadingTracker::Observer {
+class TestImageLoader {
  public:
   explicit TestImageLoader(const Extension* extension)
       : extension_(extension),
         waiting_(false),
-        image_loaded_(false),
-        ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
+        image_loaded_(false) {
   }
   virtual ~TestImageLoader() {}
 
-  // ImageLoadingTracker::Observer override.
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE {
+  void OnImageLoaded(const gfx::Image& image) {
     image_ = image;
     image_loaded_ = true;
     if (waiting_)
@@ -86,14 +82,13 @@ class TestImageLoader : public ImageLoadingTracker::Observer {
   }
 
   SkBitmap LoadBitmap(const std::string& path,
-                      int size,
-                      ImageLoadingTracker::CacheParam cache_param) {
+                      int size) {
     image_loaded_ = false;
 
-    tracker_.LoadImage(extension_,
-                       extension_->GetResource(path),
-                       gfx::Size(size, size),
-                       cache_param);
+    image_loader_.LoadImageAsync(
+        extension_, extension_->GetResource(path), gfx::Size(size, size),
+        base::Bind(&TestImageLoader::OnImageLoaded,
+                   base::Unretained(this)));
 
     // If |image_| still hasn't been loaded (i.e. it is being loaded
     // asynchronously), wait for it.
@@ -113,7 +108,7 @@ class TestImageLoader : public ImageLoadingTracker::Observer {
   bool waiting_;
   bool image_loaded_;
   gfx::Image image_;
-  ImageLoadingTracker tracker_;
+  extensions::ImageLoader image_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(TestImageLoader);
 };
@@ -192,10 +187,9 @@ class ExtensionIconImageTest : public testing::Test,
   // The image will be loaded from the relative path |path|.
   SkBitmap GetTestBitmap(const Extension* extension,
                          const std::string& path,
-                         int size,
-                         ImageLoadingTracker::CacheParam cache_param) {
+                         int size) {
     TestImageLoader image_loader(extension);
-    return image_loader.LoadBitmap(path, size, cache_param);
+    return image_loader.LoadBitmap(path, size);
   }
 
  private:
@@ -221,13 +215,13 @@ TEST_F(ExtensionIconImageTest, Basic) {
   // Load images we expect to find as representations in icon_image, so we
   // can later use them to validate icon_image.
   SkBitmap bitmap_16 =
-      GetTestBitmap(extension, "16.png", 16, ImageLoadingTracker::DONT_CACHE);
+      GetTestBitmap(extension, "16.png", 16);
   ASSERT_FALSE(bitmap_16.empty());
 
   // There is no image of size 32 defined in the extension manifest, so we
   // should expect manifest image of size 48 resized to size 32.
   SkBitmap bitmap_48_resized_to_32 =
-      GetTestBitmap(extension, "48.png", 32, ImageLoadingTracker::DONT_CACHE);
+      GetTestBitmap(extension, "48.png", 32);
   ASSERT_FALSE(bitmap_48_resized_to_32.empty());
 
   IconImage image(extension, extension->icons(), 16, default_icon, this);
@@ -287,7 +281,7 @@ TEST_F(ExtensionIconImageTest, FallbackToSmallerWhenNoBigger) {
   // Load images we expect to find as representations in icon_image, so we
   // can later use them to validate icon_image.
   SkBitmap bitmap_48 =
-      GetTestBitmap(extension, "48.png", 48, ImageLoadingTracker::DONT_CACHE);
+      GetTestBitmap(extension, "48.png", 48);
   ASSERT_FALSE(bitmap_48.empty());
 
   IconImage image(extension, extension->icons(), 32, default_icon, this);
@@ -322,7 +316,7 @@ TEST_F(ExtensionIconImageTest, FallbackToSmaller) {
   // Load images we expect to find as representations in icon_image, so we
   // can later use them to validate icon_image.
   SkBitmap bitmap_16 =
-      GetTestBitmap(extension, "16.png", 16, ImageLoadingTracker::DONT_CACHE);
+      GetTestBitmap(extension, "16.png", 16);
   ASSERT_FALSE(bitmap_16.empty());
 
   IconImage image(extension, extension->icons(), 17, default_icon, this);
@@ -474,10 +468,12 @@ TEST_F(ExtensionIconImageTest, LoadPrecachedImage) {
 
   gfx::ImageSkia default_icon = GetDefaultIcon();
 
-  // Note the cache parameter.
+  // Store the image in the cache.
   SkBitmap bitmap_16 =
-      GetTestBitmap(extension, "16.png", 16, ImageLoadingTracker::CACHE);
+      GetTestBitmap(extension, "16.png", 16);
   ASSERT_FALSE(bitmap_16.empty());
+  extension->SetCachedImage(extension->GetResource("16.png"), bitmap_16,
+                            gfx::Size(16, 16));
 
   IconImage image(extension, extension->icons(), 16, default_icon, this);
 
@@ -510,7 +506,7 @@ TEST_F(ExtensionIconImageTest, IconImageDestruction) {
   // Load images we expect to find as representations in icon_image, so we
   // can later use them to validate icon_image.
   SkBitmap bitmap_16 =
-      GetTestBitmap(extension, "16.png", 16, ImageLoadingTracker::DONT_CACHE);
+      GetTestBitmap(extension, "16.png", 16);
   ASSERT_FALSE(bitmap_16.empty());
 
   scoped_ptr<IconImage> image(
