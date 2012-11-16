@@ -144,14 +144,9 @@ class DriveFileSyncService
       const fileapi::SyncStatusCallback& callback,
       fileapi::SyncStatusCode status);
 
-  void TryResumePendingTasks();
   void AppendNewRemoteChange(const GURL& origin,
                              google_apis::DocumentEntry* entry,
                              int64 changestamp);
-  void DidGetBatchSyncListData(scoped_ptr<TaskToken> token,
-                               const GURL& origin,
-                               google_apis::GDataErrorCode error,
-                               scoped_ptr<base::Value> data);
 
   scoped_ptr<DriveMetadataStore> metadata_store_;
   scoped_ptr<DriveFileSyncClient> sync_client_;

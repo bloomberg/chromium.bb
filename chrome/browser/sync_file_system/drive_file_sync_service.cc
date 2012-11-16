@@ -57,6 +57,53 @@ class DriveFileSyncService::TaskToken {
   DISALLOW_COPY_AND_ASSIGN(TaskToken);
 };
 
+
+DriveFileSyncService::RemoteChange::RemoteChange()
+    : changestamp(0),
+      change(fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+             fileapi::SYNC_FILE_TYPE_UNKNOWN) {
+}
+
+DriveFileSyncService::RemoteChange::RemoteChange(
+    int64 changestamp,
+    const std::string& resource_id,
+    const fileapi::FileSystemURL& url,
+    const fileapi::FileChange& change)
+    : changestamp(changestamp),
+      resource_id(resource_id),
+      url(url),
+      change(change) {
+}
+
+DriveFileSyncService::RemoteChange::~RemoteChange() {
+}
+
+bool DriveFileSyncService::RemoteChangeComparator::operator()(
+    const RemoteChange& left,
+    const RemoteChange& right) {
+  // This should return true if |right| has higher priority than |left|.
+  // Smaller changestamps have higher priorities (i.e. need to be processed
+  // earlier).
+  if (left.changestamp != right.changestamp)
+    return left.changestamp > right.changestamp;
+  return false;
+}
+
+// Called by CreateForTesting.
+DriveFileSyncService::DriveFileSyncService(
+    scoped_ptr<DriveFileSyncClient> sync_client,
+    scoped_ptr<DriveMetadataStore> metadata_store)
+    : status_(fileapi::SYNC_STATUS_OK),
+      largest_changestamp_(0),
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  token_.reset(new TaskToken(weak_factory_.GetWeakPtr()));
+  sync_client_ = sync_client.Pass();
+  metadata_store_ = metadata_store.Pass();
+
+  DidInitializeMetadataStore(GetToken(FROM_HERE),
+                             fileapi::SYNC_STATUS_OK, false);
+}
+
 DriveFileSyncService::DriveFileSyncService(Profile* profile)
     : status_(fileapi::SYNC_STATUS_OK),
       largest_changestamp_(0),
@@ -76,6 +123,9 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
                  base::Passed(GetToken(FROM_HERE))));
 }
 
+DriveFileSyncService::~DriveFileSyncService() {
+}
+
 // static
 scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
     scoped_ptr<DriveFileSyncClient> sync_client,
@@ -84,22 +134,135 @@ scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
       sync_client.Pass(), metadata_store.Pass()));
 }
 
-// Called by CreateForTesting.
-DriveFileSyncService::DriveFileSyncService(
-    scoped_ptr<DriveFileSyncClient> sync_client,
-    scoped_ptr<DriveMetadataStore> metadata_store)
-    : status_(fileapi::SYNC_STATUS_OK),
-      largest_changestamp_(0),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  token_.reset(new TaskToken(weak_factory_.GetWeakPtr()));
-  sync_client_ = sync_client.Pass();
-  metadata_store_ = metadata_store.Pass();
-
-  DidInitializeMetadataStore(GetToken(FROM_HERE),
-                             fileapi::SYNC_STATUS_OK, false);
+void DriveFileSyncService::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
 }
 
-DriveFileSyncService::~DriveFileSyncService() {
+void DriveFileSyncService::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void DriveFileSyncService::RegisterOriginForTrackingChanges(
+    const GURL& origin,
+    const fileapi::SyncStatusCallback& callback) {
+  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
+  if (!token) {
+    pending_tasks_.push_back(base::Bind(
+        &DriveFileSyncService::RegisterOriginForTrackingChanges,
+        weak_factory_.GetWeakPtr(), origin, callback));
+    return;
+  }
+
+  if (status_ != fileapi::SYNC_STATUS_OK) {
+    NotifyTaskDone(status_, token.Pass());
+    callback.Run(status_);
+    return;
+  }
+
+  if (metadata_store_->IsIncrementalSyncOrigin(origin) ||
+      metadata_store_->IsBatchSyncOrigin(origin)) {
+    NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());
+    callback.Run(fileapi::SYNC_STATUS_OK);
+    return;
+  }
+
+  DCHECK(!metadata_store_->sync_root_directory().empty());
+  sync_client_->GetDriveDirectoryForOrigin(
+      metadata_store_->sync_root_directory(), origin,
+      base::Bind(&DriveFileSyncService::DidGetDirectoryForOrigin,
+                 weak_factory_.GetWeakPtr(), base::Passed(&token),
+                 origin, callback));
+}
+
+void DriveFileSyncService::UnregisterOriginForTrackingChanges(
+    const GURL& origin,
+    const fileapi::SyncStatusCallback& callback) {
+  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
+  if (!token) {
+    pending_tasks_.push_back(base::Bind(
+        &DriveFileSyncService::UnregisterOriginForTrackingChanges,
+        weak_factory_.GetWeakPtr(), origin, callback));
+    return;
+  }
+
+  changestamp_map_.erase(origin);
+
+  std::vector<RemoteChange> new_queue;
+  while (!pending_changes_.empty()) {
+    if (pending_changes_.top().url.origin() != origin)
+      new_queue.push_back(pending_changes_.top());
+    pending_changes_.pop();
+  }
+  pending_changes_ = ChangeQueue(new_queue.begin(), new_queue.end());
+
+  metadata_store_->RemoveOrigin(origin, base::Bind(
+      &DriveFileSyncService::DidRemoveOriginOnMetadataStore,
+      weak_factory_.GetWeakPtr(), base::Passed(&token), callback));
+}
+
+void DriveFileSyncService::ProcessRemoteChange(
+    RemoteChangeProcessor* processor,
+    const fileapi::SyncFileCallback& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(fileapi::SYNC_STATUS_FAILED,
+               fileapi::FileSystemURL());
+}
+
+LocalChangeProcessor* DriveFileSyncService::GetLocalChangeProcessor() {
+  return this;
+}
+
+void DriveFileSyncService::GetConflictFiles(
+    const GURL& origin,
+    const fileapi::SyncFileSetCallback& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(fileapi::SYNC_STATUS_FAILED,
+               fileapi::FileSystemURLSet());
+}
+
+void DriveFileSyncService::GetRemoteFileMetadata(
+    const fileapi::FileSystemURL& url,
+    const fileapi::SyncFileMetadataCallback& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(fileapi::SYNC_STATUS_FAILED,
+               fileapi::SyncFileMetadata());
+}
+
+void DriveFileSyncService::ApplyLocalChange(
+    const fileapi::FileChange& change,
+    const FilePath& local_path,
+    const fileapi::FileSystemURL& url,
+    const fileapi::SyncStatusCallback& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(fileapi::SYNC_STATUS_FAILED);
+}
+
+scoped_ptr<DriveFileSyncService::TaskToken> DriveFileSyncService::GetToken(
+    const tracked_objects::Location& from_here) {
+  if (!token_)
+    return scoped_ptr<TaskToken>();
+  token_->set_location(from_here);
+  return token_.Pass();
+}
+
+void DriveFileSyncService::NotifyTaskDone(fileapi::SyncStatusCode status,
+                                          scoped_ptr<TaskToken> token) {
+  DCHECK(token);
+  bool status_changed = status_ != status;
+  status_ = status;
+  token_ = token.Pass();
+  token_->set_location(tracked_objects::Location());
+
+  if (status == fileapi::SYNC_STATUS_OK && !pending_tasks_.empty()) {
+    base::Closure closure = pending_tasks_.front();
+    pending_tasks_.pop_front();
+    closure.Run();
+  }
+
+  if (status_changed) {
+    // TODO(tzik): Refine the status to track the error.
+    FOR_EACH_OBSERVER(Observer, observers_, OnRemoteSyncStatusChanged(status));
+  }
 }
 
 void DriveFileSyncService::DidInitializeMetadataStore(
@@ -145,72 +308,21 @@ void DriveFileSyncService::DidGetSyncRootDirectory(
   NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());
 }
 
-scoped_ptr<DriveFileSyncService::TaskToken> DriveFileSyncService::GetToken(
-    const tracked_objects::Location& from_here) {
-  if (!token_)
-    return scoped_ptr<TaskToken>();
-  token_->set_location(from_here);
-  return token_.Pass();
-}
-
-void DriveFileSyncService::NotifyTaskDone(fileapi::SyncStatusCode status,
-                                          scoped_ptr<TaskToken> token) {
-  DCHECK(token);
-  bool status_changed = status_ != status;
-  status_ = status;
-  token_ = token.Pass();
-  token_->set_location(tracked_objects::Location());
-
-  if (status == fileapi::SYNC_STATUS_OK && !pending_tasks_.empty()) {
-    base::Closure closure = pending_tasks_.front();
-    pending_tasks_.pop_front();
-    closure.Run();
-  }
-
-  if (status_changed) {
-    // TODO(tzik): Refine the status to track the error.
-    FOR_EACH_OBSERVER(Observer, observers_, OnRemoteSyncStatusChanged(status));
-  }
-}
-
-void DriveFileSyncService::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void DriveFileSyncService::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-void DriveFileSyncService::RegisterOriginForTrackingChanges(
+void DriveFileSyncService::StartBatchSyncForOrigin(
     const GURL& origin,
-    const fileapi::SyncStatusCallback& callback) {
+    const std::string& resource_id) {
   scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
   if (!token) {
     pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncService::RegisterOriginForTrackingChanges,
-        weak_factory_.GetWeakPtr(), origin, callback));
+        &DriveFileSyncService::StartBatchSyncForOrigin,
+        weak_factory_.GetWeakPtr(), origin, resource_id));
     return;
   }
 
-  if (status_ != fileapi::SYNC_STATUS_OK) {
-    NotifyTaskDone(status_, token.Pass());
-    callback.Run(status_);
-    return;
-  }
-
-  if (metadata_store_->IsIncrementalSyncOrigin(origin) ||
-      metadata_store_->IsBatchSyncOrigin(origin)) {
-    NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());
-    callback.Run(fileapi::SYNC_STATUS_OK);
-    return;
-  }
-
-  DCHECK(!metadata_store_->sync_root_directory().empty());
-  sync_client_->GetDriveDirectoryForOrigin(
-      metadata_store_->sync_root_directory(), origin,
-      base::Bind(&DriveFileSyncService::DidGetDirectoryForOrigin,
-                 weak_factory_.GetWeakPtr(), base::Passed(&token),
-                 origin, callback));
+  sync_client_->GetLargestChangeStamp(
+      base::Bind(&DriveFileSyncService::DidGetLargestChangeStampForBatchSync,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(&token), origin, resource_id));
 }
 
 void DriveFileSyncService::DidGetDirectoryForOrigin(
@@ -233,94 +345,6 @@ void DriveFileSyncService::DidGetDirectoryForOrigin(
   callback.Run(fileapi::SYNC_STATUS_OK);
 
   StartBatchSyncForOrigin(origin, resource_id);
-}
-
-void DriveFileSyncService::UnregisterOriginForTrackingChanges(
-    const GURL& origin,
-    const fileapi::SyncStatusCallback& callback) {
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
-  if (!token) {
-    pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncService::UnregisterOriginForTrackingChanges,
-        weak_factory_.GetWeakPtr(), origin, callback));
-    return;
-  }
-
-  changestamp_map_.erase(origin);
-
-  std::vector<RemoteChange> new_queue;
-  while (!pending_changes_.empty()) {
-    if (pending_changes_.top().url.origin() != origin)
-      new_queue.push_back(pending_changes_.top());
-    pending_changes_.pop();
-  }
-  pending_changes_ = ChangeQueue(new_queue.begin(), new_queue.end());
-
-  metadata_store_->RemoveOrigin(origin, base::Bind(
-      &DriveFileSyncService::DidRemoveOriginOnMetadataStore,
-      weak_factory_.GetWeakPtr(), base::Passed(&token), callback));
-}
-
-void DriveFileSyncService::DidRemoveOriginOnMetadataStore(
-    scoped_ptr<TaskToken> token,
-    const fileapi::SyncStatusCallback& callback,
-    fileapi::SyncStatusCode status) {
-  NotifyTaskDone(status, token.Pass());
-  callback.Run(status);
-}
-
-LocalChangeProcessor* DriveFileSyncService::GetLocalChangeProcessor() {
-  return this;
-}
-
-void DriveFileSyncService::ProcessRemoteChange(
-    RemoteChangeProcessor* processor,
-    const fileapi::SyncFileCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(fileapi::SYNC_STATUS_FAILED,
-               fileapi::FileSystemURL());
-}
-
-void DriveFileSyncService::GetConflictFiles(
-    const GURL& origin,
-    const fileapi::SyncFileSetCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(fileapi::SYNC_STATUS_FAILED,
-               fileapi::FileSystemURLSet());
-}
-
-void DriveFileSyncService::GetRemoteFileMetadata(
-    const fileapi::FileSystemURL& url,
-    const fileapi::SyncFileMetadataCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(fileapi::SYNC_STATUS_FAILED,
-               fileapi::SyncFileMetadata());
-}
-
-void DriveFileSyncService::ApplyLocalChange(
-    const fileapi::FileChange& change,
-    const FilePath& local_path,
-    const fileapi::FileSystemURL& url,
-    const fileapi::SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(fileapi::SYNC_STATUS_FAILED);
-}
-
-void DriveFileSyncService::StartBatchSyncForOrigin(
-    const GURL& origin,
-    const std::string& resource_id) {
-  scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
-  if (!token) {
-    pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncService::StartBatchSyncForOrigin,
-        weak_factory_.GetWeakPtr(), origin, resource_id));
-    return;
-  }
-
-  sync_client_->GetLargestChangeStamp(
-      base::Bind(&DriveFileSyncService::DidGetLargestChangeStampForBatchSync,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(&token), origin, resource_id));
 }
 
 void DriveFileSyncService::DidGetLargestChangeStampForBatchSync(
@@ -372,6 +396,14 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
   NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());
 }
 
+void DriveFileSyncService::DidRemoveOriginOnMetadataStore(
+    scoped_ptr<TaskToken> token,
+    const fileapi::SyncStatusCallback& callback,
+    fileapi::SyncStatusCode status) {
+  NotifyTaskDone(status, token.Pass());
+  callback.Run(status);
+}
+
 void DriveFileSyncService::AppendNewRemoteChange(
     const GURL& origin,
     google_apis::DocumentEntry* entry,
@@ -407,37 +439,6 @@ void DriveFileSyncService::AppendNewRemoteChange(
   }
 
   pending_changes_.push(change);
-}
-
-DriveFileSyncService::RemoteChange::RemoteChange()
-    : changestamp(0),
-      change(fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-             fileapi::SYNC_FILE_TYPE_UNKNOWN) {
-}
-
-DriveFileSyncService::RemoteChange::RemoteChange(
-    int64 changestamp,
-    const std::string& resource_id,
-    const fileapi::FileSystemURL& url,
-    const fileapi::FileChange& change)
-    : changestamp(changestamp),
-      resource_id(resource_id),
-      url(url),
-      change(change) {
-}
-
-DriveFileSyncService::RemoteChange::~RemoteChange() {
-}
-
-bool DriveFileSyncService::RemoteChangeComparator::operator()(
-    const RemoteChange& left,
-    const RemoteChange& right) {
-  // This should return true if |right| has higher priority than |left|.
-  // Smaller changestamps have higher priorities (i.e. need to be processed
-  // earlier).
-  if (left.changestamp != right.changestamp)
-    return left.changestamp > right.changestamp;
-  return false;
 }
 
 }  // namespace sync_file_system
