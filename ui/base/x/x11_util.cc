@@ -647,6 +647,26 @@ void SetHideTitlebarWhenMaximizedProperty(XID window,
       1);
 }
 
+void ClearX11DefaultRootWindow() {
+  Display* display = GetXDisplay();
+  XID root_window = GetX11RootWindow();
+  gfx::Rect root_bounds;
+  if (!GetWindowRect(root_window, &root_bounds)) {
+    LOG(ERROR) << "Failed to get the bounds of the X11 root window";
+    return;
+  }
+
+  XGCValues gc_values = {0};
+  gc_values.foreground = BlackPixel(display, DefaultScreen(display));
+  GC gc = XCreateGC(display, root_window, GCForeground, &gc_values);
+  XFillRectangle(display, root_window, gc,
+                 root_bounds.x(),
+                 root_bounds.y(),
+                 root_bounds.width(),
+                 root_bounds.height());
+  XFreeGC(display, gc);
+}
+
 int BitsPerPixelForPixmapDepth(Display* dpy, int depth) {
   int count;
   XPixmapFormatValues* formats = XListPixmapFormats(dpy, &count);

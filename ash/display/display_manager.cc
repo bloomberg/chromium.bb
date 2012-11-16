@@ -301,6 +301,11 @@ void DisplayManager::OnNativeDisplaysChanged(
     displays_.pop_back();
   }
   EnsurePointerInDisplays();
+
+#if defined(USE_X11) && defined(OS_CHROMEOS)
+  if (!changed_display_indices.empty() && base::chromeos::IsRunningOnChromeOS())
+    ui::ClearX11DefaultRootWindow();
+#endif
 }
 
 RootWindow* DisplayManager::CreateRootWindowForDisplay(

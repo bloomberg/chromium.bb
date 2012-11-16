@@ -140,6 +140,9 @@ UI_EXPORT void SetHideTitlebarWhenMaximizedProperty(
     XID window,
     HideTitlebarWhenMaximized property);
 
+// Clears all regions of X11's default root window by filling black pixels.
+UI_EXPORT void ClearX11DefaultRootWindow();
+
 // Return the number of bits-per-pixel for a pixmap of the given depth
 UI_EXPORT int BitsPerPixelForPixmapDepth(Display* display, int depth);
 
