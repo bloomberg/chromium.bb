@@ -184,6 +184,11 @@ class AppsGridViewTest : public testing::Test {
     apps_grid_view_->UpdateDrag(view, pointer, drag_event);
   }
 
+  void SimulateKeyPress(ui::KeyboardCode key_code) {
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, key_code, 0, false);
+    apps_grid_view_->OnKeyPressed(key_event);
+  }
+
   scoped_ptr<AppListModel> model_;
   scoped_ptr<PaginationModel> pagination_model_;
   scoped_ptr<AppsGridView> apps_grid_view_;
@@ -364,6 +369,26 @@ TEST_F(AppsGridViewTest, SimultaneousDrag) {
   EXPECT_EQ(std::string("Item 1,Item 0,Item 3,Item 2"),
             GetModelContent());
   test_api_->LayoutToIdealBounds();
+}
+
+TEST_F(AppsGridViewTest, HighlightWithKeyboard) {
+  const int kTotalitems = 2;
+  PopulateApps(kTotalitems);
+  apps_grid_view_->SetSelectedView(GetItemViewAt(0));
+
+  // Try moving off the item to an invalid location.
+  SimulateKeyPress(ui::VKEY_UP);
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(0)));
+  SimulateKeyPress(ui::VKEY_DOWN);
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(0)));
+  SimulateKeyPress(ui::VKEY_LEFT);
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(0)));
+
+  // Move to the second item and try to go past it.
+  SimulateKeyPress(ui::VKEY_RIGHT);
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(1)));
+  SimulateKeyPress(ui::VKEY_RIGHT);
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(1)));
 }
 
 }  // namespace test

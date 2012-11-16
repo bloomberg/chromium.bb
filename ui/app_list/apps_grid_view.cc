@@ -152,8 +152,10 @@ void AppsGridView::SetSelectedView(views::View* view) {
 }
 
 void AppsGridView::ClearSelectedView(views::View* view) {
-  if (IsSelectedView(view))
-    SetSelectedItemByIndex(Index());
+  if (view && IsSelectedView(view)) {
+    selected_view_->SchedulePaint();
+    selected_view_ = NULL;
+  }
 }
 
 bool AppsGridView::IsSelectedView(const views::View* view) const {
@@ -376,23 +378,26 @@ void AppsGridView::SetSelectedItemByIndex(const Index& index) {
   if (GetIndexOfView(selected_view_) == index)
     return;
 
+  views::View* new_selection = GetViewAtIndex(index);
+  if (!new_selection)
+    return; // Keep current selection.
+
   if (selected_view_)
     selected_view_->SchedulePaint();
 
-  selected_view_ = GetViewAtIndex(index);
-  if (selected_view_) {
-    EnsureViewVisible(selected_view_);
-    selected_view_->SchedulePaint();
-    if (GetWidget()) {
-      GetWidget()->NotifyAccessibilityEvent(
-          selected_view_, ui::AccessibilityTypes::EVENT_FOCUS, true);
-    }
+  selected_view_ = new_selection;
+  EnsureViewVisible(selected_view_);
+  selected_view_->SchedulePaint();
+  if (GetWidget()) {
+    GetWidget()->NotifyAccessibilityEvent(
+        selected_view_, ui::AccessibilityTypes::EVENT_FOCUS, true);
   }
 }
 
 bool AppsGridView::IsValidIndex(const Index& index) const {
   return index.page >= 0 && index.page < pagination_model_->total_pages() &&
-      index.slot >= 0 && index.slot < tiles_per_page();
+      index.slot >= 0 && index.slot < tiles_per_page() &&
+      index.page * tiles_per_page() + index.slot < view_model_.view_size();
 }
 
 AppsGridView::Index AppsGridView::GetIndexOfView(
