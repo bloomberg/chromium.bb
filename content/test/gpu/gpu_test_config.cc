@@ -29,6 +29,8 @@ GPUTestConfig::OS GetCurrentOS() {
     return GPUTestConfig::kOsWinVista;
   if (major_version == 6 && minor_version == 1)
     return GPUTestConfig::kOsWin7;
+  if (major_version == 6 && minor_version == 2)
+    return GPUTestConfig::kOsWin8;
 #elif defined(OS_MACOSX)
   int32 major_version = 0;
   int32 minor_version = 0;
@@ -43,6 +45,8 @@ GPUTestConfig::OS GetCurrentOS() {
         return GPUTestConfig::kOsMacSnowLeopard;
       case 7:
         return GPUTestConfig::kOsMacLion;
+      case 8:
+        return GPUTestConfig::kOsMacMountainLion;
     }
   }
 #elif defined(OS_ANDROID)
@@ -144,9 +148,11 @@ bool GPUTestBotConfig::IsValid() const {
     case kOsWinXP:
     case kOsWinVista:
     case kOsWin7:
+    case kOsWin8:
     case kOsMacLeopard:
     case kOsMacSnowLeopard:
     case kOsMacLion:
+    case kOsMacMountainLion:
     case kOsLinux:
     case kOsChromeOS:
     case kOsAndroid:

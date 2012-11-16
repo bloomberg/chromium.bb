@@ -31,10 +31,12 @@ enum Token {
   kConfigWinXP = 0,
   kConfigWinVista,
   kConfigWin7,
+  kConfigWin8,
   kConfigWin,
   kConfigMacLeopard,
   kConfigMacSnowLeopard,
   kConfigMacLion,
+  kConfigMacMountainLion,
   kConfigMac,
   kConfigLinux,
   kConfigChromeOS,
@@ -74,10 +76,12 @@ const TokenInfo kTokenData[] = {
   { "xp", GPUTestConfig::kOsWinXP },
   { "vista", GPUTestConfig::kOsWinVista },
   { "win7", GPUTestConfig::kOsWin7 },
+  { "win8", GPUTestConfig::kOsWin8 },
   { "win", GPUTestConfig::kOsWin },
   { "leopard", GPUTestConfig::kOsMacLeopard },
   { "snowleopard", GPUTestConfig::kOsMacSnowLeopard },
   { "lion", GPUTestConfig::kOsMacLion },
+  { "mountainlion", GPUTestConfig::kOsMacMountainLion },
   { "mac", GPUTestConfig::kOsMac },
   { "linux", GPUTestConfig::kOsLinux },
   { "chromeos", GPUTestConfig::kOsChromeOS },
@@ -230,10 +234,12 @@ bool GPUTestExpectationsParser::ParseConfig(
       case kConfigWinXP:
       case kConfigWinVista:
       case kConfigWin7:
+      case kConfigWin8:
       case kConfigWin:
       case kConfigMacLeopard:
       case kConfigMacSnowLeopard:
       case kConfigMacLion:
+      case kConfigMacMountainLion:
       case kConfigMac:
       case kConfigLinux:
       case kConfigChromeOS:
@@ -278,10 +284,12 @@ bool GPUTestExpectationsParser::ParseLine(
       case kConfigWinXP:
       case kConfigWinVista:
       case kConfigWin7:
+      case kConfigWin8:
       case kConfigWin:
       case kConfigMacLeopard:
       case kConfigMacSnowLeopard:
       case kConfigMacLion:
+      case kConfigMacMountainLion:
       case kConfigMac:
       case kConfigLinux:
       case kConfigChromeOS:
@@ -389,10 +397,12 @@ bool GPUTestExpectationsParser::UpdateTestConfig(
     case kConfigWinXP:
     case kConfigWinVista:
     case kConfigWin7:
+    case kConfigWin8:
     case kConfigWin:
     case kConfigMacLeopard:
     case kConfigMacSnowLeopard:
     case kConfigMacLion:
+    case kConfigMacMountainLion:
     case kConfigMac:
     case kConfigLinux:
     case kConfigChromeOS:

@@ -22,14 +22,17 @@ class GPUTestConfig {
     kOsWinXP = 1 << 0,
     kOsWinVista = 1 << 1,
     kOsWin7 = 1 << 2,
-    kOsWin = kOsWinXP | kOsWinVista | kOsWin7,
-    kOsMacLeopard = 1 << 3,
-    kOsMacSnowLeopard = 1 << 4,
-    kOsMacLion = 1 << 5,
-    kOsMac = kOsMacLeopard | kOsMacSnowLeopard | kOsMacLion,
-    kOsLinux = 1 << 6,
-    kOsChromeOS = 1 << 7,
-    kOsAndroid = 1 << 8,
+    kOsWin8 = 1 << 3,
+    kOsWin = kOsWinXP | kOsWinVista | kOsWin7 | kOsWin8,
+    kOsMacLeopard = 1 << 4,
+    kOsMacSnowLeopard = 1 << 5,
+    kOsMacLion = 1 << 6,
+    kOsMacMountainLion = 1 << 7,
+    kOsMac = kOsMacLeopard | kOsMacSnowLeopard | kOsMacLion |
+             kOsMacMountainLion,
+    kOsLinux = 1 << 8,
+    kOsChromeOS = 1 << 9,
+    kOsAndroid = 1 << 10,
   };
 
   enum BuildType {
