@@ -95,11 +95,11 @@ bool OverscrollController::DispatchEventCompletesAction (
   const float kOverscrollVerticalThreshold = 0.20f;
   float ratio, threshold;
   if (overscroll_mode_ == OVERSCROLL_WEST ||
-      overscroll_mode_ == OVERSCROLL_WEST) {
-    ratio = overscroll_delta_x_ / bounds.width();
+      overscroll_mode_ == OVERSCROLL_EAST) {
+    ratio = fabs(overscroll_delta_x_) / bounds.width();
     threshold = kOverscrollHorizontalThreshold;
   } else {
-    ratio = overscroll_delta_y_ / bounds.height();
+    ratio = fabs(overscroll_delta_y_) / bounds.height();
     threshold = kOverscrollVerticalThreshold;
   }
   return ratio >= threshold;
@@ -160,7 +160,7 @@ void OverscrollController::ProcessEventForOverscroll(
     }
 
     default:
-      NOTREACHED();
+      DCHECK(WebKit::WebInputEvent::isGestureEventType(event.type));
   }
 }
 
@@ -194,6 +194,8 @@ void OverscrollController::ProcessOverscroll(float delta_x, float delta_y) {
 void OverscrollController::CompleteAction() {
   if (delegate_)
     delegate_->OnOverscrollComplete(overscroll_mode_);
+  overscroll_mode_ = OVERSCROLL_NONE;
+  overscroll_delta_x_ = overscroll_delta_y_ = 0.f;
 }
 
 void OverscrollController::SetOverscrollMode(OverscrollMode mode) {

@@ -15,6 +15,7 @@ namespace content {
 // should perform appropriate actions.
 class OverscrollControllerDelegate {
  public:
+  OverscrollControllerDelegate() {}
   virtual ~OverscrollControllerDelegate() {}
 
   // This is called for each update in the overscroll amount.

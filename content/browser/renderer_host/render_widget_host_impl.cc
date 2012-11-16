@@ -182,6 +182,13 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   // Because the widget initializes as is_hidden_ == false,
   // tell the process host that we're alive.
   process_->WidgetRestored();
+
+#if defined(USE_AURA)
+  bool overscroll_enabled = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableOverscrollHistoryNavigation);
+  if (overscroll_enabled)
+    InitializeOverscrollController();
+#endif
 }
 
 RenderWidgetHostImpl::~RenderWidgetHostImpl() {
@@ -1070,8 +1077,6 @@ void RenderWidgetHostImpl::ForwardInputEvent(const WebInputEvent& input_event,
 
   DCHECK(!process_->IgnoreInputEvents());
 
-  in_process_event_types_.push(input_event.type);
-
   if (overscroll_controller_.get() &&
       !overscroll_controller_->WillDispatchEvent(input_event)) {
     // Reset the wheel-event state when appropriate.
@@ -1088,6 +1093,8 @@ void RenderWidgetHostImpl::ForwardInputEvent(const WebInputEvent& input_event,
     }
     return;
   }
+
+  in_process_event_types_.push(input_event.type);
 
   IPC::Message* message = new ViewMsg_HandleInputEvent(routing_id_);
   message->WriteData(

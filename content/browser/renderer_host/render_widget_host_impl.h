@@ -444,6 +444,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
     return gesture_event_filter_.get();
   }
 
+  OverscrollController* overscroll_controller() {
+    return overscroll_controller_.get();
+  }
+
  protected:
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;
 

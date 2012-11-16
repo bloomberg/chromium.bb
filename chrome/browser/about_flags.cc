@@ -1116,6 +1116,15 @@ const Experiment kExperiments[] = {
     kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableInteractiveAutocomplete)
   },
+#if defined(USE_AURA)
+  {
+    "enable-overscroll-history-navigation",
+    IDS_FLAGS_ENABLE_OVERSCROLL_HISTORY_NAVIGATION_NAME,
+    IDS_FLAGS_ENABLE_OVERSCROLL_HISTORY_NAVIGATION_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableOverscrollHistoryNavigation)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

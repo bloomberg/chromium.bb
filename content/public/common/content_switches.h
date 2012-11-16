@@ -238,6 +238,8 @@ CONTENT_EXPORT extern const char kFlingTapSuppressMaxGap[];
 CONTENT_EXPORT extern const char kTestCompositor[];
 #endif
 
+CONTENT_EXPORT extern const char kEnableOverscrollHistoryNavigation[];
+
 }  // namespace switches
 
 #endif  // CONTENT_PUBLIC_COMMON_CONTENT_SWITCHES_H_
