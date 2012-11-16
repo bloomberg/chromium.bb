@@ -6,7 +6,6 @@
     </output>
     <output filename="webkit_resources_100_percent.pak" type="data_package" context="default_100_percent" />
     <output filename="webkit_resources_200_percent.pak" type="data_package" context="default_200_percent" />
-    <output filename="webkit_resources.rc" type="rc_all" context="default_100_percent" />
   </outputs>
   <release seq="1">
     <includes>
