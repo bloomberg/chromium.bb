@@ -631,7 +631,7 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(cc::switches::kEnablePinchInCompositor);
   prefs.per_tile_painting_enabled =
       command_line.HasSwitch(cc::switches::kEnablePerTilePainting);
-  prefs.accelerated_compositing_for_animation_enabled =
+  prefs.accelerated_animation_enabled =
       !command_line.HasSwitch(cc::switches::kDisableThreadedAnimation);
 
   prefs.fixed_position_creates_stacking_context = !command_line.HasSwitch(
