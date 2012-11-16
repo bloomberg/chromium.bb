@@ -858,10 +858,10 @@ void TabStripGtk::UpdateLoadingAnimations() {
       --index;
     } else {
       TabRendererGtk::AnimationState state;
-      TabContents* contents = model_->GetTabContentsAt(index);
-      if (!contents || !contents->web_contents()->IsLoading()) {
+      content::WebContents* web_contents = model_->GetWebContentsAt(index);
+      if (!web_contents|| !web_contents->IsLoading()) {
         state = TabGtk::ANIMATION_NONE;
-      } else if (contents->web_contents()->IsWaitingForResponse()) {
+      } else if (web_contents->IsWaitingForResponse()) {
         state = TabGtk::ANIMATION_WAITING;
       } else {
         state = TabGtk::ANIMATION_LOADING;
