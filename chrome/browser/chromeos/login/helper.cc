@@ -113,9 +113,8 @@ int GetCurrentUserImageSize() {
   float scale_factor = gfx::Display::GetForcedDeviceScaleFactor();
   if (scale_factor > 1.0f)
     return static_cast<int>(scale_factor * kBaseUserImageSize);
-  // Use maximum supported scale factor.
   return kBaseUserImageSize *
-      ui::GetScaleFactorScale(ui::GetSupportedScaleFactors().back());
+      ui::GetScaleFactorScale(ui::GetMaxScaleFactor());
 }
 
 }  // namespace chromeos
