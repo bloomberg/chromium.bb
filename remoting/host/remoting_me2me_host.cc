@@ -67,7 +67,6 @@
 #if defined(OS_POSIX)
 #include <signal.h>
 #include "base/file_descriptor_posix.h"
-#include "remoting/host/pam_authorization_factory_posix.h"
 #include "remoting/host/posix/signal_handler.h"
 #endif  // defined(OS_POSIX)
 
@@ -79,6 +78,7 @@
 #if defined(OS_LINUX)
 #include <pwd.h>
 #include "remoting/host/audio_capturer_linux.h"
+#include "remoting/host/pam_authorization_factory_posix.h"
 #endif  // defined(OS_LINUX)
 
 // N.B. OS_WIN is defined by including src/base headers.
@@ -429,8 +429,8 @@ void HostProcess::CreateAuthenticatorFactory() {
   scoped_ptr<protocol::AuthenticatorFactory> factory(
       new protocol::Me2MeHostAuthenticatorFactory(
           local_certificate, *key_pair_.private_key(), host_secret_hash_));
-#if defined(OS_POSIX)
-  // On Linux and Mac, perform a PAM authorization step after authentication.
+#if defined(OS_LINUX)
+  // On Linux, perform a PAM authorization step after authentication.
   factory.reset(new PamAuthorizationFactory(factory.Pass()));
 #endif
   host_->SetAuthenticatorFactory(factory.Pass());
