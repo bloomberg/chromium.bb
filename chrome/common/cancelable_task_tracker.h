@@ -28,6 +28,8 @@
 // commonly used to cancel all outstanding tasks.
 //
 // 2. Both task and reply are deleted on the originating thread.
+//
+// 3. IsCanceledCallback is thread safe and can be run or deleted on any thread.
 
 #ifndef CHROME_COMMON_CANCELABLE_TASK_TRACKER_H_
 #define CHROME_COMMON_CANCELABLE_TASK_TRACKER_H_
@@ -53,6 +55,8 @@ class CancelableTaskTracker {
   typedef int64 TaskId;
   static const TaskId kBadTaskId;
 
+  typedef base::Callback<bool()> IsCanceledCallback;
+
   CancelableTaskTracker();
 
   // Cancels all tracked tasks.
@@ -66,6 +70,14 @@ class CancelableTaskTracker {
                           const tracked_objects::Location& from_here,
                           const base::Closure& task,
                           const base::Closure& reply);
+
+  // Creates a tracked TaskId and an associated IsCanceledCallback. Client can
+  // later call TryCancel() with the returned TaskId, and run |is_canceled_cb|
+  // to check whether the TaskId is canceled.
+  //
+  // Note. This function is used to address some special cancelation requirement
+  // in existing code. You SHOULD NOT need this function in new code.
+  TaskId NewTrackedTaskId(IsCanceledCallback* is_canceled_cb);
 
   // After calling this function, |task| and |reply| will not run. If the
   // cancelation happens when |task| is running or has finished running, |reply|

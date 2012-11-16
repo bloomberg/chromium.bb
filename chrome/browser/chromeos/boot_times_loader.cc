@@ -11,7 +11,9 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
@@ -67,7 +69,18 @@ const std::string GetTabUrl(RenderWidgetHost* rwh) {
   }
   return std::string();
 }
+
+void PostCallbackIfNotCanceled(
+    const CancelableTaskTracker::IsCanceledCallback& is_canceled_cb,
+    base::TaskRunner* task_runner,
+    const chromeos::BootTimesLoader::GetBootTimesCallback& callback,
+    const chromeos::BootTimesLoader::BootTimes& boot_times) {
+  if (is_canceled_cb.Run())
+    return;
+  task_runner->PostTask(FROM_HERE, base::Bind(callback, boot_times));
 }
+
+}  // namespace
 
 namespace chromeos {
 
@@ -122,31 +135,34 @@ BootTimesLoader* BootTimesLoader::Get() {
   return g_boot_times_loader.Pointer();
 }
 
-BootTimesLoader::Handle BootTimesLoader::GetBootTimes(
-    CancelableRequestConsumerBase* consumer,
-    const GetBootTimesCallback& callback) {
+CancelableTaskTracker::TaskId BootTimesLoader::GetBootTimes(
+      const GetBootTimesCallback& callback,
+      CancelableTaskTracker* tracker) {
   if (!BrowserThread::IsMessageLoopValid(BrowserThread::FILE)) {
     // This should only happen if Chrome is shutting down, so we don't do
     // anything.
-    return 0;
+    return CancelableTaskTracker::kBadTaskId;
   }
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kTestType)) {
     // TODO(davemoore) This avoids boottimes for tests. This needs to be
     // replaced with a mock of BootTimesLoader.
-    return 0;
+    return CancelableTaskTracker::kBadTaskId;
   }
 
-  scoped_refptr<CancelableRequest<GetBootTimesCallback> > request(
-      new CancelableRequest<GetBootTimesCallback>(callback));
-  AddRequest(request, consumer);
+  CancelableTaskTracker::IsCanceledCallback is_canceled;
+  CancelableTaskTracker::TaskId id = tracker->NewTrackedTaskId(&is_canceled);
 
+  GetBootTimesCallback callback_runner =
+      base::Bind(&PostCallbackIfNotCanceled,
+                 is_canceled, base::MessageLoopProxy::current(), callback);
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&Backend::GetBootTimes, backend_, request));
-  return request->handle();
+      base::Bind(&Backend::GetBootTimesAndRunCallback,
+                 backend_, is_canceled, callback_runner));
+  return id;
 }
 
 // Extracts the uptime value from files located in /tmp, returning the
@@ -214,8 +230,12 @@ static void SendBootTimesToUMA(const BootTimesLoader::BootTimes& boot_times) {
   DCHECK(file_util::PathExists(sent));
 }
 
-void BootTimesLoader::Backend::GetBootTimes(
-    const scoped_refptr<GetBootTimesRequest>& request) {
+void BootTimesLoader::Backend::GetBootTimesAndRunCallback(
+    const CancelableTaskTracker::IsCanceledCallback& is_canceled_cb,
+    const GetBootTimesCallback& callback) {
+  if (is_canceled_cb.Run())
+    return;
+
   const FilePath::CharType kFirmwareBootTime[] = FPL("firmware-boot-time");
   const FilePath::CharType kPreStartup[] = FPL("pre-startup");
   const FilePath::CharType kChromeExec[] = FPL("chrome-exec");
@@ -224,9 +244,6 @@ void BootTimesLoader::Backend::GetBootTimes(
   const FilePath::CharType kLoginPromptReady[] = FPL("login-prompt-ready");
   const FilePath::StringType uptime_prefix = kUptimePrefix;
 
-  if (request->canceled())
-    return;
-
   // Wait until firmware-boot-time file exists by reposting.
   FilePath log_dir(kLogPath);
   FilePath log_file = log_dir.Append(kFirmwareBootTime);
@@ -234,7 +251,8 @@ void BootTimesLoader::Backend::GetBootTimes(
     BrowserThread::PostDelayedTask(
         BrowserThread::FILE,
         FROM_HERE,
-        base::Bind(&Backend::GetBootTimes, this, request),
+        base::Bind(&Backend::GetBootTimesAndRunCallback,
+                   this, is_canceled_cb, callback),
         base::TimeDelta::FromMilliseconds(kReadAttemptDelayMs));
     return;
   }
@@ -258,7 +276,7 @@ void BootTimesLoader::Backend::GetBootTimes(
 
   SendBootTimesToUMA(boot_times);
 
-  request->ForwardResult(request->handle(), boot_times);
+  callback.Run(boot_times);
 }
 
 // Appends the given buffer into the file. Returns the number of bytes
