@@ -11,6 +11,8 @@
 
 namespace cc {
 
+class Thread;
+
 // This timer implements a time source that achieves the specified interval
 // in face of millisecond-precision delayed callbacks and random queueing delays.
 class CC_EXPORT DelayBasedTimeSource : public TimeSource {

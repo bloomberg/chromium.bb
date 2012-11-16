@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/timing_function.h"
+
 #include "third_party/skia/include/core/SkMath.h"
 
 // TODO(danakj) These methods come from SkInterpolator.cpp. When such a method
@@ -17,18 +18,15 @@ typedef int Dot14;
 
 #define Dot14ToFloat(x) ((x) / 16384.f)
 
-static inline Dot14 Dot14Mul(Dot14 a, Dot14 b)
-{
+static inline Dot14 Dot14Mul(Dot14 a, Dot14 b) {
     return (a * b + DOT14_HALF) >> 14;
 }
 
-static inline Dot14 EvalCubic(Dot14 t, Dot14 A, Dot14 B, Dot14 C)
-{
+static inline Dot14 EvalCubic(Dot14 t, Dot14 A, Dot14 B, Dot14 C) {
     return Dot14Mul(Dot14Mul(Dot14Mul(C, t) + B, t) + A, t);
 }
 
-static inline Dot14 PinAndConvert(SkScalar x)
-{
+static inline Dot14 PinAndConvert(SkScalar x) {
     if (x <= 0)
         return 0;
     if (x >= SK_Scalar1)
@@ -36,8 +34,9 @@ static inline Dot14 PinAndConvert(SkScalar x)
     return SkScalarToFixed(x) >> 2;
 }
 
-SkScalar SkUnitCubicInterp(SkScalar bx, SkScalar by, SkScalar cx, SkScalar cy, SkScalar value)
-{
+SkScalar SkUnitCubicInterp(SkScalar bx, SkScalar by,
+                           SkScalar cx, SkScalar cy,
+                           SkScalar value) {
     Dot14 x = PinAndConvert(value);
 
     if (x == 0) return 0;
@@ -75,70 +74,65 @@ SkScalar SkUnitCubicInterp(SkScalar bx, SkScalar by, SkScalar cx, SkScalar cy, S
     return SkFixedToScalar(EvalCubic(t, A, B, C) << 2);
 }
 
-}  // anonymous namespace
+}  // namespace
 
 namespace cc {
 
-TimingFunction::TimingFunction()
-{
+TimingFunction::TimingFunction() {
 }
 
-TimingFunction::~TimingFunction()
-{
+TimingFunction::~TimingFunction() {
 }
 
-double TimingFunction::duration() const
-{
+double TimingFunction::duration() const {
     return 1.0;
 }
 
-scoped_ptr<CubicBezierTimingFunction> CubicBezierTimingFunction::create(double x1, double y1, double x2, double y2)
-{
+scoped_ptr<CubicBezierTimingFunction> CubicBezierTimingFunction::create(
+    double x1, double y1, double x2, double y2) {
     return make_scoped_ptr(new CubicBezierTimingFunction(x1, y1, x2, y2));
 }
 
-CubicBezierTimingFunction::CubicBezierTimingFunction(double x1, double y1, double x2, double y2)
-    : m_x1(SkDoubleToScalar(x1))
-    , m_y1(SkDoubleToScalar(y1))
-    , m_x2(SkDoubleToScalar(x2))
-    , m_y2(SkDoubleToScalar(y2))
-{
+CubicBezierTimingFunction::CubicBezierTimingFunction(double x1, double y1,
+                                                     double x2, double y2)
+    : x1_(SkDoubleToScalar(x1)),
+      y1_(SkDoubleToScalar(y1)),
+      x2_(SkDoubleToScalar(x2)),
+      y2_(SkDoubleToScalar(y2)) {
 }
 
-CubicBezierTimingFunction::~CubicBezierTimingFunction()
-{
+CubicBezierTimingFunction::~CubicBezierTimingFunction() {
 }
 
-float CubicBezierTimingFunction::getValue(double x) const
-{
-    SkScalar value = SkUnitCubicInterp(m_x1, m_y1, m_x2, m_y2, x);
-    return SkScalarToFloat(value);
+float CubicBezierTimingFunction::getValue(double x) const {
+  SkScalar value = SkUnitCubicInterp(x1_, y1_, x2_, y2_, x);
+  return SkScalarToFloat(value);
 }
 
-scoped_ptr<AnimationCurve> CubicBezierTimingFunction::clone() const
-{
-    return make_scoped_ptr(new CubicBezierTimingFunction(*this)).PassAs<AnimationCurve>();
+scoped_ptr<AnimationCurve> CubicBezierTimingFunction::clone() const {
+  return make_scoped_ptr(
+      new CubicBezierTimingFunction(*this)).PassAs<AnimationCurve>();
 }
 
 // These numbers come from http://www.w3.org/TR/css3-transitions/#transition-timing-function_tag.
-scoped_ptr<TimingFunction> EaseTimingFunction::create()
-{
-    return CubicBezierTimingFunction::create(0.25, 0.1, 0.25, 1).PassAs<TimingFunction>();
+scoped_ptr<TimingFunction> EaseTimingFunction::create() {
+  return CubicBezierTimingFunction::create(
+      0.25, 0.1, 0.25, 1).PassAs<TimingFunction>();
 }
 
-scoped_ptr<TimingFunction> EaseInTimingFunction::create()
-{
-    return CubicBezierTimingFunction::create(0.42, 0, 1.0, 1).PassAs<TimingFunction>();
+scoped_ptr<TimingFunction> EaseInTimingFunction::create() {
+  return CubicBezierTimingFunction::create(
+      0.42, 0, 1.0, 1).PassAs<TimingFunction>();
 }
 
-scoped_ptr<TimingFunction> EaseOutTimingFunction::create()
-{
-    return CubicBezierTimingFunction::create(0, 0, 0.58, 1).PassAs<TimingFunction>();
+scoped_ptr<TimingFunction> EaseOutTimingFunction::create() {
+  return CubicBezierTimingFunction::create(
+      0, 0, 0.58, 1).PassAs<TimingFunction>();
 }
 
-scoped_ptr<TimingFunction> EaseInOutTimingFunction::create()
-{
-    return CubicBezierTimingFunction::create(0.42, 0, 0.58, 1).PassAs<TimingFunction>();
+scoped_ptr<TimingFunction> EaseInOutTimingFunction::create() {
+  return CubicBezierTimingFunction::create(
+      0.42, 0, 0.58, 1).PassAs<TimingFunction>();
 }
 
 }  // namespace cc

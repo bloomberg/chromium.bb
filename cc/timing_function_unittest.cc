@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 #include "cc/timing_function.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 namespace {
 
 TEST(TimingFunctionTest, CubicBezierTimingFunction) {
-  scoped_ptr<CubicBezierTimingFunction> function = CubicBezierTimingFunction::create(0.25, 0, 0.75, 1);
+  scoped_ptr<CubicBezierTimingFunction> function =
+      CubicBezierTimingFunction::create(0.25, 0, 0.75, 1);
 
   double epsilon = 0.00015;
 
