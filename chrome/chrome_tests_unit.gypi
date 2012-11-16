@@ -1670,6 +1670,17 @@
             ['include', '^common/bzip2_unittest\\.cc$'],
             ['include', '^common/zip_'],
           ],
+          'conditions': [
+            ['coverage != 0', {
+              'sources/': [
+                # These tests crash when run with coverage turned on due to an
+                # issue with llvm_gcda_increment_indirect_counter:
+                # http://crbug.com/156058
+                ['exclude', '^browser/autocomplete/builtin_provider_unittest\\.cc$'],
+                ['exclude', '^browser/autocomplete/shortcuts_provider_unittest\\.cc$'],
+              ],
+            }],
+          ],
           'actions': [
             {
               'action_name': 'copy_test_data',
