@@ -9,7 +9,7 @@ import os
 import sys
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(os.path.join(_THIS_DIR, os.pardir, 'pylib'))
+sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
 
 from common import chrome_paths
 from common import util
