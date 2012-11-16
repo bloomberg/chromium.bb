@@ -109,7 +109,7 @@ ThumbnailLoader.prototype.load = function(
     return;
   }
 
-  this.image_.src = this.thumbnailUrl_;
+  util.loadImage(this.image_, this.thumbnailUrl_);
 };
 
 /**
@@ -156,7 +156,7 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
   this.image_ = new Image();
   this.image_.onload = callback.bind(null, true);
   this.image_.onerror = callback.bind(null, false);
-  this.image_.src = this.thumbnailUrl_;
+  util.loadImage(this.image_, this.thumbnailUrl_);
 };
 
 /**
