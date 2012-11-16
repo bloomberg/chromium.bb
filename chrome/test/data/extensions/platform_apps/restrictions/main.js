@@ -122,7 +122,7 @@ chrome.test.runTests([
     var xhr = new XMLHttpRequest();
     assertThrowsError(function() {
       xhr.open('GET', 'data:should not load', false);
-    }, 'INVALID_ACCESS_ERR: DOM Exception 15');
+    }, 'InvalidAccessError: DOM Exception 15');
     succeed();
   },
 
