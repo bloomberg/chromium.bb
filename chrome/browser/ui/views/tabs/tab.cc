@@ -237,15 +237,6 @@ static const SkColor kMiniTitleChangeGradientColor2 =
 // errors may lead to tabs in the same tabstrip having different sizes.
 const size_t kMaxImageCacheSize = 4;
 
-// Height of the colored bar representing the favicon in immersive mode.
-const int kImmersiveBarHeight = 2;
-
-// Distance between the favicon bar and the tab bar in immersive mode.
-const int kImmersiveBarSpacing = 2;
-
-// Opacity for the immersive mode icon bar for inactive tabs.
-const int kImmersiveInactiveIconOpacity = 200;
-
 // Draws the icon image at the center of |bounds|.
 void DrawIconCenter(gfx::Canvas* canvas,
                     const gfx::ImageSkia& image,
@@ -391,8 +382,6 @@ const char Tab::kViewClassName[] = "BrowserTab";
 Tab::TabImage Tab::tab_alpha_ = {0};
 Tab::TabImage Tab::tab_active_ = {0};
 Tab::TabImage Tab::tab_inactive_ = {0};
-Tab::TabImage Tab::tab_immersive_active_ = {0};
-Tab::TabImage Tab::tab_immersive_inactive_ = {0};
 // static
 gfx::Font* Tab::font_ = NULL;
 // static
@@ -605,12 +594,6 @@ int Tab::GetMiniWidth() {
   return browser_defaults::kMiniTabWidth;
 }
 
-// static
-int Tab::GetImmersiveHeight() {
-  InitTabResources();
-  return tab_immersive_active_.image_l->height();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Tab, AnimationDelegate overrides:
 
@@ -670,10 +653,33 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
     }
   }
 
-  if (controller() && controller()->IsImmersiveMode())
-    PaintTabImmersive(canvas);
-  else
-    PaintTab(canvas);
+  // See if the model changes whether the icons should be painted.
+  const bool show_icon = ShouldShowIcon();
+  const bool show_close_button = ShouldShowCloseBox();
+  if (show_icon != showing_icon_ || show_close_button != showing_close_button_)
+    Layout();
+
+  PaintTabBackground(canvas);
+
+  SkColor title_color = GetThemeProvider()->
+      GetColor(IsSelected() ?
+          ThemeService::COLOR_TAB_TEXT :
+          ThemeService::COLOR_BACKGROUND_TAB_TEXT);
+
+  if (!data().mini || width() > kMiniTabRendererAsNormalTabWidth)
+    PaintTitle(canvas, title_color);
+
+  if (show_icon)
+    PaintIcon(canvas);
+
+  // If the close button color has changed, generate a new one.
+  if (!close_button_color_ || title_color != close_button_color_) {
+    close_button_color_ = title_color;
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    close_button_->SetBackground(close_button_color_,
+        rb.GetImageSkiaNamed(IDR_TAB_CLOSE),
+        rb.GetImageSkiaNamed(IDR_TAB_CLOSE_MASK));
+  }
 
   if (!clip.IsEmpty())
     canvas->Restore();
@@ -982,71 +988,6 @@ void Tab::DataChanged(const TabRendererData& old) {
     StartPulse();
   else
     StopPulse();
-}
-
-void Tab::PaintTab(gfx::Canvas* canvas) {
-  // See if the model changes whether the icons should be painted.
-  const bool show_icon = ShouldShowIcon();
-  const bool show_close_button = ShouldShowCloseBox();
-  if (show_icon != showing_icon_ || show_close_button != showing_close_button_)
-    Layout();
-
-  PaintTabBackground(canvas);
-
-  SkColor title_color = GetThemeProvider()->
-      GetColor(IsSelected() ?
-          ThemeService::COLOR_TAB_TEXT :
-          ThemeService::COLOR_BACKGROUND_TAB_TEXT);
-
-  if (!data().mini || width() > kMiniTabRendererAsNormalTabWidth)
-    PaintTitle(canvas, title_color);
-
-  if (show_icon)
-    PaintIcon(canvas);
-
-  // If the close button color has changed, generate a new one.
-  if (!close_button_color_ || title_color != close_button_color_) {
-    close_button_color_ = title_color;
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    close_button_->SetBackground(close_button_color_,
-        rb.GetImageSkiaNamed(IDR_TAB_CLOSE),
-        rb.GetImageSkiaNamed(IDR_TAB_CLOSE_MASK));
-  }
-}
-
-void Tab::PaintTabImmersive(gfx::Canvas* canvas) {
-  // The main bar is as wide as the normal tab's horizontal top line.
-  int main_bar_left = tab_active_.l_width;
-  int main_bar_right = width() - tab_active_.r_width;
-
-  bool is_active = IsActive();
-  if (ShouldShowIcon()) {
-    // Use the favicon's horizontal position.
-    gfx::Rect icon_bar_rect(favicon_bounds_.x(), 0,
-                            favicon_bounds_.width(), kImmersiveBarHeight);
-    // Decrease opacity if not active.
-    int opacity = is_active ? 255 : kImmersiveInactiveIconOpacity;
-    // TODO(jamescook): Use favicon color.
-    SkColor icon_bar_color = SkColorSetARGB(opacity, 0, 200, 0);
-    canvas->FillRect(icon_bar_rect, icon_bar_color);
-    // Start the main bar slightly offset from the icon bar.
-    main_bar_left = icon_bar_rect.right() + kImmersiveBarSpacing;
-  }
-
-  // Mini-tabs don't have a main bar.
-  if (!data().mini || width() > kMiniTabRendererAsNormalTabWidth) {
-    // Active tab has a brighter bar.
-    const TabImage& tab_image =
-        is_active ? tab_immersive_active_ : tab_immersive_inactive_;
-    canvas->DrawImageInt(*tab_image.image_l, main_bar_left, 0);
-    canvas->TileImageInt(*tab_image.image_c,
-        main_bar_left + tab_image.l_width,
-        0,
-        main_bar_right - main_bar_left - tab_image.l_width - tab_image.r_width,
-        tab_image.image_c->height());
-    canvas->DrawImageInt(
-        *tab_image.image_r, main_bar_right - tab_image.r_width, 0);
-  }
 }
 
 void Tab::PaintTabBackground(gfx::Canvas* canvas) {
@@ -1518,24 +1459,6 @@ void Tab::LoadTabImages() {
   tab_inactive_.image_r = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_RIGHT);
   tab_inactive_.l_width = tab_inactive_.image_l->width();
   tab_inactive_.r_width = tab_inactive_.image_r->width();
-
-  tab_immersive_active_.image_l =
-      rb.GetImageSkiaNamed(IDR_TAB_IMMERSIVE_ACTIVE_LEFT);
-  tab_immersive_active_.image_c =
-      rb.GetImageSkiaNamed(IDR_TAB_IMMERSIVE_ACTIVE_CENTER);
-  tab_immersive_active_.image_r =
-      rb.GetImageSkiaNamed(IDR_TAB_IMMERSIVE_ACTIVE_RIGHT);
-  tab_immersive_active_.l_width = tab_immersive_active_.image_l->width();
-  tab_immersive_active_.r_width = tab_immersive_active_.image_r->width();
-
-  tab_immersive_inactive_.image_l =
-      rb.GetImageSkiaNamed(IDR_TAB_IMMERSIVE_INACTIVE_LEFT);
-  tab_immersive_inactive_.image_c =
-      rb.GetImageSkiaNamed(IDR_TAB_IMMERSIVE_INACTIVE_CENTER);
-  tab_immersive_inactive_.image_r =
-      rb.GetImageSkiaNamed(IDR_TAB_IMMERSIVE_INACTIVE_RIGHT);
-  tab_immersive_inactive_.l_width = tab_immersive_inactive_.image_l->width();
-  tab_immersive_inactive_.r_width = tab_immersive_inactive_.image_r->width();
 }
 
 // static

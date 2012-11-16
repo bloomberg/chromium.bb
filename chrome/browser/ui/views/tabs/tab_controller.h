@@ -83,9 +83,6 @@ class TabController {
   // set to the clip (if |clip| is empty means no clip).
   virtual bool ShouldPaintTab(const Tab* tab, gfx::Rect* clip) = 0;
 
-  // Returns true if tabs are in immersive mode.
-  virtual bool IsImmersiveMode() const = 0;
-
  protected:
   virtual ~TabController() {}
 };

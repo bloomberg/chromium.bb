@@ -50,7 +50,6 @@ class FakeTabController : public TabController {
   virtual bool ShouldPaintTab(const Tab* tab, gfx::Rect* clip) OVERRIDE {
     return true;
   }
-  virtual bool IsImmersiveMode() const OVERRIDE { return false; }
 
  private:
   TabStripSelectionModel selection_model_;

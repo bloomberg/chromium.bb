@@ -74,7 +74,6 @@
 #include "chrome/browser/ui/views/password_generation_bubble_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
-#include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
@@ -814,19 +813,6 @@ void BrowserView::FullScreenStateChanged() {
   }
 }
 
-void BrowserView::SetImmersiveMode(bool enable) {
-  if (enable == IsImmersiveMode())
-    return;
-  // The tab strip owns the state of immersive mode.
-  // TODO(jamescook): Add transition state for animating top-chrome in and out.
-  tabstrip_->SetImmersiveMode(enable);
-  Layout();
-}
-
-bool BrowserView::IsImmersiveMode() const {
-  return tabstrip_->IsImmersiveMode();
-}
-
 #if defined(OS_WIN)
 void BrowserView::SetMetroSnapMode(bool enable) {
   HISTOGRAM_COUNTS("Metro.SnapModeToggle", enable);
@@ -1063,8 +1049,6 @@ void BrowserView::DestroyBrowser() {
 }
 
 bool BrowserView::IsBookmarkBarVisible() const {
-  if (IsImmersiveMode())
-    return false;
   return browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
       active_bookmark_bar_ &&
       (active_bookmark_bar_->GetPreferredSize().height() != 0);
@@ -1079,8 +1063,6 @@ bool BrowserView::IsTabStripEditable() const {
 }
 
 bool BrowserView::IsToolbarVisible() const {
-  if (IsImmersiveMode())
-    return false;
   return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
 }

@@ -116,9 +116,6 @@ class Tab : public ui::AnimationDelegate,
   // Returns the width for mini-tabs. Mini-tabs always have this width.
   static int GetMiniWidth();
 
-  // Returns the height for immersive mode tabs.
-  static int GetImmersiveHeight();
-
  private:
    // The animation object used to swap the favicon with the sad tab icon.
   class FaviconCrashAnimation;
@@ -184,12 +181,6 @@ class Tab : public ui::AnimationDelegate,
 
   // Invoked from SetData after |data_| has been updated to the new data.
   void DataChanged(const TabRendererData& old);
-
-  // Paint with the normal tab style.
-  void PaintTab(gfx::Canvas* canvas);
-
-  // Paint with the "immersive mode" light-bar style.
-  void PaintTabImmersive(gfx::Canvas* canvas);
 
   // Paint various portions of the Tab
   void PaintTabBackground(gfx::Canvas* canvas);
@@ -324,8 +315,6 @@ class Tab : public ui::AnimationDelegate,
   static TabImage tab_active_;
   static TabImage tab_inactive_;
   static TabImage tab_alpha_;
-  static TabImage tab_immersive_active_;
-  static TabImage tab_immersive_inactive_;
 
   // Whether we're showing the icon. It is cached so that we can detect when it
   // changes and layout appropriately.

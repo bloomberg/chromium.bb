@@ -303,8 +303,8 @@ void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
   } else if (sender == close_button_) {
     frame()->Close();
   } else if (sender == immersive_button_) {
-    // Toggle immersive mode.
-    browser_view()->SetImmersiveMode(!browser_view()->IsImmersiveMode());
+    // TODO(jamescook): Enter immersive mode.
+    frame()->SetFullscreen(true);
   }
 
   if (event.IsShiftDown())
