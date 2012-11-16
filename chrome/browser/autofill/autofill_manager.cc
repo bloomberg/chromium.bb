@@ -507,8 +507,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   RenderViewHost* host = NULL;
   FormStructure* form_structure = NULL;
   AutofillField* autofill_field = NULL;
-  if (GetHost(
-          personal_data_->profiles(), personal_data_->credit_cards(), &host) &&
+  if (GetHost(&host) &&
       GetCachedFormAndField(form, field, &form_structure, &autofill_field) &&
       // Don't send suggestions for forms that aren't auto-fillable.
       form_structure->IsAutofillable(false)) {
@@ -583,24 +582,19 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
                                              const FormData& form,
                                              const FormFieldData& field,
                                              int unique_id) {
-  const std::vector<AutofillProfile*>& profiles = personal_data_->profiles();
-  const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
-  const AutofillProfile* profile = NULL;
-  const CreditCard* credit_card = NULL;
+  const FormGroup* form_group = NULL;
   size_t variant = 0;
   RenderViewHost* host = NULL;
   FormStructure* form_structure = NULL;
   AutofillField* autofill_field = NULL;
-  if (!GetProfileOrCreditCard(unique_id, profiles, credit_cards, &profile,
-                              &credit_card, &variant) ||
-      !GetHost(profiles, credit_cards, &host) ||
+  if (!GetProfileOrCreditCard(unique_id, &form_group, &variant) ||
+      !GetHost(&host) ||
       !GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
 
   DCHECK(host);
   DCHECK(form_structure);
   DCHECK(autofill_field);
-  DCHECK(profile || credit_card);
 
   FormData result = form;
 
@@ -610,17 +604,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
     for (std::vector<FormFieldData>::iterator iter = result.fields.begin();
          iter != result.fields.end(); ++iter) {
       if ((*iter) == field) {
-        AutofillFieldType field_type = autofill_field->type();
-        if (profile) {
-          DCHECK_NE(AutofillType::CREDIT_CARD,
-                    AutofillType(field_type).group());
-          profile->FillFormField(*autofill_field, variant, &(*iter));
-        } else {
-          DCHECK_EQ(AutofillType::CREDIT_CARD,
-                    AutofillType(field_type).group());
-          credit_card->FillFormField(field_type, &(*iter));
-        }
-
+        form_group->FillFormField(*autofill_field, variant, &(*iter));
         // Mark the cached field as autofilled, so that we can detect when a
         // user edits an autofilled field (for metrics).
         autofill_field->is_autofilled = true;
@@ -644,27 +628,22 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
     DCHECK_EQ(*form_structure->field(i), result.fields[i]);
 
     const AutofillField* cached_field = form_structure->field(i);
-    AutofillFieldType field_type = cached_field->type();
-    FieldTypeGroup field_group_type = AutofillType(field_type).group();
+    FieldTypeGroup field_group_type =
+        AutofillType(cached_field->type()).group();
     if (field_group_type != AutofillType::NO_GROUP) {
-      if (profile) {
-        DCHECK_NE(AutofillType::CREDIT_CARD, field_group_type);
-        // If the field being filled is either
-        //   (a) the field that the user initiated the fill from, or
-        //   (b) part of the same logical unit, e.g. name or phone number,
-        // then take the multi-profile "variant" into account.
-        // Otherwise fill with the default (zeroth) variant.
-        size_t use_variant = 0;
-        if (result.fields[i] == field ||
-            field_group_type == initiating_group_type) {
-          use_variant = variant;
-        }
-        profile->FillFormField(*cached_field, use_variant, &result.fields[i]);
-      } else {
-        DCHECK_EQ(AutofillType::CREDIT_CARD, field_group_type);
-        credit_card->FillFormField(field_type, &result.fields[i]);
+      // If the field being filled is either
+      //   (a) the field that the user initiated the fill from, or
+      //   (b) part of the same logical unit, e.g. name or phone number,
+      // then take the multi-profile "variant" into account.
+      // Otherwise fill with the default (zeroth) variant.
+      size_t use_variant = 0;
+      if (result.fields[i] == field ||
+          field_group_type == initiating_group_type) {
+        use_variant = variant;
       }
-
+      form_group->FillFormField(*cached_field,
+                                use_variant,
+                                &result.fields[i]);
       // Mark the cached field as autofilled, so that we can detect when a user
       // edits an autofilled field (for metrics).
       form_structure->field(i)->is_autofilled = true;
@@ -740,13 +719,9 @@ void AutofillManager::OnShowPasswordGenerationPopup(
 }
 
 void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
-  const std::vector<AutofillProfile*>& profiles = personal_data_->profiles();
-  const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
-  const AutofillProfile* profile = NULL;
-  const CreditCard* credit_card = NULL;
+  const FormGroup* form_group = NULL;
   size_t variant = 0;
-  if (!GetProfileOrCreditCard(unique_id, profiles, credit_cards, &profile,
-                              &credit_card, &variant)) {
+  if (!GetProfileOrCreditCard(unique_id, &form_group, &variant)) {
     NOTREACHED();
     return;
   }
@@ -757,10 +732,7 @@ void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
   if (variant != 0)
     return;
 
-  if (profile)
-    personal_data_->RemoveProfile(profile->guid());
-  else
-    personal_data_->RemoveCreditCard(credit_card->guid());
+  personal_data_->RemoveByGUID(form_group->GetGUID());
 }
 
 void AutofillManager::RemoveAutocompleteEntry(const string16& name,
@@ -944,15 +916,15 @@ void AutofillManager::set_metric_logger(const AutofillMetrics* metric_logger) {
   metric_logger_.reset(metric_logger);
 }
 
-bool AutofillManager::GetHost(const std::vector<AutofillProfile*>& profiles,
-                              const std::vector<CreditCard*>& credit_cards,
-                              RenderViewHost** host) const {
+bool AutofillManager::GetHost(RenderViewHost** host) const {
   if (!IsAutofillEnabled())
     return false;
 
   // No autofill data to return if the profiles are empty.
-  if (profiles.empty() && credit_cards.empty())
+  if (personal_data_->profiles().empty() &&
+      personal_data_->credit_cards().empty()) {
     return false;
+  }
 
   *host = web_contents()->GetRenderViewHost();
   if (!*host)
@@ -963,10 +935,7 @@ bool AutofillManager::GetHost(const std::vector<AutofillProfile*>& profiles,
 
 bool AutofillManager::GetProfileOrCreditCard(
     int unique_id,
-    const std::vector<AutofillProfile*>& profiles,
-    const std::vector<CreditCard*>& credit_cards,
-    const AutofillProfile** profile,
-    const CreditCard** credit_card,
+    const FormGroup** form_group,
     size_t* variant) const {
   // Unpack the |unique_id| into component parts.
   GUIDPair credit_card_guid;
@@ -977,33 +946,22 @@ bool AutofillManager::GetProfileOrCreditCard(
 
   // Find the profile that matches the |profile_guid|, if one is specified.
   if (base::IsValidGUID(profile_guid.first)) {
-    for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
-         iter != profiles.end(); ++iter) {
-      if ((*iter)->guid() == profile_guid.first) {
-        *profile = *iter;
-        break;
-      }
-    }
-    DCHECK(*profile);
-
+    *form_group = personal_data_->GetProfileByGUID(profile_guid.first);
+    DCHECK(*form_group);
     *variant = profile_guid.second;
+    return true;
   }
 
   // Find the credit card that matches the |credit_card_guid|, if specified.
   if (base::IsValidGUID(credit_card_guid.first)) {
-    for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
-         iter != credit_cards.end(); ++iter) {
-      if ((*iter)->guid() == credit_card_guid.first) {
-        *credit_card = *iter;
-        break;
-      }
-    }
-    DCHECK(*credit_card);
-
+    *form_group =
+        personal_data_->GetCreditCardByGUID(credit_card_guid.first);
+    DCHECK(*form_group);
     *variant = credit_card_guid.second;
+    return true;
   }
 
-  return (*profile) || (*credit_card);
+  return false;
 }
 
 bool AutofillManager::FindCachedForm(const FormData& form,

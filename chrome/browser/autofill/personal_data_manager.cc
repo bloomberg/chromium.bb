@@ -379,7 +379,7 @@ void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
     return;
 
   if (profile.IsEmpty()) {
-    RemoveProfile(profile.guid());
+    RemoveByGUID(profile.guid());
     return;
   }
 
@@ -390,25 +390,6 @@ void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
 
   // Make the update.
   autofill_data->UpdateAutofillProfile(profile);
-
-  // Refresh our local cache and send notifications to observers.
-  Refresh();
-}
-
-void PersonalDataManager::RemoveProfile(const std::string& guid) {
-  if (browser_context_->IsOffTheRecord())
-    return;
-
-  if (!FindByGUID<AutofillProfile>(web_profiles_, guid))
-    return;
-
-  scoped_ptr<AutofillWebDataService> autofill_data(
-      AutofillWebDataService::FromBrowserContext(browser_context_));
-  if (!autofill_data.get())
-    return;
-
-  // Remove the profile.
-  autofill_data->RemoveAutofillProfile(guid);
 
   // Refresh our local cache and send notifications to observers.
   Refresh();
@@ -458,7 +439,7 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
     return;
 
   if (credit_card.IsEmpty()) {
-    RemoveCreditCard(credit_card.guid());
+    RemoveByGUID(credit_card.guid());
     return;
   }
 
@@ -474,11 +455,14 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
   Refresh();
 }
 
-void PersonalDataManager::RemoveCreditCard(const std::string& guid) {
+void PersonalDataManager::RemoveByGUID(const std::string& guid) {
   if (browser_context_->IsOffTheRecord())
     return;
 
-  if (!FindByGUID<CreditCard>(credit_cards_, guid))
+  bool is_credit_card = FindByGUID<CreditCard>(credit_cards_, guid);
+  bool is_profile = !is_credit_card &&
+      FindByGUID<AutofillProfile>(web_profiles_, guid);
+  if (!is_credit_card && !is_profile)
     return;
 
   scoped_ptr<AutofillWebDataService> autofill_data(
@@ -486,8 +470,10 @@ void PersonalDataManager::RemoveCreditCard(const std::string& guid) {
   if (!autofill_data.get())
     return;
 
-  // Remove the credit card.
-  autofill_data->RemoveCreditCard(guid);
+  if (is_credit_card)
+    autofill_data->RemoveCreditCard(guid);
+  else
+    autofill_data->RemoveAutofillProfile(guid);
 
   // Refresh our local cache and send notifications to observers.
   Refresh();

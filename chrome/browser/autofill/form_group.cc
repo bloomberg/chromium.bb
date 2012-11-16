@@ -207,6 +207,11 @@ bool FillCreditCardTypeSelectControl(const string16& value,
 
 }  // namespace
 
+std::string FormGroup::GetGUID() const {
+  NOTREACHED();
+  return std::string();
+}
+
 void FormGroup::GetMatchingTypes(const string16& text,
                                  FieldTypeSet* matching_types) const {
   if (text.empty()) {
@@ -244,6 +249,12 @@ bool FormGroup::SetCanonicalizedInfo(AutofillFieldType type,
                                      const string16& value) {
   SetRawInfo(type, value);
   return true;
+}
+
+void FormGroup::FillFormField(const AutofillField& field,
+                              size_t variant,
+                              FormFieldData* field_data) const {
+  NOTREACHED();
 }
 
 void FormGroup::FillSelectControl(AutofillFieldType type,

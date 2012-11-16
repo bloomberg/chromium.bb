@@ -193,7 +193,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
   // Update, remove, and add.
   profile0.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
   personal_data_->UpdateProfile(profile0);
-  personal_data_->RemoveProfile(profile1.guid());
+  personal_data_->RemoveByGUID(profile1.guid());
   personal_data_->AddProfile(profile2);
 
   // Verify that the web database has been updated and the notification sent.
@@ -248,7 +248,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
   // Update, remove, and add.
   credit_card0.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Joe"));
   personal_data_->UpdateCreditCard(credit_card0);
-  personal_data_->RemoveCreditCard(credit_card1.guid());
+  personal_data_->RemoveByGUID(credit_card1.guid());
   personal_data_->AddCreditCard(credit_card2);
 
   // Verify that the web database has been updated and the notification sent.

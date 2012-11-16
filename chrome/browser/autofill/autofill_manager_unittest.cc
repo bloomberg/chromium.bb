@@ -106,20 +106,20 @@ class TestPersonalDataManager : public PersonalDataManager {
     credit_cards_.push_back(credit_card);
   }
 
-  virtual void RemoveProfile(const std::string& guid) OVERRIDE {
-    AutofillProfile* profile = GetProfileWithGUID(guid.c_str());
-
-    web_profiles_.erase(
-        std::remove(web_profiles_.begin(), web_profiles_.end(), profile),
-        web_profiles_.end());
-  }
-
-  virtual void RemoveCreditCard(const std::string& guid) OVERRIDE {
+  virtual void RemoveByGUID(const std::string& guid) OVERRIDE {
     CreditCard* credit_card = GetCreditCardWithGUID(guid.c_str());
+    if (credit_card) {
+      credit_cards_.erase(
+          std::remove(credit_cards_.begin(), credit_cards_.end(), credit_card),
+          credit_cards_.end());
+    }
 
-    credit_cards_.erase(
-        std::remove(credit_cards_.begin(), credit_cards_.end(), credit_card),
-        credit_cards_.end());
+    AutofillProfile* profile = GetProfileWithGUID(guid.c_str());
+    if (profile) {
+      web_profiles_.erase(
+          std::remove(web_profiles_.begin(), web_profiles_.end(), profile),
+          web_profiles_.end());
+    }
   }
 
   void ClearAutofillProfiles() {
