@@ -10,6 +10,7 @@
 #include "base/stringprintf.h"
 #include "cc/damage_tracker.h"
 #include "cc/debug_border_draw_quad.h"
+#include "cc/debug_colors.h"
 #include "cc/delegated_renderer_layer_impl.h"
 #include "cc/layer_impl.h"
 #include "cc/math_util.h"
@@ -24,15 +25,6 @@
 using WebKit::WebTransformationMatrix;
 
 namespace cc {
-
-static const int debugSurfaceBorderWidth = 2;
-static const int debugSurfaceBorderAlpha = 100;
-static const int debugSurfaceBorderColorRed = 0;
-static const int debugSurfaceBorderColorGreen = 0;
-static const int debugSurfaceBorderColorBlue = 255;
-static const int debugReplicaBorderColorRed = 160;
-static const int debugReplicaBorderColorGreen = 0;
-static const int debugReplicaBorderColorBlue = 255;
 
 RenderSurfaceImpl::RenderSurfaceImpl(LayerImpl* owningLayer)
     : m_owningLayer(owningLayer)
@@ -210,11 +202,9 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
     SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(SharedQuadState::create(drawTransform, m_contentRect, clippedRectInTarget, m_drawOpacity, isOpaque).Pass());
 
     if (m_owningLayer->showDebugBorders()) {
-        int red = forReplica ? debugReplicaBorderColorRed : debugSurfaceBorderColorRed;
-        int green = forReplica ?  debugReplicaBorderColorGreen : debugSurfaceBorderColorGreen;
-        int blue = forReplica ? debugReplicaBorderColorBlue : debugSurfaceBorderColorBlue;
-        SkColor color = SkColorSetARGB(debugSurfaceBorderAlpha, red, green, blue);
-        quadSink.append(DebugBorderDrawQuad::create(sharedQuadState, contentRect(), color, debugSurfaceBorderWidth).PassAs<DrawQuad>(), appendQuadsData);
+        SkColor color = forReplica ? DebugColors::SurfaceReplicaBorderColor() : DebugColors::SurfaceBorderColor();
+        float width = forReplica ? DebugColors::SurfaceReplicaBorderWidth(m_owningLayer->layerTreeHostImpl()) : DebugColors::SurfaceBorderWidth(m_owningLayer->layerTreeHostImpl());
+        quadSink.append(DebugBorderDrawQuad::create(sharedQuadState, contentRect(), color, width).PassAs<DrawQuad>(), appendQuadsData);
     }
 
     // FIXME: By using the same RenderSurfaceImpl for both the content and its reflection,

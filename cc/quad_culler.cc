@@ -6,6 +6,7 @@
 
 #include "cc/append_quads_data.h"
 #include "cc/debug_border_draw_quad.h"
+#include "cc/debug_colors.h"
 #include "cc/layer_impl.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/overdraw_metrics.h"
@@ -16,12 +17,6 @@
 using namespace std;
 
 namespace cc {
-
-static const int debugTileBorderWidth = 1;
-static const int debugTileBorderAlpha = 120;
-static const int debugTileBorderColorRed = 160;
-static const int debugTileBorderColorGreen = 100;
-static const int debugTileBorderColorBlue = 0;
 
 QuadCuller::QuadCuller(QuadList& quadList, SharedQuadStateList& sharedQuadStateList, LayerImpl* layer, const OcclusionTrackerImpl* occlusionTracker, bool showCullingWithDebugBorderQuads, bool forSurface)
     : m_quadList(quadList)
@@ -44,7 +39,7 @@ SharedQuadState* QuadCuller::useSharedQuadState(scoped_ptr<SharedQuadState> shar
     return m_currentSharedQuadState;
 }
 
-static inline bool appendQuadInternal(scoped_ptr<DrawQuad> drawQuad, const gfx::Rect& culledRect, QuadList& quadList, const OcclusionTrackerImpl& occlusionTracker, bool createDebugBorderQuads)
+static inline bool appendQuadInternal(scoped_ptr<DrawQuad> drawQuad, const gfx::Rect& culledRect, QuadList& quadList, const OcclusionTrackerImpl& occlusionTracker, LayerImpl* layer, bool createDebugBorderQuads)
 {
     bool keepQuad = !culledRect.IsEmpty();
     if (keepQuad)
@@ -55,8 +50,9 @@ static inline bool appendQuadInternal(scoped_ptr<DrawQuad> drawQuad, const gfx::
 
     if (keepQuad) {
         if (createDebugBorderQuads && !drawQuad->isDebugQuad() && drawQuad->quadVisibleRect() != drawQuad->quadRect()) {
-            SkColor borderColor = SkColorSetARGB(debugTileBorderAlpha, debugTileBorderColorRed, debugTileBorderColorGreen, debugTileBorderColorBlue);
-            quadList.append(DebugBorderDrawQuad::create(drawQuad->sharedQuadState(), drawQuad->quadVisibleRect(), borderColor, debugTileBorderWidth).PassAs<DrawQuad>());
+            SkColor color = DebugColors::CulledTileBorderColor();
+            float width = DebugColors::CulledTileBorderWidth(layer ? layer->layerTreeHostImpl() : NULL);
+            quadList.append(DebugBorderDrawQuad::create(drawQuad->sharedQuadState(), drawQuad->quadVisibleRect(), color, width).PassAs<DrawQuad>());
         }
 
         // Pass the quad after we're done using it.
@@ -83,7 +79,7 @@ bool QuadCuller::append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData& appendQu
 
     appendQuadsData.hadOcclusionFromOutsideTargetSurface |= hasOcclusionFromOutsideTargetSurface;
 
-    return appendQuadInternal(drawQuad.Pass(), culledRect, m_quadList, *m_occlusionTracker, m_showCullingWithDebugBorderQuads);
+    return appendQuadInternal(drawQuad.Pass(), culledRect, m_quadList, *m_occlusionTracker, m_layer, m_showCullingWithDebugBorderQuads);
 }
 
 }  // namespace cc

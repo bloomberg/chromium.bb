@@ -31,6 +31,8 @@
       'damage_tracker.h',
       'debug_border_draw_quad.cc',
       'debug_border_draw_quad.h',
+      'debug_colors.cc',
+      'debug_colors.h',
       'debug_rect_history.cc',
       'debug_rect_history.h',
       'delay_based_time_source.cc',

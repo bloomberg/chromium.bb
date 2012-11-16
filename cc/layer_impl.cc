@@ -7,6 +7,7 @@
 #include "base/debug/trace_event.h"
 #include "base/stringprintf.h"
 #include "cc/debug_border_draw_quad.h"
+#include "cc/debug_colors.h"
 #include "cc/geometry.h"
 #include "cc/layer_sorter.h"
 #include "cc/layer_tree_host_impl.h"
@@ -154,22 +155,19 @@ bool LayerImpl::showDebugBorders() const
 void LayerImpl::getDebugBorderProperties(SkColor* color, float* width) const
 {
     if (m_drawsContent) {
-        // Non-tiled content layers are green.
-        *color = SkColorSetARGB(128, 0, 128, 32);
-        *width = 2;
+        *color = DebugColors::ContentLayerBorderColor();
+        *width = DebugColors::ContentLayerBorderWidth(m_layerTreeHostImpl);
         return;
     }
 
     if (m_masksToBounds) {
-        // Masking layers are pale blue.
-        *color = SkColorSetARGB(48, 128, 255, 255);
-        *width = 20;
+        *color = DebugColors::MaskingLayerBorderColor();
+        *width = DebugColors::MaskingLayerBorderWidth(m_layerTreeHostImpl);
         return;
     }
 
-    // Other container layers are yellow.
-    *color = SkColorSetARGB(192, 255, 255, 0);
-    *width = 2;
+    *color = DebugColors::ContainerLayerBorderColor();
+    *width = DebugColors::ContainerLayerBorderWidth(m_layerTreeHostImpl);
 }
 
 void LayerImpl::appendDebugBorderQuad(QuadSink& quadList, const SharedQuadState* sharedQuadState, AppendQuadsData& appendQuadsData) const

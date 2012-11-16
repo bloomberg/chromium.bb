@@ -9,6 +9,7 @@
 #include "cc/append_quads_data.h"
 #include "cc/checkerboard_draw_quad.h"
 #include "cc/debug_border_draw_quad.h"
+#include "cc/debug_colors.h"
 #include "cc/layer_tiling_data.h"
 #include "cc/math_util.h"
 #include "cc/quad_sink.h"
@@ -23,24 +24,8 @@ using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
-static const int debugTileBorderWidth = 1;
-static const int debugTileBorderAlpha = 100;
-static const int debugTileBorderColorRed = 80;
-static const int debugTileBorderColorGreen = 200;
-static const int debugTileBorderColorBlue = 200;
-static const int debugTileBorderMissingTileColorRed = 255;
-static const int debugTileBorderMissingTileColorGreen = 0;
-static const int debugTileBorderMissingTileColorBlue = 0;
-
-static const int defaultCheckerboardColorRed = 241;
-static const int defaultCheckerboardColorGreen = 241;
-static const int defaultCheckerboardColorBlue = 241;
-static const int debugTileEvictedCheckerboardColorRed = 255;
-static const int debugTileEvictedCheckerboardColorGreen = 200;
-static const int debugTileEvictedCheckerboardColorBlue = 200;
-static const int debugTileInvalidatedCheckerboardColorRed = 128;
-static const int debugTileInvalidatedCheckerboardColorGreen = 200;
-static const int debugTileInvalidatedCheckerboardColorBlue = 245;
+// Non-debug checkerboards are grey.
+const SkColor kTileCheckerboardColor = SkColorSetRGB(241, 241, 241);
 
 class DrawableTile : public LayerTilingData::Tile {
 public:
@@ -116,9 +101,8 @@ DrawableTile* TiledLayerImpl::createTile(int i, int j)
 
 void TiledLayerImpl::getDebugBorderProperties(SkColor* color, float* width) const
 {
-    // Tiled content layers are orange.
-    *color = SkColorSetARGBInline(128, 255, 128, 0);
-    *width = 2;
+    *color = DebugColors::TiledContentLayerBorderColor();
+    *width = DebugColors::TiledContentLayerBorderWidth(layerTreeHostImpl());
 }
 
 void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
@@ -140,12 +124,16 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
                 DrawableTile* tile = tileAt(i, j);
                 gfx::Rect tileRect = m_tiler->tileBounds(i, j);
                 SkColor borderColor;
+                float borderWidth;
 
-                if (m_skipsDraw || !tile || !tile->resourceId())
-                    borderColor = SkColorSetARGB(debugTileBorderAlpha, debugTileBorderMissingTileColorRed, debugTileBorderMissingTileColorGreen, debugTileBorderMissingTileColorBlue);
-                else
-                    borderColor = SkColorSetARGB(debugTileBorderAlpha, debugTileBorderColorRed, debugTileBorderColorGreen, debugTileBorderColorBlue);
-                quadSink.append(DebugBorderDrawQuad::create(sharedQuadState, tileRect, borderColor, debugTileBorderWidth).PassAs<DrawQuad>(), appendQuadsData);
+                if (m_skipsDraw || !tile || !tile->resourceId()) {
+                    borderColor = DebugColors::MissingTileBorderColor();
+                    borderWidth = DebugColors::MissingTileBorderWidth(layerTreeHostImpl());
+                } else {
+                    borderColor = DebugColors::TileBorderColor();
+                    borderWidth = DebugColors::TileBorderWidth(layerTreeHostImpl());
+                }
+                quadSink.append(DebugBorderDrawQuad::create(sharedQuadState, tileRect, borderColor, borderWidth).PassAs<DrawQuad>(), appendQuadsData);
             }
         }
     }
@@ -166,15 +154,11 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
 
             if (!tile || !tile->resourceId()) {
                 if (drawCheckerboardForMissingTiles()) {
-                    SkColor defaultColor = SkColorSetRGB(defaultCheckerboardColorRed, defaultCheckerboardColorGreen, defaultCheckerboardColorBlue);
-                    SkColor evictedColor = SkColorSetRGB(debugTileEvictedCheckerboardColorRed, debugTileEvictedCheckerboardColorGreen, debugTileEvictedCheckerboardColorBlue);
-                    SkColor invalidatedColor = SkColorSetRGB(debugTileInvalidatedCheckerboardColorRed, debugTileEvictedCheckerboardColorGreen, debugTileEvictedCheckerboardColorBlue);
-
                     SkColor checkerColor;
                     if (showDebugBorders())
-                        checkerColor = tile ? invalidatedColor : evictedColor;
+                        checkerColor = tile ? DebugColors::InvalidatedTileCheckerboardColor() : DebugColors::EvictedTileCheckerboardColor();
                     else
-                        checkerColor = defaultColor;
+                        checkerColor = kTileCheckerboardColor;
 
                     appendQuadsData.hadMissingTiles |= quadSink.append(CheckerboardDrawQuad::create(sharedQuadState, tileRect, checkerColor).PassAs<DrawQuad>(), appendQuadsData);
                 } else
