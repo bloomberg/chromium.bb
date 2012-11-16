@@ -22,6 +22,10 @@
 #include "base/system_monitor/system_monitor.h"
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+#include "chrome/browser/media_gallery/mtp_device_delegate_impl.h"
+#endif
+
 class Profile;
 
 namespace content {
@@ -40,7 +44,6 @@ namespace chrome {
 
 class ExtensionGalleriesHost;
 class MediaGalleriesPreferences;
-class ScopedMTPDeviceMapEntry;
 
 struct MediaFileSystemInfo {
   MediaFileSystemInfo(const std::string& fs_name,
@@ -52,6 +55,43 @@ struct MediaFileSystemInfo {
   FilePath path;
   std::string fsid;
 };
+
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+// Class to manage MTPDeviceDelegateImpl object for the attached MTP device.
+// Refcounted to reuse the same MTP device delegate entry across extensions.
+// This class supports WeakPtr (extends SupportsWeakPtr) to expose itself as
+// a weak pointer to MediaFileSystemRegistry.
+class ScopedMTPDeviceMapEntry
+    : public base::RefCounted<ScopedMTPDeviceMapEntry>,
+      public base::SupportsWeakPtr<ScopedMTPDeviceMapEntry> {
+ public:
+  // |no_references_callback| is called when the last ScopedMTPDeviceMapEntry
+  // reference goes away.
+  ScopedMTPDeviceMapEntry(const FilePath::StringType& device_location,
+                          const base::Closure& no_references_callback);
+
+ private:
+  // Friend declaration for ref counted implementation.
+  friend class base::RefCounted<ScopedMTPDeviceMapEntry>;
+
+  // Private because this class is ref-counted.
+  ~ScopedMTPDeviceMapEntry();
+
+  // Store the MTP or PTP device location.
+  const FilePath::StringType device_location_;
+
+  // Store a raw pointer of MTPDeviceDelegateImpl object.
+  // MTPDeviceDelegateImpl is ref-counted and owned by MTPDeviceMapService.
+  // This class tells MTPDeviceMapService to dispose of it when the last
+  // reference to |this| goes away.
+  MTPDeviceDelegateImpl* delegate_;
+
+  // A callback to call when the last reference of this object goes away.
+  base::Closure no_references_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedMTPDeviceMapEntry);
+};
+#endif
 
 class MediaFileSystemContext {
  public:
@@ -105,7 +145,10 @@ class MediaFileSystemRegistry
       const FilePath::StringType& location) OVERRIDE;
   virtual void OnRemovableStorageDetached(const std::string& id) OVERRIDE;
 
+  size_t GetExtensionHostCountForTests() const;
+
  private:
+  friend class TestMediaFileSystemContext;
   friend struct base::DefaultLazyInstanceTraits<MediaFileSystemRegistry>;
   class MediaFileSystemContextImpl;
 

@@ -13,13 +13,12 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
+#include "chrome/browser/media_gallery/media_galleries_test_util.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/api/string_ordinal.h"
@@ -59,7 +58,6 @@ class MediaGalleriesPreferencesTest : public testing::Test {
       : ui_thread_(content::BrowserThread::UI, &loop_),
         file_thread_(content::BrowserThread::FILE, &loop_),
         profile_(new TestingProfile()),
-        extension_service_(NULL),
         default_galleries_count_(0) {
     MediaStorageUtilTest::SetTestingMode();
   }
@@ -72,14 +70,11 @@ class MediaGalleriesPreferencesTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    extensions_dir_ = profile_->GetPath().AppendASCII("Extensions");
-    ASSERT_TRUE(file_util::CreateDirectory(extensions_dir_));
-
     extensions::TestExtensionSystem* extension_system(
         static_cast<extensions::TestExtensionSystem*>(
             extensions::ExtensionSystem::Get(profile_.get())));
-    extension_service_ = extension_system->CreateExtensionService(
-        CommandLine::ForCurrentProcess(), extensions_dir_, false);
+    extension_system->CreateExtensionService(
+        CommandLine::ForCurrentProcess(), FilePath(), false);
 
     gallery_prefs_.reset(new MediaGalleriesPreferences(profile_.get()));
 
@@ -103,9 +98,12 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     std::vector<std::string> read_permissions;
     read_permissions.push_back("read");
 
-    all_permission_extension = AddApp("all", all_permissions);
-    regular_permission_extension = AddApp("regular", read_permissions);
-    no_permissions_extension = AddApp("no", read_permissions);
+    all_permission_extension =
+        AddMediaGalleriesApp("all", all_permissions, profile_.get());
+    regular_permission_extension =
+        AddMediaGalleriesApp("regular", read_permissions, profile_.get());
+    no_permissions_extension =
+        AddMediaGalleriesApp("no", read_permissions, profile_.get());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -191,50 +189,6 @@ class MediaGalleriesPreferencesTest : public testing::Test {
   MediaGalleriesPrefInfoMap expected_galleries_;
 
  private:
-  scoped_refptr<extensions::Extension> AddApp(
-      std::string name,
-      std::vector<std::string> media_galleries_permissions) {
-    scoped_ptr<DictionaryValue> manifest(new DictionaryValue);
-    manifest->SetString(extension_manifest_keys::kName, name);
-    manifest->SetString(extension_manifest_keys::kVersion, "0.1");
-    manifest->SetInteger(extension_manifest_keys::kManifestVersion, 2);
-    ListValue* background_script_list = new ListValue;
-    background_script_list->Append(Value::CreateStringValue("background.js"));
-    manifest->Set(extension_manifest_keys::kPlatformAppBackgroundScripts,
-                  background_script_list);
-
-    ListValue* permission_detail_list = new ListValue;
-    for (size_t i = 0; i < media_galleries_permissions.size(); i++)
-      permission_detail_list->Append(
-          Value::CreateStringValue(media_galleries_permissions[i]));
-    DictionaryValue* media_galleries_permission = new DictionaryValue();
-    media_galleries_permission->Set("mediaGalleries", permission_detail_list);
-    ListValue* permission_list = new ListValue;
-    permission_list->Append(media_galleries_permission);
-    manifest->Set(extension_manifest_keys::kPermissions, permission_list);
-
-    FilePath path = extensions_dir_.AppendASCII(name);
-    std::string errors;
-    scoped_refptr<extensions::Extension> extension =
-        extensions::Extension::Create(path,
-                                      extensions::Extension::INTERNAL,
-                                      *manifest.get(),
-                                      extensions::Extension::NO_FLAGS,
-                                      &errors);
-    EXPECT_TRUE(extension.get() != NULL) << errors;
-    EXPECT_TRUE(extensions::Extension::IdIsValid(extension->id()));
-    if (!extension.get() ||
-        !extensions::Extension::IdIsValid(extension->id())) {
-      return NULL;
-    }
-
-    extension_service_->extension_prefs()->OnExtensionInstalled(
-        extension, extensions::Extension::ENABLED,
-        syncer::StringOrdinal::CreateInitialOrdinal());
-
-    return extension;
-  }
-
   // Needed for extension service & friends to work.
   MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
@@ -242,8 +196,6 @@ class MediaGalleriesPreferencesTest : public testing::Test {
 
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<MediaGalleriesPreferences> gallery_prefs_;
-  FilePath extensions_dir_;
-  ExtensionService* extension_service_;
 
   uint64 default_galleries_count_;
 
