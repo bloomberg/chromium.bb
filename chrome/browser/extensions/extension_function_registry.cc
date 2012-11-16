@@ -222,8 +222,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::MetricsRecordMediumTimeFunction>();
   RegisterFunction<extensions::MetricsRecordLongTimeFunction>();
 
-  // RLZ.
-#if defined(ENABLE_RLZ)
+  // RLZ (not supported on ChromeOS yet).
+#if defined(ENABLE_RLZ) && !defined(OS_CHROMEOS)
   RegisterFunction<RlzRecordProductEventFunction>();
   RegisterFunction<RlzGetAccessPointRlzFunction>();
   RegisterFunction<RlzSendFinancialPingFunction>();

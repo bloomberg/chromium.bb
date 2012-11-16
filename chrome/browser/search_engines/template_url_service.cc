@@ -15,7 +15,6 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -2152,8 +2151,6 @@ bool TemplateURLService::SetDefaultSearchProviderNoNotify(TemplateURL* url) {
     if (url->url_ref().HasGoogleBaseURLs()) {
       GoogleURLTracker::RequestServerCheck(profile_);
 #if defined(ENABLE_RLZ)
-      // Needs to be evaluated. See http://crbug.com/62328.
-      base::ThreadRestrictions::ScopedAllowIO allow_io;
       RLZTracker::RecordProductEvent(rlz_lib::CHROME,
                                      RLZTracker::CHROME_OMNIBOX,
                                      rlz_lib::SET_TO_GOOGLE);

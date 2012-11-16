@@ -46,8 +46,8 @@ ExtensionFunction* MockRlzSendFinancialPingFunctionFactory() {
   return new MockRlzSendFinancialPingFunction();
 }
 
-// Mac is flaky - http://crbug.com/137834.
-#if defined(OS_MACOSX)
+// Mac is flaky - http://crbug.com/137834. ChromeOS is not supported yet.
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define MAYBE_Rlz DISABLED_Rlz
 #else
 #define MAYBE_Rlz Rlz

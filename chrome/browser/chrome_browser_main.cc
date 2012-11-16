@@ -1266,7 +1266,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 #endif  // OS_WIN
 
-#if defined(ENABLE_RLZ)
+#if defined(ENABLE_RLZ) && !defined(OS_CHROMEOS)
+  // TODO(ivankr): do this on user login on ChromeOS.
   // Init the RLZ library. This just binds the dll and schedules a task on the
   // file thread to be run sometime later. If this is the first run we record
   // the installation event.
@@ -1304,7 +1305,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // for the startup page if needed (i.e., when the startup page is set to
   // the home page).
   RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_HOME_PAGE, NULL);
-#endif  // defined(ENABLE_RLZ)
+#endif  // defined(ENABLE_RLZ) && !defined(OS_CHROMEOS)
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);

@@ -467,7 +467,6 @@ TEST_F(TemplateURLTest, Suggestions) {
   }
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
 TEST_F(TemplateURLTest, RLZ) {
   string16 rlz_string;
 #if defined(ENABLE_RLZ)
@@ -492,7 +491,6 @@ TEST_F(TemplateURLTest, RLZ) {
   expected_url += "x";
   EXPECT_EQ(expected_url, result.spec());
 }
-#endif
 
 TEST_F(TemplateURLTest, HostAndSearchTermKey) {
   struct TestData {

@@ -5,9 +5,11 @@
 #include "chrome/browser/rlz/rlz.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_log.h"
 #include "chrome/browser/google/google_util.h"
@@ -26,8 +28,11 @@
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "rlz/win/lib/rlz_lib.h"  // InitializeTempHivesForTesting
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #include "rlz/lib/rlz_value_store.h"  // SetRlzStoreDirectory
+#endif
+#if defined(OS_CHROMEOS)
+#include "rlz/chromeos/lib/rlz_value_store_chromeos.h"
 #endif
 
 using content::NavigationEntry;
@@ -97,7 +102,7 @@ class TestRLZTracker : public RLZTracker {
   using RLZTracker::DelayedInit;
   using RLZTracker::Observe;
 
-  TestRLZTracker() : assume_not_ui_thread_(false) {
+  TestRLZTracker() : assume_not_ui_thread_(true) {
     set_tracker(this);
   }
 
@@ -114,6 +119,10 @@ class TestRLZTracker : public RLZTracker {
   }
 
  private:
+  virtual bool InitWorkers() OVERRIDE {
+    return true;
+  }
+
   virtual void ScheduleDelayedInit(int delay) OVERRIDE {
     // If the delay is 0, invoke the delayed init now. Otherwise,
     // don't schedule anything, it will be manually called during tests.
@@ -125,7 +134,17 @@ class TestRLZTracker : public RLZTracker {
     PingNowImpl();
   }
 
+  virtual bool ScheduleRecordProductEvent(rlz_lib::Product product,
+                                          rlz_lib::AccessPoint point,
+                                          rlz_lib::Event event_id) OVERRIDE {
+    return !assume_not_ui_thread_;
+  }
+
   virtual bool ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) OVERRIDE {
+    return !assume_not_ui_thread_;
+  }
+
+  virtual bool ScheduleRecordFirstSearch(rlz_lib::AccessPoint point) OVERRIDE {
     return !assume_not_ui_thread_;
   }
 
@@ -152,6 +171,11 @@ class TestRLZTracker : public RLZTracker {
 };
 
 class RlzLibTest : public testing::Test {
+ public:
+#if defined(OS_CHROMEOS)
+  RlzLibTest();
+#endif
+
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
@@ -173,11 +197,21 @@ class RlzLibTest : public testing::Test {
   TestRLZTracker tracker_;
 #if defined(OS_WIN)
   RegistryOverrideManager override_manager_;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_CHROMEOS)
   ScopedTempDir temp_dir_;
   scoped_ptr<google_util::BrandForTesting> brand_override_;
 #endif
+#if defined(OS_CHROMEOS)
+  MessageLoop loop_;
+  base::Thread io_thread_;
+#endif
 };
+
+#if defined(OS_CHROMEOS)
+RlzLibTest::RlzLibTest()
+    : io_thread_("RlzLibTest-io") {
+}
+#endif
 
 void RlzLibTest::SetUp() {
   testing::Test::SetUp();
@@ -213,9 +247,17 @@ void RlzLibTest::SetUp() {
   // initialization performed above.
   override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE, kRlzTempHklm);
   override_manager_.OverrideRegistry(HKEY_CURRENT_USER, kRlzTempHkcu);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_CHROMEOS)
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   rlz_lib::testing::SetRlzStoreDirectory(temp_dir_.path());
+#endif
+
+#if defined(OS_CHROMEOS)
+  base::Thread::Options options;
+  options.message_loop_type = MessageLoop::TYPE_IO;
+  ASSERT_TRUE(io_thread_.StartWithOptions(options));
+  rlz_lib::SetIOTaskRunner(io_thread_.message_loop_proxy());
+  rlz_lib::RlzValueStoreChromeOS::ResetForTesting();
 #endif
 
   // Make sure a non-organic brand code is set in the registry or the RLZTracker
@@ -225,16 +267,19 @@ void RlzLibTest::SetUp() {
 }
 
 void RlzLibTest::TearDown() {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   rlz_lib::testing::SetRlzStoreDirectory(FilePath());
 #endif
+#if defined(OS_CHROMEOS)
+  io_thread_.Stop();
+#endif  // defined(OS_CHROMEOS)
   testing::Test::TearDown();
 }
 
 void RlzLibTest::SetMainBrand(const char* brand) {
 #if defined(OS_WIN)
   SetRegistryBrandValue(google_update::kRegRLZBrandField, brand);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_CHROMEOS)
   brand_override_.reset(new google_util::BrandForTesting(brand));
 #endif
   std::string check_brand;
@@ -322,7 +367,7 @@ void RlzLibTest::ExpectReactivationRlzPingSent(bool expected) {
 // The events A to D happen in chronological order, but the other events
 // may happen at any point between A-B or C-D, in no particular order.
 //
-// The visible results of the scenarios are:
+// The visible results of the scenarios on Win are:
 //
 //  C1I event is recorded
 //  C2I event is recorded
@@ -333,6 +378,7 @@ void RlzLibTest::ExpectReactivationRlzPingSent(bool expected) {
 //  RLZ ping sent
 //
 //  On Mac, C5 / C6 are sent instead of C1 / C2.
+//  On ChromeOS, CA / CB are sent, respectively.
 //
 // Variations on the above scenarios:
 //
@@ -341,43 +387,51 @@ void RlzLibTest::ExpectReactivationRlzPingSent(bool expected) {
 //
 // Also want to test that pre-warming the RLZ string cache works correctly.
 
-#if !defined(OS_MACOSX)
-const char kC1I[] = "C1I";
-const char kC1S[] = "C1S";
-const char kC1F[] = "C1F";
+#if defined(OS_WIN)
+const char kOmniboxInstall[] = "C1I";
+const char kOmniboxSetToGoogle[] = "C1S";
+const char kOmniboxFirstSearch[] = "C1F";
 
-const char kC2I[] = "C2I";
-const char kC2S[] = "C2S";
-const char kC2F[] = "C2F";
-#else
-const char kC1I[] = "C5I";
-const char kC1S[] = "C5S";
-const char kC1F[] = "C5F";
+const char kHomepageInstall[] = "C2I";
+const char kHomepageSetToGoogle[] = "C2S";
+const char kHomepageFirstSeach[] = "C2F";
+#elif defined(OS_MACOSX)
+const char kOmniboxInstall[] = "C5I";
+const char kOmniboxSetToGoogle[] = "C5S";
+const char kOmniboxFirstSearch[] = "C5F";
 
-const char kC2I[] = "C6I";
-const char kC2S[] = "C6S";
-const char kC2F[] = "C6F";
+const char kHomepageInstall[] = "C6I";
+const char kHomepageSetToGoogle[] = "C6S";
+const char kHomepageFirstSeach[] = "C6F";
+#elif defined(OS_CHROMEOS)
+const char kOmniboxInstall[] = "CAI";
+const char kOmniboxSetToGoogle[] = "CAS";
+const char kOmniboxFirstSearch[] = "CAF";
+
+const char kHomepageInstall[] = "CBI";
+const char kHomepageSetToGoogle[] = "CBS";
+const char kHomepageFirstSeach[] = "CBF";
 #endif
 
 TEST_F(RlzLibTest, RecordProductEvent) {
   RLZTracker::RecordProductEvent(rlz_lib::CHROME, RLZTracker::CHROME_OMNIBOX,
                                  rlz_lib::FIRST_SEARCH);
 
-  ExpectEventRecorded(kC1F, true);
+  ExpectEventRecorded(kOmniboxFirstSearch, true);
 }
 
 TEST_F(RlzLibTest, QuickStopAfterStart) {
   RLZTracker::InitRlzDelayed(true, 20, true, true, true);
 
   // Omnibox events.
-  ExpectEventRecorded(kC1I, false);
-  ExpectEventRecorded(kC1S, false);
-  ExpectEventRecorded(kC1F, false);
+  ExpectEventRecorded(kOmniboxInstall, false);
+  ExpectEventRecorded(kOmniboxSetToGoogle, false);
+  ExpectEventRecorded(kOmniboxFirstSearch, false);
 
   // Home page events.
-  ExpectEventRecorded(kC2I, false);
-  ExpectEventRecorded(kC2S, false);
-  ExpectEventRecorded(kC2F, false);
+  ExpectEventRecorded(kHomepageInstall, false);
+  ExpectEventRecorded(kHomepageSetToGoogle, false);
+  ExpectEventRecorded(kHomepageFirstSeach, false);
 
   ExpectRlzPingSent(false);
 }
@@ -387,14 +441,14 @@ TEST_F(RlzLibTest, DelayedInitOnly) {
   InvokeDelayedInit();
 
   // Omnibox events.
-  ExpectEventRecorded(kC1I, true);
-  ExpectEventRecorded(kC1S, true);
-  ExpectEventRecorded(kC1F, false);
+  ExpectEventRecorded(kOmniboxInstall, true);
+  ExpectEventRecorded(kOmniboxSetToGoogle, true);
+  ExpectEventRecorded(kOmniboxFirstSearch, false);
 
   // Home page events.
-  ExpectEventRecorded(kC2I, true);
-  ExpectEventRecorded(kC2S, true);
-  ExpectEventRecorded(kC2F, false);
+  ExpectEventRecorded(kHomepageInstall, true);
+  ExpectEventRecorded(kHomepageSetToGoogle, true);
+  ExpectEventRecorded(kHomepageFirstSeach, false);
 
   ExpectRlzPingSent(true);
 }
@@ -404,14 +458,14 @@ TEST_F(RlzLibTest, DelayedInitOnlyGoogleAsStartup) {
   InvokeDelayedInit();
 
   // Omnibox events.
-  ExpectEventRecorded(kC1I, true);
-  ExpectEventRecorded(kC1S, false);
-  ExpectEventRecorded(kC1F, false);
+  ExpectEventRecorded(kOmniboxInstall, true);
+  ExpectEventRecorded(kOmniboxSetToGoogle, false);
+  ExpectEventRecorded(kOmniboxFirstSearch, false);
 
   // Home page events.
-  ExpectEventRecorded(kC2I, true);
-  ExpectEventRecorded(kC2S, true);
-  ExpectEventRecorded(kC2F, true);
+  ExpectEventRecorded(kHomepageInstall, true);
+  ExpectEventRecorded(kHomepageSetToGoogle, true);
+  ExpectEventRecorded(kHomepageFirstSeach, true);
 
   ExpectRlzPingSent(true);
 }
@@ -421,14 +475,14 @@ TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRunNoRlzStrings) {
   InvokeDelayedInit();
 
   // Omnibox events.
-  ExpectEventRecorded(kC1I, true);
-  ExpectEventRecorded(kC1S, true);
-  ExpectEventRecorded(kC1F, false);
+  ExpectEventRecorded(kOmniboxInstall, true);
+  ExpectEventRecorded(kOmniboxSetToGoogle, true);
+  ExpectEventRecorded(kOmniboxFirstSearch, false);
 
   // Home page events.
-  ExpectEventRecorded(kC2I, true);
-  ExpectEventRecorded(kC2S, true);
-  ExpectEventRecorded(kC2F, false);
+  ExpectEventRecorded(kHomepageInstall, true);
+  ExpectEventRecorded(kHomepageSetToGoogle, true);
+  ExpectEventRecorded(kHomepageFirstSeach, false);
 
   ExpectRlzPingSent(true);
 }
@@ -438,14 +492,14 @@ TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRunNoRlzStringsGoogleAsStartup) {
   InvokeDelayedInit();
 
   // Omnibox events.
-  ExpectEventRecorded(kC1I, true);
-  ExpectEventRecorded(kC1S, false);
-  ExpectEventRecorded(kC1F, false);
+  ExpectEventRecorded(kOmniboxInstall, true);
+  ExpectEventRecorded(kOmniboxSetToGoogle, false);
+  ExpectEventRecorded(kOmniboxFirstSearch, false);
 
   // Home page events.
-  ExpectEventRecorded(kC2I, true);
-  ExpectEventRecorded(kC2S, true);
-  ExpectEventRecorded(kC2F, true);
+  ExpectEventRecorded(kHomepageInstall, true);
+  ExpectEventRecorded(kHomepageSetToGoogle, true);
+  ExpectEventRecorded(kHomepageFirstSeach, true);
 
   ExpectRlzPingSent(true);
 }
@@ -460,14 +514,14 @@ TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRun) {
   InvokeDelayedInit();
 
   // Omnibox events.
-  ExpectEventRecorded(kC1I, true);
-  ExpectEventRecorded(kC1S, false);
-  ExpectEventRecorded(kC1F, false);
+  ExpectEventRecorded(kOmniboxInstall, true);
+  ExpectEventRecorded(kOmniboxSetToGoogle, false);
+  ExpectEventRecorded(kOmniboxFirstSearch, false);
 
   // Home page events.
-  ExpectEventRecorded(kC2I, true);
-  ExpectEventRecorded(kC2S, false);
-  ExpectEventRecorded(kC2F, true);
+  ExpectEventRecorded(kHomepageInstall, true);
+  ExpectEventRecorded(kHomepageSetToGoogle, false);
+  ExpectEventRecorded(kHomepageFirstSeach, true);
 
   ExpectRlzPingSent(true);
 }
@@ -477,14 +531,14 @@ TEST_F(RlzLibTest, DelayedInitOnlyNoGoogleDefaultSearchOrHomepageOrStartup) {
   InvokeDelayedInit();
 
   // Omnibox events.
-  ExpectEventRecorded(kC1I, true);
-  ExpectEventRecorded(kC1S, false);
-  ExpectEventRecorded(kC1F, false);
+  ExpectEventRecorded(kOmniboxInstall, true);
+  ExpectEventRecorded(kOmniboxSetToGoogle, false);
+  ExpectEventRecorded(kOmniboxFirstSearch, false);
 
   // Home page events.
-  ExpectEventRecorded(kC2I, true);
-  ExpectEventRecorded(kC2S, false);
-  ExpectEventRecorded(kC2F, false);
+  ExpectEventRecorded(kHomepageInstall, true);
+  ExpectEventRecorded(kHomepageSetToGoogle, false);
+  ExpectEventRecorded(kHomepageFirstSeach, false);
 
   ExpectRlzPingSent(true);
 }
@@ -494,14 +548,14 @@ TEST_F(RlzLibTest, OmniboxUsageOnly) {
   SimulateOmniboxUsage();
 
   // Omnibox events.
-  ExpectEventRecorded(kC1I, false);
-  ExpectEventRecorded(kC1S, false);
-  ExpectEventRecorded(kC1F, true);
+  ExpectEventRecorded(kOmniboxInstall, false);
+  ExpectEventRecorded(kOmniboxSetToGoogle, false);
+  ExpectEventRecorded(kOmniboxFirstSearch, true);
 
   // Home page events.
-  ExpectEventRecorded(kC2I, false);
-  ExpectEventRecorded(kC2S, false);
-  ExpectEventRecorded(kC2F, false);
+  ExpectEventRecorded(kHomepageInstall, false);
+  ExpectEventRecorded(kHomepageSetToGoogle, false);
+  ExpectEventRecorded(kHomepageFirstSeach, false);
 
   ExpectRlzPingSent(false);
 }
@@ -511,14 +565,14 @@ TEST_F(RlzLibTest, HomepageUsageOnly) {
   SimulateHomepageUsage();
 
   // Omnibox events.
-  ExpectEventRecorded(kC1I, false);
-  ExpectEventRecorded(kC1S, false);
-  ExpectEventRecorded(kC1F, false);
+  ExpectEventRecorded(kOmniboxInstall, false);
+  ExpectEventRecorded(kOmniboxSetToGoogle, false);
+  ExpectEventRecorded(kOmniboxFirstSearch, false);
 
   // Home page events.
-  ExpectEventRecorded(kC2I, false);
-  ExpectEventRecorded(kC2S, false);
-  ExpectEventRecorded(kC2F, true);
+  ExpectEventRecorded(kHomepageInstall, false);
+  ExpectEventRecorded(kHomepageSetToGoogle, false);
+  ExpectEventRecorded(kHomepageFirstSeach, true);
 
   ExpectRlzPingSent(false);
 }
@@ -530,14 +584,14 @@ TEST_F(RlzLibTest, UsageBeforeDelayedInit) {
   InvokeDelayedInit();
 
   // Omnibox events.
-  ExpectEventRecorded(kC1I, true);
-  ExpectEventRecorded(kC1S, true);
-  ExpectEventRecorded(kC1F, true);
+  ExpectEventRecorded(kOmniboxInstall, true);
+  ExpectEventRecorded(kOmniboxSetToGoogle, true);
+  ExpectEventRecorded(kOmniboxFirstSearch, true);
 
   // Home page events.
-  ExpectEventRecorded(kC2I, true);
-  ExpectEventRecorded(kC2S, true);
-  ExpectEventRecorded(kC2F, true);
+  ExpectEventRecorded(kHomepageInstall, true);
+  ExpectEventRecorded(kHomepageSetToGoogle, true);
+  ExpectEventRecorded(kHomepageFirstSeach, true);
 
   ExpectRlzPingSent(true);
 }
@@ -549,14 +603,14 @@ TEST_F(RlzLibTest, OmniboxUsageAfterDelayedInit) {
   SimulateHomepageUsage();
 
   // Omnibox events.
-  ExpectEventRecorded(kC1I, true);
-  ExpectEventRecorded(kC1S, true);
-  ExpectEventRecorded(kC1F, true);
+  ExpectEventRecorded(kOmniboxInstall, true);
+  ExpectEventRecorded(kOmniboxSetToGoogle, true);
+  ExpectEventRecorded(kOmniboxFirstSearch, true);
 
   // Home page events.
-  ExpectEventRecorded(kC2I, true);
-  ExpectEventRecorded(kC2S, true);
-  ExpectEventRecorded(kC2F, true);
+  ExpectEventRecorded(kHomepageInstall, true);
+  ExpectEventRecorded(kHomepageSetToGoogle, true);
+  ExpectEventRecorded(kHomepageFirstSeach, true);
 
   ExpectRlzPingSent(true);
 }
@@ -566,14 +620,14 @@ TEST_F(RlzLibTest, OmniboxUsageSendsPingWhenDelayNegative) {
   SimulateOmniboxUsage();
 
   // Omnibox events.
-  ExpectEventRecorded(kC1I, true);
-  ExpectEventRecorded(kC1S, true);
-  ExpectEventRecorded(kC1F, true);
+  ExpectEventRecorded(kOmniboxInstall, true);
+  ExpectEventRecorded(kOmniboxSetToGoogle, true);
+  ExpectEventRecorded(kOmniboxFirstSearch, true);
 
   // Home page events.
-  ExpectEventRecorded(kC2I, true);
-  ExpectEventRecorded(kC2S, true);
-  ExpectEventRecorded(kC2F, false);
+  ExpectEventRecorded(kHomepageInstall, true);
+  ExpectEventRecorded(kHomepageSetToGoogle, true);
+  ExpectEventRecorded(kHomepageFirstSeach, false);
 
   ExpectRlzPingSent(true);
 }
@@ -583,14 +637,14 @@ TEST_F(RlzLibTest, HomepageUsageDoesNotSendPingWhenDelayNegative) {
   SimulateHomepageUsage();
 
   // Omnibox events.
-  ExpectEventRecorded(kC1I, false);
-  ExpectEventRecorded(kC1S, false);
-  ExpectEventRecorded(kC1F, false);
+  ExpectEventRecorded(kOmniboxInstall, false);
+  ExpectEventRecorded(kOmniboxSetToGoogle, false);
+  ExpectEventRecorded(kOmniboxFirstSearch, false);
 
   // Home page events.
-  ExpectEventRecorded(kC2I, false);
-  ExpectEventRecorded(kC2S, false);
-  ExpectEventRecorded(kC2F, true);
+  ExpectEventRecorded(kHomepageInstall, false);
+  ExpectEventRecorded(kHomepageSetToGoogle, false);
+  ExpectEventRecorded(kHomepageFirstSeach, true);
 
   ExpectRlzPingSent(false);
 }
@@ -600,14 +654,14 @@ TEST_F(RlzLibTest, StartupUsageDoesNotSendPingWhenDelayNegative) {
   SimulateHomepageUsage();
 
   // Omnibox events.
-  ExpectEventRecorded(kC1I, false);
-  ExpectEventRecorded(kC1S, false);
-  ExpectEventRecorded(kC1F, false);
+  ExpectEventRecorded(kOmniboxInstall, false);
+  ExpectEventRecorded(kOmniboxSetToGoogle, false);
+  ExpectEventRecorded(kOmniboxFirstSearch, false);
 
   // Home page events.
-  ExpectEventRecorded(kC2I, false);
-  ExpectEventRecorded(kC2S, false);
-  ExpectEventRecorded(kC2F, true);
+  ExpectEventRecorded(kHomepageInstall, false);
+  ExpectEventRecorded(kHomepageSetToGoogle, false);
+  ExpectEventRecorded(kHomepageFirstSeach, true);
 
   ExpectRlzPingSent(false);
 }
