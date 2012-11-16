@@ -401,6 +401,15 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
     const WebURL& url,
     WebMediaPlayerClient* client,
     webkit_media::MediaStreamClient* media_stream_client) {
+  if (media_stream_client && media_stream_client->IsMediaStream(url)) {
+    return new webkit_media::WebMediaPlayerMS(
+        frame,
+        client,
+        base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
+        media_stream_client,
+        new media::MediaLog());
+  }
+
 #if defined(OS_ANDROID)
   return new webkit_media::WebMediaPlayerInProcessAndroid(
       frame,
@@ -416,15 +425,6 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
 
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
-
-  if (media_stream_client && media_stream_client->IsMediaStream(url)) {
-    return new webkit_media::WebMediaPlayerMS(
-        frame,
-        client,
-        base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
-        media_stream_client,
-        new media::MediaLog());
-  }
 
   return new webkit_media::WebMediaPlayerImpl(
       frame,
