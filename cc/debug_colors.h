@@ -44,6 +44,34 @@ class DebugColors {
   static SkColor EvictedTileCheckerboardColor();
   static SkColor InvalidatedTileCheckerboardColor();
 
+  static SkColor PaintRectBorderColor();
+  static int PaintRectBorderWidth(const LayerTreeHostImpl* host_impl);
+  static SkColor PaintRectFillColor();
+
+  static SkColor PropertyChangedRectBorderColor();
+  static int PropertyChangedRectBorderWidth(const LayerTreeHostImpl* host_impl);
+  static SkColor PropertyChangedRectFillColor();
+
+  static SkColor SurfaceDamageRectBorderColor();
+  static int SurfaceDamageRectBorderWidth(const LayerTreeHostImpl* host_impl);
+  static SkColor SurfaceDamageRectFillColor();
+
+  static SkColor ScreenSpaceLayerRectBorderColor();
+  static int ScreenSpaceLayerRectBorderWidth(const LayerTreeHostImpl* host_impl);
+  static SkColor ScreenSpaceLayerRectFillColor();
+
+  static SkColor ScreenSpaceSurfaceReplicaRectBorderColor();
+  static int ScreenSpaceSurfaceReplicaRectBorderWidth(const LayerTreeHostImpl* host_impl);
+  static SkColor ScreenSpaceSurfaceReplicaRectFillColor();
+
+  static SkColor OccludingRectBorderColor();
+  static int OccludingRectBorderWidth(const LayerTreeHostImpl* host_impl);
+  static SkColor OccludingRectFillColor();
+
+  static SkColor NonOccludingRectBorderColor();
+  static int NonOccludingRectBorderWidth(const LayerTreeHostImpl* host_impl);
+  static SkColor NonOccludingRectFillColor();
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(DebugColors);
 };
 

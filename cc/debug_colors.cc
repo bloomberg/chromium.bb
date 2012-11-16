@@ -12,6 +12,8 @@ static const float Scale(float width, const LayerTreeHostImpl* host_impl) {
   return width * (host_impl ? host_impl->deviceScaleFactor() : 1);
 }
 
+// ======= Layer border colors =======
+
 // Tiled content layers are orange.
 SkColor DebugColors::TiledContentLayerBorderColor() { return SkColorSetARGB(128, 255, 128, 0); }
 int DebugColors::TiledContentLayerBorderWidth(const LayerTreeHostImpl* host_impl) { return Scale(2, host_impl); }
@@ -40,6 +42,8 @@ int DebugColors::SurfaceReplicaBorderWidth(const LayerTreeHostImpl* host_impl) {
 SkColor DebugColors::TileBorderColor() { return SkColorSetARGB(100, 80, 200, 200); }
 int DebugColors::TileBorderWidth(const LayerTreeHostImpl* host_impl) { return Scale(1, host_impl); }
 
+// ======= Tile colors =======
+
 // Missing tile borders are red.
 SkColor DebugColors::MissingTileBorderColor() { return SkColorSetARGB(100, 255, 0, 0); }
 int DebugColors::MissingTileBorderWidth(const LayerTreeHostImpl* host_impl) { return Scale(1, host_impl); }
@@ -48,10 +52,49 @@ int DebugColors::MissingTileBorderWidth(const LayerTreeHostImpl* host_impl) { re
 SkColor DebugColors::CulledTileBorderColor() { return SkColorSetARGB(120, 160, 100, 0); }
 int DebugColors::CulledTileBorderWidth(const LayerTreeHostImpl* host_impl) { return Scale(1, host_impl); }
 
+// ======= Checkerboard colors =======
+
 // Invalidated tiles get sky blue checkerboards.
 SkColor DebugColors::InvalidatedTileCheckerboardColor() { return SkColorSetRGB(128, 200, 245); }
 
 // Evicted tiles get pale red checkerboards.
 SkColor DebugColors::EvictedTileCheckerboardColor() { return SkColorSetRGB(255, 200, 200); }
+
+// ======= Debug rect colors =======
+
+// Paint rects in red.
+SkColor DebugColors::PaintRectBorderColor() { return SkColorSetARGB(255, 255, 0, 0); }
+int DebugColors::PaintRectBorderWidth(const LayerTreeHostImpl* host_impl) { return Scale(2, host_impl); }
+SkColor DebugColors::PaintRectFillColor() { return SkColorSetARGB(30, 255, 0, 0); }
+
+// Property-changed rects in blue.
+SkColor DebugColors::PropertyChangedRectBorderColor() { return SkColorSetARGB(255, 0, 0, 255); }
+int DebugColors::PropertyChangedRectBorderWidth(const LayerTreeHostImpl* host_impl) { return Scale(2, host_impl); }
+SkColor DebugColors::PropertyChangedRectFillColor() { return SkColorSetARGB(30, 0, 0, 255); }
+
+// Surface damage rects in yellow-orange.
+SkColor DebugColors::SurfaceDamageRectBorderColor() { return SkColorSetARGB(255, 200, 100, 0); }
+int DebugColors::SurfaceDamageRectBorderWidth(const LayerTreeHostImpl* host_impl) { return Scale(2, host_impl); }
+SkColor DebugColors::SurfaceDamageRectFillColor() { return SkColorSetARGB(30, 200, 100, 0); }
+
+// Surface replica screen space rects in green.
+SkColor DebugColors::ScreenSpaceLayerRectBorderColor() { return SkColorSetARGB(255, 100, 200, 0); }
+int DebugColors::ScreenSpaceLayerRectBorderWidth(const LayerTreeHostImpl* host_impl) { return Scale(2, host_impl); }
+SkColor DebugColors::ScreenSpaceLayerRectFillColor() { return SkColorSetARGB(30, 100, 200, 0); }
+
+// Layer screen space rects in purple.
+SkColor DebugColors::ScreenSpaceSurfaceReplicaRectBorderColor() { return SkColorSetARGB(255, 100, 0, 200); }
+int DebugColors::ScreenSpaceSurfaceReplicaRectBorderWidth(const LayerTreeHostImpl* host_impl) { return Scale(2, host_impl); }
+SkColor DebugColors::ScreenSpaceSurfaceReplicaRectFillColor() { return SkColorSetARGB(10, 100, 0, 200); }
+
+// Occluding rects in pink.
+SkColor DebugColors::OccludingRectBorderColor() { return SkColorSetARGB(255, 245, 136, 255); }
+int DebugColors::OccludingRectBorderWidth(const LayerTreeHostImpl* host_impl) { return Scale(2, host_impl); }
+SkColor DebugColors::OccludingRectFillColor() { return SkColorSetARGB(10, 245, 136, 255); }
+
+// Non-Occluding rects in a reddish color.
+SkColor DebugColors::NonOccludingRectBorderColor() { return SkColorSetARGB(255, 200, 0, 100); }
+int DebugColors::NonOccludingRectBorderWidth(const LayerTreeHostImpl* host_impl) { return Scale(2, host_impl); }
+SkColor DebugColors::NonOccludingRectFillColor() { return SkColorSetARGB(10, 200, 0, 100); }
 
 }  // namespace cc

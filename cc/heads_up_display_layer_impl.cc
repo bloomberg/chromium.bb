@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/stringprintf.h"
+#include "cc/debug_colors.h"
 #include "cc/debug_rect_history.h"
 #include "cc/font_atlas.h"
 #include "cc/frame_rate_counter.h"
@@ -317,42 +318,43 @@ void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory*
     for (size_t i = 0; i < debugRects.size(); ++i) {
         SkColor strokeColor = 0;
         SkColor fillColor = 0;
+        float strokeWidth = 0;
 
         switch (debugRects[i].type) {
         case PaintRectType:
-            // Paint rects in red
-            strokeColor = SkColorSetARGB(255, 255, 0, 0);
-            fillColor = SkColorSetARGB(30, 255, 0, 0);
+            strokeColor = DebugColors::PaintRectBorderColor();
+            fillColor = DebugColors::PaintRectFillColor();
+            strokeWidth = DebugColors::PaintRectBorderWidth(layerTreeHostImpl());
             break;
         case PropertyChangedRectType:
-            // Property-changed rects in blue
-            strokeColor = SkColorSetARGB(255, 255, 0, 0);
-            fillColor = SkColorSetARGB(30, 0, 0, 255);
+            strokeColor = DebugColors::PropertyChangedRectBorderColor();
+            fillColor = DebugColors::PropertyChangedRectFillColor();
+            strokeWidth = DebugColors::PropertyChangedRectBorderWidth(layerTreeHostImpl());
             break;
         case SurfaceDamageRectType:
-            // Surface damage rects in yellow-orange
-            strokeColor = SkColorSetARGB(255, 200, 100, 0);
-            fillColor = SkColorSetARGB(30, 200, 100, 0);
+            strokeColor = DebugColors::SurfaceDamageRectBorderColor();
+            fillColor = DebugColors::SurfaceDamageRectFillColor();
+            strokeWidth = DebugColors::SurfaceDamageRectBorderWidth(layerTreeHostImpl());
             break;
         case ReplicaScreenSpaceRectType:
-            // Screen space rects in green.
-            strokeColor = SkColorSetARGB(255, 100, 200, 0);
-            fillColor = SkColorSetARGB(30, 100, 200, 0);
+            strokeColor = DebugColors::ScreenSpaceSurfaceReplicaRectBorderColor();
+            fillColor = DebugColors::ScreenSpaceSurfaceReplicaRectFillColor();
+            strokeWidth = DebugColors::ScreenSpaceSurfaceReplicaRectBorderWidth(layerTreeHostImpl());
             break;
         case ScreenSpaceRectType:
-            // Screen space rects in purple.
-            strokeColor = SkColorSetARGB(255, 100, 0, 200);
-            fillColor = SkColorSetARGB(10, 100, 0, 200);
+            strokeColor = DebugColors::ScreenSpaceLayerRectBorderColor();
+            fillColor = DebugColors::ScreenSpaceLayerRectFillColor();
+            strokeWidth = DebugColors::ScreenSpaceLayerRectBorderWidth(layerTreeHostImpl());
             break;
         case OccludingRectType:
-            // Occluding rects in pink.
-            strokeColor = SkColorSetARGB(255, 245, 136, 255);
-            fillColor = SkColorSetARGB(10, 245, 136, 255);
+            strokeColor = DebugColors::OccludingRectBorderColor();
+            fillColor = DebugColors::OccludingRectFillColor();
+            strokeWidth = DebugColors::OccludingRectBorderWidth(layerTreeHostImpl());
             break;
         case NonOccludingRectType:
-            // Non-Occluding rects in a reddish color.
-            strokeColor = SkColorSetARGB(255, 200, 0, 100);
-            fillColor = SkColorSetARGB(10, 200, 0, 100);
+            strokeColor = DebugColors::NonOccludingRectBorderColor();
+            fillColor = DebugColors::NonOccludingRectFillColor();
+            strokeWidth = DebugColors::NonOccludingRectBorderWidth(layerTreeHostImpl());
             break;
         }
 
@@ -364,7 +366,7 @@ void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory*
 
         paint.setColor(strokeColor);
         paint.setStyle(SkPaint::kStroke_Style);
-        paint.setStrokeWidth(2);
+        paint.setStrokeWidth(SkFloatToScalar(strokeWidth));
         canvas->drawRect(skRect, paint);
     }
 }
