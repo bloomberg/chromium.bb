@@ -8,7 +8,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/login/user_image_screen_actor.h"
-#include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -26,7 +25,6 @@ namespace chromeos {
 // with JS page part allowing user to select avatar.
 class UserImageScreenHandler : public UserImageScreenActor,
                                public BaseScreenHandler,
-                               public TakePhotoDialog::Delegate,
                                public ImageDecoder::Delegate {
  public:
   UserImageScreenHandler();
@@ -44,19 +42,12 @@ class UserImageScreenHandler : public UserImageScreenActor,
   virtual void Hide() OVERRIDE;
   virtual void PrepareToShow() OVERRIDE;
   virtual void SelectImage(int index) OVERRIDE;
-  virtual void UpdateVideoFrame(const SkBitmap& frame) OVERRIDE;
-  virtual void ShowCameraError() OVERRIDE;
-  virtual void ShowCameraInitializing() OVERRIDE;
   virtual void CheckCameraPresence() OVERRIDE;
-  virtual bool IsCapturing() const OVERRIDE;
   virtual void AddProfileImage(const gfx::ImageSkia& image) OVERRIDE;
   virtual void OnProfileImageAbsent() OVERRIDE;
 
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() OVERRIDE;
-
-  // TakePhotoDialog::Delegate implementation.
-  virtual void OnPhotoAccepted(const gfx::ImageSkia& photo) OVERRIDE;
 
  private:
   // Sends profile image as a data URL to the page.
@@ -64,9 +55,6 @@ class UserImageScreenHandler : public UserImageScreenActor,
 
   // Sends image data to the page.
   void HandleGetImages(const base::ListValue* args);
-
-  // Opens the camera capture dialog.
-  void HandleTakePhoto(const base::ListValue* args);
 
   // Handles photo taken with WebRTC UI.
   void HandlePhotoTaken(const base::ListValue* args);

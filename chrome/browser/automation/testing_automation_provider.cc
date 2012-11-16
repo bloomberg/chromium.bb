@@ -1870,8 +1870,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
   handler_map_["RefreshInternetDetails"] =
       &TestingAutomationProvider::RefreshInternetDetails;
 
-  browser_handler_map_["CaptureProfilePhoto"] =
-      &TestingAutomationProvider::CaptureProfilePhoto;
   browser_handler_map_["GetTimeInfo"] =
       &TestingAutomationProvider::GetTimeInfo;
 #endif  // defined(OS_CHROMEOS)

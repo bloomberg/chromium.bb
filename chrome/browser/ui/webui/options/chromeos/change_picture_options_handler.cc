@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -107,20 +106,11 @@ void ChangePictureOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_PREVIEW_ALT));
   localized_strings->SetString("authorCredit",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT));
-  if (!CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kDisableHtml5Camera)) {
-    localized_strings->SetString("cameraType", "webrtc");
-  } else {
-    localized_strings->SetString("cameraType", "old");
-  }
 }
 
 void ChangePictureOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("chooseFile",
       base::Bind(&ChangePictureOptionsHandler::HandleChooseFile,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("takePhoto",
-      base::Bind(&ChangePictureOptionsHandler::HandleTakePhoto,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("photoTaken",
       base::Bind(&ChangePictureOptionsHandler::HandlePhotoTaken,
@@ -177,14 +167,6 @@ void ChangePictureOptionsHandler::HandleChooseFile(const ListValue* args) {
       NULL);
 }
 
-void ChangePictureOptionsHandler::HandleTakePhoto(const ListValue* args) {
-  DCHECK(args && args->empty());
-  views::Widget* window = views::Widget::CreateWindowWithParent(
-      new TakePhotoDialog(this), GetBrowserWindow());
-  window->SetAlwaysOnTop(true);
-  window->Show();
-}
-
 void ChangePictureOptionsHandler::HandlePhotoTaken(
     const base::ListValue* args) {
   std::string image_url;
@@ -211,20 +193,20 @@ void ChangePictureOptionsHandler::HandlePageInitialized(
     const base::ListValue* args) {
   DCHECK(args && args->empty());
 
-  if (CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kDisableHtml5Camera)) {
-    // If no camera presence check has been performed in this session,
-    // start one now.
-    if (CameraDetector::camera_presence() ==
-        CameraDetector::kCameraPresenceUnknown) {
-      CheckCameraPresence();
-    }
-
-    // While the check is in progress, use previous camera presence state and
-    // presume it is present if no check has been performed yet.
-    SetCameraPresent(CameraDetector::camera_presence() !=
-                     CameraDetector::kCameraAbsent);
+#if 0
+  // TODO(ivankr): restore check on Chrome side.
+  // If no camera presence check has been performed in this session,
+  // start one now.
+  if (CameraDetector::camera_presence() ==
+      CameraDetector::kCameraPresenceUnknown) {
+    CheckCameraPresence();
   }
+
+  // While the check is in progress, use previous camera presence state and
+  // presume it is present if no check has been performed yet.
+  SetCameraPresent(CameraDetector::camera_presence() !=
+                   CameraDetector::kCameraAbsent);
+#endif
 
   SendDefaultImages();
 }
@@ -350,7 +332,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
       waiting_for_camera_photo = true;
       VLOG(1) << "Still waiting for camera image to decode";
     } else {
-      OnPhotoAccepted(user_photo_);
+      SetImageFromCamera(user_photo_);
     }
   } else {
     // Profile image selected. Could be previous (old) user image.
@@ -386,10 +368,9 @@ void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
   VLOG(1) << "Selected image from file";
 }
 
-void ChangePictureOptionsHandler::OnPhotoAccepted(const gfx::ImageSkia& photo) {
+void ChangePictureOptionsHandler::SetImageFromCamera(
+    const gfx::ImageSkia& photo) {
   UserManager* user_manager = UserManager::Get();
-  // TODO(ivankr): once old camera UI is gone, there's always raw data in
-  // |image_decoder_|, pass UserImage and user it instead.
   user_manager->GetUserImageManager()->SaveUserImage(
       user_manager->GetLoggedInUser()->email(),
       UserImage::CreateAndEncode(photo));
@@ -401,13 +382,12 @@ void ChangePictureOptionsHandler::OnPhotoAccepted(const gfx::ImageSkia& photo) {
 
 void ChangePictureOptionsHandler::CheckCameraPresence() {
   // For WebRTC, camera presence checked is done on JS side.
-  if (!CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kDisableHtml5Camera)) {
-    return;
-  }
+#if 0
+  // TODO(ivankr): restore check on Chrome side.
   CameraDetector::StartPresenceCheck(
       base::Bind(&ChangePictureOptionsHandler::OnCameraPresenceCheckDone,
                  weak_factory_.GetWeakPtr()));
+#endif
 }
 
 void ChangePictureOptionsHandler::SetCameraPresent(bool present) {
@@ -445,7 +425,7 @@ void ChangePictureOptionsHandler::OnImageDecoded(
   DCHECK_EQ(image_decoder_.get(), decoder);
   image_decoder_ = NULL;
   user_photo_ = gfx::ImageSkia(decoded_image);
-  OnPhotoAccepted(user_photo_);
+  SetImageFromCamera(user_photo_);
 }
 
 void ChangePictureOptionsHandler::OnDecodeImageFailed(

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CHANGE_PICTURE_OPTIONS_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "content/public/browser/notification_registrar.h"
@@ -25,7 +24,6 @@ namespace options {
 // ChromeOS user image options page UI handler.
 class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
                                     public ui::SelectFileDialog::Listener,
-                                    public TakePhotoDialog::Delegate,
                                     public ImageDecoder::Delegate {
  public:
   ChangePictureOptionsHandler();
@@ -65,9 +63,6 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
   // Opens a file selection dialog to choose user image from file.
   void HandleChooseFile(const base::ListValue* args);
 
-  // Opens the camera capture dialog.
-  void HandleTakePhoto(const base::ListValue* args);
-
   // Handles photo taken with WebRTC UI.
   void HandlePhotoTaken(const base::ListValue* args);
 
@@ -88,9 +83,6 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
       const FilePath& path,
       int index, void* params) OVERRIDE;
 
-  // TakePhotoDialog::Delegate implementation.
-  virtual void OnPhotoAccepted(const gfx::ImageSkia& photo) OVERRIDE;
-
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -98,6 +90,9 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
 
   // Called when the camera presence check has been completed.
   void OnCameraPresenceCheckDone();
+
+  // Sets user image to photo taken from camera.
+  void SetImageFromCamera(const gfx::ImageSkia& photo);
 
   // Returns handle to browser window or NULL if it can't be found.
   gfx::NativeWindow GetBrowserWindow() const;

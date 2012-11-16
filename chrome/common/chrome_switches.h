@@ -386,7 +386,6 @@ extern const char kDisableChromeCaptivePortalDetector[];
 extern const char kDisableDrive[];
 extern const char kDisableDrivePrefetch[];
 extern const char kDisableFactoryReset[];
-extern const char kDisableHtml5Camera[];
 extern const char kDisableLoginAnimations[];
 extern const char kDisableNewOobe[];
 extern const char kDisableOobeAnimation[];

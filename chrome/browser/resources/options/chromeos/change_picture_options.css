@@ -71,7 +71,7 @@
   padding: 2px;
 }
 
-[camera=webrtc] .camera.live .user-image-preview-img {
+.camera.live .user-image-preview-img {
   display: none;
 }
 
@@ -80,7 +80,7 @@
   position: relative;
 }
 
-[camera=webrtc] .camera.live .user-image-stream-area {
+.camera.live .user-image-stream-area {
   display: block;
 }
 
@@ -158,20 +158,16 @@ html[dir=rtl] #flip-photo {
   width: 220px;
 }
 
-[camera=webrtc] .camera:not(.live) #discard-photo {
+.camera:not(.live) #discard-photo {
   background: url('chrome://theme/IDR_USER_IMAGE_RECYCLE')
       no-repeat center 0;
   display: block;
 }
 
-[camera=webrtc] .camera.live.online #take-photo {
+.camera.live.online #take-photo {
   background: url('chrome://theme/IDR_USER_IMAGE_CAPTURE')
       no-repeat center -1px;
   display: block;
-}
-
-[camera=old] #user-image-attribution {
-  display: none;
 }
 
 #user-image-attribution {

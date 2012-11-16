@@ -33,7 +33,6 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -1486,23 +1485,6 @@ void TestingAutomationProvider::OpenCrosh(DictionaryValue* args,
   new NavigationNotificationObserver(
       NULL, this, reply_message, 1, false, true);
   ash::Shell::GetInstance()->delegate()->OpenCrosh();
-}
-
-void TestingAutomationProvider::CaptureProfilePhoto(
-    Browser* browser,
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  chromeos::TakePhotoDialog* take_photo_dialog =
-      new chromeos::TakePhotoDialog(NULL);
-
-  // Set up an observer (it will delete itself).
-  take_photo_dialog->AddObserver(new PhotoCaptureObserver(
-      this, reply_message));
-
-  views::Widget* window = views::Widget::CreateWindowWithParent(
-      take_photo_dialog, browser->window()->GetNativeWindow());
-  window->SetAlwaysOnTop(true);
-  window->Show();
 }
 
 void TestingAutomationProvider::AddChromeosObservers() {

@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
-#include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -75,12 +74,6 @@ void UserImageScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT));
   localized_strings->SetString("capturedPhoto",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_CAPTURED_PHOTO));
-  if (!CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kDisableHtml5Camera)) {
-    localized_strings->SetString("cameraType", "webrtc");
-  } else {
-    localized_strings->SetString("cameraType", "old");
-  }
 }
 
 void UserImageScreenHandler::Initialize() {
@@ -123,36 +116,19 @@ void UserImageScreenHandler::SelectImage(int index) {
   }
 }
 
-void UserImageScreenHandler::UpdateVideoFrame(const SkBitmap& frame) {
-}
-
-void UserImageScreenHandler::ShowCameraError() {
-}
-
-void UserImageScreenHandler::ShowCameraInitializing() {
-}
-
 void UserImageScreenHandler::CheckCameraPresence() {
   // For WebRTC, camera presence checked is done on JS side.
-  if (!CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kDisableHtml5Camera)) {
-    return;
-  }
+#if 0
+  // TODO(ivankr): restore check on Chrome side.
   CameraDetector::StartPresenceCheck(
       base::Bind(&UserImageScreenHandler::OnCameraPresenceCheckDone,
                  weak_factory_.GetWeakPtr()));
-}
-
-bool UserImageScreenHandler::IsCapturing() const {
-  return false;
+#endif
 }
 
 void UserImageScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getImages",
       base::Bind(&UserImageScreenHandler::HandleGetImages,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("takePhoto",
-      base::Bind(&UserImageScreenHandler::HandleTakePhoto,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("photoTaken",
       base::Bind(&UserImageScreenHandler::HandlePhotoTaken,
@@ -188,15 +164,6 @@ void UserImageScreenHandler::OnProfileImageAbsent() {
     web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setProfileImage",
                                      *null_value);
   }
-}
-
-void UserImageScreenHandler::OnPhotoAccepted(const gfx::ImageSkia& photo) {
-  user_photo_ = photo;
-  user_photo_data_url_ = web_ui_util::GetBitmapDataUrl(*user_photo_.bitmap());
-  selected_image_ = User::kExternalImageIndex;
-  base::StringValue data_url(user_photo_data_url_);
-  web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setUserPhoto",
-                                   data_url);
 }
 
 void UserImageScreenHandler::HandleGetImages(const base::ListValue* args) {
@@ -244,14 +211,6 @@ void UserImageScreenHandler::HandlePhotoTaken(const base::ListValue* args) {
   image_decoder_ = new ImageDecoder(this, raw_data,
                                     ImageDecoder::DEFAULT_CODEC);
   image_decoder_->Start();
-}
-
-void UserImageScreenHandler::HandleTakePhoto(const base::ListValue* args) {
-  DCHECK(args && args->empty());
-  views::Widget* window = views::Widget::CreateWindowWithParent(
-      new TakePhotoDialog(this), GetNativeWindow());
-  window->SetAlwaysOnTop(true);
-  window->Show();
 }
 
 void UserImageScreenHandler::HandleSelectImage(const base::ListValue* args) {

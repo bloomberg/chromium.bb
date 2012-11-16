@@ -1410,9 +1410,6 @@ const char kDisableDrivePrefetch[]          = "disable-drive-prefetch";
 // Disables reset the device to its factory state in design.
 const char kDisableFactoryReset[]           = "disable-factory-reset";
 
-// Disables new WebRTC implementation of user image picker.
-const char kDisableHtml5Camera[]            = "disable-html5-camera";
-
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[]        = "disable-login-animations";
 

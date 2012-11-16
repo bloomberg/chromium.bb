@@ -612,7 +612,7 @@ html[dir=rtl] #user-image-preview {
   max-width: 220px;
 }
 
-html[camera=webrtc] .camera.live #user-image-preview-img {
+.camera.live #user-image-preview-img {
   display: none;
 }
 
@@ -629,7 +629,7 @@ html[camera=webrtc] .camera.live #user-image-preview-img {
   position: relative;
 }
 
-html[camera=webrtc] .camera.live .user-image-stream-area {
+.camera.live .user-image-stream-area {
   display: block;
 }
 
@@ -716,13 +716,13 @@ html[dir=rtl] #flip-photo {
   width: 220px;
 }
 
-html[camera=webrtc] .camera:not(.live) #discard-photo {
+.camera:not(.live) #discard-photo {
   background: url('chrome://theme/IDR_USER_IMAGE_RECYCLE')
       no-repeat center 0;
   display: block;
 }
 
-html[camera=webrtc] .camera.live.online #take-photo {
+.camera.live.online #take-photo {
   background: url('chrome://theme/IDR_USER_IMAGE_CAPTURE')
       no-repeat center -1px;
   display: block;
