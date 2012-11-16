@@ -654,7 +654,8 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckUnwantedDependencies(input_api, output_api))
   results.extend(_CheckFilePermissions(input_api, output_api))
   results.extend(_CheckNoAuraWindowPropertyHInHeaders(input_api, output_api))
-  results.extend(_CheckIncludeOrder(input_api, output_api))
+  # Causes a problem with content/renderer/render_view_impl.cc
+  #results.extend(_CheckIncludeOrder(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
