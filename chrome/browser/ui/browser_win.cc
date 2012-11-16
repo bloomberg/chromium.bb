@@ -47,19 +47,23 @@ void NewMetroWindow(Browser* source_browser, Profile* profile) {
 namespace chrome {
 
 void NewWindow(Browser* browser) {
+#if !defined(USE_AURA)
   if (base::win::IsMetroProcess()) {
     NewMetroWindow(browser, browser->profile()->GetOriginalProfile());
     return;
   }
+#endif
   NewEmptyWindow(browser->profile()->GetOriginalProfile(),
                  browser->host_desktop_type());
 }
 
 void NewIncognitoWindow(Browser* browser) {
+#if !defined(USE_AURA)
   if (base::win::IsMetroProcess()) {
     NewMetroWindow(browser, browser->profile()->GetOffTheRecordProfile());
     return;
   }
+#endif
   NewEmptyWindow(browser->profile()->GetOffTheRecordProfile(),
                  browser->host_desktop_type());
 }
