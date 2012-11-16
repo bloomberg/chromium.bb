@@ -7,7 +7,7 @@
 // The actual tag is implemented via the browser plugin. The internals of this
 // are hidden via Shadow DOM.
 
-var WEB_VIEW_ATTRIBUTES = ['src'];
+var WEB_VIEW_ATTRIBUTES = ['src', 'partition'];
 
 var WEB_VIEW_READONLY_ATTRIBUTES = ['contentWindow'];
 

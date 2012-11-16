@@ -19,19 +19,17 @@ chrome.test.getConfig(function(config) {
       '/files/extensions/platform_apps/web_view_isolation/storage1.html#p3';
   var node = document.getElementById('web_view_container');
   node.innerHTML =
-      "<object id='webview' src=" + url +
-      " type='application/browser-plugin' width=500 height=550></object>" +
-      "<object id='webview2' src=" + url2 +
-      " type='application/browser-plugin' width=500 height=550></object>" +
-      "<object id='webview3' partition='partition1' src=" + url3 +
-      " type='application/browser-plugin' width=500 height=550></object>" +
-      "<object id='webview4' partition='partition1' src=" + url4 +
-      " type='application/browser-plugin' width=500 height=550></object>" +
-      "<object id='webview5' partition='persist:1' src=" + url5 +
-      " type='application/browser-plugin' width=500 height=550></object>" +
-      "<object id='webview6' partition='persist:1' src=" + url6 +
-      " type='application/browser-plugin' width=500 height=550></object>" +
-      "<object id='webview7' partition='persist:2' src=" + url7 +
-      " type='application/browser-plugin' width=500 height=550></object>";
+      "<webview id='webview' src='" + url + "'></webview>" +
+      "<webview id='webview2' src='" + url2 + "'></webview>" +
+      "<webview id='webview3' partition='partition1' src='" + url3 +
+      "'></webview>" +
+      "<webview id='webview4' partition='partition1' src='" + url4 +
+      "'></webview>" +
+      "<webview id='webview5' partition='persist:1' src='" + url5 +
+      "'></webview>" +
+      "<webview id='webview6' partition='persist:1' src='" + url6 +
+      "'></webview>" +
+      "<webview id='webview7' partition='persist:2' src='" + url7 +
+      "'></webview>";
   chrome.test.sendMessage('Launched');
 });
