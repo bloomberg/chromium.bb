@@ -43,10 +43,8 @@ public class ClientOnPageFinishedTest extends AndroidWebViewTestBase {
         assertEquals("data:text/html," + html, onPageFinishedHelper.getUrl());
     }
 
-    //@MediumTest
-    //@Feature({"AndroidWebView"})
-    // See crbug.com/148917
-    @FlakyTest
+    @MediumTest
+    @Feature({"AndroidWebView"})
     public void testOnPageFinishedCalledAfterError() throws Throwable {
         TestCallbackHelperContainer.OnReceivedErrorHelper onReceivedErrorHelper =
                 mContentsClient.getOnReceivedErrorHelper();

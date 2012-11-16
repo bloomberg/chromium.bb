@@ -1852,12 +1852,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
-    /*
-     * @SmallTest
-     * @Feature({"AndroidWebView", "Preferences"})
-     * Blocked on crbug/157563
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testTextZoomNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1865,12 +1861,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsTextZoomTestHelper(views.getContents1(), views.getClient1()));
     }
 
-    /*
-     * @SmallTest
-     * @Feature({"AndroidWebView", "Preferences"})
-     * Blocked on crbug/157563
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testTextZoomIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1878,12 +1870,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsTextZoomTestHelper(views.getContents1(), views.getClient1()));
     }
 
-    /*
-     * @SmallTest
-     * @Feature({"AndroidWebView", "Preferences"})
-     * Blocked on crbug/157563
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testTextZoomBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(

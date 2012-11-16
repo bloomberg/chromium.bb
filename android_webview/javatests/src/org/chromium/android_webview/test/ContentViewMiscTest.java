@@ -45,12 +45,8 @@ public class ContentViewMiscTest extends AndroidWebViewTestBase {
         mContentViewCore = testContainerView.getContentViewCore();
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-     * crbug.com/147721
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testFlingScroll() throws Throwable {
         StringBuffer testPage = new StringBuffer().append("data:text/html;utf-8,")
                 .append("<html><head><style>body { width: 5000px; height: 5000px; }</head><body>")
