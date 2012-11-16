@@ -454,6 +454,8 @@
       'tests/test_resource_array.cc',
       'tests/test_resource_array.h',
       'tests/test_struct_sizes.c',
+      'tests/test_talk_private.cc',
+      'tests/test_talk_private.h',
       'tests/test_tcp_socket_private_trusted.cc',
       'tests/test_tcp_socket_private_trusted.h',
       'tests/test_uma.cc',
