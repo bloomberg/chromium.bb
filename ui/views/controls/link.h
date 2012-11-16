@@ -52,6 +52,7 @@ class VIEWS_EXPORT Link : public Label {
 
   virtual void SetEnabledColor(SkColor color) OVERRIDE;
   void SetPressedColor(SkColor color);
+  void SetUnderline(bool underline);
 
   static const char kViewClassName[];
 
@@ -63,6 +64,9 @@ class VIEWS_EXPORT Link : public Label {
   void RecalculateFont();
 
   LinkListener* listener_;
+
+  // Whether the link should be underlined when enabled.
+  bool underline_;
 
   // Whether the link is currently pressed.
   bool pressed_;
