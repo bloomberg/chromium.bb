@@ -950,13 +950,10 @@ util.loadScripts = function(urls, onload) {
 
 // TODO(serya): remove it when have migrated to AppsV2.
 util.__defineGetter__('storage', function() {
-  var storage;
-  if (storage)
-    return storage;
-
+  delete util.storage;
   if (chrome.storage) {
-    storage = chrome.storage;
-    return;
+    util.storage = chrome.storage;
+    return util.storage;
   }
 
   var listeners = [];
@@ -998,7 +995,7 @@ util.__defineGetter__('storage', function() {
    * Simulation of the AppsV2 storage interface.
    * @type {object}
    */
-  storage = {
+  util.storage = {
     local: new StorageArea('local'),
     sync: new StorageArea('sync'),
     onChanged: {
@@ -1012,7 +1009,7 @@ util.__defineGetter__('storage', function() {
       }
     }
   };
-  return storage;
+  return util.storage;
 });
 
 /**
