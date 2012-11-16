@@ -398,8 +398,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   if (!prerender_contents->load_start_time().is_null()) {
     histograms_->RecordTimeUntilUsed(
         prerender_contents->origin(),
-        GetCurrentTimeTicks() - prerender_contents->load_start_time(),
-        config_.time_to_live);
+        GetCurrentTimeTicks() - prerender_contents->load_start_time());
   }
 
   histograms_->RecordPerSessionCount(prerender_contents->origin(),

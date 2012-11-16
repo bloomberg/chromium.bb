@@ -335,15 +335,14 @@ bool PrerenderHistograms::WithinWindow() const {
 
 void PrerenderHistograms::RecordTimeUntilUsed(
     Origin origin,
-    base::TimeDelta time_until_used,
-    base::TimeDelta time_to_live) const {
+    base::TimeDelta time_until_used) const {
   PREFIXED_HISTOGRAM(
-      "TimeUntilUsed", origin,
+      "TimeUntilUsed2", origin,
       UMA_HISTOGRAM_CUSTOM_TIMES(
           name,
           time_until_used,
           base::TimeDelta::FromMilliseconds(10),
-          time_to_live,
+          base::TimeDelta::FromMinutes(30),
           50));
 }
 
