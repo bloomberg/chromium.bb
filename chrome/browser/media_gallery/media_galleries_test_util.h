@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_MEDIA_GALLERY_MEDIA_GALLERIES_TEST_UTIL_H_
 
 #include "base/basictypes.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/scoped_temp_dir.h"
 
 namespace extensions {
 class Extension;
@@ -31,7 +31,7 @@ class EnsureMediaDirectoriesExists {
  private:
   void Init();
 
-  ScopedTempDir fake_dir_;
+  base::ScopedTempDir fake_dir_;
 
   int num_galleries_;
 
