@@ -294,6 +294,8 @@ cr.define('login', function() {
         this.loading = true;
         // Now that we're in logged in state header should be hidden.
         Oobe.getInstance().headerHidden = true;
+        // Clear any error messages that were shown before login.
+        Oobe.clearErrors();
       } else if (msg.method == 'loginUILoaded') {
         this.loading = false;
         $('error-message').update();
