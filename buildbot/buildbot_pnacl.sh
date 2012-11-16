@@ -360,7 +360,6 @@ scons-stage-noirt() {
 
 llvm-regression() {
   echo "@@@BUILD_STEP llvm_regression@@@"
-  # PNACL_TOOLCHAIN_LABEL is expected by this script to be in the environment
   ${LLVM_TEST} llvm-regression || handle-error
 }
 

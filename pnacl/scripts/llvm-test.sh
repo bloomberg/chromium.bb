@@ -42,8 +42,12 @@ readonly TC_SRC_LLVM="${NACL_ROOT}/pnacl/git/llvm"
 readonly TC_BUILD_LLVM="${NACL_ROOT}/pnacl/build/llvm_${HOST_ARCH}"
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
 
+# The toolchain used may not be the one downloaded, but one that is freshly
+# built into a different directory,
+# Overriding the default here will Not affect the sel_ldr
+# and IRT used to run the tests (they are controlled by run.py)
 if [[ ${PNACL_TOOLCHAIN_LABEL} == "" ]]; then
-  echo 'Must set env var PNACL_TOOLCHAIN_LABEL to locate pnacl tc!'
+  PNACL_TOOLCHAIN_LABEL="pnacl_${BUILD_PLATFORM}_x86"
 fi
 readonly PNACL_BIN="${NACL_ROOT}/toolchain/${PNACL_TOOLCHAIN_LABEL}/newlib/bin"
 readonly PNACL_SDK_DIR=\
@@ -84,13 +88,7 @@ testsuite-prereq() {
     echo "Please specify arch"
     exit 1
   fi
-  # The toolchain used may not be the one downloaded, but one that is freshly
-  # built into a different directory, due to 32 vs 64 host bitness and
-  # pathname choices.
-  # So we use pnaclsdk_mode=custom:<path>.
-  ./scons \
-    pnaclsdk_mode="custom:toolchain/${PNACL_TOOLCHAIN_LABEL}" \
-    platform=$1 irt_core sel_ldr -j${PNACL_CONCURRENCY}
+  ./scons platform=$1 irt_core sel_ldr -j${PNACL_CONCURRENCY}
 }
 
 testsuite-run() {

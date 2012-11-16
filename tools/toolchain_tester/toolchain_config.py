@@ -230,10 +230,11 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O3'] = ToolchainConfig(
 # PNACL + SEL_LDR [ARM]
 ######################################################################
 
-# Locate the pnacl toolchain.  Path supplied externally.
+# Locate the pnacl toolchain.  Path can be overridden externally.
 PNACL_TOOLCHAIN_LABEL = ''
 if os.environ['PNACL_TOOLCHAIN_LABEL'] == '':
-  raise Exception('Must set env var PNACL_TOOLCHAIN_LABEL to locate pnacl tc.')
+  env_map = { 'linux2': 'linux', 'darwin': 'mac' }
+  PNACL_TOOLCHAIN_LABEL = 'pnacl_' + env_map[sys.platform] + '_x86'
 else:
   PNACL_TOOLCHAIN_LABEL = os.environ['PNACL_TOOLCHAIN_LABEL']
 

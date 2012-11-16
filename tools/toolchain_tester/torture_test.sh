@@ -99,13 +99,12 @@ prereq() {
   local custom_tc=""
   if [[ ${arch} == "arm" ]]; then
     # For ARM+PNaCl, the toolchain used may not be the one downloaded,
-    # but one that is freshly built into a different directory,
-    # due to 32 vs 64 host bitness and pathname choices.
+    # but one that is freshly built into a different directory.
     # For other PNaCl cases, we rely on nacl-gcc to build irt_core anyway.
-    if [[ ${PNACL_TOOLCHAIN_LABEL} == "" ]]; then
-      echo 'Must set env var PNACL_TOOLCHAIN_LABEL to locate pnacl tc!'
+    # If not specified, let scons use its default.
+    if [[ ${PNACL_TOOLCHAIN_LABEL} != "" ]]; then
+      custom_tc="pnaclsdk_mode=custom:toolchain/${PNACL_TOOLCHAIN_LABEL}"
     fi
-    custom_tc="pnaclsdk_mode=custom:toolchain/${PNACL_TOOLCHAIN_LABEL}"
   fi
   ./scons ${custom_tc} platform=${arch} irt_core sel_ldr run_intrinsics_test \
     -j4
