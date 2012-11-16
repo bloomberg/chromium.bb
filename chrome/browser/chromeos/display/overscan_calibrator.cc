@@ -17,7 +17,15 @@ namespace chromeos {
 
 OverscanCalibrator::OverscanCalibrator(
     const gfx::Display& target_display, const gfx::Insets& initial_insets)
-    : display_(target_display), insets_(initial_insets) {
+    : display_(target_display),
+      insets_(initial_insets),
+      initial_insets_(initial_insets),
+      committed_(false) {
+  // Undo the overscan calibration temporarily so that the user can see
+  // dark boundary and current overscan region.
+  ash::Shell::GetInstance()->display_controller()->SetOverscanInsets(
+      display_.id(), gfx::Insets());
+
   aura::RootWindow* root = ash::Shell::GetInstance()->display_controller()->
       GetRootWindowForDisplayId(display_.id());
   ui::Layer* parent_layer = ash::Shell::GetContainer(
@@ -28,30 +36,34 @@ OverscanCalibrator::OverscanCalibrator(
   calibration_layer_->SetBounds(parent_layer->bounds());
   calibration_layer_->set_delegate(this);
   parent_layer->Add(calibration_layer_.get());
-  // The initial size of |inner_bounds_| has to be same as the root because the
-  // root size already shrinks due to the current overscan settings.
-  inner_bounds_ = parent_layer->bounds();
 }
 
 OverscanCalibrator::~OverscanCalibrator() {
+  // Overscan calibration has finished without commit, so the display has to
+  // be the original offset.
+  if (!committed_) {
+    ash::Shell::GetInstance()->display_controller()->SetOverscanInsets(
+        display_.id(), initial_insets_);
+  }
 }
 
 void OverscanCalibrator::Commit() {
   SetDisplayOverscan(display_, insets_);
+  committed_ = true;
 }
 
 void OverscanCalibrator::UpdateInsets(const gfx::Insets& insets) {
-  // Has to undo the old |insets_| in order to apply the new |insets|.
-  inner_bounds_.Inset(-insets_);
-  inner_bounds_.Inset(insets);
   insets_ = insets;
   calibration_layer_->SchedulePaint(calibration_layer_->bounds());
 }
 
 void OverscanCalibrator::OnPaintLayer(gfx::Canvas* canvas) {
   static const SkColor transparent = SkColorSetARGB(0, 0, 0, 0);
-  canvas->FillRect(calibration_layer_->bounds(), SK_ColorBLACK);
-  canvas->FillRect(inner_bounds_, transparent, SkXfermode::kClear_Mode);
+  gfx::Rect full_bounds = calibration_layer_->bounds();
+  gfx::Rect inner_bounds = full_bounds;
+  inner_bounds.Inset(insets_);
+  canvas->FillRect(full_bounds, SK_ColorBLACK);
+  canvas->FillRect(inner_bounds, transparent, SkXfermode::kClear_Mode);
 }
 
 void OverscanCalibrator::OnDeviceScaleFactorChanged(

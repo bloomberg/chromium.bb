@@ -107,7 +107,6 @@ void DisplayOptionsHandler::RegisterMessages() {
 
 void DisplayOptionsHandler::OnDisplayBoundsChanged(
     const gfx::Display& display) {
-  SendDisplayInfo();
 }
 
 void DisplayOptionsHandler::OnDisplayAdded(const gfx::Display& new_display) {

@@ -315,6 +315,11 @@ gfx::Insets DisplayController::GetOverscanInsets(int64 display_id) const {
   return GetDisplayManager()->GetOverscanInsets(display_id);
 }
 
+void DisplayController::SetOverscanInsets(int64 display_id,
+                                          const gfx::Insets& insets_in_dip) {
+  GetDisplayManager()->SetOverscanInsets(display_id, insets_in_dip);
+}
+
 std::vector<internal::RootWindowController*>
 DisplayController::GetAllRootWindowControllers() {
   std::vector<internal::RootWindowController*> controllers;

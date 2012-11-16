@@ -38,9 +38,19 @@ class OverscanCalibrator : public ui::LayerDelegate {
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE;
 
+  // The target display.
   const gfx::Display display_;
+
+  // The current insets.
   gfx::Insets insets_;
-  gfx::Rect inner_bounds_;
+
+  // The insets initially given. Stored so we can undo the insets later.
+  gfx::Insets initial_insets_;
+
+  // Whether the current insets are committed to the system or not.
+  bool committed_;
+
+  // The visualization layer for the current calibration region.
   scoped_ptr<ui::Layer> calibration_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscanCalibrator);

@@ -115,7 +115,8 @@ void NotifyDisplayLayoutChanged(PrefService* pref_service) {
 
 void NotifyDisplayOverscans() {
   PrefService* local_state = g_browser_process->local_state();
-  ash::internal::DisplayManager* display_manager = GetDisplayManager();
+  ash::DisplayController* display_controller =
+      ash::Shell::GetInstance()->display_controller();
 
   const base::DictionaryValue* overscans = local_state->GetDictionary(
       prefs::kDisplayOverscans);
@@ -139,9 +140,7 @@ void NotifyDisplayOverscans() {
       continue;
     }
 
-    // TODO(oshima|mukai): DisplayManager is internal class.
-    // Move |SetOverscanInsets| to display controller.
-    display_manager->SetOverscanInsets(display_id, insets);
+    display_controller->SetOverscanInsets(display_id, insets);
   }
 }
 
