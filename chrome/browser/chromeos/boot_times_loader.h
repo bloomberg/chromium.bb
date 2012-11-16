@@ -12,7 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/time.h"
-#include "chrome/common/cancelable_task_tracker.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_widget_host.h"
@@ -22,14 +22,17 @@ namespace chromeos {
 // BootTimesLoader loads the bootimes of Chrome OS from the file system.
 // Loading is done asynchronously on the file thread. Once loaded,
 // BootTimesLoader calls back to a method of your choice with the boot times.
-// To use BootTimesLoader, do the following:
+// To use BootTimesLoader do the following:
 //
 // . In your class define a member field of type chromeos::BootTimesLoader and
-//   CancelableTaskTracker.
+//   CancelableRequestConsumerBase.
 // . Define the callback method, something like:
-//   void OnBootTimesLoaded(const BootTimesLoader::BootTimes& boot_times);
-// . When you want the version invoke: loader.GetBootTimes(callback, &tracker_);
-class BootTimesLoader : public content::NotificationObserver {
+//   void OnBootTimesLoader(chromeos::BootTimesLoader::Handle,
+//                             BootTimesLoader::BootTimes boot_times);
+// . When you want the version invoke: loader.GetBootTimes(&consumer, callback);
+class BootTimesLoader
+    : public CancelableRequestProvider,
+      public content::NotificationObserver {
  public:
   BootTimesLoader();
   virtual ~BootTimesLoader();
@@ -57,14 +60,17 @@ class BootTimesLoader : public content::NotificationObserver {
                   total(0) {}
   } BootTimes;
 
+  // Signature
+  typedef base::Callback<void(Handle, BootTimes)> GetBootTimesCallback;
+
+  typedef CancelableRequest<GetBootTimesCallback> GetBootTimesRequest;
+
   static BootTimesLoader* Get();
 
-  typedef base::Callback<void(const BootTimes&)> GetBootTimesCallback;
-
   // Asynchronously requests the info.
-  CancelableTaskTracker::TaskId GetBootTimes(
-      const GetBootTimesCallback& callback,
-      CancelableTaskTracker* tracker);
+  Handle GetBootTimes(
+      CancelableRequestConsumerBase* consumer,
+      const GetBootTimesCallback& callback);
 
   // Add a time marker for login. A timeline will be dumped to
   // /tmp/login-times-sent after login is done. If |send_to_uma| is true
@@ -113,9 +119,7 @@ class BootTimesLoader : public content::NotificationObserver {
    public:
     Backend() {}
 
-    void GetBootTimesAndRunCallback(
-        const CancelableTaskTracker::IsCanceledCallback& is_canceled_cb,
-        const GetBootTimesCallback& callback);
+    void GetBootTimes(const scoped_refptr<GetBootTimesRequest>& request);
 
    private:
     friend class base::RefCountedThreadSafe<Backend>;

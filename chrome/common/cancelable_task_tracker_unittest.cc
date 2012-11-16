@@ -67,14 +67,12 @@ class CancelableTaskTrackerTest : public testing::Test {
   virtual void TearDown() {
     UnblockTaskThread();
 
-    // Destroy tracker on client thread.
+    // Create tracker on client thread.
     WaitableEvent tracker_destroyed(true, false);
     client_thread_runner_->PostTask(
         FROM_HERE,
         Bind(&CancelableTaskTrackerTest::DestroyTrackerOnClientThread,
              Unretained(this), &tracker_destroyed));
-
-    // This will also wait for any pending tasks on client thread.
     tracker_destroyed.Wait();
 
     client_thread_->Stop();
@@ -114,13 +112,6 @@ class CancelableTaskTrackerTest : public testing::Test {
                 &test_data_, event);
   }
 
-  Closure IncreaseTestDataIfNotCanceledAndSignalClosure(
-      const CancelableTaskTracker::IsCanceledCallback& is_canceled_cb,
-      WaitableEvent* event) {
-    return Bind(&CancelableTaskTrackerTest::IncreaseDataIfNotCanceledAndSignal,
-                &test_data_, is_canceled_cb, event);
-  }
-
   Closure DecreaseTestDataClosure(WaitableEvent* event) {
     return Bind(&CancelableTaskTrackerTest::DecreaseData,
                 Owned(new WaitableEventScoper(event)), &test_data_);
@@ -143,16 +134,6 @@ class CancelableTaskTrackerTest : public testing::Test {
       event->Signal();
   }
 
-  static void IncreaseDataIfNotCanceledAndSignal(
-      int* data,
-      const CancelableTaskTracker::IsCanceledCallback& is_canceled_cb,
-      WaitableEvent* event) {
-    if (!is_canceled_cb.Run())
-      (*data)++;
-    if (event)
-      event->Signal();
-  }
-
   static void DecreaseData(WaitableEventScoper* event_scoper, int* data) {
     (*data) -= 2;
   }
@@ -164,7 +145,6 @@ class CancelableTaskTrackerTest : public testing::Test {
 };
 
 #if (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)) && GTEST_HAS_DEATH_TEST
-
 typedef CancelableTaskTrackerTest CancelableTaskTrackerDeathTest;
 
 TEST_F(CancelableTaskTrackerDeathTest, PostFromDifferentThread) {
@@ -343,54 +323,6 @@ void TrackerDestructedAfterTask_Test(CancelableTaskTrackerTest* test,
 TEST_F(CancelableTaskTrackerTest, TrackerDestructedAfterTask) {
   RunOnClientAndWait(&TrackerDestructedAfterTask_Test);
   EXPECT_EQ(1, test_data_);
-}
-
-void CheckTrackedTaskIdOnSameThread_Test(CancelableTaskTrackerTest* test,
-                                         WaitableEvent* event) {
-  CancelableTaskTracker::IsCanceledCallback is_canceled_cb;
-  test->task_id_ = test->tracker_->NewTrackedTaskId(&is_canceled_cb);
-  ASSERT_NE(CancelableTaskTracker::kBadTaskId, test->task_id_);
-
-  EXPECT_FALSE(is_canceled_cb.Run());
-
-  test->tracker_->TryCancel(test->task_id_);
-  EXPECT_TRUE(is_canceled_cb.Run());
-
-  test->task_id_ = test->tracker_->NewTrackedTaskId(&is_canceled_cb);
-  EXPECT_FALSE(is_canceled_cb.Run());
-
-  // Destroy tracker will cancel all tasks.
-  test->tracker_.reset();
-  EXPECT_TRUE(is_canceled_cb.Run());
-
-  event->Signal();
-}
-
-TEST_F(CancelableTaskTrackerTest, CheckTrackedTaskIdOnSameThread) {
-  RunOnClientAndWait(&CheckTrackedTaskIdOnSameThread_Test);
-}
-
-void CheckTrackedTaskIdOnDifferentThread_Test(CancelableTaskTrackerTest* test,
-                                              WaitableEvent* event) {
-  CancelableTaskTracker::IsCanceledCallback is_canceled_cb;
-  test->task_id_ = test->tracker_->NewTrackedTaskId(&is_canceled_cb);
-  ASSERT_NE(CancelableTaskTracker::kBadTaskId, test->task_id_);
-
-  // Post task to task thread.
-  test->task_thread_runner_->PostTask(
-      FROM_HERE,
-      test->IncreaseTestDataIfNotCanceledAndSignalClosure(is_canceled_cb,
-                                                          event));
-  is_canceled_cb.Reset();  // So the one in task thread runner is the last ref,
-                           // and will be destroyed on task thread.
-
-  test->tracker_->TryCancel(test->task_id_);
-  test->UnblockTaskThread();
-}
-
-TEST_F(CancelableTaskTrackerTest, CheckTrackedTaskIdOnDifferentThread) {
-  RunOnClientAndWait(&CheckTrackedTaskIdOnDifferentThread_Test);
-  EXPECT_EQ(0, test_data_);
 }
 
 }  // namespace

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/cancellation_flag.h"
@@ -32,18 +31,6 @@ void RunIfNotCanceledThenUntrack(const CancellationFlag* flag,
                                  const Closure& untrack) {
   RunIfNotCanceled(flag, task);
   untrack.Run();
-}
-
-bool IsCanceled(const CancellationFlag* flag,
-                base::ScopedClosureRunner* untrack_runner) {
-  return flag->IsSet();
-}
-
-void RunOrPostToTaskRunner(TaskRunner* task_runner, const Closure& closure) {
-  if (task_runner->RunsTasksOnCurrentThread())
-    closure.Run();
-  else
-    task_runner->PostTask(FROM_HERE, closure);
 }
 
 }  // namespace
@@ -93,29 +80,6 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::PostTaskAndReply(
   if (!success)
     return kBadTaskId;
 
-  Track(id, flag);
-  return id;
-}
-
-CancelableTaskTracker::TaskId CancelableTaskTracker::NewTrackedTaskId(
-    IsCanceledCallback* is_canceled_cb) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(base::MessageLoopProxy::current());
-
-  TaskId id = next_id_;
-  next_id_++;  // int64 is big enough that we ignore the potential overflow.
-
-  // Both owned by |is_canceled_cb|.
-  CancellationFlag* flag = new CancellationFlag();
-  base::ScopedClosureRunner* untrack_runner = new base::ScopedClosureRunner(
-      Bind(&RunOrPostToTaskRunner,
-           base::MessageLoopProxy::current(),
-           Bind(&CancelableTaskTracker::Untrack,
-                weak_factory_.GetWeakPtr(), id)));
-
-  *is_canceled_cb = Bind(&IsCanceled,
-                         base::Owned(flag),
-                         base::Owned(untrack_runner));
   Track(id, flag);
   return id;
 }

@@ -59,10 +59,10 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
         base::Bind(&VersionInfoUpdater::OnVersion, base::Unretained(this)),
         &tracker_);
     boot_times_loader_.GetBootTimes(
-        base::Bind(is_official_build ? &VersionInfoUpdater::OnBootTimesNoop
-                                     : &VersionInfoUpdater::OnBootTimes,
-                   base::Unretained(this)),
-        &tracker_);
+        &boot_times_consumer_,
+        base::Bind(is_official_build ? &VersionInfoUpdater::OnBootTimesNoop :
+                                       &VersionInfoUpdater::OnBootTimes,
+                   base::Unretained(this)));
   } else {
     UpdateVersionLabel();
   }
@@ -195,10 +195,11 @@ void VersionInfoUpdater::OnVersion(const std::string& version) {
 }
 
 void VersionInfoUpdater::OnBootTimesNoop(
-    const BootTimesLoader::BootTimes& boot_times) {}
+    BootTimesLoader::Handle handle, BootTimesLoader::BootTimes boot_times) {
+}
 
 void VersionInfoUpdater::OnBootTimes(
-    const BootTimesLoader::BootTimes& boot_times) {
+    BootTimesLoader::Handle handle, BootTimesLoader::BootTimes boot_times) {
   const char* kBootTimesNoChromeExec =
       "Non-firmware boot took %.2f seconds (kernel %.2fs, system %.2fs)";
   const char* kBootTimesChromeExec =
