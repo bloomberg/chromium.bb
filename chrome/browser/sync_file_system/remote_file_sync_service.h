@@ -16,6 +16,34 @@ namespace sync_file_system {
 class RemoteChangeProcessor;
 class LocalChangeProcessor;
 
+enum RemoteServiceState {
+  // Remote service is up and running, or has not seen any errors yet.
+  // The consumer of this service can make new requests while the
+  // service is in this state.
+  REMOTE_SERVICE_OK,
+
+  // Remote service is temporarily unavailable due to network,
+  // authentication or some other temporary failure.
+  // This state may be automatically resolved when the underlying
+  // network condition or service condition changes.
+  // The consumer of this service can still make new requests but
+  // they may fail (with recoverable error code).
+  REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
+
+  // Remote service is temporarily unavailable due to authentication failure.
+  // This state may be automatically resolved when the authentication token
+  // has been refreshed internally (e.g. when the user signed in etc).
+  // The consumer of this service can still make new requests but
+  // they may fail (with recoverable error code).
+  REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
+
+  // Remote service is disabled due to unrecoverable errors, e.g.
+  // local database corruption.
+  // Any new requests will immediately fail when the service is in
+  // this state.
+  REMOTE_SERVICE_DISABLED,
+};
+
 // This class represents a backing service of the sync filesystem.
 // This also maintains conflict information, i.e. a list of conflicting files
 // (at least in the current design).
@@ -33,9 +61,10 @@ class RemoteFileSyncService {
     // value.
     virtual void OnRemoteChangeAvailable(int64 pending_changes_hint) = 0;
 
-    // This is called when RemoteFileSyncService changes its status.
-    virtual void OnRemoteSyncStatusChanged(
-        fileapi::SyncStatusCode new_status) {}
+    // This is called when RemoteFileSyncService updates its state.
+    virtual void OnRemoteServiceStateUpdated(
+        RemoteServiceState state,
+        const std::string& description) {}
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
@@ -49,12 +78,18 @@ class RemoteFileSyncService {
 
   // Registers |origin| to track remote side changes for the |origin|.
   // Upon completion, invokes |callback|.
+  // The caller may call this method again when the remote service state
+  // migrates to REMOTE_SERVICE_OK state if the error code returned via
+  // |callback| was retriable ones.
   virtual void RegisterOriginForTrackingChanges(
       const GURL& origin,
       const fileapi::SyncStatusCallback& callback) = 0;
 
   // Unregisters |origin| to track remote side changes for the |origin|.
   // Upon completion, invokes |callback|.
+  // The caller may call this method again when the remote service state
+  // migrates to REMOTE_SERVICE_OK state if the error code returned via
+  // |callback| was retriable ones.
   virtual void UnregisterOriginForTrackingChanges(
       const GURL& origin,
       const fileapi::SyncStatusCallback& callback) = 0;

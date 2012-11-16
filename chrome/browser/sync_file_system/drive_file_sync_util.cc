@@ -10,6 +10,8 @@ namespace sync_file_system {
 
 fileapi::SyncStatusCode GDataErrorCodeToSyncStatusCode(
     google_apis::GDataErrorCode error) {
+  // NOTE: Please update DriveFileSyncService::UpdateServiceState when you add
+  // more error code mapping.
   switch (error) {
     case google_apis::HTTP_SUCCESS:
     case google_apis::HTTP_CREATED:

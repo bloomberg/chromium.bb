@@ -36,28 +36,25 @@ class SyncEventObserver {
     // database, checking connectivity and authenticating to the service etc).
     SYNC_SERVICE_INITIALIZING,
 
-    // The sync service has detected changes in local or remote side and is
-    // performing file synchronization.
-    SYNC_SERVICE_SYNCING,
+    // The sync service is up and running.
+    SYNC_SERVICE_RUNNING,
 
-    // The sync service is up and runnable but currently is idle (i.e. no
-    // file activities which require sync operation in remote and local side).
-    SYNC_SERVICE_IDLE,
+    // The sync service is not synchronizing files because the remote service
+    // needs to be authenticated by the user to proceed.
+    SYNC_SERVICE_AUTHENTICATION_REQUIRED,
 
-    // The sync service is (temporarily) suspended due to some recoverable
-    // errors, e.g. network is offline, the user is not authenticated, remote
-    // service is down or not reachable etc. More details should be given
-    // by |description| parameter in OnSyncStateUpdated (which could contain
-    // service-specific details).
-    // TODO(kinuko): Revisit this to see if we need a separate state for
-    // 'auth required'.
+    // The sync service is not synchronizing files because the remote service
+    // is (temporarily) unavailable due to some recoverable errors, e.g.
+    // network is offline, the remote service is down or not
+    // reachable etc. More details should be given by |description| parameter
+    // in OnSyncStateUpdated (which could contain service-specific details).
     SYNC_SERVICE_TEMPORARY_UNAVAILABLE,
 
     // The sync service is disabled and the content will never sync.
     SYNC_SERVICE_DISABLED,
   };
 
-  // Reports there was an error in the sync file system backend.
+  // Reports there was a state change in the sync file system backend.
   virtual void OnSyncStateUpdated(fileapi::SyncServiceState state,
                                   const std::string& description) = 0;
 

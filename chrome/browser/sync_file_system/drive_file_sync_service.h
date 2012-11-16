@@ -108,12 +108,30 @@ class DriveFileSyncService
   typedef std::map<FilePath, int64> PathToChangeStamp;
   typedef std::map<GURL, PathToChangeStamp> ChangeStampMap;
 
+  // Task types; used for task token handling.
+  enum TaskType {
+    // No task is holding this token.
+    TASK_TYPE_NONE,
+
+    // Token is granted for drive-related async task.
+    TASK_TYPE_DRIVE,
+
+    // Token is granted for async database task.
+    TASK_TYPE_DATABASE,
+  };
+
   DriveFileSyncService(scoped_ptr<DriveFileSyncClient> sync_client,
                        scoped_ptr<DriveMetadataStore> metadata_store);
 
-  scoped_ptr<TaskToken> GetToken(const tracked_objects::Location& from_here);
+  // This should be called when an async task needs to get a task token.
+  // |task_description| is optional but should give human-readable
+  // messages that describe the task that is acquiring the token.
+  scoped_ptr<TaskToken> GetToken(const tracked_objects::Location& from_here,
+                                 TaskType task_type,
+                                 const std::string& task_description);
   void NotifyTaskDone(fileapi::SyncStatusCode status,
                       scoped_ptr<TaskToken> token);
+  void UpdateServiceState();
 
   void DidInitializeMetadataStore(scoped_ptr<TaskToken> token,
                                   fileapi::SyncStatusCode status,
@@ -151,7 +169,8 @@ class DriveFileSyncService
   scoped_ptr<DriveMetadataStore> metadata_store_;
   scoped_ptr<DriveFileSyncClient> sync_client_;
 
-  fileapi::SyncStatusCode status_;
+  fileapi::SyncStatusCode last_operation_status_;
+  RemoteServiceState state_;
   std::deque<base::Closure> pending_tasks_;
 
   int64 largest_changestamp_;

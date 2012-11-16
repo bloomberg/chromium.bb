@@ -18,8 +18,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
-using ::testing::StrictMock;
+using ::testing::AtLeast;
 using ::testing::InSequence;
+using ::testing::StrictMock;
 using ::testing::_;
 
 using google_apis::DriveServiceInterface;
@@ -52,6 +53,19 @@ void ExpectEqStatus(bool* done,
 }
 
 }  // namespace
+
+class MockRemoteServiceObserver : public RemoteFileSyncService::Observer {
+ public:
+  MockRemoteServiceObserver() {}
+  virtual ~MockRemoteServiceObserver() {}
+
+  // LocalChangeProcessor override.
+  MOCK_METHOD1(OnRemoteChangeAvailable,
+               void(int64 pending_changes));
+  MOCK_METHOD2(OnRemoteServiceStateUpdated,
+               void(RemoteServiceState state,
+                    const std::string& description));
+};
 
 class DriveFileSyncServiceTest : public testing::Test {
  public:
@@ -87,6 +101,7 @@ class DriveFileSyncServiceTest : public testing::Test {
   void SetUpDriveSyncService() {
     sync_service_ = DriveFileSyncService::CreateForTesting(
         sync_client_.Pass(), metadata_store_.Pass()).Pass();
+    sync_service_->AddObserver(&mock_remote_observer_);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -125,6 +140,10 @@ class DriveFileSyncServiceTest : public testing::Test {
     return mock_drive_uploader_;
   }
 
+  StrictMock<MockRemoteServiceObserver>* mock_remote_observer() {
+    return &mock_remote_observer_;
+  }
+
   MessageLoop* message_loop() { return &message_loop_; }
   DriveFileSyncService* sync_service() { return sync_service_.get(); }
 
@@ -147,6 +166,7 @@ class DriveFileSyncServiceTest : public testing::Test {
   // Owned by |sync_client_|.
   StrictMock<google_apis::MockDriveService>* mock_drive_service_;
   StrictMock<google_apis::MockDriveUploader>* mock_drive_uploader_;
+  StrictMock<MockRemoteServiceObserver> mock_remote_observer_;
 
   scoped_ptr<DriveFileSyncClient> sync_client_;
   scoped_ptr<DriveMetadataStore> metadata_store_;
@@ -198,6 +218,10 @@ TEST_F(DriveFileSyncServiceTest, GetSyncRoot) {
           google_apis::HTTP_SUCCESS,
           base::Passed(&sync_root_found)));
 
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(1);
+
   SetUpDriveSyncService();
   message_loop()->RunUntilIdle();
 
@@ -242,6 +266,10 @@ TEST_F(DriveFileSyncServiceTest, BatchSyncOnInitialization) {
           google_apis::HTTP_SUCCESS,
           base::Passed(&listing_files_in_directory)));
 
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(1);
+
   SetUpDriveSyncService();
   message_loop()->RunUntilIdle();
 
@@ -261,6 +289,10 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
   const GURL kSyncRootContentURL("https://sync_root_content_url/");
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
+
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AtLeast(1));
 
   InSequence sequence;
 
@@ -336,6 +368,10 @@ TEST_F(DriveFileSyncServiceTest, RegisterExistingOrigin) {
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
 
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AtLeast(1));
+
   InSequence sequence;
 
   scoped_ptr<Value> origin_directory_found(LoadJSONFile(
@@ -394,6 +430,10 @@ TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
   metadata_store()->AddBatchSyncOrigin(kOrigin1, kDirectoryResourceId1);
   metadata_store()->AddBatchSyncOrigin(kOrigin2, kDirectoryResourceId2);
   metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
+
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AtLeast(1));
 
   InSequence sequence;
 
