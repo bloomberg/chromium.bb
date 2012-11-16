@@ -32,7 +32,6 @@ class HungWindowDetector : public WorkerThreadTicker::Callback {
    public:
     enum ActionOnHungWindow {
       HUNG_WINDOW_IGNORE,
-      HUNG_WINDOW_TERMINATE_THREAD,
       HUNG_WINDOW_TERMINATE_PROCESS,
     };
 

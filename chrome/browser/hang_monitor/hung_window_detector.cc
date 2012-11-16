@@ -125,52 +125,27 @@ bool HungWindowDetector::CheckChildWindow(HWND child_window) {
         return continue_hang_detection;
       }
 
-      switch (action) {
-        case HungWindowNotification::HUNG_WINDOW_TERMINATE_THREAD: {
-          RemoveProp(child_window, kHungChildWindowTimeout);
-          CHandle child_thread(OpenThread(THREAD_TERMINATE,
+      if (action == HungWindowNotification::HUNG_WINDOW_TERMINATE_PROCESS) {
+        RemoveProp(child_window, kHungChildWindowTimeout);
+        CHandle child_process(OpenProcess(PROCESS_ALL_ACCESS,
                                           FALSE,
-                                          child_window_thread_id));
-          if (NULL == child_thread.m_h) {
-            break;
-          }
-          // Before swinging the axe, do some sanity checks to make
-          // sure this window still belongs to the same thread
-          if (GetWindowThreadProcessId(child_window, NULL) !=
-                  child_window_thread_id) {
-            break;
-          }
-          TerminateThread(child_thread, 0);
-          WaitForSingleObject(child_thread, kTerminateTimeout);
-          child_thread.Close();
-          break;
-        }
-        case HungWindowNotification::HUNG_WINDOW_TERMINATE_PROCESS: {
-          RemoveProp(child_window, kHungChildWindowTimeout);
-          CHandle child_process(OpenProcess(PROCESS_ALL_ACCESS,
-                                            FALSE,
-                                            child_window_process_id));
+                                          child_window_process_id));
 
-          if (NULL == child_process.m_h)  {
-            break;
-          }
-          // Before swinging the axe, do some sanity checks to make
-          // sure this window still belongs to the same process
-          DWORD process_id_check = 0;
-          GetWindowThreadProcessId(child_window, &process_id_check);
-          if (process_id_check !=  child_window_process_id) {
-            break;
-          }
+        if (NULL == child_process.m_h) {
+          return continue_hang_detection;
+        }
+        // Before swinging the axe, do some sanity checks to make
+        // sure this window still belongs to the same process
+        DWORD process_id_check = 0;
+        GetWindowThreadProcessId(child_window, &process_id_check);
+        if (process_id_check !=  child_window_process_id) {
+          return continue_hang_detection;
+        }
 
-          // Before terminating the process we try collecting a dump. Which
-          // a transient thread in the child process will do for us.
-          CrashDumpAndTerminateHungChildProcess(child_process);
-          child_process.Close();
-          break;
-        }
-        default: {
-          break;
-        }
+        // Before terminating the process we try collecting a dump. Which
+        // a transient thread in the child process will do for us.
+        CrashDumpAndTerminateHungChildProcess(child_process);
+        child_process.Close();
       }
     } else {
       RemoveProp(child_window, kHungChildWindowTimeout);
