@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 .bluetooth-device-list {
-  margin: 10px;
+  margin: 10px 0;
   padding: 5px 10px;
 }
 
@@ -11,10 +11,17 @@
   color: gray;
 }
 
-#bluetooth-scanning {
-  -webkit-box-orient: horizontal;
-  display: -webkit-inline-box;
-  margin-bottom: 5px;
+#bluetooth-options .bluetooth-device-list {
+  margin: 0 10px;
+}
+
+#bluetooth-options .button-strip {
+  -webkit-box-pack: justify;
+}
+
+#bluetooth-options .button-strip #bluetooth-scanning-label {
+  -webkit-box-flex: 1;
+  display: block;
 }
 
 #bluetooth-scanning-label {
@@ -23,7 +30,6 @@
 }
 
 #bluetooth-scanning-icon {
-  -webkit-margin-start: 10px;
   height: 20px;
   opacity: 0.66;
   vertical-align: middle;

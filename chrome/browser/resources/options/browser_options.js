@@ -1194,7 +1194,7 @@ cr.define('options', function() {
     },
 
     /**
-     * Activate the bluetooth settings section on the System settings page.
+     * Activate the Bluetooth settings section on the System settings page.
      * @private
      */
     showBluetoothSettings_: function() {
@@ -1202,7 +1202,7 @@ cr.define('options', function() {
     },
 
     /**
-     * Dectivates the bluetooth settings section from the System settings page.
+     * Dectivates the Bluetooth settings section from the System settings page.
      * @private
      */
     hideBluetoothSettings_: function() {
@@ -1210,7 +1210,7 @@ cr.define('options', function() {
     },
 
     /**
-     * Sets the state of the checkbox indicating if bluetooth is turned on. The
+     * Sets the state of the checkbox indicating if Bluetooth is turned on. The
      * state of the "Find devices" button and the list of discovered devices may
      * also be affected by a change to the state.
      * @param {boolean} checked Flag Indicating if Bluetooth is turned on.
@@ -1231,14 +1231,14 @@ cr.define('options', function() {
     },
 
     /**
-     * Adds an element to the list of available bluetooth devices. If an element
+     * Adds an element to the list of available Bluetooth devices. If an element
      * with a matching address is found, the existing element is updated.
      * @param {{name: string,
      *          address: string,
      *          paired: boolean,
      *          bonded: boolean,
      *          connected: boolean}} device
-     *     Decription of the bluetooth device.
+     *     Decription of the Bluetooth device.
      * @private
      */
     addBluetoothDevice_: function(device) {
