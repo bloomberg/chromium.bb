@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This example shows how to use the URLLoader in streaming mode (reading to
-// memory as data comes over the network). This example uses PostMessage between
-// the plugin and the url_loader.html page in this directory to start the load
-// and to communicate the result.
+// This example shows how to use the URLLoader in "stream to file" mode where
+// the browser writes incoming data to a file, which you can read out via the
+// file I/O APIs.
 //
-// The other mode is to stream to a file instead. See stream_to_file.cc
+// This example uses PostMessage between the plugin and the url_loader.html
+// page in this directory to start the load and to communicate the result.
 
+#include "ppapi/c/ppb_file_io.h"
+#include "ppapi/cpp/file_io.h"
+#include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/url_loader.h"
@@ -49,10 +52,10 @@ class MyInstance : public pp::Instance {
   // Callback for the URLLoader to tell us it finished opening the connection.
   void OnOpenComplete(int32_t result);
 
-  // Starts streaming data.
-  void ReadMore();
+  // Callback for when the file is completely filled with the download
+  void OnStreamComplete(int32_t result);
 
-  // Callback for the URLLoader to tell us when it finished a read.
+  void OnOpenFileComplete(int32_t result);
   void OnReadComplete(int32_t result);
 
   // Forwards the given string to the page.
@@ -63,6 +66,8 @@ class MyInstance : public pp::Instance {
 
   pp::URLLoader loader_;
   pp::URLResponseInfo response_;
+  pp::FileRef dest_file_;
+  pp::FileIO file_io_;
 
   // The buffer used for the current read request. This is filled and then
   // copied into content_ to build up the entire document.
@@ -83,6 +88,7 @@ void MyInstance::StartRequest(const std::string& url) {
   pp::URLRequestInfo request(this);
   request.SetURL(url);
   request.SetMethod("GET");
+  request.SetStreamToFile(true);
 
   loader_ = pp::URLLoader(this);
   loader_.Open(request,
@@ -95,58 +101,47 @@ void MyInstance::OnOpenComplete(int32_t result) {
     return;
   }
 
+  loader_.FinishStreamingToFile(
+      factory_.NewCallback(&MyInstance::OnStreamComplete));
   response_ = loader_.GetResponseInfo();
-
-  // Here you would process the headers. A real program would want to at least
-  // check the HTTP code and potentially cancel the request.
-
-  // Start streaming.
-  ReadMore();
+  dest_file_ = response_.GetBodyAsFileRef();
 }
 
-void MyInstance::ReadMore() {
-  // Note that you specifically want an "optional" callback here. This will
-  // allow Read() to return synchronously, ignoring your completion callback,
-  // if data is available. For fast connections and large files, reading as
-  // fast as we can will make a large performance difference. However, in the
-  // case of a synchronous return, we need to be sure to run the callback we
-  // created since the loader won't do anything with it.
-  pp::CompletionCallback cc =
-      factory_.NewOptionalCallback(&MyInstance::OnReadComplete);
-  int32_t result = PP_OK;
-  do {
-    result = loader_.ReadResponseBody(buf_, kBufSize, cc);
-    // Handle streaming data directly. Note that we *don't* want to call
-    // OnReadComplete here, since in the case of result > 0 it will schedule
-    // another call to this function. If the network is very fast, we could
-    // end up with a deeply recursive stack.
-    if (result > 0)
-      content_.append(buf_, result);
-  } while (result > 0);
+void MyInstance::OnStreamComplete(int32_t result) {
+  if (result == PP_OK) {
+    file_io_ = pp::FileIO(this);
+    file_io_.Open(dest_file_, PP_FILEOPENFLAG_READ,
+        factory_.NewCallback(&MyInstance::OnOpenFileComplete));
+  } else {
+    ReportResponse("Could not stream to file");
+  }
+}
 
-  if (result != PP_OK_COMPLETIONPENDING) {
-    // Either we reached the end of the stream (result == PP_OK) or there was
-    // an error. We want OnReadComplete to get called no matter what to handle
-    // that case, whether the error is synchronous or asynchronous. If the
-    // result code *is* COMPLETIONPENDING, our callback will be called
-    // asynchronously.
-    cc.Run(result);
+void MyInstance::OnOpenFileComplete(int32_t result) {
+  if (result == PP_OK) {
+    // Note we only read the first 1024 bytes from the file in this example
+    // to keep things simple. Please see a file I/O example for more details
+    // on reading files.
+    file_io_.Read(0, buf_, kBufSize,
+        factory_.NewCallback(&MyInstance::OnReadComplete));
+  } else {
+    ReportResponse("Could not open file");
   }
 }
 
 void MyInstance::OnReadComplete(int32_t result) {
-  if (result == PP_OK) {
-    // Streaming the file is complete.
-    ReportResponse(content_);
-  } else if (result > 0) {
-    // The URLLoader just filled "result" number of bytes into our buffer.
-    // Save them and perform another read.
+  if (result >= 0) {
     content_.append(buf_, result);
-    ReadMore();
+    ReportResponse(buf_);
   } else {
-    // A read error occurred.
-    ReportResponse("A read error occurred");
+    ReportResponse("Could not read file");
   }
+
+  // Release everything.
+  loader_ = pp::URLLoader();
+  response_ = pp::URLResponseInfo();
+  dest_file_ = pp::FileRef();
+  file_io_ = pp::FileIO();
 }
 
 void MyInstance::ReportResponse(const std::string& data) {

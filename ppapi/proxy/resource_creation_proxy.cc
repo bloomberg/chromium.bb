@@ -39,6 +39,7 @@
 #include "ppapi/proxy/ppb_x509_certificate_private_proxy.h"
 #include "ppapi/proxy/printing_resource.h"
 #include "ppapi/proxy/url_request_info_resource.h"
+#include "ppapi/proxy/url_response_info_resource.h"
 #include "ppapi/proxy/video_capture_resource.h"
 #include "ppapi/proxy/websocket_resource.h"
 #include "ppapi/shared_impl/api_id.h"
@@ -151,6 +152,15 @@ PP_Resource ResourceCreationProxy::CreateURLRequestInfo(
     const URLRequestInfoData& data) {
   return (new URLRequestInfoResource(GetConnection(),
                                      instance, data))->GetReference();
+}
+
+PP_Resource ResourceCreationProxy::CreateURLResponseInfo(
+    PP_Instance instance,
+    const URLResponseInfoData& data,
+    PP_Resource file_ref_resource) {
+  return (new URLResponseInfoResource(GetConnection(), instance,
+                                      data,
+                                      file_ref_resource))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateWheelInputEvent(

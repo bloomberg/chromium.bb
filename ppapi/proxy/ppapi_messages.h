@@ -56,6 +56,7 @@
 #include "ppapi/shared_impl/private/ppb_host_resolver_shared.h"
 #include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
 #include "ppapi/shared_impl/url_request_info_data.h"
+#include "ppapi/shared_impl/url_response_info_data.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT PPAPI_PROXY_EXPORT
@@ -253,6 +254,15 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::URLRequestInfoData::BodyItem)
   IPC_STRUCT_TRAITS_MEMBER(start_offset)
   IPC_STRUCT_TRAITS_MEMBER(number_of_bytes)
   IPC_STRUCT_TRAITS_MEMBER(expected_last_modified_time)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::URLResponseInfoData)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(headers)
+  IPC_STRUCT_TRAITS_MEMBER(status_code)
+  IPC_STRUCT_TRAITS_MEMBER(status_text)
+  IPC_STRUCT_TRAITS_MEMBER(redirect_url)
+  IPC_STRUCT_TRAITS_MEMBER(body_as_file_ref)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::NetworkInfo)
@@ -1066,10 +1076,11 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBURLLoader_Open,
                     ppapi::URLRequestInfoData /* request_data */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoader_FollowRedirect,
                     ppapi::HostResource /* loader */)
-IPC_SYNC_MESSAGE_ROUTED1_1(
+IPC_SYNC_MESSAGE_ROUTED1_2(
     PpapiHostMsg_PPBURLLoader_GetResponseInfo,
     ppapi::HostResource /* loader */,
-    ppapi::HostResource /* response_info_out */)
+    bool /* success */,
+    ppapi::URLResponseInfoData /* result */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBURLLoader_ReadResponseBody,
                     ppapi::HostResource /* loader */,
                     int32_t /* bytes_to_read */)
@@ -1079,15 +1090,6 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoader_Close,
                     ppapi::HostResource /* loader */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoader_GrantUniversalAccess,
                     ppapi::HostResource /* loader */)
-
-// PPB_URLResponseInfo.
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLResponseInfo_GetProperty,
-                           ppapi::HostResource /* response */,
-                           int32_t /* property */,
-                           ppapi::proxy::SerializedVar /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef,
-                           ppapi::HostResource /* response */,
-                           ppapi::PPB_FileRef_CreateInfo /* result */)
 
 // PPB_Var.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBVar_AddRefObject,

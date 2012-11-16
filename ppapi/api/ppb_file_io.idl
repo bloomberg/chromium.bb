@@ -144,7 +144,8 @@ interface PPB_FileIO {
   /**
    * Read() reads from an offset in the file.  The size of the buffer must be
    * large enough to hold the specified number of bytes to read.  This function
-   * might perform a partial read.
+   * might perform a partial read, meaning all the requested bytes
+   * might not be returned, even if the end of the file has not been reached.
    *
    * ReadToArray() is preferred to Read() when doing asynchronous operations.
    *

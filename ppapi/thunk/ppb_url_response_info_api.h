@@ -6,6 +6,7 @@
 #define PPAPI_THUNK_PPB_URL_RESPONSE_INFO_API_H_
 
 #include "ppapi/c/ppb_url_response_info.h"
+#include "ppapi/shared_impl/url_response_info_data.h"
 
 namespace ppapi {
 namespace thunk {
@@ -16,6 +17,11 @@ class PPB_URLResponseInfo_API {
 
   virtual PP_Var GetProperty(PP_URLResponseProperty property) = 0;
   virtual PP_Resource GetBodyAsFileRef() = 0;
+
+  // Internal function to get the internal data. This passes one plugin
+  // reference to the caller for the file ref resource if body_as_file_ref is
+  // non-null (meaning we're downloading to a file).
+  virtual URLResponseInfoData GetData() = 0;
 };
 
 }  // namespace thunk

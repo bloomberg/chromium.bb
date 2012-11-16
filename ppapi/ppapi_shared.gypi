@@ -103,6 +103,8 @@
           'shared_impl/tracked_callback.h',
           'shared_impl/url_request_info_data.cc',
           'shared_impl/url_request_info_data.h',
+          'shared_impl/url_response_info_data.cc',
+          'shared_impl/url_response_info_data.h',
           'shared_impl/var.cc',
           'shared_impl/var.h',
           'shared_impl/var_tracker.cc',

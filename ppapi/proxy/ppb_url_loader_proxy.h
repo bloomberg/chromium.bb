@@ -21,6 +21,7 @@
 namespace ppapi {
 
 struct URLRequestInfoData;
+struct URLResponseInfoData;
 
 namespace proxy {
 
@@ -61,7 +62,8 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
                  const URLRequestInfoData& data);
   void OnMsgFollowRedirect(const HostResource& loader);
   void OnMsgGetResponseInfo(const HostResource& loader,
-                            HostResource* result);
+                            bool* success,
+                            URLResponseInfoData* result);
   void OnMsgReadResponseBody(const HostResource& loader,
                              int32_t bytes_to_read);
   void OnMsgFinishStreamingToFile(const HostResource& loader);

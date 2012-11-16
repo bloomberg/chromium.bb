@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_io.idl modified Thu Nov 15 08:08:30 2012. */
+/* From ppb_file_io.idl modified Fri Nov 16 10:46:53 2012. */
 
 #ifndef PPAPI_C_PPB_FILE_IO_H_
 #define PPAPI_C_PPB_FILE_IO_H_
@@ -161,7 +161,8 @@ struct PPB_FileIO_1_1 {
   /**
    * Read() reads from an offset in the file.  The size of the buffer must be
    * large enough to hold the specified number of bytes to read.  This function
-   * might perform a partial read.
+   * might perform a partial read, meaning all the requested bytes
+   * might not be returned, even if the end of the file has not been reached.
    *
    * ReadToArray() is preferred to Read() when doing asynchronous operations.
    *

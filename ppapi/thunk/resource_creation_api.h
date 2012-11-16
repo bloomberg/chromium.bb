@@ -29,6 +29,7 @@ struct PP_Size;
 namespace ppapi {
 
 struct URLRequestInfoData;
+struct URLResponseInfoData;
 
 namespace thunk {
 
@@ -83,6 +84,15 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateURLRequestInfo(
       PP_Instance instance,
       const URLRequestInfoData& data) = 0;
+
+  // Passes a reference to the file_ref_resource, which is a process-local
+  // resource corresponding to the body_as_file_ref host resource in |data|,
+  // if there is one.
+  virtual PP_Resource CreateURLResponseInfo(
+      PP_Instance instance,
+      const URLResponseInfoData& data,
+      PP_Resource file_ref_resource) = 0;
+
   virtual PP_Resource CreateWheelInputEvent(
       PP_Instance instance,
       PP_TimeTicks time_stamp,

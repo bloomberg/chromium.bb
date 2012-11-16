@@ -45,8 +45,17 @@ class FileIO : public Resource {
   ///
   /// @param[in] file_ref A <code>PP_Resource</code> corresponding to a file
   /// reference.
+  ///
   /// @param[in] open_flags A bit-mask of the <code>PP_FileOpenFlags</code>
-  /// values.
+  /// values. Valid values are:
+  ///  - PP_FILEOPENFLAG_READ
+  ///  - PP_FILEOPENFLAG_WRITE
+  ///  - PP_FILEOPENFLAG_CREATE
+  ///  - PP_FILEOPENFLAG_TRUNCATE
+  ///  - PP_FILEOPENFLAG_EXCLUSIVE
+  /// See <code>PP_FileOpenFlags</code> in <code>ppb_file_io.h</code> for more
+  /// details on these flags.
+  ///
   /// @param[in] cc A <code>CompletionCallback</code> to be called upon
   /// completion of Open().
   ///
@@ -83,9 +92,33 @@ class FileIO : public Resource {
                 PP_Time last_modified_time,
                 const CompletionCallback& cc);
 
-  /// Read() reads from an offset in the file.  The size of the buffer must be
-  /// large enough to hold the specified number of bytes to read.  This
-  /// function might perform a partial read.
+  /// Reads from an offset in the file.
+  ///
+  /// The size of the buffer must be large enough to hold the specified number
+  /// of bytes to read.  This function might perform a partial read, meaning
+  /// that all the requested bytes might not be returned, even if the end of the
+  /// file has not been reached.
+  ///
+  /// This function reads into a buffer that the caller supplies. This buffer
+  /// must remain valid as long as the FileIO resource is alive. If you use
+  /// a completion callback factory and it goes out of scope, it will not issue
+  /// the callback on your class, BUT the callback factory can NOT cancel
+  /// the request from the browser's perspective. This means that the browser
+  /// will still try to write to your buffer even if the callback factory is
+  /// destroyed!
+  ///
+  /// So you must ensure that your buffer outlives the FileIO resource. If you
+  /// have one class and use the FileIO resource exclusively from that class
+  /// and never make any copies, this will be fine: the resource will be
+  /// destroyed when your class is. But keep in mind that copying a pp::FileIO
+  /// object just creates a second reference to the original resource. For
+  /// example, if you have a function like this:
+  ///   pp::FileIO MyClass::GetFileIO();
+  /// where a copy of your FileIO resource could outlive your class, the
+  /// callback will still be pending when your class goes out of scope, creating
+  /// the possibility of writing into invalid memory. So it's recommended to
+  /// keep your FileIO resource and any oubput buffers tightly controlled in
+  /// the same scope.
   ///
   /// <strong>Caveat:</strong> This Read() is potentially unsafe if you're using
   /// a CompletionCallbackFactory to scope callbacks to the lifetime of your

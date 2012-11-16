@@ -22,7 +22,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_url_response_info_proxy.h"
+#include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
@@ -114,6 +114,7 @@ class URLLoader : public Resource, public PPB_URLLoader_API {
   virtual void GrantUniversalAccess() OVERRIDE;
   virtual void SetStatusCallback(
       PP_URLLoaderTrusted_StatusCallback cb) OVERRIDE;
+  virtual bool GetResponseInfoData(URLResponseInfoData* data) OVERRIDE;
 
   // Called when the browser has new up/download progress to report.
   void UpdateProgress(const PPBURLLoader_UpdateProgress_Params& params);
@@ -249,14 +250,24 @@ PP_Bool URLLoader::GetDownloadProgress(
 
 PP_Resource URLLoader::GetResponseInfo() {
   if (!response_info_) {
-    HostResource response_id;
+    bool success = false;
+    URLResponseInfoData data;
     GetDispatcher()->Send(new PpapiHostMsg_PPBURLLoader_GetResponseInfo(
-        API_ID_PPB_URL_LOADER, host_resource(), &response_id));
-    if (response_id.is_null())
+        API_ID_PPB_URL_LOADER, host_resource(), &success, &data));
+    if (!success)
       return 0;
 
-    response_info_ = PPB_URLResponseInfo_Proxy::CreateResponseForResource(
-        response_id);
+    // Create a proxy resource for the the file ref host resource if needed.
+    PP_Resource body_as_file_ref = 0;
+    if (!data.body_as_file_ref.resource.is_null()) {
+      body_as_file_ref =
+          PPB_FileRef_Proxy::DeserializeFileRef(data.body_as_file_ref);
+    }
+
+    // Assumes ownership of body_as_file_ref.
+    thunk::EnterResourceCreationNoLock enter(pp_instance());
+    response_info_ = enter.functions()->CreateURLResponseInfo(
+        pp_instance(), data, body_as_file_ref);
   }
 
   // The caller expects to get a ref, and we want to keep holding ours.
@@ -317,6 +328,12 @@ void URLLoader::SetStatusCallback(
     PP_URLLoaderTrusted_StatusCallback cb) {
   // Not implemented in the proxied version, this is for implementing the
   // proxy itself in the host.
+}
+
+bool URLLoader::GetResponseInfoData(URLResponseInfoData* data) {
+  // Not implemented in the proxied version, this is for implementing the
+  // proxy itself in the host.
+  return false;
 }
 
 void URLLoader::UpdateProgress(
@@ -484,12 +501,13 @@ void PPB_URLLoader_Proxy::OnMsgFollowRedirect(
 }
 
 void PPB_URLLoader_Proxy::OnMsgGetResponseInfo(const HostResource& loader,
-                                               HostResource* result) {
+                                               bool* success,
+                                               URLResponseInfoData* result) {
   EnterHostFromHostResource<PPB_URLLoader_API> enter(loader);
-  if (enter.succeeded()) {
-    result->SetHostResource(loader.instance(),
-                            enter.object()->GetResponseInfo());
-  }
+  if (enter.succeeded())
+    *success = enter.object()->GetResponseInfoData(result);
+  else
+    *success = false;
 }
 
 void PPB_URLLoader_Proxy::OnMsgReadResponseBody(

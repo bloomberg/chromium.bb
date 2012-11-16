@@ -365,6 +365,16 @@
       ],
     },
     {
+      'target_name': 'ppapi_example_url_loader_file',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+      ],
+      'sources': [
+        'examples/url_loader/stream_to_file.cc',
+      ],
+    },
+    {
       'target_name': 'ppapi_example_gles2',
       'dependencies': [
         'ppapi_example_skeleton',

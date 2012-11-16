@@ -79,6 +79,10 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual PP_Resource CreateURLRequestInfo(
       PP_Instance instance,
       const URLRequestInfoData& data) OVERRIDE;
+  virtual PP_Resource CreateURLResponseInfo(
+      PP_Instance instance,
+      const URLResponseInfoData& data,
+      PP_Resource file_ref_resource) OVERRIDE;
   virtual PP_Resource CreateWheelInputEvent(
       PP_Instance instance,
       PP_TimeTicks time_stamp,

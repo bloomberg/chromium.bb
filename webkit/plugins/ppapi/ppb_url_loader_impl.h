@@ -12,6 +12,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/thunk/ppb_url_loader_api.h"
@@ -24,8 +25,6 @@ class WebURL;
 
 namespace webkit {
 namespace ppapi {
-
-class PPB_URLResponseInfo_Impl;
 
 class PPB_URLLoader_Impl : public ::ppapi::Resource,
                            public ::ppapi::thunk::PPB_URLLoader_API,
@@ -64,6 +63,8 @@ class PPB_URLLoader_Impl : public ::ppapi::Resource,
   virtual void GrantUniversalAccess() OVERRIDE;
   virtual void SetStatusCallback(
       PP_URLLoaderTrusted_StatusCallback cb) OVERRIDE;
+  virtual bool GetResponseInfoData(
+      ::ppapi::URLResponseInfoData* data) OVERRIDE;
 
   // WebKit::WebURLLoaderClient implementation.
   virtual void willSendRequest(WebKit::WebURLLoader* loader,
@@ -85,8 +86,6 @@ class PPB_URLLoader_Impl : public ::ppapi::Resource,
                                 double finish_time);
   virtual void didFail(WebKit::WebURLLoader* loader,
                        const WebKit::WebURLError& error);
-
-  PPB_URLResponseInfo_Impl* response_info() const { return response_info_; }
 
   // Returns the number of bytes currently available for synchronous reading
   // in the loader.
@@ -146,7 +145,6 @@ class PPB_URLLoader_Impl : public ::ppapi::Resource,
   // load, etc. since there is no loader.
   scoped_ptr<WebKit::WebURLLoader> loader_;
 
-  scoped_refptr<PPB_URLResponseInfo_Impl> response_info_;
   scoped_refptr< ::ppapi::TrackedCallback> pending_callback_;
   std::deque<char> buffer_;
   int64_t bytes_sent_;
@@ -162,6 +160,12 @@ class PPB_URLLoader_Impl : public ::ppapi::Resource,
   bool has_universal_access_;
 
   PP_URLLoaderTrusted_StatusCallback status_callback_;
+
+  // When the response info is received, this stores the data. The
+  // ScopedResource maintains the reference to the file ref (if any) in the
+  // data object so we don't forget to dereference it.
+  scoped_ptr< ::ppapi::URLResponseInfoData > response_info_;
+  ::ppapi::ScopedPPResource response_info_file_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_URLLoader_Impl);
 };

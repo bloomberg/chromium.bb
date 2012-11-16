@@ -27,7 +27,6 @@ PROXIED_API(PPB_Graphics3D)
 PROXIED_API(PPB_ImageData)
 PROXIED_API(PPB_Instance)
 PROXIED_API(PPB_URLLoader)
-PROXIED_API(PPB_URLResponseInfo)
 
 // AudioConfig isn't proxied in the normal way, we have only local classes and
 // serialize it to a struct when we need it on the host side.
@@ -77,7 +76,7 @@ PROXIED_IFACE(PPB_Instance, PPB_MOUSELOCK_INTERFACE_1_0, PPB_MouseLock_1_0)
 PROXIED_IFACE(PPB_URLLoader, PPB_URLLOADER_INTERFACE_1_0, PPB_URLLoader_1_0)
 PROXIED_IFACE(NoAPIName, PPB_URLREQUESTINFO_INTERFACE_1_0,
               PPB_URLRequestInfo_1_0)
-PROXIED_IFACE(PPB_URLResponseInfo, PPB_URLRESPONSEINFO_INTERFACE_1_0,
+PROXIED_IFACE(NoAPIName, PPB_URLRESPONSEINFO_INTERFACE_1_0,
               PPB_URLResponseInfo_1_0)
 PROXIED_IFACE(NoAPIName, PPB_WEBSOCKET_INTERFACE_1_0, PPB_WebSocket_1_0)
 
