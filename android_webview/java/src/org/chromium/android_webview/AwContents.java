@@ -593,6 +593,7 @@ public class AwContents {
      * @see android.view.View#onSizeChanged()
      */
     public void onSizeChanged(int w, int h, int ow, int oh) {
+        if (mNativeAwContents == 0) return;
         mContentViewCore.onSizeChanged(w, h, ow, oh);
         nativeOnSizeChanged(mNativeAwContents, w, h, ow, oh);
     }
