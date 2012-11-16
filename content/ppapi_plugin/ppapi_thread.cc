@@ -17,6 +17,7 @@
 #include "content/ppapi_plugin/plugin_process_dispatcher.h"
 #include "content/ppapi_plugin/ppapi_webkitplatformsupport_impl.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/plugin/content_plugin_client.h"
 #include "ipc/ipc_channel_handle.h"
@@ -52,7 +53,6 @@ typedef int32_t (*InitializeBrokerFunc)
 
 PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
     : is_broker_(is_broker),
-      get_plugin_interface_(NULL),
       connect_instance_func_(NULL),
       local_pp_module_(
           base::RandInt(0, std::numeric_limits<PP_Module>::max())),
@@ -68,19 +68,8 @@ PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
 
 PpapiThread::~PpapiThread() {
   ppapi::proxy::PluginGlobals::Get()->set_plugin_proxy_delegate(NULL);
-
-  if (!library_.is_valid())
-    return;
-
-  // The ShutdownModule/ShutdownBroker function is optional.
-  PP_ShutdownModule_Func shutdown_function =
-      is_broker_ ?
-      reinterpret_cast<PP_ShutdownModule_Func>(
-          library_.GetFunctionPointer("PPP_ShutdownBroker")) :
-      reinterpret_cast<PP_ShutdownModule_Func>(
-          library_.GetFunctionPointer("PPP_ShutdownModule"));
-  if (shutdown_function)
-    shutdown_function();
+  if (plugin_entry_points_.shutdown_module)
+    plugin_entry_points_.shutdown_module();
   WebKit::shutdown();
 }
 
@@ -220,9 +209,60 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path,
   // This must be set before calling into the plugin so it can get the
   // interfaces it has permission for.
   ppapi::proxy::InterfaceList::SetProcessGlobalPermissions(permissions);
+  permissions_ = permissions;
 
-  std::string error;
-  base::ScopedNativeLibrary library(base::LoadNativeLibrary(path, &error));
+  // Trusted Pepper plugins may be "internal", i.e. built-in to the browser
+  // binary.  If we're being asked to load such a plugin (e.g. the Chromoting
+  // client) then fetch the entry points from the embedder, rather than a DLL.
+  std::vector<content::PepperPluginInfo> plugins;
+  GetContentClient()->AddPepperPlugins(&plugins);
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    if (plugins[i].is_internal && plugins[i].path == path) {
+      // An internal plugin is being loaded, so fetch the entry points.
+      plugin_entry_points_ = plugins[i].internal_entry_points;
+    }
+  }
+
+  // If the plugin isn't internal then load it from |path|.
+  base::ScopedNativeLibrary library;
+  if (plugin_entry_points_.initialize_module == NULL) {
+    // Load the plugin from the specified library.
+    std::string error;
+    library.Reset(base::LoadNativeLibrary(path, &error));
+    if (!library.is_valid()) {
+      LOG(ERROR) << "Failed to load Pepper module from "
+        << path.value() << " (error: " << error << ")";
+      return;
+    }
+
+    // Get the GetInterface function (required).
+    plugin_entry_points_.get_interface =
+        reinterpret_cast<PP_GetInterface_Func>(
+            library.GetFunctionPointer("PPP_GetInterface"));
+    if (!plugin_entry_points_.get_interface) {
+      LOG(WARNING) << "No PPP_GetInterface in plugin library";
+      return;
+    }
+
+    // The ShutdownModule/ShutdownBroker function is optional.
+    plugin_entry_points_.shutdown_module =
+        is_broker_ ?
+        reinterpret_cast<PP_ShutdownModule_Func>(
+            library.GetFunctionPointer("PPP_ShutdownBroker")) :
+        reinterpret_cast<PP_ShutdownModule_Func>(
+            library.GetFunctionPointer("PPP_ShutdownModule"));
+
+    if (!is_broker_) {
+      // Get the InitializeModule function (required for non-broker code).
+      plugin_entry_points_.initialize_module =
+          reinterpret_cast<PP_InitializeModule_Func>(
+              library.GetFunctionPointer("PPP_InitializeModule"));
+      if (!plugin_entry_points_.initialize_module) {
+        LOG(WARNING) << "No PPP_InitializeModule in plugin library";
+        return;
+      }
+    }
+  }
 
 #if defined(OS_WIN)
   // Once we lower the token the sandbox is locked down and no new modules
@@ -239,20 +279,6 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path,
     g_target_services->LowerToken();
   }
 #endif
-
-  if (!library.is_valid()) {
-    LOG(ERROR) << "Failed to load Pepper module from "
-      << path.value() << " (error: " << error << ")";
-    return;
-  }
-
-  // Get the GetInterface function (required).
-  get_plugin_interface_ = reinterpret_cast<PP_GetInterface_Func>(
-      library.GetFunctionPointer("PPP_GetInterface"));
-  if (!get_plugin_interface_) {
-    LOG(WARNING) << "No PPP_GetInterface in plugin library";
-    return;
-  }
 
   if (is_broker_) {
     // Get the InitializeBroker function (required).
@@ -283,15 +309,7 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path,
     }
 #endif
 
-    // Get the InitializeModule function (required for non-broker code).
-    PP_InitializeModule_Func init_module =
-        reinterpret_cast<PP_InitializeModule_Func>(
-            library.GetFunctionPointer("PPP_InitializeModule"));
-    if (!init_module) {
-      LOG(WARNING) << "No PPP_InitializeModule in plugin library";
-      return;
-    }
-    int32_t init_error = init_module(
+    int32_t init_error = plugin_entry_points_.initialize_module(
         local_pp_module_,
         &ppapi::proxy::PluginDispatcher::GetBrowserInterface);
     if (init_error != PP_OK) {
@@ -300,14 +318,14 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path,
     }
   }
 
+  // Initialization succeeded, so keep the plugin DLL loaded.
   library_.Reset(library.Release());
-
-  permissions_ = permissions;
 }
 
 void PpapiThread::OnMsgCreateChannel(int renderer_id, bool incognito) {
   IPC::ChannelHandle channel_handle;
-  if (!library_.is_valid() ||  // Plugin couldn't be loaded.
+
+  if (!plugin_entry_points_.get_interface ||  // Plugin couldn't be loaded.
       !SetupRendererChannel(renderer_id, incognito, &channel_handle)) {
     Send(new PpapiHostMsg_ChannelCreated(IPC::ChannelHandle()));
     return;
@@ -324,10 +342,10 @@ void PpapiThread::OnMsgResourceReply(
 }
 
 void PpapiThread::OnMsgSetNetworkState(bool online) {
-  if (!get_plugin_interface_)
+  if (!plugin_entry_points_.get_interface)
     return;
   const PPP_NetworkState_Dev* ns = static_cast<const PPP_NetworkState_Dev*>(
-      get_plugin_interface_(PPP_NETWORK_STATE_DEV_INTERFACE));
+      plugin_entry_points_.get_interface(PPP_NETWORK_STATE_DEV_INTERFACE));
   if (ns)
     ns->SetOnLine(PP_FromBool(online));
 }
@@ -358,7 +376,7 @@ bool PpapiThread::SetupRendererChannel(int renderer_id,
   bool init_result = false;
   if (is_broker_) {
     BrokerProcessDispatcher* broker_dispatcher =
-        new BrokerProcessDispatcher(get_plugin_interface_,
+        new BrokerProcessDispatcher(plugin_entry_points_.get_interface,
                                     connect_instance_func_);
     init_result = broker_dispatcher->InitBrokerWithChannel(this,
                                                            plugin_handle,
@@ -366,7 +384,7 @@ bool PpapiThread::SetupRendererChannel(int renderer_id,
     dispatcher = broker_dispatcher;
   } else {
     PluginProcessDispatcher* plugin_dispatcher =
-        new PluginProcessDispatcher(get_plugin_interface_,
+        new PluginProcessDispatcher(plugin_entry_points_.get_interface,
                                     permissions_,
                                     incognito);
     init_result = plugin_dispatcher->InitPluginWithChannel(this,

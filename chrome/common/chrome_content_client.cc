@@ -105,6 +105,8 @@ const char kRemotingViewerPluginMimeType[] =
     "application/vnd.chromium.remoting-viewer";
 const char kRemotingViewerPluginMimeExtension[] = "";
 const char kRemotingViewerPluginMimeDescription[] = "";
+const uint32 kRemotingViewerPluginPermissions = ppapi::PERMISSION_PRIVATE |
+                                                ppapi::PERMISSION_DEV;
 #endif  // defined(ENABLE_REMOTING)
 
 const char kInterposeLibraryPath[] =
@@ -231,6 +233,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
 #if defined(ENABLE_REMOTING)
   content::PepperPluginInfo info;
   info.is_internal = true;
+  info.is_out_of_process = true;
   info.name = kRemotingViewerPluginName;
   info.description = kRemotingViewerPluginDescription;
   info.path = FilePath(kRemotingViewerPluginPath);
@@ -243,6 +246,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   info.internal_entry_points.initialize_module =
       remoting::PPP_InitializeModule;
   info.internal_entry_points.shutdown_module = remoting::PPP_ShutdownModule;
+  info.permissions = kRemotingViewerPluginPermissions;
 
   plugins->push_back(info);
 #endif

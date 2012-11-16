@@ -20,6 +20,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
@@ -99,7 +100,8 @@ class PpapiThread : public ChildThread,
   // Global state tracking for the proxy.
   ppapi::proxy::PluginGlobals plugin_globals_;
 
-  PP_GetInterface_Func get_plugin_interface_;
+  // Storage for plugin entry points.
+  webkit::ppapi::PluginModule::EntryPoints plugin_entry_points_;
 
   // Callback to call when a new instance connects to the broker.
   // Used only when is_broker_.

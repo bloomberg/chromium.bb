@@ -15,6 +15,10 @@ class CONTENT_EXPORT ContentPluginClient {
  public:
   virtual ~ContentPluginClient() {}
 
+  // Called to perform any per-process initialization necessary before
+  // the sandbox is initialized for the plugin process.
+  virtual void PreSandboxInitialization() {}
+
   // Notifies that a plugin process has started.
   virtual void PluginProcessStarted(const string16& plugin_name) {}
 };

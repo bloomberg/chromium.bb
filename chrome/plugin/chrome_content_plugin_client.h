@@ -12,6 +12,7 @@ namespace chrome {
 
 class ChromeContentPluginClient : public content::ContentPluginClient {
  public:
+  virtual void PreSandboxInitialization() OVERRIDE;
   virtual void PluginProcessStarted(const string16& plugin_name) OVERRIDE;
 };
 
