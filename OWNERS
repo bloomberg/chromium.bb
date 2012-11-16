@@ -1,5 +1,6 @@
 darin@chromium.org
 ben@chromium.org
+per-file .gitignore=*
 per-file DEPS=*
 per-file AUTHORS=*
 per-file WATCHLISTS=*
