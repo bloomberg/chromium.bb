@@ -2503,6 +2503,17 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       RenderViewObserver, observers_, WillCreateMediaPlayer(frame, client));
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+#if defined(ENABLE_WEBRTC)
+  // TODO(wjia): when all patches related to WebMediaPlayerMS have been
+  // landed, remove the switch. Refer to crbug.com/142988.
+  if (!cmd_line->HasSwitch(switches::kDisableWebMediaPlayerMS) &&
+      MediaStreamImpl::CheckMediaStream(url)) {
+    EnsureMediaStreamImpl();
+    return new webkit_media::WebMediaPlayerMS(
+        frame, client, AsWeakPtr(), media_stream_impl_, new RenderMediaLog());
+  }
+#endif
+
 #if defined(OS_ANDROID)
   WebGraphicsContext3D* resource_context =
       GetWebView()->sharedGraphicsContext3D();
@@ -2590,17 +2601,6 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
           audio_source_provider, message_loop_factory, media_stream_impl_,
           render_media_log);
   if (!media_player) {
-#if defined(ENABLE_WEBRTC)
-    // TODO(wjia): when all patches related to WebMediaPlayerMS have been
-    // landed, remove the switch. Refer to crbug.com/142988.
-    if (!cmd_line->HasSwitch(switches::kDisableWebMediaPlayerMS) &&
-        MediaStreamImpl::CheckMediaStream(url)) {
-      EnsureMediaStreamImpl();
-      return new webkit_media::WebMediaPlayerMS(
-          frame, client, AsWeakPtr(), media_stream_impl_, render_media_log);
-    }
-#endif
-
     media_player = new webkit_media::WebMediaPlayerImpl(
         frame, client, AsWeakPtr(), collection, audio_source_provider,
         audio_source_provider, message_loop_factory, media_stream_impl_,
