@@ -160,8 +160,7 @@ struct weston_output {
 	int32_t mm_width, mm_height;
 	struct weston_border border;
 	pixman_region32_t region;
-	int current_buffer;
-	pixman_region32_t buffer_damage[2];
+	pixman_region32_t previous_damage;
 	int repaint_needed;
 	int repaint_scheduled;
 	struct weston_output_zoom zoom;

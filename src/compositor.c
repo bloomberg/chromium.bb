@@ -2578,13 +2578,9 @@ WL_EXPORT void
 weston_output_destroy(struct weston_output *output)
 {
 	struct weston_compositor *c = output->compositor;
-	int i;
 
 	pixman_region32_fini(&output->region);
-
-	for (i = 0; i < 2; i++)
-		pixman_region32_fini(&output->buffer_damage[i]);
-
+	pixman_region32_fini(&output->previous_damage);
 	output->compositor->output_id_pool &= ~(1 << output->id);
 
 	wl_display_remove_global(c->wl_display, output->global);
@@ -2708,15 +2704,10 @@ weston_output_transform_init(struct weston_output *output, uint32_t transform)
 WL_EXPORT void
 weston_output_move(struct weston_output *output, int x, int y)
 {
-	int i;
-
 	output->x = x;
 	output->y = y;
 
-	output->current_buffer = 0;
-	for (i = 0; i < 2; i++)
-		pixman_region32_init(&output->buffer_damage[i]);
-
+	pixman_region32_init(&output->previous_damage);
 	pixman_region32_init_rect(&output->region, x, y,
 				  output->width,
 				  output->height);

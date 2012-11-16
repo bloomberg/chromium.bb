@@ -310,7 +310,7 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 	struct weston_output *output = data;
 	uint32_t msecs = output->frame_time;
 	pixman_box32_t *r;
-	pixman_region32_t damage, *previous_damage;
+	pixman_region32_t damage;
 	int i, j, k, n, width, height, run, stride;
 	uint32_t delta, prev, *d, *s, *p, next;
 	struct {
@@ -319,18 +319,9 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 	} header;
 	struct iovec v[2];
 
-	/* When recording, this will be exactly the region that was repainted
-	 * in this frame. Since overlays are disabled, the whole primary plane
-	 * damage is rendered. For the first frame, the whole output will be
-	 * damaged and that damage will be added to both buffers causing the
-	 * non-current buffer damage to be while output. Rendering will clear
-	 * all the damage in the current buffer so in the next frame (when
-	 * that is non-current) the only damage left will be the one added
-	 * from the primary plane. */
-	previous_damage = &output->buffer_damage[output->current_buffer ^ 1];
-
 	pixman_region32_init(&damage);
-	pixman_region32_intersect(&damage, &output->region, previous_damage);
+	pixman_region32_intersect(&damage, &output->region,
+				  &output->previous_damage);
 
 	r = pixman_region32_rectangles(&damage, &n);
 	if (n == 0)

@@ -48,6 +48,8 @@ struct gl_shader {
 
 struct gl_output_state {
 	EGLSurface egl_surface;
+	int current_buffer;
+	pixman_region32_t buffer_damage[2];
 };
 
 struct gl_surface_state {
@@ -723,6 +725,7 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	struct weston_compositor *ec = es->compositor;
 	struct gl_renderer *gr = get_renderer(ec);
 	struct gl_surface_state *gs = get_surface_state(es);
+	struct gl_output_state *go = get_output_state(output);
 	/* repaint bounding region in global coordinates: */
 	pixman_region32_t repaint;
 	/* non-opaque region in surface coordinates: */
@@ -739,7 +742,7 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	if (!pixman_region32_not_empty(&repaint))
 		goto out;
 
-	buffer_damage = &output->buffer_damage[output->current_buffer];
+	buffer_damage = &go->buffer_damage[go->current_buffer];
 	pixman_region32_subtract(buffer_damage, buffer_damage, &repaint);
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -963,18 +966,19 @@ gl_renderer_repaint_output(struct weston_output *output,
 	}
 
 	for (i = 0; i < 2; i++)
-		pixman_region32_union(&output->buffer_damage[i],
-				      &output->buffer_damage[i],
+		pixman_region32_union(&go->buffer_damage[i],
+				      &go->buffer_damage[i],
 				      output_damage);
 
 	pixman_region32_union(output_damage, output_damage,
-			      &output->buffer_damage[output->current_buffer]);
+			      &go->buffer_damage[go->current_buffer]);
 
 	repaint_surfaces(output, output_damage);
 
 	if (gr->border.texture)
 		draw_border(output);
 
+	pixman_region32_copy(&output->previous_damage, output_damage);
 	wl_signal_emit(&output->frame_signal, output);
 
 	ret = eglSwapBuffers(gr->egl_display, go->egl_surface);
@@ -984,7 +988,7 @@ gl_renderer_repaint_output(struct weston_output *output,
 		print_egl_error_state();
 	}
 
-	output->current_buffer ^= 1;
+	go->current_buffer ^= 1;
 
 }
 
@@ -1552,6 +1556,7 @@ gl_renderer_output_create(struct weston_output *output,
 	struct weston_compositor *ec = output->compositor;
 	struct gl_renderer *gr = get_renderer(ec);
 	struct gl_output_state *go = calloc(1, sizeof *go);
+	int i;
 
 	if (!go)
 		return -1;
@@ -1573,6 +1578,10 @@ gl_renderer_output_create(struct weston_output *output,
 			return -1;
 		}
 
+	go->current_buffer = 0;
+	for (i = 0; i < 2; i++)
+		pixman_region32_init(&go->buffer_damage[i]);
+
 	output->renderer_state = go;
 
 	output_apply_border(output, gr);
@@ -1585,6 +1594,10 @@ gl_renderer_output_destroy(struct weston_output *output)
 {
 	struct gl_renderer *gr = get_renderer(output->compositor);
 	struct gl_output_state *go = get_output_state(output);
+	int i;
+
+	for (i = 0; i < 2; i++)
+		pixman_region32_fini(&go->buffer_damage[i]);
 
 	eglDestroySurface(gr->egl_display, go->egl_surface);
 
