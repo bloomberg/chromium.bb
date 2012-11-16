@@ -507,6 +507,8 @@
         'browser/chromeos/network_message_observer.h',
         'browser/chromeos/network_settings/onc_mapper.cc',
         'browser/chromeos/network_settings/onc_mapper.h',
+        'browser/chromeos/network_settings/onc_merger.cc',
+        'browser/chromeos/network_settings/onc_merger.h',
         'browser/chromeos/network_settings/onc_normalizer.cc',
         'browser/chromeos/network_settings/onc_normalizer.h',
         'browser/chromeos/network_settings/onc_signature.cc',

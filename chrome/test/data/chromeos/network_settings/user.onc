@@ -1,0 +1,21 @@
+{ "Type": "Ethernet",
+  "Name": "testopenvpn",
+  "VPN": {
+    "Host": "users host",
+    "Type": "OpenVPN",
+    "OpenVPN": {
+      "Port": 1195,
+      "Password": "users password"
+    }
+  },
+  "ProxySettings": {
+    "Type": "Direct"
+  },
+  "IPConfigs": [
+    { "Type": "IPv4",
+      "IPAddress": "127.0.0.1",
+      "SearchDomains": [ "acme.org" ] },
+    { "Type": "IPv4",
+      "IPAddress": "1.2.3.4" }
+  ]
+}
