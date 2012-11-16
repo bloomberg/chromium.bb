@@ -76,18 +76,18 @@ void ZoomController::OnPreferenceChanged(PrefServiceBase* service,
 }
 
 void ZoomController::UpdateState(const std::string& host) {
-  if (host.empty())
-    return;
-
   CHECK(web_contents());  // http://crbug.com/144879
 
-  // Use the active navigation entry's URL instead of the WebContents' so
-  // virtual URLs work (e.g. chrome://settings). http://crbug.com/153950
-  content::NavigationEntry* active_entry =
-      web_contents()->GetController().GetActiveEntry();
-  if (!active_entry ||
-      host != net::GetHostOrSpecFromURL(active_entry->GetURL())) {
-    return;
+  // If |host| is empty, all observers should be updated.
+  if (!host.empty()) {
+    // Use the active navigation entry's URL instead of the WebContents' so
+    // virtual URLs work (e.g. chrome://settings). http://crbug.com/153950
+    content::NavigationEntry* active_entry =
+        web_contents()->GetController().GetActiveEntry();
+    if (!active_entry ||
+        host != net::GetHostOrSpecFromURL(active_entry->GetURL())) {
+      return;
+    }
   }
 
   bool dummy;
