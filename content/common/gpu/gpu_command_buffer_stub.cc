@@ -326,8 +326,15 @@ void GpuCommandBufferStub::Destroy() {
 
   command_buffer_.reset();
 
-  context_ = NULL;
+  // Make sure that context_ is current while we destroy surface_, because
+  // surface_ may have GL resources that it needs to destroy, and will need
+  // context_ to be current in order to not leak these resources.
+  if (context_.get())
+    context_->MakeCurrent(surface_.get());
   surface_ = NULL;
+
+  // Destroy context_, now that we have destroyed surface_.
+  context_ = NULL;
 }
 
 void GpuCommandBufferStub::OnInitializeFailed(IPC::Message* reply_message) {

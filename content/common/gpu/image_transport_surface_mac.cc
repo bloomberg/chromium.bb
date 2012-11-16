@@ -151,15 +151,7 @@ bool IOSurfaceImageTransportSurface::Initialize() {
 }
 
 void IOSurfaceImageTransportSurface::Destroy() {
-  if (fbo_id_) {
-    glDeleteFramebuffersEXT(1, &fbo_id_);
-    fbo_id_ = 0;
-  }
-
-  if (texture_id_) {
-    glDeleteTextures(1, &texture_id_);
-    texture_id_ = 0;
-  }
+  UnrefIOSurface();
 
   helper_->Destroy();
   NoOpGLSurfaceCGL::Destroy();
@@ -304,7 +296,13 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
 }
 
 void IOSurfaceImageTransportSurface::UnrefIOSurface() {
-  DCHECK(context_->IsCurrent(this));
+  // If we have resources to destroy, then make sure that we have a current
+  // context which we can use to delete the resources.
+  if (context_ || fbo_id_ || texture_id_) {
+    DCHECK(gfx::GLContext::GetCurrent() == context_);
+    DCHECK(context_->IsCurrent(this));
+    DCHECK(CGLGetCurrentContext());
+  }
 
   if (fbo_id_) {
     glDeleteFramebuffersEXT(1, &fbo_id_);
