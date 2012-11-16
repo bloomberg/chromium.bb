@@ -7,6 +7,7 @@
 #include "ui/message_center/base_format_view.h"
 #include "ui/message_center/message_simple_view.h"
 #include "ui/message_center/message_view.h"
+#include "ui/message_center/message_view_multiple.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/notifications/notification_types.h"
 
@@ -19,6 +20,8 @@ MessageView* MessageViewFactory::ViewForNotification(
   switch (notification.type) {
     case ui::notifications::NOTIFICATION_TYPE_BASE_FORMAT:
       return new BaseFormatView(list_delegate, notification);
+    case ui::notifications::NOTIFICATION_TYPE_MULTIPLE:
+      return new MessageViewMultiple(list_delegate, notification);
     case ui::notifications::NOTIFICATION_TYPE_SIMPLE:
       return new MessageSimpleView(list_delegate, notification);
 

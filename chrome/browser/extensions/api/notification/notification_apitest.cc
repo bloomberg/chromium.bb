@@ -84,3 +84,30 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestBaseFormatNotification) {
 
   // TODO(miket): confirm that the show succeeded.
 }
+
+IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestMultipleItemNotification) {
+  scoped_refptr<extensions::NotificationShowFunction>
+      notification_show_function(new extensions::NotificationShowFunction());
+  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+
+  notification_show_function->set_extension(empty_extension.get());
+  notification_show_function->set_has_callback(true);
+
+  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+      notification_show_function,
+      "[{"
+      "\"notificationType\": \"multiple\","
+      "\"iconUrl\": \"https://code.google.com/p/chromium/logo\","
+      "\"title\": \"Multiple Item Notification Title\","
+      "\"message\": \"Multiple item notification message.\","
+      "\"priority\": 1,"
+      "\"timestamp\": \"Fri, 16 Nov 2012 01:17:15 GMT\","
+      "\"replaceId\": \"12345678\""
+      "}]",
+      browser(), utils::NONE));
+  // TODO(dharcourt): [...], items = [{title: foo, message: bar}, ...], [...]
+
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
+
+  // TODO(dharcourt): confirm that the show succeeded.
+}

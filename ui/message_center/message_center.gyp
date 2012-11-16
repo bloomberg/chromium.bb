@@ -41,6 +41,8 @@
         'message_view.h',
         'message_view_factory.cc',
         'message_view_factory.h',
+        'message_view_multiple.cc',
+        'message_view_multiple.h',
         'notification_list.cc',
         'notification_list.h',
       ],

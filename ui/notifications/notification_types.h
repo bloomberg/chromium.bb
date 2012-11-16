@@ -29,6 +29,7 @@ UI_EXPORT extern const char kImageUrlKey[];
 enum NotificationType {
   NOTIFICATION_TYPE_SIMPLE,
   NOTIFICATION_TYPE_BASE_FORMAT,
+  NOTIFICATION_TYPE_MULTIPLE,
 };
 
 UI_EXPORT NotificationType StringToNotificationType(std::string& string_type);

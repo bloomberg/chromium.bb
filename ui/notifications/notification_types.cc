@@ -22,12 +22,15 @@ const char kImageUrlKey[] = "image_url";
 
 const char kSimpleType[] = "simple";
 const char kBaseFormatType[] = "base";
+const char kMultipleType[] = "multiple";
 
 NotificationType StringToNotificationType(std::string& string_type) {
   if (string_type == kSimpleType)
     return NOTIFICATION_TYPE_SIMPLE;
   if (string_type == kBaseFormatType)
     return NOTIFICATION_TYPE_BASE_FORMAT;
+  if (string_type == kMultipleType)
+    return NOTIFICATION_TYPE_MULTIPLE;
 
   // In case of unrecognized string, fall back to most common type.
   return NOTIFICATION_TYPE_SIMPLE;

@@ -23,6 +23,14 @@ namespace message_center {
 // A helper class to manage the list of notifications.
 class MESSAGE_CENTER_EXPORT NotificationList {
  public:
+  struct MESSAGE_CENTER_EXPORT NotificationItem {
+    string16 title;
+    string16 message;
+    NotificationItem(string16 title, string16 message)
+        : title(title),
+          message(message) {}
+  };
+
   struct MESSAGE_CENTER_EXPORT Notification {
     Notification();
     virtual ~Notification();
@@ -46,6 +54,7 @@ class MESSAGE_CENTER_EXPORT NotificationList {
     string16 button_two_intent;
     string16 expanded_message;
     string16 image_url;
+    std::vector<NotificationItem>* items;
     // End unpacked values
 
     gfx::ImageSkia image;
