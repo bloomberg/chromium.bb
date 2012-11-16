@@ -115,7 +115,7 @@ class NetworkStateHandlerTest : public testing::Test {
     test_observer_.reset(new TestObserver);
     network_state_handler_.reset(new NetworkStateHandler);
     network_state_handler_->AddObserver(test_observer_.get());
-    network_state_handler_->Init();
+    network_state_handler_->InitShillPropertyHandler();
   }
 
  protected:

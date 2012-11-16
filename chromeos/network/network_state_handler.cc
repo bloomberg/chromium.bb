@@ -16,6 +16,8 @@
 
 namespace chromeos {
 
+static NetworkStateHandler* g_network_state_handler = NULL;
+
 NetworkStateHandler::NetworkStateHandler() {
 }
 
@@ -24,9 +26,30 @@ NetworkStateHandler::~NetworkStateHandler() {
   STLDeleteContainerPointers(device_list_.begin(), device_list_.end());
 }
 
-void NetworkStateHandler::Init() {
+void NetworkStateHandler::InitShillPropertyHandler() {
   shill_property_handler_.reset(new internal::ShillPropertyHandler(this));
   shill_property_handler_->Init();
+}
+
+// static
+void NetworkStateHandler::Initialize() {
+  CHECK(!g_network_state_handler);
+  g_network_state_handler = new NetworkStateHandler();
+  g_network_state_handler->InitShillPropertyHandler();
+}
+
+// static
+void NetworkStateHandler::Shutdown() {
+  CHECK(g_network_state_handler);
+  delete g_network_state_handler;
+  g_network_state_handler = NULL;
+}
+
+// static
+NetworkStateHandler* NetworkStateHandler::Get() {
+  CHECK(g_network_state_handler)
+      << "NetworkStateHandler::Get() called before Initialize()";
+  return g_network_state_handler;
 }
 
 void NetworkStateHandler::AddObserver(NetworkStateHandlerObserver* observer) {
@@ -348,7 +371,7 @@ ManagedState* NetworkStateHandler::GetModifiableManagedState(
 
 NetworkStateHandler::ManagedStateList* NetworkStateHandler::GetManagedList(
     ManagedState::ManagedType type) {
-  switch(type) {
+  switch (type) {
     case ManagedState::MANAGED_TYPE_NETWORK:
       return &network_list_;
     case ManagedState::MANAGED_TYPE_DEVICE:

@@ -6580,6 +6580,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_MEMORY_MONITOR_DESCRIPTION" desc="Title for the flag to enable advanced gestures.">
         Enables visual memory monitor in status area.
       </message>
+      <message name="IDS_FLAGS_ENABLE_NEW_NETWORK_HANDLERS_NAME" desc="Title for the flag to enable using the new network handlers.">
+        Enable new network handlers
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NEW_NETWORK_HANDLERS_DESCRIPTION" desc="Title for the flag to enable using the new Network State Handler.">
+        Enables the new network handlers which handle Shill communication without using NetworkLibrary.
+      </message>
 
       <message name="IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT" desc="Generic 'Default' experiment choice option name. E.G. shown in multi value options in about:flags.">
         Default

@@ -39,6 +39,10 @@
 #include "ui/aura/aura_switches.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 using content::UserMetricsAction;
 
 namespace about_flags {
@@ -1010,6 +1014,12 @@ const Experiment kExperiments[] = {
 #endif
 #endif
 #if defined(OS_CHROMEOS)
+  { "enable-new-network-handlers",
+    IDS_FLAGS_ENABLE_NEW_NETWORK_HANDLERS_NAME,
+    IDS_FLAGS_ENABLE_NEW_NETWORK_HANDLERS_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnableNewNetworkHandlers),
+  },
   {
     "enable-carrier-switching",
     IDS_FLAGS_ENABLE_CARRIER_SWITCHING,

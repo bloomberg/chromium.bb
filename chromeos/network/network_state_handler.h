@@ -28,6 +28,7 @@ namespace chromeos {
 class DeviceState;
 class NetworkState;
 class NetworkStateHandlerObserver;
+class NetworkStateHandlerTest;
 
 // Class for tracking the list of visible networks and their state.
 //
@@ -45,11 +46,16 @@ class CHROMEOS_EXPORT NetworkStateHandler
   typedef std::vector<ManagedState*> ManagedStateList;
   typedef std::vector<const NetworkState*> NetworkStateList;
 
-  NetworkStateHandler();
   virtual ~NetworkStateHandler();
 
-  // Initialize ShillPropertyHandler.
-  void Init();
+  // Sets the global instance. Must be called before any calls to Get().
+  static void Initialize();
+
+  // Destroys the global instance.
+  static void Shutdown();
+
+  // Gets the global instance. Initialize() must be called first.
+  static NetworkStateHandler* Get();
 
   // Add/remove observers.
   void AddObserver(NetworkStateHandlerObserver* observer);
@@ -145,7 +151,15 @@ class CHROMEOS_EXPORT NetworkStateHandler
   virtual void ManagedStateListChanged(
       ManagedState::ManagedType type) OVERRIDE;
 
-private:
+ protected:
+  NetworkStateHandler();
+
+  // Called in Initialize(). Called explicitly by tests after adding
+  // test observers.
+  void InitShillPropertyHandler();
+
+ private:
+  friend class NetworkStateHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest, NetworkStateHandlerStub);
 
   // Non-const getters for managed entries. These are const so that they can

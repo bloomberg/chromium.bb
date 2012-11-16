@@ -73,12 +73,14 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/display/output_configurator.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/power/power_state_override.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/main_function_params.h"
@@ -166,12 +168,12 @@ class StubLogin : public LoginStatusConsumer,
 
 void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
                                        Profile* profile) {
-  if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
+  if (parsed_command_line.HasSwitch(::switches::kLoginManager)) {
     std::string first_screen =
-        parsed_command_line.GetSwitchValueASCII(switches::kLoginScreen);
+        parsed_command_line.GetSwitchValueASCII(::switches::kLoginScreen);
     std::string size_arg =
         parsed_command_line.GetSwitchValueASCII(
-            switches::kLoginScreenSize);
+            ::switches::kLoginScreenSize);
     gfx::Size size(0, 0);
     // Allow the size of the login window to be set explicitly. If not set,
     // default to the entire screen. This is mostly useful for testing.
@@ -190,14 +192,14 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
 
     if (KioskModeSettings::Get()->IsKioskModeEnabled())
       InitializeKioskModeScreensaver();
-  } else if (parsed_command_line.HasSwitch(switches::kLoginUser) &&
-      parsed_command_line.HasSwitch(switches::kLoginPassword)) {
+  } else if (parsed_command_line.HasSwitch(::switches::kLoginUser) &&
+             parsed_command_line.HasSwitch(::switches::kLoginPassword)) {
     BootTimesLoader::Get()->RecordLoginAttempted();
     new StubLogin(
-        parsed_command_line.GetSwitchValueASCII(switches::kLoginUser),
-        parsed_command_line.GetSwitchValueASCII(switches::kLoginPassword));
+        parsed_command_line.GetSwitchValueASCII(::switches::kLoginUser),
+        parsed_command_line.GetSwitchValueASCII(::switches::kLoginPassword));
   } else {
-    if (!parsed_command_line.HasSwitch(switches::kTestName)) {
+    if (!parsed_command_line.HasSwitch(::switches::kTestName)) {
       // We did not log in (we crashed or are debugging), so we need to
       // restore Sync.
       LoginUtils::Get()->RestoreAuthenticationSession(profile);
@@ -215,7 +217,8 @@ namespace internal {
 class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters)
-      : cros_initialized_(false) {
+      : cros_initialized_(false),
+        network_handlers_initialized_(false) {
     // Initialize CrosLibrary only for the browser, unless running tests
     // (which do their own CrosLibrary setup).
     if (!parameters.ui_task) {
@@ -228,6 +231,7 @@ class DBusServices {
     // the main message loop is started, as it uses the message loop.
     DBusThreadManager::Initialize();
     CrosDBusService::Initialize();
+
     // This function and SystemKeyEventListener use InputMethodManager.
     input_method::InputMethodManager::Initialize();
     disks::DiskMountManager::Initialize();
@@ -258,6 +262,17 @@ class DBusServices {
     WallpaperManager::Get()->AddObservers();
   }
 
+  // TODO(stevenjb): Move this into DBusServices() once the switch is no
+  // longer required. (Switch is set in about_flags.cc and not applied until
+  // after DBusServices() is called).
+  void InitializeNetworkHandlers() {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kEnableNewNetworkHandlers))
+      return;
+    chromeos::NetworkStateHandler::Initialize();
+    network_handlers_initialized_ = true;
+  }
+
   ~DBusServices() {
     // CrosLibrary is shut down before DBusThreadManager even though it
     // is initialized first becuase some of its libraries depend on DBus
@@ -266,6 +281,10 @@ class DBusServices {
     // (crosbug.com/26160)
     if (cros_initialized_ && CrosLibrary::Get())
       CrosLibrary::Shutdown();
+
+    if (network_handlers_initialized_)
+      chromeos::NetworkStateHandler::Shutdown();
+
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
     input_method::InputMethodManager::Shutdown();
@@ -276,6 +295,7 @@ class DBusServices {
 
  private:
   bool cros_initialized_;
+  bool network_handlers_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };
@@ -286,8 +306,7 @@ class DBusServices {
 
 ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
     const content::MainFunctionParams& parameters)
-    : ChromeBrowserMainPartsLinux(parameters),
-      did_post_main_message_loop_start_(false) {
+    : ChromeBrowserMainPartsLinux(parameters) {
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
@@ -307,10 +326,10 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
 void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
   CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
 
-  if (parsed_command_line().HasSwitch(switches::kGuestSession)) {
+  if (parsed_command_line().HasSwitch(::switches::kGuestSession)) {
     // Disable sync and extensions if we're in "browse without sign-in" mode.
-    singleton_command_line->AppendSwitch(switches::kDisableSync);
-    singleton_command_line->AppendSwitch(switches::kDisableExtensions);
+    singleton_command_line->AppendSwitch(::switches::kDisableSync);
+    singleton_command_line->AppendSwitch(::switches::kDisableExtensions);
     browser_defaults::bookmarks_enabled = false;
   }
 
@@ -318,19 +337,19 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
   // showing the login manager or attempting a command line login, login with a
   // stub user.
   if (!base::chromeos::IsRunningOnChromeOS() &&
-      !parsed_command_line().HasSwitch(switches::kLoginManager) &&
-      !parsed_command_line().HasSwitch(switches::kLoginUser) &&
-      !parsed_command_line().HasSwitch(switches::kGuestSession)) {
+      !parsed_command_line().HasSwitch(::switches::kLoginManager) &&
+      !parsed_command_line().HasSwitch(::switches::kLoginUser) &&
+      !parsed_command_line().HasSwitch(::switches::kGuestSession)) {
     singleton_command_line->AppendSwitchASCII(
-        switches::kLoginUser, UserManager::kStubUser);
-    if (!parsed_command_line().HasSwitch(switches::kLoginProfile)) {
+        ::switches::kLoginUser, UserManager::kStubUser);
+    if (!parsed_command_line().HasSwitch(::switches::kLoginProfile)) {
       // This must be kept in sync with TestingProfile::kTestUserProfileDir.
       singleton_command_line->AppendSwitchASCII(
-          switches::kLoginProfile, "test-user");
+          ::switches::kLoginProfile, "test-user");
     }
     LOG(INFO) << "Running as stub user with profile dir: "
               << singleton_command_line->GetSwitchValuePath(
-                     switches::kLoginProfile).value();
+                  ::switches::kLoginProfile).value();
   }
 
   ChromeBrowserMainPartsLinux::PreEarlyInitialization();
@@ -352,14 +371,16 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 
   dbus_services_.reset(new internal::DBusServices(parameters()));
 
-  did_post_main_message_loop_start_ = true;
-
   ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
 }
 
-// Threads are initialized MainMessageLoopStart and MainMessageLoopRun.
+// Threads are initialized between MainMessageLoopStart and MainMessageLoopRun.
+// about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
+  // Must be called after about_flags settings are applied (see note above).
+  dbus_services_->InitializeNetworkHandlers();
+
   AudioHandler::Initialize();
   imageburner::BurnManager::Initialize();
 
@@ -402,10 +423,10 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // TODO(abarth): Should this move to InitializeNetworkOptions()?
   // Allow access to file:// on ChromeOS for tests.
-  if (parsed_command_line().HasSwitch(switches::kAllowFileAccess))
+  if (parsed_command_line().HasSwitch(::switches::kAllowFileAccess))
     ChromeNetworkDelegate::AllowAccessToAllFiles();
 
-  if (parsed_command_line().HasSwitch(switches::kEnableContacts)) {
+  if (parsed_command_line().HasSwitch(::switches::kEnableContacts)) {
     contact_manager_.reset(new contacts::ContactManager());
     contact_manager_->Init();
   }
@@ -415,10 +436,10 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   //   2) if passed alone, to signal that the indicated user has already
   //      logged in and we should behave accordingly.
   // This handles case 2.
-  if (parsed_command_line().HasSwitch(switches::kLoginUser) &&
-      !parsed_command_line().HasSwitch(switches::kLoginPassword)) {
+  if (parsed_command_line().HasSwitch(::switches::kLoginUser) &&
+      !parsed_command_line().HasSwitch(::switches::kLoginPassword)) {
     std::string username =
-        parsed_command_line().GetSwitchValueASCII(switches::kLoginUser);
+        parsed_command_line().GetSwitchValueASCII(::switches::kLoginUser);
     VLOG(1) << "Relaunching browser for user: " << username;
     UserManager::Get()->UserLoggedIn(username, true);
 
@@ -456,8 +477,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   policy::BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
 
-  if (parsed_command_line().HasSwitch(switches::kLoginUser) &&
-      !parsed_command_line().HasSwitch(switches::kLoginPassword)) {
+  if (parsed_command_line().HasSwitch(::switches::kLoginUser) &&
+      !parsed_command_line().HasSwitch(::switches::kLoginPassword)) {
     // Pass the TokenService pointer to the policy connector so user policy can
     // grab a token and register with the policy server.
     // TODO(mnissler): Remove once OAuth is the only authentication mechanism.
@@ -479,7 +500,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // Make sure that wallpaper boot transition and other delays in OOBE
   // are disabled for tests by default.
   // Individual tests may enable them if they want.
-  if (parsed_command_line().HasSwitch(switches::kTestType))
+  if (parsed_command_line().HasSwitch(::switches::kTestType))
     WizardController::SetZeroDelays();
 
   // Tests should be able to tune login manager before showing it.

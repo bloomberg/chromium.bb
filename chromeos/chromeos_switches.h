@@ -20,9 +20,10 @@ namespace switches {
 // see chromeos::LoginUtil::GetOffTheRecordCommandLine().)
 
 // Please keep alphabetized.
-CHROMEOS_EXPORT extern const char kDbusStub[];
-CHROMEOS_EXPORT extern const char kSmsTestMessages[];
 CHROMEOS_EXPORT extern const char kChromeOSReleaseBoard[];
+CHROMEOS_EXPORT extern const char kDbusStub[];
+CHROMEOS_EXPORT extern const char kEnableNewNetworkHandlers[];
+CHROMEOS_EXPORT extern const char kSmsTestMessages[];
 
 }  // namespace switches
 }  // namespace chromeos

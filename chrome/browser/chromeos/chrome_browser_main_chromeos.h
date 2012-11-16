@@ -80,8 +80,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   scoped_ptr<internal::DBusServices> dbus_services_;
 
-  bool did_post_main_message_loop_start_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };
 
