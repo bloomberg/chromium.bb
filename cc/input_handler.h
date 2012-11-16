@@ -11,6 +11,7 @@
 
 namespace gfx {
 class Point;
+class PointF;
 class Vector2d;
 }
 
@@ -63,6 +64,8 @@ public:
 
     // Request another callback to InputHandler::animate().
     virtual void scheduleAnimation() = 0;
+
+    virtual bool haveTouchEventHandlersAt(const gfx::Point&) = 0;
 
 protected:
     InputHandlerClient() { }

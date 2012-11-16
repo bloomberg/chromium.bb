@@ -11,6 +11,7 @@
 #include "cc/math_util.h"
 #include "cc/render_surface.h"
 #include "cc/render_surface_impl.h"
+#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
 #include <algorithm>
 #include <public/WebTransformationMatrix.h>
@@ -872,6 +873,24 @@ static bool pointHitsRect(const gfx::PointF& screenSpacePoint, const WebTransfor
     return localSpaceRect.Contains(hitTestPointInLocalSpace);
 }
 
+static bool pointHitsRegion(gfx::PointF screenSpacePoint, const WebTransformationMatrix& screenSpaceTransform, const Region& layerSpaceRegion, float layerContentScaleX, float layerContentScaleY)
+{
+    // If the transform is not invertible, then assume that this point doesn't hit this region.
+    if (!screenSpaceTransform.isInvertible())
+        return false;
+
+    // Transform the hit test point from screen space to the local space of the given region.
+    bool clipped = false;
+    gfx::PointF hitTestPointInContentSpace = MathUtil::projectPoint(screenSpaceTransform.inverse(), screenSpacePoint, clipped);
+    gfx::PointF hitTestPointInLayerSpace = gfx::ScalePoint(hitTestPointInContentSpace, 1 / layerContentScaleX, 1 / layerContentScaleY);
+
+    // If projectPoint could not project to a valid value, then we assume that this point doesn't hit this region.
+    if (clipped)
+        return false;
+
+    return layerSpaceRegion.Contains(gfx::ToRoundedPoint(hitTestPointInLayerSpace));
+}
+
 static bool pointIsClippedBySurfaceOrClipRect(const gfx::PointF& screenSpacePoint, LayerImpl* layer)
 {
     LayerImpl* currentLayer = layer;
@@ -913,6 +932,40 @@ LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPoint(const gfx::PointF& scr
             continue;
 
         // At this point, we think the point does hit the layer, but we need to walk up
+        // the parents to ensure that the layer was not clipped in such a way that the
+        // hit point actually should not hit the layer.
+        if (pointIsClippedBySurfaceOrClipRect(screenSpacePoint, currentLayer))
+            continue;
+
+        foundLayer = currentLayer;
+        break;
+    }
+
+    // This can potentially return 0, which means the screenSpacePoint did not successfully hit test any layers, not even the root layer.
+    return foundLayer;
+}
+
+LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(const gfx::PointF& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList)
+{
+    LayerImpl* foundLayer = 0;
+
+    typedef LayerIterator<LayerImpl, std::vector<LayerImpl*>, RenderSurfaceImpl, LayerIteratorActions::FrontToBack> LayerIteratorType;
+    LayerIteratorType end = LayerIteratorType::end(&renderSurfaceLayerList);
+
+    for (LayerIteratorType it = LayerIteratorType::begin(&renderSurfaceLayerList); it != end; ++it) {
+        // We don't want to consider renderSurfaces for hit testing.
+        if (!it.representsItself())
+            continue;
+
+        LayerImpl* currentLayer = (*it);
+
+        if (currentLayer->touchEventHandlerRegion().IsEmpty())
+            continue;
+
+        if (!pointHitsRegion(screenSpacePoint, currentLayer->screenSpaceTransform(), currentLayer->touchEventHandlerRegion(), currentLayer->contentsScaleX(), currentLayer->contentsScaleY()))
+            continue;
+
+        // At this point, we think the point does hit the touch event handler region on the layer, but we need to walk up
         // the parents to ensure that the layer was not clipped in such a way that the
         // hit point actually should not hit the layer.
         if (pointIsClippedBySurfaceOrClipRect(screenSpacePoint, currentLayer))

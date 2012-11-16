@@ -324,6 +324,21 @@ void LayerTreeHostImpl::scheduleAnimation()
     m_client->setNeedsRedrawOnImplThread();
 }
 
+bool LayerTreeHostImpl::haveTouchEventHandlersAt(const gfx::Point& viewportPoint)
+{
+
+    gfx::PointF deviceViewportPoint = gfx::ScalePoint(viewportPoint, m_deviceScaleFactor);
+
+    // First find out which layer was hit from the saved list of visible layers
+    // in the most recent frame.
+    LayerImpl* layerImplHitByPointInTouchHandlerRegion = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(deviceViewportPoint, m_renderSurfaceLayerList);
+
+    if (layerImplHitByPointInTouchHandlerRegion)
+      return true;
+
+    return false;
+}
+
 void LayerTreeHostImpl::trackDamageForAllSurfaces(LayerImpl* rootDrawLayer, const LayerList& renderSurfaceLayerList)
 {
     // For now, we use damage tracking to compute a global scissor. To do this, we must

@@ -28,6 +28,8 @@ public:
     // Performs hit testing for a given renderSurfaceLayerList.
     static LayerImpl* findLayerThatIsHitByPoint(const gfx::PointF& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList);
 
+    static LayerImpl* findLayerThatIsHitByPointInTouchHandlerRegion(const gfx::PointF& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList);
+
     template<typename LayerType> static bool renderSurfaceContributesToTarget(LayerType*, int targetSurfaceLayerID);
 
     // Returns a layer with the given id if one exists in the subtree starting

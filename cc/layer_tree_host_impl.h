@@ -125,6 +125,7 @@ public:
     virtual void pinchGestureEnd() OVERRIDE;
     virtual void startPageScaleAnimation(gfx::Vector2d targetOffset, bool anchorPoint, float pageScale, base::TimeTicks startTime, base::TimeDelta duration) OVERRIDE;
     virtual void scheduleAnimation() OVERRIDE;
+    virtual bool haveTouchEventHandlersAt(const gfx::Point&) OVERRIDE;
 
     struct CC_EXPORT FrameData : public RenderPassSink {
         FrameData();

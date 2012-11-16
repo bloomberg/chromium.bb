@@ -93,6 +93,11 @@ public:
         m_client->scheduleAnimation();
     }
 
+    virtual bool haveTouchEventHandlersAt(WebPoint point)
+    {
+        return m_client->haveTouchEventHandlersAt(point);
+    }
+
 private:
     cc::InputHandlerClient* m_client;
 };

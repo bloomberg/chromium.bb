@@ -16,6 +16,7 @@
 #include "cc/test/animation_test_common.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/thread.h"
+#include "ui/gfx/size_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
@@ -3069,7 +3070,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
         bounds = gfx::Size(80, 80);
         setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
         child->setMasksToBounds(true);
-        
+
         WebTransformationMatrix rotation45DegreesAboutCorner;
         rotation45DegreesAboutCorner.rotate3d(0, 0, 45);
 
@@ -3415,6 +3416,412 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
     resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(4, resultLayer->id());
+}
+
+TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForEmptyLayerList)
+{
+    // Hit checking on an empty renderSurfaceLayerList should return a null pointer.
+    std::vector<LayerImpl*> renderSurfaceLayerList;
+
+    gfx::Point testPoint(0, 0);
+    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(10, 20);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+}
+
+TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer)
+{
+    scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
+
+    WebTransformationMatrix identityMatrix;
+    Region touchHandlerRegion(gfx::Rect(10, 10, 50, 50));
+    gfx::PointF anchor(0, 0);
+    gfx::PointF position(0, 0);
+    gfx::Size bounds(100, 100);
+    setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
+    root->setDrawsContent(true);
+
+    std::vector<LayerImpl*> renderSurfaceLayerList;
+    int dummyMaxTextureSize = 512;
+    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+
+    // Sanity check the scenario we just created.
+    ASSERT_EQ(1u, renderSurfaceLayerList.size());
+    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+
+    // Hit checking for any point should return a null pointer for a layer without any touch event handler regions.
+    gfx::Point testPoint(11, 11);
+    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    root->setTouchEventHandlerRegion(touchHandlerRegion);
+    // Hit checking for a point outside the layer should return a null pointer.
+    testPoint = gfx::Point(101, 101);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(-1, -1);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    // Hit checking for a point inside the layer, but outside the touch handler region should return a null pointer.
+    testPoint = gfx::Point(1, 1);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(99, 99);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    // Hit checking for a point inside the touch event handler region should return the root layer.
+    testPoint = gfx::Point(11, 11);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    ASSERT_TRUE(resultLayer);
+    EXPECT_EQ(12345, resultLayer->id());
+
+    testPoint = gfx::Point(59, 59);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    ASSERT_TRUE(resultLayer);
+    EXPECT_EQ(12345, resultLayer->id());
+}
+
+TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForUninvertibleTransform)
+{
+    scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
+
+    WebTransformationMatrix uninvertibleTransform;
+    uninvertibleTransform.setM11(0);
+    uninvertibleTransform.setM22(0);
+    uninvertibleTransform.setM33(0);
+    uninvertibleTransform.setM44(0);
+    ASSERT_FALSE(uninvertibleTransform.isInvertible());
+
+    WebTransformationMatrix identityMatrix;
+    Region touchHandlerRegion(gfx::Rect(10, 10, 50, 50));
+    gfx::PointF anchor(0, 0);
+    gfx::PointF position(0, 0);
+    gfx::Size bounds(100, 100);
+    setLayerPropertiesForTesting(root.get(), uninvertibleTransform, identityMatrix, anchor, position, bounds, false);
+    root->setDrawsContent(true);
+    root->setTouchEventHandlerRegion(touchHandlerRegion);
+
+    std::vector<LayerImpl*> renderSurfaceLayerList;
+    int dummyMaxTextureSize = 512;
+    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+
+    // Sanity check the scenario we just created.
+    ASSERT_EQ(1u, renderSurfaceLayerList.size());
+    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+    ASSERT_FALSE(root->screenSpaceTransform().isInvertible());
+
+    // Hit checking any point should not hit the touch handler region on the layer. If the invertible matrix is
+    // accidentally ignored and treated like an identity, then the hit testing will
+    // incorrectly hit the layer when it shouldn't.
+    gfx::Point testPoint(1, 1);
+    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(10, 10);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(10, 30);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(50, 50);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(67, 48);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(99, 99);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(-1, -1);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+}
+
+TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSinglePositionedLayer)
+{
+    scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
+
+    WebTransformationMatrix identityMatrix;
+    Region touchHandlerRegion(gfx::Rect(10, 10, 50, 50));
+    gfx::PointF anchor(0, 0);
+    gfx::PointF position(50, 50); // this layer is positioned, and hit testing should correctly know where the layer is located.
+    gfx::Size bounds(100, 100);
+    setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
+    root->setDrawsContent(true);
+    root->setTouchEventHandlerRegion(touchHandlerRegion);
+
+    std::vector<LayerImpl*> renderSurfaceLayerList;
+    int dummyMaxTextureSize = 512;
+    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+
+    // Sanity check the scenario we just created.
+    ASSERT_EQ(1u, renderSurfaceLayerList.size());
+    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+
+    // Hit checking for a point outside the layer should return a null pointer.
+    gfx::Point testPoint(49, 49);
+    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    // Even though the layer has a touch handler region containing (101, 101), it should not be visible there since the root renderSurface would clamp it.
+    testPoint = gfx::Point(101, 101);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    // Hit checking for a point inside the layer, but outside the touch handler region should return a null pointer.
+    testPoint = gfx::Point(51, 51);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    // Hit checking for a point inside the touch event handler region should return the root layer.
+    testPoint = gfx::Point(61, 61);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    ASSERT_TRUE(resultLayer);
+    EXPECT_EQ(12345, resultLayer->id());
+
+    testPoint = gfx::Point(99, 99);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    ASSERT_TRUE(resultLayer);
+    EXPECT_EQ(12345, resultLayer->id());
+}
+
+TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayerWithScaledContents)
+{
+    // A layer's visibleContentRect is actually in the layer's content space. The
+    // screenSpaceTransform converts from the layer's origin space to screen space. This
+    // test makes sure that hit testing works correctly accounts for the contents scale.
+    // A contentsScale that is not 1 effectively forces a non-identity transform between
+    // layer's content space and layer's origin space. The hit testing code must take this into account.
+    //
+    // To test this, the layer is positioned at (25, 25), and is size (50, 50). If
+    // contentsScale is ignored, then hit checking will mis-interpret the visibleContentRect
+    // as being larger than the actual bounds of the layer.
+    //
+    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
+
+    WebTransformationMatrix identityMatrix;
+    gfx::PointF anchor(0, 0);
+
+    setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, gfx::PointF(0, 0), gfx::Size(100, 100), false);
+
+    {
+        Region touchHandlerRegion(gfx::Rect(10, 10, 30, 30));
+        gfx::PointF position(25, 25);
+        gfx::Size bounds(50, 50);
+        scoped_ptr<LayerImpl> testLayer = LayerImpl::create(12345);
+        setLayerPropertiesForTesting(testLayer.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
+
+        // override contentBounds and contentsScale
+        testLayer->setContentBounds(gfx::Size(100, 100));
+        testLayer->setContentsScale(2, 2);
+
+        testLayer->setDrawsContent(true);
+        testLayer->setTouchEventHandlerRegion(touchHandlerRegion);
+        root->addChild(testLayer.Pass());
+    }
+
+    std::vector<LayerImpl*> renderSurfaceLayerList;
+    int dummyMaxTextureSize = 512;
+    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+
+    // Sanity check the scenario we just created.
+    // The visibleContentRect for testLayer is actually 100x100, even though its layout size is 50x50, positioned at 25x25.
+    LayerImpl* testLayer = root->children()[0];
+    EXPECT_RECT_EQ(gfx::Rect(gfx::Point(), gfx::Size(100, 100)), testLayer->visibleContentRect());
+    ASSERT_EQ(1u, renderSurfaceLayerList.size());
+    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+
+    // Hit checking for a point outside the layer should return a null pointer (the root layer does not draw content, so it will not be tested either).
+    gfx::Point testPoint(76, 76);
+    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    // Hit checking for a point inside the layer, but outside the touch handler region should return a null pointer.
+    testPoint = gfx::Point(26, 26);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(34, 34);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(65, 65);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(74, 74);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    // Hit checking for a point inside the touch event handler region should return the root layer.
+    testPoint = gfx::Point(35, 35);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    ASSERT_TRUE(resultLayer);
+    EXPECT_EQ(12345, resultLayer->id());
+
+    testPoint = gfx::Point(64, 64);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    ASSERT_TRUE(resultLayer);
+    EXPECT_EQ(12345, resultLayer->id());
+}
+
+TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayerWithDeviceScale)
+{
+    // The layer's deviceScalefactor and pageScaleFactor should scale the contentRect and we should
+    // be able to hit the touch handler region by scaling the points accordingly.
+    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
+
+    WebTransformationMatrix identityMatrix;
+    gfx::PointF anchor(0, 0);
+    // Set the bounds of the root layer big enough to fit the child when scaled.
+    setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, gfx::PointF(0, 0), gfx::Size(100, 100), false);
+
+    {
+        Region touchHandlerRegion(gfx::Rect(10, 10, 30, 30));
+        gfx::PointF position(25, 25);
+        gfx::Size bounds(50, 50);
+        scoped_ptr<LayerImpl> testLayer = LayerImpl::create(12345);
+        setLayerPropertiesForTesting(testLayer.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
+
+        testLayer->setDrawsContent(true);
+        testLayer->setTouchEventHandlerRegion(touchHandlerRegion);
+        root->addChild(testLayer.Pass());
+    }
+
+    std::vector<LayerImpl*> renderSurfaceLayerList;
+    int dummyMaxTextureSize = 512;
+    float deviceScaleFactor = 3.0f;
+    float pageScaleFactor = 5.0f;
+    WebTransformationMatrix pageScaleTransform;
+    pageScaleTransform.scale(pageScaleFactor);
+    root->setImplTransform(pageScaleTransform); // Applying the pageScaleFactor through implTransform.
+    gfx::Size scaledBoundsForRoot = gfx::ToCeiledSize(gfx::ScaleSize(root->bounds(), deviceScaleFactor * pageScaleFactor));
+    LayerTreeHostCommon::calculateDrawTransforms(root.get(), scaledBoundsForRoot, deviceScaleFactor, 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+
+    // Sanity check the scenario we just created.
+    // The visibleContentRect for testLayer is actually 100x100, even though its layout size is 50x50, positioned at 25x25.
+    LayerImpl* testLayer = root->children()[0];
+    ASSERT_EQ(1u, renderSurfaceLayerList.size());
+    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+
+    // Check whether the child layer fits into the root after scaled.
+    EXPECT_RECT_EQ(gfx::Rect(testLayer->contentBounds()), testLayer->visibleContentRect());;
+
+    // Hit checking for a point outside the layer should return a null pointer (the root layer does not draw content, so it will not be tested either).
+    gfx::PointF testPoint(76, 76);
+    testPoint = gfx::ScalePoint(testPoint, deviceScaleFactor * pageScaleFactor);
+    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    // Hit checking for a point inside the layer, but outside the touch handler region should return a null pointer.
+    testPoint = gfx::Point(26, 26);
+    testPoint = gfx::ScalePoint(testPoint, deviceScaleFactor * pageScaleFactor);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(34, 34);
+    testPoint = gfx::ScalePoint(testPoint, deviceScaleFactor * pageScaleFactor);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(65, 65);
+    testPoint = gfx::ScalePoint(testPoint, deviceScaleFactor * pageScaleFactor);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(74, 74);
+    testPoint = gfx::ScalePoint(testPoint, deviceScaleFactor * pageScaleFactor);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    // Hit checking for a point inside the touch event handler region should return the root layer.
+    testPoint = gfx::Point(35, 35);
+    testPoint = gfx::ScalePoint(testPoint, deviceScaleFactor * pageScaleFactor);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    ASSERT_TRUE(resultLayer);
+    EXPECT_EQ(12345, resultLayer->id());
+
+    testPoint = gfx::Point(64, 64);
+    testPoint = gfx::ScalePoint(testPoint, deviceScaleFactor * pageScaleFactor);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    ASSERT_TRUE(resultLayer);
+    EXPECT_EQ(12345, resultLayer->id());
+}
+
+TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSimpleClippedLayer)
+{
+    // Test that hit-checking will only work for the visible portion of a layer, and not
+    // the entire layer bounds. Here we just test the simple axis-aligned case.
+    WebTransformationMatrix identityMatrix;
+    gfx::PointF anchor(0, 0);
+
+    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
+    setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, gfx::PointF(0, 0), gfx::Size(100, 100), false);
+
+    {
+        scoped_ptr<LayerImpl> clippingLayer = LayerImpl::create(123);
+        gfx::PointF position(25, 25); // this layer is positioned, and hit testing should correctly know where the layer is located.
+        gfx::Size bounds(50, 50);
+        setLayerPropertiesForTesting(clippingLayer.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
+        clippingLayer->setMasksToBounds(true);
+
+        scoped_ptr<LayerImpl> child = LayerImpl::create(456);
+        Region touchHandlerRegion(gfx::Rect(10, 10, 50, 50));
+        position = gfx::PointF(-50, -50);
+        bounds = gfx::Size(300, 300);
+        setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
+        child->setDrawsContent(true);
+        child->setTouchEventHandlerRegion(touchHandlerRegion);
+        clippingLayer->addChild(child.Pass());
+        root->addChild(clippingLayer.Pass());
+    }
+
+    std::vector<LayerImpl*> renderSurfaceLayerList;
+    int dummyMaxTextureSize = 512;
+    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+
+    // Sanity check the scenario we just created.
+    ASSERT_EQ(1u, renderSurfaceLayerList.size());
+    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+    ASSERT_EQ(456, root->renderSurface()->layerList()[0]->id());
+
+    // Hit checking for a point outside the layer should return a null pointer.
+    // Despite the child layer being very large, it should be clipped to the root layer's bounds.
+    gfx::Point testPoint(24, 24);
+    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    // Hit checking for a point inside the layer, but outside the touch handler region should return a null pointer.
+    testPoint = gfx::Point(35, 35);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(74, 74);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    // Hit checking for a point inside the touch event handler region should return the root layer.
+    testPoint = gfx::Point(25, 25);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    ASSERT_TRUE(resultLayer);
+    EXPECT_EQ(456, resultLayer->id());
+
+    testPoint = gfx::Point(34, 34);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPointInTouchHandlerRegion(testPoint, renderSurfaceLayerList);
+    ASSERT_TRUE(resultLayer);
+    EXPECT_EQ(456, resultLayer->id());
 }
 
 class NoScaleContentLayer : public ContentLayer
