@@ -41,7 +41,9 @@ int InstallGoogleChrome(const char* source_path,
                         const char* master_prefs_contents,
                         unsigned master_prefs_contents_size);
 
-// This function launches Google Chrome after a successful install.
+// This function launches Google Chrome after a successful install, or it does
+// a best-effort search to launch an existing installation if
+// InstallGoogleChrome() returned GCCC_ERROR_ALREADYPRESENT.
 int LaunchGoogleChrome();
 
 #ifdef __cplusplus
