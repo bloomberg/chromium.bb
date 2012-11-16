@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "content/browser/download/save_package.h"
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
@@ -28,7 +28,7 @@ class SavePackageBrowserTest : public ContentBrowserTest {
   }
 
   // Temporary directory we will save pages to.
-  ScopedTempDir save_dir_;
+  base::ScopedTempDir save_dir_;
 };
 
 // Create a SavePackage and delete it without calling Init.

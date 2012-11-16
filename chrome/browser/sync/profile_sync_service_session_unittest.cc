@@ -9,10 +9,10 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/time.h"
 #include "chrome/browser/sessions/session_types_test_helper.h"
@@ -261,7 +261,7 @@ class ProfileSyncServiceSessionTest
 
   content::TestBrowserThread io_thread_;
   // Path used in testing.
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   SessionModelAssociator* model_associator_;
   SessionChangeProcessor* change_processor_;
   SessionID window_id_;

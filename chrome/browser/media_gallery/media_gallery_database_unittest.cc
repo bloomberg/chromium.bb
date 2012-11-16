@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/media_gallery/media_gallery_database.h"
 #include "chrome/browser/media_gallery/media_gallery_database_types.h"
 #include "sql/connection.h"
@@ -39,7 +39,7 @@ class MediaGalleryDatabaseTest : public testing::Test,
     db_.Close();
   }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   sql::Connection db_;
 };
 

@@ -267,7 +267,7 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
   }
 
  protected:
-  ScopedTempDir db_dir_;
+  base::ScopedTempDir db_dir_;
   PerformanceMonitor* performance_monitor_;
 };
 
@@ -434,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest,
 
 // Test that PerformanceMonitor correctly records an extension update event.
 IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UpdateExtensionEvent) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   FilePath test_data_dir;

@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
-#include "base/scoped_temp_dir.h"
 #include "base/sys_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -495,7 +495,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   void TestCopyInForeignFileHelper(bool overwrite) {
-    ScopedTempDir source_dir;
+    base::ScopedTempDir source_dir;
     ASSERT_TRUE(source_dir.CreateUniqueTempDir());
     FilePath root_file_path = source_dir.path();
     FilePath src_file_path = root_file_path.AppendASCII("file_name");
@@ -634,7 +634,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
  private:
-  ScopedTempDir data_dir_;
+  base::ScopedTempDir data_dir_;
   MessageLoop message_loop_;
   ObfuscatedFileUtil* obfuscated_file_util_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
@@ -1412,7 +1412,7 @@ TEST_F(ObfuscatedFileUtilTest, TestEnumerator) {
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestMigration) {
-  ScopedTempDir source_dir;
+  base::ScopedTempDir source_dir;
   ASSERT_TRUE(source_dir.CreateUniqueTempDir());
   FilePath root_path = source_dir.path().AppendASCII("chrome-pLmnMWXE7NzTFRsn");
   ASSERT_TRUE(file_util::CreateDirectory(root_path));

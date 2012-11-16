@@ -6,12 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "base/prefs/testing_pref_store.h"
-#include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
@@ -301,7 +301,7 @@ class PrefServiceUserFilePrefsTest : public testing::Test {
   }
 
   // The path to temporary directory used to contain the test operations.
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   // The path to the directory where the test data is stored.
   FilePath data_dir_;
   // A message loop that we can use as the file thread message loop.

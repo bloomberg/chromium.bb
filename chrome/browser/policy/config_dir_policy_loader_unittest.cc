@@ -4,9 +4,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/policy/async_policy_provider.h"
@@ -61,7 +61,7 @@ class TestHarness : public PolicyProviderTestHarness {
   static PolicyProviderTestHarness* Create();
 
  private:
-  ScopedTempDir test_dir_;
+  base::ScopedTempDir test_dir_;
   int next_policy_file_index_;
 
   DISALLOW_COPY_AND_ASSIGN(TestHarness);

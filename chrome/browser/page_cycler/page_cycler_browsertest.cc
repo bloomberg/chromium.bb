@@ -179,13 +179,13 @@ class PageCyclerCachedBrowserTest : public PageCyclerBrowserTest {
 
  private:
   // The directory storing the copy of the UserDataDir.
-  ScopedTempDir user_data_dir_;
+  base::ScopedTempDir user_data_dir_;
 };
 
 // Sanity check; iterate through a series of URLs and make sure there are no
 // errors.
 IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, BasicTest) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   RegisterForNotifications();
@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, UnvisitableURL) {
   const size_t kNumErrors = 1;
   const char kFakeURL[] = "http://www.pleasenoonehavethisurlanytimeinthenext"
                           "century.com/gibberish";
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   RegisterForNotifications();
@@ -247,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, UnvisitableURL) {
 IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, InvalidURL) {
   const char kBadURL[] = "notarealurl";
 
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   RegisterForNotifications();
@@ -279,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, InvalidURL) {
 
 // Test that PageCycler will remove a Chrome Error URL prior to running.
 IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, ChromeErrorURL) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   RegisterForNotifications();
@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, ChromeErrorURL) {
 #define MAYBE_PlaybackMode PlaybackMode
 #endif
 IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, MAYBE_PlaybackMode) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   RegisterForNotifications();
@@ -358,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, MAYBE_PlaybackMode) {
 IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, MAYBE_URLNotInCache) {
   const char kCacheMissURL[] = "http://www.images.google.com/";
 
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   RegisterForNotifications();

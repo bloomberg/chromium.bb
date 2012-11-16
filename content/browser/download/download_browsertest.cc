@@ -7,7 +7,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_item_impl.h"
@@ -455,7 +455,7 @@ class DownloadContentTest : public ContentBrowserTest {
   }
 
   // Location of the downloads directory for these tests
-  ScopedTempDir downloads_directory_;
+  base::ScopedTempDir downloads_directory_;
 };
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadCancelled) {

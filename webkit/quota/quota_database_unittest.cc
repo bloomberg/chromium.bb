@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "googleurl/src/gurl.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
@@ -493,7 +493,7 @@ class QuotaDatabaseTest : public testing::Test {
 };
 
 TEST_F(QuotaDatabaseTest, LazyOpen) {
-  ScopedTempDir data_dir;
+  base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
   const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
   LazyOpen(kDbFile);
@@ -501,14 +501,14 @@ TEST_F(QuotaDatabaseTest, LazyOpen) {
 }
 
 TEST_F(QuotaDatabaseTest, UpgradeSchema) {
-  ScopedTempDir data_dir;
+  base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
   const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
   UpgradeSchemaV2toV3(kDbFile);
 }
 
 TEST_F(QuotaDatabaseTest, HostQuota) {
-  ScopedTempDir data_dir;
+  base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
   const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
   HostQuota(kDbFile);
@@ -516,7 +516,7 @@ TEST_F(QuotaDatabaseTest, HostQuota) {
 }
 
 TEST_F(QuotaDatabaseTest, GlobalQuota) {
-  ScopedTempDir data_dir;
+  base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
   const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
   GlobalQuota(kDbFile);
@@ -524,7 +524,7 @@ TEST_F(QuotaDatabaseTest, GlobalQuota) {
 }
 
 TEST_F(QuotaDatabaseTest, OriginLastAccessTimeLRU) {
-  ScopedTempDir data_dir;
+  base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
   const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
   OriginLastAccessTimeLRU(kDbFile);
@@ -532,7 +532,7 @@ TEST_F(QuotaDatabaseTest, OriginLastAccessTimeLRU) {
 }
 
 TEST_F(QuotaDatabaseTest, OriginLastModifiedSince) {
-  ScopedTempDir data_dir;
+  base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
   const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
   OriginLastModifiedSince(kDbFile);
@@ -540,7 +540,7 @@ TEST_F(QuotaDatabaseTest, OriginLastModifiedSince) {
 }
 
 TEST_F(QuotaDatabaseTest, BootstrapFlag) {
-  ScopedTempDir data_dir;
+  base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
 
   const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
@@ -554,7 +554,7 @@ TEST_F(QuotaDatabaseTest, BootstrapFlag) {
 }
 
 TEST_F(QuotaDatabaseTest, RegisterInitialOriginInfo) {
-  ScopedTempDir data_dir;
+  base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
   const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
   RegisterInitialOriginInfo(kDbFile);
@@ -562,7 +562,7 @@ TEST_F(QuotaDatabaseTest, RegisterInitialOriginInfo) {
 }
 
 TEST_F(QuotaDatabaseTest, DumpQuotaTable) {
-  ScopedTempDir data_dir;
+  base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
   const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
   DumpQuotaTable(kDbFile);
@@ -570,7 +570,7 @@ TEST_F(QuotaDatabaseTest, DumpQuotaTable) {
 }
 
 TEST_F(QuotaDatabaseTest, DumpOriginInfoTable) {
-  ScopedTempDir data_dir;
+  base::ScopedTempDir data_dir;
   ASSERT_TRUE(data_dir.CreateUniqueTempDir());
   const FilePath kDbFile = data_dir.path().AppendASCII("quota_manager.db");
   DumpOriginInfoTable(kDbFile);

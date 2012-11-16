@@ -5,8 +5,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 
 #include "base/bind.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/md5.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_unittest_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -44,7 +44,7 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
     corruption_detected_ = true;
   }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   FilePath filename_;
   scoped_ptr<SafeBrowsingStoreFile> store_;
   bool corruption_detected_;

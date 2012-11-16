@@ -65,7 +65,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
 
 // Test BrowsingDataRemover for downloads.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
-  ScopedTempDir downloads_directory;
+  base::ScopedTempDir downloads_directory;
   ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
   browser()->profile()->GetPrefs()->SetFilePath(
       prefs::kDownloadDefaultDirectory, downloads_directory.path());

@@ -9,8 +9,8 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -93,7 +93,7 @@ TEST(ExtensionFromWebApp, GenerateVersion) {
 }
 
 TEST(ExtensionFromWebApp, Basic) {
-  ScopedTempDir extensions_dir;
+  base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   WebApplicationInfo web_app;
@@ -116,7 +116,7 @@ TEST(ExtensionFromWebApp, Basic) {
       extensions_dir.path());
   ASSERT_TRUE(extension.get());
 
-  ScopedTempDir extension_dir;
+  base::ScopedTempDir extension_dir;
   EXPECT_TRUE(extension_dir.Set(extension->path()));
 
   EXPECT_TRUE(extension->is_app());
@@ -150,7 +150,7 @@ TEST(ExtensionFromWebApp, Basic) {
 }
 
 TEST(ExtensionFromWebApp, Minimal) {
-  ScopedTempDir extensions_dir;
+  base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   WebApplicationInfo web_app;
@@ -163,7 +163,7 @@ TEST(ExtensionFromWebApp, Minimal) {
       extensions_dir.path());
   ASSERT_TRUE(extension.get());
 
-  ScopedTempDir extension_dir;
+  base::ScopedTempDir extension_dir;
   EXPECT_TRUE(extension_dir.Set(extension->path()));
 
   EXPECT_TRUE(extension->is_app());

@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/api/management/management_api.h"
@@ -215,7 +215,7 @@ class ExtensionManagementApiEscalationTest :
 
 
  private:
-  ScopedTempDir scoped_temp_dir_;
+  base::ScopedTempDir scoped_temp_dir_;
 };
 
 const char ExtensionManagementApiEscalationTest::kId[] =

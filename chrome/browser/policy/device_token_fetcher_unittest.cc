@@ -4,8 +4,8 @@
 
 #include "chrome/browser/policy/device_token_fetcher.h"
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/logging_work_scheduler.h"
 #include "chrome/browser/policy/mock_cloud_policy_data_store.h"
@@ -96,7 +96,7 @@ class DeviceTokenFetcherTest : public testing::Test {
   scoped_ptr<CloudPolicyDataStore> data_store_;
   MockCloudPolicyDataStoreObserver observer_;
   PolicyNotifier notifier_;
-  ScopedTempDir temp_user_data_dir_;
+  base::ScopedTempDir temp_user_data_dir_;
   em::DeviceManagementResponse successful_registration_response_;
 
  private:

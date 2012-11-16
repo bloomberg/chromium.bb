@@ -9,9 +9,9 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_unittest_base.h"
 #include "chrome/browser/history/thumbnail_database.h"
@@ -79,7 +79,7 @@ class ThumbnailDatabaseTest : public testing::Test {
 
   scoped_ptr<SkBitmap> google_bitmap_;
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   FilePath file_name_;
   FilePath new_file_name_;
   FilePath history_db_name_;

@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, Persist) {
 // Sanity check that bookmarks from different profiles are separate.
 // DISABLED_ because it regularly times out: http://crbug.com/159002.
 IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DISABLED_MultiProfile) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   BookmarkModel* bookmark_model1 = WaitForBookmarkModel(browser()->profile());

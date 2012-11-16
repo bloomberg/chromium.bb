@@ -9,7 +9,7 @@
 #include "chrome/test/chromedriver/status.h"
 
 ChromeImpl::ChromeImpl(base::ProcessHandle process,
-                       ScopedTempDir* user_data_dir)
+                       base::ScopedTempDir* user_data_dir)
     : process_(process) {
   if (user_data_dir->IsValid()) {
     CHECK(user_data_dir_.Set(user_data_dir->Take()));

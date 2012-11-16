@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "chrome/test/base/testing_pref_service.h"
 
@@ -75,7 +75,7 @@ class TestingProfileManager {
   bool called_set_up_;
 
   // The directory in which new profiles are placed.
-  ScopedTempDir profiles_dir_;
+  base::ScopedTempDir profiles_dir_;
 
   // Weak reference to the browser process on which the ProfileManager is set.
   TestingBrowserProcess* browser_process_;

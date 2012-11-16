@@ -6,8 +6,8 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_unittest_base.h"
 #include "chrome/common/chrome_constants.h"

@@ -14,9 +14,9 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/md5.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
@@ -112,7 +112,7 @@ class ZipReaderTest : public PlatformTest {
   FilePath evil_via_absolute_file_name_zip_file_;
   std::set<FilePath> test_zip_contents_;
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 };
 
 TEST_F(ZipReaderTest, Open_ValidZipFile) {

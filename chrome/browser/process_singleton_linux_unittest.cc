@@ -4,19 +4,20 @@
 
 #include "chrome/browser/process_singleton.h"
 
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <signal.h>
 #include <unistd.h>
-#include <vector>
+
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
@@ -191,7 +192,7 @@ class ProcessSingletonLinuxTest : public testing::Test {
   }
 
   content::TestBrowserThread io_thread_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   base::WaitableEvent wait_event_;
   base::WaitableEvent signal_event_;
 

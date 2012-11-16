@@ -11,13 +11,13 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
 #include "jingle/notifier/base/notification_method.h"
@@ -41,8 +41,8 @@
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
 #include "sync/notifier/invalidation_state_tracker.h"
-#include "sync/notifier/invalidator_factory.h"
 #include "sync/notifier/invalidator.h"
+#include "sync/notifier/invalidator_factory.h"
 #include "sync/test/fake_encryptor.h"
 
 #if defined(OS_MACOSX)
@@ -317,7 +317,7 @@ int SyncClientMain(int argc, char* argv[]) {
       null_invalidation_state_tracker.AsWeakPtr());
 
   // Set up database directory for the syncer.
-  ScopedTempDir database_dir;
+  base::ScopedTempDir database_dir;
   CHECK(database_dir.CreateUniqueTempDir());
 
   // Set up model type parameters.

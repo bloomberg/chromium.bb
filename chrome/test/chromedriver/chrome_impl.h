@@ -6,15 +6,15 @@
 #define CHROME_TEST_CHROMEDRIVER_CHROME_IMPL_H_
 
 #include "base/compiler_specific.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/process.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/test/chromedriver/chrome.h"
 
 class Status;
 
 class ChromeImpl : public Chrome {
  public:
-  ChromeImpl(base::ProcessHandle process, ScopedTempDir* user_data_dir);
+  ChromeImpl(base::ProcessHandle process, base::ScopedTempDir* user_data_dir);
   virtual ~ChromeImpl();
 
   // Overridden from Chrome:
@@ -22,7 +22,7 @@ class ChromeImpl : public Chrome {
 
  private:
   base::ProcessHandle process_;
-  ScopedTempDir user_data_dir_;
+  base::ScopedTempDir user_data_dir_;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_IMPL_H_

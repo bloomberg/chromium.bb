@@ -4,9 +4,9 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/observer_list.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/value_conversions.h"
@@ -280,7 +280,7 @@ class ChromeDownloadManagerDelegateTest :
                               const FilePath& intermediate_path);
 
   TestingPrefService* pref_service_;
-  ScopedTempDir test_download_dir_;
+  base::ScopedTempDir test_download_dir_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   scoped_refptr<content::MockDownloadManager> download_manager_;

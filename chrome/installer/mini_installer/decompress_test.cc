@@ -5,8 +5,8 @@
 #include <windows.h>
 
 #include "base/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/installer/mini_installer/decompress.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,7 +21,7 @@ TEST(MiniDecompressTest, ExpandTest) {
 
   // Prepare a temp folder that will be automatically deleted along with
   // our temporary test data.
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath dest_path(temp_dir.path().Append(FILE_PATH_LITERAL("setup.exe")));
 

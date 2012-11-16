@@ -14,18 +14,18 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/scoped_temp_dir.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_launcher_utils.h"
 
 namespace {
 
@@ -214,7 +214,7 @@ class ProcessSingletonTest : public InProcessBrowserTest {
 
   // We don't want to use the default profile, but can't use UITest's since we
   // don't use UITest::LaunchBrowser.
-  ScopedTempDir temp_profile_dir_;
+  base::ScopedTempDir temp_profile_dir_;
 };
 
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)

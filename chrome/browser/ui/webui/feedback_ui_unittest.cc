@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/webui/feedback_ui.h"
 
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // This macro helps avoid wrapped lines in the test structs.
@@ -45,7 +45,7 @@ class FeedbackUITest : public testing::Test {
     ASSERT_NO_FATAL_FAILURE(CreateFile(filepath));
   }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   std::vector<std::string> saved_screenshots_;
 
  private:

@@ -10,11 +10,11 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
@@ -1276,7 +1276,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
                  callback_helper_.get());
 
   // Prepare a local file.
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   const FilePath local_src_file_path = temp_dir.path().Append("local.txt");
   const std::string kContent = "hello";
@@ -1310,7 +1310,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
 
   // Prepare a local file, which is a json file of a hosted document, which
   // matches "Document 1" in root_feed.json.
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   const FilePath local_src_file_path = temp_dir.path().Append("local.gdoc");
   const std::string kEditUrl =
@@ -1365,7 +1365,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
       base::Bind(&CallbackHelper::FileOperationCallback,
                  callback_helper_.get());
 
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath local_dest_file_path = temp_dir.path().Append("local_copy.txt");
 
@@ -1421,7 +1421,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
       base::Bind(&CallbackHelper::FileOperationCallback,
                  callback_helper_.get());
 
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath local_dest_file_path = temp_dir.path().Append("local_copy.txt");
   FilePath remote_src_file_path(FILE_PATH_LITERAL("drive/Document 1.gdoc"));

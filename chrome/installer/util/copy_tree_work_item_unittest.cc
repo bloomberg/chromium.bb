@@ -8,11 +8,11 @@
 
 #include "base/base_paths.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
@@ -32,8 +32,8 @@ namespace {
     }
 
     // the path to temporary directory used to contain the test operations
-    ScopedTempDir test_dir_;
-    ScopedTempDir temp_dir_;
+    base::ScopedTempDir test_dir_;
+    base::ScopedTempDir temp_dir_;
   };
 
   // Simple function to dump some text into a new file.

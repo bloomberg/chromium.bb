@@ -423,7 +423,7 @@ void WaitForHistoryToLoad(HistoryService* history_service) {
 }
 
 void DownloadURL(Browser* browser, const GURL& download_url) {
-  ScopedTempDir downloads_directory;
+  base::ScopedTempDir downloads_directory;
   ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
   browser->profile()->GetPrefs()->SetFilePath(
       prefs::kDownloadDefaultDirectory, downloads_directory.path());

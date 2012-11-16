@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
@@ -128,7 +128,7 @@ class UserPolicyCacheTest : public testing::Test {
   MockCloudPolicyCacheBaseObserver observer_;
 
  private:
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 };

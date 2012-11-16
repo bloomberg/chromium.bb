@@ -9,13 +9,13 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/rand_util.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_piece.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -197,7 +197,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
   // Put the message loop at the top, so that it's the last thing deleted.
   MessageLoop message_loop_;
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::WeakPtrFactory<FileSystemURLRequestJobTest> weak_factory_;

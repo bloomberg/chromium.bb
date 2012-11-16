@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "content/public/browser/content_browser_client.h"
 
 namespace content {
@@ -27,7 +27,7 @@ class TestContentBrowserClient : public ContentBrowserClient {
 
  private:
   // Temporary directory for GetDefaultDownloadDirectory.
-  ScopedTempDir download_dir_;
+  base::ScopedTempDir download_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentBrowserClient);
 };

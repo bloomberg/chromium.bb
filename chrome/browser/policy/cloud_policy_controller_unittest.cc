@@ -4,9 +4,9 @@
 
 #include "chrome/browser/policy/cloud_policy_controller.h"
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/device_token_fetcher.h"
 #include "chrome/browser/policy/logging_work_scheduler.h"
@@ -117,7 +117,7 @@ class CloudPolicyControllerTest : public testing::Test {
   scoped_ptr<CloudPolicyDataStore> data_store_;
   MockDeviceManagementService service_;
   PolicyNotifier notifier_;
-  ScopedTempDir temp_user_data_dir_;
+  base::ScopedTempDir temp_user_data_dir_;
   MessageLoop loop_;
   em::DeviceManagementResponse spdy_policy_response_;
 

@@ -378,9 +378,9 @@ class BrowserCloseTest : public InProcessBrowserTest {
   Profile* first_profile_;
   Profile* second_profile_;
 
-  ScopedTempDir first_profile_downloads_dir_;
-  ScopedTempDir second_profile_data_dir_;
-  ScopedTempDir second_profile_downloads_dir_;
+  base::ScopedTempDir first_profile_downloads_dir_;
+  base::ScopedTempDir second_profile_data_dir_;
+  base::ScopedTempDir second_profile_downloads_dir_;
 };
 
 const BrowserCloseTest::DownloadsCloseCheckCase

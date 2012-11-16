@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include <windows.h>
+#include <wincrypt.h>
 #include <string>
 #include <vector>
-#include <wincrypt.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
@@ -140,7 +140,7 @@ class PasswordStoreWinTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<WebDataService> wds_;
   scoped_refptr<PasswordStore> store_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 };
 
 ACTION(STLDeleteElements0) {

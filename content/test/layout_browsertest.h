@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "content/test/content_browser_test.h"
 
 class GURL;

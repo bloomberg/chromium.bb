@@ -7,11 +7,11 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_nsobject.h"
-#include "base/scoped_temp_dir.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -98,7 +98,7 @@ WebAppShortcutCreator::~WebAppShortcutCreator() {
 bool WebAppShortcutCreator::CreateShortcut() {
   FilePath app_name = internals::GetSanitizedFileName(info_.title);
   FilePath app_file_name = app_name.ReplaceExtension("app");
-  ScopedTempDir scoped_temp_dir;
+  base::ScopedTempDir scoped_temp_dir;
   if (!scoped_temp_dir.CreateUniqueTempDir())
     return false;
   FilePath staging_path = scoped_temp_dir.path().Append(app_file_name);

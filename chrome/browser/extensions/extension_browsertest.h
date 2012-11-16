@@ -10,11 +10,11 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/feature_switch.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -204,7 +204,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
 
  private:
   // Temporary directory for testing.
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 
   // Specifies the type of UI (if any) to show during installation and what
   // user action to simulate.

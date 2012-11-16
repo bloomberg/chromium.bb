@@ -467,7 +467,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
 }
 
 TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   CannedSyncableFileSystem file_system(GURL(kOrigin1), kServiceName,

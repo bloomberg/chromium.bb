@@ -9,8 +9,8 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/platform_file.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/db/filename.h"
@@ -28,7 +28,7 @@ const FilePath::CharType kOriginDatabaseName[] = FILE_PATH_LITERAL("Origins");
 }  // namespace
 
 TEST(FileSystemOriginDatabaseTest, BasicTest) {
-  ScopedTempDir dir;
+  base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
@@ -58,7 +58,7 @@ TEST(FileSystemOriginDatabaseTest, BasicTest) {
 }
 
 TEST(FileSystemOriginDatabaseTest, TwoPathTest) {
-  ScopedTempDir dir;
+  base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
@@ -86,7 +86,7 @@ TEST(FileSystemOriginDatabaseTest, TwoPathTest) {
 }
 
 TEST(FileSystemOriginDatabaseTest, DropDatabaseTest) {
-  ScopedTempDir dir;
+  base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
@@ -114,7 +114,7 @@ TEST(FileSystemOriginDatabaseTest, DropDatabaseTest) {
 }
 
 TEST(FileSystemOriginDatabaseTest, DeleteOriginTest) {
-  ScopedTempDir dir;
+  base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
@@ -141,7 +141,7 @@ TEST(FileSystemOriginDatabaseTest, DeleteOriginTest) {
 }
 
 TEST(FileSystemOriginDatabaseTest, ListOriginsTest) {
-  ScopedTempDir dir;
+  base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   EXPECT_FALSE(file_util::PathExists(kFSDir));
@@ -190,7 +190,7 @@ TEST(FileSystemOriginDatabaseTest, DatabaseRecoveryTest) {
   // After repairing, the origin database should be consistent even when some
   // entries lost.
 
-  ScopedTempDir dir;
+  base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   const FilePath kFSDir = dir.path().Append(kFileSystemDirName);
   const FilePath kDBDir = kFSDir.Append(kOriginDatabaseName);

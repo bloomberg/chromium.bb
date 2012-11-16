@@ -1839,7 +1839,7 @@ Error* Session::GetScreenShot(std::string* png) {
                      "The current target does not support screenshot");
   }
   Error* error = NULL;
-  ScopedTempDir screenshots_dir;
+  base::ScopedTempDir screenshots_dir;
   if (!screenshots_dir.CreateUniqueTempDir()) {
     return new Error(kUnknownError,
                      "Could not create temp directory for screenshot");

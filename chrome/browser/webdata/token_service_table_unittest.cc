@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/webdata/token_service_table.h"
@@ -26,7 +26,7 @@ class TokenServiceTableTest : public testing::Test {
   }
 
   FilePath file_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TokenServiceTableTest);

@@ -7,9 +7,9 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -854,7 +854,7 @@ TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
 }
 
 TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
-  ScopedTempDir temp_directory;
+  base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   set_history_dir(temp_directory.path());
 
@@ -917,7 +917,7 @@ class InMemoryURLIndexCacheTest : public testing::Test {
   void set_history_dir(const FilePath& dir_path);
   bool GetCacheFilePath(FilePath* file_path) const;
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   scoped_ptr<InMemoryURLIndex> url_index_;
 };
 

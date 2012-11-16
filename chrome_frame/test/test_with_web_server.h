@@ -8,7 +8,7 @@
 #include <windows.h>
 #include <string>
 
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -16,8 +16,8 @@
 #include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/test_server.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 // Specifies the invocation method for CF.
 class CFInvocation {
@@ -238,7 +238,7 @@ class ChromeFrameTestWithWebServer : public testing::Test {
   static FilePath chrome_user_data_dir_;
 
   // The user data directory used for Chrome instances.
-  static ScopedTempDir temp_dir_;
+  static base::ScopedTempDir temp_dir_;
 
   // The web server from which we serve the web!
   static chrome_frame_test::TimedMsgLoop* loop_;

@@ -7,16 +7,16 @@
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
-#include "base/scoped_temp_dir.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "chrome/common/automation_id.h"
 #include "chrome/common/zip.h"
@@ -51,7 +51,7 @@ namespace {
 bool UnzipArchive(const FilePath& unzip_dir,
                   const std::string& bytes,
                   std::string* error_msg) {
-  ScopedTempDir dir;
+  base::ScopedTempDir dir;
   if (!dir.CreateUniqueTempDir()) {
     *error_msg = "Unable to create temp dir";
     return false;

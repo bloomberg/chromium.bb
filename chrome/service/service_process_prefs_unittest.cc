@@ -4,8 +4,8 @@
 
 #include <string>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/service/service_process_prefs.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,7 +26,7 @@ class ServiceProcessPrefsTest : public testing::Test {
   }
 
   // The path to temporary directory used to contain the test operations.
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   // A message loop that we can use as the file thread message loop.
   MessageLoop message_loop_;
   scoped_ptr<ServiceProcessPrefs> prefs_;

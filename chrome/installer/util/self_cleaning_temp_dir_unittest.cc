@@ -6,7 +6,7 @@
 #include <wincrypt.h>
 
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
@@ -66,7 +66,7 @@ TEST_F(SelfCleaningTempDirTest, TopLevelPlusOne) {
 // Delete() is called.
 TEST_F(SelfCleaningTempDirTest, RemoveUnusedOnDelete) {
   // Make a directory in which we'll work.
-  ScopedTempDir work_dir;
+  base::ScopedTempDir work_dir;
   EXPECT_TRUE(work_dir.CreateUniqueTempDir());
 
   // Make up some path under the temp dir.
@@ -87,7 +87,7 @@ TEST_F(SelfCleaningTempDirTest, RemoveUnusedOnDelete) {
 // Test that two clients can work in the same area.
 TEST_F(SelfCleaningTempDirTest, TwoClients) {
   // Make a directory in which we'll work.
-  ScopedTempDir work_dir;
+  base::ScopedTempDir work_dir;
   EXPECT_TRUE(work_dir.CreateUniqueTempDir());
 
   // Make up some path under the temp dir.
@@ -124,7 +124,7 @@ TEST_F(SelfCleaningTempDirTest, TwoClients) {
 // destructor is called.
 TEST_F(SelfCleaningTempDirTest, RemoveUnusedOnDestroy) {
   // Make a directory in which we'll work.
-  ScopedTempDir work_dir;
+  base::ScopedTempDir work_dir;
   EXPECT_TRUE(work_dir.CreateUniqueTempDir());
 
   // Make up some path under the temp dir.
@@ -149,7 +149,7 @@ TEST_F(SelfCleaningTempDirTest, LeaveUsedOnDestroy) {
   static const char kHiHon[] = "hi, hon";
 
   // Make a directory in which we'll work.
-  ScopedTempDir work_dir;
+  base::ScopedTempDir work_dir;
   EXPECT_TRUE(work_dir.CreateUniqueTempDir());
 
   // Make up some path under the temp dir.

@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
 #include "chrome/browser/chromeos/contacts/contact_test_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -133,7 +133,7 @@ class ContactDatabaseTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
 
   // Temporary directory where the database is saved.
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 
   // This class retains ownership of this object.
   ContactDatabase* db_;

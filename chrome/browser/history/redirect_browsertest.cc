@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientEmptyReferer) {
       final_url.spec().c_str());
 
   // Write the contents to a temporary file.
-  ScopedTempDir temp_directory;
+  base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   FilePath temp_file;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_directory.path(),

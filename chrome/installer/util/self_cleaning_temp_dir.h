@@ -12,7 +12,7 @@
 namespace installer {
 
 // A helper class for managing a temporary directory.  In relation to
-// ScopedTempDir, this class additionally cleans up all non-empty parent
+// base::ScopedTempDir, this class additionally cleans up all non-empty parent
 // directories of the temporary directory that are created by an instance.
 class SelfCleaningTempDir {
  public:

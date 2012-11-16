@@ -5,10 +5,10 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
-#include "base/scoped_temp_dir.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -97,7 +97,7 @@ class LocalFileUtilTest : public testing::Test {
 
  private:
   scoped_ptr<LocalFileUtil> local_file_util_;
-  ScopedTempDir data_dir_;
+  base::ScopedTempDir data_dir_;
   MessageLoop message_loop_;
   LocalFileSystemTestOriginHelper test_helper_;
 

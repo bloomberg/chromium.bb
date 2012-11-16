@@ -12,8 +12,8 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_split.h"
 #include "content/browser/download/file_metadata_linux.h"
 #include "googleurl/src/gurl.h"
@@ -104,7 +104,7 @@ class FileMetadataLinuxTest : public testing::Test {
   }
 
  private:
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   FilePath test_file_;
   GURL source_url_;
   GURL referrer_url_;

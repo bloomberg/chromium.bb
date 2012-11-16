@@ -5,9 +5,9 @@
 // Unit tests for the SafeBrowsing storage system.
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
@@ -267,7 +267,7 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
 
   scoped_ptr<SafeBrowsingDatabaseNew> database_;
   FilePath database_filename_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 };
 
 // Tests retrieving list name information.

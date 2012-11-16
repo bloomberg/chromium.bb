@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -77,7 +77,7 @@ class WebIntentsModelTest : public testing::Test {
   content::TestBrowserThread db_thread_;
   scoped_refptr<WebDataService> wds_;
   WebIntentsRegistry registry_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 };
 
 class WaitingWebIntentsObserver : public WebIntentsModel::Observer {

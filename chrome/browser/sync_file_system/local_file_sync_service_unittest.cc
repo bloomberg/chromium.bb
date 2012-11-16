@@ -204,7 +204,7 @@ class LocalFileSyncServiceTest
 
   MultiThreadTestHelper thread_helper_;
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 
   scoped_ptr<fileapi::CannedSyncableFileSystem> file_system_;
   scoped_ptr<LocalFileSyncService> local_service_;

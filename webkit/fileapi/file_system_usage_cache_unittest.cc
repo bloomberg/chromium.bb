@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace fileapi {
@@ -25,7 +25,7 @@ class FileSystemUsageCacheTest : public testing::Test {
   }
 
  private:
-  ScopedTempDir data_dir_;
+  base::ScopedTempDir data_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemUsageCacheTest);
 };

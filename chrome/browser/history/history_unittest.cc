@@ -29,10 +29,10 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -151,7 +151,7 @@ class HistoryBackendDBTest : public testing::Test {
     return db_->CreateDownload(download);
   }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 
   MessageLoopForUI message_loop_;
 
@@ -470,7 +470,7 @@ class HistoryTest : public testing::Test {
     MessageLoop::current()->Quit();
   }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 
   MessageLoopForUI message_loop_;
 

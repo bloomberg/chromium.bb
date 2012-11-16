@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -926,7 +926,7 @@ class PasswordStoreMacTest : public testing::Test {
   MockAppleKeychain* keychain_;  // Owned by store_.
   LoginDatabase* login_db_;  // Owned by store_.
   scoped_refptr<PasswordStoreMac> store_;
-  ScopedTempDir db_dir_;
+  base::ScopedTempDir db_dir_;
 };
 
 TEST_F(PasswordStoreMacTest, TestStoreUpdate) {

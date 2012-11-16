@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
@@ -59,7 +59,7 @@ class SessionStorageDatabaseTest : public testing::Test {
                             const GURL& origin) const;
   int64 GetMapRefCount(const std::string& map_id) const;
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   scoped_refptr<SessionStorageDatabase> db_;
 
   // Test data.

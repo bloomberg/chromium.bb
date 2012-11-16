@@ -4,10 +4,10 @@
 
 #include <vector>
 
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
+#include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
-#include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"

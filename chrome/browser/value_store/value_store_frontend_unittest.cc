@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/value_store/value_store_frontend.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/test/test_browser_thread.h"
@@ -60,7 +60,7 @@ class ValueStoreFrontendTest : public testing::Test {
   }
 
   scoped_ptr<ValueStoreFrontend> storage_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   FilePath db_path_;
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;

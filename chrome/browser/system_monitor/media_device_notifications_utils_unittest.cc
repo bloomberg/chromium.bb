@@ -6,8 +6,8 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/system_monitor/removable_device_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,7 +70,7 @@ class MediaDeviceNotificationUtilsTest : public testing::Test {
  private:
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-  ScopedTempDir scoped_temp_dir_;
+  base::ScopedTempDir scoped_temp_dir_;
 };
 
 // Test to verify that IsMediaDevice() function returns true for the given

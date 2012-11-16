@@ -5,9 +5,9 @@
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 
 #include "base/bind.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/google/google_url_tracker.h"
@@ -70,7 +70,7 @@ class TemplateURLServiceTestingProfile : public TestingProfile {
 
  private:
   scoped_refptr<WebDataService> service_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread io_thread_;
 };

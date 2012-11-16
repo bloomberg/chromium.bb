@@ -158,7 +158,7 @@ class DriveFileSyncServiceTest : public testing::Test {
  private:
   MessageLoop message_loop_;
 
-  ScopedTempDir base_dir_;
+  base::ScopedTempDir base_dir_;
   TestingProfile profile_;
 
   scoped_ptr<DriveFileSyncService> sync_service_;

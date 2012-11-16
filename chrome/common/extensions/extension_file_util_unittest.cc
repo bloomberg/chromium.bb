@@ -5,9 +5,9 @@
 #include "chrome/common/extensions/extension_file_util.h"
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
@@ -27,7 +27,7 @@ namespace keys = extension_manifest_keys;
 #define InstallUninstallGarbageCollect DISABLED_InstallUninstallGarbageCollect
 #endif
 TEST(ExtensionFileUtil, InstallUninstallGarbageCollect) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   // Create a source extension.
@@ -135,7 +135,7 @@ TEST(ExtensionFileUtil, LoadExtensionWithoutLocalesFolder) {
     DISABLED_CheckIllegalFilenamesNoUnderscores
 #endif
 TEST(ExtensionFileUtil, CheckIllegalFilenamesNoUnderscores) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   FilePath src_path = temp.path().AppendASCII("some_dir");
@@ -155,7 +155,7 @@ TEST(ExtensionFileUtil, CheckIllegalFilenamesNoUnderscores) {
     DISABLED_CheckIllegalFilenamesOnlyReserved
 #endif
 TEST(ExtensionFileUtil, CheckIllegalFilenamesOnlyReserved) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   FilePath src_path = temp.path().Append(Extension::kLocaleFolder);
@@ -172,7 +172,7 @@ TEST(ExtensionFileUtil, CheckIllegalFilenamesOnlyReserved) {
     DISABLED_CheckIllegalFilenamesReservedAndIllegal
 #endif
 TEST(ExtensionFileUtil, CheckIllegalFilenamesReservedAndIllegal) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   FilePath src_path = temp.path().Append(Extension::kLocaleFolder);
@@ -382,7 +382,7 @@ static scoped_refptr<Extension> LoadExtensionManifest(
 #define ValidateThemeUTF8 DISABLED_ValidateThemeUTF8
 #endif
 TEST(ExtensionFileUtil, ValidateThemeUTF8) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   // "aeo" with accents. Use http://0xcc.net/jsescape/ to decode them.
@@ -415,7 +415,7 @@ TEST(ExtensionFileUtil, ValidateThemeUTF8) {
 #define MAYBE_BackgroundScriptsMustExist BackgroundScriptsMustExist
 #endif
 TEST(ExtensionFileUtil, MAYBE_BackgroundScriptsMustExist) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   scoped_ptr<DictionaryValue> value(new DictionaryValue());
@@ -478,7 +478,7 @@ const char private_key[] =
     "-----END PRIVATE KEY-----\n";
 
 TEST(ExtensionFileUtil, FindPrivateKeyFiles) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   FilePath src_path = temp.path().AppendASCII("some_dir");
@@ -504,7 +504,7 @@ TEST(ExtensionFileUtil, FindPrivateKeyFiles) {
 }
 
 TEST(ExtensionFileUtil, WarnOnPrivateKey) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   FilePath ext_path = temp.path().AppendASCII("ext_root");

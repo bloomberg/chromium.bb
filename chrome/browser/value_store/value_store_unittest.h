@@ -7,10 +7,10 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/value_store/value_store.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -63,7 +63,7 @@ class ValueStoreTest : public testing::TestWithParam<ValueStoreTestParam> {
   scoped_ptr<DictionaryValue> dict123_;
 
  private:
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 
   // Need these so that the DCHECKs for running on FILE or UI threads pass.
   MessageLoop message_loop_;

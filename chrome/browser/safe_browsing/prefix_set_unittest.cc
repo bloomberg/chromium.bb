@@ -8,11 +8,11 @@
 #include <iterator>
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
-#include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -146,7 +146,7 @@ class PrefixSetTest : public PlatformTest {
   // Tests should not modify this shared resource.
   static std::vector<SBPrefix> shared_prefixes_;
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 };
 
 std::vector<SBPrefix> PrefixSetTest::shared_prefixes_;

@@ -319,7 +319,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   scoped_ptr<IPC::ChannelProxy> startup_channel_;
 
 #if defined(OS_MACOSX)
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   FilePath executable_path_, bundle_path_;
   scoped_ptr<MockLaunchd> mock_launchd_;
   scoped_ptr<Launchd::ScopedInstance> scoped_launchd_instance_;

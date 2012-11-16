@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/auto_reset.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
-#include "base/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -127,7 +127,7 @@ class DownloadsDOMHandlerTest : public InProcessBrowserTest {
   }
 
  private:
-  ScopedTempDir downloads_directory_;
+  base::ScopedTempDir downloads_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsDOMHandlerTest);
 };

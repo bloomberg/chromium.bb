@@ -8,8 +8,8 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/bookmarks/bookmark_service.h"
@@ -188,7 +188,7 @@ class AndroidProviderBackendTest : public testing::Test {
   scoped_refptr<HistoryBackend> history_backend_;
   HistoryDatabase history_db_;
   ThumbnailDatabase thumbnail_db_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   FilePath android_cache_db_name_;
   FilePath history_db_name_;
   FilePath thumbnail_db_name_;

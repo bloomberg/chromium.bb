@@ -4,11 +4,11 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -81,7 +81,7 @@ class ChromeAppCacheServiceTest : public testing::Test {
   void InsertDataIntoAppCache(ChromeAppCacheService* appcache_service);
 
   MessageLoop message_loop_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   const GURL kProtectedManifestURL;
   const GURL kNormalManifestURL;
   const GURL kSessionOnlyManifestURL;

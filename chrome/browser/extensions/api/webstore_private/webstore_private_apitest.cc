@@ -8,13 +8,13 @@
 #include "base/file_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -153,7 +153,7 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
     return browser()->profile()->GetExtensionService();
   }
 
-  ScopedTempDir tmp_;
+  base::ScopedTempDir tmp_;
 };
 
 class ExtensionWebstorePrivateBundleTest
@@ -187,7 +187,7 @@ class ExtensionWebstorePrivateBundleTest
   // Packs the |manifest| file into a CRX using |id|'s PEM key.
   void PackCRX(const std::string& id, const std::string& manifest) {
     // Move the extension to a temporary directory.
-    ScopedTempDir tmp;
+    base::ScopedTempDir tmp;
     ASSERT_TRUE(tmp.CreateUniqueTempDir());
     ASSERT_TRUE(file_util::CreateDirectory(tmp.path()));
 
@@ -300,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
 // Test having the default download directory missing.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MissingDownloadDir) {
   // Set a non-existent directory as the download path.
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath missing_directory = temp_dir.Take();
   EXPECT_TRUE(file_util::Delete(missing_directory, true));

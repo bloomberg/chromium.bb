@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_IMPORTER_IMPORTER_UNITTEST_UTILS_H_
 #define CHROME_BROWSER_IMPORTER_IMPORTER_UNITTEST_UTILS_H_
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/importer/profile_writer.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,7 +46,7 @@ class ImporterTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE;
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
 
  private:

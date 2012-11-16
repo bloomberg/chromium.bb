@@ -1620,7 +1620,7 @@ class LaunchBrowserWithNonAsciiUserDatadir : public BrowserTest {
     command_line->AppendSwitchPath(switches::kUserDataDir, tmp_profile);
   }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 };
 
 IN_PROC_BROWSER_TEST_F(LaunchBrowserWithNonAsciiUserDatadir,

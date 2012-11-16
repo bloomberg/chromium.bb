@@ -6,9 +6,9 @@
 
 #include "base/base_paths.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/conditional_work_item_list.h"
@@ -45,7 +45,7 @@ class WorkItemListTest : public testing::Test {
     ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(kTestRoot));
   }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 };
 
 }  // namespace

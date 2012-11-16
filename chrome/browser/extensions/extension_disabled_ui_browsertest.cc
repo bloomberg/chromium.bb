@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -84,7 +84,7 @@ class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
   }
 
   ExtensionService* service_;
-  ScopedTempDir scoped_temp_dir_;
+  base::ScopedTempDir scoped_temp_dir_;
   FilePath path_v1_;
   FilePath path_v2_;
   FilePath path_v3_;

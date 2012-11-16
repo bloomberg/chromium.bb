@@ -37,7 +37,7 @@ class FileSystemApiTest : public extensions::PlatformAppBrowserTest {
   }
 
   FilePath test_root_folder_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 };
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPath) {

@@ -8,9 +8,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/thread_test_helper.h"
@@ -116,7 +116,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   base::WaitableEvent key_loaded_event_;
   base::WaitableEvent db_thread_event_;
   CanonicalCookieVector cookies_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   scoped_refptr<SQLitePersistentCookieStore> store_;
 };
 

@@ -12,11 +12,11 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -466,7 +466,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
       response.SerializeAsString(),
       true);
 
-  ScopedTempDir download_dir;
+  base::ScopedTempDir download_dir;
   ASSERT_TRUE(download_dir.CreateUniqueTempDir());
 
   DownloadProtectionService::DownloadInfo info;
@@ -477,7 +477,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
 
   // Write out a zip archive to the temporary file.  In this case, it
   // only contains a text file.
-  ScopedTempDir zip_source_dir;
+  base::ScopedTempDir zip_source_dir;
   ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
   std::string file_contents = "dummy file";
   ASSERT_EQ(static_cast<int>(file_contents.size()), file_util::WriteFile(
@@ -533,7 +533,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadCorruptZip) {
-  ScopedTempDir download_dir;
+  base::ScopedTempDir download_dir;
   ASSERT_TRUE(download_dir.CreateUniqueTempDir());
 
   DownloadProtectionService::DownloadInfo info;

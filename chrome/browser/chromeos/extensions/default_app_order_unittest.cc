@@ -9,9 +9,9 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,7 +63,7 @@ class DefaultAppOrderTest : public testing::Test {
  private:
   std::vector<std::string> built_in_default_;
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   scoped_ptr<base::ScopedPathOverride> path_override_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultAppOrderTest);

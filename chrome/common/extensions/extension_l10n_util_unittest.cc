@@ -4,15 +4,15 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -70,7 +70,7 @@ namespace {
 #endif
 
 TEST(ExtensionL10nUtil, GetValidLocalesEmptyLocaleFolder) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   FilePath src_path = temp.path().Append(Extension::kLocaleFolder);
@@ -86,7 +86,7 @@ TEST(ExtensionL10nUtil, GetValidLocalesEmptyLocaleFolder) {
 }
 
 TEST(ExtensionL10nUtil, GetValidLocalesWithValidLocaleNoMessagesFile) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   FilePath src_path = temp.path().Append(Extension::kLocaleFolder);
@@ -103,7 +103,7 @@ TEST(ExtensionL10nUtil, GetValidLocalesWithValidLocaleNoMessagesFile) {
 }
 
 TEST(ExtensionL10nUtil, GetValidLocalesWithUnsupportedLocale) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   FilePath src_path = temp.path().Append(Extension::kLocaleFolder);
@@ -175,7 +175,7 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsValidFallback) {
 }
 
 TEST(ExtensionL10nUtil, LoadMessageCatalogsMissingFiles) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   FilePath src_path = temp.path().Append(Extension::kLocaleFolder);
@@ -194,7 +194,7 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsMissingFiles) {
 }
 
 TEST(ExtensionL10nUtil, LoadMessageCatalogsBadJSONFormat) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   FilePath src_path = temp.path().Append(Extension::kLocaleFolder);
@@ -221,7 +221,7 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsBadJSONFormat) {
 }
 
 TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   FilePath src_path = temp.path().Append(Extension::kLocaleFolder);

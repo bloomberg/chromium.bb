@@ -8,9 +8,9 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
@@ -74,7 +74,7 @@ class UserScriptMasterTest : public testing::Test,
   }
 
   // Directory containing user scripts.
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 
   content::NotificationRegistrar registrar_;
 

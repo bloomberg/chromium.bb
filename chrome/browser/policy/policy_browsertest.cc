@@ -11,9 +11,9 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/test/test_file_util.h"
@@ -1043,7 +1043,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
   // Verifies that the download directory can be forced by policy.
 
   // Set the initial download directory.
-  ScopedTempDir initial_dir;
+  base::ScopedTempDir initial_dir;
   ASSERT_TRUE(initial_dir.CreateUniqueTempDir());
   browser()->profile()->GetPrefs()->SetFilePath(
       prefs::kDownloadDefaultDirectory, initial_dir.path());
@@ -1057,7 +1057,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
   file_util::DieFileDie(initial_dir.path().Append(file), false);
 
   // Override the download directory with the policy and verify a download.
-  ScopedTempDir forced_dir;
+  base::ScopedTempDir forced_dir;
   ASSERT_TRUE(forced_dir.CreateUniqueTempDir());
   PolicyMap policies;
   policies.Set(key::kDownloadDirectory, POLICY_LEVEL_MANDATORY,

@@ -6,14 +6,14 @@
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string_split.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -270,14 +270,14 @@ class RecordApiTest : public InProcessBrowserTest {
   std::vector<FilePath> temp_files_;
 
  private:
-  ScopedTempDir scoped_temp_user_data_dir_;
+  base::ScopedTempDir scoped_temp_user_data_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(RecordApiTest);
 };
 
 
 IN_PROC_BROWSER_TEST_F(RecordApiTest, CheckCapture) {
-  ScopedTempDir user_data_dir;
+  base::ScopedTempDir user_data_dir;
   scoped_ptr<base::ListValue> result;
 
   EXPECT_TRUE(user_data_dir.CreateUniqueTempDir());
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(RecordApiTest, CheckCapture) {
 #define MAYBE_CheckPlayback CheckPlayback
 #endif
 IN_PROC_BROWSER_TEST_F(RecordApiTest, MAYBE_CheckPlayback) {
-  ScopedTempDir user_data_dir;
+  base::ScopedTempDir user_data_dir;
 
   EXPECT_TRUE(user_data_dir.CreateUniqueTempDir());
 

@@ -8,12 +8,12 @@
 // 3) the result of QuotaManager::GetUsageAndQuota.
 
 #include "base/bind.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
@@ -162,7 +162,7 @@ class LocalFileSystemQuotaTest
 
   LocalFileSystemTestOriginHelper test_helper_;
 
-  ScopedTempDir work_dir_;
+  base::ScopedTempDir work_dir_;
   MessageLoop message_loop_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
 

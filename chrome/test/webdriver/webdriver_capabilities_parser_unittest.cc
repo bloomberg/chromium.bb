@@ -5,7 +5,7 @@
 #include "base/base64.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/zip.h"
@@ -38,7 +38,7 @@ TEST(CapabilitiesParser, SimpleCaps) {
   options->SetBoolean("nativeEvents", true);
 
   Capabilities caps;
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   CapabilitiesParser parser(&dict, temp_dir.path(), Logger(), &caps);
   ASSERT_FALSE(parser.Parse());
@@ -61,7 +61,7 @@ TEST(CapabilitiesParser, Args) {
   options->Set("args", args);
 
   Capabilities caps;
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   CapabilitiesParser parser(&dict, temp_dir.path(), Logger(), &caps);
   ASSERT_FALSE(parser.Parse());
@@ -81,7 +81,7 @@ TEST(CapabilitiesParser, Extensions) {
   options->Set("extensions", extensions);
 
   Capabilities caps;
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   CapabilitiesParser parser(&dict, temp_dir.path(), Logger(), &caps);
   ASSERT_FALSE(parser.Parse());
@@ -99,7 +99,7 @@ TEST(CapabilitiesParser, Profile) {
   DictionaryValue* options = new DictionaryValue();
   dict.Set("chromeOptions", options);
 
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath folder = temp_dir.path().AppendASCII("folder");
   ASSERT_TRUE(file_util::CreateDirectory(folder));

@@ -6,6 +6,7 @@
 
 #include "base/base_paths.h"
 #include "base/file_version_info.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/test/test_timeouts.h"
@@ -75,7 +76,7 @@ FilePath ChromeFrameTestWithWebServer::test_file_path_;
 FilePath ChromeFrameTestWithWebServer::results_dir_;
 FilePath ChromeFrameTestWithWebServer::CFInstall_path_;
 FilePath ChromeFrameTestWithWebServer::CFInstance_path_;
-ScopedTempDir ChromeFrameTestWithWebServer::temp_dir_;
+base::ScopedTempDir ChromeFrameTestWithWebServer::temp_dir_;
 FilePath ChromeFrameTestWithWebServer::chrome_user_data_dir_;
 chrome_frame_test::TimedMsgLoop* ChromeFrameTestWithWebServer::loop_;
 std::string ChromeFrameTestWithWebServer::local_address_;

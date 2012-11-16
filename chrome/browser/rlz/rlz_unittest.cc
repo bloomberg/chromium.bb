@@ -4,9 +4,10 @@
 
 #include "chrome/browser/rlz/rlz.h"
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
 #include "base/stringprintf.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/threading/thread.h"
@@ -19,8 +20,8 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -197,8 +198,13 @@ class RlzLibTest : public testing::Test {
   TestRLZTracker tracker_;
 #if defined(OS_WIN)
   RegistryOverrideManager override_manager_;
+<<<<<<< HEAD
+#elif defined(OS_MACOSX)
+  base::ScopedTempDir temp_dir_;
+=======
 #elif defined(OS_MACOSX) || defined(OS_CHROMEOS)
   ScopedTempDir temp_dir_;
+>>>>>>> master
   scoped_ptr<google_util::BrandForTesting> brand_override_;
 #endif
 #if defined(OS_CHROMEOS)

@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "remoting/host/json_host_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,7 +29,7 @@ class JsonHostConfigTest : public testing::Test {
   }
 
   // The temporary directory used to contain the test operations.
-  ScopedTempDir test_dir_;
+  base::ScopedTempDir test_dir_;
 };
 
 TEST_F(JsonHostConfigTest, InvalidFile) {

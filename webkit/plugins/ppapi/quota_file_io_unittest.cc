@@ -8,10 +8,10 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
-#include "base/scoped_temp_dir.h"
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppapi_unittest.h"
@@ -422,7 +422,7 @@ class QuotaFileIOTest : public PpapiUnittest {
   }
 
  private:
-  ScopedTempDir dir_;
+  base::ScopedTempDir dir_;
   PlatformFile file_;
   scoped_ptr<QuotaFileIO> quota_file_io_;
   std::deque<int> bytes_written_;

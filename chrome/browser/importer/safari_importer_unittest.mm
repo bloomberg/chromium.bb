@@ -7,8 +7,8 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -193,7 +193,7 @@ TEST_F(SafariImporterTest, CanImport) {
   EXPECT_EQ(items & importer::HOME_PAGE, importer::NONE);
 
   // Check that we don't import anything from a bogus library directory.
-  ScopedTempDir fake_library_dir;
+  base::ScopedTempDir fake_library_dir;
   ASSERT_TRUE(fake_library_dir.CreateUniqueTempDir());
   EXPECT_FALSE(SafariImporter::CanImport(fake_library_dir.path(), &items));
 }

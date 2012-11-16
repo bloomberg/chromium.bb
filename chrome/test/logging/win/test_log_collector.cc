@@ -13,10 +13,10 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/logging/win/file_logger.h"
@@ -136,7 +136,7 @@ class TestLogCollector {
 
   // A temporary directory into which a log file is placed for the duration of
   // each test.  Created/destroyed at collector SetUp and TearDown.
-  ScopedTempDir log_temp_dir_;
+  base::ScopedTempDir log_temp_dir_;
 
   // The test logger.  Initialized/Unintitialized at collector SetUp and
   // TearDown.

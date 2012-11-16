@@ -5,9 +5,11 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/platform_file.h"
-#include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
 
 TEST(ScopedTempDir, FullPath) {
   FilePath test_path;
@@ -111,3 +113,5 @@ TEST(ScopedTempDir, LockedTempDir) {
   EXPECT_TRUE(dir.Delete());
 }
 #endif  // defined(OS_WIN)
+
+}  // namespace base

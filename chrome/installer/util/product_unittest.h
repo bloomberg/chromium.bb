@@ -9,8 +9,8 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TestWithTempDir : public testing::Test {
@@ -18,7 +18,7 @@ class TestWithTempDir : public testing::Test {
   virtual void SetUp();
   virtual void TearDown();
 
-  ScopedTempDir test_dir_;
+  base::ScopedTempDir test_dir_;
 };
 
 class TestWithTempDirAndDeleteTempOverrideKeys : public TestWithTempDir {

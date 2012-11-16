@@ -5,8 +5,8 @@
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 
 #include "base/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
@@ -184,7 +184,7 @@ class DriveMetadataStoreTest : public testing::Test {
     message_loop_.Quit();
   }
 
-  ScopedTempDir base_dir_;
+  base::ScopedTempDir base_dir_;
 
   MessageLoop message_loop_;
   scoped_ptr<base::Thread> file_thread_;

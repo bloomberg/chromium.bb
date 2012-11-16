@@ -4,9 +4,9 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/scoped_temp_dir.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -63,7 +63,7 @@ class DomStorageContextTest : public testing::Test {
 
  protected:
   MessageLoop message_loop_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   scoped_refptr<quota::MockSpecialStoragePolicy> storage_policy_;
   scoped_refptr<MockDomStorageTaskRunner> task_runner_;
   scoped_refptr<DomStorageContext> context_;

@@ -29,7 +29,7 @@
 #endif  // defined(OS_POSIX)
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 
 class CommandLine;
@@ -204,7 +204,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   FilePath cookie_path_;
 
   // Temporary directory to hold the socket.
-  ScopedTempDir socket_dir_;
+  base::ScopedTempDir socket_dir_;
 
   // Helper class for linux specific messages.  LinuxWatcher is ref counted
   // because it posts messages between threads.

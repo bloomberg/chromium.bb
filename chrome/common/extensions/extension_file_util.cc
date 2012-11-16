@@ -9,11 +9,11 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -83,7 +83,7 @@ FilePath InstallExtension(const FilePath& unpacked_source_dir,
 
   // Get a temp directory on the same file system as the profile.
   FilePath install_temp_dir = GetInstallTempDir(extensions_dir);
-  ScopedTempDir extension_temp_dir;
+  base::ScopedTempDir extension_temp_dir;
   if (install_temp_dir.empty() ||
       !extension_temp_dir.CreateUniqueTempDirUnderPath(install_temp_dir)) {
     LOG(ERROR) << "Creating of temp dir under in the profile failed.";

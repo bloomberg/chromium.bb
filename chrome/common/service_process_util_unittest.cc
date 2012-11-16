@@ -27,8 +27,8 @@
 #endif
 
 #if defined(OS_POSIX)
-#include "chrome/common/auto_start_linux.h"
 #include <glib.h>
+#include "chrome/common/auto_start_linux.h"
 #endif
 
 #if defined(USE_AURA)
@@ -241,8 +241,8 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/mac/mac_util.h"
-#include "base/scoped_temp_dir.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "chrome/common/mac/launchd.h"
@@ -289,7 +289,7 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
   void Run() { loop_.Run(); }
 
  private:
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   MessageLoopForUI loop_;
   base::Thread io_thread_;
   FilePath executable_path_, bundle_path_;

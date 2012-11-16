@@ -5,9 +5,9 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -190,7 +190,7 @@ class WebDatabaseMigrationTest : public testing::Test {
  private:
   MessageLoopForUI message_loop_for_ui_;
   content::TestBrowserThread ui_thread_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };

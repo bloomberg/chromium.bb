@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -217,7 +217,7 @@ class FileBrowserHandlerExtensionTest : public ExtensionApiTest {
   static const std::vector<TestCase>* test_cases_;
   static size_t current_test_case_;
 
-  ScopedTempDir scoped_tmp_dir_;
+  base::ScopedTempDir scoped_tmp_dir_;
   // Our test mount point path.
   FilePath tmp_mount_point_;
 };

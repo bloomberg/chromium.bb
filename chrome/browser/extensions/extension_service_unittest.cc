@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
@@ -20,7 +21,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -633,7 +633,7 @@ class ExtensionServiceTest
                                      InstallState install_state,
                                      int creation_flags) {
     FilePath crx_path;
-    ScopedTempDir temp_dir;
+    base::ScopedTempDir temp_dir;
     EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
     crx_path = temp_dir.path().AppendASCII("temp.crx");
 
@@ -1826,7 +1826,7 @@ TEST_F(ExtensionServiceTest, PackExtension) {
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
       .AppendASCII("1.0.0.0");
 
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath output_directory = temp_dir.path();
 
@@ -1864,7 +1864,7 @@ TEST_F(ExtensionServiceTest, PackExtension) {
 
   // Try packing an empty directory. Should fail because an empty directory is
   // not a valid extension.
-  ScopedTempDir temp_dir2;
+  base::ScopedTempDir temp_dir2;
   ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
   creator.reset(new ExtensionCreator());
   ASSERT_FALSE(creator->Run(temp_dir2.path(), crx_path, privkey_path,
@@ -1889,7 +1889,7 @@ TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
       .AppendASCII(good0)
       .AppendASCII("1.0.0.0");
 
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   // Extension names containing punctuation, and the expected names for the
@@ -1946,7 +1946,7 @@ TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
 TEST_F(ExtensionServiceTest, PackExtensionContainingKeyFails) {
   InitializeEmptyExtensionService();
 
-  ScopedTempDir extension_temp_dir;
+  base::ScopedTempDir extension_temp_dir;
   ASSERT_TRUE(extension_temp_dir.CreateUniqueTempDir());
   FilePath input_directory = extension_temp_dir.path().AppendASCII("ext");
   ASSERT_TRUE(file_util::CopyDirectory(
@@ -1958,7 +1958,7 @@ TEST_F(ExtensionServiceTest, PackExtensionContainingKeyFails) {
       input_directory,
       /*recursive=*/true));
 
-  ScopedTempDir output_temp_dir;
+  base::ScopedTempDir output_temp_dir;
   ASSERT_TRUE(output_temp_dir.CreateUniqueTempDir());
   FilePath output_directory = output_temp_dir.path();
 
@@ -2003,7 +2003,7 @@ TEST_F(ExtensionServiceTest, PackExtensionOpenSSLKey) {
       "openssl_privkey_asn1.pem"));
   ASSERT_TRUE(file_util::PathExists(privkey_path));
 
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath output_directory = temp_dir.path();
 
@@ -2075,7 +2075,7 @@ TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
 TEST_F(ExtensionServiceTest, UnpackedExtensionCanChangeID) {
   InitializeEmptyExtensionService();
 
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   FilePath extension_path = temp.path();
@@ -2127,7 +2127,7 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionMayContainSymlinkedFiles) {
   ASSERT_TRUE(file_util::PathExists(source_icon));
 
   // Set up the temporary extension directory.
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
   FilePath extension_path = temp.path();
   FilePath manifest = extension_path.Append(Extension::kManifestFilename);
@@ -2570,7 +2570,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesLocation) {
 TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
   InitializeEmptyExtensionService();
 
-  ScopedTempDir temp;
+  base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   // We'll write the extension manifest dynamically to a temporary path

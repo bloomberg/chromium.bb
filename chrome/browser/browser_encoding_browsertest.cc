@@ -4,7 +4,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -65,7 +65,7 @@ class BrowserEncodingTest : public InProcessBrowserTest {
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   FilePath save_dir_;
   FilePath temp_sub_resource_dir_;
 };

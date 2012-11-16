@@ -13,9 +13,9 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/win/scoped_hdc.h"
 #include "printing/printing_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -169,7 +169,7 @@ TEST_F(EmfPrintingTest, PageBreak) {
 
 TEST(EmfTest, FileBackedEmf) {
   // Simplest use case.
-  ScopedTempDir scratch_metafile_dir;
+  base::ScopedTempDir scratch_metafile_dir;
   ASSERT_TRUE(scratch_metafile_dir.CreateUniqueTempDir());
   FilePath metafile_path;
   EXPECT_TRUE(file_util::CreateTemporaryFileInDir(scratch_metafile_dir.path(),

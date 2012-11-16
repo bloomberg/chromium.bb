@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/extensions/extension_creator_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -32,7 +32,7 @@ class ExtensionCreatorFilterTest : public PlatformTest {
 
   scoped_refptr<extensions::ExtensionCreatorFilter> filter_;
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 
   FilePath test_dir_;
 };

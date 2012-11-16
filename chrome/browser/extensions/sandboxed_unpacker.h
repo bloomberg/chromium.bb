@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host_client.h"
@@ -205,7 +205,7 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   FilePath extensions_dir_;
 
   // A temporary directory to use for unpacking.
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 
   // The root directory of the unpacked extension. This is a child of temp_dir_.
   FilePath extension_root_;

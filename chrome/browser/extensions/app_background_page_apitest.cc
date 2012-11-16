@@ -77,7 +77,7 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
   }
 
  private:
-  ScopedTempDir app_dir_;
+  base::ScopedTempDir app_dir_;
 };
 
 // Disable on Mac only.  http://crbug.com/95139

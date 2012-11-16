@@ -38,7 +38,7 @@ DeleteTreeWorkItem::DeleteTreeWorkItem(
     NOTREACHED() << "Impossibly large key_paths collection";
   } else if (num_key_files_ != 0) {
     key_paths_.reset(new FilePath[num_key_files_]);
-    key_backup_paths_.reset(new ScopedTempDir[num_key_files_]);
+    key_backup_paths_.reset(new base::ScopedTempDir[num_key_files_]);
     std::copy(key_paths.begin(), key_paths.end(), &key_paths_[0]);
   }
 }
@@ -57,7 +57,7 @@ bool DeleteTreeWorkItem::Do() {
   bool abort = false;
   for (ptrdiff_t i = 0; !abort && i != num_key_files_; ++i) {
     FilePath& key_file = key_paths_[i];
-    ScopedTempDir& backup = key_backup_paths_[i];
+    base::ScopedTempDir& backup = key_backup_paths_[i];
     if (!ignore_failure_) {
       if (!backup.CreateUniqueTempDirUnderPath(temp_path_)) {
         PLOG(ERROR) << "Could not create temp dir in " << temp_path_.value();
@@ -147,7 +147,7 @@ void DeleteTreeWorkItem::Rollback() {
   }
 
   for (ptrdiff_t i = 0; i != num_key_files_; ++i) {
-    ScopedTempDir& backup_dir = key_backup_paths_[i];
+    base::ScopedTempDir& backup_dir = key_backup_paths_[i];
     if (!backup_dir.path().empty()) {
       FilePath& key_file = key_paths_[i];
       FilePath backup_file = backup_dir.path().Append(key_file.BaseName());

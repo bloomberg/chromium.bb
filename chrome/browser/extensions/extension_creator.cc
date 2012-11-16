@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_handle.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/crx_file.h"
 #include "chrome/browser/extensions/extension_creator_filter.h"
@@ -308,7 +308,7 @@ bool ExtensionCreator::Run(const FilePath& extension_dir,
   if (!ValidateManifest(extension_dir, key_pair.get(), run_flags))
     return false;
 
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   if (!temp_dir.CreateUniqueTempDir())
     return false;
 

@@ -5,9 +5,9 @@
 #include "content/browser/download/base_file.h"
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/test/test_file_util.h"
 #include "content/browser/browser_thread_impl.h"
@@ -203,7 +203,7 @@ class BaseFileTest : public testing::Test {
   scoped_ptr<BaseFile> base_file_;
 
   // Temporary directory for renamed downloads.
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 
   // Expect the file to survive deletion of the BaseFile instance.
   bool expect_file_survives_;

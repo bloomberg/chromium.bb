@@ -4,12 +4,12 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -244,7 +244,7 @@ protected:
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 };
 
 TEST_F(JSONFileValueSerializerTest, Roundtrip) {

@@ -138,14 +138,14 @@ class TestWebKitPlatformSupport :
   TestShellWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
-  ScopedTempDir appcache_dir_;
+  base::ScopedTempDir appcache_dir_;
   SimpleAppCacheSystem appcache_system_;
   SimpleDatabaseSystem database_system_;
   SimpleDomStorageSystem dom_storage_system_;
   SimpleWebCookieJarImpl cookie_jar_;
   scoped_refptr<TestShellWebBlobRegistryImpl> blob_registry_;
   SimpleFileSystem file_system_;
-  ScopedTempDir file_system_root_;
+  base::ScopedTempDir file_system_root_;
   WebURLLoaderMockFactory url_loader_factory_;
   bool unit_test_mode_;
   WebKit::WebGamepads gamepad_data_;

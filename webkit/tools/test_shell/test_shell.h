@@ -13,13 +13,11 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/scoped_temp_dir.h"
-#include "base/string_piece.h"
-#if defined(OS_MACOSX)
+#include "base/files/scoped_temp_dir.h"
 #include "base/lazy_instance.h"
-#endif
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/string_piece.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/tools/test_shell/webview_host.h"

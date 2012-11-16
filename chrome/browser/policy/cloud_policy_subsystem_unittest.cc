@@ -4,10 +4,10 @@
 
 #include <vector>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
@@ -245,7 +245,7 @@ class CloudPolicySubsystemTestBase : public testing::Test {
         << "No enough requests were fired during the test run.";
   }
 
-  ScopedTempDir temp_user_data_dir_;
+  base::ScopedTempDir temp_user_data_dir_;
 
   MessageLoop loop_;
   content::TestBrowserThread ui_thread_;

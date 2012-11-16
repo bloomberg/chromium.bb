@@ -6,8 +6,8 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/platform_file.h"
-#include "base/scoped_temp_dir.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/util/logging_installer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,7 +15,7 @@
 TEST(LoggingInstallerTest, TestTruncate) {
   const std::string test_data(installer::kMaxInstallerLogFileSize + 1, 'a');
 
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   FilePath temp_file = temp_dir.path().Append(L"temp");
@@ -40,7 +40,7 @@ TEST(LoggingInstallerTest, TestTruncate) {
 TEST(LoggingInstallerTest, TestTruncationNotNeeded) {
   const std::string test_data(installer::kMaxInstallerLogFileSize, 'a');
 
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   FilePath temp_file = temp_dir.path().Append(L"temp");
@@ -62,7 +62,7 @@ TEST(LoggingInstallerTest, TestTruncationNotNeeded) {
 TEST(LoggingInstallerTest, TestInUseNeedsTruncation) {
   const std::string test_data(installer::kMaxInstallerLogFileSize + 1, 'a');
 
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   FilePath temp_file = temp_dir.path().Append(L"temp");
@@ -91,7 +91,7 @@ TEST(LoggingInstallerTest, TestInUseNeedsTruncation) {
 TEST(LoggingInstallerTest, TestMoveFailsNeedsTruncation) {
   const std::string test_data(installer::kMaxInstallerLogFileSize + 1, 'a');
 
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   FilePath temp_file = temp_dir.path().Append(L"temp");

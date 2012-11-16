@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/sandboxed_unpacker.h"
@@ -157,8 +156,8 @@ class SandboxedUnpackerTest : public testing::Test {
   }
 
  protected:
-  ScopedTempDir temp_dir_;
-  ScopedTempDir extensions_dir_;
+  base::ScopedTempDir temp_dir_;
+  base::ScopedTempDir extensions_dir_;
   FilePath temp_path_;
   MockSandboxedUnpackerClient* client_;
   scoped_ptr<Unpacker> unpacker_;

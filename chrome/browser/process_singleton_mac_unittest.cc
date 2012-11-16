@@ -61,7 +61,7 @@ class ProcessSingletonMacTest : public PlatformTest {
     return false;
   }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   FilePath lock_path_;
 };
 

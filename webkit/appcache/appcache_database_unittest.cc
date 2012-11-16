@@ -5,7 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
@@ -63,7 +63,7 @@ TEST(AppCacheDatabaseTest, LazyOpen) {
 
 TEST(AppCacheDatabaseTest, ReCreate) {
   // Real files on disk for this test.
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   const FilePath kDbFile = temp_dir.path().AppendASCII("appcache.db");
   const FilePath kNestedDir = temp_dir.path().AppendASCII("nested");
@@ -619,7 +619,7 @@ TEST(AppCacheDatabaseTest, OriginUsage) {
 
 TEST(AppCacheDatabaseTest, UpgradeSchema3to4) {
   // Real file on disk for this test.
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   const FilePath kDbFile = temp_dir.path().AppendASCII("upgrade.db");
 

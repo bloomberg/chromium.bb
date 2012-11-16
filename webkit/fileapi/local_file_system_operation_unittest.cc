@@ -5,11 +5,11 @@
 #include "webkit/fileapi/local_file_system_operation.h"
 
 #include "base/bind.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,8 +22,8 @@
 #include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/mock_file_change_observer.h"
-#include "webkit/quota/quota_manager.h"
 #include "webkit/quota/mock_quota_manager.h"
+#include "webkit/quota/quota_manager.h"
 
 using quota::QuotaManager;
 using quota::QuotaManagerProxy;
@@ -71,7 +71,7 @@ class LocalFileSystemOperationTest
 
  protected:
   // Common temp base for nondestructive uses.
-  ScopedTempDir base_;
+  base::ScopedTempDir base_;
 
   quota::MockQuotaManager* quota_manager() {
     return static_cast<quota::MockQuotaManager*>(quota_manager_.get());

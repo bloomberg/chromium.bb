@@ -4,7 +4,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_item_impl.h"
@@ -84,7 +84,7 @@ class DragDownloadFileTest : public ContentBrowserTest {
   }
 
  private:
-  ScopedTempDir downloads_directory_;
+  base::ScopedTempDir downloads_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(DragDownloadFileTest);
 };

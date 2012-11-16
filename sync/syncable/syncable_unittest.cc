@@ -8,11 +8,11 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/test/values_test_util.h"
@@ -98,7 +98,7 @@ class SyncableGeneralTest : public testing::Test {
   }
  protected:
   MessageLoop message_loop_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   NullDirectoryChangeDelegate delegate_;
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;
@@ -1483,7 +1483,7 @@ TestDirectory::~TestDirectory() { }
 TEST(OnDiskSyncableDirectory, FailInitialWrite) {
   FakeEncryptor encryptor;
   TestUnrecoverableErrorHandler handler;
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.path().Append(
       FILE_PATH_LITERAL("Test.sqlite3"));
@@ -1539,7 +1539,7 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
   }
 
   TestDirectory *test_directory_;  // mirrors scoped_ptr<Directory> dir_
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   FilePath file_path_;
 };
 
@@ -1942,7 +1942,7 @@ class SyncableDirectoryManagement : public testing::Test {
   }
  protected:
   MessageLoop message_loop_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;
   NullDirectoryChangeDelegate delegate_;
@@ -2011,7 +2011,7 @@ class StressTransactionsDelegate : public base::PlatformThread::Delegate {
 
 TEST(SyncableDirectory, StressTransactions) {
   MessageLoop message_loop;
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FakeEncryptor encryptor;
   TestUnrecoverableErrorHandler handler;

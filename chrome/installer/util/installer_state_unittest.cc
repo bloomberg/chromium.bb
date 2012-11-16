@@ -10,9 +10,9 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/utf_string_conversions.h"
@@ -144,7 +144,7 @@ TEST_F(InstallerStateTest, Delete) {
   BuildSingleChromeState(chrome_dir, &installer_state);
   Version latest_version("1.0.4.0");
   {
-    ScopedTempDir temp_dir;
+    base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     installer_state.RemoveOldVersionDirectories(latest_version, NULL,
                                                 temp_dir.path());
@@ -225,7 +225,7 @@ TEST_F(InstallerStateTest, DeleteInUsed) {
   Version latest_version("1.0.4.0");
   Version existing_version("1.0.1.0");
   {
-    ScopedTempDir temp_dir;
+    base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     installer_state.RemoveOldVersionDirectories(latest_version,
                                                 &existing_version,
@@ -302,7 +302,7 @@ TEST_F(InstallerStateTest, Basic) {
   EXPECT_TRUE(file.IsValid());
   EXPECT_TRUE(file_util::PathExists(old_chrome_dll));
 
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   // Don't explicitly tell the directory cleanup logic not to delete the
@@ -469,7 +469,7 @@ TEST_F(InstallerStateTest, GetCurrentVersionMigrateChrome) {
 }
 
 TEST_F(InstallerStateTest, IsFileInUse) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   FilePath temp_file;

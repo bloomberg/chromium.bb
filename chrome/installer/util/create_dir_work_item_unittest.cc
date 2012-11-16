@@ -6,9 +6,9 @@
 
 #include "base/base_paths.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "chrome/installer/util/create_dir_work_item.h"
 #include "chrome/installer/util/work_item.h"
@@ -21,7 +21,7 @@ namespace {
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     }
 
-    ScopedTempDir temp_dir_;
+    base::ScopedTempDir temp_dir_;
   };
 };
 

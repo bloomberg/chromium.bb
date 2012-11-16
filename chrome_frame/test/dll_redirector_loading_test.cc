@@ -9,9 +9,9 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
-#include "base/scoped_temp_dir.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "base/version.h"
@@ -113,14 +113,14 @@ class DllRedirectorLoadingTest : public testing::Test {
   static scoped_ptr<Version> original_version_;
   static scoped_ptr<Version> new_version_;
 
-  static ScopedTempDir temp_dir_;
+  static base::ScopedTempDir temp_dir_;
 };  // class DllRedirectorLoadingTest
 
 FilePath DllRedirectorLoadingTest::original_chrome_frame_dll_;
 FilePath DllRedirectorLoadingTest::new_chrome_frame_dll_;
 scoped_ptr<Version> DllRedirectorLoadingTest::original_version_;
 scoped_ptr<Version> DllRedirectorLoadingTest::new_version_;
-ScopedTempDir DllRedirectorLoadingTest::temp_dir_;
+base::ScopedTempDir DllRedirectorLoadingTest::temp_dir_;
 
 #if defined(COMPONENT_BUILD)
 // Disabling since npchrome_frame.dll's DllMain can't handle being loaded into

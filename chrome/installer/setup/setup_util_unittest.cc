@@ -7,11 +7,11 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
-#include "base/time.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
 #include "base/threading/platform_thread.h"
+#include "base/time.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/installer/setup/setup_util.h"
@@ -36,7 +36,7 @@ class SetupUtilTestWithDir : public testing::Test {
   }
 
   // The temporary directory used to contain the test operations.
-  ScopedTempDir test_dir_;
+  base::ScopedTempDir test_dir_;
 
   // The path to input data used in tests.
   FilePath data_dir_;

@@ -8,8 +8,8 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "sql/connection.h"
@@ -79,7 +79,7 @@ class MigrationTest : public testing::TestWithParam<int> {
   }
 
  private:
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 };
 
 class DirectoryBackingStoreTest : public MigrationTest {};

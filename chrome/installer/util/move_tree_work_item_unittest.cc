@@ -25,8 +25,8 @@ class MoveTreeWorkItemTest : public testing::Test {
     ASSERT_TRUE(temp_to_dir_.CreateUniqueTempDir());
   }
 
-  ScopedTempDir temp_from_dir_;
-  ScopedTempDir temp_to_dir_;
+  base::ScopedTempDir temp_from_dir_;
+  base::ScopedTempDir temp_to_dir_;
 };
 
 // Simple function to dump some text into a new file.

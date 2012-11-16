@@ -5,15 +5,15 @@
 #ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_FILE_SYSTEM_H_
 #define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_FILE_SYSTEM_H_
 
+#include <vector>
 #include "base/file_util_proxy.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_temp_dir.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_types.h"
-#include <vector>
 
 namespace WebKit {
 class WebFileSystemCallbacks;
@@ -148,7 +148,7 @@ class SimpleFileSystem
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
   // A temporary directory for FileSystem API.
-  ScopedTempDir file_system_dir_;
+  base::ScopedTempDir file_system_dir_;
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 

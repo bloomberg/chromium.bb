@@ -11,9 +11,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_split.h"
 #include "base/test/thread_test_helper.h"
 #include "chrome/browser/browser_process.h"
@@ -432,7 +432,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   // destructed until after the test Browser has been torn down, since the
   // ImportantFileWriter may still be modifying it after the Profile object has
   // been destroyed.
-  ScopedTempDir temp_profile_dir_;
+  base::ScopedTempDir temp_profile_dir_;
 
   // Waits for pending tasks on the IO thread to complete. This is useful
   // to wait for the SafeBrowsingService to finish loading/stopping.

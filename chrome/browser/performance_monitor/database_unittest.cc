@@ -8,8 +8,8 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/scoped_temp_dir.h"
 #include "base/time.h"
 #include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/key_builder.h"
@@ -120,7 +120,7 @@ class PerformanceMonitorDatabaseEventTest : public ::testing::Test {
 
   scoped_ptr<Database> db_;
   Database::Clock* clock_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   scoped_ptr<Event> install_event_1_;
   scoped_ptr<Event> install_event_2_;
   scoped_ptr<Event> uninstall_event_1_;
@@ -180,13 +180,13 @@ class PerformanceMonitorDatabaseMetricTest : public ::testing::Test {
 
   scoped_ptr<Database> db_;
   Database::Clock* clock_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   std::string activity_;
 };
 
 ////// PerformanceMonitorDatabaseSetupTests ////////////////////////////////////
 TEST(PerformanceMonitorDatabaseSetupTest, OpenClose) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   scoped_ptr<Database> db = Database::Create(temp_dir.path());
   ASSERT_TRUE(db.get());
@@ -195,7 +195,7 @@ TEST(PerformanceMonitorDatabaseSetupTest, OpenClose) {
 }
 
 TEST(PerformanceMonitorDatabaseSetupTest, ActiveInterval) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   TestingClock* clock_1 = new TestingClock();
@@ -235,7 +235,7 @@ TEST(PerformanceMonitorDatabaseSetupTest, ActiveInterval) {
 
 TEST(PerformanceMonitorDatabaseSetupTest,
      ActiveIntervalRetrievalDuringActiveInterval) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   TestingClock* clock = new TestingClock();
@@ -256,7 +256,7 @@ TEST(PerformanceMonitorDatabaseSetupTest,
 
 TEST(PerformanceMonitorDatabaseSetupTest,
      ActiveIntervalRetrievalAfterActiveInterval) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   TestingClock* clock = new TestingClock();
@@ -396,7 +396,7 @@ TEST_F(PerformanceMonitorDatabaseMetricTest, GetRecentMetric) {
   ASSERT_TRUE(db_->GetRecentStatsForActivityAndMetric(METRIC_CPU_USAGE, &stat));
   EXPECT_EQ(50.5, stat.value);
 
-  ScopedTempDir dir;
+  base::ScopedTempDir dir;
   CHECK(dir.CreateUniqueTempDir());
   scoped_ptr<Database> db = Database::Create(dir.path());
   CHECK(db.get());

@@ -4,10 +4,10 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/observer_list.h"
-#include "base/scoped_temp_dir.h"
 #include "base/test/test_file_util.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_util.h"
@@ -84,7 +84,7 @@ class DownloadPathReservationTrackerTest : public testing::Test {
   }
 
  protected:
-  ScopedTempDir test_download_dir_;
+  base::ScopedTempDir test_download_dir_;
   FilePath default_download_path_;
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;

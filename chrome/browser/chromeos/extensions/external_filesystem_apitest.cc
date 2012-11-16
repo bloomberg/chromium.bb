@@ -5,11 +5,11 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/threading/worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
@@ -254,7 +254,7 @@ class RestrictedFileSystemExtensionApiTest : public ExtensionApiTest {
   }
 
  protected:
-  ScopedTempDir tmp_dir_;
+  base::ScopedTempDir tmp_dir_;
   FilePath mount_point_dir_;
 };
 
@@ -293,7 +293,7 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
   }
 
  protected:
-  ScopedTempDir test_cache_root_;
+  base::ScopedTempDir test_cache_root_;
   google_apis::MockDriveService* mock_drive_service_;
 };
 
@@ -321,10 +321,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserWebIntentTest) {
   AddTmpMountPoint();
 
   ResultCatcher catcher;
-  ScopedTempDir tmp_dir;
+  base::ScopedTempDir tmp_dir;
   ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
 
-  // Create a test file inside the ScopedTempDir.
+  // Create a test file inside the base::ScopedTempDir.
   FilePath test_file = tmp_dir.path().AppendASCII("text_file.xul");
   CreateFileWithContent(test_file, kTestFileContent);
 

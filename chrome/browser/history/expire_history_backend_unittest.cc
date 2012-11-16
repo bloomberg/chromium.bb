@@ -10,9 +10,9 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -99,7 +99,7 @@ class ExpireHistoryTest : public testing::Test,
   const FilePath& path() const { return tmp_dir_.path(); }
 
   // This must be destroyed last.
-  ScopedTempDir tmp_dir_;
+  base::ScopedTempDir tmp_dir_;
 
   BookmarkModel bookmark_model_;
 

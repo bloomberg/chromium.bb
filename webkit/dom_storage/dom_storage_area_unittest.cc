@@ -4,9 +4,9 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/scoped_temp_dir.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -124,7 +124,7 @@ TEST_F(DomStorageAreaTest, DomStorageAreaBasics) {
 
 TEST_F(DomStorageAreaTest, BackingDatabaseOpened) {
   const int64 kSessionStorageNamespaceId = kLocalStorageNamespaceId + 1;
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   const FilePath kExpectedOriginFilePath = temp_dir.path().Append(
       DomStorageArea::DatabaseFileNameFromOrigin(kOrigin));
@@ -202,7 +202,7 @@ TEST_F(DomStorageAreaTest, BackingDatabaseOpened) {
 }
 
 TEST_F(DomStorageAreaTest, CommitTasks) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   scoped_refptr<DomStorageArea> area(
@@ -280,7 +280,7 @@ TEST_F(DomStorageAreaTest, CommitTasks) {
 }
 
 TEST_F(DomStorageAreaTest, CommitChangesAtShutdown) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   scoped_refptr<DomStorageArea> area(
       new DomStorageArea(kOrigin,
@@ -307,7 +307,7 @@ TEST_F(DomStorageAreaTest, CommitChangesAtShutdown) {
 }
 
 TEST_F(DomStorageAreaTest, DeleteOrigin) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   scoped_refptr<DomStorageArea> area(
       new DomStorageArea(kOrigin,
@@ -368,7 +368,7 @@ TEST_F(DomStorageAreaTest, DeleteOrigin) {
 }
 
 TEST_F(DomStorageAreaTest, PurgeMemory) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   scoped_refptr<DomStorageArea> area(
       new DomStorageArea(kOrigin,

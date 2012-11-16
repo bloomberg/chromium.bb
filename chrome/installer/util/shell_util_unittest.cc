@@ -9,11 +9,11 @@
 #include "base/base_paths.h"
 #include "base/base_paths_win.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/md5.h"
-#include "base/scoped_temp_dir.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_shortcut_win.h"
 #include "base/win/shortcut.h"
@@ -156,13 +156,13 @@ class ShellUtilShortcutTest : public testing::Test {
   // A ShellUtil::ShortcutProperties object with common properties set already.
   scoped_ptr<ShellUtil::ShortcutProperties> test_properties_;
 
-  ScopedTempDir temp_dir_;
-  ScopedTempDir fake_user_desktop_;
-  ScopedTempDir fake_common_desktop_;
-  ScopedTempDir fake_user_quick_launch_;
-  ScopedTempDir fake_default_user_quick_launch_;
-  ScopedTempDir fake_start_menu_;
-  ScopedTempDir fake_common_start_menu_;
+  base::ScopedTempDir temp_dir_;
+  base::ScopedTempDir fake_user_desktop_;
+  base::ScopedTempDir fake_common_desktop_;
+  base::ScopedTempDir fake_user_quick_launch_;
+  base::ScopedTempDir fake_default_user_quick_launch_;
+  base::ScopedTempDir fake_start_menu_;
+  base::ScopedTempDir fake_common_start_menu_;
   scoped_ptr<base::ScopedPathOverride> user_desktop_override_;
   scoped_ptr<base::ScopedPathOverride> common_desktop_override_;
   scoped_ptr<base::ScopedPathOverride> user_quick_launch_override_;
@@ -428,7 +428,7 @@ TEST_F(ShellUtilShortcutTest, CreateMultipleStartMenuShortcutsAndRemoveFolder) {
 }
 
 TEST_F(ShellUtilShortcutTest, DontRemoveChromeShortcutIfPointsToAnotherChrome) {
-  ScopedTempDir other_exe_dir;
+  base::ScopedTempDir other_exe_dir;
   ASSERT_TRUE(other_exe_dir.CreateUniqueTempDir());
   FilePath other_chrome_exe =
       other_exe_dir.path().Append(installer::kChromeExe);

@@ -5,9 +5,9 @@
 #include "webkit/blob/shareable_file_reference.h"
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace webkit_blob {
@@ -16,7 +16,7 @@ TEST(ShareableFileReferenceTest, TestReferences) {
   MessageLoop message_loop;
   scoped_refptr<base::MessageLoopProxy> loop_proxy =
       base::MessageLoopProxy::current();
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   // Create a file.

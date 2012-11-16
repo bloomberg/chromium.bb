@@ -5,8 +5,8 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_thread_impl.h"
@@ -128,7 +128,7 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
   // SavePackage for failed generating file name.
   scoped_refptr<SavePackage> save_package_fail_;
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePackageTest);
 };

@@ -191,7 +191,7 @@ class VisitedLinkTest : public testing::Test {
     ClearDB();
   }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;

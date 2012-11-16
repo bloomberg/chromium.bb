@@ -7,7 +7,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"  // TODO(brettw) remove when WideToASCII moves.
 #include "chrome/browser/parsers/metadata_parser_filebase.h"
@@ -45,7 +45,7 @@ class FileMetaDataParserTest : public testing::Test {
     return base::Int64ToString(size);
   }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   FilePath test_file_;
 };
 

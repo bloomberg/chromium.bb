@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/test/test_file_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/api/prefs/pref_member.h"
@@ -356,7 +356,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
   FilePath test_dir_;
 
   // Temporary directory we will save pages to.
-  ScopedTempDir save_dir_;
+  base::ScopedTempDir save_dir_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SavePageBrowserTest);

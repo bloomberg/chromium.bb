@@ -5,8 +5,8 @@
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 
 #include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -106,7 +106,7 @@ TEST_F(ExtensionManifestTest, CertainApisRequirePlatformApps) {
   scoped_ptr<DictionaryValue> manifest(
       LoadManifestFile("init_valid_platform_app.json", &error));
 
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   // Create each manifest.

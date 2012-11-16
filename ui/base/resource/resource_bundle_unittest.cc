@@ -7,10 +7,10 @@
 #include "base/base_paths.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/big_endian.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -360,7 +360,7 @@ class ResourceBundleImageTest : public ResourceBundleTest {
 
  private:
   scoped_ptr<DataPack> locale_pack_;
-  ScopedTempDir dir_;
+  base::ScopedTempDir dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceBundleImageTest);
 };

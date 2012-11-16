@@ -5,11 +5,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/bind.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
+#include "base/message_loop_proxy.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper_impl.h"
 #include "content/public/test/test_browser_thread.h"
 #include "webkit/quota/mock_storage_client.h"
@@ -119,7 +119,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   content::TestBrowserThread io_thread_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
 
-  ScopedTempDir dir_;
+  base::ScopedTempDir dir_;
   scoped_refptr<BrowsingDataQuotaHelper> helper_;
 
   bool fetching_completed_;

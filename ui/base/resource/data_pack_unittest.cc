@@ -4,8 +4,8 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/data_pack.h"
@@ -22,7 +22,7 @@ extern const char kSamplePakContents[];
 extern const size_t kSamplePakSize;
 
 TEST(DataPackTest, LoadFromPath) {
-  ScopedTempDir dir;
+  base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
 
@@ -54,7 +54,7 @@ TEST(DataPackTest, LoadFromPath) {
 }
 
 TEST(DataPackTest, LoadFromFile) {
-  ScopedTempDir dir;
+  base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
 
@@ -111,7 +111,7 @@ TEST(DataPackTest, LoadFileWithTruncatedHeader) {
 }
 
 TEST_P(DataPackTest, Write) {
-  ScopedTempDir dir;
+  base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   FilePath file = dir.path().Append(FILE_PATH_LITERAL("data.pak"));
 

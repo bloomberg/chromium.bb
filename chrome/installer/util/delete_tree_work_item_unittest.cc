@@ -8,11 +8,11 @@
 
 #include "base/base_paths.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/work_item.h"
@@ -26,7 +26,7 @@ namespace {
     }
 
     // The temporary directory used to contain the test operations.
-    ScopedTempDir temp_dir_;
+    base::ScopedTempDir temp_dir_;
   };
 
   // Simple function to dump some text into a new file.
@@ -72,7 +72,7 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {
   ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
 
   // Test Do().
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   std::vector<FilePath> key_files;
@@ -124,7 +124,7 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTree) {
   ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
 
   // test Do()
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   std::vector<FilePath> key_files(1, file_name_delete_1);
@@ -197,7 +197,7 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
 
   // test Do().
   {
-    ScopedTempDir temp_dir;
+    base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
     std::vector<FilePath> key_paths(1, key_path);

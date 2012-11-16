@@ -5,10 +5,10 @@
 #include <algorithm>
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/download/download_file_icon_extractor.h"
@@ -535,7 +535,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
         downloads_directory_.path());
   }
 
-  ScopedTempDir downloads_directory_;
+  base::ScopedTempDir downloads_directory_;
   const extensions::Extension* extension_;
   Browser* incognito_browser_;
   Browser* current_browser_;
@@ -1018,7 +1018,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
     EXPECT_STREQ("hello", result_string.c_str());
   }
 
-  // The temporary files should be cleaned up when the ScopedTempDir is removed.
+  // The temporary files should be cleaned up when the base::ScopedTempDir is removed.
 }
 
 // Test passing the empty query to search().

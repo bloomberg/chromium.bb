@@ -5,10 +5,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
@@ -166,7 +166,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
   int sync_save_count_;
 
   // Path used in testing.
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   FilePath path_;
 
   SessionServiceTestHelper helper_;

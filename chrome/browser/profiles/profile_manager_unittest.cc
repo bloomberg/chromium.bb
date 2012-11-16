@@ -6,9 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -131,7 +131,7 @@ class ProfileManagerTest : public testing::Test {
 #endif
 
   // The path to temporary directory used to contain the test operations.
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   ScopedTestingLocalState local_state_;
   scoped_refptr<extensions::EventRouterForwarder>
       extension_event_router_forwarder_;

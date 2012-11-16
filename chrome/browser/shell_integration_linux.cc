@@ -19,12 +19,12 @@
 #include "base/environment.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process_util.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/string_tokenizer.h"
 #include "base/threading/thread.h"
@@ -76,7 +76,7 @@ std::string CreateShortcutIcon(
     return std::string();
 
   // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   if (!temp_dir.CreateUniqueTempDir())
     return std::string();
 
@@ -161,7 +161,7 @@ void DeleteShortcutOnDesktop(const FilePath& shortcut_filename) {
 
 bool CreateShortcutInApplicationsMenu(const FilePath& shortcut_filename,
                                       const std::string& contents) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   if (!temp_dir.CreateUniqueTempDir())
     return false;
 

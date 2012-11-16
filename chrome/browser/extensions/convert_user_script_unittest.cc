@@ -7,9 +7,9 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/convert_user_script.h"
 #include "chrome/common/chrome_paths.h"
@@ -28,7 +28,7 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 namespace extensions {
 
 TEST(ExtensionFromUserScript, Basic) {
-  ScopedTempDir extensions_dir;
+  base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   FilePath test_file;
@@ -45,7 +45,7 @@ TEST(ExtensionFromUserScript, Basic) {
   EXPECT_EQ(string16(), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
-  ScopedTempDir ext_dir;
+  base::ScopedTempDir ext_dir;
   EXPECT_TRUE(ext_dir.Set(extension->path()));
 
   // Validate generated extension metadata.
@@ -78,7 +78,7 @@ TEST(ExtensionFromUserScript, Basic) {
 }
 
 TEST(ExtensionFromUserScript, NoMetdata) {
-  ScopedTempDir extensions_dir;
+  base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   FilePath test_file;
@@ -95,7 +95,7 @@ TEST(ExtensionFromUserScript, NoMetdata) {
   EXPECT_EQ(string16(), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
-  ScopedTempDir ext_dir;
+  base::ScopedTempDir ext_dir;
   EXPECT_TRUE(ext_dir.Set(extension->path()));
 
   // Validate generated extension metadata.
@@ -124,7 +124,7 @@ TEST(ExtensionFromUserScript, NoMetdata) {
 }
 
 TEST(ExtensionFromUserScript, NotUTF8) {
-  ScopedTempDir extensions_dir;
+  base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   FilePath test_file;
@@ -142,7 +142,7 @@ TEST(ExtensionFromUserScript, NotUTF8) {
 }
 
 TEST(ExtensionFromUserScript, RunAtDocumentStart) {
-  ScopedTempDir extensions_dir;
+  base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   FilePath test_file;
@@ -159,7 +159,7 @@ TEST(ExtensionFromUserScript, RunAtDocumentStart) {
   EXPECT_EQ(string16(), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
-  ScopedTempDir ext_dir;
+  base::ScopedTempDir ext_dir;
   EXPECT_TRUE(ext_dir.Set(extension->path()));
 
   // Validate generated extension metadata.
@@ -175,7 +175,7 @@ TEST(ExtensionFromUserScript, RunAtDocumentStart) {
 }
 
 TEST(ExtensionFromUserScript, RunAtDocumentEnd) {
-  ScopedTempDir extensions_dir;
+  base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   FilePath test_file;
@@ -192,7 +192,7 @@ TEST(ExtensionFromUserScript, RunAtDocumentEnd) {
   EXPECT_EQ(string16(), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
-  ScopedTempDir ext_dir;
+  base::ScopedTempDir ext_dir;
   EXPECT_TRUE(ext_dir.Set(extension->path()));
 
   // Validate generated extension metadata.
@@ -208,7 +208,7 @@ TEST(ExtensionFromUserScript, RunAtDocumentEnd) {
 }
 
 TEST(ExtensionFromUserScript, RunAtDocumentIdle) {
-  ScopedTempDir extensions_dir;
+  base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   FilePath test_file;
@@ -226,7 +226,7 @@ TEST(ExtensionFromUserScript, RunAtDocumentIdle) {
   EXPECT_EQ(string16(), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
-  ScopedTempDir ext_dir;
+  base::ScopedTempDir ext_dir;
   EXPECT_TRUE(ext_dir.Set(extension->path()));
 
   // Validate generated extension metadata.

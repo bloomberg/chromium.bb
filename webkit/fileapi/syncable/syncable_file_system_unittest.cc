@@ -81,7 +81,7 @@ class SyncableFileSystemTest : public testing::Test {
     return file_system_context()->change_tracker();
   }
 
-  ScopedTempDir data_dir_;
+  base::ScopedTempDir data_dir_;
   MessageLoop message_loop_;
 
   CannedSyncableFileSystem file_system_;

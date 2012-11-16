@@ -5,9 +5,9 @@
 #include "chrome/browser/policy/user_cloud_policy_store_chromeos.h"
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/policy_builder.h"
@@ -124,7 +124,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
  private:
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-  ScopedTempDir tmp_dir_;
+  base::ScopedTempDir tmp_dir_;
   chromeos::ScopedMockUserManagerEnabler user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStoreChromeOSTest);

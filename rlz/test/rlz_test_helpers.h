@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #endif
 #if defined(OS_CHROMEOS)
 #include "base/message_loop.h"
@@ -28,7 +28,7 @@ class RlzLibTestNoMachineState : public ::testing::Test {
 
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
- ScopedTempDir temp_dir_;
+ base::ScopedTempDir temp_dir_;
 #endif
 #if defined(OS_CHROMEOS)
   base::Thread pref_store_io_thread_;

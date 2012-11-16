@@ -7,11 +7,11 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
@@ -212,7 +212,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   // leaks caused by tasks posted during shutdown.
   MessageLoop message_loop_;
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   net::URLRequestContext empty_context_;
   scoped_ptr<net::TestDelegate> delegate_;
   scoped_ptr<net::URLRequest> request_;

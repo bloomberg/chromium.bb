@@ -7,10 +7,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/scoped_temp_dir.h"
 #include "content/public/browser/browser_context.h"
 
 namespace content {
@@ -56,7 +56,7 @@ class TestBrowserContext : public BrowserContext {
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_ptr<MockResourceContext> resource_context_;
-  ScopedTempDir browser_context_dir_;
+  base::ScopedTempDir browser_context_dir_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserContext);

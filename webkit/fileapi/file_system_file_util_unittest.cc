@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
-#include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -49,7 +49,7 @@ class FileSystemFileUtilTest : public testing::Test {
       const GURL& src_origin, fileapi::FileSystemType src_type,
       const GURL& dest_origin, fileapi::FileSystemType dest_type,
       bool copy) {
-    ScopedTempDir base_dir;
+    base::ScopedTempDir base_dir;
     ASSERT_TRUE(base_dir.CreateUniqueTempDir());
     scoped_ptr<ObfuscatedFileUtil> file_util(
         new ObfuscatedFileUtil(base_dir.path()));

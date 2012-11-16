@@ -11,9 +11,9 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
-#include "base/scoped_temp_dir.h"
 #include "base/time.h"
 
 class AutomationProxy;
@@ -160,7 +160,7 @@ class ProxyLauncher {
 
   // We use a temporary directory for profile to avoid issues with being
   // unable to delete some files because they're in use, etc.
-  ScopedTempDir temp_profile_dir_;
+  base::ScopedTempDir temp_profile_dir_;
 
   // Handle to the first Chrome process.
   base::ProcessHandle process_;

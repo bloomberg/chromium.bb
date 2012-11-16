@@ -4,10 +4,10 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/test/thread_test_helper.h"
 #include "chrome/browser/net/clear_on_exit_policy.h"
@@ -79,7 +79,7 @@ class SQLiteServerBoundCertStoreTest : public testing::Test {
   }
 
   content::TestBrowserThread db_thread_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   scoped_refptr<SQLiteServerBoundCertStore> store_;
 };
 

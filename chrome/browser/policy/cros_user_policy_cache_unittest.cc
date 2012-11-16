@@ -5,9 +5,9 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/time.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/cros_user_policy_cache.h"
@@ -100,7 +100,7 @@ class CrosUserPolicyCacheTest : public testing::Test {
  private:
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-  ScopedTempDir tmp_dir_;
+  base::ScopedTempDir tmp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(CrosUserPolicyCacheTest);
 };

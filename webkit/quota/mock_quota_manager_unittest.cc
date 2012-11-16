@@ -7,10 +7,10 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/quota/mock_quota_manager.h"
 #include "webkit/quota/mock_special_storage_policy.h"
@@ -99,7 +99,7 @@ class MockQuotaManagerTest : public testing::Test {
 
  private:
   MessageLoop message_loop_;
-  ScopedTempDir data_dir_;
+  base::ScopedTempDir data_dir_;
   base::WeakPtrFactory<MockQuotaManagerTest> weak_factory_;
   scoped_refptr<MockQuotaManager> manager_;
   scoped_refptr<MockSpecialStoragePolicy> policy_;

@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/intents/default_web_intent_service.h"
@@ -73,7 +73,7 @@ class WebIntentsTableTest : public testing::Test {
   }
 
   WebDatabase db_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 };
 
 // Test we can add, retrieve, and remove intent services from the database.

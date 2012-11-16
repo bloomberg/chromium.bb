@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/platform_file.h"
-#include "base/scoped_temp_dir.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -181,7 +181,7 @@ class CannedSyncableFileSystem
 
   void InitializeSyncStatusObserver();
 
-  ScopedTempDir data_dir_;
+  base::ScopedTempDir data_dir_;
   const std::string service_name_;
 
   scoped_refptr<quota::QuotaManager> quota_manager_;

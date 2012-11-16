@@ -6,8 +6,8 @@
 
 #include <windows.h>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/win/registry.h"
 #include "chrome/installer/setup/install_worker.h"
@@ -81,7 +81,7 @@ InstallStatus ChromeFrameQuickEnable(const InstallationState& machine_state,
       LOG(ERROR) << "AddProduct failed";
       status = INSTALL_FAILED;
     } else {
-      ScopedTempDir temp_path;
+      base::ScopedTempDir temp_path;
       if (!temp_path.CreateUniqueTempDir()) {
         PLOG(ERROR) << "Failed to create Temp directory";
         return INSTALL_FAILED;

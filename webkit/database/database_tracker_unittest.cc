@@ -4,11 +4,11 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
-#include "base/scoped_temp_dir.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
@@ -187,7 +187,7 @@ class DatabaseTracker_TestHelper_Test {
  public:
   static void TestDeleteOpenDatabase(bool incognito_mode) {
     // Initialize the tracker database.
-    ScopedTempDir temp_dir;
+    base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy =
         new quota::MockSpecialStoragePolicy;
@@ -292,7 +292,7 @@ class DatabaseTracker_TestHelper_Test {
 
   static void TestDatabaseTracker(bool incognito_mode) {
     // Initialize the tracker database.
-    ScopedTempDir temp_dir;
+    base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy =
         new quota::MockSpecialStoragePolicy;
@@ -441,7 +441,7 @@ class DatabaseTracker_TestHelper_Test {
     const string16 kName = ASCIIToUTF16("name");
     const string16 kDescription = ASCIIToUTF16("description");
 
-    ScopedTempDir temp_dir;
+    base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
     // Initialize the tracker with a QuotaManagerProxy
@@ -541,7 +541,7 @@ class DatabaseTracker_TestHelper_Test {
 
     // Initialize the tracker database.
     MessageLoop message_loop;
-    ScopedTempDir temp_dir;
+    base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     FilePath origin1_db_dir;
     FilePath origin2_db_dir;
@@ -619,7 +619,7 @@ class DatabaseTracker_TestHelper_Test {
 
     // Initialize the tracker database.
     MessageLoop message_loop;
-    ScopedTempDir temp_dir;
+    base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     FilePath origin1_db_dir;
     FilePath origin2_db_dir;
@@ -692,7 +692,7 @@ class DatabaseTracker_TestHelper_Test {
 
     // Initialize a tracker database, no need to put it on disk.
     const bool kUseInMemoryTrackerDatabase = true;
-    ScopedTempDir temp_dir;
+    base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     scoped_refptr<DatabaseTracker> tracker(
         new DatabaseTracker(temp_dir.path(), kUseInMemoryTrackerDatabase,
@@ -738,7 +738,7 @@ class DatabaseTracker_TestHelper_Test {
 
     // Initialize a tracker database, no need to put it on disk.
     const bool kUseInMemoryTrackerDatabase = true;
-    ScopedTempDir temp_dir;
+    base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     scoped_refptr<DatabaseTracker> tracker(
         new DatabaseTracker(temp_dir.path(), kUseInMemoryTrackerDatabase,

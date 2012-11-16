@@ -5,10 +5,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -116,7 +116,7 @@ class BookmarkHTMLWriterTest : public testing::Test {
               BookmarkEntryToString(entry));
   }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   FilePath path_;
 };
 

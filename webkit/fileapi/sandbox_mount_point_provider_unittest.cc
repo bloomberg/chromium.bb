@@ -10,13 +10,13 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
-#include "base/scoped_temp_dir.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -59,7 +59,7 @@ class SandboxMountPointProviderOriginEnumeratorTest : public testing::Test {
     ASSERT_TRUE(file_util::DirectoryExists(target));
   }
 
-  ScopedTempDir data_dir_;
+  base::ScopedTempDir data_dir_;
   MessageLoop message_loop_;
   scoped_ptr<SandboxMountPointProvider> sandbox_provider_;
 };
@@ -329,7 +329,7 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
   }
 
  protected:
-  ScopedTempDir data_dir_;
+  base::ScopedTempDir data_dir_;
   MessageLoop message_loop_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::WeakPtrFactory<SandboxMountPointProviderMigrationTest> weak_factory_;

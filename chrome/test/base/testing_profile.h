@@ -7,9 +7,9 @@
 
 #include <string>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/scoped_temp_dir.h"
 #include "base/timer.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/profiles/profile.h"
@@ -357,7 +357,7 @@ class TestingProfile : public Profile {
   // We use a temporary directory to store testing profile data. In a multi-
   // profile environment, this is invalid and the directory is managed by the
   // TestingProfileManager.
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   // The path to this profile. This will be valid in either of the two above
   // cases.
   FilePath profile_path_;

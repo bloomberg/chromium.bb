@@ -8,11 +8,11 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"
 #include "base/time.h"
@@ -404,7 +404,7 @@ class QuotaManagerTest : public testing::Test {
   }
 
   MessageLoop message_loop_;
-  ScopedTempDir data_dir_;
+  base::ScopedTempDir data_dir_;
   base::WeakPtrFactory<QuotaManagerTest> weak_factory_;
 
   scoped_refptr<QuotaManager> quota_manager_;

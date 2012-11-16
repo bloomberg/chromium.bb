@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
@@ -128,7 +128,7 @@ class FileWriterDelegateTest : public PlatformTest {
   scoped_ptr<Result> result_;
   LocalFileSystemTestOriginHelper test_helper_;
 
-  ScopedTempDir dir_;
+  base::ScopedTempDir dir_;
 
   static const char* content_;
 };

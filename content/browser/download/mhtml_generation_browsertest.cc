@@ -4,8 +4,8 @@
 
 #include "base/bind.h"
 #include "base/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/shell.h"
@@ -35,7 +35,7 @@ class MHTMLGenerationTest : public ContentBrowserTest {
   bool mhtml_generated() const { return mhtml_generated_; }
   int64 file_size() const { return file_size_; }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 
  private:
   bool mhtml_generated_;

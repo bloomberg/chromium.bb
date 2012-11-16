@@ -10,8 +10,8 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/transport_security_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +47,7 @@ class TransportSecurityPersisterTest : public testing::Test {
   // TransportSecurityPersister runs on the IO thread.
   content::TestBrowserThread test_io_thread_;
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   TransportSecurityState state_;
   scoped_ptr<TransportSecurityPersister> persister_;
 };

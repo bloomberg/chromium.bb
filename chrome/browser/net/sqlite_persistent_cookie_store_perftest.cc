@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/perftimer.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/thread_test_helper.h"
@@ -86,7 +86,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
   base::WaitableEvent loaded_event_;
   base::WaitableEvent key_loaded_event_;
   std::vector<net::CanonicalCookie*> cookies_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   scoped_refptr<SQLitePersistentCookieStore> store_;
 };
 

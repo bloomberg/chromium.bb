@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -100,7 +100,7 @@ TEST(FirefoxImporterUtilsTest, GetPrefsJsValue) {
 }
 
 TEST(FirefoxImporterUtilsTest, GetFirefoxImporterName) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   const FilePath app_ini_file(temp_dir.path().AppendASCII("application.ini"));
   for (size_t i = 0; i < arraysize(GetFirefoxImporterNameCases); ++i) {

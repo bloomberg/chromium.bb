@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/common/extensions/extension.h"
 
 class ExtensionPrefValueMap;
@@ -72,7 +72,7 @@ class TestExtensionPrefs {
   void set_extensions_disabled(bool extensions_disabled);
 
  protected:
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   FilePath preferences_file_;
   FilePath extensions_dir_;
   scoped_ptr<PrefService> pref_service_;

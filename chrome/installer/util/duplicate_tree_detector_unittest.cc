@@ -7,7 +7,7 @@
 #include <fstream>
 
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "chrome/installer/util/duplicate_tree_detector.h"
@@ -60,8 +60,8 @@ class DuplicateTreeDetectorTest : public testing::Test {
     ASSERT_TRUE(installer::test::CopyFileHierarchy(d1, second_root));
   }
 
-  ScopedTempDir temp_source_dir_;
-  ScopedTempDir temp_dest_dir_;
+  base::ScopedTempDir temp_source_dir_;
+  base::ScopedTempDir temp_dest_dir_;
 
   static const wchar_t text_content_1_[];
   static const wchar_t text_content_2_[];

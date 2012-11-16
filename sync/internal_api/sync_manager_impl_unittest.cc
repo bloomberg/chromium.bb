@@ -12,12 +12,12 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/test/values_test_util.h"
@@ -1025,7 +1025,7 @@ class SyncManagerTest : public testing::Test,
   // Needed by |sync_manager_|.
   MessageLoop message_loop_;
   // Needed by |sync_manager_|.
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   // Sync Id's for the roots of the enabled datatypes.
   std::map<ModelType, int64> type_roots_;
   FakeExtensionsActivityMonitor extensions_activity_monitor_;

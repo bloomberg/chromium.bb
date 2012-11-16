@@ -8,7 +8,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/android/urls_sql_handler.h"
@@ -43,7 +43,7 @@ class VisitSQLHandlerTest : public testing::Test {
   }
 
   HistoryDatabase history_db_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   UrlsSQLHandler urls_sql_handler_;
   VisitSQLHandler visit_sql_handler_;
 

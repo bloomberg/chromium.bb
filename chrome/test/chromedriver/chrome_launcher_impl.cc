@@ -31,7 +31,7 @@ Status ChromeLauncherImpl::Launch(
   CommandLine command(program);
   command.AppendSwitch("enable-logging");
   command.AppendSwitchASCII("logging-level", "1");
-  ScopedTempDir user_data_dir;
+  base::ScopedTempDir user_data_dir;
   if (!user_data_dir.CreateUniqueTempDir())
     return Status(kUnknownError, "cannot create temp dir for user data dir");
   command.AppendSwitchPath("user-data-dir", user_data_dir.path());

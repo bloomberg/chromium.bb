@@ -76,7 +76,7 @@ TEST_F(ThumbnailServiceTest, ShouldUpdateThumbnail) {
   const GURL kBadURL("chrome://newtab");
 
   // Set up the mock profile along with mock top sites.
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   MockProfile profile;
 

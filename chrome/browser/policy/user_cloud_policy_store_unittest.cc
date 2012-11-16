@@ -5,9 +5,9 @@
 #include "chrome/browser/policy/user_cloud_policy_store.h"
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/policy/policy_builder.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -103,7 +103,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
   content::TestBrowserThread file_thread_;
 
   scoped_ptr<TestingProfile> profile_;
-  ScopedTempDir tmp_dir_;
+  base::ScopedTempDir tmp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStoreTest);
 };

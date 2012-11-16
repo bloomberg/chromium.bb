@@ -7,17 +7,17 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/scoped_nsobject.h"
-#include "base/scoped_temp_dir.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
@@ -57,7 +57,7 @@ namespace web_app {
 // * WebAppShortcutCreator::CreateShortcut() opens a Finder window which it
 //   shouldn't be doing when run from a unit test.
 TEST(WebAppShortcutCreatorTest, CreateShortcut) {
-  ScopedTempDir scoped_temp_dir;
+  base::ScopedTempDir scoped_temp_dir;
   EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
   FilePath dst_path = scoped_temp_dir.path().Append("a.app");
 
@@ -99,7 +99,7 @@ TEST(WebAppShortcutCreatorTest, CreateFailure) {
 }
 
 TEST(WebAppShortcutCreatorTest, UpdateIcon) {
-  ScopedTempDir scoped_temp_dir;
+  base::ScopedTempDir scoped_temp_dir;
   ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
   FilePath dst_path = scoped_temp_dir.path();
 

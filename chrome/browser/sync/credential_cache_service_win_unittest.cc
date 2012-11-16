@@ -4,10 +4,10 @@
 
 #include <string>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/sync/credential_cache_service_win.h"
@@ -41,7 +41,7 @@ class CredentialCacheServiceTest : public CredentialCacheService,
   }
 
  private:
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   MessageLoop file_message_loop_;
   DISALLOW_COPY_AND_ASSIGN(CredentialCacheServiceTest);
 };

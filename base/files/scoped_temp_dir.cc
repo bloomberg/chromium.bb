@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 
 #include "base/file_util.h"
 #include "base/logging.h"
+
+namespace base {
 
 ScopedTempDir::ScopedTempDir() {
 }
@@ -80,3 +82,5 @@ FilePath ScopedTempDir::Take() {
 bool ScopedTempDir::IsValid() const {
   return !path_.empty() && file_util::DirectoryExists(path_);
 }
+
+}  // namespace base

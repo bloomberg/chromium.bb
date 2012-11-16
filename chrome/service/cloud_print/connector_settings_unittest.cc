@@ -7,9 +7,9 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/service_process_prefs.h"
@@ -63,7 +63,7 @@ class ConnectorSettingsTest : public testing::Test {
     return prefs;
   }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   MessageLoop message_loop_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 };

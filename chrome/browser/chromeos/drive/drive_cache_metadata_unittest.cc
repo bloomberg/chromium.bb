@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/drive/drive_cache_metadata.h"
 
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
+#include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
@@ -128,7 +128,7 @@ class DriveCacheMetadataTest : public testing::Test {
     }
   }
 
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   scoped_ptr<DriveCacheMetadata> metadata_;
   std::vector<FilePath> cache_paths_;
   FilePath persistent_directory_;

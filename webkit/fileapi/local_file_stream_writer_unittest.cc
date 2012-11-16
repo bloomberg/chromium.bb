@@ -8,10 +8,10 @@
 
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,7 +67,7 @@ class LocalFileStreamWriterTest : public testing::Test {
 
  private:
   MessageLoop message_loop_;
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
 };
 
 void NeverCalled(int unused) {

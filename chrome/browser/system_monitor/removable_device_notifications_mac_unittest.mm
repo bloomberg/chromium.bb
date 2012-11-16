@@ -5,9 +5,9 @@
 #include "chrome/browser/system_monitor/removable_device_notifications_mac.h"
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/sys_string_conversions.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
@@ -138,7 +138,7 @@ TEST_F(RemovableDeviceNotificationsMacTest, UpdateVolumeName) {
 }
 
 TEST_F(RemovableDeviceNotificationsMacTest, DCIM) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   file_util::CreateDirectory(temp_dir.path().Append(kDCIMDirectoryName));
 

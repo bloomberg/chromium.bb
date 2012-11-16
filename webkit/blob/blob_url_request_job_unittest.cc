@@ -5,10 +5,10 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/time.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_request_headers.h"
@@ -295,7 +295,7 @@ class BlobURLRequestJobTest : public testing::Test {
   }
 
  protected:
-  ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
   FilePath temp_file1_;
   FilePath temp_file2_;
   base::Time temp_file_modification_time1_;

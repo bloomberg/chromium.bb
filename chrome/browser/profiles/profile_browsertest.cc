@@ -5,8 +5,8 @@
 #include "chrome/browser/profiles/profile.h"
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/platform_file.h"
-#include "base/scoped_temp_dir.h"
 #include "base/version.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
@@ -62,7 +62,7 @@ typedef InProcessBrowserTest ProfileBrowserTest;
 // Flaky (sometimes timeout): http://crbug.com/141141
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
                        DISABLED_CreateNewProfileSynchronous) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   MockProfileDelegate delegate;
@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
 // Flaky: http://crbug.com/141517
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
                        DISABLED_CreateOldProfileSynchronous) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   CreatePrefsFileInDirectory(temp_dir.path());
 
@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
 // This test is flaky on Linux, Win and Mac.  See crbug.com/142787
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
                        DISABLED_CreateNewProfileAsynchronous) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   MockProfileDelegate delegate;
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
 // Flaky: http://crbug.com/141517
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
                        DISABLED_CreateOldProfileAsynchronous) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   CreatePrefsFileInDirectory(temp_dir.path());
 
@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
 // Test that a README file is created for profiles that didn't have it.
 // Flaky: http://crbug.com/140882
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DISABLED_ProfileReadmeCreated) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   MockProfileDelegate delegate;
@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DISABLED_ProfileReadmeCreated) {
 
 // Test that Profile can be deleted before README file is created.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileDeletedBeforeReadmeCreated) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   MockProfileDelegate delegate;
@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileDeletedBeforeReadmeCreated) {
 
 // Test that repeated setting of exit type is handled correctly.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ExitType) {
-  ScopedTempDir temp_dir;
+  base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   MockProfileDelegate delegate;

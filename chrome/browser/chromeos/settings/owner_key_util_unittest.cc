@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,7 +58,7 @@ class OwnerKeyUtilTest : public testing::Test {
     util_ = new OwnerKeyUtilImpl(key_file_);
   }
 
-  ScopedTempDir tmpdir_;
+  base::ScopedTempDir tmpdir_;
   FilePath key_file_;
   scoped_refptr<OwnerKeyUtil> util_;
 
