@@ -54,6 +54,8 @@ uint32_t PPB_AudioConfig_Shared::RecommendSampleFrameCount_1_1(
   if (enter.failed())
     return 0;
 
+  return 2048;
+
   // Get the hardware config.
   PP_AudioSampleRate hardware_sample_rate = static_cast<PP_AudioSampleRate>(
       enter.functions()->GetAudioHardwareOutputSampleRate(instance));

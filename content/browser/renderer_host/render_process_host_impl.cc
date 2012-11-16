@@ -750,6 +750,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   static const char* const kSwitchNames[] = {
     // We propagate the Chrome Frame command line here as well in case the
     // renderer is not run in the sandbox.
+    switches::kAudioBufferSize,
     switches::kAuditAllHandles,
     switches::kAuditHandles,
     switches::kChromeFrame,
