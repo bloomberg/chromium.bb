@@ -366,12 +366,12 @@ void SigninManager::SignOut() {
   profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
   profile_->GetPrefs()->ClearPref(prefs::kIsGooglePlusUser);
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-  token_service->ResetCredentialsInMemory();
-  token_service->EraseTokensFromDB();
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
       content::Source<Profile>(profile_),
       content::Details<const GoogleServiceSignoutDetails>(&details));
+  token_service->ResetCredentialsInMemory();
+  token_service->EraseTokensFromDB();
 }
 
 bool SigninManager::AuthInProgress() const {
