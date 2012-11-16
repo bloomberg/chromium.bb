@@ -7,41 +7,38 @@
 
 namespace cc {
 
-void Resource::setDimensions(const gfx::Size& size, GLenum format)
-{
-    m_size = size;
-    m_format = format;
+void Resource::set_dimensions(const gfx::Size& size, GLenum format) {
+  size_ = size;
+  format_ = format;
 }
 
-size_t Resource::bytes() const
-{
-    if (m_size.IsEmpty())
-        return 0u;
+size_t Resource::bytes() const {
+  if (size_.IsEmpty())
+    return 0;
 
-    return memorySizeBytes(m_size, m_format);
+  return MemorySizeBytes(size_, format_);
 }
 
-size_t Resource::bytesPerPixel(GLenum format)
-{
-    unsigned int componentsPerPixel = 0;
-    unsigned int bytesPerComponent = 1;
-    switch (format) {
+size_t Resource::BytesPerPixel(GLenum format) {
+  size_t components_per_pixel = 0;
+  size_t bytes_per_component = 1;
+  switch (format) {
     case GL_RGBA:
     case GL_BGRA_EXT:
-        componentsPerPixel = 4;
-        break;
+      components_per_pixel = 4;
+      break;
     case GL_LUMINANCE:
-        componentsPerPixel = 1;
-        break;
+      components_per_pixel = 1;
+      break;
     default:
-        NOTREACHED();
-    }
-    return componentsPerPixel * bytesPerComponent;
+      NOTREACHED();
+  }
+  return components_per_pixel * bytes_per_component;
 }
 
-size_t Resource::memorySizeBytes(const gfx::Size& size, GLenum format)
-{
-    return bytesPerPixel(format) * size.width() * size.height();
+size_t Resource::MemorySizeBytes(const gfx::Size& size, GLenum format) {
+  return BytesPerPixel(format) * size.width() * size.height();
 }
+
 
 }  // namespace cc

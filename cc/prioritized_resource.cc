@@ -28,7 +28,7 @@ PrioritizedResource::PrioritizedResource(PrioritizedResourceManager* manager, gf
     // m_manager is set in registerTexture() so validity can be checked.
     DCHECK(format || size.IsEmpty());
     if (format)
-        m_bytes = Resource::memorySizeBytes(size, format);
+        m_bytes = Resource::MemorySizeBytes(size, format);
     if (manager)
         manager->registerTexture(this);
 }
@@ -55,7 +55,7 @@ void PrioritizedResource::setDimensions(gfx::Size size, GLenum format)
         m_isAbovePriorityCutoff = false;
         m_format = format;
         m_size = size;
-        m_bytes = Resource::memorySizeBytes(size, format);
+        m_bytes = Resource::MemorySizeBytes(size, format);
         DCHECK(m_manager || !m_backing);
         if (m_manager)
             m_manager->returnBackingTexture(this);
@@ -158,7 +158,7 @@ void PrioritizedResource::Backing::deleteResource(ResourceProvider* resourceProv
 #endif
 
     resourceProvider->deleteResource(id());
-    setId(0);
+    set_id(0);
     m_resourceHasBeenDeleted = true;
 }
 

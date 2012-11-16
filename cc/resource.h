@@ -13,31 +13,30 @@
 namespace cc {
 
 class CC_EXPORT Resource {
-public:
-    Resource() : m_id(0) { }
-    Resource(unsigned id, gfx::Size size, GLenum format)
-        : m_id(id)
-        , m_size(size)
-        , m_format(format) { }
+ public:
+  Resource() : id_(0) { }
+  Resource(unsigned id, gfx::Size size, GLenum format)
+      : id_(id), size_(size), format_(format) { }
 
-    ResourceProvider::ResourceId id() const { return m_id; }
-    const gfx::Size& size() const { return m_size; }
-    GLenum format() const { return m_format; }
+  ResourceProvider::ResourceId id() const { return id_; }
+  const gfx::Size& size() const { return size_; }
+  GLenum format() const { return format_; }
 
-    void setId(ResourceProvider::ResourceId id) { m_id = id; }
-    void setDimensions(const gfx::Size&, GLenum format);
+  size_t bytes() const;
 
-    size_t bytes() const;
+  static size_t BytesPerPixel(GLenum format);
+  static size_t MemorySizeBytes(const gfx::Size& size, GLenum format);
 
-    static size_t bytesPerPixel(GLenum format);
-    static size_t memorySizeBytes(const gfx::Size&, GLenum format);
+ protected:
+  void set_id(ResourceProvider::ResourceId id) { id_ = id; }
+  void set_dimensions(const gfx::Size&, GLenum format);
 
-private:
-    ResourceProvider::ResourceId m_id;
-    gfx::Size m_size;
-    GLenum m_format;
+ private:
+  ResourceProvider::ResourceId id_;
+  gfx::Size size_;
+  GLenum format_;
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_RESOURCE_H_

@@ -34,7 +34,7 @@ TEST(ScopedResourceTest, CreateScopedResource)
     scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
     scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
-    texture->allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
+    texture->Allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
 
     // The texture has an allocated byte-size now.
     size_t expectedBytes = 30 * 30 * 4;
@@ -54,7 +54,7 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted)
         scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
 
         EXPECT_EQ(0u, resourceProvider->numResources());
-        texture->allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
+        texture->Allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
         EXPECT_LT(0u, texture->id());
         EXPECT_EQ(1u, resourceProvider->numResources());
     }
@@ -64,10 +64,10 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted)
     {
         scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
         EXPECT_EQ(0u, resourceProvider->numResources());
-        texture->allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
+        texture->Allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
         EXPECT_LT(0u, texture->id());
         EXPECT_EQ(1u, resourceProvider->numResources());
-        texture->free();
+        texture->Free();
         EXPECT_EQ(0u, resourceProvider->numResources());
     }
 }
@@ -81,15 +81,15 @@ TEST(ScopedResourceTest, LeakScopedResource)
         scoped_ptr<ScopedResource> texture = ScopedResource::create(resourceProvider.get());
 
         EXPECT_EQ(0u, resourceProvider->numResources());
-        texture->allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
+        texture->Allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
         EXPECT_LT(0u, texture->id());
         EXPECT_EQ(1u, resourceProvider->numResources());
 
-        texture->leak();
+        texture->Leak();
         EXPECT_EQ(0u, texture->id());
         EXPECT_EQ(1u, resourceProvider->numResources());
 
-        texture->free();
+        texture->Free();
         EXPECT_EQ(0u, texture->id());
         EXPECT_EQ(1u, resourceProvider->numResources());
     }

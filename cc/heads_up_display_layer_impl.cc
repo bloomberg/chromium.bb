@@ -76,10 +76,10 @@ void HeadsUpDisplayLayerImpl::willDraw(ResourceProvider* resourceProvider)
     // FIXME: Scale the HUD by deviceScale to make it more friendly under high DPI.
 
     if (m_hudTexture->size() != bounds())
-        m_hudTexture->free();
+        m_hudTexture->Free();
 
     if (!m_hudTexture->id())
-        m_hudTexture->allocate(Renderer::ImplPool, bounds(), GL_RGBA, ResourceProvider::TextureUsageAny);
+        m_hudTexture->Allocate(Renderer::ImplPool, bounds(), GL_RGBA, ResourceProvider::TextureUsageAny);
 }
 
 void HeadsUpDisplayLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)

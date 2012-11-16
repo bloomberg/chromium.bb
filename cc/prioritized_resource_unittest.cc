@@ -36,7 +36,7 @@ public:
 
     size_t texturesMemorySize(size_t textureCount)
     {
-        return Resource::memorySizeBytes(m_textureSize, m_textureFormat) * textureCount;
+        return Resource::MemorySizeBytes(m_textureSize, m_textureFormat) * textureCount;
     }
 
     scoped_ptr<PrioritizedResourceManager> createManager(size_t maxTextures)

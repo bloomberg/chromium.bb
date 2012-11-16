@@ -6,46 +6,42 @@
 
 namespace cc {
 
-ScopedResource::ScopedResource(ResourceProvider* resourceProvider)
-    : m_resourceProvider(resourceProvider)
-{
-    DCHECK(m_resourceProvider);
+ScopedResource::ScopedResource(ResourceProvider* resource_provider)
+    : resource_provider_(resource_provider) {
+  DCHECK(resource_provider_);
 }
 
-ScopedResource::~ScopedResource()
-{
-    free();
+ScopedResource::~ScopedResource() {
+  Free();
 }
 
-bool ScopedResource::allocate(int pool, const gfx::Size& size, GLenum format, ResourceProvider::TextureUsageHint hint)
-{
-    DCHECK(!id());
-    DCHECK(!size.IsEmpty());
+bool ScopedResource::Allocate(int pool, const gfx::Size& size, GLenum format,
+                              ResourceProvider::TextureUsageHint hint) {
+  DCHECK(!id());
+  DCHECK(!size.IsEmpty());
 
-    setDimensions(size, format);
-    setId(m_resourceProvider->createResource(pool, size, format, hint));
+  set_dimensions(size, format);
+  set_id(resource_provider_->createResource(pool, size, format, hint));
 
 #ifndef NDEBUG
-    m_allocateThreadIdentifier = base::PlatformThread::CurrentId();
+  allocate_thread_id_ = base::PlatformThread::CurrentId();
 #endif
 
-    return id();
+  return id();
 }
 
-void ScopedResource::free()
-{
-    if (id()) {
+void ScopedResource::Free() {
+  if (id()) {
 #ifndef NDEBUG
-        DCHECK(m_allocateThreadIdentifier == base::PlatformThread::CurrentId());
+    DCHECK(allocate_thread_id_ == base::PlatformThread::CurrentId());
 #endif
-        m_resourceProvider->deleteResource(id());
-    }
-    setId(0);
+    resource_provider_->deleteResource(id());
+  }
+  set_id(0);
 }
 
-void ScopedResource::leak()
-{
-    setId(0);
+void ScopedResource::Leak() {
+  set_id(0);
 }
 
 }  // namespace cc

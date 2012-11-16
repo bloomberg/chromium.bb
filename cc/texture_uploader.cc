@@ -228,7 +228,7 @@ void TextureUploader::uploadWithTexSubImage(const uint8* image,
     gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
 
     const uint8* pixel_source;
-    unsigned int bytes_per_pixel = Resource::bytesPerPixel(format);
+    unsigned int bytes_per_pixel = Resource::BytesPerPixel(format);
 
     if (image_rect.width() == source_rect.width() && !offset.x()) {
         pixel_source = &image[bytes_per_pixel * offset.y() * image_rect.width()];
@@ -312,7 +312,7 @@ void TextureUploader::uploadWithMapTexSubImage(const uint8* image,
         return;
     }
 
-    unsigned int bytes_per_pixel = Resource::bytesPerPixel(format);
+    unsigned int bytes_per_pixel = Resource::BytesPerPixel(format);
 
     if (image_rect.width() == source_rect.width() && !offset.x()) {
         memcpy(pixel_dest,

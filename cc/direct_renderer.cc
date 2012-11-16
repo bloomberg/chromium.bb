@@ -136,7 +136,7 @@ void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& r
         DCHECK(texture);
 
         if (texture->id() && (texture->size() != requiredSize || texture->format() != requiredFormat))
-            texture->free();
+            texture->Free();
     }
 
     // Delete RenderPass textures from the previous frame that will not be used again.
@@ -213,7 +213,7 @@ bool DirectRenderer::useRenderPass(DrawingFrame& frame, const RenderPass* render
 
     CachedResource* texture = m_renderPassTextures.get(renderPass->id());
     DCHECK(texture);
-    if (!texture->id() && !texture->allocate(Renderer::ImplPool, renderPassTextureSize(renderPass), renderPassTextureFormat(renderPass), ResourceProvider::TextureUsageFramebuffer))
+    if (!texture->id() && !texture->Allocate(Renderer::ImplPool, renderPassTextureSize(renderPass), renderPassTextureFormat(renderPass), ResourceProvider::TextureUsageFramebuffer))
         return false;
 
     return bindFramebufferToTexture(frame, texture, renderPass->outputRect());

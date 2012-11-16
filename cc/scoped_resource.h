@@ -17,31 +17,30 @@
 
 namespace cc {
 
-class CC_EXPORT ScopedResource : protected Resource {
-public:
-    static scoped_ptr<ScopedResource> create(ResourceProvider* resourceProvider) { return make_scoped_ptr(new ScopedResource(resourceProvider)); }
-    virtual ~ScopedResource();
+class CC_EXPORT ScopedResource : public Resource {
+ public:
+  static scoped_ptr<ScopedResource> create(
+      ResourceProvider* resource_provider) {
+    return make_scoped_ptr(new ScopedResource(resource_provider));
+  }
+  virtual ~ScopedResource();
 
-    using Resource::id;
-    using Resource::size;
-    using Resource::format;
-    using Resource::bytes;
+  bool Allocate(int pool, const gfx::Size&, GLenum format,
+                ResourceProvider::TextureUsageHint);
+  void Free();
+  void Leak();
 
-    bool allocate(int pool, const gfx::Size&, GLenum format, ResourceProvider::TextureUsageHint);
-    void free();
-    void leak();
+ protected:
+  explicit ScopedResource(ResourceProvider*);
 
-protected:
-    explicit ScopedResource(ResourceProvider*);
-
-private:
-    ResourceProvider* m_resourceProvider;
+ private:
+  ResourceProvider* resource_provider_;
 
 #ifndef NDEBUG
-    base::PlatformThreadId m_allocateThreadIdentifier;
+  base::PlatformThreadId allocate_thread_id_;
 #endif
 
-    DISALLOW_COPY_AND_ASSIGN(ScopedResource);
+  DISALLOW_COPY_AND_ASSIGN(ScopedResource);
 };
 
 }
