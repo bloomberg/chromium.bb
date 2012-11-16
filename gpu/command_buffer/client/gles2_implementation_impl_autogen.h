@@ -1513,5 +1513,11 @@ void GLES2Implementation::ReleaseTexImage2DCHROMIUM(
   helper_->ReleaseTexImage2DCHROMIUM(target, imageId);
 }
 
+void GLES2Implementation::TraceEndCHROMIUM() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glTraceEndCHROMIUM(" << ")");
+  helper_->TraceEndCHROMIUM();
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_
 

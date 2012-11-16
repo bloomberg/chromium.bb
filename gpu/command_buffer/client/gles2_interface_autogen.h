@@ -288,5 +288,7 @@ virtual void BindUniformLocationCHROMIUM(
     GLuint program, GLint location, const char* name) = 0;
 virtual void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) = 0;
 virtual void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) = 0;
+virtual void TraceBeginCHROMIUM(const char* name) = 0;
+virtual void TraceEndCHROMIUM() = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_
 

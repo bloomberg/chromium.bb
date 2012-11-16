@@ -3093,6 +3093,12 @@ error::Error GLES2DecoderImpl::HandleReleaseTexImage2DCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleTraceEndCHROMIUM(
+    uint32 immediate_data_size, const gles2::TraceEndCHROMIUM& c) {
+  DoTraceEndCHROMIUM();
+  return error::kNoError;
+}
+
 
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {

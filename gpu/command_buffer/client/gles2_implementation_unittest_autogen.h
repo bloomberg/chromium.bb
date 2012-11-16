@@ -1786,5 +1786,16 @@ TEST_F(GLES2ImplementationTest, ReleaseTexImage2DCHROMIUM) {
   gl_->ReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, 2);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+
+TEST_F(GLES2ImplementationTest, TraceEndCHROMIUM) {
+  struct Cmds {
+    TraceEndCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init();
+
+  gl_->TraceEndCHROMIUM();
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_
 

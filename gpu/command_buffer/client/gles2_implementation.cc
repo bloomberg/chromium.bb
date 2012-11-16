@@ -3459,6 +3459,16 @@ void GLES2Implementation::PopGroupMarkerEXT() {
   debug_marker_manager_.PopGroup();
 }
 
+void GLES2Implementation::TraceBeginCHROMIUM(const char* name) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glTraceBeginCHROMIUM("
+                 << name << ")");
+
+  SetBucketAsCString(kResultBucketId, name);
+  helper_->TraceBeginCHROMIUM(kResultBucketId);
+  helper_->SetBucketSize(kResultBucketId, 0);
+}
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.

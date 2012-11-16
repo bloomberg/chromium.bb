@@ -2205,6 +2205,21 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
   },
+  'TraceBeginCHROMIUM': {
+    'type': 'Custom',
+    'impl_func': False,
+    'immediate': False,
+    'client_test': False,
+    'cmd_args': 'GLuint bucket_id',
+    'extension': True,
+    'chromium': True,
+  },
+  'TraceEndCHROMIUM': {
+    'decoder_func': 'DoTraceEndCHROMIUM',
+    'unit_test': False,
+    'extension': True,
+    'chromium': True,
+  },
 }
 
 

@@ -1918,5 +1918,19 @@
     }
   }
 
+  void TraceBeginCHROMIUM(GLuint bucket_id) {
+    gles2::TraceBeginCHROMIUM* c = GetCmdSpace<gles2::TraceBeginCHROMIUM>();
+    if (c) {
+      c->Init(bucket_id);
+    }
+  }
+
+  void TraceEndCHROMIUM() {
+    gles2::TraceEndCHROMIUM* c = GetCmdSpace<gles2::TraceEndCHROMIUM>();
+    if (c) {
+      c->Init();
+    }
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

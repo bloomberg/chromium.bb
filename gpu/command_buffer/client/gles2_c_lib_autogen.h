@@ -685,6 +685,12 @@ void GLES2BindTexImage2DCHROMIUM(GLenum target, GLint imageId) {
 void GLES2ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) {
   gles2::GetGLContext()->ReleaseTexImage2DCHROMIUM(target, imageId);
 }
+void GLES2TraceBeginCHROMIUM(const char* name) {
+  gles2::GetGLContext()->TraceBeginCHROMIUM(name);
+}
+void GLES2TraceEndCHROMIUM() {
+  gles2::GetGLContext()->TraceEndCHROMIUM();
+}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 

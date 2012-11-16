@@ -57,5 +57,8 @@
 // TODO(gman): BindUniformLocationCHROMIUMBucket
 // TODO(gman): BindTexImage2DCHROMIUM
 // TODO(gman): ReleaseTexImage2DCHROMIUM
+// TODO(gman): TraceBeginCHROMIUM
+
+// TODO(gman): TraceEndCHROMIUM
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 

@@ -602,5 +602,9 @@ void GLES2InterfaceStub::BindTexImage2DCHROMIUM(
 void GLES2InterfaceStub::ReleaseTexImage2DCHROMIUM(
     GLenum /* target */, GLint /* imageId */) {
 }
+void GLES2InterfaceStub::TraceBeginCHROMIUM(const char* /* name */) {
+}
+void GLES2InterfaceStub::TraceEndCHROMIUM() {
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_
 

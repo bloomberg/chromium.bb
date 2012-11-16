@@ -198,3 +198,5 @@ GL_APICALL void         GL_APIENTRY glConsumeTextureCHROMIUM (GLenumTextureTarge
 GL_APICALL void         GL_APIENTRY glBindUniformLocationCHROMIUM (GLidProgram program, GLint location, const char* name);
 GL_APICALL void         GL_APIENTRY glBindTexImage2DCHROMIUM (GLenumTextureBindTarget target, GLint imageId);
 GL_APICALL void         GL_APIENTRY glReleaseTexImage2DCHROMIUM (GLenumTextureBindTarget target, GLint imageId);
+GL_APICALL void         GL_APIENTRY glTraceBeginCHROMIUM (const char* name);
+GL_APICALL void         GL_APIENTRY glTraceEndCHROMIUM (void);

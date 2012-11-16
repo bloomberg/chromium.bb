@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -39,6 +40,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/gpu_trace.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -770,6 +772,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void DoReleaseTexImage2DCHROMIUM(
       GLenum target,
       GLint image_id);
+
+  void DoTraceEndCHROMIUM(void);
 
   // Creates a ProgramInfo for the given program.
   ProgramManager::ProgramInfo* CreateProgramInfo(
@@ -1573,6 +1577,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   int texture_upload_count_;
   base::TimeDelta total_texture_upload_time_;
   base::TimeDelta total_processing_commands_time_;
+
+  std::stack<linked_ptr<GPUTrace> > gpu_trace_stack_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -9322,6 +9328,36 @@ void GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM(
   texture_manager()->SetLevelInfo(
       info, target, 0, GL_RGBA, 0, 0, 1, 0,
       GL_RGBA, GL_UNSIGNED_BYTE, false);
+}
+
+error::Error GLES2DecoderImpl::HandleTraceBeginCHROMIUM(
+    uint32 immediate_data_size, const gles2::TraceBeginCHROMIUM& c) {
+  Bucket* bucket = GetBucket(c.bucket_id);
+  if (!bucket || bucket->size() == 0) {
+    return error::kInvalidArguments;
+  }
+  std::string command_name;
+  if (!bucket->GetAsString(&command_name)) {
+    return error::kInvalidArguments;
+  }
+
+  linked_ptr<GPUTrace> trace(new GPUTrace(command_name));
+  trace->EnableStartTrace();
+  gpu_trace_stack_.push(trace);
+
+  return error::kNoError;
+}
+
+void GLES2DecoderImpl::DoTraceEndCHROMIUM() {
+  if (gpu_trace_stack_.empty()) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glTraceEndCHROMIUM", "no trace begin found");
+    return;
+  }
+
+  linked_ptr<GPUTrace> trace = gpu_trace_stack_.top();
+  trace->EnableEndTrace();
+  gpu_trace_stack_.pop();
 }
 
 // Include the auto-generated part of this file. We split this because it means

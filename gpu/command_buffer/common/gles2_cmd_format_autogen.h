@@ -10508,6 +10508,70 @@ COMPILE_ASSERT(offsetof(ReleaseTexImage2DCHROMIUM, target) == 4,
 COMPILE_ASSERT(offsetof(ReleaseTexImage2DCHROMIUM, imageId) == 8,
                OffsetOf_ReleaseTexImage2DCHROMIUM_imageId_not_8);
 
+struct TraceBeginCHROMIUM {
+  typedef TraceBeginCHROMIUM ValueType;
+  static const CommandId kCmdId = kTraceBeginCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLuint _bucket_id) {
+    SetHeader();
+    bucket_id = _bucket_id;
+  }
+
+  void* Set(void* cmd, GLuint _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 bucket_id;
+};
+
+COMPILE_ASSERT(sizeof(TraceBeginCHROMIUM) == 8,
+               Sizeof_TraceBeginCHROMIUM_is_not_8);
+COMPILE_ASSERT(offsetof(TraceBeginCHROMIUM, header) == 0,
+               OffsetOf_TraceBeginCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(TraceBeginCHROMIUM, bucket_id) == 4,
+               OffsetOf_TraceBeginCHROMIUM_bucket_id_not_4);
+
+struct TraceEndCHROMIUM {
+  typedef TraceEndCHROMIUM ValueType;
+  static const CommandId kCmdId = kTraceEndCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init() {
+    SetHeader();
+  }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(TraceEndCHROMIUM) == 4,
+               Sizeof_TraceEndCHROMIUM_is_not_4);
+COMPILE_ASSERT(offsetof(TraceEndCHROMIUM, header) == 0,
+               OffsetOf_TraceEndCHROMIUM_header_not_0);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 
