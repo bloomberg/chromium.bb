@@ -91,7 +91,8 @@ class RunIsolatedTest(unittest.TestCase):
     remote = RemoteTest('')
 
     for i in range(files_to_handle):
-      remote.add_item(run_isolated.Remote.MED, i, i)
+      remote.add_item(run_isolated.Remote.MED, i, i,
+                      run_isolated.UNKNOWN_FILE_SIZE)
 
     for i in range(files_to_handle):
       self.assertNotEqual(-1, remote.get_result())
@@ -101,8 +102,10 @@ class RunIsolatedTest(unittest.TestCase):
   def test_remote_with_errors(self):
     remote = RemoteTest('')
 
-    remote.add_item(run_isolated.Remote.MED, IOError, '')
-    remote.add_item(run_isolated.Remote.MED, Exception, '')
+    remote.add_item(run_isolated.Remote.MED, IOError, '',
+                    run_isolated.UNKNOWN_FILE_SIZE)
+    remote.add_item(run_isolated.Remote.MED, Exception, '',
+                    run_isolated.UNKNOWN_FILE_SIZE)
     remote.join()
 
     self.assertNotEqual(None, remote.next_exception())

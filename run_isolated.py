@@ -436,7 +436,7 @@ class Remote(object):
     except Queue.Empty:
       return None
 
-  def add_item(self, priority, obj, dest):
+  def add_item(self, priority, obj, dest, size):
     """Retrieves an object from the remote data store.
 
     The smaller |priority| gets fetched first.
@@ -444,7 +444,7 @@ class Remote(object):
     Thread-safe.
     """
     assert (priority & self.INTERNAL_PRIORITY_BITS) == 0
-    self._add_to_queue(priority, obj, dest)
+    self._add_to_queue(priority, obj, dest, size)
 
   def get_result(self):
     """Returns the next file that was successfully fetched."""
@@ -454,10 +454,10 @@ class Remote(object):
       raise r[2][0], r[2][1], r[2][2]
     return r[2]
 
-  def _add_to_queue(self, priority, obj, dest):
+  def _add_to_queue(self, priority, obj, dest, size):
     with self._ready_lock:
       start_new_worker = not self._ready
-    self._queue.put((priority, self._next_index(), obj, dest))
+    self._queue.put((priority, self._next_index(), obj, dest, size))
     if start_new_worker:
       self._add_worker()
 
@@ -490,13 +490,18 @@ class Remote(object):
           self._ready -= 1
       if not item:
         return
-      priority, index, obj, dest = item
+      priority, index, obj, dest, size = item
       try:
         self._do_item(obj, dest)
+        if size and not valid_file(dest, size):
+          download_size = os.stat(dest).st_size
+          os.remove(dest)
+          raise IOError('File incorrect size after download of %s. Got %s and '
+                        'expected %s' % (dest, download_size, size))
       except IOError:
         # Retry a few times, lowering the priority.
         if (priority & self.INTERNAL_PRIORITY_BITS) < self.RETRIES:
-          self._add_to_queue(priority + 1, obj, dest)
+          self._add_to_queue(priority + 1, obj, dest, size)
           self._queue.task_done()
           continue
         # Transfers the exception back. It has maximum priority.
@@ -713,7 +718,7 @@ class Cache(object):
       if item in self._pending_queue:
         # Already pending. The same object could be referenced multiple times.
         return
-      self.remote.add_item(priority, item, path)
+      self.remote.add_item(priority, item, path, size)
       self._pending_queue.add(item)
 
   def add(self, filepath, obj):

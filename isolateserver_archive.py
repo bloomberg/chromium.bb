@@ -218,7 +218,7 @@ def upload_sha1_tree(base_url, indir, infiles):
       hash_data = f.read()
     priority = (run_isolated.Remote.HIGH if metadata.get('priority', '1') == '0'
                 else run_isolated.Remote.MED)
-    remote_uploader.add_item(priority, hash_data, metadata['sha-1'])
+    remote_uploader.add_item(priority, hash_data, metadata['sha-1'], None)
   remote_uploader.join()
 
   exception = remote_uploader.next_exception()

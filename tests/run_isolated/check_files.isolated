@@ -2,7 +2,7 @@
   "command": ["python", "check_files.py"],
   "includes": [
     "52f7a5f98add92134cbbf8fce3fcb87448d06169",
-    "171f7c07df14b65aa2b29191bd084d0d803be9c4"
+    "7fe91ae7f2c0e9cff92b768cdce240b334cd88eb"
   ],
   "files": {
     "check_files.py": {
@@ -11,7 +11,7 @@
     },
     "file2.txt": {
       "sha-1": "7c0095bad1bcbf38e36d208e2b685c5d279146a5",
-      "size": 10
+      "size": 6
     }
   }
 }
