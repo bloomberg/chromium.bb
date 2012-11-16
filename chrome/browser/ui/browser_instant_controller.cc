@@ -147,6 +147,10 @@ void BrowserInstantController::ActiveTabChanged(
   }
 }
 
+void BrowserInstantController::TabStripEmpty() {
+  instant_.reset();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserInstantController, search::SearchModelObserver implementation:
 

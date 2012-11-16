@@ -71,11 +71,13 @@ class BrowserInstantController : public TabStripModelObserver,
                                 content::WebContents* new_contents,
                                 int index,
                                 bool user_gesture) OVERRIDE;
+  virtual void TabStripEmpty() OVERRIDE;
 
   // Overridden from search::SearchModelObserver:
   virtual void ModeChanged(const search::Mode& old_mode,
                            const search::Mode& new_mode) OVERRIDE;
 
+ private:
   // If this browser should have Instant, a new InstantController created;
   // otherwise any existing InstantController is destroyed.
   void ResetInstant();
