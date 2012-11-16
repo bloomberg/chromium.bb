@@ -1611,7 +1611,7 @@ void DriveFileSystem::OnSearch(const SearchCallback& search_callback,
   // result directory.
   for (size_t i = 0; i < entries.size(); ++i) {
     // Run the callback if this is the last iteration of the loop.
-    const bool should_run_callback = (i+1 == entries.size());
+    const bool should_run_callback = (i + 1 == entries.size());
     resource_metadata_->RefreshFile(
         scoped_ptr<google_apis::DocumentEntry>(entries[i]),
         base::Bind(&DriveFileSystem::AddToSearchResults,
@@ -1649,6 +1649,7 @@ void DriveFileSystem::AddToSearchResults(
 }
 
 void DriveFileSystem::Search(const std::string& search_query,
+                             bool shared_with_me,
                              const GURL& next_feed,
                              const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
@@ -1659,12 +1660,14 @@ void DriveFileSystem::Search(const std::string& search_query,
       base::Bind(&DriveFileSystem::SearchAsyncOnUIThread,
                  ui_weak_ptr_,
                  search_query,
+                 shared_with_me,
                  next_feed,
                  google_apis::CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::SearchAsyncOnUIThread(
     const std::string& search_query,
+    bool shared_with_me,
     const GURL& next_feed,
     const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1672,6 +1675,7 @@ void DriveFileSystem::SearchAsyncOnUIThread(
 
   feed_loader_->SearchFromServer(
       search_query,
+      shared_with_me,
       next_feed,
       base::Bind(&DriveFileSystem::OnSearch, ui_weak_ptr_, callback));
 }

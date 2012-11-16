@@ -24,6 +24,8 @@ class GetDocumentsOperation : public GetDataOperation {
  public:
   // |start_changestamp| specifies the starting point of change list or 0 if
   // all changes are necessary.
+  // If |shared_with_me| is true, it searches for the files shared to the user,
+  // otherwise searches for the files owned by the user.
   // |url| specifies URL for documents feed fetching operation. If empty URL is
   // passed, the default URL is used and returns the first page of the result.
   // When non-first page result is requested, |url| should be specified.
@@ -31,6 +33,7 @@ class GetDocumentsOperation : public GetDataOperation {
                         const GURL& url,
                         int start_changestamp,
                         const std::string& search_string,
+                        bool shared_with_me,
                         const std::string& directory_resource_id,
                         const GetDataCallback& callback);
   virtual ~GetDocumentsOperation();
@@ -43,6 +46,7 @@ class GetDocumentsOperation : public GetDataOperation {
   GURL override_url_;
   int start_changestamp_;
   std::string search_string_;
+  bool shared_with_me_;
   std::string directory_resource_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GetDocumentsOperation);

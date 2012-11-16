@@ -311,6 +311,8 @@ class DriveFileSystemInterface {
   virtual void RequestDirectoryRefresh(const FilePath& file_path) = 0;
 
   // Does server side content search for |search_query|.
+  // If |shared_with_me| is true, it searches for the files shared to the user,
+  // otherwise searches for the files owned by the user.
   // If |next_feed| is set, this is the feed url that will be fetched.
   // Search results will be returned as a list of results' |SearchResultInfo|
   // structs, which contains file's path and is_directory flag.
@@ -318,6 +320,7 @@ class DriveFileSystemInterface {
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
   // |callback| must not be null.
   virtual void Search(const std::string& search_query,
+                      bool shared_with_me,
                       const GURL& next_feed,
                       const SearchCallback& callback) = 0;
 

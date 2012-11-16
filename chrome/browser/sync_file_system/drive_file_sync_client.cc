@@ -231,6 +231,7 @@ void DriveFileSyncClient::SearchFilesInDirectory(
       GURL(),  // feed_url
       0,  // start_changestamp
       search_query,
+      false,  // shared_with_me
       directory_resource_id,
       base::Bind(&DriveFileSyncClient::DidGetDocumentFeedData,
                  AsWeakPtr(), callback));
@@ -252,6 +253,7 @@ void DriveFileSyncClient::ListChanges(int64 start_changestamp,
       GURL(),  // feed_url
       start_changestamp,
       std::string(),  // search_query
+      false,  // shared_with_me
       std::string(),  // directory_resource_id
       base::Bind(&DriveFileSyncClient::DidGetDocumentFeedData,
                  AsWeakPtr(), callback));
@@ -265,6 +267,7 @@ void DriveFileSyncClient::ContinueListing(
       feed_url,
       0,  // start_changestamp
       std::string(),  // search_query
+      false,  // shared_with_me
       std::string(),  // directory_resource_id
       base::Bind(&DriveFileSyncClient::DidGetDocumentFeedData,
                  AsWeakPtr(), callback));

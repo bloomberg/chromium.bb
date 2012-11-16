@@ -55,6 +55,7 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
       const GURL& feed_url,
       int64 start_changestamp,
       const std::string& search_query,
+      bool shared_with_me,
       const std::string& directory_resource_id,
       const google_apis::GetDataCallback& callback) OVERRIDE;
   virtual void GetDocumentEntry(

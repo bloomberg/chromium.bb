@@ -51,6 +51,7 @@ class GDataWapiService : public DriveServiceInterface,
   virtual void GetDocuments(const GURL& feed_url,
                             int64 start_changestamp,
                             const std::string& search_query,
+                            bool shared_with_me,
                             const std::string& directory_resource_id,
                             const GetDataCallback& callback) OVERRIDE;
   virtual void GetDocumentEntry(const std::string& resource_id,

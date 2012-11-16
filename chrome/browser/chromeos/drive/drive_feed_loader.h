@@ -70,6 +70,7 @@ struct LoadFeedParams {
   int64 start_changestamp;
   int64 root_feed_changestamp;
   std::string search_query;
+  bool shared_with_me;
   std::string directory_resource_id;
   GURL feed_to_load;
   bool load_subsequent_feeds;
@@ -126,9 +127,12 @@ class DriveFeedLoader {
   // Starts retrieving search results for |search_query| from the server.
   // If |next_feed| is set, this is the feed url that will be fetched.
   // If |next_feed| is an empty string, the default URL is used.
+  // If |shared_with_me| is true, it searches for the files shared to the user,
+  // otherwise searches for the files owned by the user.
   // Upon completion, |feed_load_callback| is invoked.
   // |feed_load_callback| must not be null.
   void SearchFromServer(const std::string& search_query,
+                        bool shared_with_me,
                         const GURL& next_feed,
                         const LoadDocumentFeedCallback& feed_load_callback);
 

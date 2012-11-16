@@ -136,7 +136,7 @@ ACTION_P2(MockCopyDocument, status, value) {
 ACTION(MockFailingGetDocuments) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg4, google_apis::GDATA_NO_CONNECTION,
+      base::Bind(arg5, google_apis::GDATA_NO_CONNECTION,
                  base::Passed(scoped_ptr<base::Value>())));
 }
 
@@ -857,7 +857,7 @@ TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
 
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_drive_service_,
-              GetDocuments(Eq(GURL()), _, _, _, _)).Times(1);
+              GetDocuments(Eq(GURL()), _, _, _, _, _)).Times(1);
 
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
 
@@ -1210,7 +1210,7 @@ TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
   // Account metadata is already set up in MockDriveService's constructor.
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
-  EXPECT_CALL(*mock_drive_service_, GetDocuments(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_drive_service_, GetDocuments(_, _, _, _, _, _)).Times(0);
 
   // Kicks loading of cached file system and query for server update.
   EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/File1"))));
@@ -1237,7 +1237,7 @@ TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
 
   // Make GetDocuments fail for simulating offline situation. This will leave
   // the file system "loaded from cache, but not synced with server" state.
-  EXPECT_CALL(*mock_drive_service_, GetDocuments(_, _, _, _, _))
+  EXPECT_CALL(*mock_drive_service_, GetDocuments(_, _, _, _, _, _))
       .WillOnce(MockFailingGetDocuments());
 
   // Kicks loading of cached file system and query for server update.
@@ -1251,7 +1251,7 @@ TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
           "gdata/account_metadata.json").release());
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
-  EXPECT_CALL(*mock_drive_service_, GetDocuments(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(*mock_drive_service_, GetDocuments(_, _, _, _, _, _)).Times(1);
 
   file_system_->CheckForUpdates();
   // Expected value from reading gdata/basic_feed.json.
@@ -2498,7 +2498,7 @@ TEST_F(DriveFileSystemTest, ContentSearch) {
 
   // There should be only one GetDocuments request, even though search result
   // feed has next feed url.
-  EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
+  EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "foo", _, _, _))
       .Times(1);
 
   const SearchResultPair kExpectedResults[] = {
@@ -2511,7 +2511,7 @@ TEST_F(DriveFileSystemTest, ContentSearch) {
       kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults),
       GURL("https://next_feed"));
 
-  file_system_->Search("foo", GURL(), callback);
+  file_system_->Search("foo", false, GURL(), callback);
   message_loop_.Run();  // Wait to get our result.
 }
 
@@ -2526,7 +2526,7 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
 
   // There should be only one GetDocuments request, even though search result
   // feed has next feed url.
-  EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
+  EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "foo", _, _, _))
       .Times(1);
 
   // As the result of the first Search(), only entries in the current file
@@ -2539,7 +2539,7 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
   // This will cause notification to observers (e.g., File Browser) so that
   // they can request search again.
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
-  EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "", _, _))
+  EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "", _, _, _))
       .Times(1);
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -2559,7 +2559,7 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
       kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults),
       GURL("https://next_feed"));
 
-  file_system_->Search("foo", GURL(), callback);
+  file_system_->Search("foo", false, GURL(), callback);
   // Make sure all the delayed tasks to complete.
   // message_loop_.Run() can return before the delta feed processing finishes.
   google_apis::test_util::RunBlockingPoolTask();
@@ -2570,7 +2570,7 @@ TEST_F(DriveFileSystemTest, ContentSearchEmptyResult) {
 
   mock_drive_service_->set_search_result("gdata/empty_feed.json");
 
-  EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
+  EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "foo", _, _, _))
       .Times(1);
 
   const SearchResultPair* expected_results = NULL;
@@ -2578,7 +2578,7 @@ TEST_F(DriveFileSystemTest, ContentSearchEmptyResult) {
   SearchCallback callback = base::Bind(&DriveSearchCallback,
       &message_loop_, expected_results, 0u, GURL());
 
-  file_system_->Search("foo", GURL(), callback);
+  file_system_->Search("foo", false, GURL(), callback);
   message_loop_.Run();  // Wait to get our result.
 }
 
@@ -2603,7 +2603,8 @@ TEST_F(DriveFileSystemTest, RequestDirectoryRefresh) {
   // kWAPIRootDirectoryResourceIdForTesting
   // is used here as the root ID is set in DriveFeedLoader::UpdateFromFeed().
   EXPECT_CALL(*mock_drive_service_,
-              GetDocuments(Eq(GURL()), _, _, kWAPIRootDirectoryResourceId, _))
+              GetDocuments(Eq(GURL()), _, _, _, kWAPIRootDirectoryResourceId,
+                           _))
       .Times(1);
   // We'll notify the directory change to the observer.
   EXPECT_CALL(*mock_directory_observer_,

@@ -26,7 +26,7 @@ MockDriveService::MockDriveService() {
       .WillByDefault(Return(OperationProgressStatusList()));
   ON_CALL(*this, Authenticate(_))
       .WillByDefault(Invoke(this, &MockDriveService::AuthenticateStub));
-  ON_CALL(*this, GetDocuments(_, _, _, _, _))
+  ON_CALL(*this, GetDocuments(_, _, _, _, _, _))
       .WillByDefault(Invoke(this, &MockDriveService::GetDocumentsStub));
   ON_CALL(*this, GetAccountMetadata(_))
       .WillByDefault(Invoke(this, &MockDriveService::GetAccountMetadataStub));
@@ -75,6 +75,7 @@ void MockDriveService::GetDocumentsStub(
     const GURL& feed_url,
     int64 start_changestamp,
     const std::string& search_string,
+    bool shared_with_me,
     const std::string& directory_resource_id,
     const GetDataCallback& callback) {
   if (search_string.empty()) {

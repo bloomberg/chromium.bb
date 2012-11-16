@@ -163,6 +163,7 @@ LoadFeedParams::LoadFeedParams(
     const LoadDocumentFeedCallback& feed_load_callback)
     : start_changestamp(0),
       root_feed_changestamp(0),
+      shared_with_me(false),
       load_subsequent_feeds(true),
       feed_load_callback(feed_load_callback) {
   DCHECK(!feed_load_callback.is_null());
@@ -367,6 +368,7 @@ void DriveFeedLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params) {
         params_ptr->feed_to_load,
         params_ptr->start_changestamp,
         std::string(),  // No search query.
+        params_ptr->shared_with_me,
         std::string(),  // No directory resource ID.
         base::Bind(&DriveFeedLoader::OnGetChangelist,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -377,6 +379,7 @@ void DriveFeedLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params) {
         params_ptr->feed_to_load,
         params_ptr->start_changestamp,
         params_ptr->search_query,
+        params_ptr->shared_with_me,
         params_ptr->directory_resource_id,
         base::Bind(&DriveFeedLoader::OnGetDocuments,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -397,12 +400,14 @@ void DriveFeedLoader::LoadDirectoryFromServer(
 
 void DriveFeedLoader::SearchFromServer(
     const std::string& search_query,
+    bool shared_with_me,
     const GURL& next_feed,
     const LoadDocumentFeedCallback& feed_load_callback) {
   DCHECK(!feed_load_callback.is_null());
 
   scoped_ptr<LoadFeedParams> params(new LoadFeedParams(feed_load_callback));
   params->search_query = search_query;
+  params->shared_with_me = shared_with_me;
   params->feed_to_load = next_feed;
   params->load_subsequent_feeds = false;
   LoadFromServer(params.Pass());
@@ -520,6 +525,7 @@ void DriveFeedLoader::OnParseFeed(
         next_feed_url,
         params_ptr->start_changestamp,
         params_ptr->search_query,
+        params_ptr->shared_with_me,
         params_ptr->directory_resource_id,
         base::Bind(&DriveFeedLoader::OnGetDocuments,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -622,6 +628,7 @@ void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
         current_feed->next_link(),
         params_ptr->start_changestamp,
         std::string(),  // No search query.
+        false,  // Not shared with me.
         std::string(),  // No directory resource ID.
         base::Bind(&DriveFeedLoader::OnGetChangelist,
                    weak_ptr_factory_.GetWeakPtr(),

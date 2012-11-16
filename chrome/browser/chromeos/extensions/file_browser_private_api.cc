@@ -2792,7 +2792,7 @@ void SearchDriveFunction::OnFileSystemOpened(
   }
 
   system_service->file_system()->Search(
-      query_, GURL(next_feed_),
+      query_, false /* shared_with_me */, GURL(next_feed_),
       base::Bind(&SearchDriveFunction::OnSearch, this));
 }
 

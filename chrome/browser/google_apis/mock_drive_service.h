@@ -35,10 +35,11 @@ class MockDriveService : public DriveServiceInterface {
                      OperationProgressStatusList());
   MOCK_METHOD1(Authenticate,
                void(const AuthStatusCallback& callback));
-  MOCK_METHOD5(GetDocuments,
+  MOCK_METHOD6(GetDocuments,
                void(const GURL& feed_url,
                     int64 start_changestamp,
                     const std::string& search_string,
+                    bool shared_with_me,
                     const std::string& directory_resource_id,
                     const GetDataCallback& callback));
   MOCK_METHOD2(GetDocumentEntry,
@@ -130,6 +131,7 @@ class MockDriveService : public DriveServiceInterface {
   void GetDocumentsStub(const GURL& feed_url,
                         int64 start_changestamp,
                         const std::string& search_string,
+                        bool shared_with_me,
                         const std::string& directory_resource_id,
                         const GetDataCallback& callback);
 

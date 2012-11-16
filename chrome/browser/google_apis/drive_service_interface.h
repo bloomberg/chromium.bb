@@ -122,10 +122,11 @@ class DriveServiceInterface {
   // string is passed, |directory_resource_id| is ignored.
   //
   // Upon completion, invokes |callback| with results on the calling thread.
-  // TODO(satorux): Refactor this function: crbug.com/128746
+  // TODO(haruki): Refactor this function: crbug.com/160932
   virtual void GetDocuments(const GURL& feed_url,
                             int64 start_changestamp,
                             const std::string& search_query,
+                            bool shared_with_me,
                             const std::string& directory_resource_id,
                             const GetDataCallback& callback) = 0;
 

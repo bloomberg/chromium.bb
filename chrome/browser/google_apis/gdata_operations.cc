@@ -54,6 +54,10 @@ const char kAccountMetadataURL[] =
 const char kGetContactGroupsURL[] =
     "https://www.google.com/m8/feeds/groups/default/full?alt=json";
 
+// URL requesting documents list that shared to the authenticated user only
+const char kGetDocumentListURLForSharedWithMe[] =
+    "https://docs.google.com/feeds/default/private/full/-/shared-with-me";
+
 // URL requesting all contacts.
 // TODO(derat): Per https://goo.gl/AufHP, "The feed may not contain all of the
 // user's contacts, because there's a default limit on the number of results
@@ -219,12 +223,14 @@ GetDocumentsOperation::GetDocumentsOperation(
     const GURL& url,
     int start_changestamp,
     const std::string& search_string,
+    bool shared_with_me,
     const std::string& directory_resource_id,
     const GetDataCallback& callback)
     : GetDataOperation(registry, callback),
       override_url_(url),
       start_changestamp_(start_changestamp),
       search_string_(search_string),
+      shared_with_me_(shared_with_me),
       directory_resource_id_(directory_resource_id) {
 }
 
@@ -239,6 +245,13 @@ GURL GetDocumentsOperation::GetURL() const {
                             max_docs,
                             0,
                             search_string_);
+
+  if (shared_with_me_) {
+    return AddFeedUrlParams(GURL(kGetDocumentListURLForSharedWithMe),
+                            max_docs,
+                            0,
+                            search_string_);
+  }
 
   if (start_changestamp_ == 0) {
     return AddFeedUrlParams(FormatDocumentListURL(directory_resource_id_),

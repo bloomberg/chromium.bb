@@ -107,12 +107,12 @@ ACTION_P2(InvokeGetDataCallback2, error, result) {
       base::Bind(arg2, error, base::Passed(&value)));
 }
 
-// Invokes |arg4| as a GetDataCallback.
-ACTION_P2(InvokeGetDataCallback4, error, result) {
+// Invokes |arg5| as a GetDataCallback.
+ACTION_P2(InvokeGetDataCallback5, error, result) {
   scoped_ptr<base::Value> value(result.Pass());
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg4, error, base::Passed(&value)));
+      base::Bind(arg5, error, base::Passed(&value)));
 }
 
 void DidGetResourceID(bool* done_out,
@@ -159,9 +159,10 @@ TEST_F(DriveFileSyncClientTest, GetSyncRoot) {
               GetDocuments(GURL(),         // feed_url
                            0,              // start_changestamp,
                            FormatTitleQuery(kSyncRootDirectoryName),
+                           false,          // shared_with_me
                            std::string(),  // directory_resource_id,
                            _))
-      .WillOnce(InvokeGetDataCallback4(google_apis::HTTP_SUCCESS,
+      .WillOnce(InvokeGetDataCallback5(google_apis::HTTP_SUCCESS,
                                        base::Passed(&found_result)));
 
   bool done = false;
@@ -187,9 +188,10 @@ TEST_F(DriveFileSyncClientTest, CreateSyncRoot) {
               GetDocuments(GURL(),         // feed_urlc
                            0,              // start_changestamp
                            FormatTitleQuery(kSyncRootDirectoryName),
+                           false,          // shared_with_me
                            std::string(),  // directory_resource_id
                            _))
-      .WillOnce(InvokeGetDataCallback4(google_apis::HTTP_SUCCESS,
+      .WillOnce(InvokeGetDataCallback5(google_apis::HTTP_SUCCESS,
                                        base::Passed(&not_found_result)));
 
   // Expected to call AddNewDirectory from GetDriveDirectoryForSyncRoot.
@@ -227,9 +229,10 @@ TEST_F(DriveFileSyncClientTest, GetOriginDirectory) {
               GetDocuments(GURL(),  // feed_url
                            0,       // start_changestamp
                            FormatTitleQuery(kOrigin.spec()),
+                           false,   // shared_with_me
                            kParentResourceId,
                            _))
-      .WillOnce(InvokeGetDataCallback4(google_apis::HTTP_SUCCESS,
+      .WillOnce(InvokeGetDataCallback5(google_apis::HTTP_SUCCESS,
                                        base::Passed(&found_result)));
 
   bool done = false;
@@ -264,9 +267,10 @@ TEST_F(DriveFileSyncClientTest, CreateOriginDirectory) {
               GetDocuments(GURL(),             // feed_url
                            0,                  // start_changestamp
                            FormatTitleQuery(kOrigin.spec()),
+                           false,              // shared_with_me
                            kParentResourceId,  // directory_resource_id
                            _))
-      .WillOnce(InvokeGetDataCallback4(google_apis::HTTP_SUCCESS,
+      .WillOnce(InvokeGetDataCallback5(google_apis::HTTP_SUCCESS,
                                        base::Passed(&not_found_result)));
 
   // Expected to call GetDocumentEntry from GetDriveDirectoryForOrigin.
@@ -336,9 +340,10 @@ TEST_F(DriveFileSyncClientTest, ListFiles) {
               GetDocuments(GURL(),         // feed_url
                            0,              // start_changestamp
                            std::string(),  // search_query
+                           false,          // shared_with_me
                            kDirectoryResourceId,
                            _))
-      .WillOnce(InvokeGetDataCallback4(google_apis::HTTP_SUCCESS,
+      .WillOnce(InvokeGetDataCallback5(google_apis::HTTP_SUCCESS,
                                        base::Passed(&first_result)))
       .RetiresOnSaturation();
 
@@ -347,9 +352,10 @@ TEST_F(DriveFileSyncClientTest, ListFiles) {
               GetDocuments(kFeedURL,
                            0,              // start_changestamp
                            std::string(),  // search_query
+                           false,          // shared_with_me
                            std::string(),  // directory_resource_id
                            _))
-      .WillOnce(InvokeGetDataCallback4(google_apis::HTTP_SUCCESS,
+      .WillOnce(InvokeGetDataCallback5(google_apis::HTTP_SUCCESS,
                                        base::Passed(&following_result)))
       .RetiresOnSaturation();
 
@@ -395,9 +401,10 @@ TEST_F(DriveFileSyncClientTest, ListChanges) {
               GetDocuments(GURL(),
                            0,                     // start_changestamp
                            std::string(),         // search_query
+                           false,                 // shared_with_me
                            kDirectoryResourceId,  // directory_resource_id
                            _))
-      .WillOnce(InvokeGetDataCallback4(google_apis::HTTP_SUCCESS,
+      .WillOnce(InvokeGetDataCallback5(google_apis::HTTP_SUCCESS,
                                        base::Passed(&first_result)))
       .RetiresOnSaturation();
 
@@ -406,9 +413,10 @@ TEST_F(DriveFileSyncClientTest, ListChanges) {
               GetDocuments(GURL(),
                            kStartChangestamp,
                            std::string(),  // search_query
+                           false,          // shared_with_me
                            std::string(),  // directory_resource_id
                            _))
-      .WillOnce(InvokeGetDataCallback4(google_apis::HTTP_SUCCESS,
+      .WillOnce(InvokeGetDataCallback5(google_apis::HTTP_SUCCESS,
                                        base::Passed(&following_result)))
       .RetiresOnSaturation();
 

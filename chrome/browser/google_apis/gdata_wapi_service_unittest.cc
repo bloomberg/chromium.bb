@@ -162,6 +162,7 @@ TEST_F(GDataTest, GetDocuments) {
       gdata_test_server_.GetURL("files/chromeos/gdata/root_feed.json"),
       0,  // start_changestamp
       std::string(),  // search string
+      false,  // shared with me
       std::string(),  // directory resource ID
       base::Bind(&TestGetDocumentsCallback, &result, &result_data));
   MessageLoop::current()->Run();
@@ -187,6 +188,7 @@ TEST_F(GDataTest, GetDocumentsFailure) {
       gdata_test_server_.GetURL("files/chromeos/gdata/testfile.txt"),
       0,  // start_changestamp
       std::string(),  // search string
+      false,  // shared with me
       std::string(),  // directory resource ID
       base::Bind(&TestGetDocumentsCallback, &result, &result_data));
   MessageLoop::current()->Run();
