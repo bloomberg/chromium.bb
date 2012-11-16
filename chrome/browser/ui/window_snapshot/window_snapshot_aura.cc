@@ -29,8 +29,10 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
   gfx::Rect read_pixels_bounds_in_pixel =
       ui::ConvertRectToPixel(window->layer(), read_pixels_bounds);
 
-  DCHECK_GE(compositor->size().width(), read_pixels_bounds_in_pixel.right());
-  DCHECK_GE(compositor->size().height(), read_pixels_bounds_in_pixel.bottom());
+  // Sometimes (i.e. when using Aero on Windows) the compositor's size is
+  // smaller than the window bounds. So trim appropriately.
+  read_pixels_bounds_in_pixel.Intersect(gfx::Rect(compositor->size()));
+
   DCHECK_LE(0, read_pixels_bounds.x());
   DCHECK_LE(0, read_pixels_bounds.y());
 
