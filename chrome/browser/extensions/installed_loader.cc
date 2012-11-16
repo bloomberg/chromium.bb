@@ -240,6 +240,7 @@ void InstalledLoader::LoadAllExtensions() {
   int app_external_count = 0;
   int hosted_app_count = 0;
   int legacy_packaged_app_count = 0;
+  int platform_app_count = 0;
   int user_script_count = 0;
   int extension_user_count = 0;
   int extension_external_count = 0;
@@ -298,6 +299,14 @@ void InstalledLoader::LoadAllExtensions() {
           ++app_user_count;
         }
         break;
+      case Extension::TYPE_PLATFORM_APP:
+        ++platform_app_count;
+        if (Extension::IsExternalLocation(location)) {
+          ++app_external_count;
+        } else {
+          ++app_user_count;
+        }
+        break;
       case Extension::TYPE_EXTENSION:
       default:
         if (Extension::IsExternalLocation(location)) {
@@ -337,6 +346,7 @@ void InstalledLoader::LoadAllExtensions() {
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadHostedApp", hosted_app_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadPackagedApp",
                            legacy_packaged_app_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadPlatformApp", platform_app_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadExtension",
                            extension_user_count + extension_external_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadExtensionUser",
