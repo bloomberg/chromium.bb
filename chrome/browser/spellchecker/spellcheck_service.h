@@ -77,14 +77,6 @@ class SpellcheckService : public ProfileKeyedService,
   // renderer will not load Hunspell until it needs to.
   void InitForRenderer(content::RenderProcessHost* process);
 
-  // Returns true if the dictionary is ready to use.
-  bool IsReady() const;
-
-  // Hunspell dictionary functions.
-  virtual const base::PlatformFile& GetDictionaryFile() const;
-  virtual const std::string& GetLanguage() const;
-  virtual bool IsUsingPlatformChecker() const;
-
   // Returns a metrics counter associated with this object,
   // or null when metrics recording is disabled.
   SpellCheckHostMetrics* GetMetrics() const;

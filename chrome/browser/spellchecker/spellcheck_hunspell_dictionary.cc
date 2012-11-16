@@ -59,6 +59,7 @@ SpellcheckHunspellDictionary::~SpellcheckHunspellDictionary() {
 }
 
 void SpellcheckHunspellDictionary::Load() {
+  Initialize();
 }
 
 void SpellcheckHunspellDictionary::Initialize() {

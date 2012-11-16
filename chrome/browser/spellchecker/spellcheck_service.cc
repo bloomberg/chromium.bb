@@ -46,9 +46,8 @@ SpellcheckService::SpellcheckService(Profile* profile)
   hunspell_dictionary_.reset(new SpellcheckHunspellDictionary(
       profile, prefs->GetString(prefs::kSpellCheckDictionary),
       profile->GetRequestContext(), this));
-  // TODO(rlp): This should be the load function so we can loop through all
-  // dictionaries easily.
-  hunspell_dictionary_->Initialize();
+
+  hunspell_dictionary_->Load();
 
   custom_dictionary_.reset(new SpellcheckCustomDictionary(profile_));
   custom_dictionary_->Load();
@@ -147,11 +146,6 @@ SpellcheckService::EventType SpellcheckService::WaitStatusEvent() {
   return g_status_type;
 }
 
-void SpellcheckService::Initialize() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  hunspell_dictionary_->Initialize();
-}
-
 void SpellcheckService::StartRecordingMetrics(bool spellcheck_enabled) {
   metrics_.reset(new SpellCheckHostMetrics());
   metrics_->RecordEnabledStats(spellcheck_enabled);
@@ -225,22 +219,6 @@ SpellCheckHostMetrics* SpellcheckService::GetMetrics() const {
 
 SpellcheckCustomDictionary* SpellcheckService::GetCustomDictionary() {
   return custom_dictionary_.get();
-}
-
-bool SpellcheckService::IsReady() const {
-  return hunspell_dictionary_->IsReady();
-}
-
-bool SpellcheckService::IsUsingPlatformChecker() const {
-  return hunspell_dictionary_->IsUsingPlatformChecker();
-}
-
-const base::PlatformFile& SpellcheckService::GetDictionaryFile() const {
-  return hunspell_dictionary_->GetDictionaryFile();
-}
-
-const std::string& SpellcheckService::GetLanguage() const {
-  return hunspell_dictionary_->GetLanguage();
 }
 
 // TODO(rlp): rename to something more logical.
