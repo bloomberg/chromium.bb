@@ -462,8 +462,6 @@ void InstantController::OnAutocompleteLostFocus(
   if (!GetPreviewContents())
     return;
 
-  loader_->OnAutocompleteLostFocus();
-
   // It's bizarre if custom NTP content disappears when the user focuses
   // outside the omnibox.
   if (model_.preview_state() == InstantModel::CUSTOM_NTP_CONTENT)
@@ -546,8 +544,6 @@ void InstantController::OnAutocompleteLostFocus(
 
 void InstantController::OnAutocompleteGotFocus() {
   is_omnibox_focused_ = true;
-  if (GetPreviewContents())
-    loader_->OnAutocompleteGotFocus();
   CreateDefaultLoader();
 }
 
@@ -696,11 +692,7 @@ void InstantController::ResetLoader(const std::string& instant_url,
     loader_.reset(new InstantLoader(this, instant_url, active_tab));
     loader_->Init();
 
-    // Ensure the searchbox API has the correct focus state and context.
-    if (is_omnibox_focused_)
-      loader_->OnAutocompleteGotFocus();
-    else
-      loader_->OnAutocompleteLostFocus();
+    // Ensure the searchbox API has the correct context.
     loader_->OnActiveTabModeChanged(active_tab_mode_.is_ntp());
 
     // Reset the loader timer.

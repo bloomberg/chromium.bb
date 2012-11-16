@@ -29,7 +29,6 @@ if (!chrome.searchBox) {
     native function GetWidth();
     native function GetHeight();
     native function GetAutocompleteResults();
-    native function GetIsFocused();
     native function GetContext();
     native function NavigateContentWindow();
     native function SetSuggestions();
@@ -175,7 +174,6 @@ if (!chrome.searchBox) {
     this.__defineGetter__('width', GetWidth);
     this.__defineGetter__('height', GetHeight);
     this.__defineGetter__('nativeSuggestions', GetAutocompleteResultsWrapper);
-    this.__defineGetter__('isFocused', GetIsFocused);
     this.__defineGetter__('context', GetContext);
     this.setSuggestions = function(text) {
       SetSuggestions(text);
@@ -207,8 +205,6 @@ if (!chrome.searchBox) {
     this.onresize = null;
     this.onautocompleteresults = null;
     this.onkeypress = null;
-    this.onfocus = null;
-    this.onblur = null;
     this.oncontextchange = null;
   };
 }

@@ -9,8 +9,6 @@ var onchangecalls = 0;
 var onsubmitcalls = 0;
 var oncancelcalls = 0;
 var onresizecalls = 0;
-var onfocuscalls = 0;
-var onblurcalls = 0;
 
 var value = "";
 var verbatim = false;
@@ -44,14 +42,6 @@ chrome.searchBox.oncancel = function() {
 chrome.searchBox.onresize = function() {
   onresizecalls++;
   height = chrome.searchBox.height;
-};
-
-chrome.searchBox.onfocus = function() {
-  onfocuscalls++;
-};
-
-chrome.searchBox.onblur = function() {
-  onblurcalls++;
 };
 
 if (chrome.searchBox.value != "")

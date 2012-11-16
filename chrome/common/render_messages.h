@@ -295,10 +295,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxAutocompleteResults,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxUpOrDownKeyPressed,
                     int /* count */)
 
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxFocus)
-
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxBlur)
-
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxActiveTabModeChanged,
                     bool /* active_tab_is_ntp */)
 

@@ -73,12 +73,6 @@ class InstantLoader : public content::NotificationObserver {
   // is a repeat count, negative for moving up, positive for moving down.
   void OnUpOrDownKeyPressed(int count);
 
-  // Tells the preview page that the searchbox has been focused.
-  void OnAutocompleteGotFocus();
-
-  // Tells the preview page that the searchbox has lost focus.
-  void OnAutocompleteLostFocus();
-
   // Tells the preview page that the active tab's "NTP status" has changed.
   void OnActiveTabModeChanged(bool active_tab_is_ntp);
 

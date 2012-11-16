@@ -41,7 +41,6 @@ class SearchBox : public content::RenderViewObserver,
   size_t selection_start() const { return selection_start_; }
   size_t selection_end() const { return selection_end_; }
   int results_base() const { return results_base_; }
-  bool is_focused() const { return is_focused_; }
   bool active_tab_is_ntp() const { return active_tab_is_ntp_; }
 
   gfx::Rect GetRect();
@@ -81,7 +80,6 @@ class SearchBox : public content::RenderViewObserver,
   std::vector<InstantAutocompleteResult> autocomplete_results_;
   size_t last_results_base_;
   std::vector<InstantAutocompleteResult> last_autocomplete_results_;
-  bool is_focused_;
   bool active_tab_is_ntp_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBox);

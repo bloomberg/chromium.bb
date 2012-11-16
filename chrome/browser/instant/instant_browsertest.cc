@@ -155,8 +155,6 @@ class InstantTest : public InProcessBrowserTest {
            GetIntFromJS(rvh, "onsubmitcalls", &onsubmitcalls_) &&
            GetIntFromJS(rvh, "oncancelcalls", &oncancelcalls_) &&
            GetIntFromJS(rvh, "onresizecalls", &onresizecalls_) &&
-           GetIntFromJS(rvh, "onfocuscalls", &onfocuscalls_) &&
-           GetIntFromJS(rvh, "onblurcalls", &onblurcalls_) &&
            GetStringFromJS(rvh, "value", &value_) &&
            GetBoolFromJS(rvh, "verbatim", &verbatim_) &&
            GetIntFromJS(rvh, "height", &height_);
@@ -184,8 +182,6 @@ class InstantTest : public InProcessBrowserTest {
   int onsubmitcalls_;
   int oncancelcalls_;
   int onresizecalls_;
-  int onfocuscalls_;
-  int onblurcalls_;
 
   std::string value_;
   bool verbatim_;
@@ -244,6 +240,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OmniboxFocusLoadsInstant) {
 // Test that the onchange event is dispatched upon typing in the omnibox.
 IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   // Use the Instant page as the active tab, so we can exploit its visibility
   // handler to check visibility transitions.
@@ -257,7 +254,6 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   EXPECT_EQ(0, active_tab_onvisibilitycalls);
 
   // Typing "query" into the omnibox causes the first onchange event.
-  FocusOmniboxAndWaitForInstantSupport();
   SetOmniboxTextAndWaitForInstantToShow("query");
 
   // The page suggested "query suggestion" is inline autocompleted into the
@@ -420,31 +416,6 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnResizeEvent) {
   EXPECT_LT(0, height_);
 }
 
-// Test that the searchbox isFocused property and focus and blur events work.
-IN_PROC_BROWSER_TEST_F(InstantTest, Focus) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant());
-  FocusOmniboxAndWaitForInstantSupport();
-
-  content::RenderViewHost* preview_rvh =
-      instant()->GetPreviewContents()->web_contents()->GetRenderViewHost();
-
-  bool is_focused = false;
-  EXPECT_TRUE(GetBoolFromJS(preview_rvh, "chrome.searchBox.isFocused",
-                            &is_focused));
-  EXPECT_TRUE(is_focused);
-
-  instant()->OnAutocompleteGotFocus();
-  instant()->OnAutocompleteLostFocus(NULL);
-
-  EXPECT_TRUE(GetBoolFromJS(preview_rvh, "chrome.searchBox.isFocused",
-                            &is_focused));
-  EXPECT_FALSE(is_focused);
-
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
-  EXPECT_EQ(1, onfocuscalls_);
-  EXPECT_EQ(1, onblurcalls_);
-}
-
 // Test that the INSTANT_COMPLETE_NOW behavior works as expected.
 IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedNow) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
@@ -567,8 +538,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, RejectsURLs) {
 
 // Test that Instant doesn't fire for intranet paths that look like searches.
 // http://crbug.com/99836
-// Disabled, http://crbug.com/80118 .
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_IntranetPathLooksLikeSearch) {
+IN_PROC_BROWSER_TEST_F(InstantTest, IntranetPathLooksLikeSearch) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
 
   // Navigate to a URL that looks like a search (when the scheme is stripped).
@@ -698,8 +668,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsTwo) {
 }
 
 // Test that a non-Instant search provider shows no previews.
-// Disabled, http://crbug.com/80118 .
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_NonInstantSearchProvider) {
+IN_PROC_BROWSER_TEST_F(InstantTest, NonInstantSearchProvider) {
   instant_url_ = test_server()->GetURL("files/empty.html");
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
 
@@ -971,6 +940,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreCaseInsensitive) {
 // Test that the preview can be committed onto a new tab.
 IN_PROC_BROWSER_TEST_F(InstantTest, CommitInNewTab) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   // Use the Instant page as the active tab, so we can exploit its visibility
   // handler to check visibility transitions.
@@ -982,7 +952,6 @@ IN_PROC_BROWSER_TEST_F(InstantTest, CommitInNewTab) {
                            "onvisibilitycalls", &active_tab_onvisibilitycalls));
   EXPECT_EQ(0, active_tab_onvisibilitycalls);
 
-  FocusOmniboxAndWaitForInstantSupport();
   SetOmniboxTextAndWaitForInstantToShow("search");
 
   // Stash a reference to the preview, so we can refer to it after commit.
