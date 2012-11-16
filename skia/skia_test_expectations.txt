@@ -69,26 +69,5 @@ crbug.com/148638  svg/hixie/perf/002.xml [ Failure ImageOnlyFailure ]
 crbug.com/148638  svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Failure ImageOnlyFailure ]
 crbug.com/148638  svg/zoom/page/zoom-img-preserveAspectRatio-support-1.html [ Failure ImageOnlyFailure ]
 
-# Rebaseline after skia 6374 lands
-# These are from a speedup in blurred rectangles
-#
-crbug.com/160323  compositing/shadows/shadow-drawing.html [ ImageOnlyFailure ]
-crbug.com/160323  fast/box-shadow/basic-shadows.html [ ImageOnlyFailure ]
-crbug.com/160323  fast/box-shadow/box-shadow-clipped-slices.html [ ImageOnlyFailure ]
-crbug.com/160323  fast/box-shadow/box-shadow-radius.html [ ImageOnlyFailure ]
-crbug.com/160323  fast/box-shadow/box-shadow-transformed.html [ ImageOnlyFailure ]
-crbug.com/160323  fast/box-shadow/scaled-box-shadow.html [ ImageOnlyFailure ]
-crbug.com/160323  fast/box-shadow/single-pixel-shadow.html [ ImageOnlyFailure ]
-crbug.com/160323  fast/canvas/canvas-incremental-repaint.html [ ImageOnlyFailure ]
-crbug.com/160323  fast/repaint/box-shadow-h.html [ ImageOnlyFailure ]
-crbug.com/160323  fast/repaint/box-shadow-v.html [ ImageOnlyFailure ]
-crbug.com/160323  fast/repaint/shadow-multiple-vertical.html [ ImageOnlyFailure ]
-crbug.com/160323  fast/transforms/shadows.html [ ImageOnlyFailure ]
-crbug.com/160323  platform/chromium/virtual/softwarecompositing/shadows/shadow-drawing.html [ ImageOnlyFailure ]
-crbug.com/160323  svg/css/group-with-shadow.svg [ ImageOnlyFailure ]
-crbug.com/160323  svg/filters/shadow-on-rect-with-filter.svg [ ImageOnlyFailure ]
-crbug.com/160323  canvas/philip/tests/2d.shadow.enable.blur.html [ Failure ]
-crbug.com/160323  fast/canvas/canvas-shadow.html [ Failure ]
-
 
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
