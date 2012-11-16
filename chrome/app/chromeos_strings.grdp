@@ -635,10 +635,10 @@ Press any key to continue exploring.
     Swap primary mouse button
   </message>
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISABLE">
-    Disable bluetooth
+    Disable Bluetooth
   </message>
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENABLE">
-    Enable bluetooth
+    Enable Bluetooth
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ADD_BLUETOOTH_DEVICE">
     Add a device
@@ -665,7 +665,7 @@ Press any key to continue exploring.
     Not connected
   </message>
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE">
-    Add bluetooth device
+    Add Bluetooth device
   </message>
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT">
     Connect
