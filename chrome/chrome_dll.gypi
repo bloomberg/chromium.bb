@@ -12,6 +12,15 @@
             'chrome_main_dll',
           ],
           'conditions': [
+            ['OS=="mac" and component=="shared_library"', {
+              'type': 'shared_library',
+              'includes': [ 'chrome_dll_bundle.gypi' ],
+              'xcode_settings': {
+                'OTHER_LDFLAGS': [
+                  '-Wl,-reexport_library,<(PRODUCT_DIR)/libchrome_main_dll.dylib',
+                ],
+              },
+            }],  # OS=="mac"
             ['incremental_chrome_dll==1', {
               # Linking to a different directory and then hardlinking back
               # to OutDir is a workaround to avoid having the .ilk for
@@ -169,8 +178,13 @@
                 },
               },
             }],  # OS=="win"
+            ['OS=="mac" and component!="shared_library"', {
+              'includes': [ 'chrome_dll_bundle.gypi' ],
+            }],
+            ['OS=="mac" and component=="shared_library"', {
+              'xcode_settings': { 'OTHER_LDFLAGS': [ '-Wl,-ObjC' ], },
+            }],
             ['OS=="mac"', {
-             'includes': [ 'chrome_dll_bundle.gypi' ],
               'xcode_settings': {
                 # Define the order of symbols within the framework.  This
                 # sets -order_file.
