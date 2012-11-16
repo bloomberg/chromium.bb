@@ -208,10 +208,7 @@ void AutofillAgent::ZoomLevelChanged() {
 }
 
 void AutofillAgent::DidChangeScrollOffset(WebKit::WebFrame*) {
-  // Any time the scroll offset changes, the page's content moves, so Autofill
-  // popups should be hidden. This is only needed for the new Autofill UI
-  // because WebKit already knows to hide the old UI when this occurs.
-  HideHostPopups();
+  HidePopups();
 }
 
 void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
