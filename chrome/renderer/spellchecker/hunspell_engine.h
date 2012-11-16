@@ -21,8 +21,8 @@ class HunspellEngine : public SpellingEngine {
   HunspellEngine();
   virtual ~HunspellEngine();
 
-  virtual void Init(base::PlatformFile file,
-                    const std::vector<std::string>& custom_words) OVERRIDE;
+  void Init(base::PlatformFile file,
+            const std::vector<std::string>& custom_words);
 
   virtual bool InitializeIfNeeded() OVERRIDE;
   virtual bool IsEnabled() OVERRIDE;

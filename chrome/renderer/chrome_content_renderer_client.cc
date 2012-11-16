@@ -979,20 +979,15 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
       should_consider_workaround);
 }
 
-void ChromeContentRendererClient::SetSpellcheck(SpellCheck* spellcheck) {
-  RenderThread* thread = RenderThread::Get();
-  if (spellcheck_.get() && thread)
-    thread->RemoveObserver(spellcheck_.get());
-  spellcheck_.reset(spellcheck);
-  SpellCheckReplacer replacer(spellcheck_.get());
-  content::RenderView::ForEach(&replacer);
-  if (thread)
-    thread->AddObserver(spellcheck_.get());
-}
-
 void ChromeContentRendererClient::OnPurgeMemory() {
   DVLOG(1) << "Resetting spellcheck in renderer client";
-  SetSpellcheck(new SpellCheck());
+  RenderThread* thread = RenderThread::Get();
+  if (spellcheck_.get())
+    thread->RemoveObserver(spellcheck_.get());
+  spellcheck_.reset(new SpellCheck());
+  SpellCheckReplacer replacer(spellcheck_.get());
+  content::RenderView::ForEach(&replacer);
+  thread->AddObserver(spellcheck_.get());
 }
 
 bool ChromeContentRendererClient::IsAdblockInstalled() {
