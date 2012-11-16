@@ -12,8 +12,6 @@
 
 namespace cc {
 
-#pragma pack(push, 4)
-
 class CC_EXPORT DebugBorderDrawQuad : public DrawQuad {
 public:
     static scoped_ptr<DebugBorderDrawQuad> create(const SharedQuadState*, const gfx::Rect&, SkColor, int width);
@@ -28,8 +26,6 @@ private:
     SkColor m_color;
     int m_width;
 };
-
-#pragma pack(pop)
 
 }
 

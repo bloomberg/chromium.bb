@@ -12,8 +12,6 @@
 
 namespace cc {
 
-#pragma pack(push, 4)
-
 class CC_EXPORT IOSurfaceDrawQuad : public DrawQuad {
 public:
     enum Orientation {
@@ -35,8 +33,6 @@ private:
     unsigned m_ioSurfaceTextureId;
     Orientation m_orientation;
 };
-
-#pragma pack(pop)
 
 }
 

@@ -12,8 +12,6 @@
 
 namespace cc {
 
-#pragma pack(push, 4)
-
 class CC_EXPORT CheckerboardDrawQuad : public DrawQuad {
 public:
     static scoped_ptr<CheckerboardDrawQuad> create(const SharedQuadState*, const gfx::Rect&, SkColor);
@@ -26,8 +24,6 @@ private:
 
     SkColor m_color;
 };
-
-#pragma pack(pop)
 
 }
 

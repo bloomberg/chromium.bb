@@ -14,14 +14,14 @@ scoped_ptr<CheckerboardDrawQuad> CheckerboardDrawQuad::create(const SharedQuadSt
 }
 
 CheckerboardDrawQuad::CheckerboardDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, SkColor color)
-    : DrawQuad(sharedQuadState, DrawQuad::Checkerboard, quadRect)
+    : DrawQuad(sharedQuadState, DrawQuad::CHECKERBOARD, quadRect)
     , m_color(color)
 {
 }
 
 const CheckerboardDrawQuad* CheckerboardDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::Checkerboard);
+    DCHECK(quad->material() == DrawQuad::CHECKERBOARD);
     return static_cast<const CheckerboardDrawQuad*>(quad);
 }
 

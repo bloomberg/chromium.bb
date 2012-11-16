@@ -560,7 +560,7 @@ static void removeRenderPassesRecursive(RenderPass::Id removeRenderPassId, Layer
     QuadList::constBackToFrontIterator quadListIterator = quadList.backToFrontBegin();
     for (; quadListIterator != quadList.backToFrontEnd(); ++quadListIterator) {
         DrawQuad* currentQuad = (*quadListIterator);
-        if (currentQuad->material() != DrawQuad::RenderPass)
+        if (currentQuad->material() != DrawQuad::RENDER_PASS)
             continue;
 
         RenderPass::Id nextRemoveRenderPassId = RenderPassDrawQuad::materialCast(currentQuad)->renderPassId();
@@ -588,7 +588,7 @@ bool LayerTreeHostImpl::CullRenderPassesWithNoQuads::shouldRemoveRenderPass(cons
     for (QuadList::constBackToFrontIterator quadListIterator = quadList.backToFrontBegin(); quadListIterator != quadList.backToFrontEnd(); ++quadListIterator) {
         DrawQuad* currentQuad = *quadListIterator;
 
-        if (currentQuad->material() != DrawQuad::RenderPass)
+        if (currentQuad->material() != DrawQuad::RENDER_PASS)
             return false;
 
         const RenderPass* contributingPass = findRenderPassById(RenderPassDrawQuad::materialCast(currentQuad)->renderPassId(), frame);
@@ -615,7 +615,7 @@ void LayerTreeHostImpl::removeRenderPasses(RenderPassCuller culler, FrameData& f
         for (; quadListIterator != quadList.backToFrontEnd(); ++quadListIterator) {
             DrawQuad* currentQuad = *quadListIterator;
 
-            if (currentQuad->material() != DrawQuad::RenderPass)
+            if (currentQuad->material() != DrawQuad::RENDER_PASS)
                 continue;
 
             RenderPassDrawQuad* renderPassQuad = static_cast<RenderPassDrawQuad*>(currentQuad);

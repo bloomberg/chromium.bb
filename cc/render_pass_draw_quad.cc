@@ -12,7 +12,7 @@ scoped_ptr<RenderPassDrawQuad> RenderPassDrawQuad::create(const SharedQuadState*
 }
 
 RenderPassDrawQuad::RenderPassDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, RenderPass::Id renderPassId, bool isReplica, ResourceProvider::ResourceId maskResourceId, const gfx::Rect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY)
-    : DrawQuad(sharedQuadState, DrawQuad::RenderPass, quadRect)
+    : DrawQuad(sharedQuadState, DrawQuad::RENDER_PASS, quadRect)
     , m_renderPassId(renderPassId)
     , m_isReplica(isReplica)
     , m_maskResourceId(maskResourceId)
@@ -28,7 +28,7 @@ RenderPassDrawQuad::RenderPassDrawQuad(const SharedQuadState* sharedQuadState, c
 
 const RenderPassDrawQuad* RenderPassDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::RenderPass);
+    DCHECK(quad->material() == DrawQuad::RENDER_PASS);
     return static_cast<const RenderPassDrawQuad*>(quad);
 }
 

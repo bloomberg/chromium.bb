@@ -12,8 +12,6 @@
 
 namespace cc {
 
-#pragma pack(push, 4)
-
 class CC_EXPORT TextureDrawQuad : public DrawQuad {
 public:
     static scoped_ptr<TextureDrawQuad> create(const SharedQuadState*, const gfx::Rect&, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped);
@@ -34,8 +32,6 @@ private:
     gfx::RectF m_uvRect;
     bool m_flipped;
 };
-
-#pragma pack(pop)
 
 }
 

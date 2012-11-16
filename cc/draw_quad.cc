@@ -35,7 +35,7 @@ DrawQuad::DrawQuad(const SharedQuadState* sharedQuadState, Material material, co
     , m_needsBlending(false)
 {
     DCHECK(m_sharedQuadState);
-    DCHECK(m_material != Invalid);
+    DCHECK(m_material != INVALID);
 }
 
 gfx::Rect DrawQuad::opaqueRect() const
@@ -56,32 +56,32 @@ scoped_ptr<DrawQuad> DrawQuad::copy(const SharedQuadState* copiedSharedQuadState
 {
     scoped_ptr<DrawQuad> copyQuad;
     switch (material()) {
-    case Checkerboard:
+    case CHECKERBOARD:
         copyQuad.reset(TypedCopy<CheckerboardDrawQuad>(this));
         break;
-    case DebugBorder:
+    case DEBUG_BORDER:
         copyQuad.reset(TypedCopy<DebugBorderDrawQuad>(this));
         break;
-    case IOSurfaceContent:
+    case IO_SURFACE_CONTENT:
         copyQuad.reset(TypedCopy<IOSurfaceDrawQuad>(this));
         break;
-    case TextureContent:
+    case TEXTURE_CONTENT:
         copyQuad.reset(TypedCopy<TextureDrawQuad>(this));
         break;
-    case SolidColor:
+    case SOLID_COLOR:
         copyQuad.reset(TypedCopy<SolidColorDrawQuad>(this));
         break;
-    case TiledContent:
+    case TILED_CONTENT:
         copyQuad.reset(TypedCopy<TileDrawQuad>(this));
         break;
-    case StreamVideoContent:
+    case STREAM_VIDEO_CONTENT:
         copyQuad.reset(TypedCopy<StreamVideoDrawQuad>(this));
         break;
-    case YUVVideoContent:
+    case YUV_VIDEO_CONTENT:
         copyQuad.reset(TypedCopy<YUVVideoDrawQuad>(this));
         break;
-    case RenderPass:  // RenderPass quads have their own copy() method.
-    case Invalid:
+    case RENDER_PASS:  // RenderPass quads have their own copy() method.
+    case INVALID:
         LOG(FATAL) << "Invalid DrawQuad material " << material();
         break;
     }

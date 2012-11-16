@@ -14,7 +14,7 @@ scoped_ptr<DebugBorderDrawQuad> DebugBorderDrawQuad::create(const SharedQuadStat
 }
 
 DebugBorderDrawQuad::DebugBorderDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, SkColor color, int width)
-    : DrawQuad(sharedQuadState, DrawQuad::DebugBorder, quadRect)
+    : DrawQuad(sharedQuadState, DrawQuad::DEBUG_BORDER, quadRect)
     , m_color(color)
     , m_width(width)
 {
@@ -25,7 +25,7 @@ DebugBorderDrawQuad::DebugBorderDrawQuad(const SharedQuadState* sharedQuadState,
 
 const DebugBorderDrawQuad* DebugBorderDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::DebugBorder);
+    DCHECK(quad->material() == DrawQuad::DEBUG_BORDER);
     return static_cast<const DebugBorderDrawQuad*>(quad);
 }
 

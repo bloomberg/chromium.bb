@@ -187,19 +187,19 @@ void SoftwareRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
     }
 
     switch (quad->material()) {
-    case DrawQuad::DebugBorder:
+    case DrawQuad::DEBUG_BORDER:
         drawDebugBorderQuad(frame, DebugBorderDrawQuad::materialCast(quad));
         break;
-    case DrawQuad::SolidColor:
+    case DrawQuad::SOLID_COLOR:
         drawSolidColorQuad(frame, SolidColorDrawQuad::materialCast(quad));
         break;
-    case DrawQuad::TextureContent:
+    case DrawQuad::TEXTURE_CONTENT:
         drawTextureQuad(frame, TextureDrawQuad::materialCast(quad));
         break;
-    case DrawQuad::TiledContent:
+    case DrawQuad::TILED_CONTENT:
         drawTileQuad(frame, TileDrawQuad::materialCast(quad));
         break;
-    case DrawQuad::RenderPass:
+    case DrawQuad::RENDER_PASS:
         drawRenderPassQuad(frame, RenderPassDrawQuad::materialCast(quad));
         break;
     default:

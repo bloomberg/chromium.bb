@@ -12,8 +12,6 @@
 
 namespace cc {
 
-#pragma pack(push, 4)
-
 class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
 public:
     static scoped_ptr<StreamVideoDrawQuad> create(const SharedQuadState*, const gfx::Rect&, unsigned textureId, const WebKit::WebTransformationMatrix&);
@@ -28,8 +26,6 @@ private:
     unsigned m_textureId;
     WebKit::WebTransformationMatrix m_matrix;
 };
-
-#pragma pack(pop)
 
 }
 

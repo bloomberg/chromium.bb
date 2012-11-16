@@ -14,8 +14,6 @@
 
 namespace cc {
 
-#pragma pack(push, 4)
-
 class CC_EXPORT TileDrawQuad : public DrawQuad {
 public:
     static scoped_ptr<TileDrawQuad> create(const SharedQuadState*, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Vector2d& textureOffset, const gfx::Size& textureSize, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
@@ -45,8 +43,6 @@ private:
     bool m_rightEdgeAA;
     bool m_bottomEdgeAA;
 };
-
-#pragma pack(pop)
 
 }
 

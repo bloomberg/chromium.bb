@@ -10,16 +10,6 @@
 
 namespace cc {
 
-// WARNING! All XYZDrawQuad classes must remain PODs (plain old data).
-// They are intended to be "serializable" by copying their raw bytes, so they
-// must not contain any non-bit-copyable member variables!
-//
-// Furthermore, the class members need to be packed so they are aligned
-// properly and don't have paddings/gaps, otherwise memory check tools
-// like Valgrind will complain about uninitialized memory usage when
-// transferring these classes over the wire.
-#pragma pack(push, 4)
-
 // DrawQuad is a bag of data used for drawing a quad. Because different
 // materials need different bits of per-quad data to render, classes that derive
 // from DrawQuad store additional data in their derived instance. The Material
@@ -27,16 +17,16 @@ namespace cc {
 class CC_EXPORT DrawQuad {
 public:
     enum Material {
-        Invalid,
-        Checkerboard,
-        DebugBorder,
-        IOSurfaceContent,
-        RenderPass,
-        TextureContent,
-        SolidColor,
-        TiledContent,
-        YUVVideoContent,
-        StreamVideoContent,
+        INVALID,
+        CHECKERBOARD,
+        DEBUG_BORDER,
+        IO_SURFACE_CONTENT,
+        RENDER_PASS,
+        TEXTURE_CONTENT,
+        SOLID_COLOR,
+        TILED_CONTENT,
+        YUV_VIDEO_CONTENT,
+        STREAM_VIDEO_CONTENT,
     };
 
     gfx::Rect quadRect() const { return m_quadRect; }
@@ -52,7 +42,7 @@ public:
     // in will be clipped to quadRect().
     void setQuadVisibleRect(gfx::Rect);
     gfx::Rect quadVisibleRect() const { return m_quadVisibleRect; }
-    bool isDebugQuad() const { return m_material == DebugBorder; }
+    bool isDebugQuad() const { return m_material == DEBUG_BORDER; }
 
     Material material() const { return m_material; }
 
@@ -85,8 +75,6 @@ protected:
     // variables determine that the quad is not fully opaque but may be partially opaque.
     gfx::Rect m_opaqueRect;
 };
-
-#pragma pack(pop)
 
 }
 

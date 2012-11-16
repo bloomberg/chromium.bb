@@ -28,7 +28,7 @@ YUVVideoDrawQuad::YUVVideoDrawQuad(
     const VideoLayerImpl::FramePlane& yPlane,
     const VideoLayerImpl::FramePlane& uPlane,
     const VideoLayerImpl::FramePlane& vPlane)
-    : DrawQuad(sharedQuadState, DrawQuad::YUVVideoContent, quadRect)
+    : DrawQuad(sharedQuadState, DrawQuad::YUV_VIDEO_CONTENT, quadRect)
     , m_texScale(texScale)
     , m_yPlane(yPlane)
     , m_uPlane(uPlane)
@@ -42,7 +42,7 @@ YUVVideoDrawQuad::~YUVVideoDrawQuad()
 
 const YUVVideoDrawQuad* YUVVideoDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::YUVVideoContent);
+    DCHECK(quad->material() == DrawQuad::YUV_VIDEO_CONTENT);
     return static_cast<const YUVVideoDrawQuad*>(quad);
 }
 
