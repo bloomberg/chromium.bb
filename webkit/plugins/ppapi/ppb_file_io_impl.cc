@@ -190,8 +190,8 @@ int32_t PPB_FileIO_Impl::TouchValidated(
 
 int32_t PPB_FileIO_Impl::ReadValidated(
     int64_t offset,
-    char* buffer,
-    int32_t bytes_to_read,
+    const PP_ArrayOutput& output_array_buffer,
+    int32_t max_read_length,
     scoped_refptr<TrackedCallback> callback) {
   PluginDelegate* plugin_delegate = GetPluginDelegate();
   if (!plugin_delegate)
@@ -199,12 +199,12 @@ int32_t PPB_FileIO_Impl::ReadValidated(
 
   if (!base::FileUtilProxy::Read(
           plugin_delegate->GetFileThreadMessageLoopProxy(), file_, offset,
-          bytes_to_read,
+          max_read_length,
           base::Bind(&PPB_FileIO_Impl::ExecutePlatformReadCallback,
                      weak_factory_.GetWeakPtr())))
     return PP_ERROR_FAILED;
 
-  RegisterCallback(OPERATION_READ, callback, buffer, NULL);
+  RegisterCallback(OPERATION_READ, callback, &output_array_buffer, NULL);
   return PP_OK_COMPLETIONPENDING;
 }
 

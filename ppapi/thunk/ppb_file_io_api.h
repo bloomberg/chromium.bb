@@ -31,6 +31,10 @@ class PPAPI_THUNK_EXPORT PPB_FileIO_API {
                        char* buffer,
                        int32_t bytes_to_read,
                        scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t ReadToArray(int64_t offset,
+                              int32_t max_read_length,
+                              PP_ArrayOutput* buffer,
+                              scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t Write(int64_t offset,
                         const char* buffer,
                         int32_t bytes_to_write,

@@ -64,9 +64,9 @@ class FileIO : public PPB_FileIO_Shared {
       scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t ReadValidated(
       int64_t offset,
-      char* buffer,
-      int32_t bytes_to_read,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+      const PP_ArrayOutput& output_array_buffer,
+      int32_t max_read_length,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t WriteValidated(
       int64_t offset,
       const char* buffer,
@@ -154,12 +154,12 @@ int32_t FileIO::TouchValidated(PP_Time last_access_time,
 }
 
 int32_t FileIO::ReadValidated(int64_t offset,
-                              char* buffer,
-                              int32_t bytes_to_read,
+                              const PP_ArrayOutput& output_array_buffer,
+                              int32_t max_read_length,
                               scoped_refptr<TrackedCallback> callback) {
   GetDispatcher()->Send(new PpapiHostMsg_PPBFileIO_Read(
-      kApiID, host_resource(), offset, bytes_to_read));
-  RegisterCallback(OPERATION_READ, callback, buffer, NULL);
+      kApiID, host_resource(), offset, max_read_length));
+  RegisterCallback(OPERATION_READ, callback, &output_array_buffer, NULL);
   return PP_OK_COMPLETIONPENDING;
 }
 

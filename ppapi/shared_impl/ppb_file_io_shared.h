@@ -42,6 +42,10 @@ class PPAPI_SHARED_EXPORT PPB_FileIO_Shared : public Resource,
                        char* buffer,
                        int32_t bytes_to_read,
                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t ReadToArray(int64_t offset,
+                              int32_t max_read_length,
+                              PP_ArrayOutput* output_array_buffer,
+                              scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Write(int64_t offset,
                         const char* buffer,
                         int32_t bytes_to_write,
@@ -54,7 +58,7 @@ class PPAPI_SHARED_EXPORT PPB_FileIO_Shared : public Resource,
   void ExecuteGeneralCallback(int32_t pp_error);
   void ExecuteOpenFileCallback(int32_t pp_error);
   void ExecuteQueryCallback(int32_t pp_error, const PP_FileInfo& info);
-  void ExecuteReadCallback(int32_t pp_error, const char* data);
+  void ExecuteReadCallback(int32_t pp_error_or_bytes, const char* data);
 
  protected:
   struct CallbackEntry {
@@ -64,9 +68,8 @@ class PPAPI_SHARED_EXPORT PPB_FileIO_Shared : public Resource,
 
     scoped_refptr<TrackedCallback> callback;
 
-    // Pointer back to the caller's read buffer; only used by |Read()|, NULL
-    // for non-read operations. Not owned.
-    char* read_buffer;
+    // Output buffer used only by |Read()|.
+    PP_ArrayOutput read_buffer;
 
     // Pointer back to the caller's PP_FileInfo structure for Query operations.
     // NULL for non-query operations. Not owned.
@@ -102,8 +105,8 @@ class PPAPI_SHARED_EXPORT PPB_FileIO_Shared : public Resource,
                                  PP_Time last_modified_time,
                                  scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t ReadValidated(int64_t offset,
-                                char* buffer,
-                                int32_t bytes_to_read,
+                                const PP_ArrayOutput& buffer,
+                                int32_t max_read_length,
                                 scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t WriteValidated(int64_t offset,
                                  const char* buffer,
@@ -131,7 +134,7 @@ class PPAPI_SHARED_EXPORT PPB_FileIO_Shared : public Resource,
   // query operations.
   void RegisterCallback(OperationType op,
                         scoped_refptr<TrackedCallback> callback,
-                        char* read_buffer,
+                        const PP_ArrayOutput* read_buffer,
                         PP_FileInfo* info);
 
   // Pops the oldest callback from the queue and runs it.

@@ -6,6 +6,7 @@
 #define PPAPI_CPP_FILE_IO_H_
 
 #include "ppapi/c/pp_time.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/resource.h"
 
 /// @file
@@ -15,7 +16,6 @@ struct PP_FileInfo;
 
 namespace pp {
 
-class CompletionCallback;
 class FileRef;
 class InstanceHandle;
 
@@ -87,6 +87,19 @@ class FileIO : public Resource {
   /// large enough to hold the specified number of bytes to read.  This
   /// function might perform a partial read.
   ///
+  /// <strong>Caveat:</strong> This Read() is potentially unsafe if you're using
+  /// a CompletionCallbackFactory to scope callbacks to the lifetime of your
+  /// class.  When your class goes out of scope, the callback factory will not
+  /// actually cancel the callback, but will rather just skip issuing the
+  /// callback on your class.  This means that if the FileIO object outlives
+  /// your class (if you made a copy saved somewhere else, for example), then
+  /// the browser will still try to write into your buffer when the
+  /// asynchronous read completes, potentially causing a crash.
+  ///
+  /// See the other version of Read() which avoids this problem by writing into
+  /// CompletionCallbackWithOutput, where the output buffer is automatically
+  /// managed by the callback.
+  ///
   /// @param[in] offset The offset into the file.
   /// @param[in] buffer The buffer to hold the specified number of bytes read.
   /// @param[in] bytes_to_read The number of bytes to read from
@@ -102,6 +115,28 @@ class FileIO : public Resource {
                char* buffer,
                int32_t bytes_to_read,
                const CompletionCallback& cc);
+
+  /// Read() reads from an offset in the file.  A PP_ArrayOutput must be
+  /// provided so that output will be stored in its allocated buffer.  This
+  /// function might perform a partial read.
+  ///
+  /// @param[in] file_io A <code>PP_Resource</code> corresponding to a file
+  /// FileIO.
+  /// @param[in] offset The offset into the file.
+  /// @param[in] max_read_length The maximum number of bytes to read from
+  /// <code>offset</code>.
+  /// @param[in] output A <code>PP_ArrayOutput</code> to hold the output data.
+  /// @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+  /// completion of Read().
+  ///
+  /// @return The number of bytes read or an error code from
+  /// <code>pp_errors.h</code>. If the return value is 0, then end-of-file was
+  /// reached. It is valid to call Read() multiple times with a completion
+  /// callback to queue up parallel reads from the file, but pending reads
+  /// cannot be interleaved with other operations.
+  int32_t Read(int32_t offset,
+               int32_t max_read_length,
+               const CompletionCallbackWithOutput< std::vector<char> >& cc);
 
   /// Write() writes to an offset in the file.  This function might perform a
   /// partial write. The FileIO object must have been opened with write access.
@@ -153,6 +188,21 @@ class FileIO : public Resource {
   /// open, then it will be implicitly closed, so you are not required to call
   /// Close().
   void Close();
+
+ private:
+  struct CallbackData1_0 {
+    PP_ArrayOutput output;
+    char* temp_buffer;
+    PP_CompletionCallback original_callback;
+  };
+
+  // Provide backwards-compatability for older Read versions. Converts the
+  // old-style "char*" output buffer of 1.0 to the new "PP_ArrayOutput"
+  // interface in 1.1.
+  //
+  // This takes a heap-allocated CallbackData1_0 struct passed as the user data
+  // and deletes it when the call completes.
+  static void CallbackConverter(void* user_data, int32_t result);
 };
 
 }  // namespace pp

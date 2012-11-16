@@ -119,6 +119,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioConfig_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioConfig_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Core_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileSystem_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Fullscreen_1_0;
@@ -355,6 +356,76 @@ void Pnacl_M14_PPB_FileIO_Close(PP_Resource file_io) {
 }
 
 /* End wrapper methods for PPB_FileIO_1_0 */
+
+/* Begin wrapper methods for PPB_FileIO_1_1 */
+
+static __attribute__((pnaclcall))
+PP_Resource Pnacl_M25_PPB_FileIO_Create(PP_Instance instance) {
+  const struct PPB_FileIO_1_1 *iface = Pnacl_WrapperInfo_PPB_FileIO_1_1.real_iface;
+  return iface->Create(instance);
+}
+
+static __attribute__((pnaclcall))
+PP_Bool Pnacl_M25_PPB_FileIO_IsFileIO(PP_Resource resource) {
+  const struct PPB_FileIO_1_1 *iface = Pnacl_WrapperInfo_PPB_FileIO_1_1.real_iface;
+  return iface->IsFileIO(resource);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M25_PPB_FileIO_Open(PP_Resource file_io, PP_Resource file_ref, int32_t open_flags, struct PP_CompletionCallback callback) {
+  const struct PPB_FileIO_1_1 *iface = Pnacl_WrapperInfo_PPB_FileIO_1_1.real_iface;
+  return iface->Open(file_io, file_ref, open_flags, callback);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M25_PPB_FileIO_Query(PP_Resource file_io, struct PP_FileInfo* info, struct PP_CompletionCallback callback) {
+  const struct PPB_FileIO_1_1 *iface = Pnacl_WrapperInfo_PPB_FileIO_1_1.real_iface;
+  return iface->Query(file_io, info, callback);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M25_PPB_FileIO_Touch(PP_Resource file_io, PP_Time last_access_time, PP_Time last_modified_time, struct PP_CompletionCallback callback) {
+  const struct PPB_FileIO_1_1 *iface = Pnacl_WrapperInfo_PPB_FileIO_1_1.real_iface;
+  return iface->Touch(file_io, last_access_time, last_modified_time, callback);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M25_PPB_FileIO_Read(PP_Resource file_io, int64_t offset, char* buffer, int32_t bytes_to_read, struct PP_CompletionCallback callback) {
+  const struct PPB_FileIO_1_1 *iface = Pnacl_WrapperInfo_PPB_FileIO_1_1.real_iface;
+  return iface->Read(file_io, offset, buffer, bytes_to_read, callback);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M25_PPB_FileIO_Write(PP_Resource file_io, int64_t offset, const char* buffer, int32_t bytes_to_write, struct PP_CompletionCallback callback) {
+  const struct PPB_FileIO_1_1 *iface = Pnacl_WrapperInfo_PPB_FileIO_1_1.real_iface;
+  return iface->Write(file_io, offset, buffer, bytes_to_write, callback);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M25_PPB_FileIO_SetLength(PP_Resource file_io, int64_t length, struct PP_CompletionCallback callback) {
+  const struct PPB_FileIO_1_1 *iface = Pnacl_WrapperInfo_PPB_FileIO_1_1.real_iface;
+  return iface->SetLength(file_io, length, callback);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M25_PPB_FileIO_Flush(PP_Resource file_io, struct PP_CompletionCallback callback) {
+  const struct PPB_FileIO_1_1 *iface = Pnacl_WrapperInfo_PPB_FileIO_1_1.real_iface;
+  return iface->Flush(file_io, callback);
+}
+
+static __attribute__((pnaclcall))
+void Pnacl_M25_PPB_FileIO_Close(PP_Resource file_io) {
+  const struct PPB_FileIO_1_1 *iface = Pnacl_WrapperInfo_PPB_FileIO_1_1.real_iface;
+  iface->Close(file_io);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M25_PPB_FileIO_ReadToArray(PP_Resource file_io, int64_t offset, int32_t max_read_length, struct PP_ArrayOutput* output, struct PP_CompletionCallback callback) {
+  const struct PPB_FileIO_1_1 *iface = Pnacl_WrapperInfo_PPB_FileIO_1_1.real_iface;
+  return iface->ReadToArray(file_io, offset, max_read_length, output, callback);
+}
+
+/* End wrapper methods for PPB_FileIO_1_1 */
 
 /* Begin wrapper methods for PPB_FileRef_1_0 */
 
@@ -3466,6 +3537,20 @@ struct PPB_FileIO_1_0 Pnacl_Wrappers_PPB_FileIO_1_0 = {
     .Close = (void (*)(PP_Resource file_io))&Pnacl_M14_PPB_FileIO_Close
 };
 
+struct PPB_FileIO_1_1 Pnacl_Wrappers_PPB_FileIO_1_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M25_PPB_FileIO_Create,
+    .IsFileIO = (PP_Bool (*)(PP_Resource resource))&Pnacl_M25_PPB_FileIO_IsFileIO,
+    .Open = (int32_t (*)(PP_Resource file_io, PP_Resource file_ref, int32_t open_flags, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_FileIO_Open,
+    .Query = (int32_t (*)(PP_Resource file_io, struct PP_FileInfo* info, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_FileIO_Query,
+    .Touch = (int32_t (*)(PP_Resource file_io, PP_Time last_access_time, PP_Time last_modified_time, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_FileIO_Touch,
+    .Read = (int32_t (*)(PP_Resource file_io, int64_t offset, char* buffer, int32_t bytes_to_read, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_FileIO_Read,
+    .Write = (int32_t (*)(PP_Resource file_io, int64_t offset, const char* buffer, int32_t bytes_to_write, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_FileIO_Write,
+    .SetLength = (int32_t (*)(PP_Resource file_io, int64_t length, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_FileIO_SetLength,
+    .Flush = (int32_t (*)(PP_Resource file_io, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_FileIO_Flush,
+    .Close = (void (*)(PP_Resource file_io))&Pnacl_M25_PPB_FileIO_Close,
+    .ReadToArray = (int32_t (*)(PP_Resource file_io, int64_t offset, int32_t max_read_length, struct PP_ArrayOutput* output, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_FileIO_ReadToArray
+};
+
 struct PPB_FileRef_1_0 Pnacl_Wrappers_PPB_FileRef_1_0 = {
     .Create = (PP_Resource (*)(PP_Resource file_system, const char* path))&Pnacl_M14_PPB_FileRef_Create,
     .IsFileRef = (PP_Bool (*)(PP_Resource resource))&Pnacl_M14_PPB_FileRef_IsFileRef,
@@ -4266,6 +4351,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_0 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_1 = {
+  .iface_macro = PPB_FILEIO_INTERFACE_1_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_FileIO_1_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_0 = {
   .iface_macro = PPB_FILEREF_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_FileRef_1_0,
@@ -5022,6 +5113,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_AudioConfig_1_1,
   &Pnacl_WrapperInfo_PPB_Core_1_0,
   &Pnacl_WrapperInfo_PPB_FileIO_1_0,
+  &Pnacl_WrapperInfo_PPB_FileIO_1_1,
   &Pnacl_WrapperInfo_PPB_FileRef_1_0,
   &Pnacl_WrapperInfo_PPB_FileSystem_1_0,
   &Pnacl_WrapperInfo_PPB_Fullscreen_1_0,

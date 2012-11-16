@@ -51,8 +51,8 @@ class PPB_FileIO_Impl : public ::ppapi::PPB_FileIO_Shared {
       scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t ReadValidated(
       int64_t offset,
-      char* buffer,
-      int32_t bytes_to_read,
+      const PP_ArrayOutput& output_array_buffer,
+      int32_t max_read_length,
       scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t WriteValidated(
       int64_t offset,

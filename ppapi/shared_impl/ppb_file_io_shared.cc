@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/array_writer.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
@@ -21,9 +22,17 @@ using thunk::EnterResourceNoLock;
 using thunk::PPB_FileIO_API;
 using thunk::PPB_FileRef_API;
 
+namespace {
+
+// An adapter to let Read() share the same implementation with ReadToArray().
+void* DummyGetDataBuffer(void* user_data, uint32_t count, uint32_t size) {
+  return user_data;
+}
+
+}  // namespace
+
 PPB_FileIO_Shared::CallbackEntry::CallbackEntry()
-    : read_buffer(NULL),
-      info(NULL) {
+    : info(NULL) {
 }
 
 PPB_FileIO_Shared::CallbackEntry::CallbackEntry(const CallbackEntry& entry)
@@ -103,7 +112,21 @@ int32_t PPB_FileIO_Shared::Read(int64_t offset,
   int32_t rv = CommonCallValidation(true, OPERATION_READ);
   if (rv != PP_OK)
     return rv;
-  return ReadValidated(offset, buffer, bytes_to_read, callback);
+  PP_ArrayOutput buffer_adapter = { &DummyGetDataBuffer, buffer };
+  return ReadValidated(offset, buffer_adapter, bytes_to_read, callback);
+}
+
+int32_t PPB_FileIO_Shared::ReadToArray(
+    int64_t offset,
+    int32_t max_read_length,
+    PP_ArrayOutput* output_array_buffer,
+    scoped_refptr<TrackedCallback> callback) {
+  int32_t rv = CommonCallValidation(true, OPERATION_READ);
+  if (rv != PP_OK)
+    return rv;
+  if (!output_array_buffer)
+    return PP_ERROR_BADARGUMENT;
+  return ReadValidated(offset, *output_array_buffer, max_read_length, callback);
 }
 
 int32_t PPB_FileIO_Shared::Write(int64_t offset,
@@ -152,7 +175,7 @@ void PPB_FileIO_Shared::ExecuteQueryCallback(int32_t pp_error,
   RunAndRemoveFirstPendingCallback(pp_error);
 }
 
-void PPB_FileIO_Shared::ExecuteReadCallback(int32_t pp_error,
+void PPB_FileIO_Shared::ExecuteReadCallback(int32_t pp_error_or_bytes,
                                             const char* data) {
   if (pending_op_ != OPERATION_READ || callbacks_.empty()) {
     NOTREACHED();
@@ -160,13 +183,14 @@ void PPB_FileIO_Shared::ExecuteReadCallback(int32_t pp_error,
   }
 
   // The result code contains the number of bytes if it's positive.
-  if (pp_error > 0) {
-    char* read_buffer = callbacks_.front().read_buffer;
-    DCHECK(data);
-    DCHECK(read_buffer);
-    memcpy(read_buffer, data, pp_error);
+  ArrayWriter output;
+  output.set_pp_array_output(callbacks_.front().read_buffer);
+  if (output.is_valid()) {
+    output.StoreArray(data, std::max(0, pp_error_or_bytes));
   }
-  RunAndRemoveFirstPendingCallback(pp_error);
+
+  // Always issue the callback.
+  RunAndRemoveFirstPendingCallback(pp_error_or_bytes);
 }
 
 int32_t PPB_FileIO_Shared::CommonCallValidation(bool should_be_open,
@@ -191,14 +215,15 @@ int32_t PPB_FileIO_Shared::CommonCallValidation(bool should_be_open,
 void PPB_FileIO_Shared::RegisterCallback(
     OperationType op,
     scoped_refptr<TrackedCallback> callback,
-    char* read_buffer,
+    const PP_ArrayOutput* read_buffer,
     PP_FileInfo* info) {
   DCHECK(pending_op_ == OPERATION_NONE ||
          (pending_op_ != OPERATION_EXCLUSIVE && pending_op_ == op));
 
   CallbackEntry entry;
   entry.callback = callback;
-  entry.read_buffer = read_buffer;
+  if (read_buffer)
+    entry.read_buffer = *read_buffer;
   entry.info = info;
   callbacks_.push_back(entry);
 

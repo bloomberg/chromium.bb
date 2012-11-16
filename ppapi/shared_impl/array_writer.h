@@ -38,7 +38,8 @@ class PPAPI_SHARED_EXPORT ArrayWriter {
   // Sets the array output back to its is_null() state.
   void Reset();
 
-  // Copies the given vector of data to the plugin output array.
+  // StoreArray() and StoreVector() copy the given array/vector of data to the
+  // plugin output array.
   //
   // Returns true on success, false if the plugin reported allocation failure.
   // In either case, the object will become is_null() immediately after the
@@ -48,25 +49,33 @@ class PPAPI_SHARED_EXPORT ArrayWriter {
   // want to transfer a reference only on success. Likewise, if you have a
   // structure of PP_Vars or a struct that contains a PP_Resource, we need to
   // make sure that the right thing happens with the ref on success and failure.
-  template<typename T>
-  bool StoreVector(const std::vector<T>& input) {
+  template <typename T>
+  bool StoreArray(const T* input, uint32_t count) {
     // Always call the alloc function, even on 0 array size.
     void* dest = pp_array_output_.GetDataBuffer(
         pp_array_output_.user_data,
-        static_cast<uint32_t>(input.size()),
+        count,
         sizeof(T));
 
     // Regardless of success, we clear the output to prevent future calls on
     // this same output object.
     Reset();
 
-    if (input.empty())
+    if (count == 0)
       return true;  // Allow plugin to return NULL on 0 elements.
     if (!dest)
       return false;
 
-    memcpy(dest, &input[0], sizeof(T) * input.size());
+    if (input)
+      memcpy(dest, input, sizeof(T) * count);
     return true;
+  }
+
+  // Copies the given array/vector of data to the plugin output array.  See
+  // comment of StoreArray() for detail.
+  template<typename T>
+  bool StoreVector(const std::vector<T>& input) {
+    return StoreArray(input.size() ? &input[0] : NULL, input.size());
   }
 
   // Stores the given vector of resources as PP_Resources to the output vector,

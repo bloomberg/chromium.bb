@@ -295,7 +295,8 @@ const PPB_FileIO* PluginFileIO::GetInterface() {
     Write,
     SetLength,
     Flush,
-    Close
+    Close,
+    NULL  // TODO: support ReadToArray
   };
   return &file_io_interface;
 }

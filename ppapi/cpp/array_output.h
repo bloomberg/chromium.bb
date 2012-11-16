@@ -176,7 +176,7 @@ template<typename T>
 class ArrayOutputAdapterWithStorage : public ArrayOutputAdapter<T> {
  public:
   ArrayOutputAdapterWithStorage() {
-    set_output(&output_storage_);
+    this->set_output(&output_storage_);
   }
 
   std::vector<T>& output() { return output_storage_; }

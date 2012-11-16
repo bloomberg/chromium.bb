@@ -72,6 +72,18 @@ int32_t Read(PP_Resource file_io,
                                               enter.callback()));
 }
 
+int32_t ReadToArray(PP_Resource file_io,
+                    int64_t offset,
+                    int32_t max_read_length,
+                    PP_ArrayOutput* buffer,
+                    PP_CompletionCallback callback) {
+  EnterFileIO enter(file_io, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->ReadToArray(
+      offset, max_read_length, buffer, enter.callback()));
+}
+
 int32_t Write(PP_Resource file_io,
               int64_t offset,
               const char* buffer,
@@ -107,7 +119,21 @@ void Close(PP_Resource file_io) {
     enter.object()->Close();
 }
 
-const PPB_FileIO g_ppb_file_io_thunk = {
+const PPB_FileIO_1_1 g_ppb_file_io_thunk = {
+  &Create,
+  &IsFileIO,
+  &Open,
+  &Query,
+  &Touch,
+  &Read,
+  &Write,
+  &SetLength,
+  &Flush,
+  &Close,
+  &ReadToArray
+};
+
+const PPB_FileIO_1_0 g_ppb_file_io_thunk_1_0 = {
   &Create,
   &IsFileIO,
   &Open,
@@ -122,8 +148,12 @@ const PPB_FileIO g_ppb_file_io_thunk = {
 
 }  // namespace
 
-const PPB_FileIO_1_0* GetPPB_FileIO_1_0_Thunk() {
+const PPB_FileIO_1_1* GetPPB_FileIO_1_1_Thunk() {
   return &g_ppb_file_io_thunk;
+}
+
+const PPB_FileIO_1_0* GetPPB_FileIO_1_0_Thunk() {
+  return &g_ppb_file_io_thunk_1_0;
 }
 
 }  // namespace thunk

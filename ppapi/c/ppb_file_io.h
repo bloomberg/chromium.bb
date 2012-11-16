@@ -3,11 +3,12 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_io.idl modified Wed Feb 15 15:55:56 2012. */
+/* From ppb_file_io.idl modified Thu Nov 15 08:08:30 2012. */
 
 #ifndef PPAPI_C_PPB_FILE_IO_H_
 #define PPAPI_C_PPB_FILE_IO_H_
 
+#include "ppapi/c/pp_array_output.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_file_info.h"
@@ -18,7 +19,8 @@
 #include "ppapi/c/pp_time.h"
 
 #define PPB_FILEIO_INTERFACE_1_0 "PPB_FileIO;1.0"
-#define PPB_FILEIO_INTERFACE PPB_FILEIO_INTERFACE_1_0
+#define PPB_FILEIO_INTERFACE_1_1 "PPB_FileIO;1.1"
+#define PPB_FILEIO_INTERFACE PPB_FILEIO_INTERFACE_1_1
 
 /**
  * @file
@@ -73,7 +75,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileOpenFlags, 4);
  * The <code>PPB_FileIO</code> struct is used to operate on a regular file
  * (PP_FileType_Regular).
  */
-struct PPB_FileIO_1_0 {
+struct PPB_FileIO_1_1 {
   /**
    * Create() creates a new FileIO object.
    *
@@ -160,6 +162,8 @@ struct PPB_FileIO_1_0 {
    * Read() reads from an offset in the file.  The size of the buffer must be
    * large enough to hold the specified number of bytes to read.  This function
    * might perform a partial read.
+   *
+   * ReadToArray() is preferred to Read() when doing asynchronous operations.
    *
    * @param[in] file_io A <code>PP_Resource</code> corresponding to a file
    * FileIO.
@@ -252,9 +256,65 @@ struct PPB_FileIO_1_0 {
    * FileIO.
    */
   void (*Close)(PP_Resource file_io);
+  /**
+   * ReadToArray() reads from an offset in the file.  A PP_ArrayOutput must be
+   * provided so that output will be stored in its allocated buffer.  This
+   * function might perform a partial read.
+   *
+   * @param[in] file_io A <code>PP_Resource</code> corresponding to a file
+   * FileIO.
+   * @param[in] offset The offset into the file.
+   * @param[in] max_read_length The maximum number of bytes to read from
+   * <code>offset</code>.
+   * @param[in] output A <code>PP_ArrayOutput</code> to hold the output data.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion of ReadToArray().
+   *
+   * @return The number of bytes read or an error code from
+   * <code>pp_errors.h</code>. If the return value is 0, then end-of-file was
+   * reached. It is valid to call ReadToArray() multiple times with a completion
+   * callback to queue up parallel reads from the file, but pending reads
+   * cannot be interleaved with other operations.
+   */
+  int32_t (*ReadToArray)(PP_Resource file_io,
+                         int64_t offset,
+                         int32_t max_read_length,
+                         struct PP_ArrayOutput* output,
+                         struct PP_CompletionCallback callback);
 };
 
-typedef struct PPB_FileIO_1_0 PPB_FileIO;
+typedef struct PPB_FileIO_1_1 PPB_FileIO;
+
+struct PPB_FileIO_1_0 {
+  PP_Resource (*Create)(PP_Instance instance);
+  PP_Bool (*IsFileIO)(PP_Resource resource);
+  int32_t (*Open)(PP_Resource file_io,
+                  PP_Resource file_ref,
+                  int32_t open_flags,
+                  struct PP_CompletionCallback callback);
+  int32_t (*Query)(PP_Resource file_io,
+                   struct PP_FileInfo* info,
+                   struct PP_CompletionCallback callback);
+  int32_t (*Touch)(PP_Resource file_io,
+                   PP_Time last_access_time,
+                   PP_Time last_modified_time,
+                   struct PP_CompletionCallback callback);
+  int32_t (*Read)(PP_Resource file_io,
+                  int64_t offset,
+                  char* buffer,
+                  int32_t bytes_to_read,
+                  struct PP_CompletionCallback callback);
+  int32_t (*Write)(PP_Resource file_io,
+                   int64_t offset,
+                   const char* buffer,
+                   int32_t bytes_to_write,
+                   struct PP_CompletionCallback callback);
+  int32_t (*SetLength)(PP_Resource file_io,
+                       int64_t length,
+                       struct PP_CompletionCallback callback);
+  int32_t (*Flush)(PP_Resource file_io, struct PP_CompletionCallback callback);
+  void (*Close)(PP_Resource file_io);
+};
 /**
  * @}
  */

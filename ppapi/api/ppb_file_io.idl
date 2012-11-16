@@ -9,7 +9,8 @@
  */
 
 label Chrome {
-  M14 = 1.0
+  M14 = 1.0,
+  M25 = 1.1
 };
 
 /**
@@ -145,6 +146,8 @@ interface PPB_FileIO {
    * large enough to hold the specified number of bytes to read.  This function
    * might perform a partial read.
    *
+   * ReadToArray() is preferred to Read() when doing asynchronous operations.
+   *
    * @param[in] file_io A <code>PP_Resource</code> corresponding to a file
    * FileIO.
    * @param[in] offset The offset into the file.
@@ -240,5 +243,32 @@ interface PPB_FileIO {
    * FileIO.
    */
   void Close([in] PP_Resource file_io);
+
+  /**
+   * ReadToArray() reads from an offset in the file.  A PP_ArrayOutput must be
+   * provided so that output will be stored in its allocated buffer.  This
+   * function might perform a partial read.
+   *
+   * @param[in] file_io A <code>PP_Resource</code> corresponding to a file
+   * FileIO.
+   * @param[in] offset The offset into the file.
+   * @param[in] max_read_length The maximum number of bytes to read from
+   * <code>offset</code>.
+   * @param[in] output A <code>PP_ArrayOutput</code> to hold the output data.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion of ReadToArray().
+   *
+   * @return The number of bytes read or an error code from
+   * <code>pp_errors.h</code>. If the return value is 0, then end-of-file was
+   * reached. It is valid to call ReadToArray() multiple times with a completion
+   * callback to queue up parallel reads from the file, but pending reads
+   * cannot be interleaved with other operations.
+   */
+  [version = 1.1]
+  int32_t ReadToArray([in] PP_Resource file_io,
+                      [in] int64_t offset,
+                      [in] int32_t max_read_length,
+                      [inout] PP_ArrayOutput output,
+                      [in] PP_CompletionCallback callback);
 };
 
