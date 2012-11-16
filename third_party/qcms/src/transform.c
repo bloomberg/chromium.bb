@@ -1323,19 +1323,20 @@ qcms_transform* qcms_transform_create(
 	return transform;
 }
 
-#if defined(__GNUC__) && !defined(__x86_64__) && !defined(__amd64__)
-#if !defined(__has_attribute)
-/* Assume that the compiler supports the provided attribute. */
-#define __has_attribute(x) 1
+/* __force_align_arg_pointer__ is an x86-only attribute, and gcc/clang warns on unused
+ * attributes. Don't use this on ARM or AMD64. __has_attribute can detect the presence
+ * of the attribute but is currently only supported by clang */
+#if defined(__has_attribute)
+#define HAS_FORCE_ALIGN_ARG_POINTER __has_attribute(__force_align_arg_pointer__)
+#elif defined(__GNUC__) && !defined(__x86_64__) && !defined(__amd64__) && !defined(__arm__)
+#define HAS_FORCE_ALIGN_ARG_POINTER 1
+#else
+#define HAS_FORCE_ALIGN_ARG_POINTER 0
 #endif
-#if __has_attribute(__force_align_arg_pointer__)
+
+#if HAS_FORCE_ALIGN_ARG_POINTER
 /* we need this to avoid crashes when gcc assumes the stack is 128bit aligned */
 __attribute__((__force_align_arg_pointer__))
-#else
-/* __force_align_arg_pointer__ is an x86-only attribute, and clang warns on used
- * attributes. Don't use this on ARM.
- */
-#endif
 #endif
 void qcms_transform_data(qcms_transform *transform, void *src, void *dest, size_t length)
 {
