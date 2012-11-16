@@ -13,12 +13,12 @@ generate it.
 
 import json
 import logging
-import optparse
 import os
 import subprocess
 import sys
 import tempfile
 
+import run_isolated
 import run_test_cases
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -65,55 +65,6 @@ def load_run_test_cases_results(run_test_cases_file):
   return success, failure
 
 
-def list_test_cases(isolated):
-  """Retrieves the test cases list."""
-  cmd = [
-    sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
-    'run',
-    '--isolated', isolated,
-    '--',
-  ]
-  try:
-    # Use the default seed.
-    # TODO(maruel): Shards?
-    return run_test_cases.list_test_cases(
-        cmd,
-        '.',
-        index=0,
-        shards=0,
-        disabled=False,
-        fails=False,
-        flaky=False,
-        pre=False,
-        manual=False,
-        seed=1)
-  except run_test_cases.Failure, e:
-    cmd = [
-      sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
-      'trace',
-      '--merge',
-      '--isolated', isolated,
-      '--',
-      '--gtest_list_tests',
-    ]
-    add_verbosity(cmd)
-    logging.debug(cmd)
-    if subprocess.call(cmd):
-      # The tracing itself failed.
-      raise e
-    return run_test_cases.list_test_cases(
-        cmd,
-        '.',
-        index=0,
-        shards=0,
-        disabled=False,
-        fails=False,
-        flaky=False,
-        pre=False,
-        manual=False,
-        seed=1)
-
-
 def add_verbosity(cmd):
   """Adds --verbose flags to |cmd| depending on verbosity."""
   if logging.getLogger().level < logging.ERROR:
@@ -133,7 +84,12 @@ def run_tests(tempfilepath_cases, tempfilepath_result, isolated, test_cases):
     sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
     'run',
     '--isolated', isolated,
+  ]
+  # Make sure isolate.py is verbose.
+  add_verbosity(cmd)
+  cmd += [
     '--',
+    # This assumes run_test_cases.py is used.
     '--result', tempfilepath_result,
     '--test-case-file', tempfilepath_cases,
     # Do not retry; it's faster to trace flaky test than retrying each failing
@@ -148,6 +104,7 @@ def run_tests(tempfilepath_cases, tempfilepath_result, isolated, test_cases):
     # file missing anyway.
     '--max-failures', '25',
   ]
+  # Make sure run_test_cases.py is verbose.
   add_verbosity(cmd)
   logging.debug(cmd)
   retcode = subprocess.call(cmd)
@@ -174,14 +131,14 @@ def trace_some(tempfilepath, isolated, test_cases):
   return subprocess.call(cmd)
 
 
-def fix_all(isolated):
+def fix_all(isolated, all_test_cases):
   """Runs all the test cases in a gtest executable and trace the failing tests.
 
   Returns True on success.
 
   Makes sure the test passes afterward.
   """
-  # These could have adverse side-effects.
+  # These environment variables could have adverse side-effects.
   # TODO(maruel): Be more intelligent about it, for now be safe.
   blacklist = set(run_test_cases.KNOWN_GTEST_ENV_VARS) - set([
     'GTEST_SHARD_INDEX', 'GTEST_TOTAL_SHARDS'])
@@ -191,13 +148,13 @@ def fix_all(isolated):
       return False
 
   # Run until test cases remain to be tested.
-  all_test_cases = list_test_cases(isolated)
   remaining_test_cases = all_test_cases[:]
   if not remaining_test_cases:
     print >> sys.stderr, 'Didn\'t find any test case to run'
     return 1
 
   previous_failures = []
+  had_failure = False
   while remaining_test_cases:
     # pylint is confused about with_tempfile.
     # pylint: disable=E1120
@@ -206,8 +163,14 @@ def fix_all(isolated):
           len(all_test_cases), len(remaining_test_cases)))
     success, failures = run_tests(isolated, remaining_test_cases)
     if success is None:
-      print >> sys.stderr, 'Failed to trace test cases'
-      return 1
+      if had_failure:
+        print >> sys.stderr, 'Failed to run test cases'
+        return 1
+      # Maybe there's even enough things mapped to start the child process.
+      logging.info('Failed to run, trace one test case.')
+      had_failure = True
+      success = []
+      failures = [remaining_test_cases[0]]
     print(
         '\nTotal: %5d; Tried to run: %5d; Ran: %5d; Succeeded: %5d; Failed: %5d'
         % (
@@ -237,32 +200,44 @@ def fix_all(isolated):
     # Trace the test cases and update the .isolate file.
     print('\nTracing the %d failing tests.' % len(failures))
     if trace_some(isolated, failures):
-      # The tracing itself failed.
+      logging.info('The tracing itself failed.')
       return False
     previous_failures = failures
 
 
 def main():
-  parser = optparse.OptionParser(
-      usage='%prog <option>',
-      description=sys.modules[__name__].__doc__)
+  parser = run_test_cases.OptionParserTestCases(
+      usage='%prog <options> -s <something.isolated>')
   parser.add_option(
       '-s', '--isolated',
       help='The isolated file')
-  parser.add_option(
-      '-v', '--verbose', action='store_true',
-      help='Logs information')
   options, args = parser.parse_args()
 
-  logging.basicConfig(
-      level=(logging.DEBUG if options.verbose else logging.ERROR))
   if args:
     parser.error('Unsupported arg: %s' % args)
   if not options.isolated:
     parser.error('--isolated is required')
   if not options.isolated.endswith('.isolated'):
     parser.error('--isolated argument must end with .isolated')
-  return not fix_all(options.isolated)
+
+  # Retrieve the command from the .isolated file.
+  with open(options.isolated) as f:
+    data = run_isolated.load_isolated(f.read())
+  if 'includes' in data:
+    parser.error('includes key is not supported yet')
+
+  command = data.get('command')
+  if not command:
+    parser.error('A command must be defined')
+  test_cases = parser.process_gtest_options(
+      run_isolated.fix_python_path(command),
+      data.get('relative_cwd', os.getcwd()),
+      options)
+  if not test_cases:
+    print >> sys.stderr, 'No test case to run'
+    return 1
+
+  return not fix_all(options.isolated, test_cases)
 
 
 if __name__ == '__main__':

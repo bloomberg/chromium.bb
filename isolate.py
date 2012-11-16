@@ -456,14 +456,9 @@ def classify_files(root_dir, tracked, untracked):
 
 def chromium_fix(f, variables):
   """Fixes an isolate dependnecy with Chromium-specific fixes."""
-  # Constants.
   # Skip log in PRODUCT_DIR. Note that these are applied on '/' style path
   # separator.
   LOG_FILE = re.compile(r'^\<\(PRODUCT_DIR\)\/[^\/]+\.log$')
-  EXECUTABLE = re.compile(
-      r'^(\<\(PRODUCT_DIR\)\/[^\/\.]+)' +
-      re.escape(variables.get('EXECUTABLE_SUFFIX', '')) +
-      r'$')
   # Ignored items.
   IGNORED_ITEMS = (
       # http://crbug.com/160539, on Windows, it's in chrome/.
@@ -474,16 +469,18 @@ def chromium_fix(f, variables):
       # 'First Run' is not created by the compile, but by the test itself.
       '<(PRODUCT_DIR)/First Run')
 
-  # Now strips off known files we want to ignore and to any specific mangling
-  # as necessary. It's easier to do it here than generate a blacklist.
-  match = EXECUTABLE.match(f)
-  if match:
-    return match.group(1) + '<(EXECUTABLE_SUFFIX)'
-
   # Blacklist logs and other unimportant files.
   if LOG_FILE.match(f) or f in IGNORED_ITEMS:
     logging.debug('Ignoring %s', f)
     return None
+
+  EXECUTABLE = re.compile(
+      r'^(\<\(PRODUCT_DIR\)\/[^\/\.]+)' +
+      re.escape(variables.get('EXECUTABLE_SUFFIX', '')) +
+      r'$')
+  match = EXECUTABLE.match(f)
+  if match:
+    return match.group(1) + '<(EXECUTABLE_SUFFIX)'
 
   if sys.platform == 'darwin':
     # On OSX, the name of the output is dependent on gyp define, it can be

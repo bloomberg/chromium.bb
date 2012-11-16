@@ -36,6 +36,8 @@ class FixTestCases(unittest.TestCase):
         shutil.rmtree(self.tempdir)
 
   def _run(self, cmd):
+    if VERBOSE:
+      cmd = cmd + ['--verbose'] * 3
     logging.info(cmd)
     proc = subprocess.Popen(
         [sys.executable, os.path.join(ROOT_DIR, cmd[0])] + cmd[1:],
@@ -43,7 +45,11 @@ class FixTestCases(unittest.TestCase):
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
     out = proc.communicate()[0]
-    self.assertEqual(0, proc.returncode, out)
+    if VERBOSE:
+      print '\n-----'
+      print out.strip()
+      print '-----\n'
+    self.assertEqual(0, proc.returncode)
     return out
 
   def test_simple(self):
@@ -51,32 +57,47 @@ class FixTestCases(unittest.TestCase):
     isolate = os.path.join(self.srcdir, 'gtest_fake_pass.isolate')
     with open(isolate, 'w') as f:
       # Write a minimal .isolate file.
-      f.write('{\'variables\':{\'command\': [\'gtest_fake_pass.py\']}}')
+      f.write(
+          str(
+              {
+                'variables': {
+                  'command': [
+                    'run_test_cases.py', 'gtest_fake_pass.py',
+                  ],
+                },
+              }))
     def _copy(filename):
       shutil.copy(
           os.path.join(BASE_DIR, 'gtest_fake', filename),
           os.path.join(self.srcdir, filename))
     _copy('gtest_fake_base.py')
     _copy('gtest_fake_pass.py')
+    shutil.copy(
+        os.path.join(ROOT_DIR, 'run_test_cases.py'),
+        os.path.join(self.srcdir, 'run_test_cases.py'))
+    shutil.copy(
+        os.path.join(ROOT_DIR, 'run_isolated.py'),
+        os.path.join(self.srcdir, 'run_isolated.py'))
 
-    # Create a .isolated file out of it.
+    logging.debug('1. Create a .isolated file out of the .isolate file.')
     isolated = os.path.join(self.srcdir, 'gtest_fake_pass.isolated')
     out = self._run(['isolate.py', 'check', '-i', isolate, '-s', isolated])
-    self.assertEqual('', out)
+    if not VERBOSE:
+      self.assertEqual('', out)
 
-    out = self._run(['fix_test_cases.py', '-s', isolated])
-    expected = (
-        'Updating %s\nDidn\'t find any test case to run\n' %
-            os.path.join(self.srcdir, 'gtest_fake_pass.isolate'))
-    self.assertEqual(expected, out)
+    logging.debug('2. Run fix_test_cases.py on it.')
+    # Give up on looking at stdout.
+    _ = self._run(['fix_test_cases.py', '-s', isolated])
 
-    # Assert the content of the .isolated file.
+    logging.debug('3. Asserting the content of the .isolated file.')
     with open(isolated) as f:
       actual_isolated = json.load(f)
     gtest_fake_base_py = os.path.join(self.srcdir, 'gtest_fake_base.py')
     gtest_fake_pass_py = os.path.join(self.srcdir, 'gtest_fake_pass.py')
+    run_isolated_py = os.path.join(self.srcdir, 'run_isolated.py')
+    run_test_cases_py = os.path.join(self.srcdir, 'run_test_cases.py')
     expected_isolated = {
-      u'command': [u'gtest_fake_pass.py'],
+      u'command': [u'run_test_cases.py', u'gtest_fake_pass.py'],
       u'files': {
         u'gtest_fake_base.py': {
           u'mode': 416,
@@ -90,17 +111,27 @@ class FixTestCases(unittest.TestCase):
               open(gtest_fake_pass_py, 'rb').read()).hexdigest()),
           u'size': os.stat(gtest_fake_pass_py).st_size,
         },
+        u'run_isolated.py': {
+          u'mode': 488,
+          u'sha-1': unicode(hashlib.sha1(
+              open(run_isolated_py, 'rb').read()).hexdigest()),
+          u'size': os.stat(run_isolated_py).st_size,
+        },
+        u'run_test_cases.py': {
+          u'mode': 488,
+          u'sha-1': unicode(hashlib.sha1(
+              open(run_test_cases_py, 'rb').read()).hexdigest()),
+          u'size': os.stat(run_test_cases_py).st_size,
+        },
       },
       u'os': unicode(run_isolated.get_flavor()),
       u'relative_cwd': u'.',
     }
-    self.assertTrue(
-        actual_isolated['files']['gtest_fake_base.py'].pop('timestamp'))
-    self.assertTrue(
-        actual_isolated['files']['gtest_fake_pass.py'].pop('timestamp'))
+    for value in actual_isolated['files'].itervalues():
+      self.assertTrue(value.pop('timestamp'))
     if sys.platform == 'win32':
-      expected_isolated['files']['gtest_fake_base.py'].pop('mode')
-      expected_isolated['files']['gtest_fake_pass.py'].pop('mode')
+      for value in expected_isolated['files'].itervalues():
+        self.assertTrue(value.pop('mode'))
     self.assertEquals(expected_isolated, actual_isolated)
 
     # Now verify the .isolate file was updated! (That's the magical part where
@@ -109,7 +140,7 @@ class FixTestCases(unittest.TestCase):
       actual = eval(f.read(), {'__builtins__': None}, None)
     expected = {
       'variables': {
-        'command': ['gtest_fake_pass.py'],
+        'command': ['run_test_cases.py', 'gtest_fake_pass.py'],
       },
       'conditions': [
         ['OS=="%s"' % run_isolated.get_flavor(), {
@@ -117,6 +148,8 @@ class FixTestCases(unittest.TestCase):
             'isolate_dependency_tracked': [
               'gtest_fake_base.py',
               'gtest_fake_pass.py',
+              'run_isolated.py',
+              'run_test_cases.py',
             ],
           },
         }],

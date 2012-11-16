@@ -922,8 +922,9 @@ class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
     """Grabs the test cases."""
     if options.test_case_file:
       with open(options.test_case_file, 'r') as f:
-        # Do not shuffle or alter the file in any way in that case.
-        return filter(None, f.read().splitlines())
+        # Do not shuffle or alter the file in any way in that case except to
+        # strip whitespaces.
+        return [l for l in (l.strip() for l in f) if l]
     else:
       return get_test_cases(
           cmd,
