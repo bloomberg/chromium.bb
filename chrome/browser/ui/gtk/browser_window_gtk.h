@@ -353,9 +353,6 @@ class BrowserWindowGtk
   // Triggers relayout of the content.
   void UpdateCustomFrame();
 
-  // Hack to make gtk_window_set_decorated() work on Unity.
-  void SetDecoratedHack();
-
   // Set the bounds of the current window. If |exterior| is true, set the size
   // of the window itself, otherwise set the bounds of the web contents.
   // If |move| is true, set the position of the window, otherwise leave the
