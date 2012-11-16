@@ -7,15 +7,19 @@
 """
 
 import copy
+import glob
 import json
 import os
-import sys
 
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
+from chromite.lib import parallel
+
+# Needs to be after chromite imports.
+import lddtree
 
 if cros_build_lib.IsInsideChroot():
   # Only import portage after we've checked that we're inside the chroot.
@@ -533,6 +537,33 @@ def SelectActiveToolchains(targets, suffixes):
         cros_build_lib.RunCommand(cmd, print_cmd=False)
 
 
+def ExpandTargets(targets_wanted):
+  """Expand any possible toolchain aliases into full targets
+
+  This will expand 'all' and 'sdk' into the respective toolchain tuples.
+
+  Args:
+    targets_wanted: The targets specified by the user.
+  Returns:
+    Full list of tuples with pseudo targets removed.
+  """
+  alltargets = GetAllTargets()
+  targets_wanted = set(targets_wanted)
+  if targets_wanted == set(['all']):
+    targets = alltargets
+  elif targets_wanted == set(['sdk']):
+    # Filter out all the non-sdk toolchains as we don't want to mess
+    # with those in all of our builds.
+    targets = FilterToolchains(alltargets, 'sdk', True)
+  else:
+    # Verify user input.
+    nonexistent = targets_wanted.difference(alltargets)
+    if nonexistent:
+      raise ValueError('Invalid targets: %s', ','.join(nonexistent))
+    targets = dict((t, alltargets[t]) for t in targets_wanted)
+  return targets
+
+
 def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
                      targets_wanted, boards_wanted):
   """Performs all steps to create a synchronized toolchain enviroment.
@@ -544,24 +575,7 @@ def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
   if not hostonly:
     # For hostonly, we can skip most of the below logic, much of which won't
     # work on bare systems where this is useful.
-    alltargets = GetAllTargets()
-    targets_wanted = set(targets_wanted)
-    if targets_wanted == set(['all']):
-      targets = alltargets
-    elif targets_wanted == set(['sdk']):
-      # Filter out all the non-sdk toolchains as we don't want to mess
-      # with those in all of our builds.
-      targets = FilterToolchains(alltargets, 'sdk', True)
-    else:
-      # Verify user input.
-      nonexistant = []
-      for target in targets_wanted:
-        if target not in alltargets:
-          nonexistant.append(target)
-        else:
-          targets[target] = alltargets[target]
-      if nonexistant:
-        cros_build_lib.Die('Invalid targets: ' + ','.join(nonexistant))
+    targets = ExpandTargets(targets_wanted)
 
     # Now re-add any targets that might be from this board.  This is
     # to allow unofficial boards to declare their own toolchains.
@@ -592,6 +606,411 @@ def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
     CleanTargets(targets)
 
 
+def ShowBoardConfig(board):
+  """Show the toolchain tuples used by |board|
+
+  Args:
+    board: The board to query.
+  """
+  toolchains = GetToolchainsForBoard(board)
+  # Make sure we display the default toolchain first.
+  print ','.join(FilterToolchains(toolchains, 'default', True).keys() +
+                 FilterToolchains(toolchains, 'default', False).keys())
+
+
+def GenerateLdsoWrapper(root, path, interp, libpaths=()):
+  """Generate a shell script wrapper which uses local ldso to run the ELF
+
+  Since we cannot rely on the host glibc (or other libraries), we need to
+  execute the local packaged ldso directly and tell it where to find our
+  copies of libraries.
+
+  Args:
+    root: The root tree to generate scripts inside of
+    path: The full path (inside |root|) to the program to wrap
+    interp: The ldso interpreter that we need to execute
+    libpaths: Extra lib paths to search for libraries
+  """
+  basedir = os.path.dirname(path)
+  libpaths = ['/lib'] + list(libpaths)
+  replacements = {
+      'interp': os.path.join(os.path.relpath('/lib', basedir),
+                             os.path.basename(interp)),
+      'libpaths': ':'.join(['${basedir}/' + os.path.relpath(p, basedir)
+                            for p in libpaths]),
+  }
+  wrapper = """#!/bin/sh
+base=$(realpath "$0")
+basedir=${base%%/*}
+exec \
+  "${basedir}/%(interp)s" \
+  --library-path "%(libpaths)s" \
+  --inhibit-rpath '' \
+  "${base}.elf" \
+  "$@"
+""" % replacements
+  wrappath = root + path
+  os.rename(wrappath, wrappath + '.elf')
+  osutils.WriteFile(wrappath, wrapper)
+  os.chmod(wrappath, 0755)
+
+
+def GeneratePathWrapper(root, wrappath, path):
+  """Generate a shell script to execute another shell script
+
+  Since we can't symlink a wrapped ELF (see GenerateLdsoWrapper) because the
+  argv[0] won't be pointing to the correct path, generate a shell script that
+  just executes another program with its full path.
+
+  Args:
+    root: The root tree to generate scripts inside of
+    wrappath: The full path (inside |root|) to create the wrapper
+    path: The target program which this wrapper will execute
+  """
+  replacements = {
+      'path': path,
+      'relroot': os.path.relpath('/', os.path.dirname(wrappath)),
+  }
+  wrapper = """#!/bin/sh
+base=$(realpath "$0")
+basedir=${base%%/*}
+exec "${basedir}/%(relroot)s%(path)s" "$@"
+""" % replacements
+  root_wrapper = root + wrappath
+  if os.path.islink(root_wrapper):
+    os.unlink(root_wrapper)
+  else:
+    osutils.SafeMakedirs(os.path.dirname(root_wrapper))
+  osutils.WriteFile(root_wrapper, wrapper)
+  os.chmod(root_wrapper, 0755)
+
+
+def FileIsCrosSdkElf(elf):
+  """Determine if |elf| is an ELF that we execute in the cros_sdk
+
+  We don't need this to be perfect, just quick.  It makes sure the ELF
+  is a 64bit LSB x86_64 ELF.  That is the native type of cros_sdk.
+
+  Args:
+    elf: The file to check
+  Returns:
+    True if we think |elf| is a native ELF
+  """
+  with open(elf) as f:
+    data = f.read(20)
+    # Check the magic number, EI_CLASS, EI_DATA, and e_machine.
+    return (data[0:4] == '\x7fELF' and
+            data[4] == '\x02' and
+            data[5] == '\x01' and
+            data[18] == '\x3e')
+
+
+def IsPathPackagable(ptype, path):
+  """Should the specified file be included in a toolchain package?
+
+  We only need to handle files as we'll create dirs as we need them.
+
+  Further, trim files that won't be useful:
+   - non-english translations (.mo) since it'd require env vars
+   - debug files since these are for the host compiler itself
+   - info/man pages as they're big, and docs are online, and the
+     native docs should work fine for the most part (`man gcc`)
+
+  Args:
+    ptype: A string describing the path type (i.e. 'file' or 'dir' or 'sym')
+    path: The full path to inspect
+  Returns:
+    True if we want to include this path in the package
+  """
+  return not (ptype in ('dir',) or
+              path.startswith('/usr/lib/debug/') or
+              os.path.splitext(path)[1] == '.mo' or
+              ('/man/' in path or '/info/' in path))
+
+
+def ReadlinkRoot(path, root):
+  """Like os.readlink(), but relative to a |root|
+
+  Args:
+    path: The symlink to read
+    root: The path to use for resolving absolute symlinks
+  Returns:
+    A fully resolved symlink path
+  """
+  while os.path.islink(root + path):
+    path = os.path.join(os.path.dirname(path), os.readlink(root + path))
+  return path
+
+
+def _GetFilesForTarget(target, root='/'):
+  """Locate all the files to package for |target|
+
+  This does not cover ELF dependencies.
+
+  Args:
+    target: The toolchain target name
+    root: The root path to pull all packages from
+  Returns:
+    A tuple of a set of all packable paths, and a set of all paths which
+    are also native ELFs
+  """
+  paths = set()
+  elfs = set()
+
+  # Find all the files owned by the packages for this target.
+  for pkg in GetTargetPackages(target):
+    # Ignore packages that are part of the target sysroot.
+    if pkg in ('kernel', 'libc'):
+      continue
+
+    atom = GetPortagePackage(target, pkg)
+    cat, pn = atom.split('/')
+    ver = GetInstalledPackageVersions(atom)[0]
+    cros_build_lib.Info('packaging %s-%s', atom, ver)
+
+    # pylint: disable=E1101
+    dblink = portage.dblink(cat, pn + '-' + ver, myroot=root,
+                            settings=portage.settings)
+    contents = dblink.getcontents()
+    for obj in contents:
+      ptype = contents[obj][0]
+      if not IsPathPackagable(ptype, obj):
+        continue
+
+      if ptype == 'obj':
+        # For native ELFs, we need to pull in their dependencies too.
+        if FileIsCrosSdkElf(obj):
+          elfs.add(obj)
+      paths.add(obj)
+
+  return paths, elfs
+
+
+def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
+                             path_rewrite_func=lambda x:x, root='/'):
+  """Link in all packable files and their runtime dependencies
+
+  This also wraps up executable ELFs with helper scripts.
+
+  Args:
+    output_dir: The output directory to store files
+    paths: All the files to include
+    elfs: All the files which are ELFs (a subset of |paths|)
+    ldpaths: A dict of static ldpath information
+    path_rewrite_func: User callback to rewrite paths in output_dir
+    root: The root path to pull all packages/files from
+  """
+  # Link in all the files.
+  sym_paths = []
+  for path in paths:
+    new_path = path_rewrite_func(path)
+    dst = output_dir + new_path
+    osutils.SafeMakedirs(os.path.dirname(dst))
+
+    # Is this a symlink which we have to rewrite or wrap?
+    # Delay wrap check until after we have created all paths.
+    src = root + path
+    if os.path.islink(src):
+      tgt = os.readlink(src)
+      if os.path.sep in tgt:
+        sym_paths.append((new_path, lddtree.normpath(ReadlinkRoot(src, root))))
+
+        # Rewrite absolute links to relative and then generate the symlink
+        # ourselves.  All other symlinks can be hardlinked below.
+        if tgt[0] == '/':
+          tgt = os.path.relpath(tgt, os.path.dirname(new_path))
+          os.symlink(tgt, dst)
+          continue
+
+    os.link(src, dst)
+
+  # Now see if any of the symlinks need to be wrapped.
+  for sym, tgt in sym_paths:
+    if tgt in elfs:
+      GeneratePathWrapper(output_dir, sym, tgt)
+
+  # Locate all the dependencies for all the ELFs.  Stick them all in the
+  # top level "lib" dir to make the wrapper simpler.  This exact path does
+  # not matter since we execute ldso directly, and we tell the ldso the
+  # exact path to search for its libraries.
+  libdir = os.path.join(output_dir, 'lib')
+  osutils.SafeMakedirs(libdir)
+  donelibs = set()
+  for elf in elfs:
+    e = lddtree.ParseELF(elf, root, ldpaths)
+    interp = e['interp']
+    if interp:
+      # Generate a wrapper if it is executable.
+      GenerateLdsoWrapper(output_dir, path_rewrite_func(elf), interp,
+                          libpaths=e['rpath'] + e['runpath'])
+
+    for lib, lib_data in e['libs'].iteritems():
+      if lib in donelibs:
+        continue
+
+      src = path = lib_data['path']
+      if path is None:
+        cros_build_lib.Warning('%s: could not locate %s', elf, lib)
+        continue
+      donelibs.add(lib)
+
+      # Needed libs are the SONAME, but that is usually a symlink, not a
+      # real file.  So link in the target rather than the symlink itself.
+      # We have to walk all the possible symlinks (SONAME could point to a
+      # symlink which points to a symlink), and we have to handle absolute
+      # ourselves (since we have a "root" argument).
+      dst = os.path.join(libdir, os.path.basename(path))
+      src = ReadlinkRoot(src, root)
+
+      os.link(root + src, dst)
+
+
+def _EnvdGetVar(envd, var):
+  """Given a Gentoo env.d file, extract a var from it
+
+  Args:
+    envd: The env.d file to load (may be a glob path)
+    var: The var to extract
+  Returns:
+    The value of |var|
+  """
+  envds = glob.glob(envd)
+  assert len(envds) == 1, '%s: should have exactly 1 env.d file' % envd
+  envd = envds[0]
+  return cros_build_lib.LoadKeyValueFile(envd)[var]
+
+
+def _ProcessBinutilsConfig(target, output_dir):
+  """Do what binutils-config would have done"""
+  binpath = os.path.join('/bin', target + '-')
+  globpath = os.path.join(output_dir, 'usr', GetHostTuple(), target,
+                          'binutils-bin', '*-gold')
+  srcpath = glob.glob(globpath)
+  assert len(srcpath) == 1, '%s: did not match 1 path' % globpath
+  srcpath = srcpath[0][len(output_dir):]
+  gccpath = os.path.join('/usr', 'libexec', 'gcc')
+  for prog in os.listdir(output_dir + srcpath):
+    # Skip binaries already wrapped.
+    if not prog.endswith('.real'):
+      GeneratePathWrapper(output_dir, binpath + prog,
+                          os.path.join(srcpath, prog))
+      GeneratePathWrapper(output_dir, os.path.join(gccpath, prog),
+                          os.path.join(srcpath, prog))
+
+  libpath = os.path.join('/usr', GetHostTuple(), target, 'lib')
+  envd = os.path.join(output_dir, 'etc', 'env.d', 'binutils', '*-gold')
+  srcpath = _EnvdGetVar(envd, 'LIBPATH')
+  os.symlink(os.path.relpath(srcpath, os.path.dirname(libpath)),
+             output_dir + libpath)
+
+
+def _ProcessGccConfig(target, output_dir):
+  """Do what gcc-config would have done"""
+  binpath = '/bin'
+  envd = os.path.join(output_dir, 'etc', 'env.d', 'gcc', '*')
+  srcpath = _EnvdGetVar(envd, 'GCC_PATH')
+  for prog in os.listdir(output_dir + srcpath):
+    # Skip binaries already wrapped.
+    if (not prog.endswith('.real') and
+        not prog.endswith('.elf') and
+        prog.startswith(target)):
+      GeneratePathWrapper(output_dir, os.path.join(binpath, prog),
+                          os.path.join(srcpath, prog))
+  return srcpath
+
+
+def _ProcessSysrootWrapper(_target, output_dir, srcpath):
+  """Remove chroot-specific things from our sysroot wrapper"""
+  # Disable ccache since we know it won't work outside of chroot.
+  sysroot_wrapper = glob.glob(os.path.join(
+      output_dir + srcpath, 'sysroot_wrapper*'))[0]
+  contents = osutils.ReadFile(sysroot_wrapper).splitlines()
+  for num in xrange(len(contents)):
+    if '@CCACHE_DEFAULT@' in contents[num]:
+      contents[num] = 'use_ccache = False'
+      break
+  # Can't update the wrapper in place since it's a hardlink to a file in /.
+  os.unlink(sysroot_wrapper)
+  osutils.WriteFile(sysroot_wrapper, '\n'.join(contents))
+  os.chmod(sysroot_wrapper, 0755)
+
+
+def _ProcessDistroCleanups(target, output_dir):
+  """Clean up the tree and remove all distro-specific requirements
+
+  Args:
+    target: The toolchain target name
+    output_dir: The output directory to clean up
+  """
+  _ProcessBinutilsConfig(target, output_dir)
+  gcc_path = _ProcessGccConfig(target, output_dir)
+  _ProcessSysrootWrapper(target, output_dir, gcc_path)
+
+  osutils.RmDir(os.path.join(output_dir, 'etc'))
+
+
+def CreatePackagableRoot(target, output_dir, ldpaths, root='/'):
+  """Setup a tree from the packages for the specified target
+
+  This populates a path with all the files from toolchain packages so that
+  a tarball can easily be generated from the result.
+
+  Args:
+    target: The target to create a packagable root from
+    output_dir: The output directory to place all the files
+    ldpaths: A dict of static ldpath information
+    root: The root path to pull all packages/files from
+  """
+  # Find all the files owned by the packages for this target.
+  paths, elfs = _GetFilesForTarget(target, root=root)
+
+  # Link in all the package's files, any ELF dependencies, and wrap any
+  # executable ELFs with helper scripts.
+  def MoveUsrBinToBin(path):
+    """Move /usr/bin to /bin so people can just use that toplevel dir"""
+    return path[4:] if path.startswith('/usr/bin/') else path
+  _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
+                           path_rewrite_func=MoveUsrBinToBin, root=root)
+
+  # The packages, when part of the normal distro, have helper scripts
+  # that setup paths and such.  Since we are making this standalone, we
+  # need to preprocess all that ourselves.
+  _ProcessDistroCleanups(target, output_dir)
+
+
+def CreatePackages(targets_wanted, output_dir, root='/'):
+  """Create redistributable cross-compiler packages for the specified targets
+
+  This creates toolchain packages that should be usable in conjunction with
+  a downloaded sysroot (created elsewhere).
+
+  Tarballs (one per target) will be created in $PWD.
+
+  Args:
+    targets_wanted: The targets to package up
+    root: The root path to pull all packages/files from
+  """
+  osutils.SafeMakedirs(output_dir)
+  ldpaths = lddtree.LoadLdpaths(root)
+  targets = ExpandTargets(targets_wanted)
+
+  with osutils.TempDirContextManager() as tempdir:
+    # We have to split the root generation from the compression stages.  This is
+    # because we hardlink in all the files (to avoid overhead of reading/writing
+    # the copies multiple times).  But tar gets angry if a file's hardlink count
+    # changes from when it starts reading a file to when it finishes.
+    with parallel.BackgroundTaskRunner(CreatePackagableRoot) as queue:
+      for target in targets:
+        output_target_dir = os.path.join(tempdir, target)
+        queue.put([target, output_target_dir, ldpaths, root])
+
+    # Build the tarball.
+    with parallel.BackgroundTaskRunner(cros_build_lib.CreateTarball) as queue:
+      for target in targets:
+        tar_file = os.path.join(output_dir, target + '.tar.xz')
+        queue.put([tar_file, os.path.join(tempdir, target)])
+
+
 def main(argv):
   usage = """usage: %prog [options]
 
@@ -618,34 +1037,41 @@ def main(argv):
   parser.add_option('--show-board-cfg',
                     dest='board_cfg', default=None,
                     help='Board to list toolchain tuples for')
+  parser.add_option('--create-packages',
+                    action='store_true', default=False,
+                    help='Build redistributable packages')
+  parser.add_option('--output-dir', default=os.getcwd(), type='path',
+                    help='Output directory')
   parser.add_option('--reconfig', default=False, action='store_true',
                     help='Reload crossdev config and reselect toolchains')
 
-  (options, _remaining_arguments) = parser.parse_args(argv)
+  (options, remaining_arguments) = parser.parse_args(argv)
+  if len(remaining_arguments):
+    parser.error('script does not take arguments: %s' % remaining_arguments)
 
-  if options.board_cfg:
-    toolchains = GetToolchainsForBoard(options.board_cfg)
-    # Make sure we display the default toolchain first.
-    targets = toolchains.keys()
-    for target in targets:
-      if toolchains[target]['default']:
-        targets.remove(target)
-        targets.insert(0, target)
-        break
-    print ','.join(targets)
-    return 0
-
-  cros_build_lib.AssertInsideChroot()
-
-  # This has to be always run as root.
-  if not os.getuid() == 0:
-    print "%s: This script must be run as root!" % sys.argv[0]
-    sys.exit(1)
+  # Figure out what we're supposed to do and reject conflicting options.
+  if options.board_cfg and options.create_packages:
+    parser.error('conflicting options: create-packages & show-board-cfg')
 
   targets = set(options.targets.split(','))
   boards = set(options.include_boards.split(',')) if options.include_boards \
       else set()
-  Crossdev.Load(options.reconfig)
-  UpdateToolchains(options.usepkg, options.deleteold, options.hostonly,
-                   options.reconfig, targets, boards)
-  Crossdev.Save()
+
+  if options.board_cfg:
+    ShowBoardConfig(options.board_cfg)
+  elif options.create_packages:
+    cros_build_lib.AssertInsideChroot()
+    Crossdev.Load(False)
+    CreatePackages(targets, options.output_dir)
+  else:
+    cros_build_lib.AssertInsideChroot()
+    # This has to be always run as root.
+    if os.geteuid() != 0:
+      cros_build_lib.Die('this script must be run as root')
+
+    Crossdev.Load(options.reconfig)
+    UpdateToolchains(options.usepkg, options.deleteold, options.hostonly,
+                     options.reconfig, targets, boards)
+    Crossdev.Save()
+
+  return 0
