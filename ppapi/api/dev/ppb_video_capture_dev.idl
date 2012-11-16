@@ -7,7 +7,6 @@
  * This file defines the <code>PPB_VideoCapture_Dev</code> interface.
  */
 label Chrome {
-  M14 = 0.1,
   M19 = 0.2
 };
 
@@ -54,25 +53,6 @@ interface PPB_VideoCapture_Dev {
       [in] PP_Resource video_capture);
 
   /**
-   * Starts the capture. |requested_info| is a pointer to a structure containing
-   * the requested resolution and frame rate. |buffer_count| is the number of
-   * buffers requested by the plugin. Note: it is only used as advisory, the
-   * browser may allocate more or fewer based on available resources.
-   * How many buffers depends on usage. At least 2 to make sure latency doesn't
-   * cause lost frames. If the plugin expects to hold on to more than one buffer
-   * at a time (e.g. to do multi-frame processing, like video encoding), it
-   * should request that many more.
-   *
-   * Returns PP_ERROR_FAILED if called when the capture was already started, or
-   * PP_OK on success.
-   */
-  [version=0.1]
-  int32_t StartCapture(
-      [in] PP_Resource video_capture,
-      [in] PP_VideoCaptureDeviceInfo_Dev requested_info,
-      [in] uint32_t buffer_count);
-
-  /**
    * Enumerates video capture devices. Once the operation is completed
    * successfully, |devices| will be set to a PPB_ResourceArray_Dev resource,
    * which holds a list of PPB_DeviceRef_Dev resources.
@@ -85,7 +65,6 @@ interface PPB_VideoCapture_Dev {
    * - the ref count of the returned |devices| has already been increased by 1
    *   for the caller.
    */
-  [version=0.2]
   int32_t EnumerateDevices(
       [in] PP_Resource video_capture,
       [out] PP_Resource devices,
@@ -104,7 +83,6 @@ interface PPB_VideoCapture_Dev {
    * (e.g. to do multi-frame processing, like video encoding), it should request
    * that many more.
    */
-  [version=0.2]
   int32_t Open(
       [in] PP_Resource video_capture,
       [in] PP_Resource device_ref,
@@ -118,7 +96,6 @@ interface PPB_VideoCapture_Dev {
    * Returns PP_ERROR_FAILED if called when the capture was already started, or
    * PP_OK on success.
    */
-  [version=0.2]
   int32_t StartCapture(
       [in] PP_Resource video_capture);
 
@@ -150,7 +127,6 @@ interface PPB_VideoCapture_Dev {
    * If a video capture resource is destroyed while a device is still open, then
    * it will be implicitly closed, so you are not required to call this method.
    */
-  [version=0.2]
   void Close(
       [in] PP_Resource video_capture);
 };

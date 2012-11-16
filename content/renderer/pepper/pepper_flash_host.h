@@ -6,10 +6,8 @@
 #define CONTENT_RENDERER_PEPPER_PEPPER_FLASH_HOST_H_
 
 #include "base/basictypes.h"
-#include "ipc/ipc_message.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
-#include "ppapi/proxy/proxy_completion_callback_factory.h"
 
 namespace content {
 
@@ -27,18 +25,7 @@ class PepperFlashHost
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
-  int32_t OnMsgEnumerateVideoCaptureDevices(
-      ppapi::host::HostMessageContext* host_context,
-      const ppapi::HostResource& host_resource);
  private:
-  void OnEnumerateVideoCaptureDevicesComplete(
-      int32_t result,
-      ppapi::host::ReplyMessageContext reply_message_context,
-      const ppapi::HostResource& host_resource);
-
-  ppapi::proxy::ProxyCompletionCallbackFactory<PepperFlashHost>
-      callback_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(PepperFlashHost);
 };
 

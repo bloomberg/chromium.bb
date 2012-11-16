@@ -7,11 +7,12 @@
 
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/trusted/ppb_buffer_trusted.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
 namespace thunk {
 
-class PPB_BufferTrusted_API {
+class PPAPI_THUNK_EXPORT PPB_BufferTrusted_API {
  public:
   virtual ~PPB_BufferTrusted_API() {}
 

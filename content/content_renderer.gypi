@@ -199,6 +199,8 @@
     'renderer/pepper/pepper_plugin_delegate_impl.h',
     'renderer/pepper/pepper_proxy_channel_delegate_impl.cc',
     'renderer/pepper/pepper_proxy_channel_delegate_impl.h',
+    'renderer/pepper/pepper_video_capture_host.cc',
+    'renderer/pepper/pepper_video_capture_host.h',
     'renderer/pepper/pepper_websocket_host.cc',
     'renderer/pepper/pepper_websocket_host.h',
     'renderer/pepper/renderer_ppapi_host_impl.cc',

@@ -81,12 +81,6 @@ struct PPBURLLoader_UpdateProgress_Params {
   int64_t total_bytes_to_be_received;
 };
 
-struct PPPVideoCapture_Buffer {
-  ppapi::HostResource resource;
-  uint32_t size;
-  base::SharedMemoryHandle handle;
-};
-
 // We put all our handles in a unified structure to make it easy to translate
 // them in NaClIPCAdapter for use in NaCl.
 class PPAPI_PROXY_EXPORT SerializedHandle {
@@ -189,8 +183,6 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
   IPC::PlatformFileForTransit descriptor_;
 };
 
-// TODO(tomfinegan): This is identical to PPPVideoCapture_Buffer, maybe replace
-// both with a single type?
 struct PPPDecryptor_Buffer {
   ppapi::HostResource resource;
   uint32_t size;

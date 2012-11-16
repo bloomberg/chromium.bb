@@ -38,10 +38,8 @@
       UseDevice(device_array[index], index);
     }
 
-    function UseDefaultDevice(use_0_1_interface) {
-      var display_text = use_0_1_interface ? 'Default(v0.1)' : 'Default';
-      var command = use_0_1_interface ? 'UseDefault(v0.1)' : 'UseDefault';
-      UseDevice(display_text, command);
+    function UseDefaultDevice() {
+      UseDevice('Default', 'UseDefault');
     }
 
     function UseDevice(display_text, command) {
@@ -84,9 +82,7 @@
   <div id="available_devices">
     Available device(s), choose one to open:
     <ul id="device_list">
-      <li><a href="javascript:UseDefaultDevice(true);">
-          Default - use interface version 0.1</a></li>
-      <li><a href="javascript:UseDefaultDevice(false);">Default</a></li>
+      <li><a href="javascript:UseDefaultDevice();">Default</a></li>
     </ul>
   </div>
   <div id="control_panel"></div>

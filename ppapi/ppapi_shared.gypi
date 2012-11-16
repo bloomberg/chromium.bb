@@ -82,8 +82,6 @@
           'shared_impl/ppb_var_shared.h',
           'shared_impl/ppb_video_decoder_shared.cc',
           'shared_impl/ppb_video_decoder_shared.h',
-          'shared_impl/ppb_video_capture_shared.cc',
-          'shared_impl/ppb_video_capture_shared.h',
           'shared_impl/ppb_view_shared.cc',
           'shared_impl/ppb_view_shared.h',
           'shared_impl/ppp_flash_browser_operations_shared.h',

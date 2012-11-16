@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_video_capture_dev.idl modified Wed Feb 15 12:15:46 2012. */
+/* From dev/ppb_video_capture_dev.idl modified Tue Oct 30 17:39:32 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_VIDEO_CAPTURE_DEV_H_
 #define PPAPI_C_DEV_PPB_VIDEO_CAPTURE_DEV_H_
@@ -16,7 +16,6 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_VIDEOCAPTURE_DEV_INTERFACE_0_1 "PPB_VideoCapture(Dev);0.1"
 #define PPB_VIDEOCAPTURE_DEV_INTERFACE_0_2 "PPB_VideoCapture(Dev);0.2"
 #define PPB_VIDEOCAPTURE_DEV_INTERFACE PPB_VIDEOCAPTURE_DEV_INTERFACE_0_2
 
@@ -136,17 +135,6 @@ struct PPB_VideoCapture_Dev_0_2 {
 };
 
 typedef struct PPB_VideoCapture_Dev_0_2 PPB_VideoCapture_Dev;
-
-struct PPB_VideoCapture_Dev_0_1 {
-  PP_Resource (*Create)(PP_Instance instance);
-  PP_Bool (*IsVideoCapture)(PP_Resource video_capture);
-  int32_t (*StartCapture)(
-      PP_Resource video_capture,
-      const struct PP_VideoCaptureDeviceInfo_Dev* requested_info,
-      uint32_t buffer_count);
-  int32_t (*ReuseBuffer)(PP_Resource video_capture, uint32_t buffer);
-  int32_t (*StopCapture)(PP_Resource video_capture);
-};
 /**
  * @}
  */

@@ -29,7 +29,6 @@
 #include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_udp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
-#include "webkit/plugins/ppapi/ppb_video_capture_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
 #include "webkit/plugins/ppapi/ppb_x509_certificate_private_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
@@ -272,11 +271,7 @@ PP_Resource ResourceCreationImpl::CreateURLLoader(PP_Instance instance) {
 }
 
 PP_Resource ResourceCreationImpl::CreateVideoCapture(PP_Instance instance) {
-  scoped_refptr<PPB_VideoCapture_Impl> video_capture =
-      new PPB_VideoCapture_Impl(instance);
-  if (!video_capture->Init())
-    return 0;
-  return video_capture->GetReference();
+  return 0;  // VideoCapture is not supported in process now.
 }
 
 PP_Resource ResourceCreationImpl::CreateVideoDecoder(

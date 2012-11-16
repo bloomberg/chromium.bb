@@ -9,6 +9,7 @@
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
 #include "content/renderer/pepper/pepper_flash_clipboard_host.h"
 #include "content/renderer/pepper/pepper_flash_host.h"
+#include "content/renderer/pepper/pepper_video_capture_host.h"
 #include "content/renderer/pepper/pepper_websocket_host.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ppapi/host/resource_host.h"
@@ -59,6 +60,15 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
       case PpapiHostMsg_FileChooser_Create::ID:
         return scoped_ptr<ResourceHost>(new PepperFileChooserHost(
             host_, instance, params.pp_resource()));
+      case PpapiHostMsg_VideoCapture_Create::ID: {
+        PepperVideoCaptureHost* host = new PepperVideoCaptureHost(
+            host_, instance, params.pp_resource());
+        if (!host->Init()) {
+          delete host;
+          return scoped_ptr<ResourceHost>();
+        }
+        return scoped_ptr<ResourceHost>(host);
+      }
     }
   }
 

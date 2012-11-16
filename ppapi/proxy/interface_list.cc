@@ -102,7 +102,6 @@
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_url_response_info_proxy.h"
 #include "ppapi/proxy/ppb_var_deprecated_proxy.h"
-#include "ppapi/proxy/ppb_video_capture_proxy.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/proxy/ppb_x509_certificate_private_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
@@ -283,7 +282,6 @@ InterfaceList::InterfaceList() {
   AddPPP(PPP_Graphics3D_Proxy::GetInfo());
 #if !defined(OS_NACL)
   AddPPP(PPP_Instance_Private_Proxy::GetInfo());
-  AddPPP(PPP_VideoCapture_Proxy::GetInfo());
   AddPPP(PPP_VideoDecoder_Proxy::GetInfo());
 #endif
 }

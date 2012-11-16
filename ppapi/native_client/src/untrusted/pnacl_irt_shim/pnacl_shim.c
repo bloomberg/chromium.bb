@@ -189,7 +189,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_91;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TextInput_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TextInput_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_Dev_0_1;
@@ -1868,8 +1867,6 @@ struct PP_Var Pnacl_M17_PPB_URLUtil_Dev_GetPluginInstanceURL(PP_Instance instanc
 }
 
 /* End wrapper methods for PPB_URLUtil_Dev_0_6 */
-
-/* Not generating wrapper methods for PPB_VideoCapture_Dev_0_1 */
 
 /* Begin wrapper methods for PPB_VideoCapture_Dev_0_2 */
 
@@ -3933,8 +3930,6 @@ struct PPB_URLUtil_Dev_0_6 Pnacl_Wrappers_PPB_URLUtil_Dev_0_6 = {
     .GetPluginInstanceURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M17_PPB_URLUtil_Dev_GetPluginInstanceURL
 };
 
-/* Not generating wrapper interface for PPB_VideoCapture_Dev_0_1 */
-
 struct PPB_VideoCapture_Dev_0_2 Pnacl_Wrappers_PPB_VideoCapture_Dev_0_2 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M19_PPB_VideoCapture_Dev_Create,
     .IsVideoCapture = (PP_Bool (*)(PP_Resource video_capture))&Pnacl_M19_PPB_VideoCapture_Dev_IsVideoCapture,
@@ -4771,12 +4766,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_1 = {
-  .iface_macro = PPB_VIDEOCAPTURE_DEV_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2 = {
   .iface_macro = PPB_VIDEOCAPTURE_DEV_INTERFACE_0_2,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VideoCapture_Dev_0_2,
@@ -5177,7 +5166,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_TextInput_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_TextInput_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6,
-  &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16,
   &Pnacl_WrapperInfo_PPB_View_Dev_0_1,

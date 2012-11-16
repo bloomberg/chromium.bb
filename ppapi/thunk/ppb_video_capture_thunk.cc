@@ -92,24 +92,6 @@ void Close(PP_Resource video_capture) {
     enter.object()->Close();
 }
 
-int32_t StartCapture0_1(PP_Resource video_capture,
-                        const PP_VideoCaptureDeviceInfo_Dev* requested_info,
-                        uint32_t buffer_count) {
-  EnterVideoCapture enter(video_capture, true);
-  if (enter.failed())
-    return enter.retval();
-
-  return enter.object()->StartCapture0_1(*requested_info, buffer_count);
-}
-
-const PPB_VideoCapture_Dev_0_1 g_ppb_video_capture_0_1_thunk = {
-  &Create,
-  &IsVideoCapture,
-  &StartCapture0_1,
-  &ReuseBuffer,
-  &StopCapture
-};
-
 const PPB_VideoCapture_Dev_0_2 g_ppb_video_capture_0_2_thunk = {
   &Create,
   &IsVideoCapture,
@@ -122,10 +104,6 @@ const PPB_VideoCapture_Dev_0_2 g_ppb_video_capture_0_2_thunk = {
 };
 
 }  // namespace
-
-const PPB_VideoCapture_Dev_0_1* GetPPB_VideoCapture_Dev_0_1_Thunk() {
-  return &g_ppb_video_capture_0_1_thunk;
-}
 
 const PPB_VideoCapture_Dev_0_2* GetPPB_VideoCapture_Dev_0_2_Thunk() {
   return &g_ppb_video_capture_0_2_thunk;

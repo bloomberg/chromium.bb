@@ -10,8 +10,6 @@
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/thunk/ppb_flash_functions_api.h"
 
-struct PP_ArrayOutput;
-
 namespace ppapi {
 namespace proxy {
 
@@ -24,12 +22,6 @@ class PPAPI_PROXY_EXPORT FlashResource
 
   // Resource overrides.
   virtual thunk::PPB_Flash_Functions_API* AsPPB_Flash_Functions_API() OVERRIDE;
-
-  // PPB_Flash_Functions_API.
-  virtual int32_t EnumerateVideoCaptureDevices(
-      PP_Instance instance,
-      PP_Resource video_capture,
-      const PP_ArrayOutput& devices) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FlashResource);

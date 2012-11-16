@@ -11,13 +11,15 @@
 #include "ppapi/thunk/ppb_buffer_api.h"
 #include "ppapi/thunk/ppb_buffer_trusted_api.h"
 #include "ppapi/shared_impl/resource.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {
 namespace ppapi {
 
-class PPB_Buffer_Impl : public ::ppapi::Resource,
-                        public ::ppapi::thunk::PPB_Buffer_API,
-                        public ::ppapi::thunk::PPB_BufferTrusted_API {
+class WEBKIT_PLUGINS_EXPORT PPB_Buffer_Impl :
+    public ::ppapi::Resource,
+    public ::ppapi::thunk::PPB_Buffer_API,
+    public ::ppapi::thunk::PPB_BufferTrusted_API {
  public:
   virtual ~PPB_Buffer_Impl();
 

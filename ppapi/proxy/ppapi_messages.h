@@ -265,14 +265,7 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::NetworkInfo)
 IPC_STRUCT_TRAITS_END()
 
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
-IPC_STRUCT_TRAITS_BEGIN(ppapi::proxy::PPPVideoCapture_Buffer)
-  IPC_STRUCT_TRAITS_MEMBER(resource)
-  IPC_STRUCT_TRAITS_MEMBER(handle)
-  IPC_STRUCT_TRAITS_MEMBER(size)
-IPC_STRUCT_TRAITS_END()
 
-// TODO(tomfinegan): This is identical to PPPVideoCapture_Buffer, maybe replace
-// both with a single type?
 IPC_STRUCT_TRAITS_BEGIN(ppapi::proxy::PPPDecryptor_Buffer)
   IPC_STRUCT_TRAITS_MEMBER(resource)
   IPC_STRUCT_TRAITS_MEMBER(handle)
@@ -751,31 +744,6 @@ IPC_MESSAGE_ROUTED5(PpapiMsg_PPBHostResolver_ResolveACK,
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPInstancePrivate_GetInstanceObject,
                            PP_Instance /* instance */,
                            ppapi::proxy::SerializedVar /* result */)
-
-// PPB_VideoCapture_Dev
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPBVideoCapture_EnumerateDevicesACK,
-                    ppapi::HostResource /* video_capture */,
-                    int32_t /* result */,
-                    std::vector<ppapi::DeviceRefData> /* devices */)
-IPC_MESSAGE_ROUTED2(PpapiMsg_PPBVideoCapture_OpenACK,
-                    ppapi::HostResource /* video_capture */,
-                    int32_t /* result */)
-
-// PPP_VideoCapture_Dev
-IPC_MESSAGE_ROUTED3(
-    PpapiMsg_PPPVideoCapture_OnDeviceInfo,
-    ppapi::HostResource /* video_capture */,
-    PP_VideoCaptureDeviceInfo_Dev /* info */,
-    std::vector<ppapi::proxy::PPPVideoCapture_Buffer> /* buffers */)
-IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoCapture_OnStatus,
-                    ppapi::HostResource /* video_capture */,
-                    uint32_t /* status */)
-IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoCapture_OnError,
-                    ppapi::HostResource /* video_capture */,
-                    uint32_t /* error_code */)
-IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoCapture_OnBufferReady,
-                    ppapi::HostResource /* video_capture */,
-                    uint32_t /* buffer */)
 
 // PPB_VideoDecoder_Dev.
 // (Messages from renderer to plugin to notify it to run callbacks.)
@@ -1300,30 +1268,6 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBTesting_SimulateInputEvent,
                     ppapi::InputEventData /* input_event */)
 
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
-// PPB_VideoCapture_Dev.
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBVideoCapture_Create,
-                           PP_Instance /* instance */,
-                           ppapi::HostResource /* result */)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVideoCapture_EnumerateDevices,
-                    ppapi::HostResource /* video_capture */)
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBVideoCapture_Open,
-                    ppapi::HostResource /* video_capture */,
-                    std::string /* device_id */,
-                    PP_VideoCaptureDeviceInfo_Dev /* requested_info */,
-                    uint32_t /* buffer_count */)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVideoCapture_StartCapture,
-                    ppapi::HostResource /* video_capture */)
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBVideoCapture_ReuseBuffer,
-                    ppapi::HostResource /* video_capture */,
-                    uint32_t /* buffer */)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVideoCapture_StopCapture,
-                    ppapi::HostResource /* video_capture */)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVideoCapture_Close,
-                    ppapi::HostResource /* video_capture */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBVideoCapture_StartCapture0_1,
-                    ppapi::HostResource /* video_capture */,
-                    PP_VideoCaptureDeviceInfo_Dev /* requested_info */,
-                    uint32_t /* buffer_count */)
 
 // PPB_VideoDecoder.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBVideoDecoder_Create,
@@ -1727,8 +1671,35 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FlashMenu_ShowReply,
 
 // Flash functions.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Flash_Create)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_Flash_EnumerateVideoCaptureDevices,
-                     ppapi::HostResource /* video_capture */)
-IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Flash_EnumerateVideoCaptureDevicesReply,
+
+// VideoCapture_Dev, plugin -> host
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_Create)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_StartCapture)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_VideoCapture_ReuseBuffer,
+                     uint32_t /* buffer */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_StopCapture)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_Close)
+
+// VideoCapture_Dev, plugin -> host -> plugin
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_EnumerateDevices)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoCapture_EnumerateDevicesReply,
                      std::vector<ppapi::DeviceRefData> /* devices */)
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_VideoCapture_Open,
+                     std::string /* device_id */,
+                     PP_VideoCaptureDeviceInfo_Dev /* requested_info */,
+                     uint32_t /* buffer_count */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_VideoCapture_OpenReply)
+
+// VideoCapture_Dev, host -> plugin
+IPC_MESSAGE_CONTROL3(PpapiPluginMsg_VideoCapture_OnDeviceInfo,
+                     PP_VideoCaptureDeviceInfo_Dev /* info */,
+                     std::vector<ppapi::HostResource> /* buffers */,
+                     uint32_t /* buffer_size */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoCapture_OnStatus,
+                     uint32_t /* status */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoCapture_OnError,
+                     uint32_t /* error */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoCapture_OnBufferReady,
+                     uint32_t /* buffer */)
+
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)

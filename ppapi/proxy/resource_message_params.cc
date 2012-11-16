@@ -91,6 +91,15 @@ bool ResourceMessageParams::TakeSocketHandleAtIndex(
   return true;
 }
 
+void ResourceMessageParams::TakeAllSharedMemoryHandles(
+    std::vector<base::SharedMemoryHandle>* handles) const {
+  for (size_t i = 0; i < handles_->data().size(); ++i) {
+    base::SharedMemoryHandle handle;
+    if (TakeSharedMemoryHandleAtIndex(i, &handle))
+      handles->push_back(handle);
+  }
+}
+
 void ResourceMessageParams::AppendHandle(const SerializedHandle& handle) const {
   handles_->data().push_back(handle);
 }

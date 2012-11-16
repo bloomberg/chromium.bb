@@ -17,33 +17,6 @@ namespace {
 
 typedef PluginProxyTest FlashResourceTest;
 
-// This simulates the creation reply message of a VideoCapture resource. This
-// won't be necessary once VideoCapture is converted to the new-style proxy.
-class VideoCaptureCreationHandler : public IPC::Listener {
- public:
-  VideoCaptureCreationHandler(ResourceMessageTestSink* test_sink,
-                              PP_Instance instance)
-      : test_sink_(test_sink),
-        instance_(instance) {
-  }
-  virtual ~VideoCaptureCreationHandler() {}
-
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
-    if (msg.type() != ::PpapiHostMsg_PPBVideoCapture_Create::ID)
-      return false;
-
-    IPC::Message* reply_msg = IPC::SyncMessage::GenerateReply(&msg);
-    HostResource resource;
-    resource.SetHostResource(instance_, 12345);
-    PpapiHostMsg_PPBVideoCapture_Create::WriteReplyParams(reply_msg, resource);
-    test_sink_->SetSyncReplyMessage(reply_msg);
-    return true;
-  }
- private:
-  ResourceMessageTestSink* test_sink_;
-  PP_Instance instance_;
-};
-
 void* Unused(void* user_data, uint32_t element_count, uint32_t element_size) {
   return NULL;
 }
@@ -60,18 +33,14 @@ TEST_F(FlashResourceTest, EnumerateVideoCaptureDevices) {
   // Set up a sync call handler that should return this message.
   std::vector<ppapi::DeviceRefData> reply_device_ref_data;
   int32_t expected_result = PP_OK;
-  PpapiPluginMsg_Flash_EnumerateVideoCaptureDevicesReply reply_msg(
+  PpapiPluginMsg_VideoCapture_EnumerateDevicesReply reply_msg(
       reply_device_ref_data);
   ResourceSyncCallHandler enumerate_video_devices_handler(
       &sink(),
-      PpapiHostMsg_Flash_EnumerateVideoCaptureDevices::ID,
+      PpapiHostMsg_VideoCapture_EnumerateDevices::ID,
       expected_result,
       reply_msg);
   sink().AddFilter(&enumerate_video_devices_handler);
-
-  // Setup the handler to simulate creation of the video resource.
-  VideoCaptureCreationHandler video_creation_handler(&sink(), pp_instance());
-  sink().AddFilter(&video_creation_handler);
 
   // Set up the arguments to the call.
   ScopedPPResource video_capture(ScopedPPResource::PassRef(),
@@ -90,13 +59,12 @@ TEST_F(FlashResourceTest, EnumerateVideoCaptureDevices) {
   // Check the result is as expected.
   EXPECT_EQ(expected_result, actual_result);
 
-  // Should have sent an "EnumerateVideoCaptureDevices" message.
+  // Should have sent an "VideoCapture_EnumerateDevices" message.
   ASSERT_TRUE(enumerate_video_devices_handler.last_handled_msg().type() ==
-      PpapiHostMsg_Flash_EnumerateVideoCaptureDevices::ID);
+      PpapiHostMsg_VideoCapture_EnumerateDevices::ID);
 
   // Remove the filter or it will be destroyed before the sink() is destroyed.
   sink().RemoveFilter(&enumerate_video_devices_handler);
-  sink().RemoveFilter(&video_creation_handler);
 }
 
 }  // namespace proxy

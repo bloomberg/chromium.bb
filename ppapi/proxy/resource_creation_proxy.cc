@@ -35,11 +35,11 @@
 #include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_udp_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
-#include "ppapi/proxy/ppb_video_capture_proxy.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/proxy/ppb_x509_certificate_private_proxy.h"
 #include "ppapi/proxy/printing_resource.h"
 #include "ppapi/proxy/url_request_info_resource.h"
+#include "ppapi/proxy/video_capture_resource.h"
 #include "ppapi/proxy/websocket_resource.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/host_resource.h"
@@ -348,7 +348,11 @@ PP_Resource ResourceCreationProxy::CreateTalk(PP_Instance instance) {
 }
 
 PP_Resource ResourceCreationProxy::CreateVideoCapture(PP_Instance instance) {
-  return PPB_VideoCapture_Proxy::CreateProxyResource(instance);
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return 0;
+  return (new VideoCaptureResource(GetConnection(), instance, dispatcher))
+      ->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateVideoDecoder(

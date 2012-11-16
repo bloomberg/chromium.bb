@@ -12,6 +12,7 @@
 #include "ppapi/thunk/ppb_flash_api.h"
 #include "ppapi/thunk/ppb_flash_functions_api.h"
 #include "ppapi/thunk/ppb_instance_api.h"
+#include "ppapi/thunk/ppb_video_capture_api.h"
 #include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
@@ -158,18 +159,10 @@ PP_Bool SetCrashData(PP_Instance instance,
 int32_t EnumerateVideoCaptureDevices(PP_Instance instance,
                                      PP_Resource video_capture,
                                      PP_ArrayOutput devices) {
-  EnterInstance enter(instance);
-  if (enter.succeeded()) {
-    PPB_Flash_Functions_API* api =
-        enter.functions()->GetFlashFunctionsAPI(instance);
-    if (api) {
-      return api->EnumerateVideoCaptureDevices(instance, video_capture,
-                                               devices);
-    } else {
-      return PP_ERROR_NOINTERFACE;
-    }
-  }
-  return PP_ERROR_BADRESOURCE;
+  thunk::EnterResource<thunk::PPB_VideoCapture_API> enter(video_capture, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.object()->EnumerateDevicesSync(devices);
 }
 
 const PPB_Flash_12_0 g_ppb_flash_12_0_thunk = {

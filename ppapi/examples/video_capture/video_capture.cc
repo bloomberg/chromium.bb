@@ -198,13 +198,6 @@ void VCDemoInstance::HandleMessage(const pp::Var& message_data) {
       video_capture_.EnumerateDevices(callback);
     } else if (event == "UseDefault") {
       Open(pp::DeviceRef_Dev());
-    } else if (event == "UseDefault(v0.1)") {
-      const PPB_VideoCapture_Dev_0_1* video_capture_0_1 =
-          static_cast<const PPB_VideoCapture_Dev_0_1*>(
-              pp::Module::Get()->GetBrowserInterface(
-                  PPB_VIDEOCAPTURE_DEV_INTERFACE_0_1));
-      video_capture_0_1->StartCapture(video_capture_.pp_resource(),
-                                      &capture_info_, 4);
     } else if (event == "Stop") {
       video_capture_.StopCapture();
     }

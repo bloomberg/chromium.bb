@@ -37,11 +37,6 @@ class VideoCapture_Dev : public Resource {
   int32_t ReuseBuffer(uint32_t buffer);
   int32_t StopCapture();
   void Close();
-
- private:
-  // Used to store the arguments of Open() when using the v0.1 interface.
-  PP_VideoCaptureDeviceInfo_Dev requested_info_;
-  uint32_t buffer_count_;
 };
 
 }  // namespace pp

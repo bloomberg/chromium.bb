@@ -7,11 +7,12 @@
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
 namespace thunk {
 
-class PPB_Buffer_API {
+class PPAPI_THUNK_EXPORT PPB_Buffer_API {
  public:
   virtual ~PPB_Buffer_API() {}
 

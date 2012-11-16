@@ -22,10 +22,10 @@
           if (devices_data.length > 0)
             device_array = devices_data.split('#__#');
           else
-            devices_array = [];
+            device_array = [];
 
           var list = document.getElementById('device_list');
-          if (devices_array.length == 0)
+          if (device_array.length == 0)
             list.innerHTML = 'No devices.';
           for (var i = 0; i < device_array.length; ++i) {
             var list_item = document.createElement('li');

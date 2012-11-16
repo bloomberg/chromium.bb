@@ -18,12 +18,6 @@ namespace thunk {
 class PPAPI_THUNK_EXPORT PPB_Flash_Functions_API {
  public:
   virtual ~PPB_Flash_Functions_API() {}
-
- // PPB_Flash.
- virtual int32_t EnumerateVideoCaptureDevices(
-     PP_Instance instance,
-     PP_Resource video_capture,
-     const PP_ArrayOutput& devices) = 0;
 };
 
 }  // namespace thunk

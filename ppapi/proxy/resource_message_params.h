@@ -54,6 +54,8 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
                                      base::SharedMemoryHandle* handle) const;
   bool TakeSocketHandleAtIndex(size_t index,
                                IPC::PlatformFileForTransit* handle) const;
+  void TakeAllSharedMemoryHandles(
+      std::vector<base::SharedMemoryHandle>* handles) const;
 
   // Appends the given handle to the list of handles sent with the call or
   // reply.
