@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_internals_observer.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "content/public/browser/browser_thread.h"
@@ -84,6 +85,18 @@ void MediaInternals::OnCaptureDevicesClosed(
                                                         devices);
 }
 
+void MediaInternals::OnAudioCaptureDevicesChanged(
+    const content::MediaStreamDevices& devices) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  media_devices_dispatcher_->AudioCaptureDevicesChanged(devices);
+}
+
+void MediaInternals::OnVideoCaptureDevicesChanged(
+    const content::MediaStreamDevices& devices) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  media_devices_dispatcher_->VideoCaptureDevicesChanged(devices);
+}
+
 void MediaInternals::OnMediaRequestStateChanged(
     int render_process_id,
     int render_view_id,
@@ -111,13 +124,19 @@ void MediaInternals::SendEverything() {
   SendUpdate("media.onReceiveEverything", &data_);
 }
 
+scoped_refptr<MediaCaptureDevicesDispatcher>
+MediaInternals::GetMediaCaptureDevicesDispatcher() {
+  return media_devices_dispatcher_;
+}
+
 scoped_refptr<MediaStreamCaptureIndicator>
 MediaInternals::GetMediaStreamCaptureIndicator() {
   return media_stream_capture_indicator_.get();
 }
 
 MediaInternals::MediaInternals()
-    : media_stream_capture_indicator_(new MediaStreamCaptureIndicator()) {
+    : media_stream_capture_indicator_(new MediaStreamCaptureIndicator()),
+      media_devices_dispatcher_(new MediaCaptureDevicesDispatcher()) {
 }
 
 void MediaInternals::UpdateAudioStream(

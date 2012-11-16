@@ -622,6 +622,9 @@ extern const char kGeolocationContentSettings[];
 extern const char kGeolocationEnabled[];
 #endif
 
+extern const char kDefaultAudioCaptureDevice[];
+extern const char kDefaultVideoCaptureDevice[];
+
 extern const char kRemoteAccessHostFirewallTraversal[];
 extern const char kRemoteAccessHostRequireTwoFactor[];
 extern const char kRemoteAccessHostDomain[];

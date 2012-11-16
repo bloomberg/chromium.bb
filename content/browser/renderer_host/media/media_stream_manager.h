@@ -186,6 +186,10 @@ class CONTENT_EXPORT MediaStreamManager
     StreamDeviceInfoArray devices;
   };
 
+  // Initializes the device managers on IO thread.  Auto-starts the device
+  // thread and registers this as a listener with the device managers.
+  void InitializeDeviceManagersOnIOThread();
+
   // Helpers for signaling the media observer that new capture devices are
   // opened/closed.
   void NotifyDevicesOpened(const DeviceRequest& request);
@@ -193,20 +197,19 @@ class CONTENT_EXPORT MediaStreamManager
   void DevicesFromRequest(const DeviceRequest& request,
                           MediaStreamDevices* devices);
 
+  // Helper for sending up-to-date device lists to media observer when a
+  // capture device is plugged in or unplugged.
+  void NotifyDevicesChanged(MediaStreamType stream_type,
+                            const StreamDeviceInfoArray& devices);
+
   // Helpers.
   bool RequestDone(const MediaStreamManager::DeviceRequest& request) const;
   MediaStreamProvider* GetDeviceManager(MediaStreamType stream_type);
   void StartEnumeration(DeviceRequest* new_request,
                         std::string* label);
   void AddRequest(const DeviceRequest& new_request, std::string* label);
-  bool HasEnumerationRequest(MediaStreamType type);
-  bool HasEnumerationRequest();
   void ClearEnumerationCache(EnumerationCache* cache);
   void PostRequestToUI(const std::string& label);
-
-  // Helper to create the device managers, if needed.  Auto-starts the device
-  // thread and registers this as a listener with the device managers.
-  void EnsureDeviceManagersStarted();
 
   // Sends cached device list to a client corresponding to the request
   // identified by |label|.

@@ -30,6 +30,7 @@
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
@@ -234,6 +235,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   HostContentSettingsMap::RegisterUserPrefs(user_prefs);
   IncognitoModePrefs::RegisterUserPrefs(user_prefs);
   InstantController::RegisterUserPrefs(user_prefs);
+  MediaCaptureDevicesDispatcher::RegisterUserPrefs(user_prefs);
   NetPrefObserver::RegisterPrefs(user_prefs);
   NewTabUI::RegisterUserPrefs(user_prefs);
   PasswordManager::RegisterUserPrefs(user_prefs);
