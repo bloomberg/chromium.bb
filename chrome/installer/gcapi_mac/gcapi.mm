@@ -153,8 +153,36 @@ BOOL HasChromeTicket(TicketKind kind, const passwd* user) {
     }
     [task release];
 
-    if (ksadmin_ran_successfully && [string length] > 0)
-      return YES;
+    if (ksadmin_ran_successfully && [string length] > 0) {
+      // If the user deleted chrome, it doesn't get unregistered in keystone.
+      // Check if the path keystone thinks chrome is at still exists, and if not
+      // treat this as "chrome isn't installed". Sniff for
+      //   xc=<KSPathExistenceChecker:1234 path=/Applications/Google Chrome.app>
+      // in the output. But don't mess with system tickets, since reinstalling
+      // a user chrome on top of a system ticket produces a non-autoupdating
+      // chrome.
+      if (kind == kSystemTicket)
+        return YES;
+
+      NSRange start = [string rangeOfString:@"\n\txc=<KSPathExistenceChecker:"];
+      if (start.location == NSNotFound && start.length == 0)
+        return YES;  // Err on the cautious side.
+      string = [string substringFromIndex:start.location];
+
+      start = [string rangeOfString:@"path="];
+      if (start.location == NSNotFound && start.length == 0)
+        return YES;  // Err on the cautious side.
+      string = [string substringFromIndex:start.location];
+
+      NSRange end = [string rangeOfString:@".app>\n\t"];
+      if (end.location == NSNotFound && end.length == 0)
+        return YES;
+
+      string = [string substringToIndex:NSMaxRange(end) - [@">\n\t" length]];
+      string = [string substringFromIndex:start.length];
+
+      return [[NSFileManager defaultManager] fileExistsAtPath:string];
+    }
   }
 
   return NO;
