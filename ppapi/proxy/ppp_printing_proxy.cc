@@ -19,7 +19,16 @@ namespace proxy {
 
 namespace {
 
+bool HasPrintingPermission(PP_Instance instance) {
+  Dispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return false;
+  return dispatcher->permissions().HasPermission(PERMISSION_DEV);
+}
+
 uint32_t QuerySupportedFormats(PP_Instance instance) {
+  if (!HasPrintingPermission(instance))
+    return 0;
   uint32_t result = 0;
   HostDispatcher::GetForInstance(instance)->Send(
       new PpapiMsg_PPPPrinting_QuerySupportedFormats(API_ID_PPP_PRINTING,
@@ -29,6 +38,8 @@ uint32_t QuerySupportedFormats(PP_Instance instance) {
 
 int32_t Begin(PP_Instance instance,
               const struct PP_PrintSettings_Dev* print_settings) {
+  if (!HasPrintingPermission(instance))
+    return 0;
   // Settings is just serialized as a string.
   std::string settings_string;
   settings_string.resize(sizeof(*print_settings));
@@ -44,6 +55,8 @@ int32_t Begin(PP_Instance instance,
 PP_Resource PrintPages(PP_Instance instance,
                        const PP_PrintPageNumberRange_Dev* page_ranges,
                        uint32_t page_range_count) {
+  if (!HasPrintingPermission(instance))
+    return 0;
   std::vector<PP_PrintPageNumberRange_Dev> pages(
       page_ranges, page_ranges + page_range_count);
 
@@ -65,11 +78,15 @@ PP_Resource PrintPages(PP_Instance instance,
 }
 
 void End(PP_Instance instance) {
+  if (!HasPrintingPermission(instance))
+    return;
   HostDispatcher::GetForInstance(instance)->Send(
       new PpapiMsg_PPPPrinting_End(API_ID_PPP_PRINTING, instance));
 }
 
 PP_Bool IsScalingDisabled(PP_Instance instance) {
+  if (!HasPrintingPermission(instance))
+    return PP_FALSE;
   bool result = false;
   HostDispatcher::GetForInstance(instance)->Send(
       new PpapiMsg_PPPPrinting_IsScalingDisabled(API_ID_PPP_PRINTING,
