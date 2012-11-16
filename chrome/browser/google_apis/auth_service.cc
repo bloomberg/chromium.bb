@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/google_apis/auth_service_observer.h"
-#include "chrome/browser/google_apis/operations_base.h"
+#include "chrome/browser/google_apis/base_operations.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"

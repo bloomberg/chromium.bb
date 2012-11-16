@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/google_apis/operations_base.h"
+#include "chrome/browser/google_apis/base_operations.h"
 
 namespace google_apis {
 

@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/google_apis/base_operations.h"
 #include "chrome/browser/google_apis/drive_upload_mode.h"
-#include "chrome/browser/google_apis/operations_base.h"
 #include "net/base/io_buffer.h"
 
 namespace google_apis {
