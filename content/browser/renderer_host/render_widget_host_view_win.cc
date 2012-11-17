@@ -829,12 +829,12 @@ void RenderWidgetHostViewWin::CopyFromCompositingSurface(
   if (!output->Allocate(dst_size.width(), dst_size.height(), true))
     return;
 
-  const bool result = accelerated_surface_->CopyTo(
+  scoped_callback_runner.Release();
+  accelerated_surface_->AsyncCopyTo(
       src_subrect,
       dst_size,
-      output->GetBitmap().getPixels());
-  scoped_callback_runner.Release();
-  callback.Run(result);
+      output->GetBitmap().getPixels(),
+      callback);
 }
 
 void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {

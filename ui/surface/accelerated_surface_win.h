@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/win/scoped_comptr.h"
@@ -58,9 +59,10 @@ class SURFACE_EXPORT AcceleratedPresenter
 
   // The public member functions are called on the main thread.
   void Present(HDC dc);
-  bool CopyTo(const gfx::Rect& src_subrect,
-              const gfx::Size& dst_size,
-              void* buf);
+  void AsyncCopyTo(const gfx::Rect& src_subrect,
+                   const gfx::Size& dst_size,
+                   void* buf,
+                   const base::Callback<void(bool)>& callback);
   void Invalidate();
 
 #if defined(USE_AURA)
@@ -83,6 +85,15 @@ class SURFACE_EXPORT AcceleratedPresenter
   void DoSuspend();
   void DoPresent(const base::Closure& composite_task);
   void DoReleaseSurface();
+  void DoCopyToAndAcknowledge(
+      const gfx::Rect& src_subrect,
+      const gfx::Size& dst_size,
+      void* buf,
+      scoped_refptr<base::SingleThreadTaskRunner> callback_runner,
+      const base::Callback<void(bool)>& callback);
+  bool DoCopyTo(const gfx::Rect& src_subrect,
+                const gfx::Size& dst_size,
+                void* buf);
 
   void PresentWithGDI(HDC dc);
   gfx::Size GetWindowSize();
@@ -151,9 +162,10 @@ class SURFACE_EXPORT AcceleratedSurface {
   // |dst_size|.
   // Caller must ensure that |buf| is allocated with the size no less than
   // |4 * dst_size.width() * dst_size.height()| bytes.
-  bool CopyTo(const gfx::Rect& src_subrect,
-              const gfx::Size& dst_size,
-              void* buf);
+  void AsyncCopyTo(const gfx::Rect& src_subrect,
+                   const gfx::Size& dst_size,
+                   void* buf,
+                   const base::Callback<void(bool)>& callback);
 
   // Temporarily release resources until a new surface is asynchronously
   // presented. Present will not be able to represent the last surface after

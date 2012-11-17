@@ -16,6 +16,7 @@
 #include "base/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop_proxy.h"
 #include "base/scoped_native_library.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -478,9 +479,38 @@ void AcceleratedPresenter::Present(HDC dc) {
   PresentWithGDI(dc);
 }
 
-bool AcceleratedPresenter::CopyTo(const gfx::Rect& requested_src_subrect,
-                                  const gfx::Size& dst_size,
-                                  void* buf) {
+void AcceleratedPresenter::AsyncCopyTo(
+    const gfx::Rect& requested_src_subrect,
+    const gfx::Size& dst_size,
+    void* buf,
+    const base::Callback<void(bool)>& callback) {
+  present_thread_->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&AcceleratedPresenter::DoCopyToAndAcknowledge,
+                 this,
+                 requested_src_subrect,
+                 dst_size,
+                 buf,
+                 base::MessageLoopProxy::current(),
+                 callback));
+}
+
+void AcceleratedPresenter::DoCopyToAndAcknowledge(
+    const gfx::Rect& src_subrect,
+    const gfx::Size& dst_size,
+    void* buf,
+    scoped_refptr<base::SingleThreadTaskRunner> callback_runner,
+    const base::Callback<void(bool)>& callback) {
+
+  bool result = DoCopyTo(src_subrect, dst_size, buf);
+  callback_runner->PostTask(
+      FROM_HERE,
+      base::Bind(callback, result));
+}
+
+bool AcceleratedPresenter::DoCopyTo(const gfx::Rect& requested_src_subrect,
+                                    const gfx::Size& dst_size,
+                                    void* buf) {
   TRACE_EVENT2(
       "gpu", "CopyTo",
       "width", dst_size.width(),
@@ -1013,10 +1043,12 @@ void AcceleratedSurface::Present(HDC dc) {
   presenter_->Present(dc);
 }
 
-bool AcceleratedSurface::CopyTo(const gfx::Rect& src_subrect,
-                                const gfx::Size& dst_size,
-                                void* buf) {
-  return presenter_->CopyTo(src_subrect, dst_size, buf);
+void AcceleratedSurface::AsyncCopyTo(
+    const gfx::Rect& src_subrect,
+    const gfx::Size& dst_size,
+    void* buf,
+    const base::Callback<void(bool)>& callback) {
+  presenter_->AsyncCopyTo(src_subrect, dst_size, buf, callback);
 }
 
 void AcceleratedSurface::Suspend() {
