@@ -129,6 +129,7 @@ table_files = \
 	is.ctb \
 	it-it-comp6.utb \
 	it-it-comp8.utb \
+	iu-ca-g1.ctb	\
 	kannada.cti \
 	kha.ctb \
 	kn.ctb \

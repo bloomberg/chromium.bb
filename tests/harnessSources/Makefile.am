@@ -4,5 +4,6 @@ EXTRA_DIST =					\
 	hu-hu-comp8_harness_source.txt\
 	hu-hu-g1_harness_source.txt		\
 	hu-hu-g1-hyph_harness_source.txt	\
+	iu-ca-g1_harness_source.txt		\
 	ta-ta-g1_harness_source.txt
 

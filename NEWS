@@ -5,6 +5,10 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** Bug Fixes
 - Update gnulib
 
+** New features
+*** New Braille tables
+    - Inuktitut grade 1, thanks to Greg Kearney.
+ 
 * Noteworthy changes in release 2.5.1 (2012-9-24)
 
 ** Braille Table Improvements
