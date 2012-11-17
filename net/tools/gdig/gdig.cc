@@ -294,13 +294,14 @@ void GDig::OnDnsConfig(const DnsConfig& dns_config_const) {
 
   scoped_ptr<DnsClient> dns_client(DnsClient::CreateClient(NULL));
   dns_client->SetConfig(dns_config);
-  resolver_.reset(
+  scoped_ptr<HostResolverImpl> resolver(
       new HostResolverImpl(
           HostCache::CreateDefaultCache(),
           PrioritizedDispatcher::Limits(NUM_PRIORITIES, 1),
           HostResolverImpl::ProcTaskParams(NULL, 1),
-          dns_client.Pass(),
           log_.get()));
+  resolver->SetDnsClient(dns_client.Pass());
+  resolver_ = resolver.Pass();
 
   HostResolver::RequestInfo info(HostPortPair(domain_name_.c_str(), 80));
 

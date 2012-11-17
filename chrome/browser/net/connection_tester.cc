@@ -147,7 +147,6 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     options.max_concurrent_resolves = kMaxJobs;
     options.max_retry_attempts = kMaxRetryAttempts;
     options.enable_caching = false;
-    options.enable_async = false;
     scoped_ptr<net::HostResolver> resolver(
         net::HostResolver::CreateSystemResolver(options, NULL /* NetLog */));
 

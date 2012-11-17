@@ -137,19 +137,21 @@ scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
     }
   }
 
+  bool enable_async = false;
   if (command_line.HasSwitch(switches::kEnableAsyncDns)) {
     allow_async_dns_field_trial = false;
-    options.enable_async = true;
+    enable_async = true;
   } else if (command_line.HasSwitch(switches::kDisableAsyncDns)) {
     allow_async_dns_field_trial = false;
-    options.enable_async = false;
+    enable_async = false;
   }
 
   if (allow_async_dns_field_trial)
-    options.enable_async = chrome_browser_net::ConfigureAsyncDnsFieldTrial();
+    enable_async = chrome_browser_net::ConfigureAsyncDnsFieldTrial();
 
   scoped_ptr<net::HostResolver> global_host_resolver(
       net::HostResolver::CreateSystemResolver(options, net_log));
+  global_host_resolver->SetDnsClientEnabled(enable_async);
 
   // Determine if we should disable IPv6 support.
   if (!command_line.HasSwitch(switches::kEnableIPv6)) {
