@@ -431,7 +431,7 @@ void ProfileImplIOData::LazyInitializeInternal(
 
   // Create a media request context based on the main context, but using a
   // media cache.  It shares the same job factory as the main context.
-  StoragePartitionDescriptor details(FilePath(), false);
+  StoragePartitionDescriptor details(profile_path_, false);
   media_request_context_.reset(InitializeMediaRequestContext(main_context,
                                                              details));
 
