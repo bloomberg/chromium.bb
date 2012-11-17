@@ -324,6 +324,9 @@ int WindowResizer::GetWidthForDrag(const Details& details,
     // And don't let the window go bigger than the display.
     int max_width = Shell::GetScreen()->GetDisplayNearestWindow(
         details.window).bounds().width();
+    gfx::Size max_size = details.window->delegate()->GetMaximumSize();
+    if (max_size.width() != 0)
+      max_width = std::min(max_width, max_size.width());
     if (width > max_width) {
       width = max_width;
       *delta_x = -x_multiplier * (details.initial_bounds_in_parent.width() -
@@ -354,6 +357,9 @@ int WindowResizer::GetHeightForDrag(const Details& details,
     // And don't let the window go bigger than the display.
     int max_height = Shell::GetScreen()->GetDisplayNearestWindow(
         details.window).bounds().height();
+    gfx::Size max_size = details.window->delegate()->GetMaximumSize();
+    if (max_size.height() != 0)
+      max_height = std::min(max_height, max_size.height());
     if (height > max_height) {
       height = max_height;
       *delta_y = -y_multiplier * (details.initial_bounds_in_parent.height() -

@@ -37,6 +37,10 @@ gfx::Size TestWindowDelegate::GetMinimumSize() const {
   return gfx::Size();
 }
 
+gfx::Size TestWindowDelegate::GetMaximumSize() const {
+  return gfx::Size();
+}
+
 void TestWindowDelegate::OnBoundsChanged(const gfx::Rect& old_bounds,
                                          const gfx::Rect& new_bounds) {
 }

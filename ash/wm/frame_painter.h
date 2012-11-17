@@ -87,6 +87,7 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   int NonClientHitTest(views::NonClientFrameView* view,
                        const gfx::Point& point);
   gfx::Size GetMinimumSize(views::NonClientFrameView* view);
+  gfx::Size GetMaximumSize(views::NonClientFrameView* view);
 
   // Returns the inset from the right edge.
   int GetRightInset() const;
