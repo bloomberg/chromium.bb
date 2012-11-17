@@ -90,7 +90,7 @@ static void HandleTransferCompletion(struct libusb_transfer* transfer) {
 
 }  // namespace
 
-UsbDevice::Transfer::Transfer() {}
+UsbDevice::Transfer::Transfer() : length(0) {}
 
 UsbDevice::Transfer::~Transfer() {}
 
