@@ -202,10 +202,6 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
       NOTREACHED();
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Prerender.Sessions",
-                            PrerenderManager::GetMode(),
-                            PrerenderManager::PRERENDER_MODE_MAX);
-
   ConfigureOmniboxPrerender();
   ConfigureSpeculativePrefetching();
   ConfigureLocalPredictor();
