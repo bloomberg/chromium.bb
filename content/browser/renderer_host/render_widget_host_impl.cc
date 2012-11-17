@@ -1090,6 +1090,14 @@ void RenderWidgetHostImpl::ForwardInputEvent(const WebInputEvent& input_event,
       // receive any ACKs. So send the ACK to the gesture event filter
       // immediately, and mark it as having been processed.
       gesture_event_filter_->ProcessGestureAck(true, input_event.type);
+    } else if (WebInputEvent::isTouchEventType(input_event.type)) {
+      // During an overscroll gesture initiated by touch-scrolling, the
+      // touch-events do not reset or contribute to the overscroll gesture.
+      // However, the touch-events are not sent to the renderer. So send and ACK
+      // to the touch-event queue immediately. Mark the event as not processed,
+      // to make sure that the touch-scroll gesture that initiated the
+      // overscroll is updated properly.
+      touch_event_queue_->ProcessTouchAck(false);
     }
     return;
   }

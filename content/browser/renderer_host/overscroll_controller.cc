@@ -114,7 +114,9 @@ bool OverscrollController::DispatchEventResetsState(
       return false;
 
     default:
-      return true;
+      // Touch events can arrive during an overscroll gesture initiated by
+      // touch-scrolling. These events should not reset the overscroll state.
+      return !WebKit::WebInputEvent::isTouchEventType(event.type);
   }
 }
 
@@ -160,7 +162,9 @@ void OverscrollController::ProcessEventForOverscroll(
     }
 
     default:
-      DCHECK(WebKit::WebInputEvent::isGestureEventType(event.type));
+      DCHECK(WebKit::WebInputEvent::isGestureEventType(event.type) ||
+             WebKit::WebInputEvent::isTouchEventType(event.type))
+          << "Received unexpected event: " << event.type;
   }
 }
 

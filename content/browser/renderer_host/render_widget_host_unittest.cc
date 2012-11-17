@@ -2080,4 +2080,67 @@ TEST_F(RenderWidgetHostTest, GestureScrollDebounceTimerOverscroll) {
   EXPECT_EQ(1U, process_->sink().message_count());
 }
 
+// Tests that when touch-events are dispatched to the renderer, the overscroll
+// gesture deals with them correctly.
+TEST_F(RenderWidgetHostTest, OverscrollWithTouchEvents) {
+  host_->SetupForOverscrollControllerTest();
+  host_->set_debounce_interval_time_ms(10);
+  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  process_->sink().ClearMessages();
+
+  // The test sends an intermingled sequence of touch and gesture events.
+
+  PressTouchPoint(0, 1);
+  SendTouchEvent();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+  SendInputEventACK(WebInputEvent::TouchStart, false);
+
+  MoveTouchPoint(0, 20, 5);
+  SendTouchEvent();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+  SendInputEventACK(WebInputEvent::TouchMove, false);
+
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
+
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin);
+  SimulateGestureScrollUpdateEvent(20, 4, 0);
+  SendInputEventACK(WebInputEvent::GestureScrollBegin, false);
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate, false);
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
+  process_->sink().ClearMessages();
+
+  // Another touch move event should reach the renderer since overscroll hasn't
+  // started yet.
+  MoveTouchPoint(0, 45, 10);
+  SendTouchEvent();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+
+  SendInputEventACK(WebInputEvent::TouchMove, false);
+  SimulateGestureScrollUpdateEvent(25, 5, 0);
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate, false);
+  EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
+  EXPECT_EQ(45.f, host_->overscroll_delta_x());
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  process_->sink().ClearMessages();
+
+  // Try to send another touch event. Now that overscroll has started, the
+  // controller should consume the touch event, and the touch-event queue should
+  // remain empty.
+  MoveTouchPoint(0, 35, 5);
+  SendTouchEvent();
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
+  EXPECT_EQ(45.f, host_->overscroll_delta_x());
+
+  SimulateGestureScrollUpdateEvent(-10, 0, 0);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
+  EXPECT_EQ(35.f, host_->overscroll_delta_x());
+}
+
 }  // namespace content
