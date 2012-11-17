@@ -7,15 +7,9 @@
 #include <limits.h>
 #include <windows.h>
 
-static bool IsScreensaverRunning();
-static bool IsWorkstationLocked();
+namespace {
 
-void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
-  if (CheckIdleStateIsLocked()) {
-    notify.Run(IDLE_STATE_LOCKED);
-    return;
-  }
-
+DWORD CalculateIdleTimeInternal() {
   LASTINPUTINFO last_input_info = {0};
   last_input_info.cbSize = sizeof(LASTINPUTINFO);
   DWORD current_idle_time = 0;
@@ -37,10 +31,7 @@ void CalculateIdleState(unsigned int idle_threshold, IdleCallback notify) {
     current_idle_time /= 1000;
   }
 
-  if (current_idle_time >= idle_threshold)
-    notify.Run(IDLE_STATE_IDLE);
-  else
-    notify.Run(IDLE_STATE_ACTIVE);
+  return current_idle_time;
 }
 
 bool IsScreensaverRunning() {
@@ -66,6 +57,12 @@ bool IsWorkstationLocked() {
     ::CloseDesktop(input_desk);
   }
   return is_locked;
+}
+
+}  // namespace
+
+void CalculateIdleTime(IdleTimeCallback notify) {
+  notify.Run(static_cast<int>(CalculateIdleTimeInternal()));
 }
 
 bool CheckIdleStateIsLocked() {

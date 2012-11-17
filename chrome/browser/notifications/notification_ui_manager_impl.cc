@@ -54,12 +54,14 @@ NotificationUIManagerImpl::NotificationUIManagerImpl(PrefService* local_state)
   position_pref_.Init(prefs::kDesktopNotificationPosition, local_state, this);
 #if defined(OS_MACOSX)
   InitFullScreenMonitor();
+  InitIdleMonitor();
 #endif
 }
 
 NotificationUIManagerImpl::~NotificationUIManagerImpl() {
   STLDeleteElements(&show_queue_);
 #if defined(OS_MACOSX)
+  StopIdleMonitor();
   StopFullScreenMonitor();
 #endif
 }
