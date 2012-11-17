@@ -12,7 +12,10 @@
 class LocationBarView;
 class OpenPDFInReaderBubbleView;
 class OpenPDFInReaderPromptDelegate;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // A Page Action image view for the "Open PDF in Reader" bubble.
 class OpenPDFInReaderView : public views::ImageView,
@@ -22,7 +25,7 @@ class OpenPDFInReaderView : public views::ImageView,
   explicit OpenPDFInReaderView(LocationBarView* location_bar_view);
   virtual ~OpenPDFInReaderView();
 
-  void Update(TabContents* tab_contents);
+  void Update(content::WebContents* web_contents);
 
   // TouchableLocationBarView overrides:
   virtual int GetBuiltInHorizontalPadding() const OVERRIDE;

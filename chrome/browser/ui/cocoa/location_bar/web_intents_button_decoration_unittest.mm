@@ -6,10 +6,8 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/web_intents_button_decoration.h"
 
-#include "chrome/browser/ui/browser_tabstrip.h"
 #import "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "ipc/ipc_message.h"
@@ -36,8 +34,9 @@ class WebIntentsButtonDecorationTest : public CocoaProfileTest {
 TEST_F(WebIntentsButtonDecorationTest, IdentifiesWebIntentService) {
   scoped_refptr<content::SiteInstance> instance =
       content::SiteInstance::Create(profile());
-  scoped_ptr<TabContents> contents(chrome::TabContentsFactory(
+  scoped_ptr<content::WebContents> contents(content::WebContents::Create(
       profile(), instance.get(), MSG_ROUTING_NONE, NULL));
+  WebIntentPickerController::CreateForWebContents(contents.get());
 
   decoration_.Update(contents.get());
   EXPECT_FALSE(decoration_.IsVisible());
@@ -46,9 +45,9 @@ TEST_F(WebIntentsButtonDecorationTest, IdentifiesWebIntentService) {
   content::WebIntentsDispatcher* dispatcher =
       content::WebIntentsDispatcher::Create(data);
   WebIntentPickerController* web_intent_picker_controller =
-      WebIntentPickerController::FromWebContents(contents->web_contents());
+      WebIntentPickerController::FromWebContents(contents.get());
   SetWindowDispositionSource(web_intent_picker_controller,
-                             contents->web_contents(), dispatcher);
+                             contents.get(), dispatcher);
   web_intent_picker_controller->SetLocationBarPickerButtonIndicated();
 
   decoration_.Update(contents.get());

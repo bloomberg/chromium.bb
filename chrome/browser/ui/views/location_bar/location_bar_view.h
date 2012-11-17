@@ -47,7 +47,6 @@ class PageActionImageView;
 class Profile;
 class SelectedKeywordView;
 class StarView;
-class TabContents;
 class TemplateURLService;
 class WebIntentsButtonView;
 class ZoomView;
@@ -99,8 +98,8 @@ class LocationBarView : public LocationBar,
 
   class Delegate {
    public:
-    // Should return the current tab contents.
-    virtual TabContents* GetTabContents() const = 0;
+    // Should return the current web contents.
+    virtual content::WebContents* GetWebContents() const = 0;
 
     // Returns the InstantController, or NULL if there isn't one.
     virtual InstantController* GetInstant() = 0;
@@ -282,7 +281,7 @@ class LocationBarView : public LocationBar,
   virtual gfx::Image GetFavicon() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
-  virtual TabContents* GetTabContents() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
 
   // Overridden from views::View:
   virtual std::string GetClassName() const OVERRIDE;

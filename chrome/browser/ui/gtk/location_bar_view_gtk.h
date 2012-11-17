@@ -81,9 +81,6 @@ class LocationBarViewGtk : public OmniboxEditController,
 
   Browser* browser() const { return browser_; }
 
-  // Returns the current WebContents.
-  content::WebContents* GetWebContents() const;
-
   // Sets |preview_enabled| for the PageActionViewGtk associated with this
   // |page_action|. If |preview_enabled| is true, the view will display the
   // page action's icon even though it has not been activated by the extension.
@@ -130,7 +127,7 @@ class LocationBarViewGtk : public OmniboxEditController,
   virtual gfx::Image GetFavicon() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
-  virtual TabContents* GetTabContents() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
 
   // LocationBar:
   virtual void ShowFirstRunBubble() OVERRIDE;
@@ -184,7 +181,7 @@ class LocationBarViewGtk : public OmniboxEditController,
     GtkWidget* widget();
 
     bool IsVisible();
-    virtual void Update(TabContents* tab_contents) = 0;
+    virtual void Update(content::WebContents* web_contents) = 0;
 
     // Overridden from ui::AnimationDelegate:
     virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;

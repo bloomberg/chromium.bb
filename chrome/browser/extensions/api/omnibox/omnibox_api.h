@@ -13,10 +13,14 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/extensions/extension_function.h"
 
-class TabContents;
 class TemplateURL;
+
 namespace base {
 class ListValue;
+}
+
+namespace content {
+class WebContents;
 }
 
 namespace extensions {
@@ -39,7 +43,7 @@ class ExtensionOmniboxEventRouter {
 
   // The user has accepted the omnibox input.
   static void OnInputEntered(
-      TabContents* tab_contents,
+      content::WebContents* web_contents,
       const std::string& extension_id,
       const std::string& input);
 

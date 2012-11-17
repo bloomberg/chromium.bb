@@ -17,7 +17,6 @@
 #include "ui/views/view.h"
 
 class LocationBarView;
-class TabContents;
 
 namespace content {
 class WebContents;
@@ -49,8 +48,8 @@ class LocationBarDecorationView : public views::View,
                             SkColor font_color);
   virtual ~LocationBarDecorationView();
 
-  // Update the decoration from the shown TabContents.
-  virtual void Update(TabContents* tab_contents) = 0;
+  // Update the decoration from the shown WebContents.
+  virtual void Update(content::WebContents* web_contents) = 0;
 
   void SetImage(const gfx::ImageSkia* image_skia);
   void SetTooltipText(const string16& tooltip);

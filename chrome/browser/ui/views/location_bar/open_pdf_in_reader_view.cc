@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/location_bar/open_pdf_in_reader_view.h"
 
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 #include "chrome/browser/ui/views/open_pdf_in_reader_bubble_view.h"
 #include "grit/generated_resources.h"
@@ -32,11 +31,10 @@ OpenPDFInReaderView::~OpenPDFInReaderView() {
     bubble_->GetWidget()->RemoveObserver(this);
 }
 
-void OpenPDFInReaderView::Update(TabContents* tab_contents) {
+void OpenPDFInReaderView::Update(content::WebContents* web_contents) {
   model_ = NULL;
-  if (tab_contents) {
-    PDFTabHelper* pdf_tab_helper =
-        PDFTabHelper::FromWebContents(tab_contents->web_contents());
+  if (web_contents) {
+    PDFTabHelper* pdf_tab_helper = PDFTabHelper::FromWebContents(web_contents);
     model_ = pdf_tab_helper->open_in_reader_prompt();
   }
 

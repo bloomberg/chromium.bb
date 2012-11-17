@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/location_bar/web_intents_button_view.h"
 
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/animation/slide_animation.h"
@@ -22,10 +21,9 @@ WebIntentsButtonView::WebIntentsButtonView(LocationBarView* parent,
     : LocationBarDecorationView(parent, background_images, font, font_color) {
 }
 
-void WebIntentsButtonView::Update(TabContents* tab_contents) {
+void WebIntentsButtonView::Update(content::WebContents* web_contents) {
   WebIntentPickerController* web_intent_picker_controller =
-      tab_contents ? WebIntentPickerController::FromWebContents(
-                         tab_contents->web_contents())
+      web_contents ? WebIntentPickerController::FromWebContents(web_contents)
                    : NULL;
   if (!web_intent_picker_controller ||
       !web_intent_picker_controller->ShowLocationBarPickerButton()) {
@@ -49,11 +47,11 @@ void WebIntentsButtonView::Update(TabContents* tab_contents) {
 }
 
 void WebIntentsButtonView::OnClick(LocationBarView* parent) {
-  TabContents* tab_contents = parent->GetTabContents();
-  if (!tab_contents)
+  content::WebContents* web_contents = parent->GetWebContents();
+  if (!web_contents)
     return;
 
-  WebIntentPickerController::FromWebContents(tab_contents->web_contents())->
+  WebIntentPickerController::FromWebContents(web_contents)->
       LocationBarPickerButtonClicked();
 }
 

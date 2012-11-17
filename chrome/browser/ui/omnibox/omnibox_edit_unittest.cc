@@ -97,7 +97,7 @@ class TestingOmniboxEditController : public OmniboxEditController {
   virtual gfx::Image GetFavicon() const OVERRIDE { return gfx::Image(); }
   virtual string16 GetTitle() const OVERRIDE { return string16(); }
   virtual InstantController* GetInstant() OVERRIDE { return NULL; }
-  virtual TabContents* GetTabContents() const OVERRIDE {
+  virtual WebContents* GetWebContents() const OVERRIDE {
     return NULL;
   }
 

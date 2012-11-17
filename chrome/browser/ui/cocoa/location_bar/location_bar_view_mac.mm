@@ -28,7 +28,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
@@ -53,6 +52,7 @@
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #import "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -338,10 +338,6 @@ InstantController* LocationBarViewMac::GetInstant() {
   return browser_->instant_controller()->instant();
 }
 
-TabContents* LocationBarViewMac::GetTabContents() const {
-  return chrome::GetActiveTabContents(browser_);
-}
-
 void LocationBarViewMac::Revert() {
   omnibox_view_->RevertAll();
 }
@@ -373,7 +369,7 @@ int LocationBarViewMac::PageActionVisibleCount() {
 }
 
 WebContents* LocationBarViewMac::GetWebContents() const {
-  return chrome::GetActiveWebContents(browser_);
+  return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
 PageActionDecoration* LocationBarViewMac::GetPageActionDecoration(
@@ -588,7 +584,7 @@ void LocationBarViewMac::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED: {
       // Only update if the updated action box was for the active tab contents.
       WebContents* target_tab = content::Details<WebContents>(details).ptr();
-      if (target_tab == GetTabContents()->web_contents())
+      if (target_tab == GetWebContents())
         UpdatePageActions();
       break;
     }
@@ -612,8 +608,8 @@ void LocationBarViewMac::PostNotification(NSString* notification) {
 
 bool LocationBarViewMac::RefreshContentSettingsDecorations() {
   const bool input_in_progress = toolbar_model_->GetInputInProgress();
-  WebContents* web_contents =
-      input_in_progress ? NULL : chrome::GetActiveWebContents(browser_);
+  WebContents* web_contents = input_in_progress ?
+      NULL : browser_->tab_strip_model()->GetActiveWebContents();
   bool icons_updated = false;
   for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {
     icons_updated |=
@@ -637,14 +633,14 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
     return;
   }
 
-  TabContents* tab_contents = GetTabContents();
-  if (!tab_contents) {
+  WebContents* web_contents = GetWebContents();
+  if (!web_contents) {
     DeletePageActionDecorations();  // Necessary?
     return;
   }
 
   std::vector<ExtensionAction*> new_page_actions =
-      extensions::TabHelper::FromWebContents(tab_contents->web_contents())->
+      extensions::TabHelper::FromWebContents(web_contents)->
           location_bar_controller()->GetCurrentActions();
 
   if (new_page_actions != page_actions_) {
@@ -659,20 +655,19 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
   GURL url = toolbar_model_->GetURL();
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
     page_action_decorations_[i]->UpdateVisibility(
-        toolbar_model_->GetInputInProgress() ?
-            NULL : tab_contents->web_contents(),
+        toolbar_model_->GetInputInProgress() ? NULL : web_contents,
         url);
   }
 }
 
 void LocationBarViewMac::RefreshWebIntentsButtonDecoration() {
-  TabContents* tab_contents = GetTabContents();
-  if (!tab_contents) {
+  WebContents* web_contents = GetWebContents();
+  if (!web_contents) {
     web_intents_button_decoration_->SetVisible(false);
     return;
   }
 
-  web_intents_button_decoration_->Update(tab_contents);
+  web_intents_button_decoration_->Update(web_contents);
 }
 
 // TODO(shess): This function should over time grow to closely match
@@ -765,13 +760,11 @@ bool LocationBarViewMac::IsStarEnabled() {
 }
 
 void LocationBarViewMac::UpdateZoomDecoration() {
-  TabContents* tab_contents = GetTabContents();
-  if (!tab_contents)
+  WebContents* web_contents = GetWebContents();
+  if (!web_contents)
     return;
 
-  ZoomController* zoom_controller =
-      ZoomController::FromWebContents(tab_contents->web_contents());
-  zoom_decoration_->Update(zoom_controller);
+  zoom_decoration_->Update(ZoomController::FromWebContents(web_contents));
 }
 
 void LocationBarViewMac::UpdateStarDecorationVisibility() {

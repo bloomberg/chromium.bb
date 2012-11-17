@@ -272,7 +272,7 @@ void SimpleWebViewDialog::LoadingStateChanged(WebContents* source) {
   command_updater_->UpdateCommandEnabled(IDC_STOP, is_loading);
 }
 
-TabContents* SimpleWebViewDialog::GetTabContents() const {
+WebContents* SimpleWebViewDialog::GetWebContents() const {
   return NULL;
 }
 

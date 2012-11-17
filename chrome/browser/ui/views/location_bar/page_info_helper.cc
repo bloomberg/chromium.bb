@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/location_bar/page_info_helper.h"
 
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -31,7 +30,7 @@ void PageInfoHelper::ProcessEvent(const ui::LocatedEvent& event) {
   if (location_bar_->GetLocationEntry()->IsEditingOrEmpty())
     return;
 
-  WebContents* tab = location_bar_->GetTabContents()->web_contents();
+  WebContents* tab = location_bar_->GetWebContents();
   const NavigationController& controller = tab->GetController();
   NavigationEntry* nav_entry = controller.GetActiveEntry();
   if (!nav_entry) {

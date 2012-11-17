@@ -548,8 +548,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         autocomplete_controller_->input().type(),
         popup_->selected_line(),
         -1,  // don't yet know tab ID; set later if appropriate
-        ClassifyPage(controller_->GetTabContents()->
-                     web_contents()->GetURL()),
+        ClassifyPage(controller_->GetWebContents()->GetURL()),
         base::TimeTicks::Now() - time_user_first_modified_omnibox_,
         string16::npos,  // inline autocomplete length; possibly set later
         result());
@@ -567,7 +566,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
       // we can easily get the tab ID.  (If it's being opened in a new
       // tab, we don't know the tab ID yet.)
       log.tab_id = SessionTabHelper::FromWebContents(
-          controller_->GetTabContents()->web_contents())->session_id().id();
+          controller_->GetWebContents())->session_id().id();
     }
     autocomplete_controller_->AddProvidersInfo(&log.providers_info);
     content::NotificationService::current()->Notify(
@@ -596,7 +595,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         // Strip the keyword + leading space off the input.
         size_t prefix_length = match.keyword.length() + 1;
         extensions::ExtensionOmniboxEventRouter::OnInputEntered(
-            controller_->GetTabContents(),
+            controller_->GetWebContents(),
             template_url->GetExtensionId(),
             UTF16ToUTF8(match.fill_into_edit.substr(prefix_length)));
         view_->RevertAll();
@@ -721,15 +720,15 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
   if (instant)
     instant->OnAutocompleteGotFocus();
 
-  TabContents* tab_contents = controller_->GetTabContents();
-  if (tab_contents) {
+  content::WebContents* web_contents = controller_->GetWebContents();
+  if (web_contents) {
     // TODO(jered): We may want to merge this into Start() and just call that
     // here rather than having a special entry point for zero-suggest.  Note
     // that we avoid PermanentURL() here because it's not guaranteed to give us
     // the actual underlying current URL, e.g. if we're on the NTP and the
     // |permanent_text_| is empty.
-    autocomplete_controller_->StartZeroSuggest(
-        tab_contents->web_contents()->GetURL(), user_text_);
+    autocomplete_controller_->StartZeroSuggest(web_contents->GetURL(),
+                                               user_text_);
   }
 
   NotifySearchTabHelper();
@@ -764,8 +763,7 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
 
   // We do not clear the pending entry from the omnibox when a load is first
   // stopped.  If the user presses Escape while stopped, we clear it.
-  content::WebContents* contents =
-      controller_->GetTabContents()->web_contents();
+  content::WebContents* contents = controller_->GetWebContents();
   if (!contents->IsLoading()) {
     contents->GetController().DiscardNonCommittedEntries();
     view_->Update(NULL);
@@ -1184,9 +1182,9 @@ bool OmniboxEditModel::CreatedKeywordSearchByInsertingSpaceInMiddle(
 }
 
 void OmniboxEditModel::NotifySearchTabHelper() {
-  if (controller_->GetTabContents()) {
+  if (controller_->GetWebContents()) {
     chrome::search::SearchTabHelper::FromWebContents(
-        controller_->GetTabContents()->web_contents())->
+        controller_->GetWebContents())->
             OmniboxEditModelChanged(user_input_in_progress_, !in_revert_);
   }
 }
@@ -1234,15 +1232,14 @@ void OmniboxEditModel::DoPrerender(const AutocompleteMatch& match) {
   // It's possible the tab strip does not have an active tab contents, for
   // instance if the tab has been closed or on return from a sleep state
   // (http://crbug.com/105689)
-  TabContents* tab = controller_->GetTabContents();
+  content::WebContents* tab = controller_->GetWebContents();
   if (!tab)
     return;
   gfx::Rect container_bounds;
-  tab->web_contents()->GetView()->GetContainerBounds(&container_bounds);
+  tab->GetView()->GetContainerBounds(&container_bounds);
   AutocompleteActionPredictorFactory::GetForProfile(profile_)->
       StartPrerendering(match.destination_url,
-                        tab->web_contents()->GetController()
-                            .GetSessionStorageNamespaceMap(),
+                        tab->GetController().GetSessionStorageNamespaceMap(),
                         container_bounds.size());
 }
 

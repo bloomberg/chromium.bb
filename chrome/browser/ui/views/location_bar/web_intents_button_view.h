@@ -9,8 +9,6 @@
 #include "base/string16.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_decoration_view.h"
 
-class TabContents;
-
 // Display the use-another-service button for web intents service pages
 // displayed in a tab.
 class WebIntentsButtonView : public LocationBarDecorationView {
@@ -23,7 +21,7 @@ class WebIntentsButtonView : public LocationBarDecorationView {
                        SkColor font_color);
   virtual ~WebIntentsButtonView() {}
 
-  virtual void Update(TabContents* tab_contents) OVERRIDE;
+  virtual void Update(content::WebContents* web_contents) OVERRIDE;
 
  protected:
   virtual void OnClick(LocationBarView* parent) OVERRIDE;

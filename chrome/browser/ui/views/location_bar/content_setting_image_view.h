@@ -13,7 +13,6 @@
 
 class ContentSettingImageModel;
 class LocationBarView;
-class TabContents;
 
 // The ContentSettingImageView displays an icon and optional text label for
 // various content settings affordances in the location bar (i.e. plugin
@@ -28,7 +27,7 @@ class ContentSettingImageView : public LocationBarDecorationView,
                           SkColor font_color);
   virtual ~ContentSettingImageView();
 
-  virtual void Update(TabContents* tab_contents) OVERRIDE;
+  virtual void Update(content::WebContents* web_contents) OVERRIDE;
 
 
   // views::WidgetObserver override:

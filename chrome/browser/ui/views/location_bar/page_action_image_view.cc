@@ -19,7 +19,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
@@ -48,7 +47,7 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
       popup_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_icon_animation_observer_(
           page_action->GetIconAnimation(
-              SessionID::IdForTab(owner->GetTabContents()->web_contents())),
+              SessionID::IdForTab(owner->GetWebContents())),
           this)) {
   const Extension* extension = owner_->profile()->GetExtensionService()->
       GetExtensionById(page_action->extension_id(), false);
@@ -112,12 +111,12 @@ PageActionImageView::~PageActionImageView() {
 
 void PageActionImageView::ExecuteAction(
     ExtensionPopup::ShowAction show_action) {
-  TabContents* tab_contents = owner_->GetTabContents();
-  if (!tab_contents)
+  WebContents* web_contents = owner_->GetWebContents();
+  if (!web_contents)
     return;
 
   extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(tab_contents->web_contents());
+      extensions::TabHelper::FromWebContents(web_contents);
   LocationBarController* controller =
       extensions_tab_helper->location_bar_controller();
 
@@ -248,9 +247,9 @@ void PageActionImageView::OnWidgetClosing(views::Widget* widget) {
 }
 
 void PageActionImageView::OnIconUpdated() {
-  TabContents* tab_contents = owner_->GetTabContents();
-  if (tab_contents)
-    UpdateVisibility(tab_contents->web_contents(), current_url_);
+  WebContents* web_contents = owner_->GetWebContents();
+  if (web_contents)
+    UpdateVisibility(web_contents, current_url_);
 }
 
 void PageActionImageView::OnIconChanged() {

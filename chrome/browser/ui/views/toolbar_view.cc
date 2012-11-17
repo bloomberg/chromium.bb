@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
@@ -449,8 +448,8 @@ void ToolbarView::OnMenuButtonClicked(views::View* source,
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, LocationBarView::Delegate implementation:
 
-TabContents* ToolbarView::GetTabContents() const {
-  return chrome::GetActiveTabContents(browser_);
+WebContents* ToolbarView::GetWebContents() const {
+  return chrome::GetActiveWebContents(browser_);
 }
 
 InstantController* ToolbarView::GetInstant() {

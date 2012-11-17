@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_types.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_prompt_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
@@ -101,13 +100,8 @@ using views::View;
 
 namespace {
 
-WebContents* GetWebContentsFromDelegate(LocationBarView::Delegate* delegate) {
-  const TabContents* tab_contents = delegate->GetTabContents();
-  return tab_contents ? tab_contents->web_contents() : NULL;
-}
-
 Browser* GetBrowserFromDelegate(LocationBarView::Delegate* delegate) {
-  WebContents* contents = GetWebContentsFromDelegate(delegate);
+  WebContents* contents = delegate->GetWebContents();
   return browser::FindBrowserWithWebContents(contents);
 }
 
@@ -453,9 +447,9 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   ZoomBubbleView::CloseBubble();
   RefreshZoomView();
   RefreshPageActionViews();
-  web_intents_button_view_->Update(GetTabContents());
+  web_intents_button_view_->Update(GetWebContents());
   open_pdf_in_reader_view_->Update(
-      model_->GetInputInProgress() ? NULL : GetTabContents());
+      model_->GetInputInProgress() ? NULL : GetWebContents());
 
   bool star_enabled = star_view_ && !model_->GetInputInProgress() &&
                       edit_bookmarks_enabled_.GetValue();
@@ -506,7 +500,7 @@ void LocationBarView::InvalidatePageActions() {
 }
 
 void LocationBarView::UpdateWebIntentsButton() {
-  web_intents_button_view_->Update(GetTabContents());
+  web_intents_button_view_->Update(GetWebContents());
 
   Layout();
   SchedulePaint();
@@ -514,7 +508,7 @@ void LocationBarView::UpdateWebIntentsButton() {
 
 void LocationBarView::UpdateOpenPDFInReaderPrompt() {
   open_pdf_in_reader_view_->Update(
-      model_->GetInputInProgress() ? NULL : GetTabContents());
+      model_->GetInputInProgress() ? NULL : GetWebContents());
   Layout();
   SchedulePaint();
 }
@@ -538,7 +532,7 @@ void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
     return;
 
   DCHECK(page_action);
-  WebContents* contents = GetWebContentsFromDelegate(delegate_);
+  WebContents* contents = delegate_->GetWebContents();
 
   RefreshPageActionViews();
   PageActionWithBadgeView* page_action_view =
@@ -591,20 +585,18 @@ void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
   Layout();
   SchedulePaint();
 
-  if (can_show_bubble && zoom_view_->visible()) {
-    ZoomBubbleView::ShowBubble(
-        zoom_view_, GetWebContentsFromDelegate(delegate_), true);
-  }
+  if (can_show_bubble && zoom_view_->visible())
+    ZoomBubbleView::ShowBubble(zoom_view_, delegate_->GetWebContents(), true);
 }
 
 void LocationBarView::RefreshZoomView() {
   DCHECK(zoom_view_);
-  TabContents* tab_contents = GetTabContents();
-  if (!tab_contents)
+  WebContents* web_contents = GetWebContents();
+  if (!web_contents)
     return;
 
   ZoomController* zoom_controller =
-      ZoomController::FromWebContents(tab_contents->web_contents());
+      ZoomController::FromWebContents(web_contents);
   zoom_view_->Update(zoom_controller);
 }
 
@@ -1142,19 +1134,19 @@ void LocationBarView::OnSetFocus() {
 
 gfx::Image LocationBarView::GetFavicon() const {
   return FaviconTabHelper::FromWebContents(
-      delegate_->GetTabContents()->web_contents())->GetFavicon();
+      delegate_->GetWebContents())->GetFavicon();
 }
 
 string16 LocationBarView::GetTitle() const {
-  return GetWebContentsFromDelegate(delegate_)->GetTitle();
+  return delegate_->GetWebContents()->GetTitle();
 }
 
 InstantController* LocationBarView::GetInstant() {
   return delegate_->GetInstant();
 }
 
-TabContents* LocationBarView::GetTabContents() const {
-  return delegate_->GetTabContents();
+WebContents* LocationBarView::GetWebContents() const {
+  return delegate_->GetWebContents();
 }
 
 int LocationBarView::AvailableWidth(int location_bar_width) {
@@ -1183,7 +1175,7 @@ void LocationBarView::LayoutView(views::View* view,
 void LocationBarView::RefreshContentSettingViews() {
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
-    (*i)->Update(model_->GetInputInProgress() ? NULL : GetTabContents());
+    (*i)->Update(model_->GetInputInProgress() ? NULL : GetWebContents());
   }
 }
 
@@ -1208,7 +1200,7 @@ void LocationBarView::RefreshPageActionViews() {
 
   std::vector<ExtensionAction*> new_page_actions;
 
-  WebContents* contents = GetWebContentsFromDelegate(delegate_);
+  WebContents* contents = delegate_->GetWebContents();
   if (contents) {
     extensions::TabHelper* extensions_tab_helper =
         extensions::TabHelper::FromWebContents(contents);
@@ -1284,12 +1276,12 @@ void LocationBarView::ShowFirstRunBubbleInternal() {
 }
 
 void LocationBarView::PaintPageActionBackgrounds(gfx::Canvas* canvas) {
-  TabContents* tab_contents = GetTabContents();
-  // tab_contents may be NULL while the browser is shutting down.
-  if (tab_contents == NULL)
+  WebContents* web_contents = GetWebContents();
+  // web_contents may be NULL while the browser is shutting down.
+  if (!web_contents)
     return;
 
-  const int32 tab_id = SessionID::IdForTab(tab_contents->web_contents());
+  const int32 tab_id = SessionID::IdForTab(web_contents);
   const ToolbarModel::SecurityLevel security_level = model_->GetSecurityLevel();
   const SkColor text_color = GetColor(security_level, TEXT);
   const SkColor background_color = GetColor(security_level, BACKGROUND);
@@ -1375,7 +1367,7 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
   DCHECK_NE(GetDragOperationsForView(sender, press_pt),
             ui::DragDropTypes::DRAG_NONE);
 
-  WebContents* web_contents = GetTabContents()->web_contents();
+  WebContents* web_contents = GetWebContents();
   FaviconTabHelper* favicon_tab_helper =
       FaviconTabHelper::FromWebContents(web_contents);
   gfx::ImageSkia favicon = favicon_tab_helper->GetFavicon().AsImageSkia();
@@ -1389,7 +1381,7 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
 int LocationBarView::GetDragOperationsForView(views::View* sender,
                                               const gfx::Point& p) {
   DCHECK((sender == location_icon_view_) || (sender == ev_bubble_view_));
-  WebContents* web_contents = GetWebContentsFromDelegate(delegate_);
+  WebContents* web_contents = delegate_->GetWebContents();
   return (web_contents && web_contents->GetURL().is_valid() &&
           !GetLocationEntry()->IsEditingOrEmpty()) ?
       (ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK) :
@@ -1548,7 +1540,7 @@ void LocationBarView::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED: {
       // Only update if the updated action box was for the active tab contents.
       WebContents* target_tab = content::Details<WebContents>(details).ptr();
-      if (target_tab == GetTabContents()->web_contents())
+      if (target_tab == GetWebContents())
         UpdatePageActions();
       break;
     }

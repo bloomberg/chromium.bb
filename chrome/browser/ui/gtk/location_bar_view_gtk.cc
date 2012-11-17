@@ -65,7 +65,6 @@
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -180,7 +179,7 @@ class ContentSettingImageViewGtk : public LocationBarViewGtk::PageToolViewGtk,
   virtual ~ContentSettingImageViewGtk();
 
   // PageToolViewGtk
-  virtual void Update(TabContents* tab_contents) OVERRIDE;
+  virtual void Update(WebContents* web_contents) OVERRIDE;
 
   // ui::AnimationDelegate
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
@@ -220,12 +219,10 @@ ContentSettingImageViewGtk::~ContentSettingImageViewGtk() {
     content_setting_bubble_->Close();
 }
 
-void ContentSettingImageViewGtk::Update(
-    TabContents* tab_contents) {
-  if (tab_contents) {
-    content_setting_image_model_->UpdateFromWebContents(
-        tab_contents->web_contents());
-  }
+void ContentSettingImageViewGtk::Update(WebContents* web_contents) {
+  if (web_contents)
+    content_setting_image_model_->UpdateFromWebContents(web_contents);
+
   if (!content_setting_image_model_->is_visible()) {
     gtk_widget_hide(widget());
     return;
@@ -239,11 +236,11 @@ void ContentSettingImageViewGtk::Update(
       content_setting_image_model_->get_tooltip().c_str());
   gtk_widget_show_all(widget());
 
-  if (!tab_contents)
+  if (!web_contents)
     return;
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(tab_contents->web_contents());
+      TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings || content_settings->IsBlockageIndicated(
       content_setting_image_model_->get_content_settings_type()))
     return;
@@ -296,18 +293,18 @@ GdkColor ContentSettingImageViewGtk::
 
 void ContentSettingImageViewGtk::OnClick(
     GtkWidget* sender) {
-  TabContents* tab_contents = parent_->GetTabContents();
-  if (!tab_contents)
+  WebContents* web_contents = parent_->GetWebContents();
+  if (!web_contents)
     return;
   Profile* profile = parent_->browser()->profile();
   content_setting_bubble_ = new ContentSettingBubbleGtk(
       sender, this,
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           parent_->browser()->content_setting_bubble_model_delegate(),
-          tab_contents->web_contents(),
+          web_contents,
           profile,
           content_setting_image_model_->get_content_settings_type()),
-      profile, tab_contents->web_contents());
+      profile, web_contents);
   return;
 }
 
@@ -326,7 +323,7 @@ class WebIntentsButtonViewGtk : public LocationBarViewGtk::PageToolViewGtk {
   virtual ~WebIntentsButtonViewGtk() {}
 
   // PageToolViewGtk
-  virtual void Update(TabContents* tab_contents) OVERRIDE;
+  virtual void Update(WebContents* web_contents) OVERRIDE;
 
  private:
   // PageToolViewGtk
@@ -338,10 +335,9 @@ class WebIntentsButtonViewGtk : public LocationBarViewGtk::PageToolViewGtk {
   DISALLOW_COPY_AND_ASSIGN(WebIntentsButtonViewGtk);
 };
 
-void WebIntentsButtonViewGtk::Update(TabContents* tab_contents) {
+void WebIntentsButtonViewGtk::Update(WebContents* web_contents) {
   WebIntentPickerController* web_intent_picker_controller =
-      tab_contents ? WebIntentPickerController::FromWebContents(
-                         tab_contents->web_contents())
+      web_contents ? WebIntentPickerController::FromWebContents(web_contents)
                    : NULL;
   if (!web_intent_picker_controller ||
       !web_intent_picker_controller->ShowLocationBarPickerButton()) {
@@ -360,11 +356,11 @@ void WebIntentsButtonViewGtk::Update(TabContents* tab_contents) {
 }
 
 void WebIntentsButtonViewGtk::OnClick(GtkWidget* sender) {
-  TabContents* tab_contents = parent_->GetTabContents();
-  if (!tab_contents)
+  WebContents* web_contents = parent_->GetWebContents();
+  if (!web_contents)
     return;
 
-  WebIntentPickerController::FromWebContents(tab_contents->web_contents())->
+  WebIntentPickerController::FromWebContents(web_contents)->
       LocationBarPickerButtonClicked();
 }
 
@@ -894,10 +890,6 @@ InstantController* LocationBarViewGtk::GetInstant() {
   return browser_->instant_controller()->instant();
 }
 
-TabContents* LocationBarViewGtk::GetTabContents() const {
-  return chrome::GetActiveTabContents(browser_);
-}
-
 void LocationBarViewGtk::ShowFirstRunBubble() {
   // We need the browser window to be shown before we can show the bubble, but
   // we get called before that's happened.
@@ -945,7 +937,7 @@ void LocationBarViewGtk::UpdateContentSettingsIcons() {
            content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
     (*i)->Update(
-        toolbar_model_->GetInputInProgress() ? NULL : GetTabContents());
+        toolbar_model_->GetInputInProgress() ? NULL : GetWebContents());
     any_visible = (*i)->IsVisible() || any_visible;
   }
 
@@ -1011,7 +1003,7 @@ void LocationBarViewGtk::InvalidatePageActions() {
 }
 
 void LocationBarViewGtk::UpdateWebIntentsButton() {
-  web_intents_button_view_->Update(GetTabContents());
+  web_intents_button_view_->Update(GetWebContents());
   gtk_widget_set_visible(web_intents_hbox_.get(),
                          web_intents_button_view_->IsVisible());
 }
@@ -1098,7 +1090,7 @@ void LocationBarViewGtk::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED: {
       // Only update if the updated action box was for the active tab contents.
       WebContents* target_tab = content::Details<WebContents>(details).ptr();
-      if (target_tab == GetTabContents()->web_contents())
+      if (target_tab == GetWebContents())
         UpdatePageActions();
       break;
     }
@@ -1573,12 +1565,12 @@ void LocationBarViewGtk::ZoomChangedForActiveTab(bool can_show_bubble) {
 }
 
 void LocationBarViewGtk::UpdateZoomIcon() {
-  TabContents* tab_contents = GetTabContents();
-  if (!zoom_.get() || !tab_contents)
+  WebContents* web_contents = GetWebContents();
+  if (!zoom_.get() || !web_contents)
     return;
 
   ZoomController* zoom_controller =
-      ZoomController::FromWebContents(tab_contents->web_contents());
+      ZoomController::FromWebContents(web_contents);
   if (!zoom_controller || zoom_controller->IsAtDefaultZoom() ||
       toolbar_model_->GetInputInProgress()) {
     gtk_widget_hide(zoom_.get());
@@ -1833,7 +1825,7 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
       preview_enabled_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_icon_animation_observer_(
           page_action->GetIconAnimation(
-              SessionID::IdForTab(owner->GetTabContents()->web_contents())),
+              SessionID::IdForTab(owner->GetWebContents())),
           this)) {
   event_box_.Own(gtk_event_box_new());
   gtk_widget_set_size_request(event_box_.get(),
@@ -1915,9 +1907,9 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
 
 void LocationBarViewGtk::PageActionViewGtk::OnIconUpdated() {
   // If we have no owner, that means this class is still being constructed.
-  TabContents* tab_contents = owner_ ? owner_->GetTabContents() : NULL;
-  if (tab_contents)
-    UpdateVisibility(tab_contents->web_contents(), current_url_);
+  WebContents* web_contents = owner_ ? owner_->GetWebContents() : NULL;
+  if (web_contents)
+    UpdateVisibility(web_contents, current_url_);
 }
 
 void LocationBarViewGtk::PageActionViewGtk::TestActivatePageAction() {
@@ -2040,8 +2032,8 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
   if (event->type != GDK_BUTTON_PRESS)
     return TRUE;
 
-  TabContents* tab_contents = owner_->GetTabContents();
-  if (!tab_contents)
+  WebContents* web_contents = owner_->GetWebContents();
+  if (!web_contents)
     return TRUE;
 
   ExtensionService* extension_service =
@@ -2055,7 +2047,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     return TRUE;
 
   LocationBarController* controller =
-      extensions::TabHelper::FromWebContents(tab_contents->web_contents())->
+      extensions::TabHelper::FromWebContents(web_contents)->
           location_bar_controller();
 
   switch (controller->OnClicked(extension->id(), event->button)) {

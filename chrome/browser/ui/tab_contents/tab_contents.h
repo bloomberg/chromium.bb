@@ -103,8 +103,6 @@ class TabContents : public content::WebContentsObserver {
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 
  private:
-  friend class TabContentsFactory;
-
   // Takes ownership of |contents|, which must be heap-allocated (as it lives
   // in a scoped_ptr) and can not be NULL.
   explicit TabContents(content::WebContents* contents);

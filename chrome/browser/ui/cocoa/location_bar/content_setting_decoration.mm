@@ -13,13 +13,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_util.h"
@@ -262,8 +260,8 @@ bool ContentSettingDecoration::AcceptsMousePress() {
 bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   // Get host. This should be shared on linux/win/osx medium-term.
   Browser* browser = owner_->browser();
-  TabContents* tabContents = owner_->GetTabContents();
-  if (!tabContents)
+  WebContents* web_contents = owner_->GetWebContents();
+  if (!web_contents)
     return true;
 
   // Find point for bubble's arrow in screen coordinates.
@@ -280,7 +278,7 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   ContentSettingBubbleModel* model =
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           browser->content_setting_bubble_model_delegate(),
-          tabContents->web_contents(), profile_,
+          web_contents, profile_,
           content_setting_image_model_->get_content_settings_type());
   [ContentSettingBubbleController showForModel:model
                                   parentWindow:[field window]

@@ -8,7 +8,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "content/public/browser/web_contents.h"
@@ -57,10 +56,9 @@ ContentSettingImageView::~ContentSettingImageView() {
   }
 }
 
-void ContentSettingImageView::Update(TabContents* tab_contents) {
-  if (tab_contents) {
-    content_setting_image_model_->UpdateFromWebContents(
-        tab_contents->web_contents());
+void ContentSettingImageView::Update(WebContents* web_contents) {
+  if (web_contents) {
+    content_setting_image_model_->UpdateFromWebContents(web_contents);
   }
   if (!content_setting_image_model_->is_visible()) {
     SetVisible(false);
@@ -72,9 +70,9 @@ void ContentSettingImageView::Update(TabContents* tab_contents) {
   SetVisible(true);
 
   TabSpecificContentSettings* content_settings = NULL;
-  if (tab_contents) {
-    content_settings = TabSpecificContentSettings::FromWebContents(
-          tab_contents->web_contents());
+  if (web_contents) {
+    content_settings =
+        TabSpecificContentSettings::FromWebContents(web_contents);
   }
 
   if (!content_settings || content_settings->IsBlockageIndicated(
@@ -120,8 +118,8 @@ void ContentSettingImageView::OnWidgetClosing(views::Widget* widget) {
 }
 
 void ContentSettingImageView::OnClick(LocationBarView* parent) {
-  TabContents* tab_contents = parent->GetTabContents();
-  if (!tab_contents)
+  WebContents* web_contents = parent->GetWebContents();
+  if (!web_contents)
     return;
   if (bubble_widget_)
     return;
@@ -130,10 +128,10 @@ void ContentSettingImageView::OnClick(LocationBarView* parent) {
   ContentSettingBubbleContents* bubble = new ContentSettingBubbleContents(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           parent->delegate()->GetContentSettingBubbleModelDelegate(),
-          tab_contents->web_contents(),
+          web_contents,
           profile,
           content_setting_image_model_->get_content_settings_type()),
-      tab_contents->web_contents(),
+      web_contents,
       this,
       views::BubbleBorder::TOP_RIGHT);
   bubble_widget_ = parent->delegate()->CreateViewsBubble(bubble);

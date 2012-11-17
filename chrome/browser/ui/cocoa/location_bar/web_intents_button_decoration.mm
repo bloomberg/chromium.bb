@@ -10,7 +10,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -126,7 +125,7 @@ WebIntentsButtonDecoration::WebIntentsButtonDecoration(
     LocationBarViewMac* owner, NSFont* font)
     : BubbleDecoration(font),
       owner_(owner),
-      textWidth_(0.0) {
+      text_width_(0.0) {
   NSColor* border_color =
       [NSColor colorWithCalibratedRed:0.63 green:0.63 blue:0.63 alpha:1.0];
   NSColor* background_color =
@@ -141,9 +140,9 @@ WebIntentsButtonDecoration::~WebIntentsButtonDecoration() {}
 void WebIntentsButtonDecoration::SetButtonImages(NSImage* left,
                                                  NSImage* center,
                                                  NSImage* right) {
-  leftImage_.reset(left, base::scoped_policy::RETAIN);
-  centerImage_.reset(center, base::scoped_policy::RETAIN);
-  rightImage_.reset(right, base::scoped_policy::RETAIN);
+  left_image_.reset(left, base::scoped_policy::RETAIN);
+  center_image_.reset(center, base::scoped_policy::RETAIN);
+  right_image_.reset(right, base::scoped_policy::RETAIN);
 }
 
 bool WebIntentsButtonDecoration::AcceptsMousePress() {
@@ -151,11 +150,11 @@ bool WebIntentsButtonDecoration::AcceptsMousePress() {
 }
 
 bool WebIntentsButtonDecoration::OnMousePressed(NSRect frame) {
-  TabContents* tabContents = owner_->GetTabContents();
-  if (!tabContents)
+  content::WebContents* web_contents = owner_->GetWebContents();
+  if (!web_contents)
     return true;
 
-  WebIntentPickerController::FromWebContents(tabContents->web_contents())->
+  WebIntentPickerController::FromWebContents(web_contents)->
       LocationBarPickerButtonClicked();
   return true;
 }
@@ -175,14 +174,14 @@ CGFloat WebIntentsButtonDecoration::GetWidthForSpace(CGFloat width) {
     case kNoAnimation:
       return preferredWidth;
     case kOpening:
-      return preferredWidth + (textWidth_ * progress);
+      return preferredWidth + (text_width_ * progress);
     case kOpen:
-      return preferredWidth + textWidth_;
+      return preferredWidth + text_width_;
   }
 }
 
-void WebIntentsButtonDecoration::DrawInFrame(
-    NSRect frame, NSView* control_view) {
+void WebIntentsButtonDecoration::DrawInFrame(NSRect frame,
+                                             NSView* control_view) {
   if ([animation_ animationState] != kOpening) {
     BubbleDecoration::DrawInFrame(frame, control_view);
     return;
@@ -190,9 +189,9 @@ void WebIntentsButtonDecoration::DrawInFrame(
 
   frame = NSInsetRect(frame, 0.0, kBubbleYInset);
   NSDrawThreePartImage(frame,
-                       leftImage_.get(),
-                       centerImage_.get(),
-                       rightImage_.get(),
+                       left_image_.get(),
+                       center_image_.get(),
+                       right_image_.get(),
                        NO,  // NO=horizontal layout
                        NSCompositeSourceOver,
                        1.0,
@@ -206,22 +205,22 @@ void WebIntentsButtonDecoration::DrawInFrame(
   NSRectClip(frame);
   NSRect remainder = NSInsetRect(frame, kTextMarginPadding, 0.0);
   // .get() needed to fix compiler warning (confusion with NSImageRep).
-  [animatedText_.get() drawAtPoint:remainder.origin];
+  [animated_text_.get() drawAtPoint:remainder.origin];
 }
 
-void WebIntentsButtonDecoration::Update(TabContents* tab_contents) {
-  WebIntentPickerController* intentsController =
-      WebIntentPickerController::FromWebContents(tab_contents->web_contents());
-  SetVisible(intentsController->ShowLocationBarPickerButton());
+void WebIntentsButtonDecoration::Update(content::WebContents* web_contents) {
+  WebIntentPickerController* intents_controller =
+      WebIntentPickerController::FromWebContents(web_contents);
+  SetVisible(intents_controller->ShowLocationBarPickerButton());
 
   if (IsVisible()) {
     if (!animation_ &&
-        !intentsController->location_bar_picker_button_indicated()) {
-      intentsController->SetLocationBarPickerButtonIndicated();
+        !intents_controller->location_bar_picker_button_indicated()) {
+      intents_controller->SetLocationBarPickerButtonIndicated();
       animation_.reset(
           [[WebIntentsButtonAnimationState alloc] initWithOwner:this]);
-      animatedText_ = CreateAnimatedText();
-      textWidth_ = MeasureTextWidth();
+      animated_text_ = CreateAnimatedText();
+      text_width_ = MeasureTextWidth();
     }
   } else {
     [animation_ stopAnimation];
@@ -238,7 +237,7 @@ scoped_nsobject<NSAttributedString>
 }
 
 CGFloat WebIntentsButtonDecoration::MeasureTextWidth() {
-  return [animatedText_ size].width;
+  return [animated_text_ size].width;
 }
 
 void WebIntentsButtonDecoration::AnimationTimerFired() {
