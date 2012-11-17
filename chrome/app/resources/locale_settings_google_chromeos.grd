@@ -154,7 +154,7 @@
     <messages fallback_to_english="true">
       <!-- The font used in Web UI (e.g. History). -->
       <message name="IDS_WEB_FONT_FAMILY" use_name_for_id="true">
-        'Noto Sans UI', 'Droid Sans Fallback', sans-serif
+        'Noto Sans UI', sans-serif
       </message>
 
       <!-- The relative font size in % used in Web UI (e.g. History).  -->
@@ -218,25 +218,25 @@
       <!-- The default value for |WebPreference::standard_font_family_map| for
            Japanese script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_JAPANESE" use_name_for_id="true">
-        IPAPGothic
+        MotoyaG04Gothic
       </message>
 
       <!-- The default value for |WebPreference::fixed_font_family_map| for
            Japanese script. -->
       <message name="IDS_FIXED_FONT_FAMILY_JAPANESE" use_name_for_id="true">
-        IPAGothic
+        MotoyaG04GothicMono
       </message>
 
       <!-- The default value for |WebPreference::serif_font_family_map| for
            Japanese script. -->
       <message name="IDS_SERIF_FONT_FAMILY_JAPANESE" use_name_for_id="true">
-        IPAPMincho
+        MotoyaG04Mincho
       </message>
 
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
            Japanese script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_JAPANESE" use_name_for_id="true">
-        IPAPGothic
+        MotoyaG04Gothic
       </message>
 
      <!-- The default value for |WebPreference::standard_font_family_map| for
@@ -266,13 +266,13 @@
       <!-- The default value for |WebPreference::standard_font_family_map| for
            Simplified Chinese script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
-        Droid Sans Fallback
+        MYingHeiGB18030
       </message>
 
       <!-- The default value for |WebPreference::fixed_font_family_map| for
            Simplified Chinese script. -->
       <message name="IDS_FIXED_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
-        N Song ASC
+        MYingHeiGB18030
       </message>
 
       <!-- The default value for |WebPreference::serif_font_family_map| for
@@ -284,19 +284,19 @@
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
            Simplified Chinese script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
-        Droid Sans Fallback
+        MYingHeiGB18030
       </message>
 
       <!-- The default value for |WebPreference::standard_font_family_map| for
            Traditional Chinese script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
-        Droid Sans Fallback
+        MYingHeiB5HK
       </message>
 
       <!-- The default value for |WebPreference::fixed_font_family_map| for
            Traditional Chinese script. -->
       <message name="IDS_FIXED_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
-        MingLiU
+        MYingHeiB5HK
       </message>
 
       <!-- The default value for |WebPreference::serif_font_family_map| for
@@ -308,7 +308,7 @@
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
            Traditional Chinese script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
-        Droid Sans Fallback
+        MYingHeiB5HK
       </message>
 
       <!-- The default value for |WebPreference::default_font_size| -->

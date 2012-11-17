@@ -83,8 +83,11 @@
     "messages": [10000],
   },
   # These each start with the same resource id because we only use one
-  # file for each build (cros, linux, mac, or win).
-  "chrome/app/resources/locale_settings_cros.grd": {
+  # file for each build (chromiumos, google_chromeos, linux, mac, or win).
+  "chrome/app/resources/locale_settings_chromiumos.grd": {
+    "messages": [10500],
+  },
+  "chrome/app/resources/locale_settings_google_chromeos.grd": {
     "messages": [10500],
   },
   "chrome/app/resources/locale_settings_linux.grd": {
