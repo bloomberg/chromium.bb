@@ -1666,7 +1666,7 @@ SafetyLevel Vector1RegisterImmediate_BIT::safety(Instruction i) const {
 
 // Vector1RegisterImmediate_MVN
 SafetyLevel Vector1RegisterImmediate_MVN::safety(Instruction i) const {
-  if ((((cmode.value(i) & 0x1) ==1) && (cmode.value(i) & 0x6) != 6) ||
+  if ((((cmode.value(i) & 0x1) == 1) && (cmode.value(i) & 0xC) != 0xC) ||
       ((cmode.value(i) & 0xE) == 0xE))
     return DECODER_ERROR;
   SafetyLevel level = Vector1RegisterImmediate::safety(i);
