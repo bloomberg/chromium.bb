@@ -12,6 +12,8 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/context_menu_params.h"
@@ -188,6 +190,14 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
     case MENU_CHANGE_WALLPAPER:
       return ash::Shell::GetInstance()->user_wallpaper_delegate()->
           CanOpenSetWallpaperPage();
+    case MENU_NEW_WINDOW:
+      // "Normal" windows are not allowed when incognito is enforced.
+      return IncognitoModePrefs::GetAvailability(
+          controller_->profile()->GetPrefs()) != IncognitoModePrefs::FORCED;
+    case MENU_NEW_INCOGNITO_WINDOW:
+      // Incognito windows are not allowed when incognito is disabled.
+      return IncognitoModePrefs::GetAvailability(
+          controller_->profile()->GetPrefs()) != IncognitoModePrefs::DISABLED;
     default:
       return extension_items_->IsCommandIdEnabled(command_id);
   }
@@ -241,9 +251,9 @@ void LauncherContextMenu::ExecuteCommand(int command_id) {
     case MENU_ALIGNMENT_MENU:
       break;
     case MENU_CHANGE_WALLPAPER:
-       ash::Shell::GetInstance()->user_wallpaper_delegate()->
-           OpenSetWallpaperPage();
-       break;
+      ash::Shell::GetInstance()->user_wallpaper_delegate()->
+          OpenSetWallpaperPage();
+      break;
     default:
       extension_items_->ExecuteCommand(command_id, NULL,
                                        content::ContextMenuParams());

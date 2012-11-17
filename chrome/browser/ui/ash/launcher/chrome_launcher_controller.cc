@@ -4,11 +4,9 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
-#include <set>
 #include <vector>
 
 #include "ash/launcher/launcher_model.h"
-#include "ash/launcher/launcher_types.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"

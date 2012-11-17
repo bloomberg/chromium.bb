@@ -30,7 +30,6 @@ class AppSyncUIState;
 class Browser;
 class BrowserLauncherItemControllerTest;
 class LauncherItemController;
-class PrefService;
 class Profile;
 class ShellWindowLauncherController;
 class TabContents;

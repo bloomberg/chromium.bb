@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 
-#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/management_policy.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -149,7 +149,7 @@ ExtensionAppItem::~ExtensionAppItem() {
 
 const Extension* ExtensionAppItem::GetExtension() const {
   const Extension* extension =
-    profile_->GetExtensionService()->GetInstalledExtension(extension_id_);
+      profile_->GetExtensionService()->GetInstalledExtension(extension_id_);
   return extension;
 }
 
@@ -298,6 +298,14 @@ bool ExtensionAppItem::IsCommandIdEnabled(int command_id) const {
   } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
              command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     return extension_menu_items_->IsCommandIdEnabled(command_id);
+  } else if (command_id == MENU_NEW_WINDOW) {
+    // "Normal" windows are not allowed when incognito is enforced.
+    return IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
+        IncognitoModePrefs::FORCED;
+  } else if (command_id == MENU_NEW_INCOGNITO_WINDOW) {
+    // Incognito windows are not allowed when incognito is disabled.
+    return IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
+        IncognitoModePrefs::DISABLED;
   }
   return true;
 }
