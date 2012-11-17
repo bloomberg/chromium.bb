@@ -8,8 +8,9 @@ import os
 import sys
 import unittest
 
-from reference_resolver import ReferenceResolver
 from file_system import FileNotFoundError
+from in_memory_object_store import InMemoryObjectStore
+from reference_resolver import ReferenceResolver
 
 class FakeAPIDataSource(object):
   def __init__(self, json_data):
@@ -34,7 +35,9 @@ class APIDataSourceTest(unittest.TestCase):
   def testGetLink(self):
     data_source = FakeAPIDataSource(
         json.loads(self._ReadLocalFile('fake_data_source.json')))
-    resolver = ReferenceResolver(data_source, data_source)
+    resolver = ReferenceResolver(data_source,
+                                 data_source,
+                                 InMemoryObjectStore(''))
     self.assertEqual({
       'href': 'foo.html#type-foo_t1',
       'text': 'foo.foo_t1'

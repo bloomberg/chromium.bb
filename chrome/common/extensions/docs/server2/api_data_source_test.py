@@ -36,6 +36,9 @@ class FakeAPIAndListDataSource(object):
   def __init__(self, json_data):
     self._json = json_data
 
+  def Create(self, *args, **kwargs):
+    return self
+
   def get(self, key):
     if key not in self._json:
       raise FileNotFoundError(key)
@@ -55,7 +58,9 @@ class APIDataSourceTest(unittest.TestCase):
   def _CreateRefResolver(self, filename):
     data_source = FakeAPIAndListDataSource(
         self._LoadJSON(filename))
-    return ReferenceResolver.Factory(data_source, data_source).Create()
+    return ReferenceResolver.Factory(data_source,
+                                     data_source,
+                                     InMemoryObjectStore('')).Create()
 
   def DISABLED_testSimple(self):
     cache_factory = CompiledFileSystem.Factory(

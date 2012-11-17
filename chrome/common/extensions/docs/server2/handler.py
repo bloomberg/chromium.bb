@@ -42,6 +42,10 @@ DEFAULT_BRANCHES = { 'extensions': 'stable', 'apps': 'trunk' }
 # Dev settings:
 # DEFAULT_BRANCHES = { 'extensions': 'local', 'apps': 'local' }
 
+# Increment this version to force the server to reload all pages in the first
+# cron job that is run.
+_VERSION = 0
+
 BRANCH_UTILITY_MEMCACHE = InMemoryObjectStore('branch_utility')
 BRANCH_UTILITY = BranchUtility(url_constants.OMAHA_PROXY_URL,
                                DEFAULT_BRANCHES,
@@ -137,9 +141,13 @@ def _GetInstanceForBranch(channel_name, local_path):
   api_data_source_factory = APIDataSource.Factory(
       cache_factory,
       API_PATH)
+
+  # Give the ReferenceResolver a memcache, to speed up the lookup of
+  # duplicate $refs.
   ref_resolver_factory = ReferenceResolver.Factory(
-      api_data_source_factory.Create(None, disable_refs=True),
-      api_list_data_source_factory.Create())
+      api_data_source_factory,
+      api_list_data_source_factory,
+      branch_memcache)
   api_data_source_factory.SetReferenceResolverFactory(ref_resolver_factory)
   samples_data_source_factory = SamplesDataSource.Factory(
       channel_name,
@@ -256,8 +264,8 @@ class Handler(webapp.RequestHandler):
     #
     # Instead, let the CompiledFileSystem give us clues when to re-render: we
     # use the CFS to check whether the templates, examples, or API folders have
-    # been changed. If there has been a change, I will call the compilation
-    # function. The same is then done separately with the apps samples page,
+    # been changed. If there has been a change, the compilation function will
+    # be called. The same is then done separately with the apps samples page,
     # since it pulls its data from Github.
     channel = path.split('/')[-1]
     branch = BRANCH_UTILITY.GetBranchNumberForChannelName(channel)
@@ -268,7 +276,8 @@ class Handler(webapp.RequestHandler):
 
     needs_render = self._ValueHolder(False)
     invalidation_cache = factory.Create(lambda _: needs_render.Set(True),
-                                        compiled_fs.CRON_INVALIDATION)
+                                        compiled_fs.CRON_INVALIDATION,
+                                        version=_VERSION)
     for path in [TEMPLATE_PATH, EXAMPLES_PATH, API_PATH]:
       invalidation_cache.GetFromFile(path + '/')
 
@@ -285,6 +294,10 @@ class Handler(webapp.RequestHandler):
           compiled_fs.CRON_GITHUB_INVALIDATION)
       if needs_render.Get():
         self._Render([PUBLIC_TEMPLATE_PATH + '/apps/samples.html'], channel)
+
+      # It's good to keep the extensions samples page fresh, because if it
+      # gets dropped from the cache ALL the extensions pages time out.
+      self._Render([PUBLIC_TEMPLATE_PATH + '/extensions/samples.html'], channel)
 
     self.response.out.write('Success')
 

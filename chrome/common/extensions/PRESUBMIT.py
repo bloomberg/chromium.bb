@@ -101,7 +101,7 @@ def _CheckVersions(input_api, output_api, results):
           found = True
           break
       if not found:
-        results.append(output_api.PresubmitError(
+        results.append(output_api.PresubmitPromptWarning(
             '_VERSION of %s needs to be incremented.' % affected_file))
 
 def _CheckChange(input_api, output_api):

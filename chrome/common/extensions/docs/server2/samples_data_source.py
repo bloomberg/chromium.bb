@@ -15,6 +15,9 @@ import url_constants
 
 DEFAULT_ICON_PATH = '/images/sample-default-icon.png'
 
+# See api_data_source.py for more info on _VERSION.
+_VERSION = 0
+
 class SamplesDataSource(object):
   """Constructs a list of samples and their respective files and api calls.
   """
@@ -36,10 +39,12 @@ class SamplesDataSource(object):
       self._static_path = ((('/' + channel) if channel != 'local' else '') +
                            '/static')
       self._extensions_cache = cache_factory.Create(self._MakeSamplesList,
-                                                    compiled_fs.EXTENSIONS)
+                                                    compiled_fs.EXTENSIONS,
+                                                    version=_VERSION)
       self._apps_cache = github_cache_factory.Create(
           lambda x: self._MakeSamplesList(x, is_apps=True),
-          compiled_fs.APPS)
+          compiled_fs.APPS,
+          version=_VERSION)
       self._ref_resolver = ref_resolver_factory.Create()
       self._samples_path = samples_path
 
