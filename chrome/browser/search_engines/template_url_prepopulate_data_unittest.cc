@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_vector.h"
@@ -10,6 +11,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
@@ -175,6 +177,41 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   TemplateURLPrepopulateData::GetPrepopulatedEngines(&profile, &t_urls.get(),
                                                      &default_index);
   EXPECT_EQ(2u, t_urls.size());
+}
+
+// Verifies that built-in search providers are processed correctly.
+TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrepopulated) {
+  // Use United States.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kCountry, "US");
+  TestingProfile profile;
+  ScopedVector<TemplateURL> t_urls;
+  size_t default_index;
+  TemplateURLPrepopulateData::GetPrepopulatedEngines(&profile, &t_urls.get(),
+                                                     &default_index);
+
+  // Ensure all the URLs have the required fields populated.
+  ASSERT_FALSE(t_urls.empty());
+  for (size_t i = 0; i < t_urls.size(); ++i) {
+    ASSERT_FALSE(t_urls[i]->short_name().empty());
+    ASSERT_FALSE(t_urls[i]->keyword().empty());
+    ASSERT_FALSE(t_urls[i]->favicon_url().host().empty());
+    ASSERT_FALSE(t_urls[i]->url_ref().GetHost().empty());
+    ASSERT_FALSE(t_urls[i]->input_encodings().empty());
+    EXPECT_GT(t_urls[i]->prepopulate_id(), 0);
+  }
+
+  // Ensures the default URL is Google and has the optional fields filled.
+  EXPECT_EQ(ASCIIToUTF16("Google"), t_urls[default_index]->short_name());
+  EXPECT_FALSE(t_urls[default_index]->suggestions_url().empty());
+  EXPECT_FALSE(t_urls[default_index]->instant_url().empty());
+  // Expect at least 2 alternate_urls.
+  // This caught a bug with static initialization of arrays, so leave this in.
+  EXPECT_GT(t_urls[default_index]->alternate_urls().size(), 1u);
+  for (size_t i = 0; i < t_urls[default_index]->alternate_urls().size(); ++i)
+    EXPECT_FALSE(t_urls[default_index]->alternate_urls()[i].empty());
+  EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
+      TemplateURLPrepopulateData::GetEngineType(t_urls[default_index]->url()));
 }
 
 TEST(TemplateURLPrepopulateDataTest, GetEngineTypeBasic) {
