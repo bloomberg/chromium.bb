@@ -51,7 +51,7 @@ class PowerApiManager : public content::NotificationObserver {
 
   content::NotificationRegistrar registrar_;
 
-  scoped_ptr<chromeos::PowerStateOverride> power_state_override_;
+  scoped_refptr<chromeos::PowerStateOverride> power_state_override_;
 
   // Set of extension IDs that have a keep awake lock.
   std::set<std::string> extension_ids_set_;

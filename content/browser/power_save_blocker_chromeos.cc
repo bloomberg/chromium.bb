@@ -34,13 +34,13 @@ class PowerSaveBlocker::Delegate
       default:
         NOTREACHED() << "Unhandled block type " << type_;
     }
-    override_.reset(new chromeos::PowerStateOverride(mode));
+    override_ = new chromeos::PowerStateOverride(mode);
   }
 
   // Resets the previously-created PowerStateOverride object.
   void RemoveBlock() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    override_.reset();
+    override_ = NULL;
   }
 
  private:
@@ -49,7 +49,7 @@ class PowerSaveBlocker::Delegate
 
   PowerSaveBlockerType type_;
 
-  scoped_ptr<chromeos::PowerStateOverride> override_;
+  scoped_refptr<chromeos::PowerStateOverride> override_;
 
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };

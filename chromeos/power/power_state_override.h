@@ -17,7 +17,9 @@ class DBusThreadManager;
 
 // This class overrides the current power state on the machine, disabling
 // a set of power management features.
-class CHROMEOS_EXPORT PowerStateOverride : public DBusThreadManagerObserver {
+class CHROMEOS_EXPORT PowerStateOverride
+    : public base::RefCountedThreadSafe<PowerStateOverride>,
+      public DBusThreadManagerObserver {
  public:
   enum Mode {
     // Blocks the screen from being dimmed or blanked due to user inactivity.
@@ -30,6 +32,12 @@ class CHROMEOS_EXPORT PowerStateOverride : public DBusThreadManagerObserver {
   };
 
   explicit PowerStateOverride(Mode mode);
+
+  // This destructor cancels the current power state override. There might be
+  // a very slight delay between the the last reference to an instance being
+  // released and the power state override being canceled. This is only in
+  // the case that the current instance has JUST been created and ChromeOS
+  // hasn't had a chance to service the initial power override request yet.
   virtual ~PowerStateOverride();
 
   // DBusThreadManagerObserver implementation:
@@ -61,8 +69,6 @@ class CHROMEOS_EXPORT PowerStateOverride : public DBusThreadManagerObserver {
   base::RepeatingTimer<PowerStateOverride> heartbeat_;
 
   DBusThreadManager* dbus_thread_manager_;  // not owned
-
-  base::WeakPtrFactory<PowerStateOverride> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerStateOverride);
 };
