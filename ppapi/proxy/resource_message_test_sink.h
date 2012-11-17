@@ -5,6 +5,7 @@
 #ifndef PPAPI_PROXY_RESOURCE_MESSAGE_TEST_SINK_H_
 #define PPAPI_PROXY_RESOURCE_MESSAGE_TEST_SINK_H_
 
+#include "ipc/ipc_listener.h"
 #include "ipc/ipc_test_sink.h"
 #include "ppapi/c/pp_stdint.h"
 

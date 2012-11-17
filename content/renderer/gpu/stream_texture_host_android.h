@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/common/android/surface_texture_peer.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 
 namespace gfx {

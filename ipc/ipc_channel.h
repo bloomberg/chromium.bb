@@ -17,10 +17,6 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 
-// TODO(brettw) remove this and update files that depend on this being included
-// from here.
-#include "ipc/ipc_listener.h"
-
 namespace IPC {
 
 class Listener;

@@ -14,6 +14,7 @@
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_descriptors.h"
+#include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_multiprocess_test.h"
 #include "ipc/ipc_switches.h"

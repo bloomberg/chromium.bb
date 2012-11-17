@@ -13,19 +13,20 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/pickle.h"
 #include "base/shared_memory.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_listener.h"
 
 struct NaClDesc;
 struct NaClImcTypedMsgHdr;
 struct PP_Size;
 
 namespace IPC {
-class Message;
+class Channel;
+struct ChannelHandle;
 }
 
 namespace nacl {

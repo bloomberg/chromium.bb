@@ -16,6 +16,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
+#include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_utils.h"
 

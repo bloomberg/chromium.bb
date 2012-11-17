@@ -17,6 +17,7 @@ extern "C" {
 #include "base/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_multiprocess_test.h"
 #include "testing/multiprocess_func_list.h"
@@ -81,7 +82,7 @@ class MyChannelDescriptorListener : public IPC::Listener {
   unsigned num_fds_received_;
 };
 
-void TestDescriptorServer(IPC::Channel &chan,
+void TestDescriptorServer(IPC::Channel& chan,
                           base::ProcessHandle process_handle) {
   ASSERT_TRUE(process_handle);
 

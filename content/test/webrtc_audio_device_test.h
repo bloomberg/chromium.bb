@@ -13,10 +13,14 @@
 #include "base/message_loop.h"
 #include "content/browser/renderer_host/media/mock_media_observer.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "ipc/ipc_listener.h"
 #include "media/base/channel_layout.h"
-#include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/common_types.h"
+
+namespace IPC {
+class Channel;
+}
 
 namespace media {
 class AudioManager;

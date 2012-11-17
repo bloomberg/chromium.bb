@@ -16,6 +16,7 @@
 #include "chrome/common/nacl_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
+#include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
 
 namespace {

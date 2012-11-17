@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "build/build_config.h"
+#include "ipc/ipc_channel.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "native_client/src/trusted/desc/nacl_desc_custom.h"

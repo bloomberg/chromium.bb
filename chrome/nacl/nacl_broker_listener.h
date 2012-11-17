@@ -8,7 +8,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "chrome/common/nacl_types.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
+
+namespace IPC {
+class Channel;
+}
 
 // The BrokerThread class represents the thread that handles the messages from
 // the browser process and starts NaCl loader processes.
