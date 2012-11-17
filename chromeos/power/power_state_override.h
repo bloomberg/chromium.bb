@@ -33,6 +33,12 @@ class CHROMEOS_EXPORT PowerStateOverride
 
   explicit PowerStateOverride(Mode mode);
 
+  // DBusThreadManagerObserver implementation:
+  virtual void OnDBusThreadManagerDestroying(DBusThreadManager* manager)
+      OVERRIDE;
+
+ private:
+  friend class base::RefCountedThreadSafe<PowerStateOverride>;
   // This destructor cancels the current power state override. There might be
   // a very slight delay between the the last reference to an instance being
   // released and the power state override being canceled. This is only in
@@ -40,11 +46,6 @@ class CHROMEOS_EXPORT PowerStateOverride
   // hasn't had a chance to service the initial power override request yet.
   virtual ~PowerStateOverride();
 
-  // DBusThreadManagerObserver implementation:
-  virtual void OnDBusThreadManagerDestroying(DBusThreadManager* manager)
-      OVERRIDE;
-
- private:
   // Callback from RequestPowerStateOverride which receives our request_id.
   void SetRequestId(uint32 request_id);
 
