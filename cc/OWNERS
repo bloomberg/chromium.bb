@@ -22,7 +22,7 @@ danakj@chromium.org
 ccameron@chromium.org
 
 # input, gestures, scrolling
-# unofficial: aelias@chromium.org
+aelias@chromium.org
 jamesr@chromium.org
 
 # scheduling and texture uploading
@@ -30,7 +30,7 @@ brianderson@chromium.org
 reveman@chromium.org
 
 # math / geometry / layer_tree_host_common
-# unofficial: shawnsingh@chromium.org
+shawnsingh@chromium.org
 enne@chromium.org
 
 # animation
