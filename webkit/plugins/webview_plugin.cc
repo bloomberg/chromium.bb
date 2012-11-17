@@ -8,15 +8,16 @@
 #include "base/metrics/histogram.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webpreferences.h"
 
 using WebKit::WebCanvas;
@@ -120,17 +121,24 @@ bool WebViewPlugin::getFormValue(WebString& value) {
 }
 
 void WebViewPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
-  gfx::Rect paintRect = gfx::IntersectRects(rect_, rect);
-  if (paintRect.IsEmpty())
+  gfx::Rect paint_rect = gfx::IntersectRects(rect_, rect);
+  if (paint_rect.IsEmpty())
     return;
 
-  paintRect.Offset(-rect_.x(), -rect_.y());
+  paint_rect.Offset(-rect_.x(), -rect_.y());
+
+  float content_scale = 1.0f / GetPageScaleFactor();
+  paint_rect.SetRect(
+      ceil(content_scale * paint_rect.x()),
+      ceil(content_scale * paint_rect.y()),
+      ceil(content_scale * paint_rect.width()),
+      ceil(content_scale * paint_rect.height()));
 
   canvas->translate(SkIntToScalar(rect_.x()), SkIntToScalar(rect_.y()));
   canvas->save();
 
   web_view_->layout();
-  web_view_->paint(canvas, paintRect);
+  web_view_->paint(canvas, paint_rect);
 
   canvas->restore();
 }
@@ -141,7 +149,10 @@ void WebViewPlugin::updateGeometry(
     const WebVector<WebRect>& cut_out_rects, bool is_visible) {
   if (static_cast<gfx::Rect>(frame_rect) != rect_) {
     rect_ = frame_rect;
-    web_view_->resize(WebSize(frame_rect.width, frame_rect.height));
+
+    float content_scale = 1.0f / GetPageScaleFactor();
+    web_view_->resize(WebSize(content_scale * frame_rect.width,
+                              content_scale * frame_rect.height));
   }
 }
 
@@ -237,6 +248,15 @@ void WebViewPlugin::didReceiveResponse(WebFrame* frame,
                                        unsigned identifier,
                                        const WebURLResponse& response) {
   WebFrameClient::didReceiveResponse(frame, identifier, response);
+}
+
+float WebViewPlugin::GetPageScaleFactor() {
+  if (container_) {
+    WebFrame* frame = container_->element().document().frame();
+    WebView* top_view = frame->top()->view();
+    return top_view->pageScaleFactor();
+  }
+  return 1.0f;
 }
 
 }  // namespace webkit
