@@ -32,7 +32,7 @@ function error(message) {
 }
 
 var DBNAME = 'endurance-db';
-var DBVERSION = '1';
+var DBVERSION = 1;
 
 var MAX_DOC_ID = 25;
 var MAX_CHUNK_ID = 10;

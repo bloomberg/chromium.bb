@@ -47,7 +47,7 @@ function unexpectedBlockedCallback(e) {
 }
 
 var DBNAME = 'endurance-db';
-var DBVERSION = '1';
+var DBVERSION = 1;
 var MAX_DOC_ID = 25;
 
 var db;
@@ -57,36 +57,30 @@ function initdb() {
   request.onerror = unexpectedErrorCallback;
   request.onblocked = unexpectedBlockedCallback;
   request.onsuccess = function () {
-    request = indexedDB.open(DBNAME);
+    request = indexedDB.open(DBNAME, DBVERSION);
     request.onerror = unexpectedErrorCallback;
-    request.onsuccess = function () {
+    request.onblocked = unexpectedBlockedCallback;
+    request.onupgradeneeded = function () {
       db = request.result;
-      request = db.setVersion(DBVERSION);
-      request.onerror = unexpectedErrorCallback;
-      request.onblocked = unexpectedBlockedCallback;
-      request.onsuccess = function () {
-        var transaction = request.result;
+      request.transaction.onabort = unexpectedAbortCallback;
 
-        var syncStore = db.createObjectStore(
-          'sync-chunks', {keyPath: 'sequence', autoIncrement: true});
-        syncStore.createIndex('doc-index', 'docid');
+      var syncStore = db.createObjectStore(
+        'sync-chunks', {keyPath: 'sequence', autoIncrement: true});
+      syncStore.createIndex('doc-index', 'docid');
 
-        var docStore = db.createObjectStore(
-          'docs', {keyPath: 'docid'});
-        docStore.createIndex(
-          'owner-index', 'owner', {multiEntry: true});
+      var docStore = db.createObjectStore(
+        'docs', {keyPath: 'docid'});
+      docStore.createIndex(
+        'owner-index', 'owner', {multiEntry: true});
 
-        var userEventStore = db.createObjectStore(
-          'user-events', {keyPath: 'sequence', autoIncrement: true});
-        userEventStore.createIndex('doc-index', 'docid');
-
-        transaction.onabort = unexpectedAbortCallback;
-        transaction.oncomplete = function () {
-          log('initialized');
-          $('#offline').disabled = true;
-          $('#online').disabled = false;
-        };
-      };
+      var userEventStore = db.createObjectStore(
+        'user-events', {keyPath: 'sequence', autoIncrement: true});
+      userEventStore.createIndex('doc-index', 'docid');
+    };
+    request.onsuccess = function () {
+      log('initialized');
+      $('#offline').disabled = true;
+      $('#online').disabled = false;
     };
   };
 }
