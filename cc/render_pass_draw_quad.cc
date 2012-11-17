@@ -12,8 +12,7 @@ scoped_ptr<RenderPassDrawQuad> RenderPassDrawQuad::create(const SharedQuadState*
 }
 
 RenderPassDrawQuad::RenderPassDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, RenderPass::Id renderPassId, bool isReplica, ResourceProvider::ResourceId maskResourceId, const gfx::Rect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY)
-    : DrawQuad(sharedQuadState, DrawQuad::RENDER_PASS, quadRect, gfx::Rect())
-    , m_renderPassId(renderPassId)
+    : m_renderPassId(renderPassId)
     , m_isReplica(isReplica)
     , m_maskResourceId(maskResourceId)
     , m_contentsChangedSinceLastFrame(contentsChangedSinceLastFrame)
@@ -24,18 +23,23 @@ RenderPassDrawQuad::RenderPassDrawQuad(const SharedQuadState* sharedQuadState, c
 {
     DCHECK(m_renderPassId.layerId > 0);
     DCHECK(m_renderPassId.index >= 0);
+
+    gfx::Rect opaqueRect;
+    gfx::Rect visibleRect = quadRect;
+    bool needsBlending = false;
+    DrawQuad::SetAll(sharedQuadState, DrawQuad::RENDER_PASS, quadRect, opaqueRect, visibleRect, needsBlending);
 }
 
 const RenderPassDrawQuad* RenderPassDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::RENDER_PASS);
+    DCHECK(quad->material == DrawQuad::RENDER_PASS);
     return static_cast<const RenderPassDrawQuad*>(quad);
 }
 
 scoped_ptr<RenderPassDrawQuad> RenderPassDrawQuad::copy(const SharedQuadState* copiedSharedQuadState, RenderPass::Id copiedRenderPassId) const
 {
     scoped_ptr<RenderPassDrawQuad> copyQuad(new RenderPassDrawQuad(*materialCast(this)));
-    copyQuad->set_shared_quad_state(copiedSharedQuadState);
+    copyQuad->shared_quad_state = copiedSharedQuadState;
     copyQuad->m_renderPassId = copiedRenderPassId;
     return copyQuad.Pass();
 }

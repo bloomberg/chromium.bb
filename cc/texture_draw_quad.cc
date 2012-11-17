@@ -14,17 +14,19 @@ scoped_ptr<TextureDrawQuad> TextureDrawQuad::create(const SharedQuadState* share
 }
 
 TextureDrawQuad::TextureDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped)
-    : DrawQuad(sharedQuadState, DrawQuad::TEXTURE_CONTENT, quadRect, opaqueRect)
-    , m_resourceId(resourceId)
+    : m_resourceId(resourceId)
     , m_premultipliedAlpha(premultipliedAlpha)
     , m_uvRect(uvRect)
     , m_flipped(flipped)
 {
+    gfx::Rect visibleRect = quadRect;
+    bool needsBlending = false;
+    DrawQuad::SetAll(sharedQuadState, DrawQuad::TEXTURE_CONTENT, quadRect, opaqueRect, visibleRect, needsBlending);
 }
 
 const TextureDrawQuad* TextureDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::TEXTURE_CONTENT);
+    DCHECK(quad->material == DrawQuad::TEXTURE_CONTENT);
     return static_cast<const TextureDrawQuad*>(quad);
 }
 

@@ -23,6 +23,8 @@ public:
     gfx::Size textureSize() const { return m_textureSize; }
     bool swizzleContents() const { return m_swizzleContents; }
 
+    // TODO(danakj): Stick the data used to compute these things in the quad
+    // instead so the parent compositor can decide to use AA on its own.
     bool leftEdgeAA() const { return m_leftEdgeAA; }
     bool topEdgeAA() const { return m_topEdgeAA; }
     bool rightEdgeAA() const { return m_rightEdgeAA; }

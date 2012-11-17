@@ -113,7 +113,7 @@ TEST(TiledLayerImplTest, checkerboarding)
         EXPECT_FALSE(data.hadMissingTiles);
 
         for (size_t i = 0; i < quadCuller.quadList().size(); ++i)
-            EXPECT_EQ(quadCuller.quadList()[i]->material(), DrawQuad::TILED_CONTENT);
+            EXPECT_EQ(quadCuller.quadList()[i]->material, DrawQuad::TILED_CONTENT);
     }
 
     for (int i = 0; i < numTilesX; ++i)
@@ -128,7 +128,7 @@ TEST(TiledLayerImplTest, checkerboarding)
         EXPECT_TRUE(data.hadMissingTiles);
         EXPECT_EQ(quadCuller.quadList().size(), 4u);
         for (size_t i = 0; i < quadCuller.quadList().size(); ++i)
-            EXPECT_NE(quadCuller.quadList()[i]->material(), DrawQuad::TILED_CONTENT);
+            EXPECT_NE(quadCuller.quadList()[i]->material, DrawQuad::TILED_CONTENT);
     }
 }
 
@@ -204,7 +204,7 @@ TEST(TiledLayerImplTest, textureInfoForLayerNoBorders)
         EXPECT_NE(quad->resourceId(), 0u) << quadString << i;
         EXPECT_EQ(quad->textureOffset(), gfx::Vector2d()) << quadString << i;
         EXPECT_EQ(quad->textureSize(), tileSize) << quadString << i;
-        EXPECT_EQ(gfx::Rect(0, 0, 1, 1), quad->opaque_rect()) << quadString << i;
+        EXPECT_EQ(gfx::Rect(0, 0, 1, 1), quad->opaque_rect) << quadString << i;
     }
 }
 

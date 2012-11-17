@@ -15,8 +15,7 @@ scoped_ptr<TileDrawQuad> TileDrawQuad::create(const SharedQuadState* sharedQuadS
 }
 
 TileDrawQuad::TileDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Vector2d& textureOffset, const gfx::Size& textureSize, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
-    : DrawQuad(sharedQuadState, DrawQuad::TILED_CONTENT, quadRect, opaqueRect)
-    , m_resourceId(resourceId)
+    : m_resourceId(resourceId)
     , m_textureOffset(textureOffset)
     , m_textureSize(textureSize)
     , m_swizzleContents(swizzleContents)
@@ -25,13 +24,14 @@ TileDrawQuad::TileDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Re
     , m_rightEdgeAA(rightEdgeAA)
     , m_bottomEdgeAA(bottomEdgeAA)
 {
-    if (isAntialiased())
-        needs_blending_ = true;
+    gfx::Rect visibleRect = quadRect;
+    bool needsBlending = isAntialiased();
+    DrawQuad::SetAll(sharedQuadState, DrawQuad::TILED_CONTENT, quadRect, opaqueRect, visibleRect, needsBlending);
 }
 
 const TileDrawQuad* TileDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::TILED_CONTENT);
+    DCHECK(quad->material == DrawQuad::TILED_CONTENT);
     return static_cast<const TileDrawQuad*>(quad);
 }
 

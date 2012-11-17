@@ -209,14 +209,14 @@ TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToContributingRenderPasses
 
     // The DelegatedRendererLayer should have added copies of its quads to contributing RenderPasses.
     ASSERT_EQ(1u, frame.renderPasses[1]->quadList().size());
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quadList()[0]->rect());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quadList()[0]->rect);
 
     // Verify it added the right quads.
     ASSERT_EQ(2u, frame.renderPasses[2]->quadList().size());
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 7, 7), frame.renderPasses[2]->quadList()[0]->rect());
-    EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[2]->quadList()[1]->rect());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 7, 7), frame.renderPasses[2]->quadList()[0]->rect);
+    EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[2]->quadList()[1]->rect);
     ASSERT_EQ(1u, frame.renderPasses[1]->quadList().size());
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quadList()[0]->rect());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quadList()[0]->rect);
 }
 
 TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToTargetRenderPass)
@@ -237,10 +237,10 @@ TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToTargetRenderPass)
     ASSERT_EQ(2u, frame.renderPasses[3]->quadList().size());
 
     // Verify it added the right quads.
-    EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[3]->quadList()[0]->rect());
+    EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[3]->quadList()[0]->rect);
 
     // Its target layer should have a quad as well.
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 15, 15), frame.renderPasses[3]->quadList()[1]->rect());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 15, 15), frame.renderPasses[3]->quadList()[1]->rect);
 }
 
 TEST_F(DelegatedRendererLayerImplTestSimple, QuadsFromRootRenderPassAreModifiedForTheTarget)
@@ -325,14 +325,14 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToContributingRenderPa
 
     // The DelegatedRendererLayer should have added copies of its quads to contributing RenderPasses.
     ASSERT_EQ(1u, frame.renderPasses[1]->quadList().size());
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quadList()[0]->rect());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quadList()[0]->rect);
 
     // Verify it added the right quads.
     ASSERT_EQ(2u, frame.renderPasses[2]->quadList().size());
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 7, 7), frame.renderPasses[2]->quadList()[0]->rect());
-    EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[2]->quadList()[1]->rect());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 7, 7), frame.renderPasses[2]->quadList()[0]->rect);
+    EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[2]->quadList()[1]->rect);
     ASSERT_EQ(1u, frame.renderPasses[1]->quadList().size());
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quadList()[0]->rect());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 6), frame.renderPasses[1]->quadList()[0]->rect);
 }
 
 TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToTargetRenderPass)
@@ -353,7 +353,7 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToTargetRenderPass)
     ASSERT_EQ(1u, frame.renderPasses[3]->quadList().size());
 
     // Verify it added the right quads.
-    EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[3]->quadList()[0]->rect());
+    EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[3]->quadList()[0]->rect);
 }
 
 TEST_F(DelegatedRendererLayerImplTestOwnSurface, QuadsFromRootRenderPassAreNotModifiedForTheTarget)
@@ -440,10 +440,10 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
     ASSERT_EQ(4u, quadList.size());
 
     // All quads should share the same state.
-    const SharedQuadState* sharedState = quadList[0]->shared_quad_state();
-    EXPECT_EQ(sharedState, quadList[1]->shared_quad_state());
-    EXPECT_EQ(sharedState, quadList[2]->shared_quad_state());
-    EXPECT_EQ(sharedState, quadList[3]->shared_quad_state());
+    const SharedQuadState* sharedState = quadList[0]->shared_quad_state;
+    EXPECT_EQ(sharedState, quadList[1]->shared_quad_state);
+    EXPECT_EQ(sharedState, quadList[2]->shared_quad_state);
+    EXPECT_EQ(sharedState, quadList[3]->shared_quad_state);
 
     // The state should be transformed only once.
     EXPECT_RECT_EQ(gfx::Rect(30, 30, 50, 50), sharedState->clippedRectInTarget);

@@ -43,17 +43,17 @@ static inline bool appendQuadInternal(scoped_ptr<DrawQuad> drawQuad, const gfx::
 {
     bool keepQuad = !culledRect.IsEmpty();
     if (keepQuad)
-        drawQuad->set_visible_rect(culledRect);
+        drawQuad->visible_rect = culledRect;
 
-    occlusionTracker.overdrawMetrics().didCullForDrawing(drawQuad->quadTransform(), drawQuad->rect(), culledRect);
-    gfx::Rect opaqueDrawRect = drawQuad->opacity() == 1.0f ? drawQuad->opaque_rect() : gfx::Rect();
+    occlusionTracker.overdrawMetrics().didCullForDrawing(drawQuad->quadTransform(), drawQuad->rect, culledRect);
+    gfx::Rect opaqueDrawRect = drawQuad->opacity() == 1.0f ? drawQuad->opaque_rect : gfx::Rect();
     occlusionTracker.overdrawMetrics().didDraw(drawQuad->quadTransform(), culledRect, opaqueDrawRect);
 
     if (keepQuad) {
-        if (createDebugBorderQuads && !drawQuad->IsDebugQuad() && drawQuad->visible_rect() != drawQuad->rect()) {
+        if (createDebugBorderQuads && !drawQuad->IsDebugQuad() && drawQuad->visible_rect != drawQuad->rect) {
             SkColor color = DebugColors::CulledTileBorderColor();
             float width = DebugColors::CulledTileBorderWidth(layer ? layer->layerTreeHostImpl() : NULL);
-            quadList.append(DebugBorderDrawQuad::create(drawQuad->shared_quad_state(), drawQuad->visible_rect(), color, width).PassAs<DrawQuad>());
+            quadList.append(DebugBorderDrawQuad::create(drawQuad->shared_quad_state, drawQuad->visible_rect, color, width).PassAs<DrawQuad>());
         }
 
         // Pass the quad after we're done using it.
@@ -64,7 +64,7 @@ static inline bool appendQuadInternal(scoped_ptr<DrawQuad> drawQuad, const gfx::
 
 bool QuadCuller::append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData& appendQuadsData)
 {
-    DCHECK(drawQuad->shared_quad_state() == m_currentSharedQuadState);
+    DCHECK(drawQuad->shared_quad_state == m_currentSharedQuadState);
     DCHECK(!m_sharedQuadStateList.isEmpty());
     DCHECK(m_sharedQuadStateList.last() == m_currentSharedQuadState);
 
@@ -73,9 +73,9 @@ bool QuadCuller::append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData& appendQu
     bool implDrawTransformIsUnknown = false;
 
     if (m_forSurface)
-        culledRect = m_occlusionTracker->unoccludedContributingSurfaceContentRect(m_layer, false, drawQuad->rect(), &hasOcclusionFromOutsideTargetSurface);
+        culledRect = m_occlusionTracker->unoccludedContributingSurfaceContentRect(m_layer, false, drawQuad->rect, &hasOcclusionFromOutsideTargetSurface);
     else
-        culledRect = m_occlusionTracker->unoccludedContentRect(m_layer->renderTarget(), drawQuad->rect(), drawQuad->quadTransform(), implDrawTransformIsUnknown, drawQuad->clippedRectInTarget(), &hasOcclusionFromOutsideTargetSurface);
+        culledRect = m_occlusionTracker->unoccludedContentRect(m_layer->renderTarget(), drawQuad->rect, drawQuad->quadTransform(), implDrawTransformIsUnknown, drawQuad->clippedRectInTarget(), &hasOcclusionFromOutsideTargetSurface);
 
     appendQuadsData.hadOcclusionFromOutsideTargetSurface |= hasOcclusionFromOutsideTargetSurface;
 

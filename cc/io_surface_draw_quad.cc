@@ -14,16 +14,18 @@ scoped_ptr<IOSurfaceDrawQuad> IOSurfaceDrawQuad::create(const SharedQuadState* s
 }
 
 IOSurfaceDrawQuad::IOSurfaceDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, const gfx::Size& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
-    : DrawQuad(sharedQuadState, DrawQuad::IO_SURFACE_CONTENT, quadRect, opaqueRect)
-    , m_ioSurfaceSize(ioSurfaceSize)
+    : m_ioSurfaceSize(ioSurfaceSize)
     , m_ioSurfaceTextureId(ioSurfaceTextureId)
     , m_orientation(orientation)
 {
+    gfx::Rect visibleRect = quadRect;
+    bool needsBlending = false;
+    DrawQuad::SetAll(sharedQuadState, DrawQuad::IO_SURFACE_CONTENT, quadRect, opaqueRect, visibleRect, needsBlending);
 }
 
 const IOSurfaceDrawQuad* IOSurfaceDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::IO_SURFACE_CONTENT);
+    DCHECK(quad->material == DrawQuad::IO_SURFACE_CONTENT);
     return static_cast<const IOSurfaceDrawQuad*>(quad);
 }
 

@@ -113,7 +113,7 @@ TEST(SolidColorLayerImplTest, verifyOpaqueRect)
         layerImpl->appendQuads(quadCuller, data);
 
         ASSERT_EQ(quadCuller.quadList().size(), 1U);
-        EXPECT_EQ(visibleContentRect.ToString(), quadCuller.quadList()[0]->opaque_rect().ToString());
+        EXPECT_EQ(visibleContentRect.ToString(), quadCuller.quadList()[0]->opaque_rect.ToString());
     }
 
     EXPECT_TRUE(layer->contentsOpaque());
@@ -135,7 +135,7 @@ TEST(SolidColorLayerImplTest, verifyOpaqueRect)
         layerImpl->appendQuads(quadCuller, data);
 
         ASSERT_EQ(quadCuller.quadList().size(), 1U);
-        EXPECT_EQ(gfx::Rect().ToString(), quadCuller.quadList()[0]->opaque_rect().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), quadCuller.quadList()[0]->opaque_rect.ToString());
     }
 }
 

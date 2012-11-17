@@ -14,15 +14,17 @@ scoped_ptr<StreamVideoDrawQuad> StreamVideoDrawQuad::create(const SharedQuadStat
 }
 
 StreamVideoDrawQuad::StreamVideoDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
-    : DrawQuad(sharedQuadState, DrawQuad::STREAM_VIDEO_CONTENT, quadRect, opaqueRect)
-    , m_textureId(textureId)
+    : m_textureId(textureId)
     , m_matrix(matrix)
 {
+    gfx::Rect visibleRect = quadRect;
+    bool needsBlending = false;
+    DrawQuad::SetAll(sharedQuadState, DrawQuad::STREAM_VIDEO_CONTENT, quadRect, opaqueRect, visibleRect, needsBlending);
 }
 
 const StreamVideoDrawQuad* StreamVideoDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::STREAM_VIDEO_CONTENT);
+    DCHECK(quad->material == DrawQuad::STREAM_VIDEO_CONTENT);
     return static_cast<const StreamVideoDrawQuad*>(quad);
 }
 

@@ -14,16 +14,17 @@ scoped_ptr<SolidColorDrawQuad> SolidColorDrawQuad::create(const SharedQuadState*
 }
 
 SolidColorDrawQuad::SolidColorDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, SkColor color)
-    : DrawQuad(sharedQuadState, DrawQuad::SOLID_COLOR, quadRect, quadRect)
-    , m_color(color)
+    : m_color(color)
 {
-    if (SkColorGetA(m_color) < 255)
-        opaque_rect_ = gfx::Rect();
+    gfx::Rect opaqueRect = SkColorGetA(m_color) == 255 ? quadRect : gfx::Rect();
+    gfx::Rect visibleRect = quadRect;
+    bool needsBlending = false;
+    DrawQuad::SetAll(sharedQuadState, DrawQuad::SOLID_COLOR, quadRect, opaqueRect, visibleRect, needsBlending);
 }
 
 const SolidColorDrawQuad* SolidColorDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::SOLID_COLOR);
+    DCHECK(quad->material == DrawQuad::SOLID_COLOR);
     return static_cast<const SolidColorDrawQuad*>(quad);
 }
 

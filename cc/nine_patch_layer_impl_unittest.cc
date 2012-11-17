@@ -59,7 +59,7 @@ TEST(NinePatchLayerImplTest, verifyDrawQuads)
     Region remaining(visibleContentRect);
     for (size_t i = 0; i < quads.size(); ++i) {
         DrawQuad* quad = quads[i];
-        gfx::Rect quadRect = quad->rect();
+        gfx::Rect quadRect = quad->rect;
 
         EXPECT_TRUE(visibleContentRect.Contains(quadRect)) << i;
         EXPECT_TRUE(remaining.Contains(quadRect)) << i;
@@ -75,7 +75,6 @@ TEST(NinePatchLayerImplTest, verifyDrawQuads)
     Region texRemaining(bitmapRect);
     for (size_t i = 0; i < quads.size(); ++i) {
         DrawQuad* quad = quads[i];
-        ASSERT_EQ(quad->material(), DrawQuad::TEXTURE_CONTENT);
         const TextureDrawQuad* texQuad = TextureDrawQuad::materialCast(quad);
         gfx::RectF texRect = texQuad->uvRect();
         texRect.Scale(bitmapSize.width(), bitmapSize.height());

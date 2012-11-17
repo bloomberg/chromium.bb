@@ -168,7 +168,7 @@ void SoftwareRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
 {
     TRACE_EVENT0("cc", "SoftwareRenderer::drawQuad");
     WebTransformationMatrix quadRectMatrix;
-    quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->rect());
+    quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->rect);
     WebTransformationMatrix contentsDeviceTransform = (frame.windowMatrix * frame.projectionMatrix * quadRectMatrix).to2dTransform();
     SkMatrix skDeviceMatrix;
     toSkMatrix(&skDeviceMatrix, contentsDeviceTransform);
@@ -187,7 +187,7 @@ void SoftwareRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
         m_skCurrentPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
     }
 
-    switch (quad->material()) {
+    switch (quad->material) {
     case DrawQuad::DEBUG_BORDER:
         drawDebugBorderQuad(frame, DebugBorderDrawQuad::materialCast(quad));
         break;
@@ -260,7 +260,7 @@ void SoftwareRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQua
 
     SkRect uvRect = SkRect::MakeXYWH(
         quad->textureOffset().x(), quad->textureOffset().y(),
-        quad->rect().width(), quad->rect().height());
+        quad->rect.width(), quad->rect.height());
     m_skCurrentPaint.setFilterBitmap(true);
     m_skCurrentCanvas->drawBitmapRectToRect(*lock.skBitmap(), &uvRect,
                                             gfx::RectFToSkRect(quadVertexRect()),

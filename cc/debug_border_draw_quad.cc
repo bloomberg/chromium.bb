@@ -14,17 +14,18 @@ scoped_ptr<DebugBorderDrawQuad> DebugBorderDrawQuad::create(const SharedQuadStat
 }
 
 DebugBorderDrawQuad::DebugBorderDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, SkColor color, int width)
-    : DrawQuad(sharedQuadState, DrawQuad::DEBUG_BORDER, quadRect, gfx::Rect())
-    , m_color(color)
+    : m_color(color)
     , m_width(width)
 {
-    if (SkColorGetA(m_color) < 255)
-        needs_blending_ = true;
+    gfx::Rect opaqueRect;
+    gfx::Rect visibleRect = quadRect;
+    bool needsBlending = SkColorGetA(m_color) < 255;
+    DrawQuad::SetAll(sharedQuadState, DrawQuad::DEBUG_BORDER, quadRect, opaqueRect, visibleRect, needsBlending);
 }
 
 const DebugBorderDrawQuad* DebugBorderDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::DEBUG_BORDER);
+    DCHECK(quad->material == DrawQuad::DEBUG_BORDER);
     return static_cast<const DebugBorderDrawQuad*>(quad);
 }
 

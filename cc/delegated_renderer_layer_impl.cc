@@ -140,10 +140,10 @@ void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, Appen
     const SharedQuadState* currentSharedQuadState = 0;
     SharedQuadState* copiedSharedQuadState = 0;
     for (size_t i = 0; i < delegatedRenderPass->quadList().size(); ++i) {
-        DrawQuad* quad = delegatedRenderPass->quadList()[i];
+        const DrawQuad* quad = delegatedRenderPass->quadList()[i];
 
-        if (quad->shared_quad_state() != currentSharedQuadState) {
-            currentSharedQuadState = quad->shared_quad_state();
+        if (quad->shared_quad_state != currentSharedQuadState) {
+            currentSharedQuadState = quad->shared_quad_state;
             copiedSharedQuadState = quadSink.useSharedQuadState(currentSharedQuadState->copy());
             bool targetIsFromDelegatedRendererLayer = appendQuadsData.renderPassId.layerId == id();
             if (!targetIsFromDelegatedRendererLayer) {
@@ -160,7 +160,7 @@ void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, Appen
         DCHECK(copiedSharedQuadState);
 
         scoped_ptr<DrawQuad> copyQuad;
-        if (quad->material() != DrawQuad::RENDER_PASS)
+        if (quad->material != DrawQuad::RENDER_PASS)
             copyQuad = quad->Copy(copiedSharedQuadState);
         else {
             RenderPass::Id contributingDelegatedRenderPassId = RenderPassDrawQuad::materialCast(quad)->renderPassId();

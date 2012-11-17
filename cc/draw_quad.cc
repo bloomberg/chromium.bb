@@ -25,18 +25,27 @@ template<typename T> T* TypedCopy(const cc::DrawQuad* other) {
 
 namespace cc {
 
-DrawQuad::DrawQuad(const SharedQuadState* shared_quad_state,
-                   Material material,
-                   gfx::Rect rect,
-                   gfx::Rect opaque_rect)
-    : shared_quad_state_(shared_quad_state),
-      material_(material),
-      rect_(rect),
-      visible_rect_(rect),
-      needs_blending_(false),
-      opaque_rect_(opaque_rect) {
-  DCHECK(shared_quad_state_);
-  DCHECK(material_ != INVALID);
+DrawQuad::DrawQuad()
+    : shared_quad_state(),
+      material(INVALID),
+      needs_blending(false) {
+}
+
+void DrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+                      Material material,
+                      gfx::Rect rect,
+                      gfx::Rect opaque_rect,
+                      gfx::Rect visible_rect,
+                      bool needs_blending) {
+  this->material = material;
+  this->rect = rect;
+  this->opaque_rect = opaque_rect;
+  this->visible_rect = visible_rect;
+  this->needs_blending = needs_blending;
+  this->shared_quad_state = shared_quad_state;
+
+  DCHECK(shared_quad_state);
+  DCHECK(material != INVALID);
 }
 
 DrawQuad::~DrawQuad() {
@@ -46,7 +55,7 @@ scoped_ptr<DrawQuad> DrawQuad::Copy(
     const SharedQuadState* copied_shared_quad_state) const
 {
   scoped_ptr<DrawQuad> copy_quad;
-  switch (material()) {
+  switch (material) {
     case CHECKERBOARD:
       copy_quad.reset(TypedCopy<CheckerboardDrawQuad>(this));
       break;
@@ -73,10 +82,10 @@ scoped_ptr<DrawQuad> DrawQuad::Copy(
       break;
     case RENDER_PASS:  // RenderPass quads have their own copy() method.
     case INVALID:
-      LOG(FATAL) << "Invalid DrawQuad material " << material();
+      LOG(FATAL) << "Invalid DrawQuad material " << material;
       break;
   }
-  copy_quad->set_shared_quad_state(copied_shared_quad_state);
+  copy_quad->shared_quad_state = copied_shared_quad_state;
   return copy_quad.Pass();
 }
 

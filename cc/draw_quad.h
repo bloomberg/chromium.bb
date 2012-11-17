@@ -35,75 +35,49 @@ class CC_EXPORT DrawQuad {
       const SharedQuadState* copied_shared_quad_state) const;
 
   // TODO(danakj): Chromify or remove these SharedQuadState helpers.
-  const WebKit::WebTransformationMatrix& quadTransform() const { return shared_quad_state_->quadTransform; }
-  gfx::Rect visibleContentRect() const { return shared_quad_state_->visibleContentRect; }
-  gfx::Rect clippedRectInTarget() const { return shared_quad_state_->clippedRectInTarget; }
-  float opacity() const { return shared_quad_state_->opacity; }
+  const WebKit::WebTransformationMatrix& quadTransform() const { return shared_quad_state->quadTransform; }
+  gfx::Rect visibleContentRect() const { return shared_quad_state->visibleContentRect; }
+  gfx::Rect clippedRectInTarget() const { return shared_quad_state->clippedRectInTarget; }
+  float opacity() const { return shared_quad_state->opacity; }
 
-  Material material() const { return material_; }
+  Material material;
 
   // This rect, after applying the quad_transform(), gives the geometry that
   // this quad should draw to.
-  gfx::Rect rect() const { return rect_; }
+  gfx::Rect rect;
 
   // This specifies the region of the quad that is opaque.
-  gfx::Rect opaque_rect() const { return opaque_rect_; }
+  gfx::Rect opaque_rect;
 
   // Allows changing the rect that gets drawn to make it smaller. This value
   // should be clipped to quadRect.
-  gfx::Rect visible_rect() const { return visible_rect_; }
-
-  // Allows changing the rect that gets drawn to make it smaller. Parameter
-  // passed in will be clipped to quadRect().
-  void set_visible_rect(gfx::Rect rect) { visible_rect_ = rect; }
+  gfx::Rect visible_rect;
 
   // By default blending is used when some part of the quad is not opaque.
   // With this setting, it is possible to force blending on regardless of the
   // opaque area.
-  bool needs_blending() const { return needs_blending_; }
+  bool needs_blending;
 
   // Stores state common to a large bundle of quads; kept separate for memory
   // efficiency. There is special treatment to reconstruct these pointers
   // during serialization.
-  const SharedQuadState* shared_quad_state() const {
-    return shared_quad_state_;
-  }
+  const SharedQuadState* shared_quad_state;
 
-  // Allows changing the rect that gets drawn to make it smaller. Parameter
-  // passed in will be clipped to quadRect().
-  void set_shared_quad_state(const SharedQuadState* shared_quad_state) {
-    shared_quad_state_ = shared_quad_state;
-  }
-
-  bool IsDebugQuad() const { return material_ == DEBUG_BORDER; }
+  bool IsDebugQuad() const { return material == DEBUG_BORDER; }
   bool ShouldDrawWithBlending() const {
-    return needs_blending_ || opacity() < 1.0f ||
-        !opaque_rect_.Contains(visible_rect_);
+    return needs_blending || shared_quad_state->opacity < 1.0f ||
+        !opaque_rect.Contains(visible_rect);
   }
 
  protected:
-  DrawQuad(const SharedQuadState* shared_quad_state,
-           Material material,
-           gfx::Rect rect,
-           gfx::Rect opaque_rect);
+  DrawQuad();
 
-  // Stores state common to a large bundle of quads; kept separate for memory
-  // efficiency. There is special treatment to reconstruct these pointers
-  // during serialization.
-  const SharedQuadState* shared_quad_state_;
-
-  Material material_;
-  gfx::Rect rect_;
-  gfx::Rect visible_rect_;
-
-  // By default blending is used when some part of the quad is not opaque. With
-  // this setting, it is possible to force blending on regardless of the opaque
-  // area.
-  bool needs_blending_;
-
-  // Be default, this rect is empty. It is used when the shared quad state and above
-  // variables determine that the quad is not fully opaque but may be partially opaque.
-  gfx::Rect opaque_rect_;
+  void SetAll(const SharedQuadState* shared_quad_state,
+              Material material,
+              gfx::Rect rect,
+              gfx::Rect opaque_rect,
+              gfx::Rect visible_rect,
+              bool needs_blending);
 };
 
 }

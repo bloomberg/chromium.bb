@@ -30,12 +30,14 @@ YUVVideoDrawQuad::YUVVideoDrawQuad(
     const VideoLayerImpl::FramePlane& yPlane,
     const VideoLayerImpl::FramePlane& uPlane,
     const VideoLayerImpl::FramePlane& vPlane)
-    : DrawQuad(sharedQuadState, DrawQuad::YUV_VIDEO_CONTENT, quadRect, opaqueRect)
-    , m_texScale(texScale)
+    : m_texScale(texScale)
     , m_yPlane(yPlane)
     , m_uPlane(uPlane)
     , m_vPlane(vPlane)
 {
+    gfx::Rect visibleRect = quadRect;
+    bool needsBlending = false;
+    DrawQuad::SetAll(sharedQuadState, DrawQuad::YUV_VIDEO_CONTENT, quadRect, opaqueRect, visibleRect, needsBlending);
 }
 
 YUVVideoDrawQuad::~YUVVideoDrawQuad()
@@ -44,7 +46,7 @@ YUVVideoDrawQuad::~YUVVideoDrawQuad()
 
 const YUVVideoDrawQuad* YUVVideoDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::YUV_VIDEO_CONTENT);
+    DCHECK(quad->material == DrawQuad::YUV_VIDEO_CONTENT);
     return static_cast<const YUVVideoDrawQuad*>(quad);
 }
 
