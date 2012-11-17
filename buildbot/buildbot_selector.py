@@ -42,7 +42,7 @@ BOT_ASSIGNMENT = {
         python + ' buildbot\\buildbot_standard.py opt 64 newlib',
     'win7-64-bare-glibc-opt':
         python + ' buildbot\\buildbot_standard.py opt 64 glibc',
-    'win7-arm-newlib-opt':
+    'win7-64-arm-newlib-opt':
         'echo "TODO(mcgrathr): add arm"',
     'mac10.6-newlib-opt':
         python + ' buildbot/buildbot_standard.py opt 32 newlib',
