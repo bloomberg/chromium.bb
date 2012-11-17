@@ -1129,6 +1129,8 @@ bool PrintWebViewHelper::PrintPages(WebKit::WebFrame* frame,
   int page_count = prep_frame_view.GetExpectedPageCount();
   if (!page_count)
     return false;
+  // TODO(vitalybuka): should be page_count or valid pages from params.pages.
+  // See http://crbug.com/161576
   Send(new PrintHostMsg_DidGetPrintedPagesCount(routing_id(),
                                                 print_params.document_cookie,
                                                 page_count));

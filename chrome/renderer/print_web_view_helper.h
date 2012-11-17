@@ -288,7 +288,7 @@ class PrintWebViewHelper
 #elif defined(OS_POSIX)
   bool RenderPages(const PrintMsg_PrintPages_Params& params,
                    WebKit::WebFrame* frame, const WebKit::WebNode& node,
-                   int* page_count, PrepareFrameAndViewForPrint* prepare,
+                   std::vector<int>* printed_pages,
                    printing::Metafile* metafile);
 #endif  // defined(OS_WIN)
 

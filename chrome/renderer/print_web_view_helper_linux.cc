@@ -63,12 +63,12 @@ bool PrintWebViewHelper::PrintPages(WebFrame* frame, const WebNode& node) {
     return false;
 
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
-  PrepareFrameAndViewForPrint prep_frame_view(params.params, frame, node);
-  int page_count = 0;
-  if (!RenderPages(params, frame, node, &page_count, &prep_frame_view,
-                   &metafile)) {
+  std::vector<int> printed_pages;
+  if (!RenderPages(params, frame, node, &printed_pages, &metafile)) {
     return false;
   }
+
+  metafile.FinishDocument();
 
   // Get the size of the resulting metafile.
   uint32 buf_size = metafile.GetDataSize();
@@ -111,28 +111,11 @@ bool PrintWebViewHelper::PrintPages(WebFrame* frame, const WebNode& node) {
                              &(printed_page_params.metafile_data_handle));
   }
 
-  if (params.pages.empty()) {
-    // Send the first page with a valid handle.
-    printed_page_params.page_number = 0;
+  for (size_t i = 0; i < printed_pages.size(); ++i) {
+    printed_page_params.page_number = printed_pages[i];
     Send(new PrintHostMsg_DidPrintPage(routing_id(), printed_page_params));
-
     // Send the rest of the pages with an invalid metafile handle.
     printed_page_params.metafile_data_handle.fd = -1;
-    for (int i = 1; i < page_count; ++i) {
-      printed_page_params.page_number = i;
-      Send(new PrintHostMsg_DidPrintPage(routing_id(), printed_page_params));
-    }
-  } else {
-    // Send the first page with a valid handle.
-    printed_page_params.page_number = params.pages[0];
-    Send(new PrintHostMsg_DidPrintPage(routing_id(), printed_page_params));
-
-    // Send the rest of the pages with an invalid metafile handle.
-    printed_page_params.metafile_data_handle.fd = -1;
-    for (size_t i = 1; i < params.pages.size(); ++i) {
-      printed_page_params.page_number = params.pages[i];
-      Send(new PrintHostMsg_DidPrintPage(routing_id(), printed_page_params));
-    }
   }
   return true;
 #endif  // defined(OS_CHROMEOS)
@@ -141,40 +124,49 @@ bool PrintWebViewHelper::PrintPages(WebFrame* frame, const WebNode& node) {
 bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
                                      WebKit::WebFrame* frame,
                                      const WebKit::WebNode& node,
-                                     int* page_count,
-                                     PrepareFrameAndViewForPrint* prepare,
+                                     std::vector<int>* printed_pages,
                                      printing::Metafile* metafile) {
+  PrepareFrameAndViewForPrint prepare(params.params, frame, node);
   PrintMsg_Print_Params print_params = params.params;
-  UpdateFrameAndViewFromCssPageLayout(frame, node, prepare, print_params,
+  UpdateFrameAndViewFromCssPageLayout(frame, node, &prepare, print_params,
                                       ignore_css_margins_);
 
-  *page_count = prepare->GetExpectedPageCount();
-  if (!*page_count)
+  int page_count = prepare.GetExpectedPageCount();
+  if (!page_count)
     return false;
 
 #if !defined(OS_CHROMEOS)
-    Send(new PrintHostMsg_DidGetPrintedPagesCount(routing_id(),
-                                                  print_params.document_cookie,
-                                                  *page_count));
+  // TODO(vitalybuka): should be page_count or valid pages from params.pages.
+  // See http://crbug.com/161576
+  Send(new PrintHostMsg_DidGetPrintedPagesCount(routing_id(),
+                                                print_params.document_cookie,
+                                                page_count));
 #endif
 
-  PrintMsg_PrintPage_Params page_params;
-  page_params.params = print_params;
-  const gfx::Size& canvas_size = prepare->GetPrintCanvasSize();
   if (params.pages.empty()) {
-    for (int i = 0; i < *page_count; ++i) {
-      page_params.page_number = i;
-      PrintPageInternal(page_params, canvas_size, frame, metafile);
+    for (int i = 0; i < page_count; ++i) {
+      printed_pages->push_back(i);
     }
   } else {
+    // TODO(vitalybuka): redesign to make more code cross platform.
     for (size_t i = 0; i < params.pages.size(); ++i) {
-      page_params.page_number = params.pages[i];
-      PrintPageInternal(page_params, canvas_size, frame, metafile);
+      if (params.pages[i] >= 0 && params.pages[i] < page_count) {
+        printed_pages->push_back(params.pages[i]);
+      }
     }
   }
 
-  prepare->FinishPrinting();
-  metafile->FinishDocument();
+  if (printed_pages->empty())
+    return false;
+
+  PrintMsg_PrintPage_Params page_params;
+  page_params.params = print_params;
+  const gfx::Size& canvas_size = prepare.GetPrintCanvasSize();
+  for (size_t i = 0; i < printed_pages->size(); ++i) {
+    page_params.page_number = (*printed_pages)[i];
+    PrintPageInternal(page_params, canvas_size, frame, metafile);
+  }
+
   return true;
 }
 
