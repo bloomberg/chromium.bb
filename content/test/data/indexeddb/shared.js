@@ -22,3 +22,18 @@ function unexpectedCompleteCallback()
 {
   result('fail - unexpected complete callback');
 }
+
+function unexpectedSuccessCallback()
+{
+  result('fail - unexpected success callback');
+}
+
+function unexpectedUpgradeNeededCallback()
+{
+  result('fail - unexpected upgradeneeded callback');
+}
+
+function unexpectedBlockedCallback()
+{
+  result('fail - unexpected blocked callback');
+}

@@ -5,51 +5,50 @@
 function test()
 {
   if (document.location.hash === '#tab1') {
-    prepareDatabase(0, function () { doSetVersion(1); });
+    prepareDatabase(function () { doSetVersion(2); });
   } else if (document.location.hash === '#tab2') {
-    doSetVersion(2);
+    doSetVersion(3);
   } else {
     result('fail - unexpected hash');
   }
 }
 
-function prepareDatabase(version, callback)
+function prepareDatabase(callback)
 {
   // Prepare the database, then exit normally
   var delreq = window.indexedDB.deleteDatabase('version-change-blocked');
   delreq.onerror = unexpectedErrorCallback;
   delreq.onsuccess = function() {
-    var openreq = window.indexedDB.open('version-change-blocked');
-    openreq.onerror = unexpectedErrorCallback;
-    openreq.onsuccess = function(e) {
-      var db = openreq.result;
-      var setverreq = db.setVersion(String(version));
-      setverreq.onerror = unexpectedErrorCallback;
-      setverreq.onsuccess = function(e) {
-        var transaction = setverreq.result;
-        transaction.onabort = unexpectedAbortCallback;
-        transaction.oncomplete = function (e) {
-          db.close();
-          callback();
-        };
-      };
-    };
+    reOpen(callback);
+  };
+}
+
+function reOpen(callback)
+{
+  request = indexedDB.open('version-change-blocked');
+  request.onerror = unexpectedErrorCallback;
+  request.onblocked = unexpectedBlockedCallback;
+  request.onupgradeneeded = function() {
+    db = event.target.result;
+    db.createObjectStore("someobjectstore");
+  };
+  request.onsuccess = function() {
+    db.close();
+    callback();
   };
 }
 
 function doSetVersion(version)
 {
   // Open the database and try a setVersion
-  var openreq = window.indexedDB.open('version-change-blocked');
+  var openreq = window.indexedDB.open('version-change-blocked', version);
   openreq.onerror = unexpectedErrorCallback;
-  openreq.onsuccess = function(e) {
-    window.db = openreq.result;
-    var setverreq = window.db.setVersion(String(version));
-    setverreq.onerror = unexpectedErrorCallback;
-    setverreq.onblocked = function(e) {
-      result('setVersion(' + version + ') blocked');
-    };
-    setverreq.onsuccess = function(e) {
+  var upgradeneededComplete = false;
+  openreq.onblocked = function(e) {
+    result('setVersion(' + version + ') blocked');
+  };
+  openreq.onupgradeneeded = function(e) {
+    openreq.transaction.oncomplete = function(e2) {
       result('setVersion(' + version + ') complete');
     };
   };

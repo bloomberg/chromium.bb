@@ -103,9 +103,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionGetTest) {
   SimpleTest(GetTestUrl("indexeddb", "transaction_get_test.html"));
 }
 
-// Needs to be disabled until after WK 129037 rolls into chromium and we can
-// update this expectation.
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_KeyTypesTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyTypesTest) {
   SimpleTest(GetTestUrl("indexeddb", "key_types_test.html"));
 }
 
@@ -360,15 +358,15 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, VersionChangeCrashResilience) {
 // Verify that open DB connections are closed when a tab is destroyed.
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ConnectionsClosedOnTabClose) {
   NavigateAndWaitForTitle(shell(), "version_change_blocked.html", "#tab1",
-                          "setVersion(1) complete");
+                          "setVersion(2) complete");
 
   // Start on a different URL to force a new renderer process.
   Shell* new_shell = CreateBrowser();
   NavigateToURL(new_shell, GURL(chrome::kAboutBlankURL));
   NavigateAndWaitForTitle(new_shell, "version_change_blocked.html", "#tab2",
-                          "setVersion(2) blocked");
+                          "setVersion(3) blocked");
 
-  string16 expected_title16(ASCIIToUTF16("setVersion(2) complete"));
+  string16 expected_title16(ASCIIToUTF16("setVersion(3) complete"));
   TitleWatcher title_watcher(new_shell->web_contents(), expected_title16);
 
   base::KillProcess(

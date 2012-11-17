@@ -47,21 +47,10 @@ function onSetVersionComplete()
 function onSetVersion()
 {
   // We are now in a set version transaction.
-  var setVersionTransaction = event.target.result;
-  setVersionTransaction.oncomplete = onSetVersionComplete;
-  setVersionTransaction.onerror = unexpectedErrorCallback;
-
   debug('Creating object store.');
+  db = event.target.result;
   deleteAllObjectStores(db);
   var objectStore = db.createObjectStore('employees', {keyPath: 'id'});
-}
-
-function setVersion()
-{
-  window.db = event.target.result;
-  var request = db.setVersion('1.0');
-  request.onsuccess = onSetVersion;
-  request.onerror = unexpectedErrorCallback;
 }
 
 function test()
@@ -72,9 +61,5 @@ function test()
     IDBKeyRange = webkitIDBKeyRange;
     IDBTransaction = webkitIDBTransaction;
   }
-
-  debug('Connecting to indexedDB.');
-  var request = indexedDB.open('name');
-  request.onsuccess = setVersion;
-  request.onerror = unexpectedErrorCallback;
+  indexedDBTest(onSetVersion, onSetVersionComplete);
 }

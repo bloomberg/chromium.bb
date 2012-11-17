@@ -52,6 +52,7 @@ function dataAddedSuccess()
 function populateObjectStore()
 {
   debug('Populating object store');
+  db = event.target.result;
   deleteAllObjectStores(db);
   window.objectStore = db.createObjectStore('test');
   var request = objectStore.add('myValue', 3.14);
@@ -59,19 +60,6 @@ function populateObjectStore()
   request.onerror = unexpectedErrorCallback;
 }
 
-function setVersion()
-{
-  debug('setVersion');
-  window.db = event.target.result;
-  var request = db.setVersion('new version');
-  request.onsuccess = populateObjectStore;
-  request.onerror = unexpectedErrorCallback;
-}
-
-function test()
-{
-  debug('Connecting to indexedDB');
-  var request = webkitIndexedDB.open('name');
-  request.onsuccess = setVersion;
-  request.onerror = unexpectedErrorCallback;
+function test() {
+  indexedDBTest(populateObjectStore);
 }

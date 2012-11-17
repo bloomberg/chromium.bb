@@ -44,24 +44,13 @@ function startTransaction()
 
 function populateObjectStore()
 {
+    db = event.target.result;
     deleteAllObjectStores(db);
     window.objectStore = db.createObjectStore('storeName');
     var request = objectStore.add('myValue', 'myKey');
     request.onerror = unexpectedErrorCallback;
-    event.target.result.oncomplete = startTransaction;
 }
 
-function setVersion()
-{
-    window.db = event.target.result;
-    var request = db.setVersion('new version');
-    request.onsuccess = populateObjectStore;
-    request.onerror = unexpectedErrorCallback;
-}
-
-function test()
-{
-    request = webkitIndexedDB.open('name');
-    request.onsuccess = setVersion;
-    request.onerror = unexpectedErrorCallback;
+function test() {
+  indexedDBTest(populateObjectStore, startTransaction);
 }

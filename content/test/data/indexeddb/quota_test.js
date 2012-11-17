@@ -18,26 +18,12 @@ function initUsageCallback(usage, quota) {
   debug("original quota is " + displaySize(origReturnedQuota));
   debug("original usage is " + displaySize(origReturnedUsage));
 
-  request = webkitIndexedDB.open('database-quota');
-  request.onsuccess = openSuccess;
-  request.onerror = unexpectedErrorCallback;
+  indexedDBTest(prepareDatabase, initQuotaEnforcing);
 }
 
-function openSuccess() {
-  window.db = event.target.result;
-
-  request = db.setVersion('new version');
-  request.onsuccess = setVersionSuccess;
-  request.onerror = unexpectedErrorCallback;
-}
-
-function setVersionSuccess() {
-  window.trans = event.target.result;
-  trans.onabort = unexpectedAbortCallback;
-  trans.oncomplete = initQuotaEnforcing;
-
-  deleteAllObjectStores(db);
-
+function prepareDatabase()
+{
+  db = event.target.result;
   objectStore = db.createObjectStore("test123");
 }
 

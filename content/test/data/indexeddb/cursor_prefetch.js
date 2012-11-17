@@ -10,32 +10,14 @@ var kMinPrefetchAmount = 5;
 var kNumberOfItems = 200;
 
 function test() {
-  indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB;
-  IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction
-  IDBCursor = window.IDBCursor || window.webkitIDBCursor;
-  IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
-
-  request = indexedDB.open('cursor-prefetch');
-  request.onsuccess = openSuccess;
-  request.onerror = unexpectedErrorCallback;
-}
-
-function openSuccess() {
-  window.db = event.target.result;
-
-  request = db.setVersion('new version');
-  request.onsuccess = setVersionSuccess;
-  request.onerror = unexpectedErrorCallback;
+  indexedDBTest(setVersionSuccess, fillObjectStore);
 }
 
 function setVersionSuccess() {
   debug("setVersionSuccess():");
-  window.trans = event.target.result;
+  window.db = event.target.result;
+  window.trans = event.target.transaction;
   shouldBeTrue("trans !== null");
-  trans.onabort = unexpectedAbortCallback;
-  trans.oncomplete = fillObjectStore;
-
-  deleteAllObjectStores(db);
   var store = db.createObjectStore('store');
   store.createIndex('index', '');
 }

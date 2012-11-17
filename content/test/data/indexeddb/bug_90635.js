@@ -18,24 +18,20 @@ function testPart1()
   var delreq = window.indexedDB.deleteDatabase('bug90635');
   delreq.onerror = unexpectedErrorCallback;
   delreq.onsuccess = function() {
-    var openreq = window.indexedDB.open('bug90635');
+    var openreq = window.indexedDB.open('bug90635', 1);
     openreq.onerror = unexpectedErrorCallback;
-    openreq.onsuccess = function(e) {
-      var db = openreq.result;
-      var setverreq = db.setVersion('1');
-      setverreq.onerror = unexpectedErrorCallback;
-      setverreq.onsuccess = function(e) {
-        var transaction = setverreq.result;
+    openreq.onblocked = unexpectedBlockedCallback;
+    openreq.onupgradeneeded = function(e) {
+      db = openreq.result;
+      var transaction = openreq.transaction;
+      transaction.onabort = unexpectedAbortCallback;
 
-        db.createObjectStore('store1');
-        db.createObjectStore('store2', {keyPath: ''});
-        db.createObjectStore('store3', {keyPath: 'some_path'});
-
-        transaction.onabort = unexpectedAbortCallback;
-        transaction.oncomplete = function() {
-          test_store(db, 'first run');
-        };
-      };
+      db.createObjectStore('store1');
+      db.createObjectStore('store2', {keyPath: ''});
+      db.createObjectStore('store3', {keyPath: 'some_path'});
+    };
+    openreq.onsuccess = function() {
+      test_store(db, 'first run');
     };
   };
 }

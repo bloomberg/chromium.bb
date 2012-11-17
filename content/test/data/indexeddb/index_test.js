@@ -126,7 +126,7 @@ function dataAddedSuccess()
 function populateObjectStore()
 {
   debug('Populating object store');
-  deleteAllObjectStores(db);
+  db = event.target.result;
   window.objectStore = db.createObjectStore('test');
   var myValue = {'aKey': 21, 'aValue': '!42'};
   var request = objectStore.add(myValue, 0);
@@ -134,26 +134,7 @@ function populateObjectStore()
   request.onerror = unexpectedErrorCallback;
 }
 
-function setVersion()
-{
-  debug('setVersion');
-  window.db = event.target.result;
-  var request = db.setVersion('new version');
-  request.onsuccess = populateObjectStore;
-  request.onerror = unexpectedErrorCallback;
+function test() {
+  indexedDBTest(populateObjectStore);
 }
 
-function test()
-{
-  if ('webkitIndexedDB' in window) {
-    indexedDB = webkitIndexedDB;
-    IDBCursor = webkitIDBCursor;
-    IDBKeyRange = webkitIDBKeyRange;
-    IDBTransaction = webkitIDBTransaction;
-  }
-
-  debug('Connecting to indexedDB');
-  var request = indexedDB.open('name');
-  request.onsuccess = setVersion;
-  request.onerror = unexpectedErrorCallback;
-}

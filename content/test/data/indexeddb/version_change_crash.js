@@ -23,20 +23,14 @@ function testPart1()
   var delreq = window.indexedDB.deleteDatabase('version-change-crash');
   delreq.onerror = unexpectedErrorCallback;
   delreq.onsuccess = function() {
-    var openreq = window.indexedDB.open('version-change-crash');
+    var openreq = window.indexedDB.open('version-change-crash', 1);
     openreq.onerror = unexpectedErrorCallback;
+    openreq.onblocked = unexpectedBlockedCallback;
+    openreq.onupgradeneeded = function(e) {
+      openreq.result.createObjectStore('store1');
+    };
     openreq.onsuccess = function(e) {
-      var db = openreq.result;
-      var setverreq = db.setVersion('1');
-      setverreq.onerror = unexpectedErrorCallback;
-      setverreq.onsuccess = function(e) {
-        var transaction = setverreq.result;
-        db.createObjectStore('store1');
-        transaction.onabort = unexpectedAbortCallback;
-        transaction.oncomplete = function (e) {
-          result('pass - part1 - complete');
-        };
-      };
+      result('pass - part1 - complete');
     };
   };
 }
@@ -46,23 +40,21 @@ function testPart2()
   // Start a VERSION_CHANGE then crash
 
   // Set version 2, twiddle stores and crash
-  var openreq = window.indexedDB.open('version-change-crash');
+  var openreq = window.indexedDB.open('version-change-crash', 2);
   openreq.onerror = unexpectedErrorCallback;
-  openreq.onsuccess = function(e) {
+  openreq.onblocked = unexpectedBlockedCallback;
+  openreq.onsuccess = unexpectedSuccessCallback;
+  openreq.onupgradeneeded = function(e) {
     var db = openreq.result;
-    var setverreq = db.setVersion('2');
-    setverreq.onerror = unexpectedErrorCallback;
-    setverreq.onsuccess = function(e) {
-      var transaction = setverreq.result;
-      transaction.onabort = unexpectedAbortCallback;
-      transaction.oncomplete = unexpectedCompleteCallback;
+    var transaction = openreq.transaction;
+    transaction.onabort = unexpectedAbortCallback;
+    transaction.oncomplete = unexpectedCompleteCallback;
 
-      var store = db.createObjectStore('store2');
-      result('pass - part2 - crash me');
+    var store = db.createObjectStore('store2');
+    result('pass - part2 - crash me');
 
-      // Keep adding to the transaction so it can't commit
-      (function loop() { store.put(0, 0).onsuccess = loop; }());
-    };
+    // Keep adding to the transaction so it can't commit
+    (function loop() { store.put(0, 0).onsuccess = loop; }());
   };
 }
 
@@ -73,9 +65,11 @@ function testPart3()
   // Check version
   var openreq = window.indexedDB.open('version-change-crash');
   openreq.onerror = unexpectedErrorCallback;
+  openreq.onblocked = unexpectedBlockedCallback;
+  openreq.onupgradeneeded = unexpectedUpgradeNeededCallback;
   openreq.onsuccess = function(e) {
     var db = openreq.result;
-    if (db.version !== '1') {
+    if (db.version !== 1) {
       result('fail - version incorrect');
       return;
     }

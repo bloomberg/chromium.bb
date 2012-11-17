@@ -43,28 +43,13 @@ function populateObjectStore()
 function createObjectStore()
 {
     debug('createObjectStore');
-    deleteAllObjectStores(db);
+    db = event.target.result;
     window.objectStore = db.createObjectStore('test', {keyPath: 'keyPath'});
     count = 0;
     populateObjectStore();
 }
 
-function setVersion()
-{
-    debug('setVersion');
-    window.db = event.target.result;
-    var request = db.setVersion('new version');
-    request.onsuccess = createObjectStore;
-    request.onerror = unexpectedErrorCallback;
-}
-
 function test()
 {
-    debug("Test IndexedDB's KeyPath.");
-    debug("Opening IndexedDB");
-    request = webkitIndexedDB.open('name');
-    request.onsuccess = setVersion;
-    request.onerror = unexpectedErrorCallback;
+    indexedDBTest(createObjectStore);
 }
-
-var successfullyParsed = true;
