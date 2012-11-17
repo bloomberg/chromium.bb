@@ -66,7 +66,7 @@ void PrintLayerHierarchyImp(const Layer* layer, int indent,
     buf << L"opacity: " << std::setprecision(2) << layer->opacity();
   }
 
-  if (layer->transform().HasChange()) {
+  if (!layer->transform().IsIdentity()) {
     gfx::Point translation;
     float rotation;
     gfx::Point3F scale;

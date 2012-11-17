@@ -21,8 +21,8 @@ namespace gfx {
 
 namespace {
 
-#define MGET(m, row, col) SkMScalarToDouble(m.get(row, col))
-#define MSET(m, row, col, value) m.set(row, col, SkMScalarToDouble(value))
+// Taken from SkMatrix44.
+const double kTooSmallForDeterminant = 1e-8;
 
 double TanDegrees(double degrees) {
   double radians = degrees * M_PI / 180;
@@ -60,15 +60,15 @@ void Transform::SetRotateAbout(const Point3F& axis, double degree) {
 }
 
 void Transform::SetScaleX(double x) {
-  MSET(matrix_, 0, 0, x);
+  matrix_.setDouble(0, 0, x);
 }
 
 void Transform::SetScaleY(double y) {
-  MSET(matrix_, 1, 1, y);
+  matrix_.setDouble(1, 1, y);
 }
 
 void Transform::SetScaleZ(double z) {
-  MSET(matrix_, 2, 2, z);
+  matrix_.setDouble(2, 2, z);
 }
 
 void Transform::SetScale(double x, double y) {
@@ -84,15 +84,15 @@ void Transform::SetScale3d(double x, double y, double z) {
 }
 
 void Transform::SetTranslateX(double x) {
-  MSET(matrix_, 0, 3, x);
+  matrix_.setDouble(0, 3, x);
 }
 
 void Transform::SetTranslateY(double y) {
-  MSET(matrix_, 1, 3, y);
+  matrix_.setDouble(1, 3, y);
 }
 
 void Transform::SetTranslateZ(double z) {
-  MSET(matrix_, 2, 3, z);
+  matrix_.setDouble(2, 3, z);
 }
 
 void Transform::SetTranslate(double x, double y) {
@@ -108,16 +108,19 @@ void Transform::SetTranslate3d(double x, double y, double z) {
 }
 
 void Transform::SetSkewX(double angle) {
-  MSET(matrix_, 0, 1, TanDegrees(angle));
+  matrix_.setDouble(0, 1, TanDegrees(angle));
 }
 
 void Transform::SetSkewY(double angle) {
-  MSET(matrix_, 1, 0, TanDegrees(angle));
+  matrix_.setDouble(1, 0, TanDegrees(angle));
 }
 
 void Transform::SetPerspectiveDepth(double depth) {
+  if (depth == 0)
+      return;
+
   SkMatrix44 m;
-  MSET(m, 3, 2, -1.0 / depth);
+  m.setDouble(3, 2, -1.0 / depth);
   matrix_ = m;
 }
 
@@ -184,8 +187,11 @@ void Transform::ConcatSkewY(double angle_y) {
 }
 
 void Transform::ConcatPerspectiveDepth(double depth) {
+  if (depth == 0)
+      return;
+
   SkMatrix44 m;
-  MSET(m, 3, 2, -1.0 / depth);
+  m.setDouble(3, 2, -1.0 / depth);
   matrix_.postConcat(m);
 }
 
@@ -252,8 +258,11 @@ void Transform::PreconcatSkewY(double angle_y) {
 }
 
 void Transform::PreconcatPerspectiveDepth(double depth) {
+  if (depth == 0)
+      return;
+
   SkMatrix44 m;
-  MSET(m, 3, 2, -1.0 / depth);
+  m.setDouble(3, 2, -1.0 / depth);
   matrix_.preConcat(m);
 }
 
@@ -269,12 +278,20 @@ void Transform::ConcatTransform(const Transform& transform) {
   }
 }
 
-bool Transform::HasChange() const {
-  return !matrix_.isIdentity();
+bool Transform::IsIdentity() const {
+  return matrix_.isIdentity();
+}
+
+bool Transform::IsInvertible() const {
+  return std::abs(matrix_.determinant()) > kTooSmallForDeterminant;
 }
 
 bool Transform::GetInverse(Transform* transform) const {
   return matrix_.invert(&transform->matrix_);
+}
+
+void Transform::Transpose() {
+  matrix_.transpose();
 }
 
 void Transform::TransformPoint(Point& point) const {

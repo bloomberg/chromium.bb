@@ -615,7 +615,7 @@ bool Layer::GetTransformRelativeTo(const Layer* ancestor,
                                    gfx::Transform* transform) const {
   const Layer* p = this;
   for (; p && p != ancestor; p = p->parent()) {
-    if (p->transform().HasChange())
+    if (!p->transform().IsIdentity())
       transform->ConcatTransform(p->transform());
     transform->ConcatTranslate(static_cast<float>(p->bounds().x()),
                                static_cast<float>(p->bounds().y()));

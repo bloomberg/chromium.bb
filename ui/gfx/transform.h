@@ -5,6 +5,7 @@
 #ifndef UI_GFX_TRANSFORM_H_
 #define UI_GFX_TRANSFORM_H_
 
+#include "base/compiler_specific.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "ui/base/ui_export.h"
 
@@ -118,11 +119,17 @@ class UI_EXPORT Transform {
   // (i.e. 'this = transform * this;').
   void ConcatTransform(const Transform& transform);
 
-  // Does the transformation change anything?
-  bool HasChange() const;
+  // Returns true if this is the identity matrix.
+  bool IsIdentity() const;
+
+  // Returns true if this transform is non-singular.
+  bool IsInvertible() const;
 
   // Inverts the transform which is passed in. Returns true if successful.
-  bool GetInverse(Transform* transform) const;
+  bool GetInverse(Transform* transform) const WARN_UNUSED_RESULT;
+
+  // Transposes this transform in place.
+  void Transpose();
 
   // Applies the transformation on the point. Returns true if the point is
   // transformed successfully.

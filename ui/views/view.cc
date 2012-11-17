@@ -437,7 +437,7 @@ const gfx::Transform& View::GetTransform() const {
 }
 
 void View::SetTransform(const gfx::Transform& transform) {
-  if (!transform.HasChange()) {
+  if (transform.IsIdentity()) {
     if (layer()) {
       layer()->SetTransform(transform);
       if (!paint_to_layer_)
@@ -1432,7 +1432,7 @@ std::string View::DoPrintViewGraph(bool first, View* view_with_children) {
                  bounds().height());
   result.append(bounds_buffer);
 
-  if (GetTransform().HasChange()) {
+  if (!GetTransform().IsIdentity()) {
     gfx::Point translation;
     float rotation;
     gfx::Point3F scale;

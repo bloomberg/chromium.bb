@@ -12,18 +12,6 @@ namespace gfx {
 
 namespace {
 
-#define MGET(m, row, col) SkMScalarToDouble(m.get(row, col))
-#define MSET(m, row, col, value) m.set(row, col, SkMScalarToDouble(value))
-
-// TODO(vollick): Remove this once SkMatrix44::transpose has landed.
-SkMatrix44 Transpose(const SkMatrix44& m) {
-  SkMatrix44 to_return;
-  for (int i = 0; i < 4; ++i)
-    for (int j = 0; j < 4; ++j)
-      to_return.set(i, j, m.get(j, i));
-  return to_return;
-}
-
 double Length3(double v[3]) {
   return std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 }
@@ -95,14 +83,14 @@ bool Slerp(double out[4],
 
 // Returns false if the matrix cannot be normalized.
 bool Normalize(SkMatrix44& m) {
-  if (MGET(m, 3, 3) == 0.0)
+  if (m.getDouble(3, 3) == 0.0)
     // Cannot normalize.
     return false;
 
-  double scale = 1.0 / MGET(m, 3, 3);
+  double scale = 1.0 / m.getDouble(3, 3);
   for (int i = 0; i < 4; i++)
     for (int j = 0; j < 4; j++)
-      MSET(m, i, j, MGET(m, i, j) * scale);
+      m.setDouble(i, j, m.getDouble(i, j) * scale);
 
   return true;
 }
@@ -153,25 +141,21 @@ bool DecomposeTransform(DecomposedTransform* decomp,
   if (!Normalize(matrix))
     return false;
 
-  for (int i = 0; i < 4; i++)
-    for (int j = 0; j < 4; j++)
-      MSET(matrix, i, j, MGET(matrix, i, j) / MGET(matrix, 3, 3));
-
   SkMatrix44 perspectiveMatrix = matrix;
 
   for (int i = 0; i < 3; ++i)
-    MSET(perspectiveMatrix, 3, i, 0.0);
+    perspectiveMatrix.setDouble(3, i, 0.0);
 
-  MSET(perspectiveMatrix, 3, 3, 1.0);
+  perspectiveMatrix.setDouble(3, 3, 1.0);
 
   // If the perspective matrix is not invertible, we are also unable to
   // decompose, so we'll bail early. Constant taken from SkMatrix44::invert.
   if (std::abs(perspectiveMatrix.determinant()) < 1e-8)
     return false;
 
-  if (MGET(matrix, 3, 0) != 0.0 ||
-      MGET(matrix, 3, 1) != 0.0 ||
-      MGET(matrix, 3, 2) != 0.0) {
+  if (matrix.getDouble(3, 0) != 0.0 ||
+      matrix.getDouble(3, 1) != 0.0 ||
+      matrix.getDouble(3, 2) != 0.0) {
     // rhs is the right hand side of the equation.
     SkMScalar rhs[4] = {
       matrix.get(3, 0),
@@ -187,8 +171,9 @@ bool DecomposeTransform(DecomposedTransform* decomp,
       return false;
 
     SkMatrix44 transposedInversePerspectiveMatrix =
-        Transpose(inversePerspectiveMatrix);
+        inversePerspectiveMatrix;
 
+    transposedInversePerspectiveMatrix.transpose();
     transposedInversePerspectiveMatrix.mapMScalars(rhs);
 
     for (int i = 0; i < 4; ++i)
@@ -202,12 +187,12 @@ bool DecomposeTransform(DecomposedTransform* decomp,
   }
 
   for (int i = 0; i < 3; i++)
-    decomp->translate[i] = MGET(matrix, i, 3);
+    decomp->translate[i] = matrix.getDouble(i, 3);
 
   double row[3][3];
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; ++j)
-      row[i][j] = MGET(matrix, j, i);
+      row[i][j] = matrix.getDouble(j, i);
 
   // Compute X scale factor and normalize first row.
   decomp->scale[0] = Length3(row[0]);
@@ -275,7 +260,7 @@ bool DecomposeTransform(DecomposedTransform* decomp,
 Transform ComposeTransform(const DecomposedTransform& decomp) {
   SkMatrix44 matrix;
   for (int i = 0; i < 4; i++)
-    MSET(matrix, 3, i, decomp.perspective[i]);
+    matrix.setDouble(3, i, decomp.perspective[i]);
 
   SkMatrix44 tempTranslation;
   tempTranslation.setTranslate(SkDoubleToMScalar(decomp.translate[0]),
@@ -289,33 +274,33 @@ Transform ComposeTransform(const DecomposedTransform& decomp) {
   double w = decomp.quaternion[3];
 
   SkMatrix44 rotation_matrix;
-  MSET(rotation_matrix, 0, 0, 1.0 - 2.0 * (y * y + z * z));
-  MSET(rotation_matrix, 0, 1, 2.0 * (x * y - z * w));
-  MSET(rotation_matrix, 0, 2, 2.0 * (x * z + y * w));
-  MSET(rotation_matrix, 1, 0, 2.0 * (x * y + z * w));
-  MSET(rotation_matrix, 1, 1, 1.0 - 2.0 * (x * x + z * z));
-  MSET(rotation_matrix, 1, 2, 2.0 * (y * z - x * w));
-  MSET(rotation_matrix, 2, 0, 2.0 * (x * z - y * w));
-  MSET(rotation_matrix, 2, 1, 2.0 * (y * z + x * w));
-  MSET(rotation_matrix, 2, 2, 1.0 - 2.0 * (x * x + y * y));
+  rotation_matrix.setDouble(0, 0, 1.0 - 2.0 * (y * y + z * z));
+  rotation_matrix.setDouble(0, 1, 2.0 * (x * y - z * w));
+  rotation_matrix.setDouble(0, 2, 2.0 * (x * z + y * w));
+  rotation_matrix.setDouble(1, 0, 2.0 * (x * y + z * w));
+  rotation_matrix.setDouble(1, 1, 1.0 - 2.0 * (x * x + z * z));
+  rotation_matrix.setDouble(1, 2, 2.0 * (y * z - x * w));
+  rotation_matrix.setDouble(2, 0, 2.0 * (x * z - y * w));
+  rotation_matrix.setDouble(2, 1, 2.0 * (y * z + x * w));
+  rotation_matrix.setDouble(2, 2, 1.0 - 2.0 * (x * x + y * y));
 
   matrix.preConcat(rotation_matrix);
 
   SkMatrix44 temp;
   if (decomp.skew[2]) {
-    MSET(temp, 1, 2, decomp.skew[2]);
+    temp.setDouble(1, 2, decomp.skew[2]);
     matrix.preConcat(temp);
   }
 
   if (decomp.skew[1]) {
-    MSET(temp, 1, 2, 0);
-    MSET(temp, 0, 2, decomp.skew[1]);
+    temp.setDouble(1, 2, 0);
+    temp.setDouble(0, 2, decomp.skew[1]);
     matrix.preConcat(temp);
   }
 
   if (decomp.skew[0]) {
-    MSET(temp, 0, 2, 0);
-    MSET(temp, 0, 1, decomp.skew[0]);
+    temp.setDouble(0, 2, 0);
+    temp.setDouble(0, 1, decomp.skew[0]);
     matrix.preConcat(temp);
   }
 
