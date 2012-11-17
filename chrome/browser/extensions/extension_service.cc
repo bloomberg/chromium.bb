@@ -2332,12 +2332,18 @@ void ExtensionService::OnExtensionInstalled(
   }
 
   int include_mask = INCLUDE_ENABLED | INCLUDE_DISABLED;
-  // Do not record the install histograms for upgrades.
   if (!GetExtensionByIdInternal(extension->id(), include_mask)) {
     UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType",
                               extension->GetType(), 100);
+    UMA_HISTOGRAM_ENUMERATION("Extensions.InstallSource",
+                              extension->location(), Extension::NUM_LOCATIONS);
     RecordPermissionMessagesHistogram(
         extension, "Extensions.Permissions_Install");
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Extensions.UpdateType",
+                              extension->GetType(), 100);
+    UMA_HISTOGRAM_ENUMERATION("Extensions.UpdateSource",
+                              extension->location(), Extension::NUM_LOCATIONS);
   }
 
   // Certain extension locations are specific enough that we can
@@ -2352,8 +2358,8 @@ void ExtensionService::OnExtensionInstalled(
   if (install_updates_when_idle_ && wait_for_idle && old &&
       !IsExtensionIdle(id) && !old->has_persistent_background_page()) {
     extension_prefs_->SetIdleInstallInfo(
-      extension,
-      initial_enable ? Extension::ENABLED : Extension::DISABLED);
+        extension,
+        initial_enable ? Extension::ENABLED : Extension::DISABLED);
 
     // Transfer ownership of |extension|.
     pending_extension_updates_.Insert(scoped_extension);
