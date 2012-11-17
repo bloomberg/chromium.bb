@@ -154,8 +154,6 @@
       # -imports.ImportsTest.testFirefoxImportFromPrefs
       # Disabled on vista in the actual test. crbug.com/89767
       # -imports.ImportsTest.testImportFirefoxPasswordsFromPrefs
-      # crbug.com/125424
-      '-media.media_basic_playback.MediaBasicPlaybackTest.testBasicPlaybackMatrix',
       # crbug.com/95031
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # crbug.com/117569
@@ -196,8 +194,6 @@
       '-fullscreen_mouselock.FullscreenMouselockTest.testNoMouseLockWhenCancelFS',
       # crbug.com/114244
       '-imports.ImportsTest.testImportSafariDataTwice',
-      # crbug.com/157394
-      '-media.media_basic_playback.MediaBasicPlaybackTest.testBasicPlaybackMatrix',
       # crbug.com/121484
       '-multiprofile.MultiprofileTest.test20NewProfiles',
       '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812

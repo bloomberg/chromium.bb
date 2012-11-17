@@ -104,6 +104,12 @@ MacVideoDecodeAccelerator::MacVideoDecodeAccelerator(
 bool MacVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile) {
   DCHECK(CalledOnValidThread());
 
+  // MacVDA still fails on too many videos to be useful, even to users who
+  // ignore the GPU blacklist.  Fail unconditionally here until enough of
+  // crbug.com/133828's blockers are resolved.
+  if (true)
+    return false;
+
   if (profile < media::H264PROFILE_MIN || profile > media::H264PROFILE_MAX)
     return false;
 
