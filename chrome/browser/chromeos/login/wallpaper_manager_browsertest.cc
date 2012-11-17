@@ -107,6 +107,10 @@ class WallpaperManagerBrowserTest : public CrosInProcessBrowserTest,
     EXPECT_EQ(static_cast<int>(image_data->size()), written);
   }
 
+  int LoadedWallpapers() {
+    return WallpaperManager::Get()->loaded_wallpapers();
+  }
+
   DesktopBackgroundController* controller_;
   PrefService* local_state_;
 
@@ -214,6 +218,57 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   // The large resolution custom wallpaper is expected.
   EXPECT_EQ(kExpectedLargeWallpaperWidth, wallpaper.width());
   EXPECT_EQ(kExpectedLargeWallpaperHeight, wallpaper.height());
+}
+
+// If chrome tries to reload the same wallpaper twice, the latter request should
+// be prevented. Otherwise, there are some strange animation issues as
+// described in crbug.com/158383.
+IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
+                       PreventReloadingSameWallpaper) {
+  WallpaperManager* wallpaper_manager = WallpaperManager::Get();
+  FilePath small_wallpaper_path =
+      wallpaper_manager->GetWallpaperPathForUser(kTestUser1, true);
+
+  int index = ash::GetDefaultWallpaperIndex();
+  SaveUserWallpaperData(kTestUser1,
+                        small_wallpaper_path,
+                        GetWallpaperViewInfo(index, SMALL).id);
+
+  // Saves wallpaper info to local state for user |kTestUser1|.
+  WallpaperInfo info = {
+      "DUMMY",
+      CENTER_CROPPED,
+      User::CUSTOMIZED,
+      base::Time::Now().LocalMidnight()
+  };
+  wallpaper_manager->SetUserWallpaperInfo(kTestUser1, info, true);
+
+  SetUserWallpaper(kTestUser1);
+  EXPECT_EQ(1, LoadedWallpapers());
+  // Loads the same wallpaper before the initial one finished. It should be
+  // prevented.
+  SetUserWallpaper(kTestUser1);
+  EXPECT_EQ(1, LoadedWallpapers());
+  WaitAsyncWallpaperLoad();
+  // Loads the same wallpaper after the initial one finished. It should be
+  // prevented.
+  SetUserWallpaper(kTestUser1);
+  EXPECT_EQ(1, LoadedWallpapers());
+  wallpaper_manager->ClearWallpaperCache();
+
+  // Tests default wallpaper for user |kTestUser1|.
+  info.file = "";
+  info.type = User::DEFAULT;
+  wallpaper_manager->SetUserWallpaperInfo(kTestUser1, info, true);
+  SetUserWallpaper(kTestUser1);
+  EXPECT_EQ(2, LoadedWallpapers());
+  // Loads the same wallpaper before the initial one finished. It should be
+  // prevented.
+  SetUserWallpaper(kTestUser1);
+  EXPECT_EQ(2, LoadedWallpapers());
+  WaitAsyncWallpaperLoad();
+  SetUserWallpaper(kTestUser1);
+  EXPECT_EQ(2, LoadedWallpapers());
 }
 
 }  // namepace chromeos

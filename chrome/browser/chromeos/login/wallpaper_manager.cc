@@ -118,7 +118,10 @@ WallpaperManager* WallpaperManager::Get() {
 }
 
 WallpaperManager::WallpaperManager()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(wallpaper_loader_(
+    : loaded_wallpapers_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(current_default_wallpaper_index_(
+          ash::GetInvalidWallpaperIndex())),
+      ALLOW_THIS_IN_INITIALIZER_LIST(wallpaper_loader_(
           new UserImageLoader(ImageDecoder::ROBUST_JPEG_CODEC))),
       current_user_wallpaper_type_(User::UNKNOWN),
       ALLOW_THIS_IN_INITIALIZER_LIST(current_user_wallpaper_index_(
@@ -162,32 +165,6 @@ void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
       return;
   }
   SetUserWallpaper(UserManager::Get()->GetLoggedInUser()->email());
-}
-
-void WallpaperManager::GetCustomWallpaper(const std::string& email,
-                                          bool update_wallpaper) {
-  User::WallpaperType type;
-  int index;
-  base::Time date;
-  // Get layout, type and date while on UI thread.
-  GetUserWallpaperProperties(email, &type, &index, &date);
-  ash::WallpaperLayout layout = static_cast<ash::WallpaperLayout>(index);
-  // Initializes file name to a dummy string here. The real file path will
-  // be set in GetCustomWallpaperInternal.
-  WallpaperInfo info = {
-      "DUMMY",
-      layout,
-      type,
-      date
-  };
-  ash::WallpaperResolution resolution = ash::Shell::GetInstance()->
-      desktop_background_controller()->GetAppropriateResolution();
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&WallpaperManager::GetCustomWallpaperInternal,
-                 base::Unretained(this), email, info, resolution,
-                 update_wallpaper));
 }
 
 void WallpaperManager::ClearWallpaperCache() {
@@ -291,8 +268,7 @@ void WallpaperManager::InitializeWallpaper() {
   if (!user_manager->IsUserLoggedIn()) {
     if (!disable_new_oobe) {
       if (!WizardController::IsDeviceRegistered()) {
-        ash::Shell::GetInstance()->desktop_background_controller()->
-            SetDefaultWallpaper(kDefaultOOBEWallpaperIndex);
+        SetDefaultWallpaper(kDefaultOOBEWallpaperIndex);
       } else {
         bool show_users = true;
         bool result = CrosSettings::Get()->GetBoolean(
@@ -302,8 +278,7 @@ void WallpaperManager::InitializeWallpaper() {
         const chromeos::UserList& users = user_manager->GetUsers();
         if (!show_users || users.empty()) {
           // Boot into sign in form, preload default wallpaper.
-          ash::Shell::GetInstance()->desktop_background_controller()->
-              SetDefaultWallpaper(kDefaultOOBEWallpaperIndex);
+          SetDefaultWallpaper(kDefaultOOBEWallpaperIndex);
           return;
         }
 
@@ -460,8 +435,7 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
   // If decoded wallpaper is empty, we are probably failed to decode the file.
   // Use default wallpaper in this case.
   if (wallpaper.image().isNull()) {
-    ash::Shell::GetInstance()->desktop_background_controller()->
-        SetDefaultWallpaper(ash::GetDefaultWallpaperIndex());
+    SetDefaultWallpaper(ash::GetDefaultWallpaperIndex());
     return;
   }
 
@@ -545,6 +519,17 @@ void WallpaperManager::SetUserWallpaperProperties(const std::string& email,
   wallpaper_update->SetWithoutPathExpansion(email, wallpaper_properties);
 }
 
+void WallpaperManager::SetDefaultWallpaper(int index) {
+  // Prevents loading of the same wallpaper as the currently loading/loaded one.
+  if (current_default_wallpaper_index_ == index)
+    return;
+  current_default_wallpaper_index_ = index;
+  current_wallpaper_path_ = FilePath("");
+  loaded_wallpapers_++;
+  ash::Shell::GetInstance()->desktop_background_controller()->
+      SetDefaultWallpaper(index);
+}
+
 void WallpaperManager::SetInitialUserWallpaper(const std::string& username,
                                                bool is_persistent) {
   current_user_wallpaper_type_ = User::DEFAULT;
@@ -564,10 +549,8 @@ void WallpaperManager::SetInitialUserWallpaper(const std::string& username,
   // Some browser tests do not have shell instance. And it is not necessary to
   // create a wallpaper for these tests. Add HasInstance check to prevent tests
   // crash and speed up the tests by avoid loading wallpaper.
-  if (ash::Shell::HasInstance()) {
-    ash::Shell::GetInstance()->desktop_background_controller()->
-        SetDefaultWallpaper(current_user_wallpaper_index_);
-  }
+  if (ash::Shell::HasInstance())
+    SetDefaultWallpaper(current_user_wallpaper_index_);
 }
 
 void WallpaperManager::SetUserWallpaperInfo(const std::string& username,
@@ -599,8 +582,7 @@ void WallpaperManager::SetLastSelectedUser(
 void WallpaperManager::SetUserWallpaper(const std::string& email) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (email == kGuestUser) {
-    ash::Shell::GetInstance()->desktop_background_controller()->
-        SetDefaultWallpaper(ash::GetGuestWallpaperIndex());
+    SetDefaultWallpaper(ash::GetGuestWallpaperIndex());
     return;
   }
 
@@ -620,10 +602,18 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
       if (info.type == User::CUSTOMIZED) {
         ash::WallpaperResolution resolution = ash::Shell::GetInstance()->
             desktop_background_controller()->GetAppropriateResolution();
+        bool is_small  = (resolution == ash::SMALL);
+        FilePath wallpaper_path = GetWallpaperPathForUser(email, is_small);
+        if (current_wallpaper_path_ == wallpaper_path)
+          return;
+        current_wallpaper_path_ = wallpaper_path;
+        current_default_wallpaper_index_ = ash::GetInvalidWallpaperIndex();
+        loaded_wallpapers_++;
+
         BrowserThread::PostTask(
             BrowserThread::FILE, FROM_HERE,
             base::Bind(&WallpaperManager::GetCustomWallpaperInternal,
-                       base::Unretained(this), email, info, resolution,
+                       base::Unretained(this), email, info, wallpaper_path,
                        true /* update wallpaper */));
         return;
       }
@@ -631,8 +621,7 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
       if (info.file.empty()) {
         // Uses default built-in wallpaper when file is empty. Eventually, we
         // will only ship one built-in wallpaper in ChromeOS image.
-        ash::Shell::GetInstance()->desktop_background_controller()->
-            SetDefaultWallpaper(ash::GetDefaultWallpaperIndex());
+        SetDefaultWallpaper(ash::GetDefaultWallpaperIndex());
         return;
       }
 
@@ -645,8 +634,7 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
 }
 
 void WallpaperManager::SetSigninWallpaper() {
-  ash::Shell::GetInstance()->desktop_background_controller()->
-      SetDefaultWallpaper(kDefaultOOBEWallpaperIndex);
+  SetDefaultWallpaper(kDefaultOOBEWallpaperIndex);
 }
 
 void WallpaperManager::SetWallpaperFromImageSkia(
@@ -728,10 +716,12 @@ void WallpaperManager::CacheUserWallpaper(const std::string& email) {
     if (info.type == User::CUSTOMIZED) {
       ash::WallpaperResolution resolution = ash::Shell::GetInstance()->
           desktop_background_controller()->GetAppropriateResolution();
+      bool is_small  = (resolution == ash::SMALL);
+      FilePath wallpaper_path = GetWallpaperPathForUser(email, is_small);
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
           base::Bind(&WallpaperManager::GetCustomWallpaperInternal,
-                     base::Unretained(this), email, info, resolution,
+                     base::Unretained(this), email, info, wallpaper_path,
                      false /* do not update wallpaper */));
       return;
     }
@@ -800,8 +790,17 @@ void WallpaperManager::LoadWallpaper(const std::string& email,
     }
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
     wallpaper_path = wallpaper_dir.Append(file_name);
+    if (current_wallpaper_path_ == wallpaper_path)
+      return;
+    if (update_wallpaper) {
+      current_wallpaper_path_ = wallpaper_path;
+      current_default_wallpaper_index_ = ash::GetInvalidWallpaperIndex();
+    }
+    loaded_wallpapers_++;
     StartLoad(email, info, update_wallpaper, wallpaper_path);
   } else {
+    // For custom wallpapers, we have increment |loaded_wallpapers_| in
+    // SetUserWallpaper(). We should not increment it again here.
     FilePath user_data_dir;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
     wallpaper_path = user_data_dir.Append(info.file);
@@ -918,10 +917,8 @@ void WallpaperManager::GenerateUserWallpaperThumbnail(
 void WallpaperManager::GetCustomWallpaperInternal(
     const std::string& email,
     const WallpaperInfo& info,
-    ash::WallpaperResolution resolution,
+    const FilePath& wallpaper_path,
     bool update_wallpaper) {
-  bool is_small  = (resolution == ash::SMALL);
-  FilePath wallpaper_path = GetWallpaperPathForUser(email, is_small);
   std::string file_name = wallpaper_path.BaseName().value();
 
   if (!file_util::PathExists(wallpaper_path)) {
@@ -1079,8 +1076,7 @@ void WallpaperManager::OnWallpaperDecoded(const std::string& email,
     SetUserWallpaperInfo(email, info, true);
 
     if (update_wallpaper) {
-      ash::Shell::GetInstance()->desktop_background_controller()->
-          SetDefaultWallpaper(ash::GetDefaultWallpaperIndex());
+      SetDefaultWallpaper(ash::GetDefaultWallpaperIndex());
     } else {
       ash::Shell::GetInstance()->desktop_background_controller()->
           CacheDefaultWallpaper(ash::GetDefaultWallpaperIndex());
@@ -1187,13 +1183,6 @@ void WallpaperManager::StartLoad(const std::string& email,
                                  bool update_wallpaper,
                                  const FilePath& wallpaper_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Avoid loading the same file.
-  if (current_wallpaper_path_ == wallpaper_path)
-    return;
-
-  if (update_wallpaper)
-    current_wallpaper_path_ = wallpaper_path;
 
   wallpaper_loader_->Start(wallpaper_path.value(), 0,
                            base::Bind(&WallpaperManager::OnWallpaperDecoded,

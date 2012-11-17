@@ -39,6 +39,7 @@ struct WallpaperInfo {
   }
 };
 
+class WallpaperManagerBrowserTest;
 class UserImage;
 
 // File path suffices of resized small or large wallpaper.
@@ -72,10 +73,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Loads wallpaper asynchronously if the current wallpaper is not the
   // wallpaper of logged in user.
   void EnsureLoggedInUserWallpaperLoaded();
-
-  // Gets |email|'s wallpaper from local disk. When |update_wallpaper| is true,
-  // sets wallpaper to the loaded wallpaper
-  void GetCustomWallpaper(const std::string& email, bool update_wallpaper);
 
   // Clears ONLINE and CUSTOM wallpaper cache.
   void ClearWallpaperCache();
@@ -152,6 +149,9 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                                   int index,
                                   bool is_persistent);
 
+  // Sets wallpaper to default wallpaper at |index|.
+  void SetDefaultWallpaper(int index);
+
   // Sets one of the default wallpapers for the specified user and saves this
   // settings in local state.
   void SetInitialUserWallpaper(const std::string& username, bool is_persistent);
@@ -180,9 +180,13 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   void UpdateWallpaper();
 
  private:
+  friend class WallpaperManagerBrowserTest;
   typedef std::map<std::string, gfx::ImageSkia> CustomWallpaperMap;
 
   virtual ~WallpaperManager();
+
+  // The number of wallpapers have loaded. For test only.
+  int loaded_wallpapers() const { return loaded_wallpapers_; }
 
   // Change the wallpapers for users who choose DAILY wallpaper type. Updates
   // current wallpaper if it changed. This function should be called at exactly
@@ -226,12 +230,12 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                                       base::WeakPtr<WallpaperDelegate> delegate,
                                       const gfx::ImageSkia& wallpaper);
 
-  // Gets |email|'s custom wallpaper in specified |resolution|. Falls back on
-  // original custom wallpaper. When |update_wallpaper| is true, sets wallpaper
-  // to the loaded wallpaper. Must run on FILE thread.
+  // Gets |email|'s custom wallpaper at |wallpaper_path|. Falls back on original
+  // custom wallpaper. When |update_wallpaper| is true, sets wallpaper to the
+  // loaded wallpaper. Must run on FILE thread.
   void GetCustomWallpaperInternal(const std::string& email,
                                   const WallpaperInfo& info,
-                                  ash::WallpaperResolution resolution,
+                                  const FilePath& wallpaper_path,
                                   bool update_wallpaper);
 
   // Gets wallpaper information of |email| from Local State or memory. Returns
@@ -317,11 +321,17 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                                 bool update_wallpaper,
                                 const FilePath& wallpaper_path);
 
-  // Loads user wallpaper from its file.
-  scoped_refptr<UserImageLoader> wallpaper_loader_;
+  // The number of loaded wallpapers.
+  int loaded_wallpapers_;
 
   // The file path of current loaded/loading custom/online wallpaper.
   FilePath current_wallpaper_path_;
+
+  // The index of current loaded/loading default wallpaper.
+  int current_default_wallpaper_index_;
+
+  // Loads user wallpaper from its file.
+  scoped_refptr<UserImageLoader> wallpaper_loader_;
 
   // Logged-in user wallpaper type.
   User::WallpaperType current_user_wallpaper_type_;
