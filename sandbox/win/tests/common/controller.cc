@@ -14,7 +14,7 @@
 
 namespace {
 
-static const int kDefaultTimeout = 10000;
+static const int kDefaultTimeout = 60000;
 
 // Constructs a full path to a file inside the system32 folder.
 std::wstring MakePathToSys32(const wchar_t* name, bool is_obj_man_path) {
