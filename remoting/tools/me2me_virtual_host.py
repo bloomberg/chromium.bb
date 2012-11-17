@@ -85,14 +85,15 @@ class Config:
   def save(self):
     if not self.changed:
       return True
+    old_umask = os.umask(0066)
     try:
-      old_umask = os.umask(0066)
       settings_file = open(self.path, 'w')
       settings_file.write(json.dumps(self.data, indent=2))
       settings_file.close()
-      os.umask(old_umask)
     except Exception:
       return False
+    finally:
+      os.umask(old_umask)
     self.changed = False
     return True
 
