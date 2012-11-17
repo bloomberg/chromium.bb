@@ -10,7 +10,7 @@ vars = {
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
   "webkit_revision": "134966",
 
-  "chromium_git": "http://chromium.googlesource.com",
+  "chromium_git": "https://chromium.googlesource.com",
   "chromiumos_git": "https://chromium.googlesource.com/chromiumos",
   "swig_revision": "69281",
   "nacl_revision": "10290",
