@@ -109,7 +109,7 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE, context_);
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     STLDeleteValues(&original_samples_);
   }
 

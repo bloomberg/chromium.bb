@@ -102,7 +102,7 @@ class ProfileShortcutManagerTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
 
     int num_profiles =
         profile_manager_->profile_info_cache()->GetNumberOfProfiles();

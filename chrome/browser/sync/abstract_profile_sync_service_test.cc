@@ -58,11 +58,11 @@ void AbstractProfileSyncServiceTest::SetUp() {
 void AbstractProfileSyncServiceTest::TearDown() {
   // Pump messages posted by the sync core thread (which may end up
   // posting on the IO thread).
-  ui_loop_.RunAllPending();
+  ui_loop_.RunUntilIdle();
   io_thread_.Stop();
   file_thread_.Stop();
   db_thread_.Stop();
-  ui_loop_.RunAllPending();
+  ui_loop_.RunUntilIdle();
 }
 
 bool AbstractProfileSyncServiceTest::CreateRoot(ModelType model_type) {

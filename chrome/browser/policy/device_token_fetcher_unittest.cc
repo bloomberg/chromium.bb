@@ -60,7 +60,7 @@ class DeviceTokenFetcherTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
     data_store_->RemoveObserver(&observer_);
   }
 
@@ -77,7 +77,7 @@ class DeviceTokenFetcherTest : public testing::Test {
     // Make this cache's disk cache ready, but have it still waiting for a
     // policy fetch.
     cache_->Load();
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
     ASSERT_TRUE(cache_->last_policy_refresh_time().is_null());
     ASSERT_FALSE(cache_->IsReady());
   }
@@ -113,7 +113,7 @@ TEST_F(DeviceTokenFetcherTest, FetchToken) {
   EXPECT_EQ("", data_store_->device_token());
   EXPECT_EQ(DEVICE_MODE_PENDING, data_store_->device_mode());
   FetchToken(&fetcher, data_store_.get());
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
   std::string token = data_store_->device_token();
   EXPECT_NE("", token);
@@ -128,7 +128,7 @@ TEST_F(DeviceTokenFetcherTest, FetchToken) {
       .WillOnce(service_.SucceedJob(successful_registration_response_));
   EXPECT_CALL(observer_, OnDeviceTokenChanged());
   FetchToken(&fetcher, data_store_.get());
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
   std::string token2 = data_store_->device_token();
   EXPECT_NE("", token2);
@@ -145,7 +145,7 @@ TEST_F(DeviceTokenFetcherTest, FetchDeviceToken) {
   EXPECT_EQ("", data_store->device_token());
   EXPECT_EQ(DEVICE_MODE_PENDING, data_store->device_mode());
   FetchToken(&fetcher, data_store.get());
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   EXPECT_NE("", data_store->device_token());
   // For device registrations, the fetcher needs to determine device mode.
   EXPECT_EQ(DEVICE_MODE_ENTERPRISE, data_store->device_mode());
@@ -163,7 +163,7 @@ TEST_F(DeviceTokenFetcherTest, FetchDeviceTokenMissingMode) {
   successful_registration_response_.mutable_register_response()->
       clear_enrollment_type();
   FetchToken(&fetcher, data_store.get());
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_NE("", data_store->device_token());
   EXPECT_EQ(DEVICE_MODE_ENTERPRISE, data_store->device_mode());
@@ -179,7 +179,7 @@ TEST_F(DeviceTokenFetcherTest, RetryOnError) {
                              &notifier_, new DummyWorkScheduler);
   EXPECT_CALL(observer_, OnDeviceTokenChanged());
   FetchToken(&fetcher, data_store_.get());
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_NE("", data_store_->device_token());
 }
@@ -193,7 +193,7 @@ TEST_F(DeviceTokenFetcherTest, UnmanagedDevice) {
                              &notifier_);
   EXPECT_CALL(observer_, OnDeviceTokenChanged()).Times(0);
   FetchToken(&fetcher, data_store_.get());
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_EQ("", data_store_->device_token());
   EXPECT_TRUE(cache_->is_unmanaged());
@@ -215,7 +215,7 @@ TEST_F(DeviceTokenFetcherTest, DontSetFetchingDoneWithoutPolicyFetch) {
   DeviceTokenFetcher fetcher(&service_, cache_.get(), data_store_.get(),
                              &notifier_);
   FetchToken(&fetcher, data_store_.get());
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   // On successful token fetching the cache isn't set to ready, since the next
   // step is to fetch policy. Only failures to fetch the token should make
   // the cache ready.
@@ -238,7 +238,7 @@ TEST_F(DeviceTokenFetcherTest, SetFetchingDoneOnFailures) {
   DeviceTokenFetcher fetcher(&service_, cache_.get(), data_store_.get(),
                              &notifier_);
   FetchToken(&fetcher, data_store_.get());
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   // This is the opposite case of DontSetFetchingDone1.
   EXPECT_TRUE(cache_->IsReady());
 }
@@ -253,7 +253,7 @@ TEST_F(DeviceTokenFetcherTest, SetKnownMachineId) {
 
   data_store_->set_known_machine_id(true);
   FetchToken(&fetcher, data_store_.get());
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 
   Mock::VerifyAndClearExpectations(&observer_);
   std::string token = data_store_->device_token();

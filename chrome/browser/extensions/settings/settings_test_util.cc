@@ -27,7 +27,7 @@ ValueStore* GetStorage(
       extension_id,
       settings_namespace,
       base::Bind(&AssignStorage, &storage));
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   return storage;
 }
 

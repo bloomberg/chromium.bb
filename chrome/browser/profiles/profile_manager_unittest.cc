@@ -120,7 +120,7 @@ class ProfileManagerTest : public testing::Test {
   virtual void TearDown() {
     static_cast<TestingBrowserProcess*>(g_browser_process)->SetProfileManager(
         NULL);
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
 #if defined(OS_CHROMEOS)
@@ -225,13 +225,13 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
                                                    Profile::EXPLICIT_ACCESS));
 
   // Make sure any pending tasks run before we destroy the profiles.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   static_cast<TestingBrowserProcess*>(g_browser_process)->SetProfileManager(
       NULL);
 
   // Make sure history cleans up correctly.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 MATCHER(NotFail, "Profile creation failure status is not reported.") {
@@ -252,7 +252,7 @@ TEST_F(ProfileManagerTest, DISABLED_CreateProfileAsync) {
       base::Bind(&MockObserver::OnProfileCreated,
                  base::Unretained(&mock_observer)), string16(), string16());
 
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 MATCHER(SameNotNull, "The same non-NULL value for all calls.") {
@@ -292,7 +292,7 @@ TEST_F(ProfileManagerTest, CreateProfileAsyncMultipleRequests) {
                  base::Unretained(&mock_observer3)),
                  string16(), string16());
 
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ProfileManagerTest, CreateProfilesAsync) {
@@ -314,7 +314,7 @@ TEST_F(ProfileManagerTest, CreateProfilesAsync) {
       base::Bind(&MockObserver::OnProfileCreated,
                  base::Unretained(&mock_observer)), string16(), string16());
 
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {

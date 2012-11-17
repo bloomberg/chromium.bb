@@ -213,7 +213,7 @@ void HistoryQuickProviderTest::RunTest(const string16 text,
                                        bool can_inline_top_result,
                                        string16 expected_fill_into_edit) {
   SCOPED_TRACE(text);  // Minimal hint to query being run.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   AutocompleteInput input(text, string16(), false, false, true,
                           AutocompleteInput::ALL_MATCHES);
   provider_->Start(input, false);

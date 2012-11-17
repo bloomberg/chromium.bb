@@ -95,7 +95,7 @@ void ProfileInfoCacheTest::SetUp() {
 void ProfileInfoCacheTest::TearDown() {
   // Drain the UI thread to make sure all tasks are completed. This prevents
   // memory leaks.
-  ui_loop_.RunAllPending();
+  ui_loop_.RunUntilIdle();
 }
 
 ProfileInfoCache* ProfileInfoCacheTest::GetCache() {

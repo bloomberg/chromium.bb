@@ -250,7 +250,7 @@ void GoogleURLTrackerTest::NotifyIPAddressChanged() {
   net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
   // For thread safety, the NCN queues tasks to do the actual notifications, so
   // we need to spin the message loop so the tracker will actually be notified.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 void GoogleURLTrackerTest::SetLastPromptedGoogleURL(const GURL& url) {

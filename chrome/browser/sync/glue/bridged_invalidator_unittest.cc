@@ -38,7 +38,7 @@ class BridgedInvalidatorTestDelegate {
         bridge_(&mock_profile_, ui_loop_.message_loop_proxy()),
         fake_delegate_(NULL) {
     // Pump |ui_loop_| to fully initialize |bridge_|.
-    ui_loop_.RunAllPending();
+    ui_loop_.RunUntilIdle();
   }
 
   ~BridgedInvalidatorTestDelegate() {
@@ -72,7 +72,7 @@ class BridgedInvalidatorTestDelegate {
     invalidator_.reset();
     fake_delegate_ = NULL;
     bridge_.StopForShutdown();
-    ui_loop_.RunAllPending();
+    ui_loop_.RunUntilIdle();
   }
 
   void WaitForInvalidator() {

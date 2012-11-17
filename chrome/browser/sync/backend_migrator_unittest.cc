@@ -85,7 +85,7 @@ class SyncBackendMigratorTest : public testing::Test {
           syncer::ModelTypeSet());
       migrator_->OnConfigureDone(result);
     }
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   ProfileSyncService* service() { return &service_; }

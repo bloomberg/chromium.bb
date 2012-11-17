@@ -264,7 +264,7 @@ TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
   policy_.signing_key()->ExportPublicKey(&public_key);
   validator->ValidateSignature(public_key, false);
   validator->StartValidation();
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_TRUE(validated_);
 
   // Check that the loaded policy_data contains the expected values.

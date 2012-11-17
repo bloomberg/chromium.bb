@@ -62,7 +62,7 @@ class ResourcePrefetchPredictorTablesReopenTest
     ResourcePrefetchPredictorTablesTest::SetUp();
     tables_ = NULL;
     db_.reset(new PredictorDatabase(&profile_));
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
     tables_ = db_->resource_prefetch_tables();
   }
 };
@@ -72,7 +72,7 @@ ResourcePrefetchPredictorTablesTest::ResourcePrefetchPredictorTablesTest()
       db_thread_(content::BrowserThread::DB, &loop_),
       db_(new PredictorDatabase(&profile_)),
       tables_(db_->resource_prefetch_tables()) {
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 }
 
 ResourcePrefetchPredictorTablesTest::~ResourcePrefetchPredictorTablesTest() {

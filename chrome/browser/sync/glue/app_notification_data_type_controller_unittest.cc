@@ -147,7 +147,7 @@ class SyncAppNotificationDataTypeControllerTest
   }
 
   void PumpLoop() {
-    ui_loop_.RunAllPending();
+    ui_loop_.RunUntilIdle();
   }
 
   MessageLoop ui_loop_;

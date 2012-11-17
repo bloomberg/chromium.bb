@@ -139,7 +139,7 @@ class ExtensionActionIconFactoryTest
 
   virtual void TearDown() OVERRIDE {
     profile_.reset();  // Get all DeleteSoon calls sent to ui_loop_.
-    ui_loop_.RunAllPending();
+    ui_loop_.RunUntilIdle();
   }
 
   // ExtensionActionIconFactory::Observer overrides:

@@ -785,7 +785,7 @@ TEST_F(WebIntentsRegistryTest, UnregisterDefaultIntentServicesForServiceURL) {
   ASSERT_EQ(2U, consumer.services_.size());
 
   registry_.UnregisterServiceDefaults(service_url_0);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   registry_.GetAllDefaultIntentServices(
       base::Bind(&DefaultServiceListConsumer::Accept,

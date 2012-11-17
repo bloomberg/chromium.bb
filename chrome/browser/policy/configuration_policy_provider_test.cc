@@ -49,7 +49,7 @@ PolicyTestBase::PolicyTestBase()
 PolicyTestBase::~PolicyTestBase() {}
 
 void PolicyTestBase::TearDown() {
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 }
 
 PolicyProviderTestHarness::PolicyProviderTestHarness(PolicyLevel level,
@@ -86,7 +86,7 @@ void ConfigurationPolicyProviderTest::SetUp() {
   provider_->Init();
   // Some providers do a reload on init. Make sure any notifications generated
   // are fired now.
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 
   const PolicyBundle kEmptyBundle;
   EXPECT_TRUE(provider_->policies().Equals(kEmptyBundle));
@@ -107,7 +107,7 @@ void ConfigurationPolicyProviderTest::CheckValue(
   // Install the value, reload policy and check the provider for the value.
   install_value.Run();
   provider_->RefreshPolicies();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   PolicyBundle expected_bundle;
   expected_bundle.Get(POLICY_DOMAIN_CHROME, "")
       .Set(policy_name,
@@ -121,7 +121,7 @@ void ConfigurationPolicyProviderTest::CheckValue(
 
 TEST_P(ConfigurationPolicyProviderTest, Empty) {
   provider_->RefreshPolicies();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   const PolicyBundle kEmptyBundle;
   EXPECT_TRUE(provider_->policies().Equals(kEmptyBundle));
 }
@@ -211,7 +211,7 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
   provider_->AddObserver(&observer);
   EXPECT_CALL(observer, OnUpdatePolicy(provider_.get())).Times(1);
   provider_->RefreshPolicies();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
 
   EXPECT_TRUE(provider_->policies().Equals(bundle));
@@ -221,7 +221,7 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
                                      "value");
   EXPECT_CALL(observer, OnUpdatePolicy(provider_.get())).Times(1);
   provider_->RefreshPolicies();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
 
   bundle.Get(POLICY_DOMAIN_CHROME, "")
@@ -305,7 +305,7 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   test_harness_->Install3rdPartyPolicy(&policy_3rdparty);
 
   provider_->RefreshPolicies();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 
   PolicyMap expected_policy;
   expected_policy.Set(test_policy_definitions::kKeyDictionary,

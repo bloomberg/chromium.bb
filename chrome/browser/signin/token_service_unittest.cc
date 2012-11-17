@@ -119,7 +119,7 @@ void TokenServiceTestHarness::WaitForDBLoadCompletion() {
   done.Wait();
 
   // Notifications should be returned from the DB thread onto the UI thread.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 class TokenServiceTest : public TokenServiceTestHarness {

@@ -82,11 +82,11 @@ class ProfileSyncServiceTestHarness {
     profile.reset();
     // Pump messages posted by the sync thread (which may end up
     // posting on the IO thread).
-    ui_loop_.RunAllPending();
+    ui_loop_.RunUntilIdle();
     io_thread_.Stop();
     file_thread_.Stop();
     // Ensure that the sync objects destruct to avoid memory leaks.
-    ui_loop_.RunAllPending();
+    ui_loop_.RunUntilIdle();
   }
 
   // TODO(akalin): Refactor the StartSyncService*() functions below.

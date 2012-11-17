@@ -312,7 +312,7 @@ void ChromeDownloadManagerDelegateTest::SetUp() {
 }
 
 void ChromeDownloadManagerDelegateTest::TearDown() {
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   delegate_->Shutdown();
   ChromeRenderViewHostTestHarness::TearDown();
 }
@@ -447,7 +447,7 @@ void ChromeDownloadManagerDelegateTest::RunTestCaseWithDownloadItem(
       item,
       base::Bind(&ChromeDownloadManagerDelegateTest::DownloadTargetVerifier,
                  factory.GetWeakPtr(), base::Unretained(&test_case))));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   VerifyAndClearExpectations();
 }
 

@@ -523,7 +523,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileOneInFlight) {
 
   // Pump the loop to run the posted DTMI::ConfigureImpl() task from
   // DTMI::ProcessReconfigure() (triggered by FinishStart()).
-  ui_loop_.RunAllPending();
+  ui_loop_.RunUntilIdle();
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm.state());
 
   // Step 5.
@@ -683,7 +683,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPending) {
 
   // Pump the loop to run the posted DTMI::ConfigureImpl() task from
   // DTMI::ProcessReconfigure() (triggered by step 3).
-  ui_loop_.RunAllPending();
+  ui_loop_.RunUntilIdle();
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm.state());
 
   // Step 4.
@@ -739,7 +739,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPendingWithFailure) {
 
   // Pump the loop to run the posted DTMI::ConfigureImpl() task from
   // DTMI::ProcessReconfigure() (triggered by step 3).
-  ui_loop_.RunAllPending();
+  ui_loop_.RunUntilIdle();
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm.state());
 
   // Step 4.
@@ -849,7 +849,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureDuringPurge) {
   SetConfigureDoneExpectation(DataTypeManager::OK);
   // Pump the loop to run the posted DTMI::ConfigureImpl() task from
   // DTMI::ProcessReconfigure().
-  ui_loop_.RunAllPending();
+  ui_loop_.RunUntilIdle();
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm.state());
 
   // Now invoke the callback for the second configure request.

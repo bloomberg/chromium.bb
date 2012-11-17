@@ -147,7 +147,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
   }
 
   void PumpLoop() {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   MessageLoopForUI message_loop_;

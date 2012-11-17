@@ -86,12 +86,12 @@ TEST_F(ProfileDestroyerTest, DelayProfileDestruction) {
   render_process_host1.release()->Cleanup();
 
   // And asynchronicity kicked in properly.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(off_the_record_profile_->destroyed_otr_profile_);
 
   // I meant, ALL the render process hosts... :-)
   render_process_host2.release()->Cleanup();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(off_the_record_profile_->destroyed_otr_profile_);
 }
 
@@ -118,7 +118,7 @@ TEST_F(ProfileDestroyerTest, DelayOriginalProfileDestruction) {
   EXPECT_FALSE(original_profile->destroyed_otr_profile_);
 
   render_process_host1.release()->Cleanup();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(NULL, TestingOriginalDestructionProfile::living_instance_);
 
   // And the same protection should apply to the main profile.
@@ -133,6 +133,6 @@ TEST_F(ProfileDestroyerTest, DelayOriginalProfileDestruction) {
   ProfileDestroyer::DestroyProfileWhenAppropriate(main_profile);
   EXPECT_EQ(main_profile, TestingOriginalDestructionProfile::living_instance_);
   render_process_host2.release()->Cleanup();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(NULL, TestingOriginalDestructionProfile::living_instance_);
 }

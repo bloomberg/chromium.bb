@@ -58,7 +58,7 @@ class OnlineAttemptTest : public testing::Test {
                    attempt_->weak_factory_.GetWeakPtr(),
                    error));
     // Force UI thread to finish tasks so I can verify |state_|.
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     EXPECT_TRUE(error == state_.online_outcome().error());
   }
 
@@ -75,7 +75,7 @@ class OnlineAttemptTest : public testing::Test {
   }
 
   static void RunThreadTest() {
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
 
   MessageLoop message_loop_;
@@ -99,7 +99,7 @@ TEST_F(OnlineAttemptTest, LoginSuccess) {
                  attempt_->weak_factory_.GetWeakPtr(),
                  GaiaAuthConsumer::ClientLoginResult()));
   // Force UI thread to finish tasks so I can verify |state_|.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(OnlineAttemptTest, LoginCancelRetry) {
@@ -249,7 +249,7 @@ TEST_F(OnlineAttemptTest, TwoFactorSuccess) {
                  error));
 
   // Force UI thread to finish tasks so I can verify |state_|.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_TRUE(GoogleServiceAuthError::None() ==
               state_.online_outcome().error());
 }

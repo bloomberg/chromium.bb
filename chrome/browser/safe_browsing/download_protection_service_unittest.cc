@@ -127,7 +127,7 @@ class DownloadProtectionServiceTest : public testing::Test {
     download_service_ = sb_service_->download_protection_service();
     download_service_->signature_util_ = signature_util_;
     download_service_->SetEnabled(true);
-    msg_loop_.RunAllPending();
+    msg_loop_.RunUntilIdle();
 
     FilePath source_path;
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &source_path));
@@ -182,7 +182,7 @@ class DownloadProtectionServiceTest : public testing::Test {
   void FlushThreadMessageLoops() {
     BrowserThread::GetBlockingPool()->FlushForTesting();
     FlushMessageLoop(BrowserThread::IO);
-    msg_loop_.RunAllPending();
+    msg_loop_.RunUntilIdle();
   }
 
   // Proxy for private method.
@@ -214,7 +214,7 @@ class DownloadProtectionServiceTest : public testing::Test {
  private:
   // Helper functions for FlushThreadMessageLoops.
   void RunAllPendingAndQuitUI() {
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,

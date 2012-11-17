@@ -99,7 +99,7 @@ class CloudPolicyControllerTest : public testing::Test {
     // Make this cache's disk cache ready, but have it still waiting for a
     // policy fetch.
     cache_->Load();
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
     ASSERT_TRUE(cache_->last_policy_refresh_time().is_null());
     ASSERT_FALSE(cache_->IsReady());
   }
@@ -138,7 +138,7 @@ TEST_F(CloudPolicyControllerTest, StartupWithDeviceToken) {
       .WillOnce(DoAll(InvokeWithoutArgs(&loop_, &MessageLoop::QuitNow),
                       service_.SucceedJob(spdy_policy_response_)));
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   ExpectHasSpdyPolicy();
 }
 
@@ -149,7 +149,7 @@ TEST_F(CloudPolicyControllerTest, StartupWithoutDeviceToken) {
                                true);
   EXPECT_CALL(*token_fetcher_.get(), FetchToken()).Times(1);
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 }
 
 // If the current user belongs to a known non-managed domain, no token fetch
@@ -159,7 +159,7 @@ TEST_F(CloudPolicyControllerTest, StartupUnmanagedUser) {
                                "auth_token", true);
   EXPECT_CALL(*token_fetcher_.get(), FetchToken()).Times(0);
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 }
 
 // After policy has been fetched successfully, a new fetch should be triggered
@@ -179,7 +179,7 @@ TEST_F(CloudPolicyControllerTest, RefreshAfterSuccessfulPolicy) {
                         service_.FailJob(DM_STATUS_REQUEST_FAILED)));
   }
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   ExpectHasSpdyPolicy();
 }
 
@@ -199,7 +199,7 @@ TEST_F(CloudPolicyControllerTest, RefreshAfterError) {
                         service_.SucceedJob(spdy_policy_response_)));
   }
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   ExpectHasSpdyPolicy();
 }
 
@@ -213,7 +213,7 @@ TEST_F(CloudPolicyControllerTest, InvalidToken) {
       .WillOnce(service_.FailJob(DM_STATUS_SERVICE_MANAGEMENT_TOKEN_INVALID));
   EXPECT_CALL(*token_fetcher_.get(), FetchToken()).Times(1);
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 }
 
 // If the backend reports that the device is unknown to the server, the
@@ -226,7 +226,7 @@ TEST_F(CloudPolicyControllerTest, DeviceNotFound) {
       .WillOnce(service_.FailJob(DM_STATUS_SERVICE_DEVICE_NOT_FOUND));
   EXPECT_CALL(*token_fetcher_.get(), FetchToken()).Times(1);
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 }
 
 // If the backend reports that the device-id is already existing, the
@@ -239,7 +239,7 @@ TEST_F(CloudPolicyControllerTest, DeviceIdConflict) {
       .WillOnce(service_.FailJob(DM_STATUS_SERVICE_DEVICE_ID_CONFLICT));
   EXPECT_CALL(*token_fetcher_.get(), FetchToken()).Times(1);
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 }
 
 // If the backend reports that the device is no longer managed, the controller
@@ -253,7 +253,7 @@ TEST_F(CloudPolicyControllerTest, NoLongerManaged) {
       .WillOnce(service_.FailJob(DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED));
   EXPECT_CALL(*token_fetcher_.get(), SetUnmanagedState()).Times(1);
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 }
 
 // If the backend reports that the device has invalid serial number, the
@@ -267,7 +267,7 @@ TEST_F(CloudPolicyControllerTest, InvalidSerialNumber) {
       .WillOnce(service_.FailJob(DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER));
   EXPECT_CALL(*token_fetcher_.get(), SetSerialNumberInvalidState()).Times(1);
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 }
 
 // If the backend reports that the domain has run out of licenses, the
@@ -281,7 +281,7 @@ TEST_F(CloudPolicyControllerTest, MissingLicenses) {
       .WillOnce(service_.FailJob(DM_STATUS_SERVICE_MISSING_LICENSES));
   EXPECT_CALL(*token_fetcher_.get(), SetMissingLicensesState()).Times(1);
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 }
 
 TEST_F(CloudPolicyControllerTest, DontSetFetchingDoneWithoutTokens) {
@@ -289,24 +289,24 @@ TEST_F(CloudPolicyControllerTest, DontSetFetchingDoneWithoutTokens) {
   CreateNewController();
   // Initialized without an oauth token, goes into TOKEN_UNAVAILABLE state.
   // This means the controller is still waiting for an oauth token fetch.
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   EXPECT_FALSE(cache_->IsReady());
 
   controller_->OnDeviceTokenChanged();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   EXPECT_FALSE(cache_->IsReady());
 }
 
 TEST_F(CloudPolicyControllerTest, RefreshPoliciesWithoutMaterial) {
   CreateNewWaitingCache();
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   EXPECT_FALSE(cache_->IsReady());
 
   // Same scenario as the last test, but the RefreshPolicies call must always
   // notify the cache.
   controller_->RefreshPolicies(false);
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   EXPECT_TRUE(cache_->IsReady());
 }
 
@@ -326,7 +326,7 @@ TEST_F(CloudPolicyControllerTest, SetFetchingDoneForUnmanagedUsers) {
   data_store_->SetupForTesting("", "device_id",
                                "user@gmail.com", "auth", true);
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   // User is in an unmanaged domain.
   EXPECT_TRUE(cache_->IsReady());
   EXPECT_TRUE(cache_->last_policy_refresh_time().is_null());
@@ -341,7 +341,7 @@ TEST_F(CloudPolicyControllerTest, SetFetchingDoneAfterPolicyFetch) {
       .WillOnce(DoAll(InvokeWithoutArgs(&loop_, &MessageLoop::QuitNow),
                       service_.SucceedJob(spdy_policy_response_)));
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   EXPECT_TRUE(cache_->IsReady());
   EXPECT_FALSE(cache_->last_policy_refresh_time().is_null());
 }
@@ -355,7 +355,7 @@ TEST_F(CloudPolicyControllerTest, SetFetchingDoneAfterPolicyFetchFails) {
       .WillOnce(DoAll(InvokeWithoutArgs(&loop_, &MessageLoop::QuitNow),
                       service_.FailJob(DM_STATUS_REQUEST_FAILED)));
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   EXPECT_TRUE(cache_->IsReady());
   EXPECT_TRUE(cache_->last_policy_refresh_time().is_null());
 }
@@ -389,7 +389,7 @@ TEST_F(CloudPolicyControllerTest, DelayRefreshesIfPolicyIsInvalid) {
       .WillOnce(DoAll(InvokeWithoutArgs(&loop_, &MessageLoop::QuitNow),
                       service_.SucceedJob(response)));
   CreateNewController();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   EXPECT_EQ(CloudPolicySubsystem::NETWORK_ERROR, notifier_.state());
   EXPECT_EQ(CloudPolicySubsystem::POLICY_NETWORK_ERROR,
             notifier_.error_details());

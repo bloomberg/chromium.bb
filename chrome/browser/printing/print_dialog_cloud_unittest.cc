@@ -260,7 +260,7 @@ TEST_F(CloudPrintDataSenderTest, CanSend) {
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&CloudPrintDataSender::ReadPrintDataFile,
                  print_data_sender_.get(), test_data_file_name));
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(CloudPrintDataSenderTest, BadFile) {
@@ -275,7 +275,7 @@ TEST_F(CloudPrintDataSenderTest, BadFile) {
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&CloudPrintDataSender::ReadPrintDataFile,
                  print_data_sender_.get(), bad_data_file_name));
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(CloudPrintDataSenderTest, EmptyFile) {
@@ -286,7 +286,7 @@ TEST_F(CloudPrintDataSenderTest, EmptyFile) {
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&CloudPrintDataSender::ReadPrintDataFile,
                  print_data_sender_.get(), empty_data_file_name));
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 // Testing for CloudPrintFlowHandler needs a mock

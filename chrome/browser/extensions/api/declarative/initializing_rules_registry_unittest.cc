@@ -111,7 +111,7 @@ TEST(InitializingRulesRegistryTest, FillOptionalIdentifiers) {
 
   // Make sure that deletion traits of registry are executed.
   registry = NULL;
-  message_loop.RunAllPending();
+  message_loop.RunUntilIdle();
 }
 
 TEST(InitializingRulesRegistryTest, FillOptionalPriority) {
@@ -148,7 +148,7 @@ TEST(InitializingRulesRegistryTest, FillOptionalPriority) {
 
   // Make sure that deletion traits of registry are executed.
   registry = NULL;
-  message_loop.RunAllPending();
+  message_loop.RunUntilIdle();
 }
 
 }  // namespace extensions

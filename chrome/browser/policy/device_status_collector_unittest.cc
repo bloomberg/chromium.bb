@@ -526,7 +526,7 @@ TEST_F(DeviceStatusCollectorTest, Location) {
   SetMockPositionToReturnNext(valid_fix);
   cros_settings_->SetBoolean(chromeos::kReportDeviceLocation, false);
   // Allow the new pref to propagate to the status collector.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_TRUE(prefs_.GetDictionary(prefs::kDeviceLocation)->empty());
   CheckThatNoLocationIsReported();
 
@@ -535,7 +535,7 @@ TEST_F(DeviceStatusCollectorTest, Location) {
   SetMockPositionToReturnNext(invalid_fix);
   cros_settings_->SetBoolean(chromeos::kReportDeviceLocation, true);
   // Allow the new pref to propagate to the status collector.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   CheckThatALocationErrorIsReported();
 }
 

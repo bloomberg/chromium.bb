@@ -68,7 +68,7 @@ class CloudPolicyValidatorTest : public testing::Test {
     // Run validation and check the result.
     EXPECT_CALL(*this, ValidationCompletion(validator)).WillOnce(check_action);
     validator->StartValidation();
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
     Mock::VerifyAndClearExpectations(this);
   }
 

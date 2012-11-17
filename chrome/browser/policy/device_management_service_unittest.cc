@@ -56,7 +56,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
 
   virtual void TearDown() {
     service_.reset();
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
   }
 
   void ResetService() {
@@ -65,7 +65,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
 
   void InitializeService() {
     service_->ScheduleInitialization(0);
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
   }
 
   DeviceManagementRequestJob* StartRegistrationJob() {

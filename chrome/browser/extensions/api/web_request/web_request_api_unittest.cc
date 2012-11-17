@@ -608,7 +608,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
 
       FireURLRequestWithData(kMethodPost, kMultipart, form_1, form_2);
 
-      MessageLoop::current()->RunAllPending();
+      MessageLoop::current()->RunUntilIdle();
       // We inspect the result in the message list of |ipc_sender_| later.
 
       ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
@@ -650,7 +650,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
       // Now send a PUT request with the same body as above.
       FireURLRequestWithData(kMethodPut, NULL /*no header*/, plain_1, plain_2);
 
-      MessageLoop::current()->RunAllPending();
+      MessageLoop::current()->RunUntilIdle();
 
       // Clean-up.
       ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(

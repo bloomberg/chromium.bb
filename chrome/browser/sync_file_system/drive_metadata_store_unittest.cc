@@ -79,7 +79,7 @@ class DriveMetadataStoreTest : public testing::Test {
 
     DropDatabase();
     file_thread_->Stop();
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
  protected:

@@ -43,7 +43,7 @@ class RulesRegistryServiceTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     // Make sure that deletion traits of all registries are executed.
-    message_loop.RunAllPending();
+    message_loop.RunUntilIdle();
   }
 
  protected:
@@ -89,7 +89,7 @@ TEST_F(RulesRegistryServiceTest, TestConstructionAndMultiThreading) {
         base::Bind(&VerifyNumberOfRules,
                    registry_service.GetRulesRegistry("io"), 1));
 
-  message_loop.RunAllPending();
+  message_loop.RunUntilIdle();
 
   // Test extension unloading.
 
@@ -105,7 +105,7 @@ TEST_F(RulesRegistryServiceTest, TestConstructionAndMultiThreading) {
         base::Bind(&VerifyNumberOfRules,
                    registry_service.GetRulesRegistry("io"), 0));
 
-  message_loop.RunAllPending();
+  message_loop.RunUntilIdle();
 }
 
 }  // namespace extensions

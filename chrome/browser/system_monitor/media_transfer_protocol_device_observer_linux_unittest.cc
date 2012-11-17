@@ -90,7 +90,7 @@ class MediaTransferProtocolDeviceObserverLinuxTest
   void MtpStorageAttached(const std::string& storage_name) {
     MediaTransferProtocolDeviceObserverLinux::StorageChanged(true,
                                                              storage_name);
-    ui_loop_.RunAllPending();
+    ui_loop_.RunUntilIdle();
   }
 
   // Notifies MediaTransferProtocolDeviceObserverLinux about the detachment of
@@ -98,7 +98,7 @@ class MediaTransferProtocolDeviceObserverLinuxTest
   void MtpStorageDetached(const std::string& storage_name) {
     MediaTransferProtocolDeviceObserverLinux::StorageChanged(false,
                                                              storage_name);
-    ui_loop_.RunAllPending();
+    ui_loop_.RunUntilIdle();
   }
 
  private:

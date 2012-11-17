@@ -819,7 +819,7 @@ TEST_F(WebDataServiceTest, WebIntentsRemoveDefaultByServiceURL) {
   ASSERT_EQ(2U, consumer.services_.size());
 
   wds_->RemoveWebIntentServiceDefaults(service_url_0);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   wds_->GetAllDefaultWebIntentServices(&consumer);
   WaitUntilCalled();

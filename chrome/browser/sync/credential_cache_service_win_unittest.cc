@@ -37,7 +37,7 @@ class CredentialCacheServiceTest : public CredentialCacheService,
 
   // testing::Test implementation.
   virtual void TearDown() OVERRIDE {
-    file_message_loop_.RunAllPending();
+    file_message_loop_.RunUntilIdle();
   }
 
  private:

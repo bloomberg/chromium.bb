@@ -205,11 +205,11 @@ class RemovableDeviceNotificationLinuxTest : public testing::Test {
     notifications_ = new RemovableDeviceNotificationsLinuxTestWrapper(
         mtab_file_, &message_loop_);
     notifications_->Init();
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     notifications_ = NULL;
     system_monitor_.RemoveDevicesChangedObserver(
         mock_devices_changed_observer_.get());

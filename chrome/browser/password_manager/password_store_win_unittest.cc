@@ -256,7 +256,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_OutstandingWDSQueries) {
   store_ = NULL;
   wds_ = NULL;
 
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 // Hangs flakily, see http://crbug.com/43836.

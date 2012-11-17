@@ -74,7 +74,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     // Make sure that deletion traits of all registries are executed.
-    message_loop.RunAllPending();
+    message_loop.RunUntilIdle();
   }
 
   // Returns a rule that roughly matches http://*.example.com and

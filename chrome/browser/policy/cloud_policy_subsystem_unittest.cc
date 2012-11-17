@@ -162,7 +162,7 @@ class CloudPolicySubsystemTestBase : public testing::Test {
     data_store_->set_user_name(kUsername);
     data_store_->SetGaiaToken(kAuthToken);
     data_store_->SetDeviceToken("", true);
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
   }
 
   void VerifyTest(const std::string& homepage_location) {

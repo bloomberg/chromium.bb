@@ -161,11 +161,11 @@ class CWSIntentsRegistryTest : public testing::Test {
 
   virtual void TearDown() {
     // Pump messages posted by the main thread.
-    ui_loop_.RunAllPending();
+    ui_loop_.RunUntilIdle();
   }
 
   CWSIntentsRegistry::IntentExtensionList WaitForResults() {
-    ui_loop_.RunAllPending();
+    ui_loop_.RunUntilIdle();
     return extensions_;
   }
 

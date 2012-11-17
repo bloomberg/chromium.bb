@@ -68,7 +68,7 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
 
   void NotifyIPAddressChanged() {
     net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
   }
 
   void CheckTiming(int64 expected_delay_ms) {

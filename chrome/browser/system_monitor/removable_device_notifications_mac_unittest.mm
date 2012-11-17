@@ -98,7 +98,7 @@ TEST_F(RemovableDeviceNotificationsMacTest, AddRemove) {
                                            mount_point_.value()));
     notifications_->UpdateDisk(
         disk_info_, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   {
@@ -106,7 +106,7 @@ TEST_F(RemovableDeviceNotificationsMacTest, AddRemove) {
                 OnRemovableStorageDetached(device_id_));
     notifications_->UpdateDisk(
         disk_info_, RemovableDeviceNotificationsMac::UPDATE_DEVICE_REMOVED);
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 }
 
@@ -118,7 +118,7 @@ TEST_F(RemovableDeviceNotificationsMacTest, UpdateVolumeName) {
                                            mount_point_.value()));
     notifications_->UpdateDisk(
         disk_info_, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   {
@@ -133,7 +133,7 @@ TEST_F(RemovableDeviceNotificationsMacTest, UpdateVolumeName) {
                                            mount_point_.value()));
     notifications_->UpdateDisk(
         info2, RemovableDeviceNotificationsMac::UPDATE_DEVICE_CHANGED);
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 }
 
@@ -155,7 +155,7 @@ TEST_F(RemovableDeviceNotificationsMacTest, DCIM) {
                                            mount_point.value()));
     notifications_->UpdateDisk(
         info, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 }
 
@@ -167,7 +167,7 @@ TEST_F(RemovableDeviceNotificationsMacTest, GetDeviceInfo) {
                                            mount_point_.value()));
     notifications_->UpdateDisk(
         disk_info_, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   base::SystemMonitor::RemovableStorageInfo info;
@@ -191,7 +191,7 @@ TEST_F(RemovableDeviceNotificationsMacTest, DMG) {
       unique_id_, "Disk Image", display_name_, mount_point_);
   notifications_->UpdateDisk(
       info, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace chrome

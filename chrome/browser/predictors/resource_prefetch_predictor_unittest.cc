@@ -98,7 +98,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
 
   void InitializePredictor() {
     predictor_->LazilyInitialize();
-    loop_.RunAllPending();  // Runs the DB lookup.
+    loop_.RunUntilIdle();  // Runs the DB lookup.
     profile_.BlockUntilHistoryProcessesPendingRequests();
   }
 

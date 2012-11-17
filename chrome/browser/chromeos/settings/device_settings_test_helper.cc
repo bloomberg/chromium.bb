@@ -22,10 +22,10 @@ void DeviceSettingsTestHelper::FlushLoops() {
   // between the message loop and the blocking pool. 2 iterations are currently
   // sufficient (key loading, signing).
   for (int i = 0; i < 2; ++i) {
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
   }
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 void DeviceSettingsTestHelper::FlushStore() {

@@ -148,7 +148,7 @@ class PageCyclerTest : public BrowserWithTestWindowTest {
 
   void PumpLoop() {
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    message_loop()->RunAllPending();
+    message_loop()->RunUntilIdle();
   }
 
   void CloseBrowser() {
@@ -308,7 +308,7 @@ TEST_F(PageCyclerTest, KillBrowserAndAbort) {
       DidFinishLoad(kFrameID, kAboutURL, kIsMainFrame, _))
       .WillOnce(Invoke(page_cycler(),
                        &MockPageCycler::PageCyclerDidFinishLoad));
-  message_loop()->RunAllPending();
+  message_loop()->RunUntilIdle();
 
   FinishLoad();
 

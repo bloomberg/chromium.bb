@@ -185,7 +185,7 @@ void TemplateURLServiceTestUtil::TearDown() {
   UIThreadSearchTermsData::SetGoogleBaseURL(std::string());
 
   // Flush the message loop to make application verifiers happy.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 void TemplateURLServiceTestUtil::OnTemplateURLServiceChanged() {
@@ -312,5 +312,5 @@ void TemplateURLServiceTestUtil::StartIOThread() {
 }
 
 void TemplateURLServiceTestUtil::PumpLoop() {
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }

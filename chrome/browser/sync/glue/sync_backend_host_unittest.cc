@@ -173,10 +173,10 @@ class SyncBackendHostTest : public testing::Test {
     profile_.reset();
     // Pump messages posted by the sync thread (which may end up
     // posting on the IO thread).
-    ui_loop_.RunAllPending();
+    ui_loop_.RunUntilIdle();
     io_thread_.Stop();
     // Pump any messages posted by the IO thread.
-    ui_loop_.RunAllPending();
+    ui_loop_.RunUntilIdle();
   }
 
   // Synchronously initializes the backend.

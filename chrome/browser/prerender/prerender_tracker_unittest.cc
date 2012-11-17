@@ -68,7 +68,7 @@ class PrerenderTrackerTest : public testing::Test {
 
   // Runs any tasks queued on either thread.
   void RunEvents() {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
  private:

@@ -167,7 +167,7 @@ class ThemeSyncableServiceTest : public testing::Test {
 
   virtual void TearDown() {
     profile_.reset();
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
   }
 
   void SetUpExtension() {
@@ -181,7 +181,7 @@ class ThemeSyncableServiceTest : public testing::Test {
                                                 false);
     EXPECT_TRUE(service->extensions_enabled());
     service->Init();
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
 
     // Create and add custom theme extension so the ThemeSyncableService can
     // find it.

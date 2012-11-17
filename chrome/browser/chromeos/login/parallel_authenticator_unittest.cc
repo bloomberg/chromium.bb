@@ -179,7 +179,7 @@ class ParallelAuthenticatorTest : public testing::Test {
 
   void RunResolve(ParallelAuthenticator* auth) {
     auth->Resolve();
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   void SetAttemptState(ParallelAuthenticator* auth, TestAttemptState* state) {
@@ -665,7 +665,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
                    std::string(),
                    std::string());
   message_loop_.Run();
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetCaptchad) {
@@ -708,7 +708,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetCaptchad) {
                    std::string(),
                    std::string());
   message_loop_.Run();
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveOnlineLogin) {

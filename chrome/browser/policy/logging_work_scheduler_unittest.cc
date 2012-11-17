@@ -89,7 +89,7 @@ TEST_F(LoggingWorkSchedulerTest, LoggerTest) {
 
   Callback1();
   Callback2();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 
   std::vector<int64> events;
   logger_->Swap(&events);

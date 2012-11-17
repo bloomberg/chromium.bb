@@ -72,7 +72,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    msg_loop_.RunAllPending();
+    msg_loop_.RunUntilIdle();
     csd_service_.reset();
     file_thread_.reset();
     browser_thread_.reset();
@@ -330,7 +330,7 @@ TEST_F(ClientSideDetectionServiceTest, ServiceObjectDeletedBeforeCallbackDone) {
   csd_service_.reset();
   // Waiting for the callbacks to run should not crash even if the service
   // object is gone.
-  msg_loop_.RunAllPending();
+  msg_loop_.RunUntilIdle();
 }
 
 TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
@@ -640,7 +640,7 @@ TEST_F(ClientSideDetectionServiceTest, SetEnabledAndRefreshState) {
   EXPECT_TRUE(csd_service_->model_fetcher_.get() != NULL);
   csd_service_->SetEnabledAndRefreshState(false);
   EXPECT_TRUE(csd_service_->model_fetcher_.get() == NULL);
-  msg_loop_.RunAllPending();
+  msg_loop_.RunUntilIdle();
   // No calls expected.
   Mock::VerifyAndClearExpectations(service);
 

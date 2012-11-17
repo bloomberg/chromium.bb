@@ -44,7 +44,7 @@ void RecentlyUsedFoldersComboModelTest::SetUp() {
 
 void RecentlyUsedFoldersComboModelTest::TearDown() {
   // Flush the message loop to make application verifiers happy.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 // Verifies there are no duplicate nodes in the model.

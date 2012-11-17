@@ -45,7 +45,7 @@ class ExtensionUITest : public testing::Test {
     handler_.reset();
     profile_.reset();
     // Execute any pending deletion tasks.
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   static DictionaryValue* DeserializeJSONTestData(const FilePath& path,

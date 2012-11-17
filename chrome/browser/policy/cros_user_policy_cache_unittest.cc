@@ -119,7 +119,7 @@ TEST_F(CrosUserPolicyCacheTest, InitAndSetPolicy) {
       .WillOnce(InvokeCallbackArgument<0>(std::string()));
 
   cache.Load();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 
   EXPECT_TRUE(cache.IsReady());
   EXPECT_TRUE(data_store_->token_cache_loaded());
@@ -139,7 +139,7 @@ TEST_F(CrosUserPolicyCacheTest, InitAndSetPolicy) {
       .WillOnce(InvokeCallbackArgument<0>(serialized_response));
 
   EXPECT_TRUE(cache.SetPolicy(response));
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 
   EXPECT_EQ(1U, cache.policy()->size());
   const PolicyMap::Entry* entry = cache.policy()->Get(key::kShowHomeButton);
@@ -174,7 +174,7 @@ TEST_F(CrosUserPolicyCacheTest, Migration) {
       .WillOnce(InvokeCallbackArgument<0>(std::string()));
 
   cache.Load();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 
   EXPECT_TRUE(cache.IsReady());
   EXPECT_TRUE(data_store_->token_cache_loaded());

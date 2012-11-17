@@ -44,7 +44,7 @@ TEST(UserStyleSheetWatcherTest, StyleLoad) {
   style_sheet_watcher->Init();
 
   io_thread.Stop();
-  loop.RunAllPending();
+  loop.RunUntilIdle();
 
   GURL result_url = style_sheet_watcher->user_style_sheet();
   std::string result = result_url.spec();

@@ -261,7 +261,7 @@ TEST_F(PolicyLoaderMacTest, Invalid) {
 
   // Make the provider read the updated |prefs_|.
   provider_.RefreshPolicies();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   const PolicyBundle kEmptyBundle;
   EXPECT_TRUE(provider_.policies().Equals(kEmptyBundle));
 }
@@ -276,7 +276,7 @@ TEST_F(PolicyLoaderMacTest, TestNonForcedValue) {
 
   // Make the provider read the updated |prefs_|.
   provider_.RefreshPolicies();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   PolicyBundle expected_bundle;
   expected_bundle.Get(POLICY_DOMAIN_CHROME, "")
       .Set(test_policy_definitions::kKeyString, POLICY_LEVEL_RECOMMENDED,

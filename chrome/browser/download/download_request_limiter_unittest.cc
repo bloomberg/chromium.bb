@@ -58,7 +58,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
         "GET",  // request method
         base::Bind(&DownloadRequestLimiterTest::ContinueDownload,
                    base::Unretained(this)));
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   void OnUserGesture() {

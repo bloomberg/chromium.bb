@@ -32,7 +32,7 @@ class RulesRegistryWithCacheTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     // Make sure that deletion traits of all registries are executed.
     registry_ = NULL;
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   std::string AddRule(const std::string& extension_id,

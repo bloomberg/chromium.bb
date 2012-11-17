@@ -117,11 +117,11 @@ TEST_F(OfflineLoadPageTest, OfflinePageProceed) {
   ShowInterstitial(kURL2);
   InterstitialPage* interstitial = GetOfflineLoadPage();
   ASSERT_TRUE(interstitial);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   // Simulate the user clicking "proceed".
   interstitial->Proceed();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(OK, user_response());
 
@@ -144,7 +144,7 @@ TEST_F(OfflineLoadPageTest, OfflinePageDontProceed) {
   ShowInterstitial(kURL2);
   InterstitialPage* interstitial = GetOfflineLoadPage();
   ASSERT_TRUE(interstitial);
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   // Simulate the user clicking "don't proceed".
   interstitial->DontProceed();

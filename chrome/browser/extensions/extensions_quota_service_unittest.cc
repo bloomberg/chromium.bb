@@ -129,7 +129,7 @@ class ExtensionsQuotaServiceTest : public testing::Test {
     service_.reset(new ExtensionsQuotaService());
   }
   virtual void TearDown() {
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
     service_.reset();
   }
  protected:

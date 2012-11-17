@@ -48,7 +48,7 @@ void AssertIntercepted(
                           base::Bind(AssertInterceptedIO,
                                      url,
                                      base::Unretained(interceptor)));
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 void AssertWillHandleIO(
@@ -70,7 +70,7 @@ void AssertWillHandle(
                                      scheme,
                                      expected,
                                      base::Unretained(interceptor)));
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }
 
 class FakeDelegate : public ProtocolHandlerRegistry::Delegate {

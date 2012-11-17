@@ -57,7 +57,7 @@ class UserPolicyCacheTest : public testing::Test {
   }
 
   void TearDown() {
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
   }
 
   // Creates a (signed) PolicyFetchResponse setting the given |homepage| and
@@ -214,7 +214,7 @@ TEST_F(UserPolicyCacheTest, Empty) {
 TEST_F(UserPolicyCacheTest, LoadNoFile) {
   UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   cache.Load();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   PolicyMap empty;
   EXPECT_TRUE(empty.Equals(*cache.policy()));
   EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
@@ -228,7 +228,7 @@ TEST_F(UserPolicyCacheTest, RejectFuture) {
   WritePolicy(*policy_response);
   UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   cache.Load();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   PolicyMap empty;
   EXPECT_TRUE(empty.Equals(*cache.policy()));
   EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
@@ -241,7 +241,7 @@ TEST_F(UserPolicyCacheTest, LoadWithFile) {
   WritePolicy(*policy_response);
   UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   cache.Load();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   PolicyMap empty;
   EXPECT_TRUE(empty.Equals(*cache.policy()));
   EXPECT_NE(base::Time(), cache.last_policy_refresh_time());
@@ -256,7 +256,7 @@ TEST_F(UserPolicyCacheTest, LoadWithData) {
   WritePolicy(*policy);
   UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   cache.Load();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   PolicyMap expected;
   expected.Set(key::kHomepageLocation,
                POLICY_LEVEL_MANDATORY,
@@ -327,12 +327,12 @@ TEST_F(UserPolicyCacheTest, PersistPolicy) {
     EXPECT_TRUE(cache.SetPolicy(*policy));
   }
 
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 
   EXPECT_TRUE(file_util::PathExists(test_file()));
   UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   cache.Load();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   PolicyMap expected;
   expected.Set(key::kHomepageLocation,
                POLICY_LEVEL_MANDATORY,
@@ -356,7 +356,7 @@ TEST_F(UserPolicyCacheTest, FreshPolicyOverride) {
   EXPECT_TRUE(SetPolicy(&cache, updated_policy));
 
   cache.Load();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   PolicyMap expected;
   expected.Set(key::kHomepageLocation,
                POLICY_LEVEL_MANDATORY,
@@ -426,7 +426,7 @@ TEST_F(UserPolicyCacheTest, CheckReadyNoWaiting) {
   UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
   EXPECT_FALSE(cache.IsReady());
   cache.Load();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   EXPECT_TRUE(cache.IsReady());
 }
 
@@ -434,7 +434,7 @@ TEST_F(UserPolicyCacheTest, CheckReadyWaitForFetch) {
   UserPolicyCache cache(test_file(), true  /* wait_for_policy_fetch */);
   EXPECT_FALSE(cache.IsReady());
   cache.Load();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   EXPECT_FALSE(cache.IsReady());
   cache.SetFetchingDone();
   EXPECT_TRUE(cache.IsReady());
@@ -446,7 +446,7 @@ TEST_F(UserPolicyCacheTest, CheckReadyWaitForDisk) {
   cache.SetFetchingDone();
   EXPECT_FALSE(cache.IsReady());
   cache.Load();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
   EXPECT_TRUE(cache.IsReady());
 }
 

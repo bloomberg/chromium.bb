@@ -202,7 +202,7 @@ void SearchProviderTest::QueryForInput(const string16& text,
 
   // RunAllPending so that the task scheduled by SearchProvider to create the
   // URLFetchers runs.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 void SearchProviderTest::QueryForInputAndSetWYTMatch(
@@ -222,7 +222,7 @@ void SearchProviderTest::QueryForInputAndSetWYTMatch(
 }
 
 void SearchProviderTest::TearDown() {
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Shutdown the provider before the profile.
   provider_ = NULL;

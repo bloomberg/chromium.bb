@@ -227,7 +227,7 @@ TEST_F(ComponentUpdaterTest, StartStop) {
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
   component_updater()->Start();
-  message_loop.RunAllPending();
+  message_loop.RunUntilIdle();
   component_updater()->Stop();
 
   EXPECT_EQ(0ul, notification_tracker().size());

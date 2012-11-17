@@ -82,7 +82,7 @@ TEST_F(MediaDeviceNotificationUtilsTest, MediaDeviceAttached) {
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&MediaDeviceNotificationUtilsTest::checkDeviceType,
                  base::Unretained(this), mount_point.value(), true));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 // Test to verify that IsMediaDevice() function returns false for a given
@@ -94,7 +94,7 @@ TEST_F(MediaDeviceNotificationUtilsTest, NonMediaDeviceAttached) {
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&MediaDeviceNotificationUtilsTest::checkDeviceType,
                  base::Unretained(this), mount_point.value(), false));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace chrome

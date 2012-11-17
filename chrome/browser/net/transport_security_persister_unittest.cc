@@ -27,7 +27,7 @@ class TransportSecurityPersisterTest : public testing::Test {
   }
 
   ~TransportSecurityPersisterTest() {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   virtual void SetUp() OVERRIDE {

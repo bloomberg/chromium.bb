@@ -36,7 +36,7 @@ class ValueStoreFrontendTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    MessageLoop::current()->RunAllPending();  // wait for storage to delete
+    MessageLoop::current()->RunUntilIdle();  // wait for storage to delete
     storage_.reset();
   }
 

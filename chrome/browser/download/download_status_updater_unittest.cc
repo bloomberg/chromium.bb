@@ -69,7 +69,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
          it != manager_items_.end(); ++it)
       STLDeleteContainerPointers(it->begin(), it->end());
 
-    loop_.RunAllPending();  // Allow DownloadManager destruction.
+    loop_.RunUntilIdle();  // Allow DownloadManager destruction.
   }
 
  protected:

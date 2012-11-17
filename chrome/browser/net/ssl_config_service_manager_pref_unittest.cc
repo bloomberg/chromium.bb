@@ -47,7 +47,7 @@ class SSLConfigServiceManagerPrefTest : public testing::Test {
   bool IsChannelIdEnabled(SSLConfigService* config_service) {
     // Pump the message loop to notify the SSLConfigServiceManagerPref that the
     // preferences changed.
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     SSLConfig config;
     config_service->GetSSLConfig(&config);
     return config.channel_id_enabled;
@@ -79,7 +79,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, ChannelIDWithoutUserPrefs) {
                           Value::CreateBooleanValue(true));
   // Pump the message loop to notify the SSLConfigServiceManagerPref that the
   // preferences changed.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   config_service->GetSSLConfig(&config);
   EXPECT_TRUE(config.channel_id_enabled);
 }
@@ -170,7 +170,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, GoodDisabledCipherSuites) {
 
   // Pump the message loop to notify the SSLConfigServiceManagerPref that the
   // preferences changed.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   SSLConfig config;
   config_service->GetSSLConfig(&config);
@@ -207,7 +207,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, BadDisabledCipherSuites) {
 
   // Pump the message loop to notify the SSLConfigServiceManagerPref that the
   // preferences changed.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   SSLConfig config;
   config_service->GetSSLConfig(&config);

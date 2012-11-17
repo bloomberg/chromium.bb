@@ -75,7 +75,7 @@ class SandboxedUnpackerTest : public testing::Test {
     // Need to destruct SandboxedUnpacker before the message loop since
     // it posts a task to it.
     sandboxed_unpacker_ = NULL;
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
   }
 
   void SetupUnpacker(const std::string& crx_name) {

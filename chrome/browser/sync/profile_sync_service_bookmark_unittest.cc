@@ -293,7 +293,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     // This noticeably speeds up the unit tests that request it.
     if (save == DONT_SAVE_TO_STORAGE)
       model_->ClearStore();
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   int GetSyncBookmarkCount() {
@@ -408,7 +408,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     EXPECT_EQ(GetSyncBookmarkCount(),
               syncer_merge_result_.num_items_after_association());
 
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
 
     // Set up change processor.
     change_processor_.reset(
@@ -423,7 +423,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     EXPECT_FALSE(error.IsSet());
     model_associator_.reset();
 
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
 
     // TODO(akalin): Actually close the database and flush it to disk
     // (and make StartSync reload from disk).  This would require
@@ -433,7 +433,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   void UnloadBookmarkModel() {
     profile_.CreateBookmarkModel(false /* delete_bookmarks */);
     model_ = NULL;
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   bool InitSyncNodeFromChromeNode(const BookmarkNode* bnode,

@@ -247,12 +247,12 @@ class ProxyConfigServiceImplTestBase : public TESTBASE {
     // SetChromeProxyConfigService triggers update of initial prefs proxy
     // config by tracker to chrome proxy config service, so flush all pending
     // tasks so that tests start fresh.
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
   }
 
   virtual void TearDown() {
     config_service_impl_->DetachFromPrefService();
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
     config_service_impl_.reset();
     proxy_config_service_.reset();
     DBusThreadManager::Shutdown();
@@ -315,7 +315,7 @@ class ProxyConfigServiceImplTestBase : public TESTBASE {
       net::ProxyConfig* config) {
     *config = net::ProxyConfig();
     // Let message loop process all messages.
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
     // Calls ChromeProIOGetProxyConfig (which is called from
     // ProxyConfigService::GetLatestProxyConfig), running on faked IO thread.
     return proxy_config_service_->GetLatestProxyConfig(config);

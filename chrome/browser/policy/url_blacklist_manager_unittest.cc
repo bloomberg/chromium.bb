@@ -76,13 +76,13 @@ class URLBlacklistManagerTest : public testing::Test {
     pref_service_.RegisterListPref(prefs::kUrlWhitelist);
     blacklist_manager_.reset(
         new TestingURLBlacklistManager(&pref_service_));
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
     if (blacklist_manager_.get())
       blacklist_manager_->ShutdownOnUIThread();
-    loop_.RunAllPending();
+    loop_.RunUntilIdle();
     // Delete |blacklist_manager_| while |io_thread_| is mapping IO to
     // |loop_|.
     blacklist_manager_.reset();
@@ -181,7 +181,7 @@ TEST_F(URLBlacklistManagerTest, SingleUpdateForTwoPrefChanges) {
   whitelist->Append(new StringValue("mail.google.com"));
   pref_service_.SetManagedPref(prefs::kUrlBlacklist, blacklist);
   pref_service_.SetManagedPref(prefs::kUrlBlacklist, whitelist);
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 
   EXPECT_EQ(1, blacklist_manager_->update_called());
 }
@@ -193,7 +193,7 @@ TEST_F(URLBlacklistManagerTest, ShutdownWithPendingTask0) {
   blacklist_manager_->ShutdownOnUIThread();
   blacklist_manager_.reset();
   // Run the task after shutdown and deletion.
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 }
 
 TEST_F(URLBlacklistManagerTest, ShutdownWithPendingTask1) {
@@ -202,11 +202,11 @@ TEST_F(URLBlacklistManagerTest, ShutdownWithPendingTask1) {
   // Shutdown comes before the task is executed.
   blacklist_manager_->ShutdownOnUIThread();
   // Run the task after shutdown, but before deletion.
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 
   EXPECT_EQ(0, blacklist_manager_->update_called());
   blacklist_manager_.reset();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 }
 
 TEST_F(URLBlacklistManagerTest, ShutdownWithPendingTask2) {
@@ -217,7 +217,7 @@ TEST_F(URLBlacklistManagerTest, ShutdownWithPendingTask2) {
 
   EXPECT_FALSE(blacklist_manager_->set_blacklist_called());
   blacklist_manager_.reset();
-  loop_.RunAllPending();
+  loop_.RunUntilIdle();
 }
 
 TEST_F(URLBlacklistManagerTest, HasStandardScheme) {

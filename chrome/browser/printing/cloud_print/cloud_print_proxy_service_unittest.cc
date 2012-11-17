@@ -429,7 +429,7 @@ ProfileKeyedService* TestCloudPrintProxyServiceFactory(Profile* profile) {
   service->GetMockServiceProcessControl()->SetWillBeDisabledExpectations();
 
   service->Initialize();
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   return service;
 }
 
@@ -447,5 +447,5 @@ TEST_F(CloudPrintProxyPolicyTest, StartupBrowserCreatorWithCommandLine) {
   command_line.AppendSwitch(switches::kCheckCloudPrintConnectorPolicy);
 
   EXPECT_FALSE(LaunchBrowser(command_line, &profile_));
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 }

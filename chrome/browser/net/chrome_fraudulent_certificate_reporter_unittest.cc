@@ -188,21 +188,21 @@ TEST(ChromeFraudulentCertificateReporterTest, ReportIsSent) {
   MessageLoop loop(MessageLoop::TYPE_IO);
   content::TestBrowserThread io_thread(BrowserThread::IO, &loop);
   loop.PostTask(FROM_HERE, base::Bind(&DoReportIsSent));
-  loop.RunAllPending();
+  loop.RunUntilIdle();
 }
 
 TEST(ChromeFraudulentCertificateReporterTest, MockReportIsSent) {
   MessageLoop loop(MessageLoop::TYPE_IO);
   content::TestBrowserThread io_thread(BrowserThread::IO, &loop);
   loop.PostTask(FROM_HERE, base::Bind(&DoMockReportIsSent));
-  loop.RunAllPending();
+  loop.RunUntilIdle();
 }
 
 TEST(ChromeFraudulentCertificateReporterTest, ReportIsNotSent) {
   MessageLoop loop(MessageLoop::TYPE_IO);
   content::TestBrowserThread io_thread(BrowserThread::IO, &loop);
   loop.PostTask(FROM_HERE, base::Bind(&DoReportIsNotSent));
-  loop.RunAllPending();
+  loop.RunUntilIdle();
 }
 
 }  // namespace chrome_browser_net

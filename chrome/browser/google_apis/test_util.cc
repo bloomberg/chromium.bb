@@ -54,7 +54,7 @@ void RunBlockingPoolTask() {
 
     TaskObserver task_observer;
     MessageLoop::current()->AddTaskObserver(&task_observer);
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     MessageLoop::current()->RemoveTaskObserver(&task_observer);
     if (!task_observer.posted())
       break;

@@ -140,7 +140,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
   ModelLoadCallbackMock model_load_callback_;
 
   void PumpLoop() {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 };
 
