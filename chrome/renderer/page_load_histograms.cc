@@ -11,7 +11,6 @@
 #include "base/time.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
-#include "chrome/renderer/prerender/prerender_helper.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_thread.h"
@@ -799,11 +798,6 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
 
   // Log the PLT to the info log.
   LogPageLoadTime(document_state, frame->dataSource());
-
-  // Record prerendering histograms.
-  prerender::PrerenderHelper::RecordHistograms(render_view(),
-                                               finish_all_loads,
-                                               begin_to_finish_all_loads);
 
   // Record histograms for cache sensitivity analysis.
   static const bool cache_sensitivity_histogram =
