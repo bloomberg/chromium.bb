@@ -782,7 +782,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kHasChromeOSKeyboard,
       ::switches::kLoginProfile,
       ::switches::kNaturalScrollDefault,
-      ::switches::kNoFirstRun,
       ::switches::kNoSandbox,
       ::switches::kPpapiFlashArgs,
       ::switches::kPpapiFlashInProcess,
@@ -832,8 +831,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
   if (start_url.is_valid())
     command_line->AppendArg(start_url.spec());
 
-  // Override the value of the homepage that is set in first run mode.
-  // TODO(altimofeev): extend action of the |kNoFirstRun| to cover this case.
+  // Override the home page.
   command_line->AppendSwitchASCII(
       ::switches::kHomePage,
       GURL(chrome::kChromeUINewTabURL).spec());

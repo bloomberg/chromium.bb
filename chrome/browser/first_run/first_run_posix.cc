@@ -133,6 +133,13 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
     MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
 
+#if defined(OS_CHROMEOS)
+  // Chrome OS has its own out-of-box-experience code.  Create the sentinel to
+  // mark the fact that we've run once but skip the full first-run flow.
+  CreateSentinel();
+  return SKIP_FIRST_RUN;
+#endif
+
   FilePath master_prefs_path;
   scoped_ptr<installer::MasterPreferences>
       install_prefs(internal::LoadMasterPrefs(&master_prefs_path));
