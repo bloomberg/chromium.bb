@@ -28,6 +28,7 @@ import sys
 
 # local includes
 import buildbot_common
+import build_updater
 import build_utils
 import generate_make
 import generate_notice
@@ -793,6 +794,9 @@ def BuildStepArchiveSDKTools():
   # Only push up sdk_tools.tgz and nacl_sdk.zip on the linux buildbot.
   builder_name = os.getenv('BUILDBOT_BUILDERNAME', '')
   if builder_name == 'linux-sdk-multi':
+    buildbot_common.BuildStep('Build SDK Tools')
+    build_updater.BuildUpdater(OUT_DIR)
+
     buildbot_common.BuildStep('Archive SDK Tools')
     bucket_path = 'nativeclient-mirror/nacl/nacl_sdk/%s' % (
         build_utils.ChromeVersion(),)
