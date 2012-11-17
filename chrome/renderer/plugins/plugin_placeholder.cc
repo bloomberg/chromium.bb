@@ -614,7 +614,7 @@ void PluginPlaceholder::OpenYoutubeUrlCallback(const CppArgumentList& args,
   request.initialize();
   request.setURL(url);
   render_view()->LoadURLExternally(
-      frame_, request, WebKit::WebNavigationPolicyCurrentTab);
+      frame_, request, WebKit::WebNavigationPolicyNewForegroundTab);
 }
 
 bool PluginPlaceholder::IsValidYouTubeVideo(const std::string& path) {
