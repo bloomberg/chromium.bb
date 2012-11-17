@@ -13,6 +13,7 @@ from idl_option import ParseOptions
 from idl_outfile import IDLOutFile
 from idl_parser import ParseFiles
 from idl_c_header import HGen
+from idl_thunk import TGen
 from idl_gen_pnacl import PnaclGen
 
 
@@ -25,6 +26,7 @@ def Main(args):
           '--wnone', '--cgen', '--range=start,end',
           '--pnacl', '--pnaclshim',
           '../native_client/src/untrusted/pnacl_irt_shim/pnacl_shim.c',
+          '--tgen',
       ]
       current_dir = os.path.abspath(os.getcwd())
       script_dir = os.path.abspath(os.path.dirname(__file__))
@@ -53,4 +55,3 @@ def Main(args):
 
 if __name__ == '__main__':
     sys.exit(Main(sys.argv[1:]))
-

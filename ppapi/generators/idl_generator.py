@@ -11,6 +11,7 @@ from idl_parser import ParseFiles
 
 GeneratorList = []
 
+Option('out', 'List of output files', default='')
 Option('release', 'Which release to generate.', default='')
 Option('range', 'Which ranges in the form of MIN,MAX.', default='start,end')
 

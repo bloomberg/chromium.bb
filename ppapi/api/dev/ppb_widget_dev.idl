@@ -7,6 +7,8 @@
  * Implementation of the widgets interface.
  */
 
+[generate_thunk]
+
 label Chrome {
   M14 = 0.3,
   M23 = 0.4
@@ -26,6 +28,7 @@ interface PPB_Widget_Dev {
    * Paint the given rectangle of the widget into the given image.
    * Returns PP_TRUE on success, PP_FALSE on failure.
    */
+  [report_errors=False]
   PP_Bool Paint([in] PP_Resource widget,
                 [in] PP_Rect rect,
                 [in] PP_Resource image);
@@ -34,24 +37,27 @@ interface PPB_Widget_Dev {
    * Pass in an event to a widget.  It'll return PP_TRUE if the event was
    * consumed.
    */
+  [report_errors=False]
   PP_Bool HandleEvent([in] PP_Resource widget, [in] PP_Resource input_event);
 
   /**
    * Get the location of the widget.
    */
+  [report_errors=False]
   PP_Bool GetLocation([in] PP_Resource widget,
                       [out] PP_Rect location);
 
   /**
    * Set the location of the widget.
    */
+  [report_errors=False]
   void SetLocation([in] PP_Resource widget,
                    [in] PP_Rect location);
 
   /**
    * Set scale used during paint operations.
    */
-  [version=0.4]
+  [version=0.4, report_errors=False]
   void SetScale([in] PP_Resource widget,
                 [in] float_t scale);
 };

@@ -426,12 +426,15 @@ class CGen(object):
   #  include_name - If true, include member name in the signature.
   #                 If false, leave it out. In any case, prefix and ptr_prefix
   #                 are always included.
+  #  include_version - if True, include version in the member name
   #
   def GetSignature(self, node, release, mode, prefix='', func_as_ptr=True,
-                   ptr_prefix='', include_name=True):
+                   ptr_prefix='', include_name=True, include_version=False):
     self.LogEnter('GetSignature %s %s as func=%s' %
                   (node, mode, func_as_ptr))
     rtype, name, arrayspec, callspec = self.GetComponents(node, release, mode)
+    if include_version:
+      name = self.GetStructName(node, release, True)
     out = self.Compose(rtype, name, arrayspec, callspec, prefix,
                        func_as_ptr, ptr_prefix, include_name)
     self.LogExit('Exit GetSignature: %s' % out)
@@ -562,9 +565,49 @@ class CGen(object):
   #
   # Generate a comment or copyright block
   #
-  def Copyright(self, node, tabs=0):
+  def Copyright(self, node, cpp_style=False):
     lines = node.GetName().split('\n')
-    return CommentLines(lines, tabs)
+    if cpp_style:
+      return '//' + '\n//'.join(filter(lambda f: f != '', lines)) + '\n'
+    return CommentLines(lines)
+
+
+  def Indent(self, data, tabs=0):
+    """Handles indentation and 80-column line wrapping."""
+    tab = '  ' * tabs
+    lines = []
+    for line in data.split('\n'):
+      # Add indentation
+      line = tab + line
+      if len(line) <= 80:
+        lines.append(line.rstrip())
+      else:
+        left = line.rfind('(') + 1
+        args = line[left:].split(',')
+        orig_args = args
+        orig_left = left
+        # Try to split on '(arg1)' or '(arg1, arg2)', not '()'
+        while args[0][0] == ')':
+          left = line.rfind('(', 0, left - 1) + 1
+          if left == 0:  # No more parens, take the original option
+            args = orig_args
+            left = orig_left
+            break
+          args = line[left:].split(',')
+
+        line_max = 0
+        for arg in args:
+          if len(arg) > line_max: line_max = len(arg)
+
+        if left + line_max >= 80:
+          indent = '%s    ' % tab
+          args =  (',\n%s' % indent).join([arg.strip() for arg in args])
+          lines.append('%s\n%s%s' % (line[:left], indent, args))
+        else:
+          indent = ' ' * (left - 1)
+          args =  (',\n%s' % indent).join(args)
+          lines.append('%s%s' % (line[:left], args))
+    return '\n'.join(lines)
 
 
   # Define a top level object.
@@ -596,30 +639,10 @@ class CGen(object):
       out += comment_txt
     out += define_txt
 
-    tab = '  ' * tabs
-    lines = []
-    for line in out.split('\n'):
-      # Add indentation
-      line = tab + line
-      if len(line) > 80:
-        left = line.rfind('(') + 1
-        args = line[left:].split(',')
-        line_max = 0
-        for arg in args:
-          if len(arg) > line_max: line_max = len(arg)
-
-        if left + line_max >= 80:
-          space = '%s    ' % tab
-          args =  (',\n%s' % space).join([arg.strip() for arg in args])
-          lines.append('%s\n%s%s' % (line[:left], space, args))
-        else:
-          space = ' ' * (left - 1)
-          args =  (',\n%s' % space).join(args)
-          lines.append('%s%s' % (line[:left], args))
-      else:
-        lines.append(line.rstrip())
+    indented_out = self.Indent(out, tabs)
     self.LogExit('Exit Define')
-    return '\n'.join(lines)
+    return indented_out
+
 
 # Clean a string representing an object definition and return then string
 # as a single space delimited set of tokens.

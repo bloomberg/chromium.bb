@@ -21,7 +21,6 @@ from idl_generator import Generator, GeneratorByFile
 
 Option('dstroot', 'Base directory of output', default=os.path.join('..', 'c'))
 Option('guard', 'Include guard prefix', default=os.path.join('ppapi', 'c'))
-Option('out', 'List of output files', default='')
 
 
 def GetOutFileName(filenode, relpath=None, prefix=None):
