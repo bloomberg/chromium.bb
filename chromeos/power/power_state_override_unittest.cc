@@ -68,26 +68,24 @@ TEST_F(PowerStateOverrideTest, AddAndRemoveOverrides) {
   EXPECT_CALL(*power_manager_client_,
               RequestPowerStateOverrides(0, _, kDisplayOverrides, _))
       .WillOnce(SaveArg<3>(&request_id_callback));
-  scoped_refptr<PowerStateOverride> override(
+  scoped_ptr<PowerStateOverride> override(
       new PowerStateOverride(PowerStateOverride::BLOCK_DISPLAY_SLEEP));
-  // Make sure our PostTask to the request power state overrides runs.
-  message_loop_.RunUntilIdle();
   request_id_callback.Run(kRequestId);
 
   // The request should be canceled when the PowerStateOverride is destroyed.
   EXPECT_CALL(*power_manager_client_, CancelPowerStateOverrides(kRequestId));
-  override = NULL;
+  override.reset();
 
   // Now send a request to just block the system from suspending.
+  Mock::VerifyAndClearExpectations(power_manager_client_);
   EXPECT_CALL(*power_manager_client_,
               RequestPowerStateOverrides(0, _, kSystemOverrides, _))
       .WillOnce(SaveArg<3>(&request_id_callback));
-  override = new PowerStateOverride(PowerStateOverride::BLOCK_SYSTEM_SUSPEND);
-  // Make sure our PostTask to the request power state overrides runs.
-  message_loop_.RunUntilIdle();
+  override.reset(
+      new PowerStateOverride(PowerStateOverride::BLOCK_SYSTEM_SUSPEND));
   request_id_callback.Run(kRequestId);
   EXPECT_CALL(*power_manager_client_, CancelPowerStateOverrides(kRequestId));
-  override = NULL;
+  override.reset();
 }
 
 TEST_F(PowerStateOverrideTest, DBusThreadManagerShutDown) {
@@ -95,10 +93,8 @@ TEST_F(PowerStateOverrideTest, DBusThreadManagerShutDown) {
   chromeos::PowerStateRequestIdCallback request_id_callback;
   EXPECT_CALL(*power_manager_client_, RequestPowerStateOverrides(0, _, _, _))
       .WillOnce(SaveArg<3>(&request_id_callback));
-  scoped_refptr<PowerStateOverride> override(
+  scoped_ptr<PowerStateOverride> override(
       new PowerStateOverride(PowerStateOverride::BLOCK_DISPLAY_SLEEP));
-  // Make sure our PostTask to the request power state overrides runs.
-  message_loop_.RunUntilIdle();
   request_id_callback.Run(kRequestId);
 
   // When the DBusThreadManager is about to be shut down, PowerStateOverride

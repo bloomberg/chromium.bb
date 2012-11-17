@@ -28,7 +28,8 @@ namespace chromeos {
 PowerStateOverride::PowerStateOverride(Mode mode)
     : override_types_(0),
       request_id_(0),
-      dbus_thread_manager_(DBusThreadManager::Get()) {
+      dbus_thread_manager_(DBusThreadManager::Get()),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   switch (mode) {
     case BLOCK_DISPLAY_SLEEP:
       override_types_ |= (PowerManagerClient::DISABLE_IDLE_DIM |
@@ -45,20 +46,11 @@ PowerStateOverride::PowerStateOverride(Mode mode)
   dbus_thread_manager_->AddObserver(this);
 
   // request_id_ = 0 will create a new override request.
-  // We do a post task here to ensure that this request runs 'after' our
-  // constructor is done. If not, there is a possibility (though only in
-  // tests at the moment) that the power state override request executes
-  // and returns before the constructor has finished executing. This will
-  // cause an AddRef and a Release, the latter destructing our current
-  // instance even before the constructor has finished executing (as it does
-  // in the DownloadExtensionTest browsertests currently).
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PowerStateOverride::CallRequestPowerStateOverrides, this));
+  CallRequestPowerStateOverrides();
 
   heartbeat_.Start(FROM_HERE,
                    base::TimeDelta::FromSeconds(kHeartbeatTimeInSecs),
-                   this,
+                   weak_ptr_factory_.GetWeakPtr(),
                    &PowerStateOverride::CallRequestPowerStateOverrides);
 }
 
@@ -86,7 +78,8 @@ void PowerStateOverride::CallRequestPowerStateOverrides() {
       base::TimeDelta::FromSeconds(
           kHeartbeatTimeInSecs + kRequestSlackInSecs),
       override_types_,
-      base::Bind(&PowerStateOverride::SetRequestId, this));
+      base::Bind(&PowerStateOverride::SetRequestId,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PowerStateOverride::CancelRequest() {

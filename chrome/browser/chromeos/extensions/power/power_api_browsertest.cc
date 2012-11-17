@@ -64,8 +64,6 @@ class PowerApiTest : public InProcessBrowserTest {
     bool boolean_value;
     result->GetAsBoolean(&boolean_value);
     EXPECT_EQ(boolean_value, true);
-
-    MessageLoop::current()->RunUntilIdle();
   }
 
   // Adds an expectation that RequestPowerStateOverrides() will be called once
