@@ -114,8 +114,6 @@ class TestingBrowserProcess : public BrowserProcess {
   unsigned int module_ref_count_;
   std::string app_locale_;
 
-  // Weak pointer.
-  PrefService* local_state_;
   // TODO(ios): Add back members as more code is compiled.
 #if !defined(OS_IOS)
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -130,13 +128,13 @@ class TestingBrowserProcess : public BrowserProcess {
       print_preview_tab_controller_;
   scoped_ptr<prerender::PrerenderTracker> prerender_tracker_;
   scoped_ptr<RenderWidgetSnapshotTaker> render_widget_snapshot_taker_;
-#endif  // !defined(OS_IOS)
-  IOThread* io_thread_;
-  // TODO(ios): Add back members as more code is compiled.
-#if !defined(OS_IOS)
   scoped_refptr<SafeBrowsingService> sb_service_;
   scoped_ptr<BookmarkPromptController> bookmark_prompt_controller_;
 #endif  // !defined(OS_IOS)
+
+  // The following objects are not owned by TestingBrowserProcess:
+  PrefService* local_state_;
+  IOThread* io_thread_;
   net::URLRequestContextGetter* system_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);

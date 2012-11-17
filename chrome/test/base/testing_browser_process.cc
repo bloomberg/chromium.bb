@@ -33,10 +33,10 @@ TestingBrowserProcess::TestingBrowserProcess()
     : notification_service_(content::NotificationService::Create()),
       module_ref_count_(0),
       app_locale_("en"),
-      local_state_(NULL),
 #if !defined(OS_IOS)
       render_widget_snapshot_taker_(new RenderWidgetSnapshotTaker),
 #endif
+      local_state_(NULL),
       io_thread_(NULL),
       system_request_context_(NULL) {
 }
