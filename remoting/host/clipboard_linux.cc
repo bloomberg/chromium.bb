@@ -40,9 +40,14 @@ class ClipboardLinux : public Clipboard,
 
   scoped_ptr<protocol::ClipboardStub> client_clipboard_;
 
+  // Underlying X11 clipboard implementation.
   XServerClipboard x_server_clipboard_;
+
+  // Connection to the X server, used by |x_server_clipboard_|. This is created
+  // and owned by this class.
   Display* display_;
 
+  // Watcher used to handle X11 events from |display_|.
   MessageLoopForIO::FileDescriptorWatcher x_connection_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardLinux);

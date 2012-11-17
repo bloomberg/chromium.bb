@@ -24,9 +24,15 @@ namespace remoting {
 // application's main event-processing thread.
 class XServerClipboard {
  public:
+  // Called when new clipboard data has been received from the owner of the X
+  // selection (primary or clipboard).
+  // |mime_type| is the MIME type associated with the data. This will be one of
+  // the types listed in remoting/base/constants.h.
+  // |data| is the clipboard data from the associated X event, encoded with the
+  // specified MIME-type.
   typedef base::Callback<void(const std::string& mime_type,
                               const std::string& data)>
-    ClipboardChangedCallback;
+      ClipboardChangedCallback;
 
   XServerClipboard();
   ~XServerClipboard();
@@ -45,15 +51,26 @@ class XServerClipboard {
   void ProcessXEvent(XEvent* event);
 
  private:
-  // Handlers for X selection events.
+  // Handlers called by ProcessXEvent() for each event type.
   void OnSetSelectionOwnerNotify(Atom selection, Time timestamp);
   void OnPropertyNotify(XEvent* event);
   void OnSelectionNotify(XEvent* event);
   void OnSelectionRequest(XEvent* event);
   void OnSelectionClear(XEvent* event);
 
-  // Called when the selection owner has replied to a request for information
-  // about a selection.
+  // Used by OnSelectionRequest() to respond to requests for details of our
+  // clipboard content. This is done by changing the property |property| of the
+  // |requestor| window (these values come from the XSelectionRequestEvent).
+  // |target| must be a string type (STRING or UTF8_STRING).
+  void SendTargetsResponse(Window requestor, Atom property);
+  void SendTimestampResponse(Window requestor, Atom property);
+  void SendStringResponse(Window requestor, Atom property, Atom target);
+
+  // Called by OnSelectionNotify() when the selection owner has replied to a
+  // request for information about a selection.
+  // |event| is the raw X event from the notification.
+  // |type|, |format| etc are the results from XGetWindowProperty(), or 0 if
+  // there is no associated data.
   void HandleSelectionNotify(XSelectionEvent* event,
                              Atom type,
                              int format,
@@ -61,7 +78,8 @@ class XServerClipboard {
                              void* data);
 
   // These methods return true if selection processing is complete, false
-  // otherwise.
+  // otherwise. They are called from HandleSelectionNotify(), and take the same
+  // arguments.
   bool HandleSelectionTargetsEvent(XSelectionEvent* event,
                                    int format,
                                    int item_count,
@@ -83,20 +101,44 @@ class XServerClipboard {
   void AssertSelectionOwnership(Atom selection);
   bool IsSelectionOwner(Atom selection);
 
+  // Stores the Display* supplied to Init().
   Display* display_;
+
+  // Window through which clipboard events are received, or BadValue if the
+  // window could not be created.
   Window clipboard_window_;
+
+  // The event base returned by XFixesQueryExtension(). If XFixes is
+  // unavailable, the clipboard window will not be created, and no
+  // event-processing will take place.
   int xfixes_event_base_;
-  int xfixes_error_base_;
+
+  // Cached atoms for various strings, initialized during Init().
   Atom clipboard_atom_;
   Atom large_selection_atom_;
   Atom selection_string_atom_;
   Atom targets_atom_;
   Atom timestamp_atom_;
   Atom utf8_string_atom_;
+
+  // The set of X selections owned by |clipboard_window_| (can be Primary or
+  // Clipboard or both).
   std::set<Atom> selections_owned_;
+
+  // Clipboard content to return to other applications when |clipboard_window_|
+  // owns a selection.
   std::string data_;
+
+  // Stores the property to use for large transfers, or None if a large
+  // transfer is not currently in-progress.
   Atom large_selection_property_;
+
+  // Remembers the start time of selection processing, and is set to null when
+  // processing is complete. This is used to decide whether to begin processing
+  // a new selection or continue with the current selection.
   base::TimeTicks get_selections_time_;
+
+  // |callback| argument supplied to Init().
   ClipboardChangedCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(XServerClipboard);
