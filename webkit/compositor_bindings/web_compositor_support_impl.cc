@@ -78,18 +78,6 @@ void WebCompositorSupportImpl::shutdown() {
   impl_thread_message_loop_proxy_ = NULL;
 }
 
-void WebCompositorSupportImpl::setPerTilePaintingEnabled(bool enabled) {
-}
-
-void WebCompositorSupportImpl::setPartialSwapEnabled(bool enabled) {
-}
-
-void WebCompositorSupportImpl::setAcceleratedAnimationEnabled(bool enabled) {
-}
-
-void WebCompositorSupportImpl::setPageScalePinchZoomEnabled(bool enabled) {
-}
-
 WebLayerTreeView* WebCompositorSupportImpl::createLayerTreeView(
     WebLayerTreeViewClient* client, const WebLayer& root,
     const WebLayerTreeView::Settings& settings) {
