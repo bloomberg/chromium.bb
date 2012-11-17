@@ -252,7 +252,6 @@
             # resulting .res files get referenced multiple times.
             '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.rc',
           ],
           'configurations': {

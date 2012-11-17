@@ -10,7 +10,6 @@ without changes to the corresponding grd file. fb9 -->
     <output filename="grit/renderer_resources_map.h" type="resource_map_header" context="default_100_percent" />
     <output filename="renderer_resources_100_percent.pak" type="data_package" context="default_100_percent" />
     <output filename="renderer_resources_200_percent.pak" type="data_package" context="default_200_percent" />
-    <output filename="renderer_resources.rc" type="rc_all" context="default_100_percent" />
   </outputs>
   <release seq="1">
     <structures fallback_to_low_resolution="true">
