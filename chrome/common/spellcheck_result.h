@@ -12,7 +12,7 @@
 // possible replacement of the misspelling if it is available.
 //
 // Although SpellCheckResult::Type defines various values Chromium
-// only uses the |Spelling| type. otehr values are just reflecting the
+// only uses the |Spelling| type. Other values are just reflecting the
 // enum definition in the original WebKit class.
 //
 struct SpellCheckResult {
