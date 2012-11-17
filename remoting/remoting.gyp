@@ -1845,7 +1845,6 @@
               ],
               'ImportLibrary': '$(OutDir)\\lib\\remoting_host_exe.lib',
               'OutputFile': '$(OutDir)\\remoting_host.exe',
-              'ProgramDatabaseFile': '$(OutDir)\\remoting_host.pdb',
               # 2 == /SUBSYSTEM:WINDOWS
               'SubSystem': '2',
             },

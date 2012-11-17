@@ -97,7 +97,7 @@ class StressTest(pyauto.PyUITest):
     # TODO: Add linux symbol_files
     if self.IsWin():
       url = url + '/win/'
-      symbol_files = ['chrome_dll.pdb', 'chrome_exe.pdb']
+      symbol_files = ['chrome.dll.pdb', 'chrome.exe.pdb']
     elif self.IsMac():
       url = url + '/mac/'
       symbol_files = map(urllib.quote,

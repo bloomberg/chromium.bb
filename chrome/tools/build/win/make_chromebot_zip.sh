@@ -47,7 +47,7 @@ popd
 zip -r $output.zip $output
 
 # Create chrome symbol zip file
-sym_files=( chrome_dll.pdb chrome_exe.pdb )
+sym_files=( chrome.dll.pdb chrome.exe.pdb )
 
 sym_output=${2:-chrome-win32-syms}
 rm -fr $sym_output $sym_output.zip

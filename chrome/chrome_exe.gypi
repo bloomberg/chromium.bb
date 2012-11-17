@@ -479,7 +479,6 @@
           'msvs_settings': {
             'VCLinkerTool': {
               'ImportLibrary': '$(OutDir)\\lib\\chrome_exe.lib',
-              'ProgramDatabaseFile': '$(OutDir)\\chrome_exe.pdb',
               'DelayLoadDLLs': [
                 'dbghelp.dll',
                 'dwmapi.dll',
@@ -584,7 +583,6 @@
               'msvs_settings': {
                 'VCLinkerTool': {
                   'ImportLibrary': '$(OutDir)\\lib\\nacl64_exe.lib',
-                  'ProgramDatabaseFile': '$(OutDir)\\nacl64_exe.pdb',
                   'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
                 },
               },

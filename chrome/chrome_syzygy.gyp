@@ -27,17 +27,17 @@
               'msvs_cygwin_shell': 0,
               'inputs': [
                 '<(PRODUCT_DIR)\\chrome.dll',
-                '<(PRODUCT_DIR)\\chrome_dll.pdb',
+                '<(PRODUCT_DIR)\\chrome.dll.pdb',
               ],
               'outputs': [
                 '<(dest_dir)\\chrome.dll',
-                '<(dest_dir)\\chrome_dll.pdb',
+                '<(dest_dir)\\chrome.dll.pdb',
               ],
               'action': [
                 'python',
                 '<(DEPTH)/chrome/tools/build/win/syzygy_reorder.py',
                 '--input_executable', '<(PRODUCT_DIR)\\chrome.dll',
-                '--input_symbol', '<(PRODUCT_DIR)\\chrome_dll.pdb',
+                '--input_symbol', '<(PRODUCT_DIR)\\chrome.dll.pdb',
                 '--destination_dir', '<(dest_dir)',
               ],
             },

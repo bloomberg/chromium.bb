@@ -169,7 +169,6 @@
       'msvs_settings': {
         'VCLinkerTool': {
           'OutputFile': '$(OutDir)\\chrome_frame_helper.dll',
-          'ProgramDatabaseFile': '$(OutDir)\\chrome_frame_helper_dll.pdb',
           # Set /SUBSYSTEM:WINDOWS since this is not a command-line program.
           'SubSystem': '2',
         },

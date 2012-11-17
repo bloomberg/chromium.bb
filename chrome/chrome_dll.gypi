@@ -41,7 +41,28 @@
                              '$(OutDir)\\initial\\chrome.dll',
                              '$(OutDir)\\chrome.dll'],
                   'msvs_cygwin_shell': 0,
-                }
+                },
+              ],
+              'conditions': [
+                # Only hardlink pdb if we're generating debug info.
+                ['fastbuild==0 or win_z7!=0', {
+                  'actions': [
+                    {
+                      'action_name': 'hardlink_pdb_to_output',
+                      'inputs': [
+                        # Not the pdb, since gyp doesn't know about it
+                        '$(OutDir)\\initial\\chrome.dll',
+                      ],
+                      'outputs': [
+                        '$(OutDir)\\chrome.dll.pdb',
+                      ],
+                      'action': ['tools\\build\\win\\hardlink_failsafe.bat',
+                                 '$(OutDir)\\initial\\chrome.dll.pdb',
+                                 '$(OutDir)\\chrome.dll.pdb'],
+                      'msvs_cygwin_shell': 0,
+                    }
+                  ]
+                }]
               ],
             }],
           ]
@@ -147,7 +168,6 @@
                   'AdditionalLibraryDirectories': ['$(DXSDK_DIR)/lib/x86'],
                   'BaseAddress': '0x01c30000',
                   'ImportLibrary': '$(OutDir)\\lib\\chrome_dll.lib',
-                  'ProgramDatabaseFile': '$(OutDir)\\chrome_dll.pdb',
                   # Set /SUBSYSTEM:WINDOWS for chrome.dll (for consistency).
                   'SubSystem': '2',
                   'conditions': [
