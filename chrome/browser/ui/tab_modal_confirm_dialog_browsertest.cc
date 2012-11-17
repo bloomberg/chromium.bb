@@ -10,37 +10,47 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class MockTabModalConfirmDialogDelegate : public TabModalConfirmDialogDelegate {
- public:
-  explicit MockTabModalConfirmDialogDelegate(content::WebContents* web_contents)
-      : TabModalConfirmDialogDelegate(web_contents) {}
+MockTabModalConfirmDialogDelegate::MockTabModalConfirmDialogDelegate(
+    content::WebContents* web_contents,
+    Delegate* delegate)
+    : TabModalConfirmDialogDelegate(web_contents),
+      delegate_(delegate) {
+}
 
-  virtual string16 GetTitle() OVERRIDE {
-    return string16();
-  }
-  virtual string16 GetMessage() OVERRIDE {
-    return string16();
-  }
+MockTabModalConfirmDialogDelegate::~MockTabModalConfirmDialogDelegate() {
+}
 
-  MOCK_METHOD0(OnAccepted, void());
-  MOCK_METHOD0(OnCanceled, void());
+string16 MockTabModalConfirmDialogDelegate::GetTitle() {
+  return string16();
+}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockTabModalConfirmDialogDelegate);
-};
+string16 MockTabModalConfirmDialogDelegate::GetMessage() {
+  return string16();
+}
+
+void MockTabModalConfirmDialogDelegate::OnAccepted() {
+  if (delegate_)
+    delegate_->OnAccepted();
+}
+
+void MockTabModalConfirmDialogDelegate::OnCanceled() {
+  if (delegate_)
+    delegate_->OnCanceled();
+}
 
 TabModalConfirmDialogTest::TabModalConfirmDialogTest()
     : delegate_(NULL),
-      dialog_(NULL) {}
+      dialog_(NULL),
+      accepted_count_(0),
+      canceled_count_(0) {
+}
 
 void TabModalConfirmDialogTest::SetUpOnMainThread() {
   delegate_ = new MockTabModalConfirmDialogDelegate(
-      chrome::GetActiveWebContents(browser()));
+      chrome::GetActiveWebContents(browser()), this);
   dialog_ = TabModalConfirmDialog::Create(
       delegate_, chrome::GetActiveWebContents(browser()));
   content::RunAllPendingInMessageLoop();
@@ -48,27 +58,38 @@ void TabModalConfirmDialogTest::SetUpOnMainThread() {
 
 void TabModalConfirmDialogTest::CleanUpOnMainThread() {
   content::RunAllPendingInMessageLoop();
-  ::testing::Mock::VerifyAndClearExpectations(delegate_);
+}
+
+void TabModalConfirmDialogTest::OnAccepted() {
+  ++accepted_count_;
+}
+
+void TabModalConfirmDialogTest::OnCanceled() {
+  ++canceled_count_;
 }
 
 IN_PROC_BROWSER_TEST_F(TabModalConfirmDialogTest, Accept) {
-  EXPECT_CALL(*delegate_, OnAccepted());
   dialog_->AcceptTabModalDialog();
+  EXPECT_EQ(1, accepted_count_);
+  EXPECT_EQ(0, canceled_count_);
 }
 
 IN_PROC_BROWSER_TEST_F(TabModalConfirmDialogTest, Cancel) {
-  EXPECT_CALL(*delegate_, OnCanceled());
   dialog_->CancelTabModalDialog();
+  EXPECT_EQ(0, accepted_count_);
+  EXPECT_EQ(1, canceled_count_);
 }
 
 IN_PROC_BROWSER_TEST_F(TabModalConfirmDialogTest, CancelSelf) {
-  EXPECT_CALL(*delegate_, OnCanceled());
   delegate_->Cancel();
+  EXPECT_EQ(0, accepted_count_);
+  EXPECT_EQ(1, canceled_count_);
 }
 
 IN_PROC_BROWSER_TEST_F(TabModalConfirmDialogTest, Quit) {
-  EXPECT_CALL(*delegate_, OnCanceled());
   MessageLoopForUI::current()->PostTask(FROM_HERE,
                                         base::Bind(&browser::AttemptExit));
   content::RunMessageLoop();
+  EXPECT_EQ(0, accepted_count_);
+  EXPECT_EQ(1, canceled_count_);
 }

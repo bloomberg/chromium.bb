@@ -8,16 +8,47 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
-class MockTabModalConfirmDialogDelegate;
+class MockTabModalConfirmDialogDelegate : public TabModalConfirmDialogDelegate {
+ public:
+  class Delegate {
+   public:
+    virtual void OnAccepted() = 0;
+    virtual void OnCanceled() = 0;
+   protected:
+    virtual ~Delegate() {}
+  };
 
-class TabModalConfirmDialogTest : public InProcessBrowserTest {
+  MockTabModalConfirmDialogDelegate(content::WebContents* web_contents,
+                                    Delegate* delegate);
+  virtual ~MockTabModalConfirmDialogDelegate();
+
+  virtual string16 GetTitle() OVERRIDE;
+  virtual string16 GetMessage() OVERRIDE;
+
+  virtual void OnAccepted() OVERRIDE;
+  virtual void OnCanceled() OVERRIDE;
+
+ private:
+  Delegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTabModalConfirmDialogDelegate);
+};
+
+class TabModalConfirmDialogTest
+    : public InProcessBrowserTest,
+      public MockTabModalConfirmDialogDelegate::Delegate {
  public:
   TabModalConfirmDialogTest();
 
   virtual void SetUpOnMainThread() OVERRIDE;
   virtual void CleanUpOnMainThread() OVERRIDE;
+
+  // MockTabModalConfirmDialogDelegate::Delegate:
+  virtual void OnAccepted() OVERRIDE;
+  virtual void OnCanceled() OVERRIDE;
 
  protected:
   // Owned by |dialog_|.
@@ -25,6 +56,9 @@ class TabModalConfirmDialogTest : public InProcessBrowserTest {
 
   // Deletes itself.
   TabModalConfirmDialog* dialog_;
+
+  int accepted_count_;
+  int canceled_count_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabModalConfirmDialogTest);
