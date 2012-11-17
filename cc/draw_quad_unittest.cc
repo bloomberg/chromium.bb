@@ -57,17 +57,11 @@ scoped_ptr<SharedQuadState> createSharedQuadState()
 void compareDrawQuad(DrawQuad* quad, DrawQuad* copy, SharedQuadState* copySharedState)
 {
     EXPECT_EQ(quad->material(), copy->material());
-    EXPECT_EQ(quad->isDebugQuad(), copy->isDebugQuad());
-    EXPECT_RECT_EQ(quad->quadRect(), copy->quadRect());
-    EXPECT_RECT_EQ(quad->quadVisibleRect(), copy->quadVisibleRect());
-    EXPECT_EQ(quad->opaqueRect(), copy->opaqueRect());
-    EXPECT_EQ(quad->needsBlending(), copy->needsBlending());
-
-    EXPECT_EQ(copySharedState, copy->sharedQuadState());
-    EXPECT_EQ(copySharedState->id, copy->sharedQuadStateId());
-
-    EXPECT_EQ(quad->sharedQuadStateId(), quad->sharedQuadState()->id);
-    EXPECT_EQ(copy->sharedQuadStateId(), copy->sharedQuadState()->id);
+    EXPECT_RECT_EQ(quad->rect(), copy->rect());
+    EXPECT_RECT_EQ(quad->visible_rect(), copy->visible_rect());
+    EXPECT_RECT_EQ(quad->opaque_rect(), copy->opaque_rect());
+    EXPECT_EQ(quad->needs_blending(), copy->needs_blending());
+    EXPECT_EQ(copySharedState, copy->shared_quad_state());
 }
 
 #define CREATE_SHARED_STATE() \
@@ -80,13 +74,13 @@ void compareDrawQuad(DrawQuad* quad, DrawQuad* copy, SharedQuadState* copyShared
     gfx::Rect quadVisibleRect(40, 50, 30, 20);
 
 #define SETUP_AND_COPY_QUAD(Type, quad) \
-    quad->setQuadVisibleRect(quadVisibleRect); \
-    scoped_ptr<DrawQuad> copy(quad->copy(copySharedState.get())); \
+    quad->set_visible_rect(quadVisibleRect); \
+    scoped_ptr<DrawQuad> copy(quad->Copy(copySharedState.get())); \
     compareDrawQuad(quad.get(), copy.get(), copySharedState.get()); \
     const Type* copyQuad = Type::materialCast(copy.get());
 
 #define SETUP_AND_COPY_QUAD_1(Type, quad, a) \
-    quad->setQuadVisibleRect(quadVisibleRect); \
+    quad->set_visible_rect(quadVisibleRect); \
     scoped_ptr<DrawQuad> copy(quad->copy(copySharedState.get(), a));    \
     compareDrawQuad(quad.get(), copy.get(), copySharedState.get()); \
     const Type* copyQuad = Type::materialCast(copy.get());
@@ -174,7 +168,7 @@ TEST(DrawQuadTest, copyIOSurfaceDrawQuad)
 
     CREATE_SHARED_STATE();
     CREATE_QUAD_4(IOSurfaceDrawQuad, opaqueRect, size, textureId, orientation);
-    EXPECT_RECT_EQ(opaqueRect, copyQuad->opaqueRect());
+    EXPECT_RECT_EQ(opaqueRect, copyQuad->opaque_rect());
     EXPECT_EQ(size, copyQuad->ioSurfaceSize());
     EXPECT_EQ(textureId, copyQuad->ioSurfaceTextureId());
     EXPECT_EQ(orientation, copyQuad->orientation());
@@ -222,7 +216,7 @@ TEST(DrawQuadTest, copyStreamVideoDrawQuad)
 
     CREATE_SHARED_STATE();
     CREATE_QUAD_3(StreamVideoDrawQuad, opaqueRect, textureId, matrix);
-    EXPECT_RECT_EQ(opaqueRect, copyQuad->opaqueRect());
+    EXPECT_RECT_EQ(opaqueRect, copyQuad->opaque_rect());
     EXPECT_EQ(textureId, copyQuad->textureId());
     EXPECT_EQ(matrix, copyQuad->matrix());
 }
@@ -237,7 +231,7 @@ TEST(DrawQuadTest, copyTextureDrawQuad)
 
     CREATE_SHARED_STATE();
     CREATE_QUAD_5(TextureDrawQuad, opaqueRect, resourceId, premultipliedAlpha, uvRect, flipped);
-    EXPECT_RECT_EQ(opaqueRect, copyQuad->opaqueRect());
+    EXPECT_RECT_EQ(opaqueRect, copyQuad->opaque_rect());
     EXPECT_EQ(resourceId, copyQuad->resourceId());
     EXPECT_EQ(premultipliedAlpha, copyQuad->premultipliedAlpha());
     EXPECT_FLOAT_RECT_EQ(uvRect, copyQuad->uvRect());
@@ -258,7 +252,7 @@ TEST(DrawQuadTest, copyTileDrawQuad)
 
     CREATE_SHARED_STATE();
     CREATE_QUAD_9(TileDrawQuad, opaqueRect, resourceId, textureOffset, textureSize, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA);
-    EXPECT_RECT_EQ(opaqueRect, copyQuad->opaqueRect());
+    EXPECT_RECT_EQ(opaqueRect, copyQuad->opaque_rect());
     EXPECT_EQ(resourceId, copyQuad->resourceId());
     EXPECT_EQ(textureOffset, copyQuad->textureOffset());
     EXPECT_EQ(textureSize, copyQuad->textureSize());
@@ -288,7 +282,7 @@ TEST(DrawQuadTest, copyYUVVideoDrawQuad)
 
     CREATE_SHARED_STATE();
     CREATE_QUAD_5(YUVVideoDrawQuad, opaqueRect, texScale, yPlane, uPlane, vPlane);
-    EXPECT_RECT_EQ(opaqueRect, copyQuad->opaqueRect());
+    EXPECT_RECT_EQ(opaqueRect, copyQuad->opaque_rect());
     EXPECT_EQ(texScale, copyQuad->texScale());
     EXPECT_EQ(yPlane.resourceId, copyQuad->yPlane().resourceId);
     EXPECT_EQ(yPlane.size, copyQuad->yPlane().size);

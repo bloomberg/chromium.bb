@@ -24,7 +24,7 @@ public:
         const VideoLayerImpl::FramePlane& uPlane,
         const VideoLayerImpl::FramePlane& vPlane);
 
-    ~YUVVideoDrawQuad();
+    virtual ~YUVVideoDrawQuad();
 
     const gfx::SizeF& texScale() const { return m_texScale; }
 

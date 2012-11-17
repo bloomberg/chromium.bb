@@ -21,8 +21,6 @@ public:
     bool premultipliedAlpha() const { return  m_premultipliedAlpha; }
     bool flipped() const { return m_flipped; }
 
-    void setNeedsBlending();
-
     static const TextureDrawQuad* materialCast(const DrawQuad*);
 private:
     TextureDrawQuad(const SharedQuadState*, const gfx::Rect&, const gfx::Rect& opaqueRect, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped);

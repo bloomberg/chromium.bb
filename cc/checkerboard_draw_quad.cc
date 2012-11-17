@@ -18,7 +18,7 @@ CheckerboardDrawQuad::CheckerboardDrawQuad(const SharedQuadState* sharedQuadStat
     , m_color(color)
 {
     if (SkColorGetA(m_color) < 255)
-        m_opaqueRect = gfx::Rect();
+        opaque_rect_ = gfx::Rect();
 }
 
 const CheckerboardDrawQuad* CheckerboardDrawQuad::materialCast(const DrawQuad* quad)

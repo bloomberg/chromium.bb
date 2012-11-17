@@ -18,7 +18,7 @@ SolidColorDrawQuad::SolidColorDrawQuad(const SharedQuadState* sharedQuadState, c
     , m_color(color)
 {
     if (SkColorGetA(m_color) < 255)
-        m_opaqueRect = gfx::Rect();
+        opaque_rect_ = gfx::Rect();
 }
 
 const SolidColorDrawQuad* SolidColorDrawQuad::materialCast(const DrawQuad* quad)

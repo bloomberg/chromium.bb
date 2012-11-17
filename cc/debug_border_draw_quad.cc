@@ -19,7 +19,7 @@ DebugBorderDrawQuad::DebugBorderDrawQuad(const SharedQuadState* sharedQuadState,
     , m_width(width)
 {
     if (SkColorGetA(m_color) < 255)
-        m_needsBlending = true;
+        needs_blending_ = true;
 }
 
 const DebugBorderDrawQuad* DebugBorderDrawQuad::materialCast(const DrawQuad* quad)

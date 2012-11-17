@@ -1583,8 +1583,8 @@ public:
 
         SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
         scoped_ptr<TileDrawQuad> testBlendingDrawQuad = TileDrawQuad::create(sharedQuadState, m_quadRect, opaqueRect, m_resourceId, gfx::Vector2d(), gfx::Size(1, 1), false, false, false, false, false);
-        testBlendingDrawQuad->setQuadVisibleRect(m_quadVisibleRect);
-        EXPECT_EQ(m_blend, testBlendingDrawQuad->needsBlending());
+        testBlendingDrawQuad->set_visible_rect(m_quadVisibleRect);
+        EXPECT_EQ(m_blend, testBlendingDrawQuad->ShouldDrawWithBlending());
         EXPECT_EQ(m_hasRenderSurface, !!renderSurface());
         quadSink.append(testBlendingDrawQuad.PassAs<DrawQuad>(), appendQuadsData);
     }
@@ -3128,17 +3128,17 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithClipping)
         ASSERT_EQ(1U, frame.renderPasses[1]->quadList().size());
 
         // Verify that the child layers are being clipped.
-        gfx::Rect quadVisibleRect = frame.renderPasses[0]->quadList()[0]->quadVisibleRect();
+        gfx::Rect quadVisibleRect = frame.renderPasses[0]->quadList()[0]->visible_rect();
         EXPECT_LT(quadVisibleRect.width(), 100);
 
-        quadVisibleRect = frame.renderPasses[0]->quadList()[1]->quadVisibleRect();
+        quadVisibleRect = frame.renderPasses[0]->quadList()[1]->visible_rect();
         EXPECT_LT(quadVisibleRect.width(), 100);
 
         // Verify that the render surface texture is *not* clipped.
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), frame.renderPasses[0]->outputRect());
 
         EXPECT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[1]->quadList()[0]->material());
-        RenderPassDrawQuad* quad = static_cast<RenderPassDrawQuad*>(frame.renderPasses[1]->quadList()[0]);
+        const RenderPassDrawQuad* quad = RenderPassDrawQuad::materialCast(frame.renderPasses[1]->quadList()[0]);
         EXPECT_FALSE(quad->contentsChangedSinceLastFrame().IsEmpty());
 
         myHostImpl->drawLayers(frame);
@@ -3796,7 +3796,7 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCaching)
         EXPECT_EQ(1U, frame.renderPasses[1]->quadList().size());
 
         EXPECT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[1]->quadList()[0]->material());
-        RenderPassDrawQuad* quad = static_cast<RenderPassDrawQuad*>(frame.renderPasses[1]->quadList()[0]);
+        const RenderPassDrawQuad* quad = RenderPassDrawQuad::materialCast(frame.renderPasses[1]->quadList()[0]);
         RenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
         EXPECT_FALSE(targetPass->damageRect().IsEmpty());
 
@@ -3814,7 +3814,7 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCaching)
 
         EXPECT_EQ(1U, frame.renderPasses[0]->quadList().size());
         EXPECT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[0]->quadList()[0]->material());
-        RenderPassDrawQuad* quad = static_cast<RenderPassDrawQuad*>(frame.renderPasses[0]->quadList()[0]);
+        const RenderPassDrawQuad* quad = RenderPassDrawQuad::materialCast(frame.renderPasses[0]->quadList()[0]);
         RenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
         EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 
@@ -3833,7 +3833,7 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCaching)
 
         EXPECT_EQ(1U, frame.renderPasses[0]->quadList().size());
         EXPECT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[0]->quadList()[0]->material());
-        RenderPassDrawQuad* quad = static_cast<RenderPassDrawQuad*>(frame.renderPasses[0]->quadList()[0]);
+        const RenderPassDrawQuad* quad = RenderPassDrawQuad::materialCast(frame.renderPasses[0]->quadList()[0]);
         RenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
         EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 
@@ -3854,7 +3854,7 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCaching)
         EXPECT_EQ(DrawQuad::SOLID_COLOR, frame.renderPasses[0]->quadList()[0]->material());
 
         EXPECT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[1]->quadList()[0]->material());
-        RenderPassDrawQuad* quad = static_cast<RenderPassDrawQuad*>(frame.renderPasses[1]->quadList()[0]);
+        const RenderPassDrawQuad* quad = RenderPassDrawQuad::materialCast(frame.renderPasses[1]->quadList()[0]);
         RenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
         EXPECT_FALSE(targetPass->damageRect().IsEmpty());
 
@@ -3881,7 +3881,7 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCaching)
         EXPECT_EQ(1U, frame.renderPasses[1]->quadList().size());
 
         EXPECT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[1]->quadList()[0]->material());
-        RenderPassDrawQuad* quad = static_cast<RenderPassDrawQuad*>(frame.renderPasses[1]->quadList()[0]);
+        const RenderPassDrawQuad* quad = RenderPassDrawQuad::materialCast(frame.renderPasses[1]->quadList()[0]);
         RenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
         EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 
@@ -3902,7 +3902,7 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCaching)
 
         EXPECT_EQ(1U, frame.renderPasses[0]->quadList().size());
         EXPECT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[0]->quadList()[0]->material());
-        RenderPassDrawQuad* quad = static_cast<RenderPassDrawQuad*>(frame.renderPasses[0]->quadList()[0]);
+        const RenderPassDrawQuad* quad = RenderPassDrawQuad::materialCast(frame.renderPasses[0]->quadList()[0]);
         RenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
         EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 
@@ -3923,7 +3923,7 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCaching)
         EXPECT_EQ(1U, frame.renderPasses[0]->quadList().size());
 
         EXPECT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[0]->quadList()[0]->material());
-        RenderPassDrawQuad* quad = static_cast<RenderPassDrawQuad*>(frame.renderPasses[0]->quadList()[0]);
+        const RenderPassDrawQuad* quad = RenderPassDrawQuad::materialCast(frame.renderPasses[0]->quadList()[0]);
         RenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
         EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 
@@ -3955,7 +3955,7 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
         EXPECT_EQ(1U, frame.renderPasses[1]->quadList().size());
 
         EXPECT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[1]->quadList()[0]->material());
-        RenderPassDrawQuad* quad = static_cast<RenderPassDrawQuad*>(frame.renderPasses[1]->quadList()[0]);
+        const RenderPassDrawQuad* quad = RenderPassDrawQuad::materialCast(frame.renderPasses[1]->quadList()[0]);
         RenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
         EXPECT_FALSE(targetPass->damageRect().IsEmpty());
 
@@ -3997,7 +3997,7 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
 
         EXPECT_EQ(1U, frame.renderPasses[0]->quadList().size());
         EXPECT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[0]->quadList()[0]->material());
-        RenderPassDrawQuad* quad = static_cast<RenderPassDrawQuad*>(frame.renderPasses[0]->quadList()[0]);
+        const RenderPassDrawQuad* quad = RenderPassDrawQuad::materialCast(frame.renderPasses[0]->quadList()[0]);
         RenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
         EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 
@@ -4018,7 +4018,7 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
         EXPECT_EQ(DrawQuad::SOLID_COLOR, frame.renderPasses[0]->quadList()[0]->material());
 
         EXPECT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[1]->quadList()[0]->material());
-        RenderPassDrawQuad* quad = static_cast<RenderPassDrawQuad*>(frame.renderPasses[1]->quadList()[0]);
+        const RenderPassDrawQuad* quad = RenderPassDrawQuad::materialCast(frame.renderPasses[1]->quadList()[0]);
         RenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
         EXPECT_FALSE(targetPass->damageRect().IsEmpty());
 
@@ -4045,7 +4045,7 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
         EXPECT_EQ(1U, frame.renderPasses[1]->quadList().size());
 
         EXPECT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[1]->quadList()[0]->material());
-        RenderPassDrawQuad* quad = static_cast<RenderPassDrawQuad*>(frame.renderPasses[1]->quadList()[0]);
+        const RenderPassDrawQuad* quad = RenderPassDrawQuad::materialCast(frame.renderPasses[1]->quadList()[0]);
         RenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
         EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 
@@ -4084,7 +4084,7 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
         EXPECT_EQ(1U, frame.renderPasses[0]->quadList().size());
 
         EXPECT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[0]->quadList()[0]->material());
-        RenderPassDrawQuad* quad = static_cast<RenderPassDrawQuad*>(frame.renderPasses[0]->quadList()[0]);
+        const RenderPassDrawQuad* quad = RenderPassDrawQuad::materialCast(frame.renderPasses[0]->quadList()[0]);
         RenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
         EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 

@@ -25,72 +25,59 @@ template<typename T> T* TypedCopy(const cc::DrawQuad* other) {
 
 namespace cc {
 
-DrawQuad::DrawQuad(const SharedQuadState* sharedQuadState, Material material, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect)
-    : m_sharedQuadState(sharedQuadState)
-    , m_sharedQuadStateId(sharedQuadState->id)
-    , m_material(material)
-    , m_quadRect(quadRect)
-    , m_quadVisibleRect(quadRect)
-    , m_needsBlending(false)
-    , m_opaqueRect(opaqueRect)
-{
-    DCHECK(m_sharedQuadState);
-    DCHECK(m_material != INVALID);
+DrawQuad::DrawQuad(const SharedQuadState* shared_quad_state,
+                   Material material,
+                   gfx::Rect rect,
+                   gfx::Rect opaque_rect)
+    : shared_quad_state_(shared_quad_state),
+      material_(material),
+      rect_(rect),
+      visible_rect_(rect),
+      needs_blending_(false),
+      opaque_rect_(opaque_rect) {
+  DCHECK(shared_quad_state_);
+  DCHECK(material_ != INVALID);
 }
 
-gfx::Rect DrawQuad::opaqueRect() const
-{
-    if (opacity() != 1)
-        return gfx::Rect();
-    return m_opaqueRect;
+DrawQuad::~DrawQuad() {
 }
 
-void DrawQuad::setQuadVisibleRect(gfx::Rect quadVisibleRect)
+scoped_ptr<DrawQuad> DrawQuad::Copy(
+    const SharedQuadState* copied_shared_quad_state) const
 {
-    m_quadVisibleRect = gfx::IntersectRects(quadVisibleRect, m_quadRect);
-}
-
-scoped_ptr<DrawQuad> DrawQuad::copy(const SharedQuadState* copiedSharedQuadState) const
-{
-    scoped_ptr<DrawQuad> copyQuad;
-    switch (material()) {
+  scoped_ptr<DrawQuad> copy_quad;
+  switch (material()) {
     case CHECKERBOARD:
-        copyQuad.reset(TypedCopy<CheckerboardDrawQuad>(this));
-        break;
+      copy_quad.reset(TypedCopy<CheckerboardDrawQuad>(this));
+      break;
     case DEBUG_BORDER:
-        copyQuad.reset(TypedCopy<DebugBorderDrawQuad>(this));
-        break;
+      copy_quad.reset(TypedCopy<DebugBorderDrawQuad>(this));
+      break;
     case IO_SURFACE_CONTENT:
-        copyQuad.reset(TypedCopy<IOSurfaceDrawQuad>(this));
-        break;
+      copy_quad.reset(TypedCopy<IOSurfaceDrawQuad>(this));
+      break;
     case TEXTURE_CONTENT:
-        copyQuad.reset(TypedCopy<TextureDrawQuad>(this));
-        break;
+      copy_quad.reset(TypedCopy<TextureDrawQuad>(this));
+      break;
     case SOLID_COLOR:
-        copyQuad.reset(TypedCopy<SolidColorDrawQuad>(this));
-        break;
+      copy_quad.reset(TypedCopy<SolidColorDrawQuad>(this));
+      break;
     case TILED_CONTENT:
-        copyQuad.reset(TypedCopy<TileDrawQuad>(this));
-        break;
+      copy_quad.reset(TypedCopy<TileDrawQuad>(this));
+      break;
     case STREAM_VIDEO_CONTENT:
-        copyQuad.reset(TypedCopy<StreamVideoDrawQuad>(this));
-        break;
+      copy_quad.reset(TypedCopy<StreamVideoDrawQuad>(this));
+      break;
     case YUV_VIDEO_CONTENT:
-        copyQuad.reset(TypedCopy<YUVVideoDrawQuad>(this));
-        break;
+      copy_quad.reset(TypedCopy<YUVVideoDrawQuad>(this));
+      break;
     case RENDER_PASS:  // RenderPass quads have their own copy() method.
     case INVALID:
-        LOG(FATAL) << "Invalid DrawQuad material " << material();
-        break;
-    }
-    copyQuad->setSharedQuadState(copiedSharedQuadState);
-    return copyQuad.Pass();
-}
-
-void DrawQuad::setSharedQuadState(const SharedQuadState* sharedQuadState)
-{
-    m_sharedQuadState = sharedQuadState;
-    m_sharedQuadStateId = sharedQuadState->id;
+      LOG(FATAL) << "Invalid DrawQuad material " << material();
+      break;
+  }
+  copy_quad->set_shared_quad_state(copied_shared_quad_state);
+  return copy_quad.Pass();
 }
 
 }  // namespace cc

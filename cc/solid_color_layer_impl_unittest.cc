@@ -113,7 +113,7 @@ TEST(SolidColorLayerImplTest, verifyOpaqueRect)
         layerImpl->appendQuads(quadCuller, data);
 
         ASSERT_EQ(quadCuller.quadList().size(), 1U);
-        EXPECT_EQ(visibleContentRect.ToString(), quadCuller.quadList()[0]->opaqueRect().ToString());
+        EXPECT_EQ(visibleContentRect.ToString(), quadCuller.quadList()[0]->opaque_rect().ToString());
     }
 
     EXPECT_TRUE(layer->contentsOpaque());
@@ -127,7 +127,7 @@ TEST(SolidColorLayerImplTest, verifyOpaqueRect)
         // The impl layer should callnot itself opaque anymore.
         EXPECT_FALSE(layerImpl->contentsOpaque());
 
-        // Impl layer has 1 opacity, but the color is not opaque, so the opaqueRect should be empty.
+        // Impl layer has 1 opacity, but the color is not opaque, so the opaque_rect should be empty.
         layerImpl->setDrawOpacity(1);
 
         MockQuadCuller quadCuller;
@@ -135,7 +135,7 @@ TEST(SolidColorLayerImplTest, verifyOpaqueRect)
         layerImpl->appendQuads(quadCuller, data);
 
         ASSERT_EQ(quadCuller.quadList().size(), 1U);
-        EXPECT_EQ(gfx::Rect().ToString(), quadCuller.quadList()[0]->opaqueRect().ToString());
+        EXPECT_EQ(gfx::Rect().ToString(), quadCuller.quadList()[0]->opaque_rect().ToString());
     }
 }
 

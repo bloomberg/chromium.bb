@@ -250,7 +250,9 @@ void GLRenderer::doNoOp()
 
 void GLRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
 {
-    if (quad->needsBlending())
+    DCHECK(quad->rect().Contains(quad->visible_rect()));
+
+    if (quad->ShouldDrawWithBlending())
         GLC(m_context, m_context->enable(GL_BLEND));
     else
         GLC(m_context, m_context->disable(GL_BLEND));
@@ -301,7 +303,7 @@ void GLRenderer::drawCheckerboardQuad(const DrawingFrame& frame, const Checkerbo
     const int checkerboardWidth = 16;
     float frequency = 1.0 / checkerboardWidth;
 
-    gfx::Rect tileRect = quad->quadRect();
+    gfx::Rect tileRect = quad->rect();
     float texOffsetX = tileRect.x() % checkerboardWidth;
     float texOffsetY = tileRect.y() % checkerboardWidth;
     float texScaleX = tileRect.width();
@@ -311,7 +313,7 @@ void GLRenderer::drawCheckerboardQuad(const DrawingFrame& frame, const Checkerbo
     GLC(context(), context()->uniform1f(program->fragmentShader().frequencyLocation(), frequency));
 
     setShaderOpacity(quad->opacity(), program->fragmentShader().alphaLocation());
-    drawQuadGeometry(frame, quad->quadTransform(), quad->quadRect(), program->vertexShader().matrixLocation());
+    drawQuadGeometry(frame, quad->quadTransform(), quad->rect(), program->vertexShader().matrixLocation());
 }
 
 void GLRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorderDrawQuad* quad)
@@ -322,7 +324,7 @@ void GLRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorde
     GLC(context(), context()->useProgram(program->program()));
 
     // Use the full quadRect for debug quads to not move the edges based on partial swaps.
-    const gfx::Rect& layerRect = quad->quadRect();
+    const gfx::Rect& layerRect = quad->rect();
     WebTransformationMatrix renderMatrix = quad->quadTransform();
     renderMatrix.translate(0.5 * layerRect.width() + layerRect.x(), 0.5 * layerRect.height() + layerRect.y());
     renderMatrix.scaleNonUniform(layerRect.width(), layerRect.height());
@@ -478,17 +480,17 @@ scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
     int filteredDeviceBackgroundTextureId = texture->getTextureHandle();
 
     scoped_ptr<ScopedResource> backgroundTexture = ScopedResource::create(m_resourceProvider);
-    if (!backgroundTexture->Allocate(Renderer::ImplPool, quad->quadRect().size(), GL_RGBA, ResourceProvider::TextureUsageFramebuffer))
+    if (!backgroundTexture->Allocate(Renderer::ImplPool, quad->rect().size(), GL_RGBA, ResourceProvider::TextureUsageFramebuffer))
         return scoped_ptr<ScopedResource>();
 
     const RenderPass* targetRenderPass = frame.currentRenderPass;
-    bool usingBackgroundTexture = useScopedTexture(frame, backgroundTexture.get(), quad->quadRect());
+    bool usingBackgroundTexture = useScopedTexture(frame, backgroundTexture.get(), quad->rect());
 
     if (usingBackgroundTexture) {
         // Copy the readback pixels from device to the background texture for the surface.
         WebTransformationMatrix deviceToFramebufferTransform;
-        deviceToFramebufferTransform.translate(quad->quadRect().width() / 2.0, quad->quadRect().height() / 2.0);
-        deviceToFramebufferTransform.scale3d(quad->quadRect().width(), quad->quadRect().height(), 1);
+        deviceToFramebufferTransform.translate(quad->rect().width() / 2.0, quad->rect().height() / 2.0);
+        deviceToFramebufferTransform.scale3d(quad->rect().width(), quad->rect().height(), 1);
         deviceToFramebufferTransform.multiply(contentsDeviceTransformInverse);
         copyTextureToFramebuffer(frame, filteredDeviceBackgroundTextureId, deviceRect, deviceToFramebufferTransform);
     }
@@ -512,7 +514,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         return;
 
     WebTransformationMatrix quadRectMatrix;
-    quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->quadRect());
+    quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->rect());
     WebTransformationMatrix contentsDeviceTransform = (frame.windowMatrix * frame.projectionMatrix * quadRectMatrix).to2dTransform();
 
     // Can only draw surface if device matrix is invertible.
@@ -544,9 +546,9 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
 
     // Draw the background texture if there is one.
     if (backgroundTexture) {
-        DCHECK(backgroundTexture->size() == quad->quadRect().size());
+        DCHECK(backgroundTexture->size() == quad->rect().size());
         ResourceProvider::ScopedReadLockGL lock(m_resourceProvider, backgroundTexture->id());
-        copyTextureToFramebuffer(frame, lock.textureId(), quad->quadRect(), quad->quadTransform());
+        copyTextureToFramebuffer(frame, lock.textureId(), quad->rect(), quad->quadTransform());
     }
 
     bool clipped = false;
@@ -644,7 +646,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
 
     setShaderOpacity(quad->opacity(), shaderAlphaLocation);
     setShaderQuadF(surfaceQuad, shaderQuadLocation);
-    drawQuadGeometry(frame, quad->quadTransform(), quad->quadRect(), shaderMatrixLocation);
+    drawQuadGeometry(frame, quad->quadTransform(), quad->rect(), shaderMatrixLocation);
 
     // Flush the compositor context before the filter bitmap goes out of
     // scope, so the draw gets processed before the filter texture gets deleted.
@@ -663,7 +665,7 @@ void GLRenderer::drawSolidColorQuad(const DrawingFrame& frame, const SolidColorD
 
     GLC(context(), context()->uniform4f(program->fragmentShader().colorLocation(), (SkColorGetR(color) / 255.0) * alpha, (SkColorGetG(color) / 255.0) * alpha, (SkColorGetB(color) / 255.0) * alpha, alpha));
 
-    drawQuadGeometry(frame, quad->quadTransform(), quad->quadRect(), program->vertexShader().matrixLocation());
+    drawQuadGeometry(frame, quad->quadTransform(), quad->rect(), program->vertexShader().matrixLocation());
 }
 
 struct TileProgramUniforms {
@@ -693,7 +695,7 @@ static void tileUniformLocation(T program, TileProgramUniforms& uniforms)
 
 void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* quad)
 {
-    gfx::Rect tileRect = quad->quadVisibleRect();
+    gfx::Rect tileRect = quad->visible_rect();
 
     gfx::RectF clampRect(tileRect);
     // Clamp texture coordinates to avoid sampling outside the layer
@@ -707,7 +709,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     float clampY = min(0.5, clampRect.height() / 2.0 - epsilon);
     clampRect.Inset(clampX, clampY, clampX, clampY);
 
-    gfx::Vector2dF textureOffset = quad->textureOffset() + clampRect.OffsetFromOrigin() - quad->quadRect().OffsetFromOrigin();
+    gfx::Vector2dF textureOffset = quad->textureOffset() + (clampRect.origin() - quad->rect().origin());
 
     // Map clamping rectangle to unit square.
     float vertexTexTranslateX = -clampRect.x() / clampRect.width();
@@ -741,7 +743,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
         else
             tileUniformLocation(tileProgramAA(), uniforms);
     } else {
-        if (quad->needsBlending()) {
+        if (quad->ShouldDrawWithBlending()) {
             if (quad->swizzleContents())
                 tileUniformLocation(tileProgramSwizzle(), uniforms);
             else
@@ -796,13 +798,13 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
         LayerQuad::Edge rightEdge(topRight, bottomRight);
 
         // Only apply anti-aliasing to edges not clipped by culling or scissoring.
-        if (quad->topEdgeAA() && tileRect.y() == quad->quadRect().y())
+        if (quad->topEdgeAA() && tileRect.y() == quad->rect().y())
             topEdge = deviceLayerEdges.top();
-        if (quad->leftEdgeAA() && tileRect.x() == quad->quadRect().x())
+        if (quad->leftEdgeAA() && tileRect.x() == quad->rect().x())
             leftEdge = deviceLayerEdges.left();
-        if (quad->rightEdgeAA() && tileRect.right() == quad->quadRect().right())
+        if (quad->rightEdgeAA() && tileRect.right() == quad->rect().right())
             rightEdge = deviceLayerEdges.right();
-        if (quad->bottomEdgeAA() && tileRect.bottom() == quad->quadRect().bottom())
+        if (quad->bottomEdgeAA() && tileRect.bottom() == quad->rect().bottom())
             bottomEdge = deviceLayerEdges.bottom();
 
         float sign = gfx::QuadF(tileRect).IsCounterClockwise() ? -1 : 1;
@@ -901,7 +903,7 @@ void GLRenderer::drawYUVVideoQuad(const DrawingFrame& frame, const YUVVideoDrawQ
     GLC(context(), context()->uniform3fv(program->fragmentShader().yuvAdjLocation(), 1, yuvAdjust));
 
     setShaderOpacity(quad->opacity(), program->fragmentShader().alphaLocation());
-    drawQuadGeometry(frame, quad->quadTransform(), quad->quadRect(), program->vertexShader().matrixLocation());
+    drawQuadGeometry(frame, quad->quadTransform(), quad->rect(), program->vertexShader().matrixLocation());
 
     // Reset active texture back to texture 0.
     GLC(context(), context()->activeTexture(GL_TEXTURE0));
@@ -924,7 +926,7 @@ void GLRenderer::drawStreamVideoQuad(const DrawingFrame& frame, const StreamVide
     GLC(context(), context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
 
     setShaderOpacity(quad->opacity(), program->fragmentShader().alphaLocation());
-    drawQuadGeometry(frame, quad->quadTransform(), quad->quadRect(), program->vertexShader().matrixLocation());
+    drawQuadGeometry(frame, quad->quadTransform(), quad->rect(), program->vertexShader().matrixLocation());
 }
 
 struct TextureProgramBinding {
@@ -979,7 +981,7 @@ void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQua
     }
 
     setShaderOpacity(quad->opacity(), binding.alphaLocation);
-    drawQuadGeometry(frame, quad->quadTransform(), quad->quadRect(), binding.matrixLocation);
+    drawQuadGeometry(frame, quad->quadTransform(), quad->rect(), binding.matrixLocation);
 
     if (!quad->premultipliedAlpha())
         GLC(m_context, m_context->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
@@ -1000,7 +1002,7 @@ void GLRenderer::drawIOSurfaceQuad(const DrawingFrame& frame, const IOSurfaceDra
     GLC(context(), context()->bindTexture(GL_TEXTURE_RECTANGLE_ARB, quad->ioSurfaceTextureId()));
 
     setShaderOpacity(quad->opacity(), binding.alphaLocation);
-    drawQuadGeometry(frame, quad->quadTransform(), quad->quadRect(), binding.matrixLocation);
+    drawQuadGeometry(frame, quad->quadTransform(), quad->rect(), binding.matrixLocation);
 
     GLC(context(), context()->bindTexture(GL_TEXTURE_RECTANGLE_ARB, 0));
 }

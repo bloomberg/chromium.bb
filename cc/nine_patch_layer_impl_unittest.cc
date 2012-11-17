@@ -59,11 +59,11 @@ TEST(NinePatchLayerImplTest, verifyDrawQuads)
     Region remaining(visibleContentRect);
     for (size_t i = 0; i < quads.size(); ++i) {
         DrawQuad* quad = quads[i];
-        gfx::Rect quadRect = quad->quadRect();
+        gfx::Rect quadRect = quad->rect();
 
         EXPECT_TRUE(visibleContentRect.Contains(quadRect)) << i;
         EXPECT_TRUE(remaining.Contains(quadRect)) << i;
-        EXPECT_EQ(quad->sharedQuadState()->quadTransform, transform) << i;
+        EXPECT_EQ(quad->quadTransform(), transform) << i;
         remaining.Subtract(Region(quadRect));
     }
     EXPECT_RECT_EQ(remaining.bounds(), scaledApertureNonUniform);
@@ -76,7 +76,7 @@ TEST(NinePatchLayerImplTest, verifyDrawQuads)
     for (size_t i = 0; i < quads.size(); ++i) {
         DrawQuad* quad = quads[i];
         ASSERT_EQ(quad->material(), DrawQuad::TEXTURE_CONTENT);
-        TextureDrawQuad* texQuad = static_cast<TextureDrawQuad*>(quad);
+        const TextureDrawQuad* texQuad = TextureDrawQuad::materialCast(quad);
         gfx::RectF texRect = texQuad->uvRect();
         texRect.Scale(bitmapSize.width(), bitmapSize.height());
         texRemaining.Subtract(Region(ToRoundedIntRect(texRect)));

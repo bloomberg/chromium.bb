@@ -24,7 +24,7 @@ MockQuadCuller::~MockQuadCuller()
 
 bool MockQuadCuller::append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData&)
 {
-    if (!drawQuad->quadRect().IsEmpty()) {
+    if (!drawQuad->rect().IsEmpty()) {
         m_activeQuadList.append(drawQuad.Pass());
         return true;
     }

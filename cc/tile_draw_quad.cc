@@ -26,7 +26,7 @@ TileDrawQuad::TileDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Re
     , m_bottomEdgeAA(bottomEdgeAA)
 {
     if (isAntialiased())
-        m_needsBlending = true;
+        needs_blending_ = true;
 }
 
 const TileDrawQuad* TileDrawQuad::materialCast(const DrawQuad* quad)

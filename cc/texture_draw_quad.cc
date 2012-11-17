@@ -22,11 +22,6 @@ TextureDrawQuad::TextureDrawQuad(const SharedQuadState* sharedQuadState, const g
 {
 }
 
-void TextureDrawQuad::setNeedsBlending()
-{
-    m_needsBlending = true;
-}
-
 const TextureDrawQuad* TextureDrawQuad::materialCast(const DrawQuad* quad)
 {
     DCHECK(quad->material() == DrawQuad::TEXTURE_CONTENT);

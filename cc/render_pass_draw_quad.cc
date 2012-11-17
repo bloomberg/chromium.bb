@@ -35,7 +35,7 @@ const RenderPassDrawQuad* RenderPassDrawQuad::materialCast(const DrawQuad* quad)
 scoped_ptr<RenderPassDrawQuad> RenderPassDrawQuad::copy(const SharedQuadState* copiedSharedQuadState, RenderPass::Id copiedRenderPassId) const
 {
     scoped_ptr<RenderPassDrawQuad> copyQuad(new RenderPassDrawQuad(*materialCast(this)));
-    copyQuad->setSharedQuadState(copiedSharedQuadState);
+    copyQuad->set_shared_quad_state(copiedSharedQuadState);
     copyQuad->m_renderPassId = copiedRenderPassId;
     return copyQuad.Pass();
 }

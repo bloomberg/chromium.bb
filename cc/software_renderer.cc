@@ -168,7 +168,7 @@ void SoftwareRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
 {
     TRACE_EVENT0("cc", "SoftwareRenderer::drawQuad");
     WebTransformationMatrix quadRectMatrix;
-    quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->quadRect());
+    quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->rect());
     WebTransformationMatrix contentsDeviceTransform = (frame.windowMatrix * frame.projectionMatrix * quadRectMatrix).to2dTransform();
     SkMatrix skDeviceMatrix;
     toSkMatrix(&skDeviceMatrix, contentsDeviceTransform);
@@ -179,7 +179,8 @@ void SoftwareRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
       m_skCurrentPaint.setAntiAlias(true);
       m_skCurrentPaint.setFilterBitmap(true);
     }
-    if (quad->needsBlending()) {
+
+    if (quad->ShouldDrawWithBlending()) {
         m_skCurrentPaint.setAlpha(quad->opacity() * 255);
         m_skCurrentPaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
     } else {
@@ -259,7 +260,7 @@ void SoftwareRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQua
 
     SkRect uvRect = SkRect::MakeXYWH(
         quad->textureOffset().x(), quad->textureOffset().y(),
-        quad->quadRect().width(), quad->quadRect().height());
+        quad->rect().width(), quad->rect().height());
     m_skCurrentPaint.setFilterBitmap(true);
     m_skCurrentCanvas->drawBitmapRectToRect(*lock.skBitmap(), &uvRect,
                                             gfx::RectFToSkRect(quadVertexRect()),
