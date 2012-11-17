@@ -111,6 +111,7 @@ void FrameRateController::onTimerTick()
 
     // Check if we have too many frames in flight.
     bool throttled = m_numFramesPending >= m_maxFramesPending;
+    TRACE_COUNTER_ID1("cc", "ThrottledVSyncInterval", m_thread, throttled);
 
     if (m_client)
         m_client->vsyncTick(throttled);
