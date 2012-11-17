@@ -177,7 +177,7 @@ const char kPowerManagerServiceName[] = "org.chromium.PowerManager";
 const char kRootPowerManagerInterface[] = "org.chromium.RootPowerManager";
 const char kRootPowerManagerServicePath[] = "/org/chromium/RootPowerManager";
 const char kRootPowerManagerServiceName[] = "org.chromium.RootPowerManager";
-// Methods
+// powerd methods
 const char kDecreaseScreenBrightness[] = "DecreaseScreenBrightness";
 const char kIncreaseScreenBrightness[] = "IncreaseScreenBrightness";
 const char kGetScreenBrightnessPercent[] = "GetScreenBrightnessPercent";
@@ -194,7 +194,7 @@ const char kGetPowerAccumulationMethod[] = "GetPowerAccumulation";
 const char kHandleUserActivityMethod[] = "HandleUserActivity";
 const char kHandleVideoActivityMethod[] = "HandleVideoActivity";
 const char kSetIsProjectingMethod[] = "SetIsProjecting";
-// Signals
+// Signals emitted by powerd.
 const char kRequestSuspendSignal[] = "RequestSuspend";
 const char kCleanShutdown[] = "CleanShutdown";
 const char kRegisterSuspendDelay[] = "RegisterSuspendDelay";
@@ -212,6 +212,8 @@ const char kStateOverrideCancel[] = "StateOverrideCancel";
 const char kSoftwareScreenDimmingRequestedSignal[] =
     "SoftwareScreenDimmingRequested";
 const char kSetScreenPowerSignal[] = "SetScreenPowerSignal";
+// Signals emitted by powerm.
+const char kInputEventSignal[] = "InputEvent";
 // Values
 const char kPowerButtonName[] = "power";
 const char kLockButtonName[] = "lock";
