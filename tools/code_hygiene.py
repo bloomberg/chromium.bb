@@ -58,7 +58,7 @@ C_CHECKER = ['cpplint.py',
              ]
 
 # http://pychecker.sourceforge.net/
-PYTHON_CHECKER = ['pychecker']
+PYTHON_CHECKER = ['pychecker', '-stdlib']
 
 RE_IGNORE = re.compile(r'@IGNORE_LINES_FOR_CODE_HYGIENE\[([0-9]+)\]')
 
