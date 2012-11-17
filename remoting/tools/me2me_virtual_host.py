@@ -771,6 +771,8 @@ Web Store: https://chrome.google.com/remotedesktop"""
   parser.add_option("", "--check-running", dest="check_running", default=False,
                     action="store_true",
                     help="Return 0 if the daemon is running, or 1 otherwise.")
+  parser.add_option("", "--config", dest="config", action="store",
+                    help="Use the specified configuration file.")
   parser.add_option("", "--reload", dest="reload", default=False,
                     action="store_true",
                     help="Signal currently running host to reload the config.")
@@ -782,7 +784,10 @@ Web Store: https://chrome.google.com/remotedesktop"""
                     help="Prints version of the host.")
   (options, args) = parser.parse_args()
 
-  pid_filename = os.path.join(CONFIG_DIR, "host#%s.pid" % g_host_hash)
+  # Determine the filename of the host configuration and PID files.
+  if not options.config:
+    options.config = os.path.join(CONFIG_DIR, "host#%s.json" % g_host_hash)
+  pid_filename = os.path.splitext(options.config)[0] + ".pid"
 
   # Check for a modal command-line option (start, stop, etc.)
   if options.check_running:
@@ -825,6 +830,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
     print >> sys.stderr, EPILOG
     return 1
 
+  # Collate the list of sizes that XRANDR should support.
   if not options.size:
     options.size = [DEFAULT_SIZE]
 
@@ -847,6 +853,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
 
     sizes.append((width, height))
 
+  # Determine the command-line to run the user's preferred X environment.
   global XSESSION_COMMAND
   XSESSION_COMMAND = choose_x_session()
   if XSESSION_COMMAND is None:
@@ -859,18 +866,20 @@ Web Store: https://chrome.google.com/remotedesktop"""
       "If you encounter problems with this choice of desktop, please install\n"
       "the gnome-session-fallback package, and restart this script.\n")
 
+  # Register an exit handler to clean up session process and the PID file.
   atexit.register(cleanup)
 
-  config_filename = os.path.join(CONFIG_DIR, "host#%s.json" % g_host_hash)
-  host_config = Config(config_filename)
-
-  for s in [signal.SIGHUP, signal.SIGINT, signal.SIGTERM, signal.SIGUSR1]:
-    signal.signal(s, SignalHandler(host_config))
-
+  # Load the initial host configuration.
+  host_config = Config(options.config)
   if (not host_config.load()):
     print >> sys.stderr, "Failed to load " + config_filename
     return 1
 
+  # Register handler to re-load the configuration in response to signals.
+  for s in [signal.SIGHUP, signal.SIGINT, signal.SIGTERM, signal.SIGUSR1]:
+    signal.signal(s, SignalHandler(host_config))
+
+  # Verify that the initial host configuration has the necessary fields.
   auth = Authentication()
   auth_config_valid = auth.copy_from(host_config)
   host = Host()
@@ -879,18 +888,22 @@ Web Store: https://chrome.google.com/remotedesktop"""
     logging.error("Failed to load host configuration.")
     return 1
 
+  # Determine whether a desktop is already active for the specified host
+  # host configuration.
   global g_pidfile
   g_pidfile = PidFile(pid_filename)
   running, pid = g_pidfile.check()
-
   if running:
     # Debian policy requires that services should "start" cleanly and return 0
     # if they are already running.
     print "Service already running."
     return 0
 
+  # Record that we are running a desktop against for this configuration.
   g_pidfile.create()
 
+  # Detach a separate "daemon" process to run the session, unless specifically
+  # requested to run in the foreground.
   if not options.foreground:
     if not os.environ.has_key(LOG_FILE_ENV_VAR):
       log_file = tempfile.NamedTemporaryFile(
