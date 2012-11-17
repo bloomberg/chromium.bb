@@ -32,29 +32,37 @@ namespace ppapi {
 
 namespace {
 
-// Creates a PP_Resource containing a PPB_Buffer_Impl, copies |data| into the
-// buffer resource, and returns it. Returns a an invalid PP_Resource with an ID
-// of 0 on failure. Upon success, the returned Buffer resource has a reference
-// count of 1.
-PP_Resource MakeBufferResource(PP_Instance instance,
-                               const uint8* data, int size) {
-  if (!data || !size)
-    return 0;
+// Fills |resource| with a PP_Resource containing a PPB_Buffer_Impl and copies
+// |data| into the buffer resource. The |resource| has a reference count of 1.
+// If |data| is NULL, fills |resource| with a PP_Resource with ID of 0.
+// Returns true upon success and false if any error happened.
+bool MakeBufferResource(PP_Instance instance,
+                        const uint8* data, int size,
+                        ScopedPPResource* resource) {
+  DCHECK(resource);
 
-  ScopedPPResource resource(PPB_Buffer_Impl::Create(instance, size));
-  if (!resource.get())
-    return 0;
+  if (!data || !size) {
+    DCHECK(!data && !size);
+    resource->Release();
+    return true;
+  }
 
-  EnterResourceNoLock<PPB_Buffer_API> enter(resource, true);
+  ScopedPPResource scoped_resource(ScopedPPResource::PassRef(),
+                                   PPB_Buffer_Impl::Create(instance, size));
+  if (!scoped_resource.get())
+    return false;
+
+  EnterResourceNoLock<PPB_Buffer_API> enter(scoped_resource, true);
   if (enter.failed())
-    return 0;
+    return false;
 
   BufferAutoMapper mapper(enter.object());
   if (!mapper.data() || mapper.size() < static_cast<size_t>(size))
-    return 0;
-
+    return false;
   memcpy(mapper.data(), data, size);
-  return resource.get();
+
+  *resource = scoped_resource;
+  return true;
 }
 
 // Copies the content of |str| into |array|.
@@ -327,13 +335,14 @@ bool ContentDecryptorDelegate::Decrypt(
     const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
     const media::Decryptor::DecryptCB& decrypt_cb) {
   DVLOG(3) << "Decrypt() - stream_type: " << stream_type;
-  ScopedPPResource encrypted_resource(
-      ScopedPPResource::PassRef(),
-      MakeBufferResource(pp_instance_,
-                         encrypted_buffer->GetData(),
-                         encrypted_buffer->GetDataSize()));
-  if (!encrypted_resource.get())
+  ScopedPPResource encrypted_resource;
+  if (!MakeBufferResource(pp_instance_,
+                          encrypted_buffer->GetData(),
+                          encrypted_buffer->GetDataSize(),
+                          &encrypted_resource) ||
+      !encrypted_resource.get()) {
     return false;
+  }
 
   const uint32_t request_id = next_decryption_request_id_++;
   DVLOG(2) << "Decrypt() - request_id " << request_id;
@@ -410,11 +419,13 @@ bool ContentDecryptorDelegate::InitializeAudioDecoder(
   pp_decoder_config.samples_per_second = decoder_config.samples_per_second();
   pp_decoder_config.request_id = next_decryption_request_id_++;
 
-  ScopedPPResource extra_data_resource(
-      ScopedPPResource::PassRef(),
-      MakeBufferResource(pp_instance_,
-                         decoder_config.extra_data(),
-                         decoder_config.extra_data_size()));
+  ScopedPPResource extra_data_resource;
+  if (!MakeBufferResource(pp_instance_,
+                          decoder_config.extra_data(),
+                          decoder_config.extra_data_size(),
+                          &extra_data_resource)) {
+    return false;
+  }
 
   DCHECK_EQ(pending_audio_decoder_init_request_id_, 0u);
   DCHECK(pending_audio_decoder_init_cb_.is_null());
@@ -441,11 +452,13 @@ bool ContentDecryptorDelegate::InitializeVideoDecoder(
   pp_decoder_config.height = decoder_config.coded_size().height();
   pp_decoder_config.request_id = next_decryption_request_id_++;
 
-  ScopedPPResource extra_data_resource(
-      ScopedPPResource::PassRef(),
-      MakeBufferResource(pp_instance_,
-                         decoder_config.extra_data(),
-                         decoder_config.extra_data_size()));
+  ScopedPPResource extra_data_resource;
+  if (!MakeBufferResource(pp_instance_,
+                          decoder_config.extra_data(),
+                          decoder_config.extra_data_size(),
+                          &extra_data_resource)) {
+    return false;
+  }
 
   DCHECK_EQ(pending_video_decoder_init_request_id_, 0u);
   DCHECK(pending_video_decoder_init_cb_.is_null());
@@ -455,6 +468,7 @@ bool ContentDecryptorDelegate::InitializeVideoDecoder(
   plugin_decryption_interface_->InitializeVideoDecoder(pp_instance_,
                                                        &pp_decoder_config,
                                                        extra_data_resource);
+
   return true;
 }
 
@@ -485,11 +499,15 @@ bool ContentDecryptorDelegate::DecryptAndDecodeAudio(
   // If |encrypted_buffer| is end-of-stream buffer, GetData() and GetDataSize()
   // return NULL and 0 respectively. In that case, we'll just create a 0
   // resource.
-  ScopedPPResource encrypted_resource(
-      ScopedPPResource::PassRef(),
-      MakeBufferResource(pp_instance_,
-                         encrypted_buffer->GetData(),
-                         encrypted_buffer->GetDataSize()));
+  ScopedPPResource encrypted_resource;
+  if (!MakeBufferResource(pp_instance_,
+                          encrypted_buffer->GetData(),
+                          encrypted_buffer->GetDataSize(),
+                          &encrypted_resource)) {
+    return false;
+  }
+
+  // The resource should not be 0 for non-EOS buffer.
   if (!encrypted_buffer->IsEndOfStream() && !encrypted_resource.get())
     return false;
 
@@ -525,11 +543,15 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
   // If |encrypted_buffer| is end-of-stream buffer, GetData() and GetDataSize()
   // return NULL and 0 respectively. In that case, we'll just create a 0
   // resource.
-  ScopedPPResource encrypted_resource(
-      ScopedPPResource::PassRef(),
-      MakeBufferResource(pp_instance_,
-                         encrypted_buffer->GetData(),
-                         encrypted_buffer->GetDataSize()));
+  ScopedPPResource encrypted_resource;
+  if (!MakeBufferResource(pp_instance_,
+                          encrypted_buffer->GetData(),
+                          encrypted_buffer->GetDataSize(),
+                          &encrypted_resource)) {
+    return false;
+  }
+
+  // The resource should not be 0 for non-EOS buffer.
   if (!encrypted_buffer->IsEndOfStream() && !encrypted_resource.get())
     return false;
 
