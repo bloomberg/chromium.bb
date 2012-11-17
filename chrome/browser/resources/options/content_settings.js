@@ -75,10 +75,6 @@ cr.define('options', function() {
         OptionsPage.navigateToPage('cookies');
       };
 
-      var intentsSection = $('intents-section');
-      if (!loadTimeData.getBoolean('enable_web_intents') && intentsSection)
-        intentsSection.parentNode.removeChild(intentsSection);
-
       $('content-settings-overlay-confirm').onclick =
           OptionsPage.closeOverlay.bind(OptionsPage);
 

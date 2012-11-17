@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/content_switches.h"
@@ -63,7 +64,8 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 }
 
 bool IsWebIntentsEnabled(PrefService* prefs) {
-  return prefs->GetBoolean(prefs::kWebIntentsEnabled);
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kWebIntentsInvocationEnabled);
 }
 
 bool IsWebIntentsEnabledForProfile(Profile* profile) {

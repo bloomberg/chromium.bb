@@ -1349,7 +1349,6 @@
         'browser/ui/intents/web_intent_inline_disposition_delegate_unittest.cc',
         'browser/ui/intents/web_intent_picker_model_unittest.cc',
         'browser/ui/intents/web_intent_picker_unittest.cc',
-        'browser/ui/intents/web_intents_model_unittest.cc',
         'browser/ui/login/login_prompt_unittest.cc',
         'browser/ui/omnibox/omnibox_edit_unittest.cc',
         'browser/ui/omnibox/omnibox_view_unittest.cc',

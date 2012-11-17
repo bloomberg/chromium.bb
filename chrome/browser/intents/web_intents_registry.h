@@ -115,7 +115,6 @@ class WebIntentsRegistry : public ProfileKeyedService {
   // WebIntentsRegistry.
   friend class WebIntentsRegistryFactory;
   friend class WebIntentsRegistryTest;
-  friend class WebIntentsModelTest;
   FRIEND_TEST_ALL_PREFIXES(WebIntentsRegistryTest, CollapseIntents);
 
   WebIntentsRegistry();

@@ -18,7 +18,6 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
-#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -387,9 +386,6 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "notifications_allow", IDS_NOTIFICATIONS_ALLOW_RADIO },
     { "notifications_ask", IDS_NOTIFICATIONS_ASK_RADIO },
     { "notifications_block", IDS_NOTIFICATIONS_BLOCK_RADIO },
-    // Intents filter.
-    { "webIntentsTabLabel", IDS_WEB_INTENTS_TAB_LABEL },
-    { "allowWebIntents", IDS_ALLOW_WEB_INTENTS },
     // Fullscreen filter.
     { "fullscreen_tab_label", IDS_FULLSCREEN_TAB_LABEL },
     { "fullscreen_header", IDS_FULLSCREEN_HEADER },
@@ -466,11 +462,6 @@ void ContentSettingsHandler::GetLocalizedValues(
                 IDS_MEDIA_STREAM_TAB_LABEL);
   RegisterTitle(localized_strings, "ppapi-broker",
                 IDS_PPAPI_BROKER_TAB_LABEL);
-
-  Profile* profile = Profile::FromWebUI(web_ui());
-  localized_strings->SetBoolean(
-      "enable_web_intents",
-      web_intents::IsWebIntentsEnabledForProfile(profile));
 
   localized_strings->SetBoolean("newContentSettings",
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kContentSettings2));
