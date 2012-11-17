@@ -1141,4 +1141,65 @@ TEST_F(SpellCheckTest, EnglishWords) {
   }
 }
 
+// Checks that NOSUGGEST works in English dictionaries.
+TEST_F(SpellCheckTest, NoSuggest) {
+  static const struct {
+    const char* input;
+    bool should_pass;
+  } kTestCases[] = {
+    {"cocksucker", true},
+    {"cocksuckers", true},
+  };
+
+  static const char* kLocales[] = { "en-GB", "en-US", "en-CA", "en-AU" };
+
+  // First check that the NOSUGGEST flag didn't mark these words as not
+  // being in the dictionary.
+  size_t test_cases_size = ARRAYSIZE_UNSAFE(kTestCases);
+  for (size_t j = 0; j < arraysize(kLocales); ++j) {
+    ReinitializeSpellCheck(kLocales[j]);
+    for (size_t i = 0; i < test_cases_size; ++i) {
+      size_t input_length = 0;
+      if (kTestCases[i].input != NULL)
+        input_length = strlen(kTestCases[i].input);
+
+      int misspelling_start = 0;
+      int misspelling_length = 0;
+      bool result = spell_check()->SpellCheckWord(
+          ASCIIToUTF16(kTestCases[i].input).c_str(),
+          static_cast<int>(input_length),
+          0,
+          &misspelling_start,
+          &misspelling_length, NULL);
+
+      EXPECT_EQ(kTestCases[i].should_pass, result) << kTestCases[i].input <<
+          " in " << kLocales[j];
+    }
+  }
+
+  // Now verify that neither of testCases show up as suggestions.
+  for (size_t d = 0; d < arraysize(kLocales); ++d) {
+    ReinitializeSpellCheck(kLocales[d]);
+    int misspelling_start;
+    int misspelling_length;
+    std::vector<string16> suggestions;
+    spell_check()->SpellCheckWord(
+        ASCIIToUTF16("suckerbert").c_str(),
+        10,
+        0,
+        &misspelling_start,
+        &misspelling_length,
+        &suggestions);
+    // Check if the suggested words occur.
+    for (int j = 0; j < static_cast<int>(suggestions.size()); j++) {
+      for (size_t t = 0; t < test_cases_size; t++) {
+        int compare_result =
+            suggestions.at(j).compare(ASCIIToUTF16(kTestCases[t].input));
+        EXPECT_FALSE(compare_result == 0) << kTestCases[t].input <<
+            " in " << kLocales[d];
+      }
+    }
+  }
+}
+
 #endif

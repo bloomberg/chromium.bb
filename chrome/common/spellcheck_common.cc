@@ -111,8 +111,8 @@ FilePath GetVersionedFileName(const std::string& input_language,
     {"fo-FO", "-2-3"},  // 2-3 (May 2012): added a dictionary.
     {"en-US", "-2-4"},  // 2-4 (October 2012): add more words.
     {"en-CA", "-2-4"},
-    {"en-GB", "-2-4"},
-    {"en-AU", "-2-4"},
+    {"en-GB", "-2-5"},  // 2-5 (Nov 2012): Added NOSUGGEST flag = !.
+    {"en-AU", "-2-5"},  // Marked 1 word in each.
 
   };
 
