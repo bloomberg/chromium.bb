@@ -48,8 +48,11 @@ class Matcher {
 
 // A helper class such that ImageSkia can be cheaply copied. ImageSkia holds a
 // refptr instance of ImageSkiaStorage, which in turn holds all of ImageSkia's
-// information.
-class ImageSkiaStorage : public base::RefCounted<ImageSkiaStorage>,
+// information. Having both |base::RefCountedThreadSafe| and
+// |base::NonThreadSafe| may sounds strange but necessary to turn
+// the 'thread-non-safe modifiable ImageSkiaStorage' into
+// the 'thread-safe read-only ImageSkiaStorage'.
+class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
                          public base::NonThreadSafe {
  public:
   ImageSkiaStorage(ImageSkiaSource* source, const gfx::Size& size)
@@ -183,7 +186,7 @@ class ImageSkiaStorage : public base::RefCounted<ImageSkiaStorage>,
 
   bool read_only_;
 
-  friend class base::RefCounted<ImageSkiaStorage>;
+  friend class base::RefCountedThreadSafe<ImageSkiaStorage>;
 };
 
 }  // internal
