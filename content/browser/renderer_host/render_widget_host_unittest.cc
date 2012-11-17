@@ -466,6 +466,13 @@ class RenderWidgetHostTest : public testing::Test {
     host_->ForwardMouseEvent(mouse_event);
   }
 
+  void SimulateWheelEventWithPhase(WebMouseWheelEvent::Phase phase) {
+    WebMouseWheelEvent wheel_event;
+    wheel_event.type = WebInputEvent::MouseWheel;
+    wheel_event.phase = phase;
+    host_->ForwardWheelEvent(wheel_event);
+  }
+
   // Inject simple synthetic WebGestureEvent instances.
   void SimulateGestureEvent(WebInputEvent::Type type) {
     WebGestureEvent gesture_event;
@@ -545,6 +552,15 @@ class RenderWidgetHostTest : public testing::Test {
     CHECK(index >= 0 && index < touch_event_.touchesLengthCap);
     touch_event_.touches[index].state = WebKit::WebTouchPoint::StateReleased;
     touch_event_.type = WebInputEvent::TouchEnd;
+  }
+
+  const WebInputEvent* GetInputEventFromMessage(const IPC::Message& message) {
+    PickleIterator iter(message);
+    const char* data;
+    int data_length;
+    if (!message.ReadData(&iter, &data, &data_length))
+      return NULL;
+    return reinterpret_cast<const WebInputEvent*>(data);
   }
 
   MessageLoopForUI message_loop_;
@@ -984,6 +1000,41 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
   SendInputEventACK(WebInputEvent::MouseWheel, true);
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0U, process_->sink().message_count());
+}
+
+TEST_F(RenderWidgetHostTest, CoalescesWheelEventsQueuedPhaseEndIsNotDropped) {
+  process_->sink().ClearMessages();
+
+  // Send an initial gesture begin and ACK it.
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  SendInputEventACK(WebInputEvent::GestureScrollBegin, true);
+  MessageLoop::current()->RunUntilIdle();
+
+  // Send a wheel event, should get sent directly.
+  SimulateWheelEvent(0, -5, 0);
+  EXPECT_EQ(2U, process_->sink().message_count());
+
+  // Send a wheel phase end event before an ACK is received for the previous
+  // wheel event, which should get queued.
+  SimulateWheelEventWithPhase(WebMouseWheelEvent::PhaseEnded);
+  EXPECT_EQ(2U, process_->sink().message_count());
+
+  // A gesture event should now result in the queued phase ended event being
+  // transmitted before it.
+  SimulateGestureEvent(WebInputEvent::GestureScrollEnd);
+  ASSERT_EQ(4U, process_->sink().message_count());
+
+  // Verify the events that were sent.
+  const WebInputEvent* input_event =
+      GetInputEventFromMessage(*process_->sink().GetMessageAt(2));
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  const WebMouseWheelEvent* wheel_event =
+      static_cast<const WebMouseWheelEvent*>(input_event);
+  ASSERT_EQ(WebMouseWheelEvent::PhaseEnded, wheel_event->phase);
+
+  input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(3));
+  EXPECT_EQ(WebInputEvent::GestureScrollEnd, input_event->type);
 }
 
 TEST_F(RenderWidgetHostTest, CoalescesGesturesEvents) {

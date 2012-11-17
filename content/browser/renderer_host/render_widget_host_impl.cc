@@ -1067,6 +1067,20 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
   }
 }
 
+void RenderWidgetHostImpl::SendInputEvent(const WebInputEvent& input_event,
+                                          int event_size,
+                                          bool is_keyboard_shortcut) {
+  IPC::Message* message = new ViewMsg_HandleInputEvent(routing_id_);
+  message->WriteData(
+      reinterpret_cast<const char*>(&input_event), event_size);
+  // |is_keyboard_shortcut| only makes sense for RawKeyDown events.
+  if (input_event.type == WebInputEvent::RawKeyDown)
+    message->WriteBool(is_keyboard_shortcut);
+  input_event_start_time_ = TimeTicks::Now();
+  Send(message);
+  increment_in_flight_event_count();
+}
+
 void RenderWidgetHostImpl::ForwardInputEvent(const WebInputEvent& input_event,
                                              int event_size,
                                              bool is_keyboard_shortcut) {
@@ -1104,25 +1118,24 @@ void RenderWidgetHostImpl::ForwardInputEvent(const WebInputEvent& input_event,
 
   in_process_event_types_.push(input_event.type);
 
-  IPC::Message* message = new ViewMsg_HandleInputEvent(routing_id_);
-  message->WriteData(
-      reinterpret_cast<const char*>(&input_event), event_size);
-  // |is_keyboard_shortcut| only makes sense for RawKeyDown events.
-  if (input_event.type == WebInputEvent::RawKeyDown)
-    message->WriteBool(is_keyboard_shortcut);
-  input_event_start_time_ = TimeTicks::Now();
-  Send(message);
-
-  // Any non-wheel input event cancels pending wheel events.
-  if (input_event.type != WebInputEvent::MouseWheel)
+  // Transmit any pending wheel events on a non-wheel event. This ensures that
+  // the renderer receives the final PhaseEnded wheel event, which is necessary
+  // to terminate rubber-banding, for example.
+  if (input_event.type != WebInputEvent::MouseWheel) {
+    for (size_t i = 0; i < coalesced_mouse_wheel_events_.size(); ++i) {
+      SendInputEvent(coalesced_mouse_wheel_events_[i],
+                     sizeof(WebMouseWheelEvent), false);
+    }
     coalesced_mouse_wheel_events_.clear();
+  }
+
+  SendInputEvent(input_event, event_size, is_keyboard_shortcut);
 
   // Any input event cancels a pending mouse move event. Note that
   // |next_mouse_move_| possibly owns |input_event|, so don't use |input_event|
   // after this line.
   next_mouse_move_.reset();
 
-  increment_in_flight_event_count();
   StartHangMonitorTimeout(
       TimeDelta::FromMilliseconds(hung_renderer_delay_ms_));
 }

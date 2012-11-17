@@ -451,6 +451,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
  protected:
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;
 
+  // Transmits the given input event. This is an internal helper for
+  // |ForwardInputEvent()| and should not be used directly from elsewhere.
+  void SendInputEvent(const WebKit::WebInputEvent& input_event,
+                      int event_size, bool is_keyboard_shortcut);
+
   // Internal implementation of the public Forward*Event() methods.
   void ForwardInputEvent(const WebKit::WebInputEvent& input_event,
                          int event_size, bool is_keyboard_shortcut);
