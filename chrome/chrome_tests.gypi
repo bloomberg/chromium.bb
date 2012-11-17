@@ -1346,6 +1346,7 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
+            'app_host',
             'chrome_version_resources',
             'security_tests',  # run time dependency
           ],
