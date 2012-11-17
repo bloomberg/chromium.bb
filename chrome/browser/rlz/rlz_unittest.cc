@@ -6,10 +6,9 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stringprintf.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
+#include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_log.h"
@@ -198,13 +197,8 @@ class RlzLibTest : public testing::Test {
   TestRLZTracker tracker_;
 #if defined(OS_WIN)
   RegistryOverrideManager override_manager_;
-<<<<<<< HEAD
-#elif defined(OS_MACOSX)
-  base::ScopedTempDir temp_dir_;
-=======
 #elif defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  ScopedTempDir temp_dir_;
->>>>>>> master
+  base::ScopedTempDir temp_dir_;
   scoped_ptr<google_util::BrandForTesting> brand_override_;
 #endif
 #if defined(OS_CHROMEOS)
