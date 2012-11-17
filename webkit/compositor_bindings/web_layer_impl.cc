@@ -276,14 +276,6 @@ void WebLayerImpl::setFilter(SkImageFilter* filter)
     m_layer->setFilter(filter);
 }
 
-void WebLayerImpl::setDebugBorderColor(const WebColor& color)
-{
-}
-
-void WebLayerImpl::setDebugBorderWidth(float width)
-{
-}
-
 void WebLayerImpl::setDebugName(WebString name)
 {
     m_layer->setDebugName(UTF16ToASCII(string16(name.data(), name.length())));

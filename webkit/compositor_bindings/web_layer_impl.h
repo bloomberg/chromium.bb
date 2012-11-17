@@ -63,9 +63,6 @@ public:
     virtual void setFilter(SkImageFilter*);
     virtual void setFilters(const WebFilterOperations&) OVERRIDE;
     virtual void setBackgroundFilters(const WebFilterOperations&) OVERRIDE;
-    // TODO(danakj): remove the debug border setters
-    virtual void setDebugBorderColor(const WebColor&);
-    virtual void setDebugBorderWidth(float);
     virtual void setDebugName(WebString) OVERRIDE;
     virtual void setAnimationDelegate(WebAnimationDelegate*) OVERRIDE;
     virtual bool addAnimation(WebAnimation*) OVERRIDE;
