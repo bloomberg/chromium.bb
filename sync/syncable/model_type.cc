@@ -281,9 +281,6 @@ ModelTypeSet ControlTypes() {
     set.Put(ModelTypeFromInt(i));
   }
 
-  // TODO(zea): remove once the server fixes experiment versioning.
-  set.Remove(EXPERIMENTS);
-
   return set;
 }
 

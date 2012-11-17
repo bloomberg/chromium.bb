@@ -871,7 +871,7 @@ TEST_F(ApplyControlDataUpdatesTest,
 }
 
 // Check that we can apply a simple control datatype node successfully.
-TEST_F(ApplyControlDataUpdatesTest, DISABLED_ControlApply) {
+TEST_F(ApplyControlDataUpdatesTest, ControlApply) {
   EXPECT_FALSE(directory()->initial_sync_ended_types().Has(EXPERIMENTS));
 
   std::string experiment_id = "experiment";
@@ -890,7 +890,7 @@ TEST_F(ApplyControlDataUpdatesTest, DISABLED_ControlApply) {
 }
 
 // Verify that we apply top level folders before their children.
-TEST_F(ApplyControlDataUpdatesTest, DISABLED_ControlApplyParentBeforeChild) {
+TEST_F(ApplyControlDataUpdatesTest, ControlApplyParentBeforeChild) {
   EXPECT_FALSE(directory()->initial_sync_ended_types().Has(EXPERIMENTS));
 
   std::string parent_id = "parent";
@@ -914,7 +914,7 @@ TEST_F(ApplyControlDataUpdatesTest, DISABLED_ControlApplyParentBeforeChild) {
 
 // Verify that we handle control datatype conflicts by preserving the server
 // data.
-TEST_F(ApplyControlDataUpdatesTest, DISABLED_ControlConflict) {
+TEST_F(ApplyControlDataUpdatesTest, ControlConflict) {
   EXPECT_FALSE(directory()->initial_sync_ended_types().Has(EXPERIMENTS));
 
   std::string experiment_id = "experiment";
