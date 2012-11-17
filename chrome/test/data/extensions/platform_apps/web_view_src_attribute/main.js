@@ -17,7 +17,7 @@ onload = function() {
 
       var step = 1;
       // For setting src, we check if both webview.setAttribute('src', ?);
-      // and webview.src = ?; works propertly.
+      // and webview.src = ?; works properly.
       var webview = document.querySelector('webview');
 
       var runStep2 = function() {

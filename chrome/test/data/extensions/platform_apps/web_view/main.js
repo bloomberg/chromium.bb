@@ -186,13 +186,27 @@ onload = function() {
         }
       };
 
+      // The test starts from here, by setting the src to |url|. Event
+      // listener registration works because we already have a (dummy) src set
+      // on the <webview> tag.
+      webview.addEventListener('loadcommit', onLoadCommitA);
+      webview.addEventListener('loadcommit', onLoadCommitB);
+      webview.setAttribute('src', url);
+    },
+
+    // This test verifies that setting the partition attribute after the src has
+    // been set raises an exception.
+    function partitionRaisesException() {
+      var webview = document.createElement('webview');
+      webview.setAttribute('src', 'data:text/html,trigger navigation');
+      document.body.appendChild(webview);
       setTimeout(function() {
-        // The test starts from here, by setting the src to |url|. Event
-        // listener registration works because we already have a (dummy) src set
-        // on the <webview> tag.
-        webview.addEventListener('loadcommit', onLoadCommitA);
-        webview.addEventListener('loadcommit', onLoadCommitB);
-        webview.setAttribute('src', url);
+        try {
+          webview.partition = 'illegal';
+          chrome.test.fail();
+        } catch (e) {
+          chrome.test.succeed();
+        }
       }, 0);
     }
   ]);
