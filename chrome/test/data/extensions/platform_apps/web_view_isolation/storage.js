@@ -27,25 +27,27 @@ isolation.onerror = function(e) {
 // exist. It sets the document.title to a string referring to which
 // operation has been performed - open vs create.
 function initIDB() {
-  var request = indexedDB.open("isolation");
-  request.onsuccess = function(e) {
-    var v = 3;
+  var v = 3;
+  var ranVersionChangeTransaction = false;
+  var request = indexedDB.open("isolation", v);
+  request.onupgradeneeded = function(e) {
     isolation.db = e.target.result;
-    if (v != isolation.db.version) {
-      var setVrequest = isolation.db.setVersion(v);
-      setVrequest.onerror = isolation.onerror;
-      setVrequest.onsuccess = function(e) {
-        var store = isolation.db.createObjectStore(
-            "partitions", {keyPath: "id"});
-        e.target.transaction.oncomplete = function() {
-          document.title = "idb created";
-        }
-      };
+    var store = isolation.db.createObjectStore(
+        "partitions", {keyPath: "id"});
+    e.target.transaction.oncomplete = function() {
+      ranVersionChangeTransaction = true;
+    }
+  }
+  request.onsuccess = function(e) {
+    isolation.db = e.target.result;
+    if (ranVersionChangeTransaction) {
+      document.title = "idb created";
     } else {
       document.title = "idb open";
     }
   };
   request.onerror = isolation.onerror;
+  request.onblocked = isolation.onerror;
 }
 
 // This method adds a |value| to the database identified by |id|.
