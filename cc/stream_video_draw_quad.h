@@ -14,14 +14,14 @@ namespace cc {
 
 class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
 public:
-    static scoped_ptr<StreamVideoDrawQuad> create(const SharedQuadState*, const gfx::Rect&, unsigned textureId, const WebKit::WebTransformationMatrix&);
+    static scoped_ptr<StreamVideoDrawQuad> create(const SharedQuadState*, const gfx::Rect&, const gfx::Rect& opaqueRect, unsigned textureId, const WebKit::WebTransformationMatrix&);
 
     unsigned textureId() const { return m_textureId; }
     const WebKit::WebTransformationMatrix& matrix() const { return m_matrix; }
 
     static const StreamVideoDrawQuad* materialCast(const DrawQuad*);
 private:
-    StreamVideoDrawQuad(const SharedQuadState*, const gfx::Rect&, unsigned textureId, const WebKit::WebTransformationMatrix&);
+    StreamVideoDrawQuad(const SharedQuadState*, const gfx::Rect&, const gfx::Rect& opaqueRect, unsigned textureId, const WebKit::WebTransformationMatrix&);
 
     unsigned m_textureId;
     WebKit::WebTransformationMatrix m_matrix;

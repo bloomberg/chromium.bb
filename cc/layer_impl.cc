@@ -125,7 +125,7 @@ bool LayerImpl::descendantDrawsContent()
 
 scoped_ptr<SharedQuadState> LayerImpl::createSharedQuadState() const
 {
-    return SharedQuadState::create(m_drawTransform, m_visibleContentRect, m_drawableContentRect, m_drawOpacity, m_contentsOpaque);
+    return SharedQuadState::create(m_drawTransform, m_visibleContentRect, m_drawableContentRect, m_drawOpacity);
 }
 
 void LayerImpl::willDraw(ResourceProvider*)

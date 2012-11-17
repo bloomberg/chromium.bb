@@ -8,13 +8,13 @@
 
 namespace cc {
 
-scoped_ptr<IOSurfaceDrawQuad> IOSurfaceDrawQuad::create(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Size& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
+scoped_ptr<IOSurfaceDrawQuad> IOSurfaceDrawQuad::create(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, const gfx::Size& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
 {
-    return make_scoped_ptr(new IOSurfaceDrawQuad(sharedQuadState, quadRect, ioSurfaceSize, ioSurfaceTextureId, orientation));
+    return make_scoped_ptr(new IOSurfaceDrawQuad(sharedQuadState, quadRect, opaqueRect, ioSurfaceSize, ioSurfaceTextureId, orientation));
 }
 
-IOSurfaceDrawQuad::IOSurfaceDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Size& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
-    : DrawQuad(sharedQuadState, DrawQuad::IO_SURFACE_CONTENT, quadRect)
+IOSurfaceDrawQuad::IOSurfaceDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, const gfx::Size& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
+    : DrawQuad(sharedQuadState, DrawQuad::IO_SURFACE_CONTENT, quadRect, opaqueRect)
     , m_ioSurfaceSize(ioSurfaceSize)
     , m_ioSurfaceTextureId(ioSurfaceTextureId)
     , m_orientation(orientation)

@@ -8,13 +8,13 @@
 
 namespace cc {
 
-scoped_ptr<TextureDrawQuad> TextureDrawQuad::create(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped)
+scoped_ptr<TextureDrawQuad> TextureDrawQuad::create(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped)
 {
-    return make_scoped_ptr(new TextureDrawQuad(sharedQuadState, quadRect, resourceId, premultipliedAlpha, uvRect, flipped));
+    return make_scoped_ptr(new TextureDrawQuad(sharedQuadState, quadRect, opaqueRect, resourceId, premultipliedAlpha, uvRect, flipped));
 }
 
-TextureDrawQuad::TextureDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped)
-    : DrawQuad(sharedQuadState, DrawQuad::TEXTURE_CONTENT, quadRect)
+TextureDrawQuad::TextureDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped)
+    : DrawQuad(sharedQuadState, DrawQuad::TEXTURE_CONTENT, quadRect, opaqueRect)
     , m_resourceId(resourceId)
     , m_premultipliedAlpha(premultipliedAlpha)
     , m_uvRect(uvRect)

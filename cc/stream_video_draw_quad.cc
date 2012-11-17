@@ -8,13 +8,13 @@
 
 namespace cc {
 
-scoped_ptr<StreamVideoDrawQuad> StreamVideoDrawQuad::create(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
+scoped_ptr<StreamVideoDrawQuad> StreamVideoDrawQuad::create(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
 {
-    return make_scoped_ptr(new StreamVideoDrawQuad(sharedQuadState, quadRect, textureId, matrix));
+    return make_scoped_ptr(new StreamVideoDrawQuad(sharedQuadState, quadRect, opaqueRect, textureId, matrix));
 }
 
-StreamVideoDrawQuad::StreamVideoDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
-    : DrawQuad(sharedQuadState, DrawQuad::STREAM_VIDEO_CONTENT, quadRect)
+StreamVideoDrawQuad::StreamVideoDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
+    : DrawQuad(sharedQuadState, DrawQuad::STREAM_VIDEO_CONTENT, quadRect, opaqueRect)
     , m_textureId(textureId)
     , m_matrix(matrix)
 {

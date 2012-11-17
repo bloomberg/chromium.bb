@@ -78,7 +78,7 @@ static SolidColorDrawQuad* addQuad(TestRenderPass* pass, gfx::Rect rect, SkColor
 {
     MockQuadCuller quadSink(pass->quadList(), pass->sharedQuadStateList());
     AppendQuadsData data(pass->id());
-    SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::create(WebTransformationMatrix(), rect, rect, 1, false));
+    SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::create(WebTransformationMatrix(), rect, rect, 1));
     scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::create(sharedState, rect, color);
     SolidColorDrawQuad* quadPtr = quad.get();
     quadSink.append(quad.PassAs<DrawQuad>(), data);
@@ -90,7 +90,7 @@ static void addRenderPassQuad(TestRenderPass* toPass, TestRenderPass* contributi
     MockQuadCuller quadSink(toPass->quadList(), toPass->sharedQuadStateList());
     AppendQuadsData data(toPass->id());
     gfx::Rect outputRect = contributingPass->outputRect();
-    SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::create(WebTransformationMatrix(), outputRect, outputRect, 1, false));
+    SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::create(WebTransformationMatrix(), outputRect, outputRect, 1));
     scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::create(sharedState, outputRect, contributingPass->id(), false, 0, outputRect, 0, 0, 0, 0);
     quadSink.append(quad.PassAs<DrawQuad>(), data);
 }
@@ -402,7 +402,7 @@ public:
         TestRenderPass* pass = addRenderPass(delegatedRenderPasses, RenderPass::Id(9, 6), passRect, WebTransformationMatrix());
         MockQuadCuller quadSink(pass->quadList(), pass->sharedQuadStateList());
         AppendQuadsData data(pass->id());
-        SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::create(WebTransformationMatrix(), passRect, passRect, 1, false));
+        SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::create(WebTransformationMatrix(), passRect, passRect, 1));
         quadSink.append(SolidColorDrawQuad::create(sharedState, gfx::Rect(0, 0, 10, 10), 1u).PassAs<DrawQuad>(), data);
         quadSink.append(SolidColorDrawQuad::create(sharedState, gfx::Rect(0, 10, 10, 10), 2u).PassAs<DrawQuad>(), data);
         quadSink.append(SolidColorDrawQuad::create(sharedState, gfx::Rect(10, 0, 10, 10), 3u).PassAs<DrawQuad>(), data);

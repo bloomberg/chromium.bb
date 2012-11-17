@@ -28,10 +28,9 @@ TEST(DrawQuadTest, copySharedQuadState)
     gfx::Rect visibleContentRect(10, 12, 14, 16);
     gfx::Rect clippedRectInTarget(19, 21, 23, 25);
     float opacity = 0.25;
-    bool opaque = true;
     int id = 3;
 
-    scoped_ptr<SharedQuadState> state(SharedQuadState::create(quadTransform, visibleContentRect, clippedRectInTarget, opacity, opaque));
+    scoped_ptr<SharedQuadState> state(SharedQuadState::create(quadTransform, visibleContentRect, clippedRectInTarget, opacity));
     state->id = id;
 
     scoped_ptr<SharedQuadState> copy(state->copy());
@@ -40,7 +39,6 @@ TEST(DrawQuadTest, copySharedQuadState)
     EXPECT_RECT_EQ(visibleContentRect, copy->visibleContentRect);
     EXPECT_RECT_EQ(clippedRectInTarget, copy->clippedRectInTarget);
     EXPECT_EQ(opacity, copy->opacity);
-    EXPECT_EQ(opaque, copy->opaque);
 }
 
 scoped_ptr<SharedQuadState> createSharedQuadState()
@@ -49,10 +47,9 @@ scoped_ptr<SharedQuadState> createSharedQuadState()
     gfx::Rect visibleContentRect(10, 12, 14, 16);
     gfx::Rect clippedRectInTarget(19, 21, 23, 25);
     float opacity = 1;
-    bool opaque = false;
     int id = 3;
 
-    scoped_ptr<SharedQuadState> state(SharedQuadState::create(quadTransform, visibleContentRect, clippedRectInTarget, opacity, opaque));
+    scoped_ptr<SharedQuadState> state(SharedQuadState::create(quadTransform, visibleContentRect, clippedRectInTarget, opacity));
     state->id = id;
     return state.Pass();
 }
@@ -170,12 +167,14 @@ TEST(DrawQuadTest, copyDebugBorderDrawQuad)
 
 TEST(DrawQuadTest, copyIOSurfaceDrawQuad)
 {
+    gfx::Rect opaqueRect(3, 7, 10, 12);
     gfx::Size size(58, 95);
     unsigned textureId = 72;
     IOSurfaceDrawQuad::Orientation orientation = IOSurfaceDrawQuad::Unflipped;
 
     CREATE_SHARED_STATE();
-    CREATE_QUAD_3(IOSurfaceDrawQuad, size, textureId, orientation);
+    CREATE_QUAD_4(IOSurfaceDrawQuad, opaqueRect, size, textureId, orientation);
+    EXPECT_RECT_EQ(opaqueRect, copyQuad->opaqueRect());
     EXPECT_EQ(size, copyQuad->ioSurfaceSize());
     EXPECT_EQ(textureId, copyQuad->ioSurfaceTextureId());
     EXPECT_EQ(orientation, copyQuad->orientation());
@@ -217,24 +216,28 @@ TEST(DrawQuadTest, copySolidColorDrawQuad)
 
 TEST(DrawQuadTest, copyStreamVideoDrawQuad)
 {
+    gfx::Rect opaqueRect(3, 7, 10, 12);
     unsigned textureId = 64;
     WebTransformationMatrix matrix(0.5, 1, 0.25, 0.75, 0, 1);
 
     CREATE_SHARED_STATE();
-    CREATE_QUAD_2(StreamVideoDrawQuad, textureId, matrix);
+    CREATE_QUAD_3(StreamVideoDrawQuad, opaqueRect, textureId, matrix);
+    EXPECT_RECT_EQ(opaqueRect, copyQuad->opaqueRect());
     EXPECT_EQ(textureId, copyQuad->textureId());
     EXPECT_EQ(matrix, copyQuad->matrix());
 }
 
 TEST(DrawQuadTest, copyTextureDrawQuad)
 {
+    gfx::Rect opaqueRect(3, 7, 10, 12);
     unsigned resourceId = 82;
     bool premultipliedAlpha = true;
     gfx::RectF uvRect(0.5, 224, -51, 36);
     bool flipped = true;
 
     CREATE_SHARED_STATE();
-    CREATE_QUAD_4(TextureDrawQuad, resourceId, premultipliedAlpha, uvRect, flipped);
+    CREATE_QUAD_5(TextureDrawQuad, opaqueRect, resourceId, premultipliedAlpha, uvRect, flipped);
+    EXPECT_RECT_EQ(opaqueRect, copyQuad->opaqueRect());
     EXPECT_EQ(resourceId, copyQuad->resourceId());
     EXPECT_EQ(premultipliedAlpha, copyQuad->premultipliedAlpha());
     EXPECT_FLOAT_RECT_EQ(uvRect, copyQuad->uvRect());
@@ -268,6 +271,7 @@ TEST(DrawQuadTest, copyTileDrawQuad)
 
 TEST(DrawQuadTest, copyYUVVideoDrawQuad)
 {
+    gfx::Rect opaqueRect(3, 7, 10, 12);
     gfx::SizeF texScale(0.75, 0.5);
     VideoLayerImpl::FramePlane yPlane;
     yPlane.resourceId = 45;
@@ -283,7 +287,8 @@ TEST(DrawQuadTest, copyYUVVideoDrawQuad)
     vPlane.format = 46;
 
     CREATE_SHARED_STATE();
-    CREATE_QUAD_4(YUVVideoDrawQuad, texScale, yPlane, uPlane, vPlane);
+    CREATE_QUAD_5(YUVVideoDrawQuad, opaqueRect, texScale, yPlane, uPlane, vPlane);
+    EXPECT_RECT_EQ(opaqueRect, copyQuad->opaqueRect());
     EXPECT_EQ(texScale, copyQuad->texScale());
     EXPECT_EQ(yPlane.resourceId, copyQuad->yPlane().resourceId);
     EXPECT_EQ(yPlane.size, copyQuad->yPlane().size);

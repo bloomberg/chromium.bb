@@ -11,24 +11,26 @@ namespace cc {
 scoped_ptr<YUVVideoDrawQuad> YUVVideoDrawQuad::create(
     const SharedQuadState* sharedQuadState,
     const gfx::Rect& quadRect,
+    const gfx::Rect& opaqueRect,
     const gfx::SizeF& texScale,
     const VideoLayerImpl::FramePlane& yPlane,
     const VideoLayerImpl::FramePlane& uPlane,
     const VideoLayerImpl::FramePlane& vPlane)
 {
     return make_scoped_ptr(new YUVVideoDrawQuad(sharedQuadState,
-                                                quadRect, texScale,
+                                                quadRect, opaqueRect, texScale,
                                                 yPlane, uPlane, vPlane));
 }
 
 YUVVideoDrawQuad::YUVVideoDrawQuad(
     const SharedQuadState* sharedQuadState,
     const gfx::Rect& quadRect,
+    const gfx::Rect& opaqueRect,
     const gfx::SizeF& texScale,
     const VideoLayerImpl::FramePlane& yPlane,
     const VideoLayerImpl::FramePlane& uPlane,
     const VideoLayerImpl::FramePlane& vPlane)
-    : DrawQuad(sharedQuadState, DrawQuad::YUV_VIDEO_CONTENT, quadRect)
+    : DrawQuad(sharedQuadState, DrawQuad::YUV_VIDEO_CONTENT, quadRect, opaqueRect)
     , m_texScale(texScale)
     , m_yPlane(yPlane)
     , m_uPlane(uPlane)

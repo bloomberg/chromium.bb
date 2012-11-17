@@ -14,9 +14,11 @@ scoped_ptr<CheckerboardDrawQuad> CheckerboardDrawQuad::create(const SharedQuadSt
 }
 
 CheckerboardDrawQuad::CheckerboardDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, SkColor color)
-    : DrawQuad(sharedQuadState, DrawQuad::CHECKERBOARD, quadRect)
+    : DrawQuad(sharedQuadState, DrawQuad::CHECKERBOARD, quadRect, quadRect)
     , m_color(color)
 {
+    if (SkColorGetA(m_color) < 255)
+        m_opaqueRect = gfx::Rect();
 }
 
 const CheckerboardDrawQuad* CheckerboardDrawQuad::materialCast(const DrawQuad* quad)

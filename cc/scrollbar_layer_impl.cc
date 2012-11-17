@@ -95,8 +95,9 @@ void ScrollbarLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& append
         thumbRect = WebRect();
 
     if (m_thumbResourceId && !thumbRect.isEmpty()) {
-        scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::create(sharedQuadState, scrollbarLayerRectToContentRect(thumbRect), m_thumbResourceId, premultipledAlpha, uvRect, flipped);
-        quad->setNeedsBlending();
+        gfx::Rect quadRect(scrollbarLayerRectToContentRect(thumbRect));
+        gfx::Rect opaqueRect;
+        scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::create(sharedQuadState, quadRect, opaqueRect, m_thumbResourceId, premultipledAlpha, uvRect, flipped);
         quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
     }
 
@@ -104,13 +105,19 @@ void ScrollbarLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& append
         return;
 
     // We only paint the track in two parts if we were given a texture for the forward track part.
-    if (m_foreTrackResourceId && !foreTrackRect.isEmpty())
-        quadSink.append(TextureDrawQuad::create(sharedQuadState, scrollbarLayerRectToContentRect(foreTrackRect), m_foreTrackResourceId, premultipledAlpha, toUVRect(foreTrackRect, boundsRect), flipped).PassAs<DrawQuad>(), appendQuadsData);
+    if (m_foreTrackResourceId && !foreTrackRect.isEmpty()) {
+        gfx::Rect quadRect(scrollbarLayerRectToContentRect(foreTrackRect));
+        gfx::Rect opaqueRect(contentsOpaque() ? quadRect : gfx::Rect());
+        quadSink.append(TextureDrawQuad::create(sharedQuadState, quadRect, opaqueRect, m_foreTrackResourceId, premultipledAlpha, toUVRect(foreTrackRect, boundsRect), flipped).PassAs<DrawQuad>(), appendQuadsData);
+    }
 
     // Order matters here: since the back track texture is being drawn to the entire contents rect, we must append it after the thumb and
     // fore track quads. The back track texture contains (and displays) the buttons.
-    if (!contentBoundsRect.IsEmpty())
-        quadSink.append(TextureDrawQuad::create(sharedQuadState, gfx::Rect(contentBoundsRect), m_backTrackResourceId, premultipledAlpha, uvRect, flipped).PassAs<DrawQuad>(), appendQuadsData);
+    if (!contentBoundsRect.IsEmpty()) {
+        gfx::Rect quadRect(contentBoundsRect);
+        gfx::Rect opaqueRect(contentsOpaque() ? quadRect : gfx::Rect());
+        quadSink.append(TextureDrawQuad::create(sharedQuadState, quadRect, opaqueRect, m_backTrackResourceId, premultipledAlpha, uvRect, flipped).PassAs<DrawQuad>(), appendQuadsData);
+    }
 }
 
 void ScrollbarLayerImpl::didLoseContext()

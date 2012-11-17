@@ -6,24 +6,23 @@
 
 namespace cc {
 
-scoped_ptr<SharedQuadState> SharedQuadState::create(const WebKit::WebTransformationMatrix& quadTransform, const gfx::Rect& visibleContentRect, const gfx::Rect& clippedRectInTarget, float opacity, bool opaque)
+scoped_ptr<SharedQuadState> SharedQuadState::create(const WebKit::WebTransformationMatrix& quadTransform, const gfx::Rect& visibleContentRect, const gfx::Rect& clippedRectInTarget, float opacity)
 {
-    return make_scoped_ptr(new SharedQuadState(quadTransform, visibleContentRect, clippedRectInTarget, opacity, opaque));
+    return make_scoped_ptr(new SharedQuadState(quadTransform, visibleContentRect, clippedRectInTarget, opacity));
 }
 
-SharedQuadState::SharedQuadState(const WebKit::WebTransformationMatrix& quadTransform, const gfx::Rect& visibleContentRect, const gfx::Rect& clippedRectInTarget, float opacity, bool opaque)
+SharedQuadState::SharedQuadState(const WebKit::WebTransformationMatrix& quadTransform, const gfx::Rect& visibleContentRect, const gfx::Rect& clippedRectInTarget, float opacity)
     : id(-1)
     , quadTransform(quadTransform)
     , visibleContentRect(visibleContentRect)
     , clippedRectInTarget(clippedRectInTarget)
     , opacity(opacity)
-    , opaque(opaque)
 {
 }
 
 scoped_ptr<SharedQuadState> SharedQuadState::copy() const
 {
-    scoped_ptr<SharedQuadState> copiedState(create(quadTransform, visibleContentRect, clippedRectInTarget, opacity, opaque));
+    scoped_ptr<SharedQuadState> copiedState(create(quadTransform, visibleContentRect, clippedRectInTarget, opacity));
     copiedState->id = id;
     return copiedState.Pass();
 }

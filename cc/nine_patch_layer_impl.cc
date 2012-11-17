@@ -83,14 +83,18 @@ void NinePatchLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& append
     gfx::RectF uvRight(uvTopRight.x(), uvTopRight.bottom(), rightWidth / imgWidth, uvLeft.height());
     gfx::RectF uvBottom(uvTop.x(), uvBottomLeft.y(), uvTop.width(), bottomHeight / imgHeight);
 
-    quadSink.append(TextureDrawQuad::create(sharedQuadState, topLeft, m_resourceId, premultipliedAlpha, uvTopLeft, flipped).PassAs<DrawQuad>(), appendQuadsData);
-    quadSink.append(TextureDrawQuad::create(sharedQuadState, topRight, m_resourceId, premultipliedAlpha, uvTopRight, flipped).PassAs<DrawQuad>(), appendQuadsData);
-    quadSink.append(TextureDrawQuad::create(sharedQuadState, bottomLeft, m_resourceId, premultipliedAlpha, uvBottomLeft, flipped).PassAs<DrawQuad>(), appendQuadsData);
-    quadSink.append(TextureDrawQuad::create(sharedQuadState, bottomRight, m_resourceId, premultipliedAlpha, uvBottomRight, flipped).PassAs<DrawQuad>(), appendQuadsData);
-    quadSink.append(TextureDrawQuad::create(sharedQuadState, top, m_resourceId, premultipliedAlpha, uvTop, flipped).PassAs<DrawQuad>(), appendQuadsData);
-    quadSink.append(TextureDrawQuad::create(sharedQuadState, left, m_resourceId, premultipliedAlpha, uvLeft, flipped).PassAs<DrawQuad>(), appendQuadsData);
-    quadSink.append(TextureDrawQuad::create(sharedQuadState, right, m_resourceId, premultipliedAlpha, uvRight, flipped).PassAs<DrawQuad>(), appendQuadsData);
-    quadSink.append(TextureDrawQuad::create(sharedQuadState, bottom, m_resourceId, premultipliedAlpha, uvBottom, flipped).PassAs<DrawQuad>(), appendQuadsData);
+    // Nothing is opaque here.
+    // TODO(danakj): Should we look at the SkBitmaps to determine opaqueness?
+    gfx::Rect opaqueRect;
+
+    quadSink.append(TextureDrawQuad::create(sharedQuadState, topLeft, opaqueRect, m_resourceId, premultipliedAlpha, uvTopLeft, flipped).PassAs<DrawQuad>(), appendQuadsData);
+    quadSink.append(TextureDrawQuad::create(sharedQuadState, topRight, opaqueRect, m_resourceId, premultipliedAlpha, uvTopRight, flipped).PassAs<DrawQuad>(), appendQuadsData);
+    quadSink.append(TextureDrawQuad::create(sharedQuadState, bottomLeft, opaqueRect, m_resourceId, premultipliedAlpha, uvBottomLeft, flipped).PassAs<DrawQuad>(), appendQuadsData);
+    quadSink.append(TextureDrawQuad::create(sharedQuadState, bottomRight, opaqueRect, m_resourceId, premultipliedAlpha, uvBottomRight, flipped).PassAs<DrawQuad>(), appendQuadsData);
+    quadSink.append(TextureDrawQuad::create(sharedQuadState, top, opaqueRect, m_resourceId, premultipliedAlpha, uvTop, flipped).PassAs<DrawQuad>(), appendQuadsData);
+    quadSink.append(TextureDrawQuad::create(sharedQuadState, left, opaqueRect, m_resourceId, premultipliedAlpha, uvLeft, flipped).PassAs<DrawQuad>(), appendQuadsData);
+    quadSink.append(TextureDrawQuad::create(sharedQuadState, right, opaqueRect, m_resourceId, premultipliedAlpha, uvRight, flipped).PassAs<DrawQuad>(), appendQuadsData);
+    quadSink.append(TextureDrawQuad::create(sharedQuadState, bottom, opaqueRect, m_resourceId, premultipliedAlpha, uvBottom, flipped).PassAs<DrawQuad>(), appendQuadsData);
 }
 
 void NinePatchLayerImpl::didDraw(ResourceProvider* resourceProvider)

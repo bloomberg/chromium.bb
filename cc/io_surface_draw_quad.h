@@ -19,7 +19,7 @@ public:
       Unflipped
     };
 
-    static scoped_ptr<IOSurfaceDrawQuad> create(const SharedQuadState*, const gfx::Rect&, const gfx::Size& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation);
+    static scoped_ptr<IOSurfaceDrawQuad> create(const SharedQuadState*, const gfx::Rect&, const gfx::Rect& opaqueRect, const gfx::Size& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation);
 
     gfx::Size ioSurfaceSize() const { return m_ioSurfaceSize; }
     unsigned ioSurfaceTextureId() const { return m_ioSurfaceTextureId; }
@@ -27,7 +27,7 @@ public:
 
     static const IOSurfaceDrawQuad* materialCast(const DrawQuad*);
 private:
-    IOSurfaceDrawQuad(const SharedQuadState*, const gfx::Rect&, const gfx::Size& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation);
+    IOSurfaceDrawQuad(const SharedQuadState*, const gfx::Rect&, const gfx::Rect& opaqueRect, const gfx::Size& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation);
 
     gfx::Size m_ioSurfaceSize;
     unsigned m_ioSurfaceTextureId;

@@ -200,6 +200,7 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
     // otherwise synchonize use of all textures in the quad.
 
     gfx::Rect quadRect(gfx::Point(), contentBounds());
+    gfx::Rect opaqueRect(contentsOpaque() ? quadRect : gfx::Rect());
     gfx::Rect visibleRect = m_frame->visible_rect();
     gfx::Size codedSize = m_frame->coded_size();
 
@@ -217,7 +218,7 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         const FramePlane& vPlane = m_framePlanes[media::VideoFrame::kVPlane];
         gfx::SizeF texScale(texWidthScale, texHeightScale);
         scoped_ptr<YUVVideoDrawQuad> yuvVideoQuad = YUVVideoDrawQuad::create(
-            sharedQuadState, quadRect, texScale, yPlane, uPlane, vPlane);
+            sharedQuadState, quadRect, opaqueRect, texScale, yPlane, uPlane, vPlane);
         quadSink.append(yuvVideoQuad.PassAs<DrawQuad>(), appendQuadsData);
         break;
     }
@@ -227,7 +228,7 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         bool premultipliedAlpha = true;
         gfx::RectF uvRect(0, 0, texWidthScale, texHeightScale);
         bool flipped = false;
-        scoped_ptr<TextureDrawQuad> textureQuad = TextureDrawQuad::create(sharedQuadState, quadRect, plane.resourceId, premultipliedAlpha, uvRect, flipped);
+        scoped_ptr<TextureDrawQuad> textureQuad = TextureDrawQuad::create(sharedQuadState, quadRect, opaqueRect, plane.resourceId, premultipliedAlpha, uvRect, flipped);
         quadSink.append(textureQuad.PassAs<DrawQuad>(), appendQuadsData);
         break;
     }
@@ -236,13 +237,13 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         bool premultipliedAlpha = true;
         gfx::RectF uvRect(0, 0, texWidthScale, texHeightScale);
         bool flipped = false;
-        scoped_ptr<TextureDrawQuad> textureQuad = TextureDrawQuad::create(sharedQuadState, quadRect, m_externalTextureResource, premultipliedAlpha, uvRect, flipped);
+        scoped_ptr<TextureDrawQuad> textureQuad = TextureDrawQuad::create(sharedQuadState, quadRect, opaqueRect, m_externalTextureResource, premultipliedAlpha, uvRect, flipped);
         quadSink.append(textureQuad.PassAs<DrawQuad>(), appendQuadsData);
         break;
     }
     case GL_TEXTURE_RECTANGLE_ARB: {
         gfx::Size visibleSize(visibleRect.width(), visibleRect.height());
-        scoped_ptr<IOSurfaceDrawQuad> ioSurfaceQuad = IOSurfaceDrawQuad::create(sharedQuadState, quadRect, visibleSize, m_frame->texture_id(), IOSurfaceDrawQuad::Unflipped);
+        scoped_ptr<IOSurfaceDrawQuad> ioSurfaceQuad = IOSurfaceDrawQuad::create(sharedQuadState, quadRect, opaqueRect, visibleSize, m_frame->texture_id(), IOSurfaceDrawQuad::Unflipped);
         quadSink.append(ioSurfaceQuad.PassAs<DrawQuad>(), appendQuadsData);
         break;
     }
@@ -251,7 +252,7 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         WebKit::WebTransformationMatrix transform(m_streamTextureMatrix);
         transform.scaleNonUniform(texWidthScale, texHeightScale);
         scoped_ptr<StreamVideoDrawQuad> streamVideoQuad =
-            StreamVideoDrawQuad::create(sharedQuadState, quadRect,
+            StreamVideoDrawQuad::create(sharedQuadState, quadRect, opaqueRect,
                                         m_frame->texture_id(),
                                         transform);
         quadSink.append(streamVideoQuad.PassAs<DrawQuad>(), appendQuadsData);

@@ -18,6 +18,7 @@ public:
     static scoped_ptr<YUVVideoDrawQuad> create(
         const SharedQuadState* sharedQuadState,
         const gfx::Rect& quadRect,
+        const gfx::Rect& opaqueRect,
         const gfx::SizeF& texScale,
         const VideoLayerImpl::FramePlane& yPlane,
         const VideoLayerImpl::FramePlane& uPlane,
@@ -36,6 +37,7 @@ private:
     YUVVideoDrawQuad(
         const SharedQuadState* sharedQuadState,
         const gfx::Rect& quadRect,
+        const gfx::Rect& opaqueRect,
         const gfx::SizeF& texScale,
         const VideoLayerImpl::FramePlane& yPlane,
         const VideoLayerImpl::FramePlane& uPlane,

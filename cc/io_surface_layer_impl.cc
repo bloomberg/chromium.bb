@@ -78,7 +78,8 @@ void IOSurfaceLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& append
     appendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
 
     gfx::Rect quadRect(gfx::Point(), contentBounds());
-    quadSink.append(IOSurfaceDrawQuad::create(sharedQuadState, quadRect, m_ioSurfaceSize, m_ioSurfaceTextureId, IOSurfaceDrawQuad::Flipped).PassAs<DrawQuad>(), appendQuadsData);
+    gfx::Rect opaqueRect(contentsOpaque() ? quadRect : gfx::Rect());
+    quadSink.append(IOSurfaceDrawQuad::create(sharedQuadState, quadRect, opaqueRect, m_ioSurfaceSize, m_ioSurfaceTextureId, IOSurfaceDrawQuad::Flipped).PassAs<DrawQuad>(), appendQuadsData);
 }
 
 void IOSurfaceLayerImpl::dumpLayerProperties(std::string* str, int indent) const

@@ -12,7 +12,7 @@ scoped_ptr<RenderPassDrawQuad> RenderPassDrawQuad::create(const SharedQuadState*
 }
 
 RenderPassDrawQuad::RenderPassDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, RenderPass::Id renderPassId, bool isReplica, ResourceProvider::ResourceId maskResourceId, const gfx::Rect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY)
-    : DrawQuad(sharedQuadState, DrawQuad::RENDER_PASS, quadRect)
+    : DrawQuad(sharedQuadState, DrawQuad::RENDER_PASS, quadRect, gfx::Rect())
     , m_renderPassId(renderPassId)
     , m_isReplica(isReplica)
     , m_maskResourceId(maskResourceId)

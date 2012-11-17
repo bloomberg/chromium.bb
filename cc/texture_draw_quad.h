@@ -14,7 +14,7 @@ namespace cc {
 
 class CC_EXPORT TextureDrawQuad : public DrawQuad {
 public:
-    static scoped_ptr<TextureDrawQuad> create(const SharedQuadState*, const gfx::Rect&, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped);
+    static scoped_ptr<TextureDrawQuad> create(const SharedQuadState*, const gfx::Rect&, const gfx::Rect& opaqueRect, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped);
     gfx::RectF uvRect() const { return m_uvRect; }
 
     unsigned resourceId() const { return m_resourceId; }
@@ -25,7 +25,7 @@ public:
 
     static const TextureDrawQuad* materialCast(const DrawQuad*);
 private:
-    TextureDrawQuad(const SharedQuadState*, const gfx::Rect&, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped);
+    TextureDrawQuad(const SharedQuadState*, const gfx::Rect&, const gfx::Rect& opaqueRect, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped);
 
     unsigned m_resourceId;
     bool m_premultipliedAlpha;

@@ -15,7 +15,7 @@ scoped_ptr<TileDrawQuad> TileDrawQuad::create(const SharedQuadState* sharedQuadS
 }
 
 TileDrawQuad::TileDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Vector2d& textureOffset, const gfx::Size& textureSize, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
-    : DrawQuad(sharedQuadState, DrawQuad::TILED_CONTENT, quadRect)
+    : DrawQuad(sharedQuadState, DrawQuad::TILED_CONTENT, quadRect, opaqueRect)
     , m_resourceId(resourceId)
     , m_textureOffset(textureOffset)
     , m_textureSize(textureSize)
@@ -27,7 +27,6 @@ TileDrawQuad::TileDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Re
 {
     if (isAntialiased())
         m_needsBlending = true;
-    m_opaqueRect = opaqueRect;
 }
 
 const TileDrawQuad* TileDrawQuad::materialCast(const DrawQuad* quad)

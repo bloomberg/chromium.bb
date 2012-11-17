@@ -2693,8 +2693,8 @@ static inline scoped_ptr<RenderPass> createRenderPassWithResource(ResourceProvid
     ResourceProvider::ResourceId resourceId = provider->createResource(0, gfx::Size(1, 1), GL_RGBA, ResourceProvider::TextureUsageAny);
 
     scoped_ptr<TestRenderPass> pass = TestRenderPass::create(RenderPass::Id(1, 1), gfx::Rect(0, 0, 1, 1), WebTransformationMatrix());
-    scoped_ptr<SharedQuadState> sharedState = SharedQuadState::create(WebTransformationMatrix(), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), 1, false);
-    scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::create(sharedState.get(), gfx::Rect(0, 0, 1, 1), resourceId, false, gfx::RectF(0, 0, 1, 1), false);
+    scoped_ptr<SharedQuadState> sharedState = SharedQuadState::create(WebTransformationMatrix(), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), 1);
+    scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::create(sharedState.get(), gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), resourceId, false, gfx::RectF(0, 0, 1, 1), false);
 
     pass->appendSharedQuadState(sharedState.Pass());
     pass->appendQuad(quad.PassAs<DrawQuad>());
@@ -4166,7 +4166,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
     renderer->clearCachedTextures();
 
     // One shared state for all quads - we don't need the correct details
-    testData.sharedQuadState = SharedQuadState::create(WebTransformationMatrix(), gfx::Rect(), gfx::Rect(), 1.0, true);
+    testData.sharedQuadState = SharedQuadState::create(WebTransformationMatrix(), gfx::Rect(), gfx::Rect(), 1.0);
 
     const char* currentChar = testScript;
 

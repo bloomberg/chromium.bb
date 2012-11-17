@@ -107,7 +107,6 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
     EXPECT_EQ(40, sharedQuadState->quadTransform.m42());
     EXPECT_RECT_EQ(contentRect, gfx::Rect(sharedQuadState->visibleContentRect));
     EXPECT_EQ(1, sharedQuadState->opacity);
-    EXPECT_FALSE(sharedQuadState->opaque);
 }
 
 class TestRenderPassSink : public RenderPassSink {

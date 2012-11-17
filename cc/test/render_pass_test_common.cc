@@ -25,21 +25,22 @@ using WebKit::WebTransformationMatrix;
 void TestRenderPass::appendOneOfEveryQuadType(cc::ResourceProvider* resourceProvider)
 {
     gfx::Rect rect(0, 0, 100, 100);
+    gfx::Rect opaqueRect(10, 10, 80, 80);
     cc::ResourceProvider::ResourceId textureResource = resourceProvider->createResourceFromExternalTexture(1);
-    scoped_ptr<cc::SharedQuadState> sharedState = cc::SharedQuadState::create(WebTransformationMatrix(), rect, rect, 1, false);
+    scoped_ptr<cc::SharedQuadState> sharedState = cc::SharedQuadState::create(WebTransformationMatrix(), rect, rect, 1);
 
     appendQuad(cc::CheckerboardDrawQuad::create(sharedState.get(), rect, SK_ColorRED).PassAs<DrawQuad>());
     appendQuad(cc::DebugBorderDrawQuad::create(sharedState.get(), rect, SK_ColorRED, 1).Pass().PassAs<DrawQuad>());
-    appendQuad(cc::IOSurfaceDrawQuad::create(sharedState.get(), rect, gfx::Size(50, 50), 1, cc::IOSurfaceDrawQuad::Flipped).PassAs<DrawQuad>());
+    appendQuad(cc::IOSurfaceDrawQuad::create(sharedState.get(), rect, opaqueRect, gfx::Size(50, 50), 1, cc::IOSurfaceDrawQuad::Flipped).PassAs<DrawQuad>());
 
     cc::RenderPass::Id passId(1, 1);
     appendQuad(cc::RenderPassDrawQuad::create(sharedState.get(), rect, passId, false, 0, rect, 0, 0, 0, 0).PassAs<DrawQuad>());
 
     appendQuad(cc::SolidColorDrawQuad::create(sharedState.get(), rect, SK_ColorRED).PassAs<DrawQuad>());
-    appendQuad(cc::StreamVideoDrawQuad::create(sharedState.get(), rect, 1, WebKit::WebTransformationMatrix()).PassAs<DrawQuad>());
-    appendQuad(cc::TextureDrawQuad::create(sharedState.get(), rect, textureResource, false, rect, false).PassAs<DrawQuad>());
+    appendQuad(cc::StreamVideoDrawQuad::create(sharedState.get(), rect, opaqueRect, 1, WebKit::WebTransformationMatrix()).PassAs<DrawQuad>());
+    appendQuad(cc::TextureDrawQuad::create(sharedState.get(), rect, opaqueRect, textureResource, false, rect, false).PassAs<DrawQuad>());
 
-    appendQuad(cc::TileDrawQuad::create(sharedState.get(), rect, rect, textureResource, gfx::Vector2d(), gfx::Size(100, 100), false, false, false, false, false).PassAs<DrawQuad>());
+    appendQuad(cc::TileDrawQuad::create(sharedState.get(), rect, opaqueRect, textureResource, gfx::Vector2d(), gfx::Size(100, 100), false, false, false, false, false).PassAs<DrawQuad>());
 
     cc::VideoLayerImpl::FramePlane planes[3];
     for (int i = 0; i < 3; ++i) {
@@ -47,7 +48,7 @@ void TestRenderPass::appendOneOfEveryQuadType(cc::ResourceProvider* resourceProv
         planes[i].size = gfx::Size(100, 100);
         planes[i].format = GL_LUMINANCE;
     }
-    appendQuad(cc::YUVVideoDrawQuad::create(sharedState.get(), rect, gfx::Size(100, 100), planes[0], planes[1], planes[2]).PassAs<DrawQuad>());
+    appendQuad(cc::YUVVideoDrawQuad::create(sharedState.get(), rect, opaqueRect, gfx::Size(100, 100), planes[0], planes[1], planes[2]).PassAs<DrawQuad>());
     appendSharedQuadState(sharedState.Pass());
 }
 

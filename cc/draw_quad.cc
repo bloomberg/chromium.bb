@@ -25,14 +25,14 @@ template<typename T> T* TypedCopy(const cc::DrawQuad* other) {
 
 namespace cc {
 
-DrawQuad::DrawQuad(const SharedQuadState* sharedQuadState, Material material, const gfx::Rect& quadRect)
+DrawQuad::DrawQuad(const SharedQuadState* sharedQuadState, Material material, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect)
     : m_sharedQuadState(sharedQuadState)
     , m_sharedQuadStateId(sharedQuadState->id)
     , m_material(material)
     , m_quadRect(quadRect)
     , m_quadVisibleRect(quadRect)
-    , m_quadOpaque(true)
     , m_needsBlending(false)
+    , m_opaqueRect(opaqueRect)
 {
     DCHECK(m_sharedQuadState);
     DCHECK(m_material != INVALID);
@@ -42,8 +42,6 @@ gfx::Rect DrawQuad::opaqueRect() const
 {
     if (opacity() != 1)
         return gfx::Rect();
-    if (m_sharedQuadState->opaque && m_quadOpaque)
-        return m_quadRect;
     return m_opaqueRect;
 }
 

@@ -53,7 +53,7 @@ public:
     void setSharedQuadState(const SharedQuadState*);
 
 protected:
-    DrawQuad(const SharedQuadState*, Material, const gfx::Rect&);
+    DrawQuad(const SharedQuadState*, Material, const gfx::Rect&, const gfx::Rect& opaqueRect);
 
     // Stores state common to a large bundle of quads; kept separate for memory
     // efficiency. There is special treatment to reconstruct these pointers
@@ -65,10 +65,9 @@ protected:
     gfx::Rect m_quadRect;
     gfx::Rect m_quadVisibleRect;
 
-    // By default, the shared quad state determines whether or not this quad is
-    // opaque or needs blending. Derived classes can override with these
-    // variables.
-    bool m_quadOpaque;
+    // By default blending is used when some part of the quad is not opaque. With
+    // this setting, it is possible to force blending on regardless of the opaque
+    // area.
     bool m_needsBlending;
 
     // Be default, this rect is empty. It is used when the shared quad state and above
