@@ -66,12 +66,6 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
         read_only_(false) {
     ImageSkia::ImageSkiaReps::iterator it =
         FindRepresentation(scale_factor, true);
-    // TODO(oshima): This is necessary as there are scale indepdent
-    // resources loaded as 100P. Fix them and remove this.
-    if (scale_factor != ui::SCALE_FACTOR_100P &&
-        (it == image_reps_.end() || it->is_null()))
-      it = FindRepresentation(ui::SCALE_FACTOR_100P, true);
-
     if (it == image_reps_.end() || it->is_null())
       source_.reset();
     else
