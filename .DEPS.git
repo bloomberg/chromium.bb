@@ -145,13 +145,13 @@ deps_os = {
     'android':
     {
         'src/third_party/android_tools':
-            'http://chromium.googlesource.com/android_tools.git@e2124aef9cb91dac3a597d353cd217ed328221e5',
+            Var('git_url') + '/android_tools.git@e2124aef9cb91dac3a597d353cd217ed328221e5',
         'src/third_party/aosp':
             Var('git_url') + '/chromium/deps/aosp.git@bbafe5155dff86bbba1e92b42a073ffcfcfbf28c',
         'src/third_party/findbugs':
             Var('git_url') + '/chromium/deps/findbugs.git@b9b6889b94a3081615d5ca62173e9816a31cc1eb',
         'src/third_party/freetype':
-            'http://chromium.googlesource.com/chromium/src/third_party/freetype.git@96551feab72aac26836e9aaf4fae0962d39d5ab0',
+            Var('git_url') + '/chromium/src/third_party/freetype.git@96551feab72aac26836e9aaf4fae0962d39d5ab0',
     },
     'ios':
     {
