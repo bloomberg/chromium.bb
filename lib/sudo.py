@@ -80,13 +80,16 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
           cmd, print_cmd=False, shell=True, error_code_ok=True)
 
       if ret.returncode != 0:
-        url = 'http://goo.gl/fz9YW'
         tty_msg = 'Please disable tty_tickets using these instructions: %s'
+        if os.path.exists("/etc/goobuntu"):
+          url = 'https://goto.google.com/chromeos-sudoers'
+        else:
+          url = 'https://goo.gl/fz9YW'
 
         # If ttyless sudo is not strictly required for this script, don't
         # prompt for a password a second time. Instead, just complain.
         if idx > 0:
-          cros_build_lib.Warning(tty_msg, url)
+          cros_build_lib.Error(tty_msg, url)
           if not self._ttyless_sudo:
             break
 
