@@ -513,10 +513,6 @@
       <message desc="Help link displayed when the user enables the host on this computer. Clicking this link opens a page that explains why this operation is safe. This string appears in a UI with limited horizontal space. Please try to keep translations no more than about 30 characters." name="IDR_WHY_IS_THIS_SAFE">
         Why is this safe?
       </message>
-
-      <message name="IDR_HOST_NOT_STARTED" desc="Message displayed when the current computer is not accepting remote connections, instructing the user how to enable them.">
-        Remote access to this computer is disabled.
-      </message>
     </messages>
   </release>
 </grit>
