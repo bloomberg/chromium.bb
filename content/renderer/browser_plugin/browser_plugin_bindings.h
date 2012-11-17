@@ -14,6 +14,7 @@ namespace content {
 
 class BrowserPlugin;
 class BrowserPluginMethodBinding;
+class BrowserPluginPropertyBinding;
 
 class BrowserPluginBindings {
  public:
@@ -41,6 +42,12 @@ class BrowserPluginBindings {
                     const NPVariant* args,
                     uint32 arg_count,
                     NPVariant* result);
+
+  bool HasProperty(NPIdentifier name) const;
+  bool SetProperty(NPObject* np_obj,
+                   NPIdentifier name,
+                   const NPVariant* variant);
+  bool GetProperty(NPIdentifier name, NPVariant* result);
  private:
   BrowserPlugin* instance_;
   // The NPObject we use to expose postMessage to JavaScript.
@@ -48,6 +55,8 @@ class BrowserPluginBindings {
 
   typedef ScopedVector<BrowserPluginMethodBinding> BindingList;
   BindingList method_bindings_;
+  typedef ScopedVector<BrowserPluginPropertyBinding> PropertyBindingList;
+  PropertyBindingList property_bindings_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

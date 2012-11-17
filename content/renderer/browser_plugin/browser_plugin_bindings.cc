@@ -35,61 +35,30 @@ namespace content {
 
 namespace {
 
-const char kAddEventListener[] = "addEventListener";
-const char kAutoSizeAttribute[] = "autoSize";
-const char kBackMethod[] = "back";
-const char kCanGoBack[] = "canGoBack";
-const char kCanGoForward[] = "canGoForward";
-const char kContentWindow[] = "contentWindow";
-const char kForwardMethod[] = "forward";
-const char kGetProcessId[] = "getProcessId";
-const char kGoMethod[] = "go";
-const char kMaxHeightAttribute[] = "maxHeight";
-const char kMaxWidthAttribute[] = "maxWidth";
-const char kMinHeightAttribute[] = "minHeight";
-const char kMinWidthAttribute[] = "minWidth";
-const char kPartitionAttribute[] = "partition";
-const char kReloadMethod[] = "reload";
-const char kRemoveEventListener[] = "removeEventListener";
-const char kSrcAttribute[] = "src";
-const char kStopMethod[] = "stop";
-const char kTerminateMethod[] = "terminate";
+// Method bindings.
+const char kMethodBack[] = "back";
+const char kMethodCanGoBack[] = "canGoBack";
+const char kMethodCanGoForward[] = "canGoForward";
+const char kMethodForward[] = "forward";
+const char kMethodGetProcessId[] = "getProcessId";
+const char kMethodGo[] = "go";
+const char kMethodReload[] = "reload";
+const char kMethodStop[] = "stop";
+const char kMethodTerminate[] = "terminate";
+
+// Attributes.
+const char kAttributeAutoSize[] = "autoSize";
+const char kAttributeContentWindow[] = "contentWindow";
+const char kAttributeMaxHeight[] = "maxHeight";
+const char kAttributeMaxWidth[] = "maxWidth";
+const char kAttributeMinHeight[] = "minHeight";
+const char kAttributeMinWidth[] = "minWidth";
+const char kAttributePartition[] = "partition";
+const char kAttributeSrc[] = "src";
 
 BrowserPluginBindings* GetBindings(NPObject* object) {
   return static_cast<BrowserPluginBindings::BrowserPluginNPObject*>(object)->
       message_channel;
-}
-
-bool IdentifierIsContentWindow(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kContentWindow) == identifier;
-}
-
-bool IdentifierIsPartitionAttribute(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kPartitionAttribute) == identifier;
-}
-
-bool IdentifierIsSrcAttribute(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kSrcAttribute) == identifier;
-}
-
-bool IdentifierIsMaxHeightAttribute(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kMaxHeightAttribute) == identifier;
-}
-
-bool IdentifierIsMaxWidthAttribute(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kMaxWidthAttribute) == identifier;
-}
-
-bool IdentifierIsMinHeightAttribute(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kMinHeightAttribute) == identifier;
-}
-
-bool IdentifierIsMinWidthAttribute(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kMinWidthAttribute) == identifier;
-}
-
-bool IdentifierIsAutoSizeAttribute(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kAutoSizeAttribute) == identifier;
 }
 
 int Int32FromNPVariant(const NPVariant& variant) {
@@ -168,14 +137,14 @@ bool BrowserPluginBindingsInvokeDefault(NPObject* np_obj,
 }
 
 bool BrowserPluginBindingsHasProperty(NPObject* np_obj, NPIdentifier name) {
-  return IdentifierIsSrcAttribute(name) ||
-      IdentifierIsContentWindow(name) ||
-      IdentifierIsPartitionAttribute(name) ||
-      IdentifierIsAutoSizeAttribute(name) ||
-      IdentifierIsMaxHeightAttribute(name) ||
-      IdentifierIsMaxWidthAttribute(name) ||
-      IdentifierIsMinHeightAttribute(name) ||
-      IdentifierIsMinWidthAttribute(name);
+  if (!np_obj)
+    return false;
+
+  BrowserPluginBindings* bindings = GetBindings(np_obj);
+  if (!bindings)
+    return false;
+
+  return bindings->HasProperty(name);
 }
 
 bool BrowserPluginBindingsGetProperty(NPObject* np_obj, NPIdentifier name,
@@ -192,56 +161,7 @@ bool BrowserPluginBindingsGetProperty(NPObject* np_obj, NPIdentifier name,
   if (!bindings)
     return false;
 
-  if (IdentifierIsSrcAttribute(name)) {
-    std::string src = bindings->instance()->src_attribute();
-    return StringToNPVariant(src, result);
-  }
-
-  if (IdentifierIsContentWindow(name)) {
-    NPObject* obj = bindings->instance()->GetContentWindow();
-    if (obj) {
-      result->type = NPVariantType_Object;
-      result->value.objectValue = WebBindings::retainObject(obj);
-    }
-    return true;
-  }
-
-  if (IdentifierIsAutoSizeAttribute(name)) {
-    bool autosize = bindings->instance()->auto_size_attribute();
-    BOOLEAN_TO_NPVARIANT(autosize, *result);
-    return true;
-  }
-
-  if (IdentifierIsMaxHeightAttribute(name)) {
-    int max_height = bindings->instance()->max_height_attribute();
-    INT32_TO_NPVARIANT(max_height, *result);
-    return true;
-  }
-
-  if (IdentifierIsMaxWidthAttribute(name)) {
-    int max_width = bindings->instance()->max_width_attribute();
-    INT32_TO_NPVARIANT(max_width, *result);
-    return true;
-  }
-
-  if (IdentifierIsMinHeightAttribute(name)) {
-    int min_height = bindings->instance()->min_height_attribute();
-    INT32_TO_NPVARIANT(min_height, *result);
-    return true;
-  }
-
-  if (IdentifierIsMinWidthAttribute(name)) {
-    int min_width = bindings->instance()->min_width_attribute();
-    INT32_TO_NPVARIANT(min_width, *result);
-    return true;
-  }
-
-  if (IdentifierIsPartitionAttribute(name)) {
-    std::string partition_id = bindings->instance()->GetPartitionAttribute();
-    return StringToNPVariant(partition_id, result);
-  }
-
-  return false;
+  return bindings->GetProperty(name, result);
 }
 
 bool BrowserPluginBindingsSetProperty(NPObject* np_obj, NPIdentifier name,
@@ -257,60 +177,7 @@ bool BrowserPluginBindingsSetProperty(NPObject* np_obj, NPIdentifier name,
   if (!bindings)
     return false;
 
-  if (IdentifierIsSrcAttribute(name)) {
-    std::string src = StringFromNPVariant(*variant);
-    std::string error_message;
-    if (!bindings->instance()->SetSrcAttribute(src, &error_message)) {
-      WebBindings::setException(
-          np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
-      return false;
-    }
-    return true;
-  }
-
-  if (IdentifierIsPartitionAttribute(name)) {
-    std::string partition_id = StringFromNPVariant(*variant);
-    std::string error_message;
-    if (!bindings->instance()->SetPartitionAttribute(partition_id,
-                                                     &error_message)) {
-      WebBindings::setException(
-          np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
-      return false;
-    }
-    return true;
-  }
-
-  if (IdentifierIsAutoSizeAttribute(name)) {
-    bool autosize = NPVARIANT_TO_BOOLEAN(*variant);
-    bindings->instance()->SetAutoSizeAttribute(autosize);
-    return true;
-  }
-
-  if (IdentifierIsMaxHeightAttribute(name)) {
-    int max_height = Int32FromNPVariant(*variant);
-    bindings->instance()->SetMaxHeightAttribute(max_height);
-    return true;
-  }
-
-  if (IdentifierIsMaxWidthAttribute(name)) {
-    int max_width = Int32FromNPVariant(*variant);
-    bindings->instance()->SetMaxWidthAttribute(max_width);
-    return true;
-  }
-
-  if (IdentifierIsMinHeightAttribute(name)) {
-    int min_height = Int32FromNPVariant(*variant);
-    bindings->instance()->SetMinHeightAttribute(min_height);
-    return true;
-  }
-
-  if (IdentifierIsMinWidthAttribute(name)) {
-    int min_width = Int32FromNPVariant(*variant);
-    bindings->instance()->SetMinWidthAttribute(min_width);
-    return true;
-  }
-
-  return false;
+  return bindings->SetProperty(np_obj, name, variant);
 }
 
 bool BrowserPluginBindingsEnumerate(NPObject *np_obj, NPIdentifier **value,
@@ -367,7 +234,7 @@ class BrowserPluginMethodBinding {
 class BrowserPluginBindingBack : public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingBack()
-      : BrowserPluginMethodBinding(kBackMethod, 0) {
+      : BrowserPluginMethodBinding(kMethodBack, 0) {
   }
 
   virtual bool Invoke(BrowserPluginBindings* bindings,
@@ -384,7 +251,7 @@ class BrowserPluginBindingBack : public BrowserPluginMethodBinding {
 class BrowserPluginBindingCanGoBack : public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingCanGoBack()
-      : BrowserPluginMethodBinding(kCanGoBack, 0) {
+      : BrowserPluginMethodBinding(kMethodCanGoBack, 0) {
   }
 
   virtual bool Invoke(BrowserPluginBindings* bindings,
@@ -401,7 +268,7 @@ class BrowserPluginBindingCanGoBack : public BrowserPluginMethodBinding {
 class BrowserPluginBindingCanGoForward : public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingCanGoForward()
-      : BrowserPluginMethodBinding(kCanGoForward, 0) {
+      : BrowserPluginMethodBinding(kMethodCanGoForward, 0) {
   }
 
   virtual bool Invoke(BrowserPluginBindings* bindings,
@@ -418,7 +285,7 @@ class BrowserPluginBindingCanGoForward : public BrowserPluginMethodBinding {
 class BrowserPluginBindingForward : public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingForward()
-      : BrowserPluginMethodBinding(kForwardMethod, 0) {
+      : BrowserPluginMethodBinding(kMethodForward, 0) {
   }
 
   virtual bool Invoke(BrowserPluginBindings* bindings,
@@ -435,7 +302,7 @@ class BrowserPluginBindingForward : public BrowserPluginMethodBinding {
 class BrowserPluginBindingGetProcessID : public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingGetProcessID()
-      : BrowserPluginMethodBinding(kGetProcessId, 0) {
+      : BrowserPluginMethodBinding(kMethodGetProcessId, 0) {
   }
 
   virtual bool Invoke(BrowserPluginBindings* bindings,
@@ -453,7 +320,7 @@ class BrowserPluginBindingGetProcessID : public BrowserPluginMethodBinding {
 class BrowserPluginBindingGo : public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingGo()
-      : BrowserPluginMethodBinding(kGoMethod, 1) {
+      : BrowserPluginMethodBinding(kMethodGo, 1) {
   }
 
   virtual bool Invoke(BrowserPluginBindings* bindings,
@@ -470,7 +337,7 @@ class BrowserPluginBindingGo : public BrowserPluginMethodBinding {
 class BrowserPluginBindingReload : public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingReload()
-      : BrowserPluginMethodBinding(kReloadMethod, 0) {
+      : BrowserPluginMethodBinding(kMethodReload, 0) {
   }
 
   virtual bool Invoke(BrowserPluginBindings* bindings,
@@ -487,7 +354,7 @@ class BrowserPluginBindingReload : public BrowserPluginMethodBinding {
 class BrowserPluginBindingStop : public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingStop()
-      : BrowserPluginMethodBinding(kStopMethod, 0) {
+      : BrowserPluginMethodBinding(kMethodStop, 0) {
   }
 
   virtual bool Invoke(BrowserPluginBindings* bindings,
@@ -504,7 +371,7 @@ class BrowserPluginBindingStop : public BrowserPluginMethodBinding {
 class BrowserPluginBindingTerminate : public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingTerminate()
-      : BrowserPluginMethodBinding(kTerminateMethod, 0) {
+      : BrowserPluginMethodBinding(kMethodTerminate, 0) {
   }
 
   virtual bool Invoke(BrowserPluginBindings* bindings,
@@ -517,6 +384,239 @@ class BrowserPluginBindingTerminate : public BrowserPluginMethodBinding {
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingTerminate);
 };
+
+// BrowserPluginPropertyBinding ------------------------------------------------
+
+class BrowserPluginPropertyBinding {
+ public:
+  explicit BrowserPluginPropertyBinding(const char name[]) : name_(name) {
+  }
+  virtual ~BrowserPluginPropertyBinding() {}
+  bool MatchesName(NPIdentifier name) const {
+    return WebBindings::getStringIdentifier(name_.c_str()) == name;
+  }
+  virtual bool GetProperty(BrowserPluginBindings* bindings,
+                           NPIdentifier name,
+                           NPVariant* result) = 0;
+  virtual bool SetProperty(BrowserPluginBindings* bindings,
+                           NPObject* np_obj,
+                           NPIdentifier name,
+                           const NPVariant* variant) = 0;
+ private:
+  std::string name_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBinding);
+};
+
+class BrowserPluginPropertyBindingAutoSize
+    : public BrowserPluginPropertyBinding {
+ public:
+  BrowserPluginPropertyBindingAutoSize() :
+      BrowserPluginPropertyBinding(kAttributeAutoSize) {
+  }
+  virtual bool GetProperty(BrowserPluginBindings* bindings,
+                           NPIdentifier name,
+                           NPVariant* result) OVERRIDE {
+    bool autosize = bindings->instance()->auto_size_attribute();
+    BOOLEAN_TO_NPVARIANT(autosize, *result);
+    return true;
+  }
+  virtual bool SetProperty(BrowserPluginBindings* bindings,
+                           NPObject* np_obj,
+                           NPIdentifier name,
+                           const NPVariant* variant) OVERRIDE {
+    bool autosize = NPVARIANT_TO_BOOLEAN(*variant);
+    bindings->instance()->SetAutoSizeAttribute(autosize);
+    return true;
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingAutoSize);
+};
+
+class BrowserPluginPropertyBindingContentWindow
+    : public BrowserPluginPropertyBinding {
+ public:
+  BrowserPluginPropertyBindingContentWindow() :
+      BrowserPluginPropertyBinding(kAttributeContentWindow) {
+  }
+  virtual bool GetProperty(BrowserPluginBindings* bindings,
+                           NPIdentifier name,
+                           NPVariant* result) OVERRIDE {
+    NPObject* obj = bindings->instance()->GetContentWindow();
+    if (obj) {
+      result->type = NPVariantType_Object;
+      result->value.objectValue = WebBindings::retainObject(obj);
+    }
+    return true;
+  }
+  virtual bool SetProperty(BrowserPluginBindings* bindings,
+                           NPObject* np_obj,
+                           NPIdentifier name,
+                           const NPVariant* variant) OVERRIDE {
+    return false;
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingContentWindow);
+};
+
+class BrowserPluginPropertyBindingMaxHeight
+    : public BrowserPluginPropertyBinding {
+ public:
+  BrowserPluginPropertyBindingMaxHeight() :
+      BrowserPluginPropertyBinding(kAttributeMaxHeight) {
+  }
+  virtual bool GetProperty(BrowserPluginBindings* bindings,
+                           NPIdentifier name,
+                           NPVariant* result) OVERRIDE {
+    int max_height = bindings->instance()->max_height_attribute();
+    INT32_TO_NPVARIANT(max_height, *result);
+    return true;
+  }
+  virtual bool SetProperty(BrowserPluginBindings* bindings,
+                           NPObject* np_obj,
+                           NPIdentifier name,
+                           const NPVariant* variant) OVERRIDE {
+    int max_height = Int32FromNPVariant(*variant);
+    bindings->instance()->SetMaxHeightAttribute(max_height);
+    return true;
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMaxHeight);
+};
+
+class BrowserPluginPropertyBindingMaxWidth
+    : public BrowserPluginPropertyBinding {
+ public:
+  BrowserPluginPropertyBindingMaxWidth() :
+      BrowserPluginPropertyBinding(kAttributeMaxWidth) {
+  }
+  virtual bool GetProperty(BrowserPluginBindings* bindings,
+                           NPIdentifier name,
+                           NPVariant* result) OVERRIDE {
+    int max_width = bindings->instance()->max_width_attribute();
+    INT32_TO_NPVARIANT(max_width, *result);
+    return true;
+  }
+  virtual bool SetProperty(BrowserPluginBindings* bindings,
+                           NPObject* np_obj,
+                           NPIdentifier name,
+                           const NPVariant* variant) OVERRIDE {
+    int max_width = Int32FromNPVariant(*variant);
+    bindings->instance()->SetMaxWidthAttribute(max_width);
+    return true;
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMaxWidth);
+};
+
+class BrowserPluginPropertyBindingMinHeight
+    : public BrowserPluginPropertyBinding {
+ public:
+  BrowserPluginPropertyBindingMinHeight() :
+      BrowserPluginPropertyBinding(kAttributeMinHeight) {
+  }
+  virtual bool GetProperty(BrowserPluginBindings* bindings,
+                           NPIdentifier name,
+                           NPVariant* result) OVERRIDE {
+    int min_height = bindings->instance()->min_height_attribute();
+    INT32_TO_NPVARIANT(min_height, *result);
+    return true;
+  }
+  virtual bool SetProperty(BrowserPluginBindings* bindings,
+                           NPObject* np_obj,
+                           NPIdentifier name,
+                           const NPVariant* variant) OVERRIDE {
+    int min_height = Int32FromNPVariant(*variant);
+    bindings->instance()->SetMinHeightAttribute(min_height);
+    return true;
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMinHeight);
+};
+
+class BrowserPluginPropertyBindingMinWidth
+    : public BrowserPluginPropertyBinding {
+ public:
+  BrowserPluginPropertyBindingMinWidth() :
+      BrowserPluginPropertyBinding(kAttributeMinWidth) {
+  }
+  virtual bool GetProperty(BrowserPluginBindings* bindings,
+                           NPIdentifier name,
+                           NPVariant* result) OVERRIDE {
+    int min_width = bindings->instance()->min_width_attribute();
+    INT32_TO_NPVARIANT(min_width, *result);
+    return true;
+  }
+  virtual bool SetProperty(BrowserPluginBindings* bindings,
+                           NPObject* np_obj,
+                           NPIdentifier name,
+                           const NPVariant* variant) OVERRIDE {
+    int min_width = Int32FromNPVariant(*variant);
+    bindings->instance()->SetMinWidthAttribute(min_width);
+    return true;
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingMinWidth);
+};
+
+class BrowserPluginPropertyBindingPartition
+    : public BrowserPluginPropertyBinding {
+ public:
+  BrowserPluginPropertyBindingPartition() :
+      BrowserPluginPropertyBinding(kAttributePartition) {
+  }
+  virtual bool GetProperty(BrowserPluginBindings* bindings,
+                           NPIdentifier name,
+                           NPVariant* result) OVERRIDE {
+    std::string partition_id = bindings->instance()->GetPartitionAttribute();
+    return StringToNPVariant(partition_id, result);
+  }
+  virtual bool SetProperty(BrowserPluginBindings* bindings,
+                           NPObject* np_obj,
+                           NPIdentifier name,
+                           const NPVariant* variant) OVERRIDE {
+    std::string partition_id = StringFromNPVariant(*variant);
+    std::string error_message;
+    if (!bindings->instance()->SetPartitionAttribute(partition_id,
+                                                     &error_message)) {
+      WebBindings::setException(
+          np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
+      return false;
+    }
+    return true;
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingPartition);
+};
+
+class BrowserPluginPropertyBindingSrc : public BrowserPluginPropertyBinding {
+ public:
+  BrowserPluginPropertyBindingSrc() :
+      BrowserPluginPropertyBinding(kAttributeSrc) {
+  }
+  virtual bool GetProperty(BrowserPluginBindings* bindings,
+                           NPIdentifier name,
+                           NPVariant* result) OVERRIDE {
+    std::string src = bindings->instance()->src_attribute();
+    return StringToNPVariant(src, result);
+  }
+  virtual bool SetProperty(BrowserPluginBindings* bindings,
+                           NPObject* np_obj,
+                           NPIdentifier name,
+                           const NPVariant* variant) OVERRIDE {
+    std::string src = StringFromNPVariant(*variant);
+    std::string error_message;
+    if (!bindings->instance()->SetSrcAttribute(src, &error_message)) {
+      WebBindings::setException(
+          np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
+      return false;
+    }
+    return true;
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingSrc);
+};
+
 
 // BrowserPluginBindings ------------------------------------------------------
 
@@ -544,6 +644,15 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
   method_bindings_.push_back(new BrowserPluginBindingReload);
   method_bindings_.push_back(new BrowserPluginBindingStop);
   method_bindings_.push_back(new BrowserPluginBindingTerminate);
+
+  property_bindings_.push_back(new BrowserPluginPropertyBindingAutoSize);
+  property_bindings_.push_back(new BrowserPluginPropertyBindingContentWindow);
+  property_bindings_.push_back(new BrowserPluginPropertyBindingMaxHeight);
+  property_bindings_.push_back(new BrowserPluginPropertyBindingMaxWidth);
+  property_bindings_.push_back(new BrowserPluginPropertyBindingMinHeight);
+  property_bindings_.push_back(new BrowserPluginPropertyBindingMinWidth);
+  property_bindings_.push_back(new BrowserPluginPropertyBindingPartition);
+  property_bindings_.push_back(new BrowserPluginPropertyBindingSrc);
 }
 
 BrowserPluginBindings::~BrowserPluginBindings() {
@@ -569,6 +678,38 @@ bool BrowserPluginBindings::InvokeMethod(NPIdentifier name,
        ++iter) {
     if ((*iter)->MatchesName(name) && (*iter)->arg_count() == arg_count)
       return (*iter)->Invoke(this, args, result);
+  }
+  return false;
+}
+
+bool BrowserPluginBindings::HasProperty(NPIdentifier name) const {
+  for (PropertyBindingList::const_iterator iter = property_bindings_.begin();
+       iter != property_bindings_.end();
+       ++iter) {
+    if ((*iter)->MatchesName(name))
+      return true;
+  }
+  return false;
+}
+
+bool BrowserPluginBindings::SetProperty(NPObject* np_obj,
+                                        NPIdentifier name,
+                                        const NPVariant* variant) {
+  for (PropertyBindingList::iterator iter = property_bindings_.begin();
+       iter != property_bindings_.end();
+       ++iter) {
+    if ((*iter)->MatchesName(name))
+      return (*iter)->SetProperty(this, np_obj, name, variant);
+  }
+  return false;
+}
+
+bool BrowserPluginBindings::GetProperty(NPIdentifier name, NPVariant* result) {
+  for (PropertyBindingList::iterator iter = property_bindings_.begin();
+       iter != property_bindings_.end();
+       ++iter) {
+    if ((*iter)->MatchesName(name))
+      return (*iter)->GetProperty(this, name, result);
   }
   return false;
 }

@@ -45,30 +45,36 @@ using WebKit::WebVector;
 namespace content {
 
 namespace {
-const char kErrorAlreadyNavigated[] =
-    "The object has already navigated, so its partition cannot be changed.";
-const char kErrorInvalidPartition[] =
-    "Invalid partition attribute.";
-const char kExitEventName[] = "exit";
+
+// Events.
+const char kEventExit[] = "exit";
+const char kEventLoadAbort[] = "loadabort";
+const char kEventLoadCommit[] = "loadcommit";
+const char kEventLoadRedirect[] = "loadredirect";
+const char kEventLoadStart[] = "loadstart";
+const char kEventLoadStop[] = "loadstop";
+const char kEventSizeChanged[] = "sizechanged";
+
+// Parameters/properties on events.
 const char kIsTopLevel[] = "isTopLevel";
-const char kLoadAbortEventName[] = "loadabort";
-const char kLoadCommitEventName[] = "loadcommit";
-const char kLoadRedirectEventName[] = "loadredirect";
-const char kLoadStartEventName[] = "loadstart";
-const char kLoadStopEventName[] = "loadstop";
 const char kNewURL[] = "newUrl";
 const char kNewHeight[] = "newHeight";
 const char kNewWidth[] = "newWidth";
 const char kOldURL[] = "oldUrl";
 const char kOldHeight[] = "oldHeight";
 const char kOldWidth[] = "oldWidth";
-const char kPartitionAttribute[] = "partition";
+const char kPartition[] = "partition";
 const char kPersistPrefix[] = "persist:";
 const char kProcessId[] = "processId";
-const char kSizeChangedEventName[] = "sizechanged";
-const char kSrcAttribute[] = "src";
+const char kSrc[] = "src";
 const char kReason[] = "reason";
 const char kURL[] = "url";
+
+// Error messages.
+const char kErrorAlreadyNavigated[] =
+    "The object has already navigated, so its partition cannot be changed.";
+const char kErrorInvalidPartition[] =
+    "Invalid partition attribute.";
 
 static std::string TerminationStatusToString(base::TerminationStatus status) {
   switch (status) {
@@ -241,7 +247,7 @@ void BrowserPlugin::SizeChangedDueToAutoSize(const gfx::Size& old_view_size) {
   props[kOldWidth] = base::Value::CreateIntegerValue(old_view_size.width());
   props[kNewHeight] = base::Value::CreateIntegerValue(last_view_size_.height());
   props[kNewWidth] = base::Value::CreateIntegerValue(last_view_size_.width());
-  TriggerEvent(kSizeChangedEventName, &props);
+  TriggerEvent(kEventSizeChanged, &props);
 }
 
 void BrowserPlugin::SetMaxHeightAttribute(int max_height) {
@@ -352,9 +358,9 @@ void BrowserPlugin::ParseAttributes(const WebKit::WebPluginParams& params) {
   // Get the src attribute from the attributes vector
   for (unsigned i = 0; i < params.attributeNames.size(); ++i) {
     std::string attributeName = params.attributeNames[i].utf8();
-    if (LowerCaseEqualsASCII(attributeName, kSrcAttribute)) {
+    if (LowerCaseEqualsASCII(attributeName, kSrc)) {
       src = params.attributeValues[i].utf8();
-    } else if (LowerCaseEqualsASCII(attributeName, kPartitionAttribute)) {
+    } else if (LowerCaseEqualsASCII(attributeName, kPartition)) {
       std::string error;
       SetPartitionAttribute(params.attributeValues[i].utf8(), &error);
     }
@@ -550,7 +556,7 @@ void BrowserPlugin::GuestGone(int process_id, base::TerminationStatus status) {
   // happens, the BrowserPlugin will be scheduled for later deletion (see
   // BrowserPlugin::destroy()). That will clear the container_ reference,
   // but leave other member variables valid below.
-  TriggerEvent(kExitEventName, &props);
+  TriggerEvent(kEventExit, &props);
 
   guest_crashed_ = true;
   // We won't paint the contents of the current backing store again so we might
@@ -567,7 +573,7 @@ void BrowserPlugin::LoadStart(const GURL& url, bool is_top_level) {
   props[kURL] = base::Value::CreateStringValue(url.spec());
   props[kIsTopLevel] = base::Value::CreateBooleanValue(is_top_level);
 
-  TriggerEvent(kLoadStartEventName, &props);
+  TriggerEvent(kEventLoadStart, &props);
 }
 
 void BrowserPlugin::LoadCommit(
@@ -583,12 +589,12 @@ void BrowserPlugin::LoadCommit(
   std::map<std::string, base::Value*> props;
   props[kURL] = base::Value::CreateStringValue(src_);
   props[kIsTopLevel] = base::Value::CreateBooleanValue(params.is_top_level);
-  TriggerEvent(kLoadCommitEventName, &props);
+  TriggerEvent(kEventLoadCommit, &props);
 }
 
 void BrowserPlugin::LoadStop() {
   // Construct the loadStop event object.
-  TriggerEvent(kLoadStopEventName, NULL);
+  TriggerEvent(kEventLoadStop, NULL);
 }
 
 void BrowserPlugin::LoadAbort(const GURL& url,
@@ -598,7 +604,7 @@ void BrowserPlugin::LoadAbort(const GURL& url,
   props[kURL] = base::Value::CreateStringValue(url.spec());
   props[kIsTopLevel] = base::Value::CreateBooleanValue(is_top_level);
   props[kReason] = base::Value::CreateStringValue(type);
-  TriggerEvent(kLoadAbortEventName, &props);
+  TriggerEvent(kEventLoadAbort, &props);
 }
 
 void BrowserPlugin::LoadRedirect(const GURL& old_url,
@@ -608,7 +614,7 @@ void BrowserPlugin::LoadRedirect(const GURL& old_url,
   props[kOldURL] = base::Value::CreateStringValue(old_url.spec());
   props[kNewURL] = base::Value::CreateStringValue(new_url.spec());
   props[kIsTopLevel] = base::Value::CreateBooleanValue(is_top_level);
-  TriggerEvent(kLoadRedirectEventName, &props);
+  TriggerEvent(kEventLoadRedirect, &props);
 }
 
 void BrowserPlugin::AdvanceFocus(bool reverse) {
