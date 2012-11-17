@@ -32,6 +32,7 @@ class StoragePartitionImpl : public StoragePartition {
   virtual void AsyncClearDataForOrigin(
       const GURL& storage_origin,
       net::URLRequestContextGetter* request_context_getter) OVERRIDE;
+  virtual void AsyncClearAllData() OVERRIDE;
 
  private:
   friend class StoragePartitionImplMap;

@@ -32,6 +32,10 @@ class StoragePartitionImplMap : public base::SupportsUserData::Data {
                             const std::string& partition_name,
                             bool in_memory);
 
+  // Starts an asynchronous best-effort attempt to delete all on-disk storage
+  // related to |site|, avoiding any directories that are known to be in use.
+  void AsyncObliterate(const GURL& site);
+
   void ForEach(const BrowserContext::StoragePartitionCallback& callback);
 
  private:
@@ -93,7 +97,8 @@ class StoragePartitionImplMap : public base::SupportsUserData::Data {
   // TODO(ajwong): Is there a way to make it so that Get()'s implementation
   // doesn't need to be aware of this ordering?  Revisit when refactoring
   // ResourceContext and AppCache to respect storage partitions.
-  void PostCreateInitialization(StoragePartitionImpl* partition);
+  void PostCreateInitialization(StoragePartitionImpl* partition,
+                                bool in_memory);
 
   BrowserContext* browser_context_;  // Not Owned.
   PartitionMap partitions_;

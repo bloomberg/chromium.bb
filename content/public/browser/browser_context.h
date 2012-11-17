@@ -50,6 +50,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static void ForEachStoragePartition(
       BrowserContext* browser_context,
       const StoragePartitionCallback& callback);
+  static void AsyncObliterateStoragePartition(
+      BrowserContext* browser_context,
+      const GURL& site);
 
   // DON'T USE THIS. GetDefaultStoragePartition() is going away.
   // Use GetStoragePartition() instead. Ask ajwong@ if you have problems.

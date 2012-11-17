@@ -7,9 +7,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/string_number_conversions.h"
+#include "base/threading/worker_pool.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
@@ -22,6 +24,7 @@
 #include "content/browser/tcmalloc_internals_request_job.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
@@ -238,6 +241,99 @@ const FilePath::CharType kDefaultPartitionDirname[] =
 // partition domain.
 const int kPartitionNameHashBytes = 6;
 
+// Needed for selecting all files in ObliterateOneDirectory() below.
+#if defined(OS_POSIX)
+const int kAllFileTypes = file_util::FileEnumerator::FILES |
+                          file_util::FileEnumerator::DIRECTORIES |
+                          file_util::FileEnumerator::SHOW_SYM_LINKS;
+#else
+const int kAllFileTypes = file_util::FileEnumerator::FILES |
+                          file_util::FileEnumerator::DIRECTORIES;
+#endif
+
+FilePath GetStoragePartitionDomainPath(
+    const std::string& partition_domain) {
+  CHECK(IsStringUTF8(partition_domain));
+
+  return FilePath(kStoragePartitionDirname).Append(kExtensionsDirname)
+      .Append(FilePath::FromUTF8Unsafe(partition_domain));
+}
+
+// Helper function for doing a depth-first deletion of the data on disk.
+// Examines paths directly in |current_dir| (no recursion) and tries to
+// delete from disk anything that is in, or isn't a parent of something in
+// |paths_to_keep|. Paths that need further expansion are added to
+// |paths_to_consider|.
+void ObliterateOneDirectory(const FilePath& current_dir,
+                            const std::vector<FilePath>& paths_to_keep,
+                            std::vector<FilePath>* paths_to_consider) {
+  file_util::FileEnumerator enumerator(current_dir, false, kAllFileTypes);
+  for (FilePath to_delete = enumerator.Next(); !to_delete.empty();
+       to_delete = enumerator.Next()) {
+    // Enum tracking which of the 3 possible actions to take for |to_delete|.
+    enum { kSkip, kEnqueue, kDelete } action = kDelete;
+
+    for (std::vector<FilePath>::const_iterator to_keep = paths_to_keep.begin();
+         to_keep != paths_to_keep.end();
+         ++to_keep) {
+      if (to_delete == *to_keep) {
+        action = kSkip;
+        break;
+      } else if (to_delete.IsParent(*to_keep)) {
+        // |to_delete| contains a path to keep. Add to stack for further
+        // processing.
+        action = kEnqueue;
+        break;
+      }
+    }
+
+    switch (action) {
+      case kDelete:
+        file_util::Delete(to_delete, true);
+        break;
+
+      case kEnqueue:
+        paths_to_consider->push_back(to_delete);
+        break;
+
+      case kSkip:
+        break;
+    }
+  }
+}
+
+// Synchronously attempts to delete |root|, preserving only entries in
+// |paths_to_keep|. If there are no entries in |paths_to_keep| on disk, then it
+// completely removes |root|. All paths must be absolute paths.
+void BlockingObliteratePath(const FilePath& root,
+                            const std::vector<FilePath>& paths_to_keep) {
+  // Reduce |paths_to_keep| set to those under the root and actually on disk.
+  std::vector<FilePath> valid_paths_to_keep;
+  for (std::vector<FilePath>::const_iterator it = paths_to_keep.begin();
+       it != paths_to_keep.end();
+       ++it) {
+    if (root.IsParent(*it) && file_util::PathExists(*it))
+      valid_paths_to_keep.push_back(*it);
+  }
+
+  // If none of the |paths_to_keep| are valid anymore then we just whack the
+  // root and be done with it.
+  if (valid_paths_to_keep.empty()) {
+    file_util::Delete(root, true);
+    return;
+  }
+
+  // Otherwise, start at the root and delete everything that is not in
+  // |valid_paths_to_keep|.
+  std::vector<FilePath> paths_to_consider;
+  paths_to_consider.push_back(root);
+  while(!paths_to_consider.empty()) {
+    FilePath path = paths_to_consider.back();
+    paths_to_consider.pop_back();
+    ObliterateOneDirectory(path, valid_paths_to_keep, &paths_to_consider);
+  }
+}
+
 }  // namespace
 
 // static
@@ -247,11 +343,12 @@ FilePath StoragePartitionImplMap::GetStoragePartitionPath(
   if (partition_domain.empty())
     return FilePath();
 
-  CHECK(IsStringUTF8(partition_domain));
+  FilePath path = GetStoragePartitionDomainPath(partition_domain);
 
-  FilePath path = FilePath(kStoragePartitionDirname).Append(kExtensionsDirname)
-      .Append(FilePath::FromUTF8Unsafe(partition_domain));
-
+  // TODO(ajwong): Mangle in-memory into this somehow, either by putting
+  // it into the partition_name, or by manually adding another path component
+  // here.  Otherwise, it's possible to have an in-memory StoragePartition and
+  // a persistent one that return the same FilePath for GetPath().
   if (!partition_name.empty()) {
     // For analysis of why we can ignore collisions, see the comment above
     // kPartitionNameHashBytes.
@@ -263,7 +360,6 @@ FilePath StoragePartitionImplMap::GetStoragePartitionPath(
 
   return path.Append(kDefaultPartitionDirname);
 }
-
 
 StoragePartitionImplMap::StoragePartitionImplMap(
     BrowserContext* browser_context)
@@ -317,9 +413,59 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
       browser_context_->GetMediaRequestContextForStoragePartition(
           partition->GetPath(), in_memory));
 
-  PostCreateInitialization(partition);
+  PostCreateInitialization(partition, in_memory);
 
   return partition;
+}
+
+void StoragePartitionImplMap::AsyncObliterate(const GURL& site) {
+  // This method should avoid creating any StoragePartition (which would
+  // create more open file handles) so that it can delete as much of the
+  // data off disk as possible.
+  std::string partition_domain;
+  std::string partition_name;
+  bool in_memory = false;
+  GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+      browser_context_, site, false, &partition_domain,
+      &partition_name, &in_memory);
+
+  // The default partition is the whole profile. We can't obliterate that and
+  // should never even try.
+  CHECK(!partition_domain.empty()) << site;
+
+  // Find the active partitions for the domain. Because these partitions are
+  // active, it is not possible to just delete the directories that contain
+  // the backing data structures without causing the browser to crash. Instead,
+  // of deleteing the directory, we tell each storage context later to
+  // remove any data they have saved. This will leave the directory structure
+  // intact but it will only contain empty databases.
+  std::vector<StoragePartitionImpl*> active_partitions;
+  std::vector<FilePath> paths_to_keep;
+  for (PartitionMap::const_iterator it = partitions_.begin();
+       it != partitions_.end();
+       ++it) {
+    const StoragePartitionConfig& config = it->first;
+    if (config.partition_domain == partition_domain) {
+      it->second->AsyncClearAllData();
+      if (!config.in_memory) {
+        paths_to_keep.push_back(it->second->GetPath());
+      }
+    }
+  }
+
+  // Start a best-effort delete of the on-disk storage excluding paths that are
+  // known to still be in use. This is to delete any previously created
+  // StoragePartition state that just happens to not have been used during this
+  // run of the browser.
+  FilePath domain_root = browser_context_->GetPath().Append(
+      GetStoragePartitionDomainPath(partition_domain));
+  base::WorkerPool::PostTask(
+      FROM_HERE,
+      base::Bind(&BlockingObliteratePath, domain_root, paths_to_keep),
+      true);
+
+  // TODO(ajwong): Schedule a final AsyncObliterate of the whole directory on
+  // the next browser start. http://crbug.com/85127.
 }
 
 void StoragePartitionImplMap::ForEach(
@@ -332,14 +478,15 @@ void StoragePartitionImplMap::ForEach(
 }
 
 void StoragePartitionImplMap::PostCreateInitialization(
-    StoragePartitionImpl* partition) {
+    StoragePartitionImpl* partition,
+    bool in_memory) {
   // Check first to avoid memory leak in unittests.
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
                    partition->GetAppCacheService(),
-                   browser_context_->IsOffTheRecord() ? FilePath() :
+                   in_memory ? FilePath() :
                        partition->GetPath().Append(kAppCacheDirname),
                    browser_context_->GetResourceContext(),
                    make_scoped_refptr(partition->GetURLRequestContext()),

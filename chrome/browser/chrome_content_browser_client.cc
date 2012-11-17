@@ -501,9 +501,16 @@ bool ChromeContentBrowserClient::IsValidStoragePartitionId(
 void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
     content::BrowserContext* browser_context,
     const GURL& site,
+    bool can_be_default,
     std::string* partition_domain,
     std::string* partition_name,
     bool* in_memory) {
+  // Default to the browser-wide storage partition and override based on |site|
+  // below.
+  partition_domain->clear();
+  partition_name->clear();
+  *in_memory = false;
+
   // For the webview tag, we create special guest processes, which host the
   // tag content separately from the main application that embeds the tag.
   // A webview tag can specify both the partition name and whether the storage
@@ -523,30 +530,44 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
     // URL was created, so it needs to be decoded.
     *partition_name = net::UnescapeURLComponent(site.query(),
                                                 net::UnescapeRule::NORMAL);
-    return;
-  }
+  } else if (site.SchemeIs(extensions::kExtensionScheme)) {
+    // If |can_be_default| is false, the caller is stating that the |site|
+    // should be parsed as if it had isolated storage. In particular it is
+    // important to NOT check ExtensionService for the is_storage_isolated()
+    // attribute because this code path is run during Extension uninstall
+    // to do cleanup after the Extension has already been unloaded from the
+    // ExtensionService.
+    bool is_isolated = !can_be_default;
+    if (can_be_default) {
+      const Extension* extension = NULL;
+      Profile* profile = Profile::FromBrowserContext(browser_context);
+      ExtensionService* extension_service =
+          extensions::ExtensionSystem::Get(profile)->extension_service();
+      if (extension_service) {
+        extension = extension_service->extensions()->
+            GetExtensionOrAppByURL(ExtensionURLInfo(site));
+        if (extension && extension->is_storage_isolated()) {
+          is_isolated = true;
+        }
+      }
+    }
 
-  const Extension* extension = NULL;
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (extension_service) {
-    extension = extension_service->extensions()->
-        GetExtensionOrAppByURL(ExtensionURLInfo(site));
-    if (extension && extension->is_storage_isolated()) {
-      // Extensions which have storage isolation enabled (e.g., apps), use
-      // the extension id as the |partition_domain|.
-      *partition_domain = extension->id();
-      partition_name->clear();
+    if (is_isolated) {
+      CHECK(site.has_host());
+      // For extensions with isolated storage, the the host of the |site| is
+      // the |partition_domain|. The |in_memory| and |partition_name| are only
+      // used in guest schemes so they are cleared here.
+      *partition_domain = site.host();
       *in_memory = false;
-      return;
+      partition_name->clear();
     }
   }
 
-  // All other cases use the default, browser-wide, storage partition.
-  partition_domain->clear();
-  partition_name->clear();
-  *in_memory = false;
+  // Assert that if |can_be_default| is false, the code above must have found a
+  // non-default partition.  If this fails, the caller has a serious logic
+  // error about which StoragePartition they expect to be in and it is not
+  // safe to continue.
+  CHECK(can_be_default || !partition_domain->empty());
 }
 
 content::WebContentsViewDelegate*

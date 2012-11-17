@@ -8,6 +8,7 @@
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -15,17 +16,38 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/database/database_tracker.h"
-#include "webkit/database/database_util.h"
+#include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace content {
 
 namespace {
 
-void ClearDataOnIOThread(
+void DoNothingStatusCallback(quota::QuotaStatusCode status) {
+  // Do nothing.
+}
+
+void ClearQuotaManagedOriginsOnIOThread(
+    const scoped_refptr<quota::QuotaManager>& quota_manager,
+    const std::set<GURL>& origins,
+    quota::StorageType type) {
+  // The QuotaManager manages all storage other than cookies, LocalStorage,
+  // and SessionStorage. This loop wipes out most HTML5 storage for the given
+  // origins.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  std::set<GURL>::const_iterator origin;
+  for (std::set<GURL>::const_iterator origin = origins.begin();
+       origin != origins.end(); ++origin) {
+    quota_manager->DeleteOriginData(*origin, type,
+                                    quota::QuotaClient::kAllClientsMask,
+                                    base::Bind(&DoNothingStatusCallback));
+  }
+}
+
+void ClearOriginOnIOThread(
     const GURL& storage_origin,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
-    const scoped_refptr<ChromeAppCacheService>& appcache_service) {
+    const scoped_refptr<quota::QuotaManager>& quota_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Handle the cookies.
@@ -36,26 +58,54 @@ void ClearDataOnIOThread(
     cookie_monster->DeleteAllForHostAsync(
         storage_origin, net::CookieMonster::DeleteCallback());
 
-  // Clear out appcache.
-  appcache_service->DeleteAppCachesForOrigin(storage_origin,
-                                             net::CompletionCallback());
+  // Handle all HTML5 storage other than DOMStorageContext.
+  std::set<GURL> origins;
+  origins.insert(storage_origin);
+  ClearQuotaManagedOriginsOnIOThread(quota_manager, origins,
+                                     quota::kStorageTypePersistent);
+  ClearQuotaManagedOriginsOnIOThread(quota_manager, origins,
+                                     quota::kStorageTypeTemporary);
 }
 
-void ClearDataOnFileThread(
-    const GURL& storage_origin,
-    string16 origin_id,
-    const scoped_refptr<webkit_database::DatabaseTracker> &database_tracker,
-    const scoped_refptr<fileapi::FileSystemContext>& file_system_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+void ClearAllDataOnIOThread(
+    const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    const scoped_refptr<quota::QuotaManager>& quota_manager) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // Clear out the HTML5 filesystem.
-  file_system_context->DeleteDataForOriginOnFileThread(storage_origin);
+  // Handle the cookies.
+  net::CookieMonster* cookie_monster =
+      request_context->GetURLRequestContext()->cookie_store()->
+          GetCookieMonster();
+  if (cookie_monster)
+    cookie_monster->DeleteAllAsync(net::CookieMonster::DeleteCallback());
 
-  // Clear out the database tracker.  We just let this run until completion
-  // without notification.
-  int rv = database_tracker->DeleteDataForOrigin(
-      origin_id, net::CompletionCallback());
-  DCHECK(rv == net::OK || rv == net::ERR_IO_PENDING);
+  // Handle all HTML5 storage other than DOMStorageContext.
+  quota_manager->GetOriginsModifiedSince(
+      quota::kStorageTypePersistent, base::Time(),
+      base::Bind(&ClearQuotaManagedOriginsOnIOThread, quota_manager));
+  quota_manager->GetOriginsModifiedSince(
+      quota::kStorageTypeTemporary, base::Time(),
+      base::Bind(&ClearQuotaManagedOriginsOnIOThread, quota_manager));
+}
+
+void OnLocalStorageUsageInfo(
+    const scoped_refptr<DOMStorageContextImpl>& dom_storage_context,
+    const std::vector<dom_storage::LocalStorageUsageInfo>& infos) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  for (size_t i = 0; i < infos.size(); ++i) {
+    dom_storage_context->DeleteLocalStorage(infos[i].origin);
+  }
+}
+
+void OnSessionStorageUsageInfo(
+    const scoped_refptr<DOMStorageContextImpl>& dom_storage_context,
+    const std::vector<dom_storage::SessionStorageUsageInfo>& infos) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  for (size_t i = 0; i < infos.size(); ++i) {
+    dom_storage_context->DeleteSessionStorage(infos[i]);
+  }
 }
 
 }  // namespace
@@ -192,28 +242,28 @@ void StoragePartitionImpl::AsyncClearDataForOrigin(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ClearDataOnIOThread,
+      base::Bind(&ClearOriginOnIOThread,
                  storage_origin,
                  make_scoped_refptr(request_context_getter),
-                 appcache_service_));
-
-  string16 origin_id =
-      webkit_database::DatabaseUtil::GetOriginIdentifier(storage_origin);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&ClearDataOnFileThread,
-                                     storage_origin,
-                                     origin_id,
-                                     database_tracker_,
-                                     filesystem_context_));
+                 quota_manager_));
 
   GetDOMStorageContext()->DeleteLocalStorage(storage_origin);
+}
 
+void StoragePartitionImpl::AsyncClearAllData() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // We ignore the media request context because it shares the same cookie store
+  // as the main request context.
   BrowserThread::PostTask(
-      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
-      base::Bind(
-          &IndexedDBContext::DeleteForOrigin,
-          indexed_db_context_,
-          storage_origin));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ClearAllDataOnIOThread, url_request_context_,
+                 quota_manager_));
+
+  dom_storage_context_->GetLocalStorageUsage(
+      base::Bind(&OnLocalStorageUsageInfo, dom_storage_context_));
+  dom_storage_context_->GetSessionStorageUsage(
+      base::Bind(&OnSessionStorageUsageInfo, dom_storage_context_));
 }
 
 void StoragePartitionImpl::SetURLRequestContext(

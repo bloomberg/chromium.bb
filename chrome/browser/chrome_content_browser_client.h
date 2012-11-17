@@ -52,6 +52,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void GetStoragePartitionConfigForSite(
       content::BrowserContext* browser_context,
       const GURL& site,
+      bool can_be_default,
       std::string* partition_domain,
       std::string* partition_name,
       bool* in_memory) OVERRIDE;

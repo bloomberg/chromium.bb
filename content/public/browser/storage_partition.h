@@ -68,6 +68,10 @@ class StoragePartition {
       const GURL& storage_origin,
       net::URLRequestContextGetter* request_context_getter) = 0;
 
+  // Similar to AsyncClearDataForOrigin(), but deletes all data out of the
+  // StoragePartition rather than just the data related to this origin.
+  virtual void AsyncClearAllData() = 0;
+
  protected:
   virtual ~StoragePartition() {}
 };

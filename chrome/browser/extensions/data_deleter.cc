@@ -24,16 +24,16 @@ void DataDeleter::StartDeleting(Profile* profile,
                                 const std::string& extension_id,
                                 const GURL& storage_origin,
                                 bool is_storage_isolated) {
-  // TODO(ajwong): If |is_storage_isolated|, we should just blowaway the
-  // whole directory that the associated StoragePartition is located at. To do
-  // this, we need to ensure that all contexts referencing that directory have
-  // closed their file handles, otherwise Windows will complain.
-  //
-  // http://www.crbug.com/85127
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
 
   const GURL& site = Extension::GetBaseURLFromExtensionId(extension_id);
+
+  if (is_storage_isolated) {
+    BrowserContext::AsyncObliterateStoragePartition(profile, site);
+    return;
+  }
+
   content::StoragePartition* partition =
       BrowserContext::GetStoragePartitionForSite(profile, site);
 

@@ -278,14 +278,22 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to provide a storage parititon configuration for a
   // site. A storage partition configuration includes a domain of the embedder's
   // choice, an optional name within that domain, and whether the partition is
-  // in-memory only. The |partition_domain| is [a-z]* UTF-8 string, specifying
-  // the domain in which partitions live (similar to namespace). Within a
-  // domain, partitions can be uniquely identified by the combination of
-  // |partition_name| and |in_memory| values. When a partition is not to be
-  // persisted, the |in_memory| value must be set to true.
+  // in-memory only.
+  //
+  // If |can_be_default| is false, the caller is telling the embedder that the
+  // |site| is known to not be in the default partition. This is useful in
+  // some shutdown situations where the bookkeeping logic that maps sites to
+  // their partition configuration are no longer valid.
+  //
+  // The |partition_domain| is [a-z]* UTF-8 string, specifying the domain in
+  // which partitions live (similar to namespace). Within a domain, partitions
+  // can be uniquely identified by the combination of |partition_name| and
+  // |in_memory| values. When a partition is not to be persisted, the
+  // |in_memory| value must be set to true.
   virtual void GetStoragePartitionConfigForSite(
       content::BrowserContext* browser_context,
       const GURL& site,
+      bool can_be_default,
       std::string* partition_domain,
       std::string* partition_name,
       bool* in_memory);

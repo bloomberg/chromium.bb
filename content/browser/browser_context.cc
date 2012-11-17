@@ -37,11 +37,8 @@ namespace {
 const char* kDownloadManagerKeyName = "download_manager";
 const char* kStorageParitionMapKeyName = "content_storage_partition_map";
 
-StoragePartition* GetStoragePartitionFromConfig(
-    BrowserContext* browser_context,
-    const std::string& partition_domain,
-    const std::string& partition_name,
-    bool in_memory) {
+StoragePartitionImplMap* GetStoragePartitionMap(
+    BrowserContext* browser_context) {
   StoragePartitionImplMap* partition_map =
       static_cast<StoragePartitionImplMap*>(
           browser_context->GetUserData(kStorageParitionMapKeyName));
@@ -49,6 +46,16 @@ StoragePartition* GetStoragePartitionFromConfig(
     partition_map = new StoragePartitionImplMap(browser_context);
     browser_context->SetUserData(kStorageParitionMapKeyName, partition_map);
   }
+  return partition_map;
+}
+
+StoragePartition* GetStoragePartitionFromConfig(
+    BrowserContext* browser_context,
+    const std::string& partition_domain,
+    const std::string& partition_name,
+    bool in_memory) {
+  StoragePartitionImplMap* partition_map =
+      GetStoragePartitionMap(browser_context);
 
   if (browser_context->IsOffTheRecord())
     in_memory = true;
@@ -84,6 +91,13 @@ void PurgeMemoryOnIOThread(appcache::AppCacheService* appcache_service) {
 
 }  // namespace
 
+// static
+void BrowserContext::AsyncObliterateStoragePartition(
+    BrowserContext* browser_context,
+    const GURL& site) {
+  GetStoragePartitionMap(browser_context)->AsyncObliterate(site);
+}
+
 DownloadManager* BrowserContext::GetDownloadManager(
     BrowserContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -116,7 +130,7 @@ StoragePartition* BrowserContext::GetStoragePartition(
   // this conditional and require that |site_instance| is non-NULL.
   if (site_instance) {
     GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-        browser_context, site_instance->GetSiteURL(),
+        browser_context, site_instance->GetSiteURL(), true,
         &partition_domain, &partition_name, &in_memory);
   }
 
@@ -132,7 +146,8 @@ StoragePartition* BrowserContext::GetStoragePartitionForSite(
   bool in_memory;
 
   GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-      browser_context, site, &partition_domain, &partition_name, &in_memory);
+      browser_context, site, true, &partition_domain, &partition_name,
+      &in_memory);
 
   return GetStoragePartitionFromConfig(
       browser_context, partition_domain, partition_name, in_memory);
