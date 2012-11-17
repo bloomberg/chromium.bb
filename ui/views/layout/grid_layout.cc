@@ -662,10 +662,6 @@ GridLayout::GridLayout(View* host)
       current_row_(-1),
       next_column_(0),
       current_row_col_set_(NULL),
-      top_inset_(0),
-      bottom_inset_(0),
-      left_inset_(0),
-      right_inset_(0),
       adding_view_(false) {
   DCHECK(host);
 }
@@ -685,14 +681,11 @@ GridLayout* GridLayout::CreatePanel(View* host) {
 }
 
 void GridLayout::SetInsets(int top, int left, int bottom, int right) {
-  top_inset_ = top;
-  bottom_inset_ = bottom;
-  left_inset_ = left;
-  right_inset_ = right;
+  insets_.Set(top, left, bottom, right);
 }
 
 void GridLayout::SetInsets(const gfx::Insets& insets) {
-  SetInsets(insets.top(), insets.left(), insets.bottom(), insets.right());
+  insets_ = insets;
 }
 
 ColumnSet* GridLayout::AddColumnSet(int id) {
@@ -822,12 +815,12 @@ void GridLayout::Layout(View* host) {
     View* view = (*i)->view;
     DCHECK(view);
     int x = column_set->columns_[view_state->start_col]->Location() +
-            left_inset_;
+            insets_.left();
     int width = column_set->GetColumnWidth(view_state->start_col,
                                            view_state->col_span);
     CalculateSize(view_state->pref_width, view_state->h_align,
                   &x, &width);
-    int y = rows_[view_state->start_row]->Location() + top_inset_;
+    int y = rows_[view_state->start_row]->Location() + insets_.top();
     int height = LayoutElement::TotalSize(view_state->start_row,
                                           view_state->row_span, &rows_);
     if (view_state->v_align == BASELINE && view_state->baseline != -1) {
@@ -872,14 +865,15 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
     (*i)->CalculateSize();
     pref->set_width(std::max(pref->width(), (*i)->LayoutWidth()));
   }
-  pref->set_width(pref->width() + left_inset_ + right_inset_);
+  pref->set_width(pref->width() + insets_.width());
 
   // Go over the columns again and set them all to the size we settled for.
   width = width ? width : pref->width();
   for (std::vector<ColumnSet*>::iterator i = column_sets_.begin();
        i != column_sets_.end(); ++i) {
     // We're doing a layout, divy up any extra space.
-    (*i)->Resize(width - (*i)->LayoutWidth() - left_inset_ - right_inset_);
+    (*i)->Resize(width - (*i)->LayoutWidth() - insets_.left() -
+                 insets_.right());
     // And reset the x coordinates.
     (*i)->ResetColumnXCoordinates();
   }
@@ -949,7 +943,7 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
 
   // We now know the preferred height, set it here.
   pref->set_height(rows_[rows_.size() - 1]->Location() +
-             rows_[rows_.size() - 1]->Size() + top_inset_ + bottom_inset_);
+      rows_[rows_.size() - 1]->Size() + insets_.height());
 
   if (layout && height != pref->height()) {
     // We're doing a layout, and the height differs from the preferred height,

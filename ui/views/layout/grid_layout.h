@@ -9,12 +9,9 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "ui/gfx/insets.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/view.h"
-
-namespace gfx {
-class Insets;
-}
 
 // GridLayout is a LayoutManager that positions child Views in a grid. You
 // define the structure of the Grid first, then add the Views.
@@ -241,10 +238,7 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   ColumnSet* current_row_col_set_;
 
   // Insets.
-  int top_inset_;
-  int bottom_inset_;
-  int left_inset_;
-  int right_inset_;
+  gfx::Insets insets_;
 
   // Set to true when adding a View.
   bool adding_view_;
