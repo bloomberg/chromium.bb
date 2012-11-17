@@ -168,7 +168,7 @@ syncer::SyncDataList SettingsBackend::GetAllSyncData(
   return all_sync_data;
 }
 
-syncer::SyncError SettingsBackend::MergeDataAndStartSyncing(
+syncer::SyncMergeResult SettingsBackend::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -231,7 +231,7 @@ syncer::SyncError SettingsBackend::MergeDataAndStartSyncing(
     GetOrCreateStorageWithSyncData(it->first, *it->second);
   }
 
-  return syncer::SyncError();
+  return syncer::SyncMergeResult(type);
 }
 
 syncer::SyncError SettingsBackend::ProcessSyncChanges(

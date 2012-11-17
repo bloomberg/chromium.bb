@@ -286,7 +286,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Merge initial search engine data from Sync and push any local changes up
   // to Sync. This may send notifications if local search engines are added,
   // updated or removed.
-  virtual syncer::SyncError MergeDataAndStartSyncing(
+  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,

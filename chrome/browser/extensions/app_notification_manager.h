@@ -76,7 +76,7 @@ class AppNotificationManager
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
   // Associate and merge sync data model with our data model.
-  virtual syncer::SyncError MergeDataAndStartSyncing(
+  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,

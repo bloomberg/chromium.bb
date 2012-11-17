@@ -52,7 +52,7 @@ class TestExtensionService : public ExtensionServiceInterface {
   virtual void CheckManagementPolicy() OVERRIDE;
   virtual void CheckForUpdatesSoon() OVERRIDE;
 
-  virtual syncer::SyncError MergeDataAndStartSyncing(
+  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,

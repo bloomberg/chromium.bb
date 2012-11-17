@@ -207,7 +207,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
         scoped_ptr<syncer::SyncChangeProcessor>(
             new SyncChangeProcessorDelegate(sync_processor)),
         scoped_ptr<syncer::SyncErrorFactory>(
-            new syncer::SyncErrorFactoryMock())).IsSet());
+            new syncer::SyncErrorFactoryMock())).error().IsSet());
   }
 
   void SendChangesToSyncableService(

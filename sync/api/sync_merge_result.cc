@@ -20,7 +20,7 @@ SyncMergeResult::~SyncMergeResult() {
 
 // Setters.
 void SyncMergeResult::set_error(SyncError error) {
-  DCHECK_EQ(model_type_, error.type());
+  DCHECK(!error.IsSet() || model_type_ == error.type());
   error_ = error;
 }
 

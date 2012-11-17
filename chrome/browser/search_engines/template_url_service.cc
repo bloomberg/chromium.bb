@@ -1110,7 +1110,7 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
   return error;
 }
 
-syncer::SyncError TemplateURLService::MergeDataAndStartSyncing(
+syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -1120,6 +1120,7 @@ syncer::SyncError TemplateURLService::MergeDataAndStartSyncing(
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
   DCHECK(sync_error_factory.get());
+  syncer::SyncMergeResult merge_result(type);
   sync_processor_ = sync_processor.Pass();
   sync_error_factory_ = sync_error_factory.Pass();
 
@@ -1233,17 +1234,17 @@ syncer::SyncError TemplateURLService::MergeDataAndStartSyncing(
 
   LogDuplicatesHistogram(GetTemplateURLs());
 
-  syncer::SyncError error =
-      sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
-  if (error.IsSet())
-    return error;
+  merge_result.set_error(
+      sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
+  if (merge_result.error().IsSet())
+    return merge_result;
 
   // The ACTION_DELETEs from this set are processed. Empty it so we don't try to
   // reuse them on the next call to MergeDataAndStartSyncing.
   pre_sync_deletes_.clear();
 
   models_associated_ = true;
-  return syncer::SyncError();
+  return merge_result;
 }
 
 void TemplateURLService::StopSyncing(syncer::ModelType type) {

@@ -1287,7 +1287,7 @@ void ExtensionService::CheckForUpdatesSoon() {
   }
 }
 
-syncer::SyncError ExtensionService::MergeDataAndStartSyncing(
+syncer::SyncMergeResult ExtensionService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -1340,7 +1340,7 @@ syncer::SyncError ExtensionService::MergeDataAndStartSyncing(
     app_sync_bundle_.ProcessSyncChangeList(sync_change_list);
   }
 
-  return syncer::SyncError();
+  return syncer::SyncMergeResult(type);
 }
 
 void ExtensionService::StopSyncing(syncer::ModelType type) {

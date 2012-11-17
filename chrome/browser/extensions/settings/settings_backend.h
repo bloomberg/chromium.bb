@@ -50,7 +50,7 @@ class SettingsBackend : public syncer::SyncableService {
   // syncer::SyncableService implementation.
   virtual syncer::SyncDataList GetAllSyncData(
       syncer::ModelType type) const OVERRIDE;
-  virtual syncer::SyncError MergeDataAndStartSyncing(
+  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,

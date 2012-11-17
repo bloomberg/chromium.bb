@@ -1276,9 +1276,11 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwoClientsDupesAndConflicts) {
 
 TEST_F(TemplateURLServiceSyncTest, StopSyncing) {
   syncer::SyncError error =
-      model()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES,
-      CreateInitialSyncData(), PassProcessor(),
-      CreateAndPassSyncErrorFactory());
+      model()->MergeDataAndStartSyncing(
+          syncer::SEARCH_ENGINES,
+          CreateInitialSyncData(),
+          PassProcessor(),
+          CreateAndPassSyncErrorFactory()).error();
   ASSERT_FALSE(error.IsSet());
   model()->StopSyncing(syncer::SEARCH_ENGINES);
 
@@ -1297,9 +1299,11 @@ TEST_F(TemplateURLServiceSyncTest, StopSyncing) {
 TEST_F(TemplateURLServiceSyncTest, SyncErrorOnInitialSync) {
   processor()->set_erroneous(true);
   syncer::SyncError error =
-      model()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES,
-      CreateInitialSyncData(), PassProcessor(),
-      CreateAndPassSyncErrorFactory());
+      model()->MergeDataAndStartSyncing(
+          syncer::SEARCH_ENGINES,
+          CreateInitialSyncData(),
+          PassProcessor(),
+          CreateAndPassSyncErrorFactory()).error();
   EXPECT_TRUE(error.IsSet());
 
   // Ensure that if the initial merge was erroneous, then subsequence attempts
@@ -1322,9 +1326,11 @@ TEST_F(TemplateURLServiceSyncTest, SyncErrorOnLaterSync) {
   // Ensure that if the SyncProcessor succeeds in the initial merge, but fails
   // in future ProcessSyncChanges, we still return an error.
   syncer::SyncError error =
-      model()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES,
-      CreateInitialSyncData(), PassProcessor(),
-      CreateAndPassSyncErrorFactory());
+      model()->MergeDataAndStartSyncing(
+          syncer::SEARCH_ENGINES,
+          CreateInitialSyncData(),
+          PassProcessor(),
+          CreateAndPassSyncErrorFactory()).error();
   ASSERT_FALSE(error.IsSet());
 
   syncer::SyncChangeList changes;
@@ -1346,8 +1352,11 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwiceWithSameSyncData) {
                                      "key1", 10));  // earlier
 
   syncer::SyncError error =
-      model()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES,
-      initial_data, PassProcessor(), CreateAndPassSyncErrorFactory());
+      model()->MergeDataAndStartSyncing(
+          syncer::SEARCH_ENGINES,
+          initial_data,
+          PassProcessor(),
+          CreateAndPassSyncErrorFactory()).error();
   ASSERT_FALSE(error.IsSet());
 
   // We should have updated the original TemplateURL with Sync's version.
@@ -1373,8 +1382,11 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwiceWithSameSyncData) {
   model()->StopSyncing(syncer::SEARCH_ENGINES);
   sync_processor_delegate_.reset(new SyncChangeProcessorDelegate(
       sync_processor_.get()));
-  error = model()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES,
-      initial_data, PassProcessor(), CreateAndPassSyncErrorFactory());
+  error = model()->MergeDataAndStartSyncing(
+      syncer::SEARCH_ENGINES,
+      initial_data,
+      PassProcessor(),
+      CreateAndPassSyncErrorFactory()).error();
   ASSERT_FALSE(error.IsSet());
 
   // Check that the TemplateURL was not modified.

@@ -13,6 +13,7 @@
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error.h"
+#include "sync/api/sync_merge_result.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace syncer {
@@ -33,10 +34,10 @@ class SyncableService : public SyncChangeProcessor,
   // two. After this, the SyncableService's local data should match the server
   // data, and the service should be ready to receive and process any further
   // SyncChange's as they occur.
-  // Returns: A default SyncError (IsSet() == false) if no errors were
-  //          encountered, and a filled SyncError (IsSet() == true)
-  //          otherwise.
-  virtual SyncError MergeDataAndStartSyncing(
+  // Returns: a SyncMergeResult whose error field reflects whether an error
+  //          was encountered while merging the two models. The merge result
+  //          may also contain optional merge statistics.
+  virtual SyncMergeResult MergeDataAndStartSyncing(
       ModelType type,
       const SyncDataList& initial_sync_data,
       scoped_ptr<SyncChangeProcessor> sync_processor,

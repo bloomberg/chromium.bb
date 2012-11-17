@@ -56,7 +56,7 @@ void ThemeSyncableService::OnThemeChange() {
   }
 }
 
-syncer::SyncError ThemeSyncableService::MergeDataAndStartSyncing(
+syncer::SyncMergeResult ThemeSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -66,6 +66,7 @@ syncer::SyncError ThemeSyncableService::MergeDataAndStartSyncing(
   DCHECK(sync_processor.get());
   DCHECK(error_handler.get());
 
+  syncer::SyncMergeResult merge_result(type);
   sync_processor_ = sync_processor.Pass();
   sync_error_handler_ = error_handler.Pass();
 
@@ -86,12 +87,14 @@ syncer::SyncError ThemeSyncableService::MergeDataAndStartSyncing(
       ++sync_data) {
     if (sync_data->GetSpecifics().has_theme()) {
       MaybeSetTheme(current_specifics, *sync_data);
-      return syncer::SyncError();
+      return merge_result;
     }
   }
 
   // No theme specifics are found. Create one according to current theme.
-  return ProcessNewTheme(syncer::SyncChange::ACTION_ADD, current_specifics);
+  merge_result.set_error(ProcessNewTheme(
+      syncer::SyncChange::ACTION_ADD, current_specifics));
+  return merge_result;
 }
 
 void ThemeSyncableService::StopSyncing(syncer::ModelType type) {

@@ -277,7 +277,8 @@ TEST_F(ThemeSyncableServiceTest, SetCurrentThemeDefaultTheme) {
   syncer::SyncError error = theme_sync_service_->MergeDataAndStartSyncing(
       syncer::THEMES, MakeThemeDataList(sync_pb::ThemeSpecifics()),
       fake_change_processor_.Pass(),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock())).
+          error();
   EXPECT_FALSE(error.IsSet()) << error.message();
   EXPECT_TRUE(fake_theme_service_->UsingDefaultTheme());
 }
@@ -291,7 +292,8 @@ TEST_F(ThemeSyncableServiceTest, SetCurrentThemeSystemTheme) {
   syncer::SyncError error = theme_sync_service_->MergeDataAndStartSyncing(
       syncer::THEMES, MakeThemeDataList(theme_specifics),
       fake_change_processor_.Pass(),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock())).
+          error();
   EXPECT_FALSE(error.IsSet()) << error.message();
   EXPECT_TRUE(fake_theme_service_->UsingNativeTheme());
 }
@@ -308,7 +310,8 @@ TEST_F(ThemeSyncableServiceTest, SetCurrentThemeCustomTheme) {
   syncer::SyncError error = theme_sync_service_->MergeDataAndStartSyncing(
       syncer::THEMES, MakeThemeDataList(theme_specifics),
       fake_change_processor_.Pass(),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock())).
+          error();
   EXPECT_FALSE(error.IsSet()) << error.message();
   EXPECT_EQ(fake_theme_service_->theme_extension(), theme_extension_.get());
 }
@@ -320,7 +323,8 @@ TEST_F(ThemeSyncableServiceTest, DontResetThemeWhenSpecificsAreEqual) {
   syncer::SyncError error = theme_sync_service_->MergeDataAndStartSyncing(
       syncer::THEMES, MakeThemeDataList(sync_pb::ThemeSpecifics()),
       fake_change_processor_.Pass(),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock())).
+          error();
   EXPECT_FALSE(error.IsSet()) << error.message();
   EXPECT_FALSE(fake_theme_service_->is_dirty());
 }
@@ -335,7 +339,8 @@ TEST_F(ThemeSyncableServiceTest, UpdateThemeSpecificsFromCurrentTheme) {
 
   syncer::SyncError error = theme_sync_service_->MergeDataAndStartSyncing(
       syncer::THEMES, syncer::SyncDataList(), fake_change_processor_.Pass(),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock())).
+          error();
   EXPECT_FALSE(error.IsSet()) << error.message();
 
   ASSERT_EQ(1u, change_list.size());
@@ -378,7 +383,8 @@ TEST_F(ThemeSyncableServiceTest, ProcessSyncThemeChange) {
   syncer::SyncError error = theme_sync_service_->MergeDataAndStartSyncing(
       syncer::THEMES, MakeThemeDataList(sync_pb::ThemeSpecifics()),
       fake_change_processor_.Pass(),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock())).
+          error();
   EXPECT_FALSE(error.IsSet()) << error.message();
   // Don't expect theme change initially because specifics are equal.
   EXPECT_FALSE(fake_theme_service_->is_dirty());
@@ -413,7 +419,8 @@ TEST_F(ThemeSyncableServiceTest, OnThemeChangeByUser) {
   syncer::SyncError error = theme_sync_service_->MergeDataAndStartSyncing(
       syncer::THEMES, MakeThemeDataList(sync_pb::ThemeSpecifics()),
       fake_change_processor_.Pass(),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock())).
+          error();
   EXPECT_FALSE(error.IsSet()) << error.message();
   EXPECT_EQ(0u, change_list.size());
 
@@ -442,7 +449,8 @@ TEST_F(ThemeSyncableServiceTest, StopSync) {
   syncer::SyncError error = theme_sync_service_->MergeDataAndStartSyncing(
       syncer::THEMES, MakeThemeDataList(sync_pb::ThemeSpecifics()),
       fake_change_processor_.Pass(),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock())).
+          error();
   EXPECT_FALSE(error.IsSet()) << error.message();
   EXPECT_EQ(0u, change_list.size());
 
@@ -475,7 +483,8 @@ TEST_F(ThemeSyncableServiceTest, RestoreSystemThemeBitWhenChangeToCustomTheme) {
   syncer::SyncError error = theme_sync_service_->MergeDataAndStartSyncing(
       syncer::THEMES, MakeThemeDataList(theme_specifics),
       fake_change_processor_.Pass(),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock())).
+          error();
 
   // Change to custom theme and notify theme_sync_service_.
   // use_system_theme_by_default bit should be preserved.
@@ -502,7 +511,8 @@ TEST_F(ThemeSyncableServiceTest,
   syncer::SyncError error = theme_sync_service_->MergeDataAndStartSyncing(
       syncer::THEMES, MakeThemeDataList(theme_specifics),
       fake_change_processor_.Pass(),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock())).
+          error();
   EXPECT_FALSE(fake_theme_service_->is_dirty());
 
   // Change to default theme and notify theme_sync_service_.
@@ -544,7 +554,8 @@ TEST_F(ThemeSyncableServiceTest,
   syncer::SyncError error = theme_sync_service_->MergeDataAndStartSyncing(
       syncer::THEMES, MakeThemeDataList(theme_specifics),
       fake_change_processor_.Pass(),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock())).
+          error();
   EXPECT_EQ(fake_theme_service_->theme_extension(), theme_extension_.get());
 
   // Change to default theme and notify theme_sync_service_.

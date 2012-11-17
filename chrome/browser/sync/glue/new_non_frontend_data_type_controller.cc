@@ -285,7 +285,7 @@ void NewNonFrontendDataTypeController::
   // TODO(zea): Call shared_change_processor_->GetAllSyncData(..) before
   // and after MergeDataAndStartSyncing and store the item counts into
   // syncer_merge_result.
-  error =
+  local_merge_result =
       local_service_->MergeDataAndStartSyncing(
           type(),
           initial_sync_data,
@@ -294,8 +294,7 @@ void NewNonFrontendDataTypeController::
           scoped_ptr<syncer::SyncErrorFactory>(
               new SharedChangeProcessorRef(shared_change_processor)));
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
-  if (error.IsSet()) {
-    local_merge_result.set_error(error);
+  if (local_merge_result.error().IsSet()) {
     StartDone(ASSOCIATION_FAILED,
               local_merge_result,
               syncer_merge_result);

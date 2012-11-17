@@ -43,7 +43,7 @@ class PrefModelAssociator
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
-  virtual syncer::SyncError MergeDataAndStartSyncing(
+  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,

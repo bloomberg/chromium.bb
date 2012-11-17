@@ -27,7 +27,7 @@ class FakeSyncableService : public SyncableService {
   bool syncing() const;
 
   // SyncableService implementation.
-  virtual SyncError MergeDataAndStartSyncing(
+  virtual SyncMergeResult MergeDataAndStartSyncing(
       ModelType type,
       const SyncDataList& initial_sync_data,
       scoped_ptr<SyncChangeProcessor> sync_processor,

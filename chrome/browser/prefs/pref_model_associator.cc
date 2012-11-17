@@ -110,7 +110,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
   return;
 }
 
-syncer::SyncError PrefModelAssociator::MergeDataAndStartSyncing(
+syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -121,6 +121,7 @@ syncer::SyncError PrefModelAssociator::MergeDataAndStartSyncing(
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
   DCHECK(sync_error_factory.get());
+  syncer::SyncMergeResult merge_result(type);
   sync_processor_ = sync_processor.Pass();
   sync_error_factory_ = sync_error_factory.Pass();
 
@@ -157,15 +158,14 @@ syncer::SyncError PrefModelAssociator::MergeDataAndStartSyncing(
   }
 
   // Push updates to sync.
-  syncer::SyncError error =
-      sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
-  if (error.IsSet()) {
-    return error;
-  }
+  merge_result.set_error(
+      sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
+  if (merge_result.error().IsSet())
+    return merge_result;
 
   models_associated_ = true;
   pref_service_->OnIsSyncingChanged();
-  return syncer::SyncError();
+  return merge_result;
 }
 
 void PrefModelAssociator::StopSyncing(syncer::ModelType type) {

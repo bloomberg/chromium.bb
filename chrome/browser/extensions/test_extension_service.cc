@@ -79,13 +79,13 @@ void TestExtensionService::CheckForUpdatesSoon() {
   ADD_FAILURE();
 }
 
-syncer::SyncError TestExtensionService::MergeDataAndStartSyncing(
+syncer::SyncMergeResult TestExtensionService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   ADD_FAILURE();
-  return syncer::SyncError();
+  return syncer::SyncMergeResult(type);
 }
 
 void TestExtensionService::StopSyncing(syncer::ModelType type) {

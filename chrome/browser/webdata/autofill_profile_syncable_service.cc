@@ -57,7 +57,8 @@ AutofillProfileSyncableService::AutofillProfileSyncableService()
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
 
-syncer::SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
+syncer::SyncMergeResult
+AutofillProfileSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -68,10 +69,12 @@ syncer::SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
   DCHECK(sync_error_factory.get());
   DVLOG(1) << "Associating Autofill: MergeDataAndStartSyncing";
 
+  syncer::SyncMergeResult merge_result(type);
   sync_error_factory_ = sync_error_factory.Pass();
   if (!LoadAutofillData(&profiles_.get())) {
-    return sync_error_factory_->CreateAndUploadError(
-        FROM_HERE, "Could not get the autofill data from WebDatabase.");
+    merge_result.set_error(sync_error_factory_->CreateAndUploadError(
+        FROM_HERE, "Could not get the autofill data from WebDatabase."));
+    return merge_result;
   }
 
   if (DLOG_IS_ON(INFO)) {
@@ -131,9 +134,10 @@ syncer::SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
   }
 
   if (!SaveChangesToWebData(bundle)) {
-    return sync_error_factory_->CreateAndUploadError(
+    merge_result.set_error(sync_error_factory_->CreateAndUploadError(
         FROM_HERE,
-        "Failed to update webdata.");
+        "Failed to update webdata."));
+    return merge_result;
   }
 
   syncer::SyncChangeList new_changes;
@@ -153,13 +157,14 @@ syncer::SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
                            CreateData(*(bundle.profiles_to_sync_back[i]))));
   }
 
-  syncer::SyncError error;
-  if (!new_changes.empty())
-    error = sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
+  if (!new_changes.empty()) {
+    merge_result.set_error(
+        sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
+  }
 
   WebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
 
-  return error;
+  return merge_result;
 }
 
 void AutofillProfileSyncableService::StopSyncing(syncer::ModelType type) {

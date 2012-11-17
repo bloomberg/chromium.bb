@@ -170,12 +170,8 @@ void UIDataTypeController::Associate() {
   }
 
   // Passes a reference to |shared_change_processor_|.
-  // TODO(zea): have SyncableService return a SyncMergeResult and pass that on
-  // to the ModelAssociationManager.
-  // TODO(zea): Call shared_change_processor_->GetAllSyncData(..) before
-  // and after MergeDataAndStartSyncing and store the item counts into
-  // syncer_merge_result.
-  error = local_service_->MergeDataAndStartSyncing(
+  syncer_merge_result.set_num_items_after_association(initial_sync_data.size());
+  local_merge_result = local_service_->MergeDataAndStartSyncing(
       type(),
       initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor>(
@@ -183,8 +179,8 @@ void UIDataTypeController::Associate() {
       scoped_ptr<syncer::SyncErrorFactory>(
           new SharedChangeProcessorRef(shared_change_processor_)));
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
-  if (error.IsSet()) {
-    local_merge_result.set_error(error);
+
+  if (local_merge_result.error().IsSet()) {
     StartDone(ASSOCIATION_FAILED,
               local_merge_result,
               syncer_merge_result);

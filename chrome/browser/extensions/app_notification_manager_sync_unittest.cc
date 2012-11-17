@@ -479,7 +479,7 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptyTitleMismatch) {
       syncer::APP_NOTIFICATIONS,
       initial_data,
       PassProcessor(),
-      error_handler.PassAs<syncer::SyncErrorFactory>());
+      error_handler.PassAs<syncer::SyncErrorFactory>()).error();
 
   EXPECT_TRUE(sync_error.IsSet());
   EXPECT_EQ(syncer::APP_NOTIFICATIONS, sync_error.type());
@@ -512,7 +512,7 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptyMatchesLocal) {
       syncer::APP_NOTIFICATIONS,
       initial_data,
       PassProcessor(),
-      error_handler.PassAs<syncer::SyncErrorFactory>());
+      error_handler.PassAs<syncer::SyncErrorFactory>()).error();
 
   EXPECT_TRUE(sync_error.IsSet());
   EXPECT_EQ(syncer::APP_NOTIFICATIONS, sync_error.type());

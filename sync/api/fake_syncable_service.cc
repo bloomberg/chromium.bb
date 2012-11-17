@@ -30,17 +30,20 @@ bool FakeSyncableService::syncing() const {
 }
 
 // SyncableService implementation.
-SyncError FakeSyncableService::MergeDataAndStartSyncing(
+SyncMergeResult FakeSyncableService::MergeDataAndStartSyncing(
     ModelType type,
     const SyncDataList& initial_sync_data,
     scoped_ptr<SyncChangeProcessor> sync_processor,
     scoped_ptr<SyncErrorFactory> sync_error_factory) {
+  SyncMergeResult merge_result(type);
   sync_processor_ = sync_processor.Pass();
   type_ = type;
   if (!merge_data_and_start_syncing_error_.IsSet()) {
     syncing_ = true;
+  } else {
+    merge_result.set_error(merge_data_and_start_syncing_error_);
   }
-  return merge_data_and_start_syncing_error_;
+  return merge_result;
 }
 
 void FakeSyncableService::StopSyncing(ModelType type) {

@@ -26,8 +26,7 @@ class SyncMergeResult {
   // Default copy and assign welcome.
 
   // Setters.
-  // Note: |error.IsSet()| must be true, and |error.type()| must match
-  // model_type_
+  // Note: if |error.IsSet()| is true, |error.type()| must match model_type_
   void set_error(SyncError error);
   void set_num_items_before_association(int num_items_before_association);
   void set_num_items_after_association(int num_items_after_association);

@@ -461,7 +461,7 @@ class ExtensionService
   virtual void CheckForUpdatesSoon() OVERRIDE;
 
   // syncer::SyncableService implementation.
-  virtual syncer::SyncError MergeDataAndStartSyncing(
+  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,

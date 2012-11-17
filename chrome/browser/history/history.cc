@@ -915,7 +915,7 @@ base::WeakPtr<HistoryService> HistoryService::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-syncer::SyncError HistoryService::MergeDataAndStartSyncing(
+syncer::SyncMergeResult HistoryService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -927,7 +927,7 @@ syncer::SyncError HistoryService::MergeDataAndStartSyncing(
     DCHECK_EQ(it->GetDataType(), syncer::HISTORY_DELETE_DIRECTIVES);
     ProcessDeleteDirective(it->GetSpecifics().history_delete_directive());
   }
-  return syncer::SyncError();
+  return syncer::SyncMergeResult(type);
 }
 
 void HistoryService::StopSyncing(syncer::ModelType type) {

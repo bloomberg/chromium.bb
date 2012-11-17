@@ -115,7 +115,7 @@ AutocompleteSyncableService::AutocompleteSyncableService()
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
 
-syncer::SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
+syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -126,12 +126,14 @@ syncer::SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
   DCHECK(error_handler.get());
   VLOG(1) << "Associating Autocomplete: MergeDataAndStartSyncing";
 
+  syncer::SyncMergeResult merge_result(type);
   error_handler_ = error_handler.Pass();
   std::vector<AutofillEntry> entries;
   if (!LoadAutofillData(&entries)) {
-    return error_handler_->CreateAndUploadError(
+    merge_result.set_error(error_handler_->CreateAndUploadError(
         FROM_HERE,
-        "Could not get the autocomplete data from WebDatabase.");
+        "Could not get the autocomplete data from WebDatabase."));
+    return merge_result;
   }
 
   AutocompleteEntryMap new_db_entries;
@@ -154,9 +156,10 @@ syncer::SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
   }
 
   if (!SaveChangesToWebData(new_synced_entries)) {
-    return error_handler_->CreateAndUploadError(
+    merge_result.set_error(error_handler_->CreateAndUploadError(
         FROM_HERE,
-        "Failed to update webdata.");
+        "Failed to update webdata."));
+    return merge_result;
   }
 
   WebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
@@ -176,10 +179,9 @@ syncer::SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
     web_data_service_->RemoveExpiredFormElements();
   }
 
-  syncer::SyncError error =
-      sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
-
-  return error;
+  merge_result.set_error(
+      sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
+  return merge_result;
 }
 
 void AutocompleteSyncableService::StopSyncing(syncer::ModelType type) {
