@@ -2416,7 +2416,7 @@ void ExtensionService::MaybeFinishInstallation(
 }
 
 void ExtensionService::FinishInstallation(const std::string& extension_id) {
-  const Extension* extension = pending_extension_updates_.GetByID(extension_id);
+  const Extension* extension = GetPendingExtensionUpdate(extension_id);
   CHECK(extension);
   // Ensure extension is deleted unless we transfer ownership.
   scoped_refptr<const Extension> scoped_extension(extension);
@@ -2438,6 +2438,11 @@ void ExtensionService::FinishInstallation(const std::string& extension_id) {
   if (Extension::IsExternalLocation(extension->location()) &&
       extension_prefs_->IsExtensionDisabled(extension_id))
     UpdateExternalExtensionAlert();
+}
+
+const Extension* ExtensionService::GetPendingExtensionUpdate(
+    const std::string& id) const {
+  return pending_extension_updates_.GetByID(id);
 }
 
 const Extension* ExtensionService::GetExtensionByIdInternal(

@@ -200,7 +200,19 @@ void RuntimeRequestUpdateCheckFunction::CheckComplete() {
     return;
 
   did_reply_ = true;
-  SetResult(new base::StringValue(kUpdateNotFound));
+
+  // Since no UPDATE_FOUND notification was seen, this generally would mean
+  // that no update is found, but a previous update check might have already
+  // queued up an update, so check for that here to make sure we return the
+  // right value.
+  ExtensionSystem* system = ExtensionSystem::Get(profile());
+  ExtensionService* service = system->extension_service();
+  const Extension* update = service->GetPendingExtensionUpdate(extension_id());
+  if (update) {
+    ReplyUpdateFound(update->VersionString());
+  } else {
+    SetResult(new base::StringValue(kUpdateNotFound));
+  }
   SendResponse(true);
 }
 
@@ -216,14 +228,19 @@ void RuntimeRequestUpdateCheckFunction::Observe(
   const std::string& id = content::Details<UpdateDetails>(details)->first;
   const Version& version = content::Details<UpdateDetails>(details)->second;
   if (id == extension_id()) {
-    did_reply_ = true;
-    results_.reset(new base::ListValue);
-    results_->AppendString(kUpdateFound);
-    base::DictionaryValue* details = new base::DictionaryValue;
-    results_->Append(details);
-    details->SetString("version", version.GetString());
-    SendResponse(true);
+    ReplyUpdateFound(version.GetString());
   }
+}
+
+void RuntimeRequestUpdateCheckFunction::ReplyUpdateFound(
+    const std::string& version) {
+  did_reply_ = true;
+  results_.reset(new base::ListValue);
+  results_->AppendString(kUpdateFound);
+  base::DictionaryValue* details = new base::DictionaryValue;
+  results_->Append(details);
+  details->SetString("version", version);
+  SendResponse(true);
 }
 
 }   // namespace extensions

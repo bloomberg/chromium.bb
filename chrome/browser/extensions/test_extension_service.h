@@ -41,6 +41,9 @@ class TestExtensionService : public ExtensionServiceInterface {
       const std::string& id, bool include_disabled) const OVERRIDE;
   virtual const extensions::Extension* GetInstalledExtension(
       const std::string& id) const OVERRIDE;
+  virtual const extensions::Extension* GetPendingExtensionUpdate(
+      const std::string& extension_id) const OVERRIDE;
+  virtual void FinishInstallation(const std::string& extension_id) OVERRIDE;
   virtual bool IsExtensionEnabled(
       const std::string& extension_id) const OVERRIDE;
   virtual bool IsExternalExtensionUninstalled(

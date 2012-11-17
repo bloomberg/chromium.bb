@@ -113,6 +113,10 @@ class ExtensionServiceInterface : public syncer::SyncableService {
   virtual const extensions::Extension* GetInstalledExtension(
       const std::string& id) const = 0;
 
+  virtual const extensions::Extension* GetPendingExtensionUpdate(
+      const std::string& extension_id) const = 0;
+  virtual void FinishInstallation(const std::string& extension_id) = 0;
+
   virtual bool IsExtensionEnabled(const std::string& extension_id) const = 0;
   virtual bool IsExternalExtensionUninstalled(
       const std::string& extension_id) const = 0;
@@ -429,11 +433,17 @@ class ExtensionService
   // Finishes installation of an update for an extension with the specified id,
   // when installation of that extension was previously delayed because the
   // extension was in use.
-  void FinishInstallation(const std::string& extension_id);
+  virtual void FinishInstallation(const std::string& extension_id) OVERRIDE;
 
   // Similar to FinishInstallation, but first checks if there still is an update
   // pending for the extension, and makes sure the extension is still idle.
   void MaybeFinishInstallation(const std::string& extension_id);
+
+  // Returns an update for an extension with the specified id, if installation
+  // of that update was previously delayed because the extension was in use. If
+  // no updates are pending for the extension returns NULL.
+  virtual const extensions::Extension* GetPendingExtensionUpdate(
+      const std::string& extension_id) const OVERRIDE;
 
   // Initializes the |extension|'s active permission set and disables the
   // extension if the privilege level has increased (e.g., due to an upgrade).

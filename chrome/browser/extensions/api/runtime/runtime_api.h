@@ -70,6 +70,7 @@ class RuntimeRequestUpdateCheckFunction : public AsyncExtensionFunction,
                        const content::NotificationDetails& details) OVERRIDE;
  private:
   void CheckComplete();
+  void ReplyUpdateFound(const std::string& version);
 
   content::NotificationRegistrar registrar_;
   bool did_reply_;

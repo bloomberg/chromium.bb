@@ -295,6 +295,11 @@ class ServiceForManifestTests : public MockService {
     return &pending_extension_manager_;
   }
 
+  virtual const Extension* GetPendingExtensionUpdate(
+      const std::string& id) const OVERRIDE {
+    return NULL;
+  }
+
   void set_extensions(ExtensionList extensions) {
     for (ExtensionList::const_iterator it = extensions.begin();
          it != extensions.end(); ++it) {

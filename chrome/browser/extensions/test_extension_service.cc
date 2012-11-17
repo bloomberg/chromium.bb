@@ -49,6 +49,16 @@ const Extension* TestExtensionService::GetInstalledExtension(
   return NULL;
 }
 
+const Extension* TestExtensionService::GetPendingExtensionUpdate(
+    const std::string& id) const {
+  ADD_FAILURE();
+  return NULL;
+}
+
+void TestExtensionService::FinishInstallation(const std::string& extension_id) {
+  ADD_FAILURE();
+}
+
 bool TestExtensionService::IsExtensionEnabled(
     const std::string& extension_id) const {
   ADD_FAILURE();

@@ -462,12 +462,21 @@ void ExtensionUpdater::OnExtensionDownloadFailed(
     const std::set<int>& request_ids) {
   DCHECK(alive_);
   UpdatePingData(id, ping);
+  bool install_immediately = false;
   for (std::set<int>::const_iterator it = request_ids.begin();
        it != request_ids.end(); ++it) {
     InProgressCheck* request = &requests_in_progress_[*it];
+    install_immediately |= request->install_immediately;
     request->in_progress_ids_.remove(id);
     NotifyIfFinished(*it);
   }
+
+  // This method is called if no updates were found. However a previous update
+  // check might have queued an update for this extension already. If a
+  // current update check has |install_immediately| set the previously
+  // queued update should be installed now.
+  if (install_immediately && service_->GetPendingExtensionUpdate(id))
+    service_->FinishInstallation(id);
 }
 
 void ExtensionUpdater::OnExtensionDownloadFinished(
@@ -554,7 +563,11 @@ bool ExtensionUpdater::GetExtensionExistingVersion(const std::string& id,
   const Extension* extension = service_->GetExtensionById(id, true);
   if (!extension)
     return false;
-  *version = extension->version()->GetString();
+  const Extension* update = service_->GetPendingExtensionUpdate(id);
+  if (update)
+    *version = update->VersionString();
+  else
+    *version = extension->VersionString();
   return true;
 }
 
