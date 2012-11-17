@@ -310,6 +310,35 @@ TEST_F(RenderWidgetHostViewMacTest, FullscreenCloseOnEscape) {
   EXPECT_FALSE([rwhv_mac_->cocoa_view() suppressNextEscapeKeyUp]);
 }
 
+// Test that command accelerators which destroy the fullscreen window
+// don't crash when forwarded via the window's responder machinery.
+TEST_F(RenderWidgetHostViewMacTest, AcceleratorDestroy) {
+  // Use our own RWH since we need to destroy it.
+  MockRenderWidgetHostDelegate delegate;
+  TestBrowserContext browser_context;
+  MockRenderProcessHost* process_host =
+      new MockRenderProcessHost(&browser_context);
+  // Owned by its |cocoa_view()|.
+  RenderWidgetHostImpl* rwh = new RenderWidgetHostImpl(
+      &delegate, process_host, MSG_ROUTING_NONE);
+  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
+      RenderWidgetHostView::CreateViewForWidget(rwh));
+
+  view->InitAsFullscreen(rwhv_mac_);
+
+  WindowedNotificationObserver observer(
+      NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+      Source<RenderWidgetHost>(rwh));
+
+  // Command-ESC will destroy the view, while the window is still in
+  // |-performKeyEquivalent:|.  There are other cases where this can
+  // happen, Command-ESC is the easiest to trigger.
+  [[view->cocoa_view() window] performKeyEquivalent:
+      cocoa_test_event_utils::KeyEventWithKeyCode(
+          53, 27, NSKeyDown, NSCommandKeyMask)];
+  observer.Wait();
+}
+
 TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   const string16 kDummyString = UTF8ToUTF16("hogehoge");
   const size_t kDummyOffset = 0;

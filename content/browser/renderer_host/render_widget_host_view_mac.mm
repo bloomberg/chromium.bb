@@ -728,7 +728,11 @@ void RenderWidgetHostViewMac::Destroy() {
   [fullscreen_window_manager_ exitFullscreenMode];
   fullscreen_window_manager_.reset();
   [pepper_fullscreen_window_ close];
-  pepper_fullscreen_window_.reset();
+
+  // This can be called as part of processing the window's responder
+  // chain, for instance |-performKeyEquivalent:|.  In that case the
+  // object needs to survive until the stack unwinds.
+  pepper_fullscreen_window_.autorelease();
 
   // We get this call just before |render_widget_host_| deletes
   // itself.  But we are owned by |cocoa_view_|, which may be retained
