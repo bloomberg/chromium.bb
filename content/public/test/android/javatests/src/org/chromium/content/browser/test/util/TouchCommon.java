@@ -118,6 +118,29 @@ public class TouchCommon {
     }
 
     /**
+     * Sends (synchronously) a single click on the specified relative coordinates inside
+     * a given view.
+     *
+     * @param view The view to be clicked.
+     * @param x screen absolute
+     * @param y screen absolute
+     * @see TouchUtils
+     */
+    public void singleClickViewRelative(View view, int x, int y) {
+        long downTime = SystemClock.uptimeMillis();
+        long eventTime = SystemClock.uptimeMillis();
+
+        MotionEvent event = MotionEvent.obtain(downTime, eventTime,
+                                               MotionEvent.ACTION_DOWN, x, y, 0);
+        dispatchTouchEvent(view, event);
+
+        eventTime = SystemClock.uptimeMillis();
+        event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP,
+                                   x, y, 0);
+        dispatchTouchEvent(view, event);
+    }
+
+    /**
      * Sends (synchronously) a long press to an absolute screen coordinates.
      *
      * @param x screen absolute
@@ -164,8 +187,18 @@ public class TouchCommon {
      * @param event
      */
     private void dispatchTouchEvent(final MotionEvent event) {
-        final View view = mActivityTestCase.getActivity().findViewById(
-                android.R.id.content).getRootView();
+        View view =
+                mActivityTestCase.getActivity().findViewById(android.R.id.content).getRootView();
+        dispatchTouchEvent(view, event);
+    }
+
+    /**
+     * Send a MotionEvent to the specified view instead of the root view.
+     * For example AutofillPopup window that is above the root view.
+     * @param view The view that should receive the event.
+     * @param event The view to be dispatched.
+     */
+    private void dispatchTouchEvent(final View view, final MotionEvent event) {
         try {
             mActivityTestCase.runTestOnUiThread(new Runnable() {
                 @Override

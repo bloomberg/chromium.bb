@@ -68,7 +68,9 @@ AutofillPopupView::AutofillPopupView(
   if (!web_contents)
     return;
 
+#if !defined(OS_ANDROID)
   label_font_ = value_font_.DeriveFont(kLabelFontSizeDelta);
+#endif
 }
 
 AutofillPopupView::~AutofillPopupView() {}
@@ -104,8 +106,10 @@ void AutofillPopupView::ClearExternalDelegate() {
 }
 
 void AutofillPopupView::UpdateBoundsAndRedrawPopup() {
+#if !defined(OS_ANDROID)
   element_bounds_.set_width(GetPopupRequiredWidth());
   element_bounds_.set_height(GetPopupRequiredHeight());
+#endif
 
   UpdateBoundsAndRedrawPopupInternal();
 }
@@ -250,6 +254,7 @@ bool AutofillPopupView::CanDelete(int id) {
       id == WebAutofillClient::MenuItemIDPasswordEntry;
 }
 
+#if !defined(OS_ANDROID)
 int AutofillPopupView::GetPopupRequiredWidth() {
   if (value_font_.platform_font() == NULL ||
       label_font_.platform_font() == NULL) {
@@ -292,6 +297,7 @@ int AutofillPopupView::GetPopupRequiredHeight() {
 
   return popup_height;
 }
+#endif  // !defined(OS_ANDROID)
 
 int AutofillPopupView::LineFromY(int y) {
   int current_height = 0;
@@ -325,6 +331,9 @@ gfx::Rect AutofillPopupView::GetRectForRow(size_t row, int width) {
 }
 
 bool AutofillPopupView::DeleteIconIsSelected(int x, int y) {
+#if defined(OS_ANDROID)
+  return false;
+#else
   if (!CanDelete(selected_line()))
     return false;
 
@@ -340,6 +349,7 @@ bool AutofillPopupView::DeleteIconIsSelected(int x, int y) {
       kDeleteIconHeight);
 
   return delete_icon_bounds.Contains(x, y);
+#endif
 }
 
 bool AutofillPopupView::CanAccept(int id) {

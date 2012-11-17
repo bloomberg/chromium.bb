@@ -123,7 +123,10 @@ public class ChromiumTestShellActivity extends Activity {
         return mTabManager != null ? mTabManager.getCurrentTab() : null;
     }
 
-    private ContentView getActiveContentView() {
+    /**
+     * @return The ContentView of the active tab.
+     */
+    public ContentView getActiveContentView() {
         TabBase tab = getActiveTab();
         return tab != null ? tab.getContentView() : null;
     }

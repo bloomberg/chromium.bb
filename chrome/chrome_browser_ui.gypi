@@ -73,6 +73,8 @@
         'browser/ui/android/android_about_app_info.h',
         'browser/ui/android/autofill/autofill_external_delegate.cc',
         'browser/ui/android/autofill/autofill_external_delegate.h',
+        'browser/ui/android/autofill/autofill_popup_view_android.cc',
+        'browser/ui/android/autofill/autofill_popup_view_android.h',
         'browser/ui/android/certificate_viewer_android.cc',
         'browser/ui/android/chrome_http_auth_handler.cc',
         'browser/ui/android/chrome_http_auth_handler.h',

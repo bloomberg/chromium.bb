@@ -4,12 +4,10 @@
 
 package org.chromium.chrome.browser.autofill;
 
-import org.chromium.base.CalledByNative;
-
 /**
  * Autofill suggestion container used to store information needed for each Autofill popup entry.
  */
-class AutofillSuggestion {
+public class AutofillSuggestion {
     public final String mName;
     public final String mLabel;
     public final int mUniqueId;
@@ -20,7 +18,7 @@ class AutofillSuggestion {
      * @param label The describing label of the Autofill suggestion.
      * @param uniqueId The unique id used to identify the Autofill suggestion.
      */
-    AutofillSuggestion(String name, String label, int uniqueId) {
+    public AutofillSuggestion(String name, String label, int uniqueId) {
         mName = name;
         mLabel = label;
         mUniqueId = uniqueId;

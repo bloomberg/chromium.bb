@@ -69,8 +69,10 @@ class AutofillPopupView {
     return autofill_unique_ids_;
   }
 
+#if !defined(OS_ANDROID)
   const gfx::Font& label_font() const { return label_font_; }
   const gfx::Font& value_font() const { return value_font_; }
+#endif
 
   int selected_line() const { return selected_line_; }
   bool delete_icon_selected() const { return delete_icon_selected_; }
@@ -109,11 +111,13 @@ class AutofillPopupView {
   // Returns true if the given id refers to an element that can be deleted.
   bool CanDelete(int id);
 
+#if !defined(OS_ANDROID)
   // Get width of popup needed by values.
   int GetPopupRequiredWidth();
 
   // Get height of popup needed by values.
   int GetPopupRequiredHeight();
+#endif
 
   // Convert a y-coordinate to the closest line.
   int LineFromY(int y);
@@ -168,9 +172,11 @@ class AutofillPopupView {
   std::vector<string16> autofill_icons_;
   std::vector<int> autofill_unique_ids_;
 
+#if !defined(OS_ANDROID)
   // The fonts for the popup text.
   gfx::Font value_font_;
   gfx::Font label_font_;
+#endif
 
   // The line that is currently selected by the user.
   // |kNoSelection| indicates that no line is currently selected.
