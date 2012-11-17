@@ -219,9 +219,8 @@ bool ExternalTabContainerWin::Init(Profile* profile,
 
   content::WebContentsObserver::Observe(existing_contents);
 
-  // TODO(avi): Rather than create a TabContents, attach desired tab helpers.
-  tab_contents_.reset(
-      TabContents::Factory::CreateTabContents(existing_contents));
+  Browser::Adoption::AdoptAsTabContents(existing_contents);
+  tab_contents_.reset(TabContents::FromWebContents(existing_contents));
 
   if (!infobars_enabled) {
     InfoBarTabHelper* infobar_tab_helper =
@@ -314,10 +313,6 @@ bool ExternalTabContainerWin::Reinitialize(
 
 WebContents* ExternalTabContainerWin::GetWebContents() const {
   return tab_contents_.get() ? tab_contents_->web_contents() : NULL;
-}
-
-TabContents* ExternalTabContainerWin::GetTabContents() {
-  return tab_contents_.get();
 }
 
 gfx::NativeView ExternalTabContainerWin::GetExternalTabNativeView() const {

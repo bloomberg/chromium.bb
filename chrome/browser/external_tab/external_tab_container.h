@@ -81,8 +81,6 @@ class ExternalTabContainer : public base::RefCounted<ExternalTabContainer> {
 
   virtual content::WebContents* GetWebContents() const = 0;
 
-  virtual TabContents* GetTabContents() = 0;
-
   // This is a wrapper for GetNativeView from ExternalTabContainerWin.
   virtual gfx::NativeView GetExternalTabNativeView() const = 0;
 

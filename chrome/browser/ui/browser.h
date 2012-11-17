@@ -52,6 +52,7 @@ class BrowserToolbarModelDelegate;
 class BrowserTabRestoreServiceDelegate;
 class BrowserWindow;
 class DeviceAttachedIntentSource;
+class ExternalTabContainerWin;
 class FindBarController;
 class FullscreenController;
 class PrefService;
@@ -418,6 +419,27 @@ class Browser : public TabStripModelObserver,
                                   content::PageTransition transition,
                                   bool user_initiated);
 
+  // Adoption functions ////////////////////////////////////////////////////////
+
+  class Adoption {
+   private:
+    friend class Browser;
+    // Chrome Frame is a special case. Chrome Frame is defined as a complete
+    // tab of Chrome inside of an IE window, so it has the unique privilege of
+    // asking Browser to set up a WebContents to have the full complement of tab
+    // helpers that it would have if it were in a Browser.
+    // TODO(avi): It's still probably a good idea for Chrome Frame to more
+    // explicitly control which tab helpers get created for its WebContentses.
+    // http://crbug.com/157590
+    friend class ExternalTabContainerWin;
+
+    // Adopts the specified WebContents as a full-fledged browser tab, attaching
+    // all the associated tab helpers that are needed for the WebContents to
+    // serve in that role. It is safe to call this on a WebContents that was
+    // already adopted.
+    static void AdoptAsTabContents(content::WebContents* web_contents);
+  };
+
   // Interface implementations ////////////////////////////////////////////////
 
   // Overridden from content::PageNavigator:
@@ -760,12 +782,6 @@ class Browser : public TabStripModelObserver,
   bool CanCloseWithInProgressDownloads();
 
   // Adoption functions ////////////////////////////////////////////////////////
-
-  // Adopts the specified WebContents as a full-fledged browser tab, attaching
-  // all the associated tab helpers that are needed for the WebContents to
-  // serve in that role. It is safe to call this on a WebContents that was
-  // already adopted.
-  static void AdoptAsTabContents(content::WebContents* web_contents);
 
   // Sets the specified browser as the delegate of all the parts of the
   // TabContents that are needed.

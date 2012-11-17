@@ -86,7 +86,6 @@ class ExternalTabContainerWin : public ExternalTabContainer,
                             AutomationResourceMessageFilter* filter,
                             gfx::NativeWindow parent_window) OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual TabContents* GetTabContents() OVERRIDE;
   virtual gfx::NativeView GetExternalTabNativeView() const OVERRIDE;
   virtual void SetTabHandle(int handle) OVERRIDE;
   virtual int GetTabHandle() const OVERRIDE;

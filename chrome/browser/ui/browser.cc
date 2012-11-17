@@ -1525,7 +1525,7 @@ void Browser::WebContentsCreated(WebContents* source_contents,
   // requests for its initial navigation will start immediately. The WebContents
   // will later be inserted into this browser using Browser::Navigate via
   // AddNewContents.
-  AdoptAsTabContents(new_contents);
+  Adoption::AdoptAsTabContents(new_contents);
 
   // Notify.
   RetargetingDetails details;

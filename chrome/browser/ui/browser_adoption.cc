@@ -22,7 +22,7 @@ const char kWebDialogDelegateUserDataKey[] = "BrowserAdoptedAsTabContents";
 }  // namespace
 
 // static
-void Browser::AdoptAsTabContents(WebContents* web_contents) {
+void Browser::Adoption::AdoptAsTabContents(WebContents* web_contents) {
   // If already adopted, nothing to be done.
   base::SupportsUserData::Data* adoption_tag =
       web_contents->GetUserData(&kWebDialogDelegateUserDataKey);
@@ -34,8 +34,11 @@ void Browser::AdoptAsTabContents(WebContents* web_contents) {
                             new base::SupportsUserData::Data());
 
   // Create all the tab helpers.
-  TabContents::Factory::CreateTabContents(web_contents);
-  // ... more tab helper creation goes here ...
+  if (!TabContents::FromWebContents(web_contents))
+    TabContents::Factory::CreateTabContents(web_contents);
+  // TODO(avi): Move all the tab helpers from TabContents to here once all
+  // extraneous use of TabContents is removed and all correct use of TabContents
+  // funnels through AdoptAsTabContents.
 }
 
 void Browser::SetAsDelegate(WebContents* web_contents, Browser* delegate) {
