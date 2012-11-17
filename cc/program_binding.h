@@ -24,7 +24,7 @@ public:
     void link(WebKit::WebGraphicsContext3D*);
     void cleanup(WebKit::WebGraphicsContext3D*);
 
-    unsigned program() const { DCHECK(m_initialized); return m_program; }
+    unsigned program() const { return m_program; }
     bool initialized() const { return m_initialized; }
 
 protected:
@@ -32,6 +32,7 @@ protected:
     unsigned loadShader(WebKit::WebGraphicsContext3D*, unsigned type, const std::string& shaderSource);
     unsigned createShaderProgram(WebKit::WebGraphicsContext3D*, unsigned vertexShader, unsigned fragmentShader);
     void cleanupShaders(WebKit::WebGraphicsContext3D*);
+    bool IsContextLost(WebKit::WebGraphicsContext3D*);
 
     unsigned m_program;
     unsigned m_vertexShaderId;
@@ -50,8 +51,10 @@ public:
     void initialize(WebKit::WebGraphicsContext3D* context, bool usingBindUniform)
     {
         DCHECK(context);
-        DCHECK(m_program);
         DCHECK(!m_initialized);
+
+        if (IsContextLost(context))
+            return;
 
         // Need to bind uniforms before linking
         if (!usingBindUniform)

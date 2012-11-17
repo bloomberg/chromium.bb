@@ -31,18 +31,12 @@ ProgramBindingBase::~ProgramBindingBase()
     DCHECK(!m_initialized);
 }
 
-static bool contextLost(WebGraphicsContext3D* context)
-{
-    return (context->getGraphicsResetStatusARB() != GL_NO_ERROR);
-}
-
-
 void ProgramBindingBase::init(WebGraphicsContext3D* context, const std::string& vertexShader, const std::string& fragmentShader)
 {
     TRACE_EVENT0("cc", "ProgramBindingBase::init");
     m_vertexShaderId = loadShader(context, GL_VERTEX_SHADER, vertexShader);
     if (!m_vertexShaderId) {
-        if (!contextLost(context))
+        if (!IsContextLost(context))
             LOG(ERROR) << "Failed to create vertex shader";
         return;
     }
@@ -51,13 +45,13 @@ void ProgramBindingBase::init(WebGraphicsContext3D* context, const std::string& 
     if (!m_fragmentShaderId) {
         GLC(context, context->deleteShader(m_vertexShaderId));
         m_vertexShaderId = 0;
-        if (!contextLost(context))
+        if (!IsContextLost(context))
             LOG(ERROR) << "Failed to create fragment shader";
         return;
     }
 
     m_program = createShaderProgram(context, m_vertexShaderId, m_fragmentShaderId);
-    DCHECK(m_program || contextLost(context));
+    DCHECK(m_program || IsContextLost(context));
 }
 
 void ProgramBindingBase::link(WebGraphicsContext3D* context)
@@ -68,7 +62,7 @@ void ProgramBindingBase::link(WebGraphicsContext3D* context)
     int linked = 0;
     GLC(context, context->getProgramiv(m_program, GL_LINK_STATUS, &linked));
     if (!linked) {
-        if (!contextLost(context))
+        if (!IsContextLost(context))
             LOG(ERROR) << "Failed to link shader program";
         GLC(context, context->deleteProgram(m_program));
     }
@@ -110,7 +104,7 @@ unsigned ProgramBindingBase::createShaderProgram(WebGraphicsContext3D* context, 
 {
     unsigned programObject = context->createProgram();
     if (!programObject) {
-        if (!contextLost(context))
+        if (!IsContextLost(context))
             LOG(ERROR) << "Failed to create shader program";
         return 0;
     }
@@ -135,6 +129,10 @@ void ProgramBindingBase::cleanupShaders(WebGraphicsContext3D* context)
         GLC(context, context->deleteShader(m_fragmentShaderId));
         m_fragmentShaderId = 0;
     }
+}
+
+bool ProgramBindingBase::IsContextLost(WebGraphicsContext3D* context) {
+    return (context->getGraphicsResetStatusARB() != GL_NO_ERROR);
 }
 
 }  // namespace cc

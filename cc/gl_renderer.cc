@@ -294,7 +294,7 @@ void GLRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
 void GLRenderer::drawCheckerboardQuad(const DrawingFrame& frame, const CheckerboardDrawQuad* quad)
 {
     const TileCheckerboardProgram* program = tileCheckerboardProgram();
-    DCHECK(program && program->initialized());
+    DCHECK(program && (program->initialized() || isContextLost()));
     GLC(context(), context()->useProgram(program->program()));
 
     SkColor color = quad->color();
@@ -320,7 +320,7 @@ void GLRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorde
 {
     static float glMatrix[16];
     const SolidColorProgram* program = solidColorProgram();
-    DCHECK(program && program->initialized());
+    DCHECK(program && (program->initialized() || isContextLost()));
     GLC(context(), context()->useProgram(program->program()));
 
     // Use the full quadRect for debug quads to not move the edges based on partial swaps.
@@ -857,7 +857,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
 void GLRenderer::drawYUVVideoQuad(const DrawingFrame& frame, const YUVVideoDrawQuad* quad)
 {
     const VideoYUVProgram* program = videoYUVProgram();
-    DCHECK(program && program->initialized());
+    DCHECK(program && (program->initialized() || isContextLost()));
 
     const VideoLayerImpl::FramePlane& yPlane = quad->yPlane();
     const VideoLayerImpl::FramePlane& uPlane = quad->uPlane();
@@ -930,9 +930,10 @@ void GLRenderer::drawStreamVideoQuad(const DrawingFrame& frame, const StreamVide
 }
 
 struct TextureProgramBinding {
-    template<class Program> void set(Program* program)
+    template<class Program> void set(
+        Program* program, WebKit::WebGraphicsContext3D* context)
     {
-        DCHECK(program && program->initialized());
+        DCHECK(program && (program->initialized() || context->isContextLost()));
         programId = program->program();
         samplerLocation = program->fragmentShader().samplerLocation();
         matrixLocation = program->vertexShader().matrixLocation();
@@ -945,9 +946,10 @@ struct TextureProgramBinding {
 };
 
 struct TexTransformTextureProgramBinding : TextureProgramBinding {
-    template<class Program> void set(Program* program)
+    template<class Program> void set(
+        Program* program, WebKit::WebGraphicsContext3D* context)
     {
-        TextureProgramBinding::set(program);
+        TextureProgramBinding::set(program, context);
         texTransformLocation = program->vertexShader().texTransformLocation();
     }
     int texTransformLocation;
@@ -957,9 +959,9 @@ void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQua
 {
     TexTransformTextureProgramBinding binding;
     if (quad->flipped())
-        binding.set(textureProgramFlip());
+        binding.set(textureProgramFlip(), context());
     else
-        binding.set(textureProgram());
+        binding.set(textureProgram(), context());
     GLC(context(), context()->useProgram(binding.programId));
     GLC(context(), context()->uniform1i(binding.samplerLocation, 0));
     const gfx::RectF& uvRect = quad->uvRect();
@@ -990,7 +992,7 @@ void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQua
 void GLRenderer::drawIOSurfaceQuad(const DrawingFrame& frame, const IOSurfaceDrawQuad* quad)
 {
     TexTransformTextureProgramBinding binding;
-    binding.set(textureIOSurfaceProgram());
+    binding.set(textureIOSurfaceProgram(), context());
 
     GLC(context(), context()->useProgram(binding.programId));
     GLC(context(), context()->uniform1i(binding.samplerLocation, 0));
