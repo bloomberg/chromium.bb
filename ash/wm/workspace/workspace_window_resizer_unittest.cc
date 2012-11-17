@@ -46,22 +46,13 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
     min_size_ = size;
   }
 
-  void set_max_size(const gfx::Size& size) {
-    max_size_ = size;
-  }
-
  private:
   // Overridden from aura::Test::TestWindowDelegate:
   virtual gfx::Size GetMinimumSize() const OVERRIDE {
     return min_size_;
   }
 
-  virtual gfx::Size GetMaximumSize() const OVERRIDE {
-    return max_size_;
-  }
-
   gfx::Size min_size_;
-  gfx::Size max_size_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
 };
@@ -1471,55 +1462,6 @@ TEST_F(WorkspaceWindowResizerTest, CheckUserWindowMangedFlags) {
     EXPECT_EQ("0,150 400x200", window_->bounds().ToString());
     resizer->CompleteDrag(0);
     EXPECT_TRUE(ash::wm::HasUserChangedWindowPositionOrSize(window_.get()));
-  }
-}
-
-// Test that a window with a specified max size doesn't exceed it when dragged.
-TEST_F(WorkspaceWindowResizerTest, TestMaxSizeEnforced) {
-  window_->SetBounds(gfx::Rect(0, 0, 400, 300));
-  delegate_.set_max_size(gfx::Size(401, 301));
-
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-      window_.get(), gfx::Point(), HTBOTTOMRIGHT, empty_windows()));
-  resizer->Drag(CalculateDragPoint(*resizer, 2, 2), 0);
-  EXPECT_EQ(401, window_->bounds().width());
-  EXPECT_EQ(301, window_->bounds().height());
-}
-
-// Test that a window with a specified max width doesn't restrict its height.
-TEST_F(WorkspaceWindowResizerTest, TestPartialMaxSizeEnforced) {
-  window_->SetBounds(gfx::Rect(0, 0, 400, 300));
-  delegate_.set_max_size(gfx::Size(401, 0));
-
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-      window_.get(), gfx::Point(), HTBOTTOMRIGHT, empty_windows()));
-  resizer->Drag(CalculateDragPoint(*resizer, 2, 2), 0);
-  EXPECT_EQ(401, window_->bounds().width());
-  EXPECT_EQ(302, window_->bounds().height());
-}
-
-// Test that a window with a specified max size can't be snapped.
-TEST_F(WorkspaceWindowResizerTest, PhantomSnapMaxSize) {
-  {
-    // With max size not set we get a phantom window controller for dragging off
-    // the right hand side.
-    window_->SetBounds(gfx::Rect(0, 0, 300, 200));
-
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-    EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
-    resizer->Drag(CalculateDragPoint(*resizer, 801, 0), 0);
-    EXPECT_TRUE(resizer->snap_phantom_window_controller_.get());
-  }
-  {
-    // With max size defined, we get no phantom window.
-    window_->SetBounds(gfx::Rect(0, 0, 300, 200));
-    delegate_.set_max_size(gfx::Size(300, 200));
-
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-    resizer->Drag(CalculateDragPoint(*resizer, 801, 0), 0);
-    EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
   }
 }
 

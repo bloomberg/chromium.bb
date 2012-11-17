@@ -38,11 +38,6 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual gfx::Size GetMinimumSize() const OVERRIDE {
     return gfx::Size();
   }
-
-  virtual gfx::Size GetMaximumSize() const OVERRIDE {
-    return gfx::Size();
-  }
-
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) OVERRIDE {}
   virtual void OnFocus(aura::Window* old_focused_window) OVERRIDE {}

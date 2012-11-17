@@ -648,10 +648,6 @@ gfx::Size NativeWidgetAura::GetMinimumSize() const {
   return delegate_->GetMinimumSize();
 }
 
-gfx::Size NativeWidgetAura::GetMaximumSize() const {
-  return delegate_->GetMaximumSize();
-}
-
 void NativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                        const gfx::Rect& new_bounds) {
   if (old_bounds.origin() != new_bounds.origin())

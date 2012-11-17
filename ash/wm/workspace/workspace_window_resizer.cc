@@ -754,9 +754,6 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
     return;
 
-  if (!wm::CanSnapWindow(window()))
-    return;
-
   SnapType last_type = snap_type_;
   snap_type_ = GetSnapType(location);
   if (snap_type_ == SNAP_NONE || snap_type_ != last_type) {
