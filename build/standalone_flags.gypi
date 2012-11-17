@@ -10,12 +10,6 @@
     # these flags for Chrome source that is built as NaCl untrusted
     # code.
     'nacl_default_compile_flags': [
-      # TODO(mseaborn): Move -Werror to untrusted.gypi so that it
-      # applies to Chrome source built as untrusted code.  We have
-      # -Werror as a NaCl-side only flag at the moment because some
-      # Chrome code produces warnings when built with PNaCl/ARM.
-      # See http://code.google.com/p/nativeclient/issues/detail?id=3108
-      '-Werror',
       '-Wundef',
     ],
   },
