@@ -6149,3 +6149,20 @@
    fun:_ZN12_GLOBAL__N_120DiskMountManagerTest23InitDisksAndMountPointsEv
    fun:_ZN12_GLOBAL__N_120DiskMountManagerTest5SetUpEv
 }
+{
+   bug_161657a
+   Memcheck:Uninitialized
+   fun:_ZN10extensions16ExtensionUpdater19MaybeInstallCRXFileEv
+   ...
+   fun:_ZN10extensions20ExtensionUpdaterTest32TestMultipleExtensionDownloadingEb
+   fun:_ZN10extensions72ExtensionUpdaterTest_TestMultipleExtensionDownloadingUpdatesSucceed_Test8TestBodyEv
+}
+{
+   bug_161657b
+   Memcheck:Uninitialized
+   fun:_ZN10extensions16ExtensionUpdater25OnExtensionDownloadFailedERKSsNS_27ExtensionDownloaderDelegate5ErrorERKNS3_10PingResultERKSt3setIiSt4lessIiESaIiEE
+   fun:_ZN10extensions19ExtensionDownloader30NotifyExtensionsDownloadFailedERKSt3setISsSt4lessISsESaISsEERKS1_IiS2_IiESaIiEENS_27ExtensionDownloaderDelegate5ErrorE
+   fun:_ZN10extensions19ExtensionDownloader21HandleManifestResultsERKNS_17ManifestFetchDataEPKN14UpdateManifest7ResultsE
+   fun:_ZN10extensions20ExtensionUpdaterTest25TestHandleManifestResultsEv
+   fun:_ZN10extensions51ExtensionUpdaterTest_TestHandleManifestResults_Test8TestBodyEv
+}
