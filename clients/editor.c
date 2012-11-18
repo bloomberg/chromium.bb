@@ -67,6 +67,7 @@ struct editor {
 	struct widget *widget;
 	struct text_entry *entry;
 	struct text_entry *editor;
+	struct text_entry *active_entry;
 };
 
 static const char *
@@ -876,10 +877,13 @@ text_entry_button_handler(struct widget *widget,
 {
 	struct text_entry *entry = data;
 	struct rectangle allocation;
+	struct editor *editor;
 	int32_t x, y;
 
 	widget_get_allocation(entry->widget, &allocation);
 	input_get_position(input, &x, &y);
+
+	editor = window_get_user_data(entry->window);
 
 	if (button != BTN_LEFT) {
 		return;
@@ -893,6 +897,7 @@ text_entry_button_handler(struct widget *widget,
 		struct wl_seat *seat = input_get_seat(input);
 
 		text_entry_activate(entry, seat);
+		editor->active_entry = entry;
 
 		text_entry_set_anchor_position(entry,
 					       x - allocation.x - text_offset_left,
@@ -921,7 +926,81 @@ editor_button_handler(struct widget *widget,
 
 		text_entry_deactivate(editor->entry, seat);
 		text_entry_deactivate(editor->editor, seat);
+		editor->active_entry = NULL;
 	}
+}
+
+static void
+key_handler(struct window *window,
+	    struct input *input, uint32_t time,
+	    uint32_t key, uint32_t sym, enum wl_keyboard_key_state state,
+	    void *data)
+{
+	struct editor *editor = data;
+	struct text_entry *entry;
+	const char *start, *end, *new_char;
+	char text[16];
+
+	if (!editor->active_entry)
+		return;
+
+	entry = editor->active_entry;
+
+	if (state != WL_KEYBOARD_KEY_STATE_PRESSED)
+		return;
+
+	switch (sym) {
+		case XKB_KEY_BackSpace:
+			start = utf8_prev_char(entry->text, entry->text + entry->cursor);
+
+			if (start == NULL)
+				break;
+
+			end = utf8_end_char(entry->text + entry->cursor);
+			text_entry_delete_text(entry,
+					       start - entry->text,
+					       end - start);
+			break;
+		case XKB_KEY_Delete:
+			start = utf8_start_char(entry->text, entry->text + entry->cursor);
+
+			if (start == NULL)
+				break;
+
+			end = utf8_next_char(start);
+
+			if (end == NULL)
+				break;
+
+			text_entry_delete_text(entry,
+					       start - entry->text,
+					       end - start);
+			break;
+		case XKB_KEY_Left:
+			new_char = utf8_prev_char(entry->text, entry->text + entry->cursor);
+			if (new_char != NULL) {
+				entry->cursor = new_char - entry->text;
+				entry->anchor = entry->cursor;
+				widget_schedule_redraw(entry->widget);
+			}
+			break;
+		case XKB_KEY_Right:
+			new_char = utf8_next_char(entry->text + entry->cursor);
+			if (new_char != NULL) {
+				entry->cursor = new_char - entry->text;
+				entry->anchor = entry->cursor;
+				widget_schedule_redraw(entry->widget);
+			}
+			break;
+		default:
+			if (xkb_keysym_to_utf8(sym, text, sizeof(text)) <= 0)
+				break;
+
+			text_entry_insert_at_cursor(entry, text);
+			break;
+	}
+
+	widget_schedule_redraw(entry->widget);
 }
 
 static void
@@ -960,6 +1039,8 @@ main(int argc, char *argv[])
 	editor.editor = text_entry_create(&editor, "Editor");
 
 	window_set_title(editor.window, "Text Editor");
+	window_set_key_handler(editor.window, key_handler);
+	window_set_user_data(editor.window, &editor);
 
 	widget_set_redraw_handler(editor.widget, redraw_handler);
 	widget_set_resize_handler(editor.widget, resize_handler);
