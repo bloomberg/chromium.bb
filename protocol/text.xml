@@ -113,16 +113,28 @@
       <arg name="length" type="uint"/>
     </event>
     <event name="preedit_styling"/>
-    <event name="key">
-      <description summary="key">
+    <event name="modifiers_map">
+      <description summary="modifiers map">
+        Transfer an array of 0-terminated modifiers names. The position in
+        the array is the index of the modifier as used in the modifiers
+        bitmask in the keysym event.
+      </description>
+      <arg name="map" type="array"/>
+    </event>
+    <event name="keysym">
+      <description summary="keysym">
         Notify when a key event was sent. Key events should not be used
         for normal text input operations, which should be done with
         commit_string, delete_surrounfing_text, etc. The key event follows
-        the wl_keyboard key event convention. Key is a XKB keycode, state a
-        wl_keyboard key_state.
+        the wl_keyboard key event convention. State is a XKB keysym, state a
+	wl_keyboard key_state. Modifiers are a mask for effective modifiers
+	(where the modfier indices are set by the modifiers_map event)
       </description>
-      <arg name="key" type="uint"/>
+      <arg name="serial" type="uint"/>
+      <arg name="time" type="uint"/>
+      <arg name="sym" type="uint"/>
       <arg name="state" type="uint"/>
+      <arg name="modifiers" type="uint"/>
     </event>
     <event name="selection_replacement"/>
     <event name="direction"/>

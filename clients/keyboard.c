@@ -234,7 +234,7 @@ virtual_keyboard_commit_preedit(struct virtual_keyboard *keyboard)
 }
 
 static void
-keyboard_handle_key(struct keyboard *keyboard, const struct key *key)
+keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *key)
 {
 	const char *label = keyboard->state == keyboardstate_default ? key->label : key->alt;
 
@@ -259,8 +259,10 @@ keyboard_handle_key(struct keyboard *keyboard, const struct key *key)
 			break;
 		case keytype_enter:
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
-			input_method_context_key(keyboard->keyboard->context,
-						 XKB_KEY_KP_Enter, WL_KEYBOARD_KEY_STATE_PRESSED);
+			input_method_context_keysym(keyboard->keyboard->context,
+						    display_get_serial(keyboard->keyboard->display),
+						    time, 
+						    XKB_KEY_KP_Enter, WL_KEYBOARD_KEY_STATE_PRESSED, 0);
 			break;
 		case keytype_space:
 			keyboard->keyboard->preedit_string = strcat(keyboard->keyboard->preedit_string,
@@ -277,28 +279,38 @@ keyboard_handle_key(struct keyboard *keyboard, const struct key *key)
 			break;
 		case keytype_tab:
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
-			input_method_context_key(keyboard->keyboard->context,
-						 XKB_KEY_Tab, WL_KEYBOARD_KEY_STATE_PRESSED);
+			input_method_context_keysym(keyboard->keyboard->context,
+						    display_get_serial(keyboard->keyboard->display),
+						    time, 
+						    XKB_KEY_Tab, WL_KEYBOARD_KEY_STATE_PRESSED, 0);
 			break;
 		case keytype_arrow_up:
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
-			input_method_context_key(keyboard->keyboard->context,
-						 XKB_KEY_Up, WL_KEYBOARD_KEY_STATE_PRESSED);
+			input_method_context_keysym(keyboard->keyboard->context,
+						    display_get_serial(keyboard->keyboard->display),
+						    time, 
+						    XKB_KEY_Up, WL_KEYBOARD_KEY_STATE_PRESSED, 0);
 			break;
 		case keytype_arrow_left:
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
-			input_method_context_key(keyboard->keyboard->context,
-						 XKB_KEY_Left, WL_KEYBOARD_KEY_STATE_PRESSED);
+			input_method_context_keysym(keyboard->keyboard->context,
+						    display_get_serial(keyboard->keyboard->display),
+						    time, 
+						    XKB_KEY_Left, WL_KEYBOARD_KEY_STATE_PRESSED, 0);
 			break;
 		case keytype_arrow_right:
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
-			input_method_context_key(keyboard->keyboard->context,
-						 XKB_KEY_Right, WL_KEYBOARD_KEY_STATE_PRESSED);
+			input_method_context_keysym(keyboard->keyboard->context,
+						    display_get_serial(keyboard->keyboard->display),
+						    time, 
+						    XKB_KEY_Right, WL_KEYBOARD_KEY_STATE_PRESSED, 0);
 			break;
 		case keytype_arrow_down:
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
-			input_method_context_key(keyboard->keyboard->context,
-						 XKB_KEY_Down, WL_KEYBOARD_KEY_STATE_PRESSED);
+			input_method_context_keysym(keyboard->keyboard->context,
+						    display_get_serial(keyboard->keyboard->display),
+						    time, 
+						    XKB_KEY_Down, WL_KEYBOARD_KEY_STATE_PRESSED, 0);
 			break;
 	}
 }
@@ -330,7 +342,7 @@ button_handler(struct widget *widget,
 	for (i = 0; i < sizeof(keys) / sizeof(*keys); ++i) {
 		col -= keys[i].width;
 		if (col < 0) {
-			keyboard_handle_key(keyboard, &keys[i]);
+			keyboard_handle_key(keyboard, time, &keys[i]);
 			break;
 		}
 	}

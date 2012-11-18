@@ -53,9 +53,22 @@
       <arg name="index" type="int"/>
       <arg name="length" type="uint"/>
     </request>
-    <request name="key">
-      <arg name="key" type="uint"/>
+    <request name="modifiers_map">
+      <arg name="map" type="array"/>
+    </request>
+    <request name="keysym">
+      <description summary="keysym">
+        Notify when a key event was sent. Key events should not be used
+        for normal text input operations, which should be done with
+        commit_string, delete_surrounfing_text, etc. The key event follows
+        the wl_keyboard key event convention. State is a XKB keysym, state a
+        wl_keyboard key_state.
+      </description>
+      <arg name="serial" type="uint"/>
+      <arg name="time" type="uint"/>
+      <arg name="sym" type="uint"/>
       <arg name="state" type="uint"/>
+      <arg name="modifiers" type="uint"/>
     </request>
     <event name="surrounding_text">
       <description summary="surrounding text event">

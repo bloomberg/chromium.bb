@@ -350,14 +350,28 @@ input_method_context_delete_surrounding_text(struct wl_client *client,
 }
 
 static void
-input_method_context_key(struct wl_client *client,
-			 struct wl_resource *resource,
-			 uint32_t key,
-			 uint32_t state)
+input_method_context_modifiers_map(struct wl_client *client,
+				   struct wl_resource *resource,
+				   struct wl_array *map)
 {
 	struct input_method_context *context = resource->data;
 
-	text_model_send_key(&context->model->resource, key, state);
+	text_model_send_modifiers_map(&context->model->resource, map);
+}
+
+static void
+input_method_context_keysym(struct wl_client *client,
+			    struct wl_resource *resource,
+			    uint32_t serial,
+			    uint32_t time,
+			    uint32_t sym,
+			    uint32_t state,
+			    uint32_t modifiers)
+{
+	struct input_method_context *context = resource->data;
+
+	text_model_send_keysym(&context->model->resource, serial, time,
+			       sym, state, modifiers);
 }
 
 static const struct input_method_context_interface input_method_context_implementation = {
@@ -365,7 +379,8 @@ static const struct input_method_context_interface input_method_context_implemen
 	input_method_context_commit_string,
 	input_method_context_preedit_string,
 	input_method_context_delete_surrounding_text,
-	input_method_context_key
+	input_method_context_modifiers_map,
+	input_method_context_keysym
 };
 
 static void

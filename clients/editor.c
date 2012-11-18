@@ -361,10 +361,20 @@ text_model_preedit_styling(void *data,
 }
 
 static void
-text_model_key(void *data,
-	       struct text_model *text_model,
-               uint32_t key,
-               uint32_t state)
+text_model_modifiers_map(void *data,
+			 struct text_model *text_model,
+			 struct wl_array *map)
+{
+}
+
+static void
+text_model_keysym(void *data,
+		  struct text_model *text_model,
+		  uint32_t serial,
+		  uint32_t time,
+		  uint32_t key,
+		  uint32_t state,
+		  uint32_t modifiers)
 {
 	struct text_entry *entry = data;
 	const char *state_label;
@@ -454,7 +464,8 @@ static const struct text_model_listener text_model_listener = {
 	text_model_preedit_string,
 	text_model_delete_surrounding_text,
 	text_model_preedit_styling,
-	text_model_key,
+	text_model_modifiers_map,
+	text_model_keysym,
 	text_model_selection_replacement,
 	text_model_direction,
 	text_model_locale,
