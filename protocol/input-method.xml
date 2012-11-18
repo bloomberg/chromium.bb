@@ -79,6 +79,19 @@
       </description>
        <arg name="keyboard" type="new_id" interface="wl_keyboard"/>
     </request>
+    <request name="key">
+      <arg name="serial" type="uint"/>
+      <arg name="time" type="uint"/>
+      <arg name="key" type="uint"/>
+      <arg name="state" type="uint"/>
+    </request>
+    <request name="modifiers">
+      <arg name="serial" type="uint"/>
+      <arg name="mods_depressed" type="uint"/>
+      <arg name="mods_latched" type="uint"/>
+      <arg name="mods_locked" type="uint"/>
+      <arg name="group" type="uint"/>
+    </request>
     <event name="surrounding_text">
       <description summary="surrounding text event">
         The plain surrounding text around the input position. Cursor is the

@@ -454,6 +454,43 @@ input_method_context_grab_keyboard(struct wl_client *client,
 	wl_keyboard_start_grab(keyboard, &context->grab);
 }
 
+static void
+input_method_context_key(struct wl_client *client,
+			 struct wl_resource *resource,
+			 uint32_t serial,
+			 uint32_t time,
+			 uint32_t key,
+			 uint32_t state_w)
+{
+	struct input_method_context *context = resource->data;
+	struct weston_seat *seat = context->input_method->seat;
+	struct wl_keyboard *keyboard = seat->seat.keyboard;
+	struct wl_keyboard_grab *default_grab = &keyboard->default_grab;
+
+	default_grab->interface->key(default_grab, time, key, state_w);
+}
+
+static void
+input_method_context_modifiers(struct wl_client *client,
+			       struct wl_resource *resource,
+			       uint32_t serial,
+			       uint32_t mods_depressed,
+			       uint32_t mods_latched,
+			       uint32_t mods_locked,
+			       uint32_t group)
+{
+	struct input_method_context *context = resource->data;
+
+	struct weston_seat *seat = context->input_method->seat;
+	struct wl_keyboard *keyboard = seat->seat.keyboard;
+	struct wl_keyboard_grab *default_grab = &keyboard->default_grab;
+
+	default_grab->interface->modifiers(default_grab,
+					   serial, mods_depressed,
+					   mods_latched, mods_locked,
+					   group);
+}
+
 static const struct input_method_context_interface input_method_context_implementation = {
 	input_method_context_destroy,
 	input_method_context_commit_string,
@@ -461,7 +498,9 @@ static const struct input_method_context_interface input_method_context_implemen
 	input_method_context_delete_surrounding_text,
 	input_method_context_modifiers_map,
 	input_method_context_keysym,
-	input_method_context_grab_keyboard
+	input_method_context_grab_keyboard,
+	input_method_context_key,
+	input_method_context_modifiers
 };
 
 static void
