@@ -4024,6 +4024,12 @@ display_get_serial(struct display *display)
 	return display->serial;
 }
 
+struct xkb_context *
+display_get_xkb_context(struct display *display)
+{
+	return display->xkb_context;
+}
+
 EGLDisplay
 display_get_egl_display(struct display *d)
 {
