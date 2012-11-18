@@ -285,7 +285,7 @@ bool CanPasteBookmarkManagerFunction::RunImpl() {
     return false;
   }
   bool can_paste = bookmark_utils::CanPasteFromClipboard(parent_node);
-  SetResult(Value::CreateBooleanValue(can_paste));
+  SetResult(new base::FundamentalValue(can_paste));
   return true;
 }
 
@@ -501,7 +501,7 @@ bool GetSubtreeBookmarkManagerFunction::RunImpl() {
 
 bool CanEditBookmarkManagerFunction::RunImpl() {
   PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile_);
-  SetResult(Value::CreateBooleanValue(
+  SetResult(new base::FundamentalValue(
       prefs->GetBoolean(prefs::kEditBookmarksEnabled)));
   return true;
 }
@@ -519,6 +519,6 @@ bool CanOpenNewWindowsBookmarkFunction::RunImpl() {
     can_open_new_windows = false;
 #endif  // OS_WIN
 
-  SetResult(Value::CreateBooleanValue(can_open_new_windows));
+  SetResult(new base::FundamentalValue(can_open_new_windows));
   return true;
 }

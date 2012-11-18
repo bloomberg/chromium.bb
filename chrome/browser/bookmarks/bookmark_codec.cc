@@ -70,7 +70,7 @@ Value* BookmarkCodec::Encode(const BookmarkNode* bookmark_bar_node,
   // We are going to store the computed checksum. So set stored checksum to be
   // the same as computed checksum.
   stored_checksum_ = computed_checksum_;
-  main->Set(kChecksumKey, Value::CreateStringValue(computed_checksum_));
+  main->Set(kChecksumKey, new base::StringValue(computed_checksum_));
   main->Set(kRootsKey, roots);
   return main;
 }
