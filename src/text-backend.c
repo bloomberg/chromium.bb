@@ -72,8 +72,12 @@ struct input_method_context {
 	struct wl_resource resource;
 
 	struct text_model *model;
+	struct input_method *input_method;
 
 	struct wl_list link;
+
+	struct wl_resource *keyboard;
+	struct wl_keyboard_grab grab;
 };
 
 struct text_backend {
@@ -92,6 +96,7 @@ struct text_backend {
 
 static void input_method_context_create(struct text_model *model,
 					struct input_method *input_method);
+static void input_method_context_end_keyboard_grab(struct input_method_context *context);
 
 static void input_method_init_seat(struct weston_seat *seat);
 
@@ -102,8 +107,12 @@ deactivate_text_model(struct text_model *text_model,
 	struct weston_compositor *ec = text_model->ec;
 
 	if (input_method->model == text_model) {
-		if (input_method->context && input_method->input_method_binding)
-			input_method_send_deactivate(input_method->input_method_binding, &input_method->context->resource);
+		if (input_method->context && input_method->input_method_binding) {
+			input_method_context_end_keyboard_grab(input_method->context);
+			input_method_send_deactivate(input_method->input_method_binding,
+						     &input_method->context->resource);
+		}
+
 		wl_list_remove(&input_method->link);
 		input_method->model = NULL;
 		input_method->context = NULL;
@@ -374,19 +383,95 @@ input_method_context_keysym(struct wl_client *client,
 			       sym, state, modifiers);
 }
 
+static void
+unbind_keyboard(struct wl_resource *resource)
+{
+	struct input_method_context *context = resource->data;
+
+	input_method_context_end_keyboard_grab(context);
+	context->keyboard = NULL;
+
+	free(resource);
+}
+
+static void
+input_method_context_grab_key(struct wl_keyboard_grab *grab,
+			      uint32_t time, uint32_t key, uint32_t state_w)
+{
+	struct input_method_context *input_method_context = container_of(grab, struct input_method_context, grab);
+	uint32_t serial;
+       
+	if (input_method_context->keyboard) {
+		serial = wl_display_next_serial(input_method_context->model->ec->wl_display);
+		wl_keyboard_send_key(input_method_context->keyboard,
+				     serial, time, key, state_w);
+	}
+}
+
+static void
+input_method_context_grab_modifier(struct wl_keyboard_grab *grab, uint32_t serial,
+				   uint32_t mods_depressed, uint32_t mods_latched,
+				   uint32_t mods_locked, uint32_t group)
+{
+	struct input_method_context *input_method_context = container_of(grab, struct input_method_context, grab);
+
+	if (!input_method_context->keyboard)
+		return;
+
+	wl_keyboard_send_modifiers(input_method_context->keyboard,
+				   serial, mods_depressed, mods_latched,
+				   mods_locked, group);
+}
+
+static const struct wl_keyboard_grab_interface input_method_context_grab = {
+	input_method_context_grab_key,
+	input_method_context_grab_modifier,
+};
+
+static void
+input_method_context_grab_keyboard(struct wl_client *client,
+				   struct wl_resource *resource,
+				   uint32_t id)
+{
+	struct input_method_context *context = resource->data;
+	struct wl_resource *cr;
+	struct weston_seat *seat = context->input_method->seat;
+	struct wl_keyboard *keyboard = seat->seat.keyboard;
+
+	cr = wl_client_add_object(client, &wl_keyboard_interface,
+				  NULL, id, context);
+	cr->destroy = unbind_keyboard;
+
+	context->keyboard = cr;
+
+	wl_keyboard_send_keymap(cr, WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
+				seat->xkb_info.keymap_fd,
+				seat->xkb_info.keymap_size);
+
+	if (keyboard->grab != &keyboard->default_grab) {
+		wl_keyboard_end_grab(keyboard);
+	}
+	wl_keyboard_start_grab(keyboard, &context->grab);
+}
+
 static const struct input_method_context_interface input_method_context_implementation = {
 	input_method_context_destroy,
 	input_method_context_commit_string,
 	input_method_context_preedit_string,
 	input_method_context_delete_surrounding_text,
 	input_method_context_modifiers_map,
-	input_method_context_keysym
+	input_method_context_keysym,
+	input_method_context_grab_keyboard
 };
 
 static void
 destroy_input_method_context(struct wl_resource *resource)
 {
 	struct input_method_context *context = resource->data;
+
+	if (context->keyboard) {
+		wl_resource_destroy(context->keyboard);
+	}
 
 	free(context);
 }
@@ -400,7 +485,7 @@ input_method_context_create(struct text_model *model,
 	if (!input_method->input_method_binding)
 		return;
 
-	context = malloc(sizeof *context);
+	context = calloc(1, sizeof *context);
 	if (context == NULL)
 		return;
 
@@ -413,12 +498,26 @@ input_method_context_create(struct text_model *model,
 	wl_signal_init(&context->resource.destroy_signal);
 
 	context->model = model;
+	context->input_method = input_method;
 	input_method->context = context;
+
+	context->grab.interface = &input_method_context_grab;
 
 	wl_client_add_resource(input_method->input_method_binding->client, &context->resource);
 
 	input_method_send_activate(input_method->input_method_binding, &context->resource);
 }
+
+static void
+input_method_context_end_keyboard_grab(struct input_method_context *context)
+{
+	struct wl_keyboard_grab *grab = &context->grab;
+
+	if (grab->keyboard && (grab->keyboard->grab == grab)) {
+		wl_keyboard_end_grab(grab->keyboard);
+	}
+}
+
 
 static void
 unbind_input_method(struct wl_resource *resource)

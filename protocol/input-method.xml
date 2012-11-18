@@ -70,6 +70,15 @@
       <arg name="state" type="uint"/>
       <arg name="modifiers" type="uint"/>
     </request>
+    <request name="grab_keyboard">
+      <description summary="grab hardware keyboard">
+        Allows an input method to receive hardware keyboard input and process
+        key events to generate text events (with pre-edit) over the. This allows
+        input methods which compose multiple key events for inputting text
+        like it is done for CJK languages.
+      </description>
+       <arg name="keyboard" type="new_id" interface="wl_keyboard"/>
+    </request>
     <event name="surrounding_text">
       <description summary="surrounding text event">
         The plain surrounding text around the input position. Cursor is the
