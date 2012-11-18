@@ -55,6 +55,9 @@ struct text_entry {
 	uint32_t preedit_cursor;
 	struct text_model *model;
 	struct text_layout *layout;
+	struct {
+		xkb_mod_mask_t shift_mask;
+	} keysym;
 };
 
 struct editor {
@@ -365,6 +368,9 @@ text_model_modifiers_map(void *data,
 			 struct text_model *text_model,
 			 struct wl_array *map)
 {
+	struct text_entry *entry = data;
+
+	entry->keysym.shift_mask = keysym_modifiers_get_mask(map, "Shift");
 }
 
 static void
@@ -377,12 +383,32 @@ text_model_keysym(void *data,
 		  uint32_t modifiers)
 {
 	struct text_entry *entry = data;
-	const char *state_label;
-	const char *key_label = "released";
+	const char *state_label = "release";
+	const char *key_label = "Unknown";
 	const char *new_char;
 
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 		state_label = "pressed";
+	}
+
+	if (key == XKB_KEY_Left ||
+	    key == XKB_KEY_Right) {
+		if (state != WL_KEYBOARD_KEY_STATE_RELEASED)
+			return;
+
+		if (key == XKB_KEY_Left)
+			new_char = utf8_prev_char(entry->text, entry->text + entry->cursor);
+		else
+			new_char = utf8_next_char(entry->text + entry->cursor);
+
+		if (new_char != NULL) {
+			entry->cursor = new_char - entry->text;
+			if (!(modifiers & entry->keysym.shift_mask))
+				entry->anchor = entry->cursor;
+			widget_schedule_redraw(entry->widget);
+		}
+
+		return;
 	}
 
 	switch (key) {
@@ -390,26 +416,9 @@ text_model_keysym(void *data,
 			key_label = "Tab";
 			break;
 		case XKB_KEY_KP_Enter:
+		case XKB_KEY_Return:
 			key_label = "Enter";
 			break;
-		case XKB_KEY_Left:
-			new_char = utf8_prev_char(entry->text, entry->text + entry->cursor);
-			if (new_char != NULL) {
-				entry->cursor = new_char - entry->text;
-				entry->anchor = entry->cursor;
-				widget_schedule_redraw(entry->widget);
-			}
-			break;
-		case XKB_KEY_Right:
-			new_char = utf8_next_char(entry->text + entry->cursor);
-			if (new_char != NULL) {
-				entry->cursor = new_char - entry->text;
-				entry->anchor = entry->cursor;
-				widget_schedule_redraw(entry->widget);
-			}
-			break;
-		default:
-			key_label = "Unknown";
 	}
 
 	fprintf(stderr, "%s key was %s.\n", key_label, state_label);
@@ -478,7 +487,7 @@ text_entry_create(struct editor *editor, const char *text)
 {
 	struct text_entry *entry;
 
-	entry = malloc(sizeof *entry);
+	entry = calloc(1, sizeof *entry);
 
 	entry->widget = widget_add_widget(editor->widget, entry);
 	entry->window = editor->window;

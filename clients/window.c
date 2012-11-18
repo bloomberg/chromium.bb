@@ -4165,3 +4165,48 @@ display_exit(struct display *display)
 {
 	display->running = 0;
 }
+
+void
+keysym_modifiers_add(struct wl_array *modifiers_map,
+		     const char *name)
+{
+	size_t len = strlen(name) + 1;
+	char *p;
+
+	p = wl_array_add(modifiers_map, len);
+
+	if (p == NULL)
+		return;
+
+	strncpy(p, name, len);
+}
+
+static xkb_mod_index_t
+keysym_modifiers_get_index(struct wl_array *modifiers_map,
+			   const char *name)
+{
+	xkb_mod_index_t index = 0;
+	char *p = modifiers_map->data;
+
+	while ((const char *)p < (const char *)(modifiers_map->data + modifiers_map->size)) {
+		if (strcmp(p, name) == 0)
+			return index;
+
+		index++;
+		p += strlen(p) + 1;
+	}
+
+	return XKB_MOD_INVALID;
+}
+
+xkb_mod_mask_t
+keysym_modifiers_get_mask(struct wl_array *modifiers_map,
+			  const char *name)
+{
+	xkb_mod_index_t index = keysym_modifiers_get_index(modifiers_map, name);
+
+	if (index == XKB_MOD_INVALID)
+		return XKB_MOD_INVALID;
+
+	return 1 << index;
+}

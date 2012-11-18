@@ -38,6 +38,9 @@ struct virtual_keyboard {
 	struct input_method_context *context;
 	struct display *display;
 	char *preedit_string;
+	struct {
+		xkb_mod_mask_t shift_mask;
+	} keysym;
 };
 
 enum key_type {
@@ -234,12 +237,17 @@ virtual_keyboard_commit_preedit(struct virtual_keyboard *keyboard)
 }
 
 static void
-keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *key)
+keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *key, struct input *input, enum wl_pointer_button_state state)
 {
 	const char *label = keyboard->state == keyboardstate_default ? key->label : key->alt;
+	xkb_mod_mask_t mod_mask = keyboard->state == keyboardstate_default ? 0 : keyboard->keyboard->keysym.shift_mask;
+	uint32_t key_state = (state == WL_POINTER_BUTTON_STATE_PRESSED) ? WL_KEYBOARD_KEY_STATE_PRESSED : WL_KEYBOARD_KEY_STATE_RELEASED;
 
 	switch (key->key_type) {
 		case keytype_default:
+			if (state != WL_POINTER_BUTTON_STATE_PRESSED)
+				break;
+
 			keyboard->keyboard->preedit_string = strcat(keyboard->keyboard->preedit_string,
 								    label);
 			input_method_context_preedit_string(keyboard->keyboard->context,
@@ -247,6 +255,9 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 							    strlen(keyboard->keyboard->preedit_string));
 			break;
 		case keytype_backspace:
+			if (state != WL_POINTER_BUTTON_STATE_PRESSED)
+				break;
+
 			if (strlen(keyboard->keyboard->preedit_string) == 0) {
 				input_method_context_delete_surrounding_text(keyboard->keyboard->context,
 									     -1, 1);
@@ -262,55 +273,61 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 			input_method_context_keysym(keyboard->keyboard->context,
 						    display_get_serial(keyboard->keyboard->display),
 						    time, 
-						    XKB_KEY_KP_Enter, WL_KEYBOARD_KEY_STATE_PRESSED, 0);
+						    XKB_KEY_Return, key_state, mod_mask);
 			break;
 		case keytype_space:
+			if (state != WL_POINTER_BUTTON_STATE_PRESSED)
+				break;
 			keyboard->keyboard->preedit_string = strcat(keyboard->keyboard->preedit_string,
 								    " ");
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			break;
 		case keytype_switch:
+			if (state != WL_POINTER_BUTTON_STATE_PRESSED)
+				break;
 			if (keyboard->state == keyboardstate_default)
 				keyboard->state = keyboardstate_uppercase;
 			else
 				keyboard->state = keyboardstate_default;
 			break;
 		case keytype_symbols:
+			if (state != WL_POINTER_BUTTON_STATE_PRESSED)
+				break;
 			break;
 		case keytype_tab:
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			input_method_context_keysym(keyboard->keyboard->context,
 						    display_get_serial(keyboard->keyboard->display),
 						    time, 
-						    XKB_KEY_Tab, WL_KEYBOARD_KEY_STATE_PRESSED, 0);
+						    XKB_KEY_Tab, key_state, mod_mask);
 			break;
 		case keytype_arrow_up:
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			input_method_context_keysym(keyboard->keyboard->context,
 						    display_get_serial(keyboard->keyboard->display),
 						    time, 
-						    XKB_KEY_Up, WL_KEYBOARD_KEY_STATE_PRESSED, 0);
+						    XKB_KEY_Up, key_state, mod_mask);
 			break;
 		case keytype_arrow_left:
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			input_method_context_keysym(keyboard->keyboard->context,
 						    display_get_serial(keyboard->keyboard->display),
 						    time, 
-						    XKB_KEY_Left, WL_KEYBOARD_KEY_STATE_PRESSED, 0);
+						    XKB_KEY_Left, key_state, mod_mask);
 			break;
 		case keytype_arrow_right:
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			input_method_context_keysym(keyboard->keyboard->context,
 						    display_get_serial(keyboard->keyboard->display),
 						    time, 
-						    XKB_KEY_Right, WL_KEYBOARD_KEY_STATE_PRESSED, 0);
+						    XKB_KEY_Right, key_state, mod_mask);
 			break;
 		case keytype_arrow_down:
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			input_method_context_keysym(keyboard->keyboard->context,
 						    display_get_serial(keyboard->keyboard->display),
 						    time, 
-						    XKB_KEY_Down, WL_KEYBOARD_KEY_STATE_PRESSED, 0);
+						    XKB_KEY_Down, key_state, mod_mask);
 			break;
 	}
 }
@@ -327,7 +344,7 @@ button_handler(struct widget *widget,
 	int row, col;
 	unsigned int i;
 
-	if (state != WL_POINTER_BUTTON_STATE_PRESSED || button != BTN_LEFT) {
+	if (button != BTN_LEFT) {
 		return;
 	}
 
@@ -342,7 +359,7 @@ button_handler(struct widget *widget,
 	for (i = 0; i < sizeof(keys) / sizeof(*keys); ++i) {
 		col -= keys[i].width;
 		if (col < 0) {
-			keyboard_handle_key(keyboard, time, &keys[i]);
+			keyboard_handle_key(keyboard, time, &keys[i], input, state);
 			break;
 		}
 	}
@@ -388,6 +405,7 @@ input_method_activate(void *data,
 		      struct input_method_context *context)
 {
 	struct virtual_keyboard *keyboard = data;
+	struct wl_array modifiers_map;
 
 	if (keyboard->context)
 		input_method_context_destroy(keyboard->context);
@@ -401,6 +419,14 @@ input_method_activate(void *data,
 	input_method_context_add_listener(context,
 					  &input_method_context_listener,
 					  keyboard);
+
+	wl_array_init(&modifiers_map);
+	keysym_modifiers_add(&modifiers_map, "Shift");
+	keysym_modifiers_add(&modifiers_map, "Control");
+	keysym_modifiers_add(&modifiers_map, "Mod1");
+	input_method_context_modifiers_map(context, &modifiers_map);
+	keyboard->keysym.shift_mask = keysym_modifiers_get_mask(&modifiers_map, "Shift");
+	wl_array_release(&modifiers_map);
 }
 
 static void

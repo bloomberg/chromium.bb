@@ -455,4 +455,12 @@ output_get_allocation(struct output *output, struct rectangle *allocation);
 struct wl_output *
 output_get_wl_output(struct output *output);
 
+void
+keysym_modifiers_add(struct wl_array *modifiers_map,
+		     const char *name);
+
+xkb_mod_mask_t
+keysym_modifiers_get_mask(struct wl_array *modifiers_map,
+			  const char *name);
+
 #endif
