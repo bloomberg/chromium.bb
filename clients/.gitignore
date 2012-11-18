@@ -34,3 +34,4 @@ weston-tablet-shell
 weston-terminal
 workspaces-client-protocol.h
 workspaces-protocol.c
+weston-simple-im

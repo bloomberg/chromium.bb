@@ -13,7 +13,8 @@ libexec_PROGRAMS =				\
 	$(tablet_shell)				\
 	$(screenshooter)			\
 	$(screensaver)				\
-	$(keyboard)
+	$(keyboard)				\
+	weston-simple-im
 
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS =					\
@@ -138,6 +139,14 @@ weston_keyboard_SOURCES = 			\
 	input-method-protocol.c			\
 	input-method-client-protocol.h
 weston_keyboard_LDADD = $(toolkit_libs)
+
+weston_simple_im_SOURCES = 			\
+	weston-simple-im.c			\
+	desktop-shell-client-protocol.h		\
+	desktop-shell-protocol.c		\
+	input-method-protocol.c			\
+	input-method-client-protocol.h
+weston_simple_im_LDADD = $(toolkit_libs)
 
 weston_info_SOURCES =				\
 	weston-info.c				\
