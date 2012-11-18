@@ -289,6 +289,8 @@ struct weston_compositor {
 	struct wl_signal show_input_panel_signal;
 	struct wl_signal hide_input_panel_signal;
 
+	struct wl_signal seat_created_signal;
+
 	struct wl_event_loop *input_loop;
 	struct wl_event_source *input_loop_source;
 
@@ -757,12 +759,8 @@ clipboard_create(struct weston_seat *seat);
 void
 text_cursor_position_notifier_create(struct weston_compositor *ec);
 
-void
-text_model_factory_create(struct weston_compositor *ec);
-
-void
-input_method_create(struct weston_compositor *ec,
-		    struct weston_seat *seat);
+int
+text_backend_init(struct weston_compositor *ec);
 
 struct weston_process;
 typedef void (*weston_process_cleanup_func_t)(struct weston_process *process,

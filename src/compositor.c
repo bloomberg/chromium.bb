@@ -2471,7 +2471,7 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 		      &seat->new_drag_icon_listener);
 
 	clipboard_create(seat);
-	input_method_create(ec, seat);
+	wl_signal_emit(&ec->seat_created_signal, seat);
 }
 
 WL_EXPORT void
@@ -2864,6 +2864,7 @@ weston_compositor_init(struct weston_compositor *ec,
 	wl_signal_init(&ec->unlock_signal);
 	wl_signal_init(&ec->show_input_panel_signal);
 	wl_signal_init(&ec->hide_input_panel_signal);
+	wl_signal_init(&ec->seat_created_signal);
 	ec->launcher_sock = weston_environment_get_fd("WESTON_LAUNCHER_SOCK");
 
 	ec->output_id_pool = 0;
@@ -2890,7 +2891,7 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	screenshooter_create(ec);
 	text_cursor_position_notifier_create(ec);
-	text_model_factory_create(ec);
+	text_backend_init(ec);
 
 	wl_data_device_manager_init(ec->wl_display);
 

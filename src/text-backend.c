@@ -22,6 +22,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "compositor.h"
 #include "text-server-protocol.h"
@@ -29,6 +30,7 @@
 
 struct input_method;
 struct input_method_context;
+struct text_backend;
 
 struct text_model {
 	struct wl_resource resource;
@@ -62,6 +64,8 @@ struct input_method {
 	int focus_listener_initialized;
 
 	struct input_method_context *context;
+
+	struct text_backend *text_backend;
 };
 
 struct input_method_context {
@@ -70,6 +74,20 @@ struct input_method_context {
 	struct text_model *model;
 
 	struct wl_list link;
+};
+
+struct text_backend {
+	struct weston_compositor *compositor;
+
+	struct {
+		char *path;
+		struct wl_resource *binding;
+		struct weston_process process;
+		struct wl_client *client;
+	} input_method;
+
+	struct wl_listener seat_created_listener;
+	struct wl_listener destroy_listener;
 };
 
 static void input_method_context_create(struct text_model *model,
@@ -84,7 +102,7 @@ deactivate_text_model(struct text_model *text_model,
 	struct weston_compositor *ec = text_model->ec;
 
 	if (input_method->model == text_model) {
-		if (input_method->input_method_binding)
+		if (input_method->context && input_method->input_method_binding)
 			input_method_send_deactivate(input_method->input_method_binding, &input_method->context->resource);
 		wl_list_remove(&input_method->link);
 		input_method->model = NULL;
@@ -273,7 +291,7 @@ text_model_factory_notifier_destroy(struct wl_listener *listener, void *data)
 	free(text_model_factory);
 }
 
-WL_EXPORT void
+static void
 text_model_factory_create(struct weston_compositor *ec)
 {
 	struct text_model_factory *text_model_factory;
@@ -391,9 +409,12 @@ static void
 unbind_input_method(struct wl_resource *resource)
 {
 	struct input_method *input_method = resource->data;
+	struct text_backend *text_backend = input_method->text_backend;
 
 	input_method->input_method_binding = NULL;
 	input_method->context = NULL;
+
+	text_backend->input_method.binding = NULL;
 
 	free(resource);
 }
@@ -405,6 +426,7 @@ bind_input_method(struct wl_client *client,
 		  uint32_t id)
 {
 	struct input_method *input_method = data;
+	struct text_backend *text_backend = input_method->text_backend;
 	struct wl_resource *resource;
 
 	resource = wl_client_add_object(client, &input_method_interface,
@@ -414,6 +436,8 @@ bind_input_method(struct wl_client *client,
 	if (input_method->input_method_binding == NULL) {
 		resource->destroy = unbind_input_method;
 		input_method->input_method_binding = resource;
+
+		text_backend->input_method.binding = resource;
 		return;
 	}
 
@@ -467,11 +491,47 @@ input_method_init_seat(struct weston_seat *seat)
 	seat->input_method->focus_listener_initialized = 1;
 }
 
-WL_EXPORT void
-input_method_create(struct weston_compositor *ec,
-		    struct weston_seat *seat)
+static void
+handle_input_method_sigchld(struct weston_process *process, int status)
 {
+	struct text_backend *text_backend =
+		container_of(process, struct text_backend, input_method.process);
+
+	text_backend->input_method.process.pid = 0;
+	text_backend->input_method.client = NULL;
+}
+
+static void
+launch_input_method(struct text_backend *text_backend)
+{
+	if (text_backend->input_method.binding)
+		return;
+
+	if (!text_backend->input_method.path)
+		return;
+
+	if (text_backend->input_method.process.pid != 0)
+		return;
+
+	text_backend->input_method.client = weston_client_launch(text_backend->compositor,
+								&text_backend->input_method.process,
+								text_backend->input_method.path,
+								handle_input_method_sigchld);
+
+	if (!text_backend->input_method.client)
+		weston_log("not able to start %s\n", text_backend->input_method.path);
+}
+
+static void
+handle_seat_created(struct wl_listener *listener,
+		    void *data)
+{
+	struct weston_seat *seat = data;
+	struct text_backend *text_backend =
+		container_of(listener, struct text_backend,
+			     seat_created_listener);
 	struct input_method *input_method;
+	struct weston_compositor *ec = seat->compositor;
 
 	input_method = calloc(1, sizeof *input_method);
 
@@ -479,6 +539,7 @@ input_method_create(struct weston_compositor *ec,
 	input_method->model = NULL;
 	input_method->focus_listener_initialized = 0;
 	input_method->context = NULL;
+	input_method->text_backend = text_backend;
 
 	input_method->input_method_global =
 		wl_display_add_global(ec->wl_display,
@@ -489,5 +550,68 @@ input_method_create(struct weston_compositor *ec,
 	wl_signal_add(&seat->seat.destroy_signal, &input_method->destroy_listener);
 
 	seat->input_method = input_method;
+
+	launch_input_method(text_backend);
 }
 
+static void
+text_backend_configuration(struct text_backend *text_backend)
+{
+	char *config_file;
+	char *path = NULL;
+
+	struct config_key input_method_keys[] = {
+		{ "path", CONFIG_KEY_STRING, &path }
+	};
+
+	struct config_section cs[] = {
+		{ "input-method", input_method_keys, ARRAY_LENGTH(input_method_keys), NULL }
+	};
+
+	config_file = config_file_path("weston.ini");
+	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), text_backend);
+	free(config_file);
+
+	if (path)
+		text_backend->input_method.path = path;
+	else
+		text_backend->input_method.path = strdup(LIBEXECDIR "/weston-keyboard");
+}
+
+static void
+text_backend_notifier_destroy(struct wl_listener *listener, void *data)
+{
+	struct text_backend *text_backend =
+		container_of(listener, struct text_backend, destroy_listener);
+
+	if (text_backend->input_method.client)
+		wl_client_destroy(text_backend->input_method.client);
+
+	free(text_backend->input_method.path);
+
+	free(text_backend);
+}
+
+
+WL_EXPORT int
+text_backend_init(struct weston_compositor *ec)
+{
+	struct text_backend *text_backend;
+
+	text_backend = calloc(1, sizeof(*text_backend));
+
+	text_backend->compositor = ec;
+
+	text_backend->seat_created_listener.notify = handle_seat_created;
+	wl_signal_add(&ec->seat_created_signal,
+		      &text_backend->seat_created_listener);
+
+	text_backend->destroy_listener.notify = text_backend_notifier_destroy;
+	wl_signal_add(&ec->destroy_signal, &text_backend->destroy_listener);
+
+	text_backend_configuration(text_backend);
+
+	text_model_factory_create(ec);
+
+	return 0;
+}
