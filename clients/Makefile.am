@@ -81,6 +81,8 @@ noinst_LIBRARIES = libtoytoolkit.a
 libtoytoolkit_a_SOURCES =			\
 	window.c				\
 	window.h				\
+	keyboard-utils.c			\
+	keyboard-utils.h			\
 	text-cursor-position-protocol.c		\
 	text-cursor-position-client-protocol.h	\
 	workspaces-protocol.c			\
