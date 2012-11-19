@@ -308,13 +308,21 @@ content::BrowserContext* ChromeShellDelegate::GetCurrentBrowserContext() {
 
 void ChromeShellDelegate::ToggleSpokenFeedback() {
 #if defined(OS_CHROMEOS)
-  content::WebUI* login_screen_web_ui = NULL;
+  content::WebUI* web_ui = NULL;
+
   chromeos::WebUILoginDisplayHost* host =
       static_cast<chromeos::WebUILoginDisplayHost*>(
           chromeos::BaseLoginDisplayHost::default_host());
   if (host && host->GetOobeUI())
-    login_screen_web_ui = host->GetOobeUI()->web_ui();
-  chromeos::accessibility::ToggleSpokenFeedback(login_screen_web_ui);
+    web_ui = host->GetOobeUI()->web_ui();
+
+  if (!web_ui &&
+      chromeos::ScreenLocker::default_screen_locker() &&
+      chromeos::ScreenLocker::default_screen_locker()->locked()) {
+    web_ui = chromeos::ScreenLocker::default_screen_locker()->
+        GetAssociatedWebUI();
+  }
+  chromeos::accessibility::ToggleSpokenFeedback(web_ui);
 #endif
 }
 

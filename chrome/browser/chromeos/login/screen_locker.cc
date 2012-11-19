@@ -434,4 +434,8 @@ void ScreenLocker::OnFullyDisplayedCallback() {
   delegate_->ProcessFullyDisplayedAnimations();
 }
 
+content::WebUI* ScreenLocker::GetAssociatedWebUI() {
+  return delegate_->GetAssociatedWebUI();
+}
+
 }  // namespace chromeos

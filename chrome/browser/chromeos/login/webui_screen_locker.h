@@ -18,6 +18,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/widget/widget.h"
 
+namespace content {
+class WebUI;
+}
+
 namespace chromeos {
 
 class ScreenLocker;
@@ -48,6 +52,7 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual void AnimateAuthenticationSuccess() OVERRIDE;
   virtual void ProcessFullyDisplayedAnimations() OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
+  virtual content::WebUI* GetAssociatedWebUI() OVERRIDE;
 
   // LoginDisplay::Delegate: implementation
   virtual void CreateAccount() OVERRIDE;

@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -116,6 +117,10 @@ void WebUIScreenLocker::ClearErrors() {
 
 gfx::NativeWindow WebUIScreenLocker::GetNativeWindow() const {
   return lock_window_->GetNativeWindow();
+}
+
+content::WebUI* WebUIScreenLocker::GetAssociatedWebUI() {
+  return GetWebUI();
 }
 
 WebUIScreenLocker::~WebUIScreenLocker() {

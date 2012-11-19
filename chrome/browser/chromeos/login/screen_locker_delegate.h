@@ -11,6 +11,10 @@
 
 class GURL;
 
+namespace content {
+class WebUI;
+}
+
 namespace chromeos {
 
 class ScreenLocker;
@@ -55,6 +59,10 @@ class ScreenLockerDelegate {
 
   // Returns the native window displaying the lock screen.
   virtual gfx::NativeWindow GetNativeWindow() const = 0;
+
+  // Returns WebUI associated with screen locker implementation or NULL if
+  // there isn't one.
+  virtual content::WebUI* GetAssociatedWebUI();
 
  protected:
   // ScreenLocker that owns this delegate.
