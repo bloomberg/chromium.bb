@@ -25,9 +25,12 @@
 #include "content/public/common/ssl_status.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "net/base/net_errors.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using base::TimeDelta;
+using base::TimeTicks;
 using content::InterstitialPage;
 using content::NavigationController;
 using content::NavigationEntry;
@@ -41,8 +44,27 @@ enum SSLBlockingPageEvent {
   UNUSED_ENUM,
 };
 
-void RecordSSLBlockingPageStats(SSLBlockingPageEvent event) {
+void RecordSSLBlockingPageEventStats(SSLBlockingPageEvent event) {
   UMA_HISTOGRAM_ENUMERATION("interstial.ssl", event, UNUSED_ENUM);
+}
+
+void RecordSSLBlockingPageTimeStats(
+    bool proceed,
+    int cert_error,
+    const base::TimeTicks& start_time,
+    const base::TimeTicks& end_time) {
+  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_type",
+     SSLErrorInfo::NetErrorToErrorType(cert_error), SSLErrorInfo::END_OF_ENUM);
+  base::TimeDelta delta = end_time - start_time;
+  if (proceed) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("interstitial.ssl_accept_time", delta,
+        base::TimeDelta::FromMilliseconds(30),
+        base::TimeDelta::FromMinutes(30), 50);
+  } else {
+    UMA_HISTOGRAM_CUSTOM_TIMES("interstitial.ssl_reject_time", delta,
+        base::TimeDelta::FromMilliseconds(30),
+        base::TimeDelta::FromMinutes(30), 50);
+  }
 }
 
 }  // namespace
@@ -64,9 +86,10 @@ SSLBlockingPage::SSLBlockingPage(
       request_url_(request_url),
       overridable_(overridable),
       strict_enforcement_(strict_enforcement) {
-  RecordSSLBlockingPageStats(SHOW);
+  RecordSSLBlockingPageEventStats(SHOW);
   interstitial_page_ = InterstitialPage::Create(
       web_contents_, true, request_url, this);
+  display_start_time_ = base::TimeTicks::Now();
   interstitial_page_->Show();
 }
 
@@ -157,14 +180,18 @@ void SSLBlockingPage::OverrideRendererPrefs(
 }
 
 void SSLBlockingPage::OnProceed() {
-  RecordSSLBlockingPageStats(PROCEED);
+  RecordSSLBlockingPageTimeStats(true, cert_error_, display_start_time_,
+      base::TimeTicks::Now());
+  RecordSSLBlockingPageEventStats(PROCEED);
 
   // Accepting the certificate resumes the loading of the page.
   NotifyAllowCertificate();
 }
 
 void SSLBlockingPage::OnDontProceed() {
-  RecordSSLBlockingPageStats(DONT_PROCEED);
+  RecordSSLBlockingPageTimeStats(false, cert_error_, display_start_time_,
+      base::TimeTicks::Now());
+  RecordSSLBlockingPageEventStats(DONT_PROCEED);
 
   NotifyDenyCertificate();
 }
