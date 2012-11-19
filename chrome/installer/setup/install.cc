@@ -295,7 +295,7 @@ installer::InstallShortcutOperation GetAppLauncherShortcutOperation(
       original_state.GetProductState(installer_state.system_install(),
                                      BrowserDistribution::CHROME_APP_HOST);
   bool app_launcher_exists = original_app_host_state &&
-      CommandLine(original_app_host_state->uninstall_command())
+      original_app_host_state->uninstall_command()
           .HasSwitch(installer::switches::kChromeAppLauncher);
   if (!app_launcher_exists)
     return installer::INSTALL_SHORTCUT_CREATE_ALL;
