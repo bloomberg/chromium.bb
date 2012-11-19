@@ -72,8 +72,7 @@ class SyncExtensionHelper {
 
   // Installs all extensions pending sync in |profile| of the given
   // type.
-  void InstallExtensionsPendingForSync(Profile* profile,
-                                       extensions::Extension::Type type);
+  void InstallExtensionsPendingForSync(Profile* profile);
 
   // Returns true iff |profile1| and |profile2| have the same extensions and
   // they are all in the same state.
@@ -96,6 +95,7 @@ class SyncExtensionHelper {
       ExtensionNameMap;
   typedef std::map<Profile*, ExtensionNameMap> ProfileExtensionNameMap;
   typedef std::map<std::string, std::string> StringMap;
+  typedef std::map<std::string, extensions::Extension::Type> TypeMap;
 
   friend struct DefaultSingletonTraits<SyncExtensionHelper>;
 
@@ -118,6 +118,7 @@ class SyncExtensionHelper {
 
   ProfileExtensionNameMap profile_extensions_;
   StringMap id_to_name_;
+  TypeMap id_to_type_;
   bool setup_completed_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncExtensionHelper);

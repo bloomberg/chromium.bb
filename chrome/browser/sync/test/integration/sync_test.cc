@@ -360,6 +360,9 @@ bool SyncTest::SetupSync() {
 }
 
 void SyncTest::CleanUpOnMainThread() {
+  // Some of the pending messages might rely on browser windows still being
+  // around, so run messages both before and after closing all browsers.
+  content::RunAllPendingInMessageLoop();
   // Close all browser windows.
   browser::CloseAllBrowsers();
   content::RunAllPendingInMessageLoop();

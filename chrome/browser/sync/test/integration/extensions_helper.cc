@@ -112,8 +112,7 @@ bool IsIncognitoEnabled(Profile* profile, int index) {
 }
 
 void InstallExtensionsPendingForSync(Profile* profile) {
-  SyncExtensionHelper::GetInstance()->InstallExtensionsPendingForSync(
-      profile, extensions::Extension::TYPE_EXTENSION);
+  SyncExtensionHelper::GetInstance()->InstallExtensionsPendingForSync(profile);
 }
 
 std::string CreateFakeExtensionName(int index) {

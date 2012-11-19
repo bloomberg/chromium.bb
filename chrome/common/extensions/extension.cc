@@ -3858,6 +3858,7 @@ Extension::SyncType Extension::GetSyncType() const {
 
     case Extension::TYPE_HOSTED_APP:
     case Extension::TYPE_LEGACY_PACKAGED_APP:
+    case Extension::TYPE_PLATFORM_APP:
         return SYNC_TYPE_APP;
 
     default:

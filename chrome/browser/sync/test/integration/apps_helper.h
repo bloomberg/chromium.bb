@@ -14,16 +14,22 @@ class Profile;
 
 namespace apps_helper {
 
-// Returns true iff the profile with index |index| has the same apps as the
-// verifier.
+// Returns true iff the profile with index |index| has the same apps (hosted,
+// legacy packaged and platform) as the verifier.
 bool HasSameAppsAsVerifier(int index) WARN_UNUSED_RESULT;
 
-// Returns true iff all existing profiles have the same apps as the verifier.
+// Returns true iff all existing profiles have the same apps (hosted,
+// legacy packaged and platform) as the verifier.
 bool AllProfilesHaveSameAppsAsVerifier() WARN_UNUSED_RESULT;
 
 // Installs the app for the given index to |profile|, and returns the extension
 // ID of the new app.
 std::string InstallApp(Profile* profile, int index);
+
+// Installs the platform app for the given index to |profile|, and returns the
+// extension ID of the new app. Indices passed to this method should be distinct
+// from indices passed to InstallApp.
+std::string InstallPlatformApp(Profile* profile, int index);
 
 // Installs the app for the given index to all profiles (including the
 // verifier), and returns the extension ID of the new app.
@@ -39,7 +45,7 @@ void InstallAppsPendingForSync(Profile* profile);
 // Enables the app for the given index on |profile|.
 void EnableApp(Profile* profile, int index);
 
-// Disables the appfor the given index on |profile|.
+// Disables the app for the given index on |profile|.
 void DisableApp(Profile* profile, int index);
 
 // Enables the app for the given index in incognito mode on |profile|.

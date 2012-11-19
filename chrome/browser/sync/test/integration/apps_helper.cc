@@ -47,6 +47,13 @@ std::string InstallApp(Profile* profile, int index) {
       extensions::Extension::TYPE_HOSTED_APP);
 }
 
+std::string InstallPlatformApp(Profile* profile, int index) {
+  return SyncExtensionHelper::GetInstance()->InstallExtension(
+      profile,
+      CreateFakeAppName(index),
+      extensions::Extension::TYPE_PLATFORM_APP);
+}
+
 std::string InstallAppForAllProfiles(int index) {
   for (int i = 0; i < test()->num_clients(); ++i)
     InstallApp(test()->GetProfile(i), index);
@@ -79,8 +86,7 @@ void IncognitoDisableApp(Profile* profile, int index) {
 }
 
 void InstallAppsPendingForSync(Profile* profile) {
-  SyncExtensionHelper::GetInstance()->InstallExtensionsPendingForSync(
-      profile, extensions::Extension::TYPE_HOSTED_APP);
+  SyncExtensionHelper::GetInstance()->InstallExtensionsPendingForSync(profile);
 }
 
 syncer::StringOrdinal GetPageOrdinalForApp(Profile* profile,

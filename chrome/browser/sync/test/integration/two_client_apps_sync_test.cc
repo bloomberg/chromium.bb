@@ -23,6 +23,7 @@ using apps_helper::IncognitoDisableApp;
 using apps_helper::IncognitoEnableApp;
 using apps_helper::InstallApp;
 using apps_helper::InstallAppsPendingForSync;
+using apps_helper::InstallPlatformApp;
 using apps_helper::SetAppLaunchOrdinalForApp;
 using apps_helper::SetPageOrdinalForApp;
 using apps_helper::UninstallApp;
@@ -86,6 +87,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, StartWithDifferentApps) {
   for (int j = 0; j < kNumProfile1Apps; ++i, ++j) {
     InstallApp(GetProfile(1), i);
     InstallApp(verifier(), i);
+    CopyNTPOrdinals(GetProfile(1), verifier(), i);
+  }
+
+  const int kNumPlatformApps = 5;
+  for (int j = 0; j < kNumPlatformApps; ++i, ++j) {
+    InstallPlatformApp(GetProfile(1), i);
+    InstallPlatformApp(verifier(), i);
     CopyNTPOrdinals(GetProfile(1), verifier(), i);
   }
 
