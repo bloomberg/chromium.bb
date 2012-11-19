@@ -91,8 +91,6 @@ def _CheckSaneArguments(package_list, command, options):
     _PrintUsageAndDie('%s is not a valid command' % command)
   if not options.packages and command == 'commit' and not options.all:
     _PrintUsageAndDie('Please specify at least one package')
-  if not options.boards and command == 'commit':
-    _PrintUsageAndDie('Please specify a board')
   if not os.path.isdir(options.srcroot):
     _PrintUsageAndDie('srcroot is not a valid path')
   options.srcroot = os.path.abspath(options.srcroot)
@@ -197,7 +195,7 @@ def main(argv):
   parser = optparse.OptionParser('cros_mark_as_stable OPTIONS packages')
   parser.add_option('--all', action='store_true',
                     help='Mark all packages as stable.')
-  parser.add_option('-b', '--boards',
+  parser.add_option('-b', '--boards', default='',
                     help='Colon-separated list of boards')
   parser.add_option('--drop_file',
                     help='File to list packages that were revved.')

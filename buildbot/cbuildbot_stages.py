@@ -984,6 +984,11 @@ class UprevStage(bs.BuilderStage):
 
   option_name = 'uprev'
 
+  def __init__(self, options, build_config, boards=None):
+    super(UprevStage, self).__init__(options, build_config)
+    if boards is not None:
+      self._boards = boards
+
   def _PerformStage(self):
     # Perform chrome uprev.
     chrome_atom_to_build = None
