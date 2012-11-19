@@ -347,9 +347,6 @@ enum window_location {
 };
 
 static const cairo_user_data_key_t surface_data_key;
-struct surface_data {
-	struct wl_buffer *buffer;
-};
 
 #ifdef HAVE_CAIRO_EGL
 
@@ -414,21 +411,21 @@ display_create_egl_window_surface(struct display *display,
 
 #endif
 
+struct shm_surface_data {
+	struct wl_buffer *buffer;
+	struct shm_pool *pool;
+};
+
 struct wl_buffer *
 display_get_buffer_for_surface(struct display *display,
 			       cairo_surface_t *surface)
 {
-	struct surface_data *data;
+	struct shm_surface_data *data;
 
 	data = cairo_surface_get_user_data (surface, &surface_data_key);
 
 	return data->buffer;
 }
-
-struct shm_surface_data {
-	struct surface_data data;
-	struct shm_pool *pool;
-};
 
 static void
 shm_pool_destroy(struct shm_pool *pool);
@@ -438,7 +435,7 @@ shm_surface_data_destroy(void *p)
 {
 	struct shm_surface_data *data = p;
 
-	wl_buffer_destroy(data->data.buffer);
+	wl_buffer_destroy(data->buffer);
 	if (data->pool)
 		shm_pool_destroy(data->pool);
 
@@ -570,10 +567,10 @@ display_create_shm_surface_from_pool(struct display *display,
 	else
 		format = WL_SHM_FORMAT_ARGB8888;
 
-	data->data.buffer = wl_shm_pool_create_buffer(pool->pool, offset,
-						      rectangle->width,
-						      rectangle->height,
-						      stride, format);
+	data->buffer = wl_shm_pool_create_buffer(pool->pool, offset,
+						 rectangle->width,
+						 rectangle->height,
+						 stride, format);
 
 	return surface;
 }
