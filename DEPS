@@ -260,7 +260,7 @@ deps = {
     "/trunk/deps/third_party/speex@160092",
 
   "src/third_party/yasm/source/patched-yasm":
-    "/trunk/deps/third_party/yasm/patched-yasm@154708",
+    "/trunk/deps/third_party/yasm/patched-yasm@167605",
 
   "src/third_party/libjpeg_turbo":
     "/trunk/deps/third_party/libjpeg_turbo@149334",

@@ -40,7 +40,7 @@
 /* Define to 1 if you have the GNU C Library */
 #define HAVE_GNU_C_LIBRARY 1
 
-/* Define if you have the iconv() function. */
+/* Define if you have the iconv() function and it works. */
 /* #undef HAVE_ICONV */
 
 /* Define to 1 if you have the <inttypes.h> header file. */
@@ -115,23 +115,20 @@
 /* Define to the address where bug reports for this package should be sent. */
 #define PACKAGE_BUGREPORT "bug-yasm@tortall.net"
 
-/* Define to build version of this package. */
-#define PACKAGE_BUILD "HEAD"
-
-/* Define to internal version of this package. */
-#define PACKAGE_INTVER "0.7.99"
-
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "yasm"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "yasm HEAD"
+#define PACKAGE_STRING "yasm 1.2.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "yasm"
 
+/* Define to the home page for this package. */
+#define PACKAGE_URL ""
+
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "HEAD"
+#define PACKAGE_VERSION "1.2.0"
 
 /* Define to 1 if the C compiler supports function prototypes. */
 #define PROTOTYPES 1
@@ -155,7 +152,7 @@
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "HEAD"
+#define VERSION "1.2.0"
 
 /* Define if using the dmalloc debugging malloc package */
 /* #undef WITH_DMALLOC */
