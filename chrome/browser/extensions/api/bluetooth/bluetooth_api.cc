@@ -372,7 +372,7 @@ bool BluetoothDisconnectFunction::RunImpl() {
   return GetEventRouter(profile())->ReleaseSocket(options.socket_id);
 }
 
-BluetoothReadFunction::BluetoothReadFunction() {}
+BluetoothReadFunction::BluetoothReadFunction() : success_(false) {}
 BluetoothReadFunction::~BluetoothReadFunction() {}
 
 bool BluetoothReadFunction::Prepare() {
@@ -433,7 +433,11 @@ bool BluetoothReadFunction::Respond() {
   return success_;
 }
 
-BluetoothWriteFunction::BluetoothWriteFunction() {}
+BluetoothWriteFunction::BluetoothWriteFunction()
+    : success_(false),
+      data_to_write_(NULL) {
+}
+
 BluetoothWriteFunction::~BluetoothWriteFunction() {}
 
 bool BluetoothWriteFunction::Prepare() {
