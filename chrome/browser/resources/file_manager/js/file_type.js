@@ -66,9 +66,9 @@ FileType.types = [
   {type: 'archive', name: 'TAR_ARCHIVE_FILE_TYPE', subtype: 'TAR',
    pattern: /\.tar$/i},
   {type: 'archive', name: 'TAR_BZIP2_ARCHIVE_FILE_TYPE', subtype: 'TBZ2',
-   pattern: /\.(tar.bz2|tbz|tbz2)$/i},
+   pattern: /\.(tar\.bz2|tbz|tbz2)$/i},
   {type: 'archive', name: 'TAR_GZIP_ARCHIVE_FILE_TYPE', subtype: 'TGZ',
-   pattern: /\.(tar.|t)gz$/i},
+   pattern: /\.(tar\.|t)gz$/i},
 
   // Hosted docs.
   {type: 'hosted', icon: 'gdoc', name: 'GDOC_DOCUMENT_FILE_TYPE',
