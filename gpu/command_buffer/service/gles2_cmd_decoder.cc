@@ -3801,6 +3801,19 @@ bool GLES2DecoderImpl::GetHelper(
         }
       }
       return true;
+    case GL_VERTEX_ARRAY_BINDING_OES:
+      *num_written = 1;
+      if (params) {
+        if (state_.vertex_attrib_manager != default_vertex_attrib_manager_) {
+          GLuint client_id = 0;
+          vertex_array_manager_->GetClientId(
+              state_.vertex_attrib_manager->service_id(), &client_id);
+          *params = client_id;
+        } else {
+          *params = 0;
+        }
+      }
+      return true;
     case GL_TEXTURE_BINDING_2D:
       *num_written = 1;
       if (params) {

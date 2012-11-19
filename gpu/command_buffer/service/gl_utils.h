@@ -107,6 +107,9 @@
 // GL_OES_compressed_ETC1_RGB8_texture
 #define GL_ETC1_RGB8_OES                       0x8D64
 
+// GL_OES_vertex_array_object
+#define GL_VERTEX_ARRAY_BINDING_OES            0x85B5
+
 #define GL_GLEXT_PROTOTYPES 1
 
 // GL_ARB_get_program_binary

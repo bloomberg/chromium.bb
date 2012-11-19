@@ -537,6 +537,8 @@ _ENUM_LISTS = {
       'GL_UNPACK_FLIP_Y_CHROMIUM',
       'GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM',
       'GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM',
+      # we can add this because we emulate it if the driver does not support it.
+      'GL_VERTEX_ARRAY_BINDING_OES',
       'GL_VIEWPORT',
     ],
     'invalid': [
