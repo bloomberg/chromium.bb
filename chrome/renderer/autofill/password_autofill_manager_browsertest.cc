@@ -125,7 +125,7 @@ class PasswordAutofillManagerTest : public ChromeRenderViewTest {
     autofill_agent_->textFieldDidChange(username_element_);
     // Processing is delayed because of a WebKit bug, see
     // PasswordAutocompleteManager::TextDidChangeInTextField() for details.
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
   }
 
   void SimulateKeyDownEvent(const WebInputElement& element,

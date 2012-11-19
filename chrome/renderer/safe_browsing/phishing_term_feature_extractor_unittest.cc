@@ -99,7 +99,7 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
         FROM_HERE,
         base::Bind(&PhishingTermFeatureExtractorTest::QuitExtraction,
                    base::Unretained(this)));
-    msg_loop_.RunAllPending();
+    msg_loop_.RunUntilIdle();
   }
 
   // Completion callback for feature extraction.

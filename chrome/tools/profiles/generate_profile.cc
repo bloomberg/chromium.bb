@@ -257,7 +257,7 @@ int main(int argc, const char* argv[]) {
     const int batch_size = std::min(kBatchSize, url_count - page_id);
     InsertURLBatch(&profile, page_id, batch_size, types);
     // Run all pending messages to give TopSites a chance to catch up.
-    message_loop.RunAllPending();
+    message_loop.RunUntilIdle();
     page_id += batch_size;
   }
 
@@ -266,7 +266,7 @@ int main(int argc, const char* argv[]) {
   profile.DestroyTopSites();
   profile.DestroyHistoryService();
 
-  message_loop.RunAllPending();
+  message_loop.RunUntilIdle();
 
   file_util::FileEnumerator file_iterator(profile.GetPath(), false,
       file_util::FileEnumerator::FILES);

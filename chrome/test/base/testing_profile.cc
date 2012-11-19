@@ -384,7 +384,7 @@ void TestingProfile::DestroyTopSites() {
     // to be run to properly shutdown. Run all pending tasks now. This is
     // normally handled by browser_process shutdown.
     if (MessageLoop::current())
-      MessageLoop::current()->RunAllPending();
+      MessageLoop::current()->RunUntilIdle();
   }
 }
 

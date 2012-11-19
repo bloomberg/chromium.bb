@@ -933,7 +933,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithEmptyString) {
 
   spell_check()->RequestTextChecking(string16(), 0, &completion);
 
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(completion.completion_count_, 1U);
 }
@@ -945,7 +945,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithoutMisspelling) {
   const string16 text = ASCIIToUTF16("hello");
   spell_check()->RequestTextChecking(text, 0, &completion);
 
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(completion.completion_count_, 1U);
 }
@@ -957,7 +957,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithSingleMisspelling) {
   const string16 text = ASCIIToUTF16("apple, zz");
   spell_check()->RequestTextChecking(text, 0, &completion);
 
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(completion.completion_count_, 1U);
   EXPECT_EQ(completion.last_results_.size(), 1U);
@@ -972,7 +972,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithMisspellings) {
   const string16 text = ASCIIToUTF16("apple, zz, orange, zz");
   spell_check()->RequestTextChecking(text, 0, &completion);
 
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(completion.completion_count_, 1U);
   EXPECT_EQ(completion.last_results_.size(), 2U);
@@ -996,7 +996,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithMultipleRequests) {
   for (int i = 0; i < 3; ++i)
     spell_check()->RequestTextChecking(text[i], 0, &completion[i]);
 
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   for (int i = 0; i < 3; ++i) {
     EXPECT_EQ(completion[i].completion_count_, 1U);
@@ -1017,7 +1017,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithoutInitialization) {
   spell_check()->RequestTextChecking(text, 0, &completion);
 
   // The task will not be posted yet.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(completion.completion_count_, 0U);
 }
 
@@ -1039,7 +1039,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckMultipleTimesWithoutInitialization) {
 
   // The last task will be posted after initialization, however the other
   // requests should be pressed without spellchecking.
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   for (int i = 0; i < 2; ++i)
     EXPECT_EQ(completion[i].completion_count_, 1U);
   EXPECT_EQ(completion[2].completion_count_, 0U);
@@ -1050,7 +1050,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckMultipleTimesWithoutInitialization) {
   // Calls PostDelayedSpellCheckTask instead of OnInit here for simplicity.
   spell_check()->PostDelayedSpellCheckTask(
       spell_check()->pending_request_param_.release());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
   for (int i = 0; i < 3; ++i)
     EXPECT_EQ(completion[i].completion_count_, 1U);
 }

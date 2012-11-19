@@ -52,7 +52,7 @@ TEST(ChromeV8ContextSet, Lifecycle) {
   EXPECT_FALSE(context->web_frame());
 
   // Run loop to do the actual deletion.
-  loop.RunAllPending();
+  loop.RunUntilIdle();
 }
 
 }  // namespace extensions

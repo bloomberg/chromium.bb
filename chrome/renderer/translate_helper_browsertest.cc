@@ -96,7 +96,7 @@ TEST_F(TranslateHelperTest, TranslateLibNeverReady) {
 
   translate_helper_->TranslatePage(
       view_->GetPageId(), "en", "fr", std::string());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   int page_id;
   TranslateErrors::Type error;
@@ -132,7 +132,7 @@ TEST_F(TranslateHelperTest, TranslateSuccess) {
   std::string target_lang("fr");
   translate_helper_->TranslatePage(
       view_->GetPageId(), original_lang, target_lang, std::string());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   int page_id;
   std::string received_original_lang;
@@ -175,7 +175,7 @@ TEST_F(TranslateHelperTest, TranslateFailure) {
 
   translate_helper_->TranslatePage(
       view_->GetPageId(), "en", "fr", std::string());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   int page_id;
   TranslateErrors::Type error;
@@ -209,7 +209,7 @@ TEST_F(TranslateHelperTest, UndefinedSourceLang) {
   translate_helper_->TranslatePage(view_->GetPageId(),
                                    chrome::kUnknownLanguageCode, "fr",
                                    std::string());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   int page_id;
   TranslateErrors::Type error;
@@ -249,7 +249,7 @@ TEST_F(TranslateHelperTest, MultipleSimilarTranslations) {
   // happens.
   translate_helper_->TranslatePage(
       view_->GetPageId(), original_lang, target_lang, std::string());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   int page_id;
   std::string received_original_lang;
@@ -287,7 +287,7 @@ TEST_F(TranslateHelperTest, MultipleDifferentTranslations) {
   std::string new_target_lang("de");
   translate_helper_->TranslatePage(
       view_->GetPageId(), original_lang, new_target_lang, std::string());
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->RunUntilIdle();
 
   int page_id;
   std::string received_original_lang;
