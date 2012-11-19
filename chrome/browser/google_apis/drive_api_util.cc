@@ -5,7 +5,7 @@
 #include "chrome/browser/google_apis/drive_api_util.h"
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/browser/google_apis/drive_switches.h"
 
 namespace google_apis {
 namespace util {

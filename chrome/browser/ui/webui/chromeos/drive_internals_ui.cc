@@ -23,6 +23,7 @@
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
+#include "chrome/browser/google_apis/drive_switches.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/time_util.h"
@@ -342,9 +343,9 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
 
 void DriveInternalsWebUIHandler::UpdateDriveRelatedFlagsSection() {
   const char* kDriveRelatedFlags[] = {
+    google_apis::switches::kEnableDriveV2Api,
     switches::kDisableDrive,
     switches::kDisableDrivePrefetch,
-    switches::kEnableDriveV2Api,
   };
 
   base::ListValue flags;
