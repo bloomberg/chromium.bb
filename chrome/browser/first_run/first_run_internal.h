@@ -38,9 +38,6 @@ enum FirstRunState {
 // This variable should only be accessed through IsChromeFirstRun().
 extern FirstRunState first_run_;
 
-// The kSentinelFile file absence will tell us it is a first run.
-extern const char* const kSentinelFile;
-
 // Loads master preferences from the master preference file into the installer
 // master preferences. Passes the master preference file path out in
 // master_prefs_path. Returns the pointer to installer::MasterPreferences object

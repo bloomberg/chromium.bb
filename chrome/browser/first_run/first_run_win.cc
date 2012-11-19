@@ -154,11 +154,23 @@ bool LaunchSetupForEula(const FilePath::StringType& value, int* ret_code) {
   }
 }
 
+// Populates |path| with the path to |file| in the sentinel directory. This is
+// the application directory for user-level installs, and the default user data
+// dir for system-level installs. Returns false on error.
+bool GetSentinelFilePath(const wchar_t* file, FilePath* path) {
+  FilePath exe_path;
+  if (!PathService::Get(base::DIR_EXE, &exe_path))
+    return false;
+  if (InstallUtil::IsPerUserInstall(exe_path.value().c_str()))
+    *path = exe_path;
+  else if (!PathService::Get(chrome::DIR_USER_DATA, path))
+    return false;
+  *path = path->Append(file);
+  return true;
+}
+
 bool GetEULASentinelFilePath(FilePath* path) {
-  return InstallUtil::GetSentinelFilePath(
-      installer::kEULASentinelFile,
-      BrowserDistribution::GetDistribution(),
-      path);
+  return GetSentinelFilePath(installer::kEULASentinelFile, path);
 }
 
 // Returns true if the EULA is required but has not been accepted by this user.
@@ -472,10 +484,7 @@ bool ImportSettings(Profile* profile,
 }
 
 bool GetFirstRunSentinelFilePath(FilePath* path) {
-  return InstallUtil::GetSentinelFilePath(
-      chrome::kFirstRunSentinel,
-      BrowserDistribution::GetDistribution(),
-      path);
+  return GetSentinelFilePath(chrome::kFirstRunSentinel, path);
 }
 
 void SetImportPreferencesAndLaunchImport(
