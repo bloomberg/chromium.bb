@@ -153,8 +153,6 @@ gfx::Size CustomFrameViewAsh::GetMinimumSize() {
 // views::ButtonListener overrides:
 void CustomFrameViewAsh::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
-  if (event.IsShiftDown())
-    ui::LayerAnimator::set_slow_animation_mode(true);
   if (sender == maximize_button_) {
     // The maximize button may move out from under the cursor.
     ResetWindowControls();
@@ -166,8 +164,6 @@ void CustomFrameViewAsh::ButtonPressed(views::Button* sender,
   } else if (sender == close_button_) {
     frame_->Close();
   }
-  if (event.IsShiftDown())
-    ui::LayerAnimator::set_slow_animation_mode(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

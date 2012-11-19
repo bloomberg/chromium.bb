@@ -11,6 +11,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/base/events/event.h"
+#include "ui/base/keycodes/keyboard_codes_posix.h"
 
 namespace ash {
 namespace {
@@ -69,6 +70,8 @@ AcceleratorFilter::~AcceleratorFilter() {
 
 ui::EventResult AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
   const ui::EventType type = event->type();
+  if (event->key_code() == ui::VKEY_SHIFT)
+    ui::LayerAnimator::set_slow_animation_mode(type == ui::ET_KEY_PRESSED);
   if (type != ui::ET_KEY_PRESSED && type != ui::ET_KEY_RELEASED)
     return ui::ER_UNHANDLED;
   if (event->is_char())

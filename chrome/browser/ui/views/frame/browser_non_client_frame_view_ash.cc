@@ -284,12 +284,6 @@ gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() {
 
 void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
                                                   const ui::Event& event) {
-  // When shift-clicking slow down animations for visual debugging.
-  // We used to do this via an event filter that looked for the shift key being
-  // pressed but this interfered with several normal keyboard shortcuts.
-  if (event.IsShiftDown())
-    ui::LayerAnimator::set_slow_animation_mode(true);
-
   if (sender == size_button_) {
     // The maximize button may move out from under the cursor.
     ResetWindowControls();
@@ -306,9 +300,6 @@ void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
     // Toggle immersive mode.
     browser_view()->SetImmersiveMode(!browser_view()->IsImmersiveMode());
   }
-
-  if (event.IsShiftDown())
-    ui::LayerAnimator::set_slow_animation_mode(false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
