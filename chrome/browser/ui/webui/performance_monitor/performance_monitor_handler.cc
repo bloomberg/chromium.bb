@@ -224,7 +224,8 @@ scoped_ptr<DictionaryValue> GetEventCategory(EventCategory category) {
 // Queries the performance monitor database for active intervals between
 // |start| and |end| times and appends the results to |results|.
 void DoGetActiveIntervals(ListValue* results,
-                          const base::Time& start, const base::Time& end) {
+                          const base::Time& start,
+                          const base::Time& end) {
   Database* db = PerformanceMonitor::GetInstance()->database();
   std::vector<TimeRange> intervals = db->GetActiveIntervals(start, end);
 
@@ -240,8 +241,10 @@ void DoGetActiveIntervals(ListValue* results,
 // Queries the PerformanceMonitor database for events of type |event_type|
 // between |start| and |end| times, creates a new event with localized keys
 // for display, and appends the results to |results|.
-void DoGetEvents(ListValue* results, std::set<EventType> event_types,
-                 const base::Time& start, const base::Time& end) {
+void DoGetEvents(ListValue* results,
+                 const std::set<EventType>& event_types,
+                 const base::Time& start,
+                 const base::Time& end) {
   Database* db = PerformanceMonitor::GetInstance()->database();
 
   for (std::set<EventType>::const_iterator iter = event_types.begin();
@@ -342,7 +345,7 @@ scoped_ptr<ListValue> GetDisplayMetricsForInterval(
 // of metric points, with each sublist containing the data for an interval
 // for which PerformanceMonitor was active.
 void DoGetMetrics(ListValue* results,
-                  const std::set<MetricType> metric_types,
+                  const std::set<MetricType>& metric_types,
                   const base::Time& start,
                   const base::Time& end,
                   const base::TimeDelta& resolution,
