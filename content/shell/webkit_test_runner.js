@@ -8,7 +8,6 @@ var testRunner = testRunner || {};
   native function Display();
   native function GetWorkerThreadCount();
   native function NotifyDone();
-  native function OverridePreference();
   native function SetDumpAsText();
   native function SetDumpChildFramesAsText();
   native function SetPrinting();
@@ -36,9 +35,6 @@ var testRunner = testRunner || {};
     Object.defineProperty(this,
                           "workerThreadCount",
                           {value: GetWorkerThreadCount});
-    Object.defineProperty(this,
-                          "overridePreference",
-                          {value: OverridePreference});
     Object.defineProperty(this, "notifyDone", {value: NotifyDone});
     Object.defineProperty(this, "dumpAsText", {value: SetDumpAsText});
     Object.defineProperty(this,
@@ -50,6 +46,37 @@ var testRunner = testRunner || {};
         "setShouldStayOnPageAfterHandlingBeforeUnload",
         {value: SetShouldStayOnPageAfterHandlingBeforeUnload});
     Object.defineProperty(this, "waitUntilDone", {value: SetWaitUntilDone});
+
+    var stubs = [
+        "overridePreference",  // not really a stub, but required to pass
+                               // content_browsertests for now.
+        "dumpDatabaseCallbacks",
+        "denyWebNotificationPermission",
+        "removeAllWebNotificationPermissions",
+        "simulateWebNotificationClick",
+        "setIconDatabaseEnabled",
+        "setScrollbarPolicy",
+        "clearAllApplicationCaches",
+        "clearApplicationCacheForOrigin",
+        "clearBackForwardList",
+        "keepWebHistory",
+        "setApplicationCacheOriginQuota",
+        "setCallCloseOnWebViews",
+        "setMainFrameIsFirstResponder",
+        "setPrivateBrowsingEnabled",
+        "setUseDashboardCompatibilityMode",
+        "deleteAllLocalStorage",
+        "localStorageDiskUsageForOrigin",
+        "originsWithLocalStorage",
+        "deleteLocalStorageForOrigin",
+        "observeStorageTrackerNotifications",
+        "syncLocalStorage",
+        "addDisallowedURL",
+        "applicationCacheDiskUsageForOrigin"
+    ];
+    for (var stub in stubs) {
+      Object.defineProperty(this, stub, {value: function() { return null; }});
+    }
   }
   TestRunner.prototype = DefaultHandler("testRunner");
   testRunner = new TestRunner();
