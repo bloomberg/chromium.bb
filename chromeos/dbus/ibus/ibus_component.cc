@@ -89,6 +89,7 @@ void AppendIBusEngineDesc(const IBusComponent::EngineDescription& engine_desc,
   IBusObjectWriter ibus_object_writer("IBusEngineDesc",
                                       "ssssssssusss",
                                       writer);
+  ibus_object_writer.CloseHeader();
   ibus_object_writer.AppendString(engine_desc.engine_id);
   ibus_object_writer.AppendString(engine_desc.display_name);
   ibus_object_writer.AppendString(engine_desc.description);
@@ -193,6 +194,7 @@ bool CHROMEOS_EXPORT PopIBusComponent(dbus::MessageReader* reader,
 void CHROMEOS_EXPORT AppendIBusComponent(const IBusComponent& ibus_component,
                                          dbus::MessageWriter* writer) {
   IBusObjectWriter ibus_object_writer("IBusComponent", "ssssssssavav", writer);
+  ibus_object_writer.CloseHeader();
   ibus_object_writer.AppendString(ibus_component.name());
   ibus_object_writer.AppendString(ibus_component.description());
   ibus_object_writer.AppendString("");  // The version string is not used.

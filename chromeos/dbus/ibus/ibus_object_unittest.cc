@@ -9,6 +9,7 @@
 #include <vector>
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "dbus/message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,9 +29,19 @@ TEST(IBusObjectTest, WriteReadTest) {
   const int32 kSampleInt32 = 54321;
   const bool kSampleBool = false;
   const uint32 kSampleArrayOfUint32Count = 10UL;
+  const char kAttachmentKey[] = "key";
+  const char kStringAttachment[] = "Attachment String Value";
 
   // Create ibus object.
   IBusObjectWriter ibus_object_writer(kSampleTypeName1, "suibauv", &writer);
+
+  // Write attachment field.
+  scoped_ptr<base::Value> write_value(
+      base::Value::CreateStringValue(kStringAttachment));
+  ibus_object_writer.AddAttachment(kAttachmentKey, *write_value.get());
+  ibus_object_writer.CloseHeader();
+
+  // Write contents values.
   ibus_object_writer.AppendString(kSampleText1);
   ibus_object_writer.AppendUint32(kSampleUint32);
   ibus_object_writer.AppendInt32(kSampleInt32);
@@ -42,6 +53,7 @@ TEST(IBusObjectTest, WriteReadTest) {
   ibus_object_writer.CloseContainer(&array_writer);
   IBusObjectWriter ibus_nested_object_writer(kSampleTypeName2, "s", NULL);
   ibus_object_writer.AppendIBusObject(&ibus_nested_object_writer);
+  ibus_nested_object_writer.CloseHeader();
   ibus_nested_object_writer.AppendString(kSampleText2);
   ibus_object_writer.CloseAll();
 
@@ -49,6 +61,13 @@ TEST(IBusObjectTest, WriteReadTest) {
   dbus::MessageReader reader(message.get());
   IBusObjectReader ibus_object_reader(kSampleTypeName1, &reader);
   ASSERT_TRUE(ibus_object_reader.Init());
+  // Check the attachment value;
+  const base::Value* read_value =
+      ibus_object_reader.GetAttachment(kAttachmentKey);
+  ASSERT_TRUE(read_value);
+  std::string attachment_value;
+  ASSERT_TRUE(read_value->GetAsString(&attachment_value));
+  EXPECT_EQ(kStringAttachment, attachment_value);
   // Check the first string value.
   std::string expected_string;
   ASSERT_TRUE(ibus_object_reader.PopString(&expected_string));
@@ -93,6 +112,7 @@ TEST(IBusObjectTest, EmptyEntryTest) {
   // Write empty IBusObject.
   dbus::MessageWriter writer(message.get());
   IBusObjectWriter ibus_object_writer(kSampleTypeName, "", &writer);
+  ibus_object_writer.CloseHeader();
   ibus_object_writer.CloseAll();
 
   // Read empty IBusObject.
@@ -113,6 +133,7 @@ TEST(IBusObjectTest, PopAppendIBusTextTest) {
   // Write IBusText.
   dbus::MessageWriter writer(message.get());
   IBusObjectWriter ibus_object_writer(kSampleTypeName, "v", &writer);
+  ibus_object_writer.CloseHeader();
   IBusText ibus_text;
   ibus_text.mutable_selection_attributes()->push_back(selection_attribute);
   ibus_text.set_text(kSampleString);
@@ -144,6 +165,7 @@ TEST(IBusObjectTest, PopAppendStringAsIBusText) {
   // Write string as IBusText.
   dbus::MessageWriter writer(message.get());
   IBusObjectWriter ibus_object_writer(kSampleTypeName, "v", &writer);
+  ibus_object_writer.CloseHeader();
   ibus_object_writer.AppendStringAsIBusText(kSampleString);
   ibus_object_writer.CloseAll();
 
@@ -155,60 +177,6 @@ TEST(IBusObjectTest, PopAppendStringAsIBusText) {
   ASSERT_TRUE(ibus_object_reader.PopStringFromIBusText(&result_str));
   EXPECT_FALSE(ibus_object_reader.HasMoreData());
   EXPECT_EQ(kSampleString, result_str);
-}
-
-TEST(IBusObjectTest, AttachmentTest) {
-  // The IBusObjectWriter does not support attachment field writing, so crate
-  // IBusObject with attachment field manually.
-  const char kSampleTypeName[] = "IBusObject Name";
-  const char kSampleDictKey[] = "Sample Key";
-  const char kSampleText[] = "SampleText";
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(message.get());
-
-  // Create IBusObject header.
-  dbus::MessageWriter top_variant_writer(NULL);
-  writer.OpenVariant("(sa{sv})", &top_variant_writer);
-  dbus::MessageWriter contents_writer(NULL);
-  top_variant_writer.OpenStruct(&contents_writer);
-  contents_writer.AppendString(kSampleTypeName);
-
-  // Write values into attachment field.
-  dbus::MessageWriter attachment_array_writer(NULL);
-  contents_writer.OpenArray("{sv}", &attachment_array_writer);
-  dbus::MessageWriter entry_writer(NULL);
-  attachment_array_writer.OpenDictEntry(&entry_writer);
-  entry_writer.AppendString(kSampleDictKey);
-  dbus::MessageWriter variant_writer(NULL);
-  entry_writer.OpenVariant("s",&variant_writer);
-  variant_writer.AppendString(kSampleText);
-
-  // Close all containers.
-  entry_writer.CloseContainer(&variant_writer);
-  attachment_array_writer.CloseContainer(&entry_writer);
-  contents_writer.CloseContainer(&attachment_array_writer);
-  top_variant_writer.CloseContainer(&contents_writer);
-  writer.CloseContainer(&top_variant_writer);
-
-  // Read with IBusObjectReader.
-  dbus::MessageReader reader(message.get());
-  IBusObjectReader ibus_object_reader(kSampleTypeName, &reader);
-  dbus::MessageReader attr_reader(NULL);
-  ASSERT_TRUE(ibus_object_reader.InitWithAttachmentReader(&attr_reader));
-  dbus::MessageReader dict_reader(NULL);
-
-  // Check the values.
-  ASSERT_TRUE(attr_reader.PopDictEntry(&dict_reader));
-  std::string key;
-  std::string value;
-
-  ASSERT_TRUE(dict_reader.PopString(&key));
-  EXPECT_EQ(kSampleDictKey, key);
-
-  dbus::MessageReader variant_reader(NULL);
-  ASSERT_TRUE(dict_reader.PopVariant(&variant_reader));
-  ASSERT_TRUE(variant_reader.PopString(&value));
-  EXPECT_EQ(kSampleText, value);
 }
 
 TEST(IBusObjectTest, PopAppendIBusPropertyTest) {
@@ -234,6 +202,7 @@ TEST(IBusObjectTest, PopAppendIBusPropertyTest) {
   // Write a IBusProperty.
   dbus::MessageWriter writer(response.get());
   IBusObjectWriter ibus_object_writer(kSampleTypeName, "v", &writer);
+  ibus_object_writer.CloseHeader();
   ibus_object_writer.AppendIBusProperty(property);
   ibus_object_writer.CloseAll();
 

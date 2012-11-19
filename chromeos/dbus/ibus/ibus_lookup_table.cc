@@ -6,9 +6,10 @@
 
 #include <string>
 #include "base/logging.h"
-#include "dbus/message.h"
-#include "chromeos/dbus/ibus/ibus_text.h"
+#include "base/values.h"
 #include "chromeos/dbus/ibus/ibus_object.h"
+#include "chromeos/dbus/ibus/ibus_text.h"
+#include "dbus/message.h"
 
 namespace chromeos {
 // TODO(nona): Remove ibus namespace after complete libibus removal.
@@ -17,6 +18,7 @@ namespace ibus {
 namespace {
 // The default entry number of a page in IBusLookupTable.
 const int kDefaultPageSize = 9;
+const char kShowWindowAtCompositionKey[] = "show_window_at_composition";
 }  // namespace
 
 void AppendIBusLookupTable(const IBusLookupTable& table,
@@ -24,6 +26,11 @@ void AppendIBusLookupTable(const IBusLookupTable& table,
   IBusObjectWriter ibus_lookup_table_writer("IBusLookupTable",
                                             "uubbiavav",
                                             writer);
+  scoped_ptr<base::Value> show_position(
+      base::Value::CreateBooleanValue(table.show_window_at_composition()));
+  ibus_lookup_table_writer.AddAttachment(kShowWindowAtCompositionKey,
+                                         *show_position.get());
+  ibus_lookup_table_writer.CloseHeader();
   ibus_lookup_table_writer.AppendUint32(table.page_size());
   ibus_lookup_table_writer.AppendUint32(table.cursor_position());
   ibus_lookup_table_writer.AppendBool(table.is_cursor_visible());
@@ -60,46 +67,15 @@ void AppendIBusLookupTable(const IBusLookupTable& table,
 bool PopIBusLookupTable(dbus::MessageReader* reader, IBusLookupTable* table) {
   IBusObjectReader ibus_object_reader("IBusLookupTable", reader);
 
-  dbus::MessageReader attachment_reader(NULL);
-  if (!ibus_object_reader.InitWithAttachmentReader(&attachment_reader))
+  if (!ibus_object_reader.Init())
     return false;
 
-  while (attachment_reader.HasMoreData()) {
-    dbus::MessageReader dictionary_reader(NULL);
-    if (!attachment_reader.PopDictEntry(&dictionary_reader)) {
-      LOG(ERROR) << "Invalid attachment structure: "
-                 << "The attachment field is array of dictionary entry.";
-      return false;
-    }
-
-    std::string key;
-    if (!dictionary_reader.PopString(&key)) {
-      LOG(ERROR) << "Invalid attachement structure: "
-                 << "The 1st dictionary entry should be string.";
-      return false;
-    }
-    if (key != "show_window_at_composition")
-      continue;
-
-    dbus::MessageReader variant_reader(NULL);
-    if (!dictionary_reader.PopVariant(&variant_reader)) {
-      LOG(ERROR) << "Invalid attachment structure: "
-                 << "The 2nd dictionary entry shuold be variant.";
-      return false;
-    }
-
-    dbus::MessageReader sub_variant_reader(NULL);
-    if (!variant_reader.PopVariant(&sub_variant_reader)) {
-      LOG(ERROR) << "Invalid attachment structure: "
-                 << "The 2nd variant entry should contain variant.";
-      return false;
-    }
-
-    bool show_window_at_composition = false;
-    if (!sub_variant_reader.PopBool(&show_window_at_composition))
-      continue;  // Ignores other field.
-
-    table->set_show_window_at_composition(show_window_at_composition);
+  const base::Value* value =
+      ibus_object_reader.GetAttachment(kShowWindowAtCompositionKey);
+  if (value) {
+    bool show_window_at_composition;
+    if (value->GetAsBoolean(&show_window_at_composition))
+      table->set_show_window_at_composition(show_window_at_composition);
   }
 
   uint32 page_size = 0;
@@ -202,7 +178,8 @@ IBusLookupTable::IBusLookupTable()
     : page_size_(kDefaultPageSize),
       cursor_position_(0),
       is_cursor_visible_(true),
-      orientation_(IBUS_LOOKUP_TABLE_ORIENTATION_HORIZONTAL) {
+      orientation_(IBUS_LOOKUP_TABLE_ORIENTATION_HORIZONTAL),
+      show_window_at_composition_(false) {
 }
 
 IBusLookupTable::~IBusLookupTable() {

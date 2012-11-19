@@ -139,6 +139,8 @@ bool CHROMEOS_EXPORT PopIBusPropertyList(dbus::MessageReader* reader,
 void CHROMEOS_EXPORT AppendIBusProperty(const IBusProperty& property,
                                         dbus::MessageWriter* writer) {
   IBusObjectWriter ibus_property_writer("IBusProperty", "suvsvbbuv", writer);
+  ibus_property_writer.CloseHeader();
+
   ibus_property_writer.AppendString(property.key());
   ibus_property_writer.AppendUint32(static_cast<uint32>(property.type()));
   ibus_property_writer.AppendStringAsIBusText(property.label());
@@ -156,6 +158,7 @@ void CHROMEOS_EXPORT AppendIBusPropertyList(
     const IBusPropertyList& property_list,
     dbus::MessageWriter* writer) {
   IBusObjectWriter ibus_property_list_writer("IBusPropList", "av", writer);
+  ibus_property_list_writer.CloseHeader();
   dbus::MessageWriter property_list_writer(NULL);
   ibus_property_list_writer.OpenArray("v", &property_list_writer);
   for (size_t i = 0; i < property_list.size(); ++i) {

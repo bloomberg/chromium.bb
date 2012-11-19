@@ -126,7 +126,9 @@ class CHROMEOS_EXPORT IBusLookupTable {
   const std::vector<Entry>& candidates() const { return candidates_; }
   std::vector<Entry>* mutable_candidates() { return &candidates_; }
 
-  bool show_window_at_composition() { return show_window_at_composition_; }
+  bool show_window_at_composition() const {
+    return show_window_at_composition_;
+  }
   void set_show_window_at_composition(bool show_window_at_composition) {
     show_window_at_composition_ = show_window_at_composition;
   }

@@ -5,9 +5,11 @@
 #include "chromeos/dbus/ibus/ibus_object.h"
 
 #include "base/logging.h"
+#include "base/values.h"
 #include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
 #include "dbus/message.h"
+#include "dbus/values_util.h"
 
 namespace chromeos {
 // TODO(nona): Remove ibus namespace after complete libibus removal.
@@ -25,9 +27,12 @@ IBusObjectReader::IBusObjectReader(const std::string& type_name,
 }
 
 IBusObjectReader::~IBusObjectReader() {
+  for (std::map<std::string, base::Value*>::iterator ite = attachments_.begin();
+       ite != attachments_.end(); ++ite)
+    delete ite->second;
 }
 
-bool IBusObjectReader::InitWithoutAttachment() {
+bool IBusObjectReader::Init() {
   DCHECK(original_reader_);
   DCHECK_EQ(IBUS_OBJECT_NOT_CHECKED, check_result_);
 
@@ -63,37 +68,51 @@ bool IBusObjectReader::InitWithoutAttachment() {
     return false;
   }
 
-  return true;
-}
+  dbus::MessageReader attachment_reader(NULL);
 
-bool IBusObjectReader::Init() {
-  if (!InitWithoutAttachment())
-    return false;
-
-  // Ignores attachment field.
-  dbus::MessageReader array_reader(NULL);
-  if (!contents_reader_->PopArray(&array_reader)) {
+  // IBus object has array object at the second element, which is used in
+  // attaching additional information.
+  if (!contents_reader_->PopArray(&attachment_reader)) {
     LOG(ERROR) << "Invalid object structure[" << type_name_ << "] "
                << "can not find attachment array field.";
     return false;
   }
-  DLOG_IF(WARNING, array_reader.HasMoreData())
-      << "Ignoring attachment field in " << type_name_ <<".";
-  check_result_ = IBUS_OBJECT_VALID;
-  return true;
-}
 
-bool IBusObjectReader::InitWithAttachmentReader(dbus::MessageReader* reader) {
-  DCHECK(reader);
-  if (!InitWithoutAttachment())
-    return false;
+  while (attachment_reader.HasMoreData()) {
+    dbus::MessageReader dictionary_reader(NULL);
+    if (!attachment_reader.PopDictEntry(&dictionary_reader)) {
+      LOG(ERROR) << "Invalid attachment structure: "
+                 << "The attachment field is array of dictionary entry.";
+      return false;
+    }
 
-  // IBus object has array object at the second element, which is used in
-  // attaching additional information.
-  if (!contents_reader_->PopArray(reader)) {
-    LOG(ERROR) << "Invalid object structure[" << type_name_ << "] "
-               << "can not find attachment array field.";
-    return false;
+    std::string key;
+    if (!dictionary_reader.PopString(&key)) {
+      LOG(ERROR) << "Invalid attachement structure: "
+                 << "The 1st dictionary entry should be string.";
+      return false;
+    }
+
+    if (key.empty()) {
+      LOG(ERROR) << "Invalid attachement key: key is empty.";
+      return false;
+    }
+
+    dbus::MessageReader variant_reader(NULL);
+    if (!dictionary_reader.PopVariant(&variant_reader)) {
+      LOG(ERROR) << "Invalid attachment structure: "
+                 << "The 2nd dictionary entry shuold be variant.";
+      return false;
+    }
+
+    dbus::MessageReader sub_variant_reader(NULL);
+    if (!variant_reader.PopVariant(&sub_variant_reader)) {
+      LOG(ERROR) << "Invalid attachment structure: "
+                 << "The 2nd variant entry should contain variant.";
+      return false;
+    }
+
+    attachments_[key] =  dbus::PopDataAsValue(&sub_variant_reader);
   }
   check_result_ = IBUS_OBJECT_VALID;
   return true;
@@ -161,6 +180,17 @@ bool IBusObjectReader::PopIBusPropertyList(IBusPropertyList* properties) {
       contents_reader_.get(), properties);
 }
 
+const base::Value* IBusObjectReader::GetAttachment(const std::string& key) {
+  DCHECK_NE(IBUS_OBJECT_NOT_CHECKED, check_result_);
+  DCHECK(contents_reader_.get());
+  if (!IsValid())
+    return NULL;
+  std::map<std::string, base::Value*>::iterator it = attachments_.find(key);
+  if (it == attachments_.end())
+    return NULL;
+  return it->second;
+}
+
 bool IBusObjectReader::HasMoreData() {
   DCHECK_NE(IBUS_OBJECT_NOT_CHECKED, check_result_);
   DCHECK(contents_reader_.get());
@@ -186,7 +216,8 @@ IBusObjectWriter::IBusObjectWriter(const std::string& type_name,
                                    dbus::MessageWriter* writer)
     : type_name_(type_name),
       signature_(signature),
-      original_writer_(writer) {
+      original_writer_(writer),
+      state_(NOT_INITIALZED) {
   if (original_writer_)
     Init();
 }
@@ -195,92 +226,91 @@ IBusObjectWriter::~IBusObjectWriter() {
 }
 
 void IBusObjectWriter::AppendString(const std::string& input) {
-  DCHECK(IsInitialized());
+  DCHECK_EQ(state_, INITIALIZED);
   contents_writer_->AppendString(input);
 }
 
 void IBusObjectWriter::AppendUint32(uint32 input) {
-  DCHECK(IsInitialized());
+  DCHECK_EQ(state_, INITIALIZED);
   contents_writer_->AppendUint32(input);
 }
 
 void IBusObjectWriter::AppendInt32(int32 input) {
-  DCHECK(IsInitialized());
+  DCHECK_EQ(state_, INITIALIZED);
   contents_writer_->AppendInt32(input);
 }
 
 void IBusObjectWriter::AppendBool(bool input) {
-  DCHECK(IsInitialized());
+  DCHECK_EQ(state_, INITIALIZED);
   contents_writer_->AppendBool(input);
 }
 
 void IBusObjectWriter::OpenArray(const std::string& signature,
                                  dbus::MessageWriter* writer) {
-  DCHECK(IsInitialized());
+  DCHECK_EQ(state_, INITIALIZED);
   contents_writer_->OpenArray(signature, writer);
 }
 
 void IBusObjectWriter::AppendIBusText(const IBusText& text) {
-  DCHECK(IsInitialized());
+  DCHECK_EQ(state_, INITIALIZED);
   chromeos::ibus::AppendIBusText(text, contents_writer_.get());
 }
 
 void IBusObjectWriter::AppendStringAsIBusText(const std::string& text) {
-  DCHECK(IsInitialized());
+  DCHECK_EQ(state_, INITIALIZED);
   chromeos::ibus::AppendStringAsIBusText(text, contents_writer_.get());
 }
 
 void IBusObjectWriter::AppendIBusProperty(const IBusProperty& property) {
-  DCHECK(IsInitialized());
+  DCHECK_EQ(state_, INITIALIZED);
   chromeos::ibus::AppendIBusProperty(property, contents_writer_.get());
 }
 
 void IBusObjectWriter::AppendIBusPropertyList(
     const IBusPropertyList& property_list) {
-  DCHECK(IsInitialized());
+  DCHECK_EQ(state_, INITIALIZED);
   chromeos::ibus::AppendIBusPropertyList(property_list, contents_writer_.get());
 }
 
 void IBusObjectWriter::CloseContainer(dbus::MessageWriter* writer) {
-  DCHECK(IsInitialized());
+  DCHECK_EQ(state_, INITIALIZED);
   contents_writer_->CloseContainer(writer);
 }
 
 void IBusObjectWriter::AppendIBusObject(IBusObjectWriter* writer) {
-  DCHECK(IsInitialized());
-  DCHECK(!writer->IsInitialized()) << "Given writer is already initialized";
-
+  DCHECK_EQ(state_, INITIALIZED);
   writer->InitWithParentWriter(contents_writer_.get());
 }
 
 void IBusObjectWriter::Init() {
   DCHECK(original_writer_);
-  DCHECK(!IsInitialized());
+  DCHECK_EQ(state_, NOT_INITIALZED);
 
   top_variant_writer_.reset(new dbus::MessageWriter(NULL));
   contents_writer_.reset(new dbus::MessageWriter(NULL));
+  attachment_writer_.reset(new dbus::MessageWriter(NULL));
 
   const std::string ibus_signature = "(sa{sv}" + signature_ + ")";
   original_writer_->OpenVariant(ibus_signature, top_variant_writer_.get());
   top_variant_writer_->OpenStruct(contents_writer_.get());
 
   contents_writer_->AppendString(type_name_);
-  dbus::MessageWriter header_array_writer(NULL);
 
-  // There is no case setting any attachment in ChromeOS, so setting empty
-  // array is enough.
-  contents_writer_->OpenArray("{sv}", &header_array_writer);
-  contents_writer_->CloseContainer(&header_array_writer);
+  contents_writer_->OpenArray("{sv}", attachment_writer_.get());
+  state_ = HEADER_OPEN;
 }
 
 void IBusObjectWriter::InitWithParentWriter(dbus::MessageWriter* writer) {
+  DCHECK_EQ(state_, NOT_INITIALZED) << "Already initialized.";
   original_writer_ = writer;
   Init();
 }
 
 void IBusObjectWriter::CloseAll() {
   DCHECK(original_writer_);
-  DCHECK(IsInitialized());
+  DCHECK_NE(state_, NOT_INITIALZED);
+  if (state_ == HEADER_OPEN)
+    CloseHeader();
 
   top_variant_writer_->CloseContainer(contents_writer_.get());
   original_writer_->CloseContainer(top_variant_writer_.get());
@@ -288,8 +318,30 @@ void IBusObjectWriter::CloseAll() {
   contents_writer_.reset();
 }
 
-bool IBusObjectWriter::IsInitialized() const {
-  return contents_writer_.get() != NULL;
+void IBusObjectWriter::CloseHeader() {
+  DCHECK_EQ(state_, HEADER_OPEN) << "Header is already closed.";
+  contents_writer_->CloseContainer(attachment_writer_.get());
+  state_ = INITIALIZED;
+}
+
+bool IBusObjectWriter::AddAttachment(const std::string& key,
+                                     const base::Value& value) {
+  DCHECK_NE(state_, NOT_INITIALZED) << "Do not call before Init();";
+  DCHECK_NE(state_, INITIALIZED) << "Do not call after CloseHeader().";
+  DCHECK(attachment_writer_.get());
+  DCHECK(!key.empty());
+  DCHECK(!value.IsType(base::Value::TYPE_NULL));
+
+  dbus::MessageWriter dict_writer(NULL);
+  attachment_writer_->OpenDictEntry(&dict_writer);
+  dict_writer.AppendString(key);
+  dbus::MessageWriter variant_writer(NULL);
+  dict_writer.OpenVariant("v", &variant_writer);
+
+  dbus::AppendBasicTypeValueDataAsVariant(&variant_writer, value);
+  dict_writer.CloseContainer(&variant_writer);
+  attachment_writer_->CloseContainer(&variant_writer);
+  return true;
 }
 
 }  // namespace ibus

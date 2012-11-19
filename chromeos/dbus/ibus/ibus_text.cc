@@ -5,6 +5,7 @@
 #include "chromeos/dbus/ibus/ibus_text.h"
 
 #include "base/logging.h"
+#include "base/values.h"
 #include "chromeos/dbus/ibus/ibus_object.h"
 #include "dbus/message.h"
 
@@ -15,6 +16,8 @@ namespace ibus {
 namespace {
 const uint32 kAttributeUnderline = 1;  // Indicates underline attribute.
 const uint32 kAttributeSelection = 2;  // Indicates background attribute.
+const char kAnnotationKey[] = "annotation";
+const char kDescriptionKey[] = "description";
 
 struct IBusAttribute {
   IBusAttribute() : type(0), value(0), start_index(0), end_index(0) {}
@@ -46,6 +49,7 @@ bool PopIBusAttribute(dbus::MessageReader* reader, IBusAttribute* attribute) {
 void AppendIBusAttribute(dbus::MessageWriter* writer,
                          const IBusAttribute& attribute) {
   IBusObjectWriter ibus_attribute_writer("IBusAttribute", "uuuu", writer);
+  ibus_attribute_writer.CloseHeader();
   ibus_attribute_writer.AppendUint32(attribute.type);
   ibus_attribute_writer.AppendUint32(attribute.value);
   ibus_attribute_writer.AppendUint32(attribute.start_index);
@@ -58,11 +62,25 @@ void AppendIBusAttribute(dbus::MessageWriter* writer,
 void AppendIBusText(const IBusText& ibus_text, dbus::MessageWriter* writer) {
   IBusObjectWriter ibus_text_writer("IBusText", "sv", writer);
 
+  if (!ibus_text.annotation().empty()) {
+      scoped_ptr<base::Value> annotation(
+          base::Value::CreateStringValue(ibus_text.annotation()));
+      ibus_text_writer.AddAttachment(kAnnotationKey, *annotation.get());
+  }
+
+  if (!ibus_text.description().empty()) {
+      scoped_ptr<base::Value> description(
+          base::Value::CreateStringValue(ibus_text.description()));
+      ibus_text_writer.AddAttachment(kDescriptionKey, *description.get());
+  }
+  ibus_text_writer.CloseHeader();
+
   ibus_text_writer.AppendString(ibus_text.text());
 
   // Start appending IBusAttrList into IBusText
   IBusObjectWriter ibus_attr_list_writer("IBusAttrList", "av", NULL);
   ibus_text_writer.AppendIBusObject(&ibus_attr_list_writer);
+  ibus_attr_list_writer.CloseHeader();
   dbus::MessageWriter attribute_array_writer(NULL);
   ibus_attr_list_writer.OpenArray("v", &attribute_array_writer);
 
@@ -104,49 +122,23 @@ void CHROMEOS_EXPORT AppendStringAsIBusText(const std::string& text,
 bool PopIBusText(dbus::MessageReader* reader, IBusText* ibus_text) {
   IBusObjectReader ibus_text_reader("IBusText", reader);
 
-  dbus::MessageReader attachment_reader(NULL);
-  if (!ibus_text_reader.InitWithAttachmentReader(&attachment_reader))
+  if (!ibus_text_reader.Init())
     return false;
 
-  while (attachment_reader.HasMoreData()) {
-    dbus::MessageReader dictionary_reader(NULL);
-    if (!attachment_reader.PopDictEntry(&dictionary_reader)) {
-      LOG(ERROR) << "Invalid attachment structure: "
-                 << "The attachment field is array of dictionary entry.";
-      return false;
-    }
+  const base::Value* annotation_value =
+      ibus_text_reader.GetAttachment(kAnnotationKey);
+  if (annotation_value) {
+    std::string annotation;
+    if (annotation_value->GetAsString(&annotation))
+      ibus_text->set_annotation(annotation);
+  }
 
-    std::string key;
-    if (!dictionary_reader.PopString(&key)) {
-      LOG(ERROR) << "Invalid attachement structure: "
-                 << "The 1st dictionary entry should be string.";
-      return false;
-    }
-
-    dbus::MessageReader variant_reader(NULL);
-    if (!dictionary_reader.PopVariant(&variant_reader)) {
-      LOG(ERROR) << "Invalid attachment structure: "
-                 << "The 2nd dictionary entry shuold be variant.";
-      return false;
-    }
-
-    dbus::MessageReader sub_variant_reader(NULL);
-    if (!variant_reader.PopVariant(&sub_variant_reader)) {
-      LOG(ERROR) << "Invalid attachment structure: "
-                 << "The 2nd variant entry should contain variant.";
-      return false;
-    }
-
-    std::string value;
-    if (!sub_variant_reader.PopString(&value))
-      continue;  // Ignore other attachment values.
-
-    if (key == "annotation")
-      ibus_text->set_annotation(value);
-    else if (key == "description")
-      ibus_text->set_description(value);
-    else
-      continue;  // Ignore other fields.
+  const base::Value* description_value =
+      ibus_text_reader.GetAttachment(kDescriptionKey);
+  if (description_value) {
+    std::string description;
+    if (description_value->GetAsString(&description))
+      ibus_text->set_description(description);
   }
 
   std::string text;
