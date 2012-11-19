@@ -29,9 +29,8 @@ namespace chrome {
 
 namespace {
 
-NavigationController::RestoreType GetRestoreType(
-    Browser* browser,
-    bool from_last_session) {
+NavigationController::RestoreType GetRestoreType(Browser* browser,
+                                                 bool from_last_session) {
   if (!from_last_session)
     return NavigationController::RESTORE_CURRENT_SESSION;
   return browser->profile()->GetLastSessionExitType() == Profile::EXIT_CRASHED ?
@@ -39,16 +38,11 @@ NavigationController::RestoreType GetRestoreType(
       NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY;
 }
 
-}  // namespace
-
-content::WebContents* AddRestoredTab(
+TabContents* CreateRestoredTab(
     Browser* browser,
     const std::vector<TabNavigation>& navigations,
-    int tab_index,
     int selected_navigation,
     const std::string& extension_app_id,
-    bool select,
-    bool pin,
     bool from_last_session,
     content::SessionStorageNamespace* session_storage_namespace,
     const std::string& user_agent_override) {
@@ -66,20 +60,45 @@ content::WebContents* AddRestoredTab(
       MSG_ROUTING_NONE,
       chrome::GetActiveWebContents(browser),
       session_storage_namespace_map);
-  WebContents* new_tab = tab_contents->web_contents();
-  extensions::TabHelper::FromWebContents(new_tab)->
+  WebContents* web_contents = tab_contents->web_contents();
+  extensions::TabHelper::FromWebContents(web_contents)->
       SetExtensionAppById(extension_app_id);
   std::vector<NavigationEntry*> entries =
       TabNavigation::CreateNavigationEntriesFromTabNavigations(
           navigations, browser->profile());
-  new_tab->SetUserAgentOverride(user_agent_override);
-  new_tab->GetController().Restore(
+  web_contents->SetUserAgentOverride(user_agent_override);
+  web_contents->GetController().Restore(
       selected_navigation, GetRestoreType(browser, from_last_session),
       &entries);
   DCHECK_EQ(0u, entries.size());
 
-  int add_types = select ? TabStripModel::ADD_ACTIVE :
-      TabStripModel::ADD_NONE;
+  return tab_contents;
+}
+
+}  // namespace
+
+content::WebContents* AddRestoredTab(
+    Browser* browser,
+    const std::vector<TabNavigation>& navigations,
+    int tab_index,
+    int selected_navigation,
+    const std::string& extension_app_id,
+    bool select,
+    bool pin,
+    bool from_last_session,
+    content::SessionStorageNamespace* session_storage_namespace,
+    const std::string& user_agent_override) {
+  TabContents* tab_contents = CreateRestoredTab(browser,
+                                                navigations,
+                                                selected_navigation,
+                                                extension_app_id,
+                                                from_last_session,
+                                                session_storage_namespace,
+                                                user_agent_override);
+  WebContents* web_contents = tab_contents->web_contents();
+
+  int add_types = select ? TabStripModel::ADD_ACTIVE
+                         : TabStripModel::ADD_NONE;
   if (pin) {
     int first_mini_tab_idx =
         browser->tab_strip_model()->IndexOfFirstNonMiniTab();
@@ -95,17 +114,17 @@ content::WebContents* AddRestoredTab(
     // layout.  If we don't, the initial layout of background tabs will be
     // performed with a view width of 0, which may cause script outputs and
     // anchor link location calculations to be incorrect even after a new
-    // layout with proper view dimensions. TabStripModel::AddTabContents()
+    // layout with proper view dimensions. TabStripModel::AddWebContents()
     // contains similar logic.
-    new_tab->GetView()->SizeContents(
+    web_contents->GetView()->SizeContents(
         browser->window()->GetRestoredBounds().size());
-    new_tab->WasHidden();
+    web_contents->WasHidden();
   }
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(browser->profile());
   if (session_service)
-    session_service->TabRestored(tab_contents->web_contents(), pin);
-  return new_tab;
+    session_service->TabRestored(web_contents, pin);
+  return web_contents;
 }
 
 void ReplaceRestoredTab(
@@ -116,31 +135,13 @@ void ReplaceRestoredTab(
     const std::string& extension_app_id,
     content::SessionStorageNamespace* session_storage_namespace,
     const std::string& user_agent_override) {
-  GURL restore_url = navigations.at(selected_navigation).virtual_url();
-  // TODO(ajwong): Remove the temporary session_storage_namespace_map when
-  // we teach session restore to understand that one tab can have multiple
-  // SessionStorageNamespace objects. Also remove the
-  // session_storage_namespace.h include since we only need that to assign
-  // into the map.
-  content::SessionStorageNamespaceMap session_storage_namespace_map;
-  session_storage_namespace_map[""] = session_storage_namespace;
-  TabContents* tab_contents = chrome::TabContentsWithSessionStorageFactory(
-      browser->profile(),
-      tab_util::GetSiteInstanceForNewTab(browser->profile(), restore_url),
-      MSG_ROUTING_NONE,
-      GetActiveWebContents(browser),
-      session_storage_namespace_map);
-  WebContents* replacement = tab_contents->web_contents();
-  extensions::TabHelper::FromWebContents(replacement)->
-      SetExtensionAppById(extension_app_id);
-  replacement->SetUserAgentOverride(user_agent_override);
-  std::vector<NavigationEntry*> entries =
-      TabNavigation::CreateNavigationEntriesFromTabNavigations(
-          navigations, browser->profile());
-  replacement->GetController().Restore(
-      selected_navigation, GetRestoreType(browser, from_last_session),
-      &entries);
-  DCHECK_EQ(0u, entries.size());
+  TabContents* tab_contents = CreateRestoredTab(browser,
+                                                navigations,
+                                                selected_navigation,
+                                                extension_app_id,
+                                                from_last_session,
+                                                session_storage_namespace,
+                                                user_agent_override);
 
   // ReplaceTabContentsAt won't animate in the restoration, so do it manually.
   int insertion_index = browser->active_index();
