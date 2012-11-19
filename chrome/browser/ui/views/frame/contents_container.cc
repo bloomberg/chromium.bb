@@ -20,7 +20,8 @@ ContentsContainer::ContentsContainer(views::WebView* active)
       preview_web_contents_(NULL),
       active_top_margin_(0),
       preview_height_(100),
-      preview_height_units_(INSTANT_SIZE_PERCENT) {
+      preview_height_units_(INSTANT_SIZE_PERCENT),
+      extra_content_height_(0) {
   AddChildView(active_);
 }
 
@@ -94,7 +95,8 @@ gfx::Rect ContentsContainer::GetPreviewBounds() {
 
 void ContentsContainer::Layout() {
   int content_y = active_top_margin_;
-  int content_height = std::max(0, height() - content_y);
+  int content_height =
+      std::max(0, height() - content_y + extra_content_height_);
 
   if (active_)
     active_->SetBounds(0, content_y, width(), content_height);
@@ -108,6 +110,12 @@ void ContentsContainer::Layout() {
   // Need to invoke views::View in case any views whose bounds didn't change
   // still need a layout.
   views::View::Layout();
+}
+
+void ContentsContainer::SetExtraContentHeight(int height) {
+  if (height == extra_content_height_)
+    return;
+  extra_content_height_ = height;
 }
 
 int ContentsContainer::PreviewHeightInPixels() const {

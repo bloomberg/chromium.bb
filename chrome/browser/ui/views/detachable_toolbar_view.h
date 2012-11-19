@@ -30,6 +30,10 @@ class DetachableToolbarView : public views::AccessiblePaneView {
   // Gets the current amount of overlap atop the browser toolbar.
   virtual int GetToolbarOverlap() const = 0;
 
+  // Gets the Left/Right margins to use, if any.
+  virtual int GetLeftMargin() const = 0;
+  virtual int GetRightMargin() const = 0;
+
   // Paints the background (including the theme image behind content area) when
   // the bar/shelf is attached to the top toolbar.  |background_origin| is the
   // origin to use for painting the theme image.

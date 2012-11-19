@@ -292,8 +292,14 @@ void BrowserViewLayout::Layout(views::View* host) {
         gfx::Rect(), true);
   }
 
-  if (active_bookmark_bar_ && browser()->search_model()->mode().is_ntp())
+  if (active_bookmark_bar_ && browser()->search_model()->mode().is_ntp()) {
     LayoutBookmarkBarAtBottom();
+  } else {
+#if !defined(USE_AURA)
+    contents_container_->SetExtraContentHeight(0);
+    contents_split_->SetLeadingBottomOffset(0);
+#endif
+  }
 }
 
 // Return the preferred size which is the size required to give each
@@ -389,7 +395,7 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
     //   bookmark bar is styled to look like it's part of the page.
     // - otherwise, show the bookmark bar at the bottom of content view, so just
     //   lay out infobar here; bottom bookmark bar is laid out in
-    //   |SearchNTPContainerView::Layout| where content view is also laid out.
+    //   |LayoutBookmarkBarAtBottom|.
     if (active_bookmark_bar_->IsDetached()) {
       int infobar_top = LayoutInfoBar(top);
       return browser_view_->browser()->search_model()->mode().is_ntp() ?
@@ -441,6 +447,11 @@ void BrowserViewLayout::LayoutBookmarkBarAtBottom() {
     active_bookmark_bar_->SetVisible(false);
     active_bookmark_bar_->SetBounds(0, content_bottom.y(),
                                     browser_view_->width(), 0);
+#if !defined(USE_AURA)
+    // When the bookmark bar is hidden, there is no need for a clip offset.
+    contents_container_->SetExtraContentHeight(0);
+    contents_split_->SetLeadingBottomOffset(0);
+#endif  // !USE_AURA
     return;
   }
 
@@ -451,16 +462,19 @@ void BrowserViewLayout::LayoutBookmarkBarAtBottom() {
   active_bookmark_bar_->set_infobar_visible(true);
   active_bookmark_bar_->SetVisible(true);
 
-  // Horizontally center bookmark bar.
-  const int kMaxNtpBookmarkBarWidth = 720;
-  const int kNtpBookmarkBarWidthPadding = 130;
-  int width = vertical_layout_rect_.width() - 2 * kNtpBookmarkBarWidthPadding;
-  if (width > kMaxNtpBookmarkBarWidth)
-    width = kMaxNtpBookmarkBarWidth;
-  int x_pos = (vertical_layout_rect_.width() - width) / 2;
   int height = active_bookmark_bar_->GetPreferredSize().height();
-  active_bookmark_bar_->SetBounds(x_pos, content_bottom.y() - height,
-                                  width, height);
+  active_bookmark_bar_->SetBounds(0, content_bottom.y() - height,
+                                  vertical_layout_rect_.width(), height);
+#if !defined(USE_AURA)
+  // Without Aura, the bookmark bar can't be layered on top of the
+  // contents_container_. Setting a bottom clip offset on the
+  // contents_container_ allows it to tell its child view that it's bigger,
+  // and clip it so that a theme background aligned to the bottom
+  // or vertically centered is properly aligned whith the bookmark bar view
+  // drawing of the bottom of the bitmap.
+  contents_container_->SetExtraContentHeight(height);
+  contents_split_->SetLeadingBottomOffset(height);
+#endif  // !USE_AURA
 }
 
 int BrowserViewLayout::LayoutInfoBar(int top) {
@@ -485,32 +499,9 @@ void BrowserViewLayout::LayoutTabContents(int top, int bottom) {
   // The views hierarcy (see browser_view.h for more details):
   // contents_split_ -> [contents_container_ | devtools]
 
-  gfx::Rect contents_bounds;
-  gfx::Rect devtools_bounds;
-
   gfx::Rect contents_split_bounds(vertical_layout_rect_.x(), top,
                                   vertical_layout_rect_.width(),
                                   std::max(0, bottom - top));
-  gfx::Point contents_split_offset(
-      contents_split_bounds.x() - contents_split_->bounds().x(),
-      contents_split_bounds.y() - contents_split_->bounds().y());
-
-  // Layout resize corner and calculate reserved contents rects here as all
-  // contents view bounds are already determined, but not yet set at this point,
-  // so contents will be laid out once at most.
-  gfx::Rect browser_reserved_rect;
-  if (!browser_view_->frame_->IsMaximized() &&
-      !browser_view_->frame_->IsFullscreen()) {
-    gfx::Size resize_corner_size = browser_view_->GetResizeCornerSize();
-    if (!resize_corner_size.IsEmpty()) {
-      gfx::Rect bounds = browser_view_->GetContentsBounds();
-      gfx::Point resize_corner_origin(
-          bounds.right() - resize_corner_size.width(),
-          bounds.bottom() - resize_corner_size.height());
-      browser_reserved_rect =
-          gfx::Rect(resize_corner_origin, resize_corner_size);
-    }
-  }
 
   // Now it's safe to actually resize all contents views in the hierarchy.
   contents_split_->SetBoundsRect(contents_split_bounds);
@@ -521,7 +512,7 @@ int BrowserViewLayout::GetTopMarginForActiveContent() {
       !active_bookmark_bar_->IsDetached() ||
       // For |NTP| mode, bookmark bar does NOT overlap with top of content view;
       // instead, it "overlaps" with bottom of content view, which is handled
-      // in |SearchNTPContainerView::Layout|.
+      // in |LayoutBookmarkBarAtBottom|.
       browser()->search_model()->mode().is_ntp()) {
     return 0;
   }

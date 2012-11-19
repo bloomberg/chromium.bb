@@ -170,6 +170,8 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual bool IsDetached() const OVERRIDE;
   virtual double GetAnimationValue() const OVERRIDE;
   virtual int GetToolbarOverlap() const OVERRIDE;
+  virtual int GetLeftMargin() const OVERRIDE;
+  virtual int GetRightMargin() const OVERRIDE;
 
   // View methods:
   virtual gfx::Size GetPreferredSize() OVERRIDE;

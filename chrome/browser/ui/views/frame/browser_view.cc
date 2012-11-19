@@ -108,6 +108,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/safe_integer_conversions.h"
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/controls/single_split_view.h"
@@ -187,6 +188,130 @@ bool ShouldSaveOrRestoreWindowPos() {
   return true;
 }
 
+#if !defined(USE_AURA)
+// Draw the background to match the new tab page. The trick is to align it
+// properly because without Aura, the bookmark bar is not drawn as a semi
+// transparent layer on top of the ntp, instead, the ntp is cropped and the bar
+// is drawn below it. This code could live in ntp_background_util.cc, but won't
+// be needed once Aura is supported on Windows, so it is kept here.
+void PaintBottomBookmarkBarBackground(gfx::Canvas* canvas,
+                                      DetachableToolbarView* view,
+                                      ui::ThemeProvider* theme_provider,
+                                      int tab_contents_height) {
+  gfx::Rect area(0, 0, view->width(), view->height());
+  // Fill the background in case one of the early returns get hit below.
+  canvas->FillRect(
+      area, theme_provider->GetColor(ThemeService::COLOR_NTP_BACKGROUND));
+  if (!theme_provider->HasCustomImage(IDR_THEME_NTP_BACKGROUND))
+    return;
+  int alignment = 0;
+  if (!theme_provider->GetDisplayProperty(
+      ThemeService::NTP_BACKGROUND_ALIGNMENT, &alignment)) {
+    return;
+  }
+  int tiling = ThemeService::NO_REPEAT;
+  theme_provider->GetDisplayProperty(
+      ThemeService::NTP_BACKGROUND_TILING, &tiling);
+  gfx::ImageSkia* ntp_background =
+      theme_provider->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
+  DCHECK(ntp_background);
+  bool repeat_x = tiling == ThemeService::REPEAT ||
+                  tiling == ThemeService::REPEAT_X;
+  bool repeat_y = tiling == ThemeService::REPEAT ||
+                  tiling == ThemeService::REPEAT_Y;
+  // |src_?_pos| is an offset position within the source background image.
+  int src_x_pos = 0;
+  int src_y_pos = 0;
+  // |dest_?_pos| is an offset position within the destination view.
+  int dest_x_pos = 0;
+  int dest_y_pos = 0;
+  if (alignment & ThemeService::ALIGN_RIGHT) {
+    // When aligned to the right, drawing either starts at offset |src_x_pos|
+    // (when the image is larger than the view area, or when the image is
+    // repeated), or drawing starts at an offset of |dest_x_pos| within the
+    // view area.
+    if (area.width() < ntp_background->width() || repeat_x || repeat_y)
+      src_x_pos = area.width() - ntp_background->width();
+    else
+      dest_x_pos = area.width() - ntp_background->width();
+  } else if (alignment & ThemeService::ALIGN_LEFT) {
+    // noop, since the left of the image is aligned to the left of the view.
+  } else {  // ALIGN_CENTER
+    // Again, as for the right alignment, drawing either starts at an offset
+    // |src_x_pos| within the background image, or the image is drawn at an
+    // offset |dest_x_pos| within the view.
+    if (area.width() < ntp_background->width() || repeat_x || repeat_y) {
+      src_x_pos = gfx::ToRoundedInt(
+          (area.width() - ntp_background->width()) / 2.0);
+    } else {
+      dest_x_pos = gfx::ToRoundedInt(
+          (area.width() - ntp_background->width()) / 2.0);
+    }
+  }
+
+  if (alignment & ThemeService::ALIGN_BOTTOM) {
+    // When aligned to the bottom, drawing starts far enough so that the
+    // height of the view is filled with the bottom of the background image,
+    // always.
+    src_y_pos = area.height() - ntp_background->height();
+  } else if (alignment & ThemeService::ALIGN_TOP) {
+    // If the brackground doesn't reach to the bookmark bar, there is no
+    // need to draw anything.
+    if (tab_contents_height > ntp_background->height() &&
+        !(repeat_x || repeat_y)) {
+      return;
+    }
+    // Otherwise, drawing starts where the tab_contents end.
+    src_y_pos = -tab_contents_height;
+  } else {  // ALIGN_CENTER
+    // The center of the image must be at the center of the sum of the tab
+    // contents and the bookmark bar view height. So the top of the bar is
+    // aligned with tab contents height - start point of the image, where the
+    // start point of the image is (the center point of the bar and contents
+    // height) - half of the image height, so contents height -
+    // ((contents height + bar height) / 2.0 - image height / 2),
+    // and then the negative value to make it a proper offset.
+    if (area.height() < ntp_background->height() || repeat_x || repeat_y) {
+      src_y_pos = gfx::ToRoundedInt(
+          (area.height() - ntp_background->height() - tab_contents_height) /
+          2.0);
+    } else {
+      dest_y_pos = gfx::ToRoundedInt(
+          (area.height() - ntp_background->height() - tab_contents_height) /
+          2.0);
+    }
+  }
+
+  if (!(repeat_x || repeat_y)) {
+    canvas->Save();
+    canvas->Translate(gfx::Vector2d(src_x_pos, src_y_pos));
+    canvas->DrawImageInt(*ntp_background, dest_x_pos, dest_y_pos);
+    canvas->Restore();
+  } else {
+    // If repeating, |width| and |height| must be big enough to cover for all
+    // offsets and still fill the view area.
+    int width = area.width() + ntp_background->width();
+    int height = area.height() + ntp_background->height();
+    if (!repeat_x) {
+      // If not repeating, only the width of the image is needed.
+      width = ntp_background->width();
+    } else if (src_x_pos > 0) {
+      // Find the proper offset for the beginning of the repeats.
+      src_x_pos =
+          src_x_pos % ntp_background->width() - ntp_background->width();
+    }
+    // Same comments as for X above.
+    if (!repeat_y)
+      height = ntp_background->height();
+    else
+      src_y_pos = src_y_pos % ntp_background->height();
+
+    canvas->TileImageInt(
+        *ntp_background, src_x_pos, src_y_pos, width, height);
+  }
+}
+#endif  // !defined(USE_AURA
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -231,12 +356,24 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
   // the y-direction).  It's visually nicer without the bookmark background, so
   // utilize the existing background of content view, giving the impression that
   // each bookmark button is part of the content view.
-  const chrome::search::Mode& search_mode =
-      browser_view_->browser()->search_model()->mode();
-  if (search_mode.is_ntp()) {
+  // For non-Aura builds, it's hard to layer with transparency, so the bottom of
+  // the bookmark bar is drawn like the content view would be drawn underneath.
+  if (browser_view_->browser()->search_model()->mode().is_ntp()) {
+#if !defined(USE_AURA)
+    PaintBottomBookmarkBarBackground(
+        canvas, host_view_, tp, browser_view_->GetTabContentsContainerView()->
+            bounds().height() );
+#endif
     BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForProfile(browser_->profile());
     if (bookmark_model && bookmark_model->HasBookmarks()) {
+      canvas->Save();
+      // The bookmark bar has the same width as the contents but the margins
+      // must be taken into account when drawing the overlay / border.
+      int left_margin = host_view_->GetLeftMargin();
+      int width = host_view_->width() - host_view_->GetRightMargin() -
+          left_margin;
+      canvas->ClipRect(gfx::Rect(left_margin, 0, width, host_view_->height()));
       // If a theme is being used, paint the theme background color at maximum
       // 80% opacity to make the the bookmark bar more legible;
       // otherwise, use a transparent background.
@@ -254,6 +391,7 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
         DetachableToolbarView::PaintHorizontalBorderWithColor(
             canvas, host_view_, kBorderColor);
       }
+      canvas->Restore();
     }
     return;
   }

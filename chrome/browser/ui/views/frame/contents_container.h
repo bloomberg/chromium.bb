@@ -64,6 +64,14 @@ class ContentsContainer : public views::View {
   virtual void Layout() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
 
+  // Set/Get an extra content height, so that room is left at the bottom of the
+  // contents view for other views to draw on top of the extended child web
+  // view. Note that this doesn't cause a layout invalidation, it's up to the
+  // caller to make sure that a Layout() will be done so that the
+  // |extra_content_height_| gets taken into account.
+  int extra_content_height() const { return extra_content_height_; }
+  void SetExtraContentHeight(int height);
+
  private:
   views::WebView* active_;
   views::View* overlay_;
@@ -80,6 +88,9 @@ class ContentsContainer : public views::View {
   // The desired height of the preview and units.
   int preview_height_;
   InstantSizeUnits preview_height_units_;
+
+  // Used to extend the child WebView beyond the contents view bottom bound.
+  int extra_content_height_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsContainer);
 };
