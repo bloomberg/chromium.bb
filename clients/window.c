@@ -346,7 +346,8 @@ enum window_location {
 	WINDOW_CLIENT_AREA = 18,
 };
 
-static const cairo_user_data_key_t surface_data_key;
+static const cairo_user_data_key_t shm_surface_data_key;
+static const cairo_user_data_key_t egl_window_surface_data_key;
 
 #ifdef HAVE_CAIRO_EGL
 
@@ -403,7 +404,8 @@ display_create_egl_window_surface(struct display *display,
 							rectangle->width,
 							rectangle->height);
 
-	cairo_surface_set_user_data(cairo_surface, &surface_data_key,
+	cairo_surface_set_user_data(cairo_surface,
+				    &egl_window_surface_data_key,
 				    data, egl_window_surface_data_destroy);
 
 	return cairo_surface;
@@ -422,7 +424,7 @@ display_get_buffer_for_surface(struct display *display,
 {
 	struct shm_surface_data *data;
 
-	data = cairo_surface_get_user_data (surface, &surface_data_key);
+	data = cairo_surface_get_user_data(surface, &shm_surface_data_key);
 
 	return data->buffer;
 }
@@ -559,8 +561,8 @@ display_create_shm_surface_from_pool(struct display *display,
 						       rectangle->height,
 						       stride);
 
-	cairo_surface_set_user_data (surface, &surface_data_key,
-				     data, shm_surface_data_destroy);
+	cairo_surface_set_user_data(surface, &shm_surface_data_key,
+				    data, shm_surface_data_destroy);
 
 	if (flags & SURFACE_OPAQUE)
 		format = WL_SHM_FORMAT_XRGB8888;
@@ -609,7 +611,7 @@ display_create_shm_surface(struct display *display,
 	}
 
 	/* make sure we destroy the pool when the surface is destroyed */
-	data = cairo_surface_get_user_data(surface, &surface_data_key);
+	data = cairo_surface_get_user_data(surface, &shm_surface_data_key);
 	data->pool = pool;
 
 	return surface;
@@ -844,7 +846,7 @@ window_attach_surface(struct window *window)
 #ifdef HAVE_CAIRO_EGL
 	case WINDOW_BUFFER_TYPE_EGL_WINDOW:
 		data = cairo_surface_get_user_data(window->cairo_surface,
-						   &surface_data_key);
+						   &egl_window_surface_data_key);
 
 		cairo_gl_surface_swapbuffers(window->cairo_surface);
 		wl_egl_window_get_attached_size(data->window,
@@ -902,7 +904,7 @@ window_resize_cairo_window_surface(struct window *window)
 	int x, y;
 
 	data = cairo_surface_get_user_data(window->cairo_surface,
-					   &surface_data_key);
+					   &egl_window_surface_data_key);
 
 	window_get_resize_dx_dy(window, &x, &y),
 	wl_egl_window_resize(data->window,
@@ -3874,6 +3876,8 @@ display_create(int argc, char *argv[])
 {
 	struct display *d;
 
+	assert(&egl_window_surface_data_key != &shm_surface_data_key);
+
 	d = malloc(sizeof *d);
 	if (d == NULL)
 		return NULL;
@@ -4069,7 +4073,7 @@ display_acquire_window_surface(struct display *display,
 	}
 
 	data = cairo_surface_get_user_data(window->cairo_surface,
-					   &surface_data_key);
+					   &egl_window_surface_data_key);
 
 	cairo_device_flush(device);
 	cairo_device_acquire(device);
