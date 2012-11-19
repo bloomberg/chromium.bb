@@ -241,6 +241,8 @@ tools/git/update-copyrights.sh
 tools/json_schema_compiler/cpp_util.py
 # String 'copyright' used in code.
 tools/json_schema_compiler/idl_schema.py
+# String 'copyright' used in code.
+tools/json_to_struct/json_to_struct.py
 # String 'copyright' used in resources.
 tools/measure_page_load_time/ie_bho/MeasurePageLoadTime.rc
 # String 'copyright' used in code.
