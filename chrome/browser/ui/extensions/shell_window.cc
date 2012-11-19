@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/extensions/native_shell_window.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
-#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -108,7 +107,6 @@ void ShellWindow::Init(const GURL& url,
       profile(), SiteInstance::CreateForURL(profile(), url), MSG_ROUTING_NONE,
       NULL));
   ConstrainedWindowTabHelper::CreateForWebContents(web_contents_.get());
-  CoreTabHelper::CreateForWebContents(web_contents_.get());
   FaviconTabHelper::CreateForWebContents(web_contents_.get());
   WebIntentPickerController::CreateForWebContents(web_contents_.get());
 

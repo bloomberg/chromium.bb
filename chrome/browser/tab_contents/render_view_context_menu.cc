@@ -544,8 +544,6 @@ void RenderViewContextMenu::AppendPlatformAppItems() {
             ui::MenuModel::TYPE_SEPARATOR)
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 
-    menu_model_.AddItemWithStringId(IDC_RELOAD,
-                                    IDS_CONTENT_CONTEXT_RELOAD_PAGE);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP,
                                     IDS_CONTENT_CONTEXT_RELOAD_PACKAGED_APP);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP,
