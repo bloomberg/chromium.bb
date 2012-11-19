@@ -31,14 +31,15 @@ namespace sync_file_system {
 namespace {
 
 // Run the given join_callback when all the callbacks created by this runner
-// are run, or may dispatch it earlier if we get an error in any of the sub
-// callbacks.
+// are run. If any of the callbacks return non-OK state the given join_callback
+// will be dispatched with the non-OK state that comes first.
 class SharedCallbackRunner
     : public base::RefCountedThreadSafe<SharedCallbackRunner> {
  public:
   explicit SharedCallbackRunner(const SyncStatusCallback& join_callback)
       : join_callback_(join_callback),
-        num_shared_callbacks_(0) {}
+        num_shared_callbacks_(0),
+        status_(fileapi::SYNC_STATUS_OK) {}
 
   SyncStatusCallback CreateCallback() {
     ++num_shared_callbacks_;
@@ -67,19 +68,19 @@ class SharedCallbackRunner
   }
 
   void Done(SyncStatusCode status) {
-    if (status != fileapi::SYNC_STATUS_OK) {
-      join_callback_.Run(status);
-      join_callback_.Reset();
-      return;
+    if (status != fileapi::SYNC_STATUS_OK &&
+        status_ == fileapi::SYNC_STATUS_OK) {
+      status_ = status;
     }
     if (--num_shared_callbacks_ > 0)
       return;
-    join_callback_.Run(status);
+    join_callback_.Run(status_);
     join_callback_.Reset();
   }
 
   SyncStatusCallback join_callback_;
   int num_shared_callbacks_;
+  SyncStatusCode status_;
 };
 
 void VerifyFileSystemURLSetCallback(
