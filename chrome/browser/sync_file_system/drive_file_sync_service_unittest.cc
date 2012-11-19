@@ -151,7 +151,7 @@ class DriveFileSyncServiceTest : public testing::Test {
     return DriveFileSyncClient::FormatTitleQuery(title);
   }
 
-  const DriveFileSyncService::ChangeQueue& pending_changes() const {
+  const DriveFileSyncService::PendingChangeQueue& pending_changes() const {
     return sync_service_->pending_changes_;
   }
 

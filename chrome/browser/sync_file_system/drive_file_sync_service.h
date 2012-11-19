@@ -7,7 +7,7 @@
 
 #include <deque>
 #include <map>
-#include <queue>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -85,17 +85,33 @@ class DriveFileSyncService
   friend class DriveFileSyncServiceTest;
   class TaskToken;
 
+  struct ChangeQueueItem {
+    int64 changestamp;
+    fileapi::FileSystemURL url;
+
+    ChangeQueueItem();
+    ChangeQueueItem(int64 changestamp, const fileapi::FileSystemURL& url);
+  };
+
+  struct ChangeQueueComparator {
+    bool operator()(const ChangeQueueItem& left, const ChangeQueueItem& right);
+  };
+
+  typedef std::set<ChangeQueueItem, ChangeQueueComparator> PendingChangeQueue;
+
   struct RemoteChange {
     int64 changestamp;
     std::string resource_id;
     fileapi::FileSystemURL url;
     fileapi::FileChange change;
+    PendingChangeQueue::iterator position_in_queue;
 
     RemoteChange();
     RemoteChange(int64 changestamp,
                  const std::string& resource_id,
                  const fileapi::FileSystemURL& url,
-                 const fileapi::FileChange& change);
+                 const fileapi::FileChange& change,
+                 PendingChangeQueue::iterator position_in_queue);
     ~RemoteChange();
   };
 
@@ -103,10 +119,10 @@ class DriveFileSyncService
     bool operator()(const RemoteChange& left, const RemoteChange& right);
   };
 
-  typedef std::priority_queue<RemoteChange, std::vector<RemoteChange>,
-                              RemoteChangeComparator> ChangeQueue;
-  typedef std::map<FilePath, int64> PathToChangeStamp;
-  typedef std::map<GURL, PathToChangeStamp> ChangeStampMap;
+  // TODO(tzik): Consider using std::pair<FilePath, FileType> as the key below
+  // to support directories and custom conflict handling.
+  typedef std::map<FilePath, RemoteChange> PathToChange;
+  typedef std::map<GURL, PathToChange> URLToChange;
 
   // Task types; used for task token handling.
   enum TaskType {
@@ -174,8 +190,8 @@ class DriveFileSyncService
   std::deque<base::Closure> pending_tasks_;
 
   int64 largest_changestamp_;
-  ChangeQueue pending_changes_;
-  ChangeStampMap changestamp_map_;
+  PendingChangeQueue pending_changes_;
+  URLToChange url_to_change_;
 
   // Absence of |token_| implies a task is running. Incoming tasks should
   // wait for the task to finish in |pending_tasks_| if |token_| is null.

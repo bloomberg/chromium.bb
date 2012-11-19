@@ -74,6 +74,24 @@ class DriveFileSyncService::TaskToken {
   DISALLOW_COPY_AND_ASSIGN(TaskToken);
 };
 
+DriveFileSyncService::ChangeQueueItem::ChangeQueueItem() {
+}
+
+DriveFileSyncService::ChangeQueueItem::ChangeQueueItem(
+    int64 changestamp,
+    const fileapi::FileSystemURL& url)
+    : changestamp(changestamp),
+      url(url) {
+}
+
+bool DriveFileSyncService::ChangeQueueComparator::operator()(
+    const ChangeQueueItem& left,
+    const ChangeQueueItem& right) {
+  if (left.changestamp != right.changestamp)
+    return left.changestamp < right.changestamp;
+  return fileapi::FileSystemURL::Comparator()(left.url, right.url);
+}
+
 DriveFileSyncService::RemoteChange::RemoteChange()
     : changestamp(0),
       change(fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
@@ -84,11 +102,12 @@ DriveFileSyncService::RemoteChange::RemoteChange(
     int64 changestamp,
     const std::string& resource_id,
     const fileapi::FileSystemURL& url,
-    const fileapi::FileChange& change)
+    const fileapi::FileChange& change,
+    PendingChangeQueue::iterator position_in_queue)
     : changestamp(changestamp),
-      resource_id(resource_id),
       url(url),
-      change(change) {
+      change(change),
+      position_in_queue(position_in_queue) {
 }
 
 DriveFileSyncService::RemoteChange::~RemoteChange() {
@@ -191,15 +210,13 @@ void DriveFileSyncService::UnregisterOriginForTrackingChanges(
     return;
   }
 
-  changestamp_map_.erase(origin);
-
-  std::vector<RemoteChange> new_queue;
-  while (!pending_changes_.empty()) {
-    if (pending_changes_.top().url.origin() != origin)
-      new_queue.push_back(pending_changes_.top());
-    pending_changes_.pop();
+  URLToChange::iterator found = url_to_change_.find(origin);
+  if (found != url_to_change_.end()) {
+    for (PathToChange::iterator itr = found->second.begin();
+         itr != found->second.end(); ++itr)
+      pending_changes_.erase(itr->second.position_in_queue);
+    url_to_change_.erase(found);
   }
-  pending_changes_ = ChangeQueue(new_queue.begin(), new_queue.end());
 
   metadata_store_->RemoveOrigin(origin, base::Bind(
       &DriveFileSyncService::DidRemoveOriginOnMetadataStore,
@@ -492,6 +509,15 @@ void DriveFileSyncService::AppendNewRemoteChange(
     google_apis::DocumentEntry* entry,
     int64 changestamp) {
   FilePath path = FilePath::FromUTF8Unsafe(UTF16ToUTF8(entry->title()));
+
+  PathToChange* path_to_change = &url_to_change_[origin];
+  PathToChange::iterator found = path_to_change->find(path);
+  if (found != path_to_change->end()) {
+    if (found->second.changestamp >= changestamp)
+      return;
+    pending_changes_.erase(found->second.position_in_queue);
+  }
+
   fileapi::FileSystemURL url(
       fileapi::CreateSyncableFileSystemURL(origin, kServiceName, path));
 
@@ -509,19 +535,15 @@ void DriveFileSyncService::AppendNewRemoteChange(
   }
 
   fileapi::FileChange file_change(change_type, file_type);
-  RemoteChange change(changestamp, entry->resource_id(), url, file_change);
 
-  std::pair<PathToChangeStamp::iterator, bool> inserted =
-      changestamp_map_[url.origin()].insert(
-          std::make_pair(url.path(), changestamp));
-  if (!inserted.second) {
-    int64 another_changestamp = inserted.first->second;
-    if (another_changestamp > changestamp)
-      return;
-    inserted.first->second = changestamp;
-  }
+  ChangeQueueItem item(changestamp, url);
+  std::pair<PendingChangeQueue::iterator, bool> inserted_to_queue =
+      pending_changes_.insert(ChangeQueueItem(changestamp, url));
+  DCHECK(inserted_to_queue.second);
 
-  pending_changes_.push(change);
+  (*path_to_change)[path] = RemoteChange(
+      changestamp, entry->resource_id(), url, file_change,
+      inserted_to_queue.first);
 }
 
 }  // namespace sync_file_system
