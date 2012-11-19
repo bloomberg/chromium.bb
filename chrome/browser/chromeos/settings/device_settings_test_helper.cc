@@ -12,7 +12,8 @@
 
 namespace chromeos {
 
-DeviceSettingsTestHelper::DeviceSettingsTestHelper() {}
+DeviceSettingsTestHelper::DeviceSettingsTestHelper()
+    : store_result_(true) {}
 
 DeviceSettingsTestHelper::~DeviceSettingsTestHelper() {}
 
@@ -29,41 +30,19 @@ void DeviceSettingsTestHelper::FlushLoops() {
 
 void DeviceSettingsTestHelper::FlushStore() {
   std::vector<StorePolicyCallback> callbacks;
-  callbacks.swap(device_policy_.store_callbacks_);
+  callbacks.swap(store_callbacks_);
   for (std::vector<StorePolicyCallback>::iterator cb(callbacks.begin());
        cb != callbacks.end(); ++cb) {
-    cb->Run(device_policy_.store_result_);
-  }
-
-  std::map<std::string, PolicyState>::iterator device_local_account_state;
-  for (device_local_account_state = device_local_account_policy_.begin();
-       device_local_account_state != device_local_account_policy_.end();
-       ++device_local_account_state) {
-    callbacks.swap(device_local_account_state->second.store_callbacks_);
-    for (std::vector<StorePolicyCallback>::iterator cb(callbacks.begin());
-         cb != callbacks.end(); ++cb) {
-      cb->Run(device_local_account_state->second.store_result_);
-    }
+    cb->Run(store_result_);
   }
 }
 
 void DeviceSettingsTestHelper::FlushRetrieve() {
   std::vector<RetrievePolicyCallback> callbacks;
-  callbacks.swap(device_policy_.retrieve_callbacks_);
+  callbacks.swap(retrieve_callbacks_);
   for (std::vector<RetrievePolicyCallback>::iterator cb(callbacks.begin());
        cb != callbacks.end(); ++cb) {
-    cb->Run(device_policy_.policy_blob_);
-  }
-
-  std::map<std::string, PolicyState>::iterator device_local_account_state;
-  for (device_local_account_state = device_local_account_policy_.begin();
-       device_local_account_state != device_local_account_policy_.end();
-       ++device_local_account_state) {
-    callbacks.swap(device_local_account_state->second.retrieve_callbacks_);
-    for (std::vector<RetrievePolicyCallback>::iterator cb(callbacks.begin());
-         cb != callbacks.end(); ++cb) {
-      cb->Run(device_local_account_state->second.policy_blob_);
-    }
+    cb->Run(policy_blob_);
   }
 }
 
@@ -74,22 +53,7 @@ void DeviceSettingsTestHelper::Flush() {
     FlushLoops();
     FlushRetrieve();
     FlushLoops();
-  } while (HasPendingOperations());
-}
-
-bool DeviceSettingsTestHelper::HasPendingOperations() const {
-  if (device_policy_.HasPendingOperations())
-    return true;
-
-  std::map<std::string, PolicyState>::const_iterator device_local_account_state;
-  for (device_local_account_state = device_local_account_policy_.begin();
-       device_local_account_state != device_local_account_policy_.end();
-       ++device_local_account_state) {
-    if (device_local_account_state->second.HasPendingOperations())
-      return true;
-  }
-
-  return false;
+  } while (!store_callbacks_.empty() || !retrieve_callbacks_.empty());
 }
 
 void DeviceSettingsTestHelper::AddObserver(Observer* observer) {}
@@ -129,39 +93,23 @@ bool DeviceSettingsTestHelper::GetIsScreenLocked() {
 
 void DeviceSettingsTestHelper::RetrieveDevicePolicy(
     const RetrievePolicyCallback& callback) {
-  device_policy_.retrieve_callbacks_.push_back(callback);
+  retrieve_callbacks_.push_back(callback);
 }
 
 void DeviceSettingsTestHelper::RetrieveUserPolicy(
     const RetrievePolicyCallback& callback) {
 }
 
-void DeviceSettingsTestHelper::RetrieveDeviceLocalAccountPolicy(
-    const std::string& account_id,
-    const RetrievePolicyCallback& callback) {
-  device_local_account_policy_[account_id].retrieve_callbacks_.push_back(
-      callback);
-}
-
 void DeviceSettingsTestHelper::StoreDevicePolicy(
     const std::string& policy_blob,
     const StorePolicyCallback& callback) {
-  device_policy_.policy_blob_ = policy_blob;
-  device_policy_.store_callbacks_.push_back(callback);
+  policy_blob_ = policy_blob;
+  store_callbacks_.push_back(callback);
 }
 
 void DeviceSettingsTestHelper::StoreUserPolicy(
     const std::string& policy_blob,
-    const StorePolicyCallback& callback) {
-}
-
-void DeviceSettingsTestHelper::StoreDeviceLocalAccountPolicy(
-    const std::string& account_id,
-    const std::string& policy_blob,
-    const StorePolicyCallback& callback) {
-  device_local_account_policy_[account_id].policy_blob_ = policy_blob;
-  device_local_account_policy_[account_id].store_callbacks_.push_back(callback);
-}
+    const StorePolicyCallback& callback) {}
 
 ScopedDeviceSettingsTestHelper::ScopedDeviceSettingsTestHelper() {
   DeviceSettingsService::Get()->Initialize(this, new MockOwnerKeyUtil());

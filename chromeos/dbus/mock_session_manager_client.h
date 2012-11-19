@@ -34,19 +34,10 @@ class MockSessionManagerClient : public SessionManagerClient {
   MOCK_METHOD0(GetIsScreenLocked, bool(void));
   MOCK_METHOD1(RetrieveDevicePolicy, void(const RetrievePolicyCallback&));
   MOCK_METHOD1(RetrieveUserPolicy, void(const RetrievePolicyCallback&));
-  MOCK_METHOD2(RetrieveDeviceLocalAccountPolicy,
-               void(const std::string&,
-                    const RetrievePolicyCallback&));
-  MOCK_METHOD2(StoreDevicePolicy,
-               void(const std::string&,
-                    const StorePolicyCallback&));
-  MOCK_METHOD2(StoreUserPolicy,
-               void(const std::string&,
-                    const StorePolicyCallback&));
-  MOCK_METHOD3(StoreDeviceLocalAccountPolicy,
-               void(const std::string&,
-                    const std::string&,
-                    const StorePolicyCallback&));
+  MOCK_METHOD2(StoreDevicePolicy, void(const std::string&,
+                                       const StorePolicyCallback&));
+  MOCK_METHOD2(StoreUserPolicy, void(const std::string&,
+                                     const StorePolicyCallback&));
 };
 
 }  // namespace chromeos

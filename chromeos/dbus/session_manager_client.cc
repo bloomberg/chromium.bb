@@ -180,24 +180,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
                        callback);
   }
 
-  virtual void RetrieveDeviceLocalAccountPolicy(
-      const std::string& account_name,
-      const RetrievePolicyCallback& callback) {
-    dbus::MethodCall method_call(
-        login_manager::kSessionManagerInterface,
-        login_manager::kSessionManagerRetrieveDeviceLocalAccountPolicy);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(account_name);
-    session_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(
-            &SessionManagerClientImpl::OnRetrievePolicy,
-            weak_ptr_factory_.GetWeakPtr(),
-            login_manager::kSessionManagerRetrieveDeviceLocalAccountPolicy,
-            callback));
-  }
-
   virtual void StoreDevicePolicy(const std::string& policy_blob,
                                  const StorePolicyCallback& callback) OVERRIDE {
     CallStorePolicy(login_manager::kSessionManagerStorePolicy,
@@ -208,28 +190,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
                                const StorePolicyCallback& callback) OVERRIDE {
     CallStorePolicy(login_manager::kSessionManagerStoreUserPolicy,
                     policy_blob, callback);
-  }
-
-  virtual void StoreDeviceLocalAccountPolicy(
-      const std::string& account_name,
-      const std::string& policy_blob,
-      const StorePolicyCallback& callback) OVERRIDE {
-    dbus::MethodCall method_call(
-        login_manager::kSessionManagerInterface,
-        login_manager::kSessionManagerStoreDeviceLocalAccountPolicy);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(account_name);
-    // static_cast does not work due to signedness.
-    writer.AppendArrayOfBytes(
-        reinterpret_cast<const uint8*>(policy_blob.data()), policy_blob.size());
-    session_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(
-            &SessionManagerClientImpl::OnStorePolicy,
-            weak_ptr_factory_.GetWeakPtr(),
-            login_manager::kSessionManagerStoreDeviceLocalAccountPolicy,
-            callback));
   }
 
  private:
@@ -444,23 +404,12 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
       const RetrievePolicyCallback& callback) OVERRIDE {
     callback.Run("");
   }
-  virtual void RetrieveDeviceLocalAccountPolicy(
-      const std::string& account_name,
-      const RetrievePolicyCallback& callback) OVERRIDE {
-    callback.Run("");
-  }
   virtual void StoreDevicePolicy(const std::string& policy_blob,
                                  const StorePolicyCallback& callback) OVERRIDE {
     callback.Run(true);
   }
   virtual void StoreUserPolicy(const std::string& policy_blob,
                                const StorePolicyCallback& callback) OVERRIDE {
-    callback.Run(true);
-  }
-  virtual void StoreDeviceLocalAccountPolicy(
-      const std::string& account_name,
-      const std::string& policy_blob,
-      const StorePolicyCallback& callback) OVERRIDE {
     callback.Run(true);
   }
 

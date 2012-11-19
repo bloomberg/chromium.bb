@@ -5,13 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_SETTINGS_TEST_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_SETTINGS_TEST_HELPER_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/string_util.h"
 #include "chromeos/dbus/session_manager_client.h"
 
 namespace chromeos {
@@ -39,34 +37,18 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
   // Flushes all pending operations.
   void Flush();
 
-  // Checks whether any asynchronous Store/Retrieve operations are pending.
-  bool HasPendingOperations() const;
-
   bool store_result() {
-    return device_policy_.store_result_;
+    return store_result_;
   }
   void set_store_result(bool store_result) {
-    device_policy_.store_result_ = store_result;
+    store_result_ = store_result;
   }
 
   const std::string& policy_blob() {
-    return device_policy_.policy_blob_;
+    return policy_blob_;
   }
   void set_policy_blob(const std::string& policy_blob) {
-    device_policy_.policy_blob_ = policy_blob;
-  }
-
-  const std::string& device_local_account_policy_blob(
-      const std::string& id) const {
-    const std::map<std::string, PolicyState>::const_iterator entry =
-        device_local_account_policy_.find(id);
-    return entry == device_local_account_policy_.end() ?
-        EmptyString() : entry->second.policy_blob_;
-  }
-
-  void set_device_local_account_policy_blob(const std::string& id,
-                                            const std::string& policy_blob) {
-    device_local_account_policy_[id].policy_blob_ = policy_blob;
+    policy_blob_ = policy_blob;
   }
 
   // SessionManagerClient:
@@ -89,35 +71,17 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
       const RetrievePolicyCallback& callback) OVERRIDE;
   virtual void RetrieveUserPolicy(
       const RetrievePolicyCallback& callback) OVERRIDE;
-  virtual void RetrieveDeviceLocalAccountPolicy(
-      const std::string& account_id,
-      const RetrievePolicyCallback& callback) OVERRIDE;
   virtual void StoreDevicePolicy(const std::string& policy_blob,
                                  const StorePolicyCallback& callback) OVERRIDE;
   virtual void StoreUserPolicy(const std::string& policy_blob,
                                const StorePolicyCallback& callback) OVERRIDE;
-  virtual void StoreDeviceLocalAccountPolicy(
-      const std::string& account_id,
-      const std::string& policy_blob,
-      const StorePolicyCallback& callback) OVERRIDE;
 
  private:
-  struct PolicyState {
-    bool store_result_;
-    std::string policy_blob_;
-    std::vector<StorePolicyCallback> store_callbacks_;
-    std::vector<RetrievePolicyCallback> retrieve_callbacks_;
+  bool store_result_;
+  std::string policy_blob_;
 
-    PolicyState()
-        : store_result_(true) {}
-
-    bool HasPendingOperations() const {
-      return !store_callbacks_.empty() || !retrieve_callbacks_.empty();
-    }
-  };
-
-  PolicyState device_policy_;
-  std::map<std::string, PolicyState> device_local_account_policy_;
+  std::vector<StorePolicyCallback> store_callbacks_;
+  std::vector<RetrievePolicyCallback> retrieve_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsTestHelper);
 };
