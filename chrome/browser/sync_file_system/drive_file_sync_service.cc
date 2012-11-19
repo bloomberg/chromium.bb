@@ -129,7 +129,7 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
       state_(REMOTE_SERVICE_OK),
       largest_changestamp_(0),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  token_.reset(new TaskToken(weak_factory_.GetWeakPtr()));
+  token_.reset(new TaskToken(AsWeakPtr()));
 
   sync_client_.reset(new DriveFileSyncClient(profile));
 
@@ -139,13 +139,16 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
           content::BrowserThread::FILE)));
 
   metadata_store_->Initialize(
-      base::Bind(&DriveFileSyncService::DidInitializeMetadataStore,
-                 weak_factory_.GetWeakPtr(),
+      base::Bind(&DriveFileSyncService::DidInitializeMetadataStore, AsWeakPtr(),
                  base::Passed(GetToken(FROM_HERE, TASK_TYPE_DATABASE,
                                        "Metadata database initialization"))));
 }
 
 DriveFileSyncService::~DriveFileSyncService() {
+  // Invalidate WeakPtr instances here explicitly to notify TaskToken that we
+  // can safely discard the token.
+  weak_factory_.InvalidateWeakPtrs();
+  token_.reset();
 }
 
 // static
@@ -172,7 +175,7 @@ void DriveFileSyncService::RegisterOriginForTrackingChanges(
   if (!token) {
     pending_tasks_.push_back(base::Bind(
         &DriveFileSyncService::RegisterOriginForTrackingChanges,
-        weak_factory_.GetWeakPtr(), origin, callback));
+        AsWeakPtr(), origin, callback));
     return;
   }
 
@@ -195,8 +198,7 @@ void DriveFileSyncService::RegisterOriginForTrackingChanges(
   sync_client_->GetDriveDirectoryForOrigin(
       metadata_store_->sync_root_directory(), origin,
       base::Bind(&DriveFileSyncService::DidGetDirectoryForOrigin,
-                 weak_factory_.GetWeakPtr(), base::Passed(&token),
-                 origin, callback));
+                 AsWeakPtr(), base::Passed(&token), origin, callback));
 }
 
 void DriveFileSyncService::UnregisterOriginForTrackingChanges(
@@ -206,7 +208,7 @@ void DriveFileSyncService::UnregisterOriginForTrackingChanges(
   if (!token) {
     pending_tasks_.push_back(base::Bind(
         &DriveFileSyncService::UnregisterOriginForTrackingChanges,
-        weak_factory_.GetWeakPtr(), origin, callback));
+        AsWeakPtr(), origin, callback));
     return;
   }
 
@@ -220,7 +222,7 @@ void DriveFileSyncService::UnregisterOriginForTrackingChanges(
 
   metadata_store_->RemoveOrigin(origin, base::Bind(
       &DriveFileSyncService::DidRemoveOriginOnMetadataStore,
-      weak_factory_.GetWeakPtr(), base::Passed(&token), callback));
+      AsWeakPtr(), base::Passed(&token), callback));
 }
 
 void DriveFileSyncService::ProcessRemoteChange(
@@ -268,7 +270,7 @@ DriveFileSyncService::DriveFileSyncService(
       state_(REMOTE_SERVICE_OK),
       largest_changestamp_(0),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  token_.reset(new TaskToken(weak_factory_.GetWeakPtr()));
+  token_.reset(new TaskToken(AsWeakPtr()));
   sync_client_ = sync_client.Pass();
   metadata_store_ = metadata_store.Pass();
 
@@ -361,6 +363,10 @@ void DriveFileSyncService::UpdateServiceState() {
   }
 }
 
+base::WeakPtr<DriveFileSyncService> DriveFileSyncService::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void DriveFileSyncService::DidInitializeMetadataStore(
     scoped_ptr<TaskToken> token,
     fileapi::SyncStatusCode status,
@@ -377,8 +383,7 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     token->UpdateTask(FROM_HERE, TASK_TYPE_DRIVE, "Retrieving drive root");
     sync_client_->GetDriveDirectoryForSyncRoot(
         base::Bind(&DriveFileSyncService::DidGetSyncRootDirectory,
-                   weak_factory_.GetWeakPtr(),
-                   base::Passed(&token)));
+                   AsWeakPtr(), base::Passed(&token)));
     return;
   }
   NotifyTaskDone(status, token.Pass());
@@ -413,14 +418,13 @@ void DriveFileSyncService::StartBatchSyncForOrigin(
   if (!token) {
     pending_tasks_.push_back(base::Bind(
         &DriveFileSyncService::StartBatchSyncForOrigin,
-        weak_factory_.GetWeakPtr(), origin, resource_id));
+        AsWeakPtr(), origin, resource_id));
     return;
   }
 
   sync_client_->GetLargestChangeStamp(
       base::Bind(&DriveFileSyncService::DidGetLargestChangeStampForBatchSync,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(&token), origin, resource_id));
+                 AsWeakPtr(), base::Passed(&token), origin, resource_id));
 }
 
 void DriveFileSyncService::DidGetDirectoryForOrigin(
@@ -461,9 +465,9 @@ void DriveFileSyncService::DidGetLargestChangeStampForBatchSync(
   token->UpdateTask(FROM_HERE, TASK_TYPE_DRIVE, "Retrieving remote files");
   sync_client_->ListFiles(
       resource_id,
-      base::Bind(&DriveFileSyncService::DidGetDirectoryContentForBatchSync,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(&token), origin, largest_changestamp));
+      base::Bind(
+          &DriveFileSyncService::DidGetDirectoryContentForBatchSync,
+          AsWeakPtr(), base::Passed(&token), origin, largest_changestamp));
 }
 
 void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
@@ -488,9 +492,9 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
   if (feed->GetNextFeedURL(&next_feed_url)) {
     sync_client_->ContinueListing(
         next_feed_url,
-        base::Bind(&DriveFileSyncService::DidGetDirectoryContentForBatchSync,
-                   weak_factory_.GetWeakPtr(), base::Passed(&token),
-                   origin, largest_changestamp));
+        base::Bind(
+            &DriveFileSyncService::DidGetDirectoryContentForBatchSync,
+            AsWeakPtr(), base::Passed(&token), origin, largest_changestamp));
     return;
   }
   NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());

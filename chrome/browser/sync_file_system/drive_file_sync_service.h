@@ -40,8 +40,7 @@ class DriveMetadataStore;
 class DriveFileSyncService
     : public RemoteFileSyncService,
       public LocalChangeProcessor,
-      public base::NonThreadSafe,
-      public base::SupportsWeakPtr<DriveFileSyncService> {
+      public base::NonThreadSafe {
  public:
   static const char kServiceName[];
 
@@ -148,6 +147,7 @@ class DriveFileSyncService
   void NotifyTaskDone(fileapi::SyncStatusCode status,
                       scoped_ptr<TaskToken> token);
   void UpdateServiceState();
+  base::WeakPtr<DriveFileSyncService> AsWeakPtr();
 
   void DidInitializeMetadataStore(scoped_ptr<TaskToken> token,
                                   fileapi::SyncStatusCode status,
@@ -201,6 +201,9 @@ class DriveFileSyncService
   scoped_ptr<TaskToken> token_;
 
   ObserverList<Observer> observers_;
+
+  // Use WeakPtrFactory instead of SupportsWeakPtr to revoke the weak pointer
+  // in |token_|.
   base::WeakPtrFactory<DriveFileSyncService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveFileSyncService);
