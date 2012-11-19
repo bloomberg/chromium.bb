@@ -13,5 +13,5 @@ set -e
 export CHROME_ANDROID_BUILD_WEBVIEW=1
 export CHROME_SRC="$(readlink -f "$(dirname "$0")/../..")"
 export PYTHONDONTWRITEBYTECODE=1
-. build/android/envsetup.sh
-android_gyp
+. build/android/envsetup.sh --target-arch=arm
+android_gyp --suffix .arm
