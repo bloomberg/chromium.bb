@@ -1263,13 +1263,21 @@ class NetworkLibrary {
          USE_DHCP_GATEWAY),
   };
 
+  class NetworkProfileObserver {
+   public:
+    // Called when the list of network profiles was changed.
+    virtual void OnProfileListChanged() = 0;
+   protected:
+    virtual ~NetworkProfileObserver() {}
+  };
+
   class NetworkManagerObserver {
    public:
     // Called when the state of the network manager has changed,
     // for example, networks have appeared or disappeared.
     virtual void OnNetworkManagerChanged(NetworkLibrary* obj) = 0;
    protected:
-    virtual ~NetworkManagerObserver() { }
+    virtual ~NetworkManagerObserver() {}
   };
 
   class NetworkObserver {
@@ -1333,6 +1341,10 @@ class NetworkLibrary {
 
   // Returns true if libcros was loaded instead of stubbed out.
   virtual bool IsCros() const = 0;
+
+  virtual void AddNetworkProfileObserver(NetworkProfileObserver* observer) = 0;
+  virtual void RemoveNetworkProfileObserver(
+      NetworkProfileObserver* observer) = 0;
 
   virtual void AddNetworkManagerObserver(NetworkManagerObserver* observer) = 0;
   virtual void RemoveNetworkManagerObserver(
@@ -1514,8 +1526,6 @@ class NetworkLibrary {
   // Return a pointer to the remembered network, if it exists, or NULL.
   virtual Network* FindRememberedNetworkByPath(
       const std::string& path) const = 0;
-  virtual Network* FindRememberedNetworkByUniqueId(
-      const std::string& unique_id) const = 0;
 
   // Return a pointer to the ONC dictionary for a network identified by unique
   // ID. Returns NULL if there is no ONC dictionary available for that network.
@@ -1595,10 +1605,6 @@ class NetworkLibrary {
 
   // Return true if a profile matching |type| is loaded.
   virtual bool HasProfileType(NetworkProfileType type) const = 0;
-
-  // Move the network to the shared/global profile.
-  virtual void SetNetworkProfile(const std::string& service_path,
-                                 NetworkProfileType type) = 0;
 
   // Returns false if there is no way to connect to this network, even with
   // user input (e.g. it requires a user profile but none is available).

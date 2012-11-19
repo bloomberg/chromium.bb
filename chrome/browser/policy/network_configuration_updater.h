@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "chrome/browser/chromeos/cros/network_constants.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "chrome/browser/policy/policy_service.h"
 
@@ -14,21 +16,22 @@ namespace base {
 class Value;
 }
 
-namespace chromeos {
-class NetworkLibrary;
-}
-
 namespace policy {
 
 class PolicyMap;
 
-// Keeps track of the network configuration policy settings and updates the
-// network definitions whenever the configuration changes.
-class NetworkConfigurationUpdater {
+// Keeps track of the network configuration policy settings and Shill's
+// profiles. Requests the NetworkLibrary to apply the ONC of the network
+// policies when necessary.
+class NetworkConfigurationUpdater
+    : public chromeos::NetworkLibrary::NetworkProfileObserver {
  public:
   NetworkConfigurationUpdater(PolicyService* policy_service,
                               chromeos::NetworkLibrary* network_library);
   virtual ~NetworkConfigurationUpdater();
+
+  // NetworkProfileObserver overrides.
+  virtual void OnProfileListChanged() OVERRIDE;
 
   // Web trust isn't given to certificates imported from ONC by default.
   // Setting |allow_web_trust| to true allows giving Web trust to the
@@ -39,13 +42,21 @@ class NetworkConfigurationUpdater {
   static const char kEmptyConfiguration[];
 
  private:
-  // Extracts ONC string from |policy_map| and pushes the configuration to
-  // |network_library_| if it's different from |*cached_value| (which is
-  // updated).
-  void ApplyNetworkConfiguration(chromeos::NetworkUIData::ONCSource onc_source,
-                                 std::string* cached_value,
-                                 const base::Value* previous,
-                                 const base::Value* current);
+  // Callback that's called by |policy_service_| if the respective ONC policy
+  // changed.
+  void OnPolicyChanged(chromeos::NetworkUIData::ONCSource onc_source,
+                       const base::Value* previous,
+                       const base::Value* current);
+
+  // Retrieves the ONC policies from |policy_service_| and pushes the
+  // configurations to |network_library_|. Ensures that a device policy is
+  // always overwritten by a user policy.
+  void ApplyNetworkConfigurations();
+
+  // Push the policy stored at |policy_key| for |onc_source| to
+  // |network_library_|.
+  void ApplyNetworkConfiguration(const std::string& policy_key,
+                                 chromeos::NetworkUIData::ONCSource onc_source);
 
   // Wraps the policy service we read network configuration from.
   PolicyChangeRegistrar policy_change_registrar_;
@@ -56,9 +67,8 @@ class NetworkConfigurationUpdater {
   // Whether Web trust is allowed or not.
   bool allow_web_trust_;
 
-  // Current settings.
-  std::string device_network_config_;
-  std::string user_network_config_;
+  // The policy service storing the ONC policies.
+  PolicyService* policy_service_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationUpdater);
 };

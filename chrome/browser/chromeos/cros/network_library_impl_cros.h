@@ -127,7 +127,8 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
 
   void NetworkServiceUpdate(const std::string& service_path,
                             const base::DictionaryValue* properties);
-  void RememberedNetworkServiceUpdate(const std::string& service_path,
+  void RememberedNetworkServiceUpdate(const std::string& profile_path,
+                                      const std::string& service_path,
                                       const base::DictionaryValue* properties);
   void NetworkDeviceUpdate(const std::string& device_path,
                            const base::DictionaryValue* properties);
@@ -167,13 +168,18 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   void RequestRememberedNetworksUpdate();
   void UpdateProfile(const std::string& profile_path,
                      const base::DictionaryValue* properties);
-  Network* ParseRememberedNetwork(const std::string& service_path,
+  Network* ParseRememberedNetwork(const std::string& profile_path,
+                                  const std::string& service_path,
                                   const base::DictionaryValue& info);
 
   // NetworkDevice list management functions.
   void UpdateNetworkDeviceList(const base::ListValue* devices);
   void ParseNetworkDevice(const std::string& device_path,
                           const base::DictionaryValue& info);
+
+  // Compare two network profiles by their path.
+  static bool AreProfilePathsEqual(const NetworkProfile& a,
+                                   const NetworkProfile& b);
 
   // Empty device observer to ensure that device property updates are received.
   class NetworkLibraryDeviceObserver : public NetworkDeviceObserver {

@@ -23,66 +23,74 @@ NetworkConfigurationUpdater::NetworkConfigurationUpdater(
     : policy_change_registrar_(
           policy_service, POLICY_DOMAIN_CHROME, std::string()),
       network_library_(network_library),
-      allow_web_trust_(false) {
+      allow_web_trust_(false),
+      policy_service_(policy_service) {
   DCHECK(network_library_);
   policy_change_registrar_.Observe(
       key::kDeviceOpenNetworkConfiguration,
-      base::Bind(&NetworkConfigurationUpdater::ApplyNetworkConfiguration,
+      base::Bind(&NetworkConfigurationUpdater::OnPolicyChanged,
                  base::Unretained(this),
-                 chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY,
-                 &device_network_config_));
+                 chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY));
   policy_change_registrar_.Observe(
       key::kOpenNetworkConfiguration,
-      base::Bind(&NetworkConfigurationUpdater::ApplyNetworkConfiguration,
+      base::Bind(&NetworkConfigurationUpdater::OnPolicyChanged,
                  base::Unretained(this),
-                 chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY,
-                 &user_network_config_));
+                 chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY));
 
-  // Apply the current values immediately.
-  const PolicyMap& policies = policy_service->GetPolicies(POLICY_DOMAIN_CHROME,
-                                                          std::string());
-  ApplyNetworkConfiguration(
-      chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY,
-      &device_network_config_,
-      NULL,
-      policies.GetValue(key::kDeviceOpenNetworkConfiguration));
-  ApplyNetworkConfiguration(
-      chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY,
-      &user_network_config_,
-      NULL,
-      policies.GetValue(key::kOpenNetworkConfiguration));
+  network_library_->AddNetworkProfileObserver(this);
+
+  // Apply the current policies immediately.
+  ApplyNetworkConfigurations();
 }
 
-NetworkConfigurationUpdater::~NetworkConfigurationUpdater() {}
+NetworkConfigurationUpdater::~NetworkConfigurationUpdater() {
+  network_library_->RemoveNetworkProfileObserver(this);
+}
 
-void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
+void NetworkConfigurationUpdater::OnProfileListChanged() {
+  VLOG(1) << "Network profile list changed, applying policies.";
+  ApplyNetworkConfigurations();
+}
+
+void NetworkConfigurationUpdater::OnPolicyChanged(
     chromeos::NetworkUIData::ONCSource onc_source,
-    std::string* cached_value,
     const base::Value* previous,
     const base::Value* current) {
+  VLOG(1) << "Policy for ONC source " << onc_source << " changed.";
+  ApplyNetworkConfigurations();
+}
+
+void NetworkConfigurationUpdater::ApplyNetworkConfigurations() {
+  ApplyNetworkConfiguration(key::kDeviceOpenNetworkConfiguration,
+                            chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY);
+  ApplyNetworkConfiguration(key::kOpenNetworkConfiguration,
+                            chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY);
+}
+
+void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
+    const std::string& policy_key,
+    chromeos::NetworkUIData::ONCSource onc_source) {
+  VLOG(1) << "Apply policy for ONC source " << onc_source;
+  const PolicyMap& policies = policy_service_->GetPolicies(POLICY_DOMAIN_CHROME,
+                                                           std::string());
+  const base::Value* policy_value = policies.GetValue(policy_key);
+
   std::string new_network_config;
-  if (current != NULL) {
+  if (policy_value != NULL) {
     // If the policy is not a string, we issue a warning, but still clear the
     // network configuration.
-    if (!current->GetAsString(&new_network_config))
-      LOG(WARNING) << "Invalid network configuration.";
+    if (!policy_value->GetAsString(&new_network_config))
+      LOG(WARNING) << "ONC policy is not a string value.";
   }
 
-  // We need to load an empty configuration to get rid of any configuration
-  // that has been installed previously. An empty string also works, but
-  // generates warnings and errors, which we'd like to avoid.
+  // An empty string is not a valid ONC and generates warnings and
+  // errors. Replace by a valid empty configuration.
   if (new_network_config.empty())
     new_network_config = kEmptyConfiguration;
 
-  if (*cached_value != new_network_config) {
-    *cached_value = new_network_config;
-    std::string error;
-    if (!network_library_->LoadOncNetworks(new_network_config, "", onc_source,
-                                           allow_web_trust_, &error)) {
-      LOG(WARNING) << "Network library failed to load ONC configuration:"
-                   << error;
-    }
-  }
+  std::string unused_error;
+  network_library_->LoadOncNetworks(new_network_config, "", onc_source,
+                                    allow_web_trust_, &unused_error);
 }
 
 }  // namespace policy

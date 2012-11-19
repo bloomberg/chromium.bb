@@ -129,6 +129,8 @@ void NetworkLibraryImplCros::UpdateNetworkStatus(
       LOG(WARNING) << "UpdateNetworkStatus: Error updating: "
                    << path << "." << key;
     }
+    if (key == flimflam::kProfileProperty)
+      SetProfileTypeFromPath(network);
     // If we just connected, this may have been added to remembered list.
     if (!prev_connected && network->connected())
       RequestRememberedNetworksUpdate();
@@ -689,7 +691,6 @@ bool NetworkLibraryImplCros::NetworkManagerStatusChanged(
       if (!value->GetAsList(&vlist))
         return false;
       UpdateRememberedNetworks(vlist);
-      RequestRememberedNetworksUpdate();
       break;
     }
     case PROPERTY_INDEX_SERVICES: {
@@ -974,7 +975,9 @@ void NetworkLibraryImplCros::UpdateRememberedNetworks(
     const ListValue* profiles) {
   VLOG(1) << "UpdateRememberedNetworks";
   // Update the list of profiles.
-  profile_list_.clear();
+  NetworkProfileList old_profile_list;
+  old_profile_list.swap(profile_list_);
+
   for (ListValue::const_iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
     std::string profile_path;
@@ -990,6 +993,13 @@ void NetworkLibraryImplCros::UpdateRememberedNetworks(
       profile_type = PROFILE_USER;
     AddProfile(profile_path, profile_type);
   }
+  bool lists_equal = old_profile_list.size() == profile_list_.size() &&
+      std::equal(profile_list_.begin(), profile_list_.end(),
+                 old_profile_list.begin(), AreProfilePathsEqual);
+
+  RequestRememberedNetworksUpdate();
+  if (!lists_equal)
+    NotifyNetworkProfileObservers();
 }
 
 void NetworkLibraryImplCros::RequestRememberedNetworksUpdate() {
@@ -1054,36 +1064,53 @@ void NetworkLibraryImplCros::UpdateProfile(
     // Add service to profile list.
     profile.services.insert(service_path);
     // Request update for remembered network.
+    // Shill does not set the Profile property for remembered networks, but only
+    // for the active networks, so we provide |profile_path| to the callback.
     CrosRequestNetworkProfileEntryProperties(
         profile_path,
         service_path,
         base::Bind(&NetworkLibraryImplCros::RememberedNetworkServiceUpdate,
-                   weak_ptr_factory_.GetWeakPtr()));
+                   weak_ptr_factory_.GetWeakPtr(),
+                   profile_path));
   }
 }
 
 void NetworkLibraryImplCros::RememberedNetworkServiceUpdate(
+    const std::string& profile_path,
     const std::string& service_path,
     const base::DictionaryValue* properties) {
-  if (!properties) {
-    // Remembered network no longer exists.
-    DeleteRememberedNetwork(service_path);
+  VLOG(2) << "RememberedNetworkServiceUpdate: profile: " << profile_path
+          << " service: " << service_path
+          << (properties == NULL ? " got removed" : " got updated");
+  if (properties) {
+    ParseRememberedNetwork(profile_path, service_path, *properties);
   } else {
-    ParseRememberedNetwork(service_path, *properties);
+    // Remove this service from the respective Profile::services list.
+    for (NetworkProfileList::iterator iter = profile_list_.begin();
+         iter != profile_list_.end(); ++iter) {
+      NetworkProfile& profile = *iter;
+      if (profile.path != profile_path)
+        continue;
+
+      if (profile.services.erase(service_path) != 0) {
+        VLOG(1) << "Removed service path: " << service_path
+                << " from Profile::services of: " << profile_path;
+      }
+      break;
+    }
   }
 }
 
 // Returns NULL if |service_path| refers to a network that is not a
 // remembered type. Called from RememberedNetworkServiceUpdate.
 Network* NetworkLibraryImplCros::ParseRememberedNetwork(
-    const std::string& service_path, const DictionaryValue& info) {
+    const std::string& profile_path,
+    const std::string& service_path,
+    const DictionaryValue& info) {
   Network* remembered;
   NetworkMap::iterator found = remembered_network_map_.find(service_path);
   if (found != remembered_network_map_.end()) {
     remembered = found->second;
-    // Erase entry from network_unique_id_map_ in case unique id changes.
-    if (!remembered->unique_id().empty())
-      remembered_network_unique_id_map_.erase(remembered->unique_id());
     if (remembered->network_parser())
       remembered->network_parser()->UpdateNetworkFromInfo(info, remembered);
   } else {
@@ -1100,9 +1127,7 @@ Network* NetworkLibraryImplCros::ParseRememberedNetwork(
     }
   }
 
-  if (!remembered->unique_id().empty())
-    remembered_network_unique_id_map_[remembered->unique_id()] = remembered;
-
+  remembered->set_profile_path(profile_path);
   SetProfileTypeFromPath(remembered);
 
   VLOG(2) << "ParseRememberedNetwork: " << remembered->name()
@@ -1335,6 +1360,12 @@ void NetworkLibraryImplCros::SetIPParametersCallback(
   // properties can take effect.
   if (network->connecting_or_connected())
     RefreshIPConfig(network);
+}
+
+// static
+bool NetworkLibraryImplCros::AreProfilePathsEqual(const NetworkProfile& a,
+                                                  const NetworkProfile& b) {
+  return a.path == b.path;
 }
 
 }  // namespace chromeos
