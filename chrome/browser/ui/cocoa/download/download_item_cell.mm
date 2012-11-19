@@ -161,7 +161,7 @@ using content::DownloadItem;
   [super dealloc];
 }
 
-- (void)setStateFromDownload:(BaseDownloadItemModel*)downloadModel {
+- (void)setStateFromDownload:(DownloadItemModel*)downloadModel {
   // Set the name of the download.
   downloadPath_ = downloadModel->download()->GetFileNameToReportUser();
 

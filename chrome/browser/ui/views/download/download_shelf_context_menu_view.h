@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/download/download_shelf_context_menu.h"
 
-class BaseDownloadItemModel;
+class DownloadItemModel;
 
 namespace content {
 class PageNavigator;
@@ -27,7 +27,7 @@ class Widget;
 
 class DownloadShelfContextMenuView : public DownloadShelfContextMenu {
  public:
-  DownloadShelfContextMenuView(BaseDownloadItemModel* model,
+  DownloadShelfContextMenuView(DownloadItemModel* model,
                                content::PageNavigator* navigator);
   virtual ~DownloadShelfContextMenuView();
 

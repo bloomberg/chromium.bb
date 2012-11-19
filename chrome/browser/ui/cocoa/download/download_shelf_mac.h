@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/download/download_shelf.h"
 
-class BaseDownloadItemModel;
+class DownloadItemModel;
 
 @class DownloadShelfController;
 
@@ -27,7 +27,7 @@ class DownloadShelfMac : public DownloadShelf {
   virtual Browser* browser() const OVERRIDE;
 
  protected:
-  virtual void DoAddDownload(BaseDownloadItemModel* download_model) OVERRIDE;
+  virtual void DoAddDownload(DownloadItemModel* download_model) OVERRIDE;
   virtual void DoShow() OVERRIDE;
   virtual void DoClose() OVERRIDE;
 

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_H_
 
-class BaseDownloadItemModel;
+class DownloadItemModel;
 class Browser;
 
 // This is an abstract base class for platform specific download shelf
@@ -17,7 +17,7 @@ class DownloadShelf {
 
   // A new download has started, so add it to our shelf. This object will
   // take ownership of |download_model|. Also make the shelf visible.
-  void AddDownload(BaseDownloadItemModel* download_model);
+  void AddDownload(DownloadItemModel* download_model);
 
   // The browser view needs to know when we are going away to properly return
   // the resize corner size to WebKit so that we don't draw on top of it.
@@ -47,7 +47,7 @@ class DownloadShelf {
   bool is_hidden() { return is_hidden_; }
 
  protected:
-  virtual void DoAddDownload(BaseDownloadItemModel* download_model) = 0;
+  virtual void DoAddDownload(DownloadItemModel* download_model) = 0;
   virtual void DoShow() = 0;
   virtual void DoClose() = 0;
 

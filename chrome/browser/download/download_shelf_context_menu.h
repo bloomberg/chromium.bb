@@ -11,7 +11,7 @@
 #include "base/string16.h"
 #include "ui/base/models/simple_menu_model.h"
 
-class BaseDownloadItemModel;
+class DownloadItemModel;
 
 namespace content {
 class DownloadItem;
@@ -40,7 +40,7 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate {
   void set_download_item(content::DownloadItem* item) { download_item_ = item; }
 
  protected:
-  DownloadShelfContextMenu(BaseDownloadItemModel* download_model,
+  DownloadShelfContextMenu(DownloadItemModel* download_model,
                            content::PageNavigator* navigator);
 
   // Returns the correct menu model depending whether the download item is
@@ -69,7 +69,7 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate {
   scoped_ptr<ui::SimpleMenuModel> malicious_download_menu_model_;
 
   // A model to control the cancel behavior.
-  BaseDownloadItemModel* download_model_;
+  DownloadItemModel* download_model_;
 
   // Information source.
   content::DownloadItem* download_item_;

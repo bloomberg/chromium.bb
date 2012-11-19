@@ -292,7 +292,7 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
   [self layoutItems:NO];
 }
 
-- (void)addDownloadItem:(BaseDownloadItemModel*)model {
+- (void)addDownloadItem:(DownloadItemModel*)model {
   DCHECK([NSThread isMainThread]);
   [self cancelAutoCloseAndRemoveTrackingArea];
 

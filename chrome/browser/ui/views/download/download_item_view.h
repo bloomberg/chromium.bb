@@ -34,7 +34,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
-class BaseDownloadItemModel;
+class DownloadItemModel;
 class DownloadShelfView;
 class DownloadShelfContextMenuView;
 
@@ -60,7 +60,7 @@ class DownloadItemView : public views::ButtonListener,
  public:
   DownloadItemView(content::DownloadItem* download,
                    DownloadShelfView* parent,
-                   BaseDownloadItemModel* model);
+                   DownloadItemModel* model);
   virtual ~DownloadItemView();
 
   // Timer callback for handling animations
@@ -286,7 +286,7 @@ class DownloadItemView : public views::ButtonListener,
   // A model class to control the status text we display and the cancel
   // behavior.
   // This class owns the pointer.
-  scoped_ptr<BaseDownloadItemModel> model_;
+  scoped_ptr<DownloadItemModel> model_;
 
   // Hover animations for our body and drop buttons.
   scoped_ptr<ui::SlideAnimation> body_hover_animation_;

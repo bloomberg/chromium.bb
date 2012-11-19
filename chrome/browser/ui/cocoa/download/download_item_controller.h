@@ -7,11 +7,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 
-class BaseDownloadItemModel;
 @class ChromeUILocalizer;
 @class DownloadItemCell;
 @class DownloadItemButton;
 class DownloadItemMac;
+class DownloadItemModel;
 class DownloadShelfContextMenuMac;
 @class DownloadShelfController;
 @class GTMWidthBasedTweaker;
@@ -72,12 +72,12 @@ class Font;
 };
 
 // Takes ownership of |downloadModel|.
-- (id)initWithModel:(BaseDownloadItemModel*)downloadModel
+- (id)initWithModel:(DownloadItemModel*)downloadModel
               shelf:(DownloadShelfController*)shelf
           navigator:(content::PageNavigator*)navigator;
 
 // Updates the UI and menu state from |downloadModel|.
-- (void)setStateFromDownload:(BaseDownloadItemModel*)downloadModel;
+- (void)setStateFromDownload:(DownloadItemModel*)downloadModel;
 
 // Remove ourself from the download UI.
 - (void)remove;

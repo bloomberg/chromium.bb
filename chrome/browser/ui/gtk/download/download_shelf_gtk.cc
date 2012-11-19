@@ -179,7 +179,7 @@ content::PageNavigator* DownloadShelfGtk::GetNavigator() {
   return browser_;
 }
 
-void DownloadShelfGtk::DoAddDownload(BaseDownloadItemModel* download_model) {
+void DownloadShelfGtk::DoAddDownload(DownloadItemModel* download_model) {
   download_items_.push_back(new DownloadItemGtk(this, download_model));
 }
 

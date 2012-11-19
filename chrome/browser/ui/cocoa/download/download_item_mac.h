@@ -14,8 +14,8 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
-class BaseDownloadItemModel;
 @class DownloadItemController;
+class DownloadItemModel;
 
 namespace gfx{
 class Image;
@@ -28,7 +28,7 @@ class Image;
 class DownloadItemMac : content::DownloadItem::Observer {
  public:
   // DownloadItemMac takes ownership of |download_model|.
-  DownloadItemMac(BaseDownloadItemModel* download_model,
+  DownloadItemMac(DownloadItemModel* download_model,
                   DownloadItemController* controller);
 
   // Destructor.
@@ -39,7 +39,7 @@ class DownloadItemMac : content::DownloadItem::Observer {
   virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
   virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
 
-  BaseDownloadItemModel* download_model() { return download_model_.get(); }
+  DownloadItemModel* download_model() { return download_model_.get(); }
 
   // Asynchronous icon loading support.
   void LoadIcon();
@@ -50,7 +50,7 @@ class DownloadItemMac : content::DownloadItem::Observer {
                              gfx::Image* icon_bitmap);
 
   // The download item model we represent.
-  scoped_ptr<BaseDownloadItemModel> download_model_;
+  scoped_ptr<DownloadItemModel> download_model_;
 
   // The objective-c controller object.
   DownloadItemController* item_controller_;  // weak, owns us.

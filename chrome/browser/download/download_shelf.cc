@@ -8,7 +8,7 @@ DownloadShelf::DownloadShelf()
     : should_show_on_unhide_(false),
       is_hidden_(false) {}
 
-void DownloadShelf::AddDownload(BaseDownloadItemModel* download_model) {
+void DownloadShelf::AddDownload(DownloadItemModel* download_model) {
   if (is_hidden_)
     Unhide();
   Show();

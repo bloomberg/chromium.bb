@@ -104,7 +104,7 @@ NineBox* DownloadItemGtk::dangerous_nine_box_ = NULL;
 using content::DownloadItem;
 
 DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
-                                 BaseDownloadItemModel* download_model)
+                                 DownloadItemModel* download_model)
     : parent_shelf_(parent_shelf),
       arrow_(NULL),
       menu_showing_(false),

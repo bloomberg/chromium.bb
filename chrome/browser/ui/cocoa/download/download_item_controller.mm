@@ -74,7 +74,7 @@ void WidenView(NSView* view, CGFloat widthChange) {
 
 class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
  public:
-  DownloadShelfContextMenuMac(BaseDownloadItemModel* model,
+  DownloadShelfContextMenuMac(DownloadItemModel* model,
                               content::PageNavigator* navigator)
       : DownloadShelfContextMenu(model, navigator) { }
 
@@ -99,7 +99,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 @implementation DownloadItemController
 
-- (id)initWithModel:(BaseDownloadItemModel*)downloadModel
+- (id)initWithModel:(DownloadItemModel*)downloadModel
               shelf:(DownloadShelfController*)shelf
           navigator:(content::PageNavigator*)navigator {
   if ((self = [super initWithNibName:@"DownloadItem"
@@ -163,7 +163,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   [self updateToolTip];
 }
 
-- (void)setStateFromDownload:(BaseDownloadItemModel*)downloadModel {
+- (void)setStateFromDownload:(DownloadItemModel*)downloadModel {
   DCHECK_EQ(bridge_->download_model(), downloadModel);
 
   // Handle dangerous downloads.

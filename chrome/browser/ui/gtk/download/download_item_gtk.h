@@ -23,7 +23,7 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
-class BaseDownloadItemModel;
+class DownloadItemModel;
 class DownloadShelfContextMenuGtk;
 class DownloadShelfGtk;
 class GtkThemeService;
@@ -43,7 +43,7 @@ class DownloadItemGtk : public content::DownloadItem::Observer,
  public:
   // DownloadItemGtk takes ownership of |download_item_model|.
   DownloadItemGtk(DownloadShelfGtk* parent_shelf,
-                  BaseDownloadItemModel* download_item_model);
+                  DownloadItemModel* download_item_model);
 
   // Destroys all widgets belonging to this DownloadItemGtk.
   virtual ~DownloadItemGtk();
@@ -200,7 +200,7 @@ class DownloadItemGtk : public content::DownloadItem::Observer,
   scoped_ptr<DownloadShelfContextMenuGtk> menu_;
 
   // The download item model we represent.
-  scoped_ptr<BaseDownloadItemModel> download_model_;
+  scoped_ptr<DownloadItemModel> download_model_;
 
   // The dangerous download dialog. This will be null for safe downloads.
   GtkWidget* dangerous_prompt_;

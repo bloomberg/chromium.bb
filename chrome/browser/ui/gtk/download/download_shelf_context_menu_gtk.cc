@@ -11,7 +11,7 @@
 #include "ui/gfx/point.h"
 
 DownloadShelfContextMenuGtk::DownloadShelfContextMenuGtk(
-    BaseDownloadItemModel* model,
+    DownloadItemModel* model,
     DownloadItemGtk* download_item,
     content::PageNavigator* navigator)
     : DownloadShelfContextMenu(model, navigator),

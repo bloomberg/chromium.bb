@@ -10,7 +10,7 @@
 
 #include "base/file_path.h"
 
-class BaseDownloadItemModel;
+class DownloadItemModel;
 
 // A button cell that implements the weird button/popup button hybrid that is
 // used by the download items.
@@ -49,7 +49,7 @@ enum DownloadItemMousePosition {
 @property(nonatomic, copy) NSString* secondaryTitle;
 @property(nonatomic, retain) NSFont* secondaryFont;
 
-- (void)setStateFromDownload:(BaseDownloadItemModel*)downloadModel;
+- (void)setStateFromDownload:(DownloadItemModel*)downloadModel;
 
 // Returns if the mouse is over the button part of the cell.
 - (BOOL)isMouseOverButtonPart;

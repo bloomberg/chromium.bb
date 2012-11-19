@@ -111,6 +111,10 @@ const char* GetDangerTypeString(content::DownloadDangerType danger_type) {
 DictionaryValue* CreateDownloadItemValue(
     content::DownloadItem* download_item,
     bool incognito) {
+  // TODO(asanka): Move towards using download_model here for getting status and
+  // progress. The difference currently only matters to Drive downloads and
+  // those don't show up on the downloads page, but should.
+  DownloadItemModel download_model(download_item);
   DictionaryValue* file_value = new DictionaryValue();
 
   file_value->SetInteger(
@@ -178,8 +182,7 @@ DictionaryValue* CreateDownloadItemValue(
     file_value->SetInteger("received",
         static_cast<int>(download_item->GetReceivedBytes()));
     file_value->SetString("last_reason_text",
-        BaseDownloadItemModel::InterruptReasonMessage(
-            download_item->GetLastReason()));
+                          download_model.GetInterruptReasonText());
   } else if (download_item->IsCancelled()) {
     file_value->SetString("state", "CANCELLED");
   } else if (download_item->IsComplete()) {

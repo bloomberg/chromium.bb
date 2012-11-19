@@ -120,7 +120,7 @@ void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
   new_item_animation_->Show();
 }
 
-void DownloadShelfView::DoAddDownload(BaseDownloadItemModel* download_model) {
+void DownloadShelfView::DoAddDownload(DownloadItemModel* download_model) {
   DownloadItemView* view = new DownloadItemView(
       download_model->download(), this, download_model);
   AddDownloadView(view);

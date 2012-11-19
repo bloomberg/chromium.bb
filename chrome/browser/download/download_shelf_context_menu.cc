@@ -23,7 +23,7 @@ using extensions::Extension;
 DownloadShelfContextMenu::~DownloadShelfContextMenu() {}
 
 DownloadShelfContextMenu::DownloadShelfContextMenu(
-    BaseDownloadItemModel* download_model,
+    DownloadItemModel* download_model,
     content::PageNavigator* navigator)
     : download_model_(download_model),
       download_item_(download_model->download()),

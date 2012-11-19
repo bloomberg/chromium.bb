@@ -15,7 +15,7 @@ DownloadShelfMac::DownloadShelfMac(Browser* browser,
       shelf_controller_(controller) {
 }
 
-void DownloadShelfMac::DoAddDownload(BaseDownloadItemModel* download_model) {
+void DownloadShelfMac::DoAddDownload(DownloadItemModel* download_model) {
   [shelf_controller_ addDownloadItem:download_model];
 }
 

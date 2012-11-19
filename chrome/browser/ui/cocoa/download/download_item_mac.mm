@@ -15,7 +15,7 @@ using content::DownloadItem;
 
 // DownloadItemMac -------------------------------------------------------------
 
-DownloadItemMac::DownloadItemMac(BaseDownloadItemModel* download_model,
+DownloadItemMac::DownloadItemMac(DownloadItemModel* download_model,
                                  DownloadItemController* controller)
     : download_model_(download_model), item_controller_(controller) {
   download_model_->download()->AddObserver(this);

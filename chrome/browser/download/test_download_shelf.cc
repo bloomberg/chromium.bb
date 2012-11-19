@@ -23,7 +23,7 @@ Browser* TestDownloadShelf::browser() const {
   return NULL;
 }
 
-void TestDownloadShelf::DoAddDownload(BaseDownloadItemModel* download_model) {
+void TestDownloadShelf::DoAddDownload(DownloadItemModel* download_model) {
 }
 
 void TestDownloadShelf::DoShow() {

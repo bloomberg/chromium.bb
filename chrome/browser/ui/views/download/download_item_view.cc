@@ -84,7 +84,7 @@ using content::DownloadItem;
 
 DownloadItemView::DownloadItemView(DownloadItem* download,
     DownloadShelfView* parent,
-    BaseDownloadItemModel* model)
+    DownloadItemModel* model)
   : warning_icon_(NULL),
     download_(download),
     parent_(parent),
