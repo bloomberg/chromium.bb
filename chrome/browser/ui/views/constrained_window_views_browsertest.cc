@@ -106,7 +106,14 @@ class ConstrainedWindowViewTest : public InProcessBrowserTest {
 //
 // *) Constrained windows that are queued don't register themselves as
 //    accelerator targets until they are displayed.
-IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
+//
+// Fails flakily.  http://crbug.com/161562
+#if defined(OS_WIN)
+#define MAYBE_FocusTest DISABLED_FocusTest
+#else
+#define MAYBE_FocusTest FocusTest
+#endif
+IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, MAYBE_FocusTest) {
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
   ASSERT_TRUE(web_contents != NULL);
   ConstrainedWindowTabHelper* constrained_window_helper =
