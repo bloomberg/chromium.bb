@@ -71,7 +71,7 @@
           'link_flags': [
             '-lppapi_cpp',
             '-lppapi',
-            '-lpthread',
+            '-pthread',
           ],
         },
         'target_conditions': [
