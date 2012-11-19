@@ -92,6 +92,10 @@ class CommonMenuModel : public ui::MenuModel {
   virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) OVERRIDE {
   }
 
+  virtual ui::MenuModelDelegate* GetMenuModelDelegate() const OVERRIDE {
+    return NULL;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CommonMenuModel);
 };

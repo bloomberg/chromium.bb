@@ -1578,6 +1578,7 @@ class MockMenuModel : public ui::MenuModel {
   MOCK_METHOD0(MenuWillShow, void());
   MOCK_METHOD0(MenuClosed, void());
   MOCK_METHOD1(SetMenuModelDelegate, void(ui::MenuModelDelegate* delegate));
+  MOCK_CONST_METHOD0(GetMenuModelDelegate, ui::MenuModelDelegate*());
   MOCK_METHOD3(GetModelAndIndexForCommandId, bool(int command_id,
       MenuModel** model, int* index));
 };

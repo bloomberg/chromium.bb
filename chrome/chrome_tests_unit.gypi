@@ -1374,6 +1374,8 @@
         'browser/ui/toolbar/action_box_menu_model_unittest.cc',
         'browser/ui/toolbar/back_forward_menu_model_unittest.cc',
         'browser/ui/toolbar/encoding_menu_controller_unittest.cc',
+        'browser/ui/toolbar/recent_tabs_builder_test_helper.cc',
+        'browser/ui/toolbar/recent_tabs_builder_test_helper.h',
         'browser/ui/toolbar/recent_tabs_sub_menu_model_unittest.cc',
         'browser/ui/toolbar/toolbar_model_unittest.cc',
         'browser/ui/toolbar/test_toolbar_model.cc',

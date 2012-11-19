@@ -342,6 +342,10 @@ void SimpleMenuModel::SetMenuModelDelegate(
   menu_model_delegate_ = menu_model_delegate;
 }
 
+MenuModelDelegate* SimpleMenuModel::GetMenuModelDelegate() const {
+  return menu_model_delegate_;
+}
+
 void SimpleMenuModel::OnMenuClosed() {
   if (delegate_)
     delegate_->MenuClosed(this);

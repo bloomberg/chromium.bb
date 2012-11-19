@@ -126,6 +126,9 @@ class UI_EXPORT MenuModel {
   // Set the MenuModelDelegate. Owned by the caller of this function.
   virtual void SetMenuModelDelegate(MenuModelDelegate* delegate) = 0;
 
+  // Gets the MenuModelDelegate.
+  virtual MenuModelDelegate* GetMenuModelDelegate() const = 0;
+
   // Retrieves the model and index that contains a specific command id. Returns
   // true if an item with the specified command id is found. |model| is inout,
   // and specifies the model to start searching from.

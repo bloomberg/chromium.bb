@@ -238,6 +238,10 @@ void BackForwardMenuModel::SetMenuModelDelegate(
   menu_model_delegate_ = menu_model_delegate;
 }
 
+ui::MenuModelDelegate* BackForwardMenuModel::GetMenuModelDelegate() const {
+  return menu_model_delegate_;
+}
+
 void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
   // If the favicon has already been requested for this menu, don't do
   // anything.

@@ -13,6 +13,7 @@
 class BookmarkMenuBridge;
 class Browser;
 @class MenuTrackedRootView;
+class RecentTabsMenuModelDelegate;
 @class ToolbarController;
 @class WrenchMenuButtonViewController;
 class WrenchMenuModel;
@@ -35,6 +36,9 @@ class ZoomLevelObserver;
   // Used to provide accelerators for the menu.
   scoped_ptr<WrenchMenuControllerInternal::AcceleratorDelegate>
       acceleratorDelegate_;
+
+  // Used to update icons in the recent tabs menu.
+  scoped_ptr<RecentTabsMenuModelDelegate> recentTabsMenuModelDelegate_;
 
   // The model, rebuilt each time the |-menuNeedsUpdate:|.
   scoped_ptr<WrenchMenuModel> wrenchMenuModel_;
@@ -64,6 +68,10 @@ class ZoomLevelObserver;
 
 // Returns the weak reference to the WrenchMenuModel.
 - (WrenchMenuModel*)wrenchMenuModel;
+
+// Creates a RecentTabsMenuModelDelegate instance which will take care of
+// updating the recent tabs submenu.
+- (void)updateRecentTabsSubmenu;
 
 @end
 

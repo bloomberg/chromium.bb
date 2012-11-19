@@ -130,8 +130,10 @@ RecentTabsSubMenuModel::RecentTabsSubMenuModel(
     }
   }
 #else
-  accelerator_provider->GetAcceleratorForCommandId(
-      IDC_RESTORE_TAB, &reopen_closed_tab_accelerator_);
+  if (accelerator_provider) {
+    accelerator_provider->GetAcceleratorForCommandId(
+        IDC_RESTORE_TAB, &reopen_closed_tab_accelerator_);
+  }
 #endif  // defined(USE_ASH)
 }
 
@@ -417,8 +419,8 @@ void RecentTabsSubMenuModel::OnFaviconDataAvailable(
   int index_in_menu = GetIndexOfCommandId(command_id);
   DCHECK(index_in_menu != -1);
   SetIcon(index_in_menu, image_result.image);
-  if (menu_model_delegate())
-    menu_model_delegate()->OnIconChanged(index_in_menu);
+  if (GetMenuModelDelegate())
+    GetMenuModelDelegate()->OnIconChanged(index_in_menu);
 }
 
 browser_sync::SessionModelAssociator*

@@ -126,6 +126,10 @@ class MenuModelBase : public ui::MenuModel {
       ui::MenuModelDelegate* delegate) OVERRIDE {
   }
 
+  virtual ui::MenuModelDelegate* GetMenuModelDelegate() const OVERRIDE {
+    return NULL;
+  }
+
   // Item definition.
   struct Item {
     Item(ItemType item_type,

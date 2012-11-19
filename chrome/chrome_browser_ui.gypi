@@ -779,6 +779,8 @@
         'browser/ui/cocoa/wrench_menu/menu_tracked_button.mm',
         'browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h',
         'browser/ui/cocoa/wrench_menu/menu_tracked_root_view.mm',
+        'browser/ui/cocoa/wrench_menu/recent_tabs_menu_model_delegate.h',
+        'browser/ui/cocoa/wrench_menu/recent_tabs_menu_model_delegate.mm',
         'browser/ui/cocoa/wrench_menu/wrench_menu_button_cell.h',
         'browser/ui/cocoa/wrench_menu/wrench_menu_button_cell.mm',
         'browser/ui/cocoa/wrench_menu/wrench_menu_controller.h',

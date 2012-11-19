@@ -77,6 +77,7 @@ class BackForwardMenuModel : public ui::MenuModel {
   // Set the delegate for triggering OnIconChanged.
   virtual void SetMenuModelDelegate(
       ui::MenuModelDelegate* menu_model_delegate) OVERRIDE;
+  virtual ui::MenuModelDelegate* GetMenuModelDelegate() const OVERRIDE;
 
  protected:
    ui::MenuModelDelegate* menu_model_delegate() { return menu_model_delegate_; }

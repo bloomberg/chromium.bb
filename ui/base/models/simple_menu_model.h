@@ -136,6 +136,7 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   virtual void MenuClosed() OVERRIDE;
   virtual void SetMenuModelDelegate(
       ui::MenuModelDelegate* menu_model_delegate) OVERRIDE;
+  virtual MenuModelDelegate* GetMenuModelDelegate() const OVERRIDE;
 
  protected:
   // Some variants of this model (SystemMenuModel) relies on items to be
@@ -147,8 +148,6 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
   Delegate* delegate() { return delegate_; }
-
-  MenuModelDelegate* menu_model_delegate() { return menu_model_delegate_; }
 
  private:
   struct Item;

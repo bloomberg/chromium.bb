@@ -161,6 +161,7 @@ class NetworkMenuModel : public ui::MenuModel {
   virtual void HighlightChangedTo(int index) OVERRIDE;
   virtual void ActivatedAt(int index) OVERRIDE;
   virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) OVERRIDE;
+  virtual ui::MenuModelDelegate* GetMenuModelDelegate() const OVERRIDE;
 
  protected:
   enum MenuItemFlags {
@@ -439,6 +440,10 @@ void NetworkMenuModel::ActivatedAt(int index) {
 }
 
 void NetworkMenuModel::SetMenuModelDelegate(ui::MenuModelDelegate* delegate) {
+}
+
+ui::MenuModelDelegate* NetworkMenuModel::GetMenuModelDelegate() const {
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

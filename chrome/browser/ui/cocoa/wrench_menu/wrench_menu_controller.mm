@@ -19,6 +19,8 @@
 #import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h"
+#import "chrome/browser/ui/cocoa/wrench_menu/recent_tabs_menu_model_delegate.h"
+#include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
@@ -41,6 +43,7 @@ using content::UserMetricsAction;
 - (void)performCommandDispatch:(NSNumber*)tag;
 - (NSButton*)zoomDisplay;
 - (void)removeAllItems:(NSMenu*)menu;
+- (NSMenu*)recentTabsSubmenu;
 @end
 
 namespace WrenchMenuControllerInternal {
@@ -196,6 +199,7 @@ class ZoomLevelObserver : public content::NotificationObserver {
     [menu addItem:item];
   }
 
+  [self updateRecentTabsSubmenu];
   [self updateBookmarkSubMenu];
 }
 
@@ -240,7 +244,18 @@ class ZoomLevelObserver : public content::NotificationObserver {
   return static_cast<WrenchMenuModel*>(model_);
 }
 
+- (void)updateRecentTabsSubmenu {
+  ui::MenuModel* model = [self wrenchMenuModel];
+  int index = 0;
+  if (ui::MenuModel::GetModelAndIndexForCommandId(
+          IDC_RESTORE_TAB, &model, &index)) {
+    recentTabsMenuModelDelegate_.reset(
+        new RecentTabsMenuModelDelegate(model, [self recentTabsSubmenu]));
+  }
+}
+
 - (void)createModel {
+  recentTabsMenuModelDelegate_.reset();
   wrenchMenuModel_.reset(
       new WrenchMenuModel(acceleratorDelegate_.get(), browser_, false, false));
   [self setModel:wrenchMenuModel_.get()];
@@ -305,6 +320,11 @@ class ZoomLevelObserver : public content::NotificationObserver {
   while ([menu numberOfItems]) {
     [menu removeItemAtIndex:0];
   }
+}
+
+- (NSMenu*)recentTabsSubmenu {
+  NSString* title = l10n_util::GetNSStringWithFixup(IDS_RECENT_TABS_MENU);
+  return [[[self menu] itemWithTitle:title] submenu];
 }
 
 @end  // @implementation WrenchMenuController
