@@ -193,7 +193,8 @@ bool WebKitTestController::ResetAfterLayoutTest() {
 }
 
 void WebKitTestController::RendererUnresponsive() {
-  printer_->AddErrorMessage("#PROCESS UNRESPONSIVE - renderer");
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout))
+    printer_->AddErrorMessage("#PROCESS UNRESPONSIVE - renderer");
 }
 
 void WebKitTestController::NotifyDone() {
