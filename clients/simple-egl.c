@@ -413,6 +413,8 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 			      window->geometry.height);
 		wl_surface_set_opaque_region(window->surface, region);
 		wl_region_destroy(region);
+	} else {
+		wl_surface_set_opaque_region(window->surface, NULL);
 	}
 
 	window->callback = wl_surface_frame(window->surface);
