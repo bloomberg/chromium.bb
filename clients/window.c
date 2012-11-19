@@ -126,6 +126,10 @@ struct display {
 
 	uint32_t workspace;
 	uint32_t workspace_count;
+
+	/* A hack to get text extents for tooltips */
+	cairo_surface_t *dummy_surface;
+	void *dummy_surface_data;
 };
 
 enum {
@@ -1431,14 +1435,14 @@ tooltip_redraw_handler(struct widget *widget, void *data)
 static cairo_text_extents_t
 get_text_extents(struct tooltip *tooltip)
 {
-	struct window *window;
 	cairo_t *cr;
 	cairo_text_extents_t extents;
 
-	/* we borrow cairo_surface from the parent cause tooltip's wasn't
-	 * created yet */
-	window = tooltip->widget->window->parent;
-	cr = cairo_create(window->cairo_surface);
+	/* Use the dummy_surface because tooltip's surface was not
+	 * created yet, and parent does not have a valid surface
+	 * outside repaint, either.
+	 */
+	cr = cairo_create(tooltip->window->display->dummy_surface);
 	cairo_text_extents(cr, tooltip->entry, &extents);
 	cairo_destroy(cr);
 
@@ -4033,6 +4037,20 @@ fini_egl(struct display *display)
 #endif
 
 static void
+init_dummy_surface(struct display *display)
+{
+	int len;
+	void *data;
+
+	len = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, 1);
+	data = malloc(len);
+	display->dummy_surface =
+		cairo_image_surface_create_for_data(data, CAIRO_FORMAT_ARGB32,
+						    1, 1, len);
+	display->dummy_surface_data = data;
+}
+
+static void
 handle_display_data(struct task *task, uint32_t events)
 {
 	struct display *display =
@@ -4120,6 +4138,8 @@ display_create(int argc, char *argv[])
 
 	wl_list_init(&d->window_list);
 
+	init_dummy_surface(d);
+
 	return d;
 }
 
@@ -4152,6 +4172,9 @@ display_destroy(struct display *display)
 
 	if (!wl_list_empty(&display->deferred_list))
 		fprintf(stderr, "toytoolkit warning: deferred tasks exist.\n");
+
+	cairo_surface_destroy(display->dummy_surface);
+	free(display->dummy_surface_data);
 
 	display_destroy_outputs(display);
 	display_destroy_inputs(display);
