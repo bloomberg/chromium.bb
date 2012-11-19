@@ -599,8 +599,8 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
     return false;
   }
   // Try to start the Chrome IPC-based proxy first.
-  PP_NaClResult ipc_result = nacl_interface_->StartPpapiProxy(pp_instance());
-  if (ipc_result == PP_NACL_OK) {
+  int32_t ipc_result = nacl_interface_->StartPpapiProxy(pp_instance());
+  if (ipc_result == PP_OK) {
     // Log the amound of time that has passed between the trusted plugin being
     // initialized and the untrusted plugin being initialized.  This is
     // (roughly) the cost of using NaCl, in terms of startup time.
@@ -608,18 +608,17 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
         "NaCl.Perf.StartupTime.NaClOverhead",
         static_cast<float>(NaClGetTimeOfDayMicroseconds() - init_time_)
             / NACL_MICROS_PER_MILLI);
-  } else if (ipc_result == PP_NACL_USE_SRPC) {
-    // Start the old SRPC PPAPI proxy.
+  } else if (ipc_result == PP_ERROR_NOTSUPPORTED) {
+    // PP_ERROR_NOTSUPPORTED signals that the IPC proxy isn't available and that
+    // we should try to start the SRPC proxy instead.
     if (!main_subprocess_.StartJSObjectProxy(this, error_info)) {
       return false;
     }
-  } else if (ipc_result == PP_NACL_ERROR_MODULE) {
+  } else {
+    // The IPC proxy failed to start. Log the error.
+    // TODO(bbudge) Find a way to report other startup errors.
     error_info->SetReport(ERROR_START_PROXY_MODULE,
                           "could not initialize module.");
-    return false;
-  } else if (ipc_result == PP_NACL_ERROR_INSTANCE) {
-    error_info->SetReport(ERROR_START_PROXY_INSTANCE,
-                          "could not create instance.");
     return false;
   }
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
