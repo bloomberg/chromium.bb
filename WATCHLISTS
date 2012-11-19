@@ -143,6 +143,9 @@
     'content': {
       'filepath': 'content/',
     },
+    'content_shell': {
+      'filepath': 'content/shell/',
+    },
     'cookie_monster': {
       'filepath': 'net/cookies/|'\
         'chrome/browser/net/sqlite_persistent_cookie_store',
@@ -533,6 +536,7 @@
     'contacts': ['derat+watch@chromium.org'],
     'content': ['jam@chromium.org', 'joi+watch-content@chromium.org',
                 'darin-cc@chromium.org'],
+    'content_shell': ['jochen+watch@chromium.org'],
     'cookie_monster': ['erikwright@chromium.org'],
     'deep_memory_profiler': ['dmikurube+memory@chromium.org'],
     'devtools': ['pfeldman@chromium.org', 'yurys@chromium.org',
