@@ -494,6 +494,9 @@ egl_window_surface_create(struct display *display,
 {
 	struct egl_window_surface *surface;
 
+	if (display->dpy == EGL_NO_DISPLAY)
+		return NULL;
+
 	surface = calloc(1, sizeof *surface);
 	if (!surface)
 		return NULL;
@@ -523,6 +526,17 @@ egl_window_surface_create(struct display *display,
 						rectangle->height);
 
 	return &surface->base;
+}
+
+#else
+
+static struct toysurface *
+egl_window_surface_create(struct display *display,
+			  struct wl_surface *wl_surface,
+			  uint32_t flags,
+			  struct rectangle *rectangle)
+{
+	return NULL;
 }
 
 #endif
@@ -1130,28 +1144,19 @@ window_create_surface(struct window *window)
 	if (!window->transparent)
 		flags = SURFACE_OPAQUE;
 
-	switch (window->buffer_type) {
-#ifdef HAVE_CAIRO_EGL
-	case WINDOW_BUFFER_TYPE_EGL_WINDOW:
-		if (!window->toysurface && window->display->dpy)
-			window->toysurface =
-				egl_window_surface_create(window->display,
-							  window->surface,
-							  flags,
-							  &window->allocation);
+	if (!window->toysurface &&
+	    window->buffer_type == WINDOW_BUFFER_TYPE_EGL_WINDOW &&
+	    window->display->dpy) {
+		window->toysurface =
+			egl_window_surface_create(window->display,
+						  window->surface, flags,
+						  &window->allocation);
+	}
 
-		if (window->toysurface)
-			break;
-		/* fall through */
-#endif
-	case WINDOW_BUFFER_TYPE_SHM:
+	if (!window->toysurface)
 		window->toysurface = shm_surface_create(window->display,
 							window->surface, flags,
 							&window->allocation);
-		break;
-	default:
-		assert(0);
-	}
 
 	window_get_resize_dx_dy(window, &dx, &dy);
 	window->cairo_surface =
