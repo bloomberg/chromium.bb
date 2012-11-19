@@ -782,6 +782,26 @@ display_create_surface(struct display *display,
 					  NULL, NULL);
 }
 
+struct shm_surface_leaf {
+	cairo_surface_t *cairo_surface;
+	/* 'data' is automatically destroyed, when 'cairo_surface' is */
+	struct shm_surface_data *data;
+
+	struct shm_pool *resize_pool;
+	int busy;
+};
+
+static void
+shm_surface_leaf_release(struct shm_surface_leaf *leaf)
+{
+	if (leaf->cairo_surface)
+		cairo_surface_destroy(leaf->cairo_surface);
+	/* leaf->data already destroyed via cairo private */
+
+	if (leaf->resize_pool)
+		shm_pool_destroy(leaf->resize_pool);
+}
+
 struct shm_surface {
 	struct toysurface base;
 	struct display *display;
@@ -789,11 +809,8 @@ struct shm_surface {
 	uint32_t flags;
 	int dx, dy;
 
-	cairo_surface_t *cairo_surface;
-	/* 'data' is automatically destroyed, when 'cairo_surface' is */
-	struct shm_surface_data *data;
-
-	struct shm_pool *resize_pool;
+	struct shm_surface_leaf leaf[2];
+	struct shm_surface_leaf *current;
 };
 
 static struct shm_surface *
@@ -802,50 +819,78 @@ to_shm_surface(struct toysurface *base)
 	return container_of(base, struct shm_surface, base);
 }
 
+static void
+shm_surface_buffer_release(void *data, struct wl_buffer *buffer)
+{
+	struct shm_surface_leaf *leaf = data;
+
+	leaf->busy = 0;
+}
+
+static const struct wl_buffer_listener shm_surface_buffer_listener = {
+	shm_surface_buffer_release
+};
+
 static cairo_surface_t *
 shm_surface_prepare(struct toysurface *base, int dx, int dy,
 		    int width, int height, int resize_hint)
 {
 	struct shm_surface *surface = to_shm_surface(base);
 	struct rectangle rect = { 0, 0, width, height };
+	struct shm_surface_leaf *leaf;
 
 	surface->dx = dx;
 	surface->dy = dy;
 
-	if (!resize_hint && surface->resize_pool) {
-		cairo_surface_destroy(surface->cairo_surface);
-		shm_pool_destroy(surface->resize_pool);
-		surface->resize_pool = NULL;
-		surface->cairo_surface = NULL;
+	/* pick a free buffer from the two */
+	if (!surface->leaf[0].busy)
+		leaf = &surface->leaf[0];
+	else if (!surface->leaf[1].busy)
+		leaf = &surface->leaf[1];
+	else {
+		fprintf(stderr, "%s: both buffers are held by the server.\n",
+			__func__);
+		return NULL;
 	}
 
-	if (surface->cairo_surface &&
-	    cairo_image_surface_get_width(surface->cairo_surface) == width &&
-	    cairo_image_surface_get_height(surface->cairo_surface) == height)
+	if (!resize_hint && leaf->resize_pool) {
+		cairo_surface_destroy(leaf->cairo_surface);
+		leaf->cairo_surface = NULL;
+		shm_pool_destroy(leaf->resize_pool);
+		leaf->resize_pool = NULL;
+	}
+
+	if (leaf->cairo_surface &&
+	    cairo_image_surface_get_width(leaf->cairo_surface) == width &&
+	    cairo_image_surface_get_height(leaf->cairo_surface) == height)
 		goto out;
 
-	if (surface->cairo_surface)
-		cairo_surface_destroy(surface->cairo_surface);
+	if (leaf->cairo_surface)
+		cairo_surface_destroy(leaf->cairo_surface);
 
-	if (resize_hint && !surface->resize_pool) {
+	if (resize_hint && !leaf->resize_pool) {
 		/* Create a big pool to allocate from, while continuously
 		 * resizing. Mmapping a new pool in the server
 		 * is relatively expensive, so reusing a pool performs
 		 * better, but may temporarily reserve unneeded memory.
 		 */
 		/* We should probably base this number on the output size. */
-		surface->resize_pool = shm_pool_create(surface->display,
-						       6 * 1024 * 1024);
+		leaf->resize_pool = shm_pool_create(surface->display,
+						    6 * 1024 * 1024);
 	}
 
-	surface->cairo_surface =
+	leaf->cairo_surface =
 		display_create_shm_surface(surface->display, &rect,
 					   surface->flags,
-					   surface->resize_pool,
-					   &surface->data);
+					   leaf->resize_pool,
+					   &leaf->data);
+	wl_buffer_add_listener(leaf->data->buffer,
+			       &shm_surface_buffer_listener, leaf);
 
 out:
-	return cairo_surface_reference(surface->cairo_surface);
+	surface->current = leaf;
+
+	return cairo_surface_reference(leaf->cairo_surface);
 }
 
 static void
@@ -853,17 +898,21 @@ shm_surface_swap(struct toysurface *base,
 		 struct rectangle *server_allocation)
 {
 	struct shm_surface *surface = to_shm_surface(base);
+	struct shm_surface_leaf *leaf = surface->current;
 
 	server_allocation->width =
-		cairo_image_surface_get_width(surface->cairo_surface);
+		cairo_image_surface_get_width(leaf->cairo_surface);
 	server_allocation->height =
-		cairo_image_surface_get_height(surface->cairo_surface);
+		cairo_image_surface_get_height(leaf->cairo_surface);
 
-	wl_surface_attach(surface->surface, surface->data->buffer,
+	wl_surface_attach(surface->surface, leaf->data->buffer,
 			  surface->dx, surface->dy);
 	wl_surface_damage(surface->surface, 0, 0,
 			  server_allocation->width, server_allocation->height);
 	wl_surface_commit(surface->surface);
+
+	leaf->busy = 1;
+	surface->current = NULL;
 }
 
 static int
@@ -882,11 +931,8 @@ shm_surface_destroy(struct toysurface *base)
 {
 	struct shm_surface *surface = to_shm_surface(base);
 
-	/* this destroys surface->data, too */
-	cairo_surface_destroy(surface->cairo_surface);
-
-	if (surface->resize_pool)
-		shm_pool_destroy(surface->resize_pool);
+	shm_surface_leaf_release(&surface->leaf[0]);
+	shm_surface_leaf_release(&surface->leaf[1]);
 
 	free(surface);
 }
@@ -910,13 +956,6 @@ shm_surface_create(struct display *display, struct wl_surface *wl_surface,
 	surface->display = display;
 	surface->surface = wl_surface;
 	surface->flags = flags;
-	surface->cairo_surface = display_create_shm_surface(display, rectangle,
-							    flags, NULL,
-							    &surface->data);
-	if (!surface->cairo_surface) {
-		free(surface);
-		return NULL;
-	}
 
 	return &surface->base;
 }
