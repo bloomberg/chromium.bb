@@ -17,7 +17,8 @@ namespace {
 const uint32 kAttributeUnderline = 1;  // Indicates underline attribute.
 const uint32 kAttributeSelection = 2;  // Indicates background attribute.
 const char kAnnotationKey[] = "annotation";
-const char kDescriptionKey[] = "description";
+const char kDescriptionTitleKey[] = "description_title";
+const char kDescriptionBodyKey[] = "description_body";
 
 struct IBusAttribute {
   IBusAttribute() : type(0), value(0), start_index(0), end_index(0) {}
@@ -67,11 +68,17 @@ void AppendIBusText(const IBusText& ibus_text, dbus::MessageWriter* writer) {
           base::Value::CreateStringValue(ibus_text.annotation()));
       ibus_text_writer.AddAttachment(kAnnotationKey, *annotation.get());
   }
-
-  if (!ibus_text.description().empty()) {
-      scoped_ptr<base::Value> description(
-          base::Value::CreateStringValue(ibus_text.description()));
-      ibus_text_writer.AddAttachment(kDescriptionKey, *description.get());
+  if (!ibus_text.description_title().empty()) {
+      scoped_ptr<base::Value> description_title(
+          base::Value::CreateStringValue(ibus_text.description_title()));
+      ibus_text_writer.AddAttachment(kDescriptionTitleKey,
+                                     *description_title.get());
+  }
+  if (!ibus_text.description_body().empty()) {
+      scoped_ptr<base::Value> description_body(
+          base::Value::CreateStringValue(ibus_text.description_body()));
+      ibus_text_writer.AddAttachment(kDescriptionBodyKey,
+                                     *description_body.get());
   }
   ibus_text_writer.CloseHeader();
 
@@ -133,12 +140,20 @@ bool PopIBusText(dbus::MessageReader* reader, IBusText* ibus_text) {
       ibus_text->set_annotation(annotation);
   }
 
-  const base::Value* description_value =
-      ibus_text_reader.GetAttachment(kDescriptionKey);
-  if (description_value) {
-    std::string description;
-    if (description_value->GetAsString(&description))
-      ibus_text->set_description(description);
+  const base::Value* description_title_value =
+      ibus_text_reader.GetAttachment(kDescriptionTitleKey);
+  if (description_title_value) {
+    std::string description_title;
+    if (description_title_value->GetAsString(&description_title))
+      ibus_text->set_description_title(description_title);
+  }
+
+  const base::Value* description_body_value =
+      ibus_text_reader.GetAttachment(kDescriptionBodyKey);
+  if (description_body_value) {
+    std::string description_body;
+    if (description_body_value->GetAsString(&description_body))
+      ibus_text->set_description_body(description_body);
   }
 
   std::string text;

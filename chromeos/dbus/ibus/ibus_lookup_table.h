@@ -95,7 +95,8 @@ class CHROMEOS_EXPORT IBusLookupTable {
     std::string value;
     std::string label;
     std::string annotation;
-    std::string description;
+    std::string description_title;
+    std::string description_body;
   };
 
   IBusLookupTable();

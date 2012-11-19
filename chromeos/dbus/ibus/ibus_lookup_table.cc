@@ -137,7 +137,8 @@ bool PopIBusLookupTable(dbus::MessageReader* reader, IBusLookupTable* table) {
     IBusLookupTable::Entry entry;
     entry.value = candidate_text.text();
     entry.annotation = candidate_text.annotation();
-    entry.description = candidate_text.description();
+    entry.description_title = candidate_text.description_title();
+    entry.description_body = candidate_text.description_body();
     candidates->push_back(entry);
   }
 

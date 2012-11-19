@@ -149,9 +149,14 @@ class CHROMEOS_EXPORT IBusText {
     annotation_ = annotation;
   }
 
-  const std::string& description() const { return description_; }
-  void set_description(const std::string& description) {
-    description_ = description;
+  const std::string& description_title() const { return description_title_; }
+  void set_description_title(const std::string& title) {
+    description_title_ = title;
+  }
+
+  const std::string& description_body() const { return description_body_; }
+  void set_description_body(const std::string& body) {
+    description_body_ = body;
   }
 
   const std::vector<UnderlineAttribute>& underline_attributes() const {
@@ -172,7 +177,8 @@ class CHROMEOS_EXPORT IBusText {
  private:
   std::string text_;
   std::string annotation_;
-  std::string description_;
+  std::string description_title_;
+  std::string description_body_;
   std::vector<UnderlineAttribute> underline_attributes_;
   std::vector<SelectionAttribute> selection_attributes_;
 
