@@ -264,11 +264,6 @@ LRESULT RootWindowHostWin::OnNCActivate(UINT message,
   return DefWindowProc(hwnd(), message, w_param, l_param);
 }
 
-void RootWindowHostWin::OnMove(const CPoint& point) {
-  if (delegate_)
-    delegate_->OnHostMoved(gfx::Point(point.x, point.y));
-}
-
 void RootWindowHostWin::OnPaint(HDC dc) {
   delegate_->OnHostPaint();
   ValidateRect(hwnd(), NULL);

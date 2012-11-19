@@ -261,7 +261,7 @@ void RenderWidgetHostImpl::ResetSizeAndRepaintPendingFlags() {
 }
 
 void RenderWidgetHostImpl::SendScreenRects() {
-  if (!renderer_initialized_ || waiting_for_screen_rects_ack_)
+  if (waiting_for_screen_rects_ack_)
     return;
 
   if (is_hidden_) {

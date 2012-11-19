@@ -42,9 +42,6 @@ class CONTENT_EXPORT WebContentsViewAura
                       WebContentsViewDelegate* delegate);
 
  private:
-  class WindowObserver;
-  friend class WindowObserver;
-
   virtual ~WebContentsViewAura();
 
   void SizeChangedCommon(const gfx::Size& size);
@@ -165,8 +162,6 @@ class CONTENT_EXPORT WebContentsViewAura
 
   scoped_ptr<aura::Window> window_;
   scoped_ptr<aura::Window> overscroll_window_;
-
-  scoped_ptr<WindowObserver> window_observer_;
 
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;
