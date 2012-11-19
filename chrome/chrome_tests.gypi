@@ -720,6 +720,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+        '../third_party/safe_browsing/safe_browsing.gyp:safe_browsing',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/webkit.gyp:test_shell_test_support',
         # Runtime dependencies
@@ -1008,8 +1009,10 @@
         'browser/renderer_host/web_cache_manager_browsertest.cc',
         'browser/repost_form_warning_browsertest.cc',
         'browser/rlz/rlz_extension_apitest.cc',
+        'browser/safe_browsing/local_safebrowsing_test_server.cc',
         'browser/safe_browsing/safe_browsing_blocking_page_test.cc',
         'browser/safe_browsing/safe_browsing_service_browsertest.cc',
+        'browser/safe_browsing/safe_browsing_test.cc',
         'browser/service/service_process_control_browsertest.cc',
         'browser/sessions/better_session_restore_browsertest.cc',
         'browser/sessions/persistent_tab_restore_service_browsertest.cc',
@@ -1274,7 +1277,7 @@
             'browser/service/service_process_control_browsertest.cc',
             # chromeos does not use cross-platform panels
             'browser/ui/views/panels/panel_view_browsertest.cc',
-            'browser/ui/panels/panel_extension_browsertest.cc',
+	    'browser/ui/panels/panel_extension_browsertest.cc',
           ],
           'dependencies': [
             '../dbus/dbus.gyp:dbus_test_support',
@@ -1628,70 +1631,6 @@
         }],
       ],  # conditions
     },  # target performance_browser_tests
-    {
-      # Executable that runs safebrowsing test in a new process.
-      'target_name': 'safe_browsing_tests',
-      'type': 'executable',
-      'dependencies': [
-        'chrome',
-        'test_support_common',
-        '../base/base.gyp:base',
-        '../net/net.gyp:net_test_support',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
-        # This is the safebrowsing test server.
-        '../third_party/safe_browsing/safe_browsing.gyp:safe_browsing',
-        '../ui/ui.gyp:ui_resources',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'defines': [
-        'HAS_OUT_OF_PROC_TEST_RUNNER',
-      ],
-      'sources': [
-        'app/chrome_dll.rc',
-        'browser/safe_browsing/local_safebrowsing_test_server.cc',
-        'browser/safe_browsing/safe_browsing_test.cc',
-        'test/base/chrome_test_launcher.cc',
-      ],
-      'conditions': [
-        ['safe_browsing==0', {
-          'sources!': [
-            'browser/safe_browsing/safe_browsing_test.cc',
-          ],
-        }],
-        ['OS=="win"', {
-          'dependencies': [
-            'chrome_version_resources',
-          ],
-          'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/chrome_unscaled_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/extensions_api_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
-          ],
-          'configurations': {
-            'Debug_Base': {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                },
-              },
-            },
-          },
-        }],
-        ['OS=="mac"', {
-          # These flags are needed to run the test on Mac.
-          # Search for comments about "xcode_settings" elsewhere in this file.
-          'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
-        }],
-      ],
-    },  # target safe_browsing_tests
     {
       # To run the tests from page_load_test.cc on Linux, we need to:
       #
@@ -2671,7 +2610,7 @@
                 # Win bot needs to be turned into an interactive bot.
                 'interactive_ui_tests',
                 # Disabled from running in coverage_posix.py.
-                # We need to build this during compile step, so enabling here.
+                # We need to build this during compile step, so enabling here. 
                 'browser_tests',
                 '../courgette/courgette.gyp:courgette_unittests',
                 '../crypto/crypto.gyp:crypto_unittests',
