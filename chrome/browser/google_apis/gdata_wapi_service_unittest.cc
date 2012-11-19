@@ -9,17 +9,20 @@
 #include "base/json/json_reader.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
+#include "chrome/browser/google_apis/test_server/http_server.h"
+#include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
-#include "net/test/test_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace google_apis {
 
 namespace {
+
+const char kTestGDataAuthToken[] = "testtoken";
 
 // This class sets a request context getter for testing in
 // |testing_browser_process| and then clears the state when an instance of it
@@ -45,20 +48,15 @@ class ScopedRequestContextGetterForTesting {
   DISALLOW_COPY_AND_ASSIGN(ScopedRequestContextGetterForTesting);
 };
 
-class GDataTest : public testing::Test {
+class GDataWapiServiceTest : public testing::Test {
  public:
-  GDataTest()
+  GDataWapiServiceTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE),
-        io_thread_(content::BrowserThread::IO),
-        gdata_test_server_(net::TestServer::TYPE_GDATA,
-                           net::TestServer::kLocalhost,
-                           FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
+        io_thread_(content::BrowserThread::IO) {
   }
 
   virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(gdata_test_server_.Start());
-
     file_thread_.Start();
     io_thread_.StartIOThread();
     profile_.reset(new TestingProfile);
@@ -66,16 +64,29 @@ class GDataTest : public testing::Test {
     service_.reset(new GDataWapiService);
     service_->Initialize(profile_.get());
     service_->auth_service_for_testing()->set_access_token_for_testing(
-        net::TestServer::kGDataAuthToken);
+        kTestGDataAuthToken);
 
     // Set a context getter in |g_browser_process|. This is required to be able
     // to use net::URLFetcher.
     request_context_getter_.reset(
         new ScopedRequestContextGetterForTesting(
             static_cast<TestingBrowserProcess*>(g_browser_process)));
+
+    ASSERT_TRUE(gdata_test_server_.InitializeAndWaitUntilReady());
+    gdata_test_server_.RegisterFileResponse(
+        "/files/chromeos/gdata/testfile.txt",
+        test_util::GetTestFilePath("gdata/testfile.txt"),
+        "text/plain",
+        test_server::SUCCESS);
+    gdata_test_server_.RegisterFileResponse(
+        "/files/chromeos/gdata/root_feed.json",
+        test_util::GetTestFilePath("gdata/root_feed.json"),
+        "text/plain",
+        test_server::SUCCESS);
   }
 
   virtual void TearDown() OVERRIDE {
+    gdata_test_server_.ShutdownAndWaitUntilComplete();
     service_.reset();
     request_context_getter_.reset();
   }
@@ -89,7 +100,7 @@ class GDataTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
-  net::TestServer gdata_test_server_;
+  test_server::HttpServer gdata_test_server_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<GDataWapiService> service_;
   scoped_ptr<ScopedRequestContextGetterForTesting> request_context_getter_;
@@ -109,44 +120,44 @@ void TestDownloadCallback(GDataErrorCode* result,
 
 // The test callback for GDataWapiService::GetDocuments().
 void TestGetDocumentsCallback(GDataErrorCode* result_code,
-                              base::Value** result_data,
+                              scoped_ptr<base::Value>* result_data,
                               GDataErrorCode error,
                               scoped_ptr<base::Value> feed_data) {
   *result_code = error;
-  *result_data = feed_data.release();
+  result_data->reset(feed_data.release());
   MessageLoop::current()->Quit();
 }
 
 }  // namespace
 
-TEST_F(GDataTest, Download) {
+TEST_F(GDataWapiServiceTest, Download) {
   GDataErrorCode result = GDATA_OTHER_ERROR;
   std::string contents;
   service_->DownloadFile(
       FilePath(FILE_PATH_LITERAL("/dummy/gdata/testfile.txt")),
       GetTestCachedFilePath(FilePath(
           FILE_PATH_LITERAL("cached_testfile.txt"))),
-      gdata_test_server_.GetURL("files/chromeos/gdata/testfile.txt"),
+      gdata_test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
       base::Bind(&TestDownloadCallback, &result, &contents),
       GetContentCallback());
   MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result);
-  FilePath expected_filepath = gdata_test_server_.document_root().Append(
-      FilePath(FILE_PATH_LITERAL("chromeos/gdata/testfile.txt")));
+  const FilePath expected_path =
+      test_util::GetTestFilePath("gdata/testfile.txt");
   std::string expected_contents;
-  file_util::ReadFileToString(expected_filepath, &expected_contents);
+  file_util::ReadFileToString(expected_path, &expected_contents);
   EXPECT_EQ(expected_contents, contents);
 }
 
-TEST_F(GDataTest, NonExistingDownload) {
+TEST_F(GDataWapiServiceTest, NonExistingDownload) {
   GDataErrorCode result = GDATA_OTHER_ERROR;
   std::string dummy_contents;
   service_->DownloadFile(
       FilePath(FILE_PATH_LITERAL("/dummy/gdata/no-such-file.txt")),
       GetTestCachedFilePath(FilePath(
           FILE_PATH_LITERAL("cache_no-such-file.txt"))),
-      gdata_test_server_.GetURL("files/chromeos/gdata/no-such-file.txt"),
+      gdata_test_server_.GetURL("/files/chromeos/gdata/no-such-file.txt"),
       base::Bind(&TestDownloadCallback, &result, &dummy_contents),
       GetContentCallback());
   MessageLoop::current()->Run();
@@ -155,11 +166,11 @@ TEST_F(GDataTest, NonExistingDownload) {
   // Do not verify the not found message.
 }
 
-TEST_F(GDataTest, GetDocuments) {
+TEST_F(GDataWapiServiceTest, GetDocuments) {
   GDataErrorCode result = GDATA_OTHER_ERROR;
-  base::Value* result_data = NULL;
+  scoped_ptr<base::Value> result_data;
   service_->GetDocuments(
-      gdata_test_server_.GetURL("files/chromeos/gdata/root_feed.json"),
+      gdata_test_server_.GetURL("/files/chromeos/gdata/root_feed.json"),
       0,  // start_changestamp
       std::string(),  // search string
       false,  // shared with me
@@ -169,23 +180,22 @@ TEST_F(GDataTest, GetDocuments) {
 
   EXPECT_EQ(HTTP_SUCCESS, result);
   ASSERT_TRUE(result_data);
-  FilePath expected_filepath = gdata_test_server_.document_root().Append(
-      FilePath(FILE_PATH_LITERAL("chromeos/gdata/root_feed.json")));
+  const FilePath expected_path =
+      test_util::GetTestFilePath("gdata/root_feed.json");
   std::string expected_contents;
-  file_util::ReadFileToString(expected_filepath, &expected_contents);
+  file_util::ReadFileToString(expected_path, &expected_contents);
   scoped_ptr<base::Value> expected_data(
       base::JSONReader::Read(expected_contents));
-  EXPECT_TRUE(base::Value::Equals(expected_data.get(), result_data));
-  delete result_data;
+  EXPECT_TRUE(base::Value::Equals(expected_data.get(), result_data.get()));
 }
 
-TEST_F(GDataTest, GetDocumentsFailure) {
+TEST_F(GDataWapiServiceTest, GetDocumentsFailure) {
   // testfile.txt exists but the response is not JSON, so it should
   // emit a parse error instead.
   GDataErrorCode result = GDATA_OTHER_ERROR;
-  base::Value* result_data = NULL;
+  scoped_ptr<base::Value> result_data;
   service_->GetDocuments(
-      gdata_test_server_.GetURL("files/chromeos/gdata/testfile.txt"),
+      gdata_test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
       0,  // start_changestamp
       std::string(),  // search string
       false,  // shared with me
