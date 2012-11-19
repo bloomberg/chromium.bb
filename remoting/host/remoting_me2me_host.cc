@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_native_library.h"
+#include "base/single_thread_task_runner.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringize_macros.h"
@@ -144,19 +145,15 @@ namespace remoting {
 class HostProcess
     : public ConfigFileWatcher::Delegate,
       public HeartbeatSender::Listener,
-      public IPC::Listener {
+      public IPC::Listener,
+      public base::RefCountedThreadSafe<HostProcess> {
  public:
-  explicit HostProcess(scoped_ptr<ChromotingHostContext> context);
-
-  // Initializes IPC control channel and config file path from |cmd_line|.
-  bool InitWithCommandLine(const CommandLine* cmd_line);
+  HostProcess(scoped_ptr<ChromotingHostContext> context,
+              int* exit_code_out);
 
   // ConfigFileWatcher::Delegate interface.
   virtual void OnConfigUpdated(const std::string& serialized_config) OVERRIDE;
   virtual void OnConfigWatcherError() OVERRIDE;
-
-  void StartWatchingConfigChanges();
-  void CreateAuthenticatorFactory();
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -165,11 +162,10 @@ class HostProcess
   // HeartbeatSender::Listener overrides.
   virtual void OnUnknownHostIdError() OVERRIDE;
 
-  void StartHostProcess();
-
-  int get_exit_code() const;
-
  private:
+  friend class base::RefCountedThreadSafe<HostProcess>;
+  virtual ~HostProcess();
+
 #if defined(OS_POSIX)
   // Registers a SIGTERM handler on the network thread, to shutdown the host.
   void ListenForShutdownSignal();
@@ -178,10 +174,24 @@ class HostProcess
   void SigTermHandler(int signal_number);
 #endif
 
+  // Called to initialize resources on the UI thread.
+  void StartOnUiThread();
+
+  // Initializes IPC control channel and config file path from |cmd_line|.
+  // Called on the UI thread.
+  bool InitWithCommandLine(const CommandLine* cmd_line);
+
+  // Called on the UI thread to start monitoring the configuration file.
+  void StartWatchingConfigChanges();
+
+  // Called on the network thread to set the host's Authenticator factory.
+  void CreateAuthenticatorFactory();
+
   // Asks the daemon to inject Secure Attention Sequence to the console.
   void SendSasToConsole();
 
-  void ShutdownHostProcess();
+  // Tear down resources that run on the UI thread.
+  void ShutdownOnUiThread();
 
   // Applies the host config, returning true if successful.
   bool ApplyConfig(scoped_ptr<JsonHostConfig> config);
@@ -209,7 +219,7 @@ class HostProcess
 
   void Shutdown(int exit_code);
 
-  void OnShutdownFinished();
+  void ShutdownOnNetworkThread();
 
   void ResetHost();
 
@@ -221,11 +231,15 @@ class HostProcess
                const int& line_number);
 
   scoped_ptr<ChromotingHostContext> context_;
-  scoped_ptr<IPC::ChannelProxy> daemon_channel_;
+
+  // Created on the UI thread but used from the network thread.
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
+  // Accessed on the UI thread.
+  scoped_ptr<IPC::ChannelProxy> daemon_channel_;
   FilePath host_config_path_;
   scoped_ptr<ConfigFileWatcher> config_watcher_;
+  scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
 
   // Accessed on the network thread.
   std::string host_id_;
@@ -248,7 +262,6 @@ class HostProcess
   bool restarting_;
   bool shutting_down_;
 
-  scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
   scoped_ptr<DesktopResizer> desktop_resizer_;
   scoped_ptr<ResizingHostObserver> resizing_host_observer_;
   scoped_ptr<XmppSignalStrategy> signal_strategy_;
@@ -257,18 +270,23 @@ class HostProcess
   scoped_ptr<LogToServer> log_to_server_;
   scoped_ptr<HostEventLogger> host_event_logger_;
 
+  // Created on the UI thread and used on the network thread.
   scoped_ptr<HostUserInterface> host_user_interface_;
 
   scoped_refptr<ChromotingHost> host_;
+
+  // Used to keep this HostProcess alive until it is shutdown.
+  scoped_refptr<HostProcess> self_;
 
 #if defined(REMOTING_MULTI_PROCESS)
   DesktopSessionConnector* desktop_session_connector_;
 #endif  // defined(REMOTING_MULTI_PROCESS)
 
-  int exit_code_;
+  int* exit_code_out_;
 };
 
-HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context)
+HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
+                         int* exit_code_out)
     : context_(context.Pass()),
       allow_nat_traversal_(true),
       curtain_required_(false),
@@ -278,13 +296,37 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context)
 #if defined(REMOTING_MULTI_PROCESS)
       desktop_session_connector_(NULL),
 #endif  // defined(REMOTING_MULTI_PROCESS)
-      exit_code_(kSuccessExitCode) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(self_(this)),
+      exit_code_out_(exit_code_out) {
+  // Create a NetworkChangeNotifier for use by the signalling connector.
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+
+  // Create the platform-specific curtain-mode implementation.
+  // TODO(wez): Create this on the network thread?
   curtain_ = CurtainMode::Create(
       base::Bind(&HostProcess::OnDisconnectRequested,
                  base::Unretained(this)),
       base::Bind(&HostProcess::RejectAuthenticatingClient,
                  base::Unretained(this)));
+
+  StartOnUiThread();
+}
+
+HostProcess::~HostProcess() {
+  // Verify that UI components have been torn down.
+  DCHECK(!config_watcher_);
+  DCHECK(!daemon_channel_);
+  DCHECK(!desktop_environment_factory_);
+  DCHECK(!host_user_interface_);
+
+  // We might be getting deleted on one of the threads the |host_context| owns,
+  // so we need to post it back to the caller thread to safely join & delete the
+  // threads it contains.  This will go away when we move to AutoThread.
+  // |context_release()| will null |context_| before the method is invoked, so
+  // we need to pull out the task-runner on which to call DeleteSoon first.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      context_->ui_task_runner();
+  task_runner->DeleteSoon(FROM_HERE, context_.release());
 }
 
 bool HostProcess::InitWithCommandLine(const CommandLine* cmd_line) {
@@ -338,9 +380,8 @@ bool HostProcess::InitWithCommandLine(const CommandLine* cmd_line) {
 void HostProcess::OnConfigUpdated(
     const std::string& serialized_config) {
   if (!context_->network_task_runner()->BelongsToCurrentThread()) {
-    context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
-        &HostProcess::OnConfigUpdated, base::Unretained(this),
-        serialized_config));
+    context_->network_task_runner()->PostTask(FROM_HERE,
+        base::Bind(&HostProcess::OnConfigUpdated, this, serialized_config));
     return;
   }
 
@@ -380,19 +421,20 @@ void HostProcess::OnConfigUpdated(
 void HostProcess::OnConfigWatcherError() {
   DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
-  context_->network_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&HostProcess::Shutdown, base::Unretained(this),
+  context_->network_task_runner()->PostTask(FROM_HERE,
+      base::Bind(&HostProcess::Shutdown, this,
                  kInvalidHostConfigurationExitCode));
 }
 
 void HostProcess::StartWatchingConfigChanges() {
+  DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
+
 #if !defined(REMOTING_MULTI_PROCESS)
-    // Start watching the host configuration file.
-    config_watcher_.reset(new ConfigFileWatcher(context_->ui_task_runner(),
-                                                context_->file_task_runner(),
-                                                this));
-    config_watcher_->Watch(host_config_path_);
+  // Start watching the host configuration file.
+  config_watcher_.reset(new ConfigFileWatcher(context_->ui_task_runner(),
+                                              context_->file_task_runner(),
+                                              this));
+  config_watcher_->Watch(host_config_path_);
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 }
 
@@ -465,14 +507,13 @@ bool HostProcess::OnMessageReceived(const IPC::Message& message) {
 void HostProcess::OnChannelError() {
   DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
-  // Shutdown the host if the daemon disconnected the channel.
+  // Shutdown the host if the daemon process disconnects the IPC channel.
   context_->network_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&HostProcess::Shutdown, base::Unretained(this),
-                 kSuccessExitCode));
+      base::Bind(&HostProcess::Shutdown, this, kSuccessExitCode));
 }
 
-void HostProcess::StartHostProcess() {
+void HostProcess::StartOnUiThread() {
   DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
   if (!InitWithCommandLine(CommandLine::ForCurrentProcess())) {
@@ -511,7 +552,7 @@ void HostProcess::StartHostProcess() {
   DesktopEnvironmentFactory* desktop_environment_factory =
       new SessionDesktopEnvironmentFactory(
           context_->input_task_runner(), context_->ui_task_runner(),
-          base::Bind(&HostProcess::SendSasToConsole, base::Unretained(this)));
+          base::Bind(&HostProcess::SendSasToConsole, this));
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
 #else  // !defined(OS_WIN)
@@ -524,9 +565,7 @@ void HostProcess::StartHostProcess() {
 
 #if defined(OS_POSIX)
   context_->network_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&HostProcess::ListenForShutdownSignal,
-                 base::Unretained(this)));
+      FROM_HERE, base::Bind(&HostProcess::ListenForShutdownSignal, this));
 #endif // OS_POSIX
 
   // The host UI should be created on the UI thread.
@@ -554,10 +593,6 @@ void HostProcess::StartHostProcess() {
   StartWatchingConfigChanges();
 }
 
-int HostProcess::get_exit_code() const {
-  return exit_code_;
-}
-
 void HostProcess::SendSasToConsole() {
   DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
@@ -565,16 +600,17 @@ void HostProcess::SendSasToConsole() {
     daemon_channel_->Send(new ChromotingNetworkDaemonMsg_SendSasToConsole());
 }
 
-void HostProcess::ShutdownHostProcess() {
+void HostProcess::ShutdownOnUiThread() {
   DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
-  // Tear down resources that use ChromotingHostContext threads.
+  // Tear down resources that need to be torn down on the UI thread.
   config_watcher_.reset();
   daemon_channel_.reset();
   desktop_environment_factory_.reset();
   host_user_interface_.reset();
 
-  context_.reset();
+  // It is now safe for the HostProcess to be deleted.
+  self_ = NULL;
 }
 
 // Overridden from HeartbeatSender::Listener
@@ -633,8 +669,7 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
   // TODO(rmsousa): Consolidate all On*PolicyUpdate methods into this one.
   if (!context_->network_task_runner()->BelongsToCurrentThread()) {
     context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
-        &HostProcess::OnPolicyUpdate, base::Unretained(this),
-        base::Passed(&policies)));
+        &HostProcess::OnPolicyUpdate, this, base::Passed(&policies)));
     return;
   }
 
@@ -786,7 +821,7 @@ void HostProcess::StartHost() {
       signal_strategy_.get(),
       context_->url_request_context_getter(),
       dns_blackhole_checker.Pass(),
-      base::Bind(&HostProcess::OnAuthFailed, base::Unretained(this))));
+      base::Bind(&HostProcess::OnAuthFailed, this)));
 
   if (!oauth_refresh_token_.empty()) {
     scoped_ptr<SignalingConnector::OAuthCredentials> oauth_credentials(
@@ -842,8 +877,7 @@ void HostProcess::StartHost() {
 
   if (host_user_interface_.get()) {
     host_user_interface_->Start(
-        host_, base::Bind(&HostProcess::OnDisconnectRequested,
-                          base::Unretained(this)));
+        host_, base::Bind(&HostProcess::OnDisconnectRequested, this));
   }
 
   host_->Start(xmpp_login_);
@@ -865,8 +899,8 @@ void HostProcess::RejectAuthenticatingClient() {
 // the sessions, or when the local session is activated in curtain mode.
 void HostProcess::OnDisconnectRequested() {
   if (!context_->network_task_runner()->BelongsToCurrentThread()) {
-    context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
-        &HostProcess::OnDisconnectRequested, base::Unretained(this)));
+    context_->network_task_runner()->PostTask(FROM_HERE,
+        base::Bind(&HostProcess::OnDisconnectRequested, this));
     return;
   }
   if (host_) {
@@ -881,8 +915,7 @@ void HostProcess::RestartHost() {
     return;
 
   restarting_ = true;
-  host_->Shutdown(base::Bind(
-      &HostProcess::RestartOnHostShutdown, base::Unretained(this)));
+  host_->Shutdown(base::Bind(&HostProcess::RestartOnHostShutdown, this));
 }
 
 void HostProcess::RestartOnHostShutdown() {
@@ -905,16 +938,15 @@ void HostProcess::Shutdown(int exit_code) {
     return;
 
   shutting_down_ = true;
-  exit_code_ = exit_code;
+  *exit_code_out_ = exit_code;
   if (host_) {
-    host_->Shutdown(base::Bind(
-        &HostProcess::OnShutdownFinished, base::Unretained(this)));
+    host_->Shutdown(base::Bind(&HostProcess::ShutdownOnNetworkThread, this));
   } else {
-    OnShutdownFinished();
+    ShutdownOnNetworkThread();
   }
 }
 
-void HostProcess::OnShutdownFinished() {
+void HostProcess::ShutdownOnNetworkThread() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   // Destroy networking objects while we are on the network thread.
@@ -929,10 +961,8 @@ void HostProcess::OnShutdownFinished() {
   }
 
   // Complete the rest of shutdown on the main thread.
-  context_->ui_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&HostProcess::ShutdownHostProcess,
-                 base::Unretained(this)));
+  context_->ui_task_runner()->PostTask(FROM_HERE,
+      base::Bind(&HostProcess::ShutdownOnUiThread, this));
 }
 
 void HostProcess::ResetHost() {
@@ -997,11 +1027,16 @@ int main(int argc, char** argv) {
   if (!context->Start())
     return remoting::kInitializationFailed;
 
-  // Create the host process instance and enter the main message loop.
-  remoting::HostProcess me2me_host(context.Pass());
-  me2me_host.StartHostProcess();
+  // Create & start the HostProcess using these threads.
+  // TODO(wez): The HostProcess holds a reference to itself until Shutdown().
+  // Remove this hack as part of the multi-process refactoring.
+  int exit_code = remoting::kSuccessExitCode;
+  new remoting::HostProcess(context.Pass(), &exit_code);
+
+  // Run the main (also UI) message loop until the host no longer needs it.
   message_loop.Run();
-  return me2me_host.get_exit_code();
+
+  return exit_code;
 }
 
 #if defined(OS_WIN)
