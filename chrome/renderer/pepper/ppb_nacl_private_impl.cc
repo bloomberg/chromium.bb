@@ -22,7 +22,6 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/private/pp_file_handle.h"
-#include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -56,11 +55,11 @@ base::LazyInstance<InstanceInfoMap> g_instance_info =
     LAZY_INSTANCE_INITIALIZER;
 
 // Launch NaCl's sel_ldr process.
-PP_Bool LaunchSelLdr(PP_Instance instance,
-                     const char* alleged_url,
-                     bool enable_ppapi_dev,
-                     int socket_count,
-                     void* imc_handles) {
+PP_NaClResult LaunchSelLdr(PP_Instance instance,
+                           const char* alleged_url,
+                           PP_Bool enable_ppapi_dev,
+                           int socket_count,
+                           void* imc_handles) {
   std::vector<nacl::FileDescriptor> sockets;
   IPC::Sender* sender = content::RenderThread::Get();
   if (sender == NULL)
@@ -69,14 +68,14 @@ PP_Bool LaunchSelLdr(PP_Instance instance,
   webkit::ppapi::PluginInstance* plugin_instance =
       content::GetHostGlobals()->GetInstance(instance);
   if (!plugin_instance)
-    return PP_FALSE;
+    return PP_NACL_FAILED;
 
   WebKit::WebView* web_view =
       plugin_instance->container()->element().document().frame()->view();
   content::RenderView* render_view =
       content::RenderView::FromWebView(web_view);
   if (!render_view)
-    return PP_FALSE;
+    return PP_NACL_FAILED;
 
   InstanceInfo instance_info;
   instance_info.url = GURL(alleged_url);
@@ -97,7 +96,7 @@ PP_Bool LaunchSelLdr(PP_Instance instance,
           socket_count, &sockets,
           &instance_info.channel_handle,
           &instance_info.plugin_child_id))) {
-    return PP_FALSE;
+    return PP_NACL_FAILED;
   }
 
   // Don't save instance_info if channel handle is invalid.
@@ -115,25 +114,25 @@ PP_Bool LaunchSelLdr(PP_Instance instance,
         nacl::ToNativeHandle(sockets[i]);
   }
 
-  return PP_TRUE;
+  return PP_NACL_OK;
 }
 
-int32_t StartPpapiProxy(PP_Instance instance) {
+PP_NaClResult StartPpapiProxy(PP_Instance instance) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNaClSRPCProxy))
-    return PP_ERROR_NOTSUPPORTED;  // Signal the plugin to use the SRPC proxy.
+    return PP_NACL_USE_SRPC;
 
   InstanceInfoMap& map = g_instance_info.Get();
   InstanceInfoMap::iterator it = map.find(instance);
   if (it == map.end())
-    return PP_ERROR_FAILED;
+    return PP_NACL_FAILED;
   InstanceInfo instance_info = it->second;
   map.erase(it);
 
   webkit::ppapi::PluginInstance* plugin_instance =
       content::GetHostGlobals()->GetInstance(instance);
   if (!plugin_instance)
-    return PP_ERROR_FAILED;
+    return PP_NACL_ERROR_MODULE;
 
   // Create a new module for each instance of the NaCl plugin that is using
   // the IPC based out-of-process proxy. We can't use the existing module,
@@ -151,11 +150,13 @@ int32_t StartPpapiProxy(PP_Instance instance) {
           instance_info.permissions,
           instance_info.channel_handle,
           instance_info.plugin_child_id);
-  if (renderer_ppapi_host &&
-      nacl_plugin_module->InitAsProxiedNaCl(plugin_instance))
-    return PP_OK;
+  if (!renderer_ppapi_host)
+    return PP_NACL_ERROR_MODULE;
+  // Finally, switch the instance to the proxy.
+  if (!nacl_plugin_module->InitAsProxiedNaCl(plugin_instance))
+    return PP_NACL_ERROR_INSTANCE;
 
-  return PP_ERROR_FAILED;
+  return PP_NACL_OK;
 }
 
 int UrandomFD(void) {
@@ -166,8 +167,9 @@ int UrandomFD(void) {
 #endif
 }
 
-bool Are3DInterfacesDisabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisable3DAPIs);
+PP_Bool Are3DInterfacesDisabled() {
+  return PP_FromBool(CommandLine::ForCurrentProcess()->HasSwitch(
+                         switches::kDisable3DAPIs));
 }
 
 void EnableBackgroundSelLdrLaunch() {
@@ -175,11 +177,11 @@ void EnableBackgroundSelLdrLaunch() {
       content::RenderThread::Get()->GetSyncMessageFilter();
 }
 
-int BrokerDuplicateHandle(void* source_handle,
-                          unsigned int process_id,
-                          void** target_handle,
-                          unsigned int desired_access,
-                          unsigned int options) {
+int32_t BrokerDuplicateHandle(PP_FileHandle source_handle,
+                              uint32_t process_id,
+                              PP_FileHandle* target_handle,
+                              uint32_t desired_access,
+                              uint32_t options) {
 #if defined(OS_WIN)
   return content::BrokerDuplicateHandle(source_handle, process_id,
                                         target_handle, desired_access,
@@ -235,8 +237,8 @@ PP_Bool IsOffTheRecord() {
 }
 
 PP_Bool IsPnaclEnabled() {
-  return PP_FromBool(CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePnacl));
+  return PP_FromBool(
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePnacl));
 }
 
 const PPB_NaCl_Private nacl_interface = {

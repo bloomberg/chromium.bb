@@ -8,8 +8,7 @@
 #include "build/build_config.h"
 
 #ifndef DISABLE_NACL
-
-struct PPB_NaCl_Private;
+#include "ppapi/c/private/ppb_nacl_private.h"
 
 class PPB_NaCl_Private_Impl {
  public:
