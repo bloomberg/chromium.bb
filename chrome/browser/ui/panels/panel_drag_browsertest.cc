@@ -1207,7 +1207,13 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachWithSqueeze) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, AttachWithSqueeze) {
+// http://crbug.com/143247
+#if defined(OS_LINUX)
+#define MAYBE_AttachWithSqueeze DISABLED_AttachWithSqueeze
+#else
+#define MAYBE_AttachWithSqueeze AttachWithSqueeze
+#endif
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_AttachWithSqueeze) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
