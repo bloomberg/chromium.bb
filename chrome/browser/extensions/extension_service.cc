@@ -926,6 +926,10 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
     AcknowledgeExternalExtension(extension->id());
   }
 
+  if (extension_prefs_->GetDisableReasons(extension->id()) &
+      Extension::DISABLE_SIDELOAD_WIPEOUT)
+    UMA_HISTOGRAM_BOOLEAN("DisabledExtension.ExtensionWipedStatus", false);
+
   // Move it over to the enabled list.
   extensions_.Insert(make_scoped_refptr(extension));
   disabled_extensions_.Remove(extension->id());
@@ -2254,6 +2258,7 @@ void ExtensionService::MaybeWipeout(
           extension->id(),
           static_cast<Extension::DisableReason>(
           Extension::DISABLE_SIDELOAD_WIPEOUT));
+      UMA_HISTOGRAM_BOOLEAN("DisabledExtension.ExtensionWipedStatus", true);
     }
   }
 }
