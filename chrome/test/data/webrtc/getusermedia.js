@@ -48,7 +48,7 @@ function getUserMedia(constraints) {
     var evaluatedConstraints;
     eval('evaluatedConstraints = ' + constraints);
   } catch (exception) {
-    failTest('Not valid JavaScript expression: ' + constraints);
+    throw failTest('Not valid JavaScript expression: ' + constraints);
   }
   debug('Requesting getUserMedia: constraints: ' + constraints);
   navigator.webkitGetUserMedia(evaluatedConstraints,
@@ -73,7 +73,8 @@ function obtainGetUserMediaResult() {
  */
 function stopLocalStream() {
   if (gLocalStream == null)
-    failTest('Tried to stop local stream, but media access is not granted.');
+    throw failTest('Tried to stop local stream, ' +
+                   'but media access is not granted.');
 
   gLocalStream.stop();
   returnToTest('ok-stopped');
@@ -87,13 +88,13 @@ function stopLocalStream() {
  */
 function addLocalStreamToPeerConnection(peerConnection) {
   if (gLocalStream == null)
-    failTest('Tried to add local stream to peer connection,'
-        + ' but there is no stream yet.');
+    throw failTest('Tried to add local stream to peer connection, ' +
+                   'but there is no stream yet.');
   try {
     peerConnection.addStream(gLocalStream, gAddStreamConstraints);
   } catch (exception) {
-    failTest('Failed to add stream with hints ' + gMediaHints + ': '
-        + exception);
+    throw failTest('Failed to add stream with hints ' + gMediaHints + ': ' +
+                   exception);
   }
   debug('Added local stream.');
 }
@@ -104,12 +105,12 @@ function addLocalStreamToPeerConnection(peerConnection) {
  */
 function removeLocalStreamFromPeerConnection(peerConnection) {
   if (gLocalStream == null)
-    failTest('Tried to remove local stream from peer connection,'
-        + ' but there is no stream yet.');
+    throw failTest('Tried to remove local stream from peer connection, ' +
+                   'but there is no stream yet.');
   try {
     peerConnection.removeStream(gLocalStream);
   } catch (exception) {
-    failTest('Could not remove stream: ' + exception);
+    throw failTest('Could not remove stream: ' + exception);
   }
   debug('Removed local stream.');
 }

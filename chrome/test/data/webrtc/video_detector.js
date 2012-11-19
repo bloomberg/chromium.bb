@@ -60,7 +60,7 @@ function isVideoPlaying() {
       }
     }
   } catch (exception) {
-    failTest('Failed to detect video: ' + exception.message);
+    throw failTest('Failed to detect video: ' + exception.message);
   }
   returnToTest('video-not-playing');
 }

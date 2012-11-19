@@ -77,7 +77,7 @@ function createPeerConnection(stun_server) {
   try {
     peerConnection = new webkitRTCPeerConnection(servers, null);
   } catch (exception) {
-    failTest('Failed to create peer connection: ' + exception);
+    throw failTest('Failed to create peer connection: ' + exception);
   }
   peerConnection.onaddstream = addStreamCallback_;
   peerConnection.onremovestream = removeStreamCallback_;
@@ -106,7 +106,7 @@ function success_(method) {
 
 /** @private */
 function failure_(method, error) {
-  failTest(method + '() failed: ' + error);
+  throw failTest(method + '() failed: ' + error);
 }
 
 /** @private */

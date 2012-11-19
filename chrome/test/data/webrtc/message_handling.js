@@ -73,7 +73,7 @@ var STUN_SERVER = 'stun.l.google.com:19302';
  */
 function connect(serverUrl, clientName) {
   if (gOurPeerId != null)
-    failTest('connecting, but is already connected.');
+    throw failTest('connecting, but is already connected.');
 
   debug('Connecting to ' + serverUrl + ' as ' + clientName);
   gServerUrl = serverUrl;
@@ -105,7 +105,7 @@ function remotePeerIsConnected() {
  */
 function preparePeerConnection() {
   if (gPeerConnection != null)
-    failTest('creating peer connection, but we already have one.');
+    throw failTest('creating peer connection, but we already have one.');
 
   gPeerConnection = createPeerConnection(STUN_SERVER);
   returnToTest('ok-peerconnection-created');
@@ -127,11 +127,11 @@ function preparePeerConnection() {
  */
 function negotiateCall() {
   if (gPeerConnection == null)
-    failTest('negotiating call, but we have no peer connection.');
+    throw failTest('negotiating call, but we have no peer connection.');
   if (gOurPeerId == null)
-    failTest('negotiating call, but not connected.');
+    throw failTest('negotiating call, but not connected.');
   if (gRemotePeerId == null)
-    failTest('negotiating call, but missing remote peer.');
+    throw failTest('negotiating call, but missing remote peer.');
 
   setupCall(gPeerConnection);
   returnToTest('ok-negotiating');
@@ -143,7 +143,7 @@ function negotiateCall() {
  */
 function addLocalStream() {
   if (gPeerConnection == null)
-    failTest('adding local stream, but we have no peer connection.');
+    throw failTest('adding local stream, but we have no peer connection.');
 
   addLocalStreamToPeerConnection(gPeerConnection);
   returnToTest('ok-added');
@@ -155,7 +155,7 @@ function addLocalStream() {
  */
 function removeLocalStream() {
   if (gPeerConnection == null)
-    failTest('attempting to remove local stream, but no call is up');
+    throw failTest('attempting to remove local stream, but no call is up');
 
   removeLocalStreamFromPeerConnection(gPeerConnection);
   returnToTest('ok-local-stream-removed');
@@ -180,9 +180,11 @@ function getPeerConnectionReadyState() {
  */
 function toggleRemoteStream(selectAudioOrVideoTrack, typeToToggle) {
   if (gPeerConnection == null)
-    failTest('Tried to toggle remote stream, but have no peer connection.');
+    throw failTest('Tried to toggle remote stream, ' +
+                   'but have no peer connection.');
   if (gPeerConnection.remoteStreams.length == 0)
-    failTest('Tried to toggle remote stream, but not receiving any stream.');
+    throw failTest('Tried to toggle remote stream, ' +
+                   'but not receiving any stream.');
 
   var track = selectAudioOrVideoTrack(gPeerConnection.remoteStreams[0]);
   toggle_(track, 'remote', typeToToggle);
@@ -194,10 +196,11 @@ function toggleRemoteStream(selectAudioOrVideoTrack, typeToToggle) {
  */
 function toggleLocalStream(selectAudioOrVideoTrack, typeToToggle) {
   if (gPeerConnection == null)
-    failTest('Tried to toggle local stream, but have no peer connection.');
+    throw failTest(
+        'Tried to toggle local stream, but have no peer connection.');
   if (gPeerConnection.localStreams.length == 0)
-    failTest('Tried to toggle local stream, but there is no local' +
-             ' stream in the call (must send local stream first).');
+    throw failTest('Tried to toggle local stream, but there is no local ' +
+                   'stream in the call.');
 
   var track = selectAudioOrVideoTrack(gPeerConnection.localStreams[0]);
   toggle_(track, 'local', typeToToggle);
@@ -209,9 +212,9 @@ function toggleLocalStream(selectAudioOrVideoTrack, typeToToggle) {
  */
 function hangUp() {
   if (gPeerConnection == null)
-    failTest('hanging up, but has no peer connection');
+    throw failTest('hanging up, but has no peer connection');
   if (getReadyState() != 'active')
-    failTest('hanging up, but ready state is not active (no call up).');
+    throw failTest('hanging up, but ready state is not active (no call up).');
   sendToPeer(gRemotePeerId, 'BYE');
   closeCall_();
   gAcceptsIncomingCalls = false;
@@ -238,7 +241,7 @@ function doNotAutoAddLocalStreamWhenCalled() {
  */
 function disconnect() {
   if (gOurPeerId == null)
-    failTest('Disconnecting, but we are not connected.');
+    throw failTest('Disconnecting, but we are not connected.');
 
   request = new XMLHttpRequest();
   request.open('GET', gServerUrl + '/sign_out?peer_id=' + gOurPeerId, false);
@@ -286,7 +289,7 @@ function getReadyState() {
 /** @private */
 function toggle_(track, localOrRemote, audioOrVideo) {
   if (!track)
-    failTest('Tried to toggle ' + localOrRemote + ' ' + audioOrVideo +
+    throw failTest('Tried to toggle ' + localOrRemote + ' ' + audioOrVideo +
              ' stream, but has no such stream.');
 
   track.enabled = !track.enabled;
@@ -333,11 +336,12 @@ function parseRemotePeerIdIfConnected_(responseText) {
 
     if (id != gOurPeerId) {
       debug('Found remote peer with name ' + name + ', id ' +
-        id + ' when connecting.');
+            id + ' when connecting.');
 
       // There should be at most one remote peer in this test.
       if (remotePeerId != null)
-        failTest('Expected just one remote peer in this test: found several.');
+        throw failTest('Expected just one remote peer in this test: '
+                       'found several.');
 
       // Found a remote peer.
       remotePeerId = id;
@@ -369,10 +373,10 @@ function hangingGetCallback_(hangingGetRequest, server, ourId) {
     return;
   if (hangingGetRequest.status == 0) {
     // Code 0 is not possible if the server actually responded.
-    failTest('Previous request was malformed, or server is unavailable.');
+    throw failTest('Previous request was malformed, or server is unavailable.');
   }
   if (hangingGetRequest.status != 200) {
-    failTest('Error ' + hangingGetRequest.status + ' from server: ' +
+    throw failTest('Error ' + hangingGetRequest.status + ' from server: ' +
              hangingGetRequest.statusText);
   }
   var targetId = readResponseHeader_(hangingGetRequest, 'Pragma');
@@ -408,7 +412,7 @@ function handleServerNotification_(message) {
 /** @private */
 function closeCall_() {
   if (gPeerConnection == null)
-    failTest('Closing call, but no call active.');
+    throw failTest('Closing call, but no call active.');
   gPeerConnection.close();
   gPeerConnection = null;
 }

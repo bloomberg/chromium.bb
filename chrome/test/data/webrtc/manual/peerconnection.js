@@ -191,7 +191,7 @@ function getEvaluatedJavaScript_(stringRepresentation) {
     var evaluatedJavaScript;
     eval('evaluatedJavaScript = ' + stringRepresentation);
   } catch (exception) {
-    failTest('Not valid JavaScript expression: ' + stringRepresentation);
+    throw failTest('Not valid JavaScript expression: ' + stringRepresentation);
   }
   return evaluatedJavaScript;
 }

@@ -111,12 +111,17 @@ function addTestFailure(reason) {
 }
 
 /**
- * Follows the same contract as addTestFailure but also throws an exception to
- * stop the control flow locally.
+ * Follows the same contract as addTestFailure. This is a convenience function
+ * that should be invoked like this since you probably want to break the flow of
+ * the test on failure and yet point to the right line in a JavaScript debugger:
+ *
+ * throw failTest('my reason');
+ *
+ * @return {!Error}
  */
 function failTest(reason) {
   addTestFailure(reason);
-  throw new Error(reason);
+  return new Error(reason);
 }
 
 /** @private */
