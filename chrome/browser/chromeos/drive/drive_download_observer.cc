@@ -16,8 +16,8 @@
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/download/download_completion_blocker.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
+#include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
-#include "chrome/browser/google_apis/time_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "net/base/net_util.h"
 
@@ -212,6 +212,30 @@ void OnEntryUpdated(DriveFileError error) {
 }
 
 }  // namespace
+
+struct DriveDownloadObserver::UploaderParams {
+  UploaderParams() : file_size(0),
+                     content_length(-1) {}
+  ~UploaderParams() {}
+
+  FilePath file_path; // The path of the file to be uploaded.
+  int64 file_size; // The last known size of the file.
+
+  // TODO(zelirag, achuith): Make this string16.
+  std::string title; // Title to be used for file to be uploaded.
+  std::string content_type; // Content-Type of file.
+  int64 content_length; // Header Content-Length.
+  GURL upload_location; // Initial upload location for the file.
+
+  // Final path in gdata. Looks like /special/drive/MyFolder/MyFile.
+  FilePath drive_path;
+
+  // Callback to be invoked once the uploader is ready to upload.
+  google_apis::UploaderReadyCallback ready_callback;
+
+  // Callback to be invoked once the upload has completed.
+  google_apis::UploadCompletionCallback completion_callback;
+};
 
 DriveDownloadObserver::DriveDownloadObserver(
     google_apis::DriveUploader* uploader,
@@ -439,8 +463,6 @@ void DriveDownloadObserver::CreateUploaderParams(DownloadItem* download) {
   uploader_params->content_length = download->AllDataSaved() ?
                                     download->GetReceivedBytes() : -1;
 
-  uploader_params->all_bytes_present = download->AllDataSaved();
-
   uploader_params->completion_callback =
       base::Bind(&DriveDownloadObserver::OnUploadComplete,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -651,27 +673,6 @@ void DriveDownloadObserver::MoveFileToDriveCache(DownloadItem* download) {
                                   DriveCache::FILE_OPERATION_MOVE,
                                   base::Bind(&OnEntryUpdated));
   }
-}
-
-DriveDownloadObserver::UploaderParams::UploaderParams()
-    : file_size(0),
-      content_length(-1),
-      all_bytes_present(false) {
-}
-
-DriveDownloadObserver::UploaderParams::~UploaderParams() {
-}
-
-// Useful for printf debugging.
-std::string DriveDownloadObserver::UploaderParams::DebugString() const {
-  return "title=[" + title +
-         "], file_path=[" + file_path.value() +
-         "], content_type=[" + content_type +
-         "], content_length=[" + base::UintToString(content_length) +
-         "], upload_location=[" + upload_location.possibly_invalid_spec() +
-         "], drive_path=[" + drive_path.value() +
-         "], all_bytes_present=[" + (all_bytes_present ?  "true" : "false") +
-         "]";
 }
 
 }  // namespace drive

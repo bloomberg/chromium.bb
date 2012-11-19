@@ -5,22 +5,23 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_DOWNLOAD_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_DOWNLOAD_OBSERVER_H_
 
-#include <map>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
-#include "chrome/browser/google_apis/drive_uploader.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
-#include "content/public/browser/download_item.h"
-#include "content/public/browser/download_manager.h"
-#include "googleurl/src/gurl.h"
 
 class Profile;
 
+namespace content {
+class DownloadItem;
+class DownloadManager;
+}
+
 namespace google_apis {
 class DocumentEntry;
+class DriveUploader;
 }
 
 namespace drive {
@@ -36,7 +37,7 @@ class DriveDownloadObserver : public AllDownloadItemNotifier::Observer {
                         DriveFileSystemInterface* file_system);
   virtual ~DriveDownloadObserver();
 
-  // Become an observer of  DownloadManager.
+  // Become an observer of DownloadManager.
   void Initialize(content::DownloadManager* download_manager,
                   const FilePath& drive_tmp_download_path);
 
@@ -86,32 +87,7 @@ class DriveDownloadObserver : public AllDownloadItemNotifier::Observer {
   // Structure containing arguments required to process uploading.
   // For internal use, to avoid passing all of the parameters every time
   // separately.
-  struct UploaderParams {
-    UploaderParams();
-    ~UploaderParams();
-
-    // Useful for printf debugging.
-    std::string DebugString() const;
-
-    FilePath file_path; // The path of the file to be uploaded.
-    int64 file_size; // The last known size of the file.
-
-    // TODO(zelirag, achuith): Make this string16.
-    std::string title; // Title to be used for file to be uploaded.
-    std::string content_type; // Content-Type of file.
-    int64 content_length; // Header Content-Length.
-    GURL upload_location; // Initial upload location for the file.
-
-    // Final path in gdata. Looks like /special/drive/MyFolder/MyFile.
-    FilePath drive_path;
-    bool all_bytes_present; // Whether all bytes of this file are present.
-
-    // Callback to be invoked once the uploader is ready to upload.
-    google_apis::UploaderReadyCallback ready_callback;
-
-    // Callback to be invoked once the upload has completed.
-    google_apis::UploadCompletionCallback completion_callback;
-  };
+  struct UploaderParams;
 
   // AllDownloadItemNotifier::Observer
   virtual void OnDownloadUpdated(content::DownloadManager* manager,
