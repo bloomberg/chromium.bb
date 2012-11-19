@@ -182,6 +182,8 @@
               'proxy/flash_font_file_resource.cc',
               'proxy/flash_menu_resource.cc',
               'proxy/flash_resource.cc',
+              'proxy/host_dispatcher.cc',
+              'proxy/host_var_serialization_rules.cc',
               'proxy/ppb_broker_proxy.cc',
               'proxy/ppb_buffer_proxy.cc',
               'proxy/ppb_flash_message_loop_proxy.cc',

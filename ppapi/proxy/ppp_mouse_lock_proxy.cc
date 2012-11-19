@@ -14,6 +14,7 @@ namespace proxy {
 
 namespace {
 
+#if !defined(OS_NACL)
 void MouseLockLost(PP_Instance instance) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
@@ -29,6 +30,10 @@ void MouseLockLost(PP_Instance instance) {
 static const PPP_MouseLock mouse_lock_interface = {
   &MouseLockLost
 };
+#else
+// The NaCl plugin doesn't need the host side interface - stub it out.
+static const PPP_MouseLock mouse_lock_interface = {};
+#endif  // !defined(OS_NACL)
 
 InterfaceProxy* CreateMouseLockProxy(Dispatcher* dispatcher) {
   return new PPP_MouseLock_Proxy(dispatcher);

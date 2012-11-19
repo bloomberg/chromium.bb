@@ -14,6 +14,7 @@ namespace proxy {
 
 namespace {
 
+#if !defined(OS_NACL)
 void RequestSurroundingText(PP_Instance instance,
                             uint32_t desired_number_of_characters) {
   proxy::HostDispatcher* dispatcher =
@@ -31,6 +32,10 @@ void RequestSurroundingText(PP_Instance instance,
 const PPP_TextInput_Dev g_ppp_text_input_thunk = {
   &RequestSurroundingText
 };
+#else
+// The NaCl plugin doesn't need the host side interface - stub it out.
+static const PPP_TextInput_Dev g_ppp_text_input_thunk = {};
+#endif  // !defined(OS_NACL)
 
 }  // namespace
 
