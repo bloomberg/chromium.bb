@@ -132,7 +132,7 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
   bool AddExtensionData(const std::string& id,
                         const Version& version,
                         Extension::Type extension_type,
-                        GURL update_url,
+                        const GURL& extension_update_url,
                         const std::string& update_url_data,
                         int request_id);
 

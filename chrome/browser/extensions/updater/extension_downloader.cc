@@ -209,9 +209,10 @@ void ExtensionDownloader::StartBlacklistUpdate(
 bool ExtensionDownloader::AddExtensionData(const std::string& id,
                                            const Version& version,
                                            Extension::Type extension_type,
-                                           GURL update_url,
+                                           const GURL& extension_update_url,
                                            const std::string& update_url_data,
                                            int request_id) {
+  GURL update_url(extension_update_url);
   // Skip extensions with non-empty invalid update URLs.
   if (!update_url.is_empty() && !update_url.is_valid()) {
     LOG(WARNING) << "Extension " << id << " has invalid update url "
