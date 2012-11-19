@@ -256,8 +256,9 @@ void GestureInterpreterSetPropProvider(GestureInterpreter* obj,
   obj->SetPropProvider(pp, data);
 }
 
-void GestureInterpreterInitialize(GestureInterpreter* obj) {
-  obj->Initialize();
+void GestureInterpreterInitialize(GestureInterpreter* obj,
+                                  enum GestureInterpreterDeviceClass cls) {
+  obj->Initialize(cls);
 }
 
 // C++ API:
@@ -356,7 +357,7 @@ void GestureInterpreter::SetPropProvider(GesturesPropProvider* pp,
   prop_reg_->SetPropProvider(pp, data);
 }
 
-void GestureInterpreter::Initialize(void) {
+void GestureInterpreter::InitializeTouchpad(void) {
   Interpreter* temp = new ImmediateInterpreter(prop_reg_.get(),
                                                finger_metrics_.get(),
                                                tracer_.get());
@@ -383,6 +384,13 @@ void GestureInterpreter::Initialize(void) {
                                                        tracer_.get());
   interpreter_.reset(temp);
   temp = NULL;
+}
+
+void GestureInterpreter::Initialize(GestureInterpreterDeviceClass cls) {
+  if (cls == GESTURES_DEVCLASS_TOUCHPAD)
+    InitializeTouchpad();
+  else
+    Err("Couldn't recognize device class: %d", cls);
 }
 
 std::string GestureInterpreter::EncodeActivityLog() {

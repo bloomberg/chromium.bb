@@ -29,6 +29,12 @@ void gestures_log(int verb, const char* format, ...)
 
 typedef double stime_t;  // seconds
 
+enum GestureInterpreterDeviceClass {
+  GESTURES_DEVCLASS_UNKNOWN,
+  GESTURES_DEVCLASS_MOUSE,
+  GESTURES_DEVCLASS_TOUCHPAD,
+};
+
 stime_t StimeFromTimeval(const struct timeval*);
 stime_t StimeFromTimespec(const struct timespec*);
 
@@ -384,13 +390,16 @@ struct GestureInterpreter {
 
   // Initialize GestureInterpreter based on device configuration.  This must be
   // called after GesturesPropProvider is set and before it accepts any inputs.
-  void Initialize(void);
+  void Initialize(
+      GestureInterpreterDeviceClass type=GESTURES_DEVCLASS_TOUCHPAD);
 
   Interpreter* interpreter() const { return interpreter_.get(); }
   PropRegistry* prop_reg() const { return prop_reg_.get(); }
 
   std::string EncodeActivityLog();
  private:
+  void InitializeTouchpad(void);
+
   GestureReadyFunction callback_;
   void* callback_data_;
 
@@ -442,7 +451,8 @@ void GestureInterpreterSetPropProvider(GestureInterpreter*,
                                        GesturesPropProvider*,
                                        void*);
 
-void GestureInterpreterInitialize(GestureInterpreter*);
+void GestureInterpreterInitialize(GestureInterpreter*,
+                                  enum GestureInterpreterDeviceClass);
 
 #ifdef __cplusplus
 }
