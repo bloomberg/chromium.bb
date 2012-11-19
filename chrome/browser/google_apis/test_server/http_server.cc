@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/stl_util.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/google_apis/test_server/http_request.h"
 #include "chrome/browser/google_apis/test_server/http_response.h"
@@ -146,8 +147,14 @@ void HttpServer::HandleRequest(HttpConnection* connection,
   delete connection;
 }
 
-GURL HttpServer::GetBaseURL() {
+GURL HttpServer::GetBaseURL() const {
   return base_url_;
+}
+
+GURL HttpServer::GetURL(const std::string& relative_url) const {
+  DCHECK(StartsWithASCII(relative_url, "/", true /* case_sensitive */))
+      << relative_url;
+  return base_url_.Resolve(relative_url);
 }
 
 void HttpServer::RegisterRequestHandler(
@@ -155,10 +162,12 @@ void HttpServer::RegisterRequestHandler(
   request_handlers_.push_back(callback);
 }
 
-GURL HttpServer::RegisterDefaultResponse(
+void HttpServer::RegisterDefaultResponse(
     const std::string& relative_path,
     const HttpResponse& default_response) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(StartsWithASCII(relative_path, "/", true /* case_sensitive */))
+      << relative_path;
 
   GURL request_url = base_url_.Resolve(relative_path);
   const HandleRequestCallback callback =
@@ -166,31 +175,33 @@ GURL HttpServer::RegisterDefaultResponse(
                  request_url,
                  default_response);
   request_handlers_.push_back(callback);
-
-  return request_url;
 }
 
-GURL HttpServer::RegisterTextResponse(
+void HttpServer::RegisterTextResponse(
      const std::string& relative_path,
      const std::string& content,
      const std::string& content_type,
      const ResponseCode response_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(StartsWithASCII(relative_path, "/", true /* case_sensitive */))
+      << relative_path;
 
   HttpResponse default_response;
   default_response.set_content(content);
   default_response.set_content_type(content_type);
   default_response.set_code(response_code);
 
-  return RegisterDefaultResponse(relative_path, default_response);
+  RegisterDefaultResponse(relative_path, default_response);
 }
 
-GURL HttpServer::RegisterFileResponse(
+void HttpServer::RegisterFileResponse(
      const std::string& relative_path,
      const FilePath& file_path,
      const std::string& content_type,
      const ResponseCode response_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(StartsWithASCII(relative_path, "/", true /* case_sensitive */))
+      << relative_path;
 
   HttpResponse default_response;
 
@@ -203,7 +214,7 @@ GURL HttpServer::RegisterFileResponse(
   default_response.set_content_type(content_type);
   default_response.set_code(response_code);
 
-  return RegisterDefaultResponse(relative_path, default_response);
+  RegisterDefaultResponse(relative_path, default_response);
 }
 
 void HttpServer::DidAccept(net::StreamListenSocket* server,

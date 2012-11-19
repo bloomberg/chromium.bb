@@ -75,9 +75,18 @@ class HttpServer : private net::StreamListenSocket::Delegate {
     return listen_socket_.get() != NULL;
   }
 
-  // Provides URL to the server which is useful when general purpose provider
-  // is registered.
-  GURL GetBaseURL();
+  // Returns the base URL to the server, which looks like
+  // http://127.0.0.1:<port>/, where <port> is the actual port number used by
+  // the server.
+  GURL GetBaseURL() const;
+
+  // Returns a URL to the server based on the given relative URL, which
+  // should start with '/'. For example: GetURL("/path?query=foo") =>
+  // http://127.0.0.1:<port>/path?query=foo.
+  GURL GetURL(const std::string& relative_url) const;
+
+  // Returns the port number used by the server.
+  int port() const { return port_; }
 
   // The most general purpose method. Any request processing can be added using
   // this method. Takes ownership of the object. The |callback| is called
@@ -85,21 +94,21 @@ class HttpServer : private net::StreamListenSocket::Delegate {
   void RegisterRequestHandler(const HandleRequestCallback& callback);
 
   // Used to provide the same predefined response for the requests matching
-  // the |relative_path|. Should be used if any custom data, such as additional
-  // headers should be send from the server.
-  GURL RegisterDefaultResponse(
+  // the |relative_path|, which should start with '/'. Should be used if any
+  // custom data, such as additional headers should be sent from the server.
+  void RegisterDefaultResponse(
       const std::string& relative_path,
       const HttpResponse& default_response);
 
   // Registers a simple text response.
-  GURL RegisterTextResponse(
+  void RegisterTextResponse(
       const std::string& relative_path,
       const std::string& content,
       const std::string& content_type,
       const ResponseCode response_code);
 
   // Registers a simple file response. The file is loaded into memory.
-  GURL RegisterFileResponse(
+  void RegisterFileResponse(
       const std::string& relative_path,
       const FilePath& file_path,
       const std::string& content_type,
