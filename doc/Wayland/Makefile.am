@@ -37,13 +37,13 @@ en-US/ProtocolInterfaces.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/proto
 # the output methods.
 en-US/WaylandClientAPI.xml: $(top_builddir)/doc/doxygen/xml/index.xml $(srcdir)/doxygen-to-publican.xsl
 	$(AM_V_GEN)$(MKDIR_P) en-US/images
-	$(AM_V_GEN)mv $(top_srcdir)/doc/doxygen/xml/wayland-client_8h.xml \
-		$(top_srcdir)/doc/doxygen/
-	$(AM_V_GEN)$(XSLTPROC) $(top_srcdir)/doc/doxygen/xml/combine.xslt \
-		$(top_srcdir)/doc/doxygen/xml/index.xml > \
-		$(top_srcdir)/doc/doxygen/xml/clientAPI.xml
-	$(AM_V_GEN)mv $(top_srcdir)/doc/doxygen/wayland-client_8h.xml \
-		$(top_srcdir)/doc/doxygen/xml
+	$(AM_V_GEN)mv $(top_builddir)/doc/doxygen/xml/wayland-client_8h.xml \
+		$(top_builddir)/doc/doxygen/
+	$(AM_V_GEN)$(XSLTPROC) $(top_builddir)/doc/doxygen/xml/combine.xslt \
+		$(top_builddir)/doc/doxygen/xml/index.xml > \
+		$(top_builddir)/doc/doxygen/xml/clientAPI.xml
+	$(AM_V_GEN)mv $(top_builddir)/doc/doxygen/wayland-client_8h.xml \
+		$(top_builddir)/doc/doxygen/xml
 	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/doxygen-to-publican.xsl \
 		$(top_builddir)/doc/doxygen/xml/clientAPI.xml > en-US/WaylandClientAPI.xml
 
