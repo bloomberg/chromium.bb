@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/eula_screen.h"
 
 #include "base/logging.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
@@ -51,7 +52,9 @@ GURL EulaScreen::GetOemEulaUrl() const {
   const StartupCustomizationDocument* customization =
       StartupCustomizationDocument::GetInstance();
   if (customization->IsReady()) {
-    std::string locale = customization->initial_locale();
+    // Previously we're using "initial locale" that device initially
+    // booted with out-of-box. http://crbug.com/145142
+    std::string locale = g_browser_process->GetApplicationLocale();
     std::string eula_page = customization->GetEULAPage(locale);
     if (!eula_page.empty())
       return GURL(eula_page);

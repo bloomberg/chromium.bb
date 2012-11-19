@@ -77,7 +77,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #endif
 
@@ -159,7 +158,8 @@ class ChromeOSTermsHandler
     : source_(source),
       path_(path),
       request_id_(request_id),
-      locale_(chromeos::WizardController::GetInitialLocale()) {
+      // Previously we were using "initial locale" http://crbug.com/145142
+      locale_(g_browser_process->GetApplicationLocale()) {
   }
 
   ~ChromeOSTermsHandler() {}

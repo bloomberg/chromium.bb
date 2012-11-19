@@ -165,6 +165,10 @@ void NetworkScreenHandler::HandleOnLanguageChanged(const ListValue* args) {
   if (!args->GetString(0, &locale))
     NOTREACHED();
 
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
+  if (app_locale == locale)
+    return;
+
   // TODO(altimofeev): make language change async.
   LanguageSwitchMenu::SwitchLanguageAndEnableKeyboardLayouts(locale);
 

@@ -67,6 +67,16 @@ cr.define('oobe', function() {
       buttons.push(acceptButton);
 
       return buttons;
+    },
+
+    /**
+     * Updates localized content of the screen that is not updated via template.
+     */
+    updateLocalizedContent: function() {
+      if ($('cros-eula-frame').src != '')
+        $('cros-eula-frame').src = $('cros-eula-frame').src;
+      if ($('oem-eula-frame').src != '')
+        $('oem-eula-frame').src = $('oem-eula-frame').src;
     }
   };
 
