@@ -63,7 +63,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
 
  private:
-  typedef std::map<AutofillFieldType, views::Textfield*> TextfieldMap;
+  typedef std::map<const DetailInput*, views::Textfield*> TextfieldMap;
 
   // A convenience struct for holding pointers to views within each detail
   // section. None of the member pointers are owned.
@@ -77,7 +77,7 @@ class AutofillDialogViews : public AutofillDialogView,
     views::Combobox* suggested_input;
     // The view that allows manual input.
     views::View* manual_input;
-    // The textfields in |manual_input|, tracked by their AutofillFieldType.
+    // The textfields in |manual_input|, tracked by their DetailInput.
     TextfieldMap textfields;
   };
 
@@ -86,17 +86,17 @@ class AutofillDialogViews : public AutofillDialogView,
   // Creates and returns a view that holds all detail sections.
   views::View* CreateDetailsContainer();
 
-  // Creates a detail section (Shipping, Billing, etc.) with the given label,
+  // Creates a detail section (Shipping, Email, etc.) with the given label,
   // inputs View, and suggestion model. Relevant pointers are stored in |group|.
-  void CreateDetailsSection(const string16& label,
-                            views::View* inputs,
-                            ui::ComboboxModel* model,
-                            DetailsGroup* group);
+  void CreateDetailsSection(DialogSection section);
 
-  // These functions create the views that hold inputs for the section.
-  views::View* CreateEmailInputs();
-  views::View* CreateBillingInputs();
-  views::View* CreateShippingInputs();
+  // Like CreateDetailsSection, but creates the combined billing/cc section,
+  // which is somewhat more complicated than the others.
+  void CreateBillingSection();
+
+  // Creates the view that holds controls for inputing or selecting data for
+  // a given section.
+  views::View* CreateInputsContainer(DialogSection section);
 
   // Creates a grid of textfield views for the given section, and stores them
   // in the appropriate DetailsGroup. The top level View in the hierarchy is
@@ -124,6 +124,9 @@ class AutofillDialogViews : public AutofillDialogView,
   views::View* contents_;
 
   DetailsGroup email_;
+  // The credit card and billing sections are combined, so cc_.container is
+  // not used.
+  DetailsGroup cc_;
   DetailsGroup billing_;
   DetailsGroup shipping_;
 

@@ -180,8 +180,6 @@
         'browser/ui/aura/tabs/dock_info_aurax11.cc',
         'browser/ui/autofill/autofill_dialog_controller.cc',
         'browser/ui/autofill/autofill_dialog_controller.h',
-        'browser/ui/autofill/autofill_dialog_template.cc',
-        'browser/ui/autofill/autofill_dialog_template.h',
         'browser/ui/autofill/autofill_dialog_view.cc',
         'browser/ui/autofill/autofill_dialog_view.h',
         'browser/ui/autofill/tab_autofill_manager_delegate.cc',
