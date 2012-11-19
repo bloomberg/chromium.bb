@@ -104,7 +104,8 @@ TEST_F(DisplayControllerShutdownTest, MAYBE_Shutdown) {
   UpdateDisplay("444x333, 200x200");
 }
 
-TEST_F(DisplayControllerTest, MAYBE_SecondaryDisplayLayout) {
+// Flaky - crbug.com/161857
+TEST_F(DisplayControllerTest, DISABLED_SecondaryDisplayLayout) {
   TestObserver observer;
   UpdateDisplay("500x500,400x400");
   EXPECT_EQ(2, observer.CountAndReset());  // resize and add
