@@ -1789,6 +1789,8 @@ void Browser::SetTabContentBlocked(content::WebContents* web_contents,
     return;
   }
   tab_strip_model_->SetTabBlocked(index, blocked);
+  command_controller_->PrintingStateChanged();
+  command_controller_->FullscreenStateChanged();
   if (!blocked && tab_strip_model_->GetActiveWebContents() == web_contents)
     web_contents->Focus();
 }

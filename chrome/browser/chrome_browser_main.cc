@@ -822,24 +822,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   g_set_application_name(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str());
 #endif
 
-#if !defined(OS_ANDROID)
-  if (is_first_run_) {
-    first_run::ProcessMasterPreferencesResult pmp_result =
-        first_run::ProcessMasterPreferences(user_data_dir_,
-                                            master_prefs_.get());
-    if (pmp_result == first_run::EULA_EXIT_NOW)
-      return chrome::RESULT_CODE_EULA_REFUSED;
-
-    first_run_ui_bypass_ = (pmp_result == first_run::SKIP_FIRST_RUN);
-
-    AddFirstRunNewTabs(browser_creator_.get(), master_prefs_->new_tabs);
-  }
-#endif
-
-#if defined(OS_CHROMEOS)
-  first_run_ui_bypass_ = true;
-#endif
-
   // Android does first run in Java instead of native.
 #if !defined(OS_ANDROID)
   // On first run, we need to process the predictor preferences before the
