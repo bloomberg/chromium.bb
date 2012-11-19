@@ -27,17 +27,6 @@ ChromotingHostContext::ChromotingHostContext(
 ChromotingHostContext::~ChromotingHostContext() {
 }
 
-void ChromotingHostContext::ReleaseTaskRunners() {
-  url_request_context_getter_ = NULL;
-  audio_task_runner_ = NULL;
-  video_capture_task_runner_ = NULL;
-  video_encode_task_runner_ = NULL;
-  file_task_runner_ = NULL;
-  input_task_runner_ = NULL;
-  network_task_runner_ = NULL;
-  ui_task_runner_ = NULL;
-}
-
 bool ChromotingHostContext::Start() {
   // Start all the threads.
   base::Thread::Options io_thread_options(MessageLoop::TYPE_IO, 0);

@@ -30,8 +30,6 @@ class ChromotingHostContext {
       scoped_refptr<AutoThreadTaskRunner> ui_task_runner);
   virtual ~ChromotingHostContext();
 
-  void ReleaseTaskRunners();
-
   // TODO(ajwong): Move the Start method out of this class. Then
   // create a static factory for construction, and destruction.  We
   // should be able to remove the need for virtual functions below
