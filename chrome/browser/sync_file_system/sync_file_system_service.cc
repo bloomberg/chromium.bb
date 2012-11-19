@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
+#include "chrome/browser/sync_file_system/sync_event_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -104,6 +105,22 @@ void VerifyFileSystemURLSetCallback(
   callback.Run(status, urls);
 }
 
+SyncEventObserver::SyncServiceState RemoteStateToSyncServiceState(
+    RemoteServiceState state) {
+  switch (state) {
+    case REMOTE_SERVICE_OK:
+      return SyncEventObserver::SYNC_SERVICE_RUNNING;
+    case REMOTE_SERVICE_TEMPORARY_UNAVAILABLE:
+      return SyncEventObserver::SYNC_SERVICE_TEMPORARY_UNAVAILABLE;
+    case REMOTE_SERVICE_AUTHENTICATION_REQUIRED:
+      return SyncEventObserver::SYNC_SERVICE_AUTHENTICATION_REQUIRED;
+    case REMOTE_SERVICE_DISABLED:
+      return SyncEventObserver::SYNC_SERVICE_DISABLED;
+  }
+  NOTREACHED();
+  return SyncEventObserver::SYNC_SERVICE_DISABLED;
+}
+
 }  // namespace
 
 void SyncFileSystemService::Shutdown() {
@@ -120,6 +137,8 @@ void SyncFileSystemService::Shutdown() {
 SyncFileSystemService::~SyncFileSystemService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!profile_);
+  STLDeleteContainerPairSecondPointers(observer_map_.begin(),
+                                       observer_map_.end());
 }
 
 void SyncFileSystemService::InitializeForApp(
@@ -137,14 +156,24 @@ void SyncFileSystemService::InitializeForApp(
     return;
   }
 
+  if (ContainsKey(observer_map_, app_origin)) {
+    FOR_EACH_OBSERVER(
+        SyncEventObserver, *observer_map_[app_origin],
+        OnSyncStateUpdated(SyncEventObserver::SYNC_SERVICE_INITIALIZING,
+                           "Registering the application"));
+  }
+
   scoped_refptr<SharedCallbackRunner> callback_runner(
       new SharedCallbackRunner(callback));
+
   local_file_service_->MaybeInitializeFileSystemContext(
       app_origin, service_name, file_system_context,
       callback_runner->CreateCallback());
-
   remote_file_service_->RegisterOriginForTrackingChanges(
-      app_origin, callback_runner->CreateCallback());
+      app_origin,
+      base::Bind(&SyncFileSystemService::DidRegisterOrigin,
+                 AsWeakPtr(), app_origin,
+                 callback_runner->CreateCallback()));
 }
 
 void SyncFileSystemService::GetConflictFiles(
@@ -199,6 +228,22 @@ void SyncFileSystemService::GetConflictFileInfo(
       url, callback_runner->CreateAssignAndRunCallback(remote_metadata));
 }
 
+void SyncFileSystemService::AddSyncEventObserver(
+    const GURL& app_origin,
+    SyncEventObserver* observer) {
+  if (!ContainsKey(observer_map_, app_origin))
+    observer_map_[app_origin] = new EventObserverList;
+  observer_map_[app_origin]->AddObserver(observer);
+}
+
+void SyncFileSystemService::RemoveSyncEventObserver(
+    const GURL& app_origin,
+    SyncEventObserver* observer) {
+  if (!ContainsKey(observer_map_, app_origin))
+    return;
+  observer_map_[app_origin]->RemoveObserver(observer);
+}
+
 void SyncFileSystemService::OnLocalChangeAvailable(int64 pending_changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(pending_changes, 0);
@@ -209,6 +254,18 @@ void SyncFileSystemService::OnRemoteChangeAvailable(int64 pending_changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(pending_changes, 0);
   pending_remote_changes_ = pending_changes;
+}
+
+void SyncFileSystemService::OnRemoteServiceStateUpdated(
+    RemoteServiceState state,
+    const std::string& description) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  for (ObserverMap::iterator iter = observer_map_.begin();
+       iter != observer_map_.end(); ++iter) {
+    FOR_EACH_OBSERVER(SyncEventObserver, *iter->second,
+                      OnSyncStateUpdated(RemoteStateToSyncServiceState(state),
+                                         description));
+  }
 }
 
 SyncFileSystemService::SyncFileSystemService(Profile* profile)
@@ -243,6 +300,22 @@ void SyncFileSystemService::DidGetConflictFileInfo(
   info.local_metadata = *local_metadata;
   info.remote_metadata = *remote_metadata;
   callback.Run(status, info);
+}
+
+void SyncFileSystemService::DidRegisterOrigin(
+    const GURL& app_origin,
+    const fileapi::SyncStatusCallback& callback,
+    fileapi::SyncStatusCode status) {
+  if (status == fileapi::SYNC_STATUS_AUTHENTICATION_FAILED ||
+      status == fileapi::SYNC_STATUS_RETRY ||
+      status == fileapi::SYNC_STATUS_NETWORK_ERROR) {
+    // We're having temporary network errors or authentication errors.
+    // We're not yet sure if they're resolvable, but queue them up so that
+    // we can retry.
+    pending_register_origins_.insert(app_origin);
+    status = fileapi::SYNC_STATUS_OK;
+  }
+  callback.Run(status);
 }
 
 // SyncFileSystemServiceFactory -----------------------------------------------

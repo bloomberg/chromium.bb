@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
@@ -43,6 +44,13 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
                void(const fileapi::FileSystemURL& url,
                     const fileapi::SyncFileMetadataCallback& callback));
 
+  // Send notifications to the observers.
+  // Can be used in the mock implementation.
+  void NotifyRemoteChangeAvailable(int64 pending_changes);
+  void NotifyRemoteServiceStateUpdated(
+      RemoteServiceState state,
+      const std::string& description);
+
   // Sets a mock local change processor. The value is returned by
   // the default action for GetLocalChangeProcessor.
   void set_local_change_processor(
@@ -68,6 +76,8 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   typedef std::map<fileapi::FileSystemURL, fileapi::SyncFileMetadata,
                    fileapi::FileSystemURL::Comparator> FileMetadataMap;
 
+  void AddObserverStub(Observer* observer);
+  void RemoveObserverStub(Observer* observer);
   void RegisterOriginForTrackingChangesStub(
       const GURL& origin,
       const fileapi::SyncStatusCallback& callback);
@@ -88,6 +98,8 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
 
   OriginToURLSetMap conflict_file_urls_;
   FileMetadataMap conflict_file_metadata_;
+
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRemoteFileSyncService);
 };

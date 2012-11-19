@@ -18,6 +18,12 @@ namespace sync_file_system {
 
 MockRemoteFileSyncService::MockRemoteFileSyncService() {
   typedef MockRemoteFileSyncService self;
+  ON_CALL(*this, AddObserver(_))
+      .WillByDefault(Invoke(this, &self::AddObserverStub));
+  ON_CALL(*this, RemoveObserver(_))
+      .WillByDefault(Invoke(this, &self::RemoveObserverStub));
+  ON_CALL(*this, GetLocalChangeProcessor())
+      .WillByDefault(Return(local_change_processor_.get()));
   ON_CALL(*this, RegisterOriginForTrackingChanges(_, _))
       .WillByDefault(Invoke(this, &self::RegisterOriginForTrackingChangesStub));
   ON_CALL(*this, UnregisterOriginForTrackingChanges(_, _))
@@ -34,6 +40,27 @@ MockRemoteFileSyncService::MockRemoteFileSyncService() {
 }
 
 MockRemoteFileSyncService::~MockRemoteFileSyncService() {
+}
+
+void MockRemoteFileSyncService::NotifyRemoteChangeAvailable(
+    int64 pending_changes) {
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnRemoteChangeAvailable(pending_changes));
+}
+
+void MockRemoteFileSyncService::NotifyRemoteServiceStateUpdated(
+    RemoteServiceState state,
+    const std::string& description) {
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnRemoteServiceStateUpdated(state, description));
+}
+
+void MockRemoteFileSyncService::AddObserverStub(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MockRemoteFileSyncService::RemoveObserverStub(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void MockRemoteFileSyncService::RegisterOriginForTrackingChangesStub(

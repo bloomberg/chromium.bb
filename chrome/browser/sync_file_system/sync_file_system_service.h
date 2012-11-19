@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
@@ -25,6 +26,8 @@ class FileSystemContext;
 }
 
 namespace sync_file_system {
+
+class SyncEventObserver;
 
 class SyncFileSystemService
     : public ProfileKeyedService,
@@ -54,6 +57,11 @@ class SyncFileSystemService
       const fileapi::FileSystemURL& url,
       const fileapi::ConflictFileInfoCallback& callback);
 
+  void AddSyncEventObserver(const GURL& app_origin,
+                            SyncEventObserver* observer);
+  void RemoveSyncEventObserver(const GURL& app_origin,
+                               SyncEventObserver* observer);
+
  private:
   friend class SyncFileSystemServiceFactory;
   friend class SyncFileSystemServiceTest;
@@ -71,11 +79,18 @@ class SyncFileSystemService
                               const fileapi::SyncFileMetadata* remote_metadata,
                               fileapi::SyncStatusCode status);
 
+  void DidRegisterOrigin(const GURL& app_origin,
+                         const fileapi::SyncStatusCallback& callback,
+                         fileapi::SyncStatusCode status);
+
   // RemoteFileSyncService::Observer overrides.
   virtual void OnLocalChangeAvailable(int64 pending_changes) OVERRIDE;
 
   // LocalFileSyncService::Observer overrides.
   virtual void OnRemoteChangeAvailable(int64 pending_changes) OVERRIDE;
+  virtual void OnRemoteServiceStateUpdated(
+      RemoteServiceState state,
+      const std::string& description) OVERRIDE;
 
   Profile* profile_;
 
@@ -85,7 +100,14 @@ class SyncFileSystemService
   scoped_ptr<LocalFileSyncService> local_file_service_;
   scoped_ptr<RemoteFileSyncService> remote_file_service_;
 
+  // TODO(kinuko): clean up this.
   std::set<GURL> initialized_app_origins_;
+
+  std::set<GURL> pending_register_origins_;
+
+  typedef ObserverList<SyncEventObserver> EventObserverList;
+  typedef std::map<GURL, EventObserverList*> ObserverMap;
+  ObserverMap observer_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemService);
 };
