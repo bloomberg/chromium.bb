@@ -8,7 +8,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/public/browser/android/compositor.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
@@ -26,8 +28,10 @@ class GraphicsContext;
 // -----------------------------------------------------------------------------
 // Browser-side compositor that manages a tree of content and UI layers.
 // -----------------------------------------------------------------------------
-class CONTENT_EXPORT CompositorImpl : public Compositor,
-                                      public WebKit::WebLayerTreeViewClient {
+class CONTENT_EXPORT CompositorImpl
+    : public Compositor,
+      public WebKit::WebLayerTreeViewClient,
+      public WebGraphicsContext3DSwapBuffersClient {
  public:
   explicit CompositorImpl(Compositor::Client* client);
   virtual ~CompositorImpl();
@@ -65,6 +69,11 @@ class CONTENT_EXPORT CompositorImpl : public Compositor,
   virtual void didCompleteSwapBuffers() OVERRIDE;
   virtual void scheduleComposite() OVERRIDE;
 
+  // WebGraphicsContext3DSwapBuffersClient implementation.
+  virtual void OnViewContextSwapBuffersPosted() OVERRIDE;
+  virtual void OnViewContextSwapBuffersComplete() OVERRIDE;
+  virtual void OnViewContextSwapBuffersAborted() OVERRIDE;
+
  private:
   WebKit::WebGLId BuildBasicTexture();
   WebKit::WGC3Denum GetGLFormatForBitmap(gfx::JavaBitmap& bitmap);
@@ -79,6 +88,7 @@ class CONTENT_EXPORT CompositorImpl : public Compositor,
   int surface_id_;
 
   Compositor::Client* client_;
+  base::WeakPtrFactory<CompositorImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorImpl);
 };

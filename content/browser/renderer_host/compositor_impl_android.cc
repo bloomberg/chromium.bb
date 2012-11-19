@@ -128,7 +128,8 @@ bool CompositorImpl::UsesDirectGL() {
 CompositorImpl::CompositorImpl(Compositor::Client* client)
     : window_(NULL),
       surface_id_(0),
-      client_(client) {
+      client_(client),
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(client);
   root_layer_.reset(g_compositor_support.Get().createLayer());
 }
@@ -285,12 +286,11 @@ WebKit::WebCompositorOutputSurface* CompositorImpl::createOutputSurface() {
     attrs.noAutomaticFlushes = true;
     GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
     GURL url("chrome://gpu/Compositor::createContext3D");
-    base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
         new WebGraphicsContext3DCommandBufferImpl(surface_id_,
                                                   url,
                                                   factory,
-                                                  swap_client));
+                                                  weak_factory_.GetWeakPtr()));
     if (!context->Initialize(
         attrs,
         false,
@@ -317,6 +317,21 @@ void CompositorImpl::didCompleteSwapBuffers() {
 
 void CompositorImpl::scheduleComposite() {
   client_->ScheduleComposite();
+}
+
+void CompositorImpl::OnViewContextSwapBuffersPosted() {
+  TRACE_EVENT0("compositor", "CompositorImpl::OnViewContextSwapBuffersPosted");
+}
+
+void CompositorImpl::OnViewContextSwapBuffersComplete() {
+  TRACE_EVENT0("compositor",
+               "CompositorImpl::OnViewContextSwapBuffersComplete");
+  client_->OnSwapBuffersCompleted();
+}
+
+void CompositorImpl::OnViewContextSwapBuffersAborted() {
+  TRACE_EVENT0("compositor", "CompositorImpl::OnViewContextSwapBuffersAborted");
+  client_->OnSwapBuffersCompleted();
 }
 
 WebKit::WebGLId CompositorImpl::BuildBasicTexture() {
