@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/platform_file.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
@@ -19,6 +20,9 @@ class FilePath;
 class Profile;
 
 namespace drive {
+
+class PlatformFileInfoProto;
+
 namespace util {
 
 // Path constants.
@@ -133,6 +137,13 @@ void EnsureDirectoryExists(Profile* profile,
 // Converts GData error code into file platform error code.
 DriveFileError GDataToDriveFileError(google_apis::GDataErrorCode status);
 
+// Converts the proto representation to the platform file.
+void ConvertProtoToPlatformFileInfo(const PlatformFileInfoProto& proto,
+                                    base::PlatformFileInfo* file_info);
+
+// Converts the platform file info to the proto representation.
+void ConvertPlatformFileInfoToProto(const base::PlatformFileInfo& file_info,
+                                    PlatformFileInfoProto* proto);
 }  // namespace util
 }  // namespace drive
 

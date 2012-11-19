@@ -47,16 +47,6 @@ class DriveEntry {
   // Serialize/Parse to/from string via proto classes.
   void SerializeToString(std::string* serialized_proto) const;
 
-  // Converts the proto representation to the platform file.
-  static void ConvertProtoToPlatformFileInfo(
-      const PlatformFileInfoProto& proto,
-      base::PlatformFileInfo* file_info);
-
-  // Converts the platform file info to the proto representation.
-  static void ConvertPlatformFileInfoToProto(
-      const base::PlatformFileInfo& file_info,
-      PlatformFileInfoProto* proto);
-
   // Converts to/from proto. Only handles the common part (i.e. does not
   // touch |file_specific_info|).
   void FromProto(const DriveEntryProto& proto);

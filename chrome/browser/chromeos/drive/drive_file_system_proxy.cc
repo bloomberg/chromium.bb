@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
-#include "chrome/browser/chromeos/drive/drive_files.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -153,7 +153,7 @@ void DidCloseFileForTruncate(
 base::FileUtilProxy::Entry DriveEntryProtoToFileUtilProxyEntry(
     const DriveEntryProto& proto) {
   base::PlatformFileInfo file_info;
-  DriveEntry::ConvertProtoToPlatformFileInfo(proto.file_info(), &file_info);
+  util::ConvertProtoToPlatformFileInfo(proto.file_info(), &file_info);
 
   base::FileUtilProxy::Entry entry;
   entry.name = proto.base_name();
@@ -586,9 +586,7 @@ void DriveFileSystemProxy::OnGetEntryInfoByPath(
   }
 
   base::PlatformFileInfo file_info;
-  DriveEntry::ConvertProtoToPlatformFileInfo(
-      entry_proto->file_info(),
-      &file_info);
+  util::ConvertProtoToPlatformFileInfo(entry_proto->file_info(), &file_info);
 
   file_system_->GetFileByPath(entry_path,
                               base::Bind(&CallSnapshotFileCallback,
@@ -658,9 +656,7 @@ void DriveFileSystemProxy::OnGetMetadata(
   DCHECK(entry_proto.get());
 
   base::PlatformFileInfo file_info;
-  DriveEntry::ConvertProtoToPlatformFileInfo(
-      entry_proto->file_info(),
-      &file_info);
+  util::ConvertProtoToPlatformFileInfo(entry_proto->file_info(), &file_info);
 
   callback.Run(base::PLATFORM_FILE_OK, file_info, file_path);
 }

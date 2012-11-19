@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/drive/drive_feed_processor.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
-#include "chrome/browser/chromeos/drive/drive_files.h"
 #include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
@@ -2069,11 +2068,10 @@ void DriveFileSystem::SetHideHostedDocuments(bool hide) {
     return;
 
   hide_hosted_docs_ = hide;
-  const FilePath root_path = resource_metadata_->root()->GetFilePath();
 
   // Kick off directory refresh when this setting changes.
   FOR_EACH_OBSERVER(DriveFileSystemObserver, observers_,
-                    OnDirectoryChanged(root_path));
+                    OnDirectoryChanged(FilePath(kDriveRootDirectory)));
 }
 
 //============= DriveFileSystem: internal helper functions =====================
@@ -2410,7 +2408,7 @@ void DriveFileSystem::CheckLocalModificationAndRunAfterGetFileInfo(
   }
 
   PlatformFileInfoProto entry_file_info;
-  DriveEntry::ConvertPlatformFileInfoToProto(*file_info, &entry_file_info);
+  util::ConvertPlatformFileInfoToProto(*file_info, &entry_file_info);
   *entry_proto->mutable_file_info() = entry_file_info;
   callback.Run(DRIVE_FILE_OK, entry_proto.Pass());
 }

@@ -441,5 +441,28 @@ DriveFileError GDataToDriveFileError(google_apis::GDataErrorCode status) {
   }
 }
 
+void ConvertProtoToPlatformFileInfo(const PlatformFileInfoProto& proto,
+                                    base::PlatformFileInfo* file_info) {
+  file_info->size = proto.size();
+  file_info->is_directory = proto.is_directory();
+  file_info->is_symbolic_link = proto.is_symbolic_link();
+  file_info->last_modified = base::Time::FromInternalValue(
+      proto.last_modified());
+  file_info->last_accessed = base::Time::FromInternalValue(
+      proto.last_accessed());
+  file_info->creation_time = base::Time::FromInternalValue(
+      proto.creation_time());
+}
+
+void ConvertPlatformFileInfoToProto(const base::PlatformFileInfo& file_info,
+                                    PlatformFileInfoProto* proto) {
+  proto->set_size(file_info.size);
+  proto->set_is_directory(file_info.is_directory);
+  proto->set_is_symbolic_link(file_info.is_symbolic_link);
+  proto->set_last_modified(file_info.last_modified.ToInternalValue());
+  proto->set_last_accessed(file_info.last_accessed.ToInternalValue());
+  proto->set_creation_time(file_info.creation_time.ToInternalValue());
+}
+
 }  // namespace util
 }  // namespace drive
