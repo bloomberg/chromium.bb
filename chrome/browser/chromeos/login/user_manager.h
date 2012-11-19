@@ -10,7 +10,6 @@
 #include "ash/desktop_background/desktop_background_resources.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/ui/webui/options/chromeos/set_wallpaper_options_handler.h"
 
 class PrefService;
 
@@ -142,15 +141,6 @@ class UserManager {
   // Otherwise, returns |username| itself.
   virtual std::string GetUserDisplayEmail(
       const std::string& username) const = 0;
-
-  // Saves |type| and |index| chose by logged in user to Local State.
-  virtual void SaveLoggedInUserWallpaperProperties(User::WallpaperType type,
-                                                   int index) = 0;
-
-  // Updates custom wallpaper to selected layout and saves layout to Local
-  // State.
-  virtual void SetLoggedInUserCustomWallpaperLayout(
-      ash::WallpaperLayout layout) = 0;
 
   // Returns true if current user is an owner.
   virtual bool IsCurrentUserOwner() const = 0;

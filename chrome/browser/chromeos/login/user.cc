@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/user.h"
 
+#include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"

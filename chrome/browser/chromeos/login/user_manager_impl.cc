@@ -406,25 +406,6 @@ std::string UserManagerImpl::GetUserDisplayEmail(
   return user ? user->display_email() : username;
 }
 
-void UserManagerImpl::SetLoggedInUserCustomWallpaperLayout(
-    ash::WallpaperLayout layout) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // TODO(bshe): We current disabled the customized wallpaper feature for
-  // Ephemeral user. As we dont want to keep a copy of customized wallpaper in
-  // memory. Need a smarter way to solve this.
-  if (IsCurrentUserEphemeral())
-    return;
-  std::string username = logged_in_user_->email();
-  DCHECK(!username.empty());
-
-  std::string file_path = WallpaperManager::Get()->
-      GetWallpaperPathForUser(username, false).value();
-  SaveWallpaperToLocalState(username, file_path, layout, User::CUSTOMIZED);
-  // Load wallpaper from file.
-  WallpaperManager::Get()->SetUserWallpaper(username);
-}
-
 void UserManagerImpl::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
@@ -604,7 +585,6 @@ void UserManagerImpl::EnsureUsersLoaded() {
   }
 
   user_image_manager_->LoadUserImages(users_);
-  WallpaperManager::Get()->MigrateWallpaperData(users_);
 }
 
 void UserManagerImpl::RetrieveTrustedDevicePolicies() {
@@ -676,24 +656,6 @@ void UserManagerImpl::NotifyOnLogin() {
   // Indicate to DeviceSettingsService that the owner key may have become
   // available.
   DeviceSettingsService::Get()->SetUsername(logged_in_user_->email());
-}
-
-void UserManagerImpl::SaveLoggedInUserWallpaperProperties(
-    User::WallpaperType type, int index) {
-  // Ephemeral users can not save data to local state.
-  // We just cache the index in memory for them.
-  bool is_persistent = !IsCurrentUserEphemeral();
-  WallpaperManager::Get()->SetUserWallpaperProperties(
-      logged_in_user_->email(), type, index, is_persistent);
-}
-
-void UserManagerImpl::SaveWallpaperToLocalState(const std::string& username,
-    const std::string& wallpaper_path,
-    ash::WallpaperLayout layout,
-    User::WallpaperType type) {
-  // TODO(bshe): We probably need to save wallpaper_path instead of index.
-  WallpaperManager::Get()->SetUserWallpaperProperties(
-      username, type, layout, true);
 }
 
 void UserManagerImpl::UpdateOwnership(

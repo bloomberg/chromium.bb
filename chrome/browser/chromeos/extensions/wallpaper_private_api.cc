@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/image_decoder.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_fetcher.h"
@@ -367,8 +368,7 @@ void WallpaperSetCustomWallpaperFunction::OnWallpaperDecoded(
   // In the new wallpaper picker UI, we do not depend on WallpaperDelegate
   // to refresh thumbnail. Uses a null delegate here.
   chromeos::WallpaperManager::Get()->SetCustomWallpaper(
-      email_, layout_, chromeos::User::CUSTOMIZED,
-      base::WeakPtr<chromeos::WallpaperDelegate>(), image);
+      email_, layout_, chromeos::User::CUSTOMIZED, image);
   wallpaper_decoder_ = NULL;
   SendResponse(true);
 }

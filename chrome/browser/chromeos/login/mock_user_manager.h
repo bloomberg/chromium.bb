@@ -38,11 +38,7 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD1(GetUserDisplayName, string16(const std::string&));
   MOCK_METHOD2(SaveUserDisplayEmail, void(const std::string&,
                                           const std::string&));
-  MOCK_METHOD2(SaveLoggedInUserWallpaperProperties, void(User::WallpaperType,
-                                                         int));
   MOCK_CONST_METHOD1(GetUserDisplayEmail, std::string(const std::string&));
-  MOCK_METHOD1(SetLoggedInUserCustomWallpaperLayout,void(
-      ash::WallpaperLayout));
   MOCK_CONST_METHOD0(IsCurrentUserOwner, bool(void));
   MOCK_CONST_METHOD0(IsCurrentUserNew, bool(void));
   MOCK_CONST_METHOD0(IsCurrentUserEphemeral, bool(void));

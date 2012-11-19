@@ -77,11 +77,6 @@
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/stats_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
-#include "chrome/browser/ui/webui/options/chromeos/wallpaper_thumbnail_source.h"
-#endif
-
-#if defined(OS_CHROMEOS) && defined(USE_ASH)
-#include "chrome/browser/ui/webui/options/chromeos/set_wallpaper_options_handler.h"
 #endif
 
 #if defined(USE_NSS)
@@ -292,11 +287,6 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::StatsOptionsHandler());
 #endif
-#if defined(OS_CHROMEOS) && defined(USE_ASH)
-  AddOptionsPageUIHandler(
-      localized_strings,
-      new chromeos::options::SetWallpaperOptionsHandler());
-#endif
 #if defined(USE_NSS)
   AddOptionsPageUIHandler(localized_strings, new CertificateManagerHandler());
 #endif
@@ -319,11 +309,6 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   chromeos::options::UserImageSource* user_image_source =
       new chromeos::options::UserImageSource();
   ChromeURLDataManager::AddDataSource(profile, user_image_source);
-
-  // Set up the chrome://wallpaper-thumb/ source.
-  chromeos::options::WallpaperThumbnailSource* wallpaper_thumbnail_source =
-      new chromeos::options::WallpaperThumbnailSource();
-  ChromeURLDataManager::AddDataSource(profile, wallpaper_thumbnail_source);
 
   pointer_device_observer_.reset(
       new chromeos::system::PointerDeviceObserver());
