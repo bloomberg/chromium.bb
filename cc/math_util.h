@@ -9,6 +9,7 @@
 #include "cc/cc_export.h"
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/point3_f.h"
+#include "ui/gfx/transform.h"
 
 namespace WebKit {
 class WebTransformationMatrix;
@@ -69,6 +70,7 @@ class CC_EXPORT MathUtil {
 public:
     static const double PI_DOUBLE;
     static const float PI_FLOAT;
+    static const double EPSILON;
 
     static double Deg2Rad(double deg)  { return deg * PI_DOUBLE / 180; }
     static double Rad2Deg(double rad)  { return rad * 180 / PI_DOUBLE; }
@@ -115,7 +117,35 @@ public:
 
     // Projects the |source| vector onto |destination|. Neither vector is assumed to be normalized.
     static gfx::Vector2dF projectVector(gfx::Vector2dF source, gfx::Vector2dF destination);
+
+    // Temporary API to ease migration from WebKit::WebTransformationMatrix
+    // to gfx::Transform.
+    //
+    // TODO(shawnsingh, vollick) we should phase out as much as possible of
+    // these temporary functions, putting functionality into gfx::Transform.
+    static bool isInvertible(const gfx::Transform&);
+    static bool isBackFaceVisible(const gfx::Transform&);
+    static bool isIdentity(const gfx::Transform&);
+    static bool isIdentityOrTranslation(const gfx::Transform&);
+    static bool hasPerspective(const gfx::Transform&);
+    static void makeIdentity(gfx::Transform*);
+    static void rotateEulerAngles(gfx::Transform*, double eulerX, double eulerY, double eulerZ);
+    static void rotateAxisAngle(gfx::Transform*, double i, double j, double k, double degrees);
+    static gfx::Transform inverse(const gfx::Transform&);
+    static gfx::Transform to2dTransform(const gfx::Transform&);
+    // Note carefully: the args here are labeled as per Webcore indexing conventions.
+    static gfx::Transform createGfxTransform(double m11, double m12, double m13, double m14,
+                                             double m21, double m22, double m23, double m24,
+                                             double m31, double m32, double m33, double m34,
+                                             double m41, double m42, double m43, double m44);
+
+    static gfx::Transform createGfxTransform(double a, double b, double c,
+                                             double d, double e, double f);
 };
+
+// TODO(shawnsingh, vollick) this is a temporary home, should eventually
+// be phased out in favor of gfx::Transform API.
+gfx::Transform CC_EXPORT operator*(const gfx::Transform&, const gfx::Transform&);
 
 } // namespace cc
 

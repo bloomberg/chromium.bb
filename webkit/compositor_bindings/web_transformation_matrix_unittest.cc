@@ -31,7 +31,7 @@
     EXPECT_FLOAT_EQ((a), (matrix).m14());       \
     EXPECT_FLOAT_EQ((b), (matrix).m24());       \
     EXPECT_FLOAT_EQ((c), (matrix).m34());       \
-    EXPECT_FLOAT_EQ((d), (matrix).m44());       \
+    EXPECT_FLOAT_EQ((d), (matrix).m44());
 
 // Checking float values for equality close to zero is not robust using EXPECT_FLOAT_EQ
 // (see gtest documentation). So, to verify rotation matrices, we must use a looser
@@ -632,7 +632,6 @@ TEST(WebTransformationMatrixTest, verifyRotateAxisAngle3dForArbitraryAxis)
     EXPECT_ROW4_EQ(0, 0, 0, 1, A);
 }
 
-// Test failing as of webkit 132872:132896. http://crbug.com/158553
 TEST(WebTransformationMatrixTest, verifyRotateAxisAngle3dForDegenerateAxis)
 {
     // Check rotation about a degenerate zero vector.

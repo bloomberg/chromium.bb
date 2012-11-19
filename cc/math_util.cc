@@ -20,6 +20,7 @@ namespace cc {
 
 const double MathUtil::PI_DOUBLE = 3.14159265358979323846;
 const float MathUtil::PI_FLOAT = 3.14159265358979323846f;
+const double MathUtil::EPSILON = 1e-9;
 
 static HomogeneousCoordinate projectHomogeneousPoint(const WebTransformationMatrix& transform, const gfx::PointF& p)
 {
@@ -393,6 +394,163 @@ gfx::Vector2dF MathUtil::projectVector(gfx::Vector2dF source, gfx::Vector2dF des
 {
     float projectedLength = gfx::DotProduct(source, destination) / destination.LengthSquared();
     return gfx::Vector2dF(projectedLength * destination.x(), projectedLength * destination.y());
+}
+
+bool MathUtil::isInvertible(const gfx::Transform& transform)
+{
+    const SkMatrix44& matrix = transform.matrix();
+    double determinant = matrix.determinant();
+    return abs(determinant) > EPSILON;
+}
+
+bool MathUtil::isBackFaceVisible(const gfx::Transform&)
+{
+    // TODO (shawnsingh): to be implemented in a follow up patch very soon.
+    NOTREACHED();
+    return false;
+}
+
+bool MathUtil::isIdentity(const gfx::Transform& transform)
+{
+    return transform.matrix().isIdentity();
+}
+
+bool MathUtil::isIdentityOrTranslation(const gfx::Transform& transform)
+{
+    const SkMatrix44& matrix = transform.matrix();
+
+    bool hasNoPerspective = !matrix.getDouble(3, 0) && !matrix.getDouble(3, 1) && !matrix.getDouble(3, 2) && (matrix.getDouble(3, 3) == 1);
+    bool hasNoRotationOrSkew = !matrix.getDouble(0, 1) && !matrix.getDouble(0, 2) && !matrix.getDouble(1, 0) &&
+        !matrix.getDouble(1, 2) && !matrix.getDouble(2, 0) && !matrix.getDouble(2, 1);
+    bool hasNoScale = matrix.getDouble(0, 0) == 1 && matrix.getDouble(1, 1) == 1 && matrix.getDouble(2, 2) == 1;
+
+    return hasNoPerspective && hasNoRotationOrSkew && hasNoScale;
+}
+
+bool MathUtil::hasPerspective(const gfx::Transform& transform)
+{
+    // Mathematically it is a bit too strict to expect the 4th element to be
+    // equal to 1. However, the only non-perspective case where this element
+    // becomes non-1 is when it was explicitly initialized. In that case it
+    // still causes us to have a nontrivial divide-by-w, so we count it as
+    // being perspective here.
+    const SkMatrix44& matrix = transform.matrix();
+    return matrix.getDouble(3, 0) || matrix.getDouble(3, 1) || matrix.getDouble(3, 2) || (matrix.getDouble(3, 3) != 1);
+}
+
+void MathUtil::makeIdentity(gfx::Transform* transform)
+{
+    transform->matrix().setIdentity();
+}
+
+void MathUtil::rotateEulerAngles(gfx::Transform* transform, double eulerX, double eulerY, double eulerZ)
+{
+    // TODO (shawnsingh): make this implementation faster and more accurate by
+    // hard-coding each matrix instead of calling rotateAxisAngle().
+    gfx::Transform rotationAboutX;
+    gfx::Transform rotationAboutY;
+    gfx::Transform rotationAboutZ;
+
+    MathUtil::rotateAxisAngle(&rotationAboutX, 1, 0, 0, eulerX);
+    MathUtil::rotateAxisAngle(&rotationAboutY, 0, 1, 0, eulerY);
+    MathUtil::rotateAxisAngle(&rotationAboutZ, 0, 0, 1, eulerZ);
+
+    gfx::Transform composite = rotationAboutZ * rotationAboutY * rotationAboutX;
+    transform->PreconcatTransform(composite);
+}
+
+void MathUtil::rotateAxisAngle(gfx::Transform* transform, double i, double j, double k, double degrees)
+{
+    // TODO (shawnsingh): fix gfx::Transform API to receive vector instead of
+    // point for the axis.
+    gfx::Point3F axis(i, j, k);
+    transform->PreconcatRotateAbout(axis, degrees);
+}
+
+gfx::Transform MathUtil::inverse(const gfx::Transform& transform)
+{
+    gfx::Transform result;
+    bool invertedSuccessfully = transform.GetInverse(&result);
+
+    if (invertedSuccessfully)
+        return result;
+
+    // If transform was un-invertible, then just return identity.
+    return gfx::Transform();
+}
+
+gfx::Transform MathUtil::to2dTransform(const gfx::Transform& transform)
+{
+    gfx::Transform result = transform;
+    SkMatrix44& matrix = result.matrix();
+    matrix.setDouble(0, 2, 0);
+    matrix.setDouble(1, 2, 0);
+    matrix.setDouble(2, 2, 1);
+    matrix.setDouble(3, 2, 0);
+
+    matrix.setDouble(2, 0, 0);
+    matrix.setDouble(2, 1, 0);
+    matrix.setDouble(2, 3, 0);
+
+    return result;
+}
+
+gfx::Transform MathUtil::createGfxTransform(double m11, double m12, double m13, double m14,
+                                            double m21, double m22, double m23, double m24,
+                                            double m31, double m32, double m33, double m34,
+                                            double m41, double m42, double m43, double m44)
+{
+    gfx::Transform result;
+    SkMatrix44& matrix = result.matrix();
+
+    // Initialize column 1
+    matrix.setDouble(0, 0, m11);
+    matrix.setDouble(1, 0, m12);
+    matrix.setDouble(2, 0, m13);
+    matrix.setDouble(3, 0, m14);
+
+    // Initialize column 2
+    matrix.setDouble(0, 1, m21);
+    matrix.setDouble(1, 1, m22);
+    matrix.setDouble(2, 1, m23);
+    matrix.setDouble(3, 1, m24);
+
+    // Initialize column 3
+    matrix.setDouble(0, 2, m31);
+    matrix.setDouble(1, 2, m32);
+    matrix.setDouble(2, 2, m33);
+    matrix.setDouble(3, 2, m34);
+
+    // Initialize column 4
+    matrix.setDouble(0, 3, m41);
+    matrix.setDouble(1, 3, m42);
+    matrix.setDouble(2, 3, m43);
+    matrix.setDouble(3, 3, m44);
+
+    return result;
+}
+
+gfx::Transform MathUtil::createGfxTransform(double a, double b, double c,
+                                            double d, double e, double f)
+{
+    gfx::Transform result;
+    SkMatrix44& matrix = result.matrix();
+    matrix.setDouble(0, 0, a);
+    matrix.setDouble(1, 0, b);
+    matrix.setDouble(0, 1, c);
+    matrix.setDouble(1, 1, d);
+    matrix.setDouble(0, 3, e);
+    matrix.setDouble(1, 3, f);
+
+    return result;
+}
+
+gfx::Transform operator*(const gfx::Transform& A, const gfx::Transform& B)
+{
+    // Compute A * B.
+    gfx::Transform result = A;
+    result.PreconcatTransform(B);
+    return result;
 }
 
 }  // namespace cc
