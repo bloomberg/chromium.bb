@@ -314,7 +314,7 @@ class GitWrapper(SCMWrapper):
       if not options.verbose:
         quiet = ['--quiet']
       self._Run(['fetch', 'origin', '--prune'] + quiet, options)
-      self._Run(['reset', '--hard', 'origin/master'] + quiet, options)
+      self._Run(['reset', '--hard', revision] + quiet, options)
       self.UpdateSubmoduleConfig()
       files = self._Capture(['ls-files']).splitlines()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
