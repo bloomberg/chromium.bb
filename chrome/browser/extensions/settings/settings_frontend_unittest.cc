@@ -30,6 +30,22 @@ namespace {
 // To save typing ValueStore::DEFAULTS everywhere.
 const ValueStore::WriteOptions DEFAULTS = ValueStore::DEFAULTS;
 
+// A SettingsStorageFactory which always returns NULL.
+class NullSettingsStorageFactory : public SettingsStorageFactory {
+ public:
+  // SettingsStorageFactory implementation.
+  virtual ValueStore* Create(const FilePath& base_path,
+                             const std::string& extension_id,
+                             std::string* error) OVERRIDE {
+    *error = "NullSettingsStorageFactory";
+    return NULL;
+  }
+
+ private:
+  // SettingsStorageFactory is refcounted.
+  virtual ~NullSettingsStorageFactory() {}
+};
+
 // Creates a kilobyte of data.
 scoped_ptr<Value> CreateKilobyte() {
   std::string kilobyte_string;
@@ -177,6 +193,36 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   // Leaving this commented out rather than disabling the whole test so that the
   // deletion code paths are at least exercised.
   //EXPECT_FALSE(file_util::PathExists(temp_dir_.path()));
+}
+
+TEST_F(ExtensionSettingsFrontendTest,
+    LeveldbCreationFailureFailsAllOperations) {
+  const StringValue bar("bar");
+  const std::string id = "ext";
+  profile_->GetMockExtensionService()->AddExtensionWithId(
+      id, Extension::TYPE_EXTENSION);
+
+  storage_factory_->Reset(new NullSettingsStorageFactory());
+
+  ValueStore* storage = util::GetStorage(id, frontend_.get());
+  ASSERT_TRUE(storage != NULL);
+
+  EXPECT_TRUE(storage->Get()->HasError());
+  EXPECT_TRUE(storage->Clear()->HasError());
+  EXPECT_TRUE(storage->Set(DEFAULTS, "foo", bar)->HasError());
+  EXPECT_TRUE(storage->Remove("foo")->HasError());
+
+  // For simplicity: just always fail those requests, even if the leveldb
+  // storage areas start working.
+  storage_factory_->Reset(new LeveldbSettingsStorageFactory());
+
+  storage = util::GetStorage(id, frontend_.get());
+  ASSERT_TRUE(storage != NULL);
+
+  EXPECT_TRUE(storage->Get()->HasError());
+  EXPECT_TRUE(storage->Clear()->HasError());
+  EXPECT_TRUE(storage->Set(DEFAULTS, "foo", bar)->HasError());
+  EXPECT_TRUE(storage->Remove("foo")->HasError());
 }
 
 #if defined(OS_WIN)

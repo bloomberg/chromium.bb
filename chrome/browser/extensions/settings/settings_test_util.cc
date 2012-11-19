@@ -159,9 +159,10 @@ void ScopedSettingsStorageFactory::Reset(
 
 ValueStore* ScopedSettingsStorageFactory::Create(
     const FilePath& base_path,
-    const std::string& extension_id) {
+    const std::string& extension_id,
+    std::string* error) {
   DCHECK(delegate_.get());
-  return delegate_->Create(base_path, extension_id);
+  return delegate_->Create(base_path, extension_id, error);
 }
 
 }  // namespace settings_test_util

@@ -11,8 +11,9 @@ namespace extensions {
 
 ValueStore* LeveldbSettingsStorageFactory::Create(
     const FilePath& base_path,
-    const std::string& extension_id) {
-  return new LeveldbValueStore(base_path.AppendASCII(extension_id));
+    const std::string& extension_id,
+    std::string* error) {
+  return LeveldbValueStore::Create(base_path.AppendASCII(extension_id), error);
 }
 
 }  // namespace extensions

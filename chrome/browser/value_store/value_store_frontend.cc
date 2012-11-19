@@ -4,6 +4,7 @@
 
 #include "chrome/browser/value_store/value_store_frontend.h"
 
+#include "chrome/browser/value_store/failing_value_store.h"
 #include "chrome/browser/value_store/leveldb_value_store.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -16,7 +17,10 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   void Init(const FilePath& db_path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     DCHECK(!storage_);
-    storage_ = new LeveldbValueStore(db_path);
+    std::string error;
+    storage_ = LeveldbValueStore::Create(db_path, &error);
+    if (!storage_)
+      storage_ = new FailingValueStore(error);
   }
 
   // This variant is useful for testing (using a mock ValueStore).

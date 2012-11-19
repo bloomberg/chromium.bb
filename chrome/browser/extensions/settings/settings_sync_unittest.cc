@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
 #include "chrome/browser/extensions/settings/settings_test_util.h"
 #include "chrome/browser/extensions/settings/syncable_settings_storage.h"
+#include "chrome/browser/value_store/failing_value_store.h"
 #include "chrome/browser/value_store/testing_value_store.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/api/sync_change_processor.h"
@@ -177,7 +178,8 @@ class TestingValueStoreFactory : public SettingsStorageFactory {
 
   // SettingsStorageFactory implementation.
   virtual ValueStore* Create(const FilePath& base_path,
-                             const std::string& extension_id) OVERRIDE {
+                             const std::string& extension_id,
+                             std::string* error) OVERRIDE {
     TestingValueStore* new_storage = new TestingValueStore();
     DCHECK(!created_.count(extension_id));
     created_[extension_id] = new_storage;

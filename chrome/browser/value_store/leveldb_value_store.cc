@@ -76,22 +76,48 @@ class ScopedSnapshot {
 
 }  // namespace
 
-LeveldbValueStore::LeveldbValueStore(const FilePath& db_path)
-    : db_path_(db_path) {
+// static
+LeveldbValueStore* LeveldbValueStore::Create(const FilePath& path,
+                                             std::string* error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  std::string error = EnsureDbIsOpen();
-  if (!error.empty())
-    LOG(WARNING) << error;
+#if defined(OS_POSIX)
+  std::string os_path(path.value());
+#elif defined(OS_WIN)
+  std::string os_path = base::SysWideToUTF8(path.value());
+#endif
+
+  leveldb::Options options;
+  options.create_if_missing = true;
+  leveldb::DB* db;
+  leveldb::Status status = leveldb::DB::Open(options, os_path, &db);
+  if (!status.ok()) {
+    // |os_path| may contain sensitive data, and these strings are passed
+    // through to the extension, so strip that out.
+    std::string status_string = status.ToString();
+    ReplaceSubstringsAfterOffset(&status_string, 0u, os_path, "...");
+
+    *error = base::StringPrintf("Failed to open database: %s",
+                                status_string.c_str());
+    LOG(WARNING) << *error;
+    return NULL;
+  }
+
+  return new LeveldbValueStore(path, db);
+}
+
+LeveldbValueStore::LeveldbValueStore(
+    const FilePath& db_path, leveldb::DB* db)
+    : db_path_(db_path), db_(db) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
 LeveldbValueStore::~LeveldbValueStore() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  // Delete the database from disk if it's empty (but only if we managed to
-  // open it!). This is safe on destruction, assuming that we have exclusive
-  // access to the database.
-  if (db_ && IsEmpty()) {
+  // Delete the database from disk if it's empty.  This is safe on destruction,
+  // assuming that we have exclusive access to the database.
+  if (IsEmpty()) {
     // Close |db_| now to release any lock on the directory.
     db_.reset();
     if (!file_util::Delete(db_path_, true)) {
@@ -123,12 +149,8 @@ size_t LeveldbValueStore::GetBytesInUse() {
 ValueStore::ReadResult LeveldbValueStore::Get(const std::string& key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  std::string error = EnsureDbIsOpen();
-  if (!error.empty())
-    return ValueStore::MakeReadResult(error);
-
   scoped_ptr<Value> setting;
-  error = ReadFromDb(leveldb::ReadOptions(), key, &setting);
+  std::string error = ReadFromDb(leveldb::ReadOptions(), key, &setting);
   if (!error.empty())
     return ReadFailureForKey("get", key, error);
 
@@ -142,10 +164,6 @@ ValueStore::ReadResult LeveldbValueStore::Get(
     const std::vector<std::string>& keys) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  std::string error = EnsureDbIsOpen();
-  if (!error.empty())
-    return ValueStore::MakeReadResult(error);
-
   leveldb::ReadOptions options;
   scoped_ptr<DictionaryValue> settings(new DictionaryValue());
 
@@ -156,7 +174,7 @@ ValueStore::ReadResult LeveldbValueStore::Get(
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
     scoped_ptr<Value> setting;
-    error = ReadFromDb(options, *it, &setting);
+    std::string error = ReadFromDb(options, *it, &setting);
     if (!error.empty())
       return ReadFailureForKey("get multiple items", *it, error);
     if (setting.get())
@@ -168,10 +186,6 @@ ValueStore::ReadResult LeveldbValueStore::Get(
 
 ValueStore::ReadResult LeveldbValueStore::Get() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  std::string error = EnsureDbIsOpen();
-  if (!error.empty())
-    return ValueStore::MakeReadResult(error);
 
   base::JSONReader json_reader;
   leveldb::ReadOptions options = leveldb::ReadOptions();
@@ -207,19 +221,16 @@ ValueStore::WriteResult LeveldbValueStore::Set(
     WriteOptions options, const std::string& key, const Value& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  std::string error = EnsureDbIsOpen();
-  if (!error.empty())
-    return ValueStore::MakeWriteResult(error);
-
   leveldb::WriteBatch batch;
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
-  error = AddToBatch(options, key, value, &batch, changes.get());
-  if (!error.empty())
-    return WriteFailureForKey("find changes to set", key, error);
+  std::string read_error =
+      AddToBatch(options, key, value, &batch, changes.get());
+  if (!read_error.empty())
+    return WriteFailureForKey("find changes to set", key, read_error);
 
-  error = WriteToDb(&batch);
-  if (!error.empty())
-    return WriteFailureForKey("set", key, error);
+  std::string write_error = WriteToDb(&batch);
+  if (!write_error.empty())
+    return WriteFailureForKey("set", key, write_error);
   return MakeWriteResult(changes.release());
 }
 
@@ -227,25 +238,22 @@ ValueStore::WriteResult LeveldbValueStore::Set(
     WriteOptions options, const DictionaryValue& settings) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  std::string error = EnsureDbIsOpen();
-  if (!error.empty())
-    return ValueStore::MakeWriteResult(error);
-
   leveldb::WriteBatch batch;
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
 
   for (DictionaryValue::Iterator it(settings); it.HasNext(); it.Advance()) {
-    error = AddToBatch(options, it.key(), it.value(), &batch, changes.get());
-    if (!error.empty()) {
+    std::string read_error =
+        AddToBatch(options, it.key(), it.value(), &batch, changes.get());
+    if (!read_error.empty()) {
       return WriteFailureForKey("find changes to set multiple items",
                                 it.key(),
-                                error);
+                                read_error);
     }
   }
 
-  error = WriteToDb(&batch);
-  if (!error.empty())
-    return WriteFailure("set multiple items", error);
+  std::string write_error = WriteToDb(&batch);
+  if (!write_error.empty())
+    return WriteFailure("set multiple items", write_error);
   return MakeWriteResult(changes.release());
 }
 
@@ -258,21 +266,18 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
     const std::vector<std::string>& keys) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  std::string error = EnsureDbIsOpen();
-  if (!error.empty())
-    return ValueStore::MakeWriteResult(error);
-
   leveldb::WriteBatch batch;
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
 
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
     scoped_ptr<Value> old_value;
-    error = ReadFromDb(leveldb::ReadOptions(), *it, &old_value);
-    if (!error.empty()) {
+    std::string read_error =
+        ReadFromDb(leveldb::ReadOptions(), *it, &old_value);
+    if (!read_error.empty()) {
       return WriteFailureForKey("find changes to remove multiple items",
                                 *it,
-                                error);
+                                read_error);
     }
 
     if (old_value.get()) {
@@ -289,10 +294,6 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
 
 ValueStore::WriteResult LeveldbValueStore::Clear() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  std::string error = EnsureDbIsOpen();
-  if (!error.empty())
-    return ValueStore::MakeWriteResult(error);
 
   leveldb::ReadOptions read_options;
   // All interaction with the db is done on the same thread, so snapshotting
@@ -328,35 +329,6 @@ ValueStore::WriteResult LeveldbValueStore::Clear() {
   if (!status.ok())
     return WriteFailure("clear", status.ToString());
   return MakeWriteResult(changes.release());
-}
-
-std::string LeveldbValueStore::EnsureDbIsOpen() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  if (db_.get())
-    return "";
-
-#if defined(OS_POSIX)
-  std::string os_path(db_path_.value());
-#elif defined(OS_WIN)
-  std::string os_path = base::SysWideToUTF8(db_path_.value());
-#endif
-
-  leveldb::Options options;
-  options.create_if_missing = true;
-  leveldb::DB* db;
-  leveldb::Status status = leveldb::DB::Open(options, os_path, &db);
-  if (!status.ok()) {
-    // |os_path| may contain sensitive data, and these strings are passed
-    // through to the extension, so strip that out.
-    std::string status_string = status.ToString();
-    ReplaceSubstringsAfterOffset(&status_string, 0u, os_path, "...");
-    return base::StringPrintf("Failed to open database: %s",
-                              status_string.c_str());
-  }
-
-  db_.reset(db);
-  return "";
 }
 
 std::string LeveldbValueStore::ReadFromDb(
