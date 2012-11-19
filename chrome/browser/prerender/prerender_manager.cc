@@ -504,7 +504,8 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
 
       dummy_replacement_prerender_contents->set_match_complete_status(
           PrerenderContents::MATCH_COMPLETE_REPLACEMENT_PENDING);
-      DCHECK(dummy_replacement_prerender_contents->Init());
+      const bool did_init = dummy_replacement_prerender_contents->Init();
+      DCHECK(did_init);
       dummy_replacement_prerender_contents->
           AddAliasURLsFromOtherPrerenderContents(entry);
       dummy_replacement_prerender_contents->set_match_complete_status(
