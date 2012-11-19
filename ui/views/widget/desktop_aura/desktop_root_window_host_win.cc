@@ -644,6 +644,8 @@ void DesktopRootWindowHostWin::HandleEndWMSizeMove() {
 
 void DesktopRootWindowHostWin::HandleMove() {
   native_widget_delegate_->OnNativeWidgetMove();
+  if (root_window_host_delegate_)
+    root_window_host_delegate_->OnHostMoved(GetBounds().origin());
 }
 
 void DesktopRootWindowHostWin::HandleWorkAreaChanged() {
