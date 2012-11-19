@@ -340,7 +340,7 @@ function parseRemotePeerIdIfConnected_(responseText) {
 
       // There should be at most one remote peer in this test.
       if (remotePeerId != null)
-        throw failTest('Expected just one remote peer in this test: '
+        throw failTest('Expected just one remote peer in this test: ' +
                        'found several.');
 
       // Found a remote peer.
