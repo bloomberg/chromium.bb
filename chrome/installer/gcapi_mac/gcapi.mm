@@ -331,11 +331,15 @@ int GoogleChromeCompatibilityCheck(unsigned* reasons) {
     if (FindChromeTicket(kUserTicket, user, NULL))
       local_reasons |= GCCC_ERROR_ALREADYPRESENT;
 
-    if (![[NSFileManager defaultManager] isWritableFileAtPath:@"/Applications"])
-      local_reasons |= GCCC_ERROR_ACCESSDENIED;
-
     if ([[NSFileManager defaultManager] fileExistsAtPath:kChromeInstallPath])
       local_reasons |= GCCC_ERROR_ALREADYPRESENT;
+
+    if ((local_reasons & GCCC_ERROR_ALREADYPRESENT) == 0) {
+      if (![[NSFileManager defaultManager]
+              isWritableFileAtPath:@"/Applications"])
+      local_reasons |= GCCC_ERROR_ACCESSDENIED;
+    }
+
   }
   if (reasons != NULL)
     *reasons = local_reasons;
