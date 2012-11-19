@@ -74,6 +74,10 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_TOP" file="common/resize_shadow_top.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_TOP_LEFT" file="common/resize_shadow_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_TOP_RIGHT" file="common/resize_shadow_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER" file="common/tray_popup_label_button_border.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_POPUP_LABEL_BUTTON_HOVER_BACKGROUND" file="common/tray_popup_label_button_hover_background.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_POPUP_LABEL_BUTTON_NORMAL_BACKGROUND" file="common/tray_popup_label_button_normal_background.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER" file="common/tray_popup_public_account_logout_button_border.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ACCESSIBILITY" file="common/status_accessibility_mode.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK" file="common/status_accessibility_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH" file="common/status_bluetooth.png" />
