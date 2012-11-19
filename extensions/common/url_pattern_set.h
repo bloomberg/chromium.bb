@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_URL_PATTERN_SET_H_
-#define CHROME_COMMON_EXTENSIONS_URL_PATTERN_SET_H_
+#ifndef EXTENSIONS_COMMMON_URL_PATTERN_SET_H_
+#define EXTENSIONS_COMMMON_URL_PATTERN_SET_H_
 
 #include <set>
 
@@ -16,6 +16,8 @@ namespace base {
 class ListValue;
 class Value;
 }
+
+namespace extensions {
 
 // Represents the set of URLs an extension uses for web content.
 class URLPatternSet {
@@ -94,4 +96,6 @@ class URLPatternSet {
   std::set<URLPattern> patterns_;
 };
 
-#endif  // CHROME_COMMON_EXTENSIONS_URL_PATTERN_SET_H_
+}  // namespace extensions
+
+#endif  // EXTENSIONS_COMMMON_URL_PATTERN_SET_H_

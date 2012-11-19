@@ -11,15 +11,14 @@
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/file_reader.h"
 #include "chrome/browser/extensions/script_executor.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/api/tabs.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -27,9 +26,11 @@
 #include "chrome/common/extensions/message_bundle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/error_utils.h"
 
 using content::BrowserThread;
 using extensions::api::tabs::InjectDetails;
+using extensions::ErrorUtils;
 using extensions::ScriptExecutor;
 using extensions::UserScript;
 
@@ -210,10 +211,10 @@ void ExecuteCodeInTabFunction::DidLoadAndLocalizeFile(bool success,
 #if defined(OS_POSIX)
     // TODO(viettrungluu): bug: there's no particular reason the path should be
     // UTF-8, in which case this may fail.
-    error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kLoadFileError,
+    error_ = ErrorUtils::FormatErrorMessage(keys::kLoadFileError,
         resource_.relative_path().value());
 #elif defined(OS_WIN)
-    error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kLoadFileError,
+    error_ = ErrorUtils::FormatErrorMessage(keys::kLoadFileError,
         WideToUTF8(resource_.relative_path().value()));
 #endif  // OS_WIN
     SendResponse(false);

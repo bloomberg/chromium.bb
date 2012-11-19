@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_ERROR_UTILS_H_
-#define CHROME_COMMON_EXTENSIONS_EXTENSION_ERROR_UTILS_H_
+#ifndef EXTENSIONS_COMMON_ERROR_UTILS_H_
+#define EXTENSIONS_COMMON_ERROR_UTILS_H_
 
 #include <string>
 
 #include "base/string16.h"
 
-class ExtensionErrorUtils {
+namespace extensions {
+
+class ErrorUtils {
  public:
   // Creates an error messages from a pattern.
   static std::string FormatErrorMessage(const std::string& format,
@@ -37,4 +39,6 @@ class ExtensionErrorUtils {
                                           const std::string& s3);
 };
 
-#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_ERROR_UTILS_H_
+}  // namespace extensions
+
+#endif  // EXTENSIONS_COMMON_ERROR_UTILS_H_

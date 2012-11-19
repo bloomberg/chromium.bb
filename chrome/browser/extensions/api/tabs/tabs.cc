@@ -52,7 +52,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/windows.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/user_script.h"
@@ -68,6 +67,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/error_utils.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -92,6 +92,7 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::RenderViewHost;
 using content::WebContents;
+using extensions::ErrorUtils;
 using extensions::ScriptExecutor;
 using extensions::WindowController;
 using extensions::WindowControllerList;
@@ -119,7 +120,7 @@ Browser* GetBrowserInProfileWithId(Profile* profile,
   }
 
   if (error_message)
-    *error_message = ExtensionErrorUtils::FormatErrorMessage(
+    *error_message = ErrorUtils::FormatErrorMessage(
         keys::kWindowNotFoundError, base::IntToString(window_id));
 
   return NULL;
@@ -167,7 +168,7 @@ bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
     *controller = WindowControllerList::GetInstance()->
         FindWindowForFunctionById(function, window_id);
     if (!(*controller)) {
-      function->SetError(ExtensionErrorUtils::FormatErrorMessage(
+      function->SetError(ErrorUtils::FormatErrorMessage(
           keys::kWindowNotFoundError, base::IntToString(window_id)));
       return false;
     }
@@ -190,7 +191,7 @@ bool GetTabById(int tab_id,
     return true;
 
   if (error_message)
-    *error_message = ExtensionErrorUtils::FormatErrorMessage(
+    *error_message = ErrorUtils::FormatErrorMessage(
         keys::kTabNotFoundError, base::IntToString(tab_id));
 
   return false;
@@ -380,7 +381,7 @@ bool CreateWindowFunction::ShouldOpenIncognitoWindow(
       }
     }
     if (urls->empty() && !first_url_erased.empty()) {
-      error_ = ExtensionErrorUtils::FormatErrorMessage(
+      error_ = ErrorUtils::FormatErrorMessage(
           keys::kURLsNotAllowedInIncognitoError, first_url_erased);
       *is_error = true;
       return false;
@@ -424,7 +425,7 @@ bool CreateWindowFunction::RunImpl() {
         GURL url = ExtensionTabUtil::ResolvePossiblyRelativeURL(
             *i, GetExtension());
         if (!url.is_valid()) {
-          error_ = ExtensionErrorUtils::FormatErrorMessage(
+          error_ = ErrorUtils::FormatErrorMessage(
               keys::kInvalidUrlError, *i);
           return false;
         }
@@ -453,7 +454,7 @@ bool CreateWindowFunction::RunImpl() {
         return false;
       contents = source_tab_strip->DetachTabContentsAt(tab_index);
       if (!contents) {
-        error_ = ExtensionErrorUtils::FormatErrorMessage(
+        error_ = ErrorUtils::FormatErrorMessage(
             keys::kTabNotFoundError, base::IntToString(tab_id));
         return false;
       }
@@ -1027,7 +1028,7 @@ bool CreateTabFunction::RunImpl() {
     url = ExtensionTabUtil::ResolvePossiblyRelativeURL(url_string,
                                                        GetExtension());
     if (!url.is_valid()) {
-      error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
+      error_ = ErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
                                                        url_string);
       return false;
     }
@@ -1195,7 +1196,7 @@ bool HighlightTabsFunction::RunImpl() {
 
     // Make sure the index is in range.
     if (!tabstrip->ContainsIndex(index)) {
-      error_ = ExtensionErrorUtils::FormatErrorMessage(
+      error_ = ErrorUtils::FormatErrorMessage(
           keys::kTabIndexNotFoundError, base::IntToString(index));
       return false;
     }
@@ -1341,7 +1342,7 @@ bool UpdateTabFunction::UpdateURLIfPresent(DictionaryValue* update_props,
       url_string, GetExtension());
 
   if (!url.is_valid()) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kInvalidUrlError, url_string);
     return false;
   }
@@ -1472,7 +1473,7 @@ bool MoveTabsFunction::RunImpl() {
         TabContents* tab_contents =
             source_tab_strip->DetachTabContentsAt(tab_index);
         if (!tab_contents) {
-          error_ = ExtensionErrorUtils::FormatErrorMessage(
+          error_ = ErrorUtils::FormatErrorMessage(
               keys::kTabNotFoundError, base::IntToString(tab_ids[i]));
           return false;
         }

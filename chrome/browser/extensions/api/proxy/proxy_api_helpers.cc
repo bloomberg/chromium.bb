@@ -21,7 +21,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/proxy/proxy_api_constants.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
-#include "chrome/common/extensions/extension_error_utils.h"
+#include "extensions/common/error_utils.h"
 #include "net/base/data_url.h"
 #include "net/proxy/proxy_config.h"
 
@@ -171,7 +171,7 @@ bool GetProxyServer(const DictionaryValue* proxy_server,
     return false;
   }
   if (!IsStringASCII(host16)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(
+    *error = ErrorUtils::FormatErrorMessage(
         "Invalid 'rules.???.host' entry '*'. 'host' field supports only ASCII "
         "URLs (encode URLs in Punycode format).",
         UTF16ToUTF8(host16));
@@ -226,7 +226,7 @@ bool GetProxyRulesStringFromExtensionPref(const DictionaryValue* proxy_config,
   if (has_proxy[keys::SCHEME_ALL]) {
     for (size_t i = 1; i <= keys::SCHEME_MAX; ++i) {
       if (has_proxy[i]) {
-        *error = ExtensionErrorUtils::FormatErrorMessage(
+        *error = ErrorUtils::FormatErrorMessage(
             "Proxy rule for * and * cannot be set at the same time.",
             keys::field_name[keys::SCHEME_ALL], keys::field_name[i]);
         return false;

@@ -127,7 +127,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
-#include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -148,6 +147,7 @@
 #include "content/public/common/geoposition.h"
 #include "content/public/common/ssl_status.h"
 #include "extensions/common/url_pattern.h"
+#include "extensions/common/url_pattern_set.h"
 #include "net/cookies/cookie_store.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/events/event_constants.h"
@@ -3734,14 +3734,14 @@ void TestingAutomationProvider::InstallExtension(
 namespace {
 
 ListValue* GetHostPermissions(const Extension* ext, bool effective_perm) {
-  URLPatternSet pattern_set;
+  extensions::URLPatternSet pattern_set;
   if (effective_perm)
     pattern_set = ext->GetEffectiveHostPermissions();
   else
     pattern_set = ext->GetActivePermissions()->explicit_hosts();
 
   ListValue* permissions = new ListValue;
-  for (URLPatternSet::const_iterator perm = pattern_set.begin();
+  for (extensions::URLPatternSet::const_iterator perm = pattern_set.begin();
        perm != pattern_set.end(); ++perm) {
     permissions->Append(new StringValue(perm->GetAsString()));
   }

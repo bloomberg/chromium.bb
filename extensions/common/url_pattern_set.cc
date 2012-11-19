@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/url_pattern_set.h"
+#include "extensions/common/url_pattern_set.h"
 
 #include <algorithm>
 #include <iterator>
@@ -10,10 +10,12 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/common/error_utils.h"
 #include "extensions/common/url_pattern.h"
 #include "googleurl/src/gurl.h"
+
+namespace extensions {
 
 namespace {
 
@@ -184,8 +186,8 @@ bool URLPatternSet::Populate(const std::vector<std::string>& patterns,
     URLPattern pattern(valid_schemes);
     if (pattern.Parse(patterns[i]) != URLPattern::PARSE_SUCCESS) {
       if (error) {
-        *error = ExtensionErrorUtils::FormatErrorMessage(
-            kInvalidURLPatternError, patterns[i]);
+        *error = ErrorUtils::FormatErrorMessage(kInvalidURLPatternError,
+                                                patterns[i]);
       } else {
         LOG(ERROR) << "Invalid url pattern: " << patterns[i];
       }
@@ -213,3 +215,5 @@ bool URLPatternSet::Populate(const base::ListValue& value,
   }
   return Populate(patterns, valid_schemes, allow_file_access, error);
 }
+
+}  // namespace extensions

@@ -28,7 +28,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/debugger.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
@@ -37,6 +36,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "extensions/common/error_utils.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/webkit_glue.h"
@@ -47,6 +47,7 @@ using content::DevToolsClientHost;
 using content::DevToolsManager;
 using content::WebContents;
 using extensions::api::debugger::Debuggee;
+using extensions::ErrorUtils;
 
 namespace keys = debugger_api_constants;
 namespace Attach = extensions::api::debugger::Attach;
@@ -408,7 +409,7 @@ bool DebuggerFunction::InitWebContents() {
   bool result = ExtensionTabUtil::GetTabById(
       tab_id_, profile(), include_incognito(), NULL, NULL, &web_contents, NULL);
   if (!result || !web_contents) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kNoTabError,
         base::IntToString(tab_id_));
     return false;
@@ -417,7 +418,7 @@ bool DebuggerFunction::InitWebContents() {
 
   if (content::GetContentClient()->HasWebUIScheme(
           contents_->GetURL())) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kAttachToWebUIError,
         contents_->GetURL().scheme());
     return false;
@@ -436,7 +437,7 @@ bool DebuggerFunction::InitClientHost() {
   if (!client_host_ ||
       !client_host_->MatchesContentsAndExtensionId(contents_,
                                                    GetExtension()->id())) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kNotAttachedError,
         base::IntToString(tab_id_));
     return false;
@@ -458,7 +459,7 @@ bool AttachDebuggerFunction::RunImpl() {
 
   if (!webkit_glue::IsInspectorProtocolVersionSupported(
       params->required_version)) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kProtocolVersionNotSupportedError,
         params->required_version);
     return false;
@@ -470,7 +471,7 @@ bool AttachDebuggerFunction::RunImpl() {
       GetDevToolsClientHostFor(agent);
 
   if (client_host != NULL) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kAlreadyAttachedError,
         base::IntToString(tab_id_));
     return false;

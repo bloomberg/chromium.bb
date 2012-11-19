@@ -17,8 +17,8 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/common/error_utils.h"
 
 namespace keys = extension_accessibility_api_constants;
 
@@ -203,7 +203,7 @@ bool GetAlertsForTabFunction::RunImpl() {
   int tab_index = -1;
   if (!ExtensionTabUtil::GetTabById(tab_id, profile(), include_incognito(),
                                     NULL, &tab_strip, &contents, &tab_index)) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = extensions::ErrorUtils::FormatErrorMessage(
         extensions::tabs_constants::kTabNotFoundError,
         base::IntToString(tab_id));
     return false;

@@ -6,19 +6,21 @@
 
 #include "base/string_number_conversions.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/file_browser_handler.h"
+#include "extensions/common/error_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::ErrorUtils;
 using extensions::Extension;
+using extensions::URLPatternSet;
 
 namespace errors = extension_manifest_errors;
 
 TEST_F(ExtensionManifestTest, FileBrowserHandlers) {
   Testcase testcases[] = {
     Testcase("filebrowser_invalid_access_permission.json",
-             ExtensionErrorUtils::FormatErrorMessage(
+             ErrorUtils::FormatErrorMessage(
                  errors::kInvalidFileAccessValue, base::IntToString(1))),
     Testcase("filebrowser_invalid_access_permission_list.json",
              errors::kInvalidFileAccessList),
@@ -35,10 +37,10 @@ TEST_F(ExtensionManifestTest, FileBrowserHandlers) {
     Testcase("filebrowser_invalid_file_filters_1.json",
              errors::kInvalidFileFiltersList),
     Testcase("filebrowser_invalid_file_filters_2.json",
-             ExtensionErrorUtils::FormatErrorMessage(
+             ErrorUtils::FormatErrorMessage(
                 errors::kInvalidFileFilterValue, base::IntToString(0))),
     Testcase("filebrowser_invalid_file_filters_url.json",
-             ExtensionErrorUtils::FormatErrorMessage(
+             ErrorUtils::FormatErrorMessage(
                 errors::kInvalidURLPatternError, "http:*.html"))
   };
   RunTestcases(testcases, arraysize(testcases),

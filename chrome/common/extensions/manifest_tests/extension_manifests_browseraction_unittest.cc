@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/common/extensions/extension_builder.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "chrome/common/extensions/value_builder.h"
+#include "extensions/common/error_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
@@ -93,7 +93,7 @@ TEST_F(ExtensionManifestTest, BrowserActionManifestIcons_InvalidDefaultIcon) {
               .Set("38", "icon38.png")))
      .Build();
 
-  string16 error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+  string16 error = ErrorUtils::FormatErrorMessageUTF16(
       errors::kInvalidIconPath, "19");
   LoadAndExpectError(Manifest(manifest_value.get(), "Invalid default icon"),
                      errors::kInvalidIconPath);

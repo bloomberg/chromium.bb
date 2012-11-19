@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/common/extensions/extension_error_utils.h"
+#include "extensions/common/error_utils.h"
 
 namespace {
 
@@ -133,7 +133,7 @@ bool QuotaLimitHeuristic::ApplyToArgs(const ListValue* args,
 }
 
 std::string QuotaLimitHeuristic::GetError() const {
-  return ExtensionErrorUtils::FormatErrorMessage(kOverQuotaError, name_);
+  return extensions::ErrorUtils::FormatErrorMessage(kOverQuotaError, name_);
 }
 
 ExtensionsQuotaService::SustainedLimit::SustainedLimit(

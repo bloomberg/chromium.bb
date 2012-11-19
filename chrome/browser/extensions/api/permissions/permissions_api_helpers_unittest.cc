@@ -7,7 +7,7 @@
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
-#include "chrome/common/extensions/url_pattern_set.h"
+#include "extensions/common/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,6 +17,7 @@ using extensions::api::permissions::Permissions;
 using extensions::APIPermission;
 using extensions::APIPermissionSet;
 using extensions::PermissionSet;
+using extensions::URLPatternSet;
 
 namespace {
 

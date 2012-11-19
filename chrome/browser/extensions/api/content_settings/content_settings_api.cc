@@ -25,8 +25,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/content_settings.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/browser/plugin_service.h"
+#include "extensions/common/error_utils.h"
 
 using content::BrowserThread;
 using content::PluginService;
@@ -104,7 +104,7 @@ bool GetContentSettingFunction::RunImpl() {
 
   GURL primary_url(params->details.primary_url);
   if (!primary_url.is_valid()) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
+    error_ = ErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
         params->details.primary_url);
     return false;
   }
@@ -113,7 +113,7 @@ bool GetContentSettingFunction::RunImpl() {
   if (params->details.secondary_url.get()) {
     secondary_url = GURL(*params->details.secondary_url);
     if (!secondary_url.is_valid()) {
-      error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
+      error_ = ErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
         *params->details.secondary_url);
       return false;
     }

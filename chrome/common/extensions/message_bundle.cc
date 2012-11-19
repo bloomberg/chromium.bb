@@ -16,9 +16,9 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "extensions/common/error_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace errors = extension_manifest_errors;
@@ -118,7 +118,7 @@ bool MessageBundle::AppendReservedMessagesForLocale(
   SubstitutionMap::iterator it = append_messages.begin();
   for (; it != append_messages.end(); ++it) {
     if (ContainsKey(dictionary_, it->first)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
+      *error = ErrorUtils::FormatErrorMessage(
           errors::kReservedMessageFound, it->first);
       return false;
     } else {

@@ -20,6 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using extensions::URLPatternSet;
 
 namespace {
 

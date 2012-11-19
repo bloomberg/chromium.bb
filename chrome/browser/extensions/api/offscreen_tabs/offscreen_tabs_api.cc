@@ -9,9 +9,9 @@
 
 #include "base/hash_tables.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/lazy_instance.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -41,12 +40,14 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/common/error_utils.h"
 
 using content::NativeWebKeyboardEvent;
 using content::NavigationController;
 using content::NotificationDetails;
 using content::NotificationSource;
 using content::WebContents;
+using extensions::ErrorUtils;
 using WebKit::WebInputEvent;
 
 namespace keys = extensions::offscreen_tabs_constants;
@@ -359,7 +360,7 @@ bool OffscreenTabMap::GetOffscreenTab(const int offscreen_tab_id,
     }
   }
 
-  *error = ExtensionErrorUtils::FormatErrorMessage(
+  *error = ErrorUtils::FormatErrorMessage(
       keys::kOffscreenTabNotFoundError, base::IntToString(offscreen_tab_id));
   return false;
 }
@@ -473,7 +474,7 @@ bool CreateOffscreenTabFunction::RunImpl() {
   GURL url = ExtensionTabUtil::ResolvePossiblyRelativeURL(
       url_string, GetExtension());
   if (!url.is_valid()) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         tabs_keys::kInvalidUrlError, url_string);
     return false;
   }
@@ -540,7 +541,7 @@ bool GetOffscreenTabFunction::RunImpl() {
   OffscreenTab* offscreen_tab = NULL;
   if (!GetMap()->GetOffscreenTab(
           offscreen_tab_id, this, &offscreen_tab, &error_)) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kOffscreenTabNotFoundError, base::IntToString(offscreen_tab_id));
     return false;
   }

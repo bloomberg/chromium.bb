@@ -13,9 +13,9 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "extensions/common/error_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
@@ -265,7 +265,7 @@ TEST_F(MessageBundleTest, ReservedMessagesOverrideDeveloperMessages) {
   std::string error = CreateMessageBundle();
 
   EXPECT_TRUE(handler_.get() == NULL);
-  std::string expected_error = ExtensionErrorUtils::FormatErrorMessage(
+  std::string expected_error = ErrorUtils::FormatErrorMessage(
       errors::kReservedMessageFound, MessageBundle::kUILocaleKey);
   EXPECT_EQ(expected_error, error);
 }

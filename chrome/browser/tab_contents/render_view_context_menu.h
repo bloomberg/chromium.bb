@@ -196,7 +196,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   static bool ExtensionContextAndPatternMatch(
       const content::ContextMenuParams& params,
       extensions::MenuItem::ContextList contexts,
-      const URLPatternSet& target_url_patterns);
+      const extensions::URLPatternSet& target_url_patterns);
   static bool MenuItemMatchesParams(
       const content::ContextMenuParams& params,
       const extensions::MenuItem* item);

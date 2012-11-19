@@ -18,16 +18,16 @@
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/url_pattern_set.h"
+#include "extensions/common/url_pattern_set.h"
 #include "sync/api/string_ordinal.h"
 
 class ExtensionPrefValueMap;
 class ExtensionSorting;
 class PrefService;
-class URLPatternSet;
 
 namespace extensions {
 class ExtensionPrefsUninstallExtension;
+class URLPatternSet;
 struct ExtensionOmniboxSuggestion;
 
 // Class for managing global and per-extension preferences.

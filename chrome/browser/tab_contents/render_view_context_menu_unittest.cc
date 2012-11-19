@@ -11,6 +11,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 
 using extensions::MenuItem;
+using extensions::URLPatternSet;
 
 class RenderViewContextMenuTest : public testing::Test {
  public:

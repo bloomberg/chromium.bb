@@ -11,7 +11,7 @@
 TEST_F(ExtensionManifestTest, ValidApp) {
   scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("valid_app.json"));
-  URLPatternSet expected_patterns;
+  extensions::URLPatternSet expected_patterns;
   AddPattern(&expected_patterns, "http://www.google.com/mail/*");
   AddPattern(&expected_patterns, "http://www.google.com/foobar/*");
   EXPECT_EQ(expected_patterns, extension->web_extent());

@@ -8,9 +8,9 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/matcher/url_matcher_constants.h"
 #include "chrome/common/extensions/matcher/url_matcher_helpers.h"
+#include "extensions/common/error_utils.h"
 #include "third_party/re2/re2/re2.h"
 
 namespace helpers = extensions::url_matcher_helpers;
@@ -134,7 +134,7 @@ URLMatcherFactory::CreateFromURLFilterDictionary(
         return scoped_refptr<URLMatcherConditionSet>(NULL);
     } else {
       // Handle unknown attributes.
-      *error = ExtensionErrorUtils::FormatErrorMessage(
+      *error = ErrorUtils::FormatErrorMessage(
           kUnknownURLFilterAttribute,
           condition_attribute_name);
       return scoped_refptr<URLMatcherConditionSet>(NULL);
@@ -171,7 +171,7 @@ URLMatcherCondition URLMatcherFactory::CreateURLMatcherCondition(
     std::string* error) {
   std::string str_value;
   if (!value->GetAsString(&str_value)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kAttributeExpectedString,
+    *error = ErrorUtils::FormatErrorMessage(kAttributeExpectedString,
                                                      condition_attribute_name);
     return URLMatcherCondition();
   }
@@ -179,7 +179,7 @@ URLMatcherCondition URLMatcherFactory::CreateURLMatcherCondition(
   if (condition_attribute_name == keys::kURLMatchesKey) {
     re2::RE2 regex(str_value);
     if (!regex.ok()) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(kUnparseableRegexString,
+      *error = ErrorUtils::FormatErrorMessage(kUnparseableRegexString,
                                                        str_value,
                                                        regex.error());
       return URLMatcherCondition();
@@ -195,7 +195,7 @@ scoped_ptr<URLMatcherSchemeFilter> URLMatcherFactory::CreateURLMatcherScheme(
     std::string* error) {
   std::vector<std::string> schemas;
   if (!helpers::GetAsStringVector(value, &schemas)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kVectorOfStringsExpected,
+    *error = ErrorUtils::FormatErrorMessage(kVectorOfStringsExpected,
                                                      keys::kSchemesKey);
     return scoped_ptr<URLMatcherSchemeFilter>(NULL);
   }

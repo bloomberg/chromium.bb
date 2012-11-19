@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/common/extensions/api/extension_api.h"
-#include "chrome/common/extensions/extension_error_utils.h"
+#include "extensions/common/error_utils.h"
 
 namespace extensions {
 
@@ -76,7 +76,7 @@ ValueStore::WriteResult QuotaExceededFor(Resource resource) {
       NOTREACHED();
   }
   return ValueStore::MakeWriteResult(
-      ExtensionErrorUtils::FormatErrorMessage(kQuotaExceededError, name));
+      ErrorUtils::FormatErrorMessage(kQuotaExceededError, name));
 }
 
 }  // namespace

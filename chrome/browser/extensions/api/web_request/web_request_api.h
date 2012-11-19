@@ -20,7 +20,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/url_pattern_set.h"
+#include "extensions/common/url_pattern_set.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/completion_callback.h"
 #include "net/base/network_delegate.h"
@@ -85,7 +85,7 @@ class ExtensionWebRequestEventRouter
     // unexpected).
     bool InitFromValue(const base::DictionaryValue& value, std::string* error);
 
-    URLPatternSet urls;
+    extensions::URLPatternSet urls;
     std::vector<ResourceType::Type> types;
     int tab_id;
     int window_id;

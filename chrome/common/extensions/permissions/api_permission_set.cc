@@ -7,9 +7,9 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
+#include "extensions/common/error_utils.h"
 
 namespace errors = extension_manifest_errors;
 
@@ -19,6 +19,7 @@ using extensions::PermissionsInfo;
 using extensions::APIPermission;
 using extensions::APIPermissionInfo;
 using extensions::APIPermissionSet;
+using extensions::ErrorUtils;
 
 bool CreateAPIPermission(
     const std::string& permission_str,
@@ -34,7 +35,7 @@ bool CreateAPIPermission(
         permission_info->CreateAPIPermission());
     if (!permission->FromValue(permission_value)) {
       if (error) {
-        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+        *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidPermission, permission_info->name());
         return false;
       }
@@ -62,7 +63,7 @@ bool ParseChildPermissions(const std::string& base_name,
     const ListValue* permissions;
     if (!permission_value->GetAsList(&permissions)) {
       if (error) {
-        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+        *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidPermission, base_name);
         return false;
       }
@@ -77,7 +78,7 @@ bool ParseChildPermissions(const std::string& base_name,
       if (!permissions->GetString(i, &permission_str)) {
         // permission should be a string
         if (error) {
-          *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          *error = ErrorUtils::FormatErrorMessageUTF16(
               errors::kInvalidPermission,
               base_name + '.' + base::IntToString(i));
           return false;
@@ -293,7 +294,7 @@ bool APIPermissionSet::ParseFromJSON(
       // permission should be a string or a single key dict.
       if (!permissions->GetDictionary(i, &dict) || dict->size() != 1) {
         if (error) {
-          *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          *error = ErrorUtils::FormatErrorMessageUTF16(
               errors::kInvalidPermission, base::IntToString(i));
           return false;
         }

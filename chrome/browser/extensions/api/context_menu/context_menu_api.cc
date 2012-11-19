@@ -6,15 +6,17 @@
 
 #include <string>
 
-#include "base/values.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/context_menus.h"
-#include "chrome/common/extensions/extension_error_utils.h"
-#include "chrome/common/extensions/url_pattern_set.h"
+#include "extensions/common/error_utils.h"
+#include "extensions/common/url_pattern_set.h"
+
+using extensions::ErrorUtils;
 
 namespace {
 
@@ -128,7 +130,7 @@ extensions::MenuItem* GetParent(extensions::MenuItem::Id parent_id,
                                 std::string* error) {
   extensions::MenuItem* parent = menu_manager->GetItemById(parent_id);
   if (!parent) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(
+    *error = ErrorUtils::FormatErrorMessage(
         kCannotFindItemError, GetIDString(parent_id));
     return NULL;
   }
@@ -175,7 +177,7 @@ bool CreateContextMenuFunction::RunImpl() {
   MenuManager* menu_manager = profile()->GetExtensionService()->menu_manager();
 
   if (menu_manager->GetItemById(id)) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(kDuplicateIDError,
+    error_ = ErrorUtils::FormatErrorMessage(kDuplicateIDError,
                                                      GetIDString(id));
     return false;
   }
@@ -264,7 +266,7 @@ bool UpdateContextMenuFunction::RunImpl() {
   MenuManager* manager = service->menu_manager();
   MenuItem* item = manager->GetItemById(item_id);
   if (!item || item->extension_id() != extension_id()) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         kCannotFindItemError, GetIDString(item_id));
     return false;
   }
@@ -374,7 +376,7 @@ bool RemoveContextMenuFunction::RunImpl() {
   MenuItem* item = manager->GetItemById(id);
   // Ensure one extension can't remove another's menu items.
   if (!item || item->extension_id() != extension_id()) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         kCannotFindItemError, GetIDString(id));
     return false;
   }

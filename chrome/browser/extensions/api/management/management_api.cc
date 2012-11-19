@@ -32,13 +32,13 @@
 #include "chrome/common/extensions/api/management.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
+#include "extensions/common/error_utils.h"
 #include "extensions/common/url_pattern.h"
 
 #if !defined(OS_ANDROID)
@@ -51,6 +51,7 @@ using content::UtilityProcessHost;
 using content::UtilityProcessHostClient;
 using extensions::api::management::ExtensionInfo;
 using extensions::api::management::IconInfo;
+using extensions::ErrorUtils;
 using extensions::Extension;
 using extensions::ExtensionSystem;
 using extensions::PermissionMessages;
@@ -162,10 +163,10 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
 
   if (!extension.is_hosted_app()) {
     // Skip host permissions for hosted apps.
-    const URLPatternSet host_perms =
+    const extensions::URLPatternSet host_perms =
         extension.GetActivePermissions()->explicit_hosts();
     if (!host_perms.is_empty()) {
-      for (URLPatternSet::const_iterator iter = host_perms.begin();
+      for (extensions::URLPatternSet::const_iterator iter = host_perms.begin();
            iter != host_perms.end(); ++iter) {
         info->host_permissions.push_back(iter->GetAsString());
       }
@@ -239,7 +240,7 @@ bool GetExtensionByIdFunction::RunImpl() {
 
   const Extension* extension = service()->GetExtensionById(params->id, true);
   if (!extension) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kNoExtensionError,
+    error_ = ErrorUtils::FormatErrorMessage(keys::kNoExtensionError,
                                                      params->id);
     return false;
   }
@@ -258,7 +259,7 @@ bool GetPermissionWarningsByIdFunction::RunImpl() {
 
   const Extension* extension = service()->GetExtensionById(params->id, true);
   if (!extension) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kNoExtensionError,
+    error_ = ErrorUtils::FormatErrorMessage(keys::kNoExtensionError,
                                                      params->id);
     return false;
   }
@@ -411,12 +412,12 @@ bool LaunchAppFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   const Extension* extension = service()->GetExtensionById(params->id, true);
   if (!extension) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kNoExtensionError,
+    error_ = ErrorUtils::FormatErrorMessage(keys::kNoExtensionError,
                                                      params->id);
     return false;
   }
   if (!extension->is_app()) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kNotAnAppError,
+    error_ = ErrorUtils::FormatErrorMessage(keys::kNotAnAppError,
                                                      params->id);
     return false;
   }
@@ -452,7 +453,7 @@ bool SetEnabledFunction::RunImpl() {
 
   const Extension* extension = service()->GetInstalledExtension(extension_id_);
   if (!extension) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kNoExtensionError, extension_id_);
     return false;
   }
@@ -460,7 +461,7 @@ bool SetEnabledFunction::RunImpl() {
   const extensions::ManagementPolicy* policy = extensions::ExtensionSystem::Get(
       profile())->management_policy();
   if (!policy->UserMayModifySettings(extension, NULL)) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kUserCantModifyError, extension_id_);
     return false;
   }
@@ -524,14 +525,14 @@ bool UninstallFunction::RunImpl() {
 
   const Extension* extension = service()->GetExtensionById(extension_id_, true);
   if (!extension) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kNoExtensionError, extension_id_);
     return false;
   }
 
   if (!extensions::ExtensionSystem::Get(
       profile())->management_policy()->UserMayModifySettings(extension, NULL)) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kUserCantModifyError, extension_id_);
     return false;
   }
@@ -567,7 +568,7 @@ void UninstallFunction::Finish(bool should_uninstall) {
     // TODO set error_ if !success
     SendResponse(success);
   } else {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kUninstallCanceledError, extension_id_);
     SendResponse(false);
   }

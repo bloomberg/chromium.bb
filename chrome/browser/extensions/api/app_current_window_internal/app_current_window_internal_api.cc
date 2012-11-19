@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/app_current_window_internal/app_current_window_internal_api.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
-#include "chrome/common/extensions/extension_error_utils.h"
+#include "extensions/common/error_utils.h"
 
 namespace extensions {
 

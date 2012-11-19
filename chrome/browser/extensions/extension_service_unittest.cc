@@ -114,6 +114,7 @@ using extensions::ExtensionPrefs;
 using extensions::ExtensionSystem;
 using extensions::FeatureSwitch;
 using extensions::PermissionSet;
+using extensions::URLPatternSet;
 
 namespace keys = extension_manifest_keys;
 

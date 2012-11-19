@@ -58,7 +58,7 @@ bool OffStoreInstallAllowedByPrefs(Profile* profile, const DownloadItem& item) {
       profile)->extension_service()->extension_prefs();
   CHECK(prefs);
 
-  URLPatternSet url_patterns = prefs->GetAllowedInstallSites();
+  extensions::URLPatternSet url_patterns = prefs->GetAllowedInstallSites();
 
   // TODO(aa): RefererURL is cleared in some cases, for example when going
   // between secure and non-secure URLs. It would be better if DownloadItem

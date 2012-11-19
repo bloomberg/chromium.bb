@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension.h"
+#include "extensions/common/url_pattern_set.h"
 
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace extensions {
 
 namespace {
 
@@ -390,3 +392,5 @@ TEST(URLPatternSetTest, NwayUnion) {
     EXPECT_EQ(expected, result);
   }
 }
+
+}  // namespace extensions

@@ -12,14 +12,15 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
-#include "chrome/common/extensions/url_pattern_set.h"
+#include "extensions/common/error_utils.h"
+#include "extensions/common/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
 
 using extensions::api::permissions::Permissions;
 using extensions::APIPermission;
 using extensions::APIPermissionSet;
+using extensions::ErrorUtils;
 using extensions::PermissionSet;
 using extensions::PermissionsInfo;
 using extensions::PermissionsUpdater;
@@ -87,7 +88,7 @@ bool RemovePermissionsFunction::RunImpl() {
   for (APIPermissionSet::const_iterator i = apis.begin();
        i != apis.end(); ++i) {
     if (!i->info()->supports_optional()) {
-      error_ = ExtensionErrorUtils::FormatErrorMessage(
+      error_ = ErrorUtils::FormatErrorMessage(
           kNotWhitelistedError, i->name());
       return false;
     }
@@ -162,7 +163,7 @@ bool RequestPermissionsFunction::RunImpl() {
   for (APIPermissionSet::const_iterator i = apis.begin();
        i != apis.end(); ++i) {
     if (!i->info()->supports_optional()) {
-      error_ = ExtensionErrorUtils::FormatErrorMessage(
+      error_ = ErrorUtils::FormatErrorMessage(
           kNotWhitelistedError, i->name());
       return false;
     }

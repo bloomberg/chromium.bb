@@ -277,7 +277,7 @@ void RenderViewContextMenu::Cancel() {
   PlatformCancel();
 }
 
-static bool ExtensionPatternMatch(const URLPatternSet& patterns,
+static bool ExtensionPatternMatch(const extensions::URLPatternSet& patterns,
                                   const GURL& url) {
   // No patterns means no restriction, so that implicitly matches.
   if (patterns.is_empty())
@@ -289,7 +289,7 @@ static bool ExtensionPatternMatch(const URLPatternSet& patterns,
 bool RenderViewContextMenu::ExtensionContextAndPatternMatch(
     const content::ContextMenuParams& params,
     MenuItem::ContextList contexts,
-    const URLPatternSet& target_url_patterns) {
+    const extensions::URLPatternSet& target_url_patterns) {
   bool has_link = !params.link_url.is_empty();
   bool has_selection = !params.selection_text.empty();
   bool in_frame = !params.frame_url.is_empty();

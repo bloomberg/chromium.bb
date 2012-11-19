@@ -24,9 +24,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/cookies.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/common/error_utils.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
@@ -140,13 +140,13 @@ bool CookiesFunction::ParseUrl(const std::string& url_string, GURL* url,
                                bool check_host_permissions) {
   *url = GURL(url_string);
   if (!url->is_valid()) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kInvalidUrlError, url_string);
     return false;
   }
   // Check against host permissions if needed.
   if (check_host_permissions && !GetExtension()->HasHostPermission(*url)) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kNoHostPermissionsError, url->spec());
     return false;
   }
@@ -162,7 +162,7 @@ bool CookiesFunction::ParseStoreContext(
     store_profile = cookies_helpers::ChooseProfileFromStoreId(
         *store_id, profile(), include_incognito());
     if (!store_profile) {
-      error_ = ExtensionErrorUtils::FormatErrorMessage(
+      error_ = ErrorUtils::FormatErrorMessage(
           keys::kInvalidStoreIdError, *store_id);
       return false;
     }
@@ -423,7 +423,7 @@ void SetCookieFunction::RespondOnUIThread() {
   if (!success_) {
     std::string name = parsed_args_->details.name.get() ?
         *parsed_args_->details.name : "";
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kCookieSetFailedError, name);
   }
   SendResponse(success_);

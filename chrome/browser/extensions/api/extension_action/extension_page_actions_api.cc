@@ -17,11 +17,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/error_utils.h"
 
 using content::NavigationEntry;
+using extensions::ErrorUtils;
 
 namespace keys = extension_page_actions_api_constants;
 
@@ -69,7 +70,7 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   bool result = ExtensionTabUtil::GetTabById(
       tab_id, profile(), include_incognito(), NULL, NULL, &contents, NULL);
   if (!result || !contents) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         kNoTabError, base::IntToString(tab_id));
     return false;
   }
@@ -77,7 +78,7 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   // Make sure the URL hasn't changed.
   NavigationEntry* entry = contents->GetController().GetActiveEntry();
   if (!entry || url != entry->GetURL().spec()) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(kUrlNotActiveError, url);
+    error_ = ErrorUtils::FormatErrorMessage(kUrlNotActiveError, url);
     return false;
   }
 

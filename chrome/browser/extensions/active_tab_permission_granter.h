@@ -9,10 +9,10 @@
 #include <string>
 
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/extensions/url_pattern_set.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/common/url_pattern_set.h"
 
 class Profile;
 

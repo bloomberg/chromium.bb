@@ -4,17 +4,16 @@
 
 #include "chrome/common/extensions/extension.h"
 
-#include "base/format_macros.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/format_macros.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/command.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -23,10 +22,11 @@
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/common/url_constants.h"
+#include "extensions/common/error_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_sniffer.h"
-#include "skia/ext/image_operations.h"
 #include "net/base/mock_host_resolver.h"
+#include "skia/ext/image_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -34,10 +34,12 @@
 using content::SocketPermissionRequest;
 using extensions::APIPermission;
 using extensions::APIPermissionSet;
+using extensions::ErrorUtils;
 using extensions::Extension;
 using extensions::Feature;
 using extensions::PermissionSet;
 using extensions::SocketPermission;
+using extensions::URLPatternSet;
 
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
@@ -285,7 +287,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
 
   // Use both "popup" and "default_popup", expect failure.
   LoadActionAndExpectError("page_action_popup_and_default_popup.json",
-      ExtensionErrorUtils::FormatErrorMessage(
+      ErrorUtils::FormatErrorMessage(
           errors::kInvalidPageActionOldAndNewKeys,
           keys::kPageActionDefaultPopup,
           keys::kPageActionPopup));
@@ -472,7 +474,7 @@ TEST(ExtensionTest, SocketPermissions) {
                                     Extension::INTERNAL, Extension::NO_FLAGS,
                                     &error);
   EXPECT_TRUE(extension == NULL);
-  ASSERT_EQ(ExtensionErrorUtils::FormatErrorMessage(
+  ASSERT_EQ(ErrorUtils::FormatErrorMessage(
         errors::kInvalidPermission, "socket"), error);
 
   extension = LoadManifest("socket_permissions", "socket2.json");
@@ -902,7 +904,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
                                     Extension::INTERNAL, Extension::NO_FLAGS,
                                     &error);
   EXPECT_TRUE(extension == NULL);
-  EXPECT_EQ(ExtensionErrorUtils::FormatErrorMessage(
+  EXPECT_EQ(ErrorUtils::FormatErrorMessage(
       errors::kInvalidPermissionScheme, "chrome://*/"), error);
 
   // Having chrome://favicon/* should not give you chrome://*

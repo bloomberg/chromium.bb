@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/experimental_discovery.h"
-#include "chrome/common/extensions/extension_error_utils.h"
+#include "extensions/common/error_utils.h"
 
 namespace discovery = extensions::api::experimental_discovery;
 

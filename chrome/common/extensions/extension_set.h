@@ -114,7 +114,7 @@ class ExtensionSet {
   // Returns a hosted app that contains any URL that overlaps with the given
   // extent, if one exists.
   const extensions::Extension* GetHostedAppByOverlappingWebExtent(
-      const URLPatternSet& extent) const;
+      const extensions::URLPatternSet& extent) const;
 
   // Returns true if |new_url| is in the extent of the same extension as
   // |old_url|.  Also returns true if neither URL is in an app.

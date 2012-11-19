@@ -7,11 +7,13 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "extensions/common/error_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
+
+using extensions::ErrorUtils;
 
 TEST_F(ExtensionManifestTest, AppLaunchContainer) {
   scoped_refptr<extensions::Extension> extension;
@@ -40,19 +42,19 @@ TEST_F(ExtensionManifestTest, AppLaunchContainer) {
     Testcase("launch_container_without_launch_url.json",
              errors::kLaunchURLRequired),
     Testcase("launch_width_invalid.json",
-             ExtensionErrorUtils::FormatErrorMessage(
+             ErrorUtils::FormatErrorMessage(
                  errors::kInvalidLaunchValueContainer,
                  keys::kLaunchWidth)),
     Testcase("launch_width_negative.json",
-             ExtensionErrorUtils::FormatErrorMessage(
+             ErrorUtils::FormatErrorMessage(
                  errors::kInvalidLaunchValue,
                  keys::kLaunchWidth)),
     Testcase("launch_height_invalid.json",
-             ExtensionErrorUtils::FormatErrorMessage(
+             ErrorUtils::FormatErrorMessage(
                  errors::kInvalidLaunchValueContainer,
                  keys::kLaunchHeight)),
     Testcase("launch_height_negative.json",
-             ExtensionErrorUtils::FormatErrorMessage(
+             ErrorUtils::FormatErrorMessage(
                  errors::kInvalidLaunchValue,
                  keys::kLaunchHeight))
   };
@@ -67,31 +69,31 @@ TEST_F(ExtensionManifestTest, AppLaunchURL) {
     Testcase("launch_path_and_extent.json",
              errors::kLaunchPathAndExtentAreExclusive),
     Testcase("launch_path_invalid_type.json",
-             ExtensionErrorUtils::FormatErrorMessage(
+             ErrorUtils::FormatErrorMessage(
                  errors::kInvalidLaunchValue,
                  keys::kLaunchLocalPath)),
     Testcase("launch_path_invalid_value.json",
-             ExtensionErrorUtils::FormatErrorMessage(
+             ErrorUtils::FormatErrorMessage(
                  errors::kInvalidLaunchValue,
                  keys::kLaunchLocalPath)),
     Testcase("launch_path_invalid_localized.json",
-             ExtensionErrorUtils::FormatErrorMessage(
+             ErrorUtils::FormatErrorMessage(
                  errors::kInvalidLaunchValue,
                  keys::kLaunchLocalPath)),
     Testcase("launch_url_invalid_type_1.json",
-             ExtensionErrorUtils::FormatErrorMessage(
+             ErrorUtils::FormatErrorMessage(
                  errors::kInvalidLaunchValue,
                  keys::kLaunchWebURL)),
     Testcase("launch_url_invalid_type_2.json",
-             ExtensionErrorUtils::FormatErrorMessage(
+             ErrorUtils::FormatErrorMessage(
                  errors::kInvalidLaunchValue,
                  keys::kLaunchWebURL)),
     Testcase("launch_url_invalid_type_3.json",
-             ExtensionErrorUtils::FormatErrorMessage(
+             ErrorUtils::FormatErrorMessage(
                  errors::kInvalidLaunchValue,
                  keys::kLaunchWebURL)),
     Testcase("launch_url_invalid_localized.json",
-             ExtensionErrorUtils::FormatErrorMessage(
+             ErrorUtils::FormatErrorMessage(
                  errors::kInvalidLaunchValue,
                  keys::kLaunchWebURL))
   };
@@ -108,7 +110,7 @@ TEST_F(ExtensionManifestTest, AppLaunchURL) {
             extension->GetFullLaunchURL().spec());
 
   LoadAndExpectError("launch_web_url_relative.json",
-                     ExtensionErrorUtils::FormatErrorMessage(
+                     ErrorUtils::FormatErrorMessage(
                          errors::kInvalidLaunchValue,
                          keys::kLaunchWebURL));
 

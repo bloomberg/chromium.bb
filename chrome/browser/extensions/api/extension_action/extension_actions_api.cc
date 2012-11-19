@@ -22,10 +22,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/common/error_utils.h"
 
 namespace {
 
@@ -351,7 +351,7 @@ bool ExtensionActionFunction::RunImpl() {
     ExtensionTabUtil::GetTabById(
         tab_id_, profile(), include_incognito(), NULL, NULL, &contents_, NULL);
     if (!contents_) {
-      error_ = ExtensionErrorUtils::FormatErrorMessage(
+      error_ = extensions::ErrorUtils::FormatErrorMessage(
           kNoTabError, base::IntToString(tab_id_));
       return false;
     }

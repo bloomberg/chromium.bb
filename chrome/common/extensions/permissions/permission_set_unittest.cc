@@ -10,12 +10,12 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
+#include "extensions/common/error_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;
@@ -23,6 +23,9 @@ using extensions::Extension;
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
+
+namespace extensions {
+
 namespace {
 
 scoped_refptr<Extension> LoadManifest(const std::string& dir,
@@ -76,7 +79,6 @@ bool Contains(const std::vector<string16>& warnings,
 
 }  // namespace
 
-namespace extensions {
 
 class PermissionsTest : public testing::Test {
 };

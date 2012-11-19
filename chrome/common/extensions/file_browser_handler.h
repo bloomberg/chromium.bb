@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/common/extensions/url_pattern_set.h"
 #include "extensions/common/url_pattern.h"
+#include "extensions/common/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
 
 class URLPattern;
@@ -36,7 +36,7 @@ class FileBrowserHandler {
   void set_title(const std::string& title) { title_ = title; }
 
   // File schema URL patterns.
-  const URLPatternSet& file_url_patterns() const {
+  const extensions::URLPatternSet& file_url_patterns() const {
     return url_set_;
   }
   void AddPattern(const URLPattern& pattern);
@@ -75,7 +75,7 @@ class FileBrowserHandler {
   unsigned int file_access_permission_flags_;
 
   // A list of file filters.
-  URLPatternSet url_set_;
+  extensions::URLPatternSet url_set_;
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_FILE_BROWSER_HANDLER_H_

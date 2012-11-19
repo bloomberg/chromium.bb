@@ -11,8 +11,8 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/features/simple_feature_provider.h"
+#include "extensions/common/error_utils.h"
 
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;

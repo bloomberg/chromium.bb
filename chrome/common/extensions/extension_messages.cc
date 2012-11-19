@@ -17,6 +17,7 @@ using extensions::APIPermissionSet;
 using extensions::Extension;
 using extensions::PermissionSet;
 using extensions::SocketPermissionData;
+using extensions::URLPatternSet;
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
     : location(Extension::INVALID),

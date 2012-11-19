@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/api/alarms.h"
-#include "chrome/common/extensions/extension_error_utils.h"
+#include "extensions/common/error_utils.h"
 
 namespace alarms = extensions::api::alarms;
 
@@ -37,7 +37,7 @@ bool ValidateDelay(double delay_in_minutes,
     // In release mode we check for integer delay values and a stricter delay
     // minimum.
     if (delay_in_minutes != static_cast<int>(delay_in_minutes)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
+      *error = ErrorUtils::FormatErrorMessage(
           kDelayIsNonInteger,
           delay_or_period);
       return false;
@@ -47,7 +47,7 @@ bool ValidateDelay(double delay_in_minutes,
 
   // Validate against our found delay minimum.
   if (delay_in_minutes < delay_minimum) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(
+    *error = ErrorUtils::FormatErrorMessage(
         kDelayLessThanMinimum,
         delay_or_period,
         base::DoubleToString(delay_minimum));
@@ -128,7 +128,7 @@ bool AlarmsGetFunction::RunImpl() {
           extension_id(), name);
 
   if (!alarm) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(kAlarmNotFound, name);
+    error_ = ErrorUtils::FormatErrorMessage(kAlarmNotFound, name);
     return false;
   }
 
@@ -163,7 +163,7 @@ bool AlarmsClearFunction::RunImpl() {
      extension_id(), name);
 
   if (!success) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(kAlarmNotFound, name);
+    error_ = ErrorUtils::FormatErrorMessage(kAlarmNotFound, name);
     return false;
   }
 

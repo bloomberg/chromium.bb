@@ -113,7 +113,7 @@ const Extension* ExtensionSet::GetHostedAppByURL(
 }
 
 const Extension* ExtensionSet::GetHostedAppByOverlappingWebExtent(
-    const URLPatternSet& extent) const {
+    const extensions::URLPatternSet& extent) const {
   for (ExtensionMap::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     if (iter->second->web_extent().OverlapsWith(extent))

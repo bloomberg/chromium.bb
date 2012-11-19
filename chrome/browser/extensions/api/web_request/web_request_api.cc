@@ -39,7 +39,6 @@
 #include "chrome/common/extensions/event_filtering_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/url_constants.h"
@@ -47,6 +46,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "extensions/common/error_utils.h"
 #include "extensions/common/url_pattern.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -65,6 +65,7 @@ using chrome::VersionInfo;
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::ResourceRequestInfo;
+using extensions::ErrorUtils;
 using extensions::Extension;
 using extensions::ExtensionWarning;
 using extensions::ExtensionWarningService;
@@ -417,7 +418,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
             URLPattern::SCHEME_EXTENSION);
         if (!urls_value->GetString(i, &url) ||
             pattern.Parse(url) != URLPattern::PARSE_SUCCESS) {
-          *error = ExtensionErrorUtils::FormatErrorMessage(
+          *error = ErrorUtils::FormatErrorMessage(
               keys::kInvalidRequestFilterUrl, url);
           return false;
         }
@@ -1793,7 +1794,7 @@ bool WebRequestEventHandled::RunImpl() {
                                                    &new_url_str));
       response->new_url = GURL(new_url_str);
       if (!response->new_url.is_valid()) {
-        error_ = ExtensionErrorUtils::FormatErrorMessage(
+        error_ = ErrorUtils::FormatErrorMessage(
             keys::kInvalidRedirectUrl, new_url_str);
         return false;
       }

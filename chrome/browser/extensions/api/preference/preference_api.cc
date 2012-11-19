@@ -20,11 +20,11 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/error_utils.h"
 
 namespace keys = extensions::preference_api_constants;
 namespace helpers = extensions::preference_helpers;
@@ -282,7 +282,7 @@ void PreferenceEventRouter::OnPrefChanged(PrefServiceBase* pref_service,
       transformer->BrowserToExtensionPref(pref->GetValue());
   if (!transformed_value) {
     LOG(ERROR) <<
-        ExtensionErrorUtils::FormatErrorMessage(kConversionErrorMessage,
+        ErrorUtils::FormatErrorMessage(kConversionErrorMessage,
                                                 pref->name());
     return;
   }
@@ -312,7 +312,7 @@ bool PreferenceFunction::ValidateBrowserPref(
       PrefMapping::GetInstance()->FindBrowserPrefForExtensionPref(
           extension_pref_key, browser_pref_key, &permission));
   if (!GetExtension()->HasAPIPermission(permission)) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = ErrorUtils::FormatErrorMessage(
         keys::kPermissionErrorMessage, extension_pref_key);
     return false;
   }
@@ -363,7 +363,7 @@ bool GetPreferenceFunction::RunImpl() {
       transformer->BrowserToExtensionPref(pref->GetValue());
   if (!transformed_value) {
     LOG(ERROR) <<
-        ExtensionErrorUtils::FormatErrorMessage(kConversionErrorMessage,
+        ErrorUtils::FormatErrorMessage(kConversionErrorMessage,
                                                 pref->name());
     return false;
   }
@@ -456,7 +456,7 @@ bool SetPreferenceFunction::RunImpl() {
   scoped_ptr<Value> extensionPrefValue(
       transformer->BrowserToExtensionPref(browser_pref_value.get()));
   if (!extensionPrefValue) {
-    error_ =  ExtensionErrorUtils::FormatErrorMessage(kConversionErrorMessage,
+    error_ =  ErrorUtils::FormatErrorMessage(kConversionErrorMessage,
                                                       pref->name());
     bad_message_ = true;
     return false;

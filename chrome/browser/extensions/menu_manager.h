@@ -18,9 +18,9 @@
 #include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
-#include "chrome/common/extensions/url_pattern_set.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/url_pattern_set.h"
 
 
 class Profile;

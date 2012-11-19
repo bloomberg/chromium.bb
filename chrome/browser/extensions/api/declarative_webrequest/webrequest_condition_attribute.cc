@@ -13,13 +13,13 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/browser/resource_request_info.h"
+#include "extensions/common/error_utils.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/static_cookie_policy.h"
-#include "net/http/http_util.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 
 using base::CaseInsensitiveCompareASCII;
@@ -87,7 +87,7 @@ WebRequestConditionAttribute::Create(
     return WebRequestConditionAttributeStages::Create(name, value, error);
   }
 
-  *error = ExtensionErrorUtils::FormatErrorMessage(kUnknownConditionAttribute,
+  *error = ErrorUtils::FormatErrorMessage(kUnknownConditionAttribute,
                                                    name);
   return scoped_ptr<WebRequestConditionAttribute>(NULL);
 }
@@ -120,7 +120,7 @@ WebRequestConditionAttributeResourceType::Create(
 
   const ListValue* value_as_list = NULL;
   if (!value->GetAsList(&value_as_list)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue,
+    *error = ErrorUtils::FormatErrorMessage(kInvalidValue,
                                                      keys::kResourceTypeKey);
     return scoped_ptr<WebRequestConditionAttribute>(NULL);
   }
@@ -133,7 +133,7 @@ WebRequestConditionAttributeResourceType::Create(
     ResourceType::Type type = ResourceType::LAST_TYPE;
     if (!value_as_list->GetString(i, &resource_type_string) ||
         !helpers::ParseResourceType(resource_type_string, &type)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue,
+      *error = ErrorUtils::FormatErrorMessage(kInvalidValue,
                                                        keys::kResourceTypeKey);
       return scoped_ptr<WebRequestConditionAttribute>(NULL);
     }
@@ -198,7 +198,7 @@ WebRequestConditionAttributeContentType::Create(
 
   const ListValue* value_as_list = NULL;
   if (!value->GetAsList(&value_as_list)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue, name);
+    *error = ErrorUtils::FormatErrorMessage(kInvalidValue, name);
     return scoped_ptr<WebRequestConditionAttribute>(NULL);
   }
   std::vector<std::string> content_types;
@@ -206,7 +206,7 @@ WebRequestConditionAttributeContentType::Create(
        it != value_as_list->end(); ++it) {
     std::string content_type;
     if (!(*it)->GetAsString(&content_type)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue, name);
+      *error = ErrorUtils::FormatErrorMessage(kInvalidValue, name);
       return scoped_ptr<WebRequestConditionAttribute>(NULL);
     }
     content_types.push_back(content_type);
@@ -527,14 +527,14 @@ scoped_ptr<const HeaderMatcher> PrepareHeaderMatcher(
     std::string* error) {
   const ListValue* value_as_list = NULL;
   if (!value->GetAsList(&value_as_list)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue, name);
+    *error = ErrorUtils::FormatErrorMessage(kInvalidValue, name);
     return scoped_ptr<const HeaderMatcher>(NULL);
   }
 
   scoped_ptr<const HeaderMatcher> header_matcher(
       HeaderMatcher::Create(value_as_list));
   if (header_matcher.get() == NULL)
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue, name);
+    *error = ErrorUtils::FormatErrorMessage(kInvalidValue, name);
   return header_matcher.Pass();
 }
 
@@ -686,7 +686,7 @@ WebRequestConditionAttributeThirdParty::Create(
 
   bool third_party = false;  // Dummy value, gets overwritten.
   if (!value->GetAsBoolean(&third_party)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue,
+    *error = ErrorUtils::FormatErrorMessage(kInvalidValue,
                                                      keys::kThirdPartyKey);
     return scoped_ptr<WebRequestConditionAttribute>(NULL);
   }
@@ -783,7 +783,7 @@ WebRequestConditionAttributeStages::Create(const std::string& name,
 
   int allowed_stages = 0;
   if (!ParseListOfStages(*value, &allowed_stages)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue,
+    *error = ErrorUtils::FormatErrorMessage(kInvalidValue,
                                                      keys::kStagesKey);
     return scoped_ptr<WebRequestConditionAttribute>(NULL);
   }

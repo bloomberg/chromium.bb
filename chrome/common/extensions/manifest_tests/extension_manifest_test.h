@@ -104,7 +104,8 @@ class ExtensionManifestTest : public testing::Test {
                               extensions::Extension::INTERNAL,
                           int flags = extensions::Extension::NO_FLAGS);
 
-  void AddPattern(URLPatternSet* extent, const std::string& pattern);
+  void AddPattern(extensions::URLPatternSet* extent,
+                  const std::string& pattern);
 
   // used to differentiate between calls to LoadAndExpectError,
   // LoadAndExpectWarning and LoadAndExpectSuccess via function RunTestcases.

@@ -15,6 +15,7 @@
 using extensions::APIPermission;
 using extensions::APIPermissionSet;
 using extensions::PermissionSet;
+using extensions::URLPatternSet;
 
 namespace {
 

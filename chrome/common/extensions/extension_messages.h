@@ -11,11 +11,11 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/socket_permission_data.h"
-#include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/view_type.h"
 #include "chrome/common/web_apps.h"
 #include "content/public/common/common_param_traits.h"
 #include "extensions/common/url_pattern.h"
+#include "extensions/common/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -135,8 +135,8 @@ struct ExtensionMsg_Loaded_Params {
 
   // The extension's active permissions.
   extensions::APIPermissionSet apis;
-  URLPatternSet explicit_hosts;
-  URLPatternSet scriptable_hosts;
+  extensions::URLPatternSet explicit_hosts;
+  extensions::URLPatternSet scriptable_hosts;
 
   // We keep this separate so that it can be used in logging.
   std::string id;
@@ -156,8 +156,8 @@ struct ParamTraits<URLPattern> {
 };
 
 template <>
-struct ParamTraits<URLPatternSet> {
-  typedef URLPatternSet param_type;
+struct ParamTraits<extensions::URLPatternSet> {
+  typedef extensions::URLPatternSet param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
@@ -282,15 +282,15 @@ IPC_MESSAGE_CONTROL5(ExtensionMsg_UpdatePermissions,
                      int /* UpdateExtensionPermissionsInfo::REASON */,
                      std::string /* extension_id */,
                      extensions::APIPermissionSet /* permissions */,
-                     URLPatternSet /* explicit_hosts */,
-                     URLPatternSet /* scriptable_hosts */)
+                     extensions::URLPatternSet /* explicit_hosts */,
+                     extensions::URLPatternSet /* scriptable_hosts */)
 
 // Tell the renderer about new tab-specific permissions for an extension.
 IPC_MESSAGE_CONTROL4(ExtensionMsg_UpdateTabSpecificPermissions,
                      int32 /* page_id (only relevant for the target tab) */,
                      int /* tab_id */,
                      std::string /* extension_id */,
-                     URLPatternSet /* hosts */)
+                     extensions::URLPatternSet /* hosts */)
 
 // Tell the renderer to clear tab-specific permissions for some extensions.
 IPC_MESSAGE_CONTROL2(ExtensionMsg_ClearTabSpecificPermissions,

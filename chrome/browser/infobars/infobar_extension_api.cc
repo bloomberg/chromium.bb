@@ -16,9 +16,9 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/error_utils.h"
 #include "grit/generated_resources.h"
 
 using extensions::Extension;
@@ -61,7 +61,7 @@ bool ShowInfoBarFunction::RunImpl() {
       NULL,
       &web_contents,
       NULL)) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
+    error_ = extensions::ErrorUtils::FormatErrorMessage(
         extensions::tabs_constants::kTabNotFoundError,
         base::IntToString(tab_id));
     return false;

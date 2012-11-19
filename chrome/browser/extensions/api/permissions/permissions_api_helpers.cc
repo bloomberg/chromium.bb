@@ -7,10 +7,10 @@
 #include "base/values.h"
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
-#include "chrome/common/extensions/url_pattern_set.h"
+#include "extensions/common/error_utils.h"
+#include "extensions/common/url_pattern_set.h"
 
 using extensions::APIPermission;
 using extensions::PermissionSet;
@@ -58,7 +58,7 @@ scoped_refptr<PermissionSet> UnpackPermissionSet(
         it != permissions_list->end(); ++it) {
       const APIPermissionInfo* permission_info = info->GetByName(*it);
       if (!permission_info) {
-        *error = ExtensionErrorUtils::FormatErrorMessage(
+        *error = ErrorUtils::FormatErrorMessage(
             kUnknownPermissionError, *it);
         return NULL;
       }
@@ -73,7 +73,7 @@ scoped_refptr<PermissionSet> UnpackPermissionSet(
       URLPattern origin(Extension::kValidHostPermissionSchemes);
       URLPattern::ParseResult parse_result = origin.Parse(*it);
       if (URLPattern::PARSE_SUCCESS != parse_result) {
-        *error = ExtensionErrorUtils::FormatErrorMessage(
+        *error = ErrorUtils::FormatErrorMessage(
             kInvalidOrigin,
             *it,
             URLPattern::GetParseResultString(parse_result));

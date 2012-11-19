@@ -16,6 +16,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace extensions {
+
 namespace {
 
 static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
@@ -24,8 +26,6 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 }
 
 }
-
-namespace extensions {
 
 TEST(ExtensionFromUserScript, Basic) {
   base::ScopedTempDir extensions_dir;

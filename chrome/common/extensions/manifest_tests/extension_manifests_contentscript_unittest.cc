@@ -6,8 +6,8 @@
 
 #include "base/string_number_conversions.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "extensions/common/error_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
@@ -16,7 +16,7 @@ TEST_F(ExtensionManifestTest, ContentScriptMatchPattern) {
   Testcase testcases[] = {
     // chrome:// urls are not allowed.
     Testcase("content_script_chrome_url_invalid.json",
-             ExtensionErrorUtils::FormatErrorMessage(
+             extensions::ErrorUtils::FormatErrorMessage(
                  errors::kInvalidMatch,
                  base::IntToString(0),
                  base::IntToString(0),
@@ -25,10 +25,10 @@ TEST_F(ExtensionManifestTest, ContentScriptMatchPattern) {
 
     // Match paterns must be strings.
     Testcase("content_script_match_pattern_not_string.json",
-             ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidMatch,
-                                                     base::IntToString(0),
-                                                     base::IntToString(0),
-                                                     errors::kExpectString))
+             extensions::ErrorUtils::FormatErrorMessage(errors::kInvalidMatch,
+                                                        base::IntToString(0),
+                                                        base::IntToString(0),
+                                                        errors::kExpectString))
   };
   RunTestcases(testcases, arraysize(testcases),
                EXPECT_TYPE_ERROR);
