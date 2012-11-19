@@ -76,7 +76,8 @@ void GetFieldTrialActiveGroupIdsForActiveGroups(
   DCHECK(name_group_ids->empty());
   for (base::FieldTrial::ActiveGroups::const_iterator it =
        active_groups.begin(); it != active_groups.end(); ++it) {
-    name_group_ids->push_back(MakeActiveGroupId(it->trial, it->group));
+    name_group_ids->push_back(MakeActiveGroupId(it->trial_name,
+                                                it->group_name));
   }
 }
 

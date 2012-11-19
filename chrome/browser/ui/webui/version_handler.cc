@@ -92,7 +92,8 @@ void VersionHandler::HandleRequestVersionInfo(const ListValue* args) {
   const std::string kNonBreakingHyphenUTF8String(
       reinterpret_cast<const char*>(kNonBreakingHyphenUTF8));
   for (size_t i = 0; i < active_groups.size(); ++i) {
-    std::string line = active_groups[i].trial + ":" + active_groups[i].group;
+    std::string line = active_groups[i].trial_name + ":" +
+                       active_groups[i].group_name;
     ReplaceChars(line, "-", kNonBreakingHyphenUTF8String, &line);
     variations.push_back(line);
   }

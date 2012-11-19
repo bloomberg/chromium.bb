@@ -24,7 +24,7 @@ namespace {
 // FieldTrial. Note that this will do the group assignment in |trial| if not
 // already done.
 VariationID GetIDForTrial(base::FieldTrial* trial) {
-  return GetGoogleVariationID(trial->name(), trial->group_name());
+  return GetGoogleVariationID(trial->trial_name(), trial->group_name());
 }
 
 }  // namespace
@@ -64,12 +64,12 @@ TEST_F(VariationsUtilTest, GetFieldTrialActiveGroups) {
 
   base::FieldTrial::ActiveGroups active_groups;
   base::FieldTrial::ActiveGroup active_group;
-  active_group.trial = trial_one;
-  active_group.group = group_one;
+  active_group.trial_name = trial_one;
+  active_group.group_name = group_one;
   active_groups.push_back(active_group);
 
-  active_group.trial = trial_two;
-  active_group.group = group_two;
+  active_group.trial_name = trial_two;
+  active_group.group_name = group_two;
   active_groups.push_back(active_group);
 
   // Create our expected groups of IDs.
@@ -119,8 +119,9 @@ TEST_F(VariationsUtilTest, DisableAfterInitialization) {
       base::FieldTrialList::FactoryGetFieldTrial("trial", 100, default_name,
                                                  next_year_, 12, 12, NULL));
   trial->AppendGroup(non_default_name, 100);
-  AssociateGoogleVariationID(trial->name(), default_name, kTestValueA);
-  AssociateGoogleVariationID(trial->name(), non_default_name, kTestValueB);
+  AssociateGoogleVariationID(trial->trial_name(), default_name, kTestValueA);
+  AssociateGoogleVariationID(trial->trial_name(), non_default_name,
+                             kTestValueB);
   trial->Disable();
   ASSERT_EQ(default_name, trial->group_name());
   ASSERT_EQ(kTestValueA, GetIDForTrial(trial.get()));
@@ -136,8 +137,10 @@ TEST_F(VariationsUtilTest, AssociateGoogleVariationID) {
   int winner_group = trial_true->AppendGroup(winner, 10);
 
   // Set GoogleVariationIDs so we can verify that they were chosen correctly.
-  AssociateGoogleVariationID(trial_true->name(), default_name1, kTestValueA);
-  AssociateGoogleVariationID(trial_true->name(), winner, kTestValueB);
+  AssociateGoogleVariationID(trial_true->trial_name(), default_name1,
+                             kTestValueA);
+  AssociateGoogleVariationID(trial_true->trial_name(), winner,
+                             kTestValueB);
 
   EXPECT_EQ(winner_group, trial_true->group());
   EXPECT_EQ(winner, trial_true->group_name());
@@ -150,8 +153,10 @@ TEST_F(VariationsUtilTest, AssociateGoogleVariationID) {
   const std::string loser = "ALoser";
   const int loser_group = trial_false->AppendGroup(loser, 0);
 
-  AssociateGoogleVariationID(trial_false->name(), default_name2, kTestValueA);
-  AssociateGoogleVariationID(trial_false->name(), loser, kTestValueB);
+  AssociateGoogleVariationID(trial_false->trial_name(), default_name2,
+                             kTestValueA);
+  AssociateGoogleVariationID(trial_false->trial_name(), loser,
+                             kTestValueB);
 
   EXPECT_NE(loser_group, trial_false->group());
   EXPECT_EQ(kTestValueA, GetIDForTrial(trial_false.get()));

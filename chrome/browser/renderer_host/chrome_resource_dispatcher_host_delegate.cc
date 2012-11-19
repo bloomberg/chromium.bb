@@ -469,8 +469,8 @@ void ChromeResourceDispatcherHostDelegate::InitVariationIDsCacheIfNeeded() {
   base::FieldTrialList::GetActiveFieldTrialGroups(&initial_groups);
   for (base::FieldTrial::ActiveGroups::const_iterator it =
        initial_groups.begin(); it != initial_groups.end(); ++it) {
-    chrome_variations::VariationID id =
-        chrome_variations::GetGoogleVariationID(it->trial, it->group);
+    const chrome_variations::VariationID id =
+        chrome_variations::GetGoogleVariationID(it->trial_name, it->group_name);
     if (id != chrome_variations::kEmptyID)
       variation_ids_set_.insert(id);
   }
