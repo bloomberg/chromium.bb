@@ -125,6 +125,8 @@ void MediaPlayerBridge::Prepare() {
 void MediaPlayerBridge::GetCookiesCallback(const std::string& cookies) {
   cookies_ = cookies;
   has_cookies_ = true;
+  if (j_media_player_.is_null())
+    return;
 
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
