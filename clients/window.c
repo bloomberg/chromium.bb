@@ -142,6 +142,44 @@ struct window_output {
 	struct wl_list link;
 };
 
+struct toysurface {
+	/*
+	 * Prepare the surface for drawing. Makes sure there is a surface
+	 * of the right size available for rendering, and returns it.
+	 * dx,dy are the x,y of wl_surface.attach.
+	 * width,height are the new surface size.
+	 * Returns the Cairo surface to draw to.
+	 */
+	cairo_surface_t *(*prepare)(struct toysurface *base, int dx, int dy,
+				    int width, int height);
+
+	/*
+	 * Post the surface to the server, returning the server allocation
+	 * rectangle. The Cairo surface from prepare() must be destroyed
+	 * after calling this.
+	 */
+	void (*swap)(struct toysurface *base,
+		     struct rectangle *server_allocation);
+
+	/*
+	 * Make the toysurface current with the given EGL context.
+	 * Returns 0 on success, and negative of failure.
+	 */
+	int (*acquire)(struct toysurface *base, EGLContext ctx);
+
+	/*
+	 * Release the toysurface from the EGL context, returning control
+	 * to Cairo.
+	 */
+	void (*release)(struct toysurface *base);
+
+	/*
+	 * Destroy the toysurface, including the Cairo surface, any
+	 * backing storage, and the Wayland protocol objects.
+	 */
+	void (*destroy)(struct toysurface *base);
+};
+
 struct window {
 	struct display *display;
 	struct window *parent;
@@ -166,6 +204,7 @@ struct window {
 
 	enum window_buffer_type buffer_type;
 
+	struct toysurface *toysurface;
 	cairo_surface_t *cairo_surface;
 
 	struct shm_pool *pool;
@@ -347,68 +386,142 @@ enum window_location {
 };
 
 static const cairo_user_data_key_t shm_surface_data_key;
-static const cairo_user_data_key_t egl_window_surface_data_key;
 
 #ifdef HAVE_CAIRO_EGL
 
-struct egl_window_surface_data {
+struct egl_window_surface {
+	struct toysurface base;
+	cairo_surface_t *cairo_surface;
 	struct display *display;
 	struct wl_surface *surface;
-	struct wl_egl_window *window;
-	EGLSurface surf;
+	struct wl_egl_window *egl_window;
+	EGLSurface egl_surface;
 };
 
-static void
-egl_window_surface_data_destroy(void *p)
+static struct egl_window_surface *
+to_egl_window_surface(struct toysurface *base)
 {
-	struct egl_window_surface_data *data = p;
-	struct display *d = data->display;
-
-	eglDestroySurface(d->dpy, data->surf);
-	wl_egl_window_destroy(data->window);
-	data->surface = NULL;
-
-	free(p);
+	return container_of(base, struct egl_window_surface, base);
 }
 
 static cairo_surface_t *
-display_create_egl_window_surface(struct display *display,
-				  struct wl_surface *surface,
-				  uint32_t flags,
-				  struct rectangle *rectangle)
+egl_window_surface_prepare(struct toysurface *base, int dx, int dy,
+			   int width, int height)
 {
-	cairo_surface_t *cairo_surface;
-	struct egl_window_surface_data *data;
-	EGLConfig config;
+	struct egl_window_surface *surface = to_egl_window_surface(base);
+
+	wl_egl_window_resize(surface->egl_window, width, height, dx, dy);
+	cairo_gl_surface_set_size(surface->cairo_surface, width, height);
+
+	return cairo_surface_reference(surface->cairo_surface);
+}
+
+static void
+egl_window_surface_swap(struct toysurface *base,
+			struct rectangle *server_allocation)
+{
+	struct egl_window_surface *surface = to_egl_window_surface(base);
+
+	cairo_gl_surface_swapbuffers(surface->cairo_surface);
+	wl_egl_window_get_attached_size(surface->egl_window,
+					&server_allocation->width,
+					&server_allocation->height);
+}
+
+static int
+egl_window_surface_acquire(struct toysurface *base, EGLContext ctx)
+{
+	struct egl_window_surface *surface = to_egl_window_surface(base);
 	cairo_device_t *device;
 
-	data = malloc(sizeof *data);
-	if (data == NULL)
+	device = cairo_surface_get_device(surface->cairo_surface);
+	if (!device)
+		return -1;
+
+	if (!ctx) {
+		if (device == surface->display->argb_device)
+			ctx = surface->display->argb_ctx;
+		else
+			assert(0);
+	}
+
+	cairo_device_flush(device);
+	cairo_device_acquire(device);
+	if (!eglMakeCurrent(surface->display->dpy, surface->egl_surface,
+			    surface->egl_surface, ctx))
+		fprintf(stderr, "failed to make surface current\n");
+
+	return 0;
+}
+
+static void
+egl_window_surface_release(struct toysurface *base)
+{
+	struct egl_window_surface *surface = to_egl_window_surface(base);
+	cairo_device_t *device;
+
+	device = cairo_surface_get_device(surface->cairo_surface);
+	if (!device)
+		return;
+
+	if (!eglMakeCurrent(surface->display->dpy, NULL, NULL,
+			    surface->display->argb_ctx))
+		fprintf(stderr, "failed to make context current\n");
+
+	cairo_device_release(device);
+}
+
+static void
+egl_window_surface_destroy(struct toysurface *base)
+{
+	struct egl_window_surface *surface = to_egl_window_surface(base);
+	struct display *d = surface->display;
+
+	cairo_surface_destroy(surface->cairo_surface);
+	eglDestroySurface(d->dpy, surface->egl_surface);
+	wl_egl_window_destroy(surface->egl_window);
+	surface->surface = NULL;
+
+	free(surface);
+}
+
+static struct toysurface *
+egl_window_surface_create(struct display *display,
+			  struct wl_surface *wl_surface,
+			  uint32_t flags,
+			  struct rectangle *rectangle)
+{
+	struct egl_window_surface *surface;
+
+	surface = calloc(1, sizeof *surface);
+	if (!surface)
 		return NULL;
 
-	data->display = display;
-	data->surface = surface;
+	surface->base.prepare = egl_window_surface_prepare;
+	surface->base.swap = egl_window_surface_swap;
+	surface->base.acquire = egl_window_surface_acquire;
+	surface->base.release = egl_window_surface_release;
+	surface->base.destroy = egl_window_surface_destroy;
 
-	config = display->argb_config;
-	device = display->argb_device;
+	surface->display = display;
+	surface->surface = wl_surface;
 
-	data->window = wl_egl_window_create(surface,
-					    rectangle->width,
-					    rectangle->height);
+	surface->egl_window = wl_egl_window_create(surface->surface,
+						   rectangle->width,
+						   rectangle->height);
 
-	data->surf = eglCreateWindowSurface(display->dpy, config,
-					    data->window, NULL);
+	surface->egl_surface = eglCreateWindowSurface(display->dpy,
+						      display->argb_config,
+						      surface->egl_window,
+						      NULL);
 
-	cairo_surface = cairo_gl_surface_create_for_egl(device,
-							data->surf,
-							rectangle->width,
-							rectangle->height);
+	surface->cairo_surface =
+		cairo_gl_surface_create_for_egl(display->argb_device,
+						surface->egl_surface,
+						rectangle->width,
+						rectangle->height);
 
-	cairo_surface_set_user_data(cairo_surface,
-				    &egl_window_surface_data_key,
-				    data, egl_window_surface_data_destroy);
-
-	return cairo_surface;
+	return &surface->base;
 }
 
 #endif
@@ -812,9 +925,6 @@ window_attach_surface(struct window *window)
 {
 	struct display *display = window->display;
 	struct wl_buffer *buffer;
-#ifdef HAVE_CAIRO_EGL
-	struct egl_window_surface_data *data;
-#endif
 	int32_t x, y;
 
 	if (window->type == TYPE_NONE) {
@@ -840,13 +950,8 @@ window_attach_surface(struct window *window)
 	switch (window->buffer_type) {
 #ifdef HAVE_CAIRO_EGL
 	case WINDOW_BUFFER_TYPE_EGL_WINDOW:
-		data = cairo_surface_get_user_data(window->cairo_surface,
-						   &egl_window_surface_data_key);
-
-		cairo_gl_surface_swapbuffers(window->cairo_surface);
-		wl_egl_window_get_attached_size(data->window,
-				&window->server_allocation.width,
-				&window->server_allocation.height);
+		window->toysurface->swap(window->toysurface,
+					 &window->server_allocation);
 		break;
 #endif
 	case WINDOW_BUFFER_TYPE_SHM:
@@ -876,8 +981,12 @@ window_has_focus(struct window *window)
 static void
 window_flush(struct window *window)
 {
-	if (window->cairo_surface)
-		window_attach_surface(window);
+	if (!window->cairo_surface)
+		return;
+
+	window_attach_surface(window);
+	cairo_surface_destroy(window->cairo_surface);
+	window->cairo_surface = NULL;
 }
 
 static void
@@ -891,28 +1000,6 @@ window_set_surface(struct window *window, cairo_surface_t *surface)
 	window->cairo_surface = surface;
 }
 
-#ifdef HAVE_CAIRO_EGL
-static void
-window_resize_cairo_window_surface(struct window *window)
-{
-	struct egl_window_surface_data *data;
-	int x, y;
-
-	data = cairo_surface_get_user_data(window->cairo_surface,
-					   &egl_window_surface_data_key);
-
-	window_get_resize_dx_dy(window, &x, &y),
-	wl_egl_window_resize(data->window,
-			     window->allocation.width,
-			     window->allocation.height,
-			     x,y);
-
-	cairo_gl_surface_set_size(window->cairo_surface,
-				  window->allocation.width,
-				  window->allocation.height);
-}
-#endif
-
 struct display *
 window_get_display(struct window *window)
 {
@@ -924,21 +1011,28 @@ window_create_surface(struct window *window)
 {
 	cairo_surface_t *surface;
 	uint32_t flags = 0;
-	
+
 	if (!window->transparent)
 		flags = SURFACE_OPAQUE;
-	
+
 	switch (window->buffer_type) {
 #ifdef HAVE_CAIRO_EGL
 	case WINDOW_BUFFER_TYPE_EGL_WINDOW:
-		if (window->cairo_surface) {
-			window_resize_cairo_window_surface(window);
-			return;
-		}
-		if (window->display->dpy) {
-			surface = display_create_egl_window_surface(
-					window->display, window->surface,
-					flags, &window->allocation);
+		if (!window->toysurface && window->display->dpy)
+			window->toysurface =
+				egl_window_surface_create(window->display,
+							  window->surface,
+							  flags,
+							  &window->allocation);
+
+		if (window->toysurface) {
+			int dx, dy;
+
+			window_get_resize_dx_dy(window, &dx, &dy);
+			surface = window->toysurface->prepare(window->toysurface,
+							      dx, dy,
+							      window->allocation.width,
+							      window->allocation.height);
 			break;
 		}
 		/* fall through */
@@ -1000,6 +1094,9 @@ window_destroy(struct window *window)
 
 	if (window->cairo_surface != NULL)
 		cairo_surface_destroy(window->cairo_surface);
+
+	if (window->toysurface)
+		window->toysurface->destroy(window->toysurface);
 
 	if (window->frame_cb)
 		wl_callback_destroy(window->frame_cb);
@@ -3874,8 +3971,6 @@ display_create(int argc, char *argv[])
 {
 	struct display *d;
 
-	assert(&egl_window_surface_data_key != &shm_surface_data_key);
-
 	d = malloc(sizeof *d);
 	if (d == NULL)
 		return NULL;
@@ -4053,52 +4148,20 @@ display_acquire_window_surface(struct display *display,
 			       struct window *window,
 			       EGLContext ctx)
 {
-#ifdef HAVE_CAIRO_EGL
-	struct egl_window_surface_data *data;
-	cairo_device_t *device;
-
-	if (!window->cairo_surface)
-		return -1;
-	device = cairo_surface_get_device(window->cairo_surface);
-	if (!device)
+	if (window->buffer_type != WINDOW_BUFFER_TYPE_EGL_WINDOW)
 		return -1;
 
-	if (!ctx) {
-		if (device == display->argb_device)
-			ctx = display->argb_ctx;
-		else
-			assert(0);
-	}
-
-	data = cairo_surface_get_user_data(window->cairo_surface,
-					   &egl_window_surface_data_key);
-
-	cairo_device_flush(device);
-	cairo_device_acquire(device);
-	if (!eglMakeCurrent(display->dpy, data->surf, data->surf, ctx))
-		fprintf(stderr, "failed to make surface current\n");
-
-	return 0;
-#else
-	return -1;
-#endif
+	return window->toysurface->acquire(window->toysurface, ctx);
 }
 
 void
 display_release_window_surface(struct display *display,
 			       struct window *window)
 {
-#ifdef HAVE_CAIRO_EGL
-	cairo_device_t *device;
-	
-	device = cairo_surface_get_device(window->cairo_surface);
-	if (!device)
+	if (window->buffer_type != WINDOW_BUFFER_TYPE_EGL_WINDOW)
 		return;
 
-	if (!eglMakeCurrent(display->dpy, NULL, NULL, display->argb_ctx))
-		fprintf(stderr, "failed to make context current\n");
-	cairo_device_release(device);
-#endif
+	window->toysurface->release(window->toysurface);
 }
 
 void
