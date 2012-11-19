@@ -12,14 +12,9 @@ EXTRA_ARGS = ['100']
 if env.IsRunningUnderValgrind():
   EXTRA_ARGS = ['20']
 
-ANNOTATIONS_LIBS=[]
-if env.Bit('nacl_glibc'):
-  if not env.Bit('bitcode'):
-    ANNOTATIONS_LIBS += ['dynamic_annotations']
-  else:
-    # Valgrind does not yet work with PNaCl.
-    # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2357
-    env.FilterOut(CPPDEFINES = [['DYNAMIC_ANNOTATIONS_ENABLED', '1']])
+valgrind = env.ComponentObject(
+    'valgrind_annotations.o',
+    '${MAIN_DIR}/src/untrusted/valgrind/dynamic_annotations.c')
 
 # GLibC headers currently require target-specific defines.
 # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2447
@@ -48,8 +43,8 @@ if env.Bit('host_windows'):
 
 thread_test_nexe = biased_env.ComponentProgram(
     'thread_test',
-    'thread_test.c',
-    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'] + ANNOTATIONS_LIBS)
+    ['thread_test.c'] + valgrind,
+    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
     'thread_test.out',
@@ -84,8 +79,8 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_thread_test')
 
 race_test_nexe = env.ComponentProgram(
     'race_test',
-    'race_test.c',
-    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'] + ANNOTATIONS_LIBS)
+    ['race_test.c'] + valgrind,
+    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
     'race_test.out',
