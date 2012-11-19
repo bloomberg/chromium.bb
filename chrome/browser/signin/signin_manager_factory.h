@@ -21,6 +21,11 @@ class SigninManagerFactory : public ProfileKeyedServiceFactory {
   // SigninManager (for example, if |profile| is incognito).
   static SigninManager* GetForProfile(Profile* profile);
 
+  // Returns the instance of SigninManager associated with this profile. Returns
+  // null if no SigninManager instance currently exists (will not create a new
+  // instance).
+  static SigninManager* GetForProfileIfExists(Profile* profile);
+
   // Returns an instance of the SigninManagerFactory singleton.
   static SigninManagerFactory* GetInstance();
 

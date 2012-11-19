@@ -18,7 +18,13 @@ CloudPolicyManager::CloudPolicyManager(scoped_ptr<CloudPolicyStore> store)
     : store_(store.Pass()),
       waiting_for_policy_refresh_(false) {
   store_->AddObserver(this);
-  store_->Load();
+
+  // If the underlying store is already initialized, publish the loaded
+  // policy. Otherwise, request a load now.
+  if (store_->is_initialized())
+    CheckAndPublishPolicy();
+  else
+    store_->Load();
 }
 
 CloudPolicyManager::~CloudPolicyManager() {}

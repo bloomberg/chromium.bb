@@ -43,17 +43,27 @@ class CloudPolicyValidatorTest : public testing::Test {
   }
 
   void Validate(testing::Action<void(UserCloudPolicyValidator*)> check_action) {
-    std::vector<uint8> public_key;
-    ASSERT_TRUE(
-        PolicyBuilder::CreateTestSigningKey()->ExportPublicKey(&public_key));
-
     // Create a validator.
+    scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator();
+
+    // Run validation and check the result.
+    EXPECT_CALL(*this, ValidationCompletion(validator.get())).WillOnce(
+        check_action);
+    validator.release()->StartValidation(
+        base::Bind(&CloudPolicyValidatorTest::ValidationCompletion,
+                   base::Unretained(this)));
+    loop_.RunUntilIdle();
+    Mock::VerifyAndClearExpectations(this);
+  }
+
+  scoped_ptr<UserCloudPolicyValidator> CreateValidator() {
+    std::vector<uint8> public_key;
+    EXPECT_TRUE(
+        PolicyBuilder::CreateTestSigningKey()->ExportPublicKey(&public_key));
     policy_.Build();
+
     UserCloudPolicyValidator* validator =
-        UserCloudPolicyValidator::Create(
-            policy_.GetCopy(),
-            base::Bind(&CloudPolicyValidatorTest::ValidationCompletion,
-                       base::Unretained(this)));
+        UserCloudPolicyValidator::Create(policy_.GetCopy());
     validator->ValidateTimestamp(timestamp_, timestamp_,
                                  ignore_missing_timestamp_);
     validator->ValidateUsername(PolicyBuilder::kFakeUsername);
@@ -64,13 +74,9 @@ class CloudPolicyValidatorTest : public testing::Test {
     validator->ValidateSignature(public_key, allow_key_rotation_);
     if (allow_key_rotation_)
       validator->ValidateInitialKey();
-
-    // Run validation and check the result.
-    EXPECT_CALL(*this, ValidationCompletion(validator)).WillOnce(check_action);
-    validator->StartValidation();
-    loop_.RunUntilIdle();
-    Mock::VerifyAndClearExpectations(this);
+    return make_scoped_ptr(validator);
   }
+
 
   void CheckSuccessfulValidation(UserCloudPolicyValidator* validator) {
     EXPECT_TRUE(validator->success());
@@ -100,6 +106,13 @@ class CloudPolicyValidatorTest : public testing::Test {
 
 TEST_F(CloudPolicyValidatorTest, SuccessfulValidation) {
   Validate(Invoke(this, &CloudPolicyValidatorTest::CheckSuccessfulValidation));
+}
+
+TEST_F(CloudPolicyValidatorTest, SuccessfulRunValidation) {
+  scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator();
+  // Run validation immediately (no background tasks).
+  validator->RunValidation();
+  CheckSuccessfulValidation(validator.get());
 }
 
 TEST_F(CloudPolicyValidatorTest, UsernameCanonicalization) {

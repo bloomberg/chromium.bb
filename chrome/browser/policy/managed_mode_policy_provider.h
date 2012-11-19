@@ -31,10 +31,13 @@ class ManagedModePolicyProvider
   // Creates a new ManagedModePolicyProvider that caches its policies in a JSON
   // file inside the profile folder. |sequenced_task_runner| ensures that all
   // file I/O operations are executed in the order that does not collide
-  // with Profile's file operations.
-  static ManagedModePolicyProvider* Create(
+  // with Profile's file operations. If |force_immediate_policy_load| is true,
+  // then the underlying policies are loaded immediately before this call
+  // returns, otherwise they will be loaded asynchronously in the background.
+  static scoped_ptr<ManagedModePolicyProvider> Create(
       Profile* profile,
-      base::SequencedTaskRunner* sequenced_task_runner);
+      base::SequencedTaskRunner* sequenced_task_runner,
+      bool force_immediate_policy_load);
 
   // Use this constructor to inject a different PrefStore (e.g. for testing).
   explicit ManagedModePolicyProvider(PersistentPrefStore* store);

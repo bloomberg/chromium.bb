@@ -140,6 +140,36 @@ TEST_F(UserCloudPolicyStoreTest, LoadWithInvalidFile) {
   EXPECT_TRUE(store_->policy_map().empty());
 }
 
+TEST_F(UserCloudPolicyStoreTest, LoadImmediatelyWithNoFile) {
+  EXPECT_FALSE(store_->policy());
+  EXPECT_TRUE(store_->policy_map().empty());
+
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+  store_->LoadImmediately();  // Should load without running the message loop.
+
+  EXPECT_FALSE(store_->policy());
+  EXPECT_TRUE(store_->policy_map().empty());
+}
+
+TEST_F(UserCloudPolicyStoreTest, LoadImmediatelyWithInvalidFile) {
+  EXPECT_FALSE(store_->policy());
+  EXPECT_TRUE(store_->policy_map().empty());
+
+  // Create a bogus file.
+  ASSERT_TRUE(file_util::CreateDirectory(policy_file().DirName()));
+  std::string bogus_data = "bogus_data";
+  int size = bogus_data.size();
+  ASSERT_EQ(size, file_util::WriteFile(policy_file(),
+                                       bogus_data.c_str(),
+                                       bogus_data.size()));
+
+  ExpectError(store_.get(), CloudPolicyStore::STATUS_LOAD_ERROR);
+  store_->LoadImmediately();  // Should load without running the message loop.
+
+  EXPECT_FALSE(store_->policy());
+  EXPECT_TRUE(store_->policy_map().empty());
+}
+
 TEST_F(UserCloudPolicyStoreTest, Store) {
   EXPECT_FALSE(store_->policy());
   EXPECT_TRUE(store_->policy_map().empty());
@@ -227,6 +257,28 @@ TEST_F(UserCloudPolicyStoreTest, StoreThenLoad) {
   EXPECT_CALL(observer_, OnStoreLoaded(store2.get()));
   store2->Load();
   RunUntilIdle();
+
+  ASSERT_TRUE(store2->policy());
+  EXPECT_EQ(policy_.policy_data().SerializeAsString(),
+            store2->policy()->SerializeAsString());
+  VerifyPolicyMap(store2.get());
+  EXPECT_EQ(CloudPolicyStore::STATUS_OK, store2->status());
+  store2->RemoveObserver(&observer_);
+}
+
+TEST_F(UserCloudPolicyStoreTest, StoreThenLoadImmediately) {
+  // Store a simple policy and make sure it can be read back in.
+  // policy.
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+  store_->Store(policy_.policy());
+  RunUntilIdle();
+
+  // Now, make sure the policy can be read back in from a second store.
+  scoped_ptr<UserCloudPolicyStore> store2(
+      new UserCloudPolicyStore(profile_.get(), policy_file()));
+  store2->AddObserver(&observer_);
+  EXPECT_CALL(observer_, OnStoreLoaded(store2.get()));
+  store2->LoadImmediately();  // Should load without running the message loop.
 
   ASSERT_TRUE(store2->policy());
   EXPECT_EQ(policy_.policy_data().SerializeAsString(),

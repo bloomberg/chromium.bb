@@ -24,6 +24,11 @@ SigninManager* SigninManagerFactory::GetForProfile(Profile* profile) {
       GetInstance()->GetServiceForProfile(profile, true));
 }
 
+SigninManager* SigninManagerFactory::GetForProfileIfExists(Profile* profile) {
+  return static_cast<SigninManager*>(
+      GetInstance()->GetServiceForProfile(profile, false));
+}
+
 // static
 SigninManagerFactory* SigninManagerFactory::GetInstance() {
   return Singleton<SigninManagerFactory>::get();

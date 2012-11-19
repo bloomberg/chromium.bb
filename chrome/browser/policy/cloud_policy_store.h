@@ -103,7 +103,9 @@ class CloudPolicyStore {
   // platform, for storing user policy for the user associated with the passed
   // |profile|. Implementation is defined in the individual platform store
   // files.
-  static scoped_ptr<CloudPolicyStore> CreateUserPolicyStore(Profile* profile);
+  static scoped_ptr<CloudPolicyStore> CreateUserPolicyStore(
+      Profile* profile,
+      bool force_immediate_policy_load);
 
  protected:
   // Invokes the corresponding callback on all registered observers.

@@ -74,9 +74,7 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
   scoped_ptr<DeviceCloudPolicyValidator> validator(
       DeviceCloudPolicyValidator::Create(
           scoped_ptr<em::PolicyFetchResponse>(
-              new em::PolicyFetchResponse(*client_->policy())),
-          base::Bind(&EnrollmentHandlerChromeOS::PolicyValidated,
-                     weak_factory_.GetWeakPtr())));
+              new em::PolicyFetchResponse(*client_->policy()))));
 
   validator->ValidateTimestamp(base::Time(), base::Time::NowFromSystemTime(),
                                false);
@@ -86,7 +84,9 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
   validator->ValidatePolicyType(dm_protocol::kChromeDevicePolicyType);
   validator->ValidatePayload();
   validator->ValidateInitialKey();
-  validator.release()->StartValidation();
+  validator.release()->StartValidation(
+      base::Bind(&EnrollmentHandlerChromeOS::PolicyValidated,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(

@@ -284,7 +284,7 @@ void UserCloudPolicyStoreChromeOS::Validate(
     const UserCloudPolicyValidator::CompletionCallback& callback) {
   // Configure the validator.
   scoped_ptr<UserCloudPolicyValidator> validator =
-      CreateValidator(policy.Pass(), callback);
+      CreateValidator(policy.Pass());
   validator->ValidateUsername(
       chromeos::UserManager::Get()->GetLoggedInUser()->email());
 
@@ -294,7 +294,7 @@ void UserCloudPolicyStoreChromeOS::Validate(
 
   // Start validation. The Validator will free itself once validation is
   // complete.
-  validator.release()->StartValidation();
+  validator.release()->StartValidation(callback);
 }
 
 void UserCloudPolicyStoreChromeOS::OnLegacyLoadFinished(
@@ -360,7 +360,10 @@ void UserCloudPolicyStoreChromeOS::RemoveLegacyCacheDir(const FilePath& dir) {
 
 // static
 scoped_ptr<CloudPolicyStore> CloudPolicyStore::CreateUserPolicyStore(
-    Profile* profile) {
+    Profile* profile, bool force_immediate_policy_load) {
+  // On ChromeOS, callers should never try to load policy synchronously
+  // (profile initialization is always asynchronous).
+  DCHECK(!force_immediate_policy_load);
   FilePath profile_dir;
   CHECK(PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
   CommandLine* command_line = CommandLine::ForCurrentProcess();

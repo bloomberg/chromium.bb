@@ -346,11 +346,17 @@ ProfileImpl::ProfileImpl(
   // values).
   policy::BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
-  cloud_policy_manager_ = connector->CreateCloudPolicyManager(this);
+  // If we are creating the profile synchronously, then we should load the
+  // policy data immediately.
+  bool force_immediate_policy_load = (create_mode == CREATE_MODE_SYNCHRONOUS);
+  cloud_policy_manager_ =
+      connector->CreateCloudPolicyManager(this, force_immediate_policy_load);
   if (cloud_policy_manager_)
     cloud_policy_manager_->Init();
-  managed_mode_policy_provider_.reset(
-      policy::ManagedModePolicyProvider::Create(this, sequenced_task_runner));
+  managed_mode_policy_provider_ =
+      policy::ManagedModePolicyProvider::Create(this,
+                                                sequenced_task_runner,
+                                                force_immediate_policy_load);
   managed_mode_policy_provider_->Init();
   policy_service_ = connector->CreatePolicyService(this);
 #else

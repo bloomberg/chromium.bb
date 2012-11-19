@@ -184,30 +184,41 @@ void BrowserPolicyConnector::Shutdown() {
 }
 
 scoped_ptr<UserCloudPolicyManager>
-    BrowserPolicyConnector::CreateCloudPolicyManager(Profile* profile) {
+    BrowserPolicyConnector::CreateCloudPolicyManager(
+        Profile* profile,
+        bool force_immediate_policy_load) {
   scoped_ptr<UserCloudPolicyManager> manager;
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableCloudPolicyService)) {
-    bool wait_for_policy_fetch = false;
+    UserCloudPolicyManager::PolicyInit policy_init =
+        UserCloudPolicyManager::POLICY_INIT_IN_BACKGROUND;
 #if defined(OS_CHROMEOS)
     // TODO(mnissler): Revisit once Chrome OS gains multi-profiles support.
     // Don't wait for a policy fetch if there's no logged in user.
     if (chromeos::UserManager::Get()->IsUserLoggedIn()) {
       std::string email =
           chromeos::UserManager::Get()->GetLoggedInUser()->email();
-      wait_for_policy_fetch =
-          GetUserAffiliation(email) == USER_AFFILIATION_MANAGED;
+      if (GetUserAffiliation(email) == USER_AFFILIATION_MANAGED)
+        policy_init = UserCloudPolicyManager::POLICY_INIT_REFRESH_FROM_SERVER;
     }
 #else
     // On desktop, there's no way to figure out if a user is logged in yet
-    // because prefs are not yet initialized. So we do not block waiting for
-    // the policy fetch to happen (because that would inhibit startup for
-    // non-signed-in users) and instead rely on the fact that a signed-in
-    // profile will already have policy downloaded. If no policy is available
+    // because prefs are not yet initialized, and further there's no way to know
+    // if the user is managed. So this code does not request a policy refresh
+    // from the server because that would inhibit startup for non-signed-in
+    // users. This code relies on the fact that a signed-in profile should
+    // already have policy downloaded. If no policy is available
     // (due to a previous fetch failing), the normal policy refresh mechanism
     // will cause it to get downloaded eventually.
+    if (force_immediate_policy_load) {
+      // On desktop, profile creation on startup requires that policies get
+      // loaded immediately (the normal asynchronous policy initialization
+      // does not happen because services are initialized before the
+      // MessageLoop runs). So load policy immediately if desired.
+      policy_init = UserCloudPolicyManager::POLICY_INIT_IMMEDIATELY;
+    }
 #endif
-    manager = UserCloudPolicyManager::Create(profile, wait_for_policy_fetch);
+    manager = UserCloudPolicyManager::Create(profile, policy_init);
   }
   return manager.Pass();
 }

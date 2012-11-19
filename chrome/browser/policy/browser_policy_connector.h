@@ -63,8 +63,14 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   bool is_initialized() const { return is_initialized_; }
 
   // Creates a UserCloudPolicyManager for the given profile, or returns NULL if
-  // it is not supported on this platform.
-  scoped_ptr<UserCloudPolicyManager> CreateCloudPolicyManager(Profile* profile);
+  // it is not supported on this platform. If |force_immediate_policy_load| is
+  // true, then any underlying policy files will be loaded before this routine
+  // returns - this is used when the caller (such as
+  // CreateProfile(CREATE_MODE_SYNCHRONOUS)) needs to access the policy values
+  // immediately without waiting for tasks to complete.
+  scoped_ptr<UserCloudPolicyManager> CreateCloudPolicyManager(
+      Profile* profile,
+      bool force_immediate_policy_load);
 
   // Creates a new policy service for the given profile.
   scoped_ptr<PolicyService> CreatePolicyService(Profile* profile);

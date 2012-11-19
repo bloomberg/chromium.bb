@@ -25,8 +25,7 @@ class UserCloudPolicyStoreBase : public CloudPolicyStore {
   // Creates a validator configured to validate a user policy. The caller owns
   // the resulting object until StartValidation() is invoked.
   scoped_ptr<UserCloudPolicyValidator> CreateValidator(
-      scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
-      const UserCloudPolicyValidator::CompletionCallback& callback);
+      scoped_ptr<enterprise_management::PolicyFetchResponse> policy);
 
   // Sets |policy_data| and |payload| as the active policy.
   void InstallPolicy(

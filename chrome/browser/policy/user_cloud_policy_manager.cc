@@ -23,11 +23,12 @@ UserCloudPolicyManager::~UserCloudPolicyManager() {}
 // static
 scoped_ptr<UserCloudPolicyManager> UserCloudPolicyManager::Create(
     Profile* profile,
-    bool wait_for_policy_fetch) {
+    PolicyInit policy_init) {
   scoped_ptr<CloudPolicyStore> store =
-      CloudPolicyStore::CreateUserPolicyStore(profile);
-  return scoped_ptr<UserCloudPolicyManager>(
-      new UserCloudPolicyManager(store.Pass(), wait_for_policy_fetch));
+      CloudPolicyStore::CreateUserPolicyStore(
+          profile, policy_init == POLICY_INIT_IMMEDIATELY);
+  return make_scoped_ptr(new UserCloudPolicyManager(
+      store.Pass(), policy_init == POLICY_INIT_REFRESH_FROM_SERVER));
 }
 
 void UserCloudPolicyManager::Initialize(

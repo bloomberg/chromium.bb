@@ -252,10 +252,7 @@ TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
       policy_response->ParseFromString(
           device_settings_test_helper_.policy_blob()));
   policy::DeviceCloudPolicyValidator* validator =
-      policy::DeviceCloudPolicyValidator::Create(
-          policy_response.Pass(),
-          base::Bind(&SessionManagerOperationTest::CheckSuccessfulValidation,
-                     base::Unretained(this)));
+      policy::DeviceCloudPolicyValidator::Create(policy_response.Pass());
   validator->ValidateUsername(policy_.policy_data().username());
   validator->ValidateTimestamp(before, after, false);
   validator->ValidatePolicyType(policy::dm_protocol::kChromeDevicePolicyType);
@@ -263,7 +260,10 @@ TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
   std::vector<uint8> public_key;
   policy_.signing_key()->ExportPublicKey(&public_key);
   validator->ValidateSignature(public_key, false);
-  validator->StartValidation();
+  validator->StartValidation(
+      base::Bind(&SessionManagerOperationTest::CheckSuccessfulValidation,
+                 base::Unretained(this)));
+
   message_loop_.RunUntilIdle();
   EXPECT_TRUE(validated_);
 

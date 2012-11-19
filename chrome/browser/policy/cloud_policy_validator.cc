@@ -105,22 +105,12 @@ void CloudPolicyValidatorBase::ValidateAgainstCurrentPolicy(
     ValidateDMToken(expected_dm_token);
 }
 
-void CloudPolicyValidatorBase::StartValidation() {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CloudPolicyValidatorBase::PerformValidation,
-                 base::Passed(scoped_ptr<CloudPolicyValidatorBase>(this)),
-                 MessageLoop::current()->message_loop_proxy()));
-}
-
 CloudPolicyValidatorBase::CloudPolicyValidatorBase(
     scoped_ptr<em::PolicyFetchResponse> policy_response,
-    google::protobuf::MessageLite* payload,
-    const base::Closure& completion_callback)
+    google::protobuf::MessageLite* payload)
     : status_(VALIDATION_OK),
       policy_(policy_response.Pass()),
       payload_(payload),
-      completion_callback_(completion_callback),
       validation_flags_(0),
       timestamp_not_before_(0),
       timestamp_not_after_(0),
@@ -130,21 +120,29 @@ CloudPolicyValidatorBase::CloudPolicyValidatorBase(
 // static
 void CloudPolicyValidatorBase::PerformValidation(
     scoped_ptr<CloudPolicyValidatorBase> self,
-    scoped_refptr<base::MessageLoopProxy> message_loop) {
-  self->policy_data_.reset(new em::PolicyData());
-  self->RunChecks();
+    scoped_refptr<base::MessageLoopProxy> message_loop,
+    const base::Closure& completion_callback) {
+  // Run the validation activities on this thread.
+  self->RunValidation();
 
   // Report completion on |message_loop|.
   message_loop->PostTask(
       FROM_HERE,
       base::Bind(&CloudPolicyValidatorBase::ReportCompletion,
-                 base::Passed(&self)));
+                 base::Passed(&self),
+                 completion_callback));
 }
 
 // static
 void CloudPolicyValidatorBase::ReportCompletion(
-    scoped_ptr<CloudPolicyValidatorBase> self) {
-  self->completion_callback_.Run();
+    scoped_ptr<CloudPolicyValidatorBase> self,
+    const base::Closure& completion_callback) {
+  completion_callback.Run();
+}
+
+void CloudPolicyValidatorBase::RunValidation() {
+  policy_data_.reset(new em::PolicyData());
+  RunChecks();
 }
 
 void CloudPolicyValidatorBase::RunChecks() {
@@ -338,22 +336,29 @@ CloudPolicyValidator<PayloadProto>::~CloudPolicyValidator() {}
 
 template<typename PayloadProto>
 CloudPolicyValidator<PayloadProto>* CloudPolicyValidator<PayloadProto>::Create(
-    scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response,
-    const CompletionCallback& completion_callback) {
+    scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response) {
   return new CloudPolicyValidator(
       policy_response.Pass(),
-      scoped_ptr<PayloadProto>(new PayloadProto()),
-      completion_callback);
+      scoped_ptr<PayloadProto>(new PayloadProto()));
 }
 
 template<typename PayloadProto>
 CloudPolicyValidator<PayloadProto>::CloudPolicyValidator(
     scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response,
-    scoped_ptr<PayloadProto> payload,
-    const CompletionCallback& completion_callback)
-    : CloudPolicyValidatorBase(policy_response.Pass(), payload.get(),
-                               base::Bind(completion_callback, this)),
+    scoped_ptr<PayloadProto> payload)
+    : CloudPolicyValidatorBase(policy_response.Pass(), payload.get()),
       payload_(payload.Pass()) {}
+
+template<typename PayloadProto>
+void CloudPolicyValidator<PayloadProto>::StartValidation(
+    const CompletionCallback& completion_callback) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CloudPolicyValidatorBase::PerformValidation,
+                 base::Passed(scoped_ptr<CloudPolicyValidatorBase>(this)),
+                 MessageLoop::current()->message_loop_proxy(),
+                 base::Bind(completion_callback, this)));
+}
 
 template class CloudPolicyValidator<
     enterprise_management::ChromeDeviceSettingsProto>;

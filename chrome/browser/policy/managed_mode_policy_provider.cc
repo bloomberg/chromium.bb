@@ -19,19 +19,27 @@ namespace policy {
 const char ManagedModePolicyProvider::kPolicies[] = "policies";
 
 // static
-ManagedModePolicyProvider* ManagedModePolicyProvider::Create(
+scoped_ptr<ManagedModePolicyProvider> ManagedModePolicyProvider::Create(
     Profile* profile,
-    base::SequencedTaskRunner* sequenced_task_runner) {
+    base::SequencedTaskRunner* sequenced_task_runner,
+    bool force_load) {
   FilePath path = profile->GetPath().Append(chrome::kManagedModePolicyFilename);
   JsonPrefStore* pref_store = new JsonPrefStore(path, sequenced_task_runner);
-  return new ManagedModePolicyProvider(pref_store);
+  // Load the data synchronously if needed (when creating profiles on startup).
+  if (force_load)
+    pref_store->ReadPrefs();
+  else
+    pref_store->ReadPrefsAsync(NULL);
+
+  return make_scoped_ptr(new ManagedModePolicyProvider(pref_store));
 }
 
 ManagedModePolicyProvider::ManagedModePolicyProvider(
     PersistentPrefStore* pref_store)
     : store_(pref_store) {
   store_->AddObserver(this);
-  store_->ReadPrefsAsync(NULL);
+  if (store_->IsInitializationComplete())
+    UpdatePolicyFromCache();
 }
 
 ManagedModePolicyProvider::~ManagedModePolicyProvider() {}

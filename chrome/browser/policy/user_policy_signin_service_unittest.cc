@@ -53,7 +53,6 @@ class UserPolicySigninServiceTest : public testing::Test {
     // Create a UserCloudPolicyManager with a MockCloudPolicyStore, and build a
     // TestingProfile that uses it.
     mock_store_ = new MockCloudPolicyStore();
-    EXPECT_CALL(*mock_store_, Load());
     scoped_ptr<UserCloudPolicyManager> manager(new UserCloudPolicyManager(
         scoped_ptr<CloudPolicyStore>(mock_store_), false));
     TestingProfile::Builder builder;
