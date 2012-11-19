@@ -8,6 +8,7 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/gdata_wapi_url_util.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/common/net/url_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,16 +24,6 @@ namespace {
 // etag matching header.
 const char kIfMatchAllHeader[] = "If-Match: *";
 const char kIfMatchHeaderFormat[] = "If-Match: %s";
-
-// URL requesting documents list that belong to the authenticated user only
-// (handled with '/-/mine' part).
-const char kGetDocumentListURLForAllDocuments[] =
-    "https://docs.google.com/feeds/default/private/full/-/mine";
-
-// URL requesting documents list in a particular directory specified by "%s"
-// that belong to the authenticated user only (handled with '/-/mine' part).
-const char kGetDocumentListURLForDirectoryFormat[] =
-    "https://docs.google.com/feeds/default/private/full/%s/contents/-/mine";
 
 // URL requesting documents list of changes to documents collections.
 const char kGetChangesListURL[] =
@@ -96,69 +87,6 @@ const char kUploadParamConvertKey[] = "convert";
 const char kUploadParamConvertValue[] = "false";
 const char kUploadResponseLocation[] = "location";
 const char kUploadResponseRange[] = "range";
-
-// Adds additional parameters for API version, output content type and to show
-// folders in the feed are added to document feed URLs.
-GURL AddStandardUrlParams(const GURL& url) {
-  GURL result =
-      chrome_common_net::AppendOrReplaceQueryParameter(url, "v", "3");
-  result =
-      chrome_common_net::AppendOrReplaceQueryParameter(result, "alt", "json");
-  return result;
-}
-
-// Adds additional parameters to metadata feed to include installed 3rd party
-// applications.
-GURL AddMetadataUrlParams(const GURL& url) {
-  GURL result = AddStandardUrlParams(url);
-  result = chrome_common_net::AppendOrReplaceQueryParameter(
-      result, "include-installed-apps", "true");
-  return result;
-}
-
-// Adds additional parameters for API version, output content type and to show
-// folders in the feed are added to document feed URLs.
-GURL AddFeedUrlParams(const GURL& url,
-                      int num_items_to_fetch,
-                      int changestamp,
-                      const std::string& search_string) {
-  GURL result = AddStandardUrlParams(url);
-  result = chrome_common_net::AppendOrReplaceQueryParameter(
-      result,
-      "showfolders",
-      "true");
-  result = chrome_common_net::AppendOrReplaceQueryParameter(
-      result,
-      "max-results",
-      base::StringPrintf("%d", num_items_to_fetch));
-  result = chrome_common_net::AppendOrReplaceQueryParameter(
-      result, "include-installed-apps", "true");
-
-  if (changestamp) {
-    result = chrome_common_net::AppendQueryParameter(
-        result,
-        "start-index",
-        base::StringPrintf("%d", changestamp));
-  }
-
-  if (!search_string.empty()) {
-    result = chrome_common_net::AppendOrReplaceQueryParameter(
-        result, "q", search_string);
-  }
-  return result;
-}
-
-// Formats a URL for getting document list. If |directory_resource_id| is
-// empty, returns a URL for fetching all documents. If it's given, returns a
-// URL for fetching documents in a particular directory.
-GURL FormatDocumentListURL(const std::string& directory_resource_id) {
-  if (directory_resource_id.empty())
-    return GURL(kGetDocumentListURLForAllDocuments);
-
-  return GURL(base::StringPrintf(kGetDocumentListURLForDirectoryFormat,
-                                 net::EscapePath(
-                                     directory_resource_id).c_str()));
-}
 
 }  // namespace
 
@@ -241,29 +169,32 @@ GURL GetDocumentsOperation::GetURL() const {
                                           kMaxDocumentsPerSearchFeed;
 
   if (!override_url_.is_empty())
-    return AddFeedUrlParams(override_url_,
-                            max_docs,
-                            0,
-                            search_string_);
+    return gdata_wapi_url_util::AddFeedUrlParams(override_url_,
+                                                 max_docs,
+                                                 0,
+                                                 search_string_);
 
   if (shared_with_me_) {
-    return AddFeedUrlParams(GURL(kGetDocumentListURLForSharedWithMe),
-                            max_docs,
-                            0,
-                            search_string_);
+    return gdata_wapi_url_util::AddFeedUrlParams(
+        GURL(kGetDocumentListURLForSharedWithMe),
+        max_docs,
+        0,
+        search_string_);
   }
 
   if (start_changestamp_ == 0) {
-    return AddFeedUrlParams(FormatDocumentListURL(directory_resource_id_),
-                            max_docs,
-                            0,
-                            search_string_);
+    return gdata_wapi_url_util::AddFeedUrlParams(
+        gdata_wapi_url_util::FormatDocumentListURL(directory_resource_id_),
+        max_docs,
+        0,
+        search_string_);
   }
 
-  return AddFeedUrlParams(GURL(kGetChangesListURL),
-                          kMaxDocumentsPerFeed,
-                          start_changestamp_,
-                          std::string());
+  return gdata_wapi_url_util::AddFeedUrlParams(
+      GURL(kGetChangesListURL),
+      kMaxDocumentsPerFeed,
+      start_changestamp_,
+      std::string());
 }
 
 //============================ GetDocumentEntryOperation =======================
@@ -281,7 +212,7 @@ GetDocumentEntryOperation::~GetDocumentEntryOperation() {}
 GURL GetDocumentEntryOperation::GetURL() const {
   GURL result = GURL(base::StringPrintf(kGetDocumentEntryURLFormat,
                                         net::EscapePath(resource_id_).c_str()));
-  return AddStandardUrlParams(result);
+  return gdata_wapi_url_util::AddStandardUrlParams(result);
 }
 
 //========================= GetAccountMetadataOperation ========================
@@ -295,7 +226,7 @@ GetAccountMetadataOperation::GetAccountMetadataOperation(
 GetAccountMetadataOperation::~GetAccountMetadataOperation() {}
 
 GURL GetAccountMetadataOperation::GetURL() const {
-  return AddMetadataUrlParams(GURL(kAccountMetadataURL));
+  return gdata_wapi_url_util::AddMetadataUrlParams(GURL(kAccountMetadataURL));
 }
 
 //============================ DownloadFileOperation ===========================
@@ -377,7 +308,7 @@ DeleteDocumentOperation::DeleteDocumentOperation(
 DeleteDocumentOperation::~DeleteDocumentOperation() {}
 
 GURL DeleteDocumentOperation::GetURL() const {
-  return AddStandardUrlParams(document_url());
+  return gdata_wapi_url_util::AddStandardUrlParams(document_url());
 }
 
 URLFetcher::RequestType DeleteDocumentOperation::GetRequestType() const {
@@ -407,9 +338,9 @@ CreateDirectoryOperation::~CreateDirectoryOperation() {}
 
 GURL CreateDirectoryOperation::GetURL() const {
   if (!parent_content_url_.is_empty())
-    return AddStandardUrlParams(parent_content_url_);
+    return gdata_wapi_url_util::AddStandardUrlParams(parent_content_url_);
 
-  return AddStandardUrlParams(GURL(kDocumentListRootURL));
+  return gdata_wapi_url_util::AddStandardUrlParams(GURL(kDocumentListRootURL));
 }
 
 URLFetcher::RequestType
@@ -461,7 +392,7 @@ URLFetcher::RequestType CopyDocumentOperation::GetRequestType() const {
 }
 
 GURL CopyDocumentOperation::GetURL() const {
-  return AddStandardUrlParams(GURL(kDocumentListRootURL));
+  return gdata_wapi_url_util::AddStandardUrlParams(GURL(kDocumentListRootURL));
 }
 
 bool CopyDocumentOperation::GetContentData(std::string* upload_content_type,
@@ -508,7 +439,7 @@ RenameResourceOperation::GetExtraRequestHeaders() const {
 }
 
 GURL RenameResourceOperation::GetURL() const {
-  return AddStandardUrlParams(document_url());
+  return gdata_wapi_url_util::AddStandardUrlParams(document_url());
 }
 
 bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
@@ -633,9 +564,9 @@ AddResourceToDirectoryOperation::~AddResourceToDirectoryOperation() {}
 
 GURL AddResourceToDirectoryOperation::GetURL() const {
   if (!parent_content_url_.is_empty())
-    return AddStandardUrlParams(parent_content_url_);
+    return gdata_wapi_url_util::AddStandardUrlParams(parent_content_url_);
 
-  return AddStandardUrlParams(GURL(kDocumentListRootURL));
+  return gdata_wapi_url_util::AddStandardUrlParams(GURL(kDocumentListRootURL));
 }
 
 URLFetcher::RequestType
@@ -682,7 +613,7 @@ GURL RemoveResourceFromDirectoryOperation::GetURL() const {
   GURL edit_url(base::StringPrintf("%s/%s",
                                    parent_content_url_.spec().c_str(),
                                    escaped_resource_id.c_str()));
-  return AddStandardUrlParams(edit_url);
+  return gdata_wapi_url_util::AddStandardUrlParams(edit_url);
 }
 
 URLFetcher::RequestType

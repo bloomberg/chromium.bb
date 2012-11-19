@@ -770,6 +770,7 @@
         'browser/google_apis/gdata_operations_unittest.cc',
         'browser/google_apis/gdata_wapi_parser_unittest.cc',
         'browser/google_apis/gdata_wapi_service_unittest.cc',
+        'browser/google_apis/gdata_wapi_url_util_unittest.cc',
         'browser/google_apis/mock_drive_service.cc',
         'browser/google_apis/mock_drive_service.h',
         'browser/google_apis/mock_drive_uploader.cc',
