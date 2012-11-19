@@ -893,7 +893,7 @@
         'examples/content_client/examples_content_browser_client.h',
         'examples/content_client/examples_main_delegate.cc',
         'examples/content_client/examples_main_delegate.h',
-        'examples/examples_main.cc',
+        'examples/content_client/examples_main.cc',
       ],
       'conditions': [
         ['OS=="win"', {
