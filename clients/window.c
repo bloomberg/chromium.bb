@@ -889,7 +889,7 @@ window_flush(struct window *window)
 		window_attach_surface(window);
 }
 
-void
+static void
 window_set_surface(struct window *window, cairo_surface_t *surface)
 {
 	cairo_surface_reference(surface);
@@ -928,7 +928,7 @@ window_get_display(struct window *window)
 	return window->display;
 }
 
-void
+static void
 window_create_surface(struct window *window)
 {
 	cairo_surface_t *surface;

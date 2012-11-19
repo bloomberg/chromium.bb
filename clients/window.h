@@ -273,12 +273,6 @@ window_get_wl_shell_surface(struct window *window);
 void
 window_flush(struct window *window);
 
-void
-window_set_surface(struct window *window, cairo_surface_t *surface);
-
-void
-window_create_surface(struct window *window);
-
 enum window_buffer_type {
 	WINDOW_BUFFER_TYPE_EGL_WINDOW,
 	WINDOW_BUFFER_TYPE_SHM,
