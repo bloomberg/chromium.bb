@@ -351,9 +351,6 @@ struct surface_data {
 	struct wl_buffer *buffer;
 };
 
-#define MULT(_d,c,a,t) \
-	do { t = c * a + 0x7f; _d = ((t >> 8) + t) >> 8; } while (0)
-
 #ifdef HAVE_CAIRO_EGL
 
 struct egl_window_surface_data {
