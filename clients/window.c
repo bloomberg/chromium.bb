@@ -1,5 +1,6 @@
 /*
  * Copyright © 2008 Kristian Høgsberg
+ * Copyright © 2012 Collabora, Ltd.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -148,10 +149,11 @@ struct toysurface {
 	 * of the right size available for rendering, and returns it.
 	 * dx,dy are the x,y of wl_surface.attach.
 	 * width,height are the new surface size.
+	 * If resize_hint is non-zero, the user is doing continuous resizing.
 	 * Returns the Cairo surface to draw to.
 	 */
 	cairo_surface_t *(*prepare)(struct toysurface *base, int dx, int dy,
-				    int width, int height);
+				    int width, int height, int resize_hint);
 
 	/*
 	 * Post the surface to the server, returning the server allocation
@@ -203,11 +205,10 @@ struct window {
 	int focus_count;
 
 	enum window_buffer_type buffer_type;
-
 	struct toysurface *toysurface;
 	cairo_surface_t *cairo_surface;
 
-	struct shm_pool *pool;
+	int resizing;
 
 	window_key_handler_t key_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
@@ -406,7 +407,7 @@ to_egl_window_surface(struct toysurface *base)
 
 static cairo_surface_t *
 egl_window_surface_prepare(struct toysurface *base, int dx, int dy,
-			   int width, int height)
+			   int width, int height, int resize_hint)
 {
 	struct egl_window_surface *surface = to_egl_window_surface(base);
 
@@ -693,20 +694,24 @@ display_create_shm_surface_from_pool(struct display *display,
 static cairo_surface_t *
 display_create_shm_surface(struct display *display,
 			   struct rectangle *rectangle, uint32_t flags,
-			   struct window *window)
+			   struct shm_pool *alternate_pool,
+			   struct shm_surface_data **data_ret)
 {
 	struct shm_surface_data *data;
 	struct shm_pool *pool;
 	cairo_surface_t *surface;
 
-	if (window && window->pool) {
-		shm_pool_reset(window->pool);
+	if (alternate_pool) {
+		shm_pool_reset(alternate_pool);
 		surface = display_create_shm_surface_from_pool(display,
 							       rectangle,
 							       flags,
-							       window->pool);
-		if (surface)
-			return surface;
+							       alternate_pool);
+		if (surface) {
+			data = cairo_surface_get_user_data(surface,
+							   &shm_surface_data_key);
+			goto out;
+		}
 	}
 
 	pool = shm_pool_create(display,
@@ -726,6 +731,10 @@ display_create_shm_surface(struct display *display,
 	/* make sure we destroy the pool when the surface is destroyed */
 	data = cairo_surface_get_user_data(surface, &shm_surface_data_key);
 	data->pool = pool;
+
+out:
+	if (data_ret)
+		*data_ret = data;
 
 	return surface;
 }
@@ -751,7 +760,147 @@ display_create_surface(struct display *display,
 		return NULL;
 
 	assert(flags & SURFACE_SHM);
-	return display_create_shm_surface(display, rectangle, flags, NULL);
+	return display_create_shm_surface(display, rectangle, flags,
+					  NULL, NULL);
+}
+
+struct shm_surface {
+	struct toysurface base;
+	struct display *display;
+	struct wl_surface *surface;
+	uint32_t flags;
+	int dx, dy;
+
+	cairo_surface_t *cairo_surface;
+	/* 'data' is automatically destroyed, when 'cairo_surface' is */
+	struct shm_surface_data *data;
+
+	struct shm_pool *resize_pool;
+};
+
+static struct shm_surface *
+to_shm_surface(struct toysurface *base)
+{
+	return container_of(base, struct shm_surface, base);
+}
+
+static cairo_surface_t *
+shm_surface_prepare(struct toysurface *base, int dx, int dy,
+		    int width, int height, int resize_hint)
+{
+	struct shm_surface *surface = to_shm_surface(base);
+	struct rectangle rect = { 0, 0, width, height };
+
+	surface->dx = dx;
+	surface->dy = dy;
+
+	if (!resize_hint && surface->resize_pool) {
+		cairo_surface_destroy(surface->cairo_surface);
+		shm_pool_destroy(surface->resize_pool);
+		surface->resize_pool = NULL;
+		surface->cairo_surface = NULL;
+	}
+
+	if (surface->cairo_surface &&
+	    cairo_image_surface_get_width(surface->cairo_surface) == width &&
+	    cairo_image_surface_get_height(surface->cairo_surface) == height)
+		goto out;
+
+	if (surface->cairo_surface)
+		cairo_surface_destroy(surface->cairo_surface);
+
+	if (resize_hint && !surface->resize_pool) {
+		/* Create a big pool to allocate from, while continuously
+		 * resizing. Mmapping a new pool in the server
+		 * is relatively expensive, so reusing a pool performs
+		 * better, but may temporarily reserve unneeded memory.
+		 */
+		/* We should probably base this number on the output size. */
+		surface->resize_pool = shm_pool_create(surface->display,
+						       6 * 1024 * 1024);
+	}
+
+	surface->cairo_surface =
+		display_create_shm_surface(surface->display, &rect,
+					   surface->flags,
+					   surface->resize_pool,
+					   &surface->data);
+
+out:
+	return cairo_surface_reference(surface->cairo_surface);
+}
+
+static void
+shm_surface_swap(struct toysurface *base,
+		 struct rectangle *server_allocation)
+{
+	struct shm_surface *surface = to_shm_surface(base);
+
+	server_allocation->width =
+		cairo_image_surface_get_width(surface->cairo_surface);
+	server_allocation->height =
+		cairo_image_surface_get_height(surface->cairo_surface);
+
+	wl_surface_attach(surface->surface, surface->data->buffer,
+			  surface->dx, surface->dy);
+	wl_surface_damage(surface->surface, 0, 0,
+			  server_allocation->width, server_allocation->height);
+	wl_surface_commit(surface->surface);
+}
+
+static int
+shm_surface_acquire(struct toysurface *base, EGLContext ctx)
+{
+	return -1;
+}
+
+static void
+shm_surface_release(struct toysurface *base)
+{
+}
+
+static void
+shm_surface_destroy(struct toysurface *base)
+{
+	struct shm_surface *surface = to_shm_surface(base);
+
+	/* this destroys surface->data, too */
+	cairo_surface_destroy(surface->cairo_surface);
+
+	if (surface->resize_pool)
+		shm_pool_destroy(surface->resize_pool);
+
+	free(surface);
+}
+
+static struct toysurface *
+shm_surface_create(struct display *display, struct wl_surface *wl_surface,
+		   uint32_t flags, struct rectangle *rectangle)
+{
+	struct shm_surface *surface;
+
+	surface = calloc(1, sizeof *surface);
+	if (!surface)
+		return NULL;
+
+	surface->base.prepare = shm_surface_prepare;
+	surface->base.swap = shm_surface_swap;
+	surface->base.acquire = shm_surface_acquire;
+	surface->base.release = shm_surface_release;
+	surface->base.destroy = shm_surface_destroy;
+
+	surface->display = display;
+	surface->surface = wl_surface;
+	surface->flags = flags;
+	surface->cairo_surface = display_create_shm_surface(display, rectangle,
+							    flags, NULL,
+							    &surface->data);
+	if (!surface->cairo_surface) {
+		free(surface);
+		return NULL;
+	}
+
+	return &surface->base;
 }
 
 /*
@@ -924,8 +1073,6 @@ static void
 window_attach_surface(struct window *window)
 {
 	struct display *display = window->display;
-	struct wl_buffer *buffer;
-	int32_t x, y;
 
 	if (window->type == TYPE_NONE) {
 		window->type = TYPE_TOPLEVEL;
@@ -947,29 +1094,8 @@ window_attach_surface(struct window *window)
 		window->input_region = NULL;
 	}
 
-	switch (window->buffer_type) {
-#ifdef HAVE_CAIRO_EGL
-	case WINDOW_BUFFER_TYPE_EGL_WINDOW:
-		window->toysurface->swap(window->toysurface,
-					 &window->server_allocation);
-		break;
-#endif
-	case WINDOW_BUFFER_TYPE_SHM:
-		buffer =
-			display_get_buffer_for_surface(display,
-						       window->cairo_surface);
-
-		window_get_resize_dx_dy(window, &x, &y);
-		wl_surface_attach(window->surface, buffer, x, y);
-		wl_surface_damage(window->surface, 0, 0,
-				  window->allocation.width,
-				  window->allocation.height);
-		wl_surface_commit(window->surface);
-		window->server_allocation = window->allocation;
-		break;
-	default:
-		return;
-	}
+	window->toysurface->swap(window->toysurface,
+				 &window->server_allocation);
 }
 
 int
@@ -989,17 +1115,6 @@ window_flush(struct window *window)
 	window->cairo_surface = NULL;
 }
 
-static void
-window_set_surface(struct window *window, cairo_surface_t *surface)
-{
-	cairo_surface_reference(surface);
-
-	if (window->cairo_surface != NULL)
-		cairo_surface_destroy(window->cairo_surface);
-
-	window->cairo_surface = surface;
-}
-
 struct display *
 window_get_display(struct window *window)
 {
@@ -1009,8 +1124,8 @@ window_get_display(struct window *window)
 static void
 window_create_surface(struct window *window)
 {
-	cairo_surface_t *surface;
 	uint32_t flags = 0;
+	int dx, dy;
 
 	if (!window->transparent)
 		flags = SURFACE_OPAQUE;
@@ -1025,30 +1140,25 @@ window_create_surface(struct window *window)
 							  flags,
 							  &window->allocation);
 
-		if (window->toysurface) {
-			int dx, dy;
-
-			window_get_resize_dx_dy(window, &dx, &dy);
-			surface = window->toysurface->prepare(window->toysurface,
-							      dx, dy,
-							      window->allocation.width,
-							      window->allocation.height);
+		if (window->toysurface)
 			break;
-		}
 		/* fall through */
 #endif
 	case WINDOW_BUFFER_TYPE_SHM:
-		surface = display_create_shm_surface(window->display,
-						     &window->allocation,
-						     flags, window);
+		window->toysurface = shm_surface_create(window->display,
+							window->surface, flags,
+							&window->allocation);
 		break;
-        default:
-		surface = NULL;
-		break;
+	default:
+		assert(0);
 	}
 
-	window_set_surface(window, surface);
-	cairo_surface_destroy(surface);
+	window_get_resize_dx_dy(window, &dx, &dy);
+	window->cairo_surface =
+		window->toysurface->prepare(window->toysurface, dx, dy,
+					    window->allocation.width,
+					    window->allocation.height,
+					    window->resizing);
 }
 
 static void frame_destroy(struct frame *frame);
@@ -1091,9 +1201,6 @@ window_destroy(struct window *window)
 		wl_shell_surface_destroy(window->shell_surface);
 	wl_surface_destroy(window->surface);
 	wl_list_remove(&window->link);
-
-	if (window->cairo_surface != NULL)
-		cairo_surface_destroy(window->cairo_surface);
 
 	if (window->toysurface)
 		window->toysurface->destroy(window->toysurface);
@@ -1958,15 +2065,7 @@ frame_button_handler(struct widget *widget,
 				break;
 			input_ungrab(input);
 
-			if (!display->dpy) {
-				/* If we're using shm, allocate a big
-				   pool to create buffers out of while
-				   we resize.  We should probably base
-				   this number on the size of the output. */
-				window->pool =
-					shm_pool_create(display, 6 * 1024 * 1024);
-			}
-
+			window->resizing = 1;
 			wl_shell_surface_resize(window->shell_surface,
 						input_get_seat(input),
 						display->serial, location);
@@ -2140,9 +2239,8 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
 	input->pointer_focus = wl_surface_get_user_data(surface);
 	window = input->pointer_focus;
 
-	if (window->pool) {
-		shm_pool_destroy(window->pool);
-		window->pool = NULL;
+	if (window->resizing) {
+		window->resizing = 0;
 		/* Schedule a redraw to free the pool */
 		window_schedule_redraw(window);
 	}
