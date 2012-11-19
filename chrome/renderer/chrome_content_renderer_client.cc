@@ -320,6 +320,11 @@ SkBitmap* ChromeContentRendererClient::GetSadPluginBitmap() {
       GetImageNamed(IDR_SAD_PLUGIN).ToSkBitmap());
 }
 
+SkBitmap* ChromeContentRendererClient::GetSadWebViewBitmap() {
+  return const_cast<SkBitmap*>(ResourceBundle::GetSharedInstance().
+      GetImageNamed(IDR_SAD_WEBVIEW).ToSkBitmap());
+}
+
 std::string ChromeContentRendererClient::GetDefaultEncoding() {
   return l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING);
 }

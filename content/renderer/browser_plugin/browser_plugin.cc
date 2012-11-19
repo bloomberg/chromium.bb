@@ -692,9 +692,7 @@ void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
   if (guest_crashed_) {
     if (!sad_guest_)  // Lazily initialize bitmap.
       sad_guest_ = content::GetContentClient()->renderer()->
-          GetSadPluginBitmap();
-    // TODO(fsamuel): Do we want to paint something other than a sad plugin
-    // on crash? See http://www.crbug.com/140266.
+          GetSadWebViewBitmap();
     // content_shell does not have the sad plugin bitmap, so we'll paint black
     // instead to make it clear that something went wrong.
     if (sad_guest_) {

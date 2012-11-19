@@ -10,6 +10,10 @@ SkBitmap* ContentRendererClient::GetSadPluginBitmap() {
   return NULL;
 }
 
+SkBitmap* ContentRendererClient::GetSadWebViewBitmap() {
+  return NULL;
+}
+
 std::string ContentRendererClient::GetDefaultEncoding() {
   return std::string();
 }

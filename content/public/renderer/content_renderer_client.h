@@ -72,6 +72,10 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns the bitmap to show when a plugin crashed, or NULL for none.
   virtual SkBitmap* GetSadPluginBitmap();
 
+  // Returns the bitmap to show when a <webview> guest has crashed, or NULL for
+  // none.
+  virtual SkBitmap* GetSadWebViewBitmap();
+
   // Returns the default text encoding.
   virtual std::string GetDefaultEncoding();
 
