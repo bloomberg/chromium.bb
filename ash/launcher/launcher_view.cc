@@ -1014,6 +1014,8 @@ void LauncherView::ButtonPressed(views::Button* sender,
   if (view_index == -1)
     return;
 
+  if (event.IsShiftDown())
+    ui::LayerAnimator::set_slow_animation_mode(true);
   tooltip_->Close();
   switch (model_->items()[view_index].type) {
     case TYPE_TABBED:
@@ -1042,6 +1044,8 @@ void LauncherView::ButtonPressed(views::Button* sender,
       delegate_->OnBrowserShortcutClicked(event.flags());
       break;
   }
+  if (event.IsShiftDown())
+    ui::LayerAnimator::set_slow_animation_mode(false);
 }
 
 void LauncherView::ShowContextMenuForView(views::View* source,
