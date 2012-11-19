@@ -364,7 +364,8 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
 
 #if !defined(OS_ANDROID)
   if (managed_mode_url_filter_ &&
-      !managed_mode_url_filter_->IsURLWhitelisted(request->url())) {
+      managed_mode_url_filter_->GetFilteringBehaviorForURL(request->url()) ==
+          ManagedModeURLFilter::BLOCK) {
     // Block for now.
     return net::ERR_NETWORK_ACCESS_DENIED;
   }

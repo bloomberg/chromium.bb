@@ -118,7 +118,8 @@ class MockCallback : public base::RefCountedThreadSafe<MockCallback> {
 class ManagedModeTest : public ::testing::Test {
  public:
   ManagedModeTest() : message_loop_(MessageLoop::TYPE_UI),
-                      ui_thread_(content::BrowserThread::UI, &message_loop_) {
+                      ui_thread_(content::BrowserThread::UI, &message_loop_),
+                      io_thread_(content::BrowserThread::IO, &message_loop_) {
   }
 
   scoped_refptr<MockCallback> CreateCallback() {
@@ -134,6 +135,7 @@ class ManagedModeTest : public ::testing::Test {
  protected:
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
   TestingProfile managed_mode_profile_;
   TestingProfile other_profile_;
   FakeManagedMode managed_mode_;
@@ -234,12 +236,28 @@ TEST_F(ManagedModeTest, Cancelled) {
 TEST_F(ManagedModeTest, ExtensionManagementPolicyProvider) {
   BrowserFixture managed_mode_browser(&managed_mode_, &managed_mode_profile_);
 
-  EXPECT_TRUE(managed_mode_.UserMayLoad(NULL, NULL));
-  EXPECT_TRUE(managed_mode_.UserMayModifySettings(NULL, NULL));
+  {
+    string16 error;
+    EXPECT_TRUE(managed_mode_.UserMayLoad(NULL, &error));
+    EXPECT_EQ(string16(), error);
+  }
+  {
+    string16 error;
+    EXPECT_TRUE(managed_mode_.UserMayModifySettings(NULL, &error));
+    EXPECT_EQ(string16(), error);
+  }
 
   managed_mode_.SetInManagedMode(&managed_mode_profile_);
-  EXPECT_FALSE(managed_mode_.UserMayLoad(NULL, NULL));
-  EXPECT_FALSE(managed_mode_.UserMayModifySettings(NULL, NULL));
+  {
+    string16 error;
+    EXPECT_FALSE(managed_mode_.UserMayLoad(NULL, &error));
+    EXPECT_FALSE(error.empty());
+  }
+  {
+    string16 error;
+    EXPECT_FALSE(managed_mode_.UserMayModifySettings(NULL, &error));
+    EXPECT_FALSE(error.empty());
+  }
 
 #ifndef NDEBUG
   EXPECT_FALSE(managed_mode_.GetDebugPolicyProviderName().empty());

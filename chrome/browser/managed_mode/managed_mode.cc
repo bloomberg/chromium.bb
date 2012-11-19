@@ -5,9 +5,11 @@
 #include "chrome/browser/managed_mode/managed_mode.h"
 
 #include "base/command_line.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/managed_mode/managed_mode_site_list.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -25,35 +28,49 @@
 using content::BrowserThread;
 
 // A bridge from ManagedMode (which lives on the UI thread) to
-// ManagedModeURLFilter (which lives on the IO thread).
+// ManagedModeURLFilter (which might live on a different thread).
 class ManagedMode::URLFilterContext {
  public:
-  URLFilterContext() {}
+  explicit URLFilterContext(
+      scoped_refptr<base::SequencedTaskRunner> task_runner)
+      : task_runner_(task_runner) {}
   ~URLFilterContext() {}
 
   const ManagedModeURLFilter* url_filter() const {
+    DCHECK(task_runner_->RunsTasksOnCurrentThread());
     return &url_filter_;
   }
 
-  void SetActive(bool in_managed_mode) {
+  void SetDefaultFilteringBehavior(
+      ManagedModeURLFilter::FilteringBehavior behavior) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // Because ManagedMode is a singleton, we can pass the pointer to
     // |url_filter_| unretained.
-    BrowserThread::PostTask(BrowserThread::IO,
-                            FROM_HERE,
-                            base::Bind(
-                                &ManagedModeURLFilter::SetActive,
-                                base::Unretained(&url_filter_),
-                                in_managed_mode));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&ManagedModeURLFilter::SetDefaultFilteringBehavior,
+                   base::Unretained(&url_filter_),
+                   behavior));
+  }
+
+  void LoadWhitelists(ScopedVector<ManagedModeSiteList> site_lists) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&ManagedModeURLFilter::LoadWhitelists,
+                                      base::Unretained(&url_filter_),
+                                      base::Passed(&site_lists),
+                                      base::Bind(&base::DoNothing)));
   }
 
   void ShutdownOnUIThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
+    bool result = task_runner_->DeleteSoon(FROM_HERE, this);
+    DCHECK(result);
   }
 
  private:
   ManagedModeURLFilter url_filter_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(URLFilterContext);
 };
@@ -171,13 +188,21 @@ void ManagedMode::LeaveManagedModeImpl() {
 }
 
 // static
-const ManagedModeURLFilter* ManagedMode::GetURLFilter() {
-  return GetInstance()->GetURLFilterImpl();
+const ManagedModeURLFilter* ManagedMode::GetURLFilterForIOThread() {
+  return GetInstance()->GetURLFilterForIOThreadImpl();
 }
 
-const ManagedModeURLFilter* ManagedMode::GetURLFilterImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return url_filter_context_->url_filter();
+// static
+const ManagedModeURLFilter* ManagedMode::GetURLFilterForUIThread() {
+  return GetInstance()->GetURLFilterForUIThreadImpl();
+}
+
+const ManagedModeURLFilter* ManagedMode::GetURLFilterForIOThreadImpl() {
+  return io_url_filter_context_->url_filter();
+}
+
+const ManagedModeURLFilter* ManagedMode::GetURLFilterForUIThreadImpl() {
+  return ui_url_filter_context_->url_filter();
 }
 
 std::string ManagedMode::GetDebugPolicyProviderName() const {
@@ -192,7 +217,23 @@ std::string ManagedMode::GetDebugPolicyProviderName() const {
 
 bool ManagedMode::UserMayLoad(const extensions::Extension* extension,
                               string16* error) const {
-  return ExtensionManagementPolicyImpl(error);
+  string16 tmp_error;
+  if (ExtensionManagementPolicyImpl(&tmp_error))
+    return true;
+
+  // If the extension is already loaded, we allow it, otherwise we'd unload
+  // all existing extensions.
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(managed_profile_)->extension_service();
+
+  // |extension_service| can be NULL in a unit test.
+  if (extension_service &&
+      extension_service->GetInstalledExtension(extension->id()))
+    return true;
+
+  if (error)
+    *error = tmp_error;
+  return false;
 }
 
 bool ManagedMode::UserMayModifySettings(const extensions::Extension* extension,
@@ -235,8 +276,14 @@ void ManagedMode::OnBrowserRemoved(Browser* browser) {
     FinalizeEnter(true);
 }
 
-ManagedMode::ManagedMode() : managed_profile_(NULL),
-                             url_filter_context_(new URLFilterContext) {
+ManagedMode::ManagedMode()
+    : managed_profile_(NULL),
+      io_url_filter_context_(
+          new URLFilterContext(
+              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))),
+      ui_url_filter_context_(
+          new URLFilterContext(
+              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI))) {
   BrowserList::AddObserver(this);
 }
 
@@ -246,7 +293,8 @@ ManagedMode::~ManagedMode() {
   BrowserList::RemoveObserver(this);
   DCHECK_EQ(0u, callbacks_.size());
   DCHECK_EQ(0u, browsers_to_close_.size());
-  url_filter_context_.release()->ShutdownOnUIThread();
+  io_url_filter_context_.release()->ShutdownOnUIThread();
+  ui_url_filter_context_.release()->ShutdownOnUIThread();
 }
 
 void ManagedMode::Observe(int type,
@@ -266,12 +314,6 @@ void ManagedMode::Observe(int type,
       if (browsers_to_close_.find(browser) != browsers_to_close_.end())
         FinalizeEnter(false);
       return;
-    }
-    case chrome::NOTIFICATION_EXTENSION_LOADED:
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-      if (managed_profile_)
-        UpdateWhitelist();
-      break;
     }
     default:
       NOTREACHED();
@@ -309,21 +351,17 @@ void ManagedMode::SetInManagedMode(Profile* newly_managed_profile) {
     DCHECK(!managed_profile_ || managed_profile_ == newly_managed_profile);
     extensions::ExtensionSystem::Get(
         newly_managed_profile)->management_policy()->RegisterProvider(this);
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                   content::Source<Profile>(newly_managed_profile));
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                   content::Source<Profile>(newly_managed_profile));
   } else {
     extensions::ExtensionSystem::Get(
         managed_profile_)->management_policy()->UnregisterProvider(this);
-    registrar_.Remove(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                      content::Source<Profile>(managed_profile_));
-    registrar_.Remove(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                      content::Source<Profile>(managed_profile_));
   }
 
   managed_profile_ = newly_managed_profile;
-  url_filter_context_->SetActive(in_managed_mode);
+  ManagedModeURLFilter::FilteringBehavior behavior =
+      in_managed_mode ? ManagedModeURLFilter::BLOCK :
+                        ManagedModeURLFilter::ALLOW;
+  io_url_filter_context_->SetDefaultFilteringBehavior(behavior);
+  ui_url_filter_context_->SetDefaultFilteringBehavior(behavior);
   g_browser_process->local_state()->SetBoolean(prefs::kInManagedMode,
                                                in_managed_mode);
   if (in_managed_mode)
@@ -336,7 +374,14 @@ void ManagedMode::SetInManagedMode(Profile* newly_managed_profile) {
       content::NotificationService::NoDetails());
 }
 
-void ManagedMode::UpdateWhitelist() {
+ScopedVector<ManagedModeSiteList> ManagedMode::GetActiveSiteLists() {
   DCHECK(managed_profile_);
-  // TODO(bauerb): Update URL filter with whitelist.
+  ScopedVector<ManagedModeSiteList> site_lists;
+  // TODO(bauerb): Get site lists from all extensions.
+  return site_lists.Pass();
+}
+
+void ManagedMode::UpdateWhitelist() {
+  io_url_filter_context_->LoadWhitelists(GetActiveSiteLists());
+  ui_url_filter_context_->LoadWhitelists(GetActiveSiteLists());
 }

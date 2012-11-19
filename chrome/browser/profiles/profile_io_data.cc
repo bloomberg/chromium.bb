@@ -555,7 +555,7 @@ void ProfileIOData::LazyInitialize() const {
         profile_params_->extension_info_map,
         url_blacklist_manager_.get(),
 #if !defined(OS_ANDROID)
-        ManagedMode::GetURLFilter(),
+        ManagedMode::GetURLFilterForIOThread(),
 #else
         NULL,
 #endif

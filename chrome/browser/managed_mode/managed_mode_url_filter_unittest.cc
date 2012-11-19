@@ -45,10 +45,15 @@ class ManagedModeURLFilterTest : public ::testing::Test {
 
   virtual void SetUp() OVERRIDE {
     filter_.reset(new ManagedModeURLFilter);
-    filter_->SetActive(true);
+    filter_->SetDefaultFilteringBehavior(ManagedModeURLFilter::BLOCK);
   }
 
  protected:
+  bool IsURLWhitelisted(const std::string& url) {
+    return filter_->GetFilteringBehaviorForURL(GURL(url)) ==
+           ManagedModeURLFilter::ALLOW;
+  }
+
   MessageLoop message_loop_;
   base::RunLoop run_loop_;
   scoped_ptr<ManagedModeURLFilter> filter_;
@@ -58,40 +63,40 @@ TEST_F(ManagedModeURLFilterTest, Basic) {
   std::vector<std::string> list;
   // Allow domain and all subdomains, for any filtered scheme.
   list.push_back("google.com");
-  filter_->SetWhitelist(list, run_loop_.QuitClosure());
+  filter_->SetFromPatterns(list, run_loop_.QuitClosure());
   run_loop_.Run();
 
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://google.com")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://google.com/")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://google.com/whatever")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("https://google.com/")));
-  EXPECT_FALSE(filter_->IsURLWhitelisted(GURL("http://notgoogle.com/")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://mail.google.com")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://x.mail.google.com")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("https://x.mail.google.com/")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://x.y.google.com/a/b")));
-  EXPECT_FALSE(filter_->IsURLWhitelisted(GURL("http://youtube.com/")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("bogus://youtube.com/")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("chrome://youtube.com/")));
+  EXPECT_TRUE(IsURLWhitelisted("http://google.com"));
+  EXPECT_TRUE(IsURLWhitelisted("http://google.com/"));
+  EXPECT_TRUE(IsURLWhitelisted("http://google.com/whatever"));
+  EXPECT_TRUE(IsURLWhitelisted("https://google.com/"));
+  EXPECT_FALSE(IsURLWhitelisted("http://notgoogle.com/"));
+  EXPECT_TRUE(IsURLWhitelisted("http://mail.google.com"));
+  EXPECT_TRUE(IsURLWhitelisted("http://x.mail.google.com"));
+  EXPECT_TRUE(IsURLWhitelisted("https://x.mail.google.com/"));
+  EXPECT_TRUE(IsURLWhitelisted("http://x.y.google.com/a/b"));
+  EXPECT_FALSE(IsURLWhitelisted("http://youtube.com/"));
+  EXPECT_TRUE(IsURLWhitelisted("bogus://youtube.com/"));
+  EXPECT_TRUE(IsURLWhitelisted("chrome://youtube.com/"));
 }
 
 TEST_F(ManagedModeURLFilterTest, Inactive) {
-  filter_->SetActive(false);
+  filter_->SetDefaultFilteringBehavior(ManagedModeURLFilter::ALLOW);
 
   std::vector<std::string> list;
   list.push_back("google.com");
-  filter_->SetWhitelist(list, run_loop_.QuitClosure());
+  filter_->SetFromPatterns(list, run_loop_.QuitClosure());
   run_loop_.Run();
 
   // If the filter is inactive, every URL should be whitelisted.
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://google.com")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("https://www.example.com")));
+  EXPECT_TRUE(IsURLWhitelisted("http://google.com"));
+  EXPECT_TRUE(IsURLWhitelisted("https://www.example.com"));
 }
 
 TEST_F(ManagedModeURLFilterTest, Shutdown) {
   std::vector<std::string> list;
   list.push_back("google.com");
-  filter_->SetWhitelist(list, FailClosure(run_loop_.QuitClosure()));
+  filter_->SetFromPatterns(list, FailClosure(run_loop_.QuitClosure()));
   // Destroy the filter before we set the URLMatcher.
   filter_.reset();
   run_loop_.Run();
@@ -103,70 +108,70 @@ TEST_F(ManagedModeURLFilterTest, Scheme) {
   list.push_back("http://secure.com");
   list.push_back("ftp://secure.com");
   list.push_back("ws://secure.com");
-  filter_->SetWhitelist(list, run_loop_.QuitClosure());
+  filter_->SetFromPatterns(list, run_loop_.QuitClosure());
   run_loop_.Run();
 
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://secure.com")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://secure.com/whatever")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("ftp://secure.com/")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("ws://secure.com")));
-  EXPECT_FALSE(filter_->IsURLWhitelisted(GURL("https://secure.com/")));
-  EXPECT_FALSE(filter_->IsURLWhitelisted(GURL("wss://secure.com")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://www.secure.com")));
-  EXPECT_FALSE(filter_->IsURLWhitelisted(GURL("https://www.secure.com")));
-  EXPECT_FALSE(filter_->IsURLWhitelisted(GURL("wss://www.secure.com")));
+  EXPECT_TRUE(IsURLWhitelisted("http://secure.com"));
+  EXPECT_TRUE(IsURLWhitelisted("http://secure.com/whatever"));
+  EXPECT_TRUE(IsURLWhitelisted("ftp://secure.com/"));
+  EXPECT_TRUE(IsURLWhitelisted("ws://secure.com"));
+  EXPECT_FALSE(IsURLWhitelisted("https://secure.com/"));
+  EXPECT_FALSE(IsURLWhitelisted("wss://secure.com"));
+  EXPECT_TRUE(IsURLWhitelisted("http://www.secure.com"));
+  EXPECT_FALSE(IsURLWhitelisted("https://www.secure.com"));
+  EXPECT_FALSE(IsURLWhitelisted("wss://www.secure.com"));
 }
 
 TEST_F(ManagedModeURLFilterTest, Path) {
   std::vector<std::string> list;
   // Filter only a certain path prefix.
   list.push_back("path.to/ruin");
-  filter_->SetWhitelist(list, run_loop_.QuitClosure());
+  filter_->SetFromPatterns(list, run_loop_.QuitClosure());
   run_loop_.Run();
 
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://path.to/ruin")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("https://path.to/ruin")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://path.to/ruins")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://path.to/ruin/signup")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://www.path.to/ruin")));
-  EXPECT_FALSE(filter_->IsURLWhitelisted(GURL("http://path.to/fortune")));
+  EXPECT_TRUE(IsURLWhitelisted("http://path.to/ruin"));
+  EXPECT_TRUE(IsURLWhitelisted("https://path.to/ruin"));
+  EXPECT_TRUE(IsURLWhitelisted("http://path.to/ruins"));
+  EXPECT_TRUE(IsURLWhitelisted("http://path.to/ruin/signup"));
+  EXPECT_TRUE(IsURLWhitelisted("http://www.path.to/ruin"));
+  EXPECT_FALSE(IsURLWhitelisted("http://path.to/fortune"));
 }
 
 TEST_F(ManagedModeURLFilterTest, PathAndScheme) {
   std::vector<std::string> list;
   // Filter only a certain path prefix and scheme.
   list.push_back("https://s.aaa.com/path");
-  filter_->SetWhitelist(list, run_loop_.QuitClosure());
+  filter_->SetFromPatterns(list, run_loop_.QuitClosure());
   run_loop_.Run();
 
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("https://s.aaa.com/path")));
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("https://s.aaa.com/path/bbb")));
-  EXPECT_FALSE(filter_->IsURLWhitelisted(GURL("http://s.aaa.com/path")));
-  EXPECT_FALSE(filter_->IsURLWhitelisted(GURL("https://aaa.com/path")));
-  EXPECT_FALSE(filter_->IsURLWhitelisted(GURL("https://x.aaa.com/path")));
-  EXPECT_FALSE(filter_->IsURLWhitelisted(GURL("https://s.aaa.com/bbb")));
-  EXPECT_FALSE(filter_->IsURLWhitelisted(GURL("https://s.aaa.com/")));
+  EXPECT_TRUE(IsURLWhitelisted("https://s.aaa.com/path"));
+  EXPECT_TRUE(IsURLWhitelisted("https://s.aaa.com/path/bbb"));
+  EXPECT_FALSE(IsURLWhitelisted("http://s.aaa.com/path"));
+  EXPECT_FALSE(IsURLWhitelisted("https://aaa.com/path"));
+  EXPECT_FALSE(IsURLWhitelisted("https://x.aaa.com/path"));
+  EXPECT_FALSE(IsURLWhitelisted("https://s.aaa.com/bbb"));
+  EXPECT_FALSE(IsURLWhitelisted("https://s.aaa.com/"));
 }
 
 TEST_F(ManagedModeURLFilterTest, Host) {
   std::vector<std::string> list;
   // Filter only a certain hostname, without subdomains.
   list.push_back(".www.example.com");
-  filter_->SetWhitelist(list, run_loop_.QuitClosure());
+  filter_->SetFromPatterns(list, run_loop_.QuitClosure());
   run_loop_.Run();
 
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://www.example.com")));
-  EXPECT_FALSE(filter_->IsURLWhitelisted(GURL("http://example.com")));
-  EXPECT_FALSE(filter_->IsURLWhitelisted(GURL("http://subdomain.example.com")));
+  EXPECT_TRUE(IsURLWhitelisted("http://www.example.com"));
+  EXPECT_FALSE(IsURLWhitelisted("http://example.com"));
+  EXPECT_FALSE(IsURLWhitelisted("http://subdomain.example.com"));
 }
 
 TEST_F(ManagedModeURLFilterTest, IPAddress) {
   std::vector<std::string> list;
   // Filter an ip address.
   list.push_back("123.123.123.123");
-  filter_->SetWhitelist(list, run_loop_.QuitClosure());
+  filter_->SetFromPatterns(list, run_loop_.QuitClosure());
   run_loop_.Run();
 
-  EXPECT_TRUE(filter_->IsURLWhitelisted(GURL("http://123.123.123.123/")));
-  EXPECT_FALSE(filter_->IsURLWhitelisted(GURL("http://123.123.123.124/")));
+  EXPECT_TRUE(IsURLWhitelisted("http://123.123.123.123/"));
+  EXPECT_FALSE(IsURLWhitelisted("http://123.123.123.124/"));
 }
