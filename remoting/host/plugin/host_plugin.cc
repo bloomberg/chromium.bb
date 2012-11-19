@@ -67,13 +67,26 @@ class HostNPPlugin : public remoting::PluginThreadTaskRunner::Delegate {
   HostNPPlugin(NPP instance, uint16 mode)
       : instance_(instance),
         scriptable_object_(NULL) {
+    plugin_task_runner_ = new remoting::PluginThreadTaskRunner(this);
+    plugin_auto_task_runner_ =
+        new remoting::AutoThreadTaskRunner(
+            plugin_task_runner_,
+            base::Bind(&remoting::PluginThreadTaskRunner::Quit,
+                       plugin_task_runner_));
   }
 
   ~HostNPPlugin() {
     if (scriptable_object_) {
+      DCHECK_EQ(scriptable_object_->referenceCount, 1UL);
       g_npnetscape_funcs->releaseobject(scriptable_object_);
       scriptable_object_ = NULL;
     }
+
+    // Process tasks on |plugin_task_runner_| until all references to
+    // |plugin_auto_task_runner_| have been dropped. This requires that the
+    // browser has dropped any script object references - see above.
+    plugin_auto_task_runner_ = NULL;
+    plugin_task_runner_->DetachAndRunShutdownLoop();
   }
 
   bool Init(int16 argc, char** argn, char** argv, NPSavedData* saved) {
@@ -206,7 +219,8 @@ class HostNPPlugin : public remoting::PluginThreadTaskRunner::Delegate {
 
     object->_class = aClass;
     object->referenceCount = 1;
-    object->scriptable_object = new HostNPScriptObject(npp, object, plugin);
+    object->scriptable_object =
+        new HostNPScriptObject(npp, object, plugin->plugin_auto_task_runner_);
     return object;
   }
 
@@ -329,6 +343,9 @@ class HostNPPlugin : public remoting::PluginThreadTaskRunner::Delegate {
 
   NPP instance_;
   NPObject* scriptable_object_;
+
+  scoped_refptr<remoting::PluginThreadTaskRunner> plugin_task_runner_;
+  scoped_refptr<remoting::AutoThreadTaskRunner> plugin_auto_task_runner_;
 
   std::map<uint32_t, DelayedTask> timers_;
   base::Lock timers_lock_;

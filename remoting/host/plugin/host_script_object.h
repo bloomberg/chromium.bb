@@ -19,7 +19,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "remoting/base/plugin_thread_task_runner.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/log_to_server.h"
@@ -38,8 +38,9 @@ namespace remoting {
 // destroyed it synchronously shuts down the host and all threads.
 class HostNPScriptObject {
  public:
-  HostNPScriptObject(NPP plugin, NPObject* parent,
-                     PluginThreadTaskRunner::Delegate* plugin_thread_delegate);
+  HostNPScriptObject(NPP plugin,
+                     NPObject* parent,
+                     scoped_refptr<AutoThreadTaskRunner> plugin_task_runner);
   virtual ~HostNPScriptObject();
 
   // Implementations used to implement the NPObject interface.
@@ -251,9 +252,7 @@ class HostNPScriptObject {
 
   NPP plugin_;
   NPObject* parent_;
-  scoped_refptr<PluginThreadTaskRunner> plugin_task_runner_;
-
-  scoped_refptr<AutoThreadTaskRunner> auto_plugin_task_runner_;
+  scoped_refptr<AutoThreadTaskRunner> plugin_task_runner_;
 
   // True if we're in the middle of handling a log message.
   bool am_currently_logging_;
