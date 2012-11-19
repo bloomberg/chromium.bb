@@ -550,12 +550,6 @@ DialogType.isModal = function(type) {
 
     this.gdataSettingsMenu_.addEventListener('menushow',
         this.onGDataMenuShow_.bind(this));
-
-    this.gdataSpaceInfo_ = this.dialogDom_.querySelector('#gdata-space-info');
-    this.gdataSpaceInfoLabel_ =
-        this.dialogDom_.querySelector('#gdata-space-info-label');
-    this.gdataSpaceInfoBar_ =
-        this.dialogDom_.querySelector('#gdata-space-info-bar');
   };
 
   /**
@@ -3294,27 +3288,33 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.onGDataMenuShow_ = function() {
-    this.gdataSpaceInfoBar_.setAttribute('pending', '');
+    var gdataSpaceInfoLabel =
+        this.dialogDom_.querySelector('#gdata-space-info-label');
+
+    var gdataSpaceInnerBar =
+        this.dialogDom_.querySelector('#gdata-space-info-bar');
+    var gdataSpaceOuterBar =
+            this.dialogDom_.querySelector('#gdata-space-info-bar').parentNode;
+
+    gdataSpaceInnerBar.setAttribute('pending', '');
     chrome.fileBrowserPrivate.getSizeStats(
         this.directoryModel_.getCurrentRootUrl(), function(result) {
+          gdataSpaceInnerBar.removeAttribute('pending');
           if (result) {
-            this.gdataSpaceInfoBar_.removeAttribute('pending');
-
             var sizeInGb = util.bytesToSi(result.remainingSizeKB * 1024);
-            this.gdataSpaceInfoLabel_.textContent =
+            gdataSpaceInfoLabel.textContent =
                 strf('GDATA_SPACE_AVAILABLE', sizeInGb);
 
             var usedSpace = result.totalSizeKB - result.remainingSizeKB;
-
-            this.gdataSpaceInfoBar_.style.display = '';
-            this.gdataSpaceInfoBar_.style.width =
+            gdataSpaceInnerBar.style.width =
                 (100 * usedSpace / result.totalSizeKB) + '%';
+
+            gdataSpaceOuterBar.style.display = '';
           } else {
-            this.gdataSpaceInfoBar_.style.display = 'none';
-            this.gdataSpaceInfoLabel_.textContent =
-                str('GDATA_FAILED_SPACE_INFO');
+            gdataSpaceOuterBar.style.display = 'none';
+            gdataSpaceInfoLabel.textContent = str('GDATA_FAILED_SPACE_INFO');
           }
-        }.bind(this));
+        });
   };
 
   /**
