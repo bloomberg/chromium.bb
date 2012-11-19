@@ -28,6 +28,7 @@ class CONTENT_EXPORT GpuBlacklist {
     kOsMacosx,
     kOsWin,
     kOsChromeOS,
+    kOsAndroid,
     kOsAny,
     kOsUnknown
   };

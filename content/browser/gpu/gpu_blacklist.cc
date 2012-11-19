@@ -247,6 +247,8 @@ GpuBlacklist::OsType GpuBlacklist::OsInfo::StringToOsType(
     return kOsWin;
   else if (os == "macosx")
     return kOsMacosx;
+  else if (os == "android")
+    return kOsAndroid;
   else if (os == "linux")
     return kOsLinux;
   else if (os == "chromeos")
@@ -1344,6 +1346,8 @@ GpuBlacklist::OsType GpuBlacklist::GetOsType() {
   return kOsChromeOS;
 #elif defined(OS_WIN)
   return kOsWin;
+#elif defined(OS_ANDROID)
+  return kOsAndroid;
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
   return kOsLinux;
 #elif defined(OS_MACOSX)

@@ -74,7 +74,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.4",
+  "version": "4.5",
   "entries": [
     {
       "id": 1,
@@ -928,6 +928,25 @@
       "blacklist": [
         "multisampling"
       ]
-    }
+    },
+    {
+      "id": 62,
+      "description": "Accelerated 2D canvas buggy on old Qualcomm Adreno.",
+      "cr_bugs": [161575],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": {
+        "op": "contains",
+        "value": "Adreno"
+      },
+      "driver_version": {
+        "op": "<",
+        "number": "4.1"
+      },
+      "blacklist": [
+        "accelerated_2d_canvas"
+      ]
+     }
   ]
 }
