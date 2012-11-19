@@ -27,6 +27,9 @@
 #undef min
 #undef max
 #undef PostMessage
+
+// Allow 'this' in initializer list
+#pragma warning(disable : 4355)
 #endif
 
 namespace {
@@ -213,8 +216,8 @@ class FileIoInstance : public pp::Instance {
 
     request->offset += bytes_written;
 
-    if (request->offset == request->file_contents.length() ||
-        bytes_written == 0) {
+    if (static_cast<size_t>(request->offset) == request->file_contents.length()
+        || bytes_written == 0) {
       // All bytes have been written, flush the write buffer to complete
       pp::CompletionCallback callback = callback_factory_.NewCallback(
           &FileIoInstance::SaveFlushCallback, request);
@@ -342,7 +345,8 @@ class FileIoInstance : public pp::Instance {
 
     request->offset += bytes_read;
 
-    if (request->offset == request->file_contents.length() || bytes_read == 0) {
+    if (static_cast<size_t>(request->offset) == request->file_contents.length()
+        || bytes_read == 0) {
       // Done reading, send content to the user interface
       PostMessage(pp::Var("DISP|" + request->file_contents));
       ShowStatusMessage("Load complete");

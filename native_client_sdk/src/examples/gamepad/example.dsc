@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
   'TARGETS': [
     {
       'NAME' : 'gamepad',
@@ -15,6 +15,7 @@
 Attached gamepad values should appear, left to right, once they've been
 interacted with. Buttons, esp triggers are analog.
 """,
-  'INFO':  'Gamepad interface.'
+  'FOCUS': 'Gamepad interface.',
+  'GROUP': 'API'
 }
 

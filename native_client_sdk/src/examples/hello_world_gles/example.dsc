@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
   'TARGETS': [
     {
       'NAME' : 'hello_world_gles',
@@ -24,7 +24,9 @@
 The Hello World GLES 2.0 example demonstrates how to create a 3D cube
 that rotates.  This is a simpler example than the tumbler example, and 
 written in C.  It loads the assets using URLLoader.""",
-  'INFO': 'Teaching focus: 3D graphics, URL Loader.'
+  'FOCUS': '3D graphics, URL Loader.',
+  'GROUP': 'API'
 }
+
 
 

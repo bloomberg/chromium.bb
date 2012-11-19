@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'win', 'linux'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
   'TARGETS': [
     {
       'NAME' : 'mouselock',
@@ -17,6 +17,7 @@ The Mouselock example demonstrates how to use the MouseLock API to hide
 the mouse cursor.  Mouse lock is only available in full-screen mode.  You can
 lock and unlock the mouse while in full-screen mode by pressing the Enter key.
 """,
-  'INFO': 'Teaching focus: Mouse lock, Full-screen.'
+  'FOCUS': 'Mouse lock, Full-screen.',
+  'GROUP': 'Concepts'
 }
 

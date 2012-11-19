@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
   'TARGETS': [
     {
       'NAME' : 'file_io',
@@ -15,6 +15,7 @@
   'DESC': """
 The File IO example demonstrates saving, loading, and deleting files
 from the persistent file store.""",
-  'INFO': 'Teaching focus: File input and output.'
+  'FOCUS': 'File input and output.',
+  'GROUP': 'API'
 }
 

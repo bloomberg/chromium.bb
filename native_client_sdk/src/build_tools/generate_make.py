@@ -7,6 +7,7 @@ import buildbot_common
 import optparse
 import os
 import sys
+from generate_index import LandingPage
 from buildbot_common import ErrorExit
 from make_rules import MakeRules, SetVar, GenerateCleanRules, GenerateNMFRules
 
@@ -223,7 +224,8 @@ DSC_FORMAT = {
     'DATA': (list, '', False),
     'TITLE': (str, '', False),
     'DESC': (str, '', False),
-    'INFO': (str, '', False),
+    'FOCUS': (str, '', False),
+    'GROUP': (str, '', False),
     'EXPERIMENTAL': (bool, [True, False], False)
 }
 
@@ -564,6 +566,7 @@ def main(argv):
 
   master_projects = {}
 
+  landing_page = LandingPage()
   for filename in args:
     desc = LoadProject(filename, toolchains)
     if not desc:
@@ -578,13 +581,22 @@ def main(argv):
     if not ProcessProject(srcroot, options.dstroot, desc, toolchains):
       ErrorExit('\n*** Failed to process project: %s ***' % filename)
 
-    # if this is an example update the html
+    # if this is an example update it's html file.
     if ShouldProcessHTML(desc):
       ProcessHTML(srcroot, options.dstroot, desc, toolchains)
+
+    # if this is an example, update landing page html file.
+    if desc['DEST'] == 'examples':
+      landing_page.AddDesc(desc)
 
     # Create a list of projects for each DEST. This will be used to generate a
     # master makefile.
     master_projects.setdefault(desc['DEST'], []).append(desc)
+
+  # Generate the landing page text file.
+  index_html = os.path.join(options.dstroot, 'examples', 'index.html')
+  with open(index_html, 'w') as fh:
+    fh.write(landing_page.GeneratePage())
 
   if options.master:
     if use_gyp:
@@ -600,3 +612,4 @@ def main(argv):
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
+

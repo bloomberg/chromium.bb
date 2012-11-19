@@ -555,24 +555,21 @@ def BuildStepCopyBuildHelpers(pepperdir, platform):
 
 EXAMPLE_LIST = [
   'debugging',
+  'dlopen',
   'file_histogram',
   'file_io',
-  'fullscreen_tumbler',
   'gamepad',
   'geturl',
   'hello_nacl_mounts',
-  'hello_world_interactive',
   'hello_world',
   'hello_world_gles',
+  'hello_world_interactive',
   'input_events',
   'load_progress',
   'mouselock',
-  'multithreaded_input_events',
   'pi_generator',
-  'pong',
   'sine_synth',
   'websocket',
-  'dlopen',
 ]
 
 LIBRARY_LIST = [
@@ -624,7 +621,7 @@ def BuildStepCopyExamples(pepperdir, toolchains, build_experimental, clobber):
   MakeDirectoryOrClobber(pepperdir, 'src', clobber)
 
   # Copy individual files
-  files = ['favicon.ico', 'httpd.cmd', 'index.html']
+  files = ['favicon.ico', 'httpd.cmd']
   for filename in files:
     oshelpers.Copy(['-v', os.path.join(SDK_EXAMPLE_DIR, filename), exampledir])
 
