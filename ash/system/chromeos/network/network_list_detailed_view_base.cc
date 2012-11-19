@@ -22,6 +22,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
+const int kPaddingAroundBottomRow = 5;
 
 // Create a label with the font size and color used in the network info bubble.
 views::Label* CreateInfoBubbleLabel(const string16& text) {
@@ -133,14 +134,20 @@ void NetworkListDetailedViewBase::AppendNetworkExtra() {
   if (login_ == user::LOGGED_IN_LOCKED)
     return;
 
-  TrayPopupTextButtonContainer* bottom_row =
-      new TrayPopupTextButtonContainer;
+  views::BoxLayout* layout = new
+    views::BoxLayout(views::BoxLayout::kHorizontal,
+                     kPaddingAroundBottomRow,
+                     kPaddingAroundBottomRow,
+                     -1);
+  layout->set_spread_blank_space(true);
+  views::View* bottom_row = new View();
+  bottom_row->SetLayoutManager(layout);
 
   AppendCustomButtonsToBottomRow(bottom_row);
 
   CreateSettingsEntry();
   DCHECK(settings_ || proxy_settings_);
-  bottom_row->AddTextButton(settings_ ? settings_ : proxy_settings_);
+  bottom_row->AddChildView(settings_ ? settings_ : proxy_settings_);
 
   AddChildView(bottom_row);
 
@@ -315,10 +322,10 @@ void NetworkListDetailedViewBase::CreateSettingsEntry() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (login_ != user::LOGGED_IN_NONE) {
     // Settings, only if logged in.
-    settings_ = new TrayPopupTextButton(this,
+    settings_ = new TrayPopupLabelButton(this,
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS));
   } else {
-    proxy_settings_ = new TrayPopupTextButton(this,
+    proxy_settings_ = new TrayPopupLabelButton(this,
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS));
   }
 }

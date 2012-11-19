@@ -11,7 +11,8 @@
 #include "ui/gfx/size.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/slider.h"
@@ -25,7 +26,6 @@ class ImageSkia;
 
 namespace views {
 class Label;
-class BoxLayout;
 }
 
 namespace ash {
@@ -181,44 +181,32 @@ class FixedSizedScrollView : public views::ScrollView {
   DISALLOW_COPY_AND_ASSIGN(FixedSizedScrollView);
 };
 
-// A custom textbutton with some extra vertical padding, and custom border,
-// alignment and hover-effects.
-class TrayPopupTextButton : public views::TextButton {
+// A border for label buttons that paints a vertical separator in normal state
+// and a custom hover effect in hovered or pressed state.
+class TrayPopupLabelButtonBorder : public views::LabelButtonBorder {
  public:
-  TrayPopupTextButton(views::ButtonListener* listener, const string16& text);
-  virtual ~TrayPopupTextButton();
+  TrayPopupLabelButtonBorder();
+  virtual ~TrayPopupLabelButtonBorder();
+
+  // Overridden from views::LabelButtonBorder.
+  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Insets GetInsets() const OVERRIDE;
 
  private:
-  // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
-
-  bool hover_;
-  scoped_ptr<views::Background> hover_bg_;
-  scoped_ptr<views::Border> hover_border_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrayPopupTextButton);
+  DISALLOW_COPY_AND_ASSIGN(TrayPopupLabelButtonBorder);
 };
 
-// A container for TrayPopupTextButtons (and possibly other views). This sets up
-// the TrayPopupTextButtons to paint their borders correctly.
-class TrayPopupTextButtonContainer : public views::View {
+// A label button with custom alignment, border and focus border.
+class TrayPopupLabelButton : public views::LabelButton {
  public:
-  TrayPopupTextButtonContainer();
-  virtual ~TrayPopupTextButtonContainer();
-
-  void AddTextButton(TrayPopupTextButton* button);
-
-  views::BoxLayout* layout() const { return layout_; }
+  TrayPopupLabelButton(views::ButtonListener* listener, const string16& text);
+  virtual ~TrayPopupLabelButton();
 
  private:
-  views::BoxLayout* layout_;
+  // Overridden from views::LabelButton.
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(TrayPopupTextButtonContainer);
+  DISALLOW_COPY_AND_ASSIGN(TrayPopupLabelButton);
 };
 
 // A ToggleImageButton with fixed size, paddings and hover effects. These
@@ -255,7 +243,7 @@ class TrayBarButtonWithTitle : public views::CustomButton {
                                   int width);
   virtual ~TrayBarButtonWithTitle();
 
-  // Overridden from views::View:
+  // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
 

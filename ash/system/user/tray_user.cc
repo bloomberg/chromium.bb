@@ -103,7 +103,6 @@ class UserView : public views::View,
  public:
   explicit UserView(ash::user::LoginStatus login)
       : login_(login),
-        container_(NULL),
         user_info_(NULL),
         username_(NULL),
         email_(NULL),
@@ -116,10 +115,6 @@ class UserView : public views::View,
 
     set_background(views::Background::CreateSolidBackground(
         public_account ? kPublicAccountBackgroundColor : kBackgroundColor));
-
-    container_ = new TrayPopupTextButtonContainer;
-    container_->layout()->set_spread_blank_space(false);
-    AddChildView(container_);
 
     if (!guest)
       AddUserInfo();
@@ -134,9 +129,9 @@ class UserView : public views::View,
 
   // Create container for buttons.
   void AddButtonContainer() {
-    TrayPopupTextButton* button = new TrayPopupTextButton(this,
+    TrayPopupLabelButton* button = new TrayPopupLabelButton(this,
         ash::user::GetLocalizedSignOutStringForStatus(login_));
-    container_->AddTextButton(button);
+    AddChildView(button);
     signout_ = button;
   }
 
@@ -146,7 +141,7 @@ class UserView : public views::View,
     user_info_->SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal, kTrayPopupPaddingHorizontal,
         kUserInfoVerticalPadding, kTrayPopupPaddingBetweenItems));
-    container_->AddChildView(user_info_);
+    AddChildView(user_info_);
 
     if (login_ == ash::user::LOGGED_IN_KIOSK) {
       views::Label* label = new views::Label;
@@ -214,7 +209,6 @@ class UserView : public views::View,
     if (bounds().IsEmpty())
       return;
 
-    container_->SetBoundsRect(gfx::Rect(size()));
     if (signout_ && user_info_) {
       gfx::Rect signout_bounds(bounds());
       signout_bounds.ClampToCenteredSize(signout_->GetPreferredSize());
@@ -234,7 +228,6 @@ class UserView : public views::View,
 
   user::LoginStatus login_;
 
-  TrayPopupTextButtonContainer* container_;
   views::View* user_info_;
   views::Label* username_;
   views::Label* email_;

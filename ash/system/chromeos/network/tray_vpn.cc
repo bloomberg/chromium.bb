@@ -83,12 +83,12 @@ class VpnListDetailedView : public NetworkListDetailedViewBase {
   }
 
   virtual void AppendCustomButtonsToBottomRow(
-      TrayPopupTextButtonContainer* bottom_row) OVERRIDE {
-    other_vpn_ = new TrayPopupTextButton(
+      views::View* bottom_row) OVERRIDE {
+    other_vpn_ = new TrayPopupLabelButton(
         this,
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_OTHER_VPN));
-    bottom_row->AddTextButton(other_vpn_);
+    bottom_row->AddChildView(other_vpn_);
   }
 
   virtual void UpdateNetworkExtra() OVERRIDE {
@@ -109,7 +109,7 @@ class VpnListDetailedView : public NetworkListDetailedViewBase {
   }
 
  private:
-  TrayPopupTextButton* other_vpn_;
+  TrayPopupLabelButton* other_vpn_;
 
   DISALLOW_COPY_AND_ASSIGN(VpnListDetailedView);
 };

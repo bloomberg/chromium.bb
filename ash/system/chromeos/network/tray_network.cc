@@ -271,19 +271,19 @@ class NetworkListDetailedView : public NetworkListDetailedViewBase {
   }
 
   virtual void AppendCustomButtonsToBottomRow(
-      TrayPopupTextButtonContainer* bottom_row) OVERRIDE {
+      views::View* bottom_row) OVERRIDE {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    other_wifi_ = new TrayPopupTextButton(this,
+    other_wifi_ = new TrayPopupLabelButton(this,
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_OTHER_WIFI));
-    bottom_row->AddTextButton(other_wifi_);
+    bottom_row->AddChildView(other_wifi_);
 
-    turn_on_wifi_ = new TrayPopupTextButton(this,
+    turn_on_wifi_ = new TrayPopupLabelButton(this,
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_TURN_ON_WIFI));
-    bottom_row->AddTextButton(turn_on_wifi_);
+    bottom_row->AddChildView(turn_on_wifi_);
 
-    other_mobile_ = new TrayPopupTextButton(this,
+    other_mobile_ = new TrayPopupLabelButton(this,
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_OTHER_MOBILE));
-    bottom_row->AddTextButton(other_mobile_);
+    bottom_row->AddChildView(other_mobile_);
   }
 
   virtual void UpdateNetworkExtra() OVERRIDE {
@@ -352,9 +352,9 @@ class NetworkListDetailedView : public NetworkListDetailedViewBase {
   TrayPopupHeaderButton* button_mobile_;
   views::View* view_mobile_account_;
   views::View* setup_mobile_account_;
-  TrayPopupTextButton* other_wifi_;
-  TrayPopupTextButton* turn_on_wifi_;
-  TrayPopupTextButton* other_mobile_;
+  TrayPopupLabelButton* other_wifi_;
+  TrayPopupLabelButton* turn_on_wifi_;
+  TrayPopupLabelButton* other_mobile_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkListDetailedView);
 };
