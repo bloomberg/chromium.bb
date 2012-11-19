@@ -687,7 +687,6 @@
             'browser/renderer_host/resource_dispatcher_host_browsertest.cc',
             'browser/session_history_browsertest.cc',
             'browser/speech/speech_recognition_browsertest.cc',
-            'browser/web_contents/web_contents_view_aura_browsertest.cc',
             'browser/webkit_browsertest.cc',
             'browser/worker_host/test/worker_browsertest.cc',
             'common/content_constants_internal.cc',
