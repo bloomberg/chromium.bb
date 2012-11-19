@@ -29,6 +29,7 @@ enum GDataErrorCode {
   GDATA_OTHER_ERROR          = -103,
   GDATA_NO_CONNECTION        = -104,
   GDATA_NOT_READY            = -105,
+  GDATA_NO_SPACE             = -106,
 };
 
 }  // namespace google_apis

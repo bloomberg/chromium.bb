@@ -12,6 +12,7 @@
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
 #include "net/base/escape.h"
+#include "net/base/mime_util.h"
 
 namespace sync_file_system {
 
@@ -21,6 +22,11 @@ const char kRootResourceId[] = "";
 const char kSyncRootDirectoryName[] = "Chrome Syncable FileSystem";
 const char kResourceLinkPrefix[] =
     "https://docs.google.com/feeds/default/private/full/";
+const char kMimeTypeOctetStream[] = "application/octet-stream";
+
+// This path is not actually used but is required by DriveUploaderInterface.
+const FilePath::CharType kDummyDrivePath[] =
+    FILE_PATH_LITERAL("/dummy/drive/path");
 
 bool HasParentLinkTo(const ScopedVector<google_apis::Link>& links,
                      const std::string& parent_resource_id) {
@@ -125,10 +131,8 @@ void DriveFileSyncClient::DidGetDirectory(
     return;
   }
 
-  google_apis::DocumentEntry* entry =
-      GetDocumentByTitleAndParent(feed->entries(),
-                                  parent_resource_id,
-                                  ASCIIToUTF16(directory_name));
+  google_apis::DocumentEntry* entry = GetDocumentByTitleAndParent(
+      feed->entries(), parent_resource_id, ASCIIToUTF16(directory_name));
   if (!entry) {
     if (parent_resource_id.empty()) {
       // Use empty content URL for root directory.
@@ -166,9 +170,15 @@ void DriveFileSyncClient::DidGetParentDirectoryForCreateDirectory(
     callback.Run(error, std::string());
     return;
   }
+  DCHECK(data);
 
   scoped_ptr<google_apis::DocumentEntry> entry(
       google_apis::DocumentEntry::ExtractAndParse(*data));
+  if (!entry) {
+    callback.Run(google_apis::GDATA_PARSE_ERROR, std::string());
+    return;
+  }
+
   drive_service_->AddNewDirectory(
       entry->content_url(),
       directory_name,
@@ -193,6 +203,7 @@ void DriveFileSyncClient::DidCreateDirectory(
   // to create the directory, we might make duplicated directories.
   scoped_ptr<google_apis::DocumentEntry> entry(
       google_apis::DocumentEntry::ExtractAndParse(*data));
+  DCHECK(entry);
   callback.Run(error, entry->resource_id());
 }
 
@@ -226,7 +237,6 @@ void DriveFileSyncClient::SearchFilesInDirectory(
     const std::string& search_query,
     const DocumentFeedCallback& callback) {
   DCHECK(CalledOnValidThread());
-
   drive_service_->GetDocuments(
       GURL(),  // feed_url
       0,  // start_changestamp
@@ -240,7 +250,6 @@ void DriveFileSyncClient::SearchFilesInDirectory(
 void DriveFileSyncClient::ListFiles(const std::string& directory_resource_id,
                                     const DocumentFeedCallback& callback) {
   DCHECK(CalledOnValidThread());
-
   SearchFilesInDirectory(directory_resource_id,
                          std::string() /* search_query */,
                          callback);
@@ -278,8 +287,14 @@ void DriveFileSyncClient::DownloadFile(
     const std::string& local_file_md5,
     const FilePath& local_file_path,
     const DownloadFileCallback& callback) {
-  // TODO(nhiroki): implement.
-  NOTIMPLEMENTED();
+  DCHECK(CalledOnValidThread());
+  drive_service_->GetDocumentEntry(
+      resource_id,
+      base::Bind(&DriveFileSyncClient::DidGetDocumentEntryData,
+                 AsWeakPtr(),
+                 base::Bind(&DriveFileSyncClient::DownloadFileInternal,
+                            AsWeakPtr(), local_file_md5, local_file_path,
+                            callback)));
 }
 
 void DriveFileSyncClient::UploadNewFile(
@@ -288,8 +303,14 @@ void DriveFileSyncClient::UploadNewFile(
     const std::string& title,
     int64 file_size,
     const UploadFileCallback& callback) {
-  // TODO(nhiroki): implement.
-  NOTIMPLEMENTED();
+  DCHECK(CalledOnValidThread());
+  drive_service_->GetDocumentEntry(
+      directory_resource_id,
+      base::Bind(&DriveFileSyncClient::DidGetDocumentEntryData,
+                 AsWeakPtr(),
+                 base::Bind(&DriveFileSyncClient::UploadNewFileInternal,
+                            AsWeakPtr(), local_file_path, title, file_size,
+                            callback)));
 }
 
 void DriveFileSyncClient::UploadExistingFile(
@@ -298,16 +319,27 @@ void DriveFileSyncClient::UploadExistingFile(
     const FilePath& local_file_path,
     int64 file_size,
     const UploadFileCallback& callback) {
-  // TODO(nhiroki): implement.
-  NOTIMPLEMENTED();
+  DCHECK(CalledOnValidThread());
+  drive_service_->GetDocumentEntry(
+      resource_id,
+      base::Bind(&DriveFileSyncClient::DidGetDocumentEntryData,
+                 AsWeakPtr(),
+                 base::Bind(&DriveFileSyncClient::UploadExistingFileInternal,
+                            AsWeakPtr(), remote_file_md5, local_file_path,
+                            file_size, callback)));
 }
 
 void DriveFileSyncClient::DeleteFile(
     const std::string& resource_id,
     const std::string& remote_file_md5,
     const GDataErrorCallback& callback) {
-  // TODO(nhiroki): implement.
-  NOTIMPLEMENTED();
+  DCHECK(CalledOnValidThread());
+  drive_service_->GetDocumentEntry(
+      resource_id,
+      base::Bind(&DriveFileSyncClient::DidGetDocumentEntryData,
+                 AsWeakPtr(),
+                 base::Bind(&DriveFileSyncClient::DeleteFileInternal,
+                            AsWeakPtr(), remote_file_md5, callback)));
 }
 
 void DriveFileSyncClient::DidGetDocumentFeedData(
@@ -316,10 +348,36 @@ void DriveFileSyncClient::DidGetDocumentFeedData(
     scoped_ptr<base::Value> data) {
   DCHECK(CalledOnValidThread());
 
-  callback.Run(error,
-               error == google_apis::HTTP_SUCCESS ?
-                   google_apis::DocumentFeed::ExtractAndParse(*data) :
-                   scoped_ptr<google_apis::DocumentFeed>());
+  if (error != google_apis::HTTP_SUCCESS) {
+    callback.Run(error, scoped_ptr<google_apis::DocumentFeed>());
+    return;
+  }
+
+  DCHECK(data);
+  scoped_ptr<google_apis::DocumentFeed> feed(
+      google_apis::DocumentFeed::ExtractAndParse(*data));
+  if (!feed)
+    error = google_apis::GDATA_PARSE_ERROR;
+  callback.Run(error, feed.Pass());
+}
+
+void DriveFileSyncClient::DidGetDocumentEntryData(
+    const DocumentEntryCallback& callback,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<base::Value> data) {
+  DCHECK(CalledOnValidThread());
+
+  if (error != google_apis::HTTP_SUCCESS) {
+    callback.Run(error, scoped_ptr<google_apis::DocumentEntry>());
+    return;
+  }
+
+  DCHECK(data);
+  scoped_ptr<google_apis::DocumentEntry> entry(
+      google_apis::DocumentEntry::ExtractAndParse(*data));
+  if (!entry)
+    error = google_apis::GDATA_PARSE_ERROR;
+  callback.Run(error, entry.Pass());
 }
 
 // static
@@ -347,6 +405,191 @@ std::string DriveFileSyncClient::FormatTitleQuery(const std::string& title) {
   }
   out << '\'';
   return out.str();
+}
+
+void DriveFileSyncClient::DownloadFileInternal(
+    const std::string& local_file_md5,
+    const FilePath& local_file_path,
+    const DownloadFileCallback& callback,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::DocumentEntry> entry) {
+  DCHECK(CalledOnValidThread());
+
+  if (error != google_apis::HTTP_SUCCESS) {
+    callback.Run(error, std::string());
+    return;
+  }
+  DCHECK(entry);
+
+  // If local file and remote file are same, cancel the download.
+  if (local_file_md5 == entry->file_md5()) {
+    callback.Run(google_apis::HTTP_NOT_MODIFIED, local_file_md5);
+    return;
+  }
+
+  // TODO(nhiroki): support ETag. Currently we assume there is no change between
+  // GetDocumentEntry and DownloadFile call.
+  drive_service_->DownloadFile(
+      FilePath(kDummyDrivePath),
+      local_file_path,
+      entry->content_url(),
+      base::Bind(&DriveFileSyncClient::DidDownloadFile,
+                 AsWeakPtr(), entry->file_md5(), callback),
+      google_apis::GetContentCallback());
+}
+
+void DriveFileSyncClient::DidDownloadFile(
+    const std::string& downloaded_file_md5,
+    const DownloadFileCallback& callback,
+    google_apis::GDataErrorCode error,
+    const GURL& content_url,
+    const FilePath& downloaded_file_path) {
+  DCHECK(CalledOnValidThread());
+  callback.Run(error, downloaded_file_md5);
+}
+
+void DriveFileSyncClient::UploadNewFileInternal(
+    const FilePath& local_file_path,
+    const std::string& title,
+    int64 file_size,
+    const UploadFileCallback& callback,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::DocumentEntry> parent_directory_entry) {
+  DCHECK(CalledOnValidThread());
+
+  if (error != google_apis::HTTP_SUCCESS) {
+    callback.Run(error, std::string(), std::string());
+    return;
+  }
+  DCHECK(parent_directory_entry);
+
+  std::string mime_type;
+  if (!net::GetWellKnownMimeTypeFromExtension(
+          local_file_path.Extension(), &mime_type))
+    mime_type = kMimeTypeOctetStream;
+
+  drive_uploader_->UploadNewFile(
+      parent_directory_entry->GetLinkByType(
+          google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA)->href(),
+      FilePath(kDummyDrivePath),
+      local_file_path,
+      title,
+      mime_type,
+      file_size,  // content_length.
+      file_size,
+      base::Bind(&DriveFileSyncClient::DidUploadFile,
+                 AsWeakPtr(), callback),
+      google_apis::UploaderReadyCallback());
+}
+
+void DriveFileSyncClient::UploadExistingFileInternal(
+    const std::string& remote_file_md5,
+    const FilePath& local_file_path,
+    int64 file_size,
+    const UploadFileCallback& callback,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::DocumentEntry> entry) {
+  DCHECK(CalledOnValidThread());
+
+  if (error != google_apis::HTTP_SUCCESS) {
+    callback.Run(error, std::string(), std::string());
+    return;
+  }
+  DCHECK(entry);
+
+  // If remote file's hash value is different from the expected one, conflict
+  // might have occurred.
+  if (remote_file_md5 != entry->file_md5()) {
+    callback.Run(google_apis::HTTP_CONFLICT, std::string(), std::string());
+    return;
+  }
+
+  std::string mime_type;
+  if (!net::GetWellKnownMimeTypeFromExtension(
+          local_file_path.Extension(), &mime_type))
+    mime_type = kMimeTypeOctetStream;
+
+  // TODO(nhiroki): support ETag. Currently we assume there is no change between
+  // GetDocumentEntry and UploadExistingFile call.
+  drive_uploader_->UploadExistingFile(
+      entry->GetLinkByType(
+          google_apis::Link::LINK_RESUMABLE_EDIT_MEDIA)->href(),
+      FilePath(kDummyDrivePath),
+      local_file_path,
+      mime_type,
+      file_size,
+      base::Bind(&DriveFileSyncClient::DidUploadFile,
+                 AsWeakPtr(), callback),
+      google_apis::UploaderReadyCallback());
+}
+
+void DriveFileSyncClient::DidUploadFile(
+    const UploadFileCallback& callback,
+    google_apis::DriveUploadError error,
+    const FilePath& drive_path,
+    const FilePath& file_path,
+    scoped_ptr<google_apis::DocumentEntry> entry) {
+  DCHECK(CalledOnValidThread());
+
+  // Convert DriveUploadError to GDataErrorCode.
+  switch (error) {
+    case google_apis::DRIVE_UPLOAD_OK:
+      DCHECK(entry);
+      callback.Run(google_apis::HTTP_SUCCESS,
+                   entry->resource_id(), entry->file_md5());
+      return;
+    case google_apis::DRIVE_UPLOAD_ERROR_NOT_FOUND:
+      callback.Run(google_apis::HTTP_NOT_FOUND,
+                   std::string(), std::string());
+      return;
+    case google_apis::DRIVE_UPLOAD_ERROR_NO_SPACE:
+      callback.Run(google_apis::GDATA_NO_SPACE,
+                   std::string(), std::string());
+      return;
+    case google_apis::DRIVE_UPLOAD_ERROR_ABORT:
+      callback.Run(google_apis::GDATA_OTHER_ERROR,
+                   std::string(), std::string());
+      return;
+  }
+  NOTREACHED();
+  callback.Run(google_apis::GDATA_OTHER_ERROR, std::string(), std::string());
+}
+
+void DriveFileSyncClient::DeleteFileInternal(
+    const std::string& remote_file_md5,
+    const GDataErrorCallback& callback,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::DocumentEntry> entry) {
+  DCHECK(CalledOnValidThread());
+
+  if (error != google_apis::HTTP_SUCCESS) {
+    callback.Run(error);
+    return;
+  }
+  DCHECK(entry);
+
+  // If remote file's hash value is different from the expected one, conflict
+  // might have occurred.
+  if (remote_file_md5 != entry->file_md5()) {
+    callback.Run(google_apis::HTTP_CONFLICT);
+    return;
+  }
+
+  // Move the file to trash (don't delete it completely).
+  // TODO(nhiroki): support ETag. Currently we assume there is no change between
+  // GetDocumentEntry and DeleteFile call.
+  drive_service_->DeleteDocument(
+      GURL(entry->GetLinkByType(google_apis::Link::LINK_SELF)->href()),
+      base::Bind(&DriveFileSyncClient::DidDeleteFile,
+                 AsWeakPtr(), callback));
+}
+
+void DriveFileSyncClient::DidDeleteFile(
+    const GDataErrorCallback& callback,
+    google_apis::GDataErrorCode error,
+    const GURL& document_url) {
+  DCHECK(CalledOnValidThread());
+  callback.Run(error);
 }
 
 }  // namespace sync_file_system
