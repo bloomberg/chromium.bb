@@ -8,7 +8,7 @@
   <body>
     {{+partials.header_body title:apps_title}}
     <div id="gc-container">
-      {{+partials.apps_sidenav}}
+      {{+partials.sidenav items:sidenavs.apps}}
       <div id="gc-pagecontent">
         <h1 class="page_title">chrome.{{api.name}}</h1>
         {{?api.permissions.trunk}}{{+partials.warning_trunk}}{{/}}

@@ -1,0 +1,135 @@
+[
+  {
+    "title": "Getting Started",
+    "items": [
+      {
+        "title": "What Are Packaged Apps?",
+        "fileName": "about_apps.html"
+      },
+      {
+        "title": "Understand the Architecture",
+        "fileName": "app_architecture.html"
+      },
+      {
+        "title": "Create Your First App",
+        "fileName": "first_app.html"
+      }
+    ]
+  },
+  {
+    "title": "Developing",
+    "items": [
+      {
+        "title": "Before You Start",
+        "fileName": "develop_apps.html"
+      },
+      {
+        "title": "The Fundamentals",
+        "toggleable": true,
+        "items": [
+          {
+            "title": "Manage App Lifecycle",
+            "fileName": "app_lifecycle.html"
+          },
+          {
+            "title": "Manage Data",
+            "fileName": "app_storage.html"
+          },
+          {
+            "title": "Offline First",
+            "fileName": "offline_apps.html"
+          },
+          {
+            "title": "Embed Content",
+            "fileName": "app_external.html"
+          }
+        ]
+      },
+      {
+        "title": "Security & Privacy",
+        "toggleable": true,
+        "items": [
+          {
+            "title": "Identify User",
+            "fileName": "app_identity.html"
+          },
+          {
+            "title": "Comply with CSP",
+            "fileName": "app_csp.html"
+          }
+        ]
+      },
+      {
+        "title": "Advanced Technologies",
+        "toggleable": true,
+        "items": [
+          {
+            "title": "Network Communications",
+            "fileName": "app_network.html"
+          },
+          {
+            "title": "Access Hardware Devices",
+            "fileName": "app_hardware.html"
+          },
+          {
+            "title": "Connect Apps with Web Intents",
+            "fileName": "app_intents.html"
+          }
+        ]
+      },
+      {
+        "title": "MVC Architecture",
+        "fileName": "app_frameworks.html",
+        "toggleable": true,
+        "items": [
+          {
+            "title": "Build Apps with AngularJS",
+            "fileName": "angular_framework.html"
+          },
+          {
+            "title": "Build Apps with Sencha Ext JS",
+            "fileName": "sencha_framework.html"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Deploying",
+    "items": [
+      {
+        "title": "Publish",
+        "fileName": "publish_app.html"
+      }
+    ]
+  },
+  {
+    "title": "Reference",
+    "items": [
+      {
+        "title": "Manifest Files",
+        "fileName": "manifest.html"
+      },
+      {
+        "title": "Chrome JavaScript APIs",
+        "fileName": "api_index.html"
+      },
+      {
+        "title": "Supported Libraries",
+        "fileName": "api_other.html"
+      },
+      {
+        "title": "Disabled Web Features",
+        "fileName": "app_deprecated.html"
+      }
+    ]
+  },
+  {
+    "title": "Samples",
+    "fileName": "samples.html"
+  },
+  {
+    "title": "Known Issues",
+    "fileName": "app_known_issues.html"
+  }
+]

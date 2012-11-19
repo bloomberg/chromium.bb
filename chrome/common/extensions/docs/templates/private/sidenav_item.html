@@ -1,0 +1,17 @@
+<li class="level{{item.level}}">
+  {{?item.toggleable}}
+    <a class="button level{{item.level}}">
+      <span class="level{{item.level}}">{{item.title}}</span>
+      <div class="toggleIndicator level{{item.level}}{{?item.child_selected}} toggled{{/}}"></div>
+    </a>
+  {{:item.toggleable}}
+    {{?item.fileName}}
+      <a {{^item.selected}}href="{{item.fileName}}"{{/}} class="level{{item.level}} {{?item.selected}}selected{{/}}">{{item.title}}</a>
+    {{:item.fileName}}
+      <span class="level{{item.level}}">{{item.title}}</span>
+    {{/item.fileName}}
+  {{/item.toggleable}}
+  {{?item.items}}
+    {{+partials.sidenav_items items:item.items parent:item}}
+  {{/item.items}}
+</li>

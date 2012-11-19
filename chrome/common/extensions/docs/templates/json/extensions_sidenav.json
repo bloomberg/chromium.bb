@@ -1,0 +1,218 @@
+[
+  {
+    "title": "Getting Started",
+    "fileName": "getstarted.html"
+  },
+  {
+    "title": "Overview",
+    "fileName": "overview.html"
+  },
+  {
+    "title": "What's New?",
+    "fileName": "whats_new.html"
+  },
+  {
+    "title": "Developer's Guide",
+    "fileName": "devguide.html",
+    "items": [
+      {
+        "title": "Browser UI",
+        "toggleable": true,
+        "items": [
+          {
+            "title": "Browser Actions",
+            "fileName": "browserAction.html"
+          },
+          {
+            "title": "Context Menus",
+            "fileName": "contextMenus.html"
+          },
+          {
+            "title": "Desktop Notifications",
+            "fileName": "notifications.html"
+          },
+          {
+            "title": "Omnibox",
+            "fileName": "omnibox.html"
+          },
+          {
+            "title": "Options Pages",
+            "fileName": "options.html"
+          },
+          {
+            "title": "Override Pages",
+            "fileName": "override.html"
+          },
+          {
+            "title": "Page Actions",
+            "fileName": "pageAction.html"
+          }
+        ]
+      },
+      {
+        "title": "Browser Interaction",
+        "toggleable": true,
+        "items": [
+          {
+            "title": "Bookmarks",
+            "fileName": "bookmarks.html"
+          },
+          {
+            "title": "Cookies",
+            "fileName": "cookies.html"
+          },
+          {
+            "title": "Developer Tools",
+            "fileName": "devtools.html"
+          },
+          {
+            "title": "Events",
+            "fileName": "events.html"
+          },
+          {
+            "title": "History",
+            "fileName": "history.html"
+          },
+          {
+            "title": "Management",
+            "fileName": "management.html"
+          },
+          {
+            "title": "Tabs",
+            "fileName": "tabs.html"
+          },
+          {
+            "title": "Windows",
+            "fileName": "windows.html"
+          }
+        ]
+      },
+      {
+        "title": "Implementation",
+        "toggleable": true,
+        "items": [
+          {
+            "title": "Accessibility",
+            "fileName": "a11y.html"
+          },
+          {
+            "title": "Event Pages",
+            "fileName": "event_pages.html"
+          },
+          {
+            "title": "Content Security Policy",
+            "fileName": "contentSecurityPolicy.html"
+          },
+          {
+            "title": "Content Scripts",
+            "fileName": "content_scripts.html"
+          },
+          {
+            "title": "Cross-Origin XHR",
+            "fileName": "xhr.html"
+          },
+          {
+            "title": "Internationalization",
+            "fileName": "i18n.html"
+          },
+          {
+            "title": "Message Passing",
+            "fileName": "messaging.html"
+          },
+          {
+            "title": "Optional Permissions",
+            "fileName": "permissions.html"
+          },
+          {
+            "title": "NPAPI Plugins",
+            "fileName": "npapi.html"
+          }
+        ]
+      },
+      {
+        "title": "Finishing",
+        "toggleable": true,
+        "items": [
+          {
+            "title": "Hosting",
+            "fileName": "hosting.html"
+          },
+          {
+            "title": "Other Deployment Options",
+            "fileName": "external_extensions.html"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Tutorials",
+    "fileName": "tutorials.html",
+    "items": [
+      {
+        "title": "Manifest V2",
+        "fileName": "tut_migration_to_manifest_v2.html"
+      },
+      {
+        "title": "Debugging",
+        "fileName": "tut_debugging.html"
+      },
+      {
+        "title": "Google Analytics",
+        "fileName": "tut_analytics.html"
+      },
+      {
+        "title": "OAuth",
+        "fileName": "tut_oauth.html"
+      }
+    ]
+  },
+  {
+    "title": "Reference",
+    "items": [
+      {
+        "title": "Formats",
+        "toggleable": true,
+        "items": [
+          {
+            "title": "Manifest Files",
+            "fileName": "manifest.html"
+          },
+          {
+            "title": "Match Patterns",
+            "fileName": "match_patterns.html"
+          }
+        ]
+      },
+      {
+        "title": "Permission Warnings",
+        "fileName": "permission_warnings.html"
+      },
+      {
+        "title": "chrome.* APIs",
+        "fileName": "api_index.html"
+      },
+      {
+        "title": "Other APIs",
+        "fileName": "api_other.html"
+      }
+    ]
+  },
+  {
+    "title": "More",
+    "items": [
+      {
+        "title": "Chrome Web Store",
+        "fileName": "http://code.google.com/chrome/webstore/docs/index.html"
+      },
+      {
+        "title": "Hosted Apps",
+        "fileName": "http://code.google.com/chrome/apps/docs/developers_guide.html"
+      },
+      {
+        "title": "Themes",
+        "fileName": "themes.html"
+      }
+    ]
+  }
+]

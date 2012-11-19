@@ -1,0 +1,6 @@
+<ul {{?parent.toggleable}}toggleable{{/}}
+    class="{{?parent.level}}level{{parent.level}}{{:}}level1{{/}} {{?parent.toggleable}}{{^parent.child_selected}}hidden{{/}}{{/}}">
+{{#items}}
+  {{+partials.sidenav_item item:@}}
+{{/items}}
+</ul>
