@@ -13,6 +13,7 @@
 #include "media/base/decryptor.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 namespace media {
@@ -97,6 +98,18 @@ class WEBKIT_PLUGINS_EXPORT ContentDecryptorDelegate {
   // Cancels the pending decrypt-and-decode callback for |stream_type|.
   void CancelDecode(media::Decryptor::StreamType stream_type);
 
+  // Fills |resource| with a PP_Resource containing a PPB_Buffer_Impl and
+  // copies |data| into the buffer resource. This method reuses
+  // |audio_input_resource_| and |video_input_resource_| to reduce the latency
+  // in requesting new PPB_Buffer_Impl resources. The caller must make sure that
+  // |audio_input_resource_| or |video_input_resource_| is available before
+  // calling this method.
+  // If |data| is NULL, fills |resource| with a PP_Resource with ID of 0.
+  // Returns true upon success and false if any error happened.
+  bool MakeMediaBufferResource(media::Decryptor::StreamType stream_type,
+                               const uint8* data, int size,
+                               ::ppapi::ScopedPPResource* resource);
+
   const PP_Instance pp_instance_;
   const PPP_ContentDecryptor_Private* const plugin_decryption_interface_;
 
@@ -125,6 +138,13 @@ class WEBKIT_PLUGINS_EXPORT ContentDecryptorDelegate {
 
   uint32_t pending_video_decode_request_id_;
   media::Decryptor::VideoDecodeCB pending_video_decode_cb_;
+
+  // ScopedPPResource for audio and video input buffers.
+  // See MakeMediaBufferResource.
+  ::ppapi::ScopedPPResource audio_input_resource_;
+  int audio_input_resource_size_;
+  ::ppapi::ScopedPPResource video_input_resource_;
+  int video_input_resource_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentDecryptorDelegate);
 };
