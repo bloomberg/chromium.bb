@@ -16,7 +16,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "base/win/scoped_handle.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -582,9 +581,14 @@ FilePath InstallerState::GetInstallerDirectory(const Version& version) const {
 bool InstallerState::IsFileInUse(const FilePath& file) {
   // Call CreateFile with a share mode of 0 which should cause this to fail
   // with ERROR_SHARING_VIOLATION if the file exists and is in-use.
-  return !base::win::ScopedHandle(CreateFile(file.value().c_str(),
-                                             GENERIC_WRITE, 0, NULL,
-                                             OPEN_EXISTING, 0, 0)).IsValid();
+  HANDLE file_handle = CreateFile(file.value().c_str(), GENERIC_WRITE, 0, NULL,
+                                  OPEN_EXISTING, 0, 0);
+  bool in_use = false;
+  if (file_handle != INVALID_HANDLE_VALUE)
+    CloseHandle(file_handle);
+  else if (GetLastError() != ERROR_FILE_NOT_FOUND)
+    in_use = true;
+  return in_use;
 }
 
 
