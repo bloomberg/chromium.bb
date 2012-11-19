@@ -270,9 +270,6 @@ window_get_wl_surface(struct window *window);
 struct wl_shell_surface *
 window_get_wl_shell_surface(struct window *window);
 
-void
-window_flush(struct window *window);
-
 enum window_buffer_type {
 	WINDOW_BUFFER_TYPE_EGL_WINDOW,
 	WINDOW_BUFFER_TYPE_SHM,

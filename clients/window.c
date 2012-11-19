@@ -882,7 +882,7 @@ window_has_focus(struct window *window)
 	return window->focus_count > 0;
 }
 
-void
+static void
 window_flush(struct window *window)
 {
 	if (window->cairo_surface)
