@@ -43,8 +43,10 @@ ShellBrowserContext::~ShellBrowserContext() {
 
 void ShellBrowserContext::InitWhileIOAllowed() {
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kIgnoreCertificateErrors))
+  if (cmd_line->HasSwitch(switches::kIgnoreCertificateErrors) ||
+      cmd_line->HasSwitch(switches::kDumpRenderTree)) {
     ignore_certificate_errors_ = true;
+  }
   if (cmd_line->HasSwitch(switches::kDumpRenderTree)) {
     CHECK(testing_path_.CreateUniqueTempDir());
     path_ = testing_path_.path();
