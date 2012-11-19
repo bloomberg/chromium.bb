@@ -26,7 +26,7 @@ std::string FormatTime(const base::Time& time) {
 
 }  // namespace
 
-TEST(GDataUtilTest, GetTimeFromStringLocalTimezone) {
+TEST(TimeUtilTest, GetTimeFromStringLocalTimezone) {
   // Creates time object GMT.
   base::Time::Exploded exploded = {2012, 7, 0, 14, 1, 3, 21, 151};
   base::Time target_time = base::Time::FromUTCExploded(exploded);
@@ -46,7 +46,7 @@ TEST(GDataUtilTest, GetTimeFromStringLocalTimezone) {
   EXPECT_EQ((target_time - test_time).InMilliseconds(), offset);
 }
 
-TEST(GDataUtilTest, GetTimeFromStringTimezone) {
+TEST(TimeUtilTest, GetTimeFromStringTimezone) {
   // Sets the current timezone to GMT.
   chromeos::system::TimezoneSettings::GetInstance()->
       SetTimezone(*icu::TimeZone::getGMT());
@@ -69,7 +69,7 @@ TEST(GDataUtilTest, GetTimeFromStringTimezone) {
   EXPECT_EQ(FormatTime(target_time), FormatTime(test_time));
 }
 
-TEST(GDataUtilTest, GetTimeFromString) {
+TEST(TimeUtilTest, GetTimeFromString) {
   // Sets the current timezone to GMT.
   chromeos::system::TimezoneSettings::GetInstance()->
       SetTimezone(*icu::TimeZone::getGMT());
@@ -93,7 +93,7 @@ TEST(GDataUtilTest, GetTimeFromString) {
 }
 #endif  // OS_CHROMEOS
 
-TEST(GDataUtilTest, FormatTimeAsString) {
+TEST(TimeUtilTest, FormatTimeAsString) {
   base::Time::Exploded exploded_time = {2012, 7, 0, 19, 15, 59, 13, 123};
   base::Time time = base::Time::FromUTCExploded(exploded_time);
   EXPECT_EQ("2012-07-19T15:59:13.123Z", FormatTimeAsString(time));
