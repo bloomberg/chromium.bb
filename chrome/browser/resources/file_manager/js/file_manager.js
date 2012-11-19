@@ -443,8 +443,6 @@ DialogType.isModal = function(type) {
     dm.addEventListener('rescan-completed',
                         this.refreshCurrentDirectoryMetadata_.bind(this));
 
-    this.selectionHandler_.onSelectionChanged();
-
     this.directoryModel_.sortFileList(
         prefs.sortField || 'modificationTime',
         prefs.sortDirection || 'desc');
@@ -470,6 +468,8 @@ DialogType.isModal = function(type) {
     this.initCommands_();
 
     this.updateFileTypeFilter_();
+
+    this.selectionHandler_.onSelectionChanged();
 
     // Show the page now unless it's already delayed.
     this.delayShow_(0);

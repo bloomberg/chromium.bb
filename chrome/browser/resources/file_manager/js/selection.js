@@ -202,6 +202,7 @@ SelectionHandler.prototype.onSelectionChanged = function(event) {
   if (!indexes.length) {
     this.updatePreviewPanelVisibility_();
     this.updatePreviewPanelText_();
+    this.fileManager_.updateContextMenuActionItems(null, false);
     return;
   }
 
