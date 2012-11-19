@@ -256,8 +256,11 @@ void BrowserWindowGtk::Init() {
   // is_active() function in their ActiveWindowChanged() handlers.
   ui::ActiveWindowWatcherX::AddObserver(this);
 
-  use_custom_frame_pref_.Init(prefs::kUseCustomChromeFrame,
-      browser_->profile()->GetPrefs(), this);
+  use_custom_frame_pref_.Init(
+      prefs::kUseCustomChromeFrame,
+      browser_->profile()->GetPrefs(),
+      base::Bind(&BrowserWindowGtk::OnUseCustomChromeFrameChanged,
+                 base::Unretained(this)));
 
   // Register to be notified of changes to the profile's avatar icon.
   if (!browser_->profile()->IsOffTheRecord()) {
@@ -1184,20 +1187,6 @@ void BrowserWindowGtk::Observe(int type,
   DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED, type);
   // The profile avatar icon may have changed.
   gtk_util::SetWindowIcon(window_, browser_->profile());
-}
-
-void BrowserWindowGtk::OnPreferenceChanged(PrefServiceBase* service,
-                                           const std::string& pref_name) {
-  if (pref_name == prefs::kUseCustomChromeFrame) {
-    UpdateCustomFrame();
-    ui::SetHideTitlebarWhenMaximizedProperty(
-        ui::GetX11WindowFromGtkWidget(GTK_WIDGET(window_)),
-        UseCustomFrame() ?
-            ui::HIDE_TITLEBAR_WHEN_MAXIMIZED :
-            ui::SHOW_TITLEBAR_WHEN_MAXIMIZED);
-  } else {
-    NOTREACHED() << "Got pref change notification we didn't register for!";
-  }
 }
 
 void BrowserWindowGtk::TabDetachedAt(WebContents* contents, int index) {
@@ -2398,6 +2387,14 @@ void BrowserWindowGtk::UpdateDevToolsSplitPosition() {
         devtools_window_->GetHeight(contents_rect.height);
     gtk_paned_set_position(GTK_PANED(contents_vsplit_), split_offset);
   }
+}
+
+void BrowserWindowGtk::OnUseCustomChromeFrameChanged() {
+  UpdateCustomFrame();
+  ui::SetHideTitlebarWhenMaximizedProperty(
+      ui::GetX11WindowFromGtkWidget(GTK_WIDGET(window_)),
+      UseCustomFrame() ? ui::HIDE_TITLEBAR_WHEN_MAXIMIZED :
+                         ui::SHOW_TITLEBAR_WHEN_MAXIMIZED);
 }
 
 // static

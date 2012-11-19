@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/api/prefs/pref_member.h"
@@ -61,7 +60,6 @@ class Extension;
 class BrowserWindowGtk
     : public BrowserWindow,
       public content::NotificationObserver,
-      public PrefObserver,
       public TabStripModelObserver,
       public ui::ActiveWindowWatcherXObserver,
       public InfoBarContainer::Delegate,
@@ -182,10 +180,6 @@ class BrowserWindowGtk
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // Overridden from PrefObserver:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // Overridden from TabStripModelObserver:
   virtual void TabDetachedAt(content::WebContents* contents,
@@ -468,6 +462,9 @@ class BrowserWindowGtk
   // Reads split position from the current tab's devtools window and applies
   // it to the devtools split.
   void UpdateDevToolsSplitPosition();
+
+  // Called when the preference changes.
+  void OnUseCustomChromeFrameChanged();
 
   // Determine whether we use should default to native decorations or the custom
   // frame based on the currently-running window manager.

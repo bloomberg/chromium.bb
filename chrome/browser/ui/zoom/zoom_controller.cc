@@ -7,7 +7,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -28,7 +27,10 @@ ZoomController::ZoomController(content::WebContents* web_contents)
       observer_(NULL) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  default_zoom_level_.Init(prefs::kDefaultZoomLevel, profile->GetPrefs(), this);
+  default_zoom_level_.Init(prefs::kDefaultZoomLevel, profile->GetPrefs(),
+                           base::Bind(&ZoomController::UpdateState,
+                                      base::Unretained(this),
+                                      std::string()));
 
   content::HostZoomMap* zoom_map =
       content::HostZoomMap::GetForBrowserContext(profile);
@@ -67,12 +69,6 @@ void ZoomController::Observe(int type,
                              const content::NotificationDetails& details) {
   DCHECK_EQ(content::NOTIFICATION_ZOOM_LEVEL_CHANGED, type);
   UpdateState(*content::Details<std::string>(details).ptr());
-}
-
-void ZoomController::OnPreferenceChanged(PrefServiceBase* service,
-                                         const std::string& pref_name) {
-  DCHECK(pref_name == prefs::kDefaultZoomLevel);
-  UpdateState(std::string());
 }
 
 void ZoomController::UpdateState(const std::string& host) {

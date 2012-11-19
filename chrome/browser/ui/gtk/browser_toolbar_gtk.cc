@@ -136,10 +136,17 @@ void BrowserToolbarGtk::Init(GtkWindow* top_level_window) {
 
   offscreen_entry_.Own(gtk_entry_new());
 
-  show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(), this);
-  home_page_.Init(prefs::kHomePage, profile->GetPrefs(), this);
+  base::Closure callback =
+      base::Bind(&BrowserToolbarGtk::SetUpDragForHomeButton,
+                 base::Unretained(this));
+
+  show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(),
+                         base::Bind(&BrowserToolbarGtk::UpdateShowHomeButton,
+                                    base::Unretained(this)));
+  home_page_.Init(prefs::kHomePage, profile->GetPrefs(), callback);
   home_page_is_new_tab_page_.Init(prefs::kHomePageIsNewTabPage,
-                                  profile->GetPrefs(), this);
+                                  profile->GetPrefs(),
+                                  callback);
 
   event_box_ = gtk_event_box_new();
   // Make the event box transparent so themes can use transparent toolbar
@@ -252,7 +259,8 @@ void BrowserToolbarGtk::Init(GtkWindow* top_level_window) {
   }
 
   // Initialize pref-dependent UI state.
-  NotifyPrefChanged(NULL);
+  UpdateShowHomeButton();
+  SetUpDragForHomeButton();
 
   // Because the above does a recursive show all on all widgets we need to
   // update the icon visibility to hide them.
@@ -425,11 +433,6 @@ void BrowserToolbarGtk::Observe(int type,
   }
 }
 
-void BrowserToolbarGtk::OnPreferenceChanged(PrefServiceBase* service,
-                                            const std::string& pref_name) {
-  NotifyPrefChanged(&pref_name);
-}
-
 // BrowserToolbarGtk, public ---------------------------------------------------
 
 void BrowserToolbarGtk::UpdateWebContents(WebContents* contents,
@@ -446,8 +449,8 @@ bool BrowserToolbarGtk::IsWrenchMenuShowing() const {
 
 // BrowserToolbarGtk, private --------------------------------------------------
 
-void BrowserToolbarGtk::SetUpDragForHomeButton(bool enable) {
-  if (enable) {
+void BrowserToolbarGtk::SetUpDragForHomeButton() {
+  if (!home_page_.IsManaged() && !home_page_is_new_tab_page_.IsManaged()) {
     gtk_drag_dest_set(home_->widget(), GTK_DEST_DEFAULT_ALL,
                       NULL, 0, GDK_ACTION_COPY);
     static const int targets[] = { ui::TEXT_PLAIN, ui::TEXT_URI_LIST, -1 };
@@ -654,19 +657,6 @@ void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
     home_page_.SetValue(url.spec());
 }
 
-void BrowserToolbarGtk::NotifyPrefChanged(const std::string* pref) {
-  if (!pref || *pref == prefs::kShowHomeButton) {
-    bool visible = show_home_button_.GetValue() && !ShouldOnlyShowLocation();
-    gtk_widget_set_visible(home_->widget(), visible);
-  }
-
-  if (!pref ||
-      *pref == prefs::kHomePage ||
-      *pref == prefs::kHomePageIsNewTabPage)
-    SetUpDragForHomeButton(!home_page_.IsManaged() &&
-                           !home_page_is_new_tab_page_.IsManaged());
-}
-
 bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {
   // If we're a popup window, only show the location bar (omnibox).
   return !browser_->is_type_tabbed();
@@ -708,4 +698,9 @@ gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,
                       allocation.y + y_offset);
 
   return FALSE;
+}
+
+void BrowserToolbarGtk::UpdateShowHomeButton() {
+  bool visible = show_home_button_.GetValue() && !ShouldOnlyShowLocation();
+  gtk_widget_set_visible(home_->widget(), visible);
 }
