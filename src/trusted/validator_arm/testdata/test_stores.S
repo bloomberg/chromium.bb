@@ -59,16 +59,3 @@ bundle6:
   str r1, [sp], r2        @ post-indexing sp by a register is an ERROR
   bic r0, r0, #0xC0000000 @ Mask a register, and
   str r1, [r0, r2]        @ use it in register pre-index store: ERROR
-
-conditional_sandbox:
-  tst r0, #0xC0000000     @ Set Z if the top two bits are clear, and
-  streq r1, [r0]          @ store: should work.
-
-  tst r0, #0xC0000000     @ Set Z if the top two bits are clear, and
-  str r1, [r0]            @ store unconditionally: ERROR.
-
-  tst r0, #0xC0000000     @ Set Z if the top two bits are clear, and
-  strgt r1, [r0]          @ store using wrong predicate: ERROR.
-
-  tsteq r0, #0xC0000000   @ Conditionally set Z if the top two bits are clear,
-  strgt r1, [r0]          @ and store using wrong predicate: ERROR.

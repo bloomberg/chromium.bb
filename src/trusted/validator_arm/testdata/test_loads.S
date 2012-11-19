@@ -79,17 +79,3 @@ bundle9:
   ldr r1, [sp], r2        @ post-indexing sp by a register is an ERROR
   nop
   nop
-
-
-conditional_sandbox:
-  tst r0, #0xC0000000     @ Set Z if the top two bits are clear, and
-  ldreq r1, [r0]          @ load: should work.
-
-  tst r0, #0xC0000000     @ Set Z if the top two bits are clear, and
-  ldr r1, [r0]            @ load unconditionally: ERROR.
-
-  tst r0, #0xC0000000     @ Set Z if the top two bits are clear, and
-  ldrgt r1, [r0]          @ load using wrong predicate: ERROR.
-
-  tsteq r0, #0xC0000000   @ Conditionally set Z if the top two bits are clear,
-  ldrgt r1, [r0]          @ and load using wrong predicate: ERROR.
