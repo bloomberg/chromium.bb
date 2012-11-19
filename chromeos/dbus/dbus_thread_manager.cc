@@ -77,7 +77,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         dbus_thread_->message_loop_proxy();
     system_bus_ = new dbus::Bus(system_bus_options);
 
-    // Create the bluetooth clients.
     bluetooth_manager_client_.reset(BluetoothManagerClient::Create(
         client_type, system_bus_.get()));
     bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create(
@@ -90,63 +89,43 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         client_type, system_bus_.get(), bluetooth_device_client_.get()));
     bluetooth_out_of_band_client_.reset(BluetoothOutOfBandClient::Create(
         client_type, system_bus_.get()));
-    // Create the Cashew client.
     cashew_client_.reset(CashewClient::Create(client_type, system_bus_.get()));
-    // Create the cros-disks client.
     cros_disks_client_.reset(
         CrosDisksClient::Create(client_type, system_bus_.get()));
-    // Create the Cryptohome client.
     cryptohome_client_.reset(
         CryptohomeClient::Create(client_type, system_bus_.get()));
-    // Create the debugdaemon client.
-    debugdaemon_client_.reset(
+    debug_daemon_client_.reset(
         DebugDaemonClient::Create(client_type, system_bus_.get()));
-    // Create the Shill Device client.
     shill_device_client_.reset(
         ShillDeviceClient::Create(client_type, system_bus_.get()));
-    // Create the Shill IPConfig client.
     shill_ipconfig_client_.reset(
         ShillIPConfigClient::Create(client_type, system_bus_.get()));
-    // Create the Shill Manager client.
     shill_manager_client_.reset(
         ShillManagerClient::Create(client_type, system_bus_.get()));
-    // Create the Shill Network client.
     shill_network_client_.reset(
         ShillNetworkClient::Create(client_type, system_bus_.get()));
-    // Create the Shill Profile client.
     shill_profile_client_.reset(
         ShillProfileClient::Create(client_type, system_bus_.get()));
-    // Create the Shill Service client.
     shill_service_client_.reset(
         ShillServiceClient::Create(client_type, system_bus_.get()));
-    // Create the Gsm SMS client.
     gsm_sms_client_.reset(
         GsmSMSClient::Create(client_type, system_bus_.get()));
-    // Create the image burner client.
     image_burner_client_.reset(ImageBurnerClient::Create(client_type,
                                                          system_bus_.get()));
-    // Create the introspectable object client.
     introspectable_client_.reset(
         IntrospectableClient::Create(client_type, system_bus_.get()));
-    // Create the ModemMessaging client.
     modem_messaging_client_.reset(
         ModemMessagingClient::Create(client_type, system_bus_.get()));
-    // Create the permission broker client.
     permission_broker_client_.reset(
         PermissionBrokerClient::Create(client_type, system_bus_.get()));
-    // Create the power manager client.
     power_manager_client_.reset(
         PowerManagerClient::Create(client_type_maybe_stub, system_bus_.get()));
-    // Create the session manager client.
     session_manager_client_.reset(
         SessionManagerClient::Create(client_type, system_bus_.get()));
-    // Create the SMS client.
     sms_client_.reset(
         SMSClient::Create(client_type, system_bus_.get()));
-    // Create the speech synthesizer client.
     speech_synthesizer_client_.reset(
         SpeechSynthesizerClient::Create(client_type, system_bus_.get()));
-    // Create the update engine client.
     update_engine_client_.reset(
         UpdateEngineClient::Create(client_type, system_bus_.get()));
   }
@@ -201,181 +180,143 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         base::chromeos::IsRunningOnChromeOS() ? REAL_DBUS_CLIENT_IMPLEMENTATION
                                               : STUB_DBUS_CLIENT_IMPLEMENTATION;
 
-    // Create the ibus client.
     ibus_client_.reset(
         IBusClient::Create(client_type, ibus_bus_.get()));
-
-    // Create the ibus input context client.
     ibus_input_context_client_.reset(
         IBusInputContextClient::Create(client_type));
-
-    // Create the ibus engine factory service.
     ibus_engine_factory_service_.reset(
         IBusEngineFactoryService::Create(ibus_bus_.get(), client_type));
-
-    // Create the ibus panel service.
     ibus_panel_service_.reset(
         ibus::IBusPanelService::Create(client_type, ibus_bus_.get()));
 
     ibus_engine_services_.clear();
   }
 
-  // DBusThreadManager override.
+  // DBusThreadManager overrides:
   virtual dbus::Bus* GetSystemBus() OVERRIDE {
     return system_bus_.get();
   }
 
-  // DBusThreadManager override.
   virtual dbus::Bus* GetIBusBus() OVERRIDE {
     return ibus_bus_.get();
   }
 
-  // DBusThreadManager override.
   virtual BluetoothAdapterClient* GetBluetoothAdapterClient() OVERRIDE {
     return bluetooth_adapter_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual BluetoothDeviceClient* GetBluetoothDeviceClient() OVERRIDE {
     return bluetooth_device_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual BluetoothInputClient* GetBluetoothInputClient() OVERRIDE {
     return bluetooth_input_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual BluetoothManagerClient* GetBluetoothManagerClient() OVERRIDE {
     return bluetooth_manager_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual BluetoothNodeClient* GetBluetoothNodeClient() OVERRIDE {
     return bluetooth_node_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual BluetoothOutOfBandClient* GetBluetoothOutOfBandClient() OVERRIDE {
     return bluetooth_out_of_band_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual CashewClient* GetCashewClient() OVERRIDE {
     return cashew_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual CrosDisksClient* GetCrosDisksClient() OVERRIDE {
     return cros_disks_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual CryptohomeClient* GetCryptohomeClient() OVERRIDE {
     return cryptohome_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual DebugDaemonClient* GetDebugDaemonClient() OVERRIDE {
-    return debugdaemon_client_.get();
+    return debug_daemon_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual ShillDeviceClient* GetShillDeviceClient() OVERRIDE {
     return shill_device_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual ShillIPConfigClient* GetShillIPConfigClient() OVERRIDE {
     return shill_ipconfig_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual ShillManagerClient* GetShillManagerClient() OVERRIDE {
     return shill_manager_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual ShillNetworkClient* GetShillNetworkClient() OVERRIDE {
     return shill_network_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual ShillProfileClient* GetShillProfileClient() OVERRIDE {
     return shill_profile_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual ShillServiceClient* GetShillServiceClient() OVERRIDE {
     return shill_service_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual GsmSMSClient* GetGsmSMSClient() OVERRIDE {
     return gsm_sms_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual ImageBurnerClient* GetImageBurnerClient() OVERRIDE {
     return image_burner_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual IntrospectableClient* GetIntrospectableClient() OVERRIDE {
     return introspectable_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual ModemMessagingClient* GetModemMessagingClient() OVERRIDE {
     return modem_messaging_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual PermissionBrokerClient* GetPermissionBrokerClient() OVERRIDE {
     return permission_broker_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual PowerManagerClient* GetPowerManagerClient() OVERRIDE {
     return power_manager_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual SessionManagerClient* GetSessionManagerClient() OVERRIDE {
     return session_manager_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual SMSClient* GetSMSClient() OVERRIDE {
     return sms_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual SpeechSynthesizerClient* GetSpeechSynthesizerClient() OVERRIDE {
     return speech_synthesizer_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual UpdateEngineClient* GetUpdateEngineClient() OVERRIDE {
     return update_engine_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual IBusClient* GetIBusClient() OVERRIDE {
     return ibus_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual IBusInputContextClient* GetIBusInputContextClient() OVERRIDE {
     return ibus_input_context_client_.get();
   }
 
-  // DBusThreadManager override.
   virtual IBusEngineFactoryService* GetIBusEngineFactoryService() OVERRIDE {
     return ibus_engine_factory_service_.get();
   }
 
-  // DBusThreadManager override.
   virtual IBusEngineService* GetIBusEngineService(
       const dbus::ObjectPath& object_path) OVERRIDE {
     const DBusClientImplementationType client_type =
@@ -390,7 +331,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return ibus_engine_services_[object_path];
   }
 
-  // DBusThreadManager override.
   virtual void RemoveIBusEngineService(
       const dbus::ObjectPath& object_path) OVERRIDE {
     if (ibus_engine_services_.find(object_path) !=
@@ -402,7 +342,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     ibus_engine_services_.erase(object_path);
   }
 
-  // DBusThreadManager override.
   virtual ibus::IBusPanelService* GetIBusPanelService() OVERRIDE {
     return ibus_panel_service_.get();
   }
@@ -419,7 +358,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<CashewClient> cashew_client_;
   scoped_ptr<CrosDisksClient> cros_disks_client_;
   scoped_ptr<CryptohomeClient> cryptohome_client_;
-  scoped_ptr<DebugDaemonClient> debugdaemon_client_;
+  scoped_ptr<DebugDaemonClient> debug_daemon_client_;
   scoped_ptr<ShillDeviceClient> shill_device_client_;
   scoped_ptr<ShillIPConfigClient> shill_ipconfig_client_;
   scoped_ptr<ShillManagerClient> shill_manager_client_;

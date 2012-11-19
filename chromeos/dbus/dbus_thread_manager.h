@@ -114,162 +114,47 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // TODO(nona): Support shutdown to enable dynamical ibus-daemon shutdown.
   virtual void InitIBusBus(const std::string &ibus_address) = 0;
 
-  // Returns the D-Bus system bus instance, owned by DBusThreadManager.
+  // Returns various D-Bus bus instances, owned by DBusThreadManager.
   virtual dbus::Bus* GetSystemBus() = 0;
-
-  // Returns the IBus bus instance, owned by DBusThreadManager.
   virtual dbus::Bus* GetIBusBus() = 0;
 
-  // Returns the bluetooth adapter client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
+  // All returned objects are owned by DBusThreadManager.  Do not cache these
+  // pointers and use them after DBusThreadManager has been shut down.
   virtual BluetoothAdapterClient* GetBluetoothAdapterClient() = 0;
-
-  // Returns the bluetooth device client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
   virtual BluetoothDeviceClient* GetBluetoothDeviceClient() = 0;
-
-  // Returns the bluetooth input client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
   virtual BluetoothInputClient* GetBluetoothInputClient() = 0;
-
-  // Returns the bluetooth manager client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
   virtual BluetoothManagerClient* GetBluetoothManagerClient() = 0;
-
-  // Returns the bluetooth node client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
   virtual BluetoothNodeClient* GetBluetoothNodeClient() = 0;
-
-  // Returns the bluetooth node client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
   virtual BluetoothOutOfBandClient* GetBluetoothOutOfBandClient() = 0;
-
-  // Returns the Cashew client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
   virtual CashewClient* GetCashewClient() = 0;
-
-  // Returns the cros-disks client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
   virtual CrosDisksClient* GetCrosDisksClient() = 0;
-
-  // Returns the Cryptohome client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
   virtual CryptohomeClient* GetCryptohomeClient() = 0;
-
-  // Returns the DebugDaemon client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
   virtual DebugDaemonClient* GetDebugDaemonClient() = 0;
-
-  // Returns the Shill Device client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
-  virtual ShillDeviceClient* GetShillDeviceClient() = 0;
-
-  // Returns the Shill IPConfig client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
-  virtual ShillIPConfigClient* GetShillIPConfigClient() = 0;
-
-  // Returns the Shill Manager client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
-  virtual ShillManagerClient* GetShillManagerClient() = 0;
-
-  // Returns the Shill Network client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
-  virtual ShillNetworkClient* GetShillNetworkClient() = 0;
-
-  // Returns the Shill Profile client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
-  virtual ShillProfileClient* GetShillProfileClient() = 0;
-
-  // Returns the Shill Service client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
-  virtual ShillServiceClient* GetShillServiceClient() = 0;
-
-  // Returns the SMS client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
   virtual GsmSMSClient* GetGsmSMSClient() = 0;
-
-  // Returns the image burner client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManger is shut
-  // down.
-  virtual ImageBurnerClient* GetImageBurnerClient() = 0;
-
-  // Returns the introspectable object client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManger is shut
-  // down.
-  virtual IntrospectableClient* GetIntrospectableClient() = 0;
-
-  // Returns the Modem Messaging client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
-  virtual ModemMessagingClient* GetModemMessagingClient() = 0;
-
-  // Returns the Permission Broker client, owned by DBusThreadManager. Do not
-  // cache this pointer and use it after DBusThreadManager is shut down.
-  virtual PermissionBrokerClient* GetPermissionBrokerClient() = 0;
-
-  // Returns the power manager client, owned by DBusThreadManager.
-  // See also comments at session_manager_client().
-  virtual PowerManagerClient* GetPowerManagerClient() = 0;
-
-  // Returns the session manager client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
-  virtual SessionManagerClient* GetSessionManagerClient() = 0;
-
-  // Returns the SMS client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
-  virtual SMSClient* GetSMSClient() = 0;
-
-  // Returns the speech synthesizer client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
-  virtual SpeechSynthesizerClient* GetSpeechSynthesizerClient() = 0;
-
-  // Returns the update engine client, owned by DBusThreadManager.  Do not
-  // cache this pointer and use it after DBusThreadManager is shut down.
-  virtual UpdateEngineClient* GetUpdateEngineClient() = 0;
-
-  // Returns the ibus client, owned by DBusThreadManager. Do not cache this
-  // pointer and use it after DBusThreadManager is shut down.
   virtual IBusClient* GetIBusClient() = 0;
-
-  // Returns the ibus input context client, owned by DBusThreadManager. Do not
-  // cache this pointer and use it after DBusThreadManager is shut down.
-  virtual IBusInputContextClient* GetIBusInputContextClient() = 0;
-
-  // Returns the ibus engine factory service, owned by DBusThreadManager. Do not
-  // cache this pointer and use it after DBusThreadManager is shut down.
   virtual IBusEngineFactoryService* GetIBusEngineFactoryService() = 0;
-
-  // Returns the ibus engine service, owned by DBusThreadManager. Do not cache
-  // this pointer and use it after DBusThreadManager is shut down.
   virtual IBusEngineService* GetIBusEngineService(
       const dbus::ObjectPath& object_path) = 0;
+  virtual IBusInputContextClient* GetIBusInputContextClient() = 0;
+  virtual ibus::IBusPanelService* GetIBusPanelService() = 0;
+  virtual ImageBurnerClient* GetImageBurnerClient() = 0;
+  virtual IntrospectableClient* GetIntrospectableClient() = 0;
+  virtual ModemMessagingClient* GetModemMessagingClient() = 0;
+  virtual PermissionBrokerClient* GetPermissionBrokerClient() = 0;
+  virtual PowerManagerClient* GetPowerManagerClient() = 0;
+  virtual SessionManagerClient* GetSessionManagerClient() = 0;
+  virtual ShillDeviceClient* GetShillDeviceClient() = 0;
+  virtual ShillIPConfigClient* GetShillIPConfigClient() = 0;
+  virtual ShillManagerClient* GetShillManagerClient() = 0;
+  virtual ShillNetworkClient* GetShillNetworkClient() = 0;
+  virtual ShillProfileClient* GetShillProfileClient() = 0;
+  virtual ShillServiceClient* GetShillServiceClient() = 0;
+  virtual SMSClient* GetSMSClient() = 0;
+  virtual SpeechSynthesizerClient* GetSpeechSynthesizerClient() = 0;
+  virtual UpdateEngineClient* GetUpdateEngineClient() = 0;
 
   // Removes the ibus engine services for |object_path|.
   virtual void RemoveIBusEngineService(const dbus::ObjectPath& object_path) = 0;
-
-  // Returns the ibus panel service, owned by DBusThreadManager. Do not cache
-  // this pointer and use it after DBusThreadManager is shut down.
-  virtual ibus::IBusPanelService* GetIBusPanelService() = 0;
 
   virtual ~DBusThreadManager();
 
