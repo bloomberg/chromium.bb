@@ -5,7 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/google_apis/gdata_operations.h"
+#include "chrome/browser/google_apis/gdata_wapi_operations.h"
 #include "chrome/browser/google_apis/operation_runner.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -59,9 +59,9 @@ void GetDataOperationParseJsonCallback(GDataErrorCode* error_out,
 
 }  // namespace
 
-class GDataOperationsTest : public testing::Test {
+class GDataWapiOperationsTest : public testing::Test {
  protected:
-  GDataOperationsTest()
+  GDataWapiOperationsTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
@@ -79,15 +79,15 @@ class GDataOperationsTest : public testing::Test {
   scoped_ptr<OperationRunner> runner_;
 };
 
-TEST_F(GDataOperationsTest, GetDataOperationParseJson) {
+TEST_F(GDataWapiOperationsTest, GetDataOperationParseJson) {
   scoped_ptr<base::Value> value;
   GDataErrorCode error;
   google_apis::GetDataCallback cb =
       base::Bind(&GetDataOperationParseJsonCallback,
                  &error, &value);
-  JsonParseTestGetDataOperation* getData =
+  JsonParseTestGetDataOperation* get_data =
       new JsonParseTestGetDataOperation(runner_->operation_registry(), cb);
-  getData->NotifyStart();
+  get_data->NotifyStart();
 
   // Parses a valid json string.
   {
@@ -105,7 +105,7 @@ TEST_F(GDataOperationsTest, GetDataOperationParseJson) {
         "  ]"
         "}";
 
-    getData->ParseResponse(HTTP_SUCCESS, valid_json_str);
+    get_data->ParseResponse(HTTP_SUCCESS, valid_json_str);
     test_util::RunBlockingPoolTask();
 
     EXPECT_EQ(HTTP_SUCCESS, error);
@@ -148,15 +148,15 @@ TEST_F(GDataOperationsTest, GetDataOperationParseJson) {
   }
 }
 
-TEST_F(GDataOperationsTest, GetDataOperationParseInvalidJson) {
+TEST_F(GDataWapiOperationsTest, GetDataOperationParseInvalidJson) {
   scoped_ptr<base::Value> value;
   GDataErrorCode error;
   google_apis::GetDataCallback cb =
       base::Bind(&GetDataOperationParseJsonCallback,
                  &error, &value);
-  JsonParseTestGetDataOperation* getData =
+  JsonParseTestGetDataOperation* get_data =
       new JsonParseTestGetDataOperation(runner_->operation_registry(), cb);
-  getData->NotifyStart();
+  get_data->NotifyStart();
 
   // Parses an invalid json string.
   {
@@ -170,7 +170,7 @@ TEST_F(GDataOperationsTest, GetDataOperationParseInvalidJson) {
         "    \"bar\""
         "  ]";
 
-    getData->ParseResponse(HTTP_SUCCESS, invalid_json_str);
+    get_data->ParseResponse(HTTP_SUCCESS, invalid_json_str);
     test_util::RunBlockingPoolTask();
 
     EXPECT_EQ(GDATA_PARSE_ERROR, error);

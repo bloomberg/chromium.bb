@@ -11,7 +11,7 @@
 // headers. http://crbug.com/141469
 // DownloadActionCallback/InitiateUploadParams/ResulmeUploadParams
 #include "chrome/browser/google_apis/base_operations.h"
-#include "chrome/browser/google_apis/gdata_operations.h"
+#include "chrome/browser/google_apis/gdata_wapi_operations.h"
 
 class Profile;
 

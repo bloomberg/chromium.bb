@@ -767,7 +767,7 @@
         'browser/google/google_url_tracker_unittest.cc',
         'browser/google/google_util_unittest.cc',
         'browser/google_apis/drive_api_parser_unittest.cc',
-        'browser/google_apis/gdata_operations_unittest.cc',
+        'browser/google_apis/gdata_wapi_operations_unittest.cc',
         'browser/google_apis/gdata_wapi_parser_unittest.cc',
         'browser/google_apis/gdata_wapi_service_unittest.cc',
         'browser/google_apis/gdata_wapi_url_util_unittest.cc',
