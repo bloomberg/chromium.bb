@@ -636,13 +636,8 @@ display_create_surface(struct display *display,
 {
 	if (check_size(rectangle) < 0)
 		return NULL;
-#ifdef HAVE_CAIRO_EGL
-	if (display->dpy && !(flags & SURFACE_SHM))
-		return display_create_egl_window_surface(display,
-							 surface,
-							 flags,
-							 rectangle);
-#endif
+
+	assert(flags & SURFACE_SHM);
 	return display_create_shm_surface(display, rectangle, flags, NULL);
 }
 
@@ -940,10 +935,13 @@ window_create_surface(struct window *window)
 			window_resize_cairo_window_surface(window);
 			return;
 		}
-		surface = display_create_surface(window->display,
-						 window->surface,
-						 &window->allocation, flags);
-		break;
+		if (window->display->dpy) {
+			surface = display_create_egl_window_surface(
+					window->display, window->surface,
+					flags, &window->allocation);
+			break;
+		}
+		/* fall through */
 #endif
 	case WINDOW_BUFFER_TYPE_SHM:
 		surface = display_create_shm_surface(window->display,
