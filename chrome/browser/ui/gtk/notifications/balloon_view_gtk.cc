@@ -68,15 +68,14 @@ const int kTopShadowWidth = 0;
 const int kBottomShadowWidth = 0;
 
 // Space in pixels between text and icon on the buttons.
-const int kButtonSpacing = 4;
+const int kButtonSpacing = 3;
 
 // Number of characters to show in the origin label before ellipsis.
 const int kOriginLabelCharacters = 18;
 
 // The shelf height for the system default font size.  It is scaled
 // with changes in the default font size.
-const int kDefaultShelfHeight = 21;
-const int kShelfVerticalMargin = 4;
+const int kDefaultShelfHeight = 25;
 
 // The amount that the bubble collections class offsets from the side of the
 // screen.
@@ -221,6 +220,11 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   balloon_ = balloon;
   frame_container_ = gtk_window_new(GTK_WINDOW_POPUP);
 
+  g_signal_connect(frame_container_, "expose-event",
+                   G_CALLBACK(OnExposeThunk), this);
+  g_signal_connect(frame_container_, "destroy",
+                   G_CALLBACK(OnDestroyThunk), this);
+
   // Construct the options menu.
   options_menu_model_.reset(new NotificationOptionsMenuModel(balloon_));
   options_menu_.reset(new MenuGtk(this, options_menu_model_.get()));
@@ -236,27 +240,10 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   GtkWidget* vbox = gtk_vbox_new(0, 0);
   gtk_container_add(GTK_CONTAINER(frame_container_), vbox);
 
-  shelf_ = gtk_hbox_new(0, 0);
+  // Create the toolbar.
+  shelf_ = gtk_hbox_new(FALSE, 0);
+  gtk_widget_set_size_request(GTK_WIDGET(shelf_), -1, GetShelfHeight());
   gtk_container_add(GTK_CONTAINER(vbox), shelf_);
-
-  GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(
-      GTK_ALIGNMENT(alignment),
-      kTopMargin, kBottomMargin, kLeftMargin, kRightMargin);
-  gtk_widget_show_all(alignment);
-  gtk_container_add(GTK_CONTAINER(alignment), contents);
-  gtk_container_add(GTK_CONTAINER(vbox), alignment);
-
-  // Create a toolbar and add it to the shelf.
-  hbox_ = gtk_hbox_new(FALSE, 0);
-  gtk_widget_set_size_request(GTK_WIDGET(hbox_), -1, GetShelfHeight());
-  gtk_container_add(GTK_CONTAINER(shelf_), hbox_);
-  gtk_widget_show_all(vbox);
-
-  g_signal_connect(frame_container_, "expose-event",
-                   G_CALLBACK(OnExposeThunk), this);
-  g_signal_connect(frame_container_, "destroy",
-                   G_CALLBACK(OnDestroyThunk), this);
 
   // Create a label for the source of the notification and add it to the
   // toolbar.
@@ -269,12 +256,11 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   gtk_label_set_max_width_chars(GTK_LABEL(source_label_),
                                 kOriginLabelCharacters);
   gtk_label_set_ellipsize(GTK_LABEL(source_label_), PANGO_ELLIPSIZE_END);
-  GtkWidget* label_alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  GtkWidget* label_alignment = gtk_alignment_new(0, 0.5, 0, 0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(label_alignment),
-                            kShelfVerticalMargin, kShelfVerticalMargin,
-                            kLeftLabelMargin, 0);
+                            0, 0, kLeftLabelMargin, 0);
   gtk_container_add(GTK_CONTAINER(label_alignment), source_label_);
-  gtk_box_pack_start(GTK_BOX(hbox_), label_alignment, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(shelf_), label_alignment, FALSE, FALSE, 0);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
@@ -291,12 +277,10 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnCloseButtonThunk), this);
   gtk_widget_set_can_focus(close_button_->widget(), FALSE);
-  GtkWidget* close_alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(close_alignment),
-                            kShelfVerticalMargin, kShelfVerticalMargin,
-                            0, kButtonSpacing);
+  GtkWidget* close_alignment = gtk_alignment_new(0.0, 0.5, 0, 0);
   gtk_container_add(GTK_CONTAINER(close_alignment), close_button_->widget());
-  gtk_box_pack_end(GTK_BOX(hbox_), close_alignment, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(shelf_), close_alignment, FALSE, FALSE,
+                   kButtonSpacing);
 
   // Create a button for showing the options menu, and add it to the toolbar.
   options_menu_button_.reset(new CustomDrawButton(IDR_BALLOON_WRENCH,
@@ -308,13 +292,20 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   g_signal_connect(options_menu_button_->widget(), "button-press-event",
                    G_CALLBACK(OnOptionsMenuButtonThunk), this);
   gtk_widget_set_can_focus(options_menu_button_->widget(), FALSE);
-  GtkWidget* options_alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(options_alignment),
-                            kShelfVerticalMargin, kShelfVerticalMargin,
-                            0, kButtonSpacing);
+  GtkWidget* options_alignment = gtk_alignment_new(0.0, 0.5, 0, 0);
   gtk_container_add(GTK_CONTAINER(options_alignment),
                     options_menu_button_->widget());
-  gtk_box_pack_end(GTK_BOX(hbox_), options_alignment, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(shelf_), options_alignment, FALSE, FALSE, 0);
+
+  // Add main contents to bubble.
+  GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_alignment_set_padding(
+      GTK_ALIGNMENT(alignment),
+      kTopMargin, kBottomMargin, kLeftMargin, kRightMargin);
+  gtk_widget_show_all(alignment);
+  gtk_container_add(GTK_CONTAINER(alignment), contents);
+  gtk_container_add(GTK_CONTAINER(vbox), alignment);
+  gtk_widget_show_all(vbox);
 
   notification_registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                               content::Source<ThemeService>(theme_service_));
