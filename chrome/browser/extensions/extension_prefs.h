@@ -340,7 +340,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
 
   // Get the launch type preference.  If no preference is set, return
   // |default_pref_value|.
-  LaunchType GetLaunchType(const std::string& extension_id,
+  LaunchType GetLaunchType(const Extension* extension,
                            LaunchType default_pref_value);
 
   void SetLaunchType(const std::string& extension_id, LaunchType launch_type);

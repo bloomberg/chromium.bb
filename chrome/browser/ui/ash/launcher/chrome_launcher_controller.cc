@@ -451,8 +451,10 @@ extensions::ExtensionPrefs::LaunchType ChromeLauncherController::GetLaunchType(
     ash::LauncherID id) {
   DCHECK(HasItemController(id));
 
+  const Extension* extension = GetExtensionForAppID(
+      id_to_item_controller_map_[id]->app_id());
   return profile_->GetExtensionService()->extension_prefs()->GetLaunchType(
-      id_to_item_controller_map_[id]->app_id(),
+      extension,
       extensions::ExtensionPrefs::LAUNCH_DEFAULT);
 }
 

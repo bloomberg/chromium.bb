@@ -130,7 +130,7 @@ void AppLauncherHandler::CreateAppInfo(
   value->SetInteger("launch_container", extension->launch_container());
   ExtensionPrefs* prefs = service->extension_prefs();
   value->SetInteger("launch_type",
-      prefs->GetLaunchType(extension->id(),
+      prefs->GetLaunchType(extension,
                            ExtensionPrefs::LAUNCH_DEFAULT));
   value->SetBoolean("is_component",
       extension->location() == Extension::COMPONENT);

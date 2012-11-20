@@ -102,7 +102,7 @@ WebContents* OpenApplicationWindow(
     // LAUNCH_WINDOW launches in a normal app window.
     ExtensionPrefs::LaunchType launch_type =
         profile->GetExtensionService()->extension_prefs()->GetLaunchType(
-            extension->id(), ExtensionPrefs::LAUNCH_DEFAULT);
+            extension, ExtensionPrefs::LAUNCH_DEFAULT);
     if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN)
       params.initial_show_state = ui::SHOW_STATE_MAXIMIZED;
     else if (launch_type == ExtensionPrefs::LAUNCH_WINDOW)
@@ -162,7 +162,7 @@ WebContents* OpenApplicationTab(Profile* profile,
 
   ExtensionPrefs::LaunchType launch_type =
       extension_service->extension_prefs()->GetLaunchType(
-          extension->id(), ExtensionPrefs::LAUNCH_DEFAULT);
+          extension, ExtensionPrefs::LAUNCH_DEFAULT);
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppTabLaunchType", launch_type, 100);
 
   int add_type = TabStripModel::ADD_ACTIVE;

@@ -1199,12 +1199,12 @@ bool ExtensionPrefs::HasAllowFileAccessSetting(
 }
 
 ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
-    const std::string& extension_id,
+    const Extension* extension,
     ExtensionPrefs::LaunchType default_pref_value) {
   int value = -1;
   LaunchType result = LAUNCH_REGULAR;
 
-  if (ReadExtensionPrefInteger(extension_id, kPrefLaunchType, &value) &&
+  if (ReadExtensionPrefInteger(extension->id(), kPrefLaunchType, &value) &&
      (value == LAUNCH_PINNED ||
       value == LAUNCH_REGULAR ||
       value == LAUNCH_FULLSCREEN ||
@@ -1217,7 +1217,7 @@ ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
     // App windows are not yet supported on mac.  Pref sync could make
     // the launch type LAUNCH_WINDOW, even if there is no UI to set it
     // on mac.
-    if (result == LAUNCH_WINDOW)
+    if (!extension->is_platform_app() && result == LAUNCH_WINDOW)
       result = LAUNCH_REGULAR;
   #endif
 
@@ -1251,7 +1251,7 @@ extension_misc::LaunchContainer ExtensionPrefs::GetLaunchContainer(
     // this preference.  If no preference is set, |default_pref_value|
     // is used.
     ExtensionPrefs::LaunchType prefs_launch_type =
-        GetLaunchType(extension->id(), default_pref_value);
+        GetLaunchType(extension, default_pref_value);
 
     if (prefs_launch_type == ExtensionPrefs::LAUNCH_WINDOW) {
       // If the pref is set to launch a window (or no pref is set, and

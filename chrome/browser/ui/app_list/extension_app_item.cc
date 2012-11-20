@@ -104,9 +104,9 @@ class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
 
 extensions::ExtensionPrefs::LaunchType GetExtensionLaunchType(
     Profile* profile,
-    const std::string& extension_id) {
+    const Extension* extension) {
   return profile->GetExtensionService()->extension_prefs()->GetLaunchType(
-      extension_id, extensions::ExtensionPrefs::LAUNCH_DEFAULT);
+      extension, extensions::ExtensionPrefs::LAUNCH_DEFAULT);
 }
 
 void SetExtensionLaunchType(
@@ -270,7 +270,7 @@ string16 ExtensionAppItem::GetLabelForCommandId(int command_id) const {
 
 bool ExtensionAppItem::IsCommandIdChecked(int command_id) const {
   if (command_id >= LAUNCH_TYPE_START && command_id < LAUNCH_TYPE_LAST) {
-    return static_cast<int>(GetExtensionLaunchType(profile_, extension_id_)) +
+    return static_cast<int>(GetExtensionLaunchType(profile_, GetExtension())) +
         LAUNCH_TYPE_START == command_id;
   } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
              command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
