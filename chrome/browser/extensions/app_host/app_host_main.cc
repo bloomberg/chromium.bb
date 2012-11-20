@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <windows.h>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -11,7 +13,7 @@
 #include "chrome/browser/extensions/app_host/update.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 
-int main(int /* argc */, char* /* argv[] */) {
+int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
   base::AtExitManager exit_manager;
 
   // Initialize the commandline singleton from the environment.

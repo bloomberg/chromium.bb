@@ -897,6 +897,11 @@
             'browser/extensions/app_host/update.h',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/app_host_exe_version.rc',
           ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
+            },
+          },
         },
       ],
     }, ],  # 'OS=="win"'
