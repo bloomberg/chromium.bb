@@ -137,6 +137,8 @@
       'test/data/bookmarks/model_without_sync.json',
       'test/data/chromeos/gdata/account_metadata.json',
       'test/data/chromeos/gdata/basic_feed.json',
+      'test/data/chromeos/gdata/directory_entry.json',
+      'test/data/chromeos/gdata/file_entry.json',
       'test/data/chromeos/gdata/new_folder_entry.json',
       'test/data/chromeos/gdata/root_feed.json',
       'test/data/chromeos/gdata/testfile.txt',
@@ -708,8 +710,6 @@
           '../third_party/hunspell_dictionaries/en-GB-2-5.bdic',
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
-          'test/data/chromeos/gdata/directory_entry.json',
-          'test/data/chromeos/gdata/file_entry.json',
         ],
         'isolate_dependency_untracked': [
           'test/data/firefox2_nss/',
