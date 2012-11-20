@@ -590,8 +590,8 @@ class ProjectMappingTest(cros_test_lib.TestCase):
     split_pv = portage_utilities.SplitPV(pv)
     split_cpv = portage_utilities.SplitCPV(cpv)
     self.assertEquals(split_cpv.category, cat)
-    for k, v in split_pv.__dict__.iteritems():
-      self.assertEquals(split_cpv.__dict__[k], v)
+    for k, v in split_pv._asdict().iteritems():
+      self.assertEquals(getattr(split_cpv, k), v)
 
   def testFindWorkonProjects(self):
     """Test if we can find the list of workon projects."""

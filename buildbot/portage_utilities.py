@@ -825,7 +825,8 @@ def SplitCPV(cpv):
   m = SplitPV(pv)
   if m is None:
     return None
-  return CPV(category=category, **m.__dict__)
+  # pylint: disable=W0212
+  return CPV(category=category, **m._asdict())
 
 
 def FindWorkonProjects(packages):
