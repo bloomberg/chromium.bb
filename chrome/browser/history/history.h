@@ -784,14 +784,28 @@ class HistoryService : public CancelableRequestProvider,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors);
 
-  // Used by FaviconService to set a favicon for |page_url| with |pixel_size|.
-  // If there is already a favicon bitmap of |pixel_size| for |page_url|, the
-  // favicon bitmap is overwritten. Otherwise, a new favicon and favicon bitmap
-  // is created using |page_url| as the fake icon URL. Arbitrary favicons and
-  // favicon bitmaps associated to |page_url| may be deleted in order to
-  // maintain the restriction for the max favicons per page.
+  // Used by FaviconService to set a favicon for |page_url| and |icon_url| with
+  // |pixel_size|.
+  // Example:
+  //   |page_url|: www.google.com
+  // 2 favicons in history for |page_url|:
+  //   www.google.com/a.ico  16x16
+  //   www.google.com/b.ico  32x32
+  // MergeFavicon(|page_url|, www.google.com/a.ico, ..., ..., 16x16)
+  //
+  // Merging occurs in the following manner:
+  // 1) |page_url| is set to map to only to |icon_url|. In order to not lose
+  //    data, favicon bitmaps mapped to |page_url| but not to |icon_url| are
+  //    copied to the favicon at |icon_url|.
+  //    For the example above, |page_url| will only be mapped to a.ico.
+  //    The 32x32 favicon bitmap at b.ico is copied to a.ico
+  // 2) |bitmap_data| is added to the favicon at |icon_url|, overwriting any
+  //    favicon bitmaps of |pixel_size|.
+  //    For the example above, |bitmap_data| overwrites the 16x16 favicon
+  //    bitmap for a.ico.
   // TODO(pkotwicz): Remove once no longer required by sync.
   void MergeFavicon(const GURL& page_url,
+                    const GURL& icon_url,
                     history::IconType icon_type,
                     scoped_refptr<base::RefCountedMemory> bitmap_data,
                     const gfx::Size& pixel_size);

@@ -721,13 +721,15 @@ void BookmarkChangeProcessor::ApplyBookmarkFavicon(
   history->AddPageNoVisitForBookmark(bookmark_node->url(),
                                      bookmark_node->GetTitle());
   // The client may have cached the favicon at 2x. Use MergeFavicon() as not to
-  // overwrite the cached 2x favicon bitmap. Sync favicons are always
-  // gfx::kFaviconSize in width and height. Store the favicon into history
-  // as such.
+  // overwrite the cached 2x favicon bitmap. Use the page URL as a fake icon URL
+  // as it is guaranteed to be unique. Sync favicons are always
+  // gfx::kFaviconSize in width and height. Store the favicon into history as
+  // such.
   scoped_refptr<base::RefCountedMemory> bitmap_data(
       new base::RefCountedBytes(icon_bytes_vector));
   gfx::Size pixel_size(gfx::kFaviconSize, gfx::kFaviconSize);
   favicon_service->MergeFavicon(bookmark_node->url(),
+                                bookmark_node->url(),
                                 history::FAVICON,
                                 bitmap_data,
                                 pixel_size);

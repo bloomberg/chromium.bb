@@ -1915,85 +1915,136 @@ void HistoryBackend::UpdateFaviconMappingsAndFetch(
 
 void HistoryBackend::MergeFavicon(
     const GURL& page_url,
+    const GURL& icon_url,
     history::IconType icon_type,
     scoped_refptr<base::RefCountedMemory> bitmap_data,
     const gfx::Size& pixel_size) {
   if (!thumbnail_db_.get() || !db_.get())
     return;
 
-  std::vector<IconMapping> icon_mappings;
-  thumbnail_db_->GetIconMappingsForPageURL(page_url, icon_type, &icon_mappings);
+  FaviconID favicon_id = thumbnail_db_->GetFaviconIDForFaviconURL(icon_url,
+      icon_type, NULL);
 
-  for (size_t i = 0; i < icon_mappings.size(); ++i) {
-    std::vector<FaviconBitmapIDSize> bitmap_id_sizes;
-    thumbnail_db_->GetFaviconBitmapIDSizes(icon_mappings[i].icon_id,
-                                           &bitmap_id_sizes);
+  if (!favicon_id) {
+    // There is no favicon at |icon_url|, create it.
+    favicon_id = thumbnail_db_->AddFavicon(icon_url, icon_type,
+                                           GetDefaultFaviconSizes());
+  }
 
-    for (size_t j = 0; j < bitmap_id_sizes.size(); ++j) {
-      if (bitmap_id_sizes[j].pixel_size == pixel_size) {
-        // There is a favicon bitmap of |pixel_size| already mapped to
-        // |page_url|, replace it.
-        thumbnail_db_->SetFaviconBitmap(bitmap_id_sizes[j].bitmap_id,
-            bitmap_data, base::Time::Now());
+  std::vector<FaviconBitmapIDSize> bitmap_id_sizes;
+  thumbnail_db_->GetFaviconBitmapIDSizes(favicon_id, &bitmap_id_sizes);
 
-        // Send notification to the UI that the favicon bitmap was updated.
-        SendFaviconChangedNotificationForPageAndRedirects(page_url);
-        ScheduleCommit();
-        return;
-      }
+  // If there is already a favicon bitmap of |pixel_size| at |icon_url|,
+  // replace it.
+  bool replaced_bitmap = false;
+  for (size_t i = 0; i < bitmap_id_sizes.size(); ++i) {
+    if (bitmap_id_sizes[i].pixel_size == pixel_size) {
+      thumbnail_db_->SetFaviconBitmap(bitmap_id_sizes[i].bitmap_id, bitmap_data,
+          base::Time::Now());
+      replaced_bitmap = true;
+      break;
     }
   }
 
-  // There is no exact match for |pixel_size|. Create a new favicon with a fake
-  // icon URL. Use |page_url| as the fake icon URL as it is guaranteed to be
-  // unique.
-  const GURL& fake_icon_url = page_url;
+  // Create a vector of the pixel sizes of the favicon bitmaps currently at
+  // |icon_url|.
+  std::vector<gfx::Size> favicon_sizes;
+  for (size_t i = 0; i < bitmap_id_sizes.size(); ++i)
+    favicon_sizes.push_back(bitmap_id_sizes[i].pixel_size);
 
-  // There may already be a favicon with |fake_icon_url| mapped to |page_url|.
-  // This will be the case if MergeFavicon() was previously called for
-  // |page_url| with a different pixel size. Reuse the favicon if it exists.
-  FaviconID fake_icon_id = 0;
+  if (!replaced_bitmap) {
+    // Delete an arbitrary favicon bitmap to avoid going over the limit of
+    // |kMaxFaviconBitmapsPerIconURL|.
+    if (bitmap_id_sizes.size() >= kMaxFaviconBitmapsPerIconURL) {
+      thumbnail_db_->DeleteFaviconBitmap(bitmap_id_sizes[0].bitmap_id);
+      favicon_sizes.erase(favicon_sizes.begin());
+    }
+    thumbnail_db_->AddFaviconBitmap(favicon_id, bitmap_data, base::Time::Now(),
+                                    pixel_size);
+    favicon_sizes.push_back(pixel_size);
+  }
+
+  // A site may have changed the favicons that it uses for |page_url|.
+  // Example Scenario:
+  //   page_url = news.google.com
+  //   Intial State: www.google.com/favicon.ico 16x16, 32x32
+  //   MergeFavicon(news.google.com, news.google.com/news_specific.ico, ...,
+  //                ..., 16x16)
+  //
+  // Difficulties:
+  // 1. Sync requires that a call to GetFaviconsForURL() returns the
+  //    |bitmap_data| passed into MergeFavicon().
+  //    - It is invalid for the 16x16 bitmap for www.google.com/favicon.ico to
+  //      stay mapped to news.google.com because it would be unclear which 16x16
+  //      bitmap should be returned via GetFaviconsForURL().
+  //
+  // 2. www.google.com/favicon.ico may be mapped to more than just
+  //    news.google.com (eg www.google.com).
+  //    - The 16x16 bitmap cannot be deleted from www.google.com/favicon.ico
+  //
+  // To resolve these problems, we copy all of the favicon bitmaps previously
+  // mapped to news.google.com (|page_url|) and add them to the favicon at
+  // news.google.com/news_specific.ico (|icon_url|). The favicon sizes for
+  // |icon_url| are set to default to indicate that |icon_url| has incomplete
+  // / incorrect data.
+  // Difficlty 1: All but news.google.com/news_specific.ico are unmapped from
+  //              news.google.com
+  // Difficulty 2: The favicon bitmaps for www.google.com/favicon.ico are not
+  //               modified.
+
+  std::vector<IconMapping> icon_mappings;
+  thumbnail_db_->GetIconMappingsForPageURL(page_url, icon_type, &icon_mappings);
+
+  // Copy the favicon bitmaps mapped to |page_url| to the favicon at |icon_url|
+  // till the limit of |kMaxFaviconBitmapsPerIconURL| is reached.
+  bool migrated_bitmaps = false;
   for (size_t i = 0; i < icon_mappings.size(); ++i) {
-    if (icon_mappings[i].icon_url == fake_icon_url)
-      fake_icon_id = icon_mappings[i].icon_id;
+    if (favicon_sizes.size() >= kMaxFaviconBitmapsPerIconURL)
+      break;
+
+    if (icon_mappings[i].icon_url == icon_url)
+      continue;
+
+    std::vector<FaviconBitmap> bitmaps_to_copy;
+    thumbnail_db_->GetFaviconBitmaps(icon_mappings[i].icon_id,
+                                     &bitmaps_to_copy);
+    for (size_t j = 0; j < bitmaps_to_copy.size(); ++j) {
+      // Do not add a favicon bitmap at a pixel size for which there is already
+      // a favicon bitmap mapped to |icon_url|. The one there is more correct
+      // and having multiple equally sized favicon bitmaps for |page_url| is
+      // ambiguous in terms of GetFaviconsForURL().
+      std::vector<gfx::Size>::iterator it = std::find(favicon_sizes.begin(),
+          favicon_sizes.end(), bitmaps_to_copy[j].pixel_size);
+      if (it != favicon_sizes.end())
+        continue;
+
+      migrated_bitmaps = true;
+      thumbnail_db_->AddFaviconBitmap(favicon_id,
+          bitmaps_to_copy[j].bitmap_data, base::Time::Now(),
+          bitmaps_to_copy[j].pixel_size);
+      favicon_sizes.push_back(bitmaps_to_copy[j].pixel_size);
+
+      if (favicon_sizes.size() >= kMaxFaviconBitmapsPerIconURL)
+        break;
+    }
   }
 
-  bool update_mappings = false;
-  if (!fake_icon_id) {
-    fake_icon_id = thumbnail_db_->AddFavicon(fake_icon_url, icon_type,
-                                             GetDefaultFaviconSizes());
-
-    // The favicon mappings need to be updated to include the new favicon.
-    update_mappings = true;
+  if (migrated_bitmaps || !replaced_bitmap) {
+    // Set the favicon sizes to default to indicate that at least some of the
+    // favicon bitmaps for the favicon at |icon_url| are missing or stale.
+    thumbnail_db_->SetFaviconSizes(favicon_id, GetDefaultFaviconSizes());
   }
 
-  // Remove an arbitrary favicon bitmap to avoid going over the limit of
-  // |kMaxFaviconBitmapsPerIconURL|.
-  std::vector<FaviconBitmapIDSize> bitmap_id_sizes;
-  thumbnail_db_->GetFaviconBitmapIDSizes(fake_icon_id, &bitmap_id_sizes);
-  if (bitmap_id_sizes.size() == kMaxFaviconBitmapsPerIconURL)
-    thumbnail_db_->DeleteFaviconBitmap(bitmap_id_sizes[0].bitmap_id);
-
-  thumbnail_db_->AddFaviconBitmap(fake_icon_id, bitmap_data, base::Time::Now(),
-                                  pixel_size);
-
-  if (update_mappings) {
-    // FaviconIDs which should be mapped to |page_url| for |icon_type|.
+  // Update the favicon mappings such that only |icon_url| is mapped to
+  // |page_url|.
+  if (icon_mappings.size() != 1 || icon_mappings[0].icon_url != icon_url) {
     std::vector<FaviconID> favicon_ids;
-    for (size_t i = 0; i < icon_mappings.size(); ++i)
-      favicon_ids.push_back(icon_mappings[i].icon_id);
-
-    // Remove an arbitrary favicon to avoid going over the limit of
-    // |kMaxFaviconsPerPage|.
-    if (favicon_ids.size() == kMaxFaviconsPerPage)
-      favicon_ids.pop_back();
-
-    // Add mapping to |fake_icon_id|.
-    favicon_ids.push_back(fake_icon_id);
+    favicon_ids.push_back(favicon_id);
     SetFaviconMappingsForPageAndRedirects(page_url, icon_type, favicon_ids);
   }
 
-  // Send notification to the UI as at least a favicon bitmap was added.
+  // Send notification to the UI as at least a favicon bitmap was added or
+  // replaced.
   SendFaviconChangedNotificationForPageAndRedirects(page_url);
   ScheduleCommit();
 }

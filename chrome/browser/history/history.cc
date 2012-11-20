@@ -599,6 +599,7 @@ void HistoryService::UpdateFaviconMappingsAndFetch(
 
 void HistoryService::MergeFavicon(
     const GURL& page_url,
+    const GURL& icon_url,
     history::IconType icon_type,
     scoped_refptr<base::RefCountedMemory> bitmap_data,
     const gfx::Size& pixel_size) {
@@ -607,7 +608,7 @@ void HistoryService::MergeFavicon(
     return;
 
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::MergeFavicon, page_url,
-                    icon_type, bitmap_data, pixel_size);
+                    icon_url, icon_type, bitmap_data, pixel_size);
 }
 
 void HistoryService::SetFavicons(

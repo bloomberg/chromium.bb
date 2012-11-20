@@ -204,13 +204,9 @@ class FaviconService : public CancelableRequestProvider,
   // Unlike SetFavicons(), this method will not delete preexisting bitmap data
   // which is associated to |page_url| if at all possible. Use this method if
   // the favicon bitmaps for any of ui::GetSupportedScaleFactors() are not
-  // known. If there is a favicon bitmap of |pixel_size| for |page_url| already
-  // in the database, the favicon bitmap is overwritten. Otherwise, a new
-  // favicon and favicon bitmap are created with |page_url| as the fake icon
-  // URL. Arbitrary favicons and favicon bitmaps associated to |page_url| may be
-  // deleted in order to maintain the restriction for the max favicons per page.
-  // TODO(pkotwicz): Remove once no longer required by sync.
+  // known.
   void MergeFavicon(const GURL& page_url,
+                    const GURL& icon_url,
                     history::IconType icon_type,
                     scoped_refptr<base::RefCountedMemory> bitmap_data,
                     const gfx::Size& pixel_size);
