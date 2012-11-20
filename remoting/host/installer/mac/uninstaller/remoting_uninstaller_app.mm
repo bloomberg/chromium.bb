@@ -25,6 +25,8 @@
                                  alternateButton:nil
                                      otherButton:nil
                        informativeTextWithFormat:@"%@", message];
+  [alert setAlertStyle:
+       (success ? NSInformationalAlertStyle : NSCriticalAlertStyle)];
   [alert runModal];
 }
 
