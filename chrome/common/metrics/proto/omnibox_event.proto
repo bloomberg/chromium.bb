@@ -10,7 +10,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 13
+// Next tag: 14
 message OmniboxEventProto {
   // The timestamp for the event, in seconds since the epoch.
   optional int64 time = 1;
@@ -48,6 +48,15 @@ message OmniboxEventProto {
   // again), then writes in the omnibox again, this elapsed time should start
   // from the time of the second series of modification.
   optional int64 typing_duration_ms = 7;
+
+  // The amount of time, in milliseconds, since the last time the default
+  // (inline) match changed.  This may be longer than the time since the
+  // last keystroke.  (The last keystroke may not have changed the default
+  // match.)  It may also be shorter than the time since the last keystroke
+  // because the default match might have come from an asynchronous
+  // provider.  Regardless, it should always be less than or equal to
+  // the field |typing_duration_ms|.
+  optional int64 duration_since_last_default_match_update_ms = 13;
 
   // The type of page currently displayed when the user used the omnibox.
   enum PageClassification {

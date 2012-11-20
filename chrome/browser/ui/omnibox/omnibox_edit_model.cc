@@ -537,6 +537,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
   // We only care about cases where there is a selection (i.e. the popup is
   // open).
   if (popup_->IsOpen()) {
+    const base::TimeTicks& now(base::TimeTicks::Now());
     // TODO(sreeram): Handle is_temporary_text_set_by_instant_ correctly.
     AutocompleteLog log(
         autocomplete_controller_->input().text(),
@@ -545,14 +546,20 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         popup_->selected_line(),
         -1,  // don't yet know tab ID; set later if appropriate
         ClassifyPage(controller_->GetWebContents()->GetURL()),
-        base::TimeTicks::Now() - time_user_first_modified_omnibox_,
+        now - time_user_first_modified_omnibox_,
         string16::npos,  // inline autocomplete length; possibly set later
+        now - autocomplete_controller_->last_time_default_match_changed(),
         result());
     DCHECK(user_input_in_progress_ ||
            match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST)
         << "We didn't get here through the expected series of calls. "
         << "time_user_first_modified_omnibox_ is not set correctly and other "
         << "things may be wrong. Match provider: " << match.provider->GetName();
+    DCHECK(log.elapsed_time_since_user_first_modified_omnibox >=
+           log.elapsed_time_since_last_change_to_default_match)
+        << "We should've got the notification that the user modified the "
+        << "omnibox text at same time or before the most recent time the "
+        << "default match changed.";
     if (index != OmniboxPopupModel::kNoMatch)
       log.selected_index = index;
     else if (!has_temporary_text_)

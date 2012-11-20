@@ -13,6 +13,7 @@ AutocompleteLog::AutocompleteLog(
     metrics::OmniboxEventProto::PageClassification current_page_classification,
     base::TimeDelta elapsed_time_since_user_first_modified_omnibox,
     size_t inline_autocompleted_length,
+    base::TimeDelta elapsed_time_since_last_change_to_default_match,
     const AutocompleteResult& result)
     : text(text),
       just_deleted_text(just_deleted_text),
@@ -23,6 +24,8 @@ AutocompleteLog::AutocompleteLog(
       elapsed_time_since_user_first_modified_omnibox(
           elapsed_time_since_user_first_modified_omnibox),
       inline_autocompleted_length(inline_autocompleted_length),
+      elapsed_time_since_last_change_to_default_match(
+          elapsed_time_since_last_change_to_default_match),
       result(result),
       providers_info() {
 }

@@ -978,6 +978,8 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
     omnibox_event->set_typing_duration_ms(
         log.elapsed_time_since_user_first_modified_omnibox.InMilliseconds());
   }
+  omnibox_event->set_duration_since_last_default_match_update_ms(
+      log.elapsed_time_since_last_change_to_default_match.InMilliseconds());
   omnibox_event->set_current_page_classification(
       log.current_page_classification);
   omnibox_event->set_input_type(AsOmniboxEventInputType(log.input_type));

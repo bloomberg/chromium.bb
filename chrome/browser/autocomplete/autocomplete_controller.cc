@@ -213,7 +213,20 @@ void AutocompleteController::Start(
   }
   in_start_ = false;
   CheckIfDone();
-  UpdateResult(true);
+  // The second true forces saying the default match has changed.
+  // This triggers the edit model to update things such as the inline
+  // autocomplete state.  In particular, if the user has typed a key
+  // since the last notification, and we're now re-running
+  // autocomplete, then we need to update the inline autocompletion
+  // even if the current match is for the same URL as the last run's
+  // default match.  Likewise, the controller doesn't know what's
+  // happened in the edit since the last time it ran autocomplete.
+  // The user might have selected all the text and hit delete, then
+  // typed a new character.  The selection and delete won't send any
+  // signals to the controller so it doesn't realize that anything was
+  // cleared or changed.  Even if the default match hasn't changed, we
+  // need the edit model to update the display.
+  UpdateResult(false, true);
 
   if (!done_)
     StartExpireTimer();
@@ -263,13 +276,15 @@ void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {
 }
 
 void AutocompleteController::ExpireCopiedEntries() {
-  // Clear out the results. This ensures no results from the previous result set
-  // are copied over.
-  result_.Reset();
-  // We allow matches from the previous result set to starve out matches from
-  // the new result set. This means in order to expire matches we have to query
-  // the providers again.
-  UpdateResult(false);
+  // The first true makes UpdateResult() clear out the results and
+  // regenerate them, thus ensuring that no results from the previous
+  // result set remain.
+  // The second true says to pretend the default match changed (even
+  // if it did not).  This may not be necessary but the code has been
+  // like this for a long time and there's probably no great benefit in
+  // changing it.  Classically we have erred on the side of notifying
+  // too often because it hasn't had any major side effects.
+  UpdateResult(true, true);
 }
 
 void AutocompleteController::OnProviderUpdate(bool updated_matches) {
@@ -285,7 +300,7 @@ void AutocompleteController::OnProviderUpdate(bool updated_matches) {
     // Multiple providers may provide synchronous results, so we only update the
     // results if we're not in Start().
     if (!in_start_ && (updated_matches || done_))
-      UpdateResult(false);
+      UpdateResult(false, false);
   }
 }
 
@@ -302,7 +317,23 @@ void AutocompleteController::AddProvidersInfo(
   }
 }
 
-void AutocompleteController::UpdateResult(bool is_synchronous_pass) {
+void AutocompleteController::UpdateResult(
+    bool regenerate_result,
+    bool force_notify_default_match_changed) {
+  const bool last_default_was_valid = result_.default_match() != result_.end();
+  // The following two variables are only set and used if
+  // |last_default_was_valid|.
+  string16 last_default_fill_into_edit, last_default_associated_keyword;
+  if (last_default_was_valid) {
+    last_default_fill_into_edit = result_.default_match()->fill_into_edit;
+    if (result_.default_match()->associated_keyword != NULL)
+      last_default_associated_keyword =
+          result_.default_match()->associated_keyword->keyword;
+  }
+
+  if (regenerate_result)
+    result_.Reset();
+
   AutocompleteResult last_result;
   last_result.Swap(&result_);
 
@@ -329,27 +360,29 @@ void AutocompleteController::UpdateResult(bool is_synchronous_pass) {
   UpdateAssociatedKeywords(&result_);
   UpdateAssistedQueryStats(&result_);
 
-  bool notify_default_match = is_synchronous_pass;
-  if (!is_synchronous_pass) {
-    const bool last_default_was_valid =
-        last_result.default_match() != last_result.end();
-    const bool default_is_valid = result_.default_match() != result_.end();
-    // We've gotten async results. Send notification that the default match
-    // updated if fill_into_edit differs or associated_keyword differ.  (The
-    // latter can change if we've just started Chrome and the keyword database
-    // finishes loading while processing this request.) We don't check the URL
-    // as that may change for the default match even though the fill into edit
-    // hasn't changed (see SearchProvider for one case of this).
-    notify_default_match =
-        (last_default_was_valid != default_is_valid) ||
-        (default_is_valid &&
-          ((result_.default_match()->fill_into_edit !=
-            last_result.default_match()->fill_into_edit) ||
-            (result_.default_match()->associated_keyword.get() !=
-              last_result.default_match()->associated_keyword.get())));
+  const bool default_is_valid = result_.default_match() != result_.end();
+  string16 default_associated_keyword;
+  if (default_is_valid &&
+      (result_.default_match()->associated_keyword != NULL)) {
+    default_associated_keyword =
+        result_.default_match()->associated_keyword->keyword;
   }
+  // We've gotten async results. Send notification that the default match
+  // updated if fill_into_edit differs or associated_keyword differ.  (The
+  // latter can change if we've just started Chrome and the keyword database
+  // finishes loading while processing this request.) We don't check the URL
+  // as that may change for the default match even though the fill into edit
+  // hasn't changed (see SearchProvider for one case of this).
+  const bool notify_default_match =
+      (last_default_was_valid != default_is_valid) ||
+      (last_default_was_valid &&
+       ((result_.default_match()->fill_into_edit !=
+          last_default_fill_into_edit) ||
+         (default_associated_keyword != last_default_associated_keyword)));
+  if (notify_default_match)
+    last_time_default_match_changed_ = base::TimeTicks::Now();
 
-  NotifyChanged(notify_default_match);
+  NotifyChanged(force_notify_default_match_changed || notify_default_match);
 }
 
 void AutocompleteController::UpdateAssociatedKeywords(

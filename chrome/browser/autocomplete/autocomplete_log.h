@@ -29,6 +29,7 @@ struct AutocompleteLog {
           current_page_classification,
       base::TimeDelta elapsed_time_since_user_first_modified_omnibox,
       size_t inline_autocompleted_length,
+      base::TimeDelta elapsed_time_since_last_change_to_default_match,
       const AutocompleteResult& result);
   ~AutocompleteLog();
 
@@ -66,6 +67,11 @@ struct AutocompleteLog {
   // Inline autocompleted length (if displayed).  Set to string16::npos
   // if not available.
   size_t inline_autocompleted_length;
+
+  // The amount of time since the last time the default (i.e., inline)
+  // match changed.  This will certainly be less than
+  // elapsed_time_since_user_first_modified_omnibox.
+  base::TimeDelta elapsed_time_since_last_change_to_default_match;
 
   // Result set.
   const AutocompleteResult& result;

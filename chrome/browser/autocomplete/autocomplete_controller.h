@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
@@ -125,6 +126,10 @@ class AutocompleteController : public AutocompleteProviderListener {
   bool done() const { return done_; }
   const ACProviders* providers() const { return &providers_; }
 
+  const base::TimeTicks& last_time_default_match_changed() const {
+    return last_time_default_match_changed_;
+  }
+
   // AutocompleteProviderListener:
   virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
 
@@ -142,10 +147,22 @@ class AutocompleteController : public AutocompleteProviderListener {
                            RedundantKeywordsIgnoredInResult);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, UpdateAssistedQueryStats);
 
-  // Updates |result_| to reflect the current provider state.  Resets timers and
-  // fires notifications as necessary.  |is_synchronous_pass| is true only when
-  // Start() is calling this to get the synchronous result.
-  void UpdateResult(bool is_synchronous_pass);
+  // Updates |result_| to reflect the current provider state and fires
+  // notifications.  If |regenerate_result| then we clear the result
+  // so when we incorporate the current provider state we end up
+  // implicitly removing all expired matches.  (Normally we allow
+  // matches from the previous result set carry over.  These stale
+  // results may outrank legitimate matches from the current result
+  // set.  Sometimes we just want the current matches; the easier way
+  // to do this is to throw everything out and reconstruct the result
+  // set from the providers' current data.)
+  // If |force_notify_default_match_changed|, we tell NotifyChanged
+  // the default match has changed even if it hasn't.  This is
+  // necessary in some cases; for instance, if the user typed a new
+  // character, the edit model needs to repaint (highlighting changed)
+  // even if the default match didn't change.
+  void UpdateResult(bool regenerate_result,
+                    bool force_notify_default_match_changed);
 
   // Updates |result| to populate each match's |associated_keyword| if that
   // match can show a keyword hint.  |result| should be sorted by
@@ -187,6 +204,18 @@ class AutocompleteController : public AutocompleteProviderListener {
 
   // Data from the autocomplete query.
   AutocompleteResult result_;
+
+  // The most recent time the default match (inline match) changed.  This may
+  // be earlier than the most recent keystroke if the recent keystrokes didn't
+  // change the suggested match in the omnibox.  (For instance, if
+  // a user typed "mail.goog" and the match https://mail.google.com/ was
+  // the destination match ever since the user typed "ma" then this is
+  // the time that URL first appeared as the default match.)  This may
+  // also be more recent than the last keystroke if there was an
+  // asynchronous provider that returned and changed the default
+  // match.  See UpdateResult() for details on when we consider a
+  // match to have changed.
+  base::TimeTicks last_time_default_match_changed_;
 
   // Timer used to remove any matches copied from the last result. When run
   // invokes |ExpireCopiedEntries|.
