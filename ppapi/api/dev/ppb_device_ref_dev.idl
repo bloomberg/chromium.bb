@@ -6,6 +6,9 @@
 /**
  * This file defines the <code>PPB_DeviceRef_Dev</code> interface.
  */
+
+[generate_thunk]
+
 label Chrome {
   M18 = 0.1
 };
@@ -40,6 +43,7 @@ interface PPB_DeviceRef_Dev {
    *
    * @return A <code>PP_DeviceType_Dev</code> value.
    */
+  [on_failure=PP_DEVICETYPE_DEV_INVALID]
   PP_DeviceType_Dev GetType([in] PP_Resource device_ref);
 
   /**

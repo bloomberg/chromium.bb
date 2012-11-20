@@ -2,8 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// From dev/ppb_device_ref_dev.idl modified Tue Nov 20 13:28:29 2012.
+
+#include "ppapi/c/dev/ppb_device_ref_dev.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_device_ref_api.h"
+#include "ppapi/thunk/ppb_instance_api.h"
+#include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
@@ -13,7 +20,7 @@ namespace {
 
 PP_Bool IsDeviceRef(PP_Resource resource) {
   EnterResource<PPB_DeviceRef_API> enter(resource, false);
-  return enter.succeeded() ? PP_TRUE : PP_FALSE;
+  return PP_FromBool(enter.succeeded());
 }
 
 PP_DeviceType_Dev GetType(PP_Resource device_ref) {
@@ -23,23 +30,23 @@ PP_DeviceType_Dev GetType(PP_Resource device_ref) {
   return enter.object()->GetType();
 }
 
-PP_Var GetName(PP_Resource device_ref) {
+struct PP_Var GetName(PP_Resource device_ref) {
   EnterResource<PPB_DeviceRef_API> enter(device_ref, true);
   if (enter.failed())
     return PP_MakeUndefined();
   return enter.object()->GetName();
 }
 
-const PPB_DeviceRef_Dev g_ppb_device_ref_thunk = {
+const PPB_DeviceRef_Dev_0_1 g_ppb_deviceref_dev_thunk_0_1 = {
   &IsDeviceRef,
   &GetType,
-  &GetName
+  &GetName,
 };
 
 }  // namespace
 
 const PPB_DeviceRef_Dev_0_1* GetPPB_DeviceRef_Dev_0_1_Thunk() {
-  return &g_ppb_device_ref_thunk;
+  return &g_ppb_deviceref_dev_thunk_0_1;
 }
 
 }  // namespace thunk
