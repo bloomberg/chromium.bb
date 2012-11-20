@@ -521,9 +521,11 @@ def generate_simplified(
   relative_cwd = cleanup_path(relative_cwd)
   assert not os.path.isabs(relative_cwd), relative_cwd
   # Creates the right set of variables here. We only care about PATH_VARIABLES.
-  variables = dict(
+  path_variables = dict(
       ('<(%s)' % k, variables[k].replace(os.path.sep, '/'))
       for k in PATH_VARIABLES if k in variables)
+  variables = variables.copy()
+  variables.update(path_variables)
 
   # Actual work: Process the files.
   # TODO(maruel): if all the files in a directory are in part tracked and in
@@ -552,7 +554,7 @@ def generate_simplified(
           posixpath.join(root_dir_posix, f),
           posixpath.join(root_dir_posix, relative_cwd)) or './'
 
-    for variable, root_path in variables.iteritems():
+    for variable, root_path in path_variables.iteritems():
       if f.startswith(root_path):
         f = variable + f[len(root_path):]
         logging.debug('Converted to %s' % f)
