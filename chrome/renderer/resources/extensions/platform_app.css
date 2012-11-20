@@ -20,3 +20,7 @@ webview {
 html, body {
   overflow: hidden;
 }
+
+img, a {
+  -webkit-user-drag: none;
+}
