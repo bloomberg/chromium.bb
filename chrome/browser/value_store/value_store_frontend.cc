@@ -4,6 +4,7 @@
 
 #include "chrome/browser/value_store/value_store_frontend.h"
 
+#include "base/debug/trace_event.h"
 #include "chrome/browser/value_store/leveldb_value_store.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -16,6 +17,8 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   void Init(const FilePath& db_path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     DCHECK(!storage_);
+    TRACE_EVENT1("ValueStoreFrontend::Backend", "Init",
+                 "db_path", db_path.value().c_str());
     storage_ = new LeveldbValueStore(db_path);
   }
 

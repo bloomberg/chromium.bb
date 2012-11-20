@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -68,6 +69,7 @@ void RecordProductEvents(bool first_run,
                          bool already_ran,
                          bool omnibox_used,
                          bool homepage_used) {
+  TRACE_EVENT0("RLZ", "RecordProductEvents");
   // Record the installation of chrome. We call this all the time but the rlz
   // lib should ignore all but the first one.
   rlz_lib::RecordProductEvent(rlz_lib::CHROME,
@@ -320,6 +322,7 @@ void RLZTracker::ScheduleFinancialPing() {
 }
 
 void RLZTracker::PingNowImpl() {
+  TRACE_EVENT0("RLZ", "RLZTracker::PingNowImpl");
   string16 lang;
   GoogleUpdateSettings::GetLanguage(&lang);
   if (lang.empty())
@@ -460,6 +463,7 @@ bool RLZTracker::ScheduleRecordFirstSearch(rlz_lib::AccessPoint point) {
 
 // static
 std::string RLZTracker::GetAccessPointHttpHeader(rlz_lib::AccessPoint point) {
+  TRACE_EVENT0("RLZ", "RLZTracker::GetAccessPointHttpHeader");
   std::string extra_headers;
   string16 rlz_string;
   RLZTracker::GetAccessPointRlz(point, &rlz_string);
@@ -476,6 +480,7 @@ std::string RLZTracker::GetAccessPointHttpHeader(rlz_lib::AccessPoint point) {
 // a successful ping, then we update the cached value.
 bool RLZTracker::GetAccessPointRlz(rlz_lib::AccessPoint point,
                                    string16* rlz) {
+  TRACE_EVENT0("RLZ", "RLZTracker::GetAccessPointRlz");
   return GetInstance()->GetAccessPointRlzImpl(point, rlz);
 }
 
