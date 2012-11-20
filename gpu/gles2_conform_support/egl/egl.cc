@@ -5,6 +5,7 @@
 #include <EGL/egl.h>
 
 #include "base/command_line.h"
+#include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/gles2_conform_support/egl/display.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
@@ -398,6 +399,6 @@ EGLBoolean eglCopyBuffers(EGLDisplay dpy,
 /* Now, define eglGetProcAddress using the generic function ptr. type */
 __eglMustCastToProperFunctionPointerType
 eglGetProcAddress(const char* procname) {
-  return NULL;
+  return gles2::GetGLFunctionPointer(procname);
 }
 }  // extern "C"

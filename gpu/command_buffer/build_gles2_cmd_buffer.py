@@ -6904,8 +6904,21 @@ void GLES2DecoderTestBase::SetupInitStateExpectations() {
 
     for func in self.original_functions:
       func.WriteGLES2CLibImplementation(file)
-    file.Write("\n")
 
+    file.Write("""
+namespace gles2 {
+
+NameToFunc g_gles2_function_table[] = {
+""")
+    for func in self.original_functions:
+      file.Write(
+          '  { "gl%s", reinterpret_cast<GLES2FunctionPointer>(GLES2%s), },\n' %
+          (func.name, func.name))
+    file.Write("""  { NULL, NULL, },
+};
+
+}  // namespace gles2
+""")
     file.Close()
 
   def WriteGLES2InterfaceHeader(self, filename):
