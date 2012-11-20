@@ -777,7 +777,13 @@ TEST(LayerLayerTreeHostTest, shouldNotAddAnimationWithoutLayerTreeHost)
     scoped_refptr<Layer> layer = Layer::create();
 
     // Case 1: without a layerTreeHost, the animation should not be accepted.
+#if defined(OS_ANDROID)
+    // All animations are enabled on Android to avoid performance regressions.
+    // Other platforms will be enabled with http://crbug.com/129683
+    EXPECT_TRUE(addTestAnimation(layer.get()));
+#else
     EXPECT_FALSE(addTestAnimation(layer.get()));
+#endif
 
     scoped_ptr<FakeLayerImplTreeHost> layerTreeHost(FakeLayerImplTreeHost::create());
     layerTreeHost->setRootLayer(layer.get());
