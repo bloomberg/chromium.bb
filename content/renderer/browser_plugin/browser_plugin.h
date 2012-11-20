@@ -203,6 +203,9 @@ class CONTENT_EXPORT BrowserPlugin :
   int height() const { return plugin_rect_.height(); }
   int instance_id() const { return instance_id_; }
   int render_view_routing_id() const { return render_view_routing_id_; }
+  BrowserPluginManager* browser_plugin_manager() const {
+    return browser_plugin_manager_;
+  }
 
   // Virtual to allow for mocking in tests.
   virtual float GetDeviceScaleFactor() const;
@@ -289,6 +292,11 @@ class CONTENT_EXPORT BrowserPlugin :
 
   gfx::Size last_view_size_;
   bool size_changed_in_flight_;
+
+  // BrowserPlugin outlives RenderViewImpl in Chrome Apps and so we need to
+  // store the BrowserPlugin's BrowserPluginManager in a member variable to
+  // avoid accessing the RenderViewImpl.
+  scoped_refptr<BrowserPluginManager> browser_plugin_manager_;
 
   // Important: Do not add more history state here.
   // We strongly discourage storing additional history state (such as page IDs)

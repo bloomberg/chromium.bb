@@ -20,8 +20,7 @@ namespace content {
 
 class BrowserPluginManagerImpl : public BrowserPluginManager {
  public:
-  BrowserPluginManagerImpl();
-  virtual ~BrowserPluginManagerImpl();
+  BrowserPluginManagerImpl(RenderViewImpl* render_view);
 
   // BrowserPluginManager implementation.
   virtual BrowserPlugin* CreateBrowserPlugin(
@@ -32,9 +31,11 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
-  // RenderProcessObserver override. Call on render thread.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+  // RenderViewObserver override. Call on render thread.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
  private:
+  virtual ~BrowserPluginManagerImpl();
+
   void OnUpdateRect(int instance_id,
                     int message_id,
                     const BrowserPluginMsg_UpdateRect_Params& params);
@@ -58,8 +59,7 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
                       bool is_top_level);
   void OnSetCursor(int instance_id,
                    const WebCursor& cursor);
-  void OnPluginAtPositionRequest(int source_routing_id,
-                                 int request_id,
+  void OnPluginAtPositionRequest(int request_id,
                                  const gfx::Point& position);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManagerImpl);

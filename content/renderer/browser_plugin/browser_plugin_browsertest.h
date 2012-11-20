@@ -28,12 +28,12 @@ class BrowserPluginTest : public RenderViewTest {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
   MockBrowserPluginManager* browser_plugin_manager() const {
-    return browser_plugin_manager_.get();
+    return static_cast<MockBrowserPluginManager*>(
+        static_cast<RenderViewImpl*>(view_)->browser_plugin_manager());
   }
   std::string ExecuteScriptAndReturnString(const std::string& script);
   int ExecuteScriptAndReturnInt(const std::string& script);
  private:
-  scoped_ptr<MockBrowserPluginManager> browser_plugin_manager_;
   ContentRendererClient content_renderer_client_;
 };
 

@@ -247,6 +247,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
       RenderViewHost* embedder_rvh,
       const BrowserPluginHostMsg_ResizeGuest_Params& params);
 
+  // Returns the embedder's routing ID.
+  int embedder_routing_id() const;
+
   // Helper to send messages to embedder. Overridden in test implementation
   // since we want to intercept certain messages for testing.
   virtual void SendMessageToEmbedder(IPC::Message* msg);

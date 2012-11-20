@@ -63,6 +63,7 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
+#include "content/renderer/browser_plugin/browser_plugin_manager_impl.h"
 #include "content/renderer/device_orientation_dispatcher.h"
 #include "content/renderer/devtools_agent.h"
 #include "content/renderer/disambiguation_popup_helper.h"
@@ -577,6 +578,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       speech_recognition_dispatcher_(NULL),
       device_orientation_dispatcher_(NULL),
       media_stream_dispatcher_(NULL),
+      browser_plugin_manager_(NULL),
       media_stream_impl_(NULL),
       devtools_agent_(NULL),
       accessibility_mode_(AccessibilityModeOff),
@@ -2455,8 +2457,7 @@ WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
   }
 
   if (UTF16ToASCII(params.mimeType) == kBrowserPluginMimeType) {
-    return BrowserPluginManager::Get()->
-        CreateBrowserPlugin(this, frame, params);
+    return browser_plugin_manager()->CreateBrowserPlugin(this, frame, params);
   }
 
   webkit::WebPluginInfo info;
@@ -3863,6 +3864,12 @@ void RenderViewImpl::SendUpdatedFrameTree(
   // TODO(nasko): Frame tree updates are causing issues with postMessage, as
   // described in http://crbug.com/153701. Disable them until a proper fix is
   // in place.
+}
+
+BrowserPluginManager* RenderViewImpl::browser_plugin_manager() {
+  if (!browser_plugin_manager_)
+    browser_plugin_manager_ = BrowserPluginManager::Create(this);
+  return browser_plugin_manager_;
 }
 
 void RenderViewImpl::CreateFrameTree(WebKit::WebFrame* frame,
@@ -5830,7 +5837,8 @@ void RenderViewImpl::OnSetFocus(bool enable) {
   // Notify all Pepper plugins.
   pepper_delegate_.OnSetFocus(enable);
   // Notify all BrowserPlugins of the RenderView's focus state.
-  BrowserPluginManager::Get()->SetEmbedderFocus(this, enable);
+  if (browser_plugin_manager_)
+    browser_plugin_manager()->SetEmbedderFocus(this, enable);
 }
 
 void RenderViewImpl::PpapiPluginFocusChanged() {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_MANAGER_IMPL_H_
-#define CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_MANAGER_IMPL_H_
+#ifndef CONTENT_RENDERER_BROWSER_PLUGIN_MOCK_BROWSER_PLUGIN_MANAGER_H_
+#define CONTENT_RENDERER_BROWSER_PLUGIN_MOCK_BROWSER_PLUGIN_MANAGER_H_
 
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 
@@ -15,8 +15,7 @@ namespace content {
 
 class MockBrowserPluginManager : public BrowserPluginManager {
  public:
-  MockBrowserPluginManager();
-  virtual ~MockBrowserPluginManager();
+  MockBrowserPluginManager(RenderViewImpl* render_view);
 
   // BrowserPluginManager implementation.
   virtual BrowserPlugin* CreateBrowserPlugin(
@@ -31,12 +30,11 @@ class MockBrowserPluginManager : public BrowserPluginManager {
   // Provides access to the messages that have been received by this thread.
   IPC::TestSink& sink() { return sink_; }
 
-  // IPC::Sender implementation.
+  // RenderViewObserver override.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual bool Send(IPC::Message* msg) OVERRIDE;
-
-  // RenderProcessObserver override.
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
- private:
+ protected:
+  virtual ~MockBrowserPluginManager();
   IPC::TestSink sink_;
 
   // The last known good deserializer for sync messages.
@@ -47,4 +45,4 @@ class MockBrowserPluginManager : public BrowserPluginManager {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_BROWSER_PLUGIN_TESTS_BROWSER_PLUGIN_MANAGER_IMPL_H_
+#endif  // CONTENT_RENDERER_BROWSER_PLUGIN_MOCK_BROWSER_PLUGIN_MANAGER_H_

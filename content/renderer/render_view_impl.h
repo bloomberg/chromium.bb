@@ -137,6 +137,7 @@ class WebHitTestResult;
 }
 
 namespace content {
+class BrowserPluginManager;
 class DeviceOrientationDispatcher;
 class DevToolsAgent;
 class DocumentState;
@@ -263,6 +264,9 @@ class CONTENT_EXPORT RenderViewImpl
     return media_player_manager_.get();
   }
 #endif
+
+  // Lazily initialize this view's BrowserPluginManager and return it.
+  BrowserPluginManager* browser_plugin_manager();
 
   // Functions to add and remove observers for this object.
   void AddObserver(RenderViewObserver* observer);
@@ -1377,6 +1381,9 @@ class CONTENT_EXPORT RenderViewImpl
 
   // MediaStream dispatcher attached to this view; lazily initialized.
   MediaStreamDispatcher* media_stream_dispatcher_;
+
+  // BrowserPluginManager attached to this view; lazily initialized.
+  scoped_refptr<BrowserPluginManager> browser_plugin_manager_;
 
   // MediaStreamImpl attached to this view; lazily initialized.
   MediaStreamImpl* media_stream_impl_;

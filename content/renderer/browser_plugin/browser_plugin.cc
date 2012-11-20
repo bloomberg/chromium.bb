@@ -121,9 +121,10 @@ BrowserPlugin::BrowserPlugin(
       embedder_focused_(false),
       visible_(true),
       size_changed_in_flight_(false),
+      browser_plugin_manager_(render_view->browser_plugin_manager()),
       current_nav_entry_index_(0),
       nav_entry_count_(0) {
-  BrowserPluginManager::Get()->AddBrowserPlugin(instance_id, this);
+  browser_plugin_manager()->AddBrowserPlugin(instance_id, this);
   bindings_.reset(new BrowserPluginBindings(this));
 
   ParseAttributes(params);
@@ -132,8 +133,8 @@ BrowserPlugin::BrowserPlugin(
 BrowserPlugin::~BrowserPlugin() {
   if (damage_buffer_)
     FreeDamageBuffer();
-  BrowserPluginManager::Get()->RemoveBrowserPlugin(instance_id_);
-  BrowserPluginManager::Get()->Send(
+  browser_plugin_manager()->RemoveBrowserPlugin(instance_id_);
+  browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_PluginDestroyed(
           render_view_routing_id_,
           instance_id_));
@@ -164,7 +165,7 @@ bool BrowserPlugin::SetSrcAttribute(const std::string& src,
     params.focused = ShouldGuestBeFocused();
     params.visible = visible_;
     PopulateAutoSizeParameters(&params.auto_size);
-    BrowserPluginManager::Get()->Send(
+    browser_plugin_manager()->Send(
         new BrowserPluginHostMsg_CreateGuest(
             render_view_routing_id_,
             instance_id_,
@@ -175,7 +176,7 @@ bool BrowserPlugin::SetSrcAttribute(const std::string& src,
       GetPendingResizeParams());
   DCHECK(!params->resize_pending);
 
-  BrowserPluginManager::Get()->Send(
+  browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_NavigateGuest(
           render_view_routing_id_,
           instance_id_,
@@ -229,7 +230,7 @@ void BrowserPlugin::UpdateGuestAutoSizeState() {
   // we just want to make sure the damage buffer has been updated.
   resize_params.resize_pending = true;
   DCHECK(new_damage_buffer);
-  BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SetAutoSize(
+  browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetAutoSize(
       render_view_routing_id_,
       instance_id_,
       auto_size_params,
@@ -417,7 +418,7 @@ void BrowserPlugin::TriggerEvent(const std::string& event_name,
 void BrowserPlugin::Back() {
   if (!navigate_src_sent_)
     return;
-  BrowserPluginManager::Get()->Send(
+  browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Go(render_view_routing_id_,
                                   instance_id_, -1));
 }
@@ -425,7 +426,7 @@ void BrowserPlugin::Back() {
 void BrowserPlugin::Forward() {
   if (!navigate_src_sent_)
     return;
-  BrowserPluginManager::Get()->Send(
+  browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Go(render_view_routing_id_,
                                   instance_id_, 1));
 }
@@ -433,7 +434,7 @@ void BrowserPlugin::Forward() {
 void BrowserPlugin::Go(int relative_index) {
   if (!navigate_src_sent_)
     return;
-  BrowserPluginManager::Get()->Send(
+  browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Go(render_view_routing_id_,
                                   instance_id_,
                                   relative_index));
@@ -442,7 +443,7 @@ void BrowserPlugin::Go(int relative_index) {
 void BrowserPlugin::TerminateGuest() {
   if (!navigate_src_sent_)
     return;
-  BrowserPluginManager::Get()->Send(
+  browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_TerminateGuest(render_view_routing_id_,
                                               instance_id_));
 }
@@ -450,7 +451,7 @@ void BrowserPlugin::TerminateGuest() {
 void BrowserPlugin::Stop() {
   if (!navigate_src_sent_)
     return;
-  BrowserPluginManager::Get()->Send(
+  browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Stop(render_view_routing_id_,
                                     instance_id_));
 }
@@ -458,7 +459,7 @@ void BrowserPlugin::Stop() {
 void BrowserPlugin::Reload() {
   if (!navigate_src_sent_)
     return;
-  BrowserPluginManager::Get()->Send(
+  browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Reload(render_view_routing_id_,
                                       instance_id_));
 }
@@ -474,7 +475,7 @@ void BrowserPlugin::UpdateRect(
        (width() != params.view_size.width() ||
         height() != params.view_size.height())) ||
       (auto_size_ && (!InAutoSizeBounds(params.view_size)))) {
-    BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
+    browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
         render_view_routing_id_,
         instance_id_,
         message_id,
@@ -537,7 +538,7 @@ void BrowserPlugin::UpdateRect(
   // NULL so we shouldn't attempt to access it.
   if (container_)
     container_->invalidate();
-  BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
+  browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
       render_view_routing_id_,
       instance_id_,
       message_id,
@@ -637,7 +638,7 @@ void BrowserPlugin::UpdateGuestFocus() {
   if (!navigate_src_sent_)
     return;
   bool should_be_focused = ShouldGuestBeFocused();
-  BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SetFocus(
+  browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetFocus(
       render_view_routing_id_,
       instance_id_,
       should_be_focused));
@@ -758,7 +759,7 @@ void BrowserPlugin::updateGeometry(
   DCHECK(new_damage_buffer);
 
   if (navigate_src_sent_) {
-    BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_ResizeGuest(
+    browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
         render_view_routing_id_,
         instance_id_,
         *params));
@@ -850,7 +851,7 @@ TransportDIB* BrowserPlugin::CreateTransportDIB(const size_t size) {
       false,  // cache in browser.
       &handle);
   TransportDIB* new_damage_buffer = NULL;
-  if (BrowserPluginManager::Get()->Send(msg) && handle.fd >= 0)
+  if (browser_plugin_manager()->Send(msg) && handle.fd >= 0)
     new_damage_buffer = TransportDIB::Map(handle);
 #else
   TransportDIB* new_damage_buffer =
@@ -887,7 +888,7 @@ void BrowserPlugin::updateVisibility(bool visible) {
   if (!navigate_src_sent_)
     return;
 
-  BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SetVisibility(
+  browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetVisibility(
       render_view_routing_id_,
       instance_id_,
       visible));
@@ -911,7 +912,7 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
   message->WriteData(reinterpret_cast<const char*>(&plugin_rect_),
                      sizeof(gfx::Rect));
   message->WriteData(reinterpret_cast<const char*>(&event), event.size);
-  BrowserPluginManager::Get()->Send(message);
+  browser_plugin_manager()->Send(message);
   cursor_.GetCursorInfo(&cursor_info);
   return handled;
 }
@@ -923,7 +924,7 @@ bool BrowserPlugin::handleDragStatusUpdate(WebKit::WebDragStatus drag_status,
                                            const WebKit::WebPoint& screen) {
   if (guest_crashed_ || !navigate_src_sent_)
     return false;
-  BrowserPluginManager::Get()->Send(
+  browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_DragStatusUpdate(
         render_view_routing_id_,
         instance_id_,

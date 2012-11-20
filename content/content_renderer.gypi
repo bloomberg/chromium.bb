@@ -216,6 +216,7 @@
     'renderer/browser_plugin/browser_plugin_bindings.cc',
     'renderer/browser_plugin/browser_plugin_manager.h',
     'renderer/browser_plugin/browser_plugin_manager.cc',
+    'renderer/browser_plugin/browser_plugin_manager_factory.h',
     'renderer/browser_plugin/browser_plugin_manager_impl.h',
     'renderer/browser_plugin/browser_plugin_manager_impl.cc',
     'renderer/render_process.h',

@@ -6,10 +6,12 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "content/common/browser_plugin_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
+#include "content/renderer/browser_plugin/browser_plugin_manager_factory.h"
 #include "content/renderer/browser_plugin/mock_browser_plugin.h"
 #include "content/renderer/browser_plugin/mock_browser_plugin_manager.h"
 #include "content/renderer/render_thread_impl.h"
@@ -48,18 +50,46 @@ std::string GetHTMLForBrowserPluginObject() {
 
 namespace content {
 
+// Test factory for creating test instances of BrowserPluginManager.
+class TestBrowserPluginManagerFactory : public BrowserPluginManagerFactory {
+ public:
+  virtual MockBrowserPluginManager* CreateBrowserPluginManager(
+      RenderViewImpl* render_view) OVERRIDE {
+    return new MockBrowserPluginManager(render_view);
+  }
+
+  // Singleton getter.
+  static TestBrowserPluginManagerFactory* GetInstance() {
+    return Singleton<TestBrowserPluginManagerFactory>::get();
+  }
+
+ protected:
+  TestBrowserPluginManagerFactory() {}
+  virtual ~TestBrowserPluginManagerFactory() {}
+
+ private:
+  // For Singleton.
+  friend struct DefaultSingletonTraits<TestBrowserPluginManagerFactory>;
+
+  DISALLOW_COPY_AND_ASSIGN(TestBrowserPluginManagerFactory);
+};
+
 BrowserPluginTest::BrowserPluginTest() {}
 
 BrowserPluginTest::~BrowserPluginTest() {}
 
 void BrowserPluginTest::SetUp() {
   GetContentClient()->set_renderer_for_testing(&content_renderer_client_);
+  BrowserPluginManager::set_factory_for_testing(
+      TestBrowserPluginManagerFactory::GetInstance());
   content::RenderViewTest::SetUp();
-  browser_plugin_manager_.reset(new MockBrowserPluginManager());
+
 }
 
 void BrowserPluginTest::TearDown() {
-  browser_plugin_manager_->Cleanup();
+  browser_plugin_manager()->Cleanup();
+  BrowserPluginManager::set_factory_for_testing(
+      TestBrowserPluginManagerFactory::GetInstance());
   content::RenderViewTest::TearDown();
 }
 

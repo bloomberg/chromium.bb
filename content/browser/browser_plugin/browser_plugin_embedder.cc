@@ -161,7 +161,7 @@ void BrowserPluginEmbedder::CreateGuest(
       static_cast<WebContentsImpl*>(guest->GetWebContents())->
             CreateSwappedOutRenderView(web_contents()->GetSiteInstance());
   render_view_host->Send(new BrowserPluginMsg_GuestContentWindowReady(
-      instance_id, guest_routing_id));
+      render_view_host->GetRoutingID(), instance_id, guest_routing_id));
 }
 
 void BrowserPluginEmbedder::NavigateGuest(

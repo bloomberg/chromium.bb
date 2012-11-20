@@ -6,8 +6,10 @@
 #define CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_MANAGER_H_
 
 #include "base/id_map.h"
-#include "base/threading/non_thread_safe.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "ipc/ipc_sender.h"
 
 namespace WebKit {
@@ -18,21 +20,25 @@ struct WebPluginParams;
 namespace content {
 
 class BrowserPlugin;
+class BrowserPluginManagerFactory;
 class RenderViewImpl;
 
 // BrowserPluginManager manages the routing of messages to the appropriate
-// BrowserPlugin object based on its instance ID. There is only one
-// BrowserPluginManager per renderer process, and it should only be accessed
-// by the render thread.
-class CONTENT_EXPORT BrowserPluginManager : public IPC::Sender,
-                                            public RenderProcessObserver,
-                                            public base::NonThreadSafe {
+// BrowserPlugin object based on its instance ID.
+class CONTENT_EXPORT BrowserPluginManager
+    : public RenderViewObserver,
+      public base::RefCounted<BrowserPluginManager> {
  public:
   // Returns the one BrowserPluginManager for this process.
-  static BrowserPluginManager* Get();
+  static BrowserPluginManager* Create(RenderViewImpl* render_view);
 
-  BrowserPluginManager();
-  virtual ~BrowserPluginManager();
+  // Overrides factory for testing. Default (NULL) value indicates regular
+  // (non-test) environment.
+  static void set_factory_for_testing(BrowserPluginManagerFactory* factory) {
+    BrowserPluginManager::factory_ = factory;
+  }
+
+  BrowserPluginManager(RenderViewImpl* render_view);
 
   // Creates a new BrowserPlugin object with a unique identifier.
   // BrowserPlugin is responsible for associating itself with the
@@ -47,9 +53,29 @@ class CONTENT_EXPORT BrowserPluginManager : public IPC::Sender,
   void RemoveBrowserPlugin(int instance_id);
   BrowserPlugin* GetBrowserPlugin(int instance_id) const;
   void SetEmbedderFocus(const RenderViewImpl* embedder, bool focused);
+  RenderViewImpl* render_view() const { return render_view_; }
+
+  // RenderViewObserver implementation.
+
+  // BrowserPluginManager must override the default Send behavior.
+  virtual bool Send(IPC::Message* msg) OVERRIDE = 0;
+
+  // Don't destroy the BrowserPluginManager when the RenderViewImpl goes away.
+  // BrowserPluginManager's lifetime is managed by a reference count. Once
+  // the host RenderViewImpl and all BrowserPlugins release their references,
+  // then the BrowserPluginManager will be destroyed.
+  virtual void OnDestruct() OVERRIDE {}
 
  protected:
+  // Friend RefCounted so that the dtor can be non-public.
+  friend class base::RefCounted<BrowserPluginManager>;
+
+  // Static factory instance (always NULL for non-test).
+  static BrowserPluginManagerFactory* factory_;
+
+  virtual ~BrowserPluginManager();
   IDMap<BrowserPlugin> instances_;
+  base::WeakPtr<RenderViewImpl> render_view_;
   int browser_plugin_counter_;
 };
 

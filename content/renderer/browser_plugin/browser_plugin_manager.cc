@@ -8,46 +8,41 @@
 #include "base/threading/thread_local.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
+#include "content/renderer/browser_plugin/browser_plugin_manager_factory.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager_impl.h"
 
 namespace content {
 
-static base::LazyInstance<base::ThreadLocalPointer<
-    BrowserPluginManager> > lazy_tls = LAZY_INSTANCE_INITIALIZER;
+// static
+BrowserPluginManagerFactory* BrowserPluginManager::factory_ = NULL;
 
-BrowserPluginManager* BrowserPluginManager::Get() {
-  BrowserPluginManager* manager = lazy_tls.Pointer()->Get();
-  if (!manager) {
-    manager = new BrowserPluginManagerImpl();
-    lazy_tls.Pointer()->Set(manager);
-  }
-  return manager;
+BrowserPluginManager* BrowserPluginManager::Create(
+    RenderViewImpl* render_view) {
+  if (factory_)
+    return factory_->CreateBrowserPluginManager(render_view);
+  return new BrowserPluginManagerImpl(render_view);
 }
 
-BrowserPluginManager::BrowserPluginManager()
-    : browser_plugin_counter_(0) {
-  lazy_tls.Pointer()->Set(this);
-  RenderThread::Get()->AddObserver(this);
+BrowserPluginManager::BrowserPluginManager(RenderViewImpl* render_view)
+    : RenderViewObserver(render_view),
+      render_view_(render_view->AsWeakPtr()),
+      browser_plugin_counter_(0) {
 }
 
 BrowserPluginManager::~BrowserPluginManager() {
-  lazy_tls.Pointer()->Set(NULL);
 }
 
 void BrowserPluginManager::AddBrowserPlugin(
     int instance_id,
     BrowserPlugin* browser_plugin) {
-  DCHECK(CalledOnValidThread());
   instances_.AddWithID(browser_plugin, instance_id);
 }
 
 void BrowserPluginManager::RemoveBrowserPlugin(int instance_id) {
-  DCHECK(CalledOnValidThread());
   instances_.Remove(instance_id);
 }
 
 BrowserPlugin* BrowserPluginManager::GetBrowserPlugin(int instance_id) const {
-  DCHECK(CalledOnValidThread());
   return instances_.Lookup(instance_id);
 }
 
