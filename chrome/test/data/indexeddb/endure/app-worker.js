@@ -14,12 +14,12 @@ self.indexedDB = self.indexedDB || self.webkitIndexedDB ||
 self.IDBKeyRange = self.IDBKeyRange || self.webkitIDBKeyRange;
 
 function unexpectedErrorCallback(e) {
-  self.postMessage({type: 'ERROR', errorCode: e.target.errorCode,
+  self.postMessage({type: 'ERROR', error: { name: e.target.error.name },
                     webkitErrorMessage: e.target.webkitErrorMessage});
 }
 
 function unexpectedAbortCallback(e) {
-  self.postMessage({type: 'ABORT', errorCode: e.target.errorCode,
+  self.postMessage({type: 'ABORT', error: { name: e.target.error.name },
                     webkitErrorMessage: e.target.webkitErrorMessage});
 }
 

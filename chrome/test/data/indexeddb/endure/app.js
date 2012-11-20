@@ -33,12 +33,12 @@ function error(message) {
 }
 
 function unexpectedErrorCallback(e) {
-  error("Unexpected error callback: (" + e.target.errorCode + ") " +
+  error("Unexpected error callback: (" + e.target.error.name + ") " +
         e.target.webkitErrorMessage);
 }
 
 function unexpectedAbortCallback(e) {
-  error("Unexpected abort callback: (" + e.target.errorCode + ") " +
+  error("Unexpected abort callback: (" + e.target.error.name + ") " +
         e.target.webkitErrorMessage);
 }
 
@@ -93,19 +93,19 @@ worker.onmessage = function (event) {
     case 'ABORT':
       unexpectedAbortCallback(
         {target:{
-           errorCode: data.errorCode,
+           error: data.error,
            webkitErrorMessage: data.webkitErrorMessage}});
       break;
     case 'ERROR':
       unexpectedErrorCallback(
         {target:{
-           errorCode: data.errorCode,
+           error: data.error,
            webkitErrorMessage: data.webkitErrorMessage}});
       break;
     case 'BLOCKED':
       unexpectedBlockedCallback(
         {target:{
-           errorCode: data.errorCode,
+           error: data.error,
            webkitErrorMessage: data.webkitErrorMessage}});
       break;
     case 'LOG':

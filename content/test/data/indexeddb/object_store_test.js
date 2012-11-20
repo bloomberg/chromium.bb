@@ -66,8 +66,6 @@ function moreDataAddedSuccess()
 function addWithSameKeyFailed()
 {
   debug('Adding a record with same key failed');
-  shouldBe("event.target.errorCode",
-           "webkitIDBDatabaseException.CONSTRAINT_ERR");
   shouldBe("event.target.error.name", "'ConstraintError'");
   event.preventDefault();
 

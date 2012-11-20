@@ -4,8 +4,6 @@
 
 window.indexedDB = window.indexedDB || window.webkitIndexedDB;
 window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
-window.IDBDatabaseException = window.IDBDatabaseException ||
-  window.webkitIDBDatabaseException;
 
 function test() {
   indexedDBTest(prepareDatabase, testValidKeys);
@@ -143,7 +141,8 @@ function testInvalidKeys() {
         return;
       } catch (e) {
         window.ex = e;
-        shouldBe("ex.code", "IDBDatabaseException.DATA_ERR");
+        // TODO(jsbell): Uncomment when wkbug.com/102514 has landed/rolled.
+        //shouldBe("ex.code", "0");
         shouldBe("ex.name", "'DataError'");
       }
     });
