@@ -8,7 +8,6 @@
 #include "base/stringprintf.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/debug_colors.h"
-#include "cc/geometry.h"
 #include "cc/layer_sorter.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/math_util.h"

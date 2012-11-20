@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/hash_tables.h"
 #include "cc/delegated_renderer_layer_impl.h"
-#include "cc/geometry.h"
 #include "cc/gl_renderer.h"
 #include "cc/heads_up_display_layer_impl.h"
 #include "cc/io_surface_layer_impl.h"

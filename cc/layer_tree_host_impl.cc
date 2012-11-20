@@ -14,7 +14,6 @@
 #include "cc/delay_based_time_source.h"
 #include "cc/font_atlas.h"
 #include "cc/frame_rate_counter.h"
-#include "cc/geometry.h"
 #include "cc/gl_renderer.h"
 #include "cc/heads_up_display_layer_impl.h"
 #include "cc/layer_iterator.h"
@@ -1016,7 +1015,7 @@ void LayerTreeHostImpl::updateMaxScrollOffset()
         viewBounds.Scale(1 / m_pinchZoomViewport.pageScaleDelta());
     }
 
-    gfx::Vector2dF maxScroll = BottomRight(gfx::Rect(contentBounds)) - BottomRight(gfx::RectF(viewBounds));
+    gfx::Vector2dF maxScroll = gfx::Rect(contentBounds).bottom_right() - gfx::RectF(viewBounds).bottom_right();
     maxScroll.Scale(1 / m_deviceScaleFactor);
 
     // The viewport may be larger than the contents in some cases, such as
@@ -1309,7 +1308,7 @@ void LayerTreeHostImpl::computePinchZoomDeltas(ScrollAndScaleSet* scrollInfo)
     gfx::Vector2dF scrollEnd = scrollBegin + anchorOffset;
     scrollEnd.Scale(m_pinchZoomViewport.minPageScaleFactor() / scaleBegin);
     scrollEnd -= anchorOffset;
-    scrollEnd.ClampToMax(BottomRight(gfx::RectF(scaledContentsSize)) - BottomRight(gfx::Rect(m_deviceViewportSize)));
+    scrollEnd.ClampToMax(gfx::RectF(scaledContentsSize).bottom_right() - gfx::Rect(m_deviceViewportSize).bottom_right());
     scrollEnd.ClampToMin(gfx::Vector2d());
     scrollEnd.Scale(1 / pageScaleDeltaToSend);
     scrollEnd.Scale(m_deviceScaleFactor);

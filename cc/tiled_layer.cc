@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
-#include "cc/geometry.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host.h"
 #include "cc/overdraw_metrics.h"

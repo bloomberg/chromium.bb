@@ -10,7 +10,6 @@
 #include "base/string_util.h"
 #include "build/build_config.h"
 #include "cc/damage_tracker.h"
-#include "cc/geometry.h"
 #include "cc/geometry_binding.h"
 #include "cc/layer_quad.h"
 #include "cc/math_util.h"
@@ -707,7 +706,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     // texCoordRect to match.
     gfx::Vector2d topLeftDiff = tileRect.origin() - quad->rect.origin();
     gfx::Vector2d bottomRightDiff =
-            BottomRight(tileRect) - BottomRight(quad->rect);
+        tileRect.bottom_right() - quad->rect.bottom_right();
     texCoordRect.Inset(topLeftDiff.x() / texToGeomScaleX,
                        topLeftDiff.y() / texToGeomScaleY,
                        -bottomRightDiff.x() / texToGeomScaleX,
@@ -797,10 +796,10 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
         GLC(context(), context()->uniform4f(uniforms.vertexTexTransformLocation, vertexTexTranslateX, vertexTexTranslateY, vertexTexScaleX, vertexTexScaleY));
         GLC(context(), context()->uniform4f(uniforms.fragmentTexTransformLocation, fragmentTexTranslateX, fragmentTexTranslateY, fragmentTexScaleX, fragmentTexScaleY));
 
-        gfx::PointF bottomRight(tileRect.right(), tileRect.bottom());
-        gfx::PointF bottomLeft(tileRect.x(), tileRect.bottom());
-        gfx::PointF topLeft(tileRect.x(), tileRect.y());
-        gfx::PointF topRight(tileRect.right(), tileRect.y());
+        gfx::PointF bottomRight = tileRect.bottom_right();
+        gfx::PointF bottomLeft = tileRect.bottom_left();
+        gfx::PointF topLeft = tileRect.origin();
+        gfx::PointF topRight = tileRect.top_right();
 
         // Map points to device space.
         bottomRight = MathUtil::mapPoint(deviceTransform, bottomRight, clipped);

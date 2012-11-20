@@ -47,6 +47,10 @@ class UI_EXPORT RectBase {
   Type right() const { return x() + width(); }
   Type bottom() const { return y() + height(); }
 
+  PointClass top_right() const { return PointClass(right(), y()); }
+  PointClass bottom_left() const { return PointClass(x(), bottom()); }
+  PointClass bottom_right() const { return PointClass(right(), bottom()); }
+
   VectorClass OffsetFromOrigin() const {
     return VectorClass(x(), y());
   }

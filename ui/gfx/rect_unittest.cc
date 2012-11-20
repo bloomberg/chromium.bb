@@ -743,4 +743,19 @@ TEST(RectTest, Offset) {
   EXPECT_EQ(RectF(1.1f, 2.2f, 3.3f, 4.4f).ToString(), f.ToString());
 }
 
+TEST(RectTest, Corners) {
+  Rect i(1, 2, 3, 4);
+  RectF f(1.1f, 2.1f, 3.1f, 4.1f);
+
+  EXPECT_EQ(Point(1, 2).ToString(), i.origin().ToString());
+  EXPECT_EQ(Point(4, 2).ToString(), i.top_right().ToString());
+  EXPECT_EQ(Point(1, 6).ToString(), i.bottom_left().ToString());
+  EXPECT_EQ(Point(4, 6).ToString(), i.bottom_right().ToString());
+
+  EXPECT_EQ(PointF(1.1f, 2.1f).ToString(), f.origin().ToString());
+  EXPECT_EQ(PointF(4.2f, 2.1f).ToString(), f.top_right().ToString());
+  EXPECT_EQ(PointF(1.1f, 6.2f).ToString(), f.bottom_left().ToString());
+  EXPECT_EQ(PointF(4.2f, 6.2f).ToString(), f.bottom_right().ToString());
+}
+
 }  // namespace gfx

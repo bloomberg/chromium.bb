@@ -5,7 +5,6 @@
 #include "cc/page_scale_animation.h"
 
 #include "base/logging.h"
-#include "cc/geometry.h"
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -117,7 +116,7 @@ void PageScaleAnimation::inferTargetAnchorFromScrollOffsets()
 
 void PageScaleAnimation::clampTargetScrollOffset()
 {
-    gfx::Vector2dF maxScrollOffset = BottomRight(gfx::RectF(m_rootLayerSize)) - BottomRight(gfx::RectF(targetViewportSize()));
+    gfx::Vector2dF maxScrollOffset = gfx::RectF(m_rootLayerSize).bottom_right() - gfx::RectF(targetViewportSize()).bottom_right();
     m_targetScrollOffset.ClampToMin(gfx::Vector2dF());
     m_targetScrollOffset.ClampToMax(maxScrollOffset);
 }

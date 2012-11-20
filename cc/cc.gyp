@@ -51,7 +51,6 @@
       'frame_rate_controller.h',
       'frame_rate_counter.cc',
       'frame_rate_counter.h',
-      'geometry.h',
       'geometry_binding.cc',
       'geometry_binding.h',
       'gl_renderer.cc',
