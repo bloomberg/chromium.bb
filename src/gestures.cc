@@ -4,6 +4,7 @@
 
 #include "gestures/include/gestures.h"
 
+#include <cstring>
 #include <sys/time.h>
 
 #include <base/stringprintf.h>
@@ -19,6 +20,7 @@
 #include "gestures/include/logging.h"
 #include "gestures/include/logging_filter_interpreter.h"
 #include "gestures/include/lookahead_filter_interpreter.h"
+#include "gestures/include/mouse_interpreter.h"
 #include "gestures/include/palm_classifying_filter_interpreter.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/scaling_filter_interpreter.h"
@@ -32,6 +34,7 @@
 #include "gestures/include/util.h"
 
 using std::string;
+using std::min;
 
 // C API:
 
@@ -129,6 +132,19 @@ bool HardwareState::SameFingersAs(const HardwareState& that) const {
     if (fingers[i].tracking_id != that.fingers[i].tracking_id)
       return false;
   return true;
+}
+
+void HardwareState::DeepCopy(const HardwareState& that,
+                             unsigned short max_finger_cnt) {
+  timestamp = that.timestamp;
+  buttons_down = that.buttons_down;
+  touch_cnt = that.touch_cnt;
+  finger_cnt = min(that.finger_cnt, max_finger_cnt);
+  memcpy(fingers, that.fingers, finger_cnt * sizeof(FingerState));
+  rel_x = that.rel_x;
+  rel_y = that.rel_y;
+  rel_wheel = that.rel_wheel;
+  rel_hwheel = that.rel_hwheel;
 }
 
 string Gesture::String() const {
@@ -386,9 +402,19 @@ void GestureInterpreter::InitializeTouchpad(void) {
   temp = NULL;
 }
 
+void GestureInterpreter::InitializeMouse(void) {
+  Interpreter* temp = new MouseInterpreter(prop_reg_.get(), tracer_.get());
+  temp = loggingFilter_ = new LoggingFilterInterpreter(prop_reg_.get(), temp,
+                                                       tracer_.get());
+  interpreter_.reset(temp);
+  temp = NULL;
+}
+
 void GestureInterpreter::Initialize(GestureInterpreterDeviceClass cls) {
   if (cls == GESTURES_DEVCLASS_TOUCHPAD)
     InitializeTouchpad();
+  else if (cls == GESTURES_DEVCLASS_MOUSE)
+    InitializeMouse();
   else
     Err("Couldn't recognize device class: %d", cls);
 }

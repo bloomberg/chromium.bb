@@ -1434,17 +1434,7 @@ bool ImmediateInterpreter::FingerTooCloseToTap(const HardwareState& hwstate,
 }
 
 void ImmediateInterpreter::SetPrevState(const HardwareState& hwstate) {
-  prev_state_.timestamp = hwstate.timestamp;
-  prev_state_.buttons_down = hwstate.buttons_down;
-  prev_state_.touch_cnt = hwstate.touch_cnt;
-  prev_state_.finger_cnt = min(hwstate.finger_cnt, hw_props_.max_finger_cnt);
-  memcpy(prev_state_.fingers,
-         hwstate.fingers,
-         prev_state_.finger_cnt * sizeof(FingerState));
-  prev_state_.rel_x = hwstate.rel_x;
-  prev_state_.rel_y = hwstate.rel_y;
-  prev_state_.rel_wheel = hwstate.rel_wheel;
-  prev_state_.rel_hwheel = hwstate.rel_hwheel;
+  prev_state_.DeepCopy(hwstate, hw_props_.max_finger_cnt);
 }
 
 bool ImmediateInterpreter::FingerInDampenedZone(

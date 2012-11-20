@@ -124,6 +124,7 @@ struct HardwareState {
   const FingerState* GetFingerState(short tracking_id) const;
   bool SameFingersAs(const HardwareState& that) const;
   std::string String() const;
+  void DeepCopy(const HardwareState& that, unsigned short max_finger_cnt);
 #endif  // __cplusplus
   stime_t timestamp;  // 64-bit Wall clock time in microseconds (10^-6 s)
   int buttons_down;  // bit field, use GESTURES_BUTTON_*
@@ -399,6 +400,7 @@ struct GestureInterpreter {
   std::string EncodeActivityLog();
  private:
   void InitializeTouchpad(void);
+  void InitializeMouse(void);
 
   GestureReadyFunction callback_;
   void* callback_data_;

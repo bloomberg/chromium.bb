@@ -20,6 +20,7 @@ SO_OBJECTS=\
 	$(OBJDIR)/interpreter.o \
 	$(OBJDIR)/logging_filter_interpreter.o \
 	$(OBJDIR)/lookahead_filter_interpreter.o \
+	$(OBJDIR)/mouse_interpreter.o \
 	$(OBJDIR)/palm_classifying_filter_interpreter.o \
 	$(OBJDIR)/prop_registry.o \
 	$(OBJDIR)/scaling_filter_interpreter.o \
@@ -49,6 +50,7 @@ TEST_OBJECTS=\
 	$(OBJDIR)/logging_filter_interpreter_unittest.o \
 	$(OBJDIR)/lookahead_filter_interpreter_unittest.o \
 	$(OBJDIR)/map_unittest.o \
+	$(OBJDIR)/mouse_interpreter_unittest.o \
 	$(OBJDIR)/palm_classifying_filter_interpreter_unittest.o \
 	$(OBJDIR)/prop_registry_unittest.o \
 	$(OBJDIR)/scaling_filter_interpreter_unittest.o \
