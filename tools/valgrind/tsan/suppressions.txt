@@ -799,6 +799,14 @@
   fun:pa_rtpoll_run
 }
 {
+  bug_108539
+  ThreadSanitizer:Race
+  fun:tracked_objects::ThreadData::InitializeAndSetTrackingStatus
+  fun:tracked_objects::ThreadData::ShutdownSingleThreadedCleanup
+  fun:tracked_objects::TrackedObjectsTest::TrackedObjectsTest
+  fun:tracked_objects::TrackedObjectsTest_MinimalStartupShutdown_Test::TrackedObjectsTest_MinimalStartupShutdown_Test
+}
+{
   bug_112419
   ThreadSanitizer:Race
   ...
