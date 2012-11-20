@@ -281,8 +281,6 @@
       # ==================================================
       # crbug.com/132337
       '-autofill.AutofillTest.testTabOrderForEditAddress',
-      # crbug.com/129469
-      '-chromeos_prefs.ChromeosPrefsTest.testCaptureUserPhoto',
       # Downloads panel stays even after declining a download.
       # crosbug.com/14728
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
