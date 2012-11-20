@@ -356,7 +356,7 @@ void DriveInternalsWebUIHandler::UpdateDriveRelatedFlagsSection() {
       value = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(key);
     base::DictionaryValue* flag = new DictionaryValue;
     flag->SetString("key", key);
-    flag->SetString("value", value);
+    flag->SetString("value", value.empty() ? "(set)" : value);
     flags.Append(flag);
   }
 
