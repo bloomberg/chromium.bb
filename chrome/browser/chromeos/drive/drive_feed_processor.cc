@@ -101,7 +101,6 @@ void DriveFeedProcessor::ApplyNextEntryProtoAsync() {
       FROM_HERE,
       base::Bind(&DriveFeedProcessor::ApplyNextEntryProto,
                  weak_ptr_factory_.GetWeakPtr()));
-
 }
 
 void DriveFeedProcessor::ApplyNextEntryProto() {
@@ -139,45 +138,171 @@ void DriveFeedProcessor::ApplyNextByIterator(DriveEntryProtoMap::iterator it) {
 }
 
 void DriveFeedProcessor::ApplyEntryProto(const DriveEntryProto& entry_proto) {
-  scoped_ptr<DriveEntry> entry =
-      resource_metadata_->CreateDriveEntryFromProto(entry_proto);
-  DCHECK(entry.get());
-  DriveEntry* old_entry =
-      resource_metadata_->GetEntryByResourceId(entry->resource_id());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (entry->is_deleted()) {
-    // Deleted file/directory.
-    DVLOG(1) << "Removing file " << entry->base_name();
-    if (old_entry)
-      RemoveEntryFromParent(old_entry);
-  } else if (old_entry) {
-    // Change or move of existing entry.
-    // Please note that entry rename is just a special case of change here
-    // since name is just one of the properties that can change.
-    DVLOG(1) << "Changed file " << entry->base_name();
+  // Lookup the entry.
+  resource_metadata_->GetEntryInfoByResourceId(
+      entry_proto.resource_id(),
+      base::Bind(&DriveFeedProcessor::ContinueApplyEntryProto,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 entry_proto));
+}
 
-    // Move children files over if we are dealing with directories.
-    if (old_entry->AsDriveDirectory() && entry->AsDriveDirectory()) {
-      entry->AsDriveDirectory()->TakeOverEntries(
-          old_entry->AsDriveDirectory());
+void DriveFeedProcessor::ContinueApplyEntryProto(
+    const DriveEntryProto& entry_proto,
+    DriveFileError error,
+    const FilePath& file_path,
+    scoped_ptr<DriveEntryProto> old_entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error == DRIVE_FILE_OK) {
+    if (entry_proto.deleted()) {
+      // Deleted file/directory.
+      RemoveEntryFromParent(entry_proto, file_path);
+    } else {
+      // Entry exists and needs to be refreshed.
+      RefreshEntryProto(entry_proto, file_path);
     }
-
-    // Remove the old instance of this entry.
-    RemoveEntryFromParent(old_entry);
-
-    // Add to parent.
-    AddEntryToParent(entry.release());
+  } else if (error == DRIVE_FILE_ERROR_NOT_FOUND && !entry_proto.deleted()) {
+    // Adding a new entry.
+    AddEntryToParent(entry_proto);
   } else {
-    // Adding a new file.
-    AddEntryToParent(entry.release());
+    // Continue.
+    ApplyNextEntryProtoAsync();
+  }
+}
+
+void DriveFeedProcessor::RefreshEntryProto(const DriveEntryProto& entry_proto,
+                                           const FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  resource_metadata_->RefreshEntryProto(
+      entry_proto,
+      base::Bind(&DriveFeedProcessor::NotifyForRefreshEntryProto,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 file_path));
+}
+
+void DriveFeedProcessor::NotifyForRefreshEntryProto(
+    const FilePath& old_file_path,
+    DriveFileError error,
+    const FilePath& file_path,
+    scoped_ptr<DriveEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DVLOG(1) << "NotifyForRefreshEntryProto " << file_path.value();
+  if (error == DRIVE_FILE_OK) {
+    // Notify old parent.
+    changed_dirs_.insert(old_file_path.DirName());
+
+    // Notify new parent.
+    changed_dirs_.insert(file_path.DirName());
+
+    // Notify self if entry is a directory.
+    if (entry_proto->file_info().is_directory()) {
+      // Notify new self.
+      changed_dirs_.insert(file_path);
+      // Notify old self.
+      changed_dirs_.insert(old_file_path);
+    }
   }
 
-  // Process the next DriveEntryProto from the map.
   ApplyNextEntryProtoAsync();
 }
 
-void DriveFeedProcessor::AddEntryToParent(
-    DriveEntry* entry) {
+void DriveFeedProcessor::AddEntryToParent(const DriveEntryProto& entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  resource_metadata_->AddEntryToParent(entry_proto,
+      base::Bind(&DriveFeedProcessor::NotifyForAddEntryToParent,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 entry_proto.file_info().is_directory()));
+}
+
+void DriveFeedProcessor::NotifyForAddEntryToParent(bool is_directory,
+                                                   DriveFileError error,
+                                                   const FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DVLOG(1) << "NotifyForAddEntryToParent " << file_path.value();
+  if (error == DRIVE_FILE_OK) {
+    // Notify if a directory has been created.
+    if (is_directory)
+      changed_dirs_.insert(file_path);
+
+    // Notify parent.
+    changed_dirs_.insert(file_path.DirName());
+  }
+
+  ApplyNextEntryProtoAsync();
+}
+
+
+void DriveFeedProcessor::RemoveEntryFromParent(
+    const DriveEntryProto& entry_proto,
+    const FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!file_path.empty());
+
+  if (!entry_proto.file_info().is_directory()) {
+    // No children if entry is a file.
+    OnGetChildrenForRemove(entry_proto,
+                           file_path,
+                           std::set<FilePath>());
+  } else {
+    // If entry is a directory, notify its children.
+    resource_metadata_->GetChildDirectories(
+        entry_proto.resource_id(),
+        base::Bind(&DriveFeedProcessor::OnGetChildrenForRemove,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   entry_proto,
+                   file_path));
+  }
+}
+
+void DriveFeedProcessor::OnGetChildrenForRemove(
+    const DriveEntryProto& entry_proto,
+    const FilePath& file_path,
+    const std::set<FilePath>& changed_directories) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!file_path.empty());
+
+  resource_metadata_->RemoveEntryFromParent(
+      entry_proto.resource_id(),
+      base::Bind(&DriveFeedProcessor::NotifyForRemoveEntryFromParent,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 entry_proto.file_info().is_directory(),
+                 file_path,
+                 changed_directories));
+}
+
+void DriveFeedProcessor::NotifyForRemoveEntryFromParent(
+    bool is_directory,
+    const FilePath& file_path,
+    const std::set<FilePath>& changed_directories,
+    DriveFileError error,
+    const FilePath& parent_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DVLOG(1) << "NotifyForRemoveEntryFromParent " << file_path.value();
+  if (error == DRIVE_FILE_OK) {
+    // Notify parent.
+    changed_dirs_.insert(parent_path);
+
+    // Notify children, if any.
+    changed_dirs_.insert(changed_directories.begin(),
+                         changed_directories.end());
+
+    // If entry is a directory, notify self.
+    if (is_directory)
+      changed_dirs_.insert(file_path);
+  }
+
+  // Continue.
+  ApplyNextEntryProtoAsync();
+}
+
+void DriveFeedProcessor::AddEntryToParentDeprecated(DriveEntry* entry) {
   DriveDirectory* parent = ResolveParent(entry);
 
   if (!parent) {  // Orphan.
@@ -197,8 +322,7 @@ void DriveFeedProcessor::AddEntryToParent(
     changed_dirs_.insert(parent->GetFilePath());
 }
 
-void DriveFeedProcessor::RemoveEntryFromParent(
-    DriveEntry* entry) {
+void DriveFeedProcessor::RemoveEntryFromParent(DriveEntry* entry) {
   DriveDirectory* parent = entry->parent();
   if (!parent) {
     NOTREACHED();
@@ -206,12 +330,9 @@ void DriveFeedProcessor::RemoveEntryFromParent(
   }
 
   DriveDirectory* dir = entry->AsDriveDirectory();
-  if (dir) {
-    // We need to notify all children of entry if entry is a directory.
+  // Notify all children of entry, if entry is a directory.
+  if (dir)
     dir->GetChildDirectoryPaths(&changed_dirs_);
-    // Besides children, notify this removed directory too.
-    changed_dirs_.insert(dir->GetFilePath());
-  }
 
   parent->RemoveEntry(entry);
 
@@ -219,8 +340,7 @@ void DriveFeedProcessor::RemoveEntryFromParent(
   changed_dirs_.insert(parent->GetFilePath());
 }
 
-DriveDirectory* DriveFeedProcessor::ResolveParent(
-    DriveEntry* new_entry) {
+DriveDirectory* DriveFeedProcessor::ResolveParent(DriveEntry* new_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const std::string& parent_resource_id = new_entry->parent_resource_id();
@@ -267,7 +387,7 @@ void DriveFeedProcessor::FeedToEntryProtoMap(
         continue;
 
       // Count the number of files.
-      if (uma_stats && entry_proto.has_file_specific_info()) {
+      if (uma_stats && !entry_proto.file_info().is_directory()) {
         uma_stats->IncrementNumFiles(
             entry_proto.file_specific_info().is_hosted_document());
       }

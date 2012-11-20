@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_RESOURCE_METADATA_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -92,6 +93,10 @@ typedef base::Callback<void(DriveFileError error,
                             const FilePath& drive_file_path,
                             scoped_ptr<DriveEntryProto> entry_proto)>
     GetEntryInfoWithFilePathCallback;
+
+// Used to get a set of changed directories for feed processing.
+typedef base::Callback<void(const std::set<FilePath>&)>
+    GetChildDirectoriesCallback;
 
 // This is a part of EntryInfoPairResult.
 struct EntryInfoResult {
@@ -228,11 +233,16 @@ class DriveResourceMetadata {
       const FilePath& second_path,
       const GetEntryInfoPairCallback& callback);
 
-  // Replaces a file entry with the same resource id as |doc_entry| by deleting
-  // the existing entry, creating a new DriveFile from |doc_entry|, and adding
-  // it to the parent of the old entry. For directories, this just returns the
-  // existing directory proto. |callback| is run with the error, file path and
-  // proto of the entry. |callback| must not be null.
+  // Refreshes a drive entry with the same resource id as |entry_proto|.
+  // |callback| is run with the error, file path and proto of the entry.
+  // |callback| must not be null.
+  void RefreshEntryProto(const DriveEntryProto& entry_proto,
+                         const GetEntryInfoWithFilePathCallback& callback);
+
+  // Refresh a drive entry with resource_id that matches that of |doc_entry|,
+  // with |doc_entry|.
+  // |callback| must not be null.
+  // TODO(achuith): Deprecate this in favor of RefreshEntryProto above.
   void RefreshFile(scoped_ptr<google_apis::DocumentEntry> doc_entry,
                    const GetEntryInfoWithFilePathCallback& callback);
 
@@ -243,9 +253,20 @@ class DriveResourceMetadata {
                         const DriveEntryProtoMap& entry_proto_map,
                         const FileMoveCallback& callback);
 
+  // Add |entry_proto| to the metadata tree.
+  // |callback| must not be null.
+  void AddEntryToParent(const DriveEntryProto& entry_proto,
+                        const FileMoveCallback& callback);
+
+  // Recursively get child directories of entry pointed to by |resource_id|.
+  void GetChildDirectories(
+      const std::string& resource_id,
+      const GetChildDirectoriesCallback& changed_dirs_callback);
+
   // Moves all child entries from the directory represented by
   // |source_resource_id| to the directory respresented by
   // |destination_resource_id|. |callback| must not be null.
+  // TODO(achuith): Delete this.
   void TakeOverEntries(const std::string& source_resource_id,
                        const std::string& destination_resource_id,
                        const FileMoveCallback& callback);
@@ -299,8 +320,19 @@ class DriveResourceMetadata {
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Searches for |file_path| synchronously.
-  // TODO(satorux): Replace this with an async version crbug.com/137160
   DriveEntry* FindEntryByPathSync(const FilePath& file_path);
+
+  // Helper function to add |entry_proto| as a child to |directory|.
+  // |callback| must not be null.
+  void AddEntryToDirectoryInternal(DriveDirectory* directory,
+                                   const DriveEntryProto& entry_proto,
+                                   const FileMoveCallback& callback);
+
+  // Helper function to get a parent directory given |parent_resource_id|.
+  // Returns root if |parent_resource_id| is empty. Returns NULL if
+  // |parent_resource_id| is not empty and the corresponding entry is not a
+  // directory.
+  DriveDirectory* GetParent(const std::string& parent_resource_id);
 
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

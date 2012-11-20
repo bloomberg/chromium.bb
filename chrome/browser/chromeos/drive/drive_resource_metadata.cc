@@ -246,13 +246,6 @@ void DriveResourceMetadata::AddEntryToDirectory(
     return;
   }
 
-  scoped_ptr<DriveEntry> new_entry = CreateDriveEntryFromProto(
-      ConvertDocumentEntryToDriveEntryProto(*doc_entry));
-  if (!new_entry.get()) {
-    PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_FAILED);
-    return;
-  }
-
   DriveEntry* dir_entry = FindEntryByPathSync(directory_path);
   if (!dir_entry) {
     PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_NOT_FOUND);
@@ -265,11 +258,10 @@ void DriveResourceMetadata::AddEntryToDirectory(
     return;
   }
 
-  DriveEntry* added_entry = new_entry.release();
-  directory->AddEntry(added_entry);  // Transfers ownership.
-  DVLOG(1) << "AddEntryToDirectory " << added_entry->GetFilePath().value();
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(callback, DRIVE_FILE_OK, added_entry->GetFilePath()));
+  AddEntryToDirectoryInternal(
+      directory,
+      ConvertDocumentEntryToDriveEntryProto(*doc_entry),
+      callback);
 }
 
 void DriveResourceMetadata::MoveEntryToDirectory(
@@ -518,48 +510,53 @@ void DriveResourceMetadata::RefreshFile(
     return;
   }
 
-  scoped_ptr<DriveEntry> drive_entry = CreateDriveEntryFromProto(
-      ConvertDocumentEntryToDriveEntryProto(*doc_entry));
+  RefreshEntryProto(ConvertDocumentEntryToDriveEntryProto(
+      *doc_entry), callback);
+}
+
+void DriveResourceMetadata::RefreshEntryProto(
+    const DriveEntryProto& entry_proto,
+    const GetEntryInfoWithFilePathCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<DriveEntry> drive_entry = CreateDriveEntryFromProto(entry_proto);
   if (!drive_entry.get()) {
     PostGetEntryInfoWithFilePathCallbackError(
         callback, DRIVE_FILE_ERROR_FAILED);
     return;
   }
 
-  if (!drive_entry->AsDriveFile()) {
-    // This is a directory, return the directory info instead.
-    GetEntryInfoByResourceId(drive_entry->resource_id(), callback);
-    return;
-  }
-  scoped_ptr<DriveFile> fresh_file(drive_entry.release()->AsDriveFile());
-
-  // Need to get a reference here because Passed() could get evaluated first.
-  const std::string& resource_id = fresh_file->resource_id();
-  DVLOG(1) << "RefreshFile " << resource_id;
-  DriveEntry* old_entry = GetEntryByResourceId(resource_id);
-  DriveDirectory* entry_parent = old_entry ? old_entry->parent() : NULL;
-
-  if (!entry_parent) {
-    PostGetEntryInfoWithFilePathCallbackError(
-        callback, DRIVE_FILE_ERROR_NOT_FOUND);
+  DriveEntry* old_entry = GetEntryByResourceId(drive_entry->resource_id());
+  DriveDirectory* old_parent = old_entry ? old_entry->parent() : NULL;
+  DriveDirectory* new_parent = GetParent(entry_proto.parent_resource_id());
+  if (!old_parent || !new_parent) {
+    PostGetEntryInfoWithFilePathCallbackError(callback,
+                                              DRIVE_FILE_ERROR_NOT_FOUND);
     return;
   }
 
-  DCHECK_EQ(fresh_file->resource_id(), old_entry->resource_id());
-  DCHECK(old_entry->AsDriveFile());
+  // Move children over to the new directory from the existing directory.
+  if (drive_entry->AsDriveDirectory() && old_entry->AsDriveDirectory()) {
+    drive_entry->AsDriveDirectory()->TakeOverEntries(
+        old_entry->AsDriveDirectory());
+  }
 
-  entry_parent->RemoveEntry(old_entry);
-  DriveEntry* new_entry = fresh_file.release();
-  entry_parent->AddEntry(new_entry);
+  // Remove from the old parent and add to the new parent.
+  old_parent->RemoveEntry(old_entry);
+  DriveEntry* new_entry = drive_entry.release();
+  new_parent->AddEntry(new_entry);  // Transfers ownership.
 
-  scoped_ptr<DriveEntryProto> entry_proto(new DriveEntryProto);
-  new_entry->ToProtoFull(entry_proto.get());
+  DVLOG(1) << "RefreshEntryProto " << new_entry->GetFilePath().value();
+  // Note that base_name is not the same for new_entry and entry_proto.
+  scoped_ptr<DriveEntryProto> new_entry_proto(new DriveEntryProto);
+  new_entry->ToProtoFull(new_entry_proto.get());
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,
                  DRIVE_FILE_OK,
                  new_entry->GetFilePath(),
-                 base::Passed(&entry_proto)));
+                 base::Passed(&new_entry_proto)));
 }
 
 void DriveResourceMetadata::RefreshDirectory(
@@ -595,6 +592,65 @@ void DriveResourceMetadata::RefreshDirectory(
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, DRIVE_FILE_OK, directory->GetFilePath()));
+}
+
+void DriveResourceMetadata::AddEntryToParent(
+    const DriveEntryProto& entry_proto,
+    const FileMoveCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  DriveDirectory* parent = GetParent(entry_proto.parent_resource_id());
+  if (!parent) {
+    PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_NOT_FOUND);
+    return;
+  }
+  AddEntryToDirectoryInternal(parent, entry_proto, callback);
+}
+
+void DriveResourceMetadata::AddEntryToDirectoryInternal(
+    DriveDirectory* directory,
+    const DriveEntryProto& entry_proto,
+    const FileMoveCallback& callback) {
+  scoped_ptr<DriveEntry> new_entry = CreateDriveEntryFromProto(entry_proto);
+  if (!new_entry.get()) {
+    PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_FAILED);
+    return;
+  }
+
+  DriveEntry* added_entry = new_entry.release();
+  directory->AddEntry(added_entry);  // Transfers ownership.
+  DVLOG(1) << "AddEntryToDirectoryInternal"
+           << added_entry->GetFilePath().value();
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+      base::Bind(callback, DRIVE_FILE_OK, added_entry->GetFilePath()));
+}
+
+DriveDirectory* DriveResourceMetadata::GetParent(
+    const std::string& parent_resource_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (parent_resource_id.empty())
+    return root();
+
+  DriveEntry* entry = GetEntryByResourceId(parent_resource_id);
+  return entry ? entry->AsDriveDirectory() : NULL;
+}
+
+void DriveResourceMetadata::GetChildDirectories(
+    const std::string& resource_id,
+    const GetChildDirectoriesCallback& changed_dirs_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!changed_dirs_callback.is_null());
+
+  std::set<FilePath> changed_directories;
+  DriveEntry* entry = GetEntryByResourceId(resource_id);
+  if (entry && entry->AsDriveDirectory())
+    entry->AsDriveDirectory()->GetChildDirectoryPaths(&changed_directories);
+
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(changed_dirs_callback, changed_directories));
 }
 
 void DriveResourceMetadata::TakeOverEntries(
@@ -834,6 +890,8 @@ bool DriveResourceMetadata::ParseFromString(
 scoped_ptr<DriveEntry> DriveResourceMetadata::CreateDriveEntryFromProto(
     const DriveEntryProto& entry_proto) {
   scoped_ptr<DriveEntry> entry;
+  // TODO(achuith): This method never fails. Add basic sanity checks for
+  // resource_id, etc.
   if (entry_proto.file_info().is_directory()) {
     entry = CreateDriveDirectory().Pass();
     // Call DriveEntry::FromProto instead of DriveDirectory::FromProto because

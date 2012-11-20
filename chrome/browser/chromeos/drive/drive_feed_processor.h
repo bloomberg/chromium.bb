@@ -79,21 +79,64 @@ class DriveFeedProcessor {
   // Apply |entry_proto| to resource_metadata_.
   void ApplyEntryProto(const DriveEntryProto& entry_proto);
 
+  // Continue ApplyEntryProto. This is a callback for
+  // DriveResourceMetadata::GetEntryInfoByResourceId.
+  void ContinueApplyEntryProto(
+      const DriveEntryProto& entry_proto,
+      DriveFileError error,
+      const FilePath& file_path,
+      scoped_ptr<DriveEntryProto> old_entry_proto);
+
   // Apply the DriveEntryProto pointed to by |it| to resource_metadata_.
   void ApplyNextByIterator(DriveEntryProtoMap::iterator it);
 
-  // Helper function for adding an |entry| from the feed to its new parent.
-  // changed_dirs_ are updated if this operation needs to raise a directory
-  // change notification.
-  void AddEntryToParent(DriveEntry* entry);
-
-  // Helper function for removing |entry| from its parent.
-  // changed_dirs_ are updated if this operation needs to raise a directory
-  // change notification, including child directories.
+  // TODO(achuith): Delete these.
+  void AddEntryToParentDeprecated(DriveEntry* entry);
   void RemoveEntryFromParent(DriveEntry* entry);
-
-  // Resolves parent directory for |new_entry| from the feed.
   DriveDirectory* ResolveParent(DriveEntry* new_entry);
+
+  // Helper function to add |entry_proto| to its parent. Updates changed_dirs_
+  // as a side effect.
+  void AddEntryToParent(const DriveEntryProto& entry_proto);
+
+  // Callback for DriveResourceMetadata::AddEntryToParent.
+  void NotifyForAddEntryToParent(bool is_directory,
+                                 DriveFileError error,
+                                 const FilePath& file_path);
+
+
+  // Removes entry pointed to by |resource_id| from its parent. Updates
+  // changed_dirs_ as a side effect.
+  void RemoveEntryFromParent(
+      const DriveEntryProto& entry_proto,
+      const FilePath& file_path);
+
+  // Continues RemoveEntryFromParent after
+  // DriveResourceMetadata::GetChildDirectories.
+  void OnGetChildrenForRemove(
+      const DriveEntryProto& entry_proto,
+      const FilePath& file_path,
+      const std::set<FilePath>& changed_directories);
+
+  // Callback for DriveResourceMetadata::RemoveEntryFromParent.
+  void NotifyForRemoveEntryFromParent(
+      bool is_directory,
+      const FilePath& file_path,
+      const std::set<FilePath>& changed_directories,
+      DriveFileError error,
+      const FilePath& parent_path);
+
+  // Refreshes DriveResourceMetadata entry that has the same resource_id as
+  // |entry_proto| with |entry_proto|. Updates changed_dirs_ as a side effect.
+  void RefreshEntryProto(const DriveEntryProto& entry_proto,
+                         const FilePath& file_path);
+
+  // Callback for DriveResourceMetadata::RefreshEntryProto.
+  void NotifyForRefreshEntryProto(
+      const FilePath& old_file_path,
+      DriveFileError error,
+      const FilePath& file_path,
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Reset the state of this object.
   void Clear();
