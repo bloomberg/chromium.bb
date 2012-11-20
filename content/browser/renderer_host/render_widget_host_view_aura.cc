@@ -13,6 +13,7 @@
 #include "base/string_number_conversions.h"
 #include "content/browser/renderer_host/backing_store_aura.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
@@ -1567,6 +1568,20 @@ ui::EventResult RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     }
 
     return ui::ER_UNHANDLED;
+  }
+
+  // As the overscroll is handled during scroll events from the trackpad, the
+  // RWHVA window is transformed by the overscroll controller. This transform
+  // triggers a synthetic mouse-move event to be generated (by the aura
+  // RootWindow). But this event interferes with the overscroll gesture. So,
+  // ignore such synthetic mouse-move events if an overscroll gesture is in
+  // progress.
+  if (host_->overscroll_controller() &&
+      host_->overscroll_controller()->overscroll_mode() != OVERSCROLL_NONE &&
+      event->flags() & ui::EF_IS_SYNTHESIZED &&
+      (event->type() == ui::ET_MOUSE_ENTERED ||
+       event->type() == ui::ET_MOUSE_MOVED)) {
+    return ui::ER_CONSUMED;
   }
 
   if (event->type() == ui::ET_MOUSEWHEEL) {
