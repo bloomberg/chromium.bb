@@ -69,7 +69,10 @@ void ZoomController::Observe(int type,
 }
 
 void ZoomController::UpdateState(const std::string& host) {
-  CHECK(web_contents());  // http://crbug.com/144879
+  // TODO(dbeam): figure out why web_contents() is NULL sometimes.
+  // http://crbug.com/144879
+  if (!web_contents())
+    return;
 
   // If |host| is empty, all observers should be updated.
   if (!host.empty()) {
