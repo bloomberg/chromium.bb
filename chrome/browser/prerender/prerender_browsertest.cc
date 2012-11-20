@@ -2377,7 +2377,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Validate that the sessionStorage namespace remains the same when swapping
 // in a prerendered page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSessionStorage) {
+#if defined(OS_WIN)
+#define MAYBE_PrerenderSessionStorage DISABLED_PrerenderSessionStorage
+#else
+#define MAYBE_PrerenderSessionStorage PrerenderSessionStorage
+#endif
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderSessionStorage) {
   set_loader_path("files/prerender/prerender_loader_with_session_storage.html");
   PrerenderTestURL(GetCrossDomainTestUrl("files/prerender/prerender_page.html"),
                    FINAL_STATUS_USED,
