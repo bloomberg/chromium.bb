@@ -130,5 +130,25 @@ TEST(GDataWapiUrlUtilTest, GenerateDocumentListUrl) {
                               ).spec());
 }
 
+TEST(GDataWapiUrlUtilTest, GenerateDocumentEntryUrl) {
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/default/private/full/XXX?v=3&alt=json",
+      GenerateDocumentEntryUrl("XXX").spec());
+}
+
+TEST(GDataWapiUrlUtilTest, GenerateDocumentListRootUrl) {
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/default/private/full?v=3&alt=json",
+      GenerateDocumentListRootUrl().spec());
+}
+
+TEST(GDataWapiUrlUtilTest, GenerateAccountMetadataUrl) {
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/metadata/default"
+      "?v=3&alt=json&include-installed-apps=true",
+      GenerateAccountMetadataUrl().spec());
+}
+
+
 }  // namespace gdata_wapi_url_util
 }  // namespace google_apis

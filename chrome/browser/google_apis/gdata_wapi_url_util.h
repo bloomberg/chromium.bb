@@ -61,6 +61,17 @@ GURL GenerateDocumentListUrl(
     bool shared_with_me,
     const std::string& directory_resource_id);
 
+// Generates a URL for getting the document entry of the given resource ID.
+GURL GenerateDocumentEntryUrl(const std::string& resource_id);
+
+// Generates a URL for getting the root document list feed.
+// Used to make changes in the root directory (ex. create a directory in the
+// root directory)
+GURL GenerateDocumentListRootUrl();
+
+// Generates a URL for getting the account metadata feed.
+GURL GenerateAccountMetadataUrl();
+
 }  // namespace gdata_wapi_url_util
 }  // namespace google_apis
 

@@ -25,6 +25,18 @@ const char kGetDocumentListURLForAllDocuments[] =
 const char kGetDocumentListURLForDirectoryFormat[] =
     "https://docs.google.com/feeds/default/private/full/%s/contents/-/mine";
 
+// URL requesting single document entry whose resource id is specified by "%s".
+const char kGetDocumentEntryURLFormat[] =
+    "https://docs.google.com/feeds/default/private/full/%s";
+
+// Root document list url.
+const char kDocumentListRootURL[] =
+    "https://docs.google.com/feeds/default/private/full";
+
+// Metadata feed with things like user quota.
+const char kAccountMetadataURL[] =
+    "https://docs.google.com/feeds/metadata/default";
+
 #ifndef NDEBUG
 // Use smaller 'page' size while debugging to ensure we hit feed reload
 // almost always. Be careful not to use something too small on account that
@@ -118,6 +130,20 @@ GURL GenerateDocumentListUrl(
     url = GURL(kGetDocumentListURLForAllDocuments);
   }
   return AddFeedUrlParams(url, max_docs, start_changestamp, search_string);
+}
+
+GURL GenerateDocumentEntryUrl(const std::string& resource_id) {
+  GURL result = GURL(base::StringPrintf(kGetDocumentEntryURLFormat,
+                                        net::EscapePath(resource_id).c_str()));
+  return AddStandardUrlParams(result);
+}
+
+GURL GenerateDocumentListRootUrl() {
+  return AddStandardUrlParams(GURL(kDocumentListRootURL));
+}
+
+GURL GenerateAccountMetadataUrl() {
+  return AddMetadataUrlParams(GURL(kAccountMetadataURL));
 }
 
 }  // namespace gdata_wapi_url_util

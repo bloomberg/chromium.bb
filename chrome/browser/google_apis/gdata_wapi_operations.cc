@@ -25,18 +25,6 @@ namespace {
 const char kIfMatchAllHeader[] = "If-Match: *";
 const char kIfMatchHeaderFormat[] = "If-Match: %s";
 
-// Root document list url.
-const char kDocumentListRootURL[] =
-    "https://docs.google.com/feeds/default/private/full";
-
-// URL requesting single document entry whose resource id is specified by "%s".
-const char kGetDocumentEntryURLFormat[] =
-    "https://docs.google.com/feeds/default/private/full/%s";
-
-// Metadata feed with things like user quota.
-const char kAccountMetadataURL[] =
-    "https://docs.google.com/feeds/metadata/default";
-
 const char kUploadContentRange[] = "Content-Range: bytes ";
 const char kUploadContentType[] = "X-Upload-Content-Type: ";
 const char kUploadContentLength[] = "X-Upload-Content-Length: ";
@@ -146,9 +134,7 @@ GetDocumentEntryOperation::GetDocumentEntryOperation(
 GetDocumentEntryOperation::~GetDocumentEntryOperation() {}
 
 GURL GetDocumentEntryOperation::GetURL() const {
-  GURL result = GURL(base::StringPrintf(kGetDocumentEntryURLFormat,
-                                        net::EscapePath(resource_id_).c_str()));
-  return gdata_wapi_url_util::AddStandardUrlParams(result);
+  return gdata_wapi_url_util::GenerateDocumentEntryUrl(resource_id_);
 }
 
 //========================= GetAccountMetadataOperation ========================
@@ -162,7 +148,7 @@ GetAccountMetadataOperation::GetAccountMetadataOperation(
 GetAccountMetadataOperation::~GetAccountMetadataOperation() {}
 
 GURL GetAccountMetadataOperation::GetURL() const {
-  return gdata_wapi_url_util::AddMetadataUrlParams(GURL(kAccountMetadataURL));
+  return gdata_wapi_url_util::GenerateAccountMetadataUrl();
 }
 
 //============================ DownloadFileOperation ===========================
@@ -276,7 +262,7 @@ GURL CreateDirectoryOperation::GetURL() const {
   if (!parent_content_url_.is_empty())
     return gdata_wapi_url_util::AddStandardUrlParams(parent_content_url_);
 
-  return gdata_wapi_url_util::AddStandardUrlParams(GURL(kDocumentListRootURL));
+  return gdata_wapi_url_util::GenerateDocumentListRootUrl();
 }
 
 URLFetcher::RequestType
@@ -328,7 +314,7 @@ URLFetcher::RequestType CopyDocumentOperation::GetRequestType() const {
 }
 
 GURL CopyDocumentOperation::GetURL() const {
-  return gdata_wapi_url_util::AddStandardUrlParams(GURL(kDocumentListRootURL));
+  return gdata_wapi_url_util::GenerateDocumentListRootUrl();
 }
 
 bool CopyDocumentOperation::GetContentData(std::string* upload_content_type,
@@ -502,7 +488,7 @@ GURL AddResourceToDirectoryOperation::GetURL() const {
   if (!parent_content_url_.is_empty())
     return gdata_wapi_url_util::AddStandardUrlParams(parent_content_url_);
 
-  return gdata_wapi_url_util::AddStandardUrlParams(GURL(kDocumentListRootURL));
+  return gdata_wapi_url_util::GenerateDocumentListRootUrl();
 }
 
 URLFetcher::RequestType
