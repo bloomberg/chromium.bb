@@ -620,7 +620,7 @@ void DriveResourceMetadata::AddEntryToDirectoryInternal(
 
   DriveEntry* added_entry = new_entry.release();
   directory->AddEntry(added_entry);  // Transfers ownership.
-  DVLOG(1) << "AddEntryToDirectoryInternal"
+  DVLOG(1) << "AddEntryToDirectoryInternal "
            << added_entry->GetFilePath().value();
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
       base::Bind(callback, DRIVE_FILE_OK, added_entry->GetFilePath()));

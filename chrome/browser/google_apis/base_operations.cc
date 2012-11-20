@@ -140,7 +140,7 @@ void AuthOperation::OnGetTokenSuccess(const std::string& access_token,
 void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  LOG(WARNING) << "AuthOperation: token request using refresh token failed"
+  LOG(WARNING) << "AuthOperation: token request using refresh token failed: "
                << error.ToString();
 
   // There are many ways to fail, but if the failure is due to connection,

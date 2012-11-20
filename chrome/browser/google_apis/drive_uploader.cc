@@ -472,7 +472,7 @@ void DriveUploader::OnResumeUploadResponseReceived(
   if ((upload_mode == UPLOAD_NEW_FILE && response.code == HTTP_CREATED) ||
       (upload_mode == UPLOAD_EXISTING_FILE && response.code == HTTP_SUCCESS)) {
     DVLOG(1) << "Successfully created uploaded file=["
-             << upload_file_info->title;
+             << upload_file_info->title << "]";
 
     // Done uploading.
     upload_file_info->entry = entry.Pass();
