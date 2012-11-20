@@ -524,14 +524,15 @@ TEST_F(TiledLayerTest, paintSmallAnimatedLayersImmediately)
 
     bool runOutOfMemory[2] = {false, true};
     for (int i = 0; i < 2; i++) {
-        // Create a layer with 4x4 tiles.
-        int layerWidth  = 4 * FakeTiledLayer::tileSize().width();
-        int layerHeight = 4 * FakeTiledLayer::tileSize().height();
+        // Create a layer with 5x5 tiles, with 4x4 size viewport.
+        int viewportWidth  = 4 * FakeTiledLayer::tileSize().width();
+        int viewportHeight = 4 * FakeTiledLayer::tileSize().width();
+        int layerWidth  = 5 * FakeTiledLayer::tileSize().width();
+        int layerHeight = 5 * FakeTiledLayer::tileSize().height();
         int memoryForLayer = layerWidth * layerHeight * 4;
-        gfx::Size viewportSize = gfx::Size(layerWidth, layerHeight);
-        layerTreeHost->setViewportSize(viewportSize, viewportSize);
+        layerTreeHost->setViewportSize(gfx::Size(layerWidth, layerHeight), gfx::Size(layerWidth, layerHeight));
 
-        // Use 8x4 tiles to run out of memory.
+        // Use 10x5 tiles to run out of memory.
         if (runOutOfMemory[i])
             layerWidth *= 2;
 
@@ -564,14 +565,14 @@ TEST_F(TiledLayerTest, paintSmallAnimatedLayersImmediately)
         // We should still have the visible tiles when we didn't
         // have enough memory for all the tiles.
         if (!runOutOfMemory[i]) {
-            for (int i = 0; i < 4; ++i) {
-                for (int j = 0; j < 4; ++j)
+            for (int i = 0; i < 5; ++i) {
+                for (int j = 0; j < 5; ++j)
                     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(i, j));
             }
         } else {
-            for (int i = 0; i < 8; ++i) {
-                for (int j = 0; j < 4; ++j)
-                    EXPECT_EQ(layerImpl->hasResourceIdForTileAt(i, j), i < 4);
+            for (int i = 0; i < 10; ++i) {
+                for (int j = 0; j < 5; ++j)
+                    EXPECT_EQ(layerImpl->hasResourceIdForTileAt(i, j), i < 5);
             }
         }
     }

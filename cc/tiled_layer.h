@@ -84,6 +84,8 @@ private:
     UpdatableTile* tileAt(int, int) const;
     UpdatableTile* createTile(int, int);
 
+    bool isSmallAnimatedLayer() const;
+
     GLenum m_textureFormat;
     bool m_skipsDraw;
     bool m_failedUpdate;
