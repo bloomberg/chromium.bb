@@ -2388,13 +2388,3 @@
    fun:_ZN9Offscreen5getCGERK19SkScalerContext_MacRK7SkGlyphtPmb
    fun:_ZN19SkScalerContext_Mac13generateImageERK7SkGlyph
 }
-{
-   bug_159867
-   Memcheck:Param
-   ...
-   fun:fclose
-   fun:_ZN9file_util9CloseFileEP7__sFILE
-   fun:_ZN2ui8DataPack9WritePackERK8FilePathRKSt3mapItN4base16BasicStringPieceISsEESt4lessItESaISt4pairIKtS7_EEENS_14ResourceHandle16TextEncodingTypeE
-   fun:_ZN2ui12_GLOBAL__N_130CreateDataPackWithSingleBitmapERK8FilePathi
-   fun:_ZN2ui42ResourceBundleImageTest_GetImageNamed_Test8TestBodyEv
-}
