@@ -96,6 +96,8 @@ class WEBKIT_STORAGE_EXPORT SyncableFileSystemOperation
 
   StatusCallback completion_callback_;
 
+  bool is_directory_operation_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(SyncableFileSystemOperation);
 };
 

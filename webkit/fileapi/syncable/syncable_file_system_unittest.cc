@@ -9,6 +9,7 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/local_file_system_operation.h"
+#include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/syncable/canned_syncable_file_system.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
@@ -227,6 +228,50 @@ TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
   VerifyAndClearChange(URL(kPath2),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
                                   SYNC_FILE_TYPE_FILE));
+}
+
+// Make sure directory operation is disabled (when it's configured so).
+TEST_F(SyncableFileSystemTest, DisableDirectoryOperations) {
+  file_system_.EnableDirectoryOperations(false);
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.OpenFileSystem());
+
+  // Try some directory operations (which should fail).
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
+            file_system_.CreateDirectory(URL("dir")));
+
+  // Set up another (non-syncable) local file system.
+  LocalFileSystemTestOriginHelper other_file_system_(GURL("http://foo.com/"),
+                                                     kFileSystemTypeTemporary);
+  other_file_system_.SetUp(file_system_.file_system_context(), NULL);
+
+  // Create directory '/a' and file '/a/b' in the other file system.
+  const FileSystemURL kSrcDir = other_file_system_.CreateURLFromUTF8("/a");
+  const FileSystemURL kSrcChild = other_file_system_.CreateURLFromUTF8("/a/b");
+
+  bool created = false;
+  scoped_ptr<FileSystemOperationContext> operation_context;
+
+  operation_context.reset(other_file_system_.NewOperationContext());
+  operation_context->set_allowed_bytes_growth(1024);
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            other_file_system_.file_util()->CreateDirectory(
+                operation_context.get(),
+                kSrcDir, false /* exclusive */, false /* recursive */));
+
+  operation_context.reset(other_file_system_.NewOperationContext());
+  operation_context->set_allowed_bytes_growth(1024);
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            other_file_system_.file_util()->EnsureFileExists(
+                operation_context.get(), kSrcChild, &created));
+  EXPECT_TRUE(created);
+
+  // Now try copying the directory into the syncable file system, which should
+  // fail if directory operation is disabled. (http://crbug.com/161442)
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
+            file_system_.Copy(kSrcDir, URL("dest")));
+
+  other_file_system_.TearDown();
 }
 
 }  // namespace fileapi

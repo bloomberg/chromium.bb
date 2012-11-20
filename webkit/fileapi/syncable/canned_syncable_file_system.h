@@ -131,6 +131,13 @@ class CannedSyncableFileSystem
   virtual void OnSyncEnabled(const FileSystemURL& url) OVERRIDE;
   virtual void OnWriteEnabled(const FileSystemURL& url) OVERRIDE;
 
+  // Overrides --enable-sync-directory-operation setting which is disabled
+  // by default in production code but enabled in (and only in) an instance
+  // of this helper class for testing.
+  // TODO(kinuko): remove this method when we fully support directory
+  // operations. (http://crbug.com/161442)
+  void EnableDirectoryOperations(bool flag);
+
  private:
   typedef ObserverListThreadSafe<LocalFileSyncStatus::Observer> ObserverList;
 

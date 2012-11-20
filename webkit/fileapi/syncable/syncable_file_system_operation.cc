@@ -8,6 +8,7 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/local_file_system_operation.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/fileapi/syncable/syncable_file_operation_runner.h"
 
@@ -85,6 +86,12 @@ void SyncableFileSystemOperation::CreateDirectory(
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(operation_runner_.get());
+  if (!is_directory_operation_enabled_) {
+    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+    delete file_system_operation_;
+    delete this;
+    return;
+  }
   target_paths_.push_back(url);
   completion_callback_ = callback;
   scoped_ptr<SyncableFileOperationRunner::Task> task(new QueueableTask(
@@ -135,6 +142,12 @@ void SyncableFileSystemOperation::DirectoryExists(
     const FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
+  if (!is_directory_operation_enabled_) {
+    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+    delete file_system_operation_;
+    delete this;
+    return;
+  }
   file_system_operation_->DirectoryExists(url, callback);
   delete this;
 }
@@ -159,6 +172,9 @@ void SyncableFileSystemOperation::ReadDirectory(
     const FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   DCHECK(CalledOnValidThread());
+  // This is a read operation and there'd be no hard to let it go even if
+  // directory operation is disabled. (And we should allow this if it's made
+  // on the root directory)
   file_system_operation_->ReadDirectory(url, callback);
   delete this;
 }
@@ -269,6 +285,8 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
   DCHECK(file_system_context);
   DCHECK(file_system_operation);
   operation_runner_ = file_system_context->sync_context()->operation_runner();
+  is_directory_operation_enabled_ = file_system_context->sandbox_provider()->
+      is_sync_directory_operation_enabled();
   file_system_operation_ = file_system_operation->AsLocalFileSystemOperation();
   DCHECK(file_system_operation_);
 }

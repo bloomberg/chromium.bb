@@ -18,6 +18,7 @@
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/mock_file_system_options.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/quota/mock_special_storage_policy.h"
@@ -186,6 +187,11 @@ void CannedSyncableFileSystem::SetUp() {
       quota_manager_->proxy(),
       data_dir_.path(),
       CreateAllowFileAccessOptions());
+
+  // In testing we override this setting to support directory operations
+  // by default.
+  file_system_context_->sandbox_provider()->
+      set_enable_sync_directory_operation(true);
 
   is_filesystem_set_up_ = true;
 }
@@ -410,6 +416,12 @@ void CannedSyncableFileSystem::OnSyncEnabled(const FileSystemURL& url) {
 void CannedSyncableFileSystem::OnWriteEnabled(const FileSystemURL& url) {
   sync_status_observers_->Notify(&LocalFileSyncStatus::Observer::OnWriteEnabled,
                                  url);
+}
+
+void CannedSyncableFileSystem::EnableDirectoryOperations(bool flag) {
+  DCHECK(file_system_context_);
+  file_system_context_->sandbox_provider()->
+      set_enable_sync_directory_operation(flag);
 }
 
 void CannedSyncableFileSystem::DoCreateDirectory(

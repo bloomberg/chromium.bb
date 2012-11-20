@@ -54,6 +54,11 @@ const char kOpenFileSystemDetailNonThrottledLabel[] =
     "FileSystem.OpenFileSystemDetailNonthrottled";
 int64 kMinimumStatsCollectionIntervalHours = 1;
 
+// A command switch to enable syncing directory operations in Sync FileSystem
+// API. (http://crbug.com/161442)
+// TODO(kinuko): this command-line switch should be temporary.
+const char kEnableSyncDirectoryOperation[]  = "enable-sync-directory-operation";
+
 enum FileSystemError {
   kOK = 0,
   kIncognito,
@@ -340,6 +345,9 @@ SandboxMountPointProvider::SandboxMountPointProvider(
                       quota_manager_proxy,
                       file_task_runner,
                       sandbox_file_util_.get())),
+      enable_sync_directory_operation_(
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              kEnableSyncDirectoryOperation)),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // Set quota observers.
   UpdateObserverList::Source update_observers_src;

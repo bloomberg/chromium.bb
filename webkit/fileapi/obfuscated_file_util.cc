@@ -401,6 +401,15 @@ PlatformFileError ObfuscatedFileUtil::CreateDirectory(
   if (!db)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
+  // TODO(kinuko): Remove this dirty hack when we fully support directory
+  // operations or clean up the code if we decided not to support directory
+  // operations. (http://crbug.com/161442)
+  if (url.type() == kFileSystemTypeSyncable &&
+      !context->file_system_context()->sandbox_provider()->
+          is_sync_directory_operation_enabled()) {
+    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+  }
+
   FileId file_id;
   if (db->GetFileWithPath(url.path(), &file_id)) {
     FileInfo file_info;
