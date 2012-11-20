@@ -674,8 +674,9 @@ class WebGraphicsContext3DCommandBufferImpl
   bool ShouldUseSwapClient();
 
   // MemoryAllocationChanged callback.
-  void OnMemoryAllocationChanged(const GpuMemoryAllocationForRenderer&
-      allocation);
+  void OnMemoryAllocationChanged(
+      WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback,
+      const GpuMemoryAllocationForRenderer& allocation);
 
   // Convert the gpu cutoff enum to the WebKit enum.
   static WebGraphicsMemoryAllocation::PriorityCutoff WebkitPriorityCutoff(
@@ -694,9 +695,6 @@ class WebGraphicsContext3DCommandBufferImpl
   int32 surface_id_;
   GURL active_url_;
   base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client_;
-
-  WebGraphicsMemoryAllocationChangedCallbackCHROMIUM*
-      memory_allocation_changed_callback_;
 
   WebGraphicsContext3D::WebGraphicsContextLostCallback* context_lost_callback_;
   WGC3Denum context_lost_reason_;

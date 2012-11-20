@@ -129,7 +129,6 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       surface_id_(surface_id),
       active_url_(active_url),
       swap_client_(swap_client),
-      memory_allocation_changed_callback_(0),
       context_lost_callback_(0),
       context_lost_reason_(GL_NO_ERROR),
       error_message_callback_(0),
@@ -706,15 +705,14 @@ void WebGraphicsContext3DCommandBufferImpl::sendManagedMemoryStatsCHROMIUM(
 void WebGraphicsContext3DCommandBufferImpl::
     setMemoryAllocationChangedCallbackCHROMIUM(
         WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) {
-  memory_allocation_changed_callback_ = callback;
-
   if (!command_buffer_)
     return;
 
   if (callback)
     command_buffer_->SetMemoryAllocationChangedCallback(base::Bind(
         &WebGraphicsContext3DCommandBufferImpl::OnMemoryAllocationChanged,
-        weak_ptr_factory_.GetWeakPtr()));
+        weak_ptr_factory_.GetWeakPtr(),
+        callback));
   else
     command_buffer_->SetMemoryAllocationChangedCallback(
         base::Callback<void(const GpuMemoryAllocationForRenderer&)>());
@@ -1448,6 +1446,7 @@ WebGraphicsMemoryAllocation::PriorityCutoff
 }
 
 void WebGraphicsContext3DCommandBufferImpl::OnMemoryAllocationChanged(
+    WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback,
     const GpuMemoryAllocationForRenderer& allocation) {
 
   // Convert the gpu structure to the WebKit structure.
@@ -1472,9 +1471,8 @@ void WebGraphicsContext3DCommandBufferImpl::OnMemoryAllocationChanged(
   web_allocation.suggestHaveBackbuffer =
       allocation.have_backbuffer_when_not_visible;
 
-  if (memory_allocation_changed_callback_)
-    memory_allocation_changed_callback_->onMemoryAllocationChanged(
-        web_allocation);
+  if (callback)
+    callback->onMemoryAllocationChanged(web_allocation);
 
   // We may have allocated transfer buffers in order to free GL resources in a
   // backgrounded tab. Re-free the transfer buffers.
