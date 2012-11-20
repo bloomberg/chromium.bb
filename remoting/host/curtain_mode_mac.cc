@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 
 namespace {
@@ -65,16 +66,28 @@ CurtainModeMac::~CurtainModeMac() {
 
 void CurtainModeMac::SetActivated(bool activated) {
   if (activated) {
-    // Curtain-mode has issues on Mac OS X 10.7, so is currently disabled.
-    //if (!ActivateCurtain()) {
-    on_error_.Run();
-    //}
+    if (!ActivateCurtain()) {
+      on_error_.Run();
+    }
   } else {
     RemoveEventHandler();
   }
 }
 
 bool CurtainModeMac::ActivateCurtain() {
+  // Curtain mode causes problems with the login screen on Lion only (starting
+  // with 10.7.3), so disable it on that platform. There is a work-around, but
+  // it involves modifying a system Plist pertaining to power-management, so
+  // it's not something that should be done automatically. For more details,
+  // see https://discussions.apple.com/thread/3209415?start=690&tstart=0
+  //
+  // TODO(jamiewalch): If the underlying OS bug is ever fixed, we should support
+  // curtain mode on suitable versions of Lion.
+  if (base::mac::IsOSLion()) {
+    LOG(ERROR) << "Host curtaining is not supported on Mac OS X 10.7.";
+    return false;
+  }
+
   // Try to install the switch-in handler. Do this before switching out the
   // current session so that the console session is not affected if it fails.
   if (!InstallEventHandler()) {
@@ -83,6 +96,16 @@ bool CurtainModeMac::ActivateCurtain() {
 
   base::mac::ScopedCFTypeRef<CFDictionaryRef> session(
       CGSessionCopyCurrentDictionary());
+
+  // CGSessionCopyCurrentDictionary has been observed to return NULL in some
+  // cases. Once the system is in this state, curtain mode will fail as the
+  // CGSession command thinks the session is not attached to the console. The
+  // only known remedy is logout or reboot. Since we're not sure what causes
+  // this, or how common it is, a crash report is useful in this case (note
+  // that the connection would have to be refused in any case, so this is no
+  // loss of functionality).
+  CHECK(session != NULL);
+
   const void* on_console = CFDictionaryGetValue(session,
                                                 kCGSessionOnConsoleKey);
   const void* logged_in = CFDictionaryGetValue(session, kCGSessionLoginDoneKey);
