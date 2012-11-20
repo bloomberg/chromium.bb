@@ -3418,8 +3418,8 @@ verify-object-arm() {
   fi
   arch_info="$("${PNACL_READELF}" -A "$1")"
   #TODO(robertm): some refactoring and cleanup needed
-  if ! grep -q "Tag_FP_arch: VFPv2" <<< ${arch_info} ; then
-    echo "ERROR $1 - bad Tag_FP_arch\n"
+  if ! grep -q "Tag_FP_arch: VFPv3" <<< ${arch_info} ; then
+    echo "ERROR $1 - bad Tag_FP_arch"
     #TODO(robertm): figure out what the right thing to do is here, c.f.
     # http://code.google.com/p/nativeclient/issues/detail?id=966
     "${PNACL_READELF}" -A $1 | grep  Tag_FP_arch
@@ -3427,9 +3427,19 @@ verify-object-arm() {
   fi
 
   if ! grep -q "Tag_CPU_arch: v7" <<< ${arch_info} ; then
-    echo "FAIL bad $1 Tag_CPU_arch\n"
+    echo "FAIL bad $1 Tag_CPU_arch"
     "${PNACL_READELF}" -A $1 | grep Tag_CPU_arch
     exit -1
+  fi
+
+  if ! grep -q "Tag_Advanced_SIMD_arch: NEONv1" <<< ${arch_info} ; then
+    echo "FAIL bad $1 Tag_Advanced_SIMD_arch"
+    "${PNACL_READELF}" -A $1 | grep Tag_Advanced_SIMD_arch
+  fi
+
+  if ! grep -q "Tag_ABI_HardFP_use: SP and DP" <<< ${arch_info} ; then
+    echo "FAIL bad $1 Tag_ABI_HardFP_use"
+    "${PNACL_READELF}" -A $1 | grep Tag_ABI_HardFP_use
   fi
 }
 
