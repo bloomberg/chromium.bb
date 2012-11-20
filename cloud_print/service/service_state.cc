@@ -13,6 +13,7 @@
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
+#include "net/base/upload_data.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -178,7 +179,9 @@ std::string ServiceState::LoginToGoogle(const std::string& service,
   load_flags = load_flags | net::LOAD_DO_NOT_SAVE_COOKIES;
   request.set_load_flags(load_flags);
 
-  request.AppendBytesToUpload(post_body.c_str(), post_body.size());
+  scoped_refptr<net::UploadData> upload_data(new net::UploadData());
+  upload_data->AppendBytes(post_body.c_str(), post_body.size());
+  request.set_upload(upload_data);
   request.SetExtraRequestHeaderByName(
       "Content-Type", "application/x-www-form-urlencoded", true);
   request.set_method("POST");
