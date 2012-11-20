@@ -17,9 +17,10 @@
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/safe_browsing/database_manager.h"
+#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "googleurl/src/gurl.h"
 
-class SafeBrowsingService;
 
 namespace content {
 class DownloadItem;
@@ -181,9 +182,9 @@ class DownloadProtectionService {
   // Returns the URL that will be used for download requests.
   static std::string GetDownloadRequestUrl();
 
-  // This pointer may be NULL if SafeBrowsing is disabled. The
-  // SafeBrowsingService owns us, so we don't need to hold a reference to it.
-  SafeBrowsingService* sb_service_;
+  // These pointers may be NULL if SafeBrowsing is disabled.
+  scoped_refptr<SafeBrowsingUIManager> ui_manager_;
+  scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 
   // The context we use to issue network requests.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;

@@ -24,6 +24,7 @@
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "googleurl/src/gurl.h"
 
 class HistoryService;
@@ -43,7 +44,7 @@ struct BrowseInfo {
 
   // If a SafeBrowsing interstitial was shown for the current URL
   // this will contain the UnsafeResource struct for that URL.
-  scoped_ptr<SafeBrowsingService::UnsafeResource> unsafe_resource;
+  scoped_ptr<SafeBrowsingUIManager::UnsafeResource> unsafe_resource;
 
   // List of redirects that lead to the first page on the current host and
   // the current url respectively. These may be the same if the current url

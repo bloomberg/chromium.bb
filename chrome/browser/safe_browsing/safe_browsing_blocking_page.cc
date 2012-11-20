@@ -25,7 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/safe_browsing/malware_details.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -125,7 +125,7 @@ class SafeBrowsingBlockingPageFactoryImpl
     : public SafeBrowsingBlockingPageFactory {
  public:
   SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
-      SafeBrowsingService* service,
+      SafeBrowsingUIManager* ui_manager,
       WebContents* web_contents,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources) {
     // Only do the trial if the interstitial is for a single malware or
@@ -134,10 +134,10 @@ class SafeBrowsingBlockingPageFactoryImpl
     if (unsafe_resources.size() == 1 &&
         (unsafe_resources[0].threat_type == SB_THREAT_TYPE_URL_MALWARE ||
          unsafe_resources[0].threat_type == SB_THREAT_TYPE_URL_PHISHING)) {
-      return new SafeBrowsingBlockingPageV2(service, web_contents,
+      return new SafeBrowsingBlockingPageV2(ui_manager, web_contents,
           unsafe_resources);
     }
-    return new SafeBrowsingBlockingPageV1(service, web_contents,
+    return new SafeBrowsingBlockingPageV1(ui_manager, web_contents,
                                           unsafe_resources);
   }
 
@@ -154,12 +154,12 @@ static base::LazyInstance<SafeBrowsingBlockingPageFactoryImpl>
     g_safe_browsing_blocking_page_factory_impl = LAZY_INSTANCE_INITIALIZER;
 
 SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
-    SafeBrowsingService* sb_service,
+    SafeBrowsingUIManager* ui_manager,
     WebContents* web_contents,
     const UnsafeResourceList& unsafe_resources)
     : malware_details_proceed_delay_ms_(
           kMalwareDetailsProceedDelayMilliSeconds),
-      sb_service_(sb_service),
+      ui_manager_(ui_manager),
       report_loop_(NULL),
       is_main_frame_load_blocked_(IsMainPageLoadBlocked(unsafe_resources)),
       unsafe_resources_(unsafe_resources),
@@ -171,7 +171,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   bool phishing = false;
   for (UnsafeResourceList::const_iterator iter = unsafe_resources_.begin();
        iter != unsafe_resources_.end(); ++iter) {
-    const SafeBrowsingService::UnsafeResource& resource = *iter;
+    const UnsafeResource& resource = *iter;
     SBThreatType threat_type = resource.threat_type;
     if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
       malware = true;
@@ -206,7 +206,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       malware_details_ == NULL &&
       CanShowMalwareDetailsOption()) {
     malware_details_ = MalwareDetails::NewMalwareDetails(
-        sb_service_, web_contents, unsafe_resources[0]);
+        ui_manager_, web_contents, unsafe_resources[0]);
   }
 
   interstitial_page_ = InterstitialPage::Create(
@@ -404,7 +404,7 @@ void SafeBrowsingBlockingPage::OnProceed() {
   // Send the malware details, if we opted to.
   FinishMalwareDetails(malware_details_proceed_delay_ms_);
 
-  NotifySafeBrowsingService(sb_service_, unsafe_resources_, true);
+  NotifySafeBrowsingUIManager(ui_manager_, unsafe_resources_, true);
 
   // Check to see if some new notifications of unsafe resources have been
   // received while we were showing the interstitial.
@@ -415,7 +415,7 @@ void SafeBrowsingBlockingPage::OnProceed() {
     // Build an interstitial for all the unsafe resources notifications.
     // Don't show it now as showing an interstitial while an interstitial is
     // already showing would cause DontProceed() to be invoked.
-    blocking_page = factory_->CreateSafeBrowsingPage(sb_service_, web_contents_,
+    blocking_page = factory_->CreateSafeBrowsingPage(ui_manager_, web_contents_,
                                                      iter->second);
     unsafe_resource_map->erase(iter);
   }
@@ -429,7 +429,7 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
   // Calling this method twice will not double-count.
   RecordUserReactionTime(kNavigatedAwayMetaCommand);
   // We could have already called Proceed(), in which case we must not notify
-  // the SafeBrowsingService again, as the client has been deleted.
+  // the SafeBrowsingUIManager again, as the client has been deleted.
   if (proceeded_)
     return;
 
@@ -437,14 +437,14 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
   // Send the malware details, if we opted to.
   FinishMalwareDetails(0);  // No delay
 
-  NotifySafeBrowsingService(sb_service_, unsafe_resources_, false);
+  NotifySafeBrowsingUIManager(ui_manager_, unsafe_resources_, false);
 
   // The user does not want to proceed, clear the queued unsafe resources
   // notifications we received while the interstitial was showing.
   UnsafeResourceMap* unsafe_resource_map = GetUnsafeResourcesMap();
   UnsafeResourceMap::iterator iter = unsafe_resource_map->find(web_contents_);
   if (iter != unsafe_resource_map->end() && !iter->second.empty()) {
-    NotifySafeBrowsingService(sb_service_, iter->second, false);
+    NotifySafeBrowsingUIManager(ui_manager_, iter->second, false);
     unsafe_resource_map->erase(iter);
   }
 
@@ -678,14 +678,14 @@ bool SafeBrowsingBlockingPage::IsPrefEnabled(const char* pref) {
 }
 
 // static
-void SafeBrowsingBlockingPage::NotifySafeBrowsingService(
-    SafeBrowsingService* sb_service,
+void SafeBrowsingBlockingPage::NotifySafeBrowsingUIManager(
+    SafeBrowsingUIManager* ui_manager,
     const UnsafeResourceList& unsafe_resources,
     bool proceed) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingService::OnBlockingPageDone,
-                 sb_service, unsafe_resources, proceed));
+      base::Bind(&SafeBrowsingUIManager::OnBlockingPageDone,
+                 ui_manager, unsafe_resources, proceed));
 }
 
 // static
@@ -696,8 +696,8 @@ SafeBrowsingBlockingPage::UnsafeResourceMap*
 
 // static
 void SafeBrowsingBlockingPage::ShowBlockingPage(
-    SafeBrowsingService* sb_service,
-    const SafeBrowsingService::UnsafeResource& unsafe_resource) {
+    SafeBrowsingUIManager* ui_manager,
+    const UnsafeResource& unsafe_resource) {
   DVLOG(1) << __FUNCTION__ << " " << unsafe_resource.url.spec();
   WebContents* web_contents = tab_util::GetWebContentsByID(
       unsafe_resource.render_process_host_id, unsafe_resource.render_view_id);
@@ -715,14 +715,14 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
   if (!interstitial) {
     // There are no interstitial currently showing in that tab, go ahead and
     // show this interstitial.
-    std::vector<SafeBrowsingService::UnsafeResource> resources;
+    std::vector<UnsafeResource> resources;
     resources.push_back(unsafe_resource);
     // Set up the factory if this has not been done already (tests do that
     // before this method is called).
     if (!factory_)
       factory_ = g_safe_browsing_blocking_page_factory_impl.Pointer();
     SafeBrowsingBlockingPage* blocking_page =
-        factory_->CreateSafeBrowsingPage(sb_service, web_contents, resources);
+        factory_->CreateSafeBrowsingPage(ui_manager, web_contents, resources);
     blocking_page->interstitial_page_->Show();
     return;
   }
@@ -747,10 +747,10 @@ bool SafeBrowsingBlockingPage::IsMainPageLoadBlocked(
 }
 
 SafeBrowsingBlockingPageV1::SafeBrowsingBlockingPageV1(
-    SafeBrowsingService* sb_service,
+    SafeBrowsingUIManager* ui_manager,
     WebContents* web_contents,
     const UnsafeResourceList& unsafe_resources)
-  : SafeBrowsingBlockingPage(sb_service, web_contents, unsafe_resources) {
+  : SafeBrowsingBlockingPage(ui_manager, web_contents, unsafe_resources) {
 }
 
 std::string SafeBrowsingBlockingPageV1::GetHTMLContents() {
@@ -803,7 +803,7 @@ void SafeBrowsingBlockingPageV1::PopulateMultipleThreatStringDictionary(
   ListValue* error_strings = new ListValue;
   for (UnsafeResourceList::const_iterator iter = unsafe_resources_.begin();
        iter != unsafe_resources_.end(); ++iter) {
-    const SafeBrowsingService::UnsafeResource& resource = *iter;
+    const UnsafeResource& resource = *iter;
     SBThreatType threat_type = resource.threat_type;
     DictionaryValue* current_error_strings = new DictionaryValue;
     if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
@@ -884,10 +884,10 @@ void SafeBrowsingBlockingPageV1::PopulatePhishingStringDictionary(
 }
 
 SafeBrowsingBlockingPageV2::SafeBrowsingBlockingPageV2(
-    SafeBrowsingService* sb_service,
+    SafeBrowsingUIManager* ui_manager,
     WebContents* web_contents,
     const UnsafeResourceList& unsafe_resources)
-  : SafeBrowsingBlockingPage(sb_service, web_contents, unsafe_resources) {
+  : SafeBrowsingBlockingPage(ui_manager, web_contents, unsafe_resources) {
 }
 
 std::string SafeBrowsingBlockingPageV2::GetHTMLContents() {

@@ -12,7 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/database_manager.h"
+#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
@@ -28,7 +29,7 @@ class ClientSideDetectionService;
 // TODO(noelutz): move all client-side detection IPCs to this class.
 class ClientSideDetectionHost : public content::WebContentsObserver,
                                 public content::NotificationObserver,
-                                public SafeBrowsingService::Observer {
+                                public SafeBrowsingUIManager::Observer {
  public:
   // The caller keeps ownership of the tab object and is responsible for
   // ensuring that it stays valid until WebContentsDestroyed is called.
@@ -48,7 +49,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // Called when the SafeBrowsingService found a hit with one of the
   // SafeBrowsing lists.  This method is called on the UI thread.
   virtual void OnSafeBrowsingHit(
-      const SafeBrowsingService::UnsafeResource& resource) OVERRIDE;
+      const SafeBrowsingUIManager::UnsafeResource& resource) OVERRIDE;
 
  protected:
   // From content::WebContentsObserver.
@@ -90,14 +91,16 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // class.
   void set_client_side_detection_service(ClientSideDetectionService* service);
 
-  // Used for testing.  This function does not take ownership of the service
-  // class.
-  void set_safe_browsing_service(SafeBrowsingService* service);
+  // Used for testing.
+  void set_safe_browsing_managers(
+      SafeBrowsingUIManager* ui_manager,
+      SafeBrowsingDatabaseManager* database_manager);
 
   // This pointer may be NULL if client-side phishing detection is disabled.
   ClientSideDetectionService* csd_service_;
-  // This pointer may be NULL if SafeBrowsing is disabled.
-  scoped_refptr<SafeBrowsingService> sb_service_;
+  // These pointers may be NULL if SafeBrowsing is disabled.
+  scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
+  scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   // Keep a handle to the latest classification request so that we can cancel
   // it if necessary.
   scoped_refptr<ShouldClassifyUrlRequest> classification_request_;
@@ -121,7 +124,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // Unique page ID of the most recent unsafe site that was loaded in this tab
   // as well as the UnsafeResource.
   int unsafe_unique_page_id_;
-  scoped_ptr<SafeBrowsingService::UnsafeResource> unsafe_resource_;
+  scoped_ptr<SafeBrowsingUIManager::UnsafeResource> unsafe_resource_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionHost);
 };
