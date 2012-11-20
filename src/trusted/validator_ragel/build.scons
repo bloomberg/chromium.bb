@@ -61,12 +61,6 @@ decoder_test = env.ComponentProgram(
     ['unreviewed/decoder_test.c'],
     EXTRA_LIBS=['dfa_decode_x86_32', 'dfa_decode_x86_64'])
 
-# Command-line validator.
-validator_test_exe = env.ComponentProgram(
-    'validator_test',
-    ['unreviewed/validator_test.c'],
-    EXTRA_LIBS=['dfa_validate_x86_32', 'dfa_validate_x86_64'])
-
 env.ComponentLibrary(
     'elf_load',
     ['elf_load.cc'],
