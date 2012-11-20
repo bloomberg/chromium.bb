@@ -64,16 +64,6 @@ PhotoImport.load = function(opt_filesystem, opt_params) {
   api.getStrings(function(strings) {
     loadTimeData.data = strings;
 
-    // TODO(dgozman): remove when all strings finalized.
-    var original = loadTimeData.getString;
-    loadTimeData.getString = function(s) {
-      return original.call(loadTimeData, s) || s;
-    };
-    var originalF = loadTimeData.getStringF;
-    loadTimeData.getStringF = function() {
-      return originalF.apply(loadTimeData, arguments) || arguments[0];
-    };
-
     if (opt_filesystem) {
       onFilesystem(opt_filesystem);
     } else {
@@ -373,6 +363,11 @@ PhotoImport.prototype.onSelectionChanged_ = function() {
 PhotoImport.prototype.onImportClick_ = function(event) {
   var entries = this.getSelectedItems_();
   var move = this.dom_.querySelector('#delete-after-checkbox').checked;
+
+  var percentage = Math.round(entries.length / this.fileList_.length * 100);
+  metrics.recordMediumCount('PhotoImport.ImportCount', entries.length);
+  metrics.recordSmallCount('PhotoImport.ImportPercentage', percentage);
+
   this.importingDialog_.show(entries, this.destination_, move);
 };
 
