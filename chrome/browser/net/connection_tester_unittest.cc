@@ -91,8 +91,8 @@ class ConnectionTesterTest : public PlatformTest {
         io_thread_(BrowserThread::IO, &message_loop_),
         test_server_(net::TestServer::TYPE_HTTP,
                      net::TestServer::kLocalhost,
-                     FilePath(
-                         FILE_PATH_LITERAL("net/data/url_request_unittest"))),
+                     // Nothing is read in this directory.
+                     FilePath(FILE_PATH_LITERAL("chrome"))),
         proxy_script_fetcher_context_(new net::URLRequestContext) {
     InitializeRequestContext();
   }
