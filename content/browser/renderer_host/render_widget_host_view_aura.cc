@@ -1431,7 +1431,7 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
     backing_store->ScaleFactorChanged(device_scale_factor);
 
   UpdateScreenInfo(window_);
-  host_->SetDeviceScaleFactor(device_scale_factor);
+  host_->NotifyScreenInfoChanged();
   current_cursor_.SetScaleFactor(device_scale_factor);
 }
 

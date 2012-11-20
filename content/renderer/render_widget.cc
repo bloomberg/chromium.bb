@@ -242,7 +242,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnMsgRepaint)
     IPC_MESSAGE_HANDLER(ViewMsg_SmoothScrollCompleted,
                         OnMsgSmoothScrollCompleted)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetDeviceScaleFactor, OnSetDeviceScaleFactor)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
     IPC_MESSAGE_HANDLER(ViewMsg_ScreenInfoChanged, OnScreenInfoChanged)
@@ -1597,19 +1596,6 @@ void RenderWidget::OnMsgRepaint(const gfx::Size& size_to_paint) {
   }
 }
 
-void RenderWidget::OnSetDeviceScaleFactor(float device_scale_factor) {
-  if (device_scale_factor_ == device_scale_factor)
-    return;
-
-  device_scale_factor_ = device_scale_factor;
-
-  if (!is_accelerated_compositing_active_) {
-    didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
-  } else {
-    scheduleComposite();
-  }
-}
-
 void RenderWidget::OnMsgSmoothScrollCompleted(int gesture_id) {
   PendingSmoothScrollGestureMap::iterator it =
       pending_smooth_scroll_gestures_.find(gesture_id);
@@ -1626,8 +1612,8 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
 
 void RenderWidget::OnScreenInfoChanged(
     const WebKit::WebScreenInfo& screen_info) {
-  // TODO(oshima): Update scale factor here and remove OnSetDeviceScaleFactor.
   screen_info_ = screen_info;
+  SetDeviceScaleFactor(screen_info.deviceScaleFactor);
 }
 
 void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
@@ -1635,6 +1621,19 @@ void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
   view_screen_rect_ = view_screen_rect;
   window_screen_rect_ = window_screen_rect;
   Send(new ViewHostMsg_UpdateScreenRects_ACK(routing_id()));
+}
+
+void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
+  if (device_scale_factor_ == device_scale_factor)
+    return;
+
+  device_scale_factor_ = device_scale_factor;
+
+  if (!is_accelerated_compositing_active_) {
+    didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
+  } else {
+    scheduleComposite();
+  }
 }
 
 webkit::ppapi::PluginInstance* RenderWidget::GetBitmapForOptimizedPluginPaint(

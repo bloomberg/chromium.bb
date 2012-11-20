@@ -136,10 +136,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void WasResized() OVERRIDE;
   virtual void AddKeyboardListener(KeyboardListener* listener) OVERRIDE;
   virtual void RemoveKeyboardListener(KeyboardListener* listener) OVERRIDE;
-  virtual void SetDeviceScaleFactor(float scale) OVERRIDE;
 
   // Notification that the screen info has changed.
-  virtual void NotifyScreenInfoChanged();
+  void NotifyScreenInfoChanged();
 
   // Sets the View of this RenderWidgetHost.
   void SetView(RenderWidgetHostView* view);

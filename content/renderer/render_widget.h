@@ -279,12 +279,13 @@ class CONTENT_EXPORT RenderWidget
                         const gfx::Size& desired_size);
   void OnMsgRepaint(const gfx::Size& size_to_paint);
   void OnMsgSmoothScrollCompleted(int gesture_id);
-  virtual void OnSetDeviceScaleFactor(float device_scale_factor);
   void OnSetTextDirection(WebKit::WebTextDirection direction);
   void OnGetFPS();
   void OnScreenInfoChanged(const WebKit::WebScreenInfo& screen_info);
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
+
+  virtual void SetDeviceScaleFactor(float device_scale_factor);
 
   // Override points to notify derived classes that a paint has happened.
   // WillInitiatePaint happens when we're about to generate a new bitmap and

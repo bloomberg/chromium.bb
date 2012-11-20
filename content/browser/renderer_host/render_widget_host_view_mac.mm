@@ -2181,8 +2181,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   if (backingStore)  // NULL in hardware path.
     backingStore->ScaleFactorChanged(scaleFactor);
 
-  renderWidgetHostView_->render_widget_host_->SetDeviceScaleFactor(
-      scaleFactor);
+  renderWidgetHostView_->render_widget_host_->NotifyScreenInfoChanged();
 }
 
 // http://developer.apple.com/library/mac/#documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/CapturingScreenContents/CapturingScreenContents.html#//apple_ref/doc/uid/TP40012302-CH10-SW4
