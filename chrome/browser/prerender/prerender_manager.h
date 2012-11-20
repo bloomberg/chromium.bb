@@ -14,7 +14,6 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
@@ -262,6 +261,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
  protected:
   class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
    public:
+    struct OrderByExpiryTime;
+
     // Constructor for a pending prerender, which will get its contents later.
     explicit PrerenderData(PrerenderManager* manager);
 
@@ -434,10 +435,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // list.
   void DeletePendingDeleteEntries();
 
-  // Adds a prerender data to the |active_prerender_list_|, keeping the list
-  // sorted by increasing expiry time.
-  void InsertActivePrerenderData(
-      linked_ptr<PrerenderData> linked_prerender_data);
+  // Insures the |active_prerenders_| are sorted by increasing expiry time. Call
+  // after every mutation of active_prerenders_ that can possibly make it
+  // unsorted (e.g. an insert, or changing an expiry time).
+  void SortActivePrerenders();
 
   // Finds the active PrerenderData object for a running prerender matching
   // |url| and |session_storage_namespace|.
@@ -450,9 +451,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // returns NULL.
   PrerenderData* FindPrerenderDataForChildAndRoute(int child_id, int route_id);
 
-  // Given the |prerender_contents|, find the iterator in active_prerender_list_
+  // Given the |prerender_contents|, find the iterator in active_prerenders_
   // correponding to the given prerender.
-  std::list<linked_ptr<PrerenderData> >::iterator
+  ScopedVector<PrerenderData>::iterator
       FindIteratorForPrerenderContents(PrerenderContents* prerender_contents);
 
   bool DoesRateLimitAllowPrerender(Origin origin) const;
@@ -514,12 +515,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   PrerenderTracker* prerender_tracker_;
 
-  // List of all running prerenders. It is kept sorted, in increasing order by
-  // expiry time. This list owns the PrerenderData objects contained in it.
-  std::list<linked_ptr<PrerenderData> > active_prerender_list_;
+  // All running prerenders. Sorted by expiry time, in ascending order.
+  ScopedVector<PrerenderData> active_prerenders_;
 
-  // List of all pending prerenders.
-  std::list<linked_ptr<PrerenderData> > pending_prerender_list_;
+  // All pending prerenders.
+  ScopedVector<PrerenderData> pending_prerenders_;
 
   // List of recent navigations in this profile, sorted by ascending
   // navigate_time_.

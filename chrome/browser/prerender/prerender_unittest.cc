@@ -115,10 +115,10 @@ class UnitTestPrerenderManager : public PrerenderManager {
       return NULL;
     PrerenderContents* prerender_contents = prerender_data->contents();
     prerender_contents->set_final_status(FINAL_STATUS_USED);
-    std::list<linked_ptr<PrerenderData> >::iterator to_erase =
+    ScopedVector<PrerenderData>::iterator to_erase =
         FindIteratorForPrerenderContents(prerender_contents);
-    DCHECK(to_erase != active_prerender_list_.end());
-    active_prerender_list_.erase(to_erase);
+    DCHECK(to_erase != active_prerenders_.end());
+    active_prerenders_.erase(to_erase);
     prerender_contents->StartPendingPrerenders();
     return prerender_contents;
   }
