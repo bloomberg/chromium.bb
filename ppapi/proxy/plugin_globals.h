@@ -100,6 +100,10 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   // The embedder should call this function when the command line is known.
   void set_command_line(const std::string& c) { command_line_ = c; }
 
+  // Sets whether threadsafety is supported. Defaults to whether the
+  // ENABLE_PEPPER_THREADING build flag is set.
+  void set_enable_threading(bool enable) { enable_threading_ = enable; }
+
  private:
   // PpapiGlobals overrides.
   virtual bool IsPluginGlobals() const OVERRIDE;
@@ -110,6 +114,8 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   PluginResourceTracker plugin_resource_tracker_;
   PluginVarTracker plugin_var_tracker_;
   scoped_refptr<CallbackTracker> callback_tracker_;
+
+  bool enable_threading_;  // Indicates whether we'll use the lock.
   base::Lock proxy_lock_;
 
   scoped_ptr<base::ThreadLocalStorage::Slot> msg_loop_slot_;

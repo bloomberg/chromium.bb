@@ -20,6 +20,12 @@ PluginGlobals::PluginGlobals()
       callback_tracker_(new CallbackTracker),
       loop_for_main_thread_(
           new MessageLoopResource(MessageLoopResource::ForMainThread())) {
+#if defined(ENABLE_PEPPER_THREADING)
+  enable_threading_ = true;
+#else
+  enable_threading_ = false;
+#endif
+
   DCHECK(!plugin_globals_);
   plugin_globals_ = this;
 }
@@ -28,6 +34,11 @@ PluginGlobals::PluginGlobals(ForTest for_test)
     : ppapi::PpapiGlobals(for_test),
       plugin_proxy_delegate_(NULL),
       callback_tracker_(new CallbackTracker) {
+#if defined(ENABLE_PEPPER_THREADING)
+  enable_threading_ = true;
+#else
+  enable_threading_ = false;
+#endif
   DCHECK(!plugin_globals_);
 }
 
@@ -80,11 +91,9 @@ void PluginGlobals::PreCacheFontForFlash(const void* logfontw) {
 }
 
 base::Lock* PluginGlobals::GetProxyLock() {
-#ifdef ENABLE_PEPPER_THREADING
-  return &proxy_lock_;
-#else
+  if (enable_threading_)
+    return &proxy_lock_;
   return NULL;
-#endif
 }
 
 void PluginGlobals::LogWithSource(PP_Instance instance,
