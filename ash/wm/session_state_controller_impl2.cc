@@ -78,11 +78,6 @@ void SessionStateControllerImpl2::OnLockStateChanged(bool locked) {
         callback);
     lock_timer_.Stop();
     lock_fail_timer_.Stop();
-
-    if (shutdown_after_lock_) {
-      shutdown_after_lock_ = false;
-      StartLockToShutdownTimer();
-    }
   } else {
     animator_->StartAnimation(
         internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS |
@@ -101,6 +96,10 @@ void SessionStateControllerImpl2::OnLockScreenAnimationFinished() {
   if (!lock_screen_displayed_callback_.is_null()) {
     lock_screen_displayed_callback_.Run();
     lock_screen_displayed_callback_.Reset();
+  }
+  if (shutdown_after_lock_) {
+    shutdown_after_lock_ = false;
+    StartLockToShutdownTimer();
   }
 }
 
