@@ -21,18 +21,6 @@ namespace corewm {
 
 namespace {
 
-aura::Window* FindFocusableWindowFor(aura::Window* window) {
-  while (window && !window->CanFocus())
-    window = window->parent();
-  return window;
-}
-
-aura::Window* GetActiveWindow(aura::Window* window) {
-  DCHECK(window->GetRootWindow());
-  return aura::client::GetActivationClient(window->GetRootWindow())->
-      GetActiveWindow();
-}
-
 bool ShouldHideCursorOnKeyEvent(const ui::KeyEvent& event) {
   // All alt and control key commands are ignored.
   if (event.IsAltDown() || event.IsControlDown())
@@ -237,20 +225,7 @@ ui::EventResult CompoundEventFilter::OnMouseEvent(ui::MouseEvent* event) {
     UpdateCursor(window, event);
   }
 
-  ui::EventResult result = FilterMouseEvent(event);
-  if ((result & ui::ER_CONSUMED) ||
-      !window_tracker.Contains(window) ||
-      !window->GetRootWindow()) {
-    return result;
-  }
-
-  if (event->type() == ui::ET_MOUSE_PRESSED &&
-      GetActiveWindow(window) != window) {
-    window->GetFocusManager()->SetFocusedWindow(
-        FindFocusableWindowFor(window), event);
-  }
-
-  return result;
+  return FilterMouseEvent(event);
 }
 
 ui::EventResult CompoundEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
@@ -275,17 +250,6 @@ ui::EventResult CompoundEventFilter::OnGestureEvent(ui::GestureEvent* event) {
     while (!(result & ui::ER_CONSUMED) && (handler = it.GetNext()) != NULL)
       result |= handler->OnGestureEvent(event);
   }
-
-  aura::Window* window = static_cast<aura::Window*>(event->target());
-  if (event->type() == ui::ET_GESTURE_BEGIN &&
-      event->details().touch_points() == 1 &&
-      !(result & ui::ER_CONSUMED) &&
-      window->GetRootWindow() &&
-      GetActiveWindow(window) != window) {
-    window->GetFocusManager()->SetFocusedWindow(
-        FindFocusableWindowFor(window), event);
-  }
-
   return static_cast<ui::EventResult>(result);
 }
 

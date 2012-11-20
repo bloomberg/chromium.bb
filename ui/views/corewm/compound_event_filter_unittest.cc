@@ -140,25 +140,6 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   aura::Env::GetInstance()->RemovePreTargetHandler(compound_filter.get());
 }
 
-// Tests that tapping a window gives the window focus.
-TEST_F(CompoundEventFilterTest, GestureFocusesWindow) {
-  scoped_ptr<CompoundEventFilter> compound_filter(new CompoundEventFilter);
-  aura::Env::GetInstance()->AddPreTargetHandler(compound_filter.get());
-  aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(&delegate, 1234,
-      gfx::Rect(5, 5, 100, 100), NULL));
-  window->Show();
-
-  EXPECT_TRUE(window->CanFocus());
-  EXPECT_FALSE(window->HasFocus());
-
-  // Tap on the window should give it focus.
-  aura::test::EventGenerator generator(root_window(), gfx::Point(50, 50));
-  generator.PressTouch();
-  EXPECT_TRUE(window->HasFocus());
-  aura::Env::GetInstance()->RemovePreTargetHandler(compound_filter.get());
-}
-
 // Tests that if an event filter consumes a gesture, then it doesn't focus the
 // window.
 TEST_F(CompoundEventFilterTest, FilterConsumedGesture) {

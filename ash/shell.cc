@@ -414,6 +414,7 @@ void Shell::Init() {
       new internal::ActivationController(
           focus_manager_.get(),
           new internal::AshActivationController));
+  AddPreTargetHandler(activation_controller_.get());
 
   focus_cycler_.reset(new internal::FocusCycler());
 

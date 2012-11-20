@@ -5,6 +5,7 @@
 #ifndef ASH_WM_ACTIVATION_CONTROLLER_H_
 #define ASH_WM_ACTIVATION_CONTROLLER_H_
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
@@ -13,7 +14,7 @@
 #include "ui/aura/env_observer.h"
 #include "ui/aura/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
-#include "ash/ash_export.h"
+#include "ui/base/events/event_handler.h"
 
 namespace aura {
 namespace client {
@@ -31,7 +32,8 @@ class ASH_EXPORT ActivationController
     : public aura::client::ActivationClient,
       public aura::WindowObserver,
       public aura::EnvObserver,
-      public aura::FocusChangeObserver {
+      public aura::FocusChangeObserver,
+      public ui::EventHandler {
  public:
   // The ActivationController takes ownership of |delegate|.
   ActivationController(aura::FocusManager* focus_manager,
@@ -68,6 +70,13 @@ class ASH_EXPORT ActivationController
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
 
  private:
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+
   // Implementation of ActivateWindow() with an Event.
   void ActivateWindowWithEvent(aura::Window* window,
                                const ui::Event* event);
@@ -84,6 +93,11 @@ class ASH_EXPORT ActivationController
   aura::Window* GetTopmostWindowToActivateInContainer(
       aura::Window* container,
       aura::Window* ignore) const;
+
+  // Called from the ActivationController's event handler implementation to
+  // handle focus to the |event|'s target. Not all targets are focusable or
+  // result in focus changes.
+  void FocusWindowWithEvent(const ui::Event* event);
 
   aura::FocusManager* focus_manager_;
 

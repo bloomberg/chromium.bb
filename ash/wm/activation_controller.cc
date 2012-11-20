@@ -132,6 +132,12 @@ void StackTransientParentsBelowModalWindow(aura::Window* window) {
   }
 }
 
+aura::Window* FindFocusableWindowFor(aura::Window* window) {
+  while (window && !window->CanFocus())
+    window = window->parent();
+  return window;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -254,6 +260,35 @@ void ActivationController::OnWindowFocused(aura::Window* window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ActivationController, ui::EventHandler implementation:
+
+ui::EventResult ActivationController::OnKeyEvent(ui::KeyEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult ActivationController::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    FocusWindowWithEvent(event);
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult ActivationController::OnScrollEvent(ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult ActivationController::OnTouchEvent(ui::TouchEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult ActivationController::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_BEGIN &&
+      event->details().touch_points() == 1) {
+    FocusWindowWithEvent(event);
+  }
+  return ui::ER_UNHANDLED;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ActivationController, private:
 
 void ActivationController::ActivateWindowWithEvent(aura::Window* window,
@@ -373,6 +408,14 @@ aura::Window* ActivationController::GetTopmostWindowToActivateInContainer(
       return *i;
   }
   return NULL;
+}
+
+void ActivationController::FocusWindowWithEvent(const ui::Event* event) {
+  aura::Window* window = static_cast<aura::Window*>(event->target());
+  if (GetActiveWindow() != window) {
+    window->GetFocusManager()->SetFocusedWindow(
+        FindFocusableWindowFor(window), event);
+  }
 }
 
 }  // namespace internal
