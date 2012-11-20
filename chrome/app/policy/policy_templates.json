@@ -3377,7 +3377,7 @@
     },
     'doc_recommended': {
       'desc': '''Text appended in parentheses next to the policies top-level container to indicate that those policies are of the Recommended level''',
-      'text': 'Recommended',
+      'text': 'Default Settings (users can override)',
     },
   },
   'placeholders': [],
