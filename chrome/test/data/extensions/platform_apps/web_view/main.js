@@ -57,8 +57,6 @@ onload = function() {
     },
 
     function webViewApiMethodExistence() {
-      var webview = document.createElement('webview');
-      webview.setAttribute('src', 'data:text/html,webview check api');
       var apiMethodsToCheck = [
         'back',
         'canGoBack',
@@ -70,11 +68,8 @@ onload = function() {
         'stop',
         'terminate'
       ];
-      document.body.appendChild(webview);
-
-      // Timeout is necessary to give the mutation observers of the webview tag
-      // shim a chance to fire.
-      setTimeout(function() {
+      var webview = document.createElement('webview');
+      webview.addEventListener('loadstop', function(e) {
         for (var i = 0; i < apiMethodsToCheck.length; ++i) {
           chrome.test.assertEq('function',
                                typeof webview[apiMethodsToCheck[i]]);
@@ -86,7 +81,9 @@ onload = function() {
                              typeof webview.contentWindow.postMessage);
 
         chrome.test.succeed();
-      }, 0);
+      });
+      webview.setAttribute('src', 'data:text/html,webview check api');
+      document.body.appendChild(webview);
     },
 
     function webViewEventName() {
