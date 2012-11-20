@@ -47,6 +47,10 @@ class ChromeFrameDistribution : public BrowserDistribution {
 
   virtual string16 GetVersionKey() OVERRIDE;
 
+  virtual string16 GetIconFilename() OVERRIDE;
+
+  virtual int GetIconIndex() OVERRIDE;
+
   virtual bool CanSetAsDefault() OVERRIDE;
 
   virtual bool CanCreateDesktopShortcuts() OVERRIDE;

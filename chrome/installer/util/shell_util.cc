@@ -215,7 +215,8 @@ class RegistryEntry {
                                const string16& chrome_exe,
                                const string16& suffix,
                                ScopedVector<RegistryEntry>* entries) {
-    string16 icon_path(ShellUtil::GetChromeIcon(dist, chrome_exe));
+    string16 icon_path(
+        ShellUtil::FormatIconLocation(chrome_exe, dist->GetIconIndex()));
     string16 open_cmd(ShellUtil::GetChromeShellOpenCmd(chrome_exe));
     string16 delegate_command(ShellUtil::GetChromeDelegateCommand(chrome_exe));
     // For user-level installs: entries for the app id and DelegateExecute verb
@@ -345,7 +346,8 @@ class RegistryEntry {
                                          const string16& chrome_exe,
                                          const string16& suffix,
                                          ScopedVector<RegistryEntry>* entries) {
-    const string16 icon_path(ShellUtil::GetChromeIcon(dist, chrome_exe));
+    const string16 icon_path(
+        ShellUtil::FormatIconLocation(chrome_exe, dist->GetIconIndex()));
     const string16 quoted_exe_path(L"\"" + chrome_exe + L"\"");
 
     // Register for the Start Menu "Internet" link (pre-Win7).
@@ -495,7 +497,8 @@ class RegistryEntry {
 
     // Protocols associations.
     string16 chrome_open = ShellUtil::GetChromeShellOpenCmd(chrome_exe);
-    string16 chrome_icon = ShellUtil::GetChromeIcon(dist, chrome_exe);
+    string16 chrome_icon =
+        ShellUtil::FormatIconLocation(chrome_exe, dist->GetIconIndex());
     for (int i = 0; ShellUtil::kBrowserProtocolAssociations[i] != NULL; i++) {
       GetXPStyleUserProtocolEntries(ShellUtil::kBrowserProtocolAssociations[i],
                                     chrome_icon, chrome_open, entries);
@@ -895,7 +898,8 @@ bool RegisterChromeAsDefaultProtocolClientXPStyle(BrowserDistribution* dist,
                                                   const string16& protocol) {
   ScopedVector<RegistryEntry> entries;
   const string16 chrome_open(ShellUtil::GetChromeShellOpenCmd(chrome_exe));
-  const string16 chrome_icon(ShellUtil::GetChromeIcon(dist, chrome_exe));
+  const string16 chrome_icon(
+      ShellUtil::FormatIconLocation(chrome_exe, dist->GetIconIndex()));
   RegistryEntry::GetXPStyleUserProtocolEntries(protocol, chrome_icon,
                                                chrome_open, &entries);
   // Change the default protocol handler for current user.
@@ -1320,12 +1324,12 @@ bool ShellUtil::CreateOrUpdateShortcut(
   return ret;
 }
 
-string16 ShellUtil::GetChromeIcon(BrowserDistribution* dist,
-                                  const string16& chrome_exe) {
-  string16 chrome_icon(chrome_exe);
-  chrome_icon.append(L",");
-  chrome_icon.append(base::IntToString16(dist->GetIconIndex()));
-  return chrome_icon;
+string16 ShellUtil::FormatIconLocation(const string16& icon_path,
+                                       int icon_index) {
+  string16 icon_string(icon_path);
+  icon_string.append(L",");
+  icon_string.append(base::IntToString16(icon_index));
+  return icon_string;
 }
 
 string16 ShellUtil::GetChromeShellOpenCmd(const string16& chrome_exe) {

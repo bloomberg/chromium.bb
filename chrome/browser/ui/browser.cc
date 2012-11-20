@@ -441,7 +441,7 @@ Browser::Browser(const CreateParams& params)
       window()->GetNativeWindow());
 
   if (is_type_panel()) {
-    ui::win::SetAppIconForWindow(ShellIntegration::GetChromiumIconPath(),
+    ui::win::SetAppIconForWindow(ShellIntegration::GetChromiumIconLocation(),
                                  window()->GetNativeWindow());
   }
 #endif

@@ -146,9 +146,10 @@ class ShellIntegration {
   // Get the AppUserModelId for the App List, for the profile in |profile_path|.
   static string16 GetAppListAppModelIdForProfile(const FilePath& profile_path);
 
-  // Returns the path to the Chromium icon. This is used to specify the icon
-  // to use for the taskbar group on Win 7.
-  static string16 GetChromiumIconPath();
+  // Returns the location (path and index) of the Chromium icon, (e.g.,
+  // "C:\path\to\chrome.exe,0"). This is used to specify the icon to use
+  // for the taskbar group on Win 7.
+  static string16 GetChromiumIconLocation();
 
   // Migrates existing chrome shortcuts by tagging them with correct app id.
   // see http://crbug.com/28104

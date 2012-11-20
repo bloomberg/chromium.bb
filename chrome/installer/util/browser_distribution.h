@@ -121,6 +121,11 @@ class BrowserDistribution {
 
   virtual bool CanCreateDesktopShortcuts();
 
+  // Returns the executable filename (not path) that contains the product icon.
+  virtual string16 GetIconFilename();
+
+  // Returns the index of the icon for the product, inside the file specified by
+  // GetIconFilename().
   virtual int GetIconIndex();
 
   virtual bool GetChromeChannel(string16* channel);

@@ -116,12 +116,16 @@ string16 GoogleChromeDistribution::GetVersionKey() {
   return string16();
 }
 
+string16 GoogleChromeDistribution::GetIconFilename() {
+  NOTREACHED();
+  return string16();
+}
+
 bool GoogleChromeDistribution::GetCommandExecuteImplClsid(
     string16* handler_class_uuid) {
   NOTREACHED();
   return false;
 }
-
 
 void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
     installer::ArchiveType archive_type,

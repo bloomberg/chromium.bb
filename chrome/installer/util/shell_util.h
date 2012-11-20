@@ -312,12 +312,9 @@ class ShellUtil {
       const ShellUtil::ShortcutProperties& properties,
       ShellUtil::ShortcutOperation operation);
 
-  // This method appends the Chrome icon index inside chrome.exe to the
-  // chrome.exe path passed in as input, to generate the full path for
-  // Chrome icon that can be used as value for Windows registry keys.
-  // |chrome_exe| full path to chrome.exe.
-  static string16 GetChromeIcon(BrowserDistribution* dist,
-                                const string16& chrome_exe);
+  // Returns the string "|icon_path|,|icon_index|" (see, for example,
+  // http://msdn.microsoft.com/library/windows/desktop/dd391573.aspx).
+  static string16 FormatIconLocation(const string16& icon_path, int icon_index);
 
   // This method returns the command to open URLs/files using chrome. Typically
   // this command is written to the registry under shell\open\command key.

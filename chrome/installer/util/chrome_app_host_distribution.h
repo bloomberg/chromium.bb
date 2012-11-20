@@ -53,7 +53,7 @@ class ChromeAppHostDistribution : public BrowserDistribution {
 
   virtual bool CanCreateDesktopShortcuts() OVERRIDE;
 
-  virtual int GetIconIndex() OVERRIDE;
+  virtual string16 GetIconFilename() OVERRIDE;
 
   virtual bool GetCommandExecuteImplClsid(
       string16* handler_class_uuid) OVERRIDE;

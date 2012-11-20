@@ -883,6 +883,7 @@
           'sources': [
             'browser/extensions/app_host/app_host.rc',
             'browser/extensions/app_host/app_host_main.cc',
+            'browser/extensions/app_host/app_host_resource.h',
             'browser/extensions/app_host/binaries_installer.cc',
             'browser/extensions/app_host/binaries_installer.h',
             'browser/extensions/app_host/update.cc',

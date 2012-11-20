@@ -538,6 +538,10 @@ string16 GoogleChromeDistribution::GetVersionKey() {
   return key;
 }
 
+string16 GoogleChromeDistribution::GetIconFilename() {
+  return installer::kChromeExe;
+}
+
 bool GoogleChromeDistribution::GetCommandExecuteImplClsid(
     string16* handler_class_uuid) {
   if (handler_class_uuid)

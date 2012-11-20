@@ -225,7 +225,13 @@ bool BrowserDistribution::CanCreateDesktopShortcuts() {
   return true;
 }
 
+string16 BrowserDistribution::GetIconFilename() {
+  return string16();
+}
+
 int BrowserDistribution::GetIconIndex() {
+  // Assuming that main icon appears first alphabetically in the resource file
+  // for GetIconFilename().
   return 0;
 }
 

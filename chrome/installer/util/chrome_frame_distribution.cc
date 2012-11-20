@@ -112,6 +112,14 @@ string16 ChromeFrameDistribution::GetVersionKey() {
   return key;
 }
 
+string16 ChromeFrameDistribution::GetIconFilename() {
+  return installer::kChromeExe;
+}
+
+int ChromeFrameDistribution::GetIconIndex() {
+  return 0;
+}
+
 bool ChromeFrameDistribution::CanSetAsDefault() {
   return false;
 }
