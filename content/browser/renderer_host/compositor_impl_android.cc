@@ -188,7 +188,8 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
     return;
 
   size_ = size;
-  host_->setViewportSize(size);
+  if (host_)
+    host_->setViewportSize(size);
   root_layer_->setBounds(size);
 }
 

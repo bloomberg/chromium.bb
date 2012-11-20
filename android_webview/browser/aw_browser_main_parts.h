@@ -9,6 +9,9 @@
 
 namespace android_webview {
 
+// TODO(joth): Remove this method when when http://crbug.com/161864 is closed.
+bool UseCompositorDirectDraw();
+
 class AwBrowserContext;
 
 class AwBrowserMainParts : public content::BrowserMainParts {

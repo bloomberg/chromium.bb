@@ -4,6 +4,7 @@
 
 #include "android_webview/native/aw_contents.h"
 
+#include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 #include "android_webview/common/aw_hit_test_data.h"
@@ -73,6 +74,31 @@ class AwContentsUserData : public base::SupportsUserData::Data {
   AwContents* contents_;
 };
 
+// Work-around for http://crbug.com/161864. TODO(joth): Remove this class when
+// that bug is closed.
+class NullCompositor : public content::Compositor {
+ public:
+  NullCompositor() {}
+  virtual ~NullCompositor() {}
+
+  // Compositor
+  virtual void SetRootLayer(WebKit::WebLayer* root) {}
+  virtual void SetWindowBounds(const gfx::Size& size) {}
+  virtual void SetVisible(bool visible) {}
+  virtual void SetWindowSurface(ANativeWindow* window) {}
+  virtual bool CompositeAndReadback(void *pixels, const gfx::Rect& rect) {
+    return false;
+  }
+  virtual void Composite() {}
+  virtual WebKit::WebGLId GenerateTexture(gfx::JavaBitmap& bitmap) { return 0; }
+  virtual WebKit::WebGLId GenerateCompressedTexture(gfx::Size& size,
+                                                    int data_size,
+                                                    void* data) { return 0; }
+  virtual void DeleteTexture(WebKit::WebGLId texture_id) {}
+  virtual void CopyTextureToBitmap(WebKit::WebGLId texture_id,
+                                   gfx::JavaBitmap& bitmap) {}
+};
+
 }  // namespace
 
 // static
@@ -86,7 +112,9 @@ AwContents::AwContents(JNIEnv* env,
                        bool private_browsing)
     : java_ref_(env, obj),
       web_contents_delegate_(
-          new AwWebContentsDelegate(env, web_contents_delegate)) {
+          new AwWebContentsDelegate(env, web_contents_delegate)),
+      view_visible_(false),
+      compositor_visible_(false) {
   android_webview::AwBrowserDependencyFactory* dependency_factory =
       android_webview::AwBrowserDependencyFactory::GetInstance();
 
@@ -98,6 +126,12 @@ AwContents::AwContents(JNIEnv* env,
 
   web_contents_->SetDelegate(web_contents_delegate_.get());
   render_view_host_ext_.reset(new AwRenderViewHostExt(web_contents_.get()));
+  if (UseCompositorDirectDraw()) {
+    compositor_.reset(content::Compositor::Create(this));
+  } else {
+    LOG(WARNING) << "Running on unsupported device: using null Compositor";
+    compositor_.reset(new NullCompositor);
+  }
 }
 
 AwContents::~AwContents() {
@@ -108,11 +142,29 @@ AwContents::~AwContents() {
 }
 
 void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
-  // TODO(joth): Do some drawing.
+  // TODO(joth): Use the |draw_info| parameters.
+  DLOG(INFO) << "Unimplemented AwContents::DrawGL params"
+      << " clip_left=" << draw_info->clip_left
+      << " clip_top=" << draw_info->clip_top
+      << " clip_right=" << draw_info->clip_right
+      << " clip_bottom=" << draw_info->clip_bottom;
+  if (compositor_visible_ != view_visible_) {
+    compositor_visible_ = view_visible_;
+    compositor_->SetVisible(compositor_visible_);
+  }
+  if (compositor_visible_ && draw_info->mode == AwDrawGLInfo::kModeDraw)
+    compositor_->Composite();
 }
 
 jint AwContents::GetWebContents(JNIEnv* env, jobject obj) {
   return reinterpret_cast<jint>(web_contents_.get());
+}
+
+void AwContents::DidInitializeContentViewCore(JNIEnv* env, jobject obj,
+                                              jint content_view_core) {
+  ContentViewCore* core = reinterpret_cast<ContentViewCore*>(content_view_core);
+  DCHECK(core == ContentViewCore::FromWebContents(web_contents_.get()));
+  compositor_->SetRootLayer(core->GetWebLayer());
 }
 
 void AwContents::Destroy(JNIEnv* env, jobject obj) {
@@ -309,6 +361,13 @@ void AwContents::OnFindResultReceived(int active_ordinal,
       env, obj.obj(), active_ordinal, match_count, finished);
 }
 
+void AwContents::ScheduleComposite() {
+  // TODO(joth): Call back out to framework attachFunctor (Java side) from here.
+}
+
+void AwContents::OnSwapBuffersCompleted() {
+}
+
 base::android::ScopedJavaLocalRef<jbyteArray>
     AwContents::GetCertificate(JNIEnv* env,
                                jobject obj) {
@@ -370,13 +429,27 @@ void AwContents::UpdateLastHitTestData(JNIEnv* env, jobject obj) {
 
 void AwContents::OnSizeChanged(JNIEnv* env, jobject obj,
                                int w, int h, int ow, int oh) {
-  // TODO(joth): Set Compositor size.
+  compositor_->SetWindowBounds(gfx::Size(w, h));
 }
 
 void AwContents::SetWindowViewVisibility(JNIEnv* env, jobject obj,
                                          bool window_visible,
                                          bool view_visible) {
-  // TODO(joth): Set the Compositor visibility.
+  view_visible_ = window_visible && view_visible_;
+  // TODO(joth): Request a DrawGL (kModeProcess) call, to tell the compositor.
+}
+
+void AwContents::OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h) {
+  // Seed the Compositor size here, as we'll only receive OnSizeChanged calls
+  // for a genuine change in size, not to set initial size. Note the |w| and |h|
+  // passed here are the Java view size, NOT window size (which correctly maps
+  // to the Compositor's "window" size).
+  compositor_->SetWindowBounds(gfx::Size(w, h));
+}
+
+void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {
+  view_visible_ = false;
+  // TODO(joth): Request a DrawGL (kModeProcess) call, to tell the compositor.
 }
 
 }  // namespace android_webview

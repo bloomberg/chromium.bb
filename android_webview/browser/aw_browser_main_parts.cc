@@ -6,6 +6,8 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_result_codes.h"
+#include "base/android/build_info.h"
+#include "content/public/browser/android/compositor.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
@@ -15,6 +17,10 @@
 #include "ui/base/resource/resource_bundle.h"
 
 namespace android_webview {
+
+bool UseCompositorDirectDraw() {
+  return base::android::BuildInfo::GetInstance()->sdk_int() >= 16;
+}
 
 AwBrowserMainParts::AwBrowserMainParts(AwBrowserContext* browser_context)
     : browser_context_(browser_context) {
@@ -26,6 +32,9 @@ AwBrowserMainParts::~AwBrowserMainParts() {
 void AwBrowserMainParts::PreEarlyInitialization() {
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());
+  content::Compositor::InitializeWithFlags(
+      UseCompositorDirectDraw() ?
+          content::Compositor::DIRECT_CONTEXT_ON_DRAW_THREAD : 0);
 
   // Android WebView does not use default MessageLoop. It has its own
   // Android specific MessageLoop. ALso see MainMessageLoopRun.

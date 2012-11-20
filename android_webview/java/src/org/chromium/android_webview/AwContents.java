@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.net.http.SslCertificate;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -239,6 +240,8 @@ public class AwContents {
         setInterceptNavigationDelegate(new InterceptNavigationDelegateImpl());
 
         mPossiblyStaleHitTestData = new HitTestData();
+        nativeDidInitializeContentViewCore(mNativeAwContents,
+                mContentViewCore.getNativeContentViewCore());
     }
 
     public ContentViewCore getContentViewCore() {
@@ -567,12 +570,15 @@ public class AwContents {
      */
     public void onAttachedToWindow() {
         mContentViewCore.onAttachedToWindow();
+        nativeOnAttachedToWindow(mNativeAwContents, mContainerView.getWidth(),
+                mContainerView.getHeight());
     }
 
     /**
      * @see android.view.View#onDetachedFromWindow()
      */
     public void onDetachedFromWindow() {
+        nativeOnDetachedFromWindow(mNativeAwContents);
         mContentViewCore.onDetachedFromWindow();
     }
 
@@ -742,6 +748,8 @@ public class AwContents {
     private static native int nativeGetAwDrawGLFunction();
 
     private native int nativeGetWebContents(int nativeAwContents);
+    private native void nativeDidInitializeContentViewCore(int nativeAwContents,
+            int nativeContentViewCore);
 
     private native void nativeDocumentHasImages(int nativeAwContents, Message message);
     private native void nativeGenerateMHTML(
@@ -763,4 +771,6 @@ public class AwContents {
     private native void nativeOnSizeChanged(int nativeAwContents, int w, int h, int ow, int oh);
     private native void nativeSetWindowViewVisibility(int nativeAwContents, boolean windowVisible,
             boolean viewVisible);
+    private native void nativeOnAttachedToWindow(int nativeAwContents, int w, int h);
+    private native void nativeOnDetachedFromWindow(int nativeAwContents);
 }
