@@ -1102,10 +1102,11 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode(
   command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);
 #endif
 
-  // Disable explicit fullscreen toggling when in metro snap mode.
-  bool fullscreen_enabled = !browser_->is_type_panel() &&
-                            !browser_->is_app() &&
-                            fullscreen_mode != FULLSCREEN_METRO_SNAP;
+  // Disable explicit fullscreen toggling for app-panels and when in metro snap
+  // mode.
+  bool fullscreen_enabled =
+      !(browser_->is_type_panel() && browser_->is_app()) &&
+      fullscreen_mode != FULLSCREEN_METRO_SNAP;
 #if defined(OS_MACOSX)
   // The Mac implementation doesn't support switching to fullscreen while
   // a tab modal dialog is displayed.
