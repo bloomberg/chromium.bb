@@ -32,7 +32,7 @@ sys.path.append(os.path.join(BASE_PATH, ".."))
 
 SS_USAGE = "python %prog [options] path/to/test [gtest_args]"
 SS_DEFAULT_NUM_CORES = 4
-SS_DEFAULT_SHARDS_PER_CORE = 5  # num_shards = cores * SHARDS_PER_CORE
+SS_DEFAULT_SHARDS_PER_CORE = 1  # num_shards = cores * SHARDS_PER_CORE
 SS_DEFAULT_RUNS_PER_CORE = 1  # num_workers = cores * RUNS_PER_CORE
 SS_DEFAULT_RETRY_PERCENT = 5  # --retry-failed ignored if more than 5% fail
 SS_DEFAULT_TIMEOUT = 530  # Slightly less than buildbot's default 600 seconds
