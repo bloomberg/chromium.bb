@@ -32,12 +32,13 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   // MediaTransferProtocolDaemonClient override.
-  virtual void EnumerateStorage(const EnumerateStorageCallback& callback,
-                                const ErrorCallback& error_callback) OVERRIDE {
-    dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kEnumerateStorage);
+  virtual void EnumerateStorages(const EnumerateStoragesCallback& callback,
+                                 const ErrorCallback& error_callback) OVERRIDE {
+    dbus::MethodCall method_call(mtpd::kMtpdInterface,
+                                 mtpd::kEnumerateStorages);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnEnumerateStorage,
+        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnEnumerateStorages,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback,
                    error_callback));
@@ -240,11 +241,11 @@ class MediaTransferProtocolDaemonClientImpl
     bool is_attach;
   };
 
-  // Handles the result of EnumerateStorage and calls |callback| or
+  // Handles the result of EnumerateStorages and calls |callback| or
   // |error_callback|.
-  void OnEnumerateStorage(const EnumerateStorageCallback& callback,
-                          const ErrorCallback& error_callback,
-                          dbus::Response* response) {
+  void OnEnumerateStorages(const EnumerateStoragesCallback& callback,
+                           const ErrorCallback& error_callback,
+                           dbus::Response* response) {
     if (!response) {
       error_callback.Run();
       return;
@@ -334,7 +335,7 @@ class MediaTransferProtocolDaemonClientImpl
     callback.Run(file_entries);
   }
 
-  // Handles the result of ReadFileByPath/Id and calls |callback| or
+  // Handles the result of ReadFileChunkByPath/Id and calls |callback| or
   // |error_callback|.
   void OnReadFile(const ReadFileCallback& callback,
                   const ErrorCallback& error_callback,
@@ -414,8 +415,8 @@ class MediaTransferProtocolDaemonClientStubImpl
   MediaTransferProtocolDaemonClientStubImpl() {}
   virtual ~MediaTransferProtocolDaemonClientStubImpl() {}
 
-  virtual void EnumerateStorage(
-      const EnumerateStorageCallback& callback,
+  virtual void EnumerateStorages(
+      const EnumerateStoragesCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {}
   virtual void GetStorageInfo(
       const std::string& storage_name,

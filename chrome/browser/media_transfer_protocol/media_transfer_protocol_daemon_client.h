@@ -40,7 +40,7 @@ class MediaTransferProtocolDaemonClient {
   // A callback to handle the result of EnumerateAutoMountableDevices.
   // The argument is the enumerated storage names.
   typedef base::Callback<void(const std::vector<std::string>& storage_names)
-                         > EnumerateStorageCallback;
+                         > EnumerateStoragesCallback;
 
   // A callback to handle the result of GetStorageInfo.
   // The argument is the information about the specified storage.
@@ -77,10 +77,10 @@ class MediaTransferProtocolDaemonClient {
 
   virtual ~MediaTransferProtocolDaemonClient();
 
-  // Calls EnumerateStorage method. |callback| is called after the
+  // Calls EnumerateStorages method. |callback| is called after the
   // method call succeeds, otherwise, |error_callback| is called.
-  virtual void EnumerateStorage(
-      const EnumerateStorageCallback& callback,
+  virtual void EnumerateStorages(
+      const EnumerateStoragesCallback& callback,
       const ErrorCallback& error_callback) = 0;
 
   // Calls GetStorageInfo method. |callback| is called after the method call

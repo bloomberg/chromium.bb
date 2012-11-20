@@ -66,8 +66,8 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     mtp_client_->SetUpConnections(
         base::Bind(&MediaTransferProtocolManagerImpl::OnStorageChanged,
                    weak_ptr_factory_.GetWeakPtr()));
-    mtp_client_->EnumerateStorage(
-        base::Bind(&MediaTransferProtocolManagerImpl::OnEnumerateStorage,
+    mtp_client_->EnumerateStorages(
+        base::Bind(&MediaTransferProtocolManagerImpl::OnEnumerateStorages,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&base::DoNothing));
   }
@@ -296,7 +296,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                       StorageChanged(false /* detach */, storage_name));
   }
 
-  void OnEnumerateStorage(const std::vector<std::string>& storage_names) {
+  void OnEnumerateStorages(const std::vector<std::string>& storage_names) {
     for (size_t i = 0; i < storage_names.size(); ++i) {
       mtp_client_->GetStorageInfo(
           storage_names[i],
@@ -311,7 +311,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     const std::string& storage_name = storage_info.storage_name();
     if (ContainsKey(storage_info_map_, storage_name)) {
       // This should not happen, since MediaTransferProtocolManagerImpl should
-      // only call EnumerateStorage() once, which populates |storage_info_map_|
+      // only call EnumerateStorages() once, which populates |storage_info_map_|
       // with the already-attached devices.
       // After that, all incoming signals are either for new storage
       // attachments, which should not be in |storage_info_map_|, or for
