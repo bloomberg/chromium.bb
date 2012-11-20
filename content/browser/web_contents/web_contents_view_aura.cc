@@ -232,6 +232,21 @@ int ConvertAuraEventFlagsToWebInputEventModifiers(int aura_event_flags) {
   return web_input_event_modifiers;
 }
 
+// Given the scrolled amount (|scroll|) and the threshold (|threshold|), returns
+// the amount the window should be translated.
+int GetResistedScrollAmount(int scroll, int threshold) {
+  CHECK_GE(scroll, 0);
+  if (scroll <= threshold)
+    return scroll / 2;
+
+  // Start resisting after the threshold.
+  int resisted = threshold / 2;
+  float extra = scroll - threshold;
+  while ((extra /= 1.3f) > 1.f)
+    resisted += 1;
+  return resisted;
+}
+
 }  // namespace
 
 
@@ -368,15 +383,9 @@ gfx::Vector2d WebContentsViewAura::GetTranslationForOverscroll(int delta_x,
   if (current_overscroll_gesture_ == OVERSCROLL_NORTH ||
       current_overscroll_gesture_ == OVERSCROLL_SOUTH) {
     // For vertical overscroll, always do a resisted drag.
-    const int kVerticalOverscrollAmount = 40;
-    if (abs(delta_y) <= kVerticalOverscrollAmount)
-      return gfx::Vector2d(0, delta_y);
-
-    // Start resisting after the threshold.
-    int scroll = kVerticalOverscrollAmount;
-    int resist = abs(delta_y) - scroll;
-    while (resist /= 2)
-      scroll += 3;
+    const int kVerticalOverscrollAmount = 30;
+    int scroll = GetResistedScrollAmount(abs(delta_y),
+                                         kVerticalOverscrollAmount);
     return gfx::Vector2d(0, delta_y < 0 ? -scroll : scroll);
   }
 
@@ -391,15 +400,9 @@ gfx::Vector2d WebContentsViewAura::GetTranslationForOverscroll(int delta_x,
       return gfx::Vector2d(delta_x, 0);
   }
 
-  const int kHorizontalOverscrollAmount = 60;
-  if (abs(delta_x) < kHorizontalOverscrollAmount)
-    return gfx::Vector2d(delta_x, 0);
-
-  // Start resisting after the threshold.
-  int scroll = kHorizontalOverscrollAmount;
-  int resist = abs(delta_x) - scroll;
-  while (resist /= 2)
-    scroll += 3;
+  const int kHorizontalOverscrollAmount = 30;
+  int scroll = GetResistedScrollAmount(abs(delta_x),
+                                       kHorizontalOverscrollAmount);
   return gfx::Vector2d(delta_x < 0 ? -scroll : scroll, 0);
 }
 
@@ -636,9 +639,9 @@ void WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
     return;
 
   aura::Window* target = GetWindowToAnimateForOverscroll();
-  gfx::Vector2d translate = GetTranslationForOverscroll(delta_x, delta_y);
   ui::ScopedLayerAnimationSettings settings(target->layer()->GetAnimator());
-  settings.SetPreemptionStrategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+  settings.SetPreemptionStrategy(ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+  gfx::Vector2d translate = GetTranslationForOverscroll(delta_x, delta_y);
   gfx::Transform transform;
   transform.SetTranslate(translate.x(), translate.y());
   target->SetTransform(transform);
