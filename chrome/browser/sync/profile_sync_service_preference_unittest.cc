@@ -487,6 +487,60 @@ TEST_F(ProfileSyncServicePreferenceTest, ManagedPreferences) {
   EXPECT_TRUE(sync_value->Equals(prefs_->GetUserPref(prefs::kHomePage)));
 }
 
+// List preferences have special handling at association time due to our ability
+// to merge the local and sync value. Make sure the merge logic doesn't merge
+// managed preferences.
+TEST_F(ProfileSyncServicePreferenceTest, ManagedListPreferences) {
+  // Make the list of urls to restore on startup managed.
+  ListValue managed_value;
+  managed_value.Append(Value::CreateStringValue(example_url0_));
+  managed_value.Append(Value::CreateStringValue(example_url1_));
+  prefs_->SetManagedPref(prefs::kURLsToRestoreOnStartup,
+                         managed_value.DeepCopy());
+
+  // Set a cloud version.
+  PreferenceValues cloud_data;
+  scoped_ptr<ListValue> urls_to_restore(new ListValue);
+  urls_to_restore->Append(Value::CreateStringValue(example_url1_));
+  urls_to_restore->Append(Value::CreateStringValue(example_url2_));
+  cloud_data[prefs::kURLsToRestoreOnStartup] = urls_to_restore.release();
+
+  // Start sync and verify the synced value didn't get merged.
+  AddPreferenceEntriesHelper helper(this, cloud_data);
+  ASSERT_TRUE(StartSyncService(helper.callback(), false));
+  ASSERT_TRUE(helper.success());
+  EXPECT_TRUE(cloud_data[prefs::kURLsToRestoreOnStartup]->Equals(
+          GetSyncedValue(prefs::kURLsToRestoreOnStartup)));
+
+  // Changing the user's urls to restore on startup pref should not sync
+  // anything.
+  ListValue user_value;
+  user_value.Append(Value::CreateStringValue("http://chromium.org"));
+  prefs_->SetUserPref(prefs::kURLsToRestoreOnStartup, user_value.DeepCopy());
+  EXPECT_TRUE(cloud_data[prefs::kURLsToRestoreOnStartup]->Equals(
+          GetSyncedValue(prefs::kURLsToRestoreOnStartup)));
+
+  // An incoming sync transaction should change the user value, not the managed
+  // value.
+  ListValue sync_value;
+  sync_value.Append(Value::CreateStringValue("http://crbug.com"));
+  int64 node_id = SetSyncedValue(prefs::kURLsToRestoreOnStartup, sync_value);
+  ASSERT_NE(node_id, syncer::kInvalidId);
+  {
+    syncer::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    change_processor_->ApplyChangesFromSyncModel(
+        &trans, 0,
+        ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
+            node_id, ChangeRecord::ACTION_UPDATE));
+  }
+  change_processor_->CommitChangesFromSyncModel();
+
+  EXPECT_TRUE(managed_value.Equals(
+          prefs_->GetManagedPref(prefs::kURLsToRestoreOnStartup)));
+  EXPECT_TRUE(sync_value.Equals(
+          prefs_->GetUserPref(prefs::kURLsToRestoreOnStartup)));
+}
+
 TEST_F(ProfileSyncServicePreferenceTest, DynamicManagedPreferences) {
   CreateRootHelper create_root(this, syncer::PREFERENCES);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));

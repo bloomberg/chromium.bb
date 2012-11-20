@@ -36,59 +36,63 @@ void PrefModelAssociator::InitPrefAndAssociate(
     const syncer::SyncData& sync_pref,
     const std::string& pref_name,
     syncer::SyncChangeList* sync_changes) {
-  const PrefService::Preference* pref =
-      pref_service_->FindPreference(pref_name.c_str());
-  DCHECK(pref);
+  const Value* user_pref_value = pref_service_->GetUserPrefValue(
+      pref_name.c_str());
   VLOG(1) << "Associating preference " << pref_name;
 
-  base::JSONReader reader;
   if (sync_pref.IsValid()) {
-    // The server has a value for the preference, we have to reconcile it with
-    // ours.
     const sync_pb::PreferenceSpecifics& preference =
         sync_pref.GetSpecifics().preference();
-    DCHECK_EQ(pref->name(), preference.name());
+    DCHECK_EQ(pref_name, preference.name());
 
-    scoped_ptr<Value> value(reader.ReadToValue(preference.value()));
-    if (!value.get()) {
+    base::JSONReader reader;
+    scoped_ptr<Value> sync_value(reader.ReadToValue(preference.value()));
+    if (!sync_value.get()) {
       LOG(ERROR) << "Failed to deserialize preference value: "
                  << reader.GetErrorMessage();
       return;
     }
 
-    // Merge the server value of this preference with the local value.
-    scoped_ptr<Value> new_value(MergePreference(*pref, *value));
+    if (user_pref_value) {
+      // We have both server and local values. Merge them.
+      scoped_ptr<Value> new_value(
+          MergePreference(pref_name, *user_pref_value, *sync_value));
 
-    // Update the local preference based on what we got from the
-    // sync server. Note: this only updates the user value store, which is
-    // ignored if the preference is policy controlled.
-    if (new_value->IsType(Value::TYPE_NULL)) {
-      pref_service_->ClearPref(pref_name.c_str());
-    } else if (!new_value->IsType(pref->GetType())) {
-      LOG(WARNING) << "Synced value for " << preference.name()
-                   << " is of type " << new_value->GetType()
-                   << " which doesn't match pref type " << pref->GetType();
-    } else if (!pref->GetValue()->Equals(new_value.get())) {
-      pref_service_->Set(pref_name.c_str(), *new_value);
-    }
-
-    // If the merge resulted in an updated value, inform the syncer.
-    if (!value->Equals(new_value.get())) {
-      syncer::SyncData sync_data;
-      if (!CreatePrefSyncData(pref->name(), *new_value, &sync_data)) {
-        LOG(ERROR) << "Failed to update preference.";
-        return;
+      // Update the local preference based on what we got from the
+      // sync server. Note: this only updates the user value store, which is
+      // ignored if the preference is policy controlled.
+      if (new_value->IsType(Value::TYPE_NULL)) {
+        pref_service_->ClearPref(pref_name.c_str());
+      } else if (!new_value->IsType(user_pref_value->GetType())) {
+        LOG(WARNING) << "Synced value for " << preference.name()
+                     << " is of type " << new_value->GetType()
+                     << " which doesn't match pref type "
+                     << user_pref_value->GetType();
+      } else if (!user_pref_value->Equals(new_value.get())) {
+        pref_service_->Set(pref_name.c_str(), *new_value);
       }
-      sync_changes->push_back(
-          syncer::SyncChange(FROM_HERE,
-                             syncer::SyncChange::ACTION_UPDATE,
-                             sync_data));
+
+      // If the merge resulted in an updated value, inform the syncer.
+      if (!sync_value->Equals(new_value.get())) {
+        syncer::SyncData sync_data;
+        if (!CreatePrefSyncData(pref_name, *new_value, &sync_data)) {
+          LOG(ERROR) << "Failed to update preference.";
+          return;
+        }
+        sync_changes->push_back(
+            syncer::SyncChange(FROM_HERE,
+                               syncer::SyncChange::ACTION_UPDATE,
+                               sync_data));
+      }
+    } else {
+      // Only a server value exists. Just set the local user value.
+      pref_service_->Set(pref_name.c_str(), *sync_value);
     }
-  } else if (pref->IsUserControlled()) {
+  } else if (user_pref_value) {
     // The server does not know about this preference and should be added
     // to the syncer's database.
     syncer::SyncData sync_data;
-    if (!CreatePrefSyncData(pref->name(), *pref->GetValue(), &sync_data)) {
+    if (!CreatePrefSyncData(pref_name, *user_pref_value, &sync_data)) {
       LOG(ERROR) << "Failed to update preference.";
       return;
     }
@@ -176,24 +180,25 @@ void PrefModelAssociator::StopSyncing(syncer::ModelType type) {
   pref_service_->OnIsSyncingChanged();
 }
 
-Value* PrefModelAssociator::MergePreference(
-    const PrefService::Preference& local_pref,
+scoped_ptr<Value> PrefModelAssociator::MergePreference(
+    const std::string& name,
+    const Value& local_value,
     const Value& server_value) {
-  const std::string& name(local_pref.name());
   if (name == prefs::kURLsToRestoreOnStartup ||
       name == prefs::kDesktopNotificationAllowedOrigins ||
       name == prefs::kDesktopNotificationDeniedOrigins) {
-    return MergeListValues(*local_pref.GetValue(), server_value);
+    return scoped_ptr<Value>(MergeListValues(local_value, server_value)).Pass();
   }
 
   if (name == prefs::kContentSettingsPatterns ||
       name == prefs::kGeolocationContentSettings ||
       name == prefs::kContentSettingsPatternPairs) {
-    return MergeDictionaryValues(*local_pref.GetValue(), server_value);
+    return scoped_ptr<Value>(
+        MergeDictionaryValues(local_value, server_value)).Pass();
   }
 
   // If this is not a specially handled preference, server wins.
-  return server_value.DeepCopy();
+  return scoped_ptr<Value>(server_value.DeepCopy()).Pass();
 }
 
 bool PrefModelAssociator::CreatePrefSyncData(

@@ -74,13 +74,14 @@ class PrefModelAssociator
 
   void SetPrefService(PrefService* pref_service);
 
-  // Merges the value of local_pref into the supplied server_value and returns
+  // Merges the local_value into the supplied server_value and returns
   // the result (caller takes ownership). If there is a conflict, the server
   // value always takes precedence. Note that only certain preferences will
   // actually be merged, all others will return a copy of the server value. See
   // the method's implementation for details.
-  static base::Value* MergePreference(
-      const PrefService::Preference& local_pref,
+  static scoped_ptr<base::Value> MergePreference(
+      const std::string& name,
+      const base::Value& local_value,
       const base::Value& server_value);
 
   // Fills |sync_data| with a sync representation of the preference data
