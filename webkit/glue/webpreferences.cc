@@ -440,6 +440,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setDeferredImageDecodingEnabled(deferred_image_decoding_enabled);
 
 #if defined(OS_ANDROID)
+  settings->setAllowCustomScrollbarInMainFrame(false);
   settings->setTextAutosizingEnabled(text_autosizing_enabled);
   settings->setTextAutosizingFontScaleFactor(font_scale_factor);
   web_view->setIgnoreViewportTagMaximumScale(force_enable_zoom);
