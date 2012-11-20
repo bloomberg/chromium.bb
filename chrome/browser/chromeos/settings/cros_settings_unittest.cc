@@ -119,7 +119,7 @@ TEST_F(CrosSettingsTest, SetWhitelist) {
   // Setting the whitelist should also switch the value of
   // kAccountsPrefAllowNewUser to false.
   base::ListValue whitelist;
-  whitelist.Append(base::Value::CreateStringValue("me@owner"));
+  whitelist.Append(new base::StringValue("me@owner"));
   AddExpectation(kAccountsPrefAllowNewUser,
                  base::Value::CreateBooleanValue(false));
   AddExpectation(kAccountsPrefUsers, whitelist.DeepCopy());
@@ -179,7 +179,7 @@ TEST_F(CrosSettingsTest, SetWhitelistAndNoNewUsers) {
   // Setting the whitelist should allow us to set kAccountsPrefAllowNewUser to
   // false (which is the implicit value too).
   base::ListValue whitelist;
-  whitelist.Append(base::Value::CreateStringValue("me@owner"));
+  whitelist.Append(new base::StringValue("me@owner"));
   AddExpectation(kAccountsPrefUsers, whitelist.DeepCopy());
   AddExpectation(kAccountsPrefAllowNewUser,
                  base::Value::CreateBooleanValue(false));
@@ -209,10 +209,10 @@ TEST_F(CrosSettingsTest, SetEphemeralUsersEnabled) {
 
 TEST_F(CrosSettingsTest, FindEmailInList) {
   base::ListValue list;
-  list.Append(base::Value::CreateStringValue("user@example.com"));
-  list.Append(base::Value::CreateStringValue("nodomain"));
-  list.Append(base::Value::CreateStringValue("with.dots@gmail.com"));
-  list.Append(base::Value::CreateStringValue("Upper@example.com"));
+  list.Append(new base::StringValue("user@example.com"));
+  list.Append(new base::StringValue("nodomain"));
+  list.Append(new base::StringValue("with.dots@gmail.com"));
+  list.Append(new base::StringValue("Upper@example.com"));
 
   CrosSettings* cs = &settings_;
   cs->Set(kAccountsPrefUsers, list);

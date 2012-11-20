@@ -86,7 +86,7 @@ class WallpaperManagerBrowserTest : public CrosInProcessBrowserTest,
   // Sets |username| wallpaper.
   void SetUserWallpaper(const std::string& username) {
     ListPrefUpdate users_pref(local_state_, "LoggedInUsers");
-    users_pref->AppendIfNotPresent(base::Value::CreateStringValue(username));
+    users_pref->AppendIfNotPresent(new base::StringValue(username));
     WallpaperManager::Get()->SetUserWallpaper(username);
   }
 

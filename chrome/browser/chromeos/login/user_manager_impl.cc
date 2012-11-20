@@ -174,13 +174,13 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
   prefs_users_update->Clear();
 
   // Make sure this user is first.
-  prefs_users_update->Append(Value::CreateStringValue(email));
+  prefs_users_update->Append(new base::StringValue(email));
   UserList::iterator logged_in_user = users_.end();
   for (UserList::iterator it = users_.begin(); it != users_.end(); ++it) {
     std::string user_email = (*it)->email();
     // Skip the most recent user.
     if (email != user_email)
-      prefs_users_update->Append(Value::CreateStringValue(user_email));
+      prefs_users_update->Append(new base::StringValue(user_email));
     else
       logged_in_user = it;
   }
@@ -369,7 +369,7 @@ void UserManagerImpl::SaveUserDisplayName(const std::string& username,
   DictionaryPrefUpdate display_name_update(local_state, kUserDisplayName);
   display_name_update->SetWithoutPathExpansion(
       username,
-      base::Value::CreateStringValue(display_name));
+      new base::StringValue(display_name));
 }
 
 string16 UserManagerImpl::GetUserDisplayName(
@@ -397,7 +397,7 @@ void UserManagerImpl::SaveUserDisplayEmail(const std::string& username,
   DictionaryPrefUpdate display_email_update(local_state, kUserDisplayEmail);
   display_email_update->SetWithoutPathExpansion(
       username,
-      base::Value::CreateStringValue(display_email));
+      new base::StringValue(display_email));
 }
 
 std::string UserManagerImpl::GetUserDisplayEmail(
@@ -691,7 +691,7 @@ void UserManagerImpl::RemoveUserFromListInternal(const std::string& email) {
     std::string user_email = (*it)->email();
     // Skip user that we would like to delete.
     if (email != user_email)
-      prefs_users_update->Append(Value::CreateStringValue(user_email));
+      prefs_users_update->Append(new base::StringValue(user_email));
     else
       user_to_remove = it;
   }

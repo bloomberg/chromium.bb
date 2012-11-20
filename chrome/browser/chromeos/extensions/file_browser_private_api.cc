@@ -1346,7 +1346,7 @@ bool AddMountFunction::RunImpl() {
   }
 
   // Set default return source path to the empty string.
-  SetResult(Value::CreateStringValue(""));
+  SetResult(new base::StringValue(""));
 
   chromeos::MountType mount_type =
       DiskMountManager::MountTypeFromString(mount_type_str);
@@ -1361,7 +1361,7 @@ bool AddMountFunction::RunImpl() {
       // Pass back the drive mount point path as source path.
       const std::string& drive_path =
           drive::util::GetDriveMountPointPathAsString();
-      SetResult(Value::CreateStringValue(drive_path));
+      SetResult(new base::StringValue(drive_path));
       FileBrowserEventRouterFactory::GetForProfile(profile_)->
           MountDrive(base::Bind(&AddMountFunction::SendResponse,
                                 this,
@@ -1419,7 +1419,7 @@ void AddMountFunction::OnMountedStateSet(const std::string& mount_type,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   // Pass back the actual source path of the mount point.
-  SetResult(Value::CreateStringValue(file_path.value()));
+  SetResult(new base::StringValue(file_path.value()));
   SendResponse(true);
   // MountPath() takes a std::string.
   disk_mount_manager->MountPath(file_path.AsUTF8Unsafe(),
@@ -2428,9 +2428,9 @@ void GetFileLocationsFunction::GetLocalPathsResponseOnUIThread(
   ListValue* locations = new ListValue;
   for (size_t i = 0; i < files.size(); ++i) {
     if (drive::util::IsUnderDriveMountPoint(files[i].file_path)) {
-      locations->Append(Value::CreateStringValue("drive"));
+      locations->Append(new base::StringValue("drive"));
     } else {
-      locations->Append(Value::CreateStringValue("local"));
+      locations->Append(new base::StringValue("local"));
     }
   }
 
@@ -2517,7 +2517,7 @@ void GetDriveFilesFunction::OnFileReady(
   FilePath drive_path = remaining_drive_paths_.front();
 
   if (error == drive::DRIVE_FILE_OK) {
-    local_paths_->Append(Value::CreateStringValue(local_path.value()));
+    local_paths_->Append(new base::StringValue(local_path.value()));
     DVLOG(1) << "Got " << drive_path.value() << " as " << local_path.value();
 
     // TODO(benchan): If the file is a hosted document, a temporary JSON file
@@ -2526,7 +2526,7 @@ void GetDriveFilesFunction::OnFileReady(
     // file_manager.js to manage the lifetime of the temporary file.
     // See crosbug.com/28058.
   } else {
-    local_paths_->Append(Value::CreateStringValue(""));
+    local_paths_->Append(new base::StringValue(""));
     DVLOG(1) << "Failed to get " << drive_path.value()
              << " with error code: " << error;
   }

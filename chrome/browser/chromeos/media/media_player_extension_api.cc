@@ -46,7 +46,7 @@ static ListValue* GetPlaylistItems() {
   MediaPlayer::UrlVector const& src = MediaPlayer::GetInstance()->GetPlaylist();
 
   for (size_t i = 0; i < src.size(); i++) {
-    result->Append(Value::CreateStringValue(src[i].spec()));
+    result->Append(new base::StringValue(src[i].spec()));
   }
   return result;
 }

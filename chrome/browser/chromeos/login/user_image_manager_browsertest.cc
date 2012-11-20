@@ -72,7 +72,7 @@ class UserImageManagerTest : public CrosInProcessBrowserTest,
   // Adds given user to Local State, if not there.
   void AddUser(const std::string& username) {
     ListPrefUpdate users_pref(local_state_, "LoggedInUsers");
-    users_pref->AppendIfNotPresent(base::Value::CreateStringValue(username));
+    users_pref->AppendIfNotPresent(new base::StringValue(username));
   }
 
   // Logs in |username|.
@@ -96,7 +96,7 @@ class UserImageManagerTest : public CrosInProcessBrowserTest,
     image_properties->Set(
         "index", base::Value::CreateIntegerValue(image_index));
     image_properties->Set(
-        "path" , base::Value::CreateStringValue(image_path.value()));
+        "path" , new base::StringValue(image_path.value()));
     images_pref->SetWithoutPathExpansion(username, image_properties);
   }
 

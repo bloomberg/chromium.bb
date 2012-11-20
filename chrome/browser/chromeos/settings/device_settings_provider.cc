@@ -375,7 +375,7 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
       whitelist_proto.user_whitelist();
   for (RepeatedPtrField<std::string>::const_iterator it = whitelist.begin();
        it != whitelist.end(); ++it) {
-    list->Append(base::Value::CreateStringValue(*it));
+    list->Append(new base::StringValue(*it));
   }
   new_values_cache->SetValue(kAccountsPrefUsers, list);
 
@@ -445,7 +445,7 @@ void DeviceSettingsProvider::DecodeKioskPolicies(
     const RepeatedPtrField<std::string>& urls = urls_proto.start_up_urls();
     for (RepeatedPtrField<std::string>::const_iterator it = urls.begin();
          it != urls.end(); ++it) {
-      list->Append(base::Value::CreateStringValue(*it));
+      list->Append(new base::StringValue(*it));
     }
     new_values_cache->SetValue(kStartUpUrls, list);
   }
