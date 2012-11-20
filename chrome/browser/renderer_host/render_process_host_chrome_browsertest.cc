@@ -276,9 +276,8 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTestWithCommandLine,
 
 // Ensure that DevTools opened to debug DevTools is launched in a separate
 // process when --process-per-tab is set. See crbug.com/69873.
-// Disabled due to memory errors being reported, see http://crbug.com/161961.
 IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
-                       DISABLED_DevToolsOnSelfInOwnProcessPPT) {
+                       DevToolsOnSelfInOwnProcessPPT) {
   CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   parsed_command_line.AppendSwitch(switches::kProcessPerTab);
 
@@ -313,9 +312,8 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
 
 // Ensure that DevTools opened to debug DevTools is launched in a separate
 // process. See crbug.com/69873.
-// Disabled due to memory errors being reported, see http://crbug.com/161961.
 IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
-                       DISABLED_DevToolsOnSelfInOwnProcess) {
+                       DevToolsOnSelfInOwnProcess) {
   int tab_count = 1;
   int host_count = 1;
 

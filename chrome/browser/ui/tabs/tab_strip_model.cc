@@ -1130,7 +1130,9 @@ void TabStripModel::InternalCloseTab(WebContents* contents,
 
   // Deleting the WebContents will call back to us via
   // NotificationObserver and detach it.
-  delete contents;
+  TabContents* tab_contents = TabContents::FromWebContents(contents);
+  DCHECK(tab_contents);
+  delete tab_contents;
 }
 
 TabContents* TabStripModel::GetTabContentsAtImpl(int index) const {

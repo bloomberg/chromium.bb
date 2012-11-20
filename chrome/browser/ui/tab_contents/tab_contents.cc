@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
@@ -235,9 +234,8 @@ Profile* TabContents::profile() const {
 // WebContentsObserver overrides
 
 void TabContents::WebContentsDestroyed(WebContents* tab) {
-  if (!in_destructor_) {
-    // The owned WebContents is being destroyed independently, so delete this.
-    ignore_result(web_contents_.release());
-    delete this;
-  }
+  // Destruction of the WebContents should only be done by us from our
+  // destructor. Otherwise it's very likely we (or one of the helpers we own)
+  // will attempt to access the WebContents and we'll crash.
+  DCHECK(in_destructor_);
 }
