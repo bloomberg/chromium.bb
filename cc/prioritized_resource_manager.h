@@ -119,6 +119,10 @@ private:
         EvictOnlyRecyclable,
         EvictAnything,
     };
+    enum UnlinkPolicy {
+        DoNotUnlinkBackings,
+        UnlinkBackings,
+    };
 
     // Compare textures. Highest priority first.
     static inline bool compareTextures(PrioritizedResource* a, PrioritizedResource* b)
@@ -148,7 +152,11 @@ private:
 
     PrioritizedResourceManager(int pool, const Proxy* proxy);
 
-    bool evictBackingsToReduceMemory(size_t limitBytes, int priorityCutoff, EvictionPolicy, ResourceProvider*);
+    bool evictBackingsToReduceMemory(size_t limitBytes,
+                                     int priorityCutoff,
+                                     EvictionPolicy,
+                                     UnlinkPolicy,
+                                     ResourceProvider*);
     PrioritizedResource::Backing* createBacking(gfx::Size, GLenum format, ResourceProvider*);
     void evictFirstBackingResource(ResourceProvider*);
     void deleteUnlinkedEvictedBackings();
