@@ -22,7 +22,7 @@
   var api_filter_items = document.getElementById('api_filter_items');
   api_filter_items.addEventListener('click', function(event) {
     if (event.target instanceof HTMLAnchorElement) {
-      search_box.value = 'chrome.' + event.target.innerText;
+      search_box.value = event.target.innerText;
       filterSamples();
     }
   });
