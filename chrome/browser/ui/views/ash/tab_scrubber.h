@@ -7,7 +7,6 @@
 
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/aura/window.h"
 #include "ui/base/events/event_handler.h"
 
 class Browser;
@@ -27,11 +26,7 @@ class TabScrubber : public ui::EventHandler,
   virtual ~TabScrubber();
 
   // ui::EventHandler overrides:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
-  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,

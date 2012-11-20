@@ -74,11 +74,7 @@ class ShelfLayoutManager::AutoHideEventFilter : public ui::EventHandler {
   bool in_mouse_drag() const { return in_mouse_drag_; }
 
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
-  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   ShelfLayoutManager* shelf_;
@@ -98,11 +94,6 @@ ShelfLayoutManager::AutoHideEventFilter::~AutoHideEventFilter() {
   Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
-ui::EventResult ShelfLayoutManager::AutoHideEventFilter::OnKeyEvent(
-    ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult ShelfLayoutManager::AutoHideEventFilter::OnMouseEvent(
     ui::MouseEvent* event) {
   // This also checks IsShelfWindow() to make sure we don't attempt to hide the
@@ -113,21 +104,6 @@ ui::EventResult ShelfLayoutManager::AutoHideEventFilter::OnMouseEvent(
       !shelf_->IsShelfWindow(static_cast<aura::Window*>(event->target()));
   if (event->type() == ui::ET_MOUSE_MOVED)
     shelf_->UpdateAutoHideState();
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult ShelfLayoutManager::AutoHideEventFilter::OnScrollEvent(
-    ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult ShelfLayoutManager::AutoHideEventFilter::OnTouchEvent(
-    ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult ShelfLayoutManager::AutoHideEventFilter::OnGestureEvent(
-    ui::GestureEvent* event) {
   return ui::ER_UNHANDLED;
 }
 

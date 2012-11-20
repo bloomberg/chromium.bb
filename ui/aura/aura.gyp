@@ -94,7 +94,6 @@
         'ui_controls_x11.cc',
         'window.cc',
         'window.h',
-        'window_delegate.cc',
         'window_delegate.h',
         'window_observer.h',
         'window_tracker.cc',

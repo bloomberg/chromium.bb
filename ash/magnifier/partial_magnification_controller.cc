@@ -76,11 +76,6 @@ void PartialMagnificationController::SetEnabled(bool enabled) {
 ////////////////////////////////////////////////////////////////////////////////
 // PartialMagnificationController: ui::EventHandler implementation
 
-ui::EventResult PartialMagnificationController::OnKeyEvent(
-    ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult PartialMagnificationController::OnMouseEvent(
     ui::MouseEvent* event) {
   if (IsPartialMagnified() && event->type() == ui::ET_MOUSE_MOVED) {
@@ -97,21 +92,6 @@ ui::EventResult PartialMagnificationController::OnMouseEvent(
     }
   }
 
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult PartialMagnificationController::OnScrollEvent(
-    ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult PartialMagnificationController::OnTouchEvent(
-    ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult PartialMagnificationController::OnGestureEvent(
-    ui::GestureEvent* event) {
   return ui::ER_UNHANDLED;
 }
 

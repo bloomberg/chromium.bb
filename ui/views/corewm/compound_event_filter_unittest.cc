@@ -64,22 +64,6 @@ class ConsumeGestureEventFilter : public ui::EventHandler {
 
  private:
   // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
-    return ui::ER_UNHANDLED;
-  }
-
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
-    return ui::ER_UNHANDLED;
-  }
-
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
-    return ui::ER_UNHANDLED;
-  }
-
-  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
-    return ui::ER_UNHANDLED;
-  }
-
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* e) OVERRIDE {
     return ui::ER_CONSUMED;
   }

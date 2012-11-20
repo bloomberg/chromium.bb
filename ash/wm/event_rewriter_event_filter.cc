@@ -56,19 +56,5 @@ ui::EventResult EventRewriterEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult EventRewriterEventFilter::OnScrollEvent(
-    ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult EventRewriterEventFilter::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult EventRewriterEventFilter::OnGestureEvent(
-    ui::GestureEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 }  // namespace internal
 }  // namespace ash

@@ -59,18 +59,6 @@ ui::EventResult OverlayEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult OverlayEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult OverlayEventFilter::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult OverlayEventFilter::OnGestureEvent(ui::GestureEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 void OverlayEventFilter::OnLoginStateChanged(
     user::LoginStatus status) {
   Cancel();

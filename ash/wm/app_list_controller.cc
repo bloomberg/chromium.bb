@@ -246,21 +246,9 @@ void AppListController::UpdateBounds() {
 ////////////////////////////////////////////////////////////////////////////////
 // AppListController, aura::EventFilter implementation:
 
-ui::EventResult AppListController::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult AppListController::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
     ProcessLocatedEvent(event);
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult AppListController::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult AppListController::OnTouchEvent(ui::TouchEvent* event) {
   return ui::ER_UNHANDLED;
 }
 

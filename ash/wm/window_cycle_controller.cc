@@ -35,10 +35,6 @@ class WindowCycleEventFilter : public ui::EventHandler {
 
   // Overridden from ui::EventHandler:
   virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
-  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowCycleEventFilter);
 };
@@ -58,23 +54,6 @@ ui::EventResult WindowCycleEventFilter::OnKeyEvent(ui::KeyEvent* event) {
     // Warning: |this| will be deleted from here on.
   }
   return ui::ER_UNHANDLED;  // Always let the event propagate.
-}
-
-ui::EventResult WindowCycleEventFilter::OnMouseEvent(ui::MouseEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult WindowCycleEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult WindowCycleEventFilter::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult WindowCycleEventFilter::OnGestureEvent(
-    ui::GestureEvent* event) {
-  return ui::ER_UNHANDLED;
 }
 
 // Adds all the children of |window| to |windows|.

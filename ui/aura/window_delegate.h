@@ -102,9 +102,6 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
 
  protected:
   virtual ~WindowDelegate() {}
-
-  // Overridden from ui::EventHandler:
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 };
 
 }  // namespace aura

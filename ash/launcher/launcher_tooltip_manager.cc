@@ -254,10 +254,6 @@ bool LauncherTooltipManager::IsVisible() {
   return widget_ && widget_->IsVisible();
 }
 
-ui::EventResult LauncherTooltipManager::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult LauncherTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(event->target());
   DCHECK(event);
@@ -290,10 +286,6 @@ ui::EventResult LauncherTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
     CloseSoon();
   }
 
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult LauncherTooltipManager::OnScrollEvent(ui::ScrollEvent* event) {
   return ui::ER_UNHANDLED;
 }
 

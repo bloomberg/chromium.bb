@@ -59,22 +59,6 @@ ui::EventResult InputMethodEventFilter::OnKeyEvent(ui::KeyEvent* event) {
   }
 }
 
-ui::EventResult InputMethodEventFilter::OnMouseEvent(ui::MouseEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult InputMethodEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult InputMethodEventFilter::OnTouchEvent(ui::TouchEvent* e) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult InputMethodEventFilter::OnGestureEvent(ui::GestureEvent* e) {
-  return ui::ER_UNHANDLED;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodEventFilter, ui::InputMethodDelegate implementation:
 

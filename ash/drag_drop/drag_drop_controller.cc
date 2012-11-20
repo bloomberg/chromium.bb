@@ -230,10 +230,6 @@ ui::EventResult DragDropController::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_CONSUMED;
 }
 
-ui::EventResult DragDropController::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult DragDropController::OnTouchEvent(ui::TouchEvent* event) {
   // TODO(sad): Also check for the touch-id.
   // TODO(varunjain): Add code for supporting drag-and-drop across displays
@@ -255,10 +251,6 @@ ui::EventResult DragDropController::OnTouchEvent(ui::TouchEvent* event) {
       return ui::ER_UNHANDLED;
   }
   return ui::ER_CONSUMED;
-}
-
-ui::EventResult DragDropController::OnGestureEvent(ui::GestureEvent* event) {
-  return ui::ER_UNHANDLED;
 }
 
 void DragDropController::OnWindowDestroyed(aura::Window* window) {

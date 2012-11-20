@@ -28,10 +28,6 @@ TrayEventFilter::~TrayEventFilter() {
   ash::Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
-ui::EventResult TrayEventFilter::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult TrayEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED &&
       ProcessLocatedEvent(event)) {
@@ -40,19 +36,11 @@ ui::EventResult TrayEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult TrayEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult TrayEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   if (event->type() == ui::ET_TOUCH_PRESSED &&
       ProcessLocatedEvent(event)) {
     return ui::ER_CONSUMED;
   }
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult TrayEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   return ui::ER_UNHANDLED;
 }
 

@@ -86,21 +86,10 @@ ui::EventResult WindowModalityController::OnMouseEvent(ui::MouseEvent* event) {
                                               ui::ER_UNHANDLED;
 }
 
-ui::EventResult WindowModalityController::OnScrollEvent(
-    ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult WindowModalityController::OnTouchEvent(ui::TouchEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   return ProcessLocatedEvent(target, event) ? ui::ER_CONSUMED :
                                               ui::ER_UNHANDLED;
-}
-
-ui::EventResult WindowModalityController::OnGestureEvent(
-    ui::GestureEvent* event) {
-  // TODO: make gestures work with modals.
-  return ui::ER_UNHANDLED;
 }
 
 void WindowModalityController::OnWindowInitialized(aura::Window* window) {

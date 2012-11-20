@@ -88,10 +88,6 @@ void X11WindowEventFilter::SetUseHostWindowBorders(bool use_os_border) {
                   sizeof(MotifWmHints)/sizeof(long));
 }
 
-ui::EventResult X11WindowEventFilter::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_PRESSED)
     return ui::ER_UNHANDLED;
@@ -109,18 +105,6 @@ ui::EventResult X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   gfx::Point root_location = event->system_location();
   return DispatchHostWindowDragMovement(component, root_location) ?
       ui::ER_CONSUMED : ui::ER_UNHANDLED;
-}
-
-ui::EventResult X11WindowEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult X11WindowEventFilter::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult X11WindowEventFilter::OnGestureEvent(ui::GestureEvent* event) {
-  return ui::ER_UNHANDLED;
 }
 
 bool X11WindowEventFilter::DispatchHostWindowDragMovement(

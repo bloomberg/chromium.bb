@@ -156,16 +156,6 @@ ui::EventResult ToplevelWindowEventHandler::OnMouseEvent(
   return ui::ER_UNHANDLED;
 }
 
-ui::EventResult ToplevelWindowEventHandler::OnScrollEvent(
-    ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult ToplevelWindowEventHandler::OnTouchEvent(
-    ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult ToplevelWindowEventHandler::OnGestureEvent(
     ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());

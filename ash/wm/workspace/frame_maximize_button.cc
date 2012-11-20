@@ -48,10 +48,6 @@ class FrameMaximizeButton::EscapeEventFilter : public ui::EventHandler {
 
   // EventFilter overrides:
   virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
-  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   FrameMaximizeButton* button_;
@@ -75,26 +71,6 @@ ui::EventResult FrameMaximizeButton::EscapeEventFilter::OnKeyEvent(
       event->key_code() == ui::VKEY_ESCAPE) {
     button_->Cancel(false);
   }
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult FrameMaximizeButton::EscapeEventFilter::OnMouseEvent(
-    ui::MouseEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult FrameMaximizeButton::EscapeEventFilter::OnScrollEvent(
-    ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult FrameMaximizeButton::EscapeEventFilter::OnTouchEvent(
-    ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult FrameMaximizeButton::EscapeEventFilter::OnGestureEvent(
-    ui::GestureEvent* event) {
   return ui::ER_UNHANDLED;
 }
 

@@ -36,10 +36,6 @@ TabScrubber::TabScrubber()
 TabScrubber::~TabScrubber() {
 }
 
-ui::EventResult TabScrubber::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult TabScrubber::OnMouseEvent(ui::MouseEvent* event) {
   Browser* browser = GetActiveBrowser();
 
@@ -88,18 +84,6 @@ ui::EventResult TabScrubber::OnMouseEvent(ui::MouseEvent* event) {
   }
 
   return ui::ER_CONSUMED;
-}
-
-ui::EventResult TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult TabScrubber::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult TabScrubber::OnGestureEvent(ui::GestureEvent* event) {
-  return ui::ER_UNHANDLED;
 }
 
 void TabScrubber::Observe(int type,

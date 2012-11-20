@@ -182,18 +182,6 @@ void TouchObserverHUD::UpdateTouchPointLabel(int index) {
   touch_labels_[index]->SetText(UTF8ToUTF16(string));
 }
 
-ui::EventResult TouchObserverHUD::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult TouchObserverHUD::OnMouseEvent(ui::MouseEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult TouchObserverHUD::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult TouchObserverHUD::OnTouchEvent(ui::TouchEvent* event) {
   if (event->touch_id() >= kMaxTouchPoints)
     return ui::ER_UNHANDLED;
@@ -210,10 +198,6 @@ ui::EventResult TouchObserverHUD::OnTouchEvent(ui::TouchEvent* event) {
 
   widget_->SetSize(widget_->GetContentsView()->GetPreferredSize());
 
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult TouchObserverHUD::OnGestureEvent(ui::GestureEvent* event) {
   return ui::ER_UNHANDLED;
 }
 

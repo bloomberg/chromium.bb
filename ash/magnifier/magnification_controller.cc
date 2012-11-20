@@ -117,11 +117,8 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   void ValidateScale(float* scale);
 
   // ui::EventHandler overrides:
-  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
-  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   aura::RootWindow* root_window_;
 
@@ -450,10 +447,6 @@ bool MagnificationControllerImpl::IsEnabled() const {
 ////////////////////////////////////////////////////////////////////////////////
 // MagnificationControllerImpl: aura::EventFilter implementation
 
-ui::EventResult MagnificationControllerImpl::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult MagnificationControllerImpl::OnMouseEvent(
     ui::MouseEvent* event) {
   if (IsMagnified() && event->type() == ui::ET_MOUSE_MOVED) {
@@ -489,16 +482,6 @@ ui::EventResult MagnificationControllerImpl::OnScrollEvent(
     }
   }
 
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult MagnificationControllerImpl::OnTouchEvent(
-    ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult MagnificationControllerImpl::OnGestureEvent(
-    ui::GestureEvent* event) {
   return ui::ER_UNHANDLED;
 }
 

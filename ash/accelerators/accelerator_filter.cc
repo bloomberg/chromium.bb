@@ -90,21 +90,5 @@ ui::EventResult AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
       ui::ER_CONSUMED : ui::ER_UNHANDLED;
 }
 
-ui::EventResult AcceleratorFilter::OnMouseEvent(ui::MouseEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult AcceleratorFilter::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult AcceleratorFilter::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult AcceleratorFilter::OnGestureEvent(ui::GestureEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 }  // namespace internal
 }  // namespace ash

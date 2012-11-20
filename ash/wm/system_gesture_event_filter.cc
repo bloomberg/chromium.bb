@@ -53,10 +53,6 @@ SystemGestureEventFilter::SystemGestureEventFilter()
 SystemGestureEventFilter::~SystemGestureEventFilter() {
 }
 
-ui::EventResult SystemGestureEventFilter::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
 #if defined(OS_CHROMEOS)
   if (event->type() == ui::ET_MOUSE_PRESSED && event->native_event() &&
@@ -66,11 +62,6 @@ ui::EventResult SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
       UMA_MOUSE_DOWN);
   }
 #endif
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult SystemGestureEventFilter::OnScrollEvent(
-    ui::ScrollEvent* event) {
   return ui::ER_UNHANDLED;
 }
 

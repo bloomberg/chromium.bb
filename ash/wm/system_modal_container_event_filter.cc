@@ -33,22 +33,5 @@ ui::EventResult SystemModalContainerEventFilter::OnMouseEvent(
                                                      ui::ER_CONSUMED;
 }
 
-ui::EventResult SystemModalContainerEventFilter::OnScrollEvent(
-    ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult SystemModalContainerEventFilter::OnTouchEvent(
-    ui::TouchEvent* event) {
-  // TODO(sadrul): !
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult SystemModalContainerEventFilter::OnGestureEvent(
-    ui::GestureEvent* event) {
-  // TODO(sad):
-  return ui::ER_UNHANDLED;
-}
-
 }  // namespace internal
 }  // namespace ash

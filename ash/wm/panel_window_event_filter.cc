@@ -35,10 +35,6 @@ PanelWindowEventFilter::~PanelWindowEventFilter() {
   panel_container_->RemovePreTargetHandler(this);
 }
 
-ui::EventResult PanelWindowEventFilter::OnKeyEvent(ui::KeyEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
 ui::EventResult PanelWindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   switch (event->type()) {
@@ -94,19 +90,6 @@ ui::EventResult PanelWindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
     default:
       return ui::ER_UNHANDLED;
   }
-}
-
-ui::EventResult PanelWindowEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult PanelWindowEventFilter::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::ER_UNHANDLED;
-}
-
-ui::EventResult PanelWindowEventFilter::OnGestureEvent(
-    ui::GestureEvent* event) {
-  return ui::ER_UNHANDLED;
 }
 
 void PanelWindowEventFilter::OnWindowDestroying(aura::Window* window) {

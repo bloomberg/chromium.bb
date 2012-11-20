@@ -649,18 +649,6 @@ class DeletingEventFilter : public ui::EventHandler {
     return ui::ER_UNHANDLED;
   }
 
-  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
-    return ui::ER_UNHANDLED;
-  }
-
-  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
-    return ui::ER_UNHANDLED;
-  }
-
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
-    return ui::ER_UNHANDLED;
-  }
-
   bool delete_during_pre_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(DeletingEventFilter);
