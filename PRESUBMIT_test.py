@@ -20,6 +20,10 @@ class MockFile(object):
   def __init__(self, local_path, new_contents):
     self._local_path = local_path
     self._new_contents = new_contents
+    self._changed_contents = [(i + 1, l) for i, l in enumerate(new_contents)]
+
+  def ChangedContents(self):
+    return self._changed_contents
 
   def NewContents(self):
     return self._new_contents
@@ -170,6 +174,21 @@ class IncludeOrderTest(unittest.TestCase):
     warnings = PRESUBMIT._CheckIncludeOrderInFile(
         mock_input_api, mock_file, True, range(1, len(contents) + 1))
     self.assertEqual(0, len(warnings))
+
+
+class VersionControlerConflictsTest(unittest.TestCase):
+  def testTypicalConflict(self):
+    lines = ['<<<<<<< HEAD',
+             '  base::ScopedTempDir temp_dir_;',
+             '=======',
+             '  ScopedTempDir temp_dir_;',
+             '>>>>>>> master']
+    errors = PRESUBMIT._CheckForVersionControlConflictsInFile(
+        MockInputApi(), MockFile('some/path/foo_platform.cc', lines))
+    self.assertEqual(3, len(errors))
+    self.assertTrue('1' in errors[0])
+    self.assertTrue('3' in errors[1])
+    self.assertTrue('5' in errors[2])
 
 
 if __name__ == '__main__':

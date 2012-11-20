@@ -635,6 +635,28 @@ def _CheckIncludeOrder(input_api, output_api):
   return results
 
 
+def _CheckForVersionControlConflictsInFile(input_api, f):
+  pattern = input_api.re.compile('^(?:<<<<<<<|>>>>>>>) |^=======$')
+  errors = []
+  for line_num, line in f.ChangedContents():
+    if pattern.match(line):
+      errors.append('    %s:%d %s' % (f.LocalPath(), line_num, line))
+  return errors
+
+
+def _CheckForVersionControlConflicts(input_api, output_api):
+  """Usually this is not intentional and will cause a compile failure."""
+  errors = []
+  for f in input_api.AffectedFiles():
+    errors.extend(_CheckForVersionControlConflictsInFile(input_api, f))
+
+  results = []
+  if errors:
+    results.append(output_api.PresubmitError(
+      'Version control conflict markers found, please resolve.', errors))
+  return results
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -654,6 +676,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckFilePermissions(input_api, output_api))
   results.extend(_CheckNoAuraWindowPropertyHInHeaders(input_api, output_api))
   results.extend(_CheckIncludeOrder(input_api, output_api))
+  results.extend(_CheckForVersionControlConflicts(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
