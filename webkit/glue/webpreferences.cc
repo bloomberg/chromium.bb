@@ -110,6 +110,7 @@ WebPreferences::WebPreferences()
       css_regions_enabled(false),
       css_shaders_enabled(false),
       css_variables_enabled(false),
+      css_grid_layout_enabled(false),
       device_supports_touch(false),
       device_supports_mouse(true),
       default_tile_width(256),
@@ -423,6 +424,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setExperimentalCSSRegionsEnabled(css_regions_enabled);
   settings->setExperimentalCSSCustomFilterEnabled(css_shaders_enabled);
   settings->setExperimentalCSSVariablesEnabled(css_variables_enabled);
+  settings->setExperimentalCSSGridLayoutEnabled(css_grid_layout_enabled);
 
   settings->setDeviceSupportsTouch(device_supports_touch);
   settings->setDeviceSupportsMouse(device_supports_mouse);

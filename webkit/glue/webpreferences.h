@@ -128,6 +128,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool css_regions_enabled;
   bool css_shaders_enabled;
   bool css_variables_enabled;
+  bool css_grid_layout_enabled;
   bool device_supports_touch;
   bool device_supports_mouse;
   int default_tile_width;
