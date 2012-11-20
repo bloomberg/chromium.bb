@@ -24,6 +24,8 @@ import tempfile
 import threading
 import time
 import urllib
+import urllib2
+import zlib
 
 
 # Types of action accepted by link_file().
@@ -35,6 +37,9 @@ RE_IS_SHA1 = re.compile(r'^[a-fA-F0-9]{40}$')
 # generally used for .isolated files.
 UNKNOWN_FILE_SIZE = None
 
+# The size of each chunk to read when downloading and unzipping files.
+ZIPPED_FILE_CHUNK = 16 * 1024
+
 
 class ConfigError(ValueError):
   """Generic failure to load a .isolated file."""
@@ -44,6 +49,14 @@ class ConfigError(ValueError):
 class MappingError(OSError):
   """Failed to recreate the tree."""
   pass
+
+
+class DownloadFileOpener(urllib.FancyURLopener):
+  """This class is needed to get urlretrive to raise an exception on
+  404 errors, instead of still writing to the file with the error code.
+  """
+  def http_error_default(self, url, fp, errcode, errmsg, headers):
+    raise urllib2.HTTPError(url, errcode, errmsg, headers, fp)
 
 
 def get_flavor():
@@ -516,16 +529,33 @@ class Remote(object):
   def get_file_handler(file_or_url):
     """Returns a object to retrieve objects from a remote."""
     if re.match(r'^https?://.+$', file_or_url):
-      # TODO(maruel): This is particularly hackish. It shouldn't rstrip('/') in
-      # the first place or try to append '/'.
-      if not file_or_url.endswith('='):
-        file_or_url = file_or_url.rstrip('/') + '/'
       def download_file(item, dest):
         # TODO(maruel): Reuse HTTP connections. The stdlib doesn't make this
         # easy.
-        source = file_or_url + item
-        logging.debug('download_file(%s, %s)', source, dest)
-        urllib.urlretrieve(source, dest)
+
+        # TODO(csharp): This is a temporary workaround to generate the gzipped
+        # url, remove once the files are always zipped before being uploaded.
+        try:
+          zipped_source = file_or_url.rstrip('/') + '-gzip/' + item
+          logging.debug('download_file(%s)', zipped_source)
+          connection = urllib2.urlopen(zipped_source)
+          decompressor = zlib.decompressobj()
+          with open(dest, 'wb') as f:
+            while True:
+              chunk = connection.read(ZIPPED_FILE_CHUNK)
+              if not chunk:
+                break
+              f.write(decompressor.decompress(chunk))
+          # Ensure that all the data was properly decompressed.
+          uncompressed_data = decompressor.flush()
+          assert not uncompressed_data
+        except urllib2.URLError:
+          # Try the unzipped version
+          unzipped_source = file_or_url + item
+          logging.debug('Zipped version missing, try unzipped version')
+          logging.debug('download_file(%s, %s)', unzipped_source, dest)
+          DownloadFileOpener().retrieve(unzipped_source, dest)
+
       return download_file
 
     def copy_file(item, dest):
