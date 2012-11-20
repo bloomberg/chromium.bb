@@ -49,13 +49,18 @@ const int IsPacketOfSilence(const std::string& data) {
 
 }  // namespace
 
-AudioPipeReader::AudioPipeReader(
+// static
+scoped_refptr<AudioPipeReader> AudioPipeReader::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const FilePath& pipe_name)
-    : task_runner_(task_runner),
-      observers_(new ObserverListThreadSafe<StreamObserver>()) {
-  task_runner_->PostTask(FROM_HERE, base::Bind(
-      &AudioPipeReader::StartOnAudioThread, this, pipe_name));
+    const FilePath& pipe_name) {
+  // Create a reference to the new AudioPipeReader before posting the
+  // StartOnAudioThread task, otherwise it may be deleted on the audio
+  // thread before we return.
+  scoped_refptr<AudioPipeReader> pipe_reader =
+      new AudioPipeReader(task_runner);
+  task_runner->PostTask(FROM_HERE, base::Bind(
+      &AudioPipeReader::StartOnAudioThread, pipe_reader, pipe_name));
+  return pipe_reader;
 }
 
 void AudioPipeReader::StartOnAudioThread(const FilePath& pipe_name) {
@@ -78,6 +83,12 @@ void AudioPipeReader::StartOnAudioThread(const FilePath& pipe_name) {
   }
 
   WaitForPipeReadable();
+}
+
+AudioPipeReader::AudioPipeReader(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(task_runner),
+      observers_(new ObserverListThreadSafe<StreamObserver>()) {
 }
 
 AudioPipeReader::~AudioPipeReader() {
@@ -166,6 +177,11 @@ void AudioPipeReader::WaitForPipeReadable() {
   MessageLoopForIO::current()->WatchFileDescriptor(
       pipe_fd_, false, MessageLoopForIO::WATCH_READ,
       &file_descriptor_watcher_, this);
+}
+
+// static
+void AudioPipeReaderTraits::Destruct(const AudioPipeReader* audio_pipe_reader) {
+  audio_pipe_reader->task_runner_->DeleteSoon(FROM_HERE, audio_pipe_reader);
 }
 
 }  // namespace remoting

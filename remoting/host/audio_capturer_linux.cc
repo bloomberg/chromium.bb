@@ -26,7 +26,7 @@ void AudioCapturerLinux::InitializePipeReader(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const FilePath& pipe_name) {
   g_pulseaudio_pipe_sink_reader.Get() =
-      new AudioPipeReader(task_runner, pipe_name);
+      AudioPipeReader::Create(task_runner, pipe_name);
 }
 
 AudioCapturerLinux::AudioCapturerLinux(
