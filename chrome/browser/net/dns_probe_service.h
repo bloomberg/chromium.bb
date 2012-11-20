@@ -48,6 +48,7 @@ class DnsProbeService {
   void CallCallbacks();
 
   void OnProbeJobComplete(DnsProbeJob* job, DnsProbeJob::Result result);
+  Result EvaluateResults();
 
   // These are expected to be overridden by tests to return mock jobs.
   virtual scoped_ptr<DnsProbeJob> CreateSystemProbeJob(
@@ -60,6 +61,7 @@ class DnsProbeService {
       const DnsProbeJob::CallbackType& job_callback);
   void GetSystemDnsConfig(net::DnsConfig* config);
   void GetPublicDnsConfig(net::DnsConfig* config);
+  bool ResultsExpired();
 
   scoped_ptr<DnsProbeJob> system_job_;
   scoped_ptr<DnsProbeJob> public_job_;
@@ -68,6 +70,7 @@ class DnsProbeService {
   std::vector<CallbackType> callbacks_;
   State state_;
   Result result_;
+  base::Time last_probe_time_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsProbeService);
 };
