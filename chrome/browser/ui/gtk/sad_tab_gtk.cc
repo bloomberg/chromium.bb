@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/ui/gtk/tab_contents/chrome_web_contents_view_delegate_gtk.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -152,6 +153,21 @@ SadTabGtk::SadTabGtk(WebContents* web_contents, chrome::SadTabKind kind)
 
 SadTabGtk::~SadTabGtk() {
   event_box_.Destroy();
+}
+
+void SadTabGtk::Show() {
+  GtkWidget* expanded_container =
+      ChromeWebContentsViewDelegateGtk::GetFor(web_contents_)->
+          expanded_container();
+  gtk_container_add(GTK_CONTAINER(expanded_container), event_box_.get());
+  gtk_widget_show(event_box_.get());
+}
+
+void SadTabGtk::Close() {
+  GtkWidget* expanded_container =
+      ChromeWebContentsViewDelegateGtk::GetFor(web_contents_)->
+          expanded_container();
+  gtk_container_remove(GTK_CONTAINER(expanded_container), event_box_.get());
 }
 
 void SadTabGtk::OnLinkButtonClick(GtkWidget* sender) {

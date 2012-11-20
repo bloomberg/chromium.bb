@@ -21,7 +21,6 @@
 #include <gtk/gtk.h>
 
 #include "chrome/browser/ui/gtk/sad_tab_gtk.h"
-#include "chrome/browser/ui/gtk/tab_contents/chrome_web_contents_view_delegate_gtk.h"
 #endif
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SadTabHelper)
@@ -70,11 +69,7 @@ void SadTabHelper::Observe(int type,
         scoped_ptr<views::Widget> local_sad_tab;
         local_sad_tab.swap(sad_tab_);
 #elif defined(TOOLKIT_GTK)
-        GtkWidget* expanded_container =
-            ChromeWebContentsViewDelegateGtk::GetFor(web_contents())->
-                expanded_container();
-        gtk_container_remove(
-            GTK_CONTAINER(expanded_container), sad_tab_->widget());
+        sad_tab_->Close();
 #else
 #error Unknown platform
 #endif
@@ -124,11 +119,7 @@ void SadTabHelper::InstallSadTab(base::TerminationStatus status) {
   sad_tab_->SetBounds(gfx::Rect(bounds.size()));
 #elif defined(TOOLKIT_GTK)
   sad_tab_.reset(new SadTabGtk(web_contents(), kind));
-  GtkWidget* expanded_container =
-      ChromeWebContentsViewDelegateGtk::GetFor(web_contents())->
-          expanded_container();
-  gtk_container_add(GTK_CONTAINER(expanded_container), sad_tab_->widget());
-  gtk_widget_show(sad_tab_->widget());
+  sad_tab_->Show();
 #else
 #error Unknown platform
 #endif

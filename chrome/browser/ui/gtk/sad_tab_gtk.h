@@ -21,7 +21,8 @@ class SadTabGtk {
   SadTabGtk(content::WebContents* web_contents, chrome::SadTabKind kind);
   ~SadTabGtk();
 
-  GtkWidget* widget() const { return event_box_.get(); }
+  void Show();
+  void Close();
 
  private:
   CHROMEGTK_CALLBACK_0(SadTabGtk, void, OnLinkButtonClick);
