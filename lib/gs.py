@@ -9,6 +9,7 @@ import logging
 import os
 
 from chromite.lib import cros_build_lib
+from chromite.lib import osutils
 
 
 # Default pathway; stored here rather than usual buildbot.constants since
@@ -66,8 +67,7 @@ class GSContext(object):
     if cls.DEFAULT_GSUTIL_BIN is None:
       gsutil_bin = cls.DEFAULT_GSUTIL_BUILDER_BIN
       if not os.path.exists(gsutil_bin):
-        gsutil_bin = cros_build_lib.RunCommandCaptureOutput(
-            ['which', 'gsutil']).output.strip()
+        gsutil_bin = osutils.Which('gsutil')
       cls.DEFAULT_GSUTIL_BIN = gsutil_bin
     return cls.DEFAULT_GSUTIL_BIN
 
@@ -218,8 +218,4 @@ class GSContext(object):
     self._DoCommand(['setacl', acl, upload_url])
 
 # Set GSUTIL_BIN now.
-try:
-  GSUTIL_BIN = GSContext.GetDefaultGSUtilBin()
-except cros_build_lib.RunCommandError:
-  # Ignore it; let consuming code go boom in this case.
-  cros_build_lib.logger.warning("Didn't find a usable gsutil in default paths")
+GSUTIL_BIN = GSContext.GetDefaultGSUtilBin()
