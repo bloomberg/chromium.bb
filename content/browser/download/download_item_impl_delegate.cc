@@ -70,10 +70,7 @@ void DownloadItemImplDelegate::DownloadOpened(DownloadItemImpl* download) {}
 
 void DownloadItemImplDelegate::DownloadRemoved(DownloadItemImpl* download) {}
 
-void DownloadItemImplDelegate::DownloadRenamedToIntermediateName(
-    DownloadItemImpl* download) {}
-
-void DownloadItemImplDelegate::DownloadRenamedToFinalName(
+void DownloadItemImplDelegate::ShowDownloadInBrowser(
     DownloadItemImpl* download) {}
 
 void DownloadItemImplDelegate::AssertStateConsistent(

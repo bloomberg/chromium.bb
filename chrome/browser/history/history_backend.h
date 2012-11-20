@@ -29,17 +29,15 @@ class BookmarkService;
 class TestingProfile;
 struct ThumbnailScore;
 
-namespace content {
-struct DownloadPersistentStoreInfo;
-}
-
 namespace history {
 #if defined(OS_ANDROID)
 class AndroidProviderBackend;
 #endif
+
 class CommitLaterTask;
 class HistoryPublisher;
 class VisitFilter;
+struct DownloadRow;
 
 // The maximum number of icons URLs per page which can be stored in the
 // thumbnail database.
@@ -309,15 +307,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void GetNextDownloadId(scoped_refptr<DownloadNextIdRequest> request);
   void QueryDownloads(scoped_refptr<DownloadQueryRequest> request);
   void CleanUpInProgressEntries();
-  void UpdateDownload(const content::DownloadPersistentStoreInfo& data);
-  void UpdateDownloadPath(const FilePath& path, int64 db_handle);
+  void UpdateDownload(const DownloadRow& data);
   void CreateDownload(scoped_refptr<DownloadCreateRequest> request,
-                      int32 id,
-                      const content::DownloadPersistentStoreInfo& info);
-  void RemoveDownload(int64 db_handle);
-  void RemoveDownloadsBetween(const base::Time remove_begin,
-                              const base::Time remove_end);
-  void RemoveDownloads(const base::Time remove_end);
+                      const DownloadRow& info);
+  void RemoveDownloads(const std::set<int64>& db_handles);
 
   // Segment usage -------------------------------------------------------------
 

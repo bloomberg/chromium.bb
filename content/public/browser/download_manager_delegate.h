@@ -100,33 +100,6 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // Returns true if we need to generate a binary hash for downloads.
   virtual bool GenerateFileHash();
 
-  // Notifies the delegate that a new download item is created. The
-  // DownloadManager waits for the delegate to add information about this
-  // download to its persistent store. When the delegate is done, it calls
-  // DownloadManager::OnDownloadItemAddedToPersistentStore.
-  virtual void AddItemToPersistentStore(DownloadItem* item) {}
-
-  // Notifies the delegate that information about the given download has change,
-  // so that it can update its persistent store.
-  // Does not update |url|, |start_time|, |total_bytes|; uses |db_handle| only
-  // to select the row in the database table to update.
-  virtual void UpdateItemInPersistentStore(DownloadItem* item) {}
-
-  // Notifies the delegate that path for the download item has changed, so that
-  // it can update its persistent store.
-  virtual void UpdatePathForItemInPersistentStore(
-      DownloadItem* item,
-      const FilePath& new_path) {}
-
-  // Notifies the delegate that it should remove the download item from its
-  // persistent store.
-  virtual void RemoveItemFromPersistentStore(DownloadItem* item) {}
-
-  // Notifies the delegate to remove downloads from the given time range.
-  virtual void RemoveItemsFromPersistentStoreBetween(
-      base::Time remove_begin,
-      base::Time remove_end) {}
-
   // Retrieve the directories to save html pages and downloads to.
   virtual void GetSaveDir(BrowserContext* browser_context,
                           FilePath* website_save_dir,

@@ -41,7 +41,15 @@ class CONTENT_EXPORT DownloadItemImpl
   // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
                    DownloadId download_id,
-                   const DownloadPersistentStoreInfo& info,
+                   const FilePath& path,
+                   const GURL& url,
+                   const GURL& referrer_url,
+                   const base::Time& start_time,
+                   const base::Time& end_time,
+                   int64 received_bytes,
+                   int64 total_bytes,
+                   DownloadItem::DownloadState state,
+                   bool opened,
                    const net::BoundNetLog& bound_net_log);
 
   // Constructing for a regular download.
@@ -75,12 +83,10 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void ShowDownloadInShell() OVERRIDE;
   virtual int32 GetId() const OVERRIDE;
   virtual DownloadId GetGlobalId() const OVERRIDE;
-  virtual int64 GetDbHandle() const OVERRIDE;
   virtual DownloadState GetState() const OVERRIDE;
   virtual DownloadInterruptReason GetLastReason() const OVERRIDE;
   virtual bool IsPaused() const OVERRIDE;
   virtual bool IsTemporary() const OVERRIDE;
-  virtual bool IsPersisted() const OVERRIDE;
   virtual bool IsPartialDownload() const OVERRIDE;
   virtual bool IsInProgress() const OVERRIDE;
   virtual bool IsCancelled() const OVERRIDE;
@@ -126,7 +132,6 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual bool GetOpenWhenComplete() const OVERRIDE;
   virtual bool GetAutoOpened() OVERRIDE;
   virtual bool GetOpened() const OVERRIDE;
-  virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const OVERRIDE;
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual WebContents* GetWebContents() const OVERRIDE;
   virtual void OnContentCheckCompleted(DownloadDangerType danger_type) OVERRIDE;
@@ -187,12 +192,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // Called by SavePackage to display progress when the DownloadItem
   // should be considered complete.
   virtual void MarkAsComplete();
-
-  // Interactions with persistence system --------------------------------------
-
-  // TODO(benjhayden): Remove when DownloadHistory becomes an observer.
-  virtual void SetIsPersisted();
-  virtual void SetDbHandle(int64 handle);
 
  private:
   // Fine grained states of a download.
@@ -420,9 +419,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // Time the download completed.
   base::Time end_time_;
 
-  // Our persistent store handle.
-  int64 db_handle_;
-
   // Our delegate.
   DownloadItemImplDelegate* delegate_;
 
@@ -443,8 +439,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // an observer as it's frequently possible for the download to be auto opened
   // before the observer is added.
   bool auto_opened_;
-
-  bool is_persisted_;
 
   // True if the item was downloaded temporarily.
   bool is_temporary_;

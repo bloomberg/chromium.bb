@@ -36,6 +36,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/history/download_row.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
@@ -48,7 +49,6 @@
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "content/public/browser/download_item.h"
-#include "content/public/browser/download_persistent_store_info.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "sql/connection.h"
@@ -60,7 +60,6 @@
 using base::Time;
 using base::TimeDelta;
 using content::DownloadItem;
-using content::DownloadPersistentStoreInfo;
 
 namespace history {
 class HistoryBackendDBTest;
@@ -137,7 +136,7 @@ class HistoryBackendDBTest : public testing::Test {
   }
 
   int64 AddDownload(DownloadItem::DownloadState state, const Time& time) {
-    DownloadPersistentStoreInfo download(
+    DownloadRow download(
         FilePath(FILE_PATH_LITERAL("foo-path")),
         GURL("foo-url"),
         GURL(""),
@@ -188,86 +187,18 @@ namespace {
 TEST_F(HistoryBackendDBTest, ClearBrowsingData_Downloads) {
   CreateBackendAndDatabase();
 
-  Time now = Time::Now();
-  TimeDelta one_day = TimeDelta::FromDays(1);
-  Time month_ago = now - TimeDelta::FromDays(30);
-
   // Initially there should be nothing in the downloads database.
-  std::vector<DownloadPersistentStoreInfo> downloads;
+  std::vector<DownloadRow> downloads;
   db_->QueryDownloads(&downloads);
   EXPECT_EQ(0U, downloads.size());
 
-  // Keep track of these as we need to update them later during the test.
-  DownloadID in_progress;
-
-  // Create one with a 0 time.
-  EXPECT_NE(0, AddDownload(DownloadItem::COMPLETE, Time()));
-  // Create one for now and +/- 1 day.
-  EXPECT_NE(0, AddDownload(DownloadItem::COMPLETE, now - one_day));
-  EXPECT_NE(0, AddDownload(DownloadItem::COMPLETE, now));
-  EXPECT_NE(0, AddDownload(DownloadItem::COMPLETE, now + one_day));
-  // Try the other four states.
-  EXPECT_NE(0, AddDownload(DownloadItem::COMPLETE, month_ago));
-  EXPECT_NE(0, in_progress = AddDownload(DownloadItem::IN_PROGRESS, month_ago));
-  EXPECT_NE(0, AddDownload(DownloadItem::CANCELLED, month_ago));
-  EXPECT_NE(0, AddDownload(DownloadItem::INTERRUPTED, month_ago));
-
-  // Test to see if inserts worked.
-  db_->QueryDownloads(&downloads);
-  EXPECT_EQ(8U, downloads.size());
-
-  // Try removing from current timestamp. This should delete the one in the
-  // future and one very recent one.
-  db_->RemoveDownloadsBetween(now, Time());
-  db_->QueryDownloads(&downloads);
-  EXPECT_EQ(6U, downloads.size());
-
-  // Try removing from two months ago. This should not delete items that are
-  // 'in progress' or in 'removing' state.
-  db_->RemoveDownloadsBetween(now - TimeDelta::FromDays(60), Time());
-  db_->QueryDownloads(&downloads);
-  EXPECT_EQ(2U, downloads.size());
-
-  // Download manager converts to TimeT, which is lossy, so we do the same
-  // for comparison.
-  Time month_ago_lossy = Time::FromTimeT(month_ago.ToTimeT());
-
-  // Make sure the right values remain.
-  EXPECT_EQ(DownloadItem::COMPLETE, downloads[0].state);
-  EXPECT_EQ(0, downloads[0].start_time.ToInternalValue());
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, downloads[1].state);
-  EXPECT_EQ(month_ago_lossy.ToInternalValue(),
-            downloads[1].start_time.ToInternalValue());
-
-  // Change state so we can delete the downloads.
-  DownloadPersistentStoreInfo data;
-  data.received_bytes = 512;
-  data.state = DownloadItem::COMPLETE;
-  data.end_time = base::Time::Now();
-  data.opened = false;
-  data.db_handle = in_progress;
-  EXPECT_TRUE(db_->UpdateDownload(data));
-  data.state = DownloadItem::CANCELLED;
-  EXPECT_TRUE(db_->UpdateDownload(data));
-
-  // Try removing from Time=0. This should delete all.
-  db_->RemoveDownloadsBetween(Time(), Time());
-  db_->QueryDownloads(&downloads);
-  EXPECT_EQ(0U, downloads.size());
-
-  // Check removal of downloads stuck in IN_PROGRESS state.
-  EXPECT_NE(0, AddDownload(DownloadItem::COMPLETE,    month_ago));
-  EXPECT_NE(0, AddDownload(DownloadItem::IN_PROGRESS, month_ago));
-  db_->QueryDownloads(&downloads);
-  EXPECT_EQ(2U, downloads.size());
-  db_->RemoveDownloadsBetween(Time(), Time());
-  db_->QueryDownloads(&downloads);
-  // IN_PROGRESS download should remain. It it indicated as "Canceled"
-  EXPECT_EQ(1U, downloads.size());
-  db_->CleanUpInProgressEntries();
+  // Add a download, test that it was added, remove it, test that it was
+  // removed.
+  DownloadID handle;
+  EXPECT_NE(0, handle = AddDownload(DownloadItem::COMPLETE, Time()));
   db_->QueryDownloads(&downloads);
   EXPECT_EQ(1U, downloads.size());
-  db_->RemoveDownloadsBetween(Time(), Time());
+  db_->RemoveDownload(handle);
   db_->QueryDownloads(&downloads);
   EXPECT_EQ(0U, downloads.size());
 }

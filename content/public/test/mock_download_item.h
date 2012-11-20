@@ -5,10 +5,11 @@
 #ifndef CONTENT_PUBLIC_TEST_MOCK_DOWNLOAD_ITEM_H_
 #define CONTENT_PUBLIC_TEST_MOCK_DOWNLOAD_ITEM_H_
 
+#include "base/time.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
-#include "content/public/browser/download_persistent_store_info.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,12 +31,10 @@ class MockDownloadItem : public DownloadItem {
   MOCK_METHOD0(ShowDownloadInShell, void());
   MOCK_CONST_METHOD0(GetId, int32());
   MOCK_CONST_METHOD0(GetGlobalId, DownloadId());
-  MOCK_CONST_METHOD0(GetDbHandle, int64());
   MOCK_CONST_METHOD0(GetState, DownloadState());
   MOCK_CONST_METHOD0(GetLastReason, DownloadInterruptReason());
   MOCK_CONST_METHOD0(IsPaused, bool());
   MOCK_CONST_METHOD0(IsTemporary, bool());
-  MOCK_CONST_METHOD0(IsPersisted, bool());
   MOCK_CONST_METHOD0(IsPartialDownload, bool());
   MOCK_CONST_METHOD0(IsInProgress, bool());
   MOCK_CONST_METHOD0(IsCancelled, bool());
@@ -82,7 +81,6 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetOpenWhenComplete, bool());
   MOCK_METHOD0(GetAutoOpened, bool());
   MOCK_CONST_METHOD0(GetOpened, bool());
-  MOCK_CONST_METHOD0(GetPersistentStoreInfo, DownloadPersistentStoreInfo());
   MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_CONST_METHOD0(GetWebContents, WebContents*());
   MOCK_METHOD1(OnContentCheckCompleted, void(DownloadDangerType));

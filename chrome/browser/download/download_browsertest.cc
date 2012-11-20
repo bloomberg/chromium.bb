@@ -23,11 +23,14 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_request_limiter.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_test_file_chooser_observer.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/history/download_row.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/net/url_request_mock_util.h"
@@ -50,7 +53,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_persistent_store_info.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_source.h"
@@ -73,7 +75,6 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
-using content::DownloadPersistentStoreInfo;
 using content::DownloadUrlParameters;
 using content::URLRequestMockHTTPJob;
 using content::URLRequestSlowDownloadJob;
@@ -89,58 +90,6 @@ const FilePath kGoodCrxPath(FILE_PATH_LITERAL("extensions/good.crx"));
 
 const char kLargeThemeCrxId[] = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
 const FilePath kLargeThemePath(FILE_PATH_LITERAL("extensions/theme2.crx"));
-
-// Get History Information.
-class DownloadsHistoryDataCollector {
- public:
-  DownloadsHistoryDataCollector(int64 download_db_handle,
-                                DownloadManager* manager)
-      : result_valid_(false),
-        download_db_handle_(download_db_handle) {
-    HistoryService* hs = HistoryServiceFactory::GetForProfile(
-        Profile::FromBrowserContext(manager->GetBrowserContext()),
-        Profile::EXPLICIT_ACCESS);
-    DCHECK(hs);
-    hs->QueryDownloads(
-        &callback_consumer_,
-        base::Bind(&DownloadsHistoryDataCollector::OnQueryDownloadsComplete,
-                   base::Unretained(this)));
-
-    // TODO(rdsmith): Move message loop out of constructor.
-    // Cannot complete immediately because the history backend runs on a
-    // separate thread, so we can assume that the RunMessageLoop below will
-    // be exited by the Quit in OnQueryDownloadsComplete.
-    content::RunMessageLoop();
-  }
-
-  bool GetDownloadsHistoryEntry(DownloadPersistentStoreInfo* result) {
-    DCHECK(result);
-    *result = result_;
-    return result_valid_;
-  }
-
- private:
-  void OnQueryDownloadsComplete(
-      std::vector<DownloadPersistentStoreInfo>* entries) {
-    result_valid_ = false;
-    for (std::vector<DownloadPersistentStoreInfo>::const_iterator it =
-             entries->begin();
-         it != entries->end(); ++it) {
-      if (it->db_handle == download_db_handle_) {
-        result_ = *it;
-        result_valid_ = true;
-      }
-    }
-    MessageLoopForUI::current()->Quit();
-  }
-
-  DownloadPersistentStoreInfo result_;
-  bool result_valid_;
-  int64 download_db_handle_;
-  CancelableRequestConsumer callback_consumer_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadsHistoryDataCollector);
-};
 
 // Mock that simulates a permissions dialog where the user denies
 // permission to install.  TODO(skerner): This could be shared with
@@ -237,6 +186,51 @@ class MockDownloadOpeningObserver : public DownloadManager::Observer {
   DownloadManager* download_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDownloadOpeningObserver);
+};
+
+class HistoryObserver : public DownloadHistory::Observer {
+ public:
+  explicit HistoryObserver(Profile* profile)
+      : profile_(profile),
+        waiting_(false),
+        seen_stored_(false) {
+    DownloadServiceFactory::GetForProfile(profile_)->
+      GetDownloadHistory()->AddObserver(this);
+  }
+
+  virtual ~HistoryObserver() {
+    DownloadService* service = DownloadServiceFactory::GetForProfile(profile_);
+    if (service && service->GetDownloadHistory())
+      service->GetDownloadHistory()->RemoveObserver(this);
+  }
+
+  virtual void OnDownloadStored(
+      content::DownloadItem* item,
+      const history::DownloadRow& info) OVERRIDE {
+    seen_stored_ = true;
+    if (waiting_)
+      MessageLoopForUI::current()->Quit();
+  }
+
+  virtual void OnDownloadHistoryDestroyed() OVERRIDE {
+    DownloadServiceFactory::GetForProfile(profile_)->
+      GetDownloadHistory()->RemoveObserver(this);
+  }
+
+  void WaitForStored() {
+    if (seen_stored_)
+      return;
+    waiting_ = true;
+    content::RunMessageLoop();
+    waiting_ = false;
+  }
+
+ private:
+  Profile* profile_;
+  bool waiting_;
+  bool seen_stored_;
+
+  DISALLOW_COPY_AND_ASSIGN(HistoryObserver);
 };
 
 class DownloadTest : public InProcessBrowserTest {
@@ -1406,40 +1400,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   CheckDownload(browser(), file, file);
 }
 
-// Confirm a download makes it into the history properly.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
-  FilePath origin_file(OriginFile(file));
-  int64 origin_size;
-  file_util::GetFileSize(origin_file, &origin_size);
-
-  // Download the file and wait.  We do not expect the Select File dialog.
-  DownloadAndWait(browser(), url);
-
-  // Get details of what downloads have just happened.
-  std::vector<DownloadItem*> downloads;
-  GetDownloads(browser(), &downloads);
-  ASSERT_EQ(1u, downloads.size());
-  int64 db_handle = downloads[0]->GetDbHandle();
-
-  // Check state.
-  EXPECT_EQ(1, browser()->tab_count());
-  CheckDownload(browser(), file, file);
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-
-  // Check history results.
-  DownloadsHistoryDataCollector history_collector(
-      db_handle,
-      DownloadManagerForBrowser(browser()));
-  DownloadPersistentStoreInfo info;
-  EXPECT_TRUE(history_collector.GetDownloadsHistoryEntry(&info)) << db_handle;
-  EXPECT_EQ(file, info.path.BaseName());
-  EXPECT_EQ(url, info.url);
-  // Ignore start_time.
-  EXPECT_EQ(origin_size, info.received_bytes);
-  EXPECT_EQ(origin_size, info.total_bytes);
-  EXPECT_EQ(DownloadItem::COMPLETE, info.state);
+  GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
+  HistoryObserver observer(browser()->profile());
+  DownloadAndWait(browser(), download_url);
+  observer.WaitForStored();
 }
 
 // Test for crbug.com/14505. This tests that chrome:// urls are still functional

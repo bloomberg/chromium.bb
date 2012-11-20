@@ -25,7 +25,6 @@ class ShellDownloadManagerDelegate
   virtual bool DetermineDownloadTarget(
       DownloadItem* download,
       const DownloadTargetCallback& callback) OVERRIDE;
-  virtual void AddItemToPersistentStore(DownloadItem* item) OVERRIDE;
 
   // Inhibits prompting and sets the default download path.
   void SetDownloadBehaviorForTesting(
@@ -53,7 +52,6 @@ class ShellDownloadManagerDelegate
   DownloadManager* download_manager_;
   FilePath default_download_path_;
   bool suppress_prompting_;
-  int64 last_download_db_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDownloadManagerDelegate);
 };

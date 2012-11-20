@@ -9,16 +9,15 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
-#include "chrome/browser/safe_browsing/download_protection_service.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
+#include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class DownloadHistory;
 class DownloadPrefs;
 class ExtensionDownloadsEventRouter;
 class Profile;
@@ -57,7 +56,7 @@ class ChromeDownloadManagerDelegate
 
   void SetDownloadManager(content::DownloadManager* dm);
 
-  // Should be called before the call to ShouldCompleteDownload() to
+  // Should be called before the first call to ShouldCompleteDownload() to
   // disable SafeBrowsing checks for |item|.
   static void DisableSafeBrowsing(content::DownloadItem* item);
 
@@ -77,17 +76,6 @@ class ChromeDownloadManagerDelegate
       content::DownloadItem* item,
       const content::DownloadOpenDelayedCallback& callback) OVERRIDE;
   virtual bool GenerateFileHash() OVERRIDE;
-  virtual void AddItemToPersistentStore(content::DownloadItem* item) OVERRIDE;
-  virtual void UpdateItemInPersistentStore(
-      content::DownloadItem* item) OVERRIDE;
-  virtual void UpdatePathForItemInPersistentStore(
-      content::DownloadItem* item,
-      const FilePath& new_path) OVERRIDE;
-  virtual void RemoveItemFromPersistentStore(
-      content::DownloadItem* item) OVERRIDE;
-  virtual void RemoveItemsFromPersistentStoreBetween(
-      base::Time remove_begin,
-      base::Time remove_end) OVERRIDE;
   virtual void GetSaveDir(content::BrowserContext* browser_context,
                           FilePath* website_save_dir,
                           FilePath* download_save_dir,
@@ -104,7 +92,6 @@ class ChromeDownloadManagerDelegate
   void ClearLastDownloadPath();
 
   DownloadPrefs* download_prefs() { return download_prefs_.get(); }
-  DownloadHistory* download_history() { return download_history_.get(); }
 
  protected:
   // So that test classes can inherit from this for override purposes.
@@ -172,10 +159,10 @@ class ChromeDownloadManagerDelegate
   // a reserved path for the download. The path is then passed into
   // OnPathReservationAvailable().
   void CheckVisitedReferrerBeforeDone(
-      int32 download_id,
-      const content::DownloadTargetCallback& callback,
-      content::DownloadDangerType danger_type,
-      bool visited_referrer_before);
+    int32 download_id,
+    const content::DownloadTargetCallback& callback,
+    content::DownloadDangerType danger_type,
+    bool visited_referrer_before);
 
 #if defined (OS_CHROMEOS)
   // DriveDownloadObserver::SubstituteDriveDownloadPath callback. Calls
@@ -215,9 +202,6 @@ class ChromeDownloadManagerDelegate
       content::DownloadDangerType danger_type,
       const FilePath& target_path);
 
-  // Callback from history system.
-  void OnItemAddedToPersistentStore(int32 download_id, int64 db_handle);
-
   // Check policy of whether we should open this download with a web intents
   // dispatch.
   bool ShouldOpenWithWebIntents(const content::DownloadItem* item);
@@ -236,12 +220,13 @@ class ChromeDownloadManagerDelegate
   Profile* profile_;
   int next_download_id_;
   scoped_ptr<DownloadPrefs> download_prefs_;
-  scoped_ptr<DownloadHistory> download_history_;
 
   // Maps from pending extension installations to DownloadItem IDs.
   typedef base::hash_map<extensions::CrxInstaller*,
       content::DownloadOpenDelayedCallback> CrxInstallerMap;
   CrxInstallerMap crx_installers_;
+
+  CancelableRequestConsumer history_consumer_;
 
   content::NotificationRegistrar registrar_;
 

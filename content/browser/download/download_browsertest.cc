@@ -236,10 +236,6 @@ void DownloadFileWithDelayFactory::WaitForSomeCallback() {
   }
 }
 
-bool WasPersisted(DownloadItem* item) {
-  return item->IsPersisted();
-}
-
 class CountingDownloadFile : public DownloadFileImpl {
  public:
   CountingDownloadFile(
@@ -472,10 +468,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadCancelled) {
   ASSERT_EQ(1u, downloads.size());
   ASSERT_EQ(DownloadItem::IN_PROGRESS, downloads[0]->GetState());
 
-  // Wait for it to be persisted.
-  DownloadUpdatedObserver(
-      downloads[0], base::Bind(&WasPersisted)).WaitForEvent();
-
   // Cancel the download and wait for download system quiesce.
   downloads[0]->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
   scoped_refptr<DownloadTestFlushObserver> flush_observer(
@@ -658,9 +650,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownInProgress) {
   DownloadManagerForShell(shell())->GetAllDownloads(&items);
   ASSERT_EQ(1u, items.size());
   EXPECT_EQ(DownloadItem::IN_PROGRESS, items[0]->GetState());
-
-  // Wait for it to be persisted.
-  DownloadUpdatedObserver(items[0], base::Bind(&WasPersisted)).WaitForEvent();
 
   // Shutdown the download manager and make sure we get the right
   // notifications in the right order.

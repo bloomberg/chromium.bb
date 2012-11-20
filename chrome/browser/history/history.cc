@@ -38,6 +38,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/download_row.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
@@ -58,7 +59,6 @@
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_persistent_store_info.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -664,13 +664,12 @@ HistoryService::Handle HistoryService::QueryURL(
 // Handle creation of a download by creating an entry in the history service's
 // 'downloads' table.
 HistoryService::Handle HistoryService::CreateDownload(
-    int32 id,
-    const content::DownloadPersistentStoreInfo& create_info,
+    const history::DownloadRow& create_info,
     CancelableRequestConsumerBase* consumer,
     const HistoryService::DownloadCreateCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   return Schedule(PRIORITY_NORMAL, &HistoryBackend::CreateDownload, consumer,
-                  new history::DownloadCreateRequest(callback), id,
+                  new history::DownloadCreateRequest(callback),
                   create_info);
 }
 
@@ -702,32 +701,15 @@ void HistoryService::CleanUpInProgressEntries() {
 
 // Handle updates for a particular download. This is a 'fire and forget'
 // operation, so we don't need to be called back.
-void HistoryService::UpdateDownload(
-    const content::DownloadPersistentStoreInfo& data) {
+void HistoryService::UpdateDownload(const history::DownloadRow& data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::UpdateDownload, data);
 }
 
-void HistoryService::UpdateDownloadPath(const FilePath& path,
-                                        int64 db_handle) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::UpdateDownloadPath,
-                    path, db_handle);
-}
-
-void HistoryService::RemoveDownload(int64 db_handle) {
+void HistoryService::RemoveDownloads(const std::set<int64>& db_handles) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::RemoveDownload, db_handle);
-}
-
-void HistoryService::RemoveDownloadsBetween(Time remove_begin,
-                                            Time remove_end) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::RemoveDownloadsBetween,
-                    remove_begin,
-                    remove_end);
+                    &HistoryBackend::RemoveDownloads, db_handles);
 }
 
 HistoryService::Handle HistoryService::QueryHistory(

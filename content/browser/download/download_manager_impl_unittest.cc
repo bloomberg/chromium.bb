@@ -65,9 +65,19 @@ class MockDownloadItemImpl : public DownloadItemImpl {
  public:
   // Use history constructor for minimal base object.
   MockDownloadItemImpl(DownloadItemImplDelegate* delegate)
-      : DownloadItemImpl(delegate, DownloadId(),
-                         DownloadPersistentStoreInfo(),
-                         net::BoundNetLog()) {}
+      : DownloadItemImpl(
+          delegate,
+          content::DownloadId(),
+          FilePath(),
+          GURL(),
+          GURL(),
+          base::Time(),
+          base::Time(),
+          0,
+          0,
+          DownloadItem::IN_PROGRESS,
+          false,
+          net::BoundNetLog()) {}
   virtual ~MockDownloadItemImpl() {}
 
   MOCK_METHOD4(OnDownloadTargetDetermined,
@@ -132,10 +142,6 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(GetGlobalId, DownloadId());
   MOCK_CONST_METHOD0(GetStartTime, base::Time());
   MOCK_CONST_METHOD0(GetEndTime, base::Time());
-  MOCK_METHOD0(SetIsPersisted, void());
-  MOCK_CONST_METHOD0(IsPersisted, bool());
-  MOCK_METHOD1(SetDbHandle, void(int64));
-  MOCK_CONST_METHOD0(GetDbHandle, int64());
   MOCK_METHOD0(GetDownloadManager, DownloadManager*());
   MOCK_CONST_METHOD0(IsPaused, bool());
   MOCK_CONST_METHOD0(GetOpenWhenComplete, bool());
@@ -155,7 +161,6 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(GetLastModifiedTime, const std::string&());
   MOCK_CONST_METHOD0(GetETag, const std::string&());
   MOCK_CONST_METHOD0(GetLastReason, DownloadInterruptReason());
-  MOCK_CONST_METHOD0(GetPersistentStoreInfo, DownloadPersistentStoreInfo());
   MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_CONST_METHOD0(GetWebContents, WebContents*());
   MOCK_CONST_METHOD0(GetFileNameToReportUser, FilePath());
@@ -183,13 +188,6 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
   MOCK_METHOD2(ShouldOpenDownload,
                bool(DownloadItem*, const DownloadOpenDelayedCallback&));
   MOCK_METHOD0(GenerateFileHash, bool());
-  MOCK_METHOD1(AddItemToPersistentStore, void(DownloadItem*));
-  MOCK_METHOD1(UpdateItemInPersistentStore, void(DownloadItem*));
-  MOCK_METHOD2(UpdatePathForItemInPersistentStore,
-               void(DownloadItem*, const FilePath&));
-  MOCK_METHOD1(RemoveItemFromPersistentStore, void(DownloadItem*));
-  MOCK_METHOD2(RemoveItemsFromPersistentStoreBetween, void(
-      base::Time remove_begin, base::Time remove_end));
   MOCK_METHOD4(GetSaveDir, void(BrowserContext*,
                                 FilePath*, FilePath*, bool*));
   MOCK_METHOD5(ChooseSavePath, void(
@@ -227,7 +225,15 @@ class MockDownloadItemFactory
   virtual DownloadItemImpl* CreatePersistedItem(
       DownloadItemImplDelegate* delegate,
       DownloadId download_id,
-      const DownloadPersistentStoreInfo& info,
+      const FilePath& path,
+      const GURL& url,
+      const GURL& referrer_url,
+      const base::Time& start_time,
+      const base::Time& end_time,
+      int64 received_bytes,
+      int64 total_bytes,
+      DownloadItem::DownloadState state,
+      bool opened,
       const net::BoundNetLog& bound_net_log) OVERRIDE;
   virtual DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,
@@ -278,7 +284,15 @@ void MockDownloadItemFactory::RemoveItem(int id) {
 DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
     DownloadItemImplDelegate* delegate,
     DownloadId download_id,
-    const DownloadPersistentStoreInfo& info,
+    const FilePath& path,
+    const GURL& url,
+    const GURL& referrer_url,
+    const base::Time& start_time,
+    const base::Time& end_time,
+    int64 received_bytes,
+    int64 total_bytes,
+    DownloadItem::DownloadState state,
+    bool opened,
     const net::BoundNetLog& bound_net_log) {
   int local_id = download_id.local();
   DCHECK(items_.find(local_id) == items_.end());
@@ -543,14 +557,6 @@ class DownloadManagerTest : public testing::Test {
     // For DCHECK in AddDownloadItemToHistory.  Don't want to use
     // WillRepeatedly as it may have to return true after this.
     if (DCHECK_IS_ON())
-      EXPECT_CALL(item, IsPersisted())
-          .WillRepeatedly(Return(false));
-
-    EXPECT_CALL(item, SetDbHandle(db_handle));
-    EXPECT_CALL(item, SetIsPersisted());
-    EXPECT_CALL(item, GetDbHandle())
-        .WillRepeatedly(Return(db_handle));
-
     // Null out ShowDownloadInBrowser
     EXPECT_CALL(item, GetWebContents())
         .WillOnce(Return(static_cast<WebContents*>(NULL)));
@@ -564,8 +570,6 @@ class DownloadManagerTest : public testing::Test {
     // History addition should result in a call into MaybeCompleteDownload().
     EXPECT_CALL(item, MaybeCompleteDownload())
         .WillOnce(Return());
-
-    download_manager_->OnItemAddedToPersistentStore(item.GetId(), db_handle);
   }
 
  protected:
@@ -655,37 +659,12 @@ TEST_F(DownloadManagerTest, DetermineDownloadTarget_False) {
 }
 
 // Does DownloadStopped remove Download from appropriate queues?
-// This test tests non-persisted downloads.
-TEST_F(DownloadManagerTest, OnDownloadStopped_NonPersisted) {
+TEST_F(DownloadManagerTest, OnDownloadStopped) {
   // Put a mock we have a handle to on the download manager.
   MockDownloadItemImpl& item(AddItemToManager());
 
-  EXPECT_CALL(item, IsPersisted())
-      .WillRepeatedly(Return(false));
   EXPECT_CALL(item, GetState())
-      .WillRepeatedly(Return(DownloadItem::CANCELLED));
-  EXPECT_CALL(item, GetDbHandle())
-      .WillRepeatedly(Return(DownloadItem::kUninitializedHandle));
-
-  DownloadStopped(&item);
-}
-
-// Does DownloadStopped remove Download from appropriate queues?
-// This test tests persisted downloads.
-TEST_F(DownloadManagerTest, OnDownloadStopped_Persisted) {
-  // Put a mock we have a handle to on the download manager.
-  MockDownloadItemImpl& item(AddItemToManager());
-  int64 db_handle = 0x7;
-  AddItemToHistory(item, db_handle);
-
-  EXPECT_CALL(item, IsPersisted())
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(GetMockDownloadManagerDelegate(),
-              UpdateItemInPersistentStore(&item));
-  EXPECT_CALL(item, GetState())
-      .WillRepeatedly(Return(DownloadItem::CANCELLED));
-  EXPECT_CALL(item, GetDbHandle())
-      .WillRepeatedly(Return(db_handle));
+    .WillRepeatedly(Return(DownloadItem::CANCELLED));
 
   DownloadStopped(&item);
 }

@@ -1400,7 +1400,6 @@ void SavePackage::FinalizeDownloadEntry() {
       // but less useful to (current) customers.
       Source<DownloadManager>(download_manager_),
       Details<DownloadItem>(download_));
-  download_manager_->SavePageDownloadFinished(download_);
   StopObservation();
 }
 

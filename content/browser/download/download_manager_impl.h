@@ -63,15 +63,20 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   virtual void DownloadUrl(scoped_ptr<DownloadUrlParameters> params) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual void OnPersistentStoreQueryComplete(
-      std::vector<DownloadPersistentStoreInfo>* entries) OVERRIDE;
-  virtual void OnItemAddedToPersistentStore(int32 download_id,
-                                            int64 db_handle) OVERRIDE;
+  virtual content::DownloadItem* CreateDownloadItem(
+      const FilePath& path,
+      const GURL& url,
+      const GURL& referrer_url,
+      const base::Time& start_time,
+      const base::Time& end_time,
+      int64 received_bytes,
+      int64 total_bytes,
+      content::DownloadItem::DownloadState state,
+      bool opened) OVERRIDE;
   virtual int InProgressCount() const OVERRIDE;
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual void CheckForHistoryFilesRemoval() OVERRIDE;
   virtual DownloadItem* GetDownload(int id) OVERRIDE;
-  virtual void SavePageDownloadFinished(DownloadItem* download) OVERRIDE;
 
   // For testing; specifically, accessed from TestFileErrorInjector.
   void SetDownloadItemFactoryForTesting(
@@ -97,9 +102,6 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   virtual DownloadItemImpl* CreateDownloadItem(
       DownloadCreateInfo* info, const net::BoundNetLog& bound_net_log);
 
-  // Show the download in the browser.
-  void ShowDownloadInBrowser(DownloadItemImpl* download);
-
   // Get next download id.
   DownloadId GetNextId();
 
@@ -120,17 +122,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // containers; no-op if NDEBUG.
   void AssertContainersConsistent() const;
 
-  // Add a DownloadItem to history_downloads_.
-  void AddDownloadItemToHistory(DownloadItemImpl* item, int64 db_handle);
-
   // Remove from internal maps.
   int RemoveDownloadItems(const DownloadItemImplVector& pending_deletes);
-
-  // Called when a download entry is committed to the persistent store.
-  void OnDownloadItemAddedToPersistentStore(DownloadItemImpl* item);
-
-  // Called when Save Page As entry is committed to the persistent store.
-  void OnSavePageItemAddedToPersistentStore(DownloadItemImpl* item);
 
   // Overridden from DownloadItemImplDelegate
   // (Note that |GetBrowserContext| are present in both interfaces.)
@@ -143,14 +136,11 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       DownloadItemImpl* item,
       const ShouldOpenDownloadCallback& callback) OVERRIDE;
   virtual void CheckForFileRemoval(DownloadItemImpl* download_item) OVERRIDE;
-  virtual void UpdatePersistence(DownloadItemImpl* download) OVERRIDE;
   virtual void DownloadStopped(DownloadItemImpl* download) OVERRIDE;
   virtual void DownloadCompleted(DownloadItemImpl* download) OVERRIDE;
   virtual void DownloadOpened(DownloadItemImpl* download) OVERRIDE;
   virtual void DownloadRemoved(DownloadItemImpl* download) OVERRIDE;
-  virtual void DownloadRenamedToIntermediateName(
-      DownloadItemImpl* download) OVERRIDE;
-  virtual void DownloadRenamedToFinalName(DownloadItemImpl* download) OVERRIDE;
+  virtual void ShowDownloadInBrowser(DownloadItemImpl* download) OVERRIDE;
   virtual void AssertStateConsistent(DownloadItemImpl* download) const OVERRIDE;
 
   // Factory for creation of downloads items.

@@ -303,6 +303,10 @@ void ChromeDownloadManagerDelegateTest::SetUp() {
 
   CHECK(profile());
   delegate_ = new TestChromeDownloadManagerDelegate(profile());
+  EXPECT_CALL(*download_manager_.get(), GetAllDownloads(_))
+      .WillRepeatedly(Return());
+  EXPECT_CALL(*download_manager_.get(), AddObserver(_))
+      .WillRepeatedly(Return());
   delegate_->SetDownloadManager(download_manager_.get());
   pref_service_ = profile()->GetTestingPrefService();
   web_contents()->SetDelegate(&web_contents_delegate_);

@@ -860,9 +860,6 @@ bool DownloadsGetFileIconFunction::RunImpl() {
   if (!download_item && incognito_manager)
     download_item = incognito_manager->GetDownload(params->download_id);
   if (!download_item || download_item->GetTargetFilePath().empty()) {
-    // The DownloadItem is is added to history when the path is determined. If
-    // the download is not in history, then we don't have a path / final
-    // filename and no icon.
     error_ = download_extension_errors::kInvalidOperationError;
     return false;
   }

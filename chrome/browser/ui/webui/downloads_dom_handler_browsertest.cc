@@ -6,6 +6,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
+#include "chrome/browser/history/download_row.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -13,7 +14,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/download_persistent_store_info.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -141,22 +141,16 @@ IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest,
 
   GURL url = test_server()->GetURL("files/downloads/image.jpg");
   base::Time current(base::Time::Now());
-  content::DownloadPersistentStoreInfo population_entries[] = {
-    content::DownloadPersistentStoreInfo(
-        FilePath(FILE_PATH_LITERAL("/path/to/file")),
-        url,
-        GURL(""),
-        current - base::TimeDelta::FromMinutes(5),
-        current,
-        128,
-        128,
-        content::DownloadItem::COMPLETE,
-        1,
-        false),
-  };
-  std::vector<content::DownloadPersistentStoreInfo> entries(
-      population_entries, population_entries + arraysize(population_entries));
-  download_manager()->OnPersistentStoreQueryComplete(&entries);
+  download_manager()->CreateDownloadItem(
+      FilePath(FILE_PATH_LITERAL("/path/to/file")),
+      url,
+      GURL(""),
+      current - base::TimeDelta::FromMinutes(5),
+      current,
+      128,
+      128,
+      content::DownloadItem::COMPLETE,
+      false);
 
   mddh.WaitForDownloadsList();
   ASSERT_EQ(1, static_cast<int>(mddh.downloads_list()->GetSize()));

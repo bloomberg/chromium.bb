@@ -744,6 +744,8 @@
         'browser/history/archived_database.h',
         'browser/history/download_database.cc',
         'browser/history/download_database.h',
+        'browser/history/download_row.cc',
+        'browser/history/download_row.h',
         'browser/history/expire_history_backend.cc',
         'browser/history/expire_history_backend.h',
         'browser/history/history.cc',

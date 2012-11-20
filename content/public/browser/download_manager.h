@@ -140,13 +140,16 @@ class CONTENT_EXPORT DownloadManager
 
   // Called by the embedder, after creating the download manager, to let it know
   // about downloads from previous runs of the browser.
-  virtual void OnPersistentStoreQueryComplete(
-      std::vector<DownloadPersistentStoreInfo>* entries) = 0;
-
-  // Called by the embedder, in response to
-  // DownloadManagerDelegate::AddItemToPersistentStore.
-  virtual void OnItemAddedToPersistentStore(int32 download_id,
-                                            int64 db_handle) = 0;
+  virtual DownloadItem* CreateDownloadItem(
+      const FilePath& path,
+      const GURL& url,
+      const GURL& referrer_url,
+      const base::Time& start_time,
+      const base::Time& end_time,
+      int64 received_bytes,
+      int64 total_bytes,
+      DownloadItem::DownloadState state,
+      bool opened) = 0;
 
   // The number of in progress (including paused) downloads.
   virtual int InProgressCount() const = 0;
@@ -161,9 +164,6 @@ class CONTENT_EXPORT DownloadManager
   // Get the download item for |id| if present, no matter what type of download
   // it is or state it's in.
   virtual DownloadItem* GetDownload(int id) = 0;
-
-  // Called when Save Page download is done.
-  virtual void SavePageDownloadFinished(DownloadItem* download) = 0;
 
  protected:
   virtual ~DownloadManager() {}

@@ -39,31 +39,31 @@ class BookmarkService;
 class FilePath;
 class GURL;
 class HistoryURLProvider;
-struct HistoryURLProviderParams;
 class PageUsageData;
 class PageUsageRequest;
 class Profile;
+struct HistoryURLProviderParams;
 
 namespace base {
 class Thread;
 }
 
-namespace content {
-struct DownloadPersistentStoreInfo;
-}
 
 namespace history {
+
+class HistoryBackend;
+class HistoryDatabase;
+class HistoryQueryTest;
 class InMemoryHistoryBackend;
 class InMemoryURLIndex;
 class InMemoryURLIndexTest;
-struct HistoryAddPageArgs;
-class HistoryBackend;
-class HistoryDatabase;
-struct HistoryDetails;
-class HistoryQueryTest;
-class VisitFilter;
 class URLDatabase;
 class VisitDatabaseObserver;
+class VisitFilter;
+struct DownloadRow;
+struct HistoryAddPageArgs;
+struct HistoryDetails;
+
 }  // namespace history
 
 namespace sync_pb {
@@ -454,15 +454,15 @@ class HistoryService : public CancelableRequestProvider,
 
   // Implemented by the caller of 'CreateDownload' below, and is called when the
   // history service has created a new entry for a download in the history db.
-  typedef base::Callback<void(int32, int64)> DownloadCreateCallback;
+  typedef base::Callback<void(int64)> DownloadCreateCallback;
 
-  // Begins a history request to create a new persistent entry for a download.
-  // 'info' contains all the download's creation state, and 'callback' runs
-  // when the history service request is complete.
-  Handle CreateDownload(int32 id,
-                        const content::DownloadPersistentStoreInfo& info,
-                        CancelableRequestConsumerBase* consumer,
-                        const DownloadCreateCallback& callback);
+  // Begins a history request to create a new row for a download. 'info'
+  // contains all the download's creation state, and 'callback' runs when the
+  // history service request is complete.
+  Handle CreateDownload(
+      const history::DownloadRow& info,
+      CancelableRequestConsumerBase* consumer,
+      const DownloadCreateCallback& callback);
 
   // Implemented by the caller of 'GetNextDownloadId' below.
   typedef base::Callback<void(int)> DownloadNextIdCallback;
@@ -474,12 +474,12 @@ class HistoryService : public CancelableRequestProvider,
   // Implemented by the caller of 'QueryDownloads' below, and is called when the
   // history service has retrieved a list of all download state. The call
   typedef base::Callback<void(
-      std::vector<content::DownloadPersistentStoreInfo>*)>
+      std::vector<history::DownloadRow>*)>
           DownloadQueryCallback;
 
   // Begins a history request to retrieve the state of all downloads in the
   // history db. 'callback' runs when the history service request is complete,
-  // at which point 'info' contains an array of DownloadPersistentStoreInfo, one
+  // at which point 'info' contains an array of history::DownloadRow, one
   // per download.
   Handle QueryDownloads(CancelableRequestConsumerBase* consumer,
                         const DownloadQueryCallback& callback);
@@ -491,22 +491,11 @@ class HistoryService : public CancelableRequestProvider,
   // Called to update the history service about the current state of a download.
   // This is a 'fire and forget' query, so just pass the relevant state info to
   // the database with no need for a callback.
-  void UpdateDownload(const content::DownloadPersistentStoreInfo& data);
+  void UpdateDownload(const history::DownloadRow& data);
 
-  // Called to update the history service about the path of a download.
-  // This is a 'fire and forget' query.
-  void UpdateDownloadPath(const FilePath& path, int64 db_handle);
-
-  // Permanently remove a download from the history system. This is a 'fire and
-  // forget' operation.
-  void RemoveDownload(int64 db_handle);
-
-  // Permanently removes all completed download from the history system within
-  // the specified range. This function does not delete downloads that are in
-  // progress or in the process of being cancelled. This is a 'fire and forget'
-  // operation. You can pass is_null times to get unbounded time in either or
-  // both directions.
-  void RemoveDownloadsBetween(base::Time remove_begin, base::Time remove_end);
+  // Permanently remove some downloads from the history system. This is a 'fire
+  // and forget' operation.
+  void RemoveDownloads(const std::set<int64>& db_handles);
 
   // Visit Segments ------------------------------------------------------------
 

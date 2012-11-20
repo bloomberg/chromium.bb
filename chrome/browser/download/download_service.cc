@@ -7,8 +7,11 @@
 #include "base/callback.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_status_updater.h"
+#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -42,11 +45,29 @@ ChromeDownloadManagerDelegate* DownloadService::GetDownloadManagerDelegate() {
 
   manager_delegate_->SetDownloadManager(manager);
 
+  if (!profile_->IsOffTheRecord()) {
+    HistoryService* hs = HistoryServiceFactory::GetForProfile(
+        profile_, Profile::EXPLICIT_ACCESS);
+    if (hs)
+      download_history_.reset(new DownloadHistory(
+          manager,
+          scoped_ptr<DownloadHistory::HistoryAdapter>(
+            new DownloadHistory::HistoryAdapter(hs))));
+  }
+
   // Include this download manager in the set monitored by the
   // global status updater.
   g_browser_process->download_status_updater()->AddManager(manager);
 
   return manager_delegate_.get();
+}
+
+DownloadHistory* DownloadService::GetDownloadHistory() {
+  if (!download_manager_created_) {
+    GetDownloadManagerDelegate();
+  }
+  DCHECK(download_manager_created_);
+  return download_history_.get();
 }
 
 bool DownloadService::HasCreatedDownloadManager() {
@@ -100,4 +121,5 @@ void DownloadService::Shutdown() {
     BrowserContext::GetDownloadManager(profile_)->Shutdown();
   }
   manager_delegate_ = NULL;
+  download_history_.reset();
 }

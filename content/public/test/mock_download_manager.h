@@ -46,8 +46,16 @@ class MockDownloadManager : public DownloadManager {
   }
   MOCK_METHOD1(AddObserver, void(Observer* observer));
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
-  MOCK_METHOD1(OnPersistentStoreQueryComplete, void(
-      std::vector<DownloadPersistentStoreInfo>* entries));
+  MOCK_METHOD9(CreateDownloadItem, DownloadItem*(
+      const FilePath& path,
+      const GURL& url,
+      const GURL& referrer_url,
+      const base::Time& start_tiem,
+      const base::Time& end_time,
+      int64 received_bytes,
+      int64 total_bytes,
+      DownloadItem::DownloadState state,
+      bool opened));
   MOCK_METHOD2(OnItemAddedToPersistentStore, void(int32 download_id,
                                                   int64 db_handle));
   MOCK_CONST_METHOD0(InProgressCount, int());

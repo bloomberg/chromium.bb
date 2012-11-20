@@ -23,6 +23,7 @@
 #include "chrome/browser/api/bookmarks/bookmark_service.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/common/cancelable_request.h"
+#include "chrome/browser/history/download_row.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
@@ -33,7 +34,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/download_persistent_store_info.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -1292,40 +1292,52 @@ void HistoryBackend::CleanUpInProgressEntries() {
 
 // Update a particular download entry.
 void HistoryBackend::UpdateDownload(
-    const content::DownloadPersistentStoreInfo& data) {
+    const history::DownloadRow& data) {
   if (db_.get())
     db_->UpdateDownload(data);
-}
-
-// Update the path of a particular download entry.
-void HistoryBackend::UpdateDownloadPath(const FilePath& path,
-                                        int64 db_handle) {
-  if (db_.get())
-    db_->UpdateDownloadPath(path, db_handle);
 }
 
 // Create a new download entry and pass back the db_handle to it.
 void HistoryBackend::CreateDownload(
     scoped_refptr<DownloadCreateRequest> request,
-    int32 id,
-    const content::DownloadPersistentStoreInfo& history_info) {
+    const history::DownloadRow& history_info) {
   int64 db_handle = 0;
   if (!request->canceled()) {
     if (db_.get())
       db_handle = db_->CreateDownload(history_info);
-    request->ForwardResult(id, db_handle);
+    request->ForwardResult(db_handle);
   }
 }
 
-void HistoryBackend::RemoveDownload(int64 db_handle) {
-  if (db_.get())
-    db_->RemoveDownload(db_handle);
-}
-
-void HistoryBackend::RemoveDownloadsBetween(const Time remove_begin,
-                                            const Time remove_end) {
-  if (db_.get())
-    db_->RemoveDownloadsBetween(remove_begin, remove_end);
+void HistoryBackend::RemoveDownloads(const std::set<int64>& handles) {
+  if (!db_.get())
+    return;
+  int downloads_count_before = db_->CountDownloads();
+  base::TimeTicks started_removing = base::TimeTicks::Now();
+  // HistoryBackend uses a long-running Transaction that is committed
+  // periodically, so this loop doesn't actually hit the disk too hard.
+  for (std::set<int64>::const_iterator it = handles.begin();
+       it != handles.end(); ++it) {
+    db_->RemoveDownload(*it);
+  }
+  base::TimeTicks finished_removing = base::TimeTicks::Now();
+  int downloads_count_after = db_->CountDownloads();
+  int num_downloads_deleted = downloads_count_before - downloads_count_after;
+  if (num_downloads_deleted >= 0) {
+    UMA_HISTOGRAM_COUNTS("Download.DatabaseRemoveDownloadsCount",
+                         num_downloads_deleted);
+    base::TimeDelta micros = (1000 * (finished_removing - started_removing));
+    UMA_HISTOGRAM_TIMES("Download.DatabaseRemoveDownloadsTime", micros);
+    if (num_downloads_deleted > 0) {
+      UMA_HISTOGRAM_TIMES("Download.DatabaseRemoveDownloadsTimePerRecord",
+                          (1000 * micros) / num_downloads_deleted);
+    }
+  }
+  int num_downloads_not_deleted = handles.size() - num_downloads_deleted;
+  if (num_downloads_not_deleted >= 0) {
+    UMA_HISTOGRAM_COUNTS("Download.DatabaseRemoveDownloadsCountNotRemoved",
+                         num_downloads_not_deleted);
+  }
 }
 
 void HistoryBackend::QueryHistory(scoped_refptr<QueryHistoryRequest> request,

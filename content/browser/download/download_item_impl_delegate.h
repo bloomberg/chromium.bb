@@ -78,9 +78,9 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   virtual void DownloadCompleted(DownloadItemImpl* download);
   virtual void DownloadOpened(DownloadItemImpl* download);
   virtual void DownloadRemoved(DownloadItemImpl* download);
-  virtual void DownloadRenamedToIntermediateName(
-      DownloadItemImpl* download);
-  virtual void DownloadRenamedToFinalName(DownloadItemImpl* download);
+
+  // Show the download in the browser.
+  virtual void ShowDownloadInBrowser(DownloadItemImpl* download);
 
   // Assert consistent state for delgate object at various transitions.
   virtual void AssertStateConsistent(DownloadItemImpl* download) const;

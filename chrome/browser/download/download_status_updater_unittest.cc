@@ -13,14 +13,14 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::AtLeast;
-using ::testing::Invoke;
-using ::testing::Mock;
-using ::testing::Return;
-using ::testing::SetArgPointee;
-using ::testing::StrictMock;
-using ::testing::WithArg;
-using ::testing::_;
+using testing::AtLeast;
+using testing::Invoke;
+using testing::Mock;
+using testing::Return;
+using testing::SetArgPointee;
+using testing::StrictMock;
+using testing::WithArg;
+using testing::_;
 
 class TestDownloadStatusUpdater : public DownloadStatusUpdater {
  public:

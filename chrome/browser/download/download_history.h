@@ -5,87 +5,149 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_HISTORY_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_HISTORY_H_
 
-#include <map>
+#include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/common/cancelable_request.h"
+#include "chrome/browser/download/all_download_item_notifier.h"
 #include "chrome/browser/history/history.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 
-class Profile;
+namespace history {
+struct DownloadRow;
+}  // namespace history
 
-namespace base {
-class Time;
-}
-
-namespace content {
-class DownloadItem;
-}
-
-// Interacts with the HistoryService on behalf of the download subsystem.
-class DownloadHistory {
+// Observes a single DownloadManager and all its DownloadItems, keeping the
+// DownloadDatabase up to date.
+class DownloadHistory : public AllDownloadItemNotifier::Observer {
  public:
-  typedef base::Callback<void(bool)> VisitedBeforeDoneCallback;
+  typedef std::set<int32> IdSet;
 
-  explicit DownloadHistory(Profile* profile);
-  ~DownloadHistory();
+  // Caller must guarantee that HistoryService outlives HistoryAdapter.
+  class HistoryAdapter {
+   public:
+    explicit HistoryAdapter(HistoryService* history);
+    virtual ~HistoryAdapter();
 
-  // Retrieves the next_id counter from the sql meta_table.
-  // Should be much faster than Load so that we may delay downloads until after
-  // this call with minimal performance penalty.
-  void GetNextId(const HistoryService::DownloadNextIdCallback& callback);
+    virtual void QueryDownloads(
+        const HistoryService::DownloadQueryCallback& callback);
 
-  // Retrieves DownloadCreateInfos saved in the history.
-  void Load(const HistoryService::DownloadQueryCallback& callback);
+    virtual void CreateDownload(
+        const history::DownloadRow& info,
+        const HistoryService::DownloadCreateCallback& callback);
 
-  // Checks whether |referrer_url| has been visited before today.  This takes
-  // ownership of |callback|.
-  void CheckVisitedReferrerBefore(int32 download_id,
-                                  const GURL& referrer_url,
-                                  const VisitedBeforeDoneCallback& callback);
+    virtual void UpdateDownload(const history::DownloadRow& data);
 
-  // Adds a new entry for a download to the history database.
-  void AddEntry(content::DownloadItem* download_item,
-                const HistoryService::DownloadCreateCallback& callback);
+    virtual void RemoveDownloads(const std::set<int64>& db_handles);
 
-  // Updates the history entry for |download_item|.
-  void UpdateEntry(content::DownloadItem* download_item);
+   private:
+    HistoryService* history_;
+    CancelableRequestConsumer consumer_;
+    DISALLOW_COPY_AND_ASSIGN(HistoryAdapter);
+  };
 
-  // Updates the download path for |download_item| to |new_path|.
-  void UpdateDownloadPath(content::DownloadItem* download_item,
-                          const FilePath& new_path);
+  class Observer {
+   public:
+    Observer();
+    virtual ~Observer();
 
-  // Removes |download_item| from the history database.
-  void RemoveEntry(content::DownloadItem* download_item);
+    // Fires when a download is added to or updated in the database. When
+    // downloads are first added, this fires after the callback from the
+    // database so that |info| includes the |db_handle|. When downloads are
+    // updated, this fires right after the message is sent to the database.
+    // |info| always includes the |db_handle|.
+    virtual void OnDownloadStored(content::DownloadItem* item,
+                                  const history::DownloadRow& info) {
+    }
 
-  // Removes download-related history entries in the given time range.
-  void RemoveEntriesBetween(const base::Time remove_begin,
-                            const base::Time remove_end);
+    // Fires when RemoveDownloads messages are sent to the DB thread.
+    virtual void OnDownloadsRemoved(const IdSet& ids) {}
 
-  // Returns a new unique database handle which will not collide with real ones.
-  int64 GetNextFakeDbHandle();
+    // Fires when the DownloadHistory is being destroyed so that implementors
+    // can RemoveObserver() and nullify their DownloadHistory*s.
+    virtual void OnDownloadHistoryDestroyed() {}
+  };
+
+  // Returns true if the item is persisted.
+  static bool IsPersisted(content::DownloadItem* item);
+
+  // Neither |manager| nor |history| may be NULL.
+  // DownloadService creates DownloadHistory some time after DownloadManager is
+  // created and destroys DownloadHistory as DownloadManager is shutting down.
+  DownloadHistory(
+      content::DownloadManager* manager,
+      scoped_ptr<HistoryAdapter> history);
+
+  virtual ~DownloadHistory();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
-  typedef std::map<HistoryService::Handle, VisitedBeforeDoneCallback>
-      VisitedBeforeRequestsMap;
+  typedef std::set<int64> HandleSet;
+  typedef std::set<content::DownloadItem*> ItemSet;
 
-  void OnGotVisitCountToHost(HistoryService::Handle handle,
-                             bool found_visits,
-                             int count,
-                             base::Time first_visit);
+  // Callback from |history_| containing all entries in the downloads database
+  // table.
+  void QueryCallback(
+      std::vector<history::DownloadRow>* infos);
 
-  Profile* profile_;
+  // May add |item| to |history_|.
+  void MaybeAddToHistory(content::DownloadItem* item);
 
-  // In case we don't have a valid db_handle, we use |fake_db_handle_| instead.
-  // This is useful for incognito mode or when the history database is offline.
-  // Downloads are expected to have unique handles, so we decrement the next
-  // fake handle value on every use.
-  int64 next_fake_db_handle_;
+  // Callback from |history_| when an item was successfully inserted into the
+  // database.
+  void ItemAdded(int32 id, int64 db_handle);
 
-  CancelableRequestConsumer history_consumer_;
+  // AllDownloadItemNotifier::Observer
+  virtual void OnDownloadCreated(
+      content::DownloadManager* manager, content::DownloadItem* item) OVERRIDE;
+  virtual void OnDownloadUpdated(
+      content::DownloadManager* manager, content::DownloadItem* item) OVERRIDE;
+  virtual void OnDownloadOpened(
+      content::DownloadManager* manager, content::DownloadItem* item) OVERRIDE;
+  virtual void OnDownloadRemoved(
+      content::DownloadManager* manager, content::DownloadItem* item) OVERRIDE;
 
-  // The outstanding requests made by CheckVisitedReferrerBefore().
-  VisitedBeforeRequestsMap visited_before_requests_;
+  // Schedule a record to be removed from |history_| the next time
+  // RemoveDownloadsBatch() runs. Schedule RemoveDownloadsBatch() to be run soon
+  // if it isn't already scheduled.
+  void ScheduleRemoveDownload(int32 download_id, int64 db_handle);
+
+  // Removes all |removing_handles_| from |history_|.
+  void RemoveDownloadsBatch();
+
+
+  AllDownloadItemNotifier notifier_;
+
+  scoped_ptr<HistoryAdapter> history_;
+
+  // |db_handle| of the item being created in response to QueryCallback(),
+  // matched up with created items in OnDownloadCreated() so that the item is
+  // not re-added to the database. For items not created by QueryCallback(),
+  // this is DownloadDatabase::kUninitializedHandle.
+  int64 loading_db_handle_;
+
+  // |db_handles| and |ids| of items that are scheduled for removal from
+  // history, to facilitate batching removals together for database efficiency.
+  HandleSet removing_handles_;
+  IdSet removing_ids_;
+
+  // |GetId()|s of items that were removed while they were being added, so that
+  // they can be removed when their db_handles are received from the database.
+  IdSet removed_while_adding_;
+
+  // Count the number of items in the history for UMA.
+  int64 history_size_;
+
+  ObserverList<Observer> observers_;
+
+  base::WeakPtrFactory<DownloadHistory> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadHistory);
 };

@@ -13,6 +13,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/download_id.h"
+#include "content/public/browser/download_item.h"
 
 class FilePath;
 class GURL;
@@ -28,7 +29,6 @@ class DownloadItemImpl;
 class DownloadItemImplDelegate;
 class DownloadRequestHandleInterface;
 struct DownloadCreateInfo;
-struct DownloadPersistentStoreInfo;
 
 class DownloadItemFactory {
 public:
@@ -37,7 +37,15 @@ public:
   virtual DownloadItemImpl* CreatePersistedItem(
       DownloadItemImplDelegate* delegate,
       DownloadId download_id,
-      const DownloadPersistentStoreInfo& info,
+      const FilePath& path,
+      const GURL& url,
+      const GURL& referrer_url,
+      const base::Time& start_time,
+      const base::Time& end_time,
+      int64 received_bytes,
+      int64 total_bytes,
+      content::DownloadItem::DownloadState state,
+      bool opened,
       const net::BoundNetLog& bound_net_log) = 0;
 
   virtual DownloadItemImpl* CreateActiveItem(
