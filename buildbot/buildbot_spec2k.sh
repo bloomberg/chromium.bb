@@ -347,6 +347,8 @@ pnacl-x8664() {
   build-tests "${setups}" all 1 3
   run-tests "${setups}" all 1 3
   pnacl-x86-64-zero-based-sandbox
+  build-validator x86-64
+  download-validator-test-nexes x86-64
   measure-validator-speed x86-64
 }
 
