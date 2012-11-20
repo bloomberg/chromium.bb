@@ -10,8 +10,7 @@ cr.define('options', function() {
   /** @const */ var ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   /**
-   * Interval between consecutive camera presence checks in msec while camera is
-   * not present.
+   * Interval between consecutive camera presence checks in msec.
    * @const
    */
   var CAMERA_CHECK_INTERVAL_MS = 3000;
@@ -208,6 +207,20 @@ cr.define('options', function() {
     },
 
     /**
+     * Start camera presence check.
+     * @private
+     */
+    checkCameraPresence_: function() {
+      if (this.cameraPresentCheckTimer_) {
+        window.clearTimeout(this.cameraPresentCheckTimer_);
+        this.cameraPresentCheckTimer_ = null;
+      }
+      if (!this.cameraVideo_)
+        return;
+      chrome.send('checkCameraPresence');
+    },
+
+    /**
      * Whether a camera is present or not.
      * @type {boolean}
      */
@@ -218,6 +231,10 @@ cr.define('options', function() {
       this.cameraPresent_ = value;
       if (this.cameraLive)
         this.cameraImage = null;
+      // Repeat the check after some time.
+      this.cameraPresentCheckTimer_ = window.setTimeout(
+          this.checkCameraPresence_.bind(this),
+          CAMERA_CHECK_INTERVAL_MS);
     },
 
     /**
@@ -231,37 +248,27 @@ cr.define('options', function() {
     set cameraOnline(value) {
       this.previewElement.classList[value ? 'add' : 'remove']('online');
       if (value) {
-        this.cameraLiveCheckTimer_ = setInterval(
+        this.cameraLiveCheckTimer_ = window.setInterval(
             this.checkCameraLive_.bind(this), CAMERA_LIVENESS_CHECK_MS);
       } else if (this.cameraLiveCheckTimer_) {
-        clearInterval(this.cameraLiveCheckTimer_);
+        window.clearInterval(this.cameraLiveCheckTimer_);
         this.cameraLiveCheckTimer_ = null;
       }
     },
 
     /**
-     * Start camera presence check.
+     * Tries to starts camera stream capture.
      * @param {function(): boolean} onAvailable Callback that is called if
      *     camera is available. If it returns |true|, capture is started
      *     immediately.
-     * @param {function(): boolean} onAbsent Callback that is called if camera
-     *     is absent. If it returns |true|, camera is checked again after some
-     *     delay.
      */
-    checkCameraPresence: function(onAvailable, onAbsent) {
-      this.cameraOnline = false;
-      if (this.cameraPresentCheckTimer_) {
-        clearTimeout(this.cameraPresentCheckTimer_);
-        this.cameraPresentCheckTimer_ = null;
-      }
-      if (!this.cameraVideo_)
-        return;
-      this.cameraCheckInProgress_ = true;
+    startCamera: function(onAvailable, onAbsent) {
+      this.stopCamera();
+      this.cameraStartInProgress_ = true;
       navigator.webkitGetUserMedia(
           {video: true},
           this.handleCameraAvailable_.bind(this, onAvailable),
-          // Needs both arguments since it may call checkCameraPresence again.
-          this.handleCameraAbsent_.bind(this, onAvailable, onAbsent));
+          this.handleCameraAbsent_.bind(this));
     },
 
     /**
@@ -274,7 +281,7 @@ cr.define('options', function() {
       if (this.cameraStream_)
         this.cameraStream_.stop();
       // Cancel any pending getUserMedia() checks.
-      this.cameraCheckInProgress_ = false;
+      this.cameraStartInProgress_ = false;
     },
 
     /**
@@ -285,36 +292,24 @@ cr.define('options', function() {
      * @private
      */
     handleCameraAvailable_: function(onAvailable, stream) {
-      this.cameraPresent = true;
-      if (this.cameraCheckInProgress_ && onAvailable()) {
+      if (this.cameraStartInProgress_ && onAvailable()) {
         this.cameraVideo_.src = window.webkitURL.createObjectURL(stream);
         this.cameraStream_ = stream;
       } else {
         stream.stop();
       }
-      this.cameraCheckInProgress_ = false;
+      this.cameraStartInProgress_ = false;
     },
 
     /**
      * Handles camera check failure.
-     * @param {function(): boolean} onAvailable Callback that is called if
-     *     camera is available in future re-checks. If it returns |true|,
-     *     capture is started immediately.
-     * @param {function(): boolean} onAbsent Callback to call. If it returns
-     *     |true|, camera is checked again after some delay.
      * @param {NavigatorUserMediaError=} err Error object.
      * @private
      */
-    handleCameraAbsent_: function(onAvailable, onAbsent, err) {
+    handleCameraAbsent_: function(err) {
       this.cameraPresent = false;
       this.cameraOnline = false;
-      if (onAbsent()) {
-        // Repeat the check.
-        this.cameraPresentCheckTimer_ = setTimeout(
-            this.checkCameraPresence.bind(this, onAvailable, onAbsent),
-            CAMERA_CHECK_INTERVAL_MS);
-      }
-      this.cameraCheckInProgress_ = false;
+      this.cameraStartInProgress_ = false;
     },
 
     /**
@@ -343,9 +338,7 @@ cr.define('options', function() {
     checkCameraLive_: function() {
       if (new Date().getTime() - this.lastFrameTime_ >
           CAMERA_LIVENESS_CHECK_MS) {
-        // Continue checking for camera presence but don't start capture.
-        this.handleCameraAbsent_(function() { return false; },
-                                 function() { return true; });
+        this.cameraPresent = false;
       }
     },
 
@@ -480,13 +473,9 @@ cr.define('options', function() {
       this.cameraVideo_.addEventListener('timeupdate',
                                          this.handleVideoUpdate_.bind(this));
       this.updatePreview_();
-      this.checkCameraPresence(
-          function() {
-            return false;  // Don't start streaming if camera is present.
-          },
-          function() {
-            return false;  // Don't retry if camera is absent.
-          });
+      // Initialize camera state and check for its presence.
+      this.cameraLive = true;
+      this.cameraPresent = false;
     },
 
     /**
@@ -548,7 +537,7 @@ cr.define('options', function() {
         frameNo: 0,
         lastTimestamp: new Date().getTime()
       };
-      captureData.timer = setInterval(
+      captureData.timer = window.setInterval(
           this.captureVideoFrame_.bind(this, captureData), 1000 / RECORD_FPS);
     },
 
@@ -613,7 +602,7 @@ cr.define('options', function() {
       data.ctx.translate(0, CAPTURE_SIZE.height);
 
       if (++data.frameNo == RECORD_FRAMES) {
-        clearTimeout(data.timer);
+        window.clearTimeout(data.timer);
         if (data.callback && typeof data.callback == 'function')
           data.callback(data.canvas.toDataURL('image/png'));
       }
