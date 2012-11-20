@@ -1157,7 +1157,7 @@ def main(argv):
       parser.error('Options --buildbot/--remote-trybot and --nocgroups cannot '
                    'be used together.  Cgroup support is required for '
                    'buildbot/remote-trybot mode.')
-    if not cgroups.Cgroup.CgroupsSupported():
+    if not cgroups.Cgroup.IsSupported():
       parser.error('Option --buildbot/--remote-trybot was given, but this '
                    'system does not support cgroups.  Failing.')
 

@@ -136,9 +136,9 @@ class Cgroup(object):
 
   @classmethod
   @MemoizedSingleCall
-  def CgroupsUsable(cls):
-    """Function to sanity check if everything is setup to use cgroups"""
-    if not cls.CgroupsSupported():
+  def InitSystem(cls):
+    """If cgroups are supported, initialize the system state"""
+    if not cls.IsSupported():
       return False
 
     if not _FileContains('/proc/mounts', [cls.MOUNT_ROOT]):
@@ -154,13 +154,22 @@ class Cgroup(object):
       # This hierarchy is exclusive to cros, so it probably doesn't exist.
       cros_build_lib.SudoRunCommand(['mount', '-t', 'cgroup', '-o', opts,
                                      'cros', cls.CGROUP_ROOT], print_cmd=False)
+
+    return True
+
+  @classmethod
+  @MemoizedSingleCall
+  def IsUsable(cls):
+    """Function to sanity check if everything is setup to use cgroups"""
+    if not cls.InitSystem():
+      return False
     cls._SUPPORTS_AUTOINHERIT = os.path.exists(
         os.path.join(cls.CGROUP_ROOT, 'cgroup.clone_children'))
     return True
 
   @classmethod
   @MemoizedSingleCall
-  def CgroupsSupported(cls):
+  def IsSupported(cls):
     """Sanity check as to whether or not cgroups are supported."""
     # Is the cgroup subsystem even enabled?
 
@@ -746,7 +755,7 @@ class Cgroup(object):
         should we nest ourselves in their hierarchy?  Generally speaking,
         client code should never have a reason to disable nesting."""
 
-    if not cls.CgroupsUsable():
+    if not cls.IsUsable():
       return None
 
     target = None

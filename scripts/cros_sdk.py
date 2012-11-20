@@ -207,15 +207,22 @@ def _SudoCommand():
   return cmd
 
 
-def _ReExecuteAsRootIfNeeded(argv):
+def _ReExecuteIfNeeded(argv):
   """Re-execute cros_sdk as root.
 
   Also unshare the mount namespace so as to ensure that processes outside
   the chroot can't mess with our mounts.
   """
+  MAGIC_VAR = '%CROS_SDK_MOUNT_NS'
   if os.geteuid() != 0:
-    cmd = _SudoCommand()
-    os.execvp(cmd[0], cmd + ['--', 'unshare', '-m', '--'] + argv)
+    cmd = _SudoCommand() + ['--'] + argv
+    os.execvp(cmd[0], cmd)
+  elif os.environ.get(MAGIC_VAR, '0') == '0':
+    cgroups.Cgroup.InitSystem()
+    os.environ[MAGIC_VAR] = '1'
+    os.execvp('unshare', ['unshare', '-m', '--'] + argv)
+  else:
+    os.environ.pop(MAGIC_VAR)
 
 
 def main(argv):
@@ -285,10 +292,9 @@ If given args those are passed to the chroot environment, and executed."""
   if cros_build_lib.IsInsideChroot():
     parser.error("This needs to be ran outside the chroot")
 
-  _ReExecuteAsRootIfNeeded([sys.argv[0]] + argv)
+  _ReExecuteIfNeeded([sys.argv[0]] + argv)
 
   host = os.uname()[4]
-
   if host != 'x86_64':
     parser.error(
         "cros_sdk is currently only supported on x86_64; you're running"
