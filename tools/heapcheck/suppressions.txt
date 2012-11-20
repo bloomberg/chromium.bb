@@ -1663,3 +1663,15 @@
    fun:chromeos::disks::DiskMountManager::Disk::clear_mount_path
    fun:chromeos::disks::::DiskMountManagerImpl::OnUnmountPath
 }
+{
+   bug_161979a
+   Heapcheck:Leak
+   ...
+   fun:ProfileSyncServicePreferenceTest_ManagedListPreferences_Test*
+}
+{
+   bug_161979b
+   Heapcheck:Leak
+   ...
+   fun:ProfileSyncServicePreferenceTest::GetSyncedValue
+}
