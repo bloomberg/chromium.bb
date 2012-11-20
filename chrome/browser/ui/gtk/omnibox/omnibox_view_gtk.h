@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,7 +106,7 @@ class OmniboxViewGtk : public OmniboxView,
 
   // Sets the colors of the text view according to the theme.
   void SetBaseColor();
-  // Sets the colors of the instant suggestion view according to the theme.
+  // Sets the colors of the Instant suggestion view according to the theme.
   void UpdateInstantViewColors();
 
   // Returns the text view gtk widget. May return NULL if the widget
@@ -309,14 +309,14 @@ class OmniboxViewGtk : public OmniboxView,
   GtkTextTag* security_error_scheme_tag_;
   GtkTextTag* normal_text_tag_;
 
-  // Objects for the instant suggestion text view.
+  // Objects for the Instant suggestion text view.
   GtkTextTag* instant_anchor_tag_;
 
-  // A widget for displaying instant suggestion text. It'll be attached to a
+  // A widget for displaying Instant suggestion text. It'll be attached to a
   // child anchor in the |text_buffer_| object.
   GtkWidget* instant_view_;
 
-  // A mark to split the content and the instant anchor. Wherever the end
+  // A mark to split the content and the Instant anchor. Wherever the end
   // iterator of the text buffer is required, the iterator to this mark should
   // be used.
   GtkTextMark* instant_mark_;

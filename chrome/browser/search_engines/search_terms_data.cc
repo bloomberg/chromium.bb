@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_instant_controller.h"
+#include "chrome/browser/ui/search/search.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
@@ -111,9 +112,9 @@ string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
 std::string UIThreadSearchTermsData::InstantEnabledParam() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (InstantController::IsExtendedAPIEnabled(profile_))
+  if (chrome::search::IsInstantExtendedAPIEnabled(profile_))
     return std::string(google_util::kInstantExtendedAPIParam) + "=1&";
-  if (InstantController::IsInstantEnabled(profile_))
+  if (chrome::BrowserInstantController::IsInstantEnabled(profile_))
     return "ion=1&";
   return std::string();
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -414,7 +414,8 @@ Browser::Browser(const CreateParams& params)
   encoding_auto_detect_.Init(prefs::kWebKitUsesUniversalDetector,
                              profile_->GetPrefs(), NULL);
 
-  instant_controller_.reset(new chrome::BrowserInstantController(this));
+  if (is_type_tabbed())
+    instant_controller_.reset(new chrome::BrowserInstantController(this));
 
 #if 0
   // Disabled for M22. See http://crbug.com/144326.
@@ -1150,6 +1151,10 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
   }
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_SWITCH);
+
+  // This needs to be called after UpdateSearchState().
+  if (instant_controller_)
+    instant_controller_->ActiveTabChanged();
 }
 
 void Browser::TabMoved(WebContents* contents,
@@ -1211,6 +1216,10 @@ void Browser::TabStripEmpty() {
   //       still present.
   MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&Browser::CloseFrame, weak_factory_.GetWeakPtr()));
+
+  // Instant may have visible WebContents that need to be detached before the
+  // window system closes.
+  instant_controller_.reset();
 }
 
 bool Browser::PreHandleKeyboardEvent(content::WebContents* source,

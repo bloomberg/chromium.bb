@@ -4,15 +4,14 @@
 
 #include "chrome/browser/ui/gtk/instant_preview_controller_gtk.h"
 
+#include "chrome/browser/instant/instant_model.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
-#include "chrome/browser/instant/instant_model.h"
 
 InstantPreviewControllerGtk::InstantPreviewControllerGtk(
-    Browser* browser,
     BrowserWindowGtk* window,
     TabContentsContainerGtk* contents)
-    : InstantPreviewController(browser),
+    : InstantPreviewController(window->browser()),
       window_(window),
       contents_(contents) {
 }
@@ -22,24 +21,11 @@ InstantPreviewControllerGtk::~InstantPreviewControllerGtk() {
 
 void InstantPreviewControllerGtk::PreviewStateChanged(
     const InstantModel& model) {
-  if (model.preview_state() == InstantModel::QUERY_RESULTS) {
-    ShowInstant(model.GetPreviewContents(),
-                model.height(), model.height_units());
+  if (model.mode().is_search_suggestions()) {
+    // TODO(jered): Support non-100% height.
+    contents_->SetPreview(model.GetPreviewContents());
   } else {
-    HideInstant();
+    contents_->SetPreview(NULL);
   }
-}
-
-void InstantPreviewControllerGtk::ShowInstant(TabContents* preview,
-                                              int height,
-                                              InstantSizeUnits units) {
-  // TODO(jered): Support height < 100%.
-  DCHECK(height == 100 && units == INSTANT_SIZE_PERCENT);
-  contents_->SetPreview(preview);
-  window_->MaybeShowBookmarkBar(false);
-}
-
-void InstantPreviewControllerGtk::HideInstant() {
-  contents_->SetPreview(NULL);
   window_->MaybeShowBookmarkBar(false);
 }

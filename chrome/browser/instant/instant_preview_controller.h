@@ -7,36 +7,21 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/instant/instant_model_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class Browser;
 class InstantModel;
 
 // Abstract base class for platform-specific Instant preview controllers.
-class InstantPreviewController : public InstantModelObserver,
-                                 public content::NotificationObserver {
- public:
+class InstantPreviewController : public InstantModelObserver {
+ protected:
   explicit InstantPreviewController(Browser* browser);
   virtual ~InstantPreviewController();
 
-  // Overridden from InstantModelObserver:
-  virtual void PreviewStateChanged(const InstantModel& model) OVERRIDE = 0;
-
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
- protected:
   Browser* const browser_;
 
  private:
-  void ResetInstant();
-
-  content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstantPreviewController);
+  // Overridden from InstantModelObserver:
+  virtual void PreviewStateChanged(const InstantModel& model) OVERRIDE = 0;
 };
 
 #endif  // CHROME_BROWSER_INSTANT_INSTANT_PREVIEW_CONTROLLER_H_

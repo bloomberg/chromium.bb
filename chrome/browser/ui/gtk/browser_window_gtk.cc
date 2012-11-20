@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1678,9 +1678,7 @@ void BrowserWindowGtk::InitWidgets() {
                    TRUE, TRUE, 0);
 
   instant_preview_controller_.reset(
-      new InstantPreviewControllerGtk(browser_.get(),
-                                      this,
-                                      contents_container_.get()));
+      new InstantPreviewControllerGtk(this, contents_container_.get()));
 
   if (IsBookmarkBarSupported()) {
     bookmark_bar_.reset(new BookmarkBarGtk(this,

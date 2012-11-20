@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1886,9 +1885,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 }
 
 - (void)commitInstant {
-  InstantController* instant = browser_->instant_controller()->instant();
-  if (instant && instant->IsCurrent())
-    instant->CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
+  if (chrome::BrowserInstantController* controller =
+          browser_->instant_controller())
+    controller->instant()->CommitIfCurrent(INSTANT_COMMIT_FOCUS_LOST);
 }
 
 - (BOOL)isInstantTabShowing {

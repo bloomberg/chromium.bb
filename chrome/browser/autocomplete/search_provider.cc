@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,6 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/in_memory_database.h"
-#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -37,6 +36,7 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -700,7 +700,8 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
     extras->GetList("google:suggesttype", &types);
 
     // Only accept relevance suggestions if Instant is disabled.
-    if (!is_keyword && !InstantController::IsInstantEnabled(profile_)) {
+    if (!is_keyword &&
+        !chrome::BrowserInstantController::IsInstantEnabled(profile_)) {
       // Discard this list if its size does not match that of the suggestions.
       if (extras->GetList("google:suggestrelevance", &relevances) &&
           relevances->GetSize() != results->GetSize())
@@ -1258,5 +1259,5 @@ void SearchProvider::UpdateDone() {
   // pending, and we're not waiting on instant.
   done_ = (!timer_.IsRunning() && (suggest_results_pending_ == 0) &&
            (instant_finalized_ ||
-            !InstantController::IsInstantEnabled(profile_)));
+            !chrome::BrowserInstantController::IsInstantEnabled(profile_)));
 }

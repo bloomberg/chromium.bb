@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
@@ -1304,7 +1304,6 @@
         'browser/ui/cocoa/styled_text_field_test_helper.h',
         'browser/ui/cocoa/styled_text_field_test_helper.mm',
         'browser/ui/cocoa/styled_text_field_unittest.mm',
-        'browser/ui/cocoa/tab_contents/previewable_contents_controller_unittest.mm',
         'browser/ui/cocoa/tab_contents/sad_tab_controller_unittest.mm',
         'browser/ui/cocoa/tab_contents/sad_tab_view_unittest.mm',
         'browser/ui/cocoa/tab_view_picker_table_unittest.mm',

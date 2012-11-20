@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,10 +16,6 @@
 
 namespace content {
 class RenderView;
-}
-
-namespace IPC {
-class Message;
 }
 
 class SearchBox : public content::RenderViewObserver,
@@ -50,7 +46,7 @@ class SearchBox : public content::RenderViewObserver,
       GetAutocompleteResultWithId(size_t restricted_id) const;
 
  private:
-  // RenderViewObserver implementation.
+  // Overridden from content::RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnChange(const string16& query,

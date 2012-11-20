@@ -1,5 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
-#
+# Copyright 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -2468,7 +2467,6 @@
             'browser/ui/browser.cc',
             'browser/ui/browser_command_controller.cc',
             'browser/ui/browser_finder.cc',
-            'browser/ui/browser_instant_controller.cc',
             'browser/ui/browser_list.cc',
             'browser/ui/browser_navigator.cc',
             'browser/ui/browser_otr_state.cc',

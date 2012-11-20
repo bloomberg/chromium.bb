@@ -5,20 +5,17 @@
 #ifndef CHROME_BROWSER_INSTANT_INSTANT_MODEL_OBSERVER_H_
 #define CHROME_BROWSER_INSTANT_INSTANT_MODEL_OBSERVER_H_
 
-#include "chrome/common/instant_types.h"
-
 class InstantModel;
 
 // This class defines the observer interface for the |InstantModel|.
 class InstantModelObserver {
  public:
-  // Informs the observer that the preview state has has changed.
-  // This can mean the model state has changed, or the contents of the
-  // preview.
+  // Informs the observer that the preview state has changed. This can mean
+  // either the model state changed or the contents of the preview changed.
   virtual void PreviewStateChanged(const InstantModel& model) = 0;
 
  protected:
-  virtual ~InstantModelObserver() {}
+  ~InstantModelObserver() {}
 };
 
 #endif  // CHROME_BROWSER_INSTANT_INSTANT_MODEL_OBSERVER_H_

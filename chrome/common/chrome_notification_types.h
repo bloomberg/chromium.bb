@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1111,10 +1111,6 @@ enum NotificationType {
   // Sent when the Instant loader determines whether the page supports the
   // Instant API or not.
   NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
-
-  // Sent when the Browser Instant controller resets, this may result from
-  // a preference change.
-  NOTIFICATION_BROWSER_INSTANT_RESET,
 
   // Sent when the CaptivePortalService checks if we're behind a captive portal.
   // The Source is the Profile the CaptivePortalService belongs to, and the

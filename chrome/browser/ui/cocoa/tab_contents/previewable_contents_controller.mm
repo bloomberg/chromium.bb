@@ -1,39 +1,28 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/tab_contents/previewable_contents_controller.h"
 
-#include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#include "base/mac/mac_util.h"
 #include "chrome/browser/ui/cocoa/tab_contents/instant_preview_controller_mac.h"
 #include "content/public/browser/web_contents.h"
-
-using content::WebContents;
 
 @implementation PreviewableContentsController
 
 @synthesize activeContainer = activeContainer_;
 
-// For testing.  Use |-initWithBrowser:| for production.
-- (id)init {
-  if ((self = [super initWithNibName:@"PreviewableContents"
-                              bundle:base::mac::FrameworkBundle()])) {
-  }
-  return self;
-}
-
 - (id)initWithBrowser:(Browser*)browser
      windowController:(BrowserWindowController*)windowController {
-  if ((self = [self init])) {
+  if ((self = [super initWithNibName:@"PreviewableContents"
+                     bundle:base::mac::FrameworkBundle()])) {
     instantPreviewController_.reset(
         new InstantPreviewControllerMac(browser, windowController, self));
   }
   return self;
 }
 
-- (void)showPreview:(WebContents*)preview {
+- (void)showPreview:(content::WebContents*)preview {
   DCHECK(preview);
 
   // Remove any old preview contents before showing the new one.
@@ -63,7 +52,7 @@ using content::WebContents;
   previewContents_ = nil;
 }
 
-- (void)onActivateTabWithContents:(WebContents*)contents {
+- (void)onActivateTabWithContents:(content::WebContents*)contents {
   if (previewContents_ == contents) {
     [previewContents_->GetNativeView() removeFromSuperview];
     previewContents_ = nil;

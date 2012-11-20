@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -234,12 +234,8 @@ bool OmniboxEditModel::CommitSuggestedText(bool skip_inline_autocomplete) {
 }
 
 bool OmniboxEditModel::AcceptCurrentInstantPreview() {
-  InstantController* instant = controller_->GetInstant();
-  if (instant && instant->IsCurrent()) {
-    instant->CommitCurrentPreview(INSTANT_COMMIT_PRESSED_ENTER);
-    return true;
-  }
-  return false;
+  return controller_->GetInstant() &&
+      controller_->GetInstant()->CommitIfCurrent(INSTANT_COMMIT_PRESSED_ENTER);
 }
 
 void OmniboxEditModel::OnChanged() {
@@ -288,7 +284,7 @@ void OmniboxEditModel::OnChanged() {
     // Hide any suggestions we might be showing.
     view_->SetInstantSuggestion(string16());
 
-    // No need to wait any longer for instant.
+    // No need to wait any longer for Instant.
     FinalizeInstantQuery(string16(), InstantSuggestion(), false);
   }
 
@@ -311,7 +307,7 @@ void OmniboxEditModel::GetDataForURLExport(GURL* url,
 bool OmniboxEditModel::UseVerbatimInstant() {
 #if defined(OS_MACOSX)
   // TODO(suzhe): Fix Mac port to display Instant suggest in a separated NSView,
-  // so that we can display instant suggest along with composition text.
+  // so that we can display Instant suggest along with composition text.
   const AutocompleteInput& input = autocomplete_controller_->input();
   if (input.prevent_inline_autocomplete())
     return true;
@@ -321,11 +317,11 @@ bool OmniboxEditModel::UseVerbatimInstant() {
   // following conditions:
   // 1. If the caret is at the end of the text (checked below).
   // 2. If it's in IME composition mode.
-  // As we use a separated widget for displaying the instant suggest, it won't
+  // As we use a separated widget for displaying the Instant suggest, it won't
   // interfere with IME composition, so we don't need to care about the value of
   // input.prevent_inline_autocomplete() here.
   if (view_->DeleteAtEndPressed() || (popup_->selected_line() != 0) ||
-      just_deleted_text_)
+      just_deleted_text_ || !inline_autocomplete_text_.empty())
     return true;
 
   size_t start, end;
@@ -624,6 +620,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
   if (disposition != NEW_BACKGROUND_TAB) {
     in_revert_ = true;
     view_->RevertAll();  // Revert the box to its unedited state
+    in_revert_ = false;
   }
 
   if (match.type == AutocompleteMatch::EXTENSION_APP) {
@@ -651,11 +648,6 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
 
   if (match.starred)
     bookmark_utils::RecordBookmarkLaunch(bookmark_utils::LAUNCH_OMNIBOX);
-
-  InstantController* instant = controller_->GetInstant();
-  if (instant && !popup_->IsOpen())
-    instant->Hide();
-  in_revert_ = false;
 }
 
 bool OmniboxEditModel::AcceptKeyword() {
@@ -716,9 +708,8 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
   has_focus_ = true;
   control_key_state_ = control_down ? DOWN_WITHOUT_CHANGE : UP;
 
-  InstantController* instant = controller_->GetInstant();
-  if (instant)
-    instant->OnAutocompleteGotFocus();
+  if (InstantController* instant = controller_->GetInstant())
+    instant->OmniboxGotFocus();
 
   content::WebContents* web_contents = controller_->GetWebContents();
   if (web_contents) {
@@ -738,7 +729,7 @@ void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
   SetInstantSuggestion(InstantSuggestion());
 
   if (InstantController* instant = controller_->GetInstant())
-    instant->OnAutocompleteLostFocus(view_gaining_focus);
+    instant->OmniboxLostFocus(view_gaining_focus);
 
   // TODO(jered): Rip this out along with StartZeroSuggest.
   autocomplete_controller_->StopZeroSuggest();
@@ -768,10 +759,6 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
     contents->GetController().DiscardNonCommittedEntries();
     view_->Update(NULL);
   }
-
-  // Let Instant decide whether to hide itself.
-  if (InstantController* instant = controller_->GetInstant())
-    instant->OnEscapeKeyPressed();
 
   // If the user wasn't editing, but merely had focus in the edit, allow <esc>
   // to be processed as an accelerator, so it can still be used to stop a load.
@@ -1005,8 +992,7 @@ bool OmniboxEditModel::OnAfterPossibleChange(const string16& old_text,
 }
 
 void OmniboxEditModel::PopupBoundsChangedTo(const gfx::Rect& bounds) {
-  InstantController* instant = controller_->GetInstant();
-  if (instant)
+  if (InstantController* instant = controller_->GetInstant())
     instant->SetOmniboxBounds(bounds);
 }
 
@@ -1190,39 +1176,32 @@ void OmniboxEditModel::NotifySearchTabHelper() {
 }
 
 bool OmniboxEditModel::DoInstant(const AutocompleteMatch& match) {
-  if (in_revert_)
-    return false;
-
   InstantController* instant = controller_->GetInstant();
-
-  if (!instant)
+  if (!instant || in_revert_)
     return false;
 
-  if (user_input_in_progress_) {
-    // The two pieces of text we want to send Instant, viz., what the user has
-    // typed, and the full omnibox text including any inline autocompletion.
-    string16 user_text = user_text_;
-    string16 full_text = user_text_ + inline_autocomplete_text_;
+  // The two pieces of text we want to send Instant, viz., what the user has
+  // typed, and the full omnibox text including any inline autocompletion.
+  string16 user_text = user_text_;
+  string16 full_text = user_text_ + inline_autocomplete_text_;
 
-    // If there's temporary text, that overrides the user_text. In this case, we
-    // should ignore any inline_autocomplete_text_, because it won't be visible.
-    if (has_temporary_text_)
-      user_text = full_text = CurrentMatch().fill_into_edit;
+  // If there's temporary text, that overrides the user_text. In this case, we
+  // should ignore any inline_autocomplete_text_, because it won't be visible.
+  if (has_temporary_text_)
+    user_text = full_text = CurrentMatch().fill_into_edit;
 
-    // Remove keyword if we're in keyword mode.
-    user_text = DisplayTextFromUserText(user_text);
-    full_text = DisplayTextFromUserText(full_text);
+  // Remove keyword if we're in keyword mode.
+  user_text = DisplayTextFromUserText(user_text);
+  full_text = DisplayTextFromUserText(full_text);
 
-    // Remove "?" if we're in forced query mode.
-    AutocompleteInput::RemoveForcedQueryStringIfNecessary(
-        autocomplete_controller_->input().type(), &user_text);
-    AutocompleteInput::RemoveForcedQueryStringIfNecessary(
-        autocomplete_controller_->input().type(), &full_text);
+  // Remove "?" if we're in forced query mode.
+  AutocompleteInput::RemoveForcedQueryStringIfNecessary(
+      autocomplete_controller_->input().type(), &user_text);
+  AutocompleteInput::RemoveForcedQueryStringIfNecessary(
+      autocomplete_controller_->input().type(), &full_text);
 
-    return instant->Update(match, user_text, full_text, UseVerbatimInstant());
-  }
-
-  return false;
+  return instant->Update(match, user_text, full_text, UseVerbatimInstant(),
+                         user_input_in_progress_, popup_->IsOpen());
 }
 
 void OmniboxEditModel::DoPrerender(const AutocompleteMatch& match) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "base/time.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/common/instant_types.h"
 #include "chrome/common/metrics/proto/omnibox_event.pb.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
@@ -21,6 +20,7 @@
 
 class AutocompleteController;
 class AutocompleteResult;
+struct InstantSuggestion;
 class OmniboxEditController;
 class OmniboxPopupModel;
 class OmniboxView;

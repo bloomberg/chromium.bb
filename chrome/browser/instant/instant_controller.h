@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/instant/instant_model.h"
@@ -27,8 +27,6 @@
 struct AutocompleteMatch;
 class AutocompleteProvider;
 class InstantLoader;
-class PrefService;
-class Profile;
 class TabContents;
 class TemplateURL;
 
@@ -36,50 +34,14 @@ namespace chrome {
 class BrowserInstantController;
 }
 
-// InstantController maintains a WebContents that is intended to give a
-// preview of search results. InstantController is owned by Browser via
+// InstantController maintains a WebContents that is intended to give a preview
+// of search suggestions and results. InstantController is owned by Browser via
 // BrowserInstantController.
-//
-// At any time the WebContents maintained by InstantController may be hidden
-// from view by way of Hide(), which may result in a change in the model's
-// display state and subsequent change in model observers. Similarly, the
-// preview may be committed at any time by invoking CommitCurrentPreview(),
-// which results in CommitInstant() being invoked on the browser.
 class InstantController {
  public:
-  // InstantController may operate in one of these modes:
-  //   EXTENDED: The default search engine is preloaded when the omnibox gets
-  //       focus. Queries are issued as the user types. Predicted queries are
-  //       inline autocompleted into the omnibox. Previews of search results
-  //       as well as predicted URLs are shown. Search suggestions are rendered
-  //       within the search results preview.
-  //   INSTANT: Same as EXTENDED, without URL previews. Search suggestions are
-  //       rendered by the omnibox drop down, and not by the preview page.
-  //   DISABLED: Instant is disabled.
-  enum Mode {
-    EXTENDED,
-    INSTANT,
-    DISABLED,
-  };
-
-  virtual ~InstantController();
-
-  // Creates a new InstantController. Caller owns the returned object. The
-  // |profile| pointer is not cached, so the underlying profile object need not
-  // live beyond this call. ***NOTE***: May return NULL, which means that
-  // Instant is disabled in this profile.
-  static InstantController* CreateInstant(
-      Profile* profile,
-      chrome::BrowserInstantController* browser);
-
-  // Returns true if Instant is enabled and supports the extended API.
-  static bool IsExtendedAPIEnabled(Profile* profile);
-
-  // Returns true if Instant is enabled in a visible, preview-showing mode.
-  static bool IsInstantEnabled(Profile* profile);
-
-  // Registers Instant related preferences.
-  static void RegisterUserPrefs(PrefService* prefs);
+  InstantController(chrome::BrowserInstantController* browser,
+                    bool extended_enabled);
+  ~InstantController();
 
   // Invoked as the user types into the omnibox. |user_text| is what the user
   // has typed. |full_text| is what the omnibox is showing. These may differ if
@@ -90,7 +52,9 @@ class InstantController {
   bool Update(const AutocompleteMatch& match,
               const string16& user_text,
               const string16& full_text,
-              bool verbatim);
+              bool verbatim,
+              bool user_input_in_progress,
+              bool omnibox_popup_is_open);
 
   // Sets the bounds of the omnibox dropdown, in screen coordinates.
   void SetOmniboxBounds(const gfx::Rect& bounds);
@@ -104,41 +68,35 @@ class InstantController {
   // handled the key press.
   bool OnUpOrDownKeyPressed(int count);
 
-  // Called when the user presses escape while editing omnibox text.
-  void OnEscapeKeyPressed();
-
   // The preview TabContents. May be NULL if ReleasePreviewContents() has been
   // called, with no subsequent successful call to Update(). InstantController
   // retains ownership of the object.
   TabContents* GetPreviewContents() const;
 
-  // Hides the preview, but doesn't destroy it, in hopes it can be subsequently
-  // reused. The preview will not be used until a call to Update() succeeds.
-  void Hide();
-
-  // Returns true if the Instant preview can be committed now. This can be true
-  // even if the preview is not showing yet, because we can commit as long as
-  // we've processed the last Update() and we know the loader supports Instant.
+  // Returns true if the Instant preview can be committed now.
   bool IsCurrent() const;
 
-  // Commits the preview. Calls CommitInstant() on the browser.
-  void CommitCurrentPreview(InstantCommitType type);
+  // If the preview is showing search results, commits the preview, calling
+  // CommitInstant() on the browser, and returns true. Else, returns false.
+  bool CommitIfCurrent(InstantCommitType type);
 
-  // The autocomplete edit that was initiating the current Instant session has
-  // lost focus. Commit or discard the preview accordingly.
-  void OnAutocompleteLostFocus(gfx::NativeView view_gaining_focus);
+  // The omnibox has lost focus. Commit or discard the preview accordingly.
+  void OmniboxLostFocus(gfx::NativeView view_gaining_focus);
 
-  // The autocomplete edit has gained focus. Preload the Instant URL of the
-  // default search engine, in anticipation of the user typing a query.
-  void OnAutocompleteGotFocus();
+  // The omnibox has gained focus. Preload the default search engine, in
+  // anticipation of the user typing a query.
+  void OmniboxGotFocus();
 
   // The search mode in the active tab has changed. Pass the message down to
   // the loader which will notify the renderer.
-  void OnActiveTabModeChanged(chrome::search::Mode new_mode);
+  void SearchModeChanged(const chrome::search::Mode& old_mode,
+                         const chrome::search::Mode& new_mode);
 
-  // Returns whether the preview will be committed when the mouse or touch
-  // pointer is released.
-  bool commit_on_pointer_release() const;
+  // The user switched tabs. Hide the preview if needed.
+  void ActiveTabChanged();
+
+  // Sets whether Instant should show result previews.
+  void SetInstantEnabled(bool instant_enabled);
 
   // Returns the transition type of the last AutocompleteMatch passed to Update.
   content::PageTransition last_transition_type() const {
@@ -160,9 +118,6 @@ class InstantController {
                           int height,
                           InstantSizeUnits units);
 
-  // Invoked by InstantLoader to notify that the Instant URL completed loading.
-  void InstantLoaderPreviewLoaded(InstantLoader* loader);
-
   // Invoked by InstantLoader when it has determined whether or not the page
   // supports the Instant API.
   void InstantSupportDetermined(InstantLoader* loader, bool supports_instant);
@@ -183,11 +138,11 @@ class InstantController {
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantLoaderRefresh);
 
-  InstantController(chrome::BrowserInstantController* browser, Mode mode);
-
-  // Creates a new loader if necessary (for example, if the |instant_url| has
-  // changed since the last time we created the loader).
-  void ResetLoader(const std::string& instant_url,
+  // Creates a new loader if necessary, using the instant_url property of the
+  // |template_url| (for example, if the Instant URL has changed since the last
+  // time the loader was created). Returns false if the |template_url| doesn't
+  // have a valid Instant URL; true otherwise.
+  bool ResetLoader(const TemplateURL* template_url,
                    const TabContents* active_tab);
 
   // Ensures that the |loader_| uses the default Instant URL, recreating it if
@@ -195,22 +150,22 @@ class InstantController {
   // determined or the active tab is NULL (browser is shutting down).
   bool CreateDefaultLoader();
 
-  // If the |loader_| is not showing, it is deleted and recreated. Else the
-  // refresh is skipped and the next refresh is scheduled.
+  // Called when the |loader_| might be stale. If it's actually stale, and the
+  // omnibox doesn't have focus, and the preview isn't showing, the |loader_| is
+  // deleted and recreated. Else the refresh is skipped.
   void OnStaleLoader();
-
-  // Calls OnStaleLoader if |stale_loader_timer_| is not running.
-  void MaybeOnStaleLoader();
 
   // Destroys the |loader_| and its preview contents.
   void DeleteLoader();
 
+  // Hide the preview. If |clear_query| is true, clears query text and sends a
+  // an onchange event (with blank query) to the preview, telling it to clear
+  // out results for any old queries.
+  void Hide(bool clear_query);
+
   // Counterpart to Hide(). Asks the |browser_| to display the preview with
   // the given |height|.
   void Show(InstantShownReason reason, int height, InstantSizeUnits units);
-
-  // Send a blank query to clear out results for last search.
-  void SendBlankQuery();
 
   // Send the omnibox dropdown bounds to the page.
   void SendBoundsToPage();
@@ -220,23 +175,24 @@ class InstantController {
   // Note: If the command-line switch kInstantURL is set, this method uses its
   // value for |instant_url| and returns true without examining |template_url|.
   bool GetInstantURL(const TemplateURL* template_url,
-                     const GURL& tab_url,
                      std::string* instant_url) const;
 
   chrome::BrowserInstantController* const browser_;
+
+  // Whether the extended API and regular API are enabled. If both are false,
+  // Instant is effectively disabled.
+  const bool extended_enabled_;
+  bool instant_enabled_;
 
   InstantModel model_;
 
   scoped_ptr<InstantLoader> loader_;
 
-  // See the enum description above.
-  const Mode mode_;
+  // The most recent user_text passed to Update().
+  string16 last_user_text_;
 
   // The most recent full_text passed to Update().
   string16 last_full_text_;
-
-  // The most recent user_text passed to Update().
-  string16 last_user_text_;
 
   // The most recent verbatim passed to Update().
   bool last_verbatim_;
@@ -255,7 +211,7 @@ class InstantController {
   bool is_omnibox_focused_;
 
   // The search model mode for the active tab.
-  chrome::search::Mode active_tab_mode_;
+  chrome::search::Mode search_mode_;
 
   // Current omnibox bounds.
   gfx::Rect omnibox_bounds_;

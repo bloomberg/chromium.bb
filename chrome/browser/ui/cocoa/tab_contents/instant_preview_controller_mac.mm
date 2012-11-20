@@ -11,11 +11,11 @@
 
 InstantPreviewControllerMac::InstantPreviewControllerMac(
     Browser* browser,
-    BrowserWindowController* window_controller,
-    PreviewableContentsController* previewable_contents_controller)
+    BrowserWindowController* window,
+    PreviewableContentsController* preview)
     : InstantPreviewController(browser),
-      window_controller_(window_controller),
-      previewable_contents_controller_(previewable_contents_controller) {
+      window_(window),
+      preview_(preview) {
 }
 
 InstantPreviewControllerMac::~InstantPreviewControllerMac() {
@@ -23,14 +23,11 @@ InstantPreviewControllerMac::~InstantPreviewControllerMac() {
 
 void InstantPreviewControllerMac::PreviewStateChanged(
     const InstantModel& model) {
-  if (model.preview_state() == InstantModel::QUERY_RESULTS) {
+  if (model.mode().is_search_suggestions()) {
     // TODO(dhollowa): Needs height and units implementation on Mac.
-    [previewable_contents_controller_
-        showPreview:model.GetPreviewContents()->web_contents()];
+    [preview_ showPreview:model.GetPreviewContents()->web_contents()];
   } else {
-    if (![previewable_contents_controller_ isShowingPreview])
-      return;
-    [previewable_contents_controller_ hidePreview];
+    [preview_ hidePreview];
   }
-  [window_controller_ updateBookmarkBarVisibilityWithAnimation:NO];
+  [window_ updateBookmarkBarVisibilityWithAnimation:NO];
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_INSTANT_INSTANT_LOADER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/history/history_types.h"
@@ -22,8 +22,6 @@ class InstantController;
 class TabContents;
 
 namespace content {
-class NotificationDetails;
-class NotificationSource;
 class WebContents;
 }
 
@@ -89,6 +87,10 @@ class InstantLoader : public content::NotificationObserver {
   TabContents* ReleasePreviewContents(InstantCommitType type,
                                       const string16& text) WARN_UNUSED_RESULT;
 
+  // Severs delegate and observer connections, resets popup blocking, etc., on
+  // the |preview_contents_|.
+  void CleanupPreviewContents();
+
   // The preview TabContents. The loader retains ownership. This will be
   // non-NULL until ReleasePreviewContents() is called.
   TabContents* preview_contents() const { return preview_contents_.get(); }
@@ -112,30 +114,27 @@ class InstantLoader : public content::NotificationObserver {
   // preview content.
   bool IsPointerDownFromActivate() const;
 
-  // Returns true iff the current preview page has shown custom NTP content.
-  bool HasShownCustomNTPContent() const;
+ private:
+  class WebContentsDelegateImpl;
 
-  // content::NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
- private:
-  class WebContentsDelegateImpl;
-
   void SetupPreviewContents();
-  void CleanupPreviewContents();
   void ReplacePreviewContents(content::WebContents* old_contents,
                               content::WebContents* new_contents);
 
   InstantController* const controller_;
 
+  // Delegate of the preview WebContents. Used when the user does some gesture
+  // on the WebContents and it needs to be activated. This MUST be defined above
+  // |preview_contents_| so that the delegate can outlive the WebContents.
+  scoped_ptr<WebContentsDelegateImpl> preview_delegate_;
+
   // See comments on the getter above.
   scoped_ptr<TabContents> preview_contents_;
-
-  // Delegate of the preview WebContents. Used to detect when the user does some
-  // gesture on the WebContents and the preview needs to be activated.
-  scoped_ptr<WebContentsDelegateImpl> preview_delegate_;
 
   // See comments on the getter above.
   bool supports_instant_;

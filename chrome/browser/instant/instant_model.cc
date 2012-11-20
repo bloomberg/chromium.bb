@@ -8,8 +8,7 @@
 #include "chrome/browser/instant/instant_model_observer.h"
 
 InstantModel::InstantModel(InstantController* controller)
-  : preview_state_(NOT_READY),
-    height_(0),
+  : height_(0),
     height_units_(INSTANT_SIZE_PIXELS),
     preview_contents_(NULL),
     controller_(controller) {
@@ -18,15 +17,20 @@ InstantModel::InstantModel(InstantController* controller)
 InstantModel::~InstantModel() {
 }
 
-void InstantModel::SetPreviewState(PreviewState preview_state,
+void InstantModel::SetPreviewState(const chrome::search::Mode& mode,
                                    int height,
                                    InstantSizeUnits height_units) {
-  if (preview_state_ == preview_state &&
-      height_ == height &&
-      height_units_ == height_units)
+  if (mode_.mode == mode.mode && height_ == height &&
+      height_units_ == height_units) {
+    // Mode::mode hasn't changed, but perhaps bits that we ignore (such as
+    // Mode::origin) have. Update |mode_| anyway, so it's consistent with the
+    // argument (so InstantModel::mode() doesn't return something unexpected).
+    mode_ = mode;
     return;
+  }
 
-  preview_state_ = preview_state;
+  DVLOG(1) << "SetPreviewState: " << mode_.mode << " to " << mode.mode;
+  mode_ = mode;
   height_ = height;
   height_units_ = height_units;
 
@@ -54,8 +58,4 @@ void InstantModel::AddObserver(InstantModelObserver* observer) const {
 
 void InstantModel::RemoveObserver(InstantModelObserver* observer) const {
   observers_.RemoveObserver(observer);
-}
-
-bool InstantModel::HasObserver(InstantModelObserver* observer) const {
-  return observers_.HasObserver(observer);
 }

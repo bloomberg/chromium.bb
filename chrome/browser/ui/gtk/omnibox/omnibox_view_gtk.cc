@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,6 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -371,7 +370,7 @@ void OmniboxViewGtk::Init() {
   GtkTextIter end_iter;
   gtk_text_buffer_get_end_iter(text_buffer_, &end_iter);
 
-  // Insert a Zero Width Space character just before the instant anchor.
+  // Insert a Zero Width Space character just before the Instant anchor.
   // It's a hack to workaround a bug of GtkTextView which can not align the
   // pre-edit string and a child anchor correctly when there is no other content
   // around the pre-edit string.
@@ -743,7 +742,7 @@ int OmniboxViewGtk::TextWidth() const {
   GdkRectangle first_char_bounds, last_char_bounds;
   gtk_text_buffer_get_start_iter(text_buffer_, &start);
 
-  // Use the real end iterator here to take the width of instant suggestion
+  // Use the real end iterator here to take the width of Instant suggestion
   // text into account, so that location bar can layout its children correctly.
   gtk_text_buffer_get_end_iter(text_buffer_, &end);
   gtk_text_view_get_iter_location(GTK_TEXT_VIEW(text_view_),
@@ -1446,7 +1445,7 @@ void OmniboxViewGtk::HandleInsertText(GtkTextBuffer* buffer,
        p = g_utf8_next_char(p)) {
     gunichar c = g_utf8_get_char(p);
 
-    // 0x200B is Zero Width Space, which is inserted just before the instant
+    // 0x200B is Zero Width Space, which is inserted just before the Instant
     // anchor for working around the GtkTextView's misalignment bug.
     // This character might be captured and inserted into the content by undo
     // manager, so we need to filter it out here.
@@ -1459,7 +1458,7 @@ void OmniboxViewGtk::HandleInsertText(GtkTextBuffer* buffer,
         CollapseWhitespace(filtered_text, true));
 
   if (!filtered_text.empty()) {
-    // Avoid inserting the text after the instant anchor.
+    // Avoid inserting the text after the Instant anchor.
     ValidateTextBufferIter(location);
 
     // Call the default handler to insert filtered text.
@@ -1971,8 +1970,8 @@ void OmniboxViewGtk::HandleKeymapDirectionChanged(GdkKeymap* sender) {
 void OmniboxViewGtk::HandleDeleteRange(GtkTextBuffer* buffer,
                                        GtkTextIter* start,
                                        GtkTextIter* end) {
-  // Prevent the user from deleting the instant anchor. We can't simply set the
-  // instant anchor readonly by applying a tag with "editable" = FALSE, because
+  // Prevent the user from deleting the Instant anchor. We can't simply set the
+  // Instant anchor readonly by applying a tag with "editable" = FALSE, because
   // it'll prevent the insert caret from blinking.
   ValidateTextBufferIter(start);
   ValidateTextBufferIter(end);
@@ -1995,7 +1994,7 @@ void OmniboxViewGtk::HandleMarkSetAlways(GtkTextBuffer* buffer,
   static guint signal_id = g_signal_lookup("mark-set", GTK_TYPE_TEXT_BUFFER);
 
   // "mark-set" signal is actually emitted after the mark's location is already
-  // set, so if the location is beyond the instant anchor, we need to move the
+  // set, so if the location is beyond the Instant anchor, we need to move the
   // mark again, which will emit the signal again. In order to prevent other
   // signal handlers from being called twice, we need to stop signal emission
   // before moving the mark again.

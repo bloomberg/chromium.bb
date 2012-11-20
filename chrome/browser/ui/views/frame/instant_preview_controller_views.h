@@ -5,53 +5,40 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_INSTANT_PREVIEW_CONTROLLER_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_INSTANT_PREVIEW_CONTROLLER_VIEWS_H_
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/instant/instant_model_observer.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/instant/instant_preview_controller.h"
 
 class Browser;
-class BrowserView;
 class ContentsContainer;
-class InstantModel;
-class TabContents;
 
 namespace views {
 class WebView;
 }
 
-// A controller that manages the Views-specific Instant preview.  Its primary
+// A controller that manages the Views-specific Instant preview. Its primary
 // role is to respond to display-state changes from the Instant model and
 // reflect this in the visibility and layout of the preview.
 class InstantPreviewControllerViews : public InstantPreviewController {
  public:
-  InstantPreviewControllerViews(Browser* browser,
-                                BrowserView* browser_view,
-                                ContentsContainer* contents);
+  InstantPreviewControllerViews(Browser* browser, ContentsContainer* contents);
   virtual ~InstantPreviewControllerViews();
 
-  // InstantModelObserver overrides:
-  virtual void PreviewStateChanged(const InstantModel& model) OVERRIDE;
+  views::WebView* preview() { return preview_.get(); }
 
-  views::WebView* preview_container() { return preview_container_; }
-  views::WebView* release_preview_container() {
-    views::WebView* tmp = preview_container_;
-    preview_container_ = NULL;
-    return tmp;
+  views::WebView* release_preview() WARN_UNUSED_RESULT {
+    return preview_.release();
   }
 
  private:
-  void ShowInstant(TabContents* preview, int height, InstantSizeUnits units);
-  void HideInstant();
+  // Overridden from InstantPreviewController:
+  virtual void PreviewStateChanged(const InstantModel& model) OVERRIDE;
 
-  // Weak.
-  BrowserView* browser_view_;
-
-  // Weak.
-  ContentsContainer* contents_;
+  ContentsContainer* const contents_;
 
   // The view that contains the Instant preview web contents.
-  // Lazily created in ShowInstant() with ownership passed to |contents_|.
-  views::WebView* preview_container_;
+  scoped_ptr<views::WebView> preview_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantPreviewControllerViews);
 };

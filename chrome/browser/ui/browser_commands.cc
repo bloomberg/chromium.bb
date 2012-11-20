@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -426,7 +426,8 @@ void OpenCurrentURL(Browser* browser) {
 
   WindowOpenDisposition open_disposition =
       location_bar->GetWindowOpenDisposition();
-  if (browser->instant_controller()->OpenInstant(open_disposition))
+  if (browser->instant_controller() &&
+      browser->instant_controller()->OpenInstant(open_disposition))
     return;
 
   GURL url(location_bar->GetInputString());

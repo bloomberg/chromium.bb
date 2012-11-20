@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
-#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -528,7 +527,7 @@ BrowserView::~BrowserView() {
   launcher_item_controller_.reset();
 #endif
 
-  preview_controller_.reset(NULL);
+  preview_controller_.reset();
 
   browser_->tab_strip_model()->RemoveObserver(this);
 
@@ -1510,7 +1509,7 @@ gfx::Rect BrowserView::GetInstantBounds() {
 }
 
 bool BrowserView::IsInstantTabShowing() {
-  return preview_controller_->preview_container() != NULL;
+  return preview_controller_->preview() != NULL;
 }
 
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
@@ -1589,7 +1588,7 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
   if (contents_->preview_web_contents() == new_contents) {
     contents_->MakePreviewContentsActiveContents();
     views::WebView* old_container = contents_container_;
-    contents_container_ = preview_controller_->release_preview_container();
+    contents_container_ = preview_controller_->release_preview();
     old_container->SetWebContents(NULL);
     delete old_container;
   }
@@ -2141,7 +2140,7 @@ void BrowserView::Init() {
   toolbar_->Init();
 
   preview_controller_.reset(
-      new InstantPreviewControllerViews(browser(), this, contents_));
+      new InstantPreviewControllerViews(browser(), contents_));
 
   SkColor bg_color = GetWidget()->GetThemeProvider()->
       GetColor(ThemeService::COLOR_TOOLBAR);
