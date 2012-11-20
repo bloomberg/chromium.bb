@@ -1195,7 +1195,6 @@
         'browser/ui/search/search_model.cc',
         'browser/ui/search/search_model.h',
         'browser/ui/search/search_model_observer.h',
-        'browser/ui/search/search_model_observer_bridge.h',
         'browser/ui/search/search_tab_helper.cc',
         'browser/ui/search/search_tab_helper.h',
         'browser/ui/search/search_types.h',

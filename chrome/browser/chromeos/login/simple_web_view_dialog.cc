@@ -190,7 +190,6 @@ void SimpleWebViewDialog::Init() {
                                       command_updater_.get(),
                                       toolbar_model_.get(),
                                       this,
-                                      NULL,  // no SearchModel
                                       LocationBarView::POPUP);
 
   // Reload button.

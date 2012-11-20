@@ -237,7 +237,6 @@ void ToolbarView::Init() {
       browser_->command_controller()->command_updater(),
       model_,
       this,
-      browser_->search_model(),
       (display_mode_ == DISPLAYMODE_LOCATION) ?
           LocationBarView::POPUP : LocationBarView::NORMAL);
 

@@ -29,9 +29,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
-#include "chrome/browser/ui/search/search.h"
-#include "chrome/browser/ui/search/search_model.h"
-#include "chrome/browser/ui/search/search_types.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_prompt_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
@@ -160,20 +158,6 @@ static const int kWIBubbleBackgroundImages[] = {
   IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_R,
 };
 
-#if defined(USE_AURA)
-LocationBarView::FadeAnimationObserver::FadeAnimationObserver(
-    LocationBarView* location_bar_view)
-    : location_bar_view_(location_bar_view) {
-}
-
-LocationBarView::FadeAnimationObserver::~FadeAnimationObserver() {
-}
-
-void LocationBarView::FadeAnimationObserver::OnImplicitAnimationsCompleted() {
-  location_bar_view_->CleanupFadeAnimation();
-}
-#endif  // USE_AURA
-
 // LocationBarView -----------------------------------------------------------
 
 LocationBarView::LocationBarView(Browser* browser,
@@ -181,14 +165,12 @@ LocationBarView::LocationBarView(Browser* browser,
                                  CommandUpdater* command_updater,
                                  ToolbarModel* model,
                                  Delegate* delegate,
-                                 chrome::search::SearchModel* search_model,
                                  Mode mode)
     : browser_(browser),
       profile_(profile),
       command_updater_(command_updater),
       model_(model),
       delegate_(delegate),
-      search_model_(search_model),
       disposition_(CURRENT_TAB),
       transition_(content::PageTransitionFromInt(
           content::PAGE_TRANSITION_TYPED |
@@ -206,8 +188,6 @@ LocationBarView::LocationBarView(Browser* browser,
       action_box_button_view_(NULL),
       mode_(mode),
       show_focus_rect_(false),
-      instant_extended_api_enabled_(
-          chrome::search::IsInstantExtendedAPIEnabled(profile_)),
       template_url_service_(NULL),
       animation_offset_(0) {
   set_id(VIEW_ID_LOCATION_BAR);
@@ -224,17 +204,11 @@ LocationBarView::LocationBarView(Browser* browser,
 
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
                                profile_->GetPrefs(), this);
-
-  if (search_model_)
-    search_model_->AddObserver(this);
 }
 
 LocationBarView::~LocationBarView() {
   if (template_url_service_)
     template_url_service_->RemoveObserver(this);
-
-  if (search_model_)
-    search_model_->RemoveObserver(this);
 }
 
 void LocationBarView::Init() {
@@ -427,19 +401,6 @@ void LocationBarView::SetFocusAndSelection(bool select_all) {
 
 void LocationBarView::SetAnimationOffset(int offset) {
   animation_offset_ = offset;
-}
-
-void LocationBarView::ModeChanged(const chrome::search::Mode& old_mode,
-                                  const chrome::search::Mode& new_mode) {
-#if defined(USE_AURA)
-  if (new_mode.animate && old_mode.is_ntp() && new_mode.is_search()) {
-    // Fade in so the icons don't pop.
-    StartFadeAnimation();
-  } else {
-    // Cancel any pending animations; switch to the final state immediately.
-    StopFadeAnimation();
-  }
-#endif
 }
 
 void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
@@ -999,7 +960,7 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
 
   // For non-InstantExtendedAPI cases, if necessary, show focus rect.
   // Note: |Canvas::DrawFocusRect| paints a dashed rect with gray color.
-  if (!instant_extended_api_enabled_ && show_focus_rect_ && HasFocus()) {
+  if (show_focus_rect_ && HasFocus()) {
     gfx::Rect r = location_entry_view_->bounds();
     // TODO(jamescook): Is this still needed?
 #if defined(OS_WIN)
@@ -1566,43 +1527,3 @@ bool LocationBarView::HasValidSuggestText() const {
   return suggested_text_view_ && !suggested_text_view_->size().IsEmpty() &&
       !suggested_text_view_->text().empty();
 }
-
-#if defined(USE_AURA)
-void LocationBarView::StartFadeAnimation() {
-  // We do an opacity animation on this view, so it needs a layer.
-  SetPaintToLayer(true);
-  layer()->SetFillsBoundsOpaquely(false);
-
-  // Sub-pixel text rendering doesn't work properly on top of non-opaque
-  // layers, so disable it by setting a transparent background color on the
-  // bubble labels.
-  const SkColor kTransparentWhite = SkColorSetARGB(128, 255, 255, 255);
-  ev_bubble_view_->SetLabelBackgroundColor(kTransparentWhite);
-  selected_keyword_view_->SetLabelBackgroundColor(kTransparentWhite);
-
-  // Fade in opacity from 0 to 1.
-  layer()->SetOpacity(0.f);
-  ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
-  fade_animation_observer_.reset(new FadeAnimationObserver(this));
-  settings.AddObserver(fade_animation_observer_.get());
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(200));
-  settings.SetTweenType(ui::Tween::LINEAR);
-  layer()->SetOpacity(1.f);
-}
-
-void LocationBarView::StopFadeAnimation() {
-  if (!layer())
-    return;
-  // Stop all animations.
-  layer()->GetAnimator()->StopAnimating();
-}
-
-void LocationBarView::CleanupFadeAnimation() {
-  // Since we're no longer animating we don't need our layer.
-  SetPaintToLayer(false);
-  // Bubble labels don't need a transparent background anymore.
-  ev_bubble_view_->SetLabelBackgroundColor(SK_ColorWHITE);
-  selected_keyword_view_->SetLabelBackgroundColor(SK_ColorWHITE);
-}
-#endif  // USE_AURA

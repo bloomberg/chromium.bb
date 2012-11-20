@@ -67,11 +67,7 @@ void ReloadButton::ChangeMode(Mode mode, bool force) {
     double_click_timer_.Stop();
     stop_to_reload_timer_.Stop();
     ChangeModeInternal(mode);
-    // For instant extended API, if mode is NTP, disable button state.
-    bool disabled = location_bar_ && location_bar_->search_model() &&
-        chrome::search::IsInstantExtendedAPIEnabled(location_bar_->profile()) &&
-        location_bar_->search_model()->mode().is_ntp();
-    SetEnabled(!disabled);
+    SetEnabled(true);
 
   // We want to disable the button if we're preventing a change from stop to
   // reload due to hovering, but not if we're preventing a change from reload to

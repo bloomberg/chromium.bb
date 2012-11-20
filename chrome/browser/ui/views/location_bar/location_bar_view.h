@@ -15,7 +15,6 @@
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
-#include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
@@ -51,12 +50,6 @@ class TemplateURLService;
 class WebIntentsButtonView;
 class ZoomView;
 
-namespace chrome {
-namespace search {
-class SearchModel;
-}
-}
-
 namespace views {
 class BubbleDelegateView;
 class Label;
@@ -77,7 +70,6 @@ class LocationBarView : public LocationBar,
                         public views::DragController,
                         public OmniboxEditController,
                         public DropdownBarHostDelegate,
-                        public chrome::search::SearchModelObserver,
                         public TemplateURLServiceObserver,
                         public content::NotificationObserver,
                         public PrefObserver {
@@ -88,10 +80,6 @@ class LocationBarView : public LocationBar,
   // DropdownBarHostDelegate
   virtual void SetFocusAndSelection(bool select_all) OVERRIDE;
   virtual void SetAnimationOffset(int offset) OVERRIDE;
-
-  // chrome::search::SearchModelObserver:
-  virtual void ModeChanged(const chrome::search::Mode& old_mode,
-                           const chrome::search::Mode& new_mode) OVERRIDE;
 
   // Returns the offset used while animating.
   int animation_offset() const { return animation_offset_; }
@@ -157,7 +145,6 @@ class LocationBarView : public LocationBar,
                   CommandUpdater* command_updater,
                   ToolbarModel* model,
                   Delegate* delegate,
-                  chrome::search::SearchModel* search_model,
                   Mode mode);
 
   virtual ~LocationBarView();
@@ -264,10 +251,6 @@ class LocationBarView : public LocationBar,
 
   views::View* location_entry_view() const { return location_entry_view_; }
 
-  chrome::search::SearchModel* search_model() const {
-    return search_model_;
-  }
-
   // Overridden from OmniboxEditController:
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
@@ -373,24 +356,6 @@ class LocationBarView : public LocationBar,
   friend class PageActionWithBadgeView;
   typedef std::vector<PageActionWithBadgeView*> PageActionViews;
 
-#if defined(USE_AURA)
-  // Observer that informs the LocationBarView when the animation is done.
-  class FadeAnimationObserver : public ui::ImplicitAnimationObserver {
-   public:
-    explicit FadeAnimationObserver(LocationBarView* location_bar_view);
-    virtual ~FadeAnimationObserver();
-
-    // ui::ImplicitAnimationObserver overrides:
-    virtual void OnImplicitAnimationsCompleted() OVERRIDE;
-
-   private:
-    // The location bar view being animated.  Not owned.
-    LocationBarView* location_bar_view_;
-
-    DISALLOW_COPY_AND_ASSIGN(FadeAnimationObserver);
-  };
-#endif  // USE_AURA
-
   // Returns the amount of horizontal space (in pixels) out of
   // |location_bar_width| that is not taken up by the actual text in
   // location_entry_.
@@ -439,17 +404,6 @@ class LocationBarView : public LocationBar,
   // after layout, so the |page_action_views_| have their bounds.
   void PaintPageActionBackgrounds(gfx::Canvas* canvas);
 
-#if defined(USE_AURA)
-  // Fade in the location bar view so the icons come in gradually.
-  void StartFadeAnimation();
-
-  // Stops the fade animation, if it is playing.  Otherwise does nothing.
-  void StopFadeAnimation();
-
-  // Cleans up layers used for the animation.
-  void CleanupFadeAnimation();
-#endif
-
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser
   // window, so this may be NULL.
@@ -470,10 +424,6 @@ class LocationBarView : public LocationBar,
   // Our delegate.
   Delegate* delegate_;
 
-  // Weak, owned by browser.
-  // This is null if there is no browser instance.
-  chrome::search::SearchModel* search_model_;
-
   // This is the string of text from the autocompletion session that the user
   // entered or selected.
   string16 location_input_;
@@ -489,9 +439,6 @@ class LocationBarView : public LocationBar,
 
   // An object used to paint the normal-mode background.
   scoped_ptr<views::Painter> background_painter_;
-
-  // An object used to paint the focus border when search mode is |NTP|.
-  scoped_ptr<views::Painter> search_focus_painter_;
 
   // An icon to the left of the edit field.
   LocationIconView* location_icon_view_;
@@ -549,9 +496,6 @@ class LocationBarView : public LocationBar,
   // focused. Used when the toolbar is in full keyboard accessibility mode.
   bool show_focus_rect_;
 
-  // True if Instant Extended API is enabled.
-  const bool instant_extended_api_enabled_;
-
   // This is in case we're destroyed before the model loads. We need to make
   // Add/RemoveObserver calls.
   TemplateURLService* template_url_service_;
@@ -567,11 +511,6 @@ class LocationBarView : public LocationBar,
 
   // Used to register for notifications received by NotificationObserver.
   content::NotificationRegistrar registrar_;
-
-#if defined(USE_AURA)
-  // Observer for a fade-in animation.
-  scoped_ptr<FadeAnimationObserver> fade_animation_observer_;
-#endif
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocationBarView);
 };
