@@ -50,7 +50,7 @@
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_user_interface.h"
-#include "remoting/host/ipc_consts.h"
+#include "remoting/host/ipc_constants.h"
 #include "remoting/host/ipc_desktop_environment_factory.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/logging.h"

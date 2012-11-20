@@ -11,7 +11,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "remoting/host/chromoting_messages.h"
-#include "remoting/host/ipc_consts.h"
+#include "remoting/host/ipc_constants.h"
 #include "remoting/host/sas_injector.h"
 #include "remoting/host/win/worker_process_launcher.h"
 #include "remoting/host/win/wts_console_monitor.h"

@@ -21,7 +21,7 @@
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_session_win.h"
 #include "remoting/host/host_exit_codes.h"
-#include "remoting/host/ipc_consts.h"
+#include "remoting/host/ipc_constants.h"
 #include "remoting/host/win/host_service.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/unprivileged_process_delegate.h"

@@ -24,7 +24,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "remoting/host/host_exit_codes.h"
-#include "remoting/host/ipc_consts.h"
+#include "remoting/host/ipc_constants.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/worker_process_launcher.h"
 #include "remoting/host/win/wts_console_monitor.h"
