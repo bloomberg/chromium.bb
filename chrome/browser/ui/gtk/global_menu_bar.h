@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/gtk/global_history_menu.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -30,8 +29,7 @@ typedef struct _GtkWidget GtkWidget;
 // GtkMenuBar found. Thankfully, these systems don't check to see if the menu
 // bar itself is visible, so we insert a GtkMenuBar into the window hierarchy
 // and set it to be invisible.
-class GlobalMenuBar : public CommandObserver,
-                      public PrefObserver {
+class GlobalMenuBar : public CommandObserver {
  public:
   static const int TAG_NORMAL = 0;
   static const int TAG_MOST_VISITED = 1;
@@ -67,10 +65,6 @@ class GlobalMenuBar : public CommandObserver,
 
   // CommandObserver:
   virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
-
-  // PrefObserver:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // Updates the visibility of the bookmark bar on pref changes.
   void OnBookmarkBarVisibilityChanged();

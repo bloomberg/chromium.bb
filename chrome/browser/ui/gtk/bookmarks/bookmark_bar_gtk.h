@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
@@ -47,7 +46,6 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
                        public BookmarkModelObserver,
                        public MenuBarHelper::Delegate,
                        public content::NotificationObserver,
-                       public PrefObserver,
                        public chrome::BookmarkBarInstructionsDelegate,
                        public BookmarkContextMenuControllerDelegate {
  public:
@@ -237,11 +235,6 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // Overridden from PrefObserver:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
-
 
   GtkWidget* CreateBookmarkButton(const BookmarkNode* node);
   GtkToolItem* CreateBookmarkToolItem(const BookmarkNode* node);

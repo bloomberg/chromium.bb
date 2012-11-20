@@ -190,7 +190,10 @@ GlobalMenuBar::GlobalMenuBar(Browser* browser)
   }
 
   pref_change_registrar_.Init(browser_->profile()->GetPrefs());
-  pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
+  pref_change_registrar_.Add(
+      prefs::kShowBookmarkBar,
+      base::Bind(&GlobalMenuBar::OnBookmarkBarVisibilityChanged,
+                 base::Unretained(this)));
   OnBookmarkBarVisibilityChanged();
 }
 
@@ -279,12 +282,6 @@ void GlobalMenuBar::EnabledStateChangedForCommand(int id, bool enabled) {
   CommandIDMenuItemMap::iterator it = id_to_menu_item_.find(id);
   if (it != id_to_menu_item_.end())
     gtk_widget_set_sensitive(it->second, enabled);
-}
-
-void GlobalMenuBar::OnPreferenceChanged(PrefServiceBase* service,
-                                        const std::string& pref_name) {
-  DCHECK_EQ(prefs::kShowBookmarkBar, pref_name);
-  OnBookmarkBarVisibilityChanged();
 }
 
 void GlobalMenuBar::OnBookmarkBarVisibilityChanged() {

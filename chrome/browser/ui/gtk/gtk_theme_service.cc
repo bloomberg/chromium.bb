@@ -291,7 +291,9 @@ GtkThemeService::~GtkThemeService() {
 
 void GtkThemeService::Init(Profile* profile) {
   registrar_.Init(profile->GetPrefs());
-  registrar_.Add(prefs::kUsesSystemTheme, this);
+  registrar_.Add(prefs::kUsesSystemTheme,
+                 base::Bind(&GtkThemeService::OnUsesSystemThemeChanged,
+                            base::Unretained(this)));
   use_gtk_ = profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
   ThemeService::Init(profile);
 }
@@ -365,13 +367,6 @@ bool GtkThemeService::UsingDefaultTheme() const {
 
 bool GtkThemeService::UsingNativeTheme() const {
   return use_gtk_;
-}
-
-void GtkThemeService::OnPreferenceChanged(PrefServiceBase* service,
-                                          const std::string& pref_name) {
-  if (pref_name == prefs::kUsesSystemTheme) {
-    use_gtk_ = profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
-  }
 }
 
 GtkWidget* GtkThemeService::BuildChromeButton() {
@@ -1151,4 +1146,8 @@ gboolean GtkThemeService::OnSeparatorExpose(GtkWidget* widget,
   cairo_pattern_destroy(pattern);
 
   return TRUE;
+}
+
+void GtkThemeService::OnUsesSystemThemeChanged() {
+  use_gtk_ = profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
 }

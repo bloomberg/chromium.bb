@@ -164,8 +164,12 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(theme_service_));
 
-  edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
-                               browser_->profile()->GetPrefs(), this);
+  edit_bookmarks_enabled_.Init(
+      prefs::kEditBookmarksEnabled,
+      browser_->profile()->GetPrefs(),
+      base::Bind(&BookmarkBarGtk::OnEditBookmarksEnabledChanged,
+                 base::Unretained(this)));
+
   OnEditBookmarksEnabledChanged();
 }
 
@@ -981,12 +985,6 @@ void BookmarkBarGtk::Observe(int type,
 
     SetOverflowButtonAppearance();
   }
-}
-
-void BookmarkBarGtk::OnPreferenceChanged(PrefServiceBase* service,
-                                         const std::string& pref_name) {
-  if (pref_name == prefs::kEditBookmarksEnabled)
-    OnEditBookmarksEnabledChanged();
 }
 
 GtkWidget* BookmarkBarGtk::CreateBookmarkButton(const BookmarkNode* node) {

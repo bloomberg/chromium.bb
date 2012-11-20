@@ -610,7 +610,9 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                  chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
                  content::Source<Profile>(browser()->profile()));
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
-                               profile->GetPrefs(), this);
+                               profile->GetPrefs(),
+                               base::Bind(&LocationBarViewGtk::UpdateStarIcon,
+                                          base::Unretained(this)));
 
   theme_service_->InitThemesFor(this);
 }
@@ -1156,14 +1158,6 @@ void LocationBarViewGtk::Observe(int type,
     default:
       NOTREACHED();
   }
-}
-
-void LocationBarViewGtk::OnPreferenceChanged(PrefServiceBase* service,
-                                             const std::string& pref_name) {
-  if (pref_name == prefs::kEditBookmarksEnabled)
-    UpdateStarIcon();
-  else
-    NOTREACHED();
 }
 
 gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
