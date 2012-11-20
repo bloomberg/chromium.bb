@@ -1469,7 +1469,7 @@ SafetyLevel VectorBinary2RegisterShiftAmount_CVT::safety(Instruction i) const {
 
 // VectorBinary3RegisterSameLengthDQ
 SafetyLevel VectorBinary3RegisterSameLengthDQ::safety(Instruction i) const {
-  if (q.IsDefined(i) && (!vd.IsEven(i) || !vn.IsEven(i) || vm.IsEven(i))) {
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vn.IsEven(i) || !vm.IsEven(i))) {
     return UNDEFINED;
   }
   return MAY_BE_SAFE;
@@ -1525,7 +1525,7 @@ SafetyLevel VectorBinary3RegisterSameLength32P::safety(Instruction i) const {
 SafetyLevel VectorBinary3RegisterSameLength32_DQ::safety(Instruction i) const {
   SafetyLevel level = VectorBinary3RegisterSameLength::safety(i);
   if (MAY_BE_SAFE != level) return level;
-  if (q.IsDefined(i) && (!vd.IsEven(i) || !vn.IsEven(i) || vm.IsEven(i))) {
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vn.IsEven(i) || !vm.IsEven(i))) {
     return UNDEFINED;
   }
   switch (size.value(i)) {
