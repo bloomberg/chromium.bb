@@ -11,7 +11,7 @@
 
 EXTERN_C_BEGIN
 
-extern int PpapiPluginMain();
+extern int PpapiPluginMain(void);
 
 EXTERN_C_END
 

@@ -49,7 +49,7 @@ int RunTests(int (*test_func)(void)) {
   }
 }
 
-int TestRunningInBrowser() {
+int TestRunningInBrowser(void) {
   return 1;
 }
 
@@ -144,7 +144,7 @@ int32_t PPP_InitializeModule(PP_Module module,
   return PP_OK;
 }
 
-void PPP_ShutdownModule() {
+void PPP_ShutdownModule(void) {
 }
 
 const void *PPP_GetInterface(const char *interface_name) {
