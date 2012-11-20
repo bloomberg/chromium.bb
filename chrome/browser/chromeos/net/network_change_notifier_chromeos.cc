@@ -140,6 +140,12 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
         base::Bind(&NetworkChangeNotifierChromeos::UpdateNetworkStateCallback,
                    weak_factory_.GetWeakPtr(),
                    lib));
+  } else {
+    // If we don't have a network, then we can't fetch ipconfigs, but we still
+    // need to process state updates when we lose a network (i.e. when
+    // has_active_network_ is still set, but we don't have one anymore).
+    NetworkIPConfigVector empty_ipconfigs;
+    UpdateNetworkStateCallback(lib, empty_ipconfigs, "");
   }
 }
 
