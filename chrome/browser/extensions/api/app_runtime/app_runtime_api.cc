@@ -40,7 +40,7 @@ void AppEventRouter::DispatchOnLaunchedEvent(
   scoped_ptr<ListValue> arguments(new ListValue());
   extensions::ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension->id(), kOnLaunchedEvent,
-                               arguments.Pass(), NULL, GURL());
+                               arguments.Pass(), profile, GURL());
 }
 
 // static.
@@ -49,7 +49,7 @@ void AppEventRouter::DispatchOnRestartedEvent(
   scoped_ptr<ListValue> arguments(new ListValue());
   extensions::ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension->id(), kOnRestartedEvent,
-                               arguments.Pass(), NULL, GURL());
+                               arguments.Pass(), profile, GURL());
 }
 
 // static.
@@ -72,7 +72,7 @@ void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
   args->Append(intent_data);
   extensions::ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension->id(), kOnLaunchedEvent, args.Pass(),
-                               NULL, GURL());
+                               profile, GURL());
 }
 
 // static.
@@ -130,7 +130,7 @@ void AppEventRouter::DispatchOnLaunchedEventWithWebIntent(
   args->Append(base::Value::CreateIntegerValue(intent_id));
   extensions::ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension->id(), kOnLaunchedEvent, args.Pass(),
-                               NULL, GURL());
+                               profile, GURL());
 }
 
 bool AppRuntimePostIntentResponseFunction::RunImpl() {
