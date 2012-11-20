@@ -1119,7 +1119,13 @@ TEST_F(RenderTextTest, CursorBoundsInReplacementMode) {
   EXPECT_EQ(cursor_around_b.right(), cursor_before_c.x());
 }
 
-TEST_F(RenderTextTest, OriginForDrawing) {
+// http://crbug.com/161902
+#if defined(OS_LINUX)
+#define MAYBE_OriginForDrawing DISABLED_OriginForDrawing
+#else
+#define MAYBE_OriginForDrawing OriginForDrawing
+#endif
+TEST_F(RenderTextTest, MAYBE_OriginForDrawing) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(ASCIIToUTF16("abcdefg"));
   render_text->SetFontList(FontList("Arial, 13px"));
@@ -1221,7 +1227,13 @@ TEST_F(RenderTextTest, SameFontForParentheses) {
 // TODO(asvitkine): Cursor movements tests disabled on Mac because RenderTextMac
 //                  does not implement this yet. http://crbug.com/131618
 #if !defined(OS_MACOSX)
-TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
+// http://crbug.com/161902
+#if defined(OS_LINUX)
+#define MAYBE_DisplayRectShowsCursorLTR DISABLED_DisplayRectShowsCursorLTR
+#else
+#define MAYBE_DisplayRectShowsCursorLTR DisplayRectShowsCursorLTR
+#endif
+TEST_F(RenderTextTest, MAYBE_DisplayRectShowsCursorLTR) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(WideToUTF16(L"abcdefghijklmnopqrstuvwxzyabcdefg"));
   render_text->MoveCursorTo(SelectionModel(render_text->text().length(),
