@@ -12,7 +12,6 @@ include_rules = [
   "!chrome/browser/signin/token_service.h",
   "!chrome/common/chrome_notification_types.h",
   "!chrome/common/chrome_paths.h",
-  "!chrome/common/chrome_switches.h",
   "!chrome/common/chrome_version_info.h",
   "!chrome/common/net/url_util.h",
   "!chrome/common/pref_names.h",
