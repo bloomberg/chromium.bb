@@ -5,9 +5,13 @@
 #ifndef PPAPI_HOST_RESOURCE_HOST_H_
 #define PPAPI_HOST_RESOURCE_HOST_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/host/ppapi_host_export.h"
+#include "ppapi/host/resource_message_handler.h"
 #include "ppapi/shared_impl/host_resource.h"
 
 namespace IPC {
@@ -19,11 +23,12 @@ namespace host {
 
 struct HostMessageContext;
 class PpapiHost;
+class ResourceMessageFilter;
 
 // Some (but not all) resources have a corresponding object in the host side
 // that is kept alive as long as the resource in the plugin is alive. This is
 // the base class for such objects.
-class PPAPI_HOST_EXPORT ResourceHost {
+class PPAPI_HOST_EXPORT ResourceHost : public ResourceMessageHandler {
  public:
   ResourceHost(PpapiHost* host, PP_Instance instance, PP_Resource resource);
   virtual ~ResourceHost();
@@ -32,25 +37,21 @@ class PPAPI_HOST_EXPORT ResourceHost {
   PP_Instance pp_instance() const { return pp_instance_; }
   PP_Resource pp_resource() const { return pp_resource_; }
 
-  // Handles messages associated with a given resource object. If the flags
-  // indicate that a response is required, the return value of this function
-  // will be sent as a resource message "response" along with the message
-  // specified in the reply of the context.
-  //
-  // You can do a response asynchronously by returning PP_OK_COMPLETIONPENDING.
-  // This will cause the reply to be skipped, and the class implementing this
-  // function will take responsibility for issuing the callback. The callback
-  // can be issued inside OnResourceMessageReceived before it returns, or at
-  // a future time.
-  //
-  // If you don't have a particular reply message, you can just ignore
-  // the reply in the message context. However, if you have a reply more than
-  // just the int32_t result code, set the reply to be the message of your
-  // choosing.
-  //
-  // The default implementation just returns PP_ERROR_NOTSUPPORTED.
-  virtual int32_t OnResourceMessageReceived(const IPC::Message& msg,
-                                            HostMessageContext* context);
+  // This runs any message filters in |message_filters_|. If the message is not
+  // handled by these filters then the host's own message handler is run. True
+  // is always returned (the message will always be handled in some way).
+  virtual bool HandleMessage(const IPC::Message& msg,
+                             HostMessageContext* context) OVERRIDE;
+
+  virtual void SendReply(const ReplyMessageContext& context,
+                         const IPC::Message& msg) OVERRIDE;
+
+ protected:
+  // Adds a ResourceMessageFilter to handle resource messages. Incoming
+  // messages will be passed to the handlers of these filters before being
+  // handled by the resource host's own message handler. This allows
+  // ResourceHosts to easily handle messages on other threads.
+  void AddFilter(scoped_refptr<ResourceMessageFilter> filter);
 
  private:
   // The host that owns this object.
@@ -58,6 +59,10 @@ class PPAPI_HOST_EXPORT ResourceHost {
 
   PP_Instance pp_instance_;
   PP_Resource pp_resource_;
+
+  // A vector of message filters which the host will forward incoming resource
+  // messages to.
+  std::vector<scoped_refptr<ResourceMessageFilter> > message_filters_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceHost);
 };

@@ -48,7 +48,7 @@ class PepperFlashMenuHost : public ppapi::host::ResourceHost,
   virtual void OnMenuAction(int request_id, unsigned action) OVERRIDE;
   virtual void OnMenuClosed(int request_id) OVERRIDE;
 
-  void SendReply(int32_t result, int action);
+  void SendMenuReply(int32_t result, int action);
 
   content::RendererPpapiHost* renderer_ppapi_host_;
 

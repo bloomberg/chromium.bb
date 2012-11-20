@@ -45,8 +45,9 @@ struct PPAPI_HOST_EXPORT HostMessageContext {
   // Returns a reply message context struct which includes the reply params.
   ReplyMessageContext MakeReplyMessageContext() const;
 
-  // The original call parameters passed to the resource message call.
-  const ppapi::proxy::ResourceMessageCallParams& params;
+  // The original call parameters passed to the resource message call. This
+  // cannot be a reference because this object may be passed to another thread.
+  ppapi::proxy::ResourceMessageCallParams params;
 
   // The reply message. If the params has the callback flag set, this message
   // will be sent in reply. It is initialized to the empty message. If the

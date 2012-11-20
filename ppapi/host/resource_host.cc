@@ -5,6 +5,8 @@
 #include "ppapi/host/resource_host.h"
 
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/host/ppapi_host.h"
+#include "ppapi/host/resource_message_filter.h"
 
 namespace ppapi {
 namespace host {
@@ -18,11 +20,30 @@ ResourceHost::ResourceHost(PpapiHost* host,
 }
 
 ResourceHost::~ResourceHost() {
+  for (size_t i = 0; i < message_filters_.size(); ++i)
+    message_filters_[i]->OnFilterDestroyed();
 }
 
-int32_t ResourceHost::OnResourceMessageReceived(const IPC::Message& msg,
-                                                HostMessageContext* context) {
-  return PP_ERROR_NOTSUPPORTED;
+bool ResourceHost::HandleMessage(const IPC::Message& msg,
+                                 HostMessageContext* context) {
+  // First see if the message is handled off-thread by message filters.
+  for (size_t i = 0; i < message_filters_.size(); ++i) {
+    if (message_filters_[i]->HandleMessage(msg, context))
+      return true;
+  }
+  // Run this ResourceHosts message handler.
+  RunMessageHandlerAndReply(msg, context);
+  return true;
+}
+
+void ResourceHost::SendReply(const ReplyMessageContext& context,
+                             const IPC::Message& msg) {
+  host_->SendReply(context, msg);
+}
+
+void ResourceHost::AddFilter(scoped_refptr<ResourceMessageFilter> filter) {
+  message_filters_.push_back(filter);
+  filter->OnFilterAdded(this);
 }
 
 }  // namespace host

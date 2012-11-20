@@ -135,15 +135,15 @@ int32_t PepperFlashMenuHost::OnResourceMessageReceived(
 int32_t PepperFlashMenuHost::OnHostMsgShow(
     ppapi::host::HostMessageContext* context,
     const PP_Point& location) {
-  // Note that all early returns must do a SendReply. The sync result for this
-  // message isn't used, so to forward the error to the plugin, we need to
-  // additionally call SendReply explicitly.
+  // Note that all early returns must do a SendMenuReply. The sync result for
+  // this message isn't used, so to forward the error to the plugin, we need to
+  // additionally call SendMenuReply explicitly.
   if (menu_data_.empty()) {
-    SendReply(PP_ERROR_FAILED, -1);
+    SendMenuReply(PP_ERROR_FAILED, -1);
     return PP_ERROR_FAILED;
   }
   if (showing_context_menu_) {
-    SendReply(PP_ERROR_INPROGRESS, -1);
+    SendMenuReply(PP_ERROR_INPROGRESS, -1);
     return PP_ERROR_INPROGRESS;
   }
 
@@ -184,18 +184,18 @@ void PepperFlashMenuHost::OnMenuAction(int request_id, unsigned action) {
 void PepperFlashMenuHost::OnMenuClosed(int request_id) {
   if (has_saved_context_menu_action_ &&
       saved_context_menu_action_ < menu_id_map_.size()) {
-    SendReply(PP_OK, menu_id_map_[saved_context_menu_action_]);
+    SendMenuReply(PP_OK, menu_id_map_[saved_context_menu_action_]);
     has_saved_context_menu_action_ = false;
     saved_context_menu_action_ = 0;
   } else {
-    SendReply(PP_ERROR_USERCANCEL, -1);
+    SendMenuReply(PP_ERROR_USERCANCEL, -1);
   }
 
   showing_context_menu_ = false;
   context_menu_request_id_ = 0;
 }
 
-void PepperFlashMenuHost::SendReply(int32_t result, int action) {
+void PepperFlashMenuHost::SendMenuReply(int32_t result, int action) {
   ppapi::host::ReplyMessageContext reply_context(
       ppapi::proxy::ResourceMessageReplyParams(pp_resource(), 0),
       NULL);

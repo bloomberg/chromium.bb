@@ -118,40 +118,16 @@ void PpapiHost::HandleResourceCall(
     const proxy::ResourceMessageCallParams& params,
     const IPC::Message& nested_msg,
     HostMessageContext* context) {
-  ReplyMessageContext reply_context = context->MakeReplyMessageContext();
-
   ResourceHost* resource_host = GetResourceHost(params.pp_resource());
   if (resource_host) {
-    reply_context.params.set_result(
-        resource_host->OnResourceMessageReceived(nested_msg, context));
-
-    // Sanity check the resource handler. Note if the result was
-    // "completion pending" the resource host may have already sent the reply.
-    if (reply_context.params.result() == PP_OK_COMPLETIONPENDING) {
-      // Message handler should have only returned a pending result if a
-      // response will be sent to the plugin.
-      DCHECK(params.has_callback());
-
-      // Message handler should not have written a message to be returned if
-      // completion is pending.
-      DCHECK(context->reply_msg.type() == 0);
-    } else if (!params.has_callback()) {
-      // When no response is required, the message handler should not have
-      // written a message to be returned.
-      DCHECK(context->reply_msg.type() == 0);
-
-      // If there is no callback and the result of running the message handler
-      // was not PP_OK the client won't find out.
-      DLOG_IF(WARNING, reply_context.params.result() != PP_OK)
-          << "'Post' message handler failed to complete successfully.";
-    }
+    resource_host->HandleMessage(nested_msg, context);
   } else {
-    reply_context.params.set_result(PP_ERROR_BADRESOURCE);
+    if (context->params.has_callback()) {
+      ReplyMessageContext reply_context = context->MakeReplyMessageContext();
+      reply_context.params.set_result(PP_ERROR_BADRESOURCE);
+      SendReply(reply_context, context->reply_msg);
+    }
   }
-
-  if (params.has_callback() &&
-      reply_context.params.result() != PP_OK_COMPLETIONPENDING)
-    SendReply(reply_context, context->reply_msg);
 }
 
 void PpapiHost::OnHostMsgResourceCreated(

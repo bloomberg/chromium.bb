@@ -125,6 +125,7 @@
         'chromium_code': 1,
       },
       'dependencies': [
+        'ppapi_host',
         'ppapi_proxy',
         'ppapi_shared',
         'ppapi_unittest_shared',
@@ -140,6 +141,7 @@
       'sources': [
         'proxy/run_all_unittests.cc',
 
+        'host/resource_message_filter_unittest.cc',
         'proxy/file_chooser_resource_unittest.cc',
         'proxy/flash_resource_unittest.cc',
         'proxy/mock_resource.cc',
