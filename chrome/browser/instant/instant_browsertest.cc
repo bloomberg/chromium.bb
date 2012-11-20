@@ -551,7 +551,14 @@ IN_PROC_BROWSER_TEST_F(InstantTest, IntranetPathLooksLikeSearch) {
 }
 
 // Test that transitions between searches and non-searches work as expected.
-IN_PROC_BROWSER_TEST_F(InstantTest, TransitionsBetweenSearchAndURL) {
+#if defined(OS_WIN)
+// http://crbug.com/161998
+#define MAYBE_TransitionsBetweenSearchAndURL \
+        FLAKY_TransitionsBetweenSearchAndURL
+#else
+#define MAYBE_TransitionsBetweenSearchAndURL TransitionsBetweenSearchAndURL
+#endif
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_TransitionsBetweenSearchAndURL) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
