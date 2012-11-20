@@ -60,9 +60,12 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params) {
       request.get(), params->referrer().policy);
   request->set_load_flags(request->load_flags() | params->load_flags());
   request->set_method(params->method());
-  if (!params->post_body().empty())
-    request->AppendBytesToUpload(params->post_body().data(),
-                                 params->post_body().size());
+  if (!params->post_body().empty()) {
+    scoped_refptr<net::UploadData> upload_data(new net::UploadData());
+    upload_data->AppendBytes(params->post_body().data(),
+                             params->post_body().size());
+    request->set_upload(upload_data);
+  }
   if (params->post_id() >= 0) {
     // The POST in this case does not have an actual body, and only works
     // when retrieving data from cache. This is done because we don't want

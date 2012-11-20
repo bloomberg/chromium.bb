@@ -1291,7 +1291,9 @@ TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   std::string upload_content;
   upload_content.resize(33);
   std::fill(upload_content.begin(), upload_content.end(), 'x');
-  req.AppendBytesToUpload(upload_content.data(), upload_content.size());
+  scoped_refptr<net::UploadData> upload_data(new net::UploadData());
+  upload_data->AppendBytes(upload_content.data(), upload_content.size());
+  req.set_upload(upload_data);
 
   // Since the upload throttling is disabled, this has no effect on the cost.
   EXPECT_EQ(4436,
