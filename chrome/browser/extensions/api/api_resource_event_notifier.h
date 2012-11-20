@@ -52,10 +52,6 @@ class ApiResourceEventNotifier
                                DictionaryValue* event);
   DictionaryValue* CreateApiResourceEvent(ApiResourceEventType event_type);
 
-  void SendEventWithResultCode(const std::string& extension,
-                               ApiResourceEventType event_type,
-                               int result_code);
-
   EventRouter* router_;
   Profile* profile_;
   std::string src_extension_id_;

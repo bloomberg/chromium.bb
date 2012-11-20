@@ -218,12 +218,6 @@ class DownloadsEventsListener : public content::NotificationObserver {
   }
 
  private:
-  void TimedOut() {
-    if (!waiting_for_.get())
-      return;
-    MessageLoopForUI::current()->Quit();
-  }
-
   bool waiting_;
   base::Time last_wait_;
   scoped_ptr<Event> waiting_for_;
@@ -592,8 +586,6 @@ class ScopedCancellingItem {
         item_, base::Bind(&ItemNotInProgress));
     observer.WaitForEvent();
   }
-  DownloadItem* operator*() { return item_; }
-  DownloadItem* operator->() { return item_; }
   DownloadItem* get() { return item_; }
  private:
   DownloadItem* item_;

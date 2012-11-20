@@ -206,7 +206,6 @@ class DownloadsGetFileIconFunction : public AsyncExtensionFunction {
  private:
   void OnIconURLExtracted(const std::string& url);
   FilePath path_;
-  int icon_size_;
   scoped_ptr<DownloadFileIconExtractor> icon_extractor_;
   DISALLOW_COPY_AND_ASSIGN(DownloadsGetFileIconFunction);
 };

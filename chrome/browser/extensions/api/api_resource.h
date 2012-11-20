@@ -28,8 +28,6 @@ class ApiResource {
   ApiResource(const std::string& owner_extension_id,
               ApiResourceEventNotifier* event_notifier);
 
-  ApiResourceEventNotifier* event_notifier() const;
-
  private:
   // The extension that owns this resource. This could be derived from
   // event_notifier, but that's a little too cute; to make future code

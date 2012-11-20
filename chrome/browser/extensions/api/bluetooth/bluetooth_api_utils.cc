@@ -23,13 +23,6 @@ void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
   out->connected = device.IsConnected();
 }
 
-// The caller takes ownership of the returned pointer.
-base::Value* BluetoothDeviceToValue(const device::BluetoothDevice& device) {
-  extensions::api::bluetooth::Device api_device;
-  BluetoothDeviceToApiDevice(device, &api_device);
-  return api_device.ToValue().release();
-}
-
 }  // namespace bluetooth
 }  // namespace api
 }  // namespace extensions

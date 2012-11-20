@@ -102,10 +102,6 @@ class WebAuthFlowTest : public ChromeRenderViewHostTestHarness {
         &delegate_, profile(), extension_id, url, interactive));
   }
 
-  MockWebAuthFlow& flow() {
-    return *flow_.get();
-  }
-
   WebAuthFlow* flow_base() {
     return flow_.get();
   }

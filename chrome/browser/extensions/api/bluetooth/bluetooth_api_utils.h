@@ -18,10 +18,6 @@ void BluetoothDeviceToApiDevice(
     const device::BluetoothDevice& device,
     Device* out);
 
-// The caller takes ownership of the returned pointer.
-base::Value* BluetoothDeviceToValue(
-    const device::BluetoothDevice& device);
-
 }  // namespace bluetooth
 }  // namespace api
 }  // namespace extensions

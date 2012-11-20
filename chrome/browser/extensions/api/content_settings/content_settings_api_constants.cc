@@ -12,10 +12,8 @@ const char kContentSettingKey[] = "setting";
 const char kContentSettingsTypeKey[] = "type";
 const char kDescriptionKey[] = "description";
 const char kIdKey[] = "id";
-const char kPatternKey[] = "pattern";
 const char kPrimaryPatternKey[] = "primaryPattern";
 const char kResourceIdentifierKey[] = "resourceIdentifier";
-const char kRuleKey[] = "rule";
 const char kSecondaryPatternKey[] = "secondaryPattern";
 
 // Errors.

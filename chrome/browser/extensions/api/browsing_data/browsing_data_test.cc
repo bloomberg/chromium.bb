@@ -55,10 +55,6 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
                    content::Source<Profile>(browser()->profile()));
   }
 
-  virtual void TearDownOnMainThread() {
-    registrar_.RemoveAll();
-  }
-
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,

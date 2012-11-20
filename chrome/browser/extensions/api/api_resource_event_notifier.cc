@@ -77,16 +77,4 @@ DictionaryValue* ApiResourceEventNotifier::CreateApiResourceEvent(
   return event;
 }
 
-void ApiResourceEventNotifier::SendEventWithResultCode(
-    const std::string &extension,
-    ApiResourceEventType event_type,
-    int result_code) {
-  if (src_id_ < 0)
-    return;
-
-  DictionaryValue* event = CreateApiResourceEvent(event_type);
-  event->SetInteger(kResultCodeKey, result_code);
-  DispatchEvent(extension, event);
-}
-
 }  // namespace extensions

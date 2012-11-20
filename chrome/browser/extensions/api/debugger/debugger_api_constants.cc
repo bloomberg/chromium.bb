@@ -13,11 +13,9 @@ const char kAlreadyAttachedError[] =
     "Another debugger is already attached to the tab with id: *.";
 const char kAttachToWebUIError[] =
     "Can not attach to the page with the \"*://\" scheme.";
-const char kDebuggerExecuteFailedError[] = "Execute debugger failed.";
 const char kNoTabError[] = "No tab with given id *.";
 const char kNotAttachedError[] =
     "Debugger is not attached to the tab with id: *.";
-const char kPermissionError[] = "You do not have permission to debug pages.";
 const char kProtocolVersionNotSupportedError[] =
     "Requested protocol version is not supported: *.";
 

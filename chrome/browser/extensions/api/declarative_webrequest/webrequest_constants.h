@@ -18,7 +18,6 @@ extern const char kAgeLowerBoundKey[];
 extern const char kAgeUpperBoundKey[];
 extern const char kCookieKey[];
 extern const char kContentTypeKey[];
-extern const char kDirectionKey[];
 extern const char kDomainKey[];
 extern const char kExcludeContentTypeKey[];
 extern const char kExcludeRequestHeadersKey[];

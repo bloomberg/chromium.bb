@@ -87,19 +87,6 @@ class ExtensionDiscoveryTest : public BrowserWithTestWindowTest {
     scoped_ptr<base::Value> result(RunFunctionWithExtension(function, args));
   }
 
-  // Runs a function without argumentsand ignores the return value.
-  void RunFunctionWithoutArguments(UIThreadExtensionFunction* function,
-                   const std::string& args) {
-    scoped_ptr<base::Value> result(RunFunctionWithExtension(function, args));
-  }
-
-  // Runs a function, expect an error, and return it in a string.
-  std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
-                                        const std::string& args) {
-    function->set_extension(extension_.get());
-    return utils::RunFunctionAndReturnError(function, args, browser());
-  }
-
   const std::string& GetExtensionId() const {
     return extension_->id();
   }

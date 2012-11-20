@@ -24,8 +24,4 @@ ApiResource::~ApiResource() {
   // scoped_refptr<> constructor calls Release() for us on event_notifier_.
 }
 
-ApiResourceEventNotifier* ApiResource::event_notifier() const {
-  return event_notifier_.get();
-}
-
 }
