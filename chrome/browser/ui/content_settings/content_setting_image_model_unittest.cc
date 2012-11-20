@@ -8,32 +8,64 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/cookies/cookie_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
+namespace {
+
+// Forward all NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED to the specified
+// ContentSettingImageModel.
+class NotificationForwarder : public content::NotificationObserver {
+ public:
+  explicit NotificationForwarder(ContentSettingImageModel* model)
+      : model_(model) {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+                   content::NotificationService::AllSources());
+  }
+  virtual ~NotificationForwarder() {}
+
+  void clear() {
+    registrar_.RemoveAll();
+  }
+
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    if (type == chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED) {
+      model_->UpdateFromWebContents(
+          content::Source<content::WebContents>(source).ptr());
+    }
+  }
+
+ private:
+  content::NotificationRegistrar registrar_;
+  ContentSettingImageModel* model_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationForwarder);
+};
 
 class ContentSettingImageModelTest : public ChromeRenderViewHostTestHarness {
  public:
   ContentSettingImageModelTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {}
+      : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
 
  private:
-  virtual void SetUp() OVERRIDE {
-    ChromeRenderViewHostTestHarness::SetUp();
-    TabSpecificContentSettings::CreateForWebContents(web_contents());
-  }
-
   content::TestBrowserThread ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingImageModelTest);
 };
 
 TEST_F(ContentSettingImageModelTest, UpdateFromWebContents) {
+  TabSpecificContentSettings::CreateForWebContents(web_contents());
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
   scoped_ptr<ContentSettingImageModel> content_setting_image_model(
@@ -53,6 +85,7 @@ TEST_F(ContentSettingImageModelTest, UpdateFromWebContents) {
 }
 
 TEST_F(ContentSettingImageModelTest, RPHUpdateFromWebContents) {
+  TabSpecificContentSettings::CreateForWebContents(web_contents());
   scoped_ptr<ContentSettingImageModel> content_setting_image_model(
      ContentSettingImageModel::CreateContentSettingImageModel(
          CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS));
@@ -69,6 +102,7 @@ TEST_F(ContentSettingImageModelTest, RPHUpdateFromWebContents) {
 }
 
 TEST_F(ContentSettingImageModelTest, CookieAccessed) {
+  TabSpecificContentSettings::CreateForWebContents(web_contents());
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
   profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
@@ -91,3 +125,16 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   EXPECT_NE(0, content_setting_image_model->get_icon());
   EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
 }
+
+// Regression test for http://crbug.com/161854.
+TEST_F(ContentSettingImageModelTest, NULLTabSpecificContentSettings) {
+  scoped_ptr<ContentSettingImageModel> content_setting_image_model(
+     ContentSettingImageModel::CreateContentSettingImageModel(
+         CONTENT_SETTINGS_TYPE_IMAGES));
+  NotificationForwarder forwarder(content_setting_image_model.get());
+  // Should not crash.
+  TabSpecificContentSettings::CreateForWebContents(web_contents());
+  forwarder.clear();
+}
+
+}  // namespace
