@@ -99,8 +99,8 @@ class AwContents : public FindHelper::Listener,
                                     bool finished) OVERRIDE;
 
   // content::Compositor::Client implementation.
-  virtual void ScheduleComposite();
-  virtual void OnSwapBuffersCompleted();
+  virtual void ScheduleComposite() OVERRIDE;
+  virtual void OnSwapBuffersCompleted() OVERRIDE;
 
  private:
   JavaObjectWeakGlobalRef java_ref_;

@@ -82,21 +82,26 @@ class NullCompositor : public content::Compositor {
   virtual ~NullCompositor() {}
 
   // Compositor
-  virtual void SetRootLayer(WebKit::WebLayer* root) {}
-  virtual void SetWindowBounds(const gfx::Size& size) {}
-  virtual void SetVisible(bool visible) {}
-  virtual void SetWindowSurface(ANativeWindow* window) {}
-  virtual bool CompositeAndReadback(void *pixels, const gfx::Rect& rect) {
+  virtual void SetRootLayer(WebKit::WebLayer* root) OVERRIDE {}
+  virtual void SetWindowBounds(const gfx::Size& size) OVERRIDE {}
+  virtual void SetVisible(bool visible) OVERRIDE {}
+  virtual void SetWindowSurface(ANativeWindow* window) OVERRIDE {}
+  virtual bool CompositeAndReadback(void *pixels, const gfx::Rect& rect)
+      OVERRIDE {
     return false;
   }
   virtual void Composite() {}
-  virtual WebKit::WebGLId GenerateTexture(gfx::JavaBitmap& bitmap) { return 0; }
+  virtual WebKit::WebGLId GenerateTexture(gfx::JavaBitmap& bitmap) OVERRIDE {
+    return 0;
+  }
   virtual WebKit::WebGLId GenerateCompressedTexture(gfx::Size& size,
                                                     int data_size,
-                                                    void* data) { return 0; }
-  virtual void DeleteTexture(WebKit::WebGLId texture_id) {}
+                                                    void* data) OVERRIDE {
+    return 0;
+  }
+  virtual void DeleteTexture(WebKit::WebGLId texture_id) OVERRIDE {}
   virtual void CopyTextureToBitmap(WebKit::WebGLId texture_id,
-                                   gfx::JavaBitmap& bitmap) {}
+                                   gfx::JavaBitmap& bitmap) OVERRIDE {}
 };
 
 }  // namespace
