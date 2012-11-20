@@ -1114,6 +1114,7 @@
         'browser/ui/webui/options/content_options_browsertest.js',
         'browser/ui/webui/options/content_settings_exception_area_browsertest.js',
         'browser/ui/webui/options/cookies_view_browsertest.js',
+        'browser/ui/webui/options/edit_dictionary_browsertest.js',
         'browser/ui/webui/options/font_settings_browsertest.js',
         'browser/ui/webui/options/language_options_browsertest.js',
         'browser/ui/webui/options/options_browsertest.js',
@@ -1427,6 +1428,9 @@
             # TODO(hbono): This test depends on hunspell and we cannot run it on
             # Mac, which does not use hunspell by default.
             'browser/spellchecker/spellcheck_service_browsertest.cc',
+            # TODO(rouslan): This test depends on the custom dictionary UI,
+            # which is disabled on Mac.
+            'browser/ui/webui/options/edit_dictionary_browsertest.js',
             # ProcessSingletonMac doesn't do anything.
             'browser/process_singleton_browsertest.cc',
             # This test depends on GetCommandLineForRelaunch, which is not

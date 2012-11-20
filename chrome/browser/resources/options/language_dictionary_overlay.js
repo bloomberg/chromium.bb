@@ -7,6 +7,10 @@ cr.define('options', function() {
   var ArrayDataModel = cr.ui.ArrayDataModel;
   var DictionaryWordsList = options.dictionary_words.DictionaryWordsList;
 
+  /**
+   * Adding and removing words in custom spelling dictionary.
+   * @constructor
+   */
   function EditDictionaryOverlay() {
     OptionsPage.call(this, 'editDictionary',
                      loadTimeData.getString('languageDictionaryOverlayPage'),
