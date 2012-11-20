@@ -11,6 +11,7 @@ import signal
 import time
 
 from chromite.lib import cros_build_lib
+from chromite.lib import locking
 from chromite.lib import osutils
 from chromite.lib import signals
 from chromite.lib import sudo
@@ -141,21 +142,32 @@ class Cgroup(object):
     if not cls.IsSupported():
       return False
 
-    if not _FileContains('/proc/mounts', [cls.MOUNT_ROOT]):
-      # Not all distros mount cgroup_root to sysfs.
-      osutils.SafeMakedirs(cls.MOUNT_ROOT, sudo=True)
-      cros_build_lib.SudoRunCommand(['mount', '-t', 'tmpfs', 'cgroup_root',
-                                    cls.MOUNT_ROOT], print_cmd=False)
+    def _EnsureMounted(mnt, args):
+      if _FileContains('/proc/mounts', [mnt]):
+        return True
 
-    # Mount the root hierarchy.
-    if not _FileContains('/proc/mounts', [cls.CGROUP_ROOT]):
-      osutils.SafeMakedirs(cls.CGROUP_ROOT, sudo=True)
-      opts = ','.join(cls.NEEDED_SUBSYSTEMS)
-      # This hierarchy is exclusive to cros, so it probably doesn't exist.
-      cros_build_lib.SudoRunCommand(['mount', '-t', 'cgroup', '-o', opts,
-                                     'cros', cls.CGROUP_ROOT], print_cmd=False)
+      # Grab a lock so in the off chance we have multiple programs (like two
+      # cros_sdk launched in parallel) running this init logic, we don't end
+      # up mounting multiple times.
+      lock_path = '/tmp/.chromite.cgroups.lock'
+      with locking.FileLock(lock_path, 'cgroup lock') as lock:
+        lock.write_lock()
+        if _FileContains('/proc/mounts', [mnt]):
+          return True
 
-    return True
+        # Not all distros mount cgroup_root to sysfs.
+        osutils.SafeMakedirs(mnt, sudo=True)
+        cros_build_lib.SudoRunCommand(['mount'] + args + [mnt], print_cmd=False)
+
+      return True
+
+    mount_root_args = ['-t', 'tmpfs', 'cgroup_root']
+
+    opts = ','.join(cls.NEEDED_SUBSYSTEMS)
+    cgroup_root_args = ['-t', 'cgroup', '-o', opts, 'cros']
+
+    return _EnsureMounted(cls.MOUNT_ROOT, mount_root_args) and \
+        _EnsureMounted(cls.CGROUP_ROOT, cgroup_root_args)
 
   @classmethod
   @MemoizedSingleCall
