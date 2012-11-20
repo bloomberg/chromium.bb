@@ -646,7 +646,7 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
         }
     }
 
-    // Two-finger panning
+    // Two-finger panning should not happen based on pinch events only
     {
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
@@ -658,6 +658,27 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
         m_hostImpl->pinchGestureUpdate(pageScaleDelta, gfx::Point(10, 10));
         m_hostImpl->pinchGestureUpdate(pageScaleDelta, gfx::Point(20, 20));
         m_hostImpl->pinchGestureEnd();
+
+        scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
+        EXPECT_TRUE(scrollInfo->scrolls.empty());
+    }
+
+    // Two-finger panning should work with interleaved scroll events
+    {
+        m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
+        scrollLayer->setImplTransform(identityScaleTransform);
+        scrollLayer->setScrollDelta(gfx::Vector2d());
+        scrollLayer->setScrollOffset(gfx::Vector2d(20, 20));
+
+        float pageScaleDelta = 1;
+        m_hostImpl->scrollBegin(gfx::Point(10, 10), InputHandlerClient::Wheel);
+        m_hostImpl->pinchGestureBegin();
+        m_hostImpl->pinchGestureUpdate(pageScaleDelta, gfx::Point(10, 10));
+        m_hostImpl->scrollBy(gfx::Point(10, 10), gfx::Vector2d(-10, -10));
+        m_hostImpl->pinchGestureUpdate(pageScaleDelta, gfx::Point(20, 20));
+        m_hostImpl->pinchGestureEnd();
+        m_hostImpl->scrollEnd();
 
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);

@@ -10,13 +10,14 @@ import android.os.SystemClock;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 
 import java.util.concurrent.CountDownLatch;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
+import org.chromium.content.browser.third_party.GestureDetector;
+import org.chromium.content.browser.third_party.GestureDetector.SimpleOnGestureListener;
 
 /**
  * Test suite for ContentViewGestureHandler.

@@ -1241,13 +1241,10 @@ void LayerTreeHostImpl::pinchGestureUpdate(float magnifyDelta, gfx::Point anchor
     if (!m_rootScrollLayerImpl)
         return;
 
-    if (m_previousPinchAnchor == gfx::Point())
-        m_previousPinchAnchor = anchor;
-
     // Keep the center-of-pinch anchor specified by (x, y) in a stable
     // position over the course of the magnify.
     float pageScaleDelta = m_pinchZoomViewport.pageScaleDelta();
-    gfx::PointF previousScaleAnchor = gfx::ScalePoint(m_previousPinchAnchor, 1 / pageScaleDelta);
+    gfx::PointF previousScaleAnchor = gfx::ScalePoint(anchor, 1 / pageScaleDelta);
     setPageScaleDelta(pageScaleDelta * magnifyDelta);
     pageScaleDelta = m_pinchZoomViewport.pageScaleDelta();
     gfx::PointF newScaleAnchor = gfx::ScalePoint(anchor, 1 / pageScaleDelta);

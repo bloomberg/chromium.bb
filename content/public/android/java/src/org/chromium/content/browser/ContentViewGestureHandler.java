@@ -8,11 +8,11 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
-import android.view.GestureDetector;
-import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
+import org.chromium.content.browser.third_party.GestureDetector;
+import org.chromium.content.browser.third_party.GestureDetector.OnGestureListener;
 import org.chromium.content.browser.LongPressDetector.LongPressDelegate;
 import org.chromium.content.common.TraceEvent;
 
@@ -697,8 +697,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
         // "Last finger raised" could be an end to movement.  However,
         // give the mSimpleTouchDetector a chance to continue
         // scrolling with a fling.
-        if ((event.getAction() == MotionEvent.ACTION_UP) &&
-            (event.getPointerCount() == 1)) {
+        if (event.getAction() == MotionEvent.ACTION_UP) {
             if (mNativeScrolling) {
                 possiblyEndMovement = true;
             }
