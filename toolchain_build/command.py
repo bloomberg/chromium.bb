@@ -107,12 +107,15 @@ class Command(object):
     check_call(command, **kwargs)
 
 
-def Mkdir(path):
+def Mkdir(path, parents=False):
   """Convenience method for generating mkdir commands."""
   # TODO(bradnelson): Replace with something less hacky.
+  func = 'os.mkdir'
+  if parents:
+    func = 'os.makedirs'
   return Command([
       sys.executable, '-c',
-      'import sys,os; os.mkdir(sys.argv[1])', path])
+      'import sys,os; ' + func + '(sys.argv[1])', path])
 
 
 def Copy(src, dst):

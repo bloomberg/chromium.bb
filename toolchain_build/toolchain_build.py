@@ -251,6 +251,10 @@ def HostTools(target):
           'commands': [
               ConfigureGccCommand(target),
               GccCommand(target, MAKE_PARALLEL_CMD + ['all-gcc']),
+              # gcc/Makefile's install targets populate this directory
+              # only if it already exists.
+              command.Mkdir(os.path.join('%(output)s', target + '-nacl', 'bin'),
+                            True),
               GccCommand(target, MAKE_DESTDIR_CMD + ['install-strip-gcc']),
               REMOVE_INFO_DIR,
               ],
