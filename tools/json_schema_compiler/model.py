@@ -6,6 +6,8 @@ import copy
 import os.path
 import re
 
+from json_parse import OrderedDict
+
 class ParseException(Exception):
   """Thrown when data in the model is invalid.
   """
@@ -222,7 +224,7 @@ class Property(object):
     self._unix_name = UnixName(self.name)
     self._unix_name_used = False
     self.optional = json.get('optional', False)
-    self.functions = {}
+    self.functions = OrderedDict()
     self.has_value = False
     self.description = json.get('description')
     self.parent = parent
@@ -420,7 +422,7 @@ def _GetModelHierarchy(entity):
 def _AddTypes(model, json, namespace):
   """Adds Type objects to |model| contained in the 'types' field of |json|.
   """
-  model.types = {}
+  model.types = OrderedDict()
   for type_json in json.get('types', []):
     type_ = Type(model, type_json['id'], type_json, namespace)
     model.types[type_.name] = type_
@@ -429,7 +431,7 @@ def _AddFunctions(model, json, namespace):
   """Adds Function objects to |model| contained in the 'functions' field of
   |json|.
   """
-  model.functions = {}
+  model.functions = OrderedDict()
   for function_json in json.get('functions', []):
     function = Function(model, function_json, namespace, from_json=True)
     model.functions[function.name] = function
@@ -437,7 +439,7 @@ def _AddFunctions(model, json, namespace):
 def _AddEvents(model, json, namespace):
   """Adds Function objects to |model| contained in the 'events' field of |json|.
   """
-  model.events = {}
+  model.events = OrderedDict()
   for event_json in json.get('events', []):
     event = Function(model, event_json, namespace, from_client=True)
     model.events[event.name] = event
@@ -450,7 +452,7 @@ def _AddProperties(model,
   """Adds model.Property objects to |model| contained in the 'properties' field
   of |json|.
   """
-  model.properties = {}
+  model.properties = OrderedDict()
   for name, property_json in json.get('properties', {}).items():
     model.properties[name] = Property(
         model,

@@ -4,6 +4,8 @@
 """Utilies for the processing of schema python structures.
 """
 
+import json_parse
+
 def CapitalizeFirstLetter(value):
   return value[0].capitalize() + value[1:]
 
@@ -22,7 +24,7 @@ def PrefixSchemasWithNamespace(schemas):
     _PrefixWithNamespace(s.get("namespace"), s)
 
 def _MaybePrefixFieldWithNamespace(namespace, schema, key):
-  if type(schema) == dict and key in schema:
+  if json_parse.IsDict(schema) and key in schema:
     old_value = schema[key]
     if not "." in old_value:
       schema[key] = namespace + "." + old_value
@@ -33,7 +35,7 @@ def _PrefixTypesWithNamespace(namespace, types):
     _MaybePrefixFieldWithNamespace(namespace, t, "customBindings")
 
 def _PrefixWithNamespace(namespace, schema):
-  if type(schema) == dict:
+  if json_parse.IsDict(schema):
     if "types" in schema:
       _PrefixTypesWithNamespace(namespace, schema.get("types"))
     _MaybePrefixFieldWithNamespace(namespace, schema, "$ref")

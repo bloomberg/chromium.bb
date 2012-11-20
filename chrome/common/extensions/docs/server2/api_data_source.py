@@ -3,13 +3,12 @@
 # found in the LICENSE file.
 
 import copy
-import json
 import logging
 import os
 
 import compiled_file_system as compiled_fs
 from file_system import FileNotFoundError
-import third_party.json_schema_compiler.json_comment_eater as json_comment_eater
+import third_party.json_schema_compiler.json_parse as json_parse
 import third_party.json_schema_compiler.model as model
 import third_party.json_schema_compiler.idl_schema as idl_schema
 import third_party.json_schema_compiler.idl_parser as idl_parser
@@ -17,10 +16,10 @@ import third_party.json_schema_compiler.idl_parser as idl_parser
 # Increment this version when there are changes to the data stored in any of
 # the caches used by APIDataSource. This allows the cache to be invalidated
 # without having to flush memcache on the production server.
-_VERSION = 3
+_VERSION = 4
 
 def _RemoveNoDocs(item):
-  if type(item) == dict:
+  if json_parse.IsDict(item):
     if item.get('nodoc', False):
       return True
     to_remove = []
@@ -334,11 +333,11 @@ class APIDataSource(object):
                            disable_refs)
 
     def _LoadPermissions(self, json_str):
-      return json.loads(json_comment_eater.Nom(json_str))
+      return json_parse.Parse(json_str)
 
     def _LoadJsonAPI(self, api, disable_refs):
       return _JSCModel(
-          json.loads(json_comment_eater.Nom(api))[0],
+          json_parse.Parse(api)[0],
           self._ref_resolver_factory.Create() if not disable_refs else None,
           disable_refs).ToDict()
 
@@ -404,12 +403,9 @@ class APIDataSource(object):
     return api_perms
 
   def _GenerateHandlebarContext(self, handlebar_dict, path):
-    return_dict = {
-      'permissions': self._GetFeature(path),
-      'samples': _LazySamplesGetter(path, self._samples)
-    }
-    return_dict.update(handlebar_dict)
-    return return_dict
+    handlebar_dict['permissions'] = self._GetFeature(path)
+    handlebar_dict['samples'] = _LazySamplesGetter(path, self._samples)
+    return handlebar_dict
 
   def _GetAsSubdirectory(self, name):
     if name.startswith('experimental_'):

@@ -3,20 +3,17 @@
 # found in the LICENSE file.
 
 import copy
-import json
-import os.path
+import os
 import sys
 
-_script_path = os.path.realpath(__file__)
-sys.path.insert(0, os.path.normpath(_script_path + "/../../"))
-import json_comment_eater
+import json_parse
 import schema_util
 
 def DeleteNocompileNodes(item):
   def HasNocompile(thing):
-    return type(thing) == dict and thing.get('nocompile', False)
+    return json_parse.IsDict(thing) and thing.get('nocompile', False)
 
-  if type(item) == dict:
+  if json_parse.IsDict(item):
     toDelete = []
     for key, value in item.items():
       if HasNocompile(value):
@@ -33,7 +30,7 @@ def DeleteNocompileNodes(item):
 
 def Load(filename):
   with open(filename, 'r') as handle:
-    schemas = json.loads(json_comment_eater.Nom(handle.read()))
+    schemas = json_parse.Parse(handle.read())
   schema_util.PrefixSchemasWithNamespace(schemas)
   return schemas
 

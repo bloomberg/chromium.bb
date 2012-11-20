@@ -17,7 +17,6 @@ from file_system import FileNotFoundError
 from in_memory_object_store import InMemoryObjectStore
 from local_file_system import LocalFileSystem
 from reference_resolver import ReferenceResolver
-import third_party.json_schema_compiler.json_comment_eater as comment_eater
 import third_party.json_schema_compiler.model as model
 
 def _MakeLink(href, text):
@@ -86,7 +85,7 @@ class APIDataSourceTest(unittest.TestCase):
     self.assertRaises(FileNotFoundError, data_source.get, 'junk')
 
   def _LoadJSON(self, filename):
-    return json.loads(comment_eater.Nom(self._ReadLocalFile(filename)))
+    return json.loads(self._ReadLocalFile(filename))
 
   def testCreateId(self):
     data_source = FakeAPIAndListDataSource(

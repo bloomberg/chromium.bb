@@ -15,7 +15,10 @@ SRC_DIR = os.path.join(sys.path[0], os.pardir, os.pardir, os.pardir, os.pardir,
 THIRD_PARTY_DIR = os.path.join(SRC_DIR, 'third_party')
 LOCAL_THIRD_PARTY_DIR = os.path.join(sys.path[0], 'third_party')
 TOOLS_DIR = os.path.join(SRC_DIR, 'tools')
-SCHEMA_COMPILER_FILES = ['model.py', 'idl_schema.py', 'schema_util.py']
+SCHEMA_COMPILER_FILES = ['model.py',
+                         'idl_schema.py',
+                         'schema_util.py',
+                         'json_parse.py']
 
 def MakeInit(path):
   path = os.path.join(path, '__init__.py')
@@ -26,17 +29,19 @@ def OnError(function, path, excinfo):
   os.chmod(path, stat.S_IWUSR)
   function(path)
 
-def CopyThirdParty(src, dest, files=None):
+def CopyThirdParty(src, dest, files=None, make_init=True):
   dest_path = os.path.join(LOCAL_THIRD_PARTY_DIR, dest)
   if not files:
     shutil.copytree(src, dest_path)
-    MakeInit(dest_path)
+    if make_init:
+      MakeInit(dest_path)
     return
   try:
     os.makedirs(dest_path)
   except Exception:
     pass
-  MakeInit(dest_path)
+  if make_init:
+    MakeInit(dest_path)
   for filename in files:
     shutil.copy(os.path.join(src, filename), os.path.join(dest_path, filename))
 
@@ -60,6 +65,9 @@ def main():
                  'json_schema_compiler',
                  SCHEMA_COMPILER_FILES)
   CopyThirdParty(TOOLS_DIR, 'json_schema_compiler', ['json_comment_eater.py'])
+  CopyThirdParty(os.path.join(THIRD_PARTY_DIR, 'simplejson'),
+                 os.path.join('json_schema_compiler', 'simplejson'),
+                 make_init=False)
   MakeInit(LOCAL_THIRD_PARTY_DIR)
 
   # To be able to use the Handlebar class we need this import in __init__.py.
