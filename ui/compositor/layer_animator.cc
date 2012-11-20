@@ -97,7 +97,8 @@ LayerAnimator* LayerAnimator::CreateImplicitAnimator() {
 #define ANIMATED_PROPERTY(type, property, name, member_type, member)  \
 void LayerAnimator::Set##name(type value) {                           \
   base::TimeDelta duration = GetTransitionDuration();                 \
-  if (duration == base::TimeDelta() && delegate()) {                  \
+  if (duration == base::TimeDelta() && delegate() &&                  \
+      (preemption_strategy_ != ENQUEUE_NEW_ANIMATION)) {              \
     StopAnimatingProperty(LayerAnimationElement::property);           \
     delegate()->Set##name##FromAnimation(value);                      \
     return;                                                           \

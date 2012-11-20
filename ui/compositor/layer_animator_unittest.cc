@@ -1737,4 +1737,34 @@ TEST(LayerAnimatorTest, ObserverDeletesAnimatorAfterAborted) {
   EXPECT_TRUE(observer_was_deleted);
 }
 
+
+TEST(LayerAnimatorTest, TestSetterRespectEnqueueStrategy) {
+  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  animator->set_disable_timer_for_test(true);
+
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+
+  float start_opacity = 0.0f;
+  float target_opacity = 1.0f;
+  float magic_opacity = 0.123f;
+
+  delegate.SetOpacityFromAnimation(start_opacity);
+
+  ScopedLayerAnimationSettings settings(animator);
+  settings.SetPreemptionStrategy(
+      LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  settings.SetTransitionDuration(base::TimeDelta::FromSeconds(1));
+  animator->SetOpacity(target_opacity);
+
+  EXPECT_EQ(start_opacity, delegate.GetOpacityForAnimation());
+
+  settings.SetPreemptionStrategy(
+      LayerAnimator::ENQUEUE_NEW_ANIMATION);
+  settings.SetTransitionDuration(base::TimeDelta());
+  animator->SetOpacity(magic_opacity);
+
+  EXPECT_EQ(start_opacity, delegate.GetOpacityForAnimation());
+}
+
 }  // namespace ui
