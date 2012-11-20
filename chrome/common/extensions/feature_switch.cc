@@ -45,7 +45,7 @@ class CommonSwitches {
                 FeatureSwitch::DEFAULT_DISABLED),
         tab_capture(
             switches::kTabCapture,
-            FeatureSwitch::DEFAULT_DISABLED)
+            FeatureSwitch::DEFAULT_ENABLED)
   {
     if (!action_box.IsEnabled()){
       extensions_in_action_box.SetOverrideValue(
