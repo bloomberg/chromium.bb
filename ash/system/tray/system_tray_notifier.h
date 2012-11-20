@@ -80,6 +80,7 @@ public:
   void NotifyRefreshNetwork(const NetworkIconInfo &info);
   void NotifySetNetworkMessage(NetworkTrayDelegate* delegate,
                                NetworkObserver::MessageType message_type,
+                               NetworkObserver::NetworkType network_type,
                                const string16& title,
                                const string16& message,
                                const std::vector<string16>& links);

@@ -205,7 +205,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
       links.push_back(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
     ash::Shell::GetInstance()->system_tray_notifier()->NotifySetNetworkMessage(
         listener, ash::NetworkObserver::MESSAGE_DATA_PROMO,
-        string16(), message, links);
+        ash::NetworkObserver::NETWORK_CELLULAR, string16(), message, links);
     check_for_promo_ = false;
     SetShow3gPromoNotification(false);
     if (carrier_deal_promo_pref != kNotificationCountPrefDefault)

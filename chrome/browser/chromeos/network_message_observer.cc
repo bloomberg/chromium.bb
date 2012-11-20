@@ -30,7 +30,21 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
-
+ash::NetworkObserver::NetworkType GetAshNetworkType(
+    chromeos::ConnectionType connection_type) {
+  switch (connection_type) {
+   case chromeos::TYPE_CELLULAR:
+     return ash::NetworkObserver::NETWORK_CELLULAR;
+   case chromeos::TYPE_ETHERNET:
+     return ash::NetworkObserver::NETWORK_ETHERNET;
+   case chromeos::TYPE_WIFI:
+     return ash::NetworkObserver::NETWORK_WIFI;
+   case chromeos::TYPE_BLUETOOTH:
+     return ash::NetworkObserver::NETWORK_BLUETOOTH;
+   default:
+     return ash::NetworkObserver::NETWORK_UNKNOWN;
+  }
+}
 // Returns prefs::kShowPlanNotifications in the profile of the last active
 // browser. If there is no active browser, returns true.
 bool ShouldShowMobilePlanNotifications() {
@@ -80,22 +94,26 @@ class NetworkMessageNotification : public ash::NetworkTrayDelegate {
     title_ = title;
   }
 
-  void Show(const string16& message,
+  void Show(chromeos::ConnectionType connection_type,
+            const string16& message,
             const string16& link_text,
             const BalloonViewHost::MessageCallback& callback,
             bool urgent, bool sticky) {
     callback_ = callback;
     std::vector<string16> links;
     links.push_back(link_text);
+    ash::NetworkObserver::NetworkType network_type = GetAshNetworkType(
+        connection_type);
     ash::Shell::GetInstance()->system_tray_notifier()->NotifySetNetworkMessage(
-        this, error_type_, title_, message, links);
+        this, error_type_, network_type, title_, message, links);
   }
 
-  void ShowAlways(const string16& message,
+  void ShowAlways(chromeos::ConnectionType connection_type,
+                  const string16& message,
                   const string16& link_text,
                   const BalloonViewHost::MessageCallback& callback,
                   bool urgent, bool sticky) {
-    Show(message, link_text, callback, urgent, sticky);
+    Show(connection_type, message, link_text, callback, urgent, sticky);
   }
 
  private:
@@ -191,6 +209,7 @@ void NetworkMessageObserver::ShowNeedsPlanNotification(
       l10n_util::GetStringFUTF16(IDS_NETWORK_NO_DATA_PLAN_TITLE,
                                  UTF8ToUTF16(cellular->name())));
   notification_no_data_->Show(
+      TYPE_CELLULAR,
       l10n_util::GetStringFUTF16(
           IDS_NETWORK_NO_DATA_PLAN_MESSAGE,
           UTF8ToUTF16(cellular->name())),
@@ -209,7 +228,7 @@ void NetworkMessageObserver::ShowNoDataNotification(
       TimeFormat::TimeRemaining(base::TimeDelta()) :
       l10n_util::GetStringFUTF16(IDS_NETWORK_DATA_REMAINING_MESSAGE,
                                  ASCIIToUTF16("0"));
-  notification_no_data_->Show(message,
+  notification_no_data_->Show(TYPE_CELLULAR, message,
       l10n_util::GetStringUTF16(IDS_NETWORK_PURCHASE_MORE_MESSAGE),
       base::Bind(&NetworkMessageObserver::OpenMobileSetupPage,
                  AsWeakPtr(),
@@ -227,7 +246,7 @@ void NetworkMessageObserver::ShowLowDataNotification(
     message = l10n_util::GetStringFUTF16(IDS_NETWORK_DATA_REMAINING_MESSAGE,
         UTF8ToUTF16(base::Int64ToString(remaining_mbytes)));
   }
-  notification_low_data_->Show(message,
+  notification_low_data_->Show(TYPE_CELLULAR, message,
       l10n_util::GetStringUTF16(IDS_NETWORK_MORE_INFO_MESSAGE),
       base::Bind(&NetworkMessageObserver::OpenMoreInfoPage, AsWeakPtr()),
       false, false);
@@ -284,6 +303,7 @@ void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
   if (new_failed_network) {
     VLOG(1) << "Failed Network: " << new_failed_network->service_path();
     notification_connection_error_->ShowAlways(
+        new_failed_network->type(),
         l10n_util::GetStringFUTF16(
             IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_DETAILS,
             UTF8ToUTF16(new_failed_network->name()),

@@ -199,13 +199,19 @@ void SystemTrayNotifier::NotifyRefreshNetwork(const NetworkIconInfo &info) {
 void SystemTrayNotifier::NotifySetNetworkMessage(
     NetworkTrayDelegate* delegate,
     NetworkObserver::MessageType message_type,
+    NetworkObserver::NetworkType network_type,
     const string16& title,
     const string16& message,
     const std::vector<string16>& links) {
   FOR_EACH_OBSERVER(NetworkObserver,
                     network_observers_,
                     SetNetworkMessage(
-                        delegate, message_type, title, message, links));
+                        delegate,
+                        message_type,
+                        network_type,
+                        title,
+                        message,
+                        links));
 }
 
 void SystemTrayNotifier::NotifyClearNetworkMessage(

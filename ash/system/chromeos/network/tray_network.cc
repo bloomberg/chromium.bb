@@ -24,10 +24,16 @@ namespace {
 
 using ash::internal::TrayNetwork;
 
-int GetMessageIcon(TrayNetwork::MessageType message_type) {
+int GetMessageIcon(
+    TrayNetwork::MessageType message_type,
+    TrayNetwork::NetworkType network_type) {
   switch(message_type) {
     case TrayNetwork::ERROR_CONNECT_FAILED:
-      return IDR_AURA_UBER_TRAY_NETWORK_FAILED;
+      if (TrayNetwork::NETWORK_CELLULAR == network_type)
+        // todo(harrym) replace with dedicated icon.
+        return IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER;
+      else
+        return IDR_AURA_UBER_TRAY_NETWORK_FAILED;
     case TrayNetwork::MESSAGE_DATA_LOW:
       return IDR_AURA_UBER_TRAY_NETWORK_DATA_LOW;
     case TrayNetwork::MESSAGE_DATA_NONE:
@@ -56,14 +62,17 @@ class NetworkMessages {
   struct Message {
     Message() : delegate(NULL) {}
     Message(NetworkTrayDelegate* in_delegate,
+            TrayNetwork::NetworkType network_type,
             const string16& in_title,
             const string16& in_message,
             const std::vector<string16>& in_links) :
         delegate(in_delegate),
+        network_type_(network_type),
         title(in_title),
         message(in_message),
         links(in_links) {}
     NetworkTrayDelegate* delegate;
+    TrayNetwork::NetworkType network_type_;
     string16 title;
     string16 message;
     std::vector<string16> links;
@@ -407,7 +416,8 @@ class NetworkMessageView : public views::View,
                      TrayNetwork::MessageType message_type,
                      const NetworkMessages::Message& network_msg)
       : tray_(tray),
-        message_type_(message_type) {
+        message_type_(message_type),
+        network_type_(network_msg.network_type_) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
 
@@ -448,10 +458,12 @@ class NetworkMessageView : public views::View,
   }
 
   TrayNetwork::MessageType message_type() const { return message_type_; }
+  TrayNetwork::NetworkType network_type() const { return network_type_; }
 
  private:
   TrayNetwork* tray_;
   TrayNetwork::MessageType message_type_;
+  TrayNetwork::NetworkType network_type_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMessageView);
 };
@@ -463,7 +475,8 @@ class NetworkNotificationView : public TrayNotificationView {
     CreateMessageView();
     InitView(network_message_view_);
     SetIconImage(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        GetMessageIcon(network_message_view_->message_type())));
+        GetMessageIcon(network_message_view_->message_type(),
+            network_message_view_->network_type())));
   }
 
   // Overridden from TrayNotificationView.
@@ -481,7 +494,8 @@ class NetworkNotificationView : public TrayNotificationView {
     CreateMessageView();
     UpdateViewAndImage(network_message_view_,
         *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            GetMessageIcon(network_message_view_->message_type())));
+            GetMessageIcon(network_message_view_->message_type(),
+                network_message_view_->network_type())));
   }
 
  private:
@@ -590,11 +604,12 @@ void TrayNetwork::OnNetworkRefresh(const NetworkIconInfo& info) {
 
 void TrayNetwork::SetNetworkMessage(NetworkTrayDelegate* delegate,
                                    MessageType message_type,
+                                   NetworkType network_type,
                                    const string16& title,
                                    const string16& message,
                                    const std::vector<string16>& links) {
-  messages_->messages()[message_type] =
-      tray::NetworkMessages::Message(delegate, title, message, links);
+  messages_->messages()[message_type] = tray::NetworkMessages::Message(
+      delegate, network_type, title, message, links);
   if (notification_)
     notification_->Update();
   else
