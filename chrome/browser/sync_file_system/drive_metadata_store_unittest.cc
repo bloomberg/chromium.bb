@@ -142,15 +142,48 @@ class DriveMetadataStoreTest : public testing::Test {
     message_loop_.Run();
   }
 
-  void RemoveOrigin(const GURL& url) {
+  fileapi::SyncStatusCode RemoveOrigin(const GURL& url) {
+    fileapi::SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
     drive_metadata_store_->RemoveOrigin(
-        url, base::Bind(&DriveMetadataStoreTest::DidRemoveOrigin,
-                        base::Unretained(this)));
+        url, base::Bind(&DriveMetadataStoreTest::DidFinishDBTask,
+                        base::Unretained(this), &status));
     message_loop_.Run();
+    return status;
   }
 
-  void DidRemoveOrigin(fileapi::SyncStatusCode status) {
-    EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
+  fileapi::SyncStatusCode UpdateEntry(const fileapi::FileSystemURL& url,
+                                      const DriveMetadata& metadata) {
+    fileapi::SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
+    drive_metadata_store_->UpdateEntry(
+        url, metadata,
+        base::Bind(&DriveMetadataStoreTest::DidFinishDBTask,
+                   base::Unretained(this), &status));
+    message_loop_.Run();
+    return status;
+  }
+
+  fileapi::SyncStatusCode DeleteEntry(const fileapi::FileSystemURL& url) {
+    fileapi::SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
+    drive_metadata_store_->DeleteEntry(
+        url,
+        base::Bind(&DriveMetadataStoreTest::DidFinishDBTask,
+                   base::Unretained(this), &status));
+    message_loop_.Run();
+    return status;
+  }
+
+  fileapi::SyncStatusCode SetLargestChangeStamp(int64 changestamp) {
+    fileapi::SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
+    drive_metadata_store_->SetLargestChangeStamp(
+        changestamp, base::Bind(&DriveMetadataStoreTest::DidFinishDBTask,
+                                base::Unretained(this), &status));
+    message_loop_.Run();
+    return status;
+  }
+
+  void DidFinishDBTask(fileapi::SyncStatusCode* status_out,
+                       fileapi::SyncStatusCode status) {
+    *status_out = status;
     message_loop_.Quit();
   }
 
@@ -212,9 +245,8 @@ TEST_F(DriveMetadataStoreTest, ReadWriteTest) {
             metadata_store()->ReadEntry(url, &metadata));
 
   metadata = CreateMetadata("1234567890", "09876543210", true);
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
-            metadata_store()->UpdateEntry(url, metadata));
-  metadata_store()->SetLargestChangeStamp(1);
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK, UpdateEntry(url, metadata));
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK, SetLargestChangeStamp(1));
 
   DropDatabase();
   InitializeDatabase();
@@ -228,11 +260,10 @@ TEST_F(DriveMetadataStoreTest, ReadWriteTest) {
   EXPECT_EQ(metadata.md5_checksum(), metadata2.md5_checksum());
   EXPECT_EQ(metadata.conflicted(), metadata2.conflicted());
 
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK, metadata_store()->DeleteEntry(url));
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK, DeleteEntry(url));
   EXPECT_EQ(fileapi::SYNC_DATABASE_ERROR_NOT_FOUND,
             metadata_store()->ReadEntry(url, &metadata));
-  EXPECT_EQ(fileapi::SYNC_DATABASE_ERROR_NOT_FOUND,
-            metadata_store()->DeleteEntry(url));
+  EXPECT_EQ(fileapi::SYNC_DATABASE_ERROR_NOT_FOUND, DeleteEntry(url));
 }
 
 TEST_F(DriveMetadataStoreTest, GetConflictURLsTest) {
@@ -250,14 +281,11 @@ TEST_F(DriveMetadataStoreTest, GetConflictURLsTest) {
   // Populate metadata in DriveMetadataStore. The metadata identified by "file2"
   // and "file3" are marked as conflicted.
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
-            metadata_store()->UpdateEntry(URL(path1),
-                                          CreateMetadata("1", "1", false)));
+            UpdateEntry(URL(path1), CreateMetadata("1", "1", false)));
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
-            metadata_store()->UpdateEntry(URL(path2),
-                                          CreateMetadata("2", "2", true)));
+            UpdateEntry(URL(path2), CreateMetadata("2", "2", true)));
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
-            metadata_store()->UpdateEntry(URL(path3),
-                                          CreateMetadata("3", "3", true)));
+            UpdateEntry(URL(path3), CreateMetadata("3", "3", true)));
 
   EXPECT_EQ(fileapi::SYNC_STATUS_OK, metadata_store()->GetConflictURLs(&urls));
   EXPECT_EQ(2U, urls.size());
@@ -352,7 +380,7 @@ TEST_F(DriveMetadataStoreTest, RemoveOrigin) {
   const std::string kResourceId3("piyopiyo");
 
   InitializeDatabase();
-  metadata_store()->SetLargestChangeStamp(1);
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK, SetLargestChangeStamp(1));
 
   metadata_store()->AddBatchSyncOrigin(kOrigin1, kResourceId1);
   metadata_store()->AddBatchSyncOrigin(kOrigin2, kResourceId2);
@@ -360,34 +388,34 @@ TEST_F(DriveMetadataStoreTest, RemoveOrigin) {
   metadata_store()->AddBatchSyncOrigin(kOrigin3, kResourceId3);
 
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
-            metadata_store()->UpdateEntry(
+            UpdateEntry(
                 fileapi::CreateSyncableFileSystemURL(
                     kOrigin1, kServiceName, FilePath(FPL("guf"))),
                 CreateMetadata("foo", "spam", false)));
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
-            metadata_store()->UpdateEntry(
+            UpdateEntry(
                 fileapi::CreateSyncableFileSystemURL(
                     kOrigin2, kServiceName, FilePath(FPL("mof"))),
                 CreateMetadata("bar", "ham", false)));
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
-            metadata_store()->UpdateEntry(
+            UpdateEntry(
                 fileapi::CreateSyncableFileSystemURL(
                     kOrigin3, kServiceName, FilePath(FPL("waf"))),
                 CreateMetadata("baz", "egg", false)));
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
-            metadata_store()->UpdateEntry(
+            UpdateEntry(
                 fileapi::CreateSyncableFileSystemURL(
                     kOrigin4, kServiceName, FilePath(FPL("cue"))),
                 CreateMetadata("lat", "fork", false)));
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
-            metadata_store()->UpdateEntry(
+            UpdateEntry(
                 fileapi::CreateSyncableFileSystemURL(
                     kOrigin1, kServiceName, FilePath(FPL("tic"))),
                 CreateMetadata("zav", "sause", false)));
 
-  RemoveOrigin(kOrigin1);
-  RemoveOrigin(kOrigin2);
-  RemoveOrigin(kOrigin4);
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK, RemoveOrigin(kOrigin1));
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK, RemoveOrigin(kOrigin2));
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK, RemoveOrigin(kOrigin4));
 
   DropDatabase();
   InitializeDatabase();

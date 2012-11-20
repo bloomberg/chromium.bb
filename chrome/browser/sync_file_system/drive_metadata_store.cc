@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/location.h"
+#include "base/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
@@ -240,7 +241,9 @@ void DriveMetadataStore::DidRestoreSyncOrigins(
   callback.Run(status);
 }
 
-void DriveMetadataStore::SetLargestChangeStamp(int64 largest_changestamp) {
+void DriveMetadataStore::SetLargestChangeStamp(
+    int64 largest_changestamp,
+    const fileapi::SyncStatusCallback& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
   largest_changestamp_ = largest_changestamp;
@@ -248,7 +251,8 @@ void DriveMetadataStore::SetLargestChangeStamp(int64 largest_changestamp) {
       file_task_runner_, FROM_HERE,
       base::Bind(&DriveMetadataDB::SetLargestChangestamp,
                  base::Unretained(db_.get()), largest_changestamp),
-      base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
+      base::Bind(&DriveMetadataStore::UpdateDBStatusAndInvokeCallback,
+                 AsWeakPtr(), callback));
 }
 
 int64 DriveMetadataStore::GetLargestChangeStamp() const {
@@ -257,8 +261,10 @@ int64 DriveMetadataStore::GetLargestChangeStamp() const {
   return largest_changestamp_;
 }
 
-SyncStatusCode DriveMetadataStore::UpdateEntry(const FileSystemURL& url,
-                                               const DriveMetadata& metadata) {
+void DriveMetadataStore::UpdateEntry(
+    const FileSystemURL& url,
+    const DriveMetadata& metadata,
+    const fileapi::SyncStatusCallback& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
 
@@ -271,27 +277,34 @@ SyncStatusCode DriveMetadataStore::UpdateEntry(const FileSystemURL& url,
       file_task_runner_, FROM_HERE,
       base::Bind(&DriveMetadataDB::UpdateEntry, base::Unretained(db_.get()),
                  url, metadata),
-      base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
-  return result.second ?
-      fileapi::SYNC_STATUS_OK :
-      fileapi::SYNC_FILE_ERROR_EXISTS;
+      base::Bind(&DriveMetadataStore::UpdateDBStatusAndInvokeCallback,
+                 AsWeakPtr(), callback));
 }
 
-SyncStatusCode DriveMetadataStore::DeleteEntry(const FileSystemURL& url) {
+void DriveMetadataStore::DeleteEntry(
+    const FileSystemURL& url,
+    const fileapi::SyncStatusCallback& callback) {
   DCHECK(CalledOnValidThread());
   MetadataMap::iterator found = metadata_map_.find(url.origin());
-  if (found == metadata_map_.end())
-    return fileapi::SYNC_DATABASE_ERROR_NOT_FOUND;
+  if (found == metadata_map_.end()) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, fileapi::SYNC_DATABASE_ERROR_NOT_FOUND));
+    return;
+  }
 
   if (found->second.erase(url.path()) == 1) {
     base::PostTaskAndReplyWithResult(
         file_task_runner_, FROM_HERE,
         base::Bind(&DriveMetadataDB::DeleteEntry,
                    base::Unretained(db_.get()), url),
-        base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
-    return fileapi::SYNC_STATUS_OK;
+        base::Bind(&DriveMetadataStore::UpdateDBStatusAndInvokeCallback,
+                   AsWeakPtr(), callback));
+    return;
   }
-  return fileapi::SYNC_DATABASE_ERROR_NOT_FOUND;
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, fileapi::SYNC_DATABASE_ERROR_NOT_FOUND));
 }
 
 SyncStatusCode DriveMetadataStore::ReadEntry(const FileSystemURL& url,
@@ -406,6 +419,13 @@ void DriveMetadataStore::UpdateDBStatus(SyncStatusCode status) {
     return;
   }
   db_status_ = fileapi::SYNC_STATUS_OK;
+}
+
+void DriveMetadataStore::UpdateDBStatusAndInvokeCallback(
+    const fileapi::SyncStatusCallback& callback,
+    SyncStatusCode status) {
+  UpdateDBStatus(status);
+  callback.Run(status);
 }
 
 SyncStatusCode DriveMetadataStore::GetConflictURLs(
