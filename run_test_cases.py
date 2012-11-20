@@ -651,6 +651,9 @@ def LogResults(result_file, results):
   """Write the results out to a file if one is given."""
   if not result_file:
     return
+  base_path = os.path.dirname(result_file)
+  if base_path and not os.path.isdir(base_path):
+    os.makedirs(base_path)
   with open(result_file, 'wb') as f:
     json.dump(results, f, sort_keys=True, indent=2)
 
@@ -751,6 +754,15 @@ def run_test_cases(
         result = append_gtest_output_to_xml(result, os.path.join(tempdir, i))
 
       if result:
+        base_path = os.path.dirname(gtest_output)
+        if base_path and not os.path.isdir(base_path):
+          os.makedirs(base_path)
+        if os.path.isdir(gtest_output):
+          # Includes compatibility with with google-test when a directory is
+          # specified.
+          # TODO(maruel): It would automatically add 0, 1, 2 when a previous
+          # one exists.
+          gtest_output = os.path.join(gtest_output, 'test_detail.xml')
         with open(gtest_output, 'w') as f:
           result.writexml(f)
       else:

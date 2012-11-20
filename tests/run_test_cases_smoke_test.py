@@ -69,12 +69,21 @@ class RunTestCases(unittest.TestCase):
     # Make sure there's no environment variable that could do side effects.
     os.environ.pop('GTEST_SHARD_INDEX', '')
     os.environ.pop('GTEST_TOTAL_SHARDS', '')
-
-    self.filename = 'test.run_test_cases'
+    self._tempdirpath = None
 
   def tearDown(self):
-    if os.path.exists(self.filename):
-      os.remove(self.filename)
+    if self._tempdirpath and os.path.exists(self._tempdirpath):
+      shutil.rmtree(self._tempdirpath)
+
+  @property
+  def tempdirpath(self):
+    if not self._tempdirpath:
+      self._tempdirpath = tempfile.mkdtemp(prefix='run_test_cases')
+    return self._tempdirpath
+
+  @property
+  def filename(self):
+    return os.path.join(self.tempdirpath, 'foo', 'bar.run_test_cases')
 
   def _check_results(self, expected_out_re, out, err):
     lines = out.splitlines()
