@@ -28,8 +28,11 @@ try:
 except ImportError:
   # Failed to import, so we're running Python < 2.7, and json.loads doesn't
   # support object_pairs_hook. simplejson however does, but it's slow.
-  logging.warning('Using simplejson to parse, this might be slow! Upgrade to '
-                  'Python 2.7.')
+  #
+  # TODO(cduvall/kalman): Refuse to start the docs server in this case, but
+  # let json-schema-compiler do its thing.
+  #logging.warning('Using simplejson to parse, this might be slow! Upgrade to '
+  #                'Python 2.7.')
 
   _SYS_PATH = sys.path[:]
   try:
