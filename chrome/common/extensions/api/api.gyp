@@ -54,6 +54,7 @@
           'experimental_media_galleries.idl',
           'experimental_notification.idl',
           'experimental_system_info_cpu.idl',
+          'experimental_system_info_display.idl',
           'experimental_system_info_memory.idl',
           'experimental_system_info_storage.idl',
           'file_system.idl',

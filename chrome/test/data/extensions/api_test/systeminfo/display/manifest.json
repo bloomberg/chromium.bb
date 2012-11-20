@@ -1,0 +1,11 @@
+{
+  "name": "displayinfo",
+  "version": "1.0",
+  "description": "Test systeminfo.display API",
+  "permissions": ["experimental"],
+  "app": {
+    "background": {
+      "scripts": ["test_display_api.js"]
+    }
+  }
+}
