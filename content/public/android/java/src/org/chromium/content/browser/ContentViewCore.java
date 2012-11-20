@@ -1190,8 +1190,6 @@ public class ContentViewCore implements MotionEventDelegate {
     public void onSizeChanged(int w, int h, int ow, int oh) {
         mPopupZoomer.hide(false);
 
-        updateAfterSizeChanged();
-
         // Update the content size to make sure it is at least the View size
         if (mContentWidth < w) mContentWidth = w;
         if (mContentHeight < h) mContentHeight = h;
@@ -1203,6 +1201,8 @@ public class ContentViewCore implements MotionEventDelegate {
                 nativeSetSize(mNativeContentViewCore, mViewportWidth, mViewportHeight);
             }
         }
+
+        updateAfterSizeChanged();
     }
 
     public void updateAfterSizeChanged() {
