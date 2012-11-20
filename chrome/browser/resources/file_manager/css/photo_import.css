@@ -5,7 +5,7 @@
 .photo-import {
   -webkit-user-select: none;
   bottom: 0;
-  font-family: Open Sans, Droid Sans Fallback, sans-serif;
+  font-family: Noto Sans UI, Droid Sans Fallback, sans-serif;
   font-size: 84%;
   left: 0;
   margin: 0;
@@ -188,7 +188,9 @@ button.import {
 
 .importing-dialog button {
   bottom: 14px;
-  min-width: 80px;
+  font-size: 90%;
+  min-height: 26px;
+  min-width: 87px;
   position: absolute;
   right: 14px;
 }

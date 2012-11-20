@@ -22,6 +22,7 @@ function ActionChoice(dom, filesystem, params) {
   this.closeBound_ = this.close_.bind(this);
 
   this.initDom_();
+  this.checkDrive_();
   this.loadSource_(params.source);
 }
 
@@ -94,6 +95,28 @@ ActionChoice.prototype.initDom_ = function() {
   this.dom_.setAttribute('loading', '');
 
   this.document_.querySelectorAll('.choices input')[0].focus();
+};
+
+/**
+ * Checks whether Drive is reachable.
+ * @private
+ */
+ActionChoice.prototype.checkDrive_ = function() {
+  var driveLabel = this.dom_.querySelector('label[for=import-photos-to-drive]');
+  var driveChoice = this.dom_.querySelector('#import-photos-to-drive');
+  driveChoice.disabled = true;
+
+  var onMounted = function() {
+    driveChoice.disabled = false;
+    driveLabel.textContent =
+        loadTimeData.getString('ACTION_CHOICE_PHOTOS_DRIVE');
+  };
+
+  if (this.volumeManager_.isMounted(RootDirectory.GDATA)) {
+    onMounted();
+  } else {
+    this.volumeManager_.mountGData(onMounted, function() {});
+  }
 };
 
 /**
@@ -213,9 +236,14 @@ ActionChoice.prototype.onKeyDown_ = function(e) {
 
 /**
  * Called when OK button clicked.
+ * @param {Event} event The event object.
  * @private
  */
-ActionChoice.prototype.onOk_ = function() {
+ActionChoice.prototype.onOk_ = function(event) {
+  // Check for click on the disabled choice.
+  var input = event.currentTarget.querySelector('input');
+  if (input && input.disabled) return;
+
   if (this.document_.querySelector('#import-photos-to-drive').checked) {
     var url = util.platform.getURL('photo_import.html') +
         '#' + this.sourceEntry_.fullPath;

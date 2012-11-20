@@ -12350,6 +12350,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_ACTION_CHOICE_PHOTOS_DRIVE" desc="In the action choice dialog, label of action to import photos to Drive.">
         Import photos to Google Drive
       </message>
+      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_DRIVE_NOT_REACHED" desc="In the action choice dialog, message informing that Drive is unreachable.">
+        Google Drive could not be reached
+      </message>
       <message name="IDS_FILE_BROWSER_ACTION_CHOICE_VIEW_FILES" desc="In the action choice dialog, label of action to view all files.">
         View files
       </message>
