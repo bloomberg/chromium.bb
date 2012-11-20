@@ -89,8 +89,3 @@ bool BrowserList::IsOffTheRecordSessionActive() {
 bool BrowserList::IsOffTheRecordSessionActiveForProfile(Profile* profile) {
   return GetNativeList()->IsIncognitoWindowOpenForProfile(profile);
 }
-
-// static
-Browser* BrowserList::GetLastActive() {
-  return GetNativeList()->GetLastActive();
-}

@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/file_select_helper.h"
+#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h"
 #include "chrome/browser/ui/browser.h"

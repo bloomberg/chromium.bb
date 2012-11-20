@@ -7,39 +7,12 @@
 
 #include <vector>
 
-#include "base/gtest_prod_util.h"
-#include "ui/gfx/native_widget_types.h"
-
 class Browser;
 class Profile;
 
 namespace chrome {
 class BrowserListObserver;
-#if defined(OS_MACOSX)
-Browser* GetLastActiveBrowser();
-#endif
-#if defined(TOOLKIT_GTK)
-class ExtensionInstallDialog;
-#endif
 }
-
-#if defined(OS_CHROMEOS)
-namespace chromeos {
-class ScreenLocker;
-}
-#endif
-
-namespace content {
-class WebContents;
-}
-
-namespace web_intents {
-Browser* GetBrowserForBackgroundWebIntentDelivery(Profile*);
-}
-
-#if defined(USE_ASH)
-content::WebContents* GetActiveWebContents();
-#endif
 
 // Stores a list of all Browser objects.
 class BrowserList {
@@ -85,37 +58,6 @@ class BrowserList {
 
   // Returns true if at least one incognito session is active for |profile|.
   static bool IsOffTheRecordSessionActiveForProfile(Profile* profile);
-
- private:
-  // DO NOT ADD MORE FRIENDS TO THIS LIST. This list should be reduced over
-  // time by wiring context through to the relevant code rather than using
-  // GetLastActive().
-  friend class SelectFileDialogExtension;
-  friend Browser* web_intents::GetBrowserForBackgroundWebIntentDelivery(
-      Profile*);
-#if defined(OS_CHROMEOS)
-  friend class chromeos::ScreenLocker;
-#endif
-#if defined(OS_MACOSX)
-  friend Browser* chrome::GetLastActiveBrowser();
-#endif
-#if defined(USE_ASH)
-  friend content::WebContents* GetActiveWebContents();
-#endif
-  // DO NOT ADD MORE FRIENDS TO THIS LIST.
-
-  // Returns the Browser object whose window was most recently active.  If the
-  // most recently open Browser's window was closed, returns the first Browser
-  // in the list.  If no Browsers exist, returns NULL.
-  //
-  // WARNING: this is NULL until a browser becomes active. If during startup
-  // a browser does not become active (perhaps the user launches Chrome, then
-  // clicks on another app before the first browser window appears) then this
-  // returns NULL.
-  // WARNING #2: this will always be NULL in unit tests run on the bots.
-  // THIS FUNCTION IS PRIVATE AND NOT TO BE USED AS A REPLACEMENT FOR RELEVANT
-  // CONTEXT.
-  static Browser* GetLastActive();
 };
 
 #endif  // CHROME_BROWSER_UI_BROWSER_LIST_H_

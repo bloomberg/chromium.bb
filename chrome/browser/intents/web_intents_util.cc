@@ -10,7 +10,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -73,7 +74,8 @@ bool IsWebIntentsEnabledForProfile(Profile* profile) {
 }
 
 Browser* GetBrowserForBackgroundWebIntentDelivery(Profile* profile) {
-  Browser* browser = BrowserList::GetLastActive();
+  Browser* browser = chrome::FindLastActiveWithHostDesktopType(
+      chrome::GetActiveDesktop());
   if (browser && profile && browser->profile() != profile)
     return NULL;
   return browser;
