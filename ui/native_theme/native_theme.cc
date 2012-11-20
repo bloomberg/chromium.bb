@@ -4,13 +4,10 @@
 
 #include "ui/native_theme/native_theme.h"
 
-namespace ui {
+#include "base/command_line.h"
+#include "ui/base/ui_base_switches.h"
 
-NativeTheme::NativeTheme()
-    : thumb_inactive_color_(0xeaeaea),
-      thumb_active_color_(0xf4f4f4),
-      track_color_(0xd3d3d3) {
-}
+namespace ui {
 
 void NativeTheme::SetScrollbarColors(unsigned inactive_color,
                                      unsigned active_color,
@@ -22,5 +19,19 @@ void NativeTheme::SetScrollbarColors(unsigned inactive_color,
 
 // NativeTheme::instance() is implemented in the platform specific source files,
 // such as native_theme_win.cc or native_theme_linux.cc
+
+// static
+bool NativeTheme::IsNewMenuStyleEnabled() {
+  static bool enable_new_menu_style =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNewMenuStyle);
+  return enable_new_menu_style;
+}
+
+NativeTheme::NativeTheme()
+    : thumb_inactive_color_(0xeaeaea),
+      thumb_active_color_(0xf4f4f4),
+      track_color_(0xd3d3d3) {
+}
 
 }  // namespace ui

@@ -56,6 +56,9 @@ const char kTouchOptimizedUIEnabled[] = "enabled";
 //   disabled: never optimized for touch.
 const char kTouchOptimizedUIDisabled[] = "disabled";
 
+// Enables new menu UI.
+const char kEnableNewMenuStyle[] = "enable-new-menu-style";
+
 #if defined(USE_XI2_MT)
 // The calibration factors given as "<left>,<right>,<top>,<bottom>".
 const char kTouchCalibration[] = "touch-calibration";

@@ -4,12 +4,6 @@
 
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#include <uxtheme.h>
-#include <Vssym32.h>
-#endif
-
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -20,6 +14,7 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/round_rect_painter.h"
 
 using ui::NativeTheme;
 
@@ -179,11 +174,20 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
 
   const MenuConfig& menu_config =
       content_view_->GetMenuItem()->GetMenuConfig();
-  set_border(Border::CreateEmptyBorder(
-      menu_config.submenu_vertical_margin_size,
-      menu_config.submenu_horizontal_margin_size,
-      menu_config.submenu_vertical_margin_size,
-      menu_config.submenu_horizontal_margin_size));
+
+  if (NativeTheme::IsNewMenuStyleEnabled()) {
+    set_border(views::Border::CreateBorderPainter(
+        new views::RoundRectPainter(
+            ui::NativeTheme::instance()->GetSystemColor(
+                ui::NativeTheme::kColorId_MenuBorderColor)),
+        gfx::Insets(menu_config.menu_border_size, menu_config.menu_border_size,
+            menu_config.menu_border_size, menu_config.menu_border_size)));
+  } else {
+    set_border(Border::CreateEmptyBorder(menu_config.menu_border_size,
+                                         menu_config.menu_border_size,
+                                         menu_config.menu_border_size,
+                                         menu_config.menu_border_size));
+  }
 }
 
 void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {

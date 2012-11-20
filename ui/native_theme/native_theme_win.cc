@@ -26,6 +26,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
+#include "ui/native_theme/common_theme.h"
 
 namespace {
 
@@ -247,6 +248,23 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
                            State state,
                            const gfx::Rect& rect,
                            const ExtraParams& extra) const {
+  if (IsNewMenuStyleEnabled()) {
+    switch (part) {
+      case kMenuPopupGutter:
+        CommonThemePaintMenuGutter(canvas, rect);
+        return;
+      case kMenuPopupSeparator:
+        CommonThemePaintMenuSeparator(canvas, rect, extra.menu_separator);
+        return;
+      case kMenuPopupBackground:
+        CommonThemePaintMenuBackground(canvas, rect);
+        return;
+      case kMenuItemBackground:
+        CommonThemePaintMenuItemBackground(canvas, state, rect);
+        return;
+    }
+  }
+
   bool needs_paint_indirect = false;
   if (!skia::SupportsPlatformPaint(canvas)) {
     // This block will only get hit with --enable-accelerated-drawing flag.
@@ -412,8 +430,13 @@ void NativeThemeWin::PaintDirect(SkCanvas* canvas,
 }
 
 SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
-  switch (color_id) {
+  SkColor color;
+  if (IsNewMenuStyleEnabled() &&
+      CommonThemeGetSystemColor(color_id, &color)) {
+    return color;
+  }
 
+  switch (color_id) {
     // Dialogs
     case kColorId_DialogBackground:
       // TODO(benrg): Should this use the new Windows theme functions? The old

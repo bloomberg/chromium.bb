@@ -21,6 +21,8 @@
         'NATIVE_THEME_IMPLEMENTATION',
       ],
       'sources': [
+        'common_theme.cc',
+        'common_theme.h',
         'native_theme.cc',
         'native_theme.h',
         'native_theme_android.cc',

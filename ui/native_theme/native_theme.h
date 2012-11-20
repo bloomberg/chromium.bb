@@ -234,6 +234,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_DisabledMenuItemForegroundColor,
     kColorId_FocusedMenuItemBackgroundColor,
     kColorId_MenuSeparatorColor,
+    kColorId_MenuBackgroundColor,
+    kColorId_MenuBorderColor,
     // Label
     kColorId_LabelEnabledColor,
     kColorId_LabelDisabledColor,
@@ -256,6 +258,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Each port of NativeTheme should provide its own implementation of this
   // function, returning the port's subclass.
   static NativeTheme* instance();
+
+  static bool IsNewMenuStyleEnabled();
 
  protected:
   NativeTheme();

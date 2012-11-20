@@ -30,7 +30,6 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   }
 #endif
 
-  // The gutter is rendered before the background.
   int start_x = 0;
   if (config.render_gutter) {
     // If render_gutter is true, we're on Vista and need to render the

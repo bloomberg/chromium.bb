@@ -59,7 +59,9 @@ class VIEWS_EXPORT Border {
 
   // Creates a Border from the specified Painter. The border owns the painter,
   // thus the painter is deleted when the Border is deleted.
-  static Border* CreateBorderPainter(Painter* painter);
+  // |insets| define size of an area allocated for a Border.
+  static Border* CreateBorderPainter(Painter* painter,
+                                     const gfx::Insets& insets);
 
   // Renders the border for the specified view.
   virtual void Paint(const View& view, gfx::Canvas* canvas) = 0;

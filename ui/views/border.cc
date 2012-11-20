@@ -86,8 +86,9 @@ class EmptyBorder : public Border {
 
 class BorderPainter : public Border {
  public:
-  explicit BorderPainter(Painter* painter)
-      : painter_(painter) {
+  explicit BorderPainter(Painter* painter, const gfx::Insets& insets)
+      : painter_(painter),
+        insets_(insets) {
     DCHECK(painter);
   }
 
@@ -99,11 +100,12 @@ class BorderPainter : public Border {
   }
 
   virtual gfx::Insets GetInsets() const OVERRIDE {
-    return gfx::Insets();
+    return insets_;
   }
 
  private:
   scoped_ptr<Painter> painter_;
+  const gfx::Insets insets_;
 
   DISALLOW_COPY_AND_ASSIGN(BorderPainter);
 };
@@ -136,8 +138,9 @@ Border* Border::CreateSolidSidedBorder(int top,
 }
 
 // static
-Border* Border::CreateBorderPainter(Painter* painter) {
-  return new BorderPainter(painter);
+Border* Border::CreateBorderPainter(Painter* painter,
+                                    const gfx::Insets& insets) {
+  return new BorderPainter(painter, insets);
 }
 
 }  // namespace views

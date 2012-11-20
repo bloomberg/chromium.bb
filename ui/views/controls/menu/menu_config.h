@@ -32,11 +32,8 @@ struct VIEWS_EXPORT MenuConfig {
   // Color for the arrow to scroll bookmarks.
   SkColor arrow_color;
 
-  // Submenu horizontal margin size.
-  int submenu_horizontal_margin_size;
-
-  // Submenu vertical margin size.
-  int submenu_vertical_margin_size;
+  // Menu border size.
+  int menu_border_size;
 
   // Submenu horizontal inset with parent menu. This is the horizontal overlap
   // between the submenu and its parent menu, not including the borders of
@@ -134,6 +131,9 @@ struct VIEWS_EXPORT MenuConfig {
 #if defined(USE_AURA)
   void InitAura();
 #endif
+
+  // Adjust some values for a new UI style.
+  void AdjustForCommonTheme();
 };
 
 }  // namespace views

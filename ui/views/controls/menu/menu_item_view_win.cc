@@ -57,7 +57,17 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     control_state = NativeTheme::kDisabled;
   }
 
-  // The gutter is rendered before the background.
+  // Render the background.
+  if (mode == PB_NORMAL) {
+    gfx::Rect item_bounds(0, 0, width(), height());
+    AdjustBoundsForRTLUI(&item_bounds);
+    NativeTheme::ExtraParams extra;
+    extra.menu_item.is_selected = render_selection;
+    config.native_theme->Paint(canvas->sk_canvas(),
+        NativeTheme::kMenuItemBackground, control_state, item_bounds, extra);
+  }
+
+  // Render the gutter.
   if (config.render_gutter && mode == PB_NORMAL) {
     gfx::Rect gutter_bounds(label_start_ - config.gutter_to_label -
                             config.gutter_width, 0, config.gutter_width,
@@ -69,16 +79,6 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                                NativeTheme::kNormal,
                                gutter_bounds,
                                extra);
-  }
-
-  // Render the background.
-  if (mode == PB_NORMAL) {
-    gfx::Rect item_bounds(0, 0, width(), height());
-    NativeTheme::ExtraParams extra;
-    extra.menu_item.is_selected = render_selection;
-    AdjustBoundsForRTLUI(&item_bounds);
-    config.native_theme->Paint(canvas->sk_canvas(),
-        NativeTheme::kMenuItemBackground, control_state, item_bounds, extra);
   }
 
   int top_margin = GetTopMargin();
