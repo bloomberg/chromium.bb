@@ -354,8 +354,26 @@ def filter_shards(tests, index, shards):
   return tests[min_bound:max_bound]
 
 
-def filter_bad_tests(tests, disabled, fails, flaky, pre, manual):
-  """Filters out PRE_, MANUAL_, DISABLED_, FAILS_ or FLAKY_ tests."""
+def filter_bad_tests(tests, disabled, fails, flaky):
+  """Filters out DISABLED_, FAILS_ or FLAKY_ test cases."""
+  def starts_with(a, b, prefix):
+    return a.startswith(prefix) or b.startswith(prefix)
+
+  def valid(test):
+    fixture, case = test.split('.', 1)
+    if not disabled and starts_with(fixture, case, 'DISABLED_'):
+      return False
+    if not fails and starts_with(fixture, case, 'FAILS_'):
+      return False
+    if not flaky and starts_with(fixture, case, 'FLAKY_'):
+      return False
+    return True
+
+  return [test for test in tests if valid(test)]
+
+
+def chromium_filter_bad_tests(tests, disabled, fails, flaky, pre, manual):
+  """Filters out PRE_, MANUAL_, and other weird Chromium-specific test cases."""
   def starts_with(a, b, prefix):
     return a.startswith(prefix) or b.startswith(prefix)
 
@@ -365,14 +383,11 @@ def filter_bad_tests(tests, disabled, fails, flaky, pre, manual):
       return False
     if not manual and starts_with(fixture, case, 'MANUAL_'):
       return False
-    if not disabled and starts_with(fixture, case, 'DISABLED_'):
-      return False
-    if not fails and starts_with(fixture, case, 'FAILS_'):
-      return False
-    if not flaky and starts_with(fixture, case, 'FLAKY_'):
+    if test == 'InProcessBrowserTest.Empty':
       return False
     return True
 
+  tests = filter_bad_tests(tests, disabled, fails, flaky)
   return [test for test in tests if valid(test)]
 
 
@@ -426,9 +441,11 @@ def list_test_cases(
   """Returns the list of test cases according to the specified criterias."""
   tests = parse_gtest_cases(gtest_list_tests(cmd, cwd), seed)
 
+  # TODO(maruel): Splitting shards before filtering bad test cases could result
+  # in inbalanced shards.
   if shards:
     tests = filter_shards(tests, index, shards)
-  return filter_bad_tests(tests, disabled, fails, flaky, pre, manual)
+  return chromium_filter_bad_tests(tests, disabled, fails, flaky, pre, manual)
 
 
 class RunSome(object):
