@@ -1419,6 +1419,7 @@
         'browser/ui/window_sizer/window_sizer_common_unittest.cc',
         'browser/ui/window_sizer/window_sizer_unittest.cc',
         'browser/ui/window_snapshot/window_snapshot_mac_unittest.mm',
+        'browser/ui/zoom/zoom_controller_unittest.cc',
         'browser/chrome_to_mobile_service_unittest.cc',
         'browser/user_style_sheet_watcher_unittest.cc',
         'browser/value_store/leveldb_value_store_unittest.cc',

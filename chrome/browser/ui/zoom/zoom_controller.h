@@ -36,11 +36,6 @@ class ZoomController : public content::NotificationObserver,
 
   void set_observer(ZoomObserver* observer) { observer_ = observer; }
 
- private:
-  friend class content::WebContentsUserData<ZoomController>;
-
-  explicit ZoomController(content::WebContents* web_contents);
-
   // content::WebContentsObserver overrides:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
@@ -50,6 +45,11 @@ class ZoomController : public content::NotificationObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+ private:
+  explicit ZoomController(content::WebContents* web_contents);
+  friend class content::WebContentsUserData<ZoomController>;
+  friend class ZoomControllerTest;
 
   // Updates the zoom icon and zoom percentage based on current values and
   // notifies the observer if changes have occurred. |host| may be empty,

@@ -40,10 +40,7 @@ ZoomController::ZoomController(content::WebContents* web_contents)
   UpdateState(std::string());
 }
 
-ZoomController::~ZoomController() {
-  default_zoom_level_.Destroy();
-  registrar_.RemoveAll();
-}
+ZoomController::~ZoomController() {}
 
 bool ZoomController::IsAtDefaultZoom() const {
   return content::ZoomValuesEqual(web_contents()->GetZoomLevel(),

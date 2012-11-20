@@ -28,7 +28,7 @@ class TestingProfileWithHostZoomMap : public TestingProfile,
   TestingProfileWithHostZoomMap() {
     HostZoomMap* host_zoom_map = HostZoomMap::GetForBrowserContext(this);
     registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-                     content::Source<HostZoomMap>(host_zoom_map));
+                   content::Source<HostZoomMap>(host_zoom_map));
   }
 
   virtual ~TestingProfileWithHostZoomMap() {}

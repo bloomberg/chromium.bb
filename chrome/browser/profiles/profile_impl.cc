@@ -539,7 +539,7 @@ void ProfileImpl::InitHostZoomMap() {
   }
 
   registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
-               content::Source<HostZoomMap>(host_zoom_map));
+                 content::Source<HostZoomMap>(host_zoom_map));
 }
 
 void ProfileImpl::InitPromoResources() {
