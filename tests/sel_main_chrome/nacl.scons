@@ -24,6 +24,13 @@ env_vars = []
 if env.Bit('target_arm') and env.UsingEmulator():
   env_vars.append('NACL_DANGEROUS_SKIP_QUALIFICATION_TEST=1')
 
+# This test runs the platform qualification test, which checks for DEP
+# enforcement.  Valgrind's dynamic rewriting interferes with or
+# disables DEP somehow, so we must disable the platform qualification
+# tests.
+if env.IsRunningUnderValgrind():
+  env_vars.append('NACL_DANGEROUS_SKIP_QUALIFICATION_TEST=1')
+
 test_command_args = [env.GetIrtNexe(),
                      env.File('${STAGING_DIR}/hello_world.nexe')]
 

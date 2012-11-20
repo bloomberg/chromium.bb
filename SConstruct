@@ -119,6 +119,10 @@ ACCEPTABLE_ARGUMENTS = set([
     'force_sel_ldr',
     # force irt image used by tests
     'force_irt',
+    # Replacement memcheck command for overriding the DEPS-in memcheck
+    # script.  May have commas to separate separate shell args.  Don't
+    # ask what if an actual comma is desired.
+    'memcheck_command',
     # colon-separated list of linker flags, e.g. "-lfoo:-Wl,-u,bar".
     'nacl_linkflags',
     # colon-separated list of pnacl bcld flags, e.g. "-lfoo:-Wl,-u,bar".
@@ -368,8 +372,9 @@ def ExpandArguments():
   if ARGUMENTS.get('buildbot') == 'memcheck':
     print 'buildbot=memcheck expands to the following arguments:'
     SetArgument('run_under',
-                'src/third_party/valgrind/memcheck.sh,' +
-                '--error-exitcode=1')
+                ARGUMENTS.get('memcheck_command',
+                              'src/third_party/valgrind/memcheck.sh') +
+                ',--error-exitcode=1')
     SetArgument('scale_timeout', 20)
     SetArgument('running_on_valgrind', True)
   elif ARGUMENTS.get('buildbot') == 'tsan':

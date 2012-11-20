@@ -96,8 +96,17 @@ else:
 if not platform_limits_known:
   Return()
 
+# Valgrind's internal configuration variable VG_N_THREAD defaults to
+# 500 (valgrind version 3.8.1), which would be insufficient to keep
+# track of the high thread count used in the egyptian cotton test.
+# Since this test is primarily for catching regressions where we
+# reduce the maximum number of threads available to the NaCl module,
+# reducing it for the valgrind tests is reasonable -- the tests aren't
+# trying to expose thread race conditions or memory leaks.
+# VG_N_SEGMENTS can also cause trouble, due to thread stack
+# allocation.
 if env.IsRunningUnderValgrind():
-  high_thread_count_nthreads = min(high_thread_count_nthreads, 1500)
+  high_thread_count_nthreads = min(high_thread_count_nthreads, 400)
 
 high_thread_count_args = ['-n', str(high_thread_count_nthreads)]
 

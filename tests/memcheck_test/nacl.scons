@@ -36,7 +36,13 @@ node = env.CommandSelLdrTestNacl(
       "(strcmp: .*)'"),
     exit_status='1',
     )
-env.AddNodeToTestSuite(node, ['memcheck_bot_tests'], 'run_memcheck_test')
+
+# Assume that if we are specifying a special memcheck command (e.g., a
+# copy of valgrind built from valgrind.org sources, without the
+# NaCl-specific patches to check untrusted code), then this test will
+# not work.
+env.AddNodeToTestSuite(node, ['memcheck_bot_tests'], 'run_memcheck_test',
+                       is_broken=ARGUMENTS.get('memcheck_command') is not None)
 
 
 # Leak checker sanity test.
