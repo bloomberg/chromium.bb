@@ -5,11 +5,6 @@
 #ifndef CONTENT_BROWSER_DEVICE_MONITOR_MAC_H_
 #define CONTENT_BROWSER_DEVICE_MONITOR_MAC_H_
 
-#include <CoreAudio/AudioHardware.h>
-#include <IOKit/IOKitLib.h>
-
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/system_monitor/system_monitor.h"
 
@@ -21,26 +16,11 @@ class DeviceMonitorMac {
   ~DeviceMonitorMac();
 
  private:
-  void RegisterAudioServices();
-  void RegisterVideoServices();
-
-  static OSStatus AudioDeviceCallback(
-      AudioObjectID object, UInt32 size,
-      const AudioObjectPropertyAddress addresses[],
-      void* context);
-
-  static void VideoDeviceCallback(void* context, io_iterator_t iterator);
-
   // Forward the notifications to system monitor.
   void NotifyDeviceChanged(base::SystemMonitor::DeviceType type);
 
-  // Helper.
-  void RegisterServices(CFMutableDictionaryRef dictionary,
-                        IOServiceMatchingCallback callback);
-
-  IONotificationPortRef notification_port_;
-  std::vector<io_iterator_t*> notification_iterators_;
-
+  class QTMonitorImpl;
+  scoped_ptr<DeviceMonitorMac::QTMonitorImpl> qt_monitor_;
   DISALLOW_COPY_AND_ASSIGN(DeviceMonitorMac);
 };
 
