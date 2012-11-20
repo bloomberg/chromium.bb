@@ -1299,6 +1299,7 @@
         'sources': [
           'base/resources_unittest.cc',
           'host/plugin/host_script_object.cc',
+          'host/setup/linux/linux_host_setup_wizard.cc',
           'webapp/client_screen.js',
           'webapp/host_list.js',
           'webapp/host_table_entry.js',
