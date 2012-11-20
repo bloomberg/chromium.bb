@@ -8,13 +8,15 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
-#include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class FilePath;
 class GURL;
+
+namespace base {
+class Value;
+}
 
 namespace google_apis {
 class DriveServiceInterface;
@@ -23,12 +25,8 @@ class DriveUploaderInterface;
 
 namespace drive {
 
-class DriveCache;
 class DriveEntryProto;
 class DriveFileSystemInterface;
-
-using google_apis::DocumentEntry;
-using google_apis::GDataErrorCode;
 
 namespace file_system {
 
@@ -119,7 +117,7 @@ class CopyOperation {
   // |callback| must not be null.
   void OnCopyDocumentCompleted(const FilePath& dir_path,
                                const FileOperationCallback& callback,
-                               GDataErrorCode status,
+                               google_apis::GDataErrorCode status,
                                scoped_ptr<base::Value> data);
 
   // Moves a file or directory at |file_path| in the root directory to
@@ -145,7 +143,7 @@ class CopyOperation {
   void MoveEntryToDirectory(const FilePath& file_path,
                             const FilePath& directory_path,
                             const FileMoveCallback& callback,
-                            GDataErrorCode status,
+                            google_apis::GDataErrorCode status,
                             const GURL& /* document_url */);
 
   // Callback when an entry is moved to another directory on the client side.
@@ -191,11 +189,12 @@ class CopyOperation {
 
   // Helper function that completes bookkeeping tasks related to
   // completed file transfer.
-  void OnTransferCompleted(const FileOperationCallback& callback,
-                           google_apis::DriveUploadError error,
-                           const FilePath& drive_path,
-                           const FilePath& file_path,
-                           scoped_ptr<DocumentEntry> document_entry);
+  void OnTransferCompleted(
+      const FileOperationCallback& callback,
+      google_apis::DriveUploadError error,
+      const FilePath& drive_path,
+      const FilePath& file_path,
+      scoped_ptr<google_apis::DocumentEntry> document_entry);
 
   // Part of TransferFileFromLocalToRemote(). Called after
   // GetEntryInfoByPath() is complete.

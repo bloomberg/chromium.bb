@@ -8,15 +8,19 @@
 #include "base/json/json_file_value_serializer.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
-#include "chrome/browser/chromeos/drive/drive_file_system.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_upload_error.h"
+#include "chrome/browser/google_apis/drive_uploader.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
 
 using content::BrowserThread;
+using google_apis::DocumentEntry;
+using google_apis::GDataErrorCode;
 
 namespace drive {
 namespace file_system {
