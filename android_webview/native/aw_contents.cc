@@ -440,7 +440,7 @@ void AwContents::OnSizeChanged(JNIEnv* env, jobject obj,
 void AwContents::SetWindowViewVisibility(JNIEnv* env, jobject obj,
                                          bool window_visible,
                                          bool view_visible) {
-  view_visible_ = window_visible && view_visible_;
+  view_visible_ = window_visible && view_visible;
   // TODO(joth): Request a DrawGL (kModeProcess) call, to tell the compositor.
 }
 
