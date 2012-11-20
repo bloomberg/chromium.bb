@@ -157,9 +157,6 @@ void GetScreenInfoForWindow(WebScreenInfo* results, aura::Window* window) {
   // TODO(derat|oshima): Don't hardcode this. Get this from display object.
   results->depth = 24;
   results->depthPerComponent = 8;
-  int default_dpi = display.device_scale_factor() * 160;
-  results->verticalDPI = default_dpi;
-  results->horizontalDPI = default_dpi;
   results->deviceScaleFactor = display.device_scale_factor();
 }
 
