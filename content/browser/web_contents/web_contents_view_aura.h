@@ -42,6 +42,8 @@ class CONTENT_EXPORT WebContentsViewAura
                       WebContentsViewDelegate* delegate);
 
  private:
+  class WindowObserver;
+
   virtual ~WebContentsViewAura();
 
   void SizeChangedCommon(const gfx::Size& size);
@@ -79,6 +81,7 @@ class CONTENT_EXPORT WebContentsViewAura
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* render_widget_host) OVERRIDE;
+  virtual void SetView(RenderWidgetHostView* view) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
@@ -162,6 +165,8 @@ class CONTENT_EXPORT WebContentsViewAura
 
   scoped_ptr<aura::Window> window_;
   scoped_ptr<aura::Window> overscroll_window_;
+
+  scoped_ptr<WindowObserver> window_observer_;
 
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;

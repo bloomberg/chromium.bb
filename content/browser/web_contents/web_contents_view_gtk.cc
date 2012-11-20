@@ -148,6 +148,13 @@ RenderWidgetHostView* WebContentsViewGtk::CreateViewForWidget(
   return view;
 }
 
+void WebContentsViewGtk::SetView(RenderWidgetHostView* view) {
+  gfx::NativeView content_view = view->GetNativeView();
+  drag_dest_.reset(new WebDragDestGtk(web_contents_, content_view));
+  if (delegate_.get())
+    drag_dest_->set_delegate(delegate_->GetDragDestDelegate());
+}
+
 gfx::NativeView WebContentsViewGtk::GetNativeView() const {
   if (delegate_.get())
     return delegate_->GetNativeView();

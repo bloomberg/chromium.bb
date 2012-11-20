@@ -26,7 +26,9 @@
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -249,6 +251,68 @@ int GetResistedScrollAmount(int scroll, int threshold) {
 
 }  // namespace
 
+class WebContentsViewAura::WindowObserver
+    : public aura::WindowObserver, public aura::RootWindowObserver {
+ public:
+  explicit WindowObserver(WebContentsViewAura* view)
+      : view_(view),
+        parent_(NULL) {
+  }
+
+  virtual ~WindowObserver() {
+    if (parent_)
+      parent_->RemoveObserver(this);
+  }
+
+  // Overridden from aura::WindowObserver:
+  virtual void OnWindowParentChanged(aura::Window* window,
+                                     aura::Window* parent) OVERRIDE {
+    if (parent_)
+      parent_->RemoveObserver(this);
+    parent_ = parent;
+    if (parent)
+      parent->AddObserver(this);
+  }
+
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) {
+    // This is for the Ash case.
+    SendScreenRects();
+  }
+
+  virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE {
+    window->GetRootWindow()->AddRootWindowObserver(this);
+  }
+
+  virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
+    window->GetRootWindow()->RemoveRootWindowObserver(this);
+  }
+
+  // Overridden RootWindowObserver:
+  virtual void OnRootWindowMoved(const aura::RootWindow* root,
+                                 const gfx::Point& new_origin) OVERRIDE {
+    // This is for the desktop case (i.e. Aura desktop).
+    SendScreenRects();
+  }
+
+ private:
+  void SendScreenRects() {
+    if (!view_->view_)
+      return;
+    RenderWidgetHostImpl::From(view_->view_->GetRenderWidgetHost())->
+        SendScreenRects();
+  }
+
+  WebContentsViewAura* view_;
+
+  // We cache the old parent so that we can unregister when it's not the parent
+  // anymore.
+  aura::Window* parent_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowObserver);
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, public:
@@ -270,6 +334,10 @@ WebContentsViewAura::WebContentsViewAura(
 // WebContentsViewAura, private:
 
 WebContentsViewAura::~WebContentsViewAura() {
+  if (!window_)
+    return;
+
+  window_->RemoveObserver(window_observer_.get());
   // Window needs a valid delegate during its destructor, so we explicitly
   // delete it here.
   window_.reset();
@@ -423,6 +491,9 @@ void WebContentsViewAura::CreateView(const gfx::Size& initial_size) {
   window_->layer()->SetMasksToBounds(true);
   window_->SetName("WebContentsViewAura");
 
+  window_observer_.reset(new WindowObserver(this));
+  window_->AddObserver(window_observer_.get());
+
   // delegate_->GetDragDestDelegate() creates a new delegate on every call.
   // Hence, we save a reference to it locally. Similar model is used on other
   // platforms as well.
@@ -442,8 +513,7 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
     return render_widget_host->GetView();
   }
 
-  view_ = RenderWidgetHostView::CreateViewForWidget(
-      render_widget_host);
+  view_ = RenderWidgetHostView::CreateViewForWidget(render_widget_host);
   view_->InitAsChild(NULL);
   GetNativeView()->AddChild(view_->GetNativeView());
   view_->Show();
@@ -457,6 +527,10 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
     host_impl->overscroll_controller()->set_delegate(this);
 
   return view_;
+}
+
+void WebContentsViewAura::SetView(RenderWidgetHostView* view) {
+  view_ = view;
 }
 
 gfx::NativeView WebContentsViewAura::GetNativeView() const {

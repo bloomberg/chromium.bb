@@ -80,6 +80,9 @@ RenderWidgetHostView* WebContentsViewAndroid::CreateViewForWidget(
   return view;
 }
 
+void WebContentsViewAndroid::SetView(RenderWidgetHostView* view) {
+}
+
 gfx::NativeView WebContentsViewAndroid::GetNativeView() const {
   return content_view_core_;
 }

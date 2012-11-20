@@ -139,6 +139,10 @@ RenderWidgetHostView* WebContentsViewWin::CreateViewForWidget(
   return view_;
 }
 
+void WebContentsViewWin::SetView(RenderWidgetHostView* view) {
+  view_ = static_cast<RenderWidgetHostViewWin*>(view);
+}
+
 gfx::NativeView WebContentsViewWin::GetNativeView() const {
   return hwnd();
 }
