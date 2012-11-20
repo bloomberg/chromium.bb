@@ -81,6 +81,9 @@
 <if expr="pp_ifdef('chromeos')">
       <div i18n-content="switch_input_methods_hint"></div>
       <div i18n-content="select_previous_input_method_hint"></div>
+      <button id="edit-dictionary-button"
+          class="link-button standalone-link-button"
+          i18n-content="languageDictionaryOverlayTitle"></button>
 </if>
 <if expr="not pp_ifdef('chromeos') and not is_macosx">
       <div id="spell-check-option" class="checkbox">
@@ -89,6 +92,8 @@
               metric="Options_SpellCheck" type="checkbox">
           <span i18n-content="enable_spell_check"></span>
         </label>
+        <button id="edit-dictionary-button" class="link-button"
+            i18n-content="languageDictionaryOverlayTitle" hidden></button>
       </div>
       <div id="auto-spell-correction-option" class="checkbox" hidden>
         <label>

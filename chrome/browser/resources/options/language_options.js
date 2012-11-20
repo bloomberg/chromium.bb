@@ -90,6 +90,13 @@ cr.define('options', function() {
         }
       };
 
+      if (!cr.isMac) {
+        // Set up the button for editing custom spelling dictionary.
+        $('edit-dictionary-button') .onclick = function(e) {
+          OptionsPage.navigateToPage('editDictionary');
+        };
+      }
+
       if (cr.isChromeOS) {
         // Listen to user clicks on the add language list.
         var addLanguageList = $('add-language-overlay-language-list');
@@ -691,8 +698,9 @@ cr.define('options', function() {
      */
      updateEnableSpellCheck_: function() {
        var value = !$('enable-spell-check').checked;
-
        $('language-options-spell-check-language-button').disabled = value;
+       if (!cr.IsMac)
+         $('edit-dictionary-button').hidden = value;
      },
 
     /**

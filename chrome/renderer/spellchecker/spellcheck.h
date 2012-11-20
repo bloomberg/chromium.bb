@@ -110,6 +110,7 @@ class SpellCheck : public content::RenderProcessObserver,
               const std::string& language,
               bool auto_spell_correct);
   void OnWordAdded(const std::string& word);
+  void OnWordRemoved(const std::string& word);
   void OnEnableAutoSpellCorrect(bool enable);
 
   // If there is no dictionary file, then this requests one from the browser

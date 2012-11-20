@@ -10,24 +10,25 @@ var AutofillOptions = options.AutofillOptions;
 var BrowserOptions = options.BrowserOptions;
 var ClearBrowserDataOverlay = options.ClearBrowserDataOverlay;
 var ConfirmDialog = options.ConfirmDialog;
-var ContentSettings = options.ContentSettings;
 var ContentSettingsExceptionsArea =
     options.contentSettings.ContentSettingsExceptionsArea;
-var CookiesView = options.CookiesView;
+var ContentSettings = options.ContentSettings;
 var CookiesViewApp = options.CookiesViewApp;
+var CookiesView = options.CookiesView;
+var EditDictionaryOverlay = cr.IsMac ? null : options.EditDictionaryOverlay;
 var FactoryResetOverlay = options.FactoryResetOverlay;
 var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
 var HomePageOverlay = options.HomePageOverlay;
 var ImportDataOverlay = options.ImportDataOverlay;
 var LanguageOptions = options.LanguageOptions;
+var ManageProfileOverlay = options.ManageProfileOverlay;
 var MediaGalleriesManager = options.MediaGalleriesManager;
 var OptionsFocusManager = options.OptionsFocusManager;
 var OptionsPage = options.OptionsPage;
 var PasswordManager = options.PasswordManager;
 var Preferences = options.Preferences;
 var PreferredNetworks = options.PreferredNetworks;
-var ManageProfileOverlay = options.ManageProfileOverlay;
 var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
 var StartupOverlay = options.StartupOverlay;
@@ -119,6 +120,11 @@ function load() {
   OptionsPage.registerOverlay(CookiesViewApp.getInstance(),
                               ContentSettings.getInstance(),
                               [$('privacyContentSettingsButton')]);
+  if (!cr.isMac) {
+    OptionsPage.registerOverlay(EditDictionaryOverlay.getInstance(),
+                                LanguageOptions.getInstance(),
+                                [$('edit-dictionary-button')]);
+  }
   OptionsPage.registerOverlay(FontSettings.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('fontSettingsCustomizeFontsButton')]);

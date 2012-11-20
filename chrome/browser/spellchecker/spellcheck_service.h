@@ -34,7 +34,8 @@ class RenderProcessHost;
 // SpellCheckService maintains any per-profile information about spellcheck.
 class SpellcheckService : public ProfileKeyedService,
                           public PrefObserver,
-                          public content::NotificationObserver {
+                          public content::NotificationObserver,
+                          public SpellcheckCustomDictionary::Observer {
  public:
   // Event types used for reporting the status of this class and its derived
   // classes to browser tests.
@@ -67,11 +68,12 @@ class SpellcheckService : public ProfileKeyedService,
   // when we do not set an event to |status_event_|.
   static bool SignalStatusEvent(EventType type);
 
-  void Initialize();
-
   // Instantiates SpellCheckHostMetrics object and makes it ready for recording
   // metrics. This should be called only if the metrics recording is active.
   void StartRecordingMetrics(bool spellcheck_enabled);
+
+  // Pass all renderers some basic initialization infomration.
+  void InitForAllRenderers();
 
   // Pass the renderer some basic intialization information. Note that the
   // renderer will not load Hunspell until it needs to.
@@ -81,15 +83,8 @@ class SpellcheckService : public ProfileKeyedService,
   // or null when metrics recording is disabled.
   SpellCheckHostMetrics* GetMetrics() const;
 
-  // Returns the instance of the custom dictionary. Custom dictionary
-  // will be lazily initialized.
+  // Returns the instance of the custom dictionary.
   SpellcheckCustomDictionary* GetCustomDictionary();
-
-  // Inform |profile_| that initialization has finished.
-  // |custom_words| holds the custom word list which was
-  // loaded at the file thread.
-  void InformProfileOfInitializationWithCustomWords(
-      chrome::spellcheck_common::WordList* custom_words);
 
   // NotificationProfile implementation.
   virtual void Observe(int type,
@@ -99,6 +94,12 @@ class SpellcheckService : public ProfileKeyedService,
   // PrefObserver implementation.
   virtual void OnPreferenceChanged(PrefServiceBase* service,
                                    const std::string& pref_name) OVERRIDE;
+
+  // SpellcheckCustomDictionary::Observer implementation.
+  virtual void OnCustomDictionaryLoaded() OVERRIDE;
+  virtual void OnCustomDictionaryWordAdded(const std::string& word) OVERRIDE;
+  virtual void OnCustomDictionaryWordRemoved(const std::string& word) OVERRIDE;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT);
 

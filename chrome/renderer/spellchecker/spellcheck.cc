@@ -56,6 +56,7 @@ bool SpellCheck::OnControlMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(SpellCheck, message)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_Init, OnInit)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_WordAdded, OnWordAdded)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_WordRemoved, OnWordRemoved)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_EnableAutoSpellCorrect,
                         OnEnableAutoSpellCorrect)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -77,8 +78,13 @@ void SpellCheck::OnInit(IPC::PlatformFileForTransit bdict_file,
 }
 
 void SpellCheck::OnWordAdded(const std::string& word) {
-  if (platform_spelling_engine_)
+  if (platform_spelling_engine_.get())
     platform_spelling_engine_->OnWordAdded(word);
+}
+
+void SpellCheck::OnWordRemoved(const std::string& word) {
+  if (platform_spelling_engine_.get())
+    platform_spelling_engine_->OnWordRemoved(word);
 }
 
 void SpellCheck::OnEnableAutoSpellCorrect(bool enable) {
@@ -124,7 +130,7 @@ bool SpellCheck::SpellCheckWord(
     return true;
 
   // Do nothing if spell checking is disabled.
-  if (!platform_spelling_engine_ ||
+  if (!platform_spelling_engine_.get() ||
       !platform_spelling_engine_->IsEnabled())
     return true;
 

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/spellcheck_common.h"
 #include "chrome/renderer/spellchecker/spelling_engine.h"
 
 #include <string>
@@ -30,6 +31,8 @@ class HunspellEngine : public SpellingEngine {
   virtual void FillSuggestionList(const string16& wrong_word,
                           std::vector<string16>* optional_suggestions) OVERRIDE;
   virtual void OnWordAdded(const std::string& word) OVERRIDE;
+  virtual void OnWordRemoved(const std::string& word) OVERRIDE;
+
  private:
   // Initializes the Hunspell dictionary, or does nothing if |hunspell_| is
   // non-null. This blocks.
@@ -38,13 +41,16 @@ class HunspellEngine : public SpellingEngine {
   // Add the given custom word to |hunspell_|.
   void AddWordToHunspell(const std::string& word);
 
+  // Remove the given custom word from |hunspell_|.
+  void RemoveWordFromHunspell(const std::string& word);
+
   // We memory-map the BDict file.
   scoped_ptr<file_util::MemoryMappedFile> bdict_file_;
 
   // The hunspell dictionary in use.
   scoped_ptr<Hunspell> hunspell_;
 
-  std::vector<std::string> custom_words_;
+  chrome::spellcheck_common::WordList custom_words_;
 
   base::PlatformFile file_;
 

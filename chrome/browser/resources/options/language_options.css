@@ -213,3 +213,7 @@
 #add-language-overlay-page .content-area {
   padding-bottom: 10px;
 }
+
+.standalone-link-button {
+  padding: 0;
+}

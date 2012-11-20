@@ -24,6 +24,7 @@ class SpellingEngine {
   virtual void FillSuggestionList(const string16& wrong_word,
                           std::vector<string16>* optional_suggestions) = 0;
   virtual void OnWordAdded(const std::string& word) = 0;
+  virtual void OnWordRemoved(const std::string& word) = 0;
 };
 
 #endif  // CHROME_RENDERER_SPELLCHECKER_SPELLING_ENGINE_H_

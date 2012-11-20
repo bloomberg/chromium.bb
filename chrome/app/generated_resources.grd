@@ -6920,6 +6920,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Crash reporting is disabled.
       </message>
 
+      <!-- Custom dictionary page -->
+      <message name="IDS_LANGUAGE_DICTIONARY_OVERLAY_TITLE" desc="Title for the chrome://settings/editDictionary page, where a user can add and remove words in the dictionary used for spelling.">
+        Custom spelling dictionary
+      </message>
+      <message name="IDS_LANGUAGE_DICTIONARY_OVERLAY_ADD_WORD_LABEL" desc="Label for adding a new word to the dictionary on the chrome://settings/editDictionary page.">
+        Add a new word
+      </message>
+
       <!-- Instant -->
       <message name="IDS_INSTANT_OPT_IN_MESSAGE" desc="Message shown in the instant confirm dialog">
         With Instant enabled and if supported by your default search engine, search results appear instantly as you type queries in the omnibox, and in-line predictions help guide your search.

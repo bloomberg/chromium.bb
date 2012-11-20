@@ -50,6 +50,7 @@ SpellcheckService::SpellcheckService(Profile* profile)
   hunspell_dictionary_->Load();
 
   custom_dictionary_.reset(new SpellcheckCustomDictionary(profile_));
+  custom_dictionary_->AddObserver(this);
   custom_dictionary_->Load();
 
   registrar_.Add(weak_ptr_factory_.GetWeakPtr(),
@@ -130,25 +131,20 @@ bool SpellcheckService::SignalStatusEvent(
   return true;
 }
 
-// static
-void SpellcheckService::AttachStatusEvent(base::WaitableEvent* status_event) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  g_status_event = status_event;
-}
-
-// static
-SpellcheckService::EventType SpellcheckService::WaitStatusEvent() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (g_status_event)
-    g_status_event->Wait();
-  return g_status_type;
-}
-
 void SpellcheckService::StartRecordingMetrics(bool spellcheck_enabled) {
   metrics_.reset(new SpellCheckHostMetrics());
   metrics_->RecordEnabledStats(spellcheck_enabled);
+}
+
+void SpellcheckService::InitForAllRenderers() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    content::RenderProcessHost* process = i.GetCurrentValue();
+    if (process)
+      InitForRenderer(process);
+  }
 }
 
 void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
@@ -178,13 +174,19 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
 #endif
   }
 
-  WordList custom_words = GetCustomDictionary()->GetCustomWords();
-
   process->Send(new SpellCheckMsg_Init(
       file,
-      custom_words,
+      custom_dictionary_->GetWords(),
       hunspell_dictionary_->GetLanguage(),
       prefs->GetBoolean(prefs::kEnableAutoSpellCorrect)));
+}
+
+SpellCheckHostMetrics* SpellcheckService::GetMetrics() const {
+  return metrics_.get();
+}
+
+SpellcheckCustomDictionary* SpellcheckService::GetCustomDictionary() {
+  return custom_dictionary_.get();
 }
 
 void SpellcheckService::Observe(int type,
@@ -201,7 +203,7 @@ void SpellcheckService::OnPreferenceChanged(PrefServiceBase* prefs,
   DCHECK(prefs);
   if (pref_name_in == prefs::kSpellCheckDictionary ||
       pref_name_in == prefs::kEnableSpellCheck) {
-    InformProfileOfInitializationWithCustomWords(NULL);
+    InitForAllRenderers();
   } else if (pref_name_in == prefs::kEnableAutoSpellCorrect) {
     bool enabled = prefs->GetBoolean(prefs::kEnableAutoSpellCorrect);
     for (content::RenderProcessHost::iterator i(
@@ -213,28 +215,28 @@ void SpellcheckService::OnPreferenceChanged(PrefServiceBase* prefs,
   }
 }
 
-SpellCheckHostMetrics* SpellcheckService::GetMetrics() const {
-  return metrics_.get();
+void SpellcheckService::OnCustomDictionaryLoaded() {
+  InitForAllRenderers();
 }
 
-SpellcheckCustomDictionary* SpellcheckService::GetCustomDictionary() {
-  return custom_dictionary_.get();
+void SpellcheckService::OnCustomDictionaryWordAdded(const std::string& word) {
 }
 
-// TODO(rlp): rename to something more logical.
-void SpellcheckService::InformProfileOfInitializationWithCustomWords(
-    WordList* custom_words) {
+void SpellcheckService::OnCustomDictionaryWordRemoved(const std::string& word) {
+}
+
+// static
+void SpellcheckService::AttachStatusEvent(base::WaitableEvent* status_event) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (custom_words) {
-    GetCustomDictionary()->SetCustomWordList(custom_words);
-  }
+  g_status_event = status_event;
+}
 
-  for (content::RenderProcessHost::iterator i(
-          content::RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance()) {
-    content::RenderProcessHost* process = i.GetCurrentValue();
-    if (process)
-      InitForRenderer(process);
-  }
+// static
+SpellcheckService::EventType SpellcheckService::WaitStatusEvent() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (g_status_event)
+    g_status_event->Wait();
+  return g_status_type;
 }

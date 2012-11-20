@@ -5,17 +5,12 @@
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 
 #include "base/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/string_split.h"
-#include "base/string_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-
-#include <functional>
 
 using content::BrowserThread;
 using chrome::spellcheck_common::WordList;
@@ -30,6 +25,22 @@ SpellcheckCustomDictionary::SpellcheckCustomDictionary(Profile* profile)
 }
 
 SpellcheckCustomDictionary::~SpellcheckCustomDictionary() {
+}
+
+void SpellcheckCustomDictionary::Load() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BrowserThread::PostTaskAndReplyWithResult<WordList*>(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&SpellcheckCustomDictionary::LoadDictionary,
+                 base::Unretained(this)),
+      base::Bind(&SpellcheckCustomDictionary::SetCustomWordListAndDelete,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+const WordList& SpellcheckCustomDictionary::GetWords() const {
+  return words_;
 }
 
 void SpellcheckCustomDictionary::LoadDictionaryIntoCustomWordList(
@@ -47,12 +58,52 @@ void SpellcheckCustomDictionary::LoadDictionaryIntoCustomWordList(
     mem_fun_ref(&std::string::empty)), custom_words->end());
 }
 
-void SpellcheckCustomDictionary::Load() {
-  custom_words_.clear();
-  // We are not guaranteed to be on the FILE thread so post the task.
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-      &SpellcheckCustomDictionary::LoadDictionaryIntoCustomWordList,
-      base::Unretained(this), &custom_words_));
+void SpellcheckCustomDictionary::SetCustomWordList(WordList* custom_words) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  words_.clear();
+  if (custom_words)
+    std::swap(words_, *custom_words);
+
+  std::vector<Observer*>::iterator it;
+  for (it = observers_.begin(); it != observers_.end(); ++it)
+    (*it)->OnCustomDictionaryLoaded();
+}
+
+bool SpellcheckCustomDictionary::AddWord(const std::string& word) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!CustomWordAddedLocally(word))
+    return false;
+
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&SpellcheckCustomDictionary::WriteWordToCustomDictionary,
+                 base::Unretained(this), word));
+
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    i.GetCurrentValue()->Send(new SpellCheckMsg_WordAdded(word));
+  }
+
+  std::vector<Observer*>::iterator it;
+  for (it = observers_.begin(); it != observers_.end(); ++it)
+    (*it)->OnCustomDictionaryWordAdded(word);
+
+  return true;
+}
+
+bool SpellcheckCustomDictionary::CustomWordAddedLocally(
+    const std::string& word) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  WordList::iterator it = std::find(words_.begin(), words_.end(), word);
+  if (it == words_.end()) {
+    words_.push_back(word);
+    return true;
+  }
+  return false;
+  // TODO(rlp): record metrics on custom word size
 }
 
 void SpellcheckCustomDictionary::WriteWordToCustomDictionary(
@@ -72,44 +123,92 @@ void SpellcheckCustomDictionary::WriteWordToCustomDictionary(
   }
 }
 
-void SpellcheckCustomDictionary::CustomWordAddedLocally(
-    const std::string& word) {
-  custom_words_.push_back(word);
-  // TODO(rlp): record metrics on custom word size
-}
+bool SpellcheckCustomDictionary::RemoveWord(const std::string& word) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-bool SpellcheckCustomDictionary::SetCustomWordList(WordList* custom_words) {
-  if (!custom_words)
+  if (!CustomWordRemovedLocally(word))
     return false;
-  custom_words_.clear();
-  std::swap(custom_words_, *custom_words);
-  return true;
-}
 
-const WordList& SpellcheckCustomDictionary::GetCustomWords() const {
-  return custom_words_;
-}
-
-void SpellcheckCustomDictionary::AddWord(const std::string& word) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  CustomWordAddedLocally(word);
-
-  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&SpellcheckCustomDictionary::WriteWordToCustomDictionary,
-                 base::Unretained(this), word),
-      base::Bind(&SpellcheckCustomDictionary::AddWordComplete,
-                 weak_ptr_factory_.GetWeakPtr(), word));
-}
-
-void SpellcheckCustomDictionary::AddWordComplete(const std::string& word) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&SpellcheckCustomDictionary::EraseWordFromCustomDictionary,
+                 base::Unretained(this), word));
 
   for (content::RenderProcessHost::iterator i(
           content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    i.GetCurrentValue()->Send(new SpellCheckMsg_WordAdded(word));
+    i.GetCurrentValue()->Send(new SpellCheckMsg_WordRemoved(word));
+  }
+
+  std::vector<Observer*>::iterator it;
+  for (it = observers_.begin(); it != observers_.end(); ++it)
+    (*it)->OnCustomDictionaryWordRemoved(word);
+
+  return true;
+}
+
+bool SpellcheckCustomDictionary::CustomWordRemovedLocally(
+    const std::string& word) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  WordList::iterator it = std::find(words_.begin(), words_.end(), word);
+  if (it != words_.end()) {
+    words_.erase(it);
+    return true;
+  }
+  return false;
+}
+
+void SpellcheckCustomDictionary::EraseWordFromCustomDictionary(
+    const std::string& word) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(IsStringUTF8(word));
+
+  WordList custom_words;
+  LoadDictionaryIntoCustomWordList(&custom_words);
+
+  char empty[] = {'\0'};
+  char separator[] = {'\n', '\0'};
+  file_util::WriteFile(custom_dictionary_path_, empty, 0);
+  for (WordList::iterator it = custom_words.begin();
+      it != custom_words.end();
+      ++it) {
+    std::string word_to_add = *it;
+    if (word.compare(word_to_add) != 0) {
+      file_util::AppendToFile(custom_dictionary_path_, word_to_add.c_str(),
+          word_to_add.length());
+      file_util::AppendToFile(custom_dictionary_path_, separator, 1);
+    }
   }
 }
 
+void SpellcheckCustomDictionary::AddObserver(Observer* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  observers_.push_back(observer);
+}
+
+void SpellcheckCustomDictionary::RemoveObserver(Observer* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  std::vector<Observer*>::iterator it = std::find(observers_.begin(),
+                                                  observers_.end(),
+                                                  observer);
+  if (it != observers_.end())
+    observers_.erase(it);
+}
+
+WordList* SpellcheckCustomDictionary::LoadDictionary() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  WordList* custom_words = new WordList;
+  LoadDictionaryIntoCustomWordList(custom_words);
+  return custom_words;
+}
+
+void SpellcheckCustomDictionary::SetCustomWordListAndDelete(
+    WordList* custom_words) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  SetCustomWordList(custom_words);
+  delete custom_words;
+}

@@ -281,7 +281,7 @@ bool SpellcheckHunspellDictionary::IsReady() const {
 }
 
 void SpellcheckHunspellDictionary::InformProfileOfInitialization() {
-  spellcheck_service_->InformProfileOfInitializationWithCustomWords(NULL);
+  spellcheck_service_->InitForAllRenderers();
 }
 
 const base::PlatformFile&

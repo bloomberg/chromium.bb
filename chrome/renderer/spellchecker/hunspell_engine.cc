@@ -56,10 +56,9 @@ void HunspellEngine::InitializeHunspell() {
         new Hunspell(bdict_file_->data(), bdict_file_->length()));
 
     // Add custom words to Hunspell.
-    for (std::vector<std::string>::iterator it = custom_words_.begin();
-         it != custom_words_.end(); ++it) {
+    chrome::spellcheck_common::WordList::iterator it;
+    for (it = custom_words_.begin(); it != custom_words_.end(); ++it)
       AddWordToHunspell(*it);
-    }
 
     DHISTOGRAM_TIMES("Spellcheck.InitTime",
                      base::Histogram::DebugNow() - debug_start_time);
@@ -71,6 +70,11 @@ void HunspellEngine::InitializeHunspell() {
 void HunspellEngine::AddWordToHunspell(const std::string& word) {
   if (!word.empty() && word.length() < MAXWORDLEN)
     hunspell_->add(word.c_str());
+}
+
+void HunspellEngine::RemoveWordFromHunspell(const std::string& word) {
+  if (!word.empty() && word.length() < MAXWORDLEN)
+    hunspell_->remove(word.c_str());
 }
 
 bool HunspellEngine::CheckSpelling(const string16& word_to_check, int tag) {
@@ -121,6 +125,17 @@ void HunspellEngine::OnWordAdded(const std::string& word) {
     custom_words_.push_back(word);
   } else {
     AddWordToHunspell(word);
+  }
+}
+
+void HunspellEngine::OnWordRemoved(const std::string& word) {
+  if (!hunspell_.get()) {
+    chrome::spellcheck_common::WordList::iterator it = std::find(
+        custom_words_.begin(), custom_words_.end(), word);
+    if (it != custom_words_.end())
+      custom_words_.erase(it);
+  } else {
+    RemoveWordFromHunspell(word);
   }
 }
 

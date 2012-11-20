@@ -16,6 +16,7 @@ class CocoaSpellingEngine : public SpellingEngine {
   virtual void FillSuggestionList(const string16& wrong_word,
                           std::vector<string16>* optional_suggestions) OVERRIDE;
   virtual void OnWordAdded(const std::string& word) OVERRIDE;
+  virtual void OnWordRemoved(const std::string& word) OVERRIDE;
 };
 
 #endif  // CHROME_RENDERER_SPELLCHECKER_NSSPELLCHECKER_ENGINE_H_

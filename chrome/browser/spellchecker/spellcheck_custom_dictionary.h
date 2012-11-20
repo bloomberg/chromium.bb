@@ -17,36 +17,70 @@
 // Defines a custom dictionary which users can add their own words to.
 class SpellcheckCustomDictionary : public SpellcheckDictionary {
  public:
+  class Observer {
+   public:
+    virtual void OnCustomDictionaryLoaded() = 0;
+    virtual void OnCustomDictionaryWordAdded(const std::string& word) = 0;
+    virtual void OnCustomDictionaryWordRemoved(const std::string& word) = 0;
+  };
+
   explicit SpellcheckCustomDictionary(Profile* profile);
   virtual ~SpellcheckCustomDictionary();
 
+  // Overridden from SpellcheckDictionary:
   virtual void Load() OVERRIDE;
-  void WriteWordToCustomDictionary(const std::string& word);
 
-  // Returns true if successful. False otherwise. Takes ownership of
-  // custom_words and replaces pointer with an empty vector.
-  bool SetCustomWordList(chrome::spellcheck_common::WordList* custom_words);
-  const chrome::spellcheck_common::WordList& GetCustomWords() const;
-  void CustomWordAddedLocally(const std::string& word);
+  const chrome::spellcheck_common::WordList& GetWords() const;
+
   void LoadDictionaryIntoCustomWordList(
       chrome::spellcheck_common::WordList* custom_words);
 
-  // Adds the given word to the custom words list and inform renderer of the
-  // update.
-  void AddWord(const std::string& word);
+  // Moves the words from the |custom_words| argument into its own private
+  // member variable. Does not delete the memory at |custom_words|.
+  void SetCustomWordList(chrome::spellcheck_common::WordList* custom_words);
 
-  // The reply point for PostTaskAndReply. Called when AddWord is finished
-  // adding a word in the background.
-  void AddWordComplete(const std::string& word);
+  // Adds the given word to the custom words list and inform renderer of the
+  // update. Returns false for duplicate words.
+  bool AddWord(const std::string& word);
+
+  // Returns false for duplicate words.
+  bool CustomWordAddedLocally(const std::string& word);
+
+  void WriteWordToCustomDictionary(const std::string& word);
+
+  // Removes the given word from the custom words list and inform renderer of
+  // the update. Returns false for words that are not in the dictionary.
+  bool RemoveWord(const std::string& word);
+
+  // Returns false for words that are not in the dictionary.
+  bool CustomWordRemovedLocally(const std::string& word);
+
+  void EraseWordFromCustomDictionary(const std::string& word);
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
+  // Returns a newly allocated list of words read from custom dictionary file.
+  // The caller owns this new list.
+  chrome::spellcheck_common::WordList* LoadDictionary();
+
+  // The reply point for PostTaskAndReplyWithResult. Called when LoadDictionary
+  // is finished reading words from custom dictionary file. Moves the strings
+  // from the |custom_words| argument into the private member variable |words_|
+  // and deletes the memory at |custom_words|.
+  void SetCustomWordListAndDelete(
+      chrome::spellcheck_common::WordList* custom_words);
+
   // In-memory cache of the custom words file.
-  chrome::spellcheck_common::WordList custom_words_;
+  chrome::spellcheck_common::WordList words_;
 
   // A path for custom dictionary per profile.
   FilePath custom_dictionary_path_;
 
   base::WeakPtrFactory<SpellcheckCustomDictionary> weak_ptr_factory_;
+
+  std::vector<Observer*> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckCustomDictionary);
 };

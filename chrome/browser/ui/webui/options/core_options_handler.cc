@@ -121,6 +121,8 @@ void CoreOptionsHandler::GetStaticLocalizedValues(
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   localized_strings->SetString("close",
       l10n_util::GetStringUTF16(IDS_CLOSE));
+  localized_strings->SetString("done",
+      l10n_util::GetStringUTF16(IDS_DONE));
 }
 
 void CoreOptionsHandler::Uninitialize() {

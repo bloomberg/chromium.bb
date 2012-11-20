@@ -1981,6 +1981,8 @@
         'browser/ui/webui/options/home_page_overlay_handler.h',
         'browser/ui/webui/options/import_data_handler.cc',
         'browser/ui/webui/options/import_data_handler.h',
+        'browser/ui/webui/options/language_dictionary_overlay_handler.cc',
+        'browser/ui/webui/options/language_dictionary_overlay_handler.h',
         'browser/ui/webui/options/language_options_handler.cc',
         'browser/ui/webui/options/language_options_handler.h',
         'browser/ui/webui/options/language_options_handler_common.cc',

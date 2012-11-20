@@ -57,7 +57,7 @@ TEST_F(SpellcheckCustomDictionaryTest, SpellcheckSetCustomWordList) {
   SpellcheckCustomDictionary* custom_dictionary =
       spellcheck_service->GetCustomDictionary();
   custom_dictionary->SetCustomWordList(&loaded_custom_words);
-  EXPECT_EQ(custom_dictionary->GetCustomWords(), expected);
+  EXPECT_EQ(custom_dictionary->GetWords(), expected);
 }
 
 TEST_F(SpellcheckCustomDictionaryTest, CustomWordAddedLocally) {
@@ -69,13 +69,13 @@ TEST_F(SpellcheckCustomDictionaryTest, CustomWordAddedLocally) {
       spellcheck_service->GetCustomDictionary();
   custom_dictionary->Load();
   WordList expected;
-  EXPECT_EQ(custom_dictionary->GetCustomWords(), expected);
+  EXPECT_EQ(custom_dictionary->GetWords(), expected);
   custom_dictionary->CustomWordAddedLocally("foo");
   expected.push_back("foo");
-  EXPECT_EQ(custom_dictionary->GetCustomWords(), expected);
+  EXPECT_EQ(custom_dictionary->GetWords(), expected);
   custom_dictionary->CustomWordAddedLocally("bar");
   expected.push_back("bar");
-  EXPECT_EQ(custom_dictionary->GetCustomWords(), expected);
+  EXPECT_EQ(custom_dictionary->GetWords(), expected);
 }
 
 TEST_F(SpellcheckCustomDictionaryTest, SaveAndLoad) {
