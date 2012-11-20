@@ -307,6 +307,10 @@ Compositor::Compositor(CompositorDelegate* delegate,
       test_compositor_enabled ? kTestRefreshRate : kDefaultRefreshRate;
   settings.showDebugBorders =
       command_line->HasSwitch(switches::kUIShowLayerBorders);
+  settings.partialSwapEnabled =
+      command_line->HasSwitch(switches::kUIEnablePartialSwap);
+  settings.perTilePaintingEnabled =
+      command_line->HasSwitch(switches::kUIEnablePerTilePainting);
 
   root_web_layer_->setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
   host_.reset(compositor_support->createLayerTreeView(this, *root_web_layer_,
@@ -332,14 +336,8 @@ Compositor::~Compositor() {
 }
 
 void Compositor::Initialize(bool use_thread) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
   WebKit::WebCompositorSupport* compositor_support =
       WebKit::Platform::current()->compositorSupport();
-  // These settings must be applied before we initialize the compositor.
-  compositor_support->setPartialSwapEnabled(
-      command_line->HasSwitch(switches::kUIEnablePartialSwap));
-  compositor_support->setPerTilePaintingEnabled(
-      command_line->HasSwitch(switches::kUIEnablePerTilePainting));
   if (use_thread)
     g_compositor_thread = new webkit_glue::WebThreadImpl("Browser Compositor");
   compositor_support->initialize(g_compositor_thread);
