@@ -4,8 +4,8 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/trusted/validator_arm/ncvalidate.h"
-
+#include <climits>
+#include <limits>
 #include <vector>
 
 #include "native_client/src/include/nacl_string.h"
@@ -49,7 +49,7 @@ class EarlyExitProblemSink : public nacl_arm_val::ProblemSink {
 };
 
 static inline bool IsAligned(intptr_t value) {
-  return (value & 3) == 0;
+  return (value & (NACL_BLOCK_SHIFT - 1)) == 0;
 }
 
 static inline bool IsAlignedPtr(void* ptr) {
@@ -60,6 +60,18 @@ static const uintptr_t kBytesPerBundle = 1 << NACL_BLOCK_SHIFT;
 static const uintptr_t kBytesOfCodeSpace = 1U * 1024 * 1024 * 1024;
 static const uintptr_t kBytesOfDataSpace = 1U * 1024 * 1024 * 1024;
 
+// The following checks should have been checked at a higher level, any error
+// here is a break of the validator's preconditions. Don't try to recover.
+static inline void CheckAddressOverflow(uint8_t* ptr, size_t size) {
+  CHECK(ptr < std::numeric_limits<uint8_t *>::max() - size);
+}
+
+static inline void CheckAddressAlignAndOverflow(uint8_t* ptr, size_t size) {
+  CHECK(IsAlignedPtr(ptr));
+  CHECK(IsAligned(size));
+  CheckAddressOverflow(ptr, size);
+}
+
 static NaClValidationStatus ValidatorCopyArm(
     uintptr_t guest_addr,
     uint8_t *data_old,
@@ -68,14 +80,9 @@ static NaClValidationStatus ValidatorCopyArm(
     const NaClCPUFeatures *cpu_features,
     NaClCopyInstructionFunc copy_func) {
   UNREFERENCED_PARAMETER(cpu_features);
-
-  if (!IsAlignedPtr(data_old) ||
-      !IsAlignedPtr(data_new) ||
-      !IsAligned(size)) {
-    NaClLog(LOG_ERROR,
-            "Misaligned values passed to copy validator\n");
-    return NaClValidationFailed;
-  }
+  CheckAddressAlignAndOverflow((uint8_t *) guest_addr, size);
+  CheckAddressOverflow(data_old, size);
+  CheckAddressOverflow(data_new, size);
 
   CodeSegment dest_code(data_old, guest_addr, size);
   CodeSegment source_code(data_new, guest_addr, size);
@@ -99,6 +106,9 @@ static NaClValidationStatus ValidatorCodeReplacementArm(
     size_t size,
     const NaClCPUFeatures *cpu_features) {
   UNREFERENCED_PARAMETER(cpu_features);
+  CheckAddressAlignAndOverflow((uint8_t *) guest_addr, size);
+  CheckAddressOverflow(data_old, size);
+  CheckAddressOverflow(data_new, size);
 
   CodeSegment new_code(data_new, guest_addr, size);
   CodeSegment old_code(data_old, guest_addr, size);
@@ -117,7 +127,7 @@ static NaClValidationStatus ValidatorCodeReplacementArm(
 
 EXTERN_C_BEGIN
 
-int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size) {
+static int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size) {
   SfiValidator validator(
       kBytesPerBundle,
       kBytesOfCodeSpace,
@@ -146,6 +156,9 @@ static NaClValidationStatus ApplyValidatorArm(
   UNREFERENCED_PARAMETER(cpu_features);
   /* The ARM validator is currently unsafe w.r.t. caching. */
   UNREFERENCED_PARAMETER(cache);
+  CheckAddressAlignAndOverflow((uint8_t *) guest_addr, size);
+  CheckAddressOverflow(data, size);
+  CheckAddressOverflow(data, size);
 
   if (stubout_mode)
     return NaClValidationFailedNotImplemented;
@@ -170,9 +183,7 @@ const struct NaClValidatorInterface *NaClValidatorCreateArm() {
  * It should be moved to be part of sel_ldr, not the validator.
  */
 int NaClCopyInstruction(uint8_t *dst, uint8_t *src, uint8_t sz) {
-  // Unreferenced in release build.
-  UNREFERENCED_PARAMETER(sz);
-  CHECK(sz == 4);
+  CHECK(sz == nacl_arm_dec::kArm32InstSize / CHAR_BIT);
   *(volatile uint32_t*) dst = *(volatile uint32_t*) src;
   // Don't invalidate i-cache on every instruction update.
   // CPU executing partially updated code doesn't look like a problem,
