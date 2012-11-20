@@ -22,11 +22,16 @@ base::LazyInstance<scoped_refptr<AudioPipeReader> >::Leaky
 
 }  // namespace
 
+// TODO(wez): Remove this and have the DesktopEnvironmentFactory own the
+// AudioPipeReader rather than having it process-global.
+// See crbug.com/161373 and crbug.com/104544.
 void AudioCapturerLinux::InitializePipeReader(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const FilePath& pipe_name) {
-  g_pulseaudio_pipe_sink_reader.Get() =
-      AudioPipeReader::Create(task_runner, pipe_name);
+  scoped_refptr<AudioPipeReader> pipe_reader;
+  if (!pipe_name.empty())
+    pipe_reader = AudioPipeReader::Create(task_runner, pipe_name);
+  g_pulseaudio_pipe_sink_reader.Get() = pipe_reader;
 }
 
 AudioCapturerLinux::AudioCapturerLinux(

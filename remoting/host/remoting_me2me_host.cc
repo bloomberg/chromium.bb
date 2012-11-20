@@ -611,6 +611,14 @@ void HostProcess::ShutdownOnUiThread() {
 
   // It is now safe for the HostProcess to be deleted.
   self_ = NULL;
+
+#if defined(OS_LINUX)
+  // Cause the global AudioPipeReader to be freed, otherwise the audio
+  // thread will remain in-use and prevent the process from exiting.
+  // TODO(wez): DesktopEnvironmentFactory should own the pipe reader.
+  // See crbug.com/161373 and crbug.com/104544.
+  AudioCapturerLinux::InitializePipeReader(NULL, FilePath());
+#endif
 }
 
 // Overridden from HeartbeatSender::Listener
