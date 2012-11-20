@@ -79,26 +79,57 @@ const char NativeTextButton::kViewClassName[] = "views/NativeTextButton";
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// TextButtonBorder - constructors, destructors, initialization
+// TextButtonBorder
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-TextButtonBorder::TextButtonBorder()
-    : vertical_padding_(kPreferredPaddingVertical) {
-  set_hot_set(BorderImages(BorderImages::kHot));
-  set_pushed_set(BorderImages(BorderImages::kPushed));
+TextButtonBorder::TextButtonBorder() {
 }
 
 TextButtonBorder::~TextButtonBorder() {
 }
 
+gfx::Insets TextButtonBorder::GetInsets() const {
+  return insets_;
+}
+
+void TextButtonBorder::SetInsets(const gfx::Insets& insets) {
+  insets_ = insets;
+}
+
+TextButtonBorder* TextButtonBorder::AsTextButtonBorder() {
+  return this;
+}
+
+const TextButtonBorder* TextButtonBorder::AsTextButtonBorder() const {
+  return this;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// TextButtonBorder - painting
+// TextButtonDefaultBorder - constructors, destructors, initialization
 //
 ////////////////////////////////////////////////////////////////////////////////
-void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
+
+TextButtonDefaultBorder::TextButtonDefaultBorder()
+    : vertical_padding_(kPreferredPaddingVertical) {
+  set_hot_set(BorderImages(BorderImages::kHot));
+  set_pushed_set(BorderImages(BorderImages::kPushed));
+}
+
+TextButtonDefaultBorder::~TextButtonDefaultBorder() {
+  SetInsets(gfx::Insets(vertical_padding_,
+                        kPreferredPaddingHorizontal,
+                        vertical_padding_,
+                        kPreferredPaddingHorizontal));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// TextButtonDefaultBorder - painting
+//
+////////////////////////////////////////////////////////////////////////////////
+void TextButtonDefaultBorder::Paint(const View& view, gfx::Canvas* canvas) {
   const TextButton* button = static_cast<const TextButton*>(&view);
   int state = button->state();
 
@@ -122,11 +153,6 @@ void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
   }
 }
 
-gfx::Insets TextButtonBorder::GetInsets() const {
-  return gfx::Insets(vertical_padding_, kPreferredPaddingHorizontal,
-                     vertical_padding_, kPreferredPaddingHorizontal);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // TextButtonNativeThemeBorder
@@ -136,6 +162,10 @@ gfx::Insets TextButtonBorder::GetInsets() const {
 TextButtonNativeThemeBorder::TextButtonNativeThemeBorder(
     NativeThemeDelegate* delegate)
     : delegate_(delegate) {
+  SetInsets(gfx::Insets(kPreferredNativeThemePaddingVertical,
+                        kPreferredNativeThemePaddingHorizontal,
+                        kPreferredNativeThemePaddingVertical,
+                        kPreferredNativeThemePaddingHorizontal));
 }
 
 TextButtonNativeThemeBorder::~TextButtonNativeThemeBorder() {
@@ -169,14 +199,6 @@ void TextButtonNativeThemeBorder::Paint(const View& view, gfx::Canvas* canvas) {
     theme->Paint(canvas->sk_canvas(), part, state, rect, extra);
   }
 }
-
-gfx::Insets TextButtonNativeThemeBorder::GetInsets() const {
-  return gfx::Insets(kPreferredNativeThemePaddingVertical,
-                     kPreferredNativeThemePaddingHorizontal,
-                     kPreferredNativeThemePaddingVertical,
-                     kPreferredNativeThemePaddingHorizontal);
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // TextButtonBase, public:
@@ -604,7 +626,7 @@ TextButton::TextButton(ButtonListener* listener, const string16& text)
       has_pushed_icon_(false),
       icon_text_spacing_(kDefaultIconTextSpacing),
       ignore_minimum_size_(true) {
-  set_border(new TextButtonBorder);
+  set_border(new TextButtonDefaultBorder);
   set_focus_border(FocusBorder::CreateDashedFocusBorder(kFocusRectInset,
                                                         kFocusRectInset,
                                                         kFocusRectInset,

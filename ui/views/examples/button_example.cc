@@ -126,7 +126,7 @@ void ButtonExample::TextButtonPressed(const ui::Event& event) {
       if (use_native_theme_border_)
         text_button_->set_border(new TextButtonNativeThemeBorder(text_button_));
       else
-        text_button_->set_border(new TextButtonBorder());
+        text_button_->set_border(new TextButtonDefaultBorder());
     }
   } else if (event.IsAltDown()) {
     text_button_->SetIsDefault(!text_button_->is_default());

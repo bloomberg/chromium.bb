@@ -32,7 +32,8 @@ ConstrainedWindowFrameSimple::ConstrainedWindowFrameSimple(
     : container_(container),
       client_insets_(client_insets),
       title_label_(NULL),
-      close_button_(NULL) {
+      close_button_(NULL),
+      bottom_margin_(0) {
   container_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -122,7 +123,7 @@ gfx::Insets ConstrainedWindowFrameSimple::GetClientInsets() const {
                      title_label_->GetPreferredSize().height()) -
             kTitleBuiltinBottomPadding,
         ConstrainedWindowConstants::kHorizontalPadding,
-        ConstrainedWindowConstants::kClientBottomPadding,
+        ConstrainedWindowConstants::kClientBottomPadding - bottom_margin_,
         ConstrainedWindowConstants::kHorizontalPadding);
   }
 

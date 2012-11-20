@@ -12,6 +12,11 @@ namespace views {
 // Apply button settings to produce a style similar to Chrome WebUI.
 VIEWS_EXPORT void ApplyChromeStyle(TextButton* button);
 
+// Returns the number of pixels the shadow of the Chrome-style button extends
+// beyond the bottom of the button.
+VIEWS_EXPORT int GetChromeStyleButtonShadowMargin();
+
+
 }  // namespace views
 
 #endif  // UI_VIEWS_CONTROLS_BUTTON_CHROME_STYLE_H_

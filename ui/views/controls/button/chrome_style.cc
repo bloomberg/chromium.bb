@@ -17,6 +17,9 @@ namespace {
 const int kMinWidth = 72;
 const int kMinHeight = 27;
 
+// Minimum padding from one side of the text to the outer edge of the border.
+const int kMinHorizontalInternalPadding = 11;
+
 // Fractional position between top and bottom of button where the
 // gradient starts.
 const SkScalar kGradientStartLocation = SkFloatToScalar(0.38f);
@@ -29,8 +32,8 @@ const SkColor kPushedBackgroundBottomColor = SkColorSetRGB(0xdb, 0xdb, 0xdb);
 const SkColor kDisabledBackgroundTopColor = SkColorSetRGB(0xed, 0xed, 0xed);
 const SkColor kDisabledBackgroundBottomColor = SkColorSetRGB(0xde, 0xde, 0xde);
 
-const SkScalar kShadowOffsetX = SkFloatToScalar(0.0f);
-const SkScalar kShadowOffsetY = SkFloatToScalar(2.0f);
+const int kShadowOffsetX = 0;
+const int kShadowOffsetY = 2;
 const SkColor kShadowColor = SkColorSetRGB(0x00, 0x00, 0x00);
 const SkAlpha kNormalShadowAlpha = 0x13;
 const SkAlpha kHotShadowAlpha = 0x1e;
@@ -66,9 +69,20 @@ const int kFocusRingWidth = 1;
 const int kFocusRingRadius = 2;
 const SkColor kFocusRingColor = SkColorSetRGB(0x4d, 0x90, 0xfe);
 
-// Returns the uniform inset of the button from its local bounds.
-int GetButtonInset() {
-  return std::max(kBorderWidth, kFocusRingWidth);
+// Returns the insets of the button from its local bounds.
+gfx::Insets GetButtonInsets() {
+  int inset = std::max(kBorderWidth, kFocusRingWidth);
+  int top = inset, left = inset, bottom = inset, right = inset;
+
+  int &shadow_horizontal_inset = (kShadowOffsetX < 0 ? left : right);
+  shadow_horizontal_inset = std::max(shadow_horizontal_inset,
+                                     std::abs(kShadowOffsetX));
+
+  int &shadow_vertical_inset = (kShadowOffsetY < 0 ? top : bottom);
+  shadow_vertical_inset = std::max(shadow_vertical_inset,
+                                   std::abs(kShadowOffsetY));
+
+  return gfx::Insets(top, left, bottom, right);
 }
 
 class ChromeStyleTextButtonBackgroundPainter : public Painter {
@@ -117,7 +131,8 @@ class ChromeStyleTextButtonBackgroundPainter : public Painter {
     paint.setColor(SkColorSetA(kShadowColor, shadow_alpha_));
 
     SkRect shadow_rect = SkRect::MakeWH(size.width(), size.height());
-    shadow_rect.offset(kShadowOffsetX, kShadowOffsetY);
+    shadow_rect.offset(SkIntToScalar(kShadowOffsetX),
+                       SkIntToScalar(kShadowOffsetY));
     canvas->sk_canvas()->drawRect(shadow_rect, paint);
   }
 
@@ -167,8 +182,7 @@ class ChromeStyleTextButtonBackground : public Background {
   virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE {
     gfx::Rect bounds = view->GetLocalBounds();
     // Inset to the actual button region.
-    int inset = GetButtonInset();
-    bounds.Inset(inset, inset, inset, inset);
+    bounds.Inset(GetButtonInsets());
     Painter::PaintPainterAt(canvas, painter_.get(), bounds);
   }
 
@@ -191,7 +205,7 @@ class ChromeStyleTextButtonBackground : public Background {
   DISALLOW_COPY_AND_ASSIGN(ChromeStyleTextButtonBackground);
 };
 
-class ChromeStyleTextButtonBorderPainter : public views::Painter {
+class ChromeStyleTextButtonBorderPainter : public Painter {
  public:
   ChromeStyleTextButtonBorderPainter()
       // This value should be updated prior to rendering; it's set to a
@@ -227,7 +241,7 @@ class ChromeStyleTextButtonBorderPainter : public views::Painter {
 };
 
 
-class ChromeStyleTextButtonBorder : public views::Border {
+class ChromeStyleTextButtonBorder : public TextButtonBorder {
  public:
   ChromeStyleTextButtonBorder()
       : painter_(new ChromeStyleTextButtonBorderPainter) {
@@ -236,14 +250,21 @@ class ChromeStyleTextButtonBorder : public views::Border {
   // Overriden from Border
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE {
     gfx::Rect bounds = view.GetLocalBounds();
-    int border_inset = GetButtonInset() - kBorderWidth;
-    bounds.Inset(border_inset, border_inset, border_inset, border_inset);
+    bounds.Inset(GetButtonInsets());
+    bounds.Inset(-kBorderWidth, -kBorderWidth);
     Painter::PaintPainterAt(canvas, painter_.get(), bounds);
   }
 
   virtual gfx::Insets GetInsets() const OVERRIDE {
-    const int inset = GetButtonInset();
-    return gfx::Insets(inset, inset, inset, inset);
+    gfx::Insets insets_to_border = GetButtonInsets();
+    insets_to_border += -gfx::Insets(kBorderWidth,
+                                     kBorderWidth,
+                                     kBorderWidth,
+                                     kBorderWidth);
+
+    gfx::Insets insets = TextButtonBorder::GetInsets();
+    insets += insets_to_border;
+    return insets;
   }
 
   void SetColor(SkColor color) {
@@ -256,7 +277,7 @@ class ChromeStyleTextButtonBorder : public views::Border {
   DISALLOW_COPY_AND_ASSIGN(ChromeStyleTextButtonBorder);
 };
 
-class ChromeStyleFocusBorder : public views::FocusBorder {
+class ChromeStyleFocusBorder : public FocusBorder {
  public:
   ChromeStyleFocusBorder() {}
 
@@ -267,13 +288,14 @@ class ChromeStyleFocusBorder : public views::FocusBorder {
     paint.setStrokeWidth(SkIntToScalar(kFocusRingWidth));
     paint.setColor(kFocusRingColor);
 
-    SkScalar inset = SkFloatToScalar(GetButtonInset() - kFocusRingWidth / 2.0f);
+    gfx::Insets button_insets = GetButtonInsets();
     gfx::Rect view_bounds(view.GetLocalBounds());
     SkRect rect = SkRect::MakeLTRB(
-        SkIntToScalar(view_bounds.x()) + inset,
-        SkIntToScalar(view_bounds.y()) + inset,
-        SkIntToScalar(view_bounds.width()) - inset,
-        SkIntToScalar(view_bounds.height()) - inset);
+        SkIntToScalar(view_bounds.x() + button_insets.left()),
+        SkIntToScalar(view_bounds.y() + button_insets.top()),
+        SkIntToScalar(view_bounds.width() - button_insets.right()),
+        SkIntToScalar(view_bounds.height() - button_insets.bottom()));
+    rect.outset(kFocusRingWidth / 2.0f, kFocusRingWidth / 2.0f);
     canvas->sk_canvas()->drawRoundRect(rect, SkIntToScalar(kFocusRingRadius),
         SkIntToScalar(kFocusRingRadius), paint);
   }
@@ -426,7 +448,7 @@ void ApplyChromeStyle(TextButton* button) {
 
   button->set_alignment(TextButton::ALIGN_CENTER);
   button->set_min_width(kMinWidth);
-  button->set_min_height(kMinHeight);
+  button->set_min_height(kMinHeight + GetChromeStyleButtonShadowMargin());
 
   if (button->is_default())
     button->SetFont(button->font().DeriveFont(0, gfx::Font::BOLD));
@@ -440,6 +462,8 @@ void ApplyChromeStyle(TextButton* button) {
   button->set_background(background);
 
   ChromeStyleTextButtonBorder* border = new ChromeStyleTextButtonBorder;
+  border->SetInsets(gfx::Insets(
+      0, kMinHorizontalInternalPadding, 0, kMinHorizontalInternalPadding));
   button->set_border(border);
 
   button->set_focus_border(new ChromeStyleFocusBorder);
@@ -448,6 +472,10 @@ void ApplyChromeStyle(TextButton* button) {
       new ChromeStyleStateChangedUpdater(button, background, border);
 
   button->set_state_changed_delegate(state_changed_updater);
+}
+
+int GetChromeStyleButtonShadowMargin() {
+  return std::max(kShadowOffsetY - std::max(kBorderWidth, kFocusRingWidth), 0);
 }
 
 }  // namespace views

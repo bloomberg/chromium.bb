@@ -36,6 +36,8 @@ class View;
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+class TextButtonBorder;
+
 class VIEWS_EXPORT Border {
  public:
   Border();
@@ -68,6 +70,10 @@ class VIEWS_EXPORT Border {
 
   // Sets the specified insets to the the border insets.
   virtual gfx::Insets GetInsets() const = 0;
+
+  // Manual RTTI for text buttons.
+  virtual TextButtonBorder* AsTextButtonBorder();
+  virtual const TextButtonBorder* AsTextButtonBorder() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Border);

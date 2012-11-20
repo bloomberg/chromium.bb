@@ -27,6 +27,8 @@ class ConstrainedWindowFrameSimple : public views::NonClientFrameView,
       ConstrainedWindowViews::ChromeStyleClientInsets client_insets);
   virtual ~ConstrainedWindowFrameSimple();
 
+  void set_bottom_margin(int margin) { bottom_margin_ = margin; }
+
  private:
   gfx::Insets GetClientInsets() const;
 
@@ -52,6 +54,10 @@ class ConstrainedWindowFrameSimple : public views::NonClientFrameView,
   ConstrainedWindowViews::ChromeStyleClientInsets client_insets_;
   views::Label* title_label_;
   views::ImageButton* close_button_;
+  // Number of margin pixels between the client area and the bottom part of the
+  // frame.  These are visually part of the frame, but are actually rendered by
+  // the client area.
+  int bottom_margin_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowFrameSimple);
 };

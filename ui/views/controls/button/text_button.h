@@ -23,6 +23,34 @@ namespace views {
 //
 // TextButtonBorder
 //
+//  An abstract Border subclass for TextButtons that allows configurable insets
+//  for the button.
+//
+////////////////////////////////////////////////////////////////////////////////
+class VIEWS_EXPORT TextButtonBorder : public Border {
+ public:
+  TextButtonBorder();
+  virtual ~TextButtonBorder();
+
+  void SetInsets(const gfx::Insets& insets);
+
+  // Border:
+  virtual gfx::Insets GetInsets() const OVERRIDE;
+
+private:
+  // Border:
+  virtual TextButtonBorder* AsTextButtonBorder() OVERRIDE;
+  virtual const TextButtonBorder* AsTextButtonBorder() const OVERRIDE;
+
+  gfx::Insets insets_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextButtonBorder);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// TextButtonDefaultBorder
+//
 //  A Border subclass that paints a TextButton's background layer -
 //  basically the button frame in the hot/pushed states.
 //
@@ -31,10 +59,10 @@ namespace views {
 // focus chain.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT TextButtonBorder : public Border {
+class VIEWS_EXPORT TextButtonDefaultBorder : public TextButtonBorder {
  public:
-  TextButtonBorder();
-  virtual ~TextButtonBorder();
+  TextButtonDefaultBorder();
+  virtual ~TextButtonDefaultBorder();
 
   // By default STATE_NORMAL is drawn with no border.  Call this to instead draw
   // it with the same border as the "hot" state.
@@ -47,14 +75,9 @@ class VIEWS_EXPORT TextButtonBorder : public Border {
   void set_hot_set(const BorderImages& set) { hot_set_ = set; }
   void set_pushed_set(const BorderImages& set) { pushed_set_ = set; }
 
-  void set_vertical_padding(int vertical_padding) {
-    vertical_padding_ = vertical_padding;
-  }
-
  private:
   // Border:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Insets GetInsets() const OVERRIDE;
 
   BorderImages normal_set_;
   BorderImages hot_set_;
@@ -62,7 +85,7 @@ class VIEWS_EXPORT TextButtonBorder : public Border {
 
   int vertical_padding_;
 
-  DISALLOW_COPY_AND_ASSIGN(TextButtonBorder);
+  DISALLOW_COPY_AND_ASSIGN(TextButtonDefaultBorder);
 };
 
 
@@ -75,14 +98,13 @@ class VIEWS_EXPORT TextButtonBorder : public Border {
 //  states, with possible animation between states.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT TextButtonNativeThemeBorder : public Border {
+class VIEWS_EXPORT TextButtonNativeThemeBorder : public TextButtonBorder {
  public:
   explicit TextButtonNativeThemeBorder(NativeThemeDelegate* delegate);
   virtual ~TextButtonNativeThemeBorder();
 
   // Implementation of Border:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
-  virtual gfx::Insets GetInsets() const OVERRIDE;
 
  private:
   // The delegate the controls the appearance of this border.

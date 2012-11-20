@@ -597,14 +597,21 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   Init(params);
 
   if (enable_chrome_style_) {
-    // Set the dialog background color.
+    // Set dialog-specific state.
     if (widget_delegate && widget_delegate->AsDialogDelegate()) {
-      views::Background* background = views::Background::CreateSolidBackground(
-          ConstrainedWindow::GetBackgroundColor());
       views::DialogClientView* dialog_client_view =
           widget_delegate->AsDialogDelegate()->GetDialogClientView();
-      if (dialog_client_view)
+      if (dialog_client_view) {
+        views::Background* background =
+            views::Background::CreateSolidBackground(
+                ConstrainedWindow::GetBackgroundColor());
         dialog_client_view->set_background(background);
+
+        ConstrainedWindowFrameSimple *frame =
+            static_cast<ConstrainedWindowFrameSimple*>(
+                non_client_view()->frame_view());
+        frame->set_bottom_margin(dialog_client_view->GetBottomMargin());
+      }
     }
     PositionChromeStyleWindow(GetRootView()->bounds().size());
     registrar_.Add(this,

@@ -17,7 +17,12 @@ const int kPushedImageSet[] = { BORDER_IMAGES(IDR_INFOBARBUTTON_PRESSED) };
 }  // namespace
 
 InfoBarButtonBorder::InfoBarButtonBorder() {
-  set_vertical_padding(browser_defaults::kInfoBarBorderPaddingVertical);
+  gfx::Insets insets = GetInsets();
+  SetInsets(gfx::Insets(browser_defaults::kInfoBarBorderPaddingVertical,
+                        insets.left(),
+                        browser_defaults::kInfoBarBorderPaddingVertical,
+                        insets.right()));
+
   set_normal_set(views::BorderImages(kNormalImageSet));
   set_hot_set(views::BorderImages(kHotImageSet));
   set_pushed_set(views::BorderImages(kPushedImageSet));

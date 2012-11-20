@@ -9,7 +9,7 @@
 
 // A TextButtonBorder that is dark and also paints the button frame in the
 // normal state.
-class InfoBarButtonBorder : public views::TextButtonBorder {
+class InfoBarButtonBorder : public views::TextButtonDefaultBorder {
  public:
   InfoBarButtonBorder();
 

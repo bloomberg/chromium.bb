@@ -42,9 +42,9 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
     int button_vedge_margin;
     int button_hedge_margin;
-    int min_button_width;
-    int button_label_spacing;
+    int button_shadow_margin;
     int button_content_spacing;
+    int related_button_hspacing;
   };
 
   DialogClientView(Widget* widget,
@@ -72,6 +72,10 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
   // Creates a StyleParams struct in Chrome style (default is native style).
   static StyleParams GetChromeStyleParams();
+
+  // Returns the number of pixels at the bottom of the dialog which are visually
+  // part of the frame, but are actually rendered by the DialogClientView.
+  int GetBottomMargin();
 
   // Overridden from View:
   virtual void NativeViewHierarchyChanged(
@@ -112,9 +116,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // Paint the size box in the bottom right corner of the window if it is
   // resizable.
   void PaintSizeBox(gfx::Canvas* canvas);
-
-  // Returns the width of the specified dialog button using the correct font.
-  int GetButtonWidth(int button) const;
 
   // Returns the greater of ok and cancel button's preferred height.
   int GetButtonsHeight() const;

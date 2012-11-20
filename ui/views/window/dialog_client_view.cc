@@ -34,7 +34,6 @@ namespace views {
 namespace {
 
 const int kDialogMinButtonWidth = 75;
-const int kDialogButtonLabelSpacing = 16;
 const int kDialogButtonContentSpacing = 5;
 
 const int kChromeStyleDialogButtonLabelSpacing = 24;
@@ -117,9 +116,9 @@ template <> const char DialogButton<TextButton>::kViewClassName[] =
 DialogClientView::StyleParams::StyleParams()
     : button_vedge_margin(kButtonVEdgeMargin),
       button_hedge_margin(kButtonHEdgeMargin),
-      min_button_width(kDialogMinButtonWidth),
-      button_label_spacing(kDialogButtonLabelSpacing),
-      button_content_spacing(kDialogButtonContentSpacing) {
+      button_shadow_margin(0),
+      button_content_spacing(kDialogButtonContentSpacing),
+      related_button_hspacing(kRelatedButtonHSpacing) {
 }
 
 DialogClientView::DialogClientView(Widget* owner,
@@ -266,9 +265,14 @@ DialogClientView::StyleParams DialogClientView::GetChromeStyleParams() {
   StyleParams params;
   params.button_vedge_margin = 0;
   params.button_hedge_margin = 0;
-  params.button_label_spacing = kChromeStyleDialogButtonLabelSpacing;
+  params.button_shadow_margin = views::GetChromeStyleButtonShadowMargin();
   params.button_content_spacing = 0;
+  params.related_button_hspacing = 10;
   return params;
+}
+
+int DialogClientView::GetBottomMargin() {
+  return style_params_.button_shadow_margin;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -366,16 +370,16 @@ gfx::Size DialogClientView::GetPreferredSize() {
     // the contents.
     int width = 0;
     if (cancel_button_)
-      width += GetButtonWidth(ui::DIALOG_BUTTON_CANCEL);
+      width += cancel_button_->GetPreferredSize().width();
     if (ok_button_) {
-      width += GetButtonWidth(ui::DIALOG_BUTTON_OK);
+      width += ok_button_->GetPreferredSize().width();
       if (cancel_button_)
-        width += kRelatedButtonHSpacing;
+        width += style_params_.related_button_hspacing;
     }
     if (extra_view_) {
       width += extra_view_->GetPreferredSize().width();
       if (cancel_button_ || ok_button_)
-        width += kRelatedButtonHSpacing;
+        width += style_params_.related_button_hspacing;
     }
     if (width > 0) {
       width += 2 * style_params_.button_hedge_margin;
@@ -422,6 +426,9 @@ TextButton* DialogClientView::CreateDialogButton(ui::DialogButton type,
   else
     button = new DialogButton<NativeTextButton>(this, GetWidget(), type, title);
 
+  if (!GetDialogDelegate()->UseChromeStyle())
+    button->set_min_width(kDialogMinButtonWidth);
+
   button->SetGroup(kButtonGroup);
 
   if (GetDialogDelegate()->GetDefaultDialogButton() & type) {
@@ -464,15 +471,6 @@ void DialogClientView::PaintSizeBox(gfx::Canvas* canvas) {
   }
 }
 
-int DialogClientView::GetButtonWidth(int button) const {
-  DialogDelegate* dd = GetDialogDelegate();
-  string16 button_label = dd->GetDialogButtonLabel(
-      static_cast<ui::DialogButton>(button));
-  int string_width = GetDialogButtonFont().GetStringWidth(button_label);
-  return std::max(string_width + style_params_.button_label_spacing,
-                  style_params_.min_button_width);
-}
-
 int DialogClientView::GetButtonsHeight() const {
   int button_height = 0;
   if (cancel_button_)
@@ -497,24 +495,20 @@ void DialogClientView::LayoutDialogButtons() {
   int button_height = GetButtonsHeight();
   if (cancel_button_) {
     gfx::Size ps = cancel_button_->GetPreferredSize();
-    int button_width = std::max(
-        GetButtonWidth(ui::DIALOG_BUTTON_CANCEL), ps.width());
-    int button_x = lb.right() - button_width -
-        style_params_.button_hedge_margin;
+    int button_x = lb.right() - ps.width() - style_params_.button_hedge_margin;
     int button_y = bottom_y - ps.height();
-    cancel_button_->SetBounds(button_x, button_y, button_width, ps.height());
+    cancel_button_->SetBounds(button_x, button_y, ps.width(), ps.height());
     // The extra view bounds are dependent on this button.
     extra_bounds.set_width(std::max(0, cancel_button_->x()));
     extra_bounds.set_y(cancel_button_->y());
   }
   if (ok_button_) {
     gfx::Size ps = ok_button_->GetPreferredSize();
-    int button_width = std::max(
-        GetButtonWidth(ui::DIALOG_BUTTON_OK), ps.width());
     int ok_button_right = lb.right() - style_params_.button_hedge_margin;
     if (cancel_button_)
-      ok_button_right = cancel_button_->x() - kRelatedButtonHSpacing;
-    int button_x = ok_button_right - button_width;
+      ok_button_right = cancel_button_->x() -
+          style_params_.related_button_hspacing;
+    int button_x = ok_button_right - ps.width();
     int button_y = bottom_y - ps.height();
     ok_button_->SetBounds(button_x, button_y, ok_button_right - button_x,
                           ps.height());
