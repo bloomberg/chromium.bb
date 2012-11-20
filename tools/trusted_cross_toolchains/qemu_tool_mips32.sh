@@ -1,8 +1,7 @@
 #!/bin/bash
-#
-# Copyright 2012 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 set -o nounset
 set -o errexit
@@ -17,7 +16,7 @@ set -o errexit
 # From a qemu build based on qemu-0.12.5.tar.gz
 readonly SDK_ROOT=$(dirname $0)
 readonly QEMU=${SDK_ROOT}/qemu-mips32
-readonly QEMU_JAIL=${SDK_ROOT}/mips-release/mips-linux-gnu/libc/el
+readonly QEMU_JAIL=${SDK_ROOT}/sysroot
 # NOTE: some useful debugging options for qemu:
 #       env vars:
 #                  QEMU_STRACE=1

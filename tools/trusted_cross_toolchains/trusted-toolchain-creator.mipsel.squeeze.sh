@@ -1,7 +1,7 @@
 #!/bin/bash
-# Copyright 2012 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
 #@ This script creates the mips trusted SDK.
 #@ It must be run from the native_client directory.
@@ -551,6 +551,13 @@ FixLibs() {
 
   rm -f libresolv.so
   ln -s ../../lib/libresolv.so.2  libresolv.so
+
+  ln -s ../../../mipsel-linux-gnu/lib/libstdc++.so.6.0.17 .
+  ln -s libstdc++.so.6.0.17 libstdc++.so.6
+  ln -s libstdc++.so.6.0.17 libstdc++.so
+
+  ln -s ../../../mipsel-linux-gnu/lib/libgcc_s.so.1 .
+  ln -s libgcc_s.so.1 libgcc_s.so
 }
 
 BuildAndInstallQemu() {
