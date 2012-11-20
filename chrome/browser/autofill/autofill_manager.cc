@@ -962,18 +962,29 @@ bool AutofillManager::GetProfileOrCreditCard(
   // Find the profile that matches the |profile_guid|, if one is specified.
   if (base::IsValidGUID(profile_guid.first)) {
     *form_group = personal_data_->GetProfileByGUID(profile_guid.first);
-    DCHECK(*form_group);
-    *variant = profile_guid.second;
-    return true;
+    if (*form_group) {
+      *variant = profile_guid.second;
+      return true;
+    } else {
+      // TODO(estade): this branch is actually hit quite often on mac:
+      // http://crbug.com/161867
+      NOTREACHED();
+      return false;
+    }
   }
 
   // Find the credit card that matches the |credit_card_guid|, if specified.
   if (base::IsValidGUID(credit_card_guid.first)) {
     *form_group =
         personal_data_->GetCreditCardByGUID(credit_card_guid.first);
-    DCHECK(*form_group);
-    *variant = credit_card_guid.second;
-    return true;
+    if (*form_group) {
+      *variant = credit_card_guid.second;
+      return true;
+    } else {
+      // TODO(estade): not sure if this branch can be hit.
+      NOTREACHED();
+      return false;
+    }
   }
 
   return false;
