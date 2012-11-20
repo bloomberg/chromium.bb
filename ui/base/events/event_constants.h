@@ -26,7 +26,6 @@ enum EventType {
   ET_TOUCH_STATIONARY,
   ET_TOUCH_CANCELLED,
   ET_DROP_TARGET_EVENT,
-  ET_FOCUS_CHANGE,
   ET_TRANSLATED_KEY_PRESS,
   ET_TRANSLATED_KEY_RELEASE,
 
@@ -55,6 +54,10 @@ enum EventType {
   ET_SCROLL,
   ET_SCROLL_FLING_START,
   ET_SCROLL_FLING_CANCEL,
+
+  // Must always be last. User namespace starts above this value.
+  // See ui::RegisterCustomEventType().
+  ET_LAST
 };
 
 // Event flags currently supported

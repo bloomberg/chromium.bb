@@ -131,6 +131,9 @@ UI_EXPORT bool IsMouseEventFromTouch(UINT message);
 // its dispatch to its target.
 UI_EXPORT bool EventCanceledDefaultHandling(const Event& event);
 
+// Registers a custom event type.
+UI_EXPORT int RegisterCustomEventType();
+
 }  // namespace ui
 
 #endif  // UI_BASE_EVENTS_EVENT_UTILS_H_
