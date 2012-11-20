@@ -4,6 +4,7 @@
 
 #include "chrome/browser/google_apis/gdata_wapi_url_util.h"
 
+#include "base/logging.h"
 #include "base/stringprintf.h"
 #include "chrome/common/net/url_util.h"
 #include "googleurl/src/gurl.h"
@@ -42,19 +43,6 @@ const char kGetDocumentListURLForSharedWithMe[] =
 // URL requesting documents list of changes to documents collections.
 const char kGetChangesListURL[] =
     "https://docs.google.com/feeds/default/private/changes";
-
-// Generates a URL for getting document list. If |directory_resource_id| is
-// empty, returns a URL for fetching all documents. If it's given, returns a
-// URL for fetching documents in a particular directory.
-// This function is used to implement GenerateGetDocumentsURL().
-GURL GenerateDocumentListURL(const std::string& directory_resource_id) {
-  if (directory_resource_id.empty())
-    return GURL(kGetDocumentListURLForAllDocuments);
-
-  return GURL(base::StringPrintf(kGetDocumentListURLForDirectoryFormat,
-                                 net::EscapePath(
-                                     directory_resource_id).c_str()));
-}
 
 }  // namespace
 
@@ -103,42 +91,33 @@ GURL AddFeedUrlParams(const GURL& url,
   return result;
 }
 
-GURL GenerateGetDocumentsURL(
+GURL GenerateDocumentListUrl(
     const GURL& override_url,
     int start_changestamp,
     const std::string& search_string,
     bool shared_with_me,
     const std::string& directory_resource_id) {
+  DCHECK_LE(0, start_changestamp);
+
   int max_docs = search_string.empty() ? kMaxDocumentsPerFeed :
                                          kMaxDocumentsPerSearchFeed;
-
-  if (!override_url.is_empty())
-    return gdata_wapi_url_util::AddFeedUrlParams(override_url,
-                                                 max_docs,
-                                                 0,
-                                                 search_string);
-
-  if (shared_with_me) {
-    return gdata_wapi_url_util::AddFeedUrlParams(
-        GURL(kGetDocumentListURLForSharedWithMe),
-        max_docs,
-        0,
-        search_string);
+  GURL url;
+  if (!override_url.is_empty()) {
+    url = override_url;
+  } else if (shared_with_me) {
+    url = GURL(kGetDocumentListURLForSharedWithMe);
+  } else if (start_changestamp > 0) {
+    // The start changestamp shouldn't be used for a search.
+    DCHECK(search_string.empty());
+    url = GURL(kGetChangesListURL);
+  } else if (!directory_resource_id.empty()) {
+    url = GURL(base::StringPrintf(kGetDocumentListURLForDirectoryFormat,
+                                  net::EscapePath(
+                                      directory_resource_id).c_str()));
+  } else {
+    url = GURL(kGetDocumentListURLForAllDocuments);
   }
-
-  if (start_changestamp == 0) {
-    return gdata_wapi_url_util::AddFeedUrlParams(
-        gdata_wapi_url_util::GenerateDocumentListURL(directory_resource_id),
-        max_docs,
-        0,
-        search_string);
-  }
-
-  return gdata_wapi_url_util::AddFeedUrlParams(
-      GURL(kGetChangesListURL),
-      kMaxDocumentsPerFeed,
-      start_changestamp,
-      std::string());
+  return AddFeedUrlParams(url, max_docs, start_changestamp, search_string);
 }
 
 }  // namespace gdata_wapi_url_util

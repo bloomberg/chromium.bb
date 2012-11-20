@@ -126,7 +126,7 @@ GetDocumentsOperation::GetDocumentsOperation(
 GetDocumentsOperation::~GetDocumentsOperation() {}
 
 GURL GetDocumentsOperation::GetURL() const {
-  return gdata_wapi_url_util::GenerateGetDocumentsURL(override_url_,
+  return gdata_wapi_url_util::GenerateDocumentListUrl(override_url_,
                                                       start_changestamp_,
                                                       search_string_,
                                                       shared_with_me_,

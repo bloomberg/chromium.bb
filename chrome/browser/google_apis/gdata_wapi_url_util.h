@@ -54,7 +54,7 @@ GURL AddFeedUrlParams(const GURL& url,
 //   If |directory_resource_id| is non-empty, a URL for fetching documents in
 //   a particular directory is generated.
 //
-GURL GenerateGetDocumentsURL(
+GURL GenerateDocumentListUrl(
     const GURL& override_url,
     int start_changestamp,
     const std::string& search_string,
