@@ -4,6 +4,8 @@
 
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 
+#include <functional>
+
 #include "base/file_util.h"
 #include "base/string_split.h"
 #include "chrome/browser/profiles/profile.h"
