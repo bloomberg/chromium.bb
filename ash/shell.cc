@@ -552,6 +552,7 @@ void Shell::Init() {
 
   if (initially_hide_cursor_)
     cursor_manager_.ShowCursor(false);
+  cursor_manager_.SetCursor(ui::kCursorPointer);
 
   // Cursor might have been hidden by somethign other than chrome.
   // Let the first mouse event show the cursor.

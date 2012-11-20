@@ -361,6 +361,8 @@ void MagnificationControllerImpl::ValidateScale(float* scale) {
 }
 
 void MagnificationControllerImpl::OnImplicitAnimationsCompleted() {
+  if (!is_on_zooming_)
+    return;
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window_);
   if (cursor_client)

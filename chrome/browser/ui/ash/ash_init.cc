@@ -44,6 +44,16 @@ bool ShouldOpenAshOnStartup() {
   return false;
 }
 
+#if defined(OS_CHROMEOS)
+// Returns true if the cursor should be initially hidden.
+bool ShouldInitiallyHideCursor() {
+  if (base::chromeos::IsRunningOnChromeOS())
+    return !chromeos::UserManager::Get()->IsUserLoggedIn();
+  else
+    return CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager);
+}
+#endif
+
 void OpenAsh() {
   bool use_fullscreen = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAuraHostWindowUseFullscreen);
@@ -56,15 +66,15 @@ void OpenAsh() {
     // Aura window is closed.
     ui::HideHostCursor();
   }
+
+  // Hide the mouse cursor completely at boot.
+  if (ShouldInitiallyHideCursor())
+    ash::Shell::set_initially_hide_cursor(true);
 #endif
-  if (use_fullscreen) {
+
+  if (use_fullscreen)
     aura::SetUseFullscreenHostWindow(true);
-#if defined(OS_CHROMEOS)
-    // Hide the mouse cursor completely at boot.
-    if (!chromeos::UserManager::Get()->IsUserLoggedIn())
-      ash::Shell::set_initially_hide_cursor(true);
-#endif
-  }
+
   // Its easier to mark all windows as persisting and exclude the ones we care
   // about (browser windows), rather than explicitly excluding certain windows.
   ash::SetDefaultPersistsAcrossAllWorkspaces(true);
