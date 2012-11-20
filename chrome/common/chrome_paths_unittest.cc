@@ -22,6 +22,12 @@ TEST(ChromePaths, UserCacheDir) {
   FilePath expected_cache_dir;
   ASSERT_TRUE(PathService::Get(base::DIR_CACHE, &expected_cache_dir));
   expected_cache_dir = expected_cache_dir.Append("foobar");
+#elif(OS_ANDROID)
+  // No matter what the test_profile_dir is, Android always use the
+  // application's cache directory since multiple profiles are not
+  // supported.
+  FilePath expected_cache_dir;
+  ASSERT_TRUE(PathService::Get(base::DIR_CACHE, &expected_cache_dir));
 #elif(OS_POSIX)
   FilePath homedir = file_util::GetHomeDir();
   // Note: we assume XDG_CACHE_HOME/XDG_CONFIG_HOME are at their
@@ -41,7 +47,11 @@ TEST(ChromePaths, UserCacheDir) {
   // the special cache dir.
   test_profile_dir = FilePath(FILE_PATH_LITERAL("/some/other/path"));
   chrome::GetUserCacheDirectory(test_profile_dir, &cache_dir);
+#if defined(OS_ANDROID)
+  EXPECT_EQ(expected_cache_dir.value(), cache_dir.value());
+#else
   EXPECT_EQ(test_profile_dir.value(), cache_dir.value());
+#endif
 }
 
 #if defined(OS_WINDOWS)
