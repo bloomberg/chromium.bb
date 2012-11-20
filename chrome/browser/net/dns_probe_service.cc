@@ -23,8 +23,8 @@ namespace chrome_browser_net {
 
 namespace {
 
-const char* kPublicDnsPrimary   = "8.8.8.8";
-const char* kPublicDnsSecondary = "8.8.4.4";
+const char kPublicDnsPrimary[]   = "8.8.8.8";
+const char kPublicDnsSecondary[] = "8.8.4.4";
 
 IPEndPoint MakeDnsEndPoint(const std::string& dns_ip_literal) {
   IPAddressNumber dns_ip_number;
@@ -33,7 +33,9 @@ IPEndPoint MakeDnsEndPoint(const std::string& dns_ip_literal) {
   return IPEndPoint(dns_ip_number, net::dns_protocol::kDefaultPort);
 }
 
-}
+const int kMaxResultAgeMs = 5000;
+
+}  // namespace
 
 DnsProbeService::DnsProbeService()
     : system_result_(DnsProbeJob::SERVERS_UNKNOWN),
@@ -48,7 +50,8 @@ DnsProbeService::~DnsProbeService() {
 void DnsProbeService::ProbeDns(const DnsProbeService::CallbackType& callback) {
   callbacks_.push_back(callback);
 
-  // TODO(ttuttle): Check for cache expiration.
+  if (state_ == STATE_RESULTS_CACHED && ResultsExpired())
+    ExpireResults();
 
   switch (state_) {
   case STATE_NO_RESULTS:
@@ -102,16 +105,43 @@ void DnsProbeService::StartProbes() {
   public_job_ = CreatePublicProbeJob(job_callback);
 
   state_ = STATE_PROBE_RUNNING;
+  last_probe_time_ = base::Time::Now();
 }
 
 void DnsProbeService::OnProbesComplete() {
   DCHECK_EQ(STATE_PROBE_RUNNING, state_);
 
   state_ = STATE_RESULTS_CACHED;
-  // TODO(ttuttle): Calculate result.
-  result_ = PROBE_NXDOMAIN;
+  result_ = EvaluateResults();
 
   CallCallbacks();
+}
+
+DnsProbeService::Result DnsProbeService::EvaluateResults() {
+  DCHECK_NE(DnsProbeJob::SERVERS_UNKNOWN, system_result_);
+  DCHECK_NE(DnsProbeJob::SERVERS_UNKNOWN, public_result_);
+
+  // If the system DNS is working, assume the domain doesn't exist.
+  if (system_result_ == DnsProbeJob::SERVERS_CORRECT)
+    return PROBE_NXDOMAIN;
+
+  // If the system DNS is not working but another public server is, assume the
+  // DNS config is bad (or perhaps the DNS servers are down or broken).
+  if (public_result_ == DnsProbeJob::SERVERS_CORRECT)
+    return PROBE_BAD_CONFIG;
+
+  // If the system DNS is not working and another public server is unreachable,
+  // assume the internet connection is down (note that system DNS may be a
+  // router on the LAN, so it may be reachable but returning errors.)
+  if (public_result_ == DnsProbeJob::SERVERS_UNREACHABLE)
+    return PROBE_NO_INTERNET;
+
+  // Otherwise: the system DNS is not working and another public server is
+  // responding but with errors or incorrect results.  This is an awkward case;
+  // an invasive captive portal or a restrictive firewall may be intercepting
+  // or rewriting DNS traffic, or the public server may itself be failing or
+  // down.
+  return PROBE_UNKNOWN;
 }
 
 void DnsProbeService::CallCallbacks() {
@@ -165,6 +195,12 @@ void DnsProbeService::GetPublicDnsConfig(DnsConfig* config) {
   *config = DnsConfig();
   config->nameservers.push_back(MakeDnsEndPoint(kPublicDnsPrimary));
   config->nameservers.push_back(MakeDnsEndPoint(kPublicDnsSecondary));
+}
+
+bool DnsProbeService::ResultsExpired() {
+  const base::TimeDelta kMaxResultAge =
+      base::TimeDelta::FromMilliseconds(kMaxResultAgeMs);
+  return base::Time::Now() - last_probe_time_ > kMaxResultAge;
 }
 
 } // namespace chrome_browser_net

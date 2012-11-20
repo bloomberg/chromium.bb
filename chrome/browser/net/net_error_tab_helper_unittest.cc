@@ -4,10 +4,17 @@
 
 #include "chrome/browser/net/net_error_tab_helper.h"
 
+#include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/net/dns_probe_service.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using content::BrowserThread;
+using content::TestBrowserThread;
 
 namespace chrome_browser_net {
 
@@ -18,13 +25,14 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
   TestNetErrorTabHelper()
       : NetErrorTabHelper(NULL), probe_start_count_(0) { }
 
-  virtual void StartDnsProbe() {
+  virtual void PostStartDnsProbeTask() OVERRIDE {
     ++probe_start_count_;
-    NetErrorTabHelper::StartDnsProbe();
   }
 
+  virtual bool DnsProbesAllowedByPref() const OVERRIDE { return true; }
+
   void SimulateProbeResult(DnsProbeService::Result result) {
-    set_dns_probe_running(false);
+    OnDnsProbeFinished(result);
   }
 
   bool dns_probe_running() { return NetErrorTabHelper::dns_probe_running(); }
@@ -36,7 +44,8 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
 
 class NetErrorTabHelperTest : public testing::Test {
  public:
-  NetErrorTabHelperTest() { }
+  NetErrorTabHelperTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_) { }
 
  protected:
   void SimulateFailure(bool is_main_frame, int error_code) {
@@ -51,6 +60,9 @@ class NetErrorTabHelperTest : public testing::Test {
         error_description,
         NULL /* render_view_host */);
   }
+
+  MessageLoop message_loop_;
+  TestBrowserThread ui_thread_;
 
   TestNetErrorTabHelper tab_helper_;
 };

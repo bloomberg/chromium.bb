@@ -101,7 +101,6 @@ DnsProbeJobImpl::DnsProbeJobImpl(scoped_ptr<DnsClient> dns_client,
 }
 
 DnsProbeJobImpl::~DnsProbeJobImpl() {
-  // TODO(ttuttle): Cleanup?  (Transactions stop themselves on destruction.)
 }
 
 scoped_ptr<DnsTransaction> DnsProbeJobImpl::CreateTransaction(
@@ -146,18 +145,13 @@ DnsProbeJobImpl::QueryResult DnsProbeJobImpl::EvaluateGoodResponse(
 DnsProbeJobImpl::QueryResult DnsProbeJobImpl::EvaluateBadResponse(
     int net_error,
     const DnsResponse* response) {
+  if (net_error == net::ERR_NAME_NOT_RESOLVED)  // NXDOMAIN maps to this
+    return QUERY_CORRECT;
+
+  // TODO(ttuttle): Examine net_error a little more closely to see whether
+  // it's a DNS error or a network error.
   if (net_error != net::OK)
     return QUERY_NET_ERROR;
-
-  AddressList addr_list;
-  TimeDelta ttl;
-  DnsResponse::Result result = response->ParseToAddressList(&addr_list, &ttl);
-
-  if (result != DnsResponse::DNS_PARSE_OK)
-    return QUERY_DNS_ERROR;
-
-  if (addr_list.empty())
-    return QUERY_CORRECT;
 
   return QUERY_INCORRECT;
 }
