@@ -24,6 +24,38 @@ const char kGetDocumentListURLForAllDocuments[] =
 const char kGetDocumentListURLForDirectoryFormat[] =
     "https://docs.google.com/feeds/default/private/full/%s/contents/-/mine";
 
+#ifndef NDEBUG
+// Use smaller 'page' size while debugging to ensure we hit feed reload
+// almost always. Be careful not to use something too small on account that
+// have many items because server side 503 error might kick in.
+const int kMaxDocumentsPerFeed = 500;
+const int kMaxDocumentsPerSearchFeed = 50;
+#else
+const int kMaxDocumentsPerFeed = 500;
+const int kMaxDocumentsPerSearchFeed = 50;
+#endif
+
+// URL requesting documents list that shared to the authenticated user only
+const char kGetDocumentListURLForSharedWithMe[] =
+    "https://docs.google.com/feeds/default/private/full/-/shared-with-me";
+
+// URL requesting documents list of changes to documents collections.
+const char kGetChangesListURL[] =
+    "https://docs.google.com/feeds/default/private/changes";
+
+// Generates a URL for getting document list. If |directory_resource_id| is
+// empty, returns a URL for fetching all documents. If it's given, returns a
+// URL for fetching documents in a particular directory.
+// This function is used to implement GenerateGetDocumentsURL().
+GURL GenerateDocumentListURL(const std::string& directory_resource_id) {
+  if (directory_resource_id.empty())
+    return GURL(kGetDocumentListURLForAllDocuments);
+
+  return GURL(base::StringPrintf(kGetDocumentListURLForDirectoryFormat,
+                                 net::EscapePath(
+                                     directory_resource_id).c_str()));
+}
+
 }  // namespace
 
 GURL AddStandardUrlParams(const GURL& url) {
@@ -71,13 +103,42 @@ GURL AddFeedUrlParams(const GURL& url,
   return result;
 }
 
-GURL FormatDocumentListURL(const std::string& directory_resource_id) {
-  if (directory_resource_id.empty())
-    return GURL(kGetDocumentListURLForAllDocuments);
+GURL GenerateGetDocumentsURL(
+    const GURL& override_url,
+    int start_changestamp,
+    const std::string& search_string,
+    bool shared_with_me,
+    const std::string& directory_resource_id) {
+  int max_docs = search_string.empty() ? kMaxDocumentsPerFeed :
+                                         kMaxDocumentsPerSearchFeed;
 
-  return GURL(base::StringPrintf(kGetDocumentListURLForDirectoryFormat,
-                                 net::EscapePath(
-                                     directory_resource_id).c_str()));
+  if (!override_url.is_empty())
+    return gdata_wapi_url_util::AddFeedUrlParams(override_url,
+                                                 max_docs,
+                                                 0,
+                                                 search_string);
+
+  if (shared_with_me) {
+    return gdata_wapi_url_util::AddFeedUrlParams(
+        GURL(kGetDocumentListURLForSharedWithMe),
+        max_docs,
+        0,
+        search_string);
+  }
+
+  if (start_changestamp == 0) {
+    return gdata_wapi_url_util::AddFeedUrlParams(
+        gdata_wapi_url_util::GenerateDocumentListURL(directory_resource_id),
+        max_docs,
+        0,
+        search_string);
+  }
+
+  return gdata_wapi_url_util::AddFeedUrlParams(
+      GURL(kGetChangesListURL),
+      kMaxDocumentsPerFeed,
+      start_changestamp,
+      std::string());
 }
 
 }  // namespace gdata_wapi_url_util

@@ -25,10 +25,6 @@ namespace {
 const char kIfMatchAllHeader[] = "If-Match: *";
 const char kIfMatchHeaderFormat[] = "If-Match: %s";
 
-// URL requesting documents list of changes to documents collections.
-const char kGetChangesListURL[] =
-    "https://docs.google.com/feeds/default/private/changes";
-
 // Root document list url.
 const char kDocumentListRootURL[] =
     "https://docs.google.com/feeds/default/private/full";
@@ -41,24 +37,9 @@ const char kGetDocumentEntryURLFormat[] =
 const char kAccountMetadataURL[] =
     "https://docs.google.com/feeds/metadata/default";
 
-// URL requesting documents list that shared to the authenticated user only
-const char kGetDocumentListURLForSharedWithMe[] =
-    "https://docs.google.com/feeds/default/private/full/-/shared-with-me";
-
 const char kUploadContentRange[] = "Content-Range: bytes ";
 const char kUploadContentType[] = "X-Upload-Content-Type: ";
 const char kUploadContentLength[] = "X-Upload-Content-Length: ";
-
-#ifndef NDEBUG
-// Use smaller 'page' size while debugging to ensure we hit feed reload
-// almost always. Be careful not to use something too small on account that
-// have many items because server side 503 error might kick in.
-const int kMaxDocumentsPerFeed = 500;
-const int kMaxDocumentsPerSearchFeed = 50;
-#else
-const int kMaxDocumentsPerFeed = 500;
-const int kMaxDocumentsPerSearchFeed = 50;
-#endif
 
 const char kFeedField[] = "feed";
 
@@ -145,36 +126,11 @@ GetDocumentsOperation::GetDocumentsOperation(
 GetDocumentsOperation::~GetDocumentsOperation() {}
 
 GURL GetDocumentsOperation::GetURL() const {
-  int max_docs = search_string_.empty() ? kMaxDocumentsPerFeed :
-                                          kMaxDocumentsPerSearchFeed;
-
-  if (!override_url_.is_empty())
-    return gdata_wapi_url_util::AddFeedUrlParams(override_url_,
-                                                 max_docs,
-                                                 0,
-                                                 search_string_);
-
-  if (shared_with_me_) {
-    return gdata_wapi_url_util::AddFeedUrlParams(
-        GURL(kGetDocumentListURLForSharedWithMe),
-        max_docs,
-        0,
-        search_string_);
-  }
-
-  if (start_changestamp_ == 0) {
-    return gdata_wapi_url_util::AddFeedUrlParams(
-        gdata_wapi_url_util::FormatDocumentListURL(directory_resource_id_),
-        max_docs,
-        0,
-        search_string_);
-  }
-
-  return gdata_wapi_url_util::AddFeedUrlParams(
-      GURL(kGetChangesListURL),
-      kMaxDocumentsPerFeed,
-      start_changestamp_,
-      std::string());
+  return gdata_wapi_url_util::GenerateGetDocumentsURL(override_url_,
+                                                      start_changestamp_,
+                                                      search_string_,
+                                                      shared_with_me_,
+                                                      directory_resource_id_);
 }
 
 //============================ GetDocumentEntryOperation =======================

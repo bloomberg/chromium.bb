@@ -50,12 +50,84 @@ TEST(GDataWapiUrlUtilTest, AddFeedUrlParams) {
                              ).spec());
 }
 
-TEST(GDataWapiUrlUtilTest, FormatDocumentListURL) {
-  EXPECT_EQ("https://docs.google.com/feeds/default/private/full/-/mine",
-            FormatDocumentListURL("").spec());
-  EXPECT_EQ("https://docs.google.com/feeds/default/private/full/"
-            "RESOURCE-ID/contents/-/mine",
-            FormatDocumentListURL("RESOURCE-ID").spec());
+TEST(GDataWapiUrlUtilTest, GenerateGetDocumentsURL) {
+  // This is the very basic URL for the GetDocuments operation.
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/default/private/full/-/mine"
+      "?v=3&alt=json&showfolders=true&max-results=500"
+      "&include-installed-apps=true",
+      GenerateGetDocumentsURL(GURL(),  // override_url,
+                              0,  // start_changestamp,
+                              "",  // search_string,
+                              false, // shared_with_me,
+                              ""  // directory resource ID
+                              ).spec());
+
+  // With an override URL provided, the base URL is changed, but the default
+  // parameters remain as-is.
+  EXPECT_EQ(
+      "http://localhost/"
+      "?v=3&alt=json&showfolders=true&max-results=500"
+      "&include-installed-apps=true",
+      GenerateGetDocumentsURL(GURL("http://localhost/"),  // override_url,
+                              0,  // start_changestamp,
+                              "",  // search_string,
+                              false, // shared_with_me,
+                              ""  // directory resource ID
+                              ).spec());
+
+  // With a non-zero start_changestamp provided, the base URL is changed from
+  // "full/-/mine" to "changes", and "start-index" parameter is added.
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/default/private/changes"
+      "?v=3&alt=json&showfolders=true&max-results=500"
+      "&include-installed-apps=true"
+      "&start-index=100",
+      GenerateGetDocumentsURL(GURL(),  // override_url,
+                              100,  // start_changestamp,
+                              "",  // search_string,
+                              false, // shared_with_me,
+                              ""  // directory resource ID
+                              ).spec());
+
+  // With a non-empty search string provided, "max-results" value is changed,
+  // and "q" parameter is added.
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/default/private/full/-/mine"
+      "?v=3&alt=json&showfolders=true&max-results=50"
+      "&include-installed-apps=true&q=foo",
+      GenerateGetDocumentsURL(GURL(),  // override_url,
+                              0,  // start_changestamp,
+                              "foo",  // search_string,
+                              false, // shared_with_me,
+                              ""  // directory resource ID
+                              ).spec());
+
+  // With shared_with_me parameter set to true, the base URL is changed, but
+  // the default parameters remain.
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/default/private/full/-/shared-with-me"
+      "?v=3&alt=json&showfolders=true&max-results=500"
+      "&include-installed-apps=true",
+      GenerateGetDocumentsURL(GURL(),  // override_url,
+                              0,  // start_changestamp,
+                              "",  // search_string,
+                              true, // shared_with_me,
+                              ""  // directory resource ID
+                              ).spec());
+
+  // With a non-empty directory resource ID provided, the base URL is
+  // changed, but the default parameters remain.
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/default/private/full/XXX/contents/-/mine"
+      "?v=3&alt=json&showfolders=true&max-results=500"
+      "&include-installed-apps=true",
+      GenerateGetDocumentsURL(GURL(),  // override_url,
+                              0,  // start_changestamp,
+                              "",  // search_string,
+                              false, // shared_with_me,
+                              "XXX"  // directory resource ID
+                              ).spec());
 }
 
 }  // namespace gdata_wapi_url_util

@@ -4,8 +4,8 @@
 //
 // URL utility functions for Google Documents List API (aka WAPI).
 
-#ifndef CHROME_BROWSER_GOOGLE_APIS_URL_UTIL_H_
-#define CHROME_BROWSER_GOOGLE_APIS_URL_UTIL_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_URL_UTIL_H_
+#define CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_URL_UTIL_H_
 
 #include <string>
 
@@ -31,12 +31,37 @@ GURL AddFeedUrlParams(const GURL& url,
                       int changestamp,
                       const std::string& search_string);
 
-// Formats a URL for getting document list. If |directory_resource_id| is
-// empty, returns a URL for fetching all documents. If it's given, returns a
-// URL for fetching documents in a particular directory.
-GURL FormatDocumentListURL(const std::string& directory_resource_id);
+// Generates a URL for getting the documents list feed.
+//
+// override_url:
+//   By default, a hard-coded base URL of the WAPI server is used.
+//   The base URL can be overridden by |override_url|.
+//   This is used for handling continuation of feeds (2nd page and onward).
+//
+// start_changestamp
+//   If |start_changestamp| is 0, URL for a full feed is generated.
+//   If |start_changestamp| is non-zero, URL for a delta feed is generated.
+//
+// search_string
+//   If |search_string| is non-empty, q=... parameter is added, and
+//   max-results=... parameter is adjusted for a search.
+//
+// shared_with_me
+//   If |shared_with_me| is true, the base URL is changed to fetch the
+//   shared-with-me documents.
+//
+// directory_resource_id:
+//   If |directory_resource_id| is non-empty, a URL for fetching documents in
+//   a particular directory is generated.
+//
+GURL GenerateGetDocumentsURL(
+    const GURL& override_url,
+    int start_changestamp,
+    const std::string& search_string,
+    bool shared_with_me,
+    const std::string& directory_resource_id);
 
 }  // namespace gdata_wapi_url_util
 }  // namespace google_apis
 
-#endif  // CHROME_BROWSER_GOOGLE_APIS_URL_UTIL_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_URL_UTIL_H_
