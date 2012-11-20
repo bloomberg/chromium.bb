@@ -52,9 +52,6 @@
           'variables': {
             'package_name': 'navigation_interception',
             'java_in_dir': 'components/navigation_interception/java',
-            # TODO(jknotten): Remove once external dependencies have been 
-            # updated to use the interface in its new package.
-            'additional_src_dirs' : ['../chrome/browser/component/navigation_interception/java']
           },
           'includes': [ '../build/java.gypi' ],
         },
