@@ -31,6 +31,18 @@ class TGenError(Exception):
     return repr(self.value)
 
 
+class ThunkBodyMetadata(object):
+  """Metadata about thunk body. Used for selecting which headers to emit."""
+  def __init__(self):
+    self._apis = set()
+
+  def AddApi(self, api):
+    self._apis.add(api)
+
+  def Apis(self):
+    return self._apis
+
+
 def _GetBaseFileName(filenode):
   """Returns the base name for output files, given the filenode.
 
@@ -67,7 +79,7 @@ def _GetThunkFileName(filenode, relpath):
   return name
 
 
-def _MakeEnterLine(filenode, interface, arg, handle_errors, callback):
+def _MakeEnterLine(filenode, interface, arg, handle_errors, callback, meta):
   """Returns an EnterInstance/EnterResource string for a function."""
   if arg[0] == 'PP_Instance':
     if callback is None:
@@ -81,6 +93,7 @@ def _MakeEnterLine(filenode, interface, arg, handle_errors, callback):
     api_name += '_API'
 
     enter_type = 'EnterResource<%s>' % api_name
+    meta.AddApi(api_name)
     if callback is None:
       return '%s enter(%s, %s);' % (enter_type, arg[1],
                                     str(handle_errors).lower())
@@ -162,7 +175,7 @@ def _MakeCreateMemberBody(interface, member, args):
   return body
 
 
-def _MakeNormalMemberBody(filenode, node, member, rtype, args):
+def _MakeNormalMemberBody(filenode, node, member, rtype, args, meta):
   """Returns the body of a typical function.
 
   Args:
@@ -171,6 +184,7 @@ def _MakeNormalMemberBody(filenode, node, member, rtype, args):
     member - IDLNode for the member function
     rtype - Return type for the member function
     args - List of 4-tuple arguments for the member function
+    meta - ThunkBodyMetadata for header hints
   """
   is_callback_func = args[len(args) - 1][0] == 'struct PP_CompletionCallback'
 
@@ -193,7 +207,7 @@ def _MakeNormalMemberBody(filenode, node, member, rtype, args):
   handle_errors = not (member.GetProperty('report_errors') == 'False')
   if is_callback_func:
     body = '  %s\n' % _MakeEnterLine(filenode, node, args[0], handle_errors,
-                                     args[len(args) - 1][1])
+                                     args[len(args) - 1][1], meta)
     body += '  if (enter.failed())\n'
     value = member.GetProperty('on_failure')
     if value is None:
@@ -202,7 +216,7 @@ def _MakeNormalMemberBody(filenode, node, member, rtype, args):
     body += '  return enter.SetResult(%s);\n' % invocation
   elif rtype == 'void':
     body = '  %s\n' % _MakeEnterLine(filenode, node, args[0], handle_errors,
-                                     None)
+                                     None, meta)
     body += '  if (enter.succeeded())\n'
     body += '    %s;' % invocation
   else:
@@ -213,14 +227,14 @@ def _MakeNormalMemberBody(filenode, node, member, rtype, args):
       raise TGenError('No default value for rtype %s' % rtype)
 
     body = '  %s\n' % _MakeEnterLine(filenode, node, args[0], handle_errors,
-                                     None)
+                                     None, meta)
     body += '  if (enter.failed())\n'
     body += '    return %s;\n' % value
     body += '  return %s;' % invocation
   return body
 
 
-def DefineMember(filenode, node, member, release, include_version):
+def DefineMember(filenode, node, member, release, include_version, meta):
   """Returns a definition for a member function of an interface.
 
   Args:
@@ -229,6 +243,7 @@ def DefineMember(filenode, node, member, release, include_version):
     member - IDLNode for the member function
     release - release to generate
     include_version - include the version in emitted function name.
+    meta - ThunkMetadata for header hints
   Returns:
     A string with the member definition.
   """
@@ -236,12 +251,12 @@ def DefineMember(filenode, node, member, release, include_version):
   rtype, name, arrays, args = cgen.GetComponents(member, release, 'return')
 
   if _IsTypeCheck(node, member):
-    body = '  %s\n' % _MakeEnterLine(filenode, node, args[0], False, None)
+    body = '  %s\n' % _MakeEnterLine(filenode, node, args[0], False, None, meta)
     body += '  return PP_FromBool(enter.succeeded());'
   elif member.GetName() == 'Create':
     body = _MakeCreateMemberBody(node, member, args)
   else:
-    body = _MakeNormalMemberBody(filenode, node, member, rtype, args)
+    body = _MakeNormalMemberBody(filenode, node, member, rtype, args, meta)
 
   signature = cgen.GetSignature(member, release, 'return', func_as_ptr=False,
                                 include_version=include_version)
@@ -266,12 +281,13 @@ class TGen(GeneratorByFile):
       return False
 
     thunk_out = IDLOutFile(savename)
-    self.GenerateHead(thunk_out, filenode, releases, options)
-    self.GenerateBody(thunk_out, filenode, releases, options)
-    self.GenerateTail(thunk_out, filenode, releases, options)
+    body, meta = self.GenerateBody(thunk_out, filenode, releases, options)
+    self.WriteHead(thunk_out, filenode, releases, options, meta)
+    thunk_out.Write('\n\n'.join(body))
+    self.WriteTail(thunk_out, filenode, releases, options)
     return thunk_out.Close()
 
-  def GenerateHead(self, out, filenode, releases, options):
+  def WriteHead(self, out, filenode, releases, options, meta):
     __pychecker__ = 'unusednames=options'
     cgen = CGen()
 
@@ -298,7 +314,8 @@ class TGen(GeneratorByFile):
                 'ppapi/thunk/resource_creation_api.h',
                 'ppapi/thunk/thunk.h']
     includes.append(_GetHeaderFileName(filenode))
-    includes.append('ppapi/thunk/%s_api.h' % _GetBaseFileName(filenode))
+    for api in meta.Apis():
+      includes.append('ppapi/thunk/%s.h' % api.lower())
     for include in sorted(includes):
       out.Write('#include "%s"\n' % include)
     out.Write('\n')
@@ -309,7 +326,15 @@ class TGen(GeneratorByFile):
     out.Write('\n')
 
   def GenerateBody(self, out, filenode, releases, options):
+    """Generates a member function lines to be written and metadata.
+
+    Returns a tuple of (body, meta) where:
+      body - a list of lines with member function bodies
+      meta - a ThunkMetadata instance for hinting which headers are needed.
+    """
     __pychecker__ = 'unusednames=options'
+    members = []
+    meta = ThunkBodyMetadata()
     for node in filenode.GetListOf('Interface'):
       # Skip if this node is not in this release
       if not node.InReleases(releases):
@@ -318,7 +343,6 @@ class TGen(GeneratorByFile):
 
       # Generate Member functions
       if node.IsA('Interface'):
-        members = []
         for child in node.GetListOf('Member'):
           build_list = child.GetUniqueReleases(releases)
           # We have to filter out releases this node isn't in.
@@ -326,18 +350,18 @@ class TGen(GeneratorByFile):
           if len(build_list) == 0:
             continue
           release = build_list[-1]  # Pick the newest release.
-          member = DefineMember(filenode, node, child, release, False)
+          member = DefineMember(filenode, node, child, release, False, meta)
           if not member:
             continue
           members.append(member)
           for build in build_list[:-1]:
-            member = DefineMember(filenode, node, child, build, True)
+            member = DefineMember(filenode, node, child, build, True, meta)
             if not member:
               continue
             members.append(member)
-        out.Write('\n\n'.join(members))
+    return (members, meta)
 
-  def GenerateTail(self, out, filenode, releases, options):
+  def WriteTail(self, out, filenode, releases, options):
     __pychecker__ = 'unusednames=options'
     cgen = CGen()
 
