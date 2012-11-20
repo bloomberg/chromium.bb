@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ash/desktop_background/desktop_background_resources.h"
+#include "ash/desktop_background/desktop_background_controller.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
@@ -122,8 +122,8 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                           User::WallpaperType type,
                           const UserImage& wallpaper);
 
-  // Sets wallpaper to default wallpaper at |index|.
-  void SetDefaultWallpaper(int index);
+  // Sets wallpaper to default wallpaper.
+  void SetDefaultWallpaper();
 
   // Sets one of the default wallpapers for the specified user and saves this
   // settings in local state.
@@ -140,9 +140,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
 
   // Sets |email|'s wallpaper.
   void SetUserWallpaper(const std::string& email);
-
-  // Sets the default wallpaper for the sign-in screen.
-  void SetSigninWallpaper();
 
   // Sets wallpaper to |wallpaper|.
   void SetWallpaperFromImageSkia(const gfx::ImageSkia& wallpaper,
@@ -285,9 +282,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
 
   // The file path of current loaded/loading custom/online wallpaper.
   FilePath current_wallpaper_path_;
-
-  // The index of current loaded/loading default wallpaper.
-  int current_default_wallpaper_index_;
 
   // Loads user wallpaper from its file.
   scoped_refptr<UserImageLoader> wallpaper_loader_;

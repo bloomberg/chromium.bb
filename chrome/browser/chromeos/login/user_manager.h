@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "ash/desktop_background/desktop_background_resources.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/login/user.h"
 

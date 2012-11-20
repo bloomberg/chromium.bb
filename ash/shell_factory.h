@@ -6,7 +6,6 @@
 #define ASH_SHELL_FACTORY_H_
 
 #include "ash/ash_export.h"
-#include "ash/desktop_background/desktop_background_resources.h"
 
 namespace aura {
 class RootWindow;

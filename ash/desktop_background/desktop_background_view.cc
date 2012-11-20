@@ -128,8 +128,8 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
   WallpaperLayout wallpaper_layout = controller->GetWallpaperLayout();
 
   gfx::Rect wallpaper_rect(0, 0, wallpaper.width(), wallpaper.height());
-  if (wallpaper_layout == ash::CENTER_CROPPED && wallpaper.width() > width()
-      && wallpaper.height() > height()) {
+  if (wallpaper_layout == WALLPAPER_LAYOUT_CENTER_CROPPED &&
+      wallpaper.width() > width() && wallpaper.height() > height()) {
     // The dimension with the smallest ratio must be cropped, the other one
     // is preserved. Both are set in gfx::Size cropped_size.
     double horizontal_ratio = static_cast<double>(width()) /
@@ -154,9 +154,9 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
         wallpaper_cropped_rect.width(), wallpaper_cropped_rect.height(),
         0, 0, width(), height(),
         true);
-  } else if (wallpaper_layout == ash::TILE) {
+  } else if (wallpaper_layout == WALLPAPER_LAYOUT_TILE) {
     canvas->TileImageInt(wallpaper, 0, 0, width(), height());
-  } else if (wallpaper_layout == ash::STRETCH) {
+  } else if (wallpaper_layout == WALLPAPER_LAYOUT_STRETCH) {
     // This is generally not recommended as it may show artifacts.
     canvas->DrawImageInt(wallpaper, 0, 0, wallpaper.width(),
         wallpaper.height(), 0, 0, width(), height(), true);

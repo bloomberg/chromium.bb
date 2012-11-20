@@ -227,7 +227,7 @@ void WebUILoginDisplay::LoadWallpaper(const std::string& username) {
 }
 
 void WebUILoginDisplay::LoadSigninWallpaper() {
-  WallpaperManager::Get()->SetSigninWallpaper();
+  WallpaperManager::Get()->SetDefaultWallpaper();
 }
 
 void WebUILoginDisplay::RemoveUser(const std::string& username) {

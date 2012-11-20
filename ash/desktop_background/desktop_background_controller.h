@@ -6,7 +6,6 @@
 #define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/desktop_background/desktop_background_resources.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -23,6 +22,31 @@ class RootWindow;
 }
 
 namespace ash {
+
+enum WallpaperLayout {
+  WALLPAPER_LAYOUT_CENTER,
+  WALLPAPER_LAYOUT_CENTER_CROPPED,
+  WALLPAPER_LAYOUT_STRETCH,
+  WALLPAPER_LAYOUT_TILE,
+};
+
+enum WallpaperResolution {
+  WALLPAPER_RESOLUTION_LARGE,
+  WALLPAPER_RESOLUTION_SMALL
+};
+
+const SkColor kLoginWallpaperColor = 0xFEFEFE;
+
+// Encapsulates wallpaper infomation needed by desktop background controller.
+struct ASH_EXPORT WallpaperInfo {
+  int idr;
+  WallpaperLayout layout;
+};
+
+ASH_EXPORT extern const WallpaperInfo kDefaultLargeWallpaper;
+ASH_EXPORT extern const WallpaperInfo kDefaultSmallWallpaper;
+ASH_EXPORT extern const WallpaperInfo kGuestLargeWallpaper;
+ASH_EXPORT extern const WallpaperInfo kGuestSmallWallpaper;
 
 // The width and height of small/large resolution wallpaper. When screen size is
 // smaller than |kSmallWallpaperMaxWidth| and |kSmallWallpaperMaxHeight|, the
@@ -64,21 +88,16 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
   // is no image, e.g. background is solid color.
   gfx::ImageSkia GetCurrentWallpaperImage();
 
+  // Gets the IDR of current wallpaper. Returns -1 if current wallpaper is not
+  // a builtin wallpaper.
+  int GetWallpaperIDR() const;
+
   // Initialize root window's background.
   void OnRootWindowAdded(aura::RootWindow* root_window);
 
-  // Loads default wallpaper at |index| asynchronously but does not set the
-  // loaded image to current wallpaper. Resource bundle will cache the loaded
-  // image.
-  void CacheDefaultWallpaper(int index);
-
-  // Loads default wallpaper at |index| asynchronously and sets to current
-  // wallpaper after loaded.
-  void SetDefaultWallpaper(int index);
-
-  // Forces to reload the current default wallpaper. A different resolution
-  // wallpaper maybe loaded.
-  void ReloadDefaultWallpaper();
+  // Loads builtin wallpaper asynchronously and sets to current wallpaper after
+  // loaded.
+  void SetDefaultWallpaper(const WallpaperInfo& info);
 
   // Sets the user selected custom wallpaper. Called when user selected a file
   // from file system or changed the layout of wallpaper.
@@ -116,7 +135,7 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
 
  private:
   // An operation to asynchronously loads wallpaper.
-  class WallpaperOperation;
+  class WallpaperLoader;
 
   struct WallpaperData;
 
@@ -126,7 +145,7 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
 
   // Creates a new background widget and sets the background mode to image mode.
   // Called after wallpaper loaded successfully.
-  void OnWallpaperLoadCompleted(scoped_refptr<WallpaperOperation> wo);
+  void OnWallpaperLoadCompleted(scoped_refptr<WallpaperLoader> wl);
 
   // Adds layer with solid |color| to container |container_id| in |root_window|.
   ui::Layer* SetColorLayerForContainer(SkColor color,
@@ -163,7 +182,7 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
   // The current wallpaper.
   scoped_ptr<WallpaperData> current_wallpaper_;
 
-  scoped_refptr<WallpaperOperation> wallpaper_op_;
+  scoped_refptr<WallpaperLoader> wallpaper_loader_;
 
   base::WeakPtrFactory<DesktopBackgroundController> weak_ptr_factory_;
 

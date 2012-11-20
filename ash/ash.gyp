@@ -68,8 +68,6 @@
         'desktop_background/desktop_background_controller.cc',
         'desktop_background/desktop_background_controller.h',
         'desktop_background/desktop_background_controller_observer.h',
-        'desktop_background/desktop_background_resources.cc',
-        'desktop_background/desktop_background_resources.h',
         'desktop_background/desktop_background_view.cc',
         'desktop_background/desktop_background_view.h',
         'desktop_background/desktop_background_widget_controller.cc',

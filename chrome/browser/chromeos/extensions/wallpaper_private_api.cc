@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
@@ -38,6 +37,25 @@ using base::BinaryValue;
 using content::BrowserThread;
 
 namespace {
+
+// Keeps in sync (same order) with WallpaperLayout enum in header file.
+const char* kWallpaperLayoutArrays[] = {
+    "CENTER",
+    "CENTER_CROPPED",
+    "STRETCH",
+    "TILE"
+};
+
+const int kWallpaperLayoutCount = arraysize(kWallpaperLayoutArrays);
+
+ash::WallpaperLayout GetLayoutEnum(const std::string& layout) {
+  for (int i = 0; i < kWallpaperLayoutCount; i++) {
+    if (layout.compare(kWallpaperLayoutArrays[i]) == 0)
+      return static_cast<ash::WallpaperLayout>(i);
+  }
+  // Default to use CENTER layout.
+  return ash::WALLPAPER_LAYOUT_CENTER;
+}
 
 class WindowStateManager;
 
@@ -242,7 +260,7 @@ bool WallpaperSetWallpaperFunction::RunImpl() {
   if (!args_->GetString(1, &layout_string) || layout_string.empty()) {
     return false;
   }
-  layout_ = ash::GetLayoutEnum(layout_string);
+  layout_ = GetLayoutEnum(layout_string);
   if (!args_->GetString(2, &url_) || url_.empty())
     return false;
 
@@ -302,7 +320,7 @@ void WallpaperSetWallpaperFunction::SaveToFile() {
     chromeos::WallpaperManager::Get()->ResizeAndSaveWallpaper(
         wallpaper,
         file_path.InsertBeforeExtension(chromeos::kSmallWallpaperSuffix),
-        ash::CENTER_CROPPED,
+        ash::WALLPAPER_LAYOUT_CENTER_CROPPED,
         ash::kSmallWallpaperMaxWidth,
         ash::kSmallWallpaperMaxHeight);
   } else {
@@ -346,7 +364,7 @@ bool WallpaperSetCustomWallpaperFunction::RunImpl() {
   if (!args_->GetString(1, &layout_string) || layout_string.empty()) {
     return false;
   }
-  layout_ = ash::GetLayoutEnum(layout_string);
+  layout_ = GetLayoutEnum(layout_string);
 
   // Gets email address while at UI thread.
   email_ = chromeos::UserManager::Get()->GetLoggedInUser()->email();

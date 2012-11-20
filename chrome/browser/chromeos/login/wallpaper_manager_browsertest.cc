@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 
-#include "ash/desktop_background/desktop_background_resources.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/display/display_manager.h"
@@ -43,7 +42,6 @@ int kExpectedSmallWallpaperHeight = ash::kSmallWallpaperMaxHeight;
 int kExpectedLargeWallpaperWidth = 256;
 int kExpectedLargeWallpaperHeight = ash::kLargeWallpaperMaxHeight;
 #endif
-
 
 }  // namespace
 
@@ -127,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 
   WallpaperInfo info = {
       "",
-      CENTER_CROPPED,
+      WALLPAPER_LAYOUT_CENTER_CROPPED,
       User::DEFAULT,
       base::Time::Now().LocalMidnight()
   };
@@ -171,20 +169,19 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   FilePath large_wallpaper_path =
       wallpaper_manager->GetWallpaperPathForUser(kTestUser1, false);
 
-  int index = ash::GetDefaultWallpaperIndex();
   // Saves the small/large resolution wallpapers to small/large custom
   // wallpaper paths.
   SaveUserWallpaperData(kTestUser1,
                         small_wallpaper_path,
-                        GetWallpaperViewInfo(index, SMALL).id);
+                        ash::kDefaultSmallWallpaper.idr);
   SaveUserWallpaperData(kTestUser1,
                         large_wallpaper_path,
-                        GetWallpaperViewInfo(index, LARGE).id);
+                        ash::kDefaultLargeWallpaper.idr);
 
   // Saves wallpaper info to local state for user |kTestUser1|.
   WallpaperInfo info = {
       "DUMMY",
-      CENTER_CROPPED,
+      WALLPAPER_LAYOUT_CENTER_CROPPED,
       User::CUSTOMIZED,
       base::Time::Now().LocalMidnight()
   };
@@ -229,15 +226,14 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   FilePath small_wallpaper_path =
       wallpaper_manager->GetWallpaperPathForUser(kTestUser1, true);
 
-  int index = ash::GetDefaultWallpaperIndex();
   SaveUserWallpaperData(kTestUser1,
                         small_wallpaper_path,
-                        GetWallpaperViewInfo(index, SMALL).id);
+                        ash::kDefaultSmallWallpaper.idr);
 
   // Saves wallpaper info to local state for user |kTestUser1|.
   WallpaperInfo info = {
       "DUMMY",
-      CENTER_CROPPED,
+      WALLPAPER_LAYOUT_CENTER_CROPPED,
       User::CUSTOMIZED,
       base::Time::Now().LocalMidnight()
   };
