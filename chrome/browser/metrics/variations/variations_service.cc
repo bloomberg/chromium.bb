@@ -505,7 +505,8 @@ void VariationsService::CreateTrialFromStudy(const Study& study,
     if (experiment.has_experiment_id()) {
       const VariationID variation_id =
           static_cast<VariationID>(experiment.experiment_id());
-      AssociateGoogleVariationIDForce(study.name(),
+      AssociateGoogleVariationIDForce(GOOGLE_WEB_PROPERTIES,
+                                      study.name(),
                                       experiment.name(),
                                       variation_id);
     }

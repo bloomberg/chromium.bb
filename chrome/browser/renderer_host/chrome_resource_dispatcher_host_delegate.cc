@@ -449,7 +449,8 @@ void ChromeResourceDispatcherHostDelegate::OnFieldTrialGroupFinalized(
     const std::string& group_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   chrome_variations::VariationID new_id =
-      chrome_variations::GetGoogleVariationID(trial_name, group_name);
+      chrome_variations::GetGoogleVariationID(
+          chrome_variations::GOOGLE_WEB_PROPERTIES, trial_name, group_name);
   if (new_id == chrome_variations::kEmptyID)
     return;
   variation_ids_set_.insert(new_id);
@@ -470,7 +471,9 @@ void ChromeResourceDispatcherHostDelegate::InitVariationIDsCacheIfNeeded() {
   for (base::FieldTrial::ActiveGroups::const_iterator it =
        initial_groups.begin(); it != initial_groups.end(); ++it) {
     const chrome_variations::VariationID id =
-        chrome_variations::GetGoogleVariationID(it->trial_name, it->group_name);
+        chrome_variations::GetGoogleVariationID(
+            chrome_variations::GOOGLE_WEB_PROPERTIES, it->trial_name,
+            it->group_name);
     if (id != chrome_variations::kEmptyID)
       variation_ids_set_.insert(id);
   }

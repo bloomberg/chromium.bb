@@ -24,39 +24,74 @@ namespace {
 // The internal singleton accessor for the map, used to keep it thread-safe.
 class GroupMapAccessor {
  public:
+  typedef std::map<ActiveGroupId, VariationID, ActiveGroupIdCompare>
+      GroupToIDMap;
+
   // Retrieve the singleton.
   static GroupMapAccessor* GetInstance() {
     return Singleton<GroupMapAccessor>::get();
   }
 
-  GroupMapAccessor() {}
-  ~GroupMapAccessor() {}
-
   // Note that this normally only sets the ID for a group the first time, unless
   // |force| is set to true, in which case it will always override it.
-  void AssociateID(const ActiveGroupId& group_identifier,
+  void AssociateID(IDCollectionKey key,
+                   const ActiveGroupId& group_identifier,
                    const VariationID id,
                    const bool force) {
+#if !defined(NDEBUG)
+    // Validate that all collections with this |group_identifier| have the same
+    // associated ID.
+    DCHECK_EQ(2, ID_COLLECTION_COUNT);
+    IDCollectionKey other_key = GOOGLE_WEB_PROPERTIES;
+    if (key == GOOGLE_WEB_PROPERTIES)
+      other_key = GOOGLE_UPDATE_SERVICE;
+    VariationID other_id = GetID(other_key, group_identifier);
+    DCHECK(other_id == kEmptyID || other_id == id);
+#endif
+
     base::AutoLock scoped_lock(lock_);
+
+    GroupToIDMap* group_to_id_map = GetGroupToIDMap(key);
     if (force ||
-        group_to_id_map_.find(group_identifier) == group_to_id_map_.end())
-      group_to_id_map_[group_identifier] = id;
+        group_to_id_map->find(group_identifier) == group_to_id_map->end())
+      (*group_to_id_map)[group_identifier] = id;
   }
 
-  VariationID GetID(const ActiveGroupId& group_identifier) {
+  VariationID GetID(IDCollectionKey key,
+                    const ActiveGroupId& group_identifier) {
     base::AutoLock scoped_lock(lock_);
-    GroupToIDMap::const_iterator it = group_to_id_map_.find(group_identifier);
-    if (it == group_to_id_map_.end())
+    GroupToIDMap* group_to_id_map = GetGroupToIDMap(key);
+    GroupToIDMap::const_iterator it = group_to_id_map->find(group_identifier);
+    if (it == group_to_id_map->end())
       return kEmptyID;
     return it->second;
   }
 
+  void ClearAllMapsForTesting() {
+    base::AutoLock scoped_lock(lock_);
+
+    for (int i = 0; i < ID_COLLECTION_COUNT; ++i) {
+      GroupToIDMap* map = GetGroupToIDMap(static_cast<IDCollectionKey>(i));
+      DCHECK(map);
+      map->clear();
+    }
+  }
+
  private:
-  typedef std::map<ActiveGroupId, VariationID, ActiveGroupIdCompare>
-      GroupToIDMap;
+  friend struct DefaultSingletonTraits<GroupMapAccessor>;
+
+  // Retrieves the GroupToIDMap for |key|.
+  GroupToIDMap* GetGroupToIDMap(IDCollectionKey key) {
+    return &group_to_id_maps_[key];
+  }
+
+  GroupMapAccessor() {
+    group_to_id_maps_.resize(ID_COLLECTION_COUNT);
+  }
+  ~GroupMapAccessor() {}
 
   base::Lock lock_;
-  GroupToIDMap group_to_id_map_;
+  std::vector<GroupToIDMap> group_to_id_maps_;
 
   DISALLOW_COPY_AND_ASSIGN(GroupMapAccessor);
 };
@@ -106,25 +141,28 @@ void GetFieldTrialActiveGroupIdsAsStrings(
   }
 }
 
-void AssociateGoogleVariationID(const std::string& trial_name,
+void AssociateGoogleVariationID(IDCollectionKey key,
+                                const std::string& trial_name,
                                 const std::string& group_name,
                                 chrome_variations::VariationID id) {
   GroupMapAccessor::GetInstance()->AssociateID(
-      MakeActiveGroupId(trial_name, group_name), id, false);
+      key, MakeActiveGroupId(trial_name, group_name), id, false);
 }
 
-void AssociateGoogleVariationIDForce(const std::string& trial_name,
+void AssociateGoogleVariationIDForce(IDCollectionKey key,
+                                     const std::string& trial_name,
                                      const std::string& group_name,
                                      chrome_variations::VariationID id) {
   GroupMapAccessor::GetInstance()->AssociateID(
-      MakeActiveGroupId(trial_name, group_name), id, true);
+      key, MakeActiveGroupId(trial_name, group_name), id, true);
 }
 
 chrome_variations::VariationID GetGoogleVariationID(
+    IDCollectionKey key,
     const std::string& trial_name,
     const std::string& group_name) {
   return GroupMapAccessor::GetInstance()->GetID(
-      MakeActiveGroupId(trial_name, group_name));
+      key, MakeActiveGroupId(trial_name, group_name));
 }
 
 void GenerateVariationChunks(const std::vector<string16>& experiments,
@@ -155,6 +193,10 @@ void SetChildProcessLoggingVariationList() {
 // Functions below are exposed for testing explicitly behind this namespace.
 // They simply wrap existing functions in this file.
 namespace testing {
+
+void ClearAllVariationIDs() {
+  GroupMapAccessor::GetInstance()->ClearAllMapsForTesting();
+}
 
 void TestGetFieldTrialActiveGroupIds(
     const base::FieldTrial::ActiveGroups& active_groups,

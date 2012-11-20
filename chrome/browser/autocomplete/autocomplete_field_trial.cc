@@ -127,6 +127,7 @@ void AutocompleteFieldTrial::Activate() {
 
   // Mark this group in suggest requests to Google.
   chrome_variations::AssociateGoogleVariationID(
+      chrome_variations::GOOGLE_WEB_PROPERTIES,
       kSuggestFieldTrialStarted2012Q4Name, "0",
       chrome_variations::kSuggestTrialStarted2012Q4IDMin);
   DCHECK_EQ(kSuggestFieldTrialNumberOfGroups,
@@ -140,6 +141,7 @@ void AutocompleteFieldTrial::Activate() {
     const std::string group_name = base::IntToString(i);
     trial->AppendGroup(group_name, 1);
     chrome_variations::AssociateGoogleVariationID(
+        chrome_variations::GOOGLE_WEB_PROPERTIES,
         kSuggestFieldTrialStarted2012Q4Name, group_name,
         static_cast<chrome_variations::VariationID>(
             chrome_variations::kSuggestTrialStarted2012Q4IDMin + i));

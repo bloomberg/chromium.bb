@@ -62,7 +62,8 @@ void SetupSingleUniformityFieldTrial(
           trial_name, divisor, kDefaultGroupName, 2015, 1, 1, NULL));
   if (one_time_randomized)
     trial->UseOneTimeRandomization();
-  chrome_variations::AssociateGoogleVariationID(trial_name, kDefaultGroupName,
+  chrome_variations::AssociateGoogleVariationID(
+      chrome_variations::GOOGLE_WEB_PROPERTIES, trial_name, kDefaultGroupName,
       trial_base_id);
   // Loop starts with group 1 because the field trial automatically creates a
   // default group, which would be group 0.
@@ -70,7 +71,8 @@ void SetupSingleUniformityFieldTrial(
     const std::string group_name = StringPrintf("group_%02d", group_number);
     DVLOG(1) << "    Group name = " << group_name;
     trial->AppendGroup(group_name, kProbabilityPerGroup);
-    chrome_variations::AssociateGoogleVariationID(trial_name, group_name,
+    chrome_variations::AssociateGoogleVariationID(
+        chrome_variations::GOOGLE_WEB_PROPERTIES, trial_name, group_name,
         static_cast<chrome_variations::VariationID>(trial_base_id +
                                                     group_number));
   }
