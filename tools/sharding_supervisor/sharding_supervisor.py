@@ -94,67 +94,6 @@ def RemoveGTestOutput(gtest_args):
   return args
 
 
-def AppendToXML(final_xml, generic_path, shard):
-  """Combine the shard xml file with the final xml file."""
-
-  path = generic_path + str(shard)
-
-  try:
-    with open(path) as shard_xml_file:
-      shard_xml = minidom.parse(shard_xml_file)
-  except IOError:
-    # If the shard crashed, gtest will not have generated an xml file.
-    return final_xml
-
-  if not final_xml:
-    # Out final xml is empty, let's prepopulate it with the first one we see.
-    return shard_xml
-
-  shard_node = shard_xml.documentElement
-  final_node = final_xml.documentElement
-
-  testcases = shard_node.getElementsByTagName('testcase')
-  final_testcases = final_node.getElementsByTagName('testcase')
-
-  final_testsuites = final_node.getElementsByTagName('testsuite')
-  final_testsuites_by_name = dict(
-      (suite.getAttribute('name'), suite) for suite in final_testsuites)
-
-  for testcase in testcases:
-    name = testcase.getAttribute('name')
-    classname = testcase.getAttribute('classname')
-    failures = testcase.getElementsByTagName('failure')
-    status = testcase.getAttribute('status')
-    elapsed = testcase.getAttribute('time')
-
-    # don't bother updating the final xml if there is no data.
-    if status == 'notrun':
-      continue
-
-    # Look in our final xml to see if it's there.
-    # There has to be a better way...
-    merged_into_final_testcase = False
-    for final_testcase in final_testcases:
-      final_name = final_testcase.getAttribute('name')
-      final_classname = final_testcase.getAttribute('classname')
-      if final_name == name and final_classname == classname:
-        # We got the same entry.
-        final_testcase.setAttribute('status', status)
-        final_testcase.setAttribute('time', elapsed)
-        for failure in failures:
-          final_testcase.appendChild(failure)
-        merged_into_final_testcase = True
-
-    # We couldn't find an existing testcase to merge the results into, so we
-    # copy the node into the existing test suite.
-    if not merged_into_final_testcase:
-      testsuite = testcase.parentNode
-      final_testsuite = final_testsuites_by_name[testsuite.getAttribute('name')]
-      final_testsuite.appendChild(testcase)
-
-  return final_xml
-
-
 def RunShard(test, total_shards, index, gtest_args, stdout, stderr):
   """Runs a single test shard in a subprocess.
 
@@ -299,20 +238,6 @@ class ShardingSupervisor(object):
         print worker.stdout
 
       sys.stdout.flush()
-
-    # All the shards are done.  Merge all the XML files and generate the
-    # main one.
-    output_arg = GetGTestOutput(self.gtest_args)
-    if output_arg:
-      xml, xml_path = output_arg.split(':', 1)
-      assert(xml == 'xml')
-      final_xml = None
-      for i in range(start_point, start_point + self.num_shards_to_run):
-        final_xml = AppendToXML(final_xml, xml_path, i)
-
-      if final_xml:
-        with open(xml_path, 'w') as final_file:
-          final_xml.writexml(final_file)
 
     num_failed = len(self.failed_shards)
     if num_failed > 0:
