@@ -24,11 +24,56 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/test/net/url_request_mock_http_job.h"
 
+namespace {
+
+struct EncodingTestData {
+  const char* file_name;
+  const char* encoding_name;
+};
+
+const EncodingTestData kEncodingTestDatas[] = {
+  { "Big5.html", "Big5" },
+  { "EUC-JP.html", "EUC-JP" },
+  { "gb18030.html", "gb18030" },
+  { "iso-8859-1.html", "ISO-8859-1" },
+  { "ISO-8859-2.html", "ISO-8859-2" },
+  { "ISO-8859-4.html", "ISO-8859-4" },
+  { "ISO-8859-5.html", "ISO-8859-5" },
+  { "ISO-8859-6.html", "ISO-8859-6" },
+  { "ISO-8859-7.html", "ISO-8859-7" },
+  { "ISO-8859-8.html", "ISO-8859-8" },
+  { "ISO-8859-13.html", "ISO-8859-13" },
+  { "ISO-8859-15.html", "ISO-8859-15" },
+  { "KOI8-R.html", "KOI8-R" },
+  { "KOI8-U.html", "KOI8-U" },
+  { "macintosh.html", "macintosh" },
+  { "Shift-JIS.html", "Shift_JIS" },
+  { "US-ASCII.html", "ISO-8859-1" },  // http://crbug.com/15801
+  { "UTF-8.html", "UTF-8" },
+  { "UTF-16LE.html", "UTF-16LE" },
+  { "windows-874.html", "windows-874" },
+  // http://crbug.com/95963
+  // { "windows-949.html", "windows-949" },
+  { "windows-1250.html", "windows-1250" },
+  { "windows-1251.html", "windows-1251" },
+  { "windows-1252.html", "windows-1252" },
+  { "windows-1253.html", "windows-1253" },
+  { "windows-1254.html", "windows-1254" },
+  { "windows-1255.html", "windows-1255" },
+  { "windows-1256.html", "windows-1256" },
+  { "windows-1257.html", "windows-1257" },
+  { "windows-1258.html", "windows-1258" }
+};
+
+}  // namespace
+
 using content::BrowserThread;
 
 static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("encoding_tests");
 
-class BrowserEncodingTest : public InProcessBrowserTest {
+class BrowserEncodingTest
+    : public InProcessBrowserTest,
+      public testing::WithParamInterface<EncodingTestData> {
  protected:
   BrowserEncodingTest() {}
 
@@ -75,68 +120,23 @@ class BrowserEncodingTest : public InProcessBrowserTest {
 // 2. Add more files with multiple encoding name variants for each canonical
 // encoding name). Webkit layout tests cover some, but testing in the UI test is
 // also necessary.
-// SLOW_ is added for XP debug bots. These tests should really be unittests...
-IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, SLOW_TestEncodingAliasMapping) {
-  struct EncodingTestData {
-    const char* file_name;
-    const char* encoding_name;
-  };
-
-  const EncodingTestData kEncodingTestDatas[] = {
-    { "Big5.html", "Big5" },
-    { "EUC-JP.html", "EUC-JP" },
-    { "gb18030.html", "gb18030" },
-    { "iso-8859-1.html", "ISO-8859-1" },
-    { "ISO-8859-2.html", "ISO-8859-2" },
-    { "ISO-8859-4.html", "ISO-8859-4" },
-    { "ISO-8859-5.html", "ISO-8859-5" },
-    { "ISO-8859-6.html", "ISO-8859-6" },
-    { "ISO-8859-7.html", "ISO-8859-7" },
-    { "ISO-8859-8.html", "ISO-8859-8" },
-    { "ISO-8859-13.html", "ISO-8859-13" },
-    { "ISO-8859-15.html", "ISO-8859-15" },
-    { "KOI8-R.html", "KOI8-R" },
-    { "KOI8-U.html", "KOI8-U" },
-    { "macintosh.html", "macintosh" },
-    { "Shift-JIS.html", "Shift_JIS" },
-    { "US-ASCII.html", "ISO-8859-1" },  // http://crbug.com/15801
-    { "UTF-8.html", "UTF-8" },
-    { "UTF-16LE.html", "UTF-16LE" },
-    { "windows-874.html", "windows-874" },
-    // http://crbug.com/95963
-    // { "windows-949.html", "windows-949" },
-    { "windows-1250.html", "windows-1250" },
-    { "windows-1251.html", "windows-1251" },
-    { "windows-1252.html", "windows-1252" },
-    { "windows-1253.html", "windows-1253" },
-    { "windows-1254.html", "windows-1254" },
-    { "windows-1255.html", "windows-1255" },
-    { "windows-1256.html", "windows-1256" },
-    { "windows-1257.html", "windows-1257" },
-    { "windows-1258.html", "windows-1258" }
-  };
+IN_PROC_BROWSER_TEST_P(BrowserEncodingTest, TestEncodingAliasMapping) {
   const char* const kAliasTestDir = "alias_mapping";
 
   FilePath test_dir_path = FilePath(kTestDir).AppendASCII(kAliasTestDir);
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kEncodingTestDatas); ++i) {
-    FilePath test_file_path(test_dir_path);
-    test_file_path = test_file_path.AppendASCII(
-        kEncodingTestDatas[i].file_name);
+  FilePath test_file_path(test_dir_path);
+  test_file_path = test_file_path.AppendASCII(
+      GetParam().file_name);
 
-    GURL url = content::URLRequestMockHTTPJob::GetMockUrl(test_file_path);
-
-    // When looping through all the above files in one WebContents, there's a
-    // race condition on Windows trybots that causes the previous encoding to be
-    // seen sometimes. Create a new tab for each one.  http://crbug.com/122053
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(), url, NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-
-    EXPECT_EQ(kEncodingTestDatas[i].encoding_name,
-              chrome::GetActiveWebContents(browser())->GetEncoding());
-    chrome::CloseTab(browser());
-  }
+  GURL url = content::URLRequestMockHTTPJob::GetMockUrl(test_file_path);
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_EQ(GetParam().encoding_name,
+            chrome::GetActiveWebContents(browser())->GetEncoding());
 }
+
+INSTANTIATE_TEST_CASE_P(EncodingAliases,
+                        BrowserEncodingTest,
+                        testing::ValuesIn(kEncodingTestDatas));
 
 // Marked as flaky: see  http://crbug.com/44668
 IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
@@ -188,6 +188,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
 #else
 #define MAYBE_TestEncodingAutoDetect TestEncodingAutoDetect
 #endif
+// TODO(phajdan.jr): See if fix for http://crbug.com/122053 would help here.
 IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
   struct EncodingAutoDetectTestData {
     const char* test_file_name;   // File name of test data.
