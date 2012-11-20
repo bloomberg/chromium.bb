@@ -864,8 +864,8 @@
   action disp64_operand_end { }
 
   disp8  = any >disp8_operand_begin @disp8_operand_end;
-  disp32 = any{4} @~disp32_operand_begin @disp32_operand_end;
-  disp64 = any{8} @~disp64_operand_begin @disp64_operand_end;
+  disp32 = any{3} $disp32_operand_begin any @disp32_operand_end;
+  disp64 = any{7} $disp64_operand_begin any @disp64_operand_end;
 }%%
 
 %%{
@@ -881,11 +881,11 @@
   action imm64_operand_end { }
 
   imm8 = any >imm8_operand_begin @imm8_operand_end;
-  imm16 = any{2} @~imm16_operand_begin @imm16_operand_end;
-  imm32 = any{4} @~imm32_operand_begin @imm32_operand_end;
-  imm64 = any{8} @~imm64_operand_begin @imm64_operand_end;
+  imm16 = any $imm16_operand_begin any @imm16_operand_end;
+  imm32 = any{3} $imm32_operand_begin any @imm32_operand_end;
+  imm64 = any{7} $imm64_operand_begin any @imm64_operand_end;
   imm8n2 = any >imm8_operand_begin @imm8_operand_end;
-  imm16n2 = any{2} @~imm16_operand_begin @imm16_operand_end;
+  imm16n2 = any $imm16_operand_begin any @imm16_operand_end;
 }%%
 
 %%{
@@ -915,6 +915,6 @@
   action rel32_operand_end { }
 
   rel8  = any >rel8_operand_begin @rel8_operand_end;
-  rel16 = any{2} @~rel16_operand_begin @rel16_operand_end;
-  rel32 = any{4} @~rel32_operand_begin @rel32_operand_end;
+  rel16 = any $rel16_operand_begin any @rel16_operand_end;
+  rel32 = any{3} $rel32_operand_begin any @rel32_operand_end;
 }%%
