@@ -29,6 +29,7 @@ const int BluetoothAdapterWin::kPollIntervalMs = 500;
 
 BluetoothAdapterWin::BluetoothAdapterWin()
     : BluetoothAdapter(),
+      powered_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
@@ -48,8 +49,7 @@ bool BluetoothAdapterWin::IsPresent() const {
 }
 
 bool BluetoothAdapterWin::IsPowered() const {
-  NOTIMPLEMENTED();
-  return false;
+  return powered_;
 }
 
 void BluetoothAdapterWin::SetPowered(
@@ -97,22 +97,31 @@ void BluetoothAdapterWin::UpdateAdapterState() {
   HBLUETOOTH_RADIO_FIND bluetooth_adapter_handle = NULL;
   BLUETOOTH_RADIO_INFO bluetooth_adapter_info =
       { sizeof(BLUETOOTH_RADIO_INFO), 0 };
-  BluetoothFindFirstRadio(&bluetooth_adapter_param, &bluetooth_adapter_handle);
-  if (bluetooth_adapter_handle &&
-      ERROR_SUCCESS == BluetoothGetRadioInfo(bluetooth_adapter_handle,
-                                             &bluetooth_adapter_info)) {
-    name_ = base::SysWideToUTF8(bluetooth_adapter_info.szName);
-    address_ = base::StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X",
-        bluetooth_adapter_info.address.rgBytes[5],
-        bluetooth_adapter_info.address.rgBytes[4],
-        bluetooth_adapter_info.address.rgBytes[3],
-        bluetooth_adapter_info.address.rgBytes[2],
-        bluetooth_adapter_info.address.rgBytes[1],
-        bluetooth_adapter_info.address.rgBytes[0]);
-  } else {
-    name_.clear();
-    address_.clear();
+  HBLUETOOTH_RADIO_FIND bluetooth_handle = BluetoothFindFirstRadio(
+      &bluetooth_adapter_param, &bluetooth_adapter_handle);
+
+  if (bluetooth_adapter_handle) {
+    if (ERROR_SUCCESS == BluetoothGetRadioInfo(bluetooth_adapter_handle,
+                                               &bluetooth_adapter_info)) {
+      name_ = base::SysWideToUTF8(bluetooth_adapter_info.szName);
+      address_ = base::StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X",
+          bluetooth_adapter_info.address.rgBytes[5],
+          bluetooth_adapter_info.address.rgBytes[4],
+          bluetooth_adapter_info.address.rgBytes[3],
+          bluetooth_adapter_info.address.rgBytes[2],
+          bluetooth_adapter_info.address.rgBytes[1],
+          bluetooth_adapter_info.address.rgBytes[0]);
+      powered_ = BluetoothIsConnectable(bluetooth_adapter_handle) ||
+          BluetoothIsDiscoverable(bluetooth_adapter_handle);
+    } else {
+      name_.clear();
+      address_.clear();
+      powered_ = false;
+    }
   }
+
+  if (bluetooth_handle)
+    BluetoothFindRadioClose(bluetooth_handle);
 }
 
 void BluetoothAdapterWin::TrackDefaultAdapter() {
