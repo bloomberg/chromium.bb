@@ -211,18 +211,18 @@ DownloadProtectionService::DownloadInfo::FromDownloadItem(
 // Parent SafeBrowsing::Client class used to lookup the bad binary
 // URL and digest list.  There are two sub-classes (one for each list).
 class DownloadSBClient
-    : public SafeBrowsingDatabaseManager::Client,
+    : public SafeBrowsingService::Client,
       public base::RefCountedThreadSafe<DownloadSBClient> {
  public:
   DownloadSBClient(
       const DownloadProtectionService::DownloadInfo& info,
       const DownloadProtectionService::CheckDownloadCallback& callback,
-      const scoped_refptr<SafeBrowsingUIManager>& ui_manager,
+      SafeBrowsingService* sb_service,
       SBStatsType total_type,
       SBStatsType dangerous_type)
       : info_(info),
         callback_(callback),
-        ui_manager_(ui_manager),
+        sb_service_(sb_service),
         start_time_(base::TimeTicks::Now()),
         total_type_(total_type),
         dangerous_type_(dangerous_type) {}
@@ -261,7 +261,7 @@ class DownloadSBClient
     for (size_t i = 0; i < info_.download_url_chain.size(); ++i) {
       post_data += info_.download_url_chain[i].spec() + "\n";
     }
-    ui_manager_->ReportSafeBrowsingHit(
+    sb_service_->ReportSafeBrowsingHit(
         info_.download_url_chain.back(),  // malicious_url
         info_.download_url_chain.front(), // page_url
         info_.referrer_url,
@@ -278,7 +278,7 @@ class DownloadSBClient
 
   DownloadProtectionService::DownloadInfo info_;
   DownloadProtectionService::CheckDownloadCallback callback_;
-  scoped_refptr<SafeBrowsingUIManager> ui_manager_;
+  scoped_refptr<SafeBrowsingService> sb_service_;
   base::TimeTicks start_time_;
 
  private:
@@ -293,17 +293,15 @@ class DownloadUrlSBClient : public DownloadSBClient {
   DownloadUrlSBClient(
       const DownloadProtectionService::DownloadInfo& info,
       const DownloadProtectionService::CheckDownloadCallback& callback,
-      const scoped_refptr<SafeBrowsingUIManager>& ui_manager,
-      const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager)
-      : DownloadSBClient(info, callback, ui_manager,
+      SafeBrowsingService* sb_service)
+      : DownloadSBClient(info, callback, sb_service,
                          DOWNLOAD_URL_CHECKS_TOTAL,
-                         DOWNLOAD_URL_CHECKS_MALWARE),
-        database_manager_(database_manager) { }
+                         DOWNLOAD_URL_CHECKS_MALWARE) {}
 
   virtual void StartCheck() OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    if (!database_manager_ || database_manager_->CheckDownloadUrl(
-            info_.download_url_chain, this)) {
+    if (!sb_service_ ||
+        sb_service_->CheckDownloadUrl(info_.download_url_chain, this)) {
       CheckDone(SB_THREAT_TYPE_SAFE);
     } else {
       AddRef();  // SafeBrowsingService takes a pointer not a scoped_refptr.
@@ -326,8 +324,6 @@ class DownloadUrlSBClient : public DownloadSBClient {
   virtual ~DownloadUrlSBClient() {}
 
  private:
-  scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(DownloadUrlSBClient);
 };
 
@@ -337,17 +333,16 @@ class DownloadProtectionService::CheckClientDownloadRequest
           BrowserThread::DeleteOnUIThread>,
       public net::URLFetcherDelegate {
  public:
-  CheckClientDownloadRequest(
-      const DownloadInfo& info,
-      const CheckDownloadCallback& callback,
-      DownloadProtectionService* service,
-      const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
-      SignatureUtil* signature_util)
+  CheckClientDownloadRequest(const DownloadInfo& info,
+                             const CheckDownloadCallback& callback,
+                             DownloadProtectionService* service,
+                             SafeBrowsingService* sb_service,
+                             SignatureUtil* signature_util)
       : info_(info),
         callback_(callback),
         service_(service),
         signature_util_(signature_util),
-        database_manager_(database_manager),
+        sb_service_(sb_service),
         pingback_enabled_(service_->enabled()),
         finished_(false),
         type_(ClientDownloadRequest::WIN_EXECUTABLE),
@@ -596,21 +591,19 @@ class DownloadProtectionService::CheckClientDownloadRequest
   void CheckWhitelists() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     DownloadCheckResultReason reason = REASON_MAX;
-    if (!database_manager_) {
+    if (!sb_service_.get()) {
       reason = REASON_SB_DISABLED;
     } else {
       for (size_t i = 0; i < info_.download_url_chain.size(); ++i) {
         const GURL& url = info_.download_url_chain[i];
-        if (url.is_valid() &&
-            database_manager_->MatchDownloadWhitelistUrl(url)) {
+        if (url.is_valid() && sb_service_->MatchDownloadWhitelistUrl(url)) {
           VLOG(2) << url << " is on the download whitelist.";
           reason = REASON_WHITELISTED_URL;
           break;
         }
       }
       if (info_.referrer_url.is_valid() && reason == REASON_MAX &&
-          database_manager_->MatchDownloadWhitelistUrl(
-              info_.referrer_url)) {
+          sb_service_->MatchDownloadWhitelistUrl(info_.referrer_url)) {
         VLOG(2) << "Referrer url " << info_.referrer_url
                 << " is on the download whitelist.";
         reason = REASON_WHITELISTED_REFERRER;
@@ -767,8 +760,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
       DownloadProtectionService::GetCertificateWhitelistStrings(
           *cert, *issuer, &whitelist_strings);
       for (size_t j = 0; j < whitelist_strings.size(); ++j) {
-        if (database_manager_->MatchDownloadWhitelistString(
-                whitelist_strings[j])) {
+        if (sb_service_->MatchDownloadWhitelistString(whitelist_strings[j])) {
           VLOG(2) << "Certificate matched whitelist, cert="
                   << cert->subject().GetDisplayName()
                   << " issuer=" << issuer->subject().GetDisplayName();
@@ -786,7 +778,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   // Will be NULL if the request has been canceled.
   DownloadProtectionService* service_;
   scoped_refptr<SignatureUtil> signature_util_;
-  scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
+  scoped_refptr<SafeBrowsingService> sb_service_;
   const bool pingback_enabled_;
   scoped_ptr<net::URLFetcher> fetcher_;
   bool finished_;
@@ -800,16 +792,11 @@ class DownloadProtectionService::CheckClientDownloadRequest
 DownloadProtectionService::DownloadProtectionService(
     SafeBrowsingService* sb_service,
     net::URLRequestContextGetter* request_context_getter)
-    : request_context_getter_(request_context_getter),
+    : sb_service_(sb_service),
+      request_context_getter_(request_context_getter),
       enabled_(false),
       signature_util_(new SignatureUtil()),
-      download_request_timeout_ms_(kDownloadRequestTimeoutMs) {
-
-  if (sb_service) {
-    ui_manager_ = sb_service->ui_manager();
-    database_manager_ = sb_service->database_manager();
-  }
-}
+      download_request_timeout_ms_(kDownloadRequestTimeoutMs) {}
 
 DownloadProtectionService::~DownloadProtectionService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -832,7 +819,7 @@ void DownloadProtectionService::CheckClientDownload(
     const CheckDownloadCallback& callback) {
   scoped_refptr<CheckClientDownloadRequest> request(
       new CheckClientDownloadRequest(info, callback, this,
-                                     database_manager_, signature_util_.get()));
+                                     sb_service_, signature_util_.get()));
   download_requests_.insert(request);
   request->Start();
 }
@@ -842,7 +829,7 @@ void DownloadProtectionService::CheckDownloadUrl(
     const CheckDownloadCallback& callback) {
   DCHECK(!info.download_url_chain.empty());
   scoped_refptr<DownloadUrlSBClient> client(
-      new DownloadUrlSBClient(info, callback, ui_manager_, database_manager_));
+      new DownloadUrlSBClient(info, callback, sb_service_));
   // The client will release itself once it is done.
   BrowserThread::PostTask(
         BrowserThread::IO,

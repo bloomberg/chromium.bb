@@ -13,11 +13,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -44,31 +42,29 @@ const char kEmptyPage[] = "files/empty.html";
 const char kMalwarePage[] = "files/safe_browsing/malware.html";
 const char kMalwareIframe[] = "files/safe_browsing/malware_iframe.html";
 
-// A SafeBrowsingDatabaseManager class that allows us to inject the malicious
-// URLs.
-class FakeSafeBrowsingDatabaseManager :  public SafeBrowsingDatabaseManager {
+// A SafeBrowingService class that allows us to inject the malicious URLs.
+class FakeSafeBrowsingService :  public SafeBrowsingService {
  public:
-  explicit FakeSafeBrowsingDatabaseManager(SafeBrowsingService* service)
-      : SafeBrowsingDatabaseManager(service) { }
+  FakeSafeBrowsingService() {}
 
   // Called on the IO thread to check if the given url is safe or not.  If we
   // can synchronously determine that the url is safe, CheckUrl returns true.
   // Otherwise it returns false, and "client" is called asynchronously with the
   // result when it is ready.
-  // Overrides SafeBrowsingDatabaseManager::CheckBrowseUrl.
+  // Overrides SafeBrowsingService::CheckBrowseUrl.
   virtual bool CheckBrowseUrl(const GURL& gurl, Client* client) {
     if (badurls[gurl.spec()] == SB_THREAT_TYPE_SAFE)
       return true;
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&FakeSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
+        base::Bind(&FakeSafeBrowsingService::OnCheckBrowseURLDone,
                    this, gurl, client));
     return false;
   }
 
   void OnCheckBrowseURLDone(const GURL& gurl, Client* client) {
-    SafeBrowsingDatabaseManager::SafeBrowsingCheck check;
+    SafeBrowsingService::SafeBrowsingCheck check;
     check.urls.push_back(gurl);
     check.client = client;
     check.threat_type = badurls[gurl.spec()];
@@ -79,26 +75,13 @@ class FakeSafeBrowsingDatabaseManager :  public SafeBrowsingDatabaseManager {
     badurls[url.spec()] = threat_type;
   }
 
- private:
-  virtual ~FakeSafeBrowsingDatabaseManager() {}
-
-  base::hash_map<std::string, SBThreatType> badurls;
-  DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingDatabaseManager);
-};
-
-// A SafeBrowingUIManager class that allows intercepting malware details.
-class FakeSafeBrowsingUIManager :  public SafeBrowsingUIManager {
- public:
-  explicit FakeSafeBrowsingUIManager(SafeBrowsingService* service) :
-      SafeBrowsingUIManager(service) { }
-
-  // Overrides SafeBrowsingUIManager
+  // Overrides SafeBrowsingService.
   virtual void SendSerializedMalwareDetails(const std::string& serialized) {
     reports_.push_back(serialized);
     // Notify the UI thread that we got a report.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&FakeSafeBrowsingUIManager::OnMalwareDetailsDone, this));
+        base::Bind(&FakeSafeBrowsingService::OnMalwareDetailsDone, this));
   }
 
   void OnMalwareDetailsDone() {
@@ -111,78 +94,32 @@ class FakeSafeBrowsingUIManager :  public SafeBrowsingUIManager {
     return reports_[0];
   }
 
- protected:
-  virtual ~FakeSafeBrowsingUIManager() { }
-
- private:
   std::vector<std::string> reports_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingUIManager);
-};
-
-class FakeSafeBrowsingService : public SafeBrowsingService {
- public:
-  FakeSafeBrowsingService() { }
-
-  // Returned pointer has the same lifespan as the database_manager_ refcounted
-  // object.
-  FakeSafeBrowsingDatabaseManager* fake_database_manager() {
-    return fake_database_manager_;
-  }
-  // Returned pointer has the same lifespan as the ui_manager_ refcounted
-  // object.
-  FakeSafeBrowsingUIManager* fake_ui_manager() {
-    return fake_ui_manager_;
-  }
-
- protected:
-  virtual ~FakeSafeBrowsingService() { }
-
-  virtual SafeBrowsingDatabaseManager* CreateDatabaseManager() OVERRIDE {
-    fake_database_manager_ = new FakeSafeBrowsingDatabaseManager(this);
-    return fake_database_manager_;
-  }
-
-  virtual SafeBrowsingUIManager* CreateUIManager() OVERRIDE {
-    fake_ui_manager_ = new FakeSafeBrowsingUIManager(this);
-    return fake_ui_manager_;
-  }
-
  private:
-  FakeSafeBrowsingDatabaseManager* fake_database_manager_;
-  FakeSafeBrowsingUIManager* fake_ui_manager_;
+  virtual ~FakeSafeBrowsingService() {}
 
-  DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingService);
+  base::hash_map<std::string, SBThreatType> badurls;
 };
 
 // Factory that creates FakeSafeBrowsingService instances.
 class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
  public:
-  TestSafeBrowsingServiceFactory() :
-      most_recent_service_(NULL) { }
+  TestSafeBrowsingServiceFactory() { }
   virtual ~TestSafeBrowsingServiceFactory() { }
 
-  virtual SafeBrowsingService* CreateSafeBrowsingService() OVERRIDE {
-    most_recent_service_ =  new FakeSafeBrowsingService();
-    return most_recent_service_;
+  virtual SafeBrowsingService* CreateSafeBrowsingService() {
+    return new FakeSafeBrowsingService();
   }
-
-  FakeSafeBrowsingService* most_recent_service() const {
-    return most_recent_service_;
-  }
-
- private:
-  FakeSafeBrowsingService* most_recent_service_;
 };
 
 // A MalwareDetails class lets us intercept calls from the renderer.
 class FakeMalwareDetails : public MalwareDetails {
  public:
-  FakeMalwareDetails(
-      SafeBrowsingUIManager* delegate,
-      WebContents* web_contents,
-      const SafeBrowsingUIManager::UnsafeResource& unsafe_resource)
-      : MalwareDetails(delegate, web_contents, unsafe_resource),
+  FakeMalwareDetails(SafeBrowsingService* sb_service,
+                     WebContents* web_contents,
+                     const SafeBrowsingService::UnsafeResource& unsafe_resource)
+      : MalwareDetails(sb_service, web_contents, unsafe_resource),
         got_dom_(false),
         waiting_(false) { }
 
@@ -233,10 +170,10 @@ class TestMalwareDetailsFactory : public MalwareDetailsFactory {
   virtual ~TestMalwareDetailsFactory() { }
 
   virtual MalwareDetails* CreateMalwareDetails(
-      SafeBrowsingUIManager* delegate,
+      SafeBrowsingService* sb_service,
       WebContents* web_contents,
-      const SafeBrowsingUIManager::UnsafeResource& unsafe_resource) OVERRIDE {
-    details_ = new FakeMalwareDetails(delegate, web_contents,
+      const SafeBrowsingService::UnsafeResource& unsafe_resource) OVERRIDE {
+    details_ = new FakeMalwareDetails(sb_service, web_contents,
                                       unsafe_resource);
     return details_;
   }
@@ -252,10 +189,10 @@ class TestMalwareDetailsFactory : public MalwareDetailsFactory {
 // A SafeBrowingBlockingPage class that lets us wait until it's hidden.
 class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPageV2 {
  public:
-  TestSafeBrowsingBlockingPage(SafeBrowsingUIManager* manager,
+  TestSafeBrowsingBlockingPage(SafeBrowsingService* service,
                                WebContents* web_contents,
                                const UnsafeResourceList& unsafe_resources)
-      : SafeBrowsingBlockingPageV2(manager, web_contents, unsafe_resources),
+      : SafeBrowsingBlockingPageV2(service, web_contents, unsafe_resources),
         wait_for_delete_(false) {
     // Don't wait the whole 3 seconds for the browser test.
     malware_details_proceed_delay_ms_ = 100;
@@ -286,11 +223,11 @@ class TestSafeBrowsingBlockingPageFactory
   ~TestSafeBrowsingBlockingPageFactory() { }
 
   virtual SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
-      SafeBrowsingUIManager* delegate,
+      SafeBrowsingService* service,
       WebContents* web_contents,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
           OVERRIDE {
-    return new TestSafeBrowsingBlockingPage(delegate, web_contents,
+    return new TestSafeBrowsingBlockingPage(service, web_contents,
                                             unsafe_resources);
   }
 };
@@ -333,7 +270,7 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
             g_browser_process->safe_browsing_service());
 
     ASSERT_TRUE(service);
-    service->fake_database_manager()->SetURLThreatType(url, threat_type);
+    service->SetURLThreatType(url, threat_type);
   }
 
   // Adds a safebrowsing result of type |threat_type| to the fake safebrowsing
@@ -427,8 +364,11 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
     // When a report is scheduled in the IO thread we should get notified.
     content::RunMessageLoop();
 
-    std::string serialized = factory_.most_recent_service()->
-        fake_ui_manager()->GetReport();
+    FakeSafeBrowsingService* service =
+        static_cast<FakeSafeBrowsingService*>(
+            g_browser_process->safe_browsing_service());
+
+    std::string serialized = service->GetReport();
 
     safe_browsing::ClientMalwareReportRequest report;
     ASSERT_TRUE(report.ParseFromString(serialized));

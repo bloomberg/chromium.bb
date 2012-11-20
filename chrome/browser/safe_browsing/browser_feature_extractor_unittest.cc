@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/browser_features.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -501,8 +500,7 @@ TEST_F(BrowserFeatureExtractorTest, SafeBrowsingFeatures) {
   request.set_url("http://www.foo.com/malware.html");
   request.set_client_score(0.5);
 
-  browse_info_->unsafe_resource.reset(
-      new SafeBrowsingUIManager::UnsafeResource);
+  browse_info_->unsafe_resource.reset(new SafeBrowsingService::UnsafeResource);
   browse_info_->unsafe_resource->url = GURL("http://www.malware.com/");
   browse_info_->unsafe_resource->original_url = GURL("http://www.good.com/");
   browse_info_->unsafe_resource->is_subresource = true;

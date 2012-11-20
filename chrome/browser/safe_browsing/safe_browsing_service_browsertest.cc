@@ -22,12 +22,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
-#include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -293,12 +291,12 @@ class TestSBProtocolManagerFactory : public SBProtocolManagerFactory {
   TestProtocolManager* pm_;
 };
 
-class MockObserver : public SafeBrowsingUIManager::Observer {
+class MockObserver : public SafeBrowsingService::Observer {
  public:
   MockObserver() {}
   virtual ~MockObserver() {}
   MOCK_METHOD1(OnSafeBrowsingHit,
-               void(const SafeBrowsingUIManager::UnsafeResource&));
+               void(const SafeBrowsingService::UnsafeResource&));
 };
 
 MATCHER_P(IsUnsafeResourceFor, url, "") {
@@ -402,19 +400,19 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
   int64 DownloadUrlCheckTimeout(SafeBrowsingService* sb_service) {
-    return sb_service->database_manager()->download_urlcheck_timeout_ms_;
+    return sb_service->download_urlcheck_timeout_ms_;
   }
 
   int64 DownloadHashCheckTimeout(SafeBrowsingService* sb_service) {
-    return sb_service->database_manager()->download_hashcheck_timeout_ms_;
+    return sb_service->download_hashcheck_timeout_ms_;
   }
 
   void SetDownloadUrlCheckTimeout(SafeBrowsingService* sb_service, int64 ms) {
-    sb_service->database_manager()->download_urlcheck_timeout_ms_ = ms;
+    sb_service->download_urlcheck_timeout_ms_ = ms;
   }
 
   void SetDownloadHashCheckTimeout(SafeBrowsingService* sb_service, int64 ms) {
-    sb_service->database_manager()->download_hashcheck_timeout_ms_ = ms;
+    sb_service->download_hashcheck_timeout_ms_ = ms;
   }
 
   void CreateCSDService() {
@@ -461,8 +459,7 @@ const char kMalwarePage[] = "files/safe_browsing/malware.html";
 // This test goes through DownloadResourceHandler.
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Malware) {
   GURL url = test_server()->GetURL(kEmptyPage);
-  g_browser_process->safe_browsing_service()->
-      ui_manager()->AddObserver(&observer_);
+  g_browser_process->safe_browsing_service()->AddObserver(&observer_);
 
   // After adding the url to safebrowsing database and getfullhash result,
   // we should see the interstitial page.
@@ -474,8 +471,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Malware) {
   SetupResponseForUrl(url, malware_full_hash);
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(ShowingInterstitialPage());
-  g_browser_process->safe_browsing_service()->
-      ui_manager()->RemoveObserver(&observer_);
+  g_browser_process->safe_browsing_service()->RemoveObserver(&observer_);
 }
 
 const char kPrefetchMalwarePage[] = "files/safe_browsing/prefetch_malware.html";
@@ -485,8 +481,7 @@ const char kPrefetchMalwarePage[] = "files/safe_browsing/prefetch_malware.html";
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Prefetch) {
   GURL url = test_server()->GetURL(kPrefetchMalwarePage);
   GURL malware_url = test_server()->GetURL(kMalwarePage);
-  g_browser_process->safe_browsing_service()->
-      ui_manager()->AddObserver(&observer_);
+  g_browser_process->safe_browsing_service()->AddObserver(&observer_);
 
   class SetPrefetchForTest {
    public:
@@ -526,15 +521,14 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Prefetch) {
   ui_test_utils::NavigateToURL(browser(), malware_url);
   EXPECT_TRUE(ShowingInterstitialPage());
   Mock::VerifyAndClear(&observer_);
-  g_browser_process->safe_browsing_service()->
-      ui_manager()->RemoveObserver(&observer_);
+  g_browser_process->safe_browsing_service()->RemoveObserver(&observer_);
 }
 
 }  // namespace
 
 class TestSBClient
     : public base::RefCountedThreadSafe<TestSBClient>,
-      public SafeBrowsingDatabaseManager::Client {
+      public SafeBrowsingService::Client {
  public:
   TestSBClient()
     : threat_type_(SB_THREAT_TYPE_SAFE),
@@ -566,13 +560,11 @@ class TestSBClient
   virtual ~TestSBClient() {}
 
   void CheckDownloadUrlOnIOThread(const std::vector<GURL>& url_chain) {
-    safe_browsing_service_->database_manager()->
-        CheckDownloadUrl(url_chain, this);
+    safe_browsing_service_->CheckDownloadUrl(url_chain, this);
   }
 
   void CheckDownloadHashOnIOThread(const std::string& full_hash) {
-    safe_browsing_service_->database_manager()->
-        CheckDownloadHash(full_hash, this);
+    safe_browsing_service_->CheckDownloadHash(full_hash, this);
   }
 
   // Called when the result of checking a download URL is known.
@@ -875,9 +867,9 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceShutdownTest,
   // delete_count again.
 }
 
-class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
+class SafeBrowsingServiceCookieTest : public InProcessBrowserTest {
  public:
-  SafeBrowsingDatabaseManagerCookieTest() {}
+  SafeBrowsingServiceCookieTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
     // We need to start the test server to get the host&port in the url.
@@ -970,26 +962,24 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
   }
 
   void ForceUpdate() {
-    sb_service_->protocol_manager()->ForceScheduleNextUpdate(
+    sb_service_->protocol_manager_->ForceScheduleNextUpdate(
         base::TimeDelta::FromSeconds(0));
   }
 
   scoped_refptr<SafeBrowsingService> sb_service_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseManagerCookieTest);
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceCookieTest);
 };
 
 // Test that a Safe Browsing database update request both sends cookies and can
 // save cookies.
-IN_PROC_BROWSER_TEST_F(SafeBrowsingDatabaseManagerCookieTest,
-                       TestSBUpdateCookies) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceCookieTest, TestSBUpdateCookies) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
-      content::Source<SafeBrowsingDatabaseManager>(
-          sb_service_->database_manager()));
+      content::Source<SafeBrowsingService>(sb_service_.get()));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingDatabaseManagerCookieTest::ForceUpdate, this));
+      base::Bind(&SafeBrowsingServiceCookieTest::ForceUpdate, this));
   observer.Wait();
 }

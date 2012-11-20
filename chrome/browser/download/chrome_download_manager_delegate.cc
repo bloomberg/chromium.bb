@@ -34,7 +34,6 @@
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -478,8 +477,7 @@ void ChromeDownloadManagerDelegate::OpenWithWebIntent(
 bool ChromeDownloadManagerDelegate::GenerateFileHash() {
 #if defined(ENABLE_SAFE_BROWSING)
   return profile_->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled) &&
-      g_browser_process->safe_browsing_service()->
-          database_manager()->DownloadBinHashNeeded();
+      g_browser_process->safe_browsing_service()->DownloadBinHashNeeded();
 #else
   return false;
 #endif

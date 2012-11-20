@@ -32,7 +32,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/local_safebrowsing_test_server.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -136,7 +135,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
   void ForceUpdate() {
     content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
-        content::Source<SafeBrowsingDatabaseManager>(database_manager()));
+        content::Source<SafeBrowsingService>(safe_browsing_service_));
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         base::Bind(&SafeBrowsingServerTest::ForceUpdateOnIOThread,
                    this));
@@ -152,13 +151,14 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
 
   void CheckIsDatabaseReady() {
     base::AutoLock lock(update_status_mutex_);
-    is_database_ready_ = !database_manager()->database_update_in_progress_;
+    is_database_ready_ =
+        !safe_browsing_service_->database_update_in_progress_;
   }
 
-  void CheckUrl(SafeBrowsingDatabaseManager::Client* helper, const GURL& url) {
+  void CheckUrl(SafeBrowsingService::Client* helper, const GURL& url) {
     ASSERT_TRUE(safe_browsing_service_);
     base::AutoLock lock(update_status_mutex_);
-    if (database_manager()->CheckBrowseUrl(url, helper)) {
+    if (safe_browsing_service_->CheckBrowseUrl(url, helper)) {
       is_checked_url_in_db_ = false;
       is_checked_url_safe_ = true;
     } else {
@@ -167,10 +167,6 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
       // set_is_checked_url_safe() will be called via callback.
       is_checked_url_in_db_ = true;
     }
-  }
-
-  SafeBrowsingDatabaseManager* database_manager() {
-    return safe_browsing_service_->database_manager();
   }
 
   bool is_checked_url_in_db() {
@@ -204,7 +200,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
   }
 
   MessageLoop* SafeBrowsingMessageLoop() {
-    return database_manager()->safe_browsing_thread_->message_loop();
+    return safe_browsing_service_->safe_browsing_thread_->message_loop();
   }
 
   const net::TestServer& test_server() const {
@@ -283,7 +279,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
 // thread.
 class SafeBrowsingServerTestHelper
     : public base::RefCountedThreadSafe<SafeBrowsingServerTestHelper>,
-      public SafeBrowsingDatabaseManager::Client,
+      public SafeBrowsingService::Client,
       public net::URLFetcherDelegate {
  public:
   SafeBrowsingServerTestHelper(SafeBrowsingServerTest* safe_browsing_test,
@@ -293,7 +289,7 @@ class SafeBrowsingServerTestHelper
         request_context_(request_context) {
   }
 
-  // Callbacks for SafeBrowsingDatabaseManager::Client.
+  // Callbacks for SafeBrowsingService::Client.
   virtual void OnCheckBrowseUrlResult(const GURL& url,
                                       SBThreatType threat_type) OVERRIDE {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
