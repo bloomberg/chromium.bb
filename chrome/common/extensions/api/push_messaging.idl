@@ -5,7 +5,8 @@
 namespace pushMessaging{
 
   dictionary Message {
-    // The subchannel the message was sent on.
+    // The subchannel the message was sent on;
+    // only values 0-3 are valid.
     long subchannelId;
 
     // The payload associated with the message, if any.
