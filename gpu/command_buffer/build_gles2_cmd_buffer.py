@@ -2721,6 +2721,10 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                 func.MakeOriginalArgString("")))
     file.Write("}\n")
 
+  def WriteGLES2Header(self, func, file):
+    """Writes a re-write macro for GLES"""
+    file.Write("#define gl%s GLES2_GET_FUN(%s)\n" %(func.name, func.name))
+
   def WriteClientGLCallLog(self, func, file):
     """Writes a logging macro for the client side code."""
     comma = ""
@@ -6127,6 +6131,10 @@ class Function(object):
     """Writes the GLES2 Implemention definition."""
     self.type_handler.WriteGLES2Implementation(self, file)
 
+  def WriteGLES2Header(self, file):
+    """Writes the GLES2 Implemention unit test."""
+    self.type_handler.WriteGLES2Header(self, file)
+
   def WriteGLES2ImplementationUnitTest(self, file):
     """Writes the GLES2 Implemention unit test."""
     self.type_handler.WriteGLES2ImplementationUnitTest(self, file)
@@ -6895,6 +6903,27 @@ void GLES2DecoderTestBase::SetupInitStateExpectations() {
 """)
     file.Close()
 
+  def WriteGLES2Header(self, filename):
+    """Writes the GLES2 header."""
+    file = CHeaderWriter(
+        filename,
+        "// Because we are using both the real system GL and our own.\n"
+        "// emulated GL we need to use different names to avoid conflicts.\n"
+        "\n")
+
+    file.Write("""#if defined(GLES2_USE_CPP_BINDINGS)
+#define GLES2_GET_FUN(name) gles2::GetGLContext()->name
+#else
+#define GLES2_GET_FUN(name) GLES2 ## name
+#endif
+
+""")
+
+    for func in self.original_functions:
+      func.WriteGLES2Header(file)
+
+    file.Write("\n")
+    file.Close()
 
   def WriteGLES2CLibImplementation(self, filename):
     """Writes the GLES2 c lib implementation."""
@@ -6912,7 +6941,7 @@ NameToFunc g_gles2_function_table[] = {
 """)
     for func in self.original_functions:
       file.Write(
-          '  { "gl%s", reinterpret_cast<GLES2FunctionPointer>(GLES2%s), },\n' %
+          '  { "gl%s", reinterpret_cast<GLES2FunctionPointer>(gl%s), },\n' %
           (func.name, func.name))
     file.Write("""  { NULL, NULL, },
 };
@@ -7044,7 +7073,7 @@ NameToFunc g_gles2_function_table[] = {
         if m:
           name = m.group(1)
           value = m.group(2)
-          if not value in dict:
+          if len(value) <= 10 and not value in dict:
             dict[value] = name
 
     file = CHeaderWriter(filename)
@@ -7374,6 +7403,7 @@ def main(argv):
         "service/gles2_cmd_validation_implementation_autogen.h")
     gen.WriteCommonUtilsHeader("common/gles2_cmd_utils_autogen.h")
     gen.WriteCommonUtilsImpl("common/gles2_cmd_utils_implementation_autogen.h")
+    gen.WriteGLES2Header("../../third_party/khronos/GLES2/gl2chromium.h")
 
   if gen.errors > 0:
     print "%d errors" % gen.errors
