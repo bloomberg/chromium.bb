@@ -214,6 +214,7 @@ const char kSoftwareScreenDimmingRequestedSignal[] =
 const char kSetScreenPowerSignal[] = "SetScreenPowerSignal";
 // Signals emitted by powerm.
 const char kInputEventSignal[] = "InputEvent";
+const char kSuspendStateChangedSignal[] = "SuspendStateChanged";
 // Values
 const char kPowerButtonName[] = "power";
 const char kLockButtonName[] = "lock";
