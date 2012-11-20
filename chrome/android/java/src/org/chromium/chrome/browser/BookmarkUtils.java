@@ -21,7 +21,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
-import org.chromium.content.app.AppResource;
+import org.chromium.chrome.R;
 
 /**
  * Util class for bookmarks.
@@ -92,9 +92,7 @@ public class BookmarkUtils {
             Canvas canvas = new Canvas(bitmap);
             Rect iconBounds = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
             if (favicon == null) {
-                assert AppResource.DRAWABLE_ICON_DEFAULT_FAVICON != 0;
-                favicon = getBitmapFromResourceId(context,
-                        AppResource.DRAWABLE_ICON_DEFAULT_FAVICON, iconDensity);
+                favicon = getBitmapFromResourceId(context, R.drawable.globe_favicon, iconDensity);
                 rValue = gValue = bValue = DEFAULT_RGB_VALUE;
             }
             Bitmap icon = getIconBackground(context, iconDensity);
@@ -115,9 +113,7 @@ public class BookmarkUtils {
      * @return Bitmap favicon background asset.
      */
     private static Bitmap getIconBackground(Context context, int density) {
-        assert AppResource.MIPMAP_BOOKMARK_SHORTCUT_BACKGROUND != 0;
-        return getBitmapFromResourceId(context, AppResource.MIPMAP_BOOKMARK_SHORTCUT_BACKGROUND,
-                density);
+        return getBitmapFromResourceId(context, R.mipmap.homescreen_bg, density);
     }
 
     private static Bitmap getBitmapFromResourceId(Context context, int id, int density) {
@@ -147,34 +143,20 @@ public class BookmarkUtils {
      */
     private static void drawFaviconToCanvas(Context context, Bitmap favicon,
             Canvas canvas, Rect iconBounds, int rValue, int gValue, int bValue) {
-        assert AppResource.DIMENSION_FAVICON_SIZE != 0;
-        assert AppResource.DIMENSION_FAVICON_COLORSTRIP_CORNER_RADII != 0;
-        assert AppResource.DIMENSION_FAVICON_COLORSTRIP_HEIGHT != 0;
-        assert AppResource.DIMENSION_FAVICON_COLORSTRIP_PADDING != 0;
-        assert AppResource.DIMENSION_FAVICON_COLORSTRIP_WIDTH != 0;
-        assert AppResource.DIMENSION_FAVICON_FOLD_BORDER != 0;
-        assert AppResource.DIMENSION_FAVICON_FOLD_CORNER_RADII != 0;
-        assert AppResource.DIMENSION_FAVICON_FOLD_SHADOW != 0;
-        assert AppResource.DIMENSION_FAVICON_FOLD_SIZE != 0;
-
         int colorStripWidth = context.getResources().getDimensionPixelSize(
-                AppResource.DIMENSION_FAVICON_COLORSTRIP_WIDTH);
+                R.dimen.favicon_colorstrip_width);
         int colorStripHeight = context.getResources().getDimensionPixelSize(
-                AppResource.DIMENSION_FAVICON_COLORSTRIP_HEIGHT);
+                R.dimen.favicon_colorstrip_height);
         int colorStripPadding = context.getResources().getDimensionPixelSize(
-                AppResource.DIMENSION_FAVICON_COLORSTRIP_PADDING);
+                R.dimen.favicon_colorstrip_padding);
         int colorStripCornerRadii = context.getResources().getDimensionPixelSize(
-                AppResource.DIMENSION_FAVICON_COLORSTRIP_CORNER_RADII);
-        int foldSize = context.getResources().getDimensionPixelSize(
-                AppResource.DIMENSION_FAVICON_FOLD_SIZE);
+                R.dimen.favicon_colorstrip_corner_radii);
+        int foldSize = context.getResources().getDimensionPixelSize(R.dimen.favicon_fold_size);
         int foldCornerRadii = context.getResources().getDimensionPixelSize(
-                AppResource.DIMENSION_FAVICON_FOLD_CORNER_RADII);
-        int foldBorder = context.getResources().getDimensionPixelSize(
-                AppResource.DIMENSION_FAVICON_FOLD_BORDER);
-        int foldShadow = context.getResources().getDimensionPixelSize(
-                AppResource.DIMENSION_FAVICON_FOLD_SHADOW);
-        int faviconSize = context.getResources().getDimensionPixelSize(
-                AppResource.DIMENSION_FAVICON_SIZE);
+                R.dimen.favicon_fold_corner_radii);
+        int foldBorder = context.getResources().getDimensionPixelSize(R.dimen.favicon_fold_border);
+        int foldShadow = context.getResources().getDimensionPixelSize(R.dimen.favicon_fold_shadow);
+        int faviconSize = context.getResources().getDimensionPixelSize(R.dimen.favicon_size);
 
         float x1 = iconBounds.exactCenterX() - (colorStripWidth / 2.0f);
         float x2 = x1 + colorStripWidth;

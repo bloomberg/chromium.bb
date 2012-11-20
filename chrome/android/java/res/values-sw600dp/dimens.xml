@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2012 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<resources>
+    <!-- Favicon dimensions. Used to create bookmark shortcut images. -->
+    <dimen name="favicon_size">21dp</dimen>
+    <dimen name="favicon_colorstrip_width">43dp</dimen>
+    <dimen name="favicon_colorstrip_height">3dp</dimen>
+    <dimen name="favicon_colorstrip_padding">8dp</dimen>
+    <dimen name="favicon_colorstrip_corner_radii">1dp</dimen>
+    <dimen name="favicon_fold_size">10dp</dimen>
+    <dimen name="favicon_fold_corner_radii">1dp</dimen>
+    <dimen name="favicon_fold_shadow">3dp</dimen>
+</resources>

@@ -13,8 +13,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import org.chromium.content.app.AppResource;
 import org.chromium.content.browser.MonthPicker.OnMonthChangedListener;
+import org.chromium.content.R;
 
 public class MonthPickerDialog extends AlertDialog implements OnClickListener,
         OnMonthChangedListener {
@@ -68,23 +68,18 @@ public class MonthPickerDialog extends AlertDialog implements OnClickListener,
 
         mCallBack = callBack;
 
-        assert AppResource.STRING_DATE_PICKER_DIALOG_SET != 0;
-        assert AppResource.STRING_MONTH_PICKER_DIALOG_TITLE != 0;
-        assert AppResource.LAYOUT_MONTH_PICKER_DIALOG != 0;
-        assert AppResource.ID_DATE_PICKER != 0;
-
         setButton(BUTTON_POSITIVE, context.getText(
-                AppResource.STRING_DATE_PICKER_DIALOG_SET), this);
+                R.string.date_picker_dialog_set), this);
         setButton(BUTTON_NEGATIVE, context.getText(android.R.string.cancel),
                 (OnClickListener) null);
         setIcon(0);
-        setTitle(AppResource.STRING_MONTH_PICKER_DIALOG_TITLE);
+        setTitle(R.string.month_picker_dialog_title);
 
         LayoutInflater inflater =
                 (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View view = inflater.inflate(AppResource.LAYOUT_MONTH_PICKER_DIALOG, null);
+        View view = inflater.inflate(R.layout.month_picker_dialog, null);
         setView(view);
-        mMonthPicker = (MonthPicker) view.findViewById(AppResource.ID_DATE_PICKER);
+        mMonthPicker = (MonthPicker) view.findViewById(R.id.date_picker);
         mMonthPicker.init(year, monthOfYear, this);
     }
 

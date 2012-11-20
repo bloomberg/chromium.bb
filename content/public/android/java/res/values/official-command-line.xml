@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2012 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<resources>
+  <string-array name="official_command_line">
+  <!-- Note: this value will be overridden by the identically named resource (if
+       one exists) in the apk that is being built. -->
+  <!-- Format: double-dashed command-line flags within <item></item> blocks. -->
+  </string-array>
+</resources>

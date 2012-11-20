@@ -16,7 +16,7 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import org.chromium.content.app.AppResource;
+import org.chromium.content.R;
 
 /**
  * An ActionMode.Callback for in-page selection. This class handles both the editable and
@@ -155,20 +155,15 @@ public class SelectActionModeCallback implements ActionMode.Callback {
 
         if (!mEditable) {
             if (isShareHandlerAvailable()) {
-                assert AppResource.STRING_ACTION_BAR_SHARE != 0;
-                assert AppResource.DRAWABLE_ICON_ACTION_BAR_SHARE != 0;
-                menu.add(Menu.NONE, ID_SHARE, Menu.NONE, AppResource.STRING_ACTION_BAR_SHARE).
-                    setIcon(AppResource.DRAWABLE_ICON_ACTION_BAR_SHARE).
+                menu.add(Menu.NONE, ID_SHARE, Menu.NONE, R.string.actionbar_share).
+                    setIcon(R.drawable.ic_menu_share_holo_light).
                     setShowAsAction(
                             MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
             }
 
             if (!mIncognito && isWebSearchAvailable()) {
-                assert AppResource.STRING_ACTION_BAR_WEB_SEARCH != 0;
-                assert AppResource.DRAWABLE_ICON_ACTION_BAR_WEB_SEARCH != 0;
-                menu.add(Menu.NONE, ID_SEARCH, Menu.NONE,
-                        AppResource.STRING_ACTION_BAR_WEB_SEARCH).
-                    setIcon(AppResource.DRAWABLE_ICON_ACTION_BAR_WEB_SEARCH).
+                menu.add(Menu.NONE, ID_SEARCH, Menu.NONE, R.string.actionbar_web_search).
+                    setIcon(R.drawable.ic_menu_search_holo_light).
                     setShowAsAction(
                             MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
             }
@@ -200,9 +195,8 @@ public class SelectActionModeCallback implements ActionMode.Callback {
                     send.setType("text/plain");
                     send.putExtra(Intent.EXTRA_TEXT, selection);
                     try {
-                        assert AppResource.STRING_ACTION_BAR_SHARE != 0;
                         Intent i = Intent.createChooser(send, getContext().getString(
-                                AppResource.STRING_ACTION_BAR_SHARE));
+                                R.string.actionbar_share));
                         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         getContext().startActivity(i);
                     } catch (android.content.ActivityNotFoundException ex) {

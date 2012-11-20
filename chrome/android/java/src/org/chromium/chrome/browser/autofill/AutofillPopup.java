@@ -21,7 +21,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import org.chromium.content.app.AppResource;
+import org.chromium.chrome.R;
 import org.chromium.content.browser.ContainerViewDelegate;
 import org.chromium.ui.gfx.NativeWindow;
 
@@ -170,10 +170,10 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
             LayoutInflater inflater =
                     (LayoutInflater) mNativeWindow.getContext().getSystemService(
                             Context.LAYOUT_INFLATER_SERVICE);
-            View layout = inflater.inflate(AppResource.LAYOUT_AUTOFILL_TEXT, null);
-            TextView nameView = (TextView) layout.findViewById(AppResource.ID_AUTOFILL_NAME);
+            View layout = inflater.inflate(R.layout.autofill_text, null);
+            TextView nameView = (TextView) layout.findViewById(R.id.autofill_name);
             mNameViewPaint = nameView.getPaint();
-            TextView labelView = (TextView) layout.findViewById(AppResource.ID_AUTOFILL_LABEL);
+            TextView labelView = (TextView) layout.findViewById(R.id.autofill_label);
             mLabelViewPaint = labelView.getPaint();
         }
 

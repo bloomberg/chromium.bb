@@ -24,7 +24,7 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import org.chromium.content.app.AppResource;
+import org.chromium.content.R;
 
 // This class is heavily based on android.widget.DatePicker.
 public class MonthPicker extends FrameLayout {
@@ -94,8 +94,7 @@ public class MonthPicker extends FrameLayout {
 
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        assert AppResource.LAYOUT_MONTH_PICKER != 0;
-        inflater.inflate(AppResource.LAYOUT_MONTH_PICKER, this, true);
+        inflater.inflate(R.layout.month_picker, this, true);
 
         OnValueChangeListener onChangeListener = new OnValueChangeListener() {
             public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
@@ -121,12 +120,10 @@ public class MonthPicker extends FrameLayout {
             }
         };
 
-        assert AppResource.ID_MONTH_YEAR_PICKERS_CONTAINER != 0;
-        mSpinners = (LinearLayout) findViewById(AppResource.ID_MONTH_YEAR_PICKERS_CONTAINER);
+        mSpinners = (LinearLayout) findViewById(R.id.pickers);
 
         // month
-        assert AppResource.ID_MONTH_PICKER != 0;
-        mMonthSpinner = (NumberPicker) findViewById(AppResource.ID_MONTH_PICKER);
+        mMonthSpinner = (NumberPicker) findViewById(R.id.month);
         mMonthSpinner.setMinValue(0);
         mMonthSpinner.setMaxValue(mNumberOfMonths - 1);
         mMonthSpinner.setDisplayedValues(mShortMonths);
@@ -134,8 +131,7 @@ public class MonthPicker extends FrameLayout {
         mMonthSpinner.setOnValueChangedListener(onChangeListener);
 
         // year
-        assert AppResource.ID_YEAR_PICKER != 0;
-        mYearSpinner = (NumberPicker) findViewById(AppResource.ID_YEAR_PICKER);
+        mYearSpinner = (NumberPicker) findViewById(R.id.year);
         mYearSpinner.setOnLongPressUpdateInterval(100);
         mYearSpinner.setOnValueChangedListener(onChangeListener);
 

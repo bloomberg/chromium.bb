@@ -13,10 +13,10 @@ import android.view.WindowManager;
 import android.view.Display;
 
 import org.chromium.base.JNINamespace;
-import org.chromium.content.app.AppResource;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.common.CommandLine;
+import org.chromium.content.R;
 
 // NOTE: This file hasn't been fully upstreamed, please don't merge to downstream.
 @JNINamespace("content")
@@ -118,7 +118,7 @@ public class AndroidBrowserProcess {
                     CommandLine.getInstance().hasSwitch(CommandLine.ADD_OFFICIAL_COMMAND_LINE)) {
                 Resources res = context.getResources();
                 try {
-                    String[] switches = res.getStringArray(AppResource.ARRAY_OFFICIAL_COMMAND_LINE);
+                    String[] switches = res.getStringArray(R.array.official_command_line);
                     CommandLine.getInstance().appendSwitchesAndArguments(switches);
                 } catch (Resources.NotFoundException e) {
                     // Do nothing.  It is fine to have no command line

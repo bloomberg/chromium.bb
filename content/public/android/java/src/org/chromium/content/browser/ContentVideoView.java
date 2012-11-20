@@ -33,8 +33,8 @@ import java.lang.ref.WeakReference;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content.app.AppResource;
 import org.chromium.content.common.ISandboxedProcessService;
+import org.chromium.content.R;
 
 @JNINamespace("content")
 public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
@@ -201,12 +201,12 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
         if (mPlaybackErrorText != null) return;
 
         mPlaybackErrorText = context.getString(
-                AppResource.STRING_MEDIA_PLAYER_MESSAGE_PLAYBACK_ERROR);
+                R.string.media_player_error_text_invalid_progressive_playback);
         mUnknownErrorText = context.getString(
-                AppResource.STRING_MEDIA_PLAYER_MESSAGE_UNKNOWN_ERROR);
-        mErrorButton = context.getString(AppResource.STRING_MEDIA_PLAYER_ERROR_BUTTON);
-        mErrorTitle = context.getString(AppResource.STRING_MEDIA_PLAYER_ERROR_TITLE);
-        mVideoLoadingText = context.getString(AppResource.STRING_MEDIA_PLAYER_LOADING_VIDEO);
+                R.string.media_player_error_text_unknown);
+        mErrorButton = context.getString(R.string.media_player_error_button);
+        mErrorTitle = context.getString(R.string.media_player_error_title);
+        mVideoLoadingText = context.getString(R.string.media_player_loading_video);
     }
 
     void showContentVideoView() {

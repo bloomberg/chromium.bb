@@ -17,7 +17,7 @@ import android.widget.TimePicker;
 import android.widget.DatePicker.OnDateChangedListener;
 import android.widget.TimePicker.OnTimeChangedListener;
 
-import org.chromium.content.app.AppResource;
+import org.chromium.content.R;
 
 class DateTimePickerDialog extends AlertDialog implements OnClickListener,
         OnDateChangedListener, OnTimeChangedListener {
@@ -88,27 +88,21 @@ class DateTimePickerDialog extends AlertDialog implements OnClickListener,
 
         mCallBack = callBack;
 
-        assert AppResource.STRING_DATE_PICKER_DIALOG_SET != 0;
-        assert AppResource.STRING_DATE_TIME_PICKER_DIALOG_TITLE != 0;
-        assert AppResource.LAYOUT_DATE_TIME_PICKER_DIALOG != 0;
-        assert AppResource.ID_DATE_PICKER != 0;
-        assert AppResource.ID_TIME_PICKER != 0;
-
         setButton(BUTTON_POSITIVE, context.getText(
-                AppResource.STRING_DATE_PICKER_DIALOG_SET), this);
+                R.string.date_picker_dialog_set), this);
         setButton(BUTTON_NEGATIVE, context.getText(android.R.string.cancel),
                 (OnClickListener) null);
         setIcon(0);
-        setTitle(context.getText(AppResource.STRING_DATE_TIME_PICKER_DIALOG_TITLE));
+        setTitle(context.getText(R.string.date_time_picker_dialog_title));
 
         LayoutInflater inflater =
                 (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View view = inflater.inflate(AppResource.LAYOUT_DATE_TIME_PICKER_DIALOG, null);
+        View view = inflater.inflate(R.layout.date_time_picker_dialog, null);
         setView(view);
-        mDatePicker = (DatePicker) view.findViewById(AppResource.ID_DATE_PICKER);
+        mDatePicker = (DatePicker) view.findViewById(R.id.date_picker);
         mDatePicker.init(year, monthOfYear, dayOfMonth, this);
 
-        mTimePicker = (TimePicker) view.findViewById(AppResource.ID_TIME_PICKER);
+        mTimePicker = (TimePicker) view.findViewById(R.id.time_picker);
         mTimePicker.setIs24HourView(is24HourView);
         mTimePicker.setCurrentHour(hourOfDay);
         mTimePicker.setCurrentMinute(minute);

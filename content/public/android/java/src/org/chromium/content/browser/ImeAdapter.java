@@ -20,7 +20,6 @@ import android.view.inputmethod.InputMethodManager;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content.app.AppResource;
 
 // We have to adapt and plumb android IME service and chrome text input API.
 // ImeAdapter provides an interface in both ways native <-> java:

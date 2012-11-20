@@ -27,8 +27,8 @@ import org.chromium.ui.gfx.NativeWindow;
  */
 @JNINamespace("ui")
 class SelectFileDialog implements NativeWindow.IntentCallback{
-    // TODO (aurimas): Swap these constants with AppResources when it gets moved to base to support
-    //                 internationalization.
+    // TODO (aurimas): Move these constants into strings.xml within ui (after crbug.com/136704 is
+    //                 fixed) to support internationalization.
     private static final String LOW_MEMORY_ERROR =
             "Unable to complete previous operation due to low memory";
     private static final String OPENING_FILE_ERROR = "Failed to open selected file";

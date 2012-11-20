@@ -16,7 +16,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.content.app.AppResource;
+import org.chromium.chrome.R;
 import org.chromium.ui.gfx.NativeWindow;
 
 public class JavascriptAppModalDialog {
@@ -71,9 +71,7 @@ public class JavascriptAppModalDialog {
         LayoutInflater inflater =
                 (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        assert AppResource.LAYOUT_JS_MODAL_DIALOG != 0;
-        ViewGroup dialogLayout = (ViewGroup) inflater.inflate(AppResource.LAYOUT_JS_MODAL_DIALOG,
-                null);
+        ViewGroup dialogLayout = (ViewGroup) inflater.inflate(R.layout.js_modal_dialog, null);
 
         prepare(dialogLayout);
 
@@ -97,31 +95,21 @@ public class JavascriptAppModalDialog {
 
     void prepare(final ViewGroup layout) {
         // Set the title and message.
-        assert AppResource.ID_JS_MODAL_DIALOG_TEXT_TITLE != 0;
-        assert AppResource.ID_JS_MODAL_DIALOG_TEXT_MESSAGE != 0;
-
-        TextView titleView = (TextView) layout.findViewById(
-                AppResource.ID_JS_MODAL_DIALOG_TEXT_TITLE);
-        TextView messageView = (TextView) layout.findViewById(
-                AppResource.ID_JS_MODAL_DIALOG_TEXT_MESSAGE);
+        TextView titleView = (TextView) layout.findViewById(R.id.js_modal_dialog_title);
+        TextView messageView = (TextView) layout.findViewById(R.id.js_modal_dialog_message);
         titleView.setText(mTitle);
         messageView.setText(mMessage);
 
         // Setup the OK button.
-        assert AppResource.ID_JS_MODAL_DIALOG_BUTTON_CONFIRM != 0;
-        assert AppResource.ID_JS_MODAL_DIALOG_CHECKBOX_SUPPRESS_DIALOGS != 0;
-
-        Button okButton = (Button) layout.findViewById(
-                AppResource.ID_JS_MODAL_DIALOG_BUTTON_CONFIRM);
+        Button okButton = (Button) layout.findViewById(R.id.js_modal_dialog_button_confirm);
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 boolean suppress = ((CheckBox) layout.findViewById(
-                        AppResource.ID_JS_MODAL_DIALOG_CHECKBOX_SUPPRESS_DIALOGS)).isChecked();
+                        R.id.suppress_js_modal_dialogs)).isChecked();
 
-                assert AppResource.ID_JS_MODAL_DIALOG_TEXT_PROMPT != 0;
                 String prompt = ((TextView) layout.findViewById(
-                        AppResource.ID_JS_MODAL_DIALOG_TEXT_PROMPT)).getText().toString();
+                        R.id.js_modal_dialog_prompt)).getText().toString();
 
                 confirm(prompt, suppress);
                 mDialog.dismiss();
@@ -129,22 +117,19 @@ public class JavascriptAppModalDialog {
         });
 
         // Setup the Cancel button.
-        assert AppResource.ID_JS_MODAL_DIALOG_BUTTON_CANCEL != 0;
-
-        Button cancelButton = (Button) layout.findViewById(
-                AppResource.ID_JS_MODAL_DIALOG_BUTTON_CANCEL);
+        Button cancelButton = (Button) layout.findViewById(R.id.js_modal_dialog_button_cancel);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 boolean suppress = ((CheckBox) layout.findViewById(
-                        AppResource.ID_JS_MODAL_DIALOG_CHECKBOX_SUPPRESS_DIALOGS)).isChecked();
+                        R.id.suppress_js_modal_dialogs)).isChecked();
                 cancel(suppress);
                 mDialog.dismiss();
             }
         });
 
         // Display the checkbox for supressing dialogs if necessary.
-        layout.findViewById(AppResource.ID_JS_MODAL_DIALOG_CHECKBOX_SUPPRESS_DIALOGS).setVisibility(
+        layout.findViewById(R.id.suppress_js_modal_dialogs).setVisibility(
                 mShouldShowSuppressCheckBox ? View.VISIBLE : View.GONE);
     }
 
@@ -165,8 +150,7 @@ public class JavascriptAppModalDialog {
         @Override
         public void prepare(ViewGroup layout) {
             super.prepare(layout);
-            layout.findViewById(AppResource.ID_JS_MODAL_DIALOG_BUTTON_CANCEL)
-                    .setVisibility(View.GONE);
+            layout.findViewById(R.id.js_modal_dialog_button_cancel).setVisibility(View.GONE);
         }
     }
 
@@ -197,21 +181,16 @@ public class JavascriptAppModalDialog {
 
             // Cancel and confirm button resources are checked in
             // JavascriptAppModalDialog.prepare.
-            assert AppResource.STRING_JS_MODAL_DIALOG_DONT_RELOAD_THIS_PAGE != 0;
-            assert AppResource.STRING_JS_MODAL_DIALOG_LEAVE_THIS_PAGE != 0;
-            assert AppResource.STRING_JS_MODAL_DIALOG_RELOAD_THIS_PAGE != 0;
-            assert AppResource.STRING_JS_MODAL_DIALOG_STAY_ON_THIS_PAGE != 0;
-
             TextView stayOnThisPage =
-                    (TextView) layout.findViewById(AppResource.ID_JS_MODAL_DIALOG_BUTTON_CANCEL);
+                    (TextView) layout.findViewById(R.id.js_modal_dialog_button_cancel);
             stayOnThisPage.setText(mIsReload ?
-                    AppResource.STRING_JS_MODAL_DIALOG_DONT_RELOAD_THIS_PAGE :
-                    AppResource.STRING_JS_MODAL_DIALOG_STAY_ON_THIS_PAGE);
+                    R.string.dont_reload_this_page :
+                    R.string.stay_on_this_page);
             TextView leaveThisPage =
-                    (TextView) layout.findViewById(AppResource.ID_JS_MODAL_DIALOG_BUTTON_CONFIRM);
+                    (TextView) layout.findViewById(R.id.js_modal_dialog_button_confirm);
             leaveThisPage.setText(mIsReload ?
-                    AppResource.STRING_JS_MODAL_DIALOG_RELOAD_THIS_PAGE :
-                    AppResource.STRING_JS_MODAL_DIALOG_LEAVE_THIS_PAGE);
+                    R.string.reload_this_page :
+                    R.string.leave_this_page);
         }
     }
 
@@ -227,8 +206,7 @@ public class JavascriptAppModalDialog {
         @Override
         public void prepare(ViewGroup layout) {
             super.prepare(layout);
-            EditText prompt = (EditText) layout.findViewById(
-                    AppResource.ID_JS_MODAL_DIALOG_TEXT_PROMPT);
+            EditText prompt = (EditText) layout.findViewById(R.id.js_modal_dialog_prompt);
             prompt.setVisibility(View.VISIBLE);
 
             if (mDefaultPromptText.length() > 0) {

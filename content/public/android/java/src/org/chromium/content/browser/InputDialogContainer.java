@@ -18,9 +18,9 @@ import android.text.format.Time;
 import android.widget.DatePicker;
 import android.widget.TimePicker;
 
-import org.chromium.content.app.AppResource;
 import org.chromium.content.browser.DateTimePickerDialog.OnDateTimeSetListener;
 import org.chromium.content.browser.MonthPickerDialog.OnMonthSetListener;
+import org.chromium.content.R;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -109,11 +109,8 @@ class InputDialogContainer {
                     time.year, time.month);
         }
 
-        assert AppResource.STRING_DATE_PICKER_DIALOG_SET != 0;
-        assert AppResource.STRING_DATE_PICKER_DIALOG_CLEAR != 0;
-
         mDialog.setButton(DialogInterface.BUTTON_POSITIVE,
-                mContext.getText(AppResource.STRING_DATE_PICKER_DIALOG_SET),
+                mContext.getText(R.string.date_picker_dialog_set),
                 (DialogInterface.OnClickListener) mDialog);
 
         mDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
@@ -126,7 +123,7 @@ class InputDialogContainer {
                 });
 
         mDialog.setButton(DialogInterface.BUTTON_NEUTRAL,
-                mContext.getText(AppResource.STRING_DATE_PICKER_DIALOG_CLEAR),
+                mContext.getText(R.string.date_picker_dialog_clear),
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

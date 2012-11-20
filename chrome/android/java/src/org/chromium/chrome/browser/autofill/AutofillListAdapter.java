@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import org.chromium.content.app.AppResource;
+import org.chromium.chrome.R;
 
 import java.util.ArrayList;
 
@@ -22,7 +22,7 @@ public class AutofillListAdapter extends ArrayAdapter<AutofillSuggestion> {
     private Context mContext;
 
     AutofillListAdapter(Context context, ArrayList<AutofillSuggestion> objects) {
-        super(context, AppResource.LAYOUT_AUTOFILL_TEXT, objects);
+        super(context, R.layout.autofill_text, objects);
         mContext = context;
     }
 
@@ -32,11 +32,11 @@ public class AutofillListAdapter extends ArrayAdapter<AutofillSuggestion> {
         if (convertView == null) {
             LayoutInflater inflater =
                     (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            layout = inflater.inflate(AppResource.LAYOUT_AUTOFILL_TEXT, null);
+            layout = inflater.inflate(R.layout.autofill_text, null);
         }
-        TextView nameView = (TextView) layout.findViewById(AppResource.ID_AUTOFILL_NAME);
+        TextView nameView = (TextView) layout.findViewById(R.id.autofill_name);
         nameView.setText(getItem(position).mName);
-        TextView labelView = (TextView) layout.findViewById(AppResource.ID_AUTOFILL_LABEL);
+        TextView labelView = (TextView) layout.findViewById(R.id.autofill_label);
         labelView.setText(getItem(position).mLabel);
 
         return layout;

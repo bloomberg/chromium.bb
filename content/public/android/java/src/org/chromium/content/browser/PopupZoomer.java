@@ -28,7 +28,7 @@ import android.view.View;
 import android.view.animation.Interpolator;
 import android.view.animation.OvershootInterpolator;
 
-import org.chromium.content.app.AppResource;
+import org.chromium.content.R;
 
 /**
  * PopupZoomer is used to show the on-demand link zooming popup. It handles manipulation of the
@@ -110,12 +110,9 @@ class PopupZoomer extends View {
     private GestureDetector mGestureDetector;
 
     private static float getOverlayCornerRadius(Context context) {
-        // TODO(leandrogracia): restore an assertion for the resource id != 0
-        // here after fixing crbug.com/136704
-        // assert AppResource.DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS != 0;
-        if (sOverlayCornerRadius == 0 && AppResource.DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS != 0)
+        if (sOverlayCornerRadius == 0)
             sOverlayCornerRadius = context.getResources().getDimension(
-                    AppResource.DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS);
+                    R.dimen.link_preview_overlay_radius);
         return sOverlayCornerRadius;
     }
 
@@ -127,7 +124,7 @@ class PopupZoomer extends View {
         if (sOverlayDrawable == null) {
             try {
                 sOverlayDrawable = context.getResources().getDrawable(
-                        AppResource.DRAWABLE_LINK_PREVIEW_POPUP_OVERLAY);
+                        R.drawable.ondemand_overlay);
             } catch (Resources.NotFoundException e) {
                 Log.w(LOGTAG, "No drawable resource for PopupZoomer overlay found.");
                 sOverlayDrawable = new ColorDrawable();

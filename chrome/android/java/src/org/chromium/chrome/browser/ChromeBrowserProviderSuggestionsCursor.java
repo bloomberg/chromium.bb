@@ -11,7 +11,7 @@ import android.database.Cursor;
 import android.provider.BaseColumns;
 import android.provider.Browser.BookmarkColumns;
 
-import org.chromium.content.app.AppResource;
+import org.chromium.chrome.R;
 
 /**
  * For bookmarks/history suggestions, wrap the cursor returned in one that can feed
@@ -71,8 +71,7 @@ class ChromeBrowserProviderSuggestionsCursor extends AbstractCursor {
             return mCursor.getString(mCursor.getColumnIndex(BookmarkColumns.URL));
         case COLUMN_SUGGEST_ICON_1:
             // This is the icon displayed to the left of the result in QSB.
-            assert AppResource.DRAWABLE_ICON_APP_ICON != 0;
-            return Integer.toString(AppResource.DRAWABLE_ICON_APP_ICON);
+            return Integer.toString(R.mipmap.icon);
         case COLUMN_SUGGEST_LAST_ACCESS_HINT:
             // After clearing history, the Chrome bookmarks database will have a last
             // access time of 0 for all bookmarks. In the Android provider, this will

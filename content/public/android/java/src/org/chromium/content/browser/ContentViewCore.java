@@ -40,10 +40,10 @@ import android.view.inputmethod.InputMethodManager;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.WeakContext;
-import org.chromium.content.app.AppResource;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
 import org.chromium.content.browser.accessibility.AccessibilityInjector;
 import org.chromium.content.common.TraceEvent;
+import org.chromium.content.R;
 import org.chromium.ui.gfx.NativeWindow;
 
 /**
@@ -284,11 +284,6 @@ public class ContentViewCore implements MotionEventDelegate {
     public ContentViewCore(Context context, int personality) {
         mContext = context;
 
-        // All application resources must be registered by the time the content view is created.
-        // This should be omitted in final release builds where assertions are disabled.
-        // TODO(leandrogracia): re-enable this as soon as crbug.com/136704 is fixed.
-        // assert AppResource.verifyResourceRegistration();
-
         WeakContext.initializeWeakContext(context);
         // By default, ContentView will initialize single process mode. The call to
         // initContentViewProcess below is ignored if either the ContentView host called
@@ -507,11 +502,11 @@ public class ContentViewCore implements MotionEventDelegate {
         mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
 
         String contentDescription = "Web View";
-        if (AppResource.STRING_CONTENT_VIEW_CONTENT_DESCRIPTION == 0) {
+        if (R.string.accessibility_content_view == 0) {
             Log.w(TAG, "Setting contentDescription to 'Web View' as no value was specified.");
         } else {
             contentDescription = mContext.getResources().getString(
-                    AppResource.STRING_CONTENT_VIEW_CONTENT_DESCRIPTION);
+                    R.string.accessibility_content_view);
         }
         mContainerView.setContentDescription(contentDescription);
         mWebContentsObserver = new WebContentsObserverAndroid(this) {
