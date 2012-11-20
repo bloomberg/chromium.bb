@@ -34,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestSimpleNotification) {
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
       notification_show_function,
       "[{"
-      "\"notificationType\": \"simple\","
+      "\"type\": \"simple\","
       "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
       "common/images/chrome_logo_2x.png\","
       "\"title\": \"Attention!\","
@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestBaseFormatNotification) {
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
       notification_show_function,
       "[{"
-      "\"notificationType\": \"base\","
+      "\"type\": \"base\","
       "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
       "common/images/chrome_logo_2x.png\","
       "\"title\": \"Attention!\","
@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestMultipleItemNotification) {
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
       notification_show_function,
       "[{"
-      "\"notificationType\": \"multiple\","
+      "\"type\": \"multiple\","
       "\"iconUrl\": \"https://code.google.com/p/chromium/logo\","
       "\"title\": \"Multiple Item Notification Title\","
       "\"message\": \"Multiple item notification message.\","

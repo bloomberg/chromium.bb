@@ -8,7 +8,7 @@
     //
     // simple: icon, title, message
     // base: our MVP, with two buttons, expanded text, etc. TEMPORARY!
-    DOMString notificationType;
+    DOMString type;
 
     // Sender's avatar, app icon, or a thumbnail for image notifications.
     DOMString iconUrl;

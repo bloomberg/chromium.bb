@@ -94,7 +94,7 @@ bool NotificationShowFunction::RunImpl() {
   event_notifier_ = CreateEventNotifier(src_id_);
 
   ui::notifications::NotificationType type =
-      ui::notifications::StringToNotificationType(options->notification_type);
+      ui::notifications::StringToNotificationType(options->type);
   GURL icon_url(UTF8ToUTF16(options->icon_url));
   string16 title(UTF8ToUTF16(options->title));
   string16 message(UTF8ToUTF16(options->message));
