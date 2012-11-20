@@ -30,7 +30,7 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
     : DesktopEnvironment(
           AudioCapturer::Create(),
           EventExecutor::Create(input_task_runner, ui_task_runner),
-          scoped_ptr<VideoFrameCapturer>(VideoFrameCapturer::Create())),
+          VideoFrameCapturer::Create()),
       network_task_runner_(network_task_runner),
       desktop_session_connector_(desktop_session_connector),
       client_(client),

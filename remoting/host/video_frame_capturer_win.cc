@@ -549,8 +549,8 @@ void VideoFrameCapturerWin::CaptureCursor() {
 }  // namespace
 
 // static
-VideoFrameCapturer* VideoFrameCapturer::Create() {
-  return new VideoFrameCapturerWin();
+scoped_ptr<VideoFrameCapturer> VideoFrameCapturer::Create() {
+  return scoped_ptr<VideoFrameCapturer>(new VideoFrameCapturerWin());
 }
 
 }  // namespace remoting

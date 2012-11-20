@@ -31,7 +31,7 @@ MATCHER(DirtyRegionIsNonEmptyRect, "") {
 class VideoFrameCapturerTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    capturer_.reset(VideoFrameCapturer::Create());
+    capturer_ = VideoFrameCapturer::Create();
   }
 
   scoped_ptr<VideoFrameCapturer> capturer_;

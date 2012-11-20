@@ -69,7 +69,7 @@ class VideoFrameCapturer {
   virtual ~VideoFrameCapturer() {}
 
   // Create platform-specific capturer.
-  static VideoFrameCapturer* Create();
+  static scoped_ptr<VideoFrameCapturer> Create();
 
 #if defined(OS_LINUX)
   // Set whether the VideoFrameCapturer should try to use X DAMAGE support if it

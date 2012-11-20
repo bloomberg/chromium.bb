@@ -615,13 +615,11 @@ const SkISize& VideoFrameCapturerLinux::size_most_recent() const {
 }  // namespace
 
 // static
-VideoFrameCapturer* VideoFrameCapturer::Create() {
-  VideoFrameCapturerLinux* capturer = new VideoFrameCapturerLinux();
-  if (!capturer->Init()) {
-    delete capturer;
-    capturer = NULL;
-  }
-  return capturer;
+scoped_ptr<VideoFrameCapturer> VideoFrameCapturer::Create() {
+  scoped_ptr<VideoFrameCapturerLinux> capturer(new VideoFrameCapturerLinux());
+  if (!capturer->Init())
+    capturer.reset();
+  return capturer.PassAs<VideoFrameCapturer>();
 }
 
 // static

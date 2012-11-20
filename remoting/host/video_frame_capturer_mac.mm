@@ -813,13 +813,11 @@ void VideoFrameCapturerMac::DisplaysReconfiguredCallback(
 }  // namespace
 
 // static
-VideoFrameCapturer* VideoFrameCapturer::Create() {
-  VideoFrameCapturerMac* capturer = new VideoFrameCapturerMac();
-  if (!capturer->Init()) {
-    delete capturer;
-    capturer = NULL;
-  }
-  return capturer;
+scoped_ptr<VideoFrameCapturer> VideoFrameCapturer::Create() {
+  scoped_ptr<VideoFrameCapturerMac> capturer(new VideoFrameCapturerMac());
+  if (!capturer->Init())
+    capturer.reset();
+  return capturer.PassAs<VideoFrameCapturer>();
 }
 
 }  // namespace remoting

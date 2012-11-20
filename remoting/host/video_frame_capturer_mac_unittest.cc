@@ -41,7 +41,7 @@ class VideoFrameCapturerMacTest : public testing::Test {
 
  protected:
   virtual void SetUp() OVERRIDE {
-    capturer_.reset(VideoFrameCapturer::Create());
+    capturer_ = VideoFrameCapturer::Create();
   }
 
   void AddDirtyRect() {
