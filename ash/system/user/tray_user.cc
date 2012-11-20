@@ -130,7 +130,7 @@ class UserView : public views::View,
   // Create container for buttons.
   void AddButtonContainer() {
     TrayPopupLabelButton* button = new TrayPopupLabelButton(this,
-        ash::user::GetLocalizedSignOutStringForStatus(login_));
+        ash::user::GetLocalizedSignOutStringForStatus(login_, true));
     AddChildView(button);
     signout_ = button;
   }

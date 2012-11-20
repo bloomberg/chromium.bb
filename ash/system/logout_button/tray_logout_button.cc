@@ -86,7 +86,7 @@ class LogoutButton : public views::LabelButton,
 
   void OnLoginStatusChanged(user::LoginStatus status) {
     login_status_ = status;
-    SetText(GetLocalizedSignOutStringForStatus(login_status_));
+    SetText(GetLocalizedSignOutStringForStatus(login_status_, false));
     UpdateVisibility();
   }
 
