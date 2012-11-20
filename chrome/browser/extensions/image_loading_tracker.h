@@ -23,7 +23,10 @@
 class SkBitmap;
 
 namespace extensions {
+class AppShortcutManager;
 class Extension;
+class IconImage;
+class TabHelper;
 }
 
 namespace gfx {
@@ -45,6 +48,8 @@ class Image;
 // Observer is notified immediately from the call to LoadImage. In other words,
 // by the time LoadImage returns the observer has been notified.
 //
+// NOTE: This class is deprecated! New code should be using
+// extensions::ImageLoader or extensions::IconImage instead.
 class ImageLoadingTracker : public content::NotificationObserver {
  public:
   enum CacheParam {
@@ -96,7 +101,6 @@ class ImageLoadingTracker : public content::NotificationObserver {
     ui::ScaleFactor scale_factor;
   };
 
-  explicit ImageLoadingTracker(Observer* observer);
   virtual ~ImageLoadingTracker();
 
   // Specify image resource to load. If the loaded image is larger than
@@ -123,6 +127,28 @@ class ImageLoadingTracker : public content::NotificationObserver {
   int next_id() const { return next_id_; }
 
  private:
+  // This class is deprecated. This just lists all currently remaining
+  // usage of this class, so once this list is empty this class can and
+  // should be removed.
+  friend class CreateChromeApplicationShortcutsDialogGtk;
+  friend class CreateChromeApplicationShortcutView;
+  friend class ExtensionIconManager;
+  friend class ExtensionInfoBar;
+  friend class ExtensionInfoBarGtk;
+  friend class ExtensionUninstallDialog;
+  friend class InfobarBridge;
+  friend class Panel;
+  friend class ShellWindow;
+  friend class extensions::AppShortcutManager;
+  friend class extensions::IconImage;
+  friend class extensions::TabHelper;
+  FRIEND_TEST_ALL_PREFIXES(ImageLoadingTrackerTest, Cache);
+  FRIEND_TEST_ALL_PREFIXES(ImageLoadingTrackerTest,
+                           DeleteExtensionWhileWaitingForCache);
+  FRIEND_TEST_ALL_PREFIXES(ImageLoadingTrackerTest, MultipleImages);
+
+  explicit ImageLoadingTracker(Observer* observer);
+
   // Information for pending resource load operation for one or more image
   // representations.
   struct PendingLoadInfo {
