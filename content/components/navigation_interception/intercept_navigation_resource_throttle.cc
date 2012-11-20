@@ -94,9 +94,6 @@ bool InterceptNavigationResourceThrottle::CheckIfShouldIgnoreNavigation(
   if (!info->GetAssociatedRenderView(&render_process_id, &render_view_id))
     return false;
 
-  // This class should only be instantiated for top level frame requests.
-  DCHECK(info->IsMainFrame());
-
   ShouldIgnoreCallbackParams params;
   params.render_process_id = render_process_id;
   params.render_view_id = render_view_id;
