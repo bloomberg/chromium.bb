@@ -92,9 +92,9 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
       return pref_service_->pref_value_store_.get();
     }
 
-    std::string name_;
+    const std::string name_;
 
-    base::Value::Type type_;
+    const base::Value::Type type_;
 
     // Reference to the PrefService in which this pref was created.
     const PrefService* pref_service_;
@@ -346,6 +346,13 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // Ownership of the returned value remains at the user pref store.
   base::Value* GetMutableUserPref(const char* path,
                                   base::Value::Type type);
+
+  // GetPreferenceValue is the equivalent of FindPreference(path)->GetValue(),
+  // it has been added for performance. If is faster because it does
+  // not need to find or create a Preference object to get the
+  // value (GetValue() calls back though the preference service to
+  // actually get the value.).
+  const base::Value* GetPreferenceValue(const std::string& path) const;
 
   // The PrefValueStore provides prioritized preference values. It is owned by
   // this PrefService. Subclasses may access it for unit testing.
