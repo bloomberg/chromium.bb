@@ -69,7 +69,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<chromeos::ResumeObserver> resume_observer_;
   scoped_ptr<chromeos::ScreenLockObserver> screen_lock_observer_;
   scoped_ptr<chromeos::PowerButtonObserver> power_button_observer_;
-  scoped_ptr<chromeos::PowerStateOverride> power_state_override_;
+  scoped_refptr<chromeos::PowerStateOverride> power_state_override_;
   scoped_ptr<chromeos::PrimaryDisplaySwitchObserver>
       primary_display_switch_observer_;
   scoped_ptr<chromeos::UserActivityNotifier> user_activity_notifier_;

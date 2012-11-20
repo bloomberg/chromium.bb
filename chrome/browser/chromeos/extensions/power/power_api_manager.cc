@@ -37,7 +37,7 @@ void PowerApiManager::Observe(int type,
     UpdatePowerSettings();
   } else if (type == chrome::NOTIFICATION_APP_TERMINATING) {
     // If the Chrome app is terminating, ensure we release our power overrides.
-    power_state_override_.reset(NULL);
+    power_state_override_ = NULL;
   } else {
     NOTREACHED() << "Unexpected notification " << type;
   }
@@ -57,11 +57,11 @@ PowerApiManager::~PowerApiManager() {}
 void PowerApiManager::UpdatePowerSettings() {
   // If we have a wake lock and don't have the power state overriden.
   if (extension_ids_set_.size() && !power_state_override_.get()) {
-    power_state_override_.reset(new chromeos::PowerStateOverride(
-        chromeos::PowerStateOverride::BLOCK_DISPLAY_SLEEP));
+    power_state_override_ = new chromeos::PowerStateOverride(
+        chromeos::PowerStateOverride::BLOCK_DISPLAY_SLEEP);
   // else, if we don't have any wake locks and do have a power override.
   } else if (extension_ids_set_.empty() && power_state_override_.get()) {
-    power_state_override_.reset(NULL);
+    power_state_override_ = NULL;
   }
 }
 

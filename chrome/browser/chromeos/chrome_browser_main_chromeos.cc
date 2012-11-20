@@ -518,8 +518,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   resume_observer_.reset(new ResumeObserver());
   screen_lock_observer_.reset(new ScreenLockObserver());
   if (KioskModeSettings::Get()->IsKioskModeEnabled()) {
-    power_state_override_.reset(new PowerStateOverride(
-        PowerStateOverride::BLOCK_DISPLAY_SLEEP));
+    power_state_override_ = new PowerStateOverride(
+        PowerStateOverride::BLOCK_DISPLAY_SLEEP);
   }
 
   primary_display_switch_observer_.reset(
@@ -618,7 +618,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   resume_observer_.reset();
   brightness_observer_.reset();
   output_observer_.reset();
-  power_state_override_.reset();
+  power_state_override_ = NULL;
 
   // The XInput2 event listener needs to be shut down earlier than when
   // Singletons are finally destroyed in AtExitManager.
