@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/common/three_d_api_types.h"
 #include "media/base/channel_layout.h"
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
@@ -239,6 +240,13 @@ class RenderMessageFilter : public BrowserMessageFilter {
       OpenChannelToNpapiPluginCallback* client);
 
   void OnUpdateIsDelayed(const IPC::Message& msg);
+  void OnAre3DAPIsBlocked(int render_view_id,
+                          const GURL& top_origin_url,
+                          ThreeDAPIType requester,
+                          bool* blocked);
+  void OnDidLose3DContext(const GURL& top_origin_url,
+                          ThreeDAPIType context_type,
+                          int arb_robustness_status_code);
 
   // Cached resource request dispatcher host and plugin service, guaranteed to
   // be non-null if Init succeeds. We do not own the objects, they are managed

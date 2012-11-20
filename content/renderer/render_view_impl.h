@@ -655,6 +655,10 @@ class CONTENT_EXPORT RenderViewImpl
   virtual WebKit::WebString userAgentOverride(
       WebKit::WebFrame* frame,
       const WebKit::WebURL& url) OVERRIDE;
+  virtual bool allowWebGL(WebKit::WebFrame* frame, bool default_value) OVERRIDE;
+  virtual void didLoseWebGLContext(
+      WebKit::WebFrame* frame,
+      int arb_robustness_status_code) OVERRIDE;
 
   // WebKit::WebPageSerializerClient implementation ----------------------------
 

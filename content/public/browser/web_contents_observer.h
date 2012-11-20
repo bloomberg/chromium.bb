@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/three_d_api_types.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -148,6 +149,12 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
       const GURL& url,
       const FilePath& plugin_path,
       const base::Callback<void(bool)>& callback);
+
+  // Indicates that client 3D APIs (Pepper 3D, WebGL) were just
+  // blocked on the current page, specifically because the GPU was
+  // reset recently.
+  virtual void DidBlock3DAPIs(const GURL& url,
+                              ThreeDAPIType requester) {}
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

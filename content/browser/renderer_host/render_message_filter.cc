@@ -20,6 +20,7 @@
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/ppapi_plugin_process_host.h"
@@ -27,6 +28,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/desktop_notification_messages.h"
@@ -65,6 +67,9 @@
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"
+#else
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #endif
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -190,6 +195,22 @@ class OpenChannelToPpapiBrokerCallback
   int routing_id_;
   int request_id_;
 };
+
+void RaiseInfobarForBlocked3DContentOnUIThread(
+    int render_process_id,
+    int render_view_id,
+    const GURL& url,
+    content::ThreeDAPIType requester) {
+  RenderViewHost* rvh = RenderViewHost::FromID(
+      render_process_id, render_view_id);
+  if (!rvh)
+    return;
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderViewHost(rvh));
+  if (!web_contents)
+    return;
+  web_contents->DidBlock3DAPIs(url, requester);
+}
 
 }  // namespace
 
@@ -394,6 +415,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetMonitorColorProfile,
                         OnGetMonitorColorProfile)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvent, OnMediaLogEvent)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Are3DAPIsBlocked, OnAre3DAPIsBlocked)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidLose3DContext, OnDidLose3DContext)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -1022,6 +1045,61 @@ void RenderMessageFilter::OnUpdateIsDelayed(const IPC::Message& msg) {
   // We will simply re-use the UpdateRect unblock mechanism, just with a
   // different message.
   render_widget_helper_->DidReceiveBackingStoreMsg(msg);
+}
+
+void RenderMessageFilter::OnAre3DAPIsBlocked(int render_view_id,
+                                             const GURL& top_origin_url,
+                                             ThreeDAPIType requester,
+                                             bool* blocked) {
+  GpuDataManagerImpl::DomainBlockStatus block_status =
+      GpuDataManagerImpl::GetInstance()->Are3DAPIsBlocked(top_origin_url);
+  *blocked = (block_status !=
+              GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_NOT_BLOCKED);
+  if (*blocked) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&RaiseInfobarForBlocked3DContentOnUIThread,
+                   render_process_id_, render_view_id,
+                   top_origin_url, requester));
+  }
+}
+
+void RenderMessageFilter::OnDidLose3DContext(
+    const GURL& top_origin_url,
+    ThreeDAPIType /* unused */,
+    int arb_robustness_status_code) {
+#if defined(OS_MACOSX)
+    // TODO(kbr): this file indirectly includes npapi.h, which on Mac
+    // OS pulls in the system OpenGL headers. For some
+    // not-yet-investigated reason this breaks the build with the 10.6
+    // SDK but not 10.7. For now work around this in a way compatible
+    // with the Khronos headers.
+#ifndef GL_GUILTY_CONTEXT_RESET_ARB
+#define GL_GUILTY_CONTEXT_RESET_ARB 0x8253
+#endif
+#ifndef GL_INNOCENT_CONTEXT_RESET_ARB
+#define GL_INNOCENT_CONTEXT_RESET_ARB 0x8254
+#endif
+#ifndef GL_UNKNOWN_CONTEXT_RESET_ARB
+#define GL_UNKNOWN_CONTEXT_RESET_ARB 0x8255
+#endif
+
+#endif
+  GpuDataManagerImpl::DomainGuilt guilt;
+  switch (arb_robustness_status_code) {
+    case GL_GUILTY_CONTEXT_RESET_ARB:
+      guilt = GpuDataManagerImpl::DOMAIN_GUILT_KNOWN;
+      break;
+    case GL_UNKNOWN_CONTEXT_RESET_ARB:
+      guilt = GpuDataManagerImpl::DOMAIN_GUILT_UNKNOWN;
+      break;
+    default:
+      // Ignore lost contexts known to be innocent.
+      return;
+  }
+
+  GpuDataManagerImpl::GetInstance()->BlockDomainFrom3DAPIs(
+      top_origin_url, guilt);
 }
 
 }  // namespace content

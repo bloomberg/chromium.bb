@@ -12,6 +12,7 @@
 #include "content/public/common/gpu_switching_option.h"
 
 class FilePath;
+class GURL;
 
 namespace base {
 class ListValue;
@@ -83,6 +84,12 @@ class GpuDataManager {
   // they can be used to determine managed memory allocation.
   virtual void SetWindowCount(uint32 count) = 0;
   virtual uint32 GetWindowCount() const = 0;
+
+  // Allows a given domain previously blocked from accessing 3D APIs
+  // to access them again.
+  virtual void UnblockDomainFrom3DAPIs(const GURL& url) = 0;
+  // Disables domain blocking for 3D APIs. For use only in tests.
+  virtual void DisableDomainBlockingFor3DAPIsForTesting() = 0;
 
  protected:
   virtual ~GpuDataManager() {}

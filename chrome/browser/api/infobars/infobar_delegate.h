@@ -21,6 +21,7 @@ class PluginInstallerInfoBarDelegate;
 class RegisterProtocolHandlerInfoBarDelegate;
 class SavePasswordInfoBarDelegate;
 class ThemeInstalledInfoBarDelegate;
+class ThreeDAPIInfoBarDelegate;
 class TranslateInfoBarDelegate;
 
 namespace gfx {
@@ -105,6 +106,7 @@ class InfoBarDelegate {
   virtual RegisterProtocolHandlerInfoBarDelegate*
       AsRegisterProtocolHandlerInfoBarDelegate();
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
+  virtual ThreeDAPIInfoBarDelegate* AsThreeDAPIInfoBarDelegate();
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 
  protected:

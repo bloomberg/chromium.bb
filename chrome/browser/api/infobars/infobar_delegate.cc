@@ -86,6 +86,10 @@ ThemeInstalledInfoBarDelegate*
   return NULL;
 }
 
+ThreeDAPIInfoBarDelegate* InfoBarDelegate::AsThreeDAPIInfoBarDelegate() {
+  return NULL;
+}
+
 TranslateInfoBarDelegate* InfoBarDelegate::AsTranslateInfoBarDelegate() {
   return NULL;
 }

@@ -39,7 +39,7 @@ function testContextLost(e) {
 function testContextRestored() {
   gl = canvas.getContext("experimental-webgl");
   if (!gl || gl.isContextLost()) {
-    document.title = "FAILED: could not get recovered context";
+    // Might just be blocked because of infobar.
     return;
   }
   gl.clearColor(0, 0, 1, 1);

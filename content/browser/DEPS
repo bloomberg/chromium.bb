@@ -9,6 +9,7 @@ include_rules = [
   # Other libraries.
   "+third_party/iaccessible2",
   "+third_party/isimpledom",
+  "+third_party/khronos",   # For enum definitions only
   "+third_party/speex",
 
   # Allow non-browser Chrome OS code to be used.

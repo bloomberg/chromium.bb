@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_GPU_GPU_DATA_MANAGER_IMPL_H_
 #define CONTENT_BROWSER_GPU_GPU_DATA_MANAGER_IMPL_H_
 
-#include <set>
+#include <list>
+#include <map>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -15,6 +16,7 @@
 #include "base/memory/singleton.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "content/browser/gpu/gpu_blacklist.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -22,12 +24,31 @@
 #include "content/public/common/gpu_memory_stats.h"
 
 class CommandLine;
+class GURL;
 
 namespace content {
 
 class CONTENT_EXPORT GpuDataManagerImpl
     : public NON_EXPORTED_BASE(GpuDataManager) {
  public:
+  // Indicates the guilt level of a domain which caused a GPU reset.
+  // If a domain is 100% known to be guilty of resetting the GPU, then
+  // it will generally not cause other domains' use of 3D APIs to be
+  // blocked, unless system stability would be compromised.
+  enum DomainGuilt {
+    DOMAIN_GUILT_KNOWN,
+    DOMAIN_GUILT_UNKNOWN
+  };
+
+  // Indicates the reason that access to a given client API (like
+  // WebGL or Pepper 3D) was blocked or not. This state is distinct
+  // from blacklisting of an entire feature.
+  enum DomainBlockStatus {
+    DOMAIN_BLOCK_STATUS_BLOCKED,
+    DOMAIN_BLOCK_STATUS_ALL_DOMAINS_BLOCKED,
+    DOMAIN_BLOCK_STATUS_NOT_BLOCKED
+  };
+
   // Getter for the singleton. This will return NULL on failure.
   static GpuDataManagerImpl* GetInstance();
 
@@ -53,6 +74,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual void RemoveObserver(GpuDataManagerObserver* observer) OVERRIDE;
   virtual void SetWindowCount(uint32 count) OVERRIDE;
   virtual uint32 GetWindowCount() const OVERRIDE;
+  virtual void UnblockDomainFrom3DAPIs(const GURL& url) OVERRIDE;
+  virtual void DisableDomainBlockingFor3DAPIsForTesting() OVERRIDE;
 
   // This collects preliminary GPU info, load GpuBlacklist, and compute the
   // preliminary blacklisted features; it should only be called at browser
@@ -91,7 +114,27 @@ class CONTENT_EXPORT GpuDataManagerImpl
   bool IsUsingAcceleratedSurface() const;
 #endif
 
+  // Maintenance of domains requiring explicit user permission before
+  // using client-facing 3D APIs (WebGL, Pepper 3D), either because
+  // the domain has caused the GPU to reset, or because too many GPU
+  // resets have been observed globally recently, and system stability
+  // might be compromised.
+  //
+  // The given URL may be a partial URL (including at least the host)
+  // or a full URL to a page.
+  //
+  // Note that the unblocking API must be part of the content API
+  // because it is called from Chrome side code.
+  void BlockDomainFrom3DAPIs(const GURL& url, DomainGuilt guilt);
+  DomainBlockStatus Are3DAPIsBlocked(const GURL& url) const;
+
  private:
+  struct DomainBlockEntry {
+    DomainGuilt last_guilt;
+  };
+
+  typedef std::map<std::string, DomainBlockEntry> DomainBlockMap;
+
   typedef ObserverListThreadSafe<GpuDataManagerObserver>
       GpuDataManagerObserverList;
 
@@ -108,6 +151,16 @@ class CONTENT_EXPORT GpuDataManagerImpl
                            NoGpuInfoUpdateWithSoftwareRendering);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
                            GPUVideoMemoryUsageStatsUpdate);
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
+                           BlockAllDomainsFrom3DAPIs);
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
+                           UnblockGuiltyDomainFrom3DAPIs);
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
+                           UnblockDomainOfUnknownGuiltFrom3DAPIs);
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
+                           UnblockOtherDomainFrom3DAPIs);
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
+                           UnblockThisDomainFrom3DAPIs);
 
   GpuDataManagerImpl();
   virtual ~GpuDataManagerImpl();
@@ -130,6 +183,17 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   // Try to switch to software rendering, if possible and necessary.
   void EnableSoftwareRenderingIfNecessary();
+
+  // Helper to extract the domain from a given URL.
+  std::string GetDomainFromURL(const GURL& url) const;
+
+  // Implementation functions for blocking of 3D graphics APIs, used
+  // for unit testing.
+  void BlockDomainFrom3DAPIsAtTime(
+      const GURL& url, DomainGuilt guilt, base::Time at_time);
+  DomainBlockStatus Are3DAPIsBlockedAtTime(
+      const GURL& url, base::Time at_time) const;
+  int64 GetBlockAllDomainsDurationInMs() const;
 
   bool complete_gpu_info_already_requested_;
 
@@ -162,6 +226,10 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   // Number of currently open windows, to be used in gpu memory allocation.
   int window_count_;
+
+  DomainBlockMap blocked_domains_;
+  mutable std::list<base::Time> timestamps_of_gpu_resets_;
+  bool domain_blocking_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImpl);
 };

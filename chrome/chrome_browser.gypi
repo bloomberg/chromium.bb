@@ -2053,6 +2053,8 @@
         'browser/themes/theme_service_mac.mm',
         'browser/themes/theme_syncable_service.cc',
         'browser/themes/theme_syncable_service.h',
+        'browser/three_d_api_observer.cc',
+        'browser/three_d_api_observer.h',
         'browser/thumbnails/render_widget_snapshot_taker.cc',
         'browser/thumbnails/render_widget_snapshot_taker.h',
         'browser/thumbnails/thumbnail_service.h',

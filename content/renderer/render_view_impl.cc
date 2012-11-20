@@ -52,6 +52,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/file_chooser_params.h"
+#include "content/public/common/three_d_api_types.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/context_menu_client.h"
@@ -4250,6 +4251,28 @@ WebKit::WebString RenderViewImpl::userAgentOverride(
     return WebString::fromUTF8(renderer_preferences_.user_agent_override);
   else
     return WebKit::WebString();
+}
+
+bool RenderViewImpl::allowWebGL(WebFrame* frame, bool default_value) {
+  if (!default_value)
+    return false;
+
+  bool blocked = true;
+  Send(new ViewHostMsg_Are3DAPIsBlocked(
+      routing_id_,
+      GURL(frame->top()->document().securityOrigin().toString()),
+      THREE_D_API_TYPE_WEBGL,
+      &blocked));
+  return !blocked;
+}
+
+void RenderViewImpl::didLoseWebGLContext(
+    WebKit::WebFrame* frame,
+    int arb_robustness_status_code) {
+  Send(new ViewHostMsg_DidLose3DContext(
+      GURL(frame->top()->document().securityOrigin().toString()),
+      THREE_D_API_TYPE_WEBGL,
+      arb_robustness_status_code));
 }
 
 // WebKit::WebPageSerializerClient implementation ------------------------------

@@ -23,6 +23,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/three_d_api_types.h"
 #include "net/base/load_states.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/size.h"
@@ -178,6 +179,8 @@ class CONTENT_EXPORT WebContentsImpl
   // Returns embedder browser plugin object, or NULL if this WebContents is not
   // an embedder.
   BrowserPluginEmbedder* GetBrowserPluginEmbedder();
+
+  void DidBlock3DAPIs(const GURL& url, ThreeDAPIType requester);
 
   // WebContents ------------------------------------------------------
   virtual WebContentsDelegate* GetDelegate() OVERRIDE;

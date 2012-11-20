@@ -2342,6 +2342,12 @@ void WebContentsImpl::OnBrowserPluginCreateGuest(
                                         params);
 }
 
+void WebContentsImpl::DidBlock3DAPIs(const GURL& url,
+                                     ThreeDAPIType requester) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidBlock3DAPIs(url, requester));
+}
+
 // Notifies the RenderWidgetHost instance about the fact that the page is
 // loading, or done loading and calls the base implementation.
 void WebContentsImpl::SetIsLoading(bool is_loading,
