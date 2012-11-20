@@ -77,8 +77,6 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, ViewSourceInMenuEnabledOnANormalPage) {
 
 // Make sure that when looking at the page source, we can't select "View Source"
 // from the menu.
-//
-// Occasionally crashes on all platforms, see http://crbug.com/69249
 IN_PROC_BROWSER_TEST_F(ViewSourceTest,
                        ViewSourceInMenuDisabledWhileViewingSource) {
   ASSERT_TRUE(test_server()->Start());
@@ -92,7 +90,8 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest,
 
 // Tests that reload initiated by the script on the view-source page leaves
 // the page in view-source mode.
-IN_PROC_BROWSER_TEST_F(ViewSourceTest, TestViewSourceReload) {
+// Times out on Mac, Windows, ChromeOS Linux: crbug.com/162080
+IN_PROC_BROWSER_TEST_F(ViewSourceTest, DISABLED_TestViewSourceReload) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL url_viewsource(chrome::kViewSourceScheme + std::string(":") +
