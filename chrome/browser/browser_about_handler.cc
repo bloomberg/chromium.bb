@@ -40,6 +40,7 @@ const char* const kPaths[] = {
   chrome::kChromeUIPredictorsHost,
   chrome::kChromeUIProfilerHost,
   chrome::kChromeUIQuotaInternalsHost,
+  chrome::kChromeUISignInInternalsHost,
   chrome::kChromeUIStatsHost,
   chrome::kChromeUISyncInternalsHost,
   chrome::kChromeUITermsHost,

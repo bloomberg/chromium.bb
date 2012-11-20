@@ -185,6 +185,7 @@ extern const char kChromeUISessionFaviconHost[];
 extern const char kChromeUISettingsHost[];
 extern const char kChromeUISettingsFrameHost[];
 extern const char kChromeUIShorthangHost[];
+extern const char kChromeUISignInInternalsHost[];
 extern const char kChromeUISuggestionsInternalsHost[];
 extern const char kChromeUISSLClientCertificateSelectorHost[];
 extern const char kChromeUIStatsHost[];

@@ -46,6 +46,7 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/profiler_ui.h"
 #include "chrome/browser/ui/webui/quota_internals_ui.h"
+#include "chrome/browser/ui/webui/signin_internals_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
 #include "chrome/browser/ui/webui/task_manager/task_manager_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
@@ -222,6 +223,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ProfilerUI>;
   if (url.host() == chrome::kChromeUIQuotaInternalsHost)
     return &NewWebUI<QuotaInternalsUI>;
+  if (url.host() == chrome::kChromeUISignInInternalsHost)
+    return &NewWebUI<SignInInternalsUI>;
   if (url.host() == chrome::kChromeUISyncInternalsHost)
     return &NewWebUI<SyncInternalsUI>;
   if (url.host() == chrome::kChromeUISyncResourcesHost)

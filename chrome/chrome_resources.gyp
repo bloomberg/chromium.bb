@@ -22,6 +22,13 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          'action_name': 'signin_internals_resources',
+          'variables': {
+            'grit_grd_file': 'browser/resources/signin_internals_resources.grd',
+            },
+          'includes': ['../build/grit_action.gypi' ],
+        },
+        {
           'action_name': 'sync_internals_resources',
           'variables': {
             'grit_grd_file': 'browser/resources/sync_internals_resources.grd',

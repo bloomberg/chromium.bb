@@ -2048,6 +2048,8 @@
         'browser/ui/webui/signin/login_ui_service.h',
         'browser/ui/webui/signin/login_ui_service_factory.cc',
         'browser/ui/webui/signin/login_ui_service_factory.h',
+        'browser/ui/webui/signin_internals_ui.cc',
+        'browser/ui/webui/signin_internals_ui.h',
         'browser/ui/webui/suggestions_internals/suggestions_internals_ui.cc',
         'browser/ui/webui/suggestions_internals/suggestions_internals_ui.h',
         'browser/ui/webui/suggestions_internals/suggestions_internals_ui_handler.cc',

@@ -26,6 +26,7 @@
 #include "base/prefs/public/pref_change_registrar.h"
 #include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "chrome/browser/signin/about_signin_internals.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -159,6 +160,8 @@ class SigninManager : public GaiaAuthConsumer,
   virtual void OnPreferenceChanged(PrefServiceBase* service,
                                    const std::string& pref_name) OVERRIDE;
 
+  AboutSigninInternals* about_signin_internals();
+
  protected:
   // Weak pointer to parent profile (protected so FakeSigninManager can access
   // it).
@@ -230,6 +233,11 @@ class SigninManager : public GaiaAuthConsumer,
   // with credentials.  These will be passed to TokenService so that it does
   // not need to mint new ones.
   ClientOAuthResult temp_oauth_login_tokens_;
+
+  // A class that encapsulates information relevant to the
+  // about:signin-internals page and takes care of communication
+  // with the UI front-end.
+  AboutSigninInternals about_signin_internals_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninManager);
 };

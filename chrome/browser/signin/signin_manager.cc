@@ -10,11 +10,13 @@
 #include "base/command_line.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -98,6 +100,7 @@ void SigninManager::Initialize(Profile* profile) {
   // Should never call Initialize() twice.
   DCHECK(!IsInitialized());
   profile_ = profile;
+  about_signin_internals_.Initialize(profile);
   PrefService* local_state = g_browser_process->local_state();
   // local_state can be null during unit tests.
   if (local_state) {
@@ -427,8 +430,7 @@ void SigninManager::OnClientOAuthSuccess(const ClientOAuthResult& result) {
   }
 }
 
-void SigninManager::OnClientOAuthFailure(
-    const GoogleServiceAuthError& error) {
+void SigninManager::OnClientOAuthFailure(const GoogleServiceAuthError& error) {
   bool clear_transient_data = true;
   if (type_ == SIGNIN_TYPE_CLIENT_OAUTH) {
     // If the error is a challenge (captcha or 2-factor), then don't sign out.
@@ -546,4 +548,8 @@ void SigninManager::OnPreferenceChanged(PrefServiceBase* service,
     // the user out.
     SignOut();
   }
+}
+
+AboutSigninInternals* SigninManager::about_signin_internals() {
+  return &about_signin_internals_;
 }

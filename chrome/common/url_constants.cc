@@ -190,6 +190,7 @@ const char kChromeUISessionFaviconHost[] = "session-favicon";
 const char kChromeUISettingsHost[] = "settings";
 const char kChromeUISettingsFrameHost[] = "settings-frame";
 const char kChromeUIShorthangHost[] = "shorthang";
+const char kChromeUISignInInternalsHost[] = "signin-internals";
 const char kChromeUISuggestionsInternalsHost[] = "suggestions-internals";
 const char kChromeUISSLClientCertificateSelectorHost[] = "select-cert";
 const char kChromeUIStatsHost[] = "stats";
