@@ -868,6 +868,12 @@ WebKit::WebGestureCurve* WebKitPlatformSupportImpl::createFlingAnimationCurve(
     int device_source,
     const WebKit::WebFloatPoint& velocity,
     const WebKit::WebSize& cumulative_scroll) {
+
+#if defined(OS_ANDROID)
+  return FlingAnimatorImpl::CreateAndroidGestureCurve(velocity,
+                                                      cumulative_scroll);
+#endif
+
   if (device_source == WebKit::WebGestureEvent::Touchscreen)
     return TouchFlingGestureCurve::CreateForTouchScreen(velocity,
                                                         cumulative_scroll);

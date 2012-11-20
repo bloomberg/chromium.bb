@@ -7,6 +7,8 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurveTarget.h"
+#include "ui/gfx/vector2d.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
@@ -96,6 +98,27 @@ WebKit::WebPoint FlingAnimatorImpl::getCurrentPosition()
       env->CallIntMethod(java_scroller_.obj(), getY_method_id_));
   CheckException(env);
   return position;
+}
+
+bool FlingAnimatorImpl::apply(double time,
+                              WebKit::WebGestureCurveTarget* target) {
+  if (!updatePosition())
+    return false;
+
+  gfx::Point current_position = getCurrentPosition();
+  gfx::Vector2d diff(current_position - last_position_);
+  WebKit::WebPoint scroll_amount(diff.x(), diff.y());
+  target->scrollBy(scroll_amount);
+  last_position_ = current_position;
+  return true;
+}
+
+FlingAnimatorImpl* FlingAnimatorImpl::CreateAndroidGestureCurve(
+    const WebKit::WebFloatPoint& velocity,
+    const WebKit::WebSize&) {
+  FlingAnimatorImpl* gesture_curve = new FlingAnimatorImpl();
+  gesture_curve->startFling(velocity, WebKit::WebRect());
+  return gesture_curve;
 }
 
 } // namespace webkit_glue
