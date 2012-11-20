@@ -521,7 +521,8 @@ class BuildSpecsManager(object):
     """Returns True if the last build failed."""
     return self._latest_status and self._latest_status.Failed()
 
-  def GetBuildStatus(self, builder, version):
+  @staticmethod
+  def GetBuildStatus(builder, version, retries=3):
     """Returns a BuilderStatus instance for the given the builder.
 
     Args:
@@ -532,14 +533,13 @@ class BuildSpecsManager(object):
       A BuilderStatus instance containing the builder status and any optional
       message associated with the status passed by the builder.
     """
-    if self.dry_run:
-      return None
-    url = self._GetStatusUrl(builder, version)
+    url = BuildSpecsManager._GetStatusUrl(builder, version)
     cmd = [gs.GSUTIL_BIN, 'cat', url]
     try:
       # TODO(davidjames): Use chromite.lib.gs here.
       result = cros_build_lib.RunCommandWithRetries(
-          3, cmd, redirect_stdout=True, redirect_stderr=True)
+          retries, cmd, redirect_stdout=True, redirect_stderr=True,
+          debug_level=logging.DEBUG)
     except cros_build_lib.RunCommandError as ex:
       # If the file does not exist, InvalidUriError is returned.
       if ex.result.error and ex.result.error.startswith('InvalidUriError:'):
@@ -632,7 +632,8 @@ class BuildSpecsManager(object):
       self.RefreshManifestCheckout()
       raise GenerateBuildSpecException(last_error)
 
-  def _GetStatusUrl(self, builder, version):
+  @staticmethod
+  def _GetStatusUrl(builder, version):
     """Get the status URL in Google Storage for a given builder / version."""
     return os.path.join(BUILD_STATUS_URL, version, builder)
 
@@ -650,7 +651,7 @@ class BuildSpecsManager(object):
       # This HTTP header tells Google Storage toreturn the PreconditionFailed
       # error message if the file already exists.
       cmd += ['-h', 'x-goog-if-sequence-number-match: 0']
-    url = self._GetStatusUrl(self.build_name, version)
+    url = BuildSpecsManager._GetStatusUrl(self.build_name, version)
     cmd += ['cp', '-', url]
 
     # Create a BuilderStatus object and pickle it.

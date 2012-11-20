@@ -117,6 +117,7 @@ def IsCQType(b_type):
 # List of usable cbuildbot configs; see add_config method.
 config = {}
 
+# pylint: disable=W0102
 def GetSlavesForMaster(master_config, configs=config):
   """Gets the important builds corresponding to a master builder.
 
@@ -129,19 +130,30 @@ def GetSlavesForMaster(master_config, configs=config):
   assert master_config['master']
   builders = []
   build_type = master_config['build_type']
-  manifest_version = master_config['manifest_version']
   branch_config = master_config['branch']
-  overlay_config = master_config['overlays']
   chrome_rev = master_config['chrome_rev']
-  for build_name, config in configs.iteritems():
-    if (config['important'] and config['manifest_version'] and
-        not config['unified_manifest_version'] and
-        config['build_type'] == build_type and
-        config['chrome_rev'] == chrome_rev and
-        config['branch'] == branch_config):
+  for build_name, conf in configs.iteritems():
+    if (conf['important'] and conf['manifest_version'] and
+        not conf['unified_manifest_version'] and
+        conf['build_type'] == build_type and
+        conf['chrome_rev'] == chrome_rev and
+        conf['branch'] == branch_config):
       builders.append(build_name)
 
   return builders
+
+
+# pylint: disable=W0102
+def GetCanariesForChromeLKGM(configs=config):
+  """Grabs a list of builders that are important for the Chrome LKGM."""
+  builders = []
+  for build_name, conf in configs.iteritems():
+    if (conf['build_type'] == constants.CANARY_TYPE and
+        conf['critical_for_chrome']):
+      builders.append(build_name)
+
+  return builders
+
 
 # Enumeration of valid settings; any/all config settings must be in this.
 # All settings must be documented.
@@ -328,6 +340,9 @@ _settings = dict(
 # blessed from canary runs.
   use_chrome_lkgm=False,
 
+# True if this build config is critical for the chrome_lkgm decision.
+  critical_for_chrome=False,
+
 # prebuilts -- Upload prebuilts for this build.
   prebuilts=True,
 
@@ -437,7 +452,7 @@ class _config(dict):
     return cls().add_config(name, *inherits, **overrides)
 
   @classmethod
-  def add_group(cls, name, *configs):
+  def add_group(cls, name, *configs, **group_overrides):
     """Create a new group of build configurations.
 
     Args:
@@ -446,15 +461,18 @@ class _config(dict):
       configs: Configurations to build in this group. The first config in
                the group is considered the primary configuration and is used
                for syncing and creating the chroot.
+      group_overrides: See the docstring of derive. Applies to entire group.
     """
     board_specific_configs = {}
     for x in configs:
       for my_board in x['boards']:
         board_specific_configs[my_board] = _default.derive(x, grouped=True)
-    return configs[0].add_config(name,
-      boards=list(itertools.chain.from_iterable(x['boards'] for x in configs)),
-      board_specific_configs=board_specific_configs
-    )
+
+    group_overrides.update(dict(
+        boards=list(itertools.chain.from_iterable(
+            x['boards'] for x in configs)),
+        board_specific_configs=board_specific_configs))
+    return configs[0].add_config(name, **group_overrides)
 
 _default = _config(**_settings)
 
@@ -991,6 +1009,7 @@ _release = full.derive(official, internal,
 _release.add_config('x86-mario-release',
   boards=['x86-mario'],
   hw_tests=['bvt'],
+  critical_for_chrome=True,
 )
 
 _config.add_group('x86-alex-release-group',
@@ -1004,6 +1023,7 @@ _config.add_group('x86-alex-release-group',
     unittests=None,
     upload_hw_test_artifacts=False,
   ),
+  critical_for_chrome=True,
 )
 
 _config.add_group('x86-zgb-release-group',
@@ -1022,11 +1042,13 @@ _config.add_group('x86-zgb-release-group',
 _release.add_config('stumpy-release',
   boards=['stumpy'],
   hw_tests=['bvt'],
+  critical_for_chrome=True,
 )
 
 _release.add_config('lumpy-release',
   boards=['lumpy'],
   hw_tests=['bvt'],
+  critical_for_chrome=True,
 )
 
 _release.add_config('link-release',
@@ -1072,6 +1094,7 @@ _arm_release.add_config('daisy-release',
   useflags=official['useflags'] + ['widevine_cdm'],
   hw_tests=['bvt'],
   hw_tests_num=4,
+  critical_for_chrome=True,
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications

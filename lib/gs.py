@@ -202,6 +202,10 @@ class GSContext(object):
         raise GSContextPreconditionFailed(e)
       raise
 
+  def LS(self, path):
+    """Does a directory listing of the given gs path."""
+    return self._DoCommand(['ls', '--', path])
+
   def SetACL(self, upload_url, acl=None):
     """Set access on a file already in google storage.
 

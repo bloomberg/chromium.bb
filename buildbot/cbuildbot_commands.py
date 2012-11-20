@@ -1367,8 +1367,8 @@ def GenerateNPlus1Payloads(build_root, previous_versions_dir, target_image_path,
 
 def GetChromeLKGM(svn_revision):
   """Returns the ChromeOS LKGM from Chrome given the SVN revision."""
-  svn_url = '/'.join([gclient.GetBaseURLs()[0], 'trunk', 'src', 'chromeos',
-                      'CHROMEOS_LKGM'])
+  svn_url = '/'.join([gclient.GetBaseURLs()[0], constants.PATH_TO_CHROME_LKGM,
+                      constants.CHROME_LKGM_FILE])
   svn_revision_args = []
   if svn_revision:
     svn_revision_args = ['-r', str(svn_revision)]
