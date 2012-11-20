@@ -42,7 +42,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"

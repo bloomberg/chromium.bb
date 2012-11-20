@@ -44,7 +44,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
-#include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
