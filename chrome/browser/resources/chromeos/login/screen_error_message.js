@@ -294,13 +294,13 @@ cr.define('login', function() {
       // reloaded.
       if (reason == ERROR_REASONS.NETWORK_CHANGED) {
         if (state == NET_STATE.ONLINE &&
-            lastNetworkState_ != NET_STATE.ONLINE &&
+            this.lastNetworkState_ != NET_STATE.ONLINE &&
             isGaiaSignin && !gaiaSigninReloaded) {
           currentScreen.doReload();
           gaiaSigninReloaded = true;
         }
       }
-      lastNetworkState_ = state;
+      this.lastNetworkState_ = state;
 
       if (reason == ERROR_REASONS.PROXY_CONFIG_CHANGED && shouldOverlay &&
           isGaiaSignin && !gaiaSigninReloaded) {
