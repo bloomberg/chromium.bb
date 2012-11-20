@@ -623,6 +623,13 @@ scoped_ptr<VideoFrameCapturer> VideoFrameCapturer::Create() {
 }
 
 // static
+scoped_ptr<VideoFrameCapturer> VideoFrameCapturer::CreateWithFactory(
+    SharedBufferFactory* shared_buffer_factory) {
+  NOTIMPLEMENTED();
+  return scoped_ptr<VideoFrameCapturer>();
+}
+
+// static
 void VideoFrameCapturer::EnableXDamage(bool enable) {
   g_should_use_x_damage = enable;
 }

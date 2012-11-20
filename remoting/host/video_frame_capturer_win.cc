@@ -6,6 +6,8 @@
 
 #include <windows.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,6 +16,7 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "remoting/base/capture_data.h"
+#include "remoting/base/shared_buffer_factory.h"
 #include "remoting/host/differ.h"
 #include "remoting/host/video_frame.h"
 #include "remoting/host/video_frame_capturer_helper.h"
@@ -43,7 +46,8 @@ const uint32 kPixelBgraTransparent = 0x00000000;
 // A class representing a full-frame pixel buffer.
 class VideoFrameWin : public VideoFrame {
  public:
-  VideoFrameWin(HDC desktop_dc, const SkISize& size);
+  VideoFrameWin(HDC desktop_dc, const SkISize& size,
+                SharedBufferFactory* shared_buffer_factory);
   virtual ~VideoFrameWin();
 
   // Returns handle of the device independent bitmap representing this frame
@@ -51,7 +55,16 @@ class VideoFrameWin : public VideoFrame {
   HBITMAP GetBitmap();
 
  private:
+  // Allocates a device independent bitmap representing this frame buffer to
+  // GDI.
+  void AllocateBitmap(HDC desktop_dc, const SkISize& size);
+
+  // Handle of the device independent bitmap representing this frame buffer to
+  // GDI.
   base::win::ScopedBitmap bitmap_;
+
+  // Used to allocate shared memory buffers if set.
+  SharedBufferFactory* shared_buffer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameWin);
 };
@@ -63,6 +76,7 @@ class VideoFrameWin : public VideoFrame {
 class VideoFrameCapturerWin : public VideoFrameCapturer {
  public:
   VideoFrameCapturerWin();
+  explicit VideoFrameCapturerWin(SharedBufferFactory* shared_buffer_factory);
   virtual ~VideoFrameCapturerWin();
 
   // Overridden from VideoFrameCapturer:
@@ -90,6 +104,9 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
 
   // Capture the current cursor shape.
   void CaptureCursor();
+
+  // Used to allocate shared memory buffers if set.
+  SharedBufferFactory* shared_buffer_factory_;
 
   Delegate* delegate_;
 
@@ -132,7 +149,35 @@ static const int kPixelsPerMeter = 3780;
 // 32 bit RGBA is 4 bytes per pixel.
 static const int kBytesPerPixel = 4;
 
-VideoFrameWin::VideoFrameWin(HDC desktop_dc, const SkISize& size) {
+VideoFrameWin::VideoFrameWin(
+    HDC desktop_dc,
+    const SkISize& size,
+    SharedBufferFactory* shared_buffer_factory)
+    : shared_buffer_factory_(shared_buffer_factory) {
+  // Allocate a shared memory buffer.
+  uint32 buffer_size = size.width() * size.height() * kBytesPerPixel;
+  if (shared_buffer_factory_) {
+    scoped_refptr<SharedBuffer> shared_buffer =
+        shared_buffer_factory_->CreateSharedBuffer(buffer_size);
+    CHECK(shared_buffer->ptr() != NULL);
+    set_shared_buffer(shared_buffer);
+  }
+
+  AllocateBitmap(desktop_dc, size);
+}
+
+VideoFrameWin::~VideoFrameWin() {
+  if (shared_buffer())
+    shared_buffer_factory_->ReleaseSharedBuffer(shared_buffer());
+}
+
+HBITMAP VideoFrameWin::GetBitmap() {
+  return bitmap_;
+}
+
+void VideoFrameWin::AllocateBitmap(HDC desktop_dc, const SkISize& size) {
+  int bytes_per_row = size.width() * kBytesPerPixel;
+
   // Describe a device independent bitmap (DIB) that is the size of the desktop.
   BITMAPINFO bmi;
   memset(&bmi, 0, sizeof(bmi));
@@ -141,14 +186,17 @@ VideoFrameWin::VideoFrameWin(HDC desktop_dc, const SkISize& size) {
   bmi.bmiHeader.biPlanes = 1;
   bmi.bmiHeader.biBitCount = kBytesPerPixel * 8;
   bmi.bmiHeader.biSize = sizeof(bmi.bmiHeader);
-  int bytes_per_row = size.width() * kBytesPerPixel;
   bmi.bmiHeader.biSizeImage = bytes_per_row * size.height();
   bmi.bmiHeader.biXPelsPerMeter = kPixelsPerMeter;
   bmi.bmiHeader.biYPelsPerMeter = kPixelsPerMeter;
 
   // Create the DIB, and store a pointer to its pixel buffer.
+  HANDLE section_handle = NULL;
+  if (shared_buffer())
+    section_handle = shared_buffer()->handle();
   void* data = NULL;
-  bitmap_ = CreateDIBSection(desktop_dc, &bmi, DIB_RGB_COLORS, &data, NULL, 0);
+  bitmap_ = CreateDIBSection(desktop_dc, &bmi, DIB_RGB_COLORS, &data,
+                             section_handle, 0);
 
   // TODO(wez): Cope gracefully with failure (crbug.com/157170).
   CHECK(bitmap_ != NULL);
@@ -161,15 +209,19 @@ VideoFrameWin::VideoFrameWin(HDC desktop_dc, const SkISize& size) {
       bmi.bmiHeader.biSizeImage / std::abs(bmi.bmiHeader.biHeight));
 }
 
-VideoFrameWin::~VideoFrameWin() {
-}
-
-HBITMAP VideoFrameWin::GetBitmap() {
-  return bitmap_;
-}
-
 VideoFrameCapturerWin::VideoFrameCapturerWin()
-    : delegate_(NULL),
+    : shared_buffer_factory_(NULL),
+      delegate_(NULL),
+      last_cursor_size_(SkISize::Make(0, 0)),
+      desktop_dc_rect_(SkIRect::MakeEmpty()),
+      pixel_format_(media::VideoFrame::RGB32),
+      composition_func_(NULL) {
+}
+
+VideoFrameCapturerWin::VideoFrameCapturerWin(
+    SharedBufferFactory* shared_buffer_factory)
+    : shared_buffer_factory_(shared_buffer_factory),
+      delegate_(NULL),
       last_cursor_size_(SkISize::Make(0, 0)),
       desktop_dc_rect_(SkIRect::MakeEmpty()),
       pixel_format_(media::VideoFrame::RGB32),
@@ -322,6 +374,7 @@ void VideoFrameCapturerWin::CaptureRegion(const SkRegion& region) {
                                                   current_buffer->dimensions(),
                                                   pixel_format_));
   data->mutable_dirty_region() = region;
+  data->set_shared_buffer(current_buffer->shared_buffer());
 
   helper_.set_size_most_recent(data->size());
 
@@ -342,7 +395,8 @@ void VideoFrameCapturerWin::CaptureImage() {
 
     SkISize size = SkISize::Make(desktop_dc_rect_.width(),
                                  desktop_dc_rect_.height());
-    scoped_ptr<VideoFrameWin> buffer(new VideoFrameWin(*desktop_dc_, size));
+    scoped_ptr<VideoFrameWin> buffer(
+        new VideoFrameWin(*desktop_dc_, size, shared_buffer_factory_));
     queue_.ReplaceCurrentFrame(buffer.PassAs<VideoFrame>());
   }
 
@@ -551,6 +605,14 @@ void VideoFrameCapturerWin::CaptureCursor() {
 // static
 scoped_ptr<VideoFrameCapturer> VideoFrameCapturer::Create() {
   return scoped_ptr<VideoFrameCapturer>(new VideoFrameCapturerWin());
+}
+
+// static
+scoped_ptr<VideoFrameCapturer> VideoFrameCapturer::CreateWithFactory(
+    SharedBufferFactory* shared_buffer_factory) {
+  scoped_ptr<VideoFrameCapturerWin> capturer(
+      new VideoFrameCapturerWin(shared_buffer_factory));
+  return capturer.PassAs<VideoFrameCapturer>();
 }
 
 }  // namespace remoting

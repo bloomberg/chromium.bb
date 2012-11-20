@@ -820,4 +820,11 @@ scoped_ptr<VideoFrameCapturer> VideoFrameCapturer::Create() {
   return capturer.PassAs<VideoFrameCapturer>();
 }
 
+// static
+scoped_ptr<VideoFrameCapturer> VideoFrameCapturer::CreateWithFactory(
+    SharedBufferFactory* shared_buffer_factory) {
+  NOTIMPLEMENTED();
+  return scoped_ptr<VideoFrameCapturer>();
+}
+
 }  // namespace remoting

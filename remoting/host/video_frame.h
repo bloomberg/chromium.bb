@@ -7,6 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "remoting/base/shared_buffer.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "third_party/skia/include/core/SkSize.h"
 
@@ -20,6 +22,9 @@ class VideoFrame {
   int bytes_per_row() const { return bytes_per_row_; }
   const SkISize& dimensions() const { return dimensions_; }
   uint8* pixels() const { return pixels_; }
+  const scoped_refptr<SharedBuffer>& shared_buffer() const {
+    return shared_buffer_;
+  }
 
  protected:
   // Initializes an empty video frame. Derived classes are expected to allocate
@@ -33,6 +38,9 @@ class VideoFrame {
 
   void set_dimensions(const SkISize& dimensions) { dimensions_ = dimensions; }
   void set_pixels(uint8* ptr) { pixels_ = ptr; }
+  void set_shared_buffer(scoped_refptr<SharedBuffer> shared_buffer) {
+    shared_buffer_ = shared_buffer;
+  }
 
  private:
   // Bytes per row of pixels including necessary padding.
@@ -43,6 +51,9 @@ class VideoFrame {
 
   // Points to the pixel buffer.
   uint8* pixels_;
+
+  // Points to an optional shared memory buffer that backs up |pixels_| buffer.
+  scoped_refptr<SharedBuffer> shared_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrame);
 };

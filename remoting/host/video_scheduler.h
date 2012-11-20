@@ -86,7 +86,7 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
       protocol::ClientStub* client_stub,
       protocol::VideoStub* video_stub);
 
-  // VideoFrameCapturer::Delegate implementation
+  // VideoFrameCapturer::Delegate implementation.
   virtual void OnCaptureCompleted(
       scoped_refptr<CaptureData> capture_data) OVERRIDE;
   virtual void OnCursorShapeChanged(

@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/shared_memory.h"
 #include "media/base/video_frame.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
@@ -17,6 +18,7 @@ class CursorShapeInfo;
 }
 
 class CaptureData;
+class SharedBufferFactory;
 
 // Class used to capture video frames asynchronously.
 //
@@ -70,6 +72,10 @@ class VideoFrameCapturer {
 
   // Create platform-specific capturer.
   static scoped_ptr<VideoFrameCapturer> Create();
+
+  // Create platform-specific capturer that uses shared memory buffers.
+  static scoped_ptr<VideoFrameCapturer> CreateWithFactory(
+      SharedBufferFactory* shared_buffer_factory);
 
 #if defined(OS_LINUX)
   // Set whether the VideoFrameCapturer should try to use X DAMAGE support if it
