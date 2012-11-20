@@ -63,13 +63,6 @@ class UI_EXPORT ImageSkia {
   // Copies a reference to |other|'s storage.
   ImageSkia& operator=(const ImageSkia& other);
 
-#if defined(OS_WIN)
-  // Converts to gfx::ImageSkiaRep and SkBitmap.
-  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
-  // done.
-  operator SkBitmap&() const { return GetBitmap(); }
-#endif
-
   ~ImageSkia();
 
   // Returns a deep copy of this ImageSkia which has its own storage with

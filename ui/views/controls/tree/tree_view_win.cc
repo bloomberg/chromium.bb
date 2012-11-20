@@ -684,8 +684,10 @@ HIMAGELIST TreeView::CreateImageList() {
     // image index when adding items to the tree. If you change the
     // order you'll undoubtedly need to update itemex.iSelectedImage
     // when the item is added.
-    HICON h_closed_icon = IconUtil::CreateHICONFromSkBitmap(*closed_icon);
-    HICON h_opened_icon = IconUtil::CreateHICONFromSkBitmap(*opened_icon);
+    HICON h_closed_icon = IconUtil::CreateHICONFromSkBitmap(
+        *closed_icon->bitmap());
+    HICON h_opened_icon = IconUtil::CreateHICONFromSkBitmap(
+        *opened_icon->bitmap());
     ImageList_AddIcon(image_list, h_closed_icon);
     ImageList_AddIcon(image_list, h_opened_icon);
     DestroyIcon(h_closed_icon);
@@ -707,7 +709,8 @@ HIMAGELIST TreeView::CreateImageList() {
         model_icon = IconUtil::CreateHICONFromSkBitmap(
             canvas.ExtractImageRep().sk_bitmap());
       } else {
-        model_icon = IconUtil::CreateHICONFromSkBitmap(model_images[i]);
+        model_icon = IconUtil::CreateHICONFromSkBitmap(
+            *model_images[i].bitmap());
       }
       ImageList_AddIcon(image_list, model_icon);
       DestroyIcon(model_icon);

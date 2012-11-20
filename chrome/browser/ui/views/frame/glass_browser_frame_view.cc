@@ -479,7 +479,7 @@ void GlassBrowserFrameView::StopThrobber() {
     if (browser_view()->ShouldShowWindowIcon()) {
       gfx::ImageSkia icon = browser_view()->GetWindowIcon();
       if (!icon.isNull())
-        frame_icon = IconUtil::CreateHICONFromSkBitmap(icon);
+        frame_icon = IconUtil::CreateHICONFromSkBitmap(*icon.bitmap());
     }
 
     // Fallback to class icon.
