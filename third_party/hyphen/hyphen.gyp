@@ -6,7 +6,7 @@
   'targets': [
     {
       'target_name': 'hyphen',
-      'type': '<(library)',
+      'type': 'static_library',
       'include_dirs': [
         '.',
       ],
