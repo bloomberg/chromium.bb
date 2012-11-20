@@ -489,7 +489,7 @@
         ],
       },
     }],
-    ['target_arch != "arm" and (OS=="linux" or chromeos == 1)', {
+    ['target_arch != "arm" and chromeos == 1', {
       'sources': [
         'common/gpu/media/h264_dpb.cc',
         'common/gpu/media/h264_dpb.h',

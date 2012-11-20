@@ -794,7 +794,7 @@
         },
       ],
     }],
-    ['chromeos==1 or OS=="linux" or OS=="win" or OS=="mac"', {
+    ['chromeos==1 or OS=="win" or OS=="mac"', {
       'targets': [
           {
             'target_name': 'video_decode_accelerator_unittest',
