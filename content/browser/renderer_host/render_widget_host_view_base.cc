@@ -416,10 +416,10 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
   gfx::Display display =
       gfx::Screen::GetScreenFor(view)->GetDisplayNearestPoint(
           GetViewBounds().origin());
-  if (current_display_area_ == display.bounds() &&
+  if (current_display_area_ == display.work_area() &&
       current_device_scale_factor_ == display.device_scale_factor())
     return;
-  current_display_area_ = display.bounds();
+  current_display_area_ = display.work_area();
   current_device_scale_factor_ = display.device_scale_factor();
   if (impl)
     impl->NotifyScreenInfoChanged();

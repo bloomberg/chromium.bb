@@ -68,7 +68,7 @@ class PositionChangedMessageFilter : public ui::HWNDMessageFilter {
                              WPARAM w_param,
                              LPARAM l_param,
                              LRESULT* l_result) OVERRIDE {
-    if (message == WM_WINDOWPOSCHANGED)
+    if (message == WM_WINDOWPOSCHANGED || message == WM_SETTINGCHANGE)
       EnumChildWindows(hwnd, EnumChildProc, 0);
 
     return false;
