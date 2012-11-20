@@ -13,16 +13,25 @@
 namespace cc {
 
 class CC_EXPORT SolidColorDrawQuad : public DrawQuad {
-public:
-    static scoped_ptr<SolidColorDrawQuad> create(const SharedQuadState*, const gfx::Rect&, SkColor);
+ public:
+  static scoped_ptr<SolidColorDrawQuad> Create();
 
-    SkColor color() const { return m_color; };
+  void SetNew(const SharedQuadState* shared_quad_state,
+              gfx::Rect rect,
+              SkColor color);
 
-    static const SolidColorDrawQuad* materialCast(const DrawQuad*);
-private:
-    SolidColorDrawQuad(const SharedQuadState*, const gfx::Rect&, SkColor);
+  void SetAll(const SharedQuadState* shared_quad_state,
+              gfx::Rect rect,
+              gfx::Rect opaque_rect,
+              gfx::Rect visible_rect,
+              bool needs_blending,
+              SkColor color);
 
-    SkColor m_color;
+  SkColor color;
+
+  static const SolidColorDrawQuad* MaterialCast(const DrawQuad*);
+ private:
+  SolidColorDrawQuad();
 };
 
 }

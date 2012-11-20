@@ -69,10 +69,12 @@ TEST_F(SoftwareRendererTest, solidColorQuad)
     scoped_ptr<SharedQuadState> sharedQuadState = SharedQuadState::create(WebTransformationMatrix(), outerRect, outerRect, 1.0);
     RenderPass::Id rootRenderPassId = RenderPass::Id(1, 1);
     scoped_ptr<TestRenderPass> rootRenderPass = TestRenderPass::create(rootRenderPassId, outerRect, WebTransformationMatrix());
-    scoped_ptr<DrawQuad> outerQuad = SolidColorDrawQuad::create(sharedQuadState.get(), outerRect, SK_ColorYELLOW).PassAs<DrawQuad>();
-    scoped_ptr<DrawQuad> innerQuad = SolidColorDrawQuad::create(sharedQuadState.get(), innerRect, SK_ColorCYAN).PassAs<DrawQuad>();
-    rootRenderPass->appendQuad(innerQuad.Pass());
-    rootRenderPass->appendQuad(outerQuad.Pass());
+    scoped_ptr<SolidColorDrawQuad> outerQuad = SolidColorDrawQuad::Create();
+    outerQuad->SetNew(sharedQuadState.get(), outerRect, SK_ColorYELLOW);
+    scoped_ptr<SolidColorDrawQuad> innerQuad = SolidColorDrawQuad::Create();
+    innerQuad->SetNew(sharedQuadState.get(), innerRect, SK_ColorCYAN);
+    rootRenderPass->appendQuad(innerQuad.PassAs<DrawQuad>());
+    rootRenderPass->appendQuad(outerQuad.PassAs<DrawQuad>());
 
     RenderPassList list;
     RenderPassIdHashMap hashmap;
@@ -126,10 +128,12 @@ TEST_F(SoftwareRendererTest, tileQuad)
     scoped_ptr<SharedQuadState> sharedQuadState = SharedQuadState::create(WebTransformationMatrix(), outerRect, outerRect, 1.0);
     RenderPass::Id rootRenderPassId = RenderPass::Id(1, 1);
     scoped_ptr<TestRenderPass> rootRenderPass = TestRenderPass::create(rootRenderPassId, gfx::Rect(gfx::Point(), deviceViewportSize()), WebTransformationMatrix());
-    scoped_ptr<DrawQuad> outerQuad = TileDrawQuad::create(sharedQuadState.get(), outerRect, outerRect, resourceYellow, gfx::RectF(gfx::PointF(), outerSize), outerSize, false, false, false, false, false).PassAs<DrawQuad>();
-    scoped_ptr<DrawQuad> innerQuad = TileDrawQuad::create(sharedQuadState.get(), innerRect, innerRect, resourceCyan, gfx::RectF(gfx::PointF(), innerSize), innerSize, false, false, false, false, false).PassAs<DrawQuad>();
-    rootRenderPass->appendQuad(innerQuad.Pass());
-    rootRenderPass->appendQuad(outerQuad.Pass());
+    scoped_ptr<TileDrawQuad> outerQuad = TileDrawQuad::Create();
+    outerQuad->SetNew(sharedQuadState.get(), outerRect, outerRect, resourceYellow, gfx::RectF(gfx::PointF(), outerSize), outerSize, false, false, false, false, false);
+    scoped_ptr<TileDrawQuad> innerQuad = TileDrawQuad::Create();
+    innerQuad->SetNew(sharedQuadState.get(), innerRect, innerRect, resourceCyan, gfx::RectF(gfx::PointF(), innerSize), innerSize, false, false, false, false, false);
+    rootRenderPass->appendQuad(innerQuad.PassAs<DrawQuad>());
+    rootRenderPass->appendQuad(outerQuad.PassAs<DrawQuad>());
 
     RenderPassList list;
     RenderPassIdHashMap hashmap;

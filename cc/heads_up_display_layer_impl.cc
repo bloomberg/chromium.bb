@@ -95,7 +95,9 @@ void HeadsUpDisplayLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& a
     bool premultipliedAlpha = true;
     gfx::RectF uvRect(0, 0, 1, 1);
     bool flipped = false;
-    quadSink.append(TextureDrawQuad::create(sharedQuadState, quadRect, opaqueRect, m_hudTexture->id(), premultipliedAlpha, uvRect, flipped).PassAs<DrawQuad>(), appendQuadsData);
+    scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
+    quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_hudTexture->id(), premultipliedAlpha, uvRect, flipped);
+    quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 }
 
 void HeadsUpDisplayLayerImpl::updateHudTexture(ResourceProvider* resourceProvider)

@@ -13,22 +13,35 @@
 namespace cc {
 
 class CC_EXPORT TextureDrawQuad : public DrawQuad {
-public:
-    static scoped_ptr<TextureDrawQuad> create(const SharedQuadState*, const gfx::Rect&, const gfx::Rect& opaqueRect, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped);
-    gfx::RectF uvRect() const { return m_uvRect; }
+ public:
+  static scoped_ptr<TextureDrawQuad> Create();
 
-    unsigned resourceId() const { return m_resourceId; }
-    bool premultipliedAlpha() const { return  m_premultipliedAlpha; }
-    bool flipped() const { return m_flipped; }
+  void SetNew(const SharedQuadState* shared_quad_state,
+              gfx::Rect rect,
+              gfx::Rect opaque_rect,
+              unsigned resource_id,
+              bool premultiplied_alpha,
+              const gfx::RectF& uv_rect,
+              bool flipped);
 
-    static const TextureDrawQuad* materialCast(const DrawQuad*);
-private:
-    TextureDrawQuad(const SharedQuadState*, const gfx::Rect&, const gfx::Rect& opaqueRect, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped);
+  void SetAll(const SharedQuadState* shared_quad_state,
+              gfx::Rect rect,
+              gfx::Rect opaque_rect,
+              gfx::Rect visible_rect,
+              bool needs_blending,
+              unsigned resource_id,
+              bool premultiplied_alpha,
+              const gfx::RectF& uv_rect,
+              bool flipped);
 
-    unsigned m_resourceId;
-    bool m_premultipliedAlpha;
-    gfx::RectF m_uvRect;
-    bool m_flipped;
+  unsigned resource_id;
+  bool premultiplied_alpha;
+  gfx::RectF uv_rect;
+  bool flipped;
+
+  static const TextureDrawQuad* MaterialCast(const DrawQuad*);
+ private:
+  TextureDrawQuad();
 };
 
 }

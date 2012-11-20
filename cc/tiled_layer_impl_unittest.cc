@@ -199,11 +199,11 @@ TEST(TiledLayerImplTest, textureInfoForLayerNoBorders)
     getQuads(quads, sharedStates, tileSize, layerSize, LayerTilingData::NoBorderTexels, gfx::Rect(gfx::Point(), layerSize));
 
     for (size_t i = 0; i < quads.size(); ++i) {
-        const TileDrawQuad* quad = TileDrawQuad::materialCast(quads[i]);
+        const TileDrawQuad* quad = TileDrawQuad::MaterialCast(quads[i]);
 
-        EXPECT_NE(quad->resourceId(), 0u) << quadString << i;
-        EXPECT_EQ(quad->texCoordRect(), gfx::RectF(gfx::PointF(), tileSize)) << quadString << i;
-        EXPECT_EQ(quad->textureSize(), tileSize) << quadString << i;
+        EXPECT_NE(0u, quad->resource_id) << quadString << i;
+        EXPECT_EQ(gfx::RectF(gfx::PointF(), tileSize), quad->tex_coord_rect) << quadString << i;
+        EXPECT_EQ(tileSize, quad->texture_size) << quadString << i;
         EXPECT_EQ(gfx::Rect(0, 0, 1, 1), quad->opaque_rect) << quadString << i;
     }
 }

@@ -14,39 +14,37 @@
 namespace cc {
 
 class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
-public:
-    static scoped_ptr<YUVVideoDrawQuad> create(
-        const SharedQuadState* sharedQuadState,
-        const gfx::Rect& quadRect,
-        const gfx::Rect& opaqueRect,
-        const gfx::SizeF& texScale,
-        const VideoLayerImpl::FramePlane& yPlane,
-        const VideoLayerImpl::FramePlane& uPlane,
-        const VideoLayerImpl::FramePlane& vPlane);
+ public:
+  virtual ~YUVVideoDrawQuad();
 
-    virtual ~YUVVideoDrawQuad();
+  static scoped_ptr<YUVVideoDrawQuad> Create();
 
-    const gfx::SizeF& texScale() const { return m_texScale; }
+  void SetNew(const SharedQuadState* shared_quad_state,
+              gfx::Rect rect,
+              gfx::Rect opaque_rect,
+              gfx::SizeF tex_scale,
+              const VideoLayerImpl::FramePlane& y_plane,
+              const VideoLayerImpl::FramePlane& u_plane,
+              const VideoLayerImpl::FramePlane& v_plane);
 
-    const VideoLayerImpl::FramePlane& yPlane() const { return m_yPlane; }
-    const VideoLayerImpl::FramePlane& uPlane() const { return m_uPlane; }
-    const VideoLayerImpl::FramePlane& vPlane() const { return m_vPlane; }
+  void SetAll(const SharedQuadState* shared_quad_state,
+              gfx::Rect rect,
+              gfx::Rect opaque_rect,
+              gfx::Rect visible_rect,
+              bool needs_blending,
+              gfx::SizeF tex_scale,
+              const VideoLayerImpl::FramePlane& y_plane,
+              const VideoLayerImpl::FramePlane& u_plane,
+              const VideoLayerImpl::FramePlane& v_plane);
 
-    static const YUVVideoDrawQuad* materialCast(const DrawQuad*);
-private:
-    YUVVideoDrawQuad(
-        const SharedQuadState* sharedQuadState,
-        const gfx::Rect& quadRect,
-        const gfx::Rect& opaqueRect,
-        const gfx::SizeF& texScale,
-        const VideoLayerImpl::FramePlane& yPlane,
-        const VideoLayerImpl::FramePlane& uPlane,
-        const VideoLayerImpl::FramePlane& vPlane);
+  gfx::SizeF tex_scale;
+  VideoLayerImpl::FramePlane y_plane;
+  VideoLayerImpl::FramePlane u_plane;
+  VideoLayerImpl::FramePlane v_plane;
 
-    gfx::SizeF m_texScale;
-    VideoLayerImpl::FramePlane m_yPlane;
-    VideoLayerImpl::FramePlane m_uPlane;
-    VideoLayerImpl::FramePlane m_vPlane;
+  static const YUVVideoDrawQuad* MaterialCast(const DrawQuad*);
+ private:
+  YUVVideoDrawQuad();
 };
 
 }

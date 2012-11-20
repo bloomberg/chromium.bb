@@ -8,25 +8,45 @@
 
 namespace cc {
 
-scoped_ptr<DebugBorderDrawQuad> DebugBorderDrawQuad::create(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, SkColor color, int width)
-{
-    return make_scoped_ptr(new DebugBorderDrawQuad(sharedQuadState, quadRect, color, width));
+DebugBorderDrawQuad::DebugBorderDrawQuad()
+    : color(0),
+      width(0) {
 }
 
-DebugBorderDrawQuad::DebugBorderDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, SkColor color, int width)
-    : m_color(color)
-    , m_width(width)
-{
-    gfx::Rect opaqueRect;
-    gfx::Rect visibleRect = quadRect;
-    bool needsBlending = SkColorGetA(m_color) < 255;
-    DrawQuad::SetAll(sharedQuadState, DrawQuad::DEBUG_BORDER, quadRect, opaqueRect, visibleRect, needsBlending);
+scoped_ptr<DebugBorderDrawQuad> DebugBorderDrawQuad::Create() {
+  return make_scoped_ptr(new DebugBorderDrawQuad);
 }
 
-const DebugBorderDrawQuad* DebugBorderDrawQuad::materialCast(const DrawQuad* quad)
-{
-    DCHECK(quad->material == DrawQuad::DEBUG_BORDER);
-    return static_cast<const DebugBorderDrawQuad*>(quad);
+void DebugBorderDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
+                                 gfx::Rect rect,
+                                 SkColor color,
+                                 int width) {
+  gfx::Rect opaque_rect;
+  gfx::Rect visible_rect = rect;
+  bool needs_blending = SkColorGetA(color) < 255;
+  DrawQuad::SetAll(shared_quad_state, DrawQuad::DEBUG_BORDER, rect, opaque_rect,
+                   visible_rect, needs_blending);
+  this->color = color;
+  this->width = width;
+}
+
+void DebugBorderDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+                                 gfx::Rect rect,
+                                 gfx::Rect opaque_rect,
+                                 gfx::Rect visible_rect,
+                                 bool needs_blending,
+                                 SkColor color,
+                                 int width) {
+  DrawQuad::SetAll(shared_quad_state, DrawQuad::DEBUG_BORDER, rect, opaque_rect,
+                   visible_rect, needs_blending);
+  this->color = color;
+  this->width = width;
+}
+
+const DebugBorderDrawQuad* DebugBorderDrawQuad::MaterialCast(
+    const DrawQuad* quad) {
+  DCHECK(quad->material == DrawQuad::DEBUG_BORDER);
+  return static_cast<const DebugBorderDrawQuad*>(quad);
 }
 
 }  // namespace cc

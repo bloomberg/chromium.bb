@@ -8,26 +8,54 @@
 
 namespace cc {
 
-scoped_ptr<TextureDrawQuad> TextureDrawQuad::create(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped)
-{
-    return make_scoped_ptr(new TextureDrawQuad(sharedQuadState, quadRect, opaqueRect, resourceId, premultipliedAlpha, uvRect, flipped));
+TextureDrawQuad::TextureDrawQuad()
+    : resource_id(0),
+      premultiplied_alpha(false),
+      flipped(false) {
 }
 
-TextureDrawQuad::TextureDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped)
-    : m_resourceId(resourceId)
-    , m_premultipliedAlpha(premultipliedAlpha)
-    , m_uvRect(uvRect)
-    , m_flipped(flipped)
-{
-    gfx::Rect visibleRect = quadRect;
-    bool needsBlending = false;
-    DrawQuad::SetAll(sharedQuadState, DrawQuad::TEXTURE_CONTENT, quadRect, opaqueRect, visibleRect, needsBlending);
+scoped_ptr<TextureDrawQuad> TextureDrawQuad::Create() {
+  return make_scoped_ptr(new TextureDrawQuad);
 }
 
-const TextureDrawQuad* TextureDrawQuad::materialCast(const DrawQuad* quad)
-{
-    DCHECK(quad->material == DrawQuad::TEXTURE_CONTENT);
-    return static_cast<const TextureDrawQuad*>(quad);
+void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
+                             gfx::Rect rect,
+                             gfx::Rect opaque_rect,
+                             unsigned resource_id,
+                             bool premultiplied_alpha,
+                             const gfx::RectF& uv_rect,
+                             bool flipped) {
+  gfx::Rect visible_rect = rect;
+  bool needs_blending = false;
+  DrawQuad::SetAll(shared_quad_state, DrawQuad::TEXTURE_CONTENT, rect,
+                   opaque_rect, visible_rect, needs_blending);
+  this->resource_id = resource_id;
+  this->premultiplied_alpha = premultiplied_alpha;
+  this->uv_rect = uv_rect;
+  this->flipped = flipped;
+}
+
+void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+                             gfx::Rect rect,
+                             gfx::Rect opaque_rect,
+                             gfx::Rect visible_rect,
+                             bool needs_blending,
+                             unsigned resource_id,
+                             bool premultiplied_alpha,
+                             const gfx::RectF& uv_rect,
+                             bool flipped) {
+  DrawQuad::SetAll(shared_quad_state, DrawQuad::TEXTURE_CONTENT, rect,
+                   opaque_rect, visible_rect, needs_blending);
+  this->resource_id = resource_id;
+  this->premultiplied_alpha = premultiplied_alpha;
+  this->uv_rect = uv_rect;
+  this->flipped = flipped;
+}
+
+const TextureDrawQuad* TextureDrawQuad::MaterialCast(
+    const DrawQuad* quad) {
+  DCHECK(quad->material == DrawQuad::TEXTURE_CONTENT);
+  return static_cast<const TextureDrawQuad*>(quad);
 }
 
 }  // namespace cc

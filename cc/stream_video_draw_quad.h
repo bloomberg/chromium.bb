@@ -13,18 +13,29 @@
 namespace cc {
 
 class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
-public:
-    static scoped_ptr<StreamVideoDrawQuad> create(const SharedQuadState*, const gfx::Rect&, const gfx::Rect& opaqueRect, unsigned textureId, const WebKit::WebTransformationMatrix&);
+ public:
+  static scoped_ptr<StreamVideoDrawQuad> Create();
 
-    unsigned textureId() const { return m_textureId; }
-    const WebKit::WebTransformationMatrix& matrix() const { return m_matrix; }
+  void SetNew(const SharedQuadState* shared_quad_state,
+              gfx::Rect rect,
+              gfx::Rect opaque_rect,
+              unsigned texture_id,
+              const WebKit::WebTransformationMatrix& matrix);
 
-    static const StreamVideoDrawQuad* materialCast(const DrawQuad*);
-private:
-    StreamVideoDrawQuad(const SharedQuadState*, const gfx::Rect&, const gfx::Rect& opaqueRect, unsigned textureId, const WebKit::WebTransformationMatrix&);
+  void SetAll(const SharedQuadState* shared_quad_state,
+              gfx::Rect rect,
+              gfx::Rect opaque_rect,
+              gfx::Rect visible_rect,
+              bool needs_blending,
+              unsigned texture_id,
+              const WebKit::WebTransformationMatrix& matrix);
 
-    unsigned m_textureId;
-    WebKit::WebTransformationMatrix m_matrix;
+  unsigned texture_id;
+  WebKit::WebTransformationMatrix matrix;
+
+  static const StreamVideoDrawQuad* MaterialCast(const DrawQuad*);
+ private:
+  StreamVideoDrawQuad();
 };
 
 }

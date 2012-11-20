@@ -13,18 +13,28 @@
 namespace cc {
 
 class CC_EXPORT DebugBorderDrawQuad : public DrawQuad {
-public:
-    static scoped_ptr<DebugBorderDrawQuad> create(const SharedQuadState*, const gfx::Rect&, SkColor, int width);
+ public:
+  static scoped_ptr<DebugBorderDrawQuad> Create();
 
-    SkColor color() const { return m_color; };
-    int width() const { return m_width; }
+  void SetNew(const SharedQuadState* shared_quad_state,
+              gfx::Rect rect,
+              SkColor color,
+              int width);
 
-    static const DebugBorderDrawQuad* materialCast(const DrawQuad*);
-private:
-    DebugBorderDrawQuad(const SharedQuadState*, const gfx::Rect&, SkColor, int width);
+  void SetAll(const SharedQuadState* shared_quad_state,
+              gfx::Rect rect,
+              gfx::Rect opaque_rect,
+              gfx::Rect visible_rect,
+              bool needs_blending,
+              SkColor color,
+              int width);
 
-    SkColor m_color;
-    int m_width;
+  SkColor color;
+  int width;
+
+  static const DebugBorderDrawQuad* MaterialCast(const DrawQuad*);
+ private:
+  DebugBorderDrawQuad();
 };
 
 }

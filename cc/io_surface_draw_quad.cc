@@ -8,25 +8,49 @@
 
 namespace cc {
 
-scoped_ptr<IOSurfaceDrawQuad> IOSurfaceDrawQuad::create(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, const gfx::Size& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
-{
-    return make_scoped_ptr(new IOSurfaceDrawQuad(sharedQuadState, quadRect, opaqueRect, ioSurfaceSize, ioSurfaceTextureId, orientation));
+IOSurfaceDrawQuad::IOSurfaceDrawQuad()
+    : io_surface_texture_id(0),
+      orientation(FLIPPED) {
 }
 
-IOSurfaceDrawQuad::IOSurfaceDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, const gfx::Size& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
-    : m_ioSurfaceSize(ioSurfaceSize)
-    , m_ioSurfaceTextureId(ioSurfaceTextureId)
-    , m_orientation(orientation)
-{
-    gfx::Rect visibleRect = quadRect;
-    bool needsBlending = false;
-    DrawQuad::SetAll(sharedQuadState, DrawQuad::IO_SURFACE_CONTENT, quadRect, opaqueRect, visibleRect, needsBlending);
+scoped_ptr<IOSurfaceDrawQuad> IOSurfaceDrawQuad::Create() {
+  return make_scoped_ptr(new IOSurfaceDrawQuad);
 }
 
-const IOSurfaceDrawQuad* IOSurfaceDrawQuad::materialCast(const DrawQuad* quad)
-{
-    DCHECK(quad->material == DrawQuad::IO_SURFACE_CONTENT);
-    return static_cast<const IOSurfaceDrawQuad*>(quad);
+void IOSurfaceDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
+                               gfx::Rect rect,
+                               gfx::Rect opaque_rect,
+                               gfx::Size io_surface_size,
+                               unsigned io_surface_texture_id,
+                               Orientation orientation) {
+  gfx::Rect visible_rect = rect;
+  bool needs_blending = false;
+  DrawQuad::SetAll(shared_quad_state, DrawQuad::IO_SURFACE_CONTENT, rect,
+                   opaque_rect, visible_rect, needs_blending); 
+  this->io_surface_size = io_surface_size;
+  this->io_surface_texture_id = io_surface_texture_id;
+  this->orientation = orientation;
+}
+
+void IOSurfaceDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+                               gfx::Rect rect,
+                               gfx::Rect opaque_rect,
+                               gfx::Rect visible_rect,
+                               bool needs_blending,
+                               gfx::Size io_surface_size,
+                               unsigned io_surface_texture_id,
+                               Orientation orientation) {
+  DrawQuad::SetAll(shared_quad_state, DrawQuad::IO_SURFACE_CONTENT, rect,
+                   opaque_rect, visible_rect, needs_blending);
+  this->io_surface_size = io_surface_size;
+  this->io_surface_texture_id = io_surface_texture_id;
+  this->orientation = orientation;
+}
+
+const IOSurfaceDrawQuad* IOSurfaceDrawQuad::MaterialCast(
+    const DrawQuad* quad) {
+  DCHECK(quad->material == DrawQuad::IO_SURFACE_CONTENT);
+  return static_cast<const IOSurfaceDrawQuad*>(quad);
 }
 
 }  // namespace cc

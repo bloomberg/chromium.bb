@@ -189,19 +189,19 @@ void SoftwareRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
 
     switch (quad->material) {
     case DrawQuad::DEBUG_BORDER:
-        drawDebugBorderQuad(frame, DebugBorderDrawQuad::materialCast(quad));
+        drawDebugBorderQuad(frame, DebugBorderDrawQuad::MaterialCast(quad));
         break;
     case DrawQuad::SOLID_COLOR:
-        drawSolidColorQuad(frame, SolidColorDrawQuad::materialCast(quad));
+        drawSolidColorQuad(frame, SolidColorDrawQuad::MaterialCast(quad));
         break;
     case DrawQuad::TEXTURE_CONTENT:
-        drawTextureQuad(frame, TextureDrawQuad::materialCast(quad));
+        drawTextureQuad(frame, TextureDrawQuad::MaterialCast(quad));
         break;
     case DrawQuad::TILED_CONTENT:
-        drawTileQuad(frame, TileDrawQuad::materialCast(quad));
+        drawTileQuad(frame, TileDrawQuad::MaterialCast(quad));
         break;
     case DrawQuad::RENDER_PASS:
-        drawRenderPassQuad(frame, RenderPassDrawQuad::materialCast(quad));
+        drawRenderPassQuad(frame, RenderPassDrawQuad::MaterialCast(quad));
         break;
     default:
         drawUnsupportedQuad(frame, quad);
@@ -220,33 +220,33 @@ void SoftwareRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const Debu
     m_skCurrentCanvas->getTotalMatrix().mapPoints(transformedVertices, vertices, 4);
     m_skCurrentCanvas->resetMatrix();
 
-    m_skCurrentPaint.setColor(quad->color());
-    m_skCurrentPaint.setAlpha(quad->opacity() * SkColorGetA(quad->color()));
+    m_skCurrentPaint.setColor(quad->color);
+    m_skCurrentPaint.setAlpha(quad->opacity() * SkColorGetA(quad->color));
     m_skCurrentPaint.setStyle(SkPaint::kStroke_Style);
-    m_skCurrentPaint.setStrokeWidth(quad->width());
+    m_skCurrentPaint.setStrokeWidth(quad->width);
     m_skCurrentCanvas->drawPoints(SkCanvas::kPolygon_PointMode, 4, transformedVertices, m_skCurrentPaint);
 }
 
 void SoftwareRenderer::drawSolidColorQuad(const DrawingFrame& frame, const SolidColorDrawQuad* quad)
 {
-    m_skCurrentPaint.setColor(quad->color());
-    m_skCurrentPaint.setAlpha(quad->opacity() * SkColorGetA(quad->color()));
+    m_skCurrentPaint.setColor(quad->color);
+    m_skCurrentPaint.setAlpha(quad->opacity() * SkColorGetA(quad->color));
     m_skCurrentCanvas->drawRect(gfx::RectFToSkRect(quadVertexRect()), m_skCurrentPaint);
 }
 
 void SoftwareRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQuad* quad)
 {
-    if (!isSoftwareResource(quad->resourceId())) {
+    if (!isSoftwareResource(quad->resource_id)) {
         drawUnsupportedQuad(frame, quad);
         return;
     }
 
     // FIXME: Add support for non-premultiplied alpha.
-    ResourceProvider::ScopedReadLockSoftware lock(m_resourceProvider, quad->resourceId());
+    ResourceProvider::ScopedReadLockSoftware lock(m_resourceProvider, quad->resource_id);
     const SkBitmap* bitmap = lock.skBitmap();
-    gfx::RectF uvRect = gfx::ScaleRect(quad->uvRect(), bitmap->width(), bitmap->height());
+    gfx::RectF uvRect = gfx::ScaleRect(quad->uv_rect, bitmap->width(), bitmap->height());
     SkRect skUvRect = gfx::RectFToSkRect(uvRect);
-    if (quad->flipped())
+    if (quad->flipped)
         m_skCurrentCanvas->scale(1, -1);
     m_skCurrentCanvas->drawBitmapRectToRect(*bitmap, &skUvRect,
                                             gfx::RectFToSkRect(quadVertexRect()),
@@ -255,10 +255,10 @@ void SoftwareRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureD
 
 void SoftwareRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* quad)
 {
-    DCHECK(isSoftwareResource(quad->resourceId()));
-    ResourceProvider::ScopedReadLockSoftware lock(m_resourceProvider, quad->resourceId());
+    DCHECK(isSoftwareResource(quad->resource_id));
+    ResourceProvider::ScopedReadLockSoftware lock(m_resourceProvider, quad->resource_id);
 
-    SkRect uvRect = gfx::RectFToSkRect(quad->texCoordRect());
+    SkRect uvRect = gfx::RectFToSkRect(quad->tex_coord_rect);
     m_skCurrentPaint.setFilterBitmap(true);
     m_skCurrentCanvas->drawBitmapRectToRect(*lock.skBitmap(), &uvRect,
                                             gfx::RectFToSkRect(quadVertexRect()),
@@ -267,11 +267,11 @@ void SoftwareRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQua
 
 void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const RenderPassDrawQuad* quad)
 {
-    CachedResource* contentTexture = m_renderPassTextures.get(quad->renderPassId());
+    CachedResource* contentTexture = m_renderPassTextures.get(quad->render_pass_id);
     if (!contentTexture || !contentTexture->id())
         return;
 
-    const RenderPass* renderPass = frame.renderPassesById->get(quad->renderPassId());
+    const RenderPass* renderPass = frame.renderPassesById->get(quad->render_pass_id);
     DCHECK(renderPass);
     if (!renderPass)
         return;
@@ -299,16 +299,16 @@ void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const Rende
     if (filter)
         m_skCurrentPaint.setImageFilter(filter);
 
-    if (quad->maskResourceId()) {
-        ResourceProvider::ScopedReadLockSoftware maskLock(m_resourceProvider, quad->maskResourceId());
+    if (quad->mask_resource_id) {
+        ResourceProvider::ScopedReadLockSoftware maskLock(m_resourceProvider, quad->mask_resource_id);
 
         const SkBitmap* mask = maskLock.skBitmap();
 
         SkRect maskRect = SkRect::MakeXYWH(
-            quad->maskTexCoordOffsetX() * mask->width(),
-            quad->maskTexCoordOffsetY() * mask->height(),
-            quad->maskTexCoordScaleX() * mask->width(),
-            quad->maskTexCoordScaleY() * mask->height());
+            quad->mask_tex_coord_offset_x * mask->width(),
+            quad->mask_tex_coord_offset_y * mask->height(),
+            quad->mask_tex_coord_scale_x * mask->width(),
+            quad->mask_tex_coord_scale_y * mask->height());
 
         SkMatrix maskMat;
         maskMat.setRectToRect(maskRect, destRect, SkMatrix::kFill_ScaleToFit);

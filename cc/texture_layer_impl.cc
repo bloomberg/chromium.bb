@@ -43,7 +43,9 @@ void TextureLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQu
 
     gfx::Rect quadRect(gfx::Point(), contentBounds());
     gfx::Rect opaqueRect(contentsOpaque() ? quadRect : gfx::Rect());
-    quadSink.append(TextureDrawQuad::create(sharedQuadState, quadRect, opaqueRect, m_externalTextureResource, m_premultipliedAlpha, m_uvRect, m_flipped).PassAs<DrawQuad>(), appendQuadsData);
+    scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
+    quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_externalTextureResource, m_premultipliedAlpha, m_uvRect, m_flipped);
+    quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 }
 
 void TextureLayerImpl::didDraw(ResourceProvider* resourceProvider)

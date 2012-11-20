@@ -133,7 +133,9 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
                     borderColor = DebugColors::TileBorderColor();
                     borderWidth = DebugColors::TileBorderWidth(layerTreeHostImpl());
                 }
-                quadSink.append(DebugBorderDrawQuad::create(sharedQuadState, tileRect, borderColor, borderWidth).PassAs<DrawQuad>(), appendQuadsData);
+                scoped_ptr<DebugBorderDrawQuad> debugBorderQuad = DebugBorderDrawQuad::Create();
+                debugBorderQuad->SetNew(sharedQuadState, tileRect, borderColor, borderWidth);
+                quadSink.append(debugBorderQuad.PassAs<DrawQuad>(), appendQuadsData);
             }
         }
     }
@@ -160,9 +162,14 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
                     else
                         checkerColor = kTileCheckerboardColor;
 
-                    appendQuadsData.hadMissingTiles |= quadSink.append(CheckerboardDrawQuad::create(sharedQuadState, tileRect, checkerColor).PassAs<DrawQuad>(), appendQuadsData);
-                } else
-                    appendQuadsData.hadMissingTiles |= quadSink.append(SolidColorDrawQuad::create(sharedQuadState, tileRect, backgroundColor()).PassAs<DrawQuad>(), appendQuadsData);
+                    scoped_ptr<CheckerboardDrawQuad> checkerboardQuad = CheckerboardDrawQuad::Create();
+                    checkerboardQuad->SetNew(sharedQuadState, tileRect, checkerColor);
+                    appendQuadsData.hadMissingTiles |= quadSink.append(checkerboardQuad.PassAs<DrawQuad>(), appendQuadsData);
+                } else {
+                    scoped_ptr<SolidColorDrawQuad> solidColorQuad = SolidColorDrawQuad::Create();
+                    solidColorQuad->SetNew(sharedQuadState, tileRect, backgroundColor());
+                    appendQuadsData.hadMissingTiles |= quadSink.append(solidColorQuad.PassAs<DrawQuad>(), appendQuadsData);
+                }
                 continue;
             }
 
@@ -188,7 +195,9 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
             bool rightEdgeAA = i == m_tiler->numTilesX() - 1 && useAA;
             bool bottomEdgeAA = j == m_tiler->numTilesY() - 1 && useAA;
 
-            quadSink.append(TileDrawQuad::create(sharedQuadState, tileRect, tileOpaqueRect, tile->resourceId(), texCoordRect, textureSize, tile->contentsSwizzled(), leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA).PassAs<DrawQuad>(), appendQuadsData);
+            scoped_ptr<TileDrawQuad> quad = TileDrawQuad::Create();
+            quad->SetNew(sharedQuadState, tileRect, tileOpaqueRect, tile->resourceId(), texCoordRect, textureSize, tile->contentsSwizzled(), leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA);
+            quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
         }
     }
 }

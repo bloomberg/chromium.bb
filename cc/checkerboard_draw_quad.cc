@@ -8,24 +8,38 @@
 
 namespace cc {
 
-scoped_ptr<CheckerboardDrawQuad> CheckerboardDrawQuad::create(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, SkColor color)
-{
-    return make_scoped_ptr(new CheckerboardDrawQuad(sharedQuadState, quadRect, color));
+CheckerboardDrawQuad::CheckerboardDrawQuad() : color(0) {}
+
+scoped_ptr<CheckerboardDrawQuad> CheckerboardDrawQuad::Create() {
+  return make_scoped_ptr(new CheckerboardDrawQuad);
 }
 
-CheckerboardDrawQuad::CheckerboardDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, SkColor color)
-    : m_color(color)
-{
-    gfx::Rect opaqueRect = SkColorGetA(m_color) == 255 ? quadRect : gfx::Rect();
-    gfx::Rect visibleRect = quadRect;
-    bool needsBlending = false;
-    DrawQuad::SetAll(sharedQuadState, DrawQuad::CHECKERBOARD, quadRect, opaqueRect, visibleRect, needsBlending);
+void CheckerboardDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
+                                  gfx::Rect rect,
+                                  SkColor color) {
+  gfx::Rect opaque_rect = SkColorGetA(color) == 255 ? rect : gfx::Rect();
+  gfx::Rect visible_rect = rect;
+  bool needs_blending = false;
+  DrawQuad::SetAll(shared_quad_state, DrawQuad::CHECKERBOARD, rect, opaque_rect,
+                   visible_rect, needs_blending);
+  this->color = color;
 }
 
-const CheckerboardDrawQuad* CheckerboardDrawQuad::materialCast(const DrawQuad* quad)
-{
-    DCHECK(quad->material == DrawQuad::CHECKERBOARD);
-    return static_cast<const CheckerboardDrawQuad*>(quad);
+void CheckerboardDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+                                  gfx::Rect rect,
+                                  gfx::Rect opaque_rect,
+                                  gfx::Rect visible_rect,
+                                  bool needs_blending,
+                                  SkColor color) {
+  DrawQuad::SetAll(shared_quad_state, DrawQuad::CHECKERBOARD, rect, opaque_rect,
+                   visible_rect, needs_blending);
+  this->color = color;
+}
+
+const CheckerboardDrawQuad* CheckerboardDrawQuad::MaterialCast(
+    const DrawQuad* quad) {
+  DCHECK(quad->material == DrawQuad::CHECKERBOARD);
+  return static_cast<const CheckerboardDrawQuad*>(quad);
 }
 
 }  // namespace cc

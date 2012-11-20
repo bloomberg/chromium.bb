@@ -262,31 +262,31 @@ void GLRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
         NOTREACHED();
         break;
     case DrawQuad::CHECKERBOARD:
-        drawCheckerboardQuad(frame, CheckerboardDrawQuad::materialCast(quad));
+        drawCheckerboardQuad(frame, CheckerboardDrawQuad::MaterialCast(quad));
         break;
     case DrawQuad::DEBUG_BORDER:
-        drawDebugBorderQuad(frame, DebugBorderDrawQuad::materialCast(quad));
+        drawDebugBorderQuad(frame, DebugBorderDrawQuad::MaterialCast(quad));
         break;
     case DrawQuad::IO_SURFACE_CONTENT:
-        drawIOSurfaceQuad(frame, IOSurfaceDrawQuad::materialCast(quad));
+        drawIOSurfaceQuad(frame, IOSurfaceDrawQuad::MaterialCast(quad));
         break;
     case DrawQuad::RENDER_PASS:
-        drawRenderPassQuad(frame, RenderPassDrawQuad::materialCast(quad));
+        drawRenderPassQuad(frame, RenderPassDrawQuad::MaterialCast(quad));
         break;
     case DrawQuad::SOLID_COLOR:
-        drawSolidColorQuad(frame, SolidColorDrawQuad::materialCast(quad));
+        drawSolidColorQuad(frame, SolidColorDrawQuad::MaterialCast(quad));
         break;
     case DrawQuad::STREAM_VIDEO_CONTENT:
-        drawStreamVideoQuad(frame, StreamVideoDrawQuad::materialCast(quad));
+        drawStreamVideoQuad(frame, StreamVideoDrawQuad::MaterialCast(quad));
         break;
     case DrawQuad::TEXTURE_CONTENT:
-        drawTextureQuad(frame, TextureDrawQuad::materialCast(quad));
+        drawTextureQuad(frame, TextureDrawQuad::MaterialCast(quad));
         break;
     case DrawQuad::TILED_CONTENT:
-        drawTileQuad(frame, TileDrawQuad::materialCast(quad));
+        drawTileQuad(frame, TileDrawQuad::MaterialCast(quad));
         break;
     case DrawQuad::YUV_VIDEO_CONTENT:
-        drawYUVVideoQuad(frame, YUVVideoDrawQuad::materialCast(quad));
+        drawYUVVideoQuad(frame, YUVVideoDrawQuad::MaterialCast(quad));
         break;
     }
 }
@@ -297,7 +297,7 @@ void GLRenderer::drawCheckerboardQuad(const DrawingFrame& frame, const Checkerbo
     DCHECK(program && (program->initialized() || isContextLost()));
     GLC(context(), context()->useProgram(program->program()));
 
-    SkColor color = quad->color();
+    SkColor color = quad->color;
     GLC(context(), context()->uniform4f(program->fragmentShader().colorLocation(), SkColorGetR(color) / 255.0, SkColorGetG(color) / 255.0, SkColorGetB(color) / 255.0, 1));
 
     const int checkerboardWidth = 16;
@@ -331,12 +331,12 @@ void GLRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorde
     GLRenderer::toGLMatrix(&glMatrix[0], frame.projectionMatrix * renderMatrix);
     GLC(context(), context()->uniformMatrix4fv(program->vertexShader().matrixLocation(), 1, false, &glMatrix[0]));
 
-    SkColor color = quad->color();
+    SkColor color = quad->color;
     float alpha = SkColorGetA(color) / 255.0;
 
     GLC(context(), context()->uniform4f(program->fragmentShader().colorLocation(), (SkColorGetR(color) / 255.0) * alpha, (SkColorGetG(color) / 255.0) * alpha, (SkColorGetB(color) / 255.0) * alpha, alpha));
 
-    GLC(context(), context()->lineWidth(quad->width()));
+    GLC(context(), context()->lineWidth(quad->width));
 
     // The indices for the line are stored in the same array as the triangle indices.
     GLC(context(), context()->drawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 6 * sizeof(unsigned short)));
@@ -504,11 +504,11 @@ scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
 
 void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQuad* quad)
 {
-    CachedResource* contentsTexture = m_renderPassTextures.get(quad->renderPassId());
+    CachedResource* contentsTexture = m_renderPassTextures.get(quad->render_pass_id);
     if (!contentsTexture || !contentsTexture->id())
         return;
 
-    const RenderPass* renderPass = frame.renderPassesById->get(quad->renderPassId());
+    const RenderPass* renderPass = frame.renderPassesById->get(quad->render_pass_id);
     DCHECK(renderPass);
     if (!renderPass)
         return;
@@ -566,8 +566,8 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
 
     scoped_ptr<ResourceProvider::ScopedReadLockGL> maskResourceLock;
     unsigned maskTextureId = 0;
-    if (quad->maskResourceId()) {
-        maskResourceLock.reset(new ResourceProvider::ScopedReadLockGL(m_resourceProvider, quad->maskResourceId()));
+    if (quad->mask_resource_id) {
+        maskResourceLock.reset(new ResourceProvider::ScopedReadLockGL(m_resourceProvider, quad->mask_resource_id));
         maskTextureId = maskResourceLock->textureId();
     }
 
@@ -627,8 +627,8 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         DCHECK(shaderMaskTexCoordOffsetLocation != 1);
         GLC(context(), context()->activeTexture(GL_TEXTURE1));
         GLC(context(), context()->uniform1i(shaderMaskSamplerLocation, 1));
-        GLC(context(), context()->uniform2f(shaderMaskTexCoordScaleLocation, quad->maskTexCoordScaleX(), quad->maskTexCoordScaleY()));
-        GLC(context(), context()->uniform2f(shaderMaskTexCoordOffsetLocation, quad->maskTexCoordOffsetX(), quad->maskTexCoordOffsetY()));
+        GLC(context(), context()->uniform2f(shaderMaskTexCoordScaleLocation, quad->mask_tex_coord_scale_x, quad->mask_tex_coord_scale_y));
+        GLC(context(), context()->uniform2f(shaderMaskTexCoordOffsetLocation, quad->mask_tex_coord_offset_x, quad->mask_tex_coord_offset_y));
         context()->bindTexture(GL_TEXTURE_2D, maskTextureId);
         GLC(context(), context()->activeTexture(GL_TEXTURE0));
     }
@@ -659,7 +659,7 @@ void GLRenderer::drawSolidColorQuad(const DrawingFrame& frame, const SolidColorD
     const SolidColorProgram* program = solidColorProgram();
     GLC(context(), context()->useProgram(program->program()));
 
-    SkColor color = quad->color();
+    SkColor color = quad->color;
     float opacity = quad->opacity();
     float alpha = (SkColorGetA(color) / 255.0) * opacity;
 
@@ -697,7 +697,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
 {
     gfx::Rect tileRect = quad->visible_rect;
 
-    gfx::RectF texCoordRect = quad->texCoordRect();
+    gfx::RectF texCoordRect = quad->tex_coord_rect;
     float texToGeomScaleX = quad->rect.width() / texCoordRect.width();
     float texToGeomScaleY = quad->rect.height() / texCoordRect.height();
 
@@ -737,7 +737,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     float vertexTexScaleY = tileRect.height() / clampGeomRect.height();
 
     // Map to normalized texture coordinates.
-    const gfx::Size& textureSize = quad->textureSize();
+    const gfx::Size& textureSize = quad->texture_size;
     float fragmentTexTranslateX = clampTexRect.x() / textureSize.width();
     float fragmentTexTranslateY = clampTexRect.y() / textureSize.height();
     float fragmentTexScaleX = clampTexRect.width() / textureSize.width();
@@ -756,19 +756,19 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     TileProgramUniforms uniforms;
     // For now, we simply skip anti-aliasing with the quad is clipped. This only happens
     // on perspective transformed layers that go partially behind the camera.
-    if (quad->isAntialiased() && !clipped) {
-        if (quad->swizzleContents())
+    if (quad->IsAntialiased() && !clipped) {
+        if (quad->swizzle_contents)
             tileUniformLocation(tileProgramSwizzleAA(), uniforms);
         else
             tileUniformLocation(tileProgramAA(), uniforms);
     } else {
         if (quad->ShouldDrawWithBlending()) {
-            if (quad->swizzleContents())
+            if (quad->swizzle_contents)
                 tileUniformLocation(tileProgramSwizzle(), uniforms);
             else
                 tileUniformLocation(tileProgram(), uniforms);
         } else {
-            if (quad->swizzleContents())
+            if (quad->swizzle_contents)
                 tileUniformLocation(tileProgramSwizzleOpaque(), uniforms);
             else
                 tileUniformLocation(tileProgramOpaque(), uniforms);
@@ -777,10 +777,10 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
 
     GLC(context(), context()->useProgram(uniforms.program));
     GLC(context(), context()->uniform1i(uniforms.samplerLocation, 0));
-    ResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resourceId());
+    ResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resource_id);
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, quadResourceLock.textureId()));
 
-    bool useAA = !clipped && quad->isAntialiased();
+    bool useAA = !clipped && quad->IsAntialiased();
     if (useAA) {
         LayerQuad deviceLayerBounds = LayerQuad(gfx::QuadF(deviceLayerQuad.BoundingBox()));
         deviceLayerBounds.inflateAntiAliasingDistance();
@@ -817,13 +817,13 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
         LayerQuad::Edge rightEdge(topRight, bottomRight);
 
         // Only apply anti-aliasing to edges not clipped by culling or scissoring.
-        if (quad->topEdgeAA() && tileRect.y() == quad->rect.y())
+        if (quad->top_edge_aa && tileRect.y() == quad->rect.y())
             topEdge = deviceLayerEdges.top();
-        if (quad->leftEdgeAA() && tileRect.x() == quad->rect.x())
+        if (quad->left_edge_aa && tileRect.x() == quad->rect.x())
             leftEdge = deviceLayerEdges.left();
-        if (quad->rightEdgeAA() && tileRect.right() == quad->rect.right())
+        if (quad->right_edge_aa && tileRect.right() == quad->rect.right())
             rightEdge = deviceLayerEdges.right();
-        if (quad->bottomEdgeAA() && tileRect.bottom() == quad->rect.bottom())
+        if (quad->bottom_edge_aa && tileRect.bottom() == quad->rect.bottom())
             bottomEdge = deviceLayerEdges.bottom();
 
         float sign = gfx::QuadF(tileRect).IsCounterClockwise() ? -1 : 1;
@@ -878,9 +878,9 @@ void GLRenderer::drawYUVVideoQuad(const DrawingFrame& frame, const YUVVideoDrawQ
     const VideoYUVProgram* program = videoYUVProgram();
     DCHECK(program && (program->initialized() || isContextLost()));
 
-    const VideoLayerImpl::FramePlane& yPlane = quad->yPlane();
-    const VideoLayerImpl::FramePlane& uPlane = quad->uPlane();
-    const VideoLayerImpl::FramePlane& vPlane = quad->vPlane();
+    const VideoLayerImpl::FramePlane& yPlane = quad->y_plane;
+    const VideoLayerImpl::FramePlane& uPlane = quad->u_plane;
+    const VideoLayerImpl::FramePlane& vPlane = quad->v_plane;
 
     ResourceProvider::ScopedReadLockGL yPlaneLock(m_resourceProvider, yPlane.resourceId);
     ResourceProvider::ScopedReadLockGL uPlaneLock(m_resourceProvider, uPlane.resourceId);
@@ -894,7 +894,7 @@ void GLRenderer::drawYUVVideoQuad(const DrawingFrame& frame, const YUVVideoDrawQ
 
     GLC(context(), context()->useProgram(program->program()));
 
-    GLC(context(), context()->uniform2f(program->vertexShader().texScaleLocation(), quad->texScale().width(), quad->texScale().height()));
+    GLC(context(), context()->uniform2f(program->vertexShader().texScaleLocation(), quad->tex_scale.width(), quad->tex_scale.height()));
     GLC(context(), context()->uniform1i(program->fragmentShader().yTextureLocation(), 1));
     GLC(context(), context()->uniform1i(program->fragmentShader().uTextureLocation(), 2));
     GLC(context(), context()->uniform1i(program->fragmentShader().vTextureLocation(), 3));
@@ -937,10 +937,10 @@ void GLRenderer::drawStreamVideoQuad(const DrawingFrame& frame, const StreamVide
     const VideoStreamTextureProgram* program = videoStreamTextureProgram();
     GLC(context(), context()->useProgram(program->program()));
 
-    toGLMatrix(&glMatrix[0], quad->matrix());
+    toGLMatrix(&glMatrix[0], quad->matrix);
     GLC(context(), context()->uniformMatrix4fv(program->vertexShader().texMatrixLocation(), 1, false, glMatrix));
 
-    GLC(context(), context()->bindTexture(GL_TEXTURE_EXTERNAL_OES, quad->textureId()));
+    GLC(context(), context()->bindTexture(GL_TEXTURE_EXTERNAL_OES, quad->texture_id));
 
     GLC(context(), context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
 
@@ -977,19 +977,19 @@ struct TexTransformTextureProgramBinding : TextureProgramBinding {
 void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQuad* quad)
 {
     TexTransformTextureProgramBinding binding;
-    if (quad->flipped())
+    if (quad->flipped)
         binding.set(textureProgramFlip(), context());
     else
         binding.set(textureProgram(), context());
     GLC(context(), context()->useProgram(binding.programId));
     GLC(context(), context()->uniform1i(binding.samplerLocation, 0));
-    const gfx::RectF& uvRect = quad->uvRect();
+    const gfx::RectF& uvRect = quad->uv_rect;
     GLC(context(), context()->uniform4f(binding.texTransformLocation, uvRect.x(), uvRect.y(), uvRect.width(), uvRect.height()));
 
-    ResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resourceId());
+    ResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resource_id);
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, quadResourceLock.textureId()));
 
-    if (!quad->premultipliedAlpha()) {
+    if (!quad->premultiplied_alpha) {
         // As it turns out, the premultiplied alpha blending function (ONE, ONE_MINUS_SRC_ALPHA)
         // will never cause the alpha channel to be set to anything less than 1.0 if it is
         // initialized to that value! Therefore, premultipliedAlpha being false is the first
@@ -1004,7 +1004,7 @@ void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQua
     setShaderOpacity(quad->opacity(), binding.alphaLocation);
     drawQuadGeometry(frame, quad->quadTransform(), quad->rect, binding.matrixLocation);
 
-    if (!quad->premultipliedAlpha())
+    if (!quad->premultiplied_alpha)
         GLC(m_context, m_context->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
 }
 
@@ -1015,12 +1015,12 @@ void GLRenderer::drawIOSurfaceQuad(const DrawingFrame& frame, const IOSurfaceDra
 
     GLC(context(), context()->useProgram(binding.programId));
     GLC(context(), context()->uniform1i(binding.samplerLocation, 0));
-    if (quad->orientation() == IOSurfaceDrawQuad::Flipped)
-        GLC(context(), context()->uniform4f(binding.texTransformLocation, 0, quad->ioSurfaceSize().height(), quad->ioSurfaceSize().width(), quad->ioSurfaceSize().height() * -1.0));
+    if (quad->orientation == IOSurfaceDrawQuad::FLIPPED)
+        GLC(context(), context()->uniform4f(binding.texTransformLocation, 0, quad->io_surface_size.height(), quad->io_surface_size.width(), quad->io_surface_size.height() * -1.0));
     else
-        GLC(context(), context()->uniform4f(binding.texTransformLocation, 0, 0, quad->ioSurfaceSize().width(), quad->ioSurfaceSize().height()));
+        GLC(context(), context()->uniform4f(binding.texTransformLocation, 0, 0, quad->io_surface_size.width(), quad->io_surface_size.height()));
 
-    GLC(context(), context()->bindTexture(GL_TEXTURE_RECTANGLE_ARB, quad->ioSurfaceTextureId()));
+    GLC(context(), context()->bindTexture(GL_TEXTURE_RECTANGLE_ARB, quad->io_surface_texture_id));
 
     setShaderOpacity(quad->opacity(), binding.alphaLocation);
     drawQuadGeometry(frame, quad->quadTransform(), quad->rect, binding.matrixLocation);

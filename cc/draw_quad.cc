@@ -18,7 +18,7 @@
 namespace {
 
 template<typename T> T* TypedCopy(const cc::DrawQuad* other) {
-    return new T(*T::materialCast(other));
+  return new T(*T::MaterialCast(other));
 }
 
 }

@@ -179,7 +179,9 @@ void LayerImpl::appendDebugBorderQuad(QuadSink& quadList, const SharedQuadState*
     getDebugBorderProperties(&color, &width);
 
     gfx::Rect contentRect(gfx::Point(), contentBounds());
-    quadList.append(DebugBorderDrawQuad::create(sharedQuadState, contentRect, color, width).PassAs<DrawQuad>(), appendQuadsData);
+    scoped_ptr<DebugBorderDrawQuad> debugBorderQuad = DebugBorderDrawQuad::Create();
+    debugBorderQuad->SetNew(sharedQuadState, contentRect, color, width);
+    quadList.append(debugBorderQuad.PassAs<DrawQuad>(), appendQuadsData);
 }
 
 bool LayerImpl::hasContributingDelegatedRenderPasses() const

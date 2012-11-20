@@ -29,18 +29,37 @@ void TestRenderPass::appendOneOfEveryQuadType(cc::ResourceProvider* resourceProv
     cc::ResourceProvider::ResourceId textureResource = resourceProvider->createResourceFromExternalTexture(1);
     scoped_ptr<cc::SharedQuadState> sharedState = cc::SharedQuadState::create(WebTransformationMatrix(), rect, rect, 1);
 
-    appendQuad(cc::CheckerboardDrawQuad::create(sharedState.get(), rect, SK_ColorRED).PassAs<DrawQuad>());
-    appendQuad(cc::DebugBorderDrawQuad::create(sharedState.get(), rect, SK_ColorRED, 1).Pass().PassAs<DrawQuad>());
-    appendQuad(cc::IOSurfaceDrawQuad::create(sharedState.get(), rect, opaqueRect, gfx::Size(50, 50), 1, cc::IOSurfaceDrawQuad::Flipped).PassAs<DrawQuad>());
+    scoped_ptr<cc::CheckerboardDrawQuad> checkerboardQuad = cc::CheckerboardDrawQuad::Create();
+    checkerboardQuad->SetNew(sharedState.get(), rect, SK_ColorRED);
+    appendQuad(checkerboardQuad.PassAs<DrawQuad>());
 
-    cc::RenderPass::Id passId(1, 1);
-    appendQuad(cc::RenderPassDrawQuad::create(sharedState.get(), rect, passId, false, 0, rect, 0, 0, 0, 0).PassAs<DrawQuad>());
+    scoped_ptr<cc::DebugBorderDrawQuad> debugBorderQuad = cc::DebugBorderDrawQuad::Create();
+    debugBorderQuad->SetNew(sharedState.get(), rect, SK_ColorRED, 1);
+    appendQuad(debugBorderQuad.PassAs<DrawQuad>());
 
-    appendQuad(cc::SolidColorDrawQuad::create(sharedState.get(), rect, SK_ColorRED).PassAs<DrawQuad>());
-    appendQuad(cc::StreamVideoDrawQuad::create(sharedState.get(), rect, opaqueRect, 1, WebKit::WebTransformationMatrix()).PassAs<DrawQuad>());
-    appendQuad(cc::TextureDrawQuad::create(sharedState.get(), rect, opaqueRect, textureResource, false, rect, false).PassAs<DrawQuad>());
+    scoped_ptr<cc::IOSurfaceDrawQuad> ioSurfaceQuad = cc::IOSurfaceDrawQuad::Create();
+    ioSurfaceQuad->SetNew(sharedState.get(), rect, opaqueRect, gfx::Size(50, 50), 1, cc::IOSurfaceDrawQuad::FLIPPED);
+    appendQuad(ioSurfaceQuad.PassAs<DrawQuad>());
 
-    appendQuad(cc::TileDrawQuad::create(sharedState.get(), rect, opaqueRect, textureResource, gfx::RectF(0, 0, 100, 100), gfx::Size(100, 100), false, false, false, false, false).PassAs<DrawQuad>());
+    scoped_ptr<cc::RenderPassDrawQuad> renderPassQuad = cc::RenderPassDrawQuad::Create();
+    renderPassQuad->SetNew(sharedState.get(), rect, cc::RenderPass::Id(1, 1), false, 0, rect, 0, 0, 0, 0);
+    appendQuad(renderPassQuad.PassAs<DrawQuad>());
+
+    scoped_ptr<cc::SolidColorDrawQuad> solidColorQuad = cc::SolidColorDrawQuad::Create();
+    solidColorQuad->SetNew(sharedState.get(), rect, SK_ColorRED);
+    appendQuad(solidColorQuad.PassAs<DrawQuad>());
+
+    scoped_ptr<cc::StreamVideoDrawQuad> streamVideoQuad = cc::StreamVideoDrawQuad::Create();
+    streamVideoQuad->SetNew(sharedState.get(), rect, opaqueRect, 1, WebKit::WebTransformationMatrix());
+    appendQuad(streamVideoQuad.PassAs<DrawQuad>());
+
+    scoped_ptr<cc::TextureDrawQuad> textureQuad = cc::TextureDrawQuad::Create();
+    textureQuad->SetNew(sharedState.get(), rect, opaqueRect, textureResource, false, rect, false);
+    appendQuad(textureQuad.PassAs<DrawQuad>());
+
+    scoped_ptr<cc::TileDrawQuad> tileQuad = cc::TileDrawQuad::Create();
+    tileQuad->SetNew(sharedState.get(), rect, opaqueRect, textureResource, gfx::RectF(0, 0, 100, 100), gfx::Size(100, 100), false, false, false, false, false);
+    appendQuad(tileQuad.PassAs<DrawQuad>());
 
     cc::VideoLayerImpl::FramePlane planes[3];
     for (int i = 0; i < 3; ++i) {
@@ -48,7 +67,10 @@ void TestRenderPass::appendOneOfEveryQuadType(cc::ResourceProvider* resourceProv
         planes[i].size = gfx::Size(100, 100);
         planes[i].format = GL_LUMINANCE;
     }
-    appendQuad(cc::YUVVideoDrawQuad::create(sharedState.get(), rect, opaqueRect, gfx::Size(100, 100), planes[0], planes[1], planes[2]).PassAs<DrawQuad>());
+    scoped_ptr<cc::YUVVideoDrawQuad> yuvQuad = cc::YUVVideoDrawQuad::Create();
+    yuvQuad->SetNew(sharedState.get(), rect, opaqueRect, gfx::Size(100, 100), planes[0], planes[1], planes[2]);
+    appendQuad(yuvQuad.PassAs<DrawQuad>());
+
     appendSharedQuadState(sharedState.Pass());
 }
 

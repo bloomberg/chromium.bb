@@ -99,7 +99,9 @@ void RenderPass::appendQuadsToFillScreen(LayerImpl* rootLayer, SkColor screenBac
         // The root layer transform is composed of translations and scales only, no perspective, so mapping is sufficient.
         gfx::Rect layerRect = MathUtil::mapClippedRect(transformToLayerSpace, fillRects.rect());
         // Skip the quad culler and just append the quads directly to avoid occlusion checks.
-        m_quadList.append(SolidColorDrawQuad::create(sharedQuadState, layerRect, screenBackgroundColor).PassAs<DrawQuad>());
+        scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
+        quad->SetNew(sharedQuadState, layerRect, screenBackgroundColor);
+        m_quadList.append(quad.PassAs<DrawQuad>());
     }
 }
 

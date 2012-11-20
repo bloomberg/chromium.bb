@@ -564,19 +564,19 @@ static void removeRenderPassesRecursive(RenderPass::Id removeRenderPassId, Layer
         if (currentQuad->material != DrawQuad::RENDER_PASS)
             continue;
 
-        RenderPass::Id nextRemoveRenderPassId = RenderPassDrawQuad::materialCast(currentQuad)->renderPassId();
+        RenderPass::Id nextRemoveRenderPassId = RenderPassDrawQuad::MaterialCast(currentQuad)->render_pass_id;
         removeRenderPassesRecursive(nextRemoveRenderPassId, frame);
     }
 }
 
 bool LayerTreeHostImpl::CullRenderPassesWithCachedTextures::shouldRemoveRenderPass(const RenderPassDrawQuad& quad, const FrameData&) const
 {
-    return quad.contentsChangedSinceLastFrame().IsEmpty() && m_renderer.haveCachedResourcesForRenderPassId(quad.renderPassId());
+    return quad.contents_changed_since_last_frame.IsEmpty() && m_renderer.haveCachedResourcesForRenderPassId(quad.render_pass_id);
 }
 
 bool LayerTreeHostImpl::CullRenderPassesWithNoQuads::shouldRemoveRenderPass(const RenderPassDrawQuad& quad, const FrameData& frame) const
 {
-    const RenderPass* renderPass = findRenderPassById(quad.renderPassId(), frame);
+    const RenderPass* renderPass = findRenderPassById(quad.render_pass_id, frame);
     const RenderPassList& renderPasses = frame.renderPasses;
     RenderPassList::const_iterator foundPass = std::find(renderPasses.begin(), renderPasses.end(), renderPass);
 
@@ -592,7 +592,7 @@ bool LayerTreeHostImpl::CullRenderPassesWithNoQuads::shouldRemoveRenderPass(cons
         if (currentQuad->material != DrawQuad::RENDER_PASS)
             return false;
 
-        const RenderPass* contributingPass = findRenderPassById(RenderPassDrawQuad::materialCast(currentQuad)->renderPassId(), frame);
+        const RenderPass* contributingPass = findRenderPassById(RenderPassDrawQuad::MaterialCast(currentQuad)->render_pass_id, frame);
         RenderPassList::const_iterator foundContributingPass = std::find(renderPasses.begin(), renderPasses.end(), contributingPass);
         if (foundContributingPass != renderPasses.end())
             return false;
@@ -629,7 +629,7 @@ void LayerTreeHostImpl::removeRenderPasses(RenderPassCuller culler, FrameData& f
             // change. So, capture the iterator position from the end of the
             // list, and restore it after the change.
             int positionFromEnd = frame.renderPasses.size() - it;
-            removeRenderPassesRecursive(renderPassQuad->renderPassId(), frame);
+            removeRenderPassesRecursive(renderPassQuad->render_pass_id, frame);
             it = frame.renderPasses.size() - positionFromEnd;
             DCHECK(it >= 0);
         }

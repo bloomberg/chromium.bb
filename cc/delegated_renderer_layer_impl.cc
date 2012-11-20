@@ -163,11 +163,11 @@ void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, Appen
         if (quad->material != DrawQuad::RENDER_PASS)
             copyQuad = quad->Copy(copiedSharedQuadState);
         else {
-            RenderPass::Id contributingDelegatedRenderPassId = RenderPassDrawQuad::materialCast(quad)->renderPassId();
+            RenderPass::Id contributingDelegatedRenderPassId = RenderPassDrawQuad::MaterialCast(quad)->render_pass_id;
             RenderPass::Id contributingRenderPassId = convertDelegatedRenderPassId(contributingDelegatedRenderPassId);
             DCHECK(contributingRenderPassId != appendQuadsData.renderPassId);
 
-            copyQuad = RenderPassDrawQuad::materialCast(quad)->copy(copiedSharedQuadState, contributingRenderPassId).PassAs<DrawQuad>();
+            copyQuad = RenderPassDrawQuad::MaterialCast(quad)->Copy(copiedSharedQuadState, contributingRenderPassId).PassAs<DrawQuad>();
         }
         DCHECK(copyQuad.get());
 

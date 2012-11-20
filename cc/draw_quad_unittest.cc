@@ -71,82 +71,162 @@ void compareDrawQuad(DrawQuad* quad, DrawQuad* copy, SharedQuadState* copyShared
 
 #define QUAD_DATA \
     gfx::Rect quadRect(30, 40, 50, 60); \
-    gfx::Rect quadVisibleRect(40, 50, 30, 20);
+    gfx::Rect quadVisibleRect(40, 50, 30, 20); \
+    gfx::Rect quadOpaqueRect(60, 55, 10, 10); \
+    bool needsBlending = true;
 
-#define SETUP_AND_COPY_QUAD(Type, quad) \
-    quad->visible_rect = quadVisibleRect; \
-    scoped_ptr<DrawQuad> copy(quad->Copy(copySharedState.get())); \
-    compareDrawQuad(quad.get(), copy.get(), copySharedState.get()); \
-    const Type* copyQuad = Type::materialCast(copy.get());
+#define SETUP_AND_COPY_QUAD_NEW(Type, quad) \
+    scoped_ptr<DrawQuad> copyNew(quadNew->Copy(copySharedState.get())); \
+    compareDrawQuad(quadNew.get(), copyNew.get(), copySharedState.get()); \
+    const Type* copyQuad = Type::MaterialCast(copyNew.get());
 
-#define SETUP_AND_COPY_QUAD_1(Type, quad, a) \
-    quad->visible_rect = quadVisibleRect; \
-    scoped_ptr<DrawQuad> copy(quad->copy(copySharedState.get(), a));    \
-    compareDrawQuad(quad.get(), copy.get(), copySharedState.get()); \
-    const Type* copyQuad = Type::materialCast(copy.get());
+#define SETUP_AND_COPY_QUAD_ALL(Type, quad) \
+    scoped_ptr<DrawQuad> copyAll(quadAll->Copy(copySharedState.get())); \
+    compareDrawQuad(quadAll.get(), copyAll.get(), copySharedState.get()); \
+    copyQuad = Type::MaterialCast(copyAll.get());
 
-#define CREATE_QUAD_0(Type) \
-    QUAD_DATA \
-    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect)); \
-    SETUP_AND_COPY_QUAD(Type, quad); \
-    UNUSED_PARAM(copyQuad);
+#define SETUP_AND_COPY_QUAD_NEW_1(Type, quad, a) \
+    scoped_ptr<DrawQuad> copyNew(quadNew->Copy(copySharedState.get(), a));  \
+    compareDrawQuad(quadNew.get(), copyNew.get(), copySharedState.get()); \
+    const Type* copyQuad = Type::MaterialCast(copyNew.get());
 
-#define CREATE_QUAD_1(Type, a) \
-    QUAD_DATA \
-    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a)); \
-    SETUP_AND_COPY_QUAD(Type, quad);
+#define SETUP_AND_COPY_QUAD_ALL_1(Type, quad, a) \
+    scoped_ptr<DrawQuad> copyAll(quadAll->Copy(copySharedState.get(), a)); \
+    compareDrawQuad(quadAll.get(), copyAll.get(), copySharedState.get()); \
+    copyQuad = Type::MaterialCast(copyAll.get());
 
-#define CREATE_QUAD_2(Type, a, b) \
-    QUAD_DATA \
-    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b)); \
-    SETUP_AND_COPY_QUAD(Type, quad);
+#define CREATE_QUAD_1_NEW(Type, a) \
+    scoped_ptr<Type> quadNew(Type::Create()); \
+    { QUAD_DATA \
+      quadNew->SetNew(sharedState.get(), quadRect, a); } \
+    SETUP_AND_COPY_QUAD_NEW(Type, quadNew);
 
-#define CREATE_QUAD_3(Type, a, b, c) \
-    QUAD_DATA \
-    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c)); \
-    SETUP_AND_COPY_QUAD(Type, quad);
+#define CREATE_QUAD_1_ALL(Type, a) \
+    scoped_ptr<Type> quadAll(Type::Create()); \
+    { QUAD_DATA \
+      quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a); } \
+    SETUP_AND_COPY_QUAD_ALL(Type, quadAll);
 
-#define CREATE_QUAD_4(Type, a, b, c, d) \
-    QUAD_DATA \
-    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d)); \
-    SETUP_AND_COPY_QUAD(Type, quad);
+#define CREATE_QUAD_2_NEW(Type, a, b) \
+    scoped_ptr<Type> quadNew(Type::Create()); \
+    { QUAD_DATA \
+      quadNew->SetNew(sharedState.get(), quadRect, a, b); } \
+    SETUP_AND_COPY_QUAD_NEW(Type, quadNew);
 
-#define CREATE_QUAD_5(Type, a, b, c, d, e) \
-    QUAD_DATA \
-    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e)); \
-    SETUP_AND_COPY_QUAD(Type, quad);
+#define CREATE_QUAD_2_ALL(Type, a, b) \
+    scoped_ptr<Type> quadAll(Type::Create()); \
+    { QUAD_DATA \
+      quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a, b); } \
+    SETUP_AND_COPY_QUAD_ALL(Type, quadAll);
 
-#define CREATE_QUAD_6(Type, a, b, c, d, e, f) \
-    QUAD_DATA \
-    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f)); \
-    SETUP_AND_COPY_QUAD(Type, quad);
+#define CREATE_QUAD_3_NEW(Type, a, b, c) \
+    scoped_ptr<Type> quadNew(Type::Create()); \
+    { QUAD_DATA \
+      quadNew->SetNew(sharedState.get(), quadRect, a, b, c); } \
+    SETUP_AND_COPY_QUAD_NEW(Type, quadNew);
 
-#define CREATE_QUAD_7(Type, a, b, c, d, e, f, g) \
-    QUAD_DATA \
-    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g)); \
-    SETUP_AND_COPY_QUAD(Type, quad);
+#define CREATE_QUAD_3_ALL(Type, a, b, c) \
+    scoped_ptr<Type> quadAll(Type::Create()); \
+    { QUAD_DATA \
+      quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a, b, c); } \
+    SETUP_AND_COPY_QUAD_ALL(Type, quadAll);
 
-#define CREATE_QUAD_8(Type, a, b, c, d, e, f, g, h) \
-    QUAD_DATA \
-    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g, h)); \
-    SETUP_AND_COPY_QUAD(Type, quad);
+#define CREATE_QUAD_4_NEW(Type, a, b, c, d) \
+    scoped_ptr<Type> quadNew(Type::Create()); \
+    { QUAD_DATA \
+      quadNew->SetNew(sharedState.get(), quadRect, a, b, c, d); } \
+    SETUP_AND_COPY_QUAD_NEW(Type, quadNew);
 
-#define CREATE_QUAD_8_1(Type, a, b, c, d, e, f, g, h, copyA) \
-    QUAD_DATA \
-    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g, h)); \
-    SETUP_AND_COPY_QUAD_1(Type, quad, copyA);
+#define CREATE_QUAD_4_ALL(Type, a, b, c, d) \
+    scoped_ptr<Type> quadAll(Type::Create()); \
+    { QUAD_DATA \
+      quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a, b, c, d); } \
+    SETUP_AND_COPY_QUAD_ALL(Type, quadAll);
 
-#define CREATE_QUAD_9(Type, a, b, c, d, e, f, g, h, i) \
-    QUAD_DATA \
-    scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g, h, i)); \
-    SETUP_AND_COPY_QUAD(Type, quad);
+#define CREATE_QUAD_5_NEW(Type, a, b, c, d, e) \
+    scoped_ptr<Type> quadNew(Type::Create()); \
+    { QUAD_DATA \
+      quadNew->SetNew(sharedState.get(), quadRect, a, b, c, d, e); } \
+    SETUP_AND_COPY_QUAD_NEW(Type, quadNew);
+
+#define CREATE_QUAD_5_ALL(Type, a, b, c, d, e) \
+    scoped_ptr<Type> quadAll(Type::Create()); \
+    { QUAD_DATA \
+      quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a, b, c, d, e); } \
+    SETUP_AND_COPY_QUAD_ALL(Type, quadAll);
+
+#define CREATE_QUAD_6_NEW(Type, a, b, c, d, e, f) \
+    scoped_ptr<Type> quadNew(Type::Create()); \
+    { QUAD_DATA \
+      quadNew->SetNew(sharedState.get(), quadRect, a, b, c, d, e, f); } \
+    SETUP_AND_COPY_QUAD_NEW(Type, quadNew);
+
+#define CREATE_QUAD_6_ALL(Type, a, b, c, d, e, f) \
+    scoped_ptr<Type> quadAll(Type::Create()); \
+    { QUAD_DATA \
+      quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a, b, c, d, e, f); } \
+    SETUP_AND_COPY_QUAD_ALL(Type, quadAll);
+
+#define CREATE_QUAD_7_NEW(Type, a, b, c, d, e, f, g) \
+    scoped_ptr<Type> quadNew(Type::Create()); \
+    { QUAD_DATA \
+      quadNew->SetNew(sharedState.get(), quadRect, a, b, c, d, e, f, g); } \
+    SETUP_AND_COPY_QUAD_NEW(Type, quadNew);
+
+#define CREATE_QUAD_7_ALL(Type, a, b, c, d, e, f, g) \
+    scoped_ptr<Type> quadAll(Type::Create()); \
+    { QUAD_DATA \
+      quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a, b, c, d, e, f, g); } \
+    SETUP_AND_COPY_QUAD_ALL(Type, quadAll);
+
+#define CREATE_QUAD_8_NEW(Type, a, b, c, d, e, f, g, h) \
+    scoped_ptr<Type> quadNew(Type::Create()); \
+    { QUAD_DATA \
+      quadNew->SetNew(sharedState.get(), quadRect, a, b, c, d, e, f, g, h); } \
+    SETUP_AND_COPY_QUAD_NEW(Type, quadNew);
+
+#define CREATE_QUAD_8_ALL(Type, a, b, c, d, e, f, g, h) \
+    scoped_ptr<Type> quadAll(Type::Create()); \
+    { QUAD_DATA \
+      quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a, b, c, d, e, f, g, h); } \
+    SETUP_AND_COPY_QUAD_ALL(Type, quadAll);
+
+#define CREATE_QUAD_8_NEW_1(Type, a, b, c, d, e, f, g, h, copyA) \
+    scoped_ptr<Type> quadNew(Type::Create()); \
+    { QUAD_DATA \
+      quadNew->SetNew(sharedState.get(), quadRect, a, b, c, d, e, f, g, h); } \
+    SETUP_AND_COPY_QUAD_NEW_1(Type, quadNew, copyA);
+
+#define CREATE_QUAD_8_ALL_1(Type, a, b, c, d, e, f, g, h, copyA) \
+    scoped_ptr<Type> quadAll(Type::Create()); \
+    { QUAD_DATA \
+      quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a, b, c, d, e, f, g, h); } \
+    SETUP_AND_COPY_QUAD_ALL_1(Type, quadAll, copyA);
+
+#define CREATE_QUAD_9_NEW(Type, a, b, c, d, e, f, g, h, i) \
+    scoped_ptr<Type> quadNew(Type::Create()); \
+    { QUAD_DATA \
+      quadNew->SetNew(sharedState.get(), quadRect, a, b, c, d, e, f, g, h, i); } \
+    SETUP_AND_COPY_QUAD_NEW(Type, quadNew);
+
+#define CREATE_QUAD_9_ALL(Type, a, b, c, d, e, f, g, h, i) \
+    scoped_ptr<Type> quadAll(Type::Create()); \
+    { QUAD_DATA \
+      quadAll->SetAll(sharedState.get(), quadRect, quadOpaqueRect, quadVisibleRect, needsBlending, a, b, c, d, e, f, g, h, i); } \
+    SETUP_AND_COPY_QUAD_ALL(Type, quadAll);
 
 TEST(DrawQuadTest, copyCheckerboardDrawQuad)
 {
     SkColor color = 0xfabb0011;
     CREATE_SHARED_STATE();
-    CREATE_QUAD_1(CheckerboardDrawQuad, color);
-    EXPECT_EQ(color, copyQuad->color());
+
+    CREATE_QUAD_1_NEW(CheckerboardDrawQuad, color);
+    EXPECT_EQ(DrawQuad::CHECKERBOARD, copyQuad->material);
+    EXPECT_EQ(color, copyQuad->color);
+
+    CREATE_QUAD_1_ALL(CheckerboardDrawQuad, color);
+    EXPECT_EQ(DrawQuad::CHECKERBOARD, copyQuad->material);
+    EXPECT_EQ(color, copyQuad->color);
 }
 
 TEST(DrawQuadTest, copyDebugBorderDrawQuad)
@@ -154,9 +234,16 @@ TEST(DrawQuadTest, copyDebugBorderDrawQuad)
     SkColor color = 0xfabb0011;
     int width = 99;
     CREATE_SHARED_STATE();
-    CREATE_QUAD_2(DebugBorderDrawQuad, color, width);
-    EXPECT_EQ(color, copyQuad->color());
-    EXPECT_EQ(width, copyQuad->width());
+
+    CREATE_QUAD_2_NEW(DebugBorderDrawQuad, color, width);
+    EXPECT_EQ(DrawQuad::DEBUG_BORDER, copyQuad->material);
+    EXPECT_EQ(color, copyQuad->color);
+    EXPECT_EQ(width, copyQuad->width);
+
+    CREATE_QUAD_2_ALL(DebugBorderDrawQuad, color, width);
+    EXPECT_EQ(DrawQuad::DEBUG_BORDER, copyQuad->material);
+    EXPECT_EQ(color, copyQuad->color);
+    EXPECT_EQ(width, copyQuad->width);
 }
 
 TEST(DrawQuadTest, copyIOSurfaceDrawQuad)
@@ -164,14 +251,21 @@ TEST(DrawQuadTest, copyIOSurfaceDrawQuad)
     gfx::Rect opaqueRect(3, 7, 10, 12);
     gfx::Size size(58, 95);
     unsigned textureId = 72;
-    IOSurfaceDrawQuad::Orientation orientation = IOSurfaceDrawQuad::Unflipped;
-
+    IOSurfaceDrawQuad::Orientation orientation = IOSurfaceDrawQuad::UNFLIPPED;
     CREATE_SHARED_STATE();
-    CREATE_QUAD_4(IOSurfaceDrawQuad, opaqueRect, size, textureId, orientation);
+
+    CREATE_QUAD_4_NEW(IOSurfaceDrawQuad, opaqueRect, size, textureId, orientation);
+    EXPECT_EQ(DrawQuad::IO_SURFACE_CONTENT, copyQuad->material);
     EXPECT_RECT_EQ(opaqueRect, copyQuad->opaque_rect);
-    EXPECT_EQ(size, copyQuad->ioSurfaceSize());
-    EXPECT_EQ(textureId, copyQuad->ioSurfaceTextureId());
-    EXPECT_EQ(orientation, copyQuad->orientation());
+    EXPECT_EQ(size, copyQuad->io_surface_size);
+    EXPECT_EQ(textureId, copyQuad->io_surface_texture_id);
+    EXPECT_EQ(orientation, copyQuad->orientation);
+
+    CREATE_QUAD_3_ALL(IOSurfaceDrawQuad, size, textureId, orientation);
+    EXPECT_EQ(DrawQuad::IO_SURFACE_CONTENT, copyQuad->material);
+    EXPECT_EQ(size, copyQuad->io_surface_size);
+    EXPECT_EQ(textureId, copyQuad->io_surface_texture_id);
+    EXPECT_EQ(orientation, copyQuad->orientation);
 }
 
 TEST(DrawQuadTest, copyRenderPassDrawQuad)
@@ -186,26 +280,43 @@ TEST(DrawQuadTest, copyRenderPassDrawQuad)
     float maskTexCoordOffsetY = -21;
 
     RenderPass::Id copiedRenderPassId(235, 11);
-
     CREATE_SHARED_STATE();
-    CREATE_QUAD_8_1(RenderPassDrawQuad, renderPassId, isReplica, maskResourceId, contentsChangedSinceLastFrame, maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY, copiedRenderPassId);
-    EXPECT_EQ(copiedRenderPassId, copyQuad->renderPassId());
-    EXPECT_EQ(isReplica, copyQuad->isReplica());
-    EXPECT_EQ(maskResourceId, copyQuad->maskResourceId());
-    EXPECT_RECT_EQ(contentsChangedSinceLastFrame, copyQuad->contentsChangedSinceLastFrame());
-    EXPECT_EQ(maskTexCoordScaleX, copyQuad->maskTexCoordScaleX());
-    EXPECT_EQ(maskTexCoordScaleY, copyQuad->maskTexCoordScaleY());
-    EXPECT_EQ(maskTexCoordOffsetX, copyQuad->maskTexCoordOffsetX());
-    EXPECT_EQ(maskTexCoordOffsetY, copyQuad->maskTexCoordOffsetY());
+
+    CREATE_QUAD_8_NEW_1(RenderPassDrawQuad, renderPassId, isReplica, maskResourceId, contentsChangedSinceLastFrame, maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY, copiedRenderPassId);
+    EXPECT_EQ(DrawQuad::RENDER_PASS, copyQuad->material);
+    EXPECT_EQ(copiedRenderPassId, copyQuad->render_pass_id);
+    EXPECT_EQ(isReplica, copyQuad->is_replica);
+    EXPECT_EQ(maskResourceId, copyQuad->mask_resource_id);
+    EXPECT_RECT_EQ(contentsChangedSinceLastFrame, copyQuad->contents_changed_since_last_frame);
+    EXPECT_EQ(maskTexCoordScaleX, copyQuad->mask_tex_coord_scale_x);
+    EXPECT_EQ(maskTexCoordScaleY, copyQuad->mask_tex_coord_scale_y);
+    EXPECT_EQ(maskTexCoordOffsetX, copyQuad->mask_tex_coord_offset_x);
+    EXPECT_EQ(maskTexCoordOffsetY, copyQuad->mask_tex_coord_offset_y);
+
+    CREATE_QUAD_8_ALL_1(RenderPassDrawQuad, renderPassId, isReplica, maskResourceId, contentsChangedSinceLastFrame, maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY, copiedRenderPassId);
+    EXPECT_EQ(DrawQuad::RENDER_PASS, copyQuad->material);
+    EXPECT_EQ(copiedRenderPassId, copyQuad->render_pass_id);
+    EXPECT_EQ(isReplica, copyQuad->is_replica);
+    EXPECT_EQ(maskResourceId, copyQuad->mask_resource_id);
+    EXPECT_RECT_EQ(contentsChangedSinceLastFrame, copyQuad->contents_changed_since_last_frame);
+    EXPECT_EQ(maskTexCoordScaleX, copyQuad->mask_tex_coord_scale_x);
+    EXPECT_EQ(maskTexCoordScaleY, copyQuad->mask_tex_coord_scale_y);
+    EXPECT_EQ(maskTexCoordOffsetX, copyQuad->mask_tex_coord_offset_x);
+    EXPECT_EQ(maskTexCoordOffsetY, copyQuad->mask_tex_coord_offset_y);
 }
 
 TEST(DrawQuadTest, copySolidColorDrawQuad)
 {
     SkColor color = 0x49494949;
-
     CREATE_SHARED_STATE();
-    CREATE_QUAD_1(SolidColorDrawQuad, color);
-    EXPECT_EQ(color, copyQuad->color());
+
+    CREATE_QUAD_1_NEW(SolidColorDrawQuad, color);
+    EXPECT_EQ(DrawQuad::SOLID_COLOR, copyQuad->material);
+    EXPECT_EQ(color, copyQuad->color);
+
+    CREATE_QUAD_1_ALL(SolidColorDrawQuad, color);
+    EXPECT_EQ(DrawQuad::SOLID_COLOR, copyQuad->material);
+    EXPECT_EQ(color, copyQuad->color);
 }
 
 TEST(DrawQuadTest, copyStreamVideoDrawQuad)
@@ -213,12 +324,18 @@ TEST(DrawQuadTest, copyStreamVideoDrawQuad)
     gfx::Rect opaqueRect(3, 7, 10, 12);
     unsigned textureId = 64;
     WebTransformationMatrix matrix(0.5, 1, 0.25, 0.75, 0, 1);
-
     CREATE_SHARED_STATE();
-    CREATE_QUAD_3(StreamVideoDrawQuad, opaqueRect, textureId, matrix);
+
+    CREATE_QUAD_3_NEW(StreamVideoDrawQuad, opaqueRect, textureId, matrix);
+    EXPECT_EQ(DrawQuad::STREAM_VIDEO_CONTENT, copyQuad->material);
     EXPECT_RECT_EQ(opaqueRect, copyQuad->opaque_rect);
-    EXPECT_EQ(textureId, copyQuad->textureId());
-    EXPECT_EQ(matrix, copyQuad->matrix());
+    EXPECT_EQ(textureId, copyQuad->texture_id);
+    EXPECT_EQ(matrix, copyQuad->matrix);
+
+    CREATE_QUAD_2_ALL(StreamVideoDrawQuad, textureId, matrix);
+    EXPECT_EQ(DrawQuad::STREAM_VIDEO_CONTENT, copyQuad->material);
+    EXPECT_EQ(textureId, copyQuad->texture_id);
+    EXPECT_EQ(matrix, copyQuad->matrix);
 }
 
 TEST(DrawQuadTest, copyTextureDrawQuad)
@@ -228,14 +345,22 @@ TEST(DrawQuadTest, copyTextureDrawQuad)
     bool premultipliedAlpha = true;
     gfx::RectF uvRect(0.5, 224, -51, 36);
     bool flipped = true;
-
     CREATE_SHARED_STATE();
-    CREATE_QUAD_5(TextureDrawQuad, opaqueRect, resourceId, premultipliedAlpha, uvRect, flipped);
+
+    CREATE_QUAD_5_NEW(TextureDrawQuad, opaqueRect, resourceId, premultipliedAlpha, uvRect, flipped);
+    EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, copyQuad->material);
     EXPECT_RECT_EQ(opaqueRect, copyQuad->opaque_rect);
-    EXPECT_EQ(resourceId, copyQuad->resourceId());
-    EXPECT_EQ(premultipliedAlpha, copyQuad->premultipliedAlpha());
-    EXPECT_FLOAT_RECT_EQ(uvRect, copyQuad->uvRect());
-    EXPECT_EQ(flipped, copyQuad->flipped());
+    EXPECT_EQ(resourceId, copyQuad->resource_id);
+    EXPECT_EQ(premultipliedAlpha, copyQuad->premultiplied_alpha);
+    EXPECT_FLOAT_RECT_EQ(uvRect, copyQuad->uv_rect);
+    EXPECT_EQ(flipped, copyQuad->flipped);
+
+    CREATE_QUAD_4_ALL(TextureDrawQuad, resourceId, premultipliedAlpha, uvRect, flipped);
+    EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, copyQuad->material);
+    EXPECT_EQ(resourceId, copyQuad->resource_id);
+    EXPECT_EQ(premultipliedAlpha, copyQuad->premultiplied_alpha);
+    EXPECT_FLOAT_RECT_EQ(uvRect, copyQuad->uv_rect);
+    EXPECT_EQ(flipped, copyQuad->flipped);
 }
 
 TEST(DrawQuadTest, copyTileDrawQuad)
@@ -249,18 +374,30 @@ TEST(DrawQuadTest, copyTileDrawQuad)
     bool topEdgeAA = true;
     bool rightEdgeAA = false;
     bool bottomEdgeAA = true;
-
     CREATE_SHARED_STATE();
-    CREATE_QUAD_9(TileDrawQuad, opaqueRect, resourceId, texCoordRect, textureSize, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA);
+
+    CREATE_QUAD_9_NEW(TileDrawQuad, opaqueRect, resourceId, texCoordRect, textureSize, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA);
+    EXPECT_EQ(DrawQuad::TILED_CONTENT, copyQuad->material);
     EXPECT_RECT_EQ(opaqueRect, copyQuad->opaque_rect);
-    EXPECT_EQ(resourceId, copyQuad->resourceId());
-    EXPECT_EQ(texCoordRect, copyQuad->texCoordRect());
-    EXPECT_EQ(textureSize, copyQuad->textureSize());
-    EXPECT_EQ(swizzleContents, copyQuad->swizzleContents());
-    EXPECT_EQ(leftEdgeAA, copyQuad->leftEdgeAA());
-    EXPECT_EQ(topEdgeAA, copyQuad->topEdgeAA());
-    EXPECT_EQ(rightEdgeAA, copyQuad->rightEdgeAA());
-    EXPECT_EQ(bottomEdgeAA, copyQuad->bottomEdgeAA());
+    EXPECT_EQ(resourceId, copyQuad->resource_id);
+    EXPECT_EQ(texCoordRect, copyQuad->tex_coord_rect);
+    EXPECT_EQ(textureSize, copyQuad->texture_size);
+    EXPECT_EQ(swizzleContents, copyQuad->swizzle_contents);
+    EXPECT_EQ(leftEdgeAA, copyQuad->left_edge_aa);
+    EXPECT_EQ(topEdgeAA, copyQuad->top_edge_aa);
+    EXPECT_EQ(rightEdgeAA, copyQuad->right_edge_aa);
+    EXPECT_EQ(bottomEdgeAA, copyQuad->bottom_edge_aa);
+
+    CREATE_QUAD_8_ALL(TileDrawQuad, resourceId, texCoordRect, textureSize, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA);
+    EXPECT_EQ(DrawQuad::TILED_CONTENT, copyQuad->material);
+    EXPECT_EQ(resourceId, copyQuad->resource_id);
+    EXPECT_EQ(texCoordRect, copyQuad->tex_coord_rect);
+    EXPECT_EQ(textureSize, copyQuad->texture_size);
+    EXPECT_EQ(swizzleContents, copyQuad->swizzle_contents);
+    EXPECT_EQ(leftEdgeAA, copyQuad->left_edge_aa);
+    EXPECT_EQ(topEdgeAA, copyQuad->top_edge_aa);
+    EXPECT_EQ(rightEdgeAA, copyQuad->right_edge_aa);
+    EXPECT_EQ(bottomEdgeAA, copyQuad->bottom_edge_aa);
 }
 
 TEST(DrawQuadTest, copyYUVVideoDrawQuad)
@@ -279,20 +416,34 @@ TEST(DrawQuadTest, copyYUVVideoDrawQuad)
     vPlane.resourceId = 4;
     vPlane.size = gfx::Size(456, 486);
     vPlane.format = 46;
-
     CREATE_SHARED_STATE();
-    CREATE_QUAD_5(YUVVideoDrawQuad, opaqueRect, texScale, yPlane, uPlane, vPlane);
+
+    CREATE_QUAD_5_NEW(YUVVideoDrawQuad, opaqueRect, texScale, yPlane, uPlane, vPlane);
+    EXPECT_EQ(DrawQuad::YUV_VIDEO_CONTENT, copyQuad->material);
     EXPECT_RECT_EQ(opaqueRect, copyQuad->opaque_rect);
-    EXPECT_EQ(texScale, copyQuad->texScale());
-    EXPECT_EQ(yPlane.resourceId, copyQuad->yPlane().resourceId);
-    EXPECT_EQ(yPlane.size, copyQuad->yPlane().size);
-    EXPECT_EQ(yPlane.format, copyQuad->yPlane().format);
-    EXPECT_EQ(uPlane.resourceId, copyQuad->uPlane().resourceId);
-    EXPECT_EQ(uPlane.size, copyQuad->uPlane().size);
-    EXPECT_EQ(uPlane.format, copyQuad->uPlane().format);
-    EXPECT_EQ(vPlane.resourceId, copyQuad->vPlane().resourceId);
-    EXPECT_EQ(vPlane.size, copyQuad->vPlane().size);
-    EXPECT_EQ(vPlane.format, copyQuad->vPlane().format);
+    EXPECT_EQ(texScale, copyQuad->tex_scale);
+    EXPECT_EQ(yPlane.resourceId, copyQuad->y_plane.resourceId);
+    EXPECT_EQ(yPlane.size, copyQuad->y_plane.size);
+    EXPECT_EQ(yPlane.format, copyQuad->y_plane.format);
+    EXPECT_EQ(uPlane.resourceId, copyQuad->u_plane.resourceId);
+    EXPECT_EQ(uPlane.size, copyQuad->u_plane.size);
+    EXPECT_EQ(uPlane.format, copyQuad->u_plane.format);
+    EXPECT_EQ(vPlane.resourceId, copyQuad->v_plane.resourceId);
+    EXPECT_EQ(vPlane.size, copyQuad->v_plane.size);
+    EXPECT_EQ(vPlane.format, copyQuad->v_plane.format);
+
+    CREATE_QUAD_4_ALL(YUVVideoDrawQuad, texScale, yPlane, uPlane, vPlane);
+    EXPECT_EQ(DrawQuad::YUV_VIDEO_CONTENT, copyQuad->material);
+    EXPECT_EQ(texScale, copyQuad->tex_scale);
+    EXPECT_EQ(yPlane.resourceId, copyQuad->y_plane.resourceId);
+    EXPECT_EQ(yPlane.size, copyQuad->y_plane.size);
+    EXPECT_EQ(yPlane.format, copyQuad->y_plane.format);
+    EXPECT_EQ(uPlane.resourceId, copyQuad->u_plane.resourceId);
+    EXPECT_EQ(uPlane.size, copyQuad->u_plane.size);
+    EXPECT_EQ(uPlane.format, copyQuad->u_plane.format);
+    EXPECT_EQ(vPlane.resourceId, copyQuad->v_plane.resourceId);
+    EXPECT_EQ(vPlane.size, copyQuad->v_plane.size);
+    EXPECT_EQ(vPlane.format, copyQuad->v_plane.format);
 }
 
 }  // namespace

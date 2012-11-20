@@ -15,35 +15,54 @@
 namespace cc {
 
 class CC_EXPORT TileDrawQuad : public DrawQuad {
-public:
-    static scoped_ptr<TileDrawQuad> create(const SharedQuadState*, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::RectF& texCoordRect, const gfx::Size& textureSize, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
+ public:
+  static scoped_ptr<TileDrawQuad> Create();
 
-    unsigned resourceId() const { return m_resourceId; }
-    gfx::RectF texCoordRect() const { return m_texCoordRect; }
-    gfx::Size textureSize() const { return m_textureSize; }
-    bool swizzleContents() const { return m_swizzleContents; }
+  void SetNew(const SharedQuadState* shared_quad_state,
+              gfx::Rect rect,
+              gfx::Rect opaque_rect,
+              unsigned resource_id,
+              const gfx::RectF& tex_coord_rect,
+              gfx::Size texture_size,
+              bool swizzle_contents,
+              bool left_edge_aa,
+              bool top_edge_aa,
+              bool right_edge_aa,
+              bool bottom_edge_aa);
 
-    // TODO(danakj): Stick the data used to compute these things in the quad
-    // instead so the parent compositor can decide to use AA on its own.
-    bool leftEdgeAA() const { return m_leftEdgeAA; }
-    bool topEdgeAA() const { return m_topEdgeAA; }
-    bool rightEdgeAA() const { return m_rightEdgeAA; }
-    bool bottomEdgeAA() const { return m_bottomEdgeAA; }
+  void SetAll(const SharedQuadState* shared_quad_state,
+              gfx::Rect rect,
+              gfx::Rect opaque_rect,
+              gfx::Rect visible_rect,
+              bool needs_blending,
+              unsigned resource_id,
+              const gfx::RectF& tex_coord_rect,
+              gfx::Size texture_size,
+              bool swizzle_contents,
+              bool left_edge_aa,
+              bool top_edge_aa,
+              bool right_edge_aa,
+              bool bottom_edge_aa);
 
-    bool isAntialiased() const { return leftEdgeAA() || topEdgeAA() || rightEdgeAA() || bottomEdgeAA(); }
+  unsigned resource_id;
+  gfx::RectF tex_coord_rect;
+  gfx::Size texture_size;
+  bool swizzle_contents;
 
-    static const TileDrawQuad* materialCast(const DrawQuad*);
-private:
-    TileDrawQuad(const SharedQuadState*, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::RectF& texCoordRect, const gfx::Size& textureSize, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
+  // TODO(danakj): Stick the data used to compute these things in the quad
+  // instead so the parent compositor can decide to use AA on its own.
+  bool left_edge_aa;
+  bool top_edge_aa;
+  bool right_edge_aa;
+  bool bottom_edge_aa;
 
-    unsigned m_resourceId;
-    gfx::RectF m_texCoordRect;
-    gfx::Size m_textureSize;
-    bool m_swizzleContents;
-    bool m_leftEdgeAA;
-    bool m_topEdgeAA;
-    bool m_rightEdgeAA;
-    bool m_bottomEdgeAA;
+  bool IsAntialiased() const {
+    return left_edge_aa || top_edge_aa || right_edge_aa || bottom_edge_aa;
+  }
+
+  static const TileDrawQuad* MaterialCast(const DrawQuad*);
+ private:
+  TileDrawQuad();
 };
 
 }

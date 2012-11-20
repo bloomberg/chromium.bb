@@ -8,24 +8,42 @@
 
 namespace cc {
 
-scoped_ptr<StreamVideoDrawQuad> StreamVideoDrawQuad::create(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
-{
-    return make_scoped_ptr(new StreamVideoDrawQuad(sharedQuadState, quadRect, opaqueRect, textureId, matrix));
+StreamVideoDrawQuad::StreamVideoDrawQuad() : texture_id(0) {}
+
+scoped_ptr<StreamVideoDrawQuad> StreamVideoDrawQuad::Create() {
+  return make_scoped_ptr(new StreamVideoDrawQuad);
 }
 
-StreamVideoDrawQuad::StreamVideoDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
-    : m_textureId(textureId)
-    , m_matrix(matrix)
-{
-    gfx::Rect visibleRect = quadRect;
-    bool needsBlending = false;
-    DrawQuad::SetAll(sharedQuadState, DrawQuad::STREAM_VIDEO_CONTENT, quadRect, opaqueRect, visibleRect, needsBlending);
+void StreamVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
+                                 gfx::Rect rect,
+                                 gfx::Rect opaque_rect,
+                                 unsigned texture_id,
+                                 const WebKit::WebTransformationMatrix& matrix) {
+  gfx::Rect visible_rect = rect;
+  bool needs_blending = false;
+  DrawQuad::SetAll(shared_quad_state, DrawQuad::STREAM_VIDEO_CONTENT, rect,
+                   opaque_rect, visible_rect, needs_blending);
+  this->texture_id = texture_id;
+  this->matrix = matrix;
 }
 
-const StreamVideoDrawQuad* StreamVideoDrawQuad::materialCast(const DrawQuad* quad)
-{
-    DCHECK(quad->material == DrawQuad::STREAM_VIDEO_CONTENT);
-    return static_cast<const StreamVideoDrawQuad*>(quad);
+void StreamVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+                                 gfx::Rect rect,
+                                 gfx::Rect opaque_rect,
+                                 gfx::Rect visible_rect,
+                                 bool needs_blending,
+                                 unsigned texture_id,
+                                 const WebKit::WebTransformationMatrix& matrix) {
+  DrawQuad::SetAll(shared_quad_state, DrawQuad::STREAM_VIDEO_CONTENT, rect,
+                   opaque_rect, visible_rect, needs_blending);
+  this->texture_id = texture_id;
+  this->matrix = matrix;
+}
+
+const StreamVideoDrawQuad* StreamVideoDrawQuad::MaterialCast(
+    const DrawQuad* quad) {
+  DCHECK(quad->material == DrawQuad::STREAM_VIDEO_CONTENT);
+  return static_cast<const StreamVideoDrawQuad*>(quad);
 }
 
 }  // namespace cc

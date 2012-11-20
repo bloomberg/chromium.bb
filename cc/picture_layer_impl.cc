@@ -61,18 +61,19 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
     bool outside_right_edge = geometry_rect.right() == content_rect.right();
     bool outside_bottom_edge = geometry_rect.bottom() == content_rect.bottom();
 
-    quadSink.append(TileDrawQuad::create(
-        sharedQuadState,
-        geometry_rect,
-        opaque_rect,
-        resource,
-        texture_rect,
-        iter.texture_size(),
-        iter->contents_swizzled(),
-        outside_left_edge && useAA,
-        outside_top_edge && useAA,
-        outside_right_edge && useAA,
-        outside_bottom_edge && useAA).PassAs<DrawQuad>(), appendQuadsData);
+    scoped_ptr<TileDrawQuad> quad = TileDrawQuad::Create();
+    quad->SetNew(sharedQuadState,
+                 geometry_rect,
+                 opaque_rect,
+                 resource,
+                 texture_rect,
+                 iter.texture_size(),
+                 iter->contents_swizzled(),
+                 outside_left_edge && useAA,
+                 outside_top_edge && useAA,
+                 outside_right_edge && useAA,
+                 outside_bottom_edge && useAA);
+    quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
   }
 }
 

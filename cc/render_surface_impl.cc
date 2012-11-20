@@ -203,7 +203,9 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
     if (m_owningLayer->showDebugBorders()) {
         SkColor color = forReplica ? DebugColors::SurfaceReplicaBorderColor() : DebugColors::SurfaceBorderColor();
         float width = forReplica ? DebugColors::SurfaceReplicaBorderWidth(m_owningLayer->layerTreeHostImpl()) : DebugColors::SurfaceBorderWidth(m_owningLayer->layerTreeHostImpl());
-        quadSink.append(DebugBorderDrawQuad::create(sharedQuadState, contentRect(), color, width).PassAs<DrawQuad>(), appendQuadsData);
+        scoped_ptr<DebugBorderDrawQuad> debugBorderQuad = DebugBorderDrawQuad::Create();
+        debugBorderQuad->SetNew(sharedQuadState, contentRect(), color, width);
+        quadSink.append(debugBorderQuad.PassAs<DrawQuad>(), appendQuadsData);
     }
 
     // FIXME: By using the same RenderSurfaceImpl for both the content and its reflection,
@@ -236,8 +238,10 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
     ResourceProvider::ResourceId maskResourceId = maskLayer ? maskLayer->contentsResourceId() : 0;
     gfx::Rect contentsChangedSinceLastFrame = contentsChanged() ? m_contentRect : gfx::Rect();
 
-    quadSink.append(RenderPassDrawQuad::create(sharedQuadState, contentRect(), renderPassId, forReplica, maskResourceId, contentsChangedSinceLastFrame,
-                                               maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY).PassAs<DrawQuad>(), appendQuadsData);
+    scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
+    quad->SetNew(sharedQuadState, contentRect(), renderPassId, forReplica, maskResourceId, contentsChangedSinceLastFrame,
+                 maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY);
+    quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 }
 
 }  // namespace cc

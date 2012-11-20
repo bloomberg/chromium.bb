@@ -15,33 +15,51 @@
 namespace cc {
 
 class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
-public:
-    static scoped_ptr<RenderPassDrawQuad> create(const SharedQuadState*, const gfx::Rect&, RenderPass::Id renderPassId, bool isReplica, ResourceProvider::ResourceId maskResourceId, const gfx::Rect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY);
+ public:
+  static scoped_ptr<RenderPassDrawQuad> Create();
 
-    RenderPass::Id renderPassId() const { return m_renderPassId; }
-    bool isReplica() const { return m_isReplica; }
-    ResourceProvider::ResourceId maskResourceId() const { return m_maskResourceId; }
-    const gfx::Rect& contentsChangedSinceLastFrame() const { return m_contentsChangedSinceLastFrame; }
+  void SetNew(const SharedQuadState* shared_quad_state,
+              gfx::Rect rect,
+              RenderPass::Id render_pass_id,
+              bool is_replica,
+              ResourceProvider::ResourceId mask_resource_id,
+              gfx::Rect contents_changed_since_last_frame,
+              float mask_tex_coord_scale_x,
+              float mask_tex_coord_scale_y,
+              float mask_tex_coord_offset_x,
+              float mask_tex_coord_offset_y);
 
-    static const RenderPassDrawQuad* materialCast(const DrawQuad*);
-    float maskTexCoordScaleX() const { return m_maskTexCoordScaleX; }
-    float maskTexCoordScaleY() const { return m_maskTexCoordScaleY; }
-    float maskTexCoordOffsetX() const { return m_maskTexCoordOffsetX; }
-    float maskTexCoordOffsetY() const { return m_maskTexCoordOffsetY; }
+  void SetAll(const SharedQuadState* shared_quad_state,
+              gfx::Rect rect,
+              gfx::Rect opaque_rect,
+              gfx::Rect visible_rect,
+              bool needs_blending,
+              RenderPass::Id render_pass_id,
+              bool is_replica,
+              ResourceProvider::ResourceId mask_resource_id,
+              gfx::Rect contents_changed_since_last_frame,
+              float mask_tex_coord_scale_x,
+              float mask_tex_coord_scale_y,
+              float mask_tex_coord_offset_x,
+              float mask_tex_coord_offset_y);
 
-    scoped_ptr<RenderPassDrawQuad> copy(const SharedQuadState* copiedSharedQuadState, RenderPass::Id copiedRenderPassId) const;
+  scoped_ptr<RenderPassDrawQuad> Copy(
+      const SharedQuadState* copied_shared_quad_state,
+      RenderPass::Id copied_render_pass_id) const;
 
+  RenderPass::Id render_pass_id;
+  bool is_replica;
+  ResourceProvider::ResourceId mask_resource_id;
+  gfx::Rect contents_changed_since_last_frame;
+  // TODO(danakj): Make these a tex_coord_rect like TileDrawQuad.
+  float mask_tex_coord_scale_x;
+  float mask_tex_coord_scale_y;
+  float mask_tex_coord_offset_x;
+  float mask_tex_coord_offset_y;
+
+  static const RenderPassDrawQuad* MaterialCast(const DrawQuad*);
 private:
-    RenderPassDrawQuad(const SharedQuadState*, const gfx::Rect&, RenderPass::Id renderPassId, bool isReplica, ResourceProvider::ResourceId maskResourceId, const gfx::Rect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY);
-
-    RenderPass::Id m_renderPassId;
-    bool m_isReplica;
-    ResourceProvider::ResourceId m_maskResourceId;
-    gfx::Rect m_contentsChangedSinceLastFrame;
-    float m_maskTexCoordScaleX;
-    float m_maskTexCoordScaleY;
-    float m_maskTexCoordOffsetX;
-    float m_maskTexCoordOffsetY;
+  RenderPassDrawQuad();
 };
 
 }

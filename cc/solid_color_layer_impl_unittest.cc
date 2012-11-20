@@ -57,7 +57,7 @@ TEST(SolidColorLayerImplTest, verifyCorrectBackgroundColorInQuad)
     layer->appendQuads(quadCuller, data);
 
     ASSERT_EQ(quadCuller.quadList().size(), 1U);
-    EXPECT_EQ(SolidColorDrawQuad::materialCast(quadCuller.quadList()[0])->color(), testColor);
+    EXPECT_EQ(SolidColorDrawQuad::MaterialCast(quadCuller.quadList()[0])->color, testColor);
 }
 
 TEST(SolidColorLayerImplTest, verifyCorrectOpacityInQuad)
@@ -80,7 +80,7 @@ TEST(SolidColorLayerImplTest, verifyCorrectOpacityInQuad)
     layer->appendQuads(quadCuller, data);
 
     ASSERT_EQ(quadCuller.quadList().size(), 1U);
-    EXPECT_EQ(opacity, SolidColorDrawQuad::materialCast(quadCuller.quadList()[0])->opacity());
+    EXPECT_EQ(opacity, SolidColorDrawQuad::MaterialCast(quadCuller.quadList()[0])->opacity());
 }
 
 TEST(SolidColorLayerImplTest, verifyOpaqueRect)
