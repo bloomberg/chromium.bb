@@ -23,6 +23,7 @@ import cros_build_lib
 
 Directory = collections.namedtuple('Directory', ['name', 'contents'])
 
+
 def _FlattenStructure(base_path, dir_struct):
   """Converts a directory structure to a list of paths."""
   flattened = []
@@ -59,8 +60,50 @@ def CreateOnDiskHierarchy(base_path, dir_struct):
       osutils.Touch(f)
 
 
+def _VerifyDirectoryIterables(existing, expected):
+  """Compare two iterables representing contents of a directory.
+
+  Paths in |existing| and |expected| will be compared for exact match.
+
+  Arguments:
+    existing: An iterable containing paths that exist.
+    expected: An iterable of paths that are expected.
+
+  Raises:
+    AssertionError when there is any divergence between |existing| and
+    |expected|.
+  """
+  def FormatPaths(paths):
+    return '\n'.join(sorted(paths))
+
+  def ConvertToSet(iterable):
+    newset = set(iterable)
+    if len(iterable) != len(newset):
+      raise AssertionError('Duplicate entries found!')
+    return newset
+
+  existing = ConvertToSet(existing)
+  expected = ConvertToSet(expected)
+
+  unexpected = existing - expected
+  if unexpected:
+    raise AssertionError('Found unexpected paths:\n%s'
+                         % FormatPaths(unexpected))
+  missing = expected - existing
+  if missing:
+    raise AssertionError('These files were expected but not found:\n%s'
+                         % FormatPaths(missing))
+
+
+def _DirectoryIterator(base_path):
+  """Iterates through the files and subdirs of a directory."""
+  for root, dirs, files in os.walk(base_path):
+    for e in [d + os.sep for d in dirs] + files:
+      yield os.path.join(root, e)
+
+
 def VerifyOnDiskHierarchy(base_path, dir_struct):
-  """Verify that an ondisk directory tree exactly matches a given structure.
+  """Verify that an on-disk directory tree exactly matches a given structure.
 
   Arguments:
     See arguments of CreateOnDiskHierarchy()
@@ -69,17 +112,32 @@ def VerifyOnDiskHierarchy(base_path, dir_struct):
     AssertionError when there is any divergence between the on-disk
     structure and the structure specified by 'dir_struct'.
   """
-  expected = set(_FlattenStructure(base_path, dir_struct))
-  for root, dirs, files in os.walk(base_path):
-    for e in [d + os.sep for d in dirs] + files:
-      path = os.path.join(root, e)
-      if path not in expected:
-        raise AssertionError('%s not expected but found in %s.' % (e, root))
-      expected.remove(path)
+  expected = _FlattenStructure(base_path, dir_struct)
+  _VerifyDirectoryIterables(_DirectoryIterator(base_path), expected)
 
-  if expected:
-    raise AssertionError('These files were expected but not found in %s:\n%s'
-                           % (base_path, '\n'.join(sorted(expected))))
+
+def VerifyTarball(tarball, dir_struct):
+  """Compare the contents of a tarball against a directory structure.
+
+  Arguments:
+    tarball: Path to the tarball.
+    dir_struct: See CreateOnDiskHierarchy()
+
+  Raises:
+    AssertionError when there is any divergence between the tarball and the
+    structure specified by 'dir_struct'.
+  """
+  contents = cros_build_lib.RunCommandCaptureOutput(
+      ['tar', '-tf', tarball]).output.splitlines()
+  normalized = []
+  for p in contents:
+    norm = os.path.normpath(p)
+    if p.endswith('/'):
+      norm += '/'
+    normalized.append(norm)
+
+  expected = _FlattenStructure('', dir_struct)
+  _VerifyDirectoryIterables(normalized, expected)
 
 
 def _stacked_setUp(self):
