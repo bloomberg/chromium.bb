@@ -60,9 +60,6 @@ class DefaultProvider : public ObservableProvider {
   // true and the preference is missing, the local copy will be cleared as well.
   void ReadDefaultSettings(bool overwrite);
 
-  void MigrateObsoleteNotificationPref();
-  void MigrateObsoleteGeolocationPref();
-
   // Called on prefs change.
   void OnPreferenceChanged(const std::string& pref_name);
 

@@ -960,9 +960,6 @@ const char kUseCustomChromeFrame[] = "browser.custom_chrome_frame";
 // done directly from the omnibox should be shown.
 const char kShowOmniboxSearchHint[] = "browser.show_omnibox_search_hint";
 
-// The list of origins which are allowed|denied to show desktop notifications.
-const char kDesktopNotificationDefaultContentSetting[] =
-    "profile.notifications_default_content_setting";
 const char kDesktopNotificationAllowedOrigins[] =
     "profile.notification_allowed_sites";
 const char kDesktopNotificationDeniedOrigins[] =
@@ -1043,10 +1040,6 @@ const char kEnableTranslate[] = "translate.enabled";
 #if !defined(OS_ANDROID)
 const char kPinnedTabs[] = "pinned_tabs";
 #endif
-
-// Integer containing the default Geolocation content setting.
-const char kGeolocationDefaultContentSetting[] =
-    "geolocation.default_content_setting";
 
 #if defined(OS_ANDROID)
 // Boolean that controls the enabled-state of Geolocation.

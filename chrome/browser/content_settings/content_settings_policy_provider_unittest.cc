@@ -59,24 +59,6 @@ TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
           false));
   EXPECT_FALSE(rule_iterator->HasNext());
 
-  prefs->SetInteger(prefs::kGeolocationDefaultContentSetting,
-                    CONTENT_SETTING_ALLOW);
-  rule_iterator.reset(
-      provider.GetRuleIterator(
-          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string(),
-          false));
-  EXPECT_FALSE(rule_iterator->HasNext());
-
-  prefs->SetManagedPref(prefs::kGeolocationDefaultContentSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
-  rule_iterator.reset(
-      provider.GetRuleIterator(
-          CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string(),
-          false));
-  EXPECT_FALSE(rule_iterator->HasNext());
-
   // Change the managed value of the default geolocation setting
   prefs->SetManagedPref(prefs::kManagedDefaultGeolocationSetting,
                         Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));

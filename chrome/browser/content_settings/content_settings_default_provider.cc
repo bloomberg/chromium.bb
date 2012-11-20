@@ -93,16 +93,6 @@ void DefaultProvider::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings,
                                 default_content_settings,
                                 PrefService::SYNCABLE_PREF);
-
-  // Obsolete prefs, for migrations:
-  prefs->RegisterIntegerPref(
-      prefs::kDesktopNotificationDefaultContentSetting,
-      kDefaultSettings[CONTENT_SETTINGS_TYPE_NOTIFICATIONS],
-      PrefService::SYNCABLE_PREF);
-  prefs->RegisterIntegerPref(
-      prefs::kGeolocationDefaultContentSetting,
-      kDefaultSettings[CONTENT_SETTINGS_TYPE_GEOLOCATION],
-      PrefService::UNSYNCABLE_PREF);
 }
 
 DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
@@ -110,8 +100,6 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
       is_incognito_(incognito),
       updating_preferences_(false) {
   DCHECK(prefs_);
-  MigrateObsoleteNotificationPref();
-  MigrateObsoleteGeolocationPref();
 
   // Read global defaults.
   ReadDefaultSettings(true);
@@ -171,8 +159,6 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
   PrefChangeRegistrar::NamedChangeCallback callback = base::Bind(
       &DefaultProvider::OnPreferenceChanged, base::Unretained(this));
   pref_change_registrar_.Add(prefs::kDefaultContentSettings, callback);
-  pref_change_registrar_.Add(
-      prefs::kGeolocationDefaultContentSetting, callback);
 }
 
 DefaultProvider::~DefaultProvider() {
@@ -203,15 +189,6 @@ bool DefaultProvider::SetWebsiteSetting(
   scoped_ptr<base::Value> value(in_value);
   {
     AutoReset<bool> auto_reset(&updating_preferences_, true);
-    // Keep the obsolete pref in sync as long as backwards compatibility is
-    // required. This is required to keep sync working correctly.
-    if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-      if (value.get()) {
-        prefs_->Set(prefs::kGeolocationDefaultContentSetting, *value);
-      } else {
-        prefs_->ClearPref(prefs::kGeolocationDefaultContentSetting);
-      }
-    }
 
     // |DefaultProvider| should not send any notifications when holding
     // |lock_|. |DictionaryPrefUpdate| destructor and
@@ -286,12 +263,6 @@ void DefaultProvider::OnPreferenceChanged(const std::string& name) {
 
   if (name == prefs::kDefaultContentSettings) {
     ReadDefaultSettings(true);
-  } else if (name == prefs::kGeolocationDefaultContentSetting) {
-    MigrateObsoleteGeolocationPref();
-    // Return and don't send a notifications. Migrating the obsolete
-    // geolocation pref will change the prefs::kDefaultContentSettings and
-    // cause the notification to be fired.
-    return;
   } else {
     NOTREACHED() << "Unexpected preference observed";
     return;
@@ -352,37 +323,6 @@ void DefaultProvider::GetSettingsFromDictionary(
               CONTENT_SETTING_ASK) {
     default_settings_[CONTENT_SETTINGS_TYPE_COOKIES].reset(
         Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
-  }
-}
-
-void DefaultProvider::MigrateObsoleteNotificationPref() {
-  if (prefs_->HasPrefPath(prefs::kDesktopNotificationDefaultContentSetting)) {
-    const base::Value* value = prefs_->FindPreference(
-        prefs::kDesktopNotificationDefaultContentSetting)->GetValue();
-    // Do not clear the old preference yet as long as we need to maintain
-    // backward compatibility.
-    SetWebsiteSetting(
-        ContentSettingsPattern::Wildcard(),
-        ContentSettingsPattern::Wildcard(),
-        CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-        std::string(),
-        value->DeepCopy());
-    prefs_->ClearPref(prefs::kDesktopNotificationDefaultContentSetting);
-  }
-}
-
-void DefaultProvider::MigrateObsoleteGeolocationPref() {
-  if (prefs_->HasPrefPath(prefs::kGeolocationDefaultContentSetting)) {
-    const base::Value* value = prefs_->FindPreference(
-        prefs::kGeolocationDefaultContentSetting)->GetValue();
-    // Do not clear the old preference yet as long as we need to maintain
-    // backward compatibility.
-    SetWebsiteSetting(
-        ContentSettingsPattern::Wildcard(),
-        ContentSettingsPattern::Wildcard(),
-        CONTENT_SETTINGS_TYPE_GEOLOCATION,
-        std::string(),
-        value->DeepCopy());
   }
 }
 

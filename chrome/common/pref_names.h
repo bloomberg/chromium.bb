@@ -342,7 +342,6 @@ extern const char kShowUpdatePromotionInfoBar[];
 #endif
 extern const char kUseCustomChromeFrame[];
 extern const char kShowOmniboxSearchHint[];
-extern const char kDesktopNotificationDefaultContentSetting[];  // OBSOLETE
 extern const char kDesktopNotificationAllowedOrigins[];  // OBSOLETE
 extern const char kDesktopNotificationDeniedOrigins[];  // OBSOLETE
 extern const char kDesktopNotificationPosition[];
@@ -616,7 +615,6 @@ extern const char kWebAppCreateInAppsMenu[];
 extern const char kWebAppCreateInQuickLaunchBar[];
 
 extern const char kGeolocationAccessToken[];
-extern const char kGeolocationDefaultContentSetting[];
 extern const char kGeolocationContentSettings[];
 #if defined(OS_ANDROID)
 extern const char kGeolocationEnabled[];
