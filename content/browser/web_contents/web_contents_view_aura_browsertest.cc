@@ -140,6 +140,20 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     }
   }
 
+  int GetCurrentIndex() {
+    WebContentsImpl* web_contents =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
+        web_contents->GetRenderViewHost());
+    int index = -1;
+    scoped_ptr<base::Value> value;
+    value.reset(view_host->ExecuteJavascriptAndGetValue(string16(),
+        ASCIIToUTF16("get_current()")));
+    if (!value->GetAsInteger(&index))
+      index = -1;
+    return index;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAuraTest);
 };
@@ -168,6 +182,83 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                        MAYBE_OverscrollNavigationWithTouchHandler) {
   TestOverscrollNavigation(true);
+}
+
+// The tests are disabled on windows since the gesture support in win-aura isn't
+// complete yet. See http://crbug.com/157268
+#if defined(OS_WIN)
+#define MAYBE_QuickOverscrollDirectionChange \
+    DISABLED_QuickOverscrollDirectionChange
+#else
+#define MAYBE_QuickOverscrollDirectionChange \
+    QuickOverscrollDirectionChange
+#endif
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
+                       MAYBE_QuickOverscrollDirectionChange) {
+  ASSERT_NO_FATAL_FAILURE(
+      StartTestWithPage("files/overscroll_navigation.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
+      web_contents->GetRenderViewHost());
+
+  // Make sure the page has both back/forward history.
+  ExecuteSyncJSFunction(view_host, "navigate_next()");
+  EXPECT_EQ(1, GetCurrentIndex());
+  ExecuteSyncJSFunction(view_host, "navigate_next()");
+  EXPECT_EQ(2, GetCurrentIndex());
+  web_contents->GetController().GoBack();
+  EXPECT_EQ(1, GetCurrentIndex());
+
+  aura::Window* content = web_contents->GetContentNativeView();
+  aura::RootWindow* root_window = content->GetRootWindow();
+  gfx::Rect bounds = content->GetBoundsInRootWindow();
+
+  base::TimeDelta timestamp;
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
+      gfx::Point(bounds.x() + bounds.width() / 2, bounds.y() + 5),
+      0, timestamp);
+  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  EXPECT_EQ(1, GetCurrentIndex());
+
+  timestamp += base::TimeDelta::FromMilliseconds(10);
+  ui::TouchEvent move1(ui::ET_TOUCH_MOVED,
+      gfx::Point(bounds.right() - 10, bounds.y() + 5),
+      0, timestamp);
+  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&move1);
+  EXPECT_EQ(1, GetCurrentIndex());
+
+  // Swipe back from the right edge, back to the left edge, back to the right
+  // edge.
+
+  for (int x = bounds.right() - 10; x >= bounds.x() + 10; x-= 10) {
+    timestamp += base::TimeDelta::FromMilliseconds(10);
+    ui::TouchEvent inc(ui::ET_TOUCH_MOVED,
+        gfx::Point(x, bounds.y() + 5),
+        0, timestamp);
+    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&inc);
+    EXPECT_EQ(1, GetCurrentIndex());
+  }
+
+  for (int x = bounds.x() + 10; x <= bounds.width() - 10; x+= 10) {
+    timestamp += base::TimeDelta::FromMilliseconds(10);
+    ui::TouchEvent inc(ui::ET_TOUCH_MOVED,
+        gfx::Point(x, bounds.y() + 5),
+        0, timestamp);
+    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&inc);
+    EXPECT_EQ(1, GetCurrentIndex());
+  }
+
+  for (int x = bounds.width() - 10; x >= bounds.x() + 10; x-= 10) {
+    timestamp += base::TimeDelta::FromMilliseconds(10);
+    ui::TouchEvent inc(ui::ET_TOUCH_MOVED,
+        gfx::Point(x, bounds.y() + 5),
+        0, timestamp);
+    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&inc);
+    EXPECT_EQ(1, GetCurrentIndex());
+  }
+
+  // Do not end the overscroll sequence.
 }
 
 }  // namespace content

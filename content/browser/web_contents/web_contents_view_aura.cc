@@ -4,6 +4,7 @@
 
 #include "content/browser/web_contents/web_contents_view_aura.h"
 
+#include "base/auto_reset.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
@@ -237,7 +238,7 @@ int ConvertAuraEventFlagsToWebInputEventModifiers(int aura_event_flags) {
 // Given the scrolled amount (|scroll|) and the threshold (|threshold|), returns
 // the amount the window should be translated.
 int GetResistedScrollAmount(int scroll, int threshold) {
-  CHECK_GE(scroll, 0);
+  DCHECK_GE(scroll, 0);
   if (scroll <= threshold)
     return scroll / 2;
 
@@ -365,6 +366,17 @@ void WebContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
 }
 
 void WebContentsViewAura::PrepareOverscrollWindow() {
+  // If there is an existing |overscroll_window_| which is in the middle of an
+  // animation, then destroying the window here causes the animation to be
+  // completed immidiately, which triggers |OnImplicitAnimationsCompleted()|
+  // callback, and that tries to reset |overscroll_window_| again, causing a
+  // double-free. So use a temporary variable here.
+  if (overscroll_window_.get()) {
+    AutoReset<OverscrollMode> reset_state(&current_overscroll_gesture_,
+                                          current_overscroll_gesture_);
+    scoped_ptr<aura::Window> reset_window(overscroll_window_.release());
+  }
+
   overscroll_window_.reset(new aura::Window(NULL));
   overscroll_window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   overscroll_window_->SetTransparent(false);
@@ -836,6 +848,12 @@ void WebContentsViewAura::OnDeviceScaleFactorChanged(
 }
 
 void WebContentsViewAura::OnWindowDestroying() {
+  // This means the destructor is going to be called soon. If there is an
+  // overscroll gesture in progress (i.e. |overscroll_window_| is not NULL),
+  // then destroying it in the WebContentsViewAura destructor can trigger other
+  // virtual functions to be called (e.g. OnImplicitAnimationsCompleted()). So
+  // destroy the overscroll window here.
+  overscroll_window_.reset();
 }
 
 void WebContentsViewAura::OnWindowDestroyed() {
