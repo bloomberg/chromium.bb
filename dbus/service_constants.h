@@ -1111,17 +1111,12 @@ const char kMtpdServiceName[] = "org.chromium.Mtpd";
 const char kMtpdServiceError[] = "org.chromium.Mtpd.Error";
 
 // Methods.
-// TODO(thestig) Remove this entry when fully deprecated.
-const char kEnumerateStorage[] = "EnumerateStorage";
 const char kEnumerateStorages[] = "EnumerateStorages";
 const char kGetStorageInfo[] = "GetStorageInfo";
 const char kOpenStorage[] = "OpenStorage";
 const char kCloseStorage[] = "CloseStorage";
 const char kReadDirectoryByPath[] = "ReadDirectoryByPath";
 const char kReadDirectoryById[] = "ReadDirectoryById";
-// TODO(thestig) Remove the next two entries when fully deprecated.
-const char kReadFileByPath[] = "ReadFileByPath";
-const char kReadFileById[] = "ReadFileById";
 const char kReadFileChunkByPath[] = "ReadFileChunkByPath";
 const char kReadFileChunkById[] = "ReadFileChunkById";
 const char kGetFileInfoByPath[] = "GetFileInfoByPath";
