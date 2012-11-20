@@ -208,13 +208,6 @@
         # Loader bundle for platform apps.
         '<(PRODUCT_DIR)/app_mode_loader.app',
       ],
-      'conditions': [
-        ['debug_devtools!=0', {
-          'files': [
-             '<(PRODUCT_DIR)/resources/inspector',
-          ],
-        }],
-      ],
     },
   ],
   'conditions': [
@@ -282,6 +275,17 @@
       'dependencies': [
         '../pdf/pdf.gyp:pdf',
       ],
+    }],
+    ['debug_devtools==1', {
+      'postbuilds': [{
+        'postbuild_name': 'Copy inspector files',
+        'action': [
+          'cp',
+          '-r',
+          '${BUILT_PRODUCTS_DIR}/resources/inspector',
+          '${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources',
+        ],
+      }],
     }],
     ['enable_hidpi==1', {
       'mac_bundle_resources': [
