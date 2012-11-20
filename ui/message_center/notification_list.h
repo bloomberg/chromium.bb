@@ -10,6 +10,7 @@
 
 #include "base/string16.h"
 #include "base/time.h"
+#include "base/timer.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/notifications/notification_types.h"
@@ -132,6 +133,14 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // Marks the popups returned by GetPopupNotifications() as shown.
   void MarkPopupsAsShown();
 
+  // Sets the current quiet mode status to |quiet_mode|. The new status is not
+  // expired.
+  void SetQuietMode(bool quiet_mode);
+
+  // Sets the current quiet mode to true. The quiet mode will expire in the
+  // specified time-delta from now.
+  void EnterQuietModeWithExpire(const base::TimeDelta& expires_in);
+
   const Notifications& notifications() const { return notifications_; }
   size_t unread_count() const { return unread_count_; }
 
@@ -163,6 +172,8 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   Notifications notifications_;
   bool message_center_visible_;
   size_t unread_count_;
+  bool quiet_mode_;
+  scoped_ptr<base::OneShotTimer<NotificationList> > quiet_mode_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationList);
 };

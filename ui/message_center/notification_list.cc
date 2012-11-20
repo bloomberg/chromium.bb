@@ -4,6 +4,7 @@
 
 #include "ui/message_center/notification_list.h"
 
+#include "base/bind.h"
 #include "base/time.h"
 #include "base/values.h"
 
@@ -22,7 +23,8 @@ NotificationList::Notification::~Notification() {
 NotificationList::NotificationList(Delegate* delegate)
     : delegate_(delegate),
       message_center_visible_(false),
-      unread_count_(0) {
+      unread_count_(0),
+      quiet_mode_(false) {
 }
 
 NotificationList::~NotificationList() {
@@ -201,6 +203,25 @@ void NotificationList::MarkPopupsAsShown() {
     iter->shown_as_popup = true;
 }
 
+void NotificationList::SetQuietMode(bool quiet_mode) {
+  quiet_mode_ = quiet_mode;
+  quiet_mode_timer_.reset();
+}
+
+void NotificationList::EnterQuietModeWithExpire(
+    const base::TimeDelta& expires_in) {
+  if (quiet_mode_timer_.get()) {
+    // Note that the capital Reset() is the method to restart the timer, not
+    // scoped_ptr::reset().
+    quiet_mode_timer_->Reset();
+  } else {
+    quiet_mode_ = true;
+    quiet_mode_timer_.reset(new base::OneShotTimer<NotificationList>);
+    quiet_mode_timer_->Start(FROM_HERE, expires_in, base::Bind(
+        &NotificationList::SetQuietMode, base::Unretained(this), false));
+  }
+}
+
 NotificationList::Notifications::iterator NotificationList::GetNotification(
     const std::string& id) {
   for (Notifications::iterator iter = notifications_.begin();
@@ -227,8 +248,13 @@ void NotificationList::PushNotification(Notification& notification) {
   // unread and unshown.
   if (!message_center_visible_) {
     ++unread_count_;
-    notification.is_read = false;
-    notification.shown_as_popup = false;
+    if (quiet_mode_) {
+      notification.is_read = true;
+      notification.shown_as_popup = true;
+    } else {
+      notification.is_read = false;
+      notification.shown_as_popup = false;
+    }
   }
   notifications_.push_front(notification);
 }
