@@ -398,24 +398,28 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   virtual bool GetIsScreenLocked() OVERRIDE { return screen_locked_; }
   virtual void RetrieveDevicePolicy(
       const RetrievePolicyCallback& callback) OVERRIDE {
-    callback.Run("");
+    callback.Run(device_policy_);
   }
   virtual void RetrieveUserPolicy(
       const RetrievePolicyCallback& callback) OVERRIDE {
-    callback.Run("");
+    callback.Run(user_policy_);
   }
   virtual void StoreDevicePolicy(const std::string& policy_blob,
                                  const StorePolicyCallback& callback) OVERRIDE {
+    device_policy_ = policy_blob;
     callback.Run(true);
   }
   virtual void StoreUserPolicy(const std::string& policy_blob,
                                const StorePolicyCallback& callback) OVERRIDE {
+    user_policy_ = policy_blob;
     callback.Run(true);
   }
 
  private:
   ObserverList<Observer> observers_;
   bool screen_locked_;
+  std::string device_policy_;
+  std::string user_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManagerClientStubImpl);
 };

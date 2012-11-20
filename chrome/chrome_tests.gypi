@@ -989,6 +989,7 @@
         'browser/notifications/notification_browsertest.cc',
         'browser/page_cycler/page_cycler_browsertest.cc',
         'browser/performance_monitor/performance_monitor_browsertest.cc',
+        'browser/policy/cloud_policy_browsertest.cc',
         'browser/policy/device_management_service_browsertest.cc',
         'browser/policy/device_status_collector_browsertest.cc',
         'browser/policy/policy_browsertest.cc',

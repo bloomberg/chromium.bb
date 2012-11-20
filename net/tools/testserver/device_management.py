@@ -472,7 +472,11 @@ class RequestHandler(object):
 
     if signing_key:
       policy_data.public_key_version = key_version
-    policy_data.username = self._server.username
+    # There is no way for the testserver to know the user name belonging to
+    # the GAIA auth token we received (short of actually talking to GAIA). To
+    # address this, we read the username from the policy configuration
+    # dictionary, or use a default.
+    policy_data.username = policy.get('policy_user', 'user@example.com')
     policy_data.device_id = token_info['device_id']
     signed_data = policy_data.SerializeToString()
 
@@ -533,7 +537,7 @@ class RequestHandler(object):
 class TestServer(object):
   """Handles requests and keeps global service state."""
 
-  def __init__(self, policy_path, private_key_paths, policy_user):
+  def __init__(self, policy_path, private_key_paths):
     """Initializes the server.
 
     Args:
@@ -542,12 +546,6 @@ class TestServer(object):
     """
     self._registered_tokens = {}
     self.policy_path = policy_path
-
-    # There is no way to for the testserver to know the user name belonging to
-    # the GAIA auth token we received (short of actually talking to GAIA). To
-    # address this, we have a command line parameter to set the username that
-    # the server should report to the client.
-    self.username = policy_user
 
     self.keys = []
     if private_key_paths:
