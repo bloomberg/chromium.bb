@@ -45,7 +45,6 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
 };
 
-// TODO(rlp/rouslan): Shift some of these to a cutsom dictionary test suite.
 TEST_F(SpellcheckCustomDictionaryTest, SpellcheckSetCustomWordList) {
   SpellcheckService* spellcheck_service =
       SpellcheckServiceFactory::GetForProfile(profile_.get());
@@ -60,14 +59,13 @@ TEST_F(SpellcheckCustomDictionaryTest, SpellcheckSetCustomWordList) {
   EXPECT_EQ(custom_dictionary->GetWords(), expected);
 }
 
-TEST_F(SpellcheckCustomDictionaryTest, CustomWordAddedLocally) {
+TEST_F(SpellcheckCustomDictionaryTest, CustomWordAddedAndRemovedLocally) {
   SpellcheckService* spellcheck_service =
       SpellcheckServiceFactory::GetForProfile(profile_.get());
 
   WordList loaded_custom_words;
   SpellcheckCustomDictionary* custom_dictionary =
       spellcheck_service->GetCustomDictionary();
-  custom_dictionary->Load();
   WordList expected;
   EXPECT_EQ(custom_dictionary->GetWords(), expected);
   custom_dictionary->CustomWordAddedLocally("foo");
@@ -75,6 +73,11 @@ TEST_F(SpellcheckCustomDictionaryTest, CustomWordAddedLocally) {
   EXPECT_EQ(custom_dictionary->GetWords(), expected);
   custom_dictionary->CustomWordAddedLocally("bar");
   expected.push_back("bar");
+  EXPECT_EQ(custom_dictionary->GetWords(), expected);
+
+  custom_dictionary->CustomWordRemovedLocally("foo");
+  custom_dictionary->CustomWordRemovedLocally("bar");
+  expected.clear();
   EXPECT_EQ(custom_dictionary->GetWords(), expected);
 }
 
@@ -108,6 +111,13 @@ TEST_F(SpellcheckCustomDictionaryTest, SaveAndLoad) {
   spellcheck_service2.GetCustomDictionary()->
       LoadDictionaryIntoCustomWordList(&loaded_custom_words2);
   EXPECT_EQ(loaded_custom_words2, expected);
+
+  custom_dictionary->EraseWordFromCustomDictionary("foo");
+  custom_dictionary->EraseWordFromCustomDictionary("bar");
+  custom_dictionary->LoadDictionaryIntoCustomWordList(&loaded_custom_words);
+  expected.clear();
+  EXPECT_EQ(loaded_custom_words, expected);
+
   // Flush the loop now to prevent service init tasks from being run during
   // TearDown();
   MessageLoop::current()->RunUntilIdle();

@@ -49,8 +49,10 @@ void SpellcheckCustomDictionary::LoadDictionaryIntoCustomWordList(
 
   std::string contents;
   file_util::ReadFileToString(custom_dictionary_path_, &contents);
-  if (contents.empty())
+  if (contents.empty()) {
+    custom_words->clear();
     return;
+  }
 
   base::SplitString(contents, '\n', custom_words);
   // Clear out empty words.
