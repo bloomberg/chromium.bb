@@ -126,22 +126,22 @@ EXTRA_ENV = {
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
   'LD_ARGS_newlib_static':
     '-l:crt1.x ' +
-    '-l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ${ld_inputs} ' +
+    '-l:crti.bc -l:crtbegin.bc ${ld_inputs} ' +
     '--start-group ${STDLIBS} --end-group',
 
   'LD_ARGS_newlib_shared':
-    '-l:crti.bc -l:crtdummy.bc -l:crtbeginS.bc ${ld_inputs} ${STDLIBS}',
+    '-l:crti.bc -l:crtbeginS.bc ${ld_inputs} ${STDLIBS}',
 
   'LD_ARGS_newlib_dynamic':
-    '-l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ${ld_inputs} ' +
+    '-l:crti.bc -l:crtbegin.bc ${ld_inputs} ' +
     '--start-group ${STDLIBS} --end-group',
 
   'LD_ARGS_glibc_shared':
-    '-l:crti.bc -l:crtdummy.bc -l:crtbeginS.bc ${ld_inputs} ${STDLIBS}',
+    '-l:crti.bc -l:crtbeginS.bc ${ld_inputs} ${STDLIBS}',
 
   'LD_ARGS_glibc_dynamic':
     '-l:crt1.bc ' +
-    '-l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ${ld_inputs} ${STDLIBS}',
+    '-l:crti.bc -l:crtbegin.bc ${ld_inputs} ${STDLIBS}',
 
   'TRANSLATE_FLAGS' : '',
 

@@ -2880,7 +2880,6 @@ libs-support-bitcode() {
 
   # Install crtbegin bitcode (__dso_handle/__cxa_finalize for C++)
   StepBanner "LIBS-SUPPORT" "Install crtbegin.bc / crtbeginS.bc"
-  ${cc_cmd} -c crtdummy.c -o "${build_dir}"/crtdummy.bc
   # NOTE: we do not have "end" versions of these
   ${cc_cmd} -c crtbegin.c -o "${build_dir}"/crtbegin.bc
   ${cc_cmd} -c crtbegin.c -o "${build_dir}"/crtbeginS.bc \
@@ -2896,7 +2895,7 @@ libs-support-bitcode() {
 
   # Install to actual lib directories.
   spushd "${build_dir}"
-  local files="crti.bc crtdummy.bc crtbegin.bc crtbeginS.bc pnacl_abi.bc"
+  local files="crti.bc crtbegin.bc crtbeginS.bc pnacl_abi.bc"
   if [ ${libmode} == "newlib" ]; then
     mkdir -p "${INSTALL_LIB_NEWLIB}"
     cp -f ${files} "${INSTALL_LIB_NEWLIB}"
