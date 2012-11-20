@@ -941,7 +941,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ChangeAutoHideTaskBarThickness) {
 }
 
 // http://crbug.com/143247
-#if defined(OS_LINUX)
+#if !defined(OS_WIN)
 #define MAYBE_ActivatePanelOrTabbedWindow DISABLED_ActivatePanelOrTabbedWindow
 #else
 #define MAYBE_ActivatePanelOrTabbedWindow ActivatePanelOrTabbedWindow
@@ -1001,7 +1001,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateBasic) {
 
 
 // http://crbug.com/143247
-#if defined(OS_LINUX)
+#if !defined(OS_WIN)
 #define MAYBE_ActivateDeactivateMultiple DISABLED_ActivateDeactivateMultiple
 #else
 #define MAYBE_ActivateDeactivateMultiple ActivateDeactivateMultiple
@@ -1038,7 +1038,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateMultiple) {
 }
 
 // http://crbug.com/143247
-#if defined(OS_LINUX)
+#if !defined(OS_WIN)
 #define MAYBE_DrawAttentionBasic DISABLED_DrawAttentionBasic
 #else
 #define MAYBE_DrawAttentionBasic DrawAttentionBasic
@@ -1081,7 +1081,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionBasic) {
 }
 
 // http://crbug.com/143247
-#if defined(OS_LINUX)
+#if !defined(OS_WIN)
 #define MAYBE_DrawAttentionWhileMinimized DISABLED_DrawAttentionWhileMinimized
 #else
 #define MAYBE_DrawAttentionWhileMinimized DrawAttentionWhileMinimized
@@ -1224,7 +1224,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhenActive) {
 }
 
 // http://crbug.com/143247
-#if defined(OS_LINUX)
+#if !defined(OS_WIN)
 #define MAYBE_DrawAttentionResetOnActivate DISABLED_DrawAttentionResetOnActivate
 #else
 #define MAYBE_DrawAttentionResetOnActivate DrawAttentionResetOnActivate
@@ -1255,8 +1255,14 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnActivate) {
   panel2->Close();
 }
 
+// http://crbug.com/143247
+#if !defined(OS_WIN)
+#define MAYBE_DrawAttentionMinimizedNotResetOnActivate DISABLED_DrawAttentionMinimizedNotResetOnActivate
+#else
+#define MAYBE_DrawAttentionMinimizedNotResetOnActivate DrawAttentionMinimizedNotResetOnActivate
+#endif
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
-                       DrawAttentionMinimizedNotResetOnActivate) {
+                       MAYBE_DrawAttentionMinimizedNotResetOnActivate) {
   // Create 2 panels so we end up with an inactive panel that can
   // be made to draw attention.
   Panel* panel1 = CreatePanel("test panel1");
@@ -1286,7 +1292,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel2->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnClick) {
+// http://crbug.com/143247
+#if !defined(OS_WIN)
+#define MAYBE_DrawAttentionResetOnClick DISABLED_DrawAttentionResetOnClick
+#else
+#define MAYBE_DrawAttentionResetOnClick DrawAttentionResetOnClick
+#endif
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnClick) {
   // Create 2 panels so we end up with an inactive panel that can
   // be made to draw attention.
   Panel* panel = CreatePanel("test panel1");
@@ -1348,7 +1360,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FocusLostOnMinimize) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateInactiveSwitchToActive) {
+// http://crbug.com/143247
+#if !defined(OS_WIN)
+#define MAYBE_CreateInactiveSwitchToActive DISABLED_CreateInactiveSwitchToActive
+#else
+#define MAYBE_CreateInactiveSwitchToActive CreateInactiveSwitchToActive
+#endif
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_CreateInactiveSwitchToActive) {
   // Compiz will not activate initially inactive window.
   if (SkipTestIfCompizWM())
     return;
@@ -1414,8 +1432,14 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel2->Close();
 }
 
+// http://crbug.com/143247
+#if !defined(OS_WIN)
+#define MAYBE_NonExtensionDomainPanelsCloseOnUninstall DISABLED_NonExtensionDomainPanelsCloseOnUninstall
+#else
+#define MAYBE_NonExtensionDomainPanelsCloseOnUninstall NonExtensionDomainPanelsCloseOnUninstall
+#endif
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
-                       NonExtensionDomainPanelsCloseOnUninstall) {
+                       MAYBE_NonExtensionDomainPanelsCloseOnUninstall) {
   // Create a test extension.
   DictionaryValue empty_value;
   scoped_refptr<Extension> extension =

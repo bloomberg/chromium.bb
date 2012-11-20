@@ -26,7 +26,13 @@ class DockedPanelBrowserTest : public BasePanelBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezePanelsInDock) {
+// http://crbug.com/143247
+#if !defined(OS_WIN)
+#define MAYBE_SqueezePanelsInDock DISABLED_SqueezePanelsInDock
+#else
+#define MAYBE_SqueezePanelsInDock SqueezePanelsInDock
+#endif
+IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MAYBE_SqueezePanelsInDock) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
@@ -85,7 +91,13 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezePanelsInDock) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezeAndThenSomeMore) {
+// http://crbug.com/143247
+#if !defined(OS_WIN)
+#define MAYBE_SqueezeAndThenSomeMore DISABLED_SqueezeAndThenSomeMore
+#else
+#define MAYBE_SqueezeAndThenSomeMore SqueezeAndThenSomeMore
+#endif
+IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MAYBE_SqueezeAndThenSomeMore) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
@@ -134,7 +146,13 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezeAndThenSomeMore) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MinimizeSqueezedActive) {
+// http://crbug.com/143247
+#if !defined(OS_WIN)
+#define MAYBE_MinimizeSqueezedActive DISABLED_MinimizeSqueezedActive
+#else
+#define MAYBE_MinimizeSqueezedActive MinimizeSqueezedActive
+#endif
+IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MAYBE_MinimizeSqueezedActive) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
@@ -187,7 +205,13 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MinimizeSqueezedActive) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, CloseSqueezedPanels) {
+// http://crbug.com/143247
+#if !defined(OS_WIN)
+#define MAYBE_CloseSqueezedPanels DISABLED_CloseSqueezedPanels
+#else
+#define MAYBE_CloseSqueezedPanels CloseSqueezedPanels
+#endif
+IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MAYBE_CloseSqueezedPanels) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
