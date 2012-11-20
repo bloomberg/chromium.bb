@@ -269,11 +269,12 @@ void DeviceStatusCollector::IdleStateCallback(IdleState state) {
     // interval of activity.
     int active_seconds = (now - last_idle_check_).InSeconds();
     if (active_seconds < 0 ||
-        active_seconds >= static_cast<int>((2 * kIdlePollIntervalSeconds)))
+        active_seconds >= static_cast<int>((2 * kIdlePollIntervalSeconds))) {
       AddActivePeriod(now - TimeDelta::FromSeconds(kIdlePollIntervalSeconds),
                       now);
-    else
+    } else {
       AddActivePeriod(last_idle_check_, now);
+    }
 
     PruneStoredActivityPeriods(now);
   }
@@ -390,7 +391,7 @@ void DeviceStatusCollector::ScheduleGeolocationUpdateRequest() {
     return;
 
   if (position_.Validate()) {
-    TimeDelta elapsed = Time::Now() - position_.timestamp;
+    TimeDelta elapsed = GetCurrentTime() - position_.timestamp;
     TimeDelta interval =
         TimeDelta::FromSeconds(kGeolocationPollIntervalSeconds);
     if (elapsed > interval) {

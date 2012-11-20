@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/device_status_collector.h"
 
+#include "base/environment.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -94,7 +95,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
  protected:
   virtual void CheckIdleState() OVERRIDE {
     // This should never be called in testing, as it results in a dbus call.
-    NOTREACHED();
+    ADD_FAILURE();
   }
 
   // Each time this is called, returns a time that is a fixed increment
@@ -127,6 +128,9 @@ int64 GetActiveMilliseconds(em::DeviceStatusReportRequest& status) {
 
 namespace policy {
 
+// Though it is a unit test, this test is linked with browser_tests so that it
+// runs in a separate process. The intention is to avoid overriding the timezone
+// environment variable for other tests.
 class DeviceStatusCollectorTest : public testing::Test {
  public:
   DeviceStatusCollectorTest()
@@ -134,6 +138,11 @@ class DeviceStatusCollectorTest : public testing::Test {
       ui_thread_(content::BrowserThread::UI, &message_loop_),
       file_thread_(content::BrowserThread::FILE, &message_loop_),
       io_thread_(content::BrowserThread::IO, &message_loop_) {
+    // Run this test with a well-known timezone so that Time::LocalMidnight()
+    // returns the same values on all machines.
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    env->SetVar("TZ", "UTC");
+
     TestingDeviceStatusCollector::RegisterPrefs(&prefs_);
 
     EXPECT_CALL(statistics_provider_, GetMachineStatistic(_, NotNull()))
@@ -338,14 +347,12 @@ TEST_F(DeviceStatusCollectorTest, Times) {
   EXPECT_EQ(3 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
 }
 
-// Fails after after WebKit roll [132375:132450]
-// http://crbug.com/157848
-TEST_F(DeviceStatusCollectorTest, DISABLED_MaxStoredPeriods) {
+TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
   IdleState test_states[] = {
     IDLE_STATE_ACTIVE,
     IDLE_STATE_IDLE
   };
-  unsigned int max_days = 10;
+  int max_days = 10;
 
   cros_settings_->SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   status_collector_->set_max_stored_past_activity_days(max_days - 1);
@@ -353,7 +360,7 @@ TEST_F(DeviceStatusCollectorTest, DISABLED_MaxStoredPeriods) {
   Time baseline = Time::Now().LocalMidnight();
 
   // Simulate 12 active periods.
-  for (int i = 0; i < static_cast<int>(max_days) + 2; i++) {
+  for (int i = 0; i < max_days + 2; i++) {
     status_collector_->Simulate(test_states,
                                 sizeof(test_states) / sizeof(IdleState));
     // Advance the simulated clock by a day.
@@ -363,10 +370,10 @@ TEST_F(DeviceStatusCollectorTest, DISABLED_MaxStoredPeriods) {
 
   // Check that we don't exceed the max number of periods.
   GetStatus();
-  EXPECT_EQ(static_cast<int>(max_days), status_.active_period_size());
+  EXPECT_EQ(max_days, status_.active_period_size());
 
   // Simulate some future times.
-  for (int i = 0; i < static_cast<int>(max_days) + 2; i++) {
+  for (int i = 0; i < max_days + 2; i++) {
     status_collector_->Simulate(test_states,
                                 sizeof(test_states) / sizeof(IdleState));
     // Advance the simulated clock by a day.
@@ -383,7 +390,7 @@ TEST_F(DeviceStatusCollectorTest, DISABLED_MaxStoredPeriods) {
   // Check that we don't exceed the max number of periods.
   status_.clear_active_period();
   GetStatus();
-  EXPECT_LT(status_.active_period_size(), static_cast<int>(max_days));
+  EXPECT_LT(status_.active_period_size(), max_days);
 }
 
 TEST_F(DeviceStatusCollectorTest, ActivityTimesDisabledByDefault) {

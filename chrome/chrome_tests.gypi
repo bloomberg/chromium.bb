@@ -990,6 +990,7 @@
         'browser/page_cycler/page_cycler_browsertest.cc',
         'browser/performance_monitor/performance_monitor_browsertest.cc',
         'browser/policy/device_management_service_browsertest.cc',
+        'browser/policy/device_status_collector_browsertest.cc',
         'browser/policy/policy_browsertest.cc',
         'browser/policy/policy_prefs_browsertest.cc',
         'browser/popup_blocker_browsertest.cc',
@@ -1263,6 +1264,7 @@
           'sources!': [
             'browser/extensions/api/rtc_private/rtc_private_apitest.cc',
             'browser/extensions/api/terminal/terminal_private_apitest.cc',
+            'browser/policy/device_status_collector_browsertest.cc',
             'test/data/webui/certificate_viewer_dialog_test.js',
             'test/data/webui/certificate_viewer_ui_test-inl.h',
           ],
