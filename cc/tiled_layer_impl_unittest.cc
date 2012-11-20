@@ -202,7 +202,7 @@ TEST(TiledLayerImplTest, textureInfoForLayerNoBorders)
         const TileDrawQuad* quad = TileDrawQuad::materialCast(quads[i]);
 
         EXPECT_NE(quad->resourceId(), 0u) << quadString << i;
-        EXPECT_EQ(quad->textureOffset(), gfx::Vector2d()) << quadString << i;
+        EXPECT_EQ(quad->texCoordRect(), gfx::RectF(gfx::PointF(), tileSize)) << quadString << i;
         EXPECT_EQ(quad->textureSize(), tileSize) << quadString << i;
         EXPECT_EQ(gfx::Rect(0, 0, 1, 1), quad->opaque_rect) << quadString << i;
     }

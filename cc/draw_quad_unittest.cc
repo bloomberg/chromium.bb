@@ -242,7 +242,7 @@ TEST(DrawQuadTest, copyTileDrawQuad)
 {
     gfx::Rect opaqueRect(33, 44, 22, 33);
     unsigned resourceId = 104;
-    gfx::Vector2d textureOffset(-31, 47);
+    gfx::RectF texCoordRect(31, 12, 54, 20);
     gfx::Size textureSize(85, 32);
     bool swizzleContents = true;
     bool leftEdgeAA = true;
@@ -251,10 +251,10 @@ TEST(DrawQuadTest, copyTileDrawQuad)
     bool bottomEdgeAA = true;
 
     CREATE_SHARED_STATE();
-    CREATE_QUAD_9(TileDrawQuad, opaqueRect, resourceId, textureOffset, textureSize, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA);
+    CREATE_QUAD_9(TileDrawQuad, opaqueRect, resourceId, texCoordRect, textureSize, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA);
     EXPECT_RECT_EQ(opaqueRect, copyQuad->opaque_rect);
     EXPECT_EQ(resourceId, copyQuad->resourceId());
-    EXPECT_EQ(textureOffset, copyQuad->textureOffset());
+    EXPECT_EQ(texCoordRect, copyQuad->texCoordRect());
     EXPECT_EQ(textureSize, copyQuad->textureSize());
     EXPECT_EQ(swizzleContents, copyQuad->swizzleContents());
     EXPECT_EQ(leftEdgeAA, copyQuad->leftEdgeAA());

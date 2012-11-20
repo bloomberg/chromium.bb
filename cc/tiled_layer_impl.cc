@@ -172,6 +172,8 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
             // offset the same amount.
             gfx::Vector2d displayOffset = tileRect.origin() - displayRect.origin();
             gfx::Vector2d textureOffset = m_tiler->textureOffset(i, j) + displayOffset;
+            gfx::RectF texCoordRect = gfx::RectF(tileRect.size()) + textureOffset;
+
             float tileWidth = static_cast<float>(m_tiler->tileSize().width());
             float tileHeight = static_cast<float>(m_tiler->tileSize().height());
             gfx::Size textureSize(tileWidth, tileHeight);
@@ -186,7 +188,7 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
             bool rightEdgeAA = i == m_tiler->numTilesX() - 1 && useAA;
             bool bottomEdgeAA = j == m_tiler->numTilesY() - 1 && useAA;
 
-            quadSink.append(TileDrawQuad::create(sharedQuadState, tileRect, tileOpaqueRect, tile->resourceId(), textureOffset, textureSize, tile->contentsSwizzled(), leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA).PassAs<DrawQuad>(), appendQuadsData);
+            quadSink.append(TileDrawQuad::create(sharedQuadState, tileRect, tileOpaqueRect, tile->resourceId(), texCoordRect, textureSize, tile->contentsSwizzled(), leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA).PassAs<DrawQuad>(), appendQuadsData);
         }
     }
 }

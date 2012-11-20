@@ -53,7 +53,7 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
     }
 
     gfx::Rect geometry_rect = iter.geometry_rect();
-    gfx::Rect texture_rect = iter.texture_rect();
+    gfx::RectF texture_rect = iter.texture_rect();
     gfx::Rect opaque_rect = iter.opaque_rect();
 
     bool outside_left_edge = geometry_rect.x() == content_rect.x();
@@ -66,8 +66,8 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
         geometry_rect,
         opaque_rect,
         resource,
-        texture_rect.origin().OffsetFromOrigin(),
-        texture_rect.size(),
+        texture_rect,
+        iter.texture_size(),
         iter->contents_swizzled(),
         outside_left_edge && useAA,
         outside_top_edge && useAA,

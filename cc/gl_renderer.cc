@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "build/build_config.h"
 #include "cc/damage_tracker.h"
+#include "cc/geometry.h"
 #include "cc/geometry_binding.h"
 #include "cc/layer_quad.h"
 #include "cc/math_util.h"
@@ -697,7 +698,23 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
 {
     gfx::Rect tileRect = quad->visible_rect;
 
-    gfx::RectF clampRect(tileRect);
+    gfx::RectF texCoordRect = quad->texCoordRect();
+    float texToGeomScaleX = quad->rect.width() / texCoordRect.width();
+    float texToGeomScaleY = quad->rect.height() / texCoordRect.height();
+
+    // texCoordRect corresponds to quadRect, but quadVisibleRect may be
+    // smaller than quadRect due to occlusion or clipping. Adjust
+    // texCoordRect to match.
+    gfx::Vector2d topLeftDiff = tileRect.origin() - quad->rect.origin();
+    gfx::Vector2d bottomRightDiff =
+            BottomRight(tileRect) - BottomRight(quad->rect);
+    texCoordRect.Inset(topLeftDiff.x() / texToGeomScaleX,
+                       topLeftDiff.y() / texToGeomScaleY,
+                       -bottomRightDiff.x() / texToGeomScaleX,
+                       -bottomRightDiff.y() / texToGeomScaleY);
+
+    gfx::RectF clampGeomRect(tileRect);
+    gfx::RectF clampTexRect(texCoordRect);
     // Clamp texture coordinates to avoid sampling outside the layer
     // by deflating the tile region half a texel or half a texel
     // minus epsilon for one pixel layers. The resulting clamp region
@@ -705,24 +722,27 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     // back to normalized texture coordinates by the fragment shader
     // after being clamped to 0-1 range.
     const float epsilon = 1 / 1024.0f;
-    float clampX = min(0.5, clampRect.width() / 2.0 - epsilon);
-    float clampY = min(0.5, clampRect.height() / 2.0 - epsilon);
-    clampRect.Inset(clampX, clampY, clampX, clampY);
-
-    gfx::Vector2dF textureOffset = quad->textureOffset() + (clampRect.origin() - quad->rect.origin());
+    float texClampX = std::min(0.5f, 0.5f * clampTexRect.width() - epsilon);
+    float texClampY = std::min(0.5f, 0.5f * clampTexRect.height() - epsilon);
+    float geomClampX = std::min(texClampX * texToGeomScaleX,
+                                0.5f * clampGeomRect.width() - epsilon);
+    float geomClampY = std::min(texClampY * texToGeomScaleY,
+                                0.5f * clampGeomRect.height() - epsilon);
+    clampGeomRect.Inset(geomClampX, geomClampY, geomClampX, geomClampY);
+    clampTexRect.Inset(texClampX, texClampY, texClampX, texClampY);
 
     // Map clamping rectangle to unit square.
-    float vertexTexTranslateX = -clampRect.x() / clampRect.width();
-    float vertexTexTranslateY = -clampRect.y() / clampRect.height();
-    float vertexTexScaleX = tileRect.width() / clampRect.width();
-    float vertexTexScaleY = tileRect.height() / clampRect.height();
+    float vertexTexTranslateX = -clampGeomRect.x() / clampGeomRect.width();
+    float vertexTexTranslateY = -clampGeomRect.y() / clampGeomRect.height();
+    float vertexTexScaleX = tileRect.width() / clampGeomRect.width();
+    float vertexTexScaleY = tileRect.height() / clampGeomRect.height();
 
     // Map to normalized texture coordinates.
     const gfx::Size& textureSize = quad->textureSize();
-    float fragmentTexTranslateX = textureOffset.x() / textureSize.width();
-    float fragmentTexTranslateY = textureOffset.y() / textureSize.height();
-    float fragmentTexScaleX = clampRect.width() / textureSize.width();
-    float fragmentTexScaleY = clampRect.height() / textureSize.height();
+    float fragmentTexTranslateX = clampTexRect.x() / textureSize.width();
+    float fragmentTexTranslateY = clampTexRect.y() / textureSize.height();
+    float fragmentTexScaleX = clampTexRect.width() / textureSize.width();
+    float fragmentTexScaleY = clampTexRect.height() / textureSize.height();
 
 
     gfx::QuadF localQuad;

@@ -16,10 +16,10 @@ namespace cc {
 
 class CC_EXPORT TileDrawQuad : public DrawQuad {
 public:
-    static scoped_ptr<TileDrawQuad> create(const SharedQuadState*, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Vector2d& textureOffset, const gfx::Size& textureSize, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
+    static scoped_ptr<TileDrawQuad> create(const SharedQuadState*, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::RectF& texCoordRect, const gfx::Size& textureSize, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
 
     unsigned resourceId() const { return m_resourceId; }
-    gfx::Vector2d textureOffset() const { return m_textureOffset; }
+    gfx::RectF texCoordRect() const { return m_texCoordRect; }
     gfx::Size textureSize() const { return m_textureSize; }
     bool swizzleContents() const { return m_swizzleContents; }
 
@@ -34,10 +34,10 @@ public:
 
     static const TileDrawQuad* materialCast(const DrawQuad*);
 private:
-    TileDrawQuad(const SharedQuadState*, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Vector2d& textureOffset, const gfx::Size& textureSize, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
+    TileDrawQuad(const SharedQuadState*, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::RectF& texCoordRect, const gfx::Size& textureSize, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
 
     unsigned m_resourceId;
-    gfx::Vector2d m_textureOffset;
+    gfx::RectF m_texCoordRect;
     gfx::Size m_textureSize;
     bool m_swizzleContents;
     bool m_leftEdgeAA;

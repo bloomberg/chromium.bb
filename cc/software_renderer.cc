@@ -258,9 +258,7 @@ void SoftwareRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQua
     DCHECK(isSoftwareResource(quad->resourceId()));
     ResourceProvider::ScopedReadLockSoftware lock(m_resourceProvider, quad->resourceId());
 
-    SkRect uvRect = SkRect::MakeXYWH(
-        quad->textureOffset().x(), quad->textureOffset().y(),
-        quad->rect.width(), quad->rect.height());
+    SkRect uvRect = gfx::RectFToSkRect(quad->texCoordRect());
     m_skCurrentPaint.setFilterBitmap(true);
     m_skCurrentCanvas->drawBitmapRectToRect(*lock.skBitmap(), &uvRect,
                                             gfx::RectFToSkRect(quadVertexRect()),

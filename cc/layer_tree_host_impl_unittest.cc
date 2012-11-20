@@ -1603,7 +1603,7 @@ public:
             opaqueRect = m_opaqueContentRect;
 
         SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
-        scoped_ptr<TileDrawQuad> testBlendingDrawQuad = TileDrawQuad::create(sharedQuadState, m_quadRect, opaqueRect, m_resourceId, gfx::Vector2d(), gfx::Size(1, 1), false, false, false, false, false);
+        scoped_ptr<TileDrawQuad> testBlendingDrawQuad = TileDrawQuad::create(sharedQuadState, m_quadRect, opaqueRect, m_resourceId, gfx::RectF(0, 0, 1, 1), gfx::Size(1, 1), false, false, false, false, false);
         testBlendingDrawQuad->visible_rect = m_quadVisibleRect;
         EXPECT_EQ(m_blend, testBlendingDrawQuad->ShouldDrawWithBlending());
         EXPECT_EQ(m_hasRenderSurface, !!renderSurface());
