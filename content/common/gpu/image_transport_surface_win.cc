@@ -250,8 +250,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     DCHECK(handle.parent_client_id);
     surface = new TextureImageTransportSurface(manager, stub, handle);
   } else {
-    if (handle.transport &&
-        gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
+    if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
         !CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableImageTransportSurface)) {
       // This path handles two different cases.

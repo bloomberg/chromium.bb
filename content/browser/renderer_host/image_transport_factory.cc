@@ -528,14 +528,10 @@ class GpuProcessTransportFactory :
 #if defined(OS_WIN)
     if (GpuDataManagerImpl::GetInstance()->IsUsingAcceleratedSurface())
       data->accelerated_surface.reset(new AcceleratedSurface(widget));
-    tracker->SetSurfaceHandle(
-        data->surface_id,
-        gfx::GLSurfaceHandle(widget, true));
-#else
+#endif
     tracker->SetSurfaceHandle(
         data->surface_id,
         gfx::GLSurfaceHandle(widget, false));
-#endif
 
     per_compositor_data_[compositor] = data;
 
