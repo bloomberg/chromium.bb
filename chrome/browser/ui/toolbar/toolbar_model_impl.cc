@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -215,7 +216,8 @@ string16 ToolbarModelImpl::TryToExtractSearchTermsFromURL(
 
   // Ensure instant extended API is enabled and query URL is HTTPS.
   if (!profile || !chrome::search::IsInstantExtendedAPIEnabled(profile) ||
-      !url.SchemeIs(chrome::kHttpsScheme))
+      !url.SchemeIs(chrome::kHttpsScheme) ||
+      !google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec()))
     return string16();
 
   TemplateURLService* template_url_service =
