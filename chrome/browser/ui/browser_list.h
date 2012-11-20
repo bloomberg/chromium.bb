@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
+
 class Browser;
 class Profile;
 
