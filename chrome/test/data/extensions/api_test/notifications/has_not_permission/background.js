@@ -20,7 +20,7 @@ chrome.test.runTests([
       window.webkitNotifications.createNotification(
           "", "Foo", "This is text notification.").show();
     } catch (e) {
-      chrome.test.assertTrue(e.message.indexOf("SECURITY_ERR") == 0);
+      chrome.test.assertTrue(e.message.indexOf("SecurityError") == 0);
       chrome.test.succeed();
       return;
     }
