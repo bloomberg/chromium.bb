@@ -31,6 +31,18 @@ bool OverscrollController::WillDispatchEvent(
     const WebKit::WebInputEvent& event) {
   if (DispatchEventCompletesAction(event)) {
     CompleteAction();
+
+    // If the overscroll was caused by touch-scrolling, then the gesture event
+    // that completes the action needs to be sent to the renderer, because the
+    // touch-scrolls maintain state in the renderer side (in the compositor, for
+    // example), and the event that completes this action needs to be sent to
+    // the renderer so that those states can be updated/reset appropriately.
+    if (WebKit::WebInputEvent::isGestureEventType(event.type)) {
+      const WebKit::WebGestureEvent& gevent =
+          static_cast<const WebKit::WebGestureEvent&>(event);
+      return render_widget_host_->gesture_event_filter()->ShouldForward(gevent);
+    }
+
     return false;
   }
 
@@ -191,8 +203,30 @@ void OverscrollController::ProcessOverscroll(float delta_x, float delta_y) {
 
   // Tell the delegate about the overscroll update so that it can update
   // the display accordingly (e.g. show history preview etc.).
-  if (delegate_)
-    delegate_->OnOverscrollUpdate(overscroll_delta_x_, overscroll_delta_y_);
+  if (delegate_) {
+    // Do not include the threshold amount when sending the deltas to the
+    // delegate.
+    float delegate_delta_x = overscroll_delta_x_;
+    if (fabs(delegate_delta_x) > kMinOverscrollThreshold) {
+      if (delegate_delta_x < 0)
+        delegate_delta_x += kMinOverscrollThreshold;
+      else
+        delegate_delta_x -= kMinOverscrollThreshold;
+    } else {
+      delegate_delta_x = 0.f;
+    }
+
+    float delegate_delta_y = overscroll_delta_y_;
+    if (fabs(delegate_delta_y) > kMinOverscrollThreshold) {
+      if (delegate_delta_y < 0)
+        delegate_delta_y += kMinOverscrollThreshold;
+      else
+        delegate_delta_y -= kMinOverscrollThreshold;
+    } else {
+      delegate_delta_y = 0.f;
+    }
+    delegate_->OnOverscrollUpdate(delegate_delta_x, delegate_delta_y);
+  }
 }
 
 void OverscrollController::CompleteAction() {
