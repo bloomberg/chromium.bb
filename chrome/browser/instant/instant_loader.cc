@@ -336,6 +336,21 @@ void InstantLoader::SendAutocompleteResults(
                                                            results));
 }
 
+void InstantLoader::SendThemeBackgroundInfo(
+      const ThemeBackgroundInfo& theme_info) {
+  content::RenderViewHost* rvh =
+      preview_contents_->web_contents()->GetRenderViewHost();
+  rvh->Send(new ChromeViewMsg_SearchBoxThemeChanged(rvh->GetRoutingID(),
+                                                    theme_info));
+}
+
+void InstantLoader::SendThemeAreaHeight(int height) {
+  content::RenderViewHost* rvh =
+      preview_contents_->web_contents()->GetRenderViewHost();
+  rvh->Send(new ChromeViewMsg_SearchBoxThemeAreaHeightChanged(
+      rvh->GetRoutingID(), height));
+}
+
 void InstantLoader::OnUpOrDownKeyPressed(int count) {
   content::RenderViewHost* rvh =
       preview_contents_->web_contents()->GetRenderViewHost();

@@ -29,6 +29,7 @@ class AutocompleteProvider;
 class InstantLoader;
 class TabContents;
 class TemplateURL;
+struct ThemeBackgroundInfo;
 
 namespace chrome {
 class BrowserInstantController;
@@ -97,6 +98,14 @@ class InstantController {
 
   // Sets whether Instant should show result previews.
   void SetInstantEnabled(bool instant_enabled);
+
+  // The theme has changed.  Pass the message down to the loader which will
+  // notify the renderer.
+  void ThemeChanged(const ThemeBackgroundInfo& theme_info);
+
+  // The theme area height has changed.  Pass the message down to the loader
+  // which will notify the renderer.
+  void ThemeAreaHeightChanged(int height);
 
   // Returns the transition type of the last AutocompleteMatch passed to Update.
   content::PageTransition last_transition_type() const {

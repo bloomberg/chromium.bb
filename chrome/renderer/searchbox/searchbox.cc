@@ -17,7 +17,8 @@ SearchBox::SearchBox(content::RenderView* render_view)
       selection_end_(0),
       results_base_(0),
       last_results_base_(0),
-      active_tab_is_ntp_(false) {
+      active_tab_is_ntp_(false),
+      theme_area_height_(0) {
 }
 
 SearchBox::~SearchBox() {
@@ -78,6 +79,14 @@ const InstantAutocompleteResult* SearchBox::GetAutocompleteResultWithId(
   return &last_autocomplete_results_[restricted_id - last_results_base_];
 }
 
+const ThemeBackgroundInfo& SearchBox::GetThemeBackgroundInfo() {
+  return theme_info_;
+}
+
+int SearchBox::GetThemeAreaHeight() {
+  return theme_area_height_;
+}
+
 bool SearchBox::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SearchBox, message)
@@ -93,6 +102,10 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnUpOrDownKeyPressed)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxActiveTabModeChanged,
                         OnActiveTabModeChanged)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxThemeChanged,
+                        OnThemeChanged)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxThemeAreaHeightChanged,
+                        OnThemeAreaHeightChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -176,6 +189,22 @@ void SearchBox::OnActiveTabModeChanged(bool active_tab_is_ntp) {
   }
 }
 
+void SearchBox::OnThemeChanged(const ThemeBackgroundInfo& theme_info) {
+  theme_info_ = theme_info;
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    extensions_v8::SearchBoxExtension::DispatchThemeChange(
+        render_view()->GetWebView()->mainFrame());
+  }
+}
+
+void SearchBox::OnThemeAreaHeightChanged(int height) {
+  theme_area_height_ = height;
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    extensions_v8::SearchBoxExtension::DispatchThemeAreaHeightChange(
+        render_view()->GetWebView()->mainFrame());
+  }
+}
+
 void SearchBox::Reset() {
   query_.clear();
   verbatim_ = false;
@@ -185,4 +214,6 @@ void SearchBox::Reset() {
   rect_ = gfx::Rect();
   autocomplete_results_.clear();
   active_tab_is_ntp_ = false;
+  theme_info_ = ThemeBackgroundInfo();
+  theme_area_height_ = 0;
 }

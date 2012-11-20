@@ -44,6 +44,8 @@ class SearchBox : public content::RenderViewObserver,
   // Searchbox retains ownership of this object.
   const InstantAutocompleteResult*
       GetAutocompleteResultWithId(size_t restricted_id) const;
+  const ThemeBackgroundInfo& GetThemeBackgroundInfo();
+  int GetThemeAreaHeight();
 
  private:
   // Overridden from content::RenderViewObserver:
@@ -63,6 +65,8 @@ class SearchBox : public content::RenderViewObserver,
   void OnFocus();
   void OnBlur();
   void OnActiveTabModeChanged(bool active_tab_is_ntp);
+  void OnThemeChanged(const ThemeBackgroundInfo& theme_info);
+  void OnThemeAreaHeightChanged(int height);
 
   // Sets the searchbox values to their initial value.
   void Reset();
@@ -77,6 +81,8 @@ class SearchBox : public content::RenderViewObserver,
   size_t last_results_base_;
   std::vector<InstantAutocompleteResult> last_autocomplete_results_;
   bool active_tab_is_ntp_;
+  ThemeBackgroundInfo theme_info_;
+  int theme_area_height_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBox);
 };

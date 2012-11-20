@@ -4,7 +4,9 @@
 
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 
+#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
@@ -18,6 +20,22 @@
 
 namespace {
 
+const char kCSSBackgroundImageFormat[] =
+    "-webkit-image-set(url(chrome://theme/IDR_THEME_BACKGROUND?%s) 1x)";
+
+const char kCSSBackgroundColorFormat[] = "rgba(%d,%d,%d,%s)";
+
+const char kCSSBackgroundPositionCenter[] = "center";
+const char kCSSBackgroundPositionLeft[] = "left";
+const char kCSSBackgroundPositionTop[] = "top";
+const char kCSSBackgroundPositionRight[] = "right";
+const char kCSSBackgroundPositionBottom[] = "bottom";
+
+const char kCSSBackgroundRepeatNo[] = "no-repeat";
+const char kCSSBackgroundRepeatX[] = "repeat-x";
+const char kCSSBackgroundRepeatY[] = "repeat-y";
+const char kCSSBackgroundRepeat[] = "repeat";
+
 // Converts a V8 value to a string16.
 string16 V8ValueToUTF16(v8::Handle<v8::Value> v) {
   v8::String::Value s(v);
@@ -27,6 +45,11 @@ string16 V8ValueToUTF16(v8::Handle<v8::Value> v) {
 // Converts string16 to V8 String.
 v8::Handle<v8::String> UTF16ToV8String(const string16& s) {
   return v8::String::New(reinterpret_cast<const uint16_t*>(s.data()), s.size());
+}
+
+// Converts std::string to V8 String.
+v8::Handle<v8::String> UTF8ToV8String(const std::string& s) {
+  return v8::String::New(s.data(), s.size());
 }
 
 void Dispatch(WebKit::WebFrame* frame, const WebKit::WebString& script) {
@@ -117,6 +140,25 @@ static const char kDispatchContextChangeEventScript[] =
     "  true;"
     "}";
 
+static const char kDispatchThemeChangeEventScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.searchBox &&"
+    "    window.chrome.searchBox.onthemechange &&"
+    "    typeof window.chrome.searchBox.onthemechange == 'function') {"
+    "  window.chrome.searchBox.onthemechange();"
+    "  true;"
+    "}";
+
+static const char kDispatchThemeAreaHeightChangeEventScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.searchBox &&"
+    "    window.chrome.searchBox.onthemeareaheightchange &&"
+    "    typeof window.chrome.searchBox.onthemeareaheightchange =="
+    "        'function') {"
+    "  window.chrome.searchBox.onthemeareaheightchange();"
+    "  true;"
+    "}";
+
 // ----------------------------------------------------------------------------
 
 class SearchBoxExtensionWrapper : public v8::Extension {
@@ -165,6 +207,18 @@ class SearchBoxExtensionWrapper : public v8::Extension {
 
   // Gets the current session context.
   static v8::Handle<v8::Value> GetContext(const v8::Arguments& args);
+
+  // Gets the background info of the theme currently adopted by browser.
+  // Call only when overlay is showing NTP page.
+  static v8::Handle<v8::Value> GetThemeBackgroundInfo(
+      const v8::Arguments& args);
+
+  // Gets the theme area height that the entire theme background image should
+  // fill up.
+  // Call only when overlay is showing NTP page and GetThemeBackgroundInfo
+  // returns a non-empty image_url and an image_vertical_alignment that is not
+  // "top".
+  static v8::Handle<v8::Value> GetThemeAreaHeight(const v8::Arguments& args);
 
   // Navigates the window to a URL represented by either a URL string or a
   // restricted ID.
@@ -221,6 +275,10 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetAutocompleteResults);
   if (name->Equals(v8::String::New("GetContext")))
     return v8::FunctionTemplate::New(GetContext);
+  if (name->Equals(v8::String::New("GetThemeBackgroundInfo")))
+    return v8::FunctionTemplate::New(GetThemeBackgroundInfo);
+  if (name->Equals(v8::String::New("GetThemeAreaHeight")))
+    return v8::FunctionTemplate::New(GetThemeAreaHeight);
   if (name->Equals(v8::String::New("NavigateContentWindow")))
     return v8::FunctionTemplate::New(NavigateContentWindow);
   if (name->Equals(v8::String::New("SetSuggestions")))
@@ -369,6 +427,111 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetContext(
       v8::String::New("isNewTabPage"),
       v8::Boolean::New(SearchBox::Get(render_view)->active_tab_is_ntp()));
   return context;
+}
+
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetThemeBackgroundInfo(
+    const v8::Arguments& args) {
+  DVLOG(1) << "GetThemeBackgroundInfo";
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+
+  const ThemeBackgroundInfo& theme_info =
+      SearchBox::Get(render_view)->GetThemeBackgroundInfo();
+  v8::Handle<v8::Object> info = v8::Object::New();
+
+  // The theme background color is in RGBA format "rgba(R,G,B,A)" where R, G and
+  // B are between 0 and 255 inclusive, and A is a double between 0 and 1
+  // inclusive.
+  // This is the CSS "background-color" format.
+  // Value is always valid.
+  info->Set(v8::String::New("colorRgba"), UTF8ToV8String(
+      // Convert the alpha using DoubleToString because StringPrintf will use
+      // locale specific formatters (e.g., use , instead of . in German).
+      base::StringPrintf(
+          kCSSBackgroundColorFormat,
+          theme_info.color_r,
+          theme_info.color_g,
+          theme_info.color_b,
+          base::DoubleToString(theme_info.color_a / 255.0).c_str())));
+
+  // The theme background image url is of format
+  // "-webkit-image-set(url(chrome://theme/IDR_THEME_BACKGROUND?<theme_id>) 1x)"
+  // where <theme_id> is the id that identifies the theme.
+  // This is the CSS "background-image" format.
+  // Value is only valid if there's a custom theme background image.
+  if (extensions::Extension::IdIsValid(theme_info.theme_id)) {
+    info->Set(v8::String::New("imageUrl"), UTF8ToV8String(
+        base::StringPrintf(kCSSBackgroundImageFormat,
+                           theme_info.theme_id.c_str())));
+
+    // The theme background image horizontal alignment is one of "left",
+    // "right", "center".
+    // This is the horizontal component of the CSS "background-position" format.
+    // Value is only valid if |imageUrl| is not empty.
+    std::string alignment = kCSSBackgroundPositionCenter;
+    if (theme_info.image_horizontal_alignment ==
+            THEME_BKGRND_IMAGE_ALIGN_LEFT) {
+      alignment = kCSSBackgroundPositionLeft;
+    } else if (theme_info.image_horizontal_alignment ==
+                   THEME_BKGRND_IMAGE_ALIGN_RIGHT) {
+      alignment = kCSSBackgroundPositionRight;
+    }
+    info->Set(v8::String::New("imageHorizontalAlignment"),
+              UTF8ToV8String(alignment));
+
+    // The theme background image vertical alignment is one of "top", "bottom",
+    // "center".
+    // This is the vertical component of the CSS "background-position" format.
+    // Value is only valid if |image_url| is not empty.
+    if (theme_info.image_vertical_alignment == THEME_BKGRND_IMAGE_ALIGN_TOP) {
+      alignment = kCSSBackgroundPositionTop;
+    } else if (theme_info.image_vertical_alignment ==
+                   THEME_BKGRND_IMAGE_ALIGN_BOTTOM) {
+      alignment = kCSSBackgroundPositionBottom;
+    } else {
+      alignment = kCSSBackgroundPositionCenter;
+    }
+    info->Set(v8::String::New("imageVerticalAlignment"),
+              UTF8ToV8String(alignment));
+
+    // The tiling of the theme background image is one of "no-repeat",
+    // "repeat-x", "repeat-y", "repeat".
+    // This is the CSS "background-repeat" format.
+    // Value is only valid if |image_url| is not empty.
+    std::string tiling = kCSSBackgroundRepeatNo;
+    switch (theme_info.image_tiling) {
+      case THEME_BKGRND_IMAGE_NO_REPEAT:
+        tiling = kCSSBackgroundRepeatNo;
+        break;
+      case THEME_BKGRND_IMAGE_REPEAT_X:
+        tiling = kCSSBackgroundRepeatX;
+        break;
+      case THEME_BKGRND_IMAGE_REPEAT_Y:
+        tiling = kCSSBackgroundRepeatY;
+        break;
+      case THEME_BKGRND_IMAGE_REPEAT:
+        tiling = kCSSBackgroundRepeat;
+        break;
+    }
+    info->Set(v8::String::New("imageTiling"), UTF8ToV8String(tiling));
+
+    // The theme background image height is only valid if |imageUrl| is valid.
+    info->Set(v8::String::New("imageHeight"),
+              v8::Int32::New(theme_info.image_height));
+  }
+
+  return info;
+}
+
+
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetThemeAreaHeight(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+
+  DVLOG(1) << "GetThemeAreaHeight: "
+           << SearchBox::Get(render_view)->GetThemeAreaHeight();
+  return v8::Int32::New(SearchBox::Get(render_view)->GetThemeAreaHeight());
 }
 
 // static
@@ -611,6 +774,17 @@ void SearchBoxExtension::DispatchUpOrDownKeyPress(WebKit::WebFrame* frame,
 void SearchBoxExtension::DispatchContextChange(WebKit::WebFrame* frame) {
   DVLOG(1) << "DispatchContextChange";
   Dispatch(frame, kDispatchContextChangeEventScript);
+}
+
+// static
+void SearchBoxExtension::DispatchThemeChange(WebKit::WebFrame* frame) {
+  Dispatch(frame, kDispatchThemeChangeEventScript);
+}
+
+// static
+void SearchBoxExtension::DispatchThemeAreaHeightChange(
+    WebKit::WebFrame* frame) {
+  Dispatch(frame, kDispatchThemeAreaHeightChangeEventScript);
 }
 
 // static

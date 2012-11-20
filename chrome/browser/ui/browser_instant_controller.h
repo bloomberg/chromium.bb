@@ -12,6 +12,8 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_unload_handler.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;
@@ -19,6 +21,7 @@ struct InstantSuggestion;
 class PrefService;
 class Profile;
 class TabContents;
+class ThemeService;
 
 namespace gfx {
 class Rect;
@@ -27,6 +30,7 @@ class Rect;
 namespace chrome {
 
 class BrowserInstantController : public PrefObserver,
+                                 public content::NotificationObserver,
                                  public search::SearchModelObserver {
  public:
   explicit BrowserInstantController(Browser* browser);
@@ -68,6 +72,14 @@ class BrowserInstantController : public PrefObserver,
   // Invoked by |browser_| when the active tab changes.
   void ActiveTabChanged();
 
+  // Invoked by |BrowserWindow| during layout to set content height which is
+  // used as theme area height, i.e. the height of the area that the entire
+  // theme background image should fill up.
+  void SetContentHeight(int height);
+
+  // Invoked by |instant_| to update theme information for preview.
+  void UpdateThemeInfoForPreview();
+
  private:
   // Overridden from PrefObserver:
   virtual void OnPreferenceChanged(PrefServiceBase* service,
@@ -77,12 +89,30 @@ class BrowserInstantController : public PrefObserver,
   virtual void ModeChanged(const search::Mode& old_mode,
                            const search::Mode& new_mode) OVERRIDE;
 
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // Helper for handling theme change.
+  void OnThemeChanged(ThemeService* theme_service);
+
+  // Helper for handling theme area height change.
+  void OnThemeAreaHeightChanged(int height);
+
   Browser* const browser_;
 
   InstantController instant_;
   InstantUnloadHandler instant_unload_handler_;
 
+  // Theme-related data for NTP preview to adopt themes.
+  bool initialized_theme_info_;  // True if theme_info_ has been initialized.
+  ThemeBackgroundInfo theme_info_;
+  int theme_area_height_;
+
   PrefChangeRegistrar profile_pref_registrar_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserInstantController);
 };

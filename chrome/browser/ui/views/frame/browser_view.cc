@@ -2007,12 +2007,21 @@ std::string BrowserView::GetClassName() const {
 void BrowserView::Layout() {
   if (ignore_layout_)
     return;
+
+  int prev_content_height = contents_container_->height();
+
   views::View::Layout();
 
   // The status bubble position requires that all other layout finish first.
   LayoutStatusBubble();
 
   MaybeStackBookmarkBarAtTop();
+
+  if (browser_->instant_controller() &&
+      prev_content_height != contents_container_->height()) {
+    browser_->instant_controller()->SetContentHeight(
+        contents_container_->height());
+  }
 }
 
 void BrowserView::PaintChildren(gfx::Canvas* canvas) {

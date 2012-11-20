@@ -20,6 +20,7 @@
 struct InstantAutocompleteResult;
 class InstantController;
 class TabContents;
+struct ThemeBackgroundInfo;
 
 namespace content {
 class WebContents;
@@ -66,6 +67,12 @@ class InstantLoader : public content::NotificationObserver {
   // Tells the preview page about the available autocomplete results.
   void SendAutocompleteResults(
       const std::vector<InstantAutocompleteResult>& results);
+
+  // Tells the preview page about the current theme background.
+  void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);
+
+  // Tells the preview page about the current theme area height.
+  void SendThemeAreaHeight(int height);
 
   // Tells the preview page that the user pressed the up or down key. |count|
   // is a repeat count, negative for moving up, positive for moving down.

@@ -526,6 +526,16 @@ void InstantController::SetInstantEnabled(bool instant_enabled) {
     DeleteLoader();
 }
 
+void InstantController::ThemeChanged(const ThemeBackgroundInfo& theme_info) {
+  if (GetPreviewContents())
+    loader_->SendThemeBackgroundInfo(theme_info);
+}
+
+void InstantController::ThemeAreaHeightChanged(int height) {
+  if (GetPreviewContents())
+    loader_->SendThemeAreaHeight(height);
+}
+
 void InstantController::SetSuggestions(
     InstantLoader* loader,
     const std::vector<InstantSuggestion>& suggestions) {
@@ -645,7 +655,8 @@ bool InstantController::ResetLoader(const TemplateURL* template_url,
     loader_.reset(new InstantLoader(this, instant_url, active_tab));
     loader_->Init();
 
-    // Ensure the searchbox API has the correct context.
+    // Ensure the searchbox API has the correct theme-related info and context.
+    browser_->UpdateThemeInfoForPreview();
     if (extended_enabled_)
       loader_->OnActiveTabModeChanged(search_mode_.is_ntp());
 

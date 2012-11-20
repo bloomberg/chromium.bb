@@ -30,6 +30,8 @@ if (!chrome.searchBox) {
     native function GetHeight();
     native function GetAutocompleteResults();
     native function GetContext();
+    native function GetThemeBackgroundInfo();
+    native function GetThemeAreaHeight();
     native function NavigateContentWindow();
     native function SetSuggestions();
     native function SetQuerySuggestion();
@@ -57,7 +59,7 @@ if (!chrome.searchBox) {
     // Wraps the AutocompleteResult query and URL into ShadowDOM nodes so that
     // the JS cannot access them and deletes the raw values.
     function GetAutocompleteResultsWrapper() {
-      var autocompleteResults = DedupeAutcompleteResults(
+      var autocompleteResults = DedupeAutocompleteResults(
           GetAutocompleteResults());
       var userInput = GetQuery();
       for (var i = 0, result; result = autocompleteResults[i]; ++i) {
@@ -96,7 +98,7 @@ if (!chrome.searchBox) {
 
     // Removes duplicates from AutocompleteResults.
     // TODO(dcblack): Do this in C++ instead of JS.
-    function DedupeAutcompleteResults(autocompleteResults) {
+    function DedupeAutocompleteResults(autocompleteResults) {
       var urlToResultMap = {};
       for (var i = 0, result; result = autocompleteResults[i]; ++i) {
         var url = CanonicalizeUrl(result.destination_url);
@@ -175,6 +177,8 @@ if (!chrome.searchBox) {
     this.__defineGetter__('height', GetHeight);
     this.__defineGetter__('nativeSuggestions', GetAutocompleteResultsWrapper);
     this.__defineGetter__('context', GetContext);
+    this.__defineGetter__('themeBackgroundInfo', GetThemeBackgroundInfo);
+    this.__defineGetter__('themeAreaHeight', GetThemeAreaHeight);
     this.setSuggestions = function(text) {
       SetSuggestions(text);
     };
