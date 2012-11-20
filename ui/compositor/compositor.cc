@@ -352,14 +352,10 @@ void Compositor::Terminate() {
 }
 
 void Compositor::ScheduleDraw() {
-  if (g_compositor_thread) {
-    // TODO(nduca): Temporary while compositor calls
-    // compositeImmediately() directly.
-    layout();
+  if (g_compositor_thread)
     host_->composite();
-  } else if (delegate_) {
+  else if (delegate_)
     delegate_->ScheduleDraw();
-  }
 }
 
 void Compositor::SetRootLayer(Layer* root_layer) {
