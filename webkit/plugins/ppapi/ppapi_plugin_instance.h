@@ -501,9 +501,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // Returns true if the plugin has registered to accept touch events.
   bool IsAcceptingTouchEvents() const;
 
-  void ScheduleAsyncDidChangeView(const ::ppapi::ViewData& previous_view);
-  void SendAsyncDidChangeView(const ::ppapi::ViewData& previous_view);
-  void SendDidChangeView(const ::ppapi::ViewData& previous_view);
+  void ScheduleAsyncDidChangeView();
+  void SendAsyncDidChangeView();
+  void SendDidChangeView();
 
   // Reports the current plugin geometry to the plugin by calling
   // DidChangeView.
@@ -584,8 +584,11 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   // Stores the current state of the plugin view.
   ::ppapi::ViewData view_data_;
+  // The last state sent to the plugin. It is only valid after
+  // |sent_initial_did_change_view_| is set to true.
+  ::ppapi::ViewData last_sent_view_data_;
 
-  // Indicates if we've ever sent a didChangeView to the plugin. This ensure we
+  // Indicates if we've ever sent a didChangeView to the plugin. This ensures we
   // always send an initial notification, even if the position and clip are the
   // same as the default values.
   bool sent_initial_did_change_view_;

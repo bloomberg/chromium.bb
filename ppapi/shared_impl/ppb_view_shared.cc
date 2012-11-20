@@ -9,6 +9,9 @@ namespace ppapi {
 ViewData::ViewData() {
   // Assume POD.
   memset(this, 0, sizeof(ViewData));
+
+  device_scale = 1.0f;
+  css_scale = 1.0f;
 }
 
 ViewData::~ViewData() {

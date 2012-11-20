@@ -816,8 +816,6 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
 
   cut_outs_rects_ = cut_outs_rects;
 
-  ViewData previous_view = view_data_;
-
   view_data_.rect = PP_FromGfxRect(position);
   view_data_.clip_rect = PP_FromGfxRect(clip);
   view_data_.device_scale = container_->deviceScaleFactor();
@@ -842,7 +840,7 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
       // DidChangeView updates. Schedule an asynchronous update and suppress
       // notifications until that completes to avoid sending intermediate sizes
       // to the plugins.
-      ScheduleAsyncDidChangeView(previous_view);
+      ScheduleAsyncDidChangeView();
 
       // Reset the size attributes that we hacked to fill in the screen and
       // retrigger ViewChanged. Make sure we don't forward duplicates of
@@ -854,7 +852,7 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
 
   UpdateFlashFullscreenState(fullscreen_container_ != NULL);
 
-  SendDidChangeView(previous_view);
+  SendDidChangeView();
 }
 
 void PluginInstance::SetWebKitFocus(bool has_focus) {
@@ -880,9 +878,15 @@ void PluginInstance::SetContentAreaFocus(bool has_focus) {
 void PluginInstance::PageVisibilityChanged(bool is_visible) {
   if (is_visible == view_data_.is_page_visible)
     return;  // Nothing to do.
-  ViewData old_data = view_data_;
   view_data_.is_page_visible = is_visible;
-  SendDidChangeView(old_data);
+
+  // If the initial DidChangeView notification hasn't been sent to the plugin,
+  // let it pass the visibility state for us, instead of sending a notification
+  // immediately. It is possible that PluginInstance::ViewChanged() hasn't been
+  // called for the first time. In that case, most of the fields in |view_data_|
+  // haven't been properly initialized.
+  if (sent_initial_did_change_view_)
+    SendDidChangeView();
 }
 
 void PluginInstance::ViewWillInitiatePaint() {
@@ -1172,33 +1176,32 @@ bool PluginInstance::IsAcceptingTouchEvents() const {
       (input_event_mask_ & PP_INPUTEVENT_CLASS_TOUCH);
 }
 
-void PluginInstance::ScheduleAsyncDidChangeView(
-    const ::ppapi::ViewData& previous_view) {
+void PluginInstance::ScheduleAsyncDidChangeView() {
   if (view_change_weak_ptr_factory_.HasWeakPtrs())
     return;  // Already scheduled.
   MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&PluginInstance::SendAsyncDidChangeView,
-                            view_change_weak_ptr_factory_.GetWeakPtr(),
-                            previous_view));
+                            view_change_weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PluginInstance::SendAsyncDidChangeView(const ViewData& previous_view) {
+void PluginInstance::SendAsyncDidChangeView() {
   // The bound callback that owns the weak pointer is still valid until after
   // this function returns. SendDidChangeView checks HasWeakPtrs, so we need to
   // invalidate them here.
   // NOTE: If we ever want to have more than one pending callback, it should
   // use a different factory, or we should have a different strategy here.
   view_change_weak_ptr_factory_.InvalidateWeakPtrs();
-  SendDidChangeView(previous_view);
+  SendDidChangeView();
 }
 
-void PluginInstance::SendDidChangeView(const ViewData& previous_view) {
+void PluginInstance::SendDidChangeView() {
   // Don't send DidChangeView to crashed plugins.
   if (module()->is_crashed())
     return;
 
   if (view_change_weak_ptr_factory_.HasWeakPtrs() ||
-      (sent_initial_did_change_view_ && previous_view.Equals(view_data_)))
+      (sent_initial_did_change_view_ &&
+       last_sent_view_data_.Equals(view_data_)))
     return;  // Nothing to update.
 
   const PP_Size& size = view_data_.rect.size;
@@ -1212,6 +1215,7 @@ void PluginInstance::SendDidChangeView(const ViewData& previous_view) {
   }
 
   sent_initial_did_change_view_ = true;
+  last_sent_view_data_ = view_data_;
   ScopedPPResource resource(
       ScopedPPResource::PassRef(),
       (new PPB_View_Shared(::ppapi::OBJECT_IS_IMPL,
@@ -2390,16 +2394,12 @@ bool PluginInstance::ResetAsProxied(scoped_refptr<PluginModule> module) {
                                       argn_array.get(), argv_array.get()))
     return false;
 
-  // Use a ViewData that looks like the initial DidChangeView event for the
-  // "previous" view.
-  ::ppapi::ViewData empty_view;
-  empty_view.is_page_visible = delegate_->IsPageVisible();
   // Clear sent_initial_did_change_view_ and cancel any pending DidChangeView
   // event. This way, SendDidChangeView will send the "current" view
   // immediately (before other events like HandleDocumentLoad).
   sent_initial_did_change_view_ = false;
   view_change_weak_ptr_factory_.InvalidateWeakPtrs();
-  SendDidChangeView(empty_view);
+  SendDidChangeView();
 
   // If we received HandleDocumentLoad, re-send it now via the proxy.
   if (document_loader_)
