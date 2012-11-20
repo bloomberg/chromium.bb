@@ -142,19 +142,27 @@ void SendMnemonic(WORD mnemonic_char, Modifier modifiers, bool extended,
   }
 }
 
-void MetroExit() {
-  if (globals.core_window == ::GetForegroundWindow()) {
+// Helper function to Exit metro chrome cleanly. If we are in the foreground
+// then we try and exit by sending an Alt+F4 key combination to the core
+// window which ensures that the chrome application tile does not show up in
+// the running metro apps list on the top left corner. We have seen cases
+// where this does work. To workaround that we invoke the
+// ICoreApplicationExit::Exit function in a background delayed task which
+// ensures that chrome exits.
+void MetroExit(bool send_alt_f4_mnemonic) {
+  if (send_alt_f4_mnemonic && globals.core_window == ::GetForegroundWindow()) {
     DVLOG(1) << "We are in the foreground. Exiting via Alt F4";
     SendMnemonic(VK_F4, ALT, false, false);
     DWORD core_window_process_id = 0;
     DWORD core_window_thread_id = GetWindowThreadProcessId(
         globals.core_window, &core_window_process_id);
     if (core_window_thread_id != ::GetCurrentThreadId()) {
-      // Sleep to give time to the core window thread to get this message.
-      Sleep(100);
+      globals.appview_msg_loop->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&MetroExit, false),
+        base::TimeDelta::FromMilliseconds(100));
     }
   } else {
-    DVLOG(1) << "We are not in the foreground. Exiting normally";
     globals.app_exit->Exit();
     globals.core_window = NULL;
   }
@@ -269,7 +277,7 @@ void CloseFrameWindowInternal(HWND hwnd) {
   } else {
     // time to quit
     DVLOG(1) << "Last host window closed. Calling Exit().";
-    MetroExit();
+    MetroExit(true);
   }
 }
 
@@ -633,7 +641,7 @@ DWORD WINAPI HostMainThreadProc(void*) {
   DWORD exit_code = globals.host_main(globals.host_context);
 
   DVLOG(1) << "host thread done, exit_code=" << exit_code;
-  MetroExit();
+  MetroExit(true);
   return exit_code;
 }
 
