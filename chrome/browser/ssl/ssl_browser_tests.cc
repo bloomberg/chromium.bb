@@ -908,7 +908,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
   ui_test_utils::NavigateToURL(browser(),
       https_server_.GetURL("files/ssl/blank_page.html"));
 
-  TabContents* tab1 = chrome::GetActiveTabContents(browser());
+  TabContents* tab1 = browser()->tab_strip_model()->GetActiveTabContents();
 
   // This tab should be fine.
   CheckAuthenticatedState(tab1->web_contents(), false);
@@ -949,7 +949,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
   ui_test_utils::NavigateToURL(browser(),
       https_server_.GetURL("files/ssl/blank_page.html"));
 
-  TabContents* tab1 = chrome::GetActiveTabContents(browser());
+  TabContents* tab1 = browser()->tab_strip_model()->GetActiveTabContents();
 
   // This tab should be fine.
   CheckAuthenticatedState(tab1->web_contents(), false);

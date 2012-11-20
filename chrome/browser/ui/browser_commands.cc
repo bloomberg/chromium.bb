@@ -141,7 +141,7 @@ void BookmarkCurrentPageInternal(Browser* browser, bool from_star) {
 
 WebContents* GetOrCloneTabForDisposition(Browser* browser,
                                          WindowOpenDisposition disposition) {
-  TabContents* current_tab = GetActiveTabContents(browser);
+  TabContents* current_tab = browser->tab_strip_model()->GetActiveTabContents();
   switch (disposition) {
     case NEW_FOREGROUND_TAB:
     case NEW_BACKGROUND_TAB: {
@@ -197,7 +197,7 @@ bool HasConstrainedWindow(const Browser* browser) {
 }
 
 bool PrintPreviewShowing(const Browser* browser) {
-  TabContents* contents = GetActiveTabContents(browser);
+  TabContents* contents = browser->tab_strip_model()->GetActiveTabContents();
   printing::PrintPreviewTabController* controller =
       printing::PrintPreviewTabController::GetInstance();
   return controller && (controller->GetPrintPreviewForTab(contents) ||
@@ -343,7 +343,7 @@ bool CanGoBack(const Browser* browser) {
 void GoBack(Browser* browser, WindowOpenDisposition disposition) {
   content::RecordAction(UserMetricsAction("Back"));
 
-  TabContents* current_tab = GetActiveTabContents(browser);
+  TabContents* current_tab = browser->tab_strip_model()->GetActiveTabContents();
   if (CanGoBack(browser)) {
     WebContents* new_tab = GetOrCloneTabForDisposition(browser, disposition);
     // If we are on an interstitial page and clone the tab, it won't be copied
@@ -568,7 +568,7 @@ bool CanDuplicateTab(const Browser* browser) {
 }
 
 TabContents* DuplicateTabAt(Browser* browser, int index) {
-  TabContents* contents = GetTabContentsAt(browser, index);
+  TabContents* contents = browser->tab_strip_model()->GetTabContentsAt(index);
   CHECK(contents);
   TabContents* contents_dupe =
       BrowserCommandsTabContentsCreator::CloneTabContents(contents);
@@ -1056,7 +1056,7 @@ void ViewSource(Browser* browser,
 }
 
 void ViewSelectedSource(Browser* browser) {
-  ViewSource(browser, GetActiveTabContents(browser));
+  ViewSource(browser, browser->tab_strip_model()->GetActiveTabContents());
 }
 
 bool CanViewSource(const Browser* browser) {

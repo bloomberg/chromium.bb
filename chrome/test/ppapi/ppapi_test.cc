@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -227,7 +228,7 @@ void PPAPITestBase::RunTestURL(const GURL& test_url) {
   // "PASS" or "FAIL"). This keeps us from timing out on waits for long tests.
   PPAPITestMessageHandler handler;
   JavascriptTestObserver observer(
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
       &handler);
 
   ui_test_utils::NavigateToURL(browser(), test_url);

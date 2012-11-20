@@ -3582,7 +3582,8 @@ TabContents* GetTabContentsFromDict(const Browser* browser,
     return NULL;
   }
 
-  TabContents* tab_contents = chrome::GetTabContentsAt(browser, tab_index);
+  TabContents* tab_contents =
+      browser->tab_strip_model()->GetTabContentsAt(tab_index);
   if (!tab_contents) {
     *error_message = StringPrintf("No tab at index %d.", tab_index);
     return NULL;
@@ -6039,7 +6040,7 @@ void TestingAutomationProvider::GetViews(
   for (; browser_iter != BrowserList::end(); ++browser_iter) {
     Browser* browser = *browser_iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      TabContents* tab = chrome::GetTabContentsAt(browser, i);
+      TabContents* tab = browser->tab_strip_model()->GetTabContentsAt(i);
       DictionaryValue* dict = new DictionaryValue();
       AutomationId id = automation_util::GetIdForTab(tab);
       dict->Set("auto_id", id.ToValue());

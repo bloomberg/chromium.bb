@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/web_contents.h"
@@ -88,7 +89,8 @@ int GetIndexOfSingletonTab(NavigateParams* params) {
   int tab_count = params->browser->tab_count();
   for (int i = 0; i < tab_count; ++i) {
     int tab_index = (start_index + i) % tab_count;
-    TabContents* tab = GetTabContentsAt(params->browser, tab_index);
+    TabContents* tab =
+        params->browser->tab_strip_model()->GetTabContentsAt(tab_index);
 
     url_canon::Replacements<char> replacements;
     if (params->ref_behavior == NavigateParams::IGNORE_REF)

@@ -310,7 +310,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewForegroundTab) {
   p.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&p);
   EXPECT_NE(old_contents, chrome::GetActiveWebContents(browser()));
-  EXPECT_EQ(chrome::GetActiveTabContents(browser()), p.target_contents);
+  EXPECT_EQ(browser()->tab_strip_model()->GetActiveTabContents(),
+            p.target_contents);
   EXPECT_EQ(2, browser()->tab_count());
 }
 
@@ -640,7 +641,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_ForegroundTab) {
   // Navigate() should have opened the contents in a new foreground in the
   // current Browser.
   EXPECT_EQ(browser(), p.browser);
-  EXPECT_EQ(chrome::GetActiveTabContents(browser()), p.target_contents);
+  EXPECT_EQ(browser()->tab_strip_model()->GetActiveTabContents(),
+            p.target_contents);
 
   // We should have one window, with two tabs.
   EXPECT_EQ(1u, BrowserList::size());

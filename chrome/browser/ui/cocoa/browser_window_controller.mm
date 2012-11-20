@@ -1236,7 +1236,7 @@ enum {
     BrowserWindowController* dragBWC = (BrowserWindowController*)dragController;
     int index = [dragBWC->tabStripController_ modelIndexForTabView:view];
     TabContents* contents =
-        chrome::GetTabContentsAt(dragBWC->browser_.get(), index);
+        dragBWC->browser_->tab_strip_model()->GetTabContentsAt(index);
     // The tab contents may have gone away if given a window.close() while it
     // is being dragged. If so, bail, we've got nothing to drop.
     if (!contents)
@@ -1314,7 +1314,7 @@ enum {
 
   // Fetch the tab contents for the tab being dragged.
   int index = [tabStripController_ modelIndexForTabView:tabView];
-  TabContents* contents = chrome::GetTabContentsAt(browser_.get(), index);
+  TabContents* contents = browser_->tab_strip_model()->GetTabContentsAt(index);
 
   // Set the window size. Need to do this before we detach the tab so it's
   // still in the window. We have to flip the coordinates as that's what

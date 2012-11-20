@@ -294,7 +294,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   EXPECT_EQ(1, onvisibilitycalls_);
 
   // Before the commit, the active tab is the NTP (i.e., not Instant).
-  TabContents* active_tab = chrome::GetActiveTabContents(browser());
+  TabContents* active_tab =
+      browser()->tab_strip_model()->GetActiveTabContents();
   EXPECT_NE(preview_tab, active_tab);
   EXPECT_EQ(1, active_tab->web_contents()->GetController().GetEntryCount());
   EXPECT_EQ(std::string(chrome::kAboutBlankURL),
@@ -312,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   EXPECT_NE(instant()->GetPreviewContents(), preview_tab);
 
   // Check that the current active tab is indeed what was once the preview.
-  EXPECT_EQ(preview_tab, chrome::GetActiveTabContents(browser()));
+  EXPECT_EQ(preview_tab, browser()->tab_strip_model()->GetActiveTabContents());
 
   // We should have two navigation entries, one for the NTP, and one for the
   // Instant search that was committed.
@@ -354,7 +355,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   EXPECT_EQ(1, onvisibilitycalls_);
 
   // Before the commit, the active tab is the NTP (i.e., not Instant).
-  TabContents* active_tab = chrome::GetActiveTabContents(browser());
+  TabContents* active_tab =
+      browser()->tab_strip_model()->GetActiveTabContents();
   EXPECT_NE(preview_tab, active_tab);
   EXPECT_EQ(1, active_tab->web_contents()->GetController().GetEntryCount());
   EXPECT_EQ(std::string(chrome::kAboutBlankURL),
@@ -372,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   EXPECT_NE(instant()->GetPreviewContents(), preview_tab);
 
   // Check that the current active tab is indeed what was once the preview.
-  EXPECT_EQ(preview_tab, chrome::GetActiveTabContents(browser()));
+  EXPECT_EQ(preview_tab, browser()->tab_strip_model()->GetActiveTabContents());
 
   // We should have two navigation entries, one for the NTP, and one for the
   // Instant search that was committed.
@@ -625,7 +627,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsOne) {
 
   // Commit the URL. The omnibox should reflect the URL minus the scheme.
   browser()->window()->GetLocationBar()->AcceptInput();
-  TabContents* active_tab = chrome::GetActiveTabContents(browser());
+  TabContents* active_tab =
+      browser()->tab_strip_model()->GetActiveTabContents();
   EXPECT_NE(preview_tab, active_tab);
   EXPECT_EQ(ASCIIToUTF16("deadly/nadder"), omnibox()->GetText());
 
@@ -657,7 +660,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsTwo) {
 
   // Commit the URL. As before, check that Instant wasn't committed.
   browser()->window()->GetLocationBar()->AcceptInput();
-  TabContents* active_tab = chrome::GetActiveTabContents(browser());
+  TabContents* active_tab =
+      browser()->tab_strip_model()->GetActiveTabContents();
   EXPECT_NE(preview_tab, active_tab);
   EXPECT_EQ(ASCIIToUTF16("hideous/zippleback"), omnibox()->GetText());
 
@@ -694,7 +698,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, PageVisibility) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
-  TabContents* active_tab = chrome::GetActiveTabContents(browser());
+  TabContents* active_tab =
+      browser()->tab_strip_model()->GetActiveTabContents();
   TabContents* preview_tab = instant()->GetPreviewContents();
 
   // Inititally, the active tab is showing; the preview is not.
@@ -718,7 +723,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, PageVisibility) {
 
   // Commit the preview.
   browser()->window()->GetLocationBar()->AcceptInput();
-  EXPECT_EQ(preview_tab, chrome::GetActiveTabContents(browser()));
+  EXPECT_EQ(preview_tab, browser()->tab_strip_model()->GetActiveTabContents());
   EXPECT_TRUE(CheckVisibilityIs(preview_tab, true));
 }
 
@@ -945,7 +950,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, CommitInNewTab) {
   // Use the Instant page as the active tab, so we can exploit its visibility
   // handler to check visibility transitions.
   ui_test_utils::NavigateToURL(browser(), instant_url_);
-  TabContents* active_tab = chrome::GetActiveTabContents(browser());
+  TabContents* active_tab =
+      browser()->tab_strip_model()->GetActiveTabContents();
 
   int active_tab_onvisibilitycalls = -1;
   EXPECT_TRUE(GetIntFromJS(active_tab->web_contents()->GetRenderViewHost(),
@@ -989,7 +995,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, CommitInNewTab) {
   // once the preview. The preview tab should have just one navigation entry,
   // for the Instant search that was committed.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(preview_tab, chrome::GetActiveTabContents(browser()));
+  EXPECT_EQ(preview_tab, browser()->tab_strip_model()->GetActiveTabContents());
   EXPECT_EQ(1, preview_tab->web_contents()->GetController().GetEntryCount());
 
   // Check that the omnibox contains the Instant URL we loaded.

@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_client_auth_requestor_mock.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/ssl_client_certificate_selector.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -63,9 +63,10 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
 
     io_loop_finished_event_.Wait();
 
-    content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
+    content::WaitForLoadStop(
+        browser()->tab_strip_model()->GetActiveWebContents());
     selector_ = new SSLClientCertificateSelector(
-        chrome::GetActiveTabContents(browser()),
+        browser()->tab_strip_model()->GetActiveTabContents(),
         auth_requestor_->http_network_session_,
         auth_requestor_->cert_request_info_,
         base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,
@@ -148,21 +149,21 @@ class SSLClientCertificateSelectorMultiTabTest
 
     AddTabAtIndex(1, GURL("about:blank"), content::PAGE_TRANSITION_LINK);
     AddTabAtIndex(2, GURL("about:blank"), content::PAGE_TRANSITION_LINK);
-    ASSERT_TRUE(NULL != chrome::GetWebContentsAt(browser(), 0));
-    ASSERT_TRUE(NULL != chrome::GetWebContentsAt(browser(), 1));
-    ASSERT_TRUE(NULL != chrome::GetWebContentsAt(browser(), 2));
-    content::WaitForLoadStop(chrome::GetWebContentsAt(browser(), 1));
-    content::WaitForLoadStop(chrome::GetWebContentsAt(browser(), 2));
+    ASSERT_TRUE(NULL != browser()->tab_strip_model()->GetWebContentsAt(0));
+    ASSERT_TRUE(NULL != browser()->tab_strip_model()->GetWebContentsAt(1));
+    ASSERT_TRUE(NULL != browser()->tab_strip_model()->GetWebContentsAt(2));
+    content::WaitForLoadStop(browser()->tab_strip_model()->GetWebContentsAt(1));
+    content::WaitForLoadStop(browser()->tab_strip_model()->GetWebContentsAt(2));
 
     selector_1_ = new SSLClientCertificateSelector(
-        chrome::GetTabContentsAt(browser(), 1),
+        browser()->tab_strip_model()->GetTabContentsAt(1),
         auth_requestor_1_->http_network_session_,
         auth_requestor_1_->cert_request_info_,
         base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,
                    auth_requestor_1_));
     selector_1_->Init();
     selector_2_ = new SSLClientCertificateSelector(
-        chrome::GetTabContentsAt(browser(), 2),
+        browser()->tab_strip_model()->GetTabContentsAt(2),
         auth_requestor_2_->http_network_session_,
         auth_requestor_2_->cert_request_info_,
         base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,
@@ -231,7 +232,7 @@ class SSLClientCertificateSelectorMultiProfileTest
     SSLClientCertificateSelectorTest::SetUpOnMainThread();
 
     selector_1_ = new SSLClientCertificateSelector(
-        chrome::GetActiveTabContents(browser_1_),
+        browser_1_->tab_strip_model()->GetActiveTabContents(),
         auth_requestor_1_->http_network_session_,
         auth_requestor_1_->cert_request_info_,
         base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,

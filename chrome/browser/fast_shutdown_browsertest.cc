@@ -9,8 +9,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(FastShutdown, DISABLED_SlowTermination) {
   ASSERT_TRUE(test_server()->Start());
   // This page has an unload handler.
   GURL url = test_server()->GetURL("files/fast_shutdown/on_unloader.html");
-  TabContents* tab = chrome::GetActiveTabContents(browser());
+  TabContents* tab = browser()->tab_strip_model()->GetActiveTabContents();
   EXPECT_EQ("", content::GetCookies(tab->profile(), url));
 
   content::WindowedNotificationObserver window_observer(

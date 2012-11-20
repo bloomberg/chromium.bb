@@ -25,10 +25,8 @@ class Rect;
 
 namespace chrome {
 
-TabContents* GetActiveTabContents(const Browser* browser);
 content::WebContents* GetActiveWebContents(const Browser* browser);
 
-TabContents* GetTabContentsAt(const Browser* browser, int index);
 content::WebContents* GetWebContentsAt(const Browser* browser, int index);
 
 void ActivateTabAt(Browser* browser, int index, bool user_gesture);

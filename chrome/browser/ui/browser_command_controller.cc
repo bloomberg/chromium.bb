@@ -294,7 +294,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
   // tab.  However, Ben says he tried removing this before and got lots of
   // crashes, e.g. from Windows sending WM_COMMANDs at random times during
   // window construction.  This probably could use closer examination someday.
-  if (!chrome::GetActiveTabContents(browser_))
+  if (browser_->tab_strip_model()->active_index() == TabStripModel::kNoTab)
     return;
 
   DCHECK(command_updater_.IsCommandEnabled(id)) << "Invalid/disabled command "

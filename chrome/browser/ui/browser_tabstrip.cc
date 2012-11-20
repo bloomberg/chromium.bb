@@ -27,22 +27,12 @@ class BrowserTabstripTabContentsCreator {
 
 namespace chrome {
 
-TabContents* GetActiveTabContents(const Browser* browser) {
-  return browser->tab_strip_model()->GetActiveTabContents();
-}
-
 content::WebContents* GetActiveWebContents(const Browser* browser) {
-  TabContents* active_tab = GetActiveTabContents(browser);
-  return active_tab ? active_tab->web_contents() : NULL;
-}
-
-TabContents* GetTabContentsAt(const Browser* browser, int index) {
-  return browser->tab_strip_model()->GetTabContentsAt(index);
+  return browser->tab_strip_model()->GetActiveWebContents();
 }
 
 content::WebContents* GetWebContentsAt(const Browser* browser, int index) {
-  TabContents* tab = GetTabContentsAt(browser, index);
-  return tab ? tab->web_contents() : NULL;
+  return browser->tab_strip_model()->GetWebContentsAt(index);
 }
 
 void ActivateTabAt(Browser* browser, int index, bool user_gesture) {
@@ -131,13 +121,8 @@ void AddWebContents(Browser* browser,
   }
 
   NavigateParams params(browser, new_tab_contents);
-  if (source_contents) {
-    TabStripModel* tab_strip_model = browser->tab_strip_model();
-    params.source_contents = tab_strip_model->GetTabContentsAt(
-        tab_strip_model->GetIndexOfWebContents(source_contents));
-  } else {
-    params.source_contents = NULL;
-  }
+  params.source_contents =
+      source_contents ? TabContents::FromWebContents(source_contents) : NULL;
   params.disposition = disposition;
   params.window_bounds = initial_pos;
   params.window_action = NavigateParams::SHOW_WINDOW;

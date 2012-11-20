@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -85,7 +86,7 @@ class ContentSettingsTest : public InProcessBrowserTest {
   }
 
   void PreBasic(const GURL& url) {
-    TabContents* tab = chrome::GetActiveTabContents(browser());
+    TabContents* tab = browser()->tab_strip_model()->GetActiveTabContents();
     ASSERT_TRUE(GetCookies(tab->profile(), url).empty());
 
     CookieCheckIncognitoWindow(url, true);
@@ -95,7 +96,7 @@ class ContentSettingsTest : public InProcessBrowserTest {
   }
 
   void Basic(const GURL& url) {
-    TabContents* tab = chrome::GetActiveTabContents(browser());
+    TabContents* tab = browser()->tab_strip_model()->GetActiveTabContents();
     ASSERT_FALSE(GetCookies(tab->profile(), url).empty());
   }
 

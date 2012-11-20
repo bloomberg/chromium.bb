@@ -4,10 +4,11 @@
 
 #include <string>
 
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -20,8 +21,8 @@ class ChromeContentBrowserClientBrowserTest : public InProcessBrowserTest {
   // Returns the last committed navigation entry of the first tab. May be NULL
   // if there is no such entry.
   NavigationEntry* GetLastCommittedEntry() {
-    return chrome::GetTabContentsAt(browser(), 0)->web_contents()
-        ->GetController().GetLastCommittedEntry();
+    return browser()->tab_strip_model()->GetWebContentsAt(0)->
+        GetController().GetLastCommittedEntry();
   }
 };
 

@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -139,13 +139,13 @@ void ShowSessionCrashedPrompt(Browser* browser) {
 
   // In ChromeBot tests, there might be a race. This line appears to get
   // called during shutdown and |tab| can be NULL.
-  TabContents* tab = chrome::GetActiveTabContents(browser);
+  content::WebContents* tab =
+      browser->tab_strip_model()->GetActiveWebContents();
   if (!tab)
     return;
 
   // Don't show the info-bar if there are already info-bars showing.
-  InfoBarTabHelper* infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(tab->web_contents());
+  InfoBarTabHelper* infobar_tab_helper = InfoBarTabHelper::FromWebContents(tab);
   if (infobar_tab_helper->GetInfoBarCount() > 0)
     return;
 

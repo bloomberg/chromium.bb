@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/feature_switch.h"
@@ -109,11 +110,12 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
     const Extension* extension,
     Browser* browser,
     GURL* popup_url_out) {
-  TabContents* tab_contents = chrome::GetActiveTabContents(browser);
-  if (!tab_contents)
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents)
     return ACTION_NONE;
 
-  int tab_id = ExtensionTabUtil::GetTabId(tab_contents->web_contents());
+  int tab_id = ExtensionTabUtil::GetTabId(web_contents);
   if (tab_id < 0)
     return ACTION_NONE;
 
@@ -125,7 +127,7 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
   if (!browser_action->GetIsVisible(tab_id))
     return ACTION_NONE;
 
-  extensions::TabHelper::FromWebContents(tab_contents->web_contents())->
+  extensions::TabHelper::FromWebContents(web_contents)->
       active_tab_permission_granter()->GrantIfRequested(extension);
 
   if (browser_action->HasPopup(tab_id)) {

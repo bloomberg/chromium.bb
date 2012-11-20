@@ -1285,8 +1285,8 @@ void Browser::ShowFirstRunBubble() {
 WebContents* Browser::OpenURLFromTab(WebContents* source,
                                      const OpenURLParams& params) {
   chrome::NavigateParams nav_params(this, params.url, params.transition);
-  nav_params.source_contents = tab_strip_model_->GetTabContentsAt(
-      tab_strip_model_->GetIndexOfWebContents(source));
+  nav_params.source_contents =
+      source ? TabContents::FromWebContents(source) : NULL;
   nav_params.referrer = params.referrer;
   nav_params.extra_headers = params.extra_headers;
   nav_params.disposition = params.disposition;
@@ -1483,8 +1483,7 @@ void Browser::OnStartDownload(WebContents* source,
 
 void Browser::ViewSourceForTab(WebContents* source, const GURL& page_url) {
   DCHECK(source);
-  TabContents* tab_contents = tab_strip_model_->GetTabContentsAt(
-      tab_strip_model_->GetIndexOfWebContents(source));
+  TabContents* tab_contents = TabContents::FromWebContents(source);
   chrome::ViewSource(this, tab_contents);
 }
 
@@ -1492,8 +1491,7 @@ void Browser::ViewSourceForFrame(WebContents* source,
                                  const GURL& frame_url,
                                  const std::string& frame_content_state) {
   DCHECK(source);
-  TabContents* tab_contents = tab_strip_model_->GetTabContentsAt(
-      tab_strip_model_->GetIndexOfWebContents(source));
+  TabContents* tab_contents = TabContents::FromWebContents(source);
   chrome::ViewSource(this, tab_contents, frame_url, frame_content_state);
 }
 

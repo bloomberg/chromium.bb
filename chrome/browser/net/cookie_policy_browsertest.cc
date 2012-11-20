@@ -8,8 +8,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -38,7 +38,7 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, AllowFirstPartyCookies) {
 
   GURL url(test_server()->GetURL("set-cookie?cookie1"));
 
-  TabContents* tab = chrome::GetActiveTabContents(browser());
+  TabContents* tab = browser()->tab_strip_model()->GetActiveTabContents();
   std::string cookie = content::GetCookies(tab->profile(), url);
   ASSERT_EQ("", cookie);
 
@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
   replacements.SetHostStr(new_host);
   redirected_url = redirected_url.ReplaceComponents(replacements);
 
-  TabContents* tab = chrome::GetActiveTabContents(browser());
+  TabContents* tab = browser()->tab_strip_model()->GetActiveTabContents();
   std::string cookie = content::GetCookies(tab->profile(), redirected_url);
   ASSERT_EQ("", cookie);
 

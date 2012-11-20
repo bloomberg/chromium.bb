@@ -103,8 +103,10 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
   // the target browser. This must happen first, before
   // GetBrowserForDisposition() has a chance to replace |params->browser| with
   // another one.
-  if (!params->source_contents && params->browser)
-    params->source_contents = chrome::GetActiveTabContents(params->browser);
+  if (!params->source_contents && params->browser) {
+    params->source_contents =
+        params->browser->tab_strip_model()->GetActiveTabContents();
+  }
 
   Profile* profile = params->initiating_profile;
 

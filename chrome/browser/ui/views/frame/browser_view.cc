@@ -699,11 +699,11 @@ bool BrowserView::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
 }
 
 WebContents* BrowserView::GetActiveWebContents() const {
-  return chrome::GetActiveWebContents(browser_.get());
+  return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
 TabContents* BrowserView::GetActiveTabContents() const {
-  return chrome::GetActiveTabContents(browser_.get());
+  return browser_->tab_strip_model()->GetActiveTabContents();
 }
 
 gfx::ImageSkia BrowserView::GetOTRAvatarIcon() const {

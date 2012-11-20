@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/pref_names.h"
@@ -61,7 +62,8 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
   }
 
   void OpenPrintPreviewTab() {
-    TabContents* initiator_tab = chrome::GetActiveTabContents(browser());
+    TabContents* initiator_tab =
+        browser()->tab_strip_model()->GetActiveTabContents();
     ASSERT_TRUE(initiator_tab);
 
     printing::PrintPreviewTabController* controller =

@@ -82,7 +82,8 @@ void BrowserInstantController::CommitInstant(TabContents* preview,
     browser_->tab_strip_model()->AddTabContents(preview, -1,
         instant_->last_transition_type(), TabStripModel::ADD_ACTIVE);
   } else {
-    TabContents* active_tab = chrome::GetActiveTabContents(browser_);
+    TabContents* active_tab =
+        browser_->tab_strip_model()->GetActiveTabContents();
     int index = browser_->tab_strip_model()->GetIndexOfTabContents(active_tab);
     DCHECK_NE(TabStripModel::kNoTab, index);
     // TabStripModel takes ownership of |preview|.
@@ -116,7 +117,7 @@ void BrowserInstantController::InstantPreviewFocused() {
 }
 
 TabContents* BrowserInstantController::GetActiveTabContents() const {
-  return chrome::GetActiveTabContents(browser_);
+  return browser_->tab_strip_model()->GetActiveTabContents();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

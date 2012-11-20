@@ -6,9 +6,10 @@
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/printing/background_printing_manager.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 
 namespace {
 
@@ -41,8 +42,8 @@ void TabContentsIterator::Advance() {
       continue;
     }
 
-    TabContents* next_tab =
-        chrome::GetTabContentsAt(*browser_iterator_, web_view_index_);
+    TabContents* next_tab = (*browser_iterator_)->tab_strip_model()->
+        GetTabContentsAt(web_view_index_);
     if (next_tab) {
       cur_ = next_tab;
       return;
