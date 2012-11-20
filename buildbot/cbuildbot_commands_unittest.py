@@ -266,11 +266,15 @@ class CBuildBotTest(cros_test_lib.MoxTempDirTestCase):
   def testUprevAllPackages(self):
     """Test if we get None in revisions.pfq indicating Full Builds."""
     drop_file = commands._PACKAGE_FILE % {'buildroot': self._buildroot}
+    path = git.ReinterpretPathForChroot(constants.CHROMITE_BIN_DIR)
     cros_build_lib.RunCommand(
-        ['cros_mark_as_stable', '--all', '--boards=%s' % self._test_board,
+        [os.path.join(path, 'cros_mark_as_stable'), '--all',
+         '--boards=%s' % self._test_board,
          '--overlays=%s' % ':'.join(self._chroot_overlays),
          '--drop_file=%s' % git.ReinterpretPathForChroot(drop_file),
-         'commit'], cwd=self._buildroot, enter_chroot=True)
+         'commit'],
+        cwd='.',
+        enter_chroot=True)
 
     self.mox.ReplayAll()
     commands.UprevPackages(self._buildroot,

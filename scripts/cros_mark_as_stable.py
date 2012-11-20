@@ -16,6 +16,7 @@ from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import git
+from chromite.lib import osutils
 
 
 # TODO(sosa): Remove during OO refactor.
@@ -91,6 +92,8 @@ def _CheckSaneArguments(package_list, command, options):
     _PrintUsageAndDie('%s is not a valid command' % command)
   if not options.packages and command == 'commit' and not options.all:
     _PrintUsageAndDie('Please specify at least one package')
+  if options.boards and not cros_build_lib.IsInsideChroot():
+    cros_build_lib.Die('Must be run inside chroot in order to process boards')
   if not os.path.isdir(options.srcroot):
     _PrintUsageAndDie('srcroot is not a valid path')
   options.srcroot = os.path.abspath(options.srcroot)
@@ -206,7 +209,7 @@ def main(argv):
   parser.add_option('-p', '--packages',
                     help='Colon separated list of packages to rev.')
   parser.add_option('-r', '--srcroot',
-                    default='%s/trunk/src' % os.environ['HOME'],
+                    default=os.path.join(constants.SOURCE_ROOT, 'src'),
                     help='Path to root src directory.')
   parser.add_option('--verbose', action='store_true',
                     help='Prints out debug info.')
@@ -315,13 +318,13 @@ def main(argv):
                     'and reset the git repo yourself.' % overlay)
             raise
 
-        # Regenerate caches if need be.  We do this all the time to
-        # catch when users make changes without updating cache files.
-        cache_queue.put([overlay])
+        if cros_build_lib.IsInsideChroot():
+          # Regenerate caches if need be.  We do this all the time to
+          # catch when users make changes without updating cache files.
+          cache_queue.put([overlay])
 
   if command == 'commit':
-    CleanStalePackages(options.boards.split(':'), new_package_atoms)
+    if cros_build_lib.IsInsideChroot():
+      CleanStalePackages(options.boards.split(':'), new_package_atoms)
     if options.drop_file:
-      fh = open(options.drop_file, 'w')
-      fh.write(' '.join(revved_packages))
-      fh.close()
+      osutils.WriteFile(options.drop_file, ' '.join(revved_packages))

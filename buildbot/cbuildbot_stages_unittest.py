@@ -835,7 +835,7 @@ class UprevStageTest(AbstractStageTest):
     """Uprevving the build without uprevving chrome."""
     self.build_config['uprev'] = True
 
-    commands.UprevPackages(self.build_root, self._boards, [])
+    commands.UprevPackages(self.build_root, self._boards, [], enter_chroot=True)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -863,7 +863,7 @@ class UprevStageTest(AbstractStageTest):
         chrome_root=None,
         chrome_version=None).AndReturn(None)
 
-    commands.UprevPackages(self.build_root, self._boards, [])
+    commands.UprevPackages(self.build_root, self._boards, [], enter_chroot=True)
 
     self.mox.ReplayAll()
     self.RunStage()

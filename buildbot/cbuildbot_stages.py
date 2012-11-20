@@ -984,8 +984,9 @@ class UprevStage(bs.BuilderStage):
 
   option_name = 'uprev'
 
-  def __init__(self, options, build_config, boards=None):
+  def __init__(self, options, build_config, boards=None, enter_chroot=True):
     super(UprevStage, self).__init__(options, build_config)
+    self._enter_chroot = enter_chroot
     if boards is not None:
       self._boards = boards
 
@@ -993,6 +994,8 @@ class UprevStage(bs.BuilderStage):
     # Perform chrome uprev.
     chrome_atom_to_build = None
     if self._chrome_rev:
+      # TODO(build): If anyone wants this to run outside of the chroot, we'll
+      # need to update a few things first.  But no one does, so we'll leave it.
       chrome_atom_to_build = commands.MarkChromeAsStable(
           self._build_root, self._target_manifest_branch,
           self._chrome_rev, self._boards,
@@ -1004,7 +1007,8 @@ class UprevStage(bs.BuilderStage):
       overlays, _ = self._ExtractOverlays()
       commands.UprevPackages(self._build_root,
                              self._boards,
-                             overlays)
+                             overlays,
+                             enter_chroot=self._enter_chroot)
     elif self._chrome_rev and not chrome_atom_to_build:
       # TODO(sosa): Do this in a better way.
       sys.exit(0)
