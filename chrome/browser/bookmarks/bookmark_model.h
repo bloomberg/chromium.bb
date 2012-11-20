@@ -368,9 +368,6 @@ class BookmarkModel : public content::NotificationObserver,
   // testing.
   void ClearStore();
 
-  // Returns whether the bookmarks file changed externally.
-  bool file_changed() const { return file_changed_; }
-
   // Returns the next node ID.
   int64 next_node_id() const { return next_node_id_; }
 
@@ -413,7 +410,7 @@ class BookmarkModel : public content::NotificationObserver,
   // This does NOT delete the node.
   void RemoveNode(BookmarkNode* node, std::set<GURL>* removed_urls);
 
-  // Invoked when loading is finished. Sets loaded_ and notifies observers.
+  // Invoked when loading is finished. Sets |loaded_| and notifies observers.
   // BookmarkModel takes ownership of |details|.
   void DoneLoading(BookmarkLoadDetails* details);
 
@@ -481,10 +478,6 @@ class BookmarkModel : public content::NotificationObserver,
 
   // Whether the initial set of data has been loaded.
   bool loaded_;
-
-  // Whether the bookmarks file was changed externally. This is set after
-  // loading is complete and once set the value never changes.
-  bool file_changed_;
 
   // The root node. This contains the bookmark bar node and the 'other' node as
   // children.

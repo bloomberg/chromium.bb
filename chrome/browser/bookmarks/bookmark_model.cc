@@ -196,7 +196,6 @@ bool BookmarkPermanentNode::IsVisible() const {
 BookmarkModel::BookmarkModel(Profile* profile)
     : profile_(profile),
       loaded_(false),
-      file_changed_(false),
       root_(GURL()),
       bookmark_bar_node_(NULL),
       other_node_(NULL),
@@ -710,8 +709,6 @@ void BookmarkModel::DoneLoading(BookmarkLoadDetails* details_delete_me) {
   }
 
   next_node_id_ = details->max_id();
-  if (details->computed_checksum() != details->stored_checksum())
-    file_changed_ = true;
   if (details->computed_checksum() != details->stored_checksum() ||
       details->ids_reassigned()) {
     // If bookmarks file changed externally, the IDs may have changed
