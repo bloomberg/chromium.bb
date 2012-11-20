@@ -91,18 +91,6 @@ class FaviconHandler {
   // Initiates loading the favicon for the specified url.
   void FetchFavicon(const GURL& url);
 
-  // Initiates loading an image from given |image_url|. Returns a download id
-  // for caller to track the request. When download completes, |callback| is
-  // called with the three params: the download_id, a boolean flag to indicate
-  // whether the download succeeds and a SkBitmap as the downloaded image.
-  // Note that |image_size| is a hint for images with multiple sizes. The
-  // downloaded image is not resized to the given image_size. If 0 is passed,
-  // the first frame of the image is returned.
-  int DownloadImage(const GURL& image_url,
-                    int image_size,
-                    history::IconType icon_type,
-                    const FaviconTabHelper::ImageDownloadCallback& callback);
-
   // Message Handler.  Must be public, because also called from
   // PrerenderContents. Collects the |image_urls| list.
   void OnUpdateFaviconURL(int32 page_id,
@@ -175,12 +163,10 @@ class FaviconHandler {
 
     DownloadRequest(const GURL& url,
                     const GURL& image_url,
-                    const FaviconTabHelper::ImageDownloadCallback& callback,
                     history::IconType icon_type);
 
     GURL url;
     GURL image_url;
-    FaviconTabHelper::ImageDownloadCallback callback;
     history::IconType icon_type;
   };
 
@@ -225,8 +211,7 @@ class FaviconHandler {
   int ScheduleDownload(const GURL& url,
                        const GURL& image_url,
                        int image_size,
-                       history::IconType icon_type,
-                       const FaviconTabHelper::ImageDownloadCallback& callback);
+                       history::IconType icon_type);
 
   // Updates |favicon_candidate_| and returns true if it is an exact match.
   bool UpdateFaviconCandidate(const GURL& url,

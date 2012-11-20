@@ -32,9 +32,6 @@ class SkBitmap;
 // history backend. If the icon is not available or expired, the icon will be
 // downloaded and saved in the history backend.
 //
-// DownloadImage downloads the specified icon and returns it through the given
-// callback.
-//
 class FaviconTabHelper : public content::WebContentsObserver,
                          public FaviconHandlerDelegate,
                          public FaviconDownloadHelperDelegate,
@@ -66,20 +63,6 @@ class FaviconTabHelper : public content::WebContentsObserver,
 
   // Saves the favicon for the current page.
   void SaveFavicon();
-
-  // Initiates loading an image from given |image_url|. Returns a download id
-  // for caller to track the request. When download completes, |callback| is
-  // called with the three params: the download_id, a boolean flag to indicate
-  // whether the download succeeds and a SkBitmap as the downloaded image.
-  // Note that |image_size| is a hint for images with multiple sizes. The
-  // downloaded image is not resized to the given image_size. If 0 is passed,
-  // the first frame of the image is returned.
-  typedef base::Callback<void(int, bool, const SkBitmap&)>
-      ImageDownloadCallback;
-  int DownloadImage(const GURL& image_url,
-                    int image_size,
-                    history::IconType icon_type,
-                    const ImageDownloadCallback& callback);
 
   // FaviconHandlerDelegate methods.
   virtual content::NavigationEntry* GetActiveEntry() OVERRIDE;

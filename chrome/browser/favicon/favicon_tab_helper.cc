@@ -129,19 +129,6 @@ void FaviconTabHelper::SaveFavicon() {
                        favicon.image);
 }
 
-int FaviconTabHelper::DownloadImage(const GURL& image_url,
-                                    int image_size,
-                                    history::IconType icon_type,
-                                    const ImageDownloadCallback& callback) {
-  if (icon_type == history::FAVICON)
-    return favicon_handler_->DownloadImage(image_url, image_size, icon_type,
-                                           callback);
-  else if (touch_icon_handler_.get())
-    return touch_icon_handler_->DownloadImage(image_url, image_size, icon_type,
-                                              callback);
-  return 0;
-}
-
 NavigationEntry* FaviconTabHelper::GetActiveEntry() {
   return web_contents()->GetController().GetActiveEntry();
 }
