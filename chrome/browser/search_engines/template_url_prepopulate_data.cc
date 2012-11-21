@@ -526,7 +526,6 @@ const PrepopulatedEngine* kAllEngines[] =
 // value we call the CountryID.
 
 const int kCountryIDUnknown = -1;
-const int kCountryIDNotSet = 0;
 
 inline int CountryCharsToCountryID(char c1, char c2) {
   return c1 << 8 | c2;
@@ -635,11 +634,20 @@ int GetCurrentCountryID() {
 #elif defined(OS_ANDROID)
 
 // Initialized by InitCountryCode().
-int g_country_code_at_install = kCountryIDNotSet;
+int g_country_code_at_install = kCountryIDUnknown;
 
 int GetCurrentCountryID() {
-  DCHECK(g_country_code_at_install != kCountryIDNotSet);
   return g_country_code_at_install;
+}
+
+void InitCountryCode(const std::string& country_code) {
+  if (country_code.size() != 2) {
+    DLOG(ERROR) << "Invalid country code: " << country_code;
+    g_country_code_at_install = kCountryIDUnknown;
+  } else {
+    g_country_code_at_install =
+        CountryCharsToCountryIDWithUpdate(country_code[0], country_code[1]);
+  }
 }
 
 #elif defined(OS_POSIX)
@@ -1278,19 +1286,5 @@ GURL GetLogoURL(const TemplateURL& template_url, LogoSize size) {
   }
   return GURL();
 }
-
-#if defined(OS_ANDROID)
-
-void InitCountryCode(const std::string& country_code) {
-  if (country_code.size() != 2) {
-    DLOG(ERROR) << "Invalid country code: " << country_code;
-    g_country_code_at_install = kCountryIDUnknown;
-  } else {
-    g_country_code_at_install =
-        CountryCharsToCountryIDWithUpdate(country_code[0], country_code[1]);
-  }
-}
-
-#endif
 
 }  // namespace TemplateURLPrepopulateData
