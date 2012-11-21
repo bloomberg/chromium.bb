@@ -119,7 +119,7 @@ class BrowserView : public BrowserWindow,
   static BrowserView* GetBrowserViewForBrowser(const Browser* browser);
 
   // Returns a Browser instance of this view.
-  Browser* browser() const { return browser_.get(); }
+  Browser* browser() { return browser_.get(); }
 
   // Returns the apparent bounds of the toolbar, in BrowserView coordinates.
   // These differ from |toolbar_.bounds()| in that they match where the toolbar
@@ -149,10 +149,10 @@ class BrowserView : public BrowserWindow,
       const gfx::Point& point) const;
 
   // Accessor for the TabStrip.
-  TabStrip* tabstrip() const { return tabstrip_; }
+  TabStrip* tabstrip() { return tabstrip_; }
 
   // Accessor for the Toolbar.
-  ToolbarView* toolbar() const { return toolbar_; }
+  ToolbarView* toolbar() { return toolbar_; }
 
   // Returns true if various window components are visible.
   virtual bool IsTabStripVisible() const;
