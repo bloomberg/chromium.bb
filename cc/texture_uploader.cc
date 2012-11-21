@@ -32,6 +32,11 @@ static const double defaultEstimatedTexturesPerSecond = 48.0 * 60.0;
 // Flush interval when performing texture uploads.
 const int textureUploadFlushPeriod = 4;
 
+unsigned int RoundUp(unsigned int n, unsigned int mul)
+{
+  return (((n - 1) / mul) * mul) + mul;
+}
+
 } // anonymous namespace
 
 namespace cc {
@@ -229,11 +234,15 @@ void TextureUploader::uploadWithTexSubImage(const uint8* image,
 
     const uint8* pixel_source;
     unsigned int bytes_per_pixel = Resource::BytesPerPixel(format);
+    // Use 4-byte row alignment (OpenGL default) for upload performance.
+    // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
+    unsigned int upload_image_stride =
+        RoundUp(bytes_per_pixel * source_rect.width(), 4);
 
-    if (image_rect.width() == source_rect.width() && !offset.x()) {
-        pixel_source = &image[bytes_per_pixel * offset.y() * image_rect.width()];
+    if (upload_image_stride == image_rect.width() * bytes_per_pixel && !offset.x()) {
+        pixel_source = &image[image_rect.width() * bytes_per_pixel * offset.y()];
     } else {
-        size_t needed_size = source_rect.width() * source_rect.height() * bytes_per_pixel;
+        size_t needed_size = upload_image_stride * source_rect.height();
         if (m_subImageSize < needed_size) {
             m_subImage.reset(new uint8[needed_size]);
             m_subImageSize = needed_size;
@@ -241,7 +250,7 @@ void TextureUploader::uploadWithTexSubImage(const uint8* image,
         // Strides not equal, so do a row-by-row memcpy from the
         // paint results into a temp buffer for uploading.
         for (int row = 0; row < source_rect.height(); ++row)
-            memcpy(&m_subImage[source_rect.width() * bytes_per_pixel * row],
+            memcpy(&m_subImage[upload_image_stride * row],
                    &image[bytes_per_pixel * (offset.x() +
                           (offset.y() + row) * image_rect.width())],
                    source_rect.width() * bytes_per_pixel);
@@ -294,6 +303,12 @@ void TextureUploader::uploadWithMapTexSubImage(const uint8* image,
     // Offset from image-rect to source-rect.
     gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
 
+    unsigned int bytes_per_pixel = Resource::BytesPerPixel(format);
+    // Use 4-byte row alignment (OpenGL default) for upload performance.
+    // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
+    unsigned int upload_image_stride =
+        RoundUp(bytes_per_pixel * source_rect.width(), 4);
+
     // Upload tile data via a mapped transfer buffer
     uint8* pixel_dest = static_cast<uint8*>(
         m_context->mapTexSubImage2DCHROMIUM(GL_TEXTURE_2D,
@@ -312,17 +327,15 @@ void TextureUploader::uploadWithMapTexSubImage(const uint8* image,
         return;
     }
 
-    unsigned int bytes_per_pixel = Resource::BytesPerPixel(format);
-
-    if (image_rect.width() == source_rect.width() && !offset.x()) {
+    if (upload_image_stride == image_rect.width() * bytes_per_pixel && !offset.x()) {
         memcpy(pixel_dest,
-               &image[offset.y() * image_rect.width() * bytes_per_pixel],
-               image_rect.width() * source_rect.height() * bytes_per_pixel);
+               &image[image_rect.width() * bytes_per_pixel * offset.y()],
+               source_rect.height() * image_rect.width() * bytes_per_pixel);
     } else {
         // Strides not equal, so do a row-by-row memcpy from the
         // paint results into the pixelDest
         for (int row = 0; row < source_rect.height(); ++row)
-            memcpy(&pixel_dest[source_rect.width() * row * bytes_per_pixel],
+            memcpy(&pixel_dest[upload_image_stride * row],
                    &image[bytes_per_pixel * (offset.x() +
                           (offset.y() + row) * image_rect.width())],
                    source_rect.width() * bytes_per_pixel);

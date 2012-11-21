@@ -374,8 +374,9 @@ bool VideoLayerImpl::copyPlaneData(ResourceProvider* resourceProvider)
         // Only non-FormatNativeTexture planes should need upload.
         DCHECK_EQ(plane.format, GL_LUMINANCE);
         const uint8_t* softwarePlanePixels = m_frame->data(planeIndex);
-        gfx::Rect planeRect(gfx::Point(), plane.size);
-        resourceProvider->setPixels(plane.resourceId, softwarePlanePixels, planeRect, planeRect, gfx::Vector2d());
+        gfx::Rect imageRect(0, 0, m_frame->stride(planeIndex), plane.size.height());
+        gfx::Rect sourceRect(gfx::Point(), plane.size);
+        resourceProvider->setPixels(plane.resourceId, softwarePlanePixels, imageRect, sourceRect, gfx::Vector2d());
     }
     return true;
 }
