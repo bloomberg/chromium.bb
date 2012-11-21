@@ -823,7 +823,7 @@ class IsolateLoad(unittest.TestCase):
   def _cleanup_isolated(self, expected_isolated, actual_isolated):
     """Modifies isolated to remove the non-deterministic parts."""
     if sys.platform == 'win32':
-      # 'mode' are not saved in windows.
+      # 'm' are not saved in windows.
       for values in expected_isolated['files'].itervalues():
         del values['m']
 

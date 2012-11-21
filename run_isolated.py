@@ -1022,9 +1022,9 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
           for filepath, properties in remaining.pop(obj):
             outfile = os.path.join(outdir, filepath)
             link_file(outfile, cache.path(obj), HARDLINK)
-            if 'mode' in properties:
+            if 'm' in properties:
               # It's not set on Windows.
-              os.chmod(outfile, properties['mode'])
+              os.chmod(outfile, properties['m'])
 
       if settings.read_only:
         make_writable(outdir, True)
