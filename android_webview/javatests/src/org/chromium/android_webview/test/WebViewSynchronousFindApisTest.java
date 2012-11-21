@@ -7,7 +7,6 @@ package org.chromium.android_webview.test;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 /**
@@ -21,15 +20,23 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
         assertEquals(4, findAllSyncOnUiThread("wood"));
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
+    crbug.com/158112
+    */
+    @FlakyTest
     public void testFindAllDouble() throws Throwable {
         findAllSyncOnUiThread("wood");
         assertEquals(4, findAllSyncOnUiThread("chuck"));
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
+    crbug.com/158112
+    */
+    @FlakyTest
     public void testFindAllDoubleNext() throws Throwable {
         assertEquals(4, findAllSyncOnUiThread("wood"));
         assertEquals(4, findAllSyncOnUiThread("wood"));
@@ -109,8 +116,12 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
         clearMatchesOnUiThread();
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
+    crbug.com/158112
+    */
+    @FlakyTest
     public void testClearFindNext() throws Throwable {
         assertEquals(4, findAllSyncOnUiThread("wood"));
         clearMatchesOnUiThread();
