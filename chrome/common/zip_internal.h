@@ -38,6 +38,12 @@ unzFile PreprareMemoryForUnzipping(const std::string& data);
 // Windows. |append_flag| will be passed to zipOpen2().
 zipFile OpenForZipping(const std::string& file_name_utf8, int append_flag);
 
+#if defined(OS_POSIX)
+// Opens the file referred to by |zip_fd| for zipping. |append_flag| will be
+// passed to zipOpen2().
+zipFile OpenFdForZipping(int zip_fd, int append_flag);
+#endif
+
 const int kZipMaxPath = 256;
 const int kZipBufSize = 8192;
 

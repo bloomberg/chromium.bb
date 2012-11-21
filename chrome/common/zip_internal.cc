@@ -97,9 +97,10 @@ void* FdOpenFileFunc(void* opaque, const char* filename, int mode) {
 }
 
 // We don't actually close the file stream since that would close
-// the underlying file descriptor, and we don't own it. We do free
-// |opaque| since we malloc'ed it in FillFdOpenFileFunc.
+// the underlying file descriptor, and we don't own it. However we do need to
+// flush buffers and free |opaque| since we malloc'ed it in FillFdOpenFileFunc.
 int CloseFileFunc(void* opaque, void* stream) {
+  fflush(static_cast<FILE*>(stream));
   free(opaque);
   return 0;
 }
@@ -275,6 +276,15 @@ zipFile OpenForZipping(const std::string& file_name_utf8, int append_flag) {
                   NULL,  // global comment
                   zip_func_ptrs);
 }
+
+#if defined(OS_POSIX)
+zipFile OpenFdForZipping(int zip_fd, int append_flag) {
+  zlib_filefunc_def zip_funcs;
+  FillFdOpenFileFunc(&zip_funcs, zip_fd);
+  // Passing dummy "fd" filename to zlib.
+  return zipOpen2("fd", append_flag, NULL, &zip_funcs);
+}
+#endif
 
 }  // namespace internal
 }  // namespace zip

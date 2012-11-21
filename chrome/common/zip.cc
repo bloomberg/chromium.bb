@@ -170,17 +170,15 @@ bool Zip(const FilePath& src_dir, const FilePath& dest_file,
   }
 }
 
+#if defined(OS_POSIX)
 bool ZipFiles(const FilePath& src_dir,
               const std::vector<FilePath>& src_relative_paths,
-              const FilePath& dest_file) {
+              int dest_fd) {
   DCHECK(file_util::DirectoryExists(src_dir));
-
-  // TODO(hshi): check that |src_relative_paths| does not contain |dest_file|.
-  zipFile zip_file = internal::OpenForZipping(dest_file.AsUTF8Unsafe(),
-                                              APPEND_STATUS_CREATE);
+  zipFile zip_file = internal::OpenFdForZipping(dest_fd, APPEND_STATUS_CREATE);
 
   if (!zip_file) {
-    DLOG(WARNING) << "couldn't create file " << dest_file.value();
+    DLOG(ERROR) << "couldn't create file for fd " << dest_fd;
     return false;
   }
 
@@ -196,11 +194,12 @@ bool ZipFiles(const FilePath& src_dir,
   }
 
   if (ZIP_OK != zipClose(zip_file, NULL)) {
-    DLOG(ERROR) << "Error closing zip file " << dest_file.value();
+    DLOG(ERROR) << "Error closing zip file for fd " << dest_fd;
     success = false;
   }
 
   return success;
 }
+#endif  // defined(OS_POSIX)
 
 }  // namespace zip

@@ -25,13 +25,15 @@ bool ZipWithFilterCallback(const FilePath& src_dir, const FilePath& dest_file,
 bool Zip(const FilePath& src_dir, const FilePath& dest_file,
          bool include_hidden_files);
 
-// Zips files listed in |src_relative_paths| to |dest_file|.
-// The paths listed in |src_relative_paths| are relative to |src_dir| and will
-// be used as the file names in the created zip file. All source paths must be
-// under |src_dir| in the file system hierarchy.
+#if defined(OS_POSIX)
+// Zips files listed in |src_relative_paths| to destination specified by file
+// descriptor |dest_fd|. The paths listed in |src_relative_paths| are relative
+// to the |src_dir| and will be used as the file names in the created zip file.
+// All source paths must be under |src_dir| in the file system hierarchy.
 bool ZipFiles(const FilePath& src_dir,
               const std::vector<FilePath>& src_relative_paths,
-              const FilePath& dest_file);
+              int dest_fd);
+#endif  // defined(OS_POSIX)
 
 // Unzip the contents of zip_file into dest_dir.
 bool Unzip(const FilePath& zip_file, const FilePath& dest_dir);
