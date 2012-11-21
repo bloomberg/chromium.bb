@@ -223,7 +223,8 @@ def OutputEventData(revision, event_dict, dest_dir):
   WriteToDataFile(new_line, existing_lines, revision, data_file)
 
 
-def UpdatePerfDataFromFetchedContent(revision, content, webapp_name, test_name):
+def UpdatePerfDataFromFetchedContent(revision, content, webapp_name, test_name,
+                                     only_dmp=False):
   """Update perf data from fetched stdio data.
 
   Args:
@@ -231,6 +232,7 @@ def UpdatePerfDataFromFetchedContent(revision, content, webapp_name, test_name):
     content: Fetched stdio data.
     webapp_name: A name of the webapp.
     test_name: A name of the test.
+    only_dmp: True if only Deep Memory Profiler results should be used.
   """
   perf_data_raw = []
 
@@ -250,16 +252,18 @@ def UpdatePerfDataFromFetchedContent(revision, content, webapp_name, test_name):
   # First scan for short-running perf test results.
   for match in re.findall(
       r'RESULT ([^:]+): ([^=]+)= ([-\d\.]+) (\S+)', content):
-    AppendRawPerfData(match[0], match[1], eval(match[2]), match[3], None,
-                      webapp_name, webapp_name)
+    if (not only_dmp) or match[0].endswith('-DMP'):
+      AppendRawPerfData(match[0], match[1], eval(match[2]), match[3], None,
+                        webapp_name, webapp_name)
 
   # Next scan for long-running perf test results.
   for match in re.findall(
       r'RESULT ([^:]+): ([^=]+)= (\[[^\]]+\]) (\S+) (\S+)', content):
-    # TODO(dmikurube): Change the condition to use stacked graph when we
-    # determine how to specify it.
-    AppendRawPerfData(match[0], match[1], eval(match[2]), match[3], match[4],
-                      webapp_name, test_name, match[0].endswith('-DMP'))
+    if (not only_dmp) or match[0].endswith('-DMP'):
+      # TODO(dmikurube): Change the condition to use stacked graph when we
+      # determine how to specify it.
+      AppendRawPerfData(match[0], match[1], eval(match[2]), match[3], match[4],
+                        webapp_name, test_name, match[0].endswith('-DMP'))
 
   # Next scan for events in the test results.
   for match in re.findall(
@@ -415,7 +419,8 @@ def UpdatePerfDataForSlaveAndBuild(slave_info, build_num):
 
     UpdatePerfDataFromFetchedContent(revision, url_contents,
                                      stdio_url_data['webapp_name'],
-                                     stdio_url_data['test_name'])
+                                     stdio_url_data['test_name'],
+                                     is_dbg)
 
   return True
 
