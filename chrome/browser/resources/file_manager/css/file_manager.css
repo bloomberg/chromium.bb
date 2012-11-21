@@ -256,7 +256,8 @@ li.root-item > .root-label {
 }
 
 div.root-eject {
-  -webkit-transition: opacity 70ms linear;
+  /* The transition commented out to work around crbug.com/157813 */
+  /*-webkit-transition: opacity 70ms linear;*/
   background-image: -webkit-image-set(
     url('../images/files/ui/eject.png') 1x,
     url('../images/files/ui/2x/eject.png') 2x);
