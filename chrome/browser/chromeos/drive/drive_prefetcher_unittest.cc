@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
+#include "chrome/browser/chromeos/drive/event_logger.h"
 #include "chrome/browser/chromeos/drive/mock_drive_file_system.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -130,7 +131,8 @@ const char* kAllRegularFiles[] = {
 class DrivePrefetcherTest : public testing::Test {
  public:
   DrivePrefetcherTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
+      : dummy_event_logger_(0),
+        ui_thread_(content::BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() OVERRIDE {
     mock_file_system_.reset(new StrictMock<MockDriveFileSystem>);
@@ -150,7 +152,9 @@ class DrivePrefetcherTest : public testing::Test {
     DrivePrefetcherOptions options;
     options.initial_prefetch_count = prefetch_count;
     options.prefetch_file_size_limit = size_limit;
-    prefetcher_.reset(new DrivePrefetcher(mock_file_system_.get(), options));
+    prefetcher_.reset(new DrivePrefetcher(mock_file_system_.get(),
+                                          &dummy_event_logger_,
+                                          options));
   }
 
   // Flushes all the pending tasks on the current thread.
@@ -178,6 +182,7 @@ class DrivePrefetcherTest : public testing::Test {
     EXPECT_EQ(expected, fetched_list);
   }
 
+  EventLogger dummy_event_logger_;
   scoped_ptr<StrictMock<MockDriveFileSystem> > mock_file_system_;
   scoped_ptr<DrivePrefetcher> prefetcher_;
   MessageLoopForUI message_loop_;

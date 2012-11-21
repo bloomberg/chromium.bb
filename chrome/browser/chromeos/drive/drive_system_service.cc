@@ -108,6 +108,7 @@ void DriveSystemService::Initialize(
                                                      file_system()));
   sync_client_.reset(new DriveSyncClient(profile_, file_system(), cache()));
   prefetcher_.reset(new DrivePrefetcher(file_system(),
+                                        event_logger(),
                                         DrivePrefetcherOptions()));
   sync_client_->AddObserver(prefetcher_.get());
   stale_cache_files_remover_.reset(new StaleCacheFilesRemover(file_system(),

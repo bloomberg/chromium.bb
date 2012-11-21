@@ -23,6 +23,7 @@ class FilePath;
 namespace drive {
 
 class DriveFileSystemInterface;
+class EventLogger;
 
 // The parameters for DrivePrefetcher construction.
 struct DrivePrefetcherOptions {
@@ -40,6 +41,7 @@ class DrivePrefetcher : public DriveFileSystemObserver,
                         public DriveSyncClientObserver {
  public:
   DrivePrefetcher(DriveFileSystemInterface* file_system,
+                  EventLogger* event_logger,
                   const DrivePrefetcherOptions& options);
   virtual ~DrivePrefetcher();
 
@@ -61,7 +63,8 @@ class DrivePrefetcher : public DriveFileSystemObserver,
   void DoPrefetch();
 
   // Called when DoPrefetch is done.
-  void OnPrefetchFinished(DriveFileError error,
+  void OnPrefetchFinished(const std::string& resource_id,
+                          DriveFileError error,
                           const FilePath& file_path,
                           const std::string& mime_type,
                           DriveFileType file_type);
@@ -106,6 +109,9 @@ class DrivePrefetcher : public DriveFileSystemObserver,
 
   // File system is owned by DriveSystemService.
   DriveFileSystemInterface* file_system_;
+
+  // Event logger is owned by DriveSystemService.
+  EventLogger* event_logger_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -8,8 +8,10 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/event_logger.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -54,6 +56,7 @@ DrivePrefetcherOptions::DrivePrefetcherOptions()
 }
 
 DrivePrefetcher::DrivePrefetcher(DriveFileSystemInterface* file_system,
+                                 EventLogger* event_logger,
                                  const DrivePrefetcherOptions& options)
     : latest_files_(&ComparePrefetchPriority),
       number_of_inflight_prefetches_(0),
@@ -62,6 +65,7 @@ DrivePrefetcher::DrivePrefetcher(DriveFileSystemInterface* file_system,
       initial_prefetch_count_(options.initial_prefetch_count),
       prefetch_file_size_limit_(options.prefetch_file_size_limit),
       file_system_(file_system),
+      event_logger_(event_logger),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   file_system_->AddObserver(this);
@@ -120,23 +124,28 @@ void DrivePrefetcher::DoPrefetch() {
   std::string resource_id = queue_.front();
   queue_.pop_front();
 
+  event_logger_->Log("Prefetcher: Start fetching " + resource_id);
+
   ++number_of_inflight_prefetches_;
   file_system_->GetFileByResourceId(
       resource_id,
       base::Bind(&DrivePrefetcher::OnPrefetchFinished,
-                 weak_ptr_factory_.GetWeakPtr()),
+                 weak_ptr_factory_.GetWeakPtr(),
+                 resource_id),
       google_apis::GetContentCallback());
 }
 
-void DrivePrefetcher::OnPrefetchFinished(DriveFileError error,
+void DrivePrefetcher::OnPrefetchFinished(const std::string& resource_id,
+                                         DriveFileError error,
                                          const FilePath& file_path,
                                          const std::string& mime_type,
                                          DriveFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error != DRIVE_FILE_OK) {
+  if (error != DRIVE_FILE_OK)
     LOG(WARNING) << "Prefetch failed: " << error;
-  }
+  event_logger_->Log(base::StringPrintf("Prefetcher: Finish fetching (%s) %s",
+                                        DriveFileErrorToString(error).c_str(),
+                                        resource_id.c_str()));
 
   --number_of_inflight_prefetches_;
   DoPrefetch();  // Start next prefetch.
