@@ -903,7 +903,6 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
   if (guest_crashed_ || !navigate_src_sent_)
     return false;
   bool handled = false;
-  WebCursor cursor;
   IPC::Message* message =
       new BrowserPluginHostMsg_HandleInputEvent(
           render_view_routing_id_,
