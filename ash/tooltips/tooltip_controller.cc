@@ -10,6 +10,8 @@
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/cursor_manager.h"
+#include "ash/wm/session_state_controller.h"
+#include "ash/wm/session_state_observer.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/string_split.h"
@@ -216,11 +218,15 @@ TooltipController::TooltipController(
       base::TimeDelta::FromMilliseconds(kTooltipTimeoutMs),
       this, &TooltipController::TooltipTimerFired);
   DCHECK(drag_drop_client_);
+  if (Shell::GetInstance())
+    Shell::GetInstance()->session_state_controller()->AddObserver(this);
 }
 
 TooltipController::~TooltipController() {
   if (tooltip_window_)
     tooltip_window_->RemoveObserver(this);
+  if (Shell::GetInstance())
+    Shell::GetInstance()->session_state_controller()->RemoveObserver(this);
 }
 
 void TooltipController::UpdateTooltip(aura::Window* target) {
@@ -310,6 +316,15 @@ ui::EventResult TooltipController::OnTouchEvent(ui::TouchEvent* event) {
     tooltip_window_->RemoveObserver(this);
   tooltip_window_ = NULL;
   return ui::ER_UNHANDLED;
+}
+
+void TooltipController::OnSessionStateEvent(
+    SessionStateObserver::EventType event) {
+  if (event == SessionStateObserver::EVENT_PRELOCK_ANIMATION_STARTED ||
+      event == SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED) {
+    if (tooltip_.get() && tooltip_->IsVisible())
+      tooltip_->Hide();
+  }
 }
 
 void TooltipController::OnWindowDestroyed(aura::Window* window) {

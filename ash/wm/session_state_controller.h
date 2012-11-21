@@ -8,8 +8,10 @@
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/session_state_animator.h"
+#include "ash/wm/session_state_observer.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "ui/aura/root_window_observer.h"
@@ -120,12 +122,18 @@ class ASH_EXPORT SessionStateController : public aura::RootWindowObserver,
   // Callback is guaranteed to be called once and then discarded.
   virtual void SetLockScreenDisplayedCallback(base::Closure& callback) = 0;
 
+  virtual void AddObserver(SessionStateObserver* observer);
+  virtual void RemoveObserver(SessionStateObserver* observer);
+  virtual bool HasObserver(SessionStateObserver* observer);
+
  protected:
   friend class test::PowerButtonControllerTest;
 
   scoped_ptr<internal::SessionStateAnimator> animator_;
 
   scoped_ptr<SessionStateControllerDelegate> delegate_;
+
+  ObserverList<SessionStateObserver> observers_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionStateController);

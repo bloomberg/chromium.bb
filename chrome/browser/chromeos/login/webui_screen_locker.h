@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ash/wm/session_state_observer.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -36,11 +37,12 @@ class WebUIScreenLockerTester;
 class WebUIScreenLocker : public WebUILoginView,
                           public LoginDisplay::Delegate,
                           public ScreenLockerDelegate,
-                          public LockWindow::Observer {
+                          public LockWindow::Observer,
+                          public ash::SessionStateObserver {
  public:
   explicit WebUIScreenLocker(ScreenLocker* screen_locker);
 
-  // ScreenLockerDelegate implementation:
+  // ScreenLockerDelegate implementation.
   virtual void LockScreen(bool unlock_on_input) OVERRIDE;
   virtual void ScreenLockReady() OVERRIDE;
   virtual void OnAuthenticate() OVERRIDE;
@@ -50,7 +52,6 @@ class WebUIScreenLocker : public WebUILoginView,
       HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
   virtual void ClearErrors() OVERRIDE;
   virtual void AnimateAuthenticationSuccess() OVERRIDE;
-  virtual void ProcessFullyDisplayedAnimations() OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
   virtual content::WebUI* GetAssociatedWebUI() OVERRIDE;
 
@@ -76,6 +77,10 @@ class WebUIScreenLocker : public WebUILoginView,
 
   // LockWindow::Observer implementation.
   virtual void OnLockWindowReady() OVERRIDE;
+
+  // SessionStateObserver override.
+  virtual void OnSessionStateEvent(ash::SessionStateObserver::EventType event)
+      OVERRIDE;
 
  private:
   friend class test::WebUIScreenLockerTester;

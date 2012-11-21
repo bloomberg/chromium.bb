@@ -36,4 +36,18 @@ void SessionStateController::SetDelegate(
     SessionStateControllerDelegate* delegate) {
   delegate_.reset(delegate);
 }
+
+void SessionStateController::AddObserver(SessionStateObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void SessionStateController::RemoveObserver(SessionStateObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+bool SessionStateController::HasObserver(SessionStateObserver* observer) {
+  return observers_.HasObserver(observer);
+}
+
+
 }  // namespace ash

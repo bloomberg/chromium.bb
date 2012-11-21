@@ -275,8 +275,6 @@ Shell::~Shell() {
   drag_drop_controller_.reset();
   magnification_controller_.reset();
   partial_magnification_controller_.reset();
-  power_button_controller_.reset();
-  session_state_controller_.reset();
   resize_shadow_controller_.reset();
   shadow_controller_.reset();
   tooltip_controller_.reset();
@@ -286,6 +284,9 @@ Shell::~Shell() {
   nested_dispatcher_controller_.reset();
   user_action_client_.reset();
   visibility_controller_.reset();
+
+  power_button_controller_.reset();
+  session_state_controller_.reset();
 
   // This also deletes all RootWindows.
   display_controller_.reset();
@@ -463,6 +464,14 @@ void Shell::Init() {
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
+  if (command_line->HasSwitch(ash::switches::kAshNewLockAnimationsEnabled))
+    session_state_controller_.reset(new SessionStateControllerImpl2);
+  else
+    session_state_controller_.reset(new SessionStateControllerImpl);
+  power_button_controller_.reset(new PowerButtonController(
+      session_state_controller_.get()));
+  AddShellObserver(session_state_controller_.get());
+
   if (command_line->HasSwitch(switches::kAshTouchHud)) {
     touch_observer_hud_.reset(new internal::TouchObserverHUD);
     AddPreTargetHandler(touch_observer_hud_.get());
@@ -541,14 +550,6 @@ void Shell::Init() {
   // to be created after InitSecondaryDisplays() to initialize the wallpapers in
   // the correct size.
   user_wallpaper_delegate_->InitializeWallpaper();
-
-  if (command_line->HasSwitch(ash::switches::kAshNewLockAnimationsEnabled))
-    session_state_controller_.reset(new SessionStateControllerImpl2);
-  else
-    session_state_controller_.reset(new SessionStateControllerImpl);
-  power_button_controller_.reset(new PowerButtonController(
-      session_state_controller_.get()));
-  AddShellObserver(session_state_controller_.get());
 
   if (initially_hide_cursor_)
     cursor_manager_.ShowCursor(false);

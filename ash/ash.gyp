@@ -340,6 +340,7 @@
         'wm/session_state_controller_impl.h',
         'wm/session_state_controller_impl2.cc',
         'wm/session_state_controller_impl2.h',
+        'wm/session_state_observer.h',
         'wm/shelf_layout_manager.cc',
         'wm/shelf_layout_manager.h',
         'wm/shelf_types.h',

@@ -93,6 +93,9 @@ void SessionStateControllerImpl2::SetLockScreenDisplayedCallback(
 }
 
 void SessionStateControllerImpl2::OnLockScreenAnimationFinished() {
+  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
+      OnSessionStateEvent(
+          SessionStateObserver::EVENT_LOCK_ANIMATION_FINISHED));
   if (!lock_screen_displayed_callback_.is_null()) {
     lock_screen_displayed_callback_.Run();
     lock_screen_displayed_callback_.Reset();
@@ -112,7 +115,8 @@ void SessionStateControllerImpl2::OnStartingLock() {
       internal::SessionStateAnimator::LAUNCHER,
       internal::SessionStateAnimator::ANIMATION_LIFT,
       internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
-
+  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
+      OnSessionStateEvent(SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED));
   // Hide the screen locker containers so we can raise them later.
   animator_->StartAnimation(
       internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
@@ -126,6 +130,8 @@ void SessionStateControllerImpl2::StartLockAnimationAndLockImmediately() {
       internal::SessionStateAnimator::LAUNCHER,
       internal::SessionStateAnimator::ANIMATION_LIFT,
       internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
+  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
+      OnSessionStateEvent(SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED));
   OnLockTimeout();
 }
 
@@ -137,6 +143,9 @@ void SessionStateControllerImpl2::StartLockAnimation(bool shutdown_after_lock) {
       internal::SessionStateAnimator::LAUNCHER,
       internal::SessionStateAnimator::ANIMATION_LIFT,
       internal::SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
+  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
+      OnSessionStateEvent(
+          SessionStateObserver::EVENT_PRELOCK_ANIMATION_STARTED));
   StartLockTimer();
 }
 

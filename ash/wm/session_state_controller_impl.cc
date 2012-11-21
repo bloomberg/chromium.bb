@@ -71,6 +71,9 @@ void SessionStateControllerImpl::OnLockStateChanged(bool locked) {
         internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
         internal::SessionStateAnimator::ANIMATION_FADE_IN,
         internal::SessionStateAnimator::ANIMATION_SPEED_SHOW_LOCK_SCREEN);
+    FOR_EACH_OBSERVER(SessionStateObserver, observers_,
+        OnSessionStateEvent(
+            SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED));
     lock_timer_.Stop();
     lock_fail_timer_.Stop();
 
@@ -102,6 +105,9 @@ void SessionStateControllerImpl::OnStartingLock() {
       internal::SessionStateAnimator::ANIMATION_FULL_CLOSE,
       internal::SessionStateAnimator::ANIMATION_SPEED_FAST);
 
+  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
+      OnSessionStateEvent(SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED));
+
   // Hide the screen locker containers so we can make them fade in later.
   animator_->StartAnimation(
       internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
@@ -114,6 +120,8 @@ void SessionStateControllerImpl::StartLockAnimationAndLockImmediately() {
       internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
       internal::SessionStateAnimator::ANIMATION_PARTIAL_CLOSE,
       internal::SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
+  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
+      OnSessionStateEvent(SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED));
   OnLockTimeout();
 }
 
@@ -124,6 +132,9 @@ void SessionStateControllerImpl::StartLockAnimation(bool shutdown_after_lock) {
       internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
       internal::SessionStateAnimator::ANIMATION_PARTIAL_CLOSE,
       internal::SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
+  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
+      OnSessionStateEvent(
+          SessionStateObserver::EVENT_PRELOCK_ANIMATION_STARTED));
   StartLockTimer();
 }
 

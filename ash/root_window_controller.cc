@@ -407,6 +407,7 @@ void RootWindowController::CloseChildWindows() {
     delete child;
   }
 
+  launcher_.reset();
   // All containers are deleted, so reset shelf_.
   shelf_ = NULL;
 }
