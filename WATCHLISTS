@@ -321,6 +321,11 @@
     'pepper_api': {
       'filepath': 'ppapi/c/',
     },
+    'perf': {
+      'filepath': 'tools/perf' \
+                  '|tools/telemetry' \
+                  '|chrome/test/perf'
+    },
     'plugin': {
       'filepath': 'chrome/browser/plugin|chrome/plugin/|'\
         'chrome/common/plugin|webkit/glue/webplugin|webkit/glue/plugins/',
@@ -383,6 +388,9 @@
     },
     'tcmalloc': {
       'filepath': 'third_party/tcmalloc'
+    },
+    'telemetry': {
+      'filepath': 'tools/telemetry'
     },
     'tests': {
       'filepath': 'apitest|unittest|browsertest|uitest|chrome/test/',
@@ -589,6 +597,7 @@
     'pepper_api': ['piman+watch@chromium.org', 'darin-cc@chromium.org',
                    'ihf+watch@chromium.org', 'yzshen+watch@chromium.org',
                    'yusukes+watch@chromium.org', 'raymes+watch@chromium.org'],
+    'perf': ['chrome-speed-team+watch@google.com'],
     'plugin': ['darin-cc@chromium.org', 'jam@chromium.org',
                'stuartmorgan+watch@chromium.org'],
     'predictors': ['dominich+watch@chromium.org', 'shishir+watch@chromium.org'],
@@ -625,6 +634,7 @@
                      'creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
     'task_manager': ['yoshiki+watch@chromium.org'],
     'tcmalloc': ['dmikurube+memory@chromium.org'],
+    'telemetry': ['telemetry+watch@chromium.org'],
     'tests': [],
     'textinput': ['penghuang+watch@chromium.org',
                   'suzhe@chromium.org',
