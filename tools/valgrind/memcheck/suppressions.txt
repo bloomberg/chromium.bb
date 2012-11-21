@@ -6171,10 +6171,3 @@
    fun:_ZN21CancelableTaskTracker16NewTrackedTaskIdEPN4base8CallbackIFbvEEE
    fun:_ZN12_GLOBAL__N_140CheckTrackedTaskIdOnDifferentThread_TestEPNS_25CancelableTaskTrackerTestEPN4base13WaitableEventE
 }
-{
-   bug_162209
-   Memcheck:Uninitialized
-   fun:_ZN5media22AudioRendererMixerTest17ValidateAudioDataEiifd
-   fun:_ZN5media22AudioRendererMixerTest26RenderAndValidateAudioDataEf
-   fun:_ZN5media22AudioRendererMixerTest21PlayPartialRenderTestEi
-}

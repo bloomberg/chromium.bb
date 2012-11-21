@@ -120,6 +120,9 @@ class AudioRendererMixerTest
       for (size_t i = 0; i < fake_callbacks_.size(); ++i)
         fake_callbacks_[i]->set_half_fill(true);
       expected_callback_->set_half_fill(true);
+      // Initialize the AudioBus completely or we'll run into Valgrind problems
+      // during the verification step below.
+      expected_audio_bus_->Zero();
     }
 
     // Render actual audio data.
