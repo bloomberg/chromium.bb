@@ -16,6 +16,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -150,6 +151,8 @@ void InProcessBrowserTest::SetUp() {
   captive_portal::CaptivePortalService::set_state_for_testing(
       captive_portal::CaptivePortalService::DISABLED_FOR_TESTING);
 #endif
+
+  chrome_browser_net::NetErrorTabHelper::set_enabled_for_testing(false);
 
   google_util::SetMockLinkDoctorBaseURLForTesting();
 

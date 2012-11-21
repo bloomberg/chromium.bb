@@ -23,29 +23,49 @@ namespace {
 class TestNetErrorTabHelper : public NetErrorTabHelper {
  public:
   TestNetErrorTabHelper()
-      : NetErrorTabHelper(NULL), probe_start_count_(0) { }
+      : NetErrorTabHelper(NULL),
+        probe_start_count_(0),
+        probes_allowed_(true) {
+  }
+
+  // NetErrorTabHelper implementation:
 
   virtual void PostStartDnsProbeTask() OVERRIDE {
     ++probe_start_count_;
   }
 
-  virtual bool DnsProbesAllowedByPref() const OVERRIDE { return true; }
+  virtual bool ProbesAllowed() const OVERRIDE {
+    return probes_allowed_;
+  }
+
+  // Methods to control mock behavior and verify things:
+
+  void set_probes_allowed(bool probes_allowed) {
+    probes_allowed_ = probes_allowed;
+  }
 
   void SimulateProbeResult(DnsProbeService::Result result) {
     OnDnsProbeFinished(result);
   }
 
-  bool dns_probe_running() { return NetErrorTabHelper::dns_probe_running(); }
-  int probe_start_count() { return probe_start_count_; }
+  bool dns_probe_running() {
+    return NetErrorTabHelper::dns_probe_running();
+  }
+
+  int probe_start_count() {
+    return probe_start_count_;
+  }
 
  private:
   int probe_start_count_;
+  bool probes_allowed_;
 };
 
 class NetErrorTabHelperTest : public testing::Test {
  public:
   NetErrorTabHelperTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) { }
+      : ui_thread_(BrowserThread::UI, &message_loop_) {
+  }
 
  protected:
   void SimulateFailure(bool is_main_frame, int error_code) {
@@ -88,6 +108,13 @@ TEST_F(NetErrorTabHelperTest, ProbeOnDnsError) {
   SimulateFailure(true, net::ERR_NAME_NOT_RESOLVED);
   EXPECT_TRUE(tab_helper_.dns_probe_running());
   EXPECT_EQ(1, tab_helper_.probe_start_count());
+}
+
+TEST_F(NetErrorTabHelperTest, NoProbeWhenNotAllowed) {
+  tab_helper_.set_probes_allowed(false);
+  SimulateFailure(true, net::ERR_NAME_NOT_RESOLVED);
+  EXPECT_FALSE(tab_helper_.dns_probe_running());
+  EXPECT_EQ(0, tab_helper_.probe_start_count());
 }
 
 TEST_F(NetErrorTabHelperTest, CoalesceFailures) {

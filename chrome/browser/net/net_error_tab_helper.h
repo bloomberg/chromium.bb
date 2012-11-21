@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/net/dns_probe_service.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -34,6 +35,8 @@ class NetErrorTabHelper
 
   void OnDnsProbeFinished(DnsProbeService::Result result);
 
+  static void set_enabled_for_testing(bool enabled_for_testing);
+
  protected:
   friend class content::WebContentsUserData<NetErrorTabHelper>;
 
@@ -44,20 +47,26 @@ class NetErrorTabHelper
   // Posts a task to the IO thread that will start a DNS probe.
   virtual void PostStartDnsProbeTask();
 
-  // Checks if the "Use web service to resolve navigation errors" preference is
-  // enabled on the profile.
-  virtual bool DnsProbesAllowedByPref() const;
+  // Checks if probes are allowed by enabled_for_testing and "use web service"
+  // pref.
+  virtual bool ProbesAllowed() const;
 
   bool dns_probe_running() { return dns_probe_running_; }
   void set_dns_probe_running(bool running) { dns_probe_running_ = running; }
 
  private:
+  void InitializePref(content::WebContents* contents);
+
   void OnMainFrameDnsError();
 
   // Whether the tab helper has started a DNS probe that has not yet returned
   // a result.
   bool dns_probe_running_;
-
+  // "Use a web service to resolve navigation errors" preference is required
+  // to allow probes.
+  BooleanPrefMember resolve_errors_with_web_service_;
+  // Whether the above pref was initialized -- will be false in unit tests.
+  bool pref_initialized_;
   base::WeakPtrFactory<NetErrorTabHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetErrorTabHelper);
