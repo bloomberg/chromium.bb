@@ -338,6 +338,12 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   UpdateFileSystemContentsSection(drive_service);
   UpdateCacheContentsSection(cache);
   UpdateLocalStorageUsageSection();
+
+  // When the drive-internals page is reloaded by the reload key, the page
+  // content is recreated, but this WebUI object is not (instead, OnPageLoaded
+  // is called again). In that case, we have to forget the last sent ID here,
+  // and resent whole the logs to the page.
+  last_sent_event_id_ = -1;
   UpdateEventLogSection(system_service->event_logger());
 }
 
