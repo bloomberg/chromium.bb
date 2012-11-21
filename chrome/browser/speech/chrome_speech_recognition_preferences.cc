@@ -123,12 +123,17 @@ ChromeSpeechRecognitionPreferences::ChromeSpeechRecognitionPreferences(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   pref_change_registrar_->Init(profile_->GetPrefs());
 
-  ReloadPreference(prefs::kSpeechRecognitionFilterProfanities);
-  pref_change_registrar_->Add(prefs::kSpeechRecognitionFilterProfanities, this);
-
-  ReloadPreference(prefs::kSpeechRecognitionTrayNotificationShownContexts);
+  ReloadFilterProfanities();
   pref_change_registrar_->Add(
-      prefs::kSpeechRecognitionTrayNotificationShownContexts, this);
+      prefs::kSpeechRecognitionFilterProfanities,
+      base::Bind(&ChromeSpeechRecognitionPreferences::ReloadFilterProfanities,
+                 base::Unretained(this)));
+
+  ReloadNotificationsShown();
+  pref_change_registrar_->Add(
+      prefs::kSpeechRecognitionTrayNotificationShownContexts,
+      base::Bind(&ChromeSpeechRecognitionPreferences::ReloadNotificationsShown,
+                 base::Unretained(this)));
 }
 
 ChromeSpeechRecognitionPreferences::~ChromeSpeechRecognitionPreferences() {
@@ -139,13 +144,6 @@ void ChromeSpeechRecognitionPreferences::DetachFromProfile() {
   DCHECK(profile_);
   pref_change_registrar_.reset();
   profile_ = NULL;
-}
-
-void ChromeSpeechRecognitionPreferences::OnPreferenceChanged(
-    PrefServiceBase* service,
-    const std::string& pref_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ReloadPreference(pref_name);
 }
 
 bool ChromeSpeechRecognitionPreferences::FilterProfanities() const {
@@ -193,19 +191,17 @@ void ChromeSpeechRecognitionPreferences::SetHasShownSecurityNotification(
   }
 }
 
-void ChromeSpeechRecognitionPreferences::ReloadPreference(
-    const std::string& key) {
+void ChromeSpeechRecognitionPreferences::ReloadFilterProfanities() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(profile_);
   base::AutoLock write_lock(preferences_lock_);
-  PrefService* pref_service = profile_->GetPrefs();
-  if (key == prefs::kSpeechRecognitionFilterProfanities) {
-    filter_profanities_ =
-          pref_service->GetBoolean(prefs::kSpeechRecognitionFilterProfanities);
-  } else if (key == prefs::kSpeechRecognitionTrayNotificationShownContexts) {
-    const base::ListValue* pref_list = profile_->GetPrefs()->GetList(
-        prefs::kSpeechRecognitionTrayNotificationShownContexts);
-    DCHECK(pref_list);
-    notifications_shown_.reset(pref_list->DeepCopy());
-  }
+  filter_profanities_ = profile_->GetPrefs()->GetBoolean(
+      prefs::kSpeechRecognitionFilterProfanities);
+}
+
+void ChromeSpeechRecognitionPreferences::ReloadNotificationsShown() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::AutoLock write_lock(preferences_lock_);
+  const base::ListValue* pref_list = profile_->GetPrefs()->GetList(
+      prefs::kSpeechRecognitionTrayNotificationShownContexts);
+  notifications_shown_.reset(pref_list->DeepCopy());
 }

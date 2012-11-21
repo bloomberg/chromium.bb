@@ -39,9 +39,18 @@ SpellcheckService::SpellcheckService(Profile* profile)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* prefs = profile_->GetPrefs();
   pref_change_registrar_.Init(prefs);
-  pref_change_registrar_.Add(prefs::kSpellCheckDictionary, this);
-  pref_change_registrar_.Add(prefs::kEnableSpellCheck, this);
-  pref_change_registrar_.Add(prefs::kEnableAutoSpellCorrect, this);
+
+  pref_change_registrar_.Add(
+      prefs::kEnableAutoSpellCorrect,
+      base::Bind(&SpellcheckService::OnEnableAutoSpellCorrectChanged,
+                 base::Unretained(this)));
+
+  base::Closure init_for_all_renderers_callback = base::Bind(
+      &SpellcheckService::InitForAllRenderers, base::Unretained(this));
+  pref_change_registrar_.Add(prefs::kSpellCheckDictionary,
+                             init_for_all_renderers_callback);
+  pref_change_registrar_.Add(prefs::kEnableSpellCheck,
+                             init_for_all_renderers_callback);
 
   hunspell_dictionary_.reset(new SpellcheckHunspellDictionary(
       profile, prefs->GetString(prefs::kSpellCheckDictionary),
@@ -198,20 +207,14 @@ void SpellcheckService::Observe(int type,
   InitForRenderer(process);
 }
 
-void SpellcheckService::OnPreferenceChanged(PrefServiceBase* prefs,
-                                            const std::string& pref_name_in) {
-  DCHECK(prefs);
-  if (pref_name_in == prefs::kSpellCheckDictionary ||
-      pref_name_in == prefs::kEnableSpellCheck) {
-    InitForAllRenderers();
-  } else if (pref_name_in == prefs::kEnableAutoSpellCorrect) {
-    bool enabled = prefs->GetBoolean(prefs::kEnableAutoSpellCorrect);
-    for (content::RenderProcessHost::iterator i(
-             content::RenderProcessHost::AllHostsIterator());
-         !i.IsAtEnd(); i.Advance()) {
-      content::RenderProcessHost* process = i.GetCurrentValue();
-      process->Send(new SpellCheckMsg_EnableAutoSpellCorrect(enabled));
-    }
+void SpellcheckService::OnEnableAutoSpellCorrectChanged() {
+  bool enabled = pref_change_registrar_.prefs()->GetBoolean(
+      prefs::kEnableAutoSpellCorrect);
+  for (content::RenderProcessHost::iterator i(
+           content::RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    content::RenderProcessHost* process = i.GetCurrentValue();
+    process->Send(new SpellCheckMsg_EnableAutoSpellCorrect(enabled));
   }
 }
 

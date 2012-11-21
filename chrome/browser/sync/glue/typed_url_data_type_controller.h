@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 
@@ -25,8 +24,7 @@ namespace browser_sync {
 class ControlTask;
 
 // A class that manages the startup and shutdown of typed_url sync.
-class TypedUrlDataTypeController : public NonFrontendDataTypeController,
-                                   public PrefObserver {
+class TypedUrlDataTypeController : public NonFrontendDataTypeController {
  public:
   TypedUrlDataTypeController(
       ProfileSyncComponentsFactory* profile_sync_factory,
@@ -36,10 +34,6 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
   // NonFrontendDataTypeController implementation
   virtual syncer::ModelType type() const OVERRIDE;
   virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
-
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // Invoked on the history thread to set our history backend - must be called
   // before CreateSyncComponents() is invoked.
@@ -55,6 +49,8 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
 
  private:
   virtual ~TypedUrlDataTypeController();
+
+  void OnSavingBrowserHistoryDisabledChanged();
 
   history::HistoryBackend* backend_;
   PrefChangeRegistrar pref_registrar_;

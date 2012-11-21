@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/time.h"
 #include "chrome/common/translate_errors.h"
 #include "content/public/browser/notification_observer.h"
@@ -43,7 +42,6 @@ class URLFetcher;
 // It is a singleton.
 
 class TranslateManager : public content::NotificationObserver,
-                         public PrefObserver,
                          public net::URLFetcherDelegate {
  public:
   // Returns the singleton instance.
@@ -84,10 +82,6 @@ class TranslateManager : public content::NotificationObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // PrefObserver implementation:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // net::URLFetcherDelegate implementation:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;

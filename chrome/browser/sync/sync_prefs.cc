@@ -28,7 +28,9 @@ SyncPrefs::SyncPrefs(PrefService* pref_service)
     RegisterPreferences();
     // Watch the preference that indicates sync is managed so we can take
     // appropriate action.
-    pref_sync_managed_.Init(prefs::kSyncManaged, pref_service_, this);
+    pref_sync_managed_.Init(prefs::kSyncManaged, pref_service_,
+                            base::Bind(&SyncPrefs::OnSyncManagedPrefChanged,
+                                       base::Unretained(this)));
   }
 }
 
@@ -263,14 +265,10 @@ void SyncPrefs::AcknowledgeSyncedTypes(syncer::ModelTypeSet types) {
   pref_service_->Set(prefs::kSyncAcknowledgedSyncTypes, *value);
 }
 
-void SyncPrefs::OnPreferenceChanged(PrefServiceBase* service,
-                                    const std::string& pref_name) {
+void SyncPrefs::OnSyncManagedPrefChanged() {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(pref_service_, service);
-  if (pref_name == prefs::kSyncManaged) {
-    FOR_EACH_OBSERVER(SyncPrefObserver, sync_pref_observers_,
-                      OnSyncManagedPrefChange(*pref_sync_managed_));
-  }
+  FOR_EACH_OBSERVER(SyncPrefObserver, sync_pref_observers_,
+                    OnSyncManagedPrefChange(*pref_sync_managed_));
 }
 
 void SyncPrefs::SetManagedForTest(bool is_managed) {

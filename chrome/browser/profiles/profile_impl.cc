@@ -395,10 +395,22 @@ ProfileImpl::ProfileImpl(
 void ProfileImpl::DoFinalInit(bool is_new_profile) {
   PrefService* prefs = GetPrefs();
   pref_change_registrar_.Init(prefs);
-  pref_change_registrar_.Add(prefs::kGoogleServicesUsername, this);
-  pref_change_registrar_.Add(prefs::kDefaultZoomLevel, this);
-  pref_change_registrar_.Add(prefs::kProfileAvatarIndex, this);
-  pref_change_registrar_.Add(prefs::kProfileName, this);
+  pref_change_registrar_.Add(
+      prefs::kGoogleServicesUsername,
+      base::Bind(&ProfileImpl::UpdateProfileUserNameCache,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kDefaultZoomLevel,
+      base::Bind(&ProfileImpl::OnDefaultZoomLevelChanged,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kProfileAvatarIndex,
+      base::Bind(&ProfileImpl::UpdateProfileAvatarCache,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kProfileName,
+      base::Bind(&ProfileImpl::UpdateProfileNameCache,
+                 base::Unretained(this)));
 
   // It would be nice to use PathService for fetching this directory, but
   // the cache directory depends on the profile directory, which isn't available
@@ -941,19 +953,9 @@ void ProfileImpl::Observe(int type,
   }
 }
 
-void ProfileImpl::OnPreferenceChanged(PrefServiceBase* prefs,
-                                      const std::string& pref_name_in) {
-  DCHECK(prefs);
-  if (pref_name_in == prefs::kGoogleServicesUsername) {
-    UpdateProfileUserNameCache();
-  } else if (pref_name_in == prefs::kProfileAvatarIndex) {
-    UpdateProfileAvatarCache();
-  } else if (pref_name_in == prefs::kProfileName) {
-    UpdateProfileNameCache();
-  } else if (pref_name_in == prefs::kDefaultZoomLevel) {
-    HostZoomMap::GetForBrowserContext(this)->SetDefaultZoomLevel(
-        prefs->GetDouble(prefs::kDefaultZoomLevel));
-  }
+void ProfileImpl::OnDefaultZoomLevelChanged() {
+  HostZoomMap::GetForBrowserContext(this)->SetDefaultZoomLevel(
+      pref_change_registrar_.prefs()->GetDouble(prefs::kDefaultZoomLevel));
 }
 
 #if defined(ENABLE_SESSION_SERVICE)

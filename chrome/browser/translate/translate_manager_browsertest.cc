@@ -10,7 +10,6 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -93,11 +92,12 @@ class NavEntryCommittedObserver : public content::NotificationObserver {
 };
 
 class TranslateManagerTest : public ChromeRenderViewHostTestHarness,
-                             public content::NotificationObserver,
-                             public PrefObserver {
+                             public content::NotificationObserver {
  public:
   TranslateManagerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {
+      : pref_callback_(base::Bind(&TranslateManagerTest::OnPreferenceChanged,
+                                  base::Unretained(this))),
+        ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
   // Simulates navigating to a page and getting the page contents and language
@@ -216,7 +216,7 @@ class TranslateManagerTest : public ChromeRenderViewHostTestHarness,
         content::Details<InfoBarRemovedDetails>(details)->first);
   }
 
-  MOCK_METHOD2(OnPreferenceChanged, void(PrefServiceBase*, const std::string&));
+  MOCK_METHOD1(OnPreferenceChanged, void(const std::string&));
 
  protected:
   virtual void SetUp() {
@@ -295,8 +295,10 @@ class TranslateManagerTest : public ChromeRenderViewHostTestHarness,
   }
 
   void SetPrefObserverExpectation(const char* path) {
-    EXPECT_CALL(*this, OnPreferenceChanged(_, std::string(path)));
+    EXPECT_CALL(*this, OnPreferenceChanged(std::string(path)));
   }
+
+  PrefChangeRegistrar::NamedChangeCallback pref_callback_;
 
  private:
   content::NotificationRegistrar notification_registrar_;
@@ -1092,7 +1094,8 @@ TEST_F(TranslateManagerTest, NeverTranslateLanguagePref) {
   PrefService* prefs = profile->GetPrefs();
   PrefChangeRegistrar registrar;
   registrar.Init(prefs);
-  registrar.Add(TranslatePrefs::kPrefTranslateLanguageBlacklist, this);
+  registrar.Add(TranslatePrefs::kPrefTranslateLanguageBlacklist,
+                pref_callback_);
   TranslatePrefs translate_prefs(prefs);
   EXPECT_FALSE(translate_prefs.IsLanguageBlacklisted("fr"));
   EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
@@ -1139,7 +1142,7 @@ TEST_F(TranslateManagerTest, NeverTranslateSitePref) {
   PrefService* prefs = profile->GetPrefs();
   PrefChangeRegistrar registrar;
   registrar.Init(prefs);
-  registrar.Add(TranslatePrefs::kPrefTranslateSiteBlacklist, this);
+  registrar.Add(TranslatePrefs::kPrefTranslateSiteBlacklist, pref_callback_);
   TranslatePrefs translate_prefs(prefs);
   EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(host));
   EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
@@ -1178,7 +1181,7 @@ TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
   PrefService* prefs = profile->GetPrefs();
   PrefChangeRegistrar registrar;
   registrar.Init(prefs);
-  registrar.Add(TranslatePrefs::kPrefTranslateWhitelists, this);
+  registrar.Add(TranslatePrefs::kPrefTranslateWhitelists, pref_callback_);
   TranslatePrefs translate_prefs(prefs);
   SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateWhitelists);
   translate_prefs.WhitelistLanguagePair("fr", "en");

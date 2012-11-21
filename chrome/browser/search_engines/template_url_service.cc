@@ -926,10 +926,8 @@ void TemplateURLService::Observe(int type,
   }
 }
 
-void TemplateURLService::OnPreferenceChanged(PrefServiceBase* service,
-                                             const std::string& pref_name) {
+void TemplateURLService::OnSyncedDefaultSearchProviderGUIDChanged() {
   // Listen for changes to the default search from Sync.
-  DCHECK_EQ(std::string(prefs::kSyncedDefaultSearchProviderGUID), pref_name);
   PrefService* prefs = GetPrefs();
   TemplateURL* new_default_search = GetTemplateURLForGUID(
       prefs->GetString(prefs::kSyncedDefaultSearchProviderGUID));
@@ -1438,7 +1436,11 @@ void TemplateURLService::Init(const Initializer* initializers,
     notification_registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
                                 profile_source);
     pref_change_registrar_.Init(GetPrefs());
-    pref_change_registrar_.Add(prefs::kSyncedDefaultSearchProviderGUID, this);
+    pref_change_registrar_.Add(
+        prefs::kSyncedDefaultSearchProviderGUID,
+        base::Bind(
+            &TemplateURLService::OnSyncedDefaultSearchProviderGUIDChanged,
+            base::Unretained(this)));
   }
   notification_registrar_.Add(this,
       chrome::NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,

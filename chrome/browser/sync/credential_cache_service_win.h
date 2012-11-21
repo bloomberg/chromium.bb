@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "content/public/browser/notification_observer.h"
@@ -40,8 +39,7 @@ namespace syncer {
 // sync using credentials that were cached due to signing in on the other
 // (alternate) mode.
 class CredentialCacheService : public ProfileKeyedService,
-                               public content::NotificationObserver,
-                               public PrefObserver {
+                               public content::NotificationObserver {
  public:
   explicit CredentialCacheService(Profile* profile);
   virtual ~CredentialCacheService();
@@ -53,10 +51,6 @@ class CredentialCacheService : public ProfileKeyedService,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
 
   // Loads cached sync credentials from the alternate profile and applies them
   // to the local profile if the load was successful.
@@ -282,6 +276,9 @@ class CredentialCacheService : public ProfileKeyedService,
       const std::string& alternate_sid,
       const std::string& alternate_encryption_bootstrap_token,
       const std::string& alternate_keystore_encryption_bootstrap_token);
+
+  void OnSyncEncryptionBootstrapTokenChanged();
+  void OnSyncKeystoreEncryptionBootstrapTokenChanged();
 
   // Profile for which credentials are being cached.
   Profile* profile_;

@@ -70,7 +70,11 @@ TypedUrlDataTypeController::TypedUrlDataTypeController(
                                     sync_service),
       backend_(NULL) {
   pref_registrar_.Init(profile->GetPrefs());
-  pref_registrar_.Add(prefs::kSavingBrowserHistoryDisabled, this);
+  pref_registrar_.Add(
+      prefs::kSavingBrowserHistoryDisabled,
+      base::Bind(
+          &TypedUrlDataTypeController::OnSavingBrowserHistoryDisabledChanged,
+          base::Unretained(this)));
 }
 
 syncer::ModelType TypedUrlDataTypeController::type() const {
@@ -87,11 +91,8 @@ void TypedUrlDataTypeController::SetBackend(history::HistoryBackend* backend) {
   backend_ = backend;
 }
 
-void TypedUrlDataTypeController::OnPreferenceChanged(
-    PrefServiceBase* service,
-    const std::string& pref_name) {
+void TypedUrlDataTypeController::OnSavingBrowserHistoryDisabledChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(std::string(prefs::kSavingBrowserHistoryDisabled), pref_name);
   if (profile()->GetPrefs()->GetBoolean(
           prefs::kSavingBrowserHistoryDisabled)) {
     // We've turned off history persistence, so if we are running,

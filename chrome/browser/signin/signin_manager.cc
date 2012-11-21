@@ -105,8 +105,10 @@ void SigninManager::Initialize(Profile* profile) {
   // local_state can be null during unit tests.
   if (local_state) {
     local_state_pref_registrar_.Init(local_state);
-    local_state_pref_registrar_.Add(prefs::kGoogleServicesUsernamePattern,
-                                    this);
+    local_state_pref_registrar_.Add(
+        prefs::kGoogleServicesUsernamePattern,
+        base::Bind(&SigninManager::OnGoogleServicesUsernamePatternChanged,
+                   base::Unretained(this)));
   }
 
   // If the user is clearing the token service from the command line, then
@@ -539,9 +541,7 @@ void SigninManager::Observe(int type,
   }
 }
 
-void SigninManager::OnPreferenceChanged(PrefServiceBase* service,
-                                        const std::string& pref_name) {
-  DCHECK_EQ(std::string(prefs::kGoogleServicesUsernamePattern), pref_name);
+void SigninManager::OnGoogleServicesUsernamePatternChanged() {
   if (!authenticated_username_.empty() &&
       !IsAllowedUsername(authenticated_username_)) {
     // Signed in user is invalid according to the current policy so sign

@@ -24,7 +24,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "content/public/browser/notification_observer.h"
@@ -58,7 +57,6 @@ struct GoogleServiceSignoutDetails {
 
 class SigninManager : public GaiaAuthConsumer,
                       public content::NotificationObserver,
-                      public PrefObserver,
                       public ProfileKeyedService {
  public:
   // Returns true if the cookie policy for the given profile allows cookies
@@ -156,10 +154,6 @@ class SigninManager : public GaiaAuthConsumer,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // PrefObserver
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
-
   AboutSigninInternals* about_signin_internals();
 
  protected:
@@ -206,6 +200,8 @@ class SigninManager : public GaiaAuthConsumer,
   bool had_two_factor_error_;
 
   void CleanupNotificationRegistration();
+
+  void OnGoogleServicesUsernamePatternChanged();
 
   // Result of the last client login, kept pending the lookup of the
   // canonical email.

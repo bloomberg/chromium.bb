@@ -175,22 +175,6 @@ void CredentialCacheService::Observe(
   }
 }
 
-void CredentialCacheService::OnPreferenceChanged(PrefServiceBase* service,
-                                                 const std::string& pref_name) {
-  // One of the two sync encryption tokens has changed. Update its value in
-  // the local cache.
-  if (pref_name == prefs::kSyncEncryptionBootstrapToken) {
-    PackAndUpdateStringPref(pref_name,
-                            sync_prefs_.GetEncryptionBootstrapToken());
-  } else if (pref_name == prefs::kSyncKeystoreEncryptionBootstrapToken) {
-    PackAndUpdateStringPref(
-        pref_name,
-        sync_prefs_.GetKeystoreEncryptionBootstrapToken());
-  } else {
-    NOTREACHED() "Invalid pref name " << pref_name << ".";
-  }
-}
-
 void CredentialCacheService::ReadCachedCredentialsFromAlternateProfile() {
   // If the local user has signed in and signed out, we do not consume cached
   // credentials from the alternate profile. There is nothing more to do, now or
@@ -670,8 +654,15 @@ void CredentialCacheService::StartListeningForSyncConfigChanges() {
   // Register for notifications for updates to the sync encryption tokens, which
   // are stored in the PrefStore.
   pref_registrar_.Init(profile_->GetPrefs());
-  pref_registrar_.Add(prefs::kSyncEncryptionBootstrapToken, this);
-  pref_registrar_.Add(prefs::kSyncKeystoreEncryptionBootstrapToken, this);
+  pref_registrar_.Add(
+      prefs::kSyncEncryptionBootstrapToken,
+      base::Bind(&CredentialCacheService::OnSyncEncryptionBootstrapTokenChanged,
+                 base::Unretained(this)));
+  pref_registrar_.Add(
+      prefs::kSyncKeystoreEncryptionBootstrapToken,
+      base::Bind(&CredentialCacheService::
+                 OnSyncKeystoreEncryptionBootstrapTokenChanged,
+                 base::Unretained(this)));
 
   // Register for notifications for updates to lsid and sid, which are stored in
   // the TokenService.
@@ -872,6 +863,17 @@ bool CredentialCacheService::ShouldSignInToSync(
          !(alternate_encryption_bootstrap_token.empty() &&
            alternate_keystore_encryption_bootstrap_token.empty()) &&
          !service->setup_in_progress();
+}
+
+void CredentialCacheService::OnSyncEncryptionBootstrapTokenChanged() {
+  PackAndUpdateStringPref(prefs::kSyncEncryptionBootstrapToken,
+                          sync_prefs_.GetEncryptionBootstrapToken());
+}
+
+void CredentialCacheService::OnSyncKeystoreEncryptionBootstrapTokenChanged() {
+  PackAndUpdateStringPref(
+      prefs::kSyncKeystoreEncryptionBootstrapToken,
+      sync_prefs_.GetKeystoreEncryptionBootstrapToken());
 }
 
 }  // namespace syncer

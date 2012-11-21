@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
@@ -33,7 +32,6 @@ class RenderProcessHost;
 // profile and each is created by the SpellCheckServiceFactory.  The
 // SpellCheckService maintains any per-profile information about spellcheck.
 class SpellcheckService : public ProfileKeyedService,
-                          public PrefObserver,
                           public content::NotificationObserver,
                           public SpellcheckCustomDictionary::Observer {
  public:
@@ -91,10 +89,6 @@ class SpellcheckService : public ProfileKeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // PrefObserver implementation.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
-                                   const std::string& pref_name) OVERRIDE;
-
   // SpellcheckCustomDictionary::Observer implementation.
   virtual void OnCustomDictionaryLoaded() OVERRIDE;
   virtual void OnCustomDictionaryWordAdded(const std::string& word) OVERRIDE;
@@ -109,6 +103,8 @@ class SpellcheckService : public ProfileKeyedService,
   // Waits until a spellchecker updates its status. This function returns
   // immediately when we do not set an event to |status_event_|.
   static EventType WaitStatusEvent();
+
+  void OnEnableAutoSpellCorrectChanged();
 
   PrefChangeRegistrar pref_change_registrar_;
   content::NotificationRegistrar registrar_;
