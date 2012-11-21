@@ -503,22 +503,23 @@ TEST_F(ProfileSyncServicePreferenceTest, ManagedListPreferences) {
   scoped_ptr<ListValue> urls_to_restore(new ListValue);
   urls_to_restore->Append(Value::CreateStringValue(example_url1_));
   urls_to_restore->Append(Value::CreateStringValue(example_url2_));
-  cloud_data[prefs::kURLsToRestoreOnStartup] = urls_to_restore.release();
+  cloud_data[prefs::kURLsToRestoreOnStartup] = urls_to_restore.get();
 
   // Start sync and verify the synced value didn't get merged.
   AddPreferenceEntriesHelper helper(this, cloud_data);
   ASSERT_TRUE(StartSyncService(helper.callback(), false));
   ASSERT_TRUE(helper.success());
-  EXPECT_TRUE(cloud_data[prefs::kURLsToRestoreOnStartup]->Equals(
-          GetSyncedValue(prefs::kURLsToRestoreOnStartup)));
+  scoped_ptr<const Value> actual(
+      GetSyncedValue(prefs::kURLsToRestoreOnStartup));
+  EXPECT_TRUE(cloud_data[prefs::kURLsToRestoreOnStartup]->Equals(actual.get()));
 
   // Changing the user's urls to restore on startup pref should not sync
   // anything.
   ListValue user_value;
   user_value.Append(Value::CreateStringValue("http://chromium.org"));
   prefs_->SetUserPref(prefs::kURLsToRestoreOnStartup, user_value.DeepCopy());
-  EXPECT_TRUE(cloud_data[prefs::kURLsToRestoreOnStartup]->Equals(
-          GetSyncedValue(prefs::kURLsToRestoreOnStartup)));
+  actual.reset(GetSyncedValue(prefs::kURLsToRestoreOnStartup));
+  EXPECT_TRUE(cloud_data[prefs::kURLsToRestoreOnStartup]->Equals(actual.get()));
 
   // An incoming sync transaction should change the user value, not the managed
   // value.

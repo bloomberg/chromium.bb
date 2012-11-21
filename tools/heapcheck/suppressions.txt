@@ -1648,15 +1648,3 @@
    ...
    fun:net::FtpNetworkTransactionTest::ExecuteTransaction
 }
-{
-   bug_161979a
-   Heapcheck:Leak
-   ...
-   fun:ProfileSyncServicePreferenceTest_ManagedListPreferences_Test*
-}
-{
-   bug_161979b
-   Heapcheck:Leak
-   ...
-   fun:ProfileSyncServicePreferenceTest::GetSyncedValue
-}

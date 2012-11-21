@@ -6158,16 +6158,3 @@
    fun:_ZN10extensions20ExtensionUpdaterTest25TestHandleManifestResultsEv
    fun:_ZN10extensions51ExtensionUpdaterTest_TestHandleManifestResults_Test8TestBodyEv
 }
-{
-   bug_161979
-   Memcheck:Leak
-   ...
-   fun:_ZN60ProfileSyncServicePreferenceTest_ManagedListPreferences_Test8TestBodyEv
-}
-{
-   bug_161981
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN21CancelableTaskTracker16NewTrackedTaskIdEPN4base8CallbackIFbvEEE
-   fun:_ZN12_GLOBAL__N_140CheckTrackedTaskIdOnDifferentThread_TestEPNS_25CancelableTaskTrackerTestEPN4base13WaitableEventE
-}
