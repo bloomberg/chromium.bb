@@ -449,6 +449,23 @@ SyncStatusCode DriveMetadataStore::GetConflictURLs(
   return fileapi::SYNC_STATUS_OK;
 }
 
+std::string DriveMetadataStore::GetResourceIdForOrigin(
+    const GURL& origin) const {
+  DCHECK(CalledOnValidThread());
+  DCHECK(IsBatchSyncOrigin(origin) || IsIncrementalSyncOrigin(origin));
+
+  ResourceIDMap::const_iterator found = incremental_sync_origins_.find(origin);
+  if (found != incremental_sync_origins_.end())
+    return found->second;
+
+  found = batch_sync_origins_.find(origin);
+  if (found != batch_sync_origins_.end())
+    return found->second;
+
+  NOTREACHED();
+  return std::string();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 DriveMetadataDB::DriveMetadataDB(const FilePath& base_dir,

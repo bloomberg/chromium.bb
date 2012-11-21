@@ -95,6 +95,10 @@ class DriveMetadataStore
   // Returns a set of URLs for files in conflict.
   fileapi::SyncStatusCode GetConflictURLs(fileapi::FileSystemURLSet* urls);
 
+  // Returns resource id for |origin|. |origin| must be a batch sync origin or
+  // an incremental sync origin.
+  std::string GetResourceIdForOrigin(const GURL& origin) const;
+
   const std::string& sync_root_directory() const {
     DCHECK(CalledOnValidThread());
     return sync_root_directory_resource_id_;

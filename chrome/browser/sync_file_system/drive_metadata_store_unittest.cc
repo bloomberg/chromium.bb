@@ -431,4 +431,27 @@ TEST_F(DriveMetadataStoreTest, RemoveOrigin) {
   EXPECT_TRUE(found != metadata_map().end() && found->second.size() == 1u);
 }
 
+TEST_F(DriveMetadataStoreTest, GetResourceIdForOrigin) {
+  const GURL kOrigin1("http://hoge.example.com");
+  const GURL kOrigin2("http://fuga.example.net");
+  const std::string kResourceId1("hogera");
+  const std::string kResourceId2("fugaga");
+
+  InitializeDatabase();
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK, SetLargestChangeStamp(1));
+
+  metadata_store()->AddBatchSyncOrigin(kOrigin1, kResourceId1);
+  metadata_store()->AddBatchSyncOrigin(kOrigin2, kResourceId2);
+  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
+
+  EXPECT_EQ(kResourceId1, metadata_store()->GetResourceIdForOrigin(kOrigin1));
+  EXPECT_EQ(kResourceId2, metadata_store()->GetResourceIdForOrigin(kOrigin2));
+
+  DropDatabase();
+  InitializeDatabase();
+
+  EXPECT_EQ(kResourceId1, metadata_store()->GetResourceIdForOrigin(kOrigin1));
+  EXPECT_EQ(kResourceId2, metadata_store()->GetResourceIdForOrigin(kOrigin2));
+}
+
 }  // namespace sync_file_system
