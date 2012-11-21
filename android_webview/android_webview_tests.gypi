@@ -45,6 +45,7 @@
       'sources': [
         'lib/main/webview_tests.cc',
         'native/android_stream_reader_url_request_job_unittests.cc',
+        'native/state_serializer_unittests.cc',
       ],
     },
     {

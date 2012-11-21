@@ -36,8 +36,8 @@
         'aw_http_auth_handler.h',
         'aw_javascript_dialog_creator.cc',
         'aw_javascript_dialog_creator.h',
-        'aw_resource.h',
         'aw_resource.cc',
+        'aw_resource.h',
         'aw_web_contents_delegate.cc',
         'aw_web_contents_delegate.h',
         'cookie_manager.cc',
@@ -47,6 +47,8 @@
         'js_result_handler.cc',
         'js_result_handler.h',
         'net_init_native_callback.cc',
+        'state_serializer.cc',
+        'state_serializer.h',
       ],
     },
     {
