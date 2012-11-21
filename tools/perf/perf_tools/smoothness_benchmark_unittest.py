@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 from telemetry import multi_page_benchmark
 from telemetry import multi_page_benchmark_unittest_base
-from perf_tools import scrolling_benchmark
+from perf_tools import smoothness_benchmark
 
 from telemetry import browser_finder
 from telemetry import options_for_unittests
@@ -11,13 +11,28 @@ from telemetry import options_for_unittests
 import os
 import urlparse
 
-class ScrollingBenchmarkUnitTest(
+class SmoothnessBenchmarkUnitTest(
   multi_page_benchmark_unittest_base.MultiPageBenchmarkUnitTestBase):
+
+  def testFirstPaintTimeMeasurement(self):
+    ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
+
+    benchmark = smoothness_benchmark.SmoothnessBenchmark()
+    all_results = self.RunBenchmark(benchmark, ps)
+
+    self.assertEqual(0, len(all_results.page_failures))
+    self.assertEqual(1, len(all_results.page_results))
+
+    results0 = all_results.page_results[0]
+    if results0['first_paint'] == 'unsupported':
+      # This test can't run on content_shell.
+      return
+    self.assertTrue(results0['first_paint'] > 0)
 
   def testScrollingWithGpuBenchmarkingExtension(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
 
-    benchmark = scrolling_benchmark.ScrollingBenchmark()
+    benchmark = smoothness_benchmark.SmoothnessBenchmark()
     all_results = self.RunBenchmark(benchmark, ps)
 
     self.assertEqual(0, len(all_results.page_failures))
@@ -34,7 +49,7 @@ class ScrollingBenchmarkUnitTest(
                        'numFramesSentToScreen': 10}
     res = multi_page_benchmark.BenchmarkResults()
     res.WillMeasurePage(True)
-    scrolling_benchmark.CalcScrollResults(rendering_stats, res)
+    smoothness_benchmark.CalcScrollResults(rendering_stats, res)
     res.DidMeasurePage()
     self.assertEquals(50, res.page_results[0]['dropped_percent'])
     self.assertAlmostEquals(100, res.page_results[0]['mean_frame_time'], 2)
@@ -54,7 +69,7 @@ class ScrollingBenchmarkUnitTest(
                        'totalTimeInSeconds': 1.0}
     res = multi_page_benchmark.BenchmarkResults()
     res.WillMeasurePage(True)
-    scrolling_benchmark.CalcScrollResults(rendering_stats, res)
+    smoothness_benchmark.CalcScrollResults(rendering_stats, res)
     res.DidMeasurePage()
     self.assertEquals(0, res.page_results[0]['dropped_percent'])
     self.assertAlmostEquals(1000/60., res.page_results[0]['mean_frame_time'], 2)
@@ -102,7 +117,7 @@ class ScrollingBenchmarkUnitTest(
         self.assertTrue(rect_bottom <= viewport_height)
         self.assertTrue(rect_right <= viewport_width)
 
-class ScrollingBenchmarkWithoutGpuBenchmarkingUnitTest(
+class SmoothnessBenchmarkWithoutGpuBenchmarkingUnitTest(
   multi_page_benchmark_unittest_base.MultiPageBenchmarkUnitTestBase):
 
   def CustomizeOptionsForTest(self, options):
@@ -111,7 +126,7 @@ class ScrollingBenchmarkWithoutGpuBenchmarkingUnitTest(
   def testScrollingWithoutGpuBenchmarkingExtension(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
 
-    benchmark = scrolling_benchmark.ScrollingBenchmark()
+    benchmark = smoothness_benchmark.SmoothnessBenchmark()
     benchmark.use_gpu_benchmarking_extension = False
 
     all_results = self.RunBenchmark(benchmark, ps)
